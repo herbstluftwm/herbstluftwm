@@ -6,10 +6,13 @@
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
+#include <X11/Xatom.h>
 
 static Display *g_display;
 static Bool     g_otherwm;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
+static int g_screen;
+static Window g_root;
 
 // from dwm.c
 void die(const char *errstr, ...) {
@@ -68,11 +71,45 @@ void checkotherwm(void) {
 }
 
 
+// from dwm.c
+void
+scan(void) {
+    unsigned int i, num;
+    Window d1, d2, *wins = NULL;
+    XWindowAttributes wa;
+
+    if(XQueryTree(g_display, g_root, &d1, &d2, &wins, &num)) {
+        for(i = 0; i < num; i++) {
+            if(!XGetWindowAttributes(g_display, wins[i], &wa)
+            || wa.override_redirect || XGetTransientForHint(g_display, wins[i], &d1))
+                continue;
+            XTextProperty name;
+            XGetTextProperty(g_display, wins[i], &name, XA_WM_NAME);
+            fprintf(stdout, "Found window: %s\n", name.value);
+            XFree(name.value);
+        }
+        //for(i = 0; i < num; i++) { /* now the transients */
+        //    if(!XGetWindowAttributes(g_display, wins[i], &wa))
+        //        continue;
+        //    if(XGetTransientForHint(g_display, wins[i], &d1)
+        //    && (wa.map_state == IsViewable || getstate(wins[i]) == IconicState))
+        //        manage(wins[i], &wa);
+        //}
+        if(wins)
+            XFree(wins);
+    }
+}
+
+
 
 int main(int argc, char* argv[]) {
     if(!(g_display = XOpenDisplay(NULL)))
         die("herbstluftwm: cannot open display\n");
     checkotherwm();
+    // set some globals
+    g_screen = DefaultScreen(g_display);
+    g_root = RootWindow(g_display, g_screen);
+    scan();
     XCloseDisplay(g_display);
     return EXIT_SUCCESS;
 }
