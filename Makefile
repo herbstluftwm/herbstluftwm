@@ -1,14 +1,11 @@
 
+include config.mk
+
 # project
 SRCDIR = src
 SRC = $(wildcard $(SRCDIR)/*.c)
 OBJ = ${SRC:.c=.o}
 TARGET = herbstluftwm
-
-# environment
-LD = gcc
-CC = gcc
-CFLAGS = -pedantic -Wall -Werror
 
 # colors
 COLOR_ACTION  = "\e[1;33m"
