@@ -1,0 +1,12 @@
+
+# ignore objects
+*.o
+
+# ignore backups/vim's files
+*~
+.*.swp
+
+# ignore binaries
+herbstluftwm
+
+
