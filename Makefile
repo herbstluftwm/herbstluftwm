@@ -4,6 +4,7 @@ include config.mk
 # project
 SRCDIR = src
 SRC = $(wildcard $(SRCDIR)/*.c)
+HEADER = $(wildcard $(SRCDIR)/*.h)
 OBJ = ${SRC:.c=.o}
 TARGET = herbstluftwm
 
@@ -26,7 +27,7 @@ $(TARGET): $(OBJ)
 	@$(LD) -o $@ $(LDFLAGS)  $(OBJ)
 
 
-$(SRCDIR)/%.o: $(SRCDIR)/%.c
+$(SRCDIR)/%.o: $(SRCDIR)/%.c $(HEADER)
 	$(call colorecho,CC,$<)
 	@$(CC) -c $(CFLAGS) -o $@ $<
 

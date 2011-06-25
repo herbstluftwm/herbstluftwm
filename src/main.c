@@ -1,3 +1,6 @@
+// herbstluftwm
+#include "clientlist.h"
+#include "globals.h"
 // standard
 #include <stdio.h>
 #include <stdarg.h>
@@ -8,11 +11,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-static Display *g_display;
 static Bool     g_otherwm;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
-static int g_screen;
-static Window g_root;
 
 // from dwm.c
 void die(const char *errstr, ...) {
@@ -83,10 +83,7 @@ scan(void) {
             if(!XGetWindowAttributes(g_display, wins[i], &wa)
             || wa.override_redirect || XGetTransientForHint(g_display, wins[i], &d1))
                 continue;
-            XTextProperty name;
-            XGetTextProperty(g_display, wins[i], &name, XA_WM_NAME);
-            fprintf(stdout, "Found window: %s\n", name.value);
-            XFree(name.value);
+            manage_client(wins[i]);
         }
         //for(i = 0; i < num; i++) { /* now the transients */
         //    if(!XGetWindowAttributes(g_display, wins[i], &wa))
