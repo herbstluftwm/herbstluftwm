@@ -1,8 +1,10 @@
 
 #include "clientlist.h"
 #include "globals.h"
+#include "utils.h"
 #include <glib.h>
 #include <stdio.h>
+#include <stdlib.h>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -25,6 +27,7 @@ void manage_client(Window win) {
     // init client
     c->window = win;
     c->name = g_string_new("");
+    XSetWindowBorder(g_display, win, getcolor("#9fbc00"));
     // get properties
     update_client_properties(c);
     // add to list
@@ -32,8 +35,13 @@ void manage_client(Window win) {
     g_clients = g_list_append(g_clients, c);
 }
 
+// destroys a special client
+void destroy_client(HerbstClient* client) {
+    g_free(client);
+}
+
 void free_clients() {
-    // TODO:
+    //g_list_foreach(g_clients, (GFunc)destroy_client, NULL);
 }
 
 

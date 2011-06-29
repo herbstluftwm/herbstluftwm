@@ -1,10 +1,11 @@
 // herbstluftwm
 #include "clientlist.h"
+#include "utils.h"
 #include "globals.h"
 // standard
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdlib.h>
+#include <stdbool.h>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -14,14 +15,17 @@
 static Bool     g_otherwm;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 
-// from dwm.c
-void die(const char *errstr, ...) {
-    va_list ap;
-    va_start(ap, errstr);
-    vfprintf(stderr, errstr, ap);
-    va_end(ap);
-    exit(EXIT_FAILURE);
+
+// core funcitons
+void quit(int argc, char* argv[]) {
+    (void)argc;
+    (void)argv;
+    g_aboutToQuit = true;
 }
+
+
+
+
 
 // from dwm.c
 /* There's no way to check accesses to destroyed windows, thus those cases are
@@ -71,9 +75,9 @@ void checkotherwm(void) {
 }
 
 
+// scan for windows and add them to the list of managed clients
 // from dwm.c
-void
-scan(void) {
+void scan(void) {
     unsigned int i, num;
     Window d1, d2, *wins = NULL;
     XWindowAttributes wa;
@@ -85,13 +89,6 @@ scan(void) {
                 continue;
             manage_client(wins[i]);
         }
-        //for(i = 0; i < num; i++) { /* now the transients */
-        //    if(!XGetWindowAttributes(g_display, wins[i], &wa))
-        //        continue;
-        //    if(XGetTransientForHint(g_display, wins[i], &d1)
-        //    && (wa.map_state == IsViewable || getstate(wins[i]) == IconicState))
-        //        manage(wins[i], &wa);
-        //}
         if(wins)
             XFree(wins);
     }
@@ -106,7 +103,54 @@ int main(int argc, char* argv[]) {
     // set some globals
     g_screen = DefaultScreen(g_display);
     g_root = RootWindow(g_display, g_screen);
-    scan();
+    //scan();
+    // keybinds
+    XGrabKey(g_display, XKeysymToKeycode(g_display, XStringToKeysym("F1")),
+             Mod1Mask, g_root, True, GrabModeAsync, GrabModeAsync);
+    // main loop
+    int offset = 0;
+    XEvent event;
+    while (!g_aboutToQuit) {
+        XNextEvent(g_display, &event);
+        printf("got event of type %d\n", event.type);
+        switch (event.type) {
+            case ButtonPress: printf("name is: ButtonPress\n"); break;
+            case ClientMessage: printf("name is: ClientMessage\n"); break;
+            case ConfigureRequest: printf("name is: ConfigureRequest\n");
+                XConfigureRequestEvent* cre = &event.xconfigurerequest;
+                //XMoveResizeWindow(g_display, 5, 3, 160,90);
+                XWindowChanges wc;
+                wc.x = cre->x + offset;
+                wc.y = cre->y + offset;
+                offset += 10;
+                wc.width = cre->width;
+                wc.height = cre->height;
+                wc.border_width = cre->border_width;
+                wc.sibling = cre->above;
+                wc.stack_mode = cre->detail;
+                XConfigureWindow(g_display, cre->window, cre->value_mask, &wc);
+                XSync(g_display, False);
+                break;
+            case ConfigureNotify: printf("name is: ConfigureNotify\n"); break;
+            case DestroyNotify: printf("name is: DestroyNotify\n"); break;
+            case EnterNotify: printf("name is: EnterNotify\n"); break;
+            case Expose: printf("name is: Expose\n"); break;
+            case FocusIn: printf("name is: FocusIn\n"); break;
+            case KeyPress: printf("name is: KeyPress\n"); break;
+            case MappingNotify: printf("name is: MappingNotify\n"); break;
+            case MapRequest: printf("name is: MapRequest\n");
+                XMapRequestEvent* mapreq = &event.xmaprequest;
+                XMapWindow(g_display, mapreq->window);
+            break;
+            case PropertyNotify: printf("name is: PropertyNotify\n"); break;
+            case UnmapNotify: printf("name is: UnmapNotify\n"); break;
+        }
+        if (event.type == KeyPress) {
+            quit(0,0);
+        }
+    }
+    // close all
+    //free_clients();
     XCloseDisplay(g_display);
     return EXIT_SUCCESS;
 }

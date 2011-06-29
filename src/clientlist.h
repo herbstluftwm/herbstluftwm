@@ -17,6 +17,9 @@ struct HerbstClient {
 // adds a new client to list of managed client windows
 void manage_client(Window win);
 
+// destroys a special client
+void destroy_client(HerbstClient* client);
+
 // destroys data on quit
 void free_clients();
 
