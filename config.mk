@@ -9,6 +9,6 @@ LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 `pkg-config --libs glib-2.0`
 # FLAGS
 LD = gcc
 CC = gcc
-CFLAGS = -std=c99 -pedantic -Wall -Werror ${INCS}
+CFLAGS = -std=c99 -pedantic -Wall ${INCS}
 LDFLAGS = -g ${LIBS}
 
