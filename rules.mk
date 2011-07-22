@@ -17,7 +17,6 @@ $(TARGET): $(OBJ)
 	$(call colorecho,LD,$(TARGET))
 	@$(LD) -o $@ $(LDFLAGS)  $(OBJ)
 
-
 $(SRCDIR)/%.o: $(SRCDIR)/%.c $(HEADER)
 	$(call colorecho,CC,$<)
 	@$(CC) -c $(CFLAGS) -o $@ $<
@@ -29,5 +28,10 @@ clean:
 	$(call colorecho,RM,$(OBJ))
 	@rm -f $(OBJ)
 
-.PHONY: all clean rb
+info:
+	@echo Some Info:
+	@echo Compiling with: $(CC) -c $(CFLAGS) -o OUT INPUT
+	@echo Linking with: $(LD) -o OUT $(LDFLAGS) INPUT
+
+.PHONY: all clean rb info
 
