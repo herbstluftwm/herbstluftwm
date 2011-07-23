@@ -1,0 +1,26 @@
+
+
+
+The internal structure of herbstluftwm is as follows:
+
+all boxes are C-Modules (e.g. $name.c-files)
+
+
+                                                                                                                                    
+                                                                                                                                    
+                                                                                                                                    
+                           X11                                                                                                      
+                            |                                                                                                       
+                            V                                                                                                       
+                        +--------+                     +---------+                                                                  
+                        |  main  |                     | command |                                                                  
+                        +--------+                     +---------+                                                                  
+                            |                              ^                                                                        
+                     IPC-Call\      +------------+        / Execute                                                                 
+                      -Window `---->| ipc-server |-------'  IPC-Call                                                                
+                        -Event      +------------+                                                                                  
+                                                                                                                                    
+                                                                                                                                    
+                                                                                                                                    
+
+
