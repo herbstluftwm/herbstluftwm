@@ -17,7 +17,7 @@
 typedef struct ClientConnection {
     Window      window; // window to talk with
     int         argc;   // total number of args, -1 if unknown;
-    GString**   argv;   // all the args, but NULL if argc is unknown
+    char**      argv;   // all the args, but NULL if argc is unknown
     int         cur_arg;// index of the arg for the next received message
                         // its value is undefined if argc is unknown
 } ClientConnection;
@@ -40,20 +40,30 @@ void execute_ipc_call(ClientConnection* connection) {
     printf("there are %d args:\n", connection->argc);
     int i;
     for (i = 0; i < connection->argc; i++) {
-        printf("   %2d => \"%s\"\n", i, connection->argv[i]->str);
+        printf("   %2d => \"%s\"\n", i, connection->argv[i]);
     }
 }
 
-
-// free ClientConnection in a GHashTable
-void free_entry(Window* key, ClientConnection* connection, gpointer data) {
-    (void) key;
-    (void) data;
-    ipc_send_success_response(connection->window, "IPC-Server Shutdown");
+void destroy_client_connection(ClientConnection* connection) {
+    if (!connection) return;
+    int i = 0;
+    for (i = 0; i < connection->argc; i++) {
+        if (connection->argv[i]) {
+            g_free(connection->argv[i]);
+        }
+    }
     if (connection->argv) {
         g_free(connection->argv);
     }
     g_free(connection);
+}
+
+// free ClientConnection in a GHashTable
+void free_hash_table_entry(Window* key, ClientConnection* connection, gpointer data) {
+    (void) key;
+    (void) data;
+    ipc_send_success_response(connection->window, "IPC-Server Shutdown");
+    destroy_client_connection(connection);
 }
 
 // public callable functions
@@ -65,7 +75,7 @@ void ipc_init() {
 
 void ipc_destroy() {
     // TODO: is it really ok to first free the keys and values before destroy()?
-    g_hash_table_foreach(g_connections, (GHFunc)free_entry, 0);
+    g_hash_table_foreach(g_connections, (GHFunc)free_hash_table_entry, 0);
     g_hash_table_destroy(g_connections);
 }
 
@@ -106,7 +116,7 @@ void ipc_handle_connection(Window window) {
                 XFree(value);
                 ipc_send_success_response(window, HERBST_IPC_SUCCESS);
                 // now argc is known => create argv
-                connection->argv = g_new(GString*, connection->argc);
+                connection->argv = g_new0(char*, connection->argc);
                 // start filling of argv
                 connection->cur_arg = 0;
             }
@@ -139,7 +149,7 @@ void ipc_handle_connection(Window window) {
             } while (bytes > 0);
             // write result
             if (!parse_error_occured) {
-                connection->argv[connection->cur_arg] = result;
+                connection->argv[connection->cur_arg] = g_string_free(result, false);
                 connection->cur_arg++;
                 ipc_send_success_response(window, HERBST_IPC_SUCCESS);
             }
@@ -168,12 +178,9 @@ bool is_ipc_connectable(Window window) {
 void ipc_disconnect_client(Window window) {
     ClientConnection* connection = g_hash_table_lookup(g_connections, &window);
     if (connection != NULL) {
-        if (connection->argv) {
-            g_free(connection->argv);
-        }
-        g_free(connection);
+        destroy_client_connection(connection);
+        g_hash_table_remove(g_connections, &window);
     }
-    g_hash_table_remove(g_connections, &window);
 }
 
 void ipc_send_success_response(Window window, char* response) {
