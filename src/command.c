@@ -40,4 +40,14 @@ int call_command_no_ouput(int argc, char** argv) {
 }
 
 
+int list_commands(int argc, char** argv, GString** output)
+{
+    int i = 0;
+    while (g_commands[i].cmd.standard != NULL) {
+        *output = g_string_append(*output, g_commands[i].name);
+        *output = g_string_append(*output, "\n");
+        i++;
+    }
+    return 0;
+}
 

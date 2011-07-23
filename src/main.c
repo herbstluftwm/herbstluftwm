@@ -25,6 +25,7 @@ int version(int argc, char* argv[], GString** result);
 CommandBinding g_commands[] = {
     CMD_BIND(quit),
     CMD_BIND(version),
+    CMD_BIND(list_commands),
     {{ NULL }}
 };
 
