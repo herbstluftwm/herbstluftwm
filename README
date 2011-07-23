@@ -22,5 +22,16 @@ all boxes are C-Modules (e.g. $name.c-files)
                                                                                                                                     
                                                                                                                                     
                                                                                                                                     
+herbstclient is rather simple:
+
+ Command-Line-   +------+
+   Arguments --->| main |----.
+                 |      |   X11
+    stdout  <----|      |<---'
+                 +------+
+
+
+
+
 
 

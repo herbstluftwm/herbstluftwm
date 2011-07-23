@@ -8,5 +8,6 @@
 
 # ignore binaries
 herbstluftwm
+ipc-client/herbstclient
 
 
