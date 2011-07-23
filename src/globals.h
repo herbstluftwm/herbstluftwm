@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <X11/Xlib.h>
 
+#define HERBSTLUFT_VERSION "0.1-GIT, build on "__DATE__
+
 // connection to x-server
 Display*    g_display;
 int         g_screen;

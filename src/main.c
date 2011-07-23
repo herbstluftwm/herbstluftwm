@@ -4,6 +4,7 @@
 #include "globals.h"
 #include "ipc-server.h"
 #include "ipc-protocol.h"
+#include "command.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -18,14 +19,29 @@
 static Bool     g_otherwm;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 
+int quit();
+int version(int argc, char* argv[], GString** result);
+
+CommandBinding g_commands[] = {
+    CMD_BIND(quit),
+    CMD_BIND(version),
+    {{ NULL }}
+};
 
 // core funcitons
-void quit(int argc, char* argv[]) {
-    (void)argc;
-    (void)argv;
+int quit() {
     g_aboutToQuit = true;
+    return 0;
 }
 
+int version(int argc, char* argv[], GString** result) {
+    (void) argc;
+    (void) argv;
+    *result = g_string_assign(*result, HERBSTLUFT_VERSION);
+    return 0;
+}
+
+// handle x-events:
 
 void event_on_configure(XEvent event) {
     XConfigureRequestEvent* cre = &event.xconfigurerequest;

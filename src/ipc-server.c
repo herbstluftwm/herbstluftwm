@@ -1,5 +1,6 @@
 
 #include "globals.h"
+#include "command.h"
 #include "utils.h"
 #include "ipc-protocol.h"
 #include "ipc-server.h"
@@ -42,6 +43,11 @@ void execute_ipc_call(ClientConnection* connection) {
     for (i = 0; i < connection->argc; i++) {
         printf("   %2d => \"%s\"\n", i, connection->argv[i]);
     }
+    // really execpute it
+    GString* output = g_string_new("");
+    call_command(connection->argc, connection->argv, &output);
+    printf("and the result is: \"%s\"\n", output->str);
+    g_string_free(output, true);
 }
 
 void destroy_client_connection(ClientConnection* connection) {

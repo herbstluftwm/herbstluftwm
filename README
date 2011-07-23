@@ -15,7 +15,7 @@ all boxes are C-Modules (e.g. $name.c-files)
                         +--------+                     +---------+                                                                  
                         |  main  |                     | command |                                                                  
                         +--------+                     +---------+                                                                  
-                            |                              ^                                                                        
+                            \                              ^                                                                        
                      IPC-Call\      +------------+        / Execute                                                                 
                       -Window `---->| ipc-server |-------'  IPC-Call                                                                
                         -Event      +------------+                                                                                  

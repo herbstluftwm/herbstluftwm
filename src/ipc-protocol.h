@@ -10,6 +10,12 @@
 #define HERBST_IPC_ARGC_ATOM "_HERBST_IPC_ARGC"
 #define HERBST_IPC_ARGV_ATOM "_HERBST_IPC_ARGV"
 
+// function exit codes
+enum {
+    HERBST_EXIT_SUCCESS = 0,
+    HERBST_COMMAND_NOT_FOUND,
+    HERBST_INVALID_ARGUMENT,
+};
 
 #endif
 
