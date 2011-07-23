@@ -10,6 +10,7 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <glib.h>
 
 
 /// print a printf-like message to stderr and exit
@@ -65,6 +66,30 @@ GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
         return result;
     }
 }
+
+
+// duplicates an argument-vector
+char** argv_duplicate(int argc, char** argv) {
+    char** new_argv = malloc(sizeof(char*) * argc);
+    if (!new_argv) {
+        die("cannot malloc - there is no memory available\n");
+    }
+    int i;
+    for (i = 0; i < argc; i++) {
+        new_argv[i] = g_strdup(argv[i]);
+    }
+    return new_argv;
+}
+
+// frees all entrys in argument-vector and then the vector itself
+void argv_free(int argc, char** argv) {
+    int i;
+    for (i = 0; i < argc; i++) {
+        free(argv[i]);
+    }
+    free(argv);
+}
+
 
 
 

@@ -6,6 +6,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
+#define LENGTH(X) (sizeof(X)/sizeof(*X))
+
 /// print a printf-like message to stderr and exit
 void die(const char *errstr, ...);
 
@@ -15,6 +17,11 @@ unsigned long getcolor(const char *colstr);
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom);
+
+// duplicates an argument-vector
+char** argv_duplicate(int argc, char** argv);
+// frees all entrys in argument-vector and then the vector itself
+void argv_free(int argc, char** argv);
 
 #endif
 

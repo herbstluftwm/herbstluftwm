@@ -12,9 +12,9 @@ all boxes are C-Modules (e.g. $name.c-files)
                            X11                                                                                                      
                             |                                                                                                       
                             V                                                                                                       
-                        +--------+                     +---------+                                                                  
-                        |  main  |                     | command |                                                                  
-                        +--------+                     +---------+                                                                  
+                        +--------+  key  +-----+ call  +---------+                                                                  
+                        |  main  |------>| key |------>| command |                                                                  
+                        +--------+ event +-----+       +---------+                                                                  
                             \                    output /  ^                                                                        
                      IPC-Call\      +------------+<----'  / Execute                                                                 
                       -Window `---->| ipc-server |-------'  IPC-Call                                                                

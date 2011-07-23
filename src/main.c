@@ -1,6 +1,7 @@
 // herbstluftwm
 #include "clientlist.h"
 #include "utils.h"
+#include "key.h"
 #include "globals.h"
 #include "ipc-server.h"
 #include "ipc-protocol.h"
@@ -26,6 +27,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(quit),
     CMD_BIND(version),
     CMD_BIND(list_commands),
+    CMD_BIND_NO_OUTPUT(keybind),
     {{ NULL }}
 };
 
@@ -142,6 +144,7 @@ int main(int argc, char* argv[]) {
              Mod1Mask, g_root, True, GrabModeAsync, GrabModeAsync);
     XSelectInput(g_display, g_root, SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
     ipc_init();
+    key_init();
     // main loop
     XEvent event;
     while (!g_aboutToQuit) {
@@ -165,7 +168,9 @@ int main(int argc, char* argv[]) {
             case EnterNotify: printf("name is: EnterNotify\n"); break;
             case Expose: printf("name is: Expose\n"); break;
             case FocusIn: printf("name is: FocusIn\n"); break;
-            case KeyPress: printf("name is: KeyPress\n"); break;
+            case KeyPress: printf("name is: KeyPress\n");
+                handle_key_press(&event);
+                break;
             case MappingNotify: printf("name is: MappingNotify\n"); break;
             case MapRequest: printf("name is: MapRequest\n");
                 XMapRequestEvent* mapreq = &event.xmaprequest;
@@ -181,13 +186,11 @@ int main(int argc, char* argv[]) {
                 printf("got unknown event of type %d\n", event.type);
                 break;
         }
-        if (event.type == KeyPress) {
-            quit(0,0);
-        }
     }
     // close all
     //free_clients();
     ipc_destroy();
+    key_destroy();
     XCloseDisplay(g_display);
     return EXIT_SUCCESS;
 }
