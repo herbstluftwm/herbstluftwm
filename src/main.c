@@ -2,7 +2,10 @@
 #include "clientlist.h"
 #include "utils.h"
 #include "globals.h"
+#include "ipc-server.h"
+#include "ipc-protocol.h"
 // standard
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -24,7 +27,20 @@ void quit(int argc, char* argv[]) {
 }
 
 
-
+void event_on_configure(XEvent event) {
+    XConfigureRequestEvent* cre = &event.xconfigurerequest;
+    //XMoveResizeWindow(g_display, 5, 3, 160,90);
+    XWindowChanges wc;
+    wc.x = cre->x;
+    wc.y = cre->y;
+    wc.width = cre->width;
+    wc.height = cre->height;
+    wc.border_width = cre->border_width;
+    wc.sibling = cre->above;
+    wc.stack_mode = cre->detail;
+    XConfigureWindow(g_display, cre->window, cre->value_mask, &wc);
+    XSync(g_display, False);
+}
 
 
 // from dwm.c
@@ -107,32 +123,28 @@ int main(int argc, char* argv[]) {
     // keybinds
     XGrabKey(g_display, XKeysymToKeycode(g_display, XStringToKeysym("F1")),
              Mod1Mask, g_root, True, GrabModeAsync, GrabModeAsync);
+    XSelectInput(g_display, g_root, SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
+    ipc_init();
     // main loop
-    int offset = 0;
     XEvent event;
     while (!g_aboutToQuit) {
         XNextEvent(g_display, &event);
-        printf("got event of type %d\n", event.type);
         switch (event.type) {
             case ButtonPress: printf("name is: ButtonPress\n"); break;
             case ClientMessage: printf("name is: ClientMessage\n"); break;
+            case CreateNotify:printf("name is: CreateNotify\n");
+                if (is_ipc_connectable(event.xcreatewindow.window)) {
+                    ipc_handle_connection(event.xcreatewindow.window);
+                }
+                break;
             case ConfigureRequest: printf("name is: ConfigureRequest\n");
-                XConfigureRequestEvent* cre = &event.xconfigurerequest;
-                //XMoveResizeWindow(g_display, 5, 3, 160,90);
-                XWindowChanges wc;
-                wc.x = cre->x + offset;
-                wc.y = cre->y + offset;
-                offset += 10;
-                wc.width = cre->width;
-                wc.height = cre->height;
-                wc.border_width = cre->border_width;
-                wc.sibling = cre->above;
-                wc.stack_mode = cre->detail;
-                XConfigureWindow(g_display, cre->window, cre->value_mask, &wc);
-                XSync(g_display, False);
+                event_on_configure(event);
                 break;
             case ConfigureNotify: printf("name is: ConfigureNotify\n"); break;
-            case DestroyNotify: printf("name is: DestroyNotify\n"); break;
+            case DestroyNotify: printf("name is: DestroyNotify\n");
+                // TODO: only try to disconnect, if it _had_ the right window-class?
+                ipc_disconnect_client(event.xcreatewindow.window);
+                break;
             case EnterNotify: printf("name is: EnterNotify\n"); break;
             case Expose: printf("name is: Expose\n"); break;
             case FocusIn: printf("name is: FocusIn\n"); break;
@@ -142,8 +154,15 @@ int main(int argc, char* argv[]) {
                 XMapRequestEvent* mapreq = &event.xmaprequest;
                 XMapWindow(g_display, mapreq->window);
             break;
-            case PropertyNotify: printf("name is: PropertyNotify\n"); break;
+            case PropertyNotify: printf("name is: PropertyNotify\n"); 
+                if (is_ipc_connectable(event.xproperty.window)) {
+                    ipc_handle_connection(event.xproperty.window);
+                }
+                break;
             case UnmapNotify: printf("name is: UnmapNotify\n"); break;
+            default:
+                printf("got unknown event of type %d\n", event.type);
+                break;
         }
         if (event.type == KeyPress) {
             quit(0,0);
@@ -151,6 +170,7 @@ int main(int argc, char* argv[]) {
     }
     // close all
     //free_clients();
+    ipc_destroy();
     XCloseDisplay(g_display);
     return EXIT_SUCCESS;
 }

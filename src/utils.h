@@ -8,6 +8,8 @@ void die(const char *errstr, ...);
 // get X11 color from color string
 unsigned long getcolor(const char *colstr);
 
+#define ATOM(A) XInternAtom(g_display, (A), False)
+
 
 #endif
 
