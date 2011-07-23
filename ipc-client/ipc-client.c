@@ -68,9 +68,35 @@ int send_command(int argc, char* argv[]) {
             (unsigned char*)argv[i], strlen(argv[i])+1);
         WAIT_IPC_RESPONSE;
     }
+    // wait for output
+    WAIT_IPC_RESPONSE;
+    // fetch status code
+    int command_status = HERBST_UNKNOWN_ERROR;
+    int *value;
+    Atom type;
+    int format;
+    unsigned long items, bytes;
+    if (Success != XGetWindowProperty(dpy, win,
+        ATOM(HERBST_IPC_STATUS_ATOM), 0, 1, False,
+        XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value)) {
+        // if couldnot get window property
+        die("couldnot get WindowProperty \"%s\"\n", HERBST_IPC_STATUS_ATOM);
+    }
+    // on success:
+    command_status = *value;
+    XFree(value);
+    // fetch actual command output
+    GString* output = window_property_to_g_string(dpy, win, ATOM(HERBST_IPC_OUTPUT_ATOM));
+    if (!output) {
+        // if couldnot get window property
+        die("couldnot get WindowProperty \"%s\"\n", HERBST_IPC_OUTPUT_ATOM);
+    }
+    // print output to stdout
+    fputs(output->str, stdout);
     // clean all up
+    g_string_free(output, true);
     XDestroyWindow(dpy, win);
-    return EXIT_SUCCESS;
+    return command_status;
 }
 
 int main(int argc, char* argv[]) {
@@ -81,9 +107,9 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     root = DefaultRootWindow(dpy);
-    send_command(argc-1, argv+1);
+    int command_status = send_command(argc-1, argv+1);
     XCloseDisplay(dpy);
-    return EXIT_SUCCESS;
+    return command_status;
 }
 
 

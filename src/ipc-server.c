@@ -21,6 +21,8 @@ typedef struct ClientConnection {
     char**      argv;   // all the args, but NULL if argc is unknown
     int         cur_arg;// index of the arg for the next received message
                         // its value is undefined if argc is unknown
+    int         command_status; // return status of the called command
+    GString*    output; // output produced by the called command
 } ClientConnection;
 
 ClientConnection g_cur_connection;
@@ -44,10 +46,8 @@ void execute_ipc_call(ClientConnection* connection) {
         printf("   %2d => \"%s\"\n", i, connection->argv[i]);
     }
     // really execpute it
-    GString* output = g_string_new("");
-    call_command(connection->argc, connection->argv, &output);
-    printf("and the result is: \"%s\"\n", output->str);
-    g_string_free(output, true);
+    connection->command_status = call_command(connection->argc, connection->argv, &(connection->output));
+    printf("and the result is: \"%s\"\n", connection->output->str);
 }
 
 void destroy_client_connection(ClientConnection* connection) {
@@ -60,6 +60,9 @@ void destroy_client_connection(ClientConnection* connection) {
     }
     if (connection->argv) {
         g_free(connection->argv);
+    }
+    if (connection->output) {
+        g_string_free(connection->output, true);
     }
     g_free(connection);
 }
@@ -92,6 +95,7 @@ void ipc_add_connection(Window window) {
     new_connection->window = window;
     new_connection->argc = -1;
     new_connection->argv = NULL;
+    new_connection->output = g_string_new("");
     // insert in the connection-pool
     g_hash_table_insert(g_connections, &(new_connection->window), new_connection);
     // listen for propertychange-events on this window
@@ -129,32 +133,14 @@ void ipc_handle_connection(Window window) {
         } else if (connection->cur_arg < connection->argc) {
             // if there are still some args to be parsed
             // then read next arg from atom
-            GString* result = g_string_new("");
-            long bufsize = 10;
-            char *buf;
-            Atom type;
-            int format;
-            unsigned long items, bytes;
-            long offset = 0;
-            bool parse_error_occured = false;
-            do {
-                int status = XGetWindowProperty(g_display, window,
-                    ATOM(HERBST_IPC_ARGV_ATOM), offset, bufsize, False,
-                    ATOM("UTF8_STRING"), &type, &format,
-                    &items, &bytes, (unsigned char**)&buf);
-                if (status != Success) {
-                    ipc_send_success_response(window, "Wrong ARGV received");
-                    parse_error_occured = true;
-                    break; // then stop parsing
-                } else {
-                    result = g_string_append(result, buf);
-                    offset += bufsize;
-                    XFree(buf);
-                }
-                //printf("recieved: \"%s\"\n", result->str);
-            } while (bytes > 0);
-            // write result
-            if (!parse_error_occured) {
+            GString* result;
+            Atom atom = ATOM(HERBST_IPC_ARGV_ATOM);
+            result = window_property_to_g_string(g_display, window, atom);
+            if (result == NULL) {
+                // if property could not be received
+                ipc_send_success_response(window, "Wrong ARGV received");
+            } else {
+                // if getting of property was successful
                 connection->argv[connection->cur_arg] = g_string_free(result, false);
                 connection->cur_arg++;
                 ipc_send_success_response(window, HERBST_IPC_SUCCESS);
@@ -164,20 +150,35 @@ void ipc_handle_connection(Window window) {
         if (connection->cur_arg >= connection->argc) {
             // if enough args are parsed, then execute it!
             execute_ipc_call(connection);
+            // now we dont need any information from window anymore
+            // it is important, not to get PropertyChangeMask-Events,
+            // because wie now set its Property to return the command output
+            XSelectInput(g_display, window, 0);
+            // command was executed, so now send output back to client.
+            XChangeProperty(g_display, connection->window, ATOM(HERBST_IPC_OUTPUT_ATOM),
+                ATOM("UTF8_STRING"), 8, PropModeReplace,
+                (unsigned char*)connection->output->str, 1+strlen(connection->output->str));
+            // and also set the exit status
+            XChangeProperty(g_display, window, ATOM(HERBST_IPC_STATUS_ATOM),
+                XA_ATOM, 32, PropModeReplace, (unsigned char*)&(connection->command_status), 1);
+            // notify client
+            ipc_send_success_response(window, HERBST_IPC_SUCCESS);
         }
     }
 }
 
 bool is_ipc_connectable(Window window) {
     XClassHint hint;
-    XGetClassHint(g_display, window, &hint);
+    if (0 == XGetClassHint(g_display, window, &hint)) {
+        return false;
+    }
     bool is_ipc = false;
     if (hint.res_name && hint.res_class &&
         !strcmp(hint.res_class, HERBST_IPC_CLASS)) {
         is_ipc = true;
     }
-    XFree(hint.res_name);
-    XFree(hint.res_class);
+    if (hint.res_name) XFree(hint.res_name);
+    if (hint.res_class) XFree(hint.res_class);
     return is_ipc;
 }
 

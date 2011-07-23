@@ -32,3 +32,39 @@ unsigned long getcolor(const char *colstr) {
     return color.pixel;
 }
 
+GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
+    GString* result = g_string_new("");
+    long bufsize = 10;
+    char *buf;
+    Atom type;
+    int format;
+    unsigned long items, bytes;
+    long offset = 0;
+    bool parse_error_occured = false;
+    do {
+        int status = XGetWindowProperty(dpy, window,
+            atom, offset, bufsize, False,
+            ATOM("UTF8_STRING"), &type, &format,
+            &items, &bytes, (unsigned char**)&buf);
+        if (status != Success) {
+            parse_error_occured = true;
+            break; // then stop parsing
+        } else {
+            result = g_string_append(result, buf);
+            offset += bufsize;
+            XFree(buf);
+        }
+        //printf("recieved: \"%s\"\n", result->str);
+    } while (bytes > 0);
+    //
+    if (parse_error_occured) {
+        // then just return NULL
+        g_string_free(result, true);
+        return NULL;
+    } else {
+        return result;
+    }
+}
+
+
+
