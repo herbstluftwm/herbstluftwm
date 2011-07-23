@@ -15,13 +15,13 @@ all boxes are C-Modules (e.g. $name.c-files)
                         +--------+                     +---------+                                                                  
                         |  main  |                     | command |                                                                  
                         +--------+                     +---------+                                                                  
-                            \                              ^                                                                        
-                     IPC-Call\      +------------+        / Execute                                                                 
+                            \                    output /  ^                                                                        
+                     IPC-Call\      +------------+<----'  / Execute                                                                 
                       -Window `---->| ipc-server |-------'  IPC-Call                                                                
                         -Event      +------------+                                                                                  
-                                                                                                                                    
-                                                                                                                                    
-                                                                                                                                    
+                                           |                                                                                        
+                                           V                                                                                        
+                                          X11                                                                                       
 herbstclient is rather simple:
 
  Command-Line-   +------+
