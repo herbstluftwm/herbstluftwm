@@ -178,8 +178,8 @@ bool is_ipc_connectable(Window window) {
 void ipc_disconnect_client(Window window) {
     ClientConnection* connection = g_hash_table_lookup(g_connections, &window);
     if (connection != NULL) {
-        destroy_client_connection(connection);
         g_hash_table_remove(g_connections, &window);
+        destroy_client_connection(connection);
     }
 }
 
