@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <X11/Xutil.h>
 #include <X11/Xlib.h>
 
 int* g_window_gap;
@@ -36,6 +37,14 @@ void layout_destroy() {
 HSFrame* frame_create_empty() {
     HSFrame* frame = g_new0(HSFrame, 1);
     frame->type = TYPE_CLIENTS;
+    frame->window = XCreateSimpleWindow(g_display, g_root,
+                        42, 42, 42, 42, 0, 0, 0);
+    // set wm_class for window
+    XClassHint *hint = XAllocClassHint();
+    hint->res_name = HERBST_FRAME_CLASS;
+    hint->res_class = HERBST_FRAME_CLASS;
+    XSetClassHint(g_display, frame->window, hint);
+    XFree(hint);
     return frame;
 }
 
@@ -92,7 +101,6 @@ void frame_destroy(HSFrame* frame, Window** buf, size_t* count) {
     if (frame->type == TYPE_CLIENTS) {
         *buf = frame->content.clients.buf;
         *count = frame->content.clients.count;
-        g_free(frame);
     } else { /* frame->type == TYPE_FRAMES */
         size_t c1, c2;
         Window *buf1, *buf2;
@@ -103,11 +111,13 @@ void frame_destroy(HSFrame* frame, Window** buf, size_t* count) {
         memcpy(buf1+c1, buf2, sizeof(Window) * c2);
         // free unused things
         g_free(buf2);
-        g_free(frame);
         // return;
         *buf = buf1;
         *count = c1 + c2;
     }
+    // free other things
+    XDestroyWindow(g_display, frame->window);
+    g_free(frame);
 }
 
 void print_frame_tree(HSFrame* frame, int indent, GString** output) {

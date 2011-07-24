@@ -4,6 +4,7 @@
 // standard
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 // gui
 #include <X11/Xlib.h>
@@ -67,6 +68,25 @@ GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
     }
 }
 
+GString* window_class_to_g_string(Display* dpy, Window window) {
+    XClassHint hint;
+    if (0 == XGetClassHint(dpy, window, &hint)) {
+        return g_string_new("");
+    }
+    GString* string = g_string_new(hint.res_class ? hint.res_class : "");
+    if (hint.res_name) XFree(hint.res_name);
+    if (hint.res_class) XFree(hint.res_class);
+    return string;
+}
+
+bool is_herbstluft_window(Display* dpy, Window window) {
+    GString* string = window_class_to_g_string(dpy, window);
+    bool result;
+    result = !strcmp(string->str, HERBST_FRAME_CLASS);
+    g_string_free(string, true);
+    printf("is herbstluft = %d\n", (int)result);
+    return result;
+}
 
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv) {

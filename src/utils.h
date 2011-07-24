@@ -3,6 +3,7 @@
 #define __HERBST_UTILS_H_
 
 #include <glib.h>
+#include <stdbool.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 
@@ -17,6 +18,9 @@ unsigned long getcolor(const char *colstr);
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom);
+GString* window_class_to_g_string(Display* dpy, Window window);
+
+bool is_herbstluft_window(Display* dpy, Window window);
 
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv);

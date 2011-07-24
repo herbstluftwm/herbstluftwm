@@ -8,6 +8,8 @@
 #define HERBSTLUFT_VERSION "0.1-GIT, build on "__DATE__
 #define HERBSTLUFT_AUTOSTART "herbstluftrc"
 
+#define HERBST_FRAME_CLASS "_HERBST_FRAME"
+
 // connection to x-server
 Display*    g_display;
 int         g_screen;

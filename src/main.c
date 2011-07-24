@@ -270,7 +270,7 @@ int main(int argc, char* argv[]) {
                 manage_client(mapreq->window);
                 XMapWindow(g_display, mapreq->window);
             break;
-            case PropertyNotify: printf("name is: PropertyNotify\n"); 
+            case PropertyNotify: //printf("name is: PropertyNotify\n"); 
                 if (is_ipc_connectable(event.xproperty.window)) {
                     ipc_handle_connection(event.xproperty.window);
                 }

@@ -43,6 +43,7 @@ typedef struct HSFrame {
     } content;
     int type;
     struct HSFrame* parent;
+    Window window;
 } HSFrame;
 
 
