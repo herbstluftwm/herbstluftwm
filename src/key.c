@@ -51,6 +51,8 @@ int keybind(int argc, char** argv) {
     if (!string2key(argv[1], &(new_bind.modifiers), &(new_bind.keysym))) {
         return HERBST_INVALID_ARGUMENT;
     }
+    // remove existing binding with same keysym/modifiers
+    key_remove_bind_with_keysym(new_bind.modifiers, new_bind.keysym);
     // create a copy of the command to execute on this key
     new_bind.cmd_argc = argc - 2;
     new_bind.cmd_argv = argv_duplicate(new_bind.cmd_argc, argv+2);
@@ -116,5 +118,37 @@ void handle_key_press(XEvent* ev) {
         call_command_no_ouput(found->cmd_argc, found->cmd_argv);
     }
 }
+
+int keyunbind(int argc, char** argv) {
+    if (argc <= 1) {
+        fprintf(stderr, "keybind: not enough arguments\n");
+        return HERBST_INVALID_ARGUMENT;
+    }
+    unsigned int modifiers;
+    KeySym keysym;
+    // get keycode
+    if (!string2key(argv[1], &modifiers, &keysym)) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    key_remove_bind_with_keysym(modifiers, keysym);
+    XUngrabKey(g_display, XKeysymToKeycode(g_display, keysym), modifiers, g_root);
+    return 0;
+}
+
+void key_remove_bind_with_keysym(unsigned int modifiers, KeySym keysym){
+    KeyBinding bind;
+    bind.modifiers = modifiers;
+    bind.keysym = keysym;
+    // search this keysym in list and remove it
+    GList* element = g_list_find_custom(g_key_binds, &bind, (GCompareFunc)keysym_equals);
+    if (!element) {
+        return;
+    }
+    g_free(element->data);
+    g_key_binds = g_list_remove_link(g_key_binds, element);
+    g_list_free_1(element);
+}
+
+
 
 

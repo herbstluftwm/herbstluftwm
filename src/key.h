@@ -16,6 +16,9 @@ unsigned int modifiername2mask(const char* name);
 
 bool string2key(char* string, unsigned int* modmask, KeySym* keysym);
 int keybind(int argc, char** argv);
+int keyunbind(int argc, char** argv); //removes a keybinding
+
+void key_remove_bind_with_keysym(unsigned int modifiers, KeySym sym);
 
 void handle_key_press(XEvent* ev);
 

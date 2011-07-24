@@ -23,11 +23,23 @@ static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 int quit();
 int version(int argc, char* argv[], GString** result);
 
+int hi() {
+    printf("HIHIHI\n");
+    return 0;
+}
+int ho() {
+    printf("HOHOHO\n");
+    return 0;
+}
+
 CommandBinding g_commands[] = {
     CMD_BIND(quit),
     CMD_BIND(version),
     CMD_BIND(list_commands),
+    CMD_BIND(hi),
+    CMD_BIND(ho),
     CMD_BIND_NO_OUTPUT(keybind),
+    CMD_BIND_NO_OUTPUT(keyunbind),
     {{ NULL }}
 };
 
