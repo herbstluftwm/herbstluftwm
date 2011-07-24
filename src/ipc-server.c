@@ -39,15 +39,15 @@ gboolean window_id_equals(Window* a, Window* b) {
 }
 
 void execute_ipc_call(ClientConnection* connection) {
-    printf("now i am executing for %d\n", (int)(connection->window));
-    printf("there are %d args:\n", connection->argc);
-    int i;
-    for (i = 0; i < connection->argc; i++) {
-        printf("   %2d => \"%s\"\n", i, connection->argv[i]);
-    }
+    //printf("now i am executing for %d\n", (int)(connection->window));
+    //printf("there are %d args:\n", connection->argc);
+    //int i;
+    //for (i = 0; i < connection->argc; i++) {
+    //    printf("   %2d => \"%s\"\n", i, connection->argv[i]);
+    //}
     // really execpute it
     connection->command_status = call_command(connection->argc, connection->argv, &(connection->output));
-    printf("and the result is: \"%s\"\n", connection->output->str);
+    //printf("and the result is: \"%s\"\n", connection->output->str);
 }
 
 void destroy_client_connection(ClientConnection* connection) {
