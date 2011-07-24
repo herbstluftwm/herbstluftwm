@@ -22,7 +22,9 @@ static Bool     g_otherwm;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 
 int quit();
+int reload();
 int version(int argc, char* argv[], GString** result);
+void execute_autostart_file();
 int spawn(int argc, char** argv);
 
 int hi() {
@@ -35,7 +37,8 @@ int ho() {
 }
 
 CommandBinding g_commands[] = {
-    CMD_BIND(quit),
+    CMD_BIND_NO_OUTPUT(quit),
+    CMD_BIND_NO_OUTPUT(reload),
     CMD_BIND(version),
     CMD_BIND(list_commands),
     CMD_BIND(hi),
@@ -49,6 +52,12 @@ CommandBinding g_commands[] = {
 // core funcitons
 int quit() {
     g_aboutToQuit = true;
+    return 0;
+}
+
+// reload config
+int reload() {
+    execute_autostart_file();
     return 0;
 }
 
