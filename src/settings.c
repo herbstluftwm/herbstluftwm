@@ -12,6 +12,7 @@
 // default settings:
 SettingsPair g_settings[] = {
     { "border_width", { .i = 2 }, .type = HS_Int },
+    { "window_gap", { .i = 2 }, .type = HS_Int },
     { "border_color", { .s = "red" } },
 };
 

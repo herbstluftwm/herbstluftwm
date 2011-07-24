@@ -50,6 +50,8 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(keybind),
     CMD_BIND_NO_OUTPUT(keyunbind),
     CMD_BIND_NO_OUTPUT(spawn),
+    {{ .no_output = frame_current_cycle_selection }, .name = "cycle", .has_output = 0 },
+    {{ .no_output = frame_split_command }, .name = "split", .has_output = 0 },
     {{ .no_output = settings_set }, .name = "set", .has_output = 0 },
     {{ .standard = settings_get }, .name = "get", .has_output = 1 },
     {{ .standard = print_layout_command }, .name = "layout", .has_output = 1 },

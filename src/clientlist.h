@@ -13,6 +13,7 @@ struct HerbstClient {
     Window      window;
 };
 
+void window_focus(Window window);
 
 // adds a new client to list of managed client windows
 void manage_client(Window win);

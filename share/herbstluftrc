@@ -8,10 +8,16 @@ function hc() {
 
 xsetroot -solid '#D47A55'
 
-hc keybind Mod1-q quit
-hc keybind Mod1-Shift-r reload
-hc keybind Mod1-Return spawn xterm
-hc keybind Mod1-F2 spawn gmrun
+Mod=Mod1
+hc keybind $Mod-q quit
+hc keybind $Mod-Shift-r reload
+hc keybind $Mod-Return spawn xterm
+hc keybind $Mod-F2 spawn gmrun
+
+
+# layouting
+hc keybind $Mod-h split '(cur)' horizontal 0.5
+hc keybind $Mod-v split '(cur)' vertical 0.5
 
 
 

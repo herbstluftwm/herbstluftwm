@@ -44,4 +44,7 @@ void free_clients() {
     //g_list_foreach(g_clients, (GFunc)destroy_client, NULL);
 }
 
+void window_focus(Window window) {
+    XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
+}
 
