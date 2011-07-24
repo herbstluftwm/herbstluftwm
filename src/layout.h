@@ -87,6 +87,10 @@ void print_frame_tree(HSFrame* frame, int indent, GString** output);
 int frame_current_cycle_selection(int argc, char** argv);
 
 void frame_unfocus(); // unfocus currently focused window
+
+// get neighbour in a specific direction 'l' 'r' 'u' 'd' (left, right,...)
+// returns the neighbour or NULL if there is no one
+HSFrame* frame_neighbour(HSFrame* frame, char direction);
 int frame_focus_command(int argc, char** argv);
 
 // follow selection to leave and focus this frame

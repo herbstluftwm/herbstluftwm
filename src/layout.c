@@ -365,16 +365,9 @@ HSMonitor* monitor_with_frame(HSFrame* frame) {
     return find_monitor_with_tag(tag);
 }
 
-int frame_focus_command(int argc, char** argv) {
-    // usage: focus left|right|up|down
-    if (argc < 2) return HERBST_INVALID_ARGUMENT;
-    if (!g_cur_frame) {
-        fprintf(stderr, "warning: no frame is selected\n");
-        return HERBST_UNKNOWN_ERROR;
-    }
-    char direction = argv[1][0];
+HSFrame* frame_neighbour(HSFrame* frame, char direction) {
+    HSFrame* other;
     bool found = false;
-    HSFrame* frame= g_cur_frame;
     while (frame->parent) {
         // find frame, where we can change the
         // selection in the desired direction
@@ -382,34 +375,34 @@ int frame_focus_command(int argc, char** argv) {
         switch(direction) {
             case 'r':
                 if (layout->align == LAYOUT_HORIZONTAL
-                    && layout->selection == 0) {
-                    layout->selection = 1;
+                    && layout->a == frame) {
                     found = true;
+                    other = layout->b;
                 }
                 break;
             case 'l':
                 if (layout->align == LAYOUT_HORIZONTAL
-                    && layout->selection == 1) {
-                    layout->selection = 0;
+                    && layout->b == frame) {
                     found = true;
+                    other = layout->a;
                 }
                 break;
             case 'd':
                 if (layout->align == LAYOUT_VERTICAL
-                    && layout->selection == 0) {
-                    layout->selection = 1;
+                    && layout->a == frame) {
                     found = true;
+                    other = layout->b;
                 }
                 break;
             case 'u':
                 if (layout->align == LAYOUT_VERTICAL
-                    && layout->selection == 1) {
-                    layout->selection = 0;
+                    && layout->b == frame) {
                     found = true;
+                    other = layout->a;
                 }
                 break;
             default:
-                return HERBST_INVALID_ARGUMENT;
+                return NULL;
                 break;
         }
         if (found) {
@@ -418,8 +411,30 @@ int frame_focus_command(int argc, char** argv) {
         // else: go one step closer to root
         frame = frame->parent;
     }
-    if (found) {
-        frame_focus_recursive(frame->parent);
+    if (!found) {
+        return NULL;
+    }
+    return other;
+}
+
+int frame_focus_command(int argc, char** argv) {
+    // usage: focus left|right|up|down
+    if (argc < 2) return HERBST_INVALID_ARGUMENT;
+    if (!g_cur_frame) {
+        fprintf(stderr, "warning: no frame is selected\n");
+        return HERBST_UNKNOWN_ERROR;
+    }
+    char direction = argv[1][0];
+    //HSFrame* frame = g_cur_frame;
+    HSFrame* neighbour = frame_neighbour(g_cur_frame, direction);
+    if (neighbour != NULL) { // if neighbour was found
+        HSFrame* parent = neighbour->parent;
+        // alter focus (from 0 to 1, from 1 to 0)
+        int selection = parent->content.layout->selection;
+        selection = (selection == 1) ? 0 : 1;
+        parent->content.layout->selection = selection;
+        // change focus if possible
+        frame_focus_recursive(parent);
         HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
         monitor_apply_layout(m);
     }
