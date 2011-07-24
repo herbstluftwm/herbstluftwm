@@ -168,6 +168,7 @@ void print_frame_tree(HSFrame* frame, int indent, GString** output) {
 
 void monitor_apply_layout(HSMonitor* monitor) {
     if (monitor) {
+        printf("layouting...\n");
         XRectangle rect = monitor->rect;
         rect.x += *g_window_gap;
         rect.y += *g_window_gap;
@@ -275,7 +276,7 @@ void ensure_monitors_are_available() {
 }
 
 HSFrame* frame_current_selection() {
-    HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+    HSMonitor* m = get_current_monitor();
     if (!m->tag) return NULL;
     HSFrame* frame = m->tag->frame;
     while (frame->type == TYPE_FRAMES) {
@@ -435,15 +436,50 @@ int frame_focus_command(int argc, char** argv) {
         parent->content.layout->selection = selection;
         // change focus if possible
         frame_focus_recursive(parent);
-        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
-        monitor_apply_layout(m);
+        monitor_apply_layout(get_current_monitor());
     }
     return 0;
 }
 
+int frame_move_window_command(int argc, char** argv) {
+    // usage: move left|right|up|down
+    if (argc < 2) return HERBST_INVALID_ARGUMENT;
+    if (!g_cur_frame) {
+        fprintf(stderr, "warning: no frame is selected\n");
+        return HERBST_UNKNOWN_ERROR;
+    }
+    char direction = argv[1][0];
+    HSFrame* neighbour = frame_neighbour(g_cur_frame, direction);
+    Window win = frame_focused_window(g_cur_frame);
+    if (win && neighbour != NULL) { // if neighbour was found
+        // move window to neighbour
+        frame_remove_window(g_cur_frame, win);
+        frame_insert_window(neighbour, win);
+        // layout was changed, so update it
+        monitor_apply_layout(get_current_monitor());
+    }
+    return 0;
+}
 
 void frame_unfocus() {
     //XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
+}
+
+Window frame_focused_window(HSFrame* frame) {
+    if (!frame) {
+        return (Window)0;
+    }
+    // follow the selection to a leave
+    while (frame->type == TYPE_FRAMES) {
+        frame = (frame->content.layout->selection == 0) ?
+                frame->content.layout->a :
+                frame->content.layout->b;
+    }
+    if (frame->content.clients.count) {
+        int selection = frame->content.clients.selection;
+        return frame->content.clients.buf[selection];
+    } // else, if there are no windows
+    return (Window)0;
 }
 
 int frame_focus_recursive(HSFrame* frame) {
@@ -462,5 +498,9 @@ int frame_focus_recursive(HSFrame* frame) {
     return 0;
 }
 
+
+HSMonitor* get_current_monitor() {
+    return &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+}
 
 

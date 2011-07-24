@@ -18,8 +18,8 @@ hc keybind $Mod-F2 spawn gmrun
 
 
 # layouting
-hc keybind $Mod-Shift-h split '(cur)' horizontal 0.5
-hc keybind $Mod-Shift-v split '(cur)' vertical 0.5
+hc keybind $Mod-u split '(cur)' vertical 0.5
+hc keybind $Mod-o split '(cur)' horizontal 0.5
 
 # focus
 hc keybind $Mod-c cycle
@@ -27,5 +27,9 @@ hc keybind $Mod-h focus left
 hc keybind $Mod-j focus down
 hc keybind $Mod-k focus up
 hc keybind $Mod-l focus right
+hc keybind $Mod-Shift-h shift left
+hc keybind $Mod-Shift-j shift down
+hc keybind $Mod-Shift-k shift up
+hc keybind $Mod-Shift-l shift right
 
 

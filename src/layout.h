@@ -96,6 +96,10 @@ int frame_focus_command(int argc, char** argv);
 // follow selection to leave and focus this frame
 int frame_focus_recursive(HSFrame* frame);
 
+// returns the Window that is focused
+// returns 0 if there is none
+Window frame_focused_window(HSFrame* frame);
+int frame_move_window_command(int argc, char** argv);
 
 // for tags
 HSTag* add_tag(char* name);
@@ -105,6 +109,7 @@ HSTag* find_tag_with_toplevel_frame(HSFrame* frame);
 HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect);
+HSMonitor* get_current_monitor();
 void monitor_apply_layout(HSMonitor* monitor);
 void ensure_monitors_are_available();
 
