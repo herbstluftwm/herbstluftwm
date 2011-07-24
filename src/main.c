@@ -2,6 +2,7 @@
 #include "clientlist.h"
 #include "utils.h"
 #include "key.h"
+#include "layout.h"
 #include "globals.h"
 #include "ipc-server.h"
 #include "ipc-protocol.h"
@@ -22,9 +23,11 @@
 static Bool     g_otherwm;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 
+
 int quit();
 int reload();
 int version(int argc, char* argv[], GString** result);
+int print_layout_command(int argc, char** argv, GString** result);
 void execute_autostart_file();
 int spawn(int argc, char** argv);
 
@@ -49,6 +52,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(spawn),
     {{ .no_output = settings_set }, .name = "set", .has_output = 0 },
     {{ .standard = settings_get }, .name = "get", .has_output = 1 },
+    {{ .standard = print_layout_command }, .name = "layout", .has_output = 1 },
     {{ NULL }}
 };
 
@@ -68,6 +72,18 @@ int version(int argc, char* argv[], GString** result) {
     (void) argc;
     (void) argv;
     *result = g_string_assign(*result, HERBSTLUFT_VERSION);
+    return 0;
+}
+
+int print_layout_command(int argc, char** argv, GString** result) {
+    (void) argc;
+    (void) argv;
+    HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+    HSTag* tag = m->tag;
+    if (!tag) {
+        return 0;
+    }
+    print_frame_tree(tag->frame, 0, result);
     return 0;
 }
 
@@ -208,7 +224,6 @@ int main(int argc, char* argv[]) {
     // set some globals
     g_screen = DefaultScreen(g_display);
     g_root = RootWindow(g_display, g_screen);
-    //scan();
     // keybinds
     XGrabKey(g_display, XKeysymToKeycode(g_display, XStringToKeysym("F1")),
              Mod1Mask, g_root, True, GrabModeAsync, GrabModeAsync);
@@ -216,7 +231,10 @@ int main(int argc, char* argv[]) {
     ipc_init();
     key_init();
     settings_init();
+    layout_init();
     execute_autostart_file();
+    ensure_monitors_are_available();
+    //scan();
     // main loop
     XEvent event;
     while (!g_aboutToQuit) {
@@ -246,6 +264,9 @@ int main(int argc, char* argv[]) {
             case MappingNotify: printf("name is: MappingNotify\n"); break;
             case MapRequest: printf("name is: MapRequest\n");
                 XMapRequestEvent* mapreq = &event.xmaprequest;
+                HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+                frame_insert_window(m->tag->frame, mapreq->window);
+                frame_apply_layout(m->tag->frame, m->rect);
                 XMapWindow(g_display, mapreq->window);
             break;
             case PropertyNotify: printf("name is: PropertyNotify\n"); 
@@ -253,7 +274,12 @@ int main(int argc, char* argv[]) {
                     ipc_handle_connection(event.xproperty.window);
                 }
                 break;
-            case UnmapNotify: printf("name is: UnmapNotify\n"); break;
+            case UnmapNotify:
+                printf("name is: UnmapNotify\n");
+                HSMonitor* m2 = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+                frame_remove_window(m2->tag->frame, event.xunmap.window);
+                frame_apply_layout(m2->tag->frame, m2->rect);
+                break;
             default:
                 printf("got unknown event of type %d\n", event.type);
                 break;
@@ -261,6 +287,10 @@ int main(int argc, char* argv[]) {
     }
     // close all
     //free_clients();
+    //Window* wins; size_t count;
+    //frame_destroy(master, &wins, &count);
+    //g_free(wins);
+    layout_destroy();
     ipc_destroy();
     key_destroy();
     settings_destroy();
