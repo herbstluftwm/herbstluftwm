@@ -85,6 +85,7 @@ void print_frame_tree(HSFrame* frame, int indent, GString** output);
 
 int frame_current_cycle_selection(int argc, char** argv);
 
+void frame_unfocus(); // unfocus currently focused window
 int frame_focus_command(int argc, char** argv);
 
 // follow selection to leave and focus this frame
@@ -99,6 +100,7 @@ HSTag* find_tag_with_toplevel_frame(HSFrame* frame);
 HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect);
+void monitor_apply_layout(HSMonitor* monitor);
 void ensure_monitors_are_available();
 
 #endif

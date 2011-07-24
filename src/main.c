@@ -279,7 +279,7 @@ int main(int argc, char* argv[]) {
                 printf("name is: UnmapNotify\n");
                 HSMonitor* m2 = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
                 frame_remove_window(m2->tag->frame, event.xunmap.window);
-                frame_apply_layout(m2->tag->frame, m2->rect);
+                monitor_apply_layout(m2);
                 break;
             default:
                 printf("got unknown event of type %d\n", event.type);

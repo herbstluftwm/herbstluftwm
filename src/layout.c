@@ -51,6 +51,11 @@ void frame_insert_window(HSFrame* frame, Window window) {
         // write results back
         frame->content.clients.count = count;
         frame->content.clients.buf = buf;
+        // check for focus
+        if (g_cur_frame == frame
+            && frame->content.clients.selection == (count-1)) {
+            window_focus(window);
+        }
     } else { /* frame->type == TYPE_FRAMES */
         frame_insert_window(frame->content.layout->a, window);
     }
@@ -71,7 +76,7 @@ bool frame_remove_window(HSFrame* frame, Window window) {
                 frame->content.clients.buf = buf;
                 frame->content.clients.count = count;
                 frame->content.clients.selection -=
-                    (frame->content.clients.selection <= i) ? 0 : 1;
+                    (frame->content.clients.selection < i) ? 0 : 1;
                 return true;
             }
         }
@@ -140,14 +145,22 @@ void print_frame_tree(HSFrame* frame, int indent, GString** output) {
 
 }
 
+void monitor_apply_layout(HSMonitor* monitor) {
+    if (monitor) {
+        XRectangle rect = monitor->rect;
+        rect.x += *g_window_gap;
+        rect.y += *g_window_gap;
+        rect.height -= *g_window_gap;
+        rect.width -= *g_window_gap;
+        frame_apply_layout(monitor->tag->frame, rect);
+    }
+}
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     if (frame->type == TYPE_CLIENTS) {
         // frame only -> apply window_gap
-        rect.x += *g_window_gap;
-        rect.y += *g_window_gap;
-        rect.height -= *g_window_gap * 2;
-        rect.width -= *g_window_gap * 2;
+        rect.height -= *g_window_gap;
+        rect.width -= *g_window_gap;
         // move windows
         Window* buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
@@ -293,9 +306,7 @@ void frame_split(HSFrame* frame, int align, int fraction) {
     g_cur_frame = first;
     // redraw monitor if exists
     HSMonitor* m = monitor_with_frame(frame);
-    if (m) {
-        frame_apply_layout(m->tag->frame, m->rect);
-    }
+    monitor_apply_layout(m);
 }
 
 int frame_split_command(int argc, char** argv) {
@@ -390,9 +401,14 @@ int frame_focus_command(int argc, char** argv) {
     if (found) {
         frame_focus_recursive(frame->parent);
         HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
-        frame_apply_layout(m->tag->frame, m->rect);
+        monitor_apply_layout(m);
     }
     return 0;
+}
+
+
+void frame_unfocus() {
+    XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
 }
 
 int frame_focus_recursive(HSFrame* frame) {
@@ -403,6 +419,7 @@ int frame_focus_recursive(HSFrame* frame) {
                 frame->content.layout->b;
     }
     g_cur_frame = frame;
+    frame_unfocus();
     if (frame->content.clients.count) {
         int selection = frame->content.clients.selection;
         window_focus(frame->content.clients.buf[selection]);

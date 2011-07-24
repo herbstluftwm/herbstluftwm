@@ -37,7 +37,7 @@ void manage_client(Window win) {
     // insert to layout
     HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
     frame_insert_window(g_cur_frame, win);
-    frame_apply_layout(m->tag->frame, m->rect);
+    monitor_apply_layout(m);
 }
 
 // destroys a special client
