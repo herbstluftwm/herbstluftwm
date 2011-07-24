@@ -60,6 +60,7 @@ typedef struct HSTag {
 GArray*     g_tags;
 GArray*     g_monitors;
 int         g_cur_monitor;
+HSFrame*    g_cur_frame; // currently selected frame
 
 // functions
 void layout_init();
@@ -83,6 +84,11 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect);
 void print_frame_tree(HSFrame* frame, int indent, GString** output);
 
 int frame_current_cycle_selection(int argc, char** argv);
+
+int frame_focus_command(int argc, char** argv);
+
+// follow selection to leave and focus this frame
+int frame_focus_recursive(HSFrame* frame);
 
 
 // for tags

@@ -8,6 +8,8 @@ function hc() {
 
 xsetroot -solid '#D47A55'
 
+
+# keybindings
 Mod=Mod1
 hc keybind $Mod-q quit
 hc keybind $Mod-Shift-r reload
@@ -16,8 +18,14 @@ hc keybind $Mod-F2 spawn gmrun
 
 
 # layouting
-hc keybind $Mod-h split '(cur)' horizontal 0.5
-hc keybind $Mod-v split '(cur)' vertical 0.5
+hc keybind $Mod-Shift-h split '(cur)' horizontal 0.5
+hc keybind $Mod-Shift-v split '(cur)' vertical 0.5
 
+# focus
+hc keybind $Mod-c cycle
+hc keybind $Mod-h focus left
+hc keybind $Mod-j focus down
+hc keybind $Mod-k focus up
+hc keybind $Mod-l focus right
 
 

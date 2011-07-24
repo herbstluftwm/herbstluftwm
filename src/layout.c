@@ -7,6 +7,7 @@
 #include "layout.h"
 #include <glib.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <X11/Xlib.h>
 
@@ -109,16 +110,20 @@ void print_frame_tree(HSFrame* frame, int indent, GString** output) {
     if (frame->type == TYPE_CLIENTS) {
         Window* buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
+        int selection = frame->content.clients.selection;
         unsigned int i;
         for (j = 0; j < indent; j++) {
             *output = g_string_append(*output, " ");
         }
-        g_string_append_printf(*output, "frame with wins:\n");
+        g_string_append_printf(*output, "frame with wins:%s\n",
+            (g_cur_frame == frame) ? "[FOCUS]" : "");
         for (i = 0; i < count; i++) {
             for (j = 0; j < indent; j++) {
                 *output = g_string_append(*output, " ");
             }
-            g_string_append_printf(*output, "  -> win %d\n", (int)buf[i]);
+            g_string_append_printf(*output, "  %s win %d\n",
+                (selection == i) ? "*" : " ",
+                (int)buf[i]);
         }
     } else { /* frame->type == TYPE_FRAMES */
         for (j = 0; j < indent; j++) {
@@ -126,7 +131,8 @@ void print_frame_tree(HSFrame* frame, int indent, GString** output) {
         }
         HSLayout* layout = frame->content.layout;
         g_string_append_printf(*output,
-            "layout %s, size %f%%\n", (layout->align ? "vert" : "horz"),
+            "frame: layout %s, size %f%%\n", (layout->align == LAYOUT_VERTICAL
+                                        ? "vert" : "horz"),
                 ((double)layout->fraction*100)/(double)FRACTION_UNIT);
         print_frame_tree(layout->a, indent+2, output);
         print_frame_tree(layout->b, indent+2, output);
@@ -230,7 +236,9 @@ void ensure_monitors_are_available() {
         .height = DisplayHeight(g_display, DefaultScreen(g_display)),
     };
     ensure_tags_are_available();
-    add_monitor(rect);
+    HSMonitor* m = add_monitor(rect);
+    g_cur_monitor = 0;
+    g_cur_frame = m->tag->frame;
 }
 
 HSFrame* frame_current_selection() {
@@ -252,6 +260,10 @@ int frame_current_cycle_selection(int argc, char** argv) {
     }
     // find current selection
     HSFrame* frame = frame_current_selection();
+    if (frame->content.clients.count == 0) {
+        // nothing to do
+        return 0;
+    }
     int index = frame->content.clients.selection;
     index += delta;
     index %= frame->content.clients.count;
@@ -277,6 +289,8 @@ void frame_split(HSFrame* frame, int align, int fraction) {
     frame->content.layout->b = second;
     frame->content.layout->selection = 0;
     frame->content.layout->fraction = fraction;
+    // set focus
+    g_cur_frame = first;
     // redraw monitor if exists
     HSMonitor* m = monitor_with_frame(frame);
     if (m) {
@@ -319,4 +333,82 @@ HSMonitor* monitor_with_frame(HSFrame* frame) {
     HSTag* tag = find_tag_with_toplevel_frame(frame);
     return find_monitor_with_tag(tag);
 }
+
+int frame_focus_command(int argc, char** argv) {
+    // usage: focus left|right|up|down
+    if (argc < 2) return HERBST_INVALID_ARGUMENT;
+    if (!g_cur_frame) {
+        fprintf(stderr, "warning: no frame is selected\n");
+        return HERBST_UNKNOWN_ERROR;
+    }
+    char direction = argv[1][0];
+    bool found = false;
+    HSFrame* frame= g_cur_frame;
+    while (frame->parent) {
+        // find frame, where we can change the
+        // selection in the desired direction
+        HSLayout* layout = frame->parent->content.layout;
+        switch(direction) {
+            case 'r':
+                if (layout->align == LAYOUT_HORIZONTAL
+                    && layout->selection == 0) {
+                    layout->selection = 1;
+                    found = true;
+                }
+                break;
+            case 'l':
+                if (layout->align == LAYOUT_HORIZONTAL
+                    && layout->selection == 1) {
+                    layout->selection = 0;
+                    found = true;
+                }
+                break;
+            case 'd':
+                if (layout->align == LAYOUT_VERTICAL
+                    && layout->selection == 0) {
+                    layout->selection = 1;
+                    found = true;
+                }
+                break;
+            case 'u':
+                if (layout->align == LAYOUT_VERTICAL
+                    && layout->selection == 1) {
+                    layout->selection = 0;
+                    found = true;
+                }
+                break;
+            default:
+                return HERBST_INVALID_ARGUMENT;
+                break;
+        }
+        if (found) {
+            break;
+        }
+        // else: go one step closer to root
+        frame = frame->parent;
+    }
+    if (found) {
+        frame_focus_recursive(frame->parent);
+        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+        frame_apply_layout(m->tag->frame, m->rect);
+    }
+    return 0;
+}
+
+int frame_focus_recursive(HSFrame* frame) {
+    // follow the selection to a leave
+    while (frame->type == TYPE_FRAMES) {
+        frame = (frame->content.layout->selection == 0) ?
+                frame->content.layout->a :
+                frame->content.layout->b;
+    }
+    g_cur_frame = frame;
+    if (frame->content.clients.count) {
+        int selection = frame->content.clients.selection;
+        window_focus(frame->content.clients.buf[selection]);
+    }
+    return 0;
+}
+
+
 

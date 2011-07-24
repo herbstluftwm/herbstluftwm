@@ -1,6 +1,7 @@
 
 #include "clientlist.h"
 #include "globals.h"
+#include "layout.h"
 #include "utils.h"
 #include <glib.h>
 #include <stdio.h>
@@ -33,6 +34,10 @@ void manage_client(Window win) {
     // add to list
     fprintf(stdout, "now managing: \"%s\"\n", c->name->str);
     g_clients = g_list_append(g_clients, c);
+    // insert to layout
+    HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+    frame_insert_window(g_cur_frame, win);
+    frame_apply_layout(m->tag->frame, m->rect);
 }
 
 // destroys a special client
