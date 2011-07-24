@@ -29,8 +29,12 @@ unsigned int modifiername2mask(const char* name) {
         char* name;
         unsigned int mask;
     } table[] = {
-        { "Mod1", Mod1Mask },
-        { "Mod4", Mod4Mask },
+        { "Mod1",       Mod1Mask },
+        { "Alt",        Mod1Mask },
+        { "Mod4",       Mod4Mask },
+        { "Super",      Mod4Mask },
+        { "Shift",      ShiftMask },
+        { "Control",    ControlMask },
     };
     int i;
     for (i = 0; i < LENGTH(table); i++) {
