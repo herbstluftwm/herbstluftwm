@@ -6,6 +6,7 @@
 #include "ipc-server.h"
 #include "ipc-protocol.h"
 #include "command.h"
+#include "settings.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -46,6 +47,8 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(keybind),
     CMD_BIND_NO_OUTPUT(keyunbind),
     CMD_BIND_NO_OUTPUT(spawn),
+    {{ .no_output = settings_set }, .name = "set", .has_output = 0 },
+    {{ .standard = settings_get }, .name = "get", .has_output = 1 },
     {{ NULL }}
 };
 
@@ -212,6 +215,7 @@ int main(int argc, char* argv[]) {
     XSelectInput(g_display, g_root, SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
     ipc_init();
     key_init();
+    settings_init();
     execute_autostart_file();
     // main loop
     XEvent event;
@@ -259,6 +263,7 @@ int main(int argc, char* argv[]) {
     //free_clients();
     ipc_destroy();
     key_destroy();
+    settings_destroy();
     XCloseDisplay(g_display);
     return EXIT_SUCCESS;
 }

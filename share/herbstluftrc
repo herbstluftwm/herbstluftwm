@@ -6,11 +6,12 @@ function hc() {
     herbstclient "$@"
 }
 
+xsetroot -solid '#D47A55'
+
 hc keybind Mod1-q quit
 hc keybind Mod1-Shift-r reload
 hc keybind Mod1-Return spawn xterm
 hc keybind Mod1-F2 spawn gmrun
-
 
 
 
