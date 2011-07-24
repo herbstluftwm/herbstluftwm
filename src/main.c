@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -22,6 +23,7 @@ static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 
 int quit();
 int version(int argc, char* argv[], GString** result);
+int spawn(int argc, char** argv);
 
 int hi() {
     printf("HIHIHI\n");
@@ -40,6 +42,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(ho),
     CMD_BIND_NO_OUTPUT(keybind),
     CMD_BIND_NO_OUTPUT(keyunbind),
+    CMD_BIND_NO_OUTPUT(spawn),
     {{ NULL }}
 };
 
@@ -53,6 +56,35 @@ int version(int argc, char* argv[], GString** result) {
     (void) argc;
     (void) argv;
     *result = g_string_assign(*result, HERBSTLUFT_VERSION);
+    return 0;
+}
+
+// spawn() heavily inspired by dwm.c
+int spawn(int argc, char** argv) {
+    if (argc < 2) {
+        fprintf(stderr, "spawn: to few parameters\n");
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (fork() == 0) {
+        // only look in child
+        if (g_display) {
+            close(ConnectionNumber(g_display));
+        }
+        // shift all args in argv by 1 to the front
+        char** execargs = argv_duplicate(argc, argv);
+        free(execargs[0]);
+        int i;
+        for (i = 0; i < argc-1; i++) {
+            execargs[i] = execargs[i+1];
+        }
+        execargs[i] = NULL;
+        // do actual exec
+        setsid();
+        execvp(execargs[0], execargs);
+        fprintf(stderr, "herbstluft: execvp \"%s\"", argv[0]);
+        perror(" failed");
+        exit(0);
+    }
     return 0;
 }
 
