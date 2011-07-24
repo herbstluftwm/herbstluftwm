@@ -62,7 +62,8 @@ void frame_insert_window(HSFrame* frame, Window window) {
         frame->content.clients.buf = buf;
         // check for focus
         if (g_cur_frame == frame
-            && frame->content.clients.selection == (count-1)) {
+            && frame->content.clients.selection >= (count-1)) {
+            frame->content.clients.selection = count - 1;
             window_focus(window);
         }
     } else { /* frame->type == TYPE_FRAMES */
@@ -84,8 +85,18 @@ bool frame_remove_window(HSFrame* frame, Window window) {
                 buf = g_renew(Window, buf, count);
                 frame->content.clients.buf = buf;
                 frame->content.clients.count = count;
-                frame->content.clients.selection -=
-                    (frame->content.clients.selection < i) ? 0 : 1;
+                // find out new selection
+                int selection = frame->content.clients.selection;
+                // if selection was before removed window
+                // then do nothing
+                // else shift it by 1
+                selection -= (selection <= i) ? 0 : 1;
+                // ensure, that it's a valid index
+                selection = count ? CLAMP(selection, 0, count-1) : 0;
+                frame->content.clients.selection = selection;
+                if (selection < count) {
+                    window_focus(buf[selection]);
+                }
                 return true;
             }
         }
@@ -182,8 +193,7 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         int step = cur.height;
         int i;
         for (i = 0; i < count; i++) {
-            XMoveWindow(g_display, buf[i], cur.x, cur.y);
-            XResizeWindow(g_display, buf[i], cur.width, cur.height);
+            window_resize(buf[i], cur);
             cur.y += step;
         }
     } else { /* frame->type == TYPE_FRAMES */
@@ -418,7 +428,7 @@ int frame_focus_command(int argc, char** argv) {
 
 
 void frame_unfocus() {
-    XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
+    //XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
 }
 
 int frame_focus_recursive(HSFrame* frame) {

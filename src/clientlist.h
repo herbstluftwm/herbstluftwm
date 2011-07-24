@@ -24,6 +24,7 @@ void destroy_client(HerbstClient* client);
 // destroys data on quit
 void free_clients();
 
+void window_resize(Window win, XRectangle rect);
 
 #endif
 

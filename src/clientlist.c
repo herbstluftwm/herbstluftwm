@@ -34,6 +34,30 @@ void free_clients() {
 }
 
 void window_focus(Window window) {
+    printf("focusing window %d\n", (int)window);
+    XUngrabButton(g_display, AnyButton, AnyModifier, window);
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
 }
+
+void window_resize(Window win, XRectangle rect) {
+    XMoveWindow(g_display, win, rect.x, rect.y);
+    XResizeWindow(g_display, win, rect.width, rect.height);
+    //// send new size to client
+    //// WHY SHOULD I?
+    //XConfigureEvent ce;
+    //ce.type = ConfigureNotify;
+    //ce.display = g_display;
+    //ce.event = win;
+    //ce.window = win;
+    //ce.x = rect.x;
+    //ce.y = rect.y;
+    //ce.width = rect.width;
+    //ce.height = rect.height;
+    //ce.border_width = 0;
+    //ce.above = None;
+    //ce.override_redirect = False;
+    //XSendEvent(g_display, win, False, StructureNotifyMask, (XEvent *)&ce);
+}
+
+
 

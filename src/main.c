@@ -253,7 +253,8 @@ int main(int argc, char* argv[]) {
             case ConfigureRequest: printf("name is: ConfigureRequest\n");
                 event_on_configure(event);
                 break;
-            case ConfigureNotify: printf("name is: ConfigureNotify\n"); break;
+            case ConfigureNotify: printf("name is: ConfigureNotify\n");
+                break;
             case DestroyNotify: printf("name is: DestroyNotify\n");
                 // TODO: only try to disconnect, if it _had_ the right window-class?
                 ipc_disconnect_client(event.xcreatewindow.window);
@@ -264,7 +265,12 @@ int main(int argc, char* argv[]) {
             case KeyPress: printf("name is: KeyPress\n");
                 handle_key_press(&event);
                 break;
-            case MappingNotify: printf("name is: MappingNotify\n"); break;
+            case MappingNotify: printf("name is: MappingNotify\n");
+                break;
+            case MapNotify: printf("name is: MapNotify\n");
+                // reset focus.. just to be sure
+                frame_focus_recursive(g_cur_frame);
+                break;
             case MapRequest: printf("name is: MapRequest\n");
                 XMapRequestEvent* mapreq = &event.xmaprequest;
                 manage_client(mapreq->window);

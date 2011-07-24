@@ -84,7 +84,6 @@ bool is_herbstluft_window(Display* dpy, Window window) {
     bool result;
     result = !strcmp(string->str, HERBST_FRAME_CLASS);
     g_string_free(string, true);
-    printf("is herbstluft = %d\n", (int)result);
     return result;
 }
 
