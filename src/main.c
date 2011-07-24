@@ -173,6 +173,20 @@ void scan(void) {
     }
 }
 
+void execute_autostart_file() {
+    char* dir = getenv("XDG_CONFIG_HOME");
+    if (!dir) return;
+    GString* path = g_string_new(dir);
+    path = g_string_append(path, "/");
+    path = g_string_append(path, HERBSTLUFT_AUTOSTART);
+    char* argv[] = {
+        "...", // command name... but it doesnot matter
+        path->str
+    };
+    spawn(LENGTH(argv), argv);
+    g_string_free(path, true);
+}
+
 
 
 int main(int argc, char* argv[]) {
@@ -189,6 +203,7 @@ int main(int argc, char* argv[]) {
     XSelectInput(g_display, g_root, SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
     ipc_init();
     key_init();
+    execute_autostart_file();
     // main loop
     XEvent event;
     while (!g_aboutToQuit) {

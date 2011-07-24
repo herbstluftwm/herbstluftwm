@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# this is an simple config to herbstluftwm
+
+function hc() {
+    herbstclient "$@"
+}
+
+hc keybind Mod1-q quit
+hc keybind Mod1-Return spawn xterm
+
+
+
+
