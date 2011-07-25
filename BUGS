@@ -1,0 +1,7 @@
+
+Some BUGS/TODOS:
+    - keyboardfocus stays in window, if cursor is over it and herbstluftwm-focus goes away
+    - set range for some integer-setting-values
+    - fix 1px-border at bottom of frames if gcd(windows, frameheight) != 1
+
+
