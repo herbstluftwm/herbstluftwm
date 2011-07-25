@@ -59,6 +59,12 @@ void free_clients() {
 }
 
 void window_focus(Window window) {
+    static Window lastfocus = 0;
+    // change window-colors
+    XSetWindowBorder(g_display, lastfocus, g_window_border_normal_color);
+    XSetWindowBorder(g_display, window, g_window_border_active_color);
+    lastfocus = window;
+    // set keyboardfocus
     printf("focusing window %d\n", (int)window);
     XUngrabButton(g_display, AnyButton, AnyModifier, window);
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);

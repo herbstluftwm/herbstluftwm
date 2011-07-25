@@ -31,6 +31,10 @@ void free_clients();
 
 void window_resize(Window win, XRectangle rect);
 
+// some globals
+unsigned long g_window_border_active_color;
+unsigned long g_window_border_normal_color;
+
 #endif
 
 

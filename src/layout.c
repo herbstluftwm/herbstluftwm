@@ -228,6 +228,7 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     if (frame->type == TYPE_CLIENTS) {
         Window* buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
+        int selection = frame->content.clients.selection;
         // frame only -> apply window_gap
         rect.height -= *g_window_gap;
         rect.width -= *g_window_gap;
@@ -257,13 +258,18 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         if (count == 0) {
             return;
         }
-        if (g_cur_frame == frame) {
-        }
         XRectangle cur = rect;
         cur.height /= count;
         int step = cur.height;
         int i;
+        unsigned long colors[] = {
+            g_window_border_normal_color, // normal color
+            (g_cur_frame == frame) ?
+                g_window_border_active_color : // frame has focus and window is focused
+                g_window_border_normal_color, // window is selected but frame isnot focused
+        };
         for (i = 0; i < count; i++) {
+            XSetWindowBorder(g_display, buf[i], colors[i == selection]);
             window_resize(buf[i], cur);
             cur.y += step;
         }
