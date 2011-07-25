@@ -74,6 +74,7 @@ void window_resize(Window win, XRectangle rect) {
     // apply border width
     rect.width -= *g_window_border_width * 2;
     rect.height -= *g_window_border_width * 2;
+    XSetWindowBorderWidth(g_display, win, *g_window_border_width);
     XMoveWindow(g_display, win, rect.x, rect.y);
     XResizeWindow(g_display, win, rect.width, rect.height);
     //// send new size to client
