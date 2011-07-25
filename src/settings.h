@@ -16,6 +16,7 @@ typedef struct {
         char*   s;
     }   value;
     int type;
+    void (*on_change)(); // what to call on change
 } SettingsPair;
 
 extern SettingsPair g_settings[];

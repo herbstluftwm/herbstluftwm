@@ -1,6 +1,7 @@
 
 
 #include "settings.h"
+#include "layout.h"
 #include "ipc-protocol.h"
 #include "utils.h"
 
@@ -11,7 +12,8 @@
 
 // default settings:
 SettingsPair g_settings[] = {
-    { "window_gap", { .i = 5 }, .type = HS_Int },
+    { "window_gap", { .i = 5 }, .type = HS_Int,
+        .on_change = all_monitors_apply_layout },
     { "border_color", { .s = "red" } },
     { "frame_border_active_color", { .s = "red" } },
     { "frame_border_normal_color", { .s = "blue" } },
@@ -65,13 +67,25 @@ int settings_set(int argc, char** argv) {
         int new_value;
         // parse value to int, if possible
         if (1 == sscanf(argv[2], "%d", &new_value)) {
+            if (new_value == pair->value.i) {
+                // nothing would be changed
+                return 0;
+            }
             pair->value.i = new_value;
         } else {
             return HERBST_INVALID_ARGUMENT;
         }
     } else { // pair->type == HS_String
+        if (!strcmp(pair->value.s, argv[2])) {
+            // nothing would be changed
+            return 0;
+        }
         g_free(pair->value.s);
         pair->value.s = g_strdup(argv[2]);
+    }
+    // on successfull change, call callback
+    if (pair->on_change) {
+        pair->on_change();
     }
     return 0;
 }
