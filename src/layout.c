@@ -257,6 +257,8 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         if (count == 0) {
             return;
         }
+        if (g_cur_frame == frame) {
+        }
         XRectangle cur = rect;
         cur.height /= count;
         int step = cur.height;
