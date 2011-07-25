@@ -34,7 +34,7 @@ typedef struct HSLayout {
 
 typedef struct HSFrame {
     union {
-        HSLayout* layout;
+        HSLayout layout;
         struct {
             Window* buf;
             size_t  count;
@@ -99,7 +99,10 @@ int frame_focus_recursive(HSFrame* frame);
 // returns the Window that is focused
 // returns 0 if there is none
 Window frame_focused_window(HSFrame* frame);
+// moves a window to an other frame
 int frame_move_window_command(int argc, char** argv);
+/// removes the current frame
+int frame_remove_command(int argc, char** argv);
 
 // for tags
 HSTag* add_tag(char* name);

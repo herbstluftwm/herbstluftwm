@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <X11/Xutil.h>
 #include <X11/Xlib.h>
 
@@ -67,7 +68,7 @@ void frame_insert_window(HSFrame* frame, Window window) {
             window_focus(window);
         }
     } else { /* frame->type == TYPE_FRAMES */
-        frame_insert_window(frame->content.layout->a, window);
+        frame_insert_window(frame->content.layout.a, window);
     }
 }
 
@@ -102,8 +103,8 @@ bool frame_remove_window(HSFrame* frame, Window window) {
         }
         return false;
     } else { /* frame->type == TYPE_FRAMES */
-        bool found = frame_remove_window(frame->content.layout->a, window);
-        found = found || frame_remove_window(frame->content.layout->b, window);
+        bool found = frame_remove_window(frame->content.layout.a, window);
+        found = found || frame_remove_window(frame->content.layout.b, window);
         return found;
     }
 }
@@ -115,8 +116,8 @@ void frame_destroy(HSFrame* frame, Window** buf, size_t* count) {
     } else { /* frame->type == TYPE_FRAMES */
         size_t c1, c2;
         Window *buf1, *buf2;
-        frame_destroy(frame->content.layout->a, &buf1, &c1);
-        frame_destroy(frame->content.layout->b, &buf2, &c2);
+        frame_destroy(frame->content.layout.a, &buf1, &c1);
+        frame_destroy(frame->content.layout.b, &buf2, &c2);
         // append buf2 to buf1
         buf1 = g_renew(Window, buf1, c1 + c2);
         memcpy(buf1+c1, buf2, sizeof(Window) * c2);
@@ -155,11 +156,13 @@ void print_frame_tree(HSFrame* frame, int indent, GString** output) {
         for (j = 0; j < indent; j++) {
             *output = g_string_append(*output, " ");
         }
-        HSLayout* layout = frame->content.layout;
+        HSLayout* layout = &frame->content.layout;
         g_string_append_printf(*output,
             "frame: layout %s, size %f%%\n", (layout->align == LAYOUT_VERTICAL
                                         ? "vert" : "horz"),
                 ((double)layout->fraction*100)/(double)FRACTION_UNIT);
+        assert(layout->a->parent == frame);
+        assert(layout->b->parent == frame);
         print_frame_tree(layout->a, indent+2, output);
         print_frame_tree(layout->b, indent+2, output);
     }
@@ -168,7 +171,6 @@ void print_frame_tree(HSFrame* frame, int indent, GString** output) {
 
 void monitor_apply_layout(HSMonitor* monitor) {
     if (monitor) {
-        printf("layouting...\n");
         XRectangle rect = monitor->rect;
         rect.x += *g_window_gap;
         rect.y += *g_window_gap;
@@ -198,7 +200,7 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             cur.y += step;
         }
     } else { /* frame->type == TYPE_FRAMES */
-        HSLayout* layout = frame->content.layout;
+        HSLayout* layout = &frame->content.layout;
         XRectangle first = rect;
         XRectangle second = rect;
         if (layout->align == LAYOUT_VERTICAL) {
@@ -280,9 +282,9 @@ HSFrame* frame_current_selection() {
     if (!m->tag) return NULL;
     HSFrame* frame = m->tag->frame;
     while (frame->type == TYPE_FRAMES) {
-        frame = (frame->content.layout->selection == 0) ?
-                frame->content.layout->a :
-                frame->content.layout->b;
+        frame = (frame->content.layout.selection == 0) ?
+                frame->content.layout.a :
+                frame->content.layout.b;
     }
     return frame;
 }
@@ -317,12 +319,11 @@ void frame_split(HSFrame* frame, int align, int fraction) {
     second->parent = frame;
     second->type = TYPE_CLIENTS;
     frame->type = TYPE_FRAMES;
-    frame->content.layout = g_new(HSLayout, 1);
-    frame->content.layout->align = align;
-    frame->content.layout->a = first;
-    frame->content.layout->b = second;
-    frame->content.layout->selection = 0;
-    frame->content.layout->fraction = fraction;
+    frame->content.layout.align = align;
+    frame->content.layout.a = first;
+    frame->content.layout.b = second;
+    frame->content.layout.selection = 0;
+    frame->content.layout.fraction = fraction;
     // set focus
     g_cur_frame = first;
     // redraw monitor if exists
@@ -372,7 +373,7 @@ HSFrame* frame_neighbour(HSFrame* frame, char direction) {
     while (frame->parent) {
         // find frame, where we can change the
         // selection in the desired direction
-        HSLayout* layout = frame->parent->content.layout;
+        HSLayout* layout = &frame->parent->content.layout;
         switch(direction) {
             case 'r':
                 if (layout->align == LAYOUT_HORIZONTAL
@@ -431,9 +432,9 @@ int frame_focus_command(int argc, char** argv) {
     if (neighbour != NULL) { // if neighbour was found
         HSFrame* parent = neighbour->parent;
         // alter focus (from 0 to 1, from 1 to 0)
-        int selection = parent->content.layout->selection;
+        int selection = parent->content.layout.selection;
         selection = (selection == 1) ? 0 : 1;
-        parent->content.layout->selection = selection;
+        parent->content.layout.selection = selection;
         // change focus if possible
         frame_focus_recursive(parent);
         monitor_apply_layout(get_current_monitor());
@@ -471,9 +472,9 @@ Window frame_focused_window(HSFrame* frame) {
     }
     // follow the selection to a leave
     while (frame->type == TYPE_FRAMES) {
-        frame = (frame->content.layout->selection == 0) ?
-                frame->content.layout->a :
-                frame->content.layout->b;
+        frame = (frame->content.layout.selection == 0) ?
+                frame->content.layout.a :
+                frame->content.layout.b;
     }
     if (frame->content.clients.count) {
         int selection = frame->content.clients.selection;
@@ -485,9 +486,9 @@ Window frame_focused_window(HSFrame* frame) {
 int frame_focus_recursive(HSFrame* frame) {
     // follow the selection to a leave
     while (frame->type == TYPE_FRAMES) {
-        frame = (frame->content.layout->selection == 0) ?
-                frame->content.layout->a :
-                frame->content.layout->b;
+        frame = (frame->content.layout.selection == 0) ?
+                frame->content.layout.a :
+                frame->content.layout.b;
     }
     g_cur_frame = frame;
     frame_unfocus();
@@ -498,6 +499,49 @@ int frame_focus_recursive(HSFrame* frame) {
     return 0;
 }
 
+int frame_remove_command(int argc, char** argv) {
+    if (!g_cur_frame->parent) {
+        // do nothing if is toplevel frame
+        return 0;
+    }
+    assert(g_cur_frame->type == TYPE_CLIENTS);
+    HSFrame* parent = g_cur_frame->parent;
+    HSFrame* first = g_cur_frame;
+    HSFrame* second;
+    if (first == parent->content.layout.a) {
+        second = parent->content.layout.b;
+    } else {
+        assert(first == parent->content.layout.b);
+        second = parent->content.layout.a;
+    }
+    size_t count;
+    Window* wins;
+    // get all wins from first child
+    frame_destroy(first, &wins, &count);
+    // and insert them to other child.. inefficiently
+    int i;
+    for (i = 0; i < count; i++) {
+        frame_insert_window(second, wins[i]);
+    }
+    g_free(wins);
+    XDestroyWindow(g_display, parent->window);
+    // now do tree magic
+    // and make second child the new parent
+    // set parent
+    second->parent = parent->parent;
+    // copy all other elements
+    *parent = *second;
+    // fix childs' parent-pointer
+    if (parent->type == TYPE_FRAMES) {
+        parent->content.layout.a->parent = parent;
+        parent->content.layout.b->parent = parent;
+    }
+    g_free(second);
+    // re-layout
+    frame_focus_recursive(parent);
+    monitor_apply_layout(get_current_monitor());
+    return 0;
+}
 
 HSMonitor* get_current_monitor() {
     return &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
