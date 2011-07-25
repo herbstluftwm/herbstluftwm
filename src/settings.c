@@ -1,6 +1,7 @@
 
 
 #include "settings.h"
+#include "clientlist.h"
 #include "layout.h"
 #include "ipc-protocol.h"
 #include "utils.h"
@@ -15,12 +16,24 @@ SettingsPair g_settings[] = {
     { "window_gap", { .i = 5 }, .type = HS_Int,
         .on_change = all_monitors_apply_layout },
     { "border_color", { .s = "red" } },
-    { "frame_border_active_color", { .s = "red" } },
-    { "frame_border_normal_color", { .s = "blue" } },
-    { "frame_border_width", { .i = 2 }, .type = HS_Int },
-    { "window_border_width", { .i = 2 }, .type = HS_Int },
-    { "window_border_active_color", { .s = "red" } },
-    { "window_border_normal_color", { .s = "blue" } },
+    { "frame_border_active_color", { .s = "red" },
+        .on_change = reset_frame_colors },
+    { "frame_border_normal_color", { .s = "blue" },
+        .on_change = reset_frame_colors },
+    { "frame_bg_normal_color", { .s = "green" },
+        .on_change = reset_frame_colors },
+    { "frame_bg_active_color", { .s = "green" },
+        .on_change = reset_frame_colors },
+    { "frame_border_width", { .i = 2 }, .type = HS_Int,
+        .on_change = reset_frame_colors },
+    { "window_border_width", { .i = 2 }, .type = HS_Int,
+        .on_change = reset_client_colors },
+    { "window_border_active_color", { .s = "red" },
+        .on_change = reset_client_colors },
+    { "window_border_normal_color", { .s = "blue" },
+        .on_change = reset_client_colors },
+    { "always_show_frame", { .i = 0 }, .type = HS_Int,
+        .on_change = all_monitors_apply_layout },
 };
 
 

@@ -18,6 +18,8 @@ void clientlist_destroy();
 
 void window_focus(Window window);
 
+void reset_client_colors();
+
 // adds a new client to list of managed client windows
 void manage_client(Window win);
 

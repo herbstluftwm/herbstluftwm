@@ -17,10 +17,21 @@ int* g_window_border_width;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
 
-void clientlist_init() {
+static void fetch_colors() {
     g_window_border_width = &(settings_find("window_border_width")->value.i);
-    g_window_border_normal_color = getcolor("black");
-    g_window_border_active_color = getcolor("red");
+    char* str = settings_find("window_border_normal_color")->value.s;
+    g_window_border_normal_color = getcolor(str);
+    str = settings_find("window_border_active_color")->value.s;
+    g_window_border_active_color = getcolor(str);
+}
+
+void clientlist_init() {
+    fetch_colors();
+}
+
+void reset_client_colors() {
+    fetch_colors();
+    all_monitors_apply_layout();
 }
 
 void clientlist_destroy() {

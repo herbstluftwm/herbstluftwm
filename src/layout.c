@@ -22,18 +22,37 @@
 
 int* g_window_gap;
 int* g_frame_border_width;
+int* g_always_show_frame;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
+unsigned long g_frame_bg_active_color;
+unsigned long g_frame_bg_normal_color;
+
+static void fetch_frame_colors() {
+    // load settings
+    g_window_gap = &(settings_find("window_gap")->value.i);
+    g_frame_border_width = &(settings_find("frame_border_width")->value.i);
+    g_always_show_frame = &(settings_find("always_show_frame")->value.i);
+    char* str = settings_find("frame_border_normal_color")->value.s;
+    g_frame_border_normal_color = getcolor(str);
+    str = settings_find("frame_border_active_color")->value.s;
+    g_frame_border_active_color = getcolor(str);
+    // background color
+    str = settings_find("frame_bg_normal_color")->value.s;
+    g_frame_bg_normal_color = getcolor(str);
+    str = settings_find("frame_bg_active_color")->value.s;
+    g_frame_bg_active_color = getcolor(str);
+}
 
 void layout_init() {
     g_cur_monitor = 0;
     g_tags = g_array_new(false, false, sizeof(HSTag));
     g_monitors = g_array_new(false, false, sizeof(HSMonitor));
-    // load settings
-    g_window_gap = &(settings_find("window_gap")->value.i);
-    g_frame_border_width = &(settings_find("frame_border_width")->value.i);
-    g_frame_border_normal_color = getcolor("black");
-    g_frame_border_active_color = getcolor("red");
+    fetch_frame_colors();
+}
+void reset_frame_colors() {
+    fetch_frame_colors();
+    all_monitors_apply_layout();
 }
 
 void layout_destroy() {
@@ -219,18 +238,21 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         rect.width -= *g_frame_border_width * 2;
         // set indicator frame
         unsigned long border_color = g_frame_border_normal_color;
+        unsigned long bg_color = g_frame_bg_normal_color;
         if (g_cur_frame == frame) {
             border_color = g_frame_border_active_color;
+            bg_color = g_frame_bg_active_color;
         }
         XSetWindowBorder(g_display, frame->window, border_color);
         XMoveResizeWindow(g_display, frame->window,
                           rect.x - *g_frame_border_width,
                           rect.y - *g_frame_border_width,
                           rect.width, rect.height);
-        XSetWindowBackground(g_display, frame->window, getcolor("green"));
+        XSetWindowBackground(g_display, frame->window, bg_color);
         XClearWindow(g_display, frame->window);
         XLowerWindow(g_display, frame->window);
-        frame_set_visible(frame, (count != 0) || (g_cur_frame == frame));
+        frame_set_visible(frame, *g_always_show_frame
+            || (count != 0) || (g_cur_frame == frame));
         // move windows
         if (count == 0) {
             return;

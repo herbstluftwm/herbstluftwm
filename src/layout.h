@@ -82,6 +82,7 @@ void frame_split(HSFrame* frame, int align, int fraction);
 int frame_split_command(int argc, char** argv);
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect);
+void reset_frame_colors();
 
 void print_frame_tree(HSFrame* frame, int indent, GString** output);
 
