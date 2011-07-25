@@ -2,6 +2,7 @@
 
 #include "clientlist.h"
 #include "globals.h"
+#include "utils.h"
 #include "ipc-protocol.h"
 #include "settings.h"
 #include "layout.h"
@@ -11,10 +12,18 @@
 #include <string.h>
 #include <assert.h>
 #include <X11/Xutil.h>
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <X11/Xproto.h>
+#include <X11/Xlib.h>
+#include <X11/Xproto.h>
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
 
 int* g_window_gap;
-int* g_border_width;
+int* g_frame_border_width;
+unsigned long g_frame_border_active_color;
+unsigned long g_frame_border_normal_color;
 
 void layout_init() {
     g_cur_monitor = 0;
@@ -22,7 +31,9 @@ void layout_init() {
     g_monitors = g_array_new(false, false, sizeof(HSMonitor));
     // load settings
     g_window_gap = &(settings_find("window_gap")->value.i);
-    g_border_width = &(settings_find("border_width")->value.i);
+    g_frame_border_width = &(settings_find("frame_border_width")->value.i);
+    g_frame_border_normal_color = getcolor("black");
+    g_frame_border_active_color = getcolor("red");
 }
 
 void layout_destroy() {
@@ -38,8 +49,22 @@ void layout_destroy() {
 HSFrame* frame_create_empty() {
     HSFrame* frame = g_new0(HSFrame, 1);
     frame->type = TYPE_CLIENTS;
-    frame->window = XCreateSimpleWindow(g_display, g_root,
-                        42, 42, 42, 42, 0, 0, 0);
+    frame->window_visible = false;
+    // set window atributes
+    XSetWindowAttributes at;
+    at.background_pixel  = getcolor("red");
+    at.background_pixmap = ParentRelative;
+    at.override_redirect = True;
+    at.bit_gravity       = StaticGravity;
+    at.event_mask        = SubstructureRedirectMask|SubstructureNotifyMask
+         |ExposureMask|VisibilityChangeMask
+         |EnterWindowMask|LeaveWindowMask|FocusChangeMask;
+    frame->window = XCreateWindow(g_display, g_root,
+                        42, 42, 42, 42, *g_frame_border_width,
+                        DefaultDepth(g_display, DefaultScreen(g_display)),
+                        CopyFromParent,
+                        DefaultVisual(g_display, DefaultScreen(g_display)),
+                        CWOverrideRedirect | CWBackPixmap | CWEventMask, &at);
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
     hint->res_name = HERBST_FRAME_CLASS;
@@ -182,12 +207,31 @@ void monitor_apply_layout(HSMonitor* monitor) {
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     if (frame->type == TYPE_CLIENTS) {
+        Window* buf = frame->content.clients.buf;
+        size_t count = frame->content.clients.count;
         // frame only -> apply window_gap
         rect.height -= *g_window_gap;
         rect.width -= *g_window_gap;
+        // apply frame width
+        rect.x += *g_frame_border_width;
+        rect.y += *g_frame_border_width;
+        rect.height -= *g_frame_border_width * 2;
+        rect.width -= *g_frame_border_width * 2;
+        // set indicator frame
+        unsigned long border_color = g_frame_border_normal_color;
+        if (g_cur_frame == frame) {
+            border_color = g_frame_border_active_color;
+        }
+        XSetWindowBorder(g_display, frame->window, border_color);
+        XMoveResizeWindow(g_display, frame->window,
+                          rect.x - *g_frame_border_width,
+                          rect.y - *g_frame_border_width,
+                          rect.width, rect.height);
+        XSetWindowBackground(g_display, frame->window, getcolor("green"));
+        XClearWindow(g_display, frame->window);
+        XLowerWindow(g_display, frame->window);
+        frame_set_visible(frame, (count != 0) || (g_cur_frame == frame));
         // move windows
-        Window* buf = frame->content.clients.buf;
-        size_t count = frame->content.clients.count;
         if (count == 0) {
             return;
         }
@@ -212,6 +256,7 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             second.x += first.width;
             second.width -= first.width;
         }
+        frame_set_visible(frame, false);
         frame_apply_layout(layout->a, first);
         frame_apply_layout(layout->b, second);
     }
@@ -314,7 +359,8 @@ int frame_current_cycle_selection(int argc, char** argv) {
 void frame_split(HSFrame* frame, int align, int fraction) {
     HSFrame* first = frame_create_empty();
     HSFrame* second = frame_create_empty();
-    *first = *frame;
+    first->content = frame->content;
+    first->type = frame->type;
     first->parent = frame;
     second->parent = frame;
     second->type = TYPE_CLIENTS;
@@ -495,6 +541,9 @@ int frame_focus_recursive(HSFrame* frame) {
     if (frame->content.clients.count) {
         int selection = frame->content.clients.selection;
         window_focus(frame->content.clients.buf[selection]);
+    } else {
+        // else give focus to root window
+        window_focus(g_root);
     }
     return 0;
 }
@@ -547,4 +596,26 @@ HSMonitor* get_current_monitor() {
     return &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
 }
 
+void frame_set_visible(HSFrame* frame, bool visible) {
+    if (!frame) {
+        return;
+    }
+    if (frame->window_visible == visible) {
+        return;
+    }
+    if (visible) {
+        XMapWindow(g_display, frame->window);
+    } else {
+        XUnmapWindow(g_display, frame->window);
+    }
+    frame->window_visible = visible;
+}
+
+void all_monitors_apply_layout() {
+    int i;
+    for (i = 0; i < g_monitors->len; i++) {
+        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, i);
+        monitor_apply_layout(m);
+    }
+}
 

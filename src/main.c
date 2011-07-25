@@ -236,10 +236,12 @@ int main(int argc, char* argv[]) {
     ipc_init();
     key_init();
     settings_init();
+    clientlist_init();
     layout_init();
     execute_autostart_file();
     ensure_monitors_are_available();
     scan();
+    all_monitors_apply_layout();
     // main loop
     XEvent event;
     while (!g_aboutToQuit) {
@@ -300,6 +302,7 @@ int main(int argc, char* argv[]) {
     //frame_destroy(master, &wins, &count);
     //g_free(wins);
     layout_destroy();
+    clientlist_destroy();
     ipc_destroy();
     key_destroy();
     settings_destroy();

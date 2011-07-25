@@ -44,6 +44,7 @@ typedef struct HSFrame {
     int type;
     struct HSFrame* parent;
     Window window;
+    bool   window_visible;
 } HSFrame;
 
 
@@ -103,6 +104,7 @@ Window frame_focused_window(HSFrame* frame);
 int frame_move_window_command(int argc, char** argv);
 /// removes the current frame
 int frame_remove_command(int argc, char** argv);
+void frame_set_visible(HSFrame* frame, bool visible);
 
 // for tags
 HSTag* add_tag(char* name);
@@ -114,6 +116,7 @@ HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect);
 HSMonitor* get_current_monitor();
 void monitor_apply_layout(HSMonitor* monitor);
+void all_monitors_apply_layout();
 void ensure_monitors_are_available();
 
 #endif

@@ -1,5 +1,6 @@
 
 #include "clientlist.h"
+#include "settings.h"
 #include "globals.h"
 #include "layout.h"
 #include "utils.h"
@@ -12,13 +13,26 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+int* g_window_border_width;
+unsigned long g_window_border_active_color;
+unsigned long g_window_border_normal_color;
+
+void clientlist_init() {
+    g_window_border_width = &(settings_find("window_border_width")->value.i);
+    g_window_border_normal_color = getcolor("black");
+    g_window_border_active_color = getcolor("red");
+}
+
+void clientlist_destroy() {
+}
+
 void manage_client(Window win) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
         return;
     }
     // init client
-    XSetWindowBorderWidth(g_display, win, 0);
+    XSetWindowBorderWidth(g_display, win, *g_window_border_width);
     // insert to layout
     HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
     frame_insert_window(g_cur_frame, win);
@@ -40,6 +54,9 @@ void window_focus(Window window) {
 }
 
 void window_resize(Window win, XRectangle rect) {
+    // apply border width
+    rect.width -= *g_window_border_width * 2;
+    rect.height -= *g_window_border_width * 2;
     XMoveWindow(g_display, win, rect.x, rect.y);
     XResizeWindow(g_display, win, rect.width, rect.height);
     //// send new size to client

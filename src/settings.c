@@ -11,9 +11,14 @@
 
 // default settings:
 SettingsPair g_settings[] = {
-    { "border_width", { .i = 2 }, .type = HS_Int },
     { "window_gap", { .i = 5 }, .type = HS_Int },
     { "border_color", { .s = "red" } },
+    { "frame_border_active_color", { .s = "red" } },
+    { "frame_border_normal_color", { .s = "blue" } },
+    { "frame_border_width", { .i = 2 }, .type = HS_Int },
+    { "window_border_width", { .i = 2 }, .type = HS_Int },
+    { "window_border_active_color", { .s = "red" } },
+    { "window_border_normal_color", { .s = "blue" } },
 };
 
 
