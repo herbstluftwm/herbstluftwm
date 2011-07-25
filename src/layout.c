@@ -260,6 +260,7 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             return;
         }
         XRectangle cur = rect;
+        int last_step = cur.height % count; // get the space on bottom
         cur.height /= count;
         int step = cur.height;
         int i;
@@ -270,6 +271,8 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
                 g_window_border_normal_color, // window is selected but frame isnot focused
         };
         for (i = 0; i < count; i++) {
+            // add the space, if count doesnot divide frameheight without remainder
+            cur.height += (i == count-1) ? last_step : 0;
             XSetWindowBorder(g_display, buf[i], colors[i == selection]);
             window_resize(buf[i], cur);
             cur.y += step;
