@@ -112,7 +112,8 @@ void frame_insert_window(HSFrame* frame, Window window) {
             window_focus(window);
         }
     } else { /* frame->type == TYPE_FRAMES */
-        frame_insert_window(frame->content.layout.a, window);
+        HSLayout* layout = &frame->content.layout;
+        frame_insert_window((layout->selection == 0)? layout->a : layout->b, window);
     }
 }
 
