@@ -1,6 +1,13 @@
 
+==== First steps ====
+# 1. compile it
+make
+# 2. copy ipc-client/herbstclient to a bin-folder or adjust path in herbstluftrc
+# 3. copy default config file to your config-dir
+mkdir -p "$XDG_CONFIG_HOME" && cp share/herbstluftrc "$XDG_CONFIG_HOME"/
+# 4. run it in an session that has no windowmanager yet
 
-
+==== Internal structure ====
 The internal structure of herbstluftwm is as follows:
 
 all boxes are C-Modules (e.g. $name.c-files)
