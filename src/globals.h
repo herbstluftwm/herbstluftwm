@@ -9,6 +9,8 @@
 #define HERBSTLUFT_AUTOSTART "herbstluftrc"
 
 #define HERBST_FRAME_CLASS "_HERBST_FRAME"
+#define WINDOW_MIN_HEIGHT 32
+#define WINDOW_MIN_WIDTH 32
 
 // connection to x-server
 Display*    g_display;

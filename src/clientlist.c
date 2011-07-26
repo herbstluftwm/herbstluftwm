@@ -71,6 +71,10 @@ void window_focus(Window window) {
 }
 
 void window_resize(Window win, XRectangle rect) {
+    if (rect.width <= WINDOW_MIN_WIDTH || rect.height <= WINDOW_MIN_HEIGHT) {
+        // do nothing on invalid size
+        return;
+    }
     // apply border width
     rect.width -= *g_window_border_width * 2;
     rect.height -= *g_window_border_width * 2;

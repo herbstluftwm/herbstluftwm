@@ -238,6 +238,10 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         rect.y += *g_frame_border_width;
         rect.height -= *g_frame_border_width * 2;
         rect.width -= *g_frame_border_width * 2;
+        if (rect.width <= WINDOW_MIN_WIDTH || rect.height <= WINDOW_MIN_HEIGHT) {
+            // do nothing on invalid size
+            return;
+        }
         XSetWindowBorderWidth(g_display, frame->window, *g_frame_border_width);
         // set indicator frame
         unsigned long border_color = g_frame_border_normal_color;
