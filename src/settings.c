@@ -37,7 +37,6 @@ SettingsPair g_settings[] = {
 };
 
 int settings_count() {
-    printf("COUNT: %d\n", LENGTH(g_settings));
     return LENGTH(g_settings);
 }
 

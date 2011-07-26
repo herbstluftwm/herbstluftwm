@@ -86,7 +86,6 @@ int complete_command(int argc, char** argv, GString** output) {
             if (is_toggle_command && g_settings[i].type != HS_Int) {
                 continue;
             }
-            printf("check: %s\n", g_settings[i].name);
             // only check the first len bytes
             if (!strncmp(str, g_settings[i].name, len)) {
                 *output = g_string_append(*output, g_settings[i].name);
