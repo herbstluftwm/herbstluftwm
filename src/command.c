@@ -75,13 +75,18 @@ int complete_command(int argc, char** argv, GString** output) {
             i++;
         }
     }
+    bool is_toggle_command = !strcmp(argv[2], "toggle");
     if (position == 1 &&
-        (!strcmp(argv[2], "set") || !strcmp(argv[2], "get"))) {
+        (!strcmp(argv[2], "set") || !strcmp(argv[2], "get") || is_toggle_command)) {
         // complete with setting name
         char* str = (argc >= 4) ? argv[3] : "";
         size_t len = strlen(str);
         int i;
         for (i = 0; i < settings_count(); i++) {
+            if (is_toggle_command && g_settings[i].type != HS_Int) {
+                continue;
+            }
+            printf("check: %s\n", g_settings[i].name);
             // only check the first len bytes
             if (!strncmp(str, g_settings[i].name, len)) {
                 *output = g_string_append(*output, g_settings[i].name);

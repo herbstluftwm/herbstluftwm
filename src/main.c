@@ -56,6 +56,7 @@ CommandBinding g_commands[] = {
     {{ .no_output = frame_move_window_command }, .name = "shift", .has_output = 0 },
     {{ .no_output = frame_remove_command }, .name = "remove", .has_output = 0 },
     {{ .no_output = settings_set }, .name = "set", .has_output = 0 },
+    {{ .no_output = settings_toggle }, .name = "toggle", .has_output = 0 },
     {{ .standard = settings_get }, .name = "get", .has_output = 1 },
     {{ .standard = print_layout_command }, .name = "layout", .has_output = 1 },
     {{ .standard = complete_command }, .name = "complete", .has_output = 1 },
