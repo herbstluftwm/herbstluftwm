@@ -87,7 +87,6 @@ int complete_command(int argc, char** argv, GString** output) {
                 *output = g_string_append(*output, g_settings[i].name);
                 *output = g_string_append(*output, "\n");
             }
-            i++;
         }
     }
     return 0;
