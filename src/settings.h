@@ -27,6 +27,7 @@ void settings_destroy();
 SettingsPair* settings_find(char* name);
 
 int settings_set(int argc, char** argv);
+int settings_count();
 int settings_get(int argc, char** argv, GString** output);
 
 

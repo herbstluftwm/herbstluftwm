@@ -36,6 +36,9 @@ SettingsPair g_settings[] = {
         .on_change = all_monitors_apply_layout },
 };
 
+int settings_count() {
+    return LENGTH(g_settings);
+}
 
 void settings_init() {
     // recreate all strings -> move them to heap

@@ -58,6 +58,7 @@ CommandBinding g_commands[] = {
     {{ .no_output = settings_set }, .name = "set", .has_output = 0 },
     {{ .standard = settings_get }, .name = "get", .has_output = 1 },
     {{ .standard = print_layout_command }, .name = "layout", .has_output = 1 },
+    {{ .standard = complete_command }, .name = "complete", .has_output = 1 },
     {{ NULL }}
 };
 

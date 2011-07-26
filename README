@@ -3,9 +3,11 @@
 # 1. compile it
 make
 # 2. copy ipc-client/herbstclient to a bin-folder or adjust path in herbstluftrc
-# 3. copy default config file to your config-dir
+# 3. copy default config file to your config-dir (typically ~/.config/)
 mkdir -p "$XDG_CONFIG_HOME" && cp share/herbstluftrc "$XDG_CONFIG_HOME"/
-# 4. run it in an session that has no windowmanager yet
+# 4. add the share/herbstclient-completion to your /etc/bash_completion.d/ folder
+#    or source it in your bashrc
+# 5. run it in a session that has no windowmanager yet
 
 ==== Internal structure ====
 The internal structure of herbstluftwm is as follows:
