@@ -30,6 +30,7 @@ void destroy_client(HerbstClient* client);
 void free_clients();
 
 void window_resize(Window win, XRectangle rect);
+int window_close_current();
 
 // some globals
 unsigned long g_window_border_active_color;

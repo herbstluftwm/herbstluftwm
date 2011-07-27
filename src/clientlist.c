@@ -17,6 +17,13 @@ int* g_window_border_width;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
 
+// atoms from dwm.c
+enum { WMProtocols, WMDelete, WMState, WMLast };        /* default atoms */
+enum { NetSupported, NetWMName, NetWMState,
+       NetWMFullscreen, NetLast };                      /* EWMH atoms */
+static Atom g_wmatom[WMLast], g_netatom[NetLast];
+
+
 static void fetch_colors() {
     g_window_border_width = &(settings_find("window_border_width")->value.i);
     char* str = settings_find("window_border_normal_color")->value.s;
@@ -27,6 +34,13 @@ static void fetch_colors() {
 
 void clientlist_init() {
     fetch_colors();
+    g_wmatom[WMProtocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
+    g_wmatom[WMDelete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
+    g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
+    g_netatom[NetSupported] = XInternAtom(g_display, "_NET_SUPPORTED", False);
+    g_netatom[NetWMName] = XInternAtom(g_display, "_NET_WM_NAME", False);
+    g_netatom[NetWMState] = XInternAtom(g_display, "_NET_WM_STATE", False);
+    g_netatom[NetWMFullscreen] = XInternAtom(g_display, "_NET_WM_STATE_FULLSCREEN", False);
 }
 
 void reset_client_colors() {
@@ -71,6 +85,10 @@ void window_focus(Window window) {
 }
 
 void window_resize(Window win, XRectangle rect) {
+    if (rect.width <= WINDOW_MIN_WIDTH || rect.height <= WINDOW_MIN_HEIGHT) {
+        // do nothing on invalid size
+        return;
+    }
     // apply border width
     rect.width -= *g_window_border_width * 2;
     rect.height -= *g_window_border_width * 2;
@@ -94,5 +112,21 @@ void window_resize(Window win, XRectangle rect) {
     //XSendEvent(g_display, win, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
+// from dwm.c
+int window_close_current() {
+    XEvent ev;
+    // if there is no focus, then there is nothing to do
+    if (!g_cur_frame) return 0;
+    Window win = frame_focused_window(g_cur_frame);
+    if (!win) return 0;
+    ev.type = ClientMessage;
+    ev.xclient.window = win;
+    ev.xclient.message_type = g_wmatom[WMProtocols];
+    ev.xclient.format = 32;
+    ev.xclient.data.l[0] = g_wmatom[WMDelete];
+    ev.xclient.data.l[1] = CurrentTime;
+    XSendEvent(g_display, win, False, NoEventMask, &ev);
+    return 0;
+}
 
 

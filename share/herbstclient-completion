@@ -1,0 +1,13 @@
+#!/bin/bash
+
+
+_herbstclient_complete() {
+    COMPREPLY=(
+        # just call the herbstclient complete .. but without herbstclient as argument
+        $(herbstclient complete "$((COMP_CWORD-1))" "${COMP_WORDS[@]:1}")
+    )
+}
+
+
+complete -F _herbstclient_complete herbstclient
+

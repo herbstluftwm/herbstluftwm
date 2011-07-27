@@ -36,6 +36,9 @@ SettingsPair g_settings[] = {
         .on_change = all_monitors_apply_layout },
 };
 
+int settings_count() {
+    return LENGTH(g_settings);
+}
 
 void settings_init() {
     // recreate all strings -> move them to heap
@@ -120,4 +123,25 @@ int settings_get(int argc, char** argv, GString** output) {
 }
 
 
+// toggle integer-like values
+int settings_toggle(int argc, char** argv) {
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    SettingsPair* pair = settings_find(argv[1]);
+    if (!pair) {
+        return HERBST_SETTING_NOT_FOUND;
+    }
+    if (pair->type == HS_Int) {
+        pair->value.i = !pair->value.i;
+    } else {
+        // only toggle numbers
+        return HERBST_INVALID_ARGUMENT;
+    }
+    // on successfull change, call callback
+    if (pair->on_change) {
+        pair->on_change();
+    }
+    return 0;
+}
 

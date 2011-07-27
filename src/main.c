@@ -51,13 +51,16 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(keyunbind),
     CMD_BIND_NO_OUTPUT(spawn),
     {{ .no_output = frame_current_cycle_selection }, .name = "cycle", .has_output = 0 },
+    {{ .no_output = window_close_current }, .name = "close", .has_output = 0 },
     {{ .no_output = frame_split_command }, .name = "split", .has_output = 0 },
     {{ .no_output = frame_focus_command }, .name = "focus", .has_output = 0 },
     {{ .no_output = frame_move_window_command }, .name = "shift", .has_output = 0 },
     {{ .no_output = frame_remove_command }, .name = "remove", .has_output = 0 },
     {{ .no_output = settings_set }, .name = "set", .has_output = 0 },
+    {{ .no_output = settings_toggle }, .name = "toggle", .has_output = 0 },
     {{ .standard = settings_get }, .name = "get", .has_output = 1 },
     {{ .standard = print_layout_command }, .name = "layout", .has_output = 1 },
+    {{ .standard = complete_command }, .name = "complete", .has_output = 1 },
     {{ NULL }}
 };
 
