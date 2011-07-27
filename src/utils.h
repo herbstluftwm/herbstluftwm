@@ -22,6 +22,8 @@ GString* window_class_to_g_string(Display* dpy, Window window);
 
 bool is_herbstluft_window(Display* dpy, Window window);
 
+bool is_window_mapable(Display* dpy, Window window);
+
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv);
 // frees all entrys in argument-vector and then the vector itself

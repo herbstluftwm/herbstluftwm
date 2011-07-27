@@ -195,6 +195,10 @@ void scan(void) {
             || wa.override_redirect || XGetTransientForHint(g_display, wins[i], &d1))
                 continue;
             manage_client(wins[i]);
+            // map window if possible
+            if (is_window_mapable(g_display, wins[i])) {
+                XMapWindow(g_display, wins[i]);
+            }
         }
         if(wins)
             XFree(wins);

@@ -700,7 +700,6 @@ static void frame_hide(HSFrame* frame) {
         Window* buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            printf("unmapping %d\n", buf[i]);
             XUnmapWindow(g_display, buf[i]);
         }
     }

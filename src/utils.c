@@ -87,6 +87,12 @@ bool is_herbstluft_window(Display* dpy, Window window) {
     return result;
 }
 
+bool is_window_mapable(Display* dpy, Window window) {
+    XWindowAttributes wa;
+    XGetWindowAttributes(dpy, window,  &wa);
+    return (wa.map_state == IsUnmapped);
+}
+
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv) {
     char** new_argv = malloc(sizeof(char*) * argc);
