@@ -31,22 +31,11 @@ int print_layout_command(int argc, char** argv, GString** result);
 void execute_autostart_file();
 int spawn(int argc, char** argv);
 
-int hi() {
-    printf("HIHIHI\n");
-    return 0;
-}
-int ho() {
-    printf("HOHOHO\n");
-    return 0;
-}
-
 CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(quit),
     CMD_BIND_NO_OUTPUT(reload),
     CMD_BIND(version),
     CMD_BIND(list_commands),
-    CMD_BIND(hi),
-    CMD_BIND(ho),
     CMD_BIND_NO_OUTPUT(keybind),
     CMD_BIND_NO_OUTPUT(keyunbind),
     CMD_BIND_NO_OUTPUT(spawn),
