@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <getopt.h>
 
 // gui
 #include <X11/Xlib.h>
@@ -22,6 +23,7 @@ int send_command(int argc, char* argv[]);
 Display* dpy;
 Display* g_display;
 Window root;
+int g_ensure_newline = 1; // if set, output ends with an newline
 
 #define WAIT_IPC_RESPONSE \
     do { \
@@ -93,6 +95,11 @@ int send_command(int argc, char* argv[]) {
     }
     // print output to stdout
     fputs(output->str, stdout);
+    if (g_ensure_newline) {
+        if (output->len > 0 && output->str[output->len - 1] != '\n') {
+            fputs("\n", stdout);
+        }
+    }
     // clean all up
     g_string_free(output, true);
     XDestroyWindow(dpy, win);
@@ -100,6 +107,27 @@ int send_command(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
+    static struct option long_options[] = {
+        {"no-newline", 0, 0, 'n'},
+        {0, 0, 0, 0}
+    };
+    int arg_index = 1; // index of the first-non-option argument
+    // parse options
+    while (1) {
+        int option_index = 0;
+        int c = getopt_long(argc, argv, "+n", long_options, &option_index);
+        if (c == -1) break;
+        switch (c) {
+            case 'n':
+                g_ensure_newline = 0;
+                break;
+            default:
+                fprintf(stderr, "unknown option `%s'\n", argv[arg_index]);
+                exit(EXIT_FAILURE);
+        }
+        arg_index++;
+    }
+    // do communication
     dpy = XOpenDisplay(NULL);
     g_display = dpy;
     if (!dpy) {
@@ -107,7 +135,7 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     root = DefaultRootWindow(dpy);
-    int command_status = send_command(argc-1, argv+1);
+    int command_status = send_command(argc-arg_index, argv+arg_index);
     XCloseDisplay(dpy);
     return command_status;
 }
