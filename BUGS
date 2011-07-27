@@ -2,9 +2,9 @@
 Some BUGS/TODOS:
     - keyboardfocus stays in window, if cursor is over it and herbstluftwm-focus goes away
     - set range for some integer-setting-values
-    - don't allways re-layout all if only one thing changes (e.g. border_color)
+    - don't always re-layout all if only one thing changes (e.g. border_color)
     - don't reset border width on each layouting
     - crash on: empty-screen -> start thunar via dmenu -> close thunar with hc close -> start dmenu
         -> X Error of failed requiest: BadMatch-
         -> Major obpcode of failed request 2 (X_ChangeWindowAttributes) (borderwidth? panel?)
-
+    - get escapesequences in Makefile from tput/allow to disable colors
