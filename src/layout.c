@@ -874,4 +874,10 @@ int monitor_set_tag_command(int argc, char** argv) {
     return 0;
 }
 
+int tag_move_window_command(int argc, char** argv) {
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    return 0;
+}
 
