@@ -210,10 +210,22 @@ void scan(void) {
 }
 
 void execute_autostart_file() {
-    char* dir = getenv("XDG_CONFIG_HOME");
-    if (!dir) return;
-    GString* path = g_string_new(dir);
-    path = g_string_append(path, "/");
+    char* xdg_config_home = getenv("XDG_CONFIG_HOME");
+    GString* path;
+    if (xdg_config_home) {
+        path = g_string_new(xdg_config_home);
+    } else {
+        char* home = getenv("HOME");
+        if (!home) {
+            g_warning("Willnot parse config file. "
+                      "Neither $HOME or $XDG_CONFIG_HOME is set.\n");
+            return;
+        }
+        path = g_string_new(home);
+        path = g_string_append_c(path, G_DIR_SEPARATOR);
+        path = g_string_append(path, ".config");
+    }
+    path = g_string_append_c(path, G_DIR_SEPARATOR);
     path = g_string_append(path, HERBSTLUFT_AUTOSTART);
     char* argv[] = {
         "...", // command name... but it doesnot matter
