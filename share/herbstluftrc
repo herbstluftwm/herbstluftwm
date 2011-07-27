@@ -17,6 +17,12 @@ hc keybind $Mod-Shift-c close
 hc keybind $Mod-Return spawn xterm
 hc keybind $Mod-F2 spawn gmrun
 
+# tags
+for i in {1..9} ; do
+    hc add "$i"
+    hc keybind "$Mod-$i" use "$i"
+done
+hc keybind "$Mod-0" use default
 
 # layouting
 hc keybind $Mod-r remove

@@ -49,7 +49,7 @@ static void fetch_frame_colors() {
 
 void layout_init() {
     g_cur_monitor = 0;
-    g_tags = g_array_new(false, false, sizeof(HSTag));
+    g_tags = g_array_new(false, false, sizeof(HSTag*));
     g_monitors = g_array_new(false, false, sizeof(HSMonitor));
     fetch_frame_colors();
 }
@@ -61,7 +61,9 @@ void reset_frame_colors() {
 void layout_destroy() {
     int i;
     for (i = 0; i < g_tags->len; i++) {
-        g_string_free(g_array_index(g_tags, HSTag, i).name, true);
+        HSTag* tag = g_array_index(g_tags, HSTag*, i);
+        g_string_free(tag->name, true);
+        g_free(tag);
     }
     g_array_free(g_tags, true);
     g_array_free(g_monitors, true);
@@ -218,6 +220,16 @@ void print_frame_tree(HSFrame* frame, int indent, GString** output) {
 
 }
 
+void print_tag_tree(GString** output) {
+    int i;
+    for (i = 0; i < g_tags->len; i++) {
+        HSTag* tag = g_array_index(g_tags, HSTag*, i);
+        char* name = tag->name->str;
+        g_string_append_printf(*output, "tag \"%s\" with:\n", name);
+        print_frame_tree(tag->frame, 2, output);
+    }
+}
+
 void monitor_apply_layout(HSMonitor* monitor) {
     if (monitor) {
         XRectangle rect = monitor->rect;
@@ -357,7 +369,7 @@ HSMonitor* add_monitor(XRectangle rect) {
     // find an tag
     int i;
     for (i = 0; i < g_tags->len; i++) {
-        HSTag* tag = &g_array_index(g_tags, HSTag, i);
+        HSTag* tag = g_array_index(g_tags, HSTag*, i);
         if (find_monitor_with_tag(tag) == NULL) {
             m.tag = tag;
         }
@@ -377,12 +389,35 @@ HSMonitor* find_monitor_with_tag(HSTag* tag) {
     return NULL;
 }
 
+HSTag* find_tag(char* name) {
+    int i;
+    for (i = 0; i < g_tags->len; i++) {
+        if (!strcmp(g_array_index(g_tags, HSTag*, i)->name->str, name)) {
+            return g_array_index(g_tags, HSTag*, i);
+        }
+    }
+    return NULL;
+}
+
 HSTag* add_tag(char* name) {
-    HSTag tag;
-    tag.frame = frame_create_empty();
-    tag.name = g_string_new(name);
+    HSTag* find_result = find_tag(name);
+    if (find_result) {
+        // nothing to do
+        return find_result;
+    }
+    HSTag* tag = g_new(HSTag, 1);
+    tag->frame = frame_create_empty();
+    tag->name = g_string_new(name);
     g_array_append_val(g_tags, tag);
-    return &g_array_index(g_tags, HSTag, g_tags->len-1);
+    return tag;
+}
+
+int tag_add_command(int argc, char** argv) {
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    add_tag(argv[1]);
+    return 0;
 }
 
 void ensure_tags_are_available() {
@@ -484,7 +519,7 @@ int frame_split_command(int argc, char** argv) {
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
     int i;
     for (i = 0; i < g_tags->len; i++) {
-        HSTag* m = &g_array_index(g_tags, HSTag, i);
+        HSTag* m = g_array_index(g_tags, HSTag*, i);
         if (m->frame == frame) {
             return m;
         }
@@ -636,6 +671,62 @@ int frame_focus_recursive(HSFrame* frame) {
     return 0;
 }
 
+// do recursive for each element of the (binary) frame tree
+// if order <= 0 -> action(node); action(left); action(right);
+// if order == 1 -> action(left); action(node); action(right);
+// if order >= 2 -> action(left); action(right); action(node);
+void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order) {
+    if (!frame) {
+        return;
+    }
+    if (frame->type == TYPE_FRAMES) {
+        // clients and subframes
+        HSLayout* layout = &(frame->content.layout);
+        if (order <= 0) action(frame);
+        frame_do_recursive(layout->a, action, order);
+        if (order == 1) action(frame);
+        frame_do_recursive(layout->b, action, order);
+        if (order >= 2) action(frame);
+    } else {
+        // action only
+        action(frame);
+    }
+}
+
+static void frame_hide(HSFrame* frame) {
+    frame_set_visible(frame, false);
+    if (frame->type == TYPE_CLIENTS) {
+        int i;
+        Window* buf = frame->content.clients.buf;
+        size_t count = frame->content.clients.count;
+        for (i = 0; i < count; i++) {
+            printf("unmapping %d\n", buf[i]);
+            XUnmapWindow(g_display, buf[i]);
+        }
+    }
+}
+
+void frame_hide_recursive(HSFrame* frame) {
+    // first hide children => order = 2
+    frame_do_recursive(frame, frame_hide, 2);
+}
+
+static void frame_show_clients(HSFrame* frame) {
+    if (frame->type == TYPE_CLIENTS) {
+        int i;
+        Window* buf = frame->content.clients.buf;
+        size_t count = frame->content.clients.count;
+        for (i = 0; i < count; i++) {
+            XMapWindow(g_display, buf[i]);
+        }
+    }
+}
+
+void frame_show_recursive(HSFrame* frame) {
+    // first show parents, then childrend => order = 0
+    frame_do_recursive(frame, frame_show_clients, 2);
+}
+
 int frame_remove_command(int argc, char** argv) {
     if (!g_cur_frame->parent) {
         // do nothing if is toplevel frame
@@ -706,4 +797,35 @@ void all_monitors_apply_layout() {
         monitor_apply_layout(m);
     }
 }
+
+void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
+    HSMonitor* other = find_monitor_with_tag(tag);
+    if (other != NULL) {
+        // todo: swap tags
+        // currently: do nothing
+        g_warning("cannot swap tags yet..");
+        return;
+    }
+    HSTag* old_tag = monitor->tag;
+    // 1. hide old tag
+    frame_hide_recursive(old_tag->frame);
+    // 2. show new tag
+    monitor->tag = tag;
+    frame_show_recursive(tag->frame);
+    // reset focus
+    frame_focus_recursive(tag->frame);
+}
+
+int monitor_set_tag_command(int argc, char** argv) {
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    HSMonitor* monitor = get_current_monitor();
+    HSTag*  tag = find_tag(argv[1]);
+    if (monitor && tag) {
+        monitor_set_tag(get_current_monitor(), tag);
+    }
+    return 0;
+}
+
 

@@ -86,6 +86,7 @@ int frame_split_command(int argc, char** argv);
 void frame_apply_layout(HSFrame* frame, XRectangle rect);
 void reset_frame_colors();
 
+void print_tag_tree(GString** output);
 void print_frame_tree(HSFrame* frame, int indent, GString** output);
 
 int frame_current_cycle_selection(int argc, char** argv);
@@ -99,6 +100,9 @@ int frame_focus_command(int argc, char** argv);
 
 // follow selection to leave and focus this frame
 int frame_focus_recursive(HSFrame* frame);
+void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order);
+void frame_hide_recursive(HSFrame* frame);
+void frame_show_recursive(HSFrame* frame);
 
 void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vertical);
 void frame_apply_client_layout_horizontal(HSFrame* frame, XRectangle rect);
@@ -116,13 +120,17 @@ void frame_set_visible(HSFrame* frame, bool visible);
 
 // for tags
 HSTag* add_tag(char* name);
+HSTag* find_tag(char* name);
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame);
+int tag_add_command(int argc, char** argv);
 // for monitors
-// ads a new monitor to g_monitors and returns a pointer to it
+// adds a new monitor to g_monitors and returns a pointer to it
 HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect);
 HSMonitor* get_current_monitor();
+void monitor_set_tag(HSMonitor* monitor, HSTag* tag);
+int monitor_set_tag_command(int argc, char** argv);
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();

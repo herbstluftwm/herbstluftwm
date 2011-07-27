@@ -49,6 +49,8 @@ CommandBinding g_commands[] = {
     {{ .no_output = settings_set }, .name = "set", .has_output = 0 },
     {{ .no_output = settings_toggle }, .name = "toggle", .has_output = 0 },
     {{ .standard = settings_get }, .name = "get", .has_output = 1 },
+    {{ .no_output = tag_add_command }, .name = "add", .has_output = 0 },
+    {{ .no_output = monitor_set_tag_command }, .name = "use", .has_output = 0 },
     {{ .standard = print_layout_command }, .name = "layout", .has_output = 1 },
     {{ .standard = complete_command }, .name = "complete", .has_output = 1 },
     {{ NULL }}
@@ -81,7 +83,7 @@ int print_layout_command(int argc, char** argv, GString** result) {
     if (!tag) {
         return 0;
     }
-    print_frame_tree(tag->frame, 0, result);
+    print_tag_tree(result);
     return 0;
 }
 
