@@ -57,13 +57,16 @@ void reset_frame_colors() {
     fetch_frame_colors();
     all_monitors_apply_layout();
 }
+static void tag_free(HSTag* tag) {
+    g_string_free(tag->name, true);
+    g_free(tag);
+}
 
 void layout_destroy() {
     int i;
     for (i = 0; i < g_tags->len; i++) {
         HSTag* tag = g_array_index(g_tags, HSTag*, i);
-        g_string_free(tag->name, true);
-        g_free(tag);
+        tag_free(tag);
     }
     g_array_free(g_tags, true);
     g_array_free(g_monitors, true);
@@ -417,6 +420,50 @@ int tag_add_command(int argc, char** argv) {
         return HERBST_INVALID_ARGUMENT;
     }
     add_tag(argv[1]);
+    return 0;
+}
+
+int tag_remove_command(int argc, char** argv) {
+    // usage: remove TAG [TARGET]
+    // it removes an TAG and moves all its wins to TARGET
+    // if no TARGET is given, current tag is used
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    HSTag* tag = find_tag(argv[1]);
+    HSTag* target = (argc >= 3) ? find_tag(argv[2]) : get_current_monitor()->tag;
+    if (!tag || !target || (tag == target)) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    HSMonitor* monitor = find_monitor_with_tag(tag);
+    HSMonitor* monitor_target = find_monitor_with_tag(target);
+    if (monitor) {
+        return HERBST_TAG_IN_USE;
+    }
+    // save all these windows
+    Window* buf;
+    size_t count;
+    frame_destroy(tag->frame, &buf, &count);
+    int i;
+    for (i = 0; i < count; i++) {
+        frame_insert_window(target->frame, buf[i]);
+    }
+    if (monitor_target) {
+        // if target monitor is viewed, then show windows
+        monitor_apply_layout(monitor_target);
+        for (i = 0; i < count; i++) {
+            XMapWindow(g_display, buf[i]);
+        }
+    }
+    g_free(buf);
+    // remove tag
+    tag_free(tag);
+    for (i = 0; i < g_tags->len; i++) {
+        if (g_array_index(g_tags, HSTag*, i) == tag) {
+            g_array_remove_index(g_tags, i);
+            break;
+        }
+    }
     return 0;
 }
 

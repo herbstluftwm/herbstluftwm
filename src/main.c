@@ -51,6 +51,7 @@ CommandBinding g_commands[] = {
     {{ .standard = settings_get }, .name = "get", .has_output = 1 },
     {{ .no_output = tag_add_command }, .name = "add", .has_output = 0 },
     {{ .no_output = monitor_set_tag_command }, .name = "use", .has_output = 0 },
+    {{ .no_output = tag_remove_command }, .name = "merge_tag", .has_output = 0 },
     {{ .standard = print_layout_command }, .name = "layout", .has_output = 1 },
     {{ .standard = complete_command }, .name = "complete", .has_output = 1 },
     {{ NULL }}
