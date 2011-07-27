@@ -21,6 +21,7 @@ hc keybind $Mod-F2 spawn gmrun
 for i in {1..9} ; do
     hc add "$i"
     hc keybind "$Mod-$i" use "$i"
+    hc keybind "$Mod-Shift-$i" move "$i"
 done
 hc keybind "$Mod-0" use default
 
