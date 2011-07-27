@@ -365,20 +365,68 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     }
 }
 
-HSMonitor* add_monitor(XRectangle rect) {
+int list_monitors(int argc, char** argv, GString** output) {
+    (void)argc;
+    (void)argv;
+    int i;
+    for (i = 0; i < g_monitors->len; i++) {
+        HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, i);
+        g_string_append_printf(*output, "%d: %dx%d @ (%d,%d) with tag \"%s\"%s\n",
+            i,
+            monitor->rect.width, monitor->rect.height,
+            monitor->rect.x, monitor->rect.x,
+            monitor->tag ? monitor->tag->name->str : "???",
+            (g_cur_monitor == i) ? " [FOCUS]" : "");
+    }
+    return 0;
+}
+
+HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
+    assert(tag != NULL);
     HSMonitor m;
     m.rect = rect;
-    m.tag = NULL;
-    // find an tag
-    int i;
-    for (i = 0; i < g_tags->len; i++) {
-        HSTag* tag = g_array_index(g_tags, HSTag*, i);
-        if (find_monitor_with_tag(tag) == NULL) {
-            m.tag = tag;
-        }
-    }
+    m.tag = tag;
     g_array_append_val(g_monitors, m);
     return &g_array_index(g_monitors, HSMonitor, g_monitors->len-1);
+}
+
+int add_monitor_command(int argc, char** argv) {
+    // usage: add_monitor RECTANGLE TAG
+    if (argc < 3) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    XRectangle rect = parse_rectangle(argv[1]);
+    HSTag* tag = find_tag(argv[2]);
+    if (!tag) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (find_monitor_with_tag(tag)) {
+        return HERBST_TAG_IN_USE;
+    }
+    HSMonitor* monitor = add_monitor(rect, tag);
+    monitor_apply_layout(monitor);
+    return 0;
+}
+
+int move_monitor_command(int argc, char** argv) {
+    // usage: move_monitor INDEX RECT
+    // moves monitor with number to RECT
+    if (argc < 3) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    int index = atoi(argv[1]);
+    if (index < 0 || index >= g_monitors->len) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    XRectangle rect = parse_rectangle(argv[2]);
+    if (rect.width < WINDOW_MIN_WIDTH || rect.height < WINDOW_MIN_HEIGHT) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    // else: just move it:
+    HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, index);
+    monitor->rect = rect;
+    monitor_apply_layout(monitor);
+    return 0;
 }
 
 HSMonitor* find_monitor_with_tag(HSTag* tag) {
@@ -487,7 +535,8 @@ void ensure_monitors_are_available() {
         .height = DisplayHeight(g_display, DefaultScreen(g_display)),
     };
     ensure_tags_are_available();
-    HSMonitor* m = add_monitor(rect);
+    // add monitor with first tag
+    HSMonitor* m = add_monitor(rect, g_array_index(g_tags, HSTag*, 0));
     g_cur_monitor = 0;
     g_cur_frame = m->tag->frame;
 }
@@ -911,6 +960,35 @@ int tag_move_window_command(int argc, char** argv) {
     if (monitor_target) {
         monitor_apply_layout(monitor_target);
     }
+    return 0;
+}
+
+int monitor_cycle_command(int argc, char** argv) {
+    int delta = 1;
+    int count = g_monitors->len;
+    if (argc >= 2) {
+        delta = atoi(argv[1]);
+    }
+    int new_selection = g_cur_monitor + delta;
+    // fix range of index
+    new_selection %= count;
+    new_selection += count;
+    new_selection %= count;
+    // really change selection
+    HSMonitor* old = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+    HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, new_selection);
+    if (old == monitor) {
+        // nothing to do
+        return 0;
+    }
+    // change selection globals
+    assert(monitor->tag);
+    assert(monitor->tag->frame);
+    g_cur_monitor = new_selection;
+    frame_focus_recursive(monitor->tag->frame);
+    // repaint monitors
+    monitor_apply_layout(old);
+    monitor_apply_layout(monitor);
     return 0;
 }
 

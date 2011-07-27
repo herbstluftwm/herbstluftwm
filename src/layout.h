@@ -129,7 +129,11 @@ int tag_remove_command(int argc, char** argv);
 // adds a new monitor to g_monitors and returns a pointer to it
 HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
-HSMonitor* add_monitor(XRectangle rect);
+HSMonitor* add_monitor(XRectangle rect, HSTag* tag);
+int monitor_cycle_command(int argc, char** argv);
+int add_monitor_command(int argc, char** argv);
+int list_monitors(int argc, char** argv, GString** output);
+int move_monitor_command(int argc, char** argv);
 HSMonitor* get_current_monitor();
 void monitor_set_tag(HSMonitor* monitor, HSTag* tag);
 int monitor_set_tag_command(int argc, char** argv);

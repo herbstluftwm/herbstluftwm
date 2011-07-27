@@ -116,5 +116,16 @@ void argv_free(int argc, char** argv) {
 }
 
 
+XRectangle parse_rectangle(char* string) {
+    XRectangle rect;
+    int x,y;
+    unsigned int w, h;
+    XParseGeometry(string, &x, &y, &w, &h);
+    rect.x = (short int)x;
+    rect.y = (short int)y;
+    rect.width = (unsigned short int)w;
+    rect.height = (unsigned short int)h;
+    return rect;
+}
 
 

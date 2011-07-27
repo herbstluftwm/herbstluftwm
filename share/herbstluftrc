@@ -32,6 +32,7 @@ hc keybind $Mod-u split '(cur)' vertical 0.5
 hc keybind $Mod-o split '(cur)' horizontal 0.5
 
 # focus
+hc keybind $Mod-Tab cycle_monitor
 hc keybind $Mod-c cycle
 hc keybind $Mod-h focus left
 hc keybind $Mod-j focus down

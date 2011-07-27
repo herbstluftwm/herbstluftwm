@@ -29,6 +29,8 @@ char** argv_duplicate(int argc, char** argv);
 // frees all entrys in argument-vector and then the vector itself
 void argv_free(int argc, char** argv);
 
+XRectangle parse_rectangle(char* string);
+
 #endif
 
 
