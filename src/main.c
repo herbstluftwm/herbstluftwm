@@ -253,10 +253,10 @@ int main(int argc, char* argv[]) {
     settings_init();
     clientlist_init();
     layout_init();
-    execute_autostart_file();
     ensure_monitors_are_available();
     scan();
     all_monitors_apply_layout();
+    execute_autostart_file();
     // main loop
     XEvent event;
     while (!g_aboutToQuit) {
