@@ -23,6 +23,7 @@
 int* g_window_gap;
 int* g_frame_border_width;
 int* g_always_show_frame;
+int* g_default_frame_layout;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
@@ -33,6 +34,8 @@ static void fetch_frame_colors() {
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_frame_border_width = &(settings_find("frame_border_width")->value.i);
     g_always_show_frame = &(settings_find("always_show_frame")->value.i);
+    g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
+    *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT);
     char* str = settings_find("frame_border_normal_color")->value.s;
     g_frame_border_normal_color = getcolor(str);
     str = settings_find("frame_border_active_color")->value.s;
@@ -69,6 +72,7 @@ HSFrame* frame_create_empty() {
     HSFrame* frame = g_new0(HSFrame, 1);
     frame->type = TYPE_CLIENTS;
     frame->window_visible = false;
+    frame->content.clients.layout = *g_default_frame_layout;
     // set window atributes
     XSetWindowAttributes at;
     at.background_pixel  = getcolor("red");
@@ -225,11 +229,72 @@ void monitor_apply_layout(HSMonitor* monitor) {
     }
 }
 
+int frame_current_cycle_client_layout(int argc, char** argv) {
+    int delta = 1;
+    if (argc >= 2) {
+        delta = atoi(argv[1]);
+    }
+    if (g_cur_frame && g_cur_frame->type == TYPE_CLIENTS) {
+        delta %= LAYOUT_COUNT;
+        g_cur_frame->content.clients.layout += delta + LAYOUT_COUNT;
+        g_cur_frame->content.clients.layout %= LAYOUT_COUNT;
+        monitor_apply_layout(get_current_monitor());
+    }
+    return 0;
+}
+void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vertical) {
+    Window* buf = frame->content.clients.buf;
+    size_t count = frame->content.clients.count;
+    int selection = frame->content.clients.selection;
+    XRectangle cur = rect;
+    int last_step_y;
+    int last_step_x;
+    int step_y;
+    int step_x;
+    if (vertical) {
+        // only do steps in y direction
+        last_step_y = cur.height % count; // get the space on bottom
+        last_step_x = 0;
+        cur.height /= count;
+        step_y = cur.height;
+        step_x = 0;
+    } else {
+        // only do steps in x direction
+        last_step_y = 0;
+        last_step_x = cur.width % count; // get the space on the right
+        cur.width /= count;
+        step_y = 0;
+        step_x = cur.width;
+    }
+    int i;
+    unsigned long colors[] = {
+        g_window_border_normal_color, // normal color
+        (g_cur_frame == frame) ?
+            g_window_border_active_color : // frame has focus and window is focused
+            g_window_border_normal_color, // window is selected but frame isnot focused
+    };
+    for (i = 0; i < count; i++) {
+        // add the space, if count doesnot divide frameheight without remainder
+        cur.height += (i == count-1) ? last_step_y : 0;
+        cur.width += (i == count-1) ? last_step_x : 0;
+        XSetWindowBorder(g_display, buf[i], colors[i == selection]);
+        window_resize(buf[i], cur);
+        cur.y += step_y;
+        cur.x += step_x;
+    }
+}
+
+void frame_apply_client_layout_horizontal(HSFrame* frame, XRectangle rect) {
+    frame_apply_client_layout_linear(frame, rect, false);
+}
+
+void frame_apply_client_layout_vertical(HSFrame* frame, XRectangle rect) {
+    frame_apply_client_layout_linear(frame, rect, true);
+}
+
 void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     if (frame->type == TYPE_CLIENTS) {
-        Window* buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
-        int selection = frame->content.clients.selection;
         // frame only -> apply window_gap
         rect.height -= *g_window_gap;
         rect.width -= *g_window_gap;
@@ -264,24 +329,8 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         if (count == 0) {
             return;
         }
-        XRectangle cur = rect;
-        int last_step = cur.height % count; // get the space on bottom
-        cur.height /= count;
-        int step = cur.height;
-        int i;
-        unsigned long colors[] = {
-            g_window_border_normal_color, // normal color
-            (g_cur_frame == frame) ?
-                g_window_border_active_color : // frame has focus and window is focused
-                g_window_border_normal_color, // window is selected but frame isnot focused
-        };
-        for (i = 0; i < count; i++) {
-            // add the space, if count doesnot divide frameheight without remainder
-            cur.height += (i == count-1) ? last_step : 0;
-            XSetWindowBorder(g_display, buf[i], colors[i == selection]);
-            window_resize(buf[i], cur);
-            cur.y += step;
-        }
+        frame_apply_client_layout_linear(frame, rect,
+            (frame->content.clients.layout == LAYOUT_VERTICAL));
     } else { /* frame->type == TYPE_FRAMES */
         HSLayout* layout = &frame->content.layout;
         XRectangle first = rect;

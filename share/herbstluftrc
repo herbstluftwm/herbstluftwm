@@ -20,6 +20,7 @@ hc keybind $Mod-F2 spawn gmrun
 
 # layouting
 hc keybind $Mod-r remove
+hc keybind $Mod-space cycle_layout 1
 hc keybind $Mod-u split '(cur)' vertical 0.5
 hc keybind $Mod-o split '(cur)' horizontal 0.5
 

@@ -10,6 +10,7 @@
 enum {
     LAYOUT_VERTICAL = 0,
     LAYOUT_HORIZONTAL,
+    LAYOUT_COUNT,
 };
 
 enum {
@@ -39,6 +40,7 @@ typedef struct HSFrame {
             Window* buf;
             size_t  count;
             int     selection;
+            int     layout;
         } clients;
     } content;
     int type;
@@ -97,6 +99,11 @@ int frame_focus_command(int argc, char** argv);
 
 // follow selection to leave and focus this frame
 int frame_focus_recursive(HSFrame* frame);
+
+void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vertical);
+void frame_apply_client_layout_horizontal(HSFrame* frame, XRectangle rect);
+void frame_apply_client_layout_vertical(HSFrame* frame, XRectangle rect);
+int frame_current_cycle_client_layout(int argc, char** argv);
 
 // returns the Window that is focused
 // returns 0 if there is none

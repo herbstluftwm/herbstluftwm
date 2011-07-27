@@ -51,6 +51,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(keyunbind),
     CMD_BIND_NO_OUTPUT(spawn),
     {{ .no_output = frame_current_cycle_selection }, .name = "cycle", .has_output = 0 },
+    {{ .no_output = frame_current_cycle_client_layout }, .name = "cycle_layout", .has_output = 0 },
     {{ .no_output = window_close_current }, .name = "close", .has_output = 0 },
     {{ .no_output = frame_split_command }, .name = "split", .has_output = 0 },
     {{ .no_output = frame_focus_command }, .name = "focus", .has_output = 0 },

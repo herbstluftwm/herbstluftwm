@@ -34,6 +34,7 @@ SettingsPair g_settings[] = {
         .on_change = reset_client_colors },
     { "always_show_frame", { .i = 0 }, .type = HS_Int,
         .on_change = all_monitors_apply_layout },
+    { "default_frame_layout", { .i = 0 }, .type = HS_Int },
 };
 
 int settings_count() {
