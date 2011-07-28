@@ -498,6 +498,21 @@ int tag_add_command(int argc, char** argv) {
     return 0;
 }
 
+int tag_rename_command(int argc, char** argv) {
+    if (argc < 3) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    HSTag* tag = find_tag(argv[1]);
+    if (!tag) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (find_tag(argv[2])) {
+        return HERBST_TAG_IN_USE;
+    }
+    tag->name = g_string_assign(tag->name, argv[2]);
+    return 0;
+}
+
 int tag_remove_command(int argc, char** argv) {
     // usage: remove TAG [TARGET]
     // it removes an TAG and moves all its wins to TARGET

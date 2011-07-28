@@ -54,6 +54,7 @@ CommandBinding g_commands[] = {
     {{ .no_output = tag_add_command }, .name = "add", .has_output = 0 },
     {{ .no_output = monitor_set_tag_command }, .name = "use", .has_output = 0 },
     {{ .no_output = tag_remove_command }, .name = "merge_tag", .has_output = 0 },
+    {{ .no_output = tag_rename_command }, .name = "rename", .has_output = 0 },
     {{ .no_output = tag_move_window_command }, .name = "move", .has_output = 0 },
     {{ .no_output = add_monitor_command }, .name = "add_monitor", .has_output = 0 },
     {{ .no_output = remove_monitor_command }, .name = "remove_monitor", .has_output = 0 },

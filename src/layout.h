@@ -123,6 +123,7 @@ HSTag* add_tag(char* name);
 HSTag* find_tag(char* name);
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame);
 int tag_add_command(int argc, char** argv);
+int tag_rename_command(int argc, char** argv);
 int tag_move_window_command(int argc, char** argv);
 int tag_remove_command(int argc, char** argv);
 // for monitors
