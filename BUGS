@@ -10,3 +10,11 @@ Some BUGS/TODOS:
     - get escapesequences in Makefile from tput/allow to disable colors
     - add max-tree-height for layout tree
     - herbstclient: add timeout if server doesnot respond
+    - feature: focus follows shift
+    - max-layout for clients
+    - documentation
+    - herbstclient: errorstatus2string2stderr
+    - herbstclient: -h
+    - findout: why are windows on new monitor mapped automatically?
+    - urgent-handling (jumpto urgent)
+    - hooks
