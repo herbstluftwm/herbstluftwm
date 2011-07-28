@@ -35,6 +35,7 @@ SettingsPair g_settings[] = {
     { "always_show_frame", { .i = 0 }, .type = HS_Int,
         .on_change = all_monitors_apply_layout },
     { "default_frame_layout", { .i = 0 }, .type = HS_Int },
+    { "focus_follows_shift", { .i = 1 }, .type = HS_Int },
 };
 
 int settings_count() {

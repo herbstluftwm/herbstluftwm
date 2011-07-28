@@ -24,6 +24,7 @@ int* g_window_gap;
 int* g_frame_border_width;
 int* g_always_show_frame;
 int* g_default_frame_layout;
+int* g_focus_follows_shift;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
@@ -32,6 +33,7 @@ unsigned long g_frame_bg_normal_color;
 static void fetch_frame_colors() {
     // load settings
     g_window_gap = &(settings_find("window_gap")->value.i);
+    g_focus_follows_shift = &(settings_find("focus_follows_shift")->value.i);
     g_frame_border_width = &(settings_find("frame_border_width")->value.i);
     g_always_show_frame = &(settings_find("always_show_frame")->value.i);
     g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
@@ -763,6 +765,26 @@ int frame_move_window_command(int argc, char** argv) {
         // move window to neighbour
         frame_remove_window(g_cur_frame, win);
         frame_insert_window(neighbour, win);
+        if (*g_focus_follows_shift) {
+            // change selection in parrent
+            HSFrame* parent = neighbour->parent;
+            assert(parent);
+            parent->content.layout.selection = ! parent->content.layout.selection;
+            frame_focus_recursive(parent);
+            // focus right window in frame
+            HSFrame* frame = g_cur_frame;
+            assert(frame);
+            int i;
+            Window* buf = frame->content.clients.buf;
+            size_t count = frame->content.clients.count;
+            for (i = 0; i < count; i++) {
+                if (buf[i] == win) {
+                    frame->content.clients.selection = i;
+                    window_focus(buf[i]);
+                    break;
+                }
+            }
+        }
         // layout was changed, so update it
         monitor_apply_layout(get_current_monitor());
     }
