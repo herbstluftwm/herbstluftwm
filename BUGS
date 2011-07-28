@@ -18,3 +18,6 @@ Some BUGS/TODOS:
     - findout: why are windows on new monitor mapped automatically?
     - urgent-handling (jumpto urgent)
     - hooks
+    - completion für keybind (recursive!)
+    - completion für keyunbind
+    - completion für use/merge_tag
