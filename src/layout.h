@@ -132,6 +132,7 @@ HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag);
 int monitor_cycle_command(int argc, char** argv);
 int add_monitor_command(int argc, char** argv);
+int remove_monitor_command(int argc, char** argv);
 int list_monitors(int argc, char** argv, GString** output);
 int move_monitor_command(int argc, char** argv);
 HSMonitor* get_current_monitor();

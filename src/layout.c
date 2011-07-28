@@ -408,6 +408,33 @@ int add_monitor_command(int argc, char** argv) {
     return 0;
 }
 
+int remove_monitor_command(int argc, char** argv) {
+    // usage: remove_monitor INDEX
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    int index = atoi(argv[1]);
+    if (index < 0 || index >= g_monitors->len) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (g_monitors->len <= 1) {
+        return HERBST_FORBIDDEN;
+    }
+    HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, index);
+    // adjust selection
+    if (g_cur_monitor > index) {
+        // same monitor shall be selected after remove
+        g_cur_monitor--;
+    }
+    assert(monitor->tag);
+    assert(monitor->tag->frame);
+    // hide clients
+    frame_hide_recursive(monitor->tag->frame);
+    // and remove monitor completly
+    g_array_remove_index(g_monitors, index);
+    return 0;
+}
+
 int move_monitor_command(int argc, char** argv) {
     // usage: move_monitor INDEX RECT
     // moves monitor with number to RECT
