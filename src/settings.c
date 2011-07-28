@@ -24,6 +24,8 @@ SettingsPair g_settings[] = {
         .on_change = reset_frame_colors },
     { "frame_bg_active_color", { .s = "green" },
         .on_change = reset_frame_colors },
+    { "frame_bg_transparent", { .i = 0 }, .type = HS_Int,
+        .on_change = reset_frame_colors },
     { "frame_border_width", { .i = 2 }, .type = HS_Int,
         .on_change = reset_frame_colors },
     { "window_border_width", { .i = 2 }, .type = HS_Int,

@@ -25,6 +25,7 @@ int* g_frame_border_width;
 int* g_always_show_frame;
 int* g_default_frame_layout;
 int* g_focus_follows_shift;
+int* g_frame_bg_transparent;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
@@ -36,6 +37,7 @@ static void fetch_frame_colors() {
     g_focus_follows_shift = &(settings_find("focus_follows_shift")->value.i);
     g_frame_border_width = &(settings_find("frame_border_width")->value.i);
     g_always_show_frame = &(settings_find("always_show_frame")->value.i);
+    g_frame_bg_transparent = &(settings_find("frame_bg_transparent")->value.i);
     g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT);
     char* str = settings_find("frame_border_normal_color")->value.s;
@@ -337,7 +339,11 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
                           rect.x - *g_frame_border_width,
                           rect.y - *g_frame_border_width,
                           rect.width, rect.height);
-        XSetWindowBackground(g_display, frame->window, bg_color);
+        if (*g_frame_bg_transparent) {
+            XSetWindowBackgroundPixmap(g_display, frame->window, ParentRelative);
+        } else {
+            XSetWindowBackground(g_display, frame->window, bg_color);
+        }
         XClearWindow(g_display, frame->window);
         XLowerWindow(g_display, frame->window);
         frame_set_visible(frame, *g_always_show_frame
