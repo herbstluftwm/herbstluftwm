@@ -1,3 +1,7 @@
+/** Copyright 2011 Thorsten Wißmann. All rights reserved.
+ *
+ * This software is licensed under the "Simplified BSD License".
+ * See LICENSE for details */
 
 #ifndef __HERBST_KEY_H_
 #define __HERBST_KEY_H_

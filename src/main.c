@@ -1,3 +1,8 @@
+/** Copyright 2011 Thorsten Wißmann. All rights reserved.
+ *
+ * This software is licensed under the "Simplified BSD License".
+ * See LICENSE for details */
+
 // herbstluftwm
 #include "clientlist.h"
 #include "utils.h"
