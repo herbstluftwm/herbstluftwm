@@ -8,7 +8,6 @@ Some BUGS/TODOS:
         -> X Error of failed requiest: BadMatch-
         -> Major obpcode of failed request 2 (X_ChangeWindowAttributes) (borderwidth? panel?)
     - get escapesequences in Makefile from tput/allow to disable colors
-    - add max-tree-height for layout tree
     - herbstclient: add timeout if server doesnot respond
     - max-layout for clients
     - documentation

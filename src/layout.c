@@ -619,7 +619,26 @@ int frame_current_cycle_selection(int argc, char** argv) {
     return 0;
 }
 
+// counts the splits of a kind align to root window
+int frame_split_count_to_root(HSFrame* frame, int align) {
+    int height = 0;
+    // count steps until root node
+    // root node has no parent
+    while (frame->parent) {
+        frame = frame->parent;
+        if (frame->content.layout.align == align) {
+            height++;
+        }
+    }
+    return height;
+}
+
 void frame_split(HSFrame* frame, int align, int fraction) {
+    if (frame_split_count_to_root(frame, align) > HERBST_MAX_TREE_HEIGHT) {
+        // do nothing if tree would be to large
+        printf("ignoreing..... tree to large\n");
+        return;
+    }
     HSFrame* first = frame_create_empty();
     HSFrame* second = frame_create_empty();
     first->content = frame->content;

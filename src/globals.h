@@ -12,6 +12,8 @@
 #define WINDOW_MIN_HEIGHT 32
 #define WINDOW_MIN_WIDTH 32
 
+#define HERBST_MAX_TREE_HEIGHT 3
+
 // connection to x-server
 Display*    g_display;
 int         g_screen;
