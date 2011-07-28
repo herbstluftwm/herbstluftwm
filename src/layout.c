@@ -803,8 +803,9 @@ int frame_focus_recursive(HSFrame* frame) {
         int selection = frame->content.clients.selection;
         window_focus(frame->content.clients.buf[selection]);
     } else {
-        // else give focus to root window
-        window_focus(g_root);
+        // else give focus to focus indicator
+        XUngrabButton(g_display, AnyButton, AnyModifier, frame->window);
+        XSetInputFocus(g_display, frame->window, RevertToPointerRoot, CurrentTime);
     }
     return 0;
 }
