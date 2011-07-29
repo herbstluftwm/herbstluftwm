@@ -8,6 +8,7 @@ HEADER = $(wildcard $(SRCDIR)/*.h)
 OBJ = ${SRC:.c=.o}
 TARGET = herbstluftwm
 HERBSTCLIENTDOC = doc/herbstclient.txt
+HERBSTLUFTWMDOC = doc/herbstluftwm.txt
 
 include rules.mk
 
@@ -28,13 +29,13 @@ build-herbstclient:
 clean-herbstclient:
 	make -C ipc-client clean
 
-doc: doc/herbstclient.1 doc/herbstclient.html
+doc: doc/herbstclient.1 doc/herbstclient.html doc/herbstluftwm.1 doc/herbstluftwm.html
 
-doc/herbstclient.1: $(HERBSTCLIENTDOC)
-	$(call colorecho,DOC,doc/herbstclient.1)
+doc/%.1: doc/%.txt
+	$(call colorecho,DOC,$@)
 	@a2x -f manpage $<
 
-doc/herbstclient.html: $(HERBSTCLIENTDOC)
-	$(call colorecho,DOC,doc/herbstclient.html)
+doc/%.html: doc/%.txt
+	$(call colorecho,DOC,$@)
 	@asciidoc $<
 

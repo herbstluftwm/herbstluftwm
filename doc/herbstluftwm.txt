@@ -1,0 +1,61 @@
+HERBSTLUFTWM(1)
+===============
+:doctype: manpage
+
+
+NAME
+----
+herbstluftwm - a manual tiling window manager for X
+
+
+SYNOPSIS
+--------
+*herbstluftwm*
+
+
+DESCRIPTION
+-----------
+Starts the *herbstluftwm* window manager on 'DISPLAY'. It also listens for
+calls from *herbstclient*(1) and executes them. The list of available
+<<COMMANDS,*COMMANDS*>> is listed below.
+
+TILING ALGORITHM
+----------------
+TODO
+
+[[COMMANDS]]
+COMMANDS
+--------
+TODO
+
+ENVIRONTMENT VARIABLES
+----------------------
+DISPLAY::
+    specifies the 'DISPLAY' to use.
+
+EXIT STATUS
+-----------
+Always returns *0*.
+
+BUGS
+----
+See the *herbstluftwm* distribution BUGS file.
+
+
+AUTHOR
+------
+*herbstluftwm* was written by Thorsten Wißmann.
+
+RESOURCES
+---------
+Gitweb: <http://git.cs.fau.de/?p=re06huxa/herbstluftwm>
+
+
+COPYING
+-------
+Copyright 2011 Thorsten Wißmann. All rights reserved.
+
+This software is licensed under the "Simplified BSD License". See LICENSE for
+details
+
+// vim: tw=80
