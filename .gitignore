@@ -10,4 +10,7 @@
 herbstluftwm
 ipc-client/herbstclient
 
+# ignore generated doc
+doc/herbstclient.1
+doc/herbstclient.html
 

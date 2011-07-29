@@ -1,0 +1,70 @@
+HERBSTCLIENT(1)
+===============
+:doctype: manpage
+
+
+NAME
+----
+herbstclient - sends commands do a running *herbstluftwm*(1) instance via X
+
+
+SYNOPSIS
+--------
+*herbstclient* ['OPTIONS'] 'COMMAND' ['ARGS ...']
+
+
+DESCRIPTION
+-----------
+Sends an 'COMMAND' with its (optional) arguments 'ARGS' to an running
+*herbstluftwm*(1) instance via Xlib. If 'COMMAND' has an output, it is printed
+by *herbstclient*. If output does not end with a newline, then a newline is
+added to improve readability.
+
+// FIXME: this ##s## is an ugly hack... is there an other solution?
+See *herbstluftwm*(1) for a list of available 'COMMAND'##s## and their 'ARGS'.
+
+OPTIONS
+-------
+*-n, --no-newline*::
+    Do not print an newline if output doesnot end with a newline.
+
+ENVIRONTMENT VARIABLES
+----------------------
+DISPLAY::
+    specifies the 'DISPLAY' to use, e.g. where *herbstluftwm*(1) is running.
+
+EXIT STATUS
+-----------
+Returns the exit status of the 'COMMAND' execution in *herbstluftwm(1)* server.
+
+*0*::
+    Success
+
+other::
+    Failure. See *herbstluftwm*(1) for a list of error codes.
+
+
+BUGS
+----
+It waits endless for a response from *herbstluftwm* (there is no timeout yet).
+
+See the *herbstluftwm* distribution BUGS file.
+
+
+AUTHOR
+------
+*herbstclient* was written by Thorsten Wißmann.
+
+RESOURCES
+---------
+Gitweb: <http://git.cs.fau.de/?p=re06huxa/herbstluftwm>
+
+
+COPYING
+-------
+Copyright 2011 Thorsten Wißmann. All rights reserved.
+
+This software is licensed under the "Simplified BSD License". See LICENSE for
+details
+
+// vim: tw=80
