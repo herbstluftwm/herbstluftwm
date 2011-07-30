@@ -19,3 +19,5 @@ Some BUGS/TODOS:
     - completion für keybind (recursive!)
     - completion für keyunbind
     - completion für use/merge_tag
+    - do not map empty windows of console-vim (ignore it in scan) or luakit or xcompmgr
+    - CLAMP fraction range in split

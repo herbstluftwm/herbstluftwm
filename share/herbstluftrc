@@ -28,8 +28,8 @@ hc keybind "$Mod-0" use default
 # layouting
 hc keybind $Mod-r remove
 hc keybind $Mod-space cycle_layout 1
-hc keybind $Mod-u split '(cur)' vertical 0.5
-hc keybind $Mod-o split '(cur)' horizontal 0.5
+hc keybind $Mod-u split vertical 0.5
+hc keybind $Mod-o split horizontal 0.5
 
 # focus
 hc keybind $Mod-Tab cycle_monitor

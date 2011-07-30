@@ -671,14 +671,14 @@ void frame_split(HSFrame* frame, int align, int fraction) {
 
 int frame_split_command(int argc, char** argv) {
     // usage: split (cur) h|v FRACTION
-    if (argc < 4) {
+    if (argc < 3) {
         return HERBST_INVALID_ARGUMENT;
     }
     int align = LAYOUT_VERTICAL;
-    if (argv[2][0] == 'h') {
+    if (argv[1][0] == 'h') {
         align = LAYOUT_HORIZONTAL;
     } // else: layout ist vertical
-    int fraction = FRACTION_UNIT* CLAMP(atof(argv[3]), 0.0, 1.0);
+    int fraction = FRACTION_UNIT* CLAMP(atof(argv[2]), 0.0, 1.0);
     HSFrame* frame = frame_current_selection();
     if (!frame) return 0; // nothing to do
     frame_split(frame, align, fraction);
