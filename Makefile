@@ -42,6 +42,7 @@ doc/%.html: doc/%.txt
 install: all
 	@echo creating dirs...
 	mkdir -p $(PREFIX)
+	mkdir -p $(LICENSEDIR)
 	mkdir -p $(BINDIR)
 	mkdir -p $(MANDIR)
 	mkdir -p $(DOCDIR)
@@ -51,10 +52,12 @@ install: all
 	@echo copyiing files...
 	install $(TARGET) $(BINDIR)
 	install ipc-client/herbstclient $(BINDIR)/
+	install LICENSE $(LICENSEDIR)
 	install doc/herbstclient.1 $(MANDIR)/
 	install doc/herbstluftwm.1 $(MANDIR)/
 	install doc/herbstclient.html $(DOCDIR)/
 	install doc/herbstluftwm.html $(DOCDIR)/
+	install BUGS $(DOCDIR)/
 	install share/herbstluftrc $(CONFIGDIR)/
 	install share/herbstclient-completion $(ETCDIR)/bash_completion.d/
 
