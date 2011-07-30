@@ -8,14 +8,16 @@
 #define __CLIENTLIST_H_
 
 #include <X11/Xlib.h>
+#include <X11/Xproto.h>
+#include <X11/Xutil.h>
+#include <X11/Xatom.h>
 #include <glib.h>
 
 
-typedef struct HerbstClient HerbstClient;
-struct HerbstClient {
-    GString*    name;
+typedef struct HSClient {
     Window      window;
-};
+    XRectangle  last_size;
+} HSClient;
 
 void clientlist_init();
 void clientlist_destroy();
@@ -26,12 +28,14 @@ void reset_client_colors();
 
 // adds a new client to list of managed client windows
 void manage_client(Window win);
+void unmanage_client(Window win);
+
+void window_enforce_last_size(Window in);
 
 // destroys a special client
-void destroy_client(HerbstClient* client);
+void destroy_client(HSClient* client);
 
-// destroys data on quit
-void free_clients();
+HSClient* get_client_from_window(Window window);
 
 void window_resize(Window win, XRectangle rect);
 int window_close_current();

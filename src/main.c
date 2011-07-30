@@ -132,18 +132,20 @@ int spawn(int argc, char** argv) {
 // handle x-events:
 
 void event_on_configure(XEvent event) {
-    XConfigureRequestEvent* cre = &event.xconfigurerequest;
+    // we could allow configuration.. but i don't see, why this is needed
+    //XConfigureRequestEvent* cre = &event.xconfigurerequest;
     //XMoveResizeWindow(g_display, 5, 3, 160,90);
-    XWindowChanges wc;
-    wc.x = cre->x;
-    wc.y = cre->y;
-    wc.width = cre->width;
-    wc.height = cre->height;
-    wc.border_width = cre->border_width;
-    wc.sibling = cre->above;
-    wc.stack_mode = cre->detail;
-    XConfigureWindow(g_display, cre->window, cre->value_mask, &wc);
-    XSync(g_display, False);
+    //HSClient* client = get_client_from_window(cre->window);
+    //XWindowChanges wc;
+    //wc.x = client->last_size.x;
+    //wc.y = client->last_size.y;
+    //wc.width = client->last_size.width;
+    //wc.height = client->last_size.height;
+    //wc.border_width = cre->border_width;
+    //wc.sibling = cre->above;
+    //wc.stack_mode = cre->detail;
+    //XConfigureWindow(g_display, cre->window, cre->value_mask, &wc);
+    //XSync(g_display, False);
 }
 
 
@@ -286,6 +288,7 @@ int main(int argc, char* argv[]) {
             case DestroyNotify: printf("name is: DestroyNotify\n");
                 // TODO: only try to disconnect, if it _had_ the right window-class?
                 ipc_disconnect_client(event.xcreatewindow.window);
+                unmanage_client(event.xcreatewindow.window);
                 break;
             case EnterNotify: printf("name is: EnterNotify\n"); break;
             case Expose: printf("name is: Expose\n"); break;
@@ -301,8 +304,10 @@ int main(int argc, char* argv[]) {
                 break;
             case MapRequest: printf("name is: MapRequest\n");
                 XMapRequestEvent* mapreq = &event.xmaprequest;
-                manage_client(mapreq->window);
-                XMapWindow(g_display, mapreq->window);
+                if (!get_client_from_window(mapreq->window)) {
+                    manage_client(mapreq->window);
+                    XMapWindow(g_display, mapreq->window);
+                }
             break;
             case PropertyNotify: //printf("name is: PropertyNotify\n"); 
                 if (is_ipc_connectable(event.xproperty.window)) {
@@ -321,15 +326,11 @@ int main(int argc, char* argv[]) {
         }
     }
     // close all
-    //free_clients();
-    //Window* wins; size_t count;
-    //frame_destroy(master, &wins, &count);
-    //g_free(wins);
     layout_destroy();
-    clientlist_destroy();
     ipc_destroy();
     key_destroy();
     settings_destroy();
+    clientlist_destroy();
     XCloseDisplay(g_display);
     return EXIT_SUCCESS;
 }

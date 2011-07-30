@@ -21,12 +21,18 @@ int* g_window_border_width;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
 
+GHashTable* g_clients;
+
 // atoms from dwm.c
 enum { WMProtocols, WMDelete, WMState, WMLast };        /* default atoms */
 enum { NetSupported, NetWMName, NetWMState,
        NetWMFullscreen, NetLast };                      /* EWMH atoms */
 static Atom g_wmatom[WMLast], g_netatom[NetLast];
 
+static HSClient* create_client() {
+    HSClient* hc = g_new0(HSClient, 1);
+    return hc;
+}
 
 static void fetch_colors() {
     g_window_border_width = &(settings_find("window_border_width")->value.i);
@@ -45,6 +51,9 @@ void clientlist_init() {
     g_netatom[NetWMName] = XInternAtom(g_display, "_NET_WM_NAME", False);
     g_netatom[NetWMState] = XInternAtom(g_display, "_NET_WM_STATE", False);
     g_netatom[NetWMFullscreen] = XInternAtom(g_display, "_NET_WM_STATE_FULLSCREEN", False);
+    // init actual client list
+    g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
+                                      NULL, (GDestroyNotify)destroy_client);
 }
 
 void reset_client_colors() {
@@ -53,6 +62,11 @@ void reset_client_colors() {
 }
 
 void clientlist_destroy() {
+    g_hash_table_destroy(g_clients);
+}
+
+HSClient* get_client_from_window(Window window) {
+    return (HSClient*) g_hash_table_lookup(g_clients, &window);
 }
 
 void manage_client(Window win) {
@@ -60,20 +74,27 @@ void manage_client(Window win) {
         // ignore our own window
         return;
     }
+    if (get_client_from_window(win)) {
+        return;
+    }
     // init client
     XSetWindowBorderWidth(g_display, win, *g_window_border_width);
+    HSClient* client = create_client();
+    client->window = win;
+    g_hash_table_insert(g_clients, &(client->window), client);
     // insert to layout
     HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
     frame_insert_window(g_cur_frame, win);
     monitor_apply_layout(m);
 }
 
-// destroys a special client
-void destroy_client(HerbstClient* client) {
-    g_free(client);
+void unmanage_client(Window win) {
+    g_hash_table_remove(g_clients, &win);
 }
 
-void free_clients() {
+// destroys a special client
+void destroy_client(HSClient* client) {
+    g_free(client);
 }
 
 void window_focus(Window window) {
@@ -93,14 +114,18 @@ void window_resize(Window win, XRectangle rect) {
         // do nothing on invalid size
         return;
     }
+    struct HSClient* client = get_client_from_window(win);
     // apply border width
     rect.width -= *g_window_border_width * 2;
     rect.height -= *g_window_border_width * 2;
     XSetWindowBorderWidth(g_display, win, *g_window_border_width);
-    XMoveWindow(g_display, win, rect.x, rect.y);
-    XResizeWindow(g_display, win, rect.width, rect.height);
+    if (client) {
+        if (RECTANGLE_EQUALS(client->last_size, rect)) return;
+        client->last_size = rect;
+    }
+    XMoveResizeWindow(g_display, win, rect.x, rect.y, rect.width, rect.height);
     //// send new size to client
-    //// WHY SHOULD I?
+    //// WHY SHOULD I? -> faster? only one call?
     //XConfigureEvent ce;
     //ce.type = ConfigureNotify;
     //ce.display = g_display;
