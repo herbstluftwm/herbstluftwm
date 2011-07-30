@@ -52,12 +52,12 @@ install: all
 	@echo copyiing files...
 	install $(TARGET) $(BINDIR)
 	install ipc-client/herbstclient $(BINDIR)/
-	install LICENSE $(LICENSEDIR)
-	install doc/herbstclient.1 $(MANDIR)/
-	install doc/herbstluftwm.1 $(MANDIR)/
-	install doc/herbstclient.html $(DOCDIR)/
-	install doc/herbstluftwm.html $(DOCDIR)/
-	install BUGS $(DOCDIR)/
-	install share/herbstluftrc $(CONFIGDIR)/
-	install share/herbstclient-completion $(ETCDIR)/bash_completion.d/
+	install -m 644 LICENSE $(LICENSEDIR)
+	install -m 644 doc/herbstclient.1 $(MANDIR)/
+	install -m 644 doc/herbstluftwm.1 $(MANDIR)/
+	install -m 644 doc/herbstclient.html $(DOCDIR)/
+	install -m 644 doc/herbstluftwm.html $(DOCDIR)/
+	install -m 644 BUGS $(DOCDIR)/
+	install -m 644 share/herbstluftrc $(CONFIGDIR)/
+	install -m 644 share/herbstclient-completion $(ETCDIR)/bash_completion.d/
 
