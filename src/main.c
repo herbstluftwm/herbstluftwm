@@ -132,20 +132,31 @@ int spawn(int argc, char** argv) {
 // handle x-events:
 
 void event_on_configure(XEvent event) {
-    // we could allow configuration.. but i don't see, why this is needed
-    //XConfigureRequestEvent* cre = &event.xconfigurerequest;
-    //XMoveResizeWindow(g_display, 5, 3, 160,90);
-    //HSClient* client = get_client_from_window(cre->window);
-    //XWindowChanges wc;
-    //wc.x = client->last_size.x;
-    //wc.y = client->last_size.y;
-    //wc.width = client->last_size.width;
-    //wc.height = client->last_size.height;
-    //wc.border_width = cre->border_width;
-    //wc.sibling = cre->above;
-    //wc.stack_mode = cre->detail;
-    //XConfigureWindow(g_display, cre->window, cre->value_mask, &wc);
-    //XSync(g_display, False);
+    XConfigureRequestEvent* cre = &event.xconfigurerequest;
+    HSClient* client = get_client_from_window(cre->window);
+    XConfigureEvent ce;
+    ce.type = ConfigureNotify;
+    ce.display = g_display;
+    ce.event = cre->window;
+    ce.window = cre->window;
+    if (client) {
+        ce.x = client->last_size.x;
+        ce.y = client->last_size.y;
+        ce.width = client->last_size.width;
+        ce.height = client->last_size.height;
+    } else {
+        // if client not known.. then allow configure.
+        // its probably a nice conky or dzen2 bar :)
+        ce.x = cre->x;
+        ce.y = cre->y;
+        ce.width = cre->width;
+        ce.height = cre->height;
+    }
+    ce.border_width = cre->border_width;
+    ce.above = None;
+    ce.override_redirect = False;
+    XSendEvent(g_display, cre->window, False, StructureNotifyMask, (XEvent*)&ce);
+    XSync(g_display, False);
 }
 
 
