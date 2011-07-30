@@ -21,7 +21,58 @@ calls from *herbstclient*(1) and executes them. The list of available
 
 TILING ALGORITHM
 ----------------
-TODO
+The basic tiling concept is, that the layout is represented by a binary tree. On
+startup you see one big frame across the entire screen. A frame fullfilles
+exactly one of the following conditions:
+
+    . Frame contains windows: +
+        He shows some clients and arranges them next to each other. There are
+        the current layouut algorithms:
+
+        * Vertical ('frame_layout' = 0)
+        * Horizontal ('frame_layout' = 1)
+
+    . Frame is split into subframes: +
+        He is split into exactly two *subframes* in a configurable 'fraction'
+        either in a vertical or horizontal way. So he produces two *frames*
+        which fullfille the same conditions (new frames always are about to
+        contain *windows*).
+
+If a new window appears, it is put in the currently focused frame. Only
+frames that have the type "contains *windows*" can be focused.
+
+A frame can be removed, so it is merged with its neighbour frame. Due to the
+layout structure of a binary tree, each frame (i.e. node in binary tree) has
+exactly one neighbour.
+
+The analogy to a binary Tree is explained the best way with a small example:
+On startup you have an simple binary tree, with one frame that can contain
+clients:
+
+    C
+
+When splitting it (e.g. with command 'split vertical 0.5') you will get this:
+
+    V
+   / \
+  C   C
+
+You also can split the left frame horizontally and you will get:
+
+     V
+    / \
+   H   C
+  / \
+ C   C
+
+If you change the focus to the client on the right and remove this frame, it
+will be merged wit the left subtree and you will get:
+
+   H
+  / \
+ C   C
+
+The 'layout' command prints the current layout of all tags as a tree.
 
 [[COMMANDS]]
 COMMANDS
