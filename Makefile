@@ -15,7 +15,7 @@ include rules.mk
 all: build-herbstclient doc
 clean: clean-herbstclient cleandoc
 
-.PHONY: doc cleandoc
+.PHONY: doc cleandoc install
 
 cleandoc:
 	$(call colorecho,RM,doc/herbstclient.1)
@@ -38,4 +38,23 @@ doc/%.1: doc/%.txt
 doc/%.html: doc/%.txt
 	$(call colorecho,DOC,$@)
 	@asciidoc $<
+
+install: all
+	@echo creating dirs...
+	mkdir -p $(PREFIX)
+	mkdir -p $(BINDIR)
+	mkdir -p $(MANDIR)
+	mkdir -p $(DOCDIR)
+	mkdir -p $(ETCDIR)
+	mkdir -p $(ETCDIR)/bash_completion.d/
+	mkdir -p $(CONFIGDIR)
+	@echo copyiing files...
+	install $(TARGET) $(BINDIR)
+	install ipc-client/herbstclient $(BINDIR)/
+	install doc/herbstclient.1 $(MANDIR)/
+	install doc/herbstluftwm.1 $(MANDIR)/
+	install doc/herbstclient.html $(DOCDIR)/
+	install doc/herbstluftwm.html $(DOCDIR)/
+	install share/herbstluftrc $(CONFIGDIR)/
+	install share/herbstclient-completion $(ETCDIR)/bash_completion.d/
 

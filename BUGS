@@ -10,7 +10,6 @@ Some BUGS/TODOS:
     - get escapesequences in Makefile from tput/allow to disable colors
     - herbstclient: add timeout if server doesnot respond
     - max-layout for clients
-    - documentation
     - herbstclient: errorstatus2string2stderr
     - herbstclient: -h
     - findout: why are windows on new monitor mapped automatically?

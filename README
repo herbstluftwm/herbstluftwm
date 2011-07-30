@@ -5,7 +5,24 @@ Copyright 2011 Thorsten Wißmann. All rights reserved.
 This software is licensed under the "Simplified BSD License".
 See LICENSE for details.
 
-==== First steps ====
+==== Requirements ====
+Build dependencies:
+    - build-environemnt (gcc/other compiler, make)
+    - asciidoc
+Runtime dependencies:
+    - bash (if you use the default herbstluftrc)
+    - glib >= 2.24
+    - libx11
+
+==== Steps with installing ====
+# as user
+make
+# as root
+make PREFIX=/usr ETCDIR=/etc install
+# as user
+cp /etc/xdg/herbstluftwm/herbstluftrc ~/.config/herbstluftrc
+
+==== First steps without installing ====
 # 1. compile it
 make
 # 2. copy ipc-client/herbstclient to a bin-folder or adjust path in herbstluftrc
@@ -49,4 +66,4 @@ herbstclient is rather simple:
 
 
 
-
+// vim: nowrap

@@ -16,3 +16,7 @@ doc/herbstclient.html
 doc/herbstluftwm.1
 doc/herbstluftwm.html
 
+# ignore build dirs
+build/
+etc/
+

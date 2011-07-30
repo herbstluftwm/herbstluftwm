@@ -11,4 +11,11 @@ LD = gcc
 CC = gcc
 CFLAGS = -g -std=c99 -pedantic -Wall ${INCS}
 LDFLAGS = -g ${LIBS}
+PREFIX = ./build
+BINDIR = $(PREFIX)/bin
+SHAREDIR = $(PREFIX)/share
+MANDIR = $(PREFIX)/man/man1
+DOCDIR = $(PREFIX)/doc/herbstluftwm
+ETCDIR = ./etc/
+CONFIGDIR = $(ETCDIR)/xdg/herbstluftwm/
 
