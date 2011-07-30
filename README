@@ -14,6 +14,14 @@ Runtime dependencies:
     - glib >= 2.24
     - libx11
 
+==== Help/Support/Bugs ====
+A list of known bugs is listed in BUGS. If you found other bugs or need help
+(or want to make suggestions about the internal structure to provide a
+statusbar with dzen2), then contact:
+    Thorsten Wißmann <edu _at _ thorsten _minus_ wissmann _dot_ de>
+or join the IRC-Channel:
+    #herbstluftwm on oftc
+
 ==== Steps with installing ====
 # as user
 make
