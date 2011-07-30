@@ -80,10 +80,178 @@ Tags are very similar to workspaces or virtual desktops or window groups. Each
 tag has one layout. There is a list of tags. You can add or remove tags
 dynamically.
 
-There is also a list of monitors. Each monitor displays exactly one tag.
+There is also a list of monitors. Each monitor displays exactly one tag on a
+specified rectangle on the screen.
 
 [[COMMANDS]]
 COMMANDS
+--------
+// TODO examples in fixed font in html output
+*herbstluftwm* is controlled by internal commands, which can be executed via
+*herbstclient*(1) or via keybindings.
+
+quit::
+    quits herbstluftwm
+
+reload::
+    realoads configfile.
+
+version::
+    prints the version of running herbstluftwm instance.
+
+list_commands::
+    lists all available commands.
+
+[[list_monitors]]list_monitors::
+    list currently setuped monitors with their index, area (as rectangle) and currently
+    viewed tag.
+
+keybind 'KEY' 'COMMAND' ['ARGS ...']::
+    adds a key binding. When 'KEY' is pressed, the internal 'COMMAND' (with its
+    'ARGS') is executed. A Keybinding is a (possibly empty) list of modifiers
+    (Mod4, Mod1, Alt, Super, Ctrl, Shift) and one key (see keysymdef.h for a
+    list of keys). Modifiers and the key are concated with '-' or '+' as
+    separator. If there is already a binding for this 'KEY', it will be
+    overwritten. Examples:
+
+        * keybind Mod4+Ctrl+q quit
+        * keybind Mod1-i toggle always_show_frame
+        * keybind Mod1-Shift-space cycle_layout -1
+
+keyunbind 'KEY'::
+    removes the key binding for 'KEY'. Syntax for 'KEY' is defined in *keybind*.
+
+spawn 'EXECUTABLE' ['ARGS ...']::
+    spawns an 'EXECUTABLE' with its 'ARGS'. For details see 'man 3 execvp'.
+    Example:
+
+        * spawn xterm -e man 3 execvp
+
+cycle ['DELTA']::
+    cycles the selection within the current frame by 'DELTA'. If no 'DELTA' is
+    omitted, 'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1
+    means: cycle in the opposite direction by 1.
+
+cycle_layout ['DELTA']::
+    cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'
+    defaults to 1. Currently only 1 is usefull because there are only two
+    algorithms yet:
+
+        * vertical (below each other)
+        * horizontal (next to each other)
+close::
+    closes the focused window.
+
+split 'ALIGN' 'FACTION'::
+    splits the focused frame into two subframes with a specified 'FRACTION'
+    between 0 and 1. 'ALIGN' can be 'horizontal' or 'vertical' (actually it only
+    depends on, if the first letter of 'ALIGN'). Example:
+
+        * split horiz 0.3
+        * split vertical 0.5
+        * split h 0.8
+focus 'DIRECTION'::
+    moves the focus from current frame to the next frame in 'DIRECTION' which is
+    in:
+
+        * l[eft]
+        * r[eft]
+        * u[eft]
+        * d[eft]
+    Direction is defined as follows: Focus is in a leave of the binary tree.
+    Each inner node in the tree remembers the last focus direction (child 0 or
+    child 1). The algorithm is going as short as possible from the leave (the
+    currently focused frame) to the root until it is possible to change focus in
+    the specified 'DIRECTION'. From there the focus goes back to the leave. +
+    +
+    Example: The focus is at frame A. After executing 'focus right' focus will
+    be at frame C.
+
+ Tree:  V,0     Screen: .-----..-----. (before)
+        / \             |  B  ||  C  |
+       /   \            '-----''-----'
+     H,1   H,0          .-----..-----.
+     / \   / \          |  A* ||  D  |
+    A*  B C   D         '-----''-----'
+
+ Tree:  V,0     Screen: .-----..-----. (after focus right)
+        / \             |  B  ||  C* |
+       /   \            '-----''-----'
+     H,1   H,0          .-----..-----.
+     / \   / \          |  A  ||  D  |
+    A   B C*  D         '-----''-----'
+
+shift 'DIRECTION'::
+    shifts the focused window to the next frame in the specified 'DIRECTION'.
+    The 'DIRECTIONS' behave as specified at the 'focus' command. If
+    'focus_follows_shift' is set, then focus stays in the window; otherwise it
+    stays in the frame.
+
+remove::
+    removes focused frame and merges its windows to its neighbour frame.
+
+set 'NAME' 'VALUE'::
+    sets the specified setting 'NAME' to 'VALUE'. All <<SETTINGS,*SETTINGS*>>
+    are listed in the <<SETTINGS, section below>>.
+
+get 'NAME'::
+    prints the value of setting 'NAME'. All <<SETTINGS,*SETTINGS*>>
+    are listed in the <<SETTINGS, section below>>.
+
+toggle 'NAME'::
+    toggles the setting 'NAME' if its an integer setting: if value was 0, it
+    becomes 1, else value becomes 0.
+
+cycle_monitor ['DELTA']::
+    cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.
+
+add 'TAG'::
+    creates a new empty tag named 'TAG'.
+
+use 'TAG'::
+    switches focused monitor to specified 'TAG'.
+
+merge_tag 'TAG' ['TARGET']::
+    removes tag named 'TAG' and moves all its windows to tag 'TARGET'. If no
+    'TARGET' is omitted, the focused tag will be used.
+
+rename 'OLDTAG' 'NEWTAG'::
+    renames tag named 'OLDTAG' to 'NEWTAG'.
+
+move 'TAG'::
+    moves the focused window to tag named 'TAG'.
+
+add_monitor 'RECT' 'TAG'::
+    adds a monitor on the specified rectangle 'RECT' and displays 'TAG' on it.
+    'TAG' currently must not be displayed on any other monitor. 'RECT' is a
+    string of the form 'WxH+X+Y'. Example:
+
+        * add_monitor 1024x768-20+0 mynewtag
+
+
+remove_monitor 'INDEX'::
+    removes the monitor with specified 'INDEX'. Its 'INDEX' can be found out via
+    the <<list_monitors,'list_monitors'>> command.
+
+move_monitor 'INDEX' 'RECT'::
+    moves the monitor wit hspecified 'INDEX' to rectangle 'RECT'. 'INDEX' and
+    'RECT' is defined as in 'remove_monitor' and 'add_monitor'.
+
+layout::
+    prints the layout of all tags with focus indicators.
+
+complete 'POSITION' ['COMMAND' 'ARGS ...']::
+    prints the result of tab completion in partial writting 'COMMAND' with
+    optional 'ARGS'. You usually do not need this, because there is already tab
+    completion for bash. Example:
+
+        * complete 0 m +
+          prints all commands beginning with m
+        * complete 1 toggle fra +
+          prints all settings that can be toggled
+
+[[SETTINGS]]
+SETTINGS
 --------
 TODO
 
