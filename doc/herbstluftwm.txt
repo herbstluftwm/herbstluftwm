@@ -74,6 +74,14 @@ will be merged wit the left subtree and you will get:
 
 The 'layout' command prints the current layout of all tags as a tree.
 
+TAGS
+----
+Tags are very similar to workspaces or virtual desktops or window groups. Each
+tag has one layout. There is a list of tags. You can add or remove tags
+dynamically.
+
+There is also a list of monitors. Each monitor displays exactly one tag.
+
 [[COMMANDS]]
 COMMANDS
 --------
