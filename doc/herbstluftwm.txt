@@ -248,12 +248,60 @@ complete 'POSITION' ['COMMAND' 'ARGS ...']::
         * complete 0 m +
           prints all commands beginning with m
         * complete 1 toggle fra +
-          prints all settings that can be toggled
+          prints all settings beginning with fra that can be toggled
 
 [[SETTINGS]]
 SETTINGS
 --------
-TODO
+Settings configure the behaviour of herbstluftwm and can be controlled via the
+'set', 'get' and 'toggle' command. There are two types of settings: Strings and
+integer values. An integer value is set, if its value is 1 or an other value
+unequal to 0. An integer value is unset, if its value is 0.
+
+window_gap (Integer)::
+    the gap between frames.
+
+frame_border_active_color (String/Color)::
+    the border color of an focused frame
+
+frame_border_normal_color (String/Color)::
+    the border color of an unfocused frame
+
+frame_bg_active_color (String/Color)::
+    the fill color of an focused frame
+
+frame_bg_normal_color (String/Color)::
+    the fill color of an unfocused frame (It is only visible if
+    always_show_frame is set)
+
+frame_bg_transparent (Integer)::
+    if set, frames have transparent backgrounds.
+
+frame_border_width (Integer)::
+    border width of an frame
+
+window_border_width (Integer)::
+    border width of an window
+
+window_border_active_color (String/Color)::
+    border color of an focused window
+
+window_border_normal_color (String/Color)::
+    border color of an unfocused window
+
+always_show_frame (Integer)::
+    If set, all frames are displayed. If unset, only frames with focus or with
+    windows in it are displayed.
+
+default_frame_layout (Integer)::
+    sets the frame layout, if a new frame is created (by split or on a new tag).
+
+        * 0 means vertical
+        * 1 means horizontal
+
+focus_follows_shift (Integer)::
+    If set, focus stays in the window, if window is shifted to an other frame.
+    If unset, focus stays in the frame.
 
 ENVIRONTMENT VARIABLES
 ----------------------
