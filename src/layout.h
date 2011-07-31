@@ -56,6 +56,10 @@ typedef struct HSFrame {
 
 typedef struct HSMonitor {
     struct HSTag*      tag;    // currently viewed tag
+    int         pad_up;
+    int         pad_right;
+    int         pad_down;
+    int         pad_left;
     XRectangle  rect;   // area for this monitor
 } HSMonitor;
 

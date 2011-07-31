@@ -244,6 +244,12 @@ void print_tag_tree(GString** output) {
 void monitor_apply_layout(HSMonitor* monitor) {
     if (monitor) {
         XRectangle rect = monitor->rect;
+        // apply pad
+        rect.x += monitor->pad_left;
+        rect.width -= (monitor->pad_left + monitor->pad_right);
+        rect.y += monitor->pad_up;
+        rect.height -= (monitor->pad_up + monitor->pad_down);
+        // apply window gap
         rect.x += *g_window_gap;
         rect.y += *g_window_gap;
         rect.height -= *g_window_gap;
@@ -383,7 +389,7 @@ int list_monitors(int argc, char** argv, GString** output) {
     int i;
     for (i = 0; i < g_monitors->len; i++) {
         HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, i);
-        g_string_append_printf(*output, "%d: %dx%d @ (%d,%d) with tag \"%s\"%s\n",
+        g_string_append_printf(*output, "%d: %dx%d%+d%+d with tag \"%s\"%s\n",
             i,
             monitor->rect.width, monitor->rect.height,
             monitor->rect.x, monitor->rect.x,
@@ -396,6 +402,7 @@ int list_monitors(int argc, char** argv, GString** output) {
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
     assert(tag != NULL);
     HSMonitor m;
+    memset(&m, 0, sizeof(m));
     m.rect = rect;
     m.tag = tag;
     g_array_append_val(g_monitors, m);
@@ -403,7 +410,7 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
 }
 
 int add_monitor_command(int argc, char** argv) {
-    // usage: add_monitor RECTANGLE TAG
+    // usage: add_monitor RECTANGLE TAG [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]
     if (argc < 3) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -416,6 +423,10 @@ int add_monitor_command(int argc, char** argv) {
         return HERBST_TAG_IN_USE;
     }
     HSMonitor* monitor = add_monitor(rect, tag);
+    if (argc > 3) monitor->pad_up       = atoi(argv[3]);
+    if (argc > 4) monitor->pad_right    = atoi(argv[4]);
+    if (argc > 5) monitor->pad_down     = atoi(argv[5]);
+    if (argc > 6) monitor->pad_left     = atoi(argv[6]);
     frame_show_recursive(tag->frame);
     monitor_apply_layout(monitor);
     return 0;
@@ -449,7 +460,7 @@ int remove_monitor_command(int argc, char** argv) {
 }
 
 int move_monitor_command(int argc, char** argv) {
-    // usage: move_monitor INDEX RECT
+    // usage: move_monitor INDEX RECT [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]
     // moves monitor with number to RECT
     if (argc < 3) {
         return HERBST_INVALID_ARGUMENT;
@@ -465,6 +476,10 @@ int move_monitor_command(int argc, char** argv) {
     // else: just move it:
     HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, index);
     monitor->rect = rect;
+    if (argc > 3) monitor->pad_up       = atoi(argv[3]);
+    if (argc > 4) monitor->pad_right    = atoi(argv[4]);
+    if (argc > 5) monitor->pad_down     = atoi(argv[5]);
+    if (argc > 6) monitor->pad_left     = atoi(argv[6]);
     monitor_apply_layout(monitor);
     return 0;
 }

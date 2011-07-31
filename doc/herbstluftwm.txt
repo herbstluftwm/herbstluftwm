@@ -221,21 +221,24 @@ rename 'OLDTAG' 'NEWTAG'::
 move 'TAG'::
     moves the focused window to tag named 'TAG'.
 
-add_monitor 'RECT' 'TAG'::
+add_monitor 'RECT' 'TAG' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     adds a monitor on the specified rectangle 'RECT' and displays 'TAG' on it.
     'TAG' currently must not be displayed on any other monitor. 'RECT' is a
-    string of the form 'WxH+X+Y'. Example:
+    string of the form 'WxH+X+Y'. The padding specifies extra space around the
+    monitor for some statusbars/panels. If no padding is given, it is set to 0.
+    Example:
 
-        * add_monitor 1024x768-20+0 mynewtag
+        * add_monitor 1024x768-20+0 mynewtag 16
 
 
 remove_monitor 'INDEX'::
     removes the monitor with specified 'INDEX'. Its 'INDEX' can be found out via
     the <<list_monitors,'list_monitors'>> command.
 
-move_monitor 'INDEX' 'RECT'::
+move_monitor 'INDEX' 'RECT' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     moves the monitor wit hspecified 'INDEX' to rectangle 'RECT'. 'INDEX' and
-    'RECT' is defined as in 'remove_monitor' and 'add_monitor'.
+    'RECT' is defined as in 'remove_monitor' and 'add_monitor'. If no padding is
+    given, it is not changed.
 
 layout::
     prints the layout of all tags with focus indicators.
