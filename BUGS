@@ -12,7 +12,6 @@ Some BUGS/TODOS:
     - max-layout for clients
     - herbstclient: errorstatus2string2stderr
     - herbstclient: -h
-    - findout: why are windows on new monitor mapped automatically? -> their not! show them in add_monitor!
     - urgent-handling (jumpto urgent)
     - hooks
     - completion für keybind (recursive!)

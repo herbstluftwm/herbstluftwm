@@ -416,6 +416,7 @@ int add_monitor_command(int argc, char** argv) {
         return HERBST_TAG_IN_USE;
     }
     HSMonitor* monitor = add_monitor(rect, tag);
+    frame_show_recursive(tag->frame);
     monitor_apply_layout(monitor);
     return 0;
 }
