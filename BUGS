@@ -13,10 +13,13 @@ Some BUGS/TODOS:
     - herbstclient: errorstatus2string2stderr
     - herbstclient: -h
     - urgent-handling (jumpto urgent)
-    - hooks
     - completion für keybind (recursive!)
     - completion für keyunbind
     - set mouse-cursor theme
     - completion für use/merge_tag
     - do not map empty windows of console-vim (ignore it in scan) or luakit or xcompmgr
+    - or better: do not map any windows on startup... map hidden on quit!
+    - command to change pad
+    - signal system: clients with a special CLASS get client messages with signal names
+      herbstclient gets an --wait SIGNALREGEXP parameter
     - CLAMP fraction range in split
