@@ -122,7 +122,7 @@ int spawn(int argc, char** argv) {
         // do actual exec
         setsid();
         execvp(execargs[0], execargs);
-        fprintf(stderr, "herbstluft: execvp \"%s\"", argv[0]);
+        fprintf(stderr, "herbstluft: execvp \"%s\"", argv[1]);
         perror(" failed");
         exit(0);
     }
