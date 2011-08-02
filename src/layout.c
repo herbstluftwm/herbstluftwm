@@ -74,6 +74,7 @@ void layout_destroy() {
     int i;
     for (i = 0; i < g_tags->len; i++) {
         HSTag* tag = g_array_index(g_tags, HSTag*, i);
+        frame_show_recursive(tag->frame);
         tag_free(tag);
     }
     g_array_free(g_tags, true);

@@ -220,10 +220,11 @@ void scan(void) {
             if(!XGetWindowAttributes(g_display, wins[i], &wa)
             || wa.override_redirect || XGetTransientForHint(g_display, wins[i], &d1))
                 continue;
-            manage_client(wins[i]);
-            // map window if possible
-            if (is_window_mapable(g_display, wins[i])) {
-                XMapWindow(g_display, wins[i]);
+            // only manage mapped windows.. no strange wins like:
+            //      luakit/dbus/(ncurses-)vim
+            // TODO: what would dwm do?
+            if (is_window_mapped(g_display, wins[i])) {
+                manage_client(wins[i]);
             }
         }
         if(wins)

@@ -96,6 +96,12 @@ bool is_window_mapable(Display* dpy, Window window) {
     XGetWindowAttributes(dpy, window,  &wa);
     return (wa.map_state == IsUnmapped);
 }
+bool is_window_mapped(Display* dpy, Window window) {
+    XWindowAttributes wa;
+    XGetWindowAttributes(dpy, window,  &wa);
+    return (wa.map_state == IsViewable);
+}
+
 
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv) {
