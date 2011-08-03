@@ -15,8 +15,9 @@ Some BUGS/TODOS:
     - urgent-handling (jumpto urgent)
     - completion für keybind (recursive!)
     - completion für keyunbind
-    - set mouse-cursor theme
+    - move cursor after focus change
     - completion für use/merge_tag
     - command to change pad
+    - optional focus selection after frame_split
     - signal system: clients with a special CLASS get client messages with signal names
       herbstclient gets an --wait SIGNALREGEXP parameter
