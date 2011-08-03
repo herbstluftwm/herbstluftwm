@@ -24,9 +24,11 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <X11/cursorfont.h>
 
 static Bool     g_otherwm;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
+static Cursor g_cursor;
 
 
 int quit();
@@ -279,6 +281,9 @@ int main(int argc, char* argv[]) {
     ensure_monitors_are_available();
     scan();
     all_monitors_apply_layout();
+    /* init mouse */
+    g_cursor = XCreateFontCursor(g_display, XC_left_ptr);
+    XDefineCursor(g_display, g_root, g_cursor);
     execute_autostart_file();
     // main loop
     XEvent event;
@@ -338,6 +343,7 @@ int main(int argc, char* argv[]) {
         }
     }
     // close all
+    XFreeCursor(g_display, g_cursor);
     layout_destroy();
     ipc_destroy();
     key_destroy();
