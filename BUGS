@@ -20,4 +20,3 @@ Some BUGS/TODOS:
     - command to change pad
     - signal system: clients with a special CLASS get client messages with signal names
       herbstclient gets an --wait SIGNALREGEXP parameter
-    - CLAMP fraction range in split

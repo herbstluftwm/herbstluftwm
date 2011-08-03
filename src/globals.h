@@ -16,6 +16,9 @@
 #define WINDOW_MIN_HEIGHT 32
 #define WINDOW_MIN_WIDTH 32
 
+// minimum relative fraction of split frames
+#define FRAME_MIN_FRACTION 0.1
+
 #define HERBST_MAX_TREE_HEIGHT 3
 
 // connection to x-server
