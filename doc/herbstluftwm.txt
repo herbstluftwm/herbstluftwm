@@ -10,7 +10,7 @@ herbstluftwm - a manual tiling window manager for X
 
 SYNOPSIS
 --------
-*herbstluftwm*
+*herbstluftwm* ['OPTION' ...]
 
 
 DESCRIPTION
@@ -18,6 +18,11 @@ DESCRIPTION
 Starts the *herbstluftwm* window manager on 'DISPLAY'. It also listens for
 calls from *herbstclient*(1) and executes them. The list of available
 <<COMMANDS,*COMMANDS*>> is listed below.
+
+'OPTION' can be:
+
+    *-c*, *--autostart* 'PATH'::
+        use 'PATH' as autostart file instead of that one in '$XDG_CONFIG_HOME'
 
 TILING ALGORITHM
 ----------------
@@ -94,7 +99,7 @@ quit::
     quits herbstluftwm
 
 reload::
-    realoads configfile.
+    executes the autostart file
 
 version::
     prints the version of running herbstluftwm instance.
@@ -306,6 +311,15 @@ focus_follows_shift (Integer)::
     If set, focus stays in the window, if window is shifted to an other frame.
     If unset, focus stays in the frame.
 
+AUTOSTART FILE
+--------------
+There is no config file but an autostart file, which is executed on startup. It
+is also executed on command 'reload'. If not specified by the *--autostart*
+argument, autostart file is located as 'herbstluftrc' in $XDG_CONFIG_HOME or in
+~/.config/.
+Normally it consists of a view *herbstclient* calls.
+
+
 ENVIRONTMENT VARIABLES
 ----------------------
 DISPLAY::
@@ -318,7 +332,6 @@ Always returns *0*.
 BUGS
 ----
 See the *herbstluftwm* distribution BUGS file.
-
 
 AUTHOR
 ------

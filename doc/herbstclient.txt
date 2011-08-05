@@ -25,7 +25,7 @@ See *herbstluftwm*(1) for a list of available 'COMMAND'##s## and their 'ARGS'.
 
 OPTIONS
 -------
-*-n, --no-newline*::
+*-n*, *--no-newline*::
     Do not print an newline if output doesnot end with a newline.
 
 ENVIRONTMENT VARIABLES

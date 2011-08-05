@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <getopt.h>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -29,6 +30,7 @@
 static Bool     g_otherwm;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 static Cursor g_cursor;
+static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
 
 
 int quit();
@@ -235,23 +237,28 @@ void scan(void) {
 }
 
 void execute_autostart_file() {
-    char* xdg_config_home = getenv("XDG_CONFIG_HOME");
     GString* path;
-    if (xdg_config_home) {
-        path = g_string_new(xdg_config_home);
+    if (g_autostart_path) {
+        path = g_string_new(g_autostart_path);
     } else {
-        char* home = getenv("HOME");
-        if (!home) {
-            g_warning("Willnot parse config file. "
-                      "Neither $HOME or $XDG_CONFIG_HOME is set.\n");
-            return;
+        // find right directory
+        char* xdg_config_home = getenv("XDG_CONFIG_HOME");
+        if (xdg_config_home) {
+            path = g_string_new(xdg_config_home);
+        } else {
+            char* home = getenv("HOME");
+            if (!home) {
+                g_warning("Willnot parse config file. "
+                          "Neither $HOME or $XDG_CONFIG_HOME is set.\n");
+                return;
+            }
+            path = g_string_new(home);
+            path = g_string_append_c(path, G_DIR_SEPARATOR);
+            path = g_string_append(path, ".config");
         }
-        path = g_string_new(home);
         path = g_string_append_c(path, G_DIR_SEPARATOR);
-        path = g_string_append(path, ".config");
+        path = g_string_append(path, HERBSTLUFT_AUTOSTART);
     }
-    path = g_string_append_c(path, G_DIR_SEPARATOR);
-    path = g_string_append(path, HERBSTLUFT_AUTOSTART);
     char* argv[] = {
         "...", // command name... but it doesnot matter
         path->str
@@ -260,9 +267,31 @@ void execute_autostart_file() {
     g_string_free(path, true);
 }
 
-
+static void parse_arguments(int argc, char** argv) {
+    static struct option long_options[] = {
+        {"autostart", 1, 0, 'c'},
+        {0, 0, 0, 0}
+    };
+    int arg_index = 1; // index of the first-non-option argument
+    // parse options
+    while (1) {
+        int option_index = 0;
+        int c = getopt_long(argc, argv, "+c:", long_options, &option_index);
+        if (c == -1) break;
+        switch (c) {
+            case 'c':
+                g_autostart_path = optarg;
+                break;
+            default:
+                fprintf(stderr, "unknown option `%s'\n", argv[arg_index]);
+                exit(EXIT_FAILURE);
+        }
+        arg_index++;
+    }
+}
 
 int main(int argc, char* argv[]) {
+    parse_arguments(argc, argv);
     if(!(g_display = XOpenDisplay(NULL)))
         die("herbstluftwm: cannot open display\n");
     checkotherwm();
