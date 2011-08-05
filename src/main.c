@@ -13,6 +13,7 @@
 #include "ipc-protocol.h"
 #include "command.h"
 #include "settings.h"
+#include "hook.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -278,6 +279,7 @@ int main(int argc, char* argv[]) {
     settings_init();
     clientlist_init();
     layout_init();
+    hook_init();
     ensure_monitors_are_available();
     scan();
     all_monitors_apply_layout();
@@ -344,6 +346,7 @@ int main(int argc, char* argv[]) {
     }
     // close all
     XFreeCursor(g_display, g_cursor);
+    hook_destroy();
     layout_destroy();
     ipc_destroy();
     key_destroy();
