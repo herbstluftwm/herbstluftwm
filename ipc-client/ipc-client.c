@@ -5,6 +5,7 @@
 
 #include "../src/ipc-protocol.h"
 #include "../src/utils.h"
+#include "../src/globals.h"
 
 // standard
 #include <stdio.h>
@@ -14,6 +15,8 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <signal.h>
+#include <regex.h>
+#include <assert.h>
 
 // gui
 #include <X11/Xlib.h>
@@ -31,10 +34,16 @@ Window root;
 int g_ensure_newline = 1; // if set, output ends with an newline
 int g_wait_for_hook = 0; // if set, donot execute command but wait
 int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
+regex_t* g_hook_regex = NULL;
+int g_hook_regex_count = 0;
+
+void init_hook_regex(int argc, char* argv[]);
+void destroy_hook_regex();
 
 static void quit_herbstclient(int signal) {
     // TODO: better solution to quit x connection more softly?
     fprintf(stderr, "interrupted by signal %d\n", signal);
+    destroy_hook_regex();
     exit(EXIT_FAILURE);
 }
 
@@ -119,11 +128,38 @@ int send_command(int argc, char* argv[]) {
     return command_status;
 }
 
+void init_hook_regex(int argc, char* argv[]) {
+    g_hook_regex = (regex_t*)malloc(sizeof(regex_t)*argc);
+    assert(g_hook_regex != NULL);
+    int i;
+    // create all regexes
+    for (i = 0; i < argc; i++) {
+        int status = regcomp(g_hook_regex + i, argv[i], REG_NOSUB|REG_EXTENDED);
+        if (status != 0) {
+            char buf[ERROR_STRING_BUF_SIZE];
+            regerror(status, g_hook_regex + i, buf, ERROR_STRING_BUF_SIZE);
+            fprintf(stderr, "Cannot parse regex \"%s\": ", argv[i]);
+            fprintf(stderr, "%s\n", buf);
+            destroy_hook_regex();
+            exit(EXIT_FAILURE);
+        }
+    }
+    g_hook_regex_count = argc;
+}
+void destroy_hook_regex() {
+    int i;
+    for (i = 0; i < g_hook_regex_count; i++) {
+        regfree(g_hook_regex + i);
+    }
+    free(g_hook_regex);
+}
+
 int wait_for_hook(int argc, char* argv[]) {
     // install signals
     signal(SIGTERM, quit_herbstclient);
     signal(SIGINT, quit_herbstclient);
     signal(SIGQUIT, quit_herbstclient);
+    init_hook_regex(argc, argv);
     // get window to listen at
     int *value;
     Atom type;
@@ -165,15 +201,31 @@ int wait_for_hook(int argc, char* argv[]) {
             XFree(text_prop.value);
             return 0;
         };
-        // just print list
+        bool print_signal = true;
         int i;
-        for (i = 0; i < count; i++) {
-            printf("\"%s\", ", list_return[i]);
+        for (i = 0; i < argc && i < count; i++) {
+            if (0 != regexec(g_hook_regex + i, list_return[i], 0, NULL, 0)) {
+                // found an regex that did not match
+                // so skip this
+                print_signal = false;
+                break;
+            }
         }
-        printf("\n");
+        if (print_signal) {
+            // just print as list
+            for (i = 0; i < count; i++) {
+                printf("\"%s\", ", list_return[i]);
+            }
+            printf("\n");
+        }
         // cleanup
         XFreeStringList(list_return);
         XFree(text_prop.value);
+        if (!print_signal) {
+            // if there was nothing printed
+            // then act as there was no hook
+            continue;
+        }
         // check counter
         if (g_hook_count == 1) {
             break;
@@ -181,6 +233,7 @@ int wait_for_hook(int argc, char* argv[]) {
             g_hook_count--;
         }
     }
+    destroy_hook_regex();
     return 0;
 }
 
@@ -228,7 +281,7 @@ int main(int argc, char* argv[]) {
     root = DefaultRootWindow(dpy);
     int command_status;
     if (g_wait_for_hook == 1) {
-        command_status = wait_for_hook(argc, argv);
+        command_status = wait_for_hook(argc-arg_index, argv+arg_index);
     } else {
         command_status = send_command(argc-arg_index, argv+arg_index);
     }
