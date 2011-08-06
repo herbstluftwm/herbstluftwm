@@ -280,7 +280,6 @@ static void parse_arguments(int argc, char** argv) {
         {"autostart", 1, 0, 'c'},
         {0, 0, 0, 0}
     };
-    int arg_index = 1; // index of the first-non-option argument
     // parse options
     while (1) {
         int option_index = 0;
@@ -289,13 +288,11 @@ static void parse_arguments(int argc, char** argv) {
         switch (c) {
             case 'c':
                 g_autostart_path = optarg;
-                arg_index++;
                 break;
             default:
-                fprintf(stderr, "unknown option `%s'\n", argv[arg_index]);
+                fprintf(stderr, "unknown option `%s'\n", argv[optind]);
                 exit(EXIT_FAILURE);
         }
-        arg_index++;
     }
 }
 

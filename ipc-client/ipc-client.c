@@ -241,11 +241,10 @@ int main(int argc, char* argv[]) {
     static struct option long_options[] = {
         {"no-newline", 0, 0, 'n'},
         {"wait", 0, 0, 'w'},
-        {"count", 0, 0, 'c'},
+        {"count", 1, 0, 'c'},
         {"idle", 0, 0, 'i'},
         {0, 0, 0, 0}
     };
-    int arg_index = 1; // index of the first-non-option argument
     // parse options
     while (1) {
         int option_index = 0;
@@ -258,7 +257,7 @@ int main(int argc, char* argv[]) {
                 break;
             case 'c':
                 g_hook_count = atoi(optarg);
-                arg_index++;
+                printf("setting to  %s\n", optarg);
                 break;
             case 'w':
                 g_wait_for_hook = 1;
@@ -267,11 +266,11 @@ int main(int argc, char* argv[]) {
                 g_ensure_newline = 0;
                 break;
             default:
-                fprintf(stderr, "unknown option `%s'\n", argv[arg_index]);
+                fprintf(stderr, "unknown option `%s'\n", argv[optind]);
                 exit(EXIT_FAILURE);
         }
-        arg_index++;
     }
+    int arg_index = optind; // index of the first-non-option argument
     // do communication
     dpy = XOpenDisplay(NULL);
     g_display = dpy;
