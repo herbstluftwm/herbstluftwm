@@ -5,12 +5,13 @@ HERBSTCLIENT(1)
 
 NAME
 ----
-herbstclient - sends commands do a running *herbstluftwm*(1) instance via X
+herbstclient - sends commands do a running herbstluftwm instance via X
 
 
 SYNOPSIS
 --------
-*herbstclient* ['OPTIONS'] 'COMMAND' ['ARGS ...']
+*herbstclient* ['OPTIONS'] 'COMMAND' ['ARGS ...'] +
+*herbstclient* ['OPTIONS'] ['--wait'|'--idle'] ['FILTER ...']
 
 
 DESCRIPTION
@@ -23,10 +24,24 @@ added to improve readability.
 // FIXME: this ##s## is an ugly hack... is there an other solution?
 See *herbstluftwm*(1) for a list of available 'COMMAND'##s## and their 'ARGS'.
 
+If '--wait' or '--idle' is passed, than it waits for hooks from *herbstluftwm*.
+The hook is printed, if it matches the optional 'FILTER'. 'FILTER's are regular
+expressions.
+
 OPTIONS
 -------
 *-n*, *--no-newline*::
     Do not print an newline if output doesnot end with a newline.
+
+*-i*, *--idle*::
+    Wait for hooks instead of executing commands.
+
+*-w*, *--wait*::
+    Same as *--idle* but exit after first *--count* hooks.
+
+*-c*, *--count* 'COUNT'::
+    Let *--wait* exit after 'COUNT' hooks received and printed. The default of
+    'COUNT' is 1.
 
 ENVIRONTMENT VARIABLES
 ----------------------
