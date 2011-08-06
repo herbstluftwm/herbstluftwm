@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <signal.h>
 
 // gui
 #include <X11/Xlib.h>
@@ -28,6 +29,14 @@ Display* dpy;
 Display* g_display;
 Window root;
 int g_ensure_newline = 1; // if set, output ends with an newline
+int g_wait_for_hook = 0; // if set, donot execute command but wait
+int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
+
+static void quit_herbstclient(int signal) {
+    // TODO: better solution to quit x connection more softly?
+    fprintf(stderr, "interrupted by signal %d\n", signal);
+    exit(EXIT_FAILURE);
+}
 
 #define WAIT_IPC_RESPONSE \
     do { \
@@ -110,18 +119,96 @@ int send_command(int argc, char* argv[]) {
     return command_status;
 }
 
+int wait_for_hook(int argc, char* argv[]) {
+    // install signals
+    signal(SIGTERM, quit_herbstclient);
+    signal(SIGINT, quit_herbstclient);
+    signal(SIGQUIT, quit_herbstclient);
+    // get window to listen at
+    int *value;
+    Atom type;
+    int format;
+    unsigned long items, bytes;
+    int status = XGetWindowProperty(dpy, root,
+        ATOM(HERBST_HOOK_WIN_ID_ATOM), 0, 1, False,
+        XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value);
+    if (status != Success) {
+        fprintf(stderr, "no running herbstluftwm detected\n");
+        return EXIT_FAILURE;
+    }
+    Window win = *value;
+    XFree(value);
+    // listen on window
+    XSelectInput(dpy, win, PropertyChangeMask);
+    XEvent next_event;
+    while (1) {
+        XNextEvent(dpy, &next_event);
+        if (next_event.type != PropertyNotify) {
+            fprintf(stderr, "Warning: got other event than PropertyNotify\n");
+            return 0;
+        }
+        XPropertyEvent* pe = &next_event.xproperty;
+        if (pe->state == PropertyDelete) {
+            // no useful information for us
+            return 0;
+        }
+        if (pe->window != win) {
+            fprintf(stderr, "Warning: expected event from window %u", (unsigned int)win);
+            fprintf(stderr, " but got something from %u\n", (unsigned int)pe->window);
+            return 0;
+        }
+        XTextProperty text_prop;
+        XGetTextProperty(g_display, win, &text_prop, pe->atom);
+        char** list_return;
+        int count;
+        if (Success != Xutf8TextPropertyToTextList(g_display, &text_prop, &list_return, &count)) {
+            XFree(text_prop.value);
+            return 0;
+        };
+        // just print list
+        int i;
+        for (i = 0; i < count; i++) {
+            printf("\"%s\", ", list_return[i]);
+        }
+        printf("\n");
+        // cleanup
+        XFreeStringList(list_return);
+        XFree(text_prop.value);
+        // check counter
+        if (g_hook_count == 1) {
+            break;
+        } else if (g_hook_count > 1) {
+            g_hook_count--;
+        }
+    }
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
     static struct option long_options[] = {
         {"no-newline", 0, 0, 'n'},
+        {"wait", 0, 0, 'w'},
+        {"count", 0, 0, 'c'},
+        {"idle", 0, 0, 'i'},
         {0, 0, 0, 0}
     };
     int arg_index = 1; // index of the first-non-option argument
     // parse options
     while (1) {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "+n", long_options, &option_index);
+        int c = getopt_long(argc, argv, "+nwc:i", long_options, &option_index);
         if (c == -1) break;
         switch (c) {
+            case 'i':
+                g_hook_count = 0;
+                g_wait_for_hook = 1;
+                break;
+            case 'c':
+                g_hook_count = atoi(optarg);
+                break;
+            case 'w':
+                g_wait_for_hook = 1;
+                break;
             case 'n':
                 g_ensure_newline = 0;
                 break;
@@ -139,7 +226,12 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     root = DefaultRootWindow(dpy);
-    int command_status = send_command(argc-arg_index, argv+arg_index);
+    int command_status;
+    if (g_wait_for_hook == 1) {
+        command_status = wait_for_hook(argc, argv);
+    } else {
+        command_status = send_command(argc-arg_index, argv+arg_index);
+    }
     XCloseDisplay(dpy);
     return command_status;
 }

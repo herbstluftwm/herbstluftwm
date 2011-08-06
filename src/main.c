@@ -48,6 +48,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(list_commands),
     CMD_BIND(list_monitors),
     CMD_BIND_NO_OUTPUT(keybind),
+    CMD_BIND_NO_OUTPUT(hook_emit),
     CMD_BIND_NO_OUTPUT(keyunbind),
     CMD_BIND_NO_OUTPUT(spawn),
     {{ .no_output = frame_current_cycle_selection }, .name = "cycle", .has_output = 0 },
