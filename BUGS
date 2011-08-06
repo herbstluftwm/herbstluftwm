@@ -21,3 +21,5 @@ Some BUGS/TODOS:
     - optional focus selection after frame_split
     - signal system: clients with a special CLASS get client messages with signal names
       herbstclient gets an --wait SIGNALREGEXP parameter
+    - ignore windows with property: _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NOTIFICATION
+

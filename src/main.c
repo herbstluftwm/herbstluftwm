@@ -149,19 +149,24 @@ void event_on_configure(XEvent event) {
         ce.y = client->last_size.y;
         ce.width = client->last_size.width;
         ce.height = client->last_size.height;
+        ce.override_redirect = False;
+        ce.border_width = cre->border_width;
+        ce.above = cre->above;
+        // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
+        XSendEvent(g_display, cre->window, False, StructureNotifyMask, (XEvent*)&ce);
     } else {
         // if client not known.. then allow configure.
         // its probably a nice conky or dzen2 bar :)
-        ce.x = cre->x;
-        ce.y = cre->y;
-        ce.width = cre->width;
-        ce.height = cre->height;
+        XWindowChanges wc;
+        wc.x = cre->x;
+        wc.y = cre->y;
+        wc.width = cre->width;
+        wc.height = cre->height;
+        wc.border_width = cre->border_width;
+        wc.sibling = cre->above;
+        wc.stack_mode = cre->detail;
+        XConfigureWindow(g_display, cre->window, cre->value_mask, &wc);
     }
-    ce.border_width = cre->border_width;
-    ce.above = cre->above;
-    ce.override_redirect = False;
-    XSendEvent(g_display, cre->window, False, StructureNotifyMask, (XEvent*)&ce);
-    XSync(g_display, False);
 }
 
 
@@ -355,6 +360,10 @@ int main(int argc, char* argv[]) {
                 XMapRequestEvent* mapreq = &event.xmaprequest;
                 if (is_window_ignored(mapreq->window)) {
                     // just map the window if it wants that
+                    XWindowAttributes wa;
+                    if (!XGetWindowAttributes(g_display, mapreq->window, &wa)) {
+                        break;
+                    }
                     XMapWindow(g_display, mapreq->window);
                 } else if (!get_client_from_window(mapreq->window)) {
                     // client should be managed (is not ignored)
