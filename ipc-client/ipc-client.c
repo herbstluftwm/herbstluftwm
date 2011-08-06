@@ -181,17 +181,17 @@ int wait_for_hook(int argc, char* argv[]) {
         XNextEvent(dpy, &next_event);
         if (next_event.type != PropertyNotify) {
             fprintf(stderr, "Warning: got other event than PropertyNotify\n");
-            return 0;
+            continue;
         }
         XPropertyEvent* pe = &next_event.xproperty;
         if (pe->state == PropertyDelete) {
             // no useful information for us
-            return 0;
+            continue;
         }
         if (pe->window != win) {
             fprintf(stderr, "Warning: expected event from window %u", (unsigned int)win);
             fprintf(stderr, " but got something from %u\n", (unsigned int)pe->window);
-            return 0;
+            continue;
         }
         XTextProperty text_prop;
         XGetTextProperty(g_display, win, &text_prop, pe->atom);
