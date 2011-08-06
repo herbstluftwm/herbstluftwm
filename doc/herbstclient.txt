@@ -10,7 +10,8 @@ herbstclient - sends commands do a running herbstluftwm instance via X
 
 SYNOPSIS
 --------
-*herbstclient* ['OPTIONS'] 'COMMAND' ['ARGS ...'] +
+*herbstclient* ['OPTIONS'] 'COMMAND' ['ARGS ...']
+
 *herbstclient* ['OPTIONS'] ['--wait'|'--idle'] ['FILTER ...']
 
 
