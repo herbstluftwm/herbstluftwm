@@ -42,6 +42,8 @@ SettingsPair g_settings[] = {
         .on_change = all_monitors_apply_layout },
     { "default_frame_layout", { .i = 0 }, .type = HS_Int },
     { "focus_follows_shift", { .i = 1 }, .type = HS_Int },
+    { "ignore_class", { .s = "Conky" },
+        .on_change = reset_client_settings },
 };
 
 int settings_count() {

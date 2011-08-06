@@ -158,7 +158,7 @@ void event_on_configure(XEvent event) {
         ce.height = cre->height;
     }
     ce.border_width = cre->border_width;
-    ce.above = None;
+    ce.above = cre->above;
     ce.override_redirect = False;
     XSendEvent(g_display, cre->window, False, StructureNotifyMask, (XEvent*)&ce);
     XSync(g_display, False);
@@ -228,7 +228,8 @@ void scan(void) {
             // only manage mapped windows.. no strange wins like:
             //      luakit/dbus/(ncurses-)vim
             // TODO: what would dwm do?
-            if (is_window_mapped(g_display, wins[i])) {
+            if (!is_window_ignored(wins[i]) &&
+                is_window_mapped(g_display, wins[i])) {
                 manage_client(wins[i]);
             }
         }
@@ -352,10 +353,17 @@ int main(int argc, char* argv[]) {
                 break;
             case MapRequest: printf("name is: MapRequest\n");
                 XMapRequestEvent* mapreq = &event.xmaprequest;
-                if (!get_client_from_window(mapreq->window)) {
+                if (is_window_ignored(mapreq->window)) {
+                    // just map the window if it wants that
+                    XMapWindow(g_display, mapreq->window);
+                } else if (!get_client_from_window(mapreq->window)) {
+                    // client should be managed (is not ignored)
+                    // but is not managed yet
                     manage_client(mapreq->window);
                     XMapWindow(g_display, mapreq->window);
                 }
+                // else: ignore all other maprequests from windows
+                // that are managed already
             break;
             case PropertyNotify: //printf("name is: PropertyNotify\n"); 
                 if (is_ipc_connectable(event.xproperty.window)) {

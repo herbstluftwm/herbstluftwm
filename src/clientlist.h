@@ -12,6 +12,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <glib.h>
+#include <stdbool.h>
 
 
 typedef struct HSClient {
@@ -25,6 +26,7 @@ void clientlist_destroy();
 void window_focus(Window window);
 
 void reset_client_colors();
+void reset_client_settings();
 
 // adds a new client to list of managed client windows
 void manage_client(Window win);
@@ -39,6 +41,9 @@ HSClient* get_client_from_window(Window window);
 
 void window_resize(Window win, XRectangle rect);
 int window_close_current();
+
+bool is_window_class_ignored(char* window_class);
+bool is_window_ignored(Window win);
 
 // some globals
 unsigned long g_window_border_active_color;

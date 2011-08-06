@@ -8,9 +8,14 @@
 #include "globals.h"
 #include "layout.h"
 #include "utils.h"
+// system
 #include <glib.h>
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <regex.h>
+#include <stdbool.h>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -20,6 +25,7 @@
 int* g_window_border_width;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
+regex_t g_ignore_class_regex; // clients that match this won't be managed
 
 GHashTable* g_clients;
 
@@ -34,6 +40,20 @@ static HSClient* create_client() {
     return hc;
 }
 
+void reset_client_settings() {
+    // reset regex
+    regfree(&g_ignore_class_regex);
+    char* str = settings_find("ignore_class")->value.s;
+    int status = regcomp(&g_ignore_class_regex, str, REG_NOSUB|REG_EXTENDED);
+    if (status != 0) {
+        char buf[ERROR_STRING_BUF_SIZE];
+        regerror(status, &g_ignore_class_regex, buf, ERROR_STRING_BUF_SIZE);
+        fprintf(stderr, "Cannot parse value \"%s\"", str);
+        fprintf(stderr, "from setting \"%s\": ", "ignore_class");
+        fprintf(stderr, "\"%s\"\n", buf);
+    }
+}
+
 static void fetch_colors() {
     g_window_border_width = &(settings_find("window_border_width")->value.i);
     char* str = settings_find("window_border_normal_color")->value.s;
@@ -43,6 +63,10 @@ static void fetch_colors() {
 }
 
 void clientlist_init() {
+    // init regex simple..
+    char* default_regex = settings_find("ignore_class")->value.s;
+    assert(0 == regcomp(&g_ignore_class_regex, default_regex,
+                        REG_NOSUB|REG_EXTENDED));
     fetch_colors();
     g_wmatom[WMProtocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
     g_wmatom[WMDelete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
@@ -63,6 +87,7 @@ void reset_client_colors() {
 
 void clientlist_destroy() {
     g_hash_table_destroy(g_clients);
+    regfree(&g_ignore_class_regex);
 }
 
 HSClient* get_client_from_window(Window window) {
@@ -158,4 +183,15 @@ int window_close_current() {
     return 0;
 }
 
+bool is_window_class_ignored(char* window_class) {
+    int status = regexec(&g_ignore_class_regex, window_class, 0, NULL, 0);
+    return (status == 0);
+}
+
+bool is_window_ignored(Window win) {
+    GString* window_class = window_class_to_g_string(g_display, win);
+    bool b = is_window_class_ignored(window_class->str);
+    g_string_free(window_class, true);
+    return b;
+}
 

@@ -28,6 +28,8 @@ Window      g_root;
 // some settings/info
 bool        g_aboutToQuit;
 
+// bufsize to get some error strings
+#define ERROR_STRING_BUF_SIZE 1000
 
 #endif
 
