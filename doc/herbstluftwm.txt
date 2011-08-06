@@ -311,6 +311,11 @@ focus_follows_shift (Integer)::
     If set, focus stays in the window, if window is shifted to an other frame.
     If unset, focus stays in the frame.
 
+ignore_class (String/Regex)::
+    If the class property of a new created window matches the ignore_class
+    regex, then it will not be managed, i.e. will not be put in the layout or on
+    tags. Example value: +^(Xfce4-notifyd|Conky)$+
+
 AUTOSTART FILE
 --------------
 There is no config file but an autostart file, which is executed on startup. It
