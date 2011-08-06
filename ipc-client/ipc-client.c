@@ -258,6 +258,7 @@ int main(int argc, char* argv[]) {
                 break;
             case 'c':
                 g_hook_count = atoi(optarg);
+                arg_index++;
                 break;
             case 'w':
                 g_wait_for_hook = 1;

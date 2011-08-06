@@ -289,6 +289,7 @@ static void parse_arguments(int argc, char** argv) {
         switch (c) {
             case 'c':
                 g_autostart_path = optarg;
+                arg_index++;
                 break;
             default:
                 fprintf(stderr, "unknown option `%s'\n", argv[arg_index]);
