@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# this is an simple config to herbstluftwm
+# this is an simple config for herbstluftwm
 
 function hc() {
     herbstclient "$@"
 }
 
-xsetroot -solid '#D47A55'
+xsetroot -solid '#5A8E3A'
 
 
 # keybindings
@@ -15,15 +15,14 @@ hc keybind $Mod-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-c close
 hc keybind $Mod-Return spawn xterm
-hc keybind $Mod-F2 spawn gmrun
 
 # tags
+hc rename default 1 || true
 for i in {1..9} ; do
     hc add "$i"
     hc keybind "$Mod-$i" use "$i"
     hc keybind "$Mod-Shift-$i" move "$i"
 done
-hc keybind "$Mod-0" use default
 
 # layouting
 hc keybind $Mod-r remove
@@ -49,7 +48,7 @@ hc set frame_border_normal_color '#73532D'
 hc set frame_bg_normal_color '#BD9768'
 hc set frame_bg_active_color '#BD8541'
 hc set frame_border_width 2
-hc set window_border_width 3
+hc set window_border_width 2
 hc set window_border_normal_color '#AE8451'
 hc set window_border_active_color '#F6FF00'
 
