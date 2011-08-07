@@ -394,7 +394,7 @@ int list_monitors(int argc, char** argv, GString** output) {
         g_string_append_printf(*output, "%d: %dx%d%+d%+d with tag \"%s\"%s\n",
             i,
             monitor->rect.width, monitor->rect.height,
-            monitor->rect.x, monitor->rect.x,
+            monitor->rect.x, monitor->rect.y,
             monitor->tag ? monitor->tag->name->str : "???",
             (g_cur_monitor == i) ? " [FOCUS]" : "");
     }
