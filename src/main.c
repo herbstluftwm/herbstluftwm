@@ -54,7 +54,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "keybind",        keybind),
     CMD_BIND_NO_OUTPUT(   "keyunbind",      keyunbind),
     CMD_BIND_NO_OUTPUT(   "spawn",          spawn),
-    CMD_BIND_NO_OUTPUT(   "hook_emit",      custom_hook_emit),
+    CMD_BIND_NO_OUTPUT(   "emit_hook",      custom_hook_emit),
     CMD_BIND_NO_OUTPUT(   "cycle",          frame_current_cycle_selection),
     CMD_BIND_NO_OUTPUT(   "cycle_layout",   frame_current_cycle_client_layout),
     CMD_BIND_NO_OUTPUT(   "close",          window_close_current),
