@@ -40,6 +40,7 @@ int quit();
 int reload();
 int version(int argc, char* argv[], GString** result);
 int print_layout_command(int argc, char** argv, GString** result);
+int print_tag_status_command(int argc, char** argv, GString** result);
 void execute_autostart_file();
 int spawn(int argc, char** argv);
 static void remove_zombies(int signal);
@@ -68,6 +69,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "get",            settings_get),
     CMD_BIND_NO_OUTPUT(   "add",            tag_add_command),
     CMD_BIND_NO_OUTPUT(   "use",            monitor_set_tag_command),
+    CMD_BIND(             "tag_status",     print_tag_status_command),
     CMD_BIND_NO_OUTPUT(   "merge_tag",      tag_remove_command),
     CMD_BIND_NO_OUTPUT(   "rename",         tag_rename_command),
     CMD_BIND_NO_OUTPUT(   "move",           tag_move_window_command),
@@ -108,6 +110,31 @@ int print_layout_command(int argc, char** argv, GString** result) {
         return 0;
     }
     print_tag_tree(result);
+    return 0;
+}
+
+int print_tag_status_command(int argc, char** argv, GString** result) {
+    int monitor_index = g_cur_monitor;
+    if (argc >= 2) {
+        monitor_index = atoi(argv[1]);
+    }
+    monitor_index = CLAMP(monitor_index, 0, g_monitors->len);
+    HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, monitor_index);
+    *result = g_string_append_c(*result, '\t');
+    int i = 0;
+    for (i = 0; i < g_tags->len; i++) {
+        HSTag* tag = g_array_index(g_tags, HSTag*, i);
+        // print flags
+        if (tag == monitor->tag) {
+            char c = '+';
+            if (monitor_index == g_cur_monitor) {
+                c = '*';
+            }
+            *result = g_string_append_c(*result, c);
+        }
+        *result = g_string_append(*result, tag->name->str);
+        *result = g_string_append_c(*result, '\t');
+    }
     return 0;
 }
 

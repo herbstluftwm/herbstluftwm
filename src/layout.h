@@ -69,8 +69,8 @@ typedef struct HSTag {
 } HSTag;
 
 // globals
-GArray*     g_tags;
-GArray*     g_monitors;
+GArray*     g_tags; // Array of HSTag*
+GArray*     g_monitors; // Array of HSMonitor
 int         g_cur_monitor;
 HSFrame*    g_cur_frame; // currently selected frame
 
