@@ -21,6 +21,8 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <signal.h>
+#include <sys/wait.h>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -40,6 +42,7 @@ int version(int argc, char* argv[], GString** result);
 int print_layout_command(int argc, char** argv, GString** result);
 void execute_autostart_file();
 int spawn(int argc, char** argv);
+static void remove_zombies(int signal);
 
 CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(quit),
@@ -296,11 +299,16 @@ static void parse_arguments(int argc, char** argv) {
     }
 }
 
+static void remove_zombies(int signal) {
+    while (0 == waitpid(0, NULL, WNOHANG));
+}
+
 int main(int argc, char* argv[]) {
     parse_arguments(argc, argv);
     if(!(g_display = XOpenDisplay(NULL)))
         die("herbstluftwm: cannot open display\n");
     checkotherwm();
+    signal(SIGCHLD, remove_zombies);
     // set some globals
     g_screen = DefaultScreen(g_display);
     g_root = RootWindow(g_display, g_screen);
