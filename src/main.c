@@ -74,6 +74,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "add_monitor",    add_monitor_command),
     CMD_BIND_NO_OUTPUT(   "remove_monitor", remove_monitor_command),
     CMD_BIND_NO_OUTPUT(   "move_monitor",   move_monitor_command),
+    CMD_BIND_NO_OUTPUT(   "pad",            monitor_set_pad_command),
     CMD_BIND(             "layout",         print_layout_command),
     CMD_BIND(             "complete",       complete_command),
     {{ NULL }}

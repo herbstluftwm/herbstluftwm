@@ -147,6 +147,7 @@ int list_monitors(int argc, char** argv, GString** output);
 int move_monitor_command(int argc, char** argv);
 HSMonitor* get_current_monitor();
 void monitor_set_tag(HSMonitor* monitor, HSTag* tag);
+int monitor_set_pad_command(int argc, char** argv);
 int monitor_set_tag_command(int argc, char** argv);
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
