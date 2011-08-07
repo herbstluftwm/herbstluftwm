@@ -217,6 +217,7 @@ int wait_for_hook(int argc, char* argv[]) {
                 printf("\"%s\", ", list_return[i]);
             }
             printf("\n");
+            fflush(stdout);
         }
         // cleanup
         XFreeStringList(list_return);
