@@ -214,7 +214,7 @@ int wait_for_hook(int argc, char* argv[]) {
         if (print_signal) {
             // just print as list
             for (i = 0; i < count; i++) {
-                printf("\"%s\", ", list_return[i]);
+                printf("%s%s", i ? "\t" : "", list_return[i]);
             }
             printf("\n");
             fflush(stdout);

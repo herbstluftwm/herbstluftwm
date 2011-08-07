@@ -36,11 +36,11 @@ void hook_destroy() {
 }
 
 
-int hook_emit(int argc, char** argv) {
+void hook_emit(int argc, char** argv) {
     static int last_property_number = 0;
     if (argc <= 0) {
         // nothing to do
-        return 0;
+        return;
     }
     XTextProperty text_prop;
     static char atom_name[STRING_BUF_SIZE];
@@ -52,6 +52,5 @@ int hook_emit(int argc, char** argv) {
     // set counter for next property
     last_property_number += 1;
     last_property_number %= HERBST_HOOK_PROPERTY_COUNT;
-    return 0;
 }
 

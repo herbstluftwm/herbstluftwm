@@ -258,6 +258,10 @@ complete 'POSITION' ['COMMAND' 'ARGS ...']::
         * complete 1 toggle fra +
           prints all settings beginning with fra that can be toggled
 
+hook_emit 'ARGS ...'::
+    emits specified hook to all idling herbstclients.
+
+
 [[SETTINGS]]
 SETTINGS
 --------

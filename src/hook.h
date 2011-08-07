@@ -7,7 +7,7 @@
 void hook_init();
 void hook_destroy();
 
-int hook_emit(int argc, char** argv);
+void hook_emit(int argc, char** argv);
 
 #endif
 

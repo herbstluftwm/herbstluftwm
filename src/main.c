@@ -43,6 +43,7 @@ int print_layout_command(int argc, char** argv, GString** result);
 void execute_autostart_file();
 int spawn(int argc, char** argv);
 static void remove_zombies(int signal);
+int custom_hook_emit(int argc, char** argv);
 
 CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(quit),
@@ -51,9 +52,9 @@ CommandBinding g_commands[] = {
     CMD_BIND(list_commands),
     CMD_BIND(list_monitors),
     CMD_BIND_NO_OUTPUT(keybind),
-    CMD_BIND_NO_OUTPUT(hook_emit),
     CMD_BIND_NO_OUTPUT(keyunbind),
     CMD_BIND_NO_OUTPUT(spawn),
+    {{ .no_output = custom_hook_emit }, .name = "hook_emit", .has_output = 0 },
     {{ .no_output = frame_current_cycle_selection }, .name = "cycle", .has_output = 0 },
     {{ .no_output = frame_current_cycle_client_layout }, .name = "cycle_layout", .has_output = 0 },
     {{ .no_output = window_close_current }, .name = "close", .has_output = 0 },
@@ -106,6 +107,11 @@ int print_layout_command(int argc, char** argv, GString** result) {
         return 0;
     }
     print_tag_tree(result);
+    return 0;
+}
+
+int custom_hook_emit(int argc, char** argv) {
+    hook_emit(argc - 1, argv + 1);
     return 0;
 }
 
