@@ -4,7 +4,11 @@
 #include "utils.h"
 #include "ipc-protocol.h"
 // std
+#include <assert.h>
 #include <stdio.h>
+#include <stdarg.h>
+// other
+#include <glib.h>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -52,5 +56,41 @@ void hook_emit(int argc, char** argv) {
     // set counter for next property
     last_property_number += 1;
     last_property_number %= HERBST_HOOK_PROPERTY_COUNT;
+}
+
+void emit_tag_changed(HSTag* tag, int monitor) {
+    assert(tag != NULL);
+    static char monitor_name[STRING_BUF_SIZE];
+    snprintf(monitor_name, STRING_BUF_SIZE, "%d", monitor);
+    char* argv[3];
+    argv[0] = "tag_changed";
+    argv[1] = tag->name->str;
+    argv[2] = monitor_name;
+    hook_emit(LENGTH(argv), argv);
+}
+
+void hook_emit_list(char* name, ...) {
+    assert(name != NULL);
+    int count = 1;
+    va_list ap;
+    // first count number of arguments
+    va_start(ap, name);
+    while (va_arg(ap, char*)) {
+        count++;
+    }
+    va_end(ap);
+    // then fill arguments into argv array
+    char** argv = g_new(char*, count);
+    int i = 0;
+    argv[i++] = name;
+    va_start(ap, name);
+    while (i < count) {
+        argv[i] = va_arg(ap, char*);
+        i++;
+    }
+    va_end(ap);
+    hook_emit(count, argv);
+    // cleanup
+    g_free(argv);
 }
 

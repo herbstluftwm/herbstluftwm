@@ -7,6 +7,7 @@
 #include "clientlist.h"
 #include "globals.h"
 #include "utils.h"
+#include "hook.h"
 #include "ipc-protocol.h"
 #include "settings.h"
 #include "layout.h"
@@ -430,6 +431,7 @@ int add_monitor_command(int argc, char** argv) {
     if (argc > 6) monitor->pad_left     = atoi(argv[6]);
     frame_show_recursive(tag->frame);
     monitor_apply_layout(monitor);
+    emit_tag_changed(tag, g_monitors->len - 1);
     return 0;
 }
 
@@ -523,7 +525,8 @@ int tag_add_command(int argc, char** argv) {
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }
-    add_tag(argv[1]);
+    HSTag* tag = add_tag(argv[1]);
+    hook_emit_list("tag_added", tag->name->str, NULL);
     return 0;
 }
 
@@ -539,6 +542,7 @@ int tag_rename_command(int argc, char** argv) {
         return HERBST_TAG_IN_USE;
     }
     tag->name = g_string_assign(tag->name, argv[2]);
+    hook_emit_list("tag_renamed", tag->name->str, NULL);
     return 0;
 }
 
@@ -576,6 +580,7 @@ int tag_remove_command(int argc, char** argv) {
     }
     g_free(buf);
     // remove tag
+    char* oldname = g_strdup(tag->name->str);
     tag_free(tag);
     for (i = 0; i < g_tags->len; i++) {
         if (g_array_index(g_tags, HSTag*, i) == tag) {
@@ -583,6 +588,8 @@ int tag_remove_command(int argc, char** argv) {
             break;
         }
     }
+    hook_emit_list("tag_removed", oldname, target->name->str, NULL);
+    g_free(oldname);
     return 0;
 }
 
@@ -1032,6 +1039,7 @@ int monitor_set_tag_command(int argc, char** argv) {
     HSTag*  tag = find_tag(argv[1]);
     if (monitor && tag) {
         monitor_set_tag(get_current_monitor(), tag);
+        emit_tag_changed(tag, g_cur_monitor);
     }
     return 0;
 }
@@ -1083,6 +1091,7 @@ int monitor_cycle_command(int argc, char** argv) {
         delta = atoi(argv[1]);
     }
     int new_selection = g_cur_monitor + delta;
+    int old_selection = g_cur_monitor;
     // fix range of index
     new_selection %= count;
     new_selection += count;
@@ -1102,6 +1111,9 @@ int monitor_cycle_command(int argc, char** argv) {
     // repaint monitors
     monitor_apply_layout(old);
     monitor_apply_layout(monitor);
+    // emit hooks
+    emit_tag_changed(old->tag, old_selection);
+    emit_tag_changed(monitor->tag, new_selection);
     return 0;
 }
 
