@@ -22,25 +22,25 @@ calls from *herbstclient*(1) and executes them. The list of available
 'OPTION' can be:
 
     *-c*, *--autostart* 'PATH'::
-        use 'PATH' as autostart file instead of that one in '$XDG_CONFIG_HOME'
+        use 'PATH' as autostart file instead of the one in '$XDG_CONFIG_HOME'
 
 TILING ALGORITHM
 ----------------
 The basic tiling concept is, that the layout is represented by a binary tree. On
-startup you see one big frame across the entire screen. A frame fullfilles
+startup you see one big frame across the entire screen. A frame fulfills
 exactly one of the following conditions:
 
     . Frame contains windows: +
-        He shows some clients and arranges them next to each other. There are
-        the current layouut algorithms:
+        It shows some clients and arranges them next to each other. The
+        current layout algorithms are:
 
         * Vertical ('frame_layout' = 0)
         * Horizontal ('frame_layout' = 1)
 
     . Frame is split into subframes: +
-        He is split into exactly two *subframes* in a configurable 'fraction'
-        either in a vertical or horizontal way. So he produces two *frames*
-        which fullfille the same conditions (new frames always are about to
+        It is split into exactly two *subframes* in a configurable 'fraction'
+        either in a vertical or horizontal way. So it produces two *frames*
+        which fulfill the same conditions (new frames always are about to
         contain *windows*).
 
 If a new window appears, it is put in the currently focused frame. Only
@@ -51,7 +51,7 @@ layout structure of a binary tree, each frame (i.e. node in binary tree) has
 exactly one neighbour.
 
 The analogy to a binary Tree is explained the best way with a small example:
-On startup you have an simple binary tree, with one frame that can contain
+On startup you have a simple binary tree, with one frame that can contain
 clients:
 
     C
@@ -71,7 +71,7 @@ You also can split the left frame horizontally and you will get:
  C   C
 
 If you change the focus to the client on the right and remove this frame, it
-will be merged wit the left subtree and you will get:
+will be merged with the left subtree and you will get:
 
    H
   / \
@@ -81,7 +81,7 @@ The 'layout' command prints the current layout of all tags as a tree.
 
 TAGS
 ----
-Tags are very similar to workspaces or virtual desktops or window groups. Each
+Tags are very similar to workspaces, virtual desktops or window groups. Each
 tag has one layout. There is a list of tags. You can add or remove tags
 dynamically.
 
@@ -102,20 +102,20 @@ reload::
     executes the autostart file
 
 version::
-    prints the version of running herbstluftwm instance.
+    prints the version of the running herbstluftwm instance.
 
 list_commands::
     lists all available commands.
 
 [[list_monitors]]list_monitors::
-    list currently setuped monitors with their index, area (as rectangle) and currently
+    list currently configured monitors with their index, area (as rectangle) and currently
     viewed tag.
 
 keybind 'KEY' 'COMMAND' ['ARGS ...']::
     adds a key binding. When 'KEY' is pressed, the internal 'COMMAND' (with its
     'ARGS') is executed. A Keybinding is a (possibly empty) list of modifiers
     (Mod4, Mod1, Alt, Super, Ctrl, Shift) and one key (see keysymdef.h for a
-    list of keys). Modifiers and the key are concated with '-' or '+' as
+    list of keys). Modifiers and the key are concatenated with '-' or '+' as
     separator. If there is already a binding for this 'KEY', it will be
     overwritten. Examples:
 
@@ -133,14 +133,14 @@ spawn 'EXECUTABLE' ['ARGS ...']::
         * spawn xterm -e man 3 execvp
 
 cycle ['DELTA']::
-    cycles the selection within the current frame by 'DELTA'. If no 'DELTA' is
+    cycles the selection within the current frame by 'DELTA'. If 'DELTA' is
     omitted, 'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1
     means: cycle in the opposite direction by 1.
 
 cycle_layout ['DELTA']::
     cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'
-    defaults to 1. Currently only 1 is usefull because there are only two
-    algorithms yet:
+    defaults to 1. Currently only 1 is useful because there are only two
+    algorithms so far:
 
         * vertical (below each other)
         * horizontal (next to each other)
@@ -150,7 +150,7 @@ close::
 split 'ALIGN' 'FACTION'::
     splits the focused frame into two subframes with a specified 'FRACTION'
     between 0 and 1. 'ALIGN' can be 'horizontal' or 'vertical' (actually it only
-    depends on, if the first letter of 'ALIGN'). Example:
+    depends on the first letter of 'ALIGN'). Example:
 
         * split horiz 0.3
         * split vertical 0.5
@@ -163,11 +163,11 @@ focus 'DIRECTION'::
         * r[eft]
         * u[eft]
         * d[eft]
-    Direction is defined as follows: Focus is in a leave of the binary tree.
+    Direction is defined as follows: Focus is in a leaf of the binary tree.
     Each inner node in the tree remembers the last focus direction (child 0 or
-    child 1). The algorithm is going as short as possible from the leave (the
+    child 1). The algorithm is going as short as possible from the leaf (the
     currently focused frame) to the root until it is possible to change focus in
-    the specified 'DIRECTION'. From there the focus goes back to the leave. +
+    the specified 'DIRECTION'. From there the focus goes back to the leaf. +
     +
     Example: The focus is at frame A. After executing 'focus right' focus will
     be at frame C.
@@ -204,7 +204,7 @@ get 'NAME'::
     are listed in the <<SETTINGS, section below>>.
 
 toggle 'NAME'::
-    toggles the setting 'NAME' if its an integer setting: if value was 0, it
+    toggles the setting 'NAME' if it's an integer setting: if value was 0, it
     becomes 1, else value becomes 0.
 
 cycle_monitor ['DELTA']::
@@ -217,7 +217,7 @@ use 'TAG'::
     switches focused monitor to specified 'TAG'.
 
 merge_tag 'TAG' ['TARGET']::
-    removes tag named 'TAG' and moves all its windows to tag 'TARGET'. If no
+    removes tag named 'TAG' and moves all its windows to tag 'TARGET'. If
     'TARGET' is omitted, the focused tag will be used.
 
 rename 'OLDTAG' 'NEWTAG'::
@@ -241,19 +241,15 @@ remove_monitor 'INDEX'::
     the <<list_monitors,'list_monitors'>> command.
 
 move_monitor 'INDEX' 'RECT' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
-    moves the monitor wit hspecified 'INDEX' to rectangle 'RECT'. 'INDEX' and
-    'RECT' is defined as in 'remove_monitor' and 'add_monitor'. If no padding is
-    given, it is not changed.
-
-pad 'INDEX' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
-    sets the pad of indexed monitor to the specified padding. If no padding is
+    moves the monitor with specified 'INDEX' to rectangle 'RECT'. 'INDEX' and
+    'RECT' are defined as in 'remove_monitor' and 'add_monitor'. If no padding is
     given, it is not changed.
 
 layout::
     prints the layout of all tags with focus indicators.
 
 complete 'POSITION' ['COMMAND' 'ARGS ...']::
-    prints the result of tab completion in partial writting 'COMMAND' with
+    prints the result of tab completion in partial written 'COMMAND' with
     optional 'ARGS'. You usually do not need this, because there is already tab
     completion for bash. Example:
 
@@ -278,13 +274,13 @@ window_gap (Integer)::
     the gap between frames.
 
 frame_border_active_color (String/Color)::
-    the border color of an focused frame
+    the border color of a focused frame
 
 frame_border_normal_color (String/Color)::
     the border color of an unfocused frame
 
 frame_bg_active_color (String/Color)::
-    the fill color of an focused frame
+    the fill color of a focused frame
 
 frame_bg_normal_color (String/Color)::
     the fill color of an unfocused frame (It is only visible if
@@ -294,13 +290,13 @@ frame_bg_transparent (Integer)::
     if set, frames have transparent backgrounds.
 
 frame_border_width (Integer)::
-    border width of an frame
+    border width of a frame
 
 window_border_width (Integer)::
-    border width of an window
+    border width of a window
 
 window_border_active_color (String/Color)::
-    border color of an focused window
+    border color of a focused window
 
 window_border_normal_color (String/Color)::
     border color of an unfocused window
@@ -330,7 +326,7 @@ There is no config file but an autostart file, which is executed on startup. It
 is also executed on command 'reload'. If not specified by the *--autostart*
 argument, autostart file is located as 'herbstluftrc' in $XDG_CONFIG_HOME or in
 ~/.config/.
-Normally it consists of a view *herbstclient* calls.
+Normally it consists of a few *herbstclient* calls.
 
 
 ENVIRONTMENT VARIABLES

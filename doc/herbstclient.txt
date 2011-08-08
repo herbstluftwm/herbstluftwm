@@ -5,7 +5,7 @@ HERBSTCLIENT(1)
 
 NAME
 ----
-herbstclient - sends commands do a running herbstluftwm instance via X
+herbstclient - sends commands to a running herbstluftwm instance via X
 
 
 SYNOPSIS
@@ -17,7 +17,7 @@ SYNOPSIS
 
 DESCRIPTION
 -----------
-Sends an 'COMMAND' with its (optional) arguments 'ARGS' to an running
+Sends a 'COMMAND' with its (optional) arguments 'ARGS' to a running
 *herbstluftwm*(1) instance via Xlib. If 'COMMAND' has an output, it is printed
 by *herbstclient*. If output does not end with a newline, then a newline is
 added to improve readability.
@@ -32,7 +32,7 @@ expressions.
 OPTIONS
 -------
 *-n*, *--no-newline*::
-    Do not print an newline if output doesnot end with a newline.
+    Do not print a newline if output does not end with a newline.
 
 *-i*, *--idle*::
     Wait for hooks instead of executing commands.
@@ -41,7 +41,7 @@ OPTIONS
     Same as *--idle* but exit after first *--count* hooks.
 
 *-c*, *--count* 'COUNT'::
-    Let *--wait* exit after 'COUNT' hooks received and printed. The default of
+    Let *--wait* exit after 'COUNT' hooks were received and printed. The default of
     'COUNT' is 1.
 
 ENVIRONTMENT VARIABLES
@@ -62,7 +62,7 @@ other::
 
 BUGS
 ----
-It waits endless for a response from *herbstluftwm* (there is no timeout yet).
+It waits endlessly for a response from *herbstluftwm* (there is no timeout yet).
 
 See the *herbstluftwm* distribution BUGS file.
 
