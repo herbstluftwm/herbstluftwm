@@ -125,13 +125,14 @@ int print_tag_status_command(int argc, char** argv, GString** result) {
     for (i = 0; i < g_tags->len; i++) {
         HSTag* tag = g_array_index(g_tags, HSTag*, i);
         // print flags
+        char c = '.';
         if (tag == monitor->tag) {
-            char c = '+';
+            c = '+';
             if (monitor_index == g_cur_monitor) {
-                c = '*';
+                c = '#';
             }
-            *result = g_string_append_c(*result, c);
         }
+        *result = g_string_append_c(*result, c);
         *result = g_string_append(*result, tag->name->str);
         *result = g_string_append_c(*result, '\t');
     }

@@ -1,54 +1,67 @@
 #!/bin/bash
 
-font="Bitstream Vera Sans Mono-10:Bold"
 monitor=${1:-0}
-height=14
+height=16
+font="fixed"
+bgcolor='#3E2600'
 
 herbstclient pad $monitor $height
 (
-    #mpc idleloop &
+    # events:
+    #mpc idleloop player &
+    while true ; do
+        date +'date ^fg(#efefef)%H:%M^fg(#909090), %Y-%m-^fg(#efefef)%d'
+        sleep 1 || break
+    done &
     herbstclient --idle
 )|(
     TAGS=( $(herbstclient tag_status $monitor) )
-    active=true
-    cur=
-    for x in ${!TAGS[@]} ; do
-        i=${TAGS[$x]}
-        if [ "${i:0:1}" = '*' ] ; then
-            cur="${i:1}"
-            TAGS[$x]=${i:1}
-            break;
-        fi
-        if [ "${i:0:1}" = '+' ] ; then
-            cur="${i:1}"
-            TAGS[$x]=${i:1}
-            active=false
-            break;
-        fi
-    done
+    date=""
     while true ; do
-        echo -n "^fg()^bg()"
-        for t in "${TAGS[@]}" ; do
-            [ "$t" = $cur ] && echo -n "^bg(#9fbc00)^fg(#141414)"
-            echo -n " $t ^fg()^bg()"
+        bordercolor="#26221C"
+        hintcolor="#573500"
+        separator="^fg(#141414)^ro(1x$height)^fg()"
+        # draw tags
+        echo -n "$separator"
+        for i in "${TAGS[@]}" ; do
+            case ${i:0:1} in
+                '#')
+                    echo -n "^bg(#9fbc00)^fg(#141414)"
+                    ;;
+                '+')
+                    echo -n "^bg(#9CA668)^fg(#141414)"
+                    ;;
+                *)
+                    echo -n "^bg(#6A4100)^fg()"
+                    ;;
+            esac
+            echo -n " ${i:1} "
+            echo -n "$separator"
         done
+        # FIXME: how to change align to the right?
+        echo -n "^bg()^p(_CENTER)"
+        # draw date
+        echo -n "$separator^bg($hintcolor) $date $separator"
         echo
         # wait for next event
-        read i || break
-        cmd=( $i )
+        read line || break
+        cmd=( $line )
+        # find out event origin
         case "${cmd[0]}" in
-            tag_changed)
-                if [ "${cmd[2]}" != $monitor ] ; then
-                    active=false
-                fi
-                if [ "${cmd[2]}" = $monitor ] ; then
-                    cur="${cmd[1]}"
-                    active=true
-                fi
+            tag*)
+                #echo "reseting tags" >&2
+                TAGS=( $(herbstclient tag_status $monitor) )
                 ;;
+            date)
+                #echo "reseting date" >&2
+                date="${cmd[@]:1}"
+                ;;
+            #player)
+            #    ;;
         esac
     done
-) |dzen2 -h $height -xs $((monitor+1)) -ta l -fn "$font" -bg '#34291C' -fg '#FFEF80'
+) |dzen2 -fn "$font" -h $height -xs $((monitor+1)) \
+    -ta l -bg "$bgcolor" -fg '#efefef'
 
 
 
