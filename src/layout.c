@@ -1046,6 +1046,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     frame_show_recursive(tag->frame);
     // reset focus
     frame_focus_recursive(tag->frame);
+    emit_tag_changed(tag, g_cur_monitor);
 }
 
 int monitor_set_tag_command(int argc, char** argv) {
@@ -1056,7 +1057,6 @@ int monitor_set_tag_command(int argc, char** argv) {
     HSTag*  tag = find_tag(argv[1]);
     if (monitor && tag) {
         monitor_set_tag(get_current_monitor(), tag);
-        emit_tag_changed(tag, g_cur_monitor);
     }
     return 0;
 }
@@ -1108,7 +1108,6 @@ int monitor_cycle_command(int argc, char** argv) {
         delta = atoi(argv[1]);
     }
     int new_selection = g_cur_monitor + delta;
-    int old_selection = g_cur_monitor;
     // fix range of index
     new_selection %= count;
     new_selection += count;
@@ -1129,7 +1128,6 @@ int monitor_cycle_command(int argc, char** argv) {
     monitor_apply_layout(old);
     monitor_apply_layout(monitor);
     // emit hooks
-    emit_tag_changed(old->tag, old_selection);
     emit_tag_changed(monitor->tag, new_selection);
     return 0;
 }

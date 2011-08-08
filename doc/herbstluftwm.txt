@@ -245,6 +245,10 @@ move_monitor 'INDEX' 'RECT' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     'RECT' are defined as in 'remove_monitor' and 'add_monitor'. If no padding is
     given, it is not changed.
 
+pad 'INDEX' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
+    sets the pad of indexed monitor to the specified padding. If no padding is
+    given, it is not changed.
+
 layout::
     prints the layout of all tags with focus indicators.
 
