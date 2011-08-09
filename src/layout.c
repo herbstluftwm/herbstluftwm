@@ -687,7 +687,6 @@ int frame_split_count_to_root(HSFrame* frame, int align) {
 void frame_split(HSFrame* frame, int align, int fraction) {
     if (frame_split_count_to_root(frame, align) > HERBST_MAX_TREE_HEIGHT) {
         // do nothing if tree would be to large
-        printf("ignoreing..... tree to large\n");
         return;
     }
     HSFrame* first = frame_create_empty();
@@ -1046,6 +1045,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     frame_show_recursive(tag->frame);
     // reset focus
     frame_focus_recursive(tag->frame);
+    monitor_apply_layout(monitor);
     emit_tag_changed(tag, g_cur_monitor);
 }
 
@@ -1088,6 +1088,9 @@ int tag_move_window_command(int argc, char** argv) {
     frame_remove_window(frame, window);
     // insert window into target
     frame_insert_window(target->frame, window);
+    HSClient* client = get_client_from_window(window);
+    assert(client != NULL);
+    client->tag = target;
     // refresh things
     if (monitor && !monitor_target) {
         // window is moved to unvisible tag

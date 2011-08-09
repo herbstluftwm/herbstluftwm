@@ -109,11 +109,22 @@ void manage_client(Window win) {
     g_hash_table_insert(g_clients, &(client->window), client);
     // insert to layout
     HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
-    frame_insert_window(g_cur_frame, win);
+    client->tag = m->tag;
+    frame_insert_window(m->tag->frame, win);
     monitor_apply_layout(m);
 }
 
 void unmanage_client(Window win) {
+    HSClient* client = get_client_from_window(win);
+    if (!client) {
+        return;
+    }
+    // remove from tag
+    frame_remove_window(client->tag->frame, win);
+    // and arrange monitor
+    HSMonitor* m = find_monitor_with_tag(client->tag);
+    if (m) monitor_apply_layout(m);
+    // permanently remove it
     g_hash_table_remove(g_clients, &win);
 }
 
@@ -129,7 +140,6 @@ void window_focus(Window window) {
     XSetWindowBorder(g_display, window, g_window_border_active_color);
     lastfocus = window;
     // set keyboardfocus
-    printf("focusing window %d\n", (int)window);
     XUngrabButton(g_display, AnyButton, AnyModifier, window);
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
 }

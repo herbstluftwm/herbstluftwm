@@ -14,10 +14,12 @@
 #include <glib.h>
 #include <stdbool.h>
 
+#include "layout.h"
 
 typedef struct HSClient {
     Window      window;
     XRectangle  last_size;
+    HSTag*      tag;
 } HSClient;
 
 void clientlist_init();

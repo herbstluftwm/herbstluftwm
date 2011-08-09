@@ -400,7 +400,8 @@ int main(int argc, char* argv[]) {
                 break;
             case MapRequest: printf("name is: MapRequest\n");
                 XMapRequestEvent* mapreq = &event.xmaprequest;
-                if (is_window_ignored(mapreq->window)) {
+                if (is_window_ignored(mapreq->window)
+                    || is_herbstluft_window(g_display, mapreq->window)) {
                     // just map the window if it wants that
                     XWindowAttributes wa;
                     if (!XGetWindowAttributes(g_display, mapreq->window, &wa)) {
@@ -423,9 +424,6 @@ int main(int argc, char* argv[]) {
                 break;
             case UnmapNotify:
                 printf("name is: UnmapNotify\n");
-                HSMonitor* m2 = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
-                frame_remove_window(m2->tag->frame, event.xunmap.window);
-                monitor_apply_layout(m2);
                 break;
             default:
                 printf("got unknown event of type %d\n", event.type);
