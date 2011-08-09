@@ -60,6 +60,11 @@ typedef struct HSMonitor {
     int         pad_right;
     int         pad_down;
     int         pad_left;
+    struct {
+        // last saved mouse position
+        int x;
+        int y;
+    } mouse;
     XRectangle  rect;   // area for this monitor
 } HSMonitor;
 

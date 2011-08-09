@@ -407,6 +407,8 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
     memset(&m, 0, sizeof(m));
     m.rect = rect;
     m.tag = tag;
+    m.mouse.x = 0;
+    m.mouse.y = 0;
     g_array_append_val(g_monitors, m);
     return &g_array_index(g_monitors, HSMonitor, g_monitors->len-1);
 }
@@ -1130,6 +1132,24 @@ int monitor_cycle_command(int argc, char** argv) {
     // repaint monitors
     monitor_apply_layout(old);
     monitor_apply_layout(monitor);
+    {
+        // save old mouse position
+        Window win, child;
+        int rx, ry, wx, wy;
+        unsigned int mask;
+        if (True == XQueryPointer(g_display, g_root, &win, &child,
+            &rx, &ry, &wx, &wy, &mask)) {
+            old->mouse.x = rx - old->rect.x;
+            old->mouse.y = ry - old->rect.y;
+            old->mouse.x = CLAMP(old->mouse.x, 0, old->rect.width);
+            old->mouse.y = CLAMP(old->mouse.y, 0, old->rect.height);
+        }
+    }
+    // restore position of new monitor
+    int new_x, new_y;
+    new_x = monitor->rect.x + monitor->mouse.x;
+    new_y = monitor->rect.y + monitor->mouse.y;
+    XWarpPointer(g_display, None, g_root, 0, 0, 0, 0, new_x, new_y);
     // emit hooks
     emit_tag_changed(monitor->tag, new_selection);
     return 0;
