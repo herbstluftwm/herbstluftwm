@@ -210,6 +210,10 @@ toggle 'NAME'::
 cycle_monitor ['DELTA']::
     cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.
 
+focus_monitor 'INDEX'::
+    puts focus to monitor with specified 'INDEX' (as specified by the
+    list_monitors command)
+
 add 'TAG'::
     creates a new empty tag named 'TAG'.
 

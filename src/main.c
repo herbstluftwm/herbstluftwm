@@ -66,6 +66,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "set",            settings_set),
     CMD_BIND_NO_OUTPUT(   "toggle",         settings_toggle),
     CMD_BIND_NO_OUTPUT(   "cycle_monitor",  monitor_cycle_command),
+    CMD_BIND_NO_OUTPUT(   "focus_monitor",  monitor_focus_command),
     CMD_BIND(             "get",            settings_get),
     CMD_BIND_NO_OUTPUT(   "add",            tag_add_command),
     CMD_BIND_NO_OUTPUT(   "use",            monitor_set_tag_command),

@@ -1106,6 +1106,16 @@ int tag_move_window_command(int argc, char** argv) {
     return 0;
 }
 
+int monitor_focus_command(int argc, char** argv) {
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    int new_selection = atoi(argv[1]);
+    // really change selection
+    monitor_focus_by_index(new_selection);
+    return 0;
+}
+
 int monitor_cycle_command(int argc, char** argv) {
     int delta = 1;
     int count = g_monitors->len;
