@@ -145,6 +145,7 @@ int tag_remove_command(int argc, char** argv);
 HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag);
+void monitor_focus_by_index(int new_selection);
 int monitor_cycle_command(int argc, char** argv);
 int add_monitor_command(int argc, char** argv);
 int remove_monitor_command(int argc, char** argv);

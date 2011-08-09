@@ -1118,11 +1118,17 @@ int monitor_cycle_command(int argc, char** argv) {
     new_selection += count;
     new_selection %= count;
     // really change selection
+    monitor_focus_by_index(new_selection);
+    return 0;
+}
+
+void monitor_focus_by_index(int new_selection) {
+    new_selection = CLAMP(new_selection, 0, g_monitors->len - 1);
     HSMonitor* old = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
     HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, new_selection);
     if (old == monitor) {
         // nothing to do
-        return 0;
+        return;
     }
     // change selection globals
     assert(monitor->tag);
@@ -1152,6 +1158,6 @@ int monitor_cycle_command(int argc, char** argv) {
     XWarpPointer(g_display, None, g_root, 0, 0, 0, 0, new_x, new_y);
     // emit hooks
     emit_tag_changed(monitor->tag, new_selection);
-    return 0;
 }
+
 
