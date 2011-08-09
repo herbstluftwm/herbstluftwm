@@ -1148,10 +1148,11 @@ void monitor_focus_by_index(int new_selection) {
     // repaint monitors
     monitor_apply_layout(old);
     monitor_apply_layout(monitor);
+    int rx, ry;
     {
         // save old mouse position
         Window win, child;
-        int rx, ry, wx, wy;
+        int wx, wy;
         unsigned int mask;
         if (True == XQueryPointer(g_display, g_root, &win, &child,
             &rx, &ry, &wx, &wy, &mask)) {
@@ -1162,10 +1163,16 @@ void monitor_focus_by_index(int new_selection) {
         }
     }
     // restore position of new monitor
+    // but only if mouse pointer is not already on new monitor
     int new_x, new_y;
-    new_x = monitor->rect.x + monitor->mouse.x;
-    new_y = monitor->rect.y + monitor->mouse.y;
-    XWarpPointer(g_display, None, g_root, 0, 0, 0, 0, new_x, new_y);
+    if ((monitor->rect.x <= rx) && (rx < monitor->rect.x + monitor->rect.width)
+        && (monitor->rect.y <= ry) && (ry < monitor->rect.y + monitor->rect.height)) {
+        // mouse already is on new monitor
+    } else {
+        new_x = monitor->rect.x + monitor->mouse.x;
+        new_y = monitor->rect.y + monitor->mouse.y;
+        XWarpPointer(g_display, None, g_root, 0, 0, 0, 0, new_x, new_y);
+    }
     // emit hooks
     emit_tag_changed(monitor->tag, new_selection);
 }
