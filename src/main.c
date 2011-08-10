@@ -336,15 +336,26 @@ static void parse_arguments(int argc, char** argv) {
 }
 
 static void remove_zombies(int signal) {
-    while (0 == waitpid(0, NULL, WNOHANG));
+    int bgstatus;
+    while (waitpid(0, &bgstatus, WNOHANG) > 0);
 }
+
+static void sigaction_signal(int signum, void (*handler)(int)) {
+    struct sigaction act;
+    act.sa_handler = handler;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = SA_NOCLDSTOP | SA_RESTART;
+    sigaction(signum, &act, NULL);
+}
+
 
 int main(int argc, char* argv[]) {
     parse_arguments(argc, argv);
     if(!(g_display = XOpenDisplay(NULL)))
         die("herbstluftwm: cannot open display\n");
     checkotherwm();
-    signal(SIGCHLD, remove_zombies);
+    // remove zombies on SIGCHLD
+    sigaction_signal(SIGCHLD, remove_zombies);
     // set some globals
     g_screen = DefaultScreen(g_display);
     g_root = RootWindow(g_display, g_screen);

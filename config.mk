@@ -9,7 +9,7 @@ LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 `pkg-config --libs glib-2.0`
 # FLAGS
 LD = gcc
 CC = gcc
-CFLAGS = -g -std=c99 -pedantic -Wall ${INCS}
+CFLAGS = -g -std=c99 -pedantic -Wall ${INCS} -D _XOPEN_SOURCE=600
 LDFLAGS = -g ${LIBS}
 PREFIX = ./build
 BINDIR = $(PREFIX)/bin
