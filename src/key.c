@@ -67,6 +67,12 @@ int keybind(int argc, char** argv) {
     if (!string2key(argv[1], &(new_bind.modifiers), &(new_bind.keysym))) {
         return HERBST_INVALID_ARGUMENT;
     }
+    KeyCode keycode = XKeysymToKeycode(g_display, new_bind.keysym);
+    if (!keycode) {
+        fprintf(stderr, "keybind: no keycode for symbol %s\n",
+            XKeysymToString(new_bind.keysym));
+        return HERBST_INVALID_ARGUMENT;
+    }
     // remove existing binding with same keysym/modifiers
     key_remove_bind_with_keysym(new_bind.modifiers, new_bind.keysym);
     // create a copy of the command to execute on this key
@@ -77,7 +83,7 @@ int keybind(int argc, char** argv) {
     *data = new_bind;
     g_key_binds = g_list_append(g_key_binds, data);
     // grab for events on this keycode
-    XGrabKey(g_display, XKeysymToKeycode(g_display, new_bind.keysym),
+    XGrabKey(g_display, keycode,
              new_bind.modifiers, g_root, True, GrabModeAsync, GrabModeAsync);
     return 0;
 }
