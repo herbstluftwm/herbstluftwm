@@ -22,7 +22,6 @@ herbstclient pad $monitor $height
         hintcolor="#573500"
         separator="^fg(#141414)^ro(1x$height)^fg()"
         # draw tags
-        echo -n "$separator"
         for i in "${TAGS[@]}" ; do
             case ${i:0:1} in
                 '#')
@@ -38,10 +37,10 @@ herbstclient pad $monitor $height
             echo -n " ${i:1} "
             echo -n "$separator"
         done
-        # FIXME: how to change align to the right?
         echo -n "^bg()^p(_CENTER)"
-        # draw date
-        echo -n "$separator^bg($hintcolor) $date $separator"
+        # small adjustments
+        width=140
+        echo -n "^p(_RIGHT)^p(-$width)$separator^bg($hintcolor) $date $separator"
         echo
         # wait for next event
         read line || break
