@@ -1058,10 +1058,11 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     frame_hide_recursive(old_tag->frame);
     // 2. show new tag
     monitor->tag = tag;
-    frame_show_recursive(tag->frame);
-    // reset focus
+    // first reset focus and arrange windows
     frame_focus_recursive(tag->frame);
     monitor_apply_layout(monitor);
+    // then show them (should reduce flicker)
+    frame_show_recursive(tag->frame);
     emit_tag_changed(tag, g_cur_monitor);
 }
 
