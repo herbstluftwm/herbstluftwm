@@ -360,8 +360,6 @@ int main(int argc, char* argv[]) {
     g_screen = DefaultScreen(g_display);
     g_root = RootWindow(g_display, g_screen);
     // keybinds
-    XGrabKey(g_display, XKeysymToKeycode(g_display, XStringToKeysym("F1")),
-             Mod1Mask, g_root, True, GrabModeAsync, GrabModeAsync);
     XSelectInput(g_display, g_root, SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
     ipc_init();
     key_init();
