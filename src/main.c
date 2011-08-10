@@ -337,7 +337,7 @@ static void parse_arguments(int argc, char** argv) {
 
 static void remove_zombies(int signal) {
     int bgstatus;
-    while (waitpid(0, &bgstatus, WNOHANG) > 0);
+    while (waitpid(-1, &bgstatus, WNOHANG) > 0);
 }
 
 static void sigaction_signal(int signum, void (*handler)(int)) {
