@@ -323,6 +323,11 @@ focus_follows_shift (Integer)::
     If set, focus stays in the window, if window is shifted to an other frame.
     If unset, focus stays in the frame.
 
+swap_monitors_to_get_tag (Integer)::
+    If set: If you want to view a tag, that alreay is viewed on an other
+    monitor, then the monitor contents will be swapped and you see the wanted
+    tag on the focused monitor. If not set, nothing will be swapped.
+
 ignore_class (String/Regex)::
     If the class property of a new created window matches the ignore_class
     regex, then it will not be managed, i.e. will not be put in the layout or on

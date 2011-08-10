@@ -31,6 +31,7 @@ int* g_always_show_frame;
 int* g_default_frame_layout;
 int* g_focus_follows_shift;
 int* g_frame_bg_transparent;
+int* g_swap_monitors_to_get_tag;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
@@ -44,6 +45,7 @@ static void fetch_frame_colors() {
     g_always_show_frame = &(settings_find("always_show_frame")->value.i);
     g_frame_bg_transparent = &(settings_find("frame_bg_transparent")->value.i);
     g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
+    g_swap_monitors_to_get_tag = &(settings_find("swap_monitors_to_get_tag")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT);
     char* str = settings_find("frame_border_normal_color")->value.s;
     g_frame_border_normal_color = getcolor(str);
@@ -1033,10 +1035,22 @@ void all_monitors_apply_layout() {
 
 void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     HSMonitor* other = find_monitor_with_tag(tag);
+    if (monitor == other) {
+        // nothing to do
+        return;
+    }
     if (other != NULL) {
-        // todo: swap tags
-        // currently: do nothing
-        g_warning("cannot swap tags yet..");
+        if (*g_swap_monitors_to_get_tag) {
+            // swap tags
+            other->tag = monitor->tag;
+            monitor->tag = tag;
+            // reset focus
+            frame_focus_recursive(tag->frame);
+            monitor_apply_layout(other);
+            monitor_apply_layout(monitor);
+            emit_tag_changed(tag, other - (HSMonitor*)g_monitors->data);
+            emit_tag_changed(tag, g_cur_monitor);
+        }
         return;
     }
     HSTag* old_tag = monitor->tag;
