@@ -1048,7 +1048,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             frame_focus_recursive(tag->frame);
             monitor_apply_layout(other);
             monitor_apply_layout(monitor);
-            emit_tag_changed(tag, other - (HSMonitor*)g_monitors->data);
+            emit_tag_changed(other->tag, other - (HSMonitor*)g_monitors->data);
             emit_tag_changed(tag, g_cur_monitor);
         }
         return;
