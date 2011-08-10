@@ -1173,8 +1173,8 @@ void monitor_focus_by_index(int new_selection) {
             &rx, &ry, &wx, &wy, &mask)) {
             old->mouse.x = rx - old->rect.x;
             old->mouse.y = ry - old->rect.y;
-            old->mouse.x = CLAMP(old->mouse.x, 0, old->rect.width);
-            old->mouse.y = CLAMP(old->mouse.y, 0, old->rect.height);
+            old->mouse.x = CLAMP(old->mouse.x, 0, old->rect.width-1);
+            old->mouse.y = CLAMP(old->mouse.y, 0, old->rect.height-1);
         }
     }
     // restore position of new monitor
