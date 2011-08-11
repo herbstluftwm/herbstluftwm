@@ -382,9 +382,9 @@ int main(int argc, char* argv[]) {
         switch (event.type) {
             case ButtonPress: printf("name is: ButtonPress\n"); break;
             case ClientMessage: printf("name is: ClientMessage\n"); break;
-            case CreateNotify:printf("name is: CreateNotify\n");
+            case CreateNotify: // printf("name is: CreateNotify\n");
                 if (is_ipc_connectable(event.xcreatewindow.window)) {
-                    ipc_handle_connection(event.xcreatewindow.window);
+                    ipc_add_connection(event.xcreatewindow.window);
                 }
                 break;
             case ConfigureRequest: printf("name is: ConfigureRequest\n");
@@ -392,9 +392,7 @@ int main(int argc, char* argv[]) {
                 break;
             case ConfigureNotify: printf("name is: ConfigureNotify\n");
                 break;
-            case DestroyNotify: printf("name is: DestroyNotify\n");
-                // TODO: only try to disconnect, if it _had_ the right window-class?
-                ipc_disconnect_client(event.xcreatewindow.window);
+            case DestroyNotify: // printf("name is: DestroyNotify\n");
                 unmanage_client(event.xcreatewindow.window);
                 break;
             case EnterNotify: printf("name is: EnterNotify\n"); break;
@@ -428,7 +426,7 @@ int main(int argc, char* argv[]) {
                 // else: ignore all other maprequests from windows
                 // that are managed already
             break;
-            case PropertyNotify: //printf("name is: PropertyNotify\n"); 
+            case PropertyNotify: // printf("name is: PropertyNotify\n"); 
                 if (is_ipc_connectable(event.xproperty.window)) {
                     ipc_handle_connection(event.xproperty.window);
                 }

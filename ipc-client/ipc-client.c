@@ -47,28 +47,6 @@ static void quit_herbstclient(int signal) {
     exit(EXIT_FAILURE);
 }
 
-#define WAIT_IPC_RESPONSE \
-    do { \
-        XEvent next_event; \
-        XNextEvent(dpy, &next_event); \
-        if (next_event.type != ClientMessage) { \
-            /* discard all other events */ \
-            continue; \
-        } \
-        /* get content */ \
-        if (next_event.xclient.format != 8) { \
-            /* wrong format */ \
-            die("IPC-Response has unknown format\n"); \
-        } \
-        if (strcmp(HERBST_IPC_SUCCESS, next_event.xclient.data.b)) { \
-            /* wrong response */ \
-            die("Wrong IPC-Reponse: expected \"%s\" but got \"%s\"\n", \
-                HERBST_IPC_SUCCESS, \
-                next_event.xclient.data.b); \
-        } \
-        break; \
-    } while (1);
-
 int send_command(int argc, char* argv[]) {
     // create window
     Window win = XCreateSimpleWindow(dpy, root, 42, 42, 42, 42, 0, 0, 0);
@@ -78,42 +56,54 @@ int send_command(int argc, char* argv[]) {
     hint->res_class = HERBST_IPC_CLASS;
     XSetClassHint(dpy, win, hint);
     XFree(hint);
-    // recieve response
-    WAIT_IPC_RESPONSE;
-    // send argument count
-    XChangeProperty(dpy, win, ATOM(HERBST_IPC_ARGC_ATOM),
-        XA_ATOM, 32, PropModeReplace, (unsigned char*)&argc, 1);
-    WAIT_IPC_RESPONSE;
-    // send arguments
-    int i;
-    for (i = 0; i < argc; i++) {
-        XChangeProperty(dpy, win, ATOM(HERBST_IPC_ARGV_ATOM),
-            ATOM("UTF8_STRING"), 8, PropModeReplace,
-            (unsigned char*)argv[i], strlen(argv[i])+1);
-        WAIT_IPC_RESPONSE;
-    }
-    // wait for output
-    WAIT_IPC_RESPONSE;
-    // fetch status code
-    int command_status = HERBST_UNKNOWN_ERROR;
-    int *value;
-    Atom type;
-    int format;
-    unsigned long items, bytes;
-    if (Success != XGetWindowProperty(dpy, win,
-        ATOM(HERBST_IPC_STATUS_ATOM), 0, 1, False,
-        XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value)) {
-        // if couldnot get window property
-        die("couldnot get WindowProperty \"%s\"\n", HERBST_IPC_STATUS_ATOM);
-    }
-    // on success:
-    command_status = *value;
-    XFree(value);
-    // fetch actual command output
-    GString* output = window_property_to_g_string(dpy, win, ATOM(HERBST_IPC_OUTPUT_ATOM));
-    if (!output) {
-        // if couldnot get window property
-        die("couldnot get WindowProperty \"%s\"\n", HERBST_IPC_OUTPUT_ATOM);
+    XFlush(g_display);
+    // set arguments
+    XTextProperty text_prop;
+    Atom atom = ATOM(HERBST_IPC_ARGS_ATOM);
+    Xutf8TextListToTextProperty(g_display, argv, argc, XUTF8StringStyle, &text_prop);
+    XSetTextProperty(g_display, win, &text_prop, atom);
+    XFree(text_prop.value);
+    // get ouput
+    int command_status = 0;
+    XFlush(g_display);
+    XEvent event;
+    GString* output = NULL;
+    bool output_received = false, status_received = false;
+    XSelectInput(g_display, win, PropertyChangeMask);
+    while (!output_received && !status_received) {
+        XNextEvent(g_display, &event);
+        if (event.type != PropertyNotify) {
+            // got an event of wrong type
+            continue;
+        }
+        XPropertyEvent* pe = &(event.xproperty);
+        if (pe->window != win) {
+            // got an event from wrong window
+            continue;
+        }
+        if (!output_received
+            && !strcmp(XGetAtomName(g_display, pe->atom), HERBST_IPC_OUTPUT_ATOM)) {
+            output = window_property_to_g_string(g_display, win, ATOM(HERBST_IPC_OUTPUT_ATOM));
+            if (!output) die("couldnot get WindowProperty \"%s\"\n", HERBST_IPC_OUTPUT_ATOM);
+            output_received = true;
+        }
+        else if (!status_received && !strcmp(
+                     XGetAtomName(g_display, pe->atom),
+                     HERBST_IPC_STATUS_ATOM)) {
+            int *value;
+            Atom type;
+            int format;
+            unsigned long items, bytes;
+            if (Success != XGetWindowProperty(g_display, win,
+                    ATOM(HERBST_IPC_STATUS_ATOM), 0, 1, False,
+                    XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value)) {
+                    // if couldnot get window property
+                die("couldnot get WindowProperty \"%s\"\n", HERBST_IPC_STATUS_ATOM);
+            }
+            command_status = *value;
+            XFree(value);
+            status_received = true;
+        }
     }
     // print output to stdout
     fputs(output->str, stdout);
