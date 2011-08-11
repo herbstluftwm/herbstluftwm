@@ -4,9 +4,6 @@ Some BUGS/TODOS:
     - set range for some integer-setting-values
     - don't always re-layout all if only one thing changes (e.g. border_color)
     - don't reset border width on each layouting
-    - crash on: empty-screen -> start thunar via dmenu -> close thunar with hc close -> start dmenu
-        -> X Error of failed requiest: BadMatch-
-        -> Major obpcode of failed request 2 (X_ChangeWindowAttributes) (borderwidth? panel?)
     - get escapesequences in Makefile from tput/allow to disable colors
     - herbstclient: add timeout if server doesnot respond
     - max-layout for clients
@@ -16,11 +13,8 @@ Some BUGS/TODOS:
     - completion für keybind (recursive!)
     - completion für keyunbind
     - move cursor after focus change
-    - completion für use/merge_tag
-    - command to change pad
+    - completion for use/merge_tag
     - optional focus selection after frame_split
-    - signal system: clients with a special CLASS get client messages with signal names
-      herbstclient gets an --wait SIGNALREGEXP parameter
     - ignore windows with property: _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NOTIFICATION
     - make ipc-call faster with Xutf8TextListToTextProperty
 
