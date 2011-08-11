@@ -155,6 +155,7 @@ split 'ALIGN' 'FACTION'::
         * split horiz 0.3
         * split vertical 0.5
         * split h 0.8
+
 focus 'DIRECTION'::
     moves the focus from current frame to the next frame in 'DIRECTION' which is
     in:
@@ -185,6 +186,15 @@ focus 'DIRECTION'::
      H,1   H,0          .-----..-----.
      / \   / \          |  A  ||  D  |
     A   B C*  D         '-----''-----'
+
+resize 'DIRECTION' 'FRACTIONDELTA'::
+    changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA'.
+    'DIRECTION' is specified at the 'focus' command. You should not omit the
+    sign '-' or '+', because in future versions, the behaviour may change if the
+    sign is omitted. Example:
+
+        * resize right +0.05
+        * resize down -0.1
 
 shift 'DIRECTION'::
     shifts the focused window to the next frame in the specified 'DIRECTION'.

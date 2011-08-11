@@ -95,6 +95,7 @@ bool frame_remove_window(HSFrame* frame, Window window);
 void frame_destroy(HSFrame* frame, Window** buf, size_t* count);
 void frame_split(HSFrame* frame, int align, int fraction);
 int frame_split_command(int argc, char** argv);
+int frame_change_fraction_command(int argc, char** argv);
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect);
 void reset_frame_colors();

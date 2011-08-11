@@ -714,7 +714,7 @@ void frame_split(HSFrame* frame, int align, int fraction) {
 }
 
 int frame_split_command(int argc, char** argv) {
-    // usage: split (cur) h|v FRACTION
+    // usage: split h|v FRACTION
     if (argc < 3) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -728,6 +728,54 @@ int frame_split_command(int argc, char** argv) {
     HSFrame* frame = frame_current_selection();
     if (!frame) return 0; // nothing to do
     frame_split(frame, align, fraction);
+    return 0;
+}
+
+int frame_change_fraction_command(int argc, char** argv) {
+    // usage: fraction DIRECTION DELTA
+    if (argc < 3) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    char direction = argv[1][0];
+    double delta_double = atof(argv[2]);
+    delta_double = CLAMP(delta_double, -1.0, 1.0);
+    int delta = FRACTION_UNIT * delta_double;
+    // if direction is left or up we have to flip delta
+    // because e.g. resize up by 0.1 actually means:
+    // reduce fraction by 0.1, i.e. delta = -0.1
+    switch (direction) {
+        case 'l':   delta *= -1; break;
+        case 'r':   break;
+        case 'u':   delta *= -1; break;
+        case 'd':   break;
+        default:    return HERBST_INVALID_ARGUMENT;
+    }
+    HSFrame* neighbour = frame_neighbour(g_cur_frame, direction);
+    if (!neighbour) {
+        // then try opposite direction
+        switch (direction) {
+            case 'l':   direction = 'r'; break;
+            case 'r':   direction = 'l'; break;
+            case 'u':   direction = 'd'; break;
+            case 'd':   direction = 'u'; break;
+            default:    assert(false); break;
+        }
+        neighbour = frame_neighbour(g_cur_frame, direction);
+        if (!neighbour) {
+            // nothing to do
+            return 0;
+        }
+    }
+    HSFrame* parent = neighbour->parent;
+    assert(parent != NULL); // if has neighbour, it also must have a parent
+    assert(parent->type == TYPE_FRAMES);
+    int fraction = parent->content.layout.fraction;
+    fraction += delta;
+    fraction = CLAMP(fraction, (int)(FRAME_MIN_FRACTION * FRACTION_UNIT), (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
+    printf("=====>>>new fraction is %d\n", fraction);
+    parent->content.layout.fraction = fraction;
+    // arrange monitor
+    monitor_apply_layout(get_current_monitor());
     return 0;
 }
 
