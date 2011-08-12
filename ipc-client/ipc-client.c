@@ -56,7 +56,7 @@ int send_command(int argc, char* argv[]) {
     hint->res_class = HERBST_IPC_CLASS;
     XSetClassHint(dpy, win, hint);
     XFree(hint);
-    XFlush(g_display);
+    XSelectInput(g_display, win, PropertyChangeMask);
     // set arguments
     XTextProperty text_prop;
     Atom atom = ATOM(HERBST_IPC_ARGS_ATOM);
@@ -69,7 +69,6 @@ int send_command(int argc, char* argv[]) {
     XEvent event;
     GString* output = NULL;
     bool output_received = false, status_received = false;
-    XSelectInput(g_display, win, PropertyChangeMask);
     while (!output_received && !status_received) {
         XNextEvent(g_display, &event);
         if (event.type != PropertyNotify) {
