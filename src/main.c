@@ -428,7 +428,7 @@ int main(int argc, char* argv[]) {
             break;
             case PropertyNotify: // printf("name is: PropertyNotify\n"); 
                 if (is_ipc_connectable(event.xproperty.window)) {
-                    ipc_handle_connection(event.xproperty.window);
+                    ipc_handle_connection(event.xproperty.window, false);
                 }
                 break;
             case UnmapNotify:

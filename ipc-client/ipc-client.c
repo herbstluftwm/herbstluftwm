@@ -65,7 +65,6 @@ int send_command(int argc, char* argv[]) {
     XFree(text_prop.value);
     // get ouput
     int command_status = 0;
-    XFlush(g_display);
     XEvent event;
     GString* output = NULL;
     bool output_received = false, status_received = false;
