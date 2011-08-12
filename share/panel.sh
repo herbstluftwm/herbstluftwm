@@ -1,6 +1,11 @@
 #!/bin/bash
 
 monitor=${1:-0}
+geometry="$(herbstclient list_monitors |grep "^$monitor:"|cut -d' ' -f2)"
+# geometry has the format: WxH+X+Y
+x="$(echo $geometry |cut -d'+' -f2)"
+y="${geometry##*+}"
+width="${geometry%%x*}"
 height=16
 font="fixed"
 bgcolor='#3E2600'
@@ -58,8 +63,8 @@ herbstclient pad $monitor $height
             #player)
             #    ;;
         esac
-    done
-) |dzen2 -fn "$font" -h $height -xs $((monitor+1)) \
+        done
+) |dzen2 -w $width -x $x -y $y -fn "$font" -h $height \
     -ta l -bg "$bgcolor" -fg '#efefef'
 
 
