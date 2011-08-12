@@ -69,7 +69,7 @@ int send_command(int argc, char* argv[]) {
     XEvent event;
     GString* output = NULL;
     bool output_received = false, status_received = false;
-    while (!output_received && !status_received) {
+    while (!output_received || !status_received) {
         XNextEvent(g_display, &event);
         if (event.type != PropertyNotify) {
             // got an event of wrong type
