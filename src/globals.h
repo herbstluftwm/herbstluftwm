@@ -16,6 +16,8 @@
 #define WINDOW_MIN_HEIGHT 32
 #define WINDOW_MIN_WIDTH 32
 
+#define ROOT_EVENT_MASK (SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask)
+
 // minimum relative fraction of split frames
 #define FRAME_MIN_FRACTION 0.1
 
@@ -25,6 +27,8 @@
 Display*    g_display;
 int         g_screen;
 Window      g_root;
+int         g_screen_width;
+int         g_screen_height;
 // some settings/info
 bool        g_aboutToQuit;
 

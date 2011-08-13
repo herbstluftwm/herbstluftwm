@@ -47,6 +47,11 @@ int window_close_current();
 bool is_window_class_ignored(char* window_class);
 bool is_window_ignored(Window win);
 
+void window_show(Window win);
+void window_hide(Window win);
+void window_set_visible(Window win, bool visible);
+
+
 // some globals
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;

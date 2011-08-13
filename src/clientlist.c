@@ -205,3 +205,26 @@ bool is_window_ignored(Window win) {
     return b;
 }
 
+void window_set_visible(Window win, bool visible) {
+    static int (*action[])(Display*,Window) = {
+        XUnmapWindow,
+        XMapWindow,
+    };
+    unsigned long event_mask = PropertyChangeMask | FocusChangeMask |
+                               StructureNotifyMask;
+    XGrabServer(g_display);
+    XSelectInput(g_display, win, event_mask & ~StructureNotifyMask);
+    XSelectInput(g_display, g_root, ROOT_EVENT_MASK & ~SubstructureNotifyMask);
+    action[visible](g_display, win);
+    XSelectInput(g_display, win, event_mask);
+    XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
+    XUngrabServer(g_display);
+}
+
+void window_show(Window win) {
+    window_set_visible(win, true);
+}
+
+void window_hide(Window win) {
+    window_set_visible(win, false);
+}

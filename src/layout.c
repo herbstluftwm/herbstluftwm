@@ -596,7 +596,7 @@ int tag_remove_command(int argc, char** argv) {
         // if target monitor is viewed, then show windows
         monitor_apply_layout(monitor_target);
         for (i = 0; i < count; i++) {
-            XMapWindow(g_display, buf[i]);
+            window_show(buf[i]);
         }
     }
     g_free(buf);
@@ -984,7 +984,7 @@ static void frame_hide(HSFrame* frame) {
         Window* buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            XUnmapWindow(g_display, buf[i]);
+            window_hide(buf[i]);
         }
     }
 }
@@ -1000,7 +1000,7 @@ static void frame_show_clients(HSFrame* frame) {
         Window* buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            XMapWindow(g_display, buf[i]);
+            window_show(buf[i]);
         }
     }
 }
@@ -1066,9 +1066,9 @@ void frame_set_visible(HSFrame* frame, bool visible) {
         return;
     }
     if (visible) {
-        XMapWindow(g_display, frame->window);
+        window_show(frame->window);
     } else {
-        XUnmapWindow(g_display, frame->window);
+        window_hide(frame->window);
     }
     frame->window_visible = visible;
 }
@@ -1111,6 +1111,9 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     monitor_apply_layout(monitor);
     // then show them (should reduce flicker)
     frame_show_recursive(tag->frame);
+    // focus window just has been shown
+    // focus again to give input focus
+    frame_focus_recursive(tag->frame);
     emit_tag_changed(tag, g_cur_monitor);
 }
 
@@ -1160,7 +1163,7 @@ int tag_move_window_command(int argc, char** argv) {
     if (monitor && !monitor_target) {
         // window is moved to unvisible tag
         // so hide it
-        XUnmapWindow(g_display, window);
+        window_hide(window);
     }
     monitor_apply_layout(monitor);
     if (monitor_target) {

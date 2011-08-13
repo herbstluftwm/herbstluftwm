@@ -359,9 +359,11 @@ int main(int argc, char* argv[]) {
     sigaction_signal(SIGCHLD, remove_zombies);
     // set some globals
     g_screen = DefaultScreen(g_display);
+    g_screen_width = DisplayWidth(g_display, g_screen);
+    g_screen_height = DisplayHeight(g_display, g_screen);
     g_root = RootWindow(g_display, g_screen);
     // keybinds
-    XSelectInput(g_display, g_root, SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
+    XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
     ipc_init();
     key_init();
     settings_init();
@@ -432,7 +434,7 @@ int main(int argc, char* argv[]) {
                 }
                 break;
             case UnmapNotify:
-                printf("name is: UnmapNotify\n");
+                printf("name is: UnmapNotify for %d\n", event.xunmap.window);
                 break;
             default:
                 printf("got unknown event of type %d\n", event.type);
