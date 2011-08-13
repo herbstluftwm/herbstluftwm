@@ -395,7 +395,6 @@ int main(int argc, char* argv[]) {
             case ConfigureNotify: printf("name is: ConfigureNotify\n");
                 break;
             case DestroyNotify: // printf("name is: DestroyNotify\n");
-                unmanage_client(event.xcreatewindow.window);
                 break;
             case EnterNotify: printf("name is: EnterNotify\n"); break;
             case Expose: printf("name is: Expose\n"); break;
@@ -435,6 +434,7 @@ int main(int argc, char* argv[]) {
                 break;
             case UnmapNotify:
                 printf("name is: UnmapNotify for %d\n", event.xunmap.window);
+                unmanage_client(event.xunmap.window);
                 break;
             default:
                 printf("got unknown event of type %d\n", event.type);
