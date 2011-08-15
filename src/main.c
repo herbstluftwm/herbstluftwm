@@ -382,7 +382,16 @@ int main(int argc, char* argv[]) {
     while (!g_aboutToQuit) {
         XNextEvent(g_display, &event);
         switch (event.type) {
-            case ButtonPress: printf("name is: ButtonPress\n"); break;
+            case ButtonPress: printf("name is: ButtonPress\n");
+                if (event.xbutton.button == Button1 ||
+                    event.xbutton.button == Button2 ||
+                    event.xbutton.button == Button3) {
+                    // only change focus on real clicks... not when scrolling
+                    focus_window(event.xbutton.window, false, true);
+                }
+                // handling of event is finished, now propagate event to window
+                XAllowEvents(g_display, ReplayPointer, CurrentTime);
+                break;
             case ClientMessage: printf("name is: ClientMessage\n"); break;
             case CreateNotify: // printf("name is: CreateNotify\n");
                 if (is_ipc_connectable(event.xcreatewindow.window)) {

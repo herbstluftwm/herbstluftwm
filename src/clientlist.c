@@ -94,6 +94,11 @@ HSClient* get_client_from_window(Window window) {
     return (HSClient*) g_hash_table_lookup(g_clients, &window);
 }
 
+static void window_grab_button(Window win) {
+    XGrabButton(g_display, AnyButton, AnyModifier, win, true, ButtonPressMask,
+                GrabModeSync, GrabModeSync, None, None);
+}
+
 void manage_client(Window win) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
@@ -110,6 +115,9 @@ void manage_client(Window win) {
     // insert to layout
     HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
     client->tag = m->tag;
+    // get events from window
+    XSelectInput(g_display, win, CLIENT_EVENT_MASK);
+    window_grab_button(win);
     frame_insert_window(m->tag->frame, win);
     monitor_apply_layout(m);
 }
@@ -124,6 +132,9 @@ void unmanage_client(Window win) {
     // and arrange monitor
     HSMonitor* m = find_monitor_with_tag(client->tag);
     if (m) monitor_apply_layout(m);
+    // ignore events from it
+    XSelectInput(g_display, win, 0);
+    XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
     g_hash_table_remove(g_clients, &win);
 }
@@ -138,6 +149,8 @@ void window_focus(Window window) {
     // change window-colors
     XSetWindowBorder(g_display, lastfocus, g_window_border_normal_color);
     XSetWindowBorder(g_display, window, g_window_border_active_color);
+    // grab buttons in old window again
+    window_grab_button(lastfocus);
     lastfocus = window;
     // set keyboardfocus
     XUngrabButton(g_display, AnyButton, AnyModifier, window);
@@ -210,8 +223,7 @@ void window_set_visible(Window win, bool visible) {
         XUnmapWindow,
         XMapWindow,
     };
-    unsigned long event_mask = PropertyChangeMask | FocusChangeMask |
-                               StructureNotifyMask;
+    unsigned long event_mask = CLIENT_EVENT_MASK;
     XGrabServer(g_display);
     XSelectInput(g_display, win, event_mask & ~StructureNotifyMask);
     XSelectInput(g_display, g_root, ROOT_EVENT_MASK & ~SubstructureNotifyMask);
