@@ -935,6 +935,91 @@ Window frame_focused_window(HSFrame* frame) {
     return (Window)0;
 }
 
+// try to focus window in frame
+// returns true if win was found and focused, else returns false
+bool frame_focus_window(HSFrame* frame, Window win) {
+    if (!frame) {
+        return false;
+    }
+    if (frame->type == TYPE_CLIENTS) {
+        int i;
+        size_t count = frame->content.clients.count;
+        Window* buf = frame->content.clients.buf;
+        // search for win in buf
+        for (i = 0; i < count; i++) {
+            if (buf[i] == win) {
+                // if found, set focus to it
+                frame->content.clients.selection = i;
+                return true;
+            }
+        }
+        return false;
+    } else {
+        // type == TYPE_FRAMES
+        // search in subframes
+        bool found = frame_focus_window(frame->content.layout.a, win);
+        if (found) {
+            // set selection to first frame
+            frame->content.layout.selection = 0;
+            return true;
+        }
+        found = frame_focus_window(frame->content.layout.b, win);
+        if (found) {
+            // set selection to second frame
+            frame->content.layout.selection = 1;
+            return true;
+        }
+        return false;
+    }
+}
+
+// focus a window
+// switch_tag tells, wether to switch tag to focus to window
+// switch_monitor tells, wether to switch monitor to focus to window
+// returns if window was focused or not
+bool focus_window(Window win, bool switch_tag, bool switch_monitor) {
+    HSClient* client = get_client_from_window(win);
+    if (!client) {
+        // client is not managed
+        return false;
+    }
+    HSTag* tag = client->tag;
+    assert(client->tag);
+    HSMonitor* monitor = find_monitor_with_tag(tag);
+    HSMonitor* cur_mon = get_current_monitor();
+    if (monitor != cur_mon && !switch_monitor) {
+        // if we are not allowed to switch tag
+        // and tag is not on current monitor (or on no monitor)
+        // than we cannot focus the window
+        return false;
+    }
+    if (monitor == NULL && !switch_tag) {
+        return false;
+    }
+    if (monitor != cur_mon && monitor != NULL) {
+        if (!switch_monitor) {
+            return false;
+        } else {
+            // switch monitor
+            monitor_focus_by_index(monitor_index_of(monitor));
+            cur_mon = get_current_monitor();
+            assert(cur_mon == monitor);
+        }
+    }
+    monitor_set_tag(cur_mon, tag);
+    cur_mon = get_current_monitor();
+    if (cur_mon->tag != tag) {
+        // could not set tag on monitor
+        return false;
+    }
+    // now the right tag is visible
+    // now focus it
+    bool found = frame_focus_window(tag->frame, win);
+    frame_focus_recursive(tag->frame);
+    monitor_apply_layout(cur_mon);
+    return found;
+}
+
 int frame_focus_recursive(HSFrame* frame) {
     // follow the selection to a leave
     while (frame->type == TYPE_FRAMES) {
@@ -1196,6 +1281,10 @@ int monitor_cycle_command(int argc, char** argv) {
     // really change selection
     monitor_focus_by_index(new_selection);
     return 0;
+}
+
+int monitor_index_of(HSMonitor* monitor) {
+    return monitor - (HSMonitor*)g_monitors->data;
 }
 
 void monitor_focus_by_index(int new_selection) {

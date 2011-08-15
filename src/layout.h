@@ -127,6 +127,8 @@ int frame_split_count_to_root(HSFrame* frame, int align);
 // returns the Window that is focused
 // returns 0 if there is none
 Window frame_focused_window(HSFrame* frame);
+bool frame_focus_window(HSFrame* frame, Window win);
+bool focus_window(Window win, bool switch_tag, bool switch_monitor);
 // moves a window to an other frame
 int frame_move_window_command(int argc, char** argv);
 /// removes the current frame
@@ -147,6 +149,7 @@ HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag);
 void monitor_focus_by_index(int new_selection);
+int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv);
 int add_monitor_command(int argc, char** argv);
