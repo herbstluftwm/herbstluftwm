@@ -7,7 +7,7 @@ x="$(echo $geometry |cut -d'+' -f2)"
 y="${geometry##*+}"
 width="${geometry%%x*}"
 height=16
-font="fixed"
+font="-*-fixed-medium-*-*-*-12-*-*-*-*-*-*-*"
 bgcolor='#3E2600'
 
 herbstclient pad $monitor $height
@@ -44,8 +44,11 @@ herbstclient pad $monitor $height
         done
         echo -n "^bg()^p(_CENTER)"
         # small adjustments
-        width=140
-        echo -n "^p(_RIGHT)^p(-$width)$separator^bg($hintcolor) $date $separator"
+        right="$separator^bg($hintcolor) $date $separator"
+        right_text_only=$(echo -n "$right"|sed 's.\^[^(]*([^)]*)..g')
+        # get width of right aligned text.. and add some space..
+        width=$(textwidth "$font" "$right_text_only  ")
+        echo -n "^p(_RIGHT)^p(-$width)$right"
         echo
         # wait for next event
         read line || break
