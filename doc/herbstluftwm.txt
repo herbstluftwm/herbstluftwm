@@ -333,6 +333,11 @@ focus_follows_shift (Integer)::
     If set, focus stays in the window, if window is shifted to an other frame.
     If unset, focus stays in the frame.
 
+focus_follows_mouse (Integer)::
+    If set and a window is focused by mouse cursor, this window is focused (This
+    feature is also known as sloppy focus). If unset, you need to click to
+    change the window focus by mouse.
+
 swap_monitors_to_get_tag (Integer)::
     If set: If you want to view a tag, that alreay is viewed on an other
     monitor, then the monitor contents will be swapped and you see the wanted

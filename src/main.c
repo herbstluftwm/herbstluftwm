@@ -34,6 +34,7 @@ static Bool     g_otherwm;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 static Cursor g_cursor;
 static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
+static int*     g_focus_follows_mouse = NULL;
 
 
 int quit();
@@ -349,6 +350,11 @@ static void sigaction_signal(int signum, void (*handler)(int)) {
     sigaction(signum, &act, NULL);
 }
 
+static void fetch_settings() {
+    // fetch settings only for this main.c file from settings table
+    g_focus_follows_mouse = &(settings_find("focus_follows_mouse")->value.i);
+}
+
 
 int main(int argc, char* argv[]) {
     parse_arguments(argc, argv);
@@ -367,6 +373,7 @@ int main(int argc, char* argv[]) {
     ipc_init();
     key_init();
     settings_init();
+    fetch_settings();
     clientlist_init();
     layout_init();
     hook_init();
@@ -405,7 +412,12 @@ int main(int argc, char* argv[]) {
                 break;
             case DestroyNotify: // printf("name is: DestroyNotify\n");
                 break;
-            case EnterNotify: printf("name is: EnterNotify\n"); break;
+            case EnterNotify: printf("name is: EnterNotify\n");
+                if (*g_focus_follows_mouse) {
+                    // sloppy focus
+                    focus_window(event.xcrossing.window, false, true);
+                }
+            break;
             case Expose: printf("name is: Expose\n"); break;
             case FocusIn: printf("name is: FocusIn\n"); break;
             case KeyPress: printf("name is: KeyPress\n");
