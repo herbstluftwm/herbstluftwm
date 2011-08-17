@@ -100,3 +100,15 @@ a {
     color: black;
 }
 
+.screenshot img {
+    border: none;
+    padding: 1px;
+    background-color: #878787;
+    border: 1px solid black;
+}
+.screenshot {
+    text-decoration: none;
+}
+
+
+
