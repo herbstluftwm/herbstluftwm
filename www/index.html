@@ -1,0 +1,95 @@
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<html>
+ <head>
+  <link href="main.css" rel="stylesheet" type="text/css"> 
+  <title>Herbstluftwm</title>
+ </head>
+ <body>
+  <div class="header">
+   <div class="wmname">
+    herbstluftwm
+   </div>
+   <div class="navigation">
+    <a href="#about">About</a>
+    <a href="#getit">Get It</a>
+    <a href="#faq">FAQ</a>
+    <a href="#doc">Documentation</a>
+    <a href="#support">Support</a>
+   </div>
+  </div>
+  <div class="content">
+   <h1 id="about">About</h1>
+
+    herbstluftwm is a manual tiling window manager for X11 using Xlib and Glib.
+    Its main features can be described with:
+
+    <ul>
+
+     <li>the layout is based on splitting frames into subframes which can be split
+     again or can be filled with windows (similar to <a
+     href="http://i3wm.org/">i3</a>/<a
+     href="http://aerosuidae.net/musca.html">musca</a>)</li>
+
+     <li> tags (or workspaces or virtual desktops or ...) can be added/removed
+     at runtime. Each tag contains an own layout</li>
+
+     <li> exactly one tag is viewed on each monitor. The tags are monitor
+     independent (similar to <a href="http://xmonad.org/">xmonad</a>)</li>
+
+     <li> it is configured at runtime via ipc calls from herbstclient. So the
+     configuration file is just a script which is run on startup. (similar to <a
+     href="http://wmii.suckless.org/">wmii</a>/<a
+     href="http://aerosuidae.net/musca.html">musca</a>)</li>
+
+    </ul>
+
+   <h1 id="getit">Get It</h1>
+   There aren't any releases yet. You can browse the source in the 
+   <a
+   href="http://git.informatik.uni-erlangen.de/?p=re06huxa/herbstluftwm">GitWeb</a>
+   or directly clone the git repository with:
+
+    <div class="codeblock">
+        git clone git://git.informatik.uni-erlangen.de/re06huxa/herbstluftwm
+    </div>
+
+
+   <h1 id="faq">FAQ</h1>
+   <h2>Why is herbstluftwm called herbstluftwm?</h2>
+   I liked the name of the e-mail client wanderlust. Unfortunately I am a happy
+   mutt user, so I needed an other application with a similar name.
+
+   <h2>If the config is a bashscript, does it mean it is called on each
+   keystroke?</h2>
+   No, the configfile is executed once to set internal settings and keybindings
+   and so on. If a keybind is registred and its key is pressed, the according
+   (internal) command directly is called.
+
+
+
+   <h1 id="doc">Documentation</h1>
+   There are manpages in the <span class="code">doc/</span> directory. The also
+   can be seen online:
+
+   <ul>
+    <li><a href="herbstluftwm.html">herbstluftwm</a></li>
+    <li><a href="herbstclient.html">herbstclient</a></li>
+   </ul>
+
+   <h1 id="support">Support</h1>
+   feel free to join
+    <span class="code">#herbstluftwm</span> at
+    <span class="code">irc.oftc.net</span>.
+
+   <div class="footer">
+    <b>Imprint:</b>
+        Thorsten Wißmann,
+        edu _at_ thorsten _minus_ wissmann _dot_ de,
+        August 2011
+   </div>
+  </div>
+ </body>
+</html>
+
+<!-- vim: tw=80
+-->
