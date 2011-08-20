@@ -36,6 +36,12 @@ unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
 unsigned long g_frame_bg_normal_color;
+char*   g_tree_style = NULL;
+
+char* g_layout_names[] = {
+    "vertical",
+    "horizontal",
+};
 
 static void fetch_frame_colors() {
     // load settings
@@ -56,6 +62,15 @@ static void fetch_frame_colors() {
     g_frame_bg_normal_color = getcolor(str);
     str = settings_find("frame_bg_active_color")->value.s;
     g_frame_bg_active_color = getcolor(str);
+
+    // tree style
+    g_tree_style = settings_find("tree_style")->value.s;
+    if (g_utf8_strlen(g_tree_style, -1) < 8) {
+        g_warning("too few characters in setting tree_style\n");
+        // ensure that it is long enough
+        char* argv[] = { "set", "tree_style", "01234567" };
+        settings_set(LENGTH(argv), argv);
+    }
 }
 
 void layout_init() {
@@ -198,51 +213,73 @@ void frame_destroy(HSFrame* frame, Window** buf, size_t* count) {
     g_free(frame);
 }
 
-void print_frame_tree(HSFrame* frame, int indent, GString** output) {
-    unsigned int j;
+void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** output) {
     if (frame->type == TYPE_CLIENTS) {
+        g_string_append(*output, rootprefix);
+        *output = g_string_append_unichar(*output,
+            UTF8_STRING_AT(g_tree_style, 5));
+        // list of clients
+        g_string_append_printf(*output, " %s:",
+            g_layout_names[frame->content.clients.layout]);
         Window* buf = frame->content.clients.buf;
-        size_t count = frame->content.clients.count;
-        int selection = frame->content.clients.selection;
-        unsigned int i;
-        for (j = 0; j < indent; j++) {
-            *output = g_string_append(*output, " ");
-        }
-        g_string_append_printf(*output, "frame with wins:%s\n",
-            (g_cur_frame == frame) ? "[FOCUS]" : "");
+        size_t i, count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            for (j = 0; j < indent; j++) {
-                *output = g_string_append(*output, " ");
-            }
-            g_string_append_printf(*output, "  %s win %d\n",
-                (selection == i) ? "*" : " ",
-                (int)buf[i]);
+            g_string_append_printf(*output, " 0x%lx", buf[i]);
         }
-    } else { /* frame->type == TYPE_FRAMES */
-        for (j = 0; j < indent; j++) {
-            *output = g_string_append(*output, " ");
+        if (g_cur_frame == frame) {
+            *output = g_string_append(*output, " [FOCUS]");
         }
-        HSLayout* layout = &frame->content.layout;
-        g_string_append_printf(*output,
-            "frame: layout %s, size %f%%\n", (layout->align == LAYOUT_VERTICAL
-                                        ? "vert" : "horz"),
-                ((double)layout->fraction*100)/(double)FRACTION_UNIT);
-        assert(layout->a->parent == frame);
-        assert(layout->b->parent == frame);
-        print_frame_tree(layout->a, indent+2, output);
-        print_frame_tree(layout->b, indent+2, output);
-    }
+        *output = g_string_append(*output, "\n");
+    } else {
+        /* type == TYPE_FRAMES */
+        g_string_append_printf(*output, "%s", rootprefix);
+        *output = g_string_append_unichar(*output,
+            UTF8_STRING_AT(g_tree_style, 6));
+        *output = g_string_append_unichar(*output,
+            UTF8_STRING_AT(g_tree_style, 7));
+        // insert frame description
+        g_string_append_printf(*output, "%s %d%% selection=%d",
+            g_layout_names[frame->content.layout.align],
+            frame->content.layout.fraction * 100 / FRACTION_UNIT,
+            frame->content.layout.selection);
 
+        *output = g_string_append_c(*output, '\n');
+
+        // first child
+        GString* child_indent = g_string_new(indent);
+        child_indent = g_string_append_c(child_indent, ' ');
+        child_indent = g_string_append_unichar(child_indent,
+            UTF8_STRING_AT(g_tree_style, 1));
+
+        GString* child_prefix = g_string_new(indent);
+        child_prefix = g_string_append_c(child_prefix, ' ');
+        child_prefix = g_string_append_unichar(child_prefix,
+            UTF8_STRING_AT(g_tree_style, 3));
+        print_frame_tree(frame->content.layout.a, child_indent->str,
+                         child_prefix->str, output);
+
+        // second child
+        g_string_printf(child_indent, "%s ", indent);
+        child_indent = g_string_append_unichar(child_indent,
+            UTF8_STRING_AT(g_tree_style, 2));
+        g_string_printf(child_prefix, "%s ", indent);
+        child_prefix = g_string_append_unichar(child_prefix,
+            UTF8_STRING_AT(g_tree_style, 4));
+        print_frame_tree(frame->content.layout.b, child_indent->str,
+                         child_prefix->str, output);
+
+        // cleanup
+        g_string_free(child_indent, true);
+        g_string_free(child_prefix, true);
+    }
 }
 
-void print_tag_tree(GString** output) {
-    int i;
-    for (i = 0; i < g_tags->len; i++) {
-        HSTag* tag = g_array_index(g_tags, HSTag*, i);
-        char* name = tag->name->str;
-        g_string_append_printf(*output, "tag \"%s\" with:\n", name);
-        print_frame_tree(tag->frame, 2, output);
-    }
+void print_tag_tree(HSTag* tag, GString** output) {
+    GString* root_indicator = g_string_new("");
+    root_indicator = g_string_append_unichar(root_indicator,
+            UTF8_STRING_AT(g_tree_style, 0));
+    print_frame_tree(tag->frame, " ", root_indicator->str, output);
+    g_string_free(root_indicator, true);
 }
 
 void monitor_apply_layout(HSMonitor* monitor) {

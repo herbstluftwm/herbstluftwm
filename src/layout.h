@@ -17,6 +17,8 @@ enum {
     LAYOUT_COUNT,
 };
 
+extern char* g_layout_names[];
+
 enum {
     TYPE_CLIENTS = 0,
     TYPE_FRAMES,
@@ -100,8 +102,8 @@ int frame_change_fraction_command(int argc, char** argv);
 void frame_apply_layout(HSFrame* frame, XRectangle rect);
 void reset_frame_colors();
 
-void print_tag_tree(GString** output);
-void print_frame_tree(HSFrame* frame, int indent, GString** output);
+void print_tag_tree(HSTag* tag, GString** output);
+void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** output);
 
 int frame_current_cycle_selection(int argc, char** argv);
 

@@ -44,6 +44,8 @@ SettingsPair g_settings[] = {
     { "focus_follows_shift", { .i = 1 }, .type = HS_Int },
     { "focus_follows_mouse", { .i = 0 }, .type = HS_Int },
     { "swap_monitors_to_get_tag", { .i = 1 }, .type = HS_Int },
+    { "tree_style", { .s = "*| +`--." }, .type = HS_String,
+        .on_change = reset_frame_colors },
     { "ignore_class", { .s = "Conky" },
         .on_change = reset_client_settings },
 };

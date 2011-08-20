@@ -36,6 +36,11 @@ void argv_free(int argc, char** argv);
 
 XRectangle parse_rectangle(char* string);
 
+// returns the unichar in GSTR at position GSTR
+#define UTF8_STRING_AT(GSTR, OFFS) \
+    g_utf8_get_char( \
+        g_utf8_offset_to_pointer((GSTR), (OFFS))) \
+
 #define RECTANGLE_EQUALS(a, b) (\
         (a).x == (b).x &&   \
         (a).y == (b).y &&   \

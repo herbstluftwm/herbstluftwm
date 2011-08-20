@@ -23,6 +23,7 @@
 #include <getopt.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <assert.h>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -105,14 +106,17 @@ int version(int argc, char* argv[], GString** result) {
 }
 
 int print_layout_command(int argc, char** argv, GString** result) {
-    (void) argc;
-    (void) argv;
-    HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
-    HSTag* tag = m->tag;
-    if (!tag) {
-        return 0;
+    HSTag* tag = NULL;
+    if (argc >= 2) {
+        tag = find_tag(argv[1]);
     }
-    print_tag_tree(result);
+    // if no tag was found
+    if (!tag) {
+        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+        tag = m->tag;
+    }
+    assert(tag != NULL);
+    print_tag_tree(tag, result);
     return 0;
 }
 
@@ -454,7 +458,7 @@ int main(int argc, char* argv[]) {
                 }
                 break;
             case UnmapNotify:
-                printf("name is: UnmapNotify for %d\n", event.xunmap.window);
+                printf("name is: UnmapNotify for %lx\n", event.xunmap.window);
                 unmanage_client(event.xunmap.window);
                 break;
             default:
