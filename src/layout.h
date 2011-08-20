@@ -104,6 +104,7 @@ void reset_frame_colors();
 
 void print_tag_tree(HSTag* tag, GString** output);
 void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** output);
+void dump_frame_tree(HSFrame* frame, GString** output);
 
 int frame_current_cycle_selection(int argc, char** argv);
 

@@ -213,6 +213,29 @@ void frame_destroy(HSFrame* frame, Window** buf, size_t* count) {
     g_free(frame);
 }
 
+void dump_frame_tree(HSFrame* frame, GString** output) {
+    if (frame->type == TYPE_CLIENTS) {
+        g_string_append_printf(*output, "(%s:%d",
+            g_layout_names[frame->content.clients.layout],
+            frame->content.clients.selection);
+        Window* buf = frame->content.clients.buf;
+        size_t i, count = frame->content.clients.count;
+        for (i = 0; i < count; i++) {
+            g_string_append_printf(*output, " 0x%lx", buf[i]);
+        }
+        g_string_append_c(*output, ')');
+    } else {
+        /* type == TYPE_FRAMES */
+        g_string_append_printf(*output, "(%s:%d ",
+            g_layout_names[frame->content.layout.align],
+            frame->content.layout.selection);
+        dump_frame_tree(frame->content.layout.a, output);
+        g_string_append_c(*output, ' ');
+        dump_frame_tree(frame->content.layout.b, output);
+        g_string_append_c(*output, ')');
+    }
+}
+
 void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** output) {
     if (frame->type == TYPE_CLIENTS) {
         g_string_append(*output, rootprefix);

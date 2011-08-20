@@ -82,6 +82,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "move_monitor",   move_monitor_command),
     CMD_BIND_NO_OUTPUT(   "pad",            monitor_set_pad_command),
     CMD_BIND(             "layout",         print_layout_command),
+    CMD_BIND(             "dump",           print_layout_command),
     CMD_BIND(             "complete",       complete_command),
     {{ NULL }}
 };
@@ -105,6 +106,8 @@ int version(int argc, char* argv[], GString** result) {
     return 0;
 }
 
+// prints or dumps the layout of an given tag
+// first argument tells wether to print or to dump
 int print_layout_command(int argc, char** argv, GString** result) {
     HSTag* tag = NULL;
     if (argc >= 2) {
@@ -116,7 +119,11 @@ int print_layout_command(int argc, char** argv, GString** result) {
         tag = m->tag;
     }
     assert(tag != NULL);
-    print_tag_tree(tag, result);
+    if (argc > 0 && !strcmp(argv[0], "dump")) {
+        dump_frame_tree(tag->frame, result);
+    } else {
+        print_tag_tree(tag, result);
+    }
     return 0;
 }
 
