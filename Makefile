@@ -24,10 +24,10 @@ cleandoc:
 	@rm -f doc/herbstclient.html
 
 build-herbstclient:
-	make -C ipc-client
+	$(MAKE) -C ipc-client
 
 clean-herbstclient:
-	make -C ipc-client clean
+	$(MAKE) -C ipc-client clean
 
 doc: doc/herbstclient.1 doc/herbstclient.html doc/herbstluftwm.1 doc/herbstluftwm.html
 
