@@ -42,6 +42,7 @@ int quit();
 int reload();
 int version(int argc, char* argv[], GString** result);
 int print_layout_command(int argc, char** argv, GString** result);
+int load_command(int argc, char** argv, GString** result);
 int print_tag_status_command(int argc, char** argv, GString** result);
 void execute_autostart_file();
 int spawn(int argc, char** argv);
@@ -83,6 +84,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "pad",            monitor_set_pad_command),
     CMD_BIND(             "layout",         print_layout_command),
     CMD_BIND(             "dump",           print_layout_command),
+    CMD_BIND(             "load",           load_command),
     CMD_BIND(             "complete",       complete_command),
     {{ NULL }}
 };
@@ -124,6 +126,27 @@ int print_layout_command(int argc, char** argv, GString** result) {
     } else {
         print_tag_tree(tag, result);
     }
+    return 0;
+}
+
+int load_command(int argc, char** argv, GString** result) {
+    // usage: load TAG LAYOUT
+    HSTag* tag = NULL;
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    char* layout_string = argv[1];
+    if (argc >= 3) {
+        tag = find_tag(argv[1]);
+        layout_string = argv[2];
+    }
+    // if no tag was found
+    if (!tag) {
+        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+        tag = m->tag;
+    }
+    assert(tag != NULL);
+    g_string_printf(*result, "loading %s to tag %s\n", layout_string, tag->name->str);
     return 0;
 }
 
