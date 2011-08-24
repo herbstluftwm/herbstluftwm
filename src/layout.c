@@ -176,9 +176,6 @@ bool frame_remove_window(HSFrame* frame, Window window) {
                 // ensure, that it's a valid index
                 selection = count ? CLAMP(selection, 0, count-1) : 0;
                 frame->content.clients.selection = selection;
-                if (selection < count) {
-                    window_focus(buf[selection]);
-                }
                 return true;
             }
         }
@@ -392,6 +389,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
         rect.height -= *g_window_gap;
         rect.width -= *g_window_gap;
         frame_apply_layout(monitor->tag->frame, rect);
+        frame_focus_recursive(monitor->tag->frame);
     }
 }
 
@@ -1040,6 +1038,8 @@ int frame_move_window_command(int argc, char** argv) {
                     break;
                 }
             }
+        } else {
+            frame_focus_recursive(g_cur_frame);
         }
         // layout was changed, so update it
         monitor_apply_layout(get_current_monitor());
@@ -1166,9 +1166,7 @@ int frame_focus_recursive(HSFrame* frame) {
         int selection = frame->content.clients.selection;
         window_focus(frame->content.clients.buf[selection]);
     } else {
-        // else give focus to root window
-        XUngrabButton(g_display, AnyButton, AnyModifier, g_root);
-        XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
+        window_unfocus_last();
     }
     return 0;
 }
@@ -1383,6 +1381,7 @@ int tag_move_window_command(int argc, char** argv) {
         // so hide it
         window_hide(window);
     }
+    frame_focus_recursive(frame);
     monitor_apply_layout(monitor);
     if (monitor_target) {
         monitor_apply_layout(monitor_target);

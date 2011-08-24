@@ -106,14 +106,15 @@ int frame_change_fraction_command(int argc, char** argv);
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect);
 void reset_frame_colors();
+HSFrame* get_toplevel_frame(HSFrame* frame);
 
 void print_tag_tree(HSTag* tag, GString** output);
 void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** output);
 void dump_frame_tree(HSFrame* frame, GString** output);
 // create apply a described layout to a frame and its subframes
-// returns offset of bytes parsed
-// or -1 on an error
-int load_frame_tree(HSFrame* frame, char* description, GString** errormsg);
+// returns pointer to string that wasnot parsed yet
+// or NULL on an error
+char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg);
 int find_layout_by_name(char* name);
 
 int frame_current_cycle_selection(int argc, char** argv);

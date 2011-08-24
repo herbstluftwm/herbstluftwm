@@ -144,14 +144,30 @@ void destroy_client(HSClient* client) {
     g_free(client);
 }
 
-void window_focus(Window window) {
-    static Window lastfocus = 0;
-    // change window-colors
-    XSetWindowBorder(g_display, lastfocus, g_window_border_normal_color);
-    XSetWindowBorder(g_display, window, g_window_border_active_color);
+void window_unfocus(Window window) {
     // grab buttons in old window again
-    window_grab_button(lastfocus);
+    printf("unfocusing %lx\n", window);
+    XSetWindowBorder(g_display, window, g_window_border_normal_color);
+    window_grab_button(window);
+}
+
+static Window lastfocus = 0;
+void window_unfocus_last() {
+    if (lastfocus) {
+        window_unfocus(lastfocus);
+        lastfocus = 0;
+    }
+    // give focus to root window
+    XUngrabButton(g_display, AnyButton, AnyModifier, g_root);
+    XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
+}
+
+void window_focus(Window window) {
+    // unfocus last one
+    window_unfocus(lastfocus);
     lastfocus = window;
+    // change window-colors
+    XSetWindowBorder(g_display, window, g_window_border_active_color);
     // set keyboardfocus
     XUngrabButton(g_display, AnyButton, AnyModifier, window);
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
