@@ -146,17 +146,25 @@ int load_command(int argc, char** argv, GString** result) {
         tag = m->tag;
     }
     assert(tag != NULL);
-    int offset = load_frame_tree(tag->frame, layout_string, result);
-    if (offset < 0) {
+    char* rest = load_frame_tree(tag->frame, layout_string, result);
+    // arrange monitor
+    HSMonitor* m = find_monitor_with_tag(tag);
+    if (m) {
+        frame_show_recursive(tag->frame);
+        // reset focus
+        frame_focus_recursive(tag->frame);
+        monitor_apply_layout(m);
+    } else {
+        frame_hide_recursive(tag->frame);
+    }
+    if (!rest) {
         return HERBST_INVALID_ARGUMENT;
     }
-    int len = strlen(layout_string);
-    if (offset > len) {
-        g_string_printf(*result, "%s: offset is to large\n", argv[0]);
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (offset < len) {
-        g_string_printf(*result, "%s: layout description was too short\n", argv[0]);
+    if (rest[0] != '\0') { // if string wasnot parsed completely
+        g_string_append_printf(*result,
+            "%s: layout description was too long\n", argv[0]);
+        g_string_append_printf(*result,
+            "%s: \"%s\" has not been parsed\n", argv[0], rest);
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;
@@ -458,7 +466,7 @@ int main(int argc, char* argv[]) {
                 break;
             case DestroyNotify: // printf("name is: DestroyNotify\n");
                 break;
-            case EnterNotify: printf("name is: EnterNotify\n");
+            case EnterNotify: //printf("name is: EnterNotify\n");
                 if (*g_focus_follows_mouse) {
                     // sloppy focus
                     focus_window(event.xcrossing.window, false, true);

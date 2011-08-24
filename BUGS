@@ -17,4 +17,5 @@ Some BUGS/TODOS:
     - optional focus selection after frame_split
     - ignore windows with property: _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NOTIFICATION
     - make ipc-call faster with Xutf8TextListToTextProperty
+    - reduce flicker on load command by blocking the usage of monitor_apply_layout()
 

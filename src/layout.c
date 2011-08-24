@@ -243,57 +243,185 @@ void dump_frame_tree(HSFrame* frame, GString** output) {
     }
 }
 
-int load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
-    char* old_description = description;
-    char* next;
+char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
     // find next (
     description = strchr(description, LAYOUT_DUMP_BRACKETS[0]);
     if (!description) {
-        g_string_append_printf(*errormsg, "missing (\n");
-        return -1;
+        g_string_append_printf(*errormsg, "missing %c\n",
+            LAYOUT_DUMP_BRACKETS[0]);
+        return NULL;
     }
     description++; // jump over (
 
-    // goto frame attributes
+    // goto frame type
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
-    // get separator after first argument
-    next = strchr(description, LAYOUT_DUMP_SEPARATOR);
-    printf("finding %c in %s\n", LAYOUT_DUMP_SEPARATOR, description);
-    next[0] = '\0'; next++; // cut it here
-    int layout = find_layout_by_name(description);
-    if (layout < 0) {
-        g_string_append_printf(*errormsg, "invalid layout name %s\n",
-                               description);
-        return -1;
-    }
-    description = next;
-    // read selection and fraction
-    double fraction_double;
-    int selection;
-    if (1 != sscanf(description, "%d", &selection)) {
-        g_string_append_printf(*errormsg,
-            "cannot parse selection and fraction from %s\n",
-                               description);
-        return -1;
+    int type = TYPE_CLIENTS;
+    if (description[0] == 's') {
+        // if it could be "split"
+        type = TYPE_FRAMES;
     }
 
-    // apply it
-    bool is_type_frames = true;
-    if (is_type_frames) {
+    // get frame args
+    // jump to whitespaces and over them
+    description += strcspn(description, LAYOUT_DUMP_WHITESPACES);
+    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+    char* args = description;
+    // jump to whitespaces and over them
+    description += strcspn(description, LAYOUT_DUMP_WHITESPACES);
+    if (!*description) {
+        return NULL;
+    }
+    description[0] = '\0'; // cut here
+    description++;
+    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+    if (!*description) {
+        return NULL;
+    }
+
+    // apply type to frame
+    if (type == TYPE_FRAMES) {
+        // parse args
+        char* align_name = g_new(char, strlen(args)+1);
+        int selection;
+        double fraction_double;
+#define SEP LAYOUT_DUMP_SEPARATOR_STR
+        if (3 != sscanf(args, "%[^"SEP"]"SEP"%lf"SEP"%d",
+            align_name, &fraction_double, &selection)) {
+            g_string_append_printf(*errormsg,
+                    "cannot parse frame args \"%s\"\n", args);
+            return NULL;
+        }
+#undef SEP
+        int align = find_layout_by_name(align_name);
+        g_free(align_name);
+        if (align < 0) {
+            g_string_append_printf(*errormsg,
+                    "invalid layout name in args \"%s\"\n", args);
+            return NULL;
+        }
+        selection = !!selection; // CLAMP it to [0;1]
+        int fraction = (int)(fraction_double * (double)FRACTION_UNIT);
+
         // ensure that it is split
         if (frame->type == TYPE_FRAMES) {
             // nothing to do
+            frame->content.layout.align = align;
+            frame->content.layout.fraction = fraction;
         } else {
-            frame_split(frame, layout, FRACTION_UNIT/2);
+            frame_split(frame, align, fraction);
+            if (frame->type != TYPE_FRAMES) {
+                g_string_append_printf(*errormsg,
+                    "cannot split frame");
+                return NULL;
+            }
         }
-        if (frame->type != TYPE_FRAMES) {
-            g_string_append_printf(*errormsg,
-                "cannot split frame");
-            return -1;
-        }
+        frame->content.layout.selection = selection;
+        printf("TODO: parse \"%s\"\n", description);
+
     } else {
+        // parse args
+        char* layout_name = g_new(char, strlen(args)+1);
+        int selection;
+#define SEP LAYOUT_DUMP_SEPARATOR_STR
+        if (2 != sscanf(args, "%[^"SEP"]"SEP"%d",
+            layout_name, &selection)) {
+            g_string_append_printf(*errormsg,
+                    "cannot parse frame args \"%s\"\n", args);
+            return NULL;
+        }
+#undef SEP
+        int layout = find_layout_by_name(layout_name);
+        g_free(layout_name);
+        if (layout < 0) {
+            g_string_append_printf(*errormsg,
+                    "cannot parse layout from args \"%s\"\n", args);
+            return NULL;
+        }
+
+        // ensure that it is a client frame
+        if (frame->type == TYPE_FRAMES) {
+            // remove childs
+            Window *buf1, *buf2;
+            size_t count1, count2;
+            frame_destroy(frame->content.layout.a, &buf1, &count1);
+            frame_destroy(frame->content.layout.b, &buf2, &count2);
+
+            // merge bufs
+            size_t count = count1 + count2;
+            Window* buf = g_new(Window, count);
+            memcpy(buf,             buf1, sizeof(Window) * count1);
+            memcpy(buf + count1,    buf2, sizeof(Window) * count2);
+            g_free(buf1);
+            g_free(buf2);
+
+            // setup frame
+            frame->type = TYPE_CLIENTS;
+            frame->content.clients.buf = buf;
+            frame->content.clients.count = count;
+            frame->content.clients.selection = 0; // only some sane defauts
+            frame->content.clients.layout = 0; // only some sane defauts
+        }
+
+        // bring child wins
+        // jump over whitespaces
+        description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+        int index = 0;
+        HSTag* tag = find_tag_with_toplevel_frame(get_toplevel_frame(frame));
+        while (*description != LAYOUT_DUMP_BRACKETS[1]) {
+
+            Window win;
+            if (1 != sscanf(description, "0x%lx\n", &win)) {
+                g_string_append_printf(*errormsg,
+                        "cannot parse window id from \"%s\"\n", description);
+                return NULL;
+            }
+            // jump over window id and over whitespaces
+            description += strspn(description, "0x123456789abcdef");
+            description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+
+            // bring window here
+            HSClient* client = get_client_from_window(win);
+            if (!client) {
+                // client not managed... ignore it
+                continue;
+            }
+
+            // remove window from old tag
+            HSMonitor* clientmonitor = find_monitor_with_tag(client->tag);
+            if (!frame_remove_window(client->tag->frame, win)) {
+                g_warning("window %lx wasnot found on tag %s\n",
+                    win, client->tag->name->str);
+            }
+            if (clientmonitor) {
+                monitor_apply_layout(clientmonitor);
+            }
+
+            // insert it to buf
+            Window* buf = frame->content.clients.buf;
+            size_t count = frame->content.clients.count;
+            count++;
+            index = CLAMP(index, 0, count - 1);
+            buf = g_renew(Window, buf, count);
+            memmove(buf + index + 1, buf + index,
+                    sizeof(Window) * (count - index - 1));
+            buf[index] = win;
+            frame->content.clients.buf = buf;
+            frame->content.clients.count = count;
+
+            client->tag = tag;
+
+            index++;
+        }
+        // apply layout and selection
+        selection = CLAMP(selection, 0, frame->content.clients.count - 1);
+        frame->content.clients.layout = layout;
+        frame->content.clients.selection = selection;
     }
-    return description - old_description;
+    // jump over bracket
+    description++;
+    // and over whitespaces
+    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+    return description;
 }
 
 int find_layout_by_name(char* name) {
@@ -304,6 +432,14 @@ int find_layout_by_name(char* name) {
         }
     }
     return -1;
+}
+
+HSFrame* get_toplevel_frame(HSFrame* frame) {
+    if (!frame) return NULL;
+    while (frame->parent) {
+        frame = frame->parent;
+    }
+    return frame;
 }
 
 void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** output) {
@@ -824,6 +960,11 @@ void frame_split(HSFrame* frame, int align, int fraction) {
         // do nothing if tree would be to large
         return;
     }
+    // ensure fraction is allowed
+    fraction = CLAMP(fraction,
+                     FRACTION_UNIT * (0.0 + FRAME_MIN_FRACTION),
+                     FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
+
     HSFrame* first = frame_create_empty();
     HSFrame* second = frame_create_empty();
     first->content = frame->content;
