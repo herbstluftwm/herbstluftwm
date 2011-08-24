@@ -316,8 +316,14 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
             }
         }
         frame->content.layout.selection = selection;
-        printf("TODO: parse \"%s\"\n", description);
 
+        // now parse subframes
+        description = load_frame_tree(frame->content.layout.a,
+                        description, errormsg);
+        if (!description) return NULL;
+        description = load_frame_tree(frame->content.layout.b,
+                        description, errormsg);
+        if (!description) return NULL;
     } else {
         // parse args
         char* layout_name = g_new(char, strlen(args)+1);
