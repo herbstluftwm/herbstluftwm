@@ -531,7 +531,9 @@ void monitor_apply_layout(HSMonitor* monitor) {
         rect.height -= *g_window_gap;
         rect.width -= *g_window_gap;
         frame_apply_layout(monitor->tag->frame, rect);
-        frame_focus_recursive(monitor->tag->frame);
+        if (get_current_monitor() == monitor) {
+            frame_focus_recursive(monitor->tag->frame);
+        }
     }
 }
 
