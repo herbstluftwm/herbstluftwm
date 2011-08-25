@@ -261,18 +261,20 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
         type = TYPE_FRAMES;
     }
 
-    // get frame args
+    // get substring with frame args
     // jump to whitespaces and over them
     description += strcspn(description, LAYOUT_DUMP_WHITESPACES);
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
-    char* args = description;
-    // jump to whitespaces and over them
-    description += strcspn(description, LAYOUT_DUMP_WHITESPACES);
+    // jump to whitespaces or brackets
+    size_t args_len = strcspn(description, LAYOUT_DUMP_WHITESPACES LAYOUT_DUMP_BRACKETS);
+    char args[args_len + 1];
+    strncpy(args, description, args_len);
+    args[args_len] = '\0';
+    // jump over args substring
+    description += args_len;
     if (!*description) {
         return NULL;
     }
-    description[0] = '\0'; // cut here
-    description++;
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
     if (!*description) {
         return NULL;
@@ -423,8 +425,12 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
         frame->content.clients.layout = layout;
         frame->content.clients.selection = selection;
     }
-    // jump over bracket
-    description++;
+    // jump over closing bracket
+    if (*description == LAYOUT_DUMP_BRACKETS[1]) {
+        description++;
+    } else {
+        g_string_append_printf(*errormsg, "warning: missing closing bracket %c\n", LAYOUT_DUMP_BRACKETS[1]);
+    }
     // and over whitespaces
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
     return description;
