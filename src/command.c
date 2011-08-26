@@ -101,11 +101,22 @@ int complete_command(int argc, char** argv, GString** output) {
                 }
             }
         }
-        if (position == 1 && !strcmp(argv[2], "use")) {
+        else if (position == 1 && !strcmp(argv[2], "use")) {
             // list tags
             int i;
             for (i = 0; i < g_tags->len; i++) {
                 char* name = g_array_index(g_tags, HSTag*, i)->name->str;
+                if (!strncmp(str, name, len)) {
+                    *output = g_string_append(*output, name);
+                    *output = g_string_append(*output, "\n");
+                }
+            }
+        }
+        else if (position == 1 && (!strcmp(argv[2], "focus") ||
+                !strcmp(argv[2], "resize") || !strcmp(argv[2], "shift"))) {
+            char* words[] = { "left", "right", "up", "down" };
+            for (int i = 0; i < LENGTH(words); i++) {
+                char* name = words[i];
                 if (!strncmp(str, name, len)) {
                     *output = g_string_append(*output, name);
                     *output = g_string_append(*output, "\n");
