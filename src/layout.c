@@ -627,6 +627,8 @@ int tag_remove_command(int argc, char** argv) {
     frame_destroy(tag->frame, &buf, &count);
     int i;
     for (i = 0; i < count; i++) {
+        HSClient* client = get_client_from_window(buf[i]);
+        client->tag = target;
         frame_insert_window(target->frame, buf[i]);
     }
     if (monitor_target) {
