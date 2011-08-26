@@ -1,11 +1,13 @@
 
 # colors
-COLOR_ACTION  = "\e[1;33m"
-COLOR_FILE    = "\e[1;32m"
-COLOR_BRACKET = "\e[0;34m"
-COLOR_NORMAL  = "\e[0m"
+TPUT = tput
+COLOR_CLEAR   = `$(TPUT) sgr0`
+COLOR_NORMAL  = $(COLOR_CLEAR)
+COLOR_ACTION  = `$(TPUT) bold``$(TPUT) setaf 3`
+COLOR_FILE    = `$(TPUT) bold``$(TPUT) setaf 2`
+COLOR_BRACKET = $(COLOR_CLEAR)`$(TPUT) setaf 4`
 define colorecho
-	@echo -e $(COLOR_BRACKET)"  ["$(COLOR_ACTION)$1$(COLOR_BRACKET)"]  " $(COLOR_FILE)$2$(COLOR_BRACKET)... $(COLOR_NORMAL)
+	@echo $(COLOR_BRACKET)"  ["$(COLOR_ACTION)$1$(COLOR_BRACKET)"]  " $(COLOR_FILE)$2$(COLOR_BRACKET)... $(COLOR_NORMAL)
 endef
 
 
