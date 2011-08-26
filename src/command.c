@@ -7,6 +7,7 @@
 #include "command.h"
 #include "utils.h"
 #include "settings.h"
+#include "layout.h"
 
 #include <glib.h>
 #include <string.h>
@@ -80,13 +81,14 @@ int complete_command(int argc, char** argv, GString** output) {
         }
     }
     if (argc >= 3) {
+        char* str = (argc >= 4) ? argv[3] : "";
+        size_t len = strlen(str);
+        // complete parameters for commands
         bool is_toggle_command = !strcmp(argv[2], "toggle");
         if (position == 1 &&
             (!strcmp(argv[2], "set") || !strcmp(argv[2], "get")
             || is_toggle_command)) {
             // complete with setting name
-            char* str = (argc >= 4) ? argv[3] : "";
-            size_t len = strlen(str);
             int i;
             for (i = 0; i < settings_count(); i++) {
                 if (is_toggle_command && g_settings[i].type != HS_Int) {
@@ -95,6 +97,43 @@ int complete_command(int argc, char** argv, GString** output) {
                 // only check the first len bytes
                 if (!strncmp(str, g_settings[i].name, len)) {
                     *output = g_string_append(*output, g_settings[i].name);
+                    *output = g_string_append(*output, "\n");
+                }
+            }
+        }
+        else if ((position == 1 && !strcmp(argv[2], "use")) ||
+                 (position >= 1 && position <= 2
+                    && !strcmp(argv[2], "merge_tag"))) {
+            // we can complete first argument of use
+            // or first and second argument of merge_tag
+            bool is_merge_target = false;
+            if (!strcmp(argv[2], "merge_tag") && position == 2) {
+                // complete second arg to merge_tag
+                str = (argc >= 5) ? argv[4] : "";
+                len = strlen(str);
+                is_merge_target = true;
+            }
+            // list tags
+            int i;
+            for (i = 0; i < g_tags->len; i++) {
+                char* name = g_array_index(g_tags, HSTag*, i)->name->str;
+                if (is_merge_target && !strcmp(name, argv[3])) {
+                    // merge target must not be equal to tag to remove
+                    continue;
+                }
+                if (!strncmp(str, name, len)) {
+                    *output = g_string_append(*output, name);
+                    *output = g_string_append(*output, "\n");
+                }
+            }
+        }
+        else if (position == 1 && (!strcmp(argv[2], "focus") ||
+                !strcmp(argv[2], "resize") || !strcmp(argv[2], "shift"))) {
+            char* words[] = { "left", "right", "up", "down" };
+            for (int i = 0; i < LENGTH(words); i++) {
+                char* name = words[i];
+                if (!strncmp(str, name, len)) {
+                    *output = g_string_append(*output, name);
                     *output = g_string_append(*output, "\n");
                 }
             }

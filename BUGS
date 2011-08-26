@@ -12,7 +12,6 @@ Some BUGS/TODOS:
     - completion für keybind (recursive!)
     - completion für keyunbind
     - move cursor after focus change
-    - completion for merge_tag
     - optional focus selection after frame_split
     - ignore windows with property: _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NOTIFICATION
     - add function to put window into tag (and use it in manage, merge_tag, move)
