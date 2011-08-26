@@ -101,11 +101,26 @@ int complete_command(int argc, char** argv, GString** output) {
                 }
             }
         }
-        else if (position == 1 && !strcmp(argv[2], "use")) {
+        else if ((position == 1 && !strcmp(argv[2], "use")) ||
+                 (position >= 1 && position <= 2
+                    && !strcmp(argv[2], "merge_tag"))) {
+            // we can complete first argument of use
+            // or first and second argument of merge_tag
+            bool is_merge_target = false;
+            if (!strcmp(argv[2], "merge_tag") && position == 2) {
+                // complete second arg to merge_tag
+                str = (argc >= 5) ? argv[4] : "";
+                len = strlen(str);
+                is_merge_target = true;
+            }
             // list tags
             int i;
             for (i = 0; i < g_tags->len; i++) {
                 char* name = g_array_index(g_tags, HSTag*, i)->name->str;
+                if (is_merge_target && !strcmp(name, argv[3])) {
+                    // merge target must not be equal to tag to remove
+                    continue;
+                }
                 if (!strncmp(str, name, len)) {
                     *output = g_string_append(*output, name);
                     *output = g_string_append(*output, "\n");
