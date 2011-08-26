@@ -161,9 +161,9 @@ focus 'DIRECTION'::
     in:
 
         * l[eft]
-        * r[eft]
-        * u[eft]
-        * d[eft]
+        * r[ight]
+        * u[p]
+        * d[own]
     Direction is defined as follows: Focus is in a leaf of the binary tree.
     Each inner node in the tree remembers the last focus direction (child 0 or
     child 1). The algorithm is going as short as possible from the leaf (the
