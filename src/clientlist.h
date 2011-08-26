@@ -26,6 +26,8 @@ void clientlist_init();
 void clientlist_destroy();
 
 void window_focus(Window window);
+void window_unfocus(Window window);
+void window_unfocus_last();
 
 void reset_client_colors();
 void reset_client_settings();

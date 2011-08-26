@@ -176,9 +176,6 @@ bool frame_remove_window(HSFrame* frame, Window window) {
                 // ensure, that it's a valid index
                 selection = count ? CLAMP(selection, 0, count-1) : 0;
                 frame->content.clients.selection = selection;
-                if (selection < count) {
-                    window_focus(buf[selection]);
-                }
                 return true;
             }
         }
@@ -211,6 +208,250 @@ void frame_destroy(HSFrame* frame, Window** buf, size_t* count) {
     // free other things
     XDestroyWindow(g_display, frame->window);
     g_free(frame);
+}
+
+void dump_frame_tree(HSFrame* frame, GString** output) {
+    if (frame->type == TYPE_CLIENTS) {
+        g_string_append_printf(*output, "%cclients%c%s:%d",
+            LAYOUT_DUMP_BRACKETS[0],
+            LAYOUT_DUMP_WHITESPACES[0],
+            g_layout_names[frame->content.clients.layout],
+            frame->content.clients.selection);
+        Window* buf = frame->content.clients.buf;
+        size_t i, count = frame->content.clients.count;
+        for (i = 0; i < count; i++) {
+            g_string_append_printf(*output, "%c0x%lx",
+                LAYOUT_DUMP_WHITESPACES[0],
+                buf[i]);
+        }
+        g_string_append_c(*output, LAYOUT_DUMP_BRACKETS[1]);
+    } else {
+        /* type == TYPE_FRAMES */
+        g_string_append_printf(*output, "%csplit%c%s%c%lf%c%d%c",
+            LAYOUT_DUMP_BRACKETS[0],
+            LAYOUT_DUMP_WHITESPACES[0],
+            g_layout_names[frame->content.layout.align],
+            LAYOUT_DUMP_SEPARATOR,
+            ((double)frame->content.layout.fraction) / (double)FRACTION_UNIT,
+            LAYOUT_DUMP_SEPARATOR,
+            frame->content.layout.selection,
+            LAYOUT_DUMP_WHITESPACES[0]);
+        dump_frame_tree(frame->content.layout.a, output);
+        g_string_append_c(*output, LAYOUT_DUMP_WHITESPACES[0]);
+        dump_frame_tree(frame->content.layout.b, output);
+        g_string_append_c(*output, LAYOUT_DUMP_BRACKETS[1]);
+    }
+}
+
+char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
+    // find next (
+    description = strchr(description, LAYOUT_DUMP_BRACKETS[0]);
+    if (!description) {
+        g_string_append_printf(*errormsg, "missing %c\n",
+            LAYOUT_DUMP_BRACKETS[0]);
+        return NULL;
+    }
+    description++; // jump over (
+
+    // goto frame type
+    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+    int type = TYPE_CLIENTS;
+    if (description[0] == 's') {
+        // if it could be "split"
+        type = TYPE_FRAMES;
+    }
+
+    // get substring with frame args
+    // jump to whitespaces and over them
+    description += strcspn(description, LAYOUT_DUMP_WHITESPACES);
+    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+    // jump to whitespaces or brackets
+    size_t args_len = strcspn(description, LAYOUT_DUMP_WHITESPACES LAYOUT_DUMP_BRACKETS);
+    char args[args_len + 1];
+    strncpy(args, description, args_len);
+    args[args_len] = '\0';
+    // jump over args substring
+    description += args_len;
+    if (!*description) {
+        return NULL;
+    }
+    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+    if (!*description) {
+        return NULL;
+    }
+
+    // apply type to frame
+    if (type == TYPE_FRAMES) {
+        // parse args
+        char* align_name = g_new(char, strlen(args)+1);
+        int selection;
+        double fraction_double;
+#define SEP LAYOUT_DUMP_SEPARATOR_STR
+        if (3 != sscanf(args, "%[^"SEP"]"SEP"%lf"SEP"%d",
+            align_name, &fraction_double, &selection)) {
+            g_string_append_printf(*errormsg,
+                    "cannot parse frame args \"%s\"\n", args);
+            return NULL;
+        }
+#undef SEP
+        int align = find_layout_by_name(align_name);
+        g_free(align_name);
+        if (align < 0) {
+            g_string_append_printf(*errormsg,
+                    "invalid layout name in args \"%s\"\n", args);
+            return NULL;
+        }
+        selection = !!selection; // CLAMP it to [0;1]
+        int fraction = (int)(fraction_double * (double)FRACTION_UNIT);
+
+        // ensure that it is split
+        if (frame->type == TYPE_FRAMES) {
+            // nothing to do
+            frame->content.layout.align = align;
+            frame->content.layout.fraction = fraction;
+        } else {
+            frame_split(frame, align, fraction);
+            if (frame->type != TYPE_FRAMES) {
+                g_string_append_printf(*errormsg,
+                    "cannot split frame");
+                return NULL;
+            }
+        }
+        frame->content.layout.selection = selection;
+
+        // now parse subframes
+        description = load_frame_tree(frame->content.layout.a,
+                        description, errormsg);
+        if (!description) return NULL;
+        description = load_frame_tree(frame->content.layout.b,
+                        description, errormsg);
+        if (!description) return NULL;
+    } else {
+        // parse args
+        char* layout_name = g_new(char, strlen(args)+1);
+        int selection;
+#define SEP LAYOUT_DUMP_SEPARATOR_STR
+        if (2 != sscanf(args, "%[^"SEP"]"SEP"%d",
+            layout_name, &selection)) {
+            g_string_append_printf(*errormsg,
+                    "cannot parse frame args \"%s\"\n", args);
+            return NULL;
+        }
+#undef SEP
+        int layout = find_layout_by_name(layout_name);
+        g_free(layout_name);
+        if (layout < 0) {
+            g_string_append_printf(*errormsg,
+                    "cannot parse layout from args \"%s\"\n", args);
+            return NULL;
+        }
+
+        // ensure that it is a client frame
+        if (frame->type == TYPE_FRAMES) {
+            // remove childs
+            Window *buf1, *buf2;
+            size_t count1, count2;
+            frame_destroy(frame->content.layout.a, &buf1, &count1);
+            frame_destroy(frame->content.layout.b, &buf2, &count2);
+
+            // merge bufs
+            size_t count = count1 + count2;
+            Window* buf = g_new(Window, count);
+            memcpy(buf,             buf1, sizeof(Window) * count1);
+            memcpy(buf + count1,    buf2, sizeof(Window) * count2);
+            g_free(buf1);
+            g_free(buf2);
+
+            // setup frame
+            frame->type = TYPE_CLIENTS;
+            frame->content.clients.buf = buf;
+            frame->content.clients.count = count;
+            frame->content.clients.selection = 0; // only some sane defauts
+            frame->content.clients.layout = 0; // only some sane defauts
+        }
+
+        // bring child wins
+        // jump over whitespaces
+        description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+        int index = 0;
+        HSTag* tag = find_tag_with_toplevel_frame(get_toplevel_frame(frame));
+        while (*description != LAYOUT_DUMP_BRACKETS[1]) {
+
+            Window win;
+            if (1 != sscanf(description, "0x%lx\n", &win)) {
+                g_string_append_printf(*errormsg,
+                        "cannot parse window id from \"%s\"\n", description);
+                return NULL;
+            }
+            // jump over window id and over whitespaces
+            description += strspn(description, "0x123456789abcdef");
+            description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+
+            // bring window here
+            HSClient* client = get_client_from_window(win);
+            if (!client) {
+                // client not managed... ignore it
+                continue;
+            }
+
+            // remove window from old tag
+            HSMonitor* clientmonitor = find_monitor_with_tag(client->tag);
+            if (!frame_remove_window(client->tag->frame, win)) {
+                g_warning("window %lx wasnot found on tag %s\n",
+                    win, client->tag->name->str);
+            }
+            if (clientmonitor) {
+                monitor_apply_layout(clientmonitor);
+            }
+
+            // insert it to buf
+            Window* buf = frame->content.clients.buf;
+            size_t count = frame->content.clients.count;
+            count++;
+            index = CLAMP(index, 0, count - 1);
+            buf = g_renew(Window, buf, count);
+            memmove(buf + index + 1, buf + index,
+                    sizeof(Window) * (count - index - 1));
+            buf[index] = win;
+            frame->content.clients.buf = buf;
+            frame->content.clients.count = count;
+
+            client->tag = tag;
+
+            index++;
+        }
+        // apply layout and selection
+        selection = CLAMP(selection, 0, frame->content.clients.count - 1);
+        frame->content.clients.layout = layout;
+        frame->content.clients.selection = selection;
+    }
+    // jump over closing bracket
+    if (*description == LAYOUT_DUMP_BRACKETS[1]) {
+        description++;
+    } else {
+        g_string_append_printf(*errormsg, "warning: missing closing bracket %c\n", LAYOUT_DUMP_BRACKETS[1]);
+    }
+    // and over whitespaces
+    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
+    return description;
+}
+
+int find_layout_by_name(char* name) {
+    int i;
+    for (i = 0; i < LENGTH(g_layout_names); i++) {
+        if (!strcmp(name, g_layout_names[i])) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+HSFrame* get_toplevel_frame(HSFrame* frame) {
+    if (!frame) return NULL;
+    while (frame->parent) {
+        frame = frame->parent;
+    }
+    return frame;
 }
 
 void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** output) {
@@ -296,6 +537,9 @@ void monitor_apply_layout(HSMonitor* monitor) {
         rect.height -= *g_window_gap;
         rect.width -= *g_window_gap;
         frame_apply_layout(monitor->tag->frame, rect);
+        if (get_current_monitor() == monitor) {
+            frame_focus_recursive(monitor->tag->frame);
+        }
     }
 }
 
@@ -732,6 +976,11 @@ void frame_split(HSFrame* frame, int align, int fraction) {
         // do nothing if tree would be to large
         return;
     }
+    // ensure fraction is allowed
+    fraction = CLAMP(fraction,
+                     FRACTION_UNIT * (0.0 + FRAME_MIN_FRACTION),
+                     FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
+
     HSFrame* first = frame_create_empty();
     HSFrame* second = frame_create_empty();
     first->content = frame->content;
@@ -946,6 +1195,8 @@ int frame_move_window_command(int argc, char** argv) {
                     break;
                 }
             }
+        } else {
+            frame_focus_recursive(g_cur_frame);
         }
         // layout was changed, so update it
         monitor_apply_layout(get_current_monitor());
@@ -1072,9 +1323,7 @@ int frame_focus_recursive(HSFrame* frame) {
         int selection = frame->content.clients.selection;
         window_focus(frame->content.clients.buf[selection]);
     } else {
-        // else give focus to root window
-        XUngrabButton(g_display, AnyButton, AnyModifier, g_root);
-        XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
+        window_unfocus_last();
     }
     return 0;
 }
@@ -1289,6 +1538,7 @@ int tag_move_window_command(int argc, char** argv) {
         // so hide it
         window_hide(window);
     }
+    frame_focus_recursive(frame);
     monitor_apply_layout(monitor);
     if (monitor_target) {
         monitor_apply_layout(monitor_target);

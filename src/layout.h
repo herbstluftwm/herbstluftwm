@@ -11,6 +11,11 @@
 #include <stdlib.h>
 #include <X11/Xlib.h>
 
+#define LAYOUT_DUMP_BRACKETS "()" /* must consist of exactly two chars */
+#define LAYOUT_DUMP_WHITESPACES " \t\n" /* must be at least one char */
+#define LAYOUT_DUMP_SEPARATOR_STR ":" /* must be a string with one char */
+#define LAYOUT_DUMP_SEPARATOR LAYOUT_DUMP_SEPARATOR_STR[0]
+
 enum {
     LAYOUT_VERTICAL = 0,
     LAYOUT_HORIZONTAL,
@@ -101,9 +106,16 @@ int frame_change_fraction_command(int argc, char** argv);
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect);
 void reset_frame_colors();
+HSFrame* get_toplevel_frame(HSFrame* frame);
 
 void print_tag_tree(HSTag* tag, GString** output);
 void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** output);
+void dump_frame_tree(HSFrame* frame, GString** output);
+// create apply a described layout to a frame and its subframes
+// returns pointer to string that wasnot parsed yet
+// or NULL on an error
+char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg);
+int find_layout_by_name(char* name);
 
 int frame_current_cycle_selection(int argc, char** argv);
 

@@ -42,6 +42,7 @@ int quit();
 int reload();
 int version(int argc, char* argv[], GString** result);
 int print_layout_command(int argc, char** argv, GString** result);
+int load_command(int argc, char** argv, GString** result);
 int print_tag_status_command(int argc, char** argv, GString** result);
 void execute_autostart_file();
 int spawn(int argc, char** argv);
@@ -82,6 +83,8 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "move_monitor",   move_monitor_command),
     CMD_BIND_NO_OUTPUT(   "pad",            monitor_set_pad_command),
     CMD_BIND(             "layout",         print_layout_command),
+    CMD_BIND(             "dump",           print_layout_command),
+    CMD_BIND(             "load",           load_command),
     CMD_BIND(             "complete",       complete_command),
     {{ NULL }}
 };
@@ -105,6 +108,8 @@ int version(int argc, char* argv[], GString** result) {
     return 0;
 }
 
+// prints or dumps the layout of an given tag
+// first argument tells wether to print or to dump
 int print_layout_command(int argc, char** argv, GString** result) {
     HSTag* tag = NULL;
     if (argc >= 2) {
@@ -116,7 +121,52 @@ int print_layout_command(int argc, char** argv, GString** result) {
         tag = m->tag;
     }
     assert(tag != NULL);
-    print_tag_tree(tag, result);
+    if (argc > 0 && !strcmp(argv[0], "dump")) {
+        dump_frame_tree(tag->frame, result);
+    } else {
+        print_tag_tree(tag, result);
+    }
+    return 0;
+}
+
+int load_command(int argc, char** argv, GString** result) {
+    // usage: load TAG LAYOUT
+    HSTag* tag = NULL;
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    char* layout_string = argv[1];
+    if (argc >= 3) {
+        tag = find_tag(argv[1]);
+        layout_string = argv[2];
+    }
+    // if no tag was found
+    if (!tag) {
+        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+        tag = m->tag;
+    }
+    assert(tag != NULL);
+    char* rest = load_frame_tree(tag->frame, layout_string, result);
+    // arrange monitor
+    HSMonitor* m = find_monitor_with_tag(tag);
+    if (m) {
+        frame_show_recursive(tag->frame);
+        // reset focus
+        frame_focus_recursive(tag->frame);
+        monitor_apply_layout(m);
+    } else {
+        frame_hide_recursive(tag->frame);
+    }
+    if (!rest) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (rest[0] != '\0') { // if string wasnot parsed completely
+        g_string_append_printf(*result,
+            "%s: layout description was too long\n", argv[0]);
+        g_string_append_printf(*result,
+            "%s: \"%s\" has not been parsed\n", argv[0], rest);
+        return HERBST_INVALID_ARGUMENT;
+    }
     return 0;
 }
 
@@ -416,7 +466,7 @@ int main(int argc, char* argv[]) {
                 break;
             case DestroyNotify: // printf("name is: DestroyNotify\n");
                 break;
-            case EnterNotify: printf("name is: EnterNotify\n");
+            case EnterNotify: //printf("name is: EnterNotify\n");
                 if (*g_focus_follows_mouse) {
                     // sloppy focus
                     focus_window(event.xcrossing.window, false, true);
