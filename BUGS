@@ -12,8 +12,7 @@ Some BUGS/TODOS:
     - completion für keybind (recursive!)
     - completion für keyunbind
     - move cursor after focus change
-    - completion for use/merge_tag
+    - completion for merge_tag
     - optional focus selection after frame_split
     - ignore windows with property: _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NOTIFICATION
-    - make ipc-call faster with Xutf8TextListToTextProperty
 
