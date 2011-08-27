@@ -10,7 +10,7 @@ Build dependencies:
     - build-environemnt (gcc/other compiler, make)
     - asciidoc
 Runtime dependencies:
-    - bash (if you use the default herbstluftrc)
+    - bash (if you use the default autostart file)
     - glib >= 2.24
     - libx11
 
@@ -28,14 +28,16 @@ make
 # as root
 make PREFIX=/usr ETCDIR=/etc install
 # as user
-cp /etc/xdg/herbstluftwm/herbstluftrc ~/.config/herbstluftrc
+mkdir -p ~/.config/herbstluftwm/
+cp /etc/xdg/herbstluftwm/autostart ~/.config/herbstluftwm/autostart
 
 ==== First steps without installing ====
 # 1. compile it
 make
-# 2. copy ipc-client/herbstclient to a bin-folder or adjust path in herbstluftrc
-# 3. copy default config file to your config-dir (typically ~/.config/)
-mkdir -p "$XDG_CONFIG_HOME" && cp share/herbstluftrc "$XDG_CONFIG_HOME"/
+# 2. copy ipc-client/herbstclient to a bin-folder or adjust path in autostart file
+# 3. copy default autostart file to the config-dir (~/.config/herbstluftwm/)
+mkdir -p "$XDG_CONFIG_HOME/herbstluftwm"
+cp share/autostart "$XDG_CONFIG_HOME"/herbstluftwm
 # 4. add the share/herbstclient-completion to your /etc/bash_completion.d/ folder
 #    or source it in your bashrc
 # 5. run it in a session that has no windowmanager yet

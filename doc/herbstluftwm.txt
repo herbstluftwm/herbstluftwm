@@ -350,11 +350,15 @@ ignore_class (String/Regex)::
 
 AUTOSTART FILE
 --------------
+
 There is no config file but an autostart file, which is executed on startup. It
 is also executed on command 'reload'. If not specified by the *--autostart*
-argument, autostart file is located as 'herbstluftrc' in $XDG_CONFIG_HOME or in
-~/.config/.
-Normally it consists of a few *herbstclient* calls.
+argument, autostart file is located at '$XDG_CONFIG_HOME/herbstluftwm/autostart'
+or at '~/.config/herbstluftwm/autostart'. Normally it consists of a few
+*herbstclient* calls.
+
+For a quick install, copy the default autostart file to
+'~/.config/herbstluftwm/autostart' and make it executable.
 
 
 ENVIRONTMENT VARIABLES

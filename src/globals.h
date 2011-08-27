@@ -10,7 +10,7 @@
 #include <X11/Xlib.h>
 
 #define HERBSTLUFT_VERSION "0.1-GIT, build on "__DATE__
-#define HERBSTLUFT_AUTOSTART "herbstluftrc"
+#define HERBSTLUFT_AUTOSTART "herbstluftwm/autostart"
 
 #define HERBST_FRAME_CLASS "_HERBST_FRAME"
 #define WINDOW_MIN_HEIGHT 32

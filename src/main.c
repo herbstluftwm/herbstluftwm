@@ -351,7 +351,7 @@ void execute_autostart_file() {
         } else {
             char* home = getenv("HOME");
             if (!home) {
-                g_warning("Willnot parse config file. "
+                g_warning("Willnot run autostart file. "
                           "Neither $HOME or $XDG_CONFIG_HOME is set.\n");
                 return;
             }
