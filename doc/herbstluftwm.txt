@@ -285,7 +285,7 @@ SETTINGS
 --------
 Settings configure the behaviour of herbstluftwm and can be controlled via the
 'set', 'get' and 'toggle' command. There are two types of settings: Strings and
-integer values. An integer value is set, if its value is 1 or an other value
+integer values. An integer value is set, if its value is 1 or another value
 unequal to 0. An integer value is unset, if its value is 0.
 
 window_gap (Integer)::
@@ -330,7 +330,7 @@ default_frame_layout (Integer)::
         * 1 means horizontal
 
 focus_follows_shift (Integer)::
-    If set, focus stays in the window, if window is shifted to an other frame.
+    If set, focus stays in the window, if window is shifted to another frame.
     If unset, focus stays in the frame.
 
 focus_follows_mouse (Integer)::
@@ -339,7 +339,7 @@ focus_follows_mouse (Integer)::
     change the window focus by mouse.
 
 swap_monitors_to_get_tag (Integer)::
-    If set: If you want to view a tag, that alreay is viewed on an other
+    If set: If you want to view a tag, that already is viewed on another
     monitor, then the monitor contents will be swapped and you see the wanted
     tag on the focused monitor. If not set, nothing will be swapped.
 
