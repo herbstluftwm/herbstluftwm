@@ -62,6 +62,6 @@ install: all
 	install -m 644 doc/herbstclient.html $(DOCDIR)/
 	install -m 644 doc/herbstluftwm.html $(DOCDIR)/
 	install -m 644 BUGS $(DOCDIR)/
-	install -m 644 share/autostart $(CONFIGDIR)/
+	install -m 755 share/autostart $(CONFIGDIR)/
 	install -m 644 share/herbstclient-completion $(ETCDIR)/bash_completion.d/
 
