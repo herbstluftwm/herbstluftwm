@@ -22,6 +22,10 @@ cleandoc:
 	@rm -f doc/herbstclient.1
 	$(call colorecho,RM,doc/herbstclient.html)
 	@rm -f doc/herbstclient.html
+	$(call colorecho,RM,doc/herbstluftwm.1)
+	@rm -f doc/herbstluftwm.1
+	$(call colorecho,RM,doc/herbstluftwm.html)
+	@rm -f doc/herbstluftwm.html
 
 build-herbstclient:
 	$(MAKE) -C ipc-client
