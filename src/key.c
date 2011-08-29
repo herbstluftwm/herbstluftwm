@@ -20,7 +20,7 @@ static unsigned int numlockmask = 0;
 GList* g_key_binds = NULL;
 
 void key_init() {
-    // nothing to do yet
+    update_numlockmask();
 }
 
 void key_destroy() {
@@ -83,8 +83,7 @@ int keybind(int argc, char** argv) {
     *data = new_bind;
     g_key_binds = g_list_append(g_key_binds, data);
     // grab for events on this keycode
-    XGrabKey(g_display, keycode,
-             new_bind.modifiers, g_root, True, GrabModeAsync, GrabModeAsync);
+    grab_keybind(data, NULL);
     return 0;
 }
 
@@ -153,7 +152,7 @@ int keyunbind(int argc, char** argv) {
         return HERBST_INVALID_ARGUMENT;
     }
     key_remove_bind_with_keysym(modifiers, keysym);
-    XUngrabKey(g_display, XKeysymToKeycode(g_display, keysym), modifiers, g_root);
+    regrab_keys();
     return 0;
 }
 
@@ -171,6 +170,40 @@ void key_remove_bind_with_keysym(unsigned int modifiers, KeySym keysym){
     g_list_free_1(element);
 }
 
+void regrab_keys() {
+    update_numlockmask();
+    // init modifiers after updating numlockmask
+    XUngrabKey(g_display, AnyKey, AnyModifier, g_root); // remove all current grabs
+    g_list_foreach(g_key_binds, (GFunc)grab_keybind, NULL);
+}
 
+void grab_keybind(KeyBinding* binding, void* useless_pointer) {
+    unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask|LockMask };
+    KeyCode keycode = XKeysymToKeycode(g_display, binding->keysym);
+    if (!keycode) {
+        // ignore unknown keysyms
+        return;
+    }
+    // grab key for each modifier that is ignored (capslock, numlock)
+    for (int i = 0; i < LENGTH(modifiers); i++) {
+        XGrabKey(g_display, keycode, modifiers[i]|binding->modifiers, g_root,
+                 True, GrabModeAsync, GrabModeAsync);
+    }
+}
 
+// update the numlockmask
+// from dwm.c
+void update_numlockmask() {
+    unsigned int i, j;
+    XModifierKeymap *modmap;
+
+    numlockmask = 0;
+    modmap = XGetModifierMapping(g_display);
+    for(i = 0; i < 8; i++)
+        for(j = 0; j < modmap->max_keypermod; j++)
+            if(modmap->modifiermap[i * modmap->max_keypermod + j]
+               == XKeysymToKeycode(g_display, XK_Num_Lock))
+                numlockmask = (1 << i);
+    XFreeModifiermap(modmap);
+}
 

@@ -477,7 +477,15 @@ int main(int argc, char* argv[]) {
             case KeyPress: printf("name is: KeyPress\n");
                 handle_key_press(&event);
                 break;
-            case MappingNotify: printf("name is: MappingNotify\n");
+            case MappingNotify:
+                {
+                    // regrab when keyboard map changes
+                    XMappingEvent *ev = &event.xmapping;
+                    XRefreshKeyboardMapping(ev);
+                    if(ev->request == MappingKeyboard) {
+                        regrab_keys();
+                    }
+                }
                 break;
             case MapNotify: printf("name is: MapNotify\n");
                 // reset focus.. just to be sure
