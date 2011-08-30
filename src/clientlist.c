@@ -146,7 +146,6 @@ void destroy_client(HSClient* client) {
 
 void window_unfocus(Window window) {
     // grab buttons in old window again
-    printf("unfocusing %lx\n", window);
     XSetWindowBorder(g_display, window, g_window_border_normal_color);
     window_grab_button(window);
 }
