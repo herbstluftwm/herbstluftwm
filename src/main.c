@@ -32,6 +32,7 @@
 #include <X11/cursorfont.h>
 
 static Bool     g_otherwm;
+int g_verbose = 0;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 static Cursor g_cursor;
 static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
@@ -372,7 +373,8 @@ void execute_autostart_file() {
 
 static void parse_arguments(int argc, char** argv) {
     static struct option long_options[] = {
-        {"autostart", 1, 0, 'c'},
+        {"autostart",   1, 0, 'c'},
+        {"verbose",     0, &g_verbose, 1},
         {0, 0, 0, 0}
     };
     // parse options
@@ -381,6 +383,9 @@ static void parse_arguments(int argc, char** argv) {
         int c = getopt_long(argc, argv, "+c:", long_options, &option_index);
         if (c == -1) break;
         switch (c) {
+            case 0:
+                /* ignore recognized long option */
+                break;
             case 'c':
                 g_autostart_path = optarg;
                 break;
@@ -443,7 +448,7 @@ int main(int argc, char* argv[]) {
     while (!g_aboutToQuit) {
         XNextEvent(g_display, &event);
         switch (event.type) {
-            case ButtonPress: printf("name is: ButtonPress\n");
+            case ButtonPress: HSDebug("name is: ButtonPress\n");
                 if (event.xbutton.button == Button1 ||
                     event.xbutton.button == Button2 ||
                     event.xbutton.button == Button3) {
@@ -453,16 +458,16 @@ int main(int argc, char* argv[]) {
                 // handling of event is finished, now propagate event to window
                 XAllowEvents(g_display, ReplayPointer, CurrentTime);
                 break;
-            case ClientMessage: printf("name is: ClientMessage\n"); break;
+            case ClientMessage: HSDebug("name is: ClientMessage\n"); break;
             case CreateNotify: // printf("name is: CreateNotify\n");
                 if (is_ipc_connectable(event.xcreatewindow.window)) {
                     ipc_add_connection(event.xcreatewindow.window);
                 }
                 break;
-            case ConfigureRequest: printf("name is: ConfigureRequest\n");
+            case ConfigureRequest: HSDebug("name is: ConfigureRequest\n");
                 event_on_configure(event);
                 break;
-            case ConfigureNotify: printf("name is: ConfigureNotify\n");
+            case ConfigureNotify: HSDebug("name is: ConfigureNotify\n");
                 break;
             case DestroyNotify: // printf("name is: DestroyNotify\n");
                 break;
@@ -472,9 +477,9 @@ int main(int argc, char* argv[]) {
                     focus_window(event.xcrossing.window, false, true);
                 }
             break;
-            case Expose: printf("name is: Expose\n"); break;
-            case FocusIn: printf("name is: FocusIn\n"); break;
-            case KeyPress: printf("name is: KeyPress\n");
+            case Expose: HSDebug("name is: Expose\n"); break;
+            case FocusIn: HSDebug("name is: FocusIn\n"); break;
+            case KeyPress: HSDebug("name is: KeyPress\n");
                 handle_key_press(&event);
                 break;
             case MappingNotify:
@@ -487,11 +492,11 @@ int main(int argc, char* argv[]) {
                     }
                 }
                 break;
-            case MapNotify: printf("name is: MapNotify\n");
+            case MapNotify: HSDebug("name is: MapNotify\n");
                 // reset focus.. just to be sure
                 frame_focus_recursive(g_cur_frame);
                 break;
-            case MapRequest: printf("name is: MapRequest\n");
+            case MapRequest: HSDebug("name is: MapRequest\n");
                 XMapRequestEvent* mapreq = &event.xmaprequest;
                 if (is_window_ignored(mapreq->window)
                     || is_herbstluft_window(g_display, mapreq->window)) {
@@ -516,11 +521,11 @@ int main(int argc, char* argv[]) {
                 }
                 break;
             case UnmapNotify:
-                printf("name is: UnmapNotify for %lx\n", event.xunmap.window);
+                HSDebug("name is: UnmapNotify for %lx\n", event.xunmap.window);
                 unmanage_client(event.xunmap.window);
                 break;
             default:
-                printf("got unknown event of type %d\n", event.type);
+                HSDebug("got unknown event of type %d\n", event.type);
                 break;
         }
     }

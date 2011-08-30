@@ -33,11 +33,21 @@ int         g_screen_width;
 int         g_screen_height;
 // some settings/info
 bool        g_aboutToQuit;
+int         g_verbose;
 
 // bufsize to get some error strings
 #define ERROR_STRING_BUF_SIZE 1000
 // size for some normal string buffers
 #define STRING_BUF_SIZE 1000
+
+
+#define HSDebug(...) \
+    do { \
+        if (g_verbose) { \
+            fprintf(stderr, "%s: %d: ", __FILE__, __LINE__); \
+            fprintf(stderr, __VA_ARGS__); \
+        } \
+    } while(0);
 
 #endif
 
