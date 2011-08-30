@@ -23,6 +23,8 @@ calls from *herbstclient*(1) and executes them. The list of available
 
     *-c*, *--autostart* 'PATH'::
         use 'PATH' as autostart file instead of the one in '$XDG_CONFIG_HOME'
+    *-v*, *--version*::
+        print version and exit
     *--verbose*::
         print verbose information to stderr
 
