@@ -421,7 +421,8 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
             index++;
         }
         // apply layout and selection
-        selection = CLAMP(selection, 0, frame->content.clients.count - 1);
+        selection = (selection < frame->content.clients.count) ? selection : 0;
+        selection = (selection >= 0) ? selection : 0;
         frame->content.clients.layout = layout;
         frame->content.clients.selection = selection;
     }
