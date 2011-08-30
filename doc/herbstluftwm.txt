@@ -267,8 +267,40 @@ pad 'INDEX' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     sets the pad of indexed monitor to the specified padding. If no padding is
     given, it is not changed.
 
-layout::
-    prints the layout of all tags with focus indicators.
+layout ['TAG']::
+    prints the layout of 'TAG' in a nice tree style. Its style is defined
+    by the 'tree_style' setting. If no 'TAG' is given, current tag is used.
+    +
+An example output is:
++
+----
+╾─┐horizontal 50% selection=1
+  ├╼ vertical: 0xe00009
+  └─┐vertical 50% selection=0
+    ├╼ vertical: 0xa00009 [FOCUS]
+    └╼ vertical: 0x1000009
+----
+
+dump ['TAG']::
+    prints the same information as the 'layout' command but in a machine
+    readable format. Its output can be read back with the 'load' command.
+    +
+An example output (formatted afterwards) is:
++
+----
+(split horizontal:0.500000:1
+    (clients vertical:0 0xe00009)
+    (splitvertical:0.500000:1
+        (clients vertical:0 0xa00009)
+        (clients vertical:0 0x1000009)))
+----
+
+load ['TAG'] 'LAYOUT'::
+    loads a given 'LAYOUT' description to specified 'TAG' or current tag if no
+    'TAG' is given.
+
+CAUTION: 'LAYOUT' is exactly one parameter. If you are calling it manually
+from your shell or from a script, quote it properly!
 
 complete 'POSITION' ['COMMAND' 'ARGS ...']::
     prints the result of tab completion in partial written 'COMMAND' with
