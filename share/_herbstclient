@@ -1,0 +1,13 @@
+#compdef herbstclient
+# zsh completion for herbstclient
+
+# add this to your zshrc before sourcing this
+#autoload -U compinit
+#compinit
+
+_herbstclient() {
+    compadd "$@" $(herbstclient complete "$((CURRENT-2))" "${words[@]:1}")
+}
+
+compdef _herbstclient herbstclient
+

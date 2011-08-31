@@ -19,4 +19,5 @@ DOCDIR = $(PREFIX)/share/doc/herbstluftwm
 LICENSEDIR = $(PREFIX)/share/licenses/herbstluftwm
 ETCDIR = ./etc/
 CONFIGDIR = $(ETCDIR)/xdg/herbstluftwm/
+ZSHCOMPLETIONDIR = $(SHAREDIR)/zsh/functions/Completion/X/
 

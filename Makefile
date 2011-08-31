@@ -53,6 +53,7 @@ install: all
 	mkdir -p $(ETCDIR)
 	mkdir -p $(ETCDIR)/bash_completion.d/
 	mkdir -p $(CONFIGDIR)
+	mkdir -p $(ZSHCOMPLETIONDIR)
 	@echo copyiing files...
 	install $(TARGET) $(BINDIR)
 	install ipc-client/herbstclient $(BINDIR)/
@@ -64,4 +65,5 @@ install: all
 	install -m 644 BUGS $(DOCDIR)/
 	install -m 755 share/autostart $(CONFIGDIR)/
 	install -m 644 share/herbstclient-completion $(ETCDIR)/bash_completion.d/
+	install -m 644 share/_herbstclient $(ZSHCOMPLETIONDIR)/
 
