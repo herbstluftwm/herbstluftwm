@@ -384,6 +384,22 @@ ignore_class (String/Regex)::
     regex, then it will not be managed, i.e. will not be put in the layout or on
     tags. Example value: +^(Xfce4-notifyd|Conky)$+
 
+tree_style (String)::
+    It contains the chars that are used to print a nice ascii tree. It must
+    contain at least 8 characters. e.g. ++X|:#+*-.++ produces a tree like:
++
+----
+X-.root
+  #-.child 0
+  | #* child 01
+  | +* child 02
+  +-.child 1
+  : #* child 10
+  : +* child 01
+----
++
+Usefull values for 'tree_style' are: +╾│ ├└╼─┐+ or +╾│ ├╰╼─╮+.
+
 AUTOSTART FILE
 --------------
 
