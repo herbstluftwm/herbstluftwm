@@ -1061,7 +1061,6 @@ int frame_change_fraction_command(int argc, char** argv) {
     int fraction = parent->content.layout.fraction;
     fraction += delta;
     fraction = CLAMP(fraction, (int)(FRAME_MIN_FRACTION * FRACTION_UNIT), (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
-    printf("=====>>>new fraction is %d\n", fraction);
     parent->content.layout.fraction = fraction;
     // arrange monitor
     monitor_apply_layout(get_current_monitor());
