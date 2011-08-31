@@ -1,0 +1,11 @@
+ _            _       _   _       __ _
+| |_  ___ _ _| |__ __| |_| |_  _ / _| |___ __ ___ __
+| ' \/ -_) '_| '_ (_-<  _| | || |  _|  _\ V  V / '  \
+|_||_\___|_| |_.__/__/\__|_|\_,_|_|  \__|\_/\_/|_|_|_|
+========================================= scripts/ ===
+
+this dir contains various scripts which interact with herbstluftwm/herbstclient.
+They are all quite short. Each of them contains a short description. They are
+put here to give you some ideas what you can do with herbstluftwm.
+
+# vim: tw=80
