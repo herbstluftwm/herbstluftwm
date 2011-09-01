@@ -142,11 +142,11 @@ cycle ['DELTA']::
     means: cycle in the opposite direction by 1.
 
 cycle_all ['DIRECTION']::
-    cycles through all windows and frames. 'DIRECTION' = 1 means forward,
-    'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no effect. 'DIRECTION'
-    defaults to 1. If there are multiple windows within on frame, then it acts
-    similar to the 'cycle' command. (The 'cycle_all' command focuses the
-    next/previous leave in the 'layout' tree)
+    cycles through all windows and frames on the current tag. 'DIRECTION' = 1
+    means forward, 'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no
+    effect. 'DIRECTION' defaults to 1. If there are multiple windows within on
+    frame, then it acts similar to the 'cycle' command. (The 'cycle_all' command
+    focuses the next/previous leave in the 'layout' tree)
 
 cycle_layout ['DELTA']::
     cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'
