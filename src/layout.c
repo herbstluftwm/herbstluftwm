@@ -557,6 +557,7 @@ int frame_current_cycle_client_layout(int argc, char** argv) {
     }
     return 0;
 }
+
 void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vertical) {
     Window* buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
@@ -957,6 +958,141 @@ int frame_current_cycle_selection(int argc, char** argv) {
     window_focus(window);
     return 0;
 }
+
+int cycle_all_command(int argc, char** argv) {
+    int delta = 1;
+    if (argc >= 2) {
+        delta = atoi(argv[1]);
+    }
+    delta = CLAMP(delta, -1, 1); // only delta -1, 0, 1 is allowed
+    if (delta == 0) {
+        // nothing to do
+        return 0;
+    }
+    // find current selection
+    HSFrame* frame = frame_current_selection();
+    int index = frame->content.clients.selection;
+    bool change_frame = false;
+    int direction;
+    int other_direction;
+    int new_window_index;
+    if (delta > 0 && (index + 1) >= frame->content.clients.count) {
+        // change selection from 0 to 1
+        direction = 1;
+        other_direction = 0;
+        change_frame = true;
+        new_window_index = 0; // focus first window in in a frame
+    }
+    if (delta < 0 && index == 0) {
+        // change selection from 1 to 0
+        direction = 0;
+        other_direction = 1;
+        change_frame = true;
+        new_window_index = -1; // focus last window in in a frame
+    }
+    if (change_frame) {
+        HSFrame* top_frame;
+        //   these things can be visualized easily for direction = 1
+        //         .
+        //        / \
+        //       .   \
+        //      / \  ...
+        //     /   \
+        //    .     .
+        //   / \   / \
+        //  .   * .   .
+        //   the star shows the current focus
+        // go to next frame in tree
+        // find first frame, where we can change the selection from 0 to 1
+        // i.e. from other_direction to direction we want to use
+        while (frame->parent && frame->parent->content.layout.selection == direction) {
+            frame = frame->parent;
+        }
+        //         .
+        //        / \
+        //       .   \
+        //      / \  ...
+        //     /   \
+        //    *     .
+        //   / \   / \
+        //  .   . .   .
+        if (frame->parent) {
+            // go to the top
+            frame = frame->parent;
+        } else {
+            // if we reached the top, do nothing..
+        }
+        top_frame = frame;
+        // \       .
+        //  \     / \
+        //   `-> *   \
+        //      / \  ...
+        //     /   \
+        //    .     .
+        //   / \   / \
+        //  .   . .   .
+        // go one step to the right (i.e. in desired direction
+        if (frame->type == TYPE_FRAMES) {
+            int oldselection = frame->content.layout.selection;
+            if (oldselection == direction) {
+                // if we already reached the end,
+                // i.e. if we cannot go in the disired direction
+                // then wrap around
+                frame->content.layout.selection = other_direction;
+                frame = frame->content.layout.a;
+            } else {
+                frame->content.layout.selection = direction;
+                frame = frame->content.layout.b;
+            }
+        }
+        //         .
+        //        / \
+        //       .   \
+        //      / \  ...
+        //     /   \
+        //    .     *
+        //   / \   / \
+        //  .   . .   .
+        // and then to the left (i.e. find first leave
+        while (frame->type == TYPE_FRAMES) {
+            // then go deeper, with the other direction
+            frame->content.layout.selection = other_direction;
+            frame = frame->content.layout.a;
+        }
+        //         .
+        //        / \
+        //       .   \
+        //      / \  ...
+        //     /   \
+        //    .     .
+        //   / \   / \
+        //  .   . *   .
+        // now we reached the next client containing frame
+
+        if (frame->content.clients.count > 0) {
+            frame->content.clients.selection = new_window_index;
+            // ensure it is a valid index
+            frame->content.clients.selection += frame->content.clients.count;
+            frame->content.clients.selection %= frame->content.clients.count;
+        }
+
+        // reset focus and g_cur_frame
+        // all changes were made below top_frame
+        frame_focus_recursive(top_frame);
+
+    } else {
+        // only change the selection within one frame
+        index += delta;
+        // ensure it is a valid index
+        index %= frame->content.clients.count;
+        index += frame->content.clients.count;
+        index %= frame->content.clients.count;
+        frame->content.clients.selection = index;
+    }
+    monitor_apply_layout(get_current_monitor());
+    return 0;
+}
+
 
 // counts the splits of a kind align to root window
 int frame_split_count_to_root(HSFrame* frame, int align) {

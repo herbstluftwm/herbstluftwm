@@ -118,6 +118,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg);
 int find_layout_by_name(char* name);
 
 int frame_current_cycle_selection(int argc, char** argv);
+int cycle_all_command(int argc, char** argv);
 
 void frame_unfocus(); // unfocus currently focused window
 
