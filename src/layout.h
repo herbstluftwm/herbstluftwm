@@ -78,6 +78,7 @@ typedef struct HSMonitor {
 typedef struct HSTag {
     GString*    name;   // name of this tag
     HSFrame*    frame;  // the master frame
+    bool        floating;
 } HSTag;
 
 // globals
@@ -158,9 +159,11 @@ int tag_add_command(int argc, char** argv);
 int tag_rename_command(int argc, char** argv);
 int tag_move_window_command(int argc, char** argv);
 int tag_remove_command(int argc, char** argv);
+int tag_set_floating_command(int argc, char** argv);
 // for monitors
 // adds a new monitor to g_monitors and returns a pointer to it
 HSMonitor* monitor_with_frame(HSFrame* frame);
+HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag);
 void monitor_focus_by_index(int new_selection);

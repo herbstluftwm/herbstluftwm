@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "layout.h"
 #include "utils.h"
+#include "mouse.h"
 // system
 #include <glib.h>
 #include <assert.h>
@@ -21,6 +22,8 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+
+int g_monitor_float_treshold = 24;
 
 int* g_window_border_width;
 unsigned long g_window_border_active_color;
@@ -37,6 +40,8 @@ static Atom g_wmatom[WMLast], g_netatom[NetLast];
 
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
+    hc->float_size.width = 100;
+    hc->float_size.height = 100;
     return hc;
 }
 
@@ -110,14 +115,28 @@ void manage_client(Window win) {
     // init client
     XSetWindowBorderWidth(g_display, win, *g_window_border_width);
     HSClient* client = create_client();
+    HSMonitor* m = get_current_monitor();
+    // set to window properties
     client->window = win;
+    unsigned int border, depth;
+    Window root_win;
+    int x, y;
+    unsigned int w, h;
+    XGetGeometry(g_display, win, &root_win, &x, &y, &w, &h, &border, &depth);
+    client->float_size.x = x;
+    client->float_size.y = y;
+    client->float_size.width = w;
+    client->float_size.height = h;
+    // convert x/y to relative coordinates
+    client->float_size.x -= m->rect.x + m->pad_left;
+    client->float_size.y -= m->rect.y + m->pad_up;
     g_hash_table_insert(g_clients, &(client->window), client);
     // insert to layout
-    HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
     client->tag = m->tag;
     // get events from window
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
     window_grab_button(win);
+    mouse_grab(win);
     frame_insert_window(m->tag->frame, win);
     monitor_apply_layout(m);
 }
@@ -148,6 +167,7 @@ void window_unfocus(Window window) {
     // grab buttons in old window again
     XSetWindowBorder(g_display, window, g_window_border_normal_color);
     window_grab_button(window);
+    mouse_grab(window);
 }
 
 static Window lastfocus = 0;
@@ -169,6 +189,7 @@ void window_focus(Window window) {
     XSetWindowBorder(g_display, window, g_window_border_active_color);
     // set keyboardfocus
     XUngrabButton(g_display, AnyButton, AnyModifier, window);
+    mouse_grab(window);
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
 }
 
@@ -202,6 +223,27 @@ void window_resize(Window win, XRectangle rect) {
     //ce.above = None;
     //ce.override_redirect = False;
     //XSendEvent(g_display, win, False, StructureNotifyMask, (XEvent *)&ce);
+}
+
+void client_resize_floating(HSClient* client, HSMonitor* m) {
+    if (!client || !m) return;
+    client->last_size = client->float_size;
+    client->last_size.x += m->rect.x + m->pad_left;
+    client->last_size.y += m->rect.y + m->pad_up;
+    int space = g_monitor_float_treshold;
+    client->last_size.x =
+        CLAMP(client->last_size.x,
+              m->rect.x + m->pad_left - client->last_size.width + space,
+              m->rect.x + m->rect.width - m->pad_left - m->pad_right - space);
+    client->last_size.y =
+        CLAMP(client->last_size.y,
+              m->rect.y + m->pad_up - client->last_size.height + space,
+              m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
+    XMoveResizeWindow(g_display, client->window,
+        client->last_size.x,
+        client->last_size.y,
+        client->last_size.width,
+        client->last_size.height);
 }
 
 // from dwm.c

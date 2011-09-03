@@ -20,6 +20,7 @@ typedef struct HSClient {
     Window      window;
     XRectangle  last_size;
     HSTag*      tag;
+    XRectangle  float_size;
 } HSClient;
 
 void clientlist_init();
@@ -44,6 +45,7 @@ void destroy_client(HSClient* client);
 HSClient* get_client_from_window(Window window);
 
 void window_resize(Window win, XRectangle rect);
+void client_resize_floating(HSClient* client, HSMonitor* m);
 int window_close_current();
 
 bool is_window_class_ignored(char* window_class);

@@ -524,6 +524,23 @@ void print_tag_tree(HSTag* tag, GString** output) {
     g_string_free(root_indicator, true);
 }
 
+void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
+    if (!frame) return;
+    if (frame->type == TYPE_FRAMES) {
+        frame_apply_floating_layout(frame->content.layout.a, m);
+        frame_apply_floating_layout(frame->content.layout.b, m);
+    } else {
+        /* if(frame->type == TYPE_CLIENTS) */
+        frame_set_visible(frame, false);
+        Window* buf = frame->content.clients.buf;
+        size_t count = frame->content.clients.count;
+        for (int i = 0; i < count; i++) {
+            HSClient* client = get_client_from_window(buf[i]);
+            client_resize_floating(client, m);
+        }
+    }
+}
+
 void monitor_apply_layout(HSMonitor* monitor) {
     if (monitor) {
         XRectangle rect = monitor->rect;
@@ -537,6 +554,10 @@ void monitor_apply_layout(HSMonitor* monitor) {
         rect.y += *g_window_gap;
         rect.height -= *g_window_gap;
         rect.width -= *g_window_gap;
+        if (monitor->tag->floating) {
+            frame_apply_floating_layout(monitor->tag->frame, monitor);
+            return;
+        }
         frame_apply_layout(monitor->tag->frame, rect);
         if (get_current_monitor() == monitor) {
             frame_focus_recursive(monitor->tag->frame);
@@ -821,6 +842,7 @@ HSTag* add_tag(char* name) {
     HSTag* tag = g_new(HSTag, 1);
     tag->frame = frame_create_empty();
     tag->name = g_string_new(name);
+    tag->floating = false;
     g_array_append_val(g_tags, tag);
     return tag;
 }
@@ -896,6 +918,17 @@ int tag_remove_command(int argc, char** argv) {
     }
     hook_emit_list("tag_removed", oldname, target->name->str, NULL);
     g_free(oldname);
+    return 0;
+}
+
+int tag_set_floating_command(int argc, char** argv) {
+    HSTag* tag = get_current_monitor()->tag;
+    tag->floating = ! tag->floating;
+    HSMonitor* m = find_monitor_with_tag(tag);
+    HSDebug("setting tag:%s->floating to %s\n", tag->name->str, tag->floating ? "on" : "off");
+    if (m != NULL) {
+        monitor_apply_layout(m);
+    }
     return 0;
 }
 
@@ -1765,4 +1798,18 @@ void monitor_focus_by_index(int new_selection) {
     emit_tag_changed(monitor->tag, new_selection);
 }
 
+
+HSMonitor* monitor_with_coordinate(int x, int y) {
+    int i;
+    for (i = 0; i < g_monitors->len; i++) {
+        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, i);
+        if (m->rect.x + m->pad_left <= x
+            && m->rect.x + m->rect.width - m->pad_right > x
+            && m->rect.y + m->pad_up <= y
+            && m->rect.y + m->rect.height - m->pad_down > y) {
+            return m;
+        }
+    }
+    return NULL;
+}
 

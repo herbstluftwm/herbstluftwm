@@ -14,6 +14,7 @@
 #include "command.h"
 #include "settings.h"
 #include "hook.h"
+#include "mouse.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -37,7 +38,6 @@ static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 static Cursor g_cursor;
 static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
 static int*     g_focus_follows_mouse = NULL;
-
 
 int quit();
 int reload();
@@ -76,6 +76,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "get",            settings_get),
     CMD_BIND_NO_OUTPUT(   "add",            tag_add_command),
     CMD_BIND_NO_OUTPUT(   "use",            monitor_set_tag_command),
+    CMD_BIND_NO_OUTPUT(   "floating",       tag_set_floating_command),
     CMD_BIND(             "tag_status",     print_tag_status_command),
     CMD_BIND_NO_OUTPUT(   "merge_tag",      tag_remove_command),
     CMD_BIND_NO_OUTPUT(   "rename",         tag_rename_command),
@@ -441,6 +442,7 @@ int main(int argc, char* argv[]) {
     fetch_settings();
     clientlist_init();
     layout_init();
+    mouse_init();
     hook_init();
     ensure_monitors_are_available();
     scan();
@@ -455,14 +457,21 @@ int main(int argc, char* argv[]) {
         XNextEvent(g_display, &event);
         switch (event.type) {
             case ButtonPress: HSDebug("name is: ButtonPress\n");
+                if (event.xbutton.state & Mod1Mask) {
+                    mouse_start_drag(&event);
+                } else
                 if (event.xbutton.button == Button1 ||
                     event.xbutton.button == Button2 ||
                     event.xbutton.button == Button3) {
                     // only change focus on real clicks... not when scrolling
+                    XRaiseWindow(g_display, event.xbutton.window);
                     focus_window(event.xbutton.window, false, true);
                 }
                 // handling of event is finished, now propagate event to window
                 XAllowEvents(g_display, ReplayPointer, CurrentTime);
+                break;
+            case ButtonRelease: HSDebug("name is: ButtonRelease\n");
+                mouse_stop_drag(&event);
                 break;
             case ClientMessage: HSDebug("name is: ClientMessage\n"); break;
             case CreateNotify: // printf("name is: CreateNotify\n");
@@ -473,7 +482,7 @@ int main(int argc, char* argv[]) {
             case ConfigureRequest: HSDebug("name is: ConfigureRequest\n");
                 event_on_configure(event);
                 break;
-            case ConfigureNotify: HSDebug("name is: ConfigureNotify\n");
+            case ConfigureNotify:// HSDebug("name is: ConfigureNotify\n");
                 break;
             case DestroyNotify: // printf("name is: DestroyNotify\n");
                 break;
@@ -497,6 +506,9 @@ int main(int argc, char* argv[]) {
                         regrab_keys();
                     }
                 }
+                break;
+            case MotionNotify:
+                handle_motion_event(&event);
                 break;
             case MapNotify: HSDebug("name is: MapNotify\n");
                 // reset focus.. just to be sure
@@ -538,6 +550,7 @@ int main(int argc, char* argv[]) {
     // close all
     XFreeCursor(g_display, g_cursor);
     hook_destroy();
+    mouse_destroy();
     layout_destroy();
     ipc_destroy();
     key_destroy();
