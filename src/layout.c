@@ -993,29 +993,33 @@ int cycle_all_command(int argc, char** argv) {
     if (change_frame) {
         HSFrame* top_frame;
         //   these things can be visualized easily for direction = 1
-        //         .
-        //        / \
-        //       .   \
-        //      / \  ...
-        //     /   \
-        //    .     .
-        //   / \   / \
-        //  .   * .   .
-        //   the star shows the current focus
+        /*
+         *         .
+         *        / \
+         *       .   \
+         *      / \  ...
+         *     /   \
+         *    .     .
+         *   / \   / \
+         *  .   * .   .
+         *   the star shows the current focus
+         */
         // go to next frame in tree
         // find first frame, where we can change the selection from 0 to 1
         // i.e. from other_direction to direction we want to use
         while (frame->parent && frame->parent->content.layout.selection == direction) {
             frame = frame->parent;
         }
-        //         .
-        //        / \
-        //       .   \
-        //      / \  ...
-        //     /   \
-        //    *     .
-        //   / \   / \
-        //  .   . .   .
+        /*
+         *         .
+         *        / \
+         *       .   \
+         *      / \  ...
+         *     /   \
+         *    *     .
+         *   / \   / \
+         *  .   . .   .
+         */
         if (frame->parent) {
             // go to the top
             frame = frame->parent;
@@ -1023,14 +1027,15 @@ int cycle_all_command(int argc, char** argv) {
             // if we reached the top, do nothing..
         }
         top_frame = frame;
-        // \       .
-        //  \     / \
-        //   `-> *   \
-        //      / \  ...
-        //     /   \
-        //    .     .
-        //   / \   / \
-        //  .   . .   .
+        /* \       .
+         *  \     / \
+         *   `-> *   \
+         *      / \  ...
+         *     /   \
+         *    .     .
+         *   / \   / \
+         *  .   . .   .
+         */
         // go one step to the right (i.e. in desired direction
         if (frame->type == TYPE_FRAMES) {
             int oldselection = frame->content.layout.selection;
@@ -1045,28 +1050,31 @@ int cycle_all_command(int argc, char** argv) {
                 frame = frame->content.layout.b;
             }
         }
-        //         .
-        //        / \
-        //       .   \
-        //      / \  ...
-        //     /   \
-        //    .     *
-        //   / \   / \
-        //  .   . .   .
+        /*
+         *         .
+         *        / \
+         *       .   \
+         *      / \  ...
+         *     /   \
+         *    .     *
+         *   / \   / \
+         *  .   . .   .
+         */
         // and then to the left (i.e. find first leave
         while (frame->type == TYPE_FRAMES) {
             // then go deeper, with the other direction
             frame->content.layout.selection = other_direction;
             frame = frame->content.layout.a;
         }
-        //         .
-        //        / \
-        //       .   \
-        //      / \  ...
-        //     /   \
-        //    .     .
-        //   / \   / \
-        //  .   . *   .
+        /*         .
+         *        / \
+         *       .   \
+         *      / \  ...
+         *     /   \
+         *    .     .
+         *   / \   / \
+         *  .   . *   .
+         */
         // now we reached the next client containing frame
 
         if (frame->content.clients.count > 0) {
