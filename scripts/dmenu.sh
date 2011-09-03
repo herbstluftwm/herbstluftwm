@@ -13,7 +13,7 @@ simple_command() {
 }
 
 case "$1" in
-    use)    simple_command "$1" ;;
+    use|move)    simple_command "$1" ;;
     *)
         echo "unknown menu $1" >&2
         ;;
