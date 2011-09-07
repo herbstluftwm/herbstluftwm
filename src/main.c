@@ -453,11 +453,13 @@ int main(int argc, char* argv[]) {
     execute_autostart_file();
     // main loop
     XEvent event;
+    mouse_grab(g_root);
     while (!g_aboutToQuit) {
         XNextEvent(g_display, &event);
         switch (event.type) {
-            case ButtonPress: HSDebug("name is: ButtonPress\n");
-                if (event.xbutton.state & Mod1Mask) {
+            case ButtonPress: HSDebug("name is: ButtonPress on sub %lx, win %lx\n", event.xbutton.subwindow, event.xbutton.window);
+                if ((event.xbutton.state & Mod1Mask) && event.xbutton.subwindow != None) {
+                    //XRaiseWindow(g_display, event.xbutton.subwindow);
                     mouse_start_drag(&event);
                 } else
                 if (event.xbutton.button == Button1 ||

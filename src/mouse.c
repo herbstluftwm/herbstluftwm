@@ -29,7 +29,6 @@ static HSClient* g_win_drag_client = 0;
 
 
 void mouse_init() {
-    mouse_grab(g_root);
 }
 
 void mouse_destroy() {
@@ -46,11 +45,12 @@ void mouse_start_drag(XEvent* ev) {
     g_win_drag_x = ev->xbutton.x_root;
     g_win_drag_y = ev->xbutton.y_root;
     Window win = ev->xbutton.subwindow;
-    XRaiseWindow(g_display, win);
     g_win_drag_client = get_client_from_window(win);
     if (!g_win_drag_client) {
-        printf("unknown win %lx\n", win);
+        printf("unknown win %lx, root = %lx\n", win, g_root);
         return;
+    } else {
+        printf("win %lx\n", win);
     }
     if (g_win_drag_client->tag->floating == false) {
         // only can drag wins in  floating mode
@@ -67,10 +67,6 @@ void mouse_start_drag(XEvent* ev) {
 void mouse_stop_drag(XEvent* ev) {
     g_win_drag_client = NULL;
     XUngrabPointer(g_display, CurrentTime);
-    XGrabButton(g_display, 1, Mod1Mask, g_root, True,
-        ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-    XGrabButton(g_display, 3, Mod1Mask, g_root, True,
-        ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
 }
 
 void handle_motion_event(XEvent* ev) {

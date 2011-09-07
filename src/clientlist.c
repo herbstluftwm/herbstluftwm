@@ -100,7 +100,7 @@ HSClient* get_client_from_window(Window window) {
 }
 
 static void window_grab_button(Window win) {
-    XGrabButton(g_display, AnyButton, AnyModifier, win, true, ButtonPressMask,
+    XGrabButton(g_display, AnyButton, 0, win, true, ButtonPressMask,
                 GrabModeSync, GrabModeSync, None, None);
 }
 
@@ -136,7 +136,7 @@ void manage_client(Window win) {
     // get events from window
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
     window_grab_button(win);
-    mouse_grab(win);
+    //mouse_grab(win);
     frame_insert_window(m->tag->frame, win);
     monitor_apply_layout(m);
 }
@@ -167,7 +167,7 @@ void window_unfocus(Window window) {
     // grab buttons in old window again
     XSetWindowBorder(g_display, window, g_window_border_normal_color);
     window_grab_button(window);
-    mouse_grab(window);
+    //mouse_grab(window);
 }
 
 static Window lastfocus = 0;
@@ -187,10 +187,10 @@ void window_focus(Window window) {
     lastfocus = window;
     // change window-colors
     XSetWindowBorder(g_display, window, g_window_border_active_color);
+    //XUngrabButton(g_display, AnyButton, AnyModifier, window);
     // set keyboardfocus
-    XUngrabButton(g_display, AnyButton, AnyModifier, window);
-    mouse_grab(window);
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
+    //mouse_grab(window);
 }
 
 void window_resize(Window win, XRectangle rect) {
