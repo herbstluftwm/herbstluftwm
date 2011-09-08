@@ -70,7 +70,7 @@ void mouse_stop_drag(XEvent* ev) {
 }
 
 void handle_motion_event(XEvent* ev) {
-    if (!g_win_drag_client) return;;
+    if (!g_win_drag_client) return;
     HSMonitor* m = get_current_monitor();
     int horiz_diff = ev->xmotion.x_root - g_win_drag_x;
     int vert_diff = ev->xmotion.y_root - g_win_drag_y;

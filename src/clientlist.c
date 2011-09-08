@@ -177,7 +177,6 @@ void window_unfocus_last() {
         lastfocus = 0;
     }
     // give focus to root window
-    XUngrabButton(g_display, AnyButton, AnyModifier, g_root);
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
 }
 
