@@ -7,10 +7,14 @@
 #include "globals.h"
 #include "clientlist.h"
 #include "layout.h"
-
+#include "key.h"
+#include "ipc-protocol.h"
+#include "utils.h"
 
 
 #include <stdio.h>
+#include <string.h>
+#include <glib.h>
 
 // gui
 #include <X11/Xlib.h>
@@ -25,20 +29,14 @@ static int  g_win_drag_y;
 static XRectangle g_win_drag_start;
 static HSClient* g_win_drag_client = 0;
 
-
+static GList* g_mouse_binds = NULL;
 
 
 void mouse_init() {
 }
 
 void mouse_destroy() {
-}
-
-void mouse_grab(Window win) {
-    XGrabButton(g_display, 1, Mod1Mask, win, True,
-        ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
-    XGrabButton(g_display, 3, Mod1Mask, win, True,
-        ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+    mouse_unbind_all();
 }
 
 void mouse_start_drag(XEvent* ev) {
@@ -92,4 +90,103 @@ void handle_motion_event(XEvent* ev) {
     client_resize_floating(g_win_drag_client, m);
 }
 
+void mouse_bind_function(unsigned int modifiers, unsigned int button,
+                         MouseFunction function) {
+    MouseBinding* mb = g_new(MouseBinding, 1);
+    mb->button = button;
+    mb->modifiers = modifiers;
+    mb->function = function;
+    g_mouse_binds = g_list_prepend(g_mouse_binds, mb);
+    XGrabButton(g_display, mb->button, mb->modifiers, g_root, True,
+        ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+}
+
+int mouse_unbind_all() {
+#if GLIB_CHECK_VERSION(2, 28, 0)
+    g_list_free_full(g_mouse_binds, g_free); // only available since glib 2.28
+#else
+    // actually this is not c-standard-compatible because of casting
+    // an one-parameter-function to an 2-parameter-function.
+    // but it should work on almost all architectures (maybe not amd64?)
+    g_list_foreach(g_mouse_binds, (GFunc)g_free, 0);
+    g_list_free(g_mouse_binds);
+#endif
+    g_mouse_binds = NULL;
+    XUngrabButton(g_display, AnyButton, AnyModifier, g_root);
+    return 0;
+}
+
+int mouse_binding_equals(MouseBinding* a, MouseBinding* b) {
+    if((a->modifiers == b->modifiers) && (a->button == b->button)) {
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
+int mouse_bind_command(int argc, char** argv) {
+    if (argc < 3) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    unsigned int modifiers = 0;
+    char* string = argv[1];
+    if (!string2modifiers(string, &modifiers)) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    // last one is the mouse button
+    char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
+    unsigned int button = string2button(last_token);
+    if (button == 0) {
+        fprintf(stderr, "warning: unknown mouse button \"%s\"\n", last_token);
+        return HERBST_INVALID_ARGUMENT;
+    }
+    MouseFunction function = string2mousefunction(argv[2]);
+    if (!function) {
+        fprintf(stderr, "warning: unknown mouse action \"%s\"\n", argv[2]);
+        return HERBST_INVALID_ARGUMENT;
+    }
+    mouse_bind_function(modifiers, button, function);
+    return 0;
+}
+
+MouseFunction string2mousefunction(char* name) {
+    static struct {
+        char* name;
+        MouseFunction function;
+    } table[] = {
+        { "move", handle_motion_event },
+    };
+    int i;
+    for (i = 0; i < LENGTH(table); i++) {
+        if (!strcmp(table[i].name, name)) {
+            return table[i].function;
+        }
+    }
+    return NULL;
+}
+
+unsigned int string2button(char* name) {
+    static struct {
+        char* name;
+        unsigned int button;
+    } table[] = {
+        { "Button1",       Button1 },
+        { "Button2",       Button2 },
+        { "Button3",       Button3 },
+        { "Button4",       Button4 },
+        { "Button5",       Button5 },
+        { "B1",       Button1 },
+        { "B2",       Button2 },
+        { "B3",       Button3 },
+        { "B4",       Button4 },
+        { "B5",       Button5 },
+    };
+    int i;
+    for (i = 0; i < LENGTH(table); i++) {
+        if (!strcmp(table[i].name, name)) {
+            return table[i].button;
+        }
+    }
+    return 0;
+}
 

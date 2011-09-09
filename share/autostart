@@ -38,6 +38,10 @@ hc keybind $Mod-Control-j resize down +$RESIZESTEP
 hc keybind $Mod-Control-k resize up +$RESIZESTEP
 hc keybind $Mod-Control-l resize right +$RESIZESTEP
 
+# mouse
+hc mousebind $Mod-Button1 move
+hc mousebind $Mod-Button3 move
+
 # focus
 hc keybind $Mod-BackSpace   cycle_monitor
 hc keybind $Mod-Tab         cycle_all +1

@@ -90,10 +90,10 @@ int keybind(int argc, char** argv) {
     return 0;
 }
 
-bool string2key(char* string, unsigned int* modmask, KeySym* keysym) {
+bool string2modifiers(char* string, unsigned int* modmask) {
     // example strings: "Mod1-space" "Mod4+f" "f"
     // splitt string at "+-"
-    char** splitted = g_strsplit_set(string, "+-", 0);
+    char** splitted = g_strsplit_set(string, KEY_COMBI_SEPARATORS, 0);
     // this should give at least one part
     if (NULL == splitted[0]) {
         fprintf(stderr, "warning: empty keysym\n");
@@ -113,15 +113,22 @@ bool string2key(char* string, unsigned int* modmask, KeySym* keysym) {
         }
         *modmask |= cur_mask;
     }
-    // last one is the modifier
-    *keysym = XStringToKeysym(splitted[i]);
-    if (*keysym == NoSymbol) {
-        fprintf(stderr, "warning: unknown KeySym \"%s\"\n", splitted[i]);
-        g_strfreev(splitted);
-        return false;
-    }
     // splitted string is not needed anymore
     g_strfreev(splitted);
+    return true;
+}
+
+bool string2key(char* string, unsigned int* modmask, KeySym* keysym) {
+    if (!string2modifiers(string, modmask)) {
+        return false;
+    }
+    // last one is the key
+    char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
+    *keysym = XStringToKeysym(last_token);
+    if (*keysym == NoSymbol) {
+        fprintf(stderr, "warning: unknown KeySym \"%s\"\n", last_token);
+        return false;
+    }
     return true;
 }
 

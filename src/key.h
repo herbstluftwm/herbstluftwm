@@ -9,6 +9,8 @@
 #include <stdbool.h>
 #include <X11/Xlib.h>
 
+#define KEY_COMBI_SEPARATORS "+-"
+
 typedef struct KeyBinding {
     KeySym keysym;
     unsigned int modifiers;
@@ -18,6 +20,7 @@ typedef struct KeyBinding {
 
 unsigned int modifiername2mask(const char* name);
 
+bool string2modifiers(char* string, unsigned int* modmask);
 bool string2key(char* string, unsigned int* modmask, KeySym* keysym);
 int keybind(int argc, char** argv);
 int keyunbind(int argc, char** argv); //removes a keybinding

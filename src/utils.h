@@ -29,6 +29,8 @@ bool is_herbstluft_window(Display* dpy, Window window);
 bool is_window_mapable(Display* dpy, Window window);
 bool is_window_mapped(Display* dpy, Window window);
 
+char* strlasttoken(char* str, char* delim);
+
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv);
 // frees all entrys in argument-vector and then the vector itself

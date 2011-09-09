@@ -58,6 +58,8 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "list_monitors",  list_monitors),
     CMD_BIND_NO_OUTPUT(   "keybind",        keybind),
     CMD_BIND_NO_OUTPUT(   "keyunbind",      keyunbind),
+    CMD_BIND_NO_OUTPUT(   "mousebind",      mouse_bind_command),
+    CMD_BIND_NO_OUTPUT(   "mouseunbind",    mouse_unbind_all),
     CMD_BIND_NO_OUTPUT(   "spawn",          spawn),
     CMD_BIND_NO_OUTPUT(   "emit_hook",      custom_hook_emit),
     CMD_BIND_NO_OUTPUT(   "cycle",          frame_current_cycle_selection),
@@ -453,24 +455,23 @@ int main(int argc, char* argv[]) {
     execute_autostart_file();
     // main loop
     XEvent event;
-    mouse_grab(g_root);
     while (!g_aboutToQuit) {
         XNextEvent(g_display, &event);
         switch (event.type) {
             case ButtonPress: HSDebug("name is: ButtonPress on sub %lx, win %lx\n", event.xbutton.subwindow, event.xbutton.window);
-                if ((event.xbutton.state & Mod1Mask) && event.xbutton.subwindow != None) {
-                    //XRaiseWindow(g_display, event.xbutton.subwindow);
+                if (event.xbutton.window == g_root && event.xbutton.subwindow != None) {
                     mouse_start_drag(&event);
-                } else
-                if (event.xbutton.button == Button1 ||
-                    event.xbutton.button == Button2 ||
-                    event.xbutton.button == Button3) {
-                    // only change focus on real clicks... not when scrolling
-                    XRaiseWindow(g_display, event.xbutton.window);
-                    focus_window(event.xbutton.window, false, true);
+                } else {
+                    if (event.xbutton.button == Button1 ||
+                        event.xbutton.button == Button2 ||
+                        event.xbutton.button == Button3) {
+                        // only change focus on real clicks... not when scrolling
+                        XRaiseWindow(g_display, event.xbutton.window);
+                        focus_window(event.xbutton.window, false, true);
+                    }
+                    // handling of event is finished, now propagate event to window
+                    XAllowEvents(g_display, ReplayPointer, CurrentTime);
                 }
-                // handling of event is finished, now propagate event to window
-                XAllowEvents(g_display, ReplayPointer, CurrentTime);
                 break;
             case ButtonRelease: HSDebug("name is: ButtonRelease\n");
                 mouse_stop_drag(&event);

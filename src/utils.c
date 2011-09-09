@@ -138,4 +138,12 @@ XRectangle parse_rectangle(char* string) {
     return rect;
 }
 
+char* strlasttoken(char* str, char* delim) {
+    char* next = str;
+    while ((next = strpbrk(str, delim))) {
+        next++;;
+        str = next;
+    }
+    return str;
+}
 
