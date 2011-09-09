@@ -30,9 +30,18 @@ static XRectangle g_win_drag_start;
 static HSClient* g_win_drag_client = 0;
 
 static GList* g_mouse_binds = NULL;
+static unsigned int* g_numlockmask_ptr;
+#define CLEANMASK(mask)         ((mask) & ~(*g_numlockmask_ptr|LockMask))
+#define REMOVEBUTTONMASK(mask) ((mask) & \
+    ~( Button1Mask \
+     | Button2Mask \
+     | Button3Mask \
+     | Button4Mask \
+     | Button5Mask ))
 
 
 void mouse_init() {
+    g_numlockmask_ptr = get_numlockmask_ptr();
 }
 
 void mouse_destroy() {
@@ -90,6 +99,24 @@ void handle_motion_event(XEvent* ev) {
     client_resize_floating(g_win_drag_client, m);
 }
 
+static void grab_button(MouseBinding* mb) {
+    unsigned int numlockmask = *g_numlockmask_ptr;
+    unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask|LockMask };
+    // grab button for each modifier that is ignored (capslock, numlock)
+    for (int i = 0; i < LENGTH(modifiers); i++) {
+        XGrabButton(g_display, mb->button, modifiers[i]|mb->modifiers,
+                    g_root, True, ButtonPressMask,
+                    GrabModeAsync, GrabModeAsync, None, None);
+    }
+}
+
+void mouse_regrab_all() {
+    update_numlockmask();
+    // init modifiers after updating numlockmask
+    XUngrabButton(g_display, AnyButton, AnyModifier, g_root);
+    g_list_foreach(g_mouse_binds, (GFunc)grab_button, NULL);
+}
+
 void mouse_bind_function(unsigned int modifiers, unsigned int button,
                          MouseFunction function) {
     MouseBinding* mb = g_new(MouseBinding, 1);
@@ -97,8 +124,7 @@ void mouse_bind_function(unsigned int modifiers, unsigned int button,
     mb->modifiers = modifiers;
     mb->function = function;
     g_mouse_binds = g_list_prepend(g_mouse_binds, mb);
-    XGrabButton(g_display, mb->button, mb->modifiers, g_root, True,
-        ButtonPressMask, GrabModeAsync, GrabModeAsync, None, None);
+    grab_button(mb);
 }
 
 int mouse_unbind_all() {
@@ -117,7 +143,9 @@ int mouse_unbind_all() {
 }
 
 int mouse_binding_equals(MouseBinding* a, MouseBinding* b) {
-    if((a->modifiers == b->modifiers) && (a->button == b->button)) {
+    if((REMOVEBUTTONMASK(CLEANMASK(a->modifiers))
+        == REMOVEBUTTONMASK(CLEANMASK(b->modifiers)))
+        && (a->button == b->button)) {
         return 0;
     } else {
         return -1;
@@ -189,4 +217,11 @@ unsigned int string2button(char* name) {
     }
     return 0;
 }
+
+MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {
+    MouseBinding mb = { .modifiers = modifiers, .button = button, 0};
+    return (MouseBinding*) g_list_find_custom(g_mouse_binds, &mb,
+                              (GCompareFunc)mouse_binding_equals);
+}
+
 

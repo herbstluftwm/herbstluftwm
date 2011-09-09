@@ -460,7 +460,9 @@ int main(int argc, char* argv[]) {
         switch (event.type) {
             case ButtonPress: HSDebug("name is: ButtonPress on sub %lx, win %lx\n", event.xbutton.subwindow, event.xbutton.window);
                 if (event.xbutton.window == g_root && event.xbutton.subwindow != None) {
-                    mouse_start_drag(&event);
+                    if (mouse_binding_find(event.xbutton.state, event.xbutton.button)) {
+                        mouse_start_drag(&event);
+                    }
                 } else {
                     if (event.xbutton.button == Button1 ||
                         event.xbutton.button == Button2 ||
@@ -507,6 +509,7 @@ int main(int argc, char* argv[]) {
                     XRefreshKeyboardMapping(ev);
                     if(ev->request == MappingKeyboard) {
                         regrab_keys();
+                        mouse_regrab_all();
                     }
                 }
                 break;

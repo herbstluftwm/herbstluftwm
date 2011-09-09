@@ -17,6 +17,10 @@
 static unsigned int numlockmask = 0;
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask))
 
+unsigned int* get_numlockmask_ptr() {
+    return &numlockmask;
+}
+
 GList* g_key_binds = NULL;
 
 void key_init() {

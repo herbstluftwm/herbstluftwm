@@ -29,6 +29,7 @@ void key_remove_bind_with_keysym(unsigned int modifiers, KeySym sym);
 void regrab_keys();
 void grab_keybind(KeyBinding* binding, void* useless_pointer);
 void update_numlockmask();
+unsigned int* get_numlockmask_ptr();
 
 void handle_key_press(XEvent* ev);
 
