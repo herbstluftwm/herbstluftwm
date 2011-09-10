@@ -8,7 +8,7 @@
 void mouse_init();
 void mouse_destroy();
 
-typedef void (*MouseFunction)(XEvent*);
+typedef void (*MouseFunction)(XMotionEvent*);
 
 typedef struct MouseBinding {
     unsigned int modifiers;
@@ -31,6 +31,10 @@ MouseFunction string2mousefunction(char* name);
 void mouse_start_drag(XEvent* ev);
 void mouse_stop_drag(XEvent* ev);
 void handle_motion_event(XEvent* ev);
+
+/* some mouse functions */
+void mouse_function_move(XMotionEvent* me);
+void mouse_function_resize(XMotionEvent* me);
 
 #endif
 
