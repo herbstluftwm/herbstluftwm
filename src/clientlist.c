@@ -123,13 +123,11 @@ void manage_client(Window win) {
     int x, y;
     unsigned int w, h;
     XGetGeometry(g_display, win, &root_win, &x, &y, &w, &h, &border, &depth);
+    // treat wanted coordinates as floating coords
     client->float_size.x = x;
     client->float_size.y = y;
     client->float_size.width = w;
     client->float_size.height = h;
-    // convert x/y to relative coordinates
-    client->float_size.x -= m->rect.x + m->pad_left;
-    client->float_size.y -= m->rect.y + m->pad_up;
     g_hash_table_insert(g_clients, &(client->window), client);
     // insert to layout
     client->tag = m->tag;
