@@ -40,7 +40,8 @@ hc keybind $Mod-Control-l resize right +$RESIZESTEP
 
 # mouse
 hc mousebind $Mod-Button1 move
-hc mousebind $Mod-Button3 resize
+hc mousebind $Mod-Button2 resize
+hc mousebind $Mod-Button3 zoom
 
 # focus
 hc keybind $Mod-BackSpace   cycle_monitor

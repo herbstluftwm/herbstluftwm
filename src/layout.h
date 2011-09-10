@@ -167,6 +167,8 @@ HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag);
 void monitor_focus_by_index(int new_selection);
+int monitor_get_relative_x(HSMonitor* m, int x_root);
+int monitor_get_relative_y(HSMonitor* m, int y_root);
 int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv);

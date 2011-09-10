@@ -1798,6 +1798,13 @@ void monitor_focus_by_index(int new_selection) {
     emit_tag_changed(monitor->tag, new_selection);
 }
 
+int monitor_get_relative_x(HSMonitor* m, int x_root) {
+    return x_root - m->rect.x - m->pad_left;
+}
+
+int monitor_get_relative_y(HSMonitor* m, int y_root) {
+    return y_root - m->rect.y - m->pad_up;
+}
 
 HSMonitor* monitor_with_coordinate(int x, int y) {
     int i;

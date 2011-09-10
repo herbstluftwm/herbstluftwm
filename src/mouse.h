@@ -35,6 +35,8 @@ void handle_motion_event(XEvent* ev);
 /* some mouse functions */
 void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);
+void mouse_function_zoom(XMotionEvent* me);
+
 
 #endif
 

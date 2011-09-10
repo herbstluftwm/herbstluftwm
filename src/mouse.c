@@ -176,6 +176,7 @@ MouseFunction string2mousefunction(char* name) {
         MouseFunction function;
     } table[] = {
         { "move",       mouse_function_move },
+        { "zoom",       mouse_function_zoom },
         { "resize",     mouse_function_resize },
     };
     int i;
@@ -234,6 +235,28 @@ void mouse_function_resize(XMotionEvent* me) {
     g_win_drag_client->float_size = g_win_drag_start;
     g_win_drag_client->float_size.width += x_diff;
     g_win_drag_client->float_size.height += y_diff;
+    client_resize_floating(g_win_drag_client, g_drag_monitor);
+}
+
+void mouse_function_zoom(XMotionEvent* me) {
+    // scretch, where center stays at the same position
+    int x_diff = me->x_root - g_button_drag_start.x_root;
+    int y_diff = me->y_root - g_button_drag_start.y_root;
+    // relative x/y coords in drag window
+    HSMonitor* m = g_drag_monitor;
+    int rel_x = monitor_get_relative_x(m, g_button_drag_start.x_root) - g_win_drag_start.x;
+    int rel_y = monitor_get_relative_y(m, g_button_drag_start.y_root) - g_win_drag_start.y;
+    if (rel_x < g_win_drag_start.width/2) {
+        x_diff *= -1;
+    }
+    if (rel_y < g_win_drag_start.height/2) {
+        y_diff *= -1;
+    }
+    g_win_drag_client->float_size = g_win_drag_start;
+    g_win_drag_client->float_size.x -= x_diff;
+    g_win_drag_client->float_size.y -= y_diff;
+    g_win_drag_client->float_size.width += 2 * x_diff;
+    g_win_drag_client->float_size.height += 2 * y_diff;
     client_resize_floating(g_win_drag_client, g_drag_monitor);
 }
 
