@@ -217,7 +217,7 @@ MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {
     MouseBinding mb = { .modifiers = modifiers, .button = button, 0};
     GList* elem = g_list_find_custom(g_mouse_binds, &mb,
                                      (GCompareFunc)mouse_binding_equals);
-    return elem->data;
+    return elem ? elem->data : NULL;
 }
 
 void mouse_function_move(XMotionEvent* me) {
