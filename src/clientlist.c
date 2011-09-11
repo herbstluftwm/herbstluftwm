@@ -26,6 +26,7 @@
 int g_monitor_float_treshold = 24;
 
 int* g_window_border_width;
+int* g_raise_on_focus;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
 regex_t g_ignore_class_regex; // clients that match this won't be managed
@@ -61,6 +62,7 @@ void reset_client_settings() {
 
 static void fetch_colors() {
     g_window_border_width = &(settings_find("window_border_width")->value.i);
+    g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
     char* str = settings_find("window_border_normal_color")->value.s;
     g_window_border_normal_color = getcolor(str);
     str = settings_find("window_border_active_color")->value.s;
@@ -187,6 +189,9 @@ void window_focus(Window window) {
     //XUngrabButton(g_display, AnyButton, AnyModifier, window);
     // set keyboardfocus
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
+    if (*g_raise_on_focus) {
+        XRaiseWindow(g_display, window);
+    }
     //mouse_grab(window);
 }
 
