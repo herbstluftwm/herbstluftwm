@@ -11,10 +11,12 @@ Some BUGS:
     - ignore windows with property: _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NOTIFICATION
     - add function to put window into tag (and use it in manage, merge_tag, move)
     - reduce flicker on load command by blocking the usage of monitor_apply_layout()
+    - ensure minimal size in floating mode
 
 Planned features:
     - max-layout in Frames
-    - switch tag to floating
+    - snap border when moving in floating mode
+    - dump/load floating values
     - urgent-handling (jumpto urgent)
     - completion für keybind (recursive!)
     - completion für keyunbind
