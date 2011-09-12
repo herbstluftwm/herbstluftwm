@@ -35,7 +35,6 @@
 static Bool     g_otherwm;
 int g_verbose = 0;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
-static Cursor g_cursor;
 static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
 static int*     g_focus_follows_mouse = NULL;
 
@@ -424,6 +423,19 @@ static void fetch_settings() {
 }
 
 
+static struct {
+    void (*init)();
+    void (*destroy)();
+} g_modules[] = {
+    { ipc_init,         ipc_destroy         },
+    { key_init,         key_destroy         },
+    { settings_init,    settings_destroy    },
+    { clientlist_init,  clientlist_destroy  },
+    { layout_init,      layout_destroy      },
+    { mouse_init,       mouse_destroy       },
+    { hook_init,        hook_destroy        },
+};
+
 int main(int argc, char* argv[]) {
     parse_arguments(argc, argv);
     if(!(g_display = XOpenDisplay(NULL)))
@@ -436,23 +448,20 @@ int main(int argc, char* argv[]) {
     g_screen_width = DisplayWidth(g_display, g_screen);
     g_screen_height = DisplayHeight(g_display, g_screen);
     g_root = RootWindow(g_display, g_screen);
-    // keybinds
     XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
-    ipc_init();
-    key_init();
-    settings_init();
+
+    // initialize subsystems
+    for (int i = 0; i < LENGTH(g_modules); i++) {
+        g_modules[i].init();
+    }
     fetch_settings();
-    clientlist_init();
-    layout_init();
-    mouse_init();
-    hook_init();
+
+    // setup
     ensure_monitors_are_available();
     scan();
     all_monitors_apply_layout();
-    /* init mouse */
-    g_cursor = XCreateFontCursor(g_display, XC_left_ptr);
-    XDefineCursor(g_display, g_root, g_cursor);
     execute_autostart_file();
+
     // main loop
     XEvent event;
     while (!g_aboutToQuit) {
@@ -553,15 +562,11 @@ int main(int argc, char* argv[]) {
                 break;
         }
     }
-    // close all
-    XFreeCursor(g_display, g_cursor);
-    hook_destroy();
-    mouse_destroy();
-    layout_destroy();
-    ipc_destroy();
-    key_destroy();
-    settings_destroy();
-    clientlist_destroy();
+
+    // destroy all subsystems
+    for (int i = LENGTH(g_modules); i --> 0;) {
+        g_modules[i].destroy();
+    }
     XCloseDisplay(g_display);
     return EXIT_SUCCESS;
 }

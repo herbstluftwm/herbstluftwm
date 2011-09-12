@@ -30,6 +30,7 @@ static HSClient*        g_win_drag_client = 0;
 static HSMonitor*       g_drag_monitor = NULL;
 static MouseBinding*    g_drag_bind = NULL;
 
+static Cursor g_cursor;
 static GList* g_mouse_binds = NULL;
 static unsigned int* g_numlockmask_ptr;
 #define CLEANMASK(mask)         ((mask) & ~(*g_numlockmask_ptr|LockMask))
@@ -43,10 +44,14 @@ static unsigned int* g_numlockmask_ptr;
 
 void mouse_init() {
     g_numlockmask_ptr = get_numlockmask_ptr();
+    /* set cursor theme */
+    g_cursor = XCreateFontCursor(g_display, XC_left_ptr);
+    XDefineCursor(g_display, g_root, g_cursor);
 }
 
 void mouse_destroy() {
     mouse_unbind_all();
+    XFreeCursor(g_display, g_cursor);
 }
 
 void mouse_start_drag(XEvent* ev) {
