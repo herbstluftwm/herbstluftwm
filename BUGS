@@ -1,5 +1,5 @@
 
-Some BUGS/TODOS:
+Some BUGS:
     - keyboardfocus stays in window, if cursor is over it and herbstluftwm-focus goes away
     - set range for some integer-setting-values
     - don't always re-layout all if only one thing changes (e.g. border_color)
@@ -8,12 +8,16 @@ Some BUGS/TODOS:
     - max-layout for clients
     - herbstclient: errorstatus2string2stderr
     - herbstclient: -h
-    - urgent-handling (jumpto urgent)
-    - completion für keybind (recursive!)
-    - completion für keyunbind
-    - move cursor after focus change
-    - optional focus selection after frame_split
     - ignore windows with property: _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NOTIFICATION
     - add function to put window into tag (and use it in manage, merge_tag, move)
     - reduce flicker on load command by blocking the usage of monitor_apply_layout()
+
+Planned features:
+    - max-layout in Frames
+    - switch tag to floating
+    - urgent-handling (jumpto urgent)
+    - completion für keybind (recursive!)
+    - completion für keyunbind
+    - (optional) move cursor after focus change
+    - optional focus selection after frame_split
 
