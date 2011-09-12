@@ -556,8 +556,11 @@ void motionnotify(XEvent* event) {
 }
 void mapnotify(XEvent* event) {
     HSDebug("name is: MapNotify\n");
-    // reset focus.. just to be sure
-    frame_focus_recursive(g_cur_frame);
+    if (get_client_from_window(event->xmap.window)) {
+        // reset focus. so a new window gets the focus if it shall have the
+        // input focus
+        frame_focus_recursive(g_cur_frame);
+    }
 }
 void maprequest(XEvent* event) {
     HSDebug("name is: MapRequest\n");
