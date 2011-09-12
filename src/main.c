@@ -38,6 +38,8 @@ static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
 static int*     g_focus_follows_mouse = NULL;
 
+typedef void (*HandlerTable[LASTEvent]) (XEvent*);
+
 int quit();
 int reload();
 int version(int argc, char* argv[], GString** result);
@@ -48,6 +50,25 @@ void execute_autostart_file();
 int spawn(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(int argc, char** argv);
+
+// handler for X-Events
+void buttonpress(XEvent* event);
+void buttonrelease(XEvent* event);
+void clientmessage(XEvent* event);
+void createnotify(XEvent* event);
+void configurerequest(XEvent* event);
+void configurenotify(XEvent* event);
+void destroynotify(XEvent* event);
+void enternotify(XEvent* event);
+void expose(XEvent* event);
+void focusin(XEvent* event);
+void keypress(XEvent* event);
+void mappingnotify(XEvent* event);
+void motionnotify(XEvent* event);
+void mapnotify(XEvent* event);
+void maprequest(XEvent* event);
+void propertynotify(XEvent* event);
+void unmapnotify(XEvent* event);
 
 CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "quit",           quit),
@@ -422,6 +443,25 @@ static void fetch_settings() {
     g_focus_follows_mouse = &(settings_find("focus_follows_mouse")->value.i);
 }
 
+static HandlerTable g_default_handler = {
+    [ButtonPress] = buttonpress,
+    [ButtonRelease] = buttonrelease,
+    [ClientMessage] = clientmessage,
+    [CreateNotify] = createnotify,
+    [ConfigureRequest] = configurerequest,
+    [ConfigureNotify] = configurenotify,
+    [DestroyNotify] = destroynotify,
+    [EnterNotify] = enternotify,
+    [Expose] = expose,
+    [FocusIn] = focusin,
+    [KeyPress] = keypress,
+    [MappingNotify] = mappingnotify,
+    [MotionNotify] = motionnotify,
+    [MapNotify] = mapnotify,
+    [MapRequest] = maprequest,
+    [PropertyNotify] = propertynotify,
+    [UnmapNotify] = unmapnotify,
+};
 
 static struct {
     void (*init)();
@@ -435,6 +475,125 @@ static struct {
     { mouse_init,       mouse_destroy       },
     { hook_init,        hook_destroy        },
 };
+
+/* ----------------------------- */
+/* event handler implementations */
+/* ----------------------------- */
+
+void buttonpress(XEvent* event) {
+    XButtonEvent* be = &(event->xbutton);
+    HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
+    if (be->window == g_root && be->subwindow != None) {
+        if (mouse_binding_find(be->state, be->button)) {
+            mouse_start_drag(event);
+        }
+    } else {
+        if (be->button == Button1 ||
+            be->button == Button2 ||
+            be->button == Button3) {
+            // only change focus on real clicks... not when scrolling
+            XRaiseWindow(g_display, be->window);
+            focus_window(be->window, false, true);
+        }
+        // handling of event is finished, now propagate event to window
+        XAllowEvents(g_display, ReplayPointer, CurrentTime);
+    }
+}
+
+void buttonrelease(XEvent* event) {
+    HSDebug("name is: ButtonRelease\n");
+    mouse_stop_drag(event);
+}
+void clientmessage(XEvent* event) {
+    HSDebug("name is: ClientMessage\n");
+}
+void createnotify(XEvent* event) {
+    // printf("name is: CreateNotify\n");
+    if (is_ipc_connectable(event->xcreatewindow.window)) {
+        ipc_add_connection(event->xcreatewindow.window);
+    }
+}
+void configurerequest(XEvent* event) {
+    HSDebug("name is: ConfigureRequest\n");
+    event_on_configure(*event);
+}
+void configurenotify(XEvent* event) {
+    // HSDebug("name is: ConfigureNotify\n");
+}
+void destroynotify(XEvent* event) {
+    // printf("name is: DestroyNotify\n");
+}
+void enternotify(XEvent* event) {
+    //printf("name is: EnterNotify\n");
+    if (*g_focus_follows_mouse) {
+        // sloppy focus
+        focus_window(event->xcrossing.window, false, true);
+    }
+}
+void expose(XEvent* event) {
+    HSDebug("name is: Expose\n");
+}
+void focusin(XEvent* event) {
+    HSDebug("name is: FocusIn\n");
+}
+void keypress(XEvent* event) {
+    HSDebug("name is: KeyPress\n");
+    handle_key_press(event);
+}
+void mappingnotify(XEvent* event) {
+    {
+        // regrab when keyboard map changes
+        XMappingEvent *ev = &event->xmapping;
+        XRefreshKeyboardMapping(ev);
+        if(ev->request == MappingKeyboard) {
+            regrab_keys();
+            mouse_regrab_all();
+        }
+    }
+}
+void motionnotify(XEvent* event) {
+    handle_motion_event(event);
+}
+void mapnotify(XEvent* event) {
+    HSDebug("name is: MapNotify\n");
+    // reset focus.. just to be sure
+    frame_focus_recursive(g_cur_frame);
+}
+void maprequest(XEvent* event) {
+    HSDebug("name is: MapRequest\n");
+    XMapRequestEvent* mapreq = &event->xmaprequest;
+    if (is_window_ignored(mapreq->window)
+        || is_herbstluft_window(g_display, mapreq->window)) {
+        // just map the window if it wants that
+        XWindowAttributes wa;
+        if (!XGetWindowAttributes(g_display, mapreq->window, &wa)) {
+            return;
+        }
+        XMapWindow(g_display, mapreq->window);
+    } else if (!get_client_from_window(mapreq->window)) {
+        // client should be managed (is not ignored)
+        // but is not managed yet
+        manage_client(mapreq->window);
+        XMapWindow(g_display, mapreq->window);
+    }
+    // else: ignore all other maprequests from windows
+    // that are managed already
+}
+void propertynotify(XEvent* event) {
+    // printf("name is: PropertyNotify\n"); 
+    if (is_ipc_connectable(event->xproperty.window)) {
+        ipc_handle_connection(event->xproperty.window, false);
+    }
+}
+void unmapnotify(XEvent* event) {
+    HSDebug("name is: UnmapNotify for %lx\n", event->xunmap.window);
+    unmanage_client(event->xunmap.window);
+}
+
+
+/* ---- */
+/* main */
+/* ---- */
 
 int main(int argc, char* argv[]) {
     parse_arguments(argc, argv);
@@ -466,100 +625,9 @@ int main(int argc, char* argv[]) {
     XEvent event;
     while (!g_aboutToQuit) {
         XNextEvent(g_display, &event);
-        switch (event.type) {
-            case ButtonPress: HSDebug("name is: ButtonPress on sub %lx, win %lx\n", event.xbutton.subwindow, event.xbutton.window);
-                if (event.xbutton.window == g_root && event.xbutton.subwindow != None) {
-                    if (mouse_binding_find(event.xbutton.state, event.xbutton.button)) {
-                        mouse_start_drag(&event);
-                    }
-                } else {
-                    if (event.xbutton.button == Button1 ||
-                        event.xbutton.button == Button2 ||
-                        event.xbutton.button == Button3) {
-                        // only change focus on real clicks... not when scrolling
-                        XRaiseWindow(g_display, event.xbutton.window);
-                        focus_window(event.xbutton.window, false, true);
-                    }
-                    // handling of event is finished, now propagate event to window
-                    XAllowEvents(g_display, ReplayPointer, CurrentTime);
-                }
-                break;
-            case ButtonRelease: HSDebug("name is: ButtonRelease\n");
-                mouse_stop_drag(&event);
-                break;
-            case ClientMessage: HSDebug("name is: ClientMessage\n"); break;
-            case CreateNotify: // printf("name is: CreateNotify\n");
-                if (is_ipc_connectable(event.xcreatewindow.window)) {
-                    ipc_add_connection(event.xcreatewindow.window);
-                }
-                break;
-            case ConfigureRequest: HSDebug("name is: ConfigureRequest\n");
-                event_on_configure(event);
-                break;
-            case ConfigureNotify:// HSDebug("name is: ConfigureNotify\n");
-                break;
-            case DestroyNotify: // printf("name is: DestroyNotify\n");
-                break;
-            case EnterNotify: //printf("name is: EnterNotify\n");
-                if (*g_focus_follows_mouse) {
-                    // sloppy focus
-                    focus_window(event.xcrossing.window, false, true);
-                }
-            break;
-            case Expose: HSDebug("name is: Expose\n"); break;
-            case FocusIn: HSDebug("name is: FocusIn\n"); break;
-            case KeyPress: HSDebug("name is: KeyPress\n");
-                handle_key_press(&event);
-                break;
-            case MappingNotify:
-                {
-                    // regrab when keyboard map changes
-                    XMappingEvent *ev = &event.xmapping;
-                    XRefreshKeyboardMapping(ev);
-                    if(ev->request == MappingKeyboard) {
-                        regrab_keys();
-                        mouse_regrab_all();
-                    }
-                }
-                break;
-            case MotionNotify:
-                handle_motion_event(&event);
-                break;
-            case MapNotify: HSDebug("name is: MapNotify\n");
-                // reset focus.. just to be sure
-                frame_focus_recursive(g_cur_frame);
-                break;
-            case MapRequest: HSDebug("name is: MapRequest\n");
-                XMapRequestEvent* mapreq = &event.xmaprequest;
-                if (is_window_ignored(mapreq->window)
-                    || is_herbstluft_window(g_display, mapreq->window)) {
-                    // just map the window if it wants that
-                    XWindowAttributes wa;
-                    if (!XGetWindowAttributes(g_display, mapreq->window, &wa)) {
-                        break;
-                    }
-                    XMapWindow(g_display, mapreq->window);
-                } else if (!get_client_from_window(mapreq->window)) {
-                    // client should be managed (is not ignored)
-                    // but is not managed yet
-                    manage_client(mapreq->window);
-                    XMapWindow(g_display, mapreq->window);
-                }
-                // else: ignore all other maprequests from windows
-                // that are managed already
-            break;
-            case PropertyNotify: // printf("name is: PropertyNotify\n"); 
-                if (is_ipc_connectable(event.xproperty.window)) {
-                    ipc_handle_connection(event.xproperty.window, false);
-                }
-                break;
-            case UnmapNotify:
-                HSDebug("name is: UnmapNotify for %lx\n", event.xunmap.window);
-                unmanage_client(event.xunmap.window);
-                break;
-            default:
-                HSDebug("got unknown event of type %d\n", event.type);
-                break;
+        void (*handler) (XEvent*) = g_default_handler[event.type];
+        if (handler != NULL) {
+            handler(&event);
         }
     }
 
