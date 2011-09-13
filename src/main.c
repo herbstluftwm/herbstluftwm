@@ -48,6 +48,7 @@ int load_command(int argc, char** argv, GString** result);
 int print_tag_status_command(int argc, char** argv, GString** result);
 void execute_autostart_file();
 int spawn(int argc, char** argv);
+int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(int argc, char** argv);
 
@@ -81,6 +82,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "mousebind",      mouse_bind_command),
     CMD_BIND_NO_OUTPUT(   "mouseunbind",    mouse_unbind_all),
     CMD_BIND_NO_OUTPUT(   "spawn",          spawn),
+    CMD_BIND_NO_OUTPUT(   "wmexec",         wmexec),
     CMD_BIND_NO_OUTPUT(   "emit_hook",      custom_hook_emit),
     CMD_BIND_NO_OUTPUT(   "cycle",          frame_current_cycle_selection),
     CMD_BIND_NO_OUTPUT(   "cycle_all",      cycle_all_command),
@@ -236,6 +238,7 @@ int spawn(int argc, char** argv) {
             close(ConnectionNumber(g_display));
         }
         // shift all args in argv by 1 to the front
+        // so that we have space for a NULL entry at the end for execvp
         char** execargs = argv_duplicate(argc, argv);
         free(execargs[0]);
         int i;
@@ -246,11 +249,32 @@ int spawn(int argc, char** argv) {
         // do actual exec
         setsid();
         execvp(execargs[0], execargs);
-        fprintf(stderr, "herbstluft: execvp \"%s\"", argv[1]);
+        fprintf(stderr, "herbstluftwm: execvp \"%s\"", argv[1]);
         perror(" failed");
         exit(0);
     }
     return 0;
+}
+
+int wmexec(int argc, char** argv) {
+    if (argc < 2) {
+        fprintf(stderr, "wmexec: to few parameters\n");
+        return HERBST_INVALID_ARGUMENT;
+    }
+    // shift all args in argv by 1 to the front
+    // so that we have space for a NULL entry at the end for execvp
+    char** execargs = argv_duplicate(argc, argv);
+    free(execargs[0]);
+    int i;
+    for (i = 0; i < argc-1; i++) {
+        execargs[i] = execargs[i+1];
+    }
+    execargs[i] = NULL;
+    // do actual exec
+    execvp(execargs[0], execargs);
+    fprintf(stderr, "herbstluftwm: execvp \"%s\"", argv[1]);
+    perror(" failed");
+    return HERBST_COMMAND_NOT_FOUND;
 }
 
 // handle x-events:

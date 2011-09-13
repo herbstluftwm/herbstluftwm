@@ -136,6 +136,13 @@ spawn 'EXECUTABLE' ['ARGS ...']::
 
         * spawn xterm -e man 3 execvp
 
+wmexec 'WINDOWMANAGER' ['ARGS ...']::
+    executes the 'WINDOWMANAGER' with its 'ARGS'. This is useful to switch the
+    window manager in the running session without restarting the session. For
+    details see 'man 3 execvp'. Example:
+
+        * wmexec openbox
+
 cycle ['DELTA']::
     cycles the selection within the current frame by 'DELTA'. If 'DELTA' is
     omitted, 'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1
