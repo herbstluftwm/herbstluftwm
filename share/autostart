@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# this is an simple config for herbstluftwm
+# this is a simple config for herbstluftwm
 
 function hc() {
     herbstclient "$@"
