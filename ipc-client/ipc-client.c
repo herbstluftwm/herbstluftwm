@@ -149,14 +149,15 @@ int wait_for_hook(int argc, char* argv[]) {
     signal(SIGQUIT, quit_herbstclient);
     init_hook_regex(argc, argv);
     // get window to listen at
-    int *value;
+    int *value; // list of ints
     Atom type;
     int format;
     unsigned long items, bytes;
     int status = XGetWindowProperty(dpy, root,
         ATOM(HERBST_HOOK_WIN_ID_ATOM), 0, 1, False,
         XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value);
-    if (status != Success) {
+    // only accept exactly one Window id
+    if (status != Success || items != 1) {
         fprintf(stderr, "no running herbstluftwm detected\n");
         return EXIT_FAILURE;
     }
