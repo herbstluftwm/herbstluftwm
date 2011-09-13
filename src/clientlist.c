@@ -229,6 +229,10 @@ void window_resize(Window win, XRectangle rect) {
 
 void client_resize_floating(HSClient* client, HSMonitor* m) {
     if (!client || !m) return;
+    if (client->float_size.width < WINDOW_MIN_WIDTH)
+        client->float_size.width = WINDOW_MIN_WIDTH;
+    if (client->float_size.height < WINDOW_MIN_HEIGHT)
+        client->float_size.height = WINDOW_MIN_HEIGHT;
     client->last_size = client->float_size;
     client->last_size.x += m->rect.x + m->pad_left;
     client->last_size.y += m->rect.y + m->pad_up;

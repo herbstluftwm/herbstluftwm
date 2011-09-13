@@ -238,8 +238,13 @@ void mouse_function_resize(XMotionEvent* me) {
     int x_diff = me->x_root - g_button_drag_start.x_root;
     int y_diff = me->y_root - g_button_drag_start.y_root;
     g_win_drag_client->float_size = g_win_drag_start;
-    g_win_drag_client->float_size.width += x_diff;
-    g_win_drag_client->float_size.height += y_diff;
+    // avoid an overflow
+    int new_width  = g_win_drag_client->float_size.width + x_diff;
+    int new_height = g_win_drag_client->float_size.height + y_diff;
+    if (new_width <  WINDOW_MIN_WIDTH)  new_width = WINDOW_MIN_WIDTH;
+    if (new_height < WINDOW_MIN_HEIGHT) new_height = WINDOW_MIN_HEIGHT;
+    g_win_drag_client->float_size.width  = new_width;
+    g_win_drag_client->float_size.height = new_height;
     client_resize_floating(g_win_drag_client, g_drag_monitor);
 }
 
@@ -257,6 +262,22 @@ void mouse_function_zoom(XMotionEvent* me) {
     if (rel_y < g_win_drag_start.height/2) {
         y_diff *= -1;
     }
+
+    // avoid an overflow
+    int new_width  = g_win_drag_start.width  + 2 * x_diff;
+    int new_height = g_win_drag_start.height + 2 * y_diff;
+    if (new_width < WINDOW_MIN_WIDTH) {
+        int overflow = WINDOW_MIN_WIDTH - new_width;
+        overflow += overflow % 2; // make odd overflow even
+        x_diff += overflow;
+    }
+    if (new_height < WINDOW_MIN_HEIGHT) {
+        int overflow = WINDOW_MIN_HEIGHT - new_height;
+        overflow += overflow % 2; // make odd overflow even
+        y_diff += overflow;
+    }
+
+    // apply new rect
     g_win_drag_client->float_size = g_win_drag_start;
     g_win_drag_client->float_size.x -= x_diff;
     g_win_drag_client->float_size.y -= y_diff;
