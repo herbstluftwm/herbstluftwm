@@ -206,7 +206,7 @@ int custom_hook_emit(int argc, char** argv) {
 // spawn() heavily inspired by dwm.c
 int spawn(int argc, char** argv) {
     if (argc < 2) {
-        fprintf(stderr, "spawn: to few parameters\n");
+        fprintf(stderr, "spawn: too few parameters\n");
         return HERBST_INVALID_ARGUMENT;
     }
     if (fork() == 0) {
@@ -235,7 +235,7 @@ int spawn(int argc, char** argv) {
 
 int wmexec(int argc, char** argv) {
     if (argc < 2) {
-        fprintf(stderr, "wmexec: to few parameters\n");
+        fprintf(stderr, "wmexec: too few parameters\n");
         return HERBST_INVALID_ARGUMENT;
     }
     // shift all args in argv by 1 to the front
