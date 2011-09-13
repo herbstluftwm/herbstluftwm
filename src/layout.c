@@ -534,8 +534,17 @@ void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
         frame_set_visible(frame, false);
         Window* buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
+        size_t selection = frame->content.clients.selection;
+        /* border color */
+        unsigned long colors[] = {
+            g_window_border_normal_color, // normal color
+            (g_cur_frame == frame) ?
+                g_window_border_active_color : // frame has focus and window is focused
+                g_window_border_normal_color, // window is selected but frame isnot focused
+        };
         for (int i = 0; i < count; i++) {
             HSClient* client = get_client_from_window(buf[i]);
+            XSetWindowBorder(g_display, buf[i], colors[i == selection]);
             client_resize_floating(client, m);
         }
     }
