@@ -548,8 +548,8 @@ void destroynotify(XEvent* event) {
     // printf("name is: DestroyNotify\n");
 }
 void enternotify(XEvent* event) {
-    //printf("name is: EnterNotify\n");
-    if (*g_focus_follows_mouse) {
+    HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
+    if (*g_focus_follows_mouse && false == event->xcrossing.focus) {
         // sloppy focus
         focus_window(event->xcrossing.window, false, true);
     }
