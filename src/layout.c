@@ -1632,6 +1632,36 @@ void frame_set_visible(HSFrame* frame, bool visible) {
     frame->window_visible = visible;
 }
 
+// executes action for each client within frame and its subframes
+// if action fails (i.e. returns something != 0), then it abborts with this code
+int frame_foreach_client(HSFrame* frame, ClientAction action, void* data) {
+    int status;
+    if (frame->type == TYPE_FRAMES) {
+        status = frame_foreach_client(frame->content.layout.a, action, data);
+        if (0 != status) {
+            return status;
+        }
+        status = frame_foreach_client(frame->content.layout.b, action, data);
+        if (0 != status) {
+            return status;
+        }
+    } else {
+        // frame->type == TYPE_CLIENTS
+        Window* buf = frame->content.clients.buf;
+        size_t count = frame->content.clients.count;
+        HSClient* client;
+        for (int i = 0; i < count; i++) {
+            client = get_client_from_window(buf[i]);
+            // do action for each client
+            status = action(client, data);
+            if (0 != status) {
+                return status;
+            }
+        }
+    }
+    return 0;
+}
+
 void all_monitors_apply_layout() {
     int i;
     for (i = 0; i < g_monitors->len; i++) {

@@ -29,6 +29,11 @@ enum {
     TYPE_FRAMES,
 };
 
+// execute an action on an client
+// returns Success or failure.
+struct HSClient;
+typedef int (*ClientAction)(struct HSClient*, void* data);
+
 #define FRACTION_UNIT 10000
 
 struct HSFrame;
@@ -133,6 +138,9 @@ int frame_focus_recursive(HSFrame* frame);
 void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order);
 void frame_hide_recursive(HSFrame* frame);
 void frame_show_recursive(HSFrame* frame);
+// do an action for each client in frame tree
+// returns success or failure
+int frame_foreach_client(HSFrame* frame, ClientAction action, void* data);
 
 void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vertical);
 void frame_apply_client_layout_horizontal(HSFrame* frame, XRectangle rect);
