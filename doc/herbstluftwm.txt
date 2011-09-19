@@ -329,9 +329,10 @@ complete 'POSITION' ['COMMAND' 'ARGS ...']::
 emit_hook 'ARGS ...'::
     emits specified hook to all idling herbstclients.
 
-floating [on|off|toggle]::
-    changes the current tag to floating/tiling mode. If no argument is given,
-    floating mode is toggled.
+floating [['TAG'] on|off|toggle]::
+    changes the current tag to floating/tiling mode on specified 'TAG'. If no
+    'TAG' is given, current tag is used. If no argument is given, floating mode
+    is toggled.
 
 
 [[SETTINGS]]

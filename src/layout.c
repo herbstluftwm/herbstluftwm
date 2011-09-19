@@ -931,8 +931,24 @@ int tag_remove_command(int argc, char** argv) {
 }
 
 int tag_set_floating_command(int argc, char** argv) {
+    // usage: floating [[tag] on|off|toggle]
     HSTag* tag = get_current_monitor()->tag;
-    tag->floating = ! tag->floating;
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    char* action = argv[1];
+    if (argc >= 3) {
+        // if a tag is specified
+        tag = find_tag(argv[1]);
+        action = argv[2];
+    }
+
+    bool new_value = false;
+    if (!strcmp(action, "toggle"))      new_value = ! tag->floating;
+    else if (!strcmp(action, "on"))     new_value = true;
+    else if (!strcmp(action, "off"))    new_value = false;
+    tag->floating = new_value;
+
     HSMonitor* m = find_monitor_with_tag(tag);
     HSDebug("setting tag:%s->floating to %s\n", tag->name->str, tag->floating ? "on" : "off");
     if (m != NULL) {
