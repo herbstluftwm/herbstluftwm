@@ -20,6 +20,7 @@ SettingsPair g_settings[] = {
     { "window_gap", { .i = 5 }, .type = HS_Int,
         .on_change = all_monitors_apply_layout },
     { "snap_distance", { .i = 10 }, .type = HS_Int },
+    { "snap_gap", { .i = 5 }, .type = HS_Int },
     { "border_color", { .s = "red" } },
     { "frame_border_active_color", { .s = "red" },
         .on_change = reset_frame_colors },

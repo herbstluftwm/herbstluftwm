@@ -27,6 +27,7 @@ int g_monitor_float_treshold = 24;
 
 int* g_window_border_width;
 int* g_raise_on_focus;
+int* g_snap_gap;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
 regex_t g_ignore_class_regex; // clients that match this won't be managed
@@ -62,6 +63,7 @@ void reset_client_settings() {
 
 static void fetch_colors() {
     g_window_border_width = &(settings_find("window_border_width")->value.i);
+    g_snap_gap = &(settings_find("snap_gap")->value.i);
     g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
     char* str = settings_find("window_border_normal_color")->value.s;
     g_window_border_normal_color = getcolor(str);
@@ -252,8 +254,8 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
 
 XRectangle client_outer_floating_rect(HSClient* client) {
     XRectangle rect = client->float_size;
-    rect.width  += *g_window_border_width * 2;
-    rect.height += *g_window_border_width * 2;
+    rect.width  += *g_window_border_width * 2 + *g_snap_gap;
+    rect.height += *g_window_border_width * 2 + *g_snap_gap;
     return rect;
 }
 
