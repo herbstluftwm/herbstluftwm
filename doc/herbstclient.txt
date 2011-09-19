@@ -66,6 +66,9 @@ It waits endlessly for a response from *herbstluftwm* (there is no timeout yet).
 
 See the *herbstluftwm* distribution BUGS file.
 
+COMMUNITY
+---------
+Feel free to join the IRC channel '#herbstluftwm' on 'irc.freenode.net'.
 
 AUTHOR
 ------
@@ -74,7 +77,6 @@ AUTHOR
 RESOURCES
 ---------
 Gitweb: <http://git.cs.fau.de/?p=re06huxa/herbstluftwm>
-
 
 COPYING
 -------

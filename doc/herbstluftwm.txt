@@ -456,6 +456,10 @@ BUGS
 ----
 See the *herbstluftwm* distribution BUGS file.
 
+COMMUNITY
+---------
+Feel free to join the IRC channel '#herbstluftwm' on 'irc.freenode.net'.
+
 AUTHOR
 ------
 *herbstluftwm* was written by Thorsten Wißmann.
