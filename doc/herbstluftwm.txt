@@ -343,7 +343,15 @@ integer values. An integer value is set, if its value is 1 or another value
 unequal to 0. An integer value is unset, if its value is 0.
 
 window_gap (Integer)::
-    the gap between frames.
+    the gap between frames in the tiling mode.
+
+snap_distance (Integer)::
+    if a client is dragged in floating mode, then it snaps to neighbour clients
+    if the distance between them is smaller then snap_distance.
+
+snap_gap (Integer)::
+    specifies the remainig gap if a dragged client snaps to an edge in floating
+    mode. If snap_gap is set to 0, no gap will remain.
 
 frame_border_active_color (String/Color)::
     the border color of a focused frame
