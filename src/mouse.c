@@ -10,8 +10,10 @@
 #include "key.h"
 #include "ipc-protocol.h"
 #include "utils.h"
+#include "settings.h"
 
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
@@ -33,6 +35,8 @@ static MouseBinding*    g_drag_bind = NULL;
 static Cursor g_cursor;
 static GList* g_mouse_binds = NULL;
 static unsigned int* g_numlockmask_ptr;
+static int* g_snap_distance;
+
 #define CLEANMASK(mask)         ((mask) & ~(*g_numlockmask_ptr|LockMask))
 #define REMOVEBUTTONMASK(mask) ((mask) & \
     ~( Button1Mask \
@@ -41,9 +45,9 @@ static unsigned int* g_numlockmask_ptr;
      | Button4Mask \
      | Button5Mask ))
 
-
 void mouse_init() {
     g_numlockmask_ptr = get_numlockmask_ptr();
+    g_snap_distance = &(settings_find("snap_distance")->value.i);
     /* set cursor theme */
     g_cursor = XCreateFontCursor(g_display, XC_left_ptr);
     XDefineCursor(g_display, g_root, g_cursor);
@@ -231,6 +235,12 @@ void mouse_function_move(XMotionEvent* me) {
     g_win_drag_client->float_size = g_win_drag_start;
     g_win_drag_client->float_size.x += x_diff;
     g_win_drag_client->float_size.y += y_diff;
+    // snap it to other windows
+    int dx, dy;
+    client_snap_vector(g_win_drag_client, g_win_drag_client->tag,
+                       SNAP_EDGE_ALL, &dx, &dy);
+    g_win_drag_client->float_size.x += dx;
+    g_win_drag_client->float_size.y += dy;
     client_resize_floating(g_win_drag_client, g_drag_monitor);
 }
 
@@ -245,6 +255,12 @@ void mouse_function_resize(XMotionEvent* me) {
     if (new_height < WINDOW_MIN_HEIGHT) new_height = WINDOW_MIN_HEIGHT;
     g_win_drag_client->float_size.width  = new_width;
     g_win_drag_client->float_size.height = new_height;
+    // snap it to other windows
+    int dx, dy;
+    client_snap_vector(g_win_drag_client, g_win_drag_client->tag,
+                       SNAP_EDGE_RIGHT | SNAP_EDGE_BOTTOM, &dx, &dy);
+    g_win_drag_client->float_size.width += dx;
+    g_win_drag_client->float_size.height += dy;
     client_resize_floating(g_win_drag_client, g_drag_monitor);
 }
 
@@ -283,7 +299,106 @@ void mouse_function_zoom(XMotionEvent* me) {
     g_win_drag_client->float_size.y -= y_diff;
     g_win_drag_client->float_size.width += 2 * x_diff;
     g_win_drag_client->float_size.height += 2 * y_diff;
+    // snap it to other windows
+    int right_dx, bottom_dy;
+    int left_dx, top_dy;
+    // we have to distinguish the direction in which we zoom
+    client_snap_vector(g_win_drag_client, g_win_drag_client->tag,
+                     SNAP_EDGE_BOTTOM | SNAP_EDGE_RIGHT, &right_dx, &bottom_dy);
+    client_snap_vector(g_win_drag_client, g_win_drag_client->tag,
+                       SNAP_EDGE_TOP | SNAP_EDGE_LEFT, &left_dx, &top_dy);
+    // e.g. if window snaps by vector (3,3) at topleft, window has to be shrinked
+    // but if the window snaps by vector (3,3) at bottomright, window has to grow
+    if (abs(right_dx) < abs(left_dx)) {
+        right_dx = -left_dx;
+    }
+    if (abs(bottom_dy) < abs(top_dy)) {
+        bottom_dy = -top_dy;
+    }
+    g_win_drag_client->float_size.width += 2 * right_dx;
+    g_win_drag_client->float_size.x     -= right_dx;
+    g_win_drag_client->float_size.height += 2 * bottom_dy;
+    g_win_drag_client->float_size.y     -= bottom_dy;
     client_resize_floating(g_win_drag_client, g_drag_monitor);
 }
 
+struct SnapData {
+    HSClient*       client;
+    XRectangle      rect;
+    enum SnapFlags  flags;
+    int             dx, dy; // the vector from client to other to make them snap
+};
+
+static bool is_point_between(int point, int left, int right) {
+    return (point < right && point >= left);
+}
+
+static bool intervals_intersect(int a_left, int a_right, int b_left, int b_right) {
+    return is_point_between(a_left, b_left, b_right)
+        || is_point_between(a_right, b_left, b_right)
+        || is_point_between(b_right, a_left, a_right)
+        || is_point_between(b_left, a_left, a_right);
+}
+
+static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
+    if (candidate == d->client) {
+        return 0;
+    }
+    XRectangle subject  = d->rect;
+    XRectangle other    = client_outer_floating_rect(candidate);
+    int delta;
+    if (intervals_intersect(other.y, other.y + other.height, subject.y, subject.y + subject.height)) {
+        // check if x can snap to the right
+        if (d->flags & SNAP_EDGE_RIGHT) {
+            delta = other.x - (subject.x + subject.width);
+            if (abs(delta) < abs(d->dx)) d->dx = delta;
+        }
+        // or to the left
+        if (d->flags & SNAP_EDGE_LEFT) {
+            delta = other.x + other.width - subject.x;
+            if (abs(delta) < abs(d->dx)) d->dx = delta;
+        }
+    }
+    if (intervals_intersect(other.x, other.x + other.width, subject.x, subject.x + subject.width)) {
+        // if we can snap to the top
+        if (d->flags & SNAP_EDGE_TOP) {
+            delta = (other.y + other.height) - subject.y;
+            if (abs(delta) < abs(d->dy)) d->dy = delta;
+        }
+        // or to the bottom
+        if (d->flags & SNAP_EDGE_BOTTOM) {
+            delta = other.y - (subject.y + subject.height);
+            if (abs(delta) < abs(d->dy)) d->dy = delta;
+        }
+    }
+    return 0;
+}
+
+// get the vector to snap a client to it's neighbour
+void client_snap_vector(struct HSClient* client, struct HSTag* tag,
+                        enum SnapFlags flags,
+                        int* return_dx, int* return_dy) {
+    struct SnapData d;
+    int distance = (*g_snap_distance > 0) ? *g_snap_distance : 0;
+    // init delta
+    *return_dx = 0;
+    *return_dy = 0;
+    if (!distance) {
+        // nothing to do
+        return;
+    }
+    d.client    = client;
+    d.rect      = client_outer_floating_rect(client);
+    d.flags     = flags;
+    d.dx        = distance;
+    d.dy        = distance;
+    frame_foreach_client(tag->frame, (ClientAction)client_snap_helper, &d);
+    // write back results
+    if (abs(d.dx) < abs(distance)) {
+        *return_dx = d.dx;
+    }
+    if (abs(d.dy) < abs(distance)) {
+        *return_dy = d.dy;
+    }
+}
 

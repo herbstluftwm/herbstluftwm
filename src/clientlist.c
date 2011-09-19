@@ -245,11 +245,16 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
         CLAMP(client->last_size.y,
               m->rect.y + m->pad_up - client->last_size.height + space,
               m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
+    XRectangle rect = client->last_size;
     XMoveResizeWindow(g_display, client->window,
-        client->last_size.x,
-        client->last_size.y,
-        client->last_size.width,
-        client->last_size.height);
+        rect.x, rect.y, rect.width, rect.height);
+}
+
+XRectangle client_outer_floating_rect(HSClient* client) {
+    XRectangle rect = client->float_size;
+    rect.width  += *g_window_border_width * 2;
+    rect.height += *g_window_border_width * 2;
+    return rect;
 }
 
 // from dwm.c

@@ -43,6 +43,7 @@ void window_enforce_last_size(Window in);
 void destroy_client(HSClient* client);
 
 HSClient* get_client_from_window(Window window);
+XRectangle client_outer_floating_rect(HSClient* client);
 
 void window_resize(Window win, XRectangle rect);
 void client_resize_floating(HSClient* client, HSMonitor* m);
