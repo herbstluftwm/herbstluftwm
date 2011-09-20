@@ -14,7 +14,6 @@ Some BUGS:
 
 Planned features:
     - max-layout in Frames
-    - snap border when moving in floating mode
     - dump/load floating values
     - urgent-handling (jumpto urgent)
     - completion für keybind (recursive!)
