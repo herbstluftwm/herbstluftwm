@@ -14,10 +14,13 @@ Some BUGS:
 
 Planned features:
     - max-layout in Frames
+    - fullscreen
+    - let tag_status show if tag is empty or not
     - dump/load floating values
     - urgent-handling (jumpto urgent)
     - completion für keybind (recursive!)
     - completion für keyunbind
     - (optional) move cursor after focus change
+    - window rules: class/title/name -> tag, focus, ...
     - optional focus selection after frame_split
 
