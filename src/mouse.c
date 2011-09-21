@@ -28,7 +28,7 @@
 
 static XButtonPressedEvent g_button_drag_start;
 static XRectangle       g_win_drag_start;
-static HSClient*        g_win_drag_client = 0;
+static HSClient*        g_win_drag_client = NULL;
 static HSMonitor*       g_drag_monitor = NULL;
 static MouseBinding*    g_drag_bind = NULL;
 
@@ -85,13 +85,17 @@ void mouse_start_drag(XEvent* ev) {
             GrabModeAsync, None, None, CurrentTime);
 }
 
-void mouse_stop_drag(XEvent* ev) {
+void mouse_stop_drag() {
     g_win_drag_client = NULL;
     g_drag_bind = NULL;
     XUngrabPointer(g_display, CurrentTime);
 }
 
 void handle_motion_event(XEvent* ev) {
+    if (g_drag_monitor != get_current_monitor()) {
+        mouse_stop_drag();
+        return;
+    }
     if (!g_win_drag_client) return;
     if (!g_drag_bind) return;
     if (ev->type != MotionNotify) return;

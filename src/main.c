@@ -526,7 +526,7 @@ void buttonpress(XEvent* event) {
 
 void buttonrelease(XEvent* event) {
     HSDebug("name is: ButtonRelease\n");
-    mouse_stop_drag(event);
+    mouse_stop_drag();
 }
 void clientmessage(XEvent* event) {
     HSDebug("name is: ClientMessage\n");

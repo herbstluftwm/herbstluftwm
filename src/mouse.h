@@ -44,7 +44,7 @@ unsigned int string2button(char* name);
 MouseFunction string2mousefunction(char* name);
 
 void mouse_start_drag(XEvent* ev);
-void mouse_stop_drag(XEvent* ev);
+void mouse_stop_drag();
 void handle_motion_event(XEvent* ev);
 
 // get the vector to snap a client to it's neighbour
