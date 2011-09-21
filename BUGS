@@ -5,7 +5,6 @@ Some BUGS:
     - don't always re-layout all if only one thing changes (e.g. border_color)
     - don't reset border width on each layouting
     - herbstclient: add timeout if server doesnot respond
-    - max-layout for clients
     - herbstclient: errorstatus2string2stderr
     - herbstclient: -h
     - ignore windows with property: _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NOTIFICATION
@@ -13,7 +12,6 @@ Some BUGS:
     - reduce flicker on load command by blocking the usage of monitor_apply_layout()
 
 Planned features:
-    - max-layout in Frames
     - fullscreen
     - let tag_status show if tag is empty or not
     - dump/load floating values

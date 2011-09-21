@@ -162,6 +162,7 @@ cycle_layout ['DELTA']::
 
         * vertical (below each other)
         * horizontal (next to each other)
+        * max (only show selected client in entire frame)
 close::
     closes the focused window.
 

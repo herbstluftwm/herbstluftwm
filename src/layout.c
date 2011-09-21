@@ -46,6 +46,7 @@ char* g_align_names[] = {
 char* g_layout_names[] = {
     "vertical",
     "horizontal",
+    "max",
 };
 
 static void fetch_frame_colors() {
@@ -651,6 +652,25 @@ void frame_apply_client_layout_vertical(HSFrame* frame, XRectangle rect) {
     frame_apply_client_layout_linear(frame, rect, true);
 }
 
+void frame_apply_client_layout_max(HSFrame* frame, XRectangle rect) {
+    Window* buf = frame->content.clients.buf;
+    size_t count = frame->content.clients.count;
+    int selection = frame->content.clients.selection;
+    unsigned long colors[] = {
+        g_window_border_normal_color, // normal color
+        (g_cur_frame == frame) ?
+            g_window_border_active_color : // frame has focus and window is focused
+            g_window_border_normal_color, // window is selected but frame isnot focused
+    };
+    for (int i = 0; i < count; i++) {
+        XSetWindowBorder(g_display, buf[i], colors[i == selection]);
+        window_resize(buf[i], rect);
+        if (i == selection) {
+            XRaiseWindow(g_display, buf[i]);
+        }
+    }
+}
+
 void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     if (frame->type == TYPE_CLIENTS) {
         size_t count = frame->content.clients.count;
@@ -692,8 +712,12 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         if (count == 0) {
             return;
         }
-        frame_apply_client_layout_linear(frame, rect,
-            (frame->content.clients.layout == LAYOUT_VERTICAL));
+        if (frame->content.clients.layout == LAYOUT_MAX) {
+            frame_apply_client_layout_max(frame, rect);
+        } else {
+            frame_apply_client_layout_linear(frame, rect,
+                (frame->content.clients.layout == LAYOUT_VERTICAL));
+        }
     } else { /* frame->type == TYPE_FRAMES */
         HSLayout* layout = &frame->content.layout;
         XRectangle first = rect;

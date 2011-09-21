@@ -24,6 +24,7 @@ enum {
 enum {
     LAYOUT_VERTICAL = 0,
     LAYOUT_HORIZONTAL,
+    LAYOUT_MAX,
     LAYOUT_COUNT,
 };
 
