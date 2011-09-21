@@ -11,8 +11,6 @@ Some BUGS:
     - ignore windows with property: _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NOTIFICATION
     - add function to put window into tag (and use it in manage, merge_tag, move)
     - reduce flicker on load command by blocking the usage of monitor_apply_layout()
-    - Fix memory management of monitors
-    - Fix monitor index when removing monitor
 
 Planned features:
     - max-layout in Frames

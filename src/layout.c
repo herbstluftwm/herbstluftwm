@@ -776,6 +776,11 @@ int remove_monitor_command(int argc, char** argv) {
     frame_hide_recursive(monitor->tag->frame);
     // and remove monitor completly
     g_array_remove_index(g_monitors, index);
+    if (g_cur_monitor >= g_monitors->len) {
+        g_cur_monitor--;
+        // if selection has changed, then relayout focused monitor
+        monitor_apply_layout(get_current_monitor());
+    }
     return 0;
 }
 
