@@ -17,11 +17,17 @@
 #define LAYOUT_DUMP_SEPARATOR LAYOUT_DUMP_SEPARATOR_STR[0]
 
 enum {
+    ALIGN_VERTICAL = 0,
+    ALIGN_HORIZONTAL,
+};
+
+enum {
     LAYOUT_VERTICAL = 0,
     LAYOUT_HORIZONTAL,
     LAYOUT_COUNT,
 };
 
+extern char* g_align_names[];
 extern char* g_layout_names[];
 
 enum {
@@ -40,7 +46,7 @@ struct HSFrame;
 struct HSTag;
 
 typedef struct HSLayout {
-    int align;         // LAYOUT_VERTICAL or LAYOUT_HORIZONTAL
+    int align;         // ALIGN_VERTICAL or ALIGN_HORIZONTAL
     struct HSFrame* a; // first child
     struct HSFrame* b; // second child
     int selection;
@@ -122,6 +128,7 @@ void dump_frame_tree(HSFrame* frame, GString** output);
 // or NULL on an error
 char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg);
 int find_layout_by_name(char* name);
+int find_align_by_name(char* name);
 
 int frame_current_cycle_selection(int argc, char** argv);
 int cycle_all_command(int argc, char** argv);

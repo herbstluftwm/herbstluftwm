@@ -38,6 +38,11 @@ unsigned long g_frame_bg_active_color;
 unsigned long g_frame_bg_normal_color;
 char*   g_tree_style = NULL;
 
+char* g_align_names[] = {
+    "vertical",
+    "horizontal",
+};
+
 char* g_layout_names[] = {
     "vertical",
     "horizontal",
@@ -230,7 +235,7 @@ void dump_frame_tree(HSFrame* frame, GString** output) {
         g_string_append_printf(*output, "%csplit%c%s%c%lf%c%d%c",
             LAYOUT_DUMP_BRACKETS[0],
             LAYOUT_DUMP_WHITESPACES[0],
-            g_layout_names[frame->content.layout.align],
+            g_align_names[frame->content.layout.align],
             LAYOUT_DUMP_SEPARATOR,
             ((double)frame->content.layout.fraction) / (double)FRACTION_UNIT,
             LAYOUT_DUMP_SEPARATOR,
@@ -294,11 +299,11 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
             return NULL;
         }
 #undef SEP
-        int align = find_layout_by_name(align_name);
+        int align = find_align_by_name(align_name);
         g_free(align_name);
         if (align < 0) {
             g_string_append_printf(*errormsg,
-                    "invalid layout name in args \"%s\"\n", args);
+                    "invalid align name in args \"%s\"\n", args);
             return NULL;
         }
         selection = !!selection; // CLAMP it to [0;1]
@@ -438,9 +443,17 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
 }
 
 int find_layout_by_name(char* name) {
-    int i;
-    for (i = 0; i < LENGTH(g_layout_names); i++) {
+    for (int i = 0; i < LENGTH(g_layout_names); i++) {
         if (!strcmp(name, g_layout_names[i])) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int find_align_by_name(char* name) {
+    for (int i = 0; i < LENGTH(g_align_names); i++) {
+        if (!strcmp(name, g_align_names[i])) {
             return i;
         }
     }
@@ -685,11 +698,11 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         HSLayout* layout = &frame->content.layout;
         XRectangle first = rect;
         XRectangle second = rect;
-        if (layout->align == LAYOUT_VERTICAL) {
+        if (layout->align == ALIGN_VERTICAL) {
             first.height = (rect.height * layout->fraction) / FRACTION_UNIT;
             second.y += first.height;
             second.height -= first.height;
-        } else { // (layout->align == LAYOUT_HORIZONTAL)
+        } else { // (layout->align == ALIGN_HORIZONTAL)
             first.width = (rect.width * layout->fraction) / FRACTION_UNIT;
             second.x += first.width;
             second.width -= first.width;
@@ -1214,9 +1227,9 @@ int frame_split_command(int argc, char** argv) {
     if (argc < 3) {
         return HERBST_INVALID_ARGUMENT;
     }
-    int align = LAYOUT_VERTICAL;
+    int align = ALIGN_VERTICAL;
     if (argv[1][0] == 'h') {
-        align = LAYOUT_HORIZONTAL;
+        align = ALIGN_HORIZONTAL;
     } // else: layout ist vertical
     int fraction = FRACTION_UNIT* CLAMP(atof(argv[2]),
                                         0.0 + FRAME_MIN_FRACTION,
@@ -1303,28 +1316,28 @@ HSFrame* frame_neighbour(HSFrame* frame, char direction) {
         HSLayout* layout = &frame->parent->content.layout;
         switch(direction) {
             case 'r':
-                if (layout->align == LAYOUT_HORIZONTAL
+                if (layout->align == ALIGN_HORIZONTAL
                     && layout->a == frame) {
                     found = true;
                     other = layout->b;
                 }
                 break;
             case 'l':
-                if (layout->align == LAYOUT_HORIZONTAL
+                if (layout->align == ALIGN_HORIZONTAL
                     && layout->b == frame) {
                     found = true;
                     other = layout->a;
                 }
                 break;
             case 'd':
-                if (layout->align == LAYOUT_VERTICAL
+                if (layout->align == ALIGN_VERTICAL
                     && layout->a == frame) {
                     found = true;
                     other = layout->b;
                 }
                 break;
             case 'u':
-                if (layout->align == LAYOUT_VERTICAL
+                if (layout->align == ALIGN_VERTICAL
                     && layout->b == frame) {
                     found = true;
                     other = layout->a;
