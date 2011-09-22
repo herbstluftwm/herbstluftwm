@@ -420,7 +420,7 @@ void execute_autostart_file() {
 static void parse_arguments(int argc, char** argv) {
     static struct option long_options[] = {
         {"autostart",   1, 0, 'c'},
-        {"version",     1, 0, 'v'},
+        {"version",     0, 0, 'v'},
         {"verbose",     0, &g_verbose, 1},
         {0, 0, 0, 0}
     };
