@@ -37,6 +37,8 @@ int g_verbose = 0;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
 static int*     g_focus_follows_mouse = NULL;
+static bool     g_exec_before_quit = false;
+static char**   g_exec_args = NULL;
 
 typedef void (*HandlerTable[LASTEvent]) (XEvent*);
 
@@ -270,11 +272,11 @@ int wmexec(int argc, char** argv) {
         execargs[i] = execargs[i+1];
     }
     execargs[i] = NULL;
-    // do actual exec
-    execvp(execargs[0], execargs);
-    fprintf(stderr, "herbstluftwm: execvp \"%s\"", argv[1]);
-    perror(" failed");
-    return HERBST_COMMAND_NOT_FOUND;
+    // quit and exec to new window manger
+    g_exec_args = execargs;
+    g_exec_before_quit = true;
+    g_aboutToQuit = true;
+    return EXIT_SUCCESS;
 }
 
 // handle x-events:
@@ -663,6 +665,18 @@ int main(int argc, char* argv[]) {
         g_modules[i].destroy();
     }
     XCloseDisplay(g_display);
+    // check if wie shall restart an other window manager
+    if (g_exec_before_quit) {
+        // do actual exec
+        execvp(g_exec_args[0], g_exec_args);
+        fprintf(stderr, "herbstluftwm: execvp \"%s\"", g_exec_args[0]);
+        perror(" failed");
+        // on failure, fall back
+        execvp(argv[0], argv);
+        fprintf(stderr, "herbstluftwm: execvp \"%s\"", argv[1]);
+        perror(" failed");
+        return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }
 
