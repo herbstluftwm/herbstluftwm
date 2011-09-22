@@ -1,6 +1,7 @@
-HERBSTLUFTWM(1)
+herbstluftwm(1)
 ===============
 :doctype: manpage
+:man version: {herbstluftwmversion}
 
 
 NAME

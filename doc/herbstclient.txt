@@ -1,6 +1,7 @@
-HERBSTCLIENT(1)
+herbstclient(1)
 ===============
 :doctype: manpage
+:man version: {herbstluftwmversion}
 
 
 NAME
