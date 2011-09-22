@@ -1,4 +1,5 @@
 
+include ../version.mk
 include ../config.mk
 
 # project

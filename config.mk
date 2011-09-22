@@ -10,6 +10,11 @@ LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 `pkg-config --libs glib-2.0`
 LD = gcc
 CC = gcc
 CFLAGS = -g -std=c99 -pedantic -Wall ${INCS} -D _XOPEN_SOURCE=600
+VERSIONFLAGS = \
+    -D HERBSTLUFT_VERSION=$(VERSION) \
+    -D HERBSTLUFT_VERSION_MAJOR=$(VERSION_MAJOR) \
+    -D HERBSTLUFT_VERSION_MINOR=$(VERSION_MINOR)
+CFLAGS += $(VERSIONFLAGS)
 LDFLAGS = -g ${LIBS}
 PREFIX = ./build
 BINDIR = $(PREFIX)/bin

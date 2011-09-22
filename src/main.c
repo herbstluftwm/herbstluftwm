@@ -131,7 +131,7 @@ int reload() {
 int version(int argc, char* argv[], GString** result) {
     (void) argc;
     (void) argv;
-    *result = g_string_assign(*result, HERBSTLUFT_VERSION);
+    *result = g_string_assign(*result, HERBSTLUFT_VERSION_STRING);
     return 0;
 }
 
