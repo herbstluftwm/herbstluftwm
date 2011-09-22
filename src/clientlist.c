@@ -197,7 +197,7 @@ void window_focus(Window window) {
     //mouse_grab(window);
 }
 
-void window_resize(Window win, XRectangle rect) {
+void client_resize(HSClient* client, XRectangle rect) {
     // ensure minimum size
     if (rect.width < WINDOW_MIN_WIDTH) {
         rect.width = WINDOW_MIN_WIDTH;
@@ -205,7 +205,11 @@ void window_resize(Window win, XRectangle rect) {
     if (rect.height < WINDOW_MIN_HEIGHT) {
         rect.height = WINDOW_MIN_HEIGHT;
     }
-    struct HSClient* client = get_client_from_window(win);
+    if (!client) {
+        HSDebug("Warning: client_resize(NULL, ...) was called\n");
+        return;
+    }
+    Window win = client->window;
     // apply border width
     rect.width -= *g_window_border_width * 2;
     rect.height -= *g_window_border_width * 2;

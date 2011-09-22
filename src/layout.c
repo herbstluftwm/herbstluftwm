@@ -634,11 +634,12 @@ void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vert
             g_window_border_normal_color, // window is selected but frame isnot focused
     };
     for (i = 0; i < count; i++) {
+        HSClient* client = get_client_from_window(buf[i]);
         // add the space, if count doesnot divide frameheight without remainder
         cur.height += (i == count-1) ? last_step_y : 0;
         cur.width += (i == count-1) ? last_step_x : 0;
         XSetWindowBorder(g_display, buf[i], colors[i == selection]);
-        window_resize(buf[i], cur);
+        client_resize(client, cur);
         cur.y += step_y;
         cur.x += step_x;
     }
@@ -663,8 +664,9 @@ void frame_apply_client_layout_max(HSFrame* frame, XRectangle rect) {
             g_window_border_normal_color, // window is selected but frame isnot focused
     };
     for (int i = 0; i < count; i++) {
+        HSClient* client = get_client_from_window(buf[i]);
         XSetWindowBorder(g_display, buf[i], colors[i == selection]);
-        window_resize(buf[i], rect);
+        client_resize(client, rect);
         if (i == selection) {
             XRaiseWindow(g_display, buf[i]);
         }
