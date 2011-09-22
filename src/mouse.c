@@ -344,35 +344,41 @@ static bool intervals_intersect(int a_left, int a_right, int b_left, int b_right
         || is_point_between(b_left, a_left, a_right);
 }
 
+// compute vector to snap a point to an edge
+static void snap_1d(int x, int edge, int* delta) {
+    // whats the vector from subject to edge?
+    int cur_delta = edge - x;
+    // if distance is smaller then all other deltas
+    if (abs(cur_delta) < abs(*delta)) {
+        // then snap it, i.e. save vector
+        *delta = cur_delta;
+    }
+}
+
 static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
     if (candidate == d->client) {
         return 0;
     }
     XRectangle subject  = d->rect;
     XRectangle other    = client_outer_floating_rect(candidate);
-    int delta;
     if (intervals_intersect(other.y, other.y + other.height, subject.y, subject.y + subject.height)) {
         // check if x can snap to the right
         if (d->flags & SNAP_EDGE_RIGHT) {
-            delta = other.x - (subject.x + subject.width);
-            if (abs(delta) < abs(d->dx)) d->dx = delta;
+            snap_1d(subject.x + subject.width, other.x, &d->dx);
         }
         // or to the left
         if (d->flags & SNAP_EDGE_LEFT) {
-            delta = other.x + other.width - subject.x;
-            if (abs(delta) < abs(d->dx)) d->dx = delta;
+            snap_1d(subject.x, other.x + other.width, &d->dx);
         }
     }
     if (intervals_intersect(other.x, other.x + other.width, subject.x, subject.x + subject.width)) {
         // if we can snap to the top
         if (d->flags & SNAP_EDGE_TOP) {
-            delta = (other.y + other.height) - subject.y;
-            if (abs(delta) < abs(d->dy)) d->dy = delta;
+            snap_1d(subject.y, other.y + other.height, &d->dy);
         }
         // or to the bottom
         if (d->flags & SNAP_EDGE_BOTTOM) {
-            delta = other.y - (subject.y + subject.height);
-            if (abs(delta) < abs(d->dy)) d->dy = delta;
+            snap_1d(subject.y + subject.height, other.y, &d->dy);
         }
     }
     return 0;
