@@ -36,6 +36,7 @@ static Cursor g_cursor;
 static GList* g_mouse_binds = NULL;
 static unsigned int* g_numlockmask_ptr;
 static int* g_snap_distance;
+static int* g_snap_gap;
 
 #define CLEANMASK(mask)         ((mask) & ~(*g_numlockmask_ptr|LockMask))
 #define REMOVEBUTTONMASK(mask) ((mask) & \
@@ -48,6 +49,7 @@ static int* g_snap_distance;
 void mouse_init() {
     g_numlockmask_ptr = get_numlockmask_ptr();
     g_snap_distance = &(settings_find("snap_distance")->value.i);
+    g_snap_gap = &(settings_find("snap_gap")->value.i);
     /* set cursor theme */
     g_cursor = XCreateFontCursor(g_display, XC_left_ptr);
     XDefineCursor(g_display, g_root, g_cursor);
@@ -402,7 +404,25 @@ void client_snap_vector(struct HSClient* client, struct HSTag* tag,
     d.flags     = flags;
     d.dx        = distance;
     d.dy        = distance;
+
+    // snap to monitor edges
+    HSMonitor* m = g_drag_monitor;
+    if (flags & SNAP_EDGE_TOP) {
+        snap_1d(d.rect.x, *g_snap_gap, &d.dx);
+    }
+    if (flags & SNAP_EDGE_LEFT) {
+        snap_1d(d.rect.y, *g_snap_gap, &d.dy);
+    }
+    if (flags & SNAP_EDGE_RIGHT) {
+        snap_1d(d.rect.x + d.rect.width, m->rect.width - m->pad_left - m->pad_right, &d.dx);
+    }
+    if (flags & SNAP_EDGE_BOTTOM) {
+        snap_1d(d.rect.y + d.rect.height, m->rect.height - m->pad_up - m->pad_down, &d.dy);
+    }
+
+    // snap to other clients
     frame_foreach_client(tag->frame, (ClientAction)client_snap_helper, &d);
+
     // write back results
     if (abs(d.dx) < abs(distance)) {
         *return_dx = d.dx;
