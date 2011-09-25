@@ -94,7 +94,23 @@ void reset_client_colors() {
     all_monitors_apply_layout();
 }
 
+static void client_move_to_floatpos(void* key, void* client_void, void* data) {
+    (void)key;
+    (void)data;
+    HSClient* client = client_void;
+    if (client) {
+        int x = client->float_size.x;
+        int y = client->float_size.y;
+        unsigned int w = client->float_size.width;
+        unsigned int h = client->float_size.height;
+        XMoveResizeWindow(g_display, client->window, x, y, w, h);
+    }
+}
+
 void clientlist_destroy() {
+    // move all clients to their original floating position
+    g_hash_table_foreach(g_clients, client_move_to_floatpos, NULL);
+
     g_hash_table_destroy(g_clients);
     regfree(&g_ignore_class_regex);
 }
