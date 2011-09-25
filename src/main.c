@@ -547,7 +547,8 @@ void configurenotify(XEvent* event) {
     // HSDebug("name is: ConfigureNotify\n");
 }
 void destroynotify(XEvent* event) {
-    // printf("name is: DestroyNotify\n");
+    // try to unmanage it
+    unmanage_client(event->xdestroywindow.window);
 }
 void enternotify(XEvent* event) {
     HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
