@@ -13,7 +13,6 @@ Some BUGS:
 
 Planned features:
     - fullscreen
-    - let tag_status show if tag is empty or not
     - dump/load floating values
     - urgent-handling (jumpto urgent)
     - completion für keybind (recursive!)

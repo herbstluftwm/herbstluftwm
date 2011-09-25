@@ -331,6 +331,19 @@ complete 'POSITION' ['COMMAND' 'ARGS ...']::
 emit_hook 'ARGS ...'::
     emits specified hook to all idling herbstclients.
 
+tag_status ['MONITOR']::
+    print a tab separated list of all tags for specified 'MONITOR' index. If no
+    'MONITOR' index is given, the focused monitor is used. Each tag name is
+    prefixed with one char, which indicates its state:
+        * *.* the tag is empty
+        * *:* the tag is not empty
+        * *!* the tag contains an urgent window (not implemented yet!)
+        * *+* the tag is viewed on a different monitor
+        * *#* the tag is viewed on the specified 'MONITOR'
+
+WARNING: If you use a tab in one of the tag names, then tag_status is probably
+quite useless for you.
+
 floating [['TAG'] on|off|toggle]::
     changes the current tag to floating/tiling mode on specified 'TAG'. If no
     'TAG' is given, current tag is used. If no argument is given, floating mode
