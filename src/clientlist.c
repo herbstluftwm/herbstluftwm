@@ -99,6 +99,11 @@ void clientlist_destroy() {
     regfree(&g_ignore_class_regex);
 }
 
+
+void clientlist_foreach(GHFunc func, gpointer data) {
+    g_hash_table_foreach(g_clients, func, data);
+}
+
 HSClient* get_client_from_window(Window window) {
     return (HSClient*) g_hash_table_lookup(g_clients, &window);
 }

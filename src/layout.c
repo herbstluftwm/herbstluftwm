@@ -37,6 +37,7 @@ unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
 unsigned long g_frame_bg_normal_color;
 char*   g_tree_style = NULL;
+bool    g_tag_flags_dirty = true;
 
 char* g_align_names[] = {
     "vertical",
@@ -999,6 +1000,32 @@ int tag_set_floating_command(int argc, char** argv) {
         monitor_apply_layout(m);
     }
     return 0;
+}
+
+static void client_update_tag_flags(void* key, void* client_void, void* data) {
+    (void) key;
+    (void) data;
+    HSClient* client = client_void;
+    if (client) {
+        // TODO: update urgent flag
+        TAG_SET_FLAG(client->tag, TAG_FLAG_USED);
+    }
+}
+
+void tag_force_update_flags() {
+    g_tag_flags_dirty = false;
+    // unset all tags
+    for (int i = 0; i < g_tags->len; i++) {
+        g_array_index(g_tags, HSTag*, i)->flags = 0;
+    }
+    // update flags
+    clientlist_foreach(client_update_tag_flags, NULL);
+}
+
+void tag_update_flags() {
+    if (g_tag_flags_dirty) {
+        tag_force_update_flags();
+    }
 }
 
 void ensure_tags_are_available() {

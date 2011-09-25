@@ -203,13 +203,19 @@ int print_tag_status_command(int argc, char** argv, GString** result) {
         monitor_index = atoi(argv[1]);
     }
     monitor_index = CLAMP(monitor_index, 0, g_monitors->len);
+    tag_update_flags();
     HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, monitor_index);
     *result = g_string_append_c(*result, '\t');
-    int i = 0;
-    for (i = 0; i < g_tags->len; i++) {
+    for (int i = 0; i < g_tags->len; i++) {
         HSTag* tag = g_array_index(g_tags, HSTag*, i);
         // print flags
         char c = '.';
+        if (tag->flags & TAG_FLAG_USED) {
+            c = ':';
+        }
+        if (tag->flags & TAG_FLAG_URGENT) {
+            c = '!';
+        }
         if (tag == monitor->tag) {
             c = '+';
             if (monitor_index == g_cur_monitor) {
@@ -648,6 +654,7 @@ int main(int argc, char* argv[]) {
     // setup
     ensure_monitors_are_available();
     scan();
+    tag_force_update_flags();
     all_monitors_apply_layout();
     execute_autostart_file();
 

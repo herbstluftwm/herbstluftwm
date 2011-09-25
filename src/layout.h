@@ -16,6 +16,13 @@
 #define LAYOUT_DUMP_SEPARATOR_STR ":" /* must be a string with one char */
 #define LAYOUT_DUMP_SEPARATOR LAYOUT_DUMP_SEPARATOR_STR[0]
 
+#define TAG_SET_FLAG(tag, flag) \
+    ((tag)->flags |= (flag))
+enum {
+    TAG_FLAG_URGENT = 0x01, // is there a urgent window?
+    TAG_FLAG_USED   = 0x02, // the oposit of empty
+};
+
 enum {
     ALIGN_VERTICAL = 0,
     ALIGN_HORIZONTAL,
@@ -91,6 +98,7 @@ typedef struct HSTag {
     GString*    name;   // name of this tag
     HSFrame*    frame;  // the master frame
     bool        floating;
+    int         flags;
 } HSTag;
 
 // globals
@@ -98,6 +106,7 @@ GArray*     g_tags; // Array of HSTag*
 GArray*     g_monitors; // Array of HSMonitor
 int         g_cur_monitor;
 HSFrame*    g_cur_frame; // currently selected frame
+bool        g_tag_flags_dirty;
 
 // functions
 void layout_init();
@@ -176,6 +185,8 @@ int tag_rename_command(int argc, char** argv);
 int tag_move_window_command(int argc, char** argv);
 int tag_remove_command(int argc, char** argv);
 int tag_set_floating_command(int argc, char** argv);
+void tag_force_update_flags();
+void tag_update_flags();
 // for monitors
 // adds a new monitor to g_monitors and returns a pointer to it
 HSMonitor* monitor_with_frame(HSFrame* frame);

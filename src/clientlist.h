@@ -26,6 +26,8 @@ typedef struct HSClient {
 void clientlist_init();
 void clientlist_destroy();
 
+void clientlist_foreach(GHFunc func, gpointer data);
+
 void window_focus(Window window);
 void window_unfocus(Window window);
 void window_unfocus_last();
