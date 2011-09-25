@@ -444,7 +444,7 @@ X-.root
   : +* child 01
 ----
 +
-Usefull values for 'tree_style' are: +╾│ ├└╼─┐+ or +╾│ ├╰╼─╮+.
+Useful values for 'tree_style' are: +╾│ ├└╼─┐+ or +╾│ ├╰╼─╮+.
 
 AUTOSTART FILE
 --------------
