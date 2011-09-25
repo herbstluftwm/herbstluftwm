@@ -383,7 +383,6 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
         int index = 0;
         HSTag* tag = find_tag_with_toplevel_frame(get_toplevel_frame(frame));
         while (*description != LAYOUT_DUMP_BRACKETS[1]) {
-
             Window win;
             if (1 != sscanf(description, "0x%lx\n", &win)) {
                 g_string_append_printf(*errormsg,
@@ -970,6 +969,7 @@ int tag_remove_command(int argc, char** argv) {
             break;
         }
     }
+    tag_set_flags_dirty();
     hook_emit_list("tag_removed", oldname, target->name->str, NULL);
     g_free(oldname);
     return 0;
@@ -1026,6 +1026,11 @@ void tag_update_flags() {
     if (g_tag_flags_dirty) {
         tag_force_update_flags();
     }
+}
+
+void tag_set_flags_dirty() {
+    g_tag_flags_dirty = true;
+    hook_emit_list("tag_flags", NULL);
 }
 
 void ensure_tags_are_available() {
@@ -1846,6 +1851,7 @@ int tag_move_window_command(int argc, char** argv) {
     if (monitor_target) {
         monitor_apply_layout(monitor_target);
     }
+    tag_set_flags_dirty();
     return 0;
 }
 

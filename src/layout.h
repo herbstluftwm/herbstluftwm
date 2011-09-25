@@ -187,6 +187,7 @@ int tag_remove_command(int argc, char** argv);
 int tag_set_floating_command(int argc, char** argv);
 void tag_force_update_flags();
 void tag_update_flags();
+void tag_set_flags_dirty();
 // for monitors
 // adds a new monitor to g_monitors and returns a pointer to it
 HSMonitor* monitor_with_frame(HSFrame* frame);

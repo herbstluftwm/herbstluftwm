@@ -176,6 +176,7 @@ int load_command(int argc, char** argv, GString** result) {
     }
     assert(tag != NULL);
     char* rest = load_frame_tree(tag->frame, layout_string, result);
+    tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     HSMonitor* m = find_monitor_with_tag(tag);
     if (m) {

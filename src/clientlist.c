@@ -145,6 +145,7 @@ void manage_client(Window win) {
     window_grab_button(win);
     //mouse_grab(win);
     frame_insert_window(m->tag->frame, win);
+    tag_set_flags_dirty();
     monitor_apply_layout(m);
 }
 
@@ -163,6 +164,7 @@ void unmanage_client(Window win) {
     XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
     g_hash_table_remove(g_clients, &win);
+    tag_set_flags_dirty();
 }
 
 // destroys a special client
