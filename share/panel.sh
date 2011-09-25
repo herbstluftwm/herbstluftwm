@@ -10,6 +10,10 @@ height=16
 font="-*-fixed-medium-*-*-*-12-*-*-*-*-*-*-*"
 bgcolor='#3E2600'
 
+function uniq_linebuffered() {
+    awk '$0 != l { print ; l=$0 ; fflush(); }' "$@"
+}
+
 herbstclient pad $monitor $height
 (
     # events:
@@ -17,7 +21,7 @@ herbstclient pad $monitor $height
     while true ; do
         date +'date ^fg(#efefef)%H:%M^fg(#909090), %Y-%m-^fg(#efefef)%d'
         sleep 1 || break
-    done &
+    done | uniq_linebuffered  &
     herbstclient --idle
 )|(
     TAGS=( $(herbstclient tag_status $monitor) )
@@ -53,6 +57,7 @@ herbstclient pad $monitor $height
         # wait for next event
         read line || break
         cmd=( $line )
+        echo ldflaklsdfakldsf >&2
         # find out event origin
         case "${cmd[0]}" in
             tag*)
