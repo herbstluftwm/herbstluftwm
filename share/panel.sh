@@ -57,7 +57,6 @@ herbstclient pad $monitor $height
         # wait for next event
         read line || break
         cmd=( $line )
-        echo ldflaklsdfakldsf >&2
         # find out event origin
         case "${cmd[0]}" in
             tag*)
