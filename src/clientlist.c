@@ -48,16 +48,19 @@ static HSClient* create_client() {
 }
 
 void reset_client_settings() {
-    // reset regex
-    regfree(&g_ignore_class_regex);
     char* str = settings_find("ignore_class")->value.s;
-    int status = regcomp(&g_ignore_class_regex, str, REG_NOSUB|REG_EXTENDED);
+    regex_t new_regex;
+    int status = regcomp(&new_regex, str, REG_NOSUB|REG_EXTENDED);
     if (status != 0) {
         char buf[ERROR_STRING_BUF_SIZE];
-        regerror(status, &g_ignore_class_regex, buf, ERROR_STRING_BUF_SIZE);
+        regerror(status, &new_regex, buf, ERROR_STRING_BUF_SIZE);
         fprintf(stderr, "Cannot parse value \"%s\"", str);
         fprintf(stderr, "from setting \"%s\": ", "ignore_class");
         fprintf(stderr, "\"%s\"\n", buf);
+    } else {
+        // reset regex
+        regfree(&g_ignore_class_regex);
+        g_ignore_class_regex = new_regex;
     }
 }
 
