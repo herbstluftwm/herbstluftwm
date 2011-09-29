@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "layout.h"
 #include "utils.h"
+#include "hook.h"
 #include "mouse.h"
 // system
 #include <glib.h>
@@ -44,6 +45,7 @@ static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
     hc->float_size.width = 100;
     hc->float_size.height = 100;
+    hc->urgent = false;
     return hc;
 }
 
@@ -343,3 +345,46 @@ void window_show(Window win) {
 void window_hide(Window win) {
     window_set_visible(win, false);
 }
+
+// heavily inspired by dwm.c
+void client_clear_urgent(HSClient* client) {
+    if (client->urgent) {
+        char winid_str[STRING_BUF_SIZE];
+        snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", client->window);
+        hook_emit_list("urgent", "off", winid_str, NULL);
+        client->urgent = false;
+        XWMHints *wmh;
+        if(!(wmh = XGetWMHints(g_display, client->window)))
+            return;
+        wmh->flags &= ~XUrgencyHint;
+        XSetWMHints(g_display, client->window, wmh);
+        XFree(wmh);
+        // report changes to tags
+        tag_set_flags_dirty();
+    }
+}
+
+// heavily inspired by dwm.c
+void client_update_wm_hints(HSClient* client) {
+    XWMHints* wmh = XGetWMHints(g_display, client->window);
+    if (!wmh) {
+        return;
+    }
+
+    if ((frame_focused_window(g_cur_frame) == client->window)
+        && wmh->flags & XUrgencyHint) {
+        // remove urgency hint if window is focused
+        wmh->flags &= ~XUrgencyHint;
+        XSetWMHints(g_display, client->window, wmh);
+    } else {
+        bool newval = (wmh->flags & XUrgencyHint) ? true : false;
+        if (newval != client->urgent) {
+            client->urgent = newval;
+            char winid_str[STRING_BUF_SIZE];
+            snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", client->window);
+            hook_emit_list("urgent", client->urgent ? "on":"off", winid_str, NULL);
+            tag_set_flags_dirty();
+        }
+    }
+}
+

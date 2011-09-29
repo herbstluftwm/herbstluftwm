@@ -1008,8 +1008,10 @@ static void client_update_tag_flags(void* key, void* client_void, void* data) {
     (void) data;
     HSClient* client = client_void;
     if (client) {
-        // TODO: update urgent flag
         TAG_SET_FLAG(client->tag, TAG_FLAG_USED);
+        if (client->urgent) {
+            TAG_SET_FLAG(client->tag, TAG_FLAG_URGENT);
+        }
     }
 }
 

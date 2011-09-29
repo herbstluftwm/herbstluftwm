@@ -21,6 +21,7 @@ typedef struct HSClient {
     XRectangle  last_size;
     HSTag*      tag;
     XRectangle  float_size;
+    bool        urgent;
 } HSClient;
 
 void clientlist_init();
@@ -49,6 +50,8 @@ XRectangle client_outer_floating_rect(HSClient* client);
 
 void client_resize(HSClient* client, XRectangle rect);
 void client_resize_floating(HSClient* client, HSMonitor* m);
+void client_clear_urgent(HSClient* client);
+void client_update_wm_hints(HSClient* client);
 int window_close_current();
 
 bool is_window_class_ignored(char* window_class);

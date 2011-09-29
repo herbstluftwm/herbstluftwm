@@ -214,14 +214,14 @@ int print_tag_status_command(int argc, char** argv, GString** result) {
         if (tag->flags & TAG_FLAG_USED) {
             c = ':';
         }
-        if (tag->flags & TAG_FLAG_URGENT) {
-            c = '!';
-        }
         if (tag == monitor->tag) {
             c = '+';
             if (monitor_index == g_cur_monitor) {
                 c = '#';
             }
+        }
+        if (tag->flags & TAG_FLAG_URGENT) {
+            c = '!';
         }
         *result = g_string_append_c(*result, c);
         *result = g_string_append(*result, tag->name->str);
@@ -617,10 +617,23 @@ void maprequest(XEvent* event) {
     // else: ignore all other maprequests from windows
     // that are managed already
 }
+
 void propertynotify(XEvent* event) {
     // printf("name is: PropertyNotify\n"); 
-    if (is_ipc_connectable(event->xproperty.window)) {
-        ipc_handle_connection(event->xproperty.window, false);
+    XPropertyEvent *ev = &event->xproperty;
+    HSClient* client;
+    if (ev->state == PropertyNewValue) {
+        if (is_ipc_connectable(event->xproperty.window)) {
+            ipc_handle_connection(event->xproperty.window, false);
+        } else if((client = get_client_from_window(ev->window))) {
+            switch (ev->atom) {
+                case XA_WM_HINTS:
+                    client_update_wm_hints(client);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
 void unmapnotify(XEvent* event) {
