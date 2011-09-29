@@ -266,21 +266,22 @@ int spawn(int argc, char** argv) {
 }
 
 int wmexec(int argc, char** argv) {
-    if (argc < 2) {
-        fprintf(stderr, "wmexec: too few parameters\n");
-        return HERBST_INVALID_ARGUMENT;
+    if (argc >= 2) {
+        // shift all args in argv by 1 to the front
+        // so that we have space for a NULL entry at the end for execvp
+        char** execargs = argv_duplicate(argc, argv);
+        free(execargs[0]);
+        int i;
+        for (i = 0; i < argc-1; i++) {
+            execargs[i] = execargs[i+1];
+        }
+        execargs[i] = NULL;
+        // quit and exec to new window manger
+        g_exec_args = execargs;
+    } else {
+        // exec into same command
+        g_exec_args = NULL;
     }
-    // shift all args in argv by 1 to the front
-    // so that we have space for a NULL entry at the end for execvp
-    char** execargs = argv_duplicate(argc, argv);
-    free(execargs[0]);
-    int i;
-    for (i = 0; i < argc-1; i++) {
-        execargs[i] = execargs[i+1];
-    }
-    execargs[i] = NULL;
-    // quit and exec to new window manger
-    g_exec_args = execargs;
     g_exec_before_quit = true;
     g_aboutToQuit = true;
     return EXIT_SUCCESS;
@@ -676,11 +677,13 @@ int main(int argc, char* argv[]) {
     XCloseDisplay(g_display);
     // check if wie shall restart an other window manager
     if (g_exec_before_quit) {
-        // do actual exec
-        execvp(g_exec_args[0], g_exec_args);
-        fprintf(stderr, "herbstluftwm: execvp \"%s\"", g_exec_args[0]);
-        perror(" failed");
-        // on failure, fall back
+        if (g_exec_args) {
+            // do actual exec
+            execvp(g_exec_args[0], g_exec_args);
+            fprintf(stderr, "herbstluftwm: execvp \"%s\"", g_exec_args[0]);
+            perror(" failed");
+        }
+        // on failure or if no other wm given, then fall back
         execvp(argv[0], argv);
         fprintf(stderr, "herbstluftwm: execvp \"%s\"", argv[1]);
         perror(" failed");

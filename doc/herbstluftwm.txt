@@ -137,9 +137,10 @@ spawn 'EXECUTABLE' ['ARGS ...']::
 
         * spawn xterm -e man 3 execvp
 
-wmexec 'WINDOWMANAGER' ['ARGS ...']::
+wmexec ['WINDOWMANAGER' ['ARGS ...']]::
     executes the 'WINDOWMANAGER' with its 'ARGS'. This is useful to switch the
-    window manager in the running session without restarting the session. For
+    window manager in the running session without restarting the session. If no
+    or an invalid 'WINDOWMANAGER' is given, then herbstluftwm is restarted. For
     details see 'man 3 execvp'. Example:
 
         * wmexec openbox
