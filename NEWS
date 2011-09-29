@@ -1,0 +1,14 @@
+herbstluftwm NEWS -- history of user-visible changes.
+
+Release 0.1, current features:
+    - basic tiling concept
+    - floating mode (with border snapping)
+    - calling herbstluftwm internal commands with herbstclient
+    - change keybindings/mousebindings at runtime
+    - change/get settings (e.g. colors) at runtime
+    - add/remove monitors at runtime
+    - exec into other window manager
+    - dump/load tiling layouts to/from a string
+    - bash/zsh tab completion for herbstclient
+    - hook system: let herbstclient listen for internal events
+
