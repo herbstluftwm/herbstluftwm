@@ -338,9 +338,10 @@ tag_status ['MONITOR']::
     prefixed with one char, which indicates its state:
         * *.* the tag is empty
         * *:* the tag is not empty
-        * *!* the tag contains an urgent window (not implemented yet!)
-        * *+* the tag is viewed on a different monitor
-        * *#* the tag is viewed on the specified 'MONITOR'
+        * *+* the tag is viewed on the specified 'MONITOR', but this monitor is
+          not focused.
+        * *#* the tag is viewed on the specified 'MONITOR' and it is focused.
+        * *!* the tag contains an urgent window
 
 WARNING: If you use a tab in one of the tag names, then tag_status is probably
 quite useless for you.
