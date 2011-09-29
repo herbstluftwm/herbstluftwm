@@ -897,6 +897,7 @@ HSTag* add_tag(char* name) {
     tag->name = g_string_new(name);
     tag->floating = false;
     g_array_append_val(g_tags, tag);
+    tag_set_flags_dirty();
     return tag;
 }
 
