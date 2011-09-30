@@ -164,17 +164,24 @@ int wait_for_hook(int argc, char* argv[]) {
     Window win = *value;
     XFree(value);
     // listen on window
-    XSelectInput(dpy, win, PropertyChangeMask);
+    XSelectInput(dpy, win, StructureNotifyMask|PropertyChangeMask);
     XEvent next_event;
     while (1) {
         XNextEvent(dpy, &next_event);
+        if (next_event.type == DestroyNotify) {
+            if (next_event.xdestroywindow.window == win) {
+                // hook window was destroyed
+                // so quit idling
+                break;
+            }
+        }
         if (next_event.type != PropertyNotify) {
             fprintf(stderr, "Warning: got other event than PropertyNotify\n");
             continue;
         }
         XPropertyEvent* pe = &next_event.xproperty;
         if (pe->state == PropertyDelete) {
-            // no useful information for us
+            // just ignore property delete events
             continue;
         }
         if (pe->window != win) {
