@@ -11,4 +11,6 @@ Release 0.1, current features:
     - dump/load tiling layouts to/from a string
     - bash/zsh tab completion for herbstclient
     - hook system: let herbstclient listen for internal events
+    - provide an easy way to build an own panel (using herbstclient hooks/commands)
+    - give information about urgent state of clients
 

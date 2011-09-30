@@ -14,7 +14,7 @@ Some BUGS:
 Planned features:
     - fullscreen
     - dump/load floating values
-    - urgent-handling (jumpto urgent)
+    - jumpto urgent
     - completion für keybind (recursive!)
     - completion für keyunbind
     - (optional) move cursor after focus change
