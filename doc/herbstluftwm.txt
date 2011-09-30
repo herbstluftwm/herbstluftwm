@@ -460,6 +460,28 @@ or at '~/.config/herbstluftwm/autostart'. Normally it consists of a few
 For a quick install, copy the default autostart file to
 '~/.config/herbstluftwm/autostart' and make it executable.
 
+HOOKS
+-----
+
+On special events, herbstluftwm emits some hooks (with parameters). You can
+recieve or wait for them with *herbstclient*(1). Also custom hooks can be
+emitted with the emit_hook command. The following hooks are emitted by
+herbstluftwm itself:
+
+tag_changed 'TAG' 'MONITOR'::
+    the tag 'TAG' was selected on 'MONITOR'.
+
+tag_flags::
+    the flags (i.e. urgent or filled state) have been changed.
+
+tag_added 'TAG'::
+    a tag named 'TAG' was added.
+
+tag_removed 'TAG'::
+    the tag named 'TAG' was removed.
+
+urgent [on|off] 'WINID'::
+    the urgent state of client with given 'WINID' has been changed to [on|off].
 
 ENVIRONTMENT VARIABLES
 ----------------------

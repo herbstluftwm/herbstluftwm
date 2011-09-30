@@ -28,7 +28,7 @@ See *herbstluftwm*(1) for a list of available 'COMMAND'##s## and their 'ARGS'.
 
 If '--wait' or '--idle' is passed, than it waits for hooks from *herbstluftwm*.
 The hook is printed, if it matches the optional 'FILTER'. 'FILTER's are regular
-expressions.
+expressions. For a list of available hooks see *herbstluftwm*(1).
 
 OPTIONS
 -------
