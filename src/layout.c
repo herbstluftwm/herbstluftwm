@@ -976,7 +976,7 @@ int tag_remove_command(int argc, char** argv) {
     return 0;
 }
 
-int tag_set_floating_command(int argc, char** argv) {
+int tag_set_floating_command(int argc, char** argv, GString** result) {
     // usage: floating [[tag] on|off|toggle]
     HSTag* tag = get_current_monitor()->tag;
     if (argc < 2) {
@@ -987,18 +987,28 @@ int tag_set_floating_command(int argc, char** argv) {
         // if a tag is specified
         tag = find_tag(argv[1]);
         action = argv[2];
+        if (!tag) {
+            return HERBST_INVALID_ARGUMENT;
+        }
     }
 
     bool new_value = false;
     if (!strcmp(action, "toggle"))      new_value = ! tag->floating;
     else if (!strcmp(action, "on"))     new_value = true;
     else if (!strcmp(action, "off"))    new_value = false;
-    tag->floating = new_value;
 
-    HSMonitor* m = find_monitor_with_tag(tag);
-    HSDebug("setting tag:%s->floating to %s\n", tag->name->str, tag->floating ? "on" : "off");
-    if (m != NULL) {
-        monitor_apply_layout(m);
+    if (!strcmp(action, "status")) {
+        // just print status
+        *result = g_string_assign(*result, tag->floating ? "on" : "off");
+    } else {
+        // asign new value and rearrange if needed
+        tag->floating = new_value;
+
+        HSMonitor* m = find_monitor_with_tag(tag);
+        HSDebug("setting tag:%s->floating to %s\n", tag->name->str, tag->floating ? "on" : "off");
+        if (m != NULL) {
+            monitor_apply_layout(m);
+        }
     }
     return 0;
 }

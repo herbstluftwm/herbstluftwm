@@ -351,10 +351,11 @@ tag_status ['MONITOR']::
 WARNING: If you use a tab in one of the tag names, then tag_status is probably
 quite useless for you.
 
-floating [['TAG'] on|off|toggle]::
-    changes the current tag to floating/tiling mode on specified 'TAG'. If no
-    'TAG' is given, current tag is used. If no argument is given, floating mode
-    is toggled.
+floating [['TAG'] on|off|toggle|status]::
+    changes the current tag to floating/tiling mode on specified 'TAG' or prints
+    it current status. If no 'TAG' is given, current tag is used. If no argument
+    is given, floating mode is toggled. If status is given, then on or off is
+    printed, depending of the floating state on 'TAG'.
 
 
 [[SETTINGS]]
