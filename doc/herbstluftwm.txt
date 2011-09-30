@@ -208,6 +208,11 @@ focus 'DIRECTION'::
      / \   / \          |  A  ||  D  |
     A   B C*  D         '-----''-----'
 
+raise ['0xWINID']::
+    raises the specified window, which is specified by hexadecimal '0xWINID'. If
+    no '0xWINID' is given, the focused window will be raised. Its result is only
+    visible in floating mode.
+
 resize 'DIRECTION' 'FRACTIONDELTA'::
     changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA'.
     'DIRECTION' is specified at the 'focus' command. You should not omit the

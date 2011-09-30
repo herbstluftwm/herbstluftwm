@@ -50,6 +50,7 @@ int print_layout_command(int argc, char** argv, GString** result);
 int load_command(int argc, char** argv, GString** result);
 int print_tag_status_command(int argc, char** argv, GString** result);
 void execute_autostart_file();
+int raise_command(int argc, char** argv);
 int spawn(int argc, char** argv);
 int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
@@ -112,6 +113,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "remove_monitor", remove_monitor_command),
     CMD_BIND_NO_OUTPUT(   "move_monitor",   move_monitor_command),
     CMD_BIND_NO_OUTPUT(   "pad",            monitor_set_pad_command),
+    CMD_BIND_NO_OUTPUT(   "raise",          raise_command),
     CMD_BIND(             "layout",         print_layout_command),
     CMD_BIND(             "dump",           print_layout_command),
     CMD_BIND(             "load",           load_command),
@@ -286,6 +288,23 @@ int wmexec(int argc, char** argv) {
     g_exec_before_quit = true;
     g_aboutToQuit = true;
     return EXIT_SUCCESS;
+}
+
+int raise_command(int argc, char** argv) {
+    Window win;
+    if (argc > 1) {
+        if (1 != sscanf(argv[1], "0x%lx", (long unsigned int*)&win)) {
+            // a invalid winid was given
+            return 1;
+        }
+    } else {
+        win = frame_focused_window(g_cur_frame);
+        if (!win) {
+            return 0;
+        }
+    }
+    XRaiseWindow(g_display, win);
+    return 0;
 }
 
 // handle x-events:
