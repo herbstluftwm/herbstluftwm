@@ -39,8 +39,14 @@ herbstclient pad $monitor $height
                 '+')
                     echo -n "^bg(#9CA668)^fg(#141414)"
                     ;;
+                ':')
+                    echo -n "^bg(#6A4100)^fg(#141414)"
+                    ;;
+                '!')
+                    echo -n "^bg(#FF0675)^fg(#141414)"
+                    ;;
                 *)
-                    echo -n "^bg(#6A4100)^fg()"
+                    echo -n "^bg()^fg()"
                     ;;
             esac
             echo -n " ${i:1} "
