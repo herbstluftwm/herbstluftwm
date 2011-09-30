@@ -394,6 +394,10 @@ raise_on_focus (Integer)::
     if set, a window is raised if it is focused. The value of this setting is
     only noticed in floating mode.
 
+raise_on_click (Integer)::
+    if set, a window is raised if it is clicked. The value of this setting is
+    only noticed in floating mode.
+
 window_border_width (Integer)::
     border width of a window
 

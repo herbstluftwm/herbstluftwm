@@ -39,6 +39,7 @@ static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or
 static int*     g_focus_follows_mouse = NULL;
 static bool     g_exec_before_quit = false;
 static char**   g_exec_args = NULL;
+static int*     g_raise_on_click = NULL;
 
 typedef void (*HandlerTable[LASTEvent]) (XEvent*);
 
@@ -475,6 +476,7 @@ static void sigaction_signal(int signum, void (*handler)(int)) {
 static void fetch_settings() {
     // fetch settings only for this main.c file from settings table
     g_focus_follows_mouse = &(settings_find("focus_follows_mouse")->value.i);
+    g_raise_on_click = &(settings_find("raise_on_click")->value.i);
 }
 
 static HandlerTable g_default_handler = {
@@ -526,7 +528,9 @@ void buttonpress(XEvent* event) {
             be->button == Button2 ||
             be->button == Button3) {
             // only change focus on real clicks... not when scrolling
-            XRaiseWindow(g_display, be->window);
+            if (*g_raise_on_click) {
+                XRaiseWindow(g_display, be->window);
+            }
             focus_window(be->window, false, true);
         }
         // handling of event is finished, now propagate event to window
