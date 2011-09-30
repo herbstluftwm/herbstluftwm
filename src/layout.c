@@ -781,10 +781,10 @@ int add_monitor_command(int argc, char** argv) {
         return HERBST_TAG_IN_USE;
     }
     HSMonitor* monitor = add_monitor(rect, tag);
-    if (argc > 3) monitor->pad_up       = atoi(argv[3]);
-    if (argc > 4) monitor->pad_right    = atoi(argv[4]);
-    if (argc > 5) monitor->pad_down     = atoi(argv[5]);
-    if (argc > 6) monitor->pad_left     = atoi(argv[6]);
+    if (argc > 3 && argv[3][0] != '\0') monitor->pad_up       = atoi(argv[3]);
+    if (argc > 4 && argv[4][0] != '\0') monitor->pad_right    = atoi(argv[4]);
+    if (argc > 5 && argv[5][0] != '\0') monitor->pad_down     = atoi(argv[5]);
+    if (argc > 6 && argv[6][0] != '\0') monitor->pad_left     = atoi(argv[6]);
     frame_show_recursive(tag->frame);
     monitor_apply_layout(monitor);
     emit_tag_changed(tag, g_monitors->len - 1);
@@ -840,10 +840,10 @@ int move_monitor_command(int argc, char** argv) {
     // else: just move it:
     HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, index);
     monitor->rect = rect;
-    if (argc > 3) monitor->pad_up       = atoi(argv[3]);
-    if (argc > 4) monitor->pad_right    = atoi(argv[4]);
-    if (argc > 5) monitor->pad_down     = atoi(argv[5]);
-    if (argc > 6) monitor->pad_left     = atoi(argv[6]);
+    if (argc > 3 && argv[3][0] != '\0') monitor->pad_up       = atoi(argv[3]);
+    if (argc > 4 && argv[4][0] != '\0') monitor->pad_right    = atoi(argv[4]);
+    if (argc > 5 && argv[5][0] != '\0') monitor->pad_down     = atoi(argv[5]);
+    if (argc > 6 && argv[6][0] != '\0') monitor->pad_left     = atoi(argv[6]);
     monitor_apply_layout(monitor);
     return 0;
 }
@@ -857,10 +857,10 @@ int monitor_set_pad_command(int argc, char** argv) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, index);
-    if (argc > 2) monitor->pad_up       = atoi(argv[2]);
-    if (argc > 3) monitor->pad_right    = atoi(argv[3]);
-    if (argc > 4) monitor->pad_down     = atoi(argv[4]);
-    if (argc > 5) monitor->pad_left     = atoi(argv[5]);
+    if (argc > 2 && argv[2][0] != '\0') monitor->pad_up       = atoi(argv[2]);
+    if (argc > 3 && argv[3][0] != '\0') monitor->pad_right    = atoi(argv[3]);
+    if (argc > 4 && argv[4][0] != '\0') monitor->pad_down     = atoi(argv[4]);
+    if (argc > 5 && argv[5][0] != '\0') monitor->pad_left     = atoi(argv[5]);
     monitor_apply_layout(monitor);
     return 0;
 }

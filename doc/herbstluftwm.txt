@@ -270,8 +270,8 @@ add_monitor 'RECT' 'TAG' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     adds a monitor on the specified rectangle 'RECT' and displays 'TAG' on it.
     'TAG' currently must not be displayed on any other monitor. 'RECT' is a
     string of the form 'WxH+X+Y'. The padding specifies extra space around the
-    monitor for some statusbars/panels. If no padding is given, it is set to 0.
-    Example:
+    monitor for some statusbars/panels. If no or an empty padding is given, it
+    is set to 0.  Example:
 
         * add_monitor 1024x768-20+0 mynewtag 16
 
@@ -282,12 +282,12 @@ remove_monitor 'INDEX'::
 
 move_monitor 'INDEX' 'RECT' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     moves the monitor with specified 'INDEX' to rectangle 'RECT'. 'INDEX' and
-    'RECT' are defined as in 'remove_monitor' and 'add_monitor'. If no padding is
-    given, it is not changed.
+    'RECT' are defined as in 'remove_monitor' and 'add_monitor'. If no or an
+    empty pad is given, it is not changed.
 
 pad 'INDEX' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
-    sets the pad of indexed monitor to the specified padding. If no padding is
-    given, it is not changed.
+    sets the pad of indexed monitor to the specified padding. If no or an empty
+    padding is given, it is not changed.
 
 layout ['TAG']::
     prints the layout of 'TAG' in a nice tree style. Its style is defined
