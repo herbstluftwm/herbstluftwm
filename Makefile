@@ -51,6 +51,7 @@ install: all
 	mkdir -p $(BINDIR)
 	mkdir -p $(MANDIR)
 	mkdir -p $(DOCDIR)
+	mkdir -p $(EXAMPLESDIR)
 	mkdir -p $(ETCDIR)
 	mkdir -p $(ETCDIR)/bash_completion.d/
 	mkdir -p $(CONFIGDIR)
@@ -67,4 +68,6 @@ install: all
 	install -m 755 share/autostart $(CONFIGDIR)/
 	install -m 644 share/herbstclient-completion $(ETCDIR)/bash_completion.d/
 	install -m 644 share/_herbstclient $(ZSHCOMPLETIONDIR)/
+	install -m 644 scripts/README $(EXAMPLESDIR)/
+	install -m 755 scripts/*.sh $(EXAMPLESDIR)/
 

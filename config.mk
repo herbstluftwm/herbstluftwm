@@ -21,6 +21,7 @@ BINDIR = $(PREFIX)/bin
 SHAREDIR = $(PREFIX)/share
 MANDIR = $(PREFIX)/share/man/man1
 DOCDIR = $(PREFIX)/share/doc/herbstluftwm
+EXAMPLESDIR = $(DOCDIR)/examples
 LICENSEDIR = $(PREFIX)/share/licenses/herbstluftwm
 ETCDIR = ./etc/
 CONFIGDIR = $(ETCDIR)/xdg/herbstluftwm/
