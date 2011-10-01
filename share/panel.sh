@@ -23,7 +23,7 @@ herbstclient pad $monitor $height
         sleep 1 || break
     done | uniq_linebuffered  &
     herbstclient --idle
-)|(
+) 2> /dev/null |(
     TAGS=( $(herbstclient tag_status $monitor) )
     date=""
     while true ; do
@@ -73,11 +73,14 @@ herbstclient pad $monitor $height
                 #echo "reseting date" >&2
                 date="${cmd[@]:1}"
                 ;;
+            quit_panel)
+                exit
+                ;;
             #player)
             #    ;;
         esac
         done
-) |dzen2 -w $width -x $x -y $y -fn "$font" -h $height \
+) 2> /dev/null |dzen2 -w $width -x $x -y $y -fn "$font" -h $height \
     -ta l -bg "$bgcolor" -fg '#efefef'
 
 
