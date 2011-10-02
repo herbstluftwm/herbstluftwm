@@ -32,6 +32,7 @@ int* g_default_frame_layout;
 int* g_focus_follows_shift;
 int* g_frame_bg_transparent;
 int* g_swap_monitors_to_get_tag;
+int* g_direction_external_only;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
@@ -59,6 +60,7 @@ static void fetch_frame_colors() {
     g_frame_bg_transparent = &(settings_find("frame_bg_transparent")->value.i);
     g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
     g_swap_monitors_to_get_tag = &(settings_find("swap_monitors_to_get_tag")->value.i);
+    g_direction_external_only = &(settings_find("default_direction_external_only")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT);
     char* str = settings_find("frame_border_normal_color")->value.s;
     g_frame_border_normal_color = getcolor(str);
@@ -1430,25 +1432,74 @@ HSFrame* frame_neighbour(HSFrame* frame, char direction) {
     return other;
 }
 
+// finds a neighbour within frame in the specified direction
+// returns its index or -1 if there is none
+int frame_inner_neighbour_index(HSFrame* frame, char direction) {
+    int index = -1;
+    if (frame->type != TYPE_CLIENTS) {
+        fprintf(stderr, "warning: frame has invalid type\n");
+        return -1;
+    }
+    int selection = frame->content.clients.selection;
+    int count = frame->content.clients.count;
+    switch (frame->content.clients.layout) {
+        case LAYOUT_VERTICAL:
+            if (direction == 'd') index = selection + 1;
+            if (direction == 'u') index = selection - 1;
+            break;
+        case LAYOUT_HORIZONTAL:
+            if (direction == 'r') index = selection + 1;
+            if (direction == 'l') index = selection - 1;
+            break;
+        case LAYOUT_MAX:
+            break;
+        default:
+            break;
+    }
+    // check that index is valid
+    if (index < 0 || index >= count) {
+        index = -1;
+    }
+    printf("returned index is %d\n", index);
+    return index;
+}
+
 int frame_focus_command(int argc, char** argv) {
-    // usage: focus left|right|up|down
+    // usage: focus [-e|-i] left|right|up|down
     if (argc < 2) return HERBST_INVALID_ARGUMENT;
     if (!g_cur_frame) {
         fprintf(stderr, "warning: no frame is selected\n");
         return HERBST_UNKNOWN_ERROR;
     }
+    int external_only = *g_direction_external_only;
     char direction = argv[1][0];
+    if (argc > 2 && !strcmp(argv[1], "-i")) {
+        external_only = false;
+        direction = argv[2][0];
+    }
+    if (argc > 2 && !strcmp(argv[1], "-e")) {
+        external_only = true;
+        direction = argv[2][0];
+    }
     //HSFrame* frame = g_cur_frame;
-    HSFrame* neighbour = frame_neighbour(g_cur_frame, direction);
-    if (neighbour != NULL) { // if neighbour was found
-        HSFrame* parent = neighbour->parent;
-        // alter focus (from 0 to 1, from 1 to 0)
-        int selection = parent->content.layout.selection;
-        selection = (selection == 1) ? 0 : 1;
-        parent->content.layout.selection = selection;
-        // change focus if possible
-        frame_focus_recursive(parent);
+    int index;
+    if (!external_only &&
+        (index = frame_inner_neighbour_index(g_cur_frame, direction)) != -1) {
+        g_cur_frame->content.clients.selection = index;
+        frame_focus_recursive(g_cur_frame);
         monitor_apply_layout(get_current_monitor());
+    } else {
+        HSFrame* neighbour = frame_neighbour(g_cur_frame, direction);
+        if (neighbour != NULL) { // if neighbour was found
+            HSFrame* parent = neighbour->parent;
+            // alter focus (from 0 to 1, from 1 to 0)
+            int selection = parent->content.layout.selection;
+            selection = (selection == 1) ? 0 : 1;
+            parent->content.layout.selection = selection;
+            // change focus if possible
+            frame_focus_recursive(parent);
+            monitor_apply_layout(get_current_monitor());
+        }
     }
     return 0;
 }
@@ -1461,36 +1512,62 @@ int frame_move_window_command(int argc, char** argv) {
         return HERBST_UNKNOWN_ERROR;
     }
     char direction = argv[1][0];
-    HSFrame* neighbour = frame_neighbour(g_cur_frame, direction);
-    Window win = frame_focused_window(g_cur_frame);
-    if (win && neighbour != NULL) { // if neighbour was found
-        // move window to neighbour
-        frame_remove_window(g_cur_frame, win);
-        frame_insert_window(neighbour, win);
+    int external_only = *g_direction_external_only;
+    if (argc > 2 && !strcmp(argv[1], "-i")) {
+        external_only = false;
+        direction = argv[2][0];
+    }
+    if (argc > 2 && !strcmp(argv[1], "-e")) {
+        external_only = true;
+        direction = argv[2][0];
+    }
+    int index;
+    if (!external_only &&
+        (index = frame_inner_neighbour_index(g_cur_frame, direction)) != -1) {
+        int selection = g_cur_frame->content.clients.selection;
+        Window* buf = g_cur_frame->content.clients.buf;
+        // if internal neighbour was found, then swap
+        Window tmp = buf[selection];
+        buf[selection] = buf[index];
+        buf[index] = tmp;
+
         if (*g_focus_follows_shift) {
-            // change selection in parrent
-            HSFrame* parent = neighbour->parent;
-            assert(parent);
-            parent->content.layout.selection = ! parent->content.layout.selection;
-            frame_focus_recursive(parent);
-            // focus right window in frame
-            HSFrame* frame = g_cur_frame;
-            assert(frame);
-            int i;
-            Window* buf = frame->content.clients.buf;
-            size_t count = frame->content.clients.count;
-            for (i = 0; i < count; i++) {
-                if (buf[i] == win) {
-                    frame->content.clients.selection = i;
-                    window_focus(buf[i]);
-                    break;
-                }
-            }
-        } else {
-            frame_focus_recursive(g_cur_frame);
+            g_cur_frame->content.clients.selection = index;
         }
-        // layout was changed, so update it
+        frame_focus_recursive(g_cur_frame);
         monitor_apply_layout(get_current_monitor());
+    } else {
+        HSFrame* neighbour = frame_neighbour(g_cur_frame, direction);
+        Window win = frame_focused_window(g_cur_frame);
+        if (win && neighbour != NULL) { // if neighbour was found
+            // move window to neighbour
+            frame_remove_window(g_cur_frame, win);
+            frame_insert_window(neighbour, win);
+            if (*g_focus_follows_shift) {
+                // change selection in parrent
+                HSFrame* parent = neighbour->parent;
+                assert(parent);
+                parent->content.layout.selection = ! parent->content.layout.selection;
+                frame_focus_recursive(parent);
+                // focus right window in frame
+                HSFrame* frame = g_cur_frame;
+                assert(frame);
+                int i;
+                Window* buf = frame->content.clients.buf;
+                size_t count = frame->content.clients.count;
+                for (i = 0; i < count; i++) {
+                    if (buf[i] == win) {
+                        frame->content.clients.selection = i;
+                        window_focus(buf[i]);
+                        break;
+                    }
+                }
+            } else {
+                frame_focus_recursive(g_cur_frame);
+            }
+            // layout was changed, so update it
+            monitor_apply_layout(get_current_monitor());
+        }
     }
     return 0;
 }

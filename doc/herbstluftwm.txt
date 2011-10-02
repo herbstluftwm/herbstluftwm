@@ -177,19 +177,28 @@ split 'ALIGN' 'FACTION'::
         * split vertical 0.5
         * split h 0.8
 
-focus 'DIRECTION'::
-    moves the focus from current frame to the next frame in 'DIRECTION' which is
-    in:
-
+focus ['-i'|'-e'] 'DIRECTION'::
+    moves the focus from current frame to the next frame or client in
+    'DIRECTION' which is in:
+    +
         * l[eft]
         * r[ight]
         * u[p]
         * d[own]
-    Direction is defined as follows: Focus is in a leaf of the binary tree.
-    Each inner node in the tree remembers the last focus direction (child 0 or
-    child 1). The algorithm is going as short as possible from the leaf (the
-    currently focused frame) to the root until it is possible to change focus in
-    the specified 'DIRECTION'. From there the focus goes back to the leaf. +
+
+// small hack to fix indentation of "If ..."
+ ::
+    If '-i' (internal) is given or default_direction_external_only is unset,
+    then the next client in 'DIRECTION' can also be within the same frame. If
+    there is no client within this frame or '-e' (external) is given, then the
+    next frame in specified 'DIRECTION' will be focused. +
+    +
+    The direction between frames is defined as follows: The focus is in a leaf
+    of the binary tree.  Each inner node in the tree remembers the last focus
+    direction (child 0 or child 1). The algorithm is going as short as possible
+    from the leaf (the currently focused frame) to the root until it is possible
+    to change focus in the specified 'DIRECTION'. From there the focus goes back
+    to the leaf. +
     +
     Example: The focus is at frame A. After executing 'focus right' focus will
     be at frame C.
@@ -222,11 +231,11 @@ resize 'DIRECTION' 'FRACTIONDELTA'::
         * resize right +0.05
         * resize down -0.1
 
-shift 'DIRECTION'::
+shift ['-i'|'-e'] 'DIRECTION'::
     shifts the focused window to the next frame in the specified 'DIRECTION'.
-    The 'DIRECTIONS' behave as specified at the 'focus' command. If
-    'focus_follows_shift' is set, then focus stays in the window; otherwise it
-    stays in the frame.
+    The 'DIRECTIONS' and '-i'|'-e' behave as specified at the 'focus' command.
+    If 'focus_follows_shift' is set, then focus stays in the window; otherwise
+    it stays in the frame.
 
 remove::
     removes focused frame and merges its windows to its neighbour frame.
@@ -422,6 +431,13 @@ default_frame_layout (Integer)::
 
         * 0 means vertical
         * 1 means horizontal
+
+default_direction_external_only (Integer)::
+    this setting controls the behaviour of focus and shift if no '-e' or '-i'
+    argument is given. if set, then focus and shift changes the focused frame
+    even if there are other clients in this frame in the specified 'DIRECTION'.
+    Else, a client within current frame is selected if it is in the specified
+    'DIRECTION'.
 
 focus_follows_shift (Integer)::
     If set, focus stays in the window, if window is shifted to another frame.

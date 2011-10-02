@@ -42,6 +42,7 @@ SettingsPair g_settings[] = {
         .on_change = reset_client_colors },
     { "always_show_frame", { .i = 0 }, .type = HS_Int,
         .on_change = all_monitors_apply_layout },
+    { "default_direction_external_only", { .i = 0 }, .type = HS_Int },
     { "default_frame_layout", { .i = 0 }, .type = HS_Int },
     { "focus_follows_shift", { .i = 1 }, .type = HS_Int },
     { "focus_follows_mouse", { .i = 0 }, .type = HS_Int },
