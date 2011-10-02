@@ -26,4 +26,5 @@ LICENSEDIR = $(PREFIX)/share/licenses/herbstluftwm
 ETCDIR = ./etc/
 CONFIGDIR = $(ETCDIR)/xdg/herbstluftwm/
 ZSHCOMPLETIONDIR = $(SHAREDIR)/zsh/functions/Completion/X/
+TARFILE = herbstluftwm-$(VERSION_MAJOR).$(VERSION_MINOR)$(VERSION_SUFFIX).tar.gz
 

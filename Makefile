@@ -36,6 +36,9 @@ clean-herbstclient:
 
 doc: doc/herbstclient.1 doc/herbstclient.html doc/herbstluftwm.1 doc/herbstluftwm.html
 
+tar:
+	tar -czf $(TARFILE) `git ls-files`
+
 doc/%.1: doc/%.txt
 	$(call colorecho,DOC,$@)
 	@a2x -f manpage -a "herbstluftwmversion=herbstluftwm $(VERSION)" -a "date=`date +%Y-%m-%d`" $<
