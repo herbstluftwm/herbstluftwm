@@ -431,6 +431,7 @@ default_frame_layout (Integer)::
 
         * 0 means vertical
         * 1 means horizontal
+        * 2 means max
 
 default_direction_external_only (Integer)::
     this setting controls the behaviour of focus and shift if no '-e' or '-i'
