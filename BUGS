@@ -10,6 +10,9 @@ Some BUGS:
     - ignore windows with property: _NET_WM_WINDOW_TYPE(ATOM) = _NET_WM_WINDOW_TYPE_NOTIFICATION
     - add function to put window into tag (and use it in manage, merge_tag, move)
     - reduce flicker on load command by blocking the usage of monitor_apply_layout()
+    - the default panel.sh spawns too many shells and doesnot clean them up
+      properly at quit. you should do something like killall panel.sh when
+      logging out (this is only a workaround!).
 
 Planned features:
     - fullscreen
