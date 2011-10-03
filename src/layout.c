@@ -1460,7 +1460,6 @@ int frame_inner_neighbour_index(HSFrame* frame, char direction) {
     if (index < 0 || index >= count) {
         index = -1;
     }
-    printf("returned index is %d\n", index);
     return index;
 }
 
