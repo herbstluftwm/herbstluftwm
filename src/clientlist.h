@@ -48,6 +48,7 @@ void destroy_client(HSClient* client);
 HSClient* get_client_from_window(Window window);
 XRectangle client_outer_floating_rect(HSClient* client);
 
+void client_setup_border(HSClient* client, bool focused);
 void client_resize(HSClient* client, XRectangle rect);
 void client_resize_floating(HSClient* client, HSMonitor* m);
 void client_clear_urgent(HSClient* client);
@@ -61,10 +62,6 @@ void window_show(Window win);
 void window_hide(Window win);
 void window_set_visible(Window win, bool visible);
 
-
-// some globals
-unsigned long g_window_border_active_color;
-unsigned long g_window_border_normal_color;
 
 #endif
 

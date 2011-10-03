@@ -225,6 +225,14 @@ void window_focus(Window window) {
     //mouse_grab(window);
 }
 
+void client_setup_border(HSClient* client, bool focused) {
+    unsigned long colors[] = {
+        g_window_border_normal_color,
+        g_window_border_active_color,
+    };
+    XSetWindowBorder(g_display, client->window, colors[focused ? 1 : 0]);
+}
+
 void client_resize(HSClient* client, XRectangle rect) {
     // ensure minimum size
     if (rect.width < WINDOW_MIN_WIDTH) {

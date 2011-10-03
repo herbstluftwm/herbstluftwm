@@ -552,15 +552,9 @@ void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
         size_t count = frame->content.clients.count;
         size_t selection = frame->content.clients.selection;
         /* border color */
-        unsigned long colors[] = {
-            g_window_border_normal_color, // normal color
-            (g_cur_frame == frame) ?
-                g_window_border_active_color : // frame has focus and window is focused
-                g_window_border_normal_color, // window is selected but frame isnot focused
-        };
         for (int i = 0; i < count; i++) {
             HSClient* client = get_client_from_window(buf[i]);
-            XSetWindowBorder(g_display, buf[i], colors[i == selection]);
+            client_setup_border(client, (g_cur_frame == frame) && (i == selection));
             client_resize_floating(client, m);
         }
     }
@@ -628,19 +622,12 @@ void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vert
         step_y = 0;
         step_x = cur.width;
     }
-    int i;
-    unsigned long colors[] = {
-        g_window_border_normal_color, // normal color
-        (g_cur_frame == frame) ?
-            g_window_border_active_color : // frame has focus and window is focused
-            g_window_border_normal_color, // window is selected but frame isnot focused
-    };
-    for (i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         HSClient* client = get_client_from_window(buf[i]);
         // add the space, if count doesnot divide frameheight without remainder
         cur.height += (i == count-1) ? last_step_y : 0;
         cur.width += (i == count-1) ? last_step_x : 0;
-        XSetWindowBorder(g_display, buf[i], colors[i == selection]);
+        client_setup_border(client, (g_cur_frame == frame) && (i == selection));
         client_resize(client, cur);
         cur.y += step_y;
         cur.x += step_x;
@@ -659,15 +646,9 @@ void frame_apply_client_layout_max(HSFrame* frame, XRectangle rect) {
     Window* buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
     int selection = frame->content.clients.selection;
-    unsigned long colors[] = {
-        g_window_border_normal_color, // normal color
-        (g_cur_frame == frame) ?
-            g_window_border_active_color : // frame has focus and window is focused
-            g_window_border_normal_color, // window is selected but frame isnot focused
-    };
     for (int i = 0; i < count; i++) {
         HSClient* client = get_client_from_window(buf[i]);
-        XSetWindowBorder(g_display, buf[i], colors[i == selection]);
+        client_setup_border(client, (g_cur_frame == frame) && (i == selection));
         client_resize(client, rect);
         if (i == selection) {
             XRaiseWindow(g_display, buf[i]);
