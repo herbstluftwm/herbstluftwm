@@ -105,6 +105,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "add",            tag_add_command),
     CMD_BIND_NO_OUTPUT(   "use",            monitor_set_tag_command),
     CMD_BIND(             "floating",       tag_set_floating_command),
+    CMD_BIND_NO_OUTPUT(   "fullscreen",     client_set_fullscreen_command),
     CMD_BIND(             "tag_status",     print_tag_status_command),
     CMD_BIND_NO_OUTPUT(   "merge_tag",      tag_remove_command),
     CMD_BIND_NO_OUTPUT(   "rename",         tag_rename_command),

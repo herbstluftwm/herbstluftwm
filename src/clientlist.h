@@ -22,6 +22,7 @@ typedef struct HSClient {
     HSTag*      tag;
     XRectangle  float_size;
     bool        urgent;
+    bool        fullscreen;
 } HSClient;
 
 void clientlist_init();
@@ -46,15 +47,19 @@ void window_enforce_last_size(Window in);
 void destroy_client(HSClient* client);
 
 HSClient* get_client_from_window(Window window);
+HSClient* get_current_client();
 XRectangle client_outer_floating_rect(HSClient* client);
 
 void client_setup_border(HSClient* client, bool focused);
 void client_resize(HSClient* client, XRectangle rect);
+void client_resize_tiling(HSClient* client, XRectangle rect);
 void client_resize_floating(HSClient* client, HSMonitor* m);
 void client_clear_urgent(HSClient* client);
 void client_update_wm_hints(HSClient* client);
 int window_close_current();
 
+void client_set_fullscreen(HSClient* client, bool state);
+int client_set_fullscreen_command(int argc, char** argv);
 bool is_window_class_ignored(char* window_class);
 bool is_window_ignored(Window win);
 

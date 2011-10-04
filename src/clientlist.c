@@ -10,6 +10,7 @@
 #include "utils.h"
 #include "hook.h"
 #include "mouse.h"
+#include "ipc-protocol.h"
 // system
 #include <glib.h>
 #include <assert.h>
@@ -46,6 +47,7 @@ static HSClient* create_client() {
     hc->float_size.width = 100;
     hc->float_size.height = 100;
     hc->urgent = false;
+    hc->fullscreen = false;
     return hc;
 }
 
@@ -233,6 +235,18 @@ void client_setup_border(HSClient* client, bool focused) {
     XSetWindowBorder(g_display, client->window, colors[focused ? 1 : 0]);
 }
 
+void client_resize_fullscreen(HSClient* client, HSMonitor* m) {
+    if (!client || !m) {
+        HSDebug("client_resize_fullscreen() got invalid parameters\n");
+        return;
+    }
+    XSetWindowBorderWidth(g_display, client->window, 0);
+    client->last_size = m->rect;
+    XMoveResizeWindow(g_display, client->window,
+                      m->rect.x, m->rect.y, m->rect.width, m->rect.height);
+
+}
+
 void client_resize(HSClient* client, XRectangle rect) {
     // ensure minimum size
     if (rect.width < WINDOW_MIN_WIDTH) {
@@ -272,8 +286,25 @@ void client_resize(HSClient* client, XRectangle rect) {
     //XSendEvent(g_display, win, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
+void client_resize_tiling(HSClient* client, XRectangle rect) {
+    HSMonitor* m;
+    if (client->fullscreen && (m = find_monitor_with_tag(client->tag))) {
+        printf("applying %lx to fs\n", client->window);
+        client_resize_fullscreen(client, m);
+    } else {
+        printf("applying %lx to tiling\n", client->window);
+        client_resize(client, rect);
+    }
+}
+
 void client_resize_floating(HSClient* client, HSMonitor* m) {
     if (!client || !m) return;
+    if (client->fullscreen) {
+        client_resize_fullscreen(client, m);
+        return;
+    }
+
+    // ensure minimal size
     if (client->float_size.width < WINDOW_MIN_WIDTH)
         client->float_size.width = WINDOW_MIN_WIDTH;
     if (client->float_size.height < WINDOW_MIN_HEIGHT)
@@ -281,6 +312,8 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
     client->last_size = client->float_size;
     client->last_size.x += m->rect.x + m->pad_left;
     client->last_size.y += m->rect.y + m->pad_up;
+
+    // ensure position is on monitor
     int space = g_monitor_float_treshold;
     client->last_size.x =
         CLAMP(client->last_size.x,
@@ -291,6 +324,7 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
               m->rect.y + m->pad_up - client->last_size.height + space,
               m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
     XRectangle rect = client->last_size;
+    XSetWindowBorderWidth(g_display, client->window, *g_window_border_width);
     XMoveResizeWindow(g_display, client->window,
         rect.x, rect.y, rect.width, rect.height);
 }
@@ -394,5 +428,35 @@ void client_update_wm_hints(HSClient* client) {
             tag_set_flags_dirty();
         }
     }
+}
+
+HSClient* get_current_client() {
+    Window win = frame_focused_window(g_cur_frame);
+    if (!win) return NULL;
+    return get_client_from_window(win);
+}
+
+void client_set_fullscreen(HSClient* client, bool state) {
+    client->fullscreen = state;
+    if (state) {
+        // TODO: do proper stacking layer handling
+        XRaiseWindow(g_display, client->window);
+    }
+    monitor_apply_layout(get_current_monitor());
+}
+
+int client_set_fullscreen_command(int argc, char** argv) {
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    HSClient* client = get_current_client();
+    if (!client) {
+        // nothing to do
+        return 0;
+    }
+    bool state = string_to_bool(argv[1], client->fullscreen);
+    client_set_fullscreen(client, state);
+    return 0;
 }
 

@@ -147,3 +147,15 @@ char* strlasttoken(char* str, char* delim) {
     return str;
 }
 
+bool string_to_bool(char* string, bool oldvalue) {
+    bool val = oldvalue;
+    if (!strcmp(string, "on")) {
+        val = true;
+    } else if (!strcmp(string, "off")) {
+        val = false;
+    } else if (!strcmp(string, "toggle")) {
+        val = ! oldvalue;
+    }
+    return val;
+}
+
