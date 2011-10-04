@@ -193,6 +193,7 @@ void tag_set_flags_dirty();
 // adds a new monitor to g_monitors and returns a pointer to it
 HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* monitor_with_coordinate(int x, int y);
+HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag);
 void monitor_focus_by_index(int new_selection);
@@ -205,6 +206,7 @@ int add_monitor_command(int argc, char** argv);
 int remove_monitor_command(int argc, char** argv);
 int list_monitors(int argc, char** argv, GString** output);
 int move_monitor_command(int argc, char** argv);
+int monitor_rect_command(int argc, char** argv, GString** result);
 HSMonitor* get_current_monitor();
 void monitor_set_tag(HSMonitor* monitor, HSTag* tag);
 int monitor_set_pad_command(int argc, char** argv);

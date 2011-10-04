@@ -294,6 +294,12 @@ move_monitor 'INDEX' 'RECT' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     'RECT' are defined as in 'remove_monitor' and 'add_monitor'. If no or an
     empty pad is given, it is not changed.
 
+monitor_rect [[-p] 'INDEX']::
+    prints the rectangle of the specified 'INDEX' in the format: *X Y W H* +
+    If no 'INDEX' or 'cur' is given, then the current Monitor is used. If '-p'
+    is supplied, then the remaining rect without the pad around this monitor
+    is printed.
+
 pad 'INDEX' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     sets the pad of indexed monitor to the specified padding. If no or an empty
     padding is given, it is not changed.

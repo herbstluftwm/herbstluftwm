@@ -831,6 +831,55 @@ int move_monitor_command(int argc, char** argv) {
     return 0;
 }
 
+int monitor_rect_command(int argc, char** argv, GString** result) {
+    // usage: monitor_rect [[-p] INDEX]
+    char* index_str = NULL;
+    HSMonitor* m = NULL;
+    bool with_pad = false;
+
+    // if index is supplied
+    if (argc > 1) {
+        index_str = argv[1];
+    }
+    // if -p is supplied
+    if (argc > 2) {
+        index_str = argv[2];
+        if (!strcmp("-p", argv[1])) {
+            with_pad = true;
+        } else {
+            fprintf(stderr, "monitor_rect_command: invalid argument \"%s\"\n",
+                    argv[1]);
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
+    // if an index is set
+    if (index_str) {
+        int index;
+        if (1 == sscanf(index_str, "%d", &index)) {
+            m = monitor_with_index(index);
+            if (!m) {
+                fprintf(stderr,"monitor_rect_command: invalid index \"%s\"\n",
+                        index_str);
+                return HERBST_INVALID_ARGUMENT;
+            }
+        }
+    }
+
+    if (!m) {
+        m = get_current_monitor();
+    }
+    XRectangle rect = m->rect;
+    if (with_pad) {
+        rect.x += m->pad_left;
+        rect.width -= m->pad_left + m->pad_right;
+        rect.y += m->pad_up;
+        rect.height -= m->pad_up + m->pad_down;
+    }
+    g_string_printf(*result, "%d %d %d %d",
+                    rect.x, rect.y, rect.width, rect.height);
+    return 0;
+}
+
 int monitor_set_pad_command(int argc, char** argv) {
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
@@ -2020,5 +2069,12 @@ HSMonitor* monitor_with_coordinate(int x, int y) {
         }
     }
     return NULL;
+}
+
+HSMonitor* monitor_with_index(int index) {
+    if (index < 0 || index >= g_monitors->len) {
+        return NULL;
+    }
+    return &g_array_index(g_monitors, HSMonitor, index);
 }
 
