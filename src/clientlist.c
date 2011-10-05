@@ -289,10 +289,8 @@ void client_resize(HSClient* client, XRectangle rect) {
 void client_resize_tiling(HSClient* client, XRectangle rect) {
     HSMonitor* m;
     if (client->fullscreen && (m = find_monitor_with_tag(client->tag))) {
-        printf("applying %lx to fs\n", client->window);
         client_resize_fullscreen(client, m);
     } else {
-        printf("applying %lx to tiling\n", client->window);
         client_resize(client, rect);
     }
 }
