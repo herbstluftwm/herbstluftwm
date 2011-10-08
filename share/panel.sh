@@ -2,6 +2,10 @@
 
 monitor=${1:-0}
 geometry="$(herbstclient list_monitors |grep "^$monitor:"|cut -d' ' -f2)"
+if [ -z "$geometry" ] ;then
+    echo "Invalid monitor $monitor"
+    exit 1
+fi
 # geometry has the format: WxH+X+Y
 x="$(echo $geometry |cut -d'+' -f2)"
 y="${geometry##*+}"
