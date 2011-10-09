@@ -14,6 +14,8 @@ Some BUGS:
       properly at quit. you should do something like killall panel.sh when
       logging out (this is only a workaround!).
     - Crash: X Error: Bad Drawable when opening two "recent documents" in inkscappe
+    - Ensure stacking order is right (TODO: frame_restack())
+    - separate layout.[hc] into modules: layout, monitor, tag
 
 Planned features:
     - fullscreen
