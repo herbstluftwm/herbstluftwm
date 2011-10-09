@@ -13,6 +13,7 @@ Some BUGS:
     - the default panel.sh spawns too many shells and doesnot clean them up
       properly at quit. you should do something like killall panel.sh when
       logging out (this is only a workaround!).
+    - Crash: X Error: Bad Drawable when opening two "recent documents" in inkscappe
 
 Planned features:
     - fullscreen
