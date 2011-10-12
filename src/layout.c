@@ -1530,6 +1530,7 @@ int frame_inner_neighbour_index(HSFrame* frame, char direction) {
     }
     int selection = frame->content.clients.selection;
     int count = frame->content.clients.count;
+    int rows, cols;
     switch (frame->content.clients.layout) {
         case LAYOUT_VERTICAL:
             if (direction == 'd') index = selection + 1;
@@ -1540,6 +1541,25 @@ int frame_inner_neighbour_index(HSFrame* frame, char direction) {
             if (direction == 'l') index = selection - 1;
             break;
         case LAYOUT_MAX:
+            break;
+        case LAYOUT_GRID:
+            frame_layout_grid_get_size(count, &rows, &cols);
+            if (cols == 0) break;
+            int r = selection / cols;
+            int c = selection % cols;
+            switch (direction) {
+                case 'd':
+                    index = selection + cols;
+                    if (*g_gapless_grid && index >= count && r == (rows - 2)) {
+                        // if grid is gapless and we're in the second-last row
+                        // then it means last client is below us
+                        index = count - 1;
+                    }
+                    break;
+                case 'u': index = selection - cols; break;
+                case 'r': if (c < cols-1) index = selection + 1; break;
+                case 'l': if (c > 0)      index = selection - 1; break;
+            }
             break;
         default:
             break;
