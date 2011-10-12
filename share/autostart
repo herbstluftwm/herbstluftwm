@@ -17,11 +17,14 @@ hc keybind $Mod-Shift-c close
 hc keybind $Mod-Return spawn xterm
 
 # tags
-hc rename default 1 || true
-for i in {1..9} ; do
-    hc add "$i"
-    hc keybind "$Mod-$i" use "$i"
-    hc keybind "$Mod-Shift-$i" move "$i"
+TAG_NAMES=( {1..9} )
+TAG_KEYS=( {1..9} 0 )
+
+hc rename default "${TAG_NAMES[0]}" || true
+for i in ${!TAG_NAMES[@]} ; do
+    hc add "${TAG_NAMES[$i]}"
+    hc keybind "$Mod-${TAG_KEYS[$i]}" use "${TAG_NAMES[$i]}"
+    hc keybind "$Mod-Shift-${TAG_KEYS[$i]}" move "${TAG_NAMES[$i]}"
 done
 
 # layouting
