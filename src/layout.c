@@ -682,7 +682,6 @@ void frame_apply_client_layout_grid(HSFrame* frame, XRectangle rect) {
 
     int rows, cols;
     frame_layout_grid_get_size(count, &rows, &cols);
-    printf("grid has %dx%d\n", rows, cols);
     int width = rect.width / cols;
     int height = rect.height / rows;
     int i = 0;
@@ -692,11 +691,18 @@ void frame_apply_client_layout_grid(HSFrame* frame, XRectangle rect) {
         cur.x = rect.x;
         cur.width = width;
         cur.height = height;
+        if (r == rows -1) {
+            // fill small pixel gap below last row
+            cur.height += rect.height % rows;
+        }
         for (int c = 0; c < cols && i < count; c++) {
             if (*g_gapless_grid && (i == count - 1) // if last client
                 && (count % cols != 0)) {           // if cols remain
                 // fill remaining cols with client
-                cur.width += width * (cols - (count % cols));
+                cur.width = rect.x + rect.width - cur.x;
+            } else if (c == cols - 1) {
+                // fill small pixel gap in last col
+                cur.width += rect.width % cols;
             }
 
             // apply size
