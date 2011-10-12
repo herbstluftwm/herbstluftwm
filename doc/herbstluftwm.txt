@@ -438,6 +438,7 @@ default_frame_layout (Integer)::
         * 0 means vertical
         * 1 means horizontal
         * 2 means max
+        * 3 means grid
 
 default_direction_external_only (Integer)::
     this setting controls the behaviour of focus and shift if no '-e' or '-i'
@@ -445,6 +446,12 @@ default_direction_external_only (Integer)::
     even if there are other clients in this frame in the specified 'DIRECTION'.
     Else, a client within current frame is selected if it is in the specified
     'DIRECTION'.
+
+gapless_grid (Integer)::
+    this setting affects the size of the last client in a frame that is arranged
+    by grid layout. If set, then the last client always fills the gap within
+    this frame. If unset, then the last client has the same size as all other
+    clients in this frame.
 
 focus_follows_shift (Integer)::
     If set, focus stays in the window, if window is shifted to another frame.
