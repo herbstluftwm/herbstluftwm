@@ -33,6 +33,7 @@ int* g_focus_follows_shift;
 int* g_frame_bg_transparent;
 int* g_swap_monitors_to_get_tag;
 int* g_direction_external_only;
+int* g_gapless_grid;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
@@ -49,6 +50,7 @@ char* g_layout_names[] = {
     "vertical",
     "horizontal",
     "max",
+    "grid",
 };
 
 static void fetch_frame_colors() {
@@ -61,6 +63,7 @@ static void fetch_frame_colors() {
     g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
     g_swap_monitors_to_get_tag = &(settings_find("swap_monitors_to_get_tag")->value.i);
     g_direction_external_only = &(settings_find("default_direction_external_only")->value.i);
+    g_gapless_grid = &(settings_find("gapless_grid")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT);
     char* str = settings_find("frame_border_normal_color")->value.s;
     g_frame_border_normal_color = getcolor(str);
@@ -656,6 +659,65 @@ void frame_apply_client_layout_max(HSFrame* frame, XRectangle rect) {
     }
 }
 
+void frame_layout_grid_get_size(size_t count, int* res_rows, int* res_cols) {
+    int cols = 0;
+    while (cols * cols < count) {
+        cols++;
+    }
+    *res_cols = cols;
+    if (*res_cols != 0) {
+        *res_rows = (count / cols) + (count % cols ? 1 : 0);
+    } else {
+        *res_rows = 0;
+    }
+}
+
+void frame_apply_client_layout_grid(HSFrame* frame, XRectangle rect) {
+    Window* buf = frame->content.clients.buf;
+    size_t count = frame->content.clients.count;
+    int selection = frame->content.clients.selection;
+    if (count == 0) {
+        return;
+    }
+
+    int rows, cols;
+    frame_layout_grid_get_size(count, &rows, &cols);
+    int width = rect.width / cols;
+    int height = rect.height / rows;
+    int i = 0;
+    XRectangle cur = rect; // current rectangle
+    for (int r = 0; r < rows; r++) {
+        // reset to left
+        cur.x = rect.x;
+        cur.width = width;
+        cur.height = height;
+        if (r == rows -1) {
+            // fill small pixel gap below last row
+            cur.height += rect.height % rows;
+        }
+        for (int c = 0; c < cols && i < count; c++) {
+            if (*g_gapless_grid && (i == count - 1) // if last client
+                && (count % cols != 0)) {           // if cols remain
+                // fill remaining cols with client
+                cur.width = rect.x + rect.width - cur.x;
+            } else if (c == cols - 1) {
+                // fill small pixel gap in last col
+                cur.width += rect.width % cols;
+            }
+
+            // apply size
+            HSClient* client = get_client_from_window(buf[i]);
+            client_setup_border(client, (g_cur_frame == frame) && (i == selection));
+            client_resize_tiling(client, cur);
+            cur.x += width;
+            i++;
+        }
+        cur.y += height;
+    }
+
+}
+
+
 void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     if (frame->type == TYPE_CLIENTS) {
         size_t count = frame->content.clients.count;
@@ -699,6 +761,8 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         }
         if (frame->content.clients.layout == LAYOUT_MAX) {
             frame_apply_client_layout_max(frame, rect);
+        } else if (frame->content.clients.layout == LAYOUT_GRID) {
+            frame_apply_client_layout_grid(frame, rect);
         } else {
             frame_apply_client_layout_linear(frame, rect,
                 (frame->content.clients.layout == LAYOUT_VERTICAL));
@@ -1472,6 +1536,7 @@ int frame_inner_neighbour_index(HSFrame* frame, char direction) {
     }
     int selection = frame->content.clients.selection;
     int count = frame->content.clients.count;
+    int rows, cols;
     switch (frame->content.clients.layout) {
         case LAYOUT_VERTICAL:
             if (direction == 'd') index = selection + 1;
@@ -1482,6 +1547,25 @@ int frame_inner_neighbour_index(HSFrame* frame, char direction) {
             if (direction == 'l') index = selection - 1;
             break;
         case LAYOUT_MAX:
+            break;
+        case LAYOUT_GRID:
+            frame_layout_grid_get_size(count, &rows, &cols);
+            if (cols == 0) break;
+            int r = selection / cols;
+            int c = selection % cols;
+            switch (direction) {
+                case 'd':
+                    index = selection + cols;
+                    if (*g_gapless_grid && index >= count && r == (rows - 2)) {
+                        // if grid is gapless and we're in the second-last row
+                        // then it means last client is below us
+                        index = count - 1;
+                    }
+                    break;
+                case 'u': index = selection - cols; break;
+                case 'r': if (c < cols-1) index = selection + 1; break;
+                case 'l': if (c > 0)      index = selection - 1; break;
+            }
             break;
         default:
             break;

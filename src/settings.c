@@ -49,6 +49,8 @@ SettingsPair g_settings[] = {
     { "swap_monitors_to_get_tag", { .i = 1 }, .type = HS_Int },
     { "raise_on_focus", { .i = 1 }, .type = HS_Int },
     { "raise_on_click", { .i = 1 }, .type = HS_Int },
+    { "gapless_grid", { .i = 1 }, .type = HS_Int,
+        .on_change = all_monitors_apply_layout },
     { "tree_style", { .s = "*| +`--." }, .type = HS_String,
         .on_change = reset_frame_colors },
     { "ignore_class", { .s = "Conky" },
