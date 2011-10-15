@@ -1,15 +1,15 @@
 #!/bin/bash
 
 monitor=${1:-0}
-geometry="$(herbstclient list_monitors |grep "^$monitor:"|cut -d' ' -f2)"
+geometry=( $(herbstclient monitor_rect "$monitor") )
 if [ -z "$geometry" ] ;then
     echo "Invalid monitor $monitor"
     exit 1
 fi
 # geometry has the format: WxH+X+Y
-x="$(echo $geometry |cut -d'+' -f2)"
-y="${geometry##*+}"
-width="${geometry%%x*}"
+x=${geometry[0]}
+y=${geometry[1]}
+width=${geometry[2]}
 height=16
 font="-*-fixed-medium-*-*-*-12-*-*-*-*-*-*-*"
 bgcolor='#3E2600'
@@ -84,7 +84,7 @@ herbstclient pad $monitor $height
             #    ;;
         esac
         done
-) 2> /dev/null |dzen2 -w $width -x $x -y $y -fn "$font" -h $height \
+) 2> /dev/null | dzen2 -w $width -x $x -y $y -fn "$font" -h $height \
     -ta l -bg "$bgcolor" -fg '#efefef'
 
 
