@@ -36,9 +36,11 @@ int g_wait_for_hook = 0; // if set, donot execute command but wait
 int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
 regex_t* g_hook_regex = NULL;
 int g_hook_regex_count = 0;
+bool g_quiet = false;
 
 void init_hook_regex(int argc, char* argv[]);
 void destroy_hook_regex();
+Window get_hook_window();
 
 static void quit_herbstclient(int signal) {
     // TODO: better solution to quit x connection more softly?
@@ -48,6 +50,10 @@ static void quit_herbstclient(int signal) {
 }
 
 int send_command(int argc, char* argv[]) {
+    // check for running window manager instance
+    if (!get_hook_window()) {
+        return EXIT_FAILURE;
+    }
     // create window
     Window win = XCreateSimpleWindow(dpy, root, 42, 42, 42, 42, 0, 0, 0);
     // set wm_class for window
@@ -142,13 +148,7 @@ void destroy_hook_regex() {
     free(g_hook_regex);
 }
 
-int wait_for_hook(int argc, char* argv[]) {
-    // install signals
-    signal(SIGTERM, quit_herbstclient);
-    signal(SIGINT, quit_herbstclient);
-    signal(SIGQUIT, quit_herbstclient);
-    init_hook_regex(argc, argv);
-    // get window to listen at
+Window get_hook_window() {
     int *value; // list of ints
     Atom type;
     int format;
@@ -158,11 +158,27 @@ int wait_for_hook(int argc, char* argv[]) {
         XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value);
     // only accept exactly one Window id
     if (status != Success || items != 1) {
-        fprintf(stderr, "no running herbstluftwm detected\n");
-        return EXIT_FAILURE;
+        if (!g_quiet) {
+            fprintf(stderr, "no running herbstluftwm detected\n");
+        }
+        return 0;
     }
     Window win = *value;
     XFree(value);
+    return win;
+}
+
+int wait_for_hook(int argc, char* argv[]) {
+    // install signals
+    signal(SIGTERM, quit_herbstclient);
+    signal(SIGINT, quit_herbstclient);
+    signal(SIGQUIT, quit_herbstclient);
+    init_hook_regex(argc, argv);
+    // get window to listen at
+    Window win = get_hook_window();
+    if (!win) {
+        return EXIT_FAILURE;
+    }
     // listen on window
     XSelectInput(dpy, win, StructureNotifyMask|PropertyChangeMask);
     XEvent next_event;
@@ -240,12 +256,13 @@ int main(int argc, char* argv[]) {
         {"wait", 0, 0, 'w'},
         {"count", 1, 0, 'c'},
         {"idle", 0, 0, 'i'},
+        {"quiet", 0, 0, 'q'},
         {0, 0, 0, 0}
     };
     // parse options
     while (1) {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "+nwc:i", long_options, &option_index);
+        int c = getopt_long(argc, argv, "+nwc:iq", long_options, &option_index);
         if (c == -1) break;
         switch (c) {
             case 'i':
@@ -262,6 +279,9 @@ int main(int argc, char* argv[]) {
             case 'n':
                 g_ensure_newline = 0;
                 break;
+            case 'q':
+                g_quiet = true;
+                break;
             default:
                 fprintf(stderr, "unknown option `%s'\n", argv[optind]);
                 exit(EXIT_FAILURE);
@@ -272,7 +292,9 @@ int main(int argc, char* argv[]) {
     dpy = XOpenDisplay(NULL);
     g_display = dpy;
     if (!dpy) {
-        fprintf(stderr, "Cannot open display\n");
+        if (!g_quiet) {
+            fprintf(stderr, "Cannot open display\n");
+        }
         return EXIT_FAILURE;
     }
     root = DefaultRootWindow(dpy);
