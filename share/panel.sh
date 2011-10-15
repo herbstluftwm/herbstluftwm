@@ -19,15 +19,17 @@ function uniq_linebuffered() {
 }
 
 herbstclient pad $monitor $height
-(
+{
     # events:
     #mpc idleloop player &
     while true ; do
         date +'date ^fg(#efefef)%H:%M^fg(#909090), %Y-%m-^fg(#efefef)%d'
         sleep 1 || break
-    done | uniq_linebuffered  &
+    done > >(uniq_linebuffered)  &
+    childpid=$!
     herbstclient --idle
-) 2> /dev/null |(
+    kill $childpid
+} 2> /dev/null | {
     TAGS=( $(herbstclient tag_status $monitor) )
     date=""
     while true ; do
@@ -84,7 +86,7 @@ herbstclient pad $monitor $height
             #    ;;
         esac
         done
-) 2> /dev/null | dzen2 -w $width -x $x -y $y -fn "$font" -h $height \
+} 2> /dev/null | dzen2 -w $width -x $x -y $y -fn "$font" -h $height \
     -ta l -bg "$bgcolor" -fg '#efefef'
 
 
