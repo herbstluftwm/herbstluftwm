@@ -8,10 +8,15 @@
 
 #include <stdbool.h>
 #include <regex.h>
+#include <glib.h>
 
 enum {
     CONDITION_VALUE_TYPE_STRING,
     CONDITION_VALUE_TYPE_REGEX,
+};
+
+enum {
+    CONSEQUENCE_VALUE_TYPE_STRING,
 };
 
 typedef struct {
@@ -25,7 +30,10 @@ typedef struct {
 
 typedef struct {
     int     type;
-    char*   value;
+    int value_type;
+    union {
+        char*       str;
+    } value;
 } HSConsequence;
 
 typedef struct {
@@ -40,6 +48,7 @@ void rules_destroy();
 
 HSRule* rule_create();
 void rule_destroy(HSRule* rule);
+
 
 int rule_add_command(int argc, char** argv);
 

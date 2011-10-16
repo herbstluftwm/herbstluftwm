@@ -19,30 +19,35 @@
 
 typedef struct {
     char*   name;
-    bool    (*matches)(HSClient* client, HSCondition* condition);
+    bool    (*matches)(HSCondition* condition, HSClient* client);
 } HSConditionType;
 
 typedef struct {
     char*   name;
-    bool    (*apply)(HSClient* client, HSConsequence* consequence);
+    bool    (*apply)(HSConsequence* consequence, HSClient* client);
 } HSConsequenceType;
 
+/// DECLARATIONS ///
 
 static int find_condition_type(char* name);
 static int find_consequence_type(char* name);
+static bool condition_string(HSCondition* rule, char* string);
+static bool condition_class(HSCondition* rule, HSClient* client);
 
 /// GLOBALS ///
+
 static HSConditionType g_condition_types[] = {
-    {   "class",    NULL },
+    {   "class",    condition_class },
 };
 
 static HSConsequenceType g_consequence_types[] = {
-    {   "tag",    NULL },
+    {   "tag",      NULL },
 };
 
 GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
 
 /// FUNCTIONS ///
+// RULES //
 void rules_init() {
 }
 
@@ -51,6 +56,7 @@ void rules_destroy() {
     g_queue_clear(&g_rules);
 }
 
+// condition types //
 int find_condition_type(char* name) {
     char* cn;
     for (int i = 0; i < LENGTH(g_condition_types); i++) {
@@ -61,43 +67,6 @@ int find_condition_type(char* name) {
         }
     }
     return -1;
-}
-
-int find_consequence_type(char* name) {
-    char* cn;
-    for (int i = 0; i < LENGTH(g_consequence_types); i++) {
-        cn = g_consequence_types[i].name;
-        if (!cn) break;
-        if (!strcmp(cn, name)) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-
-// parses an arg like NAME=VALUE to res_name, res_operation and res_value
-bool tokenize_arg(char* condition,
-                  char** res_name, char* res_operation, char** res_value) {
-    // ignore two leading dashes
-    if (condition[0] == '-' && condition[1] == '-') {
-        condition += 2;
-    }
-
-    // locate operation
-    char* op = strpbrk(condition, "=~");
-    if (!op) {
-        return false;
-    }
-    *res_operation = *op;
-    *op = '\0'; // separate string at operation char
-
-    // get name
-    *res_name = condition;
-
-    // value is second one (starting after op character)
-    *res_value = op + 1;
-    return true;
 }
 
 HSCondition* condition_create(int type, char op, char* value) {
@@ -155,11 +124,25 @@ void condition_destroy(HSCondition* cond) {
     g_free(cond);
 }
 
+// consequence types //
+int find_consequence_type(char* name) {
+    char* cn;
+    for (int i = 0; i < LENGTH(g_consequence_types); i++) {
+        cn = g_consequence_types[i].name;
+        if (!cn) break;
+        if (!strcmp(cn, name)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 HSConsequence* consequence_create(int type, char op, char* value) {
     HSConsequence cons;
     switch (op) {
         case '=':
-            cons.value = g_strdup(value);
+            cons.value_type = CONSEQUENCE_VALUE_TYPE_STRING;
+            cons.value.str = g_strdup(value);
             break;
 
         default:
@@ -176,9 +159,15 @@ HSConsequence* consequence_create(int type, char op, char* value) {
 }
 
 void consequence_destroy(HSConsequence* cons) {
-    g_free(cons->value);
+    switch (cons->value_type) {
+        case CONSEQUENCE_VALUE_TYPE_STRING:
+            g_free(cons->value.str);
+            break;
+    }
     g_free(cons);
 }
+
+// rules parsing //
 
 HSRule* rule_create() {
     return g_new0(HSRule, 1);
@@ -197,6 +186,30 @@ void rule_destroy(HSRule* rule) {
     g_free(rule->consequences);
     // free rule itself
     g_free(rule);
+}
+
+// parses an arg like NAME=VALUE to res_name, res_operation and res_value
+bool tokenize_arg(char* condition,
+                  char** res_name, char* res_operation, char** res_value) {
+    // ignore two leading dashes
+    if (condition[0] == '-' && condition[1] == '-') {
+        condition += 2;
+    }
+
+    // locate operation
+    char* op = strpbrk(condition, "=~");
+    if (!op) {
+        return false;
+    }
+    *res_operation = *op;
+    *op = '\0'; // separate string at operation char
+
+    // get name
+    *res_name = condition;
+
+    // value is second one (starting after op character)
+    *res_value = op + 1;
+    return true;
 }
 
 static void rule_add_condition(HSRule* rule, HSCondition* cond) {
@@ -263,6 +276,32 @@ int rule_add_command(int argc, char** argv) {
 }
 
 
+/// CONDITIONS ///
+bool condition_string(HSCondition* rule, char* string) {
+    if (!rule || !string) {
+        return false;
+    }
 
+    int status;
+    switch (rule->value_type) {
+        case CONDITION_VALUE_TYPE_STRING:
+            return !strcmp(string, rule->value.str);
+            break;
+        case CONDITION_VALUE_TYPE_REGEX:
+            status = regexec(&rule->value.exp, string, 0, NULL, 0);
+            return (status == 0);
+            break;
+    }
+    return false;
+}
+
+bool condition_class(HSCondition* rule, HSClient* client) {
+    GString* window_class = window_class_to_g_string(g_display, client->window);
+    bool match = condition_string(rule, window_class->str);
+    g_string_free(window_class, true);
+    return match;
+}
+
+/// CONSEQUENCES ///
 
 
