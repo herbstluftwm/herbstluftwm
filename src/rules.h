@@ -10,6 +10,9 @@
 #include <regex.h>
 #include <glib.h>
 
+struct HSClient;
+struct HSTag;
+
 enum {
     CONDITION_VALUE_TYPE_STRING,
     CONDITION_VALUE_TYPE_REGEX,
@@ -43,12 +46,20 @@ typedef struct {
     int             consequence_count;
 } HSRule;
 
+typedef struct {
+    struct HSTag*   tag;
+    GString*        tag_name;
+} HSClientChanges;
+
 void rules_init();
 void rules_destroy();
+void rules_apply(struct HSClient* client, HSClientChanges* changes);
+
+void client_changes_init(HSClientChanges* changes);
+void client_changes_free_members(HSClientChanges* changes);
 
 HSRule* rule_create();
 void rule_destroy(HSRule* rule);
-
 
 int rule_add_command(int argc, char** argv);
 

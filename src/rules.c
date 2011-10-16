@@ -24,7 +24,8 @@ typedef struct {
 
 typedef struct {
     char*   name;
-    bool    (*apply)(HSConsequence* consequence, HSClient* client);
+    void    (*apply)(HSConsequence* consequence, HSClient* client,
+                     HSClientChanges* changes);
 } HSConsequenceType;
 
 /// DECLARATIONS ///
@@ -33,6 +34,8 @@ static int find_condition_type(char* name);
 static int find_consequence_type(char* name);
 static bool condition_string(HSCondition* rule, char* string);
 static bool condition_class(HSCondition* rule, HSClient* client);
+static void consequence_tag(HSConsequence* cons, HSClient* client,
+                            HSClientChanges* changes);
 
 /// GLOBALS ///
 
@@ -41,7 +44,7 @@ static HSConditionType g_condition_types[] = {
 };
 
 static HSConsequenceType g_consequence_types[] = {
-    {   "tag",      NULL },
+    {   "tag",      consequence_tag },
 };
 
 GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -275,6 +278,45 @@ int rule_add_command(int argc, char** argv) {
     return 0;
 }
 
+// rules applying //
+void client_changes_init(HSClientChanges* changes) {
+    memset(changes, 0, sizeof(HSClientChanges));
+}
+
+void client_changes_free_members(HSClientChanges* changes) {
+    if (!changes) return;
+    if (changes->tag_name) {
+        g_string_free(changes->tag_name, true);
+    }
+}
+
+// apply all rules to a certain client an save changes
+void rules_apply(HSClient* client, HSClientChanges* changes) {
+    GList* cur = g_rules.head;
+    while (cur) {
+        HSRule* rule = cur->data;
+        bool matches = true;
+
+        // check all conditions
+        for (int i = 0; matches && i < rule->condition_count; i++) {
+            int type = rule->conditions[i]->condition_type;
+            matches = g_condition_types[type].
+                matches(rule->conditions[i], client);
+        }
+
+        if (matches) {
+            // apply all consequences
+            for (int i = 0; i < rule->consequence_count; i++) {
+                int type = rule->consequences[i]->type;
+                g_consequence_types[type].
+                    apply(rule->consequences[i], client, changes);
+            }
+        }
+
+        // try next
+        cur = cur->next;
+    }
+}
 
 /// CONDITIONS ///
 bool condition_string(HSCondition* rule, char* string) {
@@ -303,5 +345,12 @@ bool condition_class(HSCondition* rule, HSClient* client) {
 }
 
 /// CONSEQUENCES ///
-
+void consequence_tag(HSConsequence* cons,
+                     HSClient* client, HSClientChanges* changes) {
+    if (changes->tag_name) {
+        changes->tag_name = g_string_assign(changes->tag_name, cons->value.str);
+    } else {
+        changes->tag_name = g_string_new(cons->value.str);
+    }
+}
 

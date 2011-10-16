@@ -10,6 +10,7 @@
 #include "utils.h"
 #include "hook.h"
 #include "mouse.h"
+#include "rules.h"
 #include "ipc-protocol.h"
 // system
 #include <glib.h>
@@ -160,6 +161,14 @@ void manage_client(Window win) {
     client->float_size.y = y;
     client->float_size.width = w;
     client->float_size.height = h;
+
+    // apply rules
+    HSClientChanges changes;
+    client_changes_init(&changes);
+    rules_apply(client, &changes);
+    client_changes_free_members(&changes);
+
+    // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
     // insert to layout
     client->tag = m->tag;
