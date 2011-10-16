@@ -12,6 +12,7 @@
 #include <X11/Xatom.h>
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
+#define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
 
 /// print a printf-like message to stderr and exit
 void die(const char *errstr, ...);
