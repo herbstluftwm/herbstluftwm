@@ -47,7 +47,6 @@ typedef struct {
 } HSRule;
 
 typedef struct {
-    struct HSTag*   tag;
     GString*        tag_name;
 } HSClientChanges;
 

@@ -643,8 +643,10 @@ void maprequest(XEvent* event) {
     } else if (!get_client_from_window(mapreq->window)) {
         // client should be managed (is not ignored)
         // but is not managed yet
-        manage_client(mapreq->window);
-        XMapWindow(g_display, mapreq->window);
+        HSClient* client = manage_client(mapreq->window);
+        if (client && find_monitor_with_tag(client->tag)) {
+            XMapWindow(g_display, mapreq->window);
+        }
     }
     // else: ignore all other maprequests from windows
     // that are managed already

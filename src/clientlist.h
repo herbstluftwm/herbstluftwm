@@ -38,7 +38,7 @@ void reset_client_colors();
 void reset_client_settings();
 
 // adds a new client to list of managed client windows
-void manage_client(Window win);
+HSClient* manage_client(Window win);
 void unmanage_client(Window win);
 
 void window_enforce_last_size(Window in);

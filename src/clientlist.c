@@ -137,13 +137,13 @@ static void window_grab_button(Window win) {
                 GrabModeSync, GrabModeSync, None, None);
 }
 
-void manage_client(Window win) {
+HSClient* manage_client(Window win) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
-        return;
+        return NULL;
     }
     if (get_client_from_window(win)) {
-        return;
+        return NULL;
     }
     // init client
     XSetWindowBorderWidth(g_display, win, *g_window_border_width);
@@ -166,19 +166,26 @@ void manage_client(Window win) {
     HSClientChanges changes;
     client_changes_init(&changes);
     rules_apply(client, &changes);
+    if (changes.tag_name) {
+        client->tag = find_tag(changes.tag_name->str);
+    }
     client_changes_free_members(&changes);
 
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
     // insert to layout
-    client->tag = m->tag;
+    if (!client->tag) {
+        client->tag = m->tag;
+    }
     // get events from window
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
     window_grab_button(win);
     //mouse_grab(win);
-    frame_insert_window(m->tag->frame, win);
+    frame_insert_window(client->tag->frame, win);
     tag_set_flags_dirty();
-    monitor_apply_layout(m);
+    monitor_apply_layout(find_monitor_with_tag(client->tag));
+
+    return client;
 }
 
 void unmanage_client(Window win) {
