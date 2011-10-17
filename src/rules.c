@@ -82,7 +82,7 @@ HSCondition* condition_create(int type, char op, char* value) {
 
         case '~':
             cond.value_type = CONDITION_VALUE_TYPE_REGEX;
-            int status = regcomp(&cond.value.exp, value, REG_NOSUB|REG_EXTENDED);
+            int status = regcomp(&cond.value.exp, value, REG_EXTENDED);
             if (status != 0) {
                 char buf[ERROR_STRING_BUF_SIZE];
                 regerror(status, &cond.value.exp, buf, ERROR_STRING_BUF_SIZE);
@@ -325,13 +325,21 @@ bool condition_string(HSCondition* rule, char* string) {
     }
 
     int status;
+    regmatch_t match;
     switch (rule->value_type) {
         case CONDITION_VALUE_TYPE_STRING:
             return !strcmp(string, rule->value.str);
             break;
         case CONDITION_VALUE_TYPE_REGEX:
-            status = regexec(&rule->value.exp, string, 0, NULL, 0);
-            return (status == 0);
+            status = regexec(&rule->value.exp, string, 1, &match, 0);
+            // only accept it, if it matches the entire string
+            if (status == 0
+                && match.rm_so == 0
+                && match.rm_eo == strlen(string)) {
+                return true;
+            } else {
+                return false;
+            }
             break;
     }
     return false;
