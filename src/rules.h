@@ -25,6 +25,7 @@ enum {
 typedef struct {
     int condition_type;
     int value_type;
+    bool negated;
     union {
         char*       str;
         regex_t     exp;

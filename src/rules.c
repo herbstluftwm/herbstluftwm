@@ -199,6 +199,10 @@ bool tokenize_arg(char* condition,
         condition += 2;
     }
 
+    // get name
+    *res_name = condition;
+
+
     // locate operation
     char* op = strpbrk(condition, "=~");
     if (!op) {
@@ -206,9 +210,6 @@ bool tokenize_arg(char* condition,
     }
     *res_operation = *op;
     *op = '\0'; // separate string at operation char
-
-    // get name
-    *res_name = condition;
 
     // value is second one (starting after op character)
     *res_value = op + 1;
@@ -238,6 +239,13 @@ int rule_add_command(int argc, char** argv) {
     HSRule* rule = rule_create();
     HSCondition* cond;
     HSConsequence* cons;
+    bool negated = false;
+    struct {
+        char* name;
+        bool* flag;
+    } flags[] = {
+        { "not", &negated }
+    };
 
     while (argc > 0) {
         char* name;
@@ -247,13 +255,29 @@ int rule_add_command(int argc, char** argv) {
         // is it a consequence or a condition?
         bool consorcond = tokenize_arg(*argv, &name, &op, &value);
         int type;
+        bool flag_found = false;
+        int flag_index = -1;
 
-        if (consorcond && (type = find_condition_type(name)) >= 0) {
+        for (int i = 0; i < LENGTH(flags); i++) {
+            if (!strcmp(flags->name, name)) {
+                flag_found = true;
+                flag_index = i;
+                break;
+            }
+        }
+
+        if (flag_found) {
+            *flags[flag_index].flag = ! *flags[flag_index].flag;
+        }
+
+        else if (consorcond && (type = find_condition_type(name)) >= 0) {
             cond = condition_create(type, op, value);
             if (!cond) {
                 rule_destroy(rule);
                 return HERBST_INVALID_ARGUMENT;
             }
+            cond->negated = negated;
+            negated = false;
             rule_add_condition(rule, cond);
         }
 
@@ -302,6 +326,9 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
             int type = rule->conditions[i]->condition_type;
             matches = g_condition_types[type].
                 matches(rule->conditions[i], client);
+            if (rule->conditions[i]->negated) {
+                matches = ! matches;
+            }
         }
 
         if (matches) {
