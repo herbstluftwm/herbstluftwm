@@ -244,7 +244,8 @@ int rule_add_command(int argc, char** argv) {
         char* name;
         bool* flag;
     } flags[] = {
-        { "not", &negated }
+        { "not", &negated },
+        { "!",   &negated },
     };
 
     while (argc > 0) {

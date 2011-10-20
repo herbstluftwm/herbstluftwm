@@ -534,6 +534,7 @@ Valid 'NAMES' are:
 A rule's behaviour can be configured by some special 'FLAGS':
 
     * +not+: negates the next 'CONDITION'
+    * +!+: same as +not+
 
 Examples:
 
