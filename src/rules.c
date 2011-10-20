@@ -259,7 +259,7 @@ int rule_add_command(int argc, char** argv) {
         int flag_index = -1;
 
         for (int i = 0; i < LENGTH(flags); i++) {
-            if (!strcmp(flags->name, name)) {
+            if (!strcmp(flags[i].name, name)) {
                 flag_found = true;
                 flag_index = i;
                 break;
