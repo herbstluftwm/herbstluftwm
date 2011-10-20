@@ -68,4 +68,8 @@ hc set window_border_width 2
 hc set window_border_normal_color '#AE8451'
 hc set window_border_active_color '#F6FF00'
 
+# rules
+hc unrule -F
+#hc rule class=XTerm tag=3
+
 

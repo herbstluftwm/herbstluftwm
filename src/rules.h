@@ -62,6 +62,7 @@ HSRule* rule_create();
 void rule_destroy(HSRule* rule);
 
 int rule_add_command(int argc, char** argv);
+int rule_remove_command(int argc, char** argv);
 
 
 #endif

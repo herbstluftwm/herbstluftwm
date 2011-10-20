@@ -302,6 +302,21 @@ int rule_add_command(int argc, char** argv) {
     return 0;
 }
 
+int rule_remove_command(int argc, char** argv) {
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    if (!strcmp(argv[1], "--all") || !strcmp(argv[1], "-F")) {
+        // remove all rules
+        g_queue_foreach(&g_rules, (GFunc)rule_destroy, NULL);
+        g_queue_clear(&g_rules);
+        return 0;
+    }
+
+    return HERBST_INVALID_ARGUMENT;
+}
+
 // rules applying //
 void client_changes_init(HSClientChanges* changes) {
     memset(changes, 0, sizeof(HSClientChanges));

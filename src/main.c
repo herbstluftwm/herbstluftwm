@@ -118,6 +118,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "pad",            monitor_set_pad_command),
     CMD_BIND_NO_OUTPUT(   "raise",          raise_command),
     CMD_BIND_NO_OUTPUT(   "rule",           rule_add_command),
+    CMD_BIND_NO_OUTPUT(   "unrule",         rule_remove_command),
     CMD_BIND(             "layout",         print_layout_command),
     CMD_BIND(             "dump",           print_layout_command),
     CMD_BIND(             "load",           load_command),
