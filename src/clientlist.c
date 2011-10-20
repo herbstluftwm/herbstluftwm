@@ -169,7 +169,6 @@ HSClient* manage_client(Window win) {
     if (changes.tag_name) {
         client->tag = find_tag(changes.tag_name->str);
     }
-    client_changes_free_members(&changes);
 
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
@@ -182,8 +181,17 @@ HSClient* manage_client(Window win) {
     window_grab_button(win);
     //mouse_grab(win);
     frame_insert_window(client->tag->frame, win);
+    if (changes.focus) {
+        // give focus to window if wanted
+        // TODO: make this faster!
+        // WARNING: this solution needs O(C + exp(D)) time where W is the count
+        // of clients on this tag and D is the depth of the binary layout tree
+        frame_focus_window(client->tag->frame, win);
+    }
+
     tag_set_flags_dirty();
     monitor_apply_layout(find_monitor_with_tag(client->tag));
+    client_changes_free_members(&changes);
 
     return client;
 }

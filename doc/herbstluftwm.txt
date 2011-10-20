@@ -530,6 +530,8 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair.
 Valid 'NAMES' are:
 
     * +tag+: moves the client to tag 'VALUE'
+    * +focus+: decides wether the client gets the input focus on his tag.
+      'VALUE' can be *on*, *off* or *toggle*
 
 A rule's behaviour can be configured by some special 'FLAGS':
 
@@ -538,15 +540,14 @@ A rule's behaviour can be configured by some special 'FLAGS':
 
 Examples:
 
-    * +rule --class=Netscape --tag=6+ +
+    * +rule --class=Netscape --tag=6 --focus=off+ +
         +
-        moves all Netscape instances to tag 6
+        moves all Netscape instances to tag 6, but doesn't give focus to them
 
     * +rule not class~.*[Tt]erm tag=2+ +
         +
         moves all clients to tag 2, if their class does not end with +term+ or
         +Term+
-
 
 AUTOSTART FILE
 --------------

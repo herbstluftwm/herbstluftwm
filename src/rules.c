@@ -36,6 +36,8 @@ static bool condition_string(HSCondition* rule, char* string);
 static bool condition_class(HSCondition* rule, HSClient* client);
 static void consequence_tag(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes);
+static void consequence_focus(HSConsequence* cons, HSClient* client,
+                              HSClientChanges* changes);
 
 /// GLOBALS ///
 
@@ -45,6 +47,7 @@ static HSConditionType g_condition_types[] = {
 
 static HSConsequenceType g_consequence_types[] = {
     {   "tag",      consequence_tag },
+    {   "focus",    consequence_focus },
 };
 
 GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -321,6 +324,7 @@ int rule_remove_command(int argc, char** argv) {
 // rules applying //
 void client_changes_init(HSClientChanges* changes) {
     memset(changes, 0, sizeof(HSClientChanges));
+    changes->focus = false;
 }
 
 void client_changes_free_members(HSClientChanges* changes) {
@@ -403,5 +407,10 @@ void consequence_tag(HSConsequence* cons,
     } else {
         changes->tag_name = g_string_new(cons->value.str);
     }
+}
+
+void consequence_focus(HSConsequence* cons, HSClient* client,
+                       HSClientChanges* changes) {
+    changes->focus = string_to_bool(cons->value.str, changes->focus);
 }
 
