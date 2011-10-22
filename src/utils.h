@@ -24,6 +24,7 @@ unsigned long getcolor(const char *colstr);
 
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom);
 GString* window_class_to_g_string(Display* dpy, Window window);
+int window_pid(Display* dpy, Window window);
 
 bool is_herbstluft_window(Display* dpy, Window window);
 

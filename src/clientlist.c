@@ -148,6 +148,7 @@ HSClient* manage_client(Window win) {
     // init client
     XSetWindowBorderWidth(g_display, win, *g_window_border_width);
     HSClient* client = create_client();
+    client->pid = window_pid(g_display, win);
     HSMonitor* m = get_current_monitor();
     // set to window properties
     client->window = win;

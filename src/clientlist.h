@@ -23,6 +23,7 @@ typedef struct HSClient {
     XRectangle  float_size;
     bool        urgent;
     bool        fullscreen;
+    int         pid;
 } HSClient;
 
 void clientlist_init();
