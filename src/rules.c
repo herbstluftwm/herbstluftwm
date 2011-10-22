@@ -373,6 +373,7 @@ bool condition_string(HSCondition* rule, char* string) {
 
     int status;
     regmatch_t match;
+    int int_value;
     switch (rule->value_type) {
         case CONDITION_VALUE_TYPE_STRING:
             return !strcmp(string, rule->value.str);
@@ -387,6 +388,10 @@ bool condition_string(HSCondition* rule, char* string) {
             } else {
                 return false;
             }
+            break;
+        case CONDITION_VALUE_TYPE_INTEGER:
+            return (1 == sscanf(string, "%d", &int_value)
+                && int_value == rule->value.integer);
             break;
     }
     return false;

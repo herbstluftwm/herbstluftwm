@@ -16,6 +16,7 @@ struct HSTag;
 enum {
     CONDITION_VALUE_TYPE_STRING,
     CONDITION_VALUE_TYPE_REGEX,
+    CONDITION_VALUE_TYPE_INTEGER,
 };
 
 enum {
@@ -29,6 +30,7 @@ typedef struct {
     union {
         char*       str;
         regex_t     exp;
+        int         integer;
     } value;
 } HSCondition;
 
