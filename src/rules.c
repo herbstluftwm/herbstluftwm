@@ -34,6 +34,7 @@ static int find_condition_type(char* name);
 static int find_consequence_type(char* name);
 static bool condition_string(HSCondition* rule, char* string);
 static bool condition_class(HSCondition* rule, HSClient* client);
+static bool condition_pid(HSCondition* rule, HSClient* client);
 static void consequence_tag(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes);
 static void consequence_focus(HSConsequence* cons, HSClient* client,
@@ -43,6 +44,7 @@ static void consequence_focus(HSConsequence* cons, HSClient* client,
 
 static HSConditionType g_condition_types[] = {
     {   "class",    condition_class },
+    {   "pid",      condition_pid },
 };
 
 static HSConsequenceType g_consequence_types[] = {
@@ -402,6 +404,19 @@ bool condition_class(HSCondition* rule, HSClient* client) {
     bool match = condition_string(rule, window_class->str);
     g_string_free(window_class, true);
     return match;
+}
+
+bool condition_pid(HSCondition* rule, HSClient* client) {
+    if (client->pid < 0) {
+        return false;
+    }
+    if (rule->value_type == CONDITION_VALUE_TYPE_INTEGER) {
+        return rule->value.integer == client->pid;
+    } else {
+        char buf[1000]; // 1kb ought to be enough for every int
+        sprintf(buf, "%d", client->pid);
+        return condition_string(rule, buf);
+    }
 }
 
 /// CONSEQUENCES ///
