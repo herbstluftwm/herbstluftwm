@@ -5,20 +5,22 @@ Release 0.2 FUTURE
 ------------------
 
 Small bugfixes and major features:
+
     * new command: monitor_rect
     * let panel.sh fork less often
     * set clients to fullscreen (without EWMH yet!)
     * new client layouting algorithm: grid layout
     * client rules with:
-        * conditon: class
-        * conditon: pid
-        * conditon: maxage
-        * operator: = (equals)
-        * operator: ~ (regex-matching)
-        * flag: once
-        * flag: not (negation of conditions)
-        * consequence: tag
-        * consequence: focus
+
+        - conditon: class
+        - conditon: pid
+        - conditon: maxage
+        - operator: = (equals)
+        - operator: ~ (regex-matching)
+        - flag: once
+        - flag: not (negation of conditions)
+        - consequence: tag
+        - consequence: focus
 
 
 Release 0.1 on 2011-10-02
