@@ -17,12 +17,10 @@ Some BUGS:
     - separate layout.[hc] into modules: layout, monitor, tag
 
 Planned features:
-    - fullscreen
     - dump/load floating values
     - jumpto urgent
     - completion für keybind (recursive!)
     - completion für keyunbind
     - (optional) move cursor after focus change
-    - window rules: class/title/name -> tag, focus, ...
     - optional focus selection after frame_split
 
