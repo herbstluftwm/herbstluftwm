@@ -54,6 +54,7 @@ unsigned int modifiername2mask(const char* name) {
         { "Super",      Mod4Mask },
         { "Shift",      ShiftMask },
         { "Control",    ControlMask },
+        { "Ctrl",       ControlMask },
     };
     int i;
     for (i = 0; i < LENGTH(table); i++) {

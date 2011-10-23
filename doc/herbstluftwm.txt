@@ -119,10 +119,10 @@ list_commands::
 keybind 'KEY' 'COMMAND' ['ARGS ...']::
     adds a key binding. When 'KEY' is pressed, the internal 'COMMAND' (with its
     'ARGS') is executed. A key binding is a (possibly empty) list of modifiers
-    (Mod1, Mod2, Mod3, Mod4, Mod5, Alt, Super, Control, Shift) and one key (see
-    keysymdef.h for a list of keys). Modifiers and the key are concatenated with
-    '-' or '+' as separator. If there is already a binding for this 'KEY', it
-    will be overwritten. Examples:
+    (Mod1, Mod2, Mod3, Mod4, Mod5, Alt, Super, Control/Ctrl, Shift) and one key
+    (see keysymdef.h for a list of keys). Modifiers and the key are concatenated
+    with '-' or '+' as separator. If there is already a binding for this 'KEY',
+    it will be overwritten. Examples:
 
         * keybind Mod4+Ctrl+q quit
         * keybind Mod1-i toggle always_show_frame
