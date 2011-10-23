@@ -10,6 +10,7 @@
 #include "ipc-protocol.h"
 
 #include <glib.h>
+#include <time.h>
 #include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -35,6 +36,7 @@ static int find_consequence_type(char* name);
 static bool condition_string(HSCondition* rule, char* string);
 static bool condition_class(HSCondition* rule, HSClient* client);
 static bool condition_pid(HSCondition* rule, HSClient* client);
+static bool condition_maxage(HSCondition* rule, HSClient* client);
 static void consequence_tag(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes);
 static void consequence_focus(HSConsequence* cons, HSClient* client,
@@ -45,7 +47,11 @@ static void consequence_focus(HSConsequence* cons, HSClient* client,
 static HSConditionType g_condition_types[] = {
     {   "class",    condition_class },
     {   "pid",      condition_pid },
+    {   "maxage",   condition_maxage },
 };
+
+int     g_maxage_type; // index of "maxage"
+time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
 
 static HSConsequenceType g_consequence_types[] = {
     {   "tag",      consequence_tag },
@@ -57,6 +63,7 @@ GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
 /// FUNCTIONS ///
 // RULES //
 void rules_init() {
+    g_maxage_type = find_condition_type("maxage");
 }
 
 void rules_destroy() {
@@ -79,10 +86,22 @@ int find_condition_type(char* name) {
 
 HSCondition* condition_create(int type, char op, char* value) {
     HSCondition cond;
+    if (op != '=' && type == g_maxage_type) {
+        fprintf(stderr, "condition maxage only supports the = operator\n");
+        return NULL;
+    }
     switch (op) {
         case '=':
-            cond.value_type = CONDITION_VALUE_TYPE_STRING;
-            cond.value.str = g_strdup(value);
+            if (type == g_maxage_type) {
+                cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
+                if (1 != sscanf(value, "%d", &cond.value.integer)) {
+                    fprintf(stderr, "cannot integer from \"%s\"\n", value);
+                    return NULL;
+                }
+            } else {
+                cond.value_type = CONDITION_VALUE_TYPE_STRING;
+                cond.value.str = g_strdup(value);
+            }
             break;
 
         case '~':
@@ -180,6 +199,9 @@ void consequence_destroy(HSConsequence* cons) {
 HSRule* rule_create() {
     HSRule* rule = g_new0(HSRule, 1);
     rule->once = false;
+    struct timespec t;
+    clock_gettime(CLOCK_MONOTONIC, &t);
+    rule->birth_time = t.tv_sec;
     return rule;
 }
 
@@ -344,19 +366,38 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
     GList* cur = g_rules.head;
     while (cur) {
         HSRule* rule = cur->data;
-        bool matches = true;
+        bool matches = true;    // if current condition matches
+        bool rule_match = true; // if entire rule matches
+        bool rule_expired = false;
+        g_current_rule_birth_time = rule->birth_time;
 
         // check all conditions
-        for (int i = 0; matches && i < rule->condition_count; i++) {
+        for (int i = 0; i < rule->condition_count; i++) {
             int type = rule->conditions[i]->condition_type;
+
+            if (!rule_match && type != g_maxage_type) {
+                // implement lazy AND &&
+                // ... except for maxage
+                continue;
+            }
+
             matches = g_condition_types[type].
                 matches(rule->conditions[i], client);
+
+            if (!matches && !rule->conditions[i]->negated
+                && rule->conditions[i]->condition_type == g_maxage_type) {
+                // if if not negated maxage doesnot match anymore
+                // then it will never match again in the future
+                rule_expired = true;
+            }
+
             if (rule->conditions[i]->negated) {
                 matches = ! matches;
             }
+            rule_match = rule_match && matches;
         }
 
-        if (matches) {
+        if (rule_match) {
             // apply all consequences
             for (int i = 0; i < rule->consequence_count; i++) {
                 int type = rule->consequences[i]->type;
@@ -364,12 +405,15 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
                     apply(rule->consequences[i], client, changes);
             }
 
-            if (rule->once) {
-                GList* next = cur->next;
-                g_queue_remove_element(&g_rules, cur);
-                cur = next;
-                continue;
-            }
+        }
+
+        // remove it if not wanted or needed anymore
+        if ((rule_match && rule->once) || rule_expired) {
+            GList* next = cur->next;
+            rule_destroy(cur->data);
+            g_queue_remove_element(&g_rules, cur);
+            cur = next;
+            continue;
         }
 
         // try next
@@ -427,6 +471,13 @@ bool condition_pid(HSCondition* rule, HSClient* client) {
         sprintf(buf, "%d", client->pid);
         return condition_string(rule, buf);
     }
+}
+
+bool condition_maxage(HSCondition* rule, HSClient* client) {
+    struct timespec cur;
+    clock_gettime(CLOCK_MONOTONIC, &cur);
+    time_t diff = cur.tv_sec - g_current_rule_birth_time;
+    return (rule->value.integer >= diff);
 }
 
 /// CONSEQUENCES ///

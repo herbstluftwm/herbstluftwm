@@ -48,6 +48,7 @@ typedef struct {
     HSConsequence** consequences;
     int             consequence_count;
     bool            once;
+    time_t          birth_time; // timestamp of at creation
 } HSRule;
 
 typedef struct {

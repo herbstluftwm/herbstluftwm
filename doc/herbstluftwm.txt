@@ -528,6 +528,10 @@ Valid 'properties' are:
     * +pid+: the client's process id (Warning: the pid is not available for
       every client. This only matches if the client sets the pid to the
       _NET_WM_PID itself)
+    * +maxage+: matches if the age of the rule mesured in seconds does not
+      exceed 'value'. This condition only can be used with the +=+ operator. If
+      maxage already is exceeded (and never will match again), then this rule is
+      removed. (With this you can build rules that only live for a certain time)
 
 Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair.
 Valid 'NAMES' are:
