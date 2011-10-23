@@ -10,6 +10,7 @@
 #include "utils.h"
 #include "hook.h"
 #include "mouse.h"
+#include "rules.h"
 #include "ipc-protocol.h"
 // system
 #include <glib.h>
@@ -136,17 +137,18 @@ static void window_grab_button(Window win) {
                 GrabModeSync, GrabModeSync, None, None);
 }
 
-void manage_client(Window win) {
+HSClient* manage_client(Window win) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
-        return;
+        return NULL;
     }
     if (get_client_from_window(win)) {
-        return;
+        return NULL;
     }
     // init client
     XSetWindowBorderWidth(g_display, win, *g_window_border_width);
     HSClient* client = create_client();
+    client->pid = window_pid(g_display, win);
     HSMonitor* m = get_current_monitor();
     // set to window properties
     client->window = win;
@@ -160,16 +162,39 @@ void manage_client(Window win) {
     client->float_size.y = y;
     client->float_size.width = w;
     client->float_size.height = h;
+
+    // apply rules
+    HSClientChanges changes;
+    client_changes_init(&changes);
+    rules_apply(client, &changes);
+    if (changes.tag_name) {
+        client->tag = find_tag(changes.tag_name->str);
+    }
+
+    // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
     // insert to layout
-    client->tag = m->tag;
+    if (!client->tag) {
+        client->tag = m->tag;
+    }
     // get events from window
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
     window_grab_button(win);
     //mouse_grab(win);
-    frame_insert_window(m->tag->frame, win);
+    frame_insert_window(client->tag->frame, win);
+    if (changes.focus) {
+        // give focus to window if wanted
+        // TODO: make this faster!
+        // WARNING: this solution needs O(C + exp(D)) time where W is the count
+        // of clients on this tag and D is the depth of the binary layout tree
+        frame_focus_window(client->tag->frame, win);
+    }
+
     tag_set_flags_dirty();
-    monitor_apply_layout(m);
+    monitor_apply_layout(find_monitor_with_tag(client->tag));
+    client_changes_free_members(&changes);
+
+    return client;
 }
 
 void unmanage_client(Window win) {

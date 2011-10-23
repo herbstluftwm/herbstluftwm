@@ -15,6 +15,7 @@
 #include "settings.h"
 #include "hook.h"
 #include "mouse.h"
+#include "rules.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -116,6 +117,8 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "monitor_rect",   monitor_rect_command),
     CMD_BIND_NO_OUTPUT(   "pad",            monitor_set_pad_command),
     CMD_BIND_NO_OUTPUT(   "raise",          raise_command),
+    CMD_BIND_NO_OUTPUT(   "rule",           rule_add_command),
+    CMD_BIND_NO_OUTPUT(   "unrule",         rule_remove_command),
     CMD_BIND(             "layout",         print_layout_command),
     CMD_BIND(             "dump",           print_layout_command),
     CMD_BIND(             "load",           load_command),
@@ -535,6 +538,7 @@ static struct {
     { layout_init,      layout_destroy      },
     { mouse_init,       mouse_destroy       },
     { hook_init,        hook_destroy        },
+    { rules_init,       rules_destroy       },
 };
 
 /* ----------------------------- */
@@ -640,8 +644,10 @@ void maprequest(XEvent* event) {
     } else if (!get_client_from_window(mapreq->window)) {
         // client should be managed (is not ignored)
         // but is not managed yet
-        manage_client(mapreq->window);
-        XMapWindow(g_display, mapreq->window);
+        HSClient* client = manage_client(mapreq->window);
+        if (client && find_monitor_with_tag(client->tag)) {
+            XMapWindow(g_display, mapreq->window);
+        }
     }
     // else: ignore all other maprequests from windows
     // that are managed already

@@ -372,6 +372,13 @@ floating [['TAG'] on|off|toggle|status]::
     is given, floating mode is toggled. If status is given, then on or off is
     printed, depending of the floating state on 'TAG'.
 
+rule [\[--]'FLAG'|\[--]'CONDITON'|\[--]'CONSEQUENCE' ...]::
+    defines a rule which will be applied to all new clients. Its behaviour is
+    described in the <<RULES,*RULES section*>>.
+
+unrule *--all*|*-F*::
+    If --all or -F is passed, then all rules are removed.
+    (It is not possible yet to remove certain rules)
 
 [[SETTINGS]]
 SETTINGS
@@ -487,6 +494,68 @@ X-.root
 ----
 +
 Useful values for 'tree_style' are: +╾│ ├└╼─┐+ or +╾│ ├╰╼─╮+.
+
+[[RULES]]
+RULES
+-----
+
+Rules are used to change default properties for certain clients when they
+appear. Each rule matches against a certain subset of all clients and defines a
+set of properties for them (called 'CONSEQUENCES'). A rule can be defined with
+this command:
+
++rule+ [\[--]'FLAG'|\[--]'CONDITON'|\[--]'CONSEQUENCE' ...]
+
+Each rule consists of a list of 'FLAGS', 'CONDITIONS' and 'CONSEQUENCES' (each
+of them can be optionally prefixed with +--+ to provide a more
+*iptables-like*(8) feeling).
+
+If a new client
+appears, herbstluftwm tries to apply each rule to this new client as follows:
+If each 'CONDITION' of this rule matches against this client, then every
+'CONSEQUENCE' is executed. (If there are no conditions given, then this rule
+is executed for each client)
+
+Each 'CONDITION' consists of a 'property' name, a operator and a 'value'. Valid
+operators are:
+
+    * +~+ matches if client's 'property' is matched by the regex 'value'
+    * +=+ matches if client's 'properly' string is equal to 'value'
+
+Valid 'properties' are:
+
+    * +class+: the client's +WM_CLASS+
+    * +pid+: the client's process id (Warning: the pid is not available for
+      every client. This only matches if the client sets the pid to the
+      _NET_WM_PID itself)
+    * +maxage+: matches if the age of the rule mesured in seconds does not
+      exceed 'value'. This condition only can be used with the +=+ operator. If
+      maxage already is exceeded (and never will match again), then this rule is
+      removed. (With this you can build rules that only live for a certain time)
+
+Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair.
+Valid 'NAMES' are:
+
+    * +tag+: moves the client to tag 'VALUE'
+    * +focus+: decides wether the client gets the input focus on his tag.
+      'VALUE' can be *on*, *off* or *toggle*
+
+A rule's behaviour can be configured by some special 'FLAGS':
+
+    * +not+: negates the next 'CONDITION'
+    * +!+: same as +not+
+    * +once+: only apply this rule once (and delete it afterwards)
+
+Examples:
+
+    * +rule --class=Netscape --tag=6 --focus=off+ +
+        +
+        moves all Netscape instances to tag 6, but doesn't give focus to them
+
+    * +rule not class~.*[Tt]erm tag=2+ +
+        +
+        moves all clients to tag 2, if their class does not end with +term+ or
+        +Term+
 
 AUTOSTART FILE
 --------------

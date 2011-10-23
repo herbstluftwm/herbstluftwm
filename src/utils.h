@@ -12,6 +12,7 @@
 #include <X11/Xatom.h>
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
+#define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
 
 /// print a printf-like message to stderr and exit
 void die(const char *errstr, ...);
@@ -23,6 +24,7 @@ unsigned long getcolor(const char *colstr);
 
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom);
 GString* window_class_to_g_string(Display* dpy, Window window);
+int window_pid(Display* dpy, Window window);
 
 bool is_herbstluft_window(Display* dpy, Window window);
 
@@ -38,6 +40,8 @@ char** argv_duplicate(int argc, char** argv);
 void argv_free(int argc, char** argv);
 
 XRectangle parse_rectangle(char* string);
+
+void g_queue_remove_element(GQueue* queue, GList* elem);
 
 // returns the unichar in GSTR at position GSTR
 #define UTF8_STRING_AT(GSTR, OFFS) \
