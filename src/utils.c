@@ -178,3 +178,20 @@ int window_pid(Display* dpy, Window window) {
     }
 }
 
+void g_queue_remove_element(GQueue* queue, GList* elem) {
+    if (queue->length <= 0) {
+        return;
+    }
+    bool was_tail = (queue->tail == elem);
+    GList* before_elem = elem->prev;
+
+    queue->head = g_list_delete_link(queue->head, elem);
+    queue->length--;
+
+    // reset pointers
+    if (was_tail) {
+        queue->tail = before_elem;
+    }
+}
+
+

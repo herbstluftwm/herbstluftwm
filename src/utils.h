@@ -41,6 +41,8 @@ void argv_free(int argc, char** argv);
 
 XRectangle parse_rectangle(char* string);
 
+void g_queue_remove_element(GQueue* queue, GList* elem);
+
 // returns the unichar in GSTR at position GSTR
 #define UTF8_STRING_AT(GSTR, OFFS) \
     g_utf8_get_char( \

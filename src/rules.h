@@ -47,6 +47,7 @@ typedef struct {
     int             condition_count;
     HSConsequence** consequences;
     int             consequence_count;
+    bool            once;
 } HSRule;
 
 typedef struct {

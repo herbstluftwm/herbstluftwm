@@ -178,7 +178,9 @@ void consequence_destroy(HSConsequence* cons) {
 // rules parsing //
 
 HSRule* rule_create() {
-    return g_new0(HSRule, 1);
+    HSRule* rule = g_new0(HSRule, 1);
+    rule->once = false;
+    return rule;
 }
 
 void rule_destroy(HSRule* rule) {
@@ -249,8 +251,9 @@ int rule_add_command(int argc, char** argv) {
         char* name;
         bool* flag;
     } flags[] = {
-        { "not", &negated },
-        { "!",   &negated },
+        { "not",    &negated },
+        { "!",      &negated },
+        { "once",   &rule->once },
     };
 
     while (argc > 0) {
@@ -360,10 +363,17 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
                 g_consequence_types[type].
                     apply(rule->consequences[i], client, changes);
             }
+
+            if (rule->once) {
+                GList* next = cur->next;
+                g_queue_remove_element(&g_rules, cur);
+                cur = next;
+                continue;
+            }
         }
 
         // try next
-        cur = cur->next;
+        cur = cur ? cur->next : NULL;
     }
 }
 
