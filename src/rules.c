@@ -41,6 +41,8 @@ static void consequence_tag(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes);
 static void consequence_focus(HSConsequence* cons, HSClient* client,
                               HSClientChanges* changes);
+static void consequence_manage(HSConsequence* cons, HSClient* client,
+                              HSClientChanges* changes);
 
 /// GLOBALS ///
 
@@ -56,6 +58,7 @@ time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxag
 static HSConsequenceType g_consequence_types[] = {
     {   "tag",      consequence_tag },
     {   "focus",    consequence_focus },
+    {   "manage",   consequence_manage },
 };
 
 GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -352,6 +355,7 @@ int rule_remove_command(int argc, char** argv) {
 void client_changes_init(HSClientChanges* changes) {
     memset(changes, 0, sizeof(HSClientChanges));
     changes->focus = false;
+    changes->manage = true;
 }
 
 void client_changes_free_members(HSClientChanges* changes) {
@@ -493,5 +497,10 @@ void consequence_tag(HSConsequence* cons,
 void consequence_focus(HSConsequence* cons, HSClient* client,
                        HSClientChanges* changes) {
     changes->focus = string_to_bool(cons->value.str, changes->focus);
+}
+
+void consequence_manage(HSConsequence* cons, HSClient* client,
+                        HSClientChanges* changes) {
+    changes->manage = string_to_bool(cons->value.str, changes->manage);
 }
 

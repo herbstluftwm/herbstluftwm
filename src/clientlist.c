@@ -171,6 +171,14 @@ HSClient* manage_client(Window win) {
         client->tag = find_tag(changes.tag_name->str);
     }
 
+    if (!changes.manage) {
+        client_changes_free_members(&changes);
+        destroy_client(client);
+        // map it... just to be sure
+        XMapWindow(g_display, win);
+        return NULL;
+    }
+
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
     // insert to layout

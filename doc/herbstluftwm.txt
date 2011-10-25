@@ -538,7 +538,9 @@ Valid 'NAMES' are:
 
     * +tag+: moves the client to tag 'VALUE'
     * +focus+: decides wether the client gets the input focus on his tag.
-      'VALUE' can be *on*, *off* or *toggle*
+      The default is *off*.  'VALUE' can be *on*, *off* or *toggle*.
+    * +manage+: decides wether the client will be managed or not. The default is
+      *on*. 'VALUE' can be *on*, *off* or *toggle*.
 
 A rule's behaviour can be configured by some special 'FLAGS':
 

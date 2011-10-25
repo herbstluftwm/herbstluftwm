@@ -54,6 +54,7 @@ typedef struct {
 typedef struct {
     GString*        tag_name;
     bool            focus; // if client should get focus
+    bool            manage; // wether we should manage it
 } HSClientChanges;
 
 void rules_init();
