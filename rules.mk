@@ -17,7 +17,7 @@ rb: clean all
 
 $(TARGET): $(OBJ)
 	$(call colorecho,LD,$(TARGET))
-	@$(LD) -o $@ $(LDFLAGS)  $(OBJ)
+	@$(LD) -o $@ $(LDFLAGS)  $(OBJ) $(LIBS)
 
 $(SRCDIR)/%.o: $(SRCDIR)/%.c $(HEADER)
 	$(call colorecho,CC,$<)
