@@ -36,8 +36,8 @@ clean-herbstclient:
 
 doc: doc/herbstclient.1 doc/herbstclient.html doc/herbstluftwm.1 doc/herbstluftwm.html
 
-tar:
-	tar -czf $(TARFILE) `git ls-files`
+tar: doc
+	tar -czf $(TARFILE) `git ls-files` doc/*.html doc/*.[0-9]
 
 doc/%.1: doc/%.txt
 	$(call colorecho,DOC,$@)
