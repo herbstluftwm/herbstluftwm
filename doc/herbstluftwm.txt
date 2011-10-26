@@ -507,8 +507,8 @@ this command:
 +rule+ [\[--]'FLAG'|\[--]'CONDITON'|\[--]'CONSEQUENCE' ...]
 
 Each rule consists of a list of 'FLAGS', 'CONDITIONS' and 'CONSEQUENCES' (each
-of them can be optionally prefixed with +--+ to provide a more
-*iptables-like*(8) feeling).
+of them can be optionally prefixed with two dashes (+--+) to provide a more
+*iptables*(8)-like feeling).
 
 If a new client
 appears, herbstluftwm tries to apply each rule to this new client as follows:
