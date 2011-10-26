@@ -23,10 +23,27 @@ or join the IRC channel:
     #herbstluftwm on irc.freenode.net
 
 ==== Steps with installing ====
+If you are using a system with a package manager, then install it via the
+package manager of your distribution! If you are not allowed to install
+software, then contact your system administrator.
+
+You only need to install it manually if you do not like package managers or if
+you are creating a package for your distribution.
+
+The compilation and installation is configured by the following make-variables
+in config.mk:
+
+INSTALLDIR = / # the path to your root-directory
+PREFIX = $(INSTALLDIR)/usr/ # the prefix
+ETCDIR = $(INSTALLDIR)/etc/ # path to etc directory
+
+Normally you should build it with INSTALLDIR=/ and install it with
+INSTALLDIR=./path/to/fakeroot if you are building a package.
+
 # as user
-make
+make INSTALLDIR=/
 # as root
-make PREFIX=/usr ETCDIR=/etc install
+make INSTALLDIR=./build/ install
 # as user
 mkdir -p ~/.config/herbstluftwm/
 cp /etc/xdg/herbstluftwm/autostart ~/.config/herbstluftwm/autostart

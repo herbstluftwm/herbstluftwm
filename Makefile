@@ -48,7 +48,7 @@ doc/%.html: doc/%.txt
 	@asciidoc $<
 
 install: all
-	@echo creating dirs...
+	@echo "==> creating dirs..."
 	mkdir -p $(PREFIX)
 	mkdir -p $(LICENSEDIR)
 	mkdir -p $(BINDIR)
@@ -59,7 +59,7 @@ install: all
 	mkdir -p $(ETCDIR)/bash_completion.d/
 	mkdir -p $(CONFIGDIR)
 	mkdir -p $(ZSHCOMPLETIONDIR)
-	@echo copyiing files...
+	@echo "==> copyiing files..."
 	install $(TARGET) $(BINDIR)
 	install ipc-client/herbstclient $(BINDIR)/
 	install -m 644 LICENSE $(LICENSEDIR)
