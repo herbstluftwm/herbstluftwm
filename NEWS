@@ -10,6 +10,7 @@ Small bugfixes and major features:
     * let panel.sh fork less often
     * set clients to fullscreen (without EWMH yet!)
     * new client layouting algorithm: grid layout
+    * new command: pseudotile (tile client but keep its floating size)
     * client rules with:
 
         - conditon: class
@@ -21,6 +22,9 @@ Small bugfixes and major features:
         - flag: not (negation of conditions)
         - consequence: tag
         - consequence: focus
+        - consequence: index (where to insert a new client in layout tree)
+        - consequence: pseudotile
+        - consequence: manage (wether window will be maanged)
 
 
 Release 0.1 on 2011-10-02
