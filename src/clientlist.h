@@ -23,6 +23,7 @@ typedef struct HSClient {
     XRectangle  float_size;
     bool        urgent;
     bool        fullscreen;
+    bool        pseudotile; // only move client but don't resize (if possible)
     int         pid;
 } HSClient;
 
@@ -60,7 +61,9 @@ void client_update_wm_hints(HSClient* client);
 int window_close_current();
 
 void client_set_fullscreen(HSClient* client, bool state);
-int client_set_fullscreen_command(int argc, char** argv);
+void client_set_pseudotile(HSClient* client, bool state);
+// sets a client property, depending on argv[0]
+int client_set_property_command(int argc, char** argv);
 bool is_window_class_ignored(char* window_class);
 bool is_window_ignored(Window win);
 

@@ -383,6 +383,12 @@ unrule *--all*|*-F*::
 fullscreen *on*|*off*|*toggle*::
     sets or toggles the fullscreen state of the focused client.
 
+pseudotile *on*|*off*|*toggle*::
+    sets or toggles the pseudotile state of the focused client. If a client is
+    pseudotiled, then in tiling mode the client is only moved but not resized -
+    the client size will stay the floating size. The only reason to resize the
+    client is to ensure, that it fits into its tile.
+
 [[SETTINGS]]
 SETTINGS
 --------

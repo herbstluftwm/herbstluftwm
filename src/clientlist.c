@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <regex.h>
 #include <stdbool.h>
+#include <string.h>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -49,6 +50,7 @@ static HSClient* create_client() {
     hc->float_size.height = 100;
     hc->urgent = false;
     hc->fullscreen = false;
+    hc->pseudotile = false;
     return hc;
 }
 
@@ -293,14 +295,26 @@ void client_resize(HSClient* client, XRectangle rect) {
         return;
     }
     Window win = client->window;
+    if (client) {
+        if (client->pseudotile) {
+            XRectangle size = client->float_size;
+            // ensure size is not larger than rect-tile
+            size.width = MIN(size.width, rect.width);
+            size.height = MIN(size.height, rect.height);
+
+            // center it
+            rect.x = rect.x + rect.width/2 - size.width/2;
+            rect.y = rect.y + rect.height/2 - size.height/2;
+            rect.width = size.width;
+            rect.height = size.height;
+        }
+        if (RECTANGLE_EQUALS(client->last_size, rect)) return;
+        client->last_size = rect;
+    }
     // apply border width
     rect.width -= *g_window_border_width * 2;
     rect.height -= *g_window_border_width * 2;
     XSetWindowBorderWidth(g_display, win, *g_window_border_width);
-    if (client) {
-        if (RECTANGLE_EQUALS(client->last_size, rect)) return;
-        client->last_size = rect;
-    }
     XMoveResizeWindow(g_display, win, rect.x, rect.y, rect.width, rect.height);
     //// send new size to client
     //// WHY SHOULD I? -> faster? only one call?
@@ -476,7 +490,12 @@ void client_set_fullscreen(HSClient* client, bool state) {
     monitor_apply_layout(get_current_monitor());
 }
 
-int client_set_fullscreen_command(int argc, char** argv) {
+void client_set_pseudotile(HSClient* client, bool state) {
+    client->pseudotile = state;
+    monitor_apply_layout(get_current_monitor());
+}
+
+int client_set_property_command(int argc, char** argv) {
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -486,8 +505,30 @@ int client_set_fullscreen_command(int argc, char** argv) {
         // nothing to do
         return 0;
     }
-    bool state = string_to_bool(argv[1], client->fullscreen);
-    client_set_fullscreen(client, state);
+
+    struct {
+        char* name;
+        void (*func)(HSClient*, bool);
+        bool* value;
+    } properties[] = {
+        { "fullscreen",   client_set_fullscreen, &client->fullscreen    },
+        { "pseudotile",   client_set_pseudotile, &client->pseudotile    },
+    };
+
+    // find the property
+    int i;
+    for  (i = 0; i < LENGTH(properties); i++) {
+        if (!strcmp(properties[i].name, argv[0])) {
+            break;
+        }
+    }
+    if (i >= LENGTH(properties)) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    // if found, then change it
+    bool state = string_to_bool(argv[1], *(properties[i].value));
+    properties[i].func(client, state);
     return 0;
 }
 
