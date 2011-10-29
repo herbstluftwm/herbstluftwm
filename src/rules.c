@@ -43,6 +43,8 @@ static void consequence_focus(HSConsequence* cons, HSClient* client,
                               HSClientChanges* changes);
 static void consequence_manage(HSConsequence* cons, HSClient* client,
                               HSClientChanges* changes);
+static void consequence_position(HSConsequence* cons, HSClient* client,
+                                 HSClientChanges* changes);
 
 /// GLOBALS ///
 
@@ -57,6 +59,7 @@ time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxag
 
 static HSConsequenceType g_consequence_types[] = {
     {   "tag",      consequence_tag },
+    {   "position", consequence_position },
     {   "focus",    consequence_focus },
     {   "manage",   consequence_manage },
 };
@@ -354,6 +357,7 @@ int rule_remove_command(int argc, char** argv) {
 // rules applying //
 void client_changes_init(HSClientChanges* changes) {
     memset(changes, 0, sizeof(HSClientChanges));
+    changes->tree_position = g_string_new("");
     changes->focus = false;
     changes->manage = true;
 }
@@ -362,6 +366,9 @@ void client_changes_free_members(HSClientChanges* changes) {
     if (!changes) return;
     if (changes->tag_name) {
         g_string_free(changes->tag_name, true);
+    }
+    if (changes->tree_position) {
+        g_string_free(changes->tree_position, true);
     }
 }
 
@@ -502,5 +509,10 @@ void consequence_focus(HSConsequence* cons, HSClient* client,
 void consequence_manage(HSConsequence* cons, HSClient* client,
                         HSClientChanges* changes) {
     changes->manage = string_to_bool(cons->value.str, changes->manage);
+}
+
+void consequence_position(HSConsequence* cons, HSClient* client,
+                               HSClientChanges* changes) {
+    changes->tree_position = g_string_assign(changes->tree_position, cons->value.str);
 }
 

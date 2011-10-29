@@ -189,7 +189,7 @@ HSClient* manage_client(Window win) {
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
     window_grab_button(win);
     //mouse_grab(win);
-    frame_insert_window(client->tag->frame, win);
+    frame_insert_window_at_index(client->tag->frame, win, changes.tree_position->str);
     if (changes.focus) {
         // give focus to window if wanted
         // TODO: make this faster!

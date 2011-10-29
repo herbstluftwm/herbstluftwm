@@ -115,6 +115,7 @@ void layout_destroy();
 // for frames
 HSFrame* frame_create_empty();
 void frame_insert_window(HSFrame* frame, Window window);
+void frame_insert_window_at_index(HSFrame* frame, Window window, char* index);
 HSFrame* frame_current_selection();
 // removes window from a frame/subframes
 // returns true, if window was found. else: false

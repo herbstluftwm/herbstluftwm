@@ -165,6 +165,32 @@ void frame_insert_window(HSFrame* frame, Window window) {
     }
 }
 
+void frame_insert_window_at_index(HSFrame* frame, Window window, char* index) {
+    if (!index || index[0] == '\0') {
+        frame_insert_window(frame, window);
+    }
+    else if (frame->type == TYPE_CLIENTS) {
+        frame_insert_window(frame, window);
+    } else { /* frame->type == TYPE_FRAMES */
+        HSLayout* layout = &frame->content.layout;
+        HSFrame* frame;
+        switch (index[0]) {
+            case '0': frame = layout->a; break;
+            case '1': frame = layout->b; break;
+            /* opposite selection */
+            case '/': frame = (layout->selection == 0)
+                                ?  layout->b
+                                :  layout->a; break;
+            /* else just follow selection */
+            case '.':
+            default:  frame = (layout->selection == 0)
+                                ?  layout->a
+                                : layout->b; break;
+        }
+        frame_insert_window_at_index(frame, window, index + 1);
+    }
+}
+
 bool frame_remove_window(HSFrame* frame, Window window) {
     if (frame->type == TYPE_CLIENTS) {
         Window* buf = frame->content.clients.buf;
