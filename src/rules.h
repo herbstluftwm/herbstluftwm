@@ -53,7 +53,7 @@ typedef struct {
 
 typedef struct {
     GString*        tag_name;
-    GString*        tree_position;
+    GString*        tree_index;
     bool            focus; // if client should get focus
     bool            manage; // wether we should manage it
 } HSClientChanges;

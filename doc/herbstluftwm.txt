@@ -550,9 +550,9 @@ Valid 'NAMES' are:
       The default is *off*.  'VALUE' can be *on*, *off* or *toggle*.
     * +manage+: decides wether the client will be managed or not. The default is
       *on*. 'VALUE' can be *on*, *off* or *toggle*.
-    * +position+: moves the window to a specified position/index in the tree.
-      'VALUE' contains of a list of characters; each of them decides in which
-      subtree the window is inserted.
+    * +index+: moves the window to a specified index in the tree. 'VALUE'
+      contains of a list of characters; each of them decides in which subtree
+      the window is inserted.
 
         ** +0+: insert it in the first subtree
         ** +1+: insert it in the second subtree
@@ -579,7 +579,7 @@ Examples:
         moves all clients to tag 2, if their class does not end with +term+ or
         +Term+
 
-    * +rule class=Thunderbird position=/0+
+    * +rule class=Thunderbird index=/0+
         +
         Insert all Thunderbird instances in the tree that has no focus and there
         in the first child.
