@@ -380,6 +380,9 @@ unrule *--all*|*-F*::
     If --all or -F is passed, then all rules are removed.
     (It is not possible yet to remove certain rules)
 
+fullscreen *on*|*off*|*toggle*::
+    sets or toggles the fullscreen state of the focused client.
+
 [[SETTINGS]]
 SETTINGS
 --------
