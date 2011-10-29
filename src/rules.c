@@ -45,6 +45,8 @@ static void consequence_manage(HSConsequence* cons, HSClient* client,
                               HSClientChanges* changes);
 static void consequence_position(HSConsequence* cons, HSClient* client,
                                  HSClientChanges* changes);
+static void consequence_pseudotile(HSConsequence* cons, HSClient* client,
+                                   HSClientChanges* changes);
 
 /// GLOBALS ///
 
@@ -58,10 +60,11 @@ int     g_maxage_type; // index of "maxage"
 time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
 
 static HSConsequenceType g_consequence_types[] = {
-    {   "tag",      consequence_tag },
-    {   "position", consequence_position },
-    {   "focus",    consequence_focus },
-    {   "manage",   consequence_manage },
+    {   "tag",          consequence_tag },
+    {   "position",     consequence_position },
+    {   "focus",        consequence_focus },
+    {   "manage",       consequence_manage },
+    {   "pseudotile",   consequence_pseudotile },
 };
 
 GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -514,5 +517,10 @@ void consequence_manage(HSConsequence* cons, HSClient* client,
 void consequence_position(HSConsequence* cons, HSClient* client,
                                HSClientChanges* changes) {
     changes->tree_position = g_string_assign(changes->tree_position, cons->value.str);
+}
+
+void consequence_pseudotile(HSConsequence* cons, HSClient* client,
+                            HSClientChanges* changes) {
+    client->pseudotile = string_to_bool(cons->value.str, client->pseudotile);
 }
 
