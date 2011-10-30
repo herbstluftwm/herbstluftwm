@@ -148,7 +148,6 @@ HSClient* manage_client(Window win) {
         return NULL;
     }
     // init client
-    XSetWindowBorderWidth(g_display, win, *g_window_border_width);
     HSClient* client = create_client();
     client->pid = window_pid(g_display, win);
     HSMonitor* m = get_current_monitor();
@@ -183,6 +182,7 @@ HSClient* manage_client(Window win) {
 
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
+    XSetWindowBorderWidth(g_display, win, *g_window_border_width);
     // insert to layout
     if (!client->tag) {
         client->tag = m->tag;
