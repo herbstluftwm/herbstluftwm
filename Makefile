@@ -41,11 +41,11 @@ tar: doc
 
 doc/%.1: doc/%.txt
 	$(call colorecho,DOC,$@)
-	@a2x -f manpage -a "herbstluftwmversion=herbstluftwm $(VERSION)" -a "date=`date +%Y-%m-%d`" $<
+	@$(A2X) -f manpage -a "herbstluftwmversion=herbstluftwm $(VERSION)" -a "date=`date +%Y-%m-%d`" $<
 
 doc/%.html: doc/%.txt
 	$(call colorecho,DOC,$@)
-	@asciidoc $<
+	@$(ASCIIDOC) $<
 
 install: all
 	@echo "==> creating dirs..."
