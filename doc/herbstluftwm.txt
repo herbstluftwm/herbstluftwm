@@ -350,7 +350,7 @@ complete 'POSITION' ['COMMAND' 'ARGS ...']::
           prints all settings beginning with fra that can be toggled
 
 emit_hook 'ARGS ...'::
-    emits specified hook to all idling herbstclients.
+    emits a custom hook to all idling herbstclients.
 
 tag_status ['MONITOR']::
     print a tab separated list of all tags for specified 'MONITOR' index. If no
@@ -618,6 +618,13 @@ tag_removed 'TAG'::
 
 urgent [on|off] 'WINID'::
     the urgent state of client with given 'WINID' has been changed to [on|off].
+
+There are also other usefull hooks, which never will be emitted by herbstluftwm
+itself, but which can be emited with the *emit_hook* command:
+
+quit_panel::
+    tells a panel to quit. The default panel.sh quits on this hook. Many
+    scripts are using this hook.
 
 ENVIRONTMENT VARIABLES
 ----------------------
