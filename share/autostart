@@ -23,8 +23,11 @@ TAG_KEYS=( {1..9} 0 )
 hc rename default "${TAG_NAMES[0]}" || true
 for i in ${!TAG_NAMES[@]} ; do
     hc add "${TAG_NAMES[$i]}"
-    hc keybind "$Mod-${TAG_KEYS[$i]}" use "${TAG_NAMES[$i]}"
-    hc keybind "$Mod-Shift-${TAG_KEYS[$i]}" move "${TAG_NAMES[$i]}"
+    key="${TAG_KEYS[$i]}"
+    if ! [ -z "$key" ] ; then
+        hc keybind "$Mod-$key" use "${TAG_NAMES[$i]}"
+        hc keybind "$Mod-Shift-$key" move "${TAG_NAMES[$i]}"
+    fi
 done
 
 # layouting
