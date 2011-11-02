@@ -35,12 +35,15 @@ The basic tiling concept is, that the layout is represented by a binary tree. On
 startup you see one big frame across the entire screen. A frame fulfills
 exactly one of the following conditions:
 
+[[LIST_LAYOUT_ALGORITHMS]]
     . Frame contains windows: +
-        It shows some clients and arranges them next to each other. The
-        current layout algorithms are:
+        It shows some clients and arranges them. The current layout algorithms
+        are:
 
-        * Vertical ('frame_layout' = 0)
-        * Horizontal ('frame_layout' = 1)
+        * 0: 'vertical' - clients are placed below each other
+        * 1: 'horizontal' - clients are placed next to each other
+        * 2: 'max' - all clients are maximized in this frame
+        * 4: 'grid' - clients are arranged in an almost quadratic grid
 
     . Frame is split into subframes: +
         It is split into exactly two *subframes* in a configurable 'fraction'
@@ -449,12 +452,9 @@ always_show_frame (Integer)::
     windows in it are displayed.
 
 default_frame_layout (Integer)::
-    sets the frame layout, if a new frame is created (by split or on a new tag).
-
-        * 0 means vertical
-        * 1 means horizontal
-        * 2 means max
-        * 3 means grid
+    index of the frame layout, which is used if a new frame is created (by split
+    or on a new tag). For a list of valid indizes and their meanings, check the
+    <<LIST_LAYOUT_ALGORITHMS,list of layout algorithms above>>.
 
 default_direction_external_only (Integer)::
     this setting controls the behaviour of focus and shift if no '-e' or '-i'
