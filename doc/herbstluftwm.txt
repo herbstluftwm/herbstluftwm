@@ -372,7 +372,7 @@ floating [['TAG'] on|off|toggle|status]::
     is given, floating mode is toggled. If status is given, then on or off is
     printed, depending of the floating state on 'TAG'.
 
-rule [\[--]'FLAG'|\[--]'CONDITON'|\[--]'CONSEQUENCE' ...]::
+rule [\[--]'FLAG'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]::
     defines a rule which will be applied to all new clients. Its behaviour is
     described in the <<RULES,*RULES section*>>.
 
@@ -405,7 +405,7 @@ snap_distance (Integer)::
     if the distance between them is smaller then snap_distance.
 
 snap_gap (Integer)::
-    specifies the remainig gap if a dragged client snaps to an edge in floating
+    specifies the remaining gap if a dragged client snaps to an edge in floating
     mode. If snap_gap is set to 0, no gap will remain.
 
 frame_border_active_color (String/Color)::
@@ -513,7 +513,7 @@ appear. Each rule matches against a certain subset of all clients and defines a
 set of properties for them (called 'CONSEQUENCES'). A rule can be defined with
 this command:
 
-+rule+ [\[--]'FLAG'|\[--]'CONDITON'|\[--]'CONSEQUENCE' ...]
++rule+ [\[--]'FLAG'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]
 
 Each rule consists of a list of 'FLAGS', 'CONDITIONS' and 'CONSEQUENCES' (each
 of them can be optionally prefixed with two dashes (+--+) to provide a more
@@ -537,7 +537,7 @@ Valid 'properties' are:
     * +pid+: the client's process id (Warning: the pid is not available for
       every client. This only matches if the client sets the pid to the
       _NET_WM_PID itself)
-    * +maxage+: matches if the age of the rule mesured in seconds does not
+    * +maxage+: matches if the age of the rule measured in seconds does not
       exceed 'value'. This condition only can be used with the +=+ operator. If
       maxage already is exceeded (and never will match again), then this rule is
       removed. (With this you can build rules that only live for a certain time)
@@ -546,9 +546,9 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair.
 Valid 'NAMES' are:
 
     * +tag+: moves the client to tag 'VALUE'
-    * +focus+: decides wether the client gets the input focus on his tag.
+    * +focus+: decides whether the client gets the input focus on his tag.
       The default is *off*.  'VALUE' can be *on*, *off* or *toggle*.
-    * +manage+: decides wether the client will be managed or not. The default is
+    * +manage+: decides whether the client will be managed or not. The default is
       *on*. 'VALUE' can be *on*, *off* or *toggle*.
     * +index+: moves the window to a specified index in the tree. 'VALUE'
       contains of a list of characters; each of them decides in which subtree
@@ -619,15 +619,15 @@ tag_removed 'TAG'::
 urgent [on|off] 'WINID'::
     the urgent state of client with given 'WINID' has been changed to [on|off].
 
-There are also other usefull hooks, which never will be emitted by herbstluftwm
-itself, but which can be emited with the *emit_hook* command:
+There are also other useful hooks, which never will be emitted by herbstluftwm
+itself, but which can be emitted with the *emit_hook* command:
 
 quit_panel::
     tells a panel to quit. The default panel.sh quits on this hook. Many
     scripts are using this hook.
 
-ENVIRONTMENT VARIABLES
-----------------------
+ENVIRONMENT VARIABLES
+---------------------
 DISPLAY::
     specifies the 'DISPLAY' to use.
 

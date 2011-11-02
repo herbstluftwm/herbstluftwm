@@ -24,7 +24,7 @@ Small bugfixes and major features:
         - consequence: focus
         - consequence: index (where to insert a new client in layout tree)
         - consequence: pseudotile
-        - consequence: manage (wether window will be maanged)
+        - consequence: manage (whether window will be managed)
 
 
 Release 0.1 on 2011-10-02

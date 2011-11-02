@@ -49,8 +49,8 @@ OPTIONS
     do not print error messages if herbstclient cannot connect to the running
     herbstluftwm instance.
 
-ENVIRONTMENT VARIABLES
-----------------------
+ENVIRONMENT VARIABLES
+---------------------
 DISPLAY::
     specifies the 'DISPLAY' to use, e.g. where *herbstluftwm*(1) is running.
 
