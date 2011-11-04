@@ -35,6 +35,7 @@ static int find_condition_type(char* name);
 static int find_consequence_type(char* name);
 static bool condition_string(HSCondition* rule, char* string);
 static bool condition_class(HSCondition* rule, HSClient* client);
+static bool condition_instance(HSCondition* rule, HSClient* client);
 static bool condition_pid(HSCondition* rule, HSClient* client);
 static bool condition_maxage(HSCondition* rule, HSClient* client);
 static void consequence_tag(HSConsequence* cons, HSClient* client,
@@ -52,6 +53,7 @@ static void consequence_pseudotile(HSConsequence* cons, HSClient* client,
 
 static HSConditionType g_condition_types[] = {
     {   "class",    condition_class },
+    {   "instance", condition_instance },
     {   "pid",      condition_pid },
     {   "maxage",   condition_maxage },
 };
@@ -473,6 +475,14 @@ bool condition_class(HSCondition* rule, HSClient* client) {
     g_string_free(window_class, true);
     return match;
 }
+
+bool condition_instance(HSCondition* rule, HSClient* client) {
+    GString* inst = window_instance_to_g_string(g_display, client->window);
+    bool match = condition_string(rule, inst->str);
+    g_string_free(inst, true);
+    return match;
+}
+
 
 bool condition_pid(HSCondition* rule, HSClient* client) {
     if (client->pid < 0) {

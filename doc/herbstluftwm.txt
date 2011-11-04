@@ -533,7 +533,8 @@ operators are:
 
 Valid 'properties' are:
 
-    * +class+: the client's +WM_CLASS+
+    * +instance+: the first entry in client's +WM_CLASS+
+    * +class+: the second entry in client's +WM_CLASS+
     * +pid+: the client's process id (Warning: the pid is not available for
       every client. This only matches if the client sets the pid to the
       _NET_WM_PID itself)

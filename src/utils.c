@@ -83,6 +83,18 @@ GString* window_class_to_g_string(Display* dpy, Window window) {
     return string;
 }
 
+GString* window_instance_to_g_string(Display* dpy, Window window) {
+    XClassHint hint;
+    if (0 == XGetClassHint(dpy, window, &hint)) {
+        return g_string_new("");
+    }
+    GString* string = g_string_new(hint.res_name ? hint.res_name : "");
+    if (hint.res_name) XFree(hint.res_name);
+    if (hint.res_class) XFree(hint.res_class);
+    return string;
+}
+
+
 bool is_herbstluft_window(Display* dpy, Window window) {
     GString* string = window_class_to_g_string(dpy, window);
     bool result;
