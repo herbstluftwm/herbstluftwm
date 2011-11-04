@@ -256,7 +256,10 @@ void window_focus(Window window) {
     //XUngrabButton(g_display, AnyButton, AnyModifier, window);
     // set keyboardfocus
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
-    if (*g_raise_on_focus) {
+    bool is_max_layout = frame_focused_window(g_cur_frame) == window
+                         && g_cur_frame->content.clients.layout == LAYOUT_MAX
+                         && get_current_monitor()->tag->floating == false;
+    if (*g_raise_on_focus || is_max_layout) {
         XRaiseWindow(g_display, window);
     }
     //mouse_grab(window);
