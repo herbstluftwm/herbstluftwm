@@ -52,7 +52,7 @@ GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
             atom, offset, bufsize, False,
             ATOM("UTF8_STRING"), &type, &format,
             &items, &bytes, (unsigned char**)&buf);
-        if (status != Success) {
+        if (status != Success || format != 8) {
             parse_error_occured = true;
             break; // then stop parsing
         } else {
