@@ -60,7 +60,7 @@ Q: Why don't new clients get the focus?::
 +
 ----
 hc unrule --all      # clear rules
-hc rule focus=on     # focus new clients by default </pre>
+hc rule focus=on     # focus new clients by default
 ----
 +
 Warning: you need the current git version to get rules!
@@ -71,15 +71,16 @@ Q: herbstclient is too long to type it in the shell::
     installing herbstluftwm, add this to your .bashrc:
 +
 ----
-source /etc/bash_completion.d/herbstclient-completion</pre>
+source /etc/bash_completion.d/herbstclient-completion
 ----
 +
 (The tab-completion in zsh works out of the box with most zsh-configurations).
 +
 You also can add an alias for herbstclient:
-   <pre class="codeblock">
++
+----
 alias hc='herbstclient'
-</pre>
+----
 
 Q: My rules seem to be messed up::
     Clear them with +hc unrule -F+ and start over. It is recommended to do this
@@ -90,7 +91,7 @@ Q: I don't like that my mplayervideo/inputdialogs get resized to full framesize:
 Add this to your autostartfile:
 +
 ----
-hc rule instance=<i>&lt;instancename&gt;</i> pseudotile=on</pre>
+hc rule instance=<instance> pseudotile=on
 ----
 +
 You can request the instancename with xprop by clicking on the related window.
