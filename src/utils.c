@@ -33,8 +33,10 @@ void die(const char *errstr, ...) {
 unsigned long getcolor(const char *colstr) {
     Colormap cmap = DefaultColormap(g_display, g_screen);
     XColor color;
-    if(!XAllocNamedColor(g_display, cmap, colstr, &color, &color))
-        die("error, cannot allocate color '%s'\n", colstr);
+    if(!XAllocNamedColor(g_display, cmap, colstr, &color, &color)) {
+        g_warning("error, cannot allocate color '%s'\n", colstr);
+        return 0;
+    }
     return color.pixel;
 }
 
