@@ -66,6 +66,17 @@
    and so on. If a keybind is registred and its key is pressed, the according
    (internal) command directly is called.
 
+   <h2>Why don't new clients get the focus?</h2>
+   Because of the default behaviour of the <span class="code">focus</span>
+   consequence in the rules. You can change it by adding this to the <a
+   href="herbstluftwm.html#RULES">rules</a> section in the autostart file:
+
+   <pre class="codeblock">
+hc unrule --all      # clear rules
+hc rule focus=on     # focus new clients by default </pre>
+
+    Warning: you need the current git version to get rules!
+
 
 
    <h1 id="doc">Documentation</h1>
