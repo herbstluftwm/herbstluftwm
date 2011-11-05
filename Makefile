@@ -11,6 +11,7 @@ TARGET = herbstluftwm
 HERBSTCLIENTDOC = doc/herbstclient.txt
 HERBSTLUFTWMDOC = doc/herbstluftwm.txt
 
+include colors.mk
 include rules.mk
 
 all: build-herbstclient doc

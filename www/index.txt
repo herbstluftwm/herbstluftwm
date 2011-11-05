@@ -1,5 +1,7 @@
 Herbstluftwm
 ============
+:linkcss:
+:stylesdir: ./
 
 What is it?
 -----------

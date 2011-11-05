@@ -9,5 +9,6 @@ HEADER = $(wildcard $(SRCDIR)/*.h) ../src/ipc-protocol.h
 OBJ = ${SRC:.c=.o}
 TARGET = herbstclient
 
+include ../colors.mk
 include ../rules.mk
 
