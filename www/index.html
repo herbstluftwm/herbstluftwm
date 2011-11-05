@@ -55,7 +55,16 @@
     </div>
 
 
-   <h1 id="faq">FAQ</h1>
+   <h1 id="faq">Hints and FAQ</h1>
+
+   <h2>Hint: Use the forc^H^H^H^Hscripts</h2>
+   There are a bunch of scripts coming along with herbstluftwm. Check out the
+   scripts directory in the sources and the examples directory after installing.
+
+   <h2>Hint: Don't restart</h2>
+   To make configchanges take effect immediately, just type <span
+   class="code">herbstclient reload</span>. No need to restart hlwm/X.
+
    <h2>Why is herbstluftwm called herbstluftwm?</h2>
    I liked the name of the e-mail client wanderlust. Unfortunately I am a happy
    mutt user, so I needed an other application with a similar name.
@@ -76,6 +85,48 @@ hc unrule --all      # clear rules
 hc rule focus=on     # focus new clients by default </pre>
 
     Warning: you need the current git version to get rules!
+
+    <h2>herbstclient is too long to type it in the shell</h2>
+    Use tab-completion! <span class="code">her&lt;tab&gt;c&lt;tab&gt;</span>
+    expands to herbstclient. There is also a tab-completion for the parameters
+    for herbstclient. After installing herbstluftwm, add this to your .bashrc:
+
+   <pre class="codeblock">
+source /etc/bash_completion.d/herbstclient-completion</pre>
+    (The tab-completion in zsh works out of the box with most
+    zsh-configurations).
+<br/>
+<br/>
+    You also can add an alias for herbstclient:
+   <pre class="codeblock">
+alias hc='herbstclient'
+</pre>
+
+    <h2>My rules seem to be messed up</h2>
+    Clear them with <span class="code">hc unrule -F</span> and start over. It is
+    recommended to do this in the autostartfile.
+
+    <h2>I don't like that my mplayervideo/inputdialogs get resized to full
+    framesize</h2>
+
+    Add this to your autostartfile:
+    <pre class="codeblock">
+hc rule instance=<i>&lt;instancename&gt;</i> pseudotile=on</pre>
+
+    You can request the instancename with xprop by clicking on the related window.
+    <span class="code"><i>&lt;instancename&gt;</i></span> is the first string in the
+    line <span class="code">WM_CLASS(STRING)</span> (for mplayer that would be <span
+    class="code">xv</span>, for firefox dialogs it is <span
+    class="code">Dialog</span>).
+
+    <h2>I set default_frame_layout to my favorite layout but it doesn't work
+    with the root frame/existing frames</h2>
+
+    Existing tags are not affected by a change of that variable (only new ones),
+    so be sure to set it <b>before</b> creating any tags. A current workaround
+    is, putting <span class="code">hc split vertical 0.5; hc remove</span> at
+    the end in your autostartfile.  You can also 'cycle_layout' in existing
+    tags.
 
 
 
