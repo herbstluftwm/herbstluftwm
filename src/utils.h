@@ -31,6 +31,9 @@ bool is_herbstluft_window(Display* dpy, Window window);
 
 bool is_window_mapable(Display* dpy, Window window);
 bool is_window_mapped(Display* dpy, Window window);
+
+bool window_has_property(Display* dpy, Window window, char* prop_name);
+
 bool string_to_bool(char* string, bool oldvalue);
 
 char* strlasttoken(char* str, char* delim);

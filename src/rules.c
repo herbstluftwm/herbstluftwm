@@ -38,6 +38,7 @@ static bool condition_class(HSCondition* rule, HSClient* client);
 static bool condition_instance(HSCondition* rule, HSClient* client);
 static bool condition_pid(HSCondition* rule, HSClient* client);
 static bool condition_maxage(HSCondition* rule, HSClient* client);
+static bool condition_windowtype(HSCondition* rule, HSClient* client);
 static void consequence_tag(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes);
 static void consequence_focus(HSConsequence* cons, HSClient* client,
@@ -56,6 +57,7 @@ static HSConditionType g_condition_types[] = {
     {   "instance", condition_instance },
     {   "pid",      condition_pid },
     {   "maxage",   condition_maxage },
+    {   "windowtype", condition_windowtype },
 };
 
 int     g_maxage_type; // index of "maxage"
@@ -503,6 +505,82 @@ bool condition_maxage(HSCondition* rule, HSClient* client) {
     time_t diff = cur.tv_sec - g_current_rule_birth_time;
     return (rule->value.integer >= diff);
 }
+
+bool condition_windowtype(HSCondition* rule, HSClient* client) {
+    // that only works for atom-type utf8-string, _NET_WM_WINDOW_TYPE is int
+    //  GString* wintype=
+    //      window_property_to_g_string(g_display, client->window, wintype_atom);
+    // =>
+    // kinda duplicate from src/utils.c:window_properties_to_g_string()
+    // using different xatom type, and only calling XGetWindowProperty
+    // once, because we are sure we only need four bytes
+    long bufsize = 10;
+    char *buf;
+    Atom type_ret, wintype;
+    int format;
+    unsigned long items, bytes_left;
+    long offset = 0;
+
+    int status = XGetWindowProperty(
+            g_display,
+            client->window,
+            ATOM("_NET_WM_WINDOW_TYPE"),
+            offset,
+            bufsize,
+            False,
+            ATOM("ATOM"),
+            &type_ret,
+            &format,
+            &items,
+            &bytes_left,
+            (unsigned char**)&buf
+            );
+    // we only need precisely four bytes (one Atom)
+    // if there are bytes left, something went wrong
+    if(status != Success || bytes_left > 0 || items < 1 || buf == NULL) {
+        return false;
+    } else {
+        wintype= *(Atom *)buf;
+        XFree(buf);
+    }
+
+
+    // now we have windowtype, check if it matches anything
+    // "thorsten` | dario: you also can leave the if-cascade as and
+    // temporary workaround until i make an ewmh-module"
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_DESKTOP"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_DESKTOP");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_DOCK"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_DOCK");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_TOOLBAR"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_TOOLBAR");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_MENU"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_MENU");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_UTILITY"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_UTILITY");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_SPLASH"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_SPLASH");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_DIALOG"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_DIALOG");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_DROPDOWN_MENU"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_POPUP_MENU"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_POPUP_MENU");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_TOOLTIP"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_TOOLTIP");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_NOTIFICATION"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_NOTIFICATION");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_COMBO"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_COMBO");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_DND"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_DND");
+    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_NORMAL"))
+        return condition_string(rule, "_NET_WM_WINDOW_TYPE_NORMAL");
+
+    // not found
+    return false;
+}
+
 
 /// CONSEQUENCES ///
 void consequence_tag(HSConsequence* cons,
