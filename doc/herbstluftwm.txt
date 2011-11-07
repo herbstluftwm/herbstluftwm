@@ -542,6 +542,7 @@ Valid 'properties' are:
       exceed 'value'. This condition only can be used with the +=+ operator. If
       maxage already is exceeded (and never will match again), then this rule is
       removed. (With this you can build rules that only live for a certain time)
+    * +windowtype+: matches the _NET_WM_WINDOW_TYPE property of a window.
 
 Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair.
 Valid 'NAMES' are:
@@ -584,6 +585,11 @@ Examples:
         +
         Insert all Thunderbird instances in the tree that has no focus and there
         in the first child.
+
+    * +rule --windowtype=_NET_WM_WINDOW_TYPE_DIALOG --focus=on+
+        +
+        Sets focus to new windows if they are dialogs (and set their
+        _NET_WM_WINDOW_TYPE correctly).
 
 AUTOSTART FILE
 --------------
