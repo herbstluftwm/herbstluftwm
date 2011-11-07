@@ -611,6 +611,9 @@ receive or wait for them with *herbstclient*(1). Also custom hooks can be
 emitted with the emit_hook command. The following hooks are emitted by
 herbstluftwm itself:
 
+fullscreen [on|off] 'WINID' 'STATE'::
+    the fullscreen state of window 'WINID' was changed to [on|off].
+
 tag_changed 'TAG' 'MONITOR'::
     the tag 'TAG' was selected on 'MONITOR'.
 

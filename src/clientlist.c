@@ -485,12 +485,21 @@ HSClient* get_current_client() {
 }
 
 void client_set_fullscreen(HSClient* client, bool state) {
+    if (client->fullscreen == state) {
+        // nothing to do
+        return;
+    }
+
     client->fullscreen = state;
     if (state) {
         // TODO: do proper stacking layer handling
         XRaiseWindow(g_display, client->window);
     }
     monitor_apply_layout(get_current_monitor());
+
+    char buf[STRING_BUF_SIZE];
+    snprintf(buf, STRING_BUF_SIZE, "0x%lx", client->window);
+    hook_emit_list("fullscreen", state ? "on" : "off", buf, NULL);
 }
 
 void client_set_pseudotile(HSClient* client, bool state) {
