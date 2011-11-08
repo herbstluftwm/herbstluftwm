@@ -1218,10 +1218,13 @@ int frame_current_cycle_selection(int argc, char** argv) {
         return 0;
     }
     int index = frame->content.clients.selection;
+    // use an integer variable to avoid strange happenings when computing
+    //       (-1) % (size_t)6
+    int count = (int) frame->content.clients.count;
     index += delta;
-    index %= frame->content.clients.count;
-    index += frame->content.clients.count;
-    index %= frame->content.clients.count;
+    index %= count;
+    index += count;
+    index %= count;
     frame->content.clients.selection = index;
     Window window = frame->content.clients.buf[index];
     window_focus(window);
