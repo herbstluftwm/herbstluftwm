@@ -49,6 +49,8 @@ static void consequence_index(HSConsequence* cons, HSClient* client,
                               HSClientChanges* changes);
 static void consequence_pseudotile(HSConsequence* cons, HSClient* client,
                                    HSClientChanges* changes);
+static void consequence_fullscreen(HSConsequence* cons, HSClient* client,
+                                   HSClientChanges* changes);
 
 /// GLOBALS ///
 
@@ -69,6 +71,7 @@ static HSConsequenceType g_consequence_types[] = {
     {   "focus",        consequence_focus },
     {   "manage",       consequence_manage },
     {   "pseudotile",   consequence_pseudotile },
+    {   "fullscreen",   consequence_fullscreen },
 };
 
 GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -610,5 +613,10 @@ void consequence_index(HSConsequence* cons, HSClient* client,
 void consequence_pseudotile(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
     client->pseudotile = string_to_bool(cons->value.str, client->pseudotile);
+}
+
+void consequence_fullscreen(HSConsequence* cons, HSClient* client,
+                            HSClientChanges* changes) {
+    changes->fullscreen = string_to_bool(cons->value.str, changes->fullscreen);
 }
 

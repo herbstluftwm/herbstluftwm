@@ -56,6 +56,7 @@ typedef struct {
     GString*        tree_index;
     bool            focus; // if client should get focus
     bool            manage; // wether we should manage it
+    bool            fullscreen;
 } HSClientChanges;
 
 void rules_init();

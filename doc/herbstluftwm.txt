@@ -561,8 +561,10 @@ Valid 'NAMES' are:
         ** +.+: insert it in the subtree that has the focus
         ** +/+: insert it in the subtree that has not the focus
 
-    * +pseudotile+: sets the pseudotile flag of the client (also see description
-      of the pseudotile command). 'VALUE' can be *on*, *off* or *toggle*.
+    * +pseudotile+: sets the pseudotile state of the client. 'VALUE' can be
+      *on*, *off* or *toggle*.
+    * +fullescreen+: sets the fullscreen flag of the client. 'VALUE' can be
+      *on*, *off* or *toggle*.
 
 A rule's behaviour can be configured by some special 'FLAGS':
 

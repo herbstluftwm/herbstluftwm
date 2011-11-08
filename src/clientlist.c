@@ -201,6 +201,7 @@ HSClient* manage_client(Window win) {
     }
 
     tag_set_flags_dirty();
+    client_set_fullscreen(client, changes.fullscreen);
     monitor_apply_layout(find_monitor_with_tag(client->tag));
     client_changes_free_members(&changes);
 
