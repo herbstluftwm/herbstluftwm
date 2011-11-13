@@ -1,3 +1,9 @@
 Herbstluftwm
 ============
 
+****
+link:index.html[About]
+link:faq.html[FAQ]
+****
+
+

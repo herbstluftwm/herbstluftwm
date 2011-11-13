@@ -162,5 +162,32 @@ span.image a.image img {
     border: 1px solid black;
 }
 
+.sidebarblock  {
+    background-color: #58AD3A;
+    border: 2px solid #214C11;
+}
+
+.sidebarblock .content p {
+    margin: auto;
+    text-align: center;
+    padding: 0em;
+    border: 2px solid #7ED75E;
+}
+
+.sidebarblock .content p a,
+.sidebarblock .content p a:visited
+{
+    padding-left: 3em;
+    padding-right: 3em;
+    margin: 0px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #efefef;
+    background: transparent;
+}
+
+.sidebarblock .content p a:hover {
+    background-color: #30691B;
+}
 
 
