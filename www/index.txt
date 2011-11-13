@@ -24,7 +24,7 @@ Its main features can be described with:
 
 Get it!
 -------
-There aren't any releases yet. You can browse the source in the 
+There aren't any stable releases yet. You can browse the source in the 
 link:http://git.informatik.uni-erlangen.de/?p=re06huxa/herbstluftwm[GitWeb]
 or directly clone the git repository with:
 
