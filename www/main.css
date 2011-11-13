@@ -80,7 +80,16 @@ li {
 }
 
 a {
-    color: #3465a4;
+    color: #288900;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #295617;
 }
 
 
@@ -120,5 +129,28 @@ dt.hdlist1 {
     margin-bottom: 0.8em;
     font-weight: bold;
     color: #2e3436;
+}
+
+.listingblock {
+    border: 1px solid black;
+    padding: 2px;
+    background-color: #454545;
+}
+
+.listingblock .content {
+    margin: 0px;
+    background-color: #1e1e1e;
+    padding: 0px;
+}
+
+.listingblock .content pre {
+    padding: 0.4em;
+    margin: 0px;
+    color: #efefef;
+}
+
+tt {
+  font-family: monospace;
+  font-size: inherit;
 }
 
