@@ -100,7 +100,7 @@ mplayer that would be +xv+, for firefox dialogs it is +Dialog+).
 
 Q: I set default_frame_layout to my favorite layout but it doesn't work with the root frame/existing frames::
     Existing tags are not affected by a change of that variable (only new
-    ones), so be sure to set it <b>before</b> creating any tags. A current
+    ones), so be sure to set it *before* creating any tags. A current
     workaround is, putting +hc split vertical 0.5; hc remove+ at the end in
     your autostartfile.  You can also 'cycle_layout' in existing tags.
 
