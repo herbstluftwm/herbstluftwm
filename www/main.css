@@ -1,69 +1,67 @@
 body {
     background-color: #eeeeec;
-    padding-top: 0.7em;
+    padding-top: 0em;
+    margin: 0px;
 }
 
-.header {
-    padding: 0.1em;
-    padding-left: 1em;
-    padding-right: 1em;
-    background-color: #e9b96e;
-    border-bottom: 2px solid #8f5902;
-    width: 100%;
-    /* make it sticky to the top */
-    position: fixed;
-    margin-top: 0;
-    margin-bottom: 0;
-    top: 0;
-    left: 0;
-}
-
-.header .wmname {
-    float: left;
-    font-weight: bold;
-    color: #8f5902;
-}
-
-.header .navigation {
-    text-align: center;
-}
-.header .navigation a {
-    padding-left: 0.4em;
-    padding-right: 0.4em;
-    color: #4e9a06;
-    font-weight: bold;
-    text-decoration: none;
-}
-
-.header .navigation a:visited {
-    color: #4e9a06;
-}
-
-.header .navigation a:hover {
-    color: #8f5902;
-    text-decoration: underline;
-}
-
-.content {
-    width: 42em;
+#header , #content {
+    width: 40em;
     margin-left: auto;
     margin-right: auto;
-    color: #2e3436;
-    background-color: white;
     padding: 1em;
-    border-left: 1px solid #555753;
-    border-right: 1px solid #555753;
+    background-color: white;
+    border: 2px solid #555753;
+    margin-bottom:0px;
+    padding-bottom:0px;
+}
+
+.sect {
+    border-top: none;
+    border-bottom: none;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.sect, #content {
+    border-top: none;
+    margin-top: 0px;
+}
+#footnotes hr {
+    display: none;
+}
+
+#content, #sect1, .sectionbody{
+    padding-bottom: 0px;
+}
+
+#footer {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    text-align: center;
+    border-top: none;
+    color: #555753;
+    font-size: 0.6em;
+}
+
+#content {
+    color: #2e3436;
+}
+
+#header {
+    text-align: center;
+    margin-top: 0.9em;
+    border-bottom: none;
+    margin-bottom: 0px;
 }
 
 h1 {
-    font-size: 1.4em;
+    font-size: 1.6em;
+    padding: 0px;
+    margin: 0px;
     color: #8f5902;
-    padding: 0.2em;
-    /* ugly hack to show h1 content when using navigation bar links */
-    padding-top: 1em;
 }
 
 h2 {
+    width: 100%;
     font-size: 1em;
     color: #2e3436;
 }
@@ -110,5 +108,10 @@ a {
     text-decoration: none;
 }
 
-
+dt.hdlist1 {
+    margin-top: 0.8em;
+    margin-bottom: 0.8em;
+    font-weight: bold;
+    color: #2e3436;
+}
 
