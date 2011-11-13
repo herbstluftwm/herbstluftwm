@@ -71,6 +71,7 @@ h2 {
     width: 100%;
     font-size: 1em;
     color: #2e3436;
+    border-bottom: 1px solid #bcbcbc;
 }
 
 
@@ -89,7 +90,7 @@ a:hover {
 }
 
 a:visited {
-    color: #295617;
+    color: #49962B;
 }
 
 
