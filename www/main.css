@@ -15,6 +15,10 @@ body {
     padding-bottom:0px;
 }
 
+#header p {
+    margin-bottom: 0px;
+}
+
 .sect {
     border-top: none;
     border-bottom: none;
@@ -46,8 +50,11 @@ body {
     color: #2e3436;
 }
 
-#header {
+#header h1 {
     text-align: center;
+}
+
+#header {
     margin-top: 0.9em;
     border-bottom: none;
     margin-bottom: 0px;

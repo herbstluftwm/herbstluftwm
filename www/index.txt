@@ -1,8 +1,5 @@
 Herbstluftwm
 ============
-:linkcss:
-:theme: main
-:stylesdir: ./
 
 What is it?
 -----------
