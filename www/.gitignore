@@ -1,1 +1,5 @@
 *.html
+# ignore all images
+*.png
+*.jpeg
+*.jpg
