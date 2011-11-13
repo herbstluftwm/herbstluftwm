@@ -1,0 +1,75 @@
+include::header.txt[]
+
+Hints and FAQ
+-------------
+
+Hint: Use the forc\^H\^H\^H^Hscripts!::
+   There are a bunch of scripts coming along with herbstluftwm. Check out the
+   scripts directory in the sources and the examples directory after installing.
+
+Hint: Don't restart::
+   To make configchanges take effect immediately, just type +herbstclient
+   reload+. There is no need to restart herbstluftwm or X.
+
+Q: Why is herbstluftwm called herbstluftwm?::
+   I liked the name of the e-mail client wanderlust. Unfortunately I am a happy
+   mutt user, so I needed an other application with a similar name.
+
+Q: If the config is a bashscript, does it mean it is called on each keystroke?::
+   No, the configfile is executed once to set internal settings and keybindings
+   and so on. If a keybind is registred and its key is pressed, the according
+   (internal) command directly is called.
+
+Q: Why don't new clients get the focus?::
+   Because of the default behaviour of the +focus+ consequence in the rules.
+   You can change it by adding this to the link:herbstluftwm.html#RULES[rules]
+   section in the autostart file:
++
+----
+hc unrule --all      # clear rules
+hc rule focus=on     # focus new clients by default
+----
++
+Warning: you need the current git version to get rules!
+
+Q: herbstclient is too long to type it in the shell::
+    Use tab-completion! +her&lt;tab&gt;c&lt;tab&gt;+ expands to herbstclient.
+    There is also a tab-completion for the parameters for herbstclient. After
+    installing herbstluftwm, add this to your .bashrc:
++
+----
+source /etc/bash_completion.d/herbstclient-completion
+----
++
+(The tab-completion in zsh works out of the box with most zsh-configurations).
++
+You also can add an alias for herbstclient:
++
+----
+alias hc='herbstclient'
+----
+
+Q: My rules seem to be messed up::
+    Clear them with +hc unrule -F+ and start over. It is recommended to do this
+    in the autostartfile.
+
+Q: I don't like that my mplayervideo/inputdialogs get resized to full framesize::
+
+Add this to your autostartfile:
++
+----
+hc rule instance=<instance> pseudotile=on
+----
++
+You can request the instancename with xprop by clicking on the related window.
++<instancename>+ is the first string in the line +WM_CLASS(STRING)+ (for
+mplayer that would be +xv+, for firefox dialogs it is +Dialog+).
+
+Q: I set default_frame_layout to my favorite layout but it doesn't work with the root frame/existing frames::
+    Existing tags are not affected by a change of that variable (only new
+    ones), so be sure to set it *before* creating any tags. A current
+    workaround is, putting +hc split vertical 0.5; hc remove+ at the end in
+    your autostartfile.  You can also 'cycle_layout' in existing tags.
+
+
+include::footer.txt[]
