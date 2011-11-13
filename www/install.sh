@@ -7,10 +7,8 @@
 target=${1:-cip:.www/herbstluftwm}
 
 files=(
-    index.html
+    *.html
     main.css
-    herbstclient.html
-    herbstluftwm.html
 )
 
 rsync -v "${files[@]}" "$target"

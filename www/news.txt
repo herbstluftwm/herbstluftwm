@@ -1,0 +1,3 @@
+include::header.txt[]
+include::../NEWS[]
+include::footer.txt[]

@@ -8,7 +8,7 @@ include ../colors.mk
 TARGET = cip:wwwcip/herbstluftwm/
 ASCIIDOCFLAGS = -a linkcss -a stylesdir=./ --theme main
 
-all: index.html faq.html herbstluftwm.html herbstclient.html
+all: index.html faq.html news.html herbstluftwm.html herbstclient.html
 
 %.html: %.txt header.txt footer.txt
 	$(call colorecho,DOC,$@)
@@ -21,6 +21,8 @@ herbstluftwm.html: ../doc/herbstluftwm.txt
 herbstclient.html: ../doc/herbstclient.txt
 	$(call colorecho,DOC,$@)
 	@$(ASCIIDOC) $(ASCIIDOCFLAGS) -o $@ $<
+
+news.html: ../NEWS
 
 clean:
 	rm -f *.html
