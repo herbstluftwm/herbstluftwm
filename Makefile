@@ -17,7 +17,7 @@ include rules.mk
 all: build-herbstclient doc
 clean: clean-herbstclient cleandoc
 
-.PHONY: doc cleandoc install
+.PHONY: doc cleandoc install www cleanwww
 
 cleandoc:
 	$(call colorecho,RM,doc/herbstclient.1)
@@ -77,3 +77,8 @@ install: all
 	install -m 644 scripts/README $(EXAMPLESDIR)/
 	install -m 755 scripts/*.sh $(EXAMPLESDIR)/
 
+www:
+	make -C www
+
+cleanwww:
+	make -C www clean
