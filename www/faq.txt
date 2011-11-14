@@ -3,13 +3,13 @@ include::header.txt[]
 Hints and FAQ
 -------------
 
+Hint: Don't restart::
+   To make changes in yout autostart take effect immediately, just type
+   +herbstclient reload+. There is no need to restart herbstluftwm or X.
+
 Hint: Use the forc\^H\^H\^H^Hscripts!::
    There are a bunch of scripts coming along with herbstluftwm. Check out the
    scripts directory in the sources and the examples directory after installing.
-
-Hint: Don't restart::
-   To make configchanges take effect immediately, just type +herbstclient
-   reload+. There is no need to restart herbstluftwm or X.
 
 Q: Why is herbstluftwm called herbstluftwm?::
    I liked the name of the e-mail client wanderlust. Unfortunately I am a happy
@@ -19,6 +19,38 @@ Q: If the config is a bashscript, does it mean it is called on each keystroke?::
    No, the configfile is executed once to set internal settings and keybindings
    and so on. If a keybind is registred and its key is pressed, the according
    (internal) command directly is called.
+
+Q: How can I let single clients float?::
+    Not at all. You don't need it. You have the power of manual tiling, so
+    there is no need to place clients manually be drag and drop. Even better:
+    You even don't need to place them manually, use a rule to place special
+    dialogs automatically when they appear. See the GIMP-Example for a good
+    example.
+
+Q: But I use GIMP very often, how can I use it without floating?::
+    Load a predefined layout to a gimp tag. Move the GIMP-Tool windows to the
+    left and right border and put the rest in the center. So add this to your
+    autostart:
++
+----
+# GIMP
+# ensure there is a gimp tag
+hc add gimp
+hc load gimp '
+(split horizontal:0.850000:0
+  (split horizontal:0.200000:1
+    (clients vertical:0)
+    (clients grid:0))
+  (clients vertical:0))
+'               # load predefined layout
+# center all other gimp windows on gimp tag
+hc rule class=Gimp tag=gimp index=01 pseudotile=on
+hc rule class=Gimp windowrole~'gimp-(image-window|toolbox|dock)' \
+    pseudotile=off
+hc rule class=Gimp windowrole=gimp-toolbox focus=off index=00
+hc rule class=Gimp windowrole=gimp-dock focus=off index=1
+----
+
 
 Q: Why don't new clients get the focus?::
    Because of the default behaviour of the +focus+ consequence in the rules.
