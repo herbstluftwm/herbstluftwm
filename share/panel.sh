@@ -55,7 +55,7 @@ herbstclient pad $monitor $height
                     echo -n "^bg()^fg()"
                     ;;
             esac
-            echo -n " ${i:1} "
+            echo -n '^ca(1, herbstclient use "'${i:1}'") '"${i:1} ^ca()"
             echo -n "$separator"
         done
         echo -n "^bg()^p(_CENTER)"
