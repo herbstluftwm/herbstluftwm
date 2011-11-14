@@ -49,12 +49,20 @@ GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
     unsigned long items, bytes;
     long offset = 0;
     bool parse_error_occured = false;
+    Atom req_type = ATOM("UTF8_STRING");
+    Atom req_type_string = ATOM("STRING");
     do {
         int status = XGetWindowProperty(dpy, window,
             atom, offset, bufsize, False,
-            ATOM("UTF8_STRING"), &type, &format,
+            req_type, &type, &format,
             &items, &bytes, (unsigned char**)&buf);
-        if (status != Success || format != 8) {
+        if (status == Success
+            && req_type != req_type_string
+            && req_type_string == type) {
+            req_type = req_type_string;
+            continue;
+        }
+        if (status != Success || format != 8 || req_type != type) {
             parse_error_occured = true;
             break; // then stop parsing
         } else {
@@ -62,7 +70,7 @@ GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
             offset += bufsize;
             XFree(buf);
         }
-        //printf("recieved: \"%s\"\n", result->str);
+        HSDebug("XGetWindowProperty recieved: \"%s\"\n", result->str);
     } while (bytes > 0);
     //
     if (parse_error_occured) {
