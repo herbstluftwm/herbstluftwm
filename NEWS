@@ -14,8 +14,11 @@ Small bugfixes and major features:
     * client rules with:
 
         - conditon: class
+        - conditon: instance
         - conditon: pid
         - conditon: maxage
+        - condition: windowtype
+        - condition: windowrole
         - operator: = (equals)
         - operator: ~ (regex-matching)
         - flag: once
@@ -24,6 +27,7 @@ Small bugfixes and major features:
         - consequence: focus
         - consequence: index (where to insert a new client in layout tree)
         - consequence: pseudotile
+        - consequence: fullscreen
         - consequence: manage (whether window will be managed)
 
 
