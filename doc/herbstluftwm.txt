@@ -543,6 +543,8 @@ Valid 'properties' are:
       maxage already is exceeded (and never will match again), then this rule is
       removed. (With this you can build rules that only live for a certain time)
     * +windowtype+: matches the _NET_WM_WINDOW_TYPE property of a window.
+    * +windowrule+: matces the WM_WINDOW_ROLE property of a window if it is set
+      by the window.
 
 Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair.
 Valid 'NAMES' are:

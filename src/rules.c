@@ -39,6 +39,7 @@ static bool condition_instance(HSCondition* rule, HSClient* client);
 static bool condition_pid(HSCondition* rule, HSClient* client);
 static bool condition_maxage(HSCondition* rule, HSClient* client);
 static bool condition_windowtype(HSCondition* rule, HSClient* client);
+static bool condition_windowrole(HSCondition* rule, HSClient* client);
 static void consequence_tag(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes);
 static void consequence_focus(HSConsequence* cons, HSClient* client,
@@ -60,6 +61,7 @@ static HSConditionType g_condition_types[] = {
     {   "pid",      condition_pid },
     {   "maxage",   condition_maxage },
     {   "windowtype", condition_windowtype },
+    {   "windowrole", condition_windowrole },
 };
 
 int     g_maxage_type; // index of "maxage"
@@ -584,6 +586,14 @@ bool condition_windowtype(HSCondition* rule, HSClient* client) {
     return false;
 }
 
+bool condition_windowrole(HSCondition* rule, HSClient* client) {
+    GString* role = window_property_to_g_string(g_display, client->window,
+        ATOM("WM_WINDOW_ROLE"));
+    if (!role) return false;
+    bool match = condition_string(rule, role->str);
+    g_string_free(role, true);
+    return match;
+}
 
 /// CONSEQUENCES ///
 void consequence_tag(HSConsequence* cons,
