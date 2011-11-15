@@ -23,7 +23,7 @@ while :; do
 		fi
 		exit $status
 	else
-		cmd+=( $(dmenu -p "herbstluft: ${cmd[@]}" <<< "$completion") )
+		cmd+=( $(dmenu -p "${prompt}${cmd[*]}" <<< "$completion") )
 		(( $? != 0 )) && exit 125 # dmenu was killed
 	fi
 done
