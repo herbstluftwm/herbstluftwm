@@ -565,7 +565,7 @@ Valid 'NAMES' are:
 
     * +pseudotile+: sets the pseudotile state of the client. 'VALUE' can be
       *on*, *off* or *toggle*.
-    * +fullescreen+: sets the fullscreen flag of the client. 'VALUE' can be
+    * +fullscreen+: sets the fullscreen flag of the client. 'VALUE' can be
       *on*, *off* or *toggle*.
 
 A rule's behaviour can be configured by some special 'FLAGS':
