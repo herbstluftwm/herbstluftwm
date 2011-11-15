@@ -25,4 +25,5 @@ Planned features:
     - completion für keyunbind
     - (optional) move cursor after focus change
     - optional focus selection after frame_split
+    - focus_follows_mouse based on frames/monitors
 
