@@ -16,20 +16,20 @@ Q: Why is herbstluftwm called herbstluftwm?::
    mutt user, so I needed an other application with a similar name.
 
 Q: If the config is a bashscript, does it mean it is called on each keystroke?::
-   No, the configfile is executed once to set internal settings and keybindings
-   and so on. If a keybind is registred and its key is pressed, the according
-   (internal) command directly is called.
+   No, the configuration file is executed once to set internal settings and
+   keybindings and so on. If a keybinding is registered and its key is pressed,
+   the according (internal) command directly is called.
 
 Q: How can I let single clients float?::
     Not at all. You don't need it. You have the power of manual tiling, so
-    there is no need to place clients manually be drag and drop. Even better:
-    You even don't need to place them manually, use a rule to place special
+    there is no need to place clients manually by dragging. Even better:
+    You don't even need to place them manually. Use a rule to place special
     dialogs automatically when they appear. See the GIMP-Example for a good
     example.
 
 Q: But I use GIMP very often, how can I use it without floating?::
     Load a predefined layout to a gimp tag. Move the GIMP-Tool windows to the
-    left and right border and put the rest in the center. So add this to your
+    left and right border and put the rest in the center. Add this to your
     autostart:
 +
 ----
@@ -52,8 +52,8 @@ hc rule class=Gimp windowrole=gimp-dock focus=off index=1
 ----
 
 
-Q: Why don't new clients get the focus?::
-   Because of the default behaviour of the +focus+ consequence in the rules.
+Q: Why doesn't a new client receive focus?::
+   The reason is the default setting of the +focus+ consequence in the rules.
    You can change it by adding this to the link:herbstluftwm.html#RULES[rules]
    section in the autostart file:
 +
@@ -66,7 +66,7 @@ Warning: you need the current git version to get rules!
 
 Q: herbstclient is too long to type it in the shell::
     Use tab-completion! +her&lt;tab&gt;c&lt;tab&gt;+ expands to herbstclient.
-    There is also a tab-completion for the parameters for herbstclient. After
+    There is also a tab-completion for the herbstclient parameters. After
     installing herbstluftwm, add this to your .bashrc:
 +
 ----
@@ -83,7 +83,7 @@ alias hc='herbstclient'
 
 Q: My rules seem to be messed up::
     Clear them with +hc unrule -F+ and start over. It is recommended to do this
-    in the autostartfile.
+    in the autostart file.
 
 Q: I don't like that my mplayervideo/inputdialogs get resized to full framesize::
 
@@ -100,8 +100,8 @@ mplayer that would be +xv+, for firefox dialogs it is +Dialog+).
 Q: I set default_frame_layout to my favorite layout but it doesn't work with the root frame/existing frames::
     Existing tags are not affected by a change of that variable (only new
     ones), so be sure to set it *before* creating any tags. A current
-    workaround is, putting +hc split vertical 0.5; hc remove+ at the end in
-    your autostartfile.  You can also 'cycle_layout' in existing tags.
+    workaround is to put +hc split vertical 0.5; hc remove+ at the end in your
+    autostartfile.  You can also 'cycle_layout' in existing tags.
 
 
 include::footer.txt[]
