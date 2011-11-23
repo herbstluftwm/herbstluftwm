@@ -166,6 +166,7 @@ void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vert
 void frame_apply_client_layout_horizontal(HSFrame* frame, XRectangle rect);
 void frame_apply_client_layout_vertical(HSFrame* frame, XRectangle rect);
 int frame_current_cycle_client_layout(int argc, char** argv);
+int frame_current_set_client_layout(int argc, char** argv);
 int frame_split_count_to_root(HSFrame* frame, int align);
 
 // returns the Window that is focused

@@ -165,6 +165,11 @@ cycle_layout ['DELTA']::
     defaults to 1. You can find a <<LIST_LAYOUT_ALGORITHMS,list of layout
     algorithms>> above.
 
+set_layout 'LAYOUT'::
+    Sets the layout algorithm in the current frame to 'LAYOUT'.  For the list of
+    layouts, check the <<LIST_LAYOUT_ALGORITHMS,list of layout algorithms
+    above>>.
+
 close::
     closes the focused window.
 

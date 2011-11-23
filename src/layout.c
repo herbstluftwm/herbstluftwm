@@ -627,6 +627,24 @@ int frame_current_cycle_client_layout(int argc, char** argv) {
     return 0;
 }
 
+int frame_current_set_client_layout(int argc, char** argv) {
+    int layout = 0;
+    if (argc <= 1) {
+        fprintf(stderr, "set_layout: not enough arguments\n");
+        return HERBST_INVALID_ARGUMENT;
+    }
+    layout = find_layout_by_name(argv[1]);
+    if (layout < 0) {
+        HSDebug("set_layout: invalid layout name \"%s\"\n", argv[1]);
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (g_cur_frame && g_cur_frame->type == TYPE_CLIENTS) {
+        g_cur_frame->content.clients.layout = layout;
+        monitor_apply_layout(get_current_monitor());
+    }
+    return 0;
+}
+
 void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vertical) {
     Window* buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
