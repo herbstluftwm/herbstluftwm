@@ -56,6 +56,7 @@ struct {
     { "shift",      1,      COMPLETION_LIST, .method.list = completion_focus_args },
     { "shift",      2,      COMPLETION_LIST, .method.list = completion_directions },
     { "unrule",     1,      COMPLETION_LIST, .method.list = completion_unrule_args },
+    { "dump",       1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
     { 0 },
 };
 
@@ -113,6 +114,21 @@ void complete_against_list(char* needle, char** list, GString** output) {
             *output = g_string_append(*output, "\n");
         }
         list++;
+    }
+}
+
+void complete_against_tags(int argc, char** argv, int pos, GString** output) {
+    char* needle = argv[pos];
+    if (!needle) {
+        needle = "";
+    }
+    size_t len = strlen(needle);
+    for (int i = 0; i < g_tags->len; i++) {
+        char* name = g_array_index(g_tags, HSTag*, i)->name->str;
+        if (!strncmp(needle, name, len)) {
+            *output = g_string_append(*output, name);
+            *output = g_string_append(*output, "\n");
+        }
     }
 }
 
@@ -199,7 +215,7 @@ int complete_command(int argc, char** argv, GString** output) {
                 // try to complete
                 switch (g_completions[i].type) {
                     case COMPLETION_FUNCTION:
-                        // TODO
+                        g_completions[i].method.function(argc - 2, argv + 2, position, output);
                         break;
                     case COMPLETION_LIST:
                         complete_against_list(needle,

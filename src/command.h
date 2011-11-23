@@ -43,6 +43,7 @@ int complete_command(int argc, char** argv, GString** output);
 
 void complete_settings(char* str, GString** output);
 void complete_against_list(char* needle, char** list, GString** output);
+void complete_against_tags(int argc, char** argv, int pos, GString** output);
 
 #endif
 
