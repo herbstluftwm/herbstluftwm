@@ -64,7 +64,7 @@ static void fetch_frame_colors() {
     g_swap_monitors_to_get_tag = &(settings_find("swap_monitors_to_get_tag")->value.i);
     g_direction_external_only = &(settings_find("default_direction_external_only")->value.i);
     g_gapless_grid = &(settings_find("gapless_grid")->value.i);
-    *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT);
+    *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
     char* str = settings_find("frame_border_normal_color")->value.s;
     g_frame_border_normal_color = getcolor(str);
     str = settings_find("frame_border_active_color")->value.s;
