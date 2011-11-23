@@ -43,7 +43,7 @@ exactly one of the following conditions:
         * 0: 'vertical' - clients are placed below each other
         * 1: 'horizontal' - clients are placed next to each other
         * 2: 'max' - all clients are maximized in this frame
-        * 4: 'grid' - clients are arranged in an almost quadratic grid
+        * 3: 'grid' - clients are arranged in an almost quadratic grid
 
     . Frame is split into subframes: +
         It is split into exactly two *subframes* in a configurable 'fraction'
@@ -162,12 +162,14 @@ cycle_all ['DIRECTION']::
 
 cycle_layout ['DELTA']::
     cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'
-    defaults to 1. Currently only 1 is useful because there are only two
-    algorithms so far:
+    defaults to 1. You can find a <<LIST_LAYOUT_ALGORITHMS,list of layout
+    algorithms>> above.
 
-        * vertical (below each other)
-        * horizontal (next to each other)
-        * max (only show selected client in entire frame)
+set_layout 'LAYOUT'::
+    Sets the layout algorithm in the current frame to 'LAYOUT'.  For the list of
+    layouts, check the <<LIST_LAYOUT_ALGORITHMS,list of layout algorithms
+    above>>.
+
 close::
     closes the focused window.
 
