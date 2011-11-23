@@ -13,6 +13,32 @@
 #include <string.h>
 #include <stdlib.h>
 
+enum {
+    COMPLETION_LIST,
+    COMPLETION_FUNCTION,
+};
+
+
+static char* completion_directions[] = {
+    "left", "right", "down", "up", NULL
+};
+
+/* list of completions, if a line matches, then it will be used, the order
+ * doesnot matter */
+struct {
+    char*   command;
+    int     index;      /* which parameter to complete, command name is index = 0 */
+    int     type;       /* which member of the method-union */
+    union {
+        void (*function)(int argc, char** argv, int pos, GString** output);
+        char** list;
+    }       method;
+} g_completions[] = {
+    { "shift",      1,      COMPLETION_LIST, .method.list = completion_directions },
+    { "focus",      1,      COMPLETION_LIST, .method.list = completion_directions },
+    { "resize",     1,      COMPLETION_LIST, .method.list = completion_directions },
+    { 0 },
+};
 
 int call_command(int argc, char** argv, GString** output) {
     if (argc <= 0) {
@@ -57,6 +83,18 @@ int list_commands(int argc, char** argv, GString** output)
         i++;
     }
     return 0;
+}
+
+void complete_against_list(char* needle, char** list, GString** output) {
+    size_t len = strlen(needle);
+    while (*list) {
+        char* name = *list;
+        if (!strncmp(needle, name, len)) {
+            *output = g_string_append(*output, name);
+            *output = g_string_append(*output, "\n");
+        }
+        list++;
+    }
 }
 
 int complete_command(int argc, char** argv, GString** output) {
@@ -128,14 +166,26 @@ int complete_command(int argc, char** argv, GString** output) {
                 }
             }
         }
-        else if (position == 1 && (!strcmp(argv[2], "focus") ||
-                !strcmp(argv[2], "resize") || !strcmp(argv[2], "shift"))) {
-            char* words[] = { "left", "right", "up", "down" };
-            for (int i = 0; i < LENGTH(words); i++) {
-                char* name = words[i];
-                if (!strncmp(str, name, len)) {
-                    *output = g_string_append(*output, name);
-                    *output = g_string_append(*output, "\n");
+        else {
+            for (int i = 0; i < LENGTH(g_completions); i++) {
+                if (!g_completions[i].command
+                    || position != g_completions[i].index
+                    || strcmp(argv[2], g_completions[i].command)) {
+                    continue;
+                }
+                char* needle = argv[position + 2];
+                if (!needle) {
+                    needle = "";
+                }
+                // try to complete
+                switch (g_completions[i].type) {
+                    case COMPLETION_FUNCTION:
+                        // TODO
+                        break;
+                    case COMPLETION_LIST:
+                        complete_against_list(needle,
+                            g_completions[i].method.list, output);
+                        break;
                 }
             }
         }

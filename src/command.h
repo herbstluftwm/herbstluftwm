@@ -42,6 +42,7 @@ int list_commands(int argc, char** argv, GString** output);
 int complete_command(int argc, char** argv, GString** output);
 
 void complete_settings(char* str, GString** output);
+void complete_against_list(char* needle, char** list, GString** output);
 
 #endif
 
