@@ -35,6 +35,10 @@ static char* completion_flag_args[] = {
     "on", "off", "toggle", NULL
 };
 
+static char* completion_status[] = {
+    "status", NULL
+};
+
 /* list of completions, if a line matches, then it will be used, the order
  * doesnot matter */
 struct {
@@ -46,17 +50,28 @@ struct {
         char** list;
     }       method;
 } g_completions[] = {
+    { "add_monitor",2,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
+    { "dump",       1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
+    { "floating",   1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
+    { "floating",   1,      COMPLETION_LIST, .method.list = completion_flag_args },
+    { "floating",   1,      COMPLETION_LIST, .method.list = completion_status },
+    { "floating",   2,      COMPLETION_LIST, .method.list = completion_flag_args },
+    { "floating",   2,      COMPLETION_LIST, .method.list = completion_status },
     { "focus",      1,      COMPLETION_LIST, .method.list = completion_directions },
     { "focus",      1,      COMPLETION_LIST, .method.list = completion_focus_args },
     { "focus",      2,      COMPLETION_LIST, .method.list = completion_directions },
     { "fullscreen", 1,      COMPLETION_LIST, .method.list = completion_flag_args },
+    { "layout",     1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
+    { "load",       1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
+    { "move",       1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
     { "pseudotile", 1,      COMPLETION_LIST, .method.list = completion_flag_args },
+    { "rename",     1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
     { "resize",     1,      COMPLETION_LIST, .method.list = completion_directions },
     { "shift",      1,      COMPLETION_LIST, .method.list = completion_directions },
     { "shift",      1,      COMPLETION_LIST, .method.list = completion_focus_args },
     { "shift",      2,      COMPLETION_LIST, .method.list = completion_directions },
     { "unrule",     1,      COMPLETION_LIST, .method.list = completion_unrule_args },
-    { "dump",       1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
+    { "use",        1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
     { 0 },
 };
 
@@ -174,9 +189,7 @@ int complete_command(int argc, char** argv, GString** output) {
                 }
             }
         }
-        else if ((position == 1 && !strcmp(argv[2], "use")) ||
-                 (position == 1 && !strcmp(argv[2], "move")) ||
-                 (position >= 1 && position <= 2
+        else if ((position >= 1 && position <= 2
                     && !strcmp(argv[2], "merge_tag"))) {
             // we can complete first argument of use
             // or first and second argument of merge_tag
