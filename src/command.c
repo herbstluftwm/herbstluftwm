@@ -13,13 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-enum {
-    COMPLETION_LIST,
-    COMPLETION_FUNCTION,
-};
-
-
-static char* completion_directions[]    = { "left", "right", "down", "up", NULL };
+static char* completion_directions[]    = { "left", "right", "down", "up",NULL};
 static char* completion_focus_args[]    = { "-i", "-e", NULL };
 static char* completion_unrule_args[]   = { "-F", "--all", NULL };
 static char* completion_flag_args[]     = { "on", "off", "toggle", NULL };
@@ -29,35 +23,37 @@ static char* completion_status[]        = { "status", NULL };
  * doesnot matter */
 struct {
     char*   command;
-    int     index;      /* which parameter to complete, command name is index = 0 */
-    int     type;       /* which member of the method-union */
-    union {
-        void (*function)(int argc, char** argv, int pos, GString** output);
-        char** list;
-    }       method;
+    int     index;      /* which parameter to complete */
+                        /* command name is index = 0 */
+    /* === various methods, how to complete === */
+    /* completion by function */
+    void (*function)(int argc, char** argv, int pos, GString** output);
+    /* completion by a list of strings */
+    char** list;
 } g_completions[] = {
-    { "add_monitor",2,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
-    { "dump",       1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
-    { "floating",   1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
-    { "floating",   1,      COMPLETION_LIST, .method.list = completion_flag_args },
-    { "floating",   1,      COMPLETION_LIST, .method.list = completion_status },
-    { "floating",   2,      COMPLETION_LIST, .method.list = completion_flag_args },
-    { "floating",   2,      COMPLETION_LIST, .method.list = completion_status },
-    { "focus",      1,      COMPLETION_LIST, .method.list = completion_directions },
-    { "focus",      1,      COMPLETION_LIST, .method.list = completion_focus_args },
-    { "focus",      2,      COMPLETION_LIST, .method.list = completion_directions },
-    { "fullscreen", 1,      COMPLETION_LIST, .method.list = completion_flag_args },
-    { "layout",     1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
-    { "load",       1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
-    { "move",       1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
-    { "pseudotile", 1,      COMPLETION_LIST, .method.list = completion_flag_args },
-    { "rename",     1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
-    { "resize",     1,      COMPLETION_LIST, .method.list = completion_directions },
-    { "shift",      1,      COMPLETION_LIST, .method.list = completion_directions },
-    { "shift",      1,      COMPLETION_LIST, .method.list = completion_focus_args },
-    { "shift",      2,      COMPLETION_LIST, .method.list = completion_directions },
-    { "unrule",     1,      COMPLETION_LIST, .method.list = completion_unrule_args },
-    { "use",        1,  COMPLETION_FUNCTION, .method.function = complete_against_tags },
+    /* name ,       index,  completion method                   */
+    { "add_monitor",    2,  .function = complete_against_tags },
+    { "dump",           1,  .function = complete_against_tags },
+    { "floating",       1,  .function = complete_against_tags },
+    { "floating",       1,  .list = completion_flag_args },
+    { "floating",       1,  .list = completion_status },
+    { "floating",       2,  .list = completion_flag_args },
+    { "floating",       2,  .list = completion_status },
+    { "focus",          1,  .list = completion_directions },
+    { "focus",          1,  .list = completion_focus_args },
+    { "focus",          2,  .list = completion_directions },
+    { "fullscreen",     1,  .list = completion_flag_args },
+    { "layout",         1,  .function = complete_against_tags },
+    { "load",           1,  .function = complete_against_tags },
+    { "move",           1,  .function = complete_against_tags },
+    { "pseudotile",     1,  .list = completion_flag_args },
+    { "rename",         1,  .function = complete_against_tags },
+    { "resize",         1,  .list = completion_directions },
+    { "shift",          1,  .list = completion_directions },
+    { "shift",          1,  .list = completion_focus_args },
+    { "shift",          2,  .list = completion_directions },
+    { "unrule",         1,  .list = completion_unrule_args },
+    { "use",            1,  .function = complete_against_tags },
     { 0 },
 };
 
@@ -212,14 +208,13 @@ int complete_command(int argc, char** argv, GString** output) {
                     needle = "";
                 }
                 // try to complete
-                switch (g_completions[i].type) {
-                    case COMPLETION_FUNCTION:
-                        g_completions[i].method.function(argc - 2, argv + 2, position, output);
-                        break;
-                    case COMPLETION_LIST:
-                        complete_against_list(needle,
-                            g_completions[i].method.list, output);
-                        break;
+                if (g_completions[i].function) {
+                    g_completions[i].function(argc - 2, argv + 2,
+                                                     position, output);
+                }
+                if (g_completions[i].list) {
+                    complete_against_list(needle, g_completions[i].list,
+                                          output);
                 }
             }
         }
