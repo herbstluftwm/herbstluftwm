@@ -35,7 +35,7 @@ typedef struct CommandBinding {
 extern CommandBinding g_commands[];
 
 int call_command(int argc, char** argv, GString** output);
-int call_command_no_ouput(int argc, char** argv);
+int call_command_no_output(int argc, char** argv);
 
 // commands
 int list_commands(int argc, char** argv, GString** output);

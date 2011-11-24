@@ -151,7 +151,7 @@ void handle_key_press(XEvent* ev) {
     if (element && element->data) {
         KeyBinding* found = (KeyBinding*)element->data;
         // call the command
-        call_command_no_ouput(found->cmd_argc, found->cmd_argv);
+        call_command_no_output(found->cmd_argc, found->cmd_argv);
     }
 }
 

@@ -40,7 +40,7 @@ int call_command(int argc, char** argv, GString** output) {
     return status;
 }
 
-int call_command_no_ouput(int argc, char** argv) {
+int call_command_no_output(int argc, char** argv) {
     GString* output = g_string_new("");
     int status = call_command(argc, argv, &output);
     g_string_free(output, true);
