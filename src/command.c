@@ -19,25 +19,11 @@ enum {
 };
 
 
-static char* completion_directions[] = {
-    "left", "right", "down", "up", NULL
-};
-
-static char* completion_focus_args[] = {
-    "-i", "-e", NULL
-};
-
-static char* completion_unrule_args[] = {
-    "-F", "--all", NULL
-};
-
-static char* completion_flag_args[] = {
-    "on", "off", "toggle", NULL
-};
-
-static char* completion_status[] = {
-    "status", NULL
-};
+static char* completion_directions[]    = { "left", "right", "down", "up", NULL };
+static char* completion_focus_args[]    = { "-i", "-e", NULL };
+static char* completion_unrule_args[]   = { "-F", "--all", NULL };
+static char* completion_flag_args[]     = { "on", "off", "toggle", NULL };
+static char* completion_status[]        = { "status", NULL };
 
 /* list of completions, if a line matches, then it will be used, the order
  * doesnot matter */
