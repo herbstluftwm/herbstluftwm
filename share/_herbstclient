@@ -6,7 +6,7 @@
 #compinit
 
 _herbstclient() {
-    compadd "$@" $(herbstclient -q complete "$((CURRENT-2))" "${words[@]:1}")
+    compadd "$@" $(herbstclient -q complete "$((CURRENT-2))" "${(@)words[@]:1}")
 }
 
 compdef _herbstclient herbstclient
