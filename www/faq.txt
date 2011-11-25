@@ -11,6 +11,59 @@ Hint: Use the forc\^H\^H\^H^Hscripts!::
    There are a bunch of scripts coming along with herbstluftwm. Check out the
    scripts directory in the sources and the examples directory after installing.
 
+Hint: Understanding processes::
+    To understand the relationship between the different processes that running
+    in a typical herbstluftwm setup, consider the following diagramm:
++
+----
+                startx
+                  | f/e
+                  V
+             ~/.xinitrc
+                  | f/e or exec
+ IPC-Call         V
+   .- - - -> herbstluftwm           __________________
+ ."            /     \             | Symbol | Meaning |
+ .            /       \            |--------+---------|
+ .       f/e /         \ f/e       |  A     | A forks |
+ .          /           \          |  | f/e | and     |
+ .         V             V         |  V     | execs   |
+ .     autostart       xterm       |  B     | into B  |
+ .         |             |         |________|_________|
+ .     f/e |             | f/e
+  .        V             V
+   -- herbstclient     $SHELL
+----
++
+As you can see, +herbstclient+ does nothing except sending requests to
++herbstluftwm+. Whenever a process performs a fork-and-exec, the following
+rules apply:
+
+        * A child process inherits the environment variables of its parent
+          process. If you change an environment variable (like 'PATH'), then it
+          will stay unchanged in the parent process. +
+          +
+          => If you want to set some environment variables for your complete
+          session (i.e. all processes) then you have to set it in your
+          +~/.xinitrc+.
+
+        * If a process spawns a window, then the window will spawn delayed. This
+          delay differs from application to application (and from time to time).
+          So a script like
++
+----
+herbstclient spawn xterm
+herbstclient spawn xev
+----
++
+does *not* guarantee that the +xterm+ window will appear before the
++xev+ window! It only guarantees that the +xterm+ is executed before +xev+ will
+be executed.+
++
+=> If you want to apply some rules only for the next windows, then use a
+bash-script like the one for <<TEMP_RULES,temporary rules>>.
+
+
 Q: Why is herbstluftwm called herbstluftwm?::
    I liked the name of the e-mail client wanderlust. Unfortunately I am a happy
    mutt user, so I needed an other application with a similar name.
@@ -50,7 +103,34 @@ hc rule class=Gimp windowrole~'gimp-(image-window|toolbox|dock)' \
 hc rule class=Gimp windowrole=gimp-toolbox focus=off index=00
 hc rule class=Gimp windowrole=gimp-dock focus=off index=1
 ----
++
 
+[[TEMP_RULES]]
+Q: How can I add rules temporarily for some special clients?::
+    Add a rule for the clients pid, before the client appears. This script
+    creates two xterms with different behaviours:
++
+----
+#!/bin/bash
+
+# Requirement: bash >= 4.0 (because of the usage of $BASHPID)
+
+spawn_with_rules() {(
+    # this rule also requires, that the client
+    # sets the _NET_WM_PID property
+    herbstclient rule once pid=$BASHPID maxage=10 "${RULES[@]}"
+    exec "$@"
+    ) &
+}
+
+# spawn an xterm with uname info, but not where the focus is
+RULES=( index='/' focus=off )
+spawn_with_rules xterm -e 'uname -a ; read'
+
+# spawn an xterm in pseudotile mode
+RULES=( pseudotile=on focus=on )
+spawn_with_rules xterm
+----
 
 Q: Why doesn't a new client receive focus?::
    The reason is the default setting of the +focus+ consequence in the rules.
