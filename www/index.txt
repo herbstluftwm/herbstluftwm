@@ -48,6 +48,9 @@ Screenshots
 // there screenshots are not in the git repo, so they must exist in the target
 // directory
 image:irc-layout-tab-thumb.png["scr",link="irc-layout-tab.png"] 
-image:herbstluftwm-autumncolors-thumb.png["scr",link="herbstluftwm-autumncolors.png"]
+image:herbstluftwm-autumncolors-thumb.png["scr",link="herbstluftwm-autumncolors.png"] 
+image:../screenshots/hlwm-panelicons-0-thumb.png["scr",link="../screenshots/hlwm-panelicons-0.png"] 
+image:../screenshots/hlwm-panelicons-1-thumb.png["scr",link="../screenshots/hlwm-panelicons-1.png"] 
+image:../screenshots/hlwm-pseudotile-1-thumb.png["scr",link="../screenshots/hlwm-pseudotile-1.png"] 
 
 include::footer.txt[]
