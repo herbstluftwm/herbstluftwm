@@ -115,9 +115,11 @@ void complete_against_list(char* needle, char** list, GString** output) {
 }
 
 void complete_against_tags(int argc, char** argv, int pos, GString** output) {
-    char* needle = argv[pos];
-    if (!needle) {
+    char* needle;
+    if (pos >= argc) {
         needle = "";
+    } else {
+        needle = argv[pos];
     }
     size_t len = strlen(needle);
     for (int i = 0; i < g_tags->len; i++) {
