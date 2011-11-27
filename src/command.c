@@ -24,6 +24,7 @@ static bool no_completion(int argc, char** argv, int pos) {
 }
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
+static bool first_parameter_is_flag(int argc, char** argv, int pos);
 
 /* find out, if a parameter still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
@@ -39,10 +40,31 @@ struct {
 } g_parameter_expected[] = {
     { "quit",           0,  no_completion },
     { "reload",         0,  no_completion },
+    { "version",        0,  no_completion },
+    { "list_monitors",  0,  no_completion },
+    { "list_commands",  0,  no_completion },
     { "add_monitor",    7,  no_completion },
     { "dump",           2,  no_completion },
     { "floating",       3,  no_completion },
     { "floating",       2,  first_parameter_is_tag },
+    { "merge_tag",      3,  no_completion },
+    { "focus",          3,  no_completion },
+    { "focus",          2,  first_parameter_is_flag },
+    { "shift",          3,  no_completion },
+    { "shift",          2,  first_parameter_is_flag },
+    { "fullscreen",     2,  no_completion },
+    { "pseudotile",     2,  no_completion },
+    { "layout",         2,  no_completion },
+    { "load",           3,  no_completion },
+    { "load",           2,  first_parameter_is_tag },
+    { "move",           2,  no_completion },
+    { "rename",         3,  no_completion },
+    { "resize",         3,  no_completion },
+    { "unrule",         2,  no_completion },
+    { "use",            2,  no_completion },
+    { "add",            2,  no_completion },
+    { "get",            2,  no_completion },
+    { "set",            3,  no_completion },
     { 0 },
 };
 
@@ -275,6 +297,15 @@ int complete_command(int argc, char** argv, GString** output) {
 bool first_parameter_is_tag(int argc, char** argv, int pos) {
     // only complete if first parameter is a valid tag
     if (argc >= 2 && find_tag(argv[1]) && pos == 2) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool first_parameter_is_flag(int argc, char** argv, int pos) {
+    // only complete if first parameter is a flag like -i or -e
+    if (argc >= 2 && argv[1][0] == '-' && pos == 2) {
         return true;
     } else {
         return false;
