@@ -19,6 +19,33 @@ static char* completion_unrule_args[]   = { "-F", "--all", NULL };
 static char* completion_flag_args[]     = { "on", "off", "toggle", NULL };
 static char* completion_status[]        = { "status", NULL };
 
+static bool no_completion(int argc, char** argv, int pos) {
+    return false;
+}
+
+static bool first_parameter_is_tag(int argc, char** argv, int pos);
+
+/* find out, if a parameter still expects a parameter at a certain index.
+ * only if this returns true, than a completion will be searched.
+ *
+ * if no match is found, then it defaults to "command still expects a
+ * parameter".
+ */
+struct {
+    char*   command;    /* the first argument */
+    int     min_index;  /* rule will only be considered */
+                        /* if current pos >= min_index */
+    bool    (*function)(int argc, char** argv, int pos);
+} g_parameter_expected[] = {
+    { "quit",           0,  no_completion },
+    { "reload",         0,  no_completion },
+    { "add_monitor",    7,  no_completion },
+    { "dump",           2,  no_completion },
+    { "floating",       3,  no_completion },
+    { "floating",       2,  first_parameter_is_tag },
+    { 0 },
+};
+
 /* list of completions, if a line matches, then it will be used, the order
  * doesnot matter */
 struct {
@@ -131,6 +158,23 @@ void complete_against_tags(int argc, char** argv, int pos, GString** output) {
     }
 }
 
+bool parameter_expected(int argc, char** argv, int pos) {
+    if (pos <= 0 || argc < 1) {
+        /* no parameter if there is no command */
+        return false;
+    }
+    for (int i = 0; i < LENGTH(g_parameter_expected)
+                    && g_parameter_expected[i].command; i++) {
+        if (pos < g_parameter_expected[i].min_index) {
+            continue;
+        }
+        if (!strcmp(g_parameter_expected[i].command, argv[0])) {
+            return g_parameter_expected[i].function(argc, argv, pos);
+        }
+    }
+    return true;
+}
+
 int complete_command(int argc, char** argv, GString** output) {
     // usage: complete POSITION command to complete ...
     if (argc < 2) {
@@ -151,6 +195,10 @@ int complete_command(int argc, char** argv, GString** output) {
             }
             i++;
         }
+        return 0;
+    }
+    if (!parameter_expected(argc - 2, argv + 2, position)) {
+        return HERBST_NO_PARAMETER_EXPECTED;
     }
     if (argc >= 3) {
         char* str = (argc >= 4) ? argv[3] : "";
@@ -224,7 +272,12 @@ int complete_command(int argc, char** argv, GString** output) {
     return 0;
 }
 
-
-
-
+bool first_parameter_is_tag(int argc, char** argv, int pos) {
+    // only complete if first parameter is a valid tag
+    if (argc >= 2 && find_tag(argv[1]) && pos == 2) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
