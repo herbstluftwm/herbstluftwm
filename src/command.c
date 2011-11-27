@@ -275,7 +275,7 @@ int complete_command(int argc, char** argv, GString** output) {
                     || strcmp(argv[2], g_completions[i].command)) {
                     continue;
                 }
-                char* needle = argv[position + 2];
+                char* needle = ((position + 2) < argc) ? argv[position + 2] : "";
                 if (!needle) {
                     needle = "";
                 }
