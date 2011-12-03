@@ -21,8 +21,8 @@ Some BUGS:
 Planned features:
     - dump/load floating values
     - jumpto urgent
-    - completion für keybind (recursive!)
-    - completion für keyunbind
+    - completion for keybind (recursive!)
+    - completion for keyunbind
     - (optional) move cursor after focus change
     - optional focus selection after frame_split
     - focus_follows_mouse based on frames/monitors
