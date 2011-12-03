@@ -27,8 +27,11 @@ forceexec=0
 while :; do
 	if [[ "$forceexec" != 1 ]]; then
 		completion=$($herbstclient_cmd complete "${#cmd[@]}" "${cmd[@]}")
+		if [[ "$?" = 7 ]] ; then
+			forceexec=1
+		fi
 	fi
-	if [[ -z "$completion" || "$forceexec" == 1 ]]; then
+	if [[ "$forceexec" == 1 ]]; then
 		echo "Executing ${cmd[@]}"
 		reply=$($herbstclient_cmd "${cmd[@]}")
 		status=$?
