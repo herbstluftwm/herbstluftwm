@@ -82,6 +82,9 @@ herbstclient pad $monitor $height
             quit_panel)
                 exit
                 ;;
+            reload)
+                exit
+                ;;
             #player)
             #    ;;
         esac

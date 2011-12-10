@@ -642,6 +642,11 @@ quit_panel::
     tells a panel to quit. The default panel.sh quits on this hook. Many
     scripts are using this hook.
 
+reload::
+    tells all daemons that the 'autostart' file is reloaded -- and tells them to
+    quit. This hook *should* be emited in the first line of everyones'
+    'autostart'.
+
 ENVIRONMENT VARIABLES
 ---------------------
 DISPLAY::
