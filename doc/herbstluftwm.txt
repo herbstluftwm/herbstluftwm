@@ -134,6 +134,28 @@ keybind 'KEY' 'COMMAND' ['ARGS ...']::
 keyunbind 'KEY'::
     removes the key binding for 'KEY'. Syntax for 'KEY' is defined in *keybind*.
 
+mousebind 'BUTTON' 'ACTION'::
+    adds a mouse binding for the floating mode. When 'BUTTON' is pressed, the
+    specified 'ACTION' will be performed. 'BUTTON' has a similar syntax to the
+    'KEY' argument of keybind: It consists of a list of modifiers (separated by
+    '-' or '+', valid modifiers are listed in the description of 'keybind') and
+    exactly one button name:
+
+        * +B1+ or +Button1+
+        * +B2+ or +Button2+
+        * +B3+ or +Button3+
+        * +B4+ or +Button4+
+        * +B5+ or +Button5+
+ ::
+    'ACTION' must be one of the following actions:
+
+        * +move+: Moves the window by dragging the cursor
+        * +resize+: Resizes the window by dragging the bottom right corner
+        * +zoom+: Resizes the window into all four directions by keeping the
+          center of the window constant.
+ ::
+    E.g.: +mousebind Mod1-Button3 zoom+
+
 spawn 'EXECUTABLE' ['ARGS ...']::
     spawns an 'EXECUTABLE' with its 'ARGS'. For details see 'man 3 execvp'.
     Example:
