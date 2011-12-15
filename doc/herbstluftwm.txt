@@ -156,6 +156,9 @@ mousebind 'BUTTON' 'ACTION'::
  ::
     E.g.: +mousebind Mod1-Button3 zoom+
 
+mouseunbind::
+    removes all mouse bindings.
+
 spawn 'EXECUTABLE' ['ARGS ...']::
     spawns an 'EXECUTABLE' with its 'ARGS'. For details see 'man 3 execvp'.
     Example:
