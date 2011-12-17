@@ -6,6 +6,8 @@ function hc() {
     herbstclient "$@"
 }
 
+hc emit_hook reload
+
 xsetroot -solid '#5A8E3A'
 
 

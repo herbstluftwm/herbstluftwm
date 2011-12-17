@@ -70,7 +70,7 @@ GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
             offset += bufsize;
             XFree(buf);
         }
-        HSDebug("XGetWindowProperty recieved: \"%s\"\n", result->str);
+        HSDebug("XGetWindowProperty received: \"%s\"\n", result->str);
     } while (bytes > 0);
     //
     if (parse_error_occured) {
