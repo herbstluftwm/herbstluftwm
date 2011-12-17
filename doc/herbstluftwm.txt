@@ -232,7 +232,8 @@ focus ['-i'|'-e'] 'DIRECTION'::
     +
     Example: The focus is at frame A. After executing 'focus right' focus will
     be at frame C.
-
++
+----
  Tree:  V,0     Screen: .-----..-----. (before)
         / \             |  B  ||  C  |
        /   \            '-----''-----'
@@ -246,6 +247,7 @@ focus ['-i'|'-e'] 'DIRECTION'::
      H,1   H,0          .-----..-----.
      / \   / \          |  A  ||  D  |
     A   B C*  D         '-----''-----'
+----
 
 raise ['0xWINID']::
     raises the specified window, which is specified by hexadecimal '0xWINID'. If
