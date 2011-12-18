@@ -16,6 +16,7 @@ Some BUGS:
     - separate layout.[hc] into modules: layout, monitor, tag
     - raise_on_click doesn't work if raise_on_click and numlock is enabled
     - raise_on_click doesn't work with gnome-settings-daemon
+    - window_gap actually should be called frame_gap
 
 Planned features:
     - dump/load floating values
@@ -28,4 +29,7 @@ Planned features:
     - mouse bindings in tiling mode
     - better xcompmgr support
     - keybind with keycodes
+    - chain keys/key chains/...
+    - lastfocused{window,frame,tag} - commands
+    - cycle_tags command
 
