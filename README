@@ -7,7 +7,7 @@ See LICENSE for details.
 
 ==== Requirements ====
 Build dependencies:
-    - build-environemnt (gcc/other compiler, make)
+    - build-environment (gcc/other compiler, make)
     - asciidoc (only when building from git, not when building from tarball)
 Runtime dependencies:
     - bash (if you use the default autostart file)
