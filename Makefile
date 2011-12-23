@@ -60,6 +60,7 @@ install: all
 	mkdir -p $(ETCDIR)/bash_completion.d/
 	mkdir -p $(CONFIGDIR)
 	mkdir -p $(ZSHCOMPLETIONDIR)
+	mkdir -p $(XSESSIONSDIR)
 	@echo "==> copyiing files..."
 	install $(TARGET) $(BINDIR)
 	install ipc-client/herbstclient $(BINDIR)/
@@ -74,6 +75,7 @@ install: all
 	install -m 755 share/restartpanels.sh $(CONFIGDIR)/
 	install -m 644 share/herbstclient-completion $(ETCDIR)/bash_completion.d/
 	install -m 644 share/_herbstclient $(ZSHCOMPLETIONDIR)/
+	install -m 644 share/herbstluftwm.desktop $(XSESSIONSDIR)/
 	install -m 644 scripts/README $(EXAMPLESDIR)/
 	install -m 755 scripts/*.sh $(EXAMPLESDIR)/
 
