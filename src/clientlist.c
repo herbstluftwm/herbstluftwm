@@ -40,9 +40,7 @@ GHashTable* g_clients;
 
 // atoms from dwm.c
 enum { WMProtocols, WMDelete, WMState, WMLast };        /* default atoms */
-enum { NetSupported, NetWMName, NetWMState,
-       NetWMFullscreen, NetLast };                      /* EWMH atoms */
-static Atom g_wmatom[WMLast], g_netatom[NetLast];
+static Atom g_wmatom[WMLast];
 
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
@@ -90,10 +88,6 @@ void clientlist_init() {
     g_wmatom[WMProtocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
     g_wmatom[WMDelete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
-    g_netatom[NetSupported] = XInternAtom(g_display, "_NET_SUPPORTED", False);
-    g_netatom[NetWMName] = XInternAtom(g_display, "_NET_WM_NAME", False);
-    g_netatom[NetWMState] = XInternAtom(g_display, "_NET_WM_STATE", False);
-    g_netatom[NetWMFullscreen] = XInternAtom(g_display, "_NET_WM_STATE_FULLSCREEN", False);
     // init actual client list
     g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
                                       NULL, (GDestroyNotify)destroy_client);
