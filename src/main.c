@@ -16,6 +16,7 @@
 #include "hook.h"
 #include "mouse.h"
 #include "rules.h"
+#include "ewmh.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -538,6 +539,7 @@ static struct {
     { settings_init,    settings_destroy    },
     { clientlist_init,  clientlist_destroy  },
     { layout_init,      layout_destroy      },
+    { ewmh_init,        ewmh_destroy        },
     { mouse_init,       mouse_destroy       },
     { hook_init,        hook_destroy        },
     { rules_init,       rules_destroy       },
