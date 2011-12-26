@@ -12,6 +12,8 @@
 
 enum {
     NetSupported,
+    NetClientList,
+    NetClientListStacking,
     NetLast
 };
 
@@ -19,6 +21,11 @@ Atom g_netatom[NetLast];
 
 void ewmh_init();
 void ewmh_destroy();
+
+void ewmh_add_client(Window win);
+void ewmh_remove_client(Window win);
+
+void ewmh_update_client_list();
 
 #endif
 

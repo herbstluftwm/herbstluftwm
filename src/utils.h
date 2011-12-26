@@ -47,6 +47,9 @@ XRectangle parse_rectangle(char* string);
 
 void g_queue_remove_element(GQueue* queue, GList* elem);
 
+// find an element in an array buf with elems elements of size size.
+int array_find(void* buf, size_t elems, size_t size, void* needle);
+
 // returns the unichar in GSTR at position GSTR
 #define UTF8_STRING_AT(GSTR, OFFS) \
     g_utf8_get_char( \

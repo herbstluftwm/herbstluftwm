@@ -235,4 +235,12 @@ void g_queue_remove_element(GQueue* queue, GList* elem) {
     }
 }
 
+int array_find(void* buf, size_t elems, size_t size, void* needle) {
+    for (int i = 0; i < elems; i++) {
+        if (0 == memcmp((char*)buf + (size * i), needle, size)) {
+            return i;
+        }
+    }
+    return -1;
+}
 

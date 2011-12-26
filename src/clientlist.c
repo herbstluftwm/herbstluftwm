@@ -10,6 +10,7 @@
 #include "utils.h"
 #include "hook.h"
 #include "mouse.h"
+#include "ewmh.h"
 #include "rules.h"
 #include "ipc-protocol.h"
 // system
@@ -36,7 +37,8 @@ unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
 regex_t g_ignore_class_regex; // clients that match this won't be managed
 
-GHashTable* g_clients;
+GHashTable* g_clients; // container of all clients
+
 
 // atoms from dwm.c
 enum { WMProtocols, WMDelete, WMState, WMLast };        /* default atoms */
@@ -176,6 +178,7 @@ HSClient* manage_client(Window win) {
 
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
+    ewmh_add_client(client->window);
     XSetWindowBorderWidth(g_display, win, *g_window_border_width);
     // insert to layout
     if (!client->tag) {
@@ -217,6 +220,7 @@ void unmanage_client(Window win) {
     XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
     g_hash_table_remove(g_clients, &win);
+    ewmh_remove_client(win);
     tag_set_flags_dirty();
 }
 
