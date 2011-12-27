@@ -30,6 +30,7 @@ void ewmh_init() {
         { NetClientList,            "_NET_CLIENT_LIST"          },
         { NetClientListStacking,    "_NET_CLIENT_LIST_STACKING" },
         { NetNumberOfDesktops,      "_NET_NUMBER_OF_DESKTOPS"   },
+        { NetDesktopNames,          "_NET_DESKTOP_NAMES"        },
     };
     for (int i = 0; i < LENGTH(a2n); i++) {
         g_netatom[a2n[i].atom] = XInternAtom(g_display, a2n[i].name, False);
@@ -45,6 +46,7 @@ void ewmh_init() {
     /* init many properties */
     ewmh_update_client_list();
     ewmh_update_desktops();
+    ewmh_update_desktop_names();
 }
 
 void ewmh_destroy() {
@@ -84,5 +86,16 @@ void ewmh_remove_client(Window win) {
 void ewmh_update_desktops() {
     XChangeProperty(g_display, g_root, g_netatom[NetNumberOfDesktops],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(g_tags->len), 1);
+}
+
+void ewmh_update_desktop_names() {
+    char**  names = g_new(char*, g_tags->len);
+    for (int i = 0; i < g_tags->len; i++) {
+        names[i] = g_array_index(g_tags, HSTag*,i)->name->str;
+    }
+    XTextProperty text_prop;
+    Xutf8TextListToTextProperty(g_display, names, g_tags->len,
+                                XUTF8StringStyle, &text_prop);
+    XSetTextProperty(g_display, g_root, &text_prop, g_netatom[NetDesktopNames]);
 }
 

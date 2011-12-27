@@ -1039,6 +1039,7 @@ HSTag* add_tag(char* name) {
     tag->floating = false;
     g_array_append_val(g_tags, tag);
     ewmh_update_desktops();
+    ewmh_update_desktop_names();
     tag_set_flags_dirty();
     return tag;
 }
@@ -1064,6 +1065,7 @@ int tag_rename_command(int argc, char** argv) {
         return HERBST_TAG_IN_USE;
     }
     tag->name = g_string_assign(tag->name, argv[2]);
+    ewmh_update_desktop_names();
     hook_emit_list("tag_renamed", tag->name->str, NULL);
     return 0;
 }
@@ -1113,6 +1115,7 @@ int tag_remove_command(int argc, char** argv) {
         }
     }
     ewmh_update_desktops();
+    ewmh_update_desktop_names();
     tag_set_flags_dirty();
     hook_emit_list("tag_removed", oldname, target->name->str, NULL);
     g_free(oldname);

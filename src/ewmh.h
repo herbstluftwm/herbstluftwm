@@ -15,6 +15,7 @@ enum {
     NetClientList,
     NetClientListStacking,
     NetNumberOfDesktops,
+    NetDesktopNames,
     NetLast
 };
 
@@ -28,6 +29,7 @@ void ewmh_remove_client(Window win);
 
 void ewmh_update_client_list();
 void ewmh_update_desktops();
+void ewmh_update_desktop_names();
 
 #endif
 
