@@ -19,6 +19,7 @@
 
 Window*     g_windows; // array with Window-IDs
 size_t      g_window_count;
+static Window      g_wm_window;
 
 void ewmh_init() {
     /* init ewmh net atoms */
@@ -34,6 +35,8 @@ void ewmh_init() {
         { NetDesktopNames,          "_NET_DESKTOP_NAMES"        },
         { NetWmDesktop,             "_NET_WM_DESKTOP"           },
         { NetActiveWindow,          "_NET_ACTIVE_WINDOW"        },
+        { NetSupportingWmCheck,     "_NET_SUPPORTING_WM_CHECK"  },
+        { NetWmName,                "_NET_WM_NAME"              },
     };
     for (int i = 0; i < LENGTH(a2n); i++) {
         g_netatom[a2n[i].atom] = XInternAtom(g_display, a2n[i].name, False);
@@ -45,6 +48,17 @@ void ewmh_init() {
     /* init some globals */
     g_windows = NULL;
     g_window_count = 0;
+
+    /* init for the supporting wm check */
+    g_wm_window = XCreateSimpleWindow(g_display, g_root,
+                                      42, 42, 42, 42, 0, 0, 0);
+    XChangeProperty(g_display, g_root, g_netatom[NetSupportingWmCheck],
+        XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
+    XChangeProperty(g_display, g_wm_window, g_netatom[NetSupportingWmCheck],
+        XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
+    XChangeProperty(g_display, g_wm_window, g_netatom[NetWmName],
+        ATOM("UTF8_STRING"), 8, PropModeReplace,
+        (unsigned char*)WINDOW_MANAGER_NAME, strlen(WINDOW_MANAGER_NAME)+1);
 }
 
 void ewmh_update_all() {
@@ -57,6 +71,8 @@ void ewmh_update_all() {
 
 void ewmh_destroy() {
     g_free(g_windows);
+    XDeleteProperty(g_display, g_root, g_netatom[NetSupportingWmCheck]);
+    XDestroyWindow(g_display, g_wm_window);
 }
 
 void ewmh_update_client_list() {

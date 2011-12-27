@@ -19,6 +19,8 @@ enum {
     NetCurrentDesktop,
     NetWmDesktop,
     NetActiveWindow,
+    NetWmName,
+    NetSupportingWmCheck,
     NetLast
 };
 

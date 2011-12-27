@@ -10,7 +10,9 @@
 #include <X11/Xlib.h>
 
 #define HERBSTLUFT_AUTOSTART "herbstluftwm/autostart"
-#define HERBSTLUFT_VERSION_STRING "herbstluftwm " HERBSTLUFT_VERSION " (built on " __DATE__ ")"
+#define WINDOW_MANAGER_NAME "herbstluftwm"
+#define HERBSTLUFT_VERSION_STRING \
+    WINDOW_MANAGER_NAME " " HERBSTLUFT_VERSION " (built on " __DATE__ ")"
 
 #define HERBST_FRAME_CLASS "_HERBST_FRAME"
 #define WINDOW_MIN_HEIGHT 32
