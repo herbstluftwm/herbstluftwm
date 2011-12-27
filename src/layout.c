@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "utils.h"
 #include "hook.h"
+#include "ewmh.h"
 #include "ipc-protocol.h"
 #include "settings.h"
 #include "layout.h"
@@ -1037,6 +1038,7 @@ HSTag* add_tag(char* name) {
     tag->name = g_string_new(name);
     tag->floating = false;
     g_array_append_val(g_tags, tag);
+    ewmh_update_desktops();
     tag_set_flags_dirty();
     return tag;
 }
@@ -1110,6 +1112,7 @@ int tag_remove_command(int argc, char** argv) {
             break;
         }
     }
+    ewmh_update_desktops();
     tag_set_flags_dirty();
     hook_emit_list("tag_removed", oldname, target->name->str, NULL);
     g_free(oldname);

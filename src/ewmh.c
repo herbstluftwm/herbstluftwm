@@ -6,6 +6,7 @@
 #include "ewmh.h"
 #include "utils.h"
 #include "globals.h"
+#include "layout.h"
 
 #include <glib.h>
 #include <string.h>
@@ -28,6 +29,7 @@ void ewmh_init() {
         { NetSupported,             "_NET_SUPPORTED"            },
         { NetClientList,            "_NET_CLIENT_LIST"          },
         { NetClientListStacking,    "_NET_CLIENT_LIST_STACKING" },
+        { NetNumberOfDesktops,      "_NET_NUMBER_OF_DESKTOPS"   },
     };
     for (int i = 0; i < LENGTH(a2n); i++) {
         g_netatom[a2n[i].atom] = XInternAtom(g_display, a2n[i].name, False);
@@ -42,6 +44,7 @@ void ewmh_init() {
 
     /* init many properties */
     ewmh_update_client_list();
+    ewmh_update_desktops();
 }
 
 void ewmh_destroy() {
@@ -76,5 +79,10 @@ void ewmh_remove_client(Window win) {
         g_window_count--;
     }
     ewmh_update_client_list();
+}
+
+void ewmh_update_desktops() {
+    XChangeProperty(g_display, g_root, g_netatom[NetNumberOfDesktops],
+        XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(g_tags->len), 1);
 }
 

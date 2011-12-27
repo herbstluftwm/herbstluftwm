@@ -14,6 +14,7 @@ enum {
     NetSupported,
     NetClientList,
     NetClientListStacking,
+    NetNumberOfDesktops,
     NetLast
 };
 
@@ -26,6 +27,7 @@ void ewmh_add_client(Window win);
 void ewmh_remove_client(Window win);
 
 void ewmh_update_client_list();
+void ewmh_update_desktops();
 
 #endif
 
