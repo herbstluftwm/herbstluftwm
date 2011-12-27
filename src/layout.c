@@ -1114,6 +1114,7 @@ int tag_remove_command(int argc, char** argv) {
             break;
         }
     }
+    ewmh_update_current_desktop();
     ewmh_update_desktops();
     ewmh_update_desktop_names();
     tag_set_flags_dirty();
@@ -2033,6 +2034,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             frame_focus_recursive(tag->frame);
             monitor_apply_layout(other);
             monitor_apply_layout(monitor);
+            ewmh_update_current_desktop();
             emit_tag_changed(other->tag, other - (HSMonitor*)g_monitors->data);
             emit_tag_changed(tag, g_cur_monitor);
         }
@@ -2051,6 +2053,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     // focus window just has been shown
     // focus again to give input focus
     frame_focus_recursive(tag->frame);
+    ewmh_update_current_desktop();
     emit_tag_changed(tag, g_cur_monitor);
 }
 
@@ -2183,6 +2186,7 @@ void monitor_focus_by_index(int new_selection) {
         XWarpPointer(g_display, None, g_root, 0, 0, 0, 0, new_x, new_y);
     }
     // emit hooks
+    ewmh_update_current_desktop();
     emit_tag_changed(monitor->tag, new_selection);
 }
 

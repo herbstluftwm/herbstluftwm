@@ -16,6 +16,7 @@ enum {
     NetClientListStacking,
     NetNumberOfDesktops,
     NetDesktopNames,
+    NetCurrentDesktop,
     NetLast
 };
 
@@ -23,6 +24,7 @@ Atom g_netatom[NetLast];
 
 void ewmh_init();
 void ewmh_destroy();
+void ewmh_update_all();
 
 void ewmh_add_client(Window win);
 void ewmh_remove_client(Window win);
@@ -30,6 +32,7 @@ void ewmh_remove_client(Window win);
 void ewmh_update_client_list();
 void ewmh_update_desktops();
 void ewmh_update_desktop_names();
+void ewmh_update_current_desktop();
 
 #endif
 

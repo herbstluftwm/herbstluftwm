@@ -710,6 +710,7 @@ int main(int argc, char* argv[]) {
     scan();
     tag_force_update_flags();
     all_monitors_apply_layout();
+    ewmh_update_all();
     execute_autostart_file();
 
     // main loop

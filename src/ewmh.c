@@ -30,6 +30,7 @@ void ewmh_init() {
         { NetClientList,            "_NET_CLIENT_LIST"          },
         { NetClientListStacking,    "_NET_CLIENT_LIST_STACKING" },
         { NetNumberOfDesktops,      "_NET_NUMBER_OF_DESKTOPS"   },
+        { NetCurrentDesktop,        "_NET_CURRENT_DESKTOP"      },
         { NetDesktopNames,          "_NET_DESKTOP_NAMES"        },
     };
     for (int i = 0; i < LENGTH(a2n); i++) {
@@ -42,10 +43,13 @@ void ewmh_init() {
     /* init some globals */
     g_windows = NULL;
     g_window_count = 0;
+}
 
+void ewmh_update_all() {
     /* init many properties */
     ewmh_update_client_list();
     ewmh_update_desktops();
+    ewmh_update_current_desktop();
     ewmh_update_desktop_names();
 }
 
@@ -97,5 +101,16 @@ void ewmh_update_desktop_names() {
     Xutf8TextListToTextProperty(g_display, names, g_tags->len,
                                 XUTF8StringStyle, &text_prop);
     XSetTextProperty(g_display, g_root, &text_prop, g_netatom[NetDesktopNames]);
+}
+
+void ewmh_update_current_desktop() {
+    HSTag* tag = get_current_monitor()->tag;
+    int index = array_find(g_tags->data, g_tags->len, sizeof(HSTag*), &tag);
+    if (index < 0) {
+        g_warning("tag %s not found in internal list\n", tag->name->str);
+        return;
+    }
+    XChangeProperty(g_display, g_root, g_netatom[NetCurrentDesktop],
+        XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(index), 1);
 }
 
