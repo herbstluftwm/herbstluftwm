@@ -197,6 +197,7 @@ HSClient* manage_client(Window win) {
         frame_focus_window(client->tag->frame, win);
     }
 
+    ewmh_window_update_tag(client->window, client->tag);
     tag_set_flags_dirty();
     client_set_fullscreen(client, changes.fullscreen);
     monitor_apply_layout(find_monitor_with_tag(client->tag));

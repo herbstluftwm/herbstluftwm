@@ -17,8 +17,11 @@ enum {
     NetNumberOfDesktops,
     NetDesktopNames,
     NetCurrentDesktop,
+    NetWmDesktop,
     NetLast
 };
+
+struct HSTag;
 
 Atom g_netatom[NetLast];
 
@@ -33,6 +36,9 @@ void ewmh_update_client_list();
 void ewmh_update_desktops();
 void ewmh_update_desktop_names();
 void ewmh_update_current_desktop();
+
+// set the desktop property of a window
+void ewmh_window_update_tag(Window win, struct HSTag* tag);
 
 #endif
 

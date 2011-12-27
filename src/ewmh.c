@@ -32,6 +32,7 @@ void ewmh_init() {
         { NetNumberOfDesktops,      "_NET_NUMBER_OF_DESKTOPS"   },
         { NetCurrentDesktop,        "_NET_CURRENT_DESKTOP"      },
         { NetDesktopNames,          "_NET_DESKTOP_NAMES"        },
+        { NetWmDesktop,             "_NET_WM_DESKTOP"           },
     };
     for (int i = 0; i < LENGTH(a2n); i++) {
         g_netatom[a2n[i].atom] = XInternAtom(g_display, a2n[i].name, False);
@@ -111,6 +112,16 @@ void ewmh_update_current_desktop() {
         return;
     }
     XChangeProperty(g_display, g_root, g_netatom[NetCurrentDesktop],
+        XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(index), 1);
+}
+
+void ewmh_window_update_tag(Window win, HSTag* tag) {
+    int index = array_find(g_tags->data, g_tags->len, sizeof(HSTag*), &tag);
+    if (index < 0) {
+        g_warning("tag %s not found in internal list\n", tag->name->str);
+        return;
+    }
+    XChangeProperty(g_display, win, g_netatom[NetWmDesktop],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(index), 1);
 }
 

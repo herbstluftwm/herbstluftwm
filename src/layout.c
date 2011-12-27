@@ -455,6 +455,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
             frame->content.clients.count = count;
 
             client->tag = tag;
+            ewmh_window_update_tag(client->window, client->tag);
 
             index++;
         }
@@ -1095,6 +1096,7 @@ int tag_remove_command(int argc, char** argv) {
     for (i = 0; i < count; i++) {
         HSClient* client = get_client_from_window(buf[i]);
         client->tag = target;
+        ewmh_window_update_tag(client->window, client->tag);
         frame_insert_window(target->frame, buf[i]);
     }
     if (monitor_target) {
@@ -2099,6 +2101,8 @@ int tag_move_window_command(int argc, char** argv) {
     HSClient* client = get_client_from_window(window);
     assert(client != NULL);
     client->tag = target;
+    ewmh_window_update_tag(client->window, client->tag);
+
     // refresh things
     if (monitor && !monitor_target) {
         // window is moved to unvisible tag
