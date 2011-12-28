@@ -550,40 +550,17 @@ bool condition_windowtype(HSCondition* rule, HSClient* client) {
         XFree(buf);
     }
 
+    for (int i = NetWmWindowTypeFIRST; i <= NetWmWindowTypeLAST; i++) {
+        // try to find the window type
+        if (wintype == g_netatom[i]) {
+            // if found, then treat the window type as a string value,
+            // which is registred in g_netatom_names[]
+            return condition_string(rule, g_netatom_names[i]);
+        }
+    }
 
-    // now we have windowtype, check if it matches anything
-    // "thorsten` | dario: you also can leave the if-cascade as and
-    // temporary workaround until i make an ewmh-module"
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_DESKTOP"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_DESKTOP");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_DOCK"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_DOCK");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_TOOLBAR"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_TOOLBAR");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_MENU"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_MENU");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_UTILITY"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_UTILITY");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_SPLASH"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_SPLASH");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_DIALOG"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_DIALOG");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_DROPDOWN_MENU"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_POPUP_MENU"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_POPUP_MENU");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_TOOLTIP"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_TOOLTIP");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_NOTIFICATION"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_NOTIFICATION");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_COMBO"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_COMBO");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_DND"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_DND");
-    if(wintype == ATOM("_NET_WM_WINDOW_TYPE_NORMAL"))
-        return condition_string(rule, "_NET_WM_WINDOW_TYPE_NORMAL");
-
-    // not found
+    // if no valid window type has been found,
+    // it can not match
     return false;
 }
 
