@@ -530,7 +530,7 @@ bool condition_windowtype(HSCondition* rule, HSClient* client) {
     int status = XGetWindowProperty(
             g_display,
             client->window,
-            ATOM("_NET_WM_WINDOW_TYPE"),
+            g_netatom[NetWmWindowType],
             offset,
             bufsize,
             False,

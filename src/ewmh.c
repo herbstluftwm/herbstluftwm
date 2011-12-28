@@ -32,6 +32,7 @@ char* g_netatom_names[NetCOUNT] = {
     [ NetWmDesktop                  ] = "_NET_WM_DESKTOP"                   ,
     [ NetActiveWindow               ] = "_NET_ACTIVE_WINDOW"                ,
     [ NetWmName                     ] = "_NET_WM_NAME"                      ,
+    [ NetWmWindowType               ] = "_NET_WM_WINDOW_TYPE"               ,
     [ NetSupportingWmCheck          ] = "_NET_SUPPORTING_WM_CHECK"          ,
     [ NetWmWindowTypeDesktop        ] = "_NET_WM_WINDOW_TYPE_DESKTOP"       ,
     [ NetWmWindowTypeDock           ] = "_NET_WM_WINDOW_TYPE_DOCK"          ,

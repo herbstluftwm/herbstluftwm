@@ -24,6 +24,7 @@ enum {
     NetActiveWindow,
     NetWmName,
     NetSupportingWmCheck,
+    NetWmWindowType,
     /* window types */
     ENUM_WITH_ALIAS(NetWmWindowTypeDesktop, NetWmWindowTypeFIRST),
     NetWmWindowTypeDock,
