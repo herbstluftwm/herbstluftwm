@@ -47,11 +47,7 @@ struct HSTag;
 
 Atom g_netatom[NetCOUNT];
 
-typedef struct {
-    int     atom;
-    char*   name;
-} Int2String;
-extern Int2String g_a2n[];
+extern char* g_netatom_names[];
 
 void ewmh_init();
 void ewmh_destroy();

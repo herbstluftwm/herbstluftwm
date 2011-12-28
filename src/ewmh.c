@@ -22,37 +22,42 @@ size_t      g_window_count;
 static Window      g_wm_window;
 
 /* list of names of all _NET-atoms */
-Int2String g_a2n[] = {
-    { NetSupported,                 "_NET_SUPPORTED"                    },
-    { NetClientList,                "_NET_CLIENT_LIST"                  },
-    { NetClientListStacking,        "_NET_CLIENT_LIST_STACKING"         },
-    { NetNumberOfDesktops,          "_NET_NUMBER_OF_DESKTOPS"           },
-    { NetCurrentDesktop,            "_NET_CURRENT_DESKTOP"              },
-    { NetDesktopNames,              "_NET_DESKTOP_NAMES"                },
-    { NetWmDesktop,                 "_NET_WM_DESKTOP"                   },
-    { NetActiveWindow,              "_NET_ACTIVE_WINDOW"                },
-    { NetWmName,                    "_NET_WM_NAME"                      },
-    { NetSupportingWmCheck,         "_NET_SUPPORTING_WM_CHECK"          },
-    { NetWmWindowTypeDesktop,       "_NET_WM_WINDOW_TYPE_DESKTOP"       },
-    { NetWmWindowTypeDock,          "_NET_WM_WINDOW_TYPE_DOCK"          },
-    { NetWmWindowTypeToolbar,       "_NET_WM_WINDOW_TYPE_TOOLBAR"       },
-    { NetWmWindowTypeMenu,          "_NET_WM_WINDOW_TYPE_MENU"          },
-    { NetWmWindowTypeUtility,       "_NET_WM_WINDOW_TYPE_UTILITY"       },
-    { NetWmWindowTypeSplash,        "_NET_WM_WINDOW_TYPE_SPLASH"        },
-    { NetWmWindowTypeDialog,        "_NET_WM_WINDOW_TYPE_DIALOG"        },
-    { NetWmWindowTypeDropdownMenu,  "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU" },
-    { NetWmWindowTypePopupMenu,     "_NET_WM_WINDOW_TYPE_POPUP_MENU"    },
-    { NetWmWindowTypeTooltip,       "_NET_WM_WINDOW_TYPE_TOOLTIP"       },
-    { NetWmWindowTypeNotification,  "_NET_WM_WINDOW_TYPE_NOTIFICATION"  },
-    { NetWmWindowTypeCombo,         "_NET_WM_WINDOW_TYPE_COMBO"         },
-    { NetWmWindowTypeDnd,           "_NET_WM_WINDOW_TYPE_DND"           },
-    { NetWmWindowTypeNormal,        "_NET_WM_WINDOW_TYPE_NORMAL"        },
+char* g_netatom_names[NetCOUNT] = {
+    [ NetSupported                  ] = "_NET_SUPPORTED"                    ,
+    [ NetClientList                 ] = "_NET_CLIENT_LIST"                  ,
+    [ NetClientListStacking         ] = "_NET_CLIENT_LIST_STACKING"         ,
+    [ NetNumberOfDesktops           ] = "_NET_NUMBER_OF_DESKTOPS"           ,
+    [ NetCurrentDesktop             ] = "_NET_CURRENT_DESKTOP"              ,
+    [ NetDesktopNames               ] = "_NET_DESKTOP_NAMES"                ,
+    [ NetWmDesktop                  ] = "_NET_WM_DESKTOP"                   ,
+    [ NetActiveWindow               ] = "_NET_ACTIVE_WINDOW"                ,
+    [ NetWmName                     ] = "_NET_WM_NAME"                      ,
+    [ NetSupportingWmCheck          ] = "_NET_SUPPORTING_WM_CHECK"          ,
+    [ NetWmWindowTypeDesktop        ] = "_NET_WM_WINDOW_TYPE_DESKTOP"       ,
+    [ NetWmWindowTypeDock           ] = "_NET_WM_WINDOW_TYPE_DOCK"          ,
+    [ NetWmWindowTypeToolbar        ] = "_NET_WM_WINDOW_TYPE_TOOLBAR"       ,
+    [ NetWmWindowTypeMenu           ] = "_NET_WM_WINDOW_TYPE_MENU"          ,
+    [ NetWmWindowTypeUtility        ] = "_NET_WM_WINDOW_TYPE_UTILITY"       ,
+    [ NetWmWindowTypeSplash         ] = "_NET_WM_WINDOW_TYPE_SPLASH"        ,
+    [ NetWmWindowTypeDialog         ] = "_NET_WM_WINDOW_TYPE_DIALOG"        ,
+    [ NetWmWindowTypeDropdownMenu   ] = "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU" ,
+    [ NetWmWindowTypePopupMenu      ] = "_NET_WM_WINDOW_TYPE_POPUP_MENU"    ,
+    [ NetWmWindowTypeTooltip        ] = "_NET_WM_WINDOW_TYPE_TOOLTIP"       ,
+    [ NetWmWindowTypeNotification   ] = "_NET_WM_WINDOW_TYPE_NOTIFICATION"  ,
+    [ NetWmWindowTypeCombo          ] = "_NET_WM_WINDOW_TYPE_COMBO"         ,
+    [ NetWmWindowTypeDnd            ] = "_NET_WM_WINDOW_TYPE_DND"           ,
+    [ NetWmWindowTypeNormal         ] = "_NET_WM_WINDOW_TYPE_NORMAL"        ,
 };
 
 void ewmh_init() {
     /* init ewmh net atoms */
-    for (int i = 0; i < LENGTH(g_a2n); i++) {
-        g_netatom[g_a2n[i].atom] = XInternAtom(g_display, g_a2n[i].name, False);
+    for (int i = 0; i < NetCOUNT; i++) {
+        if (g_netatom_names[i] == NULL) {
+            g_warning("no name specified in g_netatom_names "
+                      "for atom number %d\n", i);
+            continue;
+        }
+        g_netatom[i] = XInternAtom(g_display, g_netatom_names[i], False);
     }
     /* tell which ewmh atoms are supported */
     XChangeProperty(g_display, g_root, g_netatom[NetSupported], XA_ATOM, 32,
