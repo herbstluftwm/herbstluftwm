@@ -10,23 +10,48 @@
 #include <X11/Xproto.h>
 #include <X11/Xatom.h>
 
+#define ENUM_WITH_ALIAS(Identifier, Alias) \
+    Identifier, Alias = Identifier
+
 enum {
-    NetSupported,
+    NetSupported = 0,
     NetClientList,
     NetClientListStacking,
     NetNumberOfDesktops,
-    NetDesktopNames,
     NetCurrentDesktop,
+    NetDesktopNames,
     NetWmDesktop,
     NetActiveWindow,
     NetWmName,
     NetSupportingWmCheck,
-    NetLast
+    /* window types */
+    ENUM_WITH_ALIAS(NetWmWindowTypeDesktop, NetWmWindowTypeFIRST),
+    NetWmWindowTypeDock,
+    NetWmWindowTypeToolbar,
+    NetWmWindowTypeMenu,
+    NetWmWindowTypeUtility,
+    NetWmWindowTypeSplash,
+    NetWmWindowTypeDialog,
+    NetWmWindowTypeDropdownMenu,
+    NetWmWindowTypePopupMenu,
+    NetWmWindowTypeTooltip,
+    NetWmWindowTypeNotification,
+    NetWmWindowTypeCombo,
+    NetWmWindowTypeDnd,
+    ENUM_WITH_ALIAS(NetWmWindowTypeNormal, NetWmWindowTypeLAST),
+    /* the count of hints */
+    NetCOUNT
 };
 
 struct HSTag;
 
-Atom g_netatom[NetLast];
+Atom g_netatom[NetCOUNT];
+
+typedef struct {
+    int     atom;
+    char*   name;
+} Int2String;
+extern Int2String g_a2n[];
 
 void ewmh_init();
 void ewmh_destroy();

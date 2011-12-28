@@ -6,6 +6,7 @@
 #include "rules.h"
 #include "globals.h"
 #include "utils.h"
+#include "ewmh.h"
 #include "clientlist.h"
 #include "ipc-protocol.h"
 

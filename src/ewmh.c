@@ -21,29 +21,42 @@ Window*     g_windows; // array with Window-IDs
 size_t      g_window_count;
 static Window      g_wm_window;
 
+/* list of names of all _NET-atoms */
+Int2String g_a2n[] = {
+    { NetSupported,                 "_NET_SUPPORTED"                    },
+    { NetClientList,                "_NET_CLIENT_LIST"                  },
+    { NetClientListStacking,        "_NET_CLIENT_LIST_STACKING"         },
+    { NetNumberOfDesktops,          "_NET_NUMBER_OF_DESKTOPS"           },
+    { NetCurrentDesktop,            "_NET_CURRENT_DESKTOP"              },
+    { NetDesktopNames,              "_NET_DESKTOP_NAMES"                },
+    { NetWmDesktop,                 "_NET_WM_DESKTOP"                   },
+    { NetActiveWindow,              "_NET_ACTIVE_WINDOW"                },
+    { NetWmName,                    "_NET_WM_NAME"                      },
+    { NetSupportingWmCheck,         "_NET_SUPPORTING_WM_CHECK"          },
+    { NetWmWindowTypeDesktop,       "_NET_WM_WINDOW_TYPE_DESKTOP"       },
+    { NetWmWindowTypeDock,          "_NET_WM_WINDOW_TYPE_DOCK"          },
+    { NetWmWindowTypeToolbar,       "_NET_WM_WINDOW_TYPE_TOOLBAR"       },
+    { NetWmWindowTypeMenu,          "_NET_WM_WINDOW_TYPE_MENU"          },
+    { NetWmWindowTypeUtility,       "_NET_WM_WINDOW_TYPE_UTILITY"       },
+    { NetWmWindowTypeSplash,        "_NET_WM_WINDOW_TYPE_SPLASH"        },
+    { NetWmWindowTypeDialog,        "_NET_WM_WINDOW_TYPE_DIALOG"        },
+    { NetWmWindowTypeDropdownMenu,  "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU" },
+    { NetWmWindowTypePopupMenu,     "_NET_WM_WINDOW_TYPE_POPUP_MENU"    },
+    { NetWmWindowTypeTooltip,       "_NET_WM_WINDOW_TYPE_TOOLTIP"       },
+    { NetWmWindowTypeNotification,  "_NET_WM_WINDOW_TYPE_NOTIFICATION"  },
+    { NetWmWindowTypeCombo,         "_NET_WM_WINDOW_TYPE_COMBO"         },
+    { NetWmWindowTypeDnd,           "_NET_WM_WINDOW_TYPE_DND"           },
+    { NetWmWindowTypeNormal,        "_NET_WM_WINDOW_TYPE_NORMAL"        },
+};
+
 void ewmh_init() {
     /* init ewmh net atoms */
-    struct {
-        int     atom;
-        char*   name;
-    } a2n[] = {
-        { NetSupported,             "_NET_SUPPORTED"            },
-        { NetClientList,            "_NET_CLIENT_LIST"          },
-        { NetClientListStacking,    "_NET_CLIENT_LIST_STACKING" },
-        { NetNumberOfDesktops,      "_NET_NUMBER_OF_DESKTOPS"   },
-        { NetCurrentDesktop,        "_NET_CURRENT_DESKTOP"      },
-        { NetDesktopNames,          "_NET_DESKTOP_NAMES"        },
-        { NetWmDesktop,             "_NET_WM_DESKTOP"           },
-        { NetActiveWindow,          "_NET_ACTIVE_WINDOW"        },
-        { NetSupportingWmCheck,     "_NET_SUPPORTING_WM_CHECK"  },
-        { NetWmName,                "_NET_WM_NAME"              },
-    };
-    for (int i = 0; i < LENGTH(a2n); i++) {
-        g_netatom[a2n[i].atom] = XInternAtom(g_display, a2n[i].name, False);
+    for (int i = 0; i < LENGTH(g_a2n); i++) {
+        g_netatom[g_a2n[i].atom] = XInternAtom(g_display, g_a2n[i].name, False);
     }
     /* tell which ewmh atoms are supported */
     XChangeProperty(g_display, g_root, g_netatom[NetSupported], XA_ATOM, 32,
-        PropModeReplace, (unsigned char *) g_netatom, NetLast);
+        PropModeReplace, (unsigned char *) g_netatom, NetCOUNT);
 
     /* init some globals */
     g_windows = NULL;
