@@ -179,9 +179,21 @@ void ewmh_handle_client_message(XEvent* event) {
         HSDebug("recieved unknown client message\n");
         return;
     }
+    int desktop_index;
     switch (index) {
         case NetActiveWindow:
             focus_window(me->window, true, true);
+            break;
+
+        case NetCurrentDesktop:
+            desktop_index = me->data.l[0];
+            if (desktop_index < 0 || desktop_index >= g_tags->len) {
+                HSDebug("_NET_CURRENT_DESKTOP: invalid index \"%d\"\n",
+                        desktop_index);
+                break;
+            }
+            HSTag* tag = g_array_index(g_tags, HSTag*, desktop_index);
+            monitor_set_tag(get_current_monitor(), tag);
             break;
 
         default:
