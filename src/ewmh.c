@@ -180,6 +180,10 @@ void ewmh_handle_client_message(XEvent* event) {
         return;
     }
     switch (index) {
+        case NetActiveWindow:
+            focus_window(me->window, true, true);
+            break;
+
         default:
             HSDebug("no handler for the client message \"%s\"\n",
                     g_netatom_names[index]);
