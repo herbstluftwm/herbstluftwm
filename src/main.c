@@ -61,7 +61,6 @@ int custom_hook_emit(int argc, char** argv);
 // handler for X-Events
 void buttonpress(XEvent* event);
 void buttonrelease(XEvent* event);
-void clientmessage(XEvent* event);
 void createnotify(XEvent* event);
 void configurerequest(XEvent* event);
 void configurenotify(XEvent* event);
@@ -513,7 +512,7 @@ static void fetch_settings() {
 static HandlerTable g_default_handler = {
     [ButtonPress] = buttonpress,
     [ButtonRelease] = buttonrelease,
-    [ClientMessage] = clientmessage,
+    [ClientMessage] = ewmh_handle_client_message,
     [CreateNotify] = createnotify,
     [ConfigureRequest] = configurerequest,
     [ConfigureNotify] = configurenotify,
@@ -575,9 +574,7 @@ void buttonrelease(XEvent* event) {
     HSDebug("name is: ButtonRelease\n");
     mouse_stop_drag();
 }
-void clientmessage(XEvent* event) {
-    HSDebug("name is: ClientMessage\n");
-}
+
 void createnotify(XEvent* event) {
     // printf("name is: CreateNotify\n");
     if (is_ipc_connectable(event->xcreatewindow.window)) {

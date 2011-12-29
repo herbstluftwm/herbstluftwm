@@ -66,5 +66,7 @@ void ewmh_update_current_desktop();
 // set the desktop property of a window
 void ewmh_window_update_tag(Window win, struct HSTag* tag);
 
+void ewmh_handle_client_message(XEvent* event);
+
 #endif
 

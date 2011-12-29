@@ -166,3 +166,24 @@ void ewmh_update_active_window(Window win) {
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(win), 1);
 }
 
+void ewmh_handle_client_message(XEvent* event) {
+    HSDebug("Received event: ClientMessage\n");
+    XClientMessageEvent* me = &(event->xclient);
+    int index;
+    for (index = 0; index < NetCOUNT; index++) {
+        if (me->message_type == g_netatom[index]) {
+            break;
+        }
+    }
+    if (index >= NetCOUNT) {
+        HSDebug("recieved unknown client message\n");
+        return;
+    }
+    switch (index) {
+        default:
+            HSDebug("no handler for the client message \"%s\"\n",
+                    g_netatom_names[index]);
+            break;
+    }
+}
+
