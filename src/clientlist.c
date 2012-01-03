@@ -200,6 +200,7 @@ HSClient* manage_client(Window win) {
     ewmh_window_update_tag(client->window, client->tag);
     tag_set_flags_dirty();
     client_set_fullscreen(client, changes.fullscreen);
+    ewmh_update_window_state(client);
     monitor_apply_layout(find_monitor_with_tag(client->tag));
     client_changes_free_members(&changes);
 
@@ -501,6 +502,7 @@ void client_set_fullscreen(HSClient* client, bool state) {
 
     char buf[STRING_BUF_SIZE];
     snprintf(buf, STRING_BUF_SIZE, "0x%lx", client->window);
+    ewmh_update_window_state(client);
     hook_emit_list("fullscreen", state ? "on" : "off", buf, NULL);
 }
 

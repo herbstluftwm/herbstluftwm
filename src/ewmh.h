@@ -25,6 +25,9 @@ enum {
     NetWmName,
     NetSupportingWmCheck,
     NetWmWindowType,
+    NetWmState,
+    /* window states */
+    NetWmStateFullscreen,
     /* window types */
     ENUM_WITH_ALIAS(NetWmWindowTypeDesktop, NetWmWindowTypeFIRST),
     NetWmWindowTypeDock,
@@ -45,6 +48,7 @@ enum {
 };
 
 struct HSTag;
+struct HSClient;
 
 Atom g_netatom[NetCOUNT];
 
@@ -62,6 +66,7 @@ void ewmh_update_desktops();
 void ewmh_update_desktop_names();
 void ewmh_update_active_window(Window win);
 void ewmh_update_current_desktop();
+void ewmh_update_window_state(struct HSClient* client);
 
 // set the desktop property of a window
 void ewmh_window_update_tag(Window win, struct HSTag* tag);

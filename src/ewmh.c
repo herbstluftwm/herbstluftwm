@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "globals.h"
 #include "layout.h"
+#include "clientlist.h"
 
 #include <glib.h>
 #include <string.h>
@@ -33,6 +34,8 @@ char* g_netatom_names[NetCOUNT] = {
     [ NetActiveWindow               ] = "_NET_ACTIVE_WINDOW"                ,
     [ NetWmName                     ] = "_NET_WM_NAME"                      ,
     [ NetWmWindowType               ] = "_NET_WM_WINDOW_TYPE"               ,
+    [ NetWmState                    ] = "_NET_WM_STATE"                     ,
+    [ NetWmStateFullscreen          ] = "_NET_WM_STATE_FULLSCREEN"          ,
     [ NetSupportingWmCheck          ] = "_NET_SUPPORTING_WM_CHECK"          ,
     [ NetWmWindowTypeDesktop        ] = "_NET_WM_WINDOW_TYPE_DESKTOP"       ,
     [ NetWmWindowTypeDock           ] = "_NET_WM_WINDOW_TYPE_DOCK"          ,
@@ -201,5 +204,29 @@ void ewmh_handle_client_message(XEvent* event) {
                     g_netatom_names[index]);
             break;
     }
+}
+
+void ewmh_update_window_state(struct HSClient* client) {
+    /* mapping between EWMH atoms and client struct members */
+    struct {
+        int     atom_index;
+        bool    enabled;
+    } client_atoms[] = {
+        { NetWmStateFullscreen,         client->fullscreen      },
+    };
+
+    /* find out which flags are set */
+    Atom window_state[LENGTH(client_atoms)];
+    size_t count_enabled = 0;
+    for (int i = 0; i < LENGTH(client_atoms); i++) {
+        if (client_atoms[i].enabled) {
+            window_state[count_enabled] = g_netatom[client_atoms[i].atom_index];
+            count_enabled++;
+        }
+    }
+
+    /* write it to the window */
+    XChangeProperty(g_display, client->window, g_netatom[NetWmState], XA_ATOM,
+        32, PropModeReplace, (unsigned char *) window_state, count_enabled);
 }
 
