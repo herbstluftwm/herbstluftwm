@@ -254,17 +254,46 @@ void mouse_function_resize(XMotionEvent* me) {
     int x_diff = me->x_root - g_button_drag_start.x_root;
     int y_diff = me->y_root - g_button_drag_start.y_root;
     g_win_drag_client->float_size = g_win_drag_start;
+    // relative x/y coords in drag window
+    HSMonitor* m = g_drag_monitor;
+    int rel_x = monitor_get_relative_x(m, g_button_drag_start.x_root) - g_win_drag_start.x;
+    int rel_y = monitor_get_relative_y(m, g_button_drag_start.y_root) - g_win_drag_start.y;
+    bool top = false;
+    bool left = false;
+    if (rel_y < g_win_drag_start.height/2) {
+        top = true;
+        y_diff *= -1;
+    }
+    if (rel_x < g_win_drag_start.width/2) {
+        left = true;
+        x_diff *= -1;
+    }
     // avoid an overflow
     int new_width  = g_win_drag_client->float_size.width + x_diff;
     int new_height = g_win_drag_client->float_size.height + y_diff;
+    if (left)   g_win_drag_client->float_size.x -= x_diff;
+    if (top)    g_win_drag_client->float_size.y -= y_diff;
     if (new_width <  WINDOW_MIN_WIDTH)  new_width = WINDOW_MIN_WIDTH;
     if (new_height < WINDOW_MIN_HEIGHT) new_height = WINDOW_MIN_HEIGHT;
     g_win_drag_client->float_size.width  = new_width;
     g_win_drag_client->float_size.height = new_height;
     // snap it to other windows
     int dx, dy;
+    int snap_flags = 0;
+    if (left)   snap_flags |= SNAP_EDGE_LEFT;
+    else        snap_flags |= SNAP_EDGE_RIGHT;
+    if (top)    snap_flags |= SNAP_EDGE_TOP;
+    else        snap_flags |= SNAP_EDGE_BOTTOM;
     client_snap_vector(g_win_drag_client, g_win_drag_client->tag,
-                       SNAP_EDGE_RIGHT | SNAP_EDGE_BOTTOM, &dx, &dy);
+                       snap_flags, &dx, &dy);
+    if (left) {
+        g_win_drag_client->float_size.x += dx;
+        dx *= -1;
+    }
+    if (top) {
+        g_win_drag_client->float_size.y += dy;
+        dy *= -1;
+    }
     g_win_drag_client->float_size.width += dx;
     g_win_drag_client->float_size.height += dy;
     client_resize_floating(g_win_drag_client, g_drag_monitor);
