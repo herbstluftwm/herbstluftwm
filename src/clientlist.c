@@ -496,7 +496,7 @@ void client_set_fullscreen(HSClient* client, bool state) {
         // TODO: do proper stacking layer handling
         XRaiseWindow(g_display, client->window);
     }
-    monitor_apply_layout(get_current_monitor());
+    monitor_apply_layout(find_monitor_with_tag(client->tag));
 
     char buf[STRING_BUF_SIZE];
     snprintf(buf, STRING_BUF_SIZE, "0x%lx", client->window);
@@ -505,7 +505,7 @@ void client_set_fullscreen(HSClient* client, bool state) {
 
 void client_set_pseudotile(HSClient* client, bool state) {
     client->pseudotile = state;
-    monitor_apply_layout(get_current_monitor());
+    monitor_apply_layout(find_monitor_with_tag(client->tag));
 }
 
 int client_set_property_command(int argc, char** argv) {
