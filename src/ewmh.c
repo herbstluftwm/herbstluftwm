@@ -182,6 +182,8 @@ void ewmh_handle_client_message(XEvent* event) {
         HSDebug("recieved unknown client message\n");
         return;
     }
+    HSClient* client;
+
     int desktop_index;
     switch (index) {
         case NetActiveWindow:
@@ -197,6 +199,55 @@ void ewmh_handle_client_message(XEvent* event) {
             }
             HSTag* tag = g_array_index(g_tags, HSTag*, desktop_index);
             monitor_set_tag(get_current_monitor(), tag);
+            break;
+
+        case NetWmState:
+            client = get_client_from_window(me->window);
+            /* ignore requests for unmanaged windows */
+            if (!client) break;
+
+            /* mapping between EWMH atoms and client struct members */
+            struct {
+                int     atom_index;
+                bool    enabled;
+                void    (*callback)(HSClient*, bool);
+            } client_atoms[] = {
+                { NetWmStateFullscreen,
+                    client->fullscreen,     client_set_fullscreen },
+            };
+
+            /* me->data.l[1] and [2] describe the properties to alter */
+            for (int prop = 1; prop <= 2; prop++) {
+                if (me->data.l[prop] == 0) {
+                    /* skip if no property is specified */
+                    continue;
+                }
+                /* check if we support the property data[prop] */
+                int i;
+                for (i = 0; i < LENGTH(client_atoms); i++) {
+                    if (g_netatom[client_atoms[i].atom_index]
+                        == me->data.l[prop]) {
+                        break;
+                    }
+                }
+                printf("atom == %d\n", i);
+                if (i >= LENGTH(client_atoms)) {
+                    /* property will not be handled */
+                    continue;
+                }
+                bool new_value[] = {
+                    [ _NET_WM_STATE_REMOVE  ] = false,
+                    [ _NET_WM_STATE_ADD     ] = true,
+                    [ _NET_WM_STATE_TOGGLE  ] = !client_atoms[i].enabled,
+                };
+                int action = me->data.l[0];
+                printf("action == %d\n", action);
+                if (action >= LENGTH(new_value)) {
+                    HSDebug("_NET_WM_STATE: invalid action %d\n", action);
+                }
+                /* change the value */
+                client_atoms[i].callback(client, new_value[action]);
+            }
             break;
 
         default:
