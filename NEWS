@@ -30,6 +30,23 @@ Small bugfixes and major features:
         - consequence: fullscreen
         - consequence: manage (whether window will be managed)
 
+    * basic ewmh features:
+
+        - the following properties will be set:
+            _NET_ACTIVE_WINDOW
+            _NET_CLIENT_LIST
+            _NET_CURRENT_DESKTOP
+            _NET_DESKTOP_NAMES
+            _NET_NUMBER_OF_DESKTOPS
+            _NET_SUPPORTING_WM_CHECK
+            _NET_WM_DESKTOP
+            _NET_WM_STATE: fullscreen
+
+        - the following client messages are handled:
+            _NET_ACTIVE_WINDOW
+            _NET_CURRENT_DESKTOP
+            _NET_WM_STATE: fullscreen
+
 
 Release 0.1 on 2011-10-02
 -------------------------
