@@ -10,6 +10,7 @@ Small bugfixes and major features:
     * let panel.sh fork less often
     * set clients to fullscreen (without EWMH yet!)
     * new client layouting algorithm: grid layout
+    * new command argument: keyunbind --all
     * new command: pseudotile (tile client but keep its floating size)
     * client rules with:
 

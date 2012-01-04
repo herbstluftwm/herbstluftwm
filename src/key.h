@@ -26,6 +26,7 @@ int keybind(int argc, char** argv);
 int keyunbind(int argc, char** argv); //removes a keybinding
 
 void key_remove_bind_with_keysym(unsigned int modifiers, KeySym sym);
+void key_remove_all_binds();
 void regrab_keys();
 void grab_keybind(KeyBinding* binding, void* useless_pointer);
 void update_numlockmask();

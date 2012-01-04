@@ -11,6 +11,9 @@ hc emit_hook reload
 xsetroot -solid '#5A8E3A'
 
 
+# remove all existing keybindings
+hc keyunbind --all
+
 # keybindings
 Mod=Mod1
 hc keybind $Mod-q quit

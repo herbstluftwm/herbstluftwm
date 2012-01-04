@@ -28,6 +28,10 @@ void key_init() {
 }
 
 void key_destroy() {
+    key_remove_all_binds();
+}
+
+void key_remove_all_binds() {
 #if GLIB_CHECK_VERSION(2, 28, 0)
     g_list_free_full(g_key_binds, g_free); // only available since glib 2.28
 #else
@@ -37,8 +41,9 @@ void key_destroy() {
     g_list_foreach(g_key_binds, (GFunc)g_free, 0);
     g_list_free(g_key_binds);
 #endif
+    g_key_binds = NULL;
+    regrab_keys();
 }
-
 
 unsigned int modifiername2mask(const char* name) {
     static struct {
@@ -159,6 +164,11 @@ int keyunbind(int argc, char** argv) {
     if (argc <= 1) {
         fprintf(stderr, "keybind: not enough arguments\n");
         return HERBST_INVALID_ARGUMENT;
+    }
+    // remove all keybinds if wanted
+    if (!strcmp(argv[1], "-F") || !strcmp(argv[1], "--all")) {
+        key_remove_all_binds();
+        return 0;
     }
     unsigned int modifiers;
     KeySym keysym;

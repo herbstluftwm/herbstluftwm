@@ -131,8 +131,9 @@ keybind 'KEY' 'COMMAND' ['ARGS ...']::
         * keybind Mod1-i toggle always_show_frame
         * keybind Mod1-Shift-space cycle_layout -1
 
-keyunbind 'KEY'::
+keyunbind 'KEY'|*-F*|*--all*::
     removes the key binding for 'KEY'. Syntax for 'KEY' is defined in *keybind*.
+    If *-F* or *--all* is given, then all key bindings will be removed.
 
 mousebind 'BUTTON' 'ACTION'::
     adds a mouse binding for the floating mode. When 'BUTTON' is pressed, the
