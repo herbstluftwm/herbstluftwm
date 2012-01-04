@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "settings.h"
 #include "layout.h"
+#include "key.h"
 
 #include <glib.h>
 #include <string.h>
@@ -16,6 +17,7 @@
 static char* completion_directions[]    = { "left", "right", "down", "up",NULL};
 static char* completion_focus_args[]    = { "-i", "-e", NULL };
 static char* completion_unrule_args[]   = { "-F", "--all", NULL };
+static char* completion_keyunbind_args[]= { "-F", "--all", NULL };
 static char* completion_flag_args[]     = { "on", "off", "toggle", NULL };
 static char* completion_status[]        = { "status", NULL };
 
@@ -54,6 +56,7 @@ struct {
     { "shift",          2,  first_parameter_is_flag },
     { "fullscreen",     2,  no_completion },
     { "pseudotile",     2,  no_completion },
+    { "keyunbind",      2,  no_completion },
     { "layout",         2,  no_completion },
     { "load",           3,  no_completion },
     { "load",           2,  first_parameter_is_tag },
@@ -96,6 +99,8 @@ struct {
     { "load",           1,  .function = complete_against_tags },
     { "move",           1,  .function = complete_against_tags },
     { "pseudotile",     1,  .list = completion_flag_args },
+    { "keyunbind",      1,  .list = completion_keyunbind_args },
+    { "keyunbind",      1,  .function = complete_against_keybinds },
     { "rename",         1,  .function = complete_against_tags },
     { "resize",         1,  .list = completion_directions },
     { "shift",          1,  .list = completion_directions },
@@ -178,6 +183,16 @@ void complete_against_tags(int argc, char** argv, int pos, GString** output) {
             *output = g_string_append(*output, "\n");
         }
     }
+}
+
+void complete_against_keybinds(int argc, char** argv, int pos, GString** output) {
+    char* needle;
+    if (pos >= argc) {
+        needle = "";
+    } else {
+        needle = argv[pos];
+    }
+    key_find_binds(needle, output);
 }
 
 bool parameter_expected(int argc, char** argv, int pos) {

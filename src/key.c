@@ -45,29 +45,45 @@ void key_remove_all_binds() {
     regrab_keys();
 }
 
+static struct {
+    char* name;
+    unsigned int mask;
+} g_modifier_names[] = {
+    { "Mod1",       Mod1Mask },
+    { "Mod2",       Mod2Mask },
+    { "Mod3",       Mod3Mask },
+    { "Mod4",       Mod4Mask },
+    { "Mod5",       Mod5Mask },
+    { "Alt",        Mod1Mask },
+    { "Super",      Mod4Mask },
+    { "Shift",      ShiftMask },
+    { "Control",    ControlMask },
+    { "Ctrl",       ControlMask },
+};
+
 unsigned int modifiername2mask(const char* name) {
-    static struct {
-        char* name;
-        unsigned int mask;
-    } table[] = {
-        { "Mod1",       Mod1Mask },
-        { "Mod2",       Mod2Mask },
-        { "Mod3",       Mod3Mask },
-        { "Mod4",       Mod4Mask },
-        { "Mod5",       Mod5Mask },
-        { "Alt",        Mod1Mask },
-        { "Super",      Mod4Mask },
-        { "Shift",      ShiftMask },
-        { "Control",    ControlMask },
-        { "Ctrl",       ControlMask },
-    };
     int i;
-    for (i = 0; i < LENGTH(table); i++) {
-        if (!strcmp(table[i].name, name)) {
-            return table[i].mask;
+    for (i = 0; i < LENGTH(g_modifier_names); i++) {
+        if (!strcmp(g_modifier_names[i].name, name)) {
+            return g_modifier_names[i].mask;
         }
     }
     return 0;
+}
+
+/**
+ * \brief finds a (any) modifier in mask and returns its name
+ *
+ * \return  the name as a char string. you don't need to free it.
+ */
+char*   modifiermask2name(unsigned int mask) {
+    int i;
+    for (i = 0; i < LENGTH(g_modifier_names); i++) {
+        if (g_modifier_names[i].mask & mask) {
+            return g_modifier_names[i].name;
+        }
+    }
+    return NULL;
 }
 
 int keybind(int argc, char** argv) {
@@ -231,4 +247,62 @@ void update_numlockmask() {
                 numlockmask = (1 << i);
     XFreeModifiermap(modmap);
 }
+
+/**
+ * \brief   converts the given binding to a GString
+ * \return  the new created GString. You have to destroy it.
+ */
+GString* keybinding_to_g_string(KeyBinding* binding) {
+    GString* str = g_string_new("");
+
+    /* add modifiers */
+    unsigned int old_mask = 0, new_mask = binding->modifiers;
+    while (new_mask != 0 && new_mask != old_mask) {
+        old_mask = new_mask;
+
+        /* try to find a modifier */
+        char* name = modifiermask2name(old_mask);
+        if (!name) {
+            break;
+        }
+        str = g_string_append(str, name);
+        str = g_string_append_c(str, KEY_COMBI_SEPARATORS[0]);
+        /* remove found mask from mask */
+        new_mask = old_mask & ~ modifiername2mask(name);
+    }
+
+    /* add keysym */
+    char* name = XKeysymToString(binding->keysym);
+    if (!name) {
+        g_warning("XKeysymToString failed! using \'?\' instead\n");
+        name = "?";
+    }
+    str = g_string_append(str, name);
+
+    return str;
+}
+
+struct key_find_context {
+    GString**   output;
+    char*       needle;
+    size_t      needle_len;
+};
+
+static void key_find_binds_helper(KeyBinding* b, struct key_find_context* c) {
+    GString* name = keybinding_to_g_string(b);
+    if (!strncmp(c->needle, name->str, c->needle_len)) {
+        /* add to output if key starts with searched needle */
+        *c->output = g_string_append(*c->output, name->str);
+        *c->output = g_string_append_c(*c->output, '\n');
+    }
+    g_string_free(name, true);
+}
+
+void key_find_binds(char* needle, GString** output) {
+    struct key_find_context c = {
+        output, needle, strlen(needle)
+    };
+    g_list_foreach(g_key_binds, (GFunc)key_find_binds_helper, &c);
+}
+
 
