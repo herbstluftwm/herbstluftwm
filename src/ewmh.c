@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "layout.h"
 #include "clientlist.h"
+#include "settings.h"
 
 #include <glib.h>
 #include <string.h>
@@ -21,6 +22,7 @@
 Window*     g_windows; // array with Window-IDs
 size_t      g_window_count;
 static Window      g_wm_window;
+int*        g_focus_stealing_prevention;
 
 /* list of names of all _NET-atoms */
 char* g_netatom_names[NetCOUNT] = {
@@ -54,6 +56,10 @@ char* g_netatom_names[NetCOUNT] = {
 };
 
 void ewmh_init() {
+    /* init globals */
+    g_focus_stealing_prevention =
+        &(settings_find("focus_stealing_prevention")->value.i);
+
     /* init ewmh net atoms */
     for (int i = 0; i < NetCOUNT; i++) {
         if (g_netatom_names[i] == NULL) {
@@ -63,6 +69,7 @@ void ewmh_init() {
         }
         g_netatom[i] = XInternAtom(g_display, g_netatom_names[i], False);
     }
+
     /* tell which ewmh atoms are supported */
     XChangeProperty(g_display, g_root, g_netatom[NetSupported], XA_ATOM, 32,
         PropModeReplace, (unsigned char *) g_netatom, NetCOUNT);
@@ -169,6 +176,16 @@ void ewmh_update_active_window(Window win) {
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(win), 1);
 }
 
+bool focus_stealing_allowed(long source) {
+    if (*g_focus_stealing_prevention) {
+        /* only allow it to pagers/taskbars */
+        return (source == 2);
+    } else {
+        /* no prevention */
+        return true;
+    }
+}
+
 void ewmh_handle_client_message(XEvent* event) {
     HSDebug("Received event: ClientMessage\n");
     XClientMessageEvent* me = &(event->xclient);
@@ -187,7 +204,11 @@ void ewmh_handle_client_message(XEvent* event) {
     int desktop_index;
     switch (index) {
         case NetActiveWindow:
-            focus_window(me->window, true, true);
+            // only steal focus it allowed to the current source
+            // (i.e.  me->data.l[3] in this case as specified by EWMH)
+            if (focus_stealing_allowed(me->data.l[3])) {
+                focus_window(me->window, true, true);
+            }
             break;
 
         case NetCurrentDesktop:

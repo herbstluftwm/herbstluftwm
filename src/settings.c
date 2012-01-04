@@ -47,6 +47,7 @@ SettingsPair g_settings[] = {
         .on_change = reset_frame_colors },
     { "focus_follows_shift", { .i = 1 }, .type = HS_Int },
     { "focus_follows_mouse", { .i = 0 }, .type = HS_Int },
+    { "focus_stealing_prevention", { .i = 1 }, .type = HS_Int },
     { "swap_monitors_to_get_tag", { .i = 1 }, .type = HS_Int },
     { "raise_on_focus", { .i = 1 }, .type = HS_Int },
     { "raise_on_click", { .i = 1 }, .type = HS_Int },

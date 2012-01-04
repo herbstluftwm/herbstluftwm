@@ -507,6 +507,10 @@ focus_follows_mouse (Integer)::
     feature is also known as sloppy focus). If unset, you need to click to
     change the window focus by mouse.
 
+focus_stealing_prevention (Integer)::
+    If set, only pagers and taskbars are allowed to change the focus. If unset,
+    all applications can request a focus change.
+
 swap_monitors_to_get_tag (Integer)::
     If set: If you want to view a tag, that already is viewed on another
     monitor, then the monitor contents will be swapped and you see the wanted
