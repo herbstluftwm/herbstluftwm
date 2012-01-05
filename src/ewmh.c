@@ -33,6 +33,7 @@ char* g_netatom_names[NetCOUNT] = {
     [ NetCurrentDesktop             ] = "_NET_CURRENT_DESKTOP"              ,
     [ NetDesktopNames               ] = "_NET_DESKTOP_NAMES"                ,
     [ NetWmDesktop                  ] = "_NET_WM_DESKTOP"                   ,
+    [ NetDesktopViewport            ] = "_NET_DESKTOP_VIEWPORT"             ,
     [ NetActiveWindow               ] = "_NET_ACTIVE_WINDOW"                ,
     [ NetWmName                     ] = "_NET_WM_NAME"                      ,
     [ NetWmWindowType               ] = "_NET_WM_WINDOW_TYPE"               ,
@@ -88,6 +89,11 @@ void ewmh_init() {
     XChangeProperty(g_display, g_wm_window, g_netatom[NetWmName],
         ATOM("UTF8_STRING"), 8, PropModeReplace,
         (unsigned char*)WINDOW_MANAGER_NAME, strlen(WINDOW_MANAGER_NAME)+1);
+
+    /* init atoms that never change */
+    int buf[] = { 0, 0 };
+    XChangeProperty(g_display, g_root, g_netatom[NetDesktopViewport],
+        XA_CARDINAL, 32, PropModeReplace, (unsigned char *) buf, LENGTH(buf));
 }
 
 void ewmh_update_all() {

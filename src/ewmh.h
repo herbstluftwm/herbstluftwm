@@ -27,6 +27,7 @@ enum {
     NetCurrentDesktop,
     NetDesktopNames,
     NetWmDesktop,
+    NetDesktopViewport,
     NetActiveWindow,
     NetWmName,
     NetSupportingWmCheck,
