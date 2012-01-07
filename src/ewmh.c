@@ -257,7 +257,6 @@ void ewmh_handle_client_message(XEvent* event) {
                         break;
                     }
                 }
-                printf("atom == %d\n", i);
                 if (i >= LENGTH(client_atoms)) {
                     /* property will not be handled */
                     continue;
@@ -268,7 +267,6 @@ void ewmh_handle_client_message(XEvent* event) {
                     [ _NET_WM_STATE_TOGGLE  ] = !client_atoms[i].enabled,
                 };
                 int action = me->data.l[0];
-                printf("action == %d\n", action);
                 if (action >= LENGTH(new_value)) {
                     HSDebug("_NET_WM_STATE: invalid action %d\n", action);
                 }
