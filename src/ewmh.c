@@ -154,6 +154,7 @@ void ewmh_update_desktop_names() {
     Xutf8TextListToTextProperty(g_display, names, g_tags->len,
                                 XUTF8StringStyle, &text_prop);
     XSetTextProperty(g_display, g_root, &text_prop, g_netatom[NetDesktopNames]);
+    g_free(names);
 }
 
 void ewmh_update_current_desktop() {
