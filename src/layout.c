@@ -593,12 +593,7 @@ void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
 
 void monitor_apply_layout(HSMonitor* monitor) {
     if (monitor) {
-        XRectangle rect = monitor->rect;
-        // apply pad
-        rect.x += monitor->pad_left;
-        rect.width -= (monitor->pad_left + monitor->pad_right);
-        rect.y += monitor->pad_up;
-        rect.height -= (monitor->pad_up + monitor->pad_down);
+        XRectangle rect = monitor_get_workarea(monitor);
         // apply window gap
         rect.x += *g_window_gap;
         rect.y += *g_window_gap;
@@ -938,6 +933,7 @@ int move_monitor_command(int argc, char** argv) {
     if (argc > 5 && argv[5][0] != '\0') monitor->pad_down     = atoi(argv[5]);
     if (argc > 6 && argv[6][0] != '\0') monitor->pad_left     = atoi(argv[6]);
     monitor_apply_layout(monitor);
+    ewmh_update_workarea();
     return 0;
 }
 
@@ -1004,6 +1000,7 @@ int monitor_set_pad_command(int argc, char** argv) {
     if (argc > 4 && argv[4][0] != '\0') monitor->pad_down     = atoi(argv[4]);
     if (argc > 5 && argv[5][0] != '\0') monitor->pad_left     = atoi(argv[5]);
     monitor_apply_layout(monitor);
+    ewmh_update_workarea();
     return 0;
 }
 
@@ -2192,6 +2189,16 @@ void monitor_focus_by_index(int new_selection) {
     // emit hooks
     ewmh_update_current_desktop();
     emit_tag_changed(monitor->tag, new_selection);
+}
+
+XRectangle monitor_get_workarea(HSMonitor* m) {
+    // apply pad to monitor rect
+    XRectangle rect = m->rect;
+    rect.x      += m->pad_left;
+    rect.width  -= m->pad_left + m->pad_right;
+    rect.y      += m->pad_up;
+    rect.height -= m->pad_up + m->pad_down;
+    return rect;
 }
 
 int monitor_get_relative_x(HSMonitor* m, int x_root) {

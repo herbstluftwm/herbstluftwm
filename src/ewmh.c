@@ -34,6 +34,7 @@ char* g_netatom_names[NetCOUNT] = {
     [ NetDesktopNames               ] = "_NET_DESKTOP_NAMES"                ,
     [ NetWmDesktop                  ] = "_NET_WM_DESKTOP"                   ,
     [ NetDesktopViewport            ] = "_NET_DESKTOP_VIEWPORT"             ,
+    [ NetWorkarea                   ] = "_NET_WORKAREA"                     ,
     [ NetActiveWindow               ] = "_NET_ACTIVE_WINDOW"                ,
     [ NetWmName                     ] = "_NET_WM_NAME"                      ,
     [ NetWmWindowType               ] = "_NET_WM_WINDOW_TYPE"               ,
@@ -102,6 +103,7 @@ void ewmh_update_all() {
     ewmh_update_desktops();
     ewmh_update_current_desktop();
     ewmh_update_desktop_names();
+    ewmh_update_workarea();
 }
 
 void ewmh_destroy() {
@@ -140,9 +142,33 @@ void ewmh_remove_client(Window win) {
     ewmh_update_client_list();
 }
 
+void ewmh_update_workarea() {
+    if (g_monitors->len == 0) {
+        // a workaround so that the NetWorkarea only is updated if the monitors
+        // aren't set up yet.
+        // TODO: find a cleaner solution for this, e.g. a ewmh-update-queue
+        return;
+    }
+    XRectangle rect = monitor_get_workarea(get_current_monitor());
+
+    // init the buf for the desktop rectangles
+    size_t len = 4 * g_tags->len;
+    long* areas = g_new(long, len);
+    for (int i = 0; i < g_tags->len; i++) {
+        areas[4 * i + 0] = rect.x;
+        areas[4 * i + 1] = rect.y;
+        areas[4 * i + 2] = rect.width;
+        areas[4 * i + 3] = rect.height;
+    }
+    XChangeProperty(g_display, g_root, g_netatom[NetWorkarea],
+        XA_CARDINAL, 32, PropModeReplace, (unsigned char *) areas, len);
+    g_free(areas);
+}
+
 void ewmh_update_desktops() {
     XChangeProperty(g_display, g_root, g_netatom[NetNumberOfDesktops],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(g_tags->len), 1);
+    ewmh_update_workarea();
 }
 
 void ewmh_update_desktop_names() {

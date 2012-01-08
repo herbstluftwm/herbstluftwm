@@ -200,6 +200,7 @@ HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag);
 void monitor_focus_by_index(int new_selection);
+XRectangle monitor_get_workarea(HSMonitor* m);
 int monitor_get_relative_x(HSMonitor* m, int x_root);
 int monitor_get_relative_y(HSMonitor* m, int y_root);
 int monitor_index_of(HSMonitor* monitor);
