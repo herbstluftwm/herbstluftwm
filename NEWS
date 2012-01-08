@@ -8,10 +8,11 @@ Small bugfixes and major features:
 
     * new command: monitor_rect
     * let panel.sh fork less often
-    * set clients to fullscreen (without EWMH yet!)
+    * set clients to fullscreen
     * new client layouting algorithm: grid layout
     * new command argument: keyunbind --all
     * new command: pseudotile (tile client but keep its floating size)
+    * new command: list_keybinds
     * client rules with:
 
         - conditon: class
@@ -41,6 +42,7 @@ Small bugfixes and major features:
             _NET_NUMBER_OF_DESKTOPS
             _NET_SUPPORTING_WM_CHECK
             _NET_WM_DESKTOP
+            _NET_WORKAREA
             _NET_WM_STATE: fullscreen
 
         - the following client messages are handled:
