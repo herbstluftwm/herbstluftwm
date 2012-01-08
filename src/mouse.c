@@ -437,10 +437,10 @@ void client_snap_vector(struct HSClient* client, struct HSTag* tag,
     // snap to monitor edges
     HSMonitor* m = g_drag_monitor;
     if (flags & SNAP_EDGE_TOP) {
-        snap_1d(d.rect.x, *g_snap_gap, &d.dx);
+        snap_1d(d.rect.y, *g_snap_gap, &d.dy);
     }
     if (flags & SNAP_EDGE_LEFT) {
-        snap_1d(d.rect.y, *g_snap_gap, &d.dy);
+        snap_1d(d.rect.x, *g_snap_gap, &d.dx);
     }
     if (flags & SNAP_EDGE_RIGHT) {
         snap_1d(d.rect.x + d.rect.width, m->rect.width - m->pad_left - m->pad_right, &d.dx);
