@@ -16,6 +16,7 @@
 #include "hook.h"
 #include "mouse.h"
 #include "rules.h"
+#include "ewmh.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -60,7 +61,6 @@ int custom_hook_emit(int argc, char** argv);
 // handler for X-Events
 void buttonpress(XEvent* event);
 void buttonrelease(XEvent* event);
-void clientmessage(XEvent* event);
 void createnotify(XEvent* event);
 void configurerequest(XEvent* event);
 void configurenotify(XEvent* event);
@@ -510,23 +510,23 @@ static void fetch_settings() {
 }
 
 static HandlerTable g_default_handler = {
-    [ButtonPress] = buttonpress,
-    [ButtonRelease] = buttonrelease,
-    [ClientMessage] = clientmessage,
-    [CreateNotify] = createnotify,
-    [ConfigureRequest] = configurerequest,
-    [ConfigureNotify] = configurenotify,
-    [DestroyNotify] = destroynotify,
-    [EnterNotify] = enternotify,
-    [Expose] = expose,
-    [FocusIn] = focusin,
-    [KeyPress] = keypress,
-    [MappingNotify] = mappingnotify,
-    [MotionNotify] = motionnotify,
-    [MapNotify] = mapnotify,
-    [MapRequest] = maprequest,
-    [PropertyNotify] = propertynotify,
-    [UnmapNotify] = unmapnotify,
+    [ ButtonPress       ] = buttonpress,
+    [ ButtonRelease     ] = buttonrelease,
+    [ ClientMessage     ] = ewmh_handle_client_message,
+    [ CreateNotify      ] = createnotify,
+    [ ConfigureRequest  ] = configurerequest,
+    [ ConfigureNotify   ] = configurenotify,
+    [ DestroyNotify     ] = destroynotify,
+    [ EnterNotify       ] = enternotify,
+    [ Expose            ] = expose,
+    [ FocusIn           ] = focusin,
+    [ KeyPress          ] = keypress,
+    [ MappingNotify     ] = mappingnotify,
+    [ MotionNotify      ] = motionnotify,
+    [ MapNotify         ] = mapnotify,
+    [ MapRequest        ] = maprequest,
+    [ PropertyNotify    ] = propertynotify,
+    [ UnmapNotify       ] = unmapnotify,
 };
 
 static struct {
@@ -538,6 +538,7 @@ static struct {
     { settings_init,    settings_destroy    },
     { clientlist_init,  clientlist_destroy  },
     { layout_init,      layout_destroy      },
+    { ewmh_init,        ewmh_destroy        },
     { mouse_init,       mouse_destroy       },
     { hook_init,        hook_destroy        },
     { rules_init,       rules_destroy       },
@@ -573,9 +574,7 @@ void buttonrelease(XEvent* event) {
     HSDebug("name is: ButtonRelease\n");
     mouse_stop_drag();
 }
-void clientmessage(XEvent* event) {
-    HSDebug("name is: ClientMessage\n");
-}
+
 void createnotify(XEvent* event) {
     // printf("name is: CreateNotify\n");
     if (is_ipc_connectable(event->xcreatewindow.window)) {
@@ -708,6 +707,7 @@ int main(int argc, char* argv[]) {
     scan();
     tag_force_update_flags();
     all_monitors_apply_layout();
+    ewmh_update_all();
     execute_autostart_file();
 
     // main loop

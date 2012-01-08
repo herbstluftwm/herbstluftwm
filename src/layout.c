@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "utils.h"
 #include "hook.h"
+#include "ewmh.h"
 #include "ipc-protocol.h"
 #include "settings.h"
 #include "layout.h"
@@ -454,6 +455,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
             frame->content.clients.count = count;
 
             client->tag = tag;
+            ewmh_window_update_tag(client->window, client->tag);
 
             index++;
         }
@@ -591,12 +593,7 @@ void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
 
 void monitor_apply_layout(HSMonitor* monitor) {
     if (monitor) {
-        XRectangle rect = monitor->rect;
-        // apply pad
-        rect.x += monitor->pad_left;
-        rect.width -= (monitor->pad_left + monitor->pad_right);
-        rect.y += monitor->pad_up;
-        rect.height -= (monitor->pad_up + monitor->pad_down);
+        XRectangle rect = monitor_get_workarea(monitor);
         // apply window gap
         rect.x += *g_window_gap;
         rect.y += *g_window_gap;
@@ -936,6 +933,7 @@ int move_monitor_command(int argc, char** argv) {
     if (argc > 5 && argv[5][0] != '\0') monitor->pad_down     = atoi(argv[5]);
     if (argc > 6 && argv[6][0] != '\0') monitor->pad_left     = atoi(argv[6]);
     monitor_apply_layout(monitor);
+    ewmh_update_workarea();
     return 0;
 }
 
@@ -1002,6 +1000,7 @@ int monitor_set_pad_command(int argc, char** argv) {
     if (argc > 4 && argv[4][0] != '\0') monitor->pad_down     = atoi(argv[4]);
     if (argc > 5 && argv[5][0] != '\0') monitor->pad_left     = atoi(argv[5]);
     monitor_apply_layout(monitor);
+    ewmh_update_workarea();
     return 0;
 }
 
@@ -1037,6 +1036,8 @@ HSTag* add_tag(char* name) {
     tag->name = g_string_new(name);
     tag->floating = false;
     g_array_append_val(g_tags, tag);
+    ewmh_update_desktops();
+    ewmh_update_desktop_names();
     tag_set_flags_dirty();
     return tag;
 }
@@ -1062,6 +1063,7 @@ int tag_rename_command(int argc, char** argv) {
         return HERBST_TAG_IN_USE;
     }
     tag->name = g_string_assign(tag->name, argv[2]);
+    ewmh_update_desktop_names();
     hook_emit_list("tag_renamed", tag->name->str, NULL);
     return 0;
 }
@@ -1091,6 +1093,7 @@ int tag_remove_command(int argc, char** argv) {
     for (i = 0; i < count; i++) {
         HSClient* client = get_client_from_window(buf[i]);
         client->tag = target;
+        ewmh_window_update_tag(client->window, client->tag);
         frame_insert_window(target->frame, buf[i]);
     }
     if (monitor_target) {
@@ -1110,6 +1113,9 @@ int tag_remove_command(int argc, char** argv) {
             break;
         }
     }
+    ewmh_update_current_desktop();
+    ewmh_update_desktops();
+    ewmh_update_desktop_names();
     tag_set_flags_dirty();
     hook_emit_list("tag_removed", oldname, target->name->str, NULL);
     g_free(oldname);
@@ -2027,6 +2033,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             frame_focus_recursive(tag->frame);
             monitor_apply_layout(other);
             monitor_apply_layout(monitor);
+            ewmh_update_current_desktop();
             emit_tag_changed(other->tag, other - (HSMonitor*)g_monitors->data);
             emit_tag_changed(tag, g_cur_monitor);
         }
@@ -2045,6 +2052,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     // focus window just has been shown
     // focus again to give input focus
     frame_focus_recursive(tag->frame);
+    ewmh_update_current_desktop();
     emit_tag_changed(tag, g_cur_monitor);
 }
 
@@ -2090,6 +2098,8 @@ int tag_move_window_command(int argc, char** argv) {
     HSClient* client = get_client_from_window(window);
     assert(client != NULL);
     client->tag = target;
+    ewmh_window_update_tag(client->window, client->tag);
+
     // refresh things
     if (monitor && !monitor_target) {
         // window is moved to unvisible tag
@@ -2177,7 +2187,18 @@ void monitor_focus_by_index(int new_selection) {
         XWarpPointer(g_display, None, g_root, 0, 0, 0, 0, new_x, new_y);
     }
     // emit hooks
+    ewmh_update_current_desktop();
     emit_tag_changed(monitor->tag, new_selection);
+}
+
+XRectangle monitor_get_workarea(HSMonitor* m) {
+    // apply pad to monitor rect
+    XRectangle rect = m->rect;
+    rect.x      += m->pad_left;
+    rect.width  -= m->pad_left + m->pad_right;
+    rect.y      += m->pad_up;
+    rect.height -= m->pad_up + m->pad_down;
+    return rect;
 }
 
 int monitor_get_relative_x(HSMonitor* m, int x_root) {

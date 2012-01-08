@@ -10,6 +10,7 @@
 #include "utils.h"
 #include "hook.h"
 #include "mouse.h"
+#include "ewmh.h"
 #include "rules.h"
 #include "ipc-protocol.h"
 // system
@@ -36,13 +37,12 @@ unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
 regex_t g_ignore_class_regex; // clients that match this won't be managed
 
-GHashTable* g_clients;
+GHashTable* g_clients; // container of all clients
+
 
 // atoms from dwm.c
 enum { WMProtocols, WMDelete, WMState, WMLast };        /* default atoms */
-enum { NetSupported, NetWMName, NetWMState,
-       NetWMFullscreen, NetLast };                      /* EWMH atoms */
-static Atom g_wmatom[WMLast], g_netatom[NetLast];
+static Atom g_wmatom[WMLast];
 
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
@@ -90,10 +90,6 @@ void clientlist_init() {
     g_wmatom[WMProtocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
     g_wmatom[WMDelete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
-    g_netatom[NetSupported] = XInternAtom(g_display, "_NET_SUPPORTED", False);
-    g_netatom[NetWMName] = XInternAtom(g_display, "_NET_WM_NAME", False);
-    g_netatom[NetWMState] = XInternAtom(g_display, "_NET_WM_STATE", False);
-    g_netatom[NetWMFullscreen] = XInternAtom(g_display, "_NET_WM_STATE_FULLSCREEN", False);
     // init actual client list
     g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
                                       NULL, (GDestroyNotify)destroy_client);
@@ -182,6 +178,7 @@ HSClient* manage_client(Window win) {
 
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
+    ewmh_add_client(client->window);
     XSetWindowBorderWidth(g_display, win, *g_window_border_width);
     // insert to layout
     if (!client->tag) {
@@ -200,8 +197,10 @@ HSClient* manage_client(Window win) {
         frame_focus_window(client->tag->frame, win);
     }
 
+    ewmh_window_update_tag(client->window, client->tag);
     tag_set_flags_dirty();
     client_set_fullscreen(client, changes.fullscreen);
+    ewmh_update_window_state(client);
     monitor_apply_layout(find_monitor_with_tag(client->tag));
     client_changes_free_members(&changes);
 
@@ -223,6 +222,7 @@ void unmanage_client(Window win) {
     XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
     g_hash_table_remove(g_clients, &win);
+    ewmh_remove_client(win);
     tag_set_flags_dirty();
 }
 
@@ -246,6 +246,7 @@ void window_unfocus_last() {
     }
     // give focus to root window
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
+    ewmh_update_active_window(None);
 }
 
 void window_focus(Window window) {
@@ -257,6 +258,7 @@ void window_focus(Window window) {
     //XUngrabButton(g_display, AnyButton, AnyModifier, window);
     // set keyboardfocus
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
+    ewmh_update_active_window(window);
     bool is_max_layout = frame_focused_window(g_cur_frame) == window
                          && g_cur_frame->content.clients.layout == LAYOUT_MAX
                          && get_current_monitor()->tag->floating == false;
@@ -500,6 +502,7 @@ void client_set_fullscreen(HSClient* client, bool state) {
 
     char buf[STRING_BUF_SIZE];
     snprintf(buf, STRING_BUF_SIZE, "0x%lx", client->window);
+    ewmh_update_window_state(client);
     hook_emit_list("fullscreen", state ? "on" : "off", buf, NULL);
 }
 
