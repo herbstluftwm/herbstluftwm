@@ -27,6 +27,7 @@ bool string2key(char* string, unsigned int* modmask, KeySym* keysym);
 int keybind(int argc, char** argv);
 int keyunbind(int argc, char** argv); //removes a keybinding
 
+int key_list_binds(int argc, char** argv, GString** output);
 void key_remove_bind_with_keysym(unsigned int modifiers, KeySym sym);
 void key_remove_all_binds();
 GString* keybinding_to_g_string(KeyBinding* binding);

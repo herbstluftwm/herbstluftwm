@@ -119,6 +119,12 @@ list_commands::
     list currently configured monitors with their index, area (as rectangle) and currently
     viewed tag.
 
+list_keybinds::
+    lists all bound keys with their associated command. Each line consists of
+    one key combination and the command with its parameters separated by tabs.
+
+WARNING: Tabs within command parameters are not escaped!
+
 keybind 'KEY' 'COMMAND' ['ARGS ...']::
     adds a key binding. When 'KEY' is pressed, the internal 'COMMAND' (with its
     'ARGS') is executed. A key binding is a (possibly empty) list of modifiers

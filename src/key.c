@@ -305,4 +305,21 @@ void key_find_binds(char* needle, GString** output) {
     g_list_foreach(g_key_binds, (GFunc)key_find_binds_helper, &c);
 }
 
+static void key_list_binds_helper(KeyBinding* b, GString** output) {
+    // add keybinding
+    GString* name = keybinding_to_g_string(b);
+    *output = g_string_append(*output, name->str);
+    g_string_free(name, true);
+    // add associated command
+    for (int i = 0; i < b->cmd_argc; i++) {
+        *output = g_string_append_c(*output, '\t');
+        *output = g_string_append(*output, b->cmd_argv[i]);
+    }
+    *output = g_string_append_c(*output, '\n');
+}
+
+int key_list_binds(int argc, char** argv, GString** output) {
+    g_list_foreach(g_key_binds, (GFunc)key_list_binds_helper, output);
+    return 0;
+}
 
