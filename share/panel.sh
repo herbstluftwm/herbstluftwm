@@ -32,6 +32,7 @@ herbstclient pad $monitor $height
 } 2> /dev/null | {
     TAGS=( $(herbstclient tag_status $monitor) )
     date=""
+    windowtitle=""
     while true ; do
         bordercolor="#26221C"
         hintcolor="#573500"
@@ -58,7 +59,7 @@ herbstclient pad $monitor $height
             echo -n "^ca(1,herbstclient focus_monitor $monitor && "'herbstclient use "'${i:1}'") '"${i:1} ^ca()"
             echo -n "$separator"
         done
-        echo -n "^bg()^p(_CENTER)"
+        echo -n "^bg()${windowtitle//^/^^}^p(_CENTER)"
         # small adjustments
         right="$separator^bg($hintcolor) $date $separator"
         right_text_only=$(echo -n "$right"|sed 's.\^[^(]*([^)]*)..g')
@@ -84,6 +85,14 @@ herbstclient pad $monitor $height
                 ;;
             reload)
                 exit
+                ;;
+            focus_changed)
+                winid="${cmd[1]}"
+                windowtitle=$(xprop -id "$winid" \
+                    | grep -E '^(WM_ICON_NAME|_NET_WM_NAME|_NET_WM_ICON_NAME)' \
+                    | sort \
+                    | head -n 1 \
+                    | cut -d\" -f2)
                 ;;
             #player)
             #    ;;
