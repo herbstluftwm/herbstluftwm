@@ -28,7 +28,6 @@ enum {
     NetDesktopNames,
     NetWmDesktop,
     NetDesktopViewport,
-    NetWorkarea,
     NetActiveWindow,
     NetWmName,
     NetSupportingWmCheck,
@@ -72,7 +71,6 @@ void ewmh_remove_client(Window win);
 void ewmh_update_client_list();
 void ewmh_update_desktops();
 void ewmh_update_desktop_names();
-void ewmh_update_workarea();
 void ewmh_update_active_window(Window win);
 void ewmh_update_current_desktop();
 void ewmh_update_window_state(struct HSClient* client);
