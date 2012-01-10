@@ -13,6 +13,7 @@ Small bugfixes and major features:
     * new command argument: keyunbind --all
     * new command: pseudotile (tile client but keep its floating size)
     * new command: list_keybinds
+    * new hook: focus_changed
     * client rules with:
 
         - conditon: class

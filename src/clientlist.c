@@ -242,23 +242,37 @@ static Window lastfocus = 0;
 void window_unfocus_last() {
     if (lastfocus) {
         window_unfocus(lastfocus);
-        lastfocus = 0;
     }
     // give focus to root window
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
-    ewmh_update_active_window(None);
+    if (lastfocus) {
+        /* only emit the hook if the focus *really* changes */
+        hook_emit_list("focus_changed", "0x0", NULL);
+        ewmh_update_active_window(None);
+    }
+    lastfocus = 0;
 }
 
 void window_focus(Window window) {
     // unfocus last one
     window_unfocus(lastfocus);
-    lastfocus = window;
     // change window-colors
     XSetWindowBorder(g_display, window, g_window_border_active_color);
     //XUngrabButton(g_display, AnyButton, AnyModifier, window);
     // set keyboardfocus
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
-    ewmh_update_active_window(window);
+    if (window != lastfocus) {
+        /* FIXME: this is a workaround because window_focus always is called
+         * twice.  see BUGS for more information
+         *
+         * only emit the hook if the focus *really* changes */
+        ewmh_update_active_window(window);
+        char winid_str[STRING_BUF_SIZE];
+        snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)window);
+        hook_emit_list("focus_changed", winid_str, NULL);
+    }
+    lastfocus = window;
+    /* do some specials for the max layout */
     bool is_max_layout = frame_focused_window(g_cur_frame) == window
                          && g_cur_frame->content.clients.layout == LAYOUT_MAX
                          && get_current_monitor()->tag->floating == false;
