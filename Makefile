@@ -61,7 +61,7 @@ install: all
 	mkdir -p $(CONFIGDIR)
 	mkdir -p $(ZSHCOMPLETIONDIR)
 	mkdir -p $(XSESSIONSDIR)
-	@echo "==> copyiing files..."
+	@echo "==> copying files..."
 	install $(TARGET) $(BINDIR)
 	install ipc-client/herbstclient $(BINDIR)/
 	install -m 644 LICENSE $(LICENSEDIR)

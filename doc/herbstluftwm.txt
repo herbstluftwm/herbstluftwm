@@ -583,7 +583,7 @@ Valid 'properties' are:
       maxage already is exceeded (and never will match again), then this rule is
       removed. (With this you can build rules that only live for a certain time)
     * +windowtype+: matches the _NET_WM_WINDOW_TYPE property of a window.
-    * +windowrole+: matces the WM_WINDOW_ROLE property of a window if it is set
+    * +windowrole+: matches the WM_WINDOW_ROLE property of a window if it is set
       by the window.
 
 Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair.
@@ -638,11 +638,12 @@ Examples:
 AUTOSTART FILE
 --------------
 
-There is no config file but an autostart file, which is executed on startup. It
-is also executed on command 'reload'. If not specified by the *--autostart*
-argument, autostart file is located at '$XDG_CONFIG_HOME/herbstluftwm/autostart'
-or at '~/.config/herbstluftwm/autostart'. Normally it consists of a few
-*herbstclient* calls.
+There is no configuration file but an autostart file, which is executed on
+startup. It is also executed on command 'reload'. If not specified by the
+*--autostart* argument, autostart file is located at
+'$XDG_CONFIG_HOME/herbstluftwm/autostart' or at
+'~/.config/herbstluftwm/autostart'. Normally it consists of a few *herbstclient*
+calls.
 
 For a quick install, copy the default autostart file to
 '~/.config/herbstluftwm/autostart' and make it executable.
@@ -682,7 +683,7 @@ quit_panel::
 
 reload::
     tells all daemons that the 'autostart' file is reloaded -- and tells them to
-    quit. This hook *should* be emited in the first line of everyones'
+    quit. This hook *should* be emitted in the first line of everyones'
     'autostart'.
 
 ENVIRONMENT VARIABLES
