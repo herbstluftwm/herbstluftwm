@@ -34,4 +34,6 @@ Planned features:
     - chain keys/key chains/...
     - lastfocused{window,frame,tag} - commands
     - cycle_tags command
+    - double window border to give a good contrast to dark backgrounded and
+      light backgrounded windows.
 
