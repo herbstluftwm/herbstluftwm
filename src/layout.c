@@ -1049,6 +1049,10 @@ int tag_add_command(int argc, char** argv) {
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }
+    if (!strcmp("", argv[1])) {
+        HSDebug("A empty tag name is not permitted\n");
+        return HERBST_INVALID_ARGUMENT;
+    }
     HSTag* tag = add_tag(argv[1]);
     hook_emit_list("tag_added", tag->name->str, NULL);
     return 0;
