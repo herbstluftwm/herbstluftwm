@@ -862,13 +862,22 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
 
 int add_monitor_command(int argc, char** argv) {
     // usage: add_monitor RECTANGLE TAG [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]
-    if (argc < 3) {
+    if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }
     XRectangle rect = parse_rectangle(argv[1]);
-    HSTag* tag = find_tag(argv[2]);
-    if (!tag) {
-        return HERBST_INVALID_ARGUMENT;
+    HSTag* tag = NULL;
+    if (argc == 2 || !strcmp("", argv[2])) {
+        tag = find_unused_tag();
+        if (!tag) {
+            return HERBST_TAG_IN_USE;
+        }
+    }
+    else {
+        tag = find_tag(argv[2]);
+        if (!tag) {
+            return HERBST_INVALID_ARGUMENT;
+        }
     }
     if (find_monitor_with_tag(tag)) {
         return HERBST_TAG_IN_USE;
@@ -1022,6 +1031,15 @@ HSTag* find_tag(char* name) {
     int i;
     for (i = 0; i < g_tags->len; i++) {
         if (!strcmp(g_array_index(g_tags, HSTag*, i)->name->str, name)) {
+            return g_array_index(g_tags, HSTag*, i);
+        }
+    }
+    return NULL;
+}
+
+HSTag* find_unused_tag() {
+    for (int i = 0; i < g_tags->len; i++) {
+        if (!find_monitor_with_tag(g_array_index(g_tags, HSTag*, i))) {
             return g_array_index(g_tags, HSTag*, i);
         }
     }
