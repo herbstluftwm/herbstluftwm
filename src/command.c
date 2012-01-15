@@ -68,6 +68,7 @@ struct {
     { "add",            2,  no_completion },
     { "get",            2,  no_completion },
     { "set",            3,  no_completion },
+    { "set_layout",     2,  no_completion },
     { 0 },
 };
 
@@ -106,6 +107,7 @@ struct {
     { "shift",          1,  .list = completion_directions },
     { "shift",          1,  .list = completion_focus_args },
     { "shift",          2,  .list = completion_directions },
+    { "set_layout",     1,  .list = g_layout_names },
     { "unrule",         1,  .list = completion_unrule_args },
     { "use",            1,  .function = complete_against_tags },
     { 0 },

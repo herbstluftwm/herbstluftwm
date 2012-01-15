@@ -52,6 +52,7 @@ char* g_layout_names[] = {
     "horizontal",
     "max",
     "grid",
+    NULL,
 };
 
 static void fetch_frame_colors() {
@@ -478,6 +479,9 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
 
 int find_layout_by_name(char* name) {
     for (int i = 0; i < LENGTH(g_layout_names); i++) {
+        if (!g_layout_names[i]) {
+            break;
+        }
         if (!strcmp(name, g_layout_names[i])) {
             return i;
         }
