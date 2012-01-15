@@ -134,7 +134,7 @@ dt.hdlist1 {
 
 .listingblock {
     border: 1px solid black;
-    padding: 2px;
+    padding: 1px;
     background-color: #454545;
 }
 
@@ -148,6 +148,23 @@ dt.hdlist1 {
     padding: 0.4em;
     margin: 0px;
     color: #efefef;
+}
+
+.admonitionblock {
+    border: 1px solid #a40000;
+    background-color: #ef2929;
+    padding: 1px;
+    color: #eeeeec;
+}
+.admonitionblock table {
+    background-color: #cc0000;
+    width: 100%;
+}
+
+.admonitionblock .icon {
+    font-weight: bold;
+    color: #efefef;
+    vertical-align: top;
 }
 
 tt {
