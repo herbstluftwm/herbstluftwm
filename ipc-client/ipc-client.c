@@ -54,6 +54,9 @@ int send_command(int argc, char* argv[]) {
     if (!get_hook_window()) {
         return EXIT_FAILURE;
     }
+    /* ensure that classhint and the command is set when the hlwm-server
+     * receives the XCreateWindowEvent */
+    XGrabServer(dpy);
     // create window
     Window win = XCreateSimpleWindow(dpy, root, 42, 42, 42, 42, 0, 0, 0);
     // set wm_class for window
@@ -68,6 +71,9 @@ int send_command(int argc, char* argv[]) {
     Atom atom = ATOM(HERBST_IPC_ARGS_ATOM);
     Xutf8TextListToTextProperty(g_display, argv, argc, XUTF8StringStyle, &text_prop);
     XSetTextProperty(g_display, win, &text_prop, atom);
+    /* the window has been initialized properly, now allow the server to
+     * receive the event for it */
+    XUngrabServer(dpy);
     XFree(text_prop.value);
     // get ouput
     int command_status = 0;
