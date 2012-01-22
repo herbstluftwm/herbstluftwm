@@ -34,7 +34,7 @@ git clone git://git.informatik.uni-erlangen.de/re06huxa/herbstluftwm
 
 Documentation
 -------------
-There are manpages in the +doc/+ directory. The also can be seen online:
+There are manpages in the +doc/+ directory. They also can be seen online:
 
   * link:herbstluftwm.html[herbstluftwm]
   * link:herbstclient.html[herbstclient]
