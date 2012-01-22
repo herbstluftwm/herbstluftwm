@@ -12,13 +12,5 @@ simple_command() {
     && exec $hc "$@" "$arg"
 }
 
-case "$1" in
-    use|move)    simple_command "$1" ;;
-    *)
-        echo "unknown menu $1" >&2
-        ;;
-esac
-
-
-
+simple_command "$1"
 
