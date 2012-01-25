@@ -203,7 +203,7 @@ void ewmh_handle_client_message(XEvent* event) {
         }
     }
     if (index >= NetCOUNT) {
-        HSDebug("recieved unknown client message\n");
+        HSDebug("received unknown client message\n");
         return;
     }
     HSClient* client;
