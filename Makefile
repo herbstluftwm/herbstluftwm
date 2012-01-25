@@ -39,6 +39,12 @@ doc: doc/herbstclient.1 doc/herbstclient.html doc/herbstluftwm.1 doc/herbstluftw
 
 tar: doc
 	tar -czf $(TARFILE) `git ls-files` doc/*.html doc/*.[0-9]
+	rm -rf $(TMPTARDIR)
+	mkdir -p $(TMPTARDIR)
+	tar -xvf $(TARFILE) -C $(TMPTARDIR)
+	tar -czf $(TARFILE) $(TMPTARDIR)
+	rm -rf $(TMPTARDIR)
+
 
 doc/%.1: doc/%.txt
 	$(call colorecho,DOC,$@)
