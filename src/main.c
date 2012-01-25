@@ -1,4 +1,4 @@
-/** Copyright 2011 Thorsten Wißmann. All rights reserved.
+/** Copyright 2011-2012 Thorsten Wißmann. All rights reserved.
  *
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
@@ -477,7 +477,7 @@ static void parse_arguments(int argc, char** argv) {
                 break;
             case 'v':
                 printf("%s %s\n", argv[0], HERBSTLUFT_VERSION);
-                printf("Copyright (c) 2011 Thorsten Wißmann\n");
+                printf("Copyright (c) 2011-2012 Thorsten Wißmann\n");
                 printf("Released under the Simplified BSD License\n");
                 exit(0);
                 break;

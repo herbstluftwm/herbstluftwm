@@ -1,4 +1,4 @@
-/** Copyright 2011 Thorsten Wißmann. All rights reserved.
+/** Copyright 2011-2012 Thorsten Wißmann. All rights reserved.
  *
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
