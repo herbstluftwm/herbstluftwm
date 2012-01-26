@@ -24,9 +24,23 @@ Its main features can be described with:
 
 Get it!
 -------
-There aren't any stable releases yet. You can browse the source in the 
+Install herbstluftwm via your package manager! It is currently available in the
+link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm[Arch
+User Repository] and on Debian.
+
+If your distribution is not supported you can build a package on your own using
+the most current released tarball:
+
+[options="header"]
+|======================================================================
+| Version | Date       | Tarball
+| 0.1     | 2011-10-02 | link:tarballs/herbstluftwm-0.1.tar.gz[tar.gz]
+| 0.2     | 2012-01-25 | link:tarballs/herbstluftwm-0.1.tar.gz[tar.gz]
+|======================================================================
+
+The current development version is available in the
 link:http://git.informatik.uni-erlangen.de/?p=re06huxa/herbstluftwm[GitWeb]
-or directly clone the git repository with:
+or can be cloned with:
 
 ----
 git clone git://git.informatik.uni-erlangen.de/re06huxa/herbstluftwm
