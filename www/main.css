@@ -207,4 +207,24 @@ span.image a.image img {
     background-color: #30691B;
 }
 
+.tableblock {
+    background-color: white;
+}
+
+thead th, p.table {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 0.1em;
+    padding-bottom: 0.1em;
+}
+
+table, table td {
+    border: none;
+}
+table thead th {
+    border: none;
+    border-bottom: 1px solid #bcbcbc;
+}
+
+
 
