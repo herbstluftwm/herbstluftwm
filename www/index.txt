@@ -32,11 +32,11 @@ If your distribution is not supported you can build a package on your own using
 the most current released tarball:
 
 [options="header"]
-|======================================================================
-| Version | Date       | Tarball
-| 0.1     | 2011-10-02 | link:tarballs/herbstluftwm-0.1.tar.gz[tar.gz]
-| 0.2     | 2012-01-25 | link:tarballs/herbstluftwm-0.1.tar.gz[tar.gz]
-|======================================================================
+|==========================================================================================================
+| Version | Date       | link:tarballs/MD5SUMS[MD5SUMS]   | Tarball
+| 0.1     | 2011-10-02 | 284067728e56fa6cabca33cbf3c946b4 | link:tarballs/herbstluftwm-0.1.tar.gz[tar.gz]
+| 0.2     | 2012-01-25 | 1628f236a7086f007260f9f59e446b1c | link:tarballs/herbstluftwm-0.1.tar.gz[tar.gz]
+|==========================================================================================================
 
 The current development version is available in the
 link:http://git.informatik.uni-erlangen.de/?p=re06huxa/herbstluftwm[GitWeb]
@@ -67,4 +67,5 @@ image:../screenshots/hlwm-panelicons-0-thumb.png["scr",link="../screenshots/hlwm
 image:../screenshots/hlwm-panelicons-1-thumb.png["scr",link="../screenshots/hlwm-panelicons-1.png"] 
 image:../screenshots/hlwm-pseudotile-1-thumb.png["scr",link="../screenshots/hlwm-pseudotile-1.png"] 
 
+// vim: nowrap
 include::footer.txt[]
