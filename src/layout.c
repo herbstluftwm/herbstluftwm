@@ -150,8 +150,13 @@ void frame_insert_window(HSFrame* frame, Window window) {
         // append it to buf
         size_t count = frame->content.clients.count;
         count++;
+        // insert it after the selection
+        int index = frame->content.clients.selection + 1;
+        index = CLAMP(index, 0, count - 1);
         buf = g_renew(Window, buf, count);
-        buf[count-1] = window;
+        // shift other windows to the back to insert the new one at index
+        memmove(buf + index + 1, buf + index, sizeof(*buf) * (count - index - 1));
+        buf[index] = window;
         // write results back
         frame->content.clients.count = count;
         frame->content.clients.buf = buf;
