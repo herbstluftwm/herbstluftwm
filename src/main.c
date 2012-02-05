@@ -626,10 +626,13 @@ void motionnotify(XEvent* event) {
 }
 void mapnotify(XEvent* event) {
     HSDebug("name is: MapNotify\n");
-    if (get_client_from_window(event->xmap.window)) {
+    HSClient* c;
+    if ((c = get_client_from_window(event->xmap.window))) {
         // reset focus. so a new window gets the focus if it shall have the
         // input focus
         frame_focus_recursive(g_cur_frame);
+        // also update the window title - just to be sure
+        client_update_title(c);
     }
 }
 void maprequest(XEvent* event) {
@@ -666,6 +669,9 @@ void propertynotify(XEvent* event) {
             switch (ev->atom) {
                 case XA_WM_HINTS:
                     client_update_wm_hints(client);
+                    break;
+                case XA_WM_NAME:
+                    client_update_title(client);
                     break;
                 default:
                     break;

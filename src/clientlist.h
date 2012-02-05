@@ -21,6 +21,7 @@ typedef struct HSClient {
     XRectangle  last_size;
     HSTag*      tag;
     XRectangle  float_size;
+    GString*    title;  // or also called window title; this is never NULL
     bool        urgent;
     bool        fullscreen;
     bool        pseudotile; // only move client but don't resize (if possible)
@@ -58,6 +59,7 @@ void client_resize_tiling(HSClient* client, XRectangle rect);
 void client_resize_floating(HSClient* client, HSMonitor* m);
 void client_clear_urgent(HSClient* client);
 void client_update_wm_hints(HSClient* client);
+void client_update_title(HSClient* client);
 int window_close_current();
 
 void client_set_fullscreen(HSClient* client, bool state);

@@ -19,6 +19,7 @@ Some BUGS:
     - window_gap actually should be called frame_gap
     - window_focus is called twice when switching desktops (before mapping
       windows and after mapping them). TODO: only do it once.
+    - also update window title if *only* the _NET_WM_NAME changes
 
 Planned features:
     - dump/load floating values

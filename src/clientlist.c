@@ -48,6 +48,7 @@ static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
     hc->float_size.width = 100;
     hc->float_size.height = 100;
+    hc->title = g_string_new("");
     hc->urgent = false;
     hc->fullscreen = false;
     hc->pseudotile = false;
@@ -113,10 +114,21 @@ static void client_move_to_floatpos(void* key, void* client_void, void* data) {
     }
 }
 
+static void client_destroy(void* key, void* client_void, void* data) {
+    (void)key;
+    (void)data;
+    HSClient* client = client_void;
+    if (client) {
+        /* free window title */
+        g_string_free(client->title, true);
+    }
+}
+
 void clientlist_destroy() {
     // move all clients to their original floating position
     g_hash_table_foreach(g_clients, client_move_to_floatpos, NULL);
 
+    g_hash_table_foreach(g_clients, client_destroy, NULL);
     g_hash_table_destroy(g_clients);
     regfree(&g_ignore_class_regex);
 }
@@ -149,6 +161,8 @@ HSClient* manage_client(Window win) {
     HSMonitor* m = get_current_monitor();
     // set to window properties
     client->window = win;
+    client_update_title(client);
+
     unsigned int border, depth;
     Window root_win;
     int x, y;
@@ -493,6 +507,26 @@ void client_update_wm_hints(HSClient* client) {
             tag_set_flags_dirty();
         }
     }
+}
+
+void client_update_title(HSClient* client) {
+    GString* new_name = window_property_to_g_string(g_display,
+        client->window, g_netatom[NetWmName]);
+    if (!new_name) {
+        char* ch_new_name = NULL;
+        /* if ewmh name isn't set, then fall back to WM_NAME */
+        if (0 != XFetchName(g_display, client->window, &ch_new_name)) {
+            new_name = g_string_new(ch_new_name);
+            XFree(ch_new_name);
+        } else {
+            new_name = g_string_new("");
+            HSDebug("no title for window %lx found, using \"\"\n",
+                    client->window);
+        }
+    }
+    bool changed = (0 != strcmp(client->title->str, new_name->str));
+    g_string_free(client->title, true);
+    client->title = new_name;
 }
 
 HSClient* get_current_client() {
