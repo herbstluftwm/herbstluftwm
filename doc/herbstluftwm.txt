@@ -663,8 +663,9 @@ fullscreen [on|off] 'WINID' 'STATE'::
 tag_changed 'TAG' 'MONITOR'::
     the tag 'TAG' was selected on 'MONITOR'.
 
-focus_changed 'WINID'::
-    the window 'WINID' was focused.
+focus_changed 'WINID' 'TITLE'::
+    the window 'WINID' was focused. Its window title is 'TITLE'.
+
 
 tag_flags::
     the flags (i.e. urgent or filled state) have been changed.

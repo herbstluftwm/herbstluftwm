@@ -261,7 +261,7 @@ void window_unfocus_last() {
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
     if (lastfocus) {
         /* only emit the hook if the focus *really* changes */
-        hook_emit_list("focus_changed", "0x0", NULL);
+        hook_emit_list("focus_changed", "0x0", "", NULL);
         ewmh_update_active_window(None);
     }
     lastfocus = 0;
@@ -281,9 +281,11 @@ void window_focus(Window window) {
          *
          * only emit the hook if the focus *really* changes */
         ewmh_update_active_window(window);
+        HSClient* client = get_client_from_window(window);
+        char* title = client ? client->title->str : "?";
         char winid_str[STRING_BUF_SIZE];
         snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)window);
-        hook_emit_list("focus_changed", winid_str, NULL);
+        hook_emit_list("focus_changed", winid_str, title, NULL);
     }
     lastfocus = window;
     /* do some specials for the max layout */

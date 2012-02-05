@@ -1,6 +1,13 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Next release: 0.3
+-----------------
+
+Changes:
+
+    * hook focus_changed now also reports the window title
+
 Release 0.2 on 2012-01-25
 -------------------------
 
