@@ -666,6 +666,9 @@ tag_changed 'TAG' 'MONITOR'::
 focus_changed 'WINID' 'TITLE'::
     the window 'WINID' was focused. Its window title is 'TITLE'.
 
+window_title_changed 'WINID' 'TITLE'::
+    the title of the *focused* window was changed. Its window id is 'WINID' and
+    its new title is 'TITLE'.
 
 tag_flags::
     the flags (i.e. urgent or filled state) have been changed.

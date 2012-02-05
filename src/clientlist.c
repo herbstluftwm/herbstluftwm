@@ -529,6 +529,11 @@ void client_update_title(HSClient* client) {
     bool changed = (0 != strcmp(client->title->str, new_name->str));
     g_string_free(client->title, true);
     client->title = new_name;
+    if (changed && get_current_client() == client) {
+        char buf[STRING_BUF_SIZE];
+        snprintf(buf, STRING_BUF_SIZE, "0x%lx", client->window);
+        hook_emit_list("window_title_changed", buf, client->title->str, NULL);
+    }
 }
 
 HSClient* get_current_client() {
