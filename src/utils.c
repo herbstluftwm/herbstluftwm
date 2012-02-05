@@ -129,12 +129,12 @@ bool window_has_property(Display* dpy, Window window, char* prop_name) {
     int num_properties_ret;
     Atom* properties= XListProperties(g_display, window, &num_properties_ret);
 
-    bool atom_found= false;
+    bool atom_found = false;
     char* name;
-    for(int i= 0; i < num_properties_ret; i++) {
-        name= XGetAtomName(g_display, properties[i]);
-        if(!strcmp("_NET_WM_WINDOW_TYPE", name)) {
-            atom_found= true;
+    for(int i = 0; i < num_properties_ret; i++) {
+        name = XGetAtomName(g_display, properties[i]);
+        if(!strcmp(prop_name, name)) {
+            atom_found = true;
             break;
         }
         XFree(name);
