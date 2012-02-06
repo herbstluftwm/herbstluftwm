@@ -9,16 +9,36 @@ fi
 # geometry has the format: WxH+X+Y
 x=${geometry[0]}
 y=${geometry[1]}
-width=${geometry[2]}
-height=16
+panel_width=${geometry[2]}
+panel_height=16
 font="-*-fixed-medium-*-*-*-12-*-*-*-*-*-*-*"
 bgcolor='#3E2600'
+
+####
+# Try to find textwidth binary.
+# In e.g. Ubuntu, this is named dzen2-textwidth.
+if [ -e "$(which textwidth 2> /dev/null)" ] ; then
+    textwidth="textwidth";
+elif [ -e "$(which dzen2-textwidth 2> /dev/null)" ] ; then
+    textwidth="dzen2-textwidth";
+else
+    echo "This script requires the textwidth tool of the dzen2 project."
+    exit 1
+fi
+####
+# true if we are using the svn version of dzen2
+dzen2_version=$(dzen2 -v 2>&1 | cut -d \, -f 1|cut -d \- -f 2)
+if [ -z "$dzen2_version" ] ; then
+    dzen2_svn=""
+else
+    dzen2_svn="true"
+fi
 
 function uniq_linebuffered() {
     awk '$0 != l { print ; l=$0 ; fflush(); }' "$@"
 }
 
-herbstclient pad $monitor $height
+herbstclient pad $monitor $panel_height
 {
     # events:
     #mpc idleloop player &
@@ -36,7 +56,7 @@ herbstclient pad $monitor $height
     while true ; do
         bordercolor="#26221C"
         hintcolor="#573500"
-        separator="^fg(#141414)^ro(1x$height)^fg()"
+        separator="^fg(#141414)^ro(1x$panel_height)^fg()"
         # draw tags
         for i in "${TAGS[@]}" ; do
             case ${i:0:1} in
@@ -56,16 +76,20 @@ herbstclient pad $monitor $height
                     echo -n "^bg()^fg()"
                     ;;
             esac
-            echo -n "^ca(1,herbstclient focus_monitor $monitor && "'herbstclient use "'${i:1}'") '"${i:1} ^ca()"
+            if [ ! -z "$dzen2_svn" ] ; then
+                echo -n "^ca(1,herbstclient focus_monitor $monitor && "'herbstclient use "'${i:1}'") '"${i:1} ^ca()"
+            else
+                echo -n " ${i:1} "
+            fi
             echo -n "$separator"
         done
-        echo -n "^bg()${windowtitle//^/^^}^p(_CENTER)"
+        echo -n "^bg() ${windowtitle//^/^^}"
         # small adjustments
         right="$separator^bg($hintcolor) $date $separator"
         right_text_only=$(echo -n "$right"|sed 's.\^[^(]*([^)]*)..g')
         # get width of right aligned text.. and add some space..
-        width=$(textwidth "$font" "$right_text_only  ")
-        echo -n "^p(_RIGHT)^p(-$width)$right"
+        width=$($textwidth "$font" "$right_text_only    ")
+        echo -n "^pa($(($panel_width - $width)))$right"
         echo
         # wait for next event
         read line || break
@@ -93,9 +117,7 @@ herbstclient pad $monitor $height
             #    ;;
         esac
         done
-} 2> /dev/null | dzen2 -w $width -x $x -y $y -fn "$font" -h $height \
+} 2> /dev/null | dzen2 -w $panel_width -x $x -y $y -fn "$font" -h $panel_height \
     -ta l -bg "$bgcolor" -fg '#efefef'
-
-
 
 
