@@ -40,46 +40,30 @@ unsigned long getcolor(const char *colstr) {
     return color.pixel;
 }
 
+// inspired by dwm's gettextprop()
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
-    GString* result = g_string_new("");
-    long bufsize = 10;
-    char *buf;
-    Atom type;
-    int format;
-    unsigned long items, bytes;
-    long offset = 0;
-    bool parse_error_occured = false;
-    Atom req_type = ATOM("UTF8_STRING");
-    Atom req_type_string = ATOM("STRING");
-    do {
-        int status = XGetWindowProperty(dpy, window,
-            atom, offset, bufsize, False,
-            req_type, &type, &format,
-            &items, &bytes, (unsigned char**)&buf);
-        if (status == Success
-            && req_type != req_type_string
-            && req_type_string == type) {
-            req_type = req_type_string;
-            continue;
-        }
-        if (status != Success || format != 8 || req_type != type) {
-            parse_error_occured = true;
-            break; // then stop parsing
-        } else {
-            result = g_string_append(result, buf);
-            offset += bufsize;
-            XFree(buf);
-        }
-        HSDebug("XGetWindowProperty received: \"%s\"\n", result->str);
-    } while (bytes > 0);
-    //
-    if (parse_error_occured) {
-        // then just return NULL
-        g_string_free(result, true);
+    GString* result = NULL;
+    char** list = NULL;
+    int n = 0;
+    XTextProperty prop;
+
+    if (0 == XGetTextProperty(dpy, window, &prop, atom)) {
         return NULL;
-    } else {
-        return result;
     }
+    // convert text property to a gstring
+    result = g_string_new("");
+    if (prop.encoding == XA_STRING || prop.encoding == ATOM("UTF8_STRING")) {
+        result = g_string_new((char*)prop.value);
+    } else {
+        if (XmbTextPropertyToTextList(dpy, &prop, &list, &n) >= Success
+            && n > 0 && *list)
+        {
+            result = g_string_new(*list);
+            XFreeStringList(list);
+        }
+    }
+    XFree(prop.value);
+    return result;
 }
 
 GString* window_class_to_g_string(Display* dpy, Window window) {
