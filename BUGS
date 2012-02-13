@@ -35,6 +35,8 @@ Planned features:
     - chain keys/key chains/...
     - lastfocused{window,frame,tag} - commands
     - cycle_tags command
+    - own X-Properties to indicate window state (fullscreen, pseudotile, float,...)
+    - bind multiple commands to one keycombindation via keybind, keybindadd
     - double window border to give a good contrast to dark backgrounded and
       light backgrounded windows.
 
