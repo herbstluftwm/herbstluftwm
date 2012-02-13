@@ -76,6 +76,8 @@ install: all
 	install -m 644 doc/herbstclient.html $(DOCDIR)/
 	install -m 644 doc/herbstluftwm.html $(DOCDIR)/
 	install -m 644 BUGS $(DOCDIR)/
+	install -m 644 NEWS $(DOCDIR)/
+	install -m 644 README $(DOCDIR)/
 	install -m 755 share/autostart $(CONFIGDIR)/
 	install -m 755 share/panel.sh $(CONFIGDIR)/
 	install -m 755 share/restartpanels.sh $(CONFIGDIR)/
