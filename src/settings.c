@@ -14,49 +14,47 @@
 #include <string.h>
 #include <stdio.h>
 
+#define SET_INT(NAME, DEFAULT, CALLBACK) \
+    { .name = (NAME), \
+      .value = { .i = (DEFAULT) }, \
+      .type = HS_Int, \
+      .on_change = (CALLBACK), \
+    }
+
+#define SET_STRING(NAME, DEFAULT, CALLBACK) \
+    { .name = (NAME), \
+      .value = { .s = (DEFAULT) }, \
+      .type = HS_String, \
+      .on_change = (CALLBACK), \
+    }
 
 // default settings:
 SettingsPair g_settings[] = {
-    { "window_gap", { .i = 5 }, .type = HS_Int,
-        .on_change = all_monitors_apply_layout },
-    { "snap_distance", { .i = 10 }, .type = HS_Int },
-    { "snap_gap", { .i = 5 }, .type = HS_Int },
-    { "border_color", { .s = "red" } },
-    { "frame_border_active_color", { .s = "red" },
-        .on_change = reset_frame_colors },
-    { "frame_border_normal_color", { .s = "blue" },
-        .on_change = reset_frame_colors },
-    { "frame_bg_normal_color", { .s = "green" },
-        .on_change = reset_frame_colors },
-    { "frame_bg_active_color", { .s = "green" },
-        .on_change = reset_frame_colors },
-    { "frame_bg_transparent", { .i = 0 }, .type = HS_Int,
-        .on_change = reset_frame_colors },
-    { "frame_border_width", { .i = 2 }, .type = HS_Int,
-        .on_change = reset_frame_colors },
-    { "window_border_width", { .i = 2 }, .type = HS_Int,
-        .on_change = reset_client_colors },
-    { "window_border_active_color", { .s = "red" },
-        .on_change = reset_client_colors },
-    { "window_border_normal_color", { .s = "blue" },
-        .on_change = reset_client_colors },
-    { "always_show_frame", { .i = 0 }, .type = HS_Int,
-        .on_change = all_monitors_apply_layout },
-    { "default_direction_external_only", { .i = 0 }, .type = HS_Int },
-    { "default_frame_layout", { .i = 0 }, .type = HS_Int,
-        .on_change = reset_frame_colors },
-    { "focus_follows_shift", { .i = 1 }, .type = HS_Int },
-    { "focus_follows_mouse", { .i = 0 }, .type = HS_Int },
-    { "focus_stealing_prevention", { .i = 1 }, .type = HS_Int },
-    { "swap_monitors_to_get_tag", { .i = 1 }, .type = HS_Int },
-    { "raise_on_focus", { .i = 1 }, .type = HS_Int },
-    { "raise_on_click", { .i = 1 }, .type = HS_Int },
-    { "gapless_grid", { .i = 1 }, .type = HS_Int,
-        .on_change = all_monitors_apply_layout },
-    { "tree_style", { .s = "*| +`--." }, .type = HS_String,
-        .on_change = reset_frame_colors },
-    { "ignore_class", { .s = "Conky" },
-        .on_change = reset_client_settings },
+    SET_INT(    "window_gap",       5,      all_monitors_apply_layout),
+    SET_INT(    "snap_distance",    10,     NULL),
+    SET_INT(    "snap_gap",         5,      NULL),
+    SET_STRING( "border_color",     "red",  NULL),
+    SET_STRING( "frame_border_active_color",  "red",   reset_frame_colors ),
+    SET_STRING( "frame_border_normal_color",  "blue",  reset_frame_colors ),
+    SET_STRING( "frame_bg_normal_color",      "green", reset_frame_colors ),
+    SET_STRING( "frame_bg_active_color",      "green", reset_frame_colors ),
+    SET_INT(    "frame_bg_transparent",       0,       reset_frame_colors ),
+    SET_INT(    "frame_border_width",         2,       reset_frame_colors ),
+    SET_INT(    "window_border_width",        2,       reset_client_colors ),
+    SET_STRING( "window_border_active_color", "red",   reset_client_colors ),
+    SET_STRING( "window_border_normal_color", "blue",  reset_client_colors ),
+    SET_INT(    "always_show_frame",          0,       all_monitors_apply_layout),
+    SET_INT(    "default_direction_external_only", 0,  NULL),
+    SET_INT(    "default_frame_layout",            0,  reset_frame_colors ),
+    SET_INT(    "focus_follows_shift",             1,  NULL),
+    SET_INT(    "focus_follows_mouse",             0,  NULL),
+    SET_INT(    "focus_stealing_prevention",       1,  NULL),
+    SET_INT(    "swap_monitors_to_get_tag",        1,  NULL),
+    SET_INT(    "raise_on_focus",                  1,  NULL),
+    SET_INT(    "raise_on_click",                  1,  NULL),
+    SET_INT(    "gapless_grid",    1,           all_monitors_apply_layout ),
+    SET_STRING( "tree_style",      "*| +`--.",  reset_frame_colors ),
+    SET_STRING( "ignore_class",    "Conky",     reset_client_settings ),
 };
 
 int settings_count() {
