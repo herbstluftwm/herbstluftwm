@@ -524,11 +524,6 @@ swap_monitors_to_get_tag (Integer)::
     monitor, then the monitor contents will be swapped and you see the wanted
     tag on the focused monitor. If not set, nothing will be swapped.
 
-ignore_class (String/Regex)::
-    If the class property of a new created window matches the ignore_class
-    regex, then it will not be managed, i.e. will not be put in the layout or on
-    tags. Example value: +^(Xfce4-notifyd|Conky)$+
-
 tree_style (String)::
     It contains the chars that are used to print a nice ascii tree. It must
     contain at least 8 characters. e.g. ++X|:#+*-.++ produces a tree like:

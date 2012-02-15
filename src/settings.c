@@ -54,7 +54,6 @@ SettingsPair g_settings[] = {
     SET_INT(    "raise_on_click",                  1,  NULL),
     SET_INT(    "gapless_grid",    1,           all_monitors_apply_layout ),
     SET_STRING( "tree_style",      "*| +`--.",  reset_frame_colors ),
-    SET_STRING( "ignore_class",    "Conky",     reset_client_settings ),
 };
 
 int settings_count() {

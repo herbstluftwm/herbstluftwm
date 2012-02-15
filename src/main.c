@@ -418,8 +418,7 @@ void scan(void) {
             // only manage mapped windows.. no strange wins like:
             //      luakit/dbus/(ncurses-)vim
             // TODO: what would dwm do?
-            if (!is_window_ignored(wins[i]) &&
-                is_window_mapped(g_display, wins[i])) {
+            if (is_window_mapped(g_display, wins[i])) {
                 manage_client(wins[i]);
             }
         }
@@ -638,8 +637,7 @@ void mapnotify(XEvent* event) {
 void maprequest(XEvent* event) {
     HSDebug("name is: MapRequest\n");
     XMapRequestEvent* mapreq = &event->xmaprequest;
-    if (is_window_ignored(mapreq->window)
-        || is_herbstluft_window(g_display, mapreq->window)) {
+    if (is_herbstluft_window(g_display, mapreq->window)) {
         // just map the window if it wants that
         XWindowAttributes wa;
         if (!XGetWindowAttributes(g_display, mapreq->window, &wa)) {
