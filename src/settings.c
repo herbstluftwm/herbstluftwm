@@ -28,32 +28,37 @@
       .on_change = (CALLBACK), \
     }
 
+// often used callbacks:
+#define RELAYOUT all_monitors_apply_layout
+#define FR_COLORS reset_frame_colors
+#define CL_COLORS reset_client_colors
+
 // default settings:
 SettingsPair g_settings[] = {
-    SET_INT(    "window_gap",       5,      all_monitors_apply_layout),
-    SET_INT(    "snap_distance",    10,     NULL),
-    SET_INT(    "snap_gap",         5,      NULL),
-    SET_STRING( "border_color",     "red",  NULL),
-    SET_STRING( "frame_border_active_color",  "red",   reset_frame_colors ),
-    SET_STRING( "frame_border_normal_color",  "blue",  reset_frame_colors ),
-    SET_STRING( "frame_bg_normal_color",      "green", reset_frame_colors ),
-    SET_STRING( "frame_bg_active_color",      "green", reset_frame_colors ),
-    SET_INT(    "frame_bg_transparent",       0,       reset_frame_colors ),
-    SET_INT(    "frame_border_width",         2,       reset_frame_colors ),
-    SET_INT(    "window_border_width",        2,       reset_client_colors ),
-    SET_STRING( "window_border_active_color", "red",   reset_client_colors ),
-    SET_STRING( "window_border_normal_color", "blue",  reset_client_colors ),
-    SET_INT(    "always_show_frame",          0,       all_monitors_apply_layout),
-    SET_INT(    "default_direction_external_only", 0,  NULL),
-    SET_INT(    "default_frame_layout",            0,  reset_frame_colors ),
-    SET_INT(    "focus_follows_shift",             1,  NULL),
-    SET_INT(    "focus_follows_mouse",             0,  NULL),
-    SET_INT(    "focus_stealing_prevention",       1,  NULL),
-    SET_INT(    "swap_monitors_to_get_tag",        1,  NULL),
-    SET_INT(    "raise_on_focus",                  1,  NULL),
-    SET_INT(    "raise_on_click",                  1,  NULL),
-    SET_INT(    "gapless_grid",    1,           all_monitors_apply_layout ),
-    SET_STRING( "tree_style",      "*| +`--.",  reset_frame_colors ),
+    SET_INT(    "window_gap",                      5,           RELAYOUT    ),
+    SET_INT(    "snap_distance",                   10,          NULL        ),
+    SET_INT(    "snap_gap",                        5,           NULL        ),
+    SET_STRING( "border_color",                    "red",       NULL        ),
+    SET_STRING( "frame_border_active_color",       "red",       FR_COLORS   ),
+    SET_STRING( "frame_border_normal_color",       "blue",      FR_COLORS   ),
+    SET_STRING( "frame_bg_normal_color",           "green",     FR_COLORS   ),
+    SET_STRING( "frame_bg_active_color",           "green",     FR_COLORS   ),
+    SET_INT(    "frame_bg_transparent",            0,           FR_COLORS   ),
+    SET_INT(    "frame_border_width",              2,           FR_COLORS   ),
+    SET_INT(    "window_border_width",             2,           CL_COLORS   ),
+    SET_STRING( "window_border_active_color",      "red",       CL_COLORS   ),
+    SET_STRING( "window_border_normal_color",      "blue",      CL_COLORS   ),
+    SET_INT(    "always_show_frame",               0,           RELAYOUT    ),
+    SET_INT(    "default_direction_external_only", 0,           NULL        ),
+    SET_INT(    "default_frame_layout",            0,           FR_COLORS   ),
+    SET_INT(    "focus_follows_shift",             1,           NULL        ),
+    SET_INT(    "focus_follows_mouse",             0,           NULL        ),
+    SET_INT(    "focus_stealing_prevention",       1,           NULL        ),
+    SET_INT(    "swap_monitors_to_get_tag",        1,           NULL        ),
+    SET_INT(    "raise_on_focus",                  1,           NULL        ),
+    SET_INT(    "raise_on_click",                  1,           NULL        ),
+    SET_INT(    "gapless_grid",                    1,           RELAYOUT    ),
+    SET_STRING( "tree_style",                      "*| +`--.",  FR_COLORS   ),
 };
 
 int settings_count() {
