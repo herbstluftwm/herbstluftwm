@@ -11,6 +11,7 @@ Changes:
     * the setting ignore_class is removed, because this also can be done by
       rules. You can replace a line like 'set ignore_class "$foo"' in your
       autostart by 'rule class~"$foo" manage=off'
+    * new green and gray color theme
 
 Release 0.2 on 2012-01-25
 -------------------------
