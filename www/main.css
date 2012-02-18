@@ -14,8 +14,8 @@ body {
 #navigationbar .curtab {
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
-    -moz-border-top-left-radius: 5px;
-    -moz-border-top-right-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
 }
 
 #frame , #header {
@@ -132,6 +132,11 @@ h1 {
     padding: 0px;
     margin: 0px;
     color: #8f5902;
+}
+
+#subheader {
+    text-align: center;
+    font-size: 0.6em;
 }
 
 h2 {

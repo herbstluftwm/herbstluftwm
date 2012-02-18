@@ -45,6 +45,9 @@ cat <<EOF
   <div id="frame">
    <div id="header">
      <h1>herbstluftwm</h1>
+     <div id="subheader">
+      a manual tiling window manager for X
+     </div>
    </div>
 EOF
 
