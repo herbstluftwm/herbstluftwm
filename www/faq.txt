@@ -1,5 +1,3 @@
-include::header.txt[]
-
 Hints and FAQ
 -------------
 
@@ -183,5 +181,3 @@ Q: I set default_frame_layout to my favorite layout but it doesn't work with the
     workaround is to put +hc split vertical 0.5; hc remove+ at the end in your
     autostartfile.  You can also 'cycle_layout' in existing tags.
 
-
-include::footer.txt[]

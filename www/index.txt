@@ -1,5 +1,3 @@
-include::header.txt[]
-
 What is it?
 -----------
 
@@ -68,4 +66,3 @@ image:../screenshots/hlwm-panelicons-1-thumb.png["scr",link="../screenshots/hlwm
 image:../screenshots/hlwm-pseudotile-1-thumb.png["scr",link="../screenshots/hlwm-pseudotile-1.png"] 
 
 // vim: nowrap
-include::footer.txt[]
