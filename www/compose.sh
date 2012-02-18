@@ -8,7 +8,7 @@ id="${file%-content.html}"
 
 prefix="herbstluftwm - "
 
-# titles that are shown in <title> and in <h1>
+# titles that are shown in <title>
 declare -A id2title
 id2title=(
     ["index"]="herbstluftwm"
@@ -21,7 +21,7 @@ id2title=(
 # how names are shown in the navigation bar
 declare -A id2name
 id2name=(
-    ["index"]="Main"
+    ["index"]="Home"
     ["news"]="NEWS"
     ["faq"]="FAQ"
     ["herbstluftwm"]="herbstluftwm(1)"
@@ -42,10 +42,10 @@ cat <<EOF
   <title>$title</title>
  </head>
  <body>
-  <div id="header">
-    <h1>$title</h1>
-  </div>
-  <div id="content">
+  <div id="frame">
+   <div id="header">
+     <h1>herbstluftwm</h1>
+   </div>
 EOF
 
 #====~===~=========~==
@@ -53,30 +53,39 @@ EOF
 #====~===~=========~==
 
 cat <<EOF
-    <div id="#navigationbar">
+    <table width="100%" id="navigationbar" cellspacing="0">
+    <tr>
 EOF
 for i in "${navigationbar[@]}" ; do
     name="${id2name[$i]:-$i}"
-    [ "$id" = "$i" ] && current='class="current" ' || current=''
+    [ "$id" = "$i" ] && current=' class="curtab"' || current=' class="notab"'
     cat <<EOF
-     <a ${current}href="$i.html">$name</a>
+     <td class="notab spacing">&nbsp</td>
+     <td${current}><a href="$i.html">$name</a></td>
 EOF
 done
 cat <<EOF
-    </div>
+     <td class="notab spacing">&nbsp</td>
+    </tr>
+    </table>
 EOF
 
 #====~===~=========~==
 # Content
 #====~===~=========~==
-cat "$file"
+cat <<EOF
+   <div id="content">
+EOF
+cat "$file" - <<EOF
+    <div class="footer">
+      Generated on $(date +'%Y-%m-%d at %H:%M:%S %Z').
+    </div>
+EOF
 
 #====~===~=========~==
 # Footer
 #====~===~=========~==
 cat <<EOF
-   <div class="footer">
-     Generated on $(date +'%Y-%m-%d at %H:%M:%S %Z').
    </div>
   </div>
  </body>

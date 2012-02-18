@@ -1,23 +1,88 @@
 body {
-    background-color: #898989;
+    background-color: #66770A;
     padding-top: 0em;
-    margin: 0px;
+    margin: 10px;
 }
 
-#header , #content {
-    width: 40em;
+#frame {
     margin-left: auto;
     margin-right: auto;
-    padding: 1em;
-    background-color: white;
-    border: 1px solid #555753;
-    margin-bottom:0px;
-    padding-bottom:0px;
+    border: 0px solid #555753;
+    width: 40em;
 }
 
-#header p {
-    margin-bottom: 0px;
+#navigationbar .curtab {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    -moz-border-top-left-radius: 5px;
+    -moz-border-top-right-radius: 5px;
 }
+
+#frame , #header {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    -moz-border-radius-topleft: 10px;
+    -moz-border-radius-topright: 10px;
+}
+
+#frame , #navigationbar .curtab {
+    background-color: white;
+}
+
+#navigationbar {
+
+    background-color: #232323; /* for non-css3 browsers */
+
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#000000', endColorstr='#303030'); /* for IE */
+    background: -webkit-gradient(linear, left top, left bottom, from(#000), to(#303030)); /* for webkit browsers */
+    background: -moz-linear-gradient(top,  #000,  #303030); /* for firefox 3.6+ */ 
+    text-align: center;
+    padding-top: 0.2em;
+}
+
+#navigationbar, #navigationbar .curtab, #navigationbar .notab {
+    border-top: 1px solid black;
+}
+
+#navigationbar .notab, #navigationbar .curtab {
+    margin-top:  0.2em;
+    padding-top: 0.0em;
+    padding-bottom: 0.2em;
+    margin-bottom:  0.0em;
+}
+
+#navigationbar .spacing {
+    size: fixed;
+    font-size: 0px;
+    /* space between tabs in the navigation bar */
+    width: 10px;
+    border: 0px solid red;
+}
+
+#navigationbar .notab {
+    border: 1px solid transparent;
+    border-bottom: 1px solid #141414;
+}
+
+#navigationbar .curtab {
+    border: 1px solid white;
+    border-bottom: 0px solid transparent;
+}
+
+
+#navigationbar a {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+
+#navigationbar .notab a {
+    color: #9fbc00;
+}
+
+#navigationbar .curtab a {
+    color: #101010;
+}
+
 
 .sect {
     border-top: none;
@@ -47,6 +112,7 @@ body {
 }
 
 #content {
+    padding: 1em;
     color: #2e3436;
 }
 
@@ -55,10 +121,11 @@ body {
 }
 
 #header {
-    margin-top: 0.9em;
-    border-bottom: none;
-    margin-bottom: 0px;
+    padding: 0.2em;
 }
+
+
+/* elements in content */
 
 h1 {
     font-size: 1.6em;
