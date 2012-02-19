@@ -89,13 +89,7 @@ void settings_destroy() {
 
 
 SettingsPair* settings_find(char* name) {
-    int i;
-    for (i = 0; i < LENGTH(g_settings); i++) {
-        if (!strcmp(g_settings[i].name, name)) {
-            return g_settings + i;
-        }
-    }
-    return NULL;
+    return STATIC_TABLE_FIND_STR(SettingsPair, g_settings, name, name);
 }
 
 int settings_set(int argc, char** argv) {

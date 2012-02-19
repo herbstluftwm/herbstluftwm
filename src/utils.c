@@ -228,3 +228,52 @@ int array_find(void* buf, size_t elems, size_t size, void* needle) {
     return -1;
 }
 
+
+
+/**
+ * \brief   tells if the string needle is identical to the string *pmember
+ */
+bool  memberequals_string(void* pmember, void* needle) {
+    return !strcmp(*(char**)pmember, (char*)needle);
+}
+
+/**
+ * \brief   tells if the ints pointed by pmember and needle are identical
+ */
+bool memberequals_int(void* pmember, void* needle) {
+    return (*(int*)pmember) == (*(int*)needle);
+}
+
+/**
+ * \brief   finds a element in a table (i.e. array of structs)
+ *
+ *          it consecutively searches from the beginning of the table for a
+ *          table element whose member is equal to needle. It passes a pointer
+ *          to the member and needle to the equals-function consecutively until
+ *          equals returns something != 0.
+ *
+ * \param   start           address of the first element in the table
+ * \param   elem_size       offset between two elements
+ * \param   count           count of elements in that table
+ * \param   member_offset   offset of the member that is used to compare
+ * \param   equals          function that tells if the two values are equal
+ * \param   needle          second parameter to equals
+ * \return                  the found element or NULL
+ */
+void* table_find(void* start, size_t elem_size, size_t count,
+                 size_t member_offset, MemberEquals equals, void* needle)
+{
+    char* cstart = start;
+    while (count > 0) {
+        /* check the element */
+        if (equals(cstart + member_offset, needle)) {
+            return cstart;
+        }
+        /* go to the next element */
+        cstart += elem_size;
+        count--;
+    }
+    return NULL;
+}
+
+

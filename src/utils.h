@@ -7,6 +7,7 @@
 #define __HERBST_UTILS_H_
 
 #include <glib.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -49,6 +50,25 @@ void g_queue_remove_element(GQueue* queue, GList* elem);
 
 // find an element in an array buf with elems elements of size size.
 int array_find(void* buf, size_t elems, size_t size, void* needle);
+
+
+// utils for tables
+typedef bool (*MemberEquals)(void* pmember, void* needle);
+bool memberequals_string(void* pmember, void* needle);
+bool memberequals_int(void* pmember, void* needle);
+
+void* table_find(void* start, size_t elem_size, size_t count,
+                 size_t member_offset, MemberEquals equals, void* needle);
+#define STATIC_TABLE_FIND(TYPE, TABLE, MEMBER, EQUALS, NEEDLE)  \
+    ((TYPE*) table_find((TABLE),                                \
+                        sizeof(TABLE[0]),                       \
+                        LENGTH((TABLE)),                        \
+                        offsetof(TYPE, MEMBER),                 \
+                        EQUALS,                                 \
+                        (NEEDLE)))
+
+#define STATIC_TABLE_FIND_STR(TYPE, TABLE, MEMBER, NEEDLE)  \
+    STATIC_TABLE_FIND(TYPE, TABLE, MEMBER, memberequals_string, NEEDLE)
 
 // returns the unichar in GSTR at position GSTR
 #define UTF8_STRING_AT(GSTR, OFFS) \
