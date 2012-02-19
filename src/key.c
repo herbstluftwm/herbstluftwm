@@ -45,10 +45,12 @@ void key_remove_all_binds() {
     regrab_keys();
 }
 
-static struct {
+typedef struct {
     char* name;
     unsigned int mask;
-} g_modifier_names[] = {
+} Name2Modifier;
+
+static Name2Modifier g_modifier_names[] = {
     { "Mod1",       Mod1Mask },
     { "Mod2",       Mod2Mask },
     { "Mod3",       Mod3Mask },
@@ -62,19 +64,16 @@ static struct {
 };
 
 unsigned int modifiername2mask(const char* name) {
-    int i;
-    for (i = 0; i < LENGTH(g_modifier_names); i++) {
-        if (!strcmp(g_modifier_names[i].name, name)) {
-            return g_modifier_names[i].mask;
-        }
-    }
-    return 0;
+    Name2Modifier* elem;
+    elem = STATIC_TABLE_FIND_STR(Name2Modifier, g_modifier_names, name,
+                                 (char*)name);
+    return elem ? elem->mask : 0;
 }
 
 /**
  * \brief finds a (any) modifier in mask and returns its name
  *
- * \return  the name as a char string. you don't need to free it.
+ * \return  the name as a char string. you must not free it.
  */
 char*   modifiermask2name(unsigned int mask) {
     int i;
