@@ -27,6 +27,7 @@ static bool no_completion(int argc, char** argv, int pos) {
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
+static bool keybind_parameter_expected(int argc, char** argv, int pos);
 
 /* find out, if a parameter still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
@@ -63,6 +64,7 @@ struct {
     { "fullscreen",     2,  no_completion },
     { "pseudotile",     2,  no_completion },
     { "pad",            6,  no_completion },
+    { "keybind",        2,  keybind_parameter_expected },
     { "keyunbind",      2,  no_completion },
     { "monitor_rect",   3,  no_completion },
     { "mousebind",      3,  no_completion },
@@ -94,6 +96,7 @@ struct {
     char*   command;
     int     index;      /* which parameter to complete */
                         /* command name is index = 0 */
+                        /* -1 will match any position */
     /* === various methods, how to complete === */
     /* completion by function */
     void (*function)(int argc, char** argv, int pos, GString** output);
@@ -118,6 +121,7 @@ struct {
     { "merge_tag",      2,  .function = complete_merge_tag },
     { "move",           1,  .function = complete_against_tags },
     { "pseudotile",     1,  .list = completion_flag_args },
+    { "keybind",       -1,  .function = complete_against_keybind_command },
     { "keyunbind",      1,  .list = completion_keyunbind_args },
     { "keyunbind",      1,  .function = complete_against_keybinds },
     { "rename",         1,  .function = complete_against_tags },
@@ -293,6 +297,14 @@ int complete_command(int argc, char** argv, GString** output) {
     return complete_against_commands(argc, argv, position, output);
 }
 
+void complete_against_keybind_command(int argc, char** argv, int position,
+                                      GString** output) {
+    if (argc <  2 || position < 2) {
+        return;
+    }
+    complete_against_commands(argc - 2, argv + 2, position - 2, output);
+}
+
 int complete_against_commands(int argc, char** argv, int position,
                               GString** output) {
     // complete command
@@ -318,7 +330,8 @@ int complete_against_commands(int argc, char** argv, int position,
         // complete parameters for commands
         for (int i = 0; i < LENGTH(g_completions); i++) {
             if (!g_completions[i].command
-                || position != g_completions[i].index
+                || (g_completions[i].index != -1
+                    && position != g_completions[i].index)
                 || strcmp(cmd_str, g_completions[i].command)) {
                 continue;
             }
@@ -355,5 +368,16 @@ bool first_parameter_is_flag(int argc, char** argv, int pos) {
     } else {
         return false;
     }
+}
+
+bool keybind_parameter_expected(int argc, char** argv, int pos) {
+    if (argc < 2 || pos < 2) {
+        return true;
+    }
+    if (pos == 2) {
+        // at least a command name always is expected
+        return true;
+    }
+    return parameter_expected(argc - 2, argv + 2, pos - 2);
 }
 

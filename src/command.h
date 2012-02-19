@@ -49,6 +49,8 @@ void complete_against_settings(int argc, char** argv, int pos, GString** output)
 void complete_against_keybinds(int argc, char** argv, int pos, GString** output);
 int complete_against_commands(int argc, char** argv, int position,
                               GString** output);
+void complete_against_keybind_command(int argc, char** argv, int position,
+                                      GString** output);
 
 #endif
 
