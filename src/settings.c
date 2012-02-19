@@ -92,7 +92,7 @@ SettingsPair* settings_find(char* name) {
     return STATIC_TABLE_FIND_STR(SettingsPair, g_settings, name, name);
 }
 
-int settings_set(int argc, char** argv) {
+int settings_set_command(int argc, char** argv) {
     if (argc < 3) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -100,10 +100,14 @@ int settings_set(int argc, char** argv) {
     if (!pair) {
         return HERBST_SETTING_NOT_FOUND;
     }
+    return settings_set(pair, argv[2]);
+}
+
+int settings_set(SettingsPair* pair, char* value) {
     if (pair->type == HS_Int) {
         int new_value;
         // parse value to int, if possible
-        if (1 == sscanf(argv[2], "%d", &new_value)) {
+        if (1 == sscanf(value, "%d", &new_value)) {
             if (new_value == pair->value.i) {
                 // nothing would be changed
                 return 0;
@@ -113,12 +117,12 @@ int settings_set(int argc, char** argv) {
             return HERBST_INVALID_ARGUMENT;
         }
     } else { // pair->type == HS_String
-        if (!strcmp(pair->value.s, argv[2])) {
+        if (!strcmp(pair->value.s, value)) {
             // nothing would be changed
             return 0;
         }
         g_free(pair->value.s);
-        pair->value.s = g_strdup(argv[2]);
+        pair->value.s = g_strdup(value);
     }
     // on successfull change, call callback
     if (pair->on_change) {

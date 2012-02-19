@@ -83,7 +83,7 @@ static void fetch_frame_colors() {
         g_warning("too few characters in setting tree_style\n");
         // ensure that it is long enough
         char* argv[] = { "set", "tree_style", "01234567" };
-        settings_set(LENGTH(argv), argv);
+        settings_set_command(LENGTH(argv), argv);
     }
 }
 
