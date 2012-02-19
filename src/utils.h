@@ -70,6 +70,9 @@ void* table_find(void* start, size_t elem_size, size_t count,
 #define STATIC_TABLE_FIND_STR(TYPE, TABLE, MEMBER, NEEDLE)  \
     STATIC_TABLE_FIND(TYPE, TABLE, MEMBER, memberequals_string, NEEDLE)
 
+#define INDEX_OF(ARRAY, PELEM) \
+    (((char*)(PELEM) - (char*)(ARRAY)) / (sizeof (*ARRAY)))
+
 // returns the unichar in GSTR at position GSTR
 #define UTF8_STRING_AT(GSTR, OFFS) \
     g_utf8_get_char( \

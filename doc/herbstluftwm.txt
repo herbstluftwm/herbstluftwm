@@ -292,6 +292,15 @@ toggle 'NAME'::
     unequal to 0, it becomes 0; else its previous value (which was unequal to 0)
     is restored.
 
+cycle_value 'NAME' 'VALUES' ...::
+    cycles value of the setting 'NAME' through 'VALUES': I.e. it searches the
+    first occurence of the current value in 'VALUES' and changes the value to
+    the next in the list or to the first one if the end is reached or current
+    value wasn't found. Example:
+
+        * cycle_value window_gap 0 5 10 15
+        * cycle_value frame_bg_normal_color red green blue
+
 cycle_monitor ['DELTA']::
     cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.
 

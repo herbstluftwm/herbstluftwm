@@ -34,6 +34,7 @@ SettingsPair* settings_find(char* name);
 int settings_set(SettingsPair* pair, char* value);
 int settings_set_command(int argc, char** argv);
 int settings_toggle(int argc, char** argv);
+int settings_cycle_value(int argc, char** argv);
 int settings_count();
 int settings_get(int argc, char** argv, GString** output);
 

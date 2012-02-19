@@ -176,4 +176,29 @@ int settings_toggle(int argc, char** argv) {
     }
     return 0;
 }
+bool memberequals_settingspair(void* pmember, void* needle) {
+    char* str = *(char**)pmember;
+    SettingsPair* pair = needle;
+    if (pair->type == HS_Int) {
+        return pair->value.i == atoi(str);
+    } else {
+        return !strcmp(pair->value.s, str);
+    }
+}
+
+int settings_cycle_value(int argc, char** argv) {
+    if (argc < 3) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    SettingsPair* pair = settings_find(argv[1]);
+    if (!pair) {
+        return HERBST_SETTING_NOT_FOUND;
+    }
+    SHIFT(argc, argv);
+    SHIFT(argc, argv);
+    char** pcurrent = table_find(argv, sizeof(*argv), argc, 0,
+                                 memberequals_settingspair, pair);
+    int i = pcurrent ? ((INDEX_OF(argv, pcurrent) + 1) % argc) : 0;
+    return settings_set(pair, argv[i]);
+}
 
