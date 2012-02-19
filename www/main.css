@@ -1,14 +1,19 @@
 body {
     background-color: #66770A;
-    padding-top: 0em;
-    margin: 10px;
+    padding: 10px;
+    margin: 0px;
 }
 
 #frame {
     margin-left: auto;
     margin-right: auto;
+    margin-top: 0.5em;
+    margin-bottom: 2em;
     border: 0px solid #555753;
     width: 40em;
+    -moz-box-shadow:    0px 0px 5px 5px rgba(0,0,0,0.5);
+    -webkit-box-shadow: 0px 0px 5px 5px rgba(0,0,0,0.5);
+    box-shadow:         0px 0px 5px 5px rgba(0,0,0,0.5);
 }
 
 #navigationbar .curtab {
@@ -23,6 +28,12 @@ body {
     border-top-right-radius: 10px;
     -moz-border-radius-topleft: 10px;
     -moz-border-radius-topright: 10px;
+}
+#frame {
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    -moz-border-radius-bottomleft: 10px;
+    -moz-border-radius-bottomright: 10px;
 }
 
 #frame , #navigationbar .curtab {
