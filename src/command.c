@@ -114,6 +114,8 @@ struct {
     { "fullscreen",     1,  .list = completion_flag_args },
     { "layout",         1,  .function = complete_against_tags },
     { "load",           1,  .function = complete_against_tags },
+    { "merge_tag",      1,  .function = complete_against_tags },
+    { "merge_tag",      2,  .function = complete_merge_tag },
     { "move",           1,  .function = complete_against_tags },
     { "pseudotile",     1,  .list = completion_flag_args },
     { "keyunbind",      1,  .list = completion_keyunbind_args },
@@ -207,6 +209,28 @@ void complete_against_tags(int argc, char** argv, int pos, GString** output) {
     }
 }
 
+void complete_merge_tag(int argc, char** argv, int pos, GString** output) {
+    char* first = (argc >= 1) ? argv[1] : "";
+    char* needle;
+    if (pos >= argc) {
+        needle = "";
+    } else {
+        needle = argv[pos];
+    }
+    size_t len = strlen(needle);
+    for (int i = 0; i < g_tags->len; i++) {
+        char* name = g_array_index(g_tags, HSTag*, i)->name->str;
+        if (!strcmp(name, first)) {
+            // merge target must not be equal to tag to remove
+            continue;
+        }
+        if (!strncmp(needle, name, len)) {
+            *output = g_string_append(*output, name);
+            *output = g_string_append(*output, "\n");
+        }
+    }
+}
+
 void complete_against_settings(int argc, char** argv, int pos, GString** output)
 {
     char* needle;
@@ -286,51 +310,24 @@ int complete_command(int argc, char** argv, GString** output) {
         char* str = (argc >= 4) ? argv[3] : "";
         size_t len = strlen(str);
         // complete parameters for commands
-        if ((position >= 1 && position <= 2
-                    && !strcmp(argv[2], "merge_tag"))) {
-            // we can complete first argument of use
-            // or first and second argument of merge_tag
-            bool is_merge_target = false;
-            if (!strcmp(argv[2], "merge_tag") && position == 2) {
-                // complete second arg to merge_tag
-                str = (argc >= 5) ? argv[4] : "";
-                len = strlen(str);
-                is_merge_target = true;
+        for (int i = 0; i < LENGTH(g_completions); i++) {
+            if (!g_completions[i].command
+                || position != g_completions[i].index
+                || strcmp(argv[2], g_completions[i].command)) {
+                continue;
             }
-            // list tags
-            int i;
-            for (i = 0; i < g_tags->len; i++) {
-                char* name = g_array_index(g_tags, HSTag*, i)->name->str;
-                if (is_merge_target && !strcmp(name, argv[3])) {
-                    // merge target must not be equal to tag to remove
-                    continue;
-                }
-                if (!strncmp(str, name, len)) {
-                    *output = g_string_append(*output, name);
-                    *output = g_string_append(*output, "\n");
-                }
+            char* needle = ((position + 2) < argc) ? argv[position + 2] : "";
+            if (!needle) {
+                needle = "";
             }
-        }
-        else {
-            for (int i = 0; i < LENGTH(g_completions); i++) {
-                if (!g_completions[i].command
-                    || position != g_completions[i].index
-                    || strcmp(argv[2], g_completions[i].command)) {
-                    continue;
-                }
-                char* needle = ((position + 2) < argc) ? argv[position + 2] : "";
-                if (!needle) {
-                    needle = "";
-                }
-                // try to complete
-                if (g_completions[i].function) {
-                    g_completions[i].function(argc - 2, argv + 2,
-                                                     position, output);
-                }
-                if (g_completions[i].list) {
-                    complete_against_list(needle, g_completions[i].list,
-                                          output);
-                }
+            // try to complete
+            if (g_completions[i].function) {
+                g_completions[i].function(argc - 2, argv + 2,
+                                                 position, output);
+            }
+            if (g_completions[i].list) {
+                complete_against_list(needle, g_completions[i].list,
+                                      output);
             }
         }
     }
