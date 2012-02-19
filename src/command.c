@@ -123,6 +123,9 @@ struct {
     { "shift",          1,  .list = completion_directions },
     { "shift",          1,  .list = completion_focus_args },
     { "shift",          2,  .list = completion_directions },
+    { "set",            1,  .function = complete_against_settings },
+    { "get",            1,  .function = complete_against_settings },
+    { "toggle",         1,  .function = complete_against_settings },
     { "set_layout",     1,  .list = g_layout_names },
     { "unrule",         1,  .list = completion_unrule_args },
     { "use",            1,  .function = complete_against_tags },
@@ -203,6 +206,29 @@ void complete_against_tags(int argc, char** argv, int pos, GString** output) {
     }
 }
 
+void complete_against_settings(int argc, char** argv, int pos, GString** output)
+{
+    char* needle;
+    if (pos >= argc) {
+        needle = "";
+    } else {
+        needle = argv[pos];
+    }
+    size_t len = strlen(needle);
+    bool is_toggle_command = !strcmp(argv[0], "toggle");
+    // complete with setting name
+    for (int i = 0; i < settings_count(); i++) {
+        if (is_toggle_command && g_settings[i].type != HS_Int) {
+            continue;
+        }
+        // only check the first len bytes
+        if (!strncmp(needle, g_settings[i].name, len)) {
+            *output = g_string_append(*output, g_settings[i].name);
+            *output = g_string_append(*output, "\n");
+        }
+    }
+}
+
 void complete_against_keybinds(int argc, char** argv, int pos, GString** output) {
     char* needle;
     if (pos >= argc) {
@@ -259,24 +285,7 @@ int complete_command(int argc, char** argv, GString** output) {
         char* str = (argc >= 4) ? argv[3] : "";
         size_t len = strlen(str);
         // complete parameters for commands
-        bool is_toggle_command = !strcmp(argv[2], "toggle");
-        if (position == 1 &&
-            (!strcmp(argv[2], "set") || !strcmp(argv[2], "get")
-            || is_toggle_command)) {
-            // complete with setting name
-            int i;
-            for (i = 0; i < settings_count(); i++) {
-                if (is_toggle_command && g_settings[i].type != HS_Int) {
-                    continue;
-                }
-                // only check the first len bytes
-                if (!strncmp(str, g_settings[i].name, len)) {
-                    *output = g_string_append(*output, g_settings[i].name);
-                    *output = g_string_append(*output, "\n");
-                }
-            }
-        }
-        else if ((position >= 1 && position <= 2
+        if ((position >= 1 && position <= 2
                     && !strcmp(argv[2], "merge_tag"))) {
             // we can complete first argument of use
             // or first and second argument of merge_tag
