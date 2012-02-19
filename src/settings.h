@@ -19,6 +19,7 @@ typedef struct {
         int     i;
         char*   s;
     }   value;
+    int old_value_i;
     int type;
     void (*on_change)(); // what to call on change
 } SettingsPair;

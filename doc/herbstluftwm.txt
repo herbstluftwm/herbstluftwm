@@ -288,8 +288,9 @@ get 'NAME'::
     are listed in the <<SETTINGS, section below>>.
 
 toggle 'NAME'::
-    toggles the setting 'NAME' if it's an integer setting: if value was 0, it
-    becomes 1, else value becomes 0.
+    toggles the setting 'NAME' if it's an integer setting: if its value is
+    unequal to 0, it becomes 0; else its previous value (which was unequal to 0)
+    is restored.
 
 cycle_monitor ['DELTA']::
     cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.

@@ -71,6 +71,9 @@ void settings_init() {
         if (g_settings[i].type == HS_String) {
             g_settings[i].value.s = g_strdup(g_settings[i].value.s);
         }
+        if (g_settings[i].type == HS_Int) {
+            g_settings[i].old_value_i = 1;
+        }
     }
 }
 
@@ -157,7 +160,14 @@ int settings_toggle(int argc, char** argv) {
         return HERBST_SETTING_NOT_FOUND;
     }
     if (pair->type == HS_Int) {
-        pair->value.i = !pair->value.i;
+        if (pair->value.i) {
+            /* store old value */
+            pair->old_value_i = pair->value.i;
+            pair->value.i = 0;
+        } else {
+            /* recover old value */
+            pair->value.i = pair->old_value_i;
+        }
     } else {
         // only toggle numbers
         return HERBST_INVALID_ARGUMENT;
