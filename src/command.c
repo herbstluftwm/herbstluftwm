@@ -126,6 +126,7 @@ struct {
     { "set",            1,  .function = complete_against_settings },
     { "get",            1,  .function = complete_against_settings },
     { "toggle",         1,  .function = complete_against_settings },
+    { "cycle_value",    1,  .function = complete_against_settings },
     { "set_layout",     1,  .list = g_layout_names },
     { "unrule",         1,  .list = completion_unrule_args },
     { "use",            1,  .function = complete_against_tags },
