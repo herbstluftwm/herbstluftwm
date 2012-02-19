@@ -288,9 +288,16 @@ int complete_command(int argc, char** argv, GString** output) {
     }
     // index must be between first and als arg of "commmand to complete ..."
     int position = CLAMP(atoi(argv[1]), 0, argc-2);
+    SHIFT(argc, argv);
+    SHIFT(argc, argv);
+    return complete_against_commands(argc, argv, position, output);
+}
+
+int complete_against_commands(int argc, char** argv, int position,
+                              GString** output) {
     // complete command
     if (position == 0) {
-        char* str = (argc >= 3) ? argv[2] : "";
+        char* str = (argc >= 1) ? argv[0] : "";
         size_t len = strlen(str);
         int i = 0;
         while (g_commands[i].cmd.standard != NULL) {
@@ -303,27 +310,25 @@ int complete_command(int argc, char** argv, GString** output) {
         }
         return 0;
     }
-    if (!parameter_expected(argc - 2, argv + 2, position)) {
+    if (!parameter_expected(argc, argv, position)) {
         return HERBST_NO_PARAMETER_EXPECTED;
     }
-    if (argc >= 3) {
-        char* str = (argc >= 4) ? argv[3] : "";
-        size_t len = strlen(str);
+    if (argc >= 1) {
+        char* cmd_str = (argc >= 1) ? argv[0] : "";
         // complete parameters for commands
         for (int i = 0; i < LENGTH(g_completions); i++) {
             if (!g_completions[i].command
                 || position != g_completions[i].index
-                || strcmp(argv[2], g_completions[i].command)) {
+                || strcmp(cmd_str, g_completions[i].command)) {
                 continue;
             }
-            char* needle = ((position + 2) < argc) ? argv[position + 2] : "";
+            char* needle = (position < argc) ? argv[position] : "";
             if (!needle) {
                 needle = "";
             }
             // try to complete
             if (g_completions[i].function) {
-                g_completions[i].function(argc - 2, argv + 2,
-                                                 position, output);
+                g_completions[i].function(argc, argv, position, output);
             }
             if (g_completions[i].list) {
                 complete_against_list(needle, g_completions[i].list,
