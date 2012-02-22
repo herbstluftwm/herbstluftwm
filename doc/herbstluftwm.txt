@@ -104,29 +104,29 @@ COMMANDS
 *herbstclient*(1) or via keybindings.
 
 quit::
-    quits herbstluftwm
+    Quits herbstluftwm.
 
 reload::
-    executes the autostart file
+    Executes the autostart file.
 
 version::
-    prints the version of the running herbstluftwm instance.
+    Prints the version of the running herbstluftwm instance.
 
 list_commands::
-    lists all available commands.
+    Lists all available commands.
 
 [[list_monitors]]list_monitors::
-    list currently configured monitors with their index, area (as rectangle) and currently
+    List currently configured monitors with their index, area (as rectangle) and currently
     viewed tag.
 
 list_keybinds::
-    lists all bound keys with their associated command. Each line consists of
+    Lists all bound keys with their associated command. Each line consists of
     one key combination and the command with its parameters separated by tabs.
 
 WARNING: Tabs within command parameters are not escaped!
 
 keybind 'KEY' 'COMMAND' ['ARGS ...']::
-    adds a key binding. When 'KEY' is pressed, the internal 'COMMAND' (with its
+    Adds a key binding. When 'KEY' is pressed, the internal 'COMMAND' (with its
     'ARGS') is executed. A key binding is a (possibly empty) list of modifiers
     (Mod1, Mod2, Mod3, Mod4, Mod5, Alt, Super, Control/Ctrl, Shift) and one key
     (see keysymdef.h for a list of keys). Modifiers and the key are concatenated
@@ -138,11 +138,11 @@ keybind 'KEY' 'COMMAND' ['ARGS ...']::
         * keybind Mod1-Shift-space cycle_layout -1
 
 keyunbind 'KEY'|*-F*|*--all*::
-    removes the key binding for 'KEY'. Syntax for 'KEY' is defined in *keybind*.
+    Removes the key binding for 'KEY'. Syntax for 'KEY' is defined in *keybind*.
     If *-F* or *--all* is given, then all key bindings will be removed.
 
 mousebind 'BUTTON' 'ACTION'::
-    adds a mouse binding for the floating mode. When 'BUTTON' is pressed, the
+    Adds a mouse binding for the floating mode. When 'BUTTON' is pressed, the
     specified 'ACTION' will be performed. 'BUTTON' has a similar syntax to the
     'KEY' argument of keybind: It consists of a list of modifiers (separated by
     '-' or '+', valid modifiers are listed in the description of 'keybind') and
@@ -164,16 +164,16 @@ mousebind 'BUTTON' 'ACTION'::
     E.g.: +mousebind Mod1-Button3 zoom+
 
 mouseunbind::
-    removes all mouse bindings.
+    Removes all mouse bindings.
 
 spawn 'EXECUTABLE' ['ARGS ...']::
-    spawns an 'EXECUTABLE' with its 'ARGS'. For details see 'man 3 execvp'.
+    Spawns an 'EXECUTABLE' with its 'ARGS'. For details see 'man 3 execvp'.
     Example:
 
         * spawn xterm -e man 3 execvp
 
 wmexec ['WINDOWMANAGER' ['ARGS ...']]::
-    executes the 'WINDOWMANAGER' with its 'ARGS'. This is useful to switch the
+    Executes the 'WINDOWMANAGER' with its 'ARGS'. This is useful to switch the
     window manager in the running session without restarting the session. If no
     or an invalid 'WINDOWMANAGER' is given, then herbstluftwm is restarted. For
     details see 'man 3 execvp'. Example:
@@ -181,19 +181,19 @@ wmexec ['WINDOWMANAGER' ['ARGS ...']]::
         * wmexec openbox
 
 cycle ['DELTA']::
-    cycles the selection within the current frame by 'DELTA'. If 'DELTA' is
+    Cycles the selection within the current frame by 'DELTA'. If 'DELTA' is
     omitted, 'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1
     means: cycle in the opposite direction by 1.
 
 cycle_all ['DIRECTION']::
-    cycles through all windows and frames on the current tag. 'DIRECTION' = 1
+    Cycles through all windows and frames on the current tag. 'DIRECTION' = 1
     means forward, 'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no
     effect. 'DIRECTION' defaults to 1. If there are multiple windows within on
     frame, then it acts similar to the 'cycle' command. (The 'cycle_all' command
-    focuses the next/previous leave in the 'layout' tree)
+    focuses the next/previous leave in the 'layout' tree.)
 
 cycle_layout ['DELTA']::
-    cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'
+    Cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'
     defaults to 1. You can find a <<LIST_LAYOUT_ALGORITHMS,list of layout
     algorithms>> above.
 
@@ -203,10 +203,10 @@ set_layout 'LAYOUT'::
     above>>.
 
 close::
-    closes the focused window.
+    Closes the focused window.
 
 split 'ALIGN' 'FACTION'::
-    splits the focused frame into two subframes with a specified 'FRACTION'
+    Splits the focused frame into two subframes with a specified 'FRACTION'
     between 0 and 1. 'ALIGN' can be 'horizontal' or 'vertical' (actually it only
     depends on the first letter of 'ALIGN'). Example:
 
@@ -215,7 +215,7 @@ split 'ALIGN' 'FACTION'::
         * split h 0.8
 
 focus ['-i'|'-e'] 'DIRECTION'::
-    moves the focus from current frame to the next frame or client in
+    Moves the focus from current frame to the next frame or client in
     'DIRECTION' which is in:
     +
         * l[eft]
@@ -257,12 +257,12 @@ focus ['-i'|'-e'] 'DIRECTION'::
 ----
 
 raise ['0xWINID']::
-    raises the specified window, which is specified by hexadecimal '0xWINID'. If
+    Raises the specified window, which is specified by hexadecimal '0xWINID'. If
     no '0xWINID' is given, the focused window will be raised. Its result is only
     visible in floating mode.
 
 resize 'DIRECTION' 'FRACTIONDELTA'::
-    changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA'.
+    Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA'.
     'DIRECTION' is specified at the 'focus' command. You should not omit the
     sign '-' or '+', because in future versions, the behaviour may change if the
     sign is omitted. Example:
@@ -271,29 +271,29 @@ resize 'DIRECTION' 'FRACTIONDELTA'::
         * resize down -0.1
 
 shift ['-i'|'-e'] 'DIRECTION'::
-    shifts the focused window to the next frame in the specified 'DIRECTION'.
+    Shifts the focused window to the next frame in the specified 'DIRECTION'.
     The 'DIRECTIONS' and '-i'|'-e' behave as specified at the 'focus' command.
     If 'focus_follows_shift' is set, then focus stays in the window; otherwise
     it stays in the frame.
 
 remove::
-    removes focused frame and merges its windows to its neighbour frame.
+    Removes focused frame and merges its windows to its neighbour frame.
 
 set 'NAME' 'VALUE'::
-    sets the specified setting 'NAME' to 'VALUE'. All <<SETTINGS,*SETTINGS*>>
+    Sets the specified setting 'NAME' to 'VALUE'. All <<SETTINGS,*SETTINGS*>>
     are listed in the <<SETTINGS, section below>>.
 
 get 'NAME'::
-    prints the value of setting 'NAME'. All <<SETTINGS,*SETTINGS*>>
+    Prints the value of setting 'NAME'. All <<SETTINGS,*SETTINGS*>>
     are listed in the <<SETTINGS, section below>>.
 
 toggle 'NAME'::
-    toggles the setting 'NAME' if it's an integer setting: if its value is
+    Toggles the setting 'NAME' if it's an integer setting: if its value is
     unequal to 0, it becomes 0; else its previous value (which was unequal to 0)
     is restored.
 
 cycle_value 'NAME' 'VALUES' ...::
-    cycles value of the setting 'NAME' through 'VALUES': I.e. it searches the
+    Cycles value of the setting 'NAME' through 'VALUES': I.e. it searches the
     first occurence of the current value in 'VALUES' and changes the value to
     the next in the list or to the first one if the end is reached or current
     value wasn't found. Example:
@@ -302,30 +302,30 @@ cycle_value 'NAME' 'VALUES' ...::
         * cycle_value frame_bg_normal_color red green blue
 
 cycle_monitor ['DELTA']::
-    cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.
+    Cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.
 
 focus_monitor 'INDEX'::
-    puts focus to monitor with specified 'INDEX' (as specified by the
+    Puts focus to monitor with specified 'INDEX' (as specified by the
     list_monitors command)
 
 add 'TAG'::
-    creates a new empty tag named 'TAG'.
+    Creates a new empty tag named 'TAG'.
 
 use 'TAG'::
-    switches focused monitor to specified 'TAG'.
+    Switches focused monitor to specified 'TAG'.
 
 merge_tag 'TAG' ['TARGET']::
-    removes tag named 'TAG' and moves all its windows to tag 'TARGET'. If
+    Removes tag named 'TAG' and moves all its windows to tag 'TARGET'. If
     'TARGET' is omitted, the focused tag will be used.
 
 rename 'OLDTAG' 'NEWTAG'::
-    renames tag named 'OLDTAG' to 'NEWTAG'.
+    Renames tag named 'OLDTAG' to 'NEWTAG'.
 
 move 'TAG'::
-    moves the focused window to tag named 'TAG'.
+    Moves the focused window to tag named 'TAG'.
 
 add_monitor 'RECT' ['TAG' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]]::
-    adds a monitor on the specified rectangle 'RECT' and displays 'TAG' on it.
+    Adds a monitor on the specified rectangle 'RECT' and displays 'TAG' on it.
     'TAG' currently must not be displayed on any other monitor. 'RECT' is a
     string of the form 'WxH+X+Y'. The padding specifies extra space around the
     monitor for some statusbars/panels. If no or an empty padding is given, it
@@ -336,26 +336,26 @@ add_monitor 'RECT' ['TAG' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]]::
 
 
 remove_monitor 'INDEX'::
-    removes the monitor with specified 'INDEX'. Its 'INDEX' can be found out via
+    Removes the monitor with specified 'INDEX'. Its 'INDEX' can be found out via
     the <<list_monitors,'list_monitors'>> command.
 
 move_monitor 'INDEX' 'RECT' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
-    moves the monitor with specified 'INDEX' to rectangle 'RECT'. 'INDEX' and
+    Moves the monitor with specified 'INDEX' to rectangle 'RECT'. 'INDEX' and
     'RECT' are defined as in 'remove_monitor' and 'add_monitor'. If no or an
     empty pad is given, it is not changed.
 
 monitor_rect [[-p] 'INDEX']::
-    prints the rectangle of the specified 'INDEX' in the format: *X Y W H* +
+    Prints the rectangle of the specified 'INDEX' in the format: *X Y W H* +
     If no 'INDEX' or 'cur' is given, then the current Monitor is used. If '-p'
     is supplied, then the remaining rect without the pad around this monitor
     is printed.
 
 pad 'INDEX' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
-    sets the pad of indexed monitor to the specified padding. If no or an empty
+    Sets the pad of indexed monitor to the specified padding. If no or an empty
     padding is given, it is not changed.
 
 layout ['TAG']::
-    prints the layout of 'TAG' in a nice tree style. Its style is defined
+    Prints the layout of 'TAG' in a nice tree style. Its style is defined
     by the 'tree_style' setting. If no 'TAG' is given, current tag is used.
     +
 An example output is:
@@ -369,7 +369,7 @@ An example output is:
 ----
 
 dump ['TAG']::
-    prints the same information as the 'layout' command but in a machine
+    Prints the same information as the 'layout' command but in a machine
     readable format. Its output can be read back with the 'load' command.
     +
 An example output (formatted afterwards) is:
@@ -383,14 +383,14 @@ An example output (formatted afterwards) is:
 ----
 
 load ['TAG'] 'LAYOUT'::
-    loads a given 'LAYOUT' description to specified 'TAG' or current tag if no
+    Loads a given 'LAYOUT' description to specified 'TAG' or current tag if no
     'TAG' is given.
 
 CAUTION: 'LAYOUT' is exactly one parameter. If you are calling it manually
 from your shell or from a script, quote it properly!
 
 complete 'POSITION' ['COMMAND' 'ARGS ...']::
-    prints the result of tab completion in partial written 'COMMAND' with
+    Prints the result of tab completion in partial written 'COMMAND' with
     optional 'ARGS'. You usually do not need this, because there is already tab
     completion for bash. Example:
 
@@ -400,10 +400,10 @@ complete 'POSITION' ['COMMAND' 'ARGS ...']::
           prints all settings beginning with fra that can be toggled
 
 emit_hook 'ARGS ...'::
-    emits a custom hook to all idling herbstclients.
+    Emits a custom hook to all idling herbstclients.
 
 tag_status ['MONITOR']::
-    print a tab separated list of all tags for specified 'MONITOR' index. If no
+    Print a tab separated list of all tags for specified 'MONITOR' index. If no
     'MONITOR' index is given, the focused monitor is used. Each tag name is
     prefixed with one char, which indicates its state:
         * *.* the tag is empty
@@ -417,13 +417,13 @@ WARNING: If you use a tab in one of the tag names, then tag_status is probably
 quite useless for you.
 
 floating [['TAG'] on|off|toggle|status]::
-    changes the current tag to floating/tiling mode on specified 'TAG' or prints
+    Changes the current tag to floating/tiling mode on specified 'TAG' or prints
     it current status. If no 'TAG' is given, current tag is used. If no argument
     is given, floating mode is toggled. If status is given, then on or off is
     printed, depending of the floating state on 'TAG'.
 
 rule [\[--]'FLAG'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]::
-    defines a rule which will be applied to all new clients. Its behaviour is
+    Defines a rule which will be applied to all new clients. Its behaviour is
     described in the <<RULES,*RULES section*>>.
 
 unrule *--all*|*-F*::
@@ -431,10 +431,10 @@ unrule *--all*|*-F*::
     (It is not possible yet to remove certain rules)
 
 fullscreen *on*|*off*|*toggle*::
-    sets or toggles the fullscreen state of the focused client.
+    Sets or toggles the fullscreen state of the focused client.
 
 pseudotile *on*|*off*|*toggle*::
-    sets or toggles the pseudotile state of the focused client. If a client is
+    Sets or toggles the pseudotile state of the focused client. If a client is
     pseudotiled, then in tiling mode the client is only moved but not resized -
     the client size will stay the floating size. The only reason to resize the
     client is to ensure, that it fits into its tile.
@@ -448,70 +448,70 @@ integer values. An integer value is set, if its value is 1 or another value
 unequal to 0. An integer value is unset, if its value is 0.
 
 window_gap (Integer)::
-    the gap between frames in the tiling mode.
+    The gap between frames in the tiling mode.
 
 snap_distance (Integer)::
-    if a client is dragged in floating mode, then it snaps to neighbour clients
+    If a client is dragged in floating mode, then it snaps to neighbour clients
     if the distance between them is smaller then snap_distance.
 
 snap_gap (Integer)::
-    specifies the remaining gap if a dragged client snaps to an edge in floating
+    Specifies the remaining gap if a dragged client snaps to an edge in floating
     mode. If snap_gap is set to 0, no gap will remain.
 
 frame_border_active_color (String/Color)::
-    the border color of a focused frame
+    The border color of a focused frame
 
 frame_border_normal_color (String/Color)::
-    the border color of an unfocused frame
+    The border color of an unfocused frame
 
 frame_bg_active_color (String/Color)::
-    the fill color of a focused frame
+    The fill color of a focused frame
 
 frame_bg_normal_color (String/Color)::
-    the fill color of an unfocused frame (It is only visible if
+    The fill color of an unfocused frame (It is only visible if
     always_show_frame is set)
 
 frame_bg_transparent (Integer)::
-    if set, frames have transparent backgrounds.
+    If set, frames have transparent backgrounds.
 
 frame_border_width (Integer)::
-    border width of a frame
+    Border width of a frame
 
 raise_on_focus (Integer)::
-    if set, a window is raised if it is focused. The value of this setting is
+    If set, a window is raised if it is focused. The value of this setting is
     only noticed in floating mode.
 
 raise_on_click (Integer)::
-    if set, a window is raised if it is clicked. The value of this setting is
+    If set, a window is raised if it is clicked. The value of this setting is
     only noticed in floating mode.
 
 window_border_width (Integer)::
-    border width of a window
+    Border width of a window.
 
 window_border_active_color (String/Color)::
-    border color of a focused window
+    Border color of a focused window.
 
 window_border_normal_color (String/Color)::
-    border color of an unfocused window
+    Border color of an unfocused window.
 
 always_show_frame (Integer)::
     If set, all frames are displayed. If unset, only frames with focus or with
     windows in it are displayed.
 
 default_frame_layout (Integer)::
-    index of the frame layout, which is used if a new frame is created (by split
+    Index of the frame layout, which is used if a new frame is created (by split
     or on a new tag). For a list of valid indizes and their meanings, check the
     <<LIST_LAYOUT_ALGORITHMS,list of layout algorithms above>>.
 
 default_direction_external_only (Integer)::
-    this setting controls the behaviour of focus and shift if no '-e' or '-i'
+    This setting controls the behaviour of focus and shift if no '-e' or '-i'
     argument is given. if set, then focus and shift changes the focused frame
     even if there are other clients in this frame in the specified 'DIRECTION'.
     Else, a client within current frame is selected if it is in the specified
     'DIRECTION'.
 
 gapless_grid (Integer)::
-    this setting affects the size of the last client in a frame that is arranged
+    This setting affects the size of the last client in a frame that is arranged
     by grid layout. If set, then the last client always fills the gap within
     this frame. If unset, then the last client has the same size as all other
     clients in this frame.
@@ -571,23 +571,24 @@ If each 'CONDITION' of this rule matches against this client, then every
 'CONSEQUENCE' is executed. (If there are no conditions given, then this rule
 is executed for each client)
 
-Each 'CONDITION' consists of a 'property' name, a operator and a 'value'. Valid
+Each 'CONDITION' consists of a 'property' name, an operator and a 'value'. Valid
 operators are:
 
-    * +~+ matches if client's 'property' is matched by the regex 'value'
-    * +=+ matches if client's 'properly' string is equal to 'value'
+    * +~+ matches if client's 'property' is matched by the regex 'value'.
+    * +=+ matches if client's 'properly' string is equal to 'value'.
 
 Valid 'properties' are:
 
-    * +instance+: the first entry in client's +WM_CLASS+
-    * +class+: the second entry in client's +WM_CLASS+
+    * +instance+: the first entry in client's +WM_CLASS+.
+    * +class+: the second entry in client's +WM_CLASS+.
     * +pid+: the client's process id (Warning: the pid is not available for
       every client. This only matches if the client sets the pid to the
-      _NET_WM_PID itself)
+      _NET_WM_PID itself).
     * +maxage+: matches if the age of the rule measured in seconds does not
       exceed 'value'. This condition only can be used with the +=+ operator. If
       maxage already is exceeded (and never will match again), then this rule is
-      removed. (With this you can build rules that only live for a certain time)
+      removed. (With this you can build rules that only live for a certain
+      time.)
     * +windowtype+: matches the _NET_WM_WINDOW_TYPE property of a window.
     * +windowrole+: matches the WM_WINDOW_ROLE property of a window if it is set
       by the window.
@@ -595,7 +596,7 @@ Valid 'properties' are:
 Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair.
 Valid 'NAMES' are:
 
-    * +tag+: moves the client to tag 'VALUE'
+    * +tag+: moves the client to tag 'VALUE'.
     * +focus+: decides whether the client gets the input focus on his tag.
       The default is *off*.  'VALUE' can be *on*, *off* or *toggle*.
     * +manage+: decides whether the client will be managed or not. The default is
@@ -616,20 +617,20 @@ Valid 'NAMES' are:
 
 A rule's behaviour can be configured by some special 'FLAGS':
 
-    * +not+: negates the next 'CONDITION'
-    * +!+: same as +not+
-    * +once+: only apply this rule once (and delete it afterwards)
+    * +not+: negates the next 'CONDITION'.
+    * +!+: same as +not+.
+    * +once+: only apply this rule once (and delete it afterwards).
 
 Examples:
 
     * +rule --class=Netscape --tag=6 --focus=off+ +
         +
-        moves all Netscape instances to tag 6, but doesn't give focus to them
+        Moves all Netscape instances to tag 6, but doesn't give focus to them.
 
     * +rule not class~.*[Tt]erm tag=2+ +
         +
-        moves all clients to tag 2, if their class does not end with +term+ or
-        +Term+
+        Moves all clients to tag 2, if their class does not end with +term+ or
+        +Term+.
 
     * +rule class=Thunderbird index=/0+
         +
@@ -652,57 +653,57 @@ startup. It is also executed on command 'reload'. If not specified by the
 calls.
 
 For a quick install, copy the default autostart file to
-'~/.config/herbstluftwm/autostart' and make it executable.
+'~/.config/herbstluftwm/'.
 
 HOOKS
 -----
 
 On special events, herbstluftwm emits some hooks (with parameters). You can
 receive or wait for them with *herbstclient*(1). Also custom hooks can be
-emitted with the emit_hook command. The following hooks are emitted by
+emitted with the *emit_hook* command. The following hooks are emitted by
 herbstluftwm itself:
 
 fullscreen [on|off] 'WINID' 'STATE'::
-    the fullscreen state of window 'WINID' was changed to [on|off].
+    The fullscreen state of window 'WINID' was changed to [on|off].
 
 tag_changed 'TAG' 'MONITOR'::
-    the tag 'TAG' was selected on 'MONITOR'.
+    The tag 'TAG' was selected on 'MONITOR'.
 
 focus_changed 'WINID' 'TITLE'::
-    the window 'WINID' was focused. Its window title is 'TITLE'.
+    The window 'WINID' was focused. Its window title is 'TITLE'.
 
 window_title_changed 'WINID' 'TITLE'::
-    the title of the *focused* window was changed. Its window id is 'WINID' and
+    The title of the *focused* window was changed. Its window id is 'WINID' and
     its new title is 'TITLE'.
 
 tag_flags::
-    the flags (i.e. urgent or filled state) have been changed.
+    The flags (i.e. urgent or filled state) have been changed.
 
 tag_added 'TAG'::
-    a tag named 'TAG' was added.
+    A tag named 'TAG' was added.
 
 tag_removed 'TAG'::
-    the tag named 'TAG' was removed.
+    The tag named 'TAG' was removed.
 
 urgent [on|off] 'WINID'::
-    the urgent state of client with given 'WINID' has been changed to [on|off].
+    The urgent state of client with given 'WINID' has been changed to [on|off].
 
 There are also other useful hooks, which never will be emitted by herbstluftwm
 itself, but which can be emitted with the *emit_hook* command:
 
 quit_panel::
-    tells a panel to quit. The default panel.sh quits on this hook. Many
+    Tells a panel to quit. The default panel.sh quits on this hook. Many
     scripts are using this hook.
 
 reload::
-    tells all daemons that the 'autostart' file is reloaded -- and tells them to
-    quit. This hook *should* be emitted in the first line of everyones'
-    'autostart'.
+    Tells all daemons that the 'autostart' file is reloaded -- and tells them
+    to quit. This hook *should* be emitted in the first line of every 'autostart'
+    file.
 
 ENVIRONMENT VARIABLES
 ---------------------
 DISPLAY::
-    specifies the 'DISPLAY' to use.
+    Specifies the 'DISPLAY' to use.
 
 EXIT STATUS
 -----------
@@ -723,7 +724,6 @@ AUTHOR
 RESOURCES
 ---------
 Gitweb: <http://git.cs.fau.de/?p=re06huxa/herbstluftwm>
-
 
 COPYING
 -------

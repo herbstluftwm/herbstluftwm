@@ -26,7 +26,7 @@ added to improve readability.
 // FIXME: this ##s## is an ugly hack... is there an other solution?
 See *herbstluftwm*(1) for a list of available 'COMMAND'##s## and their 'ARGS'.
 
-If '--wait' or '--idle' is passed, than it waits for hooks from *herbstluftwm*.
+If '--wait' or '--idle' is passed, then it waits for hooks from *herbstluftwm*.
 The hook is printed, if it matches the optional 'FILTER'. 'FILTER's are regular
 expressions. For a list of available hooks see *herbstluftwm*(1).
 
@@ -46,20 +46,20 @@ OPTIONS
     'COUNT' is 1.
 
 *-q*, *--quiet*::
-    do not print error messages if herbstclient cannot connect to the running
+    Do not print error messages if herbstclient cannot connect to the running
     herbstluftwm instance.
 
 ENVIRONMENT VARIABLES
 ---------------------
 DISPLAY::
-    specifies the 'DISPLAY' to use, e.g. where *herbstluftwm*(1) is running.
+    Specifies the 'DISPLAY' to use, e.g. where *herbstluftwm*(1) is running.
 
 EXIT STATUS
 -----------
 Returns the exit status of the 'COMMAND' execution in *herbstluftwm(1)* server.
 
 *0*::
-    Success
+    Success.
 
 other::
     Failure. See *herbstluftwm*(1) for a list of error codes.
@@ -88,6 +88,6 @@ COPYING
 Copyright 2011-2012 Thorsten Wißmann. All rights reserved.
 
 This software is licensed under the "Simplified BSD License". See LICENSE for
-details
+details.
 
 // vim: tw=80
