@@ -14,6 +14,7 @@ Changes:
     * new green and gray color theme
     * remember the value when toggling a setting and restore it on next toggle
     * new command: cycle_value
+    * new command: use_index
     * recursive command completion for keybind
 
 Release 0.2 on 2012-01-25

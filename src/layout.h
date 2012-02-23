@@ -183,6 +183,7 @@ void frame_set_visible(HSFrame* frame, bool visible);
 // for tags
 HSTag* add_tag(char* name);
 HSTag* find_tag(char* name);
+int    tag_index_of(HSTag* tag);
 HSTag* find_unused_tag();
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame);
 int tag_add_command(int argc, char** argv);
@@ -215,6 +216,7 @@ HSMonitor* get_current_monitor();
 void monitor_set_tag(HSMonitor* monitor, HSTag* tag);
 int monitor_set_pad_command(int argc, char** argv);
 int monitor_set_tag_command(int argc, char** argv);
+int monitor_set_tag_by_index_command(int argc, char** argv);
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();

@@ -107,6 +107,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "get",            settings_get),
     CMD_BIND_NO_OUTPUT(   "add",            tag_add_command),
     CMD_BIND_NO_OUTPUT(   "use",            monitor_set_tag_command),
+    CMD_BIND_NO_OUTPUT(   "use_index",      monitor_set_tag_by_index_command),
     CMD_BIND(             "floating",       tag_set_floating_command),
     CMD_BIND_NO_OUTPUT(   "fullscreen",     client_set_property_command),
     CMD_BIND_NO_OUTPUT(   "pseudotile",     client_set_property_command),

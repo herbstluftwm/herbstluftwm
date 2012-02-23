@@ -312,7 +312,14 @@ add 'TAG'::
     Creates a new empty tag named 'TAG'.
 
 use 'TAG'::
-    Switches focused monitor to specified 'TAG'.
+    Switches the focused monitor to specified 'TAG'.
+
+use_index 'INDEX'::
+    Switches the focused monitor to the 'TAG' with the specified 'INDEX'. If
+    'INDEX' starts with +++ or +-+, then 'INDEX' is treated relative to the
+    current 'TAG'. E.g. this cycles backwards through the tags:
+
+        * use_index -1
 
 merge_tag 'TAG' ['TARGET']::
     Removes tag named 'TAG' and moves all its windows to tag 'TARGET'. If
