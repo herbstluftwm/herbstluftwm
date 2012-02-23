@@ -237,8 +237,12 @@ dt.hdlist1 {
     border: 1px solid #a40000;
     background-color: #ef2929;
     padding: 1px;
+}
+
+.admonitionblock .content {
     color: #eeeeec;
 }
+
 .admonitionblock table {
     background-color: #cc0000;
     width: 100%;
