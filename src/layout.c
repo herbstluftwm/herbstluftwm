@@ -1055,6 +1055,26 @@ int tag_index_of(HSTag* tag) {
     return -1;
 }
 
+HSTag* get_tag_by_index(char* index_str) {
+    int index = atoi(index_str);
+    // index must be treated relative, if it's first char is + or -
+    bool is_relative = array_find("+-", 2, sizeof(char), &index_str[0]) >= 0;
+    HSMonitor* monitor = get_current_monitor();
+    if (is_relative) {
+        int current = tag_index_of(monitor->tag);
+        index += current;
+        // ensure index is valid
+        index = ((index % g_tags->len) + g_tags->len) % g_tags->len;
+    } else {
+        // if it is absolute, then check index
+        if (index < 0 || index >= g_tags->len) {
+            HSDebug("invalid tag index %d\n", index);
+            return NULL;
+        }
+    }
+    return g_array_index(g_tags, HSTag*, index);
+}
+
 HSTag* find_unused_tag() {
     for (int i = 0; i < g_tags->len; i++) {
         if (!find_monitor_with_tag(g_array_index(g_tags, HSTag*, i))) {
@@ -2115,24 +2135,11 @@ int monitor_set_tag_by_index_command(int argc, char** argv) {
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }
-    char* index_str = argv[1];
-    int index = atoi(index_str);
-    // index must be treat relative, if it's first char is + or -
-    bool is_relative = array_find("+-", 2, sizeof(char), &index_str[0]) >= 0;
-    HSMonitor* monitor = get_current_monitor();
-    if (is_relative) {
-        int current = tag_index_of(monitor->tag);
-        index += current;
-        // ensure index is valid
-        index = ((index % g_tags->len) + g_tags->len) % g_tags->len;
-    } else {
-        // if it is absolute, then check index
-        if (index < 0 || index >= g_tags->len) {
-            HSDebug("%s: invalid index %d\n", argv[0], index);
-            return HERBST_INVALID_ARGUMENT;
-        }
+    HSTag* tag = get_tag_by_index(argv[1]);
+    if (!tag) {
+        return HERBST_INVALID_ARGUMENT;
     }
-    monitor_set_tag(monitor, g_array_index(g_tags, HSTag*, index));
+    monitor_set_tag(get_current_monitor(), tag);
     return 0;
 }
 
@@ -2145,6 +2152,18 @@ int tag_move_window_command(int argc, char** argv) {
         return HERBST_INVALID_ARGUMENT;
     }
     tag_move_window(target);
+    return 0;
+}
+
+int tag_move_window_by_index_command(int argc, char** argv) {
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    HSTag* tag = get_tag_by_index(argv[1]);
+    if (!tag) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    tag_move_window(tag);
     return 0;
 }
 

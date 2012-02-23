@@ -331,6 +331,11 @@ rename 'OLDTAG' 'NEWTAG'::
 move 'TAG'::
     Moves the focused window to tag named 'TAG'.
 
+move_index 'INDEX'::
+    Moves the focused window to the tag specified by 'INDEX'. Analogical to the
+    argument for *use_index*: If 'INDEX' starts with +++ or +-+, then it is
+    treated relative.
+
 add_monitor 'RECT' ['TAG' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]]::
     Adds a monitor on the specified rectangle 'RECT' and displays 'TAG' on it.
     'TAG' currently must not be displayed on any other monitor. 'RECT' is a
