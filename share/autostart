@@ -30,10 +30,13 @@ for i in ${!TAG_NAMES[@]} ; do
     hc add "${TAG_NAMES[$i]}"
     key="${TAG_KEYS[$i]}"
     if ! [ -z "$key" ] ; then
-        hc keybind "$Mod-$key" use "${TAG_NAMES[$i]}"
-        hc keybind "$Mod-Shift-$key" move "${TAG_NAMES[$i]}"
+        hc keybind "$Mod-$key" use_index "$i"
+        hc keybind "$Mod-Shift-$key" move_index "$i"
     fi
 done
+
+hc keybind "$Mod-Right" use_index +1
+hc keybind "$Mod-Left"  use_index -1
 
 # layouting
 hc keybind $Mod-r remove
