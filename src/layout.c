@@ -2140,24 +2140,29 @@ int tag_move_window_command(int argc, char** argv) {
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }
-    HSFrame*  frame = g_cur_frame;
-    if (!g_cur_frame) {
-        // nothing to do
-        return 0;
-    }
-    Window window = frame_focused_window(frame);
-    if (window == 0) {
-        // nothing to do
-        return 0;
-    }
     HSTag* target = find_tag(argv[1]);
     if (!target) {
         return HERBST_INVALID_ARGUMENT;
     }
+    tag_move_window(target);
+    return 0;
+}
+
+void tag_move_window(HSTag* target) {
+    HSFrame*  frame = g_cur_frame;
+    if (!g_cur_frame) {
+        // nothing to do
+        return;
+    }
+    Window window = frame_focused_window(frame);
+    if (window == 0) {
+        // nothing to do
+        return;
+    }
     HSMonitor* monitor = get_current_monitor();
     if (monitor->tag == target) {
         // nothing to do
-        return 0;
+        return;
     }
     HSMonitor* monitor_target = find_monitor_with_tag(target);
     frame_remove_window(frame, window);
@@ -2180,7 +2185,6 @@ int tag_move_window_command(int argc, char** argv) {
         monitor_apply_layout(monitor_target);
     }
     tag_set_flags_dirty();
-    return 0;
 }
 
 int monitor_focus_command(int argc, char** argv) {
