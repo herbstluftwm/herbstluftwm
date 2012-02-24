@@ -24,7 +24,6 @@ Some BUGS:
 Planned features:
     - dump/load floating values
     - jumpto urgent
-    - completion for keyunbind
     - (optional) move cursor after focus change
     - optional focus selection after frame_split
     - focus_follows_mouse based on frames/monitors
@@ -33,9 +32,17 @@ Planned features:
     - keybind with keycodes
     - chain keys/key chains/...
     - lastfocused{window,frame,tag} - commands
-    - cycle_tags command
     - own X-Properties to indicate window state (fullscreen, pseudotile, float,...)
     - bind multiple commands to one keycombindation via keybind, keybindadd
     - double window border to give a good contrast to dark backgrounded and
       light backgrounded windows.
+    - provide multiple mechanisms to split clients to child frames:
+         * 100:0 (and vice versa)
+         * 50:50
+         * clients before focus to the first child, others to the second
+    - automatic split command which splits along the longest side
+    - catchall for frames (this frame will catch all new clients)
+    - try to find a empty frame for new clients
+    - (currently unknown) handling of WM_TRANSIENT_FOR
+    - move clients in pseudotile mode
 
