@@ -34,6 +34,8 @@ for i in ${!TAG_NAMES[@]} ; do
         hc keybind "$Mod-Shift-$key" move_index "$i"
     fi
 done
+hc keybind "$Mod-period" use_index +1
+hc keybind "$Mod-comma"  use_index -1
 
 hc keybind "$Mod-Right" use_index +1
 hc keybind "$Mod-Left"  use_index -1
