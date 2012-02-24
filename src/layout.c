@@ -1064,7 +1064,7 @@ HSTag* get_tag_by_index(char* index_str) {
         int current = tag_index_of(monitor->tag);
         index += current;
         // ensure index is valid
-        index = ((index % g_tags->len) + g_tags->len) % g_tags->len;
+        index = MOD(index, g_tags->len);
     } else {
         // if it is absolute, then check index
         if (index < 0 || index >= g_tags->len) {

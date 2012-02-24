@@ -14,6 +14,8 @@
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
+#define MOD(X, N) ((((X) % (signed)(N)) + (signed)(N)) % (signed)(N))
+
 
 /// print a printf-like message to stderr and exit
 void die(const char *errstr, ...);
