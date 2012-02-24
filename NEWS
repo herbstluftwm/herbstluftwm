@@ -15,6 +15,7 @@ Changes:
     * new command: cycle_value
     * new commands: use_index, move_index
     * recursive command completion for keybind
+    * new rule condition: title
     * in the default autostart:
 
         - new green and gray color theme

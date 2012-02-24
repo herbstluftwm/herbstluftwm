@@ -37,6 +37,7 @@ static int find_consequence_type(char* name);
 static bool condition_string(HSCondition* rule, char* string);
 static bool condition_class(HSCondition* rule, HSClient* client);
 static bool condition_instance(HSCondition* rule, HSClient* client);
+static bool condition_title(HSCondition* rule, HSClient* client);
 static bool condition_pid(HSCondition* rule, HSClient* client);
 static bool condition_maxage(HSCondition* rule, HSClient* client);
 static bool condition_windowtype(HSCondition* rule, HSClient* client);
@@ -59,6 +60,7 @@ static void consequence_fullscreen(HSConsequence* cons, HSClient* client,
 static HSConditionType g_condition_types[] = {
     {   "class",    condition_class },
     {   "instance", condition_instance },
+    {   "title",    condition_title },
     {   "pid",      condition_pid },
     {   "maxage",   condition_maxage },
     {   "windowtype", condition_windowtype },
@@ -489,6 +491,10 @@ bool condition_instance(HSCondition* rule, HSClient* client) {
     bool match = condition_string(rule, inst->str);
     g_string_free(inst, true);
     return match;
+}
+
+bool condition_title(HSCondition* rule, HSClient* client) {
+    return condition_string(rule, client->title->str);
 }
 
 
