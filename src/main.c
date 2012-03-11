@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <signal.h>
+#include <sys/select.h>
 #include <sys/wait.h>
 #include <assert.h>
 // gui
@@ -498,6 +499,12 @@ static void remove_zombies(int signal) {
     while (waitpid(-1, &bgstatus, WNOHANG) > 0);
 }
 
+static void handle_signal(int signal) {
+    HSDebug("Interupted by signal %d\n", signal);
+    g_aboutToQuit = true;
+    return;
+}
+
 static void sigaction_signal(int signum, void (*handler)(int)) {
     struct sigaction act;
     act.sa_handler = handler;
@@ -697,6 +704,9 @@ int main(int argc, char* argv[]) {
     checkotherwm();
     // remove zombies on SIGCHLD
     sigaction_signal(SIGCHLD, remove_zombies);
+    sigaction_signal(SIGINT,  handle_signal);
+    sigaction_signal(SIGQUIT, handle_signal);
+    sigaction_signal(SIGTERM, handle_signal);
     // set some globals
     g_screen = DefaultScreen(g_display);
     g_screen_width = DisplayWidth(g_display, g_screen);
@@ -720,11 +730,23 @@ int main(int argc, char* argv[]) {
 
     // main loop
     XEvent event;
+    int x11_fd;
+    fd_set in_fds;
+    x11_fd = ConnectionNumber(g_display);
     while (!g_aboutToQuit) {
-        XNextEvent(g_display, &event);
-        void (*handler) (XEvent*) = g_default_handler[event.type];
-        if (handler != NULL) {
-            handler(&event);
+        FD_ZERO(&in_fds);
+        FD_SET(x11_fd, &in_fds);
+        // wait for an event or a signal
+        select(x11_fd + 1, &in_fds, 0, 0, NULL);
+        if (g_aboutToQuit) {
+            break;
+        }
+        while (XPending(g_display)) {
+            XNextEvent(g_display, &event);
+            void (*handler) (XEvent*) = g_default_handler[event.type];
+            if (handler != NULL) {
+                handler(&event);
+            }
         }
     }
 

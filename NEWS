@@ -20,6 +20,7 @@ Changes:
 
         - new green and gray color theme
         - use/move was replaced by use_index/move_index
+    * proper signal handling: map all windows on SIGINT,SIGQUIT,SIGTERM
 
 Release 0.2 on 2012-01-25
 -------------------------
