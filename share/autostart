@@ -16,7 +16,7 @@ hc keyunbind --all
 
 # keybindings
 Mod=Mod1
-hc keybind $Mod-q quit
+hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-c close
 hc keybind $Mod-Return spawn xterm
