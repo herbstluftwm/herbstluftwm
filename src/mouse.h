@@ -38,7 +38,6 @@ void mouse_bind_function(unsigned int modifiers, unsigned int button,
 int mouse_bind_command(int argc, char** argv);
 int mouse_unbind_all();
 MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button);
-void mouse_regrab_all();
 
 unsigned int string2button(char* name);
 MouseFunction string2mousefunction(char* name);

@@ -120,11 +120,6 @@ HSClient* get_client_from_window(Window window) {
     return (HSClient*) g_hash_table_lookup(g_clients, &window);
 }
 
-static void window_grab_button(Window win) {
-    XGrabButton(g_display, AnyButton, 0, win, true, ButtonPressMask,
-                GrabModeSync, GrabModeSync, None, None);
-}
-
 HSClient* manage_client(Window win) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
@@ -178,8 +173,6 @@ HSClient* manage_client(Window win) {
     }
     // get events from window
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
-    window_grab_button(win);
-    //mouse_grab(win);
     frame_insert_window_at_index(client->tag->frame, win, changes.tree_index->str);
     if (changes.focus) {
         // give focus to window if wanted
@@ -211,7 +204,7 @@ void unmanage_client(Window win) {
     if (m) monitor_apply_layout(m);
     // ignore events from it
     XSelectInput(g_display, win, 0);
-    XUngrabButton(g_display, AnyButton, AnyModifier, win);
+    //XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
     g_hash_table_remove(g_clients, &win);
     ewmh_remove_client(win);
@@ -224,10 +217,7 @@ void destroy_client(HSClient* client) {
 }
 
 void window_unfocus(Window window) {
-    // grab buttons in old window again
     XSetWindowBorder(g_display, window, g_window_border_normal_color);
-    window_grab_button(window);
-    //mouse_grab(window);
 }
 
 static Window lastfocus = 0;
@@ -250,7 +240,6 @@ void window_focus(Window window) {
     window_unfocus(lastfocus);
     // change window-colors
     XSetWindowBorder(g_display, window, g_window_border_active_color);
-    //XUngrabButton(g_display, AnyButton, AnyModifier, window);
     // set keyboardfocus
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
     if (window != lastfocus) {
@@ -273,7 +262,6 @@ void window_focus(Window window) {
     if (*g_raise_on_focus || is_max_layout) {
         XRaiseWindow(g_display, window);
     }
-    //mouse_grab(window);
 }
 
 void client_setup_border(HSClient* client, bool focused) {
