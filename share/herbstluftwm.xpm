@@ -1,7 +1,7 @@
 /* XPM */
 static char* HERBSTLUFTWM[] = {
     "16 16 4 1",
-    "  c #ff00ff",
+    "  c None",
     ". c #020202",
     "# c #9fbc00",
     "l c #8f5902",
