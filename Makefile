@@ -56,36 +56,36 @@ doc/%.html: doc/%.txt
 
 install: all
 	@echo "==> creating dirs..."
-	mkdir -p $(PREFIX)
-	mkdir -p $(LICENSEDIR)
-	mkdir -p $(BINDIR)
-	mkdir -p $(MANDIR)
-	mkdir -p $(DOCDIR)
-	mkdir -p $(EXAMPLESDIR)
-	mkdir -p $(ETCDIR)
-	mkdir -p $(ETCDIR)/bash_completion.d/
-	mkdir -p $(CONFIGDIR)
-	mkdir -p $(ZSHCOMPLETIONDIR)
-	mkdir -p $(XSESSIONSDIR)
+	$(MKDIR) $(PREFIX)
+	$(MKDIR) $(LICENSEDIR)
+	$(MKDIR) $(BINDIR)
+	$(MKDIR) $(MANDIR)
+	$(MKDIR) $(DOCDIR)
+	$(MKDIR) $(EXAMPLESDIR)
+	$(MKDIR) $(ETCDIR)
+	$(MKDIR) $(ETCDIR)/bash_completion.d/
+	$(MKDIR) $(CONFIGDIR)
+	$(MKDIR) $(ZSHCOMPLETIONDIR)
+	$(MKDIR) $(XSESSIONSDIR)
 	@echo "==> copying files..."
-	install $(TARGET) $(BINDIR)
-	install ipc-client/herbstclient $(BINDIR)/
-	install -m 644 LICENSE $(LICENSEDIR)
-	install -m 644 doc/herbstclient.1 $(MANDIR)/
-	install -m 644 doc/herbstluftwm.1 $(MANDIR)/
-	install -m 644 doc/herbstclient.html $(DOCDIR)/
-	install -m 644 doc/herbstluftwm.html $(DOCDIR)/
-	install -m 644 BUGS $(DOCDIR)/
-	install -m 644 NEWS $(DOCDIR)/
-	install -m 644 README $(DOCDIR)/
-	install -m 755 share/autostart $(CONFIGDIR)/
-	install -m 755 share/panel.sh $(CONFIGDIR)/
-	install -m 755 share/restartpanels.sh $(CONFIGDIR)/
-	install -m 644 share/herbstclient-completion $(ETCDIR)/bash_completion.d/
-	install -m 644 share/_herbstclient $(ZSHCOMPLETIONDIR)/
-	install -m 644 share/herbstluftwm.desktop $(XSESSIONSDIR)/
-	install -m 644 scripts/README $(EXAMPLESDIR)/
-	install -m 755 scripts/*.sh $(EXAMPLESDIR)/
+	$(INSTALL) $(TARGET) $(BINDIR)
+	$(INSTALL) ipc-client/herbstclient $(BINDIR)/
+	$(INSTALL) -m 644 LICENSE $(LICENSEDIR)
+	$(INSTALL) -m 644 doc/herbstclient.1 $(MANDIR)/
+	$(INSTALL) -m 644 doc/herbstluftwm.1 $(MANDIR)/
+	$(INSTALL) -m 644 doc/herbstclient.html $(DOCDIR)/
+	$(INSTALL) -m 644 doc/herbstluftwm.html $(DOCDIR)/
+	$(INSTALL) -m 644 BUGS $(DOCDIR)/
+	$(INSTALL) -m 644 NEWS $(DOCDIR)/
+	$(INSTALL) -m 644 README $(DOCDIR)/
+	$(INSTALL) -m 755 share/autostart $(CONFIGDIR)/
+	$(INSTALL) -m 755 share/panel.sh $(CONFIGDIR)/
+	$(INSTALL) -m 755 share/restartpanels.sh $(CONFIGDIR)/
+	$(INSTALL) -m 644 share/herbstclient-completion $(ETCDIR)/bash_completion.d/
+	$(INSTALL) -m 644 share/_herbstclient $(ZSHCOMPLETIONDIR)/
+	$(INSTALL) -m 644 share/herbstluftwm.desktop $(XSESSIONSDIR)/
+	$(INSTALL) -m 644 scripts/README $(EXAMPLESDIR)/
+	$(INSTALL) -m 755 scripts/*.sh $(EXAMPLESDIR)/
 
 www:
 	make -C www

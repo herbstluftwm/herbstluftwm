@@ -36,4 +36,6 @@ TARFILE = herbstluftwm-$(VERSION_MAJOR).$(VERSION_MINOR)$(VERSION_SUFFIX).tar.gz
 A2X = a2x
 ASCIIDOC = asciidoc
 TMPTARDIR = herbstluftwm-$(VERSION_MAJOR).$(VERSION_MINOR)$(VERSION_SUFFIX)
+MKDIR = mkdir -p
+INSTALL = install
 
