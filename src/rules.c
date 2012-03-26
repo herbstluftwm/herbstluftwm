@@ -370,11 +370,12 @@ int rule_remove_command(int argc, char** argv) {
 }
 
 // rules applying //
-void client_changes_init(HSClientChanges* changes) {
+void client_changes_init(HSClientChanges* changes, HSClient* client) {
     memset(changes, 0, sizeof(HSClientChanges));
     changes->tree_index = g_string_new("");
     changes->focus = false;
     changes->manage = true;
+    changes->fullscreen = ewmh_is_fullscreen_set(client->window);
 }
 
 void client_changes_free_members(HSClientChanges* changes) {

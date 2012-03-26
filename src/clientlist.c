@@ -154,7 +154,7 @@ HSClient* manage_client(Window win) {
 
     // apply rules
     HSClientChanges changes;
-    client_changes_init(&changes);
+    client_changes_init(&changes, client);
     rules_apply(client, &changes);
     if (changes.tag_name) {
         client->tag = find_tag(changes.tag_name->str);

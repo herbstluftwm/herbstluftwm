@@ -307,3 +307,33 @@ void ewmh_update_window_state(struct HSClient* client) {
         32, PropModeReplace, (unsigned char *) window_state, count_enabled);
 }
 
+bool ewmh_is_window_state_set(Window win, Atom hint) {
+    Atom* states;
+    Atom actual_type;
+    int format;
+    unsigned long actual_count, bytes_left;
+    if (Success != XGetWindowProperty(g_display, win, g_netatom[NetWmState], 0,
+            ~0L, False, XA_ATOM, &actual_type, &format, &actual_count,
+            &bytes_left, (unsigned char**)&states)) {
+        // NetWmState just is not set properly
+        return false;
+    }
+    if (actual_type != XA_ATOM || format != 32 || states == NULL) {
+        // invalid format or no entries
+        return false;
+    }
+    bool hint_set = false;
+    for (int i = 0; i < actual_count; i++) {
+        if (states[i] == hint) {
+            hint_set = true;
+            break;
+        }
+    }
+    XFree(states);
+    return hint_set;
+}
+
+bool ewmh_is_fullscreen_set(Window win) {
+    return ewmh_is_window_state_set(win, g_netatom[NetWmStateFullscreen]);
+}
+

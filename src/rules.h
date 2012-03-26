@@ -63,7 +63,7 @@ void rules_init();
 void rules_destroy();
 void rules_apply(struct HSClient* client, HSClientChanges* changes);
 
-void client_changes_init(HSClientChanges* changes);
+void client_changes_init(HSClientChanges* changes, struct HSClient* client);
 void client_changes_free_members(HSClientChanges* changes);
 
 HSRule* rule_create();
