@@ -66,6 +66,12 @@ Q: Why is herbstluftwm called herbstluftwm?::
    I liked the name of the e-mail client wanderlust. Unfortunately I am a happy
    mutt user, so I needed an other application with a similar name.
 
+[[FORK]]
+Q: Is herbstluftwm a fork of dwm/musca/wmii/...?::
+    No. It was written from scratch, although it borrows some basic XLib function calls
+    (like updating numlock-state, sending a +WMDelete+-Message to a client,
+    updating the urgent hints, ...) from dwm.
+
 Q: If the config is a bashscript, does it mean it is called on each keystroke?::
    No, the configuration file is executed once to set internal settings and
    keybindings and so on. If a keybinding is registered and its key is pressed,
