@@ -5,7 +5,7 @@ Hint: Don't restart::
    To make changes in yout autostart take effect immediately, just type
    +herbstclient reload+. There is no need to restart herbstluftwm or X.
 
-Hint: Use the forc\^H\^H\^H^Hscripts!::
+Hint: Use scripts!::
    There are a bunch of scripts coming along with herbstluftwm. Check out the
    scripts directory in the sources and the examples directory after installing.
 
