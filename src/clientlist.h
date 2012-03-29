@@ -19,6 +19,7 @@
 typedef struct HSClient {
     Window      window;
     XRectangle  last_size;
+    int         last_border_width;
     HSTag*      tag;
     XRectangle  float_size;
     GString*    title;  // or also called window title; this is never NULL
