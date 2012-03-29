@@ -13,6 +13,13 @@ Some BUGS:
       properly at quit. you should do something like killall panel.sh when
       logging out (this is only a workaround!).
     - Ensure stacking order is right (TODO: frame_restack())
+    - Also handle stacking order right when switching desktops to avoid
+      flickering. the xmonad-mailinglist tells:
+
+          When changing desktop, you can map all the windows on the new desktop
+          with a higher z-value than any of the windows on the old desktop, then
+          unmap all the windows on the old desktop.
+
     - separate layout.[hc] into modules: layout, monitor, tag
     - raise_on_click doesn't work if raise_on_click and numlock is enabled
     - raise_on_click doesn't work with gnome-settings-daemon
