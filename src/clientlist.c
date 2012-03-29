@@ -310,26 +310,25 @@ void client_resize(HSClient* client, XRectangle rect) {
         return;
     }
     Window win = client->window;
-    if (client) {
-        if (client->pseudotile) {
-            XRectangle size = client->float_size;
-            // ensure size is not larger than rect-tile
-            size.width = MIN(size.width, rect.width);
-            size.height = MIN(size.height, rect.height);
+    if (client->pseudotile) {
+        XRectangle size = client->float_size;
+        // ensure size is not larger than rect-tile
+        size.width = MIN(size.width, rect.width);
+        size.height = MIN(size.height, rect.height);
 
-            // center it
-            rect.x = rect.x + rect.width/2 - size.width/2;
-            rect.y = rect.y + rect.height/2 - size.height/2;
-            rect.width = size.width;
-            rect.height = size.height;
-        }
-        if (RECTANGLE_EQUALS(client->last_size, rect)
-            && client->last_border_width == *g_window_border_width) {
-            return;
-        }
-        client->last_size = rect;
-        client->last_border_width = *g_window_border_width;
+        // center it
+        rect.x = rect.x + rect.width/2 - size.width/2;
+        rect.y = rect.y + rect.height/2 - size.height/2;
+        rect.width = size.width;
+        rect.height = size.height;
     }
+    if (RECTANGLE_EQUALS(client->last_size, rect)
+        && client->last_border_width == *g_window_border_width) {
+        return;
+    }
+    client->last_size = rect;
+    client->last_border_width = *g_window_border_width;
+
     // apply border width
     rect.width -= *g_window_border_width * 2;
     rect.height -= *g_window_border_width * 2;
