@@ -563,7 +563,13 @@ void buttonpress(XEvent* event) {
     HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
     if (mouse_binding_find(be->state, be->button)) {
         mouse_start_drag(event);
+    } else {
+        focus_window(be->window, false, true);
+        if (*g_raise_on_click) {
+            XRaiseWindow(g_display, be->window);
+        }
     }
+    XAllowEvents(g_display, ReplayPointer, be->time);
 }
 
 void buttonrelease(XEvent* event) {

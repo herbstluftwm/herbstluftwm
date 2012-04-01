@@ -54,7 +54,7 @@ SettingsPair g_settings[] = {
     SET_INT(    "focus_follows_mouse",             0,           NULL        ),
     SET_INT(    "focus_stealing_prevention",       1,           NULL        ),
     SET_INT(    "swap_monitors_to_get_tag",        1,           NULL        ),
-    SET_INT(    "raise_on_focus",                  1,           NULL        ),
+    SET_INT(    "raise_on_focus",                  0,           NULL        ),
     SET_INT(    "raise_on_click",                  1,           NULL        ),
     SET_INT(    "gapless_grid",                    1,           RELAYOUT    ),
     SET_STRING( "tree_style",                      "*| +`--.",  FR_COLORS   ),

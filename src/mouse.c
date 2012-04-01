@@ -107,6 +107,10 @@ void handle_motion_event(XEvent* ev) {
     function(&(ev->xmotion));
 }
 
+bool mouse_is_dragging() {
+    return g_drag_bind != NULL;
+}
+
 void mouse_bind_function(unsigned int modifiers, unsigned int button,
                          MouseFunction function) {
     MouseBinding* mb = g_new(MouseBinding, 1);
@@ -114,7 +118,10 @@ void mouse_bind_function(unsigned int modifiers, unsigned int button,
     mb->modifiers = modifiers;
     mb->function = function;
     g_mouse_binds = g_list_prepend(g_mouse_binds, mb);
-    // TODO bind mb to the correct list of clients
+    HSClient* client = get_current_client();
+    if (client) {
+        grab_client_buttons(client, true);
+    }
 }
 
 int mouse_unbind_all() {
@@ -128,6 +135,10 @@ int mouse_unbind_all() {
     g_list_free(g_mouse_binds);
 #endif
     g_mouse_binds = NULL;
+    HSClient* client = get_current_client();
+    if (client) {
+        grab_client_buttons(client, true);
+    }
     return 0;
 }
 
@@ -214,6 +225,31 @@ MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {
     GList* elem = g_list_find_custom(g_mouse_binds, &mb,
                                      (GCompareFunc)mouse_binding_equals);
     return elem ? elem->data : NULL;
+}
+
+static void grab_client_button(MouseBinding* bind, HSClient* client) {
+    unsigned int modifiers[] = { 0, LockMask, *g_numlockmask_ptr, *g_numlockmask_ptr|LockMask };
+    for(int j = 0; j < LENGTH(modifiers); j++) {
+        XGrabButton(g_display, bind->button,
+                    bind->modifiers | modifiers[j],
+                    client->window, False, ButtonPressMask | ButtonReleaseMask,
+                    GrabModeAsync, GrabModeSync, None, None);
+    }
+}
+
+void grab_client_buttons(HSClient* client, bool focused) {
+    update_numlockmask();
+    XUngrabButton(g_display, AnyButton, AnyModifier, client->window);
+    if (focused) {
+        g_list_foreach(g_mouse_binds, (GFunc)grab_client_button, client);
+    } else {
+        unsigned int btns[] = { Button1, Button2, Button3 };
+        for (int i = 0; i < LENGTH(btns); i++) {
+            XGrabButton(g_display, btns[i], AnyModifier, client->window, False,
+                        ButtonPressMask|ButtonReleaseMask, GrabModeSync,
+                        GrabModeSync, None, None);
+        }
+    }
 }
 
 void mouse_function_move(XMotionEvent* me) {

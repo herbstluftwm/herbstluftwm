@@ -189,6 +189,8 @@ HSClient* manage_client(Window win) {
     monitor_apply_layout(find_monitor_with_tag(client->tag));
     client_changes_free_members(&changes);
 
+    grab_client_buttons(client, false);
+
     return client;
 }
 
@@ -218,6 +220,8 @@ void destroy_client(HSClient* client) {
 
 void window_unfocus(Window window) {
     XSetWindowBorder(g_display, window, g_window_border_normal_color);
+    HSClient* c = get_client_from_window(window);
+    if (c) grab_client_buttons(c, false);
 }
 
 static Window lastfocus = 0;
@@ -262,6 +266,7 @@ void window_focus(Window window) {
     if (*g_raise_on_focus || is_max_layout) {
         XRaiseWindow(g_display, window);
     }
+    grab_client_buttons(get_client_from_window(window), true);
 }
 
 void client_setup_border(HSClient* client, bool focused) {
