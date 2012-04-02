@@ -621,6 +621,11 @@ void monitor_apply_layout(HSMonitor* monitor) {
         if (get_current_monitor() == monitor) {
             frame_focus_recursive(monitor->tag->frame);
         }
+        // remove all enternotify-events from the event queue that were
+        // generated while arranging the clients on this monitor
+        XEvent ev;
+        XSync(g_display, False);
+        while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
     }
 }
 
