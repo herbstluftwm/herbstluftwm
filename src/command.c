@@ -294,8 +294,8 @@ int complete_command(int argc, char** argv, GString** output) {
     }
     // index must be between first and als arg of "commmand to complete ..."
     int position = CLAMP(atoi(argv[1]), 0, argc-2);
-    SHIFT(argc, argv);
-    SHIFT(argc, argv);
+    (void)SHIFT(argc, argv);
+    (void)SHIFT(argc, argv);
     return complete_against_commands(argc, argv, position, output);
 }
 

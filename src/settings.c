@@ -194,8 +194,8 @@ int settings_cycle_value(int argc, char** argv) {
     if (!pair) {
         return HERBST_SETTING_NOT_FOUND;
     }
-    SHIFT(argc, argv);
-    SHIFT(argc, argv);
+    (void)SHIFT(argc, argv);
+    (void)SHIFT(argc, argv);
     char** pcurrent = table_find(argv, sizeof(*argv), argc, 0,
                                  memberequals_settingspair, pair);
     int i = pcurrent ? ((INDEX_OF(argv, pcurrent) + 1) % argc) : 0;

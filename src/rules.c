@@ -283,7 +283,6 @@ static void rule_add_consequence(HSRule* rule, HSConsequence* cons) {
 
 int rule_add_command(int argc, char** argv) {
     // usage: rule COND=VAL ... then
-    SHIFT(argc, argv);
 
     // temporary data structures
     HSRule* rule = rule_create();
@@ -299,7 +298,7 @@ int rule_add_command(int argc, char** argv) {
         { "once",   &rule->once },
     };
 
-    while (argc > 0) {
+    while (SHIFT(argc, argv)) {
         char* name;
         char* value;
         char op;
@@ -346,8 +345,6 @@ int rule_add_command(int argc, char** argv) {
             fprintf(stderr, "rule: unknown argument \"%s\"\n", *argv);
             return HERBST_INVALID_ARGUMENT;
         }
-
-        SHIFT(argc, argv);
     }
 
     g_queue_push_tail(&g_rules, rule);
