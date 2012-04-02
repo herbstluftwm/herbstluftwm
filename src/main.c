@@ -500,7 +500,7 @@ static void remove_zombies(int signal) {
 }
 
 static void handle_signal(int signal) {
-    HSDebug("Interupted by signal %d\n", signal);
+    HSDebug("Interrupted by signal %d\n", signal);
     g_aboutToQuit = true;
     return;
 }
