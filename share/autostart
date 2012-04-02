@@ -58,6 +58,7 @@ hc keybind $Mod-Control-k resize up +$RESIZESTEP
 hc keybind $Mod-Control-l resize right +$RESIZESTEP
 
 # mouse
+hc mouseunbind --all
 hc mousebind $Mod-Button1 move
 hc mousebind $Mod-Button2 resize
 hc mousebind $Mod-Button3 zoom

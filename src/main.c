@@ -561,23 +561,15 @@ static struct {
 void buttonpress(XEvent* event) {
     XButtonEvent* be = &(event->xbutton);
     HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
-    if (be->window == g_root && be->subwindow != None) {
-        if (mouse_binding_find(be->state, be->button)) {
-            mouse_start_drag(event);
-        }
+    if (mouse_binding_find(be->state, be->button)) {
+        mouse_start_drag(event);
     } else {
-        if (be->button == Button1 ||
-            be->button == Button2 ||
-            be->button == Button3) {
-            // only change focus on real clicks... not when scrolling
-            if (*g_raise_on_click) {
-                XRaiseWindow(g_display, be->window);
-            }
-            focus_window(be->window, false, true);
+        focus_window(be->window, false, true);
+        if (*g_raise_on_click) {
+            XRaiseWindow(g_display, be->window);
         }
-        // handling of event is finished, now propagate event to window
-        XAllowEvents(g_display, ReplayPointer, CurrentTime);
     }
+    XAllowEvents(g_display, ReplayPointer, be->time);
 }
 
 void buttonrelease(XEvent* event) {
@@ -604,7 +596,9 @@ void destroynotify(XEvent* event) {
 }
 void enternotify(XEvent* event) {
     HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
-    if (*g_focus_follows_mouse && false == event->xcrossing.focus) {
+    if (!mouse_is_dragging()
+        && *g_focus_follows_mouse
+        && false == event->xcrossing.focus) {
         // sloppy focus
         focus_window(event->xcrossing.window, false, true);
     }
@@ -626,7 +620,7 @@ void mappingnotify(XEvent* event) {
         XRefreshKeyboardMapping(ev);
         if(ev->request == MappingKeyboard) {
             regrab_keys();
-            mouse_regrab_all();
+            //TODO: mouse_regrab_all();
         }
     }
 }

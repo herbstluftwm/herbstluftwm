@@ -4,6 +4,7 @@
 #define __HERBSTLUFT_MOUSE_H_
 
 #include <X11/Xlib.h>
+#include <stdbool.h>
 
 // various snap-flags
 enum SnapFlags {
@@ -38,13 +39,15 @@ void mouse_bind_function(unsigned int modifiers, unsigned int button,
 int mouse_bind_command(int argc, char** argv);
 int mouse_unbind_all();
 MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button);
-void mouse_regrab_all();
 
 unsigned int string2button(char* name);
 MouseFunction string2mousefunction(char* name);
 
+void grab_client_buttons(struct HSClient* client, bool focused);
+
 void mouse_start_drag(XEvent* ev);
 void mouse_stop_drag();
+bool mouse_is_dragging();
 void handle_motion_event(XEvent* ev);
 
 // get the vector to snap a client to it's neighbour
