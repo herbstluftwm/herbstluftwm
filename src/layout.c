@@ -2281,6 +2281,12 @@ void monitor_focus_by_index(int new_selection) {
         new_x = monitor->rect.x + monitor->mouse.x;
         new_y = monitor->rect.y + monitor->mouse.y;
         XWarpPointer(g_display, None, g_root, 0, 0, 0, 0, new_x, new_y);
+        // discard all mouse events caused by this pointer movage from the
+        // event queue, so the focus really stays in the last focused window on
+        // this monitor and doesn't jump to the window hovered by the mouse
+        XEvent ev;
+        XSync(g_display, False);
+        while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
     }
     // emit hooks
     ewmh_update_current_desktop();
