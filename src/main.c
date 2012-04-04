@@ -595,12 +595,13 @@ void destroynotify(XEvent* event) {
     unmanage_client(event->xdestroywindow.window);
 }
 void enternotify(XEvent* event) {
+    XCrossingEvent *ce = &event->xcrossing;
     HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
     if (!mouse_is_dragging()
         && *g_focus_follows_mouse
-        && false == event->xcrossing.focus) {
+        && false == ce->focus) {
         // sloppy focus
-        focus_window(event->xcrossing.window, false, true);
+        focus_window(ce->window, false, true);
     }
 }
 void expose(XEvent* event) {
