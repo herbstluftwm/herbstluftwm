@@ -39,6 +39,7 @@ cat <<EOF
 <html>
  <head>
   <link rel="stylesheet" href="main.css" type="text/css" />
+  <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
   <title>$title</title>
  </head>
  <body>
