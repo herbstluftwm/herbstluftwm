@@ -129,6 +129,8 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "dump",           print_layout_command),
     CMD_BIND(             "load",           load_command),
     CMD_BIND(             "complete",       complete_command),
+    CMD_BIND_NO_OUTPUT(   "lock",           monitors_lock_command),
+    CMD_BIND_NO_OUTPUT(   "unlock",         monitors_unlock_command),
     CMD_BIND_NO_OUTPUT(   "set_layout",     frame_current_set_client_layout),
     {{ NULL }}
 };

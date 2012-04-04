@@ -32,6 +32,7 @@
 #define RELAYOUT all_monitors_apply_layout
 #define FR_COLORS reset_frame_colors
 #define CL_COLORS reset_client_colors
+#define LOCK_CHANGED monitors_lock_changed
 
 // default settings:
 SettingsPair g_settings[] = {
@@ -57,6 +58,7 @@ SettingsPair g_settings[] = {
     SET_INT(    "raise_on_focus",                  0,           NULL        ),
     SET_INT(    "raise_on_click",                  1,           NULL        ),
     SET_INT(    "gapless_grid",                    1,           RELAYOUT    ),
+    SET_INT(    "monitors_locked",                 0,           LOCK_CHANGED),
     SET_STRING( "tree_style",                      "*| +`--.",  FR_COLORS   ),
 };
 

@@ -126,6 +126,15 @@ list_keybinds::
 
 WARNING: Tabs within command parameters are not escaped!
 
+lock::
+    Increases the 'monitors_locked' setting. Use this if you want to do multiple window
+    actions at once (i.e. without repainting between the single steps). See
+    also: *unlock*
+
+unlock::
+    Decreases the 'monitors_locked' setting. If 'monitors_locked' is changed to
+    0, then all monitors are repainted again. See also: *lock*
+
 keybind 'KEY' 'COMMAND' ['ARGS ...']::
     Adds a key binding. When 'KEY' is pressed, the internal 'COMMAND' (with its
     'ARGS') is executed. A key binding is a (possibly empty) list of modifiers
@@ -541,6 +550,13 @@ focus_follows_mouse (Integer)::
 focus_stealing_prevention (Integer)::
     If set, only pagers and taskbars are allowed to change the focus. If unset,
     all applications can request a focus change.
+
+monitors_locked (Integer)::
+    If greater than 0, then the clients on all monitors aren't moved or resized
+    anymore. If it is set to 0, then the arranging of monitors is enabled again,
+    and all monitors are rearranged if their content has changed in the
+    meantime. You should not change this setting manually due to concurrency
+    issues; use the commands *lock* and *unlock* instead.
 
 swap_monitors_to_get_tag (Integer)::
     If set: If you want to view a tag, that already is viewed on another

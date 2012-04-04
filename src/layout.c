@@ -26,6 +26,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+int* g_monitors_locked;
 int* g_window_gap;
 int* g_frame_border_width;
 int* g_always_show_frame;
@@ -85,6 +86,7 @@ static void fetch_frame_colors() {
         char* argv[] = { "set", "tree_style", "01234567" };
         settings_set_command(LENGTH(argv), argv);
     }
+    g_monitors_locked = &(settings_find("monitors_locked")->value.i);
 }
 
 void layout_init() {
@@ -602,6 +604,10 @@ void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
 
 void monitor_apply_layout(HSMonitor* monitor) {
     if (monitor) {
+        if (*g_monitors_locked) {
+            monitor->dirty = true;
+            return;
+        }
         XRectangle rect = monitor->rect;
         // apply pad
         rect.x += monitor->pad_left;
@@ -870,6 +876,7 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
     m.tag = tag;
     m.mouse.x = 0;
     m.mouse.y = 0;
+    m.dirty = false;
     g_array_append_val(g_monitors, m);
     return &g_array_index(g_monitors, HSMonitor, g_monitors->len-1);
 }
@@ -2079,8 +2086,7 @@ int frame_foreach_client(HSFrame* frame, ClientAction action, void* data) {
 }
 
 void all_monitors_apply_layout() {
-    int i;
-    for (i = 0; i < g_monitors->len; i++) {
+    for (int i = 0; i < g_monitors->len; i++) {
         HSMonitor* m = &g_array_index(g_monitors, HSMonitor, i);
         monitor_apply_layout(m);
     }
@@ -2320,5 +2326,45 @@ HSMonitor* monitor_with_index(int index) {
         return NULL;
     }
     return &g_array_index(g_monitors, HSMonitor, index);
+}
+
+int monitors_lock_command(int argc, char** argv) {
+    // lock-number must never be negative
+    // ensure that lock value is valid
+    if (*g_monitors_locked < 0) {
+        *g_monitors_locked = 0;
+    }
+    // increase lock => it is definitely > 0, i.e. locked
+    (*g_monitors_locked)++;
+    monitors_lock_changed();
+    return 0;
+}
+
+int monitors_unlock_command(int argc, char** argv) {
+    // lock-number must never be lower than 1 if unlocking
+    // so: ensure that lock value is valid
+    if (*g_monitors_locked < 1) {
+        *g_monitors_locked = 1;
+    }
+    // decrease lock => unlock
+    (*g_monitors_locked)--;
+    monitors_lock_changed();
+    return 0;
+}
+
+void monitors_lock_changed() {
+    if (*g_monitors_locked < 0) {
+        *g_monitors_locked = 0;
+        HSDebug("fixing invalid monitors_locked value to 0\n");
+    }
+    if (!*g_monitors_locked) {
+        // if not locked anymore, then repaint all the dirty monitors
+        for (int i = 0; i < g_monitors->len; i++) {
+            HSMonitor* m = &g_array_index(g_monitors, HSMonitor, i);
+            if (m->dirty) {
+                monitor_apply_layout(m);
+            }
+        }
+    }
 }
 
