@@ -1511,8 +1511,6 @@ void frame_split(HSFrame* frame, int align, int fraction) {
     frame->content.layout.b = second;
     frame->content.layout.selection = 0;
     frame->content.layout.fraction = fraction;
-    // set focus
-    g_cur_frame = first;
     // redraw monitor if exists
     HSMonitor* m = monitor_with_frame(frame);
     monitor_apply_layout(m);
@@ -1533,6 +1531,8 @@ int frame_split_command(int argc, char** argv) {
     HSFrame* frame = frame_current_selection();
     if (!frame) return 0; // nothing to do
     frame_split(frame, align, fraction);
+    // reset focus
+    g_cur_frame = frame_current_selection();
     return 0;
 }
 
