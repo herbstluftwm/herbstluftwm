@@ -608,6 +608,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
             monitor->dirty = true;
             return;
         }
+        monitor->dirty = false;
         XRectangle rect = monitor->rect;
         // apply pad
         rect.x += monitor->pad_left;
@@ -876,7 +877,7 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
     m.tag = tag;
     m.mouse.x = 0;
     m.mouse.y = 0;
-    m.dirty = false;
+    m.dirty = true;
     g_array_append_val(g_monitors, m);
     return &g_array_index(g_monitors, HSMonitor, g_monitors->len-1);
 }
