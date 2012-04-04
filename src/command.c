@@ -73,6 +73,8 @@ struct {
     { "layout",         2,  no_completion },
     { "load",           3,  no_completion },
     { "load",           2,  first_parameter_is_tag },
+    { "lock",           0,  no_completion },
+    { "unlock",         0,  no_completion },
     { "move",           2,  no_completion },
     { "move_index",     2,  no_completion },
     { "raise",          2,  no_completion },
