@@ -26,6 +26,8 @@ calls from *herbstclient*(1) and executes them. The list of available
         use 'PATH' as autostart file instead of the one in '$XDG_CONFIG_HOME'
     *-v*, *--version*::
         print version and exit
+    *-l*, *--locked*::
+        set the monitors_locked setting initially to 1
     *--verbose*::
         print verbose information to stderr
 

@@ -24,7 +24,7 @@ Changes:
     * respect the initial fullscreen state of new clients on startup (as it is
       set in the _NET_WM_STATE property)
     * monitor locking mechanism, i.e. a new setting: monitors_locked with its
-      accessors lock and unlock
+      accessors lock and unlock and the command line argument -l and --locked
 
 Release 0.2 on 2012-01-25
 -------------------------

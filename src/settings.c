@@ -62,6 +62,8 @@ SettingsPair g_settings[] = {
     SET_STRING( "tree_style",                      "*| +`--.",  FR_COLORS   ),
 };
 
+int             g_initial_monitors_locked = 0;
+
 int settings_count() {
     return LENGTH(g_settings);
 }
@@ -77,6 +79,7 @@ void settings_init() {
             g_settings[i].old_value_i = 1;
         }
     }
+    settings_find("monitors_locked")->value.i = g_initial_monitors_locked;
 }
 
 void settings_destroy() {

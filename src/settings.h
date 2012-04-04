@@ -25,6 +25,7 @@ typedef struct {
 } SettingsPair;
 
 extern SettingsPair g_settings[];
+int g_initial_monitors_locked;
 
 void settings_init();
 void settings_destroy();

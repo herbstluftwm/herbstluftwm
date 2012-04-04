@@ -468,13 +468,14 @@ static void parse_arguments(int argc, char** argv) {
     static struct option long_options[] = {
         {"autostart",   1, 0, 'c'},
         {"version",     0, 0, 'v'},
+        {"locked",      0, 0, 'l'},
         {"verbose",     0, &g_verbose, 1},
         {0, 0, 0, 0}
     };
     // parse options
     while (1) {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "+c:v", long_options, &option_index);
+        int c = getopt_long(argc, argv, "+c:vl", long_options, &option_index);
         if (c == -1) break;
         switch (c) {
             case 0:
@@ -488,6 +489,9 @@ static void parse_arguments(int argc, char** argv) {
                 break;
             case 'c':
                 g_autostart_path = optarg;
+                break;
+            case 'l':
+                g_initial_monitors_locked = 1;
                 break;
             default:
                 fprintf(stderr, "unknown option `%s'\n", argv[optind]);
