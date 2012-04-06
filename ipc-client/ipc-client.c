@@ -26,6 +26,7 @@
 
 
 int send_command(int argc, char* argv[]);
+void print_help(void);
 
 
 Display* dpy;
@@ -256,6 +257,27 @@ int wait_for_hook(int argc, char* argv[]) {
     return 0;
 }
 
+void print_help(void) {
+    // Eventually replace this and the option parsing with some fancy macro
+    // based thing? Is the cost of maintainence really that high?
+
+    char *help_string =
+        "Usage: herbstclient [OPTIONS] COMMAND [ARGS ...]\n"
+        "       herbstclient [OPTIONS] [--wait|--idle] [FILTER ...]\n"
+        "Send a COMMAND with optional arguments ARGS to a running "
+        "herbstluftwm instance.\n\n"
+        "Options:\n"
+        "\t-n, --no-newline: Do not print a newline if output does not end "
+            "with a newline.\n"
+        "\t-i, --idle: Wait for hooks instead of executing commands.\n"
+        "\t-w, --wait: Same as --idle but exit after first --count hooks.\n"
+        "\t-c, --count COUNT: Let --wait exit after COUNT hooks were "
+            "received and printed. The default of COUNT is 1.\n"
+        "\t-q, --quiet: Do not print error messages if herbstclient cannot "
+            "connect to the running herbstluftwm instance.\n\n"
+        "See the man page (herbstclient(1)) for more details.\n";
+    fprintf(stdout, help_string);
+}
 int main(int argc, char* argv[]) {
     static struct option long_options[] = {
         {"no-newline", 0, 0, 'n'},
@@ -263,12 +285,13 @@ int main(int argc, char* argv[]) {
         {"count", 1, 0, 'c'},
         {"idle", 0, 0, 'i'},
         {"quiet", 0, 0, 'q'},
+        {"help", 0, 0, 'h'},
         {0, 0, 0, 0}
     };
     // parse options
     while (1) {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "+nwc:iq", long_options, &option_index);
+        int c = getopt_long(argc, argv, "+nwc:iqh", long_options, &option_index);
         if (c == -1) break;
         switch (c) {
             case 'i':
@@ -288,6 +311,9 @@ int main(int argc, char* argv[]) {
             case 'q':
                 g_quiet = true;
                 break;
+            case 'h':
+                print_help();
+                exit(EXIT_SUCCESS);
             default:
                 fprintf(stderr, "unknown option `%s'\n", argv[optind]);
                 exit(EXIT_FAILURE);
@@ -313,7 +339,3 @@ int main(int argc, char* argv[]) {
     XCloseDisplay(dpy);
     return command_status;
 }
-
-
-
-
