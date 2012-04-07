@@ -274,7 +274,9 @@ void print_help(void) {
         "\t-c, --count COUNT: Let --wait exit after COUNT hooks were "
             "received and printed. The default of COUNT is 1.\n"
         "\t-q, --quiet: Do not print error messages if herbstclient cannot "
-            "connect to the running herbstluftwm instance.\n\n"
+            "connect to the running herbstluftwm instance.\n"
+        "\t-h, --help: Print this help."
+        "\n"
         "See the man page (herbstclient(1)) for more details.\n";
     fprintf(stdout, help_string);
 }
