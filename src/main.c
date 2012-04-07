@@ -198,6 +198,9 @@ int load_command(int argc, char** argv, GString** result) {
     HSMonitor* m = find_monitor_with_tag(tag);
     if (m) {
         frame_show_recursive(tag->frame);
+        if (get_current_monitor() == m) {
+            frame_focus_recursive(tag->frame);
+        }
         monitor_apply_layout(m);
     } else {
         frame_hide_recursive(tag->frame);
