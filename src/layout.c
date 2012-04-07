@@ -2126,6 +2126,10 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     // focus window just has been shown
     // focus again to give input focus
     frame_focus_recursive(tag->frame);
+    // discard enternotify-events
+    XEvent ev;
+    XSync(g_display, False);
+    while (XCheckMaskEvent(g_display, EnterWindowMask, &ev));
     ewmh_update_current_desktop();
     emit_tag_changed(tag, g_cur_monitor);
 }
