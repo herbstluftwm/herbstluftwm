@@ -59,7 +59,7 @@ DISPLAY::
 
 EXIT STATUS
 -----------
-Returns the exit status of the 'COMMAND' execution in *herbstluftwm(1)* server.
+Returns the exit status of the 'COMMAND' execution in *herbstluftwm*(1) server.
 
 *0*::
     Success.
