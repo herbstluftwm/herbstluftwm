@@ -738,7 +738,8 @@ DISPLAY::
 
 EXIT STATUS
 -----------
-Always returns *0*.
+Returns *0* on success. Returns +EXIT_FAILURE+ if it cannot startup or if
+'wmexec' fails.
 
 BUGS
 ----
