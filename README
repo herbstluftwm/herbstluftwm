@@ -59,6 +59,14 @@ cp share/autostart "$XDG_CONFIG_HOME"/herbstluftwm
 #    or source it in your bashrc
 # 5. run it in a session that has no windowmanager yet
 
+==== Starting it ====
+Start it within a running X-session with:
+
+    herbstluftwm --locked
+
+The --locked causes herbstluftwm not to update the screen until you unlock it
+with: herbstclient unlock (This is done automatically by the default autostart)
+
 ==== Internal structure ====
 The internal structure of herbstluftwm is as follows:
 
