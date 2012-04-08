@@ -12,7 +12,9 @@ y=${geometry[1]}
 panel_width=${geometry[2]}
 panel_height=16
 font="-*-fixed-medium-*-*-*-12-*-*-*-*-*-*-*"
-bgcolor='#3E2600'
+bgcolor=$(herbstclient get frame_border_normal_color)
+selbg=$(herbstclient get window_border_active_color)
+selfg='#101010'
 
 ####
 # Try to find textwidth binary.
@@ -55,25 +57,24 @@ herbstclient pad $monitor $panel_height
     windowtitle=""
     while true ; do
         bordercolor="#26221C"
-        hintcolor="#573500"
-        separator="^fg(#141414)^ro(1x$panel_height)^fg()"
+        separator="^bg()^fg($selbg)|"
         # draw tags
         for i in "${TAGS[@]}" ; do
             case ${i:0:1} in
                 '#')
-                    echo -n "^bg(#9fbc00)^fg(#141414)"
+                    echo -n "^bg($selbg)^fg($selfg)"
                     ;;
                 '+')
                     echo -n "^bg(#9CA668)^fg(#141414)"
                     ;;
                 ':')
-                    echo -n "^bg(#6A4100)^fg(#141414)"
+                    echo -n "^bg()^fg(#ffffff)"
                     ;;
                 '!')
                     echo -n "^bg(#FF0675)^fg(#141414)"
                     ;;
                 *)
-                    echo -n "^bg()^fg()"
+                    echo -n "^bg()^fg(#ababab)"
                     ;;
             esac
             if [ ! -z "$dzen2_svn" ] ; then
@@ -81,11 +82,11 @@ herbstclient pad $monitor $panel_height
             else
                 echo -n " ${i:1} "
             fi
-            echo -n "$separator"
         done
-        echo -n "^bg() ${windowtitle//^/^^}"
+        echo -n "$separator"
+        echo -n "^bg()^fg() ${windowtitle//^/^^}"
         # small adjustments
-        right="$separator^bg($hintcolor) $date $separator"
+        right="$separator^bg() $date $separator"
         right_text_only=$(echo -n "$right"|sed 's.\^[^(]*([^)]*)..g')
         # get width of right aligned text.. and add some space..
         width=$($textwidth "$font" "$right_text_only    ")
