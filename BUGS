@@ -51,4 +51,9 @@ Planned features:
     - try to find a empty frame for new clients
     - (currently unknown) handling of WM_TRANSIENT_FOR
     - move clients in pseudotile mode
+    - allow clients to change their own floating size or even position (and
+      make it configurable per rules)
+    - transparent frames
+    - add a commant close_or_remove that closes the current window or removes
+      the current frame if it is empty
 
