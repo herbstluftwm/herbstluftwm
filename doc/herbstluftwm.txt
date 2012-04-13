@@ -439,6 +439,9 @@ tag_status ['MONITOR']::
         * *+* the tag is viewed on the specified 'MONITOR', but this monitor is
           not focused.
         * *#* the tag is viewed on the specified 'MONITOR' and it is focused.
+        * *-* the tag is viewed on a different 'MONITOR', but this monitor is
+          not focused.
+        * *%* the tag is viewed on a different 'MONITOR' and it is focused.
         * *!* the tag contains an urgent window
 
 WARNING: If you use a tab in one of the tag names, then tag_status is probably

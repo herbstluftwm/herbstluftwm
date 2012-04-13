@@ -235,10 +235,16 @@ int print_tag_status_command(int argc, char** argv, GString** result) {
         if (tag->flags & TAG_FLAG_USED) {
             c = ':';
         }
-        if (tag == monitor->tag) {
+        HSMonitor *tag_monitor = find_monitor_with_tag(tag);
+        if (tag_monitor == monitor) {
             c = '+';
             if (monitor_index == g_cur_monitor) {
                 c = '#';
+            }
+        } else if (tag_monitor) {
+            c = '-';
+            if (get_current_monitor() == tag_monitor) {
+                c = '%';
             }
         }
         if (tag->flags & TAG_FLAG_URGENT) {
