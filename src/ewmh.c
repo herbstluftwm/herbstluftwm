@@ -13,6 +13,7 @@
 #include <glib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -38,6 +39,7 @@ char* g_netatom_names[NetCOUNT] = {
     [ NetWmName                     ] = "_NET_WM_NAME"                      ,
     [ NetWmWindowType               ] = "_NET_WM_WINDOW_TYPE"               ,
     [ NetWmState                    ] = "_NET_WM_STATE"                     ,
+    [ NetWmWindowOpacity            ] = "_NET_WM_WINDOW_OPACITY"            ,
     [ NetWmStateFullscreen          ] = "_NET_WM_STATE_FULLSCREEN"          ,
     [ NetSupportingWmCheck          ] = "_NET_SUPPORTING_WM_CHECK"          ,
     [ NetWmWindowTypeDesktop        ] = "_NET_WM_WINDOW_TYPE_DESKTOP"       ,
@@ -337,3 +339,9 @@ bool ewmh_is_fullscreen_set(Window win) {
     return ewmh_is_window_state_set(win, g_netatom[NetWmStateFullscreen]);
 }
 
+void ewmh_set_window_opacity(Window win, double opacity) {
+    uint32_t int_opacity = UINT32_MAX * CLAMP(opacity, 0, 1);
+
+    XChangeProperty(g_display, win, g_netatom[NetWmWindowOpacity], XA_CARDINAL,
+                    32, PropModeReplace, (unsigned char*)&int_opacity, 1);
+}

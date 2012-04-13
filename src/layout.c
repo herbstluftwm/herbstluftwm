@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <stdint.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -40,6 +41,7 @@ unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
 unsigned long g_frame_bg_normal_color;
+unsigned long g_frame_opacity;
 char*   g_tree_style = NULL;
 bool    g_tag_flags_dirty = true;
 
@@ -77,6 +79,7 @@ static void fetch_frame_colors() {
     g_frame_bg_normal_color = getcolor(str);
     str = settings_find("frame_bg_active_color")->value.s;
     g_frame_bg_active_color = getcolor(str);
+    g_frame_opacity = CLAMP(settings_find("frame_opacity")->value.i, 0, 100);
 
     // tree style
     g_tree_style = settings_find("tree_style")->value.s;
@@ -784,7 +787,6 @@ void frame_apply_client_layout_grid(HSFrame* frame, XRectangle rect) {
 
 }
 
-
 void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     if (frame->type == TYPE_CLIENTS) {
         size_t count = frame->content.clients.count;
@@ -818,6 +820,7 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         } else {
             XSetWindowBackground(g_display, frame->window, bg_color);
         }
+        ewmh_set_window_opacity(frame->window, g_frame_opacity/100.0);
         XClearWindow(g_display, frame->window);
         XLowerWindow(g_display, frame->window);
         frame_set_visible(frame, *g_always_show_frame

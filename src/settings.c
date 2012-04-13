@@ -45,6 +45,7 @@ SettingsPair g_settings[] = {
     SET_STRING( "frame_bg_active_color",           "black",     FR_COLORS   ),
     SET_INT(    "frame_bg_transparent",            0,           FR_COLORS   ),
     SET_INT(    "frame_border_width",              2,           FR_COLORS   ),
+    SET_INT(    "frame_opacity",                   100,         FR_COLORS   ),
     SET_INT(    "window_border_width",             2,           CL_COLORS   ),
     SET_STRING( "window_border_active_color",      "red",       CL_COLORS   ),
     SET_STRING( "window_border_normal_color",      "blue",      CL_COLORS   ),

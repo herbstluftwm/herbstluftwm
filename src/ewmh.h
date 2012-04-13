@@ -33,6 +33,7 @@ enum {
     NetSupportingWmCheck,
     NetWmWindowType,
     NetWmState,
+    NetWmWindowOpacity,
     /* window states */
     NetWmStateFullscreen,
     /* window types */
@@ -81,6 +82,8 @@ bool ewmh_is_fullscreen_set(Window win);
 void ewmh_window_update_tag(Window win, struct HSTag* tag);
 
 void ewmh_handle_client_message(XEvent* event);
+
+void ewmh_set_window_opacity(Window win, double opacity);
 
 #endif
 
