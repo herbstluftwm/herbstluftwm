@@ -179,6 +179,7 @@ bool focus_window(Window win, bool switch_tag, bool switch_monitor);
 int frame_move_window_command(int argc, char** argv);
 /// removes the current frame
 int frame_remove_command(int argc, char** argv);
+int close_or_remove_command(int argc, char** argv);
 void frame_set_visible(HSFrame* frame, bool visible);
 
 // for tags

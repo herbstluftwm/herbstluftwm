@@ -217,6 +217,10 @@ set_layout 'LAYOUT'::
 close::
     Closes the focused window.
 
+close_or_remove::
+    Closes the focused window or removes the current frame if no window is
+    focused.
+
 split 'ALIGN' 'FRACTION'::
     Splits the focused frame into two subframes with a specified 'FRACTION'
     between 0 and 1. 'ALIGN' can be 'horizontal' or 'vertical' (actually it only

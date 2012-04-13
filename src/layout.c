@@ -2036,6 +2036,14 @@ int frame_remove_command(int argc, char** argv) {
     return 0;
 }
 
+int close_or_remove_command(int argc, char** argv) {
+    if (frame_focused_window(g_cur_frame)) {
+        return window_close_current();
+    } else {
+        return frame_remove_command(argc, argv);
+    }
+}
+
 HSMonitor* get_current_monitor() {
     return &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
 }

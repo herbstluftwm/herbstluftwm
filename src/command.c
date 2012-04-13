@@ -52,6 +52,7 @@ struct {
     { "cycle_all",      2,  no_completion },
     { "cycle_layout",   2,  no_completion },
     { "close",          0,  no_completion },
+    { "close_or_remove",0,  no_completion },
     { "dump",           2,  no_completion },
     { "floating",       3,  no_completion },
     { "floating",       2,  first_parameter_is_tag },
