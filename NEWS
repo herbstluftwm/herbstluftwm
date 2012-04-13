@@ -1,6 +1,14 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Next release: 0.4
+-----------------
+
+Changes:
+
+    * new command: close_or_remove
+    * new flags '-' and '%' for tag_status for multi monitor handling
+
 Release 0.3 on 2012-04-12
 -------------------------
 
