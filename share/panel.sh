@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# disable path name expansion or * will be expanded in the line
+# cmd=( $line )
+set -f
+
 monitor=${1:-0}
 geometry=( $(herbstclient monitor_rect "$monitor") )
 if [ -z "$geometry" ] ;then
