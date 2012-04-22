@@ -529,9 +529,13 @@ always_show_frame (Integer)::
     If set, all frames are displayed. If unset, only frames with focus or with
     windows in it are displayed.
 
-frame_opacity (Integer)::
-    Frame opacity in percent. Requires a running compositing manager to take
-    actual effect.
+frame_active_opacity (Integer)::
+    Focused frame opacity in percent. Requires a running compositing manager to
+    take actual effect.
+
+frame_normal_opacity (Integer)::
+    Unfocused frame opacity in percent. Requires a running compositing manager
+    to take actual effect.
 
 default_frame_layout (Integer)::
     Index of the frame layout, which is used if a new frame is created (by split
