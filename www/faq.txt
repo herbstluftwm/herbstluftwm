@@ -2,7 +2,7 @@ Hints and FAQ
 -------------
 
 Hint: Don't restart::
-   To make changes in yout autostart take effect immediately, just type
+   To make changes in your autostart take effect immediately, just type
    +herbstclient reload+. There is no need to restart herbstluftwm or X.
 
 Hint: Use scripts!::
@@ -11,7 +11,7 @@ Hint: Use scripts!::
 
 Hint: Understanding processes::
     To understand the relationship between the different processes that running
-    in a typical herbstluftwm setup, consider the following diagramm:
+    in a typical herbstluftwm setup, consider the following diagram:
 +
 ----
                 startx
@@ -72,7 +72,7 @@ Q: Is herbstluftwm a fork of dwm/musca/wmii/...?::
     (like updating numlock-state, sending a +WMDelete+-Message to a client,
     updating the urgent hints, ...) from dwm.
 
-Q: If the config is a bashscript, does it mean it is called on each keystroke?::
+Q: If the config is a bash script, does it mean it is called on each keystroke?::
    No, the configuration file is executed once to set internal settings and
    keybindings and so on. If a keybinding is registered and its key is pressed,
    the according (internal) command directly is called.
@@ -185,5 +185,5 @@ Q: I set default_frame_layout to my favorite layout but it doesn't work with the
     Existing tags are not affected by a change of that variable (only new
     ones), so be sure to set it *before* creating any tags. A current
     workaround is to put +hc split vertical 0.5; hc remove+ at the end in your
-    autostartfile.  You can also 'cycle_layout' in existing tags.
+    autostart file.  You can also 'cycle_layout' in existing tags.
 
