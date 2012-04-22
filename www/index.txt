@@ -31,10 +31,10 @@ the most current released tarball:
 
 [options="header"]
 |==========================================================================================================
-| Version | Date       | link:tarballs/MD5SUMS[MD5SUMS]   | Tarball
-| 0.1     | 2011-10-02 | 284067728e56fa6cabca33cbf3c946b4 | link:tarballs/herbstluftwm-0.1.tar.gz[tar.gz]
-| 0.2     | 2012-01-25 | 1628f236a7086f007260f9f59e446b1c | link:tarballs/herbstluftwm-0.2.tar.gz[tar.gz]
-| 0.3     | 2012-04-12 | 176b82a7b5881a9bf2b4fab7e1784170 | link:tarballs/herbstluftwm-0.3.tar.gz[tar.gz]
+| Version | Date       | link:tarballs/MD5SUMS[MD5SUMS] | Tarball
+| 0.1     | 2011-10-02 | 284067728e56f...               | link:tarballs/herbstluftwm-0.1.tar.gz[tar.gz]
+| 0.2     | 2012-01-25 | 1628f236a7086...               | link:tarballs/herbstluftwm-0.2.tar.gz[tar.gz]
+| 0.3     | 2012-04-12 | 176b82a7b5881...               | link:tarballs/herbstluftwm-0.3.tar.gz[tar.gz]
 |==========================================================================================================
 
 The current development version is available in the
