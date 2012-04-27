@@ -57,6 +57,7 @@ herbstclient pad $monitor $panel_height
     kill $childpid
 } 2> /dev/null | {
     TAGS=( $(herbstclient tag_status $monitor) )
+    visible=true
     date=""
     windowtitle=""
     while true ; do
@@ -111,6 +112,16 @@ herbstclient pad $monitor $panel_height
                 ;;
             quit_panel)
                 exit
+                ;;
+            togglehidepanel)
+                echo "^togglehide()"
+                if $visible ; then
+                    visible=false
+                    herbstclient pad $monitor 0
+                else
+                    visible=true
+                    herbstclient pad $monitor $panel_height
+                fi
                 ;;
             reload)
                 exit
