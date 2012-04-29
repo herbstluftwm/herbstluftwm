@@ -247,13 +247,12 @@ void grab_client_buttons(HSClient* client, bool focused) {
     XUngrabButton(g_display, AnyButton, AnyModifier, client->window);
     if (focused) {
         g_list_foreach(g_mouse_binds, (GFunc)grab_client_button, client);
-    } else {
-        unsigned int btns[] = { Button1, Button2, Button3 };
-        for (int i = 0; i < LENGTH(btns); i++) {
-            XGrabButton(g_display, btns[i], AnyModifier, client->window, False,
-                        ButtonPressMask|ButtonReleaseMask, GrabModeSync,
-                        GrabModeSync, None, None);
-        }
+    }
+    unsigned int btns[] = { Button1, Button2, Button3 };
+    for (int i = 0; i < LENGTH(btns); i++) {
+        XGrabButton(g_display, btns[i], AnyModifier, client->window, False,
+                    ButtonPressMask|ButtonReleaseMask, GrabModeSync,
+                    GrabModeSync, None, None);
     }
 }
 
