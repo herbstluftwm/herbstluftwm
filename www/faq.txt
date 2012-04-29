@@ -3,7 +3,12 @@ Hints and FAQ
 
 Hint: Don't restart::
    To make changes in your autostart take effect immediately, just type
-   +herbstclient reload+. There is no need to restart herbstluftwm or X.
+   +herbstclient reload+. There is no need to restart herbstluftwm or X. +
+   +
+   Even if you just updated you herbstluftwm-binary, there's no need to restart
+   anything. Run +herbstclient wmexec+, which does an +exec+(3) on the new
+   herbstluftwm version. (You also can use +wmexec+ to switch to another window
+   manager without restarting anything)
 
 Hint: Use scripts!::
    There are a bunch of scripts coming along with herbstluftwm. Check out the
