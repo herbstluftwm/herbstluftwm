@@ -40,6 +40,8 @@ Planned features:
     - lastfocused{window,frame,tag} - commands
     - own X-Properties to indicate window state (fullscreen, pseudotile, float,...)
     - bind multiple commands to one keycombindation via keybind, keybindadd
+    - or: chain commands like: cmdchain 4 cmd1 arg1a arg1b arg1c cmd2 arg2a arg2b
+    - alias commands: alias shortcmd = cmd default arg, alias shortcmd --delete
     - double window border to give a good contrast to dark backgrounded and
       light backgrounded windows.
     - provide multiple mechanisms to split clients to child frames:
@@ -54,6 +56,11 @@ Planned features:
     - allow clients to change their own floating size or even position (and
       make it configurable per rules)
     - transparent frames
+    - undo command which undos the last layout changes on a certain tag
+    - load frame without changing it's properties to just change the
+      child-frames. Something like: (split unchanged $child1 child2)
     - add a commant close_or_remove that closes the current window or removes
       the current frame if it is empty
+    - a more verbose tag_status: list_tags with one line per tag
+    - cycle through all "invisible" (or non-focused) frames
 
