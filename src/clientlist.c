@@ -318,8 +318,12 @@ void client_resize(HSClient* client, XRectangle rect) {
     Window win = client->window;
     if (client->pseudotile) {
         XRectangle size = client->float_size;
+        // floating sizes don't include window border, tiling sizes do.
+        // so convert the floating size to a tiling size
+        size.width  += *g_window_border_width * 2;
+        size.height += *g_window_border_width * 2;
         // ensure size is not larger than rect-tile
-        size.width = MIN(size.width, rect.width);
+        size.width  = MIN(size.width, rect.width);
         size.height = MIN(size.height, rect.height);
 
         // center it

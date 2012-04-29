@@ -342,6 +342,10 @@ void event_on_configure(XEvent event) {
     ce.event = cre->window;
     ce.window = cre->window;
     if (client) {
+        cre->width += 2*cre->border_width - 2*client->last_border_width;
+        cre->height += 2*cre->border_width - 2*client->last_border_width;
+        client->float_size.width = cre->width;
+        client->float_size.height = cre->height;
         ce.x = client->last_size.x;
         ce.y = client->last_size.y;
         ce.width = client->last_size.width;
@@ -349,8 +353,13 @@ void event_on_configure(XEvent event) {
         ce.override_redirect = False;
         ce.border_width = cre->border_width;
         ce.above = cre->above;
+        if (client->tag->floating || client->pseudotile) {
+            monitor_apply_layout(find_monitor_with_tag(client->tag));
+        } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
-        XSendEvent(g_display, cre->window, False, StructureNotifyMask, (XEvent*)&ce);
+            XSendEvent(g_display, cre->window, False, StructureNotifyMask,
+                       (XEvent*)&ce);
+        }
     } else {
         // if client not known.. then allow configure.
         // its probably a nice conky or dzen2 bar :)
