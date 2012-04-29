@@ -525,6 +525,9 @@ window_border_active_color (String/Color)::
 window_border_normal_color (String/Color)::
     Border color of an unfocused window.
 
+window_border_urgent_color (String/Color)::
+    Border color of an unfocused but urgent window.
+
 always_show_frame (Integer)::
     If set, all frames are displayed. If unset, only frames with focus or with
     windows in it are displayed.

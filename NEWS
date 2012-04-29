@@ -34,6 +34,7 @@ Changes:
     * monitor locking mechanism, i.e. a new setting: monitors_locked with its
       accessors lock and unlock and the command line argument -l and --locked
     * toggle default panel on hook togglehidepanel
+    * new setting: window_border_urgent_color
 
 Release 0.2 on 2012-01-25
 -------------------------

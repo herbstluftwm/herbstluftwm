@@ -50,6 +50,7 @@ SettingsPair g_settings[] = {
     SET_INT(    "window_border_width",             2,           CL_COLORS   ),
     SET_STRING( "window_border_active_color",      "red",       CL_COLORS   ),
     SET_STRING( "window_border_normal_color",      "blue",      CL_COLORS   ),
+    SET_STRING( "window_border_urgent_color",      "orange",    CL_COLORS   ),
     SET_INT(    "always_show_frame",               0,           RELAYOUT    ),
     SET_INT(    "default_direction_external_only", 0,           NULL        ),
     SET_INT(    "default_frame_layout",            0,           FR_COLORS   ),

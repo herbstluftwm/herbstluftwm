@@ -34,6 +34,7 @@ int* g_window_border_width;
 int* g_raise_on_focus;
 int* g_snap_gap;
 unsigned long g_window_border_active_color;
+unsigned long g_window_border_urgent_color;
 unsigned long g_window_border_normal_color;
 
 GHashTable* g_clients; // container of all clients
@@ -62,6 +63,8 @@ static void fetch_colors() {
     g_window_border_normal_color = getcolor(str);
     str = settings_find("window_border_active_color")->value.s;
     g_window_border_active_color = getcolor(str);
+    str = settings_find("window_border_urgent_color")->value.s;
+    g_window_border_urgent_color = getcolor(str);
 }
 
 void clientlist_init() {
@@ -221,7 +224,12 @@ void destroy_client(HSClient* client) {
 void window_unfocus(Window window) {
     XSetWindowBorder(g_display, window, g_window_border_normal_color);
     HSClient* c = get_client_from_window(window);
-    if (c) grab_client_buttons(c, false);
+    if (c) {
+        if (c->urgent) {
+            XSetWindowBorder(g_display, window, g_window_border_urgent_color);
+        }
+        grab_client_buttons(c, false);
+    }
 }
 
 static Window lastfocus = 0;
@@ -274,7 +282,12 @@ void client_setup_border(HSClient* client, bool focused) {
         g_window_border_normal_color,
         g_window_border_active_color,
     };
-    XSetWindowBorder(g_display, client->window, colors[focused ? 1 : 0]);
+    if (client->urgent) {
+        XSetWindowBorder(g_display, client->window,
+                         g_window_border_urgent_color);
+    } else {
+        XSetWindowBorder(g_display, client->window, colors[focused ? 1 : 0]);
+    }
 }
 
 void client_resize_fullscreen(HSClient* client, HSMonitor* m) {
@@ -459,7 +472,8 @@ void client_update_wm_hints(HSClient* client) {
         return;
     }
 
-    if ((frame_focused_window(g_cur_frame) == client->window)
+    Window focused_window = frame_focused_window(g_cur_frame);
+    if ((focused_window == client->window)
         && wmh->flags & XUrgencyHint) {
         // remove urgency hint if window is focused
         wmh->flags &= ~XUrgencyHint;
@@ -470,6 +484,7 @@ void client_update_wm_hints(HSClient* client) {
             client->urgent = newval;
             char winid_str[STRING_BUF_SIZE];
             snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", client->window);
+            client_setup_border(client, focused_window == client->window);
             hook_emit_list("urgent", client->urgent ? "on":"off", winid_str, NULL);
             tag_set_flags_dirty();
         }
