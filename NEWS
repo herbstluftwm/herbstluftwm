@@ -8,6 +8,8 @@ Changes:
 
     * new command: close_or_remove
     * new flags '-' and '%' for tag_status for multi monitor handling
+    * toggle default panel on hook togglehidepanel
+    * new setting: window_border_urgent_color
 
 Release 0.3 on 2012-04-12
 -------------------------
@@ -33,8 +35,6 @@ Changes:
       set in the _NET_WM_STATE property)
     * monitor locking mechanism, i.e. a new setting: monitors_locked with its
       accessors lock and unlock and the command line argument -l and --locked
-    * toggle default panel on hook togglehidepanel
-    * new setting: window_border_urgent_color
 
 Release 0.2 on 2012-01-25
 -------------------------
