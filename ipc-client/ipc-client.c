@@ -33,7 +33,7 @@ Display* dpy;
 Display* g_display;
 Window root;
 int g_ensure_newline = 1; // if set, output ends with an newline
-int g_wait_for_hook = 0; // if set, donot execute command but wait
+int g_wait_for_hook = 0; // if set, do not execute command but wait
 int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
 regex_t* g_hook_regex = NULL;
 int g_hook_regex_count = 0;
@@ -76,7 +76,7 @@ int send_command(int argc, char* argv[]) {
      * receive the event for it */
     XUngrabServer(dpy);
     XFree(text_prop.value);
-    // get ouput
+    // get output
     int command_status = 0;
     XEvent event;
     GString* output = NULL;
@@ -95,7 +95,7 @@ int send_command(int argc, char* argv[]) {
         if (!output_received
             && !strcmp(XGetAtomName(g_display, pe->atom), HERBST_IPC_OUTPUT_ATOM)) {
             output = window_property_to_g_string(g_display, win, ATOM(HERBST_IPC_OUTPUT_ATOM));
-            if (!output) die("couldnot get WindowProperty \"%s\"\n", HERBST_IPC_OUTPUT_ATOM);
+            if (!output) die("could not get WindowProperty \"%s\"\n", HERBST_IPC_OUTPUT_ATOM);
             output_received = true;
         }
         else if (!status_received && !strcmp(
@@ -108,8 +108,8 @@ int send_command(int argc, char* argv[]) {
             if (Success != XGetWindowProperty(g_display, win,
                     ATOM(HERBST_IPC_STATUS_ATOM), 0, 1, False,
                     XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value)) {
-                    // if couldnot get window property
-                die("couldnot get WindowProperty \"%s\"\n", HERBST_IPC_STATUS_ATOM);
+                    // if could not get window property
+                die("could not get WindowProperty \"%s\"\n", HERBST_IPC_STATUS_ATOM);
             }
             command_status = *value;
             XFree(value);

@@ -48,7 +48,7 @@ bool ipc_handle_connection(Window win, bool try_it) {
     char** list_return;
     int count;
     if (Success != Xutf8TextPropertyToTextList(g_display, &text_prop, &list_return, &count)) {
-        fprintf(stderr, "herbstluftwm: Warning: couldnot parse the %s atom of herbstclient "
+        fprintf(stderr, "herbstluftwm: Warning: could not parse the %s atom of herbstclient "
                         "window %d to utf8 list\n",
                         HERBST_IPC_ARGS_ATOM, (unsigned int)win);
         XFree(text_prop.value);
