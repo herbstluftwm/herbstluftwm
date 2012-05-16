@@ -19,7 +19,6 @@ Some BUGS:
           with a higher z-value than any of the windows on the old desktop, then
           unmap all the windows on the old desktop.
 
-    - separate layout.[hc] into modules: layout, monitor, tag
     - raise_on_click doesn't work if raise_on_click and numlock is enabled
     - raise_on_click doesn't work with gnome-settings-daemon
     - window_gap actually should be called frame_gap

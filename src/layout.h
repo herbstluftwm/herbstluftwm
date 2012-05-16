@@ -10,6 +10,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
+#include <monitor.h>
+#include <tag.h>
 
 #define LAYOUT_DUMP_BRACKETS "()" /* must consist of exactly two chars */
 #define LAYOUT_DUMP_WHITESPACES " \t\n" /* must be at least one char */
@@ -81,34 +83,9 @@ typedef struct HSFrame {
 } HSFrame;
 
 
-typedef struct HSMonitor {
-    struct HSTag*      tag;    // currently viewed tag
-    int         pad_up;
-    int         pad_right;
-    int         pad_down;
-    int         pad_left;
-    bool        dirty;
-    struct {
-        // last saved mouse position
-        int x;
-        int y;
-    } mouse;
-    XRectangle  rect;   // area for this monitor
-} HSMonitor;
-
-typedef struct HSTag {
-    GString*    name;   // name of this tag
-    HSFrame*    frame;  // the master frame
-    bool        floating;
-    int         flags;
-} HSTag;
-
 // globals
-GArray*     g_tags; // Array of HSTag*
-GArray*     g_monitors; // Array of HSMonitor
-int         g_cur_monitor;
 HSFrame*    g_cur_frame; // currently selected frame
-bool        g_tag_flags_dirty;
+int* g_window_gap;
 
 // functions
 void layout_init();
@@ -130,6 +107,7 @@ int frame_split_command(int argc, char** argv);
 int frame_change_fraction_command(int argc, char** argv);
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect);
+void frame_apply_floating_layout(HSFrame* frame, struct HSMonitor* m);
 void reset_frame_colors();
 HSFrame* get_toplevel_frame(HSFrame* frame);
 
@@ -181,53 +159,6 @@ int frame_move_window_command(int argc, char** argv);
 int frame_remove_command(int argc, char** argv);
 int close_or_remove_command(int argc, char** argv);
 void frame_set_visible(HSFrame* frame, bool visible);
-
-// for tags
-HSTag* add_tag(char* name);
-HSTag* find_tag(char* name);
-int    tag_index_of(HSTag* tag);
-HSTag* find_unused_tag();
-HSTag* find_tag_with_toplevel_frame(HSFrame* frame);
-HSTag* get_tag_by_index(char* index_str);
-int tag_add_command(int argc, char** argv);
-int tag_rename_command(int argc, char** argv);
-int tag_move_window_command(int argc, char** argv);
-int tag_move_window_by_index_command(int argc, char** argv);
-void tag_move_window(HSTag* target);
-int tag_remove_command(int argc, char** argv);
-int tag_set_floating_command(int argc, char** argv, GString** result);
-void tag_force_update_flags();
-void tag_update_flags();
-void tag_set_flags_dirty();
-// for monitors
-// adds a new monitor to g_monitors and returns a pointer to it
-HSMonitor* monitor_with_frame(HSFrame* frame);
-HSMonitor* monitor_with_coordinate(int x, int y);
-HSMonitor* monitor_with_index(int index);
-HSMonitor* find_monitor_with_tag(HSTag* tag);
-HSMonitor* add_monitor(XRectangle rect, HSTag* tag);
-void monitor_focus_by_index(int new_selection);
-int monitor_get_relative_x(HSMonitor* m, int x_root);
-int monitor_get_relative_y(HSMonitor* m, int y_root);
-int monitor_index_of(HSMonitor* monitor);
-int monitor_cycle_command(int argc, char** argv);
-int monitor_focus_command(int argc, char** argv);
-int add_monitor_command(int argc, char** argv);
-int remove_monitor_command(int argc, char** argv);
-int list_monitors(int argc, char** argv, GString** output);
-int move_monitor_command(int argc, char** argv);
-int monitor_rect_command(int argc, char** argv, GString** result);
-HSMonitor* get_current_monitor();
-void monitor_set_tag(HSMonitor* monitor, HSTag* tag);
-int monitor_set_pad_command(int argc, char** argv);
-int monitor_set_tag_command(int argc, char** argv);
-int monitor_set_tag_by_index_command(int argc, char** argv);
-int monitors_lock_command(int argc, char** argv);
-int monitors_unlock_command(int argc, char** argv);
-void monitors_lock_changed();
-void monitor_apply_layout(HSMonitor* monitor);
-void all_monitors_apply_layout();
-void ensure_monitors_are_available();
 
 #endif
 
