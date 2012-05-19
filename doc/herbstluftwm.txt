@@ -119,8 +119,8 @@ list_commands::
     Lists all available commands.
 
 [[list_monitors]]list_monitors::
-    List currently configured monitors with their index, area (as rectangle) and currently
-    viewed tag.
+    List currently configured monitors with their index, area (as rectangle) and
+    currently viewed tag.
 
 list_keybinds::
     Lists all bound keys with their associated command. Each line consists of
@@ -129,9 +129,9 @@ list_keybinds::
 WARNING: Tabs within command parameters are not escaped!
 
 lock::
-    Increases the 'monitors_locked' setting. Use this if you want to do multiple window
-    actions at once (i.e. without repainting between the single steps). See
-    also: *unlock*
+    Increases the 'monitors_locked' setting. Use this if you want to do multiple
+    window actions at once (i.e. without repainting between the single steps).
+    See also: *unlock*
 
 unlock::
     Decreases the 'monitors_locked' setting. If 'monitors_locked' is changed to
