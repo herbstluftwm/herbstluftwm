@@ -81,6 +81,48 @@ int list_monitors(int argc, char** argv, GString** output) {
     return 0;
 }
 
+int set_monitor_rects_command(int argc, char** argv, GString** output) {
+    (void)SHIFT(argc, argv);
+    if (argc < 1) {
+        g_string_append_printf(*output, "At least one monitor is required.\n");
+        return HERBST_INVALID_ARGUMENT;
+    }
+    XRectangle* templates = g_new0(XRectangle, argc);
+    for (int i = 0; i < argc; i++) {
+        templates[i] = parse_rectangle(argv[i]);
+    }
+    int status = set_monitor_rects(templates, argc);
+    g_free(templates);
+    return status;
+}
+
+int set_monitor_rects(XRectangle* templates, size_t count) {
+    if (count < 1) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    HSTag* tag = NULL;
+    int i;
+    for (i = 0; i < MIN(count, g_monitors->len); i++) {
+        HSMonitor* m = monitor_with_index(i);
+        m->rect = templates[i];
+    }
+    // add aditional monitors
+    for (; i < count; i++) {
+        tag = find_unused_tag();
+        if (!tag) {
+            return HERBST_TAG_IN_USE;
+        }
+        add_monitor(templates[i], tag);
+        frame_show_recursive(tag->frame);
+    }
+    // remove monitors if there are too much
+    for (; i < g_monitors->len; i++) {
+        remove_monitor(i);
+    }
+    all_monitors_apply_layout();
+    return 0;
+}
+
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
     assert(tag != NULL);
     HSMonitor m;
@@ -133,13 +175,17 @@ int remove_monitor_command(int argc, char** argv) {
         return HERBST_INVALID_ARGUMENT;
     }
     int index = atoi(argv[1]);
+    return remove_monitor(index);
+}
+
+int remove_monitor(int index) {
     if (index < 0 || index >= g_monitors->len) {
         return HERBST_INVALID_ARGUMENT;
     }
     if (g_monitors->len <= 1) {
         return HERBST_FORBIDDEN;
     }
-    HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, index);
+    HSMonitor* monitor = monitor_with_index(index);
     // adjust selection
     if (g_cur_monitor > index) {
         // same monitor shall be selected after remove

@@ -10,6 +10,7 @@ Changes:
     * new flags '-' and '%' for tag_status for multi monitor handling
     * toggle default panel on hook togglehidepanel
     * new setting: window_border_urgent_color
+    * new command: set_monitors
 
 Release 0.3 on 2012-04-12
 -------------------------

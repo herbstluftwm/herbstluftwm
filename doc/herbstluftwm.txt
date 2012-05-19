@@ -352,6 +352,13 @@ move_index 'INDEX'::
     argument for *use_index*: If 'INDEX' starts with +++ or +-+, then it is
     treated relative.
 
+set_monitors 'RECTS' ...::
+    Sets the list of monitors *exactly* to the list of given rectangles:
+
+        * The i'th existing monitor is moved to the i'th given 'RECT'
+        * New monitors are created if there are more 'RECTS' then monitors
+        * Existing monitors are deleted if there are more monitors then 'RECTS'
+
 add_monitor 'RECT' ['TAG' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]]::
     Adds a monitor on the specified rectangle 'RECT' and displays 'TAG' on it.
     'TAG' currently must not be displayed on any other monitor. 'RECT' is a
