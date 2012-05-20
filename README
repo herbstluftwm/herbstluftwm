@@ -9,15 +9,16 @@ See LICENSE for details.
 Build dependencies:
     - build-environment (gcc/other compiler, make)
     - asciidoc (only when building from git, not when building from tarball)
+    - a posix system with _POSIX_TIMERS and _POSIX_MONOTONIC_CLOCK or a system
+      with a current mach kernel
 Runtime dependencies:
     - bash (if you use the default autostart file)
     - glib >= 2.24
     - libx11
 
 ==== Help/Support/Bugs ====
-A list of known bugs is listed in BUGS. If you found other bugs or need help
-(or want to make suggestions about the internal structure to provide a
-statusbar with dzen2), then contact:
+A list of known bugs is listed in BUGS. If you found other bugs or need help,
+then contact:
     Thorsten Wißmann <edu _at _ thorsten _minus_ wissmann _dot_ de>
 or join the IRC channel:
     #herbstluftwm on irc.freenode.net
@@ -67,36 +68,6 @@ Start it within a running X-session with:
 The --locked causes herbstluftwm not to update the screen until you unlock it
 with: herbstclient unlock (This is done automatically by the default autostart)
 
-==== Internal structure ====
-The internal structure of herbstluftwm is as follows:
-
-all boxes are C-Modules (e.g. $name.c-files)
-
-
-                                                                                                                                    
-                                                                                                                                    
-                                                                                                                                    
-                           X11                                                                                                      
-                            |                                                                                                       
-                            V                                                                                                       
-                        +--------+  key  +-----+ call  +---------+                                                                  
-                        |  main  |------>| key |------>| command |                                                                  
-                        +--------+ event +-----+       +---------+                                                                  
-                            \                    output /  ^                                                                        
-                     IPC-Call\      +------------+<----'  / Execute                                                                 
-                      -Window `---->| ipc-server |-------'  IPC-Call                                                                
-                        -Event      +------------+                                                                                  
-                                           |                                                                                        
-                                           V                                                                                        
-                                          X11                                                                                       
-herbstclient is rather simple:
-
- Command-Line-   +------+
-   Arguments --->| main |----.
-                 |      |   X11
-    stdout  <----|      |<---'
-                 +------+
-
 ==== Quirks ====
 Mac OSX:
 
@@ -117,4 +88,3 @@ clear mod1
 add mod1 = Alt_L
 --- snap ---
 
-// vim: nowrap

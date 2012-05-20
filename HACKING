@@ -1,0 +1,52 @@
+If you want to contribute to herbstluftwm, this file is for you!
+
+==== Contributing ====
+Beside writing code you can help herbstluftwm by testing, reporting bugs,
+writing/fixing documentation (e.g. by fixing spelling mistakes) or packaging it
+for distributions.
+
+==== Coding style ====
+The coding style is similar to the Linux-kernel style with some changes:
+
+  - Use 4 spaces instead of tabs.
+  - Data type names are CamelCase
+  - Globals must be prefixed with g_
+  - Always typedef struct, e.g.:
+    typedef struct {
+        int         first_member;
+        long long   other_member;
+    } MyStruct;
+
+==== Sending patches ====
+You can use git to make commits and create patches from them via the command
+git format-patch. You can send those patches via mail[1] or via the irc[2].
+
+[1] edu _at_ thorsten-wissmann _dot_ de, because there is no mailing list yet.
+[2] #herbstluftwm on irc.freenode.net
+
+==== Internal structure ====
+The main modules (i.e. source file + header file) communicate like this if a
+key is pressed or if a command is called via herbstclient:
+
+                           X11
+                            |
+                            V
+                        +--------+  key  +-----+ call  +---------+
+                        |  main  |------>| key |------>| command |
+                        +--------+ event +-----+       +---------+
+                            \                    output /  ^
+                     IPC-Call\      +------------+<----'  / Execute
+                      -Window `---->| ipc-server |-------'  IPC-Call
+                        -Event      +------------+
+                                           |
+                                           V
+                                          X11
+herbstclient is rather simple:
+
+ Command-Line-   +------+
+   Arguments --->| main |----.
+                 |      |   X11
+    stdout  <----|      |<---'
+                 +------+
+
+// vim: nowrap
