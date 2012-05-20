@@ -58,6 +58,7 @@ int spawn(int argc, char** argv);
 int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(int argc, char** argv);
+int jumpto_command(int argc, char** argv);
 
 // handler for X-Events
 void buttonpress(XEvent* event);
@@ -111,6 +112,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "add",            tag_add_command),
     CMD_BIND_NO_OUTPUT(   "use",            monitor_set_tag_command),
     CMD_BIND_NO_OUTPUT(   "use_index",      monitor_set_tag_by_index_command),
+    CMD_BIND_NO_OUTPUT(   "jumpto",         jumpto_command),
     CMD_BIND(             "floating",       tag_set_floating_command),
     CMD_BIND_NO_OUTPUT(   "fullscreen",     client_set_property_command),
     CMD_BIND_NO_OUTPUT(   "pseudotile",     client_set_property_command),
@@ -317,20 +319,20 @@ int wmexec(int argc, char** argv) {
 
 int raise_command(int argc, char** argv) {
     Window win;
-    if (argc > 1) {
-        if (1 != sscanf(argv[1], "0x%lx", (long unsigned int*)&win)) {
-            // a invalid winid was given
-            return 1;
-        }
-    } else {
-        win = frame_focused_window(g_cur_frame);
-        if (!win) {
-            return 0;
-        }
-    }
+    win = string_to_client((argc > 1) ? argv[1] : "", NULL);
     XRaiseWindow(g_display, win);
     return 0;
 }
+
+int jumpto_command(int argc, char** argv) {
+    HSClient* client;
+    string_to_client((argc > 1) ? argv[1] : "", &client);
+    if (client) {
+        focus_window(client->window, true, true);
+    }
+    return 0;
+}
+
 
 // handle x-events:
 

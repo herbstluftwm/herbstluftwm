@@ -587,3 +587,47 @@ int client_set_property_command(int argc, char** argv) {
     return 0;
 }
 
+static bool is_client_urgent(void* key, HSClient* client, void* data) {
+    (void) key;
+    (void) data;
+    return client->urgent;
+}
+
+HSClient* get_urgent_client() {
+    return g_hash_table_find(g_clients, (GHRFunc)is_client_urgent, NULL);
+}
+
+/**
+ * \brief   Resolve a window description to a client or a window id
+ *
+ * \param   str     Describes the window: "" means the focused one, "urgent"
+ *                  resolves to a arbitrary urgent window, "0x..." just
+ *                  resolves to the given window.
+ * \param   ret_client  The client pointer is stored there if ret_client is
+ *                      given and the specified window is managed.
+ * \return          The resolved window id is stored there if the according
+ *                  window has been found
+ */
+Window string_to_client(char* str, HSClient** ret_client) {
+    Window win = 0;
+    if (!strcmp(str, "")) {
+        win = frame_focused_window(g_cur_frame);
+        if (ret_client) {
+            *ret_client = get_client_from_window(win);
+        }
+    } else if (!strcmp(str, "urgent")) {
+        HSClient* client = get_urgent_client();
+        if (client) {
+            win = client->window;
+            if (ret_client) {
+                *ret_client = client;
+            }
+        }
+    } else if (1 == sscanf(str, "0x%lx", (long unsigned int*)&win)) {
+        if (ret_client) {
+            *ret_client = get_client_from_window(win);
+        }
+    }
+    return win;
+}
+

@@ -9,10 +9,12 @@
 #include "settings.h"
 #include "layout.h"
 #include "key.h"
+#include "clientlist.h"
 
 #include <glib.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 static char* completion_directions[]    = { "left", "right", "down", "up",NULL};
 static char* completion_focus_args[]    = { "-i", "-e", NULL };
@@ -20,6 +22,7 @@ static char* completion_unrule_args[]   = { "-F", "--all", NULL };
 static char* completion_keyunbind_args[]= { "-F", "--all", NULL };
 static char* completion_flag_args[]     = { "on", "off", "toggle", NULL };
 static char* completion_status[]        = { "status", NULL };
+static char* completion_special_winids[]= { "urgent", "", NULL };
 
 static bool no_completion(int argc, char** argv, int pos) {
     return false;
@@ -79,6 +82,7 @@ struct {
     { "move",           2,  no_completion },
     { "move_index",     2,  no_completion },
     { "raise",          2,  no_completion },
+    { "jumpto",         2,  no_completion },
     { "rename",         3,  no_completion },
     { "remove",         0,  no_completion },
     { "remove_monitor", 2,  no_completion },
@@ -130,6 +134,10 @@ struct {
     { "keyunbind",      1,  .list = completion_keyunbind_args },
     { "keyunbind",      1,  .function = complete_against_keybinds },
     { "rename",         1,  .function = complete_against_tags },
+    { "raise",          1,  .list = completion_special_winids },
+    { "raise",          1,  .function = complete_against_winids },
+    { "jumpto",         1,  .list = completion_special_winids },
+    { "jumpto",         1,  .function = complete_against_winids },
     { "resize",         1,  .list = completion_directions },
     { "shift",          1,  .list = completion_directions },
     { "shift",          1,  .list = completion_focus_args },
@@ -217,6 +225,35 @@ void complete_against_tags(int argc, char** argv, int pos, GString** output) {
         }
     }
 }
+
+struct wcd { /* window id completion data */
+    char* needle;
+    size_t needlelen;
+    GString** output;
+};
+
+static void add_winid_completion(void* key, HSClient* client, struct wcd* data)
+{
+    char buf[100];
+    GString** out = data->output;
+    snprintf(buf, LENGTH(buf), "0x%lx\n", client->window);
+    if (!strncmp(buf, data->needle, data->needlelen)) {
+        *out = g_string_append(*out, buf);
+    }
+}
+
+void complete_against_winids(int argc, char** argv, int pos, GString** output) {
+    struct wcd data;
+    if (pos >= argc) {
+        data.needle = "";
+    } else {
+        data.needle = argv[pos];
+    }
+    data.needlelen = strlen(data.needle);
+    data.output = output;
+    clientlist_foreach((GHFunc)add_winid_completion, &data);
+}
+
 
 void complete_merge_tag(int argc, char** argv, int pos, GString** output) {
     char* first = (argc >= 1) ? argv[1] : "";

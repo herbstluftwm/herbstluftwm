@@ -72,6 +72,7 @@ hc keybind $Mod-h focus left
 hc keybind $Mod-j focus down
 hc keybind $Mod-k focus up
 hc keybind $Mod-l focus right
+hc keybind $Mod-i jumpto urgent
 hc keybind $Mod-Shift-h shift left
 hc keybind $Mod-Shift-j shift down
 hc keybind $Mod-Shift-k shift up

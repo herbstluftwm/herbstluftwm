@@ -52,8 +52,10 @@ void destroy_client(HSClient* client);
 
 HSClient* get_client_from_window(Window window);
 HSClient* get_current_client();
+HSClient* get_urgent_client();
 XRectangle client_outer_floating_rect(HSClient* client);
 
+Window string_to_client(char* str, HSClient** ret_client);
 void client_setup_border(HSClient* client, bool focused);
 void client_resize(HSClient* client, XRectangle rect);
 void client_resize_tiling(HSClient* client, XRectangle rect);
