@@ -11,7 +11,6 @@
 #include "ipc-protocol.h"
 
 #include <glib.h>
-#include <time.h>
 #include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -220,9 +219,7 @@ void consequence_destroy(HSConsequence* cons) {
 HSRule* rule_create() {
     HSRule* rule = g_new0(HSRule, 1);
     rule->once = false;
-    struct timespec t;
-    clock_gettime(CLOCK_MONOTONIC, &t);
-    rule->birth_time = t.tv_sec;
+    rule->birth_time = get_monotonic_timestamp();
     return rule;
 }
 
@@ -510,9 +507,7 @@ bool condition_pid(HSCondition* rule, HSClient* client) {
 }
 
 bool condition_maxage(HSCondition* rule, HSClient* client) {
-    struct timespec cur;
-    clock_gettime(CLOCK_MONOTONIC, &cur);
-    time_t diff = cur.tv_sec - g_current_rule_birth_time;
+    time_t diff = get_monotonic_timestamp() - g_current_rule_birth_time;
     return (rule->value.integer >= diff);
 }
 

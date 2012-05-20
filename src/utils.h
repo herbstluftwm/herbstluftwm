@@ -41,6 +41,8 @@ bool string_to_bool(char* string, bool oldvalue);
 
 char* strlasttoken(char* str, char* delim);
 
+time_t get_monotonic_timestamp();
+
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv);
 // frees all entrys in argument-vector and then the vector itself
