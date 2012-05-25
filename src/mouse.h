@@ -55,6 +55,9 @@ void client_snap_vector(struct HSClient* client, struct HSTag* tag,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy);
 
+bool is_point_between(int point, int left, int right);
+bool intervals_intersect(int a_left, int a_right, int b_left, int b_right);
+
 /* some mouse functions */
 void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);

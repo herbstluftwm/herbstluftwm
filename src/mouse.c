@@ -385,15 +385,12 @@ struct SnapData {
     int             dx, dy; // the vector from client to other to make them snap
 };
 
-static bool is_point_between(int point, int left, int right) {
+bool is_point_between(int point, int left, int right) {
     return (point < right && point >= left);
 }
 
-static bool intervals_intersect(int a_left, int a_right, int b_left, int b_right) {
-    return is_point_between(a_left, b_left, b_right)
-        || is_point_between(a_right, b_left, b_right)
-        || is_point_between(b_right, a_left, a_right)
-        || is_point_between(b_left, a_left, a_right);
+bool intervals_intersect(int a_left, int a_right, int b_left, int b_right) {
+    return (b_left < a_right) && (a_left < b_right);
 }
 
 // compute vector to snap a point to an edge
