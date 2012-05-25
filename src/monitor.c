@@ -116,7 +116,7 @@ int set_monitor_rects(XRectangle* templates, size_t count) {
         frame_show_recursive(tag->frame);
     }
     // remove monitors if there are too much
-    for (; i < g_monitors->len; i++) {
+    while (i < g_monitors->len) {
         remove_monitor(i);
     }
     all_monitors_apply_layout();
