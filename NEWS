@@ -11,6 +11,7 @@ Changes:
     * toggle default panel on hook togglehidepanel
     * new setting: window_border_urgent_color
     * new command: set_monitors
+    * new command: disjoin_rects
     * new command: jumpto
     * use clock_get_time on systems with a mach kernel (typically Mac OS X).
       This lets herbstluftwm run on Mac systems again.

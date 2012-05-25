@@ -361,6 +361,34 @@ move_index 'INDEX'::
     argument for *use_index*: If 'INDEX' starts with +++ or +-+, then it is
     treated relative.
 
+disjoin_rects 'RECTS' ...::
+    Takes a list of rectangles and splits them into smaller pieces until all
+    rectangles are disjoint, the result rectangles are printed line by line.
+    This command does not modify the current list of monitors! So this can be
+    useful in combination with the set_monitors command.
+
+        * E.g. +disjoin_rects 600x400+0+0 600x400+300+250+ prints this:
++
+----
+300x150+300+250
+600x250+0+0
+300x150+0+250
+300x150+600+250
+600x250+300+400
+----
++
+        * In the above example two monitors are split into 5 monitors, which
+          graphically means:
++
+----
+11111111                 11111111
+1  222222222             333222224444
+1  2   1   2   disjoin   3 32   24  4
+11121111   2  -------->  333222224444
+   2       2                5       5
+   222222222                555555555
+----
+
 set_monitors 'RECTS' ...::
     Sets the list of monitors *exactly* to the list of given rectangles:
 
