@@ -24,6 +24,17 @@ git format-patch. You can send those patches via mail[1] or via the irc[2].
 [1] edu _at_ thorsten-wissmann _dot_ de, because there is no mailing list yet.
 [2] #herbstluftwm on irc.freenode.net
 
+==== Debugging with valgrind ====
+If you use tools like valgrind, then it is needed to turn of the memory
+optimization settings for glib. So export this before running herbstluftwm
+within valgrind:
+
+export G_SLICE=always-malloc
+export G_DEBUG=gc-friendly
+
+valgrind --leak-check=full ./herbstluftwm  -c share/autostart
+
+
 ==== Internal structure ====
 The main modules (i.e. source file + header file) communicate like this if a
 key is pressed or if a command is called via herbstclient:
