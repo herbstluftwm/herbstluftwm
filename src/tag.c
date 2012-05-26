@@ -25,6 +25,14 @@ void tag_init() {
 }
 
 static void tag_free(HSTag* tag) {
+    if (tag->frame) {
+        Window* buf;
+        size_t count;
+        frame_destroy(tag->frame, &buf, &count);
+        if (count) {
+            g_free(buf);
+        }
+    }
     g_string_free(tag->name, true);
     g_free(tag);
 }
@@ -156,6 +164,7 @@ int tag_remove_command(int argc, char** argv) {
     Window* buf;
     size_t count;
     frame_destroy(tag->frame, &buf, &count);
+    tag->frame = NULL;
     int i;
     for (i = 0; i < count; i++) {
         HSClient* client = get_client_from_window(buf[i]);

@@ -15,6 +15,7 @@ Changes:
     * new command: jumpto
     * use clock_get_time on systems with a mach kernel (typically Mac OS X).
       This lets herbstluftwm run on Mac systems again.
+    * fix many memory leaks.
 
 Release 0.3 on 2012-04-12
 -------------------------

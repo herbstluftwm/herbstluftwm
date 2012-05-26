@@ -33,16 +33,22 @@ void key_destroy() {
 
 void key_remove_all_binds() {
 #if GLIB_CHECK_VERSION(2, 28, 0)
-    g_list_free_full(g_key_binds, g_free); // only available since glib 2.28
+    // only available since glib 2.28
+    g_list_free_full(g_key_binds, (GDestroyNotify)keybinding_free);
 #else
     // actually this is not c-standard-compatible because of casting
     // an one-parameter-function to an 2-parameter-function.
     // but it should work on almost all architectures (maybe not amd64?)
-    g_list_foreach(g_key_binds, (GFunc)g_free, 0);
+    g_list_foreach(g_key_binds, (GFunc)keybinding_free, 0);
     g_list_free(g_key_binds);
 #endif
     g_key_binds = NULL;
     regrab_keys();
+}
+
+void keybinding_free(KeyBinding* binding) {
+    argv_free(binding->cmd_argc, binding->cmd_argv);
+    g_free(binding);
 }
 
 typedef struct {
@@ -205,7 +211,8 @@ void key_remove_bind_with_keysym(unsigned int modifiers, KeySym keysym){
     if (!element) {
         return;
     }
-    g_free(element->data);
+    KeyBinding* data = element->data;
+    keybinding_free(data);
     g_key_binds = g_list_remove_link(g_key_binds, element);
     g_list_free_1(element);
 }

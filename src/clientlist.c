@@ -75,7 +75,7 @@ void clientlist_init() {
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
     // init actual client list
     g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
-                                      NULL, (GDestroyNotify)destroy_client);
+                                      NULL, (GDestroyNotify)client_destroy);
 }
 
 void reset_client_colors() {
@@ -96,21 +96,10 @@ static void client_move_to_floatpos(void* key, void* client_void, void* data) {
     }
 }
 
-static void client_destroy(void* key, void* client_void, void* data) {
-    (void)key;
-    (void)data;
-    HSClient* client = client_void;
-    if (client) {
-        /* free window title */
-        g_string_free(client->title, true);
-    }
-}
-
 void clientlist_destroy() {
     // move all clients to their original floating position
     g_hash_table_foreach(g_clients, client_move_to_floatpos, NULL);
 
-    g_hash_table_foreach(g_clients, client_destroy, NULL);
     g_hash_table_destroy(g_clients);
 }
 
@@ -160,7 +149,7 @@ HSClient* manage_client(Window win) {
 
     if (!changes.manage) {
         client_changes_free_members(&changes);
-        destroy_client(client);
+        client_destroy(client);
         // map it... just to be sure
         XMapWindow(g_display, win);
         return NULL;
@@ -217,7 +206,11 @@ void unmanage_client(Window win) {
 }
 
 // destroys a special client
-void destroy_client(HSClient* client) {
+void client_destroy(HSClient* client) {
+    if (client) {
+        /* free window title */
+        g_string_free(client->title, true);
+    }
     g_free(client);
 }
 
@@ -493,6 +486,7 @@ void client_update_wm_hints(HSClient* client) {
             tag_set_flags_dirty();
         }
     }
+    XFree(wmh);
 }
 
 void client_update_title(HSClient* client) {

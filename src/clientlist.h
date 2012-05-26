@@ -48,7 +48,7 @@ void unmanage_client(Window win);
 void window_enforce_last_size(Window in);
 
 // destroys a special client
-void destroy_client(HSClient* client);
+void client_destroy(HSClient* client);
 
 HSClient* get_client_from_window(Window window);
 HSClient* get_current_client();
