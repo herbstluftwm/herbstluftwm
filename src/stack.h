@@ -7,6 +7,7 @@
 #define __HERBST_STACK_H_
 
 #include <X11/Xlib.h>
+#include <glib.h>
 
 typedef enum Layer {
     /* layers on each monitor, from top to bottom */
@@ -26,7 +27,7 @@ struct HSClient;
 struct HSMonitor;
 struct GList;
 
-typedef struct {
+typedef struct HSSlice {
     HSSliceType type;
     HSLayer     layer;
     union {
@@ -37,7 +38,7 @@ typedef struct {
 } HSSlice;
 
 typedef struct HSStack {
-    struct GList*  top;
+    GList*  top[LAYER_COUNT];
 } HSStack;
 
 
@@ -45,8 +46,12 @@ void stacklist_init();
 void stacklist_destroy();
 
 HSSlice* slice_create_window(Window window);
+HSSlice* slice_create_frame(Window window);
 HSSlice* slice_create_client(struct HSClient* client);
 void slice_destroy(HSSlice* slice);
+
+void stack_insert_slice(HSStack* s, HSSlice* elem);
+void stack_remove_slice(HSStack* s, HSSlice* elem);
 
 HSStack* stack_create();
 void stack_destroy(HSStack* s);

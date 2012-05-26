@@ -125,10 +125,10 @@ HSTag* add_tag(char* name) {
         // nothing to do
         return find_result;
     }
-    HSTag* tag = g_new(HSTag, 1);
-    tag->frame = frame_create_empty();
-    tag->name = g_string_new(name);
+    HSTag* tag = g_new0(HSTag, 1);
     tag->stack = stack_create();
+    tag->frame = frame_create_empty(NULL, tag);
+    tag->name = g_string_new(name);
     tag->floating = false;
     g_array_append_val(g_tags, tag);
     ewmh_update_desktops();
