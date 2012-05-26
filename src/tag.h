@@ -7,15 +7,18 @@
 #define __HERBSTLUFT_TAG_H_
 
 #include <glib.h>
+#include <stdbool.h>
 
 struct HSFrame;
 struct HSClient;
+struct HSStack;
 
 typedef struct HSTag {
     GString*        name;   // name of this tag
     struct HSFrame* frame;  // the master frame
     bool            floating;
     int             flags;
+    struct HSStack* stack;
 } HSTag;
 
 // globals

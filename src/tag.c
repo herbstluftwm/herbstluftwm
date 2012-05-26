@@ -7,13 +7,15 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "tag.h"
+
 #include "globals.h"
 #include "clientlist.h"
 #include "ipc-protocol.h"
 #include "utils.h"
 #include "hook.h"
 #include "layout.h"
-#include "tag.h"
+#include "stack.h"
 #include "ewmh.h"
 #include "monitor.h"
 #include "settings.h"
@@ -33,6 +35,7 @@ static void tag_free(HSTag* tag) {
             g_free(buf);
         }
     }
+    stack_destroy(tag->stack);
     g_string_free(tag->name, true);
     g_free(tag);
 }
@@ -125,6 +128,7 @@ HSTag* add_tag(char* name) {
     HSTag* tag = g_new(HSTag, 1);
     tag->frame = frame_create_empty();
     tag->name = g_string_new(name);
+    tag->stack = stack_create();
     tag->floating = false;
     g_array_append_val(g_tags, tag);
     ewmh_update_desktops();

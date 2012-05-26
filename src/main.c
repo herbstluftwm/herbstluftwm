@@ -17,6 +17,7 @@
 #include "mouse.h"
 #include "rules.h"
 #include "ewmh.h"
+#include "stack.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -577,6 +578,7 @@ static struct {
     { ipc_init,         ipc_destroy         },
     { key_init,         key_destroy         },
     { settings_init,    settings_destroy    },
+    { stacklist_init,   stacklist_destroy   },
     { clientlist_init,  clientlist_destroy  },
     { layout_init,      layout_destroy      },
     { tag_init,         tag_destroy         },
