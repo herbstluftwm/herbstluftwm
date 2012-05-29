@@ -21,13 +21,13 @@ clean: clean-herbstclient cleandoc
 
 cleandoc:
 	$(call colorecho,RM,doc/herbstclient.1)
-	@rm -f doc/herbstclient.1
+	$(VERBOSE) rm -f doc/herbstclient.1
 	$(call colorecho,RM,doc/herbstclient.html)
-	@rm -f doc/herbstclient.html
+	$(VERBOSE) rm -f doc/herbstclient.html
 	$(call colorecho,RM,doc/herbstluftwm.1)
-	@rm -f doc/herbstluftwm.1
+	$(VERBOSE) rm -f doc/herbstluftwm.1
 	$(call colorecho,RM,doc/herbstluftwm.html)
-	@rm -f doc/herbstluftwm.html
+	$(VERBOSE) rm -f doc/herbstluftwm.html
 
 build-herbstclient:
 	$(MAKE) -C ipc-client
@@ -48,11 +48,11 @@ tar: doc
 
 doc/%.1: doc/%.txt
 	$(call colorecho,DOC,$@)
-	@$(A2X) -f manpage -a "herbstluftwmversion=herbstluftwm $(VERSION)" -a "date=`date +%Y-%m-%d`" $<
+	$(VERBOSE) $(A2X) -f manpage -a "herbstluftwmversion=herbstluftwm $(VERSION)" -a "date=`date +%Y-%m-%d`" $<
 
 doc/%.html: doc/%.txt
 	$(call colorecho,DOC,$@)
-	@$(ASCIIDOC) $<
+	$(VERBOSE) $(ASCIIDOC) $<
 
 install: all
 	@echo "==> creating dirs..."

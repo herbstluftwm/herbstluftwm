@@ -39,3 +39,6 @@ TMPTARDIR = herbstluftwm-$(VERSION_MAJOR).$(VERSION_MINOR)$(VERSION_SUFFIX)
 MKDIR = mkdir -p
 INSTALL = install
 
+# Controls verbose build
+# Remove the @ to see the actual compiler invocations
+VERBOSE = @

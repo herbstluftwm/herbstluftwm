@@ -5,17 +5,17 @@ rb: clean all
 
 $(TARGET): $(OBJ)
 	$(call colorecho,LD,$(TARGET))
-	@$(LD) -o $@ $(LDFLAGS)  $(OBJ) $(LIBS)
+	$(VERBOSE) $(LD) -o $@ $(LDFLAGS)  $(OBJ) $(LIBS)
 
 $(SRCDIR)/%.o: $(SRCDIR)/%.c $(HEADER)
 	$(call colorecho,CC,$<)
-	@$(CC) -c $(CFLAGS) -o $@ $<
+	$(VERBOSE) $(CC) -c $(CFLAGS) -o $@ $<
 
 clean:
 	$(call colorecho,RM,$(TARGET))
-	@rm -f $(TARGET)
+	$(VERBOSE) rm -f $(TARGET)
 	$(call colorecho,RM,$(OBJ))
-	@rm -f $(OBJ)
+	$(VERBOSE) rm -f $(OBJ)
 
 info:
 	@echo Some Info:
