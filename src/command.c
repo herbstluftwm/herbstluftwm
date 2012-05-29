@@ -23,6 +23,7 @@ static char* completion_keyunbind_args[]= { "-F", "--all", NULL };
 static char* completion_flag_args[]     = { "on", "off", "toggle", NULL };
 static char* completion_status[]        = { "status", NULL };
 static char* completion_special_winids[]= { "urgent", "", NULL };
+static char* completion_use_index_args[]= { "--skip-visible", NULL };
 
 static bool no_completion(int argc, char** argv, int pos) {
     return false;
@@ -80,7 +81,7 @@ struct {
     { "lock",           0,  no_completion },
     { "unlock",         0,  no_completion },
     { "move",           2,  no_completion },
-    { "move_index",     2,  no_completion },
+    { "move_index",     3,  no_completion },
     { "raise",          2,  no_completion },
     { "jumpto",         2,  no_completion },
     { "rename",         3,  no_completion },
@@ -89,7 +90,7 @@ struct {
     { "resize",         3,  no_completion },
     { "unrule",         2,  no_completion },
     { "use",            2,  no_completion },
-    { "use_index",      2,  no_completion },
+    { "use_index",      3,  no_completion },
     { "add",            2,  no_completion },
     { "get",            2,  no_completion },
     { "toggle",         2,  no_completion },
@@ -129,6 +130,7 @@ struct {
     { "merge_tag",      1,  .function = complete_against_tags },
     { "merge_tag",      2,  .function = complete_merge_tag },
     { "move",           1,  .function = complete_against_tags },
+    { "move_index",     2,  .list = completion_use_index_args },
     { "pseudotile",     1,  .list = completion_flag_args },
     { "keybind",       -1,  .function = complete_against_keybind_command },
     { "keyunbind",      1,  .list = completion_keyunbind_args },
@@ -149,6 +151,7 @@ struct {
     { "set_layout",     1,  .list = g_layout_names },
     { "unrule",         1,  .list = completion_unrule_args },
     { "use",            1,  .function = complete_against_tags },
+    { "use_index",      2,  .list = completion_use_index_args },
     { 0 },
 };
 

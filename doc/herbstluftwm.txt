@@ -339,12 +339,14 @@ add 'TAG'::
 use 'TAG'::
     Switches the focused monitor to specified 'TAG'.
 
-use_index 'INDEX'::
+use_index 'INDEX' [*--skip-visible*]::
     Switches the focused monitor to the 'TAG' with the specified 'INDEX'. If
     'INDEX' starts with +++ or +-+, then 'INDEX' is treated relative to the
-    current 'TAG'. E.g. this cycles backwards through the tags:
+    current 'TAG'. If *--skip-visible* is passed and 'INDEX' is relative, then
+    tags that are already visible on a monitor are skipped. E.g. this cycles
+    backwards through the tags:
 
-        * use_index -1
+        * use_index -1 --skip-visible
 
 merge_tag 'TAG' ['TARGET']::
     Removes tag named 'TAG' and moves all its windows to tag 'TARGET'. If
@@ -356,10 +358,11 @@ rename 'OLDTAG' 'NEWTAG'::
 move 'TAG'::
     Moves the focused window to tag named 'TAG'.
 
-move_index 'INDEX'::
+move_index 'INDEX' [*--skip-visible*]::
     Moves the focused window to the tag specified by 'INDEX'. Analogical to the
     argument for *use_index*: If 'INDEX' starts with +++ or +-+, then it is
-    treated relative.
+    treated relative. If *--skip-visible* is passed with a relative index, then
+    already visible tags are skipped.
 
 disjoin_rects 'RECTS' ...::
     Takes a list of rectangles and splits them into smaller pieces until all

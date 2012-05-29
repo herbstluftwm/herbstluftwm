@@ -30,7 +30,7 @@ HSTag* find_tag(char* name);
 int    tag_index_of(HSTag* tag);
 HSTag* find_unused_tag();
 HSTag* find_tag_with_toplevel_frame(struct HSFrame* frame);
-HSTag* get_tag_by_index(char* index_str);
+HSTag* get_tag_by_index(char* index_str, bool skip_visible_tags);
 int tag_add_command(int argc, char** argv);
 int tag_rename_command(int argc, char** argv);
 int tag_move_window_command(int argc, char** argv);

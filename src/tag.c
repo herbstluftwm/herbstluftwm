@@ -67,16 +67,29 @@ int tag_index_of(HSTag* tag) {
     return -1;
 }
 
-HSTag* get_tag_by_index(char* index_str) {
+HSTag* get_tag_by_index(char* index_str, bool skip_visible_tags) {
     int index = atoi(index_str);
     // index must be treated relative, if it's first char is + or -
     bool is_relative = array_find("+-", 2, sizeof(char), &index_str[0]) >= 0;
     HSMonitor* monitor = get_current_monitor();
     if (is_relative) {
         int current = tag_index_of(monitor->tag);
-        index += current;
+        int delta = index;
+        index = delta + current;
         // ensure index is valid
         index = MOD(index, g_tags->len);
+        if (skip_visible_tags) {
+            HSTag* tag = g_array_index(g_tags, HSTag*, index);
+            for (int i = 0; find_monitor_with_tag(tag); i++) {
+                if (i >= g_tags->len) {
+                    // if we tried each tag then there is no invisible tag
+                    return NULL;
+                }
+                index += delta;
+                index = MOD(index, g_tags->len);
+                tag = g_array_index(g_tags, HSTag*, index);
+            }
+        }
     } else {
         // if it is absolute, then check index
         if (index < 0 || index >= g_tags->len) {
@@ -303,7 +316,11 @@ int tag_move_window_by_index_command(int argc, char** argv) {
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }
-    HSTag* tag = get_tag_by_index(argv[1]);
+    bool skip_visible = false;
+    if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
+        skip_visible = true;
+    }
+    HSTag* tag = get_tag_by_index(argv[1], skip_visible);
     if (!tag) {
         return HERBST_INVALID_ARGUMENT;
     }

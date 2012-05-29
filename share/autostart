@@ -36,10 +36,10 @@ for i in ${!TAG_NAMES[@]} ; do
 done
 
 # cycle through tags
-hc keybind $Mod-period use_index +1
-hc keybind $Mod-comma  use_index -1
-hc keybind $Mod-Right use_index +1
-hc keybind $Mod-Left  use_index -1
+hc keybind $Mod-period use_index +1 --skip-visible
+hc keybind $Mod-comma  use_index -1 --skip-visible
+hc keybind $Mod-Right use_index +1 --skip-visible
+hc keybind $Mod-Left  use_index -1 --skip-visible
 
 # layouting
 hc keybind $Mod-r remove
