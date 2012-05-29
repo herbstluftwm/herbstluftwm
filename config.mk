@@ -42,3 +42,6 @@ INSTALL = install
 # Controls verbose build
 # Remove the @ to see the actual compiler invocations
 VERBOSE = @
+
+# Set this to 0 to disable colors
+COLOR = 1
