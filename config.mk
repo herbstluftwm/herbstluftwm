@@ -11,8 +11,8 @@ LIBS += -lrt
 endif
 
 # FLAGS
-LD = gcc
-CC = gcc
+CC ?= gcc
+LD = $(CC)
 CFLAGS = -g -std=c99 -pedantic -Wall ${INCS} -D _XOPEN_SOURCE=600
 VERSIONFLAGS = \
     -D HERBSTLUFT_VERSION=$(VERSION) \
