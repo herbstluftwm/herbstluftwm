@@ -33,6 +33,7 @@ ETCDIR = $(INSTALLDIR)/etc/
 CONFIGDIR = $(ETCDIR)/xdg/herbstluftwm/
 XSESSIONSDIR = $(SHAREDIR)/xsessions
 ZSHCOMPLETIONDIR = $(SHAREDIR)/zsh/functions/Completion/X/
+BASHCOMPLETIONDIR = $(ETCDIR)/bash_completion.d/
 TARFILE = herbstluftwm-$(VERSION_MAJOR).$(VERSION_MINOR)$(VERSION_SUFFIX).tar.gz
 A2X = a2x
 ASCIIDOC = asciidoc

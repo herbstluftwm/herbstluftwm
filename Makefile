@@ -63,7 +63,7 @@ install: all
 	$(MKDIR) $(DOCDIR)
 	$(MKDIR) $(EXAMPLESDIR)
 	$(MKDIR) $(ETCDIR)
-	$(MKDIR) $(ETCDIR)/bash_completion.d/
+	$(MKDIR) $(BASHCOMPLETIONDIR)
 	$(MKDIR) $(CONFIGDIR)
 	$(MKDIR) $(ZSHCOMPLETIONDIR)
 	$(MKDIR) $(XSESSIONSDIR)
@@ -81,7 +81,7 @@ install: all
 	$(INSTALL) -m 755 share/autostart $(CONFIGDIR)/
 	$(INSTALL) -m 755 share/panel.sh $(CONFIGDIR)/
 	$(INSTALL) -m 755 share/restartpanels.sh $(CONFIGDIR)/
-	$(INSTALL) -m 644 share/herbstclient-completion $(ETCDIR)/bash_completion.d/
+	$(INSTALL) -m 644 share/herbstclient-completion $(BASHCOMPLETIONDIR)
 	$(INSTALL) -m 644 share/_herbstclient $(ZSHCOMPLETIONDIR)/
 	$(INSTALL) -m 644 share/herbstluftwm.desktop $(XSESSIONSDIR)/
 	$(INSTALL) -m 644 scripts/README $(EXAMPLESDIR)/
