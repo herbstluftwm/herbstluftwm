@@ -56,36 +56,34 @@ doc/%.html: doc/%.txt
 
 install: all
 	@echo "==> creating dirs..."
-	$(MKDIR) $(PREFIX)
-	$(MKDIR) $(LICENSEDIR)
-	$(MKDIR) $(BINDIR)
-	$(MKDIR) $(MANDIR)
-	$(MKDIR) $(DOCDIR)
-	$(MKDIR) $(EXAMPLESDIR)
-	$(MKDIR) $(ETCDIR)
-	$(MKDIR) $(BASHCOMPLETIONDIR)
-	$(MKDIR) $(CONFIGDIR)
-	$(MKDIR) $(ZSHCOMPLETIONDIR)
-	$(MKDIR) $(XSESSIONSDIR)
+	$(MKDIR) '$(DESTDIR)/$(LICENSEDIR)'
+	$(MKDIR) '$(DESTDIR)/$(BINDIR)'
+	$(MKDIR) '$(DESTDIR)/$(MANDIR)/man1'
+	$(MKDIR) '$(DESTDIR)/$(DOCDIR)'
+	$(MKDIR) '$(DESTDIR)/$(EXAMPLESDIR)'
+	$(MKDIR) '$(DESTDIR)/$(BASHCOMPLETIONDIR)'
+	$(MKDIR) '$(DESTDIR)/$(CONFIGDIR)'
+	$(MKDIR) '$(DESTDIR)/$(ZSHCOMPLETIONDIR)'
+	$(MKDIR) '$(DESTDIR)/$(XSESSIONSDIR)'
 	@echo "==> copying files..."
-	$(INSTALL) $(TARGET) $(BINDIR)
-	$(INSTALL) ipc-client/herbstclient $(BINDIR)/
-	$(INSTALL) -m 644 LICENSE $(LICENSEDIR)
-	$(INSTALL) -m 644 doc/herbstclient.1 $(MANDIR)/
-	$(INSTALL) -m 644 doc/herbstluftwm.1 $(MANDIR)/
-	$(INSTALL) -m 644 doc/herbstclient.html $(DOCDIR)/
-	$(INSTALL) -m 644 doc/herbstluftwm.html $(DOCDIR)/
-	$(INSTALL) -m 644 BUGS $(DOCDIR)/
-	$(INSTALL) -m 644 NEWS $(DOCDIR)/
-	$(INSTALL) -m 644 README $(DOCDIR)/
-	$(INSTALL) -m 755 share/autostart $(CONFIGDIR)/
-	$(INSTALL) -m 755 share/panel.sh $(CONFIGDIR)/
-	$(INSTALL) -m 755 share/restartpanels.sh $(CONFIGDIR)/
-	$(INSTALL) -m 644 share/herbstclient-completion $(BASHCOMPLETIONDIR)
-	$(INSTALL) -m 644 share/_herbstclient $(ZSHCOMPLETIONDIR)/
-	$(INSTALL) -m 644 share/herbstluftwm.desktop $(XSESSIONSDIR)/
-	$(INSTALL) -m 644 scripts/README $(EXAMPLESDIR)/
-	$(INSTALL) -m 755 scripts/*.sh $(EXAMPLESDIR)/
+	$(INSTALL) $(TARGET) '$(DESTDIR)/$(BINDIR)'
+	$(INSTALL) ipc-client/herbstclient '$(DESTDIR)/$(BINDIR)/'
+	$(INSTALL) -m 644 LICENSE '$(DESTDIR)/$(LICENSEDIR)'
+	$(INSTALL) -m 644 doc/herbstclient.1 '$(DESTDIR)/$(MAN1DIR)/'
+	$(INSTALL) -m 644 doc/herbstluftwm.1 '$(DESTDIR)/$(MAN1DIR)/'
+	$(INSTALL) -m 644 doc/herbstclient.html '$(DESTDIR)/$(DOCDIR)/'
+	$(INSTALL) -m 644 doc/herbstluftwm.html '$(DESTDIR)/$(DOCDIR)/'
+	$(INSTALL) -m 644 BUGS '$(DESTDIR)/$(DOCDIR)/'
+	$(INSTALL) -m 644 NEWS '$(DESTDIR)/$(DOCDIR)/'
+	$(INSTALL) -m 644 README '$(DESTDIR)/$(DOCDIR)/'
+	$(INSTALL) -m 755 share/autostart '$(DESTDIR)/$(CONFIGDIR)/'
+	$(INSTALL) -m 755 share/panel.sh '$(DESTDIR)/$(CONFIGDIR)/'
+	$(INSTALL) -m 755 share/restartpanels.sh '$(DESTDIR)/$(CONFIGDIR)/'
+	$(INSTALL) -m 644 share/herbstclient-completion '$(DESTDIR)/$(BASHCOMPLETIONDIR)'
+	$(INSTALL) -m 644 share/_herbstclient '$(DESTDIR)/$(ZSHCOMPLETIONDIR)/'
+	$(INSTALL) -m 644 share/herbstluftwm.desktop '$(DESTDIR)/$(XSESSIONSDIR)/'
+	$(INSTALL) -m 644 scripts/README '$(DESTDIR)/$(EXAMPLESDIR)/'
+	$(INSTALL) -m 755 scripts/*.sh '$(DESTDIR)/$(EXAMPLESDIR)/'
 
 www:
 	make -C www

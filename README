@@ -34,17 +34,17 @@ you are creating a package for your distribution.
 The compilation and installation is configured by the following make-variables
 in config.mk:
 
-INSTALLDIR = / # the path to your root-directory
-PREFIX = $(INSTALLDIR)/usr/ # the prefix
-ETCDIR = $(INSTALLDIR)/etc/ # path to etc directory
+DESTDIR = /                     # the path to your root-directory
+PREFIX = /usr/                  # the prefix
+SYSCONFDIR = $(DESTDIR)/etc/    # path to etc directory
 
-Normally you should build it with INSTALLDIR=/ and install it with
-INSTALLDIR=./path/to/fakeroot if you are building a package.
+Normally you should build it with DESTDIR=/ and install it with
+DESTDIR=./path/to/fakeroot if you are building a package.
 
 # as user
-make INSTALLDIR=/
+make DESTDIR=/
 # as root
-make INSTALLDIR=./build/ install
+make DESTDIR=./build/ install
 # as user
 mkdir -p ~/.config/herbstluftwm/
 cp /etc/xdg/herbstluftwm/autostart ~/.config/herbstluftwm/autostart
