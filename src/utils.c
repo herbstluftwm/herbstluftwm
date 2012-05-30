@@ -183,11 +183,11 @@ XRectangle parse_rectangle(char* string) {
     XRectangle rect;
     int x,y;
     unsigned int w, h;
-    XParseGeometry(string, &x, &y, &w, &h);
-    rect.x = (short int)x;
-    rect.y = (short int)y;
-    rect.width = (unsigned short int)w;
-    rect.height = (unsigned short int)h;
+    int flags = XParseGeometry(string, &x, &y, &w, &h);
+    rect.x = (XValue & flags) ? (short int)x : 0;
+    rect.y = (YValue & flags) ? (short int)y : 0;
+    rect.width = (WidthValue & flags) ? (unsigned short int)w : 0;
+    rect.height = (HeightValue & flags) ? (unsigned short int)h : 0;
     return rect;
 }
 
