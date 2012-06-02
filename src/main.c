@@ -137,6 +137,9 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "lock",           monitors_lock_command),
     CMD_BIND_NO_OUTPUT(   "unlock",         monitors_unlock_command),
     CMD_BIND_NO_OUTPUT(   "set_layout",     frame_current_set_client_layout),
+#ifdef XINERAMA
+    CMD_BIND_NO_OUTPUT(   "detect_monitors",detect_monitors_command),
+#endif /* XINERAMA */
     {{ NULL }}
 };
 

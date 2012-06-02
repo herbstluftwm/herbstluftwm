@@ -3,8 +3,12 @@
 X11INC = /usr/X11R6/include
 X11LIB = /usr/X11R6/lib
 
+# Xinerama
+XINERAMALIBS = -L${X11LIB} -lXinerama
+XINERAMAFLAGS = -DXINERAMA
+
 INCS = -Isrc/ -I/usr/include -I${X11INC}  `pkg-config --cflags glib-2.0`
-LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 `pkg-config --libs glib-2.0`
+LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 $(XINERAMALIBS) `pkg-config --libs glib-2.0`
 
 ifeq ($(shell uname),Linux)
 LIBS += -lrt
@@ -20,6 +24,7 @@ VERSIONFLAGS = \
     -D HERBSTLUFT_VERSION_MAJOR=$(VERSION_MAJOR) \
     -D HERBSTLUFT_VERSION_MINOR=$(VERSION_MINOR)
 CFLAGS += $(VERSIONFLAGS)
+CFLAGS += $(XINERAMAFLAGS)
 LDFLAGS ?= -g
 DESTDIR = /
 PREFIX = /usr/local

@@ -9,6 +9,9 @@
 #include <glib.h>
 #include <stdbool.h>
 #include <X11/Xlib.h>
+#ifdef XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif /* XINERAMA */
 
 struct HSTag;
 struct HSFrame;
@@ -68,5 +71,9 @@ void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
 
+#ifdef XINERAMA
+bool geom_unique(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info);
+int detect_monitors_command(int argc, char **argv);
+#endif /* XINERAMA */
 #endif
 

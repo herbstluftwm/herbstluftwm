@@ -5,6 +5,9 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#ifdef XINERAMA
+#include <X11/extensions/Xinerama.h>
+#endif /* XINERAMA */
 
 #include "globals.h"
 #include "ipc-protocol.h"
@@ -716,4 +719,49 @@ void monitors_lock_changed() {
     }
 }
 
+#ifdef XINERAMA
+// inspired by dwm's isuniquegeom()
+bool geom_unique(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info) {
+    while (n--)
+        if (unique[n].x_org == info->x_org && unique[n].y_org == info->y_org
+        &&  unique[n].width == info->width && unique[n].height == info->height)
+            return false;
+    return true;
+}
+
+// inspired by dwm's updategeom()
+int detect_monitors_command(int argc, char **argv) {
+    int i, j, n, ret;
+    XineramaScreenInfo *info, *unique;
+    XRectangle *monitors;
+
+    if (!XineramaIsActive(g_display)) {
+        return HERBST_UNKNOWN_ERROR;
+    }
+    info = XineramaQueryScreens(g_display, &n);
+    unique = g_new(XineramaScreenInfo, n);
+    /* only consider unique geometries as separate screens */
+    for (i = 0, j = 0; i < n; i++) {
+        if (geom_unique(unique, j, &info[i]))
+        {
+            memcpy(&unique[j++], &info[i], sizeof(XineramaScreenInfo));
+        }
+    }
+    XFree(info);
+    n = j;
+
+    monitors = g_new(XRectangle, n);
+    for (i = 0; i < n; i++) {
+        monitors[i].x = unique[i].x_org;
+        monitors[i].y = unique[i].y_org;
+        monitors[i].width = unique[i].width;
+        monitors[i].height = unique[i].height;
+    }
+
+    ret = set_monitor_rects(monitors, n);
+    g_free(monitors);
+    g_free(unique);
+    return ret;
+}
+#endif /* XINERAMA */
 
