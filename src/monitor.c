@@ -719,9 +719,10 @@ void monitors_lock_changed() {
     }
 }
 
+// monitor detection using xinerama (if available)
 #ifdef XINERAMA
 // inspired by dwm's isuniquegeom()
-bool geom_unique(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info) {
+static bool geom_unique(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info) {
     while (n--)
         if (unique[n].x_org == info->x_org && unique[n].y_org == info->y_org
         &&  unique[n].width == info->width && unique[n].height == info->height)
@@ -730,13 +731,13 @@ bool geom_unique(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info)
 }
 
 // inspired by dwm's updategeom()
-int detect_monitors_command(int argc, char **argv) {
-    int i, j, n, ret;
+bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count) {
+    int i, j, n;
     XineramaScreenInfo *info, *unique;
     XRectangle *monitors;
 
     if (!XineramaIsActive(g_display)) {
-        return HERBST_UNKNOWN_ERROR;
+        return false;
     }
     info = XineramaQueryScreens(g_display, &n);
     unique = g_new(XineramaScreenInfo, n);
@@ -757,11 +758,49 @@ int detect_monitors_command(int argc, char **argv) {
         monitors[i].width = unique[i].width;
         monitors[i].height = unique[i].height;
     }
-
-    ret = set_monitor_rects(monitors, n);
-    g_free(monitors);
+    *ret_count = n;
+    *ret_rects = monitors;
     g_free(unique);
+    return true;
+}
+#else  /* XINERAMA */
+
+bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count) {
+    return false;
+}
+
+#endif /* XINERAMA */
+
+// monitor detaction that always works: one monitor across the entire screen
+bool detect_monitors_simple(XRectangle** ret_rects, size_t* ret_count) {
+    *ret_count = 1;
+    *ret_rects = g_new0(XRectangle, 1);
+    (*ret_rects)->x = 0;
+    (*ret_rects)->y = 0;
+    (*ret_rects)->width = g_screen_width;
+    (*ret_rects)->height = g_screen_height;
+    return true;
+}
+
+int detect_monitors_command(int argc, char **argv) {
+    MonitorDetection detect[] = {
+        detect_monitors_xinerama,
+        detect_monitors_simple,
+    };
+    XRectangle* monitors = NULL;
+    size_t count = 0;
+    // search for a working monitor detection
+    // at least the simple detection must work
+    for (int i = 0; i < LENGTH(detect); i++) {
+        if (detect[i](&monitors, &count)) {
+            break;
+        }
+    }
+    assert(count && monitors);
+
+    // apply it
+    int ret = set_monitor_rects(monitors, count);
+    g_free(monitors);
     return ret;
 }
-#endif /* XINERAMA */
 

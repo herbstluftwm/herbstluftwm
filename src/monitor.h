@@ -71,9 +71,10 @@ void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
 
-#ifdef XINERAMA
-bool geom_unique(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info);
+typedef bool (*MonitorDetection)(XRectangle**, size_t*);
+bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count);
+bool detect_monitors_simple(XRectangle** ret_rects, size_t* ret_count);
 int detect_monitors_command(int argc, char **argv);
-#endif /* XINERAMA */
+
 #endif
 

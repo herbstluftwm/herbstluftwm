@@ -399,6 +399,11 @@ set_monitors 'RECTS' ...::
         * New monitors are created if there are more 'RECTS' then monitors
         * Existing monitors are deleted if there are more monitors then 'RECTS'
 
+detect_monitors::
+    Sets the list of monitors to the available Xinerama monitors. If the
+    Xinerama extension is missing, it will fall back to one monitor across the
+    entire screen.
+
 add_monitor 'RECT' ['TAG' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]]::
     Adds a monitor on the specified rectangle 'RECT' and displays 'TAG' on it.
     'TAG' currently must not be displayed on any other monitor. 'RECT' is a
