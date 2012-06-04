@@ -621,6 +621,11 @@ void configurerequest(XEvent* event) {
     event_on_configure(*event);
 }
 void configurenotify(XEvent* event) {
+    if (event->xconfigure.window == g_root &&
+        settings_find("auto_detect_monitors")->value.i) {
+        char* args[] = { "detect_monitors" };
+        detect_monitors_command(LENGTH(args), args);
+    }
     // HSDebug("name is: ConfigureNotify\n");
 }
 void destroynotify(XEvent* event) {

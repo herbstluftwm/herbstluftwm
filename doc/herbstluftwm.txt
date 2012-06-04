@@ -639,6 +639,10 @@ swap_monitors_to_get_tag (Integer)::
     monitor, then the monitor contents will be swapped and you see the wanted
     tag on the focused monitor. If not set, nothing will be swapped.
 
+auto_detect_monitors (Integer)::
+    If set, detect_monitors is automatically executed everytime a monitor is
+    connected, disconnected or resized.
+
 tree_style (String)::
     It contains the chars that are used to print a nice ascii tree. It must
     contain at least 8 characters. e.g. ++X|:#+*-.++ produces a tree like:

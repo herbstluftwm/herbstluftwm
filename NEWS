@@ -20,6 +20,7 @@ Changes:
     * new command: detect_monitors, to detect Xinerama monitors automatically
     * new ewmh feature: react to _NET_WM_DESKTOP client messages
     * new command: rotate
+    * new setting: auto_detect_monitors
 
 Release 0.3 on 2012-04-12
 -------------------------
