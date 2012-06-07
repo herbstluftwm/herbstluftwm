@@ -67,7 +67,14 @@ int tag_index_of(HSTag* tag) {
     return -1;
 }
 
-HSTag* get_tag_by_index(char* index_str, bool skip_visible_tags) {
+HSTag* get_tag_by_index(int index) {
+    if (index < 0 || index >= g_tags->len) {
+        return NULL;
+    }
+    return g_array_index(g_tags, HSTag*, index);
+}
+
+HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags) {
     int index = atoi(index_str);
     // index must be treated relative, if it's first char is + or -
     bool is_relative = array_find("+-", 2, sizeof(char), &index_str[0]) >= 0;
@@ -308,7 +315,7 @@ int tag_move_window_command(int argc, char** argv) {
     if (!target) {
         return HERBST_INVALID_ARGUMENT;
     }
-    tag_move_window(target);
+    tag_move_focused_client(target);
     return 0;
 }
 
@@ -320,49 +327,55 @@ int tag_move_window_by_index_command(int argc, char** argv) {
     if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
         skip_visible = true;
     }
-    HSTag* tag = get_tag_by_index(argv[1], skip_visible);
+    HSTag* tag = get_tag_by_index_str(argv[1], skip_visible);
     if (!tag) {
         return HERBST_INVALID_ARGUMENT;
     }
-    tag_move_window(tag);
+    tag_move_focused_client(tag);
     return 0;
 }
 
-void tag_move_window(HSTag* target) {
-    HSFrame*  frame = g_cur_frame;
-    if (!g_cur_frame) {
-        // nothing to do
-        return;
-    }
-    Window window = frame_focused_window(frame);
+void tag_move_focused_client(HSTag* target) {
+    Window window = frame_focused_window(get_current_monitor()->tag->frame);
     if (window == 0) {
         // nothing to do
         return;
     }
-    HSMonitor* monitor = get_current_monitor();
-    if (monitor->tag == target) {
+    HSClient* client = get_client_from_window(window);
+    assert(client);
+    tag_move_client(client, target);
+}
+
+void tag_move_client(HSClient* client, HSTag* target) {
+    HSTag* tag_source = client->tag;
+    HSMonitor* monitor_source = find_monitor_with_tag(tag_source);
+    if (tag_source == target) {
         // nothing to do
         return;
     }
     HSMonitor* monitor_target = find_monitor_with_tag(target);
-    frame_remove_window(frame, window);
+    frame_remove_window(tag_source->frame, client->window);
     // insert window into target
-    frame_insert_window(target->frame, window);
-    HSClient* client = get_client_from_window(window);
-    assert(client != NULL);
+    frame_insert_window(target->frame, client->window);
     client->tag = target;
     ewmh_window_update_tag(client->window, client->tag);
 
-    // refresh things
-    if (monitor && !monitor_target) {
+    // refresh things, hide things, layout it, and then show it if needed
+    if (monitor_source && !monitor_target) {
         // window is moved to unvisible tag
         // so hide it
-        window_hide(window);
+        window_hide(client->window);
     }
-    frame_focus_recursive(frame);
-    monitor_apply_layout(monitor);
-    if (monitor_target) {
-        monitor_apply_layout(monitor_target);
+    monitor_apply_layout(monitor_source);
+    monitor_apply_layout(monitor_target);
+    if (!monitor_source && monitor_target) {
+        window_show(client->window);
+    }
+    if (monitor_target == get_current_monitor()) {
+        frame_focus_recursive(monitor_target->tag->frame);
+    }
+    else if (monitor_source == get_current_monitor()) {
+        frame_focus_recursive(monitor_source->tag->frame);
     }
     tag_set_flags_dirty();
 }

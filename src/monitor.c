@@ -560,7 +560,7 @@ int monitor_set_tag_by_index_command(int argc, char** argv) {
     if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
         skip_visible = true;
     }
-    HSTag* tag = get_tag_by_index(argv[1], skip_visible);
+    HSTag* tag = get_tag_by_index_str(argv[1], skip_visible);
     if (!tag) {
         return HERBST_INVALID_ARGUMENT;
     }

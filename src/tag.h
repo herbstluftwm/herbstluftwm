@@ -9,6 +9,7 @@
 #include <glib.h>
 
 struct HSFrame;
+struct HSClient;
 
 typedef struct HSTag {
     GString*        name;   // name of this tag
@@ -30,12 +31,14 @@ HSTag* find_tag(char* name);
 int    tag_index_of(HSTag* tag);
 HSTag* find_unused_tag();
 HSTag* find_tag_with_toplevel_frame(struct HSFrame* frame);
-HSTag* get_tag_by_index(char* index_str, bool skip_visible_tags);
+HSTag* get_tag_by_index(int index);
+HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags);
 int tag_add_command(int argc, char** argv);
 int tag_rename_command(int argc, char** argv);
 int tag_move_window_command(int argc, char** argv);
 int tag_move_window_by_index_command(int argc, char** argv);
-void tag_move_window(HSTag* target);
+void tag_move_focused_client(HSTag* target);
+void tag_move_client(struct HSClient* client,HSTag* target);
 int tag_remove_command(int argc, char** argv);
 int tag_set_floating_command(int argc, char** argv, GString** result);
 void tag_force_update_flags();
