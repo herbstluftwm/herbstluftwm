@@ -232,6 +232,18 @@ void ewmh_handle_client_message(XEvent* event) {
             monitor_set_tag(get_current_monitor(), tag);
             break;
 
+        case NetWmDesktop:
+            desktop_index = me->data.l[0];
+            if (!focus_stealing_allowed(me->data.l[1])) {
+                break;
+            }
+            HSTag* target = get_tag_by_index(desktop_index);
+            client = get_client_from_window(me->window);
+            if (client && target) {
+                tag_move_client(client, target);
+            }
+            break;
+
         case NetWmState:
             client = get_client_from_window(me->window);
             /* ignore requests for unmanaged windows */
