@@ -19,6 +19,7 @@ Changes:
     * new command line flag --skip-visible for use_index and move_index
     * new command: detect_monitors, to detect Xinerama monitors automatically
     * new ewmh feature: react to _NET_WM_DESKTOP client messages
+    * new command: rotate
 
 Release 0.3 on 2012-04-12
 -------------------------

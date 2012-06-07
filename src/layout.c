@@ -1485,6 +1485,31 @@ void frame_show_recursive(HSFrame* frame) {
     frame_do_recursive(frame, frame_show_clients, 2);
 }
 
+static void frame_rotate(HSFrame* frame) {
+    if (frame && frame->type == TYPE_FRAMES) {
+        HSLayout* l = &frame->content.layout;
+        switch (l->align) {
+            case ALIGN_VERTICAL:
+                l->align = ALIGN_HORIZONTAL;
+                break;
+            case ALIGN_HORIZONTAL:
+                l->align = ALIGN_VERTICAL;
+                l->selection = l->selection ? 0 : 1;
+                HSFrame* temp = l->a;
+                l->a = l->b;
+                l->b = temp;
+                l->fraction = FRACTION_UNIT - l->fraction;
+                break;
+        }
+    }
+}
+
+int layout_rotate_command() {
+    frame_do_recursive(get_current_monitor()->tag->frame, frame_rotate, -1);
+    monitor_apply_layout(get_current_monitor());
+    return 0;
+}
+
 int frame_remove_command(int argc, char** argv) {
     if (!g_cur_frame->parent) {
         // do nothing if is toplevel frame

@@ -137,6 +137,7 @@ int frame_focus_recursive(HSFrame* frame);
 void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order);
 void frame_hide_recursive(HSFrame* frame);
 void frame_show_recursive(HSFrame* frame);
+int layout_rotate_command();
 // do an action for each client in frame tree
 // returns success or failure
 int frame_foreach_client(HSFrame* frame, ClientAction action, void* data);
