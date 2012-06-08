@@ -13,6 +13,7 @@
 #include <string.h>
 #include <glib.h>
 #include <X11/keysym.h>
+#include <X11/XKBlib.h>
 
 static unsigned int numlockmask = 0;
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask))
@@ -171,7 +172,7 @@ static gint keysym_equals(const KeyBinding* a, const KeyBinding* b) {
 
 void handle_key_press(XEvent* ev) {
     KeyBinding pressed;
-    pressed.keysym = XKeycodeToKeysym(g_display, ev->xkey.keycode, 0);
+    pressed.keysym = XkbKeycodeToKeysym(g_display, ev->xkey.keycode, 0, 0);
     pressed.modifiers = ev->xkey.state;
     GList* element = g_list_find_custom(g_key_binds, &pressed, (GCompareFunc)keysym_equals);
     if (element && element->data) {
