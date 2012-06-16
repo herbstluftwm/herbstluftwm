@@ -1,6 +1,8 @@
 
 # ignore objects
 *.o
+# ignore dependency files
+*.d
 
 # ignore backups/vim's files
 *~

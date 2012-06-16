@@ -15,11 +15,12 @@ HCTARGET = herbstclient
 
 TARGETS = $(HLWMTARGET) $(HCTARGET)
 OBJ = $(HLWMOBJ) $(HCOBJ)
+DEPS = $(OBJ:.o=.d)
 
 HERBSTCLIENTDOC = doc/herbstclient.txt
 HERBSTLUFTWMDOC = doc/herbstluftwm.txt
 
-.PHONY: all all-nodoc doc cleandoc install info www cleanwww clean
+.PHONY: depend all all-nodoc doc cleandoc install info www cleanwww clean
 
 all: $(TARGETS) doc
 all-nodoc: $(TARGETS)
@@ -30,9 +31,12 @@ $(TARGETS):
 	$(call colorecho,LD,$@)
 	$(VERBOSE) $(LD) -o $@ $(LDFLAGS)  $^ $(LIBS)
 
-%.o: %.c $(HEADER)
+-include $(DEPS)
+
+%.o: %.c
 	$(call colorecho,CC,$<)
 	$(VERBOSE) $(CC) -c $(CFLAGS) -o $@ $<
+	$(VERBOSE) $(CC) -c $(CFLAGS) -o $*.d -MT $@ -MM $<
 
 info:
 	@echo Some Info:
@@ -44,6 +48,8 @@ clean: cleandoc
 	$(VERBOSE) rm -f $(TARGETS)
 	$(call colorecho,RM,$(OBJ))
 	$(VERBOSE) rm -f $(OBJ)
+	$(call colorecho,RM,$(DEPS))
+	$(VERBOSE) rm -f $(DEPS)
 
 cleandoc:
 	$(call colorecho,RM,doc/herbstclient.1)
@@ -67,7 +73,6 @@ tar: doc
 	tar -xvf $(TARFILE) -C $(TMPTARDIR)
 	tar -czf $(TARFILE) $(TMPTARDIR)
 	rm -rf $(TMPTARDIR)
-
 
 doc/%.1: doc/%.txt
 	$(call colorecho,DOC,$@)
