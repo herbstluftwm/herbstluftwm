@@ -21,6 +21,8 @@ Changes:
     * new ewmh feature: react to _NET_WM_DESKTOP client messages
     * new command: rotate
     * new setting: auto_detect_monitors
+    * only one Makefile for herbstluftwm and herbstclient. The herbstclient
+      binary now is put in the main directory.
 
 Release 0.3 on 2012-04-12
 -------------------------

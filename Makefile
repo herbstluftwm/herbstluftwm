@@ -1,23 +1,49 @@
 
 include version.mk
 include config.mk
+include colors.mk
 
-# project
-SRCDIR = src
-SRC = $(wildcard $(SRCDIR)/*.c)
-HEADER = $(wildcard $(SRCDIR)/*.h)
-OBJ = ${SRC:.c=.o}
-TARGET = herbstluftwm
+HEADER = $(wildcard src/*.h) $(wildcard ipc-client/*.h)
+
+HLWMSRC = $(wildcard src/*.c)
+HLWMOBJ = $(HLWMSRC:.c=.o)
+HLWMTARGET = herbstluftwm
+
+HCSRC = $(wildcard ipc-client/*.c) src/utils.c
+HCOBJ = $(HCSRC:.c=.o)
+HCTARGET = herbstclient
+
+TARGETS = $(HLWMTARGET) $(HCTARGET)
+OBJ = $(HLWMOBJ) $(HCOBJ)
+
 HERBSTCLIENTDOC = doc/herbstclient.txt
 HERBSTLUFTWMDOC = doc/herbstluftwm.txt
 
-include colors.mk
-include rules.mk
+.PHONY: all all-nodoc doc cleandoc install info www cleanwww clean
 
-all: build-herbstclient doc
-clean: clean-herbstclient cleandoc
+all: $(TARGETS) doc
+all-nodoc: $(TARGETS)
+$(HLWMTARGET): $(HLWMOBJ)
+$(HCTARGET): $(HCOBJ)
 
-.PHONY: doc cleandoc install www cleanwww
+$(TARGETS):
+	$(call colorecho,LD,$@)
+	$(VERBOSE) $(LD) -o $@ $(LDFLAGS)  $^ $(LIBS)
+
+%.o: %.c $(HEADER)
+	$(call colorecho,CC,$<)
+	$(VERBOSE) $(CC) -c $(CFLAGS) -o $@ $<
+
+info:
+	@echo Some Info:
+	@echo Compiling with: $(CC) -c $(CFLAGS) -o OUT INPUT
+	@echo Linking with: $(LD) -o OUT $(LDFLAGS) INPUT
+
+clean: cleandoc
+	$(call colorecho,RM,$(TARGETS))
+	$(VERBOSE) rm -f $(TARGETS)
+	$(call colorecho,RM,$(OBJ))
+	$(VERBOSE) rm -f $(OBJ)
 
 cleandoc:
 	$(call colorecho,RM,doc/herbstclient.1)
@@ -29,13 +55,10 @@ cleandoc:
 	$(call colorecho,RM,doc/herbstluftwm.html)
 	$(VERBOSE) rm -f doc/herbstluftwm.html
 
-build-herbstclient:
-	$(MAKE) -C ipc-client
-
-clean-herbstclient:
-	$(MAKE) -C ipc-client clean
-
-doc: doc/herbstclient.1 doc/herbstclient.html doc/herbstluftwm.1 doc/herbstluftwm.html
+doc: doc/herbstclient.1    \
+     doc/herbstclient.html \
+     doc/herbstluftwm.1    \
+     doc/herbstluftwm.html
 
 tar: doc
 	tar -czf $(TARFILE) `git ls-files` doc/*.html doc/*.[0-9]
@@ -66,8 +89,7 @@ install: all
 	$(MKDIR) '$(DESTDIR)/$(ZSHCOMPLETIONDIR)'
 	$(MKDIR) '$(DESTDIR)/$(XSESSIONSDIR)'
 	@echo "==> copying files..."
-	$(INSTALL) $(TARGET) '$(DESTDIR)/$(BINDIR)'
-	$(INSTALL) ipc-client/herbstclient '$(DESTDIR)/$(BINDIR)/'
+	$(INSTALL) $(TARGETS) '$(DESTDIR)/$(BINDIR)'
 	$(INSTALL) -m 644 LICENSE '$(DESTDIR)/$(LICENSEDIR)'
 	$(INSTALL) -m 644 doc/herbstclient.1 '$(DESTDIR)/$(MAN1DIR)/'
 	$(INSTALL) -m 644 doc/herbstluftwm.1 '$(DESTDIR)/$(MAN1DIR)/'
