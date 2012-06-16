@@ -33,7 +33,7 @@ $(TARGETS):
 
 -include $(DEPS)
 
-%.o: %.c
+%.o: %.c version.mk
 	$(call colorecho,CC,$<)
 	$(VERBOSE) $(CC) -c $(CFLAGS) -o $@ $<
 	$(VERBOSE) $(CC) -c $(CFLAGS) -o $*.d -MT $@ -MM $<
@@ -74,11 +74,11 @@ tar: doc
 	tar -czf $(TARFILE) $(TMPTARDIR)
 	rm -rf $(TMPTARDIR)
 
-doc/%.1: doc/%.txt
+doc/%.1: doc/%.txt version.mk
 	$(call colorecho,DOC,$@)
 	$(VERBOSE) $(A2X) -f manpage -a "herbstluftwmversion=herbstluftwm $(VERSION)" -a "date=`date +%Y-%m-%d`" $<
 
-doc/%.html: doc/%.txt
+doc/%.html: doc/%.txt version.mk
 	$(call colorecho,DOC,$@)
 	$(VERBOSE) $(ASCIIDOC) $<
 
