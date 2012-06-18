@@ -3,8 +3,6 @@ include version.mk
 include config.mk
 include colors.mk
 
-HEADER = $(wildcard src/*.h) $(wildcard ipc-client/*.h)
-
 HLWMSRC = $(wildcard src/*.c)
 HLWMOBJ = $(HLWMSRC:.c=.o)
 HLWMTARGET = herbstluftwm
