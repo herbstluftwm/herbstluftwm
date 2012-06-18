@@ -18,7 +18,8 @@ DEPS = $(OBJ:.o=.d)
 HERBSTCLIENTDOC = doc/herbstclient.txt
 HERBSTLUFTWMDOC = doc/herbstluftwm.txt
 
-.PHONY: depend all all-nodoc doc cleandoc install info www cleanwww clean
+.PHONY: depend all all-nodoc doc install info www
+.PHONY: cleandoc cleanwww cleandeps clean
 
 all: $(TARGETS) doc
 all-nodoc: $(TARGETS)
@@ -41,11 +42,13 @@ info:
 	@echo Compiling with: $(CC) -c $(CFLAGS) -o OUT INPUT
 	@echo Linking with: $(LD) -o OUT $(LDFLAGS) INPUT
 
-clean: cleandoc
+clean: cleandoc cleandeps
 	$(call colorecho,RM,$(TARGETS))
 	$(VERBOSE) rm -f $(TARGETS)
 	$(call colorecho,RM,$(OBJ))
 	$(VERBOSE) rm -f $(OBJ)
+
+cleandeps:
 	$(call colorecho,RM,$(DEPS))
 	$(VERBOSE) rm -f $(DEPS)
 
