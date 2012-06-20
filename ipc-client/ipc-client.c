@@ -29,7 +29,6 @@ int send_command(int argc, char* argv[]);
 void print_help(void);
 
 
-Display* dpy;
 Display* g_display;
 Window root;
 int g_ensure_newline = 1; // if set, output ends with an newline
@@ -57,14 +56,14 @@ int send_command(int argc, char* argv[]) {
     }
     /* ensure that classhint and the command is set when the hlwm-server
      * receives the XCreateWindowEvent */
-    XGrabServer(dpy);
+    XGrabServer(g_display);
     // create window
-    Window win = XCreateSimpleWindow(dpy, root, 42, 42, 42, 42, 0, 0, 0);
+    Window win = XCreateSimpleWindow(g_display, root, 42, 42, 42, 42, 0, 0, 0);
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
     hint->res_name = HERBST_IPC_CLASS;
     hint->res_class = HERBST_IPC_CLASS;
-    XSetClassHint(dpy, win, hint);
+    XSetClassHint(g_display, win, hint);
     XFree(hint);
     XSelectInput(g_display, win, PropertyChangeMask);
     // set arguments
@@ -74,7 +73,7 @@ int send_command(int argc, char* argv[]) {
     XSetTextProperty(g_display, win, &text_prop, atom);
     /* the window has been initialized properly, now allow the server to
      * receive the event for it */
-    XUngrabServer(dpy);
+    XUngrabServer(g_display);
     XFree(text_prop.value);
     // get output
     int command_status = 0;
@@ -125,7 +124,7 @@ int send_command(int argc, char* argv[]) {
     }
     // clean all up
     g_string_free(output, true);
-    XDestroyWindow(dpy, win);
+    XDestroyWindow(g_display, win);
     return command_status;
 }
 
@@ -160,7 +159,7 @@ Window get_hook_window() {
     Atom type;
     int format;
     unsigned long items, bytes;
-    int status = XGetWindowProperty(dpy, root,
+    int status = XGetWindowProperty(g_display, root,
         ATOM(HERBST_HOOK_WIN_ID_ATOM), 0, 1, False,
         XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value);
     // only accept exactly one Window id
@@ -187,10 +186,10 @@ int wait_for_hook(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
     // listen on window
-    XSelectInput(dpy, win, StructureNotifyMask|PropertyChangeMask);
+    XSelectInput(g_display, win, StructureNotifyMask|PropertyChangeMask);
     XEvent next_event;
     while (1) {
-        XNextEvent(dpy, &next_event);
+        XNextEvent(g_display, &next_event);
         if (next_event.type == DestroyNotify) {
             if (next_event.xdestroywindow.window == win) {
                 // hook window was destroyed
@@ -323,21 +322,20 @@ int main(int argc, char* argv[]) {
     }
     int arg_index = optind; // index of the first-non-option argument
     // do communication
-    dpy = XOpenDisplay(NULL);
-    g_display = dpy;
-    if (!dpy) {
+    g_display = XOpenDisplay(NULL);
+    if (!g_display) {
         if (!g_quiet) {
             fprintf(stderr, "Cannot open display\n");
         }
         return EXIT_FAILURE;
     }
-    root = DefaultRootWindow(dpy);
+    root = DefaultRootWindow(g_display);
     int command_status;
     if (g_wait_for_hook == 1) {
         command_status = wait_for_hook(argc-arg_index, argv+arg_index);
     } else {
         command_status = send_command(argc-arg_index, argv+arg_index);
     }
-    XCloseDisplay(dpy);
+    XCloseDisplay(g_display);
     return command_status;
 }
