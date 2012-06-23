@@ -7,6 +7,7 @@
 #include "settings.h"
 #include "globals.h"
 #include "layout.h"
+#include "stack.h"
 #include "utils.h"
 #include "hook.h"
 #include "mouse.h"
@@ -166,6 +167,10 @@ HSClient* manage_client(Window win) {
     }
     // get events from window
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
+    // insert window to the stack
+    client->slice = slice_create_client(client);
+    stack_insert_slice(client->tag->stack, client->slice);
+    // insert windwo to the tag
     frame_insert_window_at_index(client->tag->frame, win, changes.tree_index->str);
     if (changes.focus) {
         // give focus to window if wanted
@@ -194,6 +199,7 @@ void unmanage_client(Window win) {
     }
     // remove from tag
     frame_remove_window(client->tag->frame, win);
+    stack_remove_slice(client->tag->stack, client->slice);
     // and arrange monitor
     HSMonitor* m = find_monitor_with_tag(client->tag);
     if (m) monitor_apply_layout(m);

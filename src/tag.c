@@ -361,7 +361,9 @@ void tag_move_client(HSClient* client, HSTag* target) {
     frame_remove_window(tag_source->frame, client->window);
     // insert window into target
     frame_insert_window(target->frame, client->window);
+    stack_remove_slice(client->tag->stack, client->slice);
     client->tag = target;
+    stack_insert_slice(client->tag->stack, client->slice);
     ewmh_window_update_tag(client->window, client->tag);
 
     // refresh things, hide things, layout it, and then show it if needed

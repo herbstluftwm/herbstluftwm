@@ -16,6 +16,8 @@
 
 #include "layout.h"
 
+struct HSSlice;
+
 typedef struct HSClient {
     Window      window;
     XRectangle  last_size;
@@ -27,6 +29,7 @@ typedef struct HSClient {
     bool        fullscreen;
     bool        pseudotile; // only move client but don't resize (if possible)
     int         pid;
+    struct HSSlice* slice;
 } HSClient;
 
 void clientlist_init();
