@@ -648,7 +648,7 @@ void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vert
         cur.height += (i == count-1) ? last_step_y : 0;
         cur.width += (i == count-1) ? last_step_x : 0;
         client_setup_border(client, (g_cur_frame == frame) && (i == selection));
-        client_resize_tiling(client, cur);
+        client_resize_tiling(client, cur, frame);
         cur.y += step_y;
         cur.x += step_x;
     }
@@ -669,7 +669,7 @@ void frame_apply_client_layout_max(HSFrame* frame, XRectangle rect) {
     for (int i = 0; i < count; i++) {
         HSClient* client = get_client_from_window(buf[i]);
         client_setup_border(client, (g_cur_frame == frame) && (i == selection));
-        client_resize_tiling(client, rect);
+        client_resize_tiling(client, rect, frame);
         if (i == selection) {
             XRaiseWindow(g_display, buf[i]);
         }
@@ -725,7 +725,7 @@ void frame_apply_client_layout_grid(HSFrame* frame, XRectangle rect) {
             // apply size
             HSClient* client = get_client_from_window(buf[i]);
             client_setup_border(client, (g_cur_frame == frame) && (i == selection));
-            client_resize_tiling(client, cur);
+            client_resize_tiling(client, cur, frame);
             cur.x += width;
             i++;
         }

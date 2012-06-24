@@ -33,6 +33,7 @@ int g_monitor_float_treshold = 24;
 int* g_window_border_width;
 int* g_raise_on_focus;
 int* g_snap_gap;
+int* g_smart_window_borders;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_urgent_color;
 unsigned long g_window_border_normal_color;
@@ -58,6 +59,7 @@ static HSClient* create_client() {
 static void fetch_colors() {
     g_window_border_width = &(settings_find("window_border_width")->value.i);
     g_snap_gap = &(settings_find("snap_gap")->value.i);
+    g_smart_window_borders = &(settings_find("smart_window_borders")->value.i);
     g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
     char* str = settings_find("window_border_normal_color")->value.s;
     g_window_border_normal_color = getcolor(str);
@@ -158,7 +160,6 @@ HSClient* manage_client(Window win) {
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
     ewmh_add_client(client->window);
-    XSetWindowBorderWidth(g_display, win, *g_window_border_width);
     // insert to layout
     if (!client->tag) {
         client->tag = m->tag;
@@ -296,7 +297,7 @@ void client_resize_fullscreen(HSClient* client, HSMonitor* m) {
 
 }
 
-void client_resize(HSClient* client, XRectangle rect) {
+void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
     // ensure minimum size
     if (rect.width < WINDOW_MIN_WIDTH) {
         rect.width = WINDOW_MIN_WIDTH;
@@ -325,17 +326,23 @@ void client_resize(HSClient* client, XRectangle rect) {
         rect.width = size.width;
         rect.height = size.height;
     }
+    int border_width = *g_window_border_width;
+    if (*g_smart_window_borders && !client->pseudotile
+        && (frame->content.clients.count == 1
+            || frame->content.clients.layout == LAYOUT_MAX)) {
+        border_width = 0;
+    }
     if (RECTANGLE_EQUALS(client->last_size, rect)
-        && client->last_border_width == *g_window_border_width) {
+        && client->last_border_width == border_width) {
         return;
     }
     client->last_size = rect;
-    client->last_border_width = *g_window_border_width;
+    client->last_border_width = border_width;
 
     // apply border width
-    rect.width -= *g_window_border_width * 2;
-    rect.height -= *g_window_border_width * 2;
-    XSetWindowBorderWidth(g_display, win, *g_window_border_width);
+    rect.width -= border_width * 2;
+    rect.height -= border_width * 2;
+    XSetWindowBorderWidth(g_display, win, border_width);
     XMoveResizeWindow(g_display, win, rect.x, rect.y, rect.width, rect.height);
     //// send new size to client
     //// WHY SHOULD I? -> faster? only one call?
@@ -354,12 +361,12 @@ void client_resize(HSClient* client, XRectangle rect) {
     //XSendEvent(g_display, win, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
-void client_resize_tiling(HSClient* client, XRectangle rect) {
+void client_resize_tiling(HSClient* client, XRectangle rect, HSFrame* frame) {
     HSMonitor* m;
     if (client->fullscreen && (m = find_monitor_with_tag(client->tag))) {
         client_resize_fullscreen(client, m);
     } else {
-        client_resize(client, rect);
+        client_resize(client, rect, frame);
     }
 }
 
