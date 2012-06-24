@@ -22,6 +22,7 @@
 
 int* g_monitors_locked;
 int* g_swap_monitors_to_get_tag;
+int* g_smart_frame_surroundings;
 
 typedef struct RectList {
     XRectangle rect;
@@ -35,6 +36,7 @@ void monitor_init() {
     g_cur_monitor = 0;
     g_monitors = g_array_new(false, false, sizeof(HSMonitor));
     g_swap_monitors_to_get_tag = &(settings_find("swap_monitors_to_get_tag")->value.i);
+    g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
 }
 
 void monitor_destroy() {
@@ -55,11 +57,13 @@ void monitor_apply_layout(HSMonitor* monitor) {
         rect.width -= (monitor->pad_left + monitor->pad_right);
         rect.y += monitor->pad_up;
         rect.height -= (monitor->pad_up + monitor->pad_down);
-        // apply window gap
-        rect.x += *g_window_gap;
-        rect.y += *g_window_gap;
-        rect.height -= *g_window_gap;
-        rect.width -= *g_window_gap;
+        if (!*g_smart_frame_surroundings || monitor->tag->frame->type == TYPE_FRAMES ) {
+            // apply window gap
+            rect.x += *g_window_gap;
+            rect.y += *g_window_gap;
+            rect.height -= *g_window_gap;
+            rect.width -= *g_window_gap;
+        }
         if (monitor->tag->floating) {
             frame_apply_floating_layout(monitor->tag->frame, monitor);
         } else {

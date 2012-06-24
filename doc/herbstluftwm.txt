@@ -614,6 +614,10 @@ gapless_grid (Integer)::
     this frame. If unset, then the last client has the same size as all other
     clients in this frame.
 
+smart_frame_surroundings (Integer)::
+    If set, frame borders and gaps will be removed when there's no ambiguity
+    regarding the focused frame.
+
 smart_window_borders (Integer)::
     If set, window borders will be removed when there's no ambiguity regarding
     the focused window.

@@ -23,7 +23,7 @@ Changes:
     * new setting: auto_detect_monitors
     * only one Makefile for herbstluftwm and herbstclient. The herbstclient
       binary now is put in the main directory.
-    * new settings: smart_window_borders
+    * new settings: smart_frame_surroundings and smart_window_borders
 
 Release 0.3 on 2012-04-12
 -------------------------

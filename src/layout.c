@@ -34,6 +34,7 @@ int* g_focus_follows_shift;
 int* g_frame_bg_transparent;
 int* g_direction_external_only;
 int* g_gapless_grid;
+int* g_smart_frame_surroundings;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
@@ -65,6 +66,7 @@ static void fetch_frame_colors() {
     g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
     g_direction_external_only = &(settings_find("default_direction_external_only")->value.i);
     g_gapless_grid = &(settings_find("gapless_grid")->value.i);
+    g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
     char* str = settings_find("frame_border_normal_color")->value.s;
     g_frame_border_normal_color = getcolor(str);
@@ -737,31 +739,39 @@ void frame_apply_client_layout_grid(HSFrame* frame, XRectangle rect) {
 void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     if (frame->type == TYPE_CLIENTS) {
         size_t count = frame->content.clients.count;
-        // frame only -> apply window_gap
-        rect.height -= *g_window_gap;
-        rect.width -= *g_window_gap;
-        // apply frame width
-        rect.x += *g_frame_border_width;
-        rect.y += *g_frame_border_width;
-        rect.height -= *g_frame_border_width * 2;
-        rect.width -= *g_frame_border_width * 2;
+        if (!*g_smart_frame_surroundings || frame->parent) {
+            // frame only -> apply window_gap
+            rect.height -= *g_window_gap;
+            rect.width -= *g_window_gap;
+            // apply frame width
+            rect.x += *g_frame_border_width;
+            rect.y += *g_frame_border_width;
+            rect.height -= *g_frame_border_width * 2;
+            rect.width -= *g_frame_border_width * 2;
+        }
         if (rect.width <= WINDOW_MIN_WIDTH || rect.height <= WINDOW_MIN_HEIGHT) {
             // do nothing on invalid size
             return;
         }
-        XSetWindowBorderWidth(g_display, frame->window, *g_frame_border_width);
-        // set indicator frame
         unsigned long border_color = g_frame_border_normal_color;
         unsigned long bg_color = g_frame_bg_normal_color;
-        if (g_cur_frame == frame) {
-            border_color = g_frame_border_active_color;
-            bg_color = g_frame_bg_active_color;
+        if (!*g_smart_frame_surroundings || frame->parent) {
+            XSetWindowBorderWidth(g_display, frame->window, *g_frame_border_width);
+            // set indicator frame
+            if (g_cur_frame == frame) {
+                border_color = g_frame_border_active_color;
+                bg_color = g_frame_bg_active_color;
+            }
+            XSetWindowBorder(g_display, frame->window, border_color);
+            XMoveResizeWindow(g_display, frame->window,
+                              rect.x - *g_frame_border_width,
+                              rect.y - *g_frame_border_width,
+                              rect.width, rect.height);
+        } else {
+            XSetWindowBorderWidth(g_display, frame->window, 0);
+            XMoveResizeWindow(g_display, frame->window, rect.x, rect.y, rect.width, rect.height);
         }
-        XSetWindowBorder(g_display, frame->window, border_color);
-        XMoveResizeWindow(g_display, frame->window,
-                          rect.x - *g_frame_border_width,
-                          rect.y - *g_frame_border_width,
-                          rect.width, rect.height);
+
         if (*g_frame_bg_transparent) {
             XSetWindowBackgroundPixmap(g_display, frame->window, ParentRelative);
         } else {
