@@ -95,3 +95,74 @@ int print_stack_command(int argc, char** argv, GString** result) {
     }
 }
 
+int stack_window_count(HSStack* stack) {
+    int counter = 0;
+    stack_to_window_buf(stack, NULL, 0, &counter);
+    return -counter;
+}
+
+/* stack to window buf */
+struct s2wb {
+    int     len;
+    Window* buf;
+    int     missing; /* number of slices that could not find space in buf */
+};
+
+static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
+    HSTag* tag;
+    switch (s->type) {
+        case SLICE_CLIENT:
+            if (data->len) {
+                data->buf[0] = s->data.client->window;
+                data->buf++;
+                data->len--;
+            } else {
+                data->missing++;
+            }
+            break;
+        case SLICE_WINDOW:
+            if (data->len) {
+                data->buf[0] = s->data.window;
+                data->buf++;
+                data->len--;
+            } else {
+                data->missing++;
+            }
+            break;
+        case SLICE_MONITOR:
+            tag = s->data.monitor->tag;
+            int remain_len = 0; /* remaining length */
+            stack_to_window_buf(tag->stack, data->buf, data->len, &remain_len);
+            int len_used = data->len - remain_len;
+            if (remain_len > 0) {
+                data->buf += len_used;
+                data->len -= len_used;
+            } else {
+                data->buf += data->len;
+                data->len = 0;
+                data->missing = -remain_len;
+            }
+            break;
+    }
+}
+
+void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len) {
+    struct s2wb data = {
+        .len = len,
+        .buf = buf,
+        .missing = 0,
+    };
+    for (int i = 0; i < LAYER_COUNT; i++) {
+        g_list_foreach(stack->top[i], (GFunc)slice_to_window_buf, &data);
+    }
+    if (!remain_len) {
+        // nothing to do
+        return;
+    }
+    if (data.missing == 0) {
+        *remain_len = len - data.len;
+    } else {
+        *remain_len = -data.missing;
+    }
+}
+

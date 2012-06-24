@@ -55,6 +55,10 @@ void stack_remove_slice(HSStack* s, HSSlice* elem);
 
 int print_stack_command(int argc, char** argv, GString** result);
 
+// returns the number of windows in this stack
+int stack_window_count(HSStack* stack);
+void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len);
+
 HSStack* stack_create();
 void stack_destroy(HSStack* s);
 
