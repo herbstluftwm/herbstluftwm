@@ -19,6 +19,7 @@
 #include "ewmh.h"
 #include "monitor.h"
 #include "settings.h"
+#include "stack.h"
 
 int* g_monitors_locked;
 int* g_swap_monitors_to_get_tag;
@@ -72,6 +73,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
         if (get_current_monitor() == monitor) {
             frame_focus_recursive(monitor->tag->frame);
         }
+        stack_restack(monitor->tag->stack);
         // remove all enternotify-events from the event queue that were
         // generated while arranging the clients on this monitor
         XEvent ev;

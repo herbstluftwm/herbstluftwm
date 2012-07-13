@@ -684,7 +684,7 @@ void frame_apply_client_layout_max(HSFrame* frame, XRectangle rect) {
         client_setup_border(client, (g_cur_frame == frame) && (i == selection));
         client_resize_tiling(client, rect, frame);
         if (i == selection) {
-            XRaiseWindow(g_display, buf[i]);
+            client_raise(client);
         }
     }
 }

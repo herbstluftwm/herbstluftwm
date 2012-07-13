@@ -58,6 +58,8 @@ int print_stack_command(int argc, char** argv, GString** result);
 // returns the number of windows in this stack
 int stack_window_count(HSStack* stack);
 void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len);
+void stack_restack(HSStack* stack);
+void stack_raise_slide(HSStack* stack, HSSlice* slice);
 
 HSStack* stack_create();
 void stack_destroy(HSStack* s);

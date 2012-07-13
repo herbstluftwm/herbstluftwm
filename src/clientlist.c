@@ -272,7 +272,9 @@ void window_focus(Window window) {
                          && g_cur_frame->content.clients.layout == LAYOUT_MAX
                          && get_current_monitor()->tag->floating == false;
     if (*g_raise_on_focus || is_max_layout) {
-        XRaiseWindow(g_display, window);
+        HSClient* client = get_client_from_window(window);
+        assert(client != NULL);
+        client_raise(client);
     }
     grab_client_buttons(get_client_from_window(window), true);
 }
@@ -301,6 +303,11 @@ void client_resize_fullscreen(HSClient* client, HSMonitor* m) {
     XMoveResizeWindow(g_display, client->window,
                       m->rect.x, m->rect.y, m->rect.width, m->rect.height);
 
+}
+
+void client_raise(HSClient* client) {
+    assert(client);
+    stack_raise_slide(client->tag->stack, client->slice);
 }
 
 void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {

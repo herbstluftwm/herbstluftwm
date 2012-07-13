@@ -324,13 +324,18 @@ int wmexec(int argc, char** argv) {
 
 int raise_command(int argc, char** argv) {
     Window win;
-    win = string_to_client((argc > 1) ? argv[1] : "", NULL);
-    XRaiseWindow(g_display, win);
+    HSClient* client = NULL;
+    win = string_to_client((argc > 1) ? argv[1] : "", &client);
+if (client) {
+        client_raise(client);
+    } else {
+        XRaiseWindow(g_display, win);
+    }
     return 0;
 }
 
 int jumpto_command(int argc, char** argv) {
-    HSClient* client;
+    HSClient* client = NULL;
     string_to_client((argc > 1) ? argv[1] : "", &client);
     if (client) {
         focus_window(client->window, true, true);
@@ -602,7 +607,10 @@ void buttonpress(XEvent* event) {
     } else {
         focus_window(be->window, false, true);
         if (*g_raise_on_click) {
-            XRaiseWindow(g_display, be->window);
+            HSClient* client = get_client_from_window(be->window);
+            if (client) {
+                client_raise(client);
+            }
         }
     }
     XAllowEvents(g_display, ReplayPointer, be->time);

@@ -93,6 +93,7 @@ int print_stack_command(int argc, char** argv, GString** result) {
         g_string_append_printf(*result, "==> Layer %d\n", i);
         g_list_foreach(stack->top[i], (GFunc)slice_print, result);
     }
+    stack_restack(stack);
 }
 
 int stack_window_count(HSStack* stack) {
@@ -164,5 +165,22 @@ void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len) 
     } else {
         *remain_len = -data.missing;
     }
+}
+
+void stack_restack(HSStack* stack) {
+    int count = stack_window_count(stack);
+    Window* buf = g_new0(Window, count);
+    stack_to_window_buf(stack, buf, count, NULL);
+    XRestackWindows(g_display, buf, count);
+}
+
+void stack_raise_slide(HSStack* stack, HSSlice* slice) {
+    // remove slice from list
+    stack->top[slice->layer] = g_list_remove(stack->top[slice->layer], slice);
+    // and insert it again at the top
+    stack->top[slice->layer] = g_list_prepend(stack->top[slice->layer], slice);
+    // TODO: maybe only update the specific range and not the entire stack
+    // update
+    stack_restack(stack);
 }
 

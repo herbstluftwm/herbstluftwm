@@ -66,6 +66,7 @@ void client_resize_floating(HSClient* client, HSMonitor* m);
 void client_clear_urgent(HSClient* client);
 void client_update_wm_hints(HSClient* client);
 void client_update_title(HSClient* client);
+void client_raise(HSClient* client);
 int window_close_current();
 
 void client_set_fullscreen(HSClient* client, bool state);
