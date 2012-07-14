@@ -15,9 +15,12 @@
 
 struct HSTag;
 struct HSFrame;
+struct HSSlice;
+struct HSStack;
 
 typedef struct HSMonitor {
     struct HSTag*      tag;    // currently viewed tag
+    struct HSSlice*    slice;  // slice in the monitor stack
     int         pad_up;
     int         pad_right;
     int         pad_down;
@@ -70,6 +73,9 @@ void monitors_lock_changed();
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
+
+int monitor_stack_window_count();
+void monitor_stack_to_window_buf(Window* buf, int len, int* remain_len);
 
 typedef bool (*MonitorDetection)(XRectangle**, size_t*);
 bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count);

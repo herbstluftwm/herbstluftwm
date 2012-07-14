@@ -256,6 +256,15 @@ int array_find(void* buf, size_t elems, size_t size, void* needle) {
     return -1;
 }
 
+void array_reverse(void* buf, size_t elems, size_t size) {
+    void* tmp = malloc(size);
+    for (int i = 0, j = elems - 1; i < j; i++, j--) {
+        memcpy(tmp, buf+i, size);
+        memcpy(buf+i, buf+j, size);
+        memcpy(buf+j, tmp, size);
+    }
+    free(tmp);
+}
 
 
 /**
@@ -303,5 +312,4 @@ void* table_find(void* start, size_t elem_size, size_t count,
     }
     return NULL;
 }
-
 

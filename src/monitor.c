@@ -24,6 +24,7 @@
 int* g_monitors_locked;
 int* g_swap_monitors_to_get_tag;
 int* g_smart_frame_surroundings;
+HSStack* g_monitor_stack;
 
 typedef struct RectList {
     XRectangle rect;
@@ -38,9 +39,11 @@ void monitor_init() {
     g_monitors = g_array_new(false, false, sizeof(HSMonitor));
     g_swap_monitors_to_get_tag = &(settings_find("swap_monitors_to_get_tag")->value.i);
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
+    g_monitor_stack = stack_create();
 }
 
 void monitor_destroy() {
+    stack_destroy(g_monitor_stack);
     g_array_free(g_monitors, true);
 }
 
@@ -808,5 +811,13 @@ int detect_monitors_command(int argc, char **argv) {
     int ret = set_monitor_rects(monitors, count);
     g_free(monitors);
     return ret;
+}
+
+int monitor_stack_window_count() {
+    return stack_window_count(g_monitor_stack);
+}
+
+void monitor_stack_to_window_buf(Window* buf, int len, int* remain_len) {
+    return stack_to_window_buf(g_monitor_stack, buf, len, remain_len);
 }
 

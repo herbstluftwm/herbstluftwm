@@ -1,6 +1,7 @@
 #include "stack.h"
 
 #include "clientlist.h"
+#include "ewmh.h"
 #include "globals.h"
 #include <stdio.h>
 
@@ -49,6 +50,13 @@ HSSlice* slice_create_client(HSClient* client) {
     HSSlice* s = slice_create();
     s->type = SLICE_CLIENT;
     s->data.client = client;
+    return s;
+}
+
+HSSlice* slice_create_monitor(HSMonitor* monitor) {
+    HSSlice* s = slice_create();
+    s->type = SLICE_MONITOR;
+    s->data.monitor = monitor;
     return s;
 }
 
@@ -172,6 +180,7 @@ void stack_restack(HSStack* stack) {
     Window* buf = g_new0(Window, count);
     stack_to_window_buf(stack, buf, count, NULL);
     XRestackWindows(g_display, buf, count);
+    ewmh_update_client_list_stacking();
 }
 
 void stack_raise_slide(HSStack* stack, HSSlice* slice) {

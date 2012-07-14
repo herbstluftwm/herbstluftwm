@@ -9,6 +9,7 @@
 #include "layout.h"
 #include "clientlist.h"
 #include "settings.h"
+#include "stack.h"
 
 #include <glib.h>
 #include <string.h>
@@ -101,6 +102,7 @@ void ewmh_init() {
 void ewmh_update_all() {
     /* init many properties */
     ewmh_update_client_list();
+    ewmh_update_client_list_stacking();
     ewmh_update_desktops();
     ewmh_update_current_desktop();
     ewmh_update_desktop_names();
@@ -116,9 +118,19 @@ void ewmh_update_client_list() {
     XChangeProperty(g_display, g_root, g_netatom[NetClientList],
         XA_WINDOW, 32, PropModeReplace,
         (unsigned char *) g_windows, g_window_count);
+}
+
+void ewmh_update_client_list_stacking() {
+    int count = monitor_stack_window_count();
+    Window* buf = g_new(Window, count);
+    int remain;
+    monitor_stack_to_window_buf(buf, count, &remain);
+    array_reverse(buf, count, sizeof(buf[0]));
+
     XChangeProperty(g_display, g_root, g_netatom[NetClientListStacking],
         XA_WINDOW, 32, PropModeReplace,
-        (unsigned char *) g_windows, g_window_count);
+        (unsigned char *) buf, count);
+    g_free(buf);
 }
 
 void ewmh_add_client(Window win) {

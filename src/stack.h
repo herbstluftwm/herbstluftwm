@@ -48,6 +48,7 @@ void stacklist_destroy();
 HSSlice* slice_create_window(Window window);
 HSSlice* slice_create_frame(Window window);
 HSSlice* slice_create_client(struct HSClient* client);
+HSSlice* slice_create_monitor(struct HSMonitor* monitor);
 void slice_destroy(HSSlice* slice);
 
 void stack_insert_slice(HSStack* s, HSSlice* elem);
