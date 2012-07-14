@@ -446,6 +446,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
             if (clientmonitor) {
                 monitor_apply_layout(clientmonitor);
             }
+            stack_remove_slice(client->tag->stack, client->slice);
 
             // insert it to buf
             Window* buf = frame->content.clients.buf;
@@ -460,6 +461,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
             frame->content.clients.count = count;
 
             client->tag = tag;
+            stack_insert_slice(client->tag->stack, client->slice);
             ewmh_window_update_tag(client->window, client->tag);
 
             index++;
