@@ -1,13 +1,18 @@
+BUGS
+====
 
 Some BUGS:
-    - keyboardfocus stays in window, if cursor is over it and herbstluftwm-focus goes away
+
+    - keyboardfocus stays in window, if cursor is over it and
+      herbstluftwm-focus goes away
     - set range for some integer-setting-values
     - don't always re-layout all if only one thing changes (e.g. border_color)
     - don't reset border width on each layouting
     - herbstclient: add timeout if server doesnot respond
     - herbstclient: errorstatus2string2stderr
     - herbstclient: -h
-    - add function to put window into tag (and use it in manage, merge_tag, move)
+    - add function to put window into tag (and use it in manage, merge_tag,
+      move)
     - the default panel.sh spawns too many shells and doesnot clean them up
       properly at quit. you should do something like killall panel.sh when
       logging out (this is only a workaround!).
@@ -16,8 +21,8 @@ Some BUGS:
       flickering. the xmonad-mailinglist tells:
 
           When changing desktop, you can map all the windows on the new desktop
-          with a higher z-value than any of the windows on the old desktop, then
-          unmap all the windows on the old desktop.
+          with a higher z-value than any of the windows on the old desktop,
+          then unmap all the windows on the old desktop.
 
     - raise_on_click doesn't work if raise_on_click and numlock is enabled
     - raise_on_click doesn't work with gnome-settings-daemon
@@ -28,6 +33,7 @@ Some BUGS:
     - make focus_window(client->window, true, false); work
 
 Planned features:
+
     - dump/load floating values
     - jumpto urgent
     - (optional) move cursor after focus change
@@ -38,9 +44,11 @@ Planned features:
     - keybind with keycodes
     - chain keys/key chains/...
     - lastfocused{window,frame,tag} - commands
-    - own X-Properties to indicate window state (fullscreen, pseudotile, float,...)
+    - own X-Properties to indicate window state (fullscreen, pseudotile,
+      float,...)
     - bind multiple commands to one keycombindation via keybind, keybindadd
-    - or: chain commands like: cmdchain 4 cmd1 arg1a arg1b arg1c cmd2 arg2a arg2b
+    - or: chain commands like: cmdchain 4 cmd1 arg1a arg1b arg1c cmd2 arg2a
+      arg2b
     - alias commands: alias shortcmd = cmd default arg, alias shortcmd --delete
     - double window border to give a good contrast to dark backgrounded and
       light backgrounded windows.
