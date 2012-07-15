@@ -856,10 +856,18 @@ int frame_current_cycle_selection(int argc, char** argv) {
 
 int cycle_all_command(int argc, char** argv) {
     int delta = 1;
+    int skip_invisible = false;
+    if (argc >= 2) {
+        if (!strcmp(argv[1], "--skip-invisible")) {
+            skip_invisible = true;
+            SHIFT(argc, argv);
+        }
+    }
     if (argc >= 2) {
         delta = atoi(argv[1]);
     }
     delta = CLAMP(delta, -1, 1); // only delta -1, 0, 1 is allowed
+    printf("skpi = %d, delta= %d\n", delta, skip_invisible);
     if (delta == 0) {
         // nothing to do
         return 0;
@@ -870,7 +878,7 @@ int cycle_all_command(int argc, char** argv) {
     bool change_frame = false;
     int direction;
     int other_direction;
-    int new_window_index;
+    int new_window_index; // tells where to start in a new frame
     if (delta > 0 && (index + 1) >= frame->content.clients.count) {
         // change selection from 0 to 1
         direction = 1;
@@ -884,6 +892,11 @@ int cycle_all_command(int argc, char** argv) {
         other_direction = 1;
         change_frame = true;
         new_window_index = -1; // focus last window in in a frame
+    }
+    if (skip_invisible && frame->content.clients.layout == LAYOUT_MAX) {
+        direction = (delta > 0) ? 1 : 0;
+        other_direction = 1 - direction;
+        change_frame = true;
     }
     if (change_frame) {
         HSFrame* top_frame;
@@ -973,10 +986,15 @@ int cycle_all_command(int argc, char** argv) {
         // now we reached the next client containing frame
 
         if (frame->content.clients.count > 0) {
-            frame->content.clients.selection = new_window_index;
-            // ensure it is a valid index
-            frame->content.clients.selection += frame->content.clients.count;
-            frame->content.clients.selection %= frame->content.clients.count;
+            if (!skip_invisible
+                || frame->content.clients.layout != LAYOUT_MAX)
+            {
+                frame->content.clients.selection = new_window_index;
+                // ensure it is a valid index
+                size_t count = frame->content.clients.count;
+                frame->content.clients.selection += count;
+                frame->content.clients.selection %= count;
+            }
         }
 
         // reset focus and g_cur_frame

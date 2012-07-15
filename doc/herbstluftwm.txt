@@ -197,12 +197,14 @@ cycle ['DELTA']::
     omitted, 'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1
     means: cycle in the opposite direction by 1.
 
-cycle_all ['DIRECTION']::
+cycle_all [*--skip-invisble*] ['DIRECTION']::
     Cycles through all windows and frames on the current tag. 'DIRECTION' = 1
     means forward, 'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no
     effect. 'DIRECTION' defaults to 1. If there are multiple windows within on
     frame, then it acts similar to the 'cycle' command. (The 'cycle_all' command
-    focuses the next/previous leave in the 'layout' tree.)
+    focuses the next/previous leave in the 'layout' tree.). If
+    *--skip-invisible* is given, then this only cycles through all visible
+    windows and skips invisible windows in the max layout.
 
 cycle_layout ['DELTA']::
     Cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'

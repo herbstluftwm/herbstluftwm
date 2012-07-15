@@ -24,6 +24,7 @@ static char* completion_flag_args[]     = { "on", "off", "toggle", NULL };
 static char* completion_status[]        = { "status", NULL };
 static char* completion_special_winids[]= { "urgent", "", NULL };
 static char* completion_use_index_args[]= { "--skip-visible", NULL };
+static char* completion_cycle_all_args[]= { "--skip-invisible", NULL };
 
 static bool no_completion(int argc, char** argv, int pos) {
     return false;
@@ -53,7 +54,7 @@ struct {
     { "list_keybinds",  0,  no_completion },
     { "add_monitor",    7,  no_completion },
     { "cycle",          2,  no_completion },
-    { "cycle_all",      2,  no_completion },
+    { "cycle_all",      3,  no_completion },
     { "cycle_layout",   2,  no_completion },
     { "close",          0,  no_completion },
     { "close_or_remove",0,  no_completion },
@@ -115,6 +116,7 @@ struct {
 } g_completions[] = {
     /* name ,       index,  completion method                   */
     { "add_monitor",    2,  .function = complete_against_tags },
+    { "cycle_all",      1,  .list = completion_cycle_all_args },
     { "dump",           1,  .function = complete_against_tags },
     { "floating",       1,  .function = complete_against_tags },
     { "floating",       1,  .list = completion_flag_args },
