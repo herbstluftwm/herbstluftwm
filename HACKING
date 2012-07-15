@@ -39,10 +39,26 @@ always should remove denency files by running:
 Sending patches
 ---------------
 You can use git to make commits and create patches from them via the command
-git format-patch. You can send those patches via mail[1] or via the irc[2].
+git format-patch. You can send those patches to the mailing list[1] or via the
+irc[2].
 
-[1] edu _at_ thorsten-wissmann _dot_ de, because there is no mailing list yet +
+[1] herbstluftwm-devel@lists.sourceforge.net +
 [2] #herbstluftwm on irc.freenode.net
+
+Mailing list
+------------
+The main mailing list for general development, discussion, release
+announcments is:
+
+    herbstluftwm-devel@lists.sourceforge.net
+
+You can subscribe by sending a mail with subscribe in the subject to
+
+    herbstluftwm-devel-request@lists.sourceforge.net
+
+or by using the web interface at:
+
+    https://lists.sourceforge.net/lists/listinfo/herbstluftwm-devel
 
 Debugging with valgrind
 -----------------------

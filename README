@@ -17,10 +17,14 @@ Runtime dependencies:
     - libx11
 
 ==== Help/Support/Bugs ====
-A list of known bugs is listed in BUGS. If you found other bugs or need help,
-then contact:
-    Thorsten Wißmann <edu _at _ thorsten _minus_ wissmann _dot_ de>
-or join the IRC channel:
+A list of known bugs is listed in BUGS. If you found other bugs or want to
+request features then contact the mailing list. (The subscription process is
+explained in the HACKING file).
+
+    herbstluftwm-devel@lists.sourceforge.net
+
+For instant help join the IRC channel:
+
     #herbstluftwm on irc.freenode.net
 
 ==== Steps with installing ====

@@ -56,6 +56,15 @@ Support
 -------
 Feel free to join the IRC channel +#herbstluftwm+ on +irc.freenode.net+.
 
+For further bug reporting or patch submission contact the mailing list:
+----
+herbstluftwm-devel@lists.sourceforge.net
+----
+You can subscribe by sending a mail with the subject +subscribe+ to
++herbstluftwm-devel@lists.sourceforge.net+ or by using the
+link:https://lists.sourceforge.net/lists/listinfo/herbstluftwm-devel[Mailman
+web interface].
+
 Screenshots
 -----------
 // there screenshots are not in the git repo, so they must exist in the target
