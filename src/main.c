@@ -172,7 +172,7 @@ int print_layout_command(int argc, char** argv, GString** result) {
     }
     // if no tag was found
     if (!tag) {
-        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+        HSMonitor* m = get_current_monitor();
         tag = m->tag;
     }
     assert(tag != NULL);
@@ -197,7 +197,7 @@ int load_command(int argc, char** argv, GString** result) {
     }
     // if no tag was found
     if (!tag) {
-        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+        HSMonitor* m = get_current_monitor();
         tag = m->tag;
     }
     assert(tag != NULL);
@@ -232,9 +232,9 @@ int print_tag_status_command(int argc, char** argv, GString** result) {
     if (argc >= 2) {
         monitor_index = atoi(argv[1]);
     }
-    monitor_index = CLAMP(monitor_index, 0, g_monitors->len);
+    monitor_index = CLAMP(monitor_index, 0, monitor_count());
     tag_update_flags();
-    HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, monitor_index);
+    HSMonitor* monitor = monitor_with_index(monitor_index);
     *result = g_string_append_c(*result, '\t');
     for (int i = 0; i < g_tags->len; i++) {
         HSTag* tag = g_array_index(g_tags, HSTag*, i);

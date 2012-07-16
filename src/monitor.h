@@ -35,7 +35,6 @@ typedef struct HSMonitor {
 } HSMonitor;
 
 // globals
-GArray*     g_monitors; // Array of HSMonitor
 int         g_cur_monitor;
 
 void monitor_init();
@@ -63,6 +62,7 @@ int set_monitor_rects(XRectangle* templates, size_t count);
 int move_monitor_command(int argc, char** argv);
 int monitor_rect_command(int argc, char** argv, GString** result);
 HSMonitor* get_current_monitor();
+int monitor_count();
 void monitor_set_tag(HSMonitor* monitor, struct HSTag* tag);
 int monitor_set_pad_command(int argc, char** argv);
 int monitor_set_tag_command(int argc, char** argv);

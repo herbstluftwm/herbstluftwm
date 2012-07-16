@@ -25,6 +25,7 @@ int* g_monitors_locked;
 int* g_swap_monitors_to_get_tag;
 int* g_smart_frame_surroundings;
 HSStack* g_monitor_stack;
+GArray*     g_monitors; // Array of HSMonitor
 
 typedef struct RectList {
     XRectangle rect;
@@ -498,6 +499,10 @@ HSMonitor* monitor_with_frame(HSFrame* frame) {
 
 HSMonitor* get_current_monitor() {
     return &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+}
+
+int monitor_count() {
+    return g_monitors->len;
 }
 
 void all_monitors_apply_layout() {
