@@ -26,7 +26,6 @@ Some BUGS:
 
     - raise_on_click doesn't work if raise_on_click and numlock is enabled
     - raise_on_click doesn't work with gnome-settings-daemon
-    - window_gap actually should be called frame_gap
     - window_focus is called twice when switching desktops (before mapping
       windows and after mapping them). TODO: only do it once.
     - also update window title if *only* the _NET_WM_NAME changes

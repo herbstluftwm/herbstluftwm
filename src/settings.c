@@ -36,7 +36,7 @@
 
 // default settings:
 SettingsPair g_settings[] = {
-    SET_INT(    "window_gap",                      5,           RELAYOUT    ),
+    SET_INT(    "frame_gap",                       5,           RELAYOUT    ),
     SET_INT(    "snap_distance",                   10,          NULL        ),
     SET_INT(    "snap_gap",                        5,           NULL        ),
     SET_STRING( "frame_border_active_color",       "red",       FR_COLORS   ),

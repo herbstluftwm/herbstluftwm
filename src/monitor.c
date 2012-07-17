@@ -58,11 +58,11 @@ void monitor_apply_layout(HSMonitor* monitor) {
         rect.y += monitor->pad_up;
         rect.height -= (monitor->pad_up + monitor->pad_down);
         if (!*g_smart_frame_surroundings || monitor->tag->frame->type == TYPE_FRAMES ) {
-            // apply window gap
-            rect.x += *g_window_gap;
-            rect.y += *g_window_gap;
-            rect.height -= *g_window_gap;
-            rect.width -= *g_window_gap;
+            // apply frame gap
+            rect.x += *g_frame_gap;
+            rect.y += *g_frame_gap;
+            rect.height -= *g_frame_gap;
+            rect.width -= *g_frame_gap;
         }
         if (monitor->tag->floating) {
             frame_apply_floating_layout(monitor->tag->frame, monitor);

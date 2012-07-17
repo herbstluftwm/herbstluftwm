@@ -329,7 +329,7 @@ cycle_value 'NAME' 'VALUES' ...::
     the next in the list or to the first one if the end is reached or current
     value wasn't found. Example:
 
-        * cycle_value window_gap 0 5 10 15
+        * cycle_value frame_gap 0 5 10 15
         * cycle_value frame_bg_normal_color red green blue
 
 cycle_monitor ['DELTA']::
@@ -536,7 +536,7 @@ Settings configure the behaviour of herbstluftwm and can be controlled via the
 integer values. An integer value is set, if its value is 1 or another value
 unequal to 0. An integer value is unset, if its value is 0.
 
-window_gap (Integer)::
+frame_gap (Integer)::
     The gap between frames in the tiling mode.
 
 snap_distance (Integer)::

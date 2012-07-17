@@ -58,7 +58,7 @@ char* g_layout_names[] = {
 
 static void fetch_frame_colors() {
     // load settings
-    g_window_gap = &(settings_find("window_gap")->value.i);
+    g_frame_gap = &(settings_find("frame_gap")->value.i);
     g_focus_follows_shift = &(settings_find("focus_follows_shift")->value.i);
     g_frame_border_width = &(settings_find("frame_border_width")->value.i);
     g_always_show_frame = &(settings_find("always_show_frame")->value.i);
@@ -740,9 +740,9 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     if (frame->type == TYPE_CLIENTS) {
         size_t count = frame->content.clients.count;
         if (!*g_smart_frame_surroundings || frame->parent) {
-            // frame only -> apply window_gap
-            rect.height -= *g_window_gap;
-            rect.width -= *g_window_gap;
+            // frame only -> apply frame_gap
+            rect.height -= *g_frame_gap;
+            rect.width -= *g_frame_gap;
             // apply frame width
             rect.x += *g_frame_border_width;
             rect.y += *g_frame_border_width;
