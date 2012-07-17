@@ -86,6 +86,7 @@ typedef struct HSFrame {
 // globals
 HSFrame*    g_cur_frame; // currently selected frame
 int* g_frame_gap;
+int* g_window_gap;
 
 // functions
 void layout_init();

@@ -7,6 +7,8 @@ Next release: 0.4
 Changes:
 
     * the setting window_gap is now called frame_gap
+    * new setting window_gap which controlls the gap between windows within one
+      frame
     * new command: close_or_remove
     * new flags '-' and '%' for tag_status for multi monitor handling
     * toggle default panel on hook togglehidepanel

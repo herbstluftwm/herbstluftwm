@@ -59,6 +59,7 @@ char* g_layout_names[] = {
 static void fetch_frame_colors() {
     // load settings
     g_frame_gap = &(settings_find("frame_gap")->value.i);
+    g_window_gap = &(settings_find("window_gap")->value.i);
     g_focus_follows_shift = &(settings_find("focus_follows_shift")->value.i);
     g_frame_border_width = &(settings_find("frame_border_width")->value.i);
     g_always_show_frame = &(settings_find("always_show_frame")->value.i);
@@ -749,6 +750,7 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             rect.height -= *g_frame_border_width * 2;
             rect.width -= *g_frame_border_width * 2;
         }
+
         if (rect.width <= WINDOW_MIN_WIDTH || rect.height <= WINDOW_MIN_HEIGHT) {
             // do nothing on invalid size
             return;
@@ -790,6 +792,13 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         if (count == 0) {
             return;
         }
+
+        // apply window gap
+        rect.x += *g_window_gap;
+        rect.y += *g_window_gap;
+        rect.width -= *g_window_gap;
+        rect.height -= *g_window_gap;
+
         if (frame->content.clients.layout == LAYOUT_MAX) {
             frame_apply_client_layout_max(frame, rect);
         } else if (frame->content.clients.layout == LAYOUT_GRID) {

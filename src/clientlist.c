@@ -58,6 +58,7 @@ static HSClient* create_client() {
 
 static void fetch_colors() {
     g_window_border_width = &(settings_find("window_border_width")->value.i);
+    g_window_gap = &(settings_find("window_gap")->value.i);
     g_snap_gap = &(settings_find("snap_gap")->value.i);
     g_smart_window_borders = &(settings_find("smart_window_borders")->value.i);
     g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
@@ -342,6 +343,10 @@ void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
     // apply border width
     rect.width -= border_width * 2;
     rect.height -= border_width * 2;
+    // apply window gap
+    rect.width -= *g_window_gap;
+    rect.height -= *g_window_gap;
+
     XSetWindowBorderWidth(g_display, win, border_width);
     XMoveResizeWindow(g_display, win, rect.x, rect.y, rect.width, rect.height);
     //// send new size to client

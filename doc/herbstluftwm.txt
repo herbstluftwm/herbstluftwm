@@ -539,6 +539,9 @@ unequal to 0. An integer value is unset, if its value is 0.
 frame_gap (Integer)::
     The gap between frames in the tiling mode.
 
+window_gap (Integer)::
+    The gap between windows within one frame in the tiling mode.
+
 snap_distance (Integer)::
     If a client is dragged in floating mode, then it snaps to neighbour clients
     if the distance between them is smaller then snap_distance.
