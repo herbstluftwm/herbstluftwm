@@ -757,13 +757,13 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         }
         unsigned long border_color = g_frame_border_normal_color;
         unsigned long bg_color = g_frame_bg_normal_color;
+        if (g_cur_frame == frame) {
+            border_color = g_frame_border_active_color;
+            bg_color = g_frame_bg_active_color;
+        }
         if (!*g_smart_frame_surroundings || frame->parent) {
             XSetWindowBorderWidth(g_display, frame->window, *g_frame_border_width);
             // set indicator frame
-            if (g_cur_frame == frame) {
-                border_color = g_frame_border_active_color;
-                bg_color = g_frame_bg_active_color;
-            }
             XSetWindowBorder(g_display, frame->window, border_color);
             XMoveResizeWindow(g_display, frame->window,
                               rect.x - *g_frame_border_width,
