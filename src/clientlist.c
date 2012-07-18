@@ -33,7 +33,7 @@ int g_monitor_float_treshold = 24;
 int* g_window_border_width;
 int* g_raise_on_focus;
 int* g_snap_gap;
-int* g_smart_window_borders;
+int* g_smart_window_surroundings;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_urgent_color;
 unsigned long g_window_border_normal_color;
@@ -60,7 +60,7 @@ static void fetch_colors() {
     g_window_border_width = &(settings_find("window_border_width")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_snap_gap = &(settings_find("snap_gap")->value.i);
-    g_smart_window_borders = &(settings_find("smart_window_borders")->value.i);
+    g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
     g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
     char* str = settings_find("window_border_normal_color")->value.s;
     g_window_border_normal_color = getcolor(str);
@@ -328,7 +328,7 @@ void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
         rect.height = size.height;
     }
     int border_width = *g_window_border_width;
-    if (*g_smart_window_borders && !client->pseudotile
+    if (*g_smart_window_surroundings && !client->pseudotile
         && (frame->content.clients.count == 1
             || frame->content.clients.layout == LAYOUT_MAX)) {
         border_width = 0;
@@ -343,9 +343,13 @@ void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
     // apply border width
     rect.width -= border_width * 2;
     rect.height -= border_width * 2;
-    // apply window gap
-    rect.width -= *g_window_gap;
-    rect.height -= *g_window_gap;
+    if (!*g_smart_window_surroundings
+        || (frame->content.clients.count != 1
+            && frame->content.clients.layout != LAYOUT_MAX)) {
+        // apply window gap
+        rect.width -= *g_window_gap;
+        rect.height -= *g_window_gap;
+    }
 
     XSetWindowBorderWidth(g_display, win, border_width);
     XMoveResizeWindow(g_display, win, rect.x, rect.y, rect.width, rect.height);

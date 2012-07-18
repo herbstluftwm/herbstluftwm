@@ -35,6 +35,7 @@ int* g_frame_bg_transparent;
 int* g_direction_external_only;
 int* g_gapless_grid;
 int* g_smart_frame_surroundings;
+int* g_smart_window_surroundings;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_bg_active_color;
@@ -68,6 +69,7 @@ static void fetch_frame_colors() {
     g_direction_external_only = &(settings_find("default_direction_external_only")->value.i);
     g_gapless_grid = &(settings_find("gapless_grid")->value.i);
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
+    g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
     char* str = settings_find("frame_border_normal_color")->value.s;
     g_frame_border_normal_color = getcolor(str);
@@ -741,10 +743,10 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
     if (frame->type == TYPE_CLIENTS) {
         size_t count = frame->content.clients.count;
         if (!*g_smart_frame_surroundings || frame->parent) {
-            // frame only -> apply frame_gap
+            // apply frame gap
             rect.height -= *g_frame_gap;
             rect.width -= *g_frame_gap;
-            // apply frame width
+            // apply frame border
             rect.x += *g_frame_border_width;
             rect.y += *g_frame_border_width;
             rect.height -= *g_frame_border_width * 2;
@@ -793,11 +795,15 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             return;
         }
 
-        // apply window gap
-        rect.x += *g_window_gap;
-        rect.y += *g_window_gap;
-        rect.width -= *g_window_gap;
-        rect.height -= *g_window_gap;
+        if (!*g_smart_window_surroundings
+            || (frame->content.clients.count != 1
+                && frame->content.clients.layout != LAYOUT_MAX)) {
+            // apply window gap
+            rect.x += *g_window_gap;
+            rect.y += *g_window_gap;
+            rect.width -= *g_window_gap;
+            rect.height -= *g_window_gap;
+        }
 
         if (frame->content.clients.layout == LAYOUT_MAX) {
             frame_apply_client_layout_max(frame, rect);

@@ -62,7 +62,7 @@ SettingsPair g_settings[] = {
     SET_INT(    "raise_on_focus",                  0,           NULL        ),
     SET_INT(    "raise_on_click",                  1,           NULL        ),
     SET_INT(    "gapless_grid",                    1,           RELAYOUT    ),
-    SET_INT(    "smart_window_borders",            0,           RELAYOUT    ),
+    SET_INT(    "smart_window_surroundings",       0,           RELAYOUT    ),
     SET_INT(    "smart_frame_surroundings",        0,           RELAYOUT    ),
     SET_INT(    "monitors_locked",                 0,           LOCK_CHANGED),
     SET_INT(    "auto_detect_monitors",            0,           NULL        ),
