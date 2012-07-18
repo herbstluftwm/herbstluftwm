@@ -10,7 +10,7 @@
 
 # ignore binaries
 herbstluftwm
-ipc-client/herbstclient
+herbstclient
 
 # ignore generated doc
 doc/herbstclient.1
