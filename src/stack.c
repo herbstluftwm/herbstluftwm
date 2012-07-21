@@ -181,6 +181,7 @@ void stack_restack(HSStack* stack) {
     stack_to_window_buf(stack, buf, count, NULL);
     XRestackWindows(g_display, buf, count);
     ewmh_update_client_list_stacking();
+    g_free(buf);
 }
 
 void stack_raise_slide(HSStack* stack, HSSlice* slice) {

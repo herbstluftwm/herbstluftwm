@@ -199,8 +199,6 @@ void unmanage_client(Window win) {
     }
     // remove from tag
     frame_remove_window(client->tag->frame, win);
-    stack_remove_slice(client->tag->stack, client->slice);
-    slice_destroy(client->slice);
     // and arrange monitor
     HSMonitor* m = find_monitor_with_tag(client->tag);
     if (m) monitor_apply_layout(m);
@@ -215,6 +213,12 @@ void unmanage_client(Window win) {
 
 // destroys a special client
 void client_destroy(HSClient* client) {
+    if (client->tag && client->slice) {
+        stack_remove_slice(client->tag->stack, client->slice);
+    }
+    if (client->slice) {
+        slice_destroy(client->slice);
+    }
     if (client) {
         /* free window title */
         g_string_free(client->title, true);
