@@ -44,10 +44,13 @@ void monitor_init() {
 }
 
 void monitor_destroy() {
-    stack_destroy(g_monitor_stack);
     for (int i = 0; i < g_monitors->len; i++) {
-        g_free(monitor_with_index(i));
+        HSMonitor* m = monitor_with_index(i);
+        stack_remove_slice(g_monitor_stack, m->slice);
+        slice_destroy(m->slice);
+        g_free(m);
     }
+    stack_destroy(g_monitor_stack);
     g_array_free(g_monitors, true);
 }
 
@@ -297,6 +300,8 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
     m->mouse.x = 0;
     m->mouse.y = 0;
     m->dirty = true;
+    m->slice = slice_create_monitor(m);
+    stack_insert_slice(g_monitor_stack, m->slice);
     g_array_append_val(g_monitors, m);
     return g_array_index(g_monitors, HSMonitor*, g_monitors->len-1);
 }
@@ -360,8 +365,11 @@ int remove_monitor(int index) {
     assert(monitor->tag->frame);
     // hide clients
     frame_hide_recursive(monitor->tag->frame);
+    // remove from monitor stack
+    stack_remove_slice(g_monitor_stack, monitor->slice);
+    slice_destroy(monitor->slice);
     // and remove monitor completly
-    g_free(monitor_with_index(index));
+    g_free(monitor);
     g_array_remove_index(g_monitors, index);
     if (g_cur_monitor >= g_monitors->len) {
         g_cur_monitor--;
