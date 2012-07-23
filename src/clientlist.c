@@ -250,8 +250,6 @@ void window_unfocus_last() {
 }
 
 void window_focus(Window window) {
-    // unfocus last one
-    window_unfocus(lastfocus);
     // set keyboardfocus
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
 
@@ -260,6 +258,8 @@ void window_focus(Window window) {
          * twice.  see BUGS for more information
          *
          * only emit the hook if the focus *really* changes */
+        // unfocus last one
+        window_unfocus(lastfocus);
         ewmh_update_active_window(window);
         HSClient* client = get_client_from_window(window);
         char* title = client ? client->title->str : "?";
