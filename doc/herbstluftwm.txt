@@ -589,6 +589,9 @@ window_border_normal_color (String/Color)::
 window_border_urgent_color (String/Color)::
     Border color of an unfocused but urgent window.
 
+window_border_inner_color (String/Color)::
+    Color of the inner border of a window.
+
 always_show_frame (Integer)::
     If set, all frames are displayed. If unset, only frames with focus or with
     windows in it are displayed.
@@ -626,6 +629,12 @@ smart_frame_surroundings (Integer)::
 smart_window_surroundings (Integer)::
     If set, window borders and gaps will be removed when there's no ambiguity
     regarding the focused window.
+
+double_window_border (Integer)::
+    If set, one pixel inner window borders will be drawn in addition to the
+    regular window borders. It will only activate if window_border_width is
+    greater than one. The inner border's color can be set via
+    window_border_inner_color.
 
 focus_follows_shift (Integer)::
     If set, focus stays in the window, if window is shifted to another frame.

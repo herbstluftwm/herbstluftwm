@@ -34,9 +34,11 @@ int* g_window_border_width;
 int* g_raise_on_focus;
 int* g_snap_gap;
 int* g_smart_window_surroundings;
+int* g_double_window_border;
 unsigned long g_window_border_active_color;
-unsigned long g_window_border_urgent_color;
 unsigned long g_window_border_normal_color;
+unsigned long g_window_border_urgent_color;
+unsigned long g_window_border_inner_color;
 
 GHashTable* g_clients; // container of all clients
 
@@ -61,6 +63,7 @@ static void fetch_colors() {
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_snap_gap = &(settings_find("snap_gap")->value.i);
     g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
+    g_double_window_border = &(settings_find("double_window_border")->value.i);
     g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
     char* str = settings_find("window_border_normal_color")->value.s;
     g_window_border_normal_color = getcolor(str);
@@ -68,6 +71,8 @@ static void fetch_colors() {
     g_window_border_active_color = getcolor(str);
     str = settings_find("window_border_urgent_color")->value.s;
     g_window_border_urgent_color = getcolor(str);
+    str = settings_find("window_border_inner_color")->value.s;
+    g_window_border_inner_color = getcolor(str);
 }
 
 void clientlist_init() {
@@ -217,11 +222,13 @@ void client_destroy(HSClient* client) {
 }
 
 void window_unfocus(Window window) {
-    XSetWindowBorder(g_display, window, g_window_border_normal_color);
+    HSDebug("window_unfocus NORMAL\n");
+    window_update_border(window, g_window_border_normal_color);
     HSClient* c = get_client_from_window(window);
     if (c) {
         if (c->urgent) {
-            XSetWindowBorder(g_display, window, g_window_border_urgent_color);
+            HSDebug("window_unfocus URGENT\n");
+            window_update_border(window, g_window_border_urgent_color);
         }
         grab_client_buttons(c, false);
     }
@@ -245,10 +252,9 @@ void window_unfocus_last() {
 void window_focus(Window window) {
     // unfocus last one
     window_unfocus(lastfocus);
-    // change window-colors
-    XSetWindowBorder(g_display, window, g_window_border_active_color);
     // set keyboardfocus
     XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
+
     if (window != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
          * twice.  see BUGS for more information
@@ -261,6 +267,11 @@ void window_focus(Window window) {
         snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)window);
         hook_emit_list("focus_changed", winid_str, title, NULL);
     }
+
+    // change window-colors
+    HSDebug("window_focus ACTIVE\n");
+    window_update_border(window, g_window_border_active_color);
+
     lastfocus = window;
     /* do some specials for the max layout */
     bool is_max_layout = frame_focused_window(g_cur_frame) == window
@@ -278,10 +289,11 @@ void client_setup_border(HSClient* client, bool focused) {
         g_window_border_active_color,
     };
     if (client->urgent) {
-        XSetWindowBorder(g_display, client->window,
-                         g_window_border_urgent_color);
+        HSDebug("client_setup_border URGENT\n");
+        window_update_border(client->window, g_window_border_urgent_color);
     } else {
-        XSetWindowBorder(g_display, client->window, colors[focused ? 1 : 0]);
+        HSDebug("client_setup_border %s\n", (focused ? "ACTIVE" : "NORMAL"));
+        window_update_border(client->window, colors[focused ? 1 : 0]);
     }
 }
 
@@ -353,6 +365,11 @@ void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
 
     XSetWindowBorderWidth(g_display, win, border_width);
     XMoveResizeWindow(g_display, win, rect.x, rect.y, rect.width, rect.height);
+    if (*g_double_window_border) {
+        unsigned long current_border_color = get_window_border_color(client);
+        HSDebug("client_resize %s\n", current_border_color == g_window_border_active_color ? "ACTIVE" : "NORMAL");
+        set_window_double_border(win, g_window_border_inner_color, current_border_color);
+    }
     //// send new size to client
     //// WHY SHOULD I? -> faster? only one call?
     //XConfigureEvent ce;
@@ -411,6 +428,11 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
     XSetWindowBorderWidth(g_display, client->window, *g_window_border_width);
     XMoveResizeWindow(g_display, client->window,
         rect.x, rect.y, rect.width, rect.height);
+    if (*g_double_window_border) {
+        unsigned long current_border_color = get_window_border_color(client);
+        HSDebug("client_resize %s\n", current_border_color == g_window_border_active_color ? "ACTIVE" : "NORMAL");
+        set_window_double_border(client->window, g_window_border_inner_color, current_border_color);
+    }
 }
 
 XRectangle client_outer_floating_rect(HSClient* client) {
@@ -595,6 +617,22 @@ int client_set_property_command(int argc, char** argv) {
     bool state = string_to_bool(argv[1], *(properties[i].value));
     properties[i].func(client, state);
     return 0;
+}
+
+void window_update_border(Window window, unsigned long color) {
+    if (*g_double_window_border) {
+        set_window_double_border(window, g_window_border_inner_color, color);
+    } else {
+        XSetWindowBorder(g_display, window, color);
+    }
+}
+
+unsigned long get_window_border_color(HSClient* client) {
+    Window win = client->window;
+    unsigned long current_border_color = (win == frame_focused_window(g_cur_frame) ? g_window_border_active_color : g_window_border_normal_color);
+    if (client->urgent)
+        current_border_color = g_window_border_urgent_color;
+    return current_border_color;
 }
 
 static bool is_client_urgent(void* key, HSClient* client, void* data) {

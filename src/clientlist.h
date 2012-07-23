@@ -76,6 +76,8 @@ void window_show(Window win);
 void window_hide(Window win);
 void window_set_visible(Window win, bool visible);
 
+void window_update_border(Window window, unsigned long color);
+unsigned long get_window_border_color(HSClient* client);
 
 #endif
 

@@ -49,8 +49,6 @@ Planned features:
     - or: chain commands like: cmdchain 4 cmd1 arg1a arg1b arg1c cmd2 arg2a
       arg2b
     - alias commands: alias shortcmd = cmd default arg, alias shortcmd --delete
-    - double window border to give a good contrast to dark backgrounded and
-      light backgrounded windows.
     - provide multiple mechanisms to split clients to child frames:
          * 100:0 (and vice versa)
          * 50:50
