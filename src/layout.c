@@ -28,6 +28,7 @@
 #include <X11/Xatom.h>
 
 int* g_frame_border_width;
+int* g_frame_border_inner_width;
 int* g_always_show_frame;
 int* g_default_frame_layout;
 int* g_focus_follows_shift;
@@ -38,6 +39,7 @@ int* g_smart_frame_surroundings;
 int* g_smart_window_surroundings;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
+unsigned long g_frame_border_inner_color;
 unsigned long g_frame_bg_active_color;
 unsigned long g_frame_bg_normal_color;
 unsigned long g_frame_active_opacity;
@@ -63,6 +65,7 @@ static void fetch_frame_colors() {
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_focus_follows_shift = &(settings_find("focus_follows_shift")->value.i);
     g_frame_border_width = &(settings_find("frame_border_width")->value.i);
+    g_frame_border_inner_width = &(settings_find("frame_border_inner_width")->value.i);
     g_always_show_frame = &(settings_find("always_show_frame")->value.i);
     g_frame_bg_transparent = &(settings_find("frame_bg_transparent")->value.i);
     g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
@@ -75,6 +78,8 @@ static void fetch_frame_colors() {
     g_frame_border_normal_color = getcolor(str);
     str = settings_find("frame_border_active_color")->value.s;
     g_frame_border_active_color = getcolor(str);
+    str = settings_find("frame_border_inner_color")->value.s;
+    g_frame_border_inner_color = getcolor(str);
     // background color
     str = settings_find("frame_bg_normal_color")->value.s;
     g_frame_bg_normal_color = getcolor(str);
@@ -765,8 +770,6 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         }
         if (!*g_smart_frame_surroundings || frame->parent) {
             XSetWindowBorderWidth(g_display, frame->window, *g_frame_border_width);
-            // set indicator frame
-            XSetWindowBorder(g_display, frame->window, border_color);
             XMoveResizeWindow(g_display, frame->window,
                               rect.x - *g_frame_border_width,
                               rect.y - *g_frame_border_width,
@@ -775,6 +778,8 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             XSetWindowBorderWidth(g_display, frame->window, 0);
             XMoveResizeWindow(g_display, frame->window, rect.x, rect.y, rect.width, rect.height);
         }
+
+        frame_update_border(frame->window, border_color);
 
         if (*g_frame_bg_transparent) {
             XSetWindowBackgroundPixmap(g_display, frame->window, ParentRelative);
@@ -1651,3 +1656,10 @@ int frame_foreach_client(HSFrame* frame, ClientAction action, void* data) {
 }
 
 
+void frame_update_border(Window window, unsigned long color) {
+    if (*g_frame_border_inner_width > 0 && *g_frame_border_inner_width < *g_frame_border_width) {
+        set_window_double_border(g_display, window, *g_frame_border_inner_width, g_frame_border_inner_color, color);
+    } else {
+        XSetWindowBorder(g_display, window, color);
+    }
+}

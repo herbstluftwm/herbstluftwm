@@ -161,6 +161,7 @@ int frame_move_window_command(int argc, char** argv);
 int frame_remove_command(int argc, char** argv);
 int close_or_remove_command(int argc, char** argv);
 void frame_set_visible(HSFrame* frame, bool visible);
+void frame_update_border(Window window, unsigned long color);
 
 #endif
 

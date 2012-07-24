@@ -556,6 +556,9 @@ frame_border_active_color (String/Color)::
 frame_border_normal_color (String/Color)::
     The border color of an unfocused frame
 
+frame_border_inner_color (String/Color)::
+    The color of the inner border of a frame.
+
 frame_bg_active_color (String/Color)::
     The fill color of a focused frame
 
@@ -568,6 +571,9 @@ frame_bg_transparent (Integer)::
 
 frame_border_width (Integer)::
     Border width of a frame
+
+frame_border_inner_width (Integer)::
+    The width of the inner border of a frame.
 
 raise_on_focus (Integer)::
     If set, a window is raised if it is focused. The value of this setting is
