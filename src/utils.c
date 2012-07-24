@@ -304,15 +304,21 @@ void* table_find(void* start, size_t elem_size, size_t count,
     return NULL;
 }
 
-void set_window_double_border(Window win, unsigned long inner_border_color, unsigned long outer_border_color) {
+/**
+ * \brief   emulates a double window border through the border pixmap mechanism
+ */
+void set_window_double_border(Display *dpy, Window win, int ibw,
+                              unsigned long inner_color,
+                              unsigned long outer_color)
+{
     XWindowAttributes wa;
 
-    if (!XGetWindowAttributes(g_display, win, &wa))
+    if (!XGetWindowAttributes(dpy, win, &wa))
         return;
 
-    int border_width = wa.border_width;
+    int bw = wa.border_width;
 
-    if (border_width < 2)
+    if (bw < 2 || ibw >= bw || ibw < 1)
         return;
 
     HSDebug("set_window_double_border %ix%i+%i+%i\n", wa.width, wa.height, wa.x, wa.y);
@@ -320,26 +326,49 @@ void set_window_double_border(Window win, unsigned long inner_border_color, unsi
     int width = wa.width;
     int height = wa.height;
 
-    unsigned int depth = DefaultDepth(g_display, DefaultScreen(g_display));
+    unsigned int depth = DefaultDepth(dpy, DefaultScreen(dpy));
 
-    int full_width = width + 2 * border_width;
-    int full_height = height + 2 * border_width;
+    int full_width = width + 2 * bw;
+    int full_height = height + 2 * bw;
 
-    XSegment segments[4] =
+    // the inner border is represented through the following pattern:
+    //
+    //                           ██  ██
+    //                           ██  ██
+    //                           ██  ██
+    //                           ██  ██
+    //                           ██  ██
+    //                           ██  ██
+    //                           ██  ██
+    //                           ██  ██
+    //                           ██  ██
+    //                           ██  ██
+    //                           ██  ██
+    //   ██████████████████████████  ██
+    //
+    //   ██████████████████████████  ██
+
+    XRectangle rectangles[] =
     {
-        { width, 0, width, height },
-        { full_width - 1, 0, full_width - 1, height },
-        { 0, height, width, height },
-        { 0, full_height - 1, width, full_height - 1 }
+        { width, 0, ibw, height + ibw },
+        { full_width - ibw, 0, ibw, height + ibw },
+        { 0, height, width + ibw, ibw },
+        { 0, full_height - ibw, width + ibw, ibw },
+        { full_width - ibw, full_height - ibw, ibw, ibw }
     };
 
-    Pixmap pix = XCreatePixmap(g_display, g_root, full_width, full_height, depth);
-    GC gc = XCreateGC(g_display, pix, 0, NULL);
-    XSetForeground(g_display, gc, outer_border_color);
-    XFillRectangle(g_display, pix, gc, 0, 0, full_width, full_height);
-    XSetForeground(g_display, gc, inner_border_color);
-    XDrawSegments(g_display, pix, gc, segments, 4);
-    XDrawPoint(g_display, pix, gc, full_width - 1, full_height - 1);
-    XSetWindowBorderPixmap(g_display, win, pix);
-    XFreePixmap(g_display, pix);
+    Pixmap pix = XCreatePixmap(dpy, g_root, full_width, full_height, depth);
+    GC gc = XCreateGC(dpy, pix, 0, NULL);
+
+    /* outer border */
+    XSetForeground(dpy, gc, outer_color);
+    XFillRectangle(dpy, pix, gc, 0, 0, full_width, full_height);
+
+    /* inner border */
+    XSetForeground(dpy, gc, inner_color);
+    XFillRectangles(dpy, pix, gc, rectangles, LENGTH(rectangles));
+
+    XSetWindowBorderPixmap(dpy, win, pix);
+    XFreeGC(dpy, gc);
+    XFreePixmap(dpy, pix);
 }

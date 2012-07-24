@@ -64,9 +64,8 @@ bool memberequals_int(void* pmember, void* needle);
 void* table_find(void* start, size_t elem_size, size_t count,
                  size_t member_offset, MemberEquals equals, void* needle);
 
-void set_window_double_border(Window win,
-                              unsigned long inner_border_color,
-                              unsigned long outer_border_color);
+void set_window_double_border(Display *dpy, Window win, int ibw,
+                              unsigned long inner_color, unsigned long outer_color);
 
 #define STATIC_TABLE_FIND(TYPE, TABLE, MEMBER, EQUALS, NEEDLE)  \
     ((TYPE*) table_find((TABLE),                                \

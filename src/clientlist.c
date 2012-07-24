@@ -368,7 +368,7 @@ void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
     if (*g_double_window_border) {
         unsigned long current_border_color = get_window_border_color(client);
         HSDebug("client_resize %s\n", current_border_color == g_window_border_active_color ? "ACTIVE" : "NORMAL");
-        set_window_double_border(win, g_window_border_inner_color, current_border_color);
+        set_window_double_border(g_display, win, 1, g_window_border_inner_color, current_border_color);
     }
     //// send new size to client
     //// WHY SHOULD I? -> faster? only one call?
@@ -431,7 +431,7 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
     if (*g_double_window_border) {
         unsigned long current_border_color = get_window_border_color(client);
         HSDebug("client_resize %s\n", current_border_color == g_window_border_active_color ? "ACTIVE" : "NORMAL");
-        set_window_double_border(client->window, g_window_border_inner_color, current_border_color);
+        set_window_double_border(g_display, client->window, 1, g_window_border_inner_color, current_border_color);
     }
 }
 
@@ -621,7 +621,7 @@ int client_set_property_command(int argc, char** argv) {
 
 void window_update_border(Window window, unsigned long color) {
     if (*g_double_window_border) {
-        set_window_double_border(window, g_window_border_inner_color, color);
+        set_window_double_border(g_display, window, 1, g_window_border_inner_color, color);
     } else {
         XSetWindowBorder(g_display, window, color);
     }
