@@ -27,8 +27,7 @@ Changes:
     * only one Makefile for herbstluftwm and herbstclient. The herbstclient
       binary now is put in the main directory.
     * new settings: smart_frame_surroundings and smart_window_surroundings
-    * new setting: double_window_border
-    * new setting: window_border_inner_color
+    * new settings: window_border_inner_color and window_border_inner_width
     * new option --skip-invisible for cycle_all
 
 Release 0.3 on 2012-04-12

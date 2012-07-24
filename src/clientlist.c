@@ -31,10 +31,10 @@
 int g_monitor_float_treshold = 24;
 
 int* g_window_border_width;
+int* g_window_border_inner_width;
 int* g_raise_on_focus;
 int* g_snap_gap;
 int* g_smart_window_surroundings;
-int* g_double_window_border;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
 unsigned long g_window_border_urgent_color;
@@ -60,10 +60,10 @@ static HSClient* create_client() {
 
 static void fetch_colors() {
     g_window_border_width = &(settings_find("window_border_width")->value.i);
+    g_window_border_inner_width = &(settings_find("window_border_inner_width")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_snap_gap = &(settings_find("snap_gap")->value.i);
     g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
-    g_double_window_border = &(settings_find("double_window_border")->value.i);
     g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
     char* str = settings_find("window_border_normal_color")->value.s;
     g_window_border_normal_color = getcolor(str);
@@ -365,10 +365,15 @@ void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
 
     XSetWindowBorderWidth(g_display, win, border_width);
     XMoveResizeWindow(g_display, win, rect.x, rect.y, rect.width, rect.height);
-    if (*g_double_window_border) {
+    if (*g_window_border_inner_width > 0
+        && *g_window_border_inner_width < *g_window_border_width) {
         unsigned long current_border_color = get_window_border_color(client);
-        HSDebug("client_resize %s\n", current_border_color == g_window_border_active_color ? "ACTIVE" : "NORMAL");
-        set_window_double_border(g_display, win, 1, g_window_border_inner_color, current_border_color);
+        HSDebug("client_resize %s\n",
+                current_border_color == g_window_border_active_color
+                ? "ACTIVE" : "NORMAL");
+        set_window_double_border(g_display, win, *g_window_border_inner_width,
+                                 g_window_border_inner_color,
+                                 current_border_color);
     }
     //// send new size to client
     //// WHY SHOULD I? -> faster? only one call?
@@ -428,10 +433,16 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
     XSetWindowBorderWidth(g_display, client->window, *g_window_border_width);
     XMoveResizeWindow(g_display, client->window,
         rect.x, rect.y, rect.width, rect.height);
-    if (*g_double_window_border) {
+    if (*g_window_border_inner_width > 0
+        && *g_window_border_inner_width < *g_window_border_width) {
         unsigned long current_border_color = get_window_border_color(client);
-        HSDebug("client_resize %s\n", current_border_color == g_window_border_active_color ? "ACTIVE" : "NORMAL");
-        set_window_double_border(g_display, client->window, 1, g_window_border_inner_color, current_border_color);
+        HSDebug("client_resize %s\n",
+                current_border_color == g_window_border_active_color
+                ? "ACTIVE" : "NORMAL");
+        set_window_double_border(g_display, client->window,
+                                 *g_window_border_inner_width,
+                                 g_window_border_inner_color,
+                                 current_border_color);
     }
 }
 
@@ -620,8 +631,11 @@ int client_set_property_command(int argc, char** argv) {
 }
 
 void window_update_border(Window window, unsigned long color) {
-    if (*g_double_window_border) {
-        set_window_double_border(g_display, window, 1, g_window_border_inner_color, color);
+    if (*g_window_border_inner_width > 0
+        && *g_window_border_inner_width < *g_window_border_width) {
+        set_window_double_border(g_display, window,
+                                 *g_window_border_inner_width,
+                                 g_window_border_inner_color, color);
     } else {
         XSetWindowBorder(g_display, window, color);
     }
@@ -629,7 +643,9 @@ void window_update_border(Window window, unsigned long color) {
 
 unsigned long get_window_border_color(HSClient* client) {
     Window win = client->window;
-    unsigned long current_border_color = (win == frame_focused_window(g_cur_frame) ? g_window_border_active_color : g_window_border_normal_color);
+    unsigned long current_border_color = (win == frame_focused_window(g_cur_frame)
+                                          ? g_window_border_active_color
+                                          : g_window_border_normal_color);
     if (client->urgent)
         current_border_color = g_window_border_urgent_color;
     return current_border_color;
