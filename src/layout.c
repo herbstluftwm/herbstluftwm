@@ -37,6 +37,7 @@ int* g_direction_external_only;
 int* g_gapless_grid;
 int* g_smart_frame_surroundings;
 int* g_smart_window_surroundings;
+int* g_frame_padding;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
 unsigned long g_frame_border_inner_color;
@@ -62,6 +63,7 @@ char* g_layout_names[] = {
 static void fetch_frame_colors() {
     // load settings
     g_frame_gap = &(settings_find("frame_gap")->value.i);
+    g_frame_padding = &(settings_find("frame_padding")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_focus_follows_shift = &(settings_find("focus_follows_shift")->value.i);
     g_frame_border_width = &(settings_find("frame_border_width")->value.i);
@@ -808,6 +810,12 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             rect.y += *g_window_gap;
             rect.width -= *g_window_gap;
             rect.height -= *g_window_gap;
+
+            // apply frame padding
+            rect.x += *g_frame_padding;
+            rect.y += *g_frame_padding;
+            rect.width  -= *g_frame_padding * 2;
+            rect.height -= *g_frame_padding * 2;
         }
 
         if (frame->content.clients.layout == LAYOUT_MAX) {

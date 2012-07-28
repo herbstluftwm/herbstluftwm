@@ -539,6 +539,10 @@ unequal to 0. An integer value is unset, if its value is 0.
 frame_gap (Integer)::
     The gap between frames in the tiling mode.
 
+frame_padding (Integer)::
+    The padding within a frame in the tiling mode, i.e. the space between the
+    border of a frame and the windows within it.
+
 window_gap (Integer)::
     The gap between windows within one frame in the tiling mode.
 
