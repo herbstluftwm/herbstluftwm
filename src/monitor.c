@@ -846,3 +846,18 @@ HSStack* get_monitor_stack() {
     return g_monitor_stack;
 }
 
+int monitor_raise_command(int argc, char** argv) {
+    (void)SHIFT(argc, argv);
+    HSMonitor* monitor;
+    if (argc >= 1) {
+        monitor = monitor_with_index(atoi(argv[0]));
+    } else {
+        monitor = get_current_monitor();
+    }
+    if (!monitor) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    stack_raise_slide(g_monitor_stack, monitor->slice);
+    return 0;
+}
+
