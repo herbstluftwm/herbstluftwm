@@ -143,13 +143,12 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
             int remain_len = 0; /* remaining length */
             stack_to_window_buf(tag->stack, data->buf, data->len, &remain_len);
             int len_used = data->len - remain_len;
-            if (remain_len > 0) {
+            if (remain_len >= 0) {
                 data->buf += len_used;
-                data->len -= len_used;
+                data->len = remain_len;
             } else {
-                data->buf += data->len;
                 data->len = 0;
-                data->missing = -remain_len;
+                data->missing += -remain_len;
             }
             break;
     }
@@ -169,7 +168,7 @@ void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len) 
         return;
     }
     if (data.missing == 0) {
-        *remain_len = len - data.len;
+        *remain_len = data.len;
     } else {
         *remain_len = -data.missing;
     }
