@@ -31,6 +31,7 @@ Changes:
     * new settings: window_border_inner_color and window_border_inner_width
     * new settings: frame_border_inner_color and frame_border_inner_width
     * new option --skip-invisible for cycle_all
+    * cycle_layout now offers to cycle through a custom list of layouts
 
 Release 0.3 on 2012-04-12
 -------------------------

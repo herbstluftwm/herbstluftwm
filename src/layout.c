@@ -603,12 +603,32 @@ int frame_current_cycle_client_layout(int argc, char** argv) {
     if (argc >= 2) {
         delta = atoi(argv[1]);
     }
-    if (g_cur_frame && g_cur_frame->type == TYPE_CLIENTS) {
-        delta %= LAYOUT_COUNT;
-        g_cur_frame->content.clients.layout += delta + LAYOUT_COUNT;
-        g_cur_frame->content.clients.layout %= LAYOUT_COUNT;
-        monitor_apply_layout(get_current_monitor());
+    assert(g_cur_frame && g_cur_frame->type == TYPE_CLIENTS);
+    (void)SHIFT(argc, argv);
+    (void)SHIFT(argc, argv);
+    int layout_index;
+    if (argc > 0) {
+        /* cycle through a given list of layouts */
+        char* curname = g_layout_names[g_cur_frame->content.clients.layout];
+        char** pcurrent = table_find(argv, sizeof(*argv), argc, 0,
+                                     memberequals_string, curname);
+        int idx = pcurrent ? (INDEX_OF(argv, pcurrent) + delta) : 0;
+        idx %= argc;
+        idx += argc;
+        idx %= argc;
+        layout_index = find_layout_by_name(argv[idx]);
+        if (layout_index < 0) {
+            return HERBST_INVALID_ARGUMENT;
+        }
+    } else {
+        /* cycle through the default list of layouts */
+        layout_index = g_cur_frame->content.clients.layout + delta;
+        layout_index %= LAYOUT_COUNT;
+        layout_index += LAYOUT_COUNT;
+        layout_index %= LAYOUT_COUNT;
     }
+    g_cur_frame->content.clients.layout = layout_index;
+    monitor_apply_layout(get_current_monitor());
     return 0;
 }
 

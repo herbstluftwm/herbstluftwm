@@ -55,7 +55,7 @@ struct {
     { "add_monitor",    7,  no_completion },
     { "cycle",          2,  no_completion },
     { "cycle_all",      3,  no_completion },
-    { "cycle_layout",   2,  no_completion },
+    { "cycle_layout",   LAYOUT_COUNT+2, no_completion },
     { "close",          0,  no_completion },
     { "close_or_remove",0,  no_completion },
     { "dump",           2,  no_completion },
@@ -151,6 +151,8 @@ struct {
     { "toggle",         1,  .function = complete_against_settings },
     { "cycle_value",    1,  .function = complete_against_settings },
     { "set_layout",     1,  .list = g_layout_names },
+    /* TODO: cycle_layout: this actually should not match at index 0 or 1 */
+    { "cycle_layout",  -1,  .list = g_layout_names },
     { "unrule",         1,  .list = completion_unrule_args },
     { "use",            1,  .function = complete_against_tags },
     { "use_index",      2,  .list = completion_use_index_args },
