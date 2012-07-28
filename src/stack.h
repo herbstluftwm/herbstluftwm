@@ -8,6 +8,7 @@
 
 #include <X11/Xlib.h>
 #include <glib.h>
+#include <stdbool.h>
 
 typedef enum Layer {
     /* layers on each monitor, from top to bottom */
@@ -39,6 +40,7 @@ typedef struct HSSlice {
 
 typedef struct HSStack {
     GList*  top[LAYER_COUNT];
+    bool    dirty;  /* stacking order changed but it wasn't restacked yet */
 } HSStack;
 
 
@@ -53,6 +55,7 @@ void slice_destroy(HSSlice* slice);
 
 void stack_insert_slice(HSStack* s, HSSlice* elem);
 void stack_remove_slice(HSStack* s, HSSlice* elem);
+void stack_raise_slide(HSStack* stack, HSSlice* slice);
 
 int print_stack_command(int argc, char** argv, GString** result);
 
@@ -60,7 +63,6 @@ int print_stack_command(int argc, char** argv, GString** result);
 int stack_window_count(HSStack* stack);
 void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len);
 void stack_restack(HSStack* stack);
-void stack_raise_slide(HSStack* stack, HSSlice* slice);
 
 HSStack* stack_create();
 void stack_destroy(HSStack* s);

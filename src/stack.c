@@ -67,12 +67,14 @@ void slice_destroy(HSSlice* slice) {
 void stack_insert_slice(HSStack* s, HSSlice* elem) {
     int layer = elem->layer;
     s->top[layer] = g_list_append(s->top[layer], elem);
+    s->dirty = true;
     HSDebug("stack %p += %p, layer = %d\n", (void*)s, (void*)elem, elem->layer);
 }
 
 void stack_remove_slice(HSStack* s, HSSlice* elem) {
     int layer = elem->layer;
     s->top[layer] = g_list_remove(s->top[layer], elem);
+    s->dirty = true;
     HSDebug("stack %p -= %p, layer = %d\n", (void*)s, (void*)elem, elem->layer);
 }
 
@@ -182,10 +184,14 @@ void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len) 
 }
 
 void stack_restack(HSStack* stack) {
+    if (!stack->dirty) {
+        return;
+    }
     int count = stack_window_count(stack);
     Window* buf = g_new0(Window, count);
     stack_to_window_buf(stack, buf, count, NULL);
     XRestackWindows(g_display, buf, count);
+    stack->dirty = false;
     ewmh_update_client_list_stacking();
     g_free(buf);
 }
@@ -195,6 +201,7 @@ void stack_raise_slide(HSStack* stack, HSSlice* slice) {
     stack->top[slice->layer] = g_list_remove(stack->top[slice->layer], slice);
     // and insert it again at the top
     stack->top[slice->layer] = g_list_prepend(stack->top[slice->layer], slice);
+    stack->dirty = true;
     // TODO: maybe only update the specific range and not the entire stack
     // update
     stack_restack(stack);
