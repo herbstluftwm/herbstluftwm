@@ -25,6 +25,7 @@ static char* completion_status[]        = { "status", NULL };
 static char* completion_special_winids[]= { "urgent", "", NULL };
 static char* completion_use_index_args[]= { "--skip-visible", NULL };
 static char* completion_cycle_all_args[]= { "--skip-invisible", NULL };
+static char* completion_pm_one[]= { "+1", "-1", NULL };
 
 static bool no_completion(int argc, char** argv, int pos) {
     return false;
@@ -56,6 +57,7 @@ struct {
     { "cycle",          2,  no_completion },
     { "cycle_all",      3,  no_completion },
     { "cycle_layout",   LAYOUT_COUNT+2, no_completion },
+    { "cycle_monitor",  2,  no_completion },
     { "close",          0,  no_completion },
     { "close_or_remove",0,  no_completion },
     { "dump",           2,  no_completion },
@@ -122,7 +124,11 @@ struct {
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
     { "add_monitor",    EQ, 2,  .function = complete_against_tags },
+    { "cycle",          EQ, 1,  .list = completion_pm_one },
     { "cycle_all",      EQ, 1,  .list = completion_cycle_all_args },
+    { "cycle_all",      EQ, 1,  .list = completion_pm_one },
+    { "cycle_all",      EQ, 2,  .list = completion_pm_one },
+    { "cycle_monitor",  EQ, 1,  .list = completion_pm_one },
     { "dump",           EQ, 1,  .function = complete_against_tags },
     { "floating",       EQ, 1,  .function = complete_against_tags },
     { "floating",       EQ, 1,  .list = completion_flag_args },
@@ -140,7 +146,7 @@ struct {
     { "move",           EQ, 1,  .function = complete_against_tags },
     { "move_index",     EQ, 2,  .list = completion_use_index_args },
     { "pseudotile",     EQ, 1,  .list = completion_flag_args },
-    { "keybind",        GE, 0,  .function = complete_against_keybind_command },
+    { "keybind",        GE, 2,  .function = complete_against_keybind_command },
     { "keyunbind",      EQ, 1,  .list = completion_keyunbind_args },
     { "keyunbind",      EQ, 1,  .function = complete_against_keybinds },
     { "rename",         EQ, 1,  .function = complete_against_tags },
@@ -157,9 +163,11 @@ struct {
     { "toggle",         EQ, 1,  .function = complete_against_settings },
     { "cycle_value",    EQ, 1,  .function = complete_against_settings },
     { "set_layout",     EQ, 1,  .list = g_layout_names },
+    { "cycle_layout",   EQ, 1,  .list = completion_pm_one },
     { "cycle_layout",   GE, 2,  .list = g_layout_names },
     { "unrule",         EQ, 1,  .list = completion_unrule_args },
     { "use",            EQ, 1,  .function = complete_against_tags },
+    { "use_index",      EQ, 1,  .list = completion_pm_one },
     { "use_index",      EQ, 2,  .list = completion_use_index_args },
     { 0 },
 };
