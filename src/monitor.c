@@ -75,6 +75,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
             rect.height -= *g_window_gap;
             rect.width -= *g_window_gap;
         }
+        stack_restack(monitor->tag->stack);
         if (monitor->tag->floating) {
             frame_apply_floating_layout(monitor->tag->frame, monitor);
         } else {
