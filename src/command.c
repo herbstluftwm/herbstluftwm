@@ -105,57 +105,62 @@ struct {
  * doesnot matter */
 struct {
     char*   command;
+    enum {
+        LE, /* lower equal */
+        EQ, /* equal to */
+        GE, /* greater equal */
+    } relation;         /* defines how the index matches */
     int     index;      /* which parameter to complete */
                         /* command name is index = 0 */
-                        /* -1 will match any position */
+                        /* GE 0 matches any position */
+                        /* LE 3 matches position from 0 to 3 */
     /* === various methods, how to complete === */
     /* completion by function */
     void (*function)(int argc, char** argv, int pos, GString** output);
     /* completion by a list of strings */
     char** list;
 } g_completions[] = {
-    /* name ,       index,  completion method                   */
-    { "add_monitor",    2,  .function = complete_against_tags },
-    { "cycle_all",      1,  .list = completion_cycle_all_args },
-    { "dump",           1,  .function = complete_against_tags },
-    { "floating",       1,  .function = complete_against_tags },
-    { "floating",       1,  .list = completion_flag_args },
-    { "floating",       1,  .list = completion_status },
-    { "floating",       2,  .list = completion_flag_args },
-    { "floating",       2,  .list = completion_status },
-    { "focus",          1,  .list = completion_directions },
-    { "focus",          1,  .list = completion_focus_args },
-    { "focus",          2,  .list = completion_directions },
-    { "fullscreen",     1,  .list = completion_flag_args },
-    { "layout",         1,  .function = complete_against_tags },
-    { "load",           1,  .function = complete_against_tags },
-    { "merge_tag",      1,  .function = complete_against_tags },
-    { "merge_tag",      2,  .function = complete_merge_tag },
-    { "move",           1,  .function = complete_against_tags },
-    { "move_index",     2,  .list = completion_use_index_args },
-    { "pseudotile",     1,  .list = completion_flag_args },
-    { "keybind",       -1,  .function = complete_against_keybind_command },
-    { "keyunbind",      1,  .list = completion_keyunbind_args },
-    { "keyunbind",      1,  .function = complete_against_keybinds },
-    { "rename",         1,  .function = complete_against_tags },
-    { "raise",          1,  .list = completion_special_winids },
-    { "raise",          1,  .function = complete_against_winids },
-    { "jumpto",         1,  .list = completion_special_winids },
-    { "jumpto",         1,  .function = complete_against_winids },
-    { "resize",         1,  .list = completion_directions },
-    { "shift",          1,  .list = completion_directions },
-    { "shift",          1,  .list = completion_focus_args },
-    { "shift",          2,  .list = completion_directions },
-    { "set",            1,  .function = complete_against_settings },
-    { "get",            1,  .function = complete_against_settings },
-    { "toggle",         1,  .function = complete_against_settings },
-    { "cycle_value",    1,  .function = complete_against_settings },
-    { "set_layout",     1,  .list = g_layout_names },
-    /* TODO: cycle_layout: this actually should not match at index 0 or 1 */
-    { "cycle_layout",  -1,  .list = g_layout_names },
-    { "unrule",         1,  .list = completion_unrule_args },
-    { "use",            1,  .function = complete_against_tags },
-    { "use_index",      2,  .list = completion_use_index_args },
+    /* name , relation, index,  completion method                   */
+    { "add_monitor",   EQ, 2,  .function = complete_against_tags },
+    { "cycle_all",     EQ, 1,  .list = completion_cycle_all_args },
+    { "dump",          EQ, 1,  .function = complete_against_tags },
+    { "floating",      EQ, 1,  .function = complete_against_tags },
+    { "floating",      EQ, 1,  .list = completion_flag_args },
+    { "floating",      EQ, 1,  .list = completion_status },
+    { "floating",      EQ, 2,  .list = completion_flag_args },
+    { "floating",      EQ, 2,  .list = completion_status },
+    { "focus",         EQ, 1,  .list = completion_directions },
+    { "focus",         EQ, 1,  .list = completion_focus_args },
+    { "focus",         EQ, 2,  .list = completion_directions },
+    { "fullscreen",    EQ, 1,  .list = completion_flag_args },
+    { "layout",        EQ, 1,  .function = complete_against_tags },
+    { "load",          EQ, 1,  .function = complete_against_tags },
+    { "merge_tag",     EQ, 1,  .function = complete_against_tags },
+    { "merge_tag",     EQ, 2,  .function = complete_merge_tag },
+    { "move",          EQ, 1,  .function = complete_against_tags },
+    { "move_index",    EQ, 2,  .list = completion_use_index_args },
+    { "pseudotile",    EQ, 1,  .list = completion_flag_args },
+    { "keybind",       GE, 0,  .function = complete_against_keybind_command },
+    { "keyunbind",     EQ, 1,  .list = completion_keyunbind_args },
+    { "keyunbind",     EQ, 1,  .function = complete_against_keybinds },
+    { "rename",        EQ, 1,  .function = complete_against_tags },
+    { "raise",         EQ, 1,  .list = completion_special_winids },
+    { "raise",         EQ, 1,  .function = complete_against_winids },
+    { "jumpto",        EQ, 1,  .list = completion_special_winids },
+    { "jumpto",        EQ, 1,  .function = complete_against_winids },
+    { "resize",        EQ, 1,  .list = completion_directions },
+    { "shift",         EQ, 1,  .list = completion_directions },
+    { "shift",         EQ, 1,  .list = completion_focus_args },
+    { "shift",         EQ, 2,  .list = completion_directions },
+    { "set",           EQ, 1,  .function = complete_against_settings },
+    { "get",           EQ, 1,  .function = complete_against_settings },
+    { "toggle",        EQ, 1,  .function = complete_against_settings },
+    { "cycle_value",   EQ, 1,  .function = complete_against_settings },
+    { "set_layout",    EQ, 1,  .list = g_layout_names },
+    { "cycle_layout",  GE, 2,  .list = g_layout_names },
+    { "unrule",        EQ, 1,  .list = completion_unrule_args },
+    { "use",           EQ, 1,  .function = complete_against_tags },
+    { "use_index",     EQ, 2,  .list = completion_use_index_args },
     { 0 },
 };
 
@@ -378,9 +383,14 @@ int complete_against_commands(int argc, char** argv, int position,
         char* cmd_str = (argc >= 1) ? argv[0] : "";
         // complete parameters for commands
         for (int i = 0; i < LENGTH(g_completions); i++) {
-            if (!g_completions[i].command
-                || (g_completions[i].index != -1
-                    && position != g_completions[i].index)
+            bool matches = false;
+            switch (g_completions[i].relation) {
+                case LE: matches = position <= g_completions[i].index; break;
+                case EQ: matches = position == g_completions[i].index; break;
+                case GE: matches = position >= g_completions[i].index; break;
+            }
+            if (!matches
+                || !g_completions[i].command
                 || strcmp(cmd_str, g_completions[i].command)) {
                 continue;
             }
