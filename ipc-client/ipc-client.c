@@ -26,7 +26,7 @@
 
 
 int send_command(int argc, char* argv[]);
-void print_help(void);
+void print_help(char* command);
 
 
 Display* g_display;
@@ -256,13 +256,16 @@ int wait_for_hook(int argc, char* argv[]) {
     return 0;
 }
 
-void print_help(void) {
+void print_help(char* command) {
     // Eventually replace this and the option parsing with some fancy macro
     // based thing? Is the cost of maintainence really that high?
 
-    char *help_string =
-        "Usage: herbstclient [OPTIONS] COMMAND [ARGS ...]\n"
-        "       herbstclient [OPTIONS] [--wait|--idle] [FILTER ...]\n"
+    fprintf(stdout,
+        "Usage: %s [OPTIONS] COMMAND [ARGS ...]\n"
+        "       %s [OPTIONS] [--wait|--idle] [FILTER ...]\n",
+        command);
+
+    char* help_string =
         "Send a COMMAND with optional arguments ARGS to a running "
         "herbstluftwm instance.\n\n"
         "Options:\n"
@@ -277,8 +280,9 @@ void print_help(void) {
         "\t-h, --help: Print this help."
         "\n"
         "See the man page (herbstclient(1)) for more details.\n";
-    fprintf(stdout, help_string);
+    fputs(help_string, stdout);
 }
+
 int main(int argc, char* argv[]) {
     static struct option long_options[] = {
         {"no-newline", 0, 0, 'n'},
@@ -313,7 +317,7 @@ int main(int argc, char* argv[]) {
                 g_quiet = true;
                 break;
             case 'h':
-                print_help();
+                print_help(argv[0]);
                 exit(EXIT_SUCCESS);
             default:
                 fprintf(stderr, "unknown option `%s'\n", argv[optind]);
