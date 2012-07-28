@@ -842,3 +842,7 @@ void monitor_stack_to_window_buf(Window* buf, int len, int* remain_len) {
     return stack_to_window_buf(g_monitor_stack, buf, len, remain_len);
 }
 
+HSStack* get_monitor_stack() {
+    return g_monitor_stack;
+}
+

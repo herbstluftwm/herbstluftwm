@@ -76,6 +76,8 @@ void ensure_monitors_are_available();
 
 int monitor_stack_window_count();
 void monitor_stack_to_window_buf(Window* buf, int len, int* remain_len);
+struct HSStack* get_monitor_stack();
+
 
 typedef bool (*MonitorDetection)(XRectangle**, size_t*);
 bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count);

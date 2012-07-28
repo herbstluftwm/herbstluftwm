@@ -76,6 +76,8 @@ void stack_remove_slice(HSStack* s, HSSlice* elem) {
     HSDebug("stack %p -= %p, layer = %d\n", (void*)s, (void*)elem, elem->layer);
 }
 
+static void stack_print(HSStack* stack, GString** result);
+
 static void slice_print(HSSlice* slice, GString** result) {
     switch (slice->type) {
         case SLICE_WINDOW:
@@ -88,19 +90,24 @@ static void slice_print(HSSlice* slice, GString** result) {
                                    slice->data.client->title->str);
             break;
         case SLICE_MONITOR:
-            g_string_append_printf(*result, "  :: Monitor %d",
+            g_string_append_printf(*result, "  :: Monitor %d\n",
                                    monitor_index_of(slice->data.monitor));
+            stack_print(slice->data.monitor->tag->stack, result);
+            break;
     }
     *result = g_string_append_c(*result, '\n');
 }
 
-int print_stack_command(int argc, char** argv, GString** result) {
-    HSTag* tag = get_current_monitor()->tag;
-    HSStack* stack = tag->stack;
+static void stack_print(HSStack* stack, GString** result) {
     for (int i = 0; i < LAYER_COUNT; i++) {
         g_string_append_printf(*result, "==> Layer %d\n", i);
         g_list_foreach(stack->top[i], (GFunc)slice_print, result);
     }
+}
+
+int print_stack_command(int argc, char** argv, GString** result) {
+    HSStack* stack = get_monitor_stack();
+    stack_print(stack, result);
     stack_restack(stack);
 }
 
