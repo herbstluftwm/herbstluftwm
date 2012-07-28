@@ -803,11 +803,13 @@ int main(int argc, char* argv[]) {
     if (g_exec_before_quit) {
         if (g_exec_args) {
             // do actual exec
+            HSDebug("==> Doing wmexec to %s\n", g_exec_args[0]);
             execvp(g_exec_args[0], g_exec_args);
             fprintf(stderr, "herbstluftwm: execvp \"%s\"", g_exec_args[0]);
             perror(" failed");
         }
         // on failure or if no other wm given, then fall back
+        HSDebug("==> Doing wmexec to %s\n", argv[0]);
         execvp(argv[0], argv);
         fprintf(stderr, "herbstluftwm: execvp \"%s\"", argv[1]);
         perror(" failed");
