@@ -796,7 +796,6 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             ewmh_set_window_opacity(frame->window, g_frame_normal_opacity/100.0);
         }
         XClearWindow(g_display, frame->window);
-        XLowerWindow(g_display, frame->window);
         frame_set_visible(frame, *g_always_show_frame
             || (count != 0) || (g_cur_frame == frame));
         // move windows
