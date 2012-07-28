@@ -26,6 +26,9 @@ Some BUGS:
       windows and after mapping them). TODO: only do it once.
     - also update window title if *only* the _NET_WM_NAME changes
     - make focus_window(client->window, true, false); work
+    - do not flicker if there are three monitors and the tag of the topmost is
+      swapped with the tag of the most bottom monitor (flickering can be
+      noticed at the middle monitor)
 
 Planned features:
     - dump/load floating values

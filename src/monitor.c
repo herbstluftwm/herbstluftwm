@@ -536,8 +536,14 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             monitor->tag = tag;
             // reset focus
             frame_focus_recursive(tag->frame);
+            stack_mark_dirty(g_monitor_stack);
+            stack_restack(g_monitor_stack);
             monitor_apply_layout(other);
             monitor_apply_layout(monitor);
+            // discard enternotify-events
+            XEvent ev;
+            XSync(g_display, False);
+            while (XCheckMaskEvent(g_display, EnterWindowMask, &ev));
             ewmh_update_current_desktop();
             emit_tag_changed(other->tag, monitor_index_of(other));
             emit_tag_changed(tag, g_cur_monitor);
@@ -549,6 +555,8 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     monitor->tag = tag;
     // first reset focus and arrange windows
     frame_focus_recursive(tag->frame);
+    stack_mark_dirty(g_monitor_stack);
+    stack_restack(g_monitor_stack);
     monitor_apply_layout(monitor);
     // then show them (should reduce flicker)
     frame_show_recursive(tag->frame);

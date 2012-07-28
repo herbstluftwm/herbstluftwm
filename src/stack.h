@@ -56,6 +56,7 @@ void slice_destroy(HSSlice* slice);
 void stack_insert_slice(HSStack* s, HSSlice* elem);
 void stack_remove_slice(HSStack* s, HSSlice* elem);
 void stack_raise_slide(HSStack* stack, HSSlice* slice);
+void stack_mark_dirty(HSStack* s);
 
 int print_stack_command(int argc, char** argv, GString** result);
 

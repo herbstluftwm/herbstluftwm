@@ -207,3 +207,7 @@ void stack_raise_slide(HSStack* stack, HSSlice* slice) {
     stack_restack(stack);
 }
 
+void stack_mark_dirty(HSStack* s) {
+    s->dirty = true;
+}
+
