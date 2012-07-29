@@ -64,6 +64,7 @@ int print_stack_command(int argc, char** argv, GString** result);
 int stack_window_count(HSStack* stack);
 void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len);
 void stack_restack(HSStack* stack);
+Window stack_lowest_window(HSStack* stack);
 
 HSStack* stack_create();
 void stack_destroy(HSStack* s);

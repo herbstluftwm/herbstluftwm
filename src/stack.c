@@ -211,3 +211,30 @@ void stack_mark_dirty(HSStack* s) {
     s->dirty = true;
 }
 
+Window stack_lowest_window(HSStack* stack) {
+    for (int i = LAYER_COUNT - 1; i >= 0; i--) {
+        GList* last = g_list_last(stack->top[i]);
+        while (last) {
+            HSSlice* slice = (HSSlice*)last->data;
+            Window w = 0;
+            switch (slice->type) {
+                case SLICE_CLIENT:
+                    w = slice->data.client->window;
+                    break;
+                case SLICE_WINDOW:
+                    w = slice->data.window;
+                    break;
+                case SLICE_MONITOR:
+                    w = stack_lowest_window(slice->data.monitor->tag->stack);
+                    break;
+            }
+            if (w) {
+                return w;
+            }
+            last = g_list_previous(last);
+        }
+    }
+    // if no window was found
+    return 0;
+}
+
