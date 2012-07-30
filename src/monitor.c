@@ -80,11 +80,12 @@ void monitor_apply_layout(HSMonitor* monitor) {
             frame_apply_floating_layout(monitor->tag->frame, monitor);
         } else {
             frame_apply_layout(monitor->tag->frame, rect);
+            if (!monitor->lock_frames)
+                frame_update_frame_window_visibility(monitor->tag->frame);
         }
         if (get_current_monitor() == monitor) {
             frame_focus_recursive(monitor->tag->frame);
         }
-        stack_restack(monitor->tag->stack);
         // remove all enternotify-events from the event queue that were
         // generated while arranging the clients on this monitor
         XEvent ev;
@@ -302,6 +303,8 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
     m->mouse.y = 0;
     m->dirty = true;
     m->slice = slice_create_monitor(m);
+    m->stacking_window = XCreateSimpleWindow(g_display, g_root,
+                                             42, 42, 42, 42, 1, 0, 0);
     stack_insert_slice(g_monitor_stack, m->slice);
     g_array_append_val(g_monitors, m);
     return g_array_index(g_monitors, HSMonitor*, g_monitors->len-1);
@@ -369,6 +372,7 @@ int remove_monitor(int index) {
     // remove from monitor stack
     stack_remove_slice(g_monitor_stack, monitor->slice);
     slice_destroy(monitor->slice);
+    XDestroyWindow(g_display, monitor->stacking_window);
     // and remove monitor completly
     g_free(monitor);
     g_array_remove_index(g_monitors, index);
@@ -537,8 +541,9 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             monitor->tag = tag;
             // reset focus
             frame_focus_recursive(tag->frame);
-            stack_mark_dirty(g_monitor_stack);
-            stack_restack(g_monitor_stack);
+            /* TODO: find the best order of restacking and layouting */
+            monitor_restack(other);
+            monitor_restack(monitor);
             monitor_apply_layout(other);
             monitor_apply_layout(monitor);
             // discard enternotify-events
@@ -556,11 +561,13 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     monitor->tag = tag;
     // first reset focus and arrange windows
     frame_focus_recursive(tag->frame);
-    stack_mark_dirty(g_monitor_stack);
-    stack_restack(g_monitor_stack);
+    monitor_restack(monitor);
+    monitor->lock_frames = true;
     monitor_apply_layout(monitor);
+    monitor->lock_frames = false;
     // then show them (should reduce flicker)
     frame_show_recursive(tag->frame);
+    frame_update_frame_window_visibility(monitor->tag->frame);
     // 2. hide old tag
     frame_hide_recursive(old_tag->frame);
     // focus window just has been shown
@@ -868,5 +875,14 @@ int monitor_raise_command(int argc, char** argv) {
     }
     stack_raise_slide(g_monitor_stack, monitor->slice);
     return 0;
+}
+
+void monitor_restack(HSMonitor* monitor) {
+    int count = 1 + stack_window_count(monitor->tag->stack);
+    Window* buf = g_new(Window, count);
+    buf[0] = monitor->stacking_window;
+    stack_to_window_buf(monitor->tag->stack, buf + 1, count - 1, NULL);
+    XRestackWindows(g_display, buf, count);
+    g_free(buf);
 }
 

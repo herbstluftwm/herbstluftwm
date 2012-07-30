@@ -796,8 +796,6 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             ewmh_set_window_opacity(frame->window, g_frame_normal_opacity/100.0);
         }
         XClearWindow(g_display, frame->window);
-        frame_set_visible(frame, *g_always_show_frame
-            || (count != 0) || (g_cur_frame == frame));
         // move windows
         if (count == 0) {
             return;
@@ -823,10 +821,23 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             second.x += first.width;
             second.width -= first.width;
         }
-        frame_set_visible(frame, false);
         frame_apply_layout(layout->a, first);
         frame_apply_layout(layout->b, second);
     }
+}
+
+static void frame_update_frame_window_visibility_helper(HSFrame* frame) {
+    if (frame->type == TYPE_CLIENTS) {
+        int count = frame->content.clients.count;
+        frame_set_visible(frame, *g_always_show_frame
+            || (count != 0) || (g_cur_frame == frame));
+    } else {
+        frame_set_visible(frame, false);
+    }
+}
+
+void frame_update_frame_window_visibility(HSFrame* frame) {
+    frame_do_recursive(frame, frame_update_frame_window_visibility_helper, 0);
 }
 
 HSFrame* frame_current_selection() {

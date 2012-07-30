@@ -26,12 +26,14 @@ typedef struct HSMonitor {
     int         pad_down;
     int         pad_left;
     bool        dirty;
+    bool        lock_frames;
     struct {
         // last saved mouse position
         int x;
         int y;
     } mouse;
     XRectangle  rect;   // area for this monitor
+    Window      stacking_window;   // window used for making stacking easy
 } HSMonitor;
 
 // globals
@@ -75,6 +77,7 @@ void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
 
+void monitor_restack(HSMonitor* monitor);
 int monitor_stack_window_count();
 void monitor_stack_to_window_buf(Window* buf, int len, int* remain_len);
 struct HSStack* get_monitor_stack();

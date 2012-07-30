@@ -110,6 +110,7 @@ static void stack_print(HSStack* stack, GString** result) {
 int print_stack_command(int argc, char** argv, GString** result) {
     HSStack* stack = get_monitor_stack();
     stack_print(stack, result);
+    stack_mark_dirty(stack);
     stack_restack(stack);
 }
 
@@ -149,6 +150,13 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
             break;
         case SLICE_MONITOR:
             tag = s->data.monitor->tag;
+            if (data->len) {
+                data->buf[0] = s->data.monitor->stacking_window;
+                data->buf++;
+                data->len--;
+            } else {
+                data->missing++;
+            }
             int remain_len = 0; /* remaining length */
             stack_to_window_buf(tag->stack, data->buf, data->len, &remain_len);
             int len_used = data->len - remain_len;

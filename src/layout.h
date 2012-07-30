@@ -111,6 +111,7 @@ int frame_change_fraction_command(int argc, char** argv);
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect);
 void frame_apply_floating_layout(HSFrame* frame, struct HSMonitor* m);
+void frame_update_frame_window_visibility(HSFrame* frame);
 void reset_frame_colors();
 HSFrame* get_toplevel_frame(HSFrame* frame);
 
@@ -140,6 +141,7 @@ int frame_focus_recursive(HSFrame* frame);
 void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order);
 void frame_hide_recursive(HSFrame* frame);
 void frame_show_recursive(HSFrame* frame);
+void frame_update_frame_window_visibility(HSFrame* frame);
 int layout_rotate_command();
 // do an action for each client in frame tree
 // returns success or failure
