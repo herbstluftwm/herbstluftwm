@@ -17,7 +17,7 @@ endif
 # FLAGS
 CC ?= gcc
 LD = $(CC)
-CFlAGS ?= -g -pedantic -Wall
+CFLAGS ?= -g -pedantic -Wall
 CFLAGS += -std=c99 ${INCS} -D _XOPEN_SOURCE=600
 VERSIONFLAGS = \
     -D HERBSTLUFT_VERSION=$(VERSION) \
