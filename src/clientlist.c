@@ -683,9 +683,9 @@ Window string_to_client(char* str, HSClient** ret_client) {
         HSClient* client = get_urgent_client();
         if (client) {
             win = client->window;
-            if (ret_client) {
-                *ret_client = client;
-            }
+        }
+        if (ret_client) {
+            *ret_client = client;
         }
     } else if (1 == sscanf(str, "0x%lx", (long unsigned int*)&win)) {
         if (ret_client) {
