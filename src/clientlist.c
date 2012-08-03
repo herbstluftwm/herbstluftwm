@@ -552,9 +552,11 @@ void client_set_fullscreen(HSClient* client, bool state) {
     }
 
     client->fullscreen = state;
+    HSStack* stack = client->tag->stack;
     if (state) {
-        // TODO: do proper stacking layer handling
-        XRaiseWindow(g_display, client->window);
+        stack_slice_add_layer(stack, client->slice, LAYER_FULLSCREEN);
+    } else {
+        stack_slice_remove_layer(stack, client->slice, LAYER_FULLSCREEN);
     }
     monitor_apply_layout(find_monitor_with_tag(client->tag));
 

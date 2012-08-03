@@ -4,6 +4,7 @@
 #include "ewmh.h"
 #include "globals.h"
 #include <stdio.h>
+#include <string.h>
 
 void stacklist_init() {
 }
@@ -28,7 +29,8 @@ void stack_destroy(HSStack* s) {
 
 static HSSlice* slice_create() {
     HSSlice* s = g_new0(HSSlice, 1);
-    s->layer = LAYER_NORMAL;
+    s->layer[0] = LAYER_NORMAL;
+    s->layer_count = 1;
     return s;
 }
 
@@ -41,7 +43,7 @@ HSSlice* slice_create_window(Window window) {
 
 HSSlice* slice_create_frame(Window window) {
     HSSlice* s = slice_create_window(window);
-    s->layer = LAYER_FRAMES;
+    s->layer[0] = LAYER_FRAMES;
     return s;
 }
 
@@ -64,18 +66,30 @@ void slice_destroy(HSSlice* slice) {
     g_free(slice);
 }
 
+HSLayer slice_highest_layer(HSSlice* slice) {
+    HSLayer highest = LAYER_COUNT;
+    for (int i = 0; i < slice->layer_count; i++) {
+        if (slice->layer[i] < highest) {
+            highest = slice->layer[i];
+        }
+    }
+    return highest;
+}
+
 void stack_insert_slice(HSStack* s, HSSlice* elem) {
-    int layer = elem->layer;
-    s->top[layer] = g_list_append(s->top[layer], elem);
+    for (int i = 0; i < elem->layer_count; i++) {
+        int layer = elem->layer[i];
+        s->top[layer] = g_list_append(s->top[layer], elem);
+    }
     s->dirty = true;
-    HSDebug("stack %p += %p, layer = %d\n", (void*)s, (void*)elem, elem->layer);
 }
 
 void stack_remove_slice(HSStack* s, HSSlice* elem) {
-    int layer = elem->layer;
-    s->top[layer] = g_list_remove(s->top[layer], elem);
+    for (int i = 0; i < elem->layer_count; i++) {
+        int layer = elem->layer[i];
+        s->top[layer] = g_list_remove(s->top[layer], elem);
+    }
     s->dirty = true;
-    HSDebug("stack %p -= %p, layer = %d\n", (void*)s, (void*)elem, elem->layer);
 }
 
 static void stack_print(HSStack* stack, GString** result);
@@ -125,10 +139,16 @@ struct s2wb {
     int     len;
     Window* buf;
     int     missing; /* number of slices that could not find space in buf */
+    HSLayer layer;  /* the layer the slice should be added to */
 };
 
 static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
     HSTag* tag;
+    if (slice_highest_layer(s) != data->layer) {
+        /** slice only is added to its highest layer.
+         * just skip it if the slice is not shown on this data->layer */
+        return;
+    }
     switch (s->type) {
         case SLICE_CLIENT:
             if (data->len) {
@@ -178,6 +198,7 @@ void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len) 
         .missing = 0,
     };
     for (int i = 0; i < LAYER_COUNT; i++) {
+        data.layer = i;
         g_list_foreach(stack->top[i], (GFunc)slice_to_window_buf, &data);
     }
     if (!remain_len) {
@@ -205,10 +226,12 @@ void stack_restack(HSStack* stack) {
 }
 
 void stack_raise_slide(HSStack* stack, HSSlice* slice) {
-    // remove slice from list
-    stack->top[slice->layer] = g_list_remove(stack->top[slice->layer], slice);
-    // and insert it again at the top
-    stack->top[slice->layer] = g_list_prepend(stack->top[slice->layer], slice);
+    for (int i = 0; i < slice->layer_count; i++) {
+        // remove slice from list
+        stack->top[slice->layer[i]] = g_list_remove(stack->top[slice->layer[i]], slice);
+        // and insert it again at the top
+        stack->top[slice->layer[i]] = g_list_prepend(stack->top[slice->layer[i]], slice);
+    }
     stack->dirty = true;
     // TODO: maybe only update the specific range and not the entire stack
     // update
@@ -217,6 +240,39 @@ void stack_raise_slide(HSStack* stack, HSSlice* slice) {
 
 void stack_mark_dirty(HSStack* s) {
     s->dirty = true;
+}
+
+void stack_slice_add_layer(HSStack* stack, HSSlice* slice, HSLayer layer) {
+    for (int i = 0; i < slice->layer_count; i++) {
+        if (slice->layer[i] == layer) {
+            /* nothing to do */
+            return;
+        }
+    }
+    slice->layer[slice->layer_count] = layer;
+    slice->layer_count++;
+    stack->top[layer] = g_list_prepend(stack->top[layer], slice);
+    stack->dirty = true;
+}
+
+void stack_slice_remove_layer(HSStack* stack, HSSlice* slice, HSLayer layer) {
+    int i;
+    for (i = 0; i < slice->layer_count; i++) {
+        if (slice->layer[i] == layer) {
+            break;
+        }
+    }
+    if (i >= slice->layer_count) {
+        HSDebug("remove layer: slice %p not in layer %d\n", slice, layer);
+        return;
+    }
+    /* remove layer in slice */
+    slice->layer_count--;
+    size_t len = sizeof(HSLayer) * (slice->layer_count - i);
+    memmove(slice->layer + i, slice->layer + i + 1, len);
+    /* remove slice from layer in the stack */
+    stack->top[layer] = g_list_remove(stack->top[layer], slice);
+    stack->dirty = true;
 }
 
 Window stack_lowest_window(HSStack* stack) {
