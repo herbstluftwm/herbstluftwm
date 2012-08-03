@@ -20,6 +20,7 @@
 #include "monitor.h"
 #include "settings.h"
 #include "stack.h"
+#include "clientlist.h"
 
 int* g_monitors_locked;
 int* g_swap_monitors_to_get_tag;
@@ -75,7 +76,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
             rect.height -= *g_window_gap;
             rect.width -= *g_window_gap;
         }
-        stack_restack(monitor->tag->stack);
+        monitor_restack(monitor);
         if (monitor->tag->floating) {
             frame_apply_floating_layout(monitor->tag->frame, monitor);
         } else {
@@ -882,6 +883,19 @@ void monitor_restack(HSMonitor* monitor) {
     Window* buf = g_new(Window, count);
     buf[0] = monitor->stacking_window;
     stack_to_window_buf(monitor->tag->stack, buf + 1, count - 1, NULL);
+    /* remove a focused fullscreen client */
+    HSClient* client;
+    if (monitor == get_current_monitor()
+        && (client = get_current_client())
+        && client->fullscreen) {
+        XRaiseWindow(g_display, client->window);
+        /* TODO: actually it should flicker if we don't remove the client from
+         * the window buf, but it does not: but why? */
+        // int idx = array_find(buf, count, sizeof(*buf), &client->window);
+        // assert(idx >= 0);
+        // count--;
+        // memmove(buf + idx, buf + idx + 1, sizeof(*buf) * count - idx);
+    }
     XRestackWindows(g_display, buf, count);
     g_free(buf);
 }
