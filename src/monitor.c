@@ -889,12 +889,10 @@ void monitor_restack(HSMonitor* monitor) {
         && (client = get_current_client())
         && client->fullscreen) {
         XRaiseWindow(g_display, client->window);
-        /* TODO: actually it should flicker if we don't remove the client from
-         * the window buf, but it does not: but why? */
-        // int idx = array_find(buf, count, sizeof(*buf), &client->window);
-        // assert(idx >= 0);
-        // count--;
-        // memmove(buf + idx, buf + idx + 1, sizeof(*buf) * count - idx);
+        int idx = array_find(buf, count, sizeof(*buf), &client->window);
+        assert(idx >= 0);
+        count--;
+        memmove(buf + idx, buf + idx + 1, sizeof(*buf) * count - idx);
     }
     XRestackWindows(g_display, buf, count);
     g_free(buf);
