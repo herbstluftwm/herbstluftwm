@@ -21,9 +21,12 @@
 #include "settings.h"
 
 bool    g_tag_flags_dirty = true;
+int* g_raise_on_focus_temporary;
 
 void tag_init() {
     g_tags = g_array_new(false, false, sizeof(HSTag*));
+    g_raise_on_focus_temporary = &(settings_find("raise_on_focus_temporary")
+                                   ->value.i);
 }
 
 static void tag_free(HSTag* tag) {
@@ -386,5 +389,30 @@ void tag_move_client(HSClient* client, HSTag* target) {
     tag_set_flags_dirty();
 }
 
+void tag_update_focus_layer(HSTag* tag) {
+    HSClient* focus = get_client_from_window(frame_focused_window(tag->frame));
+    stack_clear_layer(tag->stack, LAYER_FOCUS);
+    if (!stack_is_layer_empty(tag->stack, LAYER_FULLSCREEN)
+        || *g_raise_on_focus_temporary) {
+        if (focus) {
+            stack_slice_add_layer(tag->stack, focus->slice, LAYER_FOCUS);
+        }
+    }
+    HSMonitor* monitor = find_monitor_with_tag(tag);
+    if (monitor) {
+        monitor_restack(monitor);
+    }
+}
+
+void tag_foreach(void (*action)(HSTag*)) {
+    for (int i = 0; i < g_tags->len; i++) {
+        HSTag* tag = g_array_index(g_tags, HSTag*, i);
+        action(tag);
+    }
+}
+
+void tag_update_each_focus_layer() {
+    tag_foreach(tag_update_focus_layer);
+}
 
 

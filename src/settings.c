@@ -33,6 +33,7 @@
 #define FR_COLORS reset_frame_colors
 #define CL_COLORS reset_client_colors
 #define LOCK_CHANGED monitors_lock_changed
+#define FOCUS_LAYER tag_update_each_focus_layer
 
 // default settings:
 SettingsPair g_settings[] = {
@@ -59,6 +60,7 @@ SettingsPair g_settings[] = {
     SET_INT(    "focus_stealing_prevention",       1,           NULL        ),
     SET_INT(    "swap_monitors_to_get_tag",        1,           NULL        ),
     SET_INT(    "raise_on_focus",                  0,           NULL        ),
+    SET_INT(    "raise_on_focus_temporary",        1,           FOCUS_LAYER ),
     SET_INT(    "raise_on_click",                  1,           NULL        ),
     SET_INT(    "gapless_grid",                    1,           RELAYOUT    ),
     SET_INT(    "smart_window_borders",            0,           RELAYOUT    ),

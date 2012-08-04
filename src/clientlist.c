@@ -206,6 +206,7 @@ void unmanage_client(Window win) {
     g_hash_table_remove(g_clients, &win);
     // and arrange monitor after the client has been removed from the stack
     HSMonitor* m = find_monitor_with_tag(client->tag);
+    tag_update_focus_layer(client->tag);
     if (m) monitor_apply_layout(m);
     ewmh_remove_client(win);
     tag_set_flags_dirty();
@@ -248,6 +249,7 @@ void window_unfocus_last() {
         /* only emit the hook if the focus *really* changes */
         hook_emit_list("focus_changed", "0x0", "", NULL);
         ewmh_update_active_window(None);
+        tag_update_each_focus_layer();
     }
     lastfocus = 0;
 }
@@ -265,6 +267,7 @@ void window_focus(Window window) {
          *
          * only emit the hook if the focus *really* changes */
         ewmh_update_active_window(window);
+        tag_update_each_focus_layer();
         HSClient* client = get_client_from_window(window);
         char* title = client ? client->title->str : "?";
         char winid_str[STRING_BUF_SIZE];
@@ -281,6 +284,7 @@ void window_focus(Window window) {
         assert(client != NULL);
         client_raise(client);
     }
+    tag_update_focus_layer(get_current_monitor()->tag);
     grab_client_buttons(get_client_from_window(window), true);
 }
 
@@ -558,6 +562,7 @@ void client_set_fullscreen(HSClient* client, bool state) {
     } else {
         stack_slice_remove_layer(stack, client->slice, LAYER_FULLSCREEN);
     }
+    tag_update_focus_layer(client->tag);
     monitor_apply_layout(find_monitor_with_tag(client->tag));
 
     char buf[STRING_BUF_SIZE];

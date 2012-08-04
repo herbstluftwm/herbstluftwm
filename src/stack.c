@@ -302,3 +302,15 @@ Window stack_lowest_window(HSStack* stack) {
     return 0;
 }
 
+bool stack_is_layer_empty(HSStack* s, HSLayer layer) {
+    return s->top[layer] == NULL;
+}
+
+void stack_clear_layer(HSStack* stack, HSLayer layer) {
+    while (!stack_is_layer_empty(stack, layer)) {
+        HSSlice* slice = stack->top[layer]->data;
+        stack_slice_remove_layer(stack, slice, layer);
+        stack->dirty = true;
+    }
+}
+

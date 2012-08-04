@@ -12,6 +12,7 @@
 
 typedef enum Layer {
     /* layers on each monitor, from top to bottom */
+    LAYER_FOCUS,
     LAYER_FULLSCREEN,
     LAYER_NORMAL,
     LAYER_FRAMES,
@@ -61,6 +62,8 @@ void stack_raise_slide(HSStack* stack, HSSlice* slice);
 void stack_mark_dirty(HSStack* s);
 void stack_slice_add_layer(HSStack* s, HSSlice* slice, HSLayer layer);
 void stack_slice_remove_layer(HSStack* s, HSSlice* slice, HSLayer layer);
+bool stack_is_layer_empty(HSStack* s, HSLayer layer);
+void stack_clear_layer(HSStack* s, HSLayer layer);
 
 int print_stack_command(int argc, char** argv, GString** result);
 
