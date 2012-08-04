@@ -197,7 +197,7 @@ cycle ['DELTA']::
     omitted, 'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1
     means: cycle in the opposite direction by 1.
 
-cycle_all [*--skip-invisble*] ['DIRECTION']::
+cycle_all [*--skip-invisible*] ['DIRECTION']::
     Cycles through all windows and frames on the current tag. 'DIRECTION' = 1
     means forward, 'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no
     effect. 'DIRECTION' defaults to 1. If there are multiple windows within on
