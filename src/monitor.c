@@ -884,10 +884,9 @@ void monitor_restack(HSMonitor* monitor) {
     buf[0] = monitor->stacking_window;
     stack_to_window_buf(monitor->tag->stack, buf + 1, count - 1, NULL);
     /* remove a focused fullscreen client */
-    HSClient* client;
-    if (monitor == get_current_monitor()
-        && (client = get_current_client())
-        && client->fullscreen) {
+    Window win = frame_focused_window(monitor->tag->frame);
+    HSClient* client = win ? get_client_from_window(win) : NULL;
+    if (client && client->fullscreen) {
         XRaiseWindow(g_display, client->window);
         int idx = array_find(buf, count, sizeof(*buf), &client->window);
         assert(idx >= 0);
