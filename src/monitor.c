@@ -81,8 +81,9 @@ void monitor_apply_layout(HSMonitor* monitor) {
             frame_apply_floating_layout(monitor->tag->frame, monitor);
         } else {
             frame_apply_layout(monitor->tag->frame, rect);
-            if (!monitor->lock_frames)
+            if (!monitor->lock_frames && !monitor->tag->floating) {
                 frame_update_frame_window_visibility(monitor->tag->frame);
+            }
         }
         if (get_current_monitor() == monitor) {
             frame_focus_recursive(monitor->tag->frame);
@@ -568,7 +569,9 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     monitor->lock_frames = false;
     // then show them (should reduce flicker)
     frame_show_recursive(tag->frame);
-    frame_update_frame_window_visibility(monitor->tag->frame);
+    if (!monitor->tag->floating) {
+        frame_update_frame_window_visibility(monitor->tag->frame);
+    }
     // 2. hide old tag
     frame_hide_recursive(old_tag->frame);
     // focus window just has been shown
