@@ -467,7 +467,7 @@ void scan(void) {
 }
 
 void execute_autostart_file() {
-    GString* path;
+    GString* path = NULL;
     if (g_autostart_path) {
         path = g_string_new(g_autostart_path);
     } else {
@@ -489,11 +489,15 @@ void execute_autostart_file() {
         path = g_string_append_c(path, G_DIR_SEPARATOR);
         path = g_string_append(path, HERBSTLUFT_AUTOSTART);
     }
-    char* argv[] = {
-        "...", // command name... but it doesnot matter
-        path->str
-    };
-    spawn(LENGTH(argv), argv);
+    if (0 == fork()) {
+        if (g_display) {
+            close(ConnectionNumber(g_display));
+        }
+        setsid();
+        execl(path->str, path->str, NULL);
+        fprintf(stderr, "herbstluftwm: execvp \"%s\"", path->str);
+        perror(" failed");
+    }
     g_string_free(path, true);
 }
 
