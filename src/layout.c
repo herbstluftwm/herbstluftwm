@@ -931,7 +931,7 @@ int cycle_all_command(int argc, char** argv) {
     if (argc >= 2) {
         if (!strcmp(argv[1], "--skip-invisible")) {
             skip_invisible = true;
-            SHIFT(argc, argv);
+            (void) SHIFT(argc, argv);
         }
     }
     if (argc >= 2) {

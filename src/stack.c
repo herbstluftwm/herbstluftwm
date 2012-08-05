@@ -126,6 +126,7 @@ int print_stack_command(int argc, char** argv, GString** result) {
     stack_print(stack, result);
     stack_mark_dirty(stack);
     stack_restack(stack);
+    return 0;
 }
 
 int stack_window_count(HSStack* stack) {
@@ -263,7 +264,7 @@ void stack_slice_remove_layer(HSStack* stack, HSSlice* slice, HSLayer layer) {
         }
     }
     if (i >= slice->layer_count) {
-        HSDebug("remove layer: slice %p not in layer %d\n", slice, layer);
+        HSDebug("remove layer: slice %p not in layer %d\n", (void*)slice, layer);
         return;
     }
     /* remove layer in slice */

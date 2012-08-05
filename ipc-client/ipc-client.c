@@ -263,7 +263,7 @@ void print_help(char* command) {
     fprintf(stdout,
         "Usage: %s [OPTIONS] COMMAND [ARGS ...]\n"
         "       %s [OPTIONS] [--wait|--idle] [FILTER ...]\n",
-        command);
+        command, command);
 
     char* help_string =
         "Send a COMMAND with optional arguments ARGS to a running "

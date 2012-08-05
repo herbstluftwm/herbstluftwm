@@ -256,8 +256,9 @@ int array_find(void* buf, size_t elems, size_t size, void* needle) {
     return -1;
 }
 
-void array_reverse(void* buf, size_t elems, size_t size) {
-    void* tmp = malloc(size);
+void array_reverse(void* void_buf, size_t elems, size_t size) {
+    char* buf = (char*)void_buf;
+    char* tmp = malloc(size);
     for (int i = 0, j = elems - 1; i < j; i++, j--) {
         memcpy(tmp, buf + size * i, size);
         memcpy(buf + size * i, buf + size * j, size);
