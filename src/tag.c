@@ -21,12 +21,12 @@
 #include "settings.h"
 
 bool    g_tag_flags_dirty = true;
-int* g_raise_on_focus_temporary;
+int* g_raise_on_focus_temporarily;
 
 void tag_init() {
     g_tags = g_array_new(false, false, sizeof(HSTag*));
-    g_raise_on_focus_temporary = &(settings_find("raise_on_focus_temporary")
-                                   ->value.i);
+    g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
+                                     ->value.i);
 }
 
 static void tag_free(HSTag* tag) {
@@ -393,7 +393,7 @@ void tag_update_focus_layer(HSTag* tag) {
     HSClient* focus = get_client_from_window(frame_focused_window(tag->frame));
     stack_clear_layer(tag->stack, LAYER_FOCUS);
     if (!stack_is_layer_empty(tag->stack, LAYER_FULLSCREEN)
-        || *g_raise_on_focus_temporary) {
+        || *g_raise_on_focus_temporarily) {
         if (focus) {
             stack_slice_add_layer(tag->stack, focus->slice, LAYER_FOCUS);
         }
