@@ -826,6 +826,23 @@ reload::
     to quit. This hook *should* be emitted in the first line of every 'autostart'
     file.
 
+[[STACKING]]
+STACKING
+--------
+Every tag has its own stack of clients that are on this tag. Similar to the EWMH
+specification each tag stack contains several layers, which are from top to
+bottom contain:
+
+  * the focused client (if raise_on_focus_temporary is enabled)
+  * clients in fullscreen
+  * normal clients
+  * frame decorations
+
+All monitors are managed in one large stack which only consists of the stacks of
+the visible tags put above each other. The stacking order of these monitors is
+independent from their indexes and can be modified using the *raise_monitor*
+command.
+
 ENVIRONMENT VARIABLES
 ---------------------
 DISPLAY::
