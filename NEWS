@@ -37,6 +37,7 @@ Changes:
     * new settings: smart_frame_surroundings and smart_window_borders
     * new command: raise_monitor
     * new setting: raise_on_focus_temporarily
+    * start system wide autostart file if there is no working user defined one
 
 Release 0.3 on 2012-04-12
 -------------------------

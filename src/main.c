@@ -495,8 +495,14 @@ void execute_autostart_file() {
         }
         setsid();
         execl(path->str, path->str, NULL);
-        fprintf(stderr, "herbstluftwm: execvp \"%s\"", path->str);
+
+        char* global_autostart = HERBSTLUFT_GLOBAL_AUTOSTART;
+        HSDebug("Can not execute %s, falling back to %s\n", path->str, global_autostart);
+        execl(global_autostart, global_autostart, NULL);
+
+        fprintf(stderr, "herbstluftwm: execvp \"%s\"", global_autostart);
         perror(" failed");
+        exit(EXIT_FAILURE);
     }
     g_string_free(path, true);
 }
