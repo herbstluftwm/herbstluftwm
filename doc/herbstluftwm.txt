@@ -435,6 +435,10 @@ move_monitor 'INDEX' 'RECT' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     'RECT' are defined as in 'remove_monitor' and 'add_monitor'. If no or an
     empty pad is given, it is not changed.
 
+raise_monitor ['INDEX']::
+    Raises the monitor with the given 'INDEX' or the current one if 'INDEX' is
+    omitted.
+
 monitor_rect [[-p] 'INDEX']::
     Prints the rectangle of the specified 'INDEX' in the format: *X Y W H* +
     If no 'INDEX' or 'cur' is given, then the current Monitor is used. If '-p'
@@ -587,6 +591,11 @@ frame_border_inner_width (Integer)::
 raise_on_focus (Integer)::
     If set, a window is raised if it is focused. The value of this setting is
     only noticed in floating mode.
+
+raise_on_focus_temporarily (Integer)::
+    If set, a window is raised temporarily if it is focused on its tag.
+    Temporarily in this case means that the window will return to its previous
+    stacking position if another window is focused.
 
 raise_on_click (Integer)::
     If set, a window is raised if it is clicked. The value of this setting is
@@ -842,6 +851,23 @@ reload::
     Tells all daemons that the 'autostart' file is reloaded -- and tells them
     to quit. This hook *should* be emitted in the first line of every 'autostart'
     file.
+
+[[STACKING]]
+STACKING
+--------
+Every tag has its own stack of clients that are on this tag. Similar to the EWMH
+specification each tag stack contains several layers, which are from top to
+bottom contain:
+
+  * the focused client (if raise_on_focus_temporarily is enabled)
+  * clients in fullscreen
+  * normal clients
+  * frame decorations
+
+All monitors are managed in one large stack which only consists of the stacks of
+the visible tags put above each other. The stacking order of these monitors is
+independent from their indexes and can be modified using the *raise_monitor*
+command.
 
 ENVIRONMENT VARIABLES
 ---------------------

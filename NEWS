@@ -34,6 +34,9 @@ Changes:
     * cycle_layout now offers to cycle through a custom list of layouts
     * add completion for +1 and -1 to many commands: cycle, cycle_all,
       cycle_monitor, cycle_layout and use_index
+    * new settings: smart_frame_surroundings and smart_window_borders
+    * new command: raise_monitor
+    * new setting: raise_on_focus_temporarily
 
 Release 0.3 on 2012-04-12
 -------------------------

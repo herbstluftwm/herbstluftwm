@@ -17,6 +17,7 @@
 #include "mouse.h"
 #include "rules.h"
 #include "ewmh.h"
+#include "stack.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -124,6 +125,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "rotate",         layout_rotate_command),
     CMD_BIND_NO_OUTPUT(   "move_index",     tag_move_window_by_index_command),
     CMD_BIND_NO_OUTPUT(   "add_monitor",    add_monitor_command),
+    CMD_BIND_NO_OUTPUT(   "raise_monitor",  monitor_raise_command),
     CMD_BIND_NO_OUTPUT(   "remove_monitor", remove_monitor_command),
     CMD_BIND_NO_OUTPUT(   "move_monitor",   move_monitor_command),
     CMD_BIND(             "monitor_rect",   monitor_rect_command),
@@ -132,6 +134,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "rule",           rule_add_command),
     CMD_BIND_NO_OUTPUT(   "unrule",         rule_remove_command),
     CMD_BIND(             "layout",         print_layout_command),
+    CMD_BIND(             "stack",          print_stack_command),
     CMD_BIND(             "dump",           print_layout_command),
     CMD_BIND(             "load",           load_command),
     CMD_BIND(             "complete",       complete_command),
@@ -170,7 +173,7 @@ int print_layout_command(int argc, char** argv, GString** result) {
     }
     // if no tag was found
     if (!tag) {
-        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+        HSMonitor* m = get_current_monitor();
         tag = m->tag;
     }
     assert(tag != NULL);
@@ -195,7 +198,7 @@ int load_command(int argc, char** argv, GString** result) {
     }
     // if no tag was found
     if (!tag) {
-        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+        HSMonitor* m = get_current_monitor();
         tag = m->tag;
     }
     assert(tag != NULL);
@@ -230,9 +233,9 @@ int print_tag_status_command(int argc, char** argv, GString** result) {
     if (argc >= 2) {
         monitor_index = atoi(argv[1]);
     }
-    monitor_index = CLAMP(monitor_index, 0, g_monitors->len);
+    monitor_index = CLAMP(monitor_index, 0, monitor_count());
     tag_update_flags();
-    HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, monitor_index);
+    HSMonitor* monitor = monitor_with_index(monitor_index);
     *result = g_string_append_c(*result, '\t');
     for (int i = 0; i < g_tags->len; i++) {
         HSTag* tag = g_array_index(g_tags, HSTag*, i);
@@ -322,13 +325,18 @@ int wmexec(int argc, char** argv) {
 
 int raise_command(int argc, char** argv) {
     Window win;
-    win = string_to_client((argc > 1) ? argv[1] : "", NULL);
-    XRaiseWindow(g_display, win);
+    HSClient* client = NULL;
+    win = string_to_client((argc > 1) ? argv[1] : "", &client);
+if (client) {
+        client_raise(client);
+    } else {
+        XRaiseWindow(g_display, win);
+    }
     return 0;
 }
 
 int jumpto_command(int argc, char** argv) {
-    HSClient* client;
+    HSClient* client = NULL;
     string_to_client((argc > 1) ? argv[1] : "", &client);
     if (client) {
         focus_window(client->window, true, true);
@@ -577,9 +585,10 @@ static struct {
     { ipc_init,         ipc_destroy         },
     { key_init,         key_destroy         },
     { settings_init,    settings_destroy    },
-    { clientlist_init,  clientlist_destroy  },
+    { stacklist_init,   stacklist_destroy   },
     { layout_init,      layout_destroy      },
     { tag_init,         tag_destroy         },
+    { clientlist_init,  clientlist_destroy  },
     { monitor_init,     monitor_destroy     },
     { ewmh_init,        ewmh_destroy        },
     { mouse_init,       mouse_destroy       },
@@ -599,7 +608,10 @@ void buttonpress(XEvent* event) {
     } else {
         focus_window(be->window, false, true);
         if (*g_raise_on_click) {
-            XRaiseWindow(g_display, be->window);
+            HSClient* client = get_client_from_window(be->window);
+            if (client) {
+                client_raise(client);
+            }
         }
     }
     XAllowEvents(g_display, ReplayPointer, be->time);
@@ -792,11 +804,13 @@ int main(int argc, char* argv[]) {
     if (g_exec_before_quit) {
         if (g_exec_args) {
             // do actual exec
+            HSDebug("==> Doing wmexec to %s\n", g_exec_args[0]);
             execvp(g_exec_args[0], g_exec_args);
             fprintf(stderr, "herbstluftwm: execvp \"%s\"", g_exec_args[0]);
             perror(" failed");
         }
         // on failure or if no other wm given, then fall back
+        HSDebug("==> Doing wmexec to %s\n", argv[0]);
         execvp(argv[0], argv);
         fprintf(stderr, "herbstluftwm: execvp \"%s\"", argv[1]);
         perror(" failed");

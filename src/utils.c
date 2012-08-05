@@ -256,6 +256,15 @@ int array_find(void* buf, size_t elems, size_t size, void* needle) {
     return -1;
 }
 
+void array_reverse(void* buf, size_t elems, size_t size) {
+    void* tmp = malloc(size);
+    for (int i = 0, j = elems - 1; i < j; i++, j--) {
+        memcpy(tmp, buf + size * i, size);
+        memcpy(buf + size * i, buf + size * j, size);
+        memcpy(buf + size * j, tmp, size);
+    }
+    free(tmp);
+}
 
 
 /**
@@ -372,3 +381,4 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     XFreeGC(dpy, gc);
     XFreePixmap(dpy, pix);
 }
+

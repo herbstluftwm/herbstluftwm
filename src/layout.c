@@ -12,6 +12,7 @@
 #include "ipc-protocol.h"
 #include "settings.h"
 #include "layout.h"
+#include "stack.h"
 #include <glib.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -112,11 +113,16 @@ void layout_destroy() {
 }
 
 
-HSFrame* frame_create_empty() {
+/* create a new frame
+ * you can either specify a frame or a tag as its parent
+ */
+HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
     HSFrame* frame = g_new0(HSFrame, 1);
     frame->type = TYPE_CLIENTS;
     frame->window_visible = false;
     frame->content.clients.layout = *g_default_frame_layout;
+    frame->parent = parent;
+    frame->tag = parent ? parent->tag : parenttag;
     // set window atributes
     XSetWindowAttributes at;
     at.background_pixel  = getcolor("red");
@@ -132,6 +138,9 @@ HSFrame* frame_create_empty() {
                         CopyFromParent,
                         DefaultVisual(g_display, DefaultScreen(g_display)),
                         CWOverrideRedirect | CWBackPixmap | CWEventMask, &at);
+    // insert it to the stack
+    frame->slice = slice_create_frame(frame->window);
+    stack_insert_slice(frame->tag->stack, frame->slice);
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
     hint->res_name = HERBST_FRAME_CLASS;
@@ -248,6 +257,8 @@ void frame_destroy(HSFrame* frame, Window** buf, size_t* count) {
         *buf = buf1;
         *count = c1 + c2;
     }
+    stack_remove_slice(frame->tag->stack, frame->slice);
+    slice_destroy(frame->slice);
     // free other things
     XDestroyWindow(g_display, frame->window);
     g_free(frame);
@@ -445,6 +456,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
             if (clientmonitor) {
                 monitor_apply_layout(clientmonitor);
             }
+            stack_remove_slice(client->tag->stack, client->slice);
 
             // insert it to buf
             Window* buf = frame->content.clients.buf;
@@ -459,6 +471,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
             frame->content.clients.count = count;
 
             client->tag = tag;
+            stack_insert_slice(client->tag->stack, client->slice);
             ewmh_window_update_tag(client->window, client->tag);
 
             index++;
@@ -703,7 +716,7 @@ void frame_apply_client_layout_max(HSFrame* frame, XRectangle rect) {
         client_setup_border(client, (g_cur_frame == frame) && (i == selection));
         client_resize_tiling(client, rect, frame);
         if (i == selection) {
-            XRaiseWindow(g_display, buf[i]);
+            client_raise(client);
         }
     }
 }
@@ -814,9 +827,6 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             ewmh_set_window_opacity(frame->window, g_frame_normal_opacity/100.0);
         }
         XClearWindow(g_display, frame->window);
-        XLowerWindow(g_display, frame->window);
-        frame_set_visible(frame, *g_always_show_frame
-            || (count != 0) || (g_cur_frame == frame));
         // move windows
         if (count == 0) {
             return;
@@ -859,10 +869,23 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
             second.x += first.width;
             second.width -= first.width;
         }
-        frame_set_visible(frame, false);
         frame_apply_layout(layout->a, first);
         frame_apply_layout(layout->b, second);
     }
+}
+
+static void frame_update_frame_window_visibility_helper(HSFrame* frame) {
+    if (frame->type == TYPE_CLIENTS) {
+        int count = frame->content.clients.count;
+        frame_set_visible(frame, *g_always_show_frame
+            || (count != 0) || (g_cur_frame == frame));
+    } else {
+        frame_set_visible(frame, false);
+    }
+}
+
+void frame_update_frame_window_visibility(HSFrame* frame) {
+    frame_do_recursive(frame, frame_update_frame_window_visibility_helper, 0);
 }
 
 HSFrame* frame_current_selection() {
@@ -1087,12 +1110,10 @@ void frame_split(HSFrame* frame, int align, int fraction) {
                      FRACTION_UNIT * (0.0 + FRAME_MIN_FRACTION),
                      FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
 
-    HSFrame* first = frame_create_empty();
-    HSFrame* second = frame_create_empty();
+    HSFrame* first = frame_create_empty(frame, NULL);
+    HSFrame* second = frame_create_empty(frame, NULL);
     first->content = frame->content;
     first->type = frame->type;
-    first->parent = frame;
-    second->parent = frame;
     second->type = TYPE_CLIENTS;
     frame->type = TYPE_FRAMES;
     frame->content.layout.align = align;
@@ -1616,6 +1637,9 @@ int frame_remove_command(int argc, char** argv) {
     // and make second child the new parent
     // set parent
     second->parent = parent->parent;
+    // TODO: call frame destructor here
+    stack_remove_slice(parent->tag->stack, parent->slice);
+    slice_destroy(parent->slice);
     // copy all other elements
     *parent = *second;
     // fix childs' parent-pointer

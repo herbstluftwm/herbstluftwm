@@ -19,10 +19,14 @@
 #include "ewmh.h"
 #include "monitor.h"
 #include "settings.h"
+#include "stack.h"
+#include "clientlist.h"
 
 int* g_monitors_locked;
 int* g_swap_monitors_to_get_tag;
 int* g_smart_frame_surroundings;
+HSStack* g_monitor_stack;
+GArray*     g_monitors; // Array of HSMonitor*
 
 typedef struct RectList {
     XRectangle rect;
@@ -34,12 +38,20 @@ static RectList* reclist_insert_disjoint(RectList* head, RectList* mt);
 void monitor_init() {
     g_monitors_locked = &(settings_find("monitors_locked")->value.i);
     g_cur_monitor = 0;
-    g_monitors = g_array_new(false, false, sizeof(HSMonitor));
+    g_monitors = g_array_new(false, false, sizeof(HSMonitor*));
     g_swap_monitors_to_get_tag = &(settings_find("swap_monitors_to_get_tag")->value.i);
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
+    g_monitor_stack = stack_create();
 }
 
 void monitor_destroy() {
+    for (int i = 0; i < g_monitors->len; i++) {
+        HSMonitor* m = monitor_with_index(i);
+        stack_remove_slice(g_monitor_stack, m->slice);
+        slice_destroy(m->slice);
+        g_free(m);
+    }
+    stack_destroy(g_monitor_stack);
     g_array_free(g_monitors, true);
 }
 
@@ -64,10 +76,14 @@ void monitor_apply_layout(HSMonitor* monitor) {
             rect.height -= *g_frame_gap;
             rect.width -= *g_frame_gap;
         }
+        monitor_restack(monitor);
         if (monitor->tag->floating) {
             frame_apply_floating_layout(monitor->tag->frame, monitor);
         } else {
             frame_apply_layout(monitor->tag->frame, rect);
+            if (!monitor->lock_frames && !monitor->tag->floating) {
+                frame_update_frame_window_visibility(monitor->tag->frame);
+            }
         }
         if (get_current_monitor() == monitor) {
             frame_focus_recursive(monitor->tag->frame);
@@ -85,7 +101,7 @@ int list_monitors(int argc, char** argv, GString** output) {
     (void)argv;
     int i;
     for (i = 0; i < g_monitors->len; i++) {
-        HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, i);
+        HSMonitor* monitor = monitor_with_index(i);
         g_string_append_printf(*output, "%d: %dx%d%+d%+d with tag \"%s\"%s\n",
             i,
             monitor->rect.width, monitor->rect.height,
@@ -282,15 +298,18 @@ int set_monitor_rects(XRectangle* templates, size_t count) {
 
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
     assert(tag != NULL);
-    HSMonitor m;
-    memset(&m, 0, sizeof(m));
-    m.rect = rect;
-    m.tag = tag;
-    m.mouse.x = 0;
-    m.mouse.y = 0;
-    m.dirty = true;
+    HSMonitor* m = g_new0(HSMonitor, 1);
+    m->rect = rect;
+    m->tag = tag;
+    m->mouse.x = 0;
+    m->mouse.y = 0;
+    m->dirty = true;
+    m->slice = slice_create_monitor(m);
+    m->stacking_window = XCreateSimpleWindow(g_display, g_root,
+                                             42, 42, 42, 42, 1, 0, 0);
+    stack_insert_slice(g_monitor_stack, m->slice);
     g_array_append_val(g_monitors, m);
-    return &g_array_index(g_monitors, HSMonitor, g_monitors->len-1);
+    return g_array_index(g_monitors, HSMonitor*, g_monitors->len-1);
 }
 
 int add_monitor_command(int argc, char** argv) {
@@ -352,7 +371,12 @@ int remove_monitor(int index) {
     assert(monitor->tag->frame);
     // hide clients
     frame_hide_recursive(monitor->tag->frame);
+    // remove from monitor stack
+    stack_remove_slice(g_monitor_stack, monitor->slice);
+    slice_destroy(monitor->slice);
+    XDestroyWindow(g_display, monitor->stacking_window);
     // and remove monitor completly
+    g_free(monitor);
     g_array_remove_index(g_monitors, index);
     if (g_cur_monitor >= g_monitors->len) {
         g_cur_monitor--;
@@ -377,7 +401,7 @@ int move_monitor_command(int argc, char** argv) {
         return HERBST_INVALID_ARGUMENT;
     }
     // else: just move it:
-    HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, index);
+    HSMonitor* monitor = monitor_with_index(index);
     monitor->rect = rect;
     if (argc > 3 && argv[3][0] != '\0') monitor->pad_up       = atoi(argv[3]);
     if (argc > 4 && argv[4][0] != '\0') monitor->pad_right    = atoi(argv[4]);
@@ -444,7 +468,7 @@ int monitor_set_pad_command(int argc, char** argv) {
     if (index < 0 || index >= g_monitors->len) {
         return HERBST_INVALID_ARGUMENT;
     }
-    HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, index);
+    HSMonitor* monitor = monitor_with_index(index);
     if (argc > 2 && argv[2][0] != '\0') monitor->pad_up       = atoi(argv[2]);
     if (argc > 3 && argv[3][0] != '\0') monitor->pad_right    = atoi(argv[3]);
     if (argc > 4 && argv[4][0] != '\0') monitor->pad_down     = atoi(argv[4]);
@@ -456,7 +480,7 @@ int monitor_set_pad_command(int argc, char** argv) {
 HSMonitor* find_monitor_with_tag(HSTag* tag) {
     int i;
     for (i = 0; i < g_monitors->len; i++) {
-        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, i);
+        HSMonitor* m = monitor_with_index(i);
         if (m->tag == tag) {
             return m;
         }
@@ -492,12 +516,16 @@ HSMonitor* monitor_with_frame(HSFrame* frame) {
 }
 
 HSMonitor* get_current_monitor() {
-    return &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
+    return g_array_index(g_monitors, HSMonitor*, g_cur_monitor);
+}
+
+int monitor_count() {
+    return g_monitors->len;
 }
 
 void all_monitors_apply_layout() {
     for (int i = 0; i < g_monitors->len; i++) {
-        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, i);
+        HSMonitor* m = monitor_with_index(i);
         monitor_apply_layout(m);
     }
 }
@@ -515,10 +543,17 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             monitor->tag = tag;
             // reset focus
             frame_focus_recursive(tag->frame);
+            /* TODO: find the best order of restacking and layouting */
+            monitor_restack(other);
+            monitor_restack(monitor);
             monitor_apply_layout(other);
             monitor_apply_layout(monitor);
+            // discard enternotify-events
+            XEvent ev;
+            XSync(g_display, False);
+            while (XCheckMaskEvent(g_display, EnterWindowMask, &ev));
             ewmh_update_current_desktop();
-            emit_tag_changed(other->tag, other - (HSMonitor*)g_monitors->data);
+            emit_tag_changed(other->tag, monitor_index_of(other));
             emit_tag_changed(tag, g_cur_monitor);
         }
         return;
@@ -528,9 +563,15 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     monitor->tag = tag;
     // first reset focus and arrange windows
     frame_focus_recursive(tag->frame);
+    monitor_restack(monitor);
+    monitor->lock_frames = true;
     monitor_apply_layout(monitor);
+    monitor->lock_frames = false;
     // then show them (should reduce flicker)
     frame_show_recursive(tag->frame);
+    if (!monitor->tag->floating) {
+        frame_update_frame_window_visibility(monitor->tag->frame);
+    }
     // 2. hide old tag
     frame_hide_recursive(old_tag->frame);
     // focus window just has been shown
@@ -599,13 +640,18 @@ int monitor_cycle_command(int argc, char** argv) {
 }
 
 int monitor_index_of(HSMonitor* monitor) {
-    return monitor - (HSMonitor*)g_monitors->data;
+    for (int i = 0; i < g_monitors->len; i++) {
+        if (monitor_with_index(i) == monitor) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 void monitor_focus_by_index(int new_selection) {
     new_selection = CLAMP(new_selection, 0, g_monitors->len - 1);
-    HSMonitor* old = &g_array_index(g_monitors, HSMonitor, g_cur_monitor);
-    HSMonitor* monitor = &g_array_index(g_monitors, HSMonitor, new_selection);
+    HSMonitor* old = get_current_monitor();
+    HSMonitor* monitor = monitor_with_index(new_selection);
     if (old == monitor) {
         // nothing to do
         return;
@@ -665,7 +711,7 @@ int monitor_get_relative_y(HSMonitor* m, int y_root) {
 HSMonitor* monitor_with_coordinate(int x, int y) {
     int i;
     for (i = 0; i < g_monitors->len; i++) {
-        HSMonitor* m = &g_array_index(g_monitors, HSMonitor, i);
+        HSMonitor* m = monitor_with_index(i);
         if (m->rect.x + m->pad_left <= x
             && m->rect.x + m->rect.width - m->pad_right > x
             && m->rect.y + m->pad_up <= y
@@ -680,7 +726,7 @@ HSMonitor* monitor_with_index(int index) {
     if (index < 0 || index >= g_monitors->len) {
         return NULL;
     }
-    return &g_array_index(g_monitors, HSMonitor, index);
+    return g_array_index(g_monitors, HSMonitor*, index);
 }
 
 int monitors_lock_command(int argc, char** argv) {
@@ -715,7 +761,7 @@ void monitors_lock_changed() {
     if (!*g_monitors_locked) {
         // if not locked anymore, then repaint all the dirty monitors
         for (int i = 0; i < g_monitors->len; i++) {
-            HSMonitor* m = &g_array_index(g_monitors, HSMonitor, i);
+            HSMonitor* m = monitor_with_index(i);
             if (m->dirty) {
                 monitor_apply_layout(m);
             }
@@ -806,5 +852,51 @@ int detect_monitors_command(int argc, char **argv) {
     int ret = set_monitor_rects(monitors, count);
     g_free(monitors);
     return ret;
+}
+
+int monitor_stack_window_count() {
+    return stack_window_count(g_monitor_stack);
+}
+
+void monitor_stack_to_window_buf(Window* buf, int len, int* remain_len) {
+    return stack_to_window_buf(g_monitor_stack, buf, len, remain_len);
+}
+
+HSStack* get_monitor_stack() {
+    return g_monitor_stack;
+}
+
+int monitor_raise_command(int argc, char** argv) {
+    (void)SHIFT(argc, argv);
+    HSMonitor* monitor;
+    if (argc >= 1) {
+        monitor = monitor_with_index(atoi(argv[0]));
+    } else {
+        monitor = get_current_monitor();
+    }
+    if (!monitor) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    stack_raise_slide(g_monitor_stack, monitor->slice);
+    return 0;
+}
+
+void monitor_restack(HSMonitor* monitor) {
+    int count = 1 + stack_window_count(monitor->tag->stack);
+    Window* buf = g_new(Window, count);
+    buf[0] = monitor->stacking_window;
+    stack_to_window_buf(monitor->tag->stack, buf + 1, count - 1, NULL);
+    /* remove a focused fullscreen client */
+    Window win = frame_focused_window(monitor->tag->frame);
+    HSClient* client = win ? get_client_from_window(win) : NULL;
+    if (client && client->fullscreen) {
+        XRaiseWindow(g_display, client->window);
+        int idx = array_find(buf, count, sizeof(*buf), &client->window);
+        assert(idx >= 0);
+        count--;
+        memmove(buf + idx, buf + idx + 1, sizeof(*buf) * count - idx);
+    }
+    XRestackWindows(g_display, buf, count);
+    g_free(buf);
 }
 

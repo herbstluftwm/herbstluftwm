@@ -7,6 +7,7 @@
 #include "settings.h"
 #include "globals.h"
 #include "layout.h"
+#include "stack.h"
 #include "utils.h"
 #include "hook.h"
 #include "mouse.h"
@@ -172,6 +173,10 @@ HSClient* manage_client(Window win) {
     }
     // get events from window
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
+    // insert window to the stack
+    client->slice = slice_create_client(client);
+    stack_insert_slice(client->tag->stack, client->slice);
+    // insert windwo to the tag
     frame_insert_window_at_index(client->tag->frame, win, changes.tree_index->str);
     if (changes.focus) {
         // give focus to window if wanted
@@ -200,20 +205,27 @@ void unmanage_client(Window win) {
     }
     // remove from tag
     frame_remove_window(client->tag->frame, win);
-    // and arrange monitor
-    HSMonitor* m = find_monitor_with_tag(client->tag);
-    if (m) monitor_apply_layout(m);
     // ignore events from it
     XSelectInput(g_display, win, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
     g_hash_table_remove(g_clients, &win);
+    // and arrange monitor after the client has been removed from the stack
+    HSMonitor* m = find_monitor_with_tag(client->tag);
+    tag_update_focus_layer(client->tag);
+    if (m) monitor_apply_layout(m);
     ewmh_remove_client(win);
     tag_set_flags_dirty();
 }
 
 // destroys a special client
 void client_destroy(HSClient* client) {
+    if (client->tag && client->slice) {
+        stack_remove_slice(client->tag->stack, client->slice);
+    }
+    if (client->slice) {
+        slice_destroy(client->slice);
+    }
     if (client) {
         /* free window title */
         g_string_free(client->title, true);
@@ -245,6 +257,7 @@ void window_unfocus_last() {
         /* only emit the hook if the focus *really* changes */
         hook_emit_list("focus_changed", "0x0", "", NULL);
         ewmh_update_active_window(None);
+        tag_update_each_focus_layer();
     }
     lastfocus = 0;
 }
@@ -261,6 +274,7 @@ void window_focus(Window window) {
         // unfocus last one
         window_unfocus(lastfocus);
         ewmh_update_active_window(window);
+        tag_update_each_focus_layer();
         HSClient* client = get_client_from_window(window);
         char* title = client ? client->title->str : "?";
         char winid_str[STRING_BUF_SIZE];
@@ -278,8 +292,11 @@ void window_focus(Window window) {
                          && g_cur_frame->content.clients.layout == LAYOUT_MAX
                          && get_current_monitor()->tag->floating == false;
     if (*g_raise_on_focus || is_max_layout) {
-        XRaiseWindow(g_display, window);
+        HSClient* client = get_client_from_window(window);
+        assert(client != NULL);
+        client_raise(client);
     }
+    tag_update_focus_layer(get_current_monitor()->tag);
     grab_client_buttons(get_client_from_window(window), true);
 }
 
@@ -308,6 +325,11 @@ void client_resize_fullscreen(HSClient* client, HSMonitor* m) {
     XMoveResizeWindow(g_display, client->window,
                       m->rect.x, m->rect.y, m->rect.width, m->rect.height);
 
+}
+
+void client_raise(HSClient* client) {
+    assert(client);
+    stack_raise_slide(client->tag->stack, client->slice);
 }
 
 void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
@@ -576,10 +598,13 @@ void client_set_fullscreen(HSClient* client, bool state) {
     }
 
     client->fullscreen = state;
+    HSStack* stack = client->tag->stack;
     if (state) {
-        // TODO: do proper stacking layer handling
-        XRaiseWindow(g_display, client->window);
+        stack_slice_add_layer(stack, client->slice, LAYER_FULLSCREEN);
+    } else {
+        stack_slice_remove_layer(stack, client->slice, LAYER_FULLSCREEN);
     }
+    tag_update_focus_layer(client->tag);
     monitor_apply_layout(find_monitor_with_tag(client->tag));
 
     char buf[STRING_BUF_SIZE];

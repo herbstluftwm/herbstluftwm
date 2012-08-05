@@ -30,6 +30,25 @@ Some BUGS:
       windows and after mapping them). TODO: only do it once.
     - also update window title if *only* the _NET_WM_NAME changes
     - make focus_window(client->window, true, false); work
+    - do not flicker if there are three monitors and the tag of the topmost is
+      swapped with the tag of the most bottom monitor (flickering can be
+      noticed at the middle monitor)
+    - Fullscreen clients must not be above the panel of another monitor which
+      actually is above that fullscreen window in the stacking order. (But it
+      currently is, because we can't distinguish which monitor a panel is
+      associated to or if a window is a panel at all). There is no clean
+      solution yet, because we can't easily find out, which monitor a panel is
+      associated to. One could automatically detect the monitor association of
+      a panel by a panel's and a monitor's geometry, but those heuristics
+      mostly fail if two monitors overlap heavily (which is the *only* case in
+      which this bug is triggered).
+
+      Steps to reproduce: Create to monitors which overlap (Use add_monitor,
+      move_monitor and raise_monitor). Focus a fullscreen client on the lower
+      monitor and focus a non-fullscreen client on the higher monitor and
+      select the higher monitor. Effect: the non-fullscreen client on the
+      higher monitor should be above the fullscreen window but is displayed
+      below the fullscreen window on the lower monitor.
 
 Planned features:
 

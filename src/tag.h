@@ -7,15 +7,18 @@
 #define __HERBSTLUFT_TAG_H_
 
 #include <glib.h>
+#include <stdbool.h>
 
 struct HSFrame;
 struct HSClient;
+struct HSStack;
 
 typedef struct HSTag {
     GString*        name;   // name of this tag
     struct HSFrame* frame;  // the master frame
     bool            floating;
     int             flags;
+    struct HSStack* stack;
 } HSTag;
 
 // globals
@@ -41,6 +44,9 @@ void tag_move_focused_client(HSTag* target);
 void tag_move_client(struct HSClient* client,HSTag* target);
 int tag_remove_command(int argc, char** argv);
 int tag_set_floating_command(int argc, char** argv, GString** result);
+void tag_update_focus_layer(HSTag* tag);
+void tag_foreach(void (*action)(HSTag*));
+void tag_update_each_focus_layer();
 void tag_force_update_flags();
 void tag_update_flags();
 void tag_set_flags_dirty();

@@ -7,21 +7,26 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "tag.h"
+
 #include "globals.h"
 #include "clientlist.h"
 #include "ipc-protocol.h"
 #include "utils.h"
 #include "hook.h"
 #include "layout.h"
-#include "tag.h"
+#include "stack.h"
 #include "ewmh.h"
 #include "monitor.h"
 #include "settings.h"
 
 bool    g_tag_flags_dirty = true;
+int* g_raise_on_focus_temporarily;
 
 void tag_init() {
     g_tags = g_array_new(false, false, sizeof(HSTag*));
+    g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
+                                     ->value.i);
 }
 
 static void tag_free(HSTag* tag) {
@@ -33,6 +38,7 @@ static void tag_free(HSTag* tag) {
             g_free(buf);
         }
     }
+    stack_destroy(tag->stack);
     g_string_free(tag->name, true);
     g_free(tag);
 }
@@ -122,8 +128,9 @@ HSTag* add_tag(char* name) {
         // nothing to do
         return find_result;
     }
-    HSTag* tag = g_new(HSTag, 1);
-    tag->frame = frame_create_empty();
+    HSTag* tag = g_new0(HSTag, 1);
+    tag->stack = stack_create();
+    tag->frame = frame_create_empty(NULL, tag);
     tag->name = g_string_new(name);
     tag->floating = false;
     g_array_append_val(g_tags, tag);
@@ -357,7 +364,9 @@ void tag_move_client(HSClient* client, HSTag* target) {
     frame_remove_window(tag_source->frame, client->window);
     // insert window into target
     frame_insert_window(target->frame, client->window);
+    stack_remove_slice(client->tag->stack, client->slice);
     client->tag = target;
+    stack_insert_slice(client->tag->stack, client->slice);
     ewmh_window_update_tag(client->window, client->tag);
 
     // refresh things, hide things, layout it, and then show it if needed
@@ -380,5 +389,30 @@ void tag_move_client(HSClient* client, HSTag* target) {
     tag_set_flags_dirty();
 }
 
+void tag_update_focus_layer(HSTag* tag) {
+    HSClient* focus = get_client_from_window(frame_focused_window(tag->frame));
+    stack_clear_layer(tag->stack, LAYER_FOCUS);
+    if (!stack_is_layer_empty(tag->stack, LAYER_FULLSCREEN)
+        || *g_raise_on_focus_temporarily) {
+        if (focus) {
+            stack_slice_add_layer(tag->stack, focus->slice, LAYER_FOCUS);
+        }
+    }
+    HSMonitor* monitor = find_monitor_with_tag(tag);
+    if (monitor) {
+        monitor_restack(monitor);
+    }
+}
+
+void tag_foreach(void (*action)(HSTag*)) {
+    for (int i = 0; i < g_tags->len; i++) {
+        HSTag* tag = g_array_index(g_tags, HSTag*, i);
+        action(tag);
+    }
+}
+
+void tag_update_each_focus_layer() {
+    tag_foreach(tag_update_focus_layer);
+}
 
 

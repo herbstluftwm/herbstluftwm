@@ -54,6 +54,7 @@ typedef int (*ClientAction)(struct HSClient*, void* data);
 #define FRACTION_UNIT 10000
 
 struct HSFrame;
+struct HSSlice;
 struct HSTag;
 
 typedef struct HSLayout {
@@ -78,6 +79,8 @@ typedef struct HSFrame {
     } content;
     int type;
     struct HSFrame* parent;
+    struct HSTag*   tag;
+    struct HSSlice* slice;
     Window window;
     bool   window_visible;
 } HSFrame;
@@ -92,7 +95,7 @@ int* g_window_gap;
 void layout_init();
 void layout_destroy();
 // for frames
-HSFrame* frame_create_empty();
+HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag);
 void frame_insert_window(HSFrame* frame, Window window);
 void frame_insert_window_at_index(HSFrame* frame, Window window, char* index);
 HSFrame* frame_current_selection();
@@ -109,6 +112,7 @@ int frame_change_fraction_command(int argc, char** argv);
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect);
 void frame_apply_floating_layout(HSFrame* frame, struct HSMonitor* m);
+void frame_update_frame_window_visibility(HSFrame* frame);
 void reset_frame_colors();
 HSFrame* get_toplevel_frame(HSFrame* frame);
 

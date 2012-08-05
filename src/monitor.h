@@ -15,24 +15,28 @@
 
 struct HSTag;
 struct HSFrame;
+struct HSSlice;
+struct HSStack;
 
 typedef struct HSMonitor {
     struct HSTag*      tag;    // currently viewed tag
+    struct HSSlice*    slice;  // slice in the monitor stack
     int         pad_up;
     int         pad_right;
     int         pad_down;
     int         pad_left;
     bool        dirty;
+    bool        lock_frames;
     struct {
         // last saved mouse position
         int x;
         int y;
     } mouse;
     XRectangle  rect;   // area for this monitor
+    Window      stacking_window;   // window used for making stacking easy
 } HSMonitor;
 
 // globals
-GArray*     g_monitors; // Array of HSMonitor
 int         g_cur_monitor;
 
 void monitor_init();
@@ -51,6 +55,7 @@ int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv);
 int add_monitor_command(int argc, char** argv);
+int monitor_raise_command(int argc, char** argv);
 int remove_monitor_command(int argc, char** argv);
 int remove_monitor(int index);
 int list_monitors(int argc, char** argv, GString** output);
@@ -60,6 +65,7 @@ int set_monitor_rects(XRectangle* templates, size_t count);
 int move_monitor_command(int argc, char** argv);
 int monitor_rect_command(int argc, char** argv, GString** result);
 HSMonitor* get_current_monitor();
+int monitor_count();
 void monitor_set_tag(HSMonitor* monitor, struct HSTag* tag);
 int monitor_set_pad_command(int argc, char** argv);
 int monitor_set_tag_command(int argc, char** argv);
@@ -70,6 +76,12 @@ void monitors_lock_changed();
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
+
+void monitor_restack(HSMonitor* monitor);
+int monitor_stack_window_count();
+void monitor_stack_to_window_buf(Window* buf, int len, int* remain_len);
+struct HSStack* get_monitor_stack();
+
 
 typedef bool (*MonitorDetection)(XRectangle**, size_t*);
 bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count);
