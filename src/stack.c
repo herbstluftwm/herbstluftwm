@@ -124,8 +124,6 @@ static void stack_print(HSStack* stack, GString** result) {
 int print_stack_command(int argc, char** argv, GString** result) {
     HSStack* stack = get_monitor_stack();
     stack_print(stack, result);
-    stack_mark_dirty(stack);
-    stack_restack(stack);
     return 0;
 }
 
