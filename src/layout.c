@@ -522,11 +522,8 @@ HSFrame* get_toplevel_frame(HSFrame* frame) {
     return frame;
 }
 
-void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** output) {
+static void frame_append_caption(HSFrame* frame, GString** output) {
     if (frame->type == TYPE_CLIENTS) {
-        g_string_append(*output, rootprefix);
-        *output = g_string_append_unichar(*output,
-            UTF8_STRING_AT(g_tree_style, 5));
         // list of clients
         g_string_append_printf(*output, " %s:",
             g_layout_names[frame->content.clients.layout]);
@@ -538,57 +535,33 @@ void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** 
         if (g_cur_frame == frame) {
             *output = g_string_append(*output, " [FOCUS]");
         }
-        *output = g_string_append(*output, "\n");
     } else {
         /* type == TYPE_FRAMES */
-        g_string_append_printf(*output, "%s", rootprefix);
-        *output = g_string_append_unichar(*output,
-            UTF8_STRING_AT(g_tree_style, 6));
-        *output = g_string_append_unichar(*output,
-            UTF8_STRING_AT(g_tree_style, 7));
-        // insert frame description
         g_string_append_printf(*output, "%s %d%% selection=%d",
             g_layout_names[frame->content.layout.align],
             frame->content.layout.fraction * 100 / FRACTION_UNIT,
             frame->content.layout.selection);
-
-        *output = g_string_append_c(*output, '\n');
-
-        // first child
-        GString* child_indent = g_string_new(indent);
-        child_indent = g_string_append_c(child_indent, ' ');
-        child_indent = g_string_append_unichar(child_indent,
-            UTF8_STRING_AT(g_tree_style, 1));
-
-        GString* child_prefix = g_string_new(indent);
-        child_prefix = g_string_append_c(child_prefix, ' ');
-        child_prefix = g_string_append_unichar(child_prefix,
-            UTF8_STRING_AT(g_tree_style, 3));
-        print_frame_tree(frame->content.layout.a, child_indent->str,
-                         child_prefix->str, output);
-
-        // second child
-        g_string_printf(child_indent, "%s ", indent);
-        child_indent = g_string_append_unichar(child_indent,
-            UTF8_STRING_AT(g_tree_style, 2));
-        g_string_printf(child_prefix, "%s ", indent);
-        child_prefix = g_string_append_unichar(child_prefix,
-            UTF8_STRING_AT(g_tree_style, 4));
-        print_frame_tree(frame->content.layout.b, child_indent->str,
-                         child_prefix->str, output);
-
-        // cleanup
-        g_string_free(child_indent, true);
-        g_string_free(child_prefix, true);
     }
 }
 
+static size_t frame_child_count(HSFrame* frame) {
+    return (frame->type == TYPE_CLIENTS) ? 0 : 2;
+}
+
+static HSFrame* frame_nth_child(HSFrame* frame, size_t idx) {
+    if (frame->type == TYPE_CLIENTS) return NULL;
+    else if (idx == 0) return frame->content.layout.a;
+    else if (idx == 1) return frame->content.layout.b;
+    else return NULL;
+}
+
 void print_tag_tree(HSTag* tag, GString** output) {
-    GString* root_indicator = g_string_new("");
-    root_indicator = g_string_append_unichar(root_indicator,
-            UTF8_STRING_AT(g_tree_style, 0));
-    print_frame_tree(tag->frame, " ", root_indicator->str, output);
-    g_string_free(root_indicator, true);
+    HSTreeInterface frameintf = {
+        .child_count    = (HSTreeChildCount)    frame_child_count,
+        .nth_child      = (HSTreeNthChild)      frame_nth_child,
+        .append_caption = (HSTreeAppendCaption) frame_append_caption,
+    };
+    tree_print_to(tag->frame, frameintf, output);
 }
 
 void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
