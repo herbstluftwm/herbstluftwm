@@ -16,12 +16,12 @@ config_2="$HOME/.config/herbstluftwm/herbstcommander"
 [[ -f "$config_1" ]] && source "$config_1"
 [[ -f "$config_2" ]] && source "$config_2"
 
-dmenu_cmd=${dmenu_cmd:-dmenu $@}
+dmenu_cmd=${dmenu_cmd:-dmenu -i}
 herbstclient_cmd=${herbstclient_cmd:-herbstclient}
 prompt=${prompt:-herbstluft: }
 display_reply=${display_reply:-true}
 
-cmd=()
+cmd=( "$@" )
 forceexec=0
 
 while :; do
