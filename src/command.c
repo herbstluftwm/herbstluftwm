@@ -54,6 +54,7 @@ struct {
     { "list_commands",  0,  no_completion },
     { "list_keybinds",  0,  no_completion },
     { "add_monitor",    7,  no_completion },
+    { "bring",          2,  no_completion },
     { "focus_nth",      2,  no_completion },
     { "cycle",          2,  no_completion },
     { "cycle_all",      3,  no_completion },
@@ -125,6 +126,8 @@ struct {
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
     { "add_monitor",    EQ, 2,  .function = complete_against_tags },
+    { "bring",          EQ, 1,  .list = completion_special_winids },
+    { "bring",          EQ, 1,  .function = complete_against_winids },
     { "cycle",          EQ, 1,  .list = completion_pm_one },
     { "cycle_all",      EQ, 1,  .list = completion_cycle_all_args },
     { "cycle_all",      EQ, 1,  .list = completion_pm_one },

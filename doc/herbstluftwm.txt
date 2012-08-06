@@ -298,6 +298,10 @@ jumpto urgent|'0xWINID'::
     Puts the focus to the specified window, which is an arbitrary urgent window
     or specified by the hexadecimal '0xWINID'.
 
+bring urgent|'0xWINID'::
+    Moves specified window to the current frame. The window is an arbitrary
+    urgent window or specified by the hexadecimal '0xWINID'.
+
 resize 'DIRECTION' 'FRACTIONDELTA'::
     Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA'.
     'DIRECTION' is specified at the 'focus' command. You should not omit the

@@ -44,6 +44,7 @@ Changes:
       - new setting: raise_on_focus_temporarily
       - new command: stack
     * new command: focus_nth
+    * new command: bring
 
 Release 0.3 on 2012-04-12
 -------------------------

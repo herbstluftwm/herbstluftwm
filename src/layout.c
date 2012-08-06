@@ -885,6 +885,17 @@ HSFrame* frame_current_selection() {
     return frame;
 }
 
+int frame_current_bring(int argc, char** argv) {
+    HSClient* client;
+
+    string_to_client((argc > 1) ? argv[1] : "", &client);
+    if (!client) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    tag_move_client(client, get_current_monitor()->tag);
+    return 0;
+}
+
 int frame_current_set_selection(int argc, char** argv) {
     int index = 0;
     if (argc >= 2) {
