@@ -209,10 +209,11 @@ void unmanage_client(Window win) {
     XSelectInput(g_display, win, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
+    HSTag* tag = client->tag;
     g_hash_table_remove(g_clients, &win);
     // and arrange monitor after the client has been removed from the stack
-    HSMonitor* m = find_monitor_with_tag(client->tag);
-    tag_update_focus_layer(client->tag);
+    HSMonitor* m = find_monitor_with_tag(tag);
+    tag_update_focus_layer(tag);
     if (m) monitor_apply_layout(m);
     ewmh_remove_client(win);
     tag_set_flags_dirty();
