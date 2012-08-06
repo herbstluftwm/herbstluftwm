@@ -54,6 +54,7 @@ struct {
     { "list_commands",  0,  no_completion },
     { "list_keybinds",  0,  no_completion },
     { "add_monitor",    7,  no_completion },
+    { "focus_nth",      2,  no_completion },
     { "cycle",          2,  no_completion },
     { "cycle_all",      3,  no_completion },
     { "cycle_layout",   LAYOUT_COUNT+2, no_completion },

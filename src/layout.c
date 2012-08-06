@@ -885,6 +885,28 @@ HSFrame* frame_current_selection() {
     return frame;
 }
 
+int frame_current_set_selection(int argc, char** argv) {
+    int index = 0;
+    if (argc >= 2) {
+        index = atoi(argv[1]);
+    } else {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    // find current selection
+    HSFrame* frame = frame_current_selection();
+    if (frame->content.clients.count == 0) {
+        // nothing to do
+        return 0;
+    }
+    if (index < 0 || index >= frame->content.clients.count) {
+        index = frame->content.clients.count - 1;
+    }
+    frame->content.clients.selection = index;
+    Window window = frame->content.clients.buf[index];
+    window_focus(window);
+    return 0;
+}
+
 int frame_current_cycle_selection(int argc, char** argv) {
     int delta = 1;
     if (argc >= 2) {

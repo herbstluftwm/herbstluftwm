@@ -192,6 +192,11 @@ wmexec ['WINDOWMANAGER' ['ARGS ...']]::
 
         * wmexec openbox
 
+focus_nth 'INDEX'::
+    Focuses nth window in a frame. The first window has 'INDEX' 0, if INDEX is
+    negative or greater than the last window index, then the last window is
+    focused.
+
 cycle ['DELTA']::
     Cycles the selection within the current frame by 'DELTA'. If 'DELTA' is
     omitted, 'DELTA' = 1 will be used. 'DELTA' can be negative; 'DELTA' = -1
