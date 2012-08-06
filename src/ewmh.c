@@ -26,6 +26,10 @@ size_t      g_window_count;
 static Window      g_wm_window;
 int*        g_focus_stealing_prevention;
 
+static Window*  g_original_clients = NULL;
+static unsigned long g_original_clients_count = 0;
+static bool ewmh_read_client_list(Window** buf, unsigned long *count);
+
 /* list of names of all _NET-atoms */
 char* g_netatom_names[NetCOUNT] = {
     [ NetSupported                  ] = "_NET_SUPPORTED"                    ,
@@ -81,6 +85,11 @@ void ewmh_init() {
     /* init some globals */
     g_windows = NULL;
     g_window_count = 0;
+    if (!ewmh_read_client_list(&g_original_clients, &g_original_clients_count))
+    {
+        g_original_clients = NULL;
+        g_original_clients_count = 0;
+    }
 
     /* init for the supporting wm check */
     g_wm_window = XCreateSimpleWindow(g_display, g_root,
@@ -110,6 +119,9 @@ void ewmh_update_all() {
 
 void ewmh_destroy() {
     g_free(g_windows);
+    if (g_original_clients) {
+        XFree(g_original_clients);
+    }
     XDeleteProperty(g_display, g_root, g_netatom[NetSupportingWmCheck]);
     XDestroyWindow(g_display, g_wm_window);
 }
@@ -118,6 +130,26 @@ void ewmh_update_client_list() {
     XChangeProperty(g_display, g_root, g_netatom[NetClientList],
         XA_WINDOW, 32, PropModeReplace,
         (unsigned char *) g_windows, g_window_count);
+}
+
+static bool ewmh_read_client_list(Window** buf, unsigned long *count) {
+    Atom actual_type;
+    int format;
+    unsigned long bytes_left;
+    if (Success != XGetWindowProperty(g_display, g_root,
+            g_netatom[NetClientList], 0, ~0L, False, XA_WINDOW, &actual_type,
+            &format, count, &bytes_left, (unsigned char**)buf)) {
+        return false;
+    }
+    if (bytes_left || actual_type != XA_WINDOW || format != 32) {
+        return false;
+    }
+    return true;
+}
+
+void ewmh_get_original_client_list(Window** buf, unsigned long *count) {
+    *buf = g_original_clients;
+    *count = g_original_clients_count;
 }
 
 void ewmh_update_client_list_stacking() {

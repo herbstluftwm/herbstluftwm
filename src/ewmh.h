@@ -70,6 +70,7 @@ void ewmh_add_client(Window win);
 void ewmh_remove_client(Window win);
 
 void ewmh_update_client_list();
+void ewmh_get_original_client_list(Window** buf, unsigned long *count);
 void ewmh_update_client_list_stacking();
 void ewmh_update_desktops();
 void ewmh_update_desktop_names();

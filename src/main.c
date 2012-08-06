@@ -445,12 +445,12 @@ void checkotherwm(void) {
 // scan for windows and add them to the list of managed clients
 // from dwm.c
 void scan(void) {
-    unsigned int i, num;
+    unsigned int num;
     Window d1, d2, *wins = NULL;
     XWindowAttributes wa;
 
     if(XQueryTree(g_display, g_root, &d1, &d2, &wins, &num)) {
-        for(i = 0; i < num; i++) {
+        for (int i = 0; i < num; i++) {
             if(!XGetWindowAttributes(g_display, wins[i], &wa)
             || wa.override_redirect || XGetTransientForHint(g_display, wins[i], &d1))
                 continue;
@@ -463,6 +463,12 @@ void scan(void) {
         }
         if(wins)
             XFree(wins);
+    }
+    unsigned long count;
+    ewmh_get_original_client_list(&wins, &count);
+    for (int i = 0; i < count; i++) {
+        manage_client(wins[i]);
+        XMapWindow(g_display, wins[i]);
     }
 }
 
