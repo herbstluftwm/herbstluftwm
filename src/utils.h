@@ -31,16 +31,16 @@ GString* window_instance_to_g_string(Display* dpy, Window window);
 int window_pid(Display* dpy, Window window);
 
 typedef void* HSTree;
-typedef HSTree (*HSTreeNthChild)(HSTree root, size_t idx);
-typedef size_t (*HSTreeChildCount)(HSTree root);
-typedef void   (*HSTreeAppendCaption)(HSTree root, GString** output);
-typedef struct {
-    HSTreeNthChild      nth_child;
-    HSTreeChildCount    child_count;
-    HSTreeAppendCaption append_caption;
+struct HSTreeInterface;
+typedef struct HSTreeInterface {
+    struct HSTreeInterface* (*nth_child)(HSTree root, size_t idx);
+    size_t                  (*child_count)(HSTree root);
+    void                    (*append_caption)(HSTree root, GString** output);
+    HSTree                  data;
+    void                    (*destructor)(struct HSTreeInterface* obj);
 } HSTreeInterface;
 
-void tree_print_to(HSTree root, HSTreeInterface intface, GString** output);
+void tree_print_to(HSTreeInterface* intface, GString** output);
 
 
 bool is_herbstluft_window(Display* dpy, Window window);

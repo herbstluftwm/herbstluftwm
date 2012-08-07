@@ -522,7 +522,8 @@ HSFrame* get_toplevel_frame(HSFrame* frame) {
     return frame;
 }
 
-static void frame_append_caption(HSFrame* frame, GString** output) {
+static void frame_append_caption(HSTree tree, GString** output) {
+    HSFrame* frame = (HSFrame*) tree;
     if (frame->type == TYPE_CLIENTS) {
         // list of clients
         g_string_append_printf(*output, " %s:",
@@ -544,24 +545,33 @@ static void frame_append_caption(HSFrame* frame, GString** output) {
     }
 }
 
-static size_t frame_child_count(HSFrame* frame) {
+static size_t frame_child_count(HSTree tree) {
+    HSFrame* frame = (HSFrame*) tree;
     return (frame->type == TYPE_CLIENTS) ? 0 : 2;
 }
 
-static HSFrame* frame_nth_child(HSFrame* frame, size_t idx) {
-    if (frame->type == TYPE_CLIENTS) return NULL;
-    else if (idx == 0) return frame->content.layout.a;
-    else if (idx == 1) return frame->content.layout.b;
-    else return NULL;
+static HSTreeInterface* frame_nth_child(HSTree tree, size_t idx) {
+    HSFrame* frame = (HSFrame*) tree;
+    HSTreeInterface* intf = g_new0(HSTreeInterface, 1);
+    intf->nth_child = frame_nth_child;
+    intf->destructor = (void (*)(HSTreeInterface*)) g_free;
+    intf->child_count = frame_child_count;
+    intf->append_caption = frame_append_caption;
+    assert(frame->type != TYPE_CLIENTS);
+    if (idx == 0) intf->data = frame->content.layout.a;
+    else intf->data = frame->content.layout.b;
+    return intf;
 }
 
 void print_tag_tree(HSTag* tag, GString** output) {
     HSTreeInterface frameintf = {
-        .child_count    = (HSTreeChildCount)    frame_child_count,
-        .nth_child      = (HSTreeNthChild)      frame_nth_child,
-        .append_caption = (HSTreeAppendCaption) frame_append_caption,
+        .child_count    = frame_child_count,
+        .nth_child      = frame_nth_child,
+        .append_caption = frame_append_caption,
+        .destructor     = NULL,
+        .data           = (HSTree) tag->frame,
     };
-    tree_print_to(tag->frame, frameintf, output);
+    tree_print_to(&frameintf, output);
 }
 
 void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
