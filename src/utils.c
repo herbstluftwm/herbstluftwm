@@ -336,7 +336,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     int width = wa.width;
     int height = wa.height;
 
-    unsigned int depth = DefaultDepth(dpy, DefaultScreen(dpy));
+    unsigned int depth = wa.depth;
 
     int full_width = width + 2 * bw;
     int full_height = height + 2 * bw;
@@ -367,7 +367,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
         { full_width - ibw, full_height - ibw, ibw, ibw }
     };
 
-    Pixmap pix = XCreatePixmap(dpy, g_root, full_width, full_height, depth);
+    Pixmap pix = XCreatePixmap(dpy, win, full_width, full_height, depth);
     GC gc = XCreateGC(dpy, pix, 0, NULL);
 
     /* outer border */
