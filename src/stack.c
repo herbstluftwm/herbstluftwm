@@ -3,8 +3,13 @@
 #include "clientlist.h"
 #include "ewmh.h"
 #include "globals.h"
+#include "utils.h"
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
+
+static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx);
+static size_t                  stack_child_count(HSTree root);
 
 void stacklist_init() {
 }
@@ -92,38 +97,107 @@ void stack_remove_slice(HSStack* s, HSSlice* elem) {
     s->dirty = true;
 }
 
-static void stack_print(HSStack* stack, GString** result);
 
-static void slice_print(HSSlice* slice, GString** result) {
+static void slice_append_caption(HSTree root, GString** result) {
+    HSSlice* slice = (HSSlice*)root;
     switch (slice->type) {
         case SLICE_WINDOW:
-            g_string_append_printf(*result, "  :: %lx Window",
+            g_string_append_printf(*result, "Window 0x%lx",
                                    slice->data.window);
             break;
         case SLICE_CLIENT:
-            g_string_append_printf(*result, "  :: %lx Client \"%s\"",
+            g_string_append_printf(*result, "Client 0x%lx \"%s\"",
                                    slice->data.client->window,
                                    slice->data.client->title->str);
             break;
         case SLICE_MONITOR:
-            g_string_append_printf(*result, "  :: Monitor %d\n",
-                                   monitor_index_of(slice->data.monitor));
-            stack_print(slice->data.monitor->tag->stack, result);
+            g_string_append_printf(*result, "Monitor %d with tag \"%s\"",
+                                   monitor_index_of(slice->data.monitor),
+                                   slice->data.monitor->tag->name->str);
             break;
     }
-    *result = g_string_append_c(*result, '\n');
 }
 
-static void stack_print(HSStack* stack, GString** result) {
-    for (int i = 0; i < LAYER_COUNT; i++) {
-        g_string_append_printf(*result, "==> Layer %d\n", i);
-        g_list_foreach(stack->top[i], (GFunc)slice_print, result);
+static struct HSTreeInterface slice_nth_child(HSTree root, size_t idx) {
+    HSSlice* slice = (HSSlice*)root;
+    assert(slice->type == SLICE_MONITOR);
+    return stack_nth_child(slice->data.monitor->tag->stack, idx);
+}
+
+static size_t slice_child_count(HSTree root) {
+    HSSlice* slice = (HSSlice*)root;
+    if (slice->type == SLICE_MONITOR) {
+        return stack_child_count(slice->data.monitor->tag->stack);
+    } else {
+        return 0;
     }
+}
+
+struct TmpLayer {
+    HSStack* stack;
+    HSLayer    layer;
+};
+
+static struct HSTreeInterface layer_nth_child(HSTree root, size_t idx) {
+    struct TmpLayer* l = (struct TmpLayer*) root;
+    HSSlice* slice = (HSSlice*) g_list_nth_data(l->stack->top[l->layer], idx);
+    HSTreeInterface intface = {
+        .nth_child      = slice_nth_child,
+        .child_count    = slice_child_count,
+        .append_caption = slice_append_caption,
+        .data           = slice,
+        .destructor     = NULL,
+    };
+    return intface;
+}
+
+static size_t layer_child_count(HSTree root) {
+    struct TmpLayer* l = (struct TmpLayer*) root;
+    return g_list_length(l->stack->top[l->layer]);
+}
+
+static void layer_append_caption(HSTree root, GString** output) {
+    struct TmpLayer* l = (struct TmpLayer*) root;
+    g_string_append_printf(*output, "Layer %d", l->layer);
+}
+
+
+static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx) {
+    struct TmpLayer* l = g_new(struct TmpLayer, 1);
+    l->stack = (HSStack*) root;
+    l->layer = (HSLayer) idx;
+
+    HSTreeInterface intface = {
+        .nth_child      = layer_nth_child,
+        .child_count    = layer_child_count,
+        .append_caption = layer_append_caption,
+        .data           = l,
+        .destructor     = (void (*)(HSTree))g_free,
+    };
+    return intface;
+}
+
+static size_t stack_child_count(HSTree root) {
+    return LAYER_COUNT;
+}
+
+static void monitor_stack_append_caption(HSTree root, GString** output) {
+    g_string_append_printf(*output, "Stack of all monitors");
 }
 
 int print_stack_command(int argc, char** argv, GString** result) {
-    HSStack* stack = get_monitor_stack();
-    stack_print(stack, result);
+    struct TmpLayer tl = {
+        .stack = get_monitor_stack(),
+        .layer = LAYER_NORMAL,
+    };
+    HSTreeInterface intface = {
+        .nth_child      = layer_nth_child,
+        .child_count    = layer_child_count,
+        .append_caption = monitor_stack_append_caption,
+        .data           = &tl,
+        .destructor     = NULL,
+    };
+    tree_print_to(&intface, result);
     return 0;
 }
 

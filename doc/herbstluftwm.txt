@@ -439,6 +439,11 @@ raise_monitor ['INDEX']::
     Raises the monitor with the given 'INDEX' or the current one if 'INDEX' is
     omitted.
 
+stack::
+    Prints the stack of monitors with the visible tags and their layers as a
+    tree. The order printed stack is top to bottom. The style is configured by
+    the 'tree_style' setting.
+
 monitor_rect [[-p] 'INDEX']::
     Prints the rectangle of the specified 'INDEX' in the format: *X Y W H* +
     If no 'INDEX' or 'cur' is given, then the current Monitor is used. If '-p'
@@ -867,7 +872,7 @@ bottom contain:
 All monitors are managed in one large stack which only consists of the stacks of
 the visible tags put above each other. The stacking order of these monitors is
 independent from their indexes and can be modified using the *raise_monitor*
-command.
+command. The current stack is illustrated by the *stack* command.
 
 ENVIRONMENT VARIABLES
 ---------------------
