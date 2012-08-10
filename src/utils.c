@@ -415,11 +415,11 @@ static void subtree_print_to(HSTreeInterface* intface, char* indent,
             g_string_printf(child_prefix, "%s ", indent);
             child_prefix = g_string_append_unichar(child_prefix,
                 UTF8_STRING_AT(g_tree_style, last ? 4 : 3));
-            HSTreeInterface* child = intface->nth_child(root, i);
-            subtree_print_to(child, child_indent->str,
+            HSTreeInterface child = intface->nth_child(root, i);
+            subtree_print_to(&child, child_indent->str,
                              child_prefix->str, output);
-            if (child->destructor) {
-                child->destructor(child);
+            if (child.destructor) {
+                child.destructor(child.data);
             }
         }
         g_string_free(child_indent, true);

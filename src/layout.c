@@ -550,16 +550,16 @@ static size_t frame_child_count(HSTree tree) {
     return (frame->type == TYPE_CLIENTS) ? 0 : 2;
 }
 
-static HSTreeInterface* frame_nth_child(HSTree tree, size_t idx) {
+static HSTreeInterface frame_nth_child(HSTree tree, size_t idx) {
     HSFrame* frame = (HSFrame*) tree;
-    HSTreeInterface* intf = g_new0(HSTreeInterface, 1);
-    intf->nth_child = frame_nth_child;
-    intf->destructor = (void (*)(HSTreeInterface*)) g_free;
-    intf->child_count = frame_child_count;
-    intf->append_caption = frame_append_caption;
     assert(frame->type != TYPE_CLIENTS);
-    if (idx == 0) intf->data = frame->content.layout.a;
-    else intf->data = frame->content.layout.b;
+    HSTreeInterface intf = {
+        .nth_child = frame_nth_child,
+        .data       = (idx == 0) ? frame->content.layout.a : frame->content.layout.b,
+        .destructor = NULL,
+        .child_count = frame_child_count,
+        .append_caption = frame_append_caption,
+    };
     return intf;
 }
 

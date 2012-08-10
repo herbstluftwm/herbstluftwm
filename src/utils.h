@@ -33,11 +33,11 @@ int window_pid(Display* dpy, Window window);
 typedef void* HSTree;
 struct HSTreeInterface;
 typedef struct HSTreeInterface {
-    struct HSTreeInterface* (*nth_child)(HSTree root, size_t idx);
+    struct HSTreeInterface  (*nth_child)(HSTree root, size_t idx);
     size_t                  (*child_count)(HSTree root);
     void                    (*append_caption)(HSTree root, GString** output);
     HSTree                  data;
-    void                    (*destructor)(struct HSTreeInterface* obj);
+    void                    (*destructor)(HSTree data); /* how to free the data tree */
 } HSTreeInterface;
 
 void tree_print_to(HSTreeInterface* intface, GString** output);
