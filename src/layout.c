@@ -526,7 +526,7 @@ static void frame_append_caption(HSTree tree, GString** output) {
     HSFrame* frame = (HSFrame*) tree;
     if (frame->type == TYPE_CLIENTS) {
         // list of clients
-        g_string_append_printf(*output, " %s:",
+        g_string_append_printf(*output, "%s:",
             g_layout_names[frame->content.clients.layout]);
         Window* buf = frame->content.clients.buf;
         size_t i, count = frame->content.clients.count;
@@ -554,10 +554,12 @@ static HSTreeInterface frame_nth_child(HSTree tree, size_t idx) {
     HSFrame* frame = (HSFrame*) tree;
     assert(frame->type != TYPE_CLIENTS);
     HSTreeInterface intf = {
-        .nth_child = frame_nth_child,
-        .data       = (idx == 0) ? frame->content.layout.a : frame->content.layout.b,
+        .nth_child  = frame_nth_child,
+        .data       = (idx == 0)
+                        ? frame->content.layout.a
+                        : frame->content.layout.b,
         .destructor = NULL,
-        .child_count = frame_child_count,
+        .child_count    = frame_child_count,
         .append_caption = frame_append_caption,
     };
     return intf;

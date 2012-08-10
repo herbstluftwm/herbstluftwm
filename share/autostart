@@ -19,7 +19,7 @@ Mod=Mod1
 hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-c close
-hc keybind $Mod-Return spawn xterm
+hc keybind $Mod-Return spawn urxvt
 
 # tags
 TAG_NAMES=( {1..9} )
@@ -109,6 +109,8 @@ hc rule windowtype~'_NET_WM_WINDOW_TYPE_(NOTIFICATION|DOCK)' manage=off
 
 # unlock, just to be sure
 hc unlock
+
+herbstclient set tree_style '╾│ ├└╼─┐'
 
 # do multi monitor setup here, e.g.:
 # hc remove_monitor 1

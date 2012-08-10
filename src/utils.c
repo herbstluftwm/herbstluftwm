@@ -392,6 +392,7 @@ static void subtree_print_to(HSTreeInterface* intface, char* indent,
         g_string_append(*output, rootprefix);
         *output = g_string_append_unichar(*output,
             UTF8_STRING_AT(g_tree_style, 5));
+        *output = g_string_append_c(*output, ' ');
         // append caption
         intface->append_caption(root, output);
         *output = g_string_append(*output, "\n");
