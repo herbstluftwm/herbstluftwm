@@ -342,6 +342,9 @@ void stack_slice_remove_layer(HSStack* stack, HSSlice* slice, HSLayer layer) {
             break;
         }
     }
+    /* remove slice from layer in the stack */
+    stack->top[layer] = g_list_remove(stack->top[layer], slice);
+    stack->dirty = true;
     if (i >= slice->layer_count) {
         HSDebug("remove layer: slice %p not in %s\n", (void*)slice,
                 g_layer_names[layer]);
@@ -351,9 +354,6 @@ void stack_slice_remove_layer(HSStack* stack, HSSlice* slice, HSLayer layer) {
     slice->layer_count--;
     size_t len = sizeof(HSLayer) * (slice->layer_count - i);
     memmove(slice->layer + i, slice->layer + i + 1, len);
-    /* remove slice from layer in the stack */
-    stack->top[layer] = g_list_remove(stack->top[layer], slice);
-    stack->dirty = true;
 }
 
 Window stack_lowest_window(HSStack* stack) {
