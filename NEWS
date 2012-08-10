@@ -35,11 +35,14 @@ Changes:
     * add completion for +1 and -1 to many commands: cycle, cycle_all,
       cycle_monitor, cycle_layout and use_index
     * new settings: smart_frame_surroundings and smart_window_borders
-    * new command: raise_monitor
-    * new setting: raise_on_focus_temporarily
     * start system wide autostart file if there is no working user defined one
     * clients are restored (i.e. managed) from _NET_CLIENT_LIST even if they
       are not visible
+    * do proper window and monitor stacking, this also introduces:
+
+      - new command: raise_monitor
+      - new setting: raise_on_focus_temporarily
+      - new command: stack
 
 Release 0.3 on 2012-04-12
 -------------------------
