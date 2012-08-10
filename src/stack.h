@@ -19,6 +19,8 @@ typedef enum Layer {
     LAYER_COUNT,
 } HSLayer;
 
+extern char* g_layer_names[];
+
 typedef enum SliceType {
     SLICE_CLIENT,
     SLICE_WINDOW,

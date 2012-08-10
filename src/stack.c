@@ -11,6 +11,13 @@
 static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx);
 static size_t                  stack_child_count(HSTree root);
 
+char* g_layer_names[LAYER_COUNT] = {
+    [ LAYER_FULLSCREEN  ] = "Fullscreen-Layer"      ,
+    [ LAYER_FOCUS       ] = "Focus-Layer"           ,
+    [ LAYER_NORMAL      ] = "Normal Layer"          ,
+    [ LAYER_FRAMES      ] = "Frame Layer"           ,
+};
+
 void stacklist_init() {
 }
 
@@ -25,8 +32,8 @@ HSStack* stack_create() {
 void stack_destroy(HSStack* s) {
     for (int i = 0; i < LAYER_COUNT; i++) {
         if (s->top[i]) {
-            HSDebug("Warning: layer %d of stack %p was not empty on destroy\n",
-                    i, (void*)s);
+            HSDebug("Warning: %s of stack %p was not empty on destroy\n",
+                    g_layer_names[i], (void*)s);
         }
     }
     g_free(s);
@@ -158,7 +165,7 @@ static size_t layer_child_count(HSTree root) {
 
 static void layer_append_caption(HSTree root, GString** output) {
     struct TmpLayer* l = (struct TmpLayer*) root;
-    g_string_append_printf(*output, "Layer %d", l->layer);
+    g_string_append_printf(*output, "%s", g_layer_names[l->layer]);
 }
 
 
@@ -182,7 +189,7 @@ static size_t stack_child_count(HSTree root) {
 }
 
 static void monitor_stack_append_caption(HSTree root, GString** output) {
-    g_string_append_printf(*output, "Stack of all monitors");
+    // g_string_append_printf(*output, "Stack of all monitors");
 }
 
 int print_stack_command(int argc, char** argv, GString** result) {
@@ -336,7 +343,8 @@ void stack_slice_remove_layer(HSStack* stack, HSSlice* slice, HSLayer layer) {
         }
     }
     if (i >= slice->layer_count) {
-        HSDebug("remove layer: slice %p not in layer %d\n", (void*)slice, layer);
+        HSDebug("remove layer: slice %p not in %s\n", (void*)slice,
+                g_layer_names[layer]);
         return;
     }
     /* remove layer in slice */
