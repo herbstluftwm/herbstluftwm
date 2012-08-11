@@ -26,6 +26,9 @@ static char* completion_special_winids[]= { "urgent", "", NULL };
 static char* completion_use_index_args[]= { "--skip-visible", NULL };
 static char* completion_cycle_all_args[]= { "--skip-invisible", NULL };
 static char* completion_pm_one[]= { "+1", "-1", NULL };
+static char* completion_split_modes[]= { "horizontal", "vertical", NULL };
+static char* completion_split_ratios[]= {
+    "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", NULL };
 
 static bool no_completion(int argc, char** argv, int pos) {
     return false;
@@ -163,6 +166,8 @@ struct {
     { "shift",          EQ, 1,  .list = completion_focus_args },
     { "shift",          EQ, 2,  .list = completion_directions },
     { "set",            EQ, 1,  .function = complete_against_settings },
+    { "split",          EQ, 1,  .list = completion_split_modes },
+    { "split",          EQ, 2,  .list = completion_split_ratios },
     { "get",            EQ, 1,  .function = complete_against_settings },
     { "toggle",         EQ, 1,  .function = complete_against_settings },
     { "cycle_value",    EQ, 1,  .function = complete_against_settings },

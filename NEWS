@@ -33,7 +33,7 @@ Changes:
     * new option --skip-invisible for cycle_all
     * cycle_layout now offers to cycle through a custom list of layouts
     * add completion for +1 and -1 to many commands: cycle, cycle_all,
-      cycle_monitor, cycle_layout and use_index
+      cycle_monitor, cycle_layout, split and use_index
     * new settings: smart_frame_surroundings and smart_window_borders
     * start system wide autostart file if there is no working user defined one
     * clients are restored (i.e. managed) from _NET_CLIENT_LIST even if they
