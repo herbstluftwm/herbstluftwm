@@ -816,7 +816,9 @@ startup. It is also executed on command 'reload'. If not specified by the
 *--autostart* argument, autostart file is located at
 '$XDG_CONFIG_HOME/herbstluftwm/autostart' or at
 '~/.config/herbstluftwm/autostart'. Normally it consists of a few *herbstclient*
-calls.
+calls. If executing the autostart file in a user's home fails the global
+autostart file (mostly placed at /etc/xdg/herbstluftwm/autostart) is executed as
+a fallback.
 
 For a quick install, copy the default autostart file to
 '~/.config/herbstluftwm/'.
