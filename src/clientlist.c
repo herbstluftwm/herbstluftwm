@@ -180,6 +180,7 @@ HSClient* manage_client(Window win) {
     stack_insert_slice(client->tag->stack, client->slice);
     // insert windwo to the tag
     frame_insert_window_at_index(client->tag->frame, win, changes.tree_index->str);
+    client_update_wm_hints(client);
     if (changes.focus) {
         // give focus to window if wanted
         // TODO: make this faster!
