@@ -45,7 +45,8 @@ GHashTable* g_clients; // container of all clients
 
 
 // atoms from dwm.c
-enum { WMProtocols, WMDelete, WMState, WMLast };        /* default atoms */
+// default atoms
+enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
 static Atom g_wmatom[WMLast];
 
 static HSClient* create_client() {
@@ -82,6 +83,7 @@ void clientlist_init() {
     g_wmatom[WMProtocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
     g_wmatom[WMDelete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
+    g_wmatom[WMTakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
     // init actual client list
     g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
                                       NULL, (GDestroyNotify)client_destroy);
@@ -264,8 +266,13 @@ void window_unfocus_last() {
 }
 
 void window_focus(Window window) {
+    HSClient* client = get_client_from_window(window);
+    assert(client != NULL);
     // set keyboardfocus
-    XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
+    if (!client->neverfocus) {
+        XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
+    }
+    client_sendevent(client, g_wmatom[WMTakeFocus]);
 
     if (window != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
@@ -276,7 +283,6 @@ void window_focus(Window window) {
         window_unfocus(lastfocus);
         ewmh_update_active_window(window);
         tag_update_each_focus_layer();
-        HSClient* client = get_client_from_window(window);
         char* title = client ? client->title->str : "?";
         char winid_str[STRING_BUF_SIZE];
         snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)window);
@@ -293,8 +299,6 @@ void window_focus(Window window) {
                          && g_cur_frame->content.clients.layout == LAYOUT_MAX
                          && get_current_monitor()->tag->floating == false;
     if (*g_raise_on_focus || is_max_layout) {
-        HSClient* client = get_client_from_window(window);
-        assert(client != NULL);
         client_raise(client);
     }
     tag_update_focus_layer(get_current_monitor()->tag);
@@ -558,6 +562,11 @@ void client_update_wm_hints(HSClient* client) {
             tag_set_flags_dirty();
         }
     }
+    if (wmh->flags & InputHint) {
+        client->neverfocus = !wmh->input;
+    } else {
+        client->neverfocus = false;
+    }
     XFree(wmh);
 }
 
@@ -720,4 +729,29 @@ Window string_to_client(char* str, HSClient** ret_client) {
     }
     return win;
 }
+
+// mainly from dwm.c
+bool client_sendevent(HSClient *client, Atom proto) {
+    int n;
+    Atom *protocols;
+    bool exists = false;
+    XEvent ev;
+
+    if (XGetWMProtocols(g_display, client->window, &protocols, &n)) {
+        while (!exists && n--)
+            exists = protocols[n] == proto;
+        XFree(protocols);
+    }
+    if (exists) {
+        ev.type = ClientMessage;
+        ev.xclient.window = client->window;
+        ev.xclient.message_type = g_wmatom[WMProtocols];
+        ev.xclient.format = 32;
+        ev.xclient.data.l[0] = proto;
+        ev.xclient.data.l[1] = CurrentTime;
+        XSendEvent(g_display, client->window, False, NoEventMask, &ev);
+    }
+    return exists;
+}
+
 
