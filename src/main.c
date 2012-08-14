@@ -451,29 +451,29 @@ void checkotherwm(void) {
 // from dwm.c
 void scan(void) {
     unsigned int num;
-    Window d1, d2, *wins = NULL;
+    Window d1, d2, *cl, *wins = NULL;
+    unsigned long cl_count;
     XWindowAttributes wa;
 
-    if(XQueryTree(g_display, g_root, &d1, &d2, &wins, &num)) {
+    ewmh_get_original_client_list(&cl, &cl_count);
+    if (XQueryTree(g_display, g_root, &d1, &d2, &wins, &num)) {
         for (int i = 0; i < num; i++) {
             if(!XGetWindowAttributes(g_display, wins[i], &wa)
             || wa.override_redirect || XGetTransientForHint(g_display, wins[i], &d1))
                 continue;
             // only manage mapped windows.. no strange wins like:
             //      luakit/dbus/(ncurses-)vim
+            // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
+            // the previous window manager
             // TODO: what would dwm do?
-            if (is_window_mapped(g_display, wins[i])) {
+            if (is_window_mapped(g_display, wins[i])
+                || 0 <= array_find(cl, cl_count, sizeof(Window), wins+i)) {
                 manage_client(wins[i]);
+                XMapWindow(g_display, wins[i]);
             }
         }
         if(wins)
             XFree(wins);
-    }
-    unsigned long count;
-    ewmh_get_original_client_list(&wins, &count);
-    for (int i = 0; i < count; i++) {
-        manage_client(wins[i]);
-        XMapWindow(g_display, wins[i]);
     }
 }
 
