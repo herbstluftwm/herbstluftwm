@@ -745,42 +745,61 @@ operators are:
 
 Valid 'properties' are:
 
-    * +instance+: the first entry in client's +WM_CLASS+.
-    * +class+: the second entry in client's +WM_CLASS+.
-    * +title+: client's window title.
-    * +pid+: the client's process id (Warning: the pid is not available for
-      every client. This only matches if the client sets the pid to the
-      _NET_WM_PID itself).
-    * +maxage+: matches if the age of the rule measured in seconds does not
-      exceed 'value'. This condition only can be used with the +=+ operator. If
-      maxage already is exceeded (and never will match again), then this rule is
-      removed. (With this you can build rules that only live for a certain
-      time.)
-    * +windowtype+: matches the _NET_WM_WINDOW_TYPE property of a window.
-    * +windowrole+: matches the WM_WINDOW_ROLE property of a window if it is set
-      by the window.
++instance+::
+    the first entry in client's +WM_CLASS+.
 
-Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair.
-Valid 'NAMES' are:
++class+::
+    the second entry in client's +WM_CLASS+.
 
-    * +tag+: moves the client to tag 'VALUE'.
-    * +focus+: decides whether the client gets the input focus on his tag.
-      The default is *off*.  'VALUE' can be *on*, *off* or *toggle*.
-    * +manage+: decides whether the client will be managed or not. The default is
-      *on*. 'VALUE' can be *on*, *off* or *toggle*.
-    * +index+: moves the window to a specified index in the tree. 'VALUE'
-      contains of a list of characters; each of them decides in which subtree
-      the window is inserted.
++title+::
+    client's window title.
 
-        ** +0+: insert it in the first subtree
-        ** +1+: insert it in the second subtree
-        ** +.+: insert it in the subtree that has the focus
-        ** +/+: insert it in the subtree that has not the focus
++pid+::
+    the client's process id (Warning: the pid is not available for every client.
+    This only matches if the client sets the pid to the _NET_WM_PID itself).
 
-    * +pseudotile+: sets the pseudotile state of the client. 'VALUE' can be
-      *on*, *off* or *toggle*.
-    * +fullscreen+: sets the fullscreen flag of the client. 'VALUE' can be
-      *on*, *off* or *toggle*.
++maxage+::
+    matches if the age of the rule measured in seconds does not exceed 'value'.
+    This condition only can be used with the +=+ operator. If maxage already is
+    exceeded (and never will match again), then this rule is removed. (With this
+    you can build rules that only live for a certain time.)
+
++windowtype+::
+    matches the _NET_WM_WINDOW_TYPE property of a window.
+
++windowrole+::
+    matches the WM_WINDOW_ROLE property of a window if it is set by the window.
+
+Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
+
++tag+::
+    moves the client to tag 'VALUE'.
+
++focus+::
+    decides whether the client gets the input focus on his tag.  The default is
+    *off*. 'VALUE' can be *on*, *off* or *toggle*.
+
++manage+::
+    decides whether the client will be managed or not. The default is *on*.
+    'VALUE' can be *on*, *off* or *toggle*.
+
++index+::
+    moves the window to a specified index in the tree. 'VALUE' contains of a
+    list of characters; each of them decides in which subtree the window is
+    inserted.
+
+        * +0+: insert it in the first subtree
+        * +1+: insert it in the second subtree
+        * +.+: insert it in the subtree that has the focus
+        * +/+: insert it in the subtree that has not the focus
+
++pseudotile+::
+    sets the pseudotile state of the client. 'VALUE' can be *on*, *off* or
+    *toggle*.
+
++fullscreen+::
+    sets the fullscreen flag of the client. 'VALUE' can be *on*, *off* or
+    *toggle*.
 
 A rule's behaviour can be configured by some special 'FLAGS':
 
