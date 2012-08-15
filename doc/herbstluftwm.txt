@@ -722,14 +722,14 @@ RULES
 
 Rules are used to change default properties for certain clients when they
 appear. Each rule matches against a certain subset of all clients and defines a
-set of properties for them (called 'CONSEQUENCES'). A rule can be defined with
-this command:
+set of properties for them (called 'CONSEQUENCE'##s##). A rule can be defined
+with this command:
 
 +rule+ [\[--]'FLAG'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]
 
-Each rule consists of a list of 'FLAGS', 'CONDITIONS' and 'CONSEQUENCES' (each
-of them can be optionally prefixed with two dashes (+--+) to provide a more
-*iptables*(8)-like feeling).
+Each rule consists of a list of 'FLAG'##s##, 'CONDITION'##s## and
+'CONSEQUENCE'##s## (each of them can be optionally prefixed with two dashes
+(+--+) to provide a more *iptables*(8)-like feeling).
 
 If a new client
 appears, herbstluftwm tries to apply each rule to this new client as follows:
