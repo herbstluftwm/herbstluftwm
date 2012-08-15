@@ -893,6 +893,7 @@ int frame_current_bring(int argc, char** argv) {
         return HERBST_INVALID_ARGUMENT;
     }
     tag_move_client(client, get_current_monitor()->tag);
+    focus_window(client->window, false, false);
     return 0;
 }
 

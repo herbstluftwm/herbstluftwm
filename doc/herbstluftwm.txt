@@ -299,8 +299,8 @@ jumpto urgent|'0xWINID'::
     or specified by the hexadecimal '0xWINID'.
 
 bring urgent|'0xWINID'::
-    Moves specified window to the current frame. The window is an arbitrary
-    urgent window or specified by the hexadecimal '0xWINID'.
+    Moves the specified window to the current frame and focuses it. The window
+    is an arbitrary urgent window or specified by the hexadecimal '0xWINID'.
 
 resize 'DIRECTION' 'FRACTIONDELTA'::
     Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA'.
