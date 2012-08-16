@@ -894,7 +894,7 @@ void monitor_restack(HSMonitor* monitor) {
         int idx = array_find(buf, count, sizeof(*buf), &client->window);
         assert(idx >= 0);
         count--;
-        memmove(buf + idx, buf + idx + 1, sizeof(*buf) * count - idx);
+        memmove(buf + idx, buf + idx + 1, sizeof(*buf) * (count - idx));
     }
     XRestackWindows(g_display, buf, count);
     g_free(buf);
