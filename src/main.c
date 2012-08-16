@@ -364,8 +364,8 @@ void event_on_configure(XEvent event) {
         client->float_size.height = cre->height;
         ce.x = client->last_size.x;
         ce.y = client->last_size.y;
-        ce.width = client->last_size.width;
-        ce.height = client->last_size.height;
+        ce.width = cre->width;
+        ce.height = cre->height;
         ce.override_redirect = False;
         ce.border_width = cre->border_width;
         ce.above = cre->above;
