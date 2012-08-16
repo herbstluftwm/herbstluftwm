@@ -10,20 +10,11 @@ Some BUGS:
     - don't reset border width on each layouting
     - herbstclient: add timeout if server doesnot respond
     - herbstclient: errorstatus2string2stderr
-    - herbstclient: -h
     - add function to put window into tag (and use it in manage, merge_tag,
       move)
     - the default panel.sh spawns too many shells and doesnot clean them up
       properly at quit. you should do something like killall panel.sh when
       logging out (this is only a workaround!).
-    - Ensure stacking order is right (TODO: frame_restack())
-    - Also handle stacking order right when switching desktops to avoid
-      flickering. the xmonad-mailinglist tells:
-
-          When changing desktop, you can map all the windows on the new desktop
-          with a higher z-value than any of the windows on the old desktop,
-          then unmap all the windows on the old desktop.
-
     - raise_on_click doesn't work if raise_on_click and numlock is enabled
     - raise_on_click doesn't work with gnome-settings-daemon
     - window_focus is called twice when switching desktops (before mapping
@@ -53,7 +44,6 @@ Some BUGS:
 Planned features:
 
     - dump/load floating values
-    - jumpto urgent
     - (optional) move cursor after focus change
     - optional focus selection after frame_split
     - focus_follows_mouse based on frames/monitors
@@ -77,14 +67,11 @@ Planned features:
     - try to find a empty frame for new clients
     - (currently unknown) handling of WM_TRANSIENT_FOR
     - move clients in pseudotile mode
-    - allow clients to change their own floating size or even position (and
-      make it configurable per rules)
-    - transparent frames
+    - make it configurable if clients are allowed to to change their own
+      floating size or even position
     - undo command which undos the last layout changes on a certain tag
     - load frame without changing it's properties to just change the
       child-frames. Something like: (split unchanged $child1 child2)
-    - add a commant close_or_remove that closes the current window or removes
-      the current frame if it is empty
     - a more verbose tag_status: list_tags with one line per tag
-    - cycle through all "invisible" (or non-focused) frames
+    - cycle through all "invisible" (or non-focused) clients
 
