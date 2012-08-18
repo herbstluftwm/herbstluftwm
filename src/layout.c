@@ -957,7 +957,6 @@ int cycle_all_command(int argc, char** argv) {
         delta = atoi(argv[1]);
     }
     delta = CLAMP(delta, -1, 1); // only delta -1, 0, 1 is allowed
-    printf("skpi = %d, delta= %d\n", delta, skip_invisible);
     if (delta == 0) {
         // nothing to do
         return 0;
