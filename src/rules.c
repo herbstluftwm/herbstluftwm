@@ -30,33 +30,35 @@ typedef struct {
 } HSConsequenceType;
 
 /// DECLARATIONS ///
-
 static int find_condition_type(char* name);
 static int find_consequence_type(char* name);
 static bool condition_string(HSCondition* rule, char* string);
-static bool condition_class(HSCondition* rule, HSClient* client);
-static bool condition_instance(HSCondition* rule, HSClient* client);
-static bool condition_title(HSCondition* rule, HSClient* client);
-static bool condition_pid(HSCondition* rule, HSClient* client);
-static bool condition_maxage(HSCondition* rule, HSClient* client);
-static bool condition_windowtype(HSCondition* rule, HSClient* client);
-static bool condition_windowrole(HSCondition* rule, HSClient* client);
-static void consequence_tag(HSConsequence* cons, HSClient* client,
-                            HSClientChanges* changes);
-static void consequence_focus(HSConsequence* cons, HSClient* client,
-                              HSClientChanges* changes);
-static void consequence_manage(HSConsequence* cons, HSClient* client,
-                              HSClientChanges* changes);
-static void consequence_index(HSConsequence* cons, HSClient* client,
-                              HSClientChanges* changes);
-static void consequence_pseudotile(HSConsequence* cons, HSClient* client,
-                                   HSClientChanges* changes);
-static void consequence_fullscreen(HSConsequence* cons, HSClient* client,
-                                   HSClientChanges* changes);
-static void consequence_switchtag(HSConsequence* cons, HSClient* client,
-                                  HSClientChanges* changes);
-static void consequence_ewmhrequests(HSConsequence* cons, HSClient* client,
-                                     HSClientChanges* changes);
+
+/// CONDITIONS ///
+#define DECLARE_CONDITION(NAME)                         \
+    static bool NAME(HSCondition* rule, HSClient* client)
+
+DECLARE_CONDITION(condition_class);
+DECLARE_CONDITION(condition_instance);
+DECLARE_CONDITION(condition_title);
+DECLARE_CONDITION(condition_pid);
+DECLARE_CONDITION(condition_maxage);
+DECLARE_CONDITION(condition_windowtype);
+DECLARE_CONDITION(condition_windowrole);
+
+/// CONSEQUENCES ///
+#define DECLARE_CONSEQUENCE(NAME)                           \
+static void NAME(HSConsequence* cons, HSClient* client,     \
+                     HSClientChanges* changes)
+
+DECLARE_CONSEQUENCE(consequence_tag);
+DECLARE_CONSEQUENCE(consequence_focus);
+DECLARE_CONSEQUENCE(consequence_manage);
+DECLARE_CONSEQUENCE(consequence_index);
+DECLARE_CONSEQUENCE(consequence_pseudotile);
+DECLARE_CONSEQUENCE(consequence_fullscreen);
+DECLARE_CONSEQUENCE(consequence_switchtag);
+DECLARE_CONSEQUENCE(consequence_ewmhrequests);
 
 /// GLOBALS ///
 
