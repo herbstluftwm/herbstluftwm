@@ -72,7 +72,7 @@ Planned features:
     - try to find a empty frame for new clients
     - (currently unknown) handling of WM_TRANSIENT_FOR
     - move clients in pseudotile mode
-    - make it configurable if clients are allowed to to change their own
+    - make it configurable if clients are allowed to change their own
       floating size or even position
     - undo command which undos the last layout changes on a certain tag
     - load frame without changing it's properties to just change the
@@ -81,4 +81,6 @@ Planned features:
     - cycle through all "invisible" (or non-focused) clients
     - setting to make focus_follows_mouse not apply for the empty area of
       pseudotiled frames
+    - consequence: stack={top,underfocus,bottom} and setting to set the initial
+      stacking position on manage or after moving a client to a tag
 
