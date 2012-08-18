@@ -40,10 +40,11 @@ Some BUGS:
       select the higher monitor. Effect: the non-fullscreen client on the
       higher monitor should be above the fullscreen window but is displayed
       below the fullscreen window on the lower monitor.
-   - If gnome-terminal is mapped (e.g. by switching the tag) it sends a
-     ConfigureRequest which is rejected.  This causes flickering because the
-     terminal content is drawn with the requested size first and again with the
-     actual size. This bug only occurs at certain widths of gnome-terminal.
+    - If gnome-terminal is mapped (e.g. by switching the tag) it sends a
+      ConfigureRequest which is rejected.  This causes flickering because the
+      terminal content is drawn with the requested size first and again with
+      the actual size. This bug only occurs at certain widths of
+      gnome-terminal.
 
 Planned features:
 
