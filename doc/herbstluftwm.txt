@@ -804,6 +804,12 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     sets the pseudotile state of the client. 'VALUE' can be *on*, *off* or
     *toggle*.
 
++ewmhrequests+::
+    sets whether the window state (currently only changing the fullscreen state)
+    can be changed by the application itself. This does not affect the initial
+    fullscreen state requested by the window. 'VALUE' can be *on*, *off* or
+    *toggle*, it defaults to *on*.
+
 +fullscreen+::
     sets the fullscreen flag of the client. 'VALUE' can be *on*, *off* or
     *toggle*.

@@ -57,6 +57,7 @@ static HSClient* create_client() {
     hc->urgent = false;
     hc->fullscreen = false;
     hc->pseudotile = false;
+    hc->ewmhrequests = true;
     return hc;
 }
 

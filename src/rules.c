@@ -55,6 +55,8 @@ static void consequence_fullscreen(HSConsequence* cons, HSClient* client,
                                    HSClientChanges* changes);
 static void consequence_switchtag(HSConsequence* cons, HSClient* client,
                                   HSClientChanges* changes);
+static void consequence_ewmhrequests(HSConsequence* cons, HSClient* client,
+                                     HSClientChanges* changes);
 
 /// GLOBALS ///
 
@@ -75,10 +77,11 @@ static HSConsequenceType g_consequence_types[] = {
     {   "tag",          consequence_tag },
     {   "index",        consequence_index },
     {   "focus",        consequence_focus },
+    {   "switchtag",    consequence_switchtag },
     {   "manage",       consequence_manage },
     {   "pseudotile",   consequence_pseudotile },
     {   "fullscreen",   consequence_fullscreen },
-    {   "switchtag",    consequence_switchtag },
+    {   "ewmhrequests", consequence_ewmhrequests },
 };
 
 GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -615,4 +618,12 @@ void consequence_switchtag(HSConsequence* cons, HSClient* client,
                            HSClientChanges* changes) {
     changes->switchtag = string_to_bool(cons->value.str, changes->switchtag);
 }
+
+void consequence_ewmhrequests(HSConsequence* cons, HSClient* client,
+                              HSClientChanges* changes) {
+    // this is only a flag that is unused during initialization (during
+    // manage()) and so can be directly changed in the client
+    client->ewmhrequests = string_to_bool(cons->value.str, client->ewmhrequests);
+}
+
 

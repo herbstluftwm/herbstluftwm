@@ -291,7 +291,7 @@ void ewmh_handle_client_message(XEvent* event) {
         case NetWmState:
             client = get_client_from_window(me->window);
             /* ignore requests for unmanaged windows */
-            if (!client) break;
+            if (!client || !client->ewmhrequests) break;
 
             /* mapping between EWMH atoms and client struct members */
             struct {
