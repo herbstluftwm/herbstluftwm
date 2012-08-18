@@ -4,9 +4,12 @@ herbstluftwm NEWS -- History of user-visible changes
 Next release: 0.4
 -----------------
 
-Changes:
+Changes that requres user interaction on upgrade:
 
     * the setting window_gap is now called frame_gap
+
+Other changes:
+
     * new setting window_gap which controlls the gap between windows within one
       frame
     * new setting: frame_padding
