@@ -74,4 +74,6 @@ Planned features:
       child-frames. Something like: (split unchanged $child1 child2)
     - a more verbose tag_status: list_tags with one line per tag
     - cycle through all "invisible" (or non-focused) clients
+    - setting to make focus_follows_mouse not apply for the empty area of
+      pseudotiled frames
 
