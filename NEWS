@@ -47,6 +47,7 @@ Changes:
     * new command: bring
     * respect the WM_TAKE_FOCUS atom, this fixes keyboard focus issues with
       many (mostly Java/swing based) applications
+    * new rule consequence: switchtag
 
 Release 0.3 on 2012-04-12
 -------------------------

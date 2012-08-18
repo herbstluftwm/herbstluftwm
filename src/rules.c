@@ -53,6 +53,8 @@ static void consequence_pseudotile(HSConsequence* cons, HSClient* client,
                                    HSClientChanges* changes);
 static void consequence_fullscreen(HSConsequence* cons, HSClient* client,
                                    HSClientChanges* changes);
+static void consequence_switchtag(HSConsequence* cons, HSClient* client,
+                                  HSClientChanges* changes);
 
 /// GLOBALS ///
 
@@ -76,6 +78,7 @@ static HSConsequenceType g_consequence_types[] = {
     {   "manage",       consequence_manage },
     {   "pseudotile",   consequence_pseudotile },
     {   "fullscreen",   consequence_fullscreen },
+    {   "switchtag",    consequence_switchtag },
 };
 
 GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -368,6 +371,7 @@ void client_changes_init(HSClientChanges* changes, HSClient* client) {
     memset(changes, 0, sizeof(HSClientChanges));
     changes->tree_index = g_string_new("");
     changes->focus = false;
+    changes->switchtag = false;
     changes->manage = true;
     changes->fullscreen = ewmh_is_fullscreen_set(client->window);
 }
@@ -605,5 +609,10 @@ void consequence_pseudotile(HSConsequence* cons, HSClient* client,
 void consequence_fullscreen(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
     changes->fullscreen = string_to_bool(cons->value.str, changes->fullscreen);
+}
+
+void consequence_switchtag(HSConsequence* cons, HSClient* client,
+                           HSClientChanges* changes) {
+    changes->switchtag = string_to_bool(cons->value.str, changes->switchtag);
 }
 

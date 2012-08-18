@@ -779,6 +779,13 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     decides whether the client gets the input focus on his tag.  The default is
     *off*. 'VALUE' can be *on*, *off* or *toggle*.
 
++switchtag+::
+    if +focus+ is activated and the client is put to a not focused tag, then
+    +switchtag+ tells whether the client's tag will be shown or not. If the tag
+    is shown on any monitor but is not focused, the client's tag only is brought
+    to the current monitor if *swap_monitors_to_get_tag* is activated. 'VALUE'
+    can be *on*, *off* or *toggle*.
+
 +manage+::
     decides whether the client will be managed or not. The default is *on*.
     'VALUE' can be *on*, *off* or *toggle*.

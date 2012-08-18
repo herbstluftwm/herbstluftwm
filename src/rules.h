@@ -55,6 +55,7 @@ typedef struct {
     GString*        tag_name;
     GString*        tree_index;
     bool            focus; // if client should get focus
+    bool            switchtag; // if the tag may be switchted for focusing it
     bool            manage; // wether we should manage it
     bool            fullscreen;
 } HSClientChanges;

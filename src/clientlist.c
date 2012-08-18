@@ -193,9 +193,23 @@ HSClient* manage_client(Window win) {
     tag_set_flags_dirty();
     client_set_fullscreen(client, changes.fullscreen);
     ewmh_update_window_state(client);
-    monitor_apply_layout(find_monitor_with_tag(client->tag));
-    client_changes_free_members(&changes);
 
+    HSMonitor* monitor = find_monitor_with_tag(client->tag);
+    if (monitor) {
+        if (monitor != get_current_monitor()
+            && changes.focus && changes.switchtag) {
+            monitor_set_tag(get_current_monitor(), client->tag);
+        }
+        // TODO: monitor_apply_layout() maybe is called twice here if it
+        // already is called by monitor_set_tag()
+        monitor_apply_layout(monitor);
+    } else {
+        if (changes.focus && changes.switchtag) {
+            monitor_set_tag(get_current_monitor(), client->tag);
+        }
+    }
+
+    client_changes_free_members(&changes);
     grab_client_buttons(client, false);
 
     return client;
