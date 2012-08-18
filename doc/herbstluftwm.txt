@@ -943,6 +943,12 @@ RESOURCES
 ---------
 Gitweb: <http://git.cs.fau.de/?p=re06huxa/herbstluftwm>
 
+Homepage: <http://git.cs.fau.de/~re06huxa/herbstluftwm>
+
+Patch submission and bug reporting:
+
+    herbstluftwm-devel@lists.sourceforge.net
+
 COPYING
 -------
 Copyright 2011-2012 Thorsten Wißmann. All rights reserved.
