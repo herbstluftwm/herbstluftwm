@@ -716,6 +716,14 @@ X-.root
 +
 Useful values for 'tree_style' are: +╾│ ├└╼─┐+ or +╾│ ├╰╼─╮+.
 
+wmname (String)::
+    It controls the value of the +_NET_WM_NAME+ property on the root window,
+    which specifies the name of the running window manager. The value of this
+    setting is not updated if the actual +_NET_WM_NAME+ property on the root
+    window is changed externaly. Example usage:
+
+        * cycle_value wmname herbstluftwm LG3D
+
 [[RULES]]
 RULES
 -----

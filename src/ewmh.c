@@ -98,9 +98,7 @@ void ewmh_init() {
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
     XChangeProperty(g_display, g_wm_window, g_netatom[NetSupportingWmCheck],
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
-    XChangeProperty(g_display, g_wm_window, g_netatom[NetWmName],
-        ATOM("UTF8_STRING"), 8, PropModeReplace,
-        (unsigned char*)WINDOW_MANAGER_NAME, strlen(WINDOW_MANAGER_NAME)+1);
+    ewmh_update_wmname();
 
     /* init atoms that never change */
     int buf[] = { 0, 0 };
@@ -124,6 +122,19 @@ void ewmh_destroy() {
     }
     XDeleteProperty(g_display, g_root, g_netatom[NetSupportingWmCheck]);
     XDestroyWindow(g_display, g_wm_window);
+}
+
+void ewmh_set_wmname(char* name) {
+    XChangeProperty(g_display, g_wm_window, g_netatom[NetWmName],
+        ATOM("UTF8_STRING"), 8, PropModeReplace,
+        (unsigned char*)name, strlen(name)+1);
+    XChangeProperty(g_display, g_root, g_netatom[NetWmName],
+        ATOM("UTF8_STRING"), 8, PropModeReplace,
+        (unsigned char*)name, strlen(name)+1);
+}
+
+void ewmh_update_wmname() {
+    ewmh_set_wmname(settings_find("wmname")->value.s);
 }
 
 void ewmh_update_client_list() {

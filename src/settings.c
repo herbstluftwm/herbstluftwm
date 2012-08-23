@@ -4,11 +4,13 @@
  * See LICENSE for details */
 
 
+#include "globals.h"
 #include "settings.h"
 #include "clientlist.h"
 #include "layout.h"
 #include "ipc-protocol.h"
 #include "utils.h"
+#include "ewmh.h"
 
 #include <glib.h>
 #include <string.h>
@@ -34,6 +36,7 @@
 #define CL_COLORS reset_client_colors
 #define LOCK_CHANGED monitors_lock_changed
 #define FOCUS_LAYER tag_update_each_focus_layer
+#define WMNAME ewmh_update_wmname
 
 // default settings:
 SettingsPair g_settings[] = {
@@ -74,6 +77,7 @@ SettingsPair g_settings[] = {
     SET_INT(    "monitors_locked",                 0,           LOCK_CHANGED),
     SET_INT(    "auto_detect_monitors",            0,           NULL        ),
     SET_STRING( "tree_style",                      "*| +`--.",  FR_COLORS   ),
+    SET_STRING( "wmname",                  WINDOW_MANAGER_NAME, WMNAME      ),
 };
 
 int             g_initial_monitors_locked = 0;
