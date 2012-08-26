@@ -158,7 +158,7 @@ bool hc_send_command_once(int argc, char* argv[],
     return status;
 }
 
-Window get_hook_window(Display* display) {
+static Window get_hook_window(Display* display) {
     int *value; // list of ints
     Atom type;
     int format;
@@ -175,14 +175,26 @@ Window get_hook_window(Display* display) {
     return win;
 }
 
-bool hc_next_hook(HCConnection* con, int* argc, char** argv[]) {
-    // get window to listen at
-    Window win = get_hook_window(con->display);
-    if (!win) {
+bool hc_hook_window_connect(HCConnection* con) {
+    if (con->hook_window) {
+        return true;
+    }
+    con->hook_window = get_hook_window(con->display);
+    if (!con->hook_window) {
         return false;
     }
+    long mask = StructureNotifyMask|PropertyChangeMask;
+    XSelectInput(con->display, con->hook_window, mask);
+    return true;
+}
+
+bool hc_next_hook(HCConnection* con, int* argc, char** argv[]) {
+    if (!hc_hook_window_connect(con)) {
+        return false;
+    }
+    // get window to listen at
+    Window win = con->hook_window;
     // listen on window
-    XSelectInput(con->display, win, StructureNotifyMask|PropertyChangeMask);
     XEvent next_event;
     bool received_hook = false;
     while (!received_hook) {
