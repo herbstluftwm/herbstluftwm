@@ -23,10 +23,17 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+struct HCConnection {
+    Display*    display;
+    bool        own_display; // if we have to close it on disconnect
+    Window      hook_window;
+    Window      client_window;
+    Atom        atom_args;
+    Window      root;
+};
 
 Display* g_display;
 regex_t* g_hook_regex = NULL;
-int g_ensure_newline = 1; // if set, output ends with an newline
 int g_hook_regex_count = 0;
 bool g_quiet = false;
 int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
@@ -36,83 +43,133 @@ void init_hook_regex(int argc, char* argv[]);
 void destroy_hook_regex();
 Window get_hook_window();
 
-int send_command(int argc, char* argv[]) {
-    // check for running window manager instance
-    if (!get_hook_window()) {
-        return EXIT_FAILURE;
+HCConnection* hc_connect() {
+    Display* display = XOpenDisplay(NULL);
+    HCConnection* con = hc_connect_to_display(display);
+    if (con) {
+        con->own_display = true;
+    }
+    return con;
+}
+
+HCConnection* hc_connect_to_display(Display* display) {
+    HCConnection* con = malloc(sizeof(struct HCConnection));
+    if (!con) {
+        return con;
+    }
+    memset(con, 0, sizeof(con));
+    con->display = display;
+    con->root = DefaultRootWindow(con->display);
+    con->atom_args = XInternAtom(con->display, HERBST_IPC_ARGS_ATOM, False);
+    return con;
+}
+
+void hc_disconnect(HCConnection* con) {
+    if (con->client_window) {
+        XDestroyWindow(con->display, con->client_window);
+    }
+    if (con->own_display) {
+        XCloseDisplay(con->display);
+    }
+    free(con);
+}
+
+bool hc_create_client_window(HCConnection* con) {
+    if (con->client_window) {
+        return true;
     }
     /* ensure that classhint and the command is set when the hlwm-server
      * receives the XCreateWindowEvent */
-    XGrabServer(g_display);
+    XGrabServer(con->display);
     // create window
-    Window win = XCreateSimpleWindow(g_display, root, 42, 42, 42, 42, 0, 0, 0);
+    con->client_window = XCreateSimpleWindow(con->display, con->root,
+                                             42, 42, 42, 42, 0, 0, 0);
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
     hint->res_name = HERBST_IPC_CLASS;
     hint->res_class = HERBST_IPC_CLASS;
-    XSetClassHint(g_display, win, hint);
+    XSetClassHint(con->display, con->client_window, hint);
     XFree(hint);
-    XSelectInput(g_display, win, PropertyChangeMask);
-    // set arguments
-    XTextProperty text_prop;
-    Atom atom = ATOM(HERBST_IPC_ARGS_ATOM);
-    Xutf8TextListToTextProperty(g_display, argv, argc, XUTF8StringStyle, &text_prop);
-    XSetTextProperty(g_display, win, &text_prop, atom);
+    XSelectInput(con->display, con->client_window, PropertyChangeMask);
     /* the window has been initialized properly, now allow the server to
      * receive the event for it */
-    XUngrabServer(g_display);
+    XUngrabServer(con->display);
+    return true;
+}
+
+bool hc_send_command(HCConnection* con, int argc, char* argv[],
+                     GString** ret_out, int* ret_status) {
+    if (!hc_create_client_window(con)) {
+        return false;
+    }
+    // check for running window manager instance
+    // TODO
+    // set arguments
+    XTextProperty text_prop;
+    Xutf8TextListToTextProperty(con->display, argv, argc, XUTF8StringStyle, &text_prop);
+    XSetTextProperty(con->display, con->client_window, &text_prop, con->atom_args);
     XFree(text_prop.value);
+
     // get output
     int command_status = 0;
     XEvent event;
     GString* output = NULL;
     bool output_received = false, status_received = false;
     while (!output_received || !status_received) {
-        XNextEvent(g_display, &event);
+        XNextEvent(con->display, &event);
         if (event.type != PropertyNotify) {
             // got an event of wrong type
             continue;
         }
         XPropertyEvent* pe = &(event.xproperty);
-        if (pe->window != win) {
+        if (pe->window != con->client_window) {
             // got an event from wrong window
             continue;
         }
         if (!output_received
-            && !strcmp(XGetAtomName(g_display, pe->atom), HERBST_IPC_OUTPUT_ATOM)) {
-            output = window_property_to_g_string(g_display, win, ATOM(HERBST_IPC_OUTPUT_ATOM));
-            if (!output) die("could not get WindowProperty \"%s\"\n", HERBST_IPC_OUTPUT_ATOM);
+            && !strcmp(XGetAtomName(con->display, pe->atom), HERBST_IPC_OUTPUT_ATOM)) {
+            output = window_property_to_g_string(con->display, con->client_window,
+                                                 XInternAtom(con->display,
+                                                             HERBST_IPC_OUTPUT_ATOM,
+                                                             False));
+            if (!output) {
+                fprintf(stderr, "could not get WindowProperty \"%s\"\n",
+                                HERBST_IPC_OUTPUT_ATOM);
+                return false;
+            }
             output_received = true;
         }
         else if (!status_received && !strcmp(
-                     XGetAtomName(g_display, pe->atom),
+                     XGetAtomName(con->display, pe->atom),
                      HERBST_IPC_STATUS_ATOM)) {
             int *value;
             Atom type;
             int format;
             unsigned long items, bytes;
-            if (Success != XGetWindowProperty(g_display, win,
-                    ATOM(HERBST_IPC_STATUS_ATOM), 0, 1, False,
+            if (Success != XGetWindowProperty(con->display, con->client_window,
+                    XInternAtom(con->display, HERBST_IPC_STATUS_ATOM, False), 0, 1, False,
                     XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value)) {
                     // if could not get window property
-                die("could not get WindowProperty \"%s\"\n", HERBST_IPC_STATUS_ATOM);
+                fprintf(stderr, "could not get WindowProperty \"%s\"\n",
+                                HERBST_IPC_STATUS_ATOM);
+                return false;
             }
             command_status = *value;
             XFree(value);
             status_received = true;
         }
     }
-    // print output to stdout
-    fputs(output->str, stdout);
-    if (g_ensure_newline) {
-        if (output->len > 0 && output->str[output->len - 1] != '\n') {
-            fputs("\n", stdout);
-        }
-    }
-    // clean all up
-    g_string_free(output, true);
-    XDestroyWindow(g_display, win);
-    return command_status;
+    *ret_status = command_status;
+    *ret_out = output;
+    return true;
+}
+
+bool hc_send_command_once(int argc, char* argv[],
+                          GString** ret_out, int* ret_status) {
+    HCConnection* con = hc_connect();
+    bool status = hc_send_command(con, argc, argv, ret_out, ret_status);
+    hc_disconnect(con);
+    return status;
 }
 
 void init_hook_regex(int argc, char* argv[]) {
@@ -146,7 +203,7 @@ Window get_hook_window() {
     Atom type;
     int format;
     unsigned long items, bytes;
-    int status = XGetWindowProperty(g_display, root,
+    int status = XGetWindowProperty(g_display, DefaultRootWindow(g_display),
         ATOM(HERBST_HOOK_WIN_ID_ATOM), 0, 1, False,
         XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value);
     // only accept exactly one Window id

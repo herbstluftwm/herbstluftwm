@@ -14,6 +14,7 @@
 
 void print_help(char* command);
 
+int g_ensure_newline = 1; // if set, output ends with a newline
 int g_wait_for_hook = 0; // if set, do not execute command but wait
 
 static void quit_herbstclient(int signal) {
@@ -93,25 +94,37 @@ int main(int argc, char* argv[]) {
     }
     int arg_index = optind; // index of the first-non-option argument
     // do communication
-    g_display = XOpenDisplay(NULL);
-    if (!g_display) {
-        if (!g_quiet) {
-            fprintf(stderr, "Cannot open display\n");
-        }
-        return EXIT_FAILURE;
-    }
-    root = DefaultRootWindow(g_display);
     int command_status;
     if (g_wait_for_hook == 1) {
+        g_display = XOpenDisplay(NULL);
+        if (!g_display) {
+            if (!g_quiet) {
+                fprintf(stderr, "Cannot open display\n");
+            }
+            return EXIT_FAILURE;
+        }
         // install signals
         signal(SIGTERM, quit_herbstclient);
         signal(SIGINT, quit_herbstclient);
         signal(SIGQUIT, quit_herbstclient);
         command_status = wait_for_hook(argc-arg_index, argv+arg_index);
+        XCloseDisplay(g_display);
     } else {
-        command_status = send_command(argc-arg_index, argv+arg_index);
+        GString* output;
+        bool suc = hc_send_command_once(argc-arg_index, argv+arg_index,
+                                        &output, &command_status);
+        if (!suc) {
+            fprintf(stderr, "Error: Could not send command.\n");
+            return EXIT_FAILURE;
+        }
+        fputs(output->str, stdout);
+        if (g_ensure_newline) {
+            if (output->len > 0 && output->str[output->len - 1] != '\n') {
+                fputs("\n", stdout);
+            }
+        }
+        g_string_free(output, true);
     }
-    XCloseDisplay(g_display);
     return command_status;
 }
 
