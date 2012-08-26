@@ -114,6 +114,13 @@ herbstclient pad $monitor $panel_height
                 exit
                 ;;
             togglehidepanel)
+                currentmonidx=$(herbstclient list_monitors |grep ' \[FOCUS\]$'|cut -d: -f1)
+                if [ -n "${cmd[1]}" ] && [ "${cmd[1]}" -ne "$monitor" ] ; then
+                    continue
+                fi
+                if [ "${cmd[1]}" = "current" ] && [ "$currentmonidx" -ne "$monitor" ] ; then
+                    continue
+                fi
                 echo "^togglehide()"
                 if $visible ; then
                     visible=false
