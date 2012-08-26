@@ -8,14 +8,23 @@
 #include <stdbool.h>
 #include <getopt.h>
 #include <signal.h>
+#include <regex.h>
+#include <assert.h>
 
 #include "ipc-client.h"
 #include "../src/globals.h"
+#include "../src/utils.h"
 
 void print_help(char* command);
+void init_hook_regex(int argc, char* argv[]);
+void destroy_hook_regex();
 
 int g_ensure_newline = 1; // if set, output ends with a newline
 int g_wait_for_hook = 0; // if set, do not execute command but wait
+bool g_quiet = false;
+regex_t* g_hook_regex = NULL;
+int g_hook_regex_count = 0;
+int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
 
 static void quit_herbstclient(int signal) {
     // TODO: better solution to quit x connection more softly?
@@ -23,6 +32,34 @@ static void quit_herbstclient(int signal) {
     destroy_hook_regex();
     exit(EXIT_FAILURE);
 }
+
+void init_hook_regex(int argc, char* argv[]) {
+    g_hook_regex = (regex_t*)malloc(sizeof(regex_t)*argc);
+    assert(g_hook_regex != NULL);
+    int i;
+    // create all regexes
+    for (i = 0; i < argc; i++) {
+        int status = regcomp(g_hook_regex + i, argv[i], REG_NOSUB|REG_EXTENDED);
+        if (status != 0) {
+            char buf[ERROR_STRING_BUF_SIZE];
+            regerror(status, g_hook_regex + i, buf, ERROR_STRING_BUF_SIZE);
+            fprintf(stderr, "Cannot parse regex \"%s\": ", argv[i]);
+            fprintf(stderr, "%s\n", buf);
+            destroy_hook_regex();
+            exit(EXIT_FAILURE);
+        }
+    }
+    g_hook_regex_count = argc;
+}
+
+void destroy_hook_regex() {
+    int i;
+    for (i = 0; i < g_hook_regex_count; i++) {
+        regfree(g_hook_regex + i);
+    }
+    free(g_hook_regex);
+}
+
 
 void print_help(char* command) {
     // Eventually replace this and the option parsing with some fancy macro
@@ -49,6 +86,60 @@ void print_help(char* command) {
         "\n"
         "See the man page (herbstclient(1)) for more details.\n";
     fputs(help_string, stdout);
+}
+
+int main_hook(int argc, char* argv[]) {
+    init_hook_regex(argc, argv);
+    Display* display = XOpenDisplay(NULL);
+    if (!display) {
+        if (!g_quiet) {
+            fprintf(stderr, "Cannot open display\n");
+        }
+        return EXIT_FAILURE;
+    }
+    HCConnection* con = hc_connect_to_display(display);
+    signal(SIGTERM, quit_herbstclient);
+    signal(SIGINT,  quit_herbstclient);
+    signal(SIGQUIT, quit_herbstclient);
+    while (1) {
+        bool print_signal = true;
+        int hook_argc;
+        char** hook_argv;
+        if (!hc_next_hook(con, &hook_argc, &hook_argv)) {
+            fprintf(stderr, "Cannot listen for hooks\n");
+            destroy_hook_regex();
+            return EXIT_FAILURE;
+        }
+        for (int i = 0; i < argc && i < hook_argc; i++) {
+            if (0 != regexec(g_hook_regex + i, hook_argv[i], 0, NULL, 0)) {
+                // found an regex that did not match
+                // so skip this
+                print_signal = false;
+                break;
+            }
+        }
+        if (print_signal) {
+            // just print as list
+            for (int i = 0; i < hook_argc; i++) {
+                printf("%s%s", i ? "\t" : "", hook_argv[i]);
+            }
+            printf("\n");
+            fflush(stdout);
+        }
+        argv_free(hook_argc, hook_argv);
+        if (print_signal) {
+            // check counter
+            if (g_hook_count == 1) {
+                break;
+            } else if (g_hook_count > 1) {
+                g_hook_count--;
+            }
+        }
+    }
+    hc_disconnect(con);
+    XCloseDisplay(display);
+    destroy_hook_regex();
+    return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -96,19 +187,8 @@ int main(int argc, char* argv[]) {
     // do communication
     int command_status;
     if (g_wait_for_hook == 1) {
-        g_display = XOpenDisplay(NULL);
-        if (!g_display) {
-            if (!g_quiet) {
-                fprintf(stderr, "Cannot open display\n");
-            }
-            return EXIT_FAILURE;
-        }
         // install signals
-        signal(SIGTERM, quit_herbstclient);
-        signal(SIGINT, quit_herbstclient);
-        signal(SIGQUIT, quit_herbstclient);
-        command_status = wait_for_hook(argc-arg_index, argv+arg_index);
-        XCloseDisplay(g_display);
+        command_status = main_hook(argc-arg_index, argv+arg_index);
     } else {
         GString* output;
         bool suc = hc_send_command_once(argc-arg_index, argv+arg_index,

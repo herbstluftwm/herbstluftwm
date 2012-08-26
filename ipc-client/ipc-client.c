@@ -5,7 +5,6 @@
 
 #include "../src/ipc-protocol.h"
 #include "../src/utils.h"
-#include "../src/globals.h"
 #include "ipc-client.h"
 
 // standard
@@ -14,8 +13,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <regex.h>
-#include <assert.h>
 
 // gui
 #include <X11/Xlib.h>
@@ -31,17 +28,6 @@ struct HCConnection {
     Atom        atom_args;
     Window      root;
 };
-
-Display* g_display;
-regex_t* g_hook_regex = NULL;
-int g_hook_regex_count = 0;
-bool g_quiet = false;
-int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
-
-
-void init_hook_regex(int argc, char* argv[]);
-void destroy_hook_regex();
-Window get_hook_window();
 
 HCConnection* hc_connect() {
     Display* display = XOpenDisplay(NULL);
@@ -172,45 +158,16 @@ bool hc_send_command_once(int argc, char* argv[],
     return status;
 }
 
-void init_hook_regex(int argc, char* argv[]) {
-    g_hook_regex = (regex_t*)malloc(sizeof(regex_t)*argc);
-    assert(g_hook_regex != NULL);
-    int i;
-    // create all regexes
-    for (i = 0; i < argc; i++) {
-        int status = regcomp(g_hook_regex + i, argv[i], REG_NOSUB|REG_EXTENDED);
-        if (status != 0) {
-            char buf[ERROR_STRING_BUF_SIZE];
-            regerror(status, g_hook_regex + i, buf, ERROR_STRING_BUF_SIZE);
-            fprintf(stderr, "Cannot parse regex \"%s\": ", argv[i]);
-            fprintf(stderr, "%s\n", buf);
-            destroy_hook_regex();
-            exit(EXIT_FAILURE);
-        }
-    }
-    g_hook_regex_count = argc;
-}
-void destroy_hook_regex() {
-    int i;
-    for (i = 0; i < g_hook_regex_count; i++) {
-        regfree(g_hook_regex + i);
-    }
-    free(g_hook_regex);
-}
-
-Window get_hook_window() {
+Window get_hook_window(Display* display) {
     int *value; // list of ints
     Atom type;
     int format;
     unsigned long items, bytes;
-    int status = XGetWindowProperty(g_display, DefaultRootWindow(g_display),
-        ATOM(HERBST_HOOK_WIN_ID_ATOM), 0, 1, False,
+    int status = XGetWindowProperty(display, DefaultRootWindow(display),
+        XInternAtom(display, HERBST_HOOK_WIN_ID_ATOM, False), 0, 1, False,
         XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value);
     // only accept exactly one Window id
     if (status != Success || items != 1) {
-        if (!g_quiet) {
-            fprintf(stderr, "no running herbstluftwm detected\n");
-        }
         return 0;
     }
     Window win = *value;
@@ -218,23 +175,23 @@ Window get_hook_window() {
     return win;
 }
 
-int wait_for_hook(int argc, char* argv[]) {
-    init_hook_regex(argc, argv);
+bool hc_next_hook(HCConnection* con, int* argc, char** argv[]) {
     // get window to listen at
-    Window win = get_hook_window();
+    Window win = get_hook_window(con->display);
     if (!win) {
-        return EXIT_FAILURE;
+        return false;
     }
     // listen on window
-    XSelectInput(g_display, win, StructureNotifyMask|PropertyChangeMask);
+    XSelectInput(con->display, win, StructureNotifyMask|PropertyChangeMask);
     XEvent next_event;
-    while (1) {
-        XNextEvent(g_display, &next_event);
+    bool received_hook = false;
+    while (!received_hook) {
+        XNextEvent(con->display, &next_event);
         if (next_event.type == DestroyNotify) {
             if (next_event.xdestroywindow.window == win) {
                 // hook window was destroyed
                 // so quit idling
-                break;
+                return false;
             }
         }
         if (next_event.type != PropertyNotify) {
@@ -252,47 +209,21 @@ int wait_for_hook(int argc, char* argv[]) {
             continue;
         }
         XTextProperty text_prop;
-        XGetTextProperty(g_display, win, &text_prop, pe->atom);
+        XGetTextProperty(con->display, win, &text_prop, pe->atom);
         char** list_return;
         int count;
-        if (Success != Xutf8TextPropertyToTextList(g_display, &text_prop, &list_return, &count)) {
+        if (Success != Xutf8TextPropertyToTextList(con->display, &text_prop,
+                                                   &list_return, &count)) {
             XFree(text_prop.value);
-            return 0;
-        };
-        bool print_signal = true;
-        int i;
-        for (i = 0; i < argc && i < count; i++) {
-            if (0 != regexec(g_hook_regex + i, list_return[i], 0, NULL, 0)) {
-                // found an regex that did not match
-                // so skip this
-                print_signal = false;
-                break;
-            }
+            return false;
         }
-        if (print_signal) {
-            // just print as list
-            for (i = 0; i < count; i++) {
-                printf("%s%s", i ? "\t" : "", list_return[i]);
-            }
-            printf("\n");
-            fflush(stdout);
-        }
+        *argc = count;
+        *argv = argv_duplicate(count, list_return);
+        received_hook = true;
         // cleanup
         XFreeStringList(list_return);
         XFree(text_prop.value);
-        if (!print_signal) {
-            // if there was nothing printed
-            // then act as there was no hook
-            continue;
-        }
-        // check counter
-        if (g_hook_count == 1) {
-            break;
-        } else if (g_hook_count > 1) {
-            g_hook_count--;
-        }
     }
-    destroy_hook_regex();
-    return 0;
+    return true;
 }
 
