@@ -54,11 +54,11 @@ bool ipc_handle_connection(Window win, bool try_it) {
         XFree(text_prop.value);
         return false;
     }
-    // now we do not need any events from this window anymore
-    XSelectInput(g_display, win, 0);
     GString* output = g_string_new("");
     int status = call_command(count, list_return, &output);
     // send output back
+    // Mark this command as executed
+    XDeleteProperty(g_display, win, ATOM(HERBST_IPC_ARGS_ATOM));
     XChangeProperty(g_display, win, ATOM(HERBST_IPC_OUTPUT_ATOM),
         ATOM("UTF8_STRING"), 8, PropModeReplace,
         (unsigned char*)output->str, 1+strlen(output->str));
