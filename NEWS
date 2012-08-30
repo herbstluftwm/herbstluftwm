@@ -10,6 +10,16 @@ Changes:
     * hook togglehidepanel: the default panel.sh also accepts the parameters
       "current" or a certain monitor index
 
+Release: 0.4.1 on 2012-08-30
+----------------------------
+
+This fixes some build system issues:
+
+    * Separate CFLAGS and CPPFLAGS
+    * Add patch level to the version number
+    * Only use __MACH__ if really needed
+    * Honor CPPFLAGS
+
 Release: 0.4 on 2012-08-18
 --------------------------
 

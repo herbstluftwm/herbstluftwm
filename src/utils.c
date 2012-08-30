@@ -22,7 +22,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-#ifdef __MACH__
+#if defined(__MACH__) && ! defined(CLOCK_REALTIME)
 #include <mach/clock.h>
 #include <mach/mach.h>
 #endif
@@ -33,7 +33,7 @@ char*   g_tree_style; /* the one from layout.c */
 
 time_t get_monotonic_timestamp() {
     struct timespec ts;
-#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+#if defined(__MACH__) && ! defined(CLOCK_REALTIME) // OS X does not have clock_gettime, use clock_get_time
     clock_serv_t cclock;
     mach_timespec_t mts;
     host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
