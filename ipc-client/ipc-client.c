@@ -43,7 +43,7 @@ HCConnection* hc_connect_to_display(Display* display) {
     if (!con) {
         return con;
     }
-    memset(con, 0, sizeof(con));
+    memset(con, 0, sizeof(HCConnection));
     con->display = display;
     con->root = DefaultRootWindow(con->display);
     con->atom_args = XInternAtom(con->display, HERBST_IPC_ARGS_ATOM, False);
