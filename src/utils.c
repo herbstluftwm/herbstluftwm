@@ -80,7 +80,6 @@ GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
         return NULL;
     }
     // convert text property to a gstring
-    result = g_string_new("");
     if (prop.encoding == XA_STRING
         || prop.encoding == XInternAtom(dpy, "UTF8_STRING", False)) {
         result = g_string_new((char*)prop.value);
