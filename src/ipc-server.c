@@ -29,21 +29,15 @@ void ipc_destroy() {
 void ipc_add_connection(Window window) {
     XSelectInput(g_display, window, PropertyChangeMask);
     // check, if property already exists
-    ipc_handle_connection(window, true);
+    ipc_handle_connection(window);
 }
 
-bool ipc_handle_connection(Window win, bool try_it) {
+bool ipc_handle_connection(Window win) {
     XTextProperty text_prop;
     if (!XGetTextProperty(g_display, win, &text_prop, ATOM(HERBST_IPC_ARGS_ATOM))) {
-        if (try_it) {
-            // just return without doing anything else
-            return false;
-        } else {
-            fprintf(stderr, "herbstluftwm: Warning: herbstclient window %d does "
-                            "not have the Atom \"%s\" set. Ignoring it.\n",
-                            (unsigned int)win, HERBST_IPC_ARGS_ATOM);
-            return false;
-        }
+        // if the args atom is not present any more then it already has been
+        // executed (e.g. after being called by ipc_add_connection())
+        return false;
     }
     char** list_return;
     int count;

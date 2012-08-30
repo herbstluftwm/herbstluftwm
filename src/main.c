@@ -738,7 +738,7 @@ void propertynotify(XEvent* event) {
     HSClient* client;
     if (ev->state == PropertyNewValue) {
         if (is_ipc_connectable(event->xproperty.window)) {
-            ipc_handle_connection(event->xproperty.window, false);
+            ipc_handle_connection(event->xproperty.window);
         } else if((client = get_client_from_window(ev->window))) {
             switch (ev->atom) {
                 case XA_WM_HINTS:
