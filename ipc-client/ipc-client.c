@@ -26,6 +26,8 @@ struct HCConnection {
     Window      hook_window;
     Window      client_window;
     Atom        atom_args;
+    Atom        atom_output;
+    Atom        atom_status;
     Window      root;
 };
 
@@ -47,6 +49,8 @@ HCConnection* hc_connect_to_display(Display* display) {
     con->display = display;
     con->root = DefaultRootWindow(con->display);
     con->atom_args = XInternAtom(con->display, HERBST_IPC_ARGS_ATOM, False);
+    con->atom_output = XInternAtom(con->display, HERBST_IPC_OUTPUT_ATOM, False);
+    con->atom_status = XInternAtom(con->display, HERBST_IPC_STATUS_ATOM, False);
     return con;
 }
 
@@ -113,11 +117,9 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
             continue;
         }
         if (!output_received
-            && !strcmp(XGetAtomName(con->display, pe->atom), HERBST_IPC_OUTPUT_ATOM)) {
+            && pe->atom == con->atom_output) {
             output = window_property_to_g_string(con->display, con->client_window,
-                                                 XInternAtom(con->display,
-                                                             HERBST_IPC_OUTPUT_ATOM,
-                                                             False));
+                                                 con->atom_output);
             if (!output) {
                 fprintf(stderr, "could not get WindowProperty \"%s\"\n",
                                 HERBST_IPC_OUTPUT_ATOM);
@@ -125,9 +127,7 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
             }
             output_received = true;
         }
-        else if (!status_received && !strcmp(
-                     XGetAtomName(con->display, pe->atom),
-                     HERBST_IPC_STATUS_ATOM)) {
+        else if (!status_received && pe->atom == con->atom_status) {
             int *value;
             Atom type;
             int format;
