@@ -392,9 +392,12 @@ void tag_move_client(HSClient* client, HSTag* target) {
 void tag_update_focus_layer(HSTag* tag) {
     HSClient* focus = get_client_from_window(frame_focused_window(tag->frame));
     stack_clear_layer(tag->stack, LAYER_FOCUS);
-    if (!stack_is_layer_empty(tag->stack, LAYER_FULLSCREEN)
-        || *g_raise_on_focus_temporarily) {
-        if (focus) {
+    if (focus) {
+        // enforce raise_on_focus_temporarily if there is at least one
+        // fullscreen window or if the tag is in tiling mode
+        if (!stack_is_layer_empty(tag->stack, LAYER_FULLSCREEN)
+            || *g_raise_on_focus_temporarily
+            || focus->tag->floating == false) {
             stack_slice_add_layer(tag->stack, focus->slice, LAYER_FOCUS);
         }
     }
