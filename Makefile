@@ -34,12 +34,13 @@ $(TARGETS):
 
 %.o: %.c version.mk
 	$(call colorecho,CC,$<)
-	$(VERBOSE) $(CC) -c $(CFLAGS) -o $@ $<
-	$(VERBOSE) $(CC) -c $(CFLAGS) -o $*.d -MT $@ -MM $<
+	$(VERBOSE) $(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
+	$(VERBOSE) $(CC) -c $(CPPFLAGS) -o $*.d -MT $@ -MM $<
 
 info:
 	@echo Some Info:
-	@echo Compiling with: $(CC) -c $(CFLAGS) -o OUT INPUT
+	@echo Preprocessing with: $(CC) -E $(CPPFLAGS)
+	@echo Compiling with: $(CC) -c $(CPPFLAGS) $(CFLAGS) -o OUT INPUT
 	@echo Linking with: $(LD) -o OUT $(LDFLAGS) INPUT
 
 clean: cleandoc cleandeps
