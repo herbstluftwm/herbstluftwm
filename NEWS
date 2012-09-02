@@ -9,6 +9,8 @@ Changes:
     * new setting: wmname
     * hook togglehidepanel: the default panel.sh also accepts the parameters
       "current" or a certain monitor index
+    * align captions of the tree output (commands: layout, stack) better by
+      inserting a space in front of every caption
 
 Release: 0.4.1 on 2012-08-30
 ----------------------------

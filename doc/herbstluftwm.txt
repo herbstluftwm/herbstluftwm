@@ -470,11 +470,11 @@ layout ['TAG']::
 An example output is:
 +
 ----
-╾─┐horizontal 50% selection=1
-  ├╼ vertical: 0xe00009
-  └─┐vertical 50% selection=0
-    ├╼ vertical: 0xa00009 [FOCUS]
-    └╼ vertical: 0x1000009
+╾─┐ horizontal 50% selection=1
+  ├─╼ vertical: 0xe00009
+  └─┐ vertical 50% selection=0
+    ├─╼ vertical: 0xa00009 [FOCUS]
+    └─╼ vertical: 0x1000009
 ----
 
 dump ['TAG']::
@@ -706,15 +706,15 @@ tree_style (String)::
 +
 ----
 X-.root
-  #-.child 0
-  | #* child 01
-  | +* child 02
-  +-.child 1
-  : #* child 10
-  : +* child 01
+  #-. child 0
+  | #-* child 01
+  | +-* child 02
+  +-. child 1
+  : #-* child 10
+  : +-* child 01
 ----
 +
-Useful values for 'tree_style' are: +╾│ ├└╼─┐+ or +╾│ ├╰╼─╮+.
+Useful values for 'tree_style' are: +╾│ ├└╼─┐+ or +-| |'--.+ or +╾│ ├╰╼─╮+.
 
 wmname (String)::
     It controls the value of the +_NET_WM_NAME+ property on the root window,

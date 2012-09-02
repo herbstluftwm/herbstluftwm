@@ -391,6 +391,8 @@ static void subtree_print_to(HSTreeInterface* intface, char* indent,
     if (child_count == 0) {
         g_string_append(*output, rootprefix);
         *output = g_string_append_unichar(*output,
+            UTF8_STRING_AT(g_tree_style, 6));
+        *output = g_string_append_unichar(*output,
             UTF8_STRING_AT(g_tree_style, 5));
         *output = g_string_append_c(*output, ' ');
         // append caption
@@ -403,6 +405,7 @@ static void subtree_print_to(HSTreeInterface* intface, char* indent,
         *output = g_string_append_unichar(*output,
             UTF8_STRING_AT(g_tree_style, 7));
         // apend caption
+        g_string_append_c(*output, ' ');
         intface->append_caption(root, output);
         *output = g_string_append_c(*output, '\n');
         // apend children
