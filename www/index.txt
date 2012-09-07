@@ -22,9 +22,29 @@ Its main features can be described with:
 
 Get it!
 -------
-Install herbstluftwm via your package manager! It is currently available in the
-link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm[Arch
-User Repository] and on Debian.
+Install herbstluftwm via your package manager! It is currently available on the
+following plattforms:
+
+  * Arch Linux via the
+    link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm[Arch User
+    Repository]
+  * Debian (0.3 in
+    link:http://packages.debian.org/squeeze-backports/herbstluftwm[squeeze-backports],
+    link:http://packages.debian.org/wheezy/herbstluftwmw[wheezy and kFreeBSD],
+    0.4.1 on all link:http://packages.debian.org/sid/herbstluftwm[sid
+    architecutres (including Hurd)])
+  * link:http://packages.gentoo.org/package/x11-wm/herbstluftwm[Gentoo Linux]
+  * Mac OS X via
+    link:http://trac.macports.org/browser/trunk/dports/x11/herbstluftwm/Portfile[MacPorts]
+  * FreeBSD
+  * 0.3 on Ubuntu Linux via
+    link:https://launchpad.net/ubuntu/+source/herbstluftwm[Launchpad]
+
+It's confirmed to run on:
+
+  * Cygwin
+  * OpenBSD
+  * Many other Linux distributions
 
 If your distribution is not supported you can build a package on your own using
 the most current released tarball:
