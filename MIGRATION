@@ -1,0 +1,18 @@
+herbstluftwm migration guide
+----------------------------
+
+This guide describes the list of incompatible changes between the different
+herbstluftwm releases and how to migrate scripts and configuration.
+
+0.3 to 0.4
+~~~~~~~~~~
+The setting window_gap is now called frame_gap. Simply replace all occurrences
+of window_gap by frame_gap in your old scripts (and autostart).
+
+0.2 to 0.3
+~~~~~~~~~~
+The setting ignore_class is removed, because this also can be done by rules. You
+can replace a line like 'set ignore_class "$foo"' in your autostart by 'rule
+class~"$foo" manage=off'
+
+// vim: tw=80
