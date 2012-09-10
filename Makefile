@@ -17,6 +17,7 @@ DEPS = $(OBJ:.o=.d)
 
 HERBSTCLIENTDOC = doc/herbstclient.txt
 HERBSTLUFTWMDOC = doc/herbstluftwm.txt
+TUTORIAL = doc/herbstluftwm-tutorial.txt
 
 .PHONY: depend all all-nodoc doc install info www
 .PHONY: cleandoc cleanwww cleandeps clean
@@ -62,11 +63,17 @@ cleandoc:
 	$(VERBOSE) rm -f doc/herbstluftwm.1
 	$(call colorecho,RM,doc/herbstluftwm.html)
 	$(VERBOSE) rm -f doc/herbstluftwm.html
+	$(call colorecho,RM,doc/herbstluftwm-tutorial.7)
+	$(VERBOSE) rm -f doc/herbstluftwm-tutorial.7
+	$(call colorecho,RM,doc/herbstluftwm-tutorial.html)
+	$(VERBOSE) rm -f doc/herbstluftwm-tutorial.html
 
 doc: doc/herbstclient.1    \
      doc/herbstclient.html \
      doc/herbstluftwm.1    \
-     doc/herbstluftwm.html
+     doc/herbstluftwm.html \
+     doc/herbstluftwm-tutorial.7    \
+     doc/herbstluftwm-tutorial.html
 
 tar: doc
 	tar -czf $(TARFILE) `git ls-files` doc/*.html doc/*.[0-9]
@@ -76,7 +83,7 @@ tar: doc
 	tar -czf $(TARFILE) $(TMPTARDIR)
 	rm -rf $(TMPTARDIR)
 
-doc/%.1: doc/%.txt version.mk
+doc/%.1 doc/%.7: doc/%.txt version.mk
 	$(call colorecho,DOC,$@)
 	$(VERBOSE) $(A2X) -f manpage -a "herbstluftwmversion=herbstluftwm $(VERSION)" -a "date=`date +%Y-%m-%d`" $<
 

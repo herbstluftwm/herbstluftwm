@@ -1,0 +1,195 @@
+herbstluftwm-tutorial(7)
+========================
+:doctype: manpage
+:man version: {herbstluftwmversion}
+
+Name
+----
+herbstluftwm-tutorial - A tutorial introduction to herbstluftwm
+
+
+Description
+-----------
+This tutorial includes how to create a basic herbstluftwm setup and introduces
+the major herbstluftwm features. This tutorial neither covers all features nor
+specifies the mentioned features entirely; see *herbstluftwm*(1) for a compact
+and more complete description.
+
+Basic installation
+------------------
+This describes two alternate installation methods. In any case, you also have to
+install the dependencies. Beside the standard libraries (GLib, XLib) which are
+found on nearly any system, you should install dzen2 (as current as possible)
+which is needed by the default +panel.sh+.
+
+Via the package manager
+~~~~~~~~~~~~~~~~~~~~~~~
+You always should prefer installing herbstluftwm via your package manager on your
+system. It should be called +herbstluftwm+.
+
+After installing it, the default configuration file has to be copied to your
+home directory:
+
+[source,bash]
+----
+mkdir -p ~/.config/herbstluftwm
+cp /etc/xdg/herbstluftwm/autostart ~/.confg/herbstluftwm/
+----
+
+You also should activate the tab completion for +herbstclient+. In case of
+bash, you can either activate the tab completion in general or source the
+herbstclient-completion from the bash_completion.d directory in your bashrc. In
+case of zsh the tab-completion normally is activated already (if not, consider
+activating it).
+
+As usual you can define herbstluftwm as your window manager by either selecting
+herbstluftwm in your login manager or by starting it in your +~/.xinitrc+,
+mostly by writing to your xinitrc (or +.xsession+ on some systems):
+
+[source,bash]
+----
+# start herbstluftwm in locked mode (it will be unlocked at the end of your
+# autostart)
+exec herbstluftwm --locked
+----
+
+After logging in the next time, you will get a default herbstluftwm session.
+
+Directly from git
+~~~~~~~~~~~~~~~~~
+If there is no package for your plattform or if you want to use the current git
+version, then you can pull directly from the main repository:
+
+[source,bash]
+----
+git clone git://git.cs.fau.de/hlwm herbstluftwm
+cd herbstluftwm
+# if you want to use the stable version of herbstluftwm, then type:
+# git checkout stable
+# you can switch back to the development version anytime by:
+# git checkout master
+make # build the binaries
+
+# install files
+mkdir -p ~/bin
+# you also have to put $HOME/bin to your path, e.g. by:
+echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc # or to your zshrc, etc...
+ln -s `pwd`/herbstluftwm ~/bin/
+ln -s `pwd`/herbstclient ~/bin/
+
+# copy the configuration
+mkdir -p ~/.config/herbstluftwm/
+cp share/autostart ~/.config/herbstluftwm/
+cp share/panel.sh ~/.config/herbstluftwm/
+----
+
+  - If you are using bash, then source the bash completion file in your +~/.bashrc+
++
+[source,bash]
+----
+source path-to/herbstluftwm/share/herbstclient-completion
+----
+
+  - If you are using zsh, then copy the +share/_herbstclient+ file to the
+    appropriate zsh-completion directory.
+
+Each time, there is an update, you have to do the following steps in your
+herbstluftwm directory:
+
+[source,bash]
+----
+git pull
+make
+----
+
+You also can switch to another branch (e.g. +stable+ for the current release
+or +master+ for the development version), by doing this in your herbstluftwm
+directory:
+
+[source,bash]
+----
+git checkout desiredbranch # insert the branch here
+make cleandeps
+make
+----
+
+First steps
+-----------
+After starting herbstluftwm the screen is filled with a green background
+initially, which indicates, that there is only one large frame. A frame is a
+container where actual windows can be placed or which can be split into two
+frames.
+
+Start an +xterm+ by pressing Alt-Return, which will fill your entire screen.
+
+Client
+~~~~~~
+The only way to communicate to herbstluftwm is by using the client application
+called +herbstclient+. Its usual syntax is: +herbstclient COMMAND [ARGUMENTS]+.
+This calls a certain +COMMAND+ within your running herbstluftwm instance, causes
+some effect (which depends on the given +ARGUMENTS+). This produces some output
+which is printed by +herbstclient+ and lets +herbstclient+ exit with a exit-code
+(e.g. 0 for success) like many other UNIX tools:
+
+----
+    shell              COMMANDS,
+       \ COMMAND,      ARGUMENTS
+        \ ARGUMENTS  .---------.
+         \          /           \
+          V        /             V
+         herbstclient         herbstluftwm
+          /        ^             /
+         / output,  \           /
+        / exit-code  '---------'
+       V               output,
+ shell/terminal       exit-code
+----
+
+The most simple command only prints the herbstluftwm version:
+
+[source,bash]
+$ # lines prefixed with $ describes what to type, other lines describe the
+$ # typical output
+$ # Type: her<tab>c<tab> ve<tab>
+$ herbstclient version
+herbstluftwm 0.4.1 (built on Aug 30 2012)
+$ herbstclient set window_border_active_color red
+$ # now the window border turned red
+
+The configuration of herbstluftwm only is done by calling commands via
+herbstclient. So the only configuration file is the +autostart+ which is placed
+at +~/.config/herbstluftwm/+ and which is a sequence of those herbstclient
+calls.
+
+Open it in your favourite text editor and replace the Mod-line by this to use
+the Super-key (or also called Windows-key) as the main modifier:
+
+[source,bash]
+----
+# Mod=Mod1 # use alt as the main modifier
+Mod=Mod4 # use Super as the main modifier
+----
+
+After saving the autostart file, you have to reload the configuration:
+
+[source,bash]
+----
+# the following line is identical to directly calling:
+# ~/.config/herbstluftwm/autostart
+herbstclient reload
+----
+
+Now you may notice that the red border color of your terminal turned green
+again, because the color is set in the default autostart. That's the typical
+configuration workflow:
+
+  . Try some new settings in the command line
+  . Add them to the autostart file
+  . Press Mod-Shift-r which calls the +reload+ command or directly execute the
+    autostart file from your shell to get the error messages if something went
+    wrong.
+
+
+
+
+// vim: tw=80 ft=asciidoc
