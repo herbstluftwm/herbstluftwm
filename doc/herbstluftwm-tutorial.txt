@@ -141,6 +141,7 @@ which is printed by +herbstclient+ and lets +herbstclient+ exit with a exit-code
 
 The most simple command only prints the herbstluftwm version:
 
+----
 $ # lines prefixed with $ describes what to type, other lines describe the
 $ # typical output
 $ # Type: her<tab>c<tab> ve<tab>
@@ -148,6 +149,7 @@ $ herbstclient version
 herbstluftwm 0.4.1 (built on Aug 30 2012)
 $ herbstclient set window_border_active_color red
 $ # now the window border turned red
+----
 
 The configuration of herbstluftwm only is done by calling commands via
 herbstclient. So the only configuration file is the +autostart+ which is placed
