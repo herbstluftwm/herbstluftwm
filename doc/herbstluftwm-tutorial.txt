@@ -30,7 +30,6 @@ system. It should be called +herbstluftwm+.
 After installing it, the default configuration file has to be copied to your
 home directory:
 
-[source,bash]
 ----
 mkdir -p ~/.config/herbstluftwm
 cp /etc/xdg/herbstluftwm/autostart ~/.confg/herbstluftwm/
@@ -46,7 +45,6 @@ As usual you can define herbstluftwm as your window manager by either selecting
 herbstluftwm in your login manager or by starting it in your +~/.xinitrc+,
 mostly by writing to your xinitrc (or +.xsession+ on some systems):
 
-[source,bash]
 ----
 # start herbstluftwm in locked mode (it will be unlocked at the end of your
 # autostart)
@@ -60,7 +58,6 @@ Directly from git
 If there is no package for your plattform or if you want to use the current git
 version, then you can pull directly from the main repository:
 
-[source,bash]
 ----
 git clone git://git.cs.fau.de/hlwm herbstluftwm
 cd herbstluftwm
@@ -85,7 +82,6 @@ cp share/panel.sh ~/.config/herbstluftwm/
 
   - If you are using bash, then source the bash completion file in your +~/.bashrc+
 +
-[source,bash]
 ----
 source path-to/herbstluftwm/share/herbstclient-completion
 ----
@@ -96,7 +92,6 @@ source path-to/herbstluftwm/share/herbstclient-completion
 Each time, there is an update, you have to do the following steps in your
 herbstluftwm directory:
 
-[source,bash]
 ----
 git pull
 make
@@ -106,7 +101,6 @@ You also can switch to another branch (e.g. +stable+ for the current release
 or +master+ for the development version), by doing this in your herbstluftwm
 directory:
 
-[source,bash]
 ----
 git checkout desiredbranch # insert the branch here
 make cleandeps
@@ -147,7 +141,6 @@ which is printed by +herbstclient+ and lets +herbstclient+ exit with a exit-code
 
 The most simple command only prints the herbstluftwm version:
 
-[source,bash]
 $ # lines prefixed with $ describes what to type, other lines describe the
 $ # typical output
 $ # Type: her<tab>c<tab> ve<tab>
@@ -164,7 +157,6 @@ calls.
 Open it in your favourite text editor and replace the Mod-line by this to use
 the Super-key (or also called Windows-key) as the main modifier:
 
-[source,bash]
 ----
 # Mod=Mod1 # use alt as the main modifier
 Mod=Mod4 # use Super as the main modifier
@@ -172,7 +164,6 @@ Mod=Mod4 # use Super as the main modifier
 
 After saving the autostart file, you have to reload the configuration:
 
-[source,bash]
 ----
 # the following line is identical to directly calling:
 # ~/.config/herbstluftwm/autostart
