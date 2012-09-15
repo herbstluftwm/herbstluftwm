@@ -113,9 +113,9 @@ hc unlock
 herbstclient set tree_style '╾│ ├└╼─┐'
 
 # do multi monitor setup here, e.g.:
-# hc remove_monitor 1
-# hc move_monitor 0 1280x1024+0+0
-# hc add_monitor 1280x1024+1280+0
+# hc set_monitors 1280x1024+0+0 1280x1024+1280+0
+# or simply:
+# hc detect_monitors
 
 # find the panel
 panel=~/.config/herbstluftwm/panel.sh
