@@ -22,6 +22,7 @@ case "$1" in
         ;;
 esac
 
-id=$(wmctrl -l |cat -n| sed 's/\t/) /g'| $dmenu_command -l $dmenu_lines -p "$name") \
+id=$(wmctrl -l |cat -n| sed 's/\t/) /g'| sed 's/^[ ]*//' \
+    | $dmenu_command -l $dmenu_lines -p "$name") \
     && action $(awk '{ print $2 ; }' <<< "$id")
 
