@@ -83,4 +83,6 @@ Planned features:
       pseudotiled frames
     - consequence: stack={top,underfocus,bottom} and setting to set the initial
       stacking position on manage or after moving a client to a tag
+    - maybe shift_nth: like focus_nth except that it swaps those two windows
+      inside the current frame
 
