@@ -177,8 +177,12 @@ void handle_key_press(XEvent* ev) {
     GList* element = g_list_find_custom(g_key_binds, &pressed, (GCompareFunc)keysym_equals);
     if (element && element->data) {
         KeyBinding* found = (KeyBinding*)element->data;
+        // duplicate the args in the case this keybinding removes itself
+        char** argv =  argv_duplicate(found->cmd_argc, found->cmd_argv);
+        int argc = found->cmd_argc;
         // call the command
-        call_command_no_output(found->cmd_argc, found->cmd_argv);
+        call_command_no_output(argc, argv);
+        argv_free(argc, argv);
     }
 }
 
