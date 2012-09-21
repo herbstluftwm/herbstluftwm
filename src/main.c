@@ -145,6 +145,8 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "set_layout",     frame_current_set_client_layout),
     CMD_BIND_NO_OUTPUT(   "detect_monitors",detect_monitors_command),
     CMD_BIND(             "chain",          command_chain_command),
+    CMD_BIND(             "and",            command_chain_command),
+    CMD_BIND(             "or",            command_chain_command),
     {{ NULL }}
 };
 

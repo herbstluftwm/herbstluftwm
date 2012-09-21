@@ -480,14 +480,34 @@ int command_chain(char* separator, bool (*condition)(int laststatus),
     return command_chain(separator, condition, argc, argv, output);
 }
 
+static bool int_is_zero(int x) {
+    return x == 0;
+}
+
+static bool int_is_not_zero(int x) {
+    return x != 0;
+}
+
+typedef struct {
+    char* cmd;
+    bool (*condition)(int);
+} Cmd2Condition;
+
+static Cmd2Condition g_cmd2condition[] = {
+    { "and",    int_is_zero         },
+    { "or",     int_is_not_zero     },
+};
+
 int command_chain_command(int argc, char** argv, GString** output) {
+    Cmd2Condition* cmd;
+    cmd = STATIC_TABLE_FIND_STR(Cmd2Condition, g_cmd2condition, cmd, argv[0]);
     (void)SHIFT(argc, argv);
     if (argc <= 1) {
         return HERBST_INVALID_ARGUMENT;
     }
     char* separator = argv[0];
     (void)SHIFT(argc, argv);
-    bool (*condition)(int) = NULL;
+    bool (*condition)(int) = cmd ? cmd->condition : NULL;
     return command_chain(separator, condition, argc, argv, output);
 }
 
