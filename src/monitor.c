@@ -593,8 +593,10 @@ int monitor_set_tag_command(int argc, char** argv) {
     HSTag*  tag = find_tag(argv[1]);
     if (monitor && tag) {
         monitor_set_tag(get_current_monitor(), tag);
+        return 0;
+    } else {
+        return HERBST_INVALID_ARGUMENT;
     }
-    return 0;
 }
 
 int monitor_set_tag_by_index_command(int argc, char** argv) {
