@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <search.h>
 
 static char* completion_directions[]    = { "left", "right", "down", "up",NULL};
 static char* completion_focus_args[]    = { "-i", "-e", NULL };
@@ -455,5 +456,38 @@ bool keybind_parameter_expected(int argc, char** argv, int pos) {
         return true;
     }
     return parameter_expected(argc - 2, argv + 2, pos - 2);
+}
+
+static int strpcmp(const void* key, const void* val) {
+    return strcmp((const char*) key, *(const char**)val);
+}
+
+int command_chain(char* separator, bool (*condition)(int laststatus),
+                  int argc, char** argv, GString** output) {
+    size_t uargc = argc;
+    printf("finding %s in %d elements\n", separator, argc);
+    char** next_sep = lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
+    int command_argc = next_sep ? (int)(next_sep - argv) : argc;
+    int status = call_command(command_argc, argv, output);
+    if (condition && false == condition(status)) {
+        return status;
+    }
+    argc -= command_argc + 1;
+    argv += command_argc + 1;
+    if (argc <= 0) {
+        return status;
+    }
+    return command_chain(separator, condition, argc, argv, output);
+}
+
+int command_chain_command(int argc, char** argv, GString** output) {
+    (void)SHIFT(argc, argv);
+    if (argc <= 1) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    char* separator = argv[0];
+    (void)SHIFT(argc, argv);
+    bool (*condition)(int) = NULL;
+    return command_chain(separator, condition, argc, argv, output);
 }
 
