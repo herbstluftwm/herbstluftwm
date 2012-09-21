@@ -52,6 +52,7 @@ int complete_against_commands(int argc, char** argv, int position,
                               GString** output);
 void complete_against_keybind_command(int argc, char** argv, int position,
                                       GString** output);
+void complete_chain(int argc, char** argv, int position, GString** output);
 
 int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, GString** output);

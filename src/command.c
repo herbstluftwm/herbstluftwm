@@ -130,9 +130,11 @@ struct {
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
     { "add_monitor",    EQ, 2,  .function = complete_against_tags },
+    { "and",            GE, 1,  .function = complete_chain },
     { "bring",          EQ, 1,  .list = completion_special_winids },
     { "bring",          EQ, 1,  .function = complete_against_winids },
     { "cycle",          EQ, 1,  .list = completion_pm_one },
+    { "chain",          GE, 1,  .function = complete_chain },
     { "cycle_all",      EQ, 1,  .list = completion_cycle_all_args },
     { "cycle_all",      EQ, 1,  .list = completion_pm_one },
     { "cycle_all",      EQ, 2,  .list = completion_pm_one },
@@ -153,6 +155,7 @@ struct {
     { "merge_tag",      EQ, 2,  .function = complete_merge_tag },
     { "move",           EQ, 1,  .function = complete_against_tags },
     { "move_index",     EQ, 2,  .list = completion_use_index_args },
+    { "or",             GE, 1,  .function = complete_chain },
     { "pseudotile",     EQ, 1,  .list = completion_flag_args },
     { "keybind",        GE, 2,  .function = complete_against_keybind_command },
     { "keyunbind",      EQ, 1,  .list = completion_keyunbind_args },
@@ -429,6 +432,61 @@ int complete_against_commands(int argc, char** argv, int position,
     return 0;
 }
 
+static int strpcmp(const void* key, const void* val) {
+    return strcmp((const char*) key, *(const char**)val);
+}
+
+static void complete_chain_helper(int argc, char** argv, int position,
+                                  GString** output) {
+    /* argv entries:
+     * argv[0]      == the command separator
+     * argv[1]      == an arbitrary command name
+     * argv[2..]    == its arguments or a separator
+     */
+    if (position <= 0 || argc <= 1) {
+        return;
+    }
+    char* separator = argv[0];
+    (void)SHIFT(argc, argv);
+    position--;
+
+    /* find the next separator */
+    size_t uargc = argc;
+    char** next_sep = lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
+    int next_sep_idx = next_sep - argv;
+
+    if (!next_sep || next_sep_idx >= position) {
+        /* try to complete at the desired position */
+        char* needle = (position < argc) ? argv[position] : "";
+        complete_against_commands(argc, argv, position, output);
+        /* at least the command name is required
+         * so don't complete at position 0 */
+        if (position != 0 && 0 == strncmp(needle, separator, strlen(needle))) {
+            g_string_append_printf(*output, "%s\n", separator);
+        }
+    } else {
+        /* remove arguments so that the next separator becomes argv[0] */
+        position -= next_sep_idx;
+        argc     -= next_sep_idx;
+        argv     += next_sep_idx;
+        complete_chain_helper(argc, argv, position, output);
+    }
+}
+
+void complete_chain(int argc, char** argv, int position, GString** output) {
+    if (position <= 1) {
+        return;
+    }
+    /* remove the chain command name "chain" from the argv */
+    (void)SHIFT(argc, argv);
+    position--;
+
+    /* do the actual work in the helper that always expects
+     * {separator, firstcommand, ...}
+     */
+    complete_chain_helper(argc, argv, position, output);
+}
+
 bool first_parameter_is_tag(int argc, char** argv, int pos) {
     // only complete if first parameter is a valid tag
     if (argc >= 2 && find_tag(argv[1]) && pos == 2) {
@@ -456,10 +514,6 @@ bool keybind_parameter_expected(int argc, char** argv, int pos) {
         return true;
     }
     return parameter_expected(argc - 2, argv + 2, pos - 2);
-}
-
-static int strpcmp(const void* key, const void* val) {
-    return strcmp((const char*) key, *(const char**)val);
 }
 
 int command_chain(char* separator, bool (*condition)(int laststatus),
