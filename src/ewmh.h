@@ -36,6 +36,7 @@ enum {
     NetWmWindowOpacity,
     /* window states */
     NetWmStateFullscreen,
+    NetWmStateDemandsAttention,
     /* window types */
     ENUM_WITH_ALIAS(NetWmWindowTypeDesktop, NetWmWindowTypeFIRST),
     NetWmWindowTypeDock,

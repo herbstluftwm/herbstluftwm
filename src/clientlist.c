@@ -319,6 +319,7 @@ void window_focus(Window window) {
     }
     tag_update_focus_layer(get_current_monitor()->tag);
     grab_client_buttons(get_client_from_window(window), true);
+    client_set_urgent(client, false);
 }
 
 void client_setup_border(HSClient* client, bool focused) {
@@ -537,21 +538,34 @@ void window_hide(Window win) {
 }
 
 // heavily inspired by dwm.c
-void client_clear_urgent(HSClient* client) {
-    if (client->urgent) {
-        char winid_str[STRING_BUF_SIZE];
-        snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", client->window);
-        hook_emit_list("urgent", "off", winid_str, NULL);
-        client->urgent = false;
-        XWMHints *wmh;
-        if(!(wmh = XGetWMHints(g_display, client->window)))
-            return;
-        wmh->flags &= ~XUrgencyHint;
-        XSetWMHints(g_display, client->window, wmh);
-        XFree(wmh);
-        // report changes to tags
-        tag_set_flags_dirty();
+void client_set_urgent(HSClient* client, bool state) {
+    if (client->urgent == state) {
+        // nothing to do
+        return;
     }
+
+    char winid_str[STRING_BUF_SIZE];
+    snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", client->window);
+    hook_emit_list("urgent", state ? "on" : "off", winid_str, NULL);
+
+    client->urgent = state;
+
+    client_setup_border(client, client->window == frame_focused_window(g_cur_frame));
+
+    XWMHints *wmh;
+    if(!(wmh = XGetWMHints(g_display, client->window)))
+        return;
+
+    if (state) {
+        wmh->flags |= XUrgencyHint;
+    } else {
+        wmh->flags &= ~XUrgencyHint;
+    }
+
+    XSetWMHints(g_display, client->window, wmh);
+    XFree(wmh);
+    // report changes to tags
+    tag_set_flags_dirty();
 }
 
 // heavily inspired by dwm.c

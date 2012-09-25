@@ -65,7 +65,7 @@ void client_setup_border(HSClient* client, bool focused);
 void client_resize(HSClient* client, XRectangle rect, HSFrame* frame);
 void client_resize_tiling(HSClient* client, XRectangle rect, HSFrame* frame);
 void client_resize_floating(HSClient* client, HSMonitor* m);
-void client_clear_urgent(HSClient* client);
+void client_set_urgent(HSClient* client, bool state);
 void client_update_wm_hints(HSClient* client);
 void client_update_title(HSClient* client);
 void client_raise(HSClient* client);

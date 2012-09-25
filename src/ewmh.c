@@ -46,6 +46,7 @@ char* g_netatom_names[NetCOUNT] = {
     [ NetWmState                    ] = "_NET_WM_STATE"                     ,
     [ NetWmWindowOpacity            ] = "_NET_WM_WINDOW_OPACITY"            ,
     [ NetWmStateFullscreen          ] = "_NET_WM_STATE_FULLSCREEN"          ,
+    [ NetWmStateDemandsAttention    ] = "_NET_WM_STATE_DEMANDS_ATTENTION"   ,
     [ NetSupportingWmCheck          ] = "_NET_SUPPORTING_WM_CHECK"          ,
     [ NetWmWindowTypeDesktop        ] = "_NET_WM_WINDOW_TYPE_DESKTOP"       ,
     [ NetWmWindowTypeDock           ] = "_NET_WM_WINDOW_TYPE_DOCK"          ,
@@ -312,6 +313,8 @@ void ewmh_handle_client_message(XEvent* event) {
             } client_atoms[] = {
                 { NetWmStateFullscreen,
                     client->fullscreen,     client_set_fullscreen },
+                { NetWmStateDemandsAttention,
+                    client->urgent,         client_set_urgent },
             };
 
             /* me->data.l[1] and [2] describe the properties to alter */
@@ -360,6 +363,7 @@ void ewmh_update_window_state(struct HSClient* client) {
         bool    enabled;
     } client_atoms[] = {
         { NetWmStateFullscreen,         client->fullscreen      },
+        { NetWmStateDemandsAttention,   client->urgent          },
     };
 
     /* find out which flags are set */
