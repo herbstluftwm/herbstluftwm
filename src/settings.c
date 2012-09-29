@@ -163,9 +163,9 @@ int settings_get(int argc, char** argv, GString* output) {
         return HERBST_SETTING_NOT_FOUND;
     }
     if (pair->type == HS_Int) {
-        g_string_printf(output, "%d", pair->value.i);
+        g_string_append_printf(output, "%d", pair->value.i);
     } else { // pair->type == HS_String
-        g_string_assign(output, pair->value.s);
+        g_string_append(output, pair->value.s);
     }
     return 0;
 }
