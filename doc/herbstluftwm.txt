@@ -192,6 +192,35 @@ wmexec ['WINDOWMANAGER' ['ARGS ...']]::
 
         * wmexec openbox
 
+chain 'SEPARATOR' ['COMMANDS' ...]::
+    chain expects a 'SEPARATOR' and a list of 'COMMANDS' with arguments. The
+    commands have to be separated by the specified 'SEPARATOR'. The 'SEPARATOR'
+    can by any word and only is recognized as the separator between commands if
+    it exactly matches 'SEPARATOR'. "chain" outputs the appended outputs of all
+    commands and returns the exit code of the last executed command. Examples
+    are:
+
+      * Create a tag called "foo" and directly use it: +
+        chain , add foo , use foo
+      * Rotate the layout clockwise: +
+        chain .-. lock .-. rotate .-. rotate .-. rotate .-. unlock
+
+ ::
+    Counterexamples are:
+
+      * This will only create a tag called "foo,": +
+        chain , add foo, use foo
+      * Separator "." defined, but "," is used: +
+        chain . add foo , use foo
+
+and 'SEPARATOR' ['COMMANDS' ...]::
+    "and" behaves like the chain command but only executes the specified
+    'COMMANDS' while the commands return the exit code 0.
+
+or 'SEPARATOR' ['COMMANDS' ...]::
+    "or" behaves like the chain command but only executes the specified
+    'COMMANDS' until one command returns the exit code 0.
+
 focus_nth 'INDEX'::
     Focuses nth window in a frame. The first window has 'INDEX' 0, if INDEX is
     negative or greater than the last window index, then the last window is
