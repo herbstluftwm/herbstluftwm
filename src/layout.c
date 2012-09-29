@@ -264,9 +264,9 @@ void frame_destroy(HSFrame* frame, Window** buf, size_t* count) {
     g_free(frame);
 }
 
-void dump_frame_tree(HSFrame* frame, GString** output) {
+void dump_frame_tree(HSFrame* frame, GString* output) {
     if (frame->type == TYPE_CLIENTS) {
-        g_string_append_printf(*output, "%cclients%c%s:%d",
+        g_string_append_printf(output, "%cclients%c%s:%d",
             LAYOUT_DUMP_BRACKETS[0],
             LAYOUT_DUMP_WHITESPACES[0],
             g_layout_names[frame->content.clients.layout],
@@ -274,14 +274,14 @@ void dump_frame_tree(HSFrame* frame, GString** output) {
         Window* buf = frame->content.clients.buf;
         size_t i, count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            g_string_append_printf(*output, "%c0x%lx",
+            g_string_append_printf(output, "%c0x%lx",
                 LAYOUT_DUMP_WHITESPACES[0],
                 buf[i]);
         }
-        g_string_append_c(*output, LAYOUT_DUMP_BRACKETS[1]);
+        g_string_append_c(output, LAYOUT_DUMP_BRACKETS[1]);
     } else {
         /* type == TYPE_FRAMES */
-        g_string_append_printf(*output, "%csplit%c%s%c%lf%c%d%c",
+        g_string_append_printf(output, "%csplit%c%s%c%lf%c%d%c",
             LAYOUT_DUMP_BRACKETS[0],
             LAYOUT_DUMP_WHITESPACES[0],
             g_align_names[frame->content.layout.align],
@@ -291,17 +291,17 @@ void dump_frame_tree(HSFrame* frame, GString** output) {
             frame->content.layout.selection,
             LAYOUT_DUMP_WHITESPACES[0]);
         dump_frame_tree(frame->content.layout.a, output);
-        g_string_append_c(*output, LAYOUT_DUMP_WHITESPACES[0]);
+        g_string_append_c(output, LAYOUT_DUMP_WHITESPACES[0]);
         dump_frame_tree(frame->content.layout.b, output);
-        g_string_append_c(*output, LAYOUT_DUMP_BRACKETS[1]);
+        g_string_append_c(output, LAYOUT_DUMP_BRACKETS[1]);
     }
 }
 
-char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
+char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
     // find next (
     description = strchr(description, LAYOUT_DUMP_BRACKETS[0]);
     if (!description) {
-        g_string_append_printf(*errormsg, "missing %c\n",
+        g_string_append_printf(errormsg, "missing %c\n",
             LAYOUT_DUMP_BRACKETS[0]);
         return NULL;
     }
@@ -343,7 +343,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
 #define SEP LAYOUT_DUMP_SEPARATOR_STR
         if (3 != sscanf(args, "%[^"SEP"]"SEP"%lf"SEP"%d",
             align_name, &fraction_double, &selection)) {
-            g_string_append_printf(*errormsg,
+            g_string_append_printf(errormsg,
                     "cannot parse frame args \"%s\"\n", args);
             return NULL;
         }
@@ -351,7 +351,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
         int align = find_align_by_name(align_name);
         g_free(align_name);
         if (align < 0) {
-            g_string_append_printf(*errormsg,
+            g_string_append_printf(errormsg,
                     "invalid align name in args \"%s\"\n", args);
             return NULL;
         }
@@ -366,7 +366,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
         } else {
             frame_split(frame, align, fraction);
             if (frame->type != TYPE_FRAMES) {
-                g_string_append_printf(*errormsg,
+                g_string_append_printf(errormsg,
                     "cannot split frame");
                 return NULL;
             }
@@ -387,7 +387,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
 #define SEP LAYOUT_DUMP_SEPARATOR_STR
         if (2 != sscanf(args, "%[^"SEP"]"SEP"%d",
             layout_name, &selection)) {
-            g_string_append_printf(*errormsg,
+            g_string_append_printf(errormsg,
                     "cannot parse frame args \"%s\"\n", args);
             return NULL;
         }
@@ -395,7 +395,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
         int layout = find_layout_by_name(layout_name);
         g_free(layout_name);
         if (layout < 0) {
-            g_string_append_printf(*errormsg,
+            g_string_append_printf(errormsg,
                     "cannot parse layout from args \"%s\"\n", args);
             return NULL;
         }
@@ -432,7 +432,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
         while (*description != LAYOUT_DUMP_BRACKETS[1]) {
             Window win;
             if (1 != sscanf(description, "0x%lx\n", &win)) {
-                g_string_append_printf(*errormsg,
+                g_string_append_printf(errormsg,
                         "cannot parse window id from \"%s\"\n", description);
                 return NULL;
             }
@@ -486,7 +486,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg) {
     if (*description == LAYOUT_DUMP_BRACKETS[1]) {
         description++;
     } else {
-        g_string_append_printf(*errormsg, "warning: missing closing bracket %c\n", LAYOUT_DUMP_BRACKETS[1]);
+        g_string_append_printf(errormsg, "warning: missing closing bracket %c\n", LAYOUT_DUMP_BRACKETS[1]);
     }
     // and over whitespaces
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
@@ -522,23 +522,23 @@ HSFrame* get_toplevel_frame(HSFrame* frame) {
     return frame;
 }
 
-static void frame_append_caption(HSTree tree, GString** output) {
+static void frame_append_caption(HSTree tree, GString* output) {
     HSFrame* frame = (HSFrame*) tree;
     if (frame->type == TYPE_CLIENTS) {
         // list of clients
-        g_string_append_printf(*output, "%s:",
+        g_string_append_printf(output, "%s:",
             g_layout_names[frame->content.clients.layout]);
         Window* buf = frame->content.clients.buf;
         size_t i, count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            g_string_append_printf(*output, " 0x%lx", buf[i]);
+            g_string_append_printf(output, " 0x%lx", buf[i]);
         }
         if (g_cur_frame == frame) {
-            *output = g_string_append(*output, " [FOCUS]");
+            g_string_append(output, " [FOCUS]");
         }
     } else {
         /* type == TYPE_FRAMES */
-        g_string_append_printf(*output, "%s %d%% selection=%d",
+        g_string_append_printf(output, "%s %d%% selection=%d",
             g_layout_names[frame->content.layout.align],
             frame->content.layout.fraction * 100 / FRACTION_UNIT,
             frame->content.layout.selection);
@@ -565,7 +565,7 @@ static HSTreeInterface frame_nth_child(HSTree tree, size_t idx) {
     return intf;
 }
 
-void print_tag_tree(HSTag* tag, GString** output) {
+void print_tag_tree(HSTag* tag, GString* output) {
     HSTreeInterface frameintf = {
         .child_count    = frame_child_count,
         .nth_child      = frame_nth_child,

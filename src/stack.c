@@ -105,20 +105,20 @@ void stack_remove_slice(HSStack* s, HSSlice* elem) {
 }
 
 
-static void slice_append_caption(HSTree root, GString** result) {
+static void slice_append_caption(HSTree root, GString* result) {
     HSSlice* slice = (HSSlice*)root;
     switch (slice->type) {
         case SLICE_WINDOW:
-            g_string_append_printf(*result, "Window 0x%lx",
+            g_string_append_printf(result, "Window 0x%lx",
                                    slice->data.window);
             break;
         case SLICE_CLIENT:
-            g_string_append_printf(*result, "Client 0x%lx \"%s\"",
+            g_string_append_printf(result, "Client 0x%lx \"%s\"",
                                    slice->data.client->window,
                                    slice->data.client->title->str);
             break;
         case SLICE_MONITOR:
-            g_string_append_printf(*result, "Monitor %d with tag \"%s\"",
+            g_string_append_printf(result, "Monitor %d with tag \"%s\"",
                                    monitor_index_of(slice->data.monitor),
                                    slice->data.monitor->tag->name->str);
             break;
@@ -163,9 +163,9 @@ static size_t layer_child_count(HSTree root) {
     return g_list_length(l->stack->top[l->layer]);
 }
 
-static void layer_append_caption(HSTree root, GString** output) {
+static void layer_append_caption(HSTree root, GString* output) {
     struct TmpLayer* l = (struct TmpLayer*) root;
-    g_string_append_printf(*output, "%s", g_layer_names[l->layer]);
+    g_string_append_printf(output, "%s", g_layer_names[l->layer]);
 }
 
 
@@ -188,11 +188,11 @@ static size_t stack_child_count(HSTree root) {
     return LAYER_COUNT;
 }
 
-static void monitor_stack_append_caption(HSTree root, GString** output) {
+static void monitor_stack_append_caption(HSTree root, GString* output) {
     // g_string_append_printf(*output, "Stack of all monitors");
 }
 
-int print_stack_command(int argc, char** argv, GString** result) {
+int print_stack_command(int argc, char** argv, GString* result) {
     struct TmpLayer tl = {
         .stack = get_monitor_stack(),
         .layer = LAYER_NORMAL,

@@ -154,7 +154,7 @@ int settings_set(SettingsPair* pair, char* value) {
     return 0;
 }
 
-int settings_get(int argc, char** argv, GString** output) {
+int settings_get(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -163,9 +163,9 @@ int settings_get(int argc, char** argv, GString** output) {
         return HERBST_SETTING_NOT_FOUND;
     }
     if (pair->type == HS_Int) {
-        g_string_printf(*output, "%d", pair->value.i);
+        g_string_printf(output, "%d", pair->value.i);
     } else { // pair->type == HS_String
-        *output = g_string_assign(*output, pair->value.s);
+        g_string_assign(output, pair->value.s);
     }
     return 0;
 }

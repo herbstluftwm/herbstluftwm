@@ -116,13 +116,13 @@ void frame_update_frame_window_visibility(HSFrame* frame);
 void reset_frame_colors();
 HSFrame* get_toplevel_frame(HSFrame* frame);
 
-void print_tag_tree(HSTag* tag, GString** output);
-void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString** output);
-void dump_frame_tree(HSFrame* frame, GString** output);
+void print_tag_tree(HSTag* tag, GString* output);
+void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString* output);
+void dump_frame_tree(HSFrame* frame, GString* output);
 // create apply a described layout to a frame and its subframes
 // returns pointer to string that wasnot parsed yet
 // or NULL on an error
-char* load_frame_tree(HSFrame* frame, char* description, GString** errormsg);
+char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg);
 int find_layout_by_name(char* name);
 int find_align_by_name(char* name);
 

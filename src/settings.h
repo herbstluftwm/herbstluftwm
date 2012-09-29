@@ -37,7 +37,7 @@ int settings_set_command(int argc, char** argv);
 int settings_toggle(int argc, char** argv);
 int settings_cycle_value(int argc, char** argv);
 int settings_count();
-int settings_get(int argc, char** argv, GString** output);
+int settings_get(int argc, char** argv, GString* output);
 
 
 #endif

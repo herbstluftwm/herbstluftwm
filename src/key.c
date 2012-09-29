@@ -276,8 +276,8 @@ GString* keybinding_to_g_string(KeyBinding* binding) {
         if (!name) {
             break;
         }
-        str = g_string_append(str, name);
-        str = g_string_append_c(str, KEY_COMBI_SEPARATORS[0]);
+        g_string_append(str, name);
+        g_string_append_c(str, KEY_COMBI_SEPARATORS[0]);
         /* remove found mask from mask */
         new_mask = old_mask & ~ modifiername2mask(name);
     }
@@ -288,13 +288,13 @@ GString* keybinding_to_g_string(KeyBinding* binding) {
         g_warning("XKeysymToString failed! using \'?\' instead\n");
         name = "?";
     }
-    str = g_string_append(str, name);
+    g_string_append(str, name);
 
     return str;
 }
 
 struct key_find_context {
-    GString**   output;
+    GString*   output;
     char*       needle;
     size_t      needle_len;
 };
@@ -303,33 +303,33 @@ static void key_find_binds_helper(KeyBinding* b, struct key_find_context* c) {
     GString* name = keybinding_to_g_string(b);
     if (!strncmp(c->needle, name->str, c->needle_len)) {
         /* add to output if key starts with searched needle */
-        *c->output = g_string_append(*c->output, name->str);
-        *c->output = g_string_append_c(*c->output, '\n');
+        g_string_append(c->output, name->str);
+        g_string_append_c(c->output, '\n');
     }
     g_string_free(name, true);
 }
 
-void key_find_binds(char* needle, GString** output) {
+void key_find_binds(char* needle, GString* output) {
     struct key_find_context c = {
         output, needle, strlen(needle)
     };
     g_list_foreach(g_key_binds, (GFunc)key_find_binds_helper, &c);
 }
 
-static void key_list_binds_helper(KeyBinding* b, GString** output) {
+static void key_list_binds_helper(KeyBinding* b, GString* output) {
     // add keybinding
     GString* name = keybinding_to_g_string(b);
-    *output = g_string_append(*output, name->str);
+    g_string_append(output, name->str);
     g_string_free(name, true);
     // add associated command
     for (int i = 0; i < b->cmd_argc; i++) {
-        *output = g_string_append_c(*output, '\t');
-        *output = g_string_append(*output, b->cmd_argv[i]);
+        g_string_append_c(output, '\t');
+        g_string_append(output, b->cmd_argv[i]);
     }
-    *output = g_string_append_c(*output, '\n');
+    g_string_append_c(output, '\n');
 }
 
-int key_list_binds(int argc, char** argv, GString** output) {
+int key_list_binds(int argc, char** argv, GString* output) {
     g_list_foreach(g_key_binds, (GFunc)key_list_binds_helper, output);
     return 0;
 }

@@ -43,7 +43,7 @@ int tag_move_window_by_index_command(int argc, char** argv);
 void tag_move_focused_client(HSTag* target);
 void tag_move_client(struct HSClient* client,HSTag* target);
 int tag_remove_command(int argc, char** argv);
-int tag_set_floating_command(int argc, char** argv, GString** result);
+int tag_set_floating_command(int argc, char** argv, GString* result);
 void tag_update_focus_layer(HSTag* tag);
 void tag_foreach(void (*action)(HSTag*));
 void tag_update_each_focus_layer();

@@ -49,7 +49,7 @@ bool ipc_handle_connection(Window win) {
         return false;
     }
     GString* output = g_string_new("");
-    int status = call_command(count, list_return, &output);
+    int status = call_command(count, list_return, output);
     // send output back
     // Mark this command as executed
     XDeleteProperty(g_display, win, ATOM(HERBST_IPC_ARGS_ATOM));

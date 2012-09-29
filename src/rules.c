@@ -585,7 +585,7 @@ bool condition_windowrole(HSCondition* rule, HSClient* client) {
 void consequence_tag(HSConsequence* cons,
                      HSClient* client, HSClientChanges* changes) {
     if (changes->tag_name) {
-        changes->tag_name = g_string_assign(changes->tag_name, cons->value.str);
+        g_string_assign(changes->tag_name, cons->value.str);
     } else {
         changes->tag_name = g_string_new(cons->value.str);
     }
@@ -603,7 +603,7 @@ void consequence_manage(HSConsequence* cons, HSClient* client,
 
 void consequence_index(HSConsequence* cons, HSClient* client,
                                HSClientChanges* changes) {
-    changes->tree_index = g_string_assign(changes->tree_index, cons->value.str);
+    g_string_assign(changes->tree_index, cons->value.str);
 }
 
 void consequence_pseudotile(HSConsequence* cons, HSClient* client,
