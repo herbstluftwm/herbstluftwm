@@ -164,7 +164,7 @@ int tag_rename_command(int argc, char** argv) {
     if (find_tag(argv[2])) {
         return HERBST_TAG_IN_USE;
     }
-    tag->name = g_string_assign(tag->name, argv[2]);
+    g_string_assign(tag->name, argv[2]);
     ewmh_update_desktop_names();
     hook_emit_list("tag_renamed", tag->name->str, NULL);
     return 0;
@@ -225,7 +225,7 @@ int tag_remove_command(int argc, char** argv) {
     return 0;
 }
 
-int tag_set_floating_command(int argc, char** argv, GString** result) {
+int tag_set_floating_command(int argc, char** argv, GString* result) {
     // usage: floating [[tag] on|off|toggle]
     HSTag* tag = get_current_monitor()->tag;
     if (argc < 2) {
@@ -248,7 +248,7 @@ int tag_set_floating_command(int argc, char** argv, GString** result) {
 
     if (!strcmp(action, "status")) {
         // just print status
-        *result = g_string_assign(*result, tag->floating ? "on" : "off");
+        g_string_append(result, tag->floating ? "on" : "off");
     } else {
         // asign new value and rearrange if needed
         tag->floating = new_value;

@@ -96,13 +96,13 @@ void monitor_apply_layout(HSMonitor* monitor) {
     }
 }
 
-int list_monitors(int argc, char** argv, GString** output) {
+int list_monitors(int argc, char** argv, GString* output) {
     (void)argc;
     (void)argv;
     int i;
     for (i = 0; i < g_monitors->len; i++) {
         HSMonitor* monitor = monitor_with_index(i);
-        g_string_append_printf(*output, "%d: %dx%d%+d%+d with tag \"%s\"%s\n",
+        g_string_append_printf(output, "%d: %dx%d%+d%+d with tag \"%s\"%s\n",
             i,
             monitor->rect.width, monitor->rect.height,
             monitor->rect.x, monitor->rect.y,
@@ -232,10 +232,10 @@ static RectList* disjoin_rects(XRectangle* buf, size_t count) {
 }
 
 
-int disjoin_rects_command(int argc, char** argv, GString** output) {
+int disjoin_rects_command(int argc, char** argv, GString* output) {
     (void)SHIFT(argc, argv);
     if (argc < 1) {
-        g_string_append_printf(*output, "At least one rect is required.\n");
+        g_string_append_printf(output, "At least one rect is required.\n");
         return HERBST_INVALID_ARGUMENT;
     }
     XRectangle* buf = g_new(XRectangle, argc);
@@ -246,7 +246,7 @@ int disjoin_rects_command(int argc, char** argv, GString** output) {
     RectList* rects = disjoin_rects(buf, argc);
     for (RectList* cur = rects; cur; cur = cur->next) {
         XRectangle r = cur->rect;
-        g_string_append_printf(*output, "%dx%d%+d%+d\n",
+        g_string_append_printf(output, "%dx%d%+d%+d\n",
             r.width, r.height, r.x, r.y);
     }
     rectlist_free(rects);
@@ -254,10 +254,10 @@ int disjoin_rects_command(int argc, char** argv, GString** output) {
     return 0;
 }
 
-int set_monitor_rects_command(int argc, char** argv, GString** output) {
+int set_monitor_rects_command(int argc, char** argv, GString* output) {
     (void)SHIFT(argc, argv);
     if (argc < 1) {
-        g_string_append_printf(*output, "At least one monitor is required.\n");
+        g_string_append_printf(output, "At least one monitor is required.\n");
         return HERBST_INVALID_ARGUMENT;
     }
     XRectangle* templates = g_new0(XRectangle, argc);
@@ -411,7 +411,7 @@ int move_monitor_command(int argc, char** argv) {
     return 0;
 }
 
-int monitor_rect_command(int argc, char** argv, GString** result) {
+int monitor_rect_command(int argc, char** argv, GString* result) {
     // usage: monitor_rect [[-p] INDEX]
     char* index_str = NULL;
     HSMonitor* m = NULL;
@@ -455,7 +455,7 @@ int monitor_rect_command(int argc, char** argv, GString** result) {
         rect.y += m->pad_up;
         rect.height -= m->pad_up + m->pad_down;
     }
-    g_string_printf(*result, "%d %d %d %d",
+    g_string_append_printf(result, "%d %d %d %d",
                     rect.x, rect.y, rect.width, rect.height);
     return 0;
 }

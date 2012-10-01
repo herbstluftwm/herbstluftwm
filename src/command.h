@@ -11,7 +11,7 @@
 
 typedef int (*HerbstCmd)(int argc,      // number of arguments
                          char** argv,   // array of args
-                         GString** output  // result-data/stdout
+                         GString* output  // result-data/stdout
                         );
 typedef int (*HerbstCmdNoOutput)(int argc,  // number of arguments
                          char** argv        // array of args
@@ -34,24 +34,30 @@ typedef struct CommandBinding {
 
 extern CommandBinding g_commands[];
 
-int call_command(int argc, char** argv, GString** output);
+int call_command(int argc, char** argv, GString* output);
 int call_command_no_output(int argc, char** argv);
 
 // commands
-int list_commands(int argc, char** argv, GString** output);
-int complete_command(int argc, char** argv, GString** output);
+int list_commands(int argc, char** argv, GString* output);
+int complete_command(int argc, char** argv, GString* output);
 
-void complete_settings(char* str, GString** output);
-void complete_against_list(char* needle, char** list, GString** output);
-void complete_against_tags(int argc, char** argv, int pos, GString** output);
-void complete_against_winids(int argc, char** argv, int pos, GString** output);
-void complete_merge_tag(int argc, char** argv, int pos, GString** output);
-void complete_against_settings(int argc, char** argv, int pos, GString** output);
-void complete_against_keybinds(int argc, char** argv, int pos, GString** output);
+void complete_settings(char* str, GString* output);
+void complete_against_list(char* needle, char** list, GString* output);
+void complete_against_tags(int argc, char** argv, int pos, GString* output);
+void complete_against_winids(int argc, char** argv, int pos, GString* output);
+void complete_merge_tag(int argc, char** argv, int pos, GString* output);
+void complete_against_settings(int argc, char** argv, int pos, GString* output);
+void complete_against_keybinds(int argc, char** argv, int pos, GString* output);
 int complete_against_commands(int argc, char** argv, int position,
-                              GString** output);
+                              GString* output);
 void complete_against_keybind_command(int argc, char** argv, int position,
-                                      GString** output);
+                                      GString* output);
+void complete_chain(int argc, char** argv, int position, GString* output);
+
+int command_chain(char* separator, bool (*condition)(int laststatus),
+                  int argc, char** argv, GString* output);
+
+int command_chain_command(int argc, char** argv, GString* output);
 
 #endif
 

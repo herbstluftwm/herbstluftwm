@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <search.h>
 
 static char* completion_directions[]    = { "left", "right", "down", "up",NULL};
 static char* completion_focus_args[]    = { "-i", "-e", NULL };
@@ -123,15 +124,17 @@ struct {
                         /* LE 3 matches position from 0 to 3 */
     /* === various methods, how to complete === */
     /* completion by function */
-    void (*function)(int argc, char** argv, int pos, GString** output);
+    void (*function)(int argc, char** argv, int pos, GString* output);
     /* completion by a list of strings */
     char** list;
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
     { "add_monitor",    EQ, 2,  .function = complete_against_tags },
+    { "and",            GE, 1,  .function = complete_chain },
     { "bring",          EQ, 1,  .list = completion_special_winids },
     { "bring",          EQ, 1,  .function = complete_against_winids },
     { "cycle",          EQ, 1,  .list = completion_pm_one },
+    { "chain",          GE, 1,  .function = complete_chain },
     { "cycle_all",      EQ, 1,  .list = completion_cycle_all_args },
     { "cycle_all",      EQ, 1,  .list = completion_pm_one },
     { "cycle_all",      EQ, 2,  .list = completion_pm_one },
@@ -152,6 +155,7 @@ struct {
     { "merge_tag",      EQ, 2,  .function = complete_merge_tag },
     { "move",           EQ, 1,  .function = complete_against_tags },
     { "move_index",     EQ, 2,  .list = completion_use_index_args },
+    { "or",             GE, 1,  .function = complete_chain },
     { "pseudotile",     EQ, 1,  .list = completion_flag_args },
     { "keybind",        GE, 2,  .function = complete_against_keybind_command },
     { "keyunbind",      EQ, 1,  .list = completion_keyunbind_args },
@@ -181,7 +185,7 @@ struct {
     { 0 },
 };
 
-int call_command(int argc, char** argv, GString** output) {
+int call_command(int argc, char** argv, GString* output) {
     if (argc <= 0) {
         return HERBST_COMMAND_NOT_FOUND;
     }
@@ -209,36 +213,36 @@ int call_command(int argc, char** argv, GString** output) {
 
 int call_command_no_output(int argc, char** argv) {
     GString* output = g_string_new("");
-    int status = call_command(argc, argv, &output);
+    int status = call_command(argc, argv, output);
     g_string_free(output, true);
     return status;
 }
 
 
-int list_commands(int argc, char** argv, GString** output)
+int list_commands(int argc, char** argv, GString* output)
 {
     int i = 0;
     while (g_commands[i].cmd.standard != NULL) {
-        *output = g_string_append(*output, g_commands[i].name);
-        *output = g_string_append(*output, "\n");
+        g_string_append(output, g_commands[i].name);
+        g_string_append(output, "\n");
         i++;
     }
     return 0;
 }
 
-void complete_against_list(char* needle, char** list, GString** output) {
+void complete_against_list(char* needle, char** list, GString* output) {
     size_t len = strlen(needle);
     while (*list) {
         char* name = *list;
         if (!strncmp(needle, name, len)) {
-            *output = g_string_append(*output, name);
-            *output = g_string_append(*output, "\n");
+            g_string_append(output, name);
+            g_string_append(output, "\n");
         }
         list++;
     }
 }
 
-void complete_against_tags(int argc, char** argv, int pos, GString** output) {
+void complete_against_tags(int argc, char** argv, int pos, GString* output) {
     char* needle;
     if (pos >= argc) {
         needle = "";
@@ -249,8 +253,8 @@ void complete_against_tags(int argc, char** argv, int pos, GString** output) {
     for (int i = 0; i < g_tags->len; i++) {
         char* name = g_array_index(g_tags, HSTag*, i)->name->str;
         if (!strncmp(needle, name, len)) {
-            *output = g_string_append(*output, name);
-            *output = g_string_append(*output, "\n");
+            g_string_append(output, name);
+            g_string_append(output, "\n");
         }
     }
 }
@@ -258,20 +262,20 @@ void complete_against_tags(int argc, char** argv, int pos, GString** output) {
 struct wcd { /* window id completion data */
     char* needle;
     size_t needlelen;
-    GString** output;
+    GString* output;
 };
 
 static void add_winid_completion(void* key, HSClient* client, struct wcd* data)
 {
     char buf[100];
-    GString** out = data->output;
+    GString* out = data->output;
     snprintf(buf, LENGTH(buf), "0x%lx\n", client->window);
     if (!strncmp(buf, data->needle, data->needlelen)) {
-        *out = g_string_append(*out, buf);
+        g_string_append(out, buf);
     }
 }
 
-void complete_against_winids(int argc, char** argv, int pos, GString** output) {
+void complete_against_winids(int argc, char** argv, int pos, GString* output) {
     struct wcd data;
     if (pos >= argc) {
         data.needle = "";
@@ -284,7 +288,7 @@ void complete_against_winids(int argc, char** argv, int pos, GString** output) {
 }
 
 
-void complete_merge_tag(int argc, char** argv, int pos, GString** output) {
+void complete_merge_tag(int argc, char** argv, int pos, GString* output) {
     char* first = (argc >= 1) ? argv[1] : "";
     char* needle;
     if (pos >= argc) {
@@ -300,13 +304,13 @@ void complete_merge_tag(int argc, char** argv, int pos, GString** output) {
             continue;
         }
         if (!strncmp(needle, name, len)) {
-            *output = g_string_append(*output, name);
-            *output = g_string_append(*output, "\n");
+            g_string_append(output, name);
+            g_string_append(output, "\n");
         }
     }
 }
 
-void complete_against_settings(int argc, char** argv, int pos, GString** output)
+void complete_against_settings(int argc, char** argv, int pos, GString* output)
 {
     char* needle;
     if (pos >= argc) {
@@ -323,13 +327,13 @@ void complete_against_settings(int argc, char** argv, int pos, GString** output)
         }
         // only check the first len bytes
         if (!strncmp(needle, g_settings[i].name, len)) {
-            *output = g_string_append(*output, g_settings[i].name);
-            *output = g_string_append(*output, "\n");
+            g_string_append(output, g_settings[i].name);
+            g_string_append(output, "\n");
         }
     }
 }
 
-void complete_against_keybinds(int argc, char** argv, int pos, GString** output) {
+void complete_against_keybinds(int argc, char** argv, int pos, GString* output) {
     char* needle;
     if (pos >= argc) {
         needle = "";
@@ -356,7 +360,7 @@ bool parameter_expected(int argc, char** argv, int pos) {
     return true;
 }
 
-int complete_command(int argc, char** argv, GString** output) {
+int complete_command(int argc, char** argv, GString* output) {
     // usage: complete POSITION command to complete ...
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
@@ -369,7 +373,7 @@ int complete_command(int argc, char** argv, GString** output) {
 }
 
 void complete_against_keybind_command(int argc, char** argv, int position,
-                                      GString** output) {
+                                      GString* output) {
     if (argc <  2 || position < 2) {
         return;
     }
@@ -377,7 +381,7 @@ void complete_against_keybind_command(int argc, char** argv, int position,
 }
 
 int complete_against_commands(int argc, char** argv, int position,
-                              GString** output) {
+                              GString* output) {
     // complete command
     if (position == 0) {
         char* str = (argc >= 1) ? argv[0] : "";
@@ -386,8 +390,8 @@ int complete_against_commands(int argc, char** argv, int position,
         while (g_commands[i].cmd.standard != NULL) {
             // only check the first len bytes
             if (!strncmp(str, g_commands[i].name, len)) {
-                *output = g_string_append(*output, g_commands[i].name);
-                *output = g_string_append(*output, "\n");
+                g_string_append(output, g_commands[i].name);
+                g_string_append(output, "\n");
             }
             i++;
         }
@@ -428,6 +432,61 @@ int complete_against_commands(int argc, char** argv, int position,
     return 0;
 }
 
+static int strpcmp(const void* key, const void* val) {
+    return strcmp((const char*) key, *(const char**)val);
+}
+
+static void complete_chain_helper(int argc, char** argv, int position,
+                                  GString* output) {
+    /* argv entries:
+     * argv[0]      == the command separator
+     * argv[1]      == an arbitrary command name
+     * argv[2..]    == its arguments or a separator
+     */
+    if (position <= 0 || argc <= 1) {
+        return;
+    }
+    char* separator = argv[0];
+    (void)SHIFT(argc, argv);
+    position--;
+
+    /* find the next separator */
+    size_t uargc = argc;
+    char** next_sep = lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
+    int next_sep_idx = next_sep - argv;
+
+    if (!next_sep || next_sep_idx >= position) {
+        /* try to complete at the desired position */
+        char* needle = (position < argc) ? argv[position] : "";
+        complete_against_commands(argc, argv, position, output);
+        /* at least the command name is required
+         * so don't complete at position 0 */
+        if (position != 0 && 0 == strncmp(needle, separator, strlen(needle))) {
+            g_string_append_printf(output, "%s\n", separator);
+        }
+    } else {
+        /* remove arguments so that the next separator becomes argv[0] */
+        position -= next_sep_idx;
+        argc     -= next_sep_idx;
+        argv     += next_sep_idx;
+        complete_chain_helper(argc, argv, position, output);
+    }
+}
+
+void complete_chain(int argc, char** argv, int position, GString* output) {
+    if (position <= 1) {
+        return;
+    }
+    /* remove the chain command name "chain" from the argv */
+    (void)SHIFT(argc, argv);
+    position--;
+
+    /* do the actual work in the helper that always expects
+     * {separator, firstcommand, ...}
+     */
+    complete_chain_helper(argc, argv, position, output);
+}
+
 bool first_parameter_is_tag(int argc, char** argv, int pos) {
     // only complete if first parameter is a valid tag
     if (argc >= 2 && find_tag(argv[1]) && pos == 2) {
@@ -455,5 +514,54 @@ bool keybind_parameter_expected(int argc, char** argv, int pos) {
         return true;
     }
     return parameter_expected(argc - 2, argv + 2, pos - 2);
+}
+
+int command_chain(char* separator, bool (*condition)(int laststatus),
+                  int argc, char** argv, GString* output) {
+    size_t uargc = argc;
+    printf("finding %s in %d elements\n", separator, argc);
+    char** next_sep = lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
+    int command_argc = next_sep ? (int)(next_sep - argv) : argc;
+    int status = call_command(command_argc, argv, output);
+    if (condition && false == condition(status)) {
+        return status;
+    }
+    argc -= command_argc + 1;
+    argv += command_argc + 1;
+    if (argc <= 0) {
+        return status;
+    }
+    return command_chain(separator, condition, argc, argv, output);
+}
+
+static bool int_is_zero(int x) {
+    return x == 0;
+}
+
+static bool int_is_not_zero(int x) {
+    return x != 0;
+}
+
+typedef struct {
+    char* cmd;
+    bool (*condition)(int);
+} Cmd2Condition;
+
+static Cmd2Condition g_cmd2condition[] = {
+    { "and",    int_is_zero         },
+    { "or",     int_is_not_zero     },
+};
+
+int command_chain_command(int argc, char** argv, GString* output) {
+    Cmd2Condition* cmd;
+    cmd = STATIC_TABLE_FIND_STR(Cmd2Condition, g_cmd2condition, cmd, argv[0]);
+    (void)SHIFT(argc, argv);
+    if (argc <= 1) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    char* separator = argv[0];
+    (void)SHIFT(argc, argv);
+    bool (*condition)(int) = cmd ? cmd->condition : NULL;
+    return command_chain(separator, condition, argc, argv, output);
 }
 

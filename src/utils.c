@@ -385,39 +385,35 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
 }
 
 static void subtree_print_to(HSTreeInterface* intface, char* indent,
-                          char* rootprefix, GString** output) {
+                          char* rootprefix, GString* output) {
     HSTree root = intface->data;
     size_t child_count = intface->child_count(root);
     if (child_count == 0) {
-        g_string_append(*output, rootprefix);
-        *output = g_string_append_unichar(*output,
-            UTF8_STRING_AT(g_tree_style, 6));
-        *output = g_string_append_unichar(*output,
-            UTF8_STRING_AT(g_tree_style, 5));
-        *output = g_string_append_c(*output, ' ');
+        g_string_append(output, rootprefix);
+        g_string_append_unichar(output, UTF8_STRING_AT(g_tree_style, 6));
+        g_string_append_unichar(output, UTF8_STRING_AT(g_tree_style, 5));
+        g_string_append_c(output, ' ');
         // append caption
         intface->append_caption(root, output);
-        *output = g_string_append(*output, "\n");
+        g_string_append(output, "\n");
     } else {
-        g_string_append_printf(*output, "%s", rootprefix);
-        *output = g_string_append_unichar(*output,
-            UTF8_STRING_AT(g_tree_style, 6));
-        *output = g_string_append_unichar(*output,
-            UTF8_STRING_AT(g_tree_style, 7));
+        g_string_append_printf(output, "%s", rootprefix);
+        g_string_append_unichar(output, UTF8_STRING_AT(g_tree_style, 6));
+        g_string_append_unichar(output, UTF8_STRING_AT(g_tree_style, 7));
         // apend caption
-        g_string_append_c(*output, ' ');
+        g_string_append_c(output, ' ');
         intface->append_caption(root, output);
-        *output = g_string_append_c(*output, '\n');
+        g_string_append_c(output, '\n');
         // apend children
         GString* child_indent = g_string_new("");
         GString* child_prefix = g_string_new("");
         for (size_t i = 0; i < child_count; i++) {
             bool last = (i == child_count - 1);
             g_string_printf(child_indent, "%s ", indent);
-            child_indent = g_string_append_unichar(child_indent,
+            g_string_append_unichar(child_indent,
                 UTF8_STRING_AT(g_tree_style, last ? 2 : 1));
             g_string_printf(child_prefix, "%s ", indent);
-            child_prefix = g_string_append_unichar(child_prefix,
+            g_string_append_unichar(child_prefix,
                 UTF8_STRING_AT(g_tree_style, last ? 4 : 3));
             HSTreeInterface child = intface->nth_child(root, i);
             subtree_print_to(&child, child_indent->str,
@@ -432,10 +428,9 @@ static void subtree_print_to(HSTreeInterface* intface, char* indent,
     }
 }
 
-void tree_print_to(HSTreeInterface* intface, GString** output) {
+void tree_print_to(HSTreeInterface* intface, GString* output) {
     GString* root_indicator = g_string_new("");
-    root_indicator = g_string_append_unichar(root_indicator,
-            UTF8_STRING_AT(g_tree_style, 0));
+    g_string_append_unichar(root_indicator, UTF8_STRING_AT(g_tree_style, 0));
     subtree_print_to(intface, " ", root_indicator->str, output);
     g_string_free(root_indicator, true);
 }
