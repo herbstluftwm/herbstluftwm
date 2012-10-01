@@ -91,7 +91,7 @@ HSLayer slice_highest_layer(HSSlice* slice) {
 void stack_insert_slice(HSStack* s, HSSlice* elem) {
     for (int i = 0; i < elem->layer_count; i++) {
         int layer = elem->layer[i];
-        s->top[layer] = g_list_append(s->top[layer], elem);
+        s->top[layer] = g_list_prepend(s->top[layer], elem);
     }
     s->dirty = true;
 }

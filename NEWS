@@ -11,6 +11,8 @@ Changes:
       "current" or a certain monitor index
     * align captions of the tree output (commands: layout, stack) better by
       inserting a space in front of every caption
+    * let new clients and monitors (and other items that are stacked) appear on
+      top of the stacking order
 
 Release: 0.4.1 on 2012-08-30
 ----------------------------
