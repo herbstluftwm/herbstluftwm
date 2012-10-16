@@ -84,7 +84,7 @@ For further bug reporting or patch submission contact the mailing list:
 herbstluftwm-devel@lists.sourceforge.net
 ----
 You can subscribe by sending a mail with the subject +subscribe+ to
-+herbstluftwm-devel@lists.sourceforge.net+ or by using the
++herbstluftwm-devel-request@lists.sourceforge.net+ or by using the
 link:https://lists.sourceforge.net/lists/listinfo/herbstluftwm-devel[Mailman
 web interface].
 
