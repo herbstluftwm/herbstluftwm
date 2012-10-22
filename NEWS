@@ -6,7 +6,7 @@ Next Release: 0.5
 
 Changes:
 
-    * new setting: wmname
+    * new settings: wmname, mouse_recenter_gap
     * hook togglehidepanel: the default panel.sh also accepts the parameters
       "current" or a certain monitor index
     * align captions of the tree output (commands: layout, stack) better by

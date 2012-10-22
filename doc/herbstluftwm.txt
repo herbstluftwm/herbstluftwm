@@ -621,6 +621,13 @@ snap_gap (Integer)::
     Specifies the remaining gap if a dragged client snaps to an edge in floating
     mode. If snap_gap is set to 0, no gap will remain.
 
+mouse_recenter_gap (Integer)::
+    Specifies the gap around a monitor. If the monitor is selected and
+    the mouse position would be restored into this gap, it is set to
+    the center of the monitor. This is useful, when the monitor was
+    left via mouse movement, but is reselected by keyboard. If the gap
+    is 0 (default), the mouse is never recentered.
+
 frame_border_active_color (String/Color)::
     The border color of a focused frame
 

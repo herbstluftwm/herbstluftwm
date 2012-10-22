@@ -25,6 +25,7 @@
 int* g_monitors_locked;
 int* g_swap_monitors_to_get_tag;
 int* g_smart_frame_surroundings;
+int* g_mouse_recenter_gap;
 HSStack* g_monitor_stack;
 GArray*     g_monitors; // Array of HSMonitor*
 
@@ -41,6 +42,7 @@ void monitor_init() {
     g_monitors = g_array_new(false, false, sizeof(HSMonitor*));
     g_swap_monitors_to_get_tag = &(settings_find("swap_monitors_to_get_tag")->value.i);
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
+    g_mouse_recenter_gap       = &(settings_find("mouse_recenter_gap")->value.i);
     g_monitor_stack = stack_create();
 }
 
@@ -703,6 +705,14 @@ void monitor_focus_by_index(int new_selection) {
         && (monitor->rect.y <= ry) && (ry < monitor->rect.y + monitor->rect.height)) {
         // mouse already is on new monitor
     } else {
+        // If the mouse is located in a gap indicated by
+        // mouse_recenter_gap at the outer border of the monitor,
+        // recenter the mouse.
+        if (min(monitor->mouse.x, abs(monitor->mouse.x - monitor->rect.width)) < *g_mouse_recenter_gap
+            || min(monitor->mouse.y, abs(monitor->mouse.y - monitor->rect.height)) < *g_mouse_recenter_gap) {
+            monitor->mouse.x = monitor->rect.width / 2;
+            monitor->mouse.y = monitor->rect.height / 2;
+        }
         new_x = monitor->rect.x + monitor->mouse.x;
         new_y = monitor->rect.y + monitor->mouse.y;
         XWarpPointer(g_display, None, g_root, 0, 0, 0, 0, new_x, new_y);

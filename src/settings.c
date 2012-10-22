@@ -45,6 +45,7 @@ SettingsPair g_settings[] = {
     SET_INT(    "window_gap",                      0,           RELAYOUT    ),
     SET_INT(    "snap_distance",                   10,          NULL        ),
     SET_INT(    "snap_gap",                        5,           NULL        ),
+    SET_INT(    "mouse_recenter_gap",              0,           NULL        ),
     SET_STRING( "frame_border_active_color",       "red",       FR_COLORS   ),
     SET_STRING( "frame_border_normal_color",       "blue",      FR_COLORS   ),
     SET_STRING( "frame_border_inner_color",        "black",     FR_COLORS   ),

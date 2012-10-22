@@ -435,3 +435,8 @@ void tree_print_to(HSTreeInterface* intface, GString* output) {
     g_string_free(root_indicator, true);
 }
 
+int min(int a, int b) {
+    if (a < b)
+        return a;
+    return b;
+}

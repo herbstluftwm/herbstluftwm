@@ -69,6 +69,7 @@ void g_queue_remove_element(GQueue* queue, GList* elem);
 int array_find(void* buf, size_t elems, size_t size, void* needle);
 void array_reverse(void* buf, size_t elems, size_t size);
 
+int min(int a, int b);
 
 // utils for tables
 typedef bool (*MemberEquals)(void* pmember, void* needle);
