@@ -15,6 +15,8 @@ Changes:
       top of the stacking order
     * chaining of commands now is possible with the new command: chain
     * new commands: and or
+    * tag switch locking for monitors. The new lock_tag and unlock_tag commands
+      control, wether tag switching operations for a monitor are allowed.
     * set the urgent flag on _NET_WM_STATE_DEMANDS_ATTENTION
     * clear the urgent flag on window focus
 

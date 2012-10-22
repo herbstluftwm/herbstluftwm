@@ -142,6 +142,8 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "complete",       complete_command),
     CMD_BIND_NO_OUTPUT(   "lock",           monitors_lock_command),
     CMD_BIND_NO_OUTPUT(   "unlock",         monitors_unlock_command),
+    CMD_BIND_NO_OUTPUT(   "lock_tag",       monitor_lock_tag_command),
+    CMD_BIND_NO_OUTPUT(   "unlock_tag",     monitor_unlock_tag_command),
     CMD_BIND_NO_OUTPUT(   "set_layout",     frame_current_set_client_layout),
     CMD_BIND_NO_OUTPUT(   "detect_monitors",detect_monitors_command),
     CMD_BIND(             "chain",          command_chain_command),

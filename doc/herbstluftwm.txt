@@ -413,6 +413,21 @@ move_index 'INDEX' [*--skip-visible*]::
     treated relative. If *--skip-visible* is passed with a relative index, then
     already visible tags are skipped.
 
+lock_tag ['INDEX']::
+    Lock the tag switching on the monitor specified by INDEX. If no
+    argument is given, the currently focused monitor is used. When the
+    tag switching is disabled for a monitor, the commands *use* und
+    *use_index* have no effect, when executed there. When
+    'swap_monitors_to_get_tag' is enabled, switching to a tag, which
+    is located on locked monitor, switches to that monitor instead of
+    stealing it from there. The lock state of a monitor is indicated
+    by "[LOCKED]" in the *list_monitors* output.
+
+unlock_tag ['INDEX']::
+    Reenables the tag switching on the monitor specified by INDEX. If no
+    argument is given, the currently focused  monitor is used. This is the reverse
+    operation to *lock_tag* and has no further side effects but removing this lock.
+
 disjoin_rects 'RECTS' ...::
     Takes a list of rectangles and splits them into smaller pieces until all
     rectangles are disjoint, the result rectangles are printed line by line.

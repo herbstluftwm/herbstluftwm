@@ -27,6 +27,7 @@ typedef struct HSMonitor {
     int         pad_left;
     bool        dirty;
     bool        lock_frames;
+    bool        lock_tag;
     struct {
         // last saved mouse position
         int x;
@@ -73,6 +74,8 @@ int monitor_set_tag_by_index_command(int argc, char** argv);
 int monitors_lock_command(int argc, char** argv);
 int monitors_unlock_command(int argc, char** argv);
 void monitors_lock_changed();
+int monitor_lock_tag_command(int argc, char** argv);
+int monitor_unlock_tag_command(int argc, char** argv);
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();

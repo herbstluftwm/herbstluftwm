@@ -102,12 +102,13 @@ int list_monitors(int argc, char** argv, GString* output) {
     int i;
     for (i = 0; i < g_monitors->len; i++) {
         HSMonitor* monitor = monitor_with_index(i);
-        g_string_append_printf(output, "%d: %dx%d%+d%+d with tag \"%s\"%s\n",
+        g_string_append_printf(output, "%d: %dx%d%+d%+d with tag \"%s\"%s%s\n",
             i,
             monitor->rect.width, monitor->rect.height,
             monitor->rect.x, monitor->rect.y,
             monitor->tag ? monitor->tag->name->str : "???",
-            (g_cur_monitor == i) ? " [FOCUS]" : "");
+            (g_cur_monitor == i) ? " [FOCUS]" : "",
+            monitor->lock_tag ? " [LOCKED]" : "");
     }
     return 0;
 }
@@ -536,8 +537,23 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
         // nothing to do
         return;
     }
+    if (monitor->lock_tag) {
+        // If the monitor tag is locked, do not change the tag
+        if (other != NULL) {
+            // but if the tag is already visible, change to the
+            // displaying monitor
+            monitor_focus_by_index(monitor_index_of(other));
+        }
+        return;
+    }
     if (other != NULL) {
         if (*g_swap_monitors_to_get_tag) {
+            if (other->lock_tag) {
+                // the monitor we want to steal the tag from is
+                // locked. focus that monitor instead
+                monitor_focus_by_index(monitor_index_of(other));
+                return;
+            }
             // swap tags
             other->tag = monitor->tag;
             monitor->tag = tag;
@@ -770,6 +786,37 @@ void monitors_lock_changed() {
         }
     }
 }
+
+int monitor_lock_tag_command(int argc, char** argv) {
+    (void)SHIFT(argc, argv);
+    HSMonitor *monitor;
+    if (argc >= 1) {
+        monitor = monitor_with_index(atoi(argv[0]));
+    } else {
+        monitor = get_current_monitor();
+    }
+    if (!monitor) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    monitor->lock_tag = true;
+    return 0;
+}
+
+int monitor_unlock_tag_command(int argc, char** argv) {
+    (void)SHIFT(argc, argv);
+    HSMonitor *monitor;
+    if (argc >= 1) {
+        monitor = monitor_with_index(atoi(argv[0]));
+    } else {
+        monitor = get_current_monitor();
+    }
+    if (!monitor) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    monitor->lock_tag = false;
+    return 0;
+}
+
 
 // monitor detection using xinerama (if available)
 #ifdef XINERAMA
