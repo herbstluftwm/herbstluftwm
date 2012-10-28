@@ -169,7 +169,6 @@ HSClient* manage_client(Window win) {
 
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
-    ewmh_add_client(client->window);
     // insert to layout
     if (!client->tag) {
         client->tag = m->tag;
@@ -194,6 +193,9 @@ HSClient* manage_client(Window win) {
     tag_set_flags_dirty();
     client_set_fullscreen(client, changes.fullscreen);
     ewmh_update_window_state(client);
+    // add client after setting the correct tag for the new client
+    // this ensures a panel can read the tag property correctly at this point
+    ewmh_add_client(client->window);
 
     HSMonitor* monitor = find_monitor_with_tag(client->tag);
     if (monitor) {
