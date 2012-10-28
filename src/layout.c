@@ -886,7 +886,7 @@ HSFrame* frame_current_selection() {
 }
 
 int frame_current_bring(int argc, char** argv) {
-    HSClient* client;
+    HSClient* client = NULL;
 
     string_to_client((argc > 1) ? argv[1] : "", &client);
     if (!client) {
