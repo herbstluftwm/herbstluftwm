@@ -30,7 +30,7 @@ following plattforms:
     Repository]
   * Debian (0.3 in
     link:http://packages.debian.org/squeeze-backports/herbstluftwm[squeeze-backports],
-    link:http://packages.debian.org/wheezy/herbstluftwmw[wheezy and kFreeBSD],
+    link:http://packages.debian.org/wheezy/herbstluftwm[wheezy and kFreeBSD],
     0.4.1 on all link:http://packages.debian.org/sid/herbstluftwm[sid
     architecutres (including Hurd)])
   * link:http://packages.gentoo.org/package/x11-wm/herbstluftwm[Gentoo Linux]
