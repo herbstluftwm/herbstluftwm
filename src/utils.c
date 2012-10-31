@@ -17,8 +17,6 @@
 #include <X11/Xatom.h>
 #include <glib.h>
 
-
-
 #include <time.h>
 #include <sys/time.h>
 
@@ -27,9 +25,7 @@
 #include <mach/mach.h>
 #endif
 
-
 char*   g_tree_style; /* the one from layout.c */
-
 
 time_t get_monotonic_timestamp() {
     struct timespec ts;
@@ -440,3 +436,4 @@ int min(int a, int b) {
         return a;
     return b;
 }
+

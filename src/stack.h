@@ -47,7 +47,6 @@ typedef struct HSStack {
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
 } HSStack;
 
-
 void stacklist_init();
 void stacklist_destroy();
 
@@ -77,8 +76,6 @@ Window stack_lowest_window(HSStack* stack);
 
 HSStack* stack_create();
 void stack_destroy(HSStack* s);
-
-
 
 #endif
 

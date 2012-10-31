@@ -33,5 +33,3 @@ clean:
 
 install:
 	@echo scp index.html main.css $(TARGET)
-
-

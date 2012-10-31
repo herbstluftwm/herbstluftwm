@@ -3,7 +3,6 @@
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
 
-
 #include "clientlist.h"
 #include "globals.h"
 #include "utils.h"
@@ -13,12 +12,14 @@
 #include "settings.h"
 #include "layout.h"
 #include "stack.h"
+
 #include <glib.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <stdint.h>
+
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -1725,7 +1726,6 @@ int frame_foreach_client(HSFrame* frame, ClientAction action, void* data) {
     return 0;
 }
 
-
 void frame_update_border(Window window, unsigned long color) {
     if (*g_frame_border_inner_width > 0 && *g_frame_border_inner_width < *g_frame_border_width) {
         set_window_double_border(g_display, window, *g_frame_border_inner_width, g_frame_border_inner_color, color);
@@ -1733,3 +1733,4 @@ void frame_update_border(Window window, unsigned long color) {
         XSetWindowBorder(g_display, window, color);
     }
 }
+

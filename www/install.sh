@@ -12,8 +12,3 @@ files=(
 )
 
 rsync -v "${files[@]}" "$target"
-
-
-
-
-

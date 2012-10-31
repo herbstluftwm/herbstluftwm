@@ -1,4 +1,3 @@
-
 # colors
 ifeq ($(COLOR),1)
 TPUT = tput
@@ -12,5 +11,3 @@ endif
 define colorecho
 	@echo $(COLOR_BRACKET)"  ["$(COLOR_ACTION)$1$(COLOR_BRACKET)"]  " $(COLOR_FILE)$2$(COLOR_BRACKET)... $(COLOR_NORMAL)
 endef
-
-

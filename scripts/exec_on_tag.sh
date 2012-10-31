@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 TAG="$1"
 EXPIRE="120" # expiry time in seconds
 shift
@@ -32,4 +31,3 @@ hc add "$TAG"
 hc rule maxage="$EXPIRE" pid="$$" tag="$TAG" once
 
 exec "$@"
-

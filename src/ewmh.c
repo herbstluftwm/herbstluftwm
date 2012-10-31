@@ -417,3 +417,4 @@ void ewmh_set_window_opacity(Window win, double opacity) {
     XChangeProperty(g_display, win, g_netatom[NetWmWindowOpacity], XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&int_opacity, 1);
 }
+

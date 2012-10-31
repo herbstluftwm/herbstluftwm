@@ -16,5 +16,3 @@ while read line ; do
     $hc add "$tag"
     $hc load "$tag" "$tree"
 done
-
-

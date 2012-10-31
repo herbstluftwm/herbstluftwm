@@ -3,7 +3,6 @@
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
 
-
 #ifndef __HERBSTLUFT_HOOK_H_
 #define __HERBSTLUFT_HOOK_H_
 

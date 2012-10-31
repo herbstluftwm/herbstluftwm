@@ -40,4 +40,3 @@ herbstclient keybind Mod4-i chain \
     '->' keybind "${keys[8]}" chain "${unbind[@]}" , use_index 8 \
     '->' keybind "${keys[9]}" chain "${unbind[@]}" , use_index 9 \
     '->' keybind Escape       chain "${unbind[@]}"
-

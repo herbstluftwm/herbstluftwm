@@ -57,4 +57,3 @@ echo "1. Add the following line to the MD5SUMS file on the mirror:"
 md5sum $tarball
 echo "2. Make www files and install them on the remote"
 echo "3. Push the changes to all public remotes (including --tags)"
-

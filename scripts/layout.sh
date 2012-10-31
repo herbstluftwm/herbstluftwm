@@ -14,5 +14,3 @@ while read tag ; do
         | sed "2,\$ s/^/$indent/" \
         | sed "s/\(0x[0-9a-f]\{1,\}\)/$(tput setaf 3)\1$(tput sgr0)/g"
 done
-
-

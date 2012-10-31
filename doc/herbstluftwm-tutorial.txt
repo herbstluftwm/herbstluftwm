@@ -182,7 +182,4 @@ configuration workflow:
     autostart file from your shell to get the error messages if something went
     wrong.
 
-
-
-
 // vim: tw=80 ft=asciidoc

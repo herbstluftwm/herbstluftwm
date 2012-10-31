@@ -66,6 +66,5 @@ void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);
 void mouse_function_zoom(XMotionEvent* me);
 
-
 #endif
 

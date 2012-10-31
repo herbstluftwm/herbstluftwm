@@ -19,7 +19,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-
 static Window g_event_window;
 
 void hook_init() {
@@ -42,7 +41,6 @@ void hook_destroy() {
     XDeleteProperty(g_display, g_root, ATOM(HERBST_HOOK_WIN_ID_ATOM));
     XDestroyWindow(g_display, g_event_window);
 }
-
 
 void hook_emit(int argc, char** argv) {
     static int last_property_number = 0;

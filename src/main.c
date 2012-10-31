@@ -352,7 +352,6 @@ int jumpto_command(int argc, char** argv) {
     return 0;
 }
 
-
 // handle x-events:
 
 void event_on_configure(XEvent event) {
@@ -397,7 +396,6 @@ void event_on_configure(XEvent event) {
     }
 }
 
-
 // from dwm.c
 /* There's no way to check accesses to destroyed windows, thus those cases are
  * ignored (especially on UnmapNotify's).  Other types of errors call Xlibs
@@ -425,7 +423,6 @@ int xerror(Display *dpy, XErrorEvent *ee) {
     return g_xerrorxlib(dpy, ee); /* may call exit */
 }
 
-
 int xerrordummy(Display *dpy, XErrorEvent *ee) {
     return 0;
 }
@@ -437,7 +434,6 @@ int xerrorstart(Display *dpy, XErrorEvent *ee) {
     g_otherwm = True;
     return -1;
 }
-
 
 // from dwm.c
 void checkotherwm(void) {
@@ -451,7 +447,6 @@ void checkotherwm(void) {
     XSetErrorHandler(xerror);
     XSync(g_display, False);
 }
-
 
 // scan for windows and add them to the list of managed clients
 // from dwm.c
@@ -655,10 +650,12 @@ void createnotify(XEvent* event) {
         ipc_add_connection(event->xcreatewindow.window);
     }
 }
+
 void configurerequest(XEvent* event) {
     HSDebug("name is: ConfigureRequest\n");
     event_on_configure(*event);
 }
+
 void configurenotify(XEvent* event) {
     if (event->xconfigure.window == g_root &&
         settings_find("auto_detect_monitors")->value.i) {
@@ -667,10 +664,12 @@ void configurenotify(XEvent* event) {
     }
     // HSDebug("name is: ConfigureNotify\n");
 }
+
 void destroynotify(XEvent* event) {
     // try to unmanage it
     unmanage_client(event->xdestroywindow.window);
 }
+
 void enternotify(XEvent* event) {
     XCrossingEvent *ce = &event->xcrossing;
     HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
@@ -681,16 +680,20 @@ void enternotify(XEvent* event) {
         focus_window(ce->window, false, true);
     }
 }
+
 void expose(XEvent* event) {
     HSDebug("name is: Expose\n");
 }
+
 void focusin(XEvent* event) {
     HSDebug("name is: FocusIn\n");
 }
+
 void keypress(XEvent* event) {
     HSDebug("name is: KeyPress\n");
     handle_key_press(event);
 }
+
 void mappingnotify(XEvent* event) {
     {
         // regrab when keyboard map changes
@@ -702,9 +705,11 @@ void mappingnotify(XEvent* event) {
         }
     }
 }
+
 void motionnotify(XEvent* event) {
     handle_motion_event(event);
 }
+
 void mapnotify(XEvent* event) {
     HSDebug("name is: MapNotify\n");
     HSClient* c;
@@ -716,6 +721,7 @@ void mapnotify(XEvent* event) {
         client_update_title(c);
     }
 }
+
 void maprequest(XEvent* event) {
     HSDebug("name is: MapRequest\n");
     XMapRequestEvent* mapreq = &event->xmaprequest;
@@ -739,7 +745,7 @@ void maprequest(XEvent* event) {
 }
 
 void propertynotify(XEvent* event) {
-    // printf("name is: PropertyNotify\n"); 
+    // printf("name is: PropertyNotify\n");
     XPropertyEvent *ev = &event->xproperty;
     HSClient* client;
     if (ev->state == PropertyNewValue) {
@@ -759,11 +765,11 @@ void propertynotify(XEvent* event) {
         }
     }
 }
+
 void unmapnotify(XEvent* event) {
     HSDebug("name is: UnmapNotify for %lx\n", event->xunmap.window);
     unmanage_client(event->xunmap.window);
 }
-
 
 /* ---- */
 /* main */
@@ -845,6 +851,4 @@ int main(int argc, char* argv[]) {
     }
     return EXIT_SUCCESS;
 }
-
-
 

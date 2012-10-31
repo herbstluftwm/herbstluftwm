@@ -3,7 +3,6 @@
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
 
-
 #ifndef __CLIENTLIST_H_
 #define __CLIENTLIST_H_
 
@@ -88,5 +87,4 @@ void window_update_border(Window window, unsigned long color);
 unsigned long get_window_border_color(HSClient* client);
 
 #endif
-
 

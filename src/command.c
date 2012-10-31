@@ -221,7 +221,6 @@ int call_command_no_output(int argc, char** argv) {
     return status;
 }
 
-
 int list_commands(int argc, char** argv, GString* output)
 {
     int i = 0;
@@ -289,7 +288,6 @@ void complete_against_winids(int argc, char** argv, int pos, GString* output) {
     data.output = output;
     clientlist_foreach((GHFunc)add_winid_completion, &data);
 }
-
 
 void complete_merge_tag(int argc, char** argv, int pos, GString* output) {
     char* first = (argc >= 1) ? argv[1] : "";

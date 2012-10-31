@@ -22,4 +22,3 @@ bool hc_send_command_once(int argc, char* argv[],
 bool hc_hook_window_connect(HCConnection* con);
 bool hc_next_hook(HCConnection* con, int* argc, char** argv[]);
 
-

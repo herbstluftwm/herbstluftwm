@@ -42,7 +42,6 @@ int         g_verbose;
 // size for some normal string buffers
 #define STRING_BUF_SIZE 1000
 
-
 #define HSDebug(...) \
     do { \
         if (g_verbose) { \
@@ -52,6 +51,4 @@ int         g_verbose;
     } while(0);
 
 #endif
-
-
 

@@ -15,5 +15,3 @@ while read tag ; do
     echo -n "$tag: "
     $hc dump "$tag"
 done
-
-

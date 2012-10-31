@@ -22,6 +22,3 @@ herbstclient --idle '(tag_changed|goto_last_tag|reload)' \
                 ;;
         esac
     done
-
-
-

@@ -22,7 +22,6 @@ typedef int (*HerbstCmdNoOutput)(int argc,  // number of arguments
 #define CMD_BIND_NO_OUTPUT(NAME, FUNC) \
     { .cmd = { .no_output = (FUNC) }, .name = (NAME), .has_output = 0 }
 
-
 typedef struct CommandBinding {
     union {
         HerbstCmd standard;

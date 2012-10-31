@@ -3,7 +3,6 @@
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
 
-
 #include "globals.h"
 #include "settings.h"
 #include "clientlist.h"
@@ -111,7 +110,6 @@ void settings_destroy() {
     }
 }
 
-
 SettingsPair* settings_find(char* name) {
     return STATIC_TABLE_FIND_STR(SettingsPair, g_settings, name, name);
 }
@@ -170,7 +168,6 @@ int settings_get(int argc, char** argv, GString* output) {
     }
     return 0;
 }
-
 
 // toggle integer-like values
 int settings_toggle(int argc, char** argv) {

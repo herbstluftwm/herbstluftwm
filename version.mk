@@ -1,4 +1,3 @@
-
 # version is major.minor.patchlevel$suffix
 
 VERSION_MAJOR = 0
@@ -7,4 +6,3 @@ VERSION_MINOR = 4
 VERSION_PATCH = 1
 VERSION_SUFFIX = ""
 VERSION = $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)$(VERSION_SUFFIX)
-

@@ -58,6 +58,3 @@ clear=$(tput sgr0) || clear=$(echo -e '\e[0m')
 sed 's/\([()]\)/\n\1/g' | # insert newlines before (
     awk "$awkcode" |
     sed 's#(#('"$clear"'#g'
-
-
-

@@ -1,4 +1,3 @@
-
 include version.mk
 include config.mk
 include colors.mk

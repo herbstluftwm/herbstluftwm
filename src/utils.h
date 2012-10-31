@@ -16,7 +16,6 @@
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
 #define MOD(X, N) ((((X) % (signed)(N)) + (signed)(N)) % (signed)(N))
 
-
 /// print a printf-like message to stderr and exit
 void die(const char *errstr, ...);
 
@@ -109,5 +108,4 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     )
 
 #endif
-
 

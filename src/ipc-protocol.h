@@ -6,7 +6,6 @@
 #ifndef __HERBST_IPC_PROTOCOL_H_
 #define __HERBST_IPC_PROTOCOL_H_
 
-
 #define HERBST_IPC_CLASS "HERBST_IPC_CLASS"
 //#define HERBST_IPC_READY "HERBST_IPC_READY"
 //#define HERBST_IPC_ATOM  "_HERBST_IPC"
@@ -19,7 +18,6 @@
 #define HERBST_HOOK_PROPERTY_FORMAT "__HERBST_HOOK_ARGUMENTS_%d"
 // maximum number of hooks to buffer
 #define HERBST_HOOK_PROPERTY_COUNT 10
-
 
 // function exit codes
 enum {

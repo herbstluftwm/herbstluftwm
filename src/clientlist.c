@@ -43,7 +43,6 @@ unsigned long g_window_border_inner_color;
 
 GHashTable* g_clients; // container of all clients
 
-
 // atoms from dwm.c
 // default atoms
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
@@ -785,5 +784,4 @@ bool client_sendevent(HSClient *client, Atom proto) {
     }
     return exists;
 }
-
 

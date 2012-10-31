@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <sys/types.h>
 
-
 /// TYPES ///
 
 typedef struct {
@@ -501,7 +500,6 @@ bool condition_title(HSCondition* rule, HSClient* client) {
     return condition_string(rule, client->title->str);
 }
 
-
 bool condition_pid(HSCondition* rule, HSClient* client) {
     if (client->pid < 0) {
         return false;
@@ -627,5 +625,4 @@ void consequence_ewmhrequests(HSConsequence* cons, HSClient* client,
     // manage()) and so can be directly changed in the client
     client->ewmhrequests = string_to_bool(cons->value.str, client->ewmhrequests);
 }
-
 

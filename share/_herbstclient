@@ -10,4 +10,3 @@ _herbstclient() {
 }
 
 compdef _herbstclient herbstclient
-

@@ -12,7 +12,6 @@
 #include "utils.h"
 #include "settings.h"
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,7 +23,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
-
 
 static XButtonPressedEvent g_button_drag_start;
 static XRectangle       g_win_drag_start;

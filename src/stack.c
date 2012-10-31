@@ -4,6 +4,7 @@
 #include "ewmh.h"
 #include "globals.h"
 #include "utils.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -103,7 +104,6 @@ void stack_remove_slice(HSStack* s, HSSlice* elem) {
     }
     s->dirty = true;
 }
-
 
 static void slice_append_caption(HSTree root, GString* result) {
     HSSlice* slice = (HSSlice*)root;

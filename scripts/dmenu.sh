@@ -13,4 +13,3 @@ simple_command() {
 }
 
 simple_command "$1"
-

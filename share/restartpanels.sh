@@ -14,4 +14,3 @@ herbstclient emit_hook quit_panel
 for i in $(herbstclient list_monitors|cut -d':' -f1) ; do
     $panelcmd $i &
 done
-

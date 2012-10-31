@@ -20,6 +20,7 @@
 
 #define TAG_SET_FLAG(tag, flag) \
     ((tag)->flags |= (flag))
+
 enum {
     TAG_FLAG_URGENT = 0x01, // is there a urgent window?
     TAG_FLAG_USED   = 0x02, // the oposit of empty
@@ -170,5 +171,4 @@ void frame_set_visible(HSFrame* frame, bool visible);
 void frame_update_border(Window window, unsigned long color);
 
 #endif
-
 

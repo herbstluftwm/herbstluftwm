@@ -2,6 +2,7 @@
  *
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
+
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
@@ -56,7 +57,6 @@ void monitor_destroy() {
     stack_destroy(g_monitor_stack);
     g_array_free(g_monitors, true);
 }
-
 
 void monitor_apply_layout(HSMonitor* monitor) {
     if (monitor) {
@@ -842,7 +842,6 @@ int monitor_unlock_tag_command(int argc, char** argv) {
     monitor->lock_tag = false;
     return 0;
 }
-
 
 // monitor detection using xinerama (if available)
 #ifdef XINERAMA

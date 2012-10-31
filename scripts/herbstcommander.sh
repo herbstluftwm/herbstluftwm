@@ -25,57 +25,57 @@ cmd=( "$@" )
 forceexec=0
 
 while :; do
-	dmenu_args=""
-	if [[ "$forceexec" != 1 ]]; then
-		completion=$($herbstclient_cmd complete "${#cmd[@]}" "${cmd[@]}")
-		if [[ "$?" = 7 ]] ; then
-			forceexec=1
-		fi
-	fi
-	if [[ "$forceexec" == 1 ]]; then
-		echo "Executing ${cmd[@]}"
-		reply=$($herbstclient_cmd "${cmd[@]}")
-		status=$?
-		if [[ "$display_reply" && "$reply" ]]; then
-			$dmenu_cmd -p "${cmd[*]}" <<< "$reply" >/dev/null
-		fi
-		exit $status
-	else
-		case "${cmd[*]}" in
-			raise|jumpto|bring)
-				tags=( $($herbstclient_cmd tag_status) )
-				i=1
-				completion=$(
-					wmctrl -l | while read line; do
-						fields=( $line )
-						id=${fields[0]}
-						tag=${tags[ ${fields[1]} ]}
-						class=$(xprop -notype -id $id WM_CLASS |
-							sed 's/.*\?= *//; s/"\(.*\?\)", *"\(.*\?\)".*/\1,\2/')
-						title=${fields[@]:3}
-						printf "%-3s %s %-3s [%s] %s\n" "$i)" "$id" "$tag" "$class" "$title"
-						i=$((i+1))
-					done
-				)
+    dmenu_args=""
+    if [[ "$forceexec" != 1 ]]; then
+        completion=$($herbstclient_cmd complete "${#cmd[@]}" "${cmd[@]}")
+        if [[ "$?" = 7 ]] ; then
+            forceexec=1
+        fi
+    fi
+    if [[ "$forceexec" == 1 ]]; then
+        echo "Executing ${cmd[@]}"
+        reply=$($herbstclient_cmd "${cmd[@]}")
+        status=$?
+        if [[ "$display_reply" && "$reply" ]]; then
+            $dmenu_cmd -p "${cmd[*]}" <<< "$reply" >/dev/null
+        fi
+        exit $status
+    else
+        case "${cmd[*]}" in
+            raise|jumpto|bring)
+                tags=( $($herbstclient_cmd tag_status) )
+                i=1
+                completion=$(
+                    wmctrl -l | while read line; do
+                        fields=( $line )
+                        id=${fields[0]}
+                        tag=${tags[ ${fields[1]} ]}
+                        class=$(xprop -notype -id $id WM_CLASS |
+                            sed 's/.*\?= *//; s/"\(.*\?\)", *"\(.*\?\)".*/\1,\2/')
+                        title=${fields[@]:3}
+                        printf "%-3s %s %-3s [%s] %s\n" "$i)" "$id" "$tag" "$class" "$title"
+                        i=$((i+1))
+                    done
+                )
 
-				dmenu_args="-l 10"
-				;;
-		esac
-		next=$($dmenu_cmd $dmenu_args -p "${prompt}${cmd[*]}" <<< "$completion")
-		(( $? != 0 )) && exit 125 # dmenu was killed
-		if [[ -z "$next" ]]; then
-			forceexec=1 # empty reply instead of completion
-		else
-			case "${cmd[*]}" in
-				raise|jumpto|bring)
-					# add the WINID only (second field)
-					fields=( $next )
-					cmd+=( ${fields[1]} )
-					;;
-				*)
-					cmd+=( $next )
-					;;
-			esac
-		fi
-	fi
+                dmenu_args="-l 10"
+                ;;
+        esac
+        next=$($dmenu_cmd $dmenu_args -p "${prompt}${cmd[*]}" <<< "$completion")
+        (( $? != 0 )) && exit 125 # dmenu was killed
+        if [[ -z "$next" ]]; then
+            forceexec=1 # empty reply instead of completion
+        else
+            case "${cmd[*]}" in
+                raise|jumpto|bring)
+                    # add the WINID only (second field)
+                    fields=( $next )
+                    cmd+=( ${fields[1]} )
+                    ;;
+                *)
+                    cmd+=( $next )
+                    ;;
+            esac
+        fi
+    fi
 done

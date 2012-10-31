@@ -9,7 +9,6 @@
 #include <X11/Xlib.h>
 #include <stdbool.h>
 
-
 void ipc_init();
 void ipc_destroy();
 
