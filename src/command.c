@@ -57,6 +57,7 @@ struct {
     { "list_monitors",  0,  no_completion },
     { "list_commands",  0,  no_completion },
     { "list_keybinds",  0,  no_completion },
+    { "list_padding",   0,  no_completion },
     { "add_monitor",    7,  no_completion },
     { "bring",          2,  no_completion },
     { "focus_nth",      2,  no_completion },

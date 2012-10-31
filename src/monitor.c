@@ -115,6 +115,22 @@ int list_monitors(int argc, char** argv, GString* output) {
     return 0;
 }
 
+int list_padding(int argc, char** argv, GString* output) {
+    (void)argc;
+    (void)argv;
+    int i;
+    for (i = 0; i < g_monitors->len; i++) {
+        HSMonitor* monitor = monitor_with_index(i);
+        g_string_append_printf(output, "%d: %d %d %d %d\n",
+            i,
+            monitor->pad_up,
+            monitor->pad_right,
+            monitor->pad_down,
+            monitor->pad_left);
+    }
+    return 0;
+}
+
 static bool rects_intersect(RectList* m1, RectList* m2) {
     XRectangle *r1 = &m1->rect, *r2 = &m2->rect;
     bool is = TRUE;

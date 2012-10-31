@@ -507,6 +507,9 @@ pad 'INDEX' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     Sets the pad of indexed monitor to the specified padding. If no or an empty
     padding is given, it is not changed.
 
+list_padding::
+    Lists the padding of all monitors.
+
 layout ['TAG']::
     Prints the layout of 'TAG' in a nice tree style. Its style is defined
     by the 'tree_style' setting. If no 'TAG' is given, current tag is used.

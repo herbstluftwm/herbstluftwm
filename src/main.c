@@ -88,6 +88,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "set_monitors",   set_monitor_rects_command),
     CMD_BIND(             "disjoin_rects",  disjoin_rects_command),
     CMD_BIND(             "list_keybinds",  key_list_binds),
+    CMD_BIND(             "list_padding",   list_padding),
     CMD_BIND_NO_OUTPUT(   "keybind",        keybind),
     CMD_BIND_NO_OUTPUT(   "keyunbind",      keyunbind),
     CMD_BIND_NO_OUTPUT(   "mousebind",      mouse_bind_command),
