@@ -626,7 +626,7 @@ int monitor_set_tag_command(int argc, char** argv) {
     HSMonitor* monitor = get_current_monitor();
     HSTag*  tag = find_tag(argv[1]);
     if (monitor && tag) {
-        monitor_set_tag(get_current_monitor(), tag);
+        monitor_set_tag(monitor, tag);
         return 0;
     } else {
         return HERBST_INVALID_ARGUMENT;
