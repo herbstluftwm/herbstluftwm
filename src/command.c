@@ -114,6 +114,9 @@ struct {
     { "unrule",         2,  no_completion },
     { "fullscreen",     2,  no_completion },
     { "pseudotile",     2,  no_completion },
+    { "getenv",         2,  no_completion },
+    { "setenv",         3,  no_completion },
+    { "unsetenv",       2,  no_completion },
     { 0 },
 };
 

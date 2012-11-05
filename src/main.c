@@ -60,6 +60,9 @@ int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(int argc, char** argv);
 int jumpto_command(int argc, char** argv);
+int getenv_command(int argc, char** argv, GString* result);
+int setenv_command(int argc, char** argv);
+int unsetenv_command(int argc, char** argv);
 
 // handler for X-Events
 void buttonpress(XEvent* event);
@@ -149,7 +152,10 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "detect_monitors",detect_monitors_command),
     CMD_BIND(             "chain",          command_chain_command),
     CMD_BIND(             "and",            command_chain_command),
-    CMD_BIND(             "or",            command_chain_command),
+    CMD_BIND(             "or",             command_chain_command),
+    CMD_BIND(             "getenv",         getenv_command),
+    CMD_BIND_NO_OUTPUT(   "setenv",         setenv_command),
+    CMD_BIND_NO_OUTPUT(   "unsetenv",       unsetenv_command),
     {{ NULL }}
 };
 
@@ -348,6 +354,38 @@ int jumpto_command(int argc, char** argv) {
     string_to_client((argc > 1) ? argv[1] : "", &client);
     if (client) {
         focus_window(client->window, true, true);
+    }
+    return 0;
+}
+
+int getenv_command(int argc, char** argv, GString* result) {
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    char* envvar = getenv(argv[1]);
+    if (envvar == NULL) {
+        return HERBST_ENV_UNSET;
+    }
+    g_string_append_printf(result, "%s\n", envvar);
+    return 0;
+}
+
+int setenv_command(int argc, char** argv) {
+    if (argc < 3) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (setenv(argv[1], argv[2], 1) != 0) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    return 0;
+}
+
+int unsetenv_command(int argc, char** argv) {
+    if (argc < 2) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (unsetenv(argv[1]) != 0) {
+        return HERBST_INVALID_ARGUMENT;
     }
     return 0;
 }

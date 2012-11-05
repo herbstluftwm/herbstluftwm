@@ -598,6 +598,15 @@ pseudotile *on*|*off*|*toggle*::
     the client size will stay the floating size. The only reason to resize the
     client is to ensure, that it fits into its tile.
 
+getenv 'NAME'::
+    Gets the value of the environment variable 'NAME'.
+
+setenv 'NAME' 'VALUE'::
+    Set the value of the environment variable 'NAME' to 'VALUE'.
+
+unsetenv 'NAME'::
+    Unsets the environment variable 'NAME'.
+
 [[SETTINGS]]
 SETTINGS
 --------
