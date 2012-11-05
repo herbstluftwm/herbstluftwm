@@ -33,6 +33,9 @@ struct HCConnection {
 
 HCConnection* hc_connect() {
     Display* display = XOpenDisplay(NULL);
+    if (display == NULL) {
+        return NULL;
+    }
     HCConnection* con = hc_connect_to_display(display);
     if (con) {
         con->own_display = true;
@@ -153,6 +156,9 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
 bool hc_send_command_once(int argc, char* argv[],
                           GString** ret_out, int* ret_status) {
     HCConnection* con = hc_connect();
+    if (con == NULL) {
+        return false;
+    }
     bool status = hc_send_command(con, argc, argv, ret_out, ret_status);
     hc_disconnect(con);
     return status;
