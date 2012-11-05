@@ -39,7 +39,7 @@ static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
 static bool keybind_parameter_expected(int argc, char** argv, int pos);
 
-/* find out, if a parameter still expects a parameter at a certain index.
+/* find out, if a command still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
  *
  * if no match is found, then it defaults to "command still expects a
