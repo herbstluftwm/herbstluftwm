@@ -55,8 +55,10 @@ static HSClient* create_client() {
     hc->title = g_string_new("");
     hc->urgent = false;
     hc->fullscreen = false;
+    hc->ewmhfullscreen = false;
     hc->pseudotile = false;
     hc->ewmhrequests = true;
+    hc->ewmhnotify = true;
     return hc;
 }
 
@@ -639,6 +641,9 @@ void client_set_fullscreen(HSClient* client, bool state) {
     }
 
     client->fullscreen = state;
+    if (client->ewmhnotify) {
+        client->ewmhfullscreen = state;
+    }
     HSStack* stack = client->tag->stack;
     if (state) {
         stack_slice_add_layer(stack, client->slice, LAYER_FULLSCREEN);

@@ -362,7 +362,7 @@ void ewmh_update_window_state(struct HSClient* client) {
         int     atom_index;
         bool    enabled;
     } client_atoms[] = {
-        { NetWmStateFullscreen,         client->fullscreen      },
+        { NetWmStateFullscreen,         client->ewmhfullscreen  },
         { NetWmStateDemandsAttention,   client->urgent          },
     };
 

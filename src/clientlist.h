@@ -26,9 +26,11 @@ typedef struct HSClient {
     GString*    title;  // or also called window title; this is never NULL
     bool        urgent;
     bool        fullscreen;
+    bool        ewmhfullscreen; // ewmh fullscreen state
     bool        pseudotile; // only move client but don't resize (if possible)
     bool        neverfocus; // do not give the focus via XSetInputFocus
     bool        ewmhrequests; // accept ewmh-requests for this client
+    bool        ewmhnotify; // send ewmh-notifications for this client
     int         pid;
     struct HSSlice* slice;
 } HSClient;

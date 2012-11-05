@@ -58,6 +58,7 @@ typedef struct {
     bool            switchtag; // if the tag may be switchted for focusing it
     bool            manage; // wether we should manage it
     bool            fullscreen;
+    bool            ewmhnotify; // whether to send ewmh-notifications
 } HSClientChanges;
 
 void rules_init();

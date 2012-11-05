@@ -21,6 +21,7 @@ Changes:
     * clear the urgent flag on window focus
     * new command: list_padding
     * new commands: getenv/setenv/unsetenv
+    * new rule: ewmhnotify
 
 Release: 0.4.1 on 2012-08-30
 ----------------------------

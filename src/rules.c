@@ -58,6 +58,7 @@ DECLARE_CONSEQUENCE(consequence_pseudotile);
 DECLARE_CONSEQUENCE(consequence_fullscreen);
 DECLARE_CONSEQUENCE(consequence_switchtag);
 DECLARE_CONSEQUENCE(consequence_ewmhrequests);
+DECLARE_CONSEQUENCE(consequence_ewmhnotify);
 
 /// GLOBALS ///
 
@@ -83,6 +84,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "pseudotile",     consequence_pseudotile      },
     { "fullscreen",     consequence_fullscreen      },
     { "ewmhrequests",   consequence_ewmhrequests    },
+    { "ewmhnotify",     consequence_ewmhnotify      },
 };
 
 GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -624,5 +626,10 @@ void consequence_ewmhrequests(HSConsequence* cons, HSClient* client,
     // this is only a flag that is unused during initialization (during
     // manage()) and so can be directly changed in the client
     client->ewmhrequests = string_to_bool(cons->value.str, client->ewmhrequests);
+}
+
+void consequence_ewmhnotify(HSConsequence* cons, HSClient* client,
+                            HSClientChanges* changes) {
+    client->ewmhnotify = string_to_bool(cons->value.str, client->ewmhnotify);
 }
 
