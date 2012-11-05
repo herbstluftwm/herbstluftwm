@@ -33,6 +33,7 @@ BINDIR = $(PREFIX)/bin
 DATADIR = $(PREFIX)/share
 MANDIR = $(DATADIR)/man
 MAN1DIR = $(MANDIR)/man1
+MAN7DIR = $(MANDIR)/man7
 DOCDIR = $(DATADIR)/doc/herbstluftwm
 EXAMPLESDIR = $(DOCDIR)/examples
 LICENSEDIR = $(DOCDIR)
