@@ -2,7 +2,7 @@
 
 hc=${herbstclient_command:-herbstclient}
 
-# loads layouts for each tag comming from stdin
+# loads layouts for each tag coming from stdin
 # the format is the one created by savestate.sh
 
 # a common usage is:

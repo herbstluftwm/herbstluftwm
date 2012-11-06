@@ -124,7 +124,7 @@ HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
     frame->content.clients.layout = *g_default_frame_layout;
     frame->parent = parent;
     frame->tag = parent ? parent->tag : parenttag;
-    // set window atributes
+    // set window attributes
     XSetWindowAttributes at;
     at.background_pixel  = getcolor("red");
     at.background_pixmap = ParentRelative;
@@ -421,8 +421,8 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
             frame->type = TYPE_CLIENTS;
             frame->content.clients.buf = buf;
             frame->content.clients.count = count;
-            frame->content.clients.selection = 0; // only some sane defauts
-            frame->content.clients.layout = 0; // only some sane defauts
+            frame->content.clients.selection = 0; // only some sane defaults
+            frame->content.clients.layout = 0; // only some sane defaults
         }
 
         // bring child wins
@@ -451,7 +451,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
             // remove window from old tag
             HSMonitor* clientmonitor = find_monitor_with_tag(client->tag);
             if (!frame_remove_window(client->tag->frame, win)) {
-                g_warning("window %lx wasnot found on tag %s\n",
+                g_warning("window %lx was not found on tag %s\n",
                     win, client->tag->name->str);
             }
             if (clientmonitor) {
@@ -675,7 +675,7 @@ void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vert
     }
     for (int i = 0; i < count; i++) {
         HSClient* client = get_client_from_window(buf[i]);
-        // add the space, if count doesnot divide frameheight without remainder
+        // add the space, if count does not divide frameheight without remainder
         cur.height += (i == count-1) ? last_step_y : 0;
         cur.width += (i == count-1) ? last_step_x : 0;
         client_setup_border(client, (g_cur_frame == frame) && (i == selection));
@@ -1039,7 +1039,7 @@ int cycle_all_command(int argc, char** argv) {
             int oldselection = frame->content.layout.selection;
             if (oldselection == direction) {
                 // if we already reached the end,
-                // i.e. if we cannot go in the disired direction
+                // i.e. if we cannot go in the desired direction
                 // then wrap around
                 frame->content.layout.selection = other_direction;
                 frame = frame->content.layout.a;
@@ -1150,7 +1150,7 @@ int frame_split_command(int argc, char** argv) {
     int align = ALIGN_VERTICAL;
     if (argv[1][0] == 'h') {
         align = ALIGN_HORIZONTAL;
-    } // else: layout ist vertical
+    } // else: layout is vertical
     int fraction = FRACTION_UNIT* CLAMP(atof(argv[2]),
                                         0.0 + FRAME_MIN_FRACTION,
                                         1.0 - FRAME_MIN_FRACTION);
@@ -1394,7 +1394,7 @@ int frame_move_window_command(int argc, char** argv) {
             frame_remove_window(g_cur_frame, win);
             frame_insert_window(neighbour, win);
             if (*g_focus_follows_shift) {
-                // change selection in parrent
+                // change selection in parent
                 HSFrame* parent = neighbour->parent;
                 assert(parent);
                 parent->content.layout.selection = ! parent->content.layout.selection;
@@ -1482,8 +1482,8 @@ bool frame_focus_window(HSFrame* frame, Window win) {
 }
 
 // focus a window
-// switch_tag tells, wether to switch tag to focus to window
-// switch_monitor tells, wether to switch monitor to focus to window
+// switch_tag tells, whether to switch tag to focus to window
+// switch_monitor tells, whether to switch monitor to focus to window
 // returns if window was focused or not
 bool focus_window(Window win, bool switch_tag, bool switch_monitor) {
     HSClient* client = get_client_from_window(win);
@@ -1597,7 +1597,7 @@ static void frame_show_clients(HSFrame* frame) {
 }
 
 void frame_show_recursive(HSFrame* frame) {
-    // first show parents, then childrend => order = 0
+    // first show parents, then children => order = 0
     frame_do_recursive(frame, frame_show_clients, 2);
 }
 
@@ -1697,7 +1697,7 @@ void frame_set_visible(HSFrame* frame, bool visible) {
 }
 
 // executes action for each client within frame and its subframes
-// if action fails (i.e. returns something != 0), then it abborts with this code
+// if action fails (i.e. returns something != 0), then it aborts with this code
 int frame_foreach_client(HSFrame* frame, ClientAction action, void* data) {
     int status;
     if (frame->type == TYPE_FRAMES) {

@@ -16,7 +16,7 @@ typedef struct KeyBinding {
     KeySym keysym;
     unsigned int modifiers;
     int     cmd_argc; // number of arguments for command
-    char**  cmd_argv; // arguemnts for command to call
+    char**  cmd_argv; // arguments for command to call
 } KeyBinding;
 
 unsigned int modifiername2mask(const char* name);

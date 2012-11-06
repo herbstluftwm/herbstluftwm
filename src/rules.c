@@ -417,7 +417,7 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
 
             if (!matches && !rule->conditions[i]->negated
                 && rule->conditions[i]->condition_type == g_maxage_type) {
-                // if if not negated maxage doesnot match anymore
+                // if if not negated maxage does not match anymore
                 // then it will never match again in the future
                 rule_expired = true;
             }
@@ -562,7 +562,7 @@ bool condition_windowtype(HSCondition* rule, HSClient* client) {
         // try to find the window type
         if (wintype == g_netatom[i]) {
             // if found, then treat the window type as a string value,
-            // which is registred in g_netatom_names[]
+            // which is registered in g_netatom_names[]
             return condition_string(rule, g_netatom_names[i]);
         }
     }

@@ -250,7 +250,7 @@ int tag_set_floating_command(int argc, char** argv, GString* result) {
         // just print status
         g_string_append(result, tag->floating ? "on" : "off");
     } else {
-        // asign new value and rearrange if needed
+        // assign new value and rearrange if needed
         tag->floating = new_value;
 
         HSMonitor* m = find_monitor_with_tag(tag);
@@ -371,7 +371,7 @@ void tag_move_client(HSClient* client, HSTag* target) {
 
     // refresh things, hide things, layout it, and then show it if needed
     if (monitor_source && !monitor_target) {
-        // window is moved to unvisible tag
+        // window is moved to invisible tag
         // so hide it
         window_hide(client->window);
     }

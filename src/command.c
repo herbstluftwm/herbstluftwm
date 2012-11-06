@@ -121,7 +121,7 @@ struct {
 };
 
 /* list of completions, if a line matches, then it will be used, the order
- * doesnot matter */
+ * does not matter */
 struct {
     char*   command;
     enum {
@@ -374,7 +374,7 @@ int complete_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }
-    // index must be between first and als arg of "commmand to complete ..."
+    // index must be between first and last arg of "command to complete ..."
     int position = CLAMP(atoi(argv[1]), 0, argc-2);
     (void)SHIFT(argc, argv);
     (void)SHIFT(argc, argv);

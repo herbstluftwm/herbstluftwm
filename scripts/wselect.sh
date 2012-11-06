@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # a window selection utility
-# dependences: wmctrl, awk,
-#              dmenu with multiline support (command line flag -l)
+# dependencies: wmctrl, awk,
+#               dmenu with multiline support (command line flag -l)
 
 dmenu_command=${dmenu_command:-dmenu}
 dmenu_lines=${dmenu_lines:-10}

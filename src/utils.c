@@ -166,7 +166,7 @@ char** argv_duplicate(int argc, char** argv) {
     return new_argv;
 }
 
-// frees all entrys in argument-vector and then the vector itself
+// frees all entries in argument-vector and then the vector itself
 void argv_free(int argc, char** argv) {
     int i;
     for (i = 0; i < argc; i++) {
@@ -268,7 +268,7 @@ void array_reverse(void* void_buf, size_t elems, size_t size) {
 /**
  * \brief   tells if the string needle is identical to the string *pmember
  */
-bool  memberequals_string(void* pmember, void* needle) {
+bool memberequals_string(void* pmember, void* needle) {
     return !strcmp(*(char**)pmember, (char*)needle);
 }
 
@@ -280,7 +280,7 @@ bool memberequals_int(void* pmember, void* needle) {
 }
 
 /**
- * \brief   finds a element in a table (i.e. array of structs)
+ * \brief   finds an element in a table (i.e. array of structs)
  *
  *          it consecutively searches from the beginning of the table for a
  *          table element whose member is equal to needle. It passes a pointer
@@ -396,11 +396,11 @@ static void subtree_print_to(HSTreeInterface* intface, char* indent,
         g_string_append_printf(output, "%s", rootprefix);
         g_string_append_unichar(output, UTF8_STRING_AT(g_tree_style, 6));
         g_string_append_unichar(output, UTF8_STRING_AT(g_tree_style, 7));
-        // apend caption
+        // append caption
         g_string_append_c(output, ' ');
         intface->append_caption(root, output);
         g_string_append_c(output, '\n');
-        // apend children
+        // append children
         GString* child_indent = g_string_new("");
         GString* child_prefix = g_string_new("");
         for (size_t i = 0; i < child_count; i++) {

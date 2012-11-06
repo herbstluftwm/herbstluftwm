@@ -23,7 +23,7 @@ Its main features can be described with:
 Get it!
 -------
 Install herbstluftwm via your package manager! It is currently available on the
-following plattforms:
+following platforms:
 
   * Arch Linux via the
     link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm[Arch User
@@ -32,7 +32,7 @@ following plattforms:
     link:http://packages.debian.org/squeeze-backports/herbstluftwm[squeeze-backports],
     link:http://packages.debian.org/wheezy/herbstluftwm[wheezy and kFreeBSD],
     0.4.1 on all link:http://packages.debian.org/sid/herbstluftwm[sid
-    architecutres (including Hurd)])
+    architectures (including Hurd)])
   * link:http://packages.gentoo.org/package/x11-wm/herbstluftwm[Gentoo Linux]
   * Mac OS X via
     link:http://trac.macports.org/browser/trunk/dports/x11/herbstluftwm/Portfile[MacPorts]
@@ -90,7 +90,7 @@ web interface].
 
 Screenshots
 -----------
-// there screenshots are not in the git repo, so they must exist in the target
+// these screenshots are not in the git repo, so they must exist in the target
 // directory
 image:irc-layout-tab-thumb.png["scr",link="irc-layout-tab.png"]
 image:herbstluftwm-autumncolors-thumb.png["scr",link="herbstluftwm-autumncolors.png"]

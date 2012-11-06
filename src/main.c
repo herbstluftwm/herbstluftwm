@@ -159,7 +159,7 @@ CommandBinding g_commands[] = {
     {{ NULL }}
 };
 
-// core funcitons
+// core functions
 int quit() {
     g_aboutToQuit = true;
     return 0;
@@ -179,7 +179,7 @@ int version(int argc, char* argv[], GString* result) {
 }
 
 // prints or dumps the layout of an given tag
-// first argument tells wether to print or to dump
+// first argument tells whether to print or to dump
 int print_layout_command(int argc, char** argv, GString* result) {
     HSTag* tag = NULL;
     if (argc >= 2) {
@@ -232,7 +232,7 @@ int load_command(int argc, char** argv, GString* result) {
     if (!rest) {
         return HERBST_INVALID_ARGUMENT;
     }
-    if (rest[0] != '\0') { // if string wasnot parsed completely
+    if (rest[0] != '\0') { // if string was not parsed completely
         g_string_append_printf(result,
             "%s: layout description was too long\n", argv[0]);
         g_string_append_printf(result,
@@ -871,7 +871,7 @@ int main(int argc, char* argv[]) {
         g_modules[i].destroy();
     }
     XCloseDisplay(g_display);
-    // check if wie shall restart an other window manager
+    // check if we shall restart an other window manager
     if (g_exec_before_quit) {
         if (g_exec_args) {
             // do actual exec

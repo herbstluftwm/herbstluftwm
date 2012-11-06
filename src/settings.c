@@ -146,7 +146,7 @@ int settings_set(SettingsPair* pair, char* value) {
         g_free(pair->value.s);
         pair->value.s = g_strdup(value);
     }
-    // on successfull change, call callback
+    // on successful change, call callback
     if (pair->on_change) {
         pair->on_change();
     }
@@ -191,7 +191,7 @@ int settings_toggle(int argc, char** argv) {
         // only toggle numbers
         return HERBST_INVALID_ARGUMENT;
     }
-    // on successfull change, call callback
+    // on successful change, call callback
     if (pair->on_change) {
         pair->on_change();
     }

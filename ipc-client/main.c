@@ -63,7 +63,7 @@ void destroy_hook_regex() {
 
 void print_help(char* command) {
     // Eventually replace this and the option parsing with some fancy macro
-    // based thing? Is the cost of maintainence really that high?
+    // based thing? Is the cost of maintainance really that high?
 
     fprintf(stdout,
         "Usage: %s [OPTIONS] COMMAND [ARGS ...]\n"

@@ -80,7 +80,7 @@ unsigned int modifiername2mask(const char* name) {
 /**
  * \brief finds a (any) modifier in mask and returns its name
  *
- * \return  the name as a char string. you must not free it.
+ * \return  the name as a char string. You must not free it.
  */
 char*   modifiermask2name(unsigned int mask) {
     int i;
@@ -124,7 +124,7 @@ int keybind(int argc, char** argv) {
 
 bool string2modifiers(char* string, unsigned int* modmask) {
     // example strings: "Mod1-space" "Mod4+f" "f"
-    // splitt string at "+-"
+    // split string at "+-"
     char** splitted = g_strsplit_set(string, KEY_COMBI_SEPARATORS, 0);
     // this should give at least one part
     if (NULL == splitted[0]) {

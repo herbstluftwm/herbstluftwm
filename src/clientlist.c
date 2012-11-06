@@ -179,7 +179,7 @@ HSClient* manage_client(Window win) {
     // insert window to the stack
     client->slice = slice_create_client(client);
     stack_insert_slice(client->tag->stack, client->slice);
-    // insert windwo to the tag
+    // insert window to the tag
     frame_insert_window_at_index(client->tag->frame, win, changes.tree_index->str);
     client_update_wm_hints(client);
     if (changes.focus) {
@@ -287,7 +287,7 @@ void window_unfocus_last() {
 void window_focus(Window window) {
     HSClient* client = get_client_from_window(window);
     assert(client != NULL);
-    // set keyboardfocus
+    // set keyboard focus
     if (!client->neverfocus) {
         XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
     }

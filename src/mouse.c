@@ -319,7 +319,7 @@ void mouse_function_resize(XMotionEvent* me) {
 }
 
 void mouse_function_zoom(XMotionEvent* me) {
-    // scretch, where center stays at the same position
+    // stretch, where center stays at the same position
     int x_diff = me->x_root - g_button_drag_start.x_root;
     int y_diff = me->y_root - g_button_drag_start.y_root;
     // relative x/y coords in drag window

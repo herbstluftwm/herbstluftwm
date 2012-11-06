@@ -55,7 +55,7 @@ After logging in the next time, you will get a default herbstluftwm session.
 
 Directly from git
 ~~~~~~~~~~~~~~~~~
-If there is no package for your plattform or if you want to use the current git
+If there is no package for your platform or if you want to use the current git
 version, then you can pull directly from the main repository:
 
 ----

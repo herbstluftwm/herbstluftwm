@@ -16,7 +16,7 @@ Changes:
     * chaining of commands now is possible with the new command: chain
     * new commands: and or
     * tag switch locking for monitors. The new lock_tag and unlock_tag commands
-      control, wether tag switching operations for a monitor are allowed.
+      control, whether tag switching operations for a monitor are allowed.
     * set the urgent flag on _NET_WM_STATE_DEMANDS_ATTENTION
     * clear the urgent flag on window focus
     * new command: list_padding
@@ -36,13 +36,13 @@ This fixes some build system issues:
 Release: 0.4 on 2012-08-18
 --------------------------
 
-Changes that requres user interaction on upgrade:
+Changes that require user interaction on upgrade:
 
     * the setting window_gap is now called frame_gap
 
 Other changes:
 
-    * new setting window_gap which controlls the gap between windows within one
+    * new setting window_gap which controls the gap between windows within one
       frame
     * new setting: frame_padding
     * new command: close_or_remove
@@ -124,10 +124,10 @@ Small bugfixes and major features:
     * new hook: focus_changed
     * client rules with:
 
-        - conditon: class
-        - conditon: instance
-        - conditon: pid
-        - conditon: maxage
+        - condition: class
+        - condition: instance
+        - condition: pid
+        - condition: maxage
         - condition: windowtype
         - condition: windowrole
         - operator: = (equals)

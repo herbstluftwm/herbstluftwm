@@ -23,7 +23,7 @@
 
 enum {
     TAG_FLAG_URGENT = 0x01, // is there a urgent window?
-    TAG_FLAG_USED   = 0x02, // the oposit of empty
+    TAG_FLAG_USED   = 0x02, // the opposite of empty
 };
 
 enum {
@@ -121,7 +121,7 @@ void print_tag_tree(HSTag* tag, GString* output);
 void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString* output);
 void dump_frame_tree(HSFrame* frame, GString* output);
 // create apply a described layout to a frame and its subframes
-// returns pointer to string that wasnot parsed yet
+// returns pointer to string that was not parsed yet
 // or NULL on an error
 char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg);
 int find_layout_by_name(char* name);

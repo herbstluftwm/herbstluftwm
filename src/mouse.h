@@ -20,7 +20,7 @@ enum SnapFlags {
         SNAP_EDGE_TOP | SNAP_EDGE_BOTTOM | SNAP_EDGE_LEFT | SNAP_EDGE_RIGHT,
 };
 
-// foreward declarations
+// forward declarations
 struct HSClient;
 struct HSTag;
 

@@ -3,16 +3,16 @@ BUGS
 
 Some BUGS:
 
-    - keyboardfocus stays in window, if cursor is over it and
+    - keyboard focus stays in window, if cursor is over it and
       herbstluftwm-focus goes away
     - set range for some integer-setting-values
     - don't always re-layout all if only one thing changes (e.g. border_color)
     - don't reset border width on each layouting
-    - herbstclient: add timeout if server doesnot respond
+    - herbstclient: add timeout if server does not respond
     - herbstclient: errorstatus2string2stderr
     - add function to put window into tag (and use it in manage, merge_tag,
       move)
-    - the default panel.sh spawns too many shells and doesnot clean them up
+    - the default panel.sh spawns too many shells and does not clean them up
       properly at quit. you should do something like killall panel.sh when
       logging out (this is only a workaround!).
     - raise_on_click doesn't work if raise_on_click and numlock is enabled
@@ -59,7 +59,7 @@ Planned features:
     - lastfocused{window,frame,tag} - commands
     - own X-Properties to indicate window state (fullscreen, pseudotile,
       float,...)
-    - bind multiple commands to one keycombindation via keybind, keybindadd
+    - bind multiple commands to one kِeِyِ ِcِoِmِbِiِnِaِtِiِoِnِ via keybind, keybindadd
     - or: chain commands like: cmdchain 4 cmd1 arg1a arg1b arg1c cmd2 arg2a
       arg2b
     - alias commands: alias shortcmd = cmd default arg, alias shortcmd --delete

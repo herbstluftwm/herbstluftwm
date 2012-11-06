@@ -57,7 +57,7 @@ time_t get_monotonic_timestamp();
 
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv);
-// frees all entrys in argument-vector and then the vector itself
+// frees all entries in argument-vector and then the vector itself
 void argv_free(int argc, char** argv);
 
 XRectangle parse_rectangle(char* string);

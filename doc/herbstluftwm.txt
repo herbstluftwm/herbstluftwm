@@ -368,7 +368,7 @@ toggle 'NAME'::
 
 cycle_value 'NAME' 'VALUES' ...::
     Cycles value of the setting 'NAME' through 'VALUES': I.e. it searches the
-    first occurence of the current value in 'VALUES' and changes the value to
+    first occurrence of the current value in 'VALUES' and changes the value to
     the next in the list or to the first one if the end is reached or current
     value wasn't found. Example:
 
@@ -416,7 +416,7 @@ move_index 'INDEX' [*--skip-visible*]::
 lock_tag ['INDEX']::
     Lock the tag switching on the monitor specified by INDEX. If no
     argument is given, the currently focused monitor is used. When the
-    tag switching is disabled for a monitor, the commands *use* und
+    tag switching is disabled for a monitor, the commands *use* and
     *use_index* have no effect, when executed there. When
     'swap_monitors_to_get_tag' is enabled, switching to a tag, which
     is located on locked monitor, switches to that monitor instead of
@@ -424,7 +424,7 @@ lock_tag ['INDEX']::
     by "[LOCKED]" in the *list_monitors* output.
 
 unlock_tag ['INDEX']::
-    Reenables the tag switching on the monitor specified by INDEX. If no
+    Re-enables the tag switching on the monitor specified by INDEX. If no
     argument is given, the currently focused  monitor is used. This is the reverse
     operation to *lock_tag* and has no further side effects but removing this lock.
 
@@ -710,7 +710,7 @@ frame_normal_opacity (Integer)::
 
 default_frame_layout (Integer)::
     Index of the frame layout, which is used if a new frame is created (by split
-    or on a new tag). For a list of valid indizes and their meanings, check the
+    or on a new tag). For a list of valid indices and their meanings, check the
     <<LIST_LAYOUT_ALGORITHMS,list of layout algorithms above>>.
 
 default_direction_external_only (Integer)::
@@ -760,7 +760,7 @@ swap_monitors_to_get_tag (Integer)::
     tag on the focused monitor. If not set, nothing will be swapped.
 
 auto_detect_monitors (Integer)::
-    If set, detect_monitors is automatically executed everytime a monitor is
+    If set, detect_monitors is automatically executed every time a monitor is
     connected, disconnected or resized.
 
 tree_style (String)::
@@ -783,7 +783,7 @@ wmname (String)::
     It controls the value of the +_NET_WM_NAME+ property on the root window,
     which specifies the name of the running window manager. The value of this
     setting is not updated if the actual +_NET_WM_NAME+ property on the root
-    window is changed externaly. Example usage:
+    window is changed externally. Example usage:
 
         * cycle_value wmname herbstluftwm LG3D
 
@@ -991,7 +991,7 @@ bottom contain:
 
 All monitors are managed in one large stack which only consists of the stacks of
 the visible tags put above each other. The stacking order of these monitors is
-independent from their indexes and can be modified using the *raise_monitor*
+independent from their indices and can be modified using the *raise_monitor*
 command. The current stack is illustrated by the *stack* command.
 
 ENVIRONMENT VARIABLES

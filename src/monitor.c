@@ -298,7 +298,7 @@ int set_monitor_rects(XRectangle* templates, size_t count) {
         HSMonitor* m = monitor_with_index(i);
         m->rect = templates[i];
     }
-    // add aditional monitors
+    // add additional monitors
     for (; i < count; i++) {
         tag = find_unused_tag();
         if (!tag) {
@@ -394,7 +394,7 @@ int remove_monitor(int index) {
     stack_remove_slice(g_monitor_stack, monitor->slice);
     slice_destroy(monitor->slice);
     XDestroyWindow(g_display, monitor->stacking_window);
-    // and remove monitor completly
+    // and remove monitor completely
     g_free(monitor);
     g_array_remove_index(g_monitors, index);
     if (g_cur_monitor >= g_monitors->len) {
@@ -895,7 +895,7 @@ bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count) {
 
 #endif /* XINERAMA */
 
-// monitor detaction that always works: one monitor across the entire screen
+// monitor detection that always works: one monitor across the entire screen
 bool detect_monitors_simple(XRectangle** ret_rects, size_t* ret_count) {
     *ret_count = 1;
     *ret_rects = g_new0(XRectangle, 1);
