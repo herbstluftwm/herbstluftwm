@@ -48,6 +48,8 @@ ASCIIDOC = asciidoc
 TMPTARDIR = herbstluftwm-$(VERSION)
 MKDIR = mkdir -p
 INSTALL = install
+RM = rm -f
+RMDIR = rmdir
 
 # Controls verbose build
 # Remove the @ to see the actual compiler invocations

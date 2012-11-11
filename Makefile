@@ -123,6 +123,32 @@ install: all
 	$(INSTALL) -m 644 scripts/README '$(DESTDIR)/$(EXAMPLESDIR)/'
 	$(INSTALL) -m 755 scripts/*.sh '$(DESTDIR)/$(EXAMPLESDIR)/'
 
+uninstall:
+	@echo "==> deleting files..."
+	$(foreach TARGET,$(TARGETS),-$(RM) '$(DESTDIR)/$(BINDIR)/$(TARGET)';)
+	-$(RM) '$(DESTDIR)/$(LICENSEDIR)/LICENSE'
+	-$(RM) '$(DESTDIR)/$(MAN1DIR)/herbstclient.1'
+	-$(RM) '$(DESTDIR)/$(MAN1DIR)/herbstluftwm.1'
+	-$(RM) '$(DESTDIR)/$(MAN7DIR)/herbstluftwm-tutorial.7'
+	-$(RM) '$(DESTDIR)/$(DOCDIR)/herbstclient.html'
+	-$(RM) '$(DESTDIR)/$(DOCDIR)/herbstluftwm.html'
+	-$(RM) '$(DESTDIR)/$(DOCDIR)/herbstluftwm-tutorial.html'
+	-$(RM) '$(DESTDIR)/$(DOCDIR)/BUGS'
+	-$(RM) '$(DESTDIR)/$(DOCDIR)/NEWS'
+	-$(RM) '$(DESTDIR)/$(DOCDIR)/README'
+	-$(RM) '$(DESTDIR)/$(CONFIGDIR)/autostart'
+	-$(RM) '$(DESTDIR)/$(CONFIGDIR)/panel.sh'
+	-$(RM) '$(DESTDIR)/$(CONFIGDIR)/restartpanels.sh'
+	-$(RM) '$(DESTDIR)/$(BASHCOMPLETIONDIR)/herbstclient-completion'
+	-$(RM) '$(DESTDIR)/$(ZSHCOMPLETIONDIR)/_herbstclient'
+	-$(RM) '$(DESTDIR)/$(XSESSIONSDIR)/herbstluftwm.desktop'
+	-$(RM) '$(DESTDIR)/$(EXAMPLESDIR)/README'
+	$(foreach SCRIPT,$(wildcard '$(DESTDIR)/$(EXAMPLESDIR)/*.sh'),-$(RM) '$(SCRIPT)';)
+	@echo "==> deleting directories..."
+	-$(RMDIR) '$(EXAMPLESDIR)'
+	-$(RMDIR) '$(DOCDIR)'
+	-$(RMDIR) '$(CONFIGDIR)'
+
 www:
 	make -C www
 
