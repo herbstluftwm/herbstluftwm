@@ -294,6 +294,9 @@ static void rule_add_consequence(HSRule* rule, HSConsequence* cons) {
 int rule_add_command(int argc, char** argv, GString* output) {
     // usage: rule COND=VAL ... then
 
+    if (argc < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
     // temporary data structures
     HSRule* rule = rule_create();
     HSCondition* cond;
