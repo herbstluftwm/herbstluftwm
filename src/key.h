@@ -29,7 +29,7 @@ int keyunbind(int argc, char** argv, GString* output); //removes a keybinding
 void keybinding_free(KeyBinding* binding);
 
 int key_list_binds(int argc, char** argv, GString* output);
-void key_remove_bind_with_keysym(unsigned int modifiers, KeySym sym);
+bool key_remove_bind_with_keysym(unsigned int modifiers, KeySym sym);
 void key_remove_all_binds();
 GString* keybinding_to_g_string(KeyBinding* binding);
 void key_find_binds(char* needle, GString* output);

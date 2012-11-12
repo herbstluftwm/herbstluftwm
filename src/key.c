@@ -210,19 +210,20 @@ int keyunbind(int argc, char** argv, GString* output) {
     return 0;
 }
 
-void key_remove_bind_with_keysym(unsigned int modifiers, KeySym keysym){
+bool key_remove_bind_with_keysym(unsigned int modifiers, KeySym keysym){
     KeyBinding bind;
     bind.modifiers = modifiers;
     bind.keysym = keysym;
     // search this keysym in list and remove it
     GList* element = g_list_find_custom(g_key_binds, &bind, (GCompareFunc)keysym_equals);
     if (!element) {
-        return;
+        return false;
     }
     KeyBinding* data = element->data;
     keybinding_free(data);
     g_key_binds = g_list_remove_link(g_key_binds, element);
     g_list_free_1(element);
+    return true;
 }
 
 void regrab_keys() {
