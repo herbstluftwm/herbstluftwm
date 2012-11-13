@@ -90,6 +90,27 @@ will be merged with the left subtree and you will get:
 
 The 'layout' command prints the current layout of all tags as a tree.
 
+[[FRAME_INDEX]]
+FRAME INDEX
+-----------
+The exact position of a frame in the layout tree may be described by its
+*index* which is just a string of characters. The lookup algorithm starts at
+the root frame and selects one of its two subtrees according to the each
+character in the index.
+
+The characters are interpreted as follows:
+
+    * +0+: select the first subtree
+    * +1+: select the second subtree
+    * +.+: select the subtree that has the focus
+    * +/+: select the subtree that has not the focus
+
+Thus an empty string refers to the root frame, and "00" refers to the first
+subtree of the first subtree of the root frame.
+
+As a special case, the string "@" always refers to the currently focused
+frame.
+
 TAGS
 ----
 Tags are very similar to workspaces, virtual desktops or window groups. Each
@@ -510,9 +531,12 @@ pad 'INDEX' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
 list_padding::
     Lists the padding of all monitors.
 
-layout ['TAG']::
-    Prints the layout of 'TAG' in a nice tree style. Its style is defined
-    by the 'tree_style' setting. If no 'TAG' is given, current tag is used.
+layout ['TAG' ['INDEX']]::
+    Prints the layout of frame with 'INDEX' in 'TAG', in a nice tree style.
+    Its style is defined by the 'tree_style' setting. If no 'TAG' is given,
+    current tag is used. If no 'INDEX' is given, the root frame is used. To
+    specify 'INDEX' without specifying 'TAG' (i.e. use current tag), pass an
+    empty string as 'TAG'.
     +
 An example output is:
 +
@@ -524,7 +548,7 @@ An example output is:
     └─╼ vertical: 0x1000009
 ----
 
-dump ['TAG']::
+dump ['TAG' ['INDEX']]::
     Prints the same information as the 'layout' command but in a machine
     readable format. Its output can be read back with the 'load' command.
     +
@@ -864,14 +888,8 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     'VALUE' can be *on*, *off* or *toggle*.
 
 +index+::
-    moves the window to a specified index in the tree. 'VALUE' contains of a
-    list of characters; each of them decides in which subtree the window is
-    inserted.
-
-        * +0+: insert it in the first subtree
-        * +1+: insert it in the second subtree
-        * +.+: insert it in the subtree that has the focus
-        * +/+: insert it in the subtree that has not the focus
+    moves the window to a specified index in the tree. 'VALUE' is a
+    <<FRAME_INDEX,*frame index*>>.
 
 +pseudotile+::
     sets the pseudotile state of the client. 'VALUE' can be *on*, *off* or

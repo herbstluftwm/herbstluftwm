@@ -180,30 +180,30 @@ void frame_insert_window(HSFrame* frame, Window window) {
     }
 }
 
-void frame_insert_window_at_index(HSFrame* frame, Window window, char* index) {
-    if (!index || index[0] == '\0') {
-        frame_insert_window(frame, window);
+HSFrame* lookup_frame(HSFrame* root, char *index) {
+    if (index == NULL || index[0] == '\0') return root;
+    if (root->type == TYPE_CLIENTS) return root;
+
+    HSFrame* new_root;
+    char *new_index = index + 1;
+    HSLayout* layout = &root->content.layout;
+
+    switch (index[0]) {
+        case '0': new_root = layout->a; break;
+        case '1': new_root = layout->b; break;
+        /* opposite selection */
+        case '/': new_root = (layout->selection == 0)
+                            ?  layout->b
+                            :  layout->a;
+                  break;
+        /* else just follow selection */
+        case '@': new_index = index;
+        case '.':
+        default:  new_root = (layout->selection == 0)
+                            ?  layout->a
+                            : layout->b; break;
     }
-    else if (frame->type == TYPE_CLIENTS) {
-        frame_insert_window(frame, window);
-    } else { /* frame->type == TYPE_FRAMES */
-        HSLayout* layout = &frame->content.layout;
-        HSFrame* frame;
-        switch (index[0]) {
-            case '0': frame = layout->a; break;
-            case '1': frame = layout->b; break;
-            /* opposite selection */
-            case '/': frame = (layout->selection == 0)
-                                ?  layout->b
-                                :  layout->a; break;
-            /* else just follow selection */
-            case '.':
-            default:  frame = (layout->selection == 0)
-                                ?  layout->a
-                                : layout->b; break;
-        }
-        frame_insert_window_at_index(frame, window, index + 1);
-    }
+    return lookup_frame(new_root, new_index);
 }
 
 bool frame_remove_window(HSFrame* frame, Window window) {
@@ -568,13 +568,13 @@ static HSTreeInterface frame_nth_child(HSTree tree, size_t idx) {
     return intf;
 }
 
-void print_tag_tree(HSTag* tag, GString* output) {
+void print_frame_tree(HSFrame* frame, GString* output) {
     HSTreeInterface frameintf = {
         .child_count    = frame_child_count,
         .nth_child      = frame_nth_child,
         .append_caption = frame_append_caption,
         .destructor     = NULL,
-        .data           = (HSTree) tag->frame,
+        .data           = (HSTree) frame,
     };
     tree_print_to(&frameintf, output);
 }

@@ -180,7 +180,7 @@ HSClient* manage_client(Window win) {
     client->slice = slice_create_client(client);
     stack_insert_slice(client->tag->stack, client->slice);
     // insert window to the tag
-    frame_insert_window_at_index(client->tag->frame, win, changes.tree_index->str);
+    frame_insert_window(lookup_frame(client->tag->frame, changes.tree_index->str), win);
     client_update_wm_hints(client);
     if (changes.focus) {
         // give focus to window if wanted

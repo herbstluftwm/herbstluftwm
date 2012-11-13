@@ -98,7 +98,7 @@ void layout_destroy();
 // for frames
 HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag);
 void frame_insert_window(HSFrame* frame, Window window);
-void frame_insert_window_at_index(HSFrame* frame, Window window, char* index);
+HSFrame* lookup_frame(HSFrame* root, char* path);
 HSFrame* frame_current_selection();
 // removes window from a frame/subframes
 // returns true, if window was found. else: false
@@ -117,8 +117,7 @@ void frame_update_frame_window_visibility(HSFrame* frame);
 void reset_frame_colors();
 HSFrame* get_toplevel_frame(HSFrame* frame);
 
-void print_tag_tree(HSTag* tag, GString* output);
-void print_frame_tree(HSFrame* frame, char* indent, char* rootprefix, GString* output);
+void print_frame_tree(HSFrame* frame, GString* output);
 void dump_frame_tree(HSFrame* frame, GString* output);
 // create apply a described layout to a frame and its subframes
 // returns pointer to string that was not parsed yet
