@@ -17,6 +17,8 @@ doc/herbstclient.1
 doc/herbstclient.html
 doc/herbstluftwm.1
 doc/herbstluftwm.html
+doc/herbstluftwm-tutorial.7
+doc/herbstluftwm-tutorial.html
 
 # ignore build dirs
 build/
