@@ -889,11 +889,18 @@ HSFrame* frame_current_selection() {
     return frame;
 }
 
-int frame_current_bring(int argc, char** argv) {
+int frame_current_bring(int argc, char** argv, GString* output) {
     HSClient* client = NULL;
 
     string_to_client((argc > 1) ? argv[1] : "", &client);
     if (!client) {
+        g_string_append_printf(output,
+            "%s: error: Could not find client", argv[0]);
+        if (argc > 1) {
+            g_string_append_printf(output, " \"%s\".\n", argv[1]);
+        } else {
+            g_string_append(output, ".\n");
+        }
         return HERBST_INVALID_ARGUMENT;
     }
     tag_move_client(client, get_current_monitor()->tag);

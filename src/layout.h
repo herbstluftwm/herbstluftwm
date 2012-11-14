@@ -127,7 +127,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg);
 int find_layout_by_name(char* name);
 int find_align_by_name(char* name);
 
-int frame_current_bring(int argc, char** argv);
+int frame_current_bring(int argc, char** argv, GString* output);
 int frame_current_set_selection(int argc, char** argv);
 int frame_current_cycle_selection(int argc, char** argv);
 int cycle_all_command(int argc, char** argv);

@@ -100,7 +100,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "spawn",          spawn),
     CMD_BIND_NO_OUTPUT(   "wmexec",         wmexec),
     CMD_BIND_NO_OUTPUT(   "emit_hook",      custom_hook_emit),
-    CMD_BIND_NO_OUTPUT(   "bring",          frame_current_bring),
+    CMD_BIND(             "bring",          frame_current_bring),
     CMD_BIND_NO_OUTPUT(   "focus_nth",      frame_current_set_selection),
     CMD_BIND_NO_OUTPUT(   "cycle",          frame_current_cycle_selection),
     CMD_BIND_NO_OUTPUT(   "cycle_all",      cycle_all_command),
