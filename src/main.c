@@ -107,7 +107,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "cycle_layout",   frame_current_cycle_client_layout),
     CMD_BIND_NO_OUTPUT(   "close",          window_close_current),
     CMD_BIND_NO_OUTPUT(   "close_or_remove",close_or_remove_command),
-    CMD_BIND_NO_OUTPUT(   "split",          frame_split_command),
+    CMD_BIND(             "split",          frame_split_command),
     CMD_BIND(             "resize",         frame_change_fraction_command),
     CMD_BIND_NO_OUTPUT(   "focus",          frame_focus_command),
     CMD_BIND_NO_OUTPUT(   "shift",          frame_move_window_command),

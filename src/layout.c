@@ -1145,7 +1145,7 @@ void frame_split(HSFrame* frame, int align, int fraction) {
     frame->content.layout.fraction = fraction;
 }
 
-int frame_split_command(int argc, char** argv) {
+int frame_split_command(int argc, char** argv, GString* output) {
     // usage: split h|v FRACTION
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
@@ -1153,7 +1153,13 @@ int frame_split_command(int argc, char** argv) {
     int align = ALIGN_VERTICAL;
     if (argv[1][0] == 'h') {
         align = ALIGN_HORIZONTAL;
-    } // else: layout is vertical
+    } else if (argv[1][0] == 'v') {
+        align = ALIGN_VERTICAL;
+    } else {
+        g_string_append_printf(output,
+            "%s: invalid alignment \"%s\"\n", argv[0], argv[1]);
+        return HERBST_INVALID_ARGUMENT;
+    }
     int fraction = FRACTION_UNIT* CLAMP(atof(argv[2]),
                                         0.0 + FRAME_MIN_FRACTION,
                                         1.0 - FRAME_MIN_FRACTION);
