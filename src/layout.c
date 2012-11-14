@@ -892,7 +892,10 @@ HSFrame* frame_current_selection() {
 int frame_current_bring(int argc, char** argv, GString* output) {
     HSClient* client = NULL;
 
-    string_to_client((argc > 1) ? argv[1] : "", &client);
+    if (argc < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    string_to_client(argv[1], &client);
     if (!client) {
         g_string_append_printf(output,
             "%s: error: Could not find client", argv[0]);

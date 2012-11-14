@@ -358,8 +358,11 @@ int raise_command(int argc, char** argv) {
 }
 
 int jumpto_command(int argc, char** argv, GString* output) {
+    if (argc < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
     HSClient* client = NULL;
-    string_to_client((argc > 1) ? argv[1] : "", &client);
+    string_to_client(argv[1], &client);
     if (client) {
         focus_window(client->window, true, true);
         return 0;
