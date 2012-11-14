@@ -1207,8 +1207,9 @@ int frame_change_fraction_command(int argc, char** argv, GString* output) {
         }
         neighbour = frame_neighbour(g_cur_frame, direction);
         if (!neighbour) {
-            // nothing to do
-            return 0;
+            g_string_append_printf(output,
+                "%s: No neighbour found!", argv[0]);
+            return HERBST_FORBIDDEN;
         }
     }
     HSFrame* parent = neighbour->parent;
@@ -1326,7 +1327,7 @@ int frame_inner_neighbour_index(HSFrame* frame, char direction) {
     return index;
 }
 
-int frame_focus_command(int argc, char** argv) {
+int frame_focus_command(int argc, char** argv, GString* output) {
     // usage: focus [-e|-i] left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
     if (!g_cur_frame) {
@@ -1361,12 +1362,16 @@ int frame_focus_command(int argc, char** argv) {
             // change focus if possible
             frame_focus_recursive(parent);
             monitor_apply_layout(get_current_monitor());
+        } else {
+            g_string_append_printf(output,
+                "%s: No neighbour found!", argv[0]);
+            return HERBST_FORBIDDEN;
         }
     }
     return 0;
 }
 
-int frame_move_window_command(int argc, char** argv) {
+int frame_move_window_command(int argc, char** argv, GString* output) {
     // usage: move left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
     if (!g_cur_frame) {
@@ -1429,6 +1434,10 @@ int frame_move_window_command(int argc, char** argv) {
             }
             // layout was changed, so update it
             monitor_apply_layout(get_current_monitor());
+        } else {
+            g_string_append_printf(output,
+                "%s: No neighbour found!", argv[0]);
+            return HERBST_FORBIDDEN;
         }
     }
     return 0;

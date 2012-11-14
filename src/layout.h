@@ -138,7 +138,7 @@ void frame_unfocus(); // unfocus currently focused window
 // returns the neighbour or NULL if there is no one
 HSFrame* frame_neighbour(HSFrame* frame, char direction);
 int frame_inner_neighbour_index(HSFrame* frame, char direction);
-int frame_focus_command(int argc, char** argv);
+int frame_focus_command(int argc, char** argv, GString* output);
 
 // follow selection to leave and focus this frame
 int frame_focus_recursive(HSFrame* frame);
@@ -163,7 +163,7 @@ Window frame_focused_window(HSFrame* frame);
 bool frame_focus_window(HSFrame* frame, Window win);
 bool focus_window(Window win, bool switch_tag, bool switch_monitor);
 // moves a window to an other frame
-int frame_move_window_command(int argc, char** argv);
+int frame_move_window_command(int argc, char** argv, GString* output);
 /// removes the current frame
 int frame_remove_command(int argc, char** argv);
 int close_or_remove_command(int argc, char** argv);
