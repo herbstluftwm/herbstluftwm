@@ -205,7 +205,10 @@ int keyunbind(int argc, char** argv, GString* output) {
             "%s: No such KeySym/modifier!\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
-    key_remove_bind_with_keysym(modifiers, keysym);
+    if (key_remove_bind_with_keysym(modifiers, keysym) == false) {
+        g_string_append_printf(output,
+            "%s: Key \"%s\" is not bound!\n", argv[0], argv[1]);
+    }
     regrab_keys();
     return 0;
 }
