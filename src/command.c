@@ -211,6 +211,8 @@ int call_command(int argc, char** argv, GString* output) {
         i++;
     }
     if (!bind) {
+        g_string_append_printf(output,
+            "error: Command \"%s\" not found!\n", argv[0]);
         return HERBST_COMMAND_NOT_FOUND;
     }
     int status;
