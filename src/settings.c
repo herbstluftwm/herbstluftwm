@@ -226,6 +226,8 @@ int settings_cycle_value(int argc, char** argv, GString* output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
+    char* cmd_name = argv[0];
+    char* setting_name = argv[1]; // save this before shifting
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
         g_string_append_printf(output,
@@ -240,7 +242,7 @@ int settings_cycle_value(int argc, char** argv, GString* output) {
     int ret = settings_set(pair, argv[i]);
     if (ret == HERBST_INVALID_ARGUMENT) {
         g_string_append_printf(output,
-            "%s: Invalid value for setting \"%s\"\n", argv[0], argv[1]);
+            "%s: Invalid value for setting \"%s\"\n", cmd_name, setting_name);
     }
     return ret;
 }
