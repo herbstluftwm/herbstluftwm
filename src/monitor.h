@@ -57,7 +57,7 @@ int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv);
 int add_monitor_command(int argc, char** argv, GString* output);
 int monitor_raise_command(int argc, char** argv, GString* output);
-int remove_monitor_command(int argc, char** argv);
+int remove_monitor_command(int argc, char** argv, GString* output);
 int remove_monitor(int index);
 int list_monitors(int argc, char** argv, GString* output);
 int list_padding(int argc, char** argv, GString* output);

@@ -372,13 +372,21 @@ int add_monitor_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int remove_monitor_command(int argc, char** argv) {
+int remove_monitor_command(int argc, char** argv, GString* output) {
     // usage: remove_monitor INDEX
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     int index = atoi(argv[1]);
-    return remove_monitor(index);
+    int ret = remove_monitor(index);
+    if (ret == HERBST_INVALID_ARGUMENT) {
+        g_string_append_printf(output,
+            "%s: Index needs to be between 0 and %d\n", argv[0], g_monitors->len - 1);
+    } else if (ret == HERBST_FORBIDDEN) {
+        g_string_append_printf(output,
+            "%s: Can't remove the last monitor\n", argv[0]);
+    }
+    return ret;
 }
 
 int remove_monitor(int index) {
