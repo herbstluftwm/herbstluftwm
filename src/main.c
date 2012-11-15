@@ -55,7 +55,7 @@ int print_layout_command(int argc, char** argv, GString* output);
 int load_command(int argc, char** argv, GString* output);
 int print_tag_status_command(int argc, char** argv, GString* output);
 void execute_autostart_file();
-int raise_command(int argc, char** argv);
+int raise_command(int argc, char** argv, GString* output);
 int spawn(int argc, char** argv);
 int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
@@ -137,7 +137,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "move_monitor",   move_monitor_command),
     CMD_BIND(             "monitor_rect",   monitor_rect_command),
     CMD_BIND(             "pad",            monitor_set_pad_command),
-    CMD_BIND_NO_OUTPUT(   "raise",          raise_command),
+    CMD_BIND(             "raise",          raise_command),
     CMD_BIND(             "rule",           rule_add_command),
     CMD_BIND(             "unrule",         rule_remove_command),
     CMD_BIND(             "layout",         print_layout_command),
@@ -345,7 +345,7 @@ int wmexec(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
-int raise_command(int argc, char** argv) {
+int raise_command(int argc, char** argv, GString* output) {
     Window win;
     HSClient* client = NULL;
     win = string_to_client((argc > 1) ? argv[1] : "", &client);
