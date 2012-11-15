@@ -197,6 +197,8 @@ int settings_toggle(int argc, char** argv, GString* output) {
         }
     } else {
         // only toggle numbers
+        g_string_append_printf(output,
+            "%s: Only numbers can be toggled\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
     // on successful change, call callback
