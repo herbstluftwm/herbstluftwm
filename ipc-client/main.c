@@ -185,6 +185,12 @@ int main(int argc, char* argv[]) {
         }
     }
     int arg_index = optind; // index of the first-non-option argument
+    if ((argc - arg_index == 0) && !g_wait_for_hook) {
+        // if there are no non-option arguments, and no --idle/--wait, display
+        // the help and exit
+        print_help(argv[0]);
+        exit(EXIT_FAILURE);
+    }
     // do communication
     int command_status;
     if (g_wait_for_hook == 1) {
