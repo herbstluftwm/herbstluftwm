@@ -126,7 +126,12 @@ int settings_set_command(int argc, char** argv, GString* output) {
         }
         return HERBST_SETTING_NOT_FOUND;
     }
-    return settings_set(pair, argv[2]);
+    int ret = settings_set(pair, argv[2]);
+    if (ret == HERBST_INVALID_ARGUMENT) {
+        g_string_append_printf(output,
+            "%s: Invalid value for setting \"%s\"\n", argv[0], argv[1]);
+    }
+    return ret;
 }
 
 int settings_set(SettingsPair* pair, char* value) {
@@ -232,6 +237,11 @@ int settings_cycle_value(int argc, char** argv, GString* output) {
     char** pcurrent = table_find(argv, sizeof(*argv), argc, 0,
                                  memberequals_settingspair, pair);
     int i = pcurrent ? ((INDEX_OF(argv, pcurrent) + 1) % argc) : 0;
-    return settings_set(pair, argv[i]);
+    int ret = settings_set(pair, argv[i]);
+    if (ret == HERBST_INVALID_ARGUMENT) {
+        g_string_append_printf(output,
+            "%s: Invalid value for setting \"%s\"\n", argv[0], argv[1]);
+    }
+    return ret;
 }
 
