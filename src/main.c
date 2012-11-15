@@ -29,6 +29,7 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <assert.h>
+#include <errno.h>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -59,10 +60,10 @@ int spawn(int argc, char** argv);
 int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(int argc, char** argv);
-int jumpto_command(int argc, char** argv);
+int jumpto_command(int argc, char** argv, GString* output);
 int getenv_command(int argc, char** argv, GString* output);
-int setenv_command(int argc, char** argv);
-int unsetenv_command(int argc, char** argv);
+int setenv_command(int argc, char** argv, GString* output);
+int unsetenv_command(int argc, char** argv, GString* output);
 
 // handler for X-Events
 void buttonpress(XEvent* event);
@@ -92,9 +93,9 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "disjoin_rects",  disjoin_rects_command),
     CMD_BIND(             "list_keybinds",  key_list_binds),
     CMD_BIND(             "list_padding",   list_padding),
-    CMD_BIND_NO_OUTPUT(   "keybind",        keybind),
-    CMD_BIND_NO_OUTPUT(   "keyunbind",      keyunbind),
-    CMD_BIND_NO_OUTPUT(   "mousebind",      mouse_bind_command),
+    CMD_BIND(             "keybind",        keybind),
+    CMD_BIND(             "keyunbind",      keyunbind),
+    CMD_BIND(             "mousebind",      mouse_bind_command),
     CMD_BIND_NO_OUTPUT(   "mouseunbind",    mouse_unbind_all),
     CMD_BIND_NO_OUTPUT(   "spawn",          spawn),
     CMD_BIND_NO_OUTPUT(   "wmexec",         wmexec),
@@ -103,42 +104,42 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "focus_nth",      frame_current_set_selection),
     CMD_BIND_NO_OUTPUT(   "cycle",          frame_current_cycle_selection),
     CMD_BIND_NO_OUTPUT(   "cycle_all",      cycle_all_command),
-    CMD_BIND_NO_OUTPUT(   "cycle_layout",   frame_current_cycle_client_layout),
+    CMD_BIND(             "cycle_layout",   frame_current_cycle_client_layout),
     CMD_BIND_NO_OUTPUT(   "close",          window_close_current),
     CMD_BIND_NO_OUTPUT(   "close_or_remove",close_or_remove_command),
     CMD_BIND_NO_OUTPUT(   "split",          frame_split_command),
-    CMD_BIND_NO_OUTPUT(   "resize",         frame_change_fraction_command),
+    CMD_BIND(             "resize",         frame_change_fraction_command),
     CMD_BIND_NO_OUTPUT(   "focus",          frame_focus_command),
     CMD_BIND_NO_OUTPUT(   "shift",          frame_move_window_command),
     CMD_BIND_NO_OUTPUT(   "remove",         frame_remove_command),
-    CMD_BIND_NO_OUTPUT(   "set",            settings_set_command),
-    CMD_BIND_NO_OUTPUT(   "toggle",         settings_toggle),
-    CMD_BIND_NO_OUTPUT(   "cycle_value",    settings_cycle_value),
+    CMD_BIND(             "set",            settings_set_command),
+    CMD_BIND(             "toggle",         settings_toggle),
+    CMD_BIND(             "cycle_value",    settings_cycle_value),
     CMD_BIND_NO_OUTPUT(   "cycle_monitor",  monitor_cycle_command),
     CMD_BIND_NO_OUTPUT(   "focus_monitor",  monitor_focus_command),
     CMD_BIND(             "get",            settings_get),
-    CMD_BIND_NO_OUTPUT(   "add",            tag_add_command),
-    CMD_BIND_NO_OUTPUT(   "use",            monitor_set_tag_command),
-    CMD_BIND_NO_OUTPUT(   "use_index",      monitor_set_tag_by_index_command),
-    CMD_BIND_NO_OUTPUT(   "jumpto",         jumpto_command),
+    CMD_BIND(             "add",            tag_add_command),
+    CMD_BIND(             "use",            monitor_set_tag_command),
+    CMD_BIND(             "use_index",      monitor_set_tag_by_index_command),
+    CMD_BIND(             "jumpto",         jumpto_command),
     CMD_BIND(             "floating",       tag_set_floating_command),
     CMD_BIND_NO_OUTPUT(   "fullscreen",     client_set_property_command),
     CMD_BIND_NO_OUTPUT(   "pseudotile",     client_set_property_command),
     CMD_BIND(             "tag_status",     print_tag_status_command),
-    CMD_BIND_NO_OUTPUT(   "merge_tag",      tag_remove_command),
-    CMD_BIND_NO_OUTPUT(   "rename",         tag_rename_command),
-    CMD_BIND_NO_OUTPUT(   "move",           tag_move_window_command),
+    CMD_BIND(             "merge_tag",      tag_remove_command),
+    CMD_BIND(             "rename",         tag_rename_command),
+    CMD_BIND(             "move",           tag_move_window_command),
     CMD_BIND_NO_OUTPUT(   "rotate",         layout_rotate_command),
-    CMD_BIND_NO_OUTPUT(   "move_index",     tag_move_window_by_index_command),
-    CMD_BIND_NO_OUTPUT(   "add_monitor",    add_monitor_command),
-    CMD_BIND_NO_OUTPUT(   "raise_monitor",  monitor_raise_command),
+    CMD_BIND(             "move_index",     tag_move_window_by_index_command),
+    CMD_BIND(             "add_monitor",    add_monitor_command),
+    CMD_BIND(             "raise_monitor",  monitor_raise_command),
     CMD_BIND_NO_OUTPUT(   "remove_monitor", remove_monitor_command),
-    CMD_BIND_NO_OUTPUT(   "move_monitor",   move_monitor_command),
+    CMD_BIND(             "move_monitor",   move_monitor_command),
     CMD_BIND(             "monitor_rect",   monitor_rect_command),
-    CMD_BIND_NO_OUTPUT(   "pad",            monitor_set_pad_command),
+    CMD_BIND(             "pad",            monitor_set_pad_command),
     CMD_BIND_NO_OUTPUT(   "raise",          raise_command),
-    CMD_BIND_NO_OUTPUT(   "rule",           rule_add_command),
-    CMD_BIND_NO_OUTPUT(   "unrule",         rule_remove_command),
+    CMD_BIND(             "rule",           rule_add_command),
+    CMD_BIND(             "unrule",         rule_remove_command),
     CMD_BIND(             "layout",         print_layout_command),
     CMD_BIND(             "stack",          print_stack_command),
     CMD_BIND(             "dump",           print_layout_command),
@@ -146,16 +147,16 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "complete",       complete_command),
     CMD_BIND_NO_OUTPUT(   "lock",           monitors_lock_command),
     CMD_BIND_NO_OUTPUT(   "unlock",         monitors_unlock_command),
-    CMD_BIND_NO_OUTPUT(   "lock_tag",       monitor_lock_tag_command),
-    CMD_BIND_NO_OUTPUT(   "unlock_tag",     monitor_unlock_tag_command),
-    CMD_BIND_NO_OUTPUT(   "set_layout",     frame_current_set_client_layout),
-    CMD_BIND_NO_OUTPUT(   "detect_monitors",detect_monitors_command),
+    CMD_BIND(             "lock_tag",       monitor_lock_tag_command),
+    CMD_BIND(             "unlock_tag",     monitor_unlock_tag_command),
+    CMD_BIND(             "set_layout",     frame_current_set_client_layout),
+    CMD_BIND(             "detect_monitors",detect_monitors_command),
     CMD_BIND(             "chain",          command_chain_command),
     CMD_BIND(             "and",            command_chain_command),
     CMD_BIND(             "or",             command_chain_command),
     CMD_BIND(             "getenv",         getenv_command),
-    CMD_BIND_NO_OUTPUT(   "setenv",         setenv_command),
-    CMD_BIND_NO_OUTPUT(   "unsetenv",       unsetenv_command),
+    CMD_BIND(             "setenv",         setenv_command),
+    CMD_BIND(             "unsetenv",       unsetenv_command),
     {{ NULL }}
 };
 
@@ -184,9 +185,12 @@ int print_layout_command(int argc, char** argv, GString* output) {
     HSTag* tag = NULL;
     if (argc >= 2) {
         tag = find_tag(argv[1]);
-    }
-    // if no tag was found
-    if (!tag) {
+        if (!tag) {
+            g_string_append_printf(output,
+                "%s: error: tag \"%s\" not found!\n", argv[0], argv[1]);
+            return HERBST_INVALID_ARGUMENT;
+        }
+    } else { // use current tag
         HSMonitor* m = get_current_monitor();
         tag = m->tag;
     }
@@ -209,9 +213,12 @@ int load_command(int argc, char** argv, GString* output) {
     if (argc >= 3) {
         tag = find_tag(argv[1]);
         layout_string = argv[2];
-    }
-    // if no tag was found
-    if (!tag) {
+        if (!tag) {
+            g_string_append_printf(output,
+                "load_command: error: tag \"%s\" not found!\n", argv[1]);
+            return HERBST_INVALID_ARGUMENT;
+        }
+    } else { // use current tag
         HSMonitor* m = get_current_monitor();
         tag = m->tag;
     }
@@ -230,6 +237,8 @@ int load_command(int argc, char** argv, GString* output) {
         frame_hide_recursive(tag->frame);
     }
     if (!rest) {
+        g_string_append_printf(output,
+            "%s: layout \"%s\" unknown\n", argv[0], layout_string);
         return HERBST_INVALID_ARGUMENT;
     }
     if (rest[0] != '\0') { // if string was not parsed completely
@@ -348,13 +357,22 @@ int raise_command(int argc, char** argv) {
     return 0;
 }
 
-int jumpto_command(int argc, char** argv) {
+int jumpto_command(int argc, char** argv, GString* output) {
     HSClient* client = NULL;
     string_to_client((argc > 1) ? argv[1] : "", &client);
     if (client) {
         focus_window(client->window, true, true);
+        return 0;
+    } else {
+        g_string_append_printf(output,
+            "%s: error: Could not find client", argv[0]);
+        if (argc > 1) {
+            g_string_append_printf(output, " \"%s\".\n", argv[1]);
+        } else {
+            g_string_append(output, ".\n");
+        }
+        return HERBST_INVALID_ARGUMENT;
     }
-    return 0;
 }
 
 int getenv_command(int argc, char** argv, GString* output) {
@@ -369,22 +387,26 @@ int getenv_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int setenv_command(int argc, char** argv) {
+int setenv_command(int argc, char** argv, GString* output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
     if (setenv(argv[1], argv[2], 1) != 0) {
-        return HERBST_INVALID_ARGUMENT;
+        g_string_append_printf(output,
+	    "Could not set environment variable: %s\n", strerror(errno));
+        return HERBST_UNKNOWN_ERROR;
     }
     return 0;
 }
 
-int unsetenv_command(int argc, char** argv) {
+int unsetenv_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     if (unsetenv(argv[1]) != 0) {
-        return HERBST_INVALID_ARGUMENT;
+        g_string_append_printf(output,
+	    "Could not unset environment variable: %s\n", strerror(errno));
+        return HERBST_UNKNOWN_ERROR;
     }
     return 0;
 }
@@ -697,7 +719,7 @@ void configurenotify(XEvent* event) {
     if (event->xconfigure.window == g_root &&
         settings_find("auto_detect_monitors")->value.i) {
         char* args[] = { "detect_monitors" };
-        detect_monitors_command(LENGTH(args), args);
+        detect_monitors_command(LENGTH(args), args, NULL);
     }
     // HSDebug("name is: ConfigureNotify\n");
 }

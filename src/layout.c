@@ -98,7 +98,7 @@ static void fetch_frame_colors() {
         g_warning("too few characters in setting tree_style\n");
         // ensure that it is long enough
         char* argv[] = { "set", "tree_style", "01234567" };
-        settings_set_command(LENGTH(argv), argv);
+        settings_set_command(LENGTH(argv), argv, NULL);
     }
 }
 
@@ -597,7 +597,8 @@ void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
     }
 }
 
-int frame_current_cycle_client_layout(int argc, char** argv) {
+int frame_current_cycle_client_layout(int argc, char** argv, GString* output) {
+    char* cmd_name = argv[0]; // save this before shifting
     int delta = 1;
     if (argc >= 2) {
         delta = atoi(argv[1]);
@@ -617,6 +618,8 @@ int frame_current_cycle_client_layout(int argc, char** argv) {
         idx %= argc;
         layout_index = find_layout_by_name(argv[idx]);
         if (layout_index < 0) {
+            g_string_append_printf(output,
+                "%s: Invalid layout name \"%s\"\n", cmd_name, argv[idx]);
             return HERBST_INVALID_ARGUMENT;
         }
     } else {
@@ -631,14 +634,15 @@ int frame_current_cycle_client_layout(int argc, char** argv) {
     return 0;
 }
 
-int frame_current_set_client_layout(int argc, char** argv) {
+int frame_current_set_client_layout(int argc, char** argv, GString* output) {
     int layout = 0;
     if (argc <= 1) {
         return HERBST_NEED_MORE_ARGS;
     }
     layout = find_layout_by_name(argv[1]);
     if (layout < 0) {
-        HSDebug("set_layout: invalid layout name \"%s\"\n", argv[1]);
+        g_string_append_printf(output,
+            "%s: invalid layout name \"%s\"\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
     if (g_cur_frame && g_cur_frame->type == TYPE_CLIENTS) {
@@ -1163,7 +1167,7 @@ int frame_split_command(int argc, char** argv) {
     return 0;
 }
 
-int frame_change_fraction_command(int argc, char** argv) {
+int frame_change_fraction_command(int argc, char** argv, GString* output) {
     // usage: fraction DIRECTION DELTA
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
@@ -1180,7 +1184,10 @@ int frame_change_fraction_command(int argc, char** argv) {
         case 'r':   break;
         case 'u':   delta *= -1; break;
         case 'd':   break;
-        default:    return HERBST_INVALID_ARGUMENT;
+        default:
+            g_string_append_printf(output,
+                "%s: Invalid direction \"%s\"\n", argv[0], argv[1]);
+            return HERBST_INVALID_ARGUMENT;
     }
     HSFrame* neighbour = frame_neighbour(g_cur_frame, direction);
     if (!neighbour) {

@@ -109,7 +109,7 @@ bool frame_remove_window(HSFrame* frame, Window window);
 void frame_destroy(HSFrame* frame, Window** buf, size_t* count);
 void frame_split(HSFrame* frame, int align, int fraction);
 int frame_split_command(int argc, char** argv);
-int frame_change_fraction_command(int argc, char** argv);
+int frame_change_fraction_command(int argc, char** argv, GString* output);
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect);
 void frame_apply_floating_layout(HSFrame* frame, struct HSMonitor* m);
@@ -153,8 +153,8 @@ int frame_foreach_client(HSFrame* frame, ClientAction action, void* data);
 void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vertical);
 void frame_apply_client_layout_horizontal(HSFrame* frame, XRectangle rect);
 void frame_apply_client_layout_vertical(HSFrame* frame, XRectangle rect);
-int frame_current_cycle_client_layout(int argc, char** argv);
-int frame_current_set_client_layout(int argc, char** argv);
+int frame_current_cycle_client_layout(int argc, char** argv, GString* output);
+int frame_current_set_client_layout(int argc, char** argv, GString* output);
 int frame_split_count_to_root(HSFrame* frame, int align);
 
 // returns the Window that is focused

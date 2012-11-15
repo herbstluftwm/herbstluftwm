@@ -114,12 +114,16 @@ SettingsPair* settings_find(char* name) {
     return STATIC_TABLE_FIND_STR(SettingsPair, g_settings, name, name);
 }
 
-int settings_set_command(int argc, char** argv) {
+int settings_set_command(int argc, char** argv, GString* output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
+        if (output != NULL) {
+            g_string_append_printf(output,
+                "%s: setting \"%s\" not found!\n", argv[0], argv[1]);
+        }
         return HERBST_SETTING_NOT_FOUND;
     }
     return settings_set(pair, argv[2]);
@@ -159,6 +163,8 @@ int settings_get(int argc, char** argv, GString* output) {
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
+        g_string_append_printf(output,
+            "%s: setting \"%s\" not found!\n", argv[0], argv[1]);
         return HERBST_SETTING_NOT_FOUND;
     }
     if (pair->type == HS_Int) {
@@ -170,12 +176,14 @@ int settings_get(int argc, char** argv, GString* output) {
 }
 
 // toggle integer-like values
-int settings_toggle(int argc, char** argv) {
+int settings_toggle(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
+        g_string_append_printf(output,
+            "%s: setting \"%s\" not found!\n", argv[0], argv[1]);
         return HERBST_SETTING_NOT_FOUND;
     }
     if (pair->type == HS_Int) {
@@ -207,12 +215,14 @@ bool memberequals_settingspair(void* pmember, void* needle) {
     }
 }
 
-int settings_cycle_value(int argc, char** argv) {
+int settings_cycle_value(int argc, char** argv, GString* output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
+        g_string_append_printf(output,
+            "%s: setting \"%s\" not found!", argv[0], argv[1]);
         return HERBST_SETTING_NOT_FOUND;
     }
     (void)SHIFT(argc, argv);

@@ -114,10 +114,11 @@ int find_condition_type(char* name) {
     return -1;
 }
 
-HSCondition* condition_create(int type, char op, char* value) {
+HSCondition* condition_create(int type, char op, char* value, GString* output) {
     HSCondition cond;
     if (op != '=' && type == g_maxage_type) {
-        fprintf(stderr, "condition maxage only supports the = operator\n");
+        g_string_append_printf(output,
+            "condition maxage only supports the = operator\n");
         return NULL;
     }
     switch (op) {
@@ -125,7 +126,8 @@ HSCondition* condition_create(int type, char op, char* value) {
             if (type == g_maxage_type) {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
                 if (1 != sscanf(value, "%d", &cond.value.integer)) {
-                    fprintf(stderr, "cannot integer from \"%s\"\n", value);
+                    g_string_append_printf(output,
+                        "cannot integer from \"%s\"\n", value);
                     return NULL;
                 }
             } else {
@@ -140,16 +142,16 @@ HSCondition* condition_create(int type, char op, char* value) {
             if (status != 0) {
                 char buf[ERROR_STRING_BUF_SIZE];
                 regerror(status, &cond.value.exp, buf, ERROR_STRING_BUF_SIZE);
-                fprintf(stderr, "Cannot parse value \"%s\"", value);
-                fprintf(stderr, "from condition \"%s\": ",
-                        g_condition_types[type].name);
-                fprintf(stderr, "\"%s\"\n", buf);
+                g_string_append_printf(output,
+                    "Cannot parse value \"%s\" from condition \"%s\": \"%s\"\n",
+                    value, g_condition_types[type].name, buf);
                 return NULL;
             }
             break;
 
         default:
-            fprintf(stderr, "unknown rule condition operation \"%c\"\n", op);
+            g_string_append_printf(output,
+                "unknown rule condition operation \"%c\"\n", op);
             return NULL;
             break;
     }
@@ -194,7 +196,7 @@ int find_consequence_type(char* name) {
     return -1;
 }
 
-HSConsequence* consequence_create(int type, char op, char* value) {
+HSConsequence* consequence_create(int type, char op, char* value, GString* output) {
     HSConsequence cons;
     switch (op) {
         case '=':
@@ -203,7 +205,8 @@ HSConsequence* consequence_create(int type, char op, char* value) {
             break;
 
         default:
-            fprintf(stderr, "unknown rule consequence operation \"%c\"\n", op);
+            g_string_append_printf(output,
+                "unknown rule consequence operation \"%c\"\n", op);
             return NULL;
             break;
     }
@@ -288,13 +291,13 @@ static void rule_add_consequence(HSRule* rule, HSConsequence* cons) {
 }
 
 
-int rule_add_command(int argc, char** argv) {
+int rule_add_command(int argc, char** argv, GString* output) {
     // usage: rule COND=VAL ... then
 
     // temporary data structures
     HSRule* rule = rule_create();
     HSCondition* cond;
-    HSConsequence* cons;
+    HSConsequence*  cons;
     bool negated = false;
     struct {
         char* name;
@@ -329,7 +332,7 @@ int rule_add_command(int argc, char** argv) {
         }
 
         else if (consorcond && (type = find_condition_type(name)) >= 0) {
-            cond = condition_create(type, op, value);
+            cond = condition_create(type, op, value, output);
             if (!cond) {
                 rule_destroy(rule);
                 return HERBST_INVALID_ARGUMENT;
@@ -340,7 +343,7 @@ int rule_add_command(int argc, char** argv) {
         }
 
         else if (consorcond && (type = find_consequence_type(name)) >= 0) {
-            cons = consequence_create(type, op, value);
+            cons = consequence_create(type, op, value, output);
             if (!cons) {
                 rule_destroy(rule);
                 return HERBST_INVALID_ARGUMENT;
@@ -349,7 +352,9 @@ int rule_add_command(int argc, char** argv) {
         }
 
         else {
-            fprintf(stderr, "rule: unknown argument \"%s\"\n", *argv);
+            // need to hardcode "rule:" here because args are shifted
+            g_string_append_printf(output,
+                "rule: unknown argument \"%s\"\n", *argv);
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -358,7 +363,7 @@ int rule_add_command(int argc, char** argv) {
     return 0;
 }
 
-int rule_remove_command(int argc, char** argv) {
+int rule_remove_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -370,6 +375,8 @@ int rule_remove_command(int argc, char** argv) {
         return 0;
     }
 
+    g_string_append_printf(output,
+        "%s: this command must be used with --all/-F for the time being\n", argv[0]);
     return HERBST_INVALID_ARGUMENT;
 }
 

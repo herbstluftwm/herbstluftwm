@@ -92,19 +92,22 @@ char*   modifiermask2name(unsigned int mask) {
     return NULL;
 }
 
-int keybind(int argc, char** argv) {
+int keybind(int argc, char** argv, GString* output) {
     if (argc <= 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     KeyBinding new_bind;
     // get keycode
     if (!string2key(argv[1], &(new_bind.modifiers), &(new_bind.keysym))) {
+        g_string_append_printf(output,
+            "%s: No such KeySym/modifier!\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
     KeyCode keycode = XKeysymToKeycode(g_display, new_bind.keysym);
     if (!keycode) {
-        fprintf(stderr, "keybind: no keycode for symbol %s\n",
-            XKeysymToString(new_bind.keysym));
+        g_string_append_printf(output,
+            "%s: no keycode for symbol %s\n",
+            argv[0], XKeysymToString(new_bind.keysym));
         return HERBST_INVALID_ARGUMENT;
     }
     // remove existing binding with same keysym/modifiers
@@ -185,7 +188,7 @@ void handle_key_press(XEvent* ev) {
     }
 }
 
-int keyunbind(int argc, char** argv) {
+int keyunbind(int argc, char** argv, GString* output) {
     if (argc <= 1) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -198,6 +201,8 @@ int keyunbind(int argc, char** argv) {
     KeySym keysym;
     // get keycode
     if (!string2key(argv[1], &modifiers, &keysym)) {
+        g_string_append_printf(output,
+            "%s: No such KeySym/modifier!\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
     key_remove_bind_with_keysym(modifiers, keysym);

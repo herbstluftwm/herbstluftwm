@@ -8,6 +8,7 @@
 
 #include <X11/Xlib.h>
 #include <stdbool.h>
+#include <glib.h>
 
 // various snap-flags
 enum SnapFlags {
@@ -39,7 +40,7 @@ int mouse_binding_equals(MouseBinding* a, MouseBinding* b);
 
 void mouse_bind_function(unsigned int modifiers, unsigned int button,
                          MouseFunction function);
-int mouse_bind_command(int argc, char** argv);
+int mouse_bind_command(int argc, char** argv, GString* output);
 int mouse_unbind_all();
 MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button);
 
