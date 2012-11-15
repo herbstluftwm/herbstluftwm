@@ -430,7 +430,7 @@ int move_monitor_command(int argc, char** argv) {
     return 0;
 }
 
-int monitor_rect_command(int argc, char** argv, GString* result) {
+int monitor_rect_command(int argc, char** argv, GString* output) {
     // usage: monitor_rect [[-p] INDEX]
     char* index_str = NULL;
     HSMonitor* m = NULL;
@@ -474,7 +474,7 @@ int monitor_rect_command(int argc, char** argv, GString* result) {
         rect.y += m->pad_up;
         rect.height -= m->pad_up + m->pad_down;
     }
-    g_string_append_printf(result, "%d %d %d %d",
+    g_string_append_printf(output, "%d %d %d %d",
                     rect.x, rect.y, rect.width, rect.height);
     return 0;
 }

@@ -225,7 +225,7 @@ int tag_remove_command(int argc, char** argv) {
     return 0;
 }
 
-int tag_set_floating_command(int argc, char** argv, GString* result) {
+int tag_set_floating_command(int argc, char** argv, GString* output) {
     // usage: floating [[tag] on|off|toggle]
     HSTag* tag = get_current_monitor()->tag;
     if (argc < 2) {
@@ -248,7 +248,7 @@ int tag_set_floating_command(int argc, char** argv, GString* result) {
 
     if (!strcmp(action, "status")) {
         // just print status
-        g_string_append(result, tag->floating ? "on" : "off");
+        g_string_append(output, tag->floating ? "on" : "off");
     } else {
         // assign new value and rearrange if needed
         tag->floating = new_value;

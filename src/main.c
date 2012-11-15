@@ -49,10 +49,10 @@ typedef void (*HandlerTable[LASTEvent]) (XEvent*);
 
 int quit();
 int reload();
-int version(int argc, char* argv[], GString* result);
-int print_layout_command(int argc, char** argv, GString* result);
-int load_command(int argc, char** argv, GString* result);
-int print_tag_status_command(int argc, char** argv, GString* result);
+int version(int argc, char* argv[], GString* output);
+int print_layout_command(int argc, char** argv, GString* output);
+int load_command(int argc, char** argv, GString* output);
+int print_tag_status_command(int argc, char** argv, GString* output);
 void execute_autostart_file();
 int raise_command(int argc, char** argv);
 int spawn(int argc, char** argv);
@@ -60,7 +60,7 @@ int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(int argc, char** argv);
 int jumpto_command(int argc, char** argv);
-int getenv_command(int argc, char** argv, GString* result);
+int getenv_command(int argc, char** argv, GString* output);
 int setenv_command(int argc, char** argv);
 int unsetenv_command(int argc, char** argv);
 
@@ -171,16 +171,16 @@ int reload() {
     return 0;
 }
 
-int version(int argc, char* argv[], GString* result) {
+int version(int argc, char* argv[], GString* output) {
     (void) argc;
     (void) argv;
-    g_string_append(result, HERBSTLUFT_VERSION_STRING);
+    g_string_append(output, HERBSTLUFT_VERSION_STRING);
     return 0;
 }
 
 // prints or dumps the layout of an given tag
 // first argument tells whether to print or to dump
-int print_layout_command(int argc, char** argv, GString* result) {
+int print_layout_command(int argc, char** argv, GString* output) {
     HSTag* tag = NULL;
     if (argc >= 2) {
         tag = find_tag(argv[1]);
@@ -192,14 +192,14 @@ int print_layout_command(int argc, char** argv, GString* result) {
     }
     assert(tag != NULL);
     if (argc > 0 && !strcmp(argv[0], "dump")) {
-        dump_frame_tree(tag->frame, result);
+        dump_frame_tree(tag->frame, output);
     } else {
-        print_tag_tree(tag, result);
+        print_tag_tree(tag, output);
     }
     return 0;
 }
 
-int load_command(int argc, char** argv, GString* result) {
+int load_command(int argc, char** argv, GString* output) {
     // usage: load TAG LAYOUT
     HSTag* tag = NULL;
     if (argc < 2) {
@@ -216,7 +216,7 @@ int load_command(int argc, char** argv, GString* result) {
         tag = m->tag;
     }
     assert(tag != NULL);
-    char* rest = load_frame_tree(tag->frame, layout_string, result);
+    char* rest = load_frame_tree(tag->frame, layout_string, output);
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     HSMonitor* m = find_monitor_with_tag(tag);
@@ -233,16 +233,16 @@ int load_command(int argc, char** argv, GString* result) {
         return HERBST_INVALID_ARGUMENT;
     }
     if (rest[0] != '\0') { // if string was not parsed completely
-        g_string_append_printf(result,
+        g_string_append_printf(output,
             "%s: layout description was too long\n", argv[0]);
-        g_string_append_printf(result,
+        g_string_append_printf(output,
             "%s: \"%s\" has not been parsed\n", argv[0], rest);
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;
 }
 
-int print_tag_status_command(int argc, char** argv, GString* result) {
+int print_tag_status_command(int argc, char** argv, GString* output) {
     int monitor_index = g_cur_monitor;
     if (argc >= 2) {
         monitor_index = atoi(argv[1]);
@@ -250,7 +250,7 @@ int print_tag_status_command(int argc, char** argv, GString* result) {
     monitor_index = CLAMP(monitor_index, 0, monitor_count());
     tag_update_flags();
     HSMonitor* monitor = monitor_with_index(monitor_index);
-    g_string_append_c(result, '\t');
+    g_string_append_c(output, '\t');
     for (int i = 0; i < g_tags->len; i++) {
         HSTag* tag = g_array_index(g_tags, HSTag*, i);
         // print flags
@@ -273,9 +273,9 @@ int print_tag_status_command(int argc, char** argv, GString* result) {
         if (tag->flags & TAG_FLAG_URGENT) {
             c = '!';
         }
-        g_string_append_c(result, c);
-        g_string_append(result, tag->name->str);
-        g_string_append_c(result, '\t');
+        g_string_append_c(output, c);
+        g_string_append(output, tag->name->str);
+        g_string_append_c(output, '\t');
     }
     return 0;
 }
@@ -358,7 +358,7 @@ int jumpto_command(int argc, char** argv) {
     return 0;
 }
 
-int getenv_command(int argc, char** argv, GString* result) {
+int getenv_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -366,7 +366,7 @@ int getenv_command(int argc, char** argv, GString* result) {
     if (envvar == NULL) {
         return HERBST_ENV_UNSET;
     }
-    g_string_append_printf(result, "%s\n", envvar);
+    g_string_append_printf(output, "%s\n", envvar);
     return 0;
 }
 

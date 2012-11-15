@@ -105,20 +105,20 @@ void stack_remove_slice(HSStack* s, HSSlice* elem) {
     s->dirty = true;
 }
 
-static void slice_append_caption(HSTree root, GString* result) {
+static void slice_append_caption(HSTree root, GString* output) {
     HSSlice* slice = (HSSlice*)root;
     switch (slice->type) {
         case SLICE_WINDOW:
-            g_string_append_printf(result, "Window 0x%lx",
+            g_string_append_printf(output, "Window 0x%lx",
                                    slice->data.window);
             break;
         case SLICE_CLIENT:
-            g_string_append_printf(result, "Client 0x%lx \"%s\"",
+            g_string_append_printf(output, "Client 0x%lx \"%s\"",
                                    slice->data.client->window,
                                    slice->data.client->title->str);
             break;
         case SLICE_MONITOR:
-            g_string_append_printf(result, "Monitor %d with tag \"%s\"",
+            g_string_append_printf(output, "Monitor %d with tag \"%s\"",
                                    monitor_index_of(slice->data.monitor),
                                    slice->data.monitor->tag->name->str);
             break;
@@ -192,7 +192,7 @@ static void monitor_stack_append_caption(HSTree root, GString* output) {
     // g_string_append_printf(*output, "Stack of all monitors");
 }
 
-int print_stack_command(int argc, char** argv, GString* result) {
+int print_stack_command(int argc, char** argv, GString* output) {
     struct TmpLayer tl = {
         .stack = get_monitor_stack(),
         .layer = LAYER_NORMAL,
@@ -204,7 +204,7 @@ int print_stack_command(int argc, char** argv, GString* result) {
         .data           = &tl,
         .destructor     = NULL,
     };
-    tree_print_to(&intface, result);
+    tree_print_to(&intface, output);
     return 0;
 }
 

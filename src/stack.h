@@ -66,7 +66,7 @@ void stack_slice_remove_layer(HSStack* s, HSSlice* slice, HSLayer layer);
 bool stack_is_layer_empty(HSStack* s, HSLayer layer);
 void stack_clear_layer(HSStack* s, HSLayer layer);
 
-int print_stack_command(int argc, char** argv, GString* result);
+int print_stack_command(int argc, char** argv, GString* output);
 
 // returns the number of windows in this stack
 int stack_window_count(HSStack* stack);
