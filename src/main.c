@@ -224,6 +224,9 @@ int load_command(int argc, char** argv, GString* output) {
     }
     assert(tag != NULL);
     char* rest = load_frame_tree(tag->frame, layout_string, output);
+    if (output->len > 0) {
+        g_string_prepend(output, "load: ");
+    }
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     HSMonitor* m = find_monitor_with_tag(tag);

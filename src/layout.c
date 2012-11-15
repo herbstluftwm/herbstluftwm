@@ -345,7 +345,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         if (3 != sscanf(args, "%[^"SEP"]"SEP"%lf"SEP"%d",
             align_name, &fraction_double, &selection)) {
             g_string_append_printf(errormsg,
-                "load: Can not parse frame args \"%s\"\n", args);
+                "Can not parse frame args \"%s\"\n", args);
             return NULL;
         }
 #undef SEP
@@ -353,7 +353,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         g_free(align_name);
         if (align < 0) {
             g_string_append_printf(errormsg,
-                "load: Invalid align name in args \"%s\"\n", args);
+                "Invalid align name in args \"%s\"\n", args);
             return NULL;
         }
         selection = !!selection; // CLAMP it to [0;1]
@@ -368,7 +368,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
             frame_split(frame, align, fraction);
             if (frame->type != TYPE_FRAMES) {
                 g_string_append_printf(errormsg,
-                    "load: Can not split frame\n");
+                    "Can not split frame\n");
                 return NULL;
             }
         }
@@ -389,7 +389,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         if (2 != sscanf(args, "%[^"SEP"]"SEP"%d",
             layout_name, &selection)) {
             g_string_append_printf(errormsg,
-                "load: Can not parse frame args \"%s\"\n", args);
+                "Can not parse frame args \"%s\"\n", args);
             return NULL;
         }
 #undef SEP
@@ -397,7 +397,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         g_free(layout_name);
         if (layout < 0) {
             g_string_append_printf(errormsg,
-                "load: Can not parse layout from args \"%s\"\n", args);
+                "Can not parse layout from args \"%s\"\n", args);
             return NULL;
         }
 
@@ -434,7 +434,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
             Window win;
             if (1 != sscanf(description, "0x%lx\n", &win)) {
                 g_string_append_printf(errormsg,
-                    "load: Can not parse window id from \"%s\"\n", description);
+                    "Can not parse window id from \"%s\"\n", description);
                 return NULL;
             }
             // jump over window id and over whitespaces
