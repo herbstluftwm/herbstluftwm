@@ -48,7 +48,7 @@ int         g_verbose;
             fprintf(stderr, "%s: %d: ", __FILE__, __LINE__); \
             fprintf(stderr, __VA_ARGS__); \
         } \
-    } while(0);
+    } while(0)
 
 #endif
 
