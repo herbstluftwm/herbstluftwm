@@ -332,7 +332,7 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
 }
 
 int add_monitor_command(int argc, char** argv) {
-    // usage: add_monitor RECTANGLE TAG [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]
+    // usage: add_monitor RECTANGLE [TAG [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]]
     if (argc < 2) {
         return HERBST_INVALID_ARGUMENT;
     }

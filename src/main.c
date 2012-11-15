@@ -341,7 +341,7 @@ int raise_command(int argc, char** argv) {
     Window win;
     HSClient* client = NULL;
     win = string_to_client((argc > 1) ? argv[1] : "", &client);
-if (client) {
+    if (client) {
         client_raise(client);
     } else {
         XRaiseWindow(g_display, win);
