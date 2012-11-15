@@ -187,7 +187,7 @@ int print_layout_command(int argc, char** argv, GString* output) {
         tag = find_tag(argv[1]);
         if (!tag) {
             g_string_append_printf(output,
-                "%s: error: tag \"%s\" not found!\n", argv[0], argv[1]);
+                "%s: Tag \"%s\" not found\n", argv[0], argv[1]);
             return HERBST_INVALID_ARGUMENT;
         }
     } else { // use current tag
@@ -215,7 +215,7 @@ int load_command(int argc, char** argv, GString* output) {
         layout_string = argv[2];
         if (!tag) {
             g_string_append_printf(output,
-                "load_command: error: tag \"%s\" not found!\n", argv[1]);
+                "%s: Tag \"%s\" not found\n", argv[0], argv[1]);
             return HERBST_INVALID_ARGUMENT;
         }
     } else { // use current tag
@@ -238,12 +238,12 @@ int load_command(int argc, char** argv, GString* output) {
     }
     if (!rest) {
         g_string_append_printf(output,
-            "%s: layout \"%s\" unknown\n", argv[0], layout_string);
+            "%s: Layout \"%s\" unknown\n", argv[0], layout_string);
         return HERBST_INVALID_ARGUMENT;
     }
     if (rest[0] != '\0') { // if string was not parsed completely
         g_string_append_printf(output,
-            "%s: layout description was too long\n", argv[0]);
+            "%s: Layout description was too long\n", argv[0]);
         g_string_append_printf(output,
             "%s: \"%s\" has not been parsed\n", argv[0], rest);
         return HERBST_INVALID_ARGUMENT;
@@ -368,7 +368,7 @@ int jumpto_command(int argc, char** argv, GString* output) {
         return 0;
     } else {
         g_string_append_printf(output,
-            "%s: error: Could not find client", argv[0]);
+            "%s: Could not find client", argv[0]);
         if (argc > 1) {
             g_string_append_printf(output, " \"%s\".\n", argv[1]);
         } else {
@@ -396,7 +396,7 @@ int setenv_command(int argc, char** argv, GString* output) {
     }
     if (setenv(argv[1], argv[2], 1) != 0) {
         g_string_append_printf(output,
-	    "Could not set environment variable: %s\n", strerror(errno));
+            "%s: Could not set environment variable: %s\n", argv[0], strerror(errno));
         return HERBST_UNKNOWN_ERROR;
     }
     return 0;
@@ -408,7 +408,7 @@ int unsetenv_command(int argc, char** argv, GString* output) {
     }
     if (unsetenv(argv[1]) != 0) {
         g_string_append_printf(output,
-	    "Could not unset environment variable: %s\n", strerror(errno));
+            "%s: Could not unset environment variable: %s\n", argv[0], strerror(errno));
         return HERBST_UNKNOWN_ERROR;
     }
     return 0;

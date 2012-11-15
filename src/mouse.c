@@ -163,7 +163,7 @@ int mouse_bind_command(int argc, char** argv, GString* output) {
     char* string = argv[1];
     if (!string2modifiers(string, &modifiers)) {
         g_string_append_printf(output,
-            "%s: Modifier \"%s\" does not exist!\n", argv[0], string);
+            "%s: Modifier \"%s\" does not exist\n", argv[0], string);
         return HERBST_INVALID_ARGUMENT;
     }
     // last one is the mouse button
@@ -171,13 +171,13 @@ int mouse_bind_command(int argc, char** argv, GString* output) {
     unsigned int button = string2button(last_token);
     if (button == 0) {
         g_string_append_printf(output,
-            "%s: Unknown mouse button \"%s\"!\n", argv[0], last_token);
+            "%s: Unknown mouse button \"%s\"\n", argv[0], last_token);
         return HERBST_INVALID_ARGUMENT;
     }
     MouseFunction function = string2mousefunction(argv[2]);
     if (!function) {
         g_string_append_printf(output,
-            "%s: Unknown mouse action \"%s\"!\n", argv[0], argv[2]);
+            "%s: Unknown mouse action \"%s\"\n", argv[0], argv[2]);
         return HERBST_INVALID_ARGUMENT;
     }
     mouse_bind_function(modifiers, button, function);

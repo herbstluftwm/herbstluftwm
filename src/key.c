@@ -100,13 +100,13 @@ int keybind(int argc, char** argv, GString* output) {
     // get keycode
     if (!string2key(argv[1], &(new_bind.modifiers), &(new_bind.keysym))) {
         g_string_append_printf(output,
-            "%s: No such KeySym/modifier!\n", argv[0]);
+            "%s: No such KeySym/modifier\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
     KeyCode keycode = XKeysymToKeycode(g_display, new_bind.keysym);
     if (!keycode) {
         g_string_append_printf(output,
-            "%s: no keycode for symbol %s\n",
+            "%s: No keycode for symbol %s\n",
             argv[0], XKeysymToString(new_bind.keysym));
         return HERBST_INVALID_ARGUMENT;
     }
@@ -202,12 +202,12 @@ int keyunbind(int argc, char** argv, GString* output) {
     // get keycode
     if (!string2key(argv[1], &modifiers, &keysym)) {
         g_string_append_printf(output,
-            "%s: No such KeySym/modifier!\n", argv[0]);
+            "%s: No such KeySym/modifier\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
     if (key_remove_bind_with_keysym(modifiers, keysym) == false) {
         g_string_append_printf(output,
-            "%s: Key \"%s\" is not bound!\n", argv[0], argv[1]);
+            "%s: Key \"%s\" is not bound\n", argv[0], argv[1]);
     }
     regrab_keys();
     return 0;

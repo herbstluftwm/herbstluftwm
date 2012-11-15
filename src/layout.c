@@ -345,7 +345,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         if (3 != sscanf(args, "%[^"SEP"]"SEP"%lf"SEP"%d",
             align_name, &fraction_double, &selection)) {
             g_string_append_printf(errormsg,
-                    "cannot parse frame args \"%s\"\n", args);
+                "load: Can not parse frame args \"%s\"\n", args);
             return NULL;
         }
 #undef SEP
@@ -353,7 +353,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         g_free(align_name);
         if (align < 0) {
             g_string_append_printf(errormsg,
-                    "invalid align name in args \"%s\"\n", args);
+                "load: Invalid align name in args \"%s\"\n", args);
             return NULL;
         }
         selection = !!selection; // CLAMP it to [0;1]
@@ -368,7 +368,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
             frame_split(frame, align, fraction);
             if (frame->type != TYPE_FRAMES) {
                 g_string_append_printf(errormsg,
-                    "cannot split frame");
+                    "load: Can not split frame\n");
                 return NULL;
             }
         }
@@ -389,7 +389,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         if (2 != sscanf(args, "%[^"SEP"]"SEP"%d",
             layout_name, &selection)) {
             g_string_append_printf(errormsg,
-                    "cannot parse frame args \"%s\"\n", args);
+                "load: Can not parse frame args \"%s\"\n", args);
             return NULL;
         }
 #undef SEP
@@ -397,7 +397,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         g_free(layout_name);
         if (layout < 0) {
             g_string_append_printf(errormsg,
-                    "cannot parse layout from args \"%s\"\n", args);
+                "load: Can not parse layout from args \"%s\"\n", args);
             return NULL;
         }
 
@@ -434,7 +434,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
             Window win;
             if (1 != sscanf(description, "0x%lx\n", &win)) {
                 g_string_append_printf(errormsg,
-                        "cannot parse window id from \"%s\"\n", description);
+                    "load: Can not parse window id from \"%s\"\n", description);
                 return NULL;
             }
             // jump over window id and over whitespaces
@@ -642,7 +642,7 @@ int frame_current_set_client_layout(int argc, char** argv, GString* output) {
     layout = find_layout_by_name(argv[1]);
     if (layout < 0) {
         g_string_append_printf(output,
-            "%s: invalid layout name \"%s\"\n", argv[0], argv[1]);
+            "%s: Invalid layout name \"%s\"\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
     if (g_cur_frame && g_cur_frame->type == TYPE_CLIENTS) {
@@ -898,7 +898,7 @@ int frame_current_bring(int argc, char** argv, GString* output) {
     string_to_client(argv[1], &client);
     if (!client) {
         g_string_append_printf(output,
-            "%s: error: Could not find client", argv[0]);
+            "%s: Could not find client", argv[0]);
         if (argc > 1) {
             g_string_append_printf(output, " \"%s\".\n", argv[1]);
         } else {
@@ -1167,7 +1167,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
         align = ALIGN_VERTICAL;
     } else {
         g_string_append_printf(output,
-            "%s: invalid alignment \"%s\"\n", argv[0], argv[1]);
+            "%s: Invalid alignment \"%s\"\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
     int fraction = FRACTION_UNIT* CLAMP(atof(argv[2]),
@@ -1218,7 +1218,7 @@ int frame_change_fraction_command(int argc, char** argv, GString* output) {
         neighbour = frame_neighbour(g_cur_frame, direction);
         if (!neighbour) {
             g_string_append_printf(output,
-                "%s: No neighbour found!", argv[0]);
+                "%s: No neighbour found\n", argv[0]);
             return HERBST_FORBIDDEN;
         }
     }
@@ -1374,7 +1374,7 @@ int frame_focus_command(int argc, char** argv, GString* output) {
             monitor_apply_layout(get_current_monitor());
         } else {
             g_string_append_printf(output,
-                "%s: No neighbour found!", argv[0]);
+                "%s: No neighbour found\n", argv[0]);
             return HERBST_FORBIDDEN;
         }
     }
@@ -1446,7 +1446,7 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
             monitor_apply_layout(get_current_monitor());
         } else {
             g_string_append_printf(output,
-                "%s: No neighbour found!", argv[0]);
+                "%s: No neighbour found\n", argv[0]);
             return HERBST_FORBIDDEN;
         }
     }

@@ -285,7 +285,7 @@ int set_monitor_rects_command(int argc, char** argv, GString* output) {
     g_free(templates);
     if (status == HERBST_TAG_IN_USE) {
         g_string_append_printf(output,
-            "%s: there are not enough free tags!\n", argv[0]);
+            "%s: There are not enough free tags\n", argv[0]);
     }
     return status;
 }
@@ -344,7 +344,7 @@ int add_monitor_command(int argc, char** argv, GString* output) {
         tag = find_unused_tag();
         if (!tag) {
             g_string_append_printf(output,
-                "%s: there are not enough free tags!\n", argv[0]);
+                "%s: There are not enough free tags\n", argv[0]);
             return HERBST_TAG_IN_USE;
         }
     }
@@ -352,13 +352,13 @@ int add_monitor_command(int argc, char** argv, GString* output) {
         tag = find_tag(argv[2]);
         if (!tag) {
             g_string_append_printf(output,
-                "%s: The tag \"%s\" does not exist!\n", argv[0], argv[2]);
+                "%s: The tag \"%s\" does not exist\n", argv[0], argv[2]);
             return HERBST_INVALID_ARGUMENT;
         }
     }
     if (find_monitor_with_tag(tag)) {
         g_string_append_printf(output,
-            "%s: The tag \"%s\" is already viewed on a monitor!\n", argv[0], argv[2]);
+            "%s: The tag \"%s\" is already viewed on a monitor\n", argv[0], argv[2]);
         return HERBST_TAG_IN_USE;
     }
     HSMonitor* monitor = add_monitor(rect, tag);
@@ -422,13 +422,13 @@ int move_monitor_command(int argc, char** argv, GString* output) {
     int index = atoi(argv[1]);
     if (index < 0 || index >= g_monitors->len) {
         g_string_append_printf(output,
-            "%s: index %i is out of range!\n", argv[0], index);
+            "%s: Index %i is out of range\n", argv[0], index);
         return HERBST_INVALID_ARGUMENT;
     }
     XRectangle rect = parse_rectangle(argv[2]);
     if (rect.width < WINDOW_MIN_WIDTH || rect.height < WINDOW_MIN_HEIGHT) {
         g_string_append_printf(output,
-            "%s: rectangle is too small!\n", argv[0]);
+            "%s: Rectangle is too small\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
     // else: just move it:
@@ -459,7 +459,7 @@ int monitor_rect_command(int argc, char** argv, GString* output) {
             with_pad = true;
         } else {
             g_string_append_printf(output,
-                "%s: invalid argument \"%s\"\n", argv[0], argv[1]);
+                "%s: Invalid argument \"%s\"\n", argv[0], argv[1]);
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -470,7 +470,7 @@ int monitor_rect_command(int argc, char** argv, GString* output) {
             m = monitor_with_index(index);
             if (!m) {
                 g_string_append_printf(output,
-                    "%s: invalid index \"%s\"\n", argv[0], index_str);
+                    "%s: Invalid index \"%s\"\n", argv[0], index_str);
                 return HERBST_INVALID_ARGUMENT;
             }
         }
@@ -498,7 +498,7 @@ int monitor_set_pad_command(int argc, char** argv, GString* output) {
     int index = atoi(argv[1]);
     if (index < 0 || index >= g_monitors->len) {
         g_string_append_printf(output,
-            "%s: index %i is out of range!\n", argv[0], index);
+            "%s: Index %i is out of range\n", argv[0], index);
         return HERBST_INVALID_ARGUMENT;
     }
     HSMonitor* monitor = monitor_with_index(index);
@@ -644,7 +644,7 @@ int monitor_set_tag_command(int argc, char** argv, GString* output) {
         return 0;
     } else {
         g_string_append_printf(output,
-            "%s: Invalid monitor or tag!\n", argv[0]);
+            "%s: Invalid monitor or tag\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
 }
@@ -660,7 +660,7 @@ int monitor_set_tag_by_index_command(int argc, char** argv, GString* output) {
     HSTag* tag = get_tag_by_index_str(argv[1], skip_visible);
     if (!tag) {
         g_string_append_printf(output,
-            "%s: Invalid index \"%s\"!\n", argv[0], argv[1]);
+            "%s: Invalid index \"%s\"\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
     monitor_set_tag(get_current_monitor(), tag);
@@ -841,7 +841,7 @@ int monitor_lock_tag_command(int argc, char** argv, GString* output) {
     }
     if (!monitor) {
         g_string_append_printf(output,
-            "%s: Invalid monitor!\n", argv[0]);
+            "%s: Invalid monitor\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
     monitor->lock_tag = true;
@@ -858,7 +858,7 @@ int monitor_unlock_tag_command(int argc, char** argv, GString* output) {
     }
     if (!monitor) {
         g_string_append_printf(output,
-            "%s: Invalid monitor!\n", argv[0]);
+            "%s: Invalid monitor\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
     monitor->lock_tag = false;
@@ -949,7 +949,7 @@ int detect_monitors_command(int argc, char **argv, GString* output) {
     g_free(monitors);
     if (ret == HERBST_TAG_IN_USE && output != NULL) {
         g_string_append_printf(output,
-            "%s: there are not enough free tags!\n", argv[0]);
+            "%s: There are not enough free tags\n", argv[0]);
     }
     return ret;
 }
@@ -976,7 +976,7 @@ int monitor_raise_command(int argc, char** argv, GString* output) {
     }
     if (!monitor) {
         g_string_append_printf(output,
-            "%s: Invalid monitor!\n", argv[0]);
+            "%s: Invalid monitor\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
     stack_raise_slide(g_monitor_stack, monitor->slice);

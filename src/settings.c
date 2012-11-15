@@ -122,7 +122,7 @@ int settings_set_command(int argc, char** argv, GString* output) {
     if (!pair) {
         if (output != NULL) {
             g_string_append_printf(output,
-                "%s: setting \"%s\" not found!\n", argv[0], argv[1]);
+                "%s: Setting \"%s\" not found\n", argv[0], argv[1]);
         }
         return HERBST_SETTING_NOT_FOUND;
     }
@@ -164,7 +164,7 @@ int settings_get(int argc, char** argv, GString* output) {
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
         g_string_append_printf(output,
-            "%s: setting \"%s\" not found!\n", argv[0], argv[1]);
+            "%s: Setting \"%s\" not found\n", argv[0], argv[1]);
         return HERBST_SETTING_NOT_FOUND;
     }
     if (pair->type == HS_Int) {
@@ -183,7 +183,7 @@ int settings_toggle(int argc, char** argv, GString* output) {
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
         g_string_append_printf(output,
-            "%s: setting \"%s\" not found!\n", argv[0], argv[1]);
+            "%s: Setting \"%s\" not found\n", argv[0], argv[1]);
         return HERBST_SETTING_NOT_FOUND;
     }
     if (pair->type == HS_Int) {
@@ -222,7 +222,7 @@ int settings_cycle_value(int argc, char** argv, GString* output) {
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
         g_string_append_printf(output,
-            "%s: setting \"%s\" not found!", argv[0], argv[1]);
+            "%s: Setting \"%s\" not found\n", argv[0], argv[1]);
         return HERBST_SETTING_NOT_FOUND;
     }
     (void)SHIFT(argc, argv);

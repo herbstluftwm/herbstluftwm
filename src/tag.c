@@ -161,12 +161,12 @@ int tag_rename_command(int argc, char** argv, GString* output) {
     HSTag* tag = find_tag(argv[1]);
     if (!tag) {
         g_string_append_printf(output,
-            "%s: Tag \"%s\" not found!\n", argv[0], argv[1]);
+            "%s: Tag \"%s\" not found\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
     if (find_tag(argv[2])) {
         g_string_append_printf(output,
-            "%s: Tag \"%s\" already exists!\n", argv[0], argv[2]);
+            "%s: Tag \"%s\" already exists\n", argv[0], argv[2]);
         return HERBST_TAG_IN_USE;
     }
     g_string_assign(tag->name, argv[2]);
@@ -186,21 +186,21 @@ int tag_remove_command(int argc, char** argv, GString* output) {
     HSTag* target = (argc >= 3) ? find_tag(argv[2]) : get_current_monitor()->tag;
     if (!tag) {
         g_string_append_printf(output,
-            "%s: Tag \"%s\" not found!\n", argv[0], argv[1]);
+            "%s: Tag \"%s\" not found\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     } else if (!target) {
         g_string_append_printf(output,
-            "%s: Tag \"%s\" not found!\n", argv[0], argv[2]);
+            "%s: Tag \"%s\" not found\n", argv[0], argv[2]);
     } else if (tag == target) {
         g_string_append_printf(output,
-            "%s: Cannot merge tag \"%s\" into itself!\n", argv[0], argv[1]);
+            "%s: Cannot merge tag \"%s\" into itself\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
     HSMonitor* monitor = find_monitor_with_tag(tag);
     HSMonitor* monitor_target = find_monitor_with_tag(target);
     if (monitor) {
         g_string_append_printf(output,
-            "%s: Cannot merge the currently viewed tag!\n", argv[0]);
+            "%s: Cannot merge the currently viewed tag\n", argv[0]);
         return HERBST_TAG_IN_USE;
     }
     // save all these windows
@@ -251,7 +251,7 @@ int tag_set_floating_command(int argc, char** argv, GString* output) {
         action = argv[2];
         if (!tag) {
             g_string_append_printf(output,
-                "%s: Tag \"%s\" not found!\n", argv[0], argv[1]);
+                "%s: Tag \"%s\" not found\n", argv[0], argv[1]);
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -336,7 +336,7 @@ int tag_move_window_command(int argc, char** argv, GString* output) {
     HSTag* target = find_tag(argv[1]);
     if (!target) {
         g_string_append_printf(output,
-            "%s: Tag \"%s\" not found!\n", argv[0], argv[1]);
+            "%s: Tag \"%s\" not found\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
     tag_move_focused_client(target);
