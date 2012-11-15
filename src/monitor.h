@@ -68,7 +68,7 @@ int move_monitor_command(int argc, char** argv, GString* output);
 int monitor_rect_command(int argc, char** argv, GString* output);
 HSMonitor* get_current_monitor();
 int monitor_count();
-void monitor_set_tag(HSMonitor* monitor, struct HSTag* tag);
+int monitor_set_tag(HSMonitor* monitor, struct HSTag* tag);
 int monitor_set_pad_command(int argc, char** argv, GString* output);
 int monitor_set_tag_command(int argc, char** argv, GString* output);
 int monitor_set_tag_by_index_command(int argc, char** argv, GString* output);

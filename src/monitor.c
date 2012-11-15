@@ -574,11 +574,11 @@ void all_monitors_apply_layout() {
     }
 }
 
-void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
+int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     HSMonitor* other = find_monitor_with_tag(tag);
     if (monitor == other) {
         // nothing to do
-        return;
+        return 0;
     }
     if (monitor->lock_tag) {
         // If the monitor tag is locked, do not change the tag
@@ -587,7 +587,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             // displaying monitor
             monitor_focus_by_index(monitor_index_of(other));
         }
-        return;
+        return 1;
     }
     if (other != NULL) {
         if (*g_swap_monitors_to_get_tag) {
@@ -595,7 +595,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
                 // the monitor we want to steal the tag from is
                 // locked. focus that monitor instead
                 monitor_focus_by_index(monitor_index_of(other));
-                return;
+                return 1;
             }
             // swap tags
             other->tag = monitor->tag;
@@ -615,7 +615,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             emit_tag_changed(other->tag, monitor_index_of(other));
             emit_tag_changed(tag, g_cur_monitor);
         }
-        return;
+        return 0;
     }
     HSTag* old_tag = monitor->tag;
     // 1. show new tag
@@ -642,6 +642,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     while (XCheckMaskEvent(g_display, EnterWindowMask, &ev));
     ewmh_update_current_desktop();
     emit_tag_changed(tag, g_cur_monitor);
+    return 0;
 }
 
 int monitor_set_tag_command(int argc, char** argv, GString* output) {
@@ -651,8 +652,12 @@ int monitor_set_tag_command(int argc, char** argv, GString* output) {
     HSMonitor* monitor = get_current_monitor();
     HSTag*  tag = find_tag(argv[1]);
     if (monitor && tag) {
-        monitor_set_tag(monitor, tag);
-        return 0;
+        int ret = monitor_set_tag(monitor, tag);
+        if (ret != 0) {
+            g_string_append_printf(output,
+                "%s: Could not change tag (maybe monitor is locked?)\n", argv[0]);
+        }
+        return ret;
     } else {
         g_string_append_printf(output,
             "%s: Invalid monitor or tag\n", argv[0]);
@@ -674,8 +679,12 @@ int monitor_set_tag_by_index_command(int argc, char** argv, GString* output) {
             "%s: Invalid index \"%s\"\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
-    monitor_set_tag(get_current_monitor(), tag);
-    return 0;
+    int ret = monitor_set_tag(get_current_monitor(), tag);
+    if (ret != 0) {
+        g_string_append_printf(output,
+            "%s: Could not change tag (maybe monitor is locked?)\n", argv[0]);
+    }
+    return ret;
 }
 
 int monitor_focus_command(int argc, char** argv) {
