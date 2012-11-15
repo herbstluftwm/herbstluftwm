@@ -286,6 +286,9 @@ int set_monitor_rects_command(int argc, char** argv, GString* output) {
     if (status == HERBST_TAG_IN_USE) {
         g_string_append_printf(output,
             "%s: There are not enough free tags\n", argv[0]);
+    } else if (status == HERBST_INVALID_ARGUMENT) {
+        g_string_append_printf(output,
+            "%s: Need at least one rectangle\n", argv[0]);
     }
     return status;
 }
