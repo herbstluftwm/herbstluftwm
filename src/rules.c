@@ -360,7 +360,7 @@ int rule_add_command(int argc, char** argv) {
 
 int rule_remove_command(int argc, char** argv) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
 
     if (!strcmp(argv[1], "--all") || !strcmp(argv[1], "-F")) {

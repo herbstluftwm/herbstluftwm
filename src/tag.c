@@ -142,7 +142,7 @@ HSTag* add_tag(char* name) {
 
 int tag_add_command(int argc, char** argv) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     if (!strcmp("", argv[1])) {
         HSDebug("A empty tag name is not permitted\n");
@@ -155,7 +155,7 @@ int tag_add_command(int argc, char** argv) {
 
 int tag_rename_command(int argc, char** argv) {
     if (argc < 3) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     HSTag* tag = find_tag(argv[1]);
     if (!tag) {
@@ -175,7 +175,7 @@ int tag_remove_command(int argc, char** argv) {
     // it removes an TAG and moves all its wins to TARGET
     // if no TARGET is given, current tag is used
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     HSTag* tag = find_tag(argv[1]);
     HSTag* target = (argc >= 3) ? find_tag(argv[2]) : get_current_monitor()->tag;
@@ -313,7 +313,7 @@ HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
 
 int tag_move_window_command(int argc, char** argv) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     HSTag* target = find_tag(argv[1]);
     if (!target) {
@@ -325,7 +325,7 @@ int tag_move_window_command(int argc, char** argv) {
 
 int tag_move_window_by_index_command(int argc, char** argv) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     bool skip_visible = false;
     if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {

@@ -116,7 +116,7 @@ SettingsPair* settings_find(char* name) {
 
 int settings_set_command(int argc, char** argv) {
     if (argc < 3) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
@@ -155,7 +155,7 @@ int settings_set(SettingsPair* pair, char* value) {
 
 int settings_get(int argc, char** argv, GString* output) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
@@ -172,7 +172,7 @@ int settings_get(int argc, char** argv, GString* output) {
 // toggle integer-like values
 int settings_toggle(int argc, char** argv) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
@@ -209,7 +209,7 @@ bool memberequals_settingspair(void* pmember, void* needle) {
 
 int settings_cycle_value(int argc, char** argv) {
     if (argc < 3) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {

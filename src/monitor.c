@@ -254,8 +254,7 @@ static RectList* disjoin_rects(XRectangle* buf, size_t count) {
 int disjoin_rects_command(int argc, char** argv, GString* output) {
     (void)SHIFT(argc, argv);
     if (argc < 1) {
-        g_string_append_printf(output, "At least one rect is required.\n");
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     XRectangle* buf = g_new(XRectangle, argc);
     for (int i = 0; i < argc; i++) {
@@ -276,8 +275,7 @@ int disjoin_rects_command(int argc, char** argv, GString* output) {
 int set_monitor_rects_command(int argc, char** argv, GString* output) {
     (void)SHIFT(argc, argv);
     if (argc < 1) {
-        g_string_append_printf(output, "At least one monitor is required.\n");
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     XRectangle* templates = g_new0(XRectangle, argc);
     for (int i = 0; i < argc; i++) {
@@ -334,7 +332,7 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
 int add_monitor_command(int argc, char** argv) {
     // usage: add_monitor RECTANGLE [TAG [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]]
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     XRectangle rect = parse_rectangle(argv[1]);
     HSTag* tag = NULL;
@@ -367,7 +365,7 @@ int add_monitor_command(int argc, char** argv) {
 int remove_monitor_command(int argc, char** argv) {
     // usage: remove_monitor INDEX
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     int index = atoi(argv[1]);
     return remove_monitor(index);
@@ -409,7 +407,7 @@ int move_monitor_command(int argc, char** argv) {
     // usage: move_monitor INDEX RECT [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]
     // moves monitor with number to RECT
     if (argc < 3) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     int index = atoi(argv[1]);
     if (index < 0 || index >= g_monitors->len) {
@@ -481,7 +479,7 @@ int monitor_rect_command(int argc, char** argv, GString* output) {
 
 int monitor_set_pad_command(int argc, char** argv) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     int index = atoi(argv[1]);
     if (index < 0 || index >= g_monitors->len) {
@@ -621,7 +619,7 @@ void monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
 
 int monitor_set_tag_command(int argc, char** argv) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     HSMonitor* monitor = get_current_monitor();
     HSTag*  tag = find_tag(argv[1]);
@@ -635,7 +633,7 @@ int monitor_set_tag_command(int argc, char** argv) {
 
 int monitor_set_tag_by_index_command(int argc, char** argv) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     bool skip_visible = false;
     if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
@@ -651,7 +649,7 @@ int monitor_set_tag_by_index_command(int argc, char** argv) {
 
 int monitor_focus_command(int argc, char** argv) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     int new_selection = atoi(argv[1]);
     // really change selection

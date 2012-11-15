@@ -203,7 +203,7 @@ int load_command(int argc, char** argv, GString* output) {
     // usage: load TAG LAYOUT
     HSTag* tag = NULL;
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     char* layout_string = argv[1];
     if (argc >= 3) {
@@ -288,8 +288,7 @@ int custom_hook_emit(int argc, char** argv) {
 // spawn() heavily inspired by dwm.c
 int spawn(int argc, char** argv) {
     if (argc < 2) {
-        fprintf(stderr, "spawn: too few parameters\n");
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     if (fork() == 0) {
         // only look in child
@@ -360,7 +359,7 @@ int jumpto_command(int argc, char** argv) {
 
 int getenv_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     char* envvar = getenv(argv[1]);
     if (envvar == NULL) {
@@ -372,7 +371,7 @@ int getenv_command(int argc, char** argv, GString* output) {
 
 int setenv_command(int argc, char** argv) {
     if (argc < 3) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     if (setenv(argv[1], argv[2], 1) != 0) {
         return HERBST_INVALID_ARGUMENT;
@@ -382,7 +381,7 @@ int setenv_command(int argc, char** argv) {
 
 int unsetenv_command(int argc, char** argv) {
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     if (unsetenv(argv[1]) != 0) {
         return HERBST_INVALID_ARGUMENT;

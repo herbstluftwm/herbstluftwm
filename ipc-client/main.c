@@ -14,6 +14,7 @@
 #include "ipc-client.h"
 #include "../src/globals.h"
 #include "../src/utils.h"
+#include "../src/ipc-protocol.h"
 
 void print_help(char* command);
 void init_hook_regex(int argc, char* argv[]);
@@ -197,7 +198,14 @@ int main(int argc, char* argv[]) {
             fprintf(stderr, "Error: Could not send command.\n");
             return EXIT_FAILURE;
         }
-        fputs(output->str, stdout);
+        if (command_status == 0) { // success, output to stdout
+            fputs(output->str, stdout);
+        } else if (command_status == HERBST_NEED_MORE_ARGS) { // needs more arguments
+            fputs(output->str, stderr);
+            fprintf(stderr, "%s: not enough arguments\n", argv[arg_index]); // first argument == cmd
+        } else { // other error, output to stderr
+            fputs(output->str, stderr);
+        }
         if (g_ensure_newline) {
             if (output->len > 0 && output->str[output->len - 1] != '\n') {
                 fputs("\n", stdout);

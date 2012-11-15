@@ -157,7 +157,7 @@ int mouse_binding_equals(MouseBinding* a, MouseBinding* b) {
 
 int mouse_bind_command(int argc, char** argv) {
     if (argc < 3) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     unsigned int modifiers = 0;
     char* string = argv[1];

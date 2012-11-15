@@ -94,8 +94,7 @@ char*   modifiermask2name(unsigned int mask) {
 
 int keybind(int argc, char** argv) {
     if (argc <= 2) {
-        fprintf(stderr, "keybind: not enough arguments\n");
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     KeyBinding new_bind;
     // get keycode
@@ -188,8 +187,7 @@ void handle_key_press(XEvent* ev) {
 
 int keyunbind(int argc, char** argv) {
     if (argc <= 1) {
-        fprintf(stderr, "keybind: not enough arguments\n");
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     // remove all keybinds if wanted
     if (!strcmp(argv[1], "-F") || !strcmp(argv[1], "--all")) {

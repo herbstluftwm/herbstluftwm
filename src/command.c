@@ -372,7 +372,7 @@ bool parameter_expected(int argc, char** argv, int pos) {
 int complete_command(int argc, char** argv, GString* output) {
     // usage: complete POSITION command to complete ...
     if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     // index must be between first and last arg of "command to complete ..."
     int position = CLAMP(atoi(argv[1]), 0, argc-2);
@@ -566,7 +566,7 @@ int command_chain_command(int argc, char** argv, GString* output) {
     cmd = STATIC_TABLE_FIND_STR(Cmd2Condition, g_cmd2condition, cmd, argv[0]);
     (void)SHIFT(argc, argv);
     if (argc <= 1) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     char* separator = argv[0];
     (void)SHIFT(argc, argv);

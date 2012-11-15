@@ -634,8 +634,7 @@ int frame_current_cycle_client_layout(int argc, char** argv) {
 int frame_current_set_client_layout(int argc, char** argv) {
     int layout = 0;
     if (argc <= 1) {
-        fprintf(stderr, "set_layout: not enough arguments\n");
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     layout = find_layout_by_name(argv[1]);
     if (layout < 0) {
@@ -903,7 +902,7 @@ int frame_current_set_selection(int argc, char** argv) {
     if (argc >= 2) {
         index = atoi(argv[1]);
     } else {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     // find current selection
     HSFrame* frame = frame_current_selection();
@@ -1145,7 +1144,7 @@ void frame_split(HSFrame* frame, int align, int fraction) {
 int frame_split_command(int argc, char** argv) {
     // usage: split h|v FRACTION
     if (argc < 3) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     int align = ALIGN_VERTICAL;
     if (argv[1][0] == 'h') {
@@ -1167,7 +1166,7 @@ int frame_split_command(int argc, char** argv) {
 int frame_change_fraction_command(int argc, char** argv) {
     // usage: fraction DIRECTION DELTA
     if (argc < 3) {
-        return HERBST_INVALID_ARGUMENT;
+        return HERBST_NEED_MORE_ARGS;
     }
     char direction = argv[1][0];
     double delta_double = atof(argv[2]);
@@ -1316,7 +1315,7 @@ int frame_inner_neighbour_index(HSFrame* frame, char direction) {
 
 int frame_focus_command(int argc, char** argv) {
     // usage: focus [-e|-i] left|right|up|down
-    if (argc < 2) return HERBST_INVALID_ARGUMENT;
+    if (argc < 2) return HERBST_NEED_MORE_ARGS;
     if (!g_cur_frame) {
         fprintf(stderr, "warning: no frame is selected\n");
         return HERBST_UNKNOWN_ERROR;
@@ -1356,7 +1355,7 @@ int frame_focus_command(int argc, char** argv) {
 
 int frame_move_window_command(int argc, char** argv) {
     // usage: move left|right|up|down
-    if (argc < 2) return HERBST_INVALID_ARGUMENT;
+    if (argc < 2) return HERBST_NEED_MORE_ARGS;
     if (!g_cur_frame) {
         fprintf(stderr, "warning: no frame is selected\n");
         return HERBST_UNKNOWN_ERROR;
