@@ -13,7 +13,7 @@ Build dependencies:
       with a current mach kernel
 Runtime dependencies:
     - bash (if you use the default autostart file)
-    - glib >= 2.24
+    - glib >= 2.14
     - libx11
 
 ==== Help/Support/Bugs ====
