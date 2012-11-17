@@ -259,7 +259,7 @@ int print_tag_status_command(int argc, char** argv, GString* output) {
     if (argc >= 2) {
         monitor_index = atoi(argv[1]);
     }
-    monitor_index = CLAMP(monitor_index, 0, monitor_count());
+    monitor_index = CLAMP(monitor_index, 0, monitor_count() - 1);
     tag_update_flags();
     HSMonitor* monitor = monitor_with_index(monitor_index);
     g_string_append_c(output, '\t');
