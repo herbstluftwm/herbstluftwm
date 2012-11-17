@@ -302,7 +302,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
     // find next (
     description = strchr(description, LAYOUT_DUMP_BRACKETS[0]);
     if (!description) {
-        g_string_append_printf(errormsg, "missing %c\n",
+        g_string_append_printf(errormsg, "Missing %c\n",
             LAYOUT_DUMP_BRACKETS[0]);
         return NULL;
     }
@@ -328,10 +328,12 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
     // jump over args substring
     description += args_len;
     if (!*description) {
+        g_string_append_printf(errormsg, "Missing %c or arguments\n", LAYOUT_DUMP_BRACKETS[1]);
         return NULL;
     }
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
     if (!*description) {
+        g_string_append_printf(errormsg, "Missing %c or arguments\n", LAYOUT_DUMP_BRACKETS[1]);
         return NULL;
     }
 
@@ -353,7 +355,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         g_free(align_name);
         if (align < 0) {
             g_string_append_printf(errormsg,
-                "Invalid align name in args \"%s\"\n", args);
+                "Invalid alignment name in args \"%s\"\n", args);
             return NULL;
         }
         selection = !!selection; // CLAMP it to [0;1]

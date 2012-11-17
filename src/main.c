@@ -241,7 +241,7 @@ int load_command(int argc, char** argv, GString* output) {
     }
     if (!rest) {
         g_string_append_printf(output,
-            "%s: Layout \"%s\" unknown\n", argv[0], layout_string);
+            "%s: Error while parsing!\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
     if (rest[0] != '\0') { // if string was not parsed completely
