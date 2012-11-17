@@ -298,7 +298,7 @@ void complete_against_winids(int argc, char** argv, int pos, GString* output) {
 }
 
 void complete_merge_tag(int argc, char** argv, int pos, GString* output) {
-    char* first = (argc >= 1) ? argv[1] : "";
+    char* first = (argc > 1) ? argv[1] : "";
     char* needle;
     if (pos >= argc) {
         needle = "";
