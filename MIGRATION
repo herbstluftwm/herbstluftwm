@@ -4,6 +4,12 @@ herbstluftwm migration guide
 This guide describes the list of incompatible changes between the different
 herbstluftwm releases and how to migrate scripts and configuration.
 
+0.4 to 0.5
+~~~~~~~~~~
+herbstclient now returns the exitstatus 9 (HERBST_NEED_MORE_ARGS) instead of 3
+(HERBST_INVALID_ARGUMENT) if a command needs more arguments. If an error occurs,
+it now outputs an error message to stderr.
+
 0.3 to 0.4
 ~~~~~~~~~~
 The setting window_gap is now called frame_gap. Simply replace all occurrences
