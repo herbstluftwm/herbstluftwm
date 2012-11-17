@@ -575,11 +575,11 @@ tag_status ['MONITOR']::
 WARNING: If you use a tab in one of the tag names, then tag_status is probably
 quite useless for you.
 
-floating [['TAG'] on|off|toggle|status]::
+floating [['TAG'] *on*|*off*|*toggle*|*status*]::
     Changes the current tag to floating/tiling mode on specified 'TAG' or prints
     it current status. If no 'TAG' is given, current tag is used. If no argument
-    is given, floating mode is toggled. If status is given, then on or off is
-    printed, depending of the floating state on 'TAG'.
+    is given, floating mode is toggled. If status is given, then *on* or *off*
+    is printed, depending of the floating state on 'TAG'.
 
 rule [\[--]'FLAG'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]::
     Defines a rule which will be applied to all new clients. Its behaviour is
@@ -589,14 +589,16 @@ unrule *--all*|*-F*::
     If --all or -F is passed, then all rules are removed.
     (It is not possible yet to remove certain rules)
 
-fullscreen *on*|*off*|*toggle*::
-    Sets or toggles the fullscreen state of the focused client.
+fullscreen [*on*|*off*|*toggle*]::
+    Sets or toggles the fullscreen state of the focused client. If no argument
+    is given, fullscreen mode is toggled.
 
-pseudotile *on*|*off*|*toggle*::
+pseudotile [*on*|*off*|*toggle*]::
     Sets or toggles the pseudotile state of the focused client. If a client is
     pseudotiled, then in tiling mode the client is only moved but not resized -
     the client size will stay the floating size. The only reason to resize the
-    client is to ensure, that it fits into its tile.
+    client is to ensure, that it fits into its tile. If no argument is given,
+    pseudotile mode is toggled.
 
 getenv 'NAME'::
     Gets the value of the environment variable 'NAME'.

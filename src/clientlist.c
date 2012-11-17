@@ -665,9 +665,7 @@ void client_set_pseudotile(HSClient* client, bool state) {
 }
 
 int client_set_property_command(int argc, char** argv) {
-    if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
-    }
+    char* action = (argc > 1) ? argv[1] : "toggle";
 
     HSClient* client = get_current_client();
     if (!client) {
@@ -696,7 +694,7 @@ int client_set_property_command(int argc, char** argv) {
     }
 
     // if found, then change it
-    bool state = string_to_bool(argv[1], *(properties[i].value));
+    bool state = string_to_bool(action, *(properties[i].value));
     properties[i].func(client, state);
     return 0;
 }

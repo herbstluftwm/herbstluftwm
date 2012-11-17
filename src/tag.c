@@ -228,10 +228,7 @@ int tag_remove_command(int argc, char** argv) {
 int tag_set_floating_command(int argc, char** argv, GString* output) {
     // usage: floating [[tag] on|off|toggle]
     HSTag* tag = get_current_monitor()->tag;
-    if (argc < 2) {
-        return HERBST_INVALID_ARGUMENT;
-    }
-    char* action = argv[1];
+    char* action = (argc > 1) ? argv[1] : "toggle";
     if (argc >= 3) {
         // if a tag is specified
         tag = find_tag(argv[1]);
