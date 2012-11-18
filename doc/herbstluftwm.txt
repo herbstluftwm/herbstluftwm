@@ -313,10 +313,10 @@ focus ['-i'|'-e'] 'DIRECTION'::
     A   B C*  D         '-----''-----'
 ----
 
-raise urgent|'0xWINID'::
+raise [urgent|'0xWINID']::
     Raises the specified window, which is an arbitrary urgent window or
     specified by the hexadecimal '0xWINID'. If no or an empty argument is given,
-    the focused window will be raised.  Its result is only visible in floating
+    the focused window will be raised. Its result is only visible in floating
     mode.
 
 TIP: The 'WINID' also can specify an unmanaged window, although the completion
