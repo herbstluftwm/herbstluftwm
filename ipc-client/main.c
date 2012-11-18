@@ -180,7 +180,6 @@ int main(int argc, char* argv[]) {
                 print_help(argv[0], stdout);
                 exit(EXIT_SUCCESS);
             default:
-                fprintf(stderr, "unknown option `%s'\n", argv[optind]);
                 exit(EXIT_FAILURE);
         }
     }

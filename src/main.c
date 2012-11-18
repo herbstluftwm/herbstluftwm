@@ -617,7 +617,6 @@ static void parse_arguments(int argc, char** argv) {
                 g_initial_monitors_locked = 1;
                 break;
             default:
-                fprintf(stderr, "unknown option `%s'\n", argv[optind]);
                 exit(EXIT_FAILURE);
         }
     }
