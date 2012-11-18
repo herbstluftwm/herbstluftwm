@@ -182,6 +182,7 @@ void ewmh_add_client(Window win) {
     g_windows[g_window_count] = win;
     g_window_count++;
     ewmh_update_client_list();
+    ewmh_update_client_list_stacking();
 }
 
 void ewmh_remove_client(Window win) {
@@ -196,6 +197,7 @@ void ewmh_remove_client(Window win) {
         g_window_count--;
     }
     ewmh_update_client_list();
+    ewmh_update_client_list_stacking();
 }
 
 void ewmh_update_desktops() {
