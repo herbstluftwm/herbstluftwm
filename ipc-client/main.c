@@ -208,6 +208,7 @@ int main(int argc, char* argv[]) {
         if (command_status != 0) { // any error, output to stderr
             file = stderr;
         }
+        fputs(output->str, file);
         if (g_ensure_newline) {
             if (output->len > 0 && output->str[output->len - 1] != '\n') {
                 fputs("\n", file);
