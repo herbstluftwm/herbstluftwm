@@ -128,10 +128,10 @@ void ewmh_destroy() {
 void ewmh_set_wmname(char* name) {
     XChangeProperty(g_display, g_wm_window, g_netatom[NetWmName],
         ATOM("UTF8_STRING"), 8, PropModeReplace,
-        (unsigned char*)name, strlen(name)+1);
+        (unsigned char*)name, strlen(name));
     XChangeProperty(g_display, g_root, g_netatom[NetWmName],
         ATOM("UTF8_STRING"), 8, PropModeReplace,
-        (unsigned char*)name, strlen(name)+1);
+        (unsigned char*)name, strlen(name));
 }
 
 void ewmh_update_wmname() {
