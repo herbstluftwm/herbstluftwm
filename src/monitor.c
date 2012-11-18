@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
@@ -974,12 +975,13 @@ int detect_monitors_command(int argc, char **argv, GString* output) {
     return ret;
 }
 
-int monitor_stack_window_count() {
-    return stack_window_count(g_monitor_stack);
+int monitor_stack_window_count(bool only_clients) {
+    return stack_window_count(g_monitor_stack, only_clients);
 }
 
-void monitor_stack_to_window_buf(Window* buf, int len, int* remain_len) {
-    stack_to_window_buf(g_monitor_stack, buf, len, remain_len);
+void monitor_stack_to_window_buf(Window* buf, int len, bool only_clients,
+                                 int* remain_len) {
+    stack_to_window_buf(g_monitor_stack, buf, len, only_clients, remain_len);
 }
 
 HSStack* get_monitor_stack() {
@@ -1004,10 +1006,10 @@ int monitor_raise_command(int argc, char** argv, GString* output) {
 }
 
 void monitor_restack(HSMonitor* monitor) {
-    int count = 1 + stack_window_count(monitor->tag->stack);
+    int count = 1 + stack_window_count(monitor->tag->stack, false);
     Window* buf = g_new(Window, count);
     buf[0] = monitor->stacking_window;
-    stack_to_window_buf(monitor->tag->stack, buf + 1, count - 1, NULL);
+    stack_to_window_buf(monitor->tag->stack, buf + 1, count - 1, false, NULL);
     /* remove a focused fullscreen client */
     Window win = frame_focused_window(monitor->tag->frame);
     HSClient* client = win ? get_client_from_window(win) : NULL;

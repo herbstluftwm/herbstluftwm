@@ -82,8 +82,9 @@ void all_monitors_apply_layout();
 void ensure_monitors_are_available();
 
 void monitor_restack(HSMonitor* monitor);
-int monitor_stack_window_count();
-void monitor_stack_to_window_buf(Window* buf, int len, int* remain_len);
+int monitor_stack_window_count(bool only_clients);
+void monitor_stack_to_window_buf(Window* buf, int len, bool only_clients,
+                                 int* remain_len);
 struct HSStack* get_monitor_stack();
 
 

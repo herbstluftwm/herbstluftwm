@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 
 static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx);
 static size_t                  stack_child_count(HSTree root);
@@ -208,9 +209,9 @@ int print_stack_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int stack_window_count(HSStack* stack) {
+int stack_window_count(HSStack* stack, bool only_clients) {
     int counter = 0;
-    stack_to_window_buf(stack, NULL, 0, &counter);
+    stack_to_window_buf(stack, NULL, 0, only_clients, &counter);
     return -counter;
 }
 
@@ -219,6 +220,7 @@ struct s2wb {
     int     len;
     Window* buf;
     int     missing; /* number of slices that could not find space in buf */
+    bool    only_clients; /* whether to include windows that aren't clients */
     HSLayer layer;  /* the layer the slice should be added to */
 };
 
@@ -240,25 +242,30 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
             }
             break;
         case SLICE_WINDOW:
-            if (data->len) {
-                data->buf[0] = s->data.window;
-                data->buf++;
-                data->len--;
-            } else {
-                data->missing++;
+            if (!data->only_clients) {
+                if (data->len) {
+                    data->buf[0] = s->data.window;
+                    data->buf++;
+                    data->len--;
+                } else {
+                    data->missing++;
+                }
             }
             break;
         case SLICE_MONITOR:
             tag = s->data.monitor->tag;
-            if (data->len) {
-                data->buf[0] = s->data.monitor->stacking_window;
-                data->buf++;
-                data->len--;
-            } else {
-                data->missing++;
+            if (!data->only_clients) {
+                if (data->len) {
+                    data->buf[0] = s->data.monitor->stacking_window;
+                    data->buf++;
+                    data->len--;
+                } else {
+                    data->missing++;
+                }
             }
             int remain_len = 0; /* remaining length */
-            stack_to_window_buf(tag->stack, data->buf, data->len, &remain_len);
+            stack_to_window_buf(tag->stack, data->buf, data->len,
+                                data->only_clients, &remain_len);
             int len_used = data->len - remain_len;
             if (remain_len >= 0) {
                 data->buf += len_used;
@@ -271,11 +278,13 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
     }
 }
 
-void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len) {
+void stack_to_window_buf(HSStack* stack, Window* buf, int len,
+                         bool only_clients, int* remain_len) {
     struct s2wb data = {
         .len = len,
         .buf = buf,
         .missing = 0,
+        .only_clients = only_clients,
     };
     for (int i = 0; i < LAYER_COUNT; i++) {
         data.layer = i;
@@ -296,9 +305,9 @@ void stack_restack(HSStack* stack) {
     if (!stack->dirty) {
         return;
     }
-    int count = stack_window_count(stack);
+    int count = stack_window_count(stack, false);
     Window* buf = g_new0(Window, count);
-    stack_to_window_buf(stack, buf, count, NULL);
+    stack_to_window_buf(stack, buf, count, false, NULL);
     XRestackWindows(g_display, buf, count);
     stack->dirty = false;
     ewmh_update_client_list_stacking();

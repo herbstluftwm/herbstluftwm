@@ -69,8 +69,9 @@ void stack_clear_layer(HSStack* s, HSLayer layer);
 int print_stack_command(int argc, char** argv, GString* output);
 
 // returns the number of windows in this stack
-int stack_window_count(HSStack* stack);
-void stack_to_window_buf(HSStack* stack, Window* buf, int len, int* remain_len);
+int stack_window_count(HSStack* stack, bool only_clients);
+void stack_to_window_buf(HSStack* stack, Window* buf, int len, bool only_clients,
+                         int* remain_len);
 void stack_restack(HSStack* stack);
 Window stack_lowest_window(HSStack* stack);
 

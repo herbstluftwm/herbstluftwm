@@ -15,6 +15,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -165,10 +166,10 @@ void ewmh_get_original_client_list(Window** buf, unsigned long *count) {
 }
 
 void ewmh_update_client_list_stacking() {
-    int count = monitor_stack_window_count();
+    int count = monitor_stack_window_count(true);
     Window* buf = g_new(Window, count);
     int remain;
-    monitor_stack_to_window_buf(buf, count, &remain);
+    monitor_stack_to_window_buf(buf, count, true, &remain);
     array_reverse(buf, count, sizeof(buf[0]));
 
     XChangeProperty(g_display, g_root, g_netatom[NetClientListStacking],
