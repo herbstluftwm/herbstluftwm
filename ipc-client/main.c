@@ -16,7 +16,7 @@
 #include "../src/utils.h"
 #include "../src/ipc-protocol.h"
 
-void print_help(char* command);
+void print_help(char* command, FILE* file);
 void init_hook_regex(int argc, char* argv[]);
 void destroy_hook_regex();
 
@@ -62,11 +62,11 @@ void destroy_hook_regex() {
 }
 
 
-void print_help(char* command) {
+void print_help(char* command, FILE* file) {
     // Eventually replace this and the option parsing with some fancy macro
     // based thing? Is the cost of maintainance really that high?
 
-    fprintf(stdout,
+    fprintf(file,
         "Usage: %s [OPTIONS] COMMAND [ARGS ...]\n"
         "       %s [OPTIONS] [--wait|--idle] [FILTER ...]\n",
         command, command);
@@ -86,7 +86,7 @@ void print_help(char* command) {
         "\t-h, --help: Print this help."
         "\n"
         "See the man page (herbstclient(1)) for more details.\n";
-    fputs(help_string, stdout);
+    fputs(help_string, file);
 }
 
 int main_hook(int argc, char* argv[]) {
@@ -177,7 +177,7 @@ int main(int argc, char* argv[]) {
                 g_quiet = true;
                 break;
             case 'h':
-                print_help(argv[0]);
+                print_help(argv[0], stdout);
                 exit(EXIT_SUCCESS);
             default:
                 fprintf(stderr, "unknown option `%s'\n", argv[optind]);
@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
     if ((argc - arg_index == 0) && !g_wait_for_hook) {
         // if there are no non-option arguments, and no --idle/--wait, display
         // the help and exit
-        print_help(argv[0]);
+        print_help(argv[0], stderr);
         exit(EXIT_FAILURE);
     }
     // do communication
