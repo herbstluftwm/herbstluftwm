@@ -198,18 +198,17 @@ int main(int argc, char* argv[]) {
             fprintf(stderr, "Error: Could not send command.\n");
             return EXIT_FAILURE;
         }
-        if (command_status == 0) { // success, output to stdout
-            fputs(output->str, stdout);
-        } else if (command_status == HERBST_NEED_MORE_ARGS) { // needs more arguments
-            fputs(output->str, stderr);
-            fprintf(stderr, "%s: not enough arguments\n", argv[arg_index]); // first argument == cmd
-        } else { // other error, output to stderr
-            fputs(output->str, stderr);
+        FILE* file = stdout; // on success, output to stdout
+        if (command_status != 0) { // any error, output to stderr
+            file = stderr;
         }
         if (g_ensure_newline) {
             if (output->len > 0 && output->str[output->len - 1] != '\n') {
-                fputs("\n", stdout);
+                fputs("\n", file);
             }
+        }
+        if (command_status == HERBST_NEED_MORE_ARGS) { // needs more arguments
+            fprintf(stderr, "%s: not enough arguments\n", argv[arg_index]); // first argument == cmd
         }
         g_string_free(output, true);
     }
