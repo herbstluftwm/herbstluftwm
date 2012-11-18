@@ -165,16 +165,38 @@ void ewmh_get_original_client_list(Window** buf, unsigned long *count) {
     *count = g_original_clients_count;
 }
 
+/* Add windows that are not in the current stack to buf */
+static Window* ewmh_merge_stacking_list(Window *buf, int count, int *new_count) {
+    int last = count;
+
+    buf = g_renew(Window, buf, count + g_window_count);
+
+    for (int i = 0; i < g_window_count; i++) {
+        if (array_find(buf, count, sizeof(Window), g_windows + i) < 0) {
+            buf[last++] = g_windows[i];
+        }
+    }
+
+    *new_count = last;
+
+    return buf;
+}
+
 void ewmh_update_client_list_stacking() {
+    // First: get the windows in the current stack
     int count = monitor_stack_window_count(true);
     Window* buf = g_new(Window, count);
     int remain;
     monitor_stack_to_window_buf(buf, count, true, &remain);
-    array_reverse(buf, count, sizeof(buf[0]));
+
+    // Then add all the others at the end
+    int total_count;
+    buf = ewmh_merge_stacking_list(buf, count, &total_count);
+    array_reverse(buf, total_count, sizeof(buf[0]));
 
     XChangeProperty(g_display, g_root, g_netatom[NetClientListStacking],
         XA_WINDOW, 32, PropModeReplace,
-        (unsigned char *) buf, count);
+        (unsigned char *) buf, total_count);
     g_free(buf);
 }
 
