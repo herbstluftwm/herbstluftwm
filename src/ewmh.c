@@ -165,39 +165,45 @@ void ewmh_get_original_client_list(Window** buf, unsigned long *count) {
     *count = g_original_clients_count;
 }
 
-/* Add windows that are not in the current stack to buf */
-static Window* ewmh_merge_stacking_list(Window *buf, int count, int *new_count) {
-    int last = count;
+struct ewmhstack {
+    Window* buf;
+    int     count;
+    int     i;  // index of the next free element in buf
+};
 
-    buf = g_renew(Window, buf, count + g_window_count);
-
-    for (int i = 0; i < g_window_count; i++) {
-        if (array_find(buf, count, sizeof(Window), g_windows + i) < 0) {
-            buf[last++] = g_windows[i];
-        }
+static void ewmh_add_tag_stack(HSTag* tag, void* data) {
+    struct ewmhstack* stack = (struct ewmhstack*)data;
+    if (find_monitor_with_tag(tag)) {
+        // do not add tags because they are already added
+        return;
     }
-
-    *new_count = last;
-
-    return buf;
+    int remain;
+    stack_to_window_buf(tag->stack, stack->buf + stack->i,
+                        stack->count - stack->i, true, &remain);
+    if (remain >= 0) {
+        stack->i = stack->count - remain;
+    } else {
+        HSDebug("Warning: not enough space in the ewmh stack\n");
+        stack->i = stack->count;
+    }
 }
 
 void ewmh_update_client_list_stacking() {
     // First: get the windows in the current stack
-    int count = monitor_stack_window_count(true);
-    Window* buf = g_new(Window, count);
+    struct ewmhstack stack;
+    stack.count = g_window_count;
+    stack.buf = g_new(Window, stack.count);
     int remain;
-    monitor_stack_to_window_buf(buf, count, true, &remain);
+    monitor_stack_to_window_buf(stack.buf, stack.count, true, &remain);
+    stack.i = stack.count - remain;
 
     // Then add all the others at the end
-    int total_count;
-    buf = ewmh_merge_stacking_list(buf, count, &total_count);
-    array_reverse(buf, total_count, sizeof(buf[0]));
+    tag_foreach(ewmh_add_tag_stack, &stack);
 
     XChangeProperty(g_display, g_root, g_netatom[NetClientListStacking],
         XA_WINDOW, 32, PropModeReplace,
-        (unsigned char *) buf, total_count);
-    g_free(buf);
+        (unsigned char *) stack.buf, stack.i);
+    g_free(stack.buf);
 }
 
 void ewmh_add_client(Window win) {
