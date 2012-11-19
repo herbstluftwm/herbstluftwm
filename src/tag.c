@@ -426,14 +426,18 @@ void tag_update_focus_layer(HSTag* tag) {
     }
 }
 
-void tag_foreach(void (*action)(HSTag*)) {
+void tag_foreach(void (*action)(HSTag*,void*), void* data) {
     for (int i = 0; i < g_tags->len; i++) {
         HSTag* tag = g_array_index(g_tags, HSTag*, i);
-        action(tag);
+        action(tag, data);
     }
 }
 
+static void tag_update_focus_layer_helper(HSTag* tag, void* data) {
+    (void) data;
+    tag_update_focus_layer(tag);
+}
 void tag_update_each_focus_layer() {
-    tag_foreach(tag_update_focus_layer);
+    tag_foreach(tag_update_focus_layer_helper, NULL);
 }
 
