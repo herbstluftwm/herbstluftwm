@@ -108,6 +108,7 @@ void stack_remove_slice(HSStack* s, HSSlice* elem) {
 
 static void slice_append_caption(HSTree root, GString* output) {
     HSSlice* slice = (HSSlice*)root;
+    GString* monitor_name = g_string_new("");
     switch (slice->type) {
         case SLICE_WINDOW:
             g_string_append_printf(output, "Window 0x%lx",
@@ -119,11 +120,17 @@ static void slice_append_caption(HSTree root, GString* output) {
                                    slice->data.client->title->str);
             break;
         case SLICE_MONITOR:
-            g_string_append_printf(output, "Monitor %d with tag \"%s\"",
+            if (slice->data.monitor->name != NULL) {
+                g_string_append_printf(monitor_name, " (\"%s\")",
+                                       slice->data.monitor->name->str);
+            }
+            g_string_append_printf(output, "Monitor %d%s with tag \"%s\"",
                                    monitor_index_of(slice->data.monitor),
+                                   monitor_name->str,
                                    slice->data.monitor->tag->name->str);
             break;
     }
+    g_string_free(monitor_name, true);
 }
 
 static struct HSTreeInterface slice_nth_child(HSTree root, size_t idx) {
