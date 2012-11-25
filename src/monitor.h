@@ -21,6 +21,7 @@ struct HSStack;
 typedef struct HSMonitor {
     struct HSTag*      tag;    // currently viewed tag
     struct HSSlice*    slice;  // slice in the monitor stack
+    GString*    name;
     int         pad_up;
     int         pad_right;
     int         pad_down;
@@ -48,13 +49,15 @@ HSMonitor* monitor_with_frame(struct HSFrame* frame);
 HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(struct HSTag* tag);
-HSMonitor* add_monitor(XRectangle rect, struct HSTag* tag);
+HSMonitor* add_monitor(XRectangle rect, struct HSTag* tag, char* name);
 void monitor_focus_by_index(int new_selection);
 int monitor_get_relative_x(HSMonitor* m, int x_root);
 int monitor_get_relative_y(HSMonitor* m, int y_root);
 int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv);
+int find_monitor_index_by_name(char* name);
+HSMonitor* find_monitor_by_name(char* name);
 int add_monitor_command(int argc, char** argv, GString* output);
 int monitor_raise_command(int argc, char** argv, GString* output);
 int remove_monitor_command(int argc, char** argv, GString* output);

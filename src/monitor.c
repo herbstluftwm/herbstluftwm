@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <ctype.h>
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
@@ -310,7 +311,7 @@ int set_monitor_rects(XRectangle* templates, size_t count) {
         if (!tag) {
             return HERBST_TAG_IN_USE;
         }
-        add_monitor(templates[i], tag);
+        add_monitor(templates[i], tag, NULL);
         frame_show_recursive(tag->frame);
     }
     // remove monitors if there are too much
@@ -321,11 +322,32 @@ int set_monitor_rects(XRectangle* templates, size_t count) {
     return 0;
 }
 
-HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
+int find_monitor_index_by_name(char* name) {
+    int i;
+    for (i = 0; i < g_monitors->len; i++) {
+        HSMonitor* mon = monitor_with_index(i);
+        if (mon != NULL && mon->name != NULL && !strcmp(mon->name->str, name)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+HSMonitor* find_monitor_by_name(char* name) {
+    int i = find_monitor_index_by_name(name);
+    if (i == -1) {
+        return NULL;
+    } else {
+        return monitor_with_index(i);
+    }
+}
+
+HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
     HSMonitor* m = g_new0(HSMonitor, 1);
     m->rect = rect;
     m->tag = tag;
+    m->name = (name ? g_string_new(name) : NULL);
     m->mouse.x = 0;
     m->mouse.y = 0;
     m->dirty = true;
@@ -338,12 +360,13 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag) {
 }
 
 int add_monitor_command(int argc, char** argv, GString* output) {
-    // usage: add_monitor RECTANGLE [TAG [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]]
+    // usage: add_monitor RECTANGLE [TAG [NAME]]
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     XRectangle rect = parse_rectangle(argv[1]);
     HSTag* tag = NULL;
+    char* name = NULL;
     if (argc == 2 || !strcmp("", argv[2])) {
         tag = find_unused_tag();
         if (!tag) {
@@ -365,11 +388,25 @@ int add_monitor_command(int argc, char** argv, GString* output) {
             "%s: The tag \"%s\" is already viewed on a monitor\n", argv[0], argv[2]);
         return HERBST_TAG_IN_USE;
     }
-    HSMonitor* monitor = add_monitor(rect, tag);
-    if (argc > 3 && argv[3][0] != '\0') monitor->pad_up       = atoi(argv[3]);
-    if (argc > 4 && argv[4][0] != '\0') monitor->pad_right    = atoi(argv[4]);
-    if (argc > 5 && argv[5][0] != '\0') monitor->pad_down     = atoi(argv[5]);
-    if (argc > 6 && argv[6][0] != '\0') monitor->pad_left     = atoi(argv[6]);
+    if (argc > 3) {
+        name = argv[3];
+        if (isdigit(name[0])) {
+            g_string_append_printf(output,
+                "%s: The monitor name may not start with a number\n", argv[0]);
+            return HERBST_INVALID_ARGUMENT;
+        }
+        if (!strcmp("", name)) {
+            g_string_append_printf(output,
+                "%s: An empty monitor name is not permitted\n", argv[0]);
+            return HERBST_INVALID_ARGUMENT;
+        }
+        if (find_monitor_by_name(name)) {
+            g_string_append_printf(output,
+                "%s: A monitor with the same name already exists\n", argv[0]);
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
+    HSMonitor* monitor = add_monitor(rect, tag, name);
     frame_show_recursive(tag->frame);
     monitor_apply_layout(monitor);
     emit_tag_changed(tag, g_monitors->len - 1);
@@ -546,7 +583,7 @@ void ensure_monitors_are_available() {
     };
     ensure_tags_are_available();
     // add monitor with first tag
-    HSMonitor* m = add_monitor(rect, g_array_index(g_tags, HSTag*, 0));
+    HSMonitor* m = add_monitor(rect, g_array_index(g_tags, HSTag*, 0), NULL);
     g_cur_monitor = 0;
     g_cur_frame = m->tag->frame;
 }

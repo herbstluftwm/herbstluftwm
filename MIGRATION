@@ -10,6 +10,11 @@ herbstclient now returns the exitstatus 9 (HERBST_NEED_MORE_ARGS) instead of 3
 (HERBST_INVALID_ARGUMENT) if a command needs more arguments. If an error occurs,
 it now outputs an error message to stderr.
 
+The padding arguments have been removed from add_monitor and a monitor name has
+been added instead. If you add a monitor with padding, instead of 'hc
+add_monitor 1024x768+0+0 1 2 3 4' now use 'hc add_monitor 1024x768+0+0; hc pad N
+1 2 3 4'.
+
 0.3 to 0.4
 ~~~~~~~~~~
 The setting window_gap is now called frame_gap. Simply replace all occurrences
