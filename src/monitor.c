@@ -104,16 +104,25 @@ int list_monitors(int argc, char** argv, GString* output) {
     (void)argc;
     (void)argv;
     int i;
+    GString* monitor_name = g_string_new("");
     for (i = 0; i < g_monitors->len; i++) {
         HSMonitor* monitor = monitor_with_index(i);
-        g_string_append_printf(output, "%d: %dx%d%+d%+d with tag \"%s\"%s%s\n",
+        if (monitor->name != NULL ) {
+            g_string_printf(monitor_name, ", named \"%s\"",
+                            monitor->name->str);
+        } else {
+            g_string_truncate(monitor_name, 0);
+        }
+        g_string_append_printf(output, "%d: %dx%d%+d%+d with tag \"%s\"%s%s%s\n",
             i,
             monitor->rect.width, monitor->rect.height,
             monitor->rect.x, monitor->rect.y,
             monitor->tag ? monitor->tag->name->str : "???",
+            monitor_name->str,
             (g_cur_monitor == i) ? " [FOCUS]" : "",
             monitor->lock_tag ? " [LOCKED]" : "");
     }
+    g_string_free(monitor_name, true);
     return 0;
 }
 

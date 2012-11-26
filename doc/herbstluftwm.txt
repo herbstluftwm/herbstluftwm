@@ -140,8 +140,8 @@ list_commands::
     Lists all available commands.
 
 [[list_monitors]]list_monitors::
-    List currently configured monitors with their index, area (as rectangle) and
-    currently viewed tag.
+    List currently configured monitors with their index, area (as rectangle),
+    name (if named) and currently viewed tag.
 
 list_keybinds::
     Lists all bound keys with their associated command. Each line consists of
