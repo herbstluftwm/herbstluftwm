@@ -10,6 +10,7 @@
 #include "layout.h"
 #include "key.h"
 #include "clientlist.h"
+#include "monitor.h"
 
 #include <glib.h>
 #include <string.h>
@@ -198,6 +199,17 @@ struct {
     { "use",            EQ, 1,  .function = complete_against_tags },
     { "use_index",      EQ, 1,  .list = completion_pm_one },
     { "use_index",      EQ, 2,  .list = completion_use_index_args },
+    { "focus_monitor",  EQ, 1,  .function = complete_against_monitors },
+    { "lock_tag",       EQ, 1,  .function = complete_against_monitors },
+    { "unlock_tag",     EQ, 1,  .function = complete_against_monitors },
+    { "remove_monitor", EQ, 1,  .function = complete_against_monitors },
+    { "move_monitor",   EQ, 1,  .function = complete_against_monitors },
+    { "raise_monitor",  EQ, 1,  .function = complete_against_monitors },
+    { "name_monitor",   EQ, 1,  .function = complete_against_monitors },
+    { "monitor_rect",   EQ, 1,  .function = complete_against_monitors },
+    { "pad",            EQ, 1,  .function = complete_against_monitors },
+    { "list_padding",   EQ, 1,  .function = complete_against_monitors },
+    { "tag_status",     EQ, 1,  .function = complete_against_monitors },
     { 0 },
 };
 
@@ -285,6 +297,25 @@ void complete_negate(int argc, char** argv, int pos, GString* output) {
     pos--;
     // Complete as normal
     complete_against_commands(argc, argv, pos, output);
+}
+
+void complete_against_monitors(int argc, char** argv, int pos, GString* output) {
+    char* needle;
+    if (pos >= argc) {
+        needle = "";
+    } else {
+        needle = argv[pos];
+    }
+    size_t len = strlen(needle);
+    for (int i = 0; i < monitor_count(); i++) {
+        GString* name = monitor_with_index(i)->name;
+        if (name != NULL) {
+            if (!strncmp(needle, name->str, len)) {
+                g_string_append(output, name->str);
+                g_string_append(output, "\n");
+            }
+        }
+    }
 }
 
 struct wcd { /* window id completion data */
