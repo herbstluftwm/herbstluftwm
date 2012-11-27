@@ -70,6 +70,7 @@ int set_monitor_rects_command(int argc, char** argv, GString* output);
 int disjoin_rects_command(int argc, char** argv, GString* output);
 int set_monitor_rects(XRectangle* templates, size_t count);
 int move_monitor_command(int argc, char** argv, GString* output);
+int rename_monitor_command(int argc, char** argv, GString* output);
 int monitor_rect_command(int argc, char** argv, GString* output);
 HSMonitor* get_current_monitor();
 int monitor_count();

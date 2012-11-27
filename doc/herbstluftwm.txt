@@ -544,6 +544,10 @@ raise_monitor ['MONITOR']::
     Raises the specified monitor or the current one if 'MONITOR' is
     omitted.
 
+rename_monitor 'MONITOR' 'NAME'::
+    (Re)names an already existing monitor. If 'NAME' is empty, it removes the
+    monitor's name.
+
 stack::
     Prints the stack of monitors with the visible tags and their layers as a
     tree. The order printed stack is top to bottom. The style is configured by

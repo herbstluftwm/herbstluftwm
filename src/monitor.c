@@ -531,6 +531,44 @@ int move_monitor_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
+int rename_monitor_command(int argc, char** argv, GString* output) {
+    if (argc < 3) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    HSMonitor* mon = string_to_monitor(argv[1]);
+    if (mon == NULL) {
+        g_string_append_printf(output,
+            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (isdigit(argv[2][0])) {
+        g_string_append_printf(output,
+            "%s: The monitor name may not start with a number\n", argv[0]);
+        return HERBST_INVALID_ARGUMENT;
+    } else if (!strcmp("", argv[2])) {
+        // empty name -> clear name
+        if (mon->name != NULL) {
+            g_string_free(mon->name, true);
+            mon->name = NULL;
+        }
+        return 0;
+    }
+    if (find_monitor_by_name(argv[2])) {
+        g_string_append_printf(output,
+            "%s: A monitor with the same name already exists\n", argv[0]);
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (mon->name == NULL) {
+        // not named before
+        GString* name = g_string_new(argv[2]);
+        mon->name = name;
+    } else {
+        // already named
+        g_string_assign(mon->name, argv[2]);
+    }
+    return 0;
+}
+
 int monitor_rect_command(int argc, char** argv, GString* output) {
     // usage: monitor_rect [[-p] INDEX]
     char* monitor_str = NULL;

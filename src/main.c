@@ -138,6 +138,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "raise_monitor",  monitor_raise_command),
     CMD_BIND(             "remove_monitor", remove_monitor_command),
     CMD_BIND(             "move_monitor",   move_monitor_command),
+    CMD_BIND(             "rename_monitor", rename_monitor_command),
     CMD_BIND(             "monitor_rect",   monitor_rect_command),
     CMD_BIND(             "pad",            monitor_set_pad_command),
     CMD_BIND(             "raise",          raise_command),

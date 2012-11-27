@@ -99,6 +99,7 @@ struct {
     { "unlock_tag",     2,  no_completion },
     { "detect_monitors",1,  no_completion },
     { "add_monitor",    7,  no_completion },
+    { "rename_monitor", 3,  no_completion },
     { "remove_monitor", 2,  no_completion },
     { "move_monitor",   7,  no_completion },
     { "raise_monitor",  2,  no_completion },
