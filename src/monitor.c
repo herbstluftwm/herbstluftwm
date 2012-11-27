@@ -450,7 +450,12 @@ int remove_monitor_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    int index = atoi(argv[1]);
+    int index = string_to_monitor_index(argv[1]);
+    if (index == -1) {
+        g_string_append_printf(output,
+            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+        return HERBST_INVALID_ARGUMENT;
+    }
     int ret = remove_monitor(index);
     if (ret == HERBST_INVALID_ARGUMENT) {
         g_string_append_printf(output,
@@ -500,10 +505,10 @@ int move_monitor_command(int argc, char** argv, GString* output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
-    int index = atoi(argv[1]);
-    if (index < 0 || index >= g_monitors->len) {
+    HSMonitor* monitor = string_to_monitor(argv[1]);
+    if (monitor == NULL) {
         g_string_append_printf(output,
-            "%s: Index %i is out of range\n", argv[0], index);
+            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
     XRectangle rect = parse_rectangle(argv[2]);
@@ -513,7 +518,6 @@ int move_monitor_command(int argc, char** argv, GString* output) {
         return HERBST_INVALID_ARGUMENT;
     }
     // else: just move it:
-    HSMonitor* monitor = monitor_with_index(index);
     monitor->rect = rect;
     if (argc > 3 && argv[3][0] != '\0') monitor->pad_up       = atoi(argv[3]);
     if (argc > 4 && argv[4][0] != '\0') monitor->pad_right    = atoi(argv[4]);
@@ -525,17 +529,17 @@ int move_monitor_command(int argc, char** argv, GString* output) {
 
 int monitor_rect_command(int argc, char** argv, GString* output) {
     // usage: monitor_rect [[-p] INDEX]
-    char* index_str = NULL;
+    char* monitor_str = NULL;
     HSMonitor* m = NULL;
     bool with_pad = false;
 
-    // if index is supplied
+    // if monitor is supplied
     if (argc > 1) {
-        index_str = argv[1];
+        monitor_str = argv[1];
     }
     // if -p is supplied
     if (argc > 2) {
-        index_str = argv[2];
+        monitor_str = argv[2];
         if (!strcmp("-p", argv[1])) {
             with_pad = true;
         } else {
@@ -545,19 +549,14 @@ int monitor_rect_command(int argc, char** argv, GString* output) {
         }
     }
     // if an index is set
-    if (index_str) {
-        int index;
-        if (1 == sscanf(index_str, "%d", &index)) {
-            m = monitor_with_index(index);
-            if (!m) {
-                g_string_append_printf(output,
-                    "%s: Invalid index \"%s\"\n", argv[0], index_str);
-                return HERBST_INVALID_ARGUMENT;
-            }
+    if (monitor_str) {
+        m = string_to_monitor(monitor_str);
+        if (m == NULL) {
+            g_string_append_printf(output,
+                "%s: Monitor \"%s\" not found!\n", argv[0], monitor_str);
+            return HERBST_INVALID_ARGUMENT;
         }
-    }
-
-    if (!m) {
+    } else {
         m = get_current_monitor();
     }
     XRectangle rect = m->rect;
@@ -576,13 +575,12 @@ int monitor_set_pad_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    int index = atoi(argv[1]);
-    if (index < 0 || index >= g_monitors->len) {
+    HSMonitor* monitor = string_to_monitor(argv[1]);
+    if (monitor == NULL) {
         g_string_append_printf(output,
-            "%s: Index %i is out of range\n", argv[0], index);
+            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
-    HSMonitor* monitor = monitor_with_index(index);
     if (argc > 2 && argv[2][0] != '\0') monitor->pad_up       = atoi(argv[2]);
     if (argc > 3 && argv[3][0] != '\0') monitor->pad_right    = atoi(argv[3]);
     if (argc > 4 && argv[4][0] != '\0') monitor->pad_down     = atoi(argv[4]);
@@ -761,7 +759,12 @@ int monitor_focus_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    int new_selection = atoi(argv[1]);
+    int new_selection = string_to_monitor_index(argv[1]);
+    if (new_selection == -1) {
+        g_string_append_printf(output,
+            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+        return HERBST_INVALID_ARGUMENT;
+    }
     // really change selection
     monitor_focus_by_index(new_selection);
     return 0;
@@ -922,34 +925,36 @@ void monitors_lock_changed() {
 }
 
 int monitor_lock_tag_command(int argc, char** argv, GString* output) {
+    char* cmd_name = argv[0];
     (void)SHIFT(argc, argv);
     HSMonitor *monitor;
     if (argc >= 1) {
-        monitor = monitor_with_index(atoi(argv[0]));
+        monitor = string_to_monitor(argv[0]);
+        if (monitor == NULL) {
+            g_string_append_printf(output,
+                "%s: Monitor \"%s\" not found!\n", cmd_name, argv[0]);
+            return HERBST_INVALID_ARGUMENT;
+        }
     } else {
         monitor = get_current_monitor();
-    }
-    if (!monitor) {
-        g_string_append_printf(output,
-            "%s: Invalid monitor\n", argv[0]);
-        return HERBST_INVALID_ARGUMENT;
     }
     monitor->lock_tag = true;
     return 0;
 }
 
 int monitor_unlock_tag_command(int argc, char** argv, GString* output) {
+    char* cmd_name = argv[0];
     (void)SHIFT(argc, argv);
     HSMonitor *monitor;
     if (argc >= 1) {
-        monitor = monitor_with_index(atoi(argv[0]));
+        monitor = string_to_monitor(argv[0]);
+        if (monitor == NULL) {
+            g_string_append_printf(output,
+                "%s: Monitor \"%s\" not found!\n", cmd_name, argv[0]);
+            return HERBST_INVALID_ARGUMENT;
+        }
     } else {
         monitor = get_current_monitor();
-    }
-    if (!monitor) {
-        g_string_append_printf(output,
-            "%s: Invalid monitor\n", argv[0]);
-        return HERBST_INVALID_ARGUMENT;
     }
     monitor->lock_tag = false;
     return 0;
@@ -1058,17 +1063,18 @@ HSStack* get_monitor_stack() {
 }
 
 int monitor_raise_command(int argc, char** argv, GString* output) {
+    char* cmd_name = argv[0];
     (void)SHIFT(argc, argv);
     HSMonitor* monitor;
     if (argc >= 1) {
-        monitor = monitor_with_index(atoi(argv[0]));
+        monitor = string_to_monitor(argv[0]);
+        if (monitor == NULL) {
+            g_string_append_printf(output,
+                "%s: Monitor \"%s\" not found!\n", cmd_name, argv[0]);
+            return HERBST_INVALID_ARGUMENT;
+        }
     } else {
         monitor = get_current_monitor();
-    }
-    if (!monitor) {
-        g_string_append_printf(output,
-            "%s: Invalid monitor\n", argv[0]);
-        return HERBST_INVALID_ARGUMENT;
     }
     stack_raise_slide(g_monitor_stack, monitor->slice);
     return 0;

@@ -262,13 +262,19 @@ int load_command(int argc, char** argv, GString* output) {
 }
 
 int print_tag_status_command(int argc, char** argv, GString* output) {
+    HSMonitor* monitor;
     int monitor_index = g_cur_monitor;
     if (argc >= 2) {
-        monitor_index = atoi(argv[1]);
+        monitor = string_to_monitor(argv[1]);
+    } else {
+        monitor = get_current_monitor();
     }
-    monitor_index = CLAMP(monitor_index, 0, monitor_count() - 1);
+    if (monitor == NULL) {
+        g_string_append_printf(output,
+            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+        return HERBST_INVALID_ARGUMENT;
+    }
     tag_update_flags();
-    HSMonitor* monitor = monitor_with_index(monitor_index);
     g_string_append_c(output, '\t');
     for (int i = 0; i < g_tags->len; i++) {
         HSTag* tag = g_array_index(g_tags, HSTag*, i);

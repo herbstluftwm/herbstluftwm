@@ -117,8 +117,18 @@ Tags are very similar to workspaces, virtual desktops or window groups. Each
 tag has one layout. There is a list of tags. You can add or remove tags
 dynamically.
 
-There is also a list of monitors. Each monitor displays exactly one tag on a
-specified rectangle on the screen.
+[[MONITORS]]
+MONITORS
+--------
+Monitors in *herbstluftwm* are totally independent of the actual physical
+screens. This means you can for example split your screen in two virtual
+monitors to view two tags at once on a big screen.
+
+Each monitor displays exactly one tag on a specified rectangle on the screen.
+
+A monitor can be referenced in two ways: by its 'INDEX' as listed in the
+*list_monitors* command, or by a name defined when adding the monitor.
+
 
 [[COMMANDS]]
 COMMANDS
@@ -424,9 +434,8 @@ cycle_value 'NAME' 'VALUES' ...::
 cycle_monitor ['DELTA']::
     Cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.
 
-focus_monitor 'INDEX'::
-    Puts focus to monitor with specified 'INDEX' (as specified by the
-    list_monitors command)
+focus_monitor 'MONITOR'::
+    Puts focus to specified monitor.
 
 add 'TAG'::
     Creates a new empty tag named 'TAG'.
@@ -459,8 +468,8 @@ move_index 'INDEX' [*--skip-visible*]::
     treated relative. If *--skip-visible* is passed with a relative index, then
     already visible tags are skipped.
 
-lock_tag ['INDEX']::
-    Lock the tag switching on the monitor specified by INDEX. If no
+lock_tag ['MONITOR']::
+    Lock the tag switching on the specified monitor. If no
     argument is given, the currently focused monitor is used. When the
     tag switching is disabled for a monitor, the commands *use* and
     *use_index* have no effect, when executed there. When
@@ -469,8 +478,8 @@ lock_tag ['INDEX']::
     stealing it from there. The lock state of a monitor is indicated
     by "[LOCKED]" in the *list_monitors* output.
 
-unlock_tag ['INDEX']::
-    Re-enables the tag switching on the monitor specified by INDEX. If no
+unlock_tag ['MONITOR']::
+    Re-enables the tag switching on the specified monitor. If no
     argument is given, the currently focused  monitor is used. This is the reverse
     operation to *lock_tag* and has no further side effects but removing this lock.
 
@@ -524,17 +533,15 @@ add_monitor 'RECT' ['TAG' ['NAME']]::
         * add_monitor 1024x768-20+0 mynewtag main
 
 
-remove_monitor 'INDEX'::
-    Removes the monitor with specified 'INDEX'. Its 'INDEX' can be found out via
-    the <<list_monitors,'list_monitors'>> command.
+remove_monitor 'MONITOR'::
+    Removes the specified monitor.
 
-move_monitor 'INDEX' 'RECT' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
-    Moves the monitor with specified 'INDEX' to rectangle 'RECT'. 'INDEX' and
-    'RECT' are defined as in 'remove_monitor' and 'add_monitor'. If no or an
-    empty pad is given, it is not changed.
+move_monitor 'MONITOR' 'RECT' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
+    Moves the specified monitor to rectangle 'RECT'. 'RECT' is defined as in
+    'add_monitor'. If no or an empty pad is given, it is not changed.
 
-raise_monitor ['INDEX']::
-    Raises the monitor with the given 'INDEX' or the current one if 'INDEX' is
+raise_monitor ['MONITOR']::
+    Raises the specified monitor or the current one if 'MONITOR' is
     omitted.
 
 stack::
@@ -542,15 +549,15 @@ stack::
     tree. The order printed stack is top to bottom. The style is configured by
     the 'tree_style' setting.
 
-monitor_rect [[-p] 'INDEX']::
-    Prints the rectangle of the specified 'INDEX' in the format: *X Y W H* +
-    If no 'INDEX' or 'cur' is given, then the current Monitor is used. If '-p'
+monitor_rect [[-p] 'MONITOR']::
+    Prints the rectangle of the specified monitor in the format: *X Y W H* +
+    If no 'MONITOR' or 'cur' is given, then the current Monitor is used. If '-p'
     is supplied, then the remaining rect without the pad around this monitor
     is printed.
 
-pad 'INDEX' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
-    Sets the pad of indexed monitor to the specified padding. If no or an empty
-    padding is given, it is not changed.
+pad 'MONITOR' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
+    Sets the pad of specified monitor to the specified padding. If no or an
+    empty padding is given, it is not changed.
 
 list_padding::
     Lists the padding of all monitors.
