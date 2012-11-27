@@ -58,6 +58,8 @@ int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv);
 int find_monitor_index_by_name(char* name);
 HSMonitor* find_monitor_by_name(char* name);
+HSMonitor* string_to_monitor(char* string);
+int string_to_monitor_index(char* string);
 int add_monitor_command(int argc, char** argv, GString* output);
 int monitor_raise_command(int argc, char** argv, GString* output);
 int remove_monitor_command(int argc, char** argv, GString* output);

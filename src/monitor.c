@@ -351,6 +351,29 @@ HSMonitor* find_monitor_by_name(char* name) {
     }
 }
 
+int string_to_monitor_index(char* string) {
+    int idx = -1;
+    if (string[0] == '\0') {
+        return -1;
+    }
+    if (isdigit(string[0])) {
+        // monitor index
+        idx = atoi(string);
+        if (idx < 0 || idx >= g_monitors->len) {
+            return -1;
+        }
+        return idx;
+    } else {
+        // monitor string
+        return find_monitor_index_by_name(string);
+    }
+}
+
+HSMonitor* string_to_monitor(char* string) {
+    int idx = string_to_monitor_index(string);
+    return monitor_with_index(idx);
+}
+
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
     HSMonitor* m = g_new0(HSMonitor, 1);
