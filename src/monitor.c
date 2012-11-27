@@ -127,18 +127,22 @@ int list_monitors(int argc, char** argv, GString* output) {
 }
 
 int list_padding(int argc, char** argv, GString* output) {
-    (void)argc;
-    (void)argv;
-    int i;
-    for (i = 0; i < g_monitors->len; i++) {
-        HSMonitor* monitor = monitor_with_index(i);
-        g_string_append_printf(output, "%d: %d %d %d %d\n",
-            i,
-            monitor->pad_up,
-            monitor->pad_right,
-            monitor->pad_down,
-            monitor->pad_left);
+    HSMonitor* monitor;
+    if (argc < 2) {
+        monitor = get_current_monitor();
+    } else {
+        monitor = string_to_monitor(argv[1]);
+        if (monitor == NULL) {
+            g_string_append_printf(output,
+                "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+            return HERBST_INVALID_ARGUMENT;
+        }
     }
+    g_string_append_printf(output, "%d %d %d %d\n",
+        monitor->pad_up,
+        monitor->pad_right,
+        monitor->pad_down,
+        monitor->pad_left);
     return 0;
 }
 

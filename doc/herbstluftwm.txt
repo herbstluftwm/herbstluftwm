@@ -559,8 +559,9 @@ pad 'MONITOR' ['PADUP' ['PADRIGHT' ['PADDOWN' ['PADLEFT']]]]::
     Sets the pad of specified monitor to the specified padding. If no or an
     empty padding is given, it is not changed.
 
-list_padding::
-    Lists the padding of all monitors.
+list_padding ['MONITOR']::
+    Lists the padding of the specified monitor, or the currently focused monitor
+    if no monitor is given.
 
 layout ['TAG' ['INDEX']]::
     Prints the layout of frame with 'INDEX' in 'TAG', in a nice tree style.

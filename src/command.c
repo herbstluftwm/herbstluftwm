@@ -105,7 +105,7 @@ struct {
     { "stack",          2,  no_completion },
     { "monitor_rect",   3,  no_completion },
     { "pad",            6,  no_completion },
-    { "list_padding",   1,  no_completion },
+    { "list_padding",   2,  no_completion },
     { "layout",         3,  no_completion },
     { "dump",           3,  no_completion },
     { "load",           3,  no_completion },
