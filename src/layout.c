@@ -12,6 +12,7 @@
 #include "settings.h"
 #include "layout.h"
 #include "stack.h"
+#include "monitor.h"
 
 #include <glib.h>
 #include <stdlib.h>
@@ -1765,5 +1766,15 @@ void frame_update_border(Window window, unsigned long color) {
     } else {
         XSetWindowBorder(g_display, window, color);
     }
+}
+
+int frame_move_window_edge(int argc, char** argv, GString* output) {
+    // Moves a window to an edge in the specified direction
+    char* args[] = { "" };
+    monitors_lock_command(LENGTH(args), args);
+    while (0 == frame_move_window_command(argc,argv,output))
+        ;
+    monitors_unlock_command(LENGTH(args), args);
+    return 0;
 }
 
