@@ -371,6 +371,11 @@ shift ['-i'|'-e'] 'DIRECTION'::
     If 'focus_follows_shift' is set, then focus stays in the window; otherwise
     it stays in the frame.
 
+shift_to_monitor 'INDEX'::
+    Moves the focused window to the tag on monitor with the specified 'INDEX'.
+    If 'INDEX' starts with +++ or +-+, then 'INDEX' is treated relative to the
+    current monitor.
+
 remove::
     Removes focused frame and merges its windows to its neighbour frame.
 

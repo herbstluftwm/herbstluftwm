@@ -93,5 +93,7 @@ bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count);
 bool detect_monitors_simple(XRectangle** ret_rects, size_t* ret_count);
 int detect_monitors_command(int argc, char **argv, GString* output);
 
+int shift_to_monitor(int argc, char** argv, GString* output);
+
 #endif
 

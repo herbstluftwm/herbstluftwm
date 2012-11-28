@@ -112,6 +112,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "focus",          frame_focus_command),
     CMD_BIND(             "shift_edge",     frame_move_window_edge),
     CMD_BIND(             "shift",          frame_move_window_command),
+    CMD_BIND(             "shift_to_monitor",shift_to_monitor),
     CMD_BIND_NO_OUTPUT(   "remove",         frame_remove_command),
     CMD_BIND(             "set",            settings_set_command),
     CMD_BIND(             "toggle",         settings_toggle),

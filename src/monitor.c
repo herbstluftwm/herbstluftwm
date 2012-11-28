@@ -1024,3 +1024,24 @@ void monitor_restack(HSMonitor* monitor) {
     g_free(buf);
 }
 
+int shift_to_monitor(int argc, char** argv, GString* output) {
+    if (argc <= 1) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    char* index_str = argv[1];
+    bool is_relative = array_find("+-", 2, sizeof(char), &index_str[0]) >= 0;
+    int i = atoi(index_str);
+    if (is_relative) {
+        i += g_cur_monitor;
+        i = MOD(i, g_monitors->len);
+    }
+    HSMonitor* monitor = monitor_with_index(i);
+    if (!monitor) {
+        g_string_append_printf(output,
+            "%s: Invalid monitor\n", index_str);
+        return HERBST_INVALID_ARGUMENT;
+    }
+    tag_move_focused_client(monitor->tag);
+    return 0;
+}
+
