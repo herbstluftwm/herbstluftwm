@@ -168,6 +168,7 @@ struct {
     { "move",           EQ, 1,  .function = complete_against_tags },
     { "move_index",     EQ, 2,  .list = completion_use_index_args },
     { "or",             GE, 1,  .function = complete_chain },
+    { "!",              GE, 1,  .function = complete_negate },
     { "pseudotile",     EQ, 1,  .list = completion_flag_args },
     { "keybind",        GE, 2,  .function = complete_against_keybind_command },
     { "keyunbind",      EQ, 1,  .list = completion_keyunbind_args },
@@ -271,6 +272,17 @@ void complete_against_tags(int argc, char** argv, int pos, GString* output) {
             g_string_append(output, "\n");
         }
     }
+}
+
+void complete_negate(int argc, char** argv, int pos, GString* output) {
+    if (pos <= 0) {
+        return;
+    }
+    // Remove the ! from the argv
+    (void)SHIFT(argc, argv);
+    pos--;
+    // Complete as normal
+    complete_against_commands(argc, argv, pos, output);
 }
 
 struct wcd { /* window id completion data */
@@ -576,5 +588,14 @@ int command_chain_command(int argc, char** argv, GString* output) {
     (void)SHIFT(argc, argv);
     bool (*condition)(int) = cmd ? cmd->condition : NULL;
     return command_chain(separator, condition, argc, argv, output);
+}
+
+int negate_command(int argc, char** argv, GString* output) {
+    if (argc <= 1) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    (void)SHIFT(argc, argv);
+    int status = call_command(argc, argv, output);
+    return (!status);
 }
 

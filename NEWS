@@ -14,7 +14,7 @@ Changes:
     * let new clients and monitors (and other items that are stacked) appear on
       top of the stacking order
     * chaining of commands now is possible with the new command: chain
-    * new commands: and or
+    * new commands: and or negate
     * tag switch locking for monitors. The new lock_tag and unlock_tag commands
       control, whether tag switching operations for a monitor are allowed.
     * set the urgent flag on _NET_WM_STATE_DEMANDS_ATTENTION

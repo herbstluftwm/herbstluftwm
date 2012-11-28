@@ -242,6 +242,11 @@ or 'SEPARATOR' ['COMMANDS' ...]::
     "or" behaves like the chain command but only executes the specified
     'COMMANDS' until one command returns the exit code 0.
 
+! 'COMMAND'::
+    "!" executes the provided command, but inverts its return value. If the
+    provided command returns a nonzero, "!" returns a 0, if the command returns
+    a zero, "!" returns a 1.
+
 focus_nth 'INDEX'::
     Focuses nth window in a frame. The first window has 'INDEX' 0, if INDEX is
     negative or greater than the last window index, then the last window is

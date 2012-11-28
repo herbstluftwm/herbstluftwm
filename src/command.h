@@ -45,6 +45,7 @@ void complete_against_list(char* needle, char** list, GString* output);
 void complete_against_tags(int argc, char** argv, int pos, GString* output);
 void complete_against_winids(int argc, char** argv, int pos, GString* output);
 void complete_merge_tag(int argc, char** argv, int pos, GString* output);
+void complete_negate(int argc, char** argv, int pos, GString* output);
 void complete_against_settings(int argc, char** argv, int pos, GString* output);
 void complete_against_keybinds(int argc, char** argv, int pos, GString* output);
 int complete_against_commands(int argc, char** argv, int position,
@@ -58,5 +59,6 @@ int command_chain(char* separator, bool (*condition)(int laststatus),
 
 int command_chain_command(int argc, char** argv, GString* output);
 
+int negate_command(int argc, char** argv, GString* output);
 #endif
 
