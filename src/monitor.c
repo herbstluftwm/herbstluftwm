@@ -757,7 +757,7 @@ int monitor_set_tag_by_index_command(int argc, char** argv, GString* output) {
     return ret;
 }
 
-int monitor_focus_command(int argc, char** argv) {
+int monitor_focus_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }

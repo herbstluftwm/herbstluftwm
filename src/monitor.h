@@ -55,7 +55,7 @@ int monitor_get_relative_x(HSMonitor* m, int x_root);
 int monitor_get_relative_y(HSMonitor* m, int y_root);
 int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);
-int monitor_focus_command(int argc, char** argv);
+int monitor_focus_command(int argc, char** argv, GString* output);
 int find_monitor_index_by_name(char* name);
 HSMonitor* find_monitor_by_name(char* name);
 HSMonitor* string_to_monitor(char* string);
