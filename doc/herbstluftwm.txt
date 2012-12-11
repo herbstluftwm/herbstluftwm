@@ -376,9 +376,10 @@ resize 'DIRECTION' 'FRACTIONDELTA'::
         * resize right +0.05
         * resize down -0.1
 
-shift_edge 'DIRECTION'::
+shift_edge ['-i'|'-e'] 'DIRECTION'::
     Shifts the focused window to the the edge of a tag in the specified
-    'DIRECTION'. The 'DIRECTIONS' behave as specified at the 'focus' command.
+    'DIRECTION'. The 'DIRECTIONS' behave as specified at the 'focus' command and
+    '-i' and '-e' behave as specifed at the 'focus_edge' command.
 
 shift ['-i'|'-e'] 'DIRECTION'::
     Shifts the focused window to the next frame in the specified 'DIRECTION'.
