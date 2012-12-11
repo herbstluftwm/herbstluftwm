@@ -1768,8 +1768,18 @@ void frame_update_border(Window window, unsigned long color) {
     }
 }
 
+int frame_focus_edge(int argc, char** argv, GString* output) {
+    // Puts the focus to the edge in the specified direction
+    char* args[] = { "" };
+    monitors_lock_command(LENGTH(args), args);
+    while (0 == frame_focus_command(argc,argv,output))
+        ;
+    monitors_unlock_command(LENGTH(args), args);
+    return 0;
+}
+
 int frame_move_window_edge(int argc, char** argv, GString* output) {
-    // Moves a window to an edge in the specified direction
+    // Moves a window to the edge in the specified direction
     char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);
     while (0 == frame_move_window_command(argc,argv,output))

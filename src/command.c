@@ -77,6 +77,7 @@ struct {
     { "jumpto",         2,  no_completion },
     { "bring",          2,  no_completion },
     { "resize",         3,  no_completion },
+    { "focus_edge",     2,  no_completion },
     { "shift_edge",     2,  no_completion },
     { "shift",          3,  no_completion },
     { "shift",          2,  first_parameter_is_flag },

@@ -339,6 +339,16 @@ focus ['-i'|'-e'] 'DIRECTION'::
     A   B C*  D         '-----''-----'
 ----
 
+focus_edge ['-i'|'-e'] 'DIRECTION'::
+    Focuses the window on the edge of the tag in the specified 'DIRECTION'. The
+    'DIRECTIONS' and behave as specified at the 'focus' command. +
+    +
+    If '-i' (internal) is given or default_direction_external_only is unset,
+    then the window on the edge of the tag will be focused. Else, only the frame
+    on the edge of the tag will be focused, and the window that was last focused
+    in that frame will be focused.
++
+
 raise [urgent|'0xWINID']::
     Raises the specified window, which is an arbitrary urgent window or
     specified by the hexadecimal '0xWINID'. If no or an empty argument is given,

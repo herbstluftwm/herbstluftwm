@@ -169,6 +169,7 @@ int close_or_remove_command(int argc, char** argv);
 void frame_set_visible(HSFrame* frame, bool visible);
 void frame_update_border(Window window, unsigned long color);
 
+int frame_focus_edge(int argc, char** argv, GString* output);
 int frame_move_window_edge(int argc, char** argv, GString* output);
 
 #endif

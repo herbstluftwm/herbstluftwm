@@ -109,6 +109,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "close_or_remove",close_or_remove_command),
     CMD_BIND(             "split",          frame_split_command),
     CMD_BIND(             "resize",         frame_change_fraction_command),
+    CMD_BIND(             "focus_edge",     frame_focus_edge),
     CMD_BIND(             "focus",          frame_focus_command),
     CMD_BIND(             "shift_edge",     frame_move_window_edge),
     CMD_BIND(             "shift",          frame_move_window_command),
