@@ -78,6 +78,7 @@ static HSConditionType g_condition_types[] = {
 
 int     g_maxage_type; // index of "maxage"
 time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
+unsigned long long g_rule_id_index; // incremental index of rule ID
 
 static HSConsequenceType g_consequence_types[] = {
     { "tag",            consequence_tag             },
@@ -98,6 +99,7 @@ GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
 // RULES //
 void rules_init() {
     g_maxage_type = find_condition_type("maxage");
+    g_rule_id_index = 0;
 }
 
 void rules_destroy() {
@@ -231,12 +233,38 @@ void consequence_destroy(HSConsequence* cons) {
     g_free(cons);
 }
 
+bool rule_id_replace(HSRule* rule, char op, char* value, GString* output) {
+    switch (op) {
+        case '=':
+            if (*value == '\0') {
+                g_string_append_printf(output,
+                    "rule: Rule id cannot be empty");
+                return false;
+                break;
+            }
+            g_free(rule->id);
+            rule->id = g_strdup(value);
+            break;
+        default:
+            g_string_append_printf(output,
+                "rule: Unknown rule id operation \"%c\"\n", op);
+            return false;
+            break;
+    }
+    return true;
+}
+
 // rules parsing //
 
 HSRule* rule_create() {
     HSRule* rule = g_new0(HSRule, 1);
     rule->once = false;
     rule->birth_time = get_monotonic_timestamp();
+    // Add name. Defaults to index number.
+    GString* name = g_string_sized_new(20);
+    g_string_printf(name, "%llu", g_rule_id_index++);
+    rule->id = g_strdup(name->str);
+    g_string_free(name, true);
     return rule;
 }
 
@@ -251,6 +279,8 @@ void rule_destroy(HSRule* rule) {
         consequence_destroy(rule->consequences[i]);
     }
     g_free(rule->consequences);
+    // free id
+    g_free(rule->id);
     // free rule itself
     g_free(rule);
 }
@@ -331,6 +361,7 @@ int rule_add_command(int argc, char** argv, GString* output) {
     HSRule* rule = rule_create();
     HSCondition* cond;
     HSConsequence* cons;
+    bool printid = false;
     bool negated = false;
     struct {
         char* name;
@@ -339,6 +370,7 @@ int rule_add_command(int argc, char** argv, GString* output) {
         { "not",    &negated },
         { "!",      &negated },
         { "once",   &rule->once },
+        { "printid",&printid },
     };
 
     // parse rule incrementally. always maintain a correct rule in rule
@@ -385,6 +417,14 @@ int rule_add_command(int argc, char** argv, GString* output) {
             rule_add_consequence(rule, cons);
         }
 
+        // Check for a provided id, and replace default index if so
+        else if (consorcond && (!strcmp(name,"id"))) {
+            if (!rule_id_replace(rule, op, value, output)) {
+                rule_destroy(rule);
+                return HERBST_INVALID_ARGUMENT;
+            }
+        }
+
         else {
             // need to hardcode "rule:" here because args are shifted
             g_string_append_printf(output,
@@ -392,6 +432,10 @@ int rule_add_command(int argc, char** argv, GString* output) {
             rule_destroy(rule);
             return HERBST_INVALID_ARGUMENT;
         }
+    }
+
+    if (printid) {
+       g_string_append_printf(output, "ruleid\t%s\n", rule->id);
     }
 
     g_queue_push_tail(&g_rules, rule);
