@@ -311,6 +311,31 @@ void rule_complete(int argc, char** argv, int pos, GString* output) {
     g_string_free(buf, true);
 }
 
+// Compares the id of two rules.
+static gint rule_compare_id(const HSRule* a, const HSRule* b) {
+    return (!strcmp(a->id, b->id)) ? 0 : -1;
+}
+
+// Looks up rules of a given id and removes them from the queue
+bool rule_find_pop(char* id) {
+    GList* rule = { NULL };
+    bool status = false; // Will be returned as true if any is found
+    HSRule rule_find = { .id = id };
+    while ((rule = g_queue_find_custom(&g_rules, &rule_find,
+                        (GCompareFunc)rule_compare_id))) {
+        // Check if rule with id exists
+        if ( rule == NULL ) {
+            break;
+        }
+        status = true;
+        // If so, clear data
+        rule_destroy(rule->data);
+        // Remove and free empty link
+        g_queue_delete_link(&g_rules, rule);
+    }
+    return status;
+}
+
 // parses an arg like NAME=VALUE to res_name, res_operation and res_value
 bool tokenize_arg(char* condition,
                   char** res_name, char* res_operation, char** res_value) {
@@ -451,12 +476,16 @@ int rule_remove_command(int argc, char** argv, GString* output) {
         // remove all rules
         g_queue_foreach(&g_rules, (GFunc)rule_destroy, NULL);
         g_queue_clear(&g_rules);
+        g_rule_id_index = 0;
         return 0;
     }
 
-    g_string_append_printf(output,
-        "%s: This command must be used with --all/-F\n", argv[0]);
-    return HERBST_INVALID_ARGUMENT;
+    // Deletes rule with given id
+    if (!rule_find_pop(argv[1])) {
+        g_string_append_printf(output, "Couldn't find rule: \"%s\"", argv[1]);
+        return HERBST_INVALID_ARGUMENT;
+    }
+    return 0;
 }
 
 // rules applying //

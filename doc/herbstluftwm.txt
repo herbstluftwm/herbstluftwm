@@ -665,9 +665,9 @@ rule [\[--]'FLAG'|\[--]'ID'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]::
     Defines a rule which will be applied to all new clients. Its behaviour is
     described in the <<RULES,*RULES section*>>.
 
-unrule *--all*|*-F*::
-    If --all or -F is passed, then all rules are removed.
-    (It is not possible yet to remove certain rules)
+unrule 'ID'|*--all*|*-F*::
+    Removes all rules named 'ID'. If --all or -F is passed, then all rules are
+    removed.
 
 fullscreen [*on*|*off*|*toggle*]::
     Sets or toggles the fullscreen state of the focused client. If no argument
