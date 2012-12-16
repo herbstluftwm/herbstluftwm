@@ -19,6 +19,7 @@ Changes:
     * rule id: rules can be given ids with the 'id' property. The id
       can be printed to stdout using the 'printid' flag to the rule command.
       Unrule command accepts ids, and can remove rules individually.
+    * new command: list_rules
 
 Release 0.5.1 on 2013-01-05
 ---------------------------

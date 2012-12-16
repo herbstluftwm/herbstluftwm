@@ -144,15 +144,16 @@ HSCondition* condition_create(int type, char op, char* value, GString* output) {
 
         case '~':
             cond.value_type = CONDITION_VALUE_TYPE_REGEX;
-            int status = regcomp(&cond.value.exp, value, REG_EXTENDED);
+            int status = regcomp(&cond.value.reg.exp, value, REG_EXTENDED);
             if (status != 0) {
                 char buf[ERROR_STRING_BUF_SIZE];
-                regerror(status, &cond.value.exp, buf, ERROR_STRING_BUF_SIZE);
+                regerror(status, &cond.value.reg.exp, buf, ERROR_STRING_BUF_SIZE);
                 g_string_append_printf(output,
                     "rule: Can not parse value \"%s\" from condition \"%s\": \"%s\"\n",
                     value, g_condition_types[type].name, buf);
                 return NULL;
             }
+            cond.value.reg.str = g_strdup(value);
             break;
 
         default:
@@ -179,7 +180,8 @@ void condition_destroy(HSCondition* cond) {
             free(cond->value.str);
             break;
         case CONDITION_VALUE_TYPE_REGEX:
-            regfree(&cond->value.exp);
+            regfree(&cond->value.reg.exp);
+            g_free(cond->value.reg.str);
             break;
         default:
             break;
@@ -334,6 +336,47 @@ bool rule_find_pop(char* id) {
         g_queue_delete_link(&g_rules, rule);
     }
     return status;
+}
+
+// List all rules in queue
+static void rule_print_append_output(HSRule* rule, GString* output) {
+    g_string_append_printf(output, "id=%s\t", rule->id);
+    // Append conditions
+    for (int i = 0; i < rule->condition_count; i++) {
+        if (rule->conditions[i]->negated) { // Include flag if negated
+            g_string_append_printf(output, "not\t");
+        }
+        g_string_append_printf(output, "%s=",
+            g_condition_types[rule->conditions[i]->condition_type].name);
+        switch (rule->conditions[i]->value_type) {
+            case CONDITION_VALUE_TYPE_STRING:
+                g_string_append_printf(output, "%s\t",
+                    rule->conditions[i]->value.str);
+                break;
+            case CONDITION_VALUE_TYPE_REGEX:
+                g_string_append_printf(output, "%s\t",
+                    rule->conditions[i]->value.reg.str);
+                break;
+            default: /* CONDITION_VALUE_TYPE_INTEGER: */
+                g_string_append_printf(output, "%i\t",
+                    rule->conditions[i]->value.integer);
+                break;
+        }
+    }
+    // Append consequences
+    for (int i = 0; i < rule->consequence_count; i++) {
+        g_string_append_printf(output, "%s=%s\t",
+            g_consequence_types[rule->consequences[i]->type].name,
+            rule->consequences[i]->value.str);
+    }
+    // Print new line
+    g_string_append_c(output, '\n');
+}
+
+int rule_print_all_command(int argc, char** argv, GString* output) {
+    // Print entry for each in the queue
+    g_queue_foreach(&g_rules, (GFunc)rule_print_append_output, output);
+    return 0;
 }
 
 // parses an arg like NAME=VALUE to res_name, res_operation and res_value
@@ -582,7 +625,7 @@ bool condition_string(HSCondition* rule, char* string) {
             return !strcmp(string, rule->value.str);
             break;
         case CONDITION_VALUE_TYPE_REGEX:
-            status = regexec(&rule->value.exp, string, 1, &match, 0);
+            status = regexec(&rule->value.reg.exp, string, 1, &match, 0);
             // only accept it, if it matches the entire string
             if (status == 0
                 && match.rm_so == 0

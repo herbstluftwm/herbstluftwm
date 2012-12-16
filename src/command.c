@@ -66,6 +66,7 @@ struct {
     { "list_commands",  1,  no_completion },
     { "list_monitors",  1,  no_completion },
     { "list_keybinds",  1,  no_completion },
+    { "list_rules",     1,  no_completion },
     { "lock",           1,  no_completion },
     { "unlock",         1,  no_completion },
     { "keybind",        2,  keybind_parameter_expected },

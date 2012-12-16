@@ -29,7 +29,10 @@ typedef struct {
     bool negated;
     union {
         char*       str;
-        regex_t     exp;
+        struct {
+            regex_t     exp;
+            char*       str;
+        } reg;
         int         integer;
     } value;
 } HSCondition;
@@ -76,6 +79,7 @@ void rule_complete(int argc, char** argv, int pos, GString* output);
 
 int rule_add_command(int argc, char** argv, GString* output);
 int rule_remove_command(int argc, char** argv, GString* output);
+int rule_print_all_command(int argc, char** argv, GString* output);
 
 #endif
 

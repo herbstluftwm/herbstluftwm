@@ -166,6 +166,10 @@ list_commands::
     List currently configured monitors with their index, area (as rectangle),
     name (if named) and currently viewed tag.
 
+list_rules::
+    Lists all active rules. Each line consists of all the parameters the rule
+    was called with, plus it's id, separated by tabs.
+
 list_keybinds::
     Lists all bound keys with their associated command. Each line consists of
     one key combination and the command with its parameters separated by tabs.

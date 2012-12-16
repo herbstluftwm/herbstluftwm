@@ -147,6 +147,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "raise",          raise_command),
     CMD_BIND(             "rule",           rule_add_command),
     CMD_BIND(             "unrule",         rule_remove_command),
+    CMD_BIND(             "list_rules",     rule_print_all_command),
     CMD_BIND(             "layout",         print_layout_command),
     CMD_BIND(             "stack",          print_stack_command),
     CMD_BIND(             "dump",           print_layout_command),
