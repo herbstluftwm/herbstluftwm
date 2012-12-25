@@ -9,6 +9,7 @@
 #include "ewmh.h"
 #include "clientlist.h"
 #include "ipc-protocol.h"
+#include "hook.h"
 
 #include <glib.h>
 #include "glib-backports.h"
@@ -60,6 +61,7 @@ DECLARE_CONSEQUENCE(consequence_fullscreen);
 DECLARE_CONSEQUENCE(consequence_switchtag);
 DECLARE_CONSEQUENCE(consequence_ewmhrequests);
 DECLARE_CONSEQUENCE(consequence_ewmhnotify);
+DECLARE_CONSEQUENCE(consequence_hook);
 
 /// GLOBALS ///
 
@@ -86,6 +88,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "fullscreen",     consequence_fullscreen      },
     { "ewmhrequests",   consequence_ewmhrequests    },
     { "ewmhnotify",     consequence_ewmhnotify      },
+    { "hook",           consequence_hook            },
 };
 
 GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -644,3 +647,8 @@ void consequence_ewmhnotify(HSConsequence* cons, HSClient* client,
     client->ewmhnotify = string_to_bool(cons->value.str, client->ewmhnotify);
 }
 
+void consequence_hook(HSConsequence* cons, HSClient* client,
+                            HSClientChanges* changes) {
+    char* hook_str[] = { "rule" , cons->value.str };
+    hook_emit(LENGTH(hook_str), hook_str);
+}

@@ -947,6 +947,11 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     sets the fullscreen flag of the client. 'VALUE' can be *on*, *off* or
     *toggle*.
 
++hook+::
+    emits the custom hook +rule+ 'VALUE' when this rule is triggered. This
+    consequence can be used multiple times, which will cause a hook to be
+    emitted for each occurrence of a hook consequence.
+
 A rule's behaviour can be configured by some special 'FLAGS':
 
     * +not+: negates the next 'CONDITION'.

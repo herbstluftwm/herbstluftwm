@@ -28,6 +28,7 @@ Changes:
     * new commands: focus_edge, shift_edge
     * new command: shift_to_monitor
     * optional names for monitors, new command rename_monitor
+    * new consequence: hook
 
 Release: 0.4.1 on 2012-08-30
 ----------------------------
