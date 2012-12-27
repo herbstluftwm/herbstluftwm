@@ -126,8 +126,17 @@ monitors to view two tags at once on a big screen.
 
 Each monitor displays exactly one tag on a specified rectangle on the screen.
 
-A monitor can be referenced in two ways: by its 'INDEX' as listed in the
-*list_monitors* command, or by a name defined when adding the monitor.
+Each monitor may have a name, which can be set via *add_monitor* and
+*rename_monitor*. It can be unset with the *rename_monitor* command. A monitor
+name is an arbitrary non-empty string which must not start with +++, +-+ or any
+digit.
+
+A monitor can be referenced in different ways:
+
+    * by its absolute index as listed in the *list_monitors* command.
+    * by its relative index: a +++ or +-+ followed by a delta, e.g.: +3
+    * by "" (an empty string) which represents the current monitor.
+    * by its name.
 
 
 [[COMMANDS]]
@@ -397,10 +406,8 @@ shift ['-i'|'-e'] 'DIRECTION'::
     If 'focus_follows_shift' is set, then focus stays in the window; otherwise
     it stays in the frame.
 
-shift_to_monitor 'INDEX'::
-    Moves the focused window to the tag on monitor with the specified 'INDEX'.
-    If 'INDEX' starts with +++ or +-+, then 'INDEX' is treated relative to the
-    current monitor.
+shift_to_monitor 'MONITOR'::
+    Moves the focused window to the tag on the specified 'MONITOR'.
 
 remove::
     Removes focused frame and merges its windows to its neighbour frame.

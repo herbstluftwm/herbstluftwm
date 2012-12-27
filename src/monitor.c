@@ -356,13 +356,18 @@ HSMonitor* find_monitor_by_name(char* name) {
 }
 
 int string_to_monitor_index(char* string) {
-    int idx = -1;
     if (string[0] == '\0') {
         return g_cur_monitor;
-    }
-    if (isdigit(string[0])) {
-        // monitor index
-        idx = atoi(string);
+    } else if (string[0] == '-' || string[0] == '+') {
+        // relative monitor index
+        int idx = g_cur_monitor + atoi(string);
+        idx %= g_monitors->len;
+        idx += g_monitors->len;
+        idx %= g_monitors->len;
+        return idx;
+    } else if (isdigit(string[0])) {
+        // absolute monitor index
+        int idx = atoi(string);
         if (idx < 0 || idx >= g_monitors->len) {
             return -1;
         }
@@ -1145,17 +1150,8 @@ int shift_to_monitor(int argc, char** argv, GString* output) {
     if (argc <= 1) {
         return HERBST_NEED_MORE_ARGS;
     }
-    HSMonitor* monitor = NULL;
     char* monitor_str = argv[1];
-    bool is_relative = array_find("+-", 2, sizeof(char), &monitor_str[0]) >= 0;
-    if (is_relative) {
-        int i = atoi(monitor_str);
-        i += g_cur_monitor;
-        i = MOD(i, g_monitors->len);
-        monitor = monitor_with_index(i);
-    } else {
-        monitor = string_to_monitor(monitor_str);
-    }
+    HSMonitor* monitor = string_to_monitor(monitor_str);
     if (!monitor) {
         g_string_append_printf(output,
             "%s: Invalid monitor\n", monitor_str);
