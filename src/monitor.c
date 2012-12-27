@@ -358,7 +358,7 @@ HSMonitor* find_monitor_by_name(char* name) {
 int string_to_monitor_index(char* string) {
     int idx = -1;
     if (string[0] == '\0') {
-        return -1;
+        return g_cur_monitor;
     }
     if (isdigit(string[0])) {
         // monitor index
