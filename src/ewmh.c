@@ -200,6 +200,9 @@ void ewmh_update_client_list_stacking() {
     // Then add all the others at the end
     tag_foreach(ewmh_add_tag_stack, &stack);
 
+    // reverse stacking order, because ewmh requires bottom to top order
+    array_reverse(stack.buf, stack.count, sizeof(stack.buf[0]));
+
     XChangeProperty(g_display, g_root, g_netatom[NetClientListStacking],
         XA_WINDOW, 32, PropModeReplace,
         (unsigned char *) stack.buf, stack.i);
