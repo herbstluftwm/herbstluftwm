@@ -81,6 +81,9 @@ void monitor_apply_layout(HSMonitor* monitor) {
             rect.width -= *g_frame_gap;
         }
         monitor_restack(monitor);
+        if (get_current_monitor() == monitor) {
+            frame_focus_recursive(monitor->tag->frame);
+        }
         if (monitor->tag->floating) {
             frame_apply_floating_layout(monitor->tag->frame, monitor);
         } else {
@@ -88,9 +91,6 @@ void monitor_apply_layout(HSMonitor* monitor) {
             if (!monitor->lock_frames && !monitor->tag->floating) {
                 frame_update_frame_window_visibility(monitor->tag->frame);
             }
-        }
-        if (get_current_monitor() == monitor) {
-            frame_focus_recursive(monitor->tag->frame);
         }
         // remove all enternotify-events from the event queue that were
         // generated while arranging the clients on this monitor
