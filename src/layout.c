@@ -1782,8 +1782,17 @@ int frame_move_window_edge(int argc, char** argv, GString* output) {
     // Moves a window to the edge in the specified direction
     char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);
+    /** TODO: This is only a temporary fix that enforces the while-loop to
+     * terminate. Otherwise it may leed to an endless loop in the case of:
+     *
+     *      focus_follows_shift = 0
+     *      default_direction_external_only = 0
+     */
+    int oldval = *g_focus_follows_shift;
+    *g_focus_follows_shift = 1;
     while (0 == frame_move_window_command(argc,argv,output))
         ;
+    *g_focus_follows_shift = oldval;
     monitors_unlock_command(LENGTH(args), args);
     return 0;
 }
