@@ -191,3 +191,31 @@ Q: I set default_frame_layout to my favorite layout but it doesn't work with the
     ones), so be sure to set it *before* creating any tags. A current
     workaround is to put +hc split vertical 0.5; hc remove+ at the end in your
     autostart file.  You can also 'cycle_layout' in existing tags.
+
+[[PANELS]]
+Q: How can I start external panels correctly?::
+    The cleanest solution to start the external EWMH panel (like +xfce4-panel+)
+    from the autostart and manually reserve some space for it. Also start
+    +herbstclient+ instance that knows when to kill the panel again so that
+    there aren't multiple instances when reloading the autostart multiple
+    times. Append the following code to your +bash+ autostart (assuming the
+    panel needs 31 pixels at the bottom of monitor 0):
++
+----
+# add a external panel
+{
+    pids=( )
+    # reserve some space for the panel on monitor 0
+    hc pad 0 "" "" 31
+    # start the panel itself and remember its pid
+    xfce4-panel -d --sm-client-disable &
+    pids+=( $! )
+    # or start another panel:
+    # mypanel &
+    # pids+=( $! )
+    # wait until the panels should be stopped
+    herbstclient -w '(quit_panel|reload)'
+    # stopp all started panels
+    kill ${pids[@]}
+} &
+----
