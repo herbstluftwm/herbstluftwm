@@ -291,7 +291,7 @@ void window_focus(Window window) {
     if (!client->neverfocus) {
         XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
     }
-    client_sendevent(client, g_wmatom[WMTakeFocus]);
+    else client_sendevent(client, g_wmatom[WMTakeFocus]);
 
     if (window != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
