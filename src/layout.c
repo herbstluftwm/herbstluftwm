@@ -877,7 +877,7 @@ static void frame_update_frame_window_visibility_helper(HSFrame* frame) {
 }
 
 void frame_update_frame_window_visibility(HSFrame* frame) {
-    frame_do_recursive(frame, frame_update_frame_window_visibility_helper, 0);
+    frame_do_recursive(frame, frame_update_frame_window_visibility_helper, 2);
 }
 
 HSFrame* frame_current_selection() {

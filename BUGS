@@ -47,6 +47,10 @@ Some BUGS:
       terminal content is drawn with the requested size first and again with
       the actual size. This bug only occurs at certain widths of
       gnome-terminal.
+    - Do not flicker when removing a frame. Currently first the children frame
+      is destroyed (especially hidden) and then the parent frame is shown
+      again. The fix is to first show the parent frame (above of the children
+      frames) and then hide the children.
 
 Planned features:
 
