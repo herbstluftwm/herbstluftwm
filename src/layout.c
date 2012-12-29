@@ -1548,10 +1548,12 @@ bool focus_window(Window win, bool switch_tag, bool switch_monitor) {
             assert(cur_mon == monitor);
         }
     }
+    monitors_lock();
     monitor_set_tag(cur_mon, tag);
     cur_mon = get_current_monitor();
     if (cur_mon->tag != tag) {
         // could not set tag on monitor
+        monitors_unlock();
         return false;
     }
     // now the right tag is visible
@@ -1559,6 +1561,7 @@ bool focus_window(Window win, bool switch_tag, bool switch_monitor) {
     bool found = frame_focus_window(tag->frame, win);
     frame_focus_recursive(tag->frame);
     monitor_apply_layout(cur_mon);
+    monitors_unlock();
     return found;
 }
 
