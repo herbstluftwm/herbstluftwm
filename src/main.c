@@ -901,7 +901,9 @@ int main(int argc, char* argv[]) {
             XNextEvent(g_display, &event);
             void (*handler) (XEvent*) = g_default_handler[event.type];
             if (handler != NULL) {
+                monitors_lock();
                 handler(&event);
+                monitors_unlock();
             }
         }
     }

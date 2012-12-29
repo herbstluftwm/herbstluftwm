@@ -932,6 +932,11 @@ HSMonitor* monitor_with_index(int index) {
 }
 
 int monitors_lock_command(int argc, char** argv) {
+    monitors_lock();
+    return 0;
+}
+
+void monitors_lock() {
     // lock-number must never be negative
     // ensure that lock value is valid
     if (*g_monitors_locked < 0) {
@@ -940,10 +945,14 @@ int monitors_lock_command(int argc, char** argv) {
     // increase lock => it is definitely > 0, i.e. locked
     (*g_monitors_locked)++;
     monitors_lock_changed();
-    return 0;
 }
 
 int monitors_unlock_command(int argc, char** argv) {
+    monitors_unlock();
+    return 0;
+}
+
+void monitors_unlock() {
     // lock-number must never be lower than 1 if unlocking
     // so: ensure that lock value is valid
     if (*g_monitors_locked < 1) {
@@ -952,7 +961,6 @@ int monitors_unlock_command(int argc, char** argv) {
     // decrease lock => unlock
     (*g_monitors_locked)--;
     monitors_lock_changed();
-    return 0;
 }
 
 void monitors_lock_changed() {
