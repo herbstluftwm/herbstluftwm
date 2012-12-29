@@ -34,7 +34,6 @@ int* g_frame_border_width;
 int* g_frame_border_inner_width;
 int* g_always_show_frame;
 int* g_default_frame_layout;
-int* g_focus_follows_shift;
 int* g_frame_bg_transparent;
 int* g_direction_external_only;
 int* g_gapless_grid;
@@ -68,7 +67,6 @@ static void fetch_frame_colors() {
     g_frame_gap = &(settings_find("frame_gap")->value.i);
     g_frame_padding = &(settings_find("frame_padding")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
-    g_focus_follows_shift = &(settings_find("focus_follows_shift")->value.i);
     g_frame_border_width = &(settings_find("frame_border_width")->value.i);
     g_frame_border_inner_width = &(settings_find("frame_border_inner_width")->value.i);
     g_always_show_frame = &(settings_find("always_show_frame")->value.i);
@@ -1411,9 +1409,7 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
         buf[selection] = buf[index];
         buf[index] = tmp;
 
-        if (*g_focus_follows_shift) {
-            g_cur_frame->content.clients.selection = index;
-        }
+        g_cur_frame->content.clients.selection = index;
         frame_focus_recursive(g_cur_frame);
         monitor_apply_layout(get_current_monitor());
     } else {
@@ -1423,28 +1419,26 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
             // move window to neighbour
             frame_remove_window(g_cur_frame, win);
             frame_insert_window(neighbour, win);
-            if (*g_focus_follows_shift) {
-                // change selection in parent
-                HSFrame* parent = neighbour->parent;
-                assert(parent);
-                parent->content.layout.selection = ! parent->content.layout.selection;
-                frame_focus_recursive(parent);
-                // focus right window in frame
-                HSFrame* frame = g_cur_frame;
-                assert(frame);
-                int i;
-                Window* buf = frame->content.clients.buf;
-                size_t count = frame->content.clients.count;
-                for (i = 0; i < count; i++) {
-                    if (buf[i] == win) {
-                        frame->content.clients.selection = i;
-                        window_focus(buf[i]);
-                        break;
-                    }
+
+            // change selection in parent
+            HSFrame* parent = neighbour->parent;
+            assert(parent);
+            parent->content.layout.selection = ! parent->content.layout.selection;
+            frame_focus_recursive(parent);
+            // focus right window in frame
+            HSFrame* frame = g_cur_frame;
+            assert(frame);
+            int i;
+            Window* buf = frame->content.clients.buf;
+            size_t count = frame->content.clients.count;
+            for (i = 0; i < count; i++) {
+                if (buf[i] == win) {
+                    frame->content.clients.selection = i;
+                    window_focus(buf[i]);
+                    break;
                 }
-            } else {
-                frame_focus_recursive(g_cur_frame);
             }
+
             // layout was changed, so update it
             monitor_apply_layout(get_current_monitor());
         } else {
@@ -1785,17 +1779,8 @@ int frame_move_window_edge(int argc, char** argv, GString* output) {
     // Moves a window to the edge in the specified direction
     char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);
-    /** TODO: This is only a temporary fix that enforces the while-loop to
-     * terminate. Otherwise it may leed to an endless loop in the case of:
-     *
-     *      focus_follows_shift = 0
-     *      default_direction_external_only = 0
-     */
-    int oldval = *g_focus_follows_shift;
-    *g_focus_follows_shift = 1;
     while (0 == frame_move_window_command(argc,argv,output))
         ;
-    *g_focus_follows_shift = oldval;
     monitors_unlock_command(LENGTH(args), args);
     return 0;
 }

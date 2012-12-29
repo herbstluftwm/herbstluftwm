@@ -19,6 +19,9 @@ As a result from adding monitor names, the output of list_monitors and stack
 changes a bit for named monitors. list_padding only outputs the padding for one
 monitor now.
 
+The setting focus_follows_shift has been removed. The behaviour now is set like
+it were set to 1; the focus always follows the shift now.
+
 0.3 to 0.4
 ~~~~~~~~~~
 The setting window_gap is now called frame_gap. Simply replace all occurrences

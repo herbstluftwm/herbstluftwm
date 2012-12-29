@@ -64,7 +64,6 @@ SettingsPair g_settings[] = {
     SET_INT(    "always_show_frame",               0,           RELAYOUT    ),
     SET_INT(    "default_direction_external_only", 0,           NULL        ),
     SET_INT(    "default_frame_layout",            0,           FR_COLORS   ),
-    SET_INT(    "focus_follows_shift",             1,           NULL        ),
     SET_INT(    "focus_follows_mouse",             0,           NULL        ),
     SET_INT(    "focus_stealing_prevention",       1,           NULL        ),
     SET_INT(    "swap_monitors_to_get_tag",        1,           NULL        ),

@@ -3,6 +3,10 @@ herbstluftwm NEWS -- History of user-visible changes
 
 Next Release: 0.5
 -----------------
+Incompatible changes:
+
+    * The setting focus_follows_shift has been removed. The behaviour now is
+      set like it were set to 1; the focus always follows the shift now.
 
 Changes:
 
