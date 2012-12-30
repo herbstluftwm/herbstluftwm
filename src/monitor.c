@@ -388,6 +388,7 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     HSMonitor* m = g_new0(HSMonitor, 1);
     m->rect = rect;
     m->tag = tag;
+    m->tag_previous = tag;
     m->name = (name ? g_string_new(name) : NULL);
     m->mouse.x = 0;
     m->mouse.y = 0;
@@ -1175,3 +1176,12 @@ int shift_to_monitor(int argc, char** argv, GString* output) {
     return 0;
 }
 
+void all_monitors_replace_previous_tag(HSTag *old, HSTag *new) {
+    int i;
+    for (i = 0; i < g_monitors->len; i++) {
+        HSMonitor* m = monitor_with_index(i);
+        if (m->tag_previous == old) {
+            m->tag_previous = new;
+        }
+    }
+}

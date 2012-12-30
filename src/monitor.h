@@ -20,6 +20,7 @@ struct HSStack;
 
 typedef struct HSMonitor {
     struct HSTag*      tag;    // currently viewed tag
+    struct HSTag*      tag_previous;    // previously viewed tag
     struct HSSlice*    slice;  // slice in the monitor stack
     GString*    name;
     int         pad_up;
@@ -88,6 +89,7 @@ int monitor_unlock_tag_command(int argc, char** argv, GString* output);
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
+void all_monitors_replace_previous_tag(struct HSTag* old, struct HSTag* new);
 
 void monitor_restack(HSMonitor* monitor);
 int monitor_stack_window_count(bool only_clients);
