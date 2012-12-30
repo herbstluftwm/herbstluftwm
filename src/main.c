@@ -124,6 +124,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "add",            tag_add_command),
     CMD_BIND(             "use",            monitor_set_tag_command),
     CMD_BIND(             "use_index",      monitor_set_tag_by_index_command),
+    CMD_BIND(             "use_previous",   monitor_set_previous_tag_command),
     CMD_BIND(             "jumpto",         jumpto_command),
     CMD_BIND(             "floating",       tag_set_floating_command),
     CMD_BIND_NO_OUTPUT(   "fullscreen",     client_set_property_command),

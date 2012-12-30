@@ -92,6 +92,7 @@ struct {
     { "add",            2,  no_completion },
     { "use",            2,  no_completion },
     { "use_index",      3,  no_completion },
+    { "use_previous",   1,  no_completion },
     { "merge_tag",      3,  no_completion },
     { "rename",         3,  no_completion },
     { "move",           2,  no_completion },

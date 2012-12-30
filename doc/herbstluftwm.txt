@@ -457,6 +457,9 @@ use_index 'INDEX' [*--skip-visible*]::
 
         * use_index -1 --skip-visible
 
+use_previous::
+    Switches the focused monitor to the previously viewed tag.
+
 merge_tag 'TAG' ['TARGET']::
     Removes tag named 'TAG' and moves all its windows to tag 'TARGET'. If
     'TARGET' is omitted, the focused tag will be used.

@@ -79,6 +79,7 @@ int monitor_set_tag(HSMonitor* monitor, struct HSTag* tag);
 int monitor_set_pad_command(int argc, char** argv, GString* output);
 int monitor_set_tag_command(int argc, char** argv, GString* output);
 int monitor_set_tag_by_index_command(int argc, char** argv, GString* output);
+int monitor_set_previous_tag_command(int argc, char** argv, GString* output);
 void monitors_lock();
 void monitors_unlock();
 int monitors_lock_command(int argc, char** argv);
