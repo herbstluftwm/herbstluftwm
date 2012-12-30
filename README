@@ -21,11 +21,9 @@ A list of known bugs is listed in BUGS. If you found other bugs or want to
 request features then contact the mailing list. (The subscription process is
 explained in the HACKING file).
 
-    herbstluftwm-devel@lists.sourceforge.net
+Mailing list: herbstluftwm-devel@lists.sourceforge.net
 
-For instant help join the IRC channel:
-
-    #herbstluftwm on irc.freenode.net
+For instant help join the IRC channel: #herbstluftwm on irc.freenode.net
 
 ==== Steps with installing ====
 If you are using a system with a package manager, then install it via the
@@ -45,24 +43,25 @@ SYSCONFDIR = $(DESTDIR)/etc/    # path to etc directory
 Normally you should build it with DESTDIR=/ and install it with
 DESTDIR=./path/to/fakeroot if you are building a package.
 
-# as user
-make DESTDIR=/
-# as root
-make DESTDIR=./build/ install
-# as user
-mkdir -p ~/.config/herbstluftwm/
-cp /etc/xdg/herbstluftwm/autostart ~/.config/herbstluftwm/autostart
+    make DESTDIR=/
+    sudo make DESTDIR=./build/ install
+    mkdir -p ~/.config/herbstluftwm/
+    cp /etc/xdg/herbstluftwm/autostart ~/.config/herbstluftwm/autostart
 
 ==== First steps without installing ====
-# 1. compile it
-make
-# 2. copy ipc-client/herbstclient to a bin-folder or adjust path in autostart file
-# 3. copy default autostart file to the config-dir (~/.config/herbstluftwm/)
-mkdir -p "$XDG_CONFIG_HOME/herbstluftwm"
-cp share/autostart "$XDG_CONFIG_HOME"/herbstluftwm
-# 4. add the share/herbstclient-completion to your /etc/bash_completion.d/ folder
-#    or source it in your bashrc
-# 5. run it in a session that has no windowmanager yet
+1. compile it:
+
+    make
+
+2. copy herbstclient to a bin-folder or adjust path in autostart file
+3. copy default autostart file to the config-dir:
+
+    mkdir -p ~/.config/herbstluftwm
+    cp share/autostart ~/.config/herbstluftwm/
+
+4. add the share/herbstclient-completion to your /etc/bash_completion.d/ folder
+   or source it in your bashrc
+5. run it in a session that has no windowmanager yet
 
 ==== Starting it ====
 Start it within a running X-session with:
