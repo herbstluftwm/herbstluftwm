@@ -70,6 +70,10 @@ EOF
 done
 cat <<EOF
      <td class="notab spacing">&nbsp</td>
+     <td class="notab"><a href="http://wiki.herbstluftwm.org">Wiki</a></td>
+EOF
+cat <<EOF
+     <td class="notab spacing">&nbsp</td>
     </tr>
     </table>
 EOF
