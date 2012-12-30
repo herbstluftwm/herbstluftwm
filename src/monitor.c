@@ -701,6 +701,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             // but if the tag is already visible, change to the
             // displaying monitor
             monitor_focus_by_index(monitor_index_of(other));
+            return 0;
         }
         return 1;
     }
@@ -710,7 +711,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
                 // the monitor we want to steal the tag from is
                 // locked. focus that monitor instead
                 monitor_focus_by_index(monitor_index_of(other));
-                return 1;
+                return 0;
             }
             // swap tags
             other->tag = monitor->tag;
@@ -770,12 +771,17 @@ int monitor_set_tag_command(int argc, char** argv, GString* output) {
         int ret = monitor_set_tag(monitor, tag);
         if (ret != 0) {
             g_string_append_printf(output,
-                "%s: Could not change tag (maybe monitor is locked?)\n", argv[0]);
+                "%s: Could not change tag", argv[0]);
+            if (monitor->lock_tag) {
+                g_string_append_printf(output,
+                    " (monitor %d is locked)", monitor_index_of(monitor));
+            }
+            g_string_append_printf(output, "\n");
         }
         return ret;
     } else {
         g_string_append_printf(output,
-            "%s: Invalid monitor or tag\n", argv[0]);
+            "%s: Invalid tag \"%s\"\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
 }
