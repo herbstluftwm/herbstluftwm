@@ -23,3 +23,11 @@ doc/herbstluftwm-tutorial.html
 # ignore build dirs
 build/
 etc/
+
+# ignore tag files
+src/tags
+src/TAGS
+ipc-client/tags
+ipc-client/TAGS
+
+
