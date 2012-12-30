@@ -735,6 +735,8 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
         return 0;
     }
     HSTag* old_tag = monitor->tag;
+    // save old tag
+    monitor->tag_previous = old_tag;
     // 1. show new tag
     monitor->tag = tag;
     // first reset focus and arrange windows

@@ -196,13 +196,13 @@ int tag_remove_command(int argc, char** argv, GString* output) {
             "%s: Cannot merge tag \"%s\" into itself\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
-    HSMonitor* monitor = find_monitor_with_tag(tag);
-    HSMonitor* monitor_target = find_monitor_with_tag(target);
-    if (monitor) {
+    if (find_monitor_with_tag(tag)) {
         g_string_append_printf(output,
             "%s: Cannot merge the currently viewed tag\n", argv[0]);
         return HERBST_TAG_IN_USE;
     }
+    // prevent dangling tag_previous pointers
+    all_monitors_replace_previous_tag(tag, target);
     // save all these windows
     Window* buf;
     size_t count;
@@ -217,6 +217,7 @@ int tag_remove_command(int argc, char** argv, GString* output) {
         ewmh_window_update_tag(client->window, client->tag);
         frame_insert_window(target->frame, buf[i]);
     }
+    HSMonitor* monitor_target = find_monitor_with_tag(target);
     if (monitor_target) {
         // if target monitor is viewed, then show windows
         monitor_apply_layout(monitor_target);
