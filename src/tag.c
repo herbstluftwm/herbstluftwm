@@ -211,7 +211,9 @@ int tag_remove_command(int argc, char** argv, GString* output) {
     int i;
     for (i = 0; i < count; i++) {
         HSClient* client = get_client_from_window(buf[i]);
+        stack_remove_slice(client->tag->stack, client->slice);
         client->tag = target;
+        stack_insert_slice(client->tag->stack, client->slice);
         ewmh_window_update_tag(client->window, client->tag);
         frame_insert_window(target->frame, buf[i]);
     }
