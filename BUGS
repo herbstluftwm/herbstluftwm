@@ -15,8 +15,6 @@ Some BUGS:
       enternotify event.
     - herbstclient: add timeout if server does not respond
     - herbstclient: errorstatus2string2stderr
-    - add_monitor flickers: the windows on the tag are shown for a short time
-      at their last position.
     - add function to put window into tag (and use it in manage, merge_tag,
       move)
     - the default panel.sh spawns too many shells and does not clean them up

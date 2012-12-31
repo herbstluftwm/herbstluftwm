@@ -448,8 +448,8 @@ int add_monitor_command(int argc, char** argv, GString* output) {
         }
     }
     HSMonitor* monitor = add_monitor(rect, tag, name);
-    frame_show_recursive(tag->frame);
     monitor_apply_layout(monitor);
+    frame_show_recursive(tag->frame);
     emit_tag_changed(tag, g_monitors->len - 1);
     return 0;
 }
