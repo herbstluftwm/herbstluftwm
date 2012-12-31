@@ -3,7 +3,7 @@
 VERSION="$1"
 
 if [ -z "$1" ] || [ "$1" = -h ] ; then
-    echo "$0 VERSIONMAJOR.VERSIONMINOR"
+    echo "$0 VERSIONMAJOR.VERSIONMINOR.VERSIONPATCH"
     echo "  Releases the specified version (tagging and tarball creation)"
     exit 0
 fi
@@ -13,14 +13,14 @@ if git status --porcelain | grep '^ M' ; then
     exit 1
 fi
 
-VERSION_MAJOR="${VERSION%.*}"
-VERSION_MINOR="${VERSION#*.}"
+VERSIONARGS=( $(tr . ' ' <<< "$VERSION") )
 
 
 echo "==> Release commit"
 echo ":: Patching version.mk"
-sed -i "s/^VERSION_MAJOR.*$/VERSION_MAJOR = $VERSION_MAJOR/" version.mk
-sed -i "s/^VERSION_MINOR.*$/VERSION_MINOR = $VERSION_MINOR/" version.mk
+sed -i "s/^VERSION_MAJOR.*$/VERSION_MAJOR = ${VERSIONARGS[0]}/" version.mk
+sed -i "s/^VERSION_MINOR.*$/VERSION_MINOR = ${VERSIONARGS[1]}/" version.mk
+sed -i "s/^VERSION_PATCH.*$/VERSION_PATCH = ${VERSIONARGS[2]}/" version.mk
 
 echo ":: Patching NEWS"
 date=$(date +%Y-%m-%d)
