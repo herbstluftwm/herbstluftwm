@@ -11,8 +11,12 @@ Some BUGS:
       herbstluftwm-focus goes away
     - don't always re-layout all if only one thing changes (e.g. border_color)
     - don't reset border width on each layouting
+    - don't call monitor_apply_layout() if only the focus changes, e.g. on an
+      enternotify event.
     - herbstclient: add timeout if server does not respond
     - herbstclient: errorstatus2string2stderr
+    - add_monitor flickers: the windows on the tag are shown for a short time
+      at their last position.
     - add function to put window into tag (and use it in manage, merge_tag,
       move)
     - the default panel.sh spawns too many shells and does not clean them up
