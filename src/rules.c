@@ -314,6 +314,7 @@ int rule_add_command(int argc, char** argv, GString* output) {
         { "once",   &rule->once },
     };
 
+    // parse rule incrementally. always maintain a correct rule in rule
     while (SHIFT(argc, argv)) {
         char* name;
         char* value;
@@ -361,6 +362,7 @@ int rule_add_command(int argc, char** argv, GString* output) {
             // need to hardcode "rule:" here because args are shifted
             g_string_append_printf(output,
                 "rule: Unknown argument \"%s\"\n", *argv);
+            rule_destroy(rule);
             return HERBST_INVALID_ARGUMENT;
         }
     }
