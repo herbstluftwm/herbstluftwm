@@ -19,6 +19,19 @@ hc() {
     herbstclient "$@" ;
 }
 
+mrect=( $(hc monitor_rect -p "" ) )
+termwidth=$(((${mrect[2]}*8)/10))
+termheight=400
+
+rect=(
+    $termwidth
+    $termheight
+    $((${mrect[0]}+(${mrect[2]}-termwidth)/2))
+    $((${mrect[1]}-termheight))
+)
+
+y_line=${mrect[1]}
+
 
 hc add scratchpad
 
@@ -49,19 +62,6 @@ animate() {
 }
 
 show() {
-
-    mrect=( $(hc monitor_rect -p "" ) )
-    termwidth=$(((${mrect[2]}*8)/10))
-    termheight=400
-
-    rect=(
-        $termwidth
-        $termheight
-        $((${mrect[0]}+(${mrect[2]}-termwidth)/2))
-        $((${mrect[1]}-termheight))
-    )
-
-    y_line=${mrect[1]}
 
     hc lock
     hc raise_monitor $monitor
