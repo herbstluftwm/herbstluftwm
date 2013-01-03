@@ -18,7 +18,7 @@ HERBSTCLIENTDOC = doc/herbstclient.txt
 HERBSTLUFTWMDOC = doc/herbstluftwm.txt
 TUTORIAL = doc/herbstluftwm-tutorial.txt
 
-.PHONY: depend all all-nodoc doc install info www
+.PHONY: depend all all-nodoc doc install install-nodoc info www
 .PHONY: cleandoc cleanwww cleandeps clean
 
 all: $(TARGETS) doc
@@ -90,12 +90,23 @@ doc/%.html: doc/%.txt version.mk
 	$(call colorecho,DOC,$@)
 	$(VERBOSE) $(ASCIIDOC) $<
 
-install: all
+install: all install-nodoc
+	@echo "==> creating dirs..."
+	$(MKDIR) '$(DESTDIR)/$(MAN1DIR)'
+	$(MKDIR) '$(DESTDIR)/$(MAN7DIR)'
+	$(MKDIR) '$(DESTDIR)/$(DOCDIR)'
+	@echo "==> copying files..."
+	$(INSTALL) -m 644 doc/herbstclient.1 '$(DESTDIR)/$(MAN1DIR)/'
+	$(INSTALL) -m 644 doc/herbstluftwm.1 '$(DESTDIR)/$(MAN1DIR)/'
+	$(INSTALL) -m 644 doc/herbstluftwm-tutorial.7 '$(DESTDIR)/$(MAN7DIR)/'
+	$(INSTALL) -m 644 doc/herbstclient.html '$(DESTDIR)/$(DOCDIR)/'
+	$(INSTALL) -m 644 doc/herbstluftwm.html '$(DESTDIR)/$(DOCDIR)/'
+	$(INSTALL) -m 644 doc/herbstluftwm-tutorial.html '$(DESTDIR)/$(DOCDIR)/'
+
+install-nodoc: all-nodoc
 	@echo "==> creating dirs..."
 	$(MKDIR) '$(DESTDIR)/$(LICENSEDIR)'
 	$(MKDIR) '$(DESTDIR)/$(BINDIR)'
-	$(MKDIR) '$(DESTDIR)/$(MAN1DIR)'
-	$(MKDIR) '$(DESTDIR)/$(MAN7DIR)'
 	$(MKDIR) '$(DESTDIR)/$(DOCDIR)'
 	$(MKDIR) '$(DESTDIR)/$(EXAMPLESDIR)'
 	$(MKDIR) '$(DESTDIR)/$(BASHCOMPLETIONDIR)'
@@ -105,12 +116,6 @@ install: all
 	@echo "==> copying files..."
 	$(INSTALL) $(TARGETS) '$(DESTDIR)/$(BINDIR)'
 	$(INSTALL) -m 644 LICENSE '$(DESTDIR)/$(LICENSEDIR)'
-	$(INSTALL) -m 644 doc/herbstclient.1 '$(DESTDIR)/$(MAN1DIR)/'
-	$(INSTALL) -m 644 doc/herbstluftwm.1 '$(DESTDIR)/$(MAN1DIR)/'
-	$(INSTALL) -m 644 doc/herbstluftwm-tutorial.7 '$(DESTDIR)/$(MAN7DIR)/'
-	$(INSTALL) -m 644 doc/herbstclient.html '$(DESTDIR)/$(DOCDIR)/'
-	$(INSTALL) -m 644 doc/herbstluftwm.html '$(DESTDIR)/$(DOCDIR)/'
-	$(INSTALL) -m 644 doc/herbstluftwm-tutorial.html '$(DESTDIR)/$(DOCDIR)/'
 	$(INSTALL) -m 644 BUGS '$(DESTDIR)/$(DOCDIR)/'
 	$(INSTALL) -m 644 NEWS '$(DESTDIR)/$(DOCDIR)/'
 	$(INSTALL) -m 644 README '$(DESTDIR)/$(DOCDIR)/'
@@ -122,6 +127,8 @@ install: all
 	$(INSTALL) -m 644 share/herbstluftwm.desktop '$(DESTDIR)/$(XSESSIONSDIR)/'
 	$(INSTALL) -m 644 scripts/README '$(DESTDIR)/$(EXAMPLESDIR)/'
 	$(INSTALL) -m 755 scripts/*.sh '$(DESTDIR)/$(EXAMPLESDIR)/'
+
+
 
 uninstall:
 	@echo "==> deleting files..."
