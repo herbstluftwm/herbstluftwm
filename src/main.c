@@ -265,7 +265,6 @@ int load_command(int argc, char** argv, GString* output) {
 
 int print_tag_status_command(int argc, char** argv, GString* output) {
     HSMonitor* monitor;
-    int monitor_index = g_cur_monitor;
     if (argc >= 2) {
         monitor = string_to_monitor(argv[1]);
     } else {
@@ -288,7 +287,7 @@ int print_tag_status_command(int argc, char** argv, GString* output) {
         HSMonitor *tag_monitor = find_monitor_with_tag(tag);
         if (tag_monitor == monitor) {
             c = '+';
-            if (monitor_index == g_cur_monitor) {
+            if (monitor == get_current_monitor()) {
                 c = '#';
             }
         } else if (tag_monitor) {
