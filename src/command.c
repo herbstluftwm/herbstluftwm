@@ -578,7 +578,6 @@ bool keybind_parameter_expected(int argc, char** argv, int pos) {
 int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, GString* output) {
     size_t uargc = argc;
-    printf("finding %s in %d elements\n", separator, argc);
     char** next_sep = lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
     int command_argc = next_sep ? (int)(next_sep - argv) : argc;
     int status = call_command(command_argc, argv, output);
