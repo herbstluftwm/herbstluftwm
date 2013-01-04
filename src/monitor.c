@@ -505,6 +505,9 @@ int remove_monitor(int index) {
         g_cur_monitor--;
         // if selection has changed, then relayout focused monitor
         monitor_apply_layout(get_current_monitor());
+        // also announce the new selection
+        ewmh_update_current_desktop();
+        emit_tag_changed(get_current_monitor()->tag, g_cur_monitor);
     }
     return 0;
 }
