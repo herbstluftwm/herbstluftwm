@@ -58,6 +58,7 @@ the most current released tarball:
 | 0.4     | 2012-08-18 | 698b43bde76f9...               | link:tarballs/herbstluftwm-0.4.tar.gz[tar.gz]
 | 0.4.1   | 2012-08-30 | 2cf235dd9e0c4...               | link:tarballs/herbstluftwm-0.4.1.tar.gz[tar.gz]
 | 0.5.0   | 2012-12-31 | ed28cc9d89d5f...               | link:tarballs/herbstluftwm-0.5.0.tar.gz[tar.gz]
+| 0.5.1   | 2013-01-05 | c6ea924d947df...               | link:tarballs/herbstluftwm-0.5.1.tar.gz[tar.gz]
 // do not remove this: next version line will be added here
 |==========================================================================================================
 
