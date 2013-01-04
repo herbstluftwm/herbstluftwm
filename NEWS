@@ -7,6 +7,9 @@ Changes:
 
     * new command: use_previous
     * Makefile: new target: install-nodoc -- install without man/html-docs
+    * fixup of the + flag in tag_status
+    * fixup of the example script q3terminal.sh
+    * announce it if the tag changes due to remove_monitor
 
 Release 0.5.0 on 2012-12-31
 ---------------------------
