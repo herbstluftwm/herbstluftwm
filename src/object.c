@@ -15,6 +15,9 @@ typedef struct {
     HSObject*   child;
 } HSObjectChild;
 
+static void hsobjectchild_destroy(HSObjectChild* oc);
+static HSObjectChild* hsobjectchild_create(char* name, HSObject* obj);
+
 static HSObject g_root_object;
 
 void object_tree_init() {
@@ -35,12 +38,20 @@ bool hsobject_init(HSObject* obj) {
 }
 
 void hsobject_free(HSObject* obj) {
+    g_list_free_full(obj->children, (GDestroyNotify)hsobjectchild_destroy);
 }
 
-void hsobject_link(HSObject* parent, HSObject* child, char* name) {
+HSObjectChild* hsobjectchild_create(char* name, HSObject* obj) {
+    HSObjectChild* oc = g_new(HSObjectChild, 1);
+    oc->name = g_strdup(name);
+    oc->child = obj;
+    return oc;
 }
 
-void hsobject_unlink(HSObject* parent, HSObject* child) {
+void hsobjectchild_destroy(HSObjectChild* oc) {
+    if (!oc) return;
+    g_free(oc->name);
+    g_free(oc);
 }
 
 struct HSObjectComplChild {
@@ -60,6 +71,34 @@ void hsobject_complete_children(HSObject* obj, char* needle, GString* output) {
 static int child_check_name(HSObjectChild* child, char* name) {
     return strcmp(child->name, name);
 }
+
+void hsobject_link(HSObject* parent, HSObject* child, char* name) {
+    GList* elem = g_list_find_custom(parent->children, name,
+                                     (GCompareFunc)child_check_name);
+    if (!elem) {
+        // create a new child node
+        HSObjectChild* oc = hsobjectchild_create(name, child);
+        parent->children = g_list_append(parent->children, oc);
+    } else {
+        // replace it
+        HSObjectChild* oc = (HSObjectChild*) elem->data;
+        oc->child = child;
+    }
+}
+
+static int child_check_object(HSObjectChild* child, HSObject* obj) {
+    return child->child == obj;
+}
+
+void hsobject_unlink(HSObject* parent, HSObject* child) {
+    GList* elem = g_list_find_custom(parent->children, child,
+                                     (GCompareFunc)child_check_object);
+    if (elem) {
+        hsobjectchild_destroy((HSObjectChild*)elem->data);
+        parent->children = g_list_delete_link(parent->children, elem);
+    }
+}
+
 
 HSObject* hsobject_find_child(HSObject* obj, char* name) {
     GList* elem = g_list_find_custom(obj->children, name,
