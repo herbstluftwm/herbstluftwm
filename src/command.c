@@ -332,12 +332,21 @@ void complete_against_monitors(int argc, char** argv, int pos, GString* output) 
     } else {
         needle = argv[pos];
     }
+    // complete against relative indices
+    try_complete(needle, "-1", output);
+    try_complete(needle, "+1", output);
+    GString* index_str = g_string_sized_new(10);
     for (int i = 0; i < monitor_count(); i++) {
+        // complete against the absolute index
+        g_string_printf(index_str, "%d", i);
+        try_complete(needle, index_str->str, output);
+        // complete against the name
         GString* name = monitor_with_index(i)->name;
         if (name != NULL) {
             try_complete(needle, name->str, output);
         }
     }
+    g_string_free(index_str, true);
 }
 
 struct wcd { /* window id completion data */
