@@ -14,6 +14,7 @@
 #include <stdbool.h>
 
 #include "layout.h"
+#include "object.h"
 
 struct HSSlice;
 
@@ -32,6 +33,7 @@ typedef struct HSClient {
     bool        ewmhrequests; // accept ewmh-requests for this client
     bool        ewmhnotify; // send ewmh-notifications for this client
     int         pid;
+    HSObject    object;
     struct HSSlice* slice;
 } HSClient;
 

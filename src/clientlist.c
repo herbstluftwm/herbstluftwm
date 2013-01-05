@@ -14,6 +14,7 @@
 #include "ewmh.h"
 #include "rules.h"
 #include "ipc-protocol.h"
+#include "object.h"
 // system
 #include <glib.h>
 #include <assert.h>
@@ -41,7 +42,8 @@ unsigned long g_window_border_normal_color;
 unsigned long g_window_border_urgent_color;
 unsigned long g_window_border_inner_color;
 
-GHashTable* g_clients; // container of all clients
+static GHashTable* g_clients; // container of all clients
+static HSObject    g_client_object;
 
 // atoms from dwm.c
 // default atoms
@@ -50,6 +52,7 @@ static Atom g_wmatom[WMLast];
 
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
+    hsobject_init(&hc->object);
     hc->float_size.width = 100;
     hc->float_size.height = 100;
     hc->title = g_string_new("");
@@ -87,6 +90,8 @@ void clientlist_init() {
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
     g_wmatom[WMTakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
     // init actual client list
+    hsobject_init(&g_client_object);
+    hsobject_link(hsobject_root(), &g_client_object, "clients");
     g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
                                       NULL, (GDestroyNotify)client_destroy);
 }
@@ -114,6 +119,8 @@ void clientlist_destroy() {
     g_hash_table_foreach(g_clients, client_move_to_floatpos, NULL);
 
     g_hash_table_destroy(g_clients);
+    hsobject_unlink(hsobject_root(), &g_client_object);
+    hsobject_free(&g_client_object);
 }
 
 
@@ -170,6 +177,10 @@ HSClient* manage_client(Window win) {
 
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
+    GString* winid_str = g_string_sized_new(10);
+    g_string_printf(winid_str, "0x%lx", win);
+    hsobject_link(&g_client_object, &client->object, winid_str->str);
+    g_string_free(winid_str, true);
     // insert to layout
     if (!client->tag) {
         client->tag = m->tag;
@@ -252,6 +263,7 @@ void client_destroy(HSClient* client) {
         /* free window title */
         g_string_free(client->title, true);
     }
+    hsobject_unlink(&g_client_object, &client->object);
     g_free(client);
 }
 
