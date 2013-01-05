@@ -28,6 +28,7 @@ void hsobject_unlink(HSObject* parent, HSObject* child);
 HSObject* hsobject_find_child(HSObject* obj, char* name);
 
 int list_objects_command(int argc, char* argv[], GString* output);
+int print_object_tree_command(int argc, char* argv[], GString* output);
 
 void hsobject_complete_children(HSObject* obj, char* needle, GString* output);
 

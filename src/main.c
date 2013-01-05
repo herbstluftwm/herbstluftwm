@@ -164,6 +164,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "and",            command_chain_command),
     CMD_BIND(             "or",             command_chain_command),
     CMD_BIND(             "ls",             list_objects_command),
+    CMD_BIND(             "object_tree",    print_object_tree_command),
     CMD_BIND(             "!",              negate_command),
     CMD_BIND(             "getenv",         getenv_command),
     CMD_BIND(             "setenv",         setenv_command),

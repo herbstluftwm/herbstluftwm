@@ -6,6 +6,7 @@
 #include "object.h"
 #include "command.h"
 #include "utils.h"
+#include "assert.h"
 #include "ipc-protocol.h"
 
 #include <string.h>
@@ -130,6 +131,42 @@ int list_objects_command(int argc, char* argv[], GString* output) {
     // list children
     g_string_append_printf(output, "children:\n");
     g_list_foreach(obj->children, (GFunc) print_child_name, output);
+    return 0;
+}
+
+static void object_append_caption(HSTree tree, GString* output) {
+    HSObjectChild* oc = (HSObjectChild*) tree;
+    g_string_append(output, oc->name);
+}
+
+static size_t object_child_count(HSTree tree) {
+    HSObjectChild* oc = (HSObjectChild*) tree;
+    return g_list_length(oc->child->children);
+}
+
+static HSTreeInterface object_nth_child(HSTree tree, size_t idx) {
+    HSObjectChild* oc = (HSObjectChild*) tree;
+    assert(oc->child);
+    HSTreeInterface intf = {
+        .nth_child  = object_nth_child,
+        .data       = (HSTree) g_list_nth_data(oc->child->children, idx),
+        .destructor = NULL,
+        .child_count    = object_child_count,
+        .append_caption = object_append_caption,
+    };
+    return intf;
+}
+
+int print_object_tree_command(int argc, char* argv[], GString* output) {
+    HSObjectChild oc = { .name = "", .child = hsobject_root() };
+    HSTreeInterface intf = {
+        .nth_child  = object_nth_child,
+        .data       = &oc,
+        .destructor = NULL,
+        .child_count    = object_child_count,
+        .append_caption = object_append_caption,
+    };
+    tree_print_to(&intf, output);
     return 0;
 }
 
