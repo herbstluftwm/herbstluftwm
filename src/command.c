@@ -12,6 +12,7 @@
 #include "clientlist.h"
 #include "monitor.h"
 #include "rules.h"
+#include "object.h"
 
 #include <glib.h>
 #include <string.h>

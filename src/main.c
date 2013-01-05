@@ -18,6 +18,7 @@
 #include "rules.h"
 #include "ewmh.h"
 #include "stack.h"
+#include "object.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -162,6 +163,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "chain",          command_chain_command),
     CMD_BIND(             "and",            command_chain_command),
     CMD_BIND(             "or",             command_chain_command),
+    CMD_BIND(             "ls",             list_objects_command),
     CMD_BIND(             "!",              negate_command),
     CMD_BIND(             "getenv",         getenv_command),
     CMD_BIND(             "setenv",         setenv_command),
@@ -699,6 +701,7 @@ static struct {
     void (*destroy)();
 } g_modules[] = {
     { ipc_init,         ipc_destroy         },
+    { object_tree_init, object_tree_destroy },
     { key_init,         key_destroy         },
     { settings_init,    settings_destroy    },
     { stacklist_init,   stacklist_destroy   },
