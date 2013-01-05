@@ -260,6 +260,35 @@ int list_commands(int argc, char** argv, GString* output)
     return 0;
 }
 
+void try_complete(char* needle, char* to_check, GString* output) {
+    bool matches = (needle == NULL);
+    if (matches == false) {
+        matches = true; // set it to true if the loop successfully runs
+        // find the first difference between needle and to_check
+        for (int i = 0; true ; i++) {
+            // check if needle is a prefix of to_check
+            if (!needle[i]) {
+                break;
+            }
+            // if the needle is longer than to_check, then needle isn't a
+            // correct prefix of to_check
+            if (!to_check[i]) {
+                matches = false;
+                break;
+            }
+            // only proceed if they are identical
+            if (to_check[i] != needle[i]) {
+                matches = false;
+                break;
+            }
+        }
+    }
+    if (matches) {
+        g_string_append(output, to_check);
+        g_string_append_c(output, '\n');
+    }
+}
+
 void complete_against_list(char* needle, char** list, GString* output) {
     size_t len = strlen(needle);
     while (*list) {
@@ -279,13 +308,9 @@ void complete_against_tags(int argc, char** argv, int pos, GString* output) {
     } else {
         needle = argv[pos];
     }
-    size_t len = strlen(needle);
     for (int i = 0; i < g_tags->len; i++) {
         char* name = g_array_index(g_tags, HSTag*, i)->name->str;
-        if (!strncmp(needle, name, len)) {
-            g_string_append(output, name);
-            g_string_append(output, "\n");
-        }
+        try_complete(needle, name, output);
     }
 }
 
@@ -307,14 +332,10 @@ void complete_against_monitors(int argc, char** argv, int pos, GString* output) 
     } else {
         needle = argv[pos];
     }
-    size_t len = strlen(needle);
     for (int i = 0; i < monitor_count(); i++) {
         GString* name = monitor_with_index(i)->name;
         if (name != NULL) {
-            if (!strncmp(needle, name->str, len)) {
-                g_string_append(output, name->str);
-                g_string_append(output, "\n");
-            }
+            try_complete(needle, name->str, output);
         }
     }
 }
@@ -355,17 +376,13 @@ void complete_merge_tag(int argc, char** argv, int pos, GString* output) {
     } else {
         needle = argv[pos];
     }
-    size_t len = strlen(needle);
     for (int i = 0; i < g_tags->len; i++) {
         char* name = g_array_index(g_tags, HSTag*, i)->name->str;
         if (!strcmp(name, first)) {
             // merge target must not be equal to tag to remove
             continue;
         }
-        if (!strncmp(needle, name, len)) {
-            g_string_append(output, name);
-            g_string_append(output, "\n");
-        }
+        try_complete(needle, name, output);
     }
 }
 
@@ -377,18 +394,13 @@ void complete_against_settings(int argc, char** argv, int pos, GString* output)
     } else {
         needle = argv[pos];
     }
-    size_t len = strlen(needle);
     bool is_toggle_command = !strcmp(argv[0], "toggle");
     // complete with setting name
     for (int i = 0; i < settings_count(); i++) {
         if (is_toggle_command && g_settings[i].type != HS_Int) {
             continue;
         }
-        // only check the first len bytes
-        if (!strncmp(needle, g_settings[i].name, len)) {
-            g_string_append(output, g_settings[i].name);
-            g_string_append(output, "\n");
-        }
+        try_complete(needle, g_settings[i].name, output);
     }
 }
 
@@ -443,16 +455,10 @@ int complete_against_commands(int argc, char** argv, int position,
                               GString* output) {
     // complete command
     if (position == 0) {
-        char* str = (argc >= 1) ? argv[0] : "";
-        size_t len = strlen(str);
-        int i = 0;
-        while (g_commands[i].cmd.standard != NULL) {
+        char* str = (argc >= 1) ? argv[0] : NULL;
+        for (int i = 0; g_commands[i].cmd.standard != NULL; i++) {
             // only check the first len bytes
-            if (!strncmp(str, g_commands[i].name, len)) {
-                g_string_append(output, g_commands[i].name);
-                g_string_append(output, "\n");
-            }
-            i++;
+            try_complete(str, g_commands[i].name, output);
         }
         return 0;
     }
@@ -520,8 +526,8 @@ static void complete_chain_helper(int argc, char** argv, int position,
         complete_against_commands(argc, argv, position, output);
         /* at least the command name is required
          * so don't complete at position 0 */
-        if (position != 0 && 0 == strncmp(needle, separator, strlen(needle))) {
-            g_string_append_printf(output, "%s\n", separator);
+        if (position != 0) {
+            try_complete(needle, separator, output);
         }
     } else {
         /* remove arguments so that the next separator becomes argv[0] */

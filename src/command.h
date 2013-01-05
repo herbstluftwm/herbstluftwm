@@ -40,6 +40,8 @@ int call_command_no_output(int argc, char** argv);
 int list_commands(int argc, char** argv, GString* output);
 int complete_command(int argc, char** argv, GString* output);
 
+void try_complete(char* needle, char* to_check, GString* output);
+
 void complete_settings(char* str, GString* output);
 void complete_against_list(char* needle, char** list, GString* output);
 void complete_against_tags(int argc, char** argv, int pos, GString* output);
