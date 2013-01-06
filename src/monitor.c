@@ -58,6 +58,9 @@ void monitor_destroy() {
         stack_remove_slice(g_monitor_stack, m->slice);
         slice_destroy(m->slice);
         hsobject_free(&m->object);
+        if (m->name) {
+            g_string_free(m->name, true);
+        }
         g_free(m);
     }
     hsobject_free(&g_monitor_object);
