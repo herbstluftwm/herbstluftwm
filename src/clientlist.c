@@ -43,7 +43,7 @@ unsigned long g_window_border_urgent_color;
 unsigned long g_window_border_inner_color;
 
 static GHashTable* g_clients; // container of all clients
-static HSObject    g_client_object;
+static HSObject*   g_client_object;
 
 // atoms from dwm.c
 // default atoms
@@ -91,8 +91,7 @@ void clientlist_init() {
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
     g_wmatom[WMTakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
     // init actual client list
-    hsobject_init(&g_client_object);
-    hsobject_link(hsobject_root(), &g_client_object, "clients");
+    g_client_object = hsobject_create_and_link(hsobject_root(), "clients");
     g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
                                       NULL, (GDestroyNotify)client_destroy);
 }
@@ -120,8 +119,7 @@ void clientlist_destroy() {
     g_hash_table_foreach(g_clients, client_move_to_floatpos, NULL);
 
     g_hash_table_destroy(g_clients);
-    hsobject_unlink(hsobject_root(), &g_client_object);
-    hsobject_free(&g_client_object);
+    hsobject_unlink_and_destroy(hsobject_root(), g_client_object);
 }
 
 
@@ -180,7 +178,7 @@ HSClient* manage_client(Window win) {
     g_hash_table_insert(g_clients, &(client->window), client);
     client->window_str = g_string_sized_new(10);
     g_string_printf(client->window_str, "0x%lx", win);
-    hsobject_link(&g_client_object, &client->object, client->window_str->str);
+    hsobject_link(g_client_object, &client->object, client->window_str->str);
     // insert to layout
     if (!client->tag) {
         client->tag = m->tag;
@@ -263,7 +261,7 @@ void unmanage_client(Window win) {
 
 // destroys a special client
 void client_destroy(HSClient* client) {
-    hsobject_unlink(&g_client_object, &client->object);
+    hsobject_unlink(g_client_object, &client->object);
     if (client->tag && client->slice) {
         stack_remove_slice(client->tag->stack, client->slice);
     }
@@ -299,7 +297,7 @@ void window_unfocus_last() {
     if (lastfocus) {
         window_unfocus(lastfocus);
     }
-    hsobject_unlink_by_name(&g_client_object, "focus");
+    hsobject_unlink_by_name(g_client_object, "focus");
     // give focus to root window
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
     if (lastfocus) {
@@ -327,7 +325,7 @@ void window_focus(Window window) {
          * only emit the hook if the focus *really* changes */
         // unfocus last one
         window_unfocus(lastfocus);
-        hsobject_link(&g_client_object, &client->object, "focus");
+        hsobject_link(g_client_object, &client->object, "focus");
         ewmh_update_active_window(window);
         tag_update_each_focus_layer();
         char* title = client ? client->title->str : "?";
