@@ -174,7 +174,17 @@ static HSTreeInterface object_nth_child(HSTree tree, size_t idx) {
 }
 
 int print_object_tree_command(int argc, char* argv[], GString* output) {
+    char* cmdname = argv[0];
     HSObjectChild oc = { .name = "", .child = hsobject_root() };
+    while (SHIFT(argc, argv)) {
+        oc.name = argv[0];
+        oc.child = hsobject_find_child(oc.child, oc.name);
+        if (!oc.child) {
+            g_string_append_printf(output, "%s: Can not find object \"%s\"\n",
+                                   cmdname, argv[0]);
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
     HSTreeInterface intf = {
         .nth_child  = object_nth_child,
         .data       = &oc,
