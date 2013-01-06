@@ -499,6 +499,9 @@ int remove_monitor(int index) {
     slice_destroy(monitor->slice);
     XDestroyWindow(g_display, monitor->stacking_window);
     // and remove monitor completely
+    if (monitor->name) {
+        g_string_free(monitor->name, true);
+    }
     g_free(monitor);
     g_array_remove_index(g_monitors, index);
     if (g_cur_monitor >= g_monitors->len) {
