@@ -397,6 +397,14 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     m->slice = slice_create_monitor(m);
     m->stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
+
+    HSAttribute attributes[] = {
+        ATTRIBUTE_STRING(   "name",     m->name,        ATTR_READ_ONLY  ),
+        ATTRIBUTE_BOOL(     "lock_tag", m->lock_tag,    ATTR_READ_ONLY  ),
+        ATTRIBUTE_LAST,
+    };
+    hsobject_set_attributes(&m->object, attributes);
+
     stack_insert_slice(g_monitor_stack, m->slice);
     g_array_append_val(g_monitors, m);
     return g_array_index(g_monitors, HSMonitor*, g_monitors->len-1);
