@@ -226,6 +226,7 @@ struct {
     { "getenv",         EQ, 1,  .function = complete_against_env },
     { "unsetenv",       EQ, 1,  .function = complete_against_env },
     { "object_tree",    GE, 1,  .function = complete_against_objects },
+    { "ls",             GE, 1,  .function = complete_against_objects },
     { 0 },
 };
 

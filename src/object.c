@@ -34,6 +34,8 @@ HSObject* hsobject_root() {
 }
 
 bool hsobject_init(HSObject* obj) {
+    obj->attributes = NULL;
+    obj->attribute_count = 0;
     obj->children = NULL;
     return true;
 }
@@ -143,10 +145,26 @@ int list_objects_command(int argc, char* argv[], GString* output) {
             return HERBST_INVALID_ARGUMENT;
         }
     }
-    // list object contents
-    // TODO: list attributes
+    // list attributes
+    g_string_append_printf(output, "attributes:\n");
+    for (int i = 0; i < obj->attribute_count; i++) {
+        HSAttribute* a = obj->attributes + i;
+        g_string_append_printf(output, "%-20s = ", a->name);
+        switch (a->type) {
+            case HSATTR_TYPE_BOOL:
+                if (*(a->value.b)) {
+                    g_string_append_printf(output, "true\n");
+                } else {
+                    g_string_append_printf(output, "false\n");
+                }
+                break;
+            case HSATTR_TYPE_STRING:
+                g_string_append_printf(output, "\"%s\"\n", (*(a->value.str))->str);
+                break;
+        }
+    }
     // list children
-    g_string_append_printf(output, "children:\n");
+    g_string_append_printf(output, "\nchildren:\n");
     g_list_foreach(obj->children, (GFunc) print_child_name, output);
     return 0;
 }
@@ -195,5 +213,27 @@ int print_object_tree_command(int argc, char* argv[], GString* output) {
     };
     tree_print_to(&intf, output);
     return 0;
+}
+
+bool ATTR_ACCEPT_ALL(HSObject* obj, HSAttribute* attr) {
+    (void) obj;
+    (void) attr;
+    return true;
+}
+
+bool ATTR_DENY_ALL(HSObject* obj, HSAttribute* attr) {
+    (void) obj;
+    (void) attr;
+    return false;
+}
+
+void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes) {
+    // calculate new size
+    size_t count;
+    for (count = 0; attributes[count].name != NULL; count++)
+        ;
+    obj->attributes = g_renew(HSAttribute, obj->attributes, count);
+    obj->attribute_count = count;
+    memcpy(obj->attributes, attributes, count * sizeof(HSAttribute));
 }
 
