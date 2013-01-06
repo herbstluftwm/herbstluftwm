@@ -119,6 +119,19 @@ void hsobject_unlink_by_name(HSObject* parent, char* name) {
                            name);
 }
 
+void hsobject_link_rename(HSObject* parent, char* oldname, char* newname) {
+    if (!strcmp(oldname, newname)) {
+        return;
+    }
+    hsobject_unlink_by_name(parent, newname);
+    GList* elem = g_list_find_custom(parent->children,
+                                     oldname,
+                                     (GCompareFunc)child_check_name);
+    HSObjectChild* child = (HSObjectChild*)elem->data;
+    g_free(child->name);
+    child->name = g_strdup(newname);
+}
+
 
 HSObject* hsobject_find_child(HSObject* obj, char* name) {
     GList* elem = g_list_find_custom(obj->children, name,

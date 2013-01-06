@@ -6,6 +6,8 @@
 #ifndef __HERBSTLUFT_TAG_H_
 #define __HERBSTLUFT_TAG_H_
 
+#include "object.h"
+
 #include <glib.h>
 #include <stdbool.h>
 
@@ -19,6 +21,7 @@ typedef struct HSTag {
     bool            floating;
     int             flags;
     struct HSStack* stack;
+    HSObject        object;
 } HSTag;
 
 // globals

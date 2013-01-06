@@ -47,6 +47,7 @@ void hsobject_free(HSObject* obj);
 void hsobject_link(HSObject* parent, HSObject* child, char* name);
 void hsobject_unlink(HSObject* parent, HSObject* child);
 void hsobject_unlink_by_name(HSObject* parent, char* name);
+void hsobject_link_rename(HSObject* parent, char* oldname, char* newname);
 
 void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes);
 

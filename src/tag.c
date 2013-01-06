@@ -21,12 +21,15 @@
 #include "settings.h"
 
 bool    g_tag_flags_dirty = true;
+HSObject g_tag_object;
 int* g_raise_on_focus_temporarily;
 
 void tag_init() {
     g_tags = g_array_new(false, false, sizeof(HSTag*));
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
+    hsobject_init(&g_tag_object);
+    hsobject_link(hsobject_root(), &g_tag_object, "tags");
 }
 
 static void tag_free(HSTag* tag) {
@@ -39,6 +42,8 @@ static void tag_free(HSTag* tag) {
         }
     }
     stack_destroy(tag->stack);
+    hsobject_unlink(&g_tag_object, &tag->object);
+    hsobject_free(&tag->object);
     g_string_free(tag->name, true);
     g_free(tag);
 }
@@ -51,6 +56,7 @@ void tag_destroy() {
         tag_free(tag);
     }
     g_array_free(g_tags, true);
+    hsobject_unlink(hsobject_root(), &g_tag_object);
 }
 
 
@@ -134,6 +140,8 @@ HSTag* add_tag(char* name) {
     tag->name = g_string_new(name);
     tag->floating = false;
     g_array_append_val(g_tags, tag);
+    hsobject_init(&tag->object);
+    hsobject_link(&g_tag_object, &tag->object, name);
     ewmh_update_desktops();
     ewmh_update_desktop_names();
     tag_set_flags_dirty();
@@ -169,6 +177,7 @@ int tag_rename_command(int argc, char** argv, GString* output) {
             "%s: Tag \"%s\" already exists\n", argv[0], argv[2]);
         return HERBST_TAG_IN_USE;
     }
+    hsobject_link_rename(&g_tag_object, tag->name->str, argv[2]);
     g_string_assign(tag->name, argv[2]);
     ewmh_update_desktop_names();
     hook_emit_list("tag_renamed", tag->name->str, NULL);
