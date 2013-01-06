@@ -24,6 +24,7 @@ bool hsobject_init(HSObject* obj);
 void hsobject_free(HSObject* obj);
 void hsobject_link(HSObject* parent, HSObject* child, char* name);
 void hsobject_unlink(HSObject* parent, HSObject* child);
+void hsobject_unlink_by_name(HSObject* parent, char* name);
 
 HSObject* hsobject_find_child(HSObject* obj, char* name);
 

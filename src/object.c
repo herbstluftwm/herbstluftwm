@@ -91,16 +91,29 @@ static int child_check_object(HSObjectChild* child, HSObject* obj) {
     return child->child == obj;
 }
 
-void hsobject_unlink(HSObject* parent, HSObject* child) {
+static void hsobject_unlink_helper(HSObject* parent, GCompareFunc f, void* data) {
     GList* elem = parent->children;
     while (elem) {
-        elem = g_list_find_custom(elem, child,
-                                  (GCompareFunc)child_check_object);
+        elem = g_list_find_custom(elem, data, f);
         if (elem) {
+            GList* next = elem->next;
             hsobjectchild_destroy((HSObjectChild*)elem->data);
             parent->children = g_list_delete_link(parent->children, elem);
+            elem = next;
         }
     }
+}
+
+void hsobject_unlink(HSObject* parent, HSObject* child) {
+    hsobject_unlink_helper(parent,
+                           (GCompareFunc)child_check_object,
+                           child);
+}
+
+void hsobject_unlink_by_name(HSObject* parent, char* name) {
+    hsobject_unlink_helper(parent,
+                           (GCompareFunc)child_check_name,
+                           name);
 }
 
 

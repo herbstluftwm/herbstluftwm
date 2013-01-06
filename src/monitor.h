@@ -13,6 +13,8 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+#include "object.h"
+
 struct HSTag;
 struct HSFrame;
 struct HSSlice;
@@ -22,6 +24,7 @@ typedef struct HSMonitor {
     struct HSTag*      tag;    // currently viewed tag
     struct HSTag*      tag_previous;    // previously viewed tag
     struct HSSlice*    slice;  // slice in the monitor stack
+    HSObject    object;
     GString*    name;
     int         pad_up;
     int         pad_right;

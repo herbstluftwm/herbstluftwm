@@ -31,6 +31,7 @@ int* g_smart_frame_surroundings;
 int* g_mouse_recenter_gap;
 HSStack* g_monitor_stack;
 GArray*     g_monitors; // Array of HSMonitor*
+HSObject    g_monitor_object;
 
 typedef struct RectList {
     XRectangle rect;
@@ -47,6 +48,8 @@ void monitor_init() {
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
     g_mouse_recenter_gap       = &(settings_find("mouse_recenter_gap")->value.i);
     g_monitor_stack = stack_create();
+    hsobject_init(&g_monitor_object);
+    hsobject_link(hsobject_root(), &g_monitor_object, "monitors");
 }
 
 void monitor_destroy() {
@@ -54,8 +57,10 @@ void monitor_destroy() {
         HSMonitor* m = monitor_with_index(i);
         stack_remove_slice(g_monitor_stack, m->slice);
         slice_destroy(m->slice);
+        hsobject_free(&m->object);
         g_free(m);
     }
+    hsobject_free(&g_monitor_object);
     stack_destroy(g_monitor_stack);
     g_array_free(g_monitors, true);
 }
@@ -375,6 +380,10 @@ HSMonitor* string_to_monitor(char* string) {
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
     HSMonitor* m = g_new0(HSMonitor, 1);
+    hsobject_init(&m->object);
+    if (name) {
+        hsobject_link(&g_monitor_object, &m->object, name);
+    }
     m->rect = rect;
     m->tag = tag;
     m->tag_previous = tag;
@@ -487,6 +496,8 @@ int remove_monitor(int index) {
     stack_remove_slice(g_monitor_stack, monitor->slice);
     slice_destroy(monitor->slice);
     XDestroyWindow(g_display, monitor->stacking_window);
+    hsobject_unlink(&g_monitor_object, &monitor->object);
+    hsobject_free(&monitor->object);
     // and remove monitor completely
     if (monitor->name) {
         g_string_free(monitor->name, true);
@@ -549,6 +560,7 @@ int rename_monitor_command(int argc, char** argv, GString* output) {
     } else if (!strcmp("", argv[2])) {
         // empty name -> clear name
         if (mon->name != NULL) {
+            hsobject_unlink_by_name(&g_monitor_object, mon->name->str);
             g_string_free(mon->name, true);
             mon->name = NULL;
         }
@@ -564,9 +576,11 @@ int rename_monitor_command(int argc, char** argv, GString* output) {
         GString* name = g_string_new(argv[2]);
         mon->name = name;
     } else {
+        hsobject_unlink_by_name(&g_monitor_object, mon->name->str);
         // already named
         g_string_assign(mon->name, argv[2]);
     }
+    hsobject_link(&g_monitor_object, &mon->object, mon->name->str);
     return 0;
 }
 
