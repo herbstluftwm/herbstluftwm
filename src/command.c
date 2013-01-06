@@ -225,6 +225,7 @@ struct {
     { "setenv",         EQ, 1,  .function = complete_against_env },
     { "getenv",         EQ, 1,  .function = complete_against_env },
     { "unsetenv",       EQ, 1,  .function = complete_against_env },
+    { "object_tree",    GE, 1,  .function = complete_against_objects },
     { 0 },
 };
 
@@ -391,6 +392,22 @@ void complete_against_monitors(int argc, char** argv, int pos, GString* output) 
         }
     }
     g_string_free(index_str, true);
+}
+
+void complete_against_objects(int argc, char** argv, int pos, GString* output) {
+    // Remove command name
+    (void)SHIFT(argc,argv);
+    pos--;
+    // find object to operate on
+    HSObject* obj = hsobject_root();
+    while (pos > 0 && pos < argc) {
+        obj = hsobject_find_child(obj, argv[0]);
+        if (!obj) return;
+        (void)SHIFT(argc, argv);
+        pos--;
+    }
+    char* needle = (pos < argc) ? argv[pos] : NULL;
+    hsobject_complete_children(obj, needle, output);
 }
 
 struct wcd { /* window id completion data */

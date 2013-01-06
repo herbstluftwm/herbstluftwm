@@ -51,6 +51,7 @@ void complete_settings(char* str, GString* output);
 void complete_against_list(char* needle, char** list, GString* output);
 void complete_against_tags(int argc, char** argv, int pos, GString* output);
 void complete_against_monitors(int argc, char** argv, int pos, GString* output);
+void complete_against_objects(int argc, char** argv, int pos, GString* output);
 void complete_against_winids(int argc, char** argv, int pos, GString* output);
 void complete_merge_tag(int argc, char** argv, int pos, GString* output);
 void complete_negate(int argc, char** argv, int pos, GString* output);
