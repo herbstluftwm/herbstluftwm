@@ -141,7 +141,16 @@ HSTag* add_tag(char* name) {
     tag->name = g_string_new(name);
     tag->floating = false;
     g_array_append_val(g_tags, tag);
+
+    // create object
     tag->object = hsobject_create_and_link(g_tag_by_name, name);
+    HSAttribute attributes[] = {
+        ATTRIBUTE_STRING(   "name",         tag->name,      ATTR_READ_ONLY),
+        ATTRIBUTE_BOOL(     "floating",     tag->floating,  ATTR_READ_ONLY),
+        ATTRIBUTE_LAST,
+    };
+    hsobject_set_attributes(tag->object, attributes);
+
     ewmh_update_desktops();
     ewmh_update_desktop_names();
     tag_set_flags_dirty();
