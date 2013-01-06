@@ -754,8 +754,13 @@ void enternotify(XEvent* event) {
     if (!mouse_is_dragging()
         && *g_focus_follows_mouse
         && false == ce->focus) {
-        // sloppy focus
-        focus_window(ce->window, false, true);
+        if (g_cur_frame->content.clients.layout == LAYOUT_MAX
+            && frame_contains_window(g_cur_frame, ce->window)) {
+            // don't allow focus_follows_mouse if both windows are in the same
+            // frame and that frame is in the max layout
+        } else {
+            focus_window(ce->window, false, true);
+        }
     }
 }
 

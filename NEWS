@@ -6,6 +6,9 @@ Next Release
 
 Changes:
 
+    * disallow focus_follows_mouse between two clients in the same frame in max
+      layout.
+
 Release 0.5.1 on 2013-01-05
 ---------------------------
 

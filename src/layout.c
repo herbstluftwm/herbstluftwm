@@ -205,6 +205,23 @@ HSFrame* lookup_frame(HSFrame* root, char *index) {
     return lookup_frame(new_root, new_index);
 }
 
+bool frame_contains_window(HSFrame* frame, Window window) {
+    if (frame->type == TYPE_CLIENTS) {
+        Window* buf = frame->content.clients.buf;
+        size_t count = frame->content.clients.count;
+        for (int i = 0; i < count; i++) {
+            if (buf[i] == window) {
+                return true;
+            }
+        }
+        return false;
+    } else { /* frame->type == TYPE_FRAMES */
+        bool found = frame_contains_window(frame->content.layout.a, window);
+        found = found || frame_contains_window(frame->content.layout.b, window);
+        return found;
+    }
+}
+
 bool frame_remove_window(HSFrame* frame, Window window) {
     if (frame->type == TYPE_CLIENTS) {
         Window* buf = frame->content.clients.buf;
