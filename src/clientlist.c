@@ -53,6 +53,7 @@ static Atom g_wmatom[WMLast];
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
     hsobject_init(&hc->object);
+    hc->window_str = NULL;
     hc->float_size.width = 100;
     hc->float_size.height = 100;
     hc->title = g_string_new("");
@@ -177,10 +178,9 @@ HSClient* manage_client(Window win) {
 
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
-    GString* winid_str = g_string_sized_new(10);
-    g_string_printf(winid_str, "0x%lx", win);
-    hsobject_link(&g_client_object, &client->object, winid_str->str);
-    g_string_free(winid_str, true);
+    client->window_str = g_string_sized_new(10);
+    g_string_printf(client->window_str, "0x%lx", win);
+    hsobject_link(&g_client_object, &client->object, client->window_str->str);
     // insert to layout
     if (!client->tag) {
         client->tag = m->tag;
@@ -200,6 +200,16 @@ HSClient* manage_client(Window win) {
         // of clients on this tag and D is the depth of the binary layout tree
         frame_focus_window(client->tag->frame, win);
     }
+
+    HSAttribute attributes[] = {
+        ATTRIBUTE_STRING(   "winid",        client->window_str,     ATTR_READ_ONLY),
+        ATTRIBUTE_STRING(   "title",        client->title,          ATTR_READ_ONLY),
+        ATTRIBUTE_BOOL(     "fullscreen",   client->fullscreen,     ATTR_READ_ONLY),
+        ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile,     ATTR_READ_ONLY),
+        ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests,   ATTR_READ_ONLY),
+        ATTRIBUTE_LAST,
+    };
+    hsobject_set_attributes(&client->object, attributes);
 
     ewmh_window_update_tag(client->window, client->tag);
     tag_set_flags_dirty();
@@ -253,17 +263,20 @@ void unmanage_client(Window win) {
 
 // destroys a special client
 void client_destroy(HSClient* client) {
+    hsobject_unlink(&g_client_object, &client->object);
     if (client->tag && client->slice) {
         stack_remove_slice(client->tag->stack, client->slice);
     }
     if (client->slice) {
         slice_destroy(client->slice);
     }
-    if (client) {
+    if (client->title) {
         /* free window title */
         g_string_free(client->title, true);
     }
-    hsobject_unlink(&g_client_object, &client->object);
+    if (client->window_str) {
+        g_string_free(client->window_str, true);
+    }
     g_free(client);
 }
 
