@@ -203,6 +203,7 @@ struct {
     { "focus_monitor",  EQ, 1,  .function = complete_against_monitors },
     { "lock_tag",       EQ, 1,  .function = complete_against_monitors },
     { "unlock_tag",     EQ, 1,  .function = complete_against_monitors },
+    { "rename_monitor", EQ, 1,  .function = complete_against_monitors },
     { "remove_monitor", EQ, 1,  .function = complete_against_monitors },
     { "move_monitor",   EQ, 1,  .function = complete_against_monitors },
     { "raise_monitor",  EQ, 1,  .function = complete_against_monitors },
