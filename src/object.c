@@ -168,7 +168,7 @@ HSObject* hsobject_find_child(HSObject* obj, char* name) {
 }
 
 static void print_child_name(HSObjectChild* child, GString* output) {
-    g_string_append_printf(output, "%s\n", child->name);
+    g_string_append_printf(output, "%s/\n", child->name);
 }
 
 int list_objects_command(int argc, char* argv[], GString* output) {
@@ -183,7 +183,6 @@ int list_objects_command(int argc, char* argv[], GString* output) {
         }
     }
     // list attributes
-    g_string_append_printf(output, "attributes:\n");
     for (int i = 0; i < obj->attribute_count; i++) {
         HSAttribute* a = obj->attributes + i;
         g_string_append_printf(output, "%-20s = ", a->name);
@@ -201,7 +200,6 @@ int list_objects_command(int argc, char* argv[], GString* output) {
         }
     }
     // list children
-    g_string_append_printf(output, "\nchildren:\n");
     g_list_foreach(obj->children, (GFunc) print_child_name, output);
     return 0;
 }
