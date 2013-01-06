@@ -277,6 +277,7 @@ void client_destroy(HSClient* client) {
     if (client->window_str) {
         g_string_free(client->window_str, true);
     }
+    hsobject_free(&client->object);
     g_free(client);
 }
 
