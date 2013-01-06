@@ -285,6 +285,7 @@ void window_unfocus_last() {
     if (lastfocus) {
         window_unfocus(lastfocus);
     }
+    hsobject_unlink_by_name(&g_client_object, "focus");
     // give focus to root window
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
     if (lastfocus) {
@@ -312,6 +313,7 @@ void window_focus(Window window) {
          * only emit the hook if the focus *really* changes */
         // unfocus last one
         window_unfocus(lastfocus);
+        hsobject_link(&g_client_object, &client->object, "focus");
         ewmh_update_active_window(window);
         tag_update_each_focus_layer();
         char* title = client ? client->title->str : "?";
