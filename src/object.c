@@ -88,7 +88,8 @@ void hsobject_link(HSObject* parent, HSObject* child, char* name) {
 }
 
 static int child_check_object(HSObjectChild* child, HSObject* obj) {
-    return child->child == obj;
+    // return 0 if they are identical
+    return (child->child == obj) ? 0 : 1;
 }
 
 static void hsobject_unlink_helper(HSObject* parent, GCompareFunc f, void* data) {
