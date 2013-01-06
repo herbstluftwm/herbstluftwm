@@ -3,6 +3,12 @@ herbstluftwm NEWS -- History of user-visible changes
 
 Next Release
 ------------
+
+Changes:
+
+Release 0.5.1 on 2013-01-05
+---------------------------
+
 Changes:
 
     * new command: use_previous
