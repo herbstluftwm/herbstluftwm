@@ -41,7 +41,31 @@ bool hsobject_init(HSObject* obj) {
 }
 
 void hsobject_free(HSObject* obj) {
+    g_free(obj->attributes);
     g_list_free_full(obj->children, (GDestroyNotify)hsobjectchild_destroy);
+}
+
+HSObject* hsobject_create() {
+    HSObject* obj = g_new(HSObject, 1);
+    hsobject_init(obj);
+    return obj;
+}
+
+void hsobject_destroy(HSObject* obj) {
+    if (!obj) return;
+    hsobject_free(obj);
+    g_free(obj);
+}
+
+HSObject* hsobject_create_and_link(HSObject* parent, char* name) {
+    HSObject* obj = hsobject_create();
+    hsobject_link(parent, obj, name);
+    return obj;
+}
+
+void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child) {
+    hsobject_unlink(parent, child);
+    hsobject_destroy(child);
 }
 
 HSObjectChild* hsobjectchild_create(char* name, HSObject* obj) {

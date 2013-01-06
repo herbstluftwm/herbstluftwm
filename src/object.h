@@ -44,10 +44,14 @@ HSObject* hsobject_root();
 
 bool hsobject_init(HSObject* obj);
 void hsobject_free(HSObject* obj);
+HSObject* hsobject_create();
+HSObject* hsobject_create_and_link(HSObject* parent, char* name);
+void hsobject_destroy(HSObject* obj);
 void hsobject_link(HSObject* parent, HSObject* child, char* name);
 void hsobject_unlink(HSObject* parent, HSObject* child);
 void hsobject_unlink_by_name(HSObject* parent, char* name);
 void hsobject_link_rename(HSObject* parent, char* oldname, char* newname);
+void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child);
 
 void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes);
 
