@@ -754,10 +754,14 @@ void enternotify(XEvent* event) {
     if (!mouse_is_dragging()
         && *g_focus_follows_mouse
         && false == ce->focus) {
-        if (g_cur_frame->content.clients.layout == LAYOUT_MAX
-            && frame_contains_window(g_cur_frame, ce->window)) {
-            // don't allow focus_follows_mouse if both windows are in the same
-            // frame and that frame is in the max layout
+        HSClient* c = get_client_from_window(ce->window);
+        HSFrame* target;
+        if (c && c->tag->floating == false
+              && (target = find_frame_with_window(c->tag->frame, ce->window))
+              && target->content.clients.layout == LAYOUT_MAX
+              && frame_focused_window(target) != ce->window) {
+            // don't allow focus_follows_mouse if another window would be
+            // hidden during that focus change (which only occurs in max layout)
         } else {
             focus_window(ce->window, false, true);
         }

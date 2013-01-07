@@ -811,7 +811,11 @@ smart_window_surroundings (Integer)::
 focus_follows_mouse (Integer)::
     If set and a window is focused by mouse cursor, this window is focused (This
     feature is also known as sloppy focus). If unset, you need to click to
-    change the window focus by mouse.
+    change the window focus by mouse. +
+    +
+    If another window is hidden by the focus change (e.g. when having
+    pseudotiled windows in the max layout) then an extra click is required to
+    change the focus.
 
 focus_stealing_prevention (Integer)::
     If set, only pagers and taskbars are allowed to change the focus. If unset,
