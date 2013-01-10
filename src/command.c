@@ -28,7 +28,7 @@ static bool g_shell_quoting = false;
 
 static char* completion_directions[]    = { "left", "right", "down", "up",NULL};
 static char* completion_focus_args[]    = { "-i", "-e", NULL };
-static char* completion_unrule_args[]   = { "-F", "--all", NULL };
+static char* completion_unrule_flags[]   = { "-F", "--all", NULL };
 static char* completion_keyunbind_args[]= { "-F", "--all", NULL };
 static char* completion_flag_args[]     = { "on", "off", "toggle", NULL };
 static char* completion_status[]        = { "status", NULL };
@@ -206,7 +206,7 @@ struct {
     { "set_layout",     EQ, 1,  .list = g_layout_names },
     { "cycle_layout",   EQ, 1,  .list = completion_pm_one },
     { "cycle_layout",   GE, 2,  .list = g_layout_names },
-    { "unrule",         EQ, 1,  .list = completion_unrule_args },
+    { "unrule",         EQ, 1,  .function = complete_against_rule_names },
     { "use",            EQ, 1,  .function = complete_against_tags },
     { "use_index",      EQ, 1,  .list = completion_pm_one },
     { "use_index",      EQ, 2,  .list = completion_use_index_args },
@@ -355,6 +355,23 @@ void complete_against_tags(int argc, char** argv, int pos, GString* output) {
     for (int i = 0; i < g_tags->len; i++) {
         char* name = g_array_index(g_tags, HSTag*, i)->name->str;
         try_complete(needle, name, output);
+    }
+}
+
+void complete_against_rule_names(int argc, char** argv, int pos, GString* output) {
+    char* needle;
+    if (pos >= argc) {
+        needle = "";
+    } else {
+        needle = argv[pos];
+    }
+    // Complete flags
+    complete_against_list(needle, completion_unrule_flags, output);
+    // Complete ids
+    GList* cur_rule = g_queue_peek_head_link(&g_rules);
+    while (cur_rule != NULL) {
+        try_complete(needle, ((HSRule*)cur_rule->data)->id, output);
+        cur_rule = g_list_next(cur_rule);
     }
 }
 

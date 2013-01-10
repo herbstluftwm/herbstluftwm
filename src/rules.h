@@ -13,6 +13,8 @@
 struct HSClient;
 struct HSTag;
 
+extern GQueue g_rules;
+
 enum {
     CONDITION_VALUE_TYPE_STRING,
     CONDITION_VALUE_TYPE_REGEX,

@@ -61,6 +61,7 @@ int complete_against_commands(int argc, char** argv, int position,
 void complete_against_keybind_command(int argc, char** argv, int position,
                                       GString* output);
 void complete_against_env(int argc, char** argv, int position, GString* output);
+void complete_against_rule_names(int argc, char** argv, int pos, GString* output);
 void complete_chain(int argc, char** argv, int position, GString* output);
 
 int command_chain(char* separator, bool (*condition)(int laststatus),
