@@ -6,7 +6,10 @@
 #compinit
 
 _herbstclient() {
-    compadd "$@" $(herbstclient -q complete "$((CURRENT-2))" "${(@)words[@]:1}")
+    local IFS=$'\n'
+    # compadd is documented in zshcompwid(1)
+    compadd -S '' "$@" $(herbstclient -q complete "$((CURRENT-2))" "${(@)words[@]:1}")
 }
 
+# compdef is documented in zshcompsys(1)
 compdef _herbstclient herbstclient
