@@ -42,6 +42,10 @@ int complete_command(int argc, char** argv, GString* output);
 
 void try_complete(char* needle, char* to_check, GString* output);
 void try_complete_partial(char* needle, char* to_check, GString* output);
+void try_complete_prefix_partial(char* needle, char* to_check,
+                                 char* prefix, GString* output);
+void try_complete_prefix(char* needle, char* to_check,
+                         char* prefix, GString* output);
 
 void complete_settings(char* str, GString* output);
 void complete_against_list(char* needle, char** list, GString* output);
@@ -60,6 +64,7 @@ void complete_chain(int argc, char** argv, int position, GString* output);
 
 int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, GString* output);
+
 
 int command_chain_command(int argc, char** argv, GString* output);
 

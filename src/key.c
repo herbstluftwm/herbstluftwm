@@ -83,8 +83,7 @@ unsigned int modifiername2mask(const char* name) {
  * \return  the name as a char string. You must not free it.
  */
 char*   modifiermask2name(unsigned int mask) {
-    int i;
-    for (i = 0; i < LENGTH(g_modifier_names); i++) {
+    for (int i = 0; i < LENGTH(g_modifier_names); i++) {
         if (g_modifier_names[i].mask & mask) {
             return g_modifier_names[i].name;
         }
@@ -339,5 +338,35 @@ static void key_list_binds_helper(KeyBinding* b, GString* output) {
 int key_list_binds(int argc, char** argv, GString* output) {
     g_list_foreach(g_key_binds, (GFunc)key_list_binds_helper, output);
     return 0;
+}
+
+void complete_against_keysyms(char* needle, char* prefix, GString* output) {
+    // get all possible keysyms
+    int min, max;
+    XDisplayKeycodes(g_display, &min, &max);
+    int kc_count = max - min + 1;
+    int ks_per_kc; // count of keysysms per keycode
+    KeySym* keysyms;
+    keysyms = XGetKeyboardMapping(g_display, min, kc_count, &ks_per_kc);
+    // only symbols at a position i*ks_per_kc are symbols that are recieved in
+    // a keyevent, it should be the symbol for the keycode if no modifier is
+    // pressed
+    for (int i = 0; i < kc_count; i++) {
+        if (keysyms[i * ks_per_kc] != NoSymbol) {
+            char* str = XKeysymToString(keysyms[i * ks_per_kc]);
+            try_complete_prefix(needle, str, prefix, output);
+        }
+    }
+    XFree(keysyms);
+}
+
+void complete_against_modifiers(char* needle, char seperator,
+                                char* prefix, GString* output) {
+    GString* buf = g_string_sized_new(20);
+    for (int i = 0; i < LENGTH(g_modifier_names); i++) {
+        g_string_printf(buf, "%s%c", g_modifier_names[i].name, seperator);
+        try_complete_prefix_partial(needle, buf->str, prefix, output);
+    }
+    g_string_free(buf, true);
 }
 

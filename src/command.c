@@ -179,7 +179,7 @@ struct {
     { "or",             GE, 1,  .function = complete_chain },
     { "!",              GE, 1,  .function = complete_negate },
     { "pseudotile",     EQ, 1,  .list = completion_flag_args },
-    { "keybind",        GE, 2,  .function = complete_against_keybind_command },
+    { "keybind",        GE, 1,  .function = complete_against_keybind_command },
     { "keyunbind",      EQ, 1,  .list = completion_keyunbind_args },
     { "keyunbind",      EQ, 1,  .function = complete_against_keybinds },
     { "rename",         EQ, 1,  .function = complete_against_tags },
@@ -267,7 +267,9 @@ int list_commands(int argc, char** argv, GString* output)
     return 0;
 }
 
-static void try_complete_suffix(char* needle, char* to_check, char* suffix, GString* output) {
+static void try_complete_suffix(char* needle, char* to_check, char* suffix,
+                                char* prefix, GString* output)
+{
     bool matches = (needle == NULL);
     if (matches == false) {
         matches = true; // set it to true if the loop successfully runs
@@ -295,6 +297,13 @@ static void try_complete_suffix(char* needle, char* to_check, char* suffix, GStr
         if (g_shell_quoting) {
             escaped = posix_sh_escape(to_check);
         }
+        char* prefix_escaped = NULL;
+        if (prefix) {
+            if (g_shell_quoting) {
+                prefix_escaped = posix_sh_escape(prefix);
+            }
+            g_string_append(output, prefix_escaped ? prefix_escaped : prefix);
+        }
         g_string_append(output, escaped ? escaped : to_check);
         free(escaped);
         g_string_append(output, suffix);
@@ -303,11 +312,22 @@ static void try_complete_suffix(char* needle, char* to_check, char* suffix, GStr
 
 void try_complete(char* needle, char* to_check, GString* output) {
     char* suffix = g_shell_quoting ? " \n" : "\n";
-    try_complete_suffix(needle, to_check, suffix, output);
+    try_complete_suffix(needle, to_check, suffix, NULL, output);
+}
+
+void try_complete_prefix(char* needle, char* to_check,
+                         char* prefix, GString* output) {
+    char* suffix = g_shell_quoting ? " \n" : "\n";
+    try_complete_suffix(needle, to_check, suffix, prefix, output);
 }
 
 void try_complete_partial(char* needle, char* to_check, GString* output) {
-    try_complete_suffix(needle, to_check, "\n", output);
+    try_complete_suffix(needle, to_check, "\n", NULL, output);
+}
+
+void try_complete_prefix_partial(char* needle, char* to_check,
+                                 char* prefix, GString* output) {
+    try_complete_suffix(needle, to_check, "\n", prefix, output);
 }
 
 void complete_against_list(char* needle, char** list, GString* output) {
@@ -474,9 +494,27 @@ int complete_command(int argc, char** argv, GString* output) {
 
 void complete_against_keybind_command(int argc, char** argv, int position,
                                       GString* output) {
-    if (argc <  2 || position < 2) {
+    if (argc <  2 || position < 1) {
         return;
     }
+    // complete the keycombination
+    if (position == 1) {
+        char* needle = (position < argc) ? argv[position] : "";
+        char* lasttok = strlasttoken(needle, KEY_COMBI_SEPARATORS);
+        char* prefix = g_strdup(needle);
+        prefix[lasttok - needle] = '\0';
+        char separator = KEY_COMBI_SEPARATORS[0];
+        if (lasttok != needle) {
+            // if there is a suffix, then the already used separator is before
+            // the start of the last token
+            separator = lasttok[-1];
+        }
+        complete_against_modifiers(lasttok, separator, prefix, output);
+        complete_against_keysyms(lasttok, prefix, output);
+        g_free(prefix);
+        return;
+    }
+    // complete the command
     complete_against_commands(argc - 2, argv + 2, position - 2, output);
 }
 

@@ -11,6 +11,7 @@ Changes:
       click is required to change the focus.
     * new command complete_shell for posix shell specific completion
     * add completion for the rule command
+    * add completion for keycombinations in keybind
 
 Release 0.5.1 on 2013-01-05
 ---------------------------
