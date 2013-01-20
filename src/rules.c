@@ -10,6 +10,7 @@
 #include "clientlist.h"
 #include "ipc-protocol.h"
 #include "hook.h"
+#include "command.h"
 
 #include <glib.h>
 #include "glib-backports.h"
@@ -252,6 +253,32 @@ void rule_destroy(HSRule* rule) {
     g_free(rule->consequences);
     // free rule itself
     g_free(rule);
+}
+
+void rule_complete(int argc, char** argv, int pos, GString* output) {
+    char* needle = (pos < argc) ? argv[pos] : "";
+    GString* buf = g_string_sized_new(20);
+
+    // complete against conditions
+    for (int i = 0; i < LENGTH(g_condition_types); i++) {
+        g_string_printf(buf, "%s=", g_condition_types[i].name);
+        try_complete_partial(needle, buf->str, output);
+        g_string_printf(buf, "%s~", g_condition_types[i].name);
+        try_complete_partial(needle, buf->str, output);
+    }
+
+    // complete against consequences
+    for (int i = 0; i < LENGTH(g_consequence_types); i++) {
+        g_string_printf(buf, "%s=", g_consequence_types[i].name);
+        try_complete_partial(needle, buf->str, output);
+    }
+
+    // complete flags
+    try_complete(needle, "once",    output);
+    try_complete(needle, "not",     output);
+    try_complete(needle, "!",       output);
+
+    g_string_free(buf, true);
 }
 
 // parses an arg like NAME=VALUE to res_name, res_operation and res_value

@@ -11,6 +11,7 @@
 #include "key.h"
 #include "clientlist.h"
 #include "monitor.h"
+#include "rules.h"
 
 #include <glib.h>
 #include <string.h>
@@ -183,6 +184,7 @@ struct {
     { "jumpto",         EQ, 1,  .list = completion_special_winids },
     { "jumpto",         EQ, 1,  .function = complete_against_winids },
     { "resize",         EQ, 1,  .list = completion_directions },
+    { "rule",           GE, 1,  .function = rule_complete },
     { "shift_edge",     EQ, 1,  .list = completion_directions },
     { "shift",          EQ, 1,  .list = completion_directions },
     { "shift",          EQ, 1,  .list = completion_focus_args },
@@ -261,7 +263,7 @@ int list_commands(int argc, char** argv, GString* output)
     return 0;
 }
 
-void try_complete(char* needle, char* to_check, GString* output) {
+static void try_complete_suffix(char* needle, char* to_check, char* suffix, GString* output) {
     bool matches = (needle == NULL);
     if (matches == false) {
         matches = true; // set it to true if the loop successfully runs
@@ -288,8 +290,16 @@ void try_complete(char* needle, char* to_check, GString* output) {
         char* escaped = posix_sh_escape(to_check);
         g_string_append(output, escaped ? escaped : to_check);
         free(escaped);
-        g_string_append(output, " \n");
+        g_string_append(output, suffix);
     }
+}
+
+void try_complete(char* needle, char* to_check, GString* output) {
+    try_complete_suffix(needle, to_check, " \n", output);
+}
+
+void try_complete_partial(char* needle, char* to_check, GString* output) {
+    try_complete_suffix(needle, to_check, "\n", output);
 }
 
 void complete_against_list(char* needle, char** list, GString* output) {

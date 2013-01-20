@@ -71,6 +71,8 @@ void client_changes_free_members(HSClientChanges* changes);
 HSRule* rule_create();
 void rule_destroy(HSRule* rule);
 
+void rule_complete(int argc, char** argv, int pos, GString* output);
+
 int rule_add_command(int argc, char** argv, GString* output);
 int rule_remove_command(int argc, char** argv, GString* output);
 

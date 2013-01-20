@@ -9,6 +9,7 @@ Changes:
     * disallow focus_follows_mouse if the focus change hides another window
       (e.g. an pseudotiled window in the max layout). In that case an extra
       click is required to change the focus.
+    * add completion for the rule command
 
 Release 0.5.1 on 2013-01-05
 ---------------------------
