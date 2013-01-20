@@ -4,8 +4,16 @@ herbstluftwm migration guide
 This guide describes the list of incompatible changes between the different
 herbstluftwm releases and how to migrate scripts and configuration.
 
-0.4 to 0.5
-~~~~~~~~~~
+0.5.1 to the next release
+~~~~~~~~~~~~~~~~~~~~~~~~~
+The herbstclient completion options changed for bash. If you manually setup the
+completion -- e.g. for an alias like hc -- then update the complete line as
+follows:
+
+    complete -F _herbstclient_complete -o nospace herbstclient # or hc
+
+0.4.1 to 0.5.0
+~~~~~~~~~~~~~~
 herbstclient now returns the exitstatus 9 (HERBST_NEED_MORE_ARGS) instead of 3
 (HERBST_INVALID_ARGUMENT) if a command needs more arguments. If an error occurs,
 it now outputs an error message to stderr.
