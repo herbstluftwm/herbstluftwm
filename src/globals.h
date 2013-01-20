@@ -51,7 +51,6 @@ int         g_verbose;
     } while(0)
 
 // macro for very slow asserts, which are only executed if DEBUG is defined
-#define DEBUG
 #ifdef DEBUG
 #define slow_assert(X)                                                  \
     do {                                                                \

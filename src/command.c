@@ -452,6 +452,9 @@ int complete_command(int argc, char** argv, GString* output) {
     int position = CLAMP(atoi(argv[1]), 0, argc-2);
     (void)SHIFT(argc, argv);
     (void)SHIFT(argc, argv);
+    for (int i = 0; i < argc; i++) {
+        posix_sh_compress_inplace(argv[i]);
+    }
     return complete_against_commands(argc, argv, position, output);
 }
 

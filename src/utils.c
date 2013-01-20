@@ -500,3 +500,19 @@ char* posix_sh_escape(char* source) {
     return target;
 }
 
+void posix_sh_compress_inplace(char* str) {
+    int offset = 0;
+    for (int i = 0; true ; i++) {
+        if (str[i] == '\\' && str[i + 1] ) {
+            str[i + offset] = str[i + 1];
+            i++;
+            offset --;
+        } else {
+            str[i + offset] = str[i];
+        }
+        if (!str[i]) {
+            break;
+        }
+    }
+}
+
