@@ -293,13 +293,9 @@ void try_complete(char* needle, char* to_check, GString* output) {
 }
 
 void complete_against_list(char* needle, char** list, GString* output) {
-    size_t len = strlen(needle);
     while (*list) {
         char* name = *list;
-        if (!strncmp(needle, name, len)) {
-            g_string_append(output, name);
-            g_string_append(output, "\n");
-        }
+        try_complete(needle, name, output);
         list++;
     }
 }
