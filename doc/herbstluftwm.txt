@@ -623,6 +623,14 @@ complete 'POSITION' ['COMMAND' 'ARGS ...']::
         * complete 1 toggle fra +
           prints all settings beginning with fra that can be toggled
 
+complete_shell 'POSITION' ['COMMAND' 'ARGS ...']::
+    Behaves like *complete* with the following extras, useful for completion on
+    posix shells:
+
+        * Escape sequences are removed in 'COMMAND' and 'ARGS'.
+        * A space is appended to each full completion result.
+        * The special characters will be escaped in the output.
+
 emit_hook 'ARGS ...'::
     Emits a custom hook to all idling herbstclients.
 

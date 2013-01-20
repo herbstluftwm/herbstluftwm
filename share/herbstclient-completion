@@ -4,7 +4,7 @@ _herbstclient_complete() {
     local IFS=$'\n'
     COMPREPLY=(
         # just call the herbstclient complete .. but without herbstclient as argument
-        $(herbstclient -q complete "$((COMP_CWORD-1))" "${COMP_WORDS[@]:1}")
+        $(herbstclient -q complete_shell "$((COMP_CWORD-1))" "${COMP_WORDS[@]:1}")
     )
 }
 

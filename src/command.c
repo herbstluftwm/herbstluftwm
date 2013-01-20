@@ -19,6 +19,10 @@
 #include <stdio.h>
 #include <search.h>
 
+// if the current completion needs shell quoting and other shell specific
+// behaviour
+static bool g_shell_quoting = false;
+
 static char* completion_directions[]    = { "left", "right", "down", "up",NULL};
 static char* completion_focus_args[]    = { "-i", "-e", NULL };
 static char* completion_unrule_args[]   = { "-F", "--all", NULL };
@@ -287,7 +291,10 @@ static void try_complete_suffix(char* needle, char* to_check, char* suffix, GStr
         }
     }
     if (matches) {
-        char* escaped = posix_sh_escape(to_check);
+        char* escaped = NULL;
+        if (g_shell_quoting) {
+            escaped = posix_sh_escape(to_check);
+        }
         g_string_append(output, escaped ? escaped : to_check);
         free(escaped);
         g_string_append(output, suffix);
@@ -295,7 +302,8 @@ static void try_complete_suffix(char* needle, char* to_check, char* suffix, GStr
 }
 
 void try_complete(char* needle, char* to_check, GString* output) {
-    try_complete_suffix(needle, to_check, " \n", output);
+    char* suffix = g_shell_quoting ? " \n" : "\n";
+    try_complete_suffix(needle, to_check, suffix, output);
 }
 
 void try_complete_partial(char* needle, char* to_check, GString* output) {
@@ -450,12 +458,16 @@ int complete_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
+    char* cmdname = argv[0];
+    g_shell_quoting = !strcmp(cmdname, "complete_shell");
     // index must be between first and last arg of "command to complete ..."
     int position = CLAMP(atoi(argv[1]), 0, argc-2);
     (void)SHIFT(argc, argv);
     (void)SHIFT(argc, argv);
-    for (int i = 0; i < argc; i++) {
-        posix_sh_compress_inplace(argv[i]);
+    if (g_shell_quoting) {
+        for (int i = 0; i < argc; i++) {
+            posix_sh_compress_inplace(argv[i]);
+        }
     }
     return complete_against_commands(argc, argv, position, output);
 }

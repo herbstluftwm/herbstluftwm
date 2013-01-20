@@ -150,6 +150,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "dump",           print_layout_command),
     CMD_BIND(             "load",           load_command),
     CMD_BIND(             "complete",       complete_command),
+    CMD_BIND(             "complete_shell", complete_command),
     CMD_BIND_NO_OUTPUT(   "lock",           monitors_lock_command),
     CMD_BIND_NO_OUTPUT(   "unlock",         monitors_unlock_command),
     CMD_BIND(             "lock_tag",       monitor_lock_tag_command),
