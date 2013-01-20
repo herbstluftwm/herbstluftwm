@@ -350,18 +350,15 @@ void complete_against_monitors(int argc, char** argv, int pos, GString* output) 
 
 struct wcd { /* window id completion data */
     char* needle;
-    size_t needlelen;
     GString* output;
 };
 
 static void add_winid_completion(void* key, HSClient* client, struct wcd* data)
 {
     char buf[100];
-    GString* out = data->output;
-    snprintf(buf, LENGTH(buf), "0x%lx\n", client->window);
-    if (!strncmp(buf, data->needle, data->needlelen)) {
-        g_string_append(out, buf);
-    }
+    snprintf(buf, LENGTH(buf), "0x%lx", client->window);
+    try_complete(data->needle, buf, data->output);
+
 }
 
 void complete_against_winids(int argc, char** argv, int pos, GString* output) {
@@ -371,7 +368,6 @@ void complete_against_winids(int argc, char** argv, int pos, GString* output) {
     } else {
         data.needle = argv[pos];
     }
-    data.needlelen = strlen(data.needle);
     data.output = output;
     clientlist_foreach((GHFunc)add_winid_completion, &data);
 }
