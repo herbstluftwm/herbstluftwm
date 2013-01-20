@@ -285,7 +285,9 @@ void try_complete(char* needle, char* to_check, GString* output) {
         }
     }
     if (matches) {
-        g_string_append(output, to_check);
+        char* escaped = posix_sh_escape(to_check);
+        g_string_append(output, escaped ? escaped : to_check);
+        free(escaped);
         g_string_append_c(output, '\n');
     }
 }

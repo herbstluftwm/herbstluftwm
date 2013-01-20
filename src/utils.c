@@ -438,3 +438,65 @@ int min(int a, int b) {
     return b;
 }
 
+char* posix_sh_escape(char* source) {
+    size_t count = 0;
+    int i;
+    for (i = 0; source[i]; i++) {
+        int j = LENGTH(ESCAPE_CHARACTERS) - 1; // = strlen(ESCAPE_CHARACTERS)
+        slow_assert(j == strlen(ESCAPE_CHARACTERS));
+        while (j--) {
+            slow_assert(0 <= j && j < strlen(ESCAPE_CHARACTERS));
+            if (source[i] == ESCAPE_CHARACTERS[j]) {
+                count++;
+                break;
+            }
+        }
+    }
+    size_t source_len = i;
+    // special chars:
+    if (source[0] == '~') {
+        count++;
+    }
+    // if there is nothing to escape
+    if (count == 0) return NULL;
+    char* target = malloc(sizeof(char) * (count + source_len + 1));
+    if (!target) {
+        die("cannot malloc - there is no memory available\n");
+    }
+
+    // do the actual escaping
+    // special chars:
+    int s = 0; // position in the source
+    int t = 0; // position in the target
+    slow_assert(s < strlen(source));
+    slow_assert(t < (count + source_len));
+    if (source[0] == '~') {
+        target[t++] = '\\';
+        target[t++] = source[s++];
+    }
+    slow_assert(s < strlen(source));
+    slow_assert(t < (count + source_len));
+    while (source[s]) {
+        // check if we need to escape the next char
+        int j = LENGTH(ESCAPE_CHARACTERS) - 1; // = strlen(ESCAPE_CHARACTERS)
+        slow_assert(s < strlen(source));
+        slow_assert(t < (count + source_len));
+        while (j--) {
+            if (source[s] == ESCAPE_CHARACTERS[j]) {
+                // if source[s] needs to be escape, then put an backslash first
+                target[t++] = '\\';
+                break;
+            }
+        }
+        slow_assert(s < strlen(source));
+        slow_assert(t < (count + source_len));
+        // put the actual character
+        target[t++] = source[s++];
+    }
+    slow_assert(s == strlen(source));
+    slow_assert(t == (count + source_len));
+    // terminate the string
+    target[t] = '\0';
+    return target;
+}
+

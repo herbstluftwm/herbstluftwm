@@ -50,5 +50,24 @@ int         g_verbose;
         } \
     } while(0)
 
+// macro for very slow asserts, which are only executed if DEBUG is defined
+#define DEBUG
+#ifdef DEBUG
+#define slow_assert(X)                                                  \
+    do {                                                                \
+        if (!(X)) {                                                     \
+            fprintf(stderr, "%s:%d: %s: Slow assertion `%s\' failed.",  \
+                    __FILE__, __LINE__, __func__, #X);                  \
+            abort();                                                    \
+        }                                                               \
+    } while (0)
+#else // DEBUG
+#define slow_assert(ignore)((void) 0)
+#endif // DEBUG
+
+// characters that need to be escaped
+// http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html
+#define ESCAPE_CHARACTERS "|&;<>()$`\\\"\' \t\n"
+
 #endif
 

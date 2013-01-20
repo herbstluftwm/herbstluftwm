@@ -107,5 +107,9 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
         (a).height == (b).height    \
     )
 
+// returns an posix sh escaped string or NULL if there is nothing to escape
+// if a new string is returned, then the caller has to free it
+char* posix_sh_escape(char* source);
+
 #endif
 
