@@ -494,11 +494,11 @@ int complete_command(int argc, char** argv, GString* output) {
 
 void complete_against_keybind_command(int argc, char** argv, int position,
                                       GString* output) {
-    if (argc <  2 || position < 1) {
+    if (argc <  1 || position < 1) {
         return;
     }
-    // complete the keycombination
     if (position == 1) {
+        // complete the keycombination
         char* needle = (position < argc) ? argv[position] : "";
         char* lasttok = strlasttoken(needle, KEY_COMBI_SEPARATORS);
         char* prefix = g_strdup(needle);
@@ -512,10 +512,10 @@ void complete_against_keybind_command(int argc, char** argv, int position,
         complete_against_modifiers(lasttok, separator, prefix, output);
         complete_against_keysyms(lasttok, prefix, output);
         g_free(prefix);
-        return;
+    } else if (position >= 2 && argc >= 2) {
+        // complete the command
+        complete_against_commands(argc - 2, argv + 2, position - 2, output);
     }
-    // complete the command
-    complete_against_commands(argc - 2, argv + 2, position - 2, output);
 }
 
 int complete_against_commands(int argc, char** argv, int position,
