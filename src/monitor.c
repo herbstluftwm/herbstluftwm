@@ -243,17 +243,6 @@ static void rectlist_free(RectList* head) {
     rectlist_free(next);
 }
 
-static size_t rectlist_len(RectList* head) {
-    if (!head) return 0;
-    return 1 + rectlist_len(head->next);
-}
-
-static void rectlist_to_array(RectList* head, XRectangle* rects) {
-    if (!head) return;
-    *rects = head->rect;
-    rectlist_to_array(head->next, rects + 1);
-}
-
 static RectList* disjoin_rects(XRectangle* buf, size_t count) {
     RectList* cur;
     struct RectList* rects = NULL;
