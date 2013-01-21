@@ -12,6 +12,7 @@ Changes:
     * new command complete_shell for posix shell specific completion
     * add completion for the rule command
     * add completion for keycombinations in keybind
+    * the hook consequence now also tells the window id that triggerd the rule
 
 Release 0.5.1 on 2013-01-05
 ---------------------------

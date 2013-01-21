@@ -678,6 +678,9 @@ void consequence_ewmhnotify(HSConsequence* cons, HSClient* client,
 
 void consequence_hook(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
-    char* hook_str[] = { "rule" , cons->value.str };
+    GString* winid = g_string_sized_new(20);
+    g_string_printf(winid, "0x%lx", client->window);
+    char* hook_str[] = { "rule" , cons->value.str, winid->str };
     hook_emit(LENGTH(hook_str), hook_str);
+    g_string_free(winid, true);
 }

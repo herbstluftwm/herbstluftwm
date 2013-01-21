@@ -968,9 +968,10 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     *toggle*.
 
 +hook+::
-    emits the custom hook +rule+ 'VALUE' when this rule is triggered. This
-    consequence can be used multiple times, which will cause a hook to be
-    emitted for each occurrence of a hook consequence.
+    emits the custom hook +rule+ 'VALUE' 'WINID' when this rule is triggered by
+    a new window with the id 'WINID'. This consequence can be used multiple
+    times, which will cause a hook to be emitted for each occurrence of a hook
+    consequence.
 
 A rule's behaviour can be configured by some special 'FLAGS':
 
@@ -1045,6 +1046,10 @@ tag_removed 'TAG'::
 
 urgent [on|off] 'WINID'::
     The urgent state of client with given 'WINID' has been changed to [on|off].
+
+rule 'NAME' 'WINID'::
+    A window with the id 'WINID' appeared which triggerd a rule with the
+    consequence hook='NAME'.
 
 There are also other useful hooks, which never will be emitted by herbstluftwm
 itself, but which can be emitted with the *emit_hook* command:
