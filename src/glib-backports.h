@@ -30,5 +30,21 @@
 
 #endif
 
+
+
+#if !(GLIB_CHECK_VERSION(2, 28, 0))
+/**
+ * g_list_free_full
+ *
+ * actually this is not c-standard-compatible because of casting
+ * an one-parameter-function to an 2-parameter-function.
+ * but it should work on almost all architectures (maybe not amd64?)
+ */
+#define g_list_free_full(LIST, DESTROY) do {            \
+        g_list_foreach((LIST), (GFunc)(DESTROY), 0);    \
+        g_list_free((LIST));                            \
+    } while(0)
+#endif
+
 #endif
 

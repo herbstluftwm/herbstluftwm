@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <glib.h>
+#include "glib-backports.h"
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
 
@@ -33,16 +34,7 @@ void key_destroy() {
 }
 
 void key_remove_all_binds() {
-#if GLIB_CHECK_VERSION(2, 28, 0)
-    // only available since glib 2.28
     g_list_free_full(g_key_binds, (GDestroyNotify)keybinding_free);
-#else
-    // actually this is not c-standard-compatible because of casting
-    // an one-parameter-function to an 2-parameter-function.
-    // but it should work on almost all architectures (maybe not amd64?)
-    g_list_foreach(g_key_binds, (GFunc)keybinding_free, 0);
-    g_list_free(g_key_binds);
-#endif
     g_key_binds = NULL;
     regrab_keys();
 }

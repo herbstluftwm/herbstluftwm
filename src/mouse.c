@@ -128,15 +128,7 @@ void mouse_bind_function(unsigned int modifiers, unsigned int button,
 }
 
 int mouse_unbind_all() {
-#if GLIB_CHECK_VERSION(2, 28, 0)
-    g_list_free_full(g_mouse_binds, g_free); // only available since glib 2.28
-#else
-    // actually this is not c-standard-compatible because of casting
-    // an one-parameter-function to an 2-parameter-function.
-    // but it should work on almost all architectures (maybe not amd64?)
-    g_list_foreach(g_mouse_binds, (GFunc)g_free, 0);
-    g_list_free(g_mouse_binds);
-#endif
+    g_list_free_full(g_mouse_binds, g_free);
     g_mouse_binds = NULL;
     HSClient* client = get_current_client();
     if (client) {
