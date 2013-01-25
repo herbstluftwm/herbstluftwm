@@ -6,6 +6,7 @@ Next Release
 
 Changes:
 
+    * focus a client on its tag after moving it there (by shift_to_monitor or move)
     * disallow focus_follows_mouse if the focus change hides another window
       (e.g. an pseudotiled window in the max layout). In that case an extra
       click is required to change the focus.

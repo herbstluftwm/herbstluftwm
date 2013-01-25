@@ -386,6 +386,8 @@ void tag_move_client(HSClient* client, HSTag* target) {
     frame_remove_window(tag_source->frame, client->window);
     // insert window into target
     frame_insert_window(target->frame, client->window);
+    // enfoce it to be focused on the target tag
+    frame_focus_window(target->frame, client->window);
     stack_remove_slice(client->tag->stack, client->slice);
     client->tag = target;
     stack_insert_slice(client->tag->stack, client->slice);

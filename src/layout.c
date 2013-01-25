@@ -1491,6 +1491,8 @@ Window frame_focused_window(HSFrame* frame) {
 }
 
 // try to focus window in frame
+// it does not require anything from the frame. it may be infocused or even
+// hidden.
 // returns true if win was found and focused, else returns false
 bool frame_focus_window(HSFrame* frame, Window win) {
     if (!frame) {
