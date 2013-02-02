@@ -9,6 +9,8 @@
 #include <stdbool.h>
 #include <glib.h>
 
+#define OBJECT_PATH_SEPARATOR '/'
+
 typedef struct HSObject {
     struct HSAttribute* attributes;
     size_t              attribute_count;
@@ -53,6 +55,10 @@ void hsobject_unlink_by_name(HSObject* parent, char* name);
 void hsobject_link_rename(HSObject* parent, char* oldname, char* newname);
 void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child);
 
+HSObject* hsobject_by_path(char* path);
+HSObject* hsobject_parse_path(char* path, char** unparsable);
+HSObject* hsobject_parse_path_verbose(char* path, char** unparsable, GString* output);
+
 void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes);
 
 bool    ATTR_ACCEPT_ALL (HSObject* obj, HSAttribute* attr);
@@ -64,7 +70,8 @@ HSObject* hsobject_find_child(HSObject* obj, char* name);
 int list_objects_command(int argc, char* argv[], GString* output);
 int print_object_tree_command(int argc, char* argv[], GString* output);
 
-void hsobject_complete_children(HSObject* obj, char* needle, GString* output);
+void hsobject_complete_children(HSObject* obj, char* needle, char* prefix,
+                                GString* output);
 
 #endif
 

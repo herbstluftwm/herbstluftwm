@@ -399,16 +399,19 @@ void complete_against_objects(int argc, char** argv, int pos, GString* output) {
     // Remove command name
     (void)SHIFT(argc,argv);
     pos--;
-    // find object to operate on
-    HSObject* obj = hsobject_root();
-    while (pos > 0 && pos < argc) {
-        obj = hsobject_find_child(obj, argv[0]);
-        if (!obj) return;
-        (void)SHIFT(argc, argv);
-        pos--;
+    char* needle = (pos < argc) ? argv[pos] : "";
+    char* suffix;
+    char* prefix = g_new(char, strlen(needle)+2);
+    HSObject* obj = hsobject_parse_path(needle, &suffix);
+    strncpy(prefix, needle, suffix-needle);
+    if (suffix != needle && prefix[suffix - needle - 1] != OBJECT_PATH_SEPARATOR) {
+        prefix[suffix - needle] = OBJECT_PATH_SEPARATOR;
+        prefix[suffix - needle + 1] = '\0';
+    } else {
+        prefix[suffix - needle] = '\0';
     }
-    char* needle = (pos < argc) ? argv[pos] : NULL;
-    hsobject_complete_children(obj, needle, output);
+    hsobject_complete_children(obj, suffix, prefix, output);
+    g_free(prefix);
 }
 
 struct wcd { /* window id completion data */

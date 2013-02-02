@@ -10,6 +10,7 @@
 #include "ipc-protocol.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 typedef struct {
     char*       name;
@@ -83,15 +84,16 @@ void hsobjectchild_destroy(HSObjectChild* oc) {
 
 struct HSObjectComplChild {
     char*    needle;
+    char*    prefix;
     GString* output;
 };
 
 static void completion_helper(HSObjectChild* child, struct HSObjectComplChild* data) {
-    try_complete(data->needle, child->name, data->output);
+    try_complete_prefix_partial(data->needle, child->name, data->prefix, data->output);
 }
 
-void hsobject_complete_children(HSObject* obj, char* needle, GString* output) {
-    struct HSObjectComplChild data = { needle, output };
+void hsobject_complete_children(HSObject* obj, char* needle, char* prefix, GString* output) {
+    struct HSObjectComplChild data = { needle, prefix, output };
     g_list_foreach(obj->children, (GFunc) completion_helper, &data);
 }
 
@@ -172,15 +174,11 @@ static void print_child_name(HSObjectChild* child, GString* output) {
 }
 
 int list_objects_command(int argc, char* argv[], GString* output) {
-    char* cmdname = argv[0];
-    HSObject* obj = hsobject_root();
-    while (SHIFT(argc,argv)) {
-        obj = hsobject_find_child(obj, argv[0]);
-        if (!obj) {
-            g_string_append_printf(output, "%s: Can not find object \"%s\"\n",
-                                   cmdname, argv[0]);
-            return HERBST_INVALID_ARGUMENT;
-        }
+    char* path = (argc < 2) ? "" : argv[1];
+    char* unparsable;
+    HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, output);
+    if (strcmp("", unparsable)) {
+        return HERBST_INVALID_ARGUMENT;
     }
     // list attributes
     for (int i = 0; i < obj->attribute_count; i++) {
@@ -227,17 +225,71 @@ static HSTreeInterface object_nth_child(HSTree tree, size_t idx) {
     return intf;
 }
 
-int print_object_tree_command(int argc, char* argv[], GString* output) {
-    char* cmdname = argv[0];
-    HSObjectChild oc = { .name = "", .child = hsobject_root() };
-    while (SHIFT(argc, argv)) {
-        oc.name = argv[0];
-        oc.child = hsobject_find_child(oc.child, oc.name);
-        if (!oc.child) {
-            g_string_append_printf(output, "%s: Can not find object \"%s\"\n",
-                                   cmdname, argv[0]);
-            return HERBST_INVALID_ARGUMENT;
+HSObject* hsobject_by_path(char* path) {
+    HSObject* obj = hsobject_parse_path(path, &path);
+    if (!strcmp("", path)) {
+        return obj;
+    } else {
+        // an invalid path was given if it was not parsed entirely
+        return NULL;
+    }
+}
+
+HSObject* hsobject_parse_path_verbose(char* path, char** unparsable,
+                                      GString* output) {
+    char* pathdup = strdup(path);
+    char* curname = pathdup;
+    char* lastname = "root";
+    char seps[] = { OBJECT_PATH_SEPARATOR, '\0' };
+    // replace all separators by null bytes
+    g_strdelimit(curname, seps, '\0');
+    HSObject* obj = hsobject_root();
+    HSObject* child;
+    // skip separator characters
+    while (*path == OBJECT_PATH_SEPARATOR) {
+        path++;
+        curname++;
+    }
+    while (strcmp("", path)) {
+        child = hsobject_find_child(obj, curname);
+        if (!child) {
+            if (output) {
+                g_string_append_printf(output, "Invalid path \"%s\": ", path);
+                g_string_append_printf(output, "No child \"%s\" in object %s\n",
+                                       curname, lastname);
+            }
+            break;
         }
+        lastname = curname;
+        obj = child;
+        // skip the name
+        path    += strlen(curname);
+        curname += strlen(curname);
+        // skip separator characters
+        while (*path == OBJECT_PATH_SEPARATOR) {
+            path++;
+            curname++;
+        }
+    }
+    *unparsable = path;
+    free(pathdup);
+    return obj;
+}
+
+HSObject* hsobject_parse_path(char* path, char** unparsable) {
+    return hsobject_parse_path_verbose(path, unparsable, NULL);
+}
+
+
+int print_object_tree_command(int argc, char* argv[], GString* output) {
+    char* unparsable;
+    char* path = (argc < 2) ? "" : argv[1];
+    HSObjectChild oc = {
+        .name = path,
+        .child = hsobject_parse_path_verbose(path, &unparsable, output),
+    };
+    if (strcmp("", unparsable)) {
+        return HERBST_INVALID_ARGUMENT;
     }
     HSTreeInterface intf = {
         .nth_child  = object_nth_child,
