@@ -405,3 +405,38 @@ int hsattribute_get_command(int argc, char* argv[], GString* output) {
     return 0;
 }
 
+int substitute_command(int argc, char* argv[], GString* output) {
+    // usage: substitute identifier attribute command [args ...]
+    //            0         1           2       3
+    if (argc < 4) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    char* identifier = argv[1];
+    HSAttribute* attribute = hsattribute_parse_path_verbose(argv[2], output);
+    if (!attribute) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    GString* attribute_string = hsattribute_to_string(attribute);
+
+    (void) SHIFT(argc, argv); // remove command name
+    (void) SHIFT(argc, argv); // remove identifier
+    (void) SHIFT(argc, argv); // remove attribute
+
+    // construct the new command
+    char** command = g_new(char*, argc + 1);
+    command[argc] = NULL;
+    for (int i = 0; i < argc; i++) {
+        if (!strcmp(identifier, argv[i])) {
+            // if argument equals the identifier, replace it by the attribute
+            // value
+            command[i] = attribute_string->str;
+        } else {
+            command[i] = argv[i];
+        }
+    }
+    int status = call_command(argc, command, output);
+    g_free(command);
+    g_string_free(attribute_string, true);
+    return status;
+}
+

@@ -680,6 +680,15 @@ pseudotile [*on*|*off*|*toggle*]::
     client is to ensure, that it fits into its tile. If no argument is given,
     pseudotile mode is toggled.
 
+substitute 'IDENTIFIER' 'ATTRIBUTE' 'COMMAND' ['ARGS' ...]::
+    Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'ARGS'
+    by the value of the 'ATTRIBUTE'. Note that the 'COMMAND' also is replaced by
+    the attribute value if it equals 'IDENTIFIER'. The replaced command with its
+    arguments then is executed. Examples:
+
+        * +substitute MYTITLE clients.focus.title echo MYTITLE+ +
+          Prints the title of the currently focused window.
+
 getenv 'NAME'::
     Gets the value of the environment variable 'NAME'.
 

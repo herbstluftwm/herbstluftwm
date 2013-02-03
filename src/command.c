@@ -47,7 +47,9 @@ static bool no_completion(int argc, char** argv, int pos) {
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
-static bool keybind_parameter_expected(int argc, char** argv, int pos);
+static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
+static bool parameter_expected_offset_2(int argc, char** argv, int pos);
+static bool parameter_expected_offset_3(int argc, char** argv, int pos);
 
 /* find out, if a command still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
@@ -69,7 +71,7 @@ struct {
     { "list_keybinds",  1,  no_completion },
     { "lock",           1,  no_completion },
     { "unlock",         1,  no_completion },
-    { "keybind",        2,  keybind_parameter_expected },
+    { "keybind",        2,  parameter_expected_offset_2 },
     { "keyunbind",      2,  no_completion },
     { "mousebind",      3,  no_completion },
     { "mouseunbind",    1,  no_completion },
@@ -131,6 +133,7 @@ struct {
     { "ls",             2,  no_completion },
     { "object_tree",    2,  no_completion },
     { "get_attribute",  2,  no_completion },
+    { "substitute",     3,  parameter_expected_offset_3 },
     { "getenv",         2,  no_completion },
     { "setenv",         3,  no_completion },
     { "unsetenv",       2,  no_completion },
@@ -232,6 +235,10 @@ struct {
     { "object_tree",    EQ, 1,  .function = complete_against_objects },
     { "get_attribute",  EQ, 1,  .function = complete_against_objects },
     { "get_attribute",  EQ, 1,  .function = complete_against_attributes },
+    { "substitute",     EQ, 2,  .function = complete_against_objects },
+    { "substitute",     EQ, 2,  .function = complete_against_attributes },
+    { "substitute",     GE, 3,  .function = complete_against_commands_3 },
+    { "substitute",     GE, 3,  .function = complete_against_arg_1 },
     { 0 },
 };
 
@@ -588,6 +595,19 @@ void complete_against_env(int argc, char** argv, int position,
     g_string_free(curname, true);
 }
 
+void complete_against_commands_3(int argc, char** argv, int position,
+                                      GString* output) {
+    complete_against_commands(argc - 3, argv + 3, position - 3, output);
+}
+
+void complete_against_arg_1(int argc, char** argv, int position,
+                            GString* output)
+{
+    if (argc > 2 && position > 2) {
+        char* needle = (position < argc) ? argv[position] : "";
+        try_complete(needle, argv[1], output);
+    }
+}
 
 int complete_against_commands(int argc, char** argv, int position,
                               GString* output) {
@@ -708,16 +728,25 @@ bool first_parameter_is_flag(int argc, char** argv, int pos) {
     }
 }
 
-bool keybind_parameter_expected(int argc, char** argv, int pos) {
-    if (argc < 2 || pos < 2) {
+bool parameter_expected_offset(int argc, char** argv, int pos, int offset) {
+    if (argc < offset || pos < offset) {
         return true;
     }
-    if (pos == 2) {
+    if (pos == offset) {
         // at least a command name always is expected
         return true;
     }
-    return parameter_expected(argc - 2, argv + 2, pos - 2);
+    return parameter_expected(argc - offset, argv + offset, pos - offset);
 }
+
+bool parameter_expected_offset_2(int argc, char** argv, int pos) {
+    return parameter_expected_offset(argc,argv, pos, 2);
+}
+
+bool parameter_expected_offset_3(int argc, char** argv, int pos) {
+    return parameter_expected_offset(argc,argv, pos, 3);
+}
+
 
 int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, GString* output) {
