@@ -51,6 +51,7 @@ typedef void (*HandlerTable[LASTEvent]) (XEvent*);
 int quit();
 int reload();
 int version(int argc, char* argv[], GString* output);
+int echo(int argc, char* argv[], GString* output);
 int print_layout_command(int argc, char** argv, GString* output);
 int load_command(int argc, char** argv, GString* output);
 int print_tag_status_command(int argc, char** argv, GString* output);
@@ -85,6 +86,7 @@ void unmapnotify(XEvent* event);
 
 CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "quit",           quit),
+    CMD_BIND(             "echo",           echo),
     CMD_BIND_NO_OUTPUT(   "reload",         reload),
     CMD_BIND(             "version",        version),
     CMD_BIND(             "list_commands",  list_commands),
@@ -183,6 +185,19 @@ int version(int argc, char* argv[], GString* output) {
     (void) argc;
     (void) argv;
     g_string_append(output, HERBSTLUFT_VERSION_STRING);
+    return 0;
+}
+
+int echo(int argc, char* argv[], GString* output) {
+    if (SHIFT(argc, argv)) {
+        // if there still is an argument
+        g_string_append(output, argv[0]);
+        while (SHIFT(argc, argv)) {
+            g_string_append_c(output, ' ');
+            g_string_append(output, argv[0]);
+        }
+    }
+    g_string_append_c(output, '\n');
     return 0;
 }
 

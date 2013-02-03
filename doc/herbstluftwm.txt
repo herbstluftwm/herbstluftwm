@@ -155,6 +155,10 @@ reload::
 version::
     Prints the version of the running herbstluftwm instance.
 
+echo ['ARGS' ...]::
+    Prints all given 'ARGS' separated by a single space and a newline
+    afterwards.
+
 list_commands::
     Lists all available commands.
 
