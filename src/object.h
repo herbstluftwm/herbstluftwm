@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <glib.h>
 
-#define OBJECT_PATH_SEPARATOR '/'
+#define OBJECT_PATH_SEPARATOR '.'
 
 typedef struct HSObject {
     struct HSAttribute* attributes;
