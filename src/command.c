@@ -18,6 +18,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <search.h>
+#include <unistd.h>
+
+extern char** environ;
 
 // if the current completion needs shell quoting and other shell specific
 // behaviour
@@ -218,6 +221,9 @@ struct {
     { "pad",            EQ, 1,  .function = complete_against_monitors },
     { "list_padding",   EQ, 1,  .function = complete_against_monitors },
     { "tag_status",     EQ, 1,  .function = complete_against_monitors },
+    { "setenv",         EQ, 1,  .function = complete_against_env },
+    { "getenv",         EQ, 1,  .function = complete_against_env },
+    { "unsetenv",       EQ, 1,  .function = complete_against_env },
     { 0 },
 };
 
@@ -517,6 +523,23 @@ void complete_against_keybind_command(int argc, char** argv, int position,
         complete_against_commands(argc - 2, argv + 2, position - 2, output);
     }
 }
+
+void complete_against_env(int argc, char** argv, int position,
+                          GString* output) {
+    GString* curname = g_string_sized_new(30);
+    char* needle = (position < argc) ? argv[position] : "";
+    for (char** env = environ; *env; ++env) {
+        g_string_assign(curname, *env);
+        char* name_end = strchr(*env, '=');
+        if (!name_end) {
+            continue;
+        }
+        g_string_truncate(curname, name_end - *env);
+        try_complete(needle, curname->str, output);
+    }
+    g_string_free(curname, true);
+}
+
 
 int complete_against_commands(int argc, char** argv, int position,
                               GString* output) {

@@ -13,6 +13,7 @@ Changes:
     * new command complete_shell for posix shell specific completion
     * add completion for the rule command
     * add completion for keycombinations in keybind
+    * add completion for setenv, getenv and unsetenv
     * the hook consequence now also tells the window id that triggerd the rule
     * new command: echo
 
