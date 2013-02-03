@@ -85,16 +85,33 @@ void hsobjectchild_destroy(HSObjectChild* oc) {
 struct HSObjectComplChild {
     char*    needle;
     char*    prefix;
+    GString* curname;
     GString* output;
 };
 
 static void completion_helper(HSObjectChild* child, struct HSObjectComplChild* data) {
-    try_complete_prefix_partial(data->needle, child->name, data->prefix, data->output);
+    g_string_assign(data->curname, child->name);
+    g_string_append_c(data->curname, OBJECT_PATH_SEPARATOR);
+    try_complete_prefix_partial(data->needle, data->curname->str, data->prefix, data->output);
 }
 
 void hsobject_complete_children(HSObject* obj, char* needle, char* prefix, GString* output) {
-    struct HSObjectComplChild data = { needle, prefix, output };
+    struct HSObjectComplChild data = {
+        needle,
+        prefix,
+        g_string_new(""),
+        output
+    };
     g_list_foreach(obj->children, (GFunc) completion_helper, &data);
+    g_string_free(data.curname, true);
+}
+
+void hsobject_complete_attributes(HSObject* obj, char* needle, char* prefix,
+                                GString* output) {
+    for (int i = 0; i < obj->attribute_count; i++) {
+        HSAttribute* attr = obj->attributes + i;
+        try_complete_prefix(needle, attr->name, prefix, output);
+    }
 }
 
 static int child_check_name(HSObjectChild* child, char* name) {
@@ -169,8 +186,38 @@ HSObject* hsobject_find_child(HSObject* obj, char* name) {
     }
 }
 
+HSAttribute* hsobject_find_attribute(HSObject* obj, char* name) {
+    for (int i = 0; i < obj->attribute_count; i++) {
+        if (!strcmp(name, obj->attributes[i].name)) {
+            return obj->attributes + i;
+        }
+    }
+    return NULL;
+}
+
 static void print_child_name(HSObjectChild* child, GString* output) {
     g_string_append_printf(output, "%s/\n", child->name);
+}
+
+void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
+    switch (attribute->type) {
+        case HSATTR_TYPE_BOOL:
+            if (*(attribute->value.b)) {
+                g_string_append_printf(output, "true");
+            } else {
+                g_string_append_printf(output, "false");
+            }
+            break;
+        case HSATTR_TYPE_STRING:
+            g_string_append_printf(output, "%s", (*(attribute->value.str))->str);
+            break;
+    }
+}
+
+GString* hsattribute_to_string(HSAttribute* attribute) {
+    GString* str = g_string_new("");
+    hsattribute_append_to_string(attribute, str);
+    return str;
 }
 
 int list_objects_command(int argc, char* argv[], GString* output) {
@@ -184,18 +231,14 @@ int list_objects_command(int argc, char* argv[], GString* output) {
     for (int i = 0; i < obj->attribute_count; i++) {
         HSAttribute* a = obj->attributes + i;
         g_string_append_printf(output, "%-20s = ", a->name);
-        switch (a->type) {
-            case HSATTR_TYPE_BOOL:
-                if (*(a->value.b)) {
-                    g_string_append_printf(output, "true\n");
-                } else {
-                    g_string_append_printf(output, "false\n");
-                }
-                break;
-            case HSATTR_TYPE_STRING:
-                g_string_append_printf(output, "\"%s\"\n", (*(a->value.str))->str);
-                break;
+        if (a->type == HSATTR_TYPE_STRING) {
+            g_string_append_c(output, '\"');
         }
+        hsattribute_append_to_string(a, output);
+        if (a->type == HSATTR_TYPE_STRING) {
+            g_string_append_c(output, '\"');
+        }
+        g_string_append_c(output, '\n');
     }
     // list children
     g_list_foreach(obj->children, (GFunc) print_child_name, output);
@@ -280,6 +323,32 @@ HSObject* hsobject_parse_path(char* path, char** unparsable) {
     return hsobject_parse_path_verbose(path, unparsable, NULL);
 }
 
+HSAttribute* hsattribute_parse_path_verbose(char* path, GString* output) {
+    GString* object_error = g_string_new("");
+    HSAttribute* attr;
+    char* unparsable;
+    HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, object_error);
+    if (obj == NULL || strchr(unparsable, OBJECT_PATH_SEPARATOR) != NULL) {
+        // if there is still another path separator
+        // then unparsable is more than just the attribute name.
+        g_string_append(output, object_error->str);
+        attr = NULL;
+    } else {
+        // if there is no path remaining separator, then unparsable contains
+        // the attribute name
+        attr = hsobject_find_attribute(obj, unparsable);
+        if (!attr) {
+            GString* obj_path = g_string_new(path);
+            g_string_truncate(obj_path, unparsable - path);
+            g_string_append_printf(output,
+                "Unknown attribute \"%s\" in object \"%s\".\n",
+                unparsable, obj_path->str);
+            g_string_free(obj_path, true);
+        }
+    }
+    g_string_free(object_error, true);
+    return attr;
+}
 
 int print_object_tree_command(int argc, char* argv[], GString* output) {
     char* unparsable;
@@ -322,5 +391,17 @@ void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes) {
     obj->attributes = g_renew(HSAttribute, obj->attributes, count);
     obj->attribute_count = count;
     memcpy(obj->attributes, attributes, count * sizeof(HSAttribute));
+}
+
+int hsattribute_get_command(int argc, char* argv[], GString* output) {
+    if (argc < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    HSAttribute* attr = hsattribute_parse_path_verbose(argv[1], output);
+    if (!attr) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    hsattribute_append_to_string(attr, output);
+    return 0;
 }
 

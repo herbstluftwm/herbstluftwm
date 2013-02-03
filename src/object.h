@@ -66,12 +66,19 @@ bool    ATTR_DENY_ALL   (HSObject* obj, HSAttribute* attr);
 #define ATTR_READ_ONLY  NULL
 
 HSObject* hsobject_find_child(HSObject* obj, char* name);
+HSAttribute* hsobject_find_attribute(HSObject* obj, char* name);
 
 int list_objects_command(int argc, char* argv[], GString* output);
 int print_object_tree_command(int argc, char* argv[], GString* output);
+int hsattribute_get_command(int argc, char* argv[], GString* output);
+void hsattribute_append_to_string(HSAttribute* attribute, GString* output);
+GString* hsattribute_to_string(HSAttribute* attribute);
 
 void hsobject_complete_children(HSObject* obj, char* needle, char* prefix,
                                 GString* output);
+void hsobject_complete_attributes(HSObject* obj, char* needle, char* prefix,
+                                GString* output);
+
 
 #endif
 

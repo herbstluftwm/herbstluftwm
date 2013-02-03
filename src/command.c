@@ -128,6 +128,7 @@ struct {
     { "unrule",         2,  no_completion },
     { "fullscreen",     2,  no_completion },
     { "pseudotile",     2,  no_completion },
+    { "get_attribute",  2,  no_completion },
     { "getenv",         2,  no_completion },
     { "setenv",         3,  no_completion },
     { "unsetenv",       2,  no_completion },
@@ -227,6 +228,8 @@ struct {
     { "unsetenv",       EQ, 1,  .function = complete_against_env },
     { "object_tree",    GE, 1,  .function = complete_against_objects },
     { "ls",             GE, 1,  .function = complete_against_objects },
+    { "get_attribute",  EQ, 1,  .function = complete_against_objects },
+    { "get_attribute",  EQ, 1,  .function = complete_against_attributes },
     { 0 },
 };
 
@@ -412,6 +415,27 @@ void complete_against_objects(int argc, char** argv, int pos, GString* output) {
     }
     hsobject_complete_children(obj, suffix, prefix, output);
     g_free(prefix);
+}
+
+void complete_against_attributes(int argc, char** argv, int pos, GString* output) {
+    // Remove command name
+    (void)SHIFT(argc,argv);
+    pos--;
+    char* needle = (pos < argc) ? argv[pos] : "";
+    char* unparsable;
+    HSObject* obj = hsobject_parse_path(needle, &unparsable);
+    if (obj && strchr(unparsable, OBJECT_PATH_SEPARATOR) == NULL) {
+        GString* prefix = g_string_new(needle);
+        g_string_truncate(prefix, unparsable - needle);
+        if (prefix->len >= 1) {
+            char last = prefix->str[prefix->len - 1];
+            if (last != OBJECT_PATH_SEPARATOR) {
+                g_string_append_c(prefix, OBJECT_PATH_SEPARATOR);
+            }
+        }
+        hsobject_complete_attributes(obj, unparsable, prefix->str, output);
+        g_string_free(prefix, true);
+    }
 }
 
 struct wcd { /* window id completion data */
