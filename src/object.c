@@ -287,6 +287,7 @@ HSObject* hsobject_by_path(char* path) {
 
 HSObject* hsobject_parse_path_verbose(char* path, char** unparsable,
                                       GString* output) {
+    char* origpath = path;
     char* pathdup = strdup(path);
     char* curname = pathdup;
     char* lastname = "root";
@@ -304,7 +305,7 @@ HSObject* hsobject_parse_path_verbose(char* path, char** unparsable,
         child = hsobject_find_child(obj, curname);
         if (!child) {
             if (output) {
-                g_string_append_printf(output, "Invalid path \"%s\": ", path);
+                g_string_append_printf(output, "Invalid path \"%s\": ", origpath);
                 g_string_append_printf(output, "No child \"%s\" in object %s\n",
                                        curname, lastname);
             }
