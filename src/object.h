@@ -65,6 +65,8 @@ HSObject* hsobject_by_path(char* path);
 HSObject* hsobject_parse_path(char* path, char** unparsable);
 HSObject* hsobject_parse_path_verbose(char* path, char** unparsable, GString* output);
 
+HSAttribute* hsattribute_parse_path_verbose(char* path, GString* output);
+
 void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes);
 
 #define ATTR_READ_ONLY  NULL

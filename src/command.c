@@ -238,6 +238,7 @@ struct {
     { "get_attribute",  EQ, 1,  .function = complete_against_attributes },
     { "set_attribute",  EQ, 1,  .function = complete_against_objects },
     { "set_attribute",  EQ, 1,  .function = complete_against_attributes },
+    { "set_attribute",  EQ, 2,  .function = complete_against_attribute_values },
     { "substitute",     EQ, 2,  .function = complete_against_objects },
     { "substitute",     EQ, 2,  .function = complete_against_attributes },
     { "substitute",     GE, 3,  .function = complete_against_commands_3 },
@@ -447,6 +448,23 @@ void complete_against_attributes(int argc, char** argv, int pos, GString* output
         }
         hsobject_complete_attributes(obj, unparsable, prefix->str, output);
         g_string_free(prefix, true);
+    }
+}
+
+void complete_against_attribute_values(int argc, char** argv, int pos, GString* output) {
+    char* needle = (pos < argc) ? argv[pos] : "";
+    char* path =  (1 < argc) ? argv[1] : "";
+    GString* path_error = g_string_new("");
+    HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
+    g_string_free(path_error, true);
+    if (attr && attr->on_change != ATTR_READ_ONLY) {
+        switch (attr->type) {
+            case HSATTR_TYPE_BOOL:
+                complete_against_list(needle, completion_flag_args, output);
+            default:
+                // no suitable completion
+                break;
+        }
     }
 }
 
