@@ -18,24 +18,29 @@ typedef struct HSObject {
 } HSObject;
 
 typedef struct HSAttribute {
+    HSObject* object;           /* the object this attribute is in */
     enum  {
         HSATTR_TYPE_BOOL,
         HSATTR_TYPE_STRING,
-    } type;                   /* the datatype */
-    char*  name;              /* name as it is displayed to the user */
+    } type;                     /* the datatype */
+    char*  name;                /* name as it is displayed to the user */
     union {
         bool*       b;
         GString**   str;
     } value;
-    /** on_change is called after the user changes the value. If this
-     * function returns false, the old value will be restored */
-    bool (*on_change)(HSObject* obj, struct HSAttribute* attr);
+    /** if type is not custom:
+     * on_change is called after the user changes the value. If this
+     * function returns NULL, the value is accepted. If this function returns
+     * some error message, the old value is restored automatically and the
+     * message first is displayed to the user and then freed.
+     * */
+    GString* (*on_change)  (struct HSAttribute* attr);
 } HSAttribute;
 
 #define ATTRIBUTE_BOOL(N, V, CHANGE) \
-    { HSATTR_TYPE_BOOL, (N), { .b = &(V) }, (CHANGE) }
+    { NULL, HSATTR_TYPE_BOOL, (N), { .b = &(V) }, (CHANGE) }
 #define ATTRIBUTE_STRING(N, V, CHANGE) \
-    { HSATTR_TYPE_STRING, (N), { .str = &(V) }, (CHANGE) }
+    { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, (CHANGE) }
 
 #define ATTRIBUTE_LAST { .name = NULL }
 
@@ -53,6 +58,7 @@ void hsobject_link(HSObject* parent, HSObject* child, char* name);
 void hsobject_unlink(HSObject* parent, HSObject* child);
 void hsobject_unlink_by_name(HSObject* parent, char* name);
 void hsobject_link_rename(HSObject* parent, char* oldname, char* newname);
+void hsobject_rename_child(HSObject* parent, HSObject* child, char* newname);
 void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child);
 
 HSObject* hsobject_by_path(char* path);
@@ -61,8 +67,6 @@ HSObject* hsobject_parse_path_verbose(char* path, char** unparsable, GString* ou
 
 void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes);
 
-bool    ATTR_ACCEPT_ALL (HSObject* obj, HSAttribute* attr);
-bool    ATTR_DENY_ALL   (HSObject* obj, HSAttribute* attr);
 #define ATTR_READ_ONLY  NULL
 
 HSObject* hsobject_find_child(HSObject* obj, char* name);
@@ -71,6 +75,7 @@ HSAttribute* hsobject_find_attribute(HSObject* obj, char* name);
 int list_objects_command(int argc, char* argv[], GString* output);
 int print_object_tree_command(int argc, char* argv[], GString* output);
 int hsattribute_get_command(int argc, char* argv[], GString* output);
+int hsattribute_set_command(int argc, char* argv[], GString* output);
 void hsattribute_append_to_string(HSAttribute* attribute, GString* output);
 GString* hsattribute_to_string(HSAttribute* attribute);
 

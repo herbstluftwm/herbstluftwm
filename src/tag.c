@@ -25,6 +25,8 @@ HSObject* g_tag_object;
 HSObject* g_tag_by_name;
 int* g_raise_on_focus_temporarily;
 
+static int tag_rename(HSTag* tag, char* name, GString* output);
+
 void tag_init() {
     g_tags = g_array_new(false, false, sizeof(HSTag*));
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
@@ -45,6 +47,7 @@ static void tag_free(HSTag* tag) {
     stack_destroy(tag->stack);
     hsobject_unlink_and_destroy(g_tag_by_name, tag->object);
     g_string_free(tag->name, true);
+    g_string_free(tag->display_name, true);
     g_free(tag);
 }
 
@@ -129,6 +132,28 @@ HSTag* find_unused_tag() {
     return NULL;
 }
 
+static GString* tag_attr_floating(HSAttribute* attr) {
+    HSTag* tag = container_of(attr->value.b, HSTag, floating);
+    HSMonitor* m = find_monitor_with_tag(tag);
+    if (m != NULL) {
+        monitor_apply_layout(m);
+    }
+    return NULL;
+}
+
+static GString* tag_attr_name(HSAttribute* attr) {
+    HSTag* tag = container_of(attr->value.str, HSTag, display_name);
+    GString* error = g_string_new("");
+    int status = tag_rename(tag, tag->display_name->str, error);
+    if (status == 0) {
+        g_string_free(error, true);
+        return NULL;
+    } else {
+        return error;
+    }
+}
+
+
 HSTag* add_tag(char* name) {
     HSTag* find_result = find_tag(name);
     if (find_result) {
@@ -139,14 +164,15 @@ HSTag* add_tag(char* name) {
     tag->stack = stack_create();
     tag->frame = frame_create_empty(NULL, tag);
     tag->name = g_string_new(name);
+    tag->display_name = g_string_new(name);
     tag->floating = false;
     g_array_append_val(g_tags, tag);
 
     // create object
     tag->object = hsobject_create_and_link(g_tag_by_name, name);
     HSAttribute attributes[] = {
-        ATTRIBUTE_STRING(   "name",         tag->name,      ATTR_READ_ONLY),
-        ATTRIBUTE_BOOL(     "floating",     tag->floating,  ATTR_READ_ONLY),
+        ATTRIBUTE_STRING(   "name",         tag->display_name,  tag_attr_name),
+        ATTRIBUTE_BOOL(     "floating",     tag->floating,  tag_attr_floating),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(tag->object, attributes);
@@ -171,6 +197,20 @@ int tag_add_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
+static int tag_rename(HSTag* tag, char* name, GString* output) {
+    if (find_tag(name)) {
+        g_string_append_printf(output,
+            "Error: Tag \"%s\" already exists\n", name);
+        return HERBST_TAG_IN_USE;
+    }
+    hsobject_link_rename(g_tag_by_name, tag->name->str, name);
+    g_string_assign(tag->name, name);
+    g_string_assign(tag->display_name, name);
+    ewmh_update_desktop_names();
+    hook_emit_list("tag_renamed", tag->name->str, NULL);
+    return 0;
+}
+
 int tag_rename_command(int argc, char** argv, GString* output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
@@ -181,16 +221,7 @@ int tag_rename_command(int argc, char** argv, GString* output) {
             "%s: Tag \"%s\" not found\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
-    if (find_tag(argv[2])) {
-        g_string_append_printf(output,
-            "%s: Tag \"%s\" already exists\n", argv[0], argv[2]);
-        return HERBST_TAG_IN_USE;
-    }
-    hsobject_link_rename(g_tag_by_name, tag->name->str, argv[2]);
-    g_string_assign(tag->name, argv[2]);
-    ewmh_update_desktop_names();
-    hook_emit_list("tag_renamed", tag->name->str, NULL);
-    return 0;
+    return tag_rename(tag, argv[2], output);
 }
 
 int tag_remove_command(int argc, char** argv, GString* output) {

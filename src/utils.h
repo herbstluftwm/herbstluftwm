@@ -16,6 +16,10 @@
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
 #define MOD(X, N) ((((X) % (signed)(N)) + (signed)(N)) % (signed)(N))
 
+#define container_of(ptr, type, member) \
+    ((type *)( (char *)(ptr)- offsetof(type,member) ))
+
+
 /// print a printf-like message to stderr and exit
 void die(const char *errstr, ...);
 
@@ -49,6 +53,7 @@ bool is_window_mapped(Display* dpy, Window window);
 
 bool window_has_property(Display* dpy, Window window, char* prop_name);
 
+bool string_to_bool_error(char* string, bool oldvalue, bool* error);
 bool string_to_bool(char* string, bool oldvalue);
 
 char* strlasttoken(char* str, char* delim);

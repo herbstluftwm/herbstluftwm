@@ -167,6 +167,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "ls",             list_objects_command),
     CMD_BIND(             "object_tree",    print_object_tree_command),
     CMD_BIND(             "get_attribute",  hsattribute_get_command),
+    CMD_BIND(             "set_attribute",  hsattribute_set_command),
     CMD_BIND(             "substitute",     substitute_command),
     CMD_BIND(             "getenv",         getenv_command),
     CMD_BIND(             "setenv",         setenv_command),

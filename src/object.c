@@ -166,6 +166,7 @@ void hsobject_link_rename(HSObject* parent, char* oldname, char* newname) {
     if (!strcmp(oldname, newname)) {
         return;
     }
+    // remove object with target name
     hsobject_unlink_by_name(parent, newname);
     GList* elem = g_list_find_custom(parent->children,
                                      oldname,
@@ -175,6 +176,12 @@ void hsobject_link_rename(HSObject* parent, char* oldname, char* newname) {
     child->name = g_strdup(newname);
 }
 
+void hsobject_link_rename_object(HSObject* parent, HSObject* child, char* newname) {
+    // remove occurrences of that object
+    hsobject_unlink(parent, child);
+    // link it again (replacing any object with newname)
+    hsobject_link(parent, child, newname);
+}
 
 HSObject* hsobject_find_child(HSObject* obj, char* name) {
     GList* elem = g_list_find_custom(obj->children, name,
@@ -209,7 +216,7 @@ void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
             }
             break;
         case HSATTR_TYPE_STRING:
-            g_string_append_printf(output, "%s", (*(attribute->value.str))->str);
+            g_string_append_printf(output, "%s", (*attribute->value.str)->str);
             break;
     }
 }
@@ -371,18 +378,6 @@ int print_object_tree_command(int argc, char* argv[], GString* output) {
     return 0;
 }
 
-bool ATTR_ACCEPT_ALL(HSObject* obj, HSAttribute* attr) {
-    (void) obj;
-    (void) attr;
-    return true;
-}
-
-bool ATTR_DENY_ALL(HSObject* obj, HSAttribute* attr) {
-    (void) obj;
-    (void) attr;
-    return false;
-}
-
 void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes) {
     // calculate new size
     size_t count;
@@ -391,6 +386,9 @@ void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes) {
     obj->attributes = g_renew(HSAttribute, obj->attributes, count);
     obj->attribute_count = count;
     memcpy(obj->attributes, attributes, count * sizeof(HSAttribute));
+    for (int i = 0; i < count; i++) {
+        obj->attributes[i].object = obj;
+    }
 }
 
 int hsattribute_get_command(int argc, char* argv[], GString* output) {
@@ -404,6 +402,83 @@ int hsattribute_get_command(int argc, char* argv[], GString* output) {
     hsattribute_append_to_string(attr, output);
     return 0;
 }
+
+int hsattribute_set_command(int argc, char* argv[], GString* output) {
+    if (argc < 3) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    HSAttribute* attr = hsattribute_parse_path_verbose(argv[1], output);
+    if (!attr) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (attr->on_change == ATTR_READ_ONLY) {
+        g_string_append_printf(output,
+            "Can not write read-only attribute \"%s\"\n",
+            argv[1]);
+        return HERBST_FORBIDDEN;
+    }
+
+    bool error = false;
+    char* new_value_str = argv[2];
+    switch (attr->type) {
+
+        case HSATTR_TYPE_BOOL: {
+                bool new_value = string_to_bool_error(new_value_str,
+                                                      *attr->value.b,
+                                                      &error);
+                if (error) {
+                    g_string_append_printf(output,
+                                           "Can not parse boolean from \"%s\"",
+                                           new_value_str);
+                    break;
+                }
+                bool old_value = *attr->value.b;
+                if (old_value == new_value) {
+                    break;
+                }
+                *attr->value.b = new_value;
+                GString* errormsg = attr->on_change(attr);
+                if (errormsg && errormsg->len > 0) {
+                    if (errormsg->str[errormsg->len - 1] == '\n') {
+                        g_string_truncate(errormsg, errormsg->len - 1);
+                    }
+                    g_string_append_printf(output,
+                        "Can not write attribute %s: %s\n",
+                        argv[1],
+                        errormsg->str);
+                    g_string_free(errormsg, true);
+                    // restore old value
+                    *attr->value.b = old_value;
+                }
+            }
+            break;
+
+        case HSATTR_TYPE_STRING:
+            if (strcmp(new_value_str, (*attr->value.str)->str)) {
+                // only do something if the value changes
+                GString* old_value = g_string_new((*attr->value.str)->str);
+                g_string_assign(*attr->value.str, new_value_str);
+                GString* errormsg = attr->on_change(attr);
+                if (errormsg && errormsg->len > 0) {
+                    if (errormsg->str[errormsg->len - 1] == '\n') {
+                        g_string_truncate(errormsg, errormsg->len - 1);
+                    }
+                    g_string_append_printf(output,
+                        "Can not write attribute %s: %s\n",
+                        argv[1],
+                        errormsg->str);
+                    g_string_free(errormsg, true);
+                    // restore old value
+                    g_string_assign(*attr->value.str, old_value->str);
+                }
+                g_string_free(old_value, true);
+            }
+            break;
+
+    }
+    return 0;
+}
+
 
 int substitute_command(int argc, char* argv[], GString* output) {
     // usage: substitute identifier attribute command [args ...]
