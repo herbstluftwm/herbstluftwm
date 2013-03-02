@@ -277,10 +277,7 @@ int tag_set_floating_command(int argc, char** argv, GString* output) {
         }
     }
 
-    bool new_value = false;
-    if (!strcmp(action, "toggle"))      new_value = ! tag->floating;
-    else if (!strcmp(action, "on"))     new_value = true;
-    else if (!strcmp(action, "off"))    new_value = false;
+    bool new_value = string_to_bool(action, tag->floating);
 
     if (!strcmp(action, "status")) {
         // just print status

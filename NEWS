@@ -16,6 +16,8 @@ Changes:
     * add completion for setenv, getenv and unsetenv
     * the hook consequence now also tells the window id that triggerd the rule
     * new command: echo
+    * allow true/false as arguments to commands accepting boolean values. This
+      affects the commands: floating, fullscreen, pseudotile and rule.
 
 Release 0.5.1 on 2013-01-05
 ---------------------------

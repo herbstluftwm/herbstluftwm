@@ -204,6 +204,10 @@ bool string_to_bool(char* string, bool oldvalue) {
         val = true;
     } else if (!strcmp(string, "off")) {
         val = false;
+    } else if (!strcmp(string, "true")) {
+        val = true;
+    } else if (!strcmp(string, "false")) {
+        val = false;
     } else if (!strcmp(string, "toggle")) {
         val = ! oldvalue;
     }
