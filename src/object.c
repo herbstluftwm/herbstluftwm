@@ -228,6 +228,10 @@ void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
         case HSATTR_TYPE_CUSTOM:
             attribute->value.custom(attribute->object->data, output);
             break;
+        case HSATTR_TYPE_CUSTOM_INT:
+            g_string_append_printf(output, "%d",
+                attribute->value.custom_int(attribute->object->data));
+            break;
     }
 }
 
@@ -509,6 +513,7 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
             }
             break;
         case HSATTR_TYPE_CUSTOM: break;
+        case HSATTR_TYPE_CUSTOM_INT: break;
     }
     if (nothing_to_do) {
         return 0;
@@ -537,6 +542,7 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
                 g_string_assign(*attr->value.str, old_value.str->str);
                 break;
             case HSATTR_TYPE_CUSTOM: break;
+            case HSATTR_TYPE_CUSTOM_INT: break;
         }
     }
     // free old_value
@@ -548,6 +554,7 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
             g_string_free(old_value.str, true);
             break;
         case HSATTR_TYPE_CUSTOM: break;
+        case HSATTR_TYPE_CUSTOM_INT: break;
     }
     return exit_status;
 }
@@ -605,7 +612,8 @@ int compare_command(int argc, char* argv[], GString* output) {
     char* op = argv[2];
     char* rvalue = argv[3];
     if (attr->type == HSATTR_TYPE_INT
-        || attr->type == HSATTR_TYPE_UINT)
+        || attr->type == HSATTR_TYPE_UINT
+        || attr->type == HSATTR_TYPE_CUSTOM_INT)
     {
         long long l;
         long long r;
@@ -618,6 +626,9 @@ int compare_command(int argc, char* argv[], GString* output) {
         switch (attr->type) {
             case HSATTR_TYPE_INT:  l = *attr->value.i; break;
             case HSATTR_TYPE_UINT: l = *attr->value.u; break;
+            case HSATTR_TYPE_CUSTOM_INT:
+                l = attr->value.custom_int(attr->object->data);
+                break;
             default: break;
         }
         struct {

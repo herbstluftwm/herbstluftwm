@@ -488,6 +488,7 @@ void complete_against_comparators(int argc, char** argv, int pos, GString* outpu
         switch (attr->type) {
             case HSATTR_TYPE_INT:
             case HSATTR_TYPE_UINT:
+            case HSATTR_TYPE_CUSTOM_INT:
                 complete_against_list(needle, order, output);
             default:
                 complete_against_list(needle, equals, output);

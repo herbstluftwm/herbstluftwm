@@ -19,6 +19,7 @@ typedef struct HSObject {
 } HSObject;
 
 typedef void (*HSAttributeCustom)(void* data, GString* output);
+typedef int (*HSAttributeCustomInt)(void* data);
 
 typedef struct HSAttribute {
     HSObject* object;           /* the object this attribute is in */
@@ -28,6 +29,7 @@ typedef struct HSAttribute {
         HSATTR_TYPE_INT,
         HSATTR_TYPE_STRING,
         HSATTR_TYPE_CUSTOM,
+        HSATTR_TYPE_CUSTOM_INT,
     } type;                     /* the datatype */
     char*  name;                /* name as it is displayed to the user */
     union {
@@ -36,6 +38,7 @@ typedef struct HSAttribute {
         unsigned int* u;
         GString**   str;
         HSAttributeCustom custom;
+        HSAttributeCustomInt custom_int;
     } value;
     /** if type is not custom:
      * on_change is called after the user changes the value. If this
@@ -59,6 +62,8 @@ typedef struct HSAttribute {
     { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, (CHANGE) }
 #define ATTRIBUTE_CUSTOM(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, (NULL) }
+#define ATTRIBUTE_CUSTOM_INT(N, V, CHANGE) \
+    { NULL, HSATTR_TYPE_CUSTOM_INT, (N), { .custom_int = V }, (NULL) }
 
 #define ATTRIBUTE_LAST { .name = NULL }
 
