@@ -405,6 +405,7 @@ void complete_against_monitors(int argc, char** argv, int pos, GString* output) 
     // complete against relative indices
     try_complete(needle, "-1", output);
     try_complete(needle, "+1", output);
+    try_complete(needle, "+0", output);
     GString* index_str = g_string_sized_new(10);
     for (int i = 0; i < monitor_count(); i++) {
         // complete against the absolute index
