@@ -131,6 +131,19 @@ HSClient* get_client_from_window(Window window) {
     return (HSClient*) g_hash_table_lookup(g_clients, &window);
 }
 
+static GString* client_attr_fullscreen(HSAttribute* attr) {
+    HSClient* client = container_of(attr->value.b, HSClient, fullscreen);
+    client_set_fullscreen(client, client->fullscreen);
+    return NULL;
+}
+
+static GString* client_attr_pseudotile(HSAttribute* attr) {
+    HSClient* client = container_of(attr->value.b, HSClient, pseudotile);
+    client_set_pseudotile(client, client->pseudotile);
+    return NULL;
+}
+
+
 HSClient* manage_client(Window win) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
@@ -202,9 +215,9 @@ HSClient* manage_client(Window win) {
     HSAttribute attributes[] = {
         ATTRIBUTE_STRING(   "winid",        client->window_str,     ATTR_READ_ONLY),
         ATTRIBUTE_STRING(   "title",        client->title,          ATTR_READ_ONLY),
-        ATTRIBUTE_BOOL(     "fullscreen",   client->fullscreen,     ATTR_READ_ONLY),
-        ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile,     ATTR_READ_ONLY),
-        ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests,   ATTR_READ_ONLY),
+        ATTRIBUTE_BOOL(     "fullscreen",   client->fullscreen,     client_attr_fullscreen),
+        ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile,     client_attr_pseudotile),
+        ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests,   ATTR_ACCEPT_ALL),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(&client->object, attributes);
@@ -661,11 +674,6 @@ HSClient* get_current_client() {
 }
 
 void client_set_fullscreen(HSClient* client, bool state) {
-    if (client->fullscreen == state) {
-        // nothing to do
-        return;
-    }
-
     client->fullscreen = state;
     if (client->ewmhnotify) {
         client->ewmhfullscreen = state;
@@ -720,8 +728,11 @@ int client_set_property_command(int argc, char** argv) {
     }
 
     // if found, then change it
+    bool old_value = *(properties[i].value);
     bool state = string_to_bool(action, *(properties[i].value));
-    properties[i].func(client, state);
+    if (state != old_value) {
+        properties[i].func(client, state);
+    }
     return 0;
 }
 

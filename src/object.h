@@ -69,6 +69,7 @@ HSAttribute* hsattribute_parse_path_verbose(char* path, GString* output);
 
 void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes);
 
+GString* ATTR_ACCEPT_ALL(HSAttribute* attr);
 #define ATTR_READ_ONLY  NULL
 
 HSObject* hsobject_find_child(HSObject* obj, char* name);

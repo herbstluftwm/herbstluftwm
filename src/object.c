@@ -516,3 +516,8 @@ int substitute_command(int argc, char* argv[], GString* output) {
     return status;
 }
 
+GString* ATTR_ACCEPT_ALL(HSAttribute* attr) {
+    (void) attr;
+    return NULL;
+}
+
