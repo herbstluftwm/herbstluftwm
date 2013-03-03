@@ -75,10 +75,11 @@ GString* ATTR_ACCEPT_ALL(HSAttribute* attr);
 HSObject* hsobject_find_child(HSObject* obj, char* name);
 HSAttribute* hsobject_find_attribute(HSObject* obj, char* name);
 
-int list_objects_command(int argc, char* argv[], GString* output);
+int attr_command(int argc, char* argv[], GString* output);
 int print_object_tree_command(int argc, char* argv[], GString* output);
 int hsattribute_get_command(int argc, char* argv[], GString* output);
 int hsattribute_set_command(int argc, char* argv[], GString* output);
+int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output);
 void hsattribute_append_to_string(HSAttribute* attribute, GString* output);
 GString* hsattribute_to_string(HSAttribute* attribute);
 

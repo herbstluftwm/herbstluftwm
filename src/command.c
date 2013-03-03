@@ -47,6 +47,7 @@ static bool no_completion(int argc, char** argv, int pos) {
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
+static bool first_parameter_is_attribute(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
 static bool parameter_expected_offset_2(int argc, char** argv, int pos);
 static bool parameter_expected_offset_3(int argc, char** argv, int pos);
@@ -130,7 +131,8 @@ struct {
     { "unrule",         2,  no_completion },
     { "fullscreen",     2,  no_completion },
     { "pseudotile",     2,  no_completion },
-    { "ls",             2,  no_completion },
+    { "attr",           2,  first_parameter_is_attribute },
+    { "attr",           3,  no_completion },
     { "object_tree",    2,  no_completion },
     { "get_attribute",  2,  no_completion },
     { "set_attribute",  3,  no_completion },
@@ -232,7 +234,9 @@ struct {
     { "setenv",         EQ, 1,  .function = complete_against_env },
     { "getenv",         EQ, 1,  .function = complete_against_env },
     { "unsetenv",       EQ, 1,  .function = complete_against_env },
-    { "ls",             EQ, 1,  .function = complete_against_objects },
+    { "attr",           EQ, 1,  .function = complete_against_objects },
+    { "attr",           EQ, 1,  .function = complete_against_attributes },
+    { "attr",           EQ, 2,  .function = complete_against_attribute_values },
     { "object_tree",    EQ, 1,  .function = complete_against_objects },
     { "get_attribute",  EQ, 1,  .function = complete_against_objects },
     { "get_attribute",  EQ, 1,  .function = complete_against_attributes },
@@ -747,6 +751,15 @@ bool first_parameter_is_flag(int argc, char** argv, int pos) {
     } else {
         return false;
     }
+}
+
+bool first_parameter_is_attribute(int argc, char** argv, int pos) {
+    GString* dummy = g_string_new("");
+    bool is_attr = (argc >= 2
+                    && hsattribute_parse_path_verbose(argv[1], dummy)
+                    && pos == 2);
+    g_string_free(dummy, true);
+    return is_attr;
 }
 
 bool parameter_expected_offset(int argc, char** argv, int pos, int offset) {

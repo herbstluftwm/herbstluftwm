@@ -203,7 +203,7 @@ HSAttribute* hsobject_find_attribute(HSObject* obj, char* name) {
 }
 
 static void print_child_name(HSObjectChild* child, GString* output) {
-    g_string_append_printf(output, "%s/\n", child->name);
+    g_string_append_printf(output, "%s%c\n", child->name, OBJECT_PATH_SEPARATOR);
 }
 
 void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
@@ -227,28 +227,51 @@ GString* hsattribute_to_string(HSAttribute* attribute) {
     return str;
 }
 
-int list_objects_command(int argc, char* argv[], GString* output) {
+int attr_command(int argc, char* argv[], GString* output) {
     char* path = (argc < 2) ? "" : argv[1];
     char* unparsable;
-    HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, output);
+    GString* errormsg = g_string_new("");
+    HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, errormsg);
+    HSAttribute* attribute = NULL;
     if (strcmp("", unparsable)) {
+        // if object could not be parsed, try attribute
+        attribute = hsattribute_parse_path_verbose(path, errormsg);
+        obj = NULL;
+    }
+    if (!obj && !attribute) {
+        // if nothing was found
+        g_string_append(output, errormsg->str);
+        g_string_free(errormsg, true);
         return HERBST_INVALID_ARGUMENT;
+    } else {
+        g_string_free(errormsg, true);
     }
-    // list attributes
-    for (int i = 0; i < obj->attribute_count; i++) {
-        HSAttribute* a = obj->attributes + i;
-        g_string_append_printf(output, "%-20s = ", a->name);
-        if (a->type == HSATTR_TYPE_STRING) {
-            g_string_append_c(output, '\"');
+    char* new_value = (argc >= 3) ? argv[2] : NULL;
+    if (obj && new_value) {
+        g_string_append_printf(output,
+            "%s: Can not assign value \"%s\" to object \"%s\",",
+            argv[0], new_value, path);
+    } else if (obj && !new_value) {
+        // list attributes
+        for (int i = 0; i < obj->attribute_count; i++) {
+            HSAttribute* a = obj->attributes + i;
+            g_string_append_printf(output, "%-20s = ", a->name);
+            if (a->type == HSATTR_TYPE_STRING) {
+                g_string_append_c(output, '\"');
+            }
+            hsattribute_append_to_string(a, output);
+            if (a->type == HSATTR_TYPE_STRING) {
+                g_string_append_c(output, '\"');
+            }
+            g_string_append_c(output, '\n');
         }
-        hsattribute_append_to_string(a, output);
-        if (a->type == HSATTR_TYPE_STRING) {
-            g_string_append_c(output, '\"');
-        }
-        g_string_append_c(output, '\n');
+        // list children
+        g_list_foreach(obj->children, (GFunc) print_child_name, output);
+    } else if (new_value) { // && (attribute)
+        return hsattribute_assign(attribute, new_value, output);
+    } else { // !new_value && (attribute)
+        hsattribute_append_to_string(attribute, output);
     }
-    // list children
-    g_list_foreach(obj->children, (GFunc) print_child_name, output);
     return 0;
 }
 
@@ -412,15 +435,18 @@ int hsattribute_set_command(int argc, char* argv[], GString* output) {
     if (!attr) {
         return HERBST_INVALID_ARGUMENT;
     }
+    return hsattribute_assign(attr, argv[2], output);
+}
+
+int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) {
     if (attr->on_change == ATTR_READ_ONLY) {
         g_string_append_printf(output,
             "Can not write read-only attribute \"%s\"\n",
-            argv[1]);
+            attr->name);
         return HERBST_FORBIDDEN;
     }
 
     bool error = false;
-    char* new_value_str = argv[2];
     switch (attr->type) {
 
         case HSATTR_TYPE_BOOL: {
@@ -444,12 +470,13 @@ int hsattribute_set_command(int argc, char* argv[], GString* output) {
                         g_string_truncate(errormsg, errormsg->len - 1);
                     }
                     g_string_append_printf(output,
-                        "Can not write attribute %s: %s\n",
-                        argv[1],
+                        "Can not write attribute \"%s\": %s\n",
+                        attr->name,
                         errormsg->str);
                     g_string_free(errormsg, true);
                     // restore old value
                     *attr->value.b = old_value;
+                    return HERBST_INVALID_ARGUMENT;
                 }
             }
             break;
@@ -465,14 +492,17 @@ int hsattribute_set_command(int argc, char* argv[], GString* output) {
                         g_string_truncate(errormsg, errormsg->len - 1);
                     }
                     g_string_append_printf(output,
-                        "Can not write attribute %s: %s\n",
-                        argv[1],
+                        "Can not write attribute \"%s\": %s\n",
+                        attr->name,
                         errormsg->str);
                     g_string_free(errormsg, true);
                     // restore old value
                     g_string_assign(*attr->value.str, old_value->str);
                 }
                 g_string_free(old_value, true);
+                if (errormsg) {
+                    return HERBST_INVALID_ARGUMENT;
+                }
             }
             break;
 
