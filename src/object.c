@@ -204,7 +204,7 @@ HSAttribute* hsobject_find_attribute(HSObject* obj, char* name) {
 }
 
 static void print_child_name(HSObjectChild* child, GString* output) {
-    g_string_append_printf(output, "%s%c\n", child->name, OBJECT_PATH_SEPARATOR);
+    g_string_append_printf(output, "  %s%c\n", child->name, OBJECT_PATH_SEPARATOR);
 }
 
 void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
@@ -266,10 +266,29 @@ int attr_command(int argc, char* argv[], GString* output) {
             "%s: Can not assign value \"%s\" to object \"%s\",",
             argv[0], new_value, path);
     } else if (obj && !new_value) {
+        // list children
+        int childcount = g_list_length(obj->children);
+        g_string_append_printf(output, "%d children%c\n", childcount,
+                               childcount ? ':' : '.');
+        g_list_foreach(obj->children, (GFunc) print_child_name, output);
+        if (childcount > 0) {
+            g_string_append_printf(output, "\n");
+        }
         // list attributes
+        g_string_append_printf(output, "%d attributes", obj->attribute_count);
+        if (obj->attribute_count > 0) {
+            g_string_append_printf(output, ":\n");
+            g_string_append_printf(output, " .---- type\n");
+            g_string_append_printf(output, " | .-- writeable\n");
+            g_string_append_printf(output, " V V\n");
+        } else {
+            g_string_append_printf(output, ".\n");
+        }
         for (int i = 0; i < obj->attribute_count; i++) {
             HSAttribute* a = obj->attributes + i;
-            g_string_append_printf(output, "%-20s = ", a->name);
+            char write = (a->on_change == ATTR_READ_ONLY) ? '-' : 'w';
+            char t = hsattribute_type_indicator(a->type);
+            g_string_append_printf(output, " %c %c %-20s = ", t, write, a->name);
             if (a->type == HSATTR_TYPE_STRING) {
                 g_string_append_c(output, '\"');
             }
@@ -279,8 +298,6 @@ int attr_command(int argc, char* argv[], GString* output) {
             }
             g_string_append_c(output, '\n');
         }
-        // list children
-        g_list_foreach(obj->children, (GFunc) print_child_name, output);
     } else if (new_value) { // && (attribute)
         return hsattribute_assign(attribute, new_value, output);
     } else { // !new_value && (attribute)
@@ -690,5 +707,17 @@ int compare_command(int argc, char* argv[], GString* output) {
         }
         return status;
     }
+}
+
+char hsattribute_type_indicator(int type) {
+    switch (type) {
+        case HSATTR_TYPE_BOOL:      return 'b';
+        case HSATTR_TYPE_UINT:      return 'u';
+        case HSATTR_TYPE_INT:       return 'i';
+        case HSATTR_TYPE_STRING:    return 's';
+        case HSATTR_TYPE_CUSTOM:    return 's';
+        case HSATTR_TYPE_CUSTOM_INT:return 'u';
+    }
+    return '?';
 }
 

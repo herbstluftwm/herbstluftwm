@@ -98,6 +98,8 @@ GString* ATTR_ACCEPT_ALL(HSAttribute* attr);
 HSObject* hsobject_find_child(HSObject* obj, char* name);
 HSAttribute* hsobject_find_attribute(HSObject* obj, char* name);
 
+char hsattribute_type_indicator(int type);
+
 int attr_command(int argc, char* argv[], GString* output);
 int print_object_tree_command(int argc, char* argv[], GString* output);
 int hsattribute_get_command(int argc, char* argv[], GString* output);
