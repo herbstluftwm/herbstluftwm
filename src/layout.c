@@ -1623,6 +1623,22 @@ void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order) {
     }
 }
 
+void frame_do_recursive_data(HSFrame* frame, void (*action)(HSFrame*,void*),
+                             int order, void* data) {
+    if (frame->type == TYPE_FRAMES) {
+        // clients and subframes
+        HSLayout* layout = &(frame->content.layout);
+        if (order <= 0) action(frame, data);
+        frame_do_recursive_data(layout->a, action, order, data);
+        if (order == 1) action(frame, data);
+        frame_do_recursive_data(layout->b, action, order, data);
+        if (order >= 2) action(frame, data);
+    } else {
+        // action only
+        action(frame, data);
+    }
+}
+
 static void frame_hide(HSFrame* frame) {
     frame_set_visible(frame, false);
     if (frame->type == TYPE_CLIENTS) {
@@ -1807,16 +1823,5 @@ int frame_move_window_edge(int argc, char** argv, GString* output) {
         ;
     monitors_unlock_command(LENGTH(args), args);
     return 0;
-}
-
-int frame_count_clientframes(HSFrame* frame) {
-    if (frame->type == TYPE_CLIENTS) {
-        return 1;
-    } else {
-        int i = 0;
-        i += frame_count_clientframes(frame->content.layout.a);
-        i += frame_count_clientframes(frame->content.layout.b);
-        return i;
-    }
 }
 

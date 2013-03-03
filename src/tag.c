@@ -158,11 +158,32 @@ static GString* tag_attr_name(HSAttribute* attr) {
     }
 }
 
+static void sum_up_clientframes(HSFrame* frame, void* data) {
+    if (frame->type == TYPE_CLIENTS) {
+        (*(int*)data)++;
+    }
+}
+
 static void tag_attr_frame_count(void* data, GString* output) {
     HSTag* tag = (HSTag*) data;
-    int i = frame_count_clientframes(tag->frame);
+    int i = 0;
+    frame_do_recursive_data(tag->frame, sum_up_clientframes, 0, &i);
     g_string_append_printf(output, "%d", i);
 }
+
+static void sum_up_clients(HSFrame* frame, void* data) {
+    if (frame->type == TYPE_CLIENTS) {
+        *(int*)data += frame->content.clients.count;
+    }
+}
+
+static void tag_attr_client_count(void* data, GString* output) {
+    HSTag* tag = (HSTag*) data;
+    int i = 0;
+    frame_do_recursive_data(tag->frame, sum_up_clients, 0, &i);
+    g_string_append_printf(output, "%d", i);
+}
+
 
 static void tag_attr_curframe_windex(void* data, GString* output) {
     HSTag* tag = (HSTag*) data;
@@ -195,9 +216,10 @@ HSTag* add_tag(char* name) {
     tag->object = hsobject_create_and_link(g_tag_by_name, name);
     tag->object->data = tag;
     HSAttribute attributes[] = {
-        ATTRIBUTE_STRING("name",           tag->display_name,       tag_attr_name),
-        ATTRIBUTE_BOOL(  "floating",       tag->floating,           tag_attr_floating),
-        ATTRIBUTE_CUSTOM("frame_count",    tag_attr_frame_count,    ATTR_READ_ONLY),
+        ATTRIBUTE_STRING("name",           tag->display_name,        tag_attr_name),
+        ATTRIBUTE_BOOL(  "floating",       tag->floating,            tag_attr_floating),
+        ATTRIBUTE_CUSTOM("frame_count",    tag_attr_frame_count,     ATTR_READ_ONLY),
+        ATTRIBUTE_CUSTOM("client_count",   tag_attr_client_count,    ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM("curframe_windex",tag_attr_curframe_windex, ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM("curframe_wcount",tag_attr_curframe_wcount, ATTR_READ_ONLY),
         ATTRIBUTE_LAST,
