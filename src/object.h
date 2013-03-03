@@ -21,11 +21,15 @@ typedef struct HSAttribute {
     HSObject* object;           /* the object this attribute is in */
     enum  {
         HSATTR_TYPE_BOOL,
+        HSATTR_TYPE_UINT,
+        HSATTR_TYPE_INT,
         HSATTR_TYPE_STRING,
     } type;                     /* the datatype */
     char*  name;                /* name as it is displayed to the user */
     union {
         bool*       b;
+        int*        i;
+        unsigned int* u;
         GString**   str;
     } value;
     /** if type is not custom:
@@ -39,6 +43,10 @@ typedef struct HSAttribute {
 
 #define ATTRIBUTE_BOOL(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_BOOL, (N), { .b = &(V) }, (CHANGE) }
+#define ATTRIBUTE_INT(N, V, CHANGE) \
+    { NULL, HSATTR_TYPE_INT, (N), { .i = &(V) }, (CHANGE) }
+#define ATTRIBUTE_UINT(N, V, CHANGE) \
+    { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, (CHANGE) }
 #define ATTRIBUTE_STRING(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, (CHANGE) }
 

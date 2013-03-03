@@ -11,6 +11,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef struct {
     char*       name;
@@ -214,6 +215,12 @@ void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
             } else {
                 g_string_append_printf(output, "false");
             }
+            break;
+        case HSATTR_TYPE_INT:
+            g_string_append_printf(output, "%d", *attribute->value.i);
+            break;
+        case HSATTR_TYPE_UINT:
+            g_string_append_printf(output, "%u", *attribute->value.u);
             break;
         case HSATTR_TYPE_STRING:
             g_string_append_printf(output, "%s", (*attribute->value.str)->str);
@@ -448,10 +455,27 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
 
     bool error = false;
     union {
-        bool b;
-        GString* str;
+        bool        b;
+        int         i;
+        unsigned int u;
+        GString*    str;
     } new_value, old_value;
     bool nothing_to_do = false;
+
+#define ATTR_DO_ASSIGN_COMPARE(NAME,MEM) \
+        do { \
+            if (error) { \
+                g_string_append_printf(output, \
+                                       "Can not parse "NAME" from \"%s\"", \
+                                       new_value_str); \
+            } \
+            old_value.MEM = *attr->value.MEM; \
+            if (old_value.MEM == new_value.MEM) { \
+                nothing_to_do = true; \
+            } else { \
+                *attr->value.MEM = new_value.MEM; \
+            } \
+        } while (0);
 
     // change the value and backup the old value
     switch (attr->type) {
@@ -459,18 +483,19 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
             new_value.b = string_to_bool_error(new_value_str,
                                              *attr->value.b,
                                              &error);
-            if (error) {
-                g_string_append_printf(output,
-                                       "Can not parse boolean from \"%s\"",
-                                       new_value_str);
-            }
-            old_value.b = *attr->value.b;
-            if (old_value.b == new_value.b) {
-                nothing_to_do = true;
-            } else {
-                *attr->value.b = new_value.b;
-            }
+            ATTR_DO_ASSIGN_COMPARE("boolean", b);
             break;
+
+        case HSATTR_TYPE_INT:
+            error = (1 != sscanf(new_value_str, "%d", &new_value.i));
+            ATTR_DO_ASSIGN_COMPARE("integer", i);
+            break;
+
+        case HSATTR_TYPE_UINT:
+            error = (1 != sscanf(new_value_str, "%u", &new_value.u));
+            ATTR_DO_ASSIGN_COMPARE("unsigned integer", u);
+            break;
+
 
         case HSATTR_TYPE_STRING:
             if (!strcmp(new_value_str, (*attr->value.str)->str)) {
@@ -501,15 +526,19 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
         g_string_free(errormsg, true);
         // restore old value
         switch (attr->type) {
-            case HSATTR_TYPE_BOOL:
-                *attr->value.b = old_value.b;
-                break;
+            case HSATTR_TYPE_BOOL: *attr->value.b = old_value.b; break;
+            case HSATTR_TYPE_INT:  *attr->value.i = old_value.i; break;
+            case HSATTR_TYPE_UINT: *attr->value.u = old_value.u; break;
             case HSATTR_TYPE_STRING:
                 g_string_assign(*attr->value.str, old_value.str->str);
+                break;
         }
     }
+    // free old_value
     switch (attr->type) {
         case HSATTR_TYPE_BOOL: break;
+        case HSATTR_TYPE_INT:  break;
+        case HSATTR_TYPE_UINT:  break;
         case HSATTR_TYPE_STRING:
             g_string_free(old_value.str, true);
             break;

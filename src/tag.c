@@ -32,6 +32,11 @@ void tag_init() {
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
     g_tag_object = hsobject_create_and_link(hsobject_root(), "tags");
+    HSAttribute attributes[] = {
+        ATTRIBUTE_UINT("count", g_tags->len, ATTR_READ_ONLY),
+        ATTRIBUTE_LAST,
+    };
+    hsobject_set_attributes(g_tag_object, attributes);
     g_tag_by_name = hsobject_create_and_link(g_tag_object, "by-name");
 }
 
