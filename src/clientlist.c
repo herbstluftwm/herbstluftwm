@@ -50,6 +50,8 @@ static HSObject*   g_client_object;
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
 static Atom g_wmatom[WMLast];
 
+static void client_set_urgent_force(HSClient* client, bool state);
+
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
     hsobject_init(&hc->object);
@@ -131,18 +133,24 @@ HSClient* get_client_from_window(Window window) {
     return (HSClient*) g_hash_table_lookup(g_clients, &window);
 }
 
+#define CLIENT_UPDATE_ATTR(FUNC,MEMBER) do { \
+        HSClient* client = container_of(attr->value.b, HSClient, MEMBER); \
+        FUNC(client, client->MEMBER); \
+        return NULL; \
+    }   \
+    while (0);
+
 static GString* client_attr_fullscreen(HSAttribute* attr) {
-    HSClient* client = container_of(attr->value.b, HSClient, fullscreen);
-    client_set_fullscreen(client, client->fullscreen);
-    return NULL;
+    CLIENT_UPDATE_ATTR(client_set_fullscreen, fullscreen);
 }
 
 static GString* client_attr_pseudotile(HSAttribute* attr) {
-    HSClient* client = container_of(attr->value.b, HSClient, pseudotile);
-    client_set_pseudotile(client, client->pseudotile);
-    return NULL;
+    CLIENT_UPDATE_ATTR(client_set_pseudotile, pseudotile);
 }
 
+static GString* client_attr_urgent(HSAttribute* attr) {
+    CLIENT_UPDATE_ATTR(client_set_urgent_force, urgent);
+}
 
 HSClient* manage_client(Window win) {
     if (is_herbstluft_window(g_display, win)) {
@@ -219,6 +227,7 @@ HSClient* manage_client(Window win) {
         ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile,     client_attr_pseudotile),
         ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests,   ATTR_ACCEPT_ALL),
         ATTRIBUTE_BOOL(     "ewmhnotify",   client->ewmhnotify,     ATTR_ACCEPT_ALL),
+        ATTRIBUTE_BOOL(     "urgent",       client->urgent,         client_attr_urgent),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(&client->object, attributes);
@@ -586,7 +595,10 @@ void client_set_urgent(HSClient* client, bool state) {
         // nothing to do
         return;
     }
+    client_set_urgent_force(client, state);
+}
 
+void client_set_urgent_force(HSClient* client, bool state) {
     char winid_str[STRING_BUF_SIZE];
     snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", client->window);
     hook_emit_list("urgent", state ? "on" : "off", winid_str, NULL);
