@@ -100,6 +100,7 @@ HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag);
 void frame_insert_window(HSFrame* frame, Window window);
 HSFrame* lookup_frame(HSFrame* root, char* path);
 HSFrame* frame_current_selection();
+HSFrame* frame_current_selection_below(HSFrame* frame);
 // finds the subframe of frame that contains the window
 HSFrame* find_frame_with_window(HSFrame* frame, Window window);
 // removes window from a frame/subframes

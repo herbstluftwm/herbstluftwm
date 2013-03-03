@@ -164,6 +164,19 @@ static void tag_attr_frame_count(void* data, GString* output) {
     g_string_append_printf(output, "%d", i);
 }
 
+static void tag_attr_curframe_windex(void* data, GString* output) {
+    HSTag* tag = (HSTag*) data;
+    HSFrame* frame = frame_current_selection_below(tag->frame);
+    g_string_append_printf(output, "%d", frame->content.clients.selection);
+}
+
+static void tag_attr_curframe_wcount(void* data, GString* output) {
+    HSTag* tag = (HSTag*) data;
+    HSFrame* frame = frame_current_selection_below(tag->frame);
+    g_string_append_printf(output, "%d", frame->content.clients.count);
+}
+
+
 HSTag* add_tag(char* name) {
     HSTag* find_result = find_tag(name);
     if (find_result) {
@@ -182,9 +195,11 @@ HSTag* add_tag(char* name) {
     tag->object = hsobject_create_and_link(g_tag_by_name, name);
     tag->object->data = tag;
     HSAttribute attributes[] = {
-        ATTRIBUTE_STRING(   "name",         tag->display_name,  tag_attr_name),
-        ATTRIBUTE_BOOL(     "floating",     tag->floating,  tag_attr_floating),
-        ATTRIBUTE_CUSTOM(   "frame_count",  tag_attr_frame_count,  ATTR_READ_ONLY),
+        ATTRIBUTE_STRING("name",           tag->display_name,       tag_attr_name),
+        ATTRIBUTE_BOOL(  "floating",       tag->floating,           tag_attr_floating),
+        ATTRIBUTE_CUSTOM("frame_count",    tag_attr_frame_count,    ATTR_READ_ONLY),
+        ATTRIBUTE_CUSTOM("curframe_windex",tag_attr_curframe_windex, ATTR_READ_ONLY),
+        ATTRIBUTE_CUSTOM("curframe_wcount",tag_attr_curframe_wcount, ATTR_READ_ONLY),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(tag->object, attributes);
