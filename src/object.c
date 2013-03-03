@@ -447,67 +447,74 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
     }
 
     bool error = false;
-    switch (attr->type) {
+    union {
+        bool b;
+        GString* str;
+    } new_value, old_value;
+    bool nothing_to_do = false;
 
-        case HSATTR_TYPE_BOOL: {
-                bool new_value = string_to_bool_error(new_value_str,
-                                                      *attr->value.b,
-                                                      &error);
-                if (error) {
-                    g_string_append_printf(output,
-                                           "Can not parse boolean from \"%s\"",
-                                           new_value_str);
-                    break;
-                }
-                bool old_value = *attr->value.b;
-                if (old_value == new_value) {
-                    break;
-                }
-                *attr->value.b = new_value;
-                GString* errormsg = attr->on_change(attr);
-                if (errormsg && errormsg->len > 0) {
-                    if (errormsg->str[errormsg->len - 1] == '\n') {
-                        g_string_truncate(errormsg, errormsg->len - 1);
-                    }
-                    g_string_append_printf(output,
-                        "Can not write attribute \"%s\": %s\n",
-                        attr->name,
-                        errormsg->str);
-                    g_string_free(errormsg, true);
-                    // restore old value
-                    *attr->value.b = old_value;
-                    return HERBST_INVALID_ARGUMENT;
-                }
+    // change the value and backup the old value
+    switch (attr->type) {
+        case HSATTR_TYPE_BOOL:
+            new_value.b = string_to_bool_error(new_value_str,
+                                             *attr->value.b,
+                                             &error);
+            if (error) {
+                g_string_append_printf(output,
+                                       "Can not parse boolean from \"%s\"",
+                                       new_value_str);
+            }
+            old_value.b = *attr->value.b;
+            if (old_value.b == new_value.b) {
+                nothing_to_do = true;
+            } else {
+                *attr->value.b = new_value.b;
             }
             break;
 
         case HSATTR_TYPE_STRING:
-            if (strcmp(new_value_str, (*attr->value.str)->str)) {
-                // only do something if the value changes
-                GString* old_value = g_string_new((*attr->value.str)->str);
+            if (!strcmp(new_value_str, (*attr->value.str)->str)) {
+                nothing_to_do = true;
+            } else {
+                old_value.str = g_string_new((*attr->value.str)->str);
                 g_string_assign(*attr->value.str, new_value_str);
-                GString* errormsg = attr->on_change(attr);
-                if (errormsg && errormsg->len > 0) {
-                    if (errormsg->str[errormsg->len - 1] == '\n') {
-                        g_string_truncate(errormsg, errormsg->len - 1);
-                    }
-                    g_string_append_printf(output,
-                        "Can not write attribute \"%s\": %s\n",
-                        attr->name,
-                        errormsg->str);
-                    g_string_free(errormsg, true);
-                    // restore old value
-                    g_string_assign(*attr->value.str, old_value->str);
-                }
-                g_string_free(old_value, true);
-                if (errormsg) {
-                    return HERBST_INVALID_ARGUMENT;
-                }
             }
             break;
-
     }
-    return 0;
+    if (nothing_to_do) {
+        return 0;
+    }
+
+    // ask the attribute about the change
+    GString* errormsg = attr->on_change(attr);
+    int exit_status = 0;
+    if (errormsg && errormsg->len > 0) {
+        exit_status = HERBST_INVALID_ARGUMENT;
+        // print the message
+        if (errormsg->str[errormsg->len - 1] == '\n') {
+            g_string_truncate(errormsg, errormsg->len - 1);
+        }
+        g_string_append_printf(output,
+            "Can not write attribute \"%s\": %s\n",
+            attr->name,
+            errormsg->str);
+        g_string_free(errormsg, true);
+        // restore old value
+        switch (attr->type) {
+            case HSATTR_TYPE_BOOL:
+                *attr->value.b = old_value.b;
+                break;
+            case HSATTR_TYPE_STRING:
+                g_string_assign(*attr->value.str, old_value.str->str);
+        }
+    }
+    switch (attr->type) {
+        case HSATTR_TYPE_BOOL: break;
+        case HSATTR_TYPE_STRING:
+            g_string_free(old_value.str, true);
+            break;
+    }
+    return exit_status;
 }
 
 
