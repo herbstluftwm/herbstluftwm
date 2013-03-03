@@ -165,6 +165,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "or",             command_chain_command),
     CMD_BIND(             "!",              negate_command),
     CMD_BIND(             "attr",           attr_command),
+    CMD_BIND(             "compare",        compare_command),
     CMD_BIND(             "object_tree",    print_object_tree_command),
     CMD_BIND(             "get_attribute",  hsattribute_get_command),
     CMD_BIND(             "set_attribute",  hsattribute_set_command),

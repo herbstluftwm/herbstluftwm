@@ -106,6 +106,7 @@ void hsobject_complete_children(HSObject* obj, char* needle, char* prefix,
 void hsobject_complete_attributes(HSObject* obj, char* needle, char* prefix,
                                 GString* output);
 int substitute_command(int argc, char* argv[], GString* output);
+int compare_command(int argc, char* argv[], GString* output);
 
 #endif
 

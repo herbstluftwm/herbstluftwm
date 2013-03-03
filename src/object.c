@@ -593,3 +593,91 @@ GString* ATTR_ACCEPT_ALL(HSAttribute* attr) {
     return NULL;
 }
 
+int compare_command(int argc, char* argv[], GString* output) {
+    // usage: compare attribute operator constant
+    if (argc < 4) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    HSAttribute* attr = hsattribute_parse_path_verbose(argv[1], output);
+    if (!attr) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    char* op = argv[2];
+    char* rvalue = argv[3];
+    if (attr->type == HSATTR_TYPE_INT
+        || attr->type == HSATTR_TYPE_UINT)
+    {
+        long long l;
+        long long r;
+        if (1 != sscanf(rvalue, "%lld", &r)) {
+            g_string_append_printf(output,
+                                   "Can not parse integer from \"%s\"\n",
+                                   rvalue);
+            return HERBST_INVALID_ARGUMENT;
+        }
+        switch (attr->type) {
+            case HSATTR_TYPE_INT:  l = *attr->value.i; break;
+            case HSATTR_TYPE_UINT: l = *attr->value.u; break;
+            default: break;
+        }
+        struct {
+            char* name;
+            bool  result;
+        } eval[] = {
+            { "=",  l == r  },
+            { "!=", l != r  },
+            { "le", l <= r  },
+            { "lt", l <  r  },
+            { "ge", l >= r  },
+            { "gt", l >  r  },
+        };
+        int result = -1;
+        for (int i = 0; i < LENGTH(eval); i++) {
+            if (!strcmp(eval[i].name, op)) {
+                result = !eval[i].result; // make false -> 1, true -> 0
+            }
+        }
+        if (result == -1) {
+            g_string_append_printf(output, "Invalid operator \"%s\"", op);
+            result = HERBST_INVALID_ARGUMENT;
+        }
+        return result;
+    } else if (attr->type == HSATTR_TYPE_BOOL) {
+        bool l = *attr->value.b;
+        bool error = false;
+        bool r = string_to_bool_error(rvalue, l, &error);
+        if (error) {
+            g_string_append_printf(output, "Can not parse boolean from \"%s\"\n", rvalue);
+            return HERBST_INVALID_ARGUMENT;
+        }
+        if (!strcmp("=", op)) return !(l == r);
+        if (!strcmp("!=", op)) return !(l != r);
+        g_string_append_printf(output, "Invalid boolean operator \"%s\"", op);
+        return HERBST_INVALID_ARGUMENT;
+    } else { // STRING or CUSTOM
+        GString* l;
+        bool free_l = false;
+        if (attr->type == HSATTR_TYPE_STRING) {
+            l = *(attr->value.str);
+        } else { // TYPE == CUSTOM
+            l = g_string_new("");
+            attr->value.custom(attr->object->data, l);
+            free_l = true;
+            printf("%s = ,%s,\n", argv[1], l->str);
+        }
+        bool equals = !strcmp(l->str, rvalue);
+        int status;
+        if (!strcmp("=", op)) status = !equals;
+        else if (!strcmp("!=", op)) status = equals;
+        else status = -1;
+        if (free_l) {
+            g_string_free(l, true);
+        }
+        if (status == -1) {
+            g_string_append_printf(output, "Invalid string operator \"%s\"", op);
+            return HERBST_INVALID_ARGUMENT;
+        }
+        return status;
+    }
+}
+

@@ -47,7 +47,7 @@ static bool no_completion(int argc, char** argv, int pos) {
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
-static bool first_parameter_is_attribute(int argc, char** argv, int pos);
+static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
 static bool parameter_expected_offset_2(int argc, char** argv, int pos);
 static bool parameter_expected_offset_3(int argc, char** argv, int pos);
@@ -131,7 +131,7 @@ struct {
     { "unrule",         2,  no_completion },
     { "fullscreen",     2,  no_completion },
     { "pseudotile",     2,  no_completion },
-    { "attr",           2,  first_parameter_is_attribute },
+    { "attr",           2,  first_parameter_is_writable_attribute },
     { "attr",           3,  no_completion },
     { "object_tree",    2,  no_completion },
     { "get_attribute",  2,  no_completion },
@@ -237,6 +237,10 @@ struct {
     { "attr",           EQ, 1,  .function = complete_against_objects },
     { "attr",           EQ, 1,  .function = complete_against_attributes },
     { "attr",           EQ, 2,  .function = complete_against_attribute_values },
+    { "compare",        EQ, 1,  .function = complete_against_objects },
+    { "compare",        EQ, 1,  .function = complete_against_attributes },
+    { "compare",        EQ, 2,  .function = complete_against_comparators },
+    { "compare",        EQ, 3,  .function = complete_against_attribute_values },
     { "object_tree",    EQ, 1,  .function = complete_against_objects },
     { "get_attribute",  EQ, 1,  .function = complete_against_objects },
     { "get_attribute",  EQ, 1,  .function = complete_against_attributes },
@@ -461,12 +465,32 @@ void complete_against_attribute_values(int argc, char** argv, int pos, GString* 
     GString* path_error = g_string_new("");
     HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
     g_string_free(path_error, true);
-    if (attr && attr->on_change != ATTR_READ_ONLY) {
+    if (attr) {
         switch (attr->type) {
             case HSATTR_TYPE_BOOL:
                 complete_against_list(needle, completion_flag_args, output);
             default:
                 // no suitable completion
+                break;
+        }
+    }
+}
+
+void complete_against_comparators(int argc, char** argv, int pos, GString* output) {
+    char* needle = (pos < argc) ? argv[pos] : "";
+    char* path =  (1 < argc) ? argv[1] : "";
+    GString* path_error = g_string_new("");
+    HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
+    g_string_free(path_error, true);
+    char* equals[] = { "=", "!=", NULL };
+    char* order[] = { "le", "lt", "ge", "gt", NULL };
+    if (attr) {
+        switch (attr->type) {
+            case HSATTR_TYPE_INT:
+            case HSATTR_TYPE_UINT:
+                complete_against_list(needle, order, output);
+            default:
+                complete_against_list(needle, equals, output);
                 break;
         }
     }
@@ -753,13 +777,14 @@ bool first_parameter_is_flag(int argc, char** argv, int pos) {
     }
 }
 
-bool first_parameter_is_attribute(int argc, char** argv, int pos) {
+bool first_parameter_is_writable_attribute(int argc, char** argv, int pos) {
     GString* dummy = g_string_new("");
-    bool is_attr = (argc >= 2
-                    && hsattribute_parse_path_verbose(argv[1], dummy)
-                    && pos == 2);
+    HSAttribute* attr = NULL;
+    if (argc >= 2) {
+        attr = hsattribute_parse_path_verbose(argv[1], dummy);
+    }
     g_string_free(dummy, true);
-    return is_attr;
+    return attr && attr->on_change != ATTR_READ_ONLY;
 }
 
 bool parameter_expected_offset(int argc, char** argv, int pos, int offset) {
