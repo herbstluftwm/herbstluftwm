@@ -102,6 +102,7 @@ void monitor_stack_to_window_buf(Window* buf, int len, bool only_clients,
                                  int* remain_len);
 struct HSStack* get_monitor_stack();
 
+void monitor_update_focos_objects();
 
 typedef bool (*MonitorDetection)(XRectangle**, size_t*);
 bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count);

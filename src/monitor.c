@@ -690,6 +690,8 @@ void ensure_monitors_are_available() {
     HSMonitor* m = add_monitor(rect, g_array_index(g_tags, HSTag*, 0), NULL);
     g_cur_monitor = 0;
     g_cur_frame = m->tag->frame;
+
+    monitor_update_focos_objects();
 }
 
 HSMonitor* monitor_with_frame(HSFrame* frame) {
@@ -952,9 +954,16 @@ void monitor_focus_by_index(int new_selection) {
         XSync(g_display, False);
         while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
     }
+    // update objects
+    monitor_update_focos_objects();
     // emit hooks
     ewmh_update_current_desktop();
     emit_tag_changed(monitor->tag, new_selection);
+}
+
+void monitor_update_focos_objects() {
+    hsobject_link(g_monitor_object, &get_current_monitor()->object, "focus");
+    tag_update_focus_objects();
 }
 
 int monitor_get_relative_x(HSMonitor* m, int x_root) {

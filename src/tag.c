@@ -541,3 +541,7 @@ void tag_update_each_focus_layer() {
     tag_foreach(tag_update_focus_layer_helper, NULL);
 }
 
+void tag_update_focus_objects() {
+    hsobject_link(g_tag_object, get_current_monitor()->tag->object, "focus");
+}
+
