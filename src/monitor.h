@@ -26,6 +26,7 @@ typedef struct HSMonitor {
     struct HSSlice*    slice;  // slice in the monitor stack
     HSObject    object;
     GString*    name;
+    GString*    display_name;   // name used for object IO
     int         pad_up;
     int         pad_right;
     int         pad_down;

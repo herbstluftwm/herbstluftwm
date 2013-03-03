@@ -62,6 +62,7 @@ void monitor_destroy() {
         if (m->name) {
             g_string_free(m->name, true);
         }
+        g_string_free(m->display_name, true);
         g_free(m);
     }
     hsobject_unlink_and_destroy(g_monitor_object, g_monitor_by_name_object);
@@ -393,6 +394,7 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     m->tag = tag;
     m->tag_previous = tag;
     m->name = (name ? g_string_new(name) : NULL);
+    m->display_name = g_string_new(name ? name : "");
     m->mouse.x = 0;
     m->mouse.y = 0;
     m->dirty = true;
@@ -401,7 +403,7 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
                                              42, 42, 42, 42, 1, 0, 0);
 
     HSAttribute attributes[] = {
-        ATTRIBUTE_STRING(   "name",     m->name,        ATTR_READ_ONLY  ),
+        ATTRIBUTE_STRING(   "name",     m->display_name,ATTR_READ_ONLY  ),
         ATTRIBUTE_BOOL(     "lock_tag", m->lock_tag,    ATTR_READ_ONLY  ),
         ATTRIBUTE_LAST,
     };
@@ -515,6 +517,7 @@ int remove_monitor(int index) {
     if (monitor->name) {
         g_string_free(monitor->name, true);
     }
+    g_string_free(monitor->display_name, true);
     g_free(monitor);
     g_array_remove_index(g_monitors, index);
     if (g_cur_monitor >= g_monitors->len) {
@@ -584,6 +587,7 @@ int rename_monitor_command(int argc, char** argv, GString* output) {
             "%s: A monitor with the same name already exists\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
+    g_string_assign(mon->display_name, argv[2]);
     if (mon->name == NULL) {
         // not named before
         GString* name = g_string_new(argv[2]);
