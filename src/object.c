@@ -225,6 +225,9 @@ void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
         case HSATTR_TYPE_STRING:
             g_string_append_printf(output, "%s", (*attribute->value.str)->str);
             break;
+        case HSATTR_TYPE_CUSTOM:
+            attribute->value.custom(attribute->object->data, output);
+            break;
     }
 }
 
@@ -505,6 +508,7 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
                 g_string_assign(*attr->value.str, new_value_str);
             }
             break;
+        case HSATTR_TYPE_CUSTOM: break;
     }
     if (nothing_to_do) {
         return 0;
@@ -532,6 +536,7 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
             case HSATTR_TYPE_STRING:
                 g_string_assign(*attr->value.str, old_value.str->str);
                 break;
+            case HSATTR_TYPE_CUSTOM: break;
         }
     }
     // free old_value
@@ -542,6 +547,7 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
         case HSATTR_TYPE_STRING:
             g_string_free(old_value.str, true);
             break;
+        case HSATTR_TYPE_CUSTOM: break;
     }
     return exit_status;
 }

@@ -1806,3 +1806,14 @@ int frame_move_window_edge(int argc, char** argv, GString* output) {
     return 0;
 }
 
+int frame_count_clientframes(HSFrame* frame) {
+    if (frame->type == TYPE_CLIENTS) {
+        return 1;
+    } else {
+        int i = 0;
+        i += frame_count_clientframes(frame->content.layout.a);
+        i += frame_count_clientframes(frame->content.layout.b);
+        return i;
+    }
+}
+

@@ -158,6 +158,11 @@ static GString* tag_attr_name(HSAttribute* attr) {
     }
 }
 
+static void tag_attr_frame_count(void* data, GString* output) {
+    HSTag* tag = (HSTag*) data;
+    int i = frame_count_clientframes(tag->frame);
+    g_string_append_printf(output, "%d", i);
+}
 
 HSTag* add_tag(char* name) {
     HSTag* find_result = find_tag(name);
@@ -175,9 +180,11 @@ HSTag* add_tag(char* name) {
 
     // create object
     tag->object = hsobject_create_and_link(g_tag_by_name, name);
+    tag->object->data = tag;
     HSAttribute attributes[] = {
         ATTRIBUTE_STRING(   "name",         tag->display_name,  tag_attr_name),
         ATTRIBUTE_BOOL(     "floating",     tag->floating,  tag_attr_floating),
+        ATTRIBUTE_CUSTOM(   "frame_count",  tag_attr_frame_count,  ATTR_READ_ONLY),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(tag->object, attributes);

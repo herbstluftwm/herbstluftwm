@@ -15,7 +15,10 @@ typedef struct HSObject {
     struct HSAttribute* attributes;
     size_t              attribute_count;
     GList*              children; // list of HSObjectChild
+    void*               data;     // user data pointer
 } HSObject;
+
+typedef void (*HSAttributeCustom)(void* data, GString* output);
 
 typedef struct HSAttribute {
     HSObject* object;           /* the object this attribute is in */
@@ -24,6 +27,7 @@ typedef struct HSAttribute {
         HSATTR_TYPE_UINT,
         HSATTR_TYPE_INT,
         HSATTR_TYPE_STRING,
+        HSATTR_TYPE_CUSTOM,
     } type;                     /* the datatype */
     char*  name;                /* name as it is displayed to the user */
     union {
@@ -31,12 +35,16 @@ typedef struct HSAttribute {
         int*        i;
         unsigned int* u;
         GString**   str;
+        HSAttributeCustom custom;
     } value;
     /** if type is not custom:
      * on_change is called after the user changes the value. If this
      * function returns NULL, the value is accepted. If this function returns
      * some error message, the old value is restored automatically and the
      * message first is displayed to the user and then freed.
+     *
+     * if type is custom:
+     * on_change will never be called, because custom are read-only for now.
      * */
     GString* (*on_change)  (struct HSAttribute* attr);
 } HSAttribute;
@@ -49,6 +57,8 @@ typedef struct HSAttribute {
     { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, (CHANGE) }
 #define ATTRIBUTE_STRING(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, (CHANGE) }
+#define ATTRIBUTE_CUSTOM(N, V, CHANGE) \
+    { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, (NULL) }
 
 #define ATTRIBUTE_LAST { .name = NULL }
 
