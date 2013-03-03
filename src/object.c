@@ -691,7 +691,6 @@ int compare_command(int argc, char* argv[], GString* output) {
             l = g_string_new("");
             attr->value.custom(attr->object->data, l);
             free_l = true;
-            printf("%s = ,%s,\n", argv[1], l->str);
         }
         bool equals = !strcmp(l->str, rvalue);
         int status;
@@ -716,7 +715,7 @@ char hsattribute_type_indicator(int type) {
         case HSATTR_TYPE_INT:       return 'i';
         case HSATTR_TYPE_STRING:    return 's';
         case HSATTR_TYPE_CUSTOM:    return 's';
-        case HSATTR_TYPE_CUSTOM_INT:return 'u';
+        case HSATTR_TYPE_CUSTOM_INT:return 'i';
     }
     return '?';
 }
