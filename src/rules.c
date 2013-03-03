@@ -305,6 +305,8 @@ void rule_complete(int argc, char** argv, int pos, GString* output) {
         try_complete_partial(needle, buf->str, output);
     }
 
+    // complete id
+    try_complete_partial(needle, "id=", output);
     // complete flags
     try_complete(needle, "once",    output);
     try_complete(needle, "not",     output);
