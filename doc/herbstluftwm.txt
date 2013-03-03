@@ -906,6 +906,9 @@ TIP: Rule ID's default to an incremental index. These default IDs should be
 unique, unless you assign a different rule a custom integer ID. Defaulted IDs
 can be captured with the 'printid' flag.
 
+WARNING: The interface for rule ids may change before the next stable release,
+so check the docs after updating the next time.
+
 If a new client
 appears, herbstluftwm tries to apply each rule to this new client as follows:
 If each 'CONDITION' of this rule matches against this client, then every

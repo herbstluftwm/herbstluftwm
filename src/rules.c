@@ -76,9 +76,9 @@ static HSConditionType g_condition_types[] = {
     { "windowrole",     condition_windowrole        },
 };
 
-int     g_maxage_type; // index of "maxage"
-time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
-unsigned long long g_rule_id_index; // incremental index of rule ID
+static int     g_maxage_type; // index of "maxage"
+static time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
+static unsigned long long g_rule_id_index; // incremental index of rule ID
 
 static HSConsequenceType g_consequence_types[] = {
     { "tag",            consequence_tag             },
@@ -93,7 +93,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "hook",           consequence_hook            },
 };
 
-GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
+static GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
 
 /// FUNCTIONS ///
 // RULES //
@@ -265,8 +265,8 @@ HSRule* rule_create() {
     // Add name. Defaults to index number.
     GString* name = g_string_sized_new(20);
     g_string_printf(name, "%llu", g_rule_id_index++);
-    rule->id = g_strdup(name->str);
-    g_string_free(name, true);
+    rule->id = name->str;
+    g_string_free(name, false);
     return rule;
 }
 
@@ -315,7 +315,7 @@ void rule_complete(int argc, char** argv, int pos, GString* output) {
 
 // Compares the id of two rules.
 static gint rule_compare_id(const HSRule* a, const HSRule* b) {
-    return (!strcmp(a->id, b->id)) ? 0 : -1;
+    return strcmp(a->id, b->id);
 }
 
 // Looks up rules of a given id and removes them from the queue
@@ -503,12 +503,28 @@ int rule_add_command(int argc, char** argv, GString* output) {
     }
 
     if (printid) {
-       g_string_append_printf(output, "ruleid\t%s\n", rule->id);
+       g_string_append_printf(output, "%s\n", rule->id);
     }
 
     g_queue_push_tail(&g_rules, rule);
     return 0;
 }
+
+void complete_against_rule_names(int argc, char** argv, int pos, GString* output) {
+    char* needle;
+    if (pos >= argc) {
+        needle = "";
+    } else {
+        needle = argv[pos];
+    }
+    // Complete ids
+    GList* cur_rule = g_queue_peek_head_link(&g_rules);
+    while (cur_rule != NULL) {
+        try_complete(needle, ((HSRule*)cur_rule->data)->id, output);
+        cur_rule = g_list_next(cur_rule);
+    }
+}
+
 
 int rule_remove_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
@@ -800,3 +816,4 @@ void consequence_hook(HSConsequence* cons, HSClient* client,
     hook_emit(LENGTH(hook_str), hook_str);
     g_string_free(winid, true);
 }
+

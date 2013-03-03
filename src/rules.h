@@ -13,8 +13,6 @@
 struct HSClient;
 struct HSTag;
 
-extern GQueue g_rules;
-
 enum {
     CONDITION_VALUE_TYPE_STRING,
     CONDITION_VALUE_TYPE_REGEX,
@@ -82,6 +80,7 @@ void rule_complete(int argc, char** argv, int pos, GString* output);
 int rule_add_command(int argc, char** argv, GString* output);
 int rule_remove_command(int argc, char** argv, GString* output);
 int rule_print_all_command(int argc, char** argv, GString* output);
+void complete_against_rule_names(int argc, char** argv, int pos, GString* output);
 
 #endif
 
