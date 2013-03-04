@@ -383,6 +383,11 @@ HSMonitor* string_to_monitor(char* string) {
     return monitor_with_index(idx);
 }
 
+static int monitor_attr_index(void* data) {
+    HSMonitor* m = (HSMonitor*) data;
+    return monitor_index_of(m);
+}
+
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
     HSMonitor* m = g_new0(HSMonitor, 1);
@@ -402,8 +407,10 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     m->stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
 
+    m->object.data = m;
     HSAttribute attributes[] = {
         ATTRIBUTE_STRING(   "name",     m->display_name,ATTR_READ_ONLY  ),
+        ATTRIBUTE_CUSTOM_INT("index",   monitor_attr_index,ATTR_READ_ONLY  ),
         ATTRIBUTE_BOOL(     "lock_tag", m->lock_tag,    ATTR_READ_ONLY  ),
         ATTRIBUTE_LAST,
     };

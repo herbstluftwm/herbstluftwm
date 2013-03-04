@@ -1232,6 +1232,7 @@ listed as follows:
 [format="csv",cols="m,"]
 |===========================
  s - name                 , its name
+ i - index                , its index
  b - lock_tag             ,
 |===========================
 
