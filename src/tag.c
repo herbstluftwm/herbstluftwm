@@ -197,6 +197,10 @@ static int tag_attr_curframe_wcount(void* data) {
     return frame->content.clients.count;
 }
 
+static int tag_attr_index(void* data) {
+    HSTag* tag = (HSTag*) data;
+    return tag_index_of(tag);
+}
 
 HSTag* add_tag(char* name) {
     HSTag* find_result = find_tag(name);
@@ -218,6 +222,7 @@ HSTag* add_tag(char* name) {
     HSAttribute attributes[] = {
         ATTRIBUTE_STRING("name",           tag->display_name,        tag_attr_name),
         ATTRIBUTE_BOOL(  "floating",       tag->floating,            tag_attr_floating),
+        ATTRIBUTE_CUSTOM_INT("index",          tag_attr_index,           ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM_INT("frame_count",    tag_attr_frame_count,     ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM_INT("client_count",   tag_attr_client_count,    ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM_INT("curframe_windex",tag_attr_curframe_windex, ATTR_READ_ONLY),
