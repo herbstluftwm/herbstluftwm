@@ -198,14 +198,28 @@ char* strlasttoken(char* str, char* delim) {
     return str;
 }
 
+
 bool string_to_bool(char* string, bool oldvalue) {
+    return string_to_bool_error(string, oldvalue, NULL);
+}
+
+bool string_to_bool_error(char* string, bool oldvalue, bool* error) {
     bool val = oldvalue;
+    if (error) {
+        error = false;
+    }
     if (!strcmp(string, "on")) {
         val = true;
     } else if (!strcmp(string, "off")) {
         val = false;
+    } else if (!strcmp(string, "true")) {
+        val = true;
+    } else if (!strcmp(string, "false")) {
+        val = false;
     } else if (!strcmp(string, "toggle")) {
         val = ! oldvalue;
+    } else if (error) {
+        *error = true;
     }
     return val;
 }

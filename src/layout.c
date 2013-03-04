@@ -897,16 +897,19 @@ void frame_update_frame_window_visibility(HSFrame* frame) {
     frame_do_recursive(frame, frame_update_frame_window_visibility_helper, 2);
 }
 
-HSFrame* frame_current_selection() {
-    HSMonitor* m = get_current_monitor();
-    if (!m->tag) return NULL;
-    HSFrame* frame = m->tag->frame;
+HSFrame* frame_current_selection_below(HSFrame* frame) {
     while (frame->type == TYPE_FRAMES) {
         frame = (frame->content.layout.selection == 0) ?
                 frame->content.layout.a :
                 frame->content.layout.b;
     }
     return frame;
+}
+
+HSFrame* frame_current_selection() {
+    HSMonitor* m = get_current_monitor();
+    if (!m->tag) return NULL;
+    return frame_current_selection_below(m->tag->frame);
 }
 
 int frame_current_bring(int argc, char** argv, GString* output) {
@@ -1617,6 +1620,22 @@ void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order) {
     } else {
         // action only
         action(frame);
+    }
+}
+
+void frame_do_recursive_data(HSFrame* frame, void (*action)(HSFrame*,void*),
+                             int order, void* data) {
+    if (frame->type == TYPE_FRAMES) {
+        // clients and subframes
+        HSLayout* layout = &(frame->content.layout);
+        if (order <= 0) action(frame, data);
+        frame_do_recursive_data(layout->a, action, order, data);
+        if (order == 1) action(frame, data);
+        frame_do_recursive_data(layout->b, action, order, data);
+        if (order >= 2) action(frame, data);
+    } else {
+        // action only
+        action(frame, data);
     }
 }
 

@@ -116,4 +116,41 @@ herbstclient is rather simple:
                     stdout  <----|      |<---'
                                  +------+
 
-// vim: nowrap ft=asciidoc
+Objects
+-------
+There is one tree of objects in herbstluftwm to provide an easy access for the
+user to many option. The usage is similar to kobjects known from the Linux
+kernel. The most important functions are:
+
+  - bool hsobject_init(HSObject* obj): Initialize the given HSObject.
+  - void hsobject_free(HSObject* obj): De-initialize the given HSObject.
+  - void hsobject_link(HSObject* parent, HSObject* child, char* name): Register
+    a new child node at a parent using the specified name. If a child with that
+    name already exists, it will be replaced.
+  - void hsobject_unlink(HSObject* parent, HSObject* child): Removes all child
+    entries at the parent object.
+  - HSObject* hsobject_root(): Return the root node of the object tree.
+
+Each object has a certain set of attributes:
+
+  struct HSAttribute {
+      enum  {
+          HSATTR_TYPE_BOOL,
+          HSATTR_TYPE_INT,
+          HSATTR_TYPE_STRING,
+          //HSATTR_TYPE_WINID,    /* TODO: Win-ID als datentyp? */
+      } type;                   /* the datatype */
+      char*  name;              /* name as it is displayed to the user */
+      union {
+          bool  b;
+          int   i;
+          char* str;
+      } value;
+      bool read_only;           /* tells if this is read only for the user */
+      /** on_change is called after the user changes the value. If this
+       * function returns false, the old value will be restored */
+      bool (*on_change)(HSObject* obj, struct HSAttribute* attr);
+  };
+
+
+// vim: nowrap ft=asciidoc tw=80

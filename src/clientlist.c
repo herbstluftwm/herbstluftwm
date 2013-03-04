@@ -14,6 +14,7 @@
 #include "ewmh.h"
 #include "rules.h"
 #include "ipc-protocol.h"
+#include "object.h"
 // system
 #include <glib.h>
 #include <assert.h>
@@ -41,15 +42,20 @@ unsigned long g_window_border_normal_color;
 unsigned long g_window_border_urgent_color;
 unsigned long g_window_border_inner_color;
 
-GHashTable* g_clients; // container of all clients
+static GHashTable* g_clients; // container of all clients
+static HSObject*   g_client_object;
 
 // atoms from dwm.c
 // default atoms
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
 static Atom g_wmatom[WMLast];
 
+static void client_set_urgent_force(HSClient* client, bool state);
+
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
+    hsobject_init(&hc->object);
+    hc->window_str = NULL;
     hc->float_size.width = 100;
     hc->float_size.height = 100;
     hc->title = g_string_new("");
@@ -87,6 +93,7 @@ void clientlist_init() {
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
     g_wmatom[WMTakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
     // init actual client list
+    g_client_object = hsobject_create_and_link(hsobject_root(), "clients");
     g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
                                       NULL, (GDestroyNotify)client_destroy);
 }
@@ -114,6 +121,7 @@ void clientlist_destroy() {
     g_hash_table_foreach(g_clients, client_move_to_floatpos, NULL);
 
     g_hash_table_destroy(g_clients);
+    hsobject_unlink_and_destroy(hsobject_root(), g_client_object);
 }
 
 
@@ -123,6 +131,25 @@ void clientlist_foreach(GHFunc func, gpointer data) {
 
 HSClient* get_client_from_window(Window window) {
     return (HSClient*) g_hash_table_lookup(g_clients, &window);
+}
+
+#define CLIENT_UPDATE_ATTR(FUNC,MEMBER) do { \
+        HSClient* client = container_of(attr->value.b, HSClient, MEMBER); \
+        FUNC(client, client->MEMBER); \
+        return NULL; \
+    }   \
+    while (0);
+
+static GString* client_attr_fullscreen(HSAttribute* attr) {
+    CLIENT_UPDATE_ATTR(client_set_fullscreen, fullscreen);
+}
+
+static GString* client_attr_pseudotile(HSAttribute* attr) {
+    CLIENT_UPDATE_ATTR(client_set_pseudotile, pseudotile);
+}
+
+static GString* client_attr_urgent(HSAttribute* attr) {
+    CLIENT_UPDATE_ATTR(client_set_urgent_force, urgent);
 }
 
 HSClient* manage_client(Window win) {
@@ -170,6 +197,9 @@ HSClient* manage_client(Window win) {
 
     // actually manage it
     g_hash_table_insert(g_clients, &(client->window), client);
+    client->window_str = g_string_sized_new(10);
+    g_string_printf(client->window_str, "0x%lx", win);
+    hsobject_link(g_client_object, &client->object, client->window_str->str);
     // insert to layout
     if (!client->tag) {
         client->tag = m->tag;
@@ -189,6 +219,18 @@ HSClient* manage_client(Window win) {
         // of clients on this tag and D is the depth of the binary layout tree
         frame_focus_window(client->tag->frame, win);
     }
+
+    HSAttribute attributes[] = {
+        ATTRIBUTE_STRING(   "winid",        client->window_str,     ATTR_READ_ONLY),
+        ATTRIBUTE_STRING(   "title",        client->title,          ATTR_READ_ONLY),
+        ATTRIBUTE_BOOL(     "fullscreen",   client->fullscreen,     client_attr_fullscreen),
+        ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile,     client_attr_pseudotile),
+        ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests,   ATTR_ACCEPT_ALL),
+        ATTRIBUTE_BOOL(     "ewmhnotify",   client->ewmhnotify,     ATTR_ACCEPT_ALL),
+        ATTRIBUTE_BOOL(     "urgent",       client->urgent,         client_attr_urgent),
+        ATTRIBUTE_LAST,
+    };
+    hsobject_set_attributes(&client->object, attributes);
 
     ewmh_window_update_tag(client->window, client->tag);
     tag_set_flags_dirty();
@@ -242,16 +284,21 @@ void unmanage_client(Window win) {
 
 // destroys a special client
 void client_destroy(HSClient* client) {
+    hsobject_unlink(g_client_object, &client->object);
     if (client->tag && client->slice) {
         stack_remove_slice(client->tag->stack, client->slice);
     }
     if (client->slice) {
         slice_destroy(client->slice);
     }
-    if (client) {
+    if (client->title) {
         /* free window title */
         g_string_free(client->title, true);
     }
+    if (client->window_str) {
+        g_string_free(client->window_str, true);
+    }
+    hsobject_free(&client->object);
     g_free(client);
 }
 
@@ -273,6 +320,7 @@ void window_unfocus_last() {
     if (lastfocus) {
         window_unfocus(lastfocus);
     }
+    hsobject_unlink_by_name(g_client_object, "focus");
     // give focus to root window
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
     if (lastfocus) {
@@ -300,6 +348,7 @@ void window_focus(Window window) {
          * only emit the hook if the focus *really* changes */
         // unfocus last one
         window_unfocus(lastfocus);
+        hsobject_link(g_client_object, &client->object, "focus");
         ewmh_update_active_window(window);
         tag_update_each_focus_layer();
         char* title = client ? client->title->str : "?";
@@ -546,7 +595,10 @@ void client_set_urgent(HSClient* client, bool state) {
         // nothing to do
         return;
     }
+    client_set_urgent_force(client, state);
+}
 
+void client_set_urgent_force(HSClient* client, bool state) {
     char winid_str[STRING_BUF_SIZE];
     snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", client->window);
     hook_emit_list("urgent", state ? "on" : "off", winid_str, NULL);
@@ -635,11 +687,6 @@ HSClient* get_current_client() {
 }
 
 void client_set_fullscreen(HSClient* client, bool state) {
-    if (client->fullscreen == state) {
-        // nothing to do
-        return;
-    }
-
     client->fullscreen = state;
     if (client->ewmhnotify) {
         client->ewmhfullscreen = state;
@@ -694,8 +741,11 @@ int client_set_property_command(int argc, char** argv) {
     }
 
     // if found, then change it
+    bool old_value = *(properties[i].value);
     bool state = string_to_bool(action, *(properties[i].value));
-    properties[i].func(client, state);
+    if (state != old_value) {
+        properties[i].func(client, state);
+    }
     return 0;
 }
 

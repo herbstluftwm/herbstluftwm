@@ -13,6 +13,8 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+#include "object.h"
+
 struct HSTag;
 struct HSFrame;
 struct HSSlice;
@@ -22,7 +24,9 @@ typedef struct HSMonitor {
     struct HSTag*      tag;    // currently viewed tag
     struct HSTag*      tag_previous;    // previously viewed tag
     struct HSSlice*    slice;  // slice in the monitor stack
+    HSObject    object;
     GString*    name;
+    GString*    display_name;   // name used for object IO
     int         pad_up;
     int         pad_right;
     int         pad_down;
@@ -98,6 +102,7 @@ void monitor_stack_to_window_buf(Window* buf, int len, bool only_clients,
                                  int* remain_len);
 struct HSStack* get_monitor_stack();
 
+void monitor_update_focos_objects();
 
 typedef bool (*MonitorDetection)(XRectangle**, size_t*);
 bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count);

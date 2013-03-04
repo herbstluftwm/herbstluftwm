@@ -20,6 +20,8 @@ Changes:
       can be printed to stdout using the 'printid' flag to the rule command.
       Unrule command accepts ids, and can remove rules individually.
     * new command: list_rules
+    * allow true/false as arguments to commands accepting boolean values. This
+      affects the commands: floating, fullscreen, pseudotile and rule.
 
 Release 0.5.1 on 2013-01-05
 ---------------------------

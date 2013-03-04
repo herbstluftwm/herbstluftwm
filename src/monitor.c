@@ -31,6 +31,8 @@ int* g_smart_frame_surroundings;
 int* g_mouse_recenter_gap;
 HSStack* g_monitor_stack;
 GArray*     g_monitors; // Array of HSMonitor*
+HSObject*   g_monitor_object;
+HSObject*   g_monitor_by_name_object;
 
 typedef struct RectList {
     XRectangle rect;
@@ -47,6 +49,8 @@ void monitor_init() {
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
     g_mouse_recenter_gap       = &(settings_find("mouse_recenter_gap")->value.i);
     g_monitor_stack = stack_create();
+    g_monitor_object = hsobject_create_and_link(hsobject_root(), "monitors");
+    g_monitor_by_name_object = hsobject_create_and_link(g_monitor_object, "by-name");
 }
 
 void monitor_destroy() {
@@ -54,8 +58,15 @@ void monitor_destroy() {
         HSMonitor* m = monitor_with_index(i);
         stack_remove_slice(g_monitor_stack, m->slice);
         slice_destroy(m->slice);
+        hsobject_free(&m->object);
+        if (m->name) {
+            g_string_free(m->name, true);
+        }
+        g_string_free(m->display_name, true);
         g_free(m);
     }
+    hsobject_unlink_and_destroy(g_monitor_object, g_monitor_by_name_object);
+    hsobject_unlink_and_destroy(hsobject_root(), g_monitor_object);
     stack_destroy(g_monitor_stack);
     g_array_free(g_monitors, true);
 }
@@ -375,16 +386,29 @@ HSMonitor* string_to_monitor(char* string) {
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
     HSMonitor* m = g_new0(HSMonitor, 1);
+    hsobject_init(&m->object);
+    if (name) {
+        hsobject_link(g_monitor_by_name_object, &m->object, name);
+    }
     m->rect = rect;
     m->tag = tag;
     m->tag_previous = tag;
     m->name = (name ? g_string_new(name) : NULL);
+    m->display_name = g_string_new(name ? name : "");
     m->mouse.x = 0;
     m->mouse.y = 0;
     m->dirty = true;
     m->slice = slice_create_monitor(m);
     m->stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
+
+    HSAttribute attributes[] = {
+        ATTRIBUTE_STRING(   "name",     m->display_name,ATTR_READ_ONLY  ),
+        ATTRIBUTE_BOOL(     "lock_tag", m->lock_tag,    ATTR_READ_ONLY  ),
+        ATTRIBUTE_LAST,
+    };
+    hsobject_set_attributes(&m->object, attributes);
+
     stack_insert_slice(g_monitor_stack, m->slice);
     g_array_append_val(g_monitors, m);
     return g_array_index(g_monitors, HSMonitor*, g_monitors->len-1);
@@ -487,10 +511,13 @@ int remove_monitor(int index) {
     stack_remove_slice(g_monitor_stack, monitor->slice);
     slice_destroy(monitor->slice);
     XDestroyWindow(g_display, monitor->stacking_window);
+    hsobject_unlink(g_monitor_by_name_object, &monitor->object);
+    hsobject_free(&monitor->object);
     // and remove monitor completely
     if (monitor->name) {
         g_string_free(monitor->name, true);
     }
+    g_string_free(monitor->display_name, true);
     g_free(monitor);
     g_array_remove_index(g_monitors, index);
     if (g_cur_monitor >= g_monitors->len) {
@@ -549,6 +576,7 @@ int rename_monitor_command(int argc, char** argv, GString* output) {
     } else if (!strcmp("", argv[2])) {
         // empty name -> clear name
         if (mon->name != NULL) {
+            hsobject_unlink_by_name(g_monitor_by_name_object, mon->name->str);
             g_string_free(mon->name, true);
             mon->name = NULL;
         }
@@ -559,14 +587,17 @@ int rename_monitor_command(int argc, char** argv, GString* output) {
             "%s: A monitor with the same name already exists\n", argv[0]);
         return HERBST_INVALID_ARGUMENT;
     }
+    g_string_assign(mon->display_name, argv[2]);
     if (mon->name == NULL) {
         // not named before
         GString* name = g_string_new(argv[2]);
         mon->name = name;
     } else {
+        hsobject_unlink_by_name(g_monitor_by_name_object, mon->name->str);
         // already named
         g_string_assign(mon->name, argv[2]);
     }
+    hsobject_link(g_monitor_by_name_object, &mon->object, mon->name->str);
     return 0;
 }
 
@@ -659,6 +690,8 @@ void ensure_monitors_are_available() {
     HSMonitor* m = add_monitor(rect, g_array_index(g_tags, HSTag*, 0), NULL);
     g_cur_monitor = 0;
     g_cur_frame = m->tag->frame;
+
+    monitor_update_focos_objects();
 }
 
 HSMonitor* monitor_with_frame(HSFrame* frame) {
@@ -921,9 +954,16 @@ void monitor_focus_by_index(int new_selection) {
         XSync(g_display, False);
         while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
     }
+    // update objects
+    monitor_update_focos_objects();
     // emit hooks
     ewmh_update_current_desktop();
     emit_tag_changed(monitor->tag, new_selection);
+}
+
+void monitor_update_focos_objects() {
+    hsobject_link(g_monitor_object, &get_current_monitor()->object, "focus");
+    tag_update_focus_objects();
 }
 
 int monitor_get_relative_x(HSMonitor* m, int x_root) {

@@ -100,6 +100,7 @@ HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag);
 void frame_insert_window(HSFrame* frame, Window window);
 HSFrame* lookup_frame(HSFrame* root, char* path);
 HSFrame* frame_current_selection();
+HSFrame* frame_current_selection_below(HSFrame* frame);
 // finds the subframe of frame that contains the window
 HSFrame* find_frame_with_window(HSFrame* frame, Window window);
 // removes window from a frame/subframes
@@ -144,6 +145,8 @@ int frame_focus_command(int argc, char** argv, GString* output);
 // follow selection to leave and focus this frame
 int frame_focus_recursive(HSFrame* frame);
 void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order);
+void frame_do_recursive_data(HSFrame* frame, void (*action)(HSFrame*,void*),
+                             int order, void* data);
 void frame_hide_recursive(HSFrame* frame);
 void frame_show_recursive(HSFrame* frame);
 int layout_rotate_command();

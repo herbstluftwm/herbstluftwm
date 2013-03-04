@@ -684,6 +684,58 @@ pseudotile [*on*|*off*|*toggle*]::
     client is to ensure, that it fits into its tile. If no argument is given,
     pseudotile mode is toggled.
 
+object_tree ['PATH']::
+    Prints the tree of objects. If the object path 'PATH' is given, only the
+    subtree starting at 'PATH' is printed. See the <<OBJECTS,*OBJECTS section*>>
+    for more details.
+
+attr ['PATH' ['NEWVALUE']::
+    Prints the children and attributes of the given object addressed by 'PATH'.
+    If 'PATH' is an attribute, then print the attribute value. If 'NEWVALUE' is
+    given, assign 'NEWVALUE' to the attribute given by 'PATH'. See the
+    <<OBJECTS,*OBJECTS section*>> for more details.
+
+get_attribute 'ATTRIBUTE'::
+    Print the value of the specified 'ATTRIBUTE' as described in the
+    <<OBJECTS,*OBJECTS section*>>.
+
+set_attribute 'ATTRIBUTE' 'NEWVALUE'::
+    Assign 'NEWVALUE' to the specified 'ATTRIBUTE' as described in the
+    <<OBJECTS,*OBJECTS section*>>.
+
+substitute 'IDENTIFIER' 'ATTRIBUTE' 'COMMAND' ['ARGS' ...]::
+    Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'ARGS'
+    by the value of the 'ATTRIBUTE'. Note that the 'COMMAND' also is replaced by
+    the attribute value if it equals 'IDENTIFIER'. The replaced command with its
+    arguments then is executed. Examples:
+
+        * +substitute MYTITLE clients.focus.title echo MYTITLE+ +
+          Prints the title of the currently focused window.
+
+compare 'ATTRIBUTE' 'OPERATOR' 'VALUE'::
+    Compares the value of 'ATTRIBUTE' with 'VALUE' using the comparation method
+    'OPERATOR'. If the comparation succeeds, it returns 0, else 1. The operators
+    are:
+        - *=*: 'ATTRIBUTEs' value equals 'VALUE'
+        - *!=*: 'ATTRIBUTEs' value does not equal 'VALUE'
+        - *le*: 'ATTRIBUTEs' value \<= 'VALUE'
+        - *lt*: 'ATTRIBUTEs' value <  'VALUE'
+        - *ge*: 'ATTRIBUTEs' value >= 'VALUE'
+        - *gt*: 'ATTRIBUTEs' value >  'VALUE'
+
+ ::
+    The 'OPERATORs' *le*,*lt*,*ge*,*gt* can only be used if 'ATTRIBUTE' is of
+    the type integer or unsigned integer. Note that the first parameter must
+    always be an attribute and the second a constant value. If you want to
+    compare to attributes, use the substitute command:
++
+----
+substitute FC tags.focus.frame_count \
+    compare tags.focus.client_count gt FC
+----
++
+It returns success if there are more clients on the focused tag than frames.
+
 getenv 'NAME'::
     Gets the value of the environment variable 'NAME'.
 
@@ -1024,6 +1076,165 @@ Examples:
     * +rule --windowtype=_NET_WM_WINDOW_TYPE_DIALOG --focus=on+
         +
         Sets focus to new dialogs which set their +_NET_WM_WINDOW_TYPE+ correctly.
+
+[[OBJECTS]]
+OBJECTS
+-------
+
+WARNING: The object tree is not stable yet, i.e. its interface may change until
+the next stable release. So check this documentation again after upgrading the
+next time.
+
+The object tree is a collection of objects with attributes similar to +/sys+
+known from the Linux Kernel. Many entities (like tags, monitors, clients, ...)
+have objects to access their attributes directly. The tree is printed by the
++object_tree+ command and looks more or less as follows:
+----
+$ herbstclient object_tree
+╾─┐
+  ├─┐ tags
+  │ ├─┐ by-name
+  │ │ ├─╼ 1
+  │ │ ...
+  │ │ └─╼ 9
+  │ └─╼ focus
+  ├─┐ clients
+  │ ├─╼ 0x1400022
+  │ └─╼ focus
+  └─┐ monitors
+    ├─╼ by-name
+    └─╼ focus
+----
+To print a subtree starting at a certain object, give the 'PATH' of the object
+to +object_tree+. The object 'PATH' is the path using the separator +.+ (dot),
+e.g. +tags.by-name+:
+
+----
+$ herbstclient object_tree tags.by-name.
+╾─┐ tags.by-name.
+  ├─╼ 1
+  ├─╼ 2
+  ...
+  └─╼ 9
+----
+
+To query all attributes and children of a object, pass its 'PATH' to +attr+:
+
+----
+$ herbstclient attr tags.
+2 children:
+  by-name.
+  focus.
+
+1 attributes:
+ .---- type
+ | .-- writeable
+ V V
+ u - count                = 9
+
+$ herbstclient attr tags.focus.
+0 children.
+6 attributes:
+ .---- type
+ | .-- writeable
+ V V
+ s w name                 = "1"
+ b w floating             = false
+ i - frame_count          = 2
+ i - client_count         = 1
+ i - curframe_windex      = 0
+ i - curframe_wcount      = 1
+----
+
+This already gives an intuition of the output: +attr+ first lists the names of
+the child objects and then all attributes, telling for each attribute:
+
+  - its type
+
+    * +s+ for string
+    * +i+ for integer
+    * +b+ for boolean
+    * +u+ for unsigned integer
+
+  - if it is writeable by the user: +w+ if yes, +-+ else.
+  - the name of the attribute
+  - its current value (only quoted for strings)
+
+To get the unquoted value of a certain attribute, address the attribute using
+the same syntax as for object paths and pass it to +attr+ or +get_attribute+:
+
+----
+$ herbstclient attr clients.focus.title
+herbstluftwm.txt = (~/dev/c/herbstluftwm/doc) - VIM
+$ herbstclient get_attribute  clients.focus.title
+herbstluftwm.txt = (~/dev/c/herbstluftwm/doc) - VIM
+----
+
+To change a writeable attribute value pass the new value to +attr+ or to
++set_attribute+:
+
+----
+$ herbstclient attr tags.focus.floating
+false
+$ herbstclient attr tags.focus.floating true
+$ herbstclient attr tags.focus.floating
+true
+$ herbstclient set_attribute tags.focus.floating false
+$ herbstclient attr tags.focus.floating
+false
+----
+
+Just look around to get a feeling what is there. The detailed tree content is
+listed as follows:
+
+  * +tags+: subtree for tags.
++
+[format="csv",cols="m,"]
+|===========================
+ u - count                , number of tags
+|===========================
+    ** +by-name+
+        *** 'TAG': a object for each tag with the name 'TAG' +
++
+[format="csv",cols="m,"]
+|===========================
+ s w name                 , name of the tag
+ b w floating             , if it is in floating mode
+ i - frame_count          , number of frames
+ i - client_count         , number of clients on this tag
+ i - curframe_windex      , index of the focused client in the select frame
+ i - curframe_wcount      , number of clients in the selected frame
+|===========================
+
+    ** +focus+: the object of the focused tag
+
+  * +clients+
+    ** 'WINID': a object for each client with its 'WINID' +
++
+[format="csv",cols="m,"]
+|===========================
+ s - winid                , its window id
+ s - title                , its window title
+ b w fullscreen           ,
+ b w pseudotile           ,
+ b w ewmhrequests         , if ewmh requests are permitted for this client
+ b w ewmhnotify           , if the client is told about its state via ewmh
+ b w urgent               , its urgent state
+|===========================
+
+    ** +focus+: the object of the focused client, if any
+
+  * +monitors+
+    ** +by-name+
+      *** 'NAME': a object for each named monitor +
++
+[format="csv",cols="m,"]
+|===========================
+ s - name                 , its name
+ b - lock_tag             ,
+|===========================
+
+    ** +focus+: the object of the focused monitor
 
 AUTOSTART FILE
 --------------

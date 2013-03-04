@@ -15,10 +15,12 @@ struct HSStack;
 
 typedef struct HSTag {
     GString*        name;   // name of this tag
+    GString*        display_name; // name used for object-io
     struct HSFrame* frame;  // the master frame
     bool            floating;
     int             flags;
     struct HSStack* stack;
+    struct HSObject* object;
 } HSTag;
 
 // globals
@@ -47,6 +49,7 @@ int tag_set_floating_command(int argc, char** argv, GString* output);
 void tag_update_focus_layer(HSTag* tag);
 void tag_foreach(void (*action)(HSTag*,void*), void* data);
 void tag_update_each_focus_layer();
+void tag_update_focus_objects();
 void tag_force_update_flags();
 void tag_update_flags();
 void tag_set_flags_dirty();
