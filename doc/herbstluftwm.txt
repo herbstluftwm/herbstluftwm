@@ -716,18 +716,18 @@ compare 'ATTRIBUTE' 'OPERATOR' 'VALUE'::
     Compares the value of 'ATTRIBUTE' with 'VALUE' using the comparation method
     'OPERATOR'. If the comparation succeeds, it returns 0, else 1. The operators
     are:
-        - *=*: 'ATTRIBUTEs' value equals 'VALUE'
-        - *!=*: 'ATTRIBUTEs' value does not equal 'VALUE'
-        - *le*: 'ATTRIBUTEs' value \<= 'VALUE'
-        - *lt*: 'ATTRIBUTEs' value <  'VALUE'
-        - *ge*: 'ATTRIBUTEs' value >= 'VALUE'
-        - *gt*: 'ATTRIBUTEs' value >  'VALUE'
+        - *=*: 'ATTRIBUTE'##\'s## value equals 'VALUE'
+        - *!=*: 'ATTRIBUTE'##\'s## value does not equal 'VALUE'
+        - *le*: 'ATTRIBUTE'##\'s## value \<= 'VALUE'
+        - *lt*: 'ATTRIBUTE'##\'s## value <  'VALUE'
+        - *ge*: 'ATTRIBUTE'##\'s## value >= 'VALUE'
+        - *gt*: 'ATTRIBUTE'##\'s## value >  'VALUE'
 
  ::
     The 'OPERATORs' *le*,*lt*,*ge*,*gt* can only be used if 'ATTRIBUTE' is of
     the type integer or unsigned integer. Note that the first parameter must
     always be an attribute and the second a constant value. If you want to
-    compare to attributes, use the substitute command:
+    compare two attributes, use the substitute command:
 +
 ----
 substitute FC tags.focus.frame_count \
