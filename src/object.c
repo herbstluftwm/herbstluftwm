@@ -275,7 +275,7 @@ int attr_command(int argc, char* argv[], GString* output) {
             g_string_append_printf(output, "\n");
         }
         // list attributes
-        g_string_append_printf(output, "%d attributes", obj->attribute_count);
+        g_string_append_printf(output, "%zu attributes", obj->attribute_count);
         if (obj->attribute_count > 0) {
             g_string_append_printf(output, ":\n");
             g_string_append_printf(output, " .---- type\n");
