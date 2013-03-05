@@ -78,7 +78,7 @@ static HSConditionType g_condition_types[] = {
 
 static int     g_maxage_type; // index of "maxage"
 static time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
-static unsigned long long g_rule_id_index; // incremental index of rule ID
+static unsigned long long g_rule_label_index; // incremental index of rule label
 
 static HSConsequenceType g_consequence_types[] = {
     { "tag",            consequence_tag             },
@@ -99,7 +99,7 @@ static GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
 // RULES //
 void rules_init() {
     g_maxage_type = find_condition_type("maxage");
-    g_rule_id_index = 0;
+    g_rule_label_index = 0;
 }
 
 void rules_destroy() {
@@ -235,21 +235,21 @@ void consequence_destroy(HSConsequence* cons) {
     g_free(cons);
 }
 
-bool rule_id_replace(HSRule* rule, char op, char* value, GString* output) {
+bool rule_label_replace(HSRule* rule, char op, char* value, GString* output) {
     switch (op) {
         case '=':
             if (*value == '\0') {
                 g_string_append_printf(output,
-                    "rule: Rule id cannot be empty");
+                    "rule: Rule label cannot be empty");
                 return false;
                 break;
             }
-            g_free(rule->id);
-            rule->id = g_strdup(value);
+            g_free(rule->label);
+            rule->label = g_strdup(value);
             break;
         default:
             g_string_append_printf(output,
-                "rule: Unknown rule id operation \"%c\"\n", op);
+                "rule: Unknown rule label operation \"%c\"\n", op);
             return false;
             break;
     }
@@ -264,8 +264,8 @@ HSRule* rule_create() {
     rule->birth_time = get_monotonic_timestamp();
     // Add name. Defaults to index number.
     GString* name = g_string_sized_new(20);
-    g_string_printf(name, "%llu", g_rule_id_index++);
-    rule->id = name->str;
+    g_string_printf(name, "%llu", g_rule_label_index++);
+    rule->label = name->str;
     g_string_free(name, false);
     return rule;
 }
@@ -281,8 +281,8 @@ void rule_destroy(HSRule* rule) {
         consequence_destroy(rule->consequences[i]);
     }
     g_free(rule->consequences);
-    // free id
-    g_free(rule->id);
+    // free label
+    g_free(rule->label);
     // free rule itself
     g_free(rule);
 }
@@ -305,8 +305,8 @@ void rule_complete(int argc, char** argv, int pos, GString* output) {
         try_complete_partial(needle, buf->str, output);
     }
 
-    // complete id
-    try_complete_partial(needle, "id=", output);
+    // complete label
+    try_complete_partial(needle, "label=", output);
     // complete flags
     try_complete(needle, "once",    output);
     try_complete(needle, "not",     output);
@@ -316,18 +316,18 @@ void rule_complete(int argc, char** argv, int pos, GString* output) {
 }
 
 // Compares the id of two rules.
-static gint rule_compare_id(const HSRule* a, const HSRule* b) {
-    return strcmp(a->id, b->id);
+static gint rule_compare_label(const HSRule* a, const HSRule* b) {
+    return strcmp(a->label, b->label);
 }
 
-// Looks up rules of a given id and removes them from the queue
-bool rule_find_pop(char* id) {
+// Looks up rules of a given label and removes them from the queue
+bool rule_find_pop(char* label) {
     GList* rule = { NULL };
     bool status = false; // Will be returned as true if any is found
-    HSRule rule_find = { .id = id };
+    HSRule rule_find = { .label = label };
     while ((rule = g_queue_find_custom(&g_rules, &rule_find,
-                        (GCompareFunc)rule_compare_id))) {
-        // Check if rule with id exists
+                        (GCompareFunc)rule_compare_label))) {
+        // Check if rule with label exists
         if ( rule == NULL ) {
             break;
         }
@@ -342,7 +342,7 @@ bool rule_find_pop(char* id) {
 
 // List all rules in queue
 static void rule_print_append_output(HSRule* rule, GString* output) {
-    g_string_append_printf(output, "id=%s\t", rule->id);
+    g_string_append_printf(output, "label=%s\t", rule->label);
     // Append conditions
     for (int i = 0; i < rule->condition_count; i++) {
         if (rule->conditions[i]->negated) { // Include flag if negated
@@ -431,7 +431,7 @@ int rule_add_command(int argc, char** argv, GString* output) {
     HSRule* rule = rule_create();
     HSCondition* cond;
     HSConsequence* cons;
-    bool printid = false;
+    bool printlabel = false;
     bool negated = false;
     struct {
         char* name;
@@ -440,7 +440,7 @@ int rule_add_command(int argc, char** argv, GString* output) {
         { "not",    &negated },
         { "!",      &negated },
         { "once",   &rule->once },
-        { "printid",&printid },
+        { "printlabel",&printlabel },
     };
 
     // parse rule incrementally. always maintain a correct rule in rule
@@ -487,9 +487,9 @@ int rule_add_command(int argc, char** argv, GString* output) {
             rule_add_consequence(rule, cons);
         }
 
-        // Check for a provided id, and replace default index if so
-        else if (consorcond && (!strcmp(name,"id"))) {
-            if (!rule_id_replace(rule, op, value, output)) {
+        // Check for a provided label, and replace default index if so
+        else if (consorcond && (!strcmp(name,"label"))) {
+            if (!rule_label_replace(rule, op, value, output)) {
                 rule_destroy(rule);
                 return HERBST_INVALID_ARGUMENT;
             }
@@ -504,8 +504,8 @@ int rule_add_command(int argc, char** argv, GString* output) {
         }
     }
 
-    if (printid) {
-       g_string_append_printf(output, "%s\n", rule->id);
+    if (printlabel) {
+       g_string_append_printf(output, "%s\n", rule->label);
     }
 
     g_queue_push_tail(&g_rules, rule);
@@ -519,10 +519,10 @@ void complete_against_rule_names(int argc, char** argv, int pos, GString* output
     } else {
         needle = argv[pos];
     }
-    // Complete ids
+    // Complete labels
     GList* cur_rule = g_queue_peek_head_link(&g_rules);
     while (cur_rule != NULL) {
-        try_complete(needle, ((HSRule*)cur_rule->data)->id, output);
+        try_complete(needle, ((HSRule*)cur_rule->data)->label, output);
         cur_rule = g_list_next(cur_rule);
     }
 }
@@ -537,11 +537,11 @@ int rule_remove_command(int argc, char** argv, GString* output) {
         // remove all rules
         g_queue_foreach(&g_rules, (GFunc)rule_destroy, NULL);
         g_queue_clear(&g_rules);
-        g_rule_id_index = 0;
+        g_rule_label_index = 0;
         return 0;
     }
 
-    // Deletes rule with given id
+    // Deletes rule with given label
     if (!rule_find_pop(argv[1])) {
         g_string_append_printf(output, "Couldn't find rule: \"%s\"", argv[1]);
         return HERBST_INVALID_ARGUMENT;

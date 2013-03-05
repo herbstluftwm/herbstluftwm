@@ -17,9 +17,10 @@ Changes:
     * the hook consequence now also tells the window id that triggerd the rule
     * new command: echo
     * new commands: true false
-    * rule id: rules can be given ids with the 'id' property. The id
-      can be printed to stdout using the 'printid' flag to the rule command.
-      Unrule command accepts ids, and can remove rules individually.
+    * rule labels: rules can be given a label with the 'label' property. The
+      label can be printed to stdout using the 'printlabel' flag to the rule
+      command. Unrule command accepts a label to remove all rules with that
+      label.
     * new command: list_rules
     * allow true/false as arguments to commands accepting boolean values. This
       affects the commands: floating, fullscreen, pseudotile and rule.

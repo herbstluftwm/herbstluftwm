@@ -946,32 +946,29 @@ appear. Each rule matches against a certain subset of all clients and defines a
 set of properties for them (called 'CONSEQUENCE'##s##). A rule can be defined
 with this command:
 
-+rule+ [\[--]'FLAG'|\[--]'ID'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]
++rule+ [\[--]'FLAG'|\[--]'LABEL'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]
 
 Each rule consists of a list of 'FLAG'##s##, 'CONDITION'##s## 'CONSEQUENCE'##s##
-and, optionally, an 'ID'. (each of them can be optionally prefixed with two
+and, optionally, a 'LABEL'. (each of them can be optionally prefixed with two
 dashes (+--+) to provide a more *iptables*(8)-like feeling).
 
-Each rule can be given a custom identifier by specifying the 'ID' property:
+Each rule can be given a custom label by specifying the 'LABEL' property:
 
-    * +[--]id+='VALUE'
+    * +[--]label+='VALUE'
 
-If multiple id properties are specified, the last one in the list will be
-applied. If no ID is given, then the rule will be given an integer name that
-represents the index of the rule since the last 'unrule -F' or 'reload' command.
+If multiple labels are specified, the last one in the list will be applied. If
+no label is given, then the rule will be given an integer name that represents
+the index of the rule since the last 'unrule -F' command (which is triggered in
+the default autostart).
 
-TIP: Rule ID's default to an incremental index. These default IDs should be
-unique, unless you assign a different rule a custom integer ID. Defaulted IDs
-can be captured with the 'printid' flag.
+TIP: Rule labels default to an incremental index. These default labels are
+unique, unless you assign a different rule a custom integer 'LABEL'. Defaulted
+labels can be captured with the 'printlabel' flag.
 
-WARNING: The interface for rule ids may change before the next stable release,
-so check the docs after updating the next time.
-
-If a new client
-appears, herbstluftwm tries to apply each rule to this new client as follows:
-If each 'CONDITION' of this rule matches against this client, then every
-'CONSEQUENCE' is executed. (If there are no conditions given, then this rule
-is executed for each client)
+If a new client appears, herbstluftwm tries to apply each rule to this new
+client as follows: If each 'CONDITION' of this rule matches against this client,
+then every 'CONSEQUENCE' is executed. (If there are no conditions given, then
+this rule is executed for each client)
 
 Each 'CONDITION' consists of a 'property' name, an operator and a 'value'. Valid
 operators are:
@@ -1061,7 +1058,7 @@ A rule's behaviour can be configured by some special 'FLAGS':
     * +not+: negates the next 'CONDITION'.
     * +!+: same as +not+.
     * +once+: only apply this rule once (and delete it afterwards).
-    * +printid+: prints the id of the newly created rule to stdout.
+    * +printlabel+: prints the label of the newly created rule to stdout.
 
 Examples:
 

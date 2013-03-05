@@ -46,7 +46,7 @@ typedef struct {
 } HSConsequence;
 
 typedef struct {
-    char*           id;
+    char*           label;
     HSCondition**   conditions;
     int             condition_count;
     HSConsequence** consequences;
