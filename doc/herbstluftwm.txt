@@ -671,13 +671,13 @@ floating [['TAG'] *on*|*off*|*toggle*|*status*]::
     is given, floating mode is toggled. If status is given, then *on* or *off*
     is printed, depending of the floating state on 'TAG'.
 
-rule [\[--]'FLAG'|\[--]'ID'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]::
+rule [\[--]'FLAG'|\[--]'LABEL'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]::
     Defines a rule which will be applied to all new clients. Its behaviour is
     described in the <<RULES,*RULES section*>>.
 
-unrule 'ID'|*--all*|*-F*::
-    Removes all rules named 'ID'. If --all or -F is passed, then all rules are
-    removed.
+unrule 'LABEL'|*--all*|*-F*::
+    Removes all rules named 'LABEL'. If --all or -F is passed, then all rules
+    are removed.
 
 fullscreen [*on*|*off*|*toggle*]::
     Sets or toggles the fullscreen state of the focused client. If no argument
