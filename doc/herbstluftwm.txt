@@ -159,6 +159,12 @@ echo ['ARGS' ...]::
     Prints all given 'ARGS' separated by a single space and a newline
     afterwards.
 
+true::
+    Ignores all arguments and always returns success, i.e. 0.
+
+false::
+    Ignores all arguments and always returns failure, i.e. 1.
+
 list_commands::
     Lists all available commands.
 

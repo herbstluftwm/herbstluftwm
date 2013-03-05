@@ -53,6 +53,8 @@ int quit();
 int reload();
 int version(int argc, char* argv[], GString* output);
 int echo(int argc, char* argv[], GString* output);
+int true_command();
+int false_command();
 int print_layout_command(int argc, char** argv, GString* output);
 int load_command(int argc, char** argv, GString* output);
 int print_tag_status_command(int argc, char** argv, GString* output);
@@ -88,6 +90,8 @@ void unmapnotify(XEvent* event);
 CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "quit",           quit),
     CMD_BIND(             "echo",           echo),
+    CMD_BIND_NO_OUTPUT(   "true",           true_command),
+    CMD_BIND_NO_OUTPUT(   "false",          false_command),
     CMD_BIND_NO_OUTPUT(   "reload",         reload),
     CMD_BIND(             "version",        version),
     CMD_BIND(             "list_commands",  list_commands),
@@ -208,6 +212,15 @@ int echo(int argc, char* argv[], GString* output) {
     g_string_append_c(output, '\n');
     return 0;
 }
+
+int true_command() {
+    return 0;
+}
+
+int false_command() {
+    return 1;
+}
+
 
 // prints or dumps the layout of an given tag
 // first argument tells whether to print or to dump

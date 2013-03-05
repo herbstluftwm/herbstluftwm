@@ -66,6 +66,8 @@ struct {
 } g_parameter_expected[] = {
     { "quit",           1,  no_completion },
     { "reload",         1,  no_completion },
+    { "true",           1,  no_completion },
+    { "false",          1,  no_completion },
     { "version",        1,  no_completion },
     { "list_commands",  1,  no_completion },
     { "list_monitors",  1,  no_completion },

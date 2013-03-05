@@ -16,6 +16,7 @@ Changes:
     * add completion for setenv, getenv and unsetenv
     * the hook consequence now also tells the window id that triggerd the rule
     * new command: echo
+    * new commands: true false
     * rule id: rules can be given ids with the 'id' property. The id
       can be printed to stdout using the 'printid' flag to the rule command.
       Unrule command accepts ids, and can remove rules individually.
