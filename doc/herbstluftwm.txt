@@ -174,7 +174,7 @@ list_commands::
 
 list_rules::
     Lists all active rules. Each line consists of all the parameters the rule
-    was called with, plus it's id, separated by tabs.
+    was called with, plus its label, separated by tabs.
 
 list_keybinds::
     Lists all bound keys with their associated command. Each line consists of
