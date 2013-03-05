@@ -119,38 +119,50 @@ herbstclient is rather simple:
 Objects
 -------
 There is one tree of objects in herbstluftwm to provide an easy access for the
-user to many option. The usage is similar to kobjects known from the Linux
+user to many options. The usage is similar to kobjects known from the Linux
 kernel. The most important functions are:
 
-  - bool hsobject_init(HSObject* obj): Initialize the given HSObject.
-  - void hsobject_free(HSObject* obj): De-initialize the given HSObject.
-  - void hsobject_link(HSObject* parent, HSObject* child, char* name): Register
-    a new child node at a parent using the specified name. If a child with that
-    name already exists, it will be replaced.
-  - void hsobject_unlink(HSObject* parent, HSObject* child): Removes all child
-    entries at the parent object.
+  - HSObject* hsobject_create_and_link(HSObject* parent, char* name): Create a
+    new child object under parent. If name already exists it will be replaced.
+  - void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child): Remove
+    all child entries at the parent object and destroys the object afterwards.
   - HSObject* hsobject_root(): Return the root node of the object tree.
+  - void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes): Set
+    the attributes of an object, attributes is an array terminated by
+    ATTRIBUTE_LAST.
 
-Each object has a certain set of attributes:
+For a full list see src/object.h. Each object has a certain set of attributes.
+Each attribute has a type, which is defined by the according constructor:
 
-  struct HSAttribute {
-      enum  {
-          HSATTR_TYPE_BOOL,
-          HSATTR_TYPE_INT,
-          HSATTR_TYPE_STRING,
-          //HSATTR_TYPE_WINID,    /* TODO: Win-ID als datentyp? */
-      } type;                   /* the datatype */
-      char*  name;              /* name as it is displayed to the user */
-      union {
-          bool  b;
-          int   i;
-          char* str;
-      } value;
-      bool read_only;           /* tells if this is read only for the user */
-      /** on_change is called after the user changes the value. If this
-       * function returns false, the old value will be restored */
-      bool (*on_change)(HSObject* obj, struct HSAttribute* attr);
-  };
+  - ATTRIBUTE_BOOL(N, V, CHANGE): accords to bool
+  - ATTRIBUTE_INT(N, V, CHANGE): accords to int
+  - ATTRIBUTE_UINT(N, V, CHANGE): accords to unsigned int
+  - ATTRIBUTE_STRING(N, V, CHANGE): accords to GString*
+  - ATTRIBUTE_CUSTOM(N, V, CHANGE): accords to HSAttributeCustom
+  - ATTRIBUTE_CUSTOM_INT(N, V, CHANGE): accords to HSAttributeCustomInt
+
+N is the name of the attribute as displayed to the user, V is the value in the
+struct; the macro automatically prepends a '&' to it to get the pointer. To
+check if attributes are changed properly (or to do certain actions after a
+change), the callback CHANGE is definied:
+
+    GString* (*on_change)  (struct HSAttribute* attr);
+
+It is called after the attribute is changed by the user. If this function
+returns something != NULL, this string is put as an error message to the user
+and the original value is restored. To mark a attribute as read-only for the
+user, give ATTR_READ_ONLY as CHANGE.
+
+The "custom" attributes do not give a pointer to a variable but give a function
+that returns the variable. HSAttributeCustom returns a GString,
+HSAttributeCustomInt an int.
+
+    typedef void (*HSAttributeCustom)(void* data, GString* output);
+    typedef int (*HSAttributeCustomInt)(void* data);
+
+They both get a data-pointer, it is exactly the data-pointer you can give as the
+data-member of the HSObject struct. For an example see, add_tag(char*) in
+src/tag.c, it covers most cases.
 
 
 // vim: nowrap ft=asciidoc tw=80
