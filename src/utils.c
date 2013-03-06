@@ -16,7 +16,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include "glib-backports.h"
-#include "glib-backports.h"
 
 #include <time.h>
 #include <sys/time.h>
