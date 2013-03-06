@@ -8,8 +8,8 @@
 
 /**
  * This file re-implements newer glib functions that are missing in glib on
- * older systems. Note that this is mostly works correctly but isn't as
- * efficient. As the new glib function.
+ * older systems. Note that this mostly works correctly but isn't as
+ * efficient as the new glib functions.
  */
 
 #include <glib.h>
