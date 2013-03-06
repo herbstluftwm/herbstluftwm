@@ -6,7 +6,7 @@
 #ifndef __HERBSTLUFT_MONITOR_H_
 #define __HERBSTLUFT_MONITOR_H_
 
-#include <glib.h>
+#include "glib-backports.h"
 #include <stdbool.h>
 #include <X11/Xlib.h>
 #ifdef XINERAMA

@@ -6,7 +6,7 @@
 #ifndef __HERBSTLUFT_SETTINGS_H_
 #define __HERBSTLUFT_SETTINGS_H_
 
-#include <glib.h>
+#include "glib-backports.h"
 
 enum {
     HS_String = 0,

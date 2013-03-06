@@ -8,7 +8,7 @@
 
 #include <stdbool.h>
 #include <X11/Xlib.h>
-#include <glib.h>
+#include "glib-backports.h"
 
 #define KEY_COMBI_SEPARATORS "+-"
 

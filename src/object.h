@@ -7,7 +7,7 @@
 #define __HS_OBJECT_H_
 
 #include <stdbool.h>
-#include <glib.h>
+#include "glib-backports.h"
 
 #define OBJECT_PATH_SEPARATOR '.'
 

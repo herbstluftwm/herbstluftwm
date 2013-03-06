@@ -14,7 +14,7 @@
 #include "rules.h"
 #include "object.h"
 
-#include <glib.h>
+#include "glib-backports.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>

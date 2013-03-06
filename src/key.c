@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <glib.h>
+#include "glib-backports.h"
 #include "glib-backports.h"
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>

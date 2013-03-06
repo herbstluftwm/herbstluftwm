@@ -6,7 +6,7 @@
 #ifndef __HERBSTLUFT_LAYOUT_H_
 #define __HERBSTLUFT_LAYOUT_H_
 
-#include <glib.h>
+#include "glib-backports.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>

@@ -6,7 +6,7 @@
 #ifndef __HERBST_UTILS_H_
 #define __HERBST_UTILS_H_
 
-#include <glib.h>
+#include "glib-backports.h"
 #include <stddef.h>
 #include <stdbool.h>
 #include <X11/Xlib.h>

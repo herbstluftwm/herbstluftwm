@@ -11,7 +11,7 @@
 #include "settings.h"
 #include "stack.h"
 
-#include <glib.h>
+#include "glib-backports.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>

@@ -12,7 +12,7 @@
 #include "hook.h"
 #include "command.h"
 
-#include <glib.h>
+#include "glib-backports.h"
 #include "glib-backports.h"
 #include <string.h>
 #include <stdio.h>

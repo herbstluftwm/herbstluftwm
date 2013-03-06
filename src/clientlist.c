@@ -16,7 +16,7 @@
 #include "ipc-protocol.h"
 #include "object.h"
 // system
-#include <glib.h>
+#include "glib-backports.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -7,7 +7,7 @@
 #define __HERBST_STACK_H_
 
 #include <X11/Xlib.h>
-#include <glib.h>
+#include "glib-backports.h"
 #include <stdbool.h>
 
 typedef enum Layer {

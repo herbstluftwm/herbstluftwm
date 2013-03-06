@@ -6,7 +6,7 @@
 #ifndef __HERBSTLUFT_COMMAND_H_
 #define __HERBSTLUFT_COMMAND_H_
 
-#include <glib.h>
+#include "glib-backports.h"
 #include <stdbool.h>
 
 typedef int (*HerbstCmd)(int argc,      // number of arguments

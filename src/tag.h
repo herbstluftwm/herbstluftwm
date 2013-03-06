@@ -6,7 +6,7 @@
 #ifndef __HERBSTLUFT_TAG_H_
 #define __HERBSTLUFT_TAG_H_
 
-#include <glib.h>
+#include "glib-backports.h"
 #include <stdbool.h>
 
 struct HSFrame;

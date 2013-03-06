@@ -8,7 +8,7 @@
 
 #include <X11/Xlib.h>
 #include <stdbool.h>
-#include <glib.h>
+#include "glib-backports.h"
 
 // various snap-flags
 enum SnapFlags {

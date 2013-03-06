@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 // other
-#include <glib.h>
+#include "glib-backports.h"
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>

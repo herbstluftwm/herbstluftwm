@@ -14,7 +14,7 @@
 #include "stack.h"
 #include "monitor.h"
 
-#include <glib.h>
+#include "glib-backports.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

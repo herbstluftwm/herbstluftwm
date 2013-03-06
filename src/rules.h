@@ -8,7 +8,7 @@
 
 #include <stdbool.h>
 #include <regex.h>
-#include <glib.h>
+#include "glib-backports.h"
 
 struct HSClient;
 struct HSTag;

@@ -15,7 +15,7 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
-#include <glib.h>
+#include "glib-backports.h"
 #include "glib-backports.h"
 
 #include <time.h>
