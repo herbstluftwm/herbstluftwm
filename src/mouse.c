@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <glib.h>
+#include "glib-backports.h"
 
 // gui
 #include <X11/Xlib.h>
