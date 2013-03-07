@@ -53,6 +53,7 @@ void hsobject_free(HSObject* obj) {
 
 void hsattribute_free(HSAttribute* attr) {
     if (attr->user_attribute) {
+        g_free(attr->name);
         if (attr->type == HSATTR_TYPE_STRING) {
             g_string_free(attr->user_data.str, true);
         }
