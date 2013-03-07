@@ -120,10 +120,14 @@ void hsobject_complete_children(HSObject* obj, char* needle, char* prefix, GStri
     g_string_free(data.curname, true);
 }
 
-void hsobject_complete_attributes(HSObject* obj, char* needle, char* prefix,
-                                GString* output) {
+void hsobject_complete_attributes(HSObject* obj, bool user_only, char* needle,
+                                  char* prefix, GString* output) {
     for (int i = 0; i < obj->attribute_count; i++) {
         HSAttribute* attr = obj->attributes + i;
+        if (user_only && !attr->user_attribute) {
+            // do not complete default attributes if user_only is set
+            continue;
+        }
         try_complete_prefix(needle, attr->name, prefix, output);
     }
 }
@@ -816,6 +820,37 @@ int userattribute_command(int argc, char* argv[], GString* output) {
         default:
             break;
     }
+    return 0;
+}
+
+int userattribute_remove_command(int argc, char* argv[], GString* output) {
+    if (argc < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    char* path = argv[1];
+    HSAttribute* attr = hsattribute_parse_path_verbose(path, output);
+    if (!attr) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    HSObject* obj = attr->object;
+    int idx = attr - obj->attributes;
+    if (idx < 0 || idx >= obj->attribute_count) {
+        fprintf(stderr, "Assertion 0 <= idx < count failed.\n");
+        return HERBST_UNKNOWN_ERROR;
+    }
+    if (!attr->user_attribute) {
+        g_string_append_printf(output, "Can only user-defined attributes, "
+                                       "but \"%s\" is not user-defined.\n",
+                               path);
+        return HERBST_FORBIDDEN;
+    }
+    hsattribute_free(attr);
+    // remove it from buf
+    size_t count = obj->attribute_count - 1;
+    size_t bytes = (count - idx) * sizeof(HSAttribute);
+    memmove(obj->attributes + idx, obj->attributes + idx + 1, bytes);
+    obj->attributes = g_renew(HSAttribute, obj->attributes, count);
+    obj->attribute_count = count;
     return 0;
 }
 

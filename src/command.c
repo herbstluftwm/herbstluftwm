@@ -141,6 +141,7 @@ struct {
     { "get_attribute",  2,  no_completion },
     { "set_attribute",  3,  no_completion },
     { "new_attr",       3,  no_completion },
+    { "remove_attr",    2,  no_completion },
     { "substitute",     3,  parameter_expected_offset_3 },
     { "getenv",         2,  no_completion },
     { "setenv",         3,  no_completion },
@@ -256,6 +257,8 @@ struct {
     { "new_attr",       EQ, 1,  .list = completion_userattribute_types },
     { "new_attr",       EQ, 2,  .function = complete_against_objects },
     { "new_attr",       EQ, 2,  .function = complete_against_user_attr_prefix },
+    { "remove_attr",    EQ, 1,  .function = complete_against_objects },
+    { "remove_attr",    EQ, 1,  .function = complete_against_user_attributes },
     { "substitute",     EQ, 2,  .function = complete_against_objects },
     { "substitute",     EQ, 2,  .function = complete_against_attributes },
     { "substitute",     GE, 3,  .function = complete_against_commands_3 },
@@ -448,7 +451,8 @@ void complete_against_objects(int argc, char** argv, int pos, GString* output) {
     g_free(prefix);
 }
 
-void complete_against_attributes(int argc, char** argv, int pos, GString* output) {
+void complete_against_attributes_helper(int argc, char** argv, int pos,
+                                        GString* output, bool user_only) {
     // Remove command name
     (void)SHIFT(argc,argv);
     pos--;
@@ -464,10 +468,20 @@ void complete_against_attributes(int argc, char** argv, int pos, GString* output
                 g_string_append_c(prefix, OBJECT_PATH_SEPARATOR);
             }
         }
-        hsobject_complete_attributes(obj, unparsable, prefix->str, output);
+        hsobject_complete_attributes(obj, user_only, unparsable, prefix->str,
+                                     output);
         g_string_free(prefix, true);
     }
 }
+
+void complete_against_attributes(int argc, char** argv, int pos, GString* output) {
+    complete_against_attributes_helper(argc, argv, pos, output, false);
+}
+
+void complete_against_user_attributes(int argc, char** argv, int pos, GString* output) {
+    complete_against_attributes_helper(argc, argv, pos, output, true);
+}
+
 
 void complete_against_user_attr_prefix(int argc, char** argv, int position,
                                       GString* output) {

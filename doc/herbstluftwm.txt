@@ -711,7 +711,11 @@ set_attribute 'ATTRIBUTE' 'NEWVALUE'::
 
 new_attr [*bool*|*int*|*string*|*uint*] 'PATH'::
     Creates a new attribute with the name and in the object specified by 'PATH'.
-    Its type is specified by the first argument.
+    Its type is specified by the first argument. The attribute name has to begin
+    with +my_+.
+
+remove_attr 'PATH'::
+    Removes the user defined attribute 'PATH'.
 
 substitute 'IDENTIFIER' 'ATTRIBUTE' 'COMMAND' ['ARGS' ...]::
     Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'ARGS'

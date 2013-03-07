@@ -118,12 +118,14 @@ GString* hsattribute_to_string(HSAttribute* attribute);
 
 void hsobject_complete_children(HSObject* obj, char* needle, char* prefix,
                                 GString* output);
-void hsobject_complete_attributes(HSObject* obj, char* needle, char* prefix,
-                                GString* output);
+void hsobject_complete_attributes(HSObject* obj, bool user_only,
+                                  char* needle, char* prefix,
+                                  GString* output);
 int substitute_command(int argc, char* argv[], GString* output);
 int compare_command(int argc, char* argv[], GString* output);
 
 int userattribute_command(int argc, char* argv[], GString* output);
+int userattribute_remove_command(int argc, char* argv[], GString* output);
 
 #endif
 
