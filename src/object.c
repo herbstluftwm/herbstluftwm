@@ -794,6 +794,7 @@ int userattribute_command(int argc, char* argv[], GString* output) {
     attr->type = type;
     attr->name = g_strdup(unparsable);
     attr->on_change = ATTR_ACCEPT_ALL;
+    attr->user_attribute = true;
     switch (type) {
         case HSATTR_TYPE_BOOL:
             attr->user_data.b = false;
