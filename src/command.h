@@ -73,6 +73,8 @@ void complete_chain(int argc, char** argv, int position, GString* output);
 int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, GString* output);
 
+void complete_against_user_attr_prefix(int argc, char** argv, int position,
+                                       GString* output);
 
 int command_chain_command(int argc, char** argv, GString* output);
 

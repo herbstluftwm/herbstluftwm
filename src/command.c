@@ -32,6 +32,7 @@ static char* completion_focus_args[]    = { "-i", "-e", NULL };
 static char* completion_unrule_flags[]   = { "-F", "--all", NULL };
 static char* completion_keyunbind_args[]= { "-F", "--all", NULL };
 static char* completion_flag_args[]     = { "on", "off", "true", "false", "toggle", NULL };
+static char* completion_userattribute_types[] = { "int", "uint", "string", "bool", NULL };
 static char* completion_status[]        = { "status", NULL };
 static char* completion_special_winids[]= { "urgent", "", NULL };
 static char* completion_use_index_args[]= { "--skip-visible", NULL };
@@ -139,6 +140,7 @@ struct {
     { "object_tree",    2,  no_completion },
     { "get_attribute",  2,  no_completion },
     { "set_attribute",  3,  no_completion },
+    { "new_attr",       3,  no_completion },
     { "substitute",     3,  parameter_expected_offset_3 },
     { "getenv",         2,  no_completion },
     { "setenv",         3,  no_completion },
@@ -251,6 +253,9 @@ struct {
     { "set_attribute",  EQ, 1,  .function = complete_against_objects },
     { "set_attribute",  EQ, 1,  .function = complete_against_attributes },
     { "set_attribute",  EQ, 2,  .function = complete_against_attribute_values },
+    { "new_attr",       EQ, 1,  .list = completion_userattribute_types },
+    { "new_attr",       EQ, 2,  .function = complete_against_objects },
+    { "new_attr",       EQ, 2,  .function = complete_against_user_attr_prefix },
     { "substitute",     EQ, 2,  .function = complete_against_objects },
     { "substitute",     EQ, 2,  .function = complete_against_attributes },
     { "substitute",     GE, 3,  .function = complete_against_commands_3 },
@@ -462,6 +467,22 @@ void complete_against_attributes(int argc, char** argv, int pos, GString* output
         hsobject_complete_attributes(obj, unparsable, prefix->str, output);
         g_string_free(prefix, true);
     }
+}
+
+void complete_against_user_attr_prefix(int argc, char** argv, int position,
+                                      GString* output) {
+    char* path = (position < argc) ? argv[position] : "";
+    char* unparsable;
+    GString* prefix = g_string_new(path);
+    hsobject_parse_path(path, &unparsable);
+
+    g_string_truncate(prefix, unparsable - path);
+    if (prefix->len > 0
+        && prefix->str[prefix->len - 1] != OBJECT_PATH_SEPARATOR) {
+        g_string_append_c(prefix, OBJECT_PATH_SEPARATOR);
+    }
+    try_complete_prefix_partial(unparsable, USER_ATTRIBUTE_PREFIX,
+                                prefix->str, output);
 }
 
 void complete_against_attribute_values(int argc, char** argv, int pos, GString* output) {

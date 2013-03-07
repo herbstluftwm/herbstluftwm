@@ -20,6 +20,7 @@ typedef struct {
 
 static void hsobjectchild_destroy(HSObjectChild* oc);
 static HSObjectChild* hsobjectchild_create(char* name, HSObject* obj);
+static void hsattribute_free(HSAttribute* attr);
 
 static HSObject g_root_object;
 
@@ -43,8 +44,19 @@ bool hsobject_init(HSObject* obj) {
 }
 
 void hsobject_free(HSObject* obj) {
+    for (int i = 0; i < obj->attribute_count; i++) {
+        hsattribute_free(obj->attributes + i);
+    }
     g_free(obj->attributes);
     g_list_free_full(obj->children, (GDestroyNotify)hsobjectchild_destroy);
+}
+
+void hsattribute_free(HSAttribute* attr) {
+    if (attr->user_attribute) {
+        if (attr->type == HSATTR_TYPE_STRING) {
+            g_string_free(attr->user_data.str, true);
+        }
+    }
 }
 
 HSObject* hsobject_create() {
@@ -718,5 +730,90 @@ char hsattribute_type_indicator(int type) {
         case HSATTR_TYPE_CUSTOM_INT:return 'i';
     }
     return '?';
+}
+
+int userattribute_command(int argc, char* argv[], GString* output) {
+    if (argc < 3) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    char* type_str = argv[1];
+    char* path = argv[2];
+    char* unparsable;
+    GString* errormsg = g_string_new("");
+    HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, errormsg);
+    if (obj == NULL || strchr(unparsable, OBJECT_PATH_SEPARATOR) != NULL) {
+        g_string_append(output, errormsg->str);
+        g_string_free(errormsg, true);
+        return HERBST_INVALID_ARGUMENT;
+    } else {
+        g_string_free(errormsg, true);
+    }
+    // check for an already existing attribute
+    if (hsobject_find_attribute(obj, unparsable)) {
+        g_string_append_printf(output, "Error: an attribute called \"%s\" already exists\n",
+                               unparsable);
+        return HERBST_FORBIDDEN;
+    }
+    // do not check for children with that name, because they must not start
+    // with the USER_ATTRIBUTE_PREFIX.
+    // now create a new attribute named unparsable at obj
+    const char* prefix = USER_ATTRIBUTE_PREFIX;
+    if (strncmp(unparsable, prefix, strlen(prefix))) {
+        g_string_append(output, "Error: the name of user attributes has to ");
+        g_string_append_printf(output, "start with \"%s\" but yours is \"%s\"\n",
+                                       prefix, unparsable);
+        return HERBST_INVALID_ARGUMENT;
+    }
+    struct {
+        char* name;
+        int   type;
+    } types[] = {
+        { "bool",   HSATTR_TYPE_BOOL    },
+        { "uint",   HSATTR_TYPE_UINT    },
+        { "int",    HSATTR_TYPE_INT     },
+        { "string", HSATTR_TYPE_STRING  },
+    };
+    int type = -1;
+    for (int i = 0; i < LENGTH(types); i++) {
+        if (!strcmp(type_str, types[i].name)) {
+            type = types[i].type;
+            break;
+        }
+    }
+    if (type < 0) {
+        g_string_append_printf(output, "Unknown attribute type \"%s\"\n",
+                               type_str);
+        return HERBST_INVALID_ARGUMENT;
+    }
+    size_t count = obj->attribute_count + 1;
+    obj->attributes = g_renew(HSAttribute, obj->attributes, count);
+    obj->attribute_count = count;
+    // initialize object
+    HSAttribute* attr = obj->attributes + count - 1;
+    attr->object = obj;
+    attr->type = type;
+    attr->name = g_strdup(unparsable);
+    attr->on_change = ATTR_ACCEPT_ALL;
+    switch (type) {
+        case HSATTR_TYPE_BOOL:
+            attr->user_data.b = false;
+            attr->value.b = &attr->user_data.b;
+            break;
+        case HSATTR_TYPE_INT:
+            attr->user_data.i = 0;
+            attr->value.i = &attr->user_data.i;
+            break;
+        case HSATTR_TYPE_UINT:
+            attr->user_data.u = 0;
+            attr->value.u = &attr->user_data.u;
+            break;
+        case HSATTR_TYPE_STRING:
+            attr->user_data.str = g_string_new("");
+            attr->value.str = &attr->user_data.str;
+            break;
+        default:
+            break;
+    }
+    return 0;
 }
 

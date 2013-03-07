@@ -10,6 +10,7 @@
 #include "glib-backports.h"
 
 #define OBJECT_PATH_SEPARATOR '.'
+#define USER_ATTRIBUTE_PREFIX "my_"
 
 typedef struct HSObject {
     struct HSAttribute* attributes;
@@ -50,20 +51,27 @@ typedef struct HSAttribute {
      * on_change will never be called, because custom are read-only for now.
      * */
     GString* (*on_change)  (struct HSAttribute* attr);
+    bool user_attribute;    /* if this attribute was added by the user */
+    union {                 /* data needed for user attributes */
+        bool        b;
+        int         i;
+        unsigned int u;
+        GString*   str;
+    } user_data;
 } HSAttribute;
 
 #define ATTRIBUTE_BOOL(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_BOOL, (N), { .b = &(V) }, (CHANGE) }
+    { NULL, HSATTR_TYPE_BOOL, (N), { .b = &(V) }, (CHANGE), false }
 #define ATTRIBUTE_INT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_INT, (N), { .i = &(V) }, (CHANGE) }
+    { NULL, HSATTR_TYPE_INT, (N), { .i = &(V) }, (CHANGE), false }
 #define ATTRIBUTE_UINT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, (CHANGE) }
+    { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, (CHANGE), false }
 #define ATTRIBUTE_STRING(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, (CHANGE) }
+    { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, (CHANGE), false }
 #define ATTRIBUTE_CUSTOM(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, (NULL) }
+    { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, (NULL), false }
 #define ATTRIBUTE_CUSTOM_INT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_CUSTOM_INT, (N), { .custom_int = V }, (NULL) }
+    { NULL, HSATTR_TYPE_CUSTOM_INT, (N), { .custom_int = V }, (NULL), false }
 
 #define ATTRIBUTE_LAST { .name = NULL }
 
@@ -114,6 +122,8 @@ void hsobject_complete_attributes(HSObject* obj, char* needle, char* prefix,
                                 GString* output);
 int substitute_command(int argc, char* argv[], GString* output);
 int compare_command(int argc, char* argv[], GString* output);
+
+int userattribute_command(int argc, char* argv[], GString* output);
 
 #endif
 

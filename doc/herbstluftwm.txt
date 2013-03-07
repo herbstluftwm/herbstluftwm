@@ -709,6 +709,10 @@ set_attribute 'ATTRIBUTE' 'NEWVALUE'::
     Assign 'NEWVALUE' to the specified 'ATTRIBUTE' as described in the
     <<OBJECTS,*OBJECTS section*>>.
 
+new_attr [*bool*|*int*|*string*|*uint*] 'PATH'::
+    Creates a new attribute with the name and in the object specified by 'PATH'.
+    Its type is specified by the first argument.
+
 substitute 'IDENTIFIER' 'ATTRIBUTE' 'COMMAND' ['ARGS' ...]::
     Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'ARGS'
     by the value of the 'ATTRIBUTE'. Note that the 'COMMAND' also is replaced by
