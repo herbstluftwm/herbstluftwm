@@ -742,7 +742,7 @@ sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
           +
           Moves the next client that appears to the tag that is currently
           focused.
-        * +sprintf X %s/%s tags.focus.index tags.focus.count echo X+ +
+        * +sprintf X %s/%s tags.focus.index tags.count echo X+ +
           +
           Tells which tag is focused and how many tags there are
         * +sprintf l somelongstring echo l l l+ +
