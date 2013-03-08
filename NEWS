@@ -24,7 +24,7 @@ Changes:
     * new command: list_rules
     * allow true/false as arguments to commands accepting boolean values. This
       affects the commands: floating, fullscreen, pseudotile and rule.
-    * new command: new_attr, remove_attr
+    * new command: new_attr, remove_attr, get_attr, set_attr
 
 Release 0.5.1 on 2013-01-05
 ---------------------------

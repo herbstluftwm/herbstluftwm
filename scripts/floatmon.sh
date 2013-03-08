@@ -22,12 +22,12 @@ or  case: and
         # if not on floating monitor
         . compare monitors.focus.name != $monitor
         # and if a client is focused
-        . get_attribute clients.focus.winid
+        . get_attr clients.focus.winid
         # then remember the last monitor of the client
         . chain try new_attr string clients.focus.my_lastmon
                 try true
         . substitute M monitors.focus.index
-            set_attribute clients.focus.my_lastmon M
+            set_attr clients.focus.my_lastmon M
         # and then move the client to the floating tag
         . shift_to_monitor $monitor
         . focus_monitor $monitor
@@ -36,7 +36,7 @@ or  case: and
         # if on the floating monitor
         . compare monitors.focus.name = $monitor
         # and if a client is focused
-        . get_attribute clients.focus.winid
+        . get_attr clients.focus.winid
         # then send it back to the original monitor
         . substitute M clients.focus.my_lastmon chain
             , shift_to_monitor M

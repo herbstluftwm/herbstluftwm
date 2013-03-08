@@ -47,7 +47,7 @@ else
     hc chain \
         , new_attr string monitors.by-name.$monitor.my_prev_focus \
         , substitute M monitors.focus.index \
-            set_attribute monitors.by-name.$monitor.my_prev_focus M
+            set_attr monitors.by-name.$monitor.my_prev_focus M
 fi
 
 hc attr monitors.focus

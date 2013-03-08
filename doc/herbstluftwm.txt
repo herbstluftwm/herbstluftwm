@@ -701,11 +701,11 @@ attr ['PATH' ['NEWVALUE']::
     given, assign 'NEWVALUE' to the attribute given by 'PATH'. See the
     <<OBJECTS,*OBJECTS section*>> for more details.
 
-get_attribute 'ATTRIBUTE'::
+get_attr 'ATTRIBUTE'::
     Print the value of the specified 'ATTRIBUTE' as described in the
     <<OBJECTS,*OBJECTS section*>>.
 
-set_attribute 'ATTRIBUTE' 'NEWVALUE'::
+set_attr 'ATTRIBUTE' 'NEWVALUE'::
     Assign 'NEWVALUE' to the specified 'ATTRIBUTE' as described in the
     <<OBJECTS,*OBJECTS section*>>.
 
@@ -1172,17 +1172,17 @@ the child objects and then all attributes, telling for each attribute:
   - its current value (only quoted for strings)
 
 To get the unquoted value of a certain attribute, address the attribute using
-the same syntax as for object paths and pass it to +attr+ or +get_attribute+:
+the same syntax as for object paths and pass it to +attr+ or +get_attr+:
 
 ----
 $ herbstclient attr clients.focus.title
 herbstluftwm.txt = (~/dev/c/herbstluftwm/doc) - VIM
-$ herbstclient get_attribute  clients.focus.title
+$ herbstclient get_attr  clients.focus.title
 herbstluftwm.txt = (~/dev/c/herbstluftwm/doc) - VIM
 ----
 
 To change a writeable attribute value pass the new value to +attr+ or to
-+set_attribute+:
++set_attr+:
 
 ----
 $ herbstclient attr tags.focus.floating
@@ -1190,7 +1190,7 @@ false
 $ herbstclient attr tags.focus.floating true
 $ herbstclient attr tags.focus.floating
 true
-$ herbstclient set_attribute tags.focus.floating false
+$ herbstclient set_attr tags.focus.floating false
 $ herbstclient attr tags.focus.floating
 false
 ----
