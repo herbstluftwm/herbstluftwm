@@ -606,25 +606,13 @@ int substitute_command(int argc, char* argv[], GString* output) {
         return HERBST_INVALID_ARGUMENT;
     }
     GString* attribute_string = hsattribute_to_string(attribute);
+    char* repl = attribute_string->str;
 
     (void) SHIFT(argc, argv); // remove command name
     (void) SHIFT(argc, argv); // remove identifier
     (void) SHIFT(argc, argv); // remove attribute
 
-    // construct the new command
-    char** command = g_new(char*, argc + 1);
-    command[argc] = NULL;
-    for (int i = 0; i < argc; i++) {
-        if (!strcmp(identifier, argv[i])) {
-            // if argument equals the identifier, replace it by the attribute
-            // value
-            command[i] = attribute_string->str;
-        } else {
-            command[i] = argv[i];
-        }
-    }
-    int status = call_command(argc, command, output);
-    g_free(command);
+    int status = call_command_substitute(identifier, repl, argc, argv, output);
     g_string_free(attribute_string, true);
     return status;
 }
@@ -852,5 +840,71 @@ int userattribute_remove_command(int argc, char* argv[], GString* output) {
     obj->attributes = g_renew(HSAttribute, obj->attributes, count);
     obj->attribute_count = count;
     return 0;
+}
+
+#define FORMAT_CHAR '%'
+
+int sprintf_command(int argc, char* argv[], GString* output) {
+    // usage: sprintf IDENTIFIER FORMAT [Params...] COMMAND [ARGS ...]
+    if (argc < 4) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    char* identifier = argv[1];
+    char* format = argv[2];
+    (void) SHIFT(argc, argv);
+    (void) SHIFT(argc, argv);
+    (void) SHIFT(argc, argv);
+    GString* repl = g_string_new("");
+    int nextarg = 0; // next argument to consider
+    for (int i = 0; format[i] != '\0'; i++) {
+        if (format[i] == FORMAT_CHAR) {
+            // FORMAT_CHAR is our format character
+            // '%' is the printf format character
+            switch (format[i+1]) {
+                case FORMAT_CHAR:
+                    g_string_append(repl, "%%");
+                    break;
+
+                case 's':
+                    if (nextarg >= (argc - 1)) {
+                        g_string_append_printf(output,
+                            "Error: Too few parameters. A %dth parameter missing. "
+                            "(treating \"%s\" as the command to execute)\n",
+                            nextarg, argv[argc - 1]);
+                        g_string_free(repl, true);
+                        return HERBST_INVALID_ARGUMENT;
+                    }
+                    HSAttribute* attr;
+                    attr = hsattribute_parse_path_verbose(argv[nextarg], output);
+                    if (!attr) {
+                        g_string_free(repl, true);
+                        return HERBST_INVALID_ARGUMENT;
+                    }
+                    GString* gs = hsattribute_to_string(attr);
+                    g_string_append(repl, gs->str);
+                    g_string_free(gs, true);
+                    nextarg++;
+                    break;
+
+                default:
+                    g_string_append_printf(output,
+                        "Error: unknown format specifier \'%c\' in format "
+                        "\"%s\" at position %d\n",
+                        format[i+1] ? format[i+1] : '?', format, i);
+                    g_string_free(repl, true);
+                    return HERBST_INVALID_ARGUMENT;
+                    break;
+            }
+            i++;
+        } else {
+            g_string_append_c(repl, format[i]);
+        }
+    }
+    int cmdc = argc - nextarg;
+    char** cmdv = argv + nextarg;
+    int status;
+    status = call_command_substitute(identifier, repl->str, cmdc, cmdv, output);
+    g_string_free(repl, true);
+    return status;
 }
 

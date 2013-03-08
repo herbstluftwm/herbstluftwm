@@ -35,6 +35,8 @@ extern CommandBinding g_commands[];
 
 int call_command(int argc, char** argv, GString* output);
 int call_command_no_output(int argc, char** argv);
+int call_command_substitute(char* needle, char* replacement,
+                            int argc, char** argv, GString* output);
 
 // commands
 int list_commands(int argc, char** argv, GString* output);
@@ -73,6 +75,8 @@ void complete_chain(int argc, char** argv, int position, GString* output);
 
 int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, GString* output);
+
+void complete_sprintf(int argc, char** argv, int position, GString* output);
 
 void complete_against_user_attr_prefix(int argc, char** argv, int position,
                                        GString* output);

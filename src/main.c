@@ -177,6 +177,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "new_attr",       userattribute_command),
     CMD_BIND(             "remove_attr",    userattribute_remove_command),
     CMD_BIND(             "substitute",     substitute_command),
+    CMD_BIND(             "sprintf",        sprintf_command),
     CMD_BIND(             "getenv",         getenv_command),
     CMD_BIND(             "setenv",         setenv_command),
     CMD_BIND(             "unsetenv",       unsetenv_command),
