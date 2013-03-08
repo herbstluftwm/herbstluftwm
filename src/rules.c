@@ -263,10 +263,7 @@ HSRule* rule_create() {
     rule->once = false;
     rule->birth_time = get_monotonic_timestamp();
     // Add name. Defaults to index number.
-    GString* name = g_string_sized_new(20);
-    g_string_printf(name, "%llu", g_rule_label_index++);
-    rule->label = name->str;
-    g_string_free(name, false);
+    rule->label = g_strdup_printf("%llu", g_rule_label_index++);
     return rule;
 }
 
