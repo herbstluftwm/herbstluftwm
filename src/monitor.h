@@ -96,13 +96,15 @@ void all_monitors_apply_layout();
 void ensure_monitors_are_available();
 void all_monitors_replace_previous_tag(struct HSTag* old, struct HSTag* new);
 
+void drop_enternotify_events();
+
 void monitor_restack(HSMonitor* monitor);
 int monitor_stack_window_count(bool only_clients);
 void monitor_stack_to_window_buf(Window* buf, int len, bool only_clients,
                                  int* remain_len);
 struct HSStack* get_monitor_stack();
 
-void monitor_update_focos_objects();
+void monitor_update_focus_objects();
 
 typedef bool (*MonitorDetection)(XRectangle**, size_t*);
 bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count);

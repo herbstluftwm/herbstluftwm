@@ -105,9 +105,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
         }
         // remove all enternotify-events from the event queue that were
         // generated while arranging the clients on this monitor
-        XEvent ev;
-        XSync(g_display, False);
-        while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
+        drop_enternotify_events();
     }
 }
 
@@ -531,6 +529,7 @@ int remove_monitor(int index) {
         g_cur_monitor--;
         // if selection has changed, then relayout focused monitor
         monitor_apply_layout(get_current_monitor());
+        monitor_update_focus_objects();
         // also announce the new selection
         ewmh_update_current_desktop();
         emit_tag_changed(get_current_monitor()->tag, g_cur_monitor);
@@ -698,7 +697,7 @@ void ensure_monitors_are_available() {
     g_cur_monitor = 0;
     g_cur_frame = m->tag->frame;
 
-    monitor_update_focos_objects();
+    monitor_update_focus_objects();
 }
 
 HSMonitor* monitor_with_frame(HSFrame* frame) {
@@ -760,9 +759,8 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             monitor_apply_layout(other);
             monitor_apply_layout(monitor);
             // discard enternotify-events
-            XEvent ev;
-            XSync(g_display, False);
-            while (XCheckMaskEvent(g_display, EnterWindowMask, &ev));
+            drop_enternotify_events();
+            monitor_update_focus_objects();
             ewmh_update_current_desktop();
             emit_tag_changed(other->tag, monitor_index_of(other));
             emit_tag_changed(tag, g_cur_monitor);
@@ -791,9 +789,8 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     // focus again to give input focus
     frame_focus_recursive(tag->frame);
     // discard enternotify-events
-    XEvent ev;
-    XSync(g_display, False);
-    while (XCheckMaskEvent(g_display, EnterWindowMask, &ev));
+    drop_enternotify_events();
+    monitor_update_focus_objects();
     ewmh_update_current_desktop();
     emit_tag_changed(tag, g_cur_monitor);
     return 0;
@@ -957,18 +954,16 @@ void monitor_focus_by_index(int new_selection) {
         // discard all mouse events caused by this pointer movage from the
         // event queue, so the focus really stays in the last focused window on
         // this monitor and doesn't jump to the window hovered by the mouse
-        XEvent ev;
-        XSync(g_display, False);
-        while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
+        drop_enternotify_events();
     }
     // update objects
-    monitor_update_focos_objects();
+    monitor_update_focus_objects();
     // emit hooks
     ewmh_update_current_desktop();
     emit_tag_changed(monitor->tag, new_selection);
 }
 
-void monitor_update_focos_objects() {
+void monitor_update_focus_objects() {
     hsobject_link(g_monitor_object, &get_current_monitor()->object, "focus");
     tag_update_focus_objects();
 }
@@ -1248,4 +1243,10 @@ void all_monitors_replace_previous_tag(HSTag *old, HSTag *new) {
             m->tag_previous = new;
         }
     }
+}
+
+void drop_enternotify_events() {
+    XEvent ev;
+    XSync(g_display, False);
+    while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
 }
