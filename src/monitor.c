@@ -470,6 +470,7 @@ int add_monitor_command(int argc, char** argv, GString* output) {
     monitor_apply_layout(monitor);
     frame_show_recursive(tag->frame);
     emit_tag_changed(tag, g_monitors->len - 1);
+    drop_enternotify_events();
     return 0;
 }
 
