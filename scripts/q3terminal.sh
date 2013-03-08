@@ -42,7 +42,15 @@ exists=false
 if ! hc add_monitor $(printf "%dx%d%+d%+d" "${rect[@]}") \
                     "$tag" $monitor 2> /dev/null ; then
     exists=true
+else
+    # remember which monitor was focused previously
+    hc chain \
+        , new_attr string monitors.by-name.$monitor.my_prev_focus \
+        , substitute M monitors.focus.index \
+            set_attribute monitors.by-name.$monitor.my_prev_focus M
 fi
+
+hc attr monitors.focus
 
 update_geom() {
     local geom=$(printf "%dx%d%+d%+d" "${rect[@]}")
@@ -83,6 +91,11 @@ hide() {
     y_line=${rect[3]} # height of the upper screen border
 
     animate $(seq 0 +1 $steps)
+    # if q3terminal still is focused, then focus the previously focused monitor
+    # (that mon which was focused when starting q3terminal)
+    hc substitute M monitors.by-name.$monitor.my_prev_focus \
+        and + compare monitors.focus.name = $monitor \
+            + focus_monitor M
     hc remove_monitor $monitor
 }
 
