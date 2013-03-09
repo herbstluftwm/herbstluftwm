@@ -3,6 +3,7 @@
 monitor=floatmon
 tag=fl
 Mod=${Mod:-Mod1}
+Floatkey=${Floatkey:-Shift-f}
 
 hc() { herbstclient "$@" ; }
 
@@ -49,5 +50,5 @@ or  case: and
         . focus_monitor 0
 )
 
-herbstclient keybind $Mod-Shift-f "${cmd[@]}"
+herbstclient keybind $Mod-$Floatkey "${cmd[@]}"
 
