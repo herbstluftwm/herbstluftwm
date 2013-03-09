@@ -42,6 +42,11 @@ or  case: and
             , shift_to_monitor M
             , focus_monitor M
         . true
+    case: and
+        # if the previous things fail,
+        # just move to the first monitor
+        . shift_to_monitor 0
+        . focus_monitor 0
 )
 
 herbstclient keybind $Mod-Shift-f "${cmd[@]}"
