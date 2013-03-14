@@ -50,8 +50,6 @@ else
             set_attr monitors.by-name.$monitor.my_prev_focus M
 fi
 
-hc attr monitors.focus
-
 update_geom() {
     local geom=$(printf "%dx%d%+d%+d" "${rect[@]}")
     hc move_monitor "$monitor" $geom
