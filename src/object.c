@@ -946,11 +946,11 @@ int tmpattribute_command(int argc, char* argv[], GString* output) {
     }
     char* path = g_strdup_printf("%s%c%s", TMP_OBJECT_PATH,
                                  OBJECT_PATH_SEPARATOR, name);
-    call_command_substitute(argv[2], path, argc - 3, argv + 3, output);
+    int status = call_command_substitute(argv[2], path, argc - 3, argv + 3, output);
     userattribute_remove(hsobject_find_attribute(obj, name));
     g_free(name);
     g_free(path);
     tmpcount--;
-    return 0;
+    return status;
 }
 
