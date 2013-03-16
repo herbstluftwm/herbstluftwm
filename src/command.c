@@ -143,6 +143,7 @@ struct {
     { "set_attr",       3,  no_completion },
     { "new_attr",       3,  no_completion },
     { "remove_attr",    2,  no_completion },
+    { "mktemp",         3,  parameter_expected_offset_3 },
     { "substitute",     3,  parameter_expected_offset_3 },
     { "getenv",         2,  no_completion },
     { "setenv",         3,  no_completion },
@@ -261,6 +262,9 @@ struct {
     { "new_attr",       EQ, 2,  .function = complete_against_user_attr_prefix },
     { "remove_attr",    EQ, 1,  .function = complete_against_objects },
     { "remove_attr",    EQ, 1,  .function = complete_against_user_attributes },
+    { "mktemp",         EQ, 1,  .list = completion_userattribute_types },
+    { "mktemp",         GE, 3,  .function = complete_against_commands_3 },
+    { "mktemp",         GE, 4,  .function = complete_against_arg_2 },
     { "substitute",     EQ, 2,  .function = complete_against_objects },
     { "substitute",     EQ, 2,  .function = complete_against_attributes },
     { "substitute",     GE, 3,  .function = complete_against_commands_3 },
@@ -720,6 +724,16 @@ void complete_against_arg_1(int argc, char** argv, int position,
         try_complete(needle, argv[1], output);
     }
 }
+
+void complete_against_arg_2(int argc, char** argv, int position,
+                            GString* output)
+{
+    if (argc > 3 && position > 3) {
+        char* needle = (position < argc) ? argv[position] : "";
+        try_complete(needle, argv[2], output);
+    }
+}
+
 
 int complete_against_commands(int argc, char** argv, int position,
                               GString* output) {

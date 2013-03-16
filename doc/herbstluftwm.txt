@@ -749,6 +749,12 @@ sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
           +
           Prints +somelongstring+ three times, separated by spaces.
 
+mktemp [*bool*|*int*|*string*|*uint*] 'IDENTIFIER' 'COMMAND' ['ARGS' ...]::
+    Creates a temporary attribute with the given type and replaces all
+    occurrences of 'IDENTIFIER' in 'COMMAND' and 'ARGS' by by the path of the
+    temporary attribute. The replaced command with its arguments is executed
+    then.
+
 compare 'ATTRIBUTE' 'OPERATOR' 'VALUE'::
     Compares the value of 'ATTRIBUTE' with 'VALUE' using the comparation method
     'OPERATOR'. If the comparation succeeds, it returns 0, else 1. The operators

@@ -11,6 +11,7 @@
 
 #define OBJECT_PATH_SEPARATOR '.'
 #define USER_ATTRIBUTE_PREFIX "my_"
+#define TMP_OBJECT_PATH "tmp"
 
 typedef struct HSObject {
     struct HSAttribute* attributes;
@@ -52,6 +53,7 @@ typedef struct HSAttribute {
      * */
     GString* (*on_change)  (struct HSAttribute* attr);
     bool user_attribute;    /* if this attribute was added by the user */
+    bool free_user_data;    /* if user_data has to be freed */
     union {                 /* data needed for user attributes */
         bool        b;
         int         i;
@@ -127,6 +129,10 @@ int compare_command(int argc, char* argv[], GString* output);
 
 int userattribute_command(int argc, char* argv[], GString* output);
 int userattribute_remove_command(int argc, char* argv[], GString* output);
+HSAttribute* hsattribute_create(HSObject* obj, char* name, char* type_str,
+                                GString* output);
+bool userattribute_remove(HSAttribute* attr);
+int tmpattribute_command(int argc, char* argv[], GString* output);
 
 #endif
 

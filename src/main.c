@@ -175,6 +175,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "get_attr",       hsattribute_get_command),
     CMD_BIND(             "set_attr",       hsattribute_set_command),
     CMD_BIND(             "new_attr",       userattribute_command),
+    CMD_BIND(             "mktemp",         tmpattribute_command),
     CMD_BIND(             "remove_attr",    userattribute_remove_command),
     CMD_BIND(             "substitute",     substitute_command),
     CMD_BIND(             "sprintf",        sprintf_command),

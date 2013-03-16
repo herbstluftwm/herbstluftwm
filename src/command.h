@@ -68,6 +68,7 @@ int complete_against_commands(int argc, char** argv, int position,
 void complete_against_commands_3(int argc, char** argv, int position,
                                  GString* output);
 void complete_against_arg_1(int argc, char** argv, int position, GString* output);
+void complete_against_arg_2(int argc, char** argv, int position, GString* output);
 void complete_against_keybind_command(int argc, char** argv, int position,
                                       GString* output);
 void complete_against_env(int argc, char** argv, int position, GString* output);

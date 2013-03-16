@@ -23,12 +23,16 @@ static HSObjectChild* hsobjectchild_create(char* name, HSObject* obj);
 static void hsattribute_free(HSAttribute* attr);
 
 static HSObject g_root_object;
+static HSObject* g_tmp_object;
 
 void object_tree_init() {
     hsobject_init(&g_root_object);
+    g_tmp_object = hsobject_create_and_link(&g_root_object, TMP_OBJECT_PATH);
+
 }
 
 void object_tree_destroy() {
+    hsobject_unlink_and_destroy(&g_root_object, g_tmp_object);
     hsobject_free(&g_root_object);
 }
 
@@ -757,6 +761,17 @@ int userattribute_command(int argc, char* argv[], GString* output) {
                                        prefix, unparsable);
         return HERBST_INVALID_ARGUMENT;
     }
+    HSAttribute* attr = hsattribute_create(obj, unparsable, type_str, output);
+    if (!attr) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    attr->user_attribute = true;
+    return 0;
+}
+
+HSAttribute* hsattribute_create(HSObject* obj, char* name, char* type_str,
+                                GString* output)
+{
     struct {
         char* name;
         int   type;
@@ -776,7 +791,7 @@ int userattribute_command(int argc, char* argv[], GString* output) {
     if (type < 0) {
         g_string_append_printf(output, "Unknown attribute type \"%s\"\n",
                                type_str);
-        return HERBST_INVALID_ARGUMENT;
+        return NULL;
     }
     size_t count = obj->attribute_count + 1;
     obj->attributes = g_renew(HSAttribute, obj->attributes, count);
@@ -785,9 +800,10 @@ int userattribute_command(int argc, char* argv[], GString* output) {
     HSAttribute* attr = obj->attributes + count - 1;
     attr->object = obj;
     attr->type = type;
-    attr->name = g_strdup(unparsable);
+    attr->name = g_strdup(name);
     attr->on_change = ATTR_ACCEPT_ALL;
-    attr->user_attribute = true;
+    attr->user_attribute = false;
+    attr->free_user_data = true;
     switch (type) {
         case HSATTR_TYPE_BOOL:
             attr->user_data.b = false;
@@ -808,7 +824,7 @@ int userattribute_command(int argc, char* argv[], GString* output) {
         default:
             break;
     }
-    return 0;
+    return attr;
 }
 
 int userattribute_remove_command(int argc, char* argv[], GString* output) {
@@ -820,17 +836,21 @@ int userattribute_remove_command(int argc, char* argv[], GString* output) {
     if (!attr) {
         return HERBST_INVALID_ARGUMENT;
     }
-    HSObject* obj = attr->object;
-    int idx = attr - obj->attributes;
-    if (idx < 0 || idx >= obj->attribute_count) {
-        fprintf(stderr, "Assertion 0 <= idx < count failed.\n");
-        return HERBST_UNKNOWN_ERROR;
-    }
     if (!attr->user_attribute) {
         g_string_append_printf(output, "Can only user-defined attributes, "
                                        "but \"%s\" is not user-defined.\n",
                                path);
         return HERBST_FORBIDDEN;
+    }
+    return userattribute_remove(attr) ? 0 : HERBST_UNKNOWN_ERROR;
+}
+
+bool userattribute_remove(HSAttribute* attr) {
+    HSObject* obj = attr->object;
+    int idx = attr - obj->attributes;
+    if (idx < 0 || idx >= obj->attribute_count) {
+        fprintf(stderr, "Assertion 0 <= idx < count failed.\n");
+        return false;
     }
     hsattribute_free(attr);
     // remove it from buf
@@ -906,5 +926,31 @@ int sprintf_command(int argc, char* argv[], GString* output) {
     status = call_command_substitute(identifier, repl->str, cmdc, cmdv, output);
     g_string_free(repl, true);
     return status;
+}
+
+int tmpattribute_command(int argc, char* argv[], GString* output) {
+    // usage: tmp type IDENTIFIER COMMAND [ARGS...]
+    if (argc < 4) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    static int tmpcount = 0;
+    tmpcount++;
+    char* name = g_strdup_printf("%stmp%d", USER_ATTRIBUTE_PREFIX, tmpcount);
+    // attr may change, so only remember the object
+    HSAttribute* attr = hsattribute_create(g_tmp_object, name, argv[1], output);
+    HSObject* obj = attr->object;
+    if (!attr) {
+        tmpcount--;
+        g_free(name);
+        return HERBST_INVALID_ARGUMENT;
+    }
+    char* path = g_strdup_printf("%s%c%s", TMP_OBJECT_PATH,
+                                 OBJECT_PATH_SEPARATOR, name);
+    call_command_substitute(argv[2], path, argc - 3, argv + 3, output);
+    userattribute_remove(hsobject_find_attribute(obj, name));
+    g_free(name);
+    g_free(path);
+    tmpcount--;
+    return 0;
 }
 
