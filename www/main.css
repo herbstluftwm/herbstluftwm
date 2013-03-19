@@ -10,7 +10,7 @@ body {
     margin-top: 0.5em;
     margin-bottom: 2em;
     border: 0px solid #555753;
-    width: 40em;
+    width: 90%; max-width: 70em;
     -moz-box-shadow:    0px 0px 5px 5px rgba(0,0,0,0.5);
     -webkit-box-shadow: 0px 0px 5px 5px rgba(0,0,0,0.5);
     box-shadow:         0px 0px 5px 5px rgba(0,0,0,0.5);
