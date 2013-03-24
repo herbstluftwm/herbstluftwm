@@ -938,12 +938,12 @@ int tmpattribute_command(int argc, char* argv[], GString* output) {
     char* name = g_strdup_printf("%stmp%d", USER_ATTRIBUTE_PREFIX, tmpcount);
     // attr may change, so only remember the object
     HSAttribute* attr = hsattribute_create(g_tmp_object, name, argv[1], output);
-    HSObject* obj = attr->object;
     if (!attr) {
         tmpcount--;
         g_free(name);
         return HERBST_INVALID_ARGUMENT;
     }
+    HSObject* obj = attr->object;
     char* path = g_strdup_printf("%s%c%s", TMP_OBJECT_PATH,
                                  OBJECT_PATH_SEPARATOR, name);
     int status = call_command_substitute(argv[2], path, argc - 3, argv + 3, output);
