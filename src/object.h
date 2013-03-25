@@ -23,6 +23,22 @@ typedef struct HSObject {
 typedef void (*HSAttributeCustom)(void* data, GString* output);
 typedef int (*HSAttributeCustomInt)(void* data);
 
+typedef union HSAttributePointer {
+    bool*       b;
+    int*        i;
+    unsigned int* u;
+    GString*    str;
+    HSAttributeCustom custom;
+    HSAttributeCustomInt custom_int;
+} HSAttributePointer;
+
+typedef union HSAttributeValue {
+    bool        b;
+    int         i;
+    unsigned int u;
+    GString*    str;
+} HSAttributeValue;
+
 typedef struct HSAttribute {
     HSObject* object;           /* the object this attribute is in */
     enum  {
@@ -34,14 +50,7 @@ typedef struct HSAttribute {
         HSATTR_TYPE_CUSTOM_INT,
     } type;                     /* the datatype */
     char*  name;                /* name as it is displayed to the user */
-    union {
-        bool*       b;
-        int*        i;
-        unsigned int* u;
-        GString**   str;
-        HSAttributeCustom custom;
-        HSAttributeCustomInt custom_int;
-    } value;
+    HSAttributePointer value;
     /** if type is not custom:
      * on_change is called after the user changes the value. If this
      * function returns NULL, the value is accepted. If this function returns
@@ -53,13 +62,9 @@ typedef struct HSAttribute {
      * */
     GString* (*on_change)  (struct HSAttribute* attr);
     bool user_attribute;    /* if this attribute was added by the user */
-    bool free_user_data;    /* if user_data has to be freed */
-    union {                 /* data needed for user attributes */
-        bool        b;
-        int         i;
-        unsigned int u;
-        GString*   str;
-    } user_data;
+    /* save the user_data at a constant position that is not shifted when
+     * realloc'ing the HSAttribute */
+    HSAttributeValue* user_data; /* data needed for user attributes */
 } HSAttribute;
 
 #define ATTRIBUTE_BOOL(N, V, CHANGE) \
@@ -69,7 +74,7 @@ typedef struct HSAttribute {
 #define ATTRIBUTE_UINT(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, (CHANGE), false }
 #define ATTRIBUTE_STRING(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, (CHANGE), false }
+    { NULL, HSATTR_TYPE_STRING, (N), { .str =  (V) }, (CHANGE), false }
 #define ATTRIBUTE_CUSTOM(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, (NULL), false }
 #define ATTRIBUTE_CUSTOM_INT(N, V, CHANGE) \

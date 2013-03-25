@@ -56,10 +56,10 @@ void hsobject_free(HSObject* obj) {
 }
 
 void hsattribute_free(HSAttribute* attr) {
-    if (attr->user_attribute) {
+    if (attr->user_data) {
         g_free(attr->name);
         if (attr->type == HSATTR_TYPE_STRING) {
-            g_string_free(attr->user_data.str, true);
+            g_string_free(attr->user_data->str, true);
         }
     }
 }
@@ -244,7 +244,7 @@ void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
             g_string_append_printf(output, "%u", *attribute->value.u);
             break;
         case HSATTR_TYPE_STRING:
-            g_string_append_printf(output, "%s", (*attribute->value.str)->str);
+            g_string_append_printf(output, "%s", attribute->value.str->str);
             break;
         case HSATTR_TYPE_CUSTOM:
             attribute->value.custom(attribute->object->data, output);
@@ -543,11 +543,11 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
 
 
         case HSATTR_TYPE_STRING:
-            if (!strcmp(new_value_str, (*attr->value.str)->str)) {
+            if (!strcmp(new_value_str, attr->value.str->str)) {
                 nothing_to_do = true;
             } else {
-                old_value.str = g_string_new((*attr->value.str)->str);
-                g_string_assign(*attr->value.str, new_value_str);
+                old_value.str = g_string_new(attr->value.str->str);
+                g_string_assign(attr->value.str, new_value_str);
             }
             break;
         case HSATTR_TYPE_CUSTOM: break;
@@ -577,7 +577,7 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
             case HSATTR_TYPE_INT:  *attr->value.i = old_value.i; break;
             case HSATTR_TYPE_UINT: *attr->value.u = old_value.u; break;
             case HSATTR_TYPE_STRING:
-                g_string_assign(*attr->value.str, old_value.str->str);
+                g_string_assign(attr->value.str, old_value.str->str);
                 break;
             case HSATTR_TYPE_CUSTOM: break;
             case HSATTR_TYPE_CUSTOM_INT: break;
@@ -695,7 +695,7 @@ int compare_command(int argc, char* argv[], GString* output) {
         GString* l;
         bool free_l = false;
         if (attr->type == HSATTR_TYPE_STRING) {
-            l = *(attr->value.str);
+            l = attr->value.str;
         } else { // TYPE == CUSTOM
             l = g_string_new("");
             attr->value.custom(attr->object->data, l);
@@ -803,23 +803,23 @@ HSAttribute* hsattribute_create(HSObject* obj, char* name, char* type_str,
     attr->name = g_strdup(name);
     attr->on_change = ATTR_ACCEPT_ALL;
     attr->user_attribute = false;
-    attr->free_user_data = true;
+    attr->user_data = g_new(HSAttributeValue, 1);
     switch (type) {
         case HSATTR_TYPE_BOOL:
-            attr->user_data.b = false;
-            attr->value.b = &attr->user_data.b;
+            attr->user_data->b = false;
+            attr->value.b = &attr->user_data->b;
             break;
         case HSATTR_TYPE_INT:
-            attr->user_data.i = 0;
-            attr->value.i = &attr->user_data.i;
+            attr->user_data->i = 0;
+            attr->value.i = &attr->user_data->i;
             break;
         case HSATTR_TYPE_UINT:
-            attr->user_data.u = 0;
-            attr->value.u = &attr->user_data.u;
+            attr->user_data->u = 0;
+            attr->value.u = &attr->user_data->u;
             break;
         case HSATTR_TYPE_STRING:
-            attr->user_data.str = g_string_new("");
-            attr->value.str = &attr->user_data.str;
+            attr->user_data->str = g_string_new("");
+            attr->value.str = attr->user_data->str;
             break;
         default:
             break;
