@@ -61,6 +61,7 @@ void hsattribute_free(HSAttribute* attr) {
         if (attr->type == HSATTR_TYPE_STRING) {
             g_string_free(attr->user_data->str, true);
         }
+        g_free(attr->user_data);
     }
 }
 
