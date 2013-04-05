@@ -297,7 +297,8 @@ cycle_all [*--skip-invisible*] ['DIRECTION']::
     frame, then it acts similar to the 'cycle' command. (The 'cycle_all' command
     focuses the next/previous leave in the 'layout' tree.). If
     *--skip-invisible* is given, then this only cycles through all visible
-    windows and skips invisible windows in the max layout.
+    windows and skips invisible windows in the max layout. The focused window
+    is raised.
 
 cycle_layout ['DELTA' ['LAYOUTS' ...]]::
     Cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'

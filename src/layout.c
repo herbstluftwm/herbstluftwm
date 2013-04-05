@@ -1136,6 +1136,13 @@ int cycle_all_command(int argc, char** argv) {
         index %= frame->content.clients.count;
         frame->content.clients.selection = index;
     }
+    Window w = frame_focused_window(g_cur_frame);
+    if (w) {
+        HSClient* c = get_client_from_window(w);
+        if (c) {
+            client_raise(c);
+        }
+    }
     monitor_apply_layout(get_current_monitor());
     return 0;
 }
