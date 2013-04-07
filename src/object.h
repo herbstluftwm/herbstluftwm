@@ -27,7 +27,7 @@ typedef union HSAttributePointer {
     bool*       b;
     int*        i;
     unsigned int* u;
-    GString*    str;
+    GString**   str;
     HSAttributeCustom custom;
     HSAttributeCustomInt custom_int;
 } HSAttributePointer;
@@ -74,7 +74,7 @@ typedef struct HSAttribute {
 #define ATTRIBUTE_UINT(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, (CHANGE), false }
 #define ATTRIBUTE_STRING(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_STRING, (N), { .str =  (V) }, (CHANGE), false }
+    { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, (CHANGE), false }
 #define ATTRIBUTE_CUSTOM(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, (NULL), false }
 #define ATTRIBUTE_CUSTOM_INT(N, V, CHANGE) \
