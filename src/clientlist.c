@@ -65,6 +65,7 @@ static HSClient* create_client() {
     hc->pseudotile = false;
     hc->ewmhrequests = true;
     hc->ewmhnotify = true;
+    hc->sizehints = true;
     return hc;
 }
 
@@ -227,6 +228,7 @@ HSClient* manage_client(Window win) {
         ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile,     client_attr_pseudotile),
         ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests,   ATTR_ACCEPT_ALL),
         ATTRIBUTE_BOOL(     "ewmhnotify",   client->ewmhnotify,     ATTR_ACCEPT_ALL),
+        ATTRIBUTE_BOOL(     "sizehints",    client->sizehints,      ATTR_ACCEPT_ALL),
         ATTRIBUTE_BOOL(     "urgent",       client->urgent,         client_attr_urgent),
         ATTRIBUTE_LAST,
     };
@@ -265,6 +267,9 @@ void unmanage_client(Window win) {
     HSClient* client = get_client_from_window(win);
     if (!client) {
         return;
+    }
+    if (client->dragged) {
+        mouse_stop_drag();
     }
     // remove from tag
     frame_remove_window(client->tag->frame, win);
@@ -510,7 +515,11 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
     if (client->float_size.height < WINDOW_MIN_HEIGHT)
         client->float_size.height = WINDOW_MIN_HEIGHT;
 
-    client->last_border_width = *g_window_border_width;
+    bool border_changed = false;
+    if (client->last_border_width != *g_window_border_width) {
+        client->last_border_width = *g_window_border_width;
+        border_changed = true;
+    }
     client->last_size = client->float_size;
     client->last_size.x += m->rect.x + m->pad_left;
     client->last_size.y += m->rect.y + m->pad_up;
@@ -526,7 +535,12 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
               m->rect.y + m->pad_up - client->last_size.height + space,
               m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
     XRectangle rect = client->last_size;
-    XSetWindowBorderWidth(g_display, client->window, *g_window_border_width);
+    // add window border to last_size
+    client->last_size.width += 2 * client->last_border_width;
+    client->last_size.height += 2 * client->last_border_width;
+    if (border_changed) {
+        XSetWindowBorderWidth(g_display, client->window, *g_window_border_width);
+    }
     XMoveResizeWindow(g_display, client->window,
         rect.x, rect.y, rect.width, rect.height);
     if (*g_window_border_inner_width > 0

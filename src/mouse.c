@@ -77,6 +77,7 @@ void mouse_start_drag(XEvent* ev) {
         g_drag_bind = NULL;
         return;
     }
+    g_win_drag_client->dragged = true;
     g_win_drag_start = g_win_drag_client->float_size;
     g_button_drag_start = ev->xbutton;
     g_drag_monitor = get_current_monitor();
@@ -86,6 +87,9 @@ void mouse_start_drag(XEvent* ev) {
 }
 
 void mouse_stop_drag() {
+    if (g_win_drag_client) {
+        g_win_drag_client->dragged = false;
+    }
     g_win_drag_client = NULL;
     g_drag_bind = NULL;
     XUngrabPointer(g_display, CurrentTime);

@@ -21,10 +21,10 @@ struct HSSlice;
 typedef struct HSClient {
     Window      window;
     GString*    window_str;     // the window id as a string
-    XRectangle  last_size;
+    XRectangle  last_size;      // last size including the window border
     int         last_border_width;
     HSTag*      tag;
-    XRectangle  float_size;
+    XRectangle  float_size;     // floating size without the window border
     GString*    title;  // or also called window title; this is never NULL
     bool        urgent;
     bool        fullscreen;
@@ -33,6 +33,8 @@ typedef struct HSClient {
     bool        neverfocus; // do not give the focus via XSetInputFocus
     bool        ewmhrequests; // accept ewmh-requests for this client
     bool        ewmhnotify; // send ewmh-notifications for this client
+    bool        sizehints;  // respect size hints regarding this client
+    bool        dragged;  // if this client is dragged currently
     int         pid;
     HSObject    object;
     struct HSSlice* slice;

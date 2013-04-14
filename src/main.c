@@ -483,18 +483,25 @@ void event_on_configure(XEvent event) {
     ce.event = cre->window;
     ce.window = cre->window;
     if (client) {
-        cre->width += 2*cre->border_width - 2*client->last_border_width;
-        cre->height += 2*cre->border_width - 2*client->last_border_width;
-        client->float_size.width = cre->width;
-        client->float_size.height = cre->height;
-        ce.x = client->last_size.x;
-        ce.y = client->last_size.y;
-        ce.width = client->last_size.width;
-        ce.height = client->last_size.height;
-        ce.override_redirect = False;
-        ce.border_width = cre->border_width;
-        ce.above = cre->above;
-        if (client->tag->floating || client->pseudotile) {
+        bool changes = false;
+        if (client->sizehints && !client->dragged) {
+            cre->width += 2*cre->border_width - 2*client->last_border_width;
+            cre->height += 2*cre->border_width - 2*client->last_border_width;
+            if (client->float_size.width != cre->width) changes = true;
+            if (client->float_size.height != cre->height) changes = true;
+            client->float_size.width = cre->width;
+            client->float_size.height = cre->height;
+            ce.x = client->last_size.x;
+            ce.y = client->last_size.y;
+            ce.width = client->last_size.width;
+            ce.height = client->last_size.height;
+            ce.override_redirect = False;
+            ce.border_width = cre->border_width;
+            ce.above = cre->above;
+        }
+        if (changes && client->tag->floating) {
+            client_resize_floating(client, find_monitor_with_tag(client->tag));
+        } else if (changes && client->pseudotile) {
             monitor_apply_layout(find_monitor_with_tag(client->tag));
         } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
