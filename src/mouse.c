@@ -89,6 +89,12 @@ void mouse_start_drag(XEvent* ev) {
 void mouse_stop_drag() {
     if (g_win_drag_client) {
         g_win_drag_client->dragged = false;
+        // resend last size
+        XRectangle r = g_win_drag_client->last_size;
+        int bw = g_win_drag_client->last_border_width;
+        r.width -= 2* bw;
+        r.height -= 2* bw;
+        XResizeWindow(g_display, g_win_drag_client->window, r.width, r.height);
     }
     g_win_drag_client = NULL;
     g_drag_bind = NULL;
