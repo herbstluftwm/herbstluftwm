@@ -41,7 +41,7 @@ else
 fi
 
 function uniq_linebuffered() {
-    awk '$0 != l { print ; l=$0 ; fflush(); }' "$@"
+    awk -W interactive '$0 != l { print ; l=$0 ; fflush(); }' "$@"
 }
 
 herbstclient pad $monitor $panel_height
