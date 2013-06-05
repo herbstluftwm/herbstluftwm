@@ -656,7 +656,7 @@ int compare_command(int argc, char* argv[], GString* output) {
             case HSATTR_TYPE_CUSTOM_INT:
                 l = attr->value.custom_int(attr->object->data);
                 break;
-            default: break;
+            default: return HERBST_UNKNOWN_ERROR; break;
         }
         struct {
             char* name;
