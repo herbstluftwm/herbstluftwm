@@ -465,8 +465,12 @@ void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
         rect.height -= *g_window_gap;
     }
 
-    XSetWindowBorderWidth(g_display, win, border_width);
-    XMoveResizeWindow(g_display, win, rect.x, rect.y, rect.width, rect.height);
+    XWindowChanges changes = {
+      .x = rect.x, .y = rect.y, .width = rect.width, .height = rect.height,
+      .border_width = border_width
+    };
+    int mask = CWX | CWY | CWWidth | CWHeight | CWBorderWidth;
+    XConfigureWindow(g_display, win, mask, &changes);
     if (*g_window_border_inner_width > 0
         && *g_window_border_inner_width < *g_window_border_width) {
         unsigned long current_border_color = get_window_border_color(client);
