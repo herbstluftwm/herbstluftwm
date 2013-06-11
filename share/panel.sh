@@ -103,11 +103,11 @@ herbstclient pad $monitor $panel_height
         # find out event origin
         case "${cmd[0]}" in
             tag*)
-                #echo "reseting tags" >&2
+                #echo "resetting tags" >&2
                 TAGS=( $(herbstclient tag_status $monitor) )
                 ;;
             date)
-                #echo "reseting date" >&2
+                #echo "resetting date" >&2
                 date="${cmd[@]:1}"
                 ;;
             quit_panel)
