@@ -33,8 +33,9 @@ else
 fi
 ####
 # true if we are using the svn version of dzen2
-dzen2_version=$(dzen2 -v 2>&1 | head -n 1 | cut -d , -f 1|cut -d - -f 2)
-if [ -z "$dzen2_version" ] ; then
+# depending on version/distribution, this seems to have version strings like
+# "dzen-" or "dzen-x.x.x-svn"
+if dzen2 -v 2>&1 | head -n 1 | grep -q '^dzen-\([^,]*-svn\|\),'; then
     dzen2_svn="true"
 else
     dzen2_svn=""
