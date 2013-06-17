@@ -4,5 +4,11 @@ VERSION_MAJOR = 0
 VERSION_MINOR = 5
 # patch level
 VERSION_PATCH = 1
+# git version
+ifneq (,$(wildcard .git))
+ifneq (,$(shell which git 2>/dev/null))
+VERSION_GIT = \ \($(shell git rev-parse --short HEAD)\)
+endif
+endif
 VERSION_SUFFIX = ""
-VERSION = $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)$(VERSION_SUFFIX)
+VERSION = $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)$(VERSION_SUFFIX)$(VERSION_GIT)
