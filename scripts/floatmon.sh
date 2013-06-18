@@ -5,23 +5,35 @@ tag=fl
 Mod=${Mod:-Mod1}
 Floatkey=${Floatkey:-Shift-f}
 
-hc() { herbstclient "$@" ; }
+hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
 
-size=$(xwininfo -root |
-                grep -E '^  (Width|Height):' |
-                cut -d' ' -f4 |
-                sed 'N;s/\n/x/')
+if which xwininfo &> /dev/null; then
+    size=$(xwininfo -root |
+           sed -n -e '/^  Width: / {
+                          s/.*: //;
+                          h
+                      }
+                      /^  Height: / {
+                          s/.*: //g;
+                          H;
+                          x;
+                          s/\n/x/p
+                      }')
+else
+    echo "This script requires the xwininfo binary."
+    exit 1
+fi
 
-hc chain , add $tag , floating $tag on
-hc or , add_monitor "$size"+0+0 $tag $monitor \
-      , move_monitor $monitor "$size"+0+0
-hc raise_monitor $monitor
-hc lock_tag $monitor
+hc chain , add "$tag" , floating "$tag" on
+hc or , add_monitor "$size"+0+0 "$tag" "$monitor" \
+      , move_monitor "$monitor" "$size"+0+0
+hc raise_monitor "$monitor"
+hc lock_tag "$monitor"
 
 cmd=(
 or  case: and
         # if not on floating monitor
-        . compare monitors.focus.name != $monitor
+        . compare monitors.focus.name != "$monitor"
         # and if a client is focused
         . get_attr clients.focus.winid
         # then remember the last monitor of the client
@@ -30,12 +42,12 @@ or  case: and
         . substitute M monitors.focus.index
             set_attr clients.focus.my_lastmon M
         # and then move the client to the floating tag
-        . shift_to_monitor $monitor
-        . focus_monitor $monitor
+        . shift_to_monitor "$monitor"
+        . focus_monitor "$monitor"
         . true
     case: and
         # if on the floating monitor
-        . compare monitors.focus.name = $monitor
+        . compare monitors.focus.name = "$monitor"
         # and if a client is focused
         . get_attr clients.focus.winid
         # then send it back to the original monitor
@@ -50,5 +62,5 @@ or  case: and
         . focus_monitor 0
 )
 
-herbstclient keybind $Mod-$Floatkey "${cmd[@]}"
+hc keybind $Mod-$Floatkey "${cmd[@]}"
 

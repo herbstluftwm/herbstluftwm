@@ -1,15 +1,11 @@
 #!/bin/bash
 
-dmenu_command=${dmenu_command:-dmenu}
-hc=${herbstclient_command:-herbstclient}
-
-dmenu_cmd() {
-    $dmenu_command "$@"
-}
+dm() { "${dmenu_command[@]:-dmenu}" "$@" ;}
+hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
 
 simple_command() {
-    arg=$($hc complete 1 "$@"|dmenu_cmd -p "$@:") \
-    && exec $hc "$@" "$arg"
+    arg=$(hc complete 1 "$@" | dm -p "$@:") \
+    && exec "${herbstclient_command[@]:-herbstclient}" "$@" "$arg"
 }
 
 simple_command "$1"

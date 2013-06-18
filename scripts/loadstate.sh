@@ -1,6 +1,6 @@
 #!/bin/bash
 
-hc=${herbstclient_command:-herbstclient}
+hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
 
 # loads layouts for each tag coming from stdin
 # the format is the one created by savestate.sh
@@ -13,6 +13,6 @@ hc=${herbstclient_command:-herbstclient}
 while read line ; do
     tag="${line%%: *}"
     tree="${line#*: }"
-    $hc add "$tag"
-    $hc load "$tag" "$tree"
+    hc add "$tag"
+    hc load "$tag" "$tree"
 done

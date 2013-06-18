@@ -1,6 +1,6 @@
 #!/bin/bash
 
-hc=${herbstclient_command:-herbstclient}
+hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
 
 # prints a machine readable format of all tags and its layouts
 # one tag with its layout per line
@@ -10,8 +10,8 @@ hc=${herbstclient_command:-herbstclient}
 # and sometime later:
 # loadstate.sh < mystate
 
-$hc complete 1 use |
+hc complete 1 use |
 while read tag ; do
     echo -n "$tag: "
-    $hc dump "$tag"
+    hc dump "$tag"
 done

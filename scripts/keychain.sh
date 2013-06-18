@@ -3,15 +3,18 @@
 # Execute this (e.g. from your autostart) to obtain basic key chaining like it
 # is known from other applications like screen.
 #
-# E.g. you can press Mod4-i 1 (i.e. first press Mod4-i and then press the
+# E.g. you can press Mod1-i 1 (i.e. first press Mod1-i and then press the
 # 1-button) to switch to the first workspace
 #
 # The idea of this implementation is: If one presses the prefix (in this case
-# Mod4-i) except the notification, nothing is really executed but new
+# Mod1-i) except the notification, nothing is really executed but new
 # keybindings are added to execute the actually commands (like use_index 0) and
 # to unbind the second key level (1..9 and 0) of this keychain. (If you would
 # not unbind it, use_index 0 always would be executed when pressing the single
 # 1-button).
+
+hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
+Mod=Mod1
 
 # Create the array of keysyms, the n'th entry will be used for the n'th
 # keybinding
@@ -27,7 +30,7 @@ done
 # key chain. (Except the spawn notify-send of course, which can be deactivated
 # by only deleting the appropriate line)
 
-herbstclient keybind Mod4-i chain \
+hc keybind $Mod-i chain \
     '->' spawn notify-send "Select a workspace number or press Escape" \
     '->' keybind "${keys[0]}" chain "${unbind[@]}" , use_index 0 \
     '->' keybind "${keys[1]}" chain "${unbind[@]}" , use_index 1 \

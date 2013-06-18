@@ -1,31 +1,28 @@
 #!/bin/bash
 
-# disable path name expansion or * will be expanded in the line
-# cmd=( $line )
-set -f
-
+hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
 monitor=${1:-0}
 geometry=( $(herbstclient monitor_rect "$monitor") )
 if [ -z "$geometry" ] ;then
     echo "Invalid monitor $monitor"
     exit 1
 fi
-# geometry has the format: WxH+X+Y
+# geometry has the format W H X Y
 x=${geometry[0]}
 y=${geometry[1]}
 panel_width=${geometry[2]}
 panel_height=16
 font="-*-fixed-medium-*-*-*-12-*-*-*-*-*-*-*"
-bgcolor=$(herbstclient get frame_border_normal_color)
-selbg=$(herbstclient get window_border_active_color)
+bgcolor=$(hc get frame_border_normal_color)
+selbg=$(hc get window_border_active_color)
 selfg='#101010'
 
 ####
 # Try to find textwidth binary.
 # In e.g. Ubuntu, this is named dzen2-textwidth.
-if [ -e "$(which textwidth 2> /dev/null)" ] ; then
+if which textwidth &> /dev/null ; then
     textwidth="textwidth";
-elif [ -e "$(which dzen2-textwidth 2> /dev/null)" ] ; then
+elif which dzen2-textwidth &> /dev/null ; then
     textwidth="dzen2-textwidth";
 else
     echo "This script requires the textwidth tool of the dzen2 project."
@@ -41,23 +38,33 @@ else
     dzen2_svn=""
 fi
 
-function uniq_linebuffered() {
-    awk -W interactive '$0 != l { print ; l=$0 ; fflush(); }' "$@"
-}
+if awk -Wv 2>/dev/null | head -1 | grep -q '^mawk'; then
+    # mawk needs "-W interactive" to line-buffer stdout correctly
+    # http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=593504
+    uniq_linebuffered() {
+      awk -W interactive '$0 != l { print ; l=$0 ; fflush(); }' "$@"
+    }
+else
+    # other awk versions (e.g. gawk) issue a warning with "-W interactive", so
+    # we don't want to use it there.
+    uniq_linebuffered() {
+      awk '$0 != l { print ; l=$0 ; fflush(); }' "$@"
+    }
+fi
 
-herbstclient pad $monitor $panel_height
+hc pad $monitor $panel_height
 {
     # events:
     #mpc idleloop player &
     while true ; do
         date +'date ^fg(#efefef)%H:%M^fg(#909090), %Y-%m-^fg(#efefef)%d'
         sleep 1 || break
-    done > >(uniq_linebuffered)  &
+    done > >(uniq_linebuffered) &
     childpid=$!
-    herbstclient --idle
+    hc --idle
     kill $childpid
 } 2> /dev/null | {
-    TAGS=( $(herbstclient tag_status $monitor) )
+    IFS=$'\t' read -ra tags <<< "$(hc tag_status $monitor)"
     visible=true
     date=""
     windowtitle=""
@@ -65,7 +72,7 @@ herbstclient pad $monitor $panel_height
         bordercolor="#26221C"
         separator="^bg()^fg($selbg)|"
         # draw tags
-        for i in "${TAGS[@]}" ; do
+        for i in "${tags[@]}" ; do
             case ${i:0:1} in
                 '#')
                     echo -n "^bg($selbg)^fg($selfg)"
@@ -84,7 +91,10 @@ herbstclient pad $monitor $panel_height
                     ;;
             esac
             if [ ! -z "$dzen2_svn" ] ; then
-                echo -n "^ca(1,herbstclient focus_monitor $monitor && "'herbstclient use "'${i:1}'") '"${i:1} ^ca()"
+                echo -n "^ca(1,\"${herbstclient_command[@]:-herbstclient}\" "
+                echo -n "focus_monitor \"$monitor\" && "
+                echo -n "\"${herbstclient_command[@]:-herbstclient}\" "
+                echo -n "use \"${i:1}\") ${i:1} ^ca()"
             else
                 echo -n " ${i:1} "
             fi
@@ -93,19 +103,18 @@ herbstclient pad $monitor $panel_height
         echo -n "^bg()^fg() ${windowtitle//^/^^}"
         # small adjustments
         right="$separator^bg() $date $separator"
-        right_text_only=$(echo -n "$right"|sed 's.\^[^(]*([^)]*)..g')
+        right_text_only=$(echo -n "$right" | sed 's.\^[^(]*([^)]*)..g')
         # get width of right aligned text.. and add some space..
         width=$($textwidth "$font" "$right_text_only    ")
         echo -n "^pa($(($panel_width - $width)))$right"
         echo
         # wait for next event
-        read line || break
-        cmd=( $line )
+        IFS=$'\t' read -ra cmd || break
         # find out event origin
         case "${cmd[0]}" in
             tag*)
                 #echo "resetting tags" >&2
-                TAGS=( $(herbstclient tag_status $monitor) )
+                IFS=$'\t' read -ra tags <<< "$(hc tag_status $monitor)"
                 ;;
             date)
                 #echo "resetting date" >&2
@@ -115,8 +124,8 @@ herbstclient pad $monitor $panel_height
                 exit
                 ;;
             togglehidepanel)
-                currentmonidx=$(herbstclient list_monitors |grep ' \[FOCUS\]$'|cut -d: -f1)
-                if [ -n "${cmd[1]}" ] && [ "${cmd[1]}" -ne "$monitor" ] ; then
+                currentmonidx=$(hc list_monitors | sed -n '/\[FOCUS\]$/s/:.*//p')
+                if [ "${cmd[1]}" -ne "$monitor" ] ; then
                     continue
                 fi
                 if [ "${cmd[1]}" = "current" ] && [ "$currentmonidx" -ne "$monitor" ] ; then
@@ -125,10 +134,10 @@ herbstclient pad $monitor $panel_height
                 echo "^togglehide()"
                 if $visible ; then
                     visible=false
-                    herbstclient pad $monitor 0
+                    hc pad $monitor 0
                 else
                     visible=true
-                    herbstclient pad $monitor $panel_height
+                    hc pad $monitor $panel_height
                 fi
                 ;;
             reload)

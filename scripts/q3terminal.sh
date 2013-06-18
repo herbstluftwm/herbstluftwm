@@ -13,27 +13,23 @@
 # If a tag name is supplied, this is used instead of the scratchpad
 
 tag="${1:-scratchpad}"
-
-hc() {
-    #echo "hc $@" >&2 ;
-    herbstclient "$@" ;
-}
+hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
 
 mrect=( $(hc monitor_rect -p "" ) )
-termwidth=$(((${mrect[2]}*8)/10))
+termwidth=$(( (${mrect[2]} * 8) / 10 ))
 termheight=400
 
 rect=(
     $termwidth
     $termheight
-    $((${mrect[0]}+(${mrect[2]}-termwidth)/2))
-    $((${mrect[1]}-termheight))
+    $(( ${mrect[0]} + (${mrect[2]} - termwidth) / 2 ))
+    $(( ${mrect[1]} - termheight ))
 )
 
 y_line=${mrect[1]}
 
 
-hc add scratchpad
+hc add "$tag"
 
 
 monitor=q3terminal
@@ -45,9 +41,9 @@ if ! hc add_monitor $(printf "%dx%d%+d%+d" "${rect[@]}") \
 else
     # remember which monitor was focused previously
     hc chain \
-        , new_attr string monitors.by-name.$monitor.my_prev_focus \
+        , new_attr string monitors.by-name."$monitor".my_prev_focus \
         , substitute M monitors.focus.index \
-            set_attr monitors.by-name.$monitor.my_prev_focus M
+            set_attr monitors.by-name."$monitor".my_prev_focus M
 fi
 
 update_geom() {
@@ -61,19 +57,18 @@ interval=0.01
 animate() {
     progress=( "$@" )
     for i in "${progress[@]}" ; do
-        rect[3]=$((${y_line}-(i*termheight)/$steps))
+        rect[3]=$((y_line - (i * termheight) / steps))
         update_geom
         sleep "$interval"
     done
 }
 
 show() {
-
     hc lock
-    hc raise_monitor $monitor
-    hc focus_monitor $monitor
+    hc raise_monitor "$monitor"
+    hc focus_monitor "$monitor"
     hc unlock
-    hc lock_tag $monitor
+    hc lock_tag "$monitor"
     animate $(seq $steps -1 0)
 }
 
@@ -91,10 +86,10 @@ hide() {
     animate $(seq 0 +1 $steps)
     # if q3terminal still is focused, then focus the previously focused monitor
     # (that mon which was focused when starting q3terminal)
-    hc substitute M monitors.by-name.$monitor.my_prev_focus \
-        and + compare monitors.focus.name = $monitor \
+    hc substitute M monitors.by-name."$monitor".my_prev_focus \
+        and + compare monitors.focus.name = "$monitor" \
             + focus_monitor M
-    hc remove_monitor $monitor
+    hc remove_monitor "$monitor"
 }
 
 [ $exists = true ] && hide || show

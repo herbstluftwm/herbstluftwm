@@ -6,16 +6,17 @@
 # to switch to the last tag, call: herbstclient emit_hook goto_last_tag
 # or bind it: herbstclient keybind Mod1-Escape emit_hook goto_last_tag
 
-herbstclient --idle '(tag_changed|goto_last_tag|reload)' \
+hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
+hc --idle '(tag_changed|goto_last_tag|reload)' \
     | while read line ; do
-        ARGS=( $line )
-        case ${ARGS[0]} in
+        IFS=$'\t' read -ra args <<< "$line"
+        case ${args[0]} in
             tag_changed)
-                LASTTAG="$TAG"
-                TAG=${ARGS[1]}
+                lasttag="$tag"
+                tag=${args[1]}
                 ;;
             goto_last_tag)
-                ! [ -z "$LASTTAG" ] && herbstclient use "$LASTTAG"
+                [ "$lasttag" ] && hc use "$lasttag"
                 ;;
             reload)
                 exit

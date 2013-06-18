@@ -1,7 +1,9 @@
 #!/bin/bash
 
-TAG="$1"
-EXPIRE="120" # expiry time in seconds
+hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
+
+tag="$1"
+expire="120" # expiry time in seconds
 shift
 
 if [ -z "$1" ] ;then
@@ -12,22 +14,12 @@ if [ -z "$1" ] ;then
 
 fi
 
-hc() {
-    herbstclient "$@"
-}
-
-curtag() {
-     hc tag_status \
-        | grep -oE "$(echo -ne '\t')#[^$(echo -ne '\t')]*" \
-        | tail -c +3
-}
-
-TAG=${TAG:-$(curtag)}
+tag=${tag:-$(hc attr tags.focus.name)}
 
 # ensure tag exists
-hc add "$TAG"
+hc add "$tag"
 
 # move next window from this process to this tag
-hc rule maxage="$EXPIRE" pid="$$" tag="$TAG" once
+hc rule maxage="$expire" pid="$$" tag="$tag" once
 
 exec "$@"
