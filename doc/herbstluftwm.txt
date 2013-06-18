@@ -1273,6 +1273,7 @@ listed as follows:
     ** +focus+: the object of the focused client, if any
 
   * +monitors+
+    ** 'INDEX': a object for each monitor with its 'INDEX' +
     ** +by-name+
       *** 'NAME': a object for each named monitor +
 +

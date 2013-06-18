@@ -391,6 +391,25 @@ static void monitor_attr_tag(void* data, GString* output) {
     g_string_append(output, m->tag->display_name->str);
 }
 
+static void monitor_foreach(void (*action)(HSMonitor*)) {
+    for (int i = 0; i < g_monitors->len; i++) {
+        HSMonitor* m = monitor_with_index(i);
+        action(m);
+    }
+}
+
+static void monitor_unlink_id_object(HSMonitor* m) {
+    hsobject_unlink(g_monitor_object, &m->object);
+}
+
+static void monitor_link_id_object(HSMonitor* m) {
+    GString* index_str = g_string_new("");
+    int index = monitor_index_of(m);
+    g_string_printf(index_str, "%d", index);
+    hsobject_link(g_monitor_object, &m->object, index_str->str);
+    g_string_free(index_str, true);
+}
+
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
     HSMonitor* m = g_new0(HSMonitor, 1);
@@ -422,6 +441,8 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
 
     stack_insert_slice(g_monitor_stack, m->slice);
     g_array_append_val(g_monitors, m);
+    monitor_link_id_object(m);
+
     return g_array_index(g_monitors, HSMonitor*, g_monitors->len-1);
 }
 
@@ -530,8 +551,10 @@ int remove_monitor(int index) {
         g_string_free(monitor->name, true);
     }
     g_string_free(monitor->display_name, true);
-    g_free(monitor);
+    monitor_foreach(monitor_unlink_id_object);
     g_array_remove_index(g_monitors, index);
+    g_free(monitor);
+    monitor_foreach(monitor_link_id_object);
     if (g_cur_monitor >= g_monitors->len) {
         g_cur_monitor--;
         // if selection has changed, then relayout focused monitor
