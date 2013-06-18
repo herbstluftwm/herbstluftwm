@@ -149,6 +149,25 @@ HSClient* get_client_from_window(Window window) {
     }   \
     while (0);
 
+static void client_attr_tag(void* data, GString* output) {
+    HSClient* client = (HSClient*) data;
+    g_string_append(output, client->tag->display_name->str);
+}
+
+static void client_attr_class(void* data, GString* output) {
+    HSClient* client = (HSClient*) data;
+    GString* ret = window_class_to_g_string(g_display, client->window);
+    g_string_append(output, ret->str);
+    g_string_free(ret, true);
+}
+
+static void client_attr_instance(void* data, GString* output) {
+    HSClient* client = (HSClient*) data;
+    GString* ret = window_instance_to_g_string(g_display, client->window);
+    g_string_append(output, ret->str);
+    g_string_free(ret, true);
+}
+
 static GString* client_attr_fullscreen(HSAttribute* attr) {
     CLIENT_UPDATE_ATTR(client_set_fullscreen, fullscreen);
 }
@@ -229,9 +248,15 @@ HSClient* manage_client(Window win) {
         frame_focus_client(client->tag->frame, client);
     }
 
+    client->object.data = client;
+
     HSAttribute attributes[] = {
         ATTRIBUTE_STRING(   "winid",        client->window_str,     ATTR_READ_ONLY),
         ATTRIBUTE_STRING(   "title",        client->title,          ATTR_READ_ONLY),
+        ATTRIBUTE_CUSTOM(   "tag",          client_attr_tag,        ATTR_READ_ONLY),
+        ATTRIBUTE_INT(      "pid",          client->pid,            ATTR_READ_ONLY),
+        ATTRIBUTE_CUSTOM(   "class",        client_attr_class,      ATTR_READ_ONLY),
+        ATTRIBUTE_CUSTOM(   "instance",     client_attr_instance,   ATTR_READ_ONLY),
         ATTRIBUTE_BOOL(     "fullscreen",   client->fullscreen,     client_attr_fullscreen),
         ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile,     client_attr_pseudotile),
         ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests,   ATTR_ACCEPT_ALL),
