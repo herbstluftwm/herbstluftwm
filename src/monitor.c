@@ -386,6 +386,11 @@ static int monitor_attr_index(void* data) {
     return monitor_index_of(m);
 }
 
+static void monitor_attr_tag(void* data, GString* output) {
+    HSMonitor* m = (HSMonitor*) data;
+    g_string_append(output, m->tag->display_name->str);
+}
+
 HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
     HSMonitor* m = g_new0(HSMonitor, 1);
@@ -409,6 +414,7 @@ HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
     HSAttribute attributes[] = {
         ATTRIBUTE_STRING(   "name",     m->display_name,ATTR_READ_ONLY  ),
         ATTRIBUTE_CUSTOM_INT("index",   monitor_attr_index,ATTR_READ_ONLY  ),
+        ATTRIBUTE_CUSTOM(   "tag",      monitor_attr_tag,ATTR_READ_ONLY  ),
         ATTRIBUTE_BOOL(     "lock_tag", m->lock_tag,    ATTR_READ_ONLY  ),
         ATTRIBUTE_LAST,
     };

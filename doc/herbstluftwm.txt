@@ -1280,6 +1280,7 @@ listed as follows:
 |===========================
  s - name                 , its name
  i - index                , its index
+ s - tag                  , the tag currently viewed on it
  b - lock_tag             ,
 |===========================
 
