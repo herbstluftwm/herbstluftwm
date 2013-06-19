@@ -1300,6 +1300,18 @@ listed as follows:
 
     ** +focus+: the object of the focused tag
 
+    ** +frames+:
+        *** 'FRAME': a object for each tag with the name 'FRAME' +
+        *** +focus+: the object of the focused frame
++
+[format="csv",cols="m,"]
+|===========================
+ s - layout               , its layout-name
+ s - index                , its index ("root" for the root frame)
+ i - windex               , index of the focused client in the frame
+ i - wcount               , number of clients in the frame
+|===========================
+
   * +clients+
     ** 'WINID': a object for each client with its 'WINID' +
 +

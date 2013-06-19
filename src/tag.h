@@ -21,6 +21,7 @@ typedef struct HSTag {
     int             flags;
     struct HSStack* stack;
     struct HSObject* object;
+    struct HSObject* frames_object;
 } HSTag;
 
 // globals

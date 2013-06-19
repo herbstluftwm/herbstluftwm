@@ -208,15 +208,10 @@ HSTag* add_tag(char* name) {
         return find_result;
     }
     HSTag* tag = g_new0(HSTag, 1);
-    tag->stack = stack_create();
-    tag->frame = frame_create_empty(NULL, tag);
-    tag->name = g_string_new(name);
-    tag->display_name = g_string_new(name);
-    tag->floating = false;
-    g_array_append_val(g_tags, tag);
 
     // create object
     tag->object = hsobject_create_and_link(g_tag_by_name, name);
+    tag->frames_object = hsobject_create_and_link(tag->object, "frames");
     tag->object->data = tag;
     HSAttribute attributes[] = {
         ATTRIBUTE_STRING("name",           tag->display_name,        tag_attr_name),
@@ -229,6 +224,13 @@ HSTag* add_tag(char* name) {
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(tag->object, attributes);
+
+    tag->stack = stack_create();
+    tag->frame = frame_create_empty(NULL, tag);
+    tag->name = g_string_new(name);
+    tag->display_name = g_string_new(name);
+    tag->floating = false;
+    g_array_append_val(g_tags, tag);
 
     ewmh_update_desktops();
     ewmh_update_desktop_names();
