@@ -4,6 +4,9 @@ herbstluftwm NEWS -- History of user-visible changes
 Next Release
 ------------
 
+Release 0.5.2 on 2013-06-23
+---------------------------
+
 Changes:
 
     * cycle_all now raises the focused client.
