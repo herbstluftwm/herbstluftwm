@@ -211,14 +211,14 @@ HSClient* manage_client(Window win) {
     client->slice = slice_create_client(client);
     stack_insert_slice(client->tag->stack, client->slice);
     // insert window to the tag
-    frame_insert_window(lookup_frame(client->tag->frame, changes.tree_index->str), win);
+    frame_insert_client(lookup_frame(client->tag->frame, changes.tree_index->str), client);
     client_update_wm_hints(client);
     if (changes.focus) {
         // give focus to window if wanted
         // TODO: make this faster!
         // WARNING: this solution needs O(C + exp(D)) time where W is the count
         // of clients on this tag and D is the depth of the binary layout tree
-        frame_focus_window(client->tag->frame, win);
+        frame_focus_client(client->tag->frame, client);
     }
 
     HSAttribute attributes[] = {
@@ -272,7 +272,7 @@ void unmanage_client(Window win) {
         mouse_stop_drag();
     }
     // remove from tag
-    frame_remove_window(client->tag->frame, win);
+    frame_remove_client(client->tag->frame, client);
     // ignore events from it
     XSelectInput(g_display, win, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
@@ -368,7 +368,7 @@ void window_focus(Window window) {
 
     lastfocus = window;
     /* do some specials for the max layout */
-    bool is_max_layout = frame_focused_window(g_cur_frame) == window
+    bool is_max_layout = frame_focused_client(g_cur_frame) == client
                          && g_cur_frame->content.clients.layout == LAYOUT_MAX
                          && get_current_monitor()->tag->floating == false;
     if (*g_raise_on_focus || is_max_layout) {
@@ -573,15 +573,15 @@ int window_close_current() {
     XEvent ev;
     // if there is no focus, then there is nothing to do
     if (!g_cur_frame) return 0;
-    Window win = frame_focused_window(g_cur_frame);
-    if (!win) return 0;
+    HSClient* client = frame_focused_client(g_cur_frame);
+    if (!client) return 0;
     ev.type = ClientMessage;
-    ev.xclient.window = win;
+    ev.xclient.window = client->window;
     ev.xclient.message_type = g_wmatom[WMProtocols];
     ev.xclient.format = 32;
     ev.xclient.data.l[0] = g_wmatom[WMDelete];
     ev.xclient.data.l[1] = CurrentTime;
-    XSendEvent(g_display, win, False, NoEventMask, &ev);
+    XSendEvent(g_display, client->window, False, NoEventMask, &ev);
     return 0;
 }
 
@@ -624,7 +624,7 @@ void client_set_urgent_force(HSClient* client, bool state) {
 
     client->urgent = state;
 
-    client_setup_border(client, client->window == frame_focused_window(g_cur_frame));
+    client_setup_border(client, client == frame_focused_client(g_cur_frame));
 
     XWMHints *wmh;
     if(!(wmh = XGetWMHints(g_display, client->window)))
@@ -649,8 +649,8 @@ void client_update_wm_hints(HSClient* client) {
         return;
     }
 
-    Window focused_window = frame_focused_window(g_cur_frame);
-    if ((focused_window == client->window)
+    HSClient* focused_client = frame_focused_client(g_cur_frame);
+    if ((focused_client == client)
         && wmh->flags & XUrgencyHint) {
         // remove urgency hint if window is focused
         wmh->flags &= ~XUrgencyHint;
@@ -661,7 +661,7 @@ void client_update_wm_hints(HSClient* client) {
             client->urgent = newval;
             char winid_str[STRING_BUF_SIZE];
             snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", client->window);
-            client_setup_border(client, focused_window == client->window);
+            client_setup_border(client, focused_client == client);
             hook_emit_list("urgent", client->urgent ? "on":"off", winid_str, NULL);
             tag_set_flags_dirty();
         }
@@ -700,9 +700,7 @@ void client_update_title(HSClient* client) {
 }
 
 HSClient* get_current_client() {
-    Window win = frame_focused_window(g_cur_frame);
-    if (!win) return NULL;
-    return get_client_from_window(win);
+    return frame_focused_client(g_cur_frame);
 }
 
 void client_set_fullscreen(HSClient* client, bool state) {
@@ -780,8 +778,7 @@ void window_update_border(Window window, unsigned long color) {
 }
 
 unsigned long get_window_border_color(HSClient* client) {
-    Window win = client->window;
-    unsigned long current_border_color = (win == frame_focused_window(g_cur_frame)
+    unsigned long current_border_color = (client == frame_focused_client(g_cur_frame)
                                           ? g_window_border_active_color
                                           : g_window_border_normal_color);
     if (client->urgent)
@@ -813,9 +810,10 @@ HSClient* get_urgent_client() {
 Window string_to_client(char* str, HSClient** ret_client) {
     Window win = 0;
     if (!strcmp(str, "")) {
-        win = frame_focused_window(g_cur_frame);
+        HSClient* client = get_current_client();
+        win = client ? client->window : 0;
         if (ret_client) {
-            *ret_client = get_client_from_window(win);
+            *ret_client = client;
         }
     } else if (!strcmp(str, "urgent")) {
         HSClient* client = get_urgent_client();

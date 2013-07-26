@@ -42,7 +42,7 @@ void tag_init() {
 
 static void tag_free(HSTag* tag) {
     if (tag->frame) {
-        Window* buf;
+        HSClient** buf;
         size_t count;
         frame_destroy(tag->frame, &buf, &count);
         if (count) {
@@ -307,25 +307,25 @@ int tag_remove_command(int argc, char** argv, GString* output) {
     // prevent dangling tag_previous pointers
     all_monitors_replace_previous_tag(tag, target);
     // save all these windows
-    Window* buf;
+    HSClient** buf;
     size_t count;
     frame_destroy(tag->frame, &buf, &count);
     tag->frame = NULL;
     int i;
     for (i = 0; i < count; i++) {
-        HSClient* client = get_client_from_window(buf[i]);
+        HSClient* client = buf[i];
         stack_remove_slice(client->tag->stack, client->slice);
         client->tag = target;
         stack_insert_slice(client->tag->stack, client->slice);
         ewmh_window_update_tag(client->window, client->tag);
-        frame_insert_window(target->frame, buf[i]);
+        frame_insert_client(target->frame, buf[i]);
     }
     HSMonitor* monitor_target = find_monitor_with_tag(target);
     if (monitor_target) {
         // if target monitor is viewed, then show windows
         monitor_apply_layout(monitor_target);
         for (i = 0; i < count; i++) {
-            window_show(buf[i]);
+            window_show(buf[i]->window);
         }
     }
     g_free(buf);
@@ -465,13 +465,11 @@ int tag_move_window_by_index_command(int argc, char** argv, GString* output) {
 }
 
 void tag_move_focused_client(HSTag* target) {
-    Window window = frame_focused_window(get_current_monitor()->tag->frame);
-    if (window == 0) {
+    HSClient* client = frame_focused_client(get_current_monitor()->tag->frame);
+    if (client == 0) {
         // nothing to do
         return;
     }
-    HSClient* client = get_client_from_window(window);
-    assert(client);
     tag_move_client(client, target);
 }
 
@@ -483,11 +481,11 @@ void tag_move_client(HSClient* client, HSTag* target) {
         return;
     }
     HSMonitor* monitor_target = find_monitor_with_tag(target);
-    frame_remove_window(tag_source->frame, client->window);
+    frame_remove_client(tag_source->frame, client);
     // insert window into target
-    frame_insert_window(target->frame, client->window);
+    frame_insert_client(target->frame, client);
     // enfoce it to be focused on the target tag
-    frame_focus_window(target->frame, client->window);
+    frame_focus_client(target->frame, client);
     stack_remove_slice(client->tag->stack, client->slice);
     client->tag = target;
     stack_insert_slice(client->tag->stack, client->slice);
@@ -514,7 +512,7 @@ void tag_move_client(HSClient* client, HSTag* target) {
 }
 
 void tag_update_focus_layer(HSTag* tag) {
-    HSClient* focus = get_client_from_window(frame_focused_window(tag->frame));
+    HSClient* focus = frame_focused_client(tag->frame);
     stack_clear_layer(tag->stack, LAYER_FOCUS);
     if (focus) {
         // enforce raise_on_focus_temporarily if there is at least one

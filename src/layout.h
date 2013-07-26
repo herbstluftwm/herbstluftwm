@@ -72,7 +72,7 @@ typedef struct HSFrame {
     union {
         HSLayout layout;
         struct {
-            Window* buf;
+            struct HSClient** buf;
             size_t  count;
             int     selection;
             int     layout;
@@ -97,19 +97,19 @@ void layout_init();
 void layout_destroy();
 // for frames
 HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag);
-void frame_insert_window(HSFrame* frame, Window window);
+void frame_insert_client(HSFrame* frame, struct HSClient* client);
 HSFrame* lookup_frame(HSFrame* root, char* path);
 HSFrame* frame_current_selection();
 HSFrame* frame_current_selection_below(HSFrame* frame);
 // finds the subframe of frame that contains the window
-HSFrame* find_frame_with_window(HSFrame* frame, Window window);
+HSFrame* find_frame_with_client(HSFrame* frame, struct HSClient* client);
 // removes window from a frame/subframes
 // returns true, if window was found. else: false
-bool frame_remove_window(HSFrame* frame, Window window);
+bool frame_remove_client(HSFrame* frame, struct HSClient* client);
 // destroys a frame and all its childs
 // then all Windows in it are collected and returned
 // YOU have to g_free the resulting window-buf
-void frame_destroy(HSFrame* frame, Window** buf, size_t* count);
+void frame_destroy(HSFrame* frame, struct HSClient*** buf, size_t* count);
 void frame_split(HSFrame* frame, int align, int fraction);
 int frame_split_command(int argc, char** argv, GString* output);
 int frame_change_fraction_command(int argc, char** argv, GString* output);
@@ -163,9 +163,9 @@ int frame_split_count_to_root(HSFrame* frame, int align);
 
 // returns the Window that is focused
 // returns 0 if there is none
-Window frame_focused_window(HSFrame* frame);
-bool frame_focus_window(HSFrame* frame, Window win);
-bool focus_window(Window win, bool switch_tag, bool switch_monitor);
+struct HSClient* frame_focused_client(HSFrame* frame);
+bool frame_focus_client(HSFrame* frame, struct HSClient* client);
+bool focus_client(struct HSClient* client, bool switch_tag, bool switch_monitor);
 // moves a window to an other frame
 int frame_move_window_command(int argc, char** argv, GString* output);
 /// removes the current frame

@@ -422,7 +422,7 @@ int jumpto_command(int argc, char** argv, GString* output) {
     HSClient* client = NULL;
     string_to_client(argv[1], &client);
     if (client) {
-        focus_window(client->window, true, true);
+        focus_client(client, true, true);
         return 0;
     } else {
         g_string_append_printf(output,
@@ -755,11 +755,11 @@ void buttonpress(XEvent* event) {
     if (mouse_binding_find(be->state, be->button)) {
         mouse_start_drag(event);
     } else {
-        focus_window(be->window, false, true);
-        if (*g_raise_on_click) {
-            HSClient* client = get_client_from_window(be->window);
-            if (client) {
-                client_raise(client);
+        HSClient* client = get_client_from_window(be->window);
+        if (client) {
+            focus_client(client, false, true);
+            if (*g_raise_on_click) {
+                    client_raise(client);
             }
         }
     }
@@ -806,13 +806,13 @@ void enternotify(XEvent* event) {
         HSClient* c = get_client_from_window(ce->window);
         HSFrame* target;
         if (c && c->tag->floating == false
-              && (target = find_frame_with_window(c->tag->frame, ce->window))
+              && (target = find_frame_with_client(c->tag->frame, c))
               && target->content.clients.layout == LAYOUT_MAX
-              && frame_focused_window(target) != ce->window) {
+              && frame_focused_client(target) != c) {
             // don't allow focus_follows_mouse if another window would be
             // hidden during that focus change (which only occurs in max layout)
-        } else {
-            focus_window(ce->window, false, true);
+        } else if (c) {
+            focus_client(c, false, true);
         }
     }
 }

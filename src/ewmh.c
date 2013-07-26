@@ -307,7 +307,10 @@ void ewmh_handle_client_message(XEvent* event) {
             // only steal focus it allowed to the current source
             // (i.e.  me->data.l[0] in this case as specified by EWMH)
             if (focus_stealing_allowed(me->data.l[0])) {
-                focus_window(me->window, true, true);
+                HSClient* client = get_client_from_window(me->window);
+                if (client) {
+                    focus_client(client, true, true);
+                }
             }
             break;
 
