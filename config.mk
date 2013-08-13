@@ -3,8 +3,8 @@ X11INC = /usr/X11R6/include
 X11LIB = /usr/X11R6/lib
 
 # Xinerama
-XINERAMALIBS = -L${X11LIB} -lXinerama
-XINERAMAFLAGS = -DXINERAMA
+XINERAMALIBS = `pkg-config --silence-errors --libs xinerama`
+XINERAMAFLAGS = `pkg-config --exists xinerama && echo -DXINERAMA`
 
 INCS = -Isrc/ -I/usr/include -I${X11INC}  `pkg-config --cflags glib-2.0`
 LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 $(XINERAMALIBS) `pkg-config --libs glib-2.0`
