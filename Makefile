@@ -132,7 +132,7 @@ install-nodoc: all-nodoc
 
 uninstall:
 	@echo "==> deleting files..."
-	$(foreach TARGET,$(TARGETS),-$(RM) '$(DESTDIR)$(BINDIR)/$(TARGET)';)
+	-$(foreach TARGET,$(TARGETS),$(RM) '$(DESTDIR)$(BINDIR)/$(TARGET)';)
 	-$(RM) '$(DESTDIR)$(LICENSEDIR)/LICENSE'
 	-$(RM) '$(DESTDIR)$(MAN1DIR)/herbstclient.1'
 	-$(RM) '$(DESTDIR)$(MAN1DIR)/herbstluftwm.1'
@@ -150,7 +150,7 @@ uninstall:
 	-$(RM) '$(DESTDIR)$(ZSHCOMPLETIONDIR)/_herbstclient'
 	-$(RM) '$(DESTDIR)$(XSESSIONSDIR)/herbstluftwm.desktop'
 	-$(RM) '$(DESTDIR)$(EXAMPLESDIR)/README'
-	$(foreach SCRIPT,$(wildcard '$(DESTDIR)$(EXAMPLESDIR)/*.sh'),-$(RM) '$(SCRIPT)';)
+	-$(RM) '$(DESTDIR)$(EXAMPLESDIR)'/*.sh
 	@echo "==> deleting directories..."
 	-$(RMDIR) '$(EXAMPLESDIR)'
 	-$(RMDIR) '$(DOCDIR)'
