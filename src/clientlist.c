@@ -117,9 +117,17 @@ static void client_move_to_floatpos(void* key, void* client_void, void* data) {
     }
 }
 
+static void client_show_window(void* key, void* client_void, void* data) {
+    (void)key;
+    (void)data;
+    HSClient* client = client_void;
+    window_show(client->window);
+}
+
 void clientlist_destroy() {
     // move all clients to their original floating position
     g_hash_table_foreach(g_clients, client_move_to_floatpos, NULL);
+    g_hash_table_foreach(g_clients, client_show_window, NULL);
 
     g_hash_table_destroy(g_clients);
     hsobject_unlink_and_destroy(hsobject_root(), g_client_object);
