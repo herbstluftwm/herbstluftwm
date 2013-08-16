@@ -142,4 +142,5 @@ herbstclient pad $monitor $panel_height
         esac
     done
 } 2> /dev/null | dzen2 -w $panel_width -x $x -y $y -fn "$font" -h $panel_height \
+    -e 'button3=' \
     -ta l -bg "$bgcolor" -fg '#efefef'
