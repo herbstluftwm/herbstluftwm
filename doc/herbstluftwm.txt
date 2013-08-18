@@ -1097,6 +1097,8 @@ A rule's behaviour can be configured by some special 'FLAGS':
     * +!+: same as +not+.
     * +once+: only apply this rule once (and delete it afterwards).
     * +printlabel+: prints the label of the newly created rule to stdout.
+    * +prepend+: prepend the rule to the list of rules instead of appending it.
+      So its consequences may be overwritten by already existing rules.
 
 Examples:
 

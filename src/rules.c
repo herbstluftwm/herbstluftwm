@@ -305,6 +305,7 @@ void rule_complete(int argc, char** argv, int pos, GString* output) {
     // complete label
     try_complete_partial(needle, "label=", output);
     // complete flags
+    try_complete(needle, "prepend", output);
     try_complete(needle, "once",    output);
     try_complete(needle, "not",     output);
     try_complete(needle, "!",       output);
@@ -431,10 +432,12 @@ int rule_add_command(int argc, char** argv, GString* output) {
     HSConsequence* cons;
     bool printlabel = false;
     bool negated = false;
+    bool prepend = false;
     struct {
         char* name;
         bool* flag;
     } flags[] = {
+        { "prepend",&prepend },
         { "not",    &negated },
         { "!",      &negated },
         { "once",   &rule->once },
@@ -506,7 +509,8 @@ int rule_add_command(int argc, char** argv, GString* output) {
        g_string_append_printf(output, "%s\n", rule->label);
     }
 
-    g_queue_push_tail(&g_rules, rule);
+    if (prepend) g_queue_push_head(&g_rules, rule);
+    else         g_queue_push_tail(&g_rules, rule);
     return 0;
 }
 

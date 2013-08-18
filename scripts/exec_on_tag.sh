@@ -20,6 +20,8 @@ tag=${tag:-$(hc attr tags.focus.name)}
 hc add "$tag"
 
 # move next window from this process to this tag
-hc rule maxage="$expire" pid="$$" tag="$tag" once
+# prepend the rule so that it may be overwritten by existing custom rules e.g.
+# in the autostart
+hc rule prepend maxage="$expire" pid="$$" tag="$tag" once
 
 exec "$@"

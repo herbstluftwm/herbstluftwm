@@ -4,6 +4,8 @@ herbstluftwm NEWS -- History of user-visible changes
 Next Release
 ------------
 
+    * new rule flag: prepend
+
 Release 0.5.2 on 2013-06-23
 ---------------------------
 
