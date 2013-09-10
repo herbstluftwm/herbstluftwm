@@ -929,7 +929,13 @@ int frame_current_bring(int argc, char** argv, GString* output) {
         }
         return HERBST_INVALID_ARGUMENT;
     }
-    tag_move_client(client, get_current_monitor()->tag);
+    HSTag* tag = get_current_monitor()->tag;
+    tag_move_client(client, tag);
+    HSFrame* frame = find_frame_with_client(tag->frame, client);
+    if (frame != g_cur_frame) {
+        frame_remove_client(frame, client);
+        frame_insert_client(g_cur_frame, client);
+    }
     focus_client(client, false, false);
     return 0;
 }
