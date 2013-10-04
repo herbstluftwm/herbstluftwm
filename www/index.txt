@@ -84,11 +84,11 @@ Feel free to join the IRC channel +#herbstluftwm+ on +irc.freenode.net+.
 
 For further bug reporting or patch submission contact the mailing list:
 ----
-herbstluftwm-devel@lists.sourceforge.net
+hlwm@lists.herbstluftwm.org
 ----
 You can subscribe by sending a mail with the subject +subscribe+ to
-+herbstluftwm-devel-request@lists.sourceforge.net+ or by using the
-link:https://lists.sourceforge.net/lists/listinfo/herbstluftwm-devel[Mailman
++hlwm-request@lists.herbstluftwm.org+ or by using the
+link:https://lists.schokokeks.org/mailman/listinfo.cgi/hlwm[Mailman
 web interface].
 
 Screenshots
