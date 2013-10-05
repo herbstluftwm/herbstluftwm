@@ -748,10 +748,7 @@ int monitor_count() {
 }
 
 void all_monitors_apply_layout() {
-    for (int i = 0; i < g_monitors->len; i++) {
-        HSMonitor* m = monitor_with_index(i);
-        monitor_apply_layout(m);
-    }
+    monitor_foreach(monitor_apply_layout);
 }
 
 int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
