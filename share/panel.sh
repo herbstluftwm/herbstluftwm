@@ -57,7 +57,7 @@ hc pad $monitor $panel_height
     # events:
     #mpc idleloop player &
     while true ; do
-        date +'date ^fg(#efefef)%H:%M^fg(#909090), %Y-%m-^fg(#efefef)%d'
+        date +$'date\t^fg(#efefef)%H:%M^fg(#909090), %Y-%m-^fg(#efefef)%d'
         sleep 1 || break
     done > >(uniq_linebuffered) &
     childpid=$!
