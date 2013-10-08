@@ -2,14 +2,13 @@
 
 # this is a simple config for herbstluftwm
 
-function hc() {
+hc() {
     herbstclient "$@"
 }
 
 hc emit_hook reload
 
 xsetroot -solid '#5A8E3A'
-
 
 # remove all existing keybindings
 hc keyunbind --all
@@ -22,13 +21,13 @@ hc keybind $Mod-Shift-c close
 hc keybind $Mod-Return spawn xterm
 
 # tags
-TAG_NAMES=( {1..9} )
-TAG_KEYS=( {1..9} 0 )
+tag_names=( {1..9} )
+tag_keys=( {1..9} 0 )
 
-hc rename default "${TAG_NAMES[0]}" || true
-for i in ${!TAG_NAMES[@]} ; do
-    hc add "${TAG_NAMES[$i]}"
-    key="${TAG_KEYS[$i]}"
+hc rename default "${tag_names[0]}" || true
+for i in ${!tag_names[@]} ; do
+    hc add "${tag_names[$i]}"
+    key="${tag_keys[$i]}"
     if ! [ -z "$key" ] ; then
         hc keybind "$Mod-$key" use_index "$i"
         hc keybind "$Mod-Shift-$key" move_index "$i"
@@ -51,11 +50,11 @@ hc keybind $Mod-f fullscreen toggle
 hc keybind $Mod-p pseudotile toggle
 
 # resizing
-RESIZESTEP=0.05
-hc keybind $Mod-Control-h resize left +$RESIZESTEP
-hc keybind $Mod-Control-j resize down +$RESIZESTEP
-hc keybind $Mod-Control-k resize up +$RESIZESTEP
-hc keybind $Mod-Control-l resize right +$RESIZESTEP
+resizestep=0.05
+hc keybind $Mod-Control-h resize left +$resizestep
+hc keybind $Mod-Control-j resize down +$resizestep
+hc keybind $Mod-Control-k resize up +$resizestep
+hc keybind $Mod-Control-l resize right +$resizestep
 
 # mouse
 hc mouseunbind --all
@@ -97,7 +96,6 @@ hc set smart_window_surroundings 0
 hc set smart_frame_surroundings 1
 hc set mouse_recenter_gap 0
 
-
 # rules
 hc unrule -F
 #hc rule class=XTerm tag=3 # move all xterms to tag 3
@@ -123,5 +121,5 @@ panel=~/.config/herbstluftwm/panel.sh
 [ -x "$panel" ] || panel=/etc/xdg/herbstluftwm/panel.sh
 for monitor in $(herbstclient list_monitors | cut -d: -f1) ; do
     # start it on each monitor
-    $panel $monitor &
+    "$panel" $monitor &
 done
