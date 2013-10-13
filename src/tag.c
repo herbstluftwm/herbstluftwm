@@ -183,19 +183,6 @@ static int tag_attr_client_count(void* data) {
     return i;
 }
 
-
-static int tag_attr_curframe_windex(void* data) {
-    HSTag* tag = (HSTag*) data;
-    HSFrame* frame = frame_current_selection_below(tag->frame);
-    return frame->content.clients.selection;
-}
-
-static int tag_attr_curframe_wcount(void* data) {
-    HSTag* tag = (HSTag*) data;
-    HSFrame* frame = frame_current_selection_below(tag->frame);
-    return frame->content.clients.count;
-}
-
 static int tag_attr_index(void* data) {
     HSTag* tag = (HSTag*) data;
     return tag_index_of(tag);
@@ -219,8 +206,6 @@ HSTag* add_tag(char* name) {
         ATTRIBUTE_CUSTOM_INT("index",          tag_attr_index,           ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM_INT("frame_count",    tag_attr_frame_count,     ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM_INT("client_count",   tag_attr_client_count,    ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM_INT("curframe_windex",tag_attr_curframe_windex, ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM_INT("curframe_wcount",tag_attr_curframe_wcount, ATTR_READ_ONLY),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(tag->object, attributes);
