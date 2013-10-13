@@ -142,7 +142,7 @@ HSFrame* frame_neighbour(HSFrame* frame, char direction);
 int frame_inner_neighbour_index(HSFrame* frame, char direction);
 int frame_focus_command(int argc, char** argv, GString* output);
 
-// follow selection to leave and focus this frame
+// follow selection to leaf and focus this frame
 int frame_focus_recursive(HSFrame* frame);
 void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order);
 void frame_do_recursive_data(HSFrame* frame, void (*action)(HSFrame*,void*),

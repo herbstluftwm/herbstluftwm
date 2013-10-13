@@ -1100,7 +1100,7 @@ int cycle_all_command(int argc, char** argv) {
          *   / \   / \
          *  .   . .   .
          */
-        // and then to the left (i.e. find first leave
+        // and then to the left (i.e. find first leaf)
         while (frame->type == TYPE_FRAMES) {
             // then go deeper, with the other direction
             frame->content.layout.selection = other_direction;
@@ -1490,7 +1490,7 @@ HSClient* frame_focused_client(HSFrame* frame) {
     if (!frame) {
         return NULL;
     }
-    // follow the selection to a leave
+    // follow the selection to a leaf
     while (frame->type == TYPE_FRAMES) {
         frame = (frame->content.layout.selection == 0) ?
                 frame->content.layout.a :
@@ -1593,7 +1593,7 @@ bool focus_client(struct HSClient* client, bool switch_tag, bool switch_monitor)
 }
 
 int frame_focus_recursive(HSFrame* frame) {
-    // follow the selection to a leave
+    // follow the selection to a leaf
     while (frame->type == TYPE_FRAMES) {
         frame = (frame->content.layout.selection == 0) ?
                 frame->content.layout.a :
