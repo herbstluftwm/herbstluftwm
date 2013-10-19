@@ -96,7 +96,7 @@ void hsobject_link(HSObject* parent, HSObject* child, char* name);
 void hsobject_unlink(HSObject* parent, HSObject* child);
 void hsobject_unlink_by_name(HSObject* parent, char* name);
 void hsobject_link_rename(HSObject* parent, char* oldname, char* newname);
-void hsobject_rename_child(HSObject* parent, HSObject* child, char* newname);
+void hsobject_link_rename_object(HSObject* parent, HSObject* child, char* newname);
 void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child);
 
 HSObject* hsobject_by_path(char* path);
