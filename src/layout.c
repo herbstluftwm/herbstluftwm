@@ -616,6 +616,10 @@ static void frame_append_caption(HSTree tree, GString* output) {
         for (i = 0; i < count; i++) {
             g_string_append_printf(output, " 0x%lx", buf[i]->window);
         }
+        GString* frame_index = g_string_new("");
+        frame_index_to_gstring(frame, frame_index);
+        g_string_append_printf(output, " (%s)", frame_index->str);
+        g_string_free(frame_index, true);
         if (g_cur_frame == frame) {
             g_string_append(output, " [FOCUS]");
         }
