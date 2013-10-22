@@ -1224,17 +1224,18 @@ $ herbstclient attr tags.
  u - count                = 9
 
 $ herbstclient attr tags.focus.
-0 children.
-6 attributes:
+1 children:
+  frames.
+
+5 attributes:
  .---- type
  | .-- writeable
  V V
  s w name                 = "1"
  b w floating             = false
+ i - index                = 0
  i - frame_count          = 2
  i - client_count         = 1
- i - curframe_windex      = 0
- i - curframe_wcount      = 1
 ----
 
 This already gives an intuition of the output: +attr+ first lists the names of
