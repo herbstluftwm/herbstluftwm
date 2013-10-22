@@ -223,7 +223,7 @@ static RectList* insert_rect_border(RectList* head,
 }
 
 // insert a new element without any intersections into the given list
-RectList* reclist_insert_disjoint(RectList* head, RectList* element) {
+static RectList* reclist_insert_disjoint(RectList* head, RectList* element) {
     if (!element) {
         return head;
     } else if (!head) {

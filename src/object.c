@@ -55,7 +55,7 @@ void hsobject_free(HSObject* obj) {
     g_list_free_full(obj->children, (GDestroyNotify)hsobjectchild_destroy);
 }
 
-void hsattribute_free(HSAttribute* attr) {
+static void hsattribute_free(HSAttribute* attr) {
     if (attr->user_data) {
         g_free(attr->name);
         if (attr->type == HSATTR_TYPE_STRING) {
@@ -88,14 +88,14 @@ void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child) {
     hsobject_destroy(child);
 }
 
-HSObjectChild* hsobjectchild_create(char* name, HSObject* obj) {
+static HSObjectChild* hsobjectchild_create(char* name, HSObject* obj) {
     HSObjectChild* oc = g_new(HSObjectChild, 1);
     oc->name = g_strdup(name);
     oc->child = obj;
     return oc;
 }
 
-void hsobjectchild_destroy(HSObjectChild* oc) {
+static void hsobjectchild_destroy(HSObjectChild* oc) {
     if (!oc) return;
     g_free(oc->name);
     g_free(oc);

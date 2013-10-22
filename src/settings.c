@@ -211,7 +211,7 @@ int settings_toggle(int argc, char** argv, GString* output) {
     }
     return 0;
 }
-bool memberequals_settingspair(void* pmember, void* needle) {
+static bool memberequals_settingspair(void* pmember, void* needle) {
     char* str = *(char**)pmember;
     SettingsPair* pair = needle;
     if (pair->type == HS_Int) {

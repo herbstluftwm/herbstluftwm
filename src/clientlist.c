@@ -426,7 +426,7 @@ void client_setup_border(HSClient* client, bool focused) {
     }
 }
 
-void client_resize_fullscreen(HSClient* client, HSMonitor* m) {
+static void client_resize_fullscreen(HSClient* client, HSMonitor* m) {
     if (!client || !m) {
         HSDebug("client_resize_fullscreen() got invalid parameters\n");
         return;
@@ -650,7 +650,7 @@ void client_set_urgent(HSClient* client, bool state) {
     client_set_urgent_force(client, state);
 }
 
-void client_set_urgent_force(HSClient* client, bool state) {
+static void client_set_urgent_force(HSClient* client, bool state) {
     char winid_str[STRING_BUF_SIZE];
     snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", client->window);
     hook_emit_list("urgent", state ? "on" : "off", winid_str, NULL);

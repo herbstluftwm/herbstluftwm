@@ -108,7 +108,7 @@ void rules_destroy() {
 }
 
 // condition types //
-int find_condition_type(char* name) {
+static int find_condition_type(char* name) {
     char* cn;
     for (int i = 0; i < LENGTH(g_condition_types); i++) {
         cn = g_condition_types[i].name;
@@ -170,7 +170,7 @@ HSCondition* condition_create(int type, char op, char* value, GString* output) {
     return ptr;
 }
 
-void condition_destroy(HSCondition* cond) {
+static void condition_destroy(HSCondition* cond) {
     if (!cond) {
         return;
     }
@@ -192,7 +192,7 @@ void condition_destroy(HSCondition* cond) {
 }
 
 // consequence types //
-int find_consequence_type(char* name) {
+static int find_consequence_type(char* name) {
     char* cn;
     for (int i = 0; i < LENGTH(g_consequence_types); i++) {
         cn = g_consequence_types[i].name;
@@ -226,7 +226,7 @@ HSConsequence* consequence_create(int type, char op, char* value, GString* outpu
     return ptr;
 }
 
-void consequence_destroy(HSConsequence* cons) {
+static void consequence_destroy(HSConsequence* cons) {
     switch (cons->value_type) {
         case CONSEQUENCE_VALUE_TYPE_STRING:
             g_free(cons->value.str);
@@ -235,7 +235,7 @@ void consequence_destroy(HSConsequence* cons) {
     g_free(cons);
 }
 
-bool rule_label_replace(HSRule* rule, char op, char* value, GString* output) {
+static bool rule_label_replace(HSRule* rule, char op, char* value, GString* output) {
     switch (op) {
         case '=':
             if (*value == '\0') {
@@ -320,7 +320,7 @@ static gint rule_compare_label(const HSRule* a, const HSRule* b) {
 }
 
 // Looks up rules of a given label and removes them from the queue
-bool rule_find_pop(char* label) {
+static bool rule_find_pop(char* label) {
     GList* rule = { NULL };
     bool status = false; // Will be returned as true if any is found
     HSRule rule_find = { .label = label };
@@ -632,7 +632,7 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
 }
 
 /// CONDITIONS ///
-bool condition_string(HSCondition* rule, char* string) {
+static bool condition_string(HSCondition* rule, char* string) {
     if (!rule || !string) {
         return false;
     }
@@ -663,25 +663,25 @@ bool condition_string(HSCondition* rule, char* string) {
     return false;
 }
 
-bool condition_class(HSCondition* rule, HSClient* client) {
+static bool condition_class(HSCondition* rule, HSClient* client) {
     GString* window_class = window_class_to_g_string(g_display, client->window);
     bool match = condition_string(rule, window_class->str);
     g_string_free(window_class, true);
     return match;
 }
 
-bool condition_instance(HSCondition* rule, HSClient* client) {
+static bool condition_instance(HSCondition* rule, HSClient* client) {
     GString* inst = window_instance_to_g_string(g_display, client->window);
     bool match = condition_string(rule, inst->str);
     g_string_free(inst, true);
     return match;
 }
 
-bool condition_title(HSCondition* rule, HSClient* client) {
+static bool condition_title(HSCondition* rule, HSClient* client) {
     return condition_string(rule, client->title->str);
 }
 
-bool condition_pid(HSCondition* rule, HSClient* client) {
+static bool condition_pid(HSCondition* rule, HSClient* client) {
     if (client->pid < 0) {
         return false;
     }
@@ -694,12 +694,12 @@ bool condition_pid(HSCondition* rule, HSClient* client) {
     }
 }
 
-bool condition_maxage(HSCondition* rule, HSClient* client) {
+static bool condition_maxage(HSCondition* rule, HSClient* client) {
     time_t diff = get_monotonic_timestamp() - g_current_rule_birth_time;
     return (rule->value.integer >= diff);
 }
 
-bool condition_windowtype(HSCondition* rule, HSClient* client) {
+static bool condition_windowtype(HSCondition* rule, HSClient* client) {
     // that only works for atom-type utf8-string, _NET_WM_WINDOW_TYPE is int
     //  GString* wintype=
     //      window_property_to_g_string(g_display, client->window, wintype_atom);
@@ -751,7 +751,7 @@ bool condition_windowtype(HSCondition* rule, HSClient* client) {
     return false;
 }
 
-bool condition_windowrole(HSCondition* rule, HSClient* client) {
+static bool condition_windowrole(HSCondition* rule, HSClient* client) {
     GString* role = window_property_to_g_string(g_display, client->window,
         ATOM("WM_WINDOW_ROLE"));
     if (!role) return false;

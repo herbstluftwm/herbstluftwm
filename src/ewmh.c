@@ -276,7 +276,7 @@ void ewmh_update_active_window(Window win) {
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(win), 1);
 }
 
-bool focus_stealing_allowed(long source) {
+static bool focus_stealing_allowed(long source) {
     if (*g_focus_stealing_prevention) {
         /* only allow it to pagers/taskbars */
         return (source == 2);

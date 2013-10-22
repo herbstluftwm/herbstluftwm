@@ -633,7 +633,7 @@ void complete_against_keybinds(int argc, char** argv, int pos, GString* output) 
     key_find_binds(needle, output);
 }
 
-bool parameter_expected(int argc, char** argv, int pos) {
+static bool parameter_expected(int argc, char** argv, int pos) {
     if (pos <= 0 || argc < 1) {
         /* no parameter if there is no command */
         return false;
@@ -861,7 +861,7 @@ void complete_sprintf(int argc, char** argv, int position, GString* output) {
     }
 }
 
-bool first_parameter_is_tag(int argc, char** argv, int pos) {
+static bool first_parameter_is_tag(int argc, char** argv, int pos) {
     // only complete if first parameter is a valid tag
     if (argc >= 2 && find_tag(argv[1]) && pos == 2) {
         return true;
@@ -870,7 +870,7 @@ bool first_parameter_is_tag(int argc, char** argv, int pos) {
     }
 }
 
-bool first_parameter_is_flag(int argc, char** argv, int pos) {
+static bool first_parameter_is_flag(int argc, char** argv, int pos) {
     // only complete if first parameter is a flag like -i or -e
     if (argc >= 2 && argv[1][0] == '-' && pos == 2) {
         return true;
@@ -879,7 +879,7 @@ bool first_parameter_is_flag(int argc, char** argv, int pos) {
     }
 }
 
-bool first_parameter_is_writable_attribute(int argc, char** argv, int pos) {
+static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos) {
     GString* dummy = g_string_new("");
     HSAttribute* attr = NULL;
     if (argc >= 2) {
@@ -889,7 +889,7 @@ bool first_parameter_is_writable_attribute(int argc, char** argv, int pos) {
     return attr && attr->on_change != ATTR_READ_ONLY;
 }
 
-bool parameter_expected_offset(int argc, char** argv, int pos, int offset) {
+static bool parameter_expected_offset(int argc, char** argv, int pos, int offset) {
     if (argc < offset || pos < offset) {
         return true;
     }
@@ -900,11 +900,11 @@ bool parameter_expected_offset(int argc, char** argv, int pos, int offset) {
     return parameter_expected(argc - offset, argv + offset, pos - offset);
 }
 
-bool parameter_expected_offset_2(int argc, char** argv, int pos) {
+static bool parameter_expected_offset_2(int argc, char** argv, int pos) {
     return parameter_expected_offset(argc,argv, pos, 2);
 }
 
-bool parameter_expected_offset_3(int argc, char** argv, int pos) {
+static bool parameter_expected_offset_3(int argc, char** argv, int pos) {
     return parameter_expected_offset(argc,argv, pos, 3);
 }
 
