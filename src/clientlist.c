@@ -293,6 +293,7 @@ HSClient* manage_client(Window win) {
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(&client->object, attributes);
+    hsobject_link(g_client_object, &client->object, client->window_str->str);
 
     ewmh_window_update_tag(client->window, client->tag);
     tag_set_flags_dirty();
@@ -351,6 +352,7 @@ void unmanage_client(Window win) {
 // destroys a special client
 void client_destroy(HSClient* client) {
     hsobject_unlink(g_client_object, &client->object);
+    hsobject_unlink(client->tag->frame->client_object, &client->object);
     if (client->tag && client->slice) {
         stack_remove_slice(client->tag->stack, client->slice);
     }

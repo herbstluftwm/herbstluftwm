@@ -157,6 +157,17 @@ static int frame_attr_wcount(void* data) {
     return frame->content.clients.count;
 }
 
+static void frame_object_update_clientfocus(HSFrame* frame) {
+    if (frame->type == TYPE_CLIENTS) {
+        if (frame->content.clients.count > 0) {
+            HSClient* client = frame->content.clients.buf[frame->content.clients.selection];
+            hsobject_link(frame->client_object, &client->object, "focus");
+        } else {
+            hsobject_unlink_by_name(frame->client_object, "focus");
+        }
+    }
+}
+
 /* create a new frame
  * you can either specify a frame or a tag as its parent
  */
@@ -183,6 +194,8 @@ HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
         // creating root frame for a tag, so add root object
         hsobject_link(parenttag->frames_object, frame->object, "root");
     }
+    frame->client_object = hsobject_create();
+    hsobject_link(frame->object, frame->client_object, "clients");
 
     // set window attributes
     XSetWindowAttributes at;
@@ -228,10 +241,13 @@ void frame_insert_client(HSFrame* frame, struct HSClient* client) {
         // write results back
         frame->content.clients.count = count;
         frame->content.clients.buf = buf;
+        // link client object
+        hsobject_link(frame->client_object, &client->object, client->window_str->str);
         // check for focus
         if (g_cur_frame == frame
             && frame->content.clients.selection >= (count-1)) {
             frame->content.clients.selection = count - 1;
+            frame_object_update_clientfocus(frame);
             window_focus(client->window);
         }
     } else { /* frame->type == TYPE_FRAMES */
@@ -299,6 +315,7 @@ bool frame_remove_client(HSFrame* frame, HSClient* client) {
                 buf = g_renew(HSClient*, buf, count);
                 frame->content.clients.buf = buf;
                 frame->content.clients.count = count;
+                hsobject_unlink(frame->client_object, &client->object);
                 // find out new selection
                 int selection = frame->content.clients.selection;
                 // if selection was before removed window
@@ -308,6 +325,7 @@ bool frame_remove_client(HSFrame* frame, HSClient* client) {
                 // ensure, that it's a valid index
                 selection = count ? CLAMP(selection, 0, count-1) : 0;
                 frame->content.clients.selection = selection;
+                frame_object_update_clientfocus(frame);
                 return true;
             }
         }
@@ -323,6 +341,7 @@ void frame_destroy(HSFrame* frame, HSClient*** buf, size_t* count) {
     if (frame->type == TYPE_CLIENTS) {
         *buf = frame->content.clients.buf;
         *count = frame->content.clients.count;
+        hsobject_unlink_and_destroy(frame->object, frame->client_object);
         hsobject_unlink_and_destroy(frame->tag->frames_object, frame->object);
     } else { /* frame->type == TYPE_FRAMES */
         size_t c1, c2;
@@ -455,6 +474,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
             }
         }
         frame->content.layout.selection = selection;
+        frame_object_update_clientfocus(frame);
 
         // now parse subframes
         description = load_frame_tree(frame->content.layout.a,
@@ -564,6 +584,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         selection = (selection >= 0) ? selection : 0;
         frame->content.clients.layout = layout;
         frame->content.clients.selection = selection;
+        frame_object_update_clientfocus(frame);
     }
     // jump over closing bracket
     if (*description == LAYOUT_DUMP_BRACKETS[1]) {
@@ -1026,6 +1047,7 @@ int frame_current_set_selection(int argc, char** argv) {
         index = frame->content.clients.count - 1;
     }
     frame->content.clients.selection = index;
+    frame_object_update_clientfocus(frame);
     Window window = frame->content.clients.buf[index]->window;
     window_focus(window);
     return 0;
@@ -1051,6 +1073,7 @@ int frame_current_cycle_selection(int argc, char** argv) {
     index += count;
     index %= count;
     frame->content.clients.selection = index;
+    frame_object_update_clientfocus(frame);
     Window window = frame->content.clients.buf[index]->window;
     window_focus(window);
     return 0;
@@ -1105,6 +1128,7 @@ int cycle_all_command(int argc, char** argv) {
         index += frame->content.clients.count;
         index %= frame->content.clients.count;
         frame->content.clients.selection = index;
+        frame_object_update_clientfocus(frame);
     }
     HSClient* c = frame_focused_client(g_cur_frame);
     if (c) {
@@ -1237,6 +1261,7 @@ void cycle_frame(int direction, int new_window_index, bool skip_invisible) {
         frame_focus_recursive(top_frame);
 
     }
+    frame_object_update_clientfocus(frame);
     monitor_apply_layout(get_current_monitor());
     return;
 }
@@ -1267,9 +1292,6 @@ bool frame_split(HSFrame* frame, int align, int fraction) {
                      FRACTION_UNIT * (0.0 + FRAME_MIN_FRACTION),
                      FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
 
-    // remove old frame object from object tree
-    hsobject_unlink_and_destroy(frame->tag->frames_object, frame->object);
-
     HSFrame* first = frame_create_empty(frame, NULL);
     HSFrame* second = frame_create_empty(frame, NULL);
     first->content = frame->content;
@@ -1282,7 +1304,16 @@ bool frame_split(HSFrame* frame, int align, int fraction) {
     frame->content.layout.selection = 0;
     frame->content.layout.fraction = fraction;
 
+    // remove old frame object from object tree
+    first->client_object = frame->client_object;
+    hsobject_unlink(frame->object, frame->client_object);
+    hsobject_unlink_and_destroy(frame->tag->frames_object, frame->object);
+
     // add new frame objects to object tree
+    hsobject_link(first->object, first->client_object, "clients");
+    hsobject_link(second->object, second->client_object, "clients");
+    // FIXME address of first's client_object changes - is this a problem?
+
     GString* nindex_a = g_string_new("");
     GString* nindex_b = g_string_new("");
     frame_index_to_gstring(first, nindex_a);
@@ -1402,6 +1433,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
         frame->content.layout.a = emptyFrame;
     }
     frame->content.layout.selection = selection;
+    frame_object_update_clientfocus(frame);
     // reset focus
     g_cur_frame = frame_current_selection();
     // redraw monitor
@@ -1586,6 +1618,7 @@ int frame_focus_command(int argc, char** argv, GString* output) {
         (index = frame_inner_neighbour_index(g_cur_frame, direction)) != -1) {
         g_cur_frame->content.clients.selection = index;
         frame_focus_recursive(g_cur_frame);
+        frame_object_update_clientfocus(g_cur_frame);
         monitor_apply_layout(get_current_monitor());
     } else {
         HSFrame* neighbour = frame_neighbour(g_cur_frame, direction);
@@ -1635,6 +1668,7 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
         buf[index] = tmp;
 
         g_cur_frame->content.clients.selection = index;
+        frame_object_update_clientfocus(g_cur_frame);
         frame_focus_recursive(g_cur_frame);
         monitor_apply_layout(get_current_monitor());
     } else {
@@ -1663,6 +1697,7 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
                     break;
                 }
             }
+            frame_object_update_clientfocus(frame);
 
             // layout was changed, so update it
             monitor_apply_layout(get_current_monitor());
@@ -1713,6 +1748,7 @@ bool frame_focus_client(HSFrame* frame, HSClient* client) {
             if (buf[i] == client) {
                 // if found, set focus to it
                 frame->content.clients.selection = i;
+                frame_object_update_clientfocus(frame);
                 return true;
             }
         }
