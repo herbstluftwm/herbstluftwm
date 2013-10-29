@@ -53,10 +53,18 @@ else
 fi
 
 hc pad $monitor $panel_height
+
 {
-    # events:
+    ### Event generator ###
+    # based on different input data (mpc, date, hlwm hooks, ...) this generates events, formed like this:
+    #   <eventname>\t<data> [...]
+    # e.g.
+    #   date    ^fg(#efefef)18:33^fg(#909090), 2013-10-^fg(#efefef)29
+
     #mpc idleloop player &
     while true ; do
+        # "date" output is checked once a second, but an event is only
+        # generated if the output changed compared to the previous run.
         date +$'date\t^fg(#efefef)%H:%M^fg(#909090), %Y-%m-^fg(#efefef)%d'
         sleep 1 || break
     done > >(uniq_linebuffered) &
@@ -69,6 +77,11 @@ hc pad $monitor $panel_height
     date=""
     windowtitle=""
     while true ; do
+
+        ### Output ###
+        # This part prints dzen data based on the _previous_ data handling run,
+        # and then waits for the next event to happen.
+
         bordercolor="#26221C"
         separator="^bg()^fg($selbg)|"
         # draw tags
@@ -91,11 +104,13 @@ hc pad $monitor $panel_height
                     ;;
             esac
             if [ ! -z "$dzen2_svn" ] ; then
+                # clickable tags if using SVN dzen
                 echo -n "^ca(1,\"${herbstclient_command[@]:-herbstclient}\" "
                 echo -n "focus_monitor \"$monitor\" && "
                 echo -n "\"${herbstclient_command[@]:-herbstclient}\" "
                 echo -n "use \"${i:1}\") ${i:1} ^ca()"
             else
+                # non-clickable tags if using older dzen
                 echo -n " ${i:1} "
             fi
         done
@@ -108,6 +123,15 @@ hc pad $monitor $panel_height
         width=$($textwidth "$font" "$right_text_only    ")
         echo -n "^pa($(($panel_width - $width)))$right"
         echo
+
+        ### Data handling ###
+        # This part handles the events generated in the event loop, and sets
+        # internal variables based on them. The event and its arguments are
+        # read into the array cmd, then action is taken depending on the event
+        # name.
+        # "Special" events (quit_panel/togglehidepanel/reload) are also handled
+        # here.
+
         # wait for next event
         IFS=$'\t' read -ra cmd || break
         # find out event origin
@@ -150,6 +174,11 @@ hc pad $monitor $panel_height
             #    ;;
         esac
     done
+
+    ### dzen2 ###
+    # After the data is gathered and processed, the output of the previous block
+    # gets piped to dzen2.
+
 } 2> /dev/null | dzen2 -w $panel_width -x $x -y $y -fn "$font" -h $panel_height \
     -e 'button3=' \
     -ta l -bg "$bgcolor" -fg '#efefef'
