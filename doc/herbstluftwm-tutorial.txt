@@ -32,7 +32,7 @@ home directory:
 
 ----
 mkdir -p ~/.config/herbstluftwm
-cp /etc/xdg/herbstluftwm/autostart ~/.confg/herbstluftwm/
+cp /etc/xdg/herbstluftwm/autostart ~/.config/herbstluftwm/
 ----
 
 You also should activate the tab completion for +herbstclient+. In case of
