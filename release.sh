@@ -26,7 +26,7 @@ echo ":: Patching NEWS"
 date=$(date +%Y-%m-%d)
 newheader="Release $version on $date"
 newunderline="$(echo $newheader | sed 's/./-/g')"
-headerexp="^Next Release: [^ ]*$"
+headerexp="^Current git version$"
 # this requires new sed
 sed -i -e "/$headerexp/,+1s/^[-]*$/$newunderline/" \
        -e "s/$headerexp/$newheader/" NEWS

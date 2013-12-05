@@ -1,8 +1,8 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
-Next Release
-------------
+Current git version
+-------------------
 
     * new rule flag: prepend
     * close now accepts an arbitrary window id as a parameter
