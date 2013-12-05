@@ -838,7 +838,8 @@ HSClient* get_urgent_client() {
  *
  * \param   str     Describes the window: "" means the focused one, "urgent"
  *                  resolves to a arbitrary urgent window, "0x..." just
- *                  resolves to the given window.
+ *                  resolves to the given window given its hexadecimal window id,
+ *                  a decimal number its decimal window id.
  * \param   ret_client  The client pointer is stored there if ret_client is
  *                      given and the specified window is managed.
  * \return          The resolved window id is stored there if the according
@@ -861,6 +862,10 @@ Window string_to_client(char* str, HSClient** ret_client) {
             *ret_client = client;
         }
     } else if (1 == sscanf(str, "0x%lx", (long unsigned int*)&win)) {
+        if (ret_client) {
+            *ret_client = get_client_from_window(win);
+        }
+    } else if (1 == sscanf(str, "%lu", (long unsigned int*)&win)) {
         if (ret_client) {
             *ret_client = get_client_from_window(win);
         }
