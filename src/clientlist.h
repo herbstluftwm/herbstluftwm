@@ -75,7 +75,8 @@ void client_set_urgent(HSClient* client, bool state);
 void client_update_wm_hints(HSClient* client);
 void client_update_title(HSClient* client);
 void client_raise(HSClient* client);
-int window_close_current();
+int close_command(int argc, char** argv, GString* output);
+void window_close(Window window);
 
 bool client_sendevent(HSClient *client, Atom proto);
 

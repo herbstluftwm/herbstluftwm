@@ -5,6 +5,7 @@ Next Release
 ------------
 
     * new rule flag: prepend
+    * close now accepts an arbitrary window id as a parameter
 
 Release 0.5.2 on 2013-06-23
 ---------------------------

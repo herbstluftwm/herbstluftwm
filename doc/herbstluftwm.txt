@@ -315,8 +315,9 @@ set_layout 'LAYOUT'::
     layouts, check the <<LIST_LAYOUT_ALGORITHMS,list of layout algorithms
     above>>.
 
-close::
-    Closes the focused window.
+close [urgent|'0xWINID']::
+    Closes the specified window gracefully or the focused window if none is
+    given explicitly.
 
 close_or_remove::
     Closes the focused window or removes the current frame if no window is

@@ -601,21 +601,25 @@ XRectangle client_outer_floating_rect(HSClient* client) {
     return rect;
 }
 
-// from dwm.c
-int window_close_current() {
+int close_command(int argc, char** argv, GString* output) {
+    Window win;
+    HSClient* client = NULL;
+    win = string_to_client((argc > 1) ? argv[1] : "", &client);
+    if (win) window_close(win);
+    else return HERBST_INVALID_ARGUMENT;
+    return 0;
+}
+
+
+void window_close(Window window) {
     XEvent ev;
-    // if there is no focus, then there is nothing to do
-    if (!g_cur_frame) return 0;
-    HSClient* client = frame_focused_client(g_cur_frame);
-    if (!client) return 0;
     ev.type = ClientMessage;
-    ev.xclient.window = client->window;
+    ev.xclient.window = window;
     ev.xclient.message_type = g_wmatom[WMProtocols];
     ev.xclient.format = 32;
     ev.xclient.data.l[0] = g_wmatom[WMDelete];
     ev.xclient.data.l[1] = CurrentTime;
-    XSendEvent(g_display, client->window, False, NoEventMask, &ev);
-    return 0;
+    XSendEvent(g_display, window, False, NoEventMask, &ev);
 }
 
 void window_set_visible(Window win, bool visible) {

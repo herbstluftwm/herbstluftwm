@@ -1754,8 +1754,10 @@ int frame_remove_command(int argc, char** argv) {
 }
 
 int close_or_remove_command(int argc, char** argv) {
-    if (frame_focused_client(g_cur_frame)) {
-        return window_close_current();
+    HSClient* client = frame_focused_client(g_cur_frame);
+    if (client) {
+        window_close(client->window);
+        return 0;
     } else {
         return frame_remove_command(argc, argv);
     }
