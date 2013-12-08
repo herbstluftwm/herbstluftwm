@@ -4,6 +4,7 @@ herbstluftwm NEWS -- History of user-visible changes
 Current git version
 -------------------
 
+    * make window floating faster, by dropping old motion events
     * new rule flag: prepend
     * close now accepts an arbitrary window id as a parameter
     * Also allow decimal window ids for raise, jump, close (TODO: document

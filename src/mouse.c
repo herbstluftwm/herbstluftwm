@@ -114,6 +114,8 @@ void handle_motion_event(XEvent* ev) {
     if (!g_win_drag_client) return;
     if (!g_drag_bind) return;
     if (ev->type != MotionNotify) return;
+    // get newest motion notification
+    while (XCheckMaskEvent(g_display, ButtonMotionMask, ev));
     MouseFunction function = g_drag_bind->function;
     if (!function) return;
     // call function that handles it
