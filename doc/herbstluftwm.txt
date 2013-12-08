@@ -315,9 +315,10 @@ set_layout 'LAYOUT'::
     layouts, check the <<LIST_LAYOUT_ALGORITHMS,list of layout algorithms
     above>>.
 
-close [urgent|'0xWINID']::
+close 'WINID'::
     Closes the specified window gracefully or the focused window if none is
-    given explicitly.
+    given explicitly. See the <<WINDOW_IDS, section on WINDOW IDS>> how to
+    reference a certain window.
 
 close_or_remove::
     Closes the focused window or removes the current frame if no window is
@@ -384,23 +385,23 @@ focus_edge ['-i'|'-e'] 'DIRECTION'::
     in that frame will be focused.
 +
 
-raise [urgent|'0xWINID']::
-    Raises the specified window, which is an arbitrary urgent window or
-    specified by the hexadecimal '0xWINID'. If no or an empty argument is given,
-    the focused window will be raised. Its result is only visible in floating
+raise 'WINID'::
+    Raises the specified window. See the <<WINDOW_IDS, section on WINDOW IDS>>
+    how to reference a certain window. Its result is only visible in floating
     mode.
 
 TIP: The 'WINID' also can specify an unmanaged window, although the completion
 for the raise command does not list the IDs of unmanaged windows.
 
 
-jumpto urgent|'0xWINID'::
-    Puts the focus to the specified window, which is an arbitrary urgent window
-    or specified by the hexadecimal '0xWINID'.
+jumpto 'WINID'::
+    Puts the focus to the specified window. See the <<WINDOW_IDS, section on
+    WINDOW IDS>> how to reference a certain window.
 
-bring urgent|'0xWINID'::
-    Moves the specified window to the current frame and focuses it. The window
-    is an arbitrary urgent window or specified by the hexadecimal '0xWINID'.
+bring 'WINID'::
+    Moves the specified window to the current frame and focuses it. See the
+    <<WINDOW_IDS, section on WINDOW IDS>> how to reference a certain window.
+
 
 resize 'DIRECTION' 'FRACTIONDELTA'::
     Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA'.
@@ -1120,6 +1121,20 @@ Examples:
     * +rule --windowtype=_NET_WM_WINDOW_TYPE_DIALOG --focus=on+
         +
         Sets focus to new dialogs which set their +_NET_WM_WINDOW_TYPE+ correctly.
+
+[[WINDOW_IDS]]
+WINDOW IDS
+----------
+Several commands accept a window as reference, e.g. +close+. The syntax is as
+follows:
+
+  - an empty string -- or missing argument -- references the currently focused
+    window.
+  - +urgent+ references some window that is urgent.
+  - +0x+'HEXID' -- where 'HEXID' is some hexadecimal number -- references the
+    window with hexadecimal X11 window id is 'HEXID'.
+  - 'DECID' -- where 'DECID' is some decimal number -- references the window
+    with the decimal X11 window id 'DECID'.
 
 [[OBJECTS]]
 OBJECTS
