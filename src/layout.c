@@ -1189,16 +1189,35 @@ void frame_split(HSFrame* frame, int align, int fraction) {
 }
 
 int frame_split_command(int argc, char** argv, GString* output) {
-    // usage: split h|v FRACTION
+    // usage: split t|b|l|r|h|v FRACTION
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
-    int align = ALIGN_VERTICAL;
-    if (argv[1][0] == 'h') {
-        align = ALIGN_HORIZONTAL;
-    } else if (argv[1][0] == 'v') {
-        align = ALIGN_VERTICAL;
-    } else {
+    int align = -1;
+    bool frameToFirst = true;
+    int selection = 0;
+    struct {
+        char* name;
+        int align;
+        bool frameToFirst;  // if former frame moves to first child
+        int selection;      // which child to select after the split
+    } splitModes[] = {
+        { "top",        ALIGN_VERTICAL,     false,  1   },
+        { "bottom",     ALIGN_VERTICAL,     true,   0   },
+        { "vertical",   ALIGN_VERTICAL,     true,   0   },
+        { "right",      ALIGN_HORIZONTAL,   true,   0   },
+        { "horizontal", ALIGN_HORIZONTAL,   true,   0   },
+        { "left",       ALIGN_HORIZONTAL,   false,  1   },
+    };
+    for (int i = 0; i < LENGTH(splitModes); i++) {
+        if (splitModes[i].name[0] == argv[1][0]) {
+            align           = splitModes[i].align;
+            frameToFirst    = splitModes[i].frameToFirst;
+            selection       = splitModes[i].selection;
+            break;
+        }
+    }
+    if (align < 0) {
         g_string_append_printf(output,
             "%s: Invalid alignment \"%s\"\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
@@ -1209,6 +1228,12 @@ int frame_split_command(int argc, char** argv, GString* output) {
     HSFrame* frame = frame_current_selection();
     if (!frame) return 0; // nothing to do
     frame_split(frame, align, fraction);
+    if (!frameToFirst) {
+        HSFrame* emptyFrame = frame->content.layout.b;
+        frame->content.layout.b = frame->content.layout.a;
+        frame->content.layout.a = emptyFrame;
+    }
+    frame->content.layout.selection = selection;
     // reset focus
     g_cur_frame = frame_current_selection();
     // redraw monitor

@@ -326,9 +326,19 @@ close_or_remove::
 
 split 'ALIGN' 'FRACTION'::
     Splits the focused frame into two subframes with a specified 'FRACTION'
-    between 0 and 1. 'ALIGN' can be 'horizontal' or 'vertical' (actually it only
-    depends on the first letter of 'ALIGN'). Example:
+    between 0 and 1. 'ALIGN' is one of
+    +
+        * 'top'
+        * 'bottom' (= 'vertical')
+        * 'left',
+        * 'right' (= 'horizontal')
+    +
+    It specifies which of the two halves will be empty
+    after the split. The other half will be occupied by the currently focused
+    frame. After splitting, the originally focuse frame will stay focused.
+    Example:
 
+        * split bottom 0.5
         * split horiz 0.3
         * split vertical 0.5
         * split h 0.8
