@@ -324,9 +324,9 @@ close_or_remove::
     Closes the focused window or removes the current frame if no window is
     focused.
 
-split 'ALIGN' 'FRACTION'::
+split 'ALIGN' ['FRACTION']::
     Splits the focused frame into two subframes with a specified 'FRACTION'
-    between 0 and 1. 'ALIGN' is one of
+    between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
     +
         * 'top'
         * 'bottom' (= 'vertical')
@@ -338,13 +338,15 @@ split 'ALIGN' 'FRACTION'::
     after the split. The other half will be occupied by the currently focused
     frame. After splitting, the originally focuse frame will stay focused.
     One special 'ALIGN' mode is 'fragment', which splits the frame in such a way
-    that the window sizes and positions are kept as much as possible.
-    Example:
+    that the window sizes and positions are kept as much as possible. If no
+    'FRACTION' is given to 'fragment' mode an optimal fraction is picked
+    automatically. Example:
 
+        * split fragment
         * split bottom 0.5
         * split horiz 0.3
         * split vertical 0.5
-        * split h 0.8
+        * split h
 
 focus ['-i'|'-e'] 'DIRECTION'::
     Moves the focus from current frame to the next frame or client in

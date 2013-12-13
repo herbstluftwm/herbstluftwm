@@ -1192,11 +1192,21 @@ bool frame_split(HSFrame* frame, int align, int fraction) {
 
 int frame_split_command(int argc, char** argv, GString* output) {
     // usage: split t|b|l|r|h|v FRACTION
-    if (argc < 3) {
+    if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     int align = -1;
+    bool userDefinedFraction = true;
+    char* strFraction = "0.5";
+    if (argc < 3) {
+        userDefinedFraction = false;
+    } else {
+        strFraction = argv[2];
+    }
     bool frameToFirst = true;
+    int fraction = FRACTION_UNIT* CLAMP(atof(strFraction),
+                                        0.0 + FRAME_MIN_FRACTION,
+                                        1.0 - FRAME_MIN_FRACTION);
     int selection = 0;
     int lh = g_cur_frame->last_rect.height;
     int lw = g_cur_frame->last_rect.width;
@@ -1228,9 +1238,6 @@ int frame_split_command(int argc, char** argv, GString* output) {
             "%s: Invalid alignment \"%s\"\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
-    int fraction = FRACTION_UNIT* CLAMP(atof(argv[2]),
-                                        0.0 + FRAME_MIN_FRACTION,
-                                        1.0 - FRAME_MIN_FRACTION);
     HSFrame* frame = frame_current_selection();
     if (!frame) return 0; // nothing to do
     bool fragmenting = align == ALIGN_FRAGMENT;
@@ -1247,6 +1254,13 @@ int frame_split_command(int argc, char** argv, GString* output) {
             align = ALIGN_HORIZONTAL;
         } else {
             align = ALIGN_VERTICAL;
+        }
+        int layout = frame->content.clients.layout;
+        size_t count1 = frame->content.clients.count;
+        size_t nc1 = (count1 + 1) / 2;      // new count for the first frame
+        if ((layout == LAYOUT_HORIZONTAL || layout == LAYOUT_VERTICAL)
+            && !userDefinedFraction && count1 > 0) {
+            fraction = (nc1 * FRACTION_UNIT) / count1;
         }
     }
     if (!frame_split(frame, align, fraction)) {
