@@ -38,7 +38,7 @@ static char* completion_special_winids[]= { "urgent", "", NULL };
 static char* completion_use_index_args[]= { "--skip-visible", NULL };
 static char* completion_cycle_all_args[]= { "--skip-invisible", NULL };
 static char* completion_pm_one[]= { "+1", "-1", NULL };
-static char* completion_split_modes[]= { "horizontal", "vertical", NULL };
+static char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", NULL };
 static char* completion_split_ratios[]= {
     "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", NULL };
 
