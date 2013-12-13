@@ -30,7 +30,7 @@ enum {
     ALIGN_VERTICAL = 0,
     ALIGN_HORIZONTAL,
     // temporary values in split_command
-    ALIGN_FRAGMENT,
+    ALIGN_EXPLODE,
 };
 
 enum {

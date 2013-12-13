@@ -1223,7 +1223,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
         { "right",      ALIGN_HORIZONTAL,   true,   0   },
         { "horizontal", ALIGN_HORIZONTAL,   true,   0   },
         { "left",       ALIGN_HORIZONTAL,   false,  1   },
-        { "fragment",   ALIGN_FRAGMENT,     true,   0   },
+        { "explode",    ALIGN_EXPLODE,      true,   0   },
     };
     for (int i = 0; i < LENGTH(splitModes); i++) {
         if (splitModes[i].name[0] == argv[1][0]) {
@@ -1240,10 +1240,10 @@ int frame_split_command(int argc, char** argv, GString* output) {
     }
     HSFrame* frame = frame_current_selection();
     if (!frame) return 0; // nothing to do
-    bool fragmenting = align == ALIGN_FRAGMENT;
+    bool exploding = align == ALIGN_EXPLODE;
     int layout = frame->content.clients.layout;
     int windowcount = frame->content.clients.count;
-    if (fragmenting) {
+    if (exploding) {
         if (windowcount <= 1) {
             align = align_auto;
         } else if (layout == LAYOUT_MAX) {
@@ -1266,7 +1266,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
     if (!frame_split(frame, align, fraction)) {
         return 0;
     }
-    if (fragmenting) {
+    if (exploding) {
         // move second half of the window buf to second frame
         size_t count1 = frame->content.layout.a->content.clients.count;
         size_t count2 = frame->content.layout.b->content.clients.count;

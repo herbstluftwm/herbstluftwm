@@ -332,17 +332,17 @@ split 'ALIGN' ['FRACTION']::
         * 'bottom' (= 'vertical')
         * 'left',
         * 'right' (= 'horizontal')
-        * 'fragment'
+        * 'explode'
     +
     It specifies which of the two halves will be empty
     after the split. The other half will be occupied by the currently focused
     frame. After splitting, the originally focuse frame will stay focused.
-    One special 'ALIGN' mode is 'fragment', which splits the frame in such a way
+    One special 'ALIGN' mode is 'explode', which splits the frame in such a way
     that the window sizes and positions are kept as much as possible. If no
-    'FRACTION' is given to 'fragment' mode an optimal fraction is picked
+    'FRACTION' is given to 'explode' mode an optimal fraction is picked
     automatically. Example:
 
-        * split fragment
+        * split explode
         * split bottom 0.5
         * split horiz 0.3
         * split vertical 0.5
