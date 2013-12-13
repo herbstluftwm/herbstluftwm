@@ -11,6 +11,7 @@ Current git version
       raise, jump, close
     * new split modes, i.e. parameters to the split command: bottom, right
       (indicating the relative location of the new empty frame)
+    * new split mode: fragment
 
 Release 0.5.2 on 2013-06-23
 ---------------------------

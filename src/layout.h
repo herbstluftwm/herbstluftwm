@@ -29,6 +29,8 @@ enum {
 enum {
     ALIGN_VERTICAL = 0,
     ALIGN_HORIZONTAL,
+    // temporary values in split_command
+    ALIGN_FRAGMENT,
 };
 
 enum {
@@ -84,6 +86,7 @@ typedef struct HSFrame {
     struct HSSlice* slice;
     Window window;
     bool   window_visible;
+    XRectangle  last_rect; // last rectangle when being drawn
 } HSFrame;
 
 
@@ -110,7 +113,7 @@ bool frame_remove_client(HSFrame* frame, struct HSClient* client);
 // then all Windows in it are collected and returned
 // YOU have to g_free the resulting window-buf
 void frame_destroy(HSFrame* frame, struct HSClient*** buf, size_t* count);
-void frame_split(HSFrame* frame, int align, int fraction);
+bool frame_split(HSFrame* frame, int align, int fraction);
 int frame_split_command(int argc, char** argv, GString* output);
 int frame_change_fraction_command(int argc, char** argv, GString* output);
 

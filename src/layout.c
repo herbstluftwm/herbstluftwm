@@ -789,6 +789,7 @@ void frame_apply_client_layout_grid(HSFrame* frame, XRectangle rect) {
 }
 
 void frame_apply_layout(HSFrame* frame, XRectangle rect) {
+    frame->last_rect = rect;
     if (frame->type == TYPE_CLIENTS) {
         size_t count = frame->content.clients.count;
         if (!*g_smart_frame_surroundings || frame->parent) {
@@ -1165,10 +1166,10 @@ int frame_split_count_to_root(HSFrame* frame, int align) {
     return height;
 }
 
-void frame_split(HSFrame* frame, int align, int fraction) {
+bool frame_split(HSFrame* frame, int align, int fraction) {
     if (frame_split_count_to_root(frame, align) > HERBST_MAX_TREE_HEIGHT) {
         // do nothing if tree would be to large
-        return;
+        return false;
     }
     // ensure fraction is allowed
     fraction = CLAMP(fraction,
@@ -1186,6 +1187,7 @@ void frame_split(HSFrame* frame, int align, int fraction) {
     frame->content.layout.b = second;
     frame->content.layout.selection = 0;
     frame->content.layout.fraction = fraction;
+    return true;
 }
 
 int frame_split_command(int argc, char** argv, GString* output) {
@@ -1196,6 +1198,9 @@ int frame_split_command(int argc, char** argv, GString* output) {
     int align = -1;
     bool frameToFirst = true;
     int selection = 0;
+    int lh = g_cur_frame->last_rect.height;
+    int lw = g_cur_frame->last_rect.width;
+    int align_auto = (lw > lh) ? ALIGN_HORIZONTAL : ALIGN_VERTICAL;
     struct {
         char* name;
         int align;
@@ -1208,6 +1213,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
         { "right",      ALIGN_HORIZONTAL,   true,   0   },
         { "horizontal", ALIGN_HORIZONTAL,   true,   0   },
         { "left",       ALIGN_HORIZONTAL,   false,  1   },
+        { "fragment",   ALIGN_FRAGMENT,     true,   0   },
     };
     for (int i = 0; i < LENGTH(splitModes); i++) {
         if (splitModes[i].name[0] == argv[1][0]) {
@@ -1227,8 +1233,52 @@ int frame_split_command(int argc, char** argv, GString* output) {
                                         1.0 - FRAME_MIN_FRACTION);
     HSFrame* frame = frame_current_selection();
     if (!frame) return 0; // nothing to do
-    frame_split(frame, align, fraction);
-    if (!frameToFirst) {
+    bool fragmenting = align == ALIGN_FRAGMENT;
+    int layout = frame->content.clients.layout;
+    int windowcount = frame->content.clients.count;
+    if (fragmenting) {
+        if (windowcount <= 1) {
+            align = align_auto;
+        } else if (layout == LAYOUT_MAX) {
+            align = align_auto;
+        } else if (layout == LAYOUT_GRID && windowcount == 2) {
+            align = ALIGN_HORIZONTAL;
+        } else if (layout == LAYOUT_HORIZONTAL) {
+            align = ALIGN_HORIZONTAL;
+        } else {
+            align = ALIGN_VERTICAL;
+        }
+    }
+    if (!frame_split(frame, align, fraction)) {
+        return 0;
+    }
+    if (fragmenting) {
+        // move second half of the window buf to second frame
+        size_t count1 = frame->content.layout.a->content.clients.count;
+        size_t count2 = frame->content.layout.b->content.clients.count;
+        // assert: count2 == 0
+        size_t nc1 = (count1 + 1) / 2;      // new count for the first frame
+        size_t nc2 = count1 - nc1 + count2; // new count for the 2nd frame
+        HSFrame* child1 = frame->content.layout.a;
+        HSFrame* child2 = frame->content.layout.b;
+        HSClient*** buf1 = &child1->content.clients.buf;
+        HSClient*** buf2 = &child2->content.clients.buf;
+        *buf2 = g_renew(HSClient*, *buf2, nc2);
+        memcpy(*buf2 + count2, *buf1 + nc1, (nc2 - count2) * sizeof(**buf2));
+        *buf1 = g_renew(HSClient*, *buf1, nc1);
+        child1->content.clients.count = nc1;
+        child2->content.clients.count = nc2;
+        child2->content.clients.layout = child1->content.clients.layout;
+        if (child1->content.clients.selection >= nc1 && nc1 > 0) {
+            child2->content.clients.selection =
+                child1->content.clients.selection - nc1 + count2;
+            child1->content.clients.selection = nc1 - 1;
+            selection = 1;
+        } else {
+            selection = 0;
+        }
+
+    } else if (!frameToFirst) {
         HSFrame* emptyFrame = frame->content.layout.b;
         frame->content.layout.b = frame->content.layout.a;
         frame->content.layout.a = emptyFrame;

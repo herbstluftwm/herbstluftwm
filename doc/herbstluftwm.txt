@@ -332,10 +332,13 @@ split 'ALIGN' 'FRACTION'::
         * 'bottom' (= 'vertical')
         * 'left',
         * 'right' (= 'horizontal')
+        * 'fragment'
     +
     It specifies which of the two halves will be empty
     after the split. The other half will be occupied by the currently focused
     frame. After splitting, the originally focuse frame will stay focused.
+    One special 'ALIGN' mode is 'fragment', which splits the frame in such a way
+    that the window sizes and positions are kept as much as possible.
     Example:
 
         * split bottom 0.5
@@ -628,7 +631,7 @@ An example output (formatted afterwards) is:
 ----
 (split horizontal:0.500000:1
     (clients vertical:0 0xe00009)
-    (splitvertical:0.500000:1
+    (split vertical:0.500000:1
         (clients vertical:0 0xa00009)
         (clients vertical:0 0x1000009)))
 ----
