@@ -1259,7 +1259,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
         size_t count1 = frame->content.clients.count;
         size_t nc1 = (count1 + 1) / 2;      // new count for the first frame
         if ((layout == LAYOUT_HORIZONTAL || layout == LAYOUT_VERTICAL)
-            && !userDefinedFraction && count1 > 0) {
+            && !userDefinedFraction && count1 > 1) {
             fraction = (nc1 * FRACTION_UNIT) / count1;
         }
     }
