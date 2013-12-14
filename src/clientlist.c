@@ -240,6 +240,7 @@ HSClient* manage_client(Window win) {
     // insert window to the tag
     frame_insert_client(lookup_frame(client->tag->frame, changes.tree_index->str), client);
     client_update_wm_hints(client);
+    updatesizehints(client);
     if (changes.focus) {
         // give focus to window if wanted
         // TODO: make this faster!
@@ -290,7 +291,6 @@ HSClient* manage_client(Window win) {
         }
     }
     client_send_configure(client);
-    updatesizehints(client);
 
     client_changes_free_members(&changes);
     grab_client_buttons(client, false);
@@ -503,10 +503,14 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
     }
-
-    client->last_size = rect;
     rect.width -= border_width * 2;
     rect.height -= border_width * 2;
+
+    applysizehints(client, &rect.x, &rect.y, &rect.width, &rect.height);
+
+    client->last_size = rect;
+    client->last_size.width  +=  2 * border_width;
+    client->last_size.height += 2 * border_width;
 
     XWindowChanges changes = {
       .x = rect.x, .y = rect.y, .width = rect.width, .height = rect.height,
