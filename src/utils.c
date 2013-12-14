@@ -342,8 +342,6 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     if (bw < 2 || ibw >= bw || ibw < 1)
         return;
 
-    HSDebug("set_window_double_border %ix%i+%i+%i\n", wa.width, wa.height, wa.x, wa.y);
-
     int width = wa.width;
     int height = wa.height;
 
