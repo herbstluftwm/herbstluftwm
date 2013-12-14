@@ -477,37 +477,30 @@ int unsetenv_command(int argc, char** argv, GString* output) {
 void event_on_configure(XEvent event) {
     XConfigureRequestEvent* cre = &event.xconfigurerequest;
     HSClient* client = get_client_from_window(cre->window);
-    XConfigureEvent ce;
-    ce.type = ConfigureNotify;
-    ce.display = g_display;
-    ce.event = cre->window;
-    ce.window = cre->window;
     if (client) {
         bool changes = false;
+        Rectangle newRect = client->last_size;
+        newRect.width  -= 2 * client->last_border_width;
+        newRect.height -= 2 * client->last_border_width;
         if (client->sizehints && is_client_floated(client)) {
             cre->width += 2*cre->border_width - 2*client->last_border_width;
             cre->height += 2*cre->border_width - 2*client->last_border_width;
-            if (client->float_size.width != cre->width) changes = true;
-            if (client->float_size.height != cre->height) changes = true;
-            client->float_size.width = cre->width;
-            client->float_size.height = cre->height;
-            ce.x = client->last_size.x;
-            ce.y = client->last_size.y;
-            int bw = client->last_border_width;
-            ce.width = client->last_size.width - bw * 2;
-            ce.height = client->last_size.height - bw * 2;
-            ce.override_redirect = False;
-            ce.border_width = cre->border_width;
-            ce.above = cre->above;
+            if (newRect.width  != cre->width) changes = true;
+            if (newRect.height != cre->height) changes = true;
+            newRect.x = cre->x;
+            newRect.y = cre->y;
+            newRect.width = cre->width;
+            newRect.height = cre->height;
         }
-        if (changes && client->tag->floating) {
+        if (changes && is_client_floated(client)) {
+            client->float_size = newRect;
             client_resize_floating(client, find_monitor_with_tag(client->tag));
         } else if (changes && client->pseudotile) {
+            client->float_size = newRect;
             monitor_apply_layout(find_monitor_with_tag(client->tag));
         } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
-            XSendEvent(g_display, cre->window, False, StructureNotifyMask,
-                       (XEvent*)&ce);
+            client_send_configure(client);
         }
     } else {
         // if client not known.. then allow configure.
