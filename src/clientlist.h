@@ -37,6 +37,10 @@ typedef struct HSClient {
     bool        sizehints;  // respect size hints regarding this client
     bool        dragged;  // if this client is dragged currently
     int         pid;
+    // for size hints
+	float mina, maxa;
+    int basew, baseh, incw, inch, maxw, maxh, minw, minh;
+    // for other modules
     HSObject    object;
     struct HSSlice* slice;
 } HSClient;
@@ -72,12 +76,16 @@ void client_setup_border(HSClient* client, bool focused);
 void client_resize(HSClient* client, Rectangle rect, HSFrame* frame);
 void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame);
 void client_resize_floating(HSClient* client, HSMonitor* m);
+bool is_client_floated(HSClient* client);
 void client_set_urgent(HSClient* client, bool state);
 void client_update_wm_hints(HSClient* client);
 void client_update_title(HSClient* client);
 void client_raise(HSClient* client);
 int close_command(int argc, char** argv, GString* output);
 void window_close(Window window);
+
+void client_send_configure(HSClient *c);
+void updatesizehints(HSClient *c);
 
 bool client_sendevent(HSClient *client, Atom proto);
 

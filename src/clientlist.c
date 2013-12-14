@@ -289,6 +289,8 @@ HSClient* manage_client(Window win) {
             monitor_set_tag(get_current_monitor(), client->tag);
         }
     }
+    client_send_configure(client);
+    updatesizehints(client);
 
     client_changes_free_members(&changes);
     grab_client_buttons(client, false);
@@ -436,7 +438,8 @@ static void client_resize_fullscreen(HSClient* client, HSMonitor* m) {
     client->last_border_width = 0;
     XMoveResizeWindow(g_display, client->window,
                       m->rect.x, m->rect.y, m->rect.width, m->rect.height);
-
+    client_send_configure(client);
+    XSync(g_display, False);
 }
 
 void client_raise(HSClient* client) {
@@ -444,7 +447,13 @@ void client_raise(HSClient* client) {
     stack_raise_slide(client->tag->stack, client->slice);
 }
 
-void client_resize(HSClient* client, Rectangle rect, HSFrame* frame) {
+
+void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
+    HSMonitor* m;
+    if (client->fullscreen && (m = find_monitor_with_tag(client->tag))) {
+        client_resize_fullscreen(client, m);
+        return;
+    }
     // ensure minimum size
     if (rect.width < WINDOW_MIN_WIDTH) {
         rect.width = WINDOW_MIN_WIDTH;
@@ -515,29 +524,128 @@ void client_resize(HSClient* client, Rectangle rect, HSFrame* frame) {
                                  current_border_color);
     }
     //// send new size to client
-    //// WHY SHOULD I? -> faster? only one call?
-    //XConfigureEvent ce;
-    //ce.type = ConfigureNotify;
-    //ce.display = g_display;
-    //ce.event = win;
-    //ce.window = win;
-    //ce.x = rect.x;
-    //ce.y = rect.y;
-    //ce.width = rect.width;
-    //ce.height = rect.height;
-    //ce.border_width = 0;
-    //ce.above = None;
-    //ce.override_redirect = False;
-    //XSendEvent(g_display, win, False, StructureNotifyMask, (XEvent *)&ce);
+    client_send_configure(client);
+    XSync(g_display, False);
 }
 
-void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
-    HSMonitor* m;
-    if (client->fullscreen && (m = find_monitor_with_tag(client->tag))) {
-        client_resize_fullscreen(client, m);
-    } else {
-        client_resize(client, rect, frame);
+
+// from dwm.c
+bool applysizehints(HSClient *c, int *x, int *y, int *w, int *h) {
+    bool baseismin;
+
+    /* set minimum possible */
+    *w = MAX(1, *w);
+    *h = MAX(1, *h);
+    if(*h < WINDOW_MIN_HEIGHT)
+        *h = WINDOW_MIN_HEIGHT;
+    if(*w < WINDOW_MIN_WIDTH)
+        *w = WINDOW_MIN_WIDTH;
+    if(c->sizehints) { // TODO || c->isfloating
+        /* see last two sentences in ICCCM 4.1.2.3 */
+        baseismin = c->basew == c->minw && c->baseh == c->minh;
+        if(!baseismin) { /* temporarily remove base dimensions */
+            *w -= c->basew;
+            *h -= c->baseh;
+        }
+        /* adjust for aspect limits */
+        if(c->mina > 0 && c->maxa > 0) {
+            if(c->maxa < (float)*w / *h)
+                *w = *h * c->maxa + 0.5;
+            else if(c->mina < (float)*h / *w)
+                *h = *w * c->mina + 0.5;
+        }
+        if(baseismin) { /* increment calculation requires this */
+            *w -= c->basew;
+            *h -= c->baseh;
+        }
+        /* adjust for increment value */
+        if(c->incw)
+            *w -= *w % c->incw;
+        if(c->inch)
+            *h -= *h % c->inch;
+        /* restore base dimensions */
+        *w += c->basew;
+        *h += c->baseh;
+        *w = MAX(*w, c->minw);
+        *h = MAX(*h, c->minh);
+        if(c->maxw)
+            *w = MIN(*w, c->maxw);
+        if(c->maxh)
+            *h = MIN(*h, c->maxh);
     }
+    int bw = c->last_border_width;
+    return *x != c->last_size.x || *y != c->last_size.y
+        || *w != c->last_size.width - 2*bw || *h != c->last_size.height - 2*bw;
+}
+
+// from dwm.c
+void updatesizehints(HSClient *c) {
+    long msize;
+    XSizeHints size;
+
+    if(!XGetWMNormalHints(g_display, c->window, &size, &msize))
+        /* size is uninitialized, ensure that size.flags aren't used */
+        size.flags = PSize;
+    if(size.flags & PBaseSize) {
+        c->basew = size.base_width;
+        c->baseh = size.base_height;
+    }
+    else if(size.flags & PMinSize) {
+        c->basew = size.min_width;
+        c->baseh = size.min_height;
+    } else {
+        c->basew = c->baseh = 0;
+    }
+    if(size.flags & PResizeInc) {
+        c->incw = size.width_inc;
+        c->inch = size.height_inc;
+    }
+    else
+        c->incw = c->inch = 0;
+    if(size.flags & PMaxSize) {
+        c->maxw = size.max_width;
+        c->maxh = size.max_height;
+    } else {
+        c->maxw = c->maxh = 0;
+    }
+    if(size.flags & PMinSize) {
+        c->minw = size.min_width;
+        c->minh = size.min_height;
+    }
+    else if(size.flags & PBaseSize) {
+        c->minw = size.base_width;
+        c->minh = size.base_height;
+    } else {
+        c->minw = c->minh = 0;
+    }
+    if(size.flags & PAspect) {
+        c->mina = (float)size.min_aspect.y / size.min_aspect.x;
+        c->maxa = (float)size.max_aspect.x / size.max_aspect.y;
+    } else {
+        c->maxa = c->mina = 0.0;
+    }
+    //c->isfixed = (c->maxw && c->minw && c->maxh && c->minh
+    //             && c->maxw == c->minw && c->maxh == c->minh);
+}
+
+
+
+
+void client_send_configure(HSClient *c) {
+    XConfigureEvent ce;
+    int bw = c->last_border_width;
+    ce.type = ConfigureNotify;
+    ce.display = g_display;
+    ce.event = c->window;
+    ce.window = c->window;
+    ce.x = c->last_size.x;
+    ce.y = c->last_size.y;
+    ce.width = c->last_size.width - 2*bw;
+    ce.height = c->last_size.height - 2*bw;
+    ce.border_width = bw;
+    ce.above = None;
+    ce.override_redirect = False;
+    XSendEvent(g_display, c->window, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
 void client_resize_floating(HSClient* client, HSMonitor* m) {
@@ -558,29 +666,31 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
         client->last_border_width = *g_window_border_width;
         border_changed = true;
     }
-    client->last_size = client->float_size;
-    client->last_size.x += m->rect.x + m->pad_left;
-    client->last_size.y += m->rect.y + m->pad_up;
+    Rectangle rect = client->float_size;
+    rect.x += m->rect.x + m->pad_left;
+    rect.y += m->rect.y + m->pad_up;
 
     // ensure position is on monitor
     int space = g_monitor_float_treshold;
-    client->last_size.x =
-        CLAMP(client->last_size.x,
+    rect.x =
+        CLAMP(rect.x,
               m->rect.x + m->pad_left - client->last_size.width + space,
               m->rect.x + m->rect.width - m->pad_left - m->pad_right - space);
-    client->last_size.y =
-        CLAMP(client->last_size.y,
+    rect.y =
+        CLAMP(rect.y,
               m->rect.y + m->pad_up - client->last_size.height + space,
               m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
-    Rectangle rect = client->last_size;
-    // add window border to last_size
-    client->last_size.width += 2 * client->last_border_width;
-    client->last_size.height += 2 * client->last_border_width;
+    if (applysizehints(client, &rect.x, &rect.y, &rect.width, &rect.height)) {
+        XMoveResizeWindow(g_display, client->window,
+            rect.x, rect.y, rect.width, rect.height);
+    }
     if (border_changed) {
         XSetWindowBorderWidth(g_display, client->window, *g_window_border_width);
     }
-    XMoveResizeWindow(g_display, client->window,
-        rect.x, rect.y, rect.width, rect.height);
+    // add window border to last_size
+    client->last_size = rect;
+    client->last_size.width += 2 * client->last_border_width;
+    client->last_size.height += 2 * client->last_border_width;
     if (*g_window_border_inner_width > 0
         && *g_window_border_inner_width < *g_window_border_width) {
         unsigned long current_border_color = get_window_border_color(client);
@@ -592,6 +702,8 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
                                  g_window_border_inner_color,
                                  current_border_color);
     }
+    client_send_configure(client);
+    XSync(g_display, False);
 }
 
 Rectangle client_outer_floating_rect(HSClient* client) {
@@ -610,6 +722,9 @@ int close_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
+bool is_client_floated(HSClient* client) {
+    return (client->tag->floating || client->pseudotile);
+}
 
 void window_close(Window window) {
     XEvent ev;

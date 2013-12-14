@@ -484,7 +484,7 @@ void event_on_configure(XEvent event) {
     ce.window = cre->window;
     if (client) {
         bool changes = false;
-        if (client->sizehints && !client->dragged) {
+        if (client->sizehints && is_client_floated(client)) {
             cre->width += 2*cre->border_width - 2*client->last_border_width;
             cre->height += 2*cre->border_width - 2*client->last_border_width;
             if (client->float_size.width != cre->width) changes = true;
@@ -891,6 +891,9 @@ void propertynotify(XEvent* event) {
             switch (ev->atom) {
                 case XA_WM_HINTS:
                     client_update_wm_hints(client);
+                    break;
+                case XA_WM_NORMAL_HINTS:
+                    updatesizehints(client);
                     break;
                 case XA_WM_NAME:
                     client_update_title(client);

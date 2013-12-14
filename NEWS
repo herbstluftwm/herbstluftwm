@@ -13,6 +13,7 @@ Current git version
       (indicating the relative location of the new empty frame)
     * new split mode: explode
     * make fraction parameter for the split command optional
+    * respect size hints in floating mode
 
 Release 0.5.2 on 2013-06-23
 ---------------------------
