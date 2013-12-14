@@ -25,7 +25,7 @@
 #include <X11/cursorfont.h>
 
 static XButtonPressedEvent g_button_drag_start;
-static XRectangle       g_win_drag_start;
+static Rectangle       g_win_drag_start;
 static HSClient*        g_win_drag_client = NULL;
 static HSMonitor*       g_drag_monitor = NULL;
 static MouseBinding*    g_drag_bind = NULL;
@@ -90,7 +90,7 @@ void mouse_stop_drag() {
     if (g_win_drag_client) {
         g_win_drag_client->dragged = false;
         // resend last size
-        XRectangle r = g_win_drag_client->last_size;
+        Rectangle r = g_win_drag_client->last_size;
         int bw = g_win_drag_client->last_border_width;
         r.width -= 2* bw;
         r.height -= 2* bw;
@@ -386,7 +386,7 @@ void mouse_function_zoom(XMotionEvent* me) {
 
 struct SnapData {
     HSClient*       client;
-    XRectangle      rect;
+    Rectangle      rect;
     enum SnapFlags  flags;
     int             dx, dy; // the vector from client to other to make them snap
 };
@@ -414,8 +414,8 @@ static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
     if (candidate == d->client) {
         return 0;
     }
-    XRectangle subject  = d->rect;
-    XRectangle other    = client_outer_floating_rect(candidate);
+    Rectangle subject  = d->rect;
+    Rectangle other    = client_outer_floating_rect(candidate);
     if (intervals_intersect(other.y, other.y + other.height, subject.y, subject.y + subject.height)) {
         // check if x can snap to the right
         if (d->flags & SNAP_EDGE_RIGHT) {

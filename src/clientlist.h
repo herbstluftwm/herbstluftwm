@@ -15,16 +15,17 @@
 
 #include "layout.h"
 #include "object.h"
+#include "utils.h"
 
 struct HSSlice;
 
 typedef struct HSClient {
     Window      window;
     GString*    window_str;     // the window id as a string
-    XRectangle  last_size;      // last size including the window border
+    Rectangle   last_size;      // last size including the window border
     int         last_border_width;
     HSTag*      tag;
-    XRectangle  float_size;     // floating size without the window border
+    Rectangle   float_size;     // floating size without the window border
     GString*    title;  // or also called window title; this is never NULL
     bool        urgent;
     bool        fullscreen;
@@ -64,12 +65,12 @@ void client_destroy(HSClient* client);
 HSClient* get_client_from_window(Window window);
 HSClient* get_current_client();
 HSClient* get_urgent_client();
-XRectangle client_outer_floating_rect(HSClient* client);
+Rectangle client_outer_floating_rect(HSClient* client);
 
 Window string_to_client(char* str, HSClient** ret_client);
 void client_setup_border(HSClient* client, bool focused);
-void client_resize(HSClient* client, XRectangle rect, HSFrame* frame);
-void client_resize_tiling(HSClient* client, XRectangle rect, HSFrame* frame);
+void client_resize(HSClient* client, Rectangle rect, HSFrame* frame);
+void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame);
 void client_resize_floating(HSClient* client, HSMonitor* m);
 void client_set_urgent(HSClient* client, bool state);
 void client_update_wm_hints(HSClient* client);

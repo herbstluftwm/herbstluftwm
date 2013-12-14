@@ -672,11 +672,11 @@ int frame_current_set_client_layout(int argc, char** argv, GString* output) {
     return 0;
 }
 
-void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vertical) {
+void frame_apply_client_layout_linear(HSFrame* frame, Rectangle rect, bool vertical) {
     HSClient** buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
     int selection = frame->content.clients.selection;
-    XRectangle cur = rect;
+    Rectangle cur = rect;
     int last_step_y;
     int last_step_x;
     int step_y;
@@ -708,15 +708,15 @@ void frame_apply_client_layout_linear(HSFrame* frame, XRectangle rect, bool vert
     }
 }
 
-void frame_apply_client_layout_horizontal(HSFrame* frame, XRectangle rect) {
+void frame_apply_client_layout_horizontal(HSFrame* frame, Rectangle rect) {
     frame_apply_client_layout_linear(frame, rect, false);
 }
 
-void frame_apply_client_layout_vertical(HSFrame* frame, XRectangle rect) {
+void frame_apply_client_layout_vertical(HSFrame* frame, Rectangle rect) {
     frame_apply_client_layout_linear(frame, rect, true);
 }
 
-void frame_apply_client_layout_max(HSFrame* frame, XRectangle rect) {
+void frame_apply_client_layout_max(HSFrame* frame, Rectangle rect) {
     HSClient** buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
     int selection = frame->content.clients.selection;
@@ -743,7 +743,7 @@ void frame_layout_grid_get_size(size_t count, int* res_rows, int* res_cols) {
     }
 }
 
-void frame_apply_client_layout_grid(HSFrame* frame, XRectangle rect) {
+void frame_apply_client_layout_grid(HSFrame* frame, Rectangle rect) {
     HSClient** buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
     int selection = frame->content.clients.selection;
@@ -756,7 +756,7 @@ void frame_apply_client_layout_grid(HSFrame* frame, XRectangle rect) {
     int width = rect.width / cols;
     int height = rect.height / rows;
     int i = 0;
-    XRectangle cur = rect; // current rectangle
+    Rectangle cur = rect; // current rectangle
     for (int r = 0; r < rows; r++) {
         // reset to left
         cur.x = rect.x;
@@ -788,7 +788,7 @@ void frame_apply_client_layout_grid(HSFrame* frame, XRectangle rect) {
 
 }
 
-void frame_apply_layout(HSFrame* frame, XRectangle rect) {
+void frame_apply_layout(HSFrame* frame, Rectangle rect) {
     frame->last_rect = rect;
     if (frame->type == TYPE_CLIENTS) {
         size_t count = frame->content.clients.count;
@@ -868,8 +868,8 @@ void frame_apply_layout(HSFrame* frame, XRectangle rect) {
         }
     } else { /* frame->type == TYPE_FRAMES */
         HSLayout* layout = &frame->content.layout;
-        XRectangle first = rect;
-        XRectangle second = rect;
+        Rectangle first = rect;
+        Rectangle second = rect;
         if (layout->align == ALIGN_VERTICAL) {
             first.height = (rect.height * layout->fraction) / FRACTION_UNIT;
             second.y += first.height;

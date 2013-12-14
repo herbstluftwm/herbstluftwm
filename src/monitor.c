@@ -35,7 +35,7 @@ HSObject*   g_monitor_object;
 HSObject*   g_monitor_by_name_object;
 
 typedef struct RectList {
-    XRectangle rect;
+    Rectangle rect;
     struct RectList* next;
 } RectList;
 
@@ -78,7 +78,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
             return;
         }
         monitor->dirty = false;
-        XRectangle rect = monitor->rect;
+        Rectangle rect = monitor->rect;
         // apply pad
         rect.x += monitor->pad_left;
         rect.width -= (monitor->pad_left + monitor->pad_right);
@@ -156,7 +156,7 @@ int list_padding(int argc, char** argv, GString* output) {
 }
 
 static bool rects_intersect(RectList* m1, RectList* m2) {
-    XRectangle *r1 = &m1->rect, *r2 = &m2->rect;
+    Rectangle *r1 = &m1->rect, *r2 = &m2->rect;
     bool is = TRUE;
     is = is && intervals_intersect(r1->x, r1->x + r1->width,
                                    r2->x, r2->x + r2->width);
@@ -165,8 +165,8 @@ static bool rects_intersect(RectList* m1, RectList* m2) {
     return is;
 }
 
-static XRectangle intersection_area(RectList* m1, RectList* m2) {
-    XRectangle r; // intersection between m1->rect and m2->rect
+static Rectangle intersection_area(RectList* m1, RectList* m2) {
+    Rectangle r; // intersection between m1->rect and m2->rect
     r.x = MAX(m1->rect.x, m2->rect.x);
     r.y = MAX(m1->rect.y, m2->rect.y);
     // the bottom right coordinates of the rects
@@ -193,7 +193,7 @@ static RectList* rectlist_create_simple(int x1, int y1, int x2, int y2) {
 }
 
 static RectList* insert_rect_border(RectList* head,
-                                    XRectangle large, XRectangle center)
+                                    Rectangle large, Rectangle center)
 {
     // given a large rectangle and a center which guaranteed to be a subset of
     // the large rect, the task is to split "large" into pieces and insert them
@@ -235,8 +235,8 @@ static RectList* reclist_insert_disjoint(RectList* head, RectList* element) {
         return head;
     } else {
         // element intersects with the head rect
-        XRectangle center = intersection_area(head, element);
-        XRectangle large = head->rect;
+        Rectangle center = intersection_area(head, element);
+        Rectangle large = head->rect;
         head->rect = center;
         head->next = insert_rect_border(head->next, large, center);
         head->next = insert_rect_border(head->next, element->rect, center);
@@ -252,7 +252,7 @@ static void rectlist_free(RectList* head) {
     rectlist_free(next);
 }
 
-static RectList* disjoin_rects(XRectangle* buf, size_t count) {
+static RectList* disjoin_rects(Rectangle* buf, size_t count) {
     RectList* cur;
     struct RectList* rects = NULL;
     for (int i = 0; i < count; i++) {
@@ -269,14 +269,14 @@ int disjoin_rects_command(int argc, char** argv, GString* output) {
     if (argc < 1) {
         return HERBST_NEED_MORE_ARGS;
     }
-    XRectangle* buf = g_new(XRectangle, argc);
+    Rectangle* buf = g_new(Rectangle, argc);
     for (int i = 0; i < argc; i++) {
         buf[i] = parse_rectangle(argv[i]);
     }
 
     RectList* rects = disjoin_rects(buf, argc);
     for (RectList* cur = rects; cur; cur = cur->next) {
-        XRectangle r = cur->rect;
+        Rectangle r = cur->rect;
         g_string_append_printf(output, "%dx%d%+d%+d\n",
             r.width, r.height, r.x, r.y);
     }
@@ -290,7 +290,7 @@ int set_monitor_rects_command(int argc, char** argv, GString* output) {
     if (argc < 1) {
         return HERBST_NEED_MORE_ARGS;
     }
-    XRectangle* templates = g_new0(XRectangle, argc);
+    Rectangle* templates = g_new0(Rectangle, argc);
     for (int i = 0; i < argc; i++) {
         templates[i] = parse_rectangle(argv[i]);
     }
@@ -306,7 +306,7 @@ int set_monitor_rects_command(int argc, char** argv, GString* output) {
     return status;
 }
 
-int set_monitor_rects(XRectangle* templates, size_t count) {
+int set_monitor_rects(Rectangle* templates, size_t count) {
     if (count < 1) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -410,7 +410,7 @@ static void monitor_link_id_object(HSMonitor* m) {
     g_string_free(index_str, true);
 }
 
-HSMonitor* add_monitor(XRectangle rect, HSTag* tag, char* name) {
+HSMonitor* add_monitor(Rectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
     HSMonitor* m = g_new0(HSMonitor, 1);
     hsobject_init(&m->object);
@@ -451,7 +451,7 @@ int add_monitor_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    XRectangle rect = parse_rectangle(argv[1]);
+    Rectangle rect = parse_rectangle(argv[1]);
     HSTag* tag = NULL;
     char* name = NULL;
     if (argc == 2 || !strcmp("", argv[2])) {
@@ -579,7 +579,7 @@ int move_monitor_command(int argc, char** argv, GString* output) {
             "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
-    XRectangle rect = parse_rectangle(argv[2]);
+    Rectangle rect = parse_rectangle(argv[2]);
     if (rect.width < WINDOW_MIN_WIDTH || rect.height < WINDOW_MIN_HEIGHT) {
         g_string_append_printf(output,
             "%s: Rectangle is too small\n", argv[0]);
@@ -669,7 +669,7 @@ int monitor_rect_command(int argc, char** argv, GString* output) {
     } else {
         m = get_current_monitor();
     }
-    XRectangle rect = m->rect;
+    Rectangle rect = m->rect;
     if (with_pad) {
         rect.x += m->pad_left;
         rect.width -= m->pad_left + m->pad_right;
@@ -716,7 +716,7 @@ void ensure_monitors_are_available() {
         return;
     }
     // add monitor if necessary
-    XRectangle rect = {
+    Rectangle rect = {
         .x = 0, .y = 0,
         .width = DisplayWidth(g_display, DefaultScreen(g_display)),
         .height = DisplayHeight(g_display, DefaultScreen(g_display)),
@@ -1120,10 +1120,10 @@ static bool geom_unique(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo
 }
 
 // inspired by dwm's updategeom()
-bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count) {
+bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count) {
     int i, j, n;
     XineramaScreenInfo *info, *unique;
-    XRectangle *monitors;
+    Rectangle *monitors;
 
     if (!XineramaIsActive(g_display)) {
         return false;
@@ -1140,7 +1140,7 @@ bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count) {
     XFree(info);
     n = j;
 
-    monitors = g_new(XRectangle, n);
+    monitors = g_new(Rectangle, n);
     for (i = 0; i < n; i++) {
         monitors[i].x = unique[i].x_org;
         monitors[i].y = unique[i].y_org;
@@ -1154,16 +1154,16 @@ bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count) {
 }
 #else  /* XINERAMA */
 
-bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count) {
+bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count) {
     return false;
 }
 
 #endif /* XINERAMA */
 
 // monitor detection that always works: one monitor across the entire screen
-bool detect_monitors_simple(XRectangle** ret_rects, size_t* ret_count) {
+bool detect_monitors_simple(Rectangle** ret_rects, size_t* ret_count) {
     *ret_count = 1;
-    *ret_rects = g_new0(XRectangle, 1);
+    *ret_rects = g_new0(Rectangle, 1);
     (*ret_rects)->x = 0;
     (*ret_rects)->y = 0;
     (*ret_rects)->width = g_screen_width;
@@ -1176,7 +1176,7 @@ int detect_monitors_command(int argc, char **argv, GString* output) {
         detect_monitors_xinerama,
         detect_monitors_simple,
     };
-    XRectangle* monitors = NULL;
+    Rectangle* monitors = NULL;
     size_t count = 0;
     // search for a working monitor detection
     // at least the simple detection must work

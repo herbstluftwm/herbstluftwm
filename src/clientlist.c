@@ -444,7 +444,7 @@ void client_raise(HSClient* client) {
     stack_raise_slide(client->tag->stack, client->slice);
 }
 
-void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
+void client_resize(HSClient* client, Rectangle rect, HSFrame* frame) {
     // ensure minimum size
     if (rect.width < WINDOW_MIN_WIDTH) {
         rect.width = WINDOW_MIN_WIDTH;
@@ -458,7 +458,7 @@ void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
     }
     Window win = client->window;
     if (client->pseudotile) {
-        XRectangle size = client->float_size;
+        Rectangle size = client->float_size;
         // floating sizes don't include window border, tiling sizes do.
         // so convert the floating size to a tiling size
         size.width  += *g_window_border_width * 2;
@@ -531,7 +531,7 @@ void client_resize(HSClient* client, XRectangle rect, HSFrame* frame) {
     //XSendEvent(g_display, win, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
-void client_resize_tiling(HSClient* client, XRectangle rect, HSFrame* frame) {
+void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     HSMonitor* m;
     if (client->fullscreen && (m = find_monitor_with_tag(client->tag))) {
         client_resize_fullscreen(client, m);
@@ -572,7 +572,7 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
         CLAMP(client->last_size.y,
               m->rect.y + m->pad_up - client->last_size.height + space,
               m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
-    XRectangle rect = client->last_size;
+    Rectangle rect = client->last_size;
     // add window border to last_size
     client->last_size.width += 2 * client->last_border_width;
     client->last_size.height += 2 * client->last_border_width;
@@ -594,8 +594,8 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
     }
 }
 
-XRectangle client_outer_floating_rect(HSClient* client) {
-    XRectangle rect = client->float_size;
+Rectangle client_outer_floating_rect(HSClient* client) {
+    Rectangle rect = client->float_size;
     rect.width  += *g_window_border_width * 2 + *g_snap_gap;
     rect.height += *g_window_border_width * 2 + *g_snap_gap;
     return rect;

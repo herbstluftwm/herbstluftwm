@@ -176,8 +176,8 @@ void argv_free(int argc, char** argv) {
 }
 
 
-XRectangle parse_rectangle(char* string) {
-    XRectangle rect;
+Rectangle parse_rectangle(char* string) {
+    Rectangle rect;
     int x,y;
     unsigned int w, h;
     int flags = XParseGeometry(string, &x, &y, &w, &h);

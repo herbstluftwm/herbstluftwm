@@ -14,6 +14,7 @@
 #endif /* XINERAMA */
 
 #include "object.h"
+#include "utils.h"
 
 struct HSTag;
 struct HSFrame;
@@ -39,7 +40,7 @@ typedef struct HSMonitor {
         int x;
         int y;
     } mouse;
-    XRectangle  rect;   // area for this monitor
+    Rectangle   rect;   // area for this monitor
     Window      stacking_window;   // window used for making stacking easy
 } HSMonitor;
 
@@ -54,7 +55,7 @@ HSMonitor* monitor_with_frame(struct HSFrame* frame);
 HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(struct HSTag* tag);
-HSMonitor* add_monitor(XRectangle rect, struct HSTag* tag, char* name);
+HSMonitor* add_monitor(Rectangle rect, struct HSTag* tag, char* name);
 void monitor_focus_by_index(int new_selection);
 int monitor_get_relative_x(HSMonitor* m, int x_root);
 int monitor_get_relative_y(HSMonitor* m, int y_root);
@@ -73,7 +74,7 @@ int list_monitors(int argc, char** argv, GString* output);
 int list_padding(int argc, char** argv, GString* output);
 int set_monitor_rects_command(int argc, char** argv, GString* output);
 int disjoin_rects_command(int argc, char** argv, GString* output);
-int set_monitor_rects(XRectangle* templates, size_t count);
+int set_monitor_rects(Rectangle* templates, size_t count);
 int move_monitor_command(int argc, char** argv, GString* output);
 int rename_monitor_command(int argc, char** argv, GString* output);
 int monitor_rect_command(int argc, char** argv, GString* output);
@@ -106,9 +107,9 @@ struct HSStack* get_monitor_stack();
 
 void monitor_update_focus_objects();
 
-typedef bool (*MonitorDetection)(XRectangle**, size_t*);
-bool detect_monitors_xinerama(XRectangle** ret_rects, size_t* ret_count);
-bool detect_monitors_simple(XRectangle** ret_rects, size_t* ret_count);
+typedef bool (*MonitorDetection)(Rectangle**, size_t*);
+bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count);
+bool detect_monitors_simple(Rectangle** ret_rects, size_t* ret_count);
 int detect_monitors_command(int argc, char **argv, GString* output);
 
 int shift_to_monitor(int argc, char** argv, GString* output);
