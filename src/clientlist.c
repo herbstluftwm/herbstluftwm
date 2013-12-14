@@ -492,12 +492,9 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         && client->last_border_width == border_width) {
         return;
     }
-    client->last_size = rect;
     client->last_border_width = border_width;
 
     // apply border width
-    rect.width -= border_width * 2;
-    rect.height -= border_width * 2;
     bool is_max_layout = frame->content.clients.layout != LAYOUT_MAX;
     bool only_one_client = frame->content.clients.count != 1;
     bool smart_surroundings_are_applied = *g_smart_window_surroundings && is_max_layout && only_one_client;
@@ -506,6 +503,10 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
     }
+
+    client->last_size = rect;
+    rect.width -= border_width * 2;
+    rect.height -= border_width * 2;
 
     XWindowChanges changes = {
       .x = rect.x, .y = rect.y, .width = rect.width, .height = rect.height,
