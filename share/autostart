@@ -27,7 +27,7 @@ hc keybind $Mod-Return spawn xterm
 # focusing clients
 hc keybind $Mod-Left  focus left
 hc keybind $Mod-Down  focus down
-hc keybind $Mod-up    focus up
+hc keybind $Mod-Up    focus up
 hc keybind $Mod-Right focus right
 hc keybind $Mod-h     focus left
 hc keybind $Mod-j     focus down
@@ -37,7 +37,7 @@ hc keybind $Mod-l     focus right
 # moving clients
 hc keybind $Mod-Shift-Left  shift left
 hc keybind $Mod-Shift-Down  shift down
-hc keybind $Mod-Shift-up    shift up
+hc keybind $Mod-Shift-Up    shift up
 hc keybind $Mod-Shift-Right shift right
 hc keybind $Mod-Shift-h     shift left
 hc keybind $Mod-Shift-j     shift down
@@ -59,7 +59,7 @@ hc keybind $Mod-Control-k       resize up +$resizestep
 hc keybind $Mod-Control-l       resize right +$resizestep
 hc keybind $Mod-Control-Left    resize left +$resizestep
 hc keybind $Mod-Control-Down    resize down +$resizestep
-hc keybind $Mod-Control-up      resize up +$resizestep
+hc keybind $Mod-Control-Up      resize up +$resizestep
 hc keybind $Mod-Control-Right   resize right +$resizestep
 
 # tags
