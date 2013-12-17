@@ -727,7 +727,7 @@ int close_command(int argc, char** argv, GString* output) {
 }
 
 bool is_client_floated(HSClient* client) {
-    return (client->tag->floating || client->pseudotile);
+    return client->tag->floating;
 }
 
 void window_close(Window window) {
