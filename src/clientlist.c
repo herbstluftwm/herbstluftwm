@@ -465,22 +465,9 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         HSDebug("Warning: client_resize(NULL, ...) was called\n");
         return;
     }
+    Rectangle tile = rect;
     Window win = client->window;
     if (client->pseudotile) {
-        Rectangle size = client->float_size;
-        // floating sizes don't include window border, tiling sizes do.
-        // so convert the floating size to a tiling size
-        size.width  += *g_window_border_width * 2;
-        size.height += *g_window_border_width * 2;
-        // ensure size is not larger than rect-tile
-        size.width  = MIN(size.width, rect.width);
-        size.height = MIN(size.height, rect.height);
-
-        // center it
-        rect.x = rect.x + rect.width/2 - size.width/2;
-        rect.y = rect.y + rect.height/2 - size.height/2;
-        rect.width = size.width;
-        rect.height = size.height;
     }
     int border_width = *g_window_border_width;
     if (*g_smart_window_surroundings && !client->pseudotile
@@ -506,7 +493,19 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     rect.width -= border_width * 2;
     rect.height -= border_width * 2;
 
+    if (client->pseudotile) {
+        Rectangle size = client->float_size;
+        // ensure size is not larger than the tile
+        rect.width  = MIN(size.width,  tile.width  - 2 * border_width);
+        rect.height = MIN(size.height, tile.height - 2 * border_width);
+    }
     applysizehints(client, &rect.x, &rect.y, &rect.width, &rect.height);
+    // force it into the tile
+    rect.width = MIN(tile.width - 2*border_width,   rect.width);
+    rect.height = MIN(tile.height - 2*border_width, rect.height);
+    // center the window in the tile
+    rect.x = tile.x + MAX(0, tile.width/2 - rect.width/2 - border_width);
+    rect.y = tile.y + MAX(0, tile.height/2 - rect.height/2 - border_width);
 
     client->last_size = rect;
     client->last_size.width  +=  2 * border_width;
@@ -528,7 +527,7 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
                                  g_window_border_inner_color,
                                  current_border_color);
     }
-    //// send new size to client
+    // send new size to client
     client_send_configure(client);
     XSync(g_display, False);
 }
