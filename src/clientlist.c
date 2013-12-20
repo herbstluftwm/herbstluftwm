@@ -66,6 +66,7 @@ static HSClient* create_client() {
     hc->ewmhrequests = true;
     hc->ewmhnotify = true;
     hc->sizehints = true;
+    decoration_init(&hc->dec, hc);
     return hc;
 }
 
@@ -325,6 +326,7 @@ void unmanage_client(Window win) {
 // destroys a special client
 void client_destroy(HSClient* client) {
     hsobject_unlink(g_client_object, &client->object);
+    decoration_free(&client->dec);
     if (client->tag && client->slice) {
         stack_remove_slice(client->tag->stack, client->slice);
     }
