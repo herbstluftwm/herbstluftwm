@@ -16,6 +16,7 @@
 #include "layout.h"
 #include "object.h"
 #include "utils.h"
+#include "decoration.h"
 
 struct HSSlice;
 
@@ -44,6 +45,7 @@ typedef struct HSClient {
     // for other modules
     HSObject    object;
     struct HSSlice* slice;
+    HSDecoration    dec;
 } HSClient;
 
 void clientlist_init();
