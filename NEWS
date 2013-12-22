@@ -14,6 +14,10 @@ Current git version
     * new split mode: explode
     * make fraction parameter for the split command optional
     * respect size hints in floating and tiling mode
+    * new setting: frame_transparent_width
+    * frame_bg_transparent: instead of copying the pixmap from the root window
+      achieve transparency by cutting out a rectangle from the center of frames
+      using the Shape Extension of X.
 
 Release 0.5.2 on 2013-06-23
 ---------------------------

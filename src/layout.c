@@ -6,6 +6,7 @@
 #include "clientlist.h"
 #include "globals.h"
 #include "utils.h"
+#include "x11-utils.h"
 #include "hook.h"
 #include "ewmh.h"
 #include "ipc-protocol.h"
@@ -35,6 +36,7 @@ int* g_frame_border_inner_width;
 int* g_always_show_frame;
 int* g_default_frame_layout;
 int* g_frame_bg_transparent;
+int* g_frame_transparent_width;
 int* g_direction_external_only;
 int* g_gapless_grid;
 int* g_smart_frame_surroundings;
@@ -71,6 +73,7 @@ static void fetch_frame_colors() {
     g_frame_border_inner_width = &(settings_find("frame_border_inner_width")->value.i);
     g_always_show_frame = &(settings_find("always_show_frame")->value.i);
     g_frame_bg_transparent = &(settings_find("frame_bg_transparent")->value.i);
+    g_frame_transparent_width = &(settings_find("frame_transparent_width")->value.i);
     g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
     g_direction_external_only = &(settings_find("default_direction_external_only")->value.i);
     g_gapless_grid = &(settings_find("gapless_grid")->value.i);
@@ -825,11 +828,14 @@ void frame_apply_layout(HSFrame* frame, Rectangle rect) {
 
         frame_update_border(frame->window, border_color);
 
-        if (*g_frame_bg_transparent) {
-            XSetWindowBackgroundPixmap(g_display, frame->window, ParentRelative);
-        } else {
-            XSetWindowBackground(g_display, frame->window, bg_color);
+        XSetWindowBackground(g_display, frame->window, bg_color);
+        if (*g_frame_bg_transparent) { // != ) {
+            window_cut_rect_hole(frame->window, rect.width, rect.height,
+                                 *g_frame_transparent_width);
+        } else if (frame->window_transparent) {
+            window_make_intransparent(frame->window, rect.width, rect.height);
         }
+        frame->window_transparent = *g_frame_bg_transparent;
         if (g_cur_frame == frame) {
             ewmh_set_window_opacity(frame->window, g_frame_active_opacity/100.0);
         } else {

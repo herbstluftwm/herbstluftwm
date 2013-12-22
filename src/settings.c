@@ -51,6 +51,7 @@ SettingsPair g_settings[] = {
     SET_STRING( "frame_bg_normal_color",           "black",     FR_COLORS   ),
     SET_STRING( "frame_bg_active_color",           "black",     FR_COLORS   ),
     SET_INT(    "frame_bg_transparent",            0,           FR_COLORS   ),
+    SET_INT(    "frame_transparent_width",         5,           FR_COLORS   ),
     SET_INT(    "frame_border_width",              2,           FR_COLORS   ),
     SET_INT(    "frame_border_inner_width",        0,           FR_COLORS   ),
     SET_INT(    "frame_active_opacity",            100,         FR_COLORS   ),

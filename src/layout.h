@@ -85,6 +85,7 @@ typedef struct HSFrame {
     struct HSTag*   tag;
     struct HSSlice* slice;
     Window window;
+    int    window_transparent;
     bool   window_visible;
     Rectangle  last_rect; // last rectangle when being drawn
 } HSFrame;

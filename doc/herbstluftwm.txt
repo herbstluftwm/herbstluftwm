@@ -856,9 +856,14 @@ frame_bg_normal_color (String/Color)::
     always_show_frame is set)
 
 frame_bg_transparent (Integer)::
-    If set, frames have transparent backgrounds. *Warning:* Results in ugly
-    artifacts when used together with a compositing manager. Use
-    'frame_active_opacity' and 'frame_normal_opacity' in this case.
+    If set, the background of frames are transparent. That means a rectangle is
+    cut out frome the inner such that only the frame border and a stripe of
+    width 'frame_transparent_width' can be seen. Use 'frame_active_opacity' and
+    'frame_normal_opacity' for real transparency.
+
+frame_transparent_width (Integer)::
+    Specifies the width of the remaining frame colored with
+    'frame_bg_active_color' if 'frame_bg_transparent' is set.
 
 frame_border_width (Integer)::
     Border width of a frame
