@@ -491,8 +491,6 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     }
     Rectangle tile = rect;
     Window win = client->window;
-    if (client->pseudotile) {
-    }
     int border_width = *g_window_border_width;
     if (*g_smart_window_surroundings && !client->pseudotile
         && (frame->content.clients.count == 1
