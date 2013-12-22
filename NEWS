@@ -18,6 +18,8 @@ Current git version
     * frame_bg_transparent: instead of copying the pixmap from the root window
       achieve transparency by cutting out a rectangle from the center of frames
       using the Shape Extension of X.
+    * Make respecting of sizehints configurable for tiling and floating mode
+      via the client properties sizehints_tiling and sizehints_floating
 
 Release 0.5.2 on 2013-06-23
 ---------------------------

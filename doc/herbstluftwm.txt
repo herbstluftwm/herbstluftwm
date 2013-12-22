@@ -1304,6 +1304,8 @@ listed as follows:
  b w ewmhrequests         , if ewmh requests are permitted for this client
  b w ewmhnotify           , if the client is told about its state via ewmh
  b w urgent               , its urgent state
+ b w sizehints_tiling     , if sizehints for this client should be respected in tiling mode
+ b w sizehints_flaoting   , if sizehints for this client should be respected in floating mode
 |===========================
 
     ** +focus+: the object of the focused client, if any

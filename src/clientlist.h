@@ -34,7 +34,8 @@ typedef struct HSClient {
     bool        neverfocus; // do not give the focus via XSetInputFocus
     bool        ewmhrequests; // accept ewmh-requests for this client
     bool        ewmhnotify; // send ewmh-notifications for this client
-    bool        sizehints;  // respect size hints regarding this client
+    bool        sizehints_floating;  // respect size hints regarding this client in floating mode
+    bool        sizehints_tiling;  // respect size hints regarding this client in tiling mode
     bool        dragged;  // if this client is dragged currently
     int         pid;
     // for size hints

@@ -65,7 +65,8 @@ static HSClient* create_client() {
     hc->pseudotile = false;
     hc->ewmhrequests = true;
     hc->ewmhnotify = true;
-    hc->sizehints = true;
+    hc->sizehints_floating = true;
+    hc->sizehints_tiling = false;
     return hc;
 }
 
@@ -262,7 +263,8 @@ HSClient* manage_client(Window win) {
         ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile,     client_attr_pseudotile),
         ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests,   ATTR_ACCEPT_ALL),
         ATTRIBUTE_BOOL(     "ewmhnotify",   client->ewmhnotify,     ATTR_ACCEPT_ALL),
-        ATTRIBUTE_BOOL(     "sizehints",    client->sizehints,      ATTR_ACCEPT_ALL),
+        ATTRIBUTE_BOOL(     "sizehints_tiling",   client->sizehints_tiling,   ATTR_ACCEPT_ALL),
+        ATTRIBUTE_BOOL(     "sizehints_floating", client->sizehints_floating, ATTR_ACCEPT_ALL),
         ATTRIBUTE_BOOL(     "urgent",       client->urgent,         client_attr_urgent),
         ATTRIBUTE_LAST,
     };
@@ -544,7 +546,10 @@ bool applysizehints(HSClient *c, int *x, int *y, int *w, int *h) {
         *h = WINDOW_MIN_HEIGHT;
     if(*w < WINDOW_MIN_WIDTH)
         *w = WINDOW_MIN_WIDTH;
-    if(c->sizehints) { // TODO || c->isfloating
+    bool sizehints = (is_client_floated(c) || c->pseudotile)
+                        ? c->sizehints_floating
+                        : c->sizehints_tiling;
+    if(sizehints) {
         /* see last two sentences in ICCCM 4.1.2.3 */
         baseismin = c->basew == c->minw && c->baseh == c->minh;
         if(!baseismin) { /* temporarily remove base dimensions */
