@@ -181,6 +181,28 @@ static GString* client_attr_urgent(HSAttribute* attr) {
     CLIENT_UPDATE_ATTR(client_set_urgent_force, urgent);
 }
 
+static GString* client_attr_sh_tiling(HSAttribute* attr) {
+    HSClient* client = container_of(attr->value.b, HSClient, sizehints_tiling);
+    if (!is_client_floated(client) && !client->pseudotile) {
+        HSMonitor* mon = find_monitor_with_tag(client->tag);
+        if (mon) {
+            monitor_apply_layout(mon);
+        }
+    }
+    return NULL;
+}
+
+static GString* client_attr_sh_floating(HSAttribute* attr) {
+    HSClient* client = container_of(attr->value.b, HSClient, sizehints_floating);
+    if (!is_client_floated(client) || client->pseudotile) {
+        HSMonitor* mon = find_monitor_with_tag(client->tag);
+        if (mon) {
+            monitor_apply_layout(mon);
+        }
+    }
+    return NULL;
+}
+
 HSClient* manage_client(Window win) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
@@ -263,8 +285,8 @@ HSClient* manage_client(Window win) {
         ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile,     client_attr_pseudotile),
         ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests,   ATTR_ACCEPT_ALL),
         ATTRIBUTE_BOOL(     "ewmhnotify",   client->ewmhnotify,     ATTR_ACCEPT_ALL),
-        ATTRIBUTE_BOOL(     "sizehints_tiling",   client->sizehints_tiling,   ATTR_ACCEPT_ALL),
-        ATTRIBUTE_BOOL(     "sizehints_floating", client->sizehints_floating, ATTR_ACCEPT_ALL),
+        ATTRIBUTE_BOOL(     "sizehints_tiling",   client->sizehints_tiling, client_attr_sh_tiling),
+        ATTRIBUTE_BOOL(     "sizehints_floating", client->sizehints_floating, client_attr_sh_floating),
         ATTRIBUTE_BOOL(     "urgent",       client->urgent,         client_attr_urgent),
         ATTRIBUTE_LAST,
     };
