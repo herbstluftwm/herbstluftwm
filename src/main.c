@@ -480,8 +480,6 @@ void event_on_configure(XEvent event) {
     if (client) {
         bool changes = false;
         Rectangle newRect = client->last_size;
-        newRect.width  -= 2 * client->last_border_width;
-        newRect.height -= 2 * client->last_border_width;
         if (client->sizehints_floating &&
             (is_client_floated(client) || client->pseudotile))
         {

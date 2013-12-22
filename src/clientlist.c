@@ -511,8 +511,6 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     client->last_border_width = border_width;
 
     client->last_size = rect;
-    client->last_size.width  +=  2 * border_width;
-    client->last_size.height += 2 * border_width;
 
     XWindowChanges changes = {
       .x = rect.x, .y = rect.y, .width = rect.width, .height = rect.height,
@@ -583,9 +581,8 @@ bool applysizehints(HSClient *c, int *x, int *y, int *w, int *h) {
         if(c->maxh)
             *h = MIN(*h, c->maxh);
     }
-    int bw = c->last_border_width;
     return *x != c->last_size.x || *y != c->last_size.y
-        || *w != c->last_size.width - 2*bw || *h != c->last_size.height - 2*bw;
+        || *w != c->last_size.width || *h != c->last_size.height;
 }
 
 // from dwm.c
@@ -650,8 +647,8 @@ void client_send_configure(HSClient *c) {
     ce.window = c->window;
     ce.x = c->last_size.x;
     ce.y = c->last_size.y;
-    ce.width = c->last_size.width - 2*bw;
-    ce.height = c->last_size.height - 2*bw;
+    ce.width = c->last_size.width;
+    ce.height = c->last_size.height;
     ce.border_width = bw;
     ce.above = None;
     ce.override_redirect = False;
@@ -684,11 +681,11 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
     int space = g_monitor_float_treshold;
     rect.x =
         CLAMP(rect.x,
-              m->rect.x + m->pad_left - client->last_size.width + space,
+              m->rect.x + m->pad_left - rect.width + space,
               m->rect.x + m->rect.width - m->pad_left - m->pad_right - space);
     rect.y =
         CLAMP(rect.y,
-              m->rect.y + m->pad_up - client->last_size.height + space,
+              m->rect.y + m->pad_up - rect.height + space,
               m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
     if (applysizehints(client, &rect.x, &rect.y, &rect.width, &rect.height)) {
         XMoveResizeWindow(g_display, client->window,
@@ -699,8 +696,6 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
     }
     // add window border to last_size
     client->last_size = rect;
-    client->last_size.width += 2 * client->last_border_width;
-    client->last_size.height += 2 * client->last_border_width;
     if (*g_window_border_inner_width > 0
         && *g_window_border_inner_width < *g_window_border_width) {
         unsigned long current_border_color = get_window_border_color(client);

@@ -22,7 +22,7 @@ struct HSSlice;
 typedef struct HSClient {
     Window      window;
     GString*    window_str;     // the window id as a string
-    Rectangle   last_size;      // last size including the window border
+    Rectangle   last_size;      // last size excluding the window border
     int         last_border_width;
     HSTag*      tag;
     Rectangle   float_size;     // floating size without the window border
