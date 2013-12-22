@@ -809,20 +809,19 @@ void frame_apply_layout(HSFrame* frame, Rectangle rect) {
         }
         unsigned long border_color = g_frame_border_normal_color;
         unsigned long bg_color = g_frame_bg_normal_color;
+        int bw = *g_frame_border_width;
         if (g_cur_frame == frame) {
             border_color = g_frame_border_active_color;
             bg_color = g_frame_bg_active_color;
         }
-        if (!*g_smart_frame_surroundings || frame->parent) {
-            XSetWindowBorderWidth(g_display, frame->window, *g_frame_border_width);
-            XMoveResizeWindow(g_display, frame->window,
-                              rect.x - *g_frame_border_width,
-                              rect.y - *g_frame_border_width,
-                              rect.width, rect.height);
-        } else {
-            XSetWindowBorderWidth(g_display, frame->window, 0);
-            XMoveResizeWindow(g_display, frame->window, rect.x, rect.y, rect.width, rect.height);
+        if (*g_smart_frame_surroundings && !frame->parent) {
+            bw = 0;
         }
+        XSetWindowBorderWidth(g_display, frame->window, bw);
+        XMoveResizeWindow(g_display, frame->window,
+                          rect.x - bw,
+                          rect.y - bw,
+                          rect.width, rect.height);
 
         frame_update_border(frame->window, border_color);
 
