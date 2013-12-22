@@ -489,7 +489,6 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         HSDebug("Warning: client_resize(NULL, ...) was called\n");
         return;
     }
-    Rectangle tile = rect;
     Window win = client->window;
     int border_width = *g_window_border_width;
     if (*g_smart_window_surroundings && !client->pseudotile
@@ -507,6 +506,7 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
     }
+    Rectangle tile = rect;
     rect.width -= border_width * 2;
     rect.height -= border_width * 2;
 
