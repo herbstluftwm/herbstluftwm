@@ -477,11 +477,6 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
             || frame->content.clients.layout == LAYOUT_MAX)) {
         border_width = 0;
     }
-    if (RECTANGLE_EQUALS(client->last_size, rect)
-        && client->last_border_width == border_width) {
-        return;
-    }
-    client->last_border_width = border_width;
 
     // apply border width
     bool is_max_layout = frame->content.clients.layout != LAYOUT_MAX;
@@ -508,6 +503,12 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     // center the window in the tile
     rect.x = tile.x + MAX(0, tile.width/2 - rect.width/2 - border_width);
     rect.y = tile.y + MAX(0, tile.height/2 - rect.height/2 - border_width);
+
+    if (RECTANGLE_EQUALS(client->last_size, rect)
+        && client->last_border_width == border_width) {
+        return;
+    }
+    client->last_border_width = border_width;
 
     client->last_size = rect;
     client->last_size.width  +=  2 * border_width;
