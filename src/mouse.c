@@ -295,10 +295,23 @@ void mouse_function_resize(XMotionEvent* me) {
     // avoid an overflow
     int new_width  = g_win_drag_client->float_size.width + x_diff;
     int new_height = g_win_drag_client->float_size.height + y_diff;
+    int min_width = WINDOW_MIN_WIDTH;
+    int min_height = WINDOW_MIN_HEIGHT;
+    HSClient* client = g_win_drag_client;
+    if (client->sizehints_floating) {
+        min_width = MAX(WINDOW_MIN_WIDTH, client->minw);
+        min_height = MAX(WINDOW_MIN_HEIGHT, client->minh);
+    }
+    if (new_width <  min_width) {
+        new_width = min_width;
+        x_diff = new_width - g_win_drag_client->float_size.width;
+    }
+    if (new_height < min_height) {
+        new_height = min_height;
+        y_diff = new_height - g_win_drag_client->float_size.height;
+    }
     if (left)   g_win_drag_client->float_size.x -= x_diff;
     if (top)    g_win_drag_client->float_size.y -= y_diff;
-    if (new_width <  WINDOW_MIN_WIDTH)  new_width = WINDOW_MIN_WIDTH;
-    if (new_height < WINDOW_MIN_HEIGHT) new_height = WINDOW_MIN_HEIGHT;
     g_win_drag_client->float_size.width  = new_width;
     g_win_drag_client->float_size.height = new_height;
     // snap it to other windows
@@ -337,17 +350,24 @@ void mouse_function_zoom(XMotionEvent* me) {
     if (rel_y < g_win_drag_start.height/2) {
         y_diff *= -1;
     }
+    HSClient* client = g_win_drag_client;
 
     // avoid an overflow
     int new_width  = g_win_drag_start.width  + 2 * x_diff;
     int new_height = g_win_drag_start.height + 2 * y_diff;
-    if (new_width < WINDOW_MIN_WIDTH) {
-        int overflow = WINDOW_MIN_WIDTH - new_width;
+    int min_width = WINDOW_MIN_WIDTH;
+    int min_height = WINDOW_MIN_HEIGHT;
+    if (client->sizehints_floating) {
+        min_width = MAX(WINDOW_MIN_WIDTH, client->minw);
+        min_height = MAX(WINDOW_MIN_HEIGHT, client->minh);
+    }
+    if (new_width < min_width) {
+        int overflow = min_width - new_width;
         overflow += overflow % 2; // make odd overflow even
         x_diff += overflow;
     }
-    if (new_height < WINDOW_MIN_HEIGHT) {
-        int overflow = WINDOW_MIN_HEIGHT - new_height;
+    if (new_height < min_height) {
+        int overflow = min_height - new_height;
         overflow += overflow % 2; // make odd overflow even
         y_diff += overflow;
     }
