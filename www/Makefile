@@ -5,11 +5,16 @@ include ../colors.mk
 
 .PHONY: all clean install
 
-TARGET = cip:wwwcip/herbstluftwm/
+TARGET = herbstluftwm.org:www/
+
 ASCIIDOCFLAGS = -s
 TXT = $(wildcard *.txt)
+INSTALLFILES = $(TXT:.txt=.html) \
+	herbstluftwm.html \
+	herbstclient.html \
+	herbstluftwm.svg
 
-all: $(TXT:.txt=.html) herbstluftwm.html herbstclient.html herbstluftwm.svg
+all: $(INSTALLFILES)
 
 %-content.html: %.txt
 	$(call colorecho,DOC,$@)
@@ -35,4 +40,4 @@ clean:
 	rm -f *.html *-content.html
 
 install:
-	@echo scp index.html main.css $(TARGET)
+	scp $(INSTALLFILES) $(TARGET)
