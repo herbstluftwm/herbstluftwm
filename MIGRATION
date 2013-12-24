@@ -4,8 +4,8 @@ herbstluftwm migration guide
 This guide describes the list of incompatible changes between the different
 herbstluftwm releases and how to migrate scripts and configuration.
 
-0.5.1 to the next release
-~~~~~~~~~~~~~~~~~~~~~~~~~
+0.5.1 to 0.5.2
+~~~~~~~~~~~~~~
 The herbstclient completion options changed for bash. If you manually setup the
 completion -- e.g. for an alias like hc -- then update the complete line as
 follows:
