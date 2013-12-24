@@ -300,6 +300,11 @@ cycle_all [*--skip-invisible*] ['DIRECTION']::
     windows and skips invisible windows in the max layout. The focused window
     is raised.
 
+cycle_frame ['DIRECTION']::
+    Cycles through all frames on the current tag. 'DIRECTION' = 1 means forward,
+    'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no effect. 'DIRECTION'
+    defaults to 1. 
+
 cycle_layout ['DELTA' ['LAYOUTS' ...]]::
     Cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'
     defaults to 1. You can find a <<LIST_LAYOUT_ALGORITHMS,list of layout

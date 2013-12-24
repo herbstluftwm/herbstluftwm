@@ -112,6 +112,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "cycle",          frame_current_cycle_selection),
     CMD_BIND_NO_OUTPUT(   "cycle_all",      cycle_all_command),
     CMD_BIND(             "cycle_layout",   frame_current_cycle_client_layout),
+    CMD_BIND_NO_OUTPUT(   "cycle_frame",    cycle_frame_command),
     CMD_BIND(             "close",          close_command),
     CMD_BIND_NO_OUTPUT(   "close_or_remove",close_or_remove_command),
     CMD_BIND(             "split",          frame_split_command),

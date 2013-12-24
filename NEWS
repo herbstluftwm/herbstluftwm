@@ -21,6 +21,7 @@ Current git version
     * Make respecting of sizehints configurable for tiling and floating mode
       via the client properties sizehints_tiling and sizehints_floating
     * new setting: pseudotile_center_threshold
+    * new command: cycle_frame
 
 Release 0.5.2 on 2013-06-23
 ---------------------------

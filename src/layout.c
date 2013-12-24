@@ -995,7 +995,7 @@ int frame_current_cycle_selection(int argc, char** argv) {
 
 int cycle_all_command(int argc, char** argv) {
     int delta = 1;
-    int skip_invisible = false;
+    bool skip_invisible = false;
     if (argc >= 2) {
         if (!strcmp(argv[1], "--skip-invisible")) {
             skip_invisible = true;
@@ -1015,28 +1015,62 @@ int cycle_all_command(int argc, char** argv) {
     int index = frame->content.clients.selection;
     bool change_frame = false;
     int direction;
-    int other_direction;
     int new_window_index; // tells where to start in a new frame
     if (delta > 0 && (index + 1) >= frame->content.clients.count) {
         // change selection from 0 to 1
         direction = 1;
-        other_direction = 0;
         change_frame = true;
         new_window_index = 0; // focus first window in in a frame
     }
     if (delta < 0 && index == 0) {
         // change selection from 1 to 0
         direction = 0;
-        other_direction = 1;
         change_frame = true;
         new_window_index = -1; // focus last window in in a frame
     }
     if (skip_invisible && frame->content.clients.layout == LAYOUT_MAX) {
         direction = (delta > 0) ? 1 : 0;
-        other_direction = 1 - direction;
         change_frame = true;
     }
     if (change_frame) {
+        cycle_frame(direction, new_window_index, skip_invisible);
+    } else {
+        // only change the selection within one frame
+        index += delta;
+        // ensure it is a valid index
+        index %= frame->content.clients.count;
+        index += frame->content.clients.count;
+        index %= frame->content.clients.count;
+        frame->content.clients.selection = index;
+    }
+    HSClient* c = frame_focused_client(g_cur_frame);
+    if (c) {
+        client_raise(c);
+    }
+    monitor_apply_layout(get_current_monitor());
+    return 0;
+}
+
+int cycle_frame_command(int argc, char** argv) {
+    int delta = 1;
+    if (argc >= 2) {
+        delta = atoi(argv[1]);
+    }
+    if (delta == 0) return 0;
+    int direction = (delta > 0) ? 1 : 0;
+    cycle_frame(direction, -2, false);
+    return 0;
+}
+
+// cycle_frame:
+//  direction: 1 for forward cycling, 0 for backwards cycling
+//  new_window_index: which index in the new frame should be focused, -2 does
+//  not change the window selection in the new frame
+//  skip_invisible: if set, don't touch the selection in frames in max layout
+void cycle_frame(int direction, int new_window_index, bool skip_invisible) {
+    HSFrame* frame = frame_current_selection();
+    int other_direction = 1 - direction;
+    if (true) {
         HSFrame* top_frame;
         //   these things can be visualized easily for direction = 1
         /*
@@ -1123,7 +1157,7 @@ int cycle_all_command(int argc, char** argv) {
          */
         // now we reached the next client containing frame
 
-        if (frame->content.clients.count > 0) {
+        if (new_window_index != -2 && frame->content.clients.count > 0) {
             if (!skip_invisible
                 || frame->content.clients.layout != LAYOUT_MAX)
             {
@@ -1139,21 +1173,9 @@ int cycle_all_command(int argc, char** argv) {
         // all changes were made below top_frame
         frame_focus_recursive(top_frame);
 
-    } else {
-        // only change the selection within one frame
-        index += delta;
-        // ensure it is a valid index
-        index %= frame->content.clients.count;
-        index += frame->content.clients.count;
-        index %= frame->content.clients.count;
-        frame->content.clients.selection = index;
-    }
-    HSClient* c = frame_focused_client(g_cur_frame);
-    if (c) {
-        client_raise(c);
     }
     monitor_apply_layout(get_current_monitor());
-    return 0;
+    return;
 }
 
 
