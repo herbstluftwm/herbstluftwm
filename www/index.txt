@@ -28,16 +28,12 @@ following platforms:
   * Arch Linux via the
     link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm[Arch User
     Repository]
-  * Debian (0.3 in
-    link:http://packages.debian.org/squeeze-backports/herbstluftwm[squeeze-backports],
-    link:http://packages.debian.org/wheezy/herbstluftwm[wheezy],
-    0.5.1 on all link:http://packages.debian.org/sid/herbstluftwm[sid
-    architectures (including Hurd)])
+  * Debian
   * link:http://packages.gentoo.org/package/x11-wm/herbstluftwm[Gentoo Linux]
   * Mac OS X via
     link:http://trac.macports.org/browser/trunk/dports/x11/herbstluftwm/Portfile[MacPorts]
   * FreeBSD
-  * 0.5.2 on Ubuntu Linux (Saucy Salamander)
+  * Ubuntu Linux
 
 It's confirmed to run on:
 
