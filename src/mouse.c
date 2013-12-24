@@ -344,6 +344,8 @@ void mouse_function_zoom(XMotionEvent* me) {
     HSMonitor* m = g_drag_monitor;
     int rel_x = monitor_get_relative_x(m, g_button_drag_start.x_root) - g_win_drag_start.x;
     int rel_y = monitor_get_relative_y(m, g_button_drag_start.y_root) - g_win_drag_start.y;
+    int cent_x = g_win_drag_start.x + g_win_drag_start.width  / 2;
+    int cent_y = g_win_drag_start.y + g_win_drag_start.height / 2;
     if (rel_x < g_win_drag_start.width/2) {
         x_diff *= -1;
     }
@@ -355,29 +357,12 @@ void mouse_function_zoom(XMotionEvent* me) {
     // avoid an overflow
     int new_width  = g_win_drag_start.width  + 2 * x_diff;
     int new_height = g_win_drag_start.height + 2 * y_diff;
-    int min_width = WINDOW_MIN_WIDTH;
-    int min_height = WINDOW_MIN_HEIGHT;
-    if (client->sizehints_floating) {
-        min_width = MAX(WINDOW_MIN_WIDTH, client->minw);
-        min_height = MAX(WINDOW_MIN_HEIGHT, client->minh);
-    }
-    if (new_width < min_width) {
-        int overflow = min_width - new_width;
-        overflow += overflow % 2; // make odd overflow even
-        x_diff += overflow;
-    }
-    if (new_height < min_height) {
-        int overflow = min_height - new_height;
-        overflow += overflow % 2; // make odd overflow even
-        y_diff += overflow;
-    }
-
     // apply new rect
-    g_win_drag_client->float_size = g_win_drag_start;
-    g_win_drag_client->float_size.x -= x_diff;
-    g_win_drag_client->float_size.y -= y_diff;
-    g_win_drag_client->float_size.width += 2 * x_diff;
-    g_win_drag_client->float_size.height += 2 * y_diff;
+    client->float_size = g_win_drag_start;
+    client->float_size.x = cent_x - new_width / 2;
+    client->float_size.y = cent_y - new_height / 2;
+    client->float_size.width = new_width;
+    client->float_size.height = new_height;
     // snap it to other windows
     int right_dx, bottom_dy;
     int left_dx, top_dy;
@@ -394,10 +379,14 @@ void mouse_function_zoom(XMotionEvent* me) {
     if (abs(bottom_dy) < abs(top_dy)) {
         bottom_dy = -top_dy;
     }
-    g_win_drag_client->float_size.width += 2 * right_dx;
-    g_win_drag_client->float_size.x     -= right_dx;
-    g_win_drag_client->float_size.height += 2 * bottom_dy;
-    g_win_drag_client->float_size.y     -= bottom_dy;
+    new_width += 2 * right_dx;
+    new_height += 2 * bottom_dy;
+    applysizehints(client, &new_width, &new_height);
+    // center window again
+    client->float_size.width = new_width;
+    client->float_size.height = new_height;
+    client->float_size.x = cent_x - new_width / 2;
+    client->float_size.y = cent_y - new_height / 2;
     client_resize_floating(g_win_drag_client, g_drag_monitor);
 }
 

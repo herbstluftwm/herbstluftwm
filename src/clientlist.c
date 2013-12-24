@@ -518,7 +518,7 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         rect.width  = MIN(size.width,  tile.width  - 2 * border_width);
         rect.height = MIN(size.height, tile.height - 2 * border_width);
     }
-    applysizehints(client, &rect.x, &rect.y, &rect.width, &rect.height);
+    applysizehints(client, &rect.width, &rect.height);
     // force it into the tile
     rect.width = MIN(tile.width - 2*border_width,   rect.width);
     rect.height = MIN(tile.height - 2*border_width, rect.height);
@@ -562,7 +562,7 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
 
 
 // from dwm.c
-bool applysizehints(HSClient *c, int *x, int *y, int *w, int *h) {
+bool applysizehints(HSClient *c, int *w, int *h) {
     bool baseismin;
 
     /* set minimum possible */
@@ -608,8 +608,12 @@ bool applysizehints(HSClient *c, int *x, int *y, int *w, int *h) {
         if(c->maxh)
             *h = MIN(*h, c->maxh);
     }
-    return *x != c->last_size.x || *y != c->last_size.y
-        || *w != c->last_size.width || *h != c->last_size.height;
+    return *w != c->last_size.width || *h != c->last_size.height;
+}
+
+bool applysizehints_xy(HSClient *c, int *x, int *y, int *w, int *h) {
+    return applysizehints(c,w,h) || *x != c->last_size.x
+                                 || *y != c->last_size.y;
 }
 
 // from dwm.c
@@ -714,7 +718,7 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
         CLAMP(rect.y,
               m->rect.y + m->pad_up - rect.height + space,
               m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
-    if (applysizehints(client, &rect.x, &rect.y, &rect.width, &rect.height)) {
+    if (applysizehints_xy(client, &rect.x, &rect.y, &rect.width, &rect.height)) {
         XMoveResizeWindow(g_display, client->window,
             rect.x, rect.y, rect.width, rect.height);
     }
