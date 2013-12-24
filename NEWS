@@ -20,6 +20,7 @@ Current git version
       using the Shape Extension of X.
     * Make respecting of sizehints configurable for tiling and floating mode
       via the client properties sizehints_tiling and sizehints_floating
+    * new setting: pseudotile_center_threshold
 
 Release 0.5.2 on 2013-06-23
 ---------------------------

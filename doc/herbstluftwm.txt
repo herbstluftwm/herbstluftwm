@@ -997,6 +997,13 @@ wmname (String)::
 
         * cycle_value wmname herbstluftwm LG3D
 
+pseudotile_center_threshold (Int)::
+    If greater than 0, it specifies the least distance between a centeres
+    pseudotile window and the border of the frame or tile it is assigned to. If
+    this distance is lower than 'pseudotile_center_threshold', it is aligned to
+    the top left of the client's tile.
+
+
 [[RULES]]
 RULES
 -----

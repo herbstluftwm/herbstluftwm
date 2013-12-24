@@ -37,6 +37,7 @@ int* g_window_border_inner_width;
 int* g_raise_on_focus;
 int* g_snap_gap;
 int* g_smart_window_surroundings;
+int* g_pseudotile_center_threshold;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
 unsigned long g_window_border_urgent_color;
@@ -85,6 +86,7 @@ static void fetch_colors() {
     g_window_border_urgent_color = getcolor(str);
     str = settings_find("window_border_inner_color")->value.s;
     g_window_border_inner_color = getcolor(str);
+    g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
 }
 
 void clientlist_init() {
@@ -521,8 +523,13 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     rect.width = MIN(tile.width - 2*border_width,   rect.width);
     rect.height = MIN(tile.height - 2*border_width, rect.height);
     // center the window in the tile
-    rect.x = tile.x + MAX(0, tile.width/2 - rect.width/2 - border_width);
-    rect.y = tile.y + MAX(0, tile.height/2 - rect.height/2 - border_width);
+    // but only if it's relative coordinates would not be too close to the
+    // upper left tile border
+    int threshold = *g_pseudotile_center_threshold;
+    int dx = tile.width/2 - rect.width/2 - border_width;
+    int dy = tile.height/2 - rect.height/2 - border_width;
+    rect.x = tile.x + ((dx < threshold) ? 0 : dx);
+    rect.y = tile.y + ((dy < threshold) ? 0 : dy);
 
     if (RECTANGLE_EQUALS(client->last_size, rect)
         && client->last_border_width == border_width) {
