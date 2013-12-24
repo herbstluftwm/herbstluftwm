@@ -1,8 +1,8 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
-Current git version
--------------------
+Release 0.5.3 on 2013-12-24
+---------------------------
 
     * make window floating faster, by dropping old motion events
     * new rule flag: prepend
