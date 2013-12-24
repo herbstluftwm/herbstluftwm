@@ -129,10 +129,25 @@ body {
 
 #header h1 {
     text-align: center;
+    font-size: 2em;
 }
 
 #header {
     padding: 0.2em;
+    text-align: center;
+}
+
+#header #squeezeheader {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#header #logoname {
+    margin: auto;
+    display: inline-block;
+}
+#header #icon {
+    height: 3em;
 }
 
 
@@ -146,7 +161,7 @@ h1 {
 }
 
 #subheader {
-    text-align: center;
+    text-align: left;
     font-size: 0.6em;
 }
 

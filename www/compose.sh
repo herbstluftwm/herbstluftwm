@@ -45,10 +45,15 @@ cat <<EOF
  <body>
   <div id="frame">
    <div id="header">
-     <h1>herbstluftwm</h1>
-     <div id="subheader">
-      a manual tiling window manager for X
+    <div id="logoname">
+     <img id="icon" src="herbstluftwm.svg"/>
+     <div id="squeezeheader">
+       <h1>herbstluftwm</h1>
+       <div id="subheader">
+        a manual tiling window manager for X
+       </div>
      </div>
+    </div>
    </div>
 EOF
 

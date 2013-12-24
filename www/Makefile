@@ -9,7 +9,7 @@ TARGET = cip:wwwcip/herbstluftwm/
 ASCIIDOCFLAGS = -s
 TXT = $(wildcard *.txt)
 
-all: $(TXT:.txt=.html) herbstluftwm.html herbstclient.html
+all: $(TXT:.txt=.html) herbstluftwm.html herbstclient.html herbstluftwm.svg
 
 %-content.html: %.txt
 	$(call colorecho,DOC,$@)
@@ -17,6 +17,9 @@ all: $(TXT:.txt=.html) herbstluftwm.html herbstclient.html
 
 %.html: %-content.html compose.sh
 	./compose.sh $< > $@
+
+herbstluftwm.svg: ../share/herbstluftwm.svg
+	cp $^ $@
 
 herbstluftwm-content.html: ../doc/herbstluftwm.txt
 	$(call colorecho,DOC,$@)
