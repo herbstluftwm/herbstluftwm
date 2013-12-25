@@ -30,6 +30,8 @@ typedef struct {
     struct HSClient*        client; // the client to decorate
     Window                  decwin; // the decoration winodw
     HSDecorationScheme      last_scheme;
+    Rectangle               last_rect;
+    bool                    last_rect_inner; // whether last_rect is inner size
 } HSDecoration;
 
 typedef struct {
@@ -61,6 +63,8 @@ void decoration_resize_outline(struct HSClient* client, Rectangle rect,
 void decoration_resize_inner(struct HSClient* client, Rectangle rect,
                              HSDecorationScheme scheme);
 
+void decoration_change_scheme(struct HSClient* client,
+                              HSDecorationScheme scheme);
 
 #endif
 

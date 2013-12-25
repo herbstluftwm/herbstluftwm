@@ -174,7 +174,7 @@ void frame_insert_client(HSFrame* frame, struct HSClient* client) {
         if (g_cur_frame == frame
             && frame->content.clients.selection >= (count-1)) {
             frame->content.clients.selection = count - 1;
-            window_focus(client->window);
+            client_window_focus(client);
         }
     } else { /* frame->type == TYPE_FRAMES */
         HSLayout* layout = &frame->content.layout;
@@ -963,8 +963,8 @@ int frame_current_set_selection(int argc, char** argv) {
         index = frame->content.clients.count - 1;
     }
     frame->content.clients.selection = index;
-    Window window = frame->content.clients.buf[index]->window;
-    window_focus(window);
+    HSClient* client = frame->content.clients.buf[index];
+    client_window_focus(client);
     return 0;
 }
 
@@ -988,8 +988,8 @@ int frame_current_cycle_selection(int argc, char** argv) {
     index += count;
     index %= count;
     frame->content.clients.selection = index;
-    Window window = frame->content.clients.buf[index]->window;
-    window_focus(window);
+    HSClient* client = frame->content.clients.buf[index];
+    client_window_focus(client);
     return 0;
 }
 
@@ -1582,7 +1582,7 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
             for (i = 0; i < count; i++) {
                 if (buf[i] == client) {
                     frame->content.clients.selection = i;
-                    window_focus(buf[i]->window);
+                    client_window_focus(buf[i]);
                     break;
                 }
             }
@@ -1719,9 +1719,9 @@ int frame_focus_recursive(HSFrame* frame) {
     frame_unfocus();
     if (frame->content.clients.count) {
         int selection = frame->content.clients.selection;
-        window_focus(frame->content.clients.buf[selection]->window);
+        client_window_focus(frame->content.clients.buf[selection]);
     } else {
-        window_unfocus_last();
+        client_window_unfocus_last();
     }
     return 0;
 }

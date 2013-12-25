@@ -52,9 +52,9 @@ void clientlist_destroy();
 
 void clientlist_foreach(GHFunc func, gpointer data);
 
-void window_focus(Window window);
-void window_unfocus(Window window);
-void window_unfocus_last();
+void client_window_focus(HSClient* client);
+void client_window_unfocus(HSClient* client);
+void client_window_unfocus_last();
 
 void reset_client_colors();
 void reset_client_settings();
@@ -103,7 +103,6 @@ bool is_window_ignored(Window win);
 void client_set_visible(HSClient* client, bool visible);
 void window_set_visible(Window win, bool visible);
 
-void window_update_border(Window window, unsigned long color);
 unsigned long get_window_border_color(HSClient* client);
 
 #endif

@@ -81,6 +81,8 @@ static Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme scheme
 void decoration_resize_inner(HSClient* client, Rectangle inner,
                              HSDecorationScheme scheme) {
     decoration_resize_outline(client, inner_rect_to_outline(inner, scheme), scheme);
+    client->dec.last_rect = inner;
+    client->dec.last_rect_inner = true;
 }
 
 void decoration_resize_outline(HSClient* client, Rectangle outline,
@@ -125,6 +127,8 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     //                             current_border_color);
     //}
     // send new size to client
+    client->dec.last_rect = outline;
+    client->dec.last_rect_inner = false;
     client->last_size = inner;
     client_send_configure(client);
     XSync(g_display, False);
@@ -132,4 +136,12 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
                       outline.x, outline.y, outline.width, outline.height);
 }
 
+void decoration_change_scheme(struct HSClient* client,
+                              HSDecorationScheme scheme) {
+    if (client->dec.last_rect_inner) {
+        decoration_resize_inner(client, client->dec.last_rect, scheme);
+    } else {
+        decoration_resize_outline(client, client->dec.last_rect, scheme);
+    }
+}
 

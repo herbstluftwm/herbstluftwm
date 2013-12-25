@@ -53,6 +53,7 @@ static Atom g_wmatom[WMLast];
 
 static void client_set_urgent_force(HSClient* client, bool state);
 static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx);
+static int client_get_scheme_triple_idx(HSClient* client);
 
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
@@ -381,23 +382,25 @@ void client_destroy(HSClient* client) {
     g_free(client);
 }
 
-void window_unfocus(Window window) {
-    HSDebug("window_unfocus NORMAL\n");
-    window_update_border(window, g_window_border_normal_color);
-    HSClient* c = get_client_from_window(window);
-    if (c) {
-        if (c->urgent) {
-            HSDebug("window_unfocus URGENT\n");
-            window_update_border(window, g_window_border_urgent_color);
-        }
-        grab_client_buttons(c, false);
-    }
+static int client_get_scheme_triple_idx(HSClient* client) {
+    if (client->fullscreen) return HSDecSchemeFullscreen;
+    else if (is_client_floated(client)) return HSDecSchemeFloating;
+    else return HSDecSchemeTiling;
 }
 
-static Window lastfocus = 0;
-void window_unfocus_last() {
+void client_window_unfocus(HSClient* client) {
+    if (!client) return;
+    // get correct scheme triple
+    int idx = client_get_scheme_triple_idx(client);
+    decoration_change_scheme(client,
+        client_scheme_from_triple(client, idx));
+    grab_client_buttons(client, false);
+}
+
+static HSClient* lastfocus = NULL;
+void client_window_unfocus_last() {
     if (lastfocus) {
-        window_unfocus(lastfocus);
+        client_window_unfocus(lastfocus);
     }
     hsobject_unlink_by_name(g_client_object, "focus");
     // give focus to root window
@@ -411,36 +414,37 @@ void window_unfocus_last() {
     lastfocus = 0;
 }
 
-void window_focus(Window window) {
-    HSClient* client = get_client_from_window(window);
+void client_window_focus(HSClient* client) {
     assert(client != NULL);
     // set keyboard focus
     if (!client->neverfocus) {
-        XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
+        XSetInputFocus(g_display, client->window, RevertToPointerRoot, CurrentTime);
     }
     else client_sendevent(client, g_wmatom[WMTakeFocus]);
 
-    if (window != lastfocus) {
+    if (client != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
          * twice.  see BUGS for more information
          *
          * only emit the hook if the focus *really* changes */
         // unfocus last one
-        window_unfocus(lastfocus);
+        client_window_unfocus(lastfocus);
         hsobject_link(g_client_object, &client->object, "focus");
-        ewmh_update_active_window(window);
+        ewmh_update_active_window(client->window);
         tag_update_each_focus_layer();
         char* title = client ? client->title->str : "?";
         char winid_str[STRING_BUF_SIZE];
-        snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)window);
+        snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)client->window);
         hook_emit_list("focus_changed", winid_str, title, NULL);
     }
 
     // change window-colors
     HSDebug("window_focus ACTIVE\n");
-    window_update_border(window, g_window_border_active_color);
+    int idx = client_get_scheme_triple_idx(client);
+    decoration_change_scheme(client,
+        client_scheme_from_triple(client, idx));
 
-    lastfocus = window;
+    lastfocus = client;
     /* do some specials for the max layout */
     bool is_max_layout = frame_focused_client(g_cur_frame) == client
                          && g_cur_frame->content.clients.layout == LAYOUT_MAX
@@ -449,21 +453,20 @@ void window_focus(Window window) {
         client_raise(client);
     }
     tag_update_focus_layer(get_current_monitor()->tag);
-    grab_client_buttons(get_client_from_window(window), true);
+    grab_client_buttons(client, true);
     client_set_urgent(client, false);
 }
 
 void client_setup_border(HSClient* client, bool focused) {
-    unsigned long colors[] = {
-        g_window_border_normal_color,
-        g_window_border_active_color,
-    };
     if (client->urgent) {
-        HSDebug("client_setup_border URGENT\n");
-        window_update_border(client->window, g_window_border_urgent_color);
+        decoration_change_scheme(client,
+            g_decorations[client_get_scheme_triple_idx(client)].urgent);
+    } else if (focused) {
+        decoration_change_scheme(client,
+            g_decorations[client_get_scheme_triple_idx(client)].active);
     } else {
-        HSDebug("client_setup_border %s\n", (focused ? "ACTIVE" : "NORMAL"));
-        window_update_border(client->window, colors[focused ? 1 : 0]);
+        decoration_change_scheme(client,
+            g_decorations[client_get_scheme_triple_idx(client)].normal);
     }
 }
 
