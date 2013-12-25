@@ -14,9 +14,9 @@ void decorations_init() {
     g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
     // init default schemes
     HSDecTripple tiling = {
-        { 5, getcolor("black"),     false },    // normal
-        { 5, getcolor("green"),     false },    // active
-        { 5, getcolor("orange"),    false },    // urgent
+        { 2, getcolor("black"),     false },    // normal
+        { 2, getcolor("green"),     false },    // active
+        { 2, getcolor("orange"),    false },    // urgent
     };
     g_decorations[HSDecSchemeTiling] = tiling;
     HSDecTripple fs = {

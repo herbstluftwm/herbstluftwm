@@ -503,6 +503,13 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     //        || frame->content.clients.layout == LAYOUT_MAX)) {
     //    border_width = 0;
     //}
+    if (!*g_smart_window_surroundings
+        || (frame->content.clients.count != 1
+            && frame->content.clients.layout != LAYOUT_MAX)) {
+        // apply window gap
+        rect.width -= *g_window_gap;
+        rect.height -= *g_window_gap;
+    }
     //// apply border width
     //bool is_max_layout = frame->content.clients.layout != LAYOUT_MAX;
     //bool only_one_client = frame->content.clients.count != 1;
