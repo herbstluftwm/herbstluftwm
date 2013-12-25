@@ -791,13 +791,13 @@ void configurenotify(XEvent* event) {
 
 void destroynotify(XEvent* event) {
     // try to unmanage it
-    HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
+    //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
     unmanage_client(event->xdestroywindow.window);
 }
 
 void enternotify(XEvent* event) {
     XCrossingEvent *ce = &event->xcrossing;
-    HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
+    //HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
     if (!mouse_is_dragging()
         && *g_focus_follows_mouse
         && false == ce->focus) {
@@ -820,11 +820,11 @@ void expose(XEvent* event) {
 }
 
 void focusin(XEvent* event) {
-    HSDebug("name is: FocusIn\n");
+    //HSDebug("name is: FocusIn\n");
 }
 
 void keypress(XEvent* event) {
-    HSDebug("name is: KeyPress\n");
+    //HSDebug("name is: KeyPress\n");
     handle_key_press(event);
 }
 
@@ -845,7 +845,7 @@ void motionnotify(XEvent* event) {
 }
 
 void mapnotify(XEvent* event) {
-    HSDebug("name is: MapNotify\n");
+    //HSDebug("name is: MapNotify\n");
     HSClient* c;
     if ((c = get_client_from_window(event->xmap.window))) {
         // reset focus. so a new window gets the focus if it shall have the

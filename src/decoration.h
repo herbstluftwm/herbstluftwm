@@ -30,7 +30,7 @@ typedef struct {
     struct HSClient*        client; // the client to decorate
     Window                  decwin; // the decoration winodw
     HSDecorationScheme      last_scheme;
-    Rectangle               last_rect;
+    Rectangle               last_rect;       // only valid if width >= 0
     bool                    last_rect_inner; // whether last_rect is inner size
 } HSDecoration;
 

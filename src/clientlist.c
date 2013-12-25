@@ -51,6 +51,7 @@ static HSObject*   g_client_object;
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
 static Atom g_wmatom[WMLast];
 
+static HSClient* lastfocus = NULL;
 static void client_set_urgent_force(HSClient* client, bool state);
 static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx);
 static int client_get_scheme_triple_idx(HSClient* client);
@@ -365,6 +366,9 @@ void unmanage_client(Window win) {
 void client_destroy(HSClient* client) {
     hsobject_unlink(g_client_object, &client->object);
     decoration_free(&client->dec);
+    if (lastfocus == client) {
+        lastfocus = NULL;
+    }
     if (client->tag && client->slice) {
         stack_remove_slice(client->tag->stack, client->slice);
     }
@@ -390,14 +394,10 @@ static int client_get_scheme_triple_idx(HSClient* client) {
 
 void client_window_unfocus(HSClient* client) {
     if (!client) return;
-    // get correct scheme triple
-    int idx = client_get_scheme_triple_idx(client);
-    decoration_change_scheme(client,
-        client_scheme_from_triple(client, idx));
+    client_setup_border(client, false);
     grab_client_buttons(client, false);
 }
 
-static HSClient* lastfocus = NULL;
 void client_window_unfocus_last() {
     if (lastfocus) {
         client_window_unfocus(lastfocus);
@@ -439,10 +439,8 @@ void client_window_focus(HSClient* client) {
     }
 
     // change window-colors
-    HSDebug("window_focus ACTIVE\n");
-    int idx = client_get_scheme_triple_idx(client);
-    decoration_change_scheme(client,
-        client_scheme_from_triple(client, idx));
+    //HSDebug("window_focus ACTIVE: 0x%lx\n", client->window);
+    client_setup_border(client, true);
 
     lastfocus = client;
     /* do some specials for the max layout */
@@ -458,12 +456,12 @@ void client_window_focus(HSClient* client) {
 }
 
 void client_setup_border(HSClient* client, bool focused) {
-    if (client->urgent) {
-        decoration_change_scheme(client,
-            g_decorations[client_get_scheme_triple_idx(client)].urgent);
-    } else if (focused) {
+    if (focused) {
         decoration_change_scheme(client,
             g_decorations[client_get_scheme_triple_idx(client)].active);
+    } else if (client->urgent) {
+        decoration_change_scheme(client,
+            g_decorations[client_get_scheme_triple_idx(client)].urgent);
     } else {
         decoration_change_scheme(client,
             g_decorations[client_get_scheme_triple_idx(client)].normal);
@@ -702,7 +700,6 @@ void window_set_visible(Window win, bool visible) {
         XUnmapWindow,
         XMapWindow,
     };
-    printf("showing %lx\n", win);
     unsigned long event_mask = CLIENT_EVENT_MASK;
     XGrabServer(g_display);
     XSelectInput(g_display, win, event_mask & ~StructureNotifyMask);

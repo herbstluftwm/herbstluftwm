@@ -14,9 +14,9 @@ void decorations_init() {
     g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
     // init default schemes
     HSDecTripple tiling = {
-        { 3, getcolor("black"),     false },    // normal
-        { 3, getcolor("green"),     false },    // active
-        { 3, getcolor("orange"),    false },    // urgent
+        { 5, getcolor("black"),     false },    // normal
+        { 5, getcolor("green"),     false },    // active
+        { 5, getcolor("orange"),    false },    // urgent
     };
     g_decorations[HSDecSchemeTiling] = tiling;
     HSDecTripple fs = {
@@ -51,6 +51,8 @@ void decoration_init(HSDecoration* dec, struct HSClient* client) {
                         CopyFromParent,
                         DefaultVisual(g_display, DefaultScreen(g_display)),
                         CWOverrideRedirect | CWBackPixmap | CWEventMask, &at);
+    dec->last_rect.width = -1;
+    dec->last_rect_inner = false;
 }
 
 void decoration_free(HSDecoration* dec) {
@@ -114,7 +116,9 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
       .border_width = 0
     };
     int mask = CWX | CWY | CWWidth | CWHeight | CWBorderWidth;
-    XSetWindowBackground(g_display, decwin, scheme.border_color);
+    HSColor col = scheme.border_color;
+    XSetWindowBackground(g_display, decwin, col);
+    XClearWindow(g_display, decwin);
     XConfigureWindow(g_display, win, mask, &changes);
     //if (*g_window_border_inner_width > 0
     //    && *g_window_border_inner_width < *g_window_border_width) {
@@ -130,14 +134,18 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     client->dec.last_rect = outline;
     client->dec.last_rect_inner = false;
     client->last_size = inner;
-    client_send_configure(client);
-    XSync(g_display, False);
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
+    client_send_configure(client);
+    XSync(g_display, False);
 }
 
 void decoration_change_scheme(struct HSClient* client,
                               HSDecorationScheme scheme) {
+    if (client->dec.last_rect.width < 0) {
+        // TODO: do something useful here
+        return;
+    }
     if (client->dec.last_rect_inner) {
         decoration_resize_inner(client, client->dec.last_rect, scheme);
     } else {
