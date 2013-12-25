@@ -648,18 +648,7 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
         client_resize_fullscreen(client, m);
         return;
     }
-
-    // ensure minimal size
-    if (client->float_size.width < WINDOW_MIN_WIDTH)
-        client->float_size.width = WINDOW_MIN_WIDTH;
-    if (client->float_size.height < WINDOW_MIN_HEIGHT)
-        client->float_size.height = WINDOW_MIN_HEIGHT;
-
-    bool border_changed = false;
     Rectangle rect = client->float_size;
-    rect.x += m->rect.x + m->pad_left;
-    rect.y += m->rect.y + m->pad_up;
-
     // ensure position is on monitor
     int space = g_monitor_float_treshold;
     rect.x =
@@ -670,28 +659,8 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
         CLAMP(rect.y,
               m->rect.y + m->pad_up - rect.height + space,
               m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
-    if (applysizehints_xy(client, &rect.x, &rect.y, &rect.width, &rect.height)) {
-        XMoveResizeWindow(g_display, client->window,
-            rect.x, rect.y, rect.width, rect.height);
-    }
-    if (border_changed) {
-        XSetWindowBorderWidth(g_display, client->window, *g_window_border_width);
-    }
-    // add window border to last_size
-    client->last_size = rect;
-    if (*g_window_border_inner_width > 0
-        && *g_window_border_inner_width < *g_window_border_width) {
-        unsigned long current_border_color = get_window_border_color(client);
-        HSDebug("client_resize %s\n",
-                current_border_color == g_window_border_active_color
-                ? "ACTIVE" : "NORMAL");
-        set_window_double_border(g_display, client->window,
-                                 *g_window_border_inner_width,
-                                 g_window_border_inner_color,
-                                 current_border_color);
-    }
-    client_send_configure(client);
-    XSync(g_display, False);
+    decoration_resize_inner(client, rect,
+        client_scheme_from_triple(client, HSDecSchemeFloating));
 }
 
 Rectangle client_outer_floating_rect(HSClient* client) {

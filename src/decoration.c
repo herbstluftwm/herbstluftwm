@@ -25,6 +25,12 @@ void decorations_init() {
         { 0, getcolor("orange"),    false },    // urgent
     };
     g_decorations[HSDecSchemeFullscreen] = fs;
+    HSDecTripple fl = {
+        { 1, getcolor("black"),     false },    // normal
+        { 4, getcolor("green"),     false },    // active
+        { 1, getcolor("orange"),    false },    // urgent
+    };
+    g_decorations[HSDecSchemeFloating] = fl;
 }
 
 void decorations_destroy() {
