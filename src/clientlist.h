@@ -47,8 +47,13 @@ typedef struct HSClient {
     HSDecoration    dec;
 } HSClient;
 
+
+
 void clientlist_init();
 void clientlist_destroy();
+void clientlist_end_startup();
+
+bool clientlist_ignore_unmapnotify(Window win);
 
 void clientlist_foreach(GHFunc func, gpointer data);
 

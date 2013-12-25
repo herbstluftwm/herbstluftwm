@@ -905,7 +905,9 @@ void propertynotify(XEvent* event) {
 
 void unmapnotify(XEvent* event) {
     HSDebug("name is: UnmapNotify for %lx\n", event->xunmap.window);
-    unmanage_client(event->xunmap.window);
+    if (!clientlist_ignore_unmapnotify(event->xunmap.window)) {
+        unmanage_client(event->xunmap.window);
+    }
 }
 
 /* ---- */
@@ -942,6 +944,7 @@ int main(int argc, char* argv[]) {
     all_monitors_apply_layout();
     ewmh_update_all();
     execute_autostart_file();
+    clientlist_end_startup();
 
     // main loop
     XEvent event;

@@ -56,6 +56,13 @@ static void client_set_urgent_force(HSClient* client, bool state);
 static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx);
 static int client_get_scheme_triple_idx(HSClient* client);
 
+static bool g_startup = true; // whether hlwm is starting up and is not in the
+                              // main event loop yet
+static int  g_unmapnotify_ignore_cnt = 0; // number of unmapnotify events to
+                                          // ignore after startup. Ignore one
+                                          // for each reparented window, as
+                                          // this creates an unmap notify event
+
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
     hsobject_init(&hc->object);
@@ -103,6 +110,20 @@ void clientlist_init() {
     g_client_object = hsobject_create_and_link(hsobject_root(), "clients");
     g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
                                       NULL, (GDestroyNotify)client_destroy);
+}
+
+void clientlist_end_startup() {
+    g_startup = false;
+}
+
+bool clientlist_ignore_unmapnotify(Window win) {
+    if (get_client_from_window(win)
+        && g_unmapnotify_ignore_cnt > 0) {
+        g_unmapnotify_ignore_cnt--;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void reset_client_colors() {
@@ -305,6 +326,7 @@ HSClient* manage_client(Window win) {
     ewmh_add_client(client->window);
 
     XReparentWindow(g_display, client->window, client->dec.decwin, 40, 40);
+    g_unmapnotify_ignore_cnt++;
     XMapWindow(g_display, client->window);
     // get events from window
     XSelectInput(g_display, client->dec.decwin, (EnterWindowMask | LeaveWindowMask |
