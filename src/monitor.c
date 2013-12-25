@@ -1236,8 +1236,8 @@ void monitor_restack(HSMonitor* monitor) {
     /* remove a focused fullscreen client */
     HSClient* client = frame_focused_client(monitor->tag->frame);
     if (client && client->fullscreen) {
-        XRaiseWindow(g_display, client->window);
-        int idx = array_find(buf, count, sizeof(*buf), &client->window);
+        XRaiseWindow(g_display, client->dec.decwin);
+        int idx = array_find(buf, count, sizeof(*buf), &client->dec.decwin);
         assert(idx >= 0);
         count--;
         memmove(buf + idx, buf + idx + 1, sizeof(*buf) * (count - idx));

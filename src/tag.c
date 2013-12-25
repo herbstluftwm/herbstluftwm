@@ -324,7 +324,7 @@ int tag_remove_command(int argc, char** argv, GString* output) {
         // if target monitor is viewed, then show windows
         monitor_apply_layout(monitor_target);
         for (i = 0; i < count; i++) {
-            window_show(buf[i]->window);
+            client_set_visible(buf[i], true);
         }
     }
     g_free(buf);
@@ -494,12 +494,12 @@ void tag_move_client(HSClient* client, HSTag* target) {
     if (monitor_source && !monitor_target) {
         // window is moved to invisible tag
         // so hide it
-        window_hide(client->window);
+        client_set_visible(client, false);
     }
     monitor_apply_layout(monitor_source);
     monitor_apply_layout(monitor_target);
     if (!monitor_source && monitor_target) {
-        window_show(client->window);
+        client_set_visible(client, true);
     }
     if (monitor_target == get_current_monitor()) {
         frame_focus_recursive(monitor_target->tag->frame);

@@ -19,6 +19,7 @@
 #include "ewmh.h"
 #include "stack.h"
 #include "object.h"
+#include "decoration.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -484,8 +485,8 @@ void event_on_configure(XEvent event) {
         if (client->sizehints_floating &&
             (is_client_floated(client) || client->pseudotile))
         {
-            cre->width += 2*cre->border_width - 2*client->last_border_width;
-            cre->height += 2*cre->border_width - 2*client->last_border_width;
+            cre->width += 2*cre->border_width;
+            cre->height += 2*cre->border_width;
             if (newRect.width  != cre->width) changes = true;
             if (newRect.height != cre->height) changes = true;
             newRect.x = cre->x;
@@ -733,6 +734,7 @@ static struct {
     { layout_init,      layout_destroy      },
     { tag_init,         tag_destroy         },
     { clientlist_init,  clientlist_destroy  },
+    { decorations_init, decorations_destroy },
     { monitor_init,     monitor_destroy     },
     { ewmh_init,        ewmh_destroy        },
     { mouse_init,       mouse_destroy       },
@@ -789,6 +791,7 @@ void configurenotify(XEvent* event) {
 
 void destroynotify(XEvent* event) {
     // try to unmanage it
+    HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
     unmanage_client(event->xdestroywindow.window);
 }
 

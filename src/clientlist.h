@@ -24,7 +24,6 @@ typedef struct HSClient {
     Window      window;
     GString*    window_str;     // the window id as a string
     Rectangle   last_size;      // last size excluding the window border
-    int         last_border_width;
     HSTag*      tag;
     Rectangle   float_size;     // floating size without the window border
     GString*    title;  // or also called window title; this is never NULL
@@ -101,8 +100,7 @@ int client_set_property_command(int argc, char** argv);
 bool is_window_class_ignored(char* window_class);
 bool is_window_ignored(Window win);
 
-void window_show(Window win);
-void window_hide(Window win);
+void client_set_visible(HSClient* client, bool visible);
 void window_set_visible(Window win, bool visible);
 
 void window_update_border(Window window, unsigned long color);

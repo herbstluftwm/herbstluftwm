@@ -1771,7 +1771,7 @@ static void frame_hide(HSFrame* frame) {
         HSClient** buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            window_hide(buf[i]->window);
+            client_set_visible(buf[i], false);
         }
     }
 }
@@ -1787,7 +1787,7 @@ static void frame_show_clients(HSFrame* frame) {
         HSClient** buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            window_show(buf[i]->window);
+            client_set_visible(buf[i], true);
         }
     }
 }
@@ -1886,11 +1886,7 @@ void frame_set_visible(HSFrame* frame, bool visible) {
     if (frame->window_visible == visible) {
         return;
     }
-    if (visible) {
-        window_show(frame->window);
-    } else {
-        window_hide(frame->window);
-    }
+    window_set_visible(frame->window, visible);
     frame->window_visible = visible;
 }
 

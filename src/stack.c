@@ -241,7 +241,7 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
     switch (s->type) {
         case SLICE_CLIENT:
             if (data->len) {
-                data->buf[0] = s->data.client->window;
+                data->buf[0] = s->data.client->dec.decwin;
                 data->buf++;
                 data->len--;
             } else {
@@ -380,7 +380,7 @@ Window stack_lowest_window(HSStack* stack) {
             Window w = 0;
             switch (slice->type) {
                 case SLICE_CLIENT:
-                    w = slice->data.client->window;
+                    w = slice->data.client->dec.decwin;
                     break;
                 case SLICE_WINDOW:
                     w = slice->data.window;

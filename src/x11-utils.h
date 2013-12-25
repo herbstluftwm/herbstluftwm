@@ -14,5 +14,7 @@
 void window_cut_rect_hole(Window win, int width, int height, int framewidth);
 void window_make_intransparent(Window win, int width, int height);
 
+typedef unsigned long HSColor;
+
 #endif
 
