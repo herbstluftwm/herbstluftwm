@@ -28,7 +28,7 @@ following platforms:
   * Arch Linux via the
     link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm[Arch User
     Repository]
-  * Debian
+  * link:http://packages.debian.org/search?keywords=herbstluftwm[Debian]
   * link:http://packages.gentoo.org/package/x11-wm/herbstluftwm[Gentoo Linux]
   * Mac OS X via
     link:http://trac.macports.org/browser/trunk/dports/x11/herbstluftwm/Portfile[MacPorts]
