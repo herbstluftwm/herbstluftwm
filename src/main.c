@@ -891,7 +891,6 @@ void propertynotify(XEvent* event) {
                     client_update_wm_hints(client);
                     break;
                 case XA_WM_NORMAL_HINTS:
-                    printf("sizehints\n");
                     updatesizehints(client);
                     HSMonitor* m = find_monitor_with_tag(client->tag);
                     if (m) monitor_apply_layout(m);

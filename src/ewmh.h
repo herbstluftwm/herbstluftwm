@@ -34,6 +34,8 @@ enum {
     NetWmWindowType,
     NetWmState,
     NetWmWindowOpacity,
+    NetMoveresizeWindow,
+    NetWmMoveresize,
     /* window states */
     NetWmStateFullscreen,
     NetWmStateDemandsAttention,
