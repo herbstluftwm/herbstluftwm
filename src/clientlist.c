@@ -520,11 +520,6 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         client_resize_fullscreen(client, m);
         return;
     }
-    //if (*g_smart_window_surroundings && !client->pseudotile
-    //    && (frame->content.clients.count == 1
-    //        || frame->content.clients.layout == LAYOUT_MAX)) {
-    //    border_width = 0;
-    //}
     if (!*g_smart_window_surroundings
         || (frame->content.clients.count != 1
             && frame->content.clients.layout != LAYOUT_MAX)) {
@@ -532,10 +527,6 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
     }
-    //// apply border width
-    //bool is_max_layout = frame->content.clients.layout != LAYOUT_MAX;
-    //bool only_one_client = frame->content.clients.count != 1;
-    //bool smart_surroundings_are_applied = *g_smart_window_surroundings && is_max_layout && only_one_client;
     //if (client->pseudotile) {
     //    Rectangle size = client->float_size;
     //    // ensure size is not larger than the tile
@@ -543,8 +534,14 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     //    rect.height = MIN(size.height, tile.height - 2 * border_width);
     //}
     //// TODO: force it into the tile
-    decoration_resize_outline(client, rect,
-        client_scheme_from_triple(client, HSDecSchemeTiling));
+    HSDecorationScheme scheme = client_scheme_from_triple(client, HSDecSchemeTiling);
+    // TODO: but do this on focus change as well!!
+    //if (*g_smart_window_surroundings && !client->pseudotile
+    //    && (frame->content.clients.count == 1
+    //        || frame->content.clients.layout == LAYOUT_MAX)) {
+    //    scheme = client_scheme_from_triple(client, HSDecSchemeFullscreen);
+    //}
+    decoration_resize_outline(client, rect, scheme);
 }
 
 
