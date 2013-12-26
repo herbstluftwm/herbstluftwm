@@ -26,9 +26,9 @@ void decorations_init() {
     };
     g_decorations[HSDecSchemeFullscreen] = fs;
     HSDecTripple fl = {
-        { 1, getcolor("black"),     false },    // normal
-        { 4, getcolor("green"),     false },    // active
-        { 1, getcolor("orange"),    false },    // urgent
+        { 1, getcolor("black"),     true  },    // normal
+        { 4, getcolor("green"),     true  },    // active
+        { 1, getcolor("orange"),    true  },    // urgent
     };
     g_decorations[HSDecSchemeFloating] = fl;
 }
@@ -94,21 +94,27 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     Window decwin = client->dec.decwin;
     Window win = client->window;
 
-    //applysizehints(client, &inner.width, &inner.height);
-    // center the window in the tile
-    // but only if it's relative coordinates would not be too close to the
-    // upper left tile border
-    //int threshold = *g_pseudotile_center_threshold;
-    //int dx = tile.width/2 - rect.width/2 - border_width;
-    //int dy = tile.height/2 - rect.height/2 - border_width;
-    //rect.x = tile.x + ((dx < threshold) ? 0 : dx);
-    //rect.y = tile.y + ((dy < threshold) ? 0 : dy);
+    Rectangle tile = inner;
+    applysizehints(client, &inner.width, &inner.height);
+    if (!scheme.tight_decoration) {
+        // center the window in the outline tile
+        // but only if it's relative coordinates would not be too close to the
+        // upper left tile border
+        int threshold = *g_pseudotile_center_threshold;
+        int dx = tile.width/2 - inner.width/2;
+        int dy = tile.height/2 - inner.height/2;
+        inner.x = tile.x + ((dx < threshold) ? 0 : dx);
+        inner.y = tile.y + ((dy < threshold) ? 0 : dy);
+    }
 
     //if (RECTANGLE_EQUALS(client->last_size, rect)
     //    && client->last_border_width == border_width) {
     //    return;
     //}
 
+    if (scheme.tight_decoration) {
+        outline = inner_rect_to_outline(inner, scheme);
+    }
     inner.x -= outline.x;
     inner.y -= outline.y;
     XWindowChanges changes = {
