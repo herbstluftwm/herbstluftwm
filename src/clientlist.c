@@ -837,6 +837,7 @@ HSClient* get_current_client() {
 }
 
 void client_set_fullscreen(HSClient* client, bool state) {
+    if (client->fullscreen == state) return;
     client->fullscreen = state;
     if (client->ewmhnotify) {
         client->ewmhfullscreen = state;

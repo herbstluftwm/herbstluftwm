@@ -704,7 +704,6 @@ void frame_apply_client_layout_linear(HSFrame* frame, Rectangle rect, bool verti
         // add the space, if count does not divide frameheight without remainder
         cur.height += (i == count-1) ? last_step_y : 0;
         cur.width += (i == count-1) ? last_step_x : 0;
-        client_setup_border(client, (g_cur_frame == frame) && (i == selection));
         client_resize_tiling(client, cur, frame);
         cur.y += step_y;
         cur.x += step_x;
