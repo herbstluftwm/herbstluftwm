@@ -60,7 +60,7 @@ void decoration_free(HSDecoration* dec) {
 }
 
 
-static Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme scheme) {
+Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme scheme) {
     Rectangle inner = {
         .x = rect.x + scheme.border_width,
         .y = rect.y + scheme.border_width,
@@ -70,7 +70,7 @@ static Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme scheme
     return inner;
 }
 
-static Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme scheme) {
+Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme scheme) {
     Rectangle out = {
         .x = rect.x - scheme.border_width,
         .y = rect.y - scheme.border_width,

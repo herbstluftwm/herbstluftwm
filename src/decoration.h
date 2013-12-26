@@ -66,5 +66,8 @@ void decoration_resize_inner(struct HSClient* client, Rectangle rect,
 void decoration_change_scheme(struct HSClient* client,
                               HSDecorationScheme scheme);
 
+Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme scheme);
+Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme scheme);
+
 #endif
 

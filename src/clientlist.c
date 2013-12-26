@@ -527,14 +527,15 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
     }
-    //if (client->pseudotile) {
-    //    Rectangle size = client->float_size;
-    //    // ensure size is not larger than the tile
-    //    rect.width  = MIN(size.width,  tile.width  - 2 * border_width);
-    //    rect.height = MIN(size.height, tile.height - 2 * border_width);
-    //}
-    //// TODO: force it into the tile
     HSDecorationScheme scheme = client_scheme_from_triple(client, HSDecSchemeTiling);
+    if (client->pseudotile) {
+        Rectangle outline = inner_rect_to_outline(client->float_size, scheme);
+        rect.x += MAX(0, (rect.width - outline.width)/2);
+        rect.y += MAX(0, (rect.height - outline.height)/2);
+        rect.width = MIN(outline.width, rect.width);
+        rect.height = MIN(outline.height, rect.height);
+        scheme.tight_decoration = true;
+    }
     // TODO: but do this on focus change as well!!
     //if (*g_smart_window_surroundings && !client->pseudotile
     //    && (frame->content.clients.count == 1
