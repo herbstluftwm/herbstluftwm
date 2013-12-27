@@ -12,7 +12,8 @@ TXT = $(wildcard *.txt)
 INSTALLFILES = $(TXT:.txt=.html) \
 	herbstluftwm.html \
 	herbstclient.html \
-	herbstluftwm.svg
+	herbstluftwm.svg \
+	main.css
 
 all: $(INSTALLFILES)
 
