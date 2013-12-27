@@ -84,6 +84,7 @@ print """\
      <td class="notab spacing">&nbsp</td>
     </tr>
     </table>\
+    <div class="tabbarseparator"></div>
 """
 
 subpages = tabs[page2tab[name]]
