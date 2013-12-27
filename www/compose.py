@@ -12,7 +12,7 @@ tabs = OrderedDict([
     ("Documentation", OrderedDict([
         ("news", "News"),
         ("migration", "Migration"),
-        ("tour", "Tour"),
+        ("tutorial", "Tutorial"),
         ("herbstluftwm", "herbstluftwm(1)"),
         ("herbstclient", "herbstclient(1)"),
     ])),

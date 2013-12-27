@@ -31,6 +31,9 @@ git clone git://git.cs.fau.de/hlwm
 
 How to use it?
 ---------------
+If you are new to herbstluftwm, the link:tutorial.html[tutorial] is the best
+place to start.
+
 There are manpages for link:herbstluftwm.html[herbstluftwm] and
 link:herbstclient.html[herbstclient] in the +doc/+ directory. They also can be
 seen link:herbstluftwm.html[online].
