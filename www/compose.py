@@ -9,15 +9,20 @@ tabs = OrderedDict([
     ("Overview", OrderedDict([
         ("index","..."),
     ])),
-    ("Doc", OrderedDict([
-        ("news", "NEWS"),
+    ("Documentation", OrderedDict([
+        ("news", "News"),
+        ("migration", "Migration"),
+        ("tour", "Tour"),
         ("herbstluftwm", "herbstluftwm(1)"),
         ("herbstclient", "herbstclient(1)"),
     ])),
     ("FAQ", OrderedDict([
         ("faq", "FAQ"),
     ])),
-    ("Wiki", "http://wiki.herbstluftwm.org")
+    ("Download", OrderedDict([
+        ("download", "..."),
+    ])),
+    ("Wiki", "http://wiki.herbstluftwm.org"),
 ])
 
 page2tab = {}
@@ -97,9 +102,8 @@ if len(subpages) > 1:
         else:
             cls = "subpage"
         print '<span class="{cls}">'.format(cls = cls)
-        print '<a href="{url}">{title}</a>'.format(
+        print '<a href="{url}">{title}</a></span>'.format(
             url = basename + ".html",title = title)
-        print '</span>'
     print "</div>"
 
 print """\

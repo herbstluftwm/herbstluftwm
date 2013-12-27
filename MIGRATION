@@ -1,11 +1,11 @@
 herbstluftwm migration guide
-----------------------------
+============================
 
 This guide describes the list of incompatible changes between the different
 herbstluftwm releases and how to migrate scripts and configuration.
 
 0.5.1 to 0.5.2
-~~~~~~~~~~~~~~
+--------------
 The herbstclient completion options changed for bash. If you manually setup the
 completion -- e.g. for an alias like hc -- then update the complete line as
 follows:
@@ -13,7 +13,7 @@ follows:
     complete -F _herbstclient_complete -o nospace herbstclient # or hc
 
 0.4.1 to 0.5.0
-~~~~~~~~~~~~~~
+--------------
 herbstclient now returns the exitstatus 9 (HERBST_NEED_MORE_ARGS) instead of 3
 (HERBST_INVALID_ARGUMENT) if a command needs more arguments. If an error occurs,
 it now outputs an error message to stderr.
@@ -31,12 +31,12 @@ The setting focus_follows_shift has been removed. The behaviour now is set like
 it were set to 1; the focus always follows the shift now.
 
 0.3 to 0.4
-~~~~~~~~~~
+----------
 The setting window_gap is now called frame_gap. Simply replace all occurrences
 of window_gap by frame_gap in your old scripts (and autostart).
 
 0.2 to 0.3
-~~~~~~~~~~
+----------
 The setting ignore_class is removed, because this also can be done by rules. You
 can replace a line like 'set ignore_class "$foo"' in your autostart by 'rule
 class~"$foo" manage=off'

@@ -61,10 +61,6 @@ version, then you can pull directly from the main repository:
 ----
 git clone git://git.cs.fau.de/hlwm herbstluftwm
 cd herbstluftwm
-# if you want to use the stable version of herbstluftwm, then type:
-# git checkout stable
-# you can switch back to the development version anytime by:
-# git checkout master
 make # build the binaries
 
 # install files
@@ -97,27 +93,17 @@ git pull
 make
 ----
 
-You also can switch to another branch (e.g. +stable+ for the current release
-or +master+ for the development version), by doing this in your herbstluftwm
-directory:
-
-----
-git checkout desiredbranch # insert the branch here
-make cleandeps
-make
-----
-
-First steps
+First start
 -----------
-After starting herbstluftwm the screen is filled with a green background
-initially, which indicates, that there is only one large frame. A frame is a
-container where actual windows can be placed or which can be split into two
+After starting herbstluftwm the screen is surrounded by a green frame initially,
+which indicates, that there is only one large frame. A frame is a container
+where actual windows can be placed or which can be split into two
 frames.
 
 Start an +xterm+ by pressing Alt-Return, which will fill your entire screen.
 
-Client
-~~~~~~
+Using the client
+----------------
 The only way to communicate to herbstluftwm is by using the client application
 called +herbstclient+. Its usual syntax is: +herbstclient COMMAND [ARGUMENTS]+.
 This calls a certain +COMMAND+ within your running herbstluftwm instance, causes

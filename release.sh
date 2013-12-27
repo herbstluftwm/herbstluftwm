@@ -42,13 +42,13 @@ echo ":: Tarball creation"
 make tar
 tarball="herbstluftwm-$version.tar.gz"
 md5sum=$(md5sum "$tarball" | head -c 13 )
-echo ":: Patching www/index.txt"
+echo ":: Patching www/download.txt"
 line=$(printf "| %-7s | $date | $md5sum...%15s| link:tarballs/%s[tar.gz]" \
                 $version                  ' '                 "$tarball" )
 linerexp="// do not remove this: next version line will be added here"
-sed -i "s#^$linerexp\$#$line\n$linerexp#" www/index.txt
+sed -i "s#^$linerexp\$#$line\n$linerexp#" www/download.txt
 echo ":: Commiting changes"
-git add www/index.txt
+git add www/download.txt
 git commit -m "www: Add $version tarball"
 
 echo

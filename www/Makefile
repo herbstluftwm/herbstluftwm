@@ -27,15 +27,15 @@ all: $(INSTALLFILES)
 herbstluftwm.svg: ../share/herbstluftwm.svg
 	cp $^ $@
 
-herbstluftwm-content.html: ../doc/herbstluftwm.txt
-	$(call colorecho,DOC,$@)
-	@$(ASCIIDOC) $(ASCIIDOCFLAGS) -o $@ $<
-
-herbstclient-content.html: ../doc/herbstclient.txt
-	$(call colorecho,DOC,$@)
-	@$(ASCIIDOC) $(ASCIIDOCFLAGS) -o $@ $<
-
 news.html: ../NEWS
+
+migration.html: ../MIGRATION
+
+herbstluftwm.html: ../doc/herbstluftwm.txt
+
+herbstclient.html: ../doc/herbstclient.txt
+
+tour.html: ../doc/herbstluftwm-tutorial.txt
 
 clean:
 	rm -f *.html *-content.html

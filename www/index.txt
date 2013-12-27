@@ -20,63 +20,24 @@ Its main features can be described with:
     link:http://wmii.suckless.org/[wmii]/
     link:http://aerosuidae.net/musca.html[musca])
 
-Get it!
--------
-Install herbstluftwm via your package manager! It is currently available on the
-following platforms:
-
-  * Arch Linux via the
-    link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm[Arch User
-    Repository]
-  * link:http://packages.debian.org/search?keywords=herbstluftwm[Debian]
-  * link:http://packages.gentoo.org/package/x11-wm/herbstluftwm[Gentoo Linux]
-  * Mac OS X via
-    link:http://trac.macports.org/browser/trunk/dports/x11/herbstluftwm/Portfile[MacPorts]
-  * FreeBSD
-  * Ubuntu Linux
-
-It's confirmed to run on:
-
-  * Cygwin
-  * OpenBSD
-  * Many other Linux distributions
-
-If your distribution is not supported you can build a package on your own using
-the most current released tarball:
-
-[options="header"]
-|==========================================================================================================
-| Version | Date       | link:tarballs/MD5SUMS[MD5SUMS] | Tarball
-| 0.1     | 2011-10-02 | 284067728e56f...               | link:tarballs/herbstluftwm-0.1.tar.gz[tar.gz]
-| 0.2     | 2012-01-25 | 1628f236a7086...               | link:tarballs/herbstluftwm-0.2.tar.gz[tar.gz]
-| 0.3     | 2012-04-12 | 176b82a7b5881...               | link:tarballs/herbstluftwm-0.3.tar.gz[tar.gz]
-| 0.4     | 2012-08-18 | 698b43bde76f9...               | link:tarballs/herbstluftwm-0.4.tar.gz[tar.gz]
-| 0.4.1   | 2012-08-30 | 2cf235dd9e0c4...               | link:tarballs/herbstluftwm-0.4.1.tar.gz[tar.gz]
-| 0.5.0   | 2012-12-31 | ed28cc9d89d5f...               | link:tarballs/herbstluftwm-0.5.0.tar.gz[tar.gz]
-| 0.5.1   | 2013-01-05 | c6ea924d947df...               | link:tarballs/herbstluftwm-0.5.1.tar.gz[tar.gz]
-| 0.5.2   | 2013-06-23 | 4cbbe35ac3627...               | link:tarballs/herbstluftwm-0.5.2.tar.gz[tar.gz]
-| 0.5.3   | 2013-12-24 | 8b7f430c85d22...               | link:tarballs/herbstluftwm-0.5.3.tar.gz[tar.gz]
-// do not remove this: next version line will be added here
-|==========================================================================================================
-
-The current development version is available in the
-link:http://git.informatik.uni-erlangen.de/?p=re06huxa/herbstluftwm[GitWeb]
-or can be cloned with:
+How to get it?
+--------------
+Install it via the package manager, link:download.html[download tarballs], or
+clone the git repository:
 
 ----
-git clone git://git.informatik.uni-erlangen.de/re06huxa/herbstluftwm
+git clone git://git.cs.fau.de/hlwm
 ----
 
-Documentation
--------------
-There are manpages in the +doc/+ directory. They also can be seen online:
-
-  * link:herbstluftwm.html[herbstluftwm]
-  * link:herbstclient.html[herbstclient]
+How to use it?
+---------------
+There are manpages for link:herbstluftwm.html[herbstluftwm] and
+link:herbstclient.html[herbstclient] in the +doc/+ directory. They also can be
+seen link:herbstluftwm.html[online].
 
 Support
 -------
-Feel free to join the IRC channel +#herbstluftwm+ on +irc.freenode.net+.
+You are welcome to join the IRC channel +#herbstluftwm+ on +irc.freenode.net+.
 
 For further bug reporting or patch submission contact the mailing list:
 ----
