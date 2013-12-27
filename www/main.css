@@ -332,3 +332,26 @@ table thead th {
     margin-top: 0em;
     margin-bottom: 0em;
 }
+
+.subpagebar {
+    padding: 0.4em;
+}
+
+.subpagebar .subpage {
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+}
+
+.subpagebar .subpage a {
+    color: #6f9c00;
+    font-weight: bold;
+}
+
+.subpagebar .subpagecur a {
+    color: black;
+}
+
+.subpagebar .subpagecur {
+    background-color: grey;
+}
+

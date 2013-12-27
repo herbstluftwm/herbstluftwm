@@ -1,8 +1,0 @@
-Herbstluftwm
-============
-
-****
-link:index.html[About]
-link:news.html[NEWS]
-link:faq.html[FAQ]
-****

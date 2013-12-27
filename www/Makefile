@@ -20,8 +20,8 @@ all: $(INSTALLFILES)
 	$(call colorecho,DOC,$@)
 	$(ASCIIDOC) $(ASCIIDOCFLAGS) -o $@ $<
 
-%.html: %-content.html compose.sh
-	./compose.sh $< > $@
+%.html: %-content.html compose.py
+	./compose.py $< > $@
 
 herbstluftwm.svg: ../share/herbstluftwm.svg
 	cp $^ $@
