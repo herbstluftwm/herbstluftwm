@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 tabs = OrderedDict([
     ("Overview", OrderedDict([
-        ("index","..."),
+        ("index",""),
     ])),
     ("Documentation", OrderedDict([
         ("news", "News"),
@@ -20,22 +20,25 @@ tabs = OrderedDict([
         ("faq", "FAQ"),
     ])),
     ("Download", OrderedDict([
-        ("download", "..."),
+        ("download", "Download"),
     ])),
     ("Wiki", "http://wiki.herbstluftwm.org"),
 ])
 
 page2tab = {}
 
-for title, subpages in tabs.iteritems():
-    if not isinstance(subpages, basestring):
-        for filename, _ in subpages.iteritems():
-            page2tab[filename] = title
-
-windowtitle = "herbstluftwm"
-
 filename = sys.argv[1]
 name = filename.replace('-content.html', '')
+
+windowtitle = "herbstluftwm"
+for title, subpages in tabs.iteritems():
+    if not isinstance(subpages, basestring):
+        for fn, subtitle in subpages.iteritems():
+            page2tab[fn] = title
+            if not ("" == subtitle) and (name == fn):
+                windowtitle = subtitle + " - herbstluftwm"
+
+
 curtab = page2tab[name]
 
 #====~===~=========~==
@@ -60,7 +63,7 @@ print """\
        </div>
      </div>
     </div>
-   </div>""".format(title="test")
+   </div>""".format(title=windowtitle)
 
 #====~===~=========~==
 # Navigation bar

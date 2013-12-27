@@ -136,13 +136,14 @@ h1 {
     color: black;
 }
 
-h2 {
+h2, h3 {
     width: 100%;
-    font-size: 1em;
     color: #2e3436;
     border-bottom: 1px solid #bcbcbc;
 }
 
+h2 { font-size: 1.3em; }
+h3 { font-size: 1.0em; }
 
 li {
     margin-top: 0.4em;

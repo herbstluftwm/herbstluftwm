@@ -41,18 +41,6 @@ herbstclient-completion from the bash_completion.d directory in your bashrc. In
 case of zsh the tab-completion normally is activated already (if not, consider
 activating it).
 
-As usual you can define herbstluftwm as your window manager by either selecting
-herbstluftwm in your login manager or by starting it in your +~/.xinitrc+,
-mostly by writing to your xinitrc (or +.xsession+ on some systems):
-
-----
-# start herbstluftwm in locked mode (it will be unlocked at the end of your
-# autostart)
-exec herbstluftwm --locked
-----
-
-After logging in the next time, you will get a default herbstluftwm session.
-
 Directly from git
 ~~~~~~~~~~~~~~~~~
 If there is no package for your platform or if you want to use the current git
@@ -93,6 +81,21 @@ git pull
 make
 ----
 
+Configure herbstluftwm as your window manager
+---------------------------------------------
+
+As usual you can define herbstluftwm as your window manager by either selecting
+herbstluftwm in your login manager or by starting it in your +~/.xinitrc+,
+mostly by writing to your xinitrc (or +.xsession+ on some systems):
+
+----
+# start herbstluftwm in locked mode (it will be unlocked at the end of your
+# autostart)
+exec herbstluftwm --locked
+----
+
+After logging in the next time, you will get a default herbstluftwm session.
+
 First start
 -----------
 After starting herbstluftwm the screen is surrounded by a green frame initially,
@@ -113,14 +116,14 @@ which is printed by +herbstclient+ and lets +herbstclient+ exit with a exit-code
 
 ----
     shell              COMMANDS,
-       \ COMMAND,      ARGUMENTS
-        \ ARGUMENTS  .---------.
-         \          /           \
-          V        /             V
+       ╲ COMMAND,      ARGUMENTS
+        ╲ ARGUMENTS ╭────────────╮
+         ╲          │            │
+          V         │            V
          herbstclient         herbstluftwm
-          /        ^             /
-         / output,  \           /
-        / exit-code  '---------'
+          ╱         ^            │
+         ╱ output,  │            │
+        ╱ exit-code ╰────────────╯
        V               output,
  shell/terminal       exit-code
 ----
@@ -167,5 +170,79 @@ configuration workflow:
   . Press Mod-Shift-r which calls the +reload+ command or directly execute the
     autostart file from your shell to get the error messages if something went
     wrong.
+
+Tiling
+------
+Initially there is one frame. Each frame has one of the two following possible
+types:
+
+  . It servers as a container for windows, i.e. it can hold zero up to
+  arbitrarily many windows. Launch several more terminals to see what happens:
+  If there are multiple windows in one frame, they are aligned below each other.
+  To change this layout algorithm, press Mod-space to cycle all the available
+  layouting algorithms for the focused frame.
+
+  . A frame also can be split into two subframes, which can be aligned next to
+  or below each other. Press Mod-o to split to an horizontal alignment. To
+  navigate to the fresh frame right of the old one press Mod-l. Press Mod-u to
+  split vertically. The intuitive navigation is: +
++
+----
+      ⎧ h (or ←) ⎫                 ⎧ left
+      ⎪ j (or ↓) ⎪   means         ⎪ down
+Mod + ⎨ k (or ↑) ⎬  ═══════> focus ⎨ up
+      ⎩ l (or →) ⎭                 ⎩ right
+----
++
+To undo splitting, you can remove a frame via Mod-r. To shift some window from
+one frame to one of its nieghbours, use the same keyboard shortcut while holding
+the Shift key pressed. It is not possible to resize single windows but to resize
+frames. The according keyboard shortcut is the same while holding Control
+pressed. All in all it is:
++
+----
+                    ⎧ h (or ←) ⎫                          ⎧ left
+      ⎧         ⎫   ⎪ j (or ↓) ⎪  means  ⎧ focus frame  ⎫ ⎪ down
+Mod + ⎨ Shift   ⎬ + ⎨ k (or ↑) ⎬  ═════> ⎨ move window  ⎬ ⎨ up
+      ⎩ Control ⎭   ⎩ l (or →) ⎭         ⎩ resize frame ⎭ ⎩ right
+----
+
+With this, you can define a custom layout. It can be printed via the +layout+
+command:
+
+----
+$ herbstclient layout
+╾─┐ horizontal 50% selection=1
+  ├─┐ vertical 70% selection=0
+  │ ├─╼ vertical: 0x1400009
+  │ └─╼ vertical:
+  └─╼ max: 0x1a00009 [FOCUS]
+----
+
+Just play with it a bit to how it works. You also can permanently save the
+layout using the +dump+ command:
+
+----
+$ herbstclient dump
+(split horizontal:0.500000:1
+    (split vertical:0.700000:0
+        (clients vertical:0 0x1400009)
+        (clients vertical:0))
+    (clients max:0 0x1a00009))
+$ layout=$(herbstclient dump)
+----
+
+And after some changes you can rewind to the original layout with the +load+
+command:
+
+----
+$ herbstclient load "$layout"       # mind the quotes!
+----
+
+
+// TODO: add sections for:
+//      rules
+//      tags
+//      monitors
 
 // vim: tw=80 ft=asciidoc
