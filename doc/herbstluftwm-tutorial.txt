@@ -7,7 +7,6 @@ Name
 ----
 herbstluftwm-tutorial - A tutorial introduction to herbstluftwm
 
-
 Description
 -----------
 This tutorial includes how to create a basic herbstluftwm setup and introduces
@@ -15,6 +14,15 @@ the major herbstluftwm features. This tutorial neither covers all features nor
 specifies the mentioned features entirely; see *herbstluftwm*(1) for a compact
 and more complete description.
 
+This tutorial covers these topics:
+
+  - <<installation,Basic installation>>
+  - <<client,Usage of the client>>
+  - <<tiling,The tiling method>>
+  - <<tags,Tags (or workspaces...)>>
+  - <<monitors,Multi-Monitor handling>>
+
+[[installation]]
 Basic installation
 ------------------
 This describes two alternate installation methods. In any case, you also have to
@@ -105,6 +113,7 @@ frames.
 
 Start an +xterm+ by pressing Alt-Return, which will fill your entire screen.
 
+[[client]]
 Using the client
 ----------------
 The only way to communicate to herbstluftwm is by using the client application
@@ -171,6 +180,12 @@ configuration workflow:
     autostart file from your shell to get the error messages if something went
     wrong.
 
+To learn more about herbstluftwm, just go through the man page line by
+line and check using the link:herbstluftwm.html[herbstluftwm(1) man page] what
+it does. For a quick introduction to the central paradigms, continue reading
+this.
+
+[[tiling]]
 Tiling
 ------
 Initially there is one frame. Each frame has one of the two following possible
@@ -239,10 +254,54 @@ command:
 $ herbstclient load "$layout"       # mind the quotes!
 ----
 
+[[tags]]
+Tags (or workspaces or virtual desktops or ....)
+------------------------------------------------
+A tag consists of a name and a frame layout with clients on it. With the default
+autostart, there are nine tags named 1 to 9. You can switch to the ith tag using
+Mod-i, e.g. Mod-4 to switch to tag 4 or with the command +use 4+. A window can
+be move to tag i via Mod-Shift-i, i.e. with the +move+ command.
+
+[[monitors]]
+Monitors
+--------
+The notion of a monitor in herbstluftwm is treaten much more abstract and
+general than in other window managers: A monitor just is a rectangular part of
+your screen which shows exactly one tag on it.
+
+Initially there is only one large monitor ranging over your entire screen:
+
+----
+$ herbstclient list_monitors
+0: 1440x900+0+0 with tag "1" [FOCUS]
+----
+
+It tells, that there is only one monitor with index 0 at position +0+0 of size
+1440x900 showing tag 1. In most cases, the herbstluftwm monitors will match the
+list of physical monitors. So to add another physical monitor, you have to
+perform several steps:
+
+  . Enable it, such that it shows a part of your screen. You can use +xrandr+,
+    +xinerama+ or any other tool you like.
+  . Register it in herbstluftwm: Lets assume your new monitor has the resolution
+    1024x768 and is right of your main screen, then you can activate it via:
++
+----
+$ herbstclient set_monitors 1440x900+0+0 1024x768+1440+0
+----
++
+Alternatively, if +xinerama+ works for your setup, simply run:
++
+----
+$ herbstclient detect_monitors
+----
+
+For even more automation, you can put +hc detect_monitors+ in your autostart and
+press Mod-r after your X11 monitor setup changed. For more advanced examples,
+look at the +q3terminal.sh+ example script, which implements a
+drop-down-terminal like monitor where you can put any application you like.
 
 // TODO: add sections for:
 //      rules
-//      tags
-//      monitors
 
 // vim: tw=80 ft=asciidoc
