@@ -41,4 +41,4 @@ clean:
 	rm -f *.html *-content.html
 
 install:
-	scp $(INSTALLFILES) $(TARGET)
+	rsync -v $(INSTALLFILES) $(TARGET)
