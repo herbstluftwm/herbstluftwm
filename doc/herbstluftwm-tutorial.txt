@@ -210,7 +210,7 @@ Mod + ⎨ k (or ↑) ⎬  ═══════> focus ⎨ up
 ----
 +
 To undo splitting, you can remove a frame via Mod-r. To shift some window from
-one frame to one of its nieghbours, use the same keyboard shortcut while holding
+one frame to one of its neighbours, use the same keyboard shortcut while holding
 the Shift key pressed. It is not possible to resize single windows but to resize
 frames. The according keyboard shortcut is the same while holding Control
 pressed. All in all it is:
