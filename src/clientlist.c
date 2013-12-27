@@ -325,6 +325,7 @@ HSClient* manage_client(Window win) {
     // this ensures a panel can read the tag property correctly at this point
     ewmh_add_client(client->window);
 
+    XSetWindowBorderWidth(g_display, client->window,0);
     XReparentWindow(g_display, client->window, client->dec.decwin, 40, 40);
     g_unmapnotify_ignore_cnt++;
     XMapWindow(g_display, client->window);
