@@ -49,7 +49,8 @@ MouseFunction string2mousefunction(char* name);
 
 void grab_client_buttons(struct HSClient* client, bool focused);
 
-void mouse_start_drag(XEvent* ev);
+void mouse_start_drag_by_event(XEvent* ev);
+void mouse_start_drag(Window win, MouseFunction function);
 void mouse_stop_drag();
 bool mouse_is_dragging();
 void handle_motion_event(XEvent* ev);

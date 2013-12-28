@@ -72,6 +72,11 @@ typedef struct {
     int height;
 } Rectangle;
 
+typedef struct {
+    int x;
+    int y;
+} Point2D;
+
 Rectangle parse_rectangle(char* string);
 
 void g_queue_remove_element(GQueue* queue, GList* elem);

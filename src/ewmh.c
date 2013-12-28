@@ -10,6 +10,7 @@
 #include "clientlist.h"
 #include "settings.h"
 #include "stack.h"
+#include "mouse.h"
 
 #include "glib-backports.h"
 #include <string.h>
@@ -386,6 +387,11 @@ void ewmh_handle_client_message(XEvent* event) {
                 /* change the value */
                 client_atoms[i].callback(client, new_value[action]);
             }
+            break;
+
+        case NetWmMoveresize:
+            // TODO: handle requests more exactly
+            mouse_start_drag(me->window, mouse_function_resize);
             break;
 
         default:

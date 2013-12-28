@@ -50,6 +50,12 @@ int         g_verbose;
         } \
     } while(0)
 
+#define HSWarning(...) \
+    do { \
+        fprintf(stderr, "%s: %d: ", __FILE__, __LINE__); \
+        fprintf(stderr, __VA_ARGS__); \
+    } while(0)
+
 // macro for very slow asserts, which are only executed if DEBUG is defined
 #ifdef DEBUG
 #define slow_assert(X)                                                  \

@@ -2,6 +2,7 @@
 
 #include "x11-utils.h"
 #include "globals.h"
+#include <stdio.h>
 
 #include<X11/extensions/shape.h>
 
@@ -61,4 +62,19 @@ void window_make_intransparent(Window win, int width, int height) {
     XShapeCombineMask(d, win, ShapeBounding, -bw, -bw, p, ShapeSet);
     XFreeGC(d, gp);
     XFreePixmap(d, p);
+}
+
+
+Point2D get_cursor_position() {
+    Point2D point;
+    Window win, child;
+    int wx, wy;
+    unsigned int mask;
+    if (True != XQueryPointer(g_display, g_root, &win, &child,
+                              &point.x, &point.y, &wx,&wy, &mask)) {
+        HSWarning("Can not query cursor coordinates via XQueryPointer\n");
+        point.x = 0;
+        point.y = 0;
+    }
+    return point;
 }
