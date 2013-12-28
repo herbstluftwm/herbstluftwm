@@ -1198,6 +1198,7 @@ bool frame_split(HSFrame* frame, int align, int fraction) {
         // do nothing if tree would be to large
         return false;
     }
+    assert(frame->type == TYPE_CLIENTS);
     // ensure fraction is allowed
     fraction = CLAMP(fraction,
                      FRACTION_UNIT * (0.0 + FRAME_MIN_FRACTION),
