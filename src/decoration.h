@@ -24,6 +24,10 @@ typedef struct {
     HSColor border_color;
     bool    tight_decoration; // if set, there is no space between the
                               // decoration and the window content
+    int     padding_top;    // additional window border
+    int     padding_right;  // additional window border
+    int     padding_bottom; // additional window border
+    int     padding_left;   // additional window border
 } HSDecorationScheme;
 
 typedef struct {

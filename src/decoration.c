@@ -59,22 +59,22 @@ void decoration_free(HSDecoration* dec) {
 }
 
 
-Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme scheme) {
+Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme s) {
     Rectangle inner = {
-        .x = rect.x + scheme.border_width,
-        .y = rect.y + scheme.border_width,
-        .width  = rect.width  - 2* scheme.border_width,
-        .height = rect.height - 2* scheme.border_width,
+        .x = rect.x + s.border_width + s.padding_left,
+        .y = rect.y + s.border_width + s.padding_top,
+        .width  = rect.width  - 2* s.border_width - s.padding_left - s.padding_right,
+        .height = rect.height - 2* s.border_width - s.padding_top - s.padding_bottom,
     };
     return inner;
 }
 
-Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme scheme) {
+Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme s) {
     Rectangle out = {
-        .x = rect.x - scheme.border_width,
-        .y = rect.y - scheme.border_width,
-        .width  = rect.width  + 2* scheme.border_width,
-        .height = rect.height + 2* scheme.border_width,
+        .x = rect.x - s.border_width - s.padding_left,
+        .y = rect.y - s.border_width - s.padding_top,
+        .width  = rect.width  + 2* s.border_width + s.padding_left + s.padding_right,
+        .height = rect.height + 2* s.border_width + s.padding_top + s.padding_bottom,
     };
     return out;
 }
