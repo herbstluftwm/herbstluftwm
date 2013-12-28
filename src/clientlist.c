@@ -73,6 +73,7 @@ static HSClient* create_client() {
     hc->ewmhnotify = true;
     hc->sizehints_floating = true;
     hc->sizehints_tiling = false;
+    hc->visible = false;
     decoration_init(&hc->dec, hc);
     return hc;
 }
@@ -735,6 +736,7 @@ void window_set_visible(Window win, bool visible) {
 }
 
 void client_set_visible(HSClient* client, bool visible) {
+    if (visible == client->visible) return;
     if (visible) {
         /* Grab the server to make sure that the frame window is mapped before
            the client gets its MapNotify, i.e. to make sure the client is
@@ -750,6 +752,7 @@ void client_set_visible(HSClient* client, bool visible) {
         XUnmapWindow(g_display, client->window);
         client->ignore_unmaps++;
     }
+    client->visible = visible;
 }
 
 // heavily inspired by dwm.c

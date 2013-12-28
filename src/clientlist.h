@@ -41,6 +41,7 @@ typedef struct HSClient {
     int         ignore_unmaps;  // Ignore one unmap for each reparenting
                                 // action, because reparenting creates an unmap
                                 // notify event
+    bool        visible;
     // for size hints
 	float mina, maxa;
     int basew, baseh, incw, inch, maxw, maxh, minw, minh;
