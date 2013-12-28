@@ -19,7 +19,7 @@ typedef struct {
 } HSObjectChild;
 
 static void hsobjectchild_destroy(HSObjectChild* oc);
-static HSObjectChild* hsobjectchild_create(char* name, HSObject* obj);
+static HSObjectChild* hsobjectchild_create(const char* name, HSObject* obj);
 static void hsattribute_free(HSAttribute* attr);
 
 static HSObject g_root_object;
@@ -77,7 +77,7 @@ void hsobject_destroy(HSObject* obj) {
     g_free(obj);
 }
 
-HSObject* hsobject_create_and_link(HSObject* parent, char* name) {
+HSObject* hsobject_create_and_link(HSObject* parent, const char* name) {
     HSObject* obj = hsobject_create();
     hsobject_link(parent, obj, name);
     return obj;
@@ -88,7 +88,7 @@ void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child) {
     hsobject_destroy(child);
 }
 
-static HSObjectChild* hsobjectchild_create(char* name, HSObject* obj) {
+static HSObjectChild* hsobjectchild_create(const char* name, HSObject* obj) {
     HSObjectChild* oc = g_new(HSObjectChild, 1);
     oc->name = g_strdup(name);
     oc->child = obj;
@@ -141,7 +141,7 @@ static int child_check_name(HSObjectChild* child, char* name) {
     return strcmp(child->name, name);
 }
 
-void hsobject_link(HSObject* parent, HSObject* child, char* name) {
+void hsobject_link(HSObject* parent, HSObject* child, const char* name) {
     GList* elem = g_list_find_custom(parent->children, name,
                                      (GCompareFunc)child_check_name);
     if (!elem) {
