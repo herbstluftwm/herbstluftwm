@@ -9,8 +9,11 @@
 HSDecTripple g_decorations[HSDecSchemeCount];
 
 int* g_pseudotile_center_threshold;
+HSObject* g_theme_object;
+static void init_dec_tripple_object(HSDecTripple* t, const char* name);
 
 void decorations_init() {
+    g_theme_object = hsobject_create_and_link(hsobject_root(), "theme");
     g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
     // init default schemes
     HSDecTripple tiling = {
@@ -31,9 +34,53 @@ void decorations_init() {
         { 1, getcolor("orange"),    true  },    // urgent
     };
     g_decorations[HSDecSchemeFloating] = fl;
+    init_dec_tripple_object(g_decorations + HSDecSchemeTiling, "tiling");
+    init_dec_tripple_object(g_decorations + HSDecSchemeFloating, "floating");
+}
+
+GString* RELAYOUT(HSAttribute* attr) {
+    (void) attr;
+    all_monitors_apply_layout();
+    return NULL;
+}
+
+// initializes the specified object to edit the scheme
+static void init_scheme_object(HSObject* obj, HSDecorationScheme* s) {
+    hsobject_init(obj);
+    HSAttribute attributes[] = {
+        ATTRIBUTE_INT(      "border_width",     s->border_width,    RELAYOUT),
+        ATTRIBUTE_INT(      "padding_top",      s->padding_top,     RELAYOUT),
+        ATTRIBUTE_INT(      "padding_right",    s->padding_right,   RELAYOUT),
+        ATTRIBUTE_INT(      "padding_bottom",   s->padding_bottom,  RELAYOUT),
+        ATTRIBUTE_INT(      "padding_left",     s->padding_left,    RELAYOUT),
+        ATTRIBUTE_LAST,
+    };
+    hsobject_set_attributes(obj, attributes);
+}
+
+static void init_dec_tripple_object(HSDecTripple* t, const char* name) {
+    hsobject_init(&t->object);
+    init_scheme_object(&t->obj_normal, &t->normal);
+    init_scheme_object(&t->obj_active, &t->active);
+    init_scheme_object(&t->obj_urgent, &t->urgent);
+    hsobject_link(&t->object, &t->obj_normal, "normal");
+    hsobject_link(&t->object, &t->obj_active, "active");
+    hsobject_link(&t->object, &t->obj_urgent, "urgent");
+    hsobject_link(g_theme_object, &t->object, name);
+}
+
+static void free_dec_tripple_object(HSDecTripple* t) {
+    hsobject_unlink(g_theme_object, &t->object);
+    hsobject_free(&t->object);
+    hsobject_free(&t->obj_normal);
+    hsobject_free(&t->obj_active);
+    hsobject_free(&t->obj_urgent);
 }
 
 void decorations_destroy() {
+    free_dec_tripple_object(g_decorations + HSDecSchemeTiling);
+    free_dec_tripple_object(g_decorations + HSDecSchemeFloating);
+    hsobject_unlink_and_destroy(hsobject_root(), g_theme_object);
 }
 
 void decoration_init(HSDecoration* dec, struct HSClient* client) {
