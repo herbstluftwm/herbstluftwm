@@ -678,6 +678,8 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
         return;
     }
     Rectangle rect = client->float_size;
+    rect.x += m->pad_left;
+    rect.y += m->pad_up;
     // ensure position is on monitor
     int space = g_monitor_float_treshold;
     rect.x =
