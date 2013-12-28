@@ -328,7 +328,6 @@ HSClient* manage_client(Window win) {
                             ButtonPressMask | ButtonReleaseMask |
                             SubstructureRedirectMask | FocusChangeMask));
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
-    client_set_visible(client, true);
 
     HSMonitor* monitor = find_monitor_with_tag(client->tag);
     if (monitor) {
@@ -339,11 +338,11 @@ HSClient* manage_client(Window win) {
         // TODO: monitor_apply_layout() maybe is called twice here if it
         // already is called by monitor_set_tag()
         monitor_apply_layout(monitor);
-        // TODO: why was this called in the 
-        //client_set_visible(client, true);
+        client_set_visible(client, true);
     } else {
         if (changes.focus && changes.switchtag) {
             monitor_set_tag(get_current_monitor(), client->tag);
+            client_set_visible(client, true);
         }
     }
     client_send_configure(client);
@@ -650,19 +649,20 @@ void updatesizehints(HSClient *c) {
 
 
 void client_send_configure(HSClient *c) {
-    XConfigureEvent ce;
-    ce.type = ConfigureNotify;
-    ce.display = g_display;
-    ce.event = c->window;
-    ce.window = c->window;
-    ce.x = c->last_size.x;
-    ce.y = c->last_size.y;
-    ce.width = c->last_size.width;
-    ce.height = c->last_size.height;
-    ce.border_width = 0;
-    ce.above = None;
-    ce.override_redirect = False;
-    XSendEvent(g_display, c->window, False, StructureNotifyMask, (XEvent *)&ce);
+    XConfigureEvent ce = {
+        .type = ConfigureNotify,
+        .display = g_display,
+        .event = c->dec.decwin,
+        .window = c->window,
+        .x = c->last_size.x,
+        .y = c->last_size.y,
+        .width = c->last_size.width,
+        .height = c->last_size.height,
+        .border_width = 0,
+        .above = None,
+        .override_redirect = False,
+    };
+    XSendEvent(g_display, c->window, False, SubstructureNotifyMask, (XEvent *)&ce);
 }
 
 void client_resize_floating(HSClient* client, HSMonitor* m) {
