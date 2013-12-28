@@ -481,18 +481,23 @@ void event_on_configure(XEvent event) {
     HSClient* client = get_client_from_window(cre->window);
     if (client) {
         bool changes = false;
-        Rectangle newRect = client->last_size;
+        Rectangle newRect = client->float_size;
         if (client->sizehints_floating &&
             (is_client_floated(client) || client->pseudotile))
         {
+            bool width_requested = 0 != (cre->value_mask & CWWidth);
+            bool height_requested = 0 != (cre->value_mask & CWHeight);
+            bool x_requested = 0 != (cre->value_mask & CWX);
+            bool y_requested = 0 != (cre->value_mask & CWY);
             cre->width += 2*cre->border_width;
             cre->height += 2*cre->border_width;
-            if (newRect.width  != cre->width) changes = true;
-            if (newRect.height != cre->height) changes = true;
-            newRect.x = cre->x;
-            newRect.y = cre->y;
-            newRect.width = cre->width;
-            newRect.height = cre->height;
+            if (width_requested && newRect.width  != cre->width) changes = true;
+            if (height_requested && newRect.height != cre->height) changes = true;
+            if (x_requested || y_requested) changes = true;
+            if (x_requested) newRect.x = cre->x;
+            if (y_requested) newRect.y = cre->y;
+            if (width_requested) newRect.width = cre->width;
+            if (height_requested) newRect.height = cre->height;
         }
         if (changes && is_client_floated(client)) {
             client->float_size = newRect;

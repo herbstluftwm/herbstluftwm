@@ -38,6 +38,9 @@ typedef struct HSClient {
     bool        sizehints_tiling;  // respect size hints regarding this client in tiling mode
     bool        dragged;  // if this client is dragged currently
     int         pid;
+    int         ignore_unmaps;  // Ignore one unmap for each reparenting
+                                // action, because reparenting creates an unmap
+                                // notify event
     // for size hints
 	float mina, maxa;
     int basew, baseh, incw, inch, maxw, maxh, minw, minh;

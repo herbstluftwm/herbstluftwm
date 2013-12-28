@@ -39,20 +39,19 @@ void decorations_destroy() {
 void decoration_init(HSDecoration* dec, struct HSClient* client) {
     dec->client = client;
     XSetWindowAttributes at;
-    at.background_pixel  = getcolor("red");
-    at.background_pixmap = ParentRelative;
-    at.override_redirect = True;
-    at.bit_gravity       = StaticGravity;
-    at.event_mask        = SubstructureRedirectMask|SubstructureNotifyMask
-         |ExposureMask|VisibilityChangeMask
-         |EnterWindowMask|LeaveWindowMask|FocusChangeMask;
     dec->decwin = XCreateWindow(g_display, g_root, 0,0, 30, 30, 0,
                         DefaultDepth(g_display, DefaultScreen(g_display)),
                         CopyFromParent,
                         DefaultVisual(g_display, DefaultScreen(g_display)),
-                        CWOverrideRedirect | CWBackPixmap | CWEventMask, &at);
+                        0, &at);
     dec->last_rect.width = -1;
     dec->last_rect_inner = false;
+    // set wm_class for window
+    XClassHint *hint = XAllocClassHint();
+    hint->res_name = HERBST_FRAME_CLASS;
+    hint->res_class = HERBST_FRAME_CLASS;
+    XSetClassHint(g_display, dec->decwin, hint);
+    XFree(hint);
 }
 
 void decoration_free(HSDecoration* dec) {

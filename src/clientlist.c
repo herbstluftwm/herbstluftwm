@@ -58,11 +58,6 @@ static int client_get_scheme_triple_idx(HSClient* client);
 
 static bool g_startup = true; // whether hlwm is starting up and is not in the
                               // main event loop yet
-static int  g_unmapnotify_ignore_cnt = 0; // number of unmapnotify events to
-                                          // ignore after startup. Ignore one
-                                          // for each reparented window, as
-                                          // this creates an unmap notify event
-
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
     hsobject_init(&hc->object);
@@ -117,9 +112,9 @@ void clientlist_end_startup() {
 }
 
 bool clientlist_ignore_unmapnotify(Window win) {
-    if (get_client_from_window(win)
-        && g_unmapnotify_ignore_cnt > 0) {
-        g_unmapnotify_ignore_cnt--;
+    HSClient* c = get_client_from_window(win);
+    if (c && c->ignore_unmaps > 0) {
+        c->ignore_unmaps--;
         return true;
     } else {
         return false;
@@ -327,8 +322,7 @@ HSClient* manage_client(Window win) {
 
     XSetWindowBorderWidth(g_display, client->window,0);
     XReparentWindow(g_display, client->window, client->dec.decwin, 40, 40);
-    g_unmapnotify_ignore_cnt++;
-    XMapWindow(g_display, client->window);
+    if (g_startup) client->ignore_unmaps++;
     // get events from window
     XSelectInput(g_display, client->dec.decwin, (EnterWindowMask | LeaveWindowMask |
                             ButtonPressMask | ButtonReleaseMask |
@@ -741,7 +735,21 @@ void window_set_visible(Window win, bool visible) {
 }
 
 void client_set_visible(HSClient* client, bool visible) {
-    window_set_visible(client->dec.decwin, visible);
+    if (visible) {
+        /* Grab the server to make sure that the frame window is mapped before
+           the client gets its MapNotify, i.e. to make sure the client is
+           _visible_ when it gets MapNotify. */
+        XGrabServer(g_display);
+        XMapWindow(g_display, client->window);
+        XMapWindow(g_display, client->dec.decwin);
+        XUngrabServer(g_display);
+    } else {
+        /* we unmap the client itself so that we can get MapRequest
+           events, and because the ICCCM tells us to! */
+        XUnmapWindow(g_display, client->dec.decwin);
+        XUnmapWindow(g_display, client->window);
+        client->ignore_unmaps++;
+    }
 }
 
 // heavily inspired by dwm.c
