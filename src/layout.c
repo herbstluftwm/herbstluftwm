@@ -168,6 +168,19 @@ static void frame_object_update_clientfocus(HSFrame* frame) {
     }
 }
 
+static void frame_object_update_clientobj(HSFrame* frame) {
+    int i;
+    HSClient* client;
+
+    hsobject_unlink_and_destroy(frame->object, frame->client_object);
+    frame->client_object = hsobject_create();
+    hsobject_link(frame->object, frame->client_object, "clients");
+    for (i = 0; i < frame->content.clients.count; i++) {
+        client = frame->content.clients.buf[i];
+        hsobject_link(frame->client_object, &client->object, client->window_str->str);
+    }
+}
+
 static void frame_object_init(HSFrame* frame, HSFrame* parent, HSTag* parenttag) {
     frame->object = hsobject_create();
     frame->object->data = frame;
@@ -183,8 +196,7 @@ static void frame_object_init(HSFrame* frame, HSFrame* parent, HSTag* parenttag)
         // creating root frame for a tag, so add root object
         hsobject_link(parenttag->frames_object, frame->object, "root");
     }
-    frame->client_object = hsobject_create();
-    hsobject_link(frame->object, frame->client_object, "clients");
+    frame_object_update_clientobj(frame);
 }
 
 /* create a new frame
@@ -245,8 +257,8 @@ void frame_insert_client(HSFrame* frame, struct HSClient* client) {
         // write results back
         frame->content.clients.count = count;
         frame->content.clients.buf = buf;
-        // link client object
-        hsobject_link(frame->client_object, &client->object, client->window_str->str);
+        // update client object
+        frame_object_update_clientobj(frame);
         // check for focus
         if (g_cur_frame == frame
             && frame->content.clients.selection >= (count-1)) {
@@ -319,7 +331,7 @@ bool frame_remove_client(HSFrame* frame, HSClient* client) {
                 buf = g_renew(HSClient*, buf, count);
                 frame->content.clients.buf = buf;
                 frame->content.clients.count = count;
-                hsobject_unlink(frame->client_object, &client->object);
+                frame_object_update_clientobj(frame);
                 // find out new selection
                 int selection = frame->content.clients.selection;
                 // if selection was before removed window
@@ -1301,6 +1313,7 @@ bool frame_split(HSFrame* frame, int align, int fraction) {
     HSFrame* second = frame_create_empty(frame, NULL);
     first->content = frame->content;
     first->type = frame->type;
+    frame_object_update_clientobj(first);
     second->type = TYPE_CLIENTS;
     frame->type = TYPE_FRAMES;
     frame->content.layout.align = align;
@@ -1310,14 +1323,7 @@ bool frame_split(HSFrame* frame, int align, int fraction) {
     frame->content.layout.fraction = fraction;
 
     // remove old frame object from object tree
-    first->client_object = frame->client_object;
-    hsobject_unlink(frame->object, frame->client_object);
     hsobject_unlink_and_destroy(frame->tag->frames_object, frame->object);
-
-    // add new frame objects to object tree
-    hsobject_link(first->object, first->client_object, "clients");
-    hsobject_link(second->object, second->client_object, "clients");
-    // FIXME address of first's client_object changes - is this a problem?
 
     GString* nindex_a = g_string_new("");
     GString* nindex_b = g_string_new("");
