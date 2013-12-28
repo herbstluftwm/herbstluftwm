@@ -168,18 +168,7 @@ static void frame_object_update_clientfocus(HSFrame* frame) {
     }
 }
 
-/* create a new frame
- * you can either specify a frame or a tag as its parent
- */
-HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
-    HSFrame* frame = g_new0(HSFrame, 1);
-    frame->type = TYPE_CLIENTS;
-    frame->window_visible = false;
-    frame->content.clients.layout = *g_default_frame_layout;
-    frame->parent = parent;
-    frame->tag = parent ? parent->tag : parenttag;
-
-    // create object
+static void frame_object_init(HSFrame* frame, HSFrame* parent, HSTag* parenttag) {
     frame->object = hsobject_create();
     frame->object->data = frame;
     HSAttribute attributes[] = {
@@ -196,6 +185,21 @@ HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
     }
     frame->client_object = hsobject_create();
     hsobject_link(frame->object, frame->client_object, "clients");
+}
+
+/* create a new frame
+ * you can either specify a frame or a tag as its parent
+ */
+HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
+    HSFrame* frame = g_new0(HSFrame, 1);
+    frame->type = TYPE_CLIENTS;
+    frame->window_visible = false;
+    frame->content.clients.layout = *g_default_frame_layout;
+    frame->parent = parent;
+    frame->tag = parent ? parent->tag : parenttag;
+
+    // create object
+    frame_object_init(frame, parent, parenttag);
 
     // set window attributes
     XSetWindowAttributes at;
@@ -525,6 +529,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
             frame->content.clients.count = count;
             frame->content.clients.selection = 0; // only some sane defaults
             frame->content.clients.layout = 0; // only some sane defaults
+            frame_object_init(frame, frame->parent, frame->tag);
         }
 
         // bring child wins
