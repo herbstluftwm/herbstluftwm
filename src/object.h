@@ -42,6 +42,9 @@ typedef union HSAttributeValue {
     HSColor     color;
 } HSAttributeValue;
 
+struct HSAttribute;
+typedef GString* (*HSAttrCallback)(struct HSAttribute* attr);
+
 typedef struct HSAttribute {
     HSObject* object;           /* the object this attribute is in */
     enum  {
@@ -65,7 +68,7 @@ typedef struct HSAttribute {
      * if type is custom:
      * on_change will never be called, because custom are read-only for now.
      * */
-    GString* (*on_change)  (struct HSAttribute* attr);
+    HSAttrCallback on_change;
     bool user_attribute;    /* if this attribute was added by the user */
     /* save the user_data at a constant position that is not shifted when
      * realloc'ing the HSAttribute */

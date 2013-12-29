@@ -529,7 +529,6 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
                 *attr->value.MEM = new_value.MEM; \
             } \
         } while (0);
-
     // change the value and backup the old value
     switch (attr->type) {
         case HSATTR_TYPE_BOOL:
@@ -570,6 +569,9 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
         return 0;
     }
 
+    GString* old_unparsed_value = attr->unparsed_value;
+    if (attr->unparsed_value) attr->unparsed_value = g_string_new(new_value_str);
+
     // ask the attribute about the change
     GString* errormsg = attr->on_change(attr);
     int exit_status = 0;
@@ -585,6 +587,10 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
             errormsg->str);
         g_string_free(errormsg, true);
         // restore old value
+        if (old_unparsed_value) {
+            g_string_free(attr->unparsed_value, true);
+            attr->unparsed_value = old_unparsed_value;
+        }
         switch (attr->type) {
             case HSATTR_TYPE_BOOL: *attr->value.b = old_value.b; break;
             case HSATTR_TYPE_INT:  *attr->value.i = old_value.i; break;
@@ -612,6 +618,9 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
             break;
         case HSATTR_TYPE_CUSTOM: break;
         case HSATTR_TYPE_CUSTOM_INT: break;
+    }
+    if (old_unparsed_value) {
+        g_string_free(old_unparsed_value, true);
     }
     return exit_status;
 }
