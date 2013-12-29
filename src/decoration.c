@@ -53,6 +53,7 @@ static void init_scheme_object(HSObject* obj, HSDecorationScheme* s) {
         ATTRIBUTE_INT(      "padding_right",    s->padding_right,   RELAYOUT),
         ATTRIBUTE_INT(      "padding_bottom",   s->padding_bottom,  RELAYOUT),
         ATTRIBUTE_INT(      "padding_left",     s->padding_left,    RELAYOUT),
+        ATTRIBUTE_COLOR(    "color",            s->border_color,    RELAYOUT),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(obj, attributes);

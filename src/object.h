@@ -84,6 +84,7 @@ typedef struct HSAttribute {
     { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, NULL, (NULL), false }
 #define ATTRIBUTE_CUSTOM_INT(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_CUSTOM_INT, (N), { .custom_int = V }, NULL, (NULL), false }
+// TODO: add reasonable unparsed_value string here:
 #define ATTRIBUTE_COLOR(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_COLOR, (N), { .color = &(V) }, g_string_new(""), (CHANGE), false }
 

@@ -114,9 +114,27 @@ hc set always_show_frame 1
 hc set frame_bg_transparent 1
 hc set frame_transparent_width 5
 hc set frame_gap 4
-# add overlapping window borders
-hc set window_gap -2
-hc set frame_padding 2
+
+bw=1
+tw=5
+hc set_attr theme.tiling.active.border_width $bw
+hc set_attr theme.tiling.active.padding_top $tw
+hc set_attr theme.tiling.active.color '#9fbc00'
+hc set_attr theme.tiling.normal.border_width $bw
+hc set_attr theme.tiling.normal.padding_top $tw
+hc set_attr theme.tiling.normal.color '#454545'
+hc set_attr theme.tiling.urgent.border_width $bw
+hc set_attr theme.tiling.urgent.padding_top $tw
+hc set_attr theme.tiling.urgent.color 'orange'
+
+hc set_attr theme.floating.active.border_width 7
+hc set_attr theme.floating.normal.border_width 1
+hc set_attr theme.floating.urgent.border_width 3
+hc set_attr theme.floating.active.color '#9fbc00'
+hc set_attr theme.floating.normal.color '#454545'
+hc set_attr theme.floating.urgent.color 'orange'
+hc set window_gap 0
+hc set frame_padding 0
 hc set smart_window_surroundings 0
 hc set smart_frame_surroundings 1
 hc set mouse_recenter_gap 0
