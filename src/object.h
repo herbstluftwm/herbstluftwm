@@ -8,6 +8,7 @@
 
 #include <stdbool.h>
 #include "glib-backports.h"
+#include "x11-types.h"
 
 #define OBJECT_PATH_SEPARATOR '.'
 #define USER_ATTRIBUTE_PREFIX "my_"
@@ -28,6 +29,7 @@ typedef union HSAttributePointer {
     int*        i;
     unsigned int* u;
     GString**   str;
+    HSColor*    color;
     HSAttributeCustom custom;
     HSAttributeCustomInt custom_int;
 } HSAttributePointer;
@@ -37,6 +39,7 @@ typedef union HSAttributeValue {
     int         i;
     unsigned int u;
     GString*    str;
+    HSColor     color;
 } HSAttributeValue;
 
 typedef struct HSAttribute {
@@ -45,12 +48,14 @@ typedef struct HSAttribute {
         HSATTR_TYPE_BOOL,
         HSATTR_TYPE_UINT,
         HSATTR_TYPE_INT,
+        HSATTR_TYPE_COLOR,
         HSATTR_TYPE_STRING,
         HSATTR_TYPE_CUSTOM,
         HSATTR_TYPE_CUSTOM_INT,
     } type;                     /* the datatype */
     char*  name;                /* name as it is displayed to the user */
     HSAttributePointer value;
+    GString*           unparsed_value;
     /** if type is not custom:
      * on_change is called after the user changes the value. If this
      * function returns NULL, the value is accepted. If this function returns
@@ -68,17 +73,19 @@ typedef struct HSAttribute {
 } HSAttribute;
 
 #define ATTRIBUTE_BOOL(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_BOOL, (N), { .b = &(V) }, (CHANGE), false }
+    { NULL, HSATTR_TYPE_BOOL, (N), { .b = &(V) }, NULL, (CHANGE), false }
 #define ATTRIBUTE_INT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_INT, (N), { .i = &(V) }, (CHANGE), false }
+    { NULL, HSATTR_TYPE_INT, (N), { .i = &(V) }, NULL, (CHANGE), false }
 #define ATTRIBUTE_UINT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, (CHANGE), false }
+    { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, NULL, (CHANGE), false }
 #define ATTRIBUTE_STRING(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, (CHANGE), false }
+    { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, NULL, (CHANGE), false }
 #define ATTRIBUTE_CUSTOM(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, (NULL), false }
+    { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, NULL, (NULL), false }
 #define ATTRIBUTE_CUSTOM_INT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_CUSTOM_INT, (N), { .custom_int = V }, (NULL), false }
+    { NULL, HSATTR_TYPE_CUSTOM_INT, (N), { .custom_int = V }, NULL, (NULL), false }
+#define ATTRIBUTE_COLOR(N, V, CHANGE) \
+    { NULL, HSATTR_TYPE_COLOR, (N), { .color = &(V) }, g_string_new(""), (CHANGE), false }
 
 #define ATTRIBUTE_LAST { .name = NULL }
 

@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include "x11-types.h"
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
@@ -24,7 +25,7 @@
 void die(const char *errstr, ...);
 
 // get X11 color from color string
-unsigned long getcolor(const char *colstr);
+HSColor getcolor(const char *colstr);
 
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
@@ -64,18 +65,6 @@ time_t get_monotonic_timestamp();
 char** argv_duplicate(int argc, char** argv);
 // frees all entries in argument-vector and then the vector itself
 void argv_free(int argc, char** argv);
-
-typedef struct {
-    int x;
-    int y;
-    int width;
-    int height;
-} Rectangle;
-
-typedef struct {
-    int x;
-    int y;
-} Point2D;
 
 Rectangle parse_rectangle(char* string);
 

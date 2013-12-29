@@ -63,6 +63,9 @@ static void hsattribute_free(HSAttribute* attr) {
         }
         g_free(attr->user_data);
     }
+    if (attr->unparsed_value) {
+        g_string_free(attr->unparsed_value, true);
+    }
 }
 
 HSObject* hsobject_create() {
@@ -246,6 +249,9 @@ void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
             break;
         case HSATTR_TYPE_STRING:
             g_string_append_printf(output, "%s", (*attribute->value.str)->str);
+            break;
+        case HSATTR_TYPE_COLOR:
+            g_string_append_printf(output, "%s", attribute->unparsed_value->str);
             break;
         case HSATTR_TYPE_CUSTOM:
             attribute->value.custom(attribute->object->data, output);
@@ -505,6 +511,7 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
         int         i;
         unsigned int u;
         GString*    str;
+        HSColor     color;
     } new_value, old_value;
     bool nothing_to_do = false;
 
@@ -542,7 +549,6 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
             ATTR_DO_ASSIGN_COMPARE("unsigned integer", u);
             break;
 
-
         case HSATTR_TYPE_STRING:
             if (!strcmp(new_value_str, (*attr->value.str)->str)) {
                 nothing_to_do = true;
@@ -551,6 +557,12 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
                 g_string_assign(*attr->value.str, new_value_str);
             }
             break;
+
+        case HSATTR_TYPE_COLOR:
+            error = (0 == (new_value.color = getcolor(new_value_str)));
+            ATTR_DO_ASSIGN_COMPARE("color", color);
+            break;
+
         case HSATTR_TYPE_CUSTOM: break;
         case HSATTR_TYPE_CUSTOM_INT: break;
     }
@@ -580,6 +592,9 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
             case HSATTR_TYPE_STRING:
                 g_string_assign(*attr->value.str, old_value.str->str);
                 break;
+            case HSATTR_TYPE_COLOR:
+                *attr->value.color = old_value.color; break;
+                break;
             case HSATTR_TYPE_CUSTOM: break;
             case HSATTR_TYPE_CUSTOM_INT: break;
         }
@@ -591,6 +606,9 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
         case HSATTR_TYPE_UINT:  break;
         case HSATTR_TYPE_STRING:
             g_string_free(old_value.str, true);
+            break;
+        case HSATTR_TYPE_COLOR:
+            g_string_assign(attr->unparsed_value, new_value_str);
             break;
         case HSATTR_TYPE_CUSTOM: break;
         case HSATTR_TYPE_CUSTOM_INT: break;
@@ -692,6 +710,13 @@ int compare_command(int argc, char* argv[], GString* output) {
         if (!strcmp("!=", op)) return !(l != r);
         g_string_append_printf(output, "Invalid boolean operator \"%s\"", op);
         return HERBST_INVALID_ARGUMENT;
+    } else if (attr->type == HSATTR_TYPE_COLOR) {
+        HSColor l = *attr->value.color;
+        HSColor r = getcolor(rvalue);
+        if (!strcmp("=", op)) return !(l == r);
+        if (!strcmp("!=", op)) return !(l != r);
+        g_string_append_printf(output, "Invalid color operator \"%s\"", op);
+        return HERBST_INVALID_ARGUMENT;
     } else { // STRING or CUSTOM
         GString* l;
         bool free_l = false;
@@ -726,6 +751,7 @@ char hsattribute_type_indicator(int type) {
         case HSATTR_TYPE_STRING:    return 's';
         case HSATTR_TYPE_CUSTOM:    return 's';
         case HSATTR_TYPE_CUSTOM_INT:return 'i';
+        case HSATTR_TYPE_COLOR:     return 'c';
     }
     return '?';
 }
@@ -781,6 +807,7 @@ HSAttribute* hsattribute_create(HSObject* obj, char* name, char* type_str,
         { "uint",   HSATTR_TYPE_UINT    },
         { "int",    HSATTR_TYPE_INT     },
         { "string", HSATTR_TYPE_STRING  },
+        { "color",  HSATTR_TYPE_COLOR   },
     };
     int type = -1;
     for (int i = 0; i < LENGTH(types); i++) {
@@ -822,6 +849,10 @@ HSAttribute* hsattribute_create(HSObject* obj, char* name, char* type_str,
             attr->user_data->str = g_string_new("");
             attr->value.str = &attr->user_data->str;
             break;
+        case HSATTR_TYPE_COLOR:
+            attr->user_data->color = getcolor("#000000");
+            attr->unparsed_value = g_string_new("#000000");
+            attr->value.color = &attr->user_data->color;
         default:
             break;
     }
