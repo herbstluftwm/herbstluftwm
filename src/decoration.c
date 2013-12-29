@@ -44,6 +44,22 @@ GString* RELAYOUT(HSAttribute* attr) {
     return NULL;
 }
 
+GString* PROPAGATE(HSAttribute* attr) {
+    HSDecTripple* t = attr->object->data;
+    monitors_lock();
+    // find out which attribute it was
+    int idx = attr - attr->object->attributes;
+    // then copy it to active and urgent scheme
+    GString* output = g_string_new("");
+    GString* val = hsattribute_to_string(attr);
+    hsattribute_assign(t->obj_active.attributes + idx, val->str, output);
+    hsattribute_assign(t->obj_urgent.attributes + idx, val->str, output);
+    monitors_unlock();
+    g_string_free(output, true);
+    g_string_free(val, true);
+    return NULL;
+}
+
 // initializes the specified object to edit the scheme
 static void init_scheme_object(HSObject* obj, HSDecorationScheme* s) {
     hsobject_init(obj);
@@ -67,6 +83,17 @@ static void init_dec_tripple_object(HSDecTripple* t, const char* name) {
     hsobject_link(&t->object, &t->obj_normal, "normal");
     hsobject_link(&t->object, &t->obj_active, "active");
     hsobject_link(&t->object, &t->obj_urgent, "urgent");
+    HSAttribute attributes[] = {
+        ATTRIBUTE_INT(      "border_width",     t->normal.border_width,    PROPAGATE),
+        ATTRIBUTE_INT(      "padding_top",      t->normal.padding_top,     PROPAGATE),
+        ATTRIBUTE_INT(      "padding_right",    t->normal.padding_right,   PROPAGATE),
+        ATTRIBUTE_INT(      "padding_bottom",   t->normal.padding_bottom,  PROPAGATE),
+        ATTRIBUTE_INT(      "padding_left",     t->normal.padding_left,    PROPAGATE),
+        ATTRIBUTE_COLOR(    "color",            t->normal.border_color,    PROPAGATE),
+        ATTRIBUTE_LAST,
+    };
+    t->object.data = t;
+    hsobject_set_attributes(&t->object, attributes);
     hsobject_link(g_theme_object, &t->object, name);
 }
 
