@@ -252,6 +252,7 @@ HSClient* manage_client(Window win) {
     client->float_size.y = y;
     client->float_size.width = w;
     client->float_size.height = h;
+    client->last_size = client->float_size;
 
     // apply rules
     HSClientChanges changes;
@@ -653,17 +654,17 @@ void client_send_configure(HSClient *c) {
     XConfigureEvent ce = {
         .type = ConfigureNotify,
         .display = g_display,
-        .event = c->dec.decwin,
+        .event = c->window,
         .window = c->window,
         .x = c->last_size.x,
         .y = c->last_size.y,
-        .width = c->last_size.width,
-        .height = c->last_size.height,
+        .width = MAX(c->last_size.width, WINDOW_MIN_WIDTH),
+        .height = MAX(c->last_size.height, WINDOW_MIN_HEIGHT),
         .border_width = 0,
         .above = None,
         .override_redirect = False,
     };
-    XSendEvent(g_display, c->window, False, SubstructureNotifyMask, (XEvent *)&ce);
+    XSendEvent(g_display, c->window, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
 void client_resize_floating(HSClient* client, HSMonitor* m) {
