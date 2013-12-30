@@ -6,7 +6,14 @@
 
 #include <stdio.h>
 
+#define EffectiveBorderWidth(s) \
+    ((s).border_width   \
+      + MIN(MIN((s).padding_top, (s).padding_right), \
+            MIN((s).padding_bottom, (s).padding_left)))
+
 HSDecTripple g_decorations[HSDecSchemeCount];
+
+static GHashTable* g_decwin2client = NULL;
 
 int* g_pseudotile_center_threshold;
 HSObject* g_theme_object;
@@ -20,6 +27,7 @@ static GString* PROP2FLOAT(HSAttribute* attr);
 void decorations_init() {
     g_theme_object = hsobject_create_and_link(hsobject_root(), "theme");
     g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
+    g_decwin2client = g_hash_table_new(g_int_hash, g_int_equal);
     // init default schemes
     HSDecTripple tiling = {
         { 2, getcolor("black"),     false },    // normal
@@ -111,6 +119,8 @@ static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallb
         ATTRIBUTE_INT(      "padding_bottom",   s->padding_bottom,  cb),
         ATTRIBUTE_INT(      "padding_left",     s->padding_left,    cb),
         ATTRIBUTE_COLOR(    "color",            s->border_color,    cb),
+        ATTRIBUTE_INT(      "inner_width",      s->inner_width,     cb),
+        ATTRIBUTE_COLOR(    "inner_color",      s->inner_color,     cb),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(obj, attributes);
@@ -131,6 +141,8 @@ static void init_dec_tripple_object(HSDecTripple* t, const char* name) {
         ATTRIBUTE_INT(      "padding_bottom",   t->normal.padding_bottom,  PROPAGATE),
         ATTRIBUTE_INT(      "padding_left",     t->normal.padding_left,    PROPAGATE),
         ATTRIBUTE_COLOR(    "color",            t->normal.border_color,    PROPAGATE),
+        ATTRIBUTE_INT(      "inner_width",      t->normal.inner_width,     PROPAGATE),
+        ATTRIBUTE_COLOR(    "inner_color",      t->normal.inner_color,     PROPAGATE),
         ATTRIBUTE_LAST,
     };
     t->object.data = t;
@@ -156,6 +168,8 @@ void decorations_destroy() {
     hsobject_free(&g_theme_active_object);
     hsobject_free(&g_theme_urgent_object);
     hsobject_unlink_and_destroy(hsobject_root(), g_theme_object);
+    g_hash_table_destroy(g_decwin2client);
+    g_decwin2client = NULL;
 }
 
 void decoration_init(HSDecoration* dec, struct HSClient* client) {
@@ -166,20 +180,30 @@ void decoration_init(HSDecoration* dec, struct HSClient* client) {
                         CopyFromParent,
                         DefaultVisual(g_display, DefaultScreen(g_display)),
                         0, &at);
-    dec->last_rect.width = -1;
     dec->last_rect_inner = false;
+    dec->last_inner_rect.width = -1;
+    dec->last_outer_rect.width = -1;
+    g_hash_table_insert(g_decwin2client, &(dec->decwin), client);
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
     hint->res_name = HERBST_FRAME_CLASS;
     hint->res_class = HERBST_FRAME_CLASS;
     XSetClassHint(g_display, dec->decwin, hint);
     XFree(hint);
+    dec->gc = XCreateGC(g_display, dec->decwin, 0, NULL);
 }
 
 void decoration_free(HSDecoration* dec) {
+    if (g_decwin2client) {
+        g_hash_table_remove(g_decwin2client, &(dec->decwin));
+    }
+    XFreeGC(g_display, dec->gc);
     XDestroyWindow(g_display, dec->decwin);
 }
 
+HSClient* get_client_from_decoration(Window decwin) {
+    return (HSClient*) g_hash_table_lookup(g_decwin2client, &decwin);
+}
 
 Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme s) {
     Rectangle inner = {
@@ -204,7 +228,6 @@ Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme s) {
 void decoration_resize_inner(HSClient* client, Rectangle inner,
                              HSDecorationScheme scheme) {
     decoration_resize_outline(client, inner_rect_to_outline(inner, scheme), scheme);
-    client->dec.last_rect = inner;
     client->dec.last_rect_inner = true;
 }
 
@@ -236,6 +259,7 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     if (scheme.tight_decoration) {
         outline = inner_rect_to_outline(inner, scheme);
     }
+    client->dec.last_inner_rect = inner;
     inner.x -= outline.x;
     inner.y -= outline.y;
     XWindowChanges changes = {
@@ -258,25 +282,43 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     //                             current_border_color);
     //}
     // send new size to client
-    client->dec.last_rect = outline;
+    client->dec.last_outer_rect = outline;
     client->dec.last_rect_inner = false;
     client->last_size = inner;
+    client->dec.last_scheme = scheme;
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
+    decoration_redraw(client);
     client_send_configure(client);
     XSync(g_display, False);
 }
 
 void decoration_change_scheme(struct HSClient* client,
                               HSDecorationScheme scheme) {
-    if (client->dec.last_rect.width < 0) {
+    if (client->dec.last_inner_rect.width < 0) {
         // TODO: do something useful here
         return;
     }
     if (client->dec.last_rect_inner) {
-        decoration_resize_inner(client, client->dec.last_rect, scheme);
+        decoration_resize_inner(client, client->dec.last_inner_rect, scheme);
     } else {
-        decoration_resize_outline(client, client->dec.last_rect, scheme);
+        decoration_resize_outline(client, client->dec.last_outer_rect, scheme);
+    }
+}
+
+void decoration_redraw(struct HSClient* client) {
+    HSDecorationScheme s = client->dec.last_scheme;
+    Window win = client->dec.decwin;
+    GC gc = client->dec.gc;
+    int iw = MIN(s.inner_width, EffectiveBorderWidth(s));
+    Rectangle inner = client->dec.last_inner_rect;
+    inner.x -= client->dec.last_outer_rect.x;
+    inner.y -= client->dec.last_outer_rect.y;
+    if (iw > 0) {
+        XSetForeground(g_display, gc, s.inner_color);
+        XSetLineAttributes(g_display, gc, iw, LineSolid, CapNotLast, JoinMiter);
+        XDrawRectangle(g_display, win, gc, inner.x - iw, inner.y - iw,
+                                           inner.width + 2*iw-1, inner.height + 2*iw-1);
     }
 }
 

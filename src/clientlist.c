@@ -328,6 +328,7 @@ HSClient* manage_client(Window win) {
     // get events from window
     XSelectInput(g_display, client->dec.decwin, (EnterWindowMask | LeaveWindowMask |
                             ButtonPressMask | ButtonReleaseMask |
+                            ExposureMask |
                             SubstructureRedirectMask | FocusChangeMask));
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
 

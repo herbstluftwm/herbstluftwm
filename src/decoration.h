@@ -21,10 +21,12 @@ struct HSClient;
 
 
 typedef struct {
-    int     border_width;
     HSColor border_color;
+    int     border_width;
     bool    tight_decoration; // if set, there is no space between the
                               // decoration and the window content
+    HSColor inner_color;
+    int     inner_width;
     int     padding_top;    // additional window border
     int     padding_right;  // additional window border
     int     padding_bottom; // additional window border
@@ -35,8 +37,10 @@ typedef struct {
     struct HSClient*        client; // the client to decorate
     Window                  decwin; // the decoration winodw
     HSDecorationScheme      last_scheme;
-    Rectangle               last_rect;       // only valid if width >= 0
     bool                    last_rect_inner; // whether last_rect is inner size
+    Rectangle               last_inner_rect; // only valid if width >= 0
+    Rectangle               last_outer_rect; // only valid if width >= 0
+    GC                      gc;
 } HSDecoration;
 
 typedef struct {
@@ -74,6 +78,9 @@ void decoration_resize_inner(struct HSClient* client, Rectangle rect,
 
 void decoration_change_scheme(struct HSClient* client,
                               HSDecorationScheme scheme);
+
+void decoration_redraw(struct HSClient* client);
+struct HSClient* get_client_from_decoration(Window decwin);
 
 Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme scheme);
 Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme scheme);
