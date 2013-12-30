@@ -70,28 +70,24 @@ print """\
 #====~===~=========~==
 
 print """\
-    <table width="100%" id="navigationbar" cellspacing="0">
-    <tr>"""
+    <ul id="navigationbar">"""
 
 for title, subpages in tabs.iteritems():
     classstring = "notab"
     if title == curtab:
         classstring = "curtab"
-    print '<td class="notab spacing">&nbsp</td>'
     if isinstance(subpages, basestring):
         trg = subpages
     else:
         trg = subpages.keys()[0] + ".html"
-    print '<td class="{cls}"><a href="{target}">{title}</a></td>'.format(
+    print '<li class="{cls}"><a href="{target}">{title}</a></li>'.format(
         cls = classstring,
         target = trg,
         title = title)
 
 
 print """\
-     <td class="notab spacing">&nbsp</td>
-    </tr>
-    </table>\
+    </ul>\
     <div class="tabbarseparator"></div>
 """
 

@@ -19,20 +19,35 @@ body {
     border: 4px solid #176800;
 }
 
+@media (max-width: 35em) {
+    #frame {
+        border: none;
+        width: 100%;
+        margin: 0px;
+    }
+    body {
+        padding: 0px;
+        background-color: black;
+    }
+}
+
+
 #frame , #navigationbar .curtab {
     background-color: white;
 }
 
 #navigationbar {
-    text-align: center;
-    padding-top: 0.2em;
+    margin: 0px;
+    padding: 0px;
+    text-align: left;
 }
 
 #navigationbar .notab, #navigationbar .curtab {
-    margin-top:  0.2em;
-    padding-top: 0.0em;
-    padding-bottom: 0.2em;
-    margin-bottom:  0.0em;
+    display: inline-block;
+    margin: 0px;
+    margin-left: 4px;
+    margin-right: 4px;
+    padding: 1px;
 }
 
 #navigationbar .spacing {
@@ -45,7 +60,6 @@ body {
 
 
 #navigationbar .curtab {
-    border: 1px solid #176800;
     background-color: #176800;
     border-bottom: 0px solid transparent;
 }
@@ -314,15 +328,18 @@ table thead th {
 }
 
 .subpagebar {
-    padding: 0.2em;
+    padding: 0em;
     padding-left: 0.4em;
     padding-right: 0.4em;
+    padding-top: 3px;
 }
 
 .subpagebar .subpage {
-    padding: 0.2em;
-    padding-left: 0.8em;
-    padding-right: 0.8em;
+    padding: 2px;
+    line-height: 1.3em;
+    padding-left: 0.9em;
+    padding-right: 0.9em;
+    margin: 2px;
 }
 
 .subpagebar .subpage a {
