@@ -352,7 +352,9 @@ void unmanage_client(Window win) {
 // destroys a special client
 void client_destroy(HSClient* client) {
     hsobject_unlink(g_client_object, &client->object);
-    hsobject_unlink(client->tag->frame->client_object, &client->object);
+    if (client->tag) {
+        hsobject_unlink(client->tag->frame->client_object, &client->object);
+    }
     if (client->tag && client->slice) {
         stack_remove_slice(client->tag->stack, client->slice);
     }
