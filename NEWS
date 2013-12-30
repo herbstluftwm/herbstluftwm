@@ -1,6 +1,14 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Current git version
+-------------------
+
+    * The tag attributes curframe_windex and curframe_wcount have been removed,
+      they are replaced by the more general attributes frames.focus.windex
+      frames.focus.wcount.
+    * new example script: scratchpad.sh
+
 Release 0.5.3 on 2013-12-24
 ---------------------------
 
