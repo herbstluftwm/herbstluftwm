@@ -17,8 +17,8 @@ SYNOPSIS
 DESCRIPTION
 -----------
 Starts the *herbstluftwm* window manager on 'DISPLAY'. It also listens for
-calls from *herbstclient*(1) and executes them. The list of available
-<<COMMANDS,*COMMANDS*>> is listed below.
+calls from link:herbstclient.html[*herbstclient*(1)] and executes them. The list
+of available <<COMMANDS,*COMMANDS*>> is listed below.
 
 'OPTION' can be:
 
@@ -30,6 +30,10 @@ calls from *herbstclient*(1) and executes them. The list of available
         set the monitors_locked setting initially to 1
     *--verbose*::
         print verbose information to stderr
+
+This manual documents the scripting and configuration interface. For a more
+verbose introduction see
+link:tutorial.html[*herbstluftwm-tutorial*(7)].
 
 TILING ALGORITHM
 ----------------
