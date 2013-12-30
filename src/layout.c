@@ -115,23 +115,28 @@ void reset_frame_colors() {
 void layout_destroy() {
 }
 
-static void frame_index_to_gstring(HSFrame* frame, GString* output) {
+static GString* frame_index_to_gstring_helper(HSFrame* frame) {
     if (frame->parent == NULL) {
-        // we arrived at the root frame
-        if (output->str[0] == '\0') {
-            g_string_assign(output, "root");
-        }
-        return;
-    }
-    // walk back in the frame tree, constructing the index from the end
-    if (frame == frame->parent->content.layout.a) {
-        g_string_prepend_c(output, '0');
-    } else if (frame == frame->parent->content.layout.b) {
-        g_string_prepend_c(output, '1');
+        return g_string_new("");
     } else {
-        assert(false);
+        GString* str = frame_index_to_gstring_helper(frame->parent);
+        if (frame == frame->parent->content.layout.a) {
+            g_string_append_c(str, '0');
+        } else if (frame == frame->parent->content.layout.b) {
+            g_string_append_c(str, '1');
+        } else {
+            assert(0 == "frame is neither first or second child of its parent");
+        }
+        return str;
     }
-    frame_index_to_gstring(frame->parent, output);
+}
+
+static GString* frame_index_to_gstring(HSFrame* frame) {
+    GString* str = frame_index_to_gstring_helper(frame);
+    if (str->len == 0) {
+        g_string_assign(str,"root");
+    }
+    return str;
 }
 
 static void frame_attr_layout(void* data, GString* output) {
@@ -141,8 +146,7 @@ static void frame_attr_layout(void* data, GString* output) {
 
 static void frame_attr_index(void* data, GString* output) {
     HSFrame* frame = (HSFrame*) data;
-    GString* frame_index = g_string_new("");
-    frame_index_to_gstring(frame, frame_index);
+    GString* frame_index = frame_index_to_gstring(frame);
     g_string_append(output, frame_index->str);
     g_string_free(frame_index, true);
 }
@@ -654,8 +658,7 @@ static void frame_append_caption(HSTree tree, GString* output) {
         for (i = 0; i < count; i++) {
             g_string_append_printf(output, " 0x%lx", buf[i]->window);
         }
-        GString* frame_index = g_string_new("");
-        frame_index_to_gstring(frame, frame_index);
+        GString* frame_index = frame_index_to_gstring(frame);
         g_string_append_printf(output, " (%s)", frame_index->str);
         g_string_free(frame_index, true);
         if (g_cur_frame == frame) {
@@ -1325,10 +1328,8 @@ bool frame_split(HSFrame* frame, int align, int fraction) {
     // remove old frame object from object tree
     hsobject_unlink_and_destroy(frame->tag->frames_object, frame->object);
 
-    GString* nindex_a = g_string_new("");
-    GString* nindex_b = g_string_new("");
-    frame_index_to_gstring(first, nindex_a);
-    frame_index_to_gstring(second, nindex_b);
+    GString* nindex_a = frame_index_to_gstring(first);
+    GString* nindex_b = frame_index_to_gstring(second);
     hsobject_link(frame->tag->frames_object, first->object, nindex_a->str);
     hsobject_link(frame->tag->frames_object, second->object, nindex_b->str);
     g_string_free(nindex_a, true);
@@ -1995,8 +1996,7 @@ int frame_remove_command(int argc, char** argv) {
     g_free(second);
 
     // link new object
-    GString* nindex = g_string_new("");
-    frame_index_to_gstring(parent, nindex);
+    GString* nindex = frame_index_to_gstring(parent);
     hsobject_link(frames_object, parent->object, nindex->str);
     parent->object->data = parent;
     g_string_free(nindex, true);
