@@ -121,8 +121,8 @@ void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes);
 GString* ATTR_ACCEPT_ALL(HSAttribute* attr);
 #define ATTR_READ_ONLY  NULL
 
-HSObject* hsobject_find_child(HSObject* obj, char* name);
-HSAttribute* hsobject_find_attribute(HSObject* obj, char* name);
+HSObject* hsobject_find_child(HSObject* obj, const char* name);
+HSAttribute* hsobject_find_attribute(HSObject* obj, const char* name);
 
 char hsattribute_type_indicator(int type);
 

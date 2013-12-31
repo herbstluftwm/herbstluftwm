@@ -209,7 +209,7 @@ void hsobject_link_rename_object(HSObject* parent, HSObject* child, char* newnam
     hsobject_link(parent, child, newname);
 }
 
-HSObject* hsobject_find_child(HSObject* obj, char* name) {
+HSObject* hsobject_find_child(HSObject* obj, const char* name) {
     GList* elem = g_list_find_custom(obj->children, name,
                                      (GCompareFunc)child_check_name);
     if (elem) {
@@ -219,7 +219,7 @@ HSObject* hsobject_find_child(HSObject* obj, char* name) {
     }
 }
 
-HSAttribute* hsobject_find_attribute(HSObject* obj, char* name) {
+HSAttribute* hsobject_find_attribute(HSObject* obj, const char* name) {
     for (int i = 0; i < obj->attribute_count; i++) {
         if (!strcmp(name, obj->attributes[i].name)) {
             return obj->attributes + i;
