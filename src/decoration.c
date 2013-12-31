@@ -6,11 +6,6 @@
 
 #include <stdio.h>
 
-#define EffectiveBorderWidth(s) \
-    ((s).border_width   \
-      + MIN(MIN((s).padding_top, (s).padding_right), \
-            MIN((s).padding_bottom, (s).padding_left)))
-
 HSDecTripple g_decorations[HSDecSchemeCount];
 
 static GHashTable* g_decwin2client = NULL;
@@ -310,15 +305,17 @@ void decoration_redraw(struct HSClient* client) {
     HSDecorationScheme s = client->dec.last_scheme;
     Window win = client->dec.decwin;
     GC gc = client->dec.gc;
-    int iw = MIN(s.inner_width, EffectiveBorderWidth(s));
+    int iw = s.inner_width;
     Rectangle inner = client->dec.last_inner_rect;
     inner.x -= client->dec.last_outer_rect.x;
     inner.y -= client->dec.last_outer_rect.y;
     if (iw > 0) {
         XSetForeground(g_display, gc, s.inner_color);
         XSetLineAttributes(g_display, gc, iw, LineSolid, CapNotLast, JoinMiter);
-        XDrawRectangle(g_display, win, gc, inner.x - iw, inner.y - iw,
-                                           inner.width + 2*iw-1, inner.height + 2*iw-1);
+        XDrawRectangle(g_display, win, gc,
+            inner.x - (iw - iw/2), inner.y - (iw - iw/2),
+            inner.width + iw, inner.height + iw);
+    }
     }
 }
 
