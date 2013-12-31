@@ -33,15 +33,9 @@
 
 int g_monitor_float_treshold = 24;
 
-int* g_window_border_width;
-int* g_window_border_inner_width;
 int* g_raise_on_focus;
 int* g_snap_gap;
 int* g_smart_window_surroundings;
-unsigned long g_window_border_active_color;
-unsigned long g_window_border_normal_color;
-unsigned long g_window_border_urgent_color;
-unsigned long g_window_border_inner_color;
 
 static GHashTable* g_clients; // container of all clients
 static HSObject*   g_client_object;
@@ -79,20 +73,10 @@ static HSClient* create_client() {
 }
 
 static void fetch_colors() {
-    g_window_border_width = &(settings_find("window_border_width")->value.i);
-    g_window_border_inner_width = &(settings_find("window_border_inner_width")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_snap_gap = &(settings_find("snap_gap")->value.i);
     g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
     g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
-    char* str = settings_find("window_border_normal_color")->value.s;
-    g_window_border_normal_color = getcolor(str);
-    str = settings_find("window_border_active_color")->value.s;
-    g_window_border_active_color = getcolor(str);
-    str = settings_find("window_border_urgent_color")->value.s;
-    g_window_border_urgent_color = getcolor(str);
-    str = settings_find("window_border_inner_color")->value.s;
-    g_window_border_inner_color = getcolor(str);
 }
 
 void clientlist_init() {
@@ -911,26 +895,6 @@ int client_set_property_command(int argc, char** argv) {
         properties[i].func(client, state);
     }
     return 0;
-}
-
-void window_update_border(Window window, unsigned long color) {
-    if (*g_window_border_inner_width > 0
-        && *g_window_border_inner_width < *g_window_border_width) {
-        set_window_double_border(g_display, window,
-                                 *g_window_border_inner_width,
-                                 g_window_border_inner_color, color);
-    } else {
-        XSetWindowBorder(g_display, window, color);
-    }
-}
-
-unsigned long get_window_border_color(HSClient* client) {
-    unsigned long current_border_color = (client == frame_focused_client(g_cur_frame)
-                                          ? g_window_border_active_color
-                                          : g_window_border_normal_color);
-    if (client->urgent)
-        current_border_color = g_window_border_urgent_color;
-    return current_border_color;
 }
 
 static bool is_client_urgent(void* key, HSClient* client, void* data) {
