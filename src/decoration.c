@@ -104,6 +104,38 @@ GString* PROPAGATE(HSAttribute* attr) {
     return NULL;
 }
 
+void reset_helper(void* data, GString* output) {
+    (void) data;
+    g_string_append(output,
+                    "Writing this resets all attributes to a default value\n");
+}
+
+static GString* trigger_attribute_reset(struct HSAttribute* attr, const char* new_value) {
+    (void) attr;
+    (void) new_value;
+    HSObject* obj = attr->object;
+    HSAttribute* attrs = obj->attributes;
+    size_t cnt = obj->attribute_count;
+    GString* out = g_string_new("");
+    monitors_lock();
+    for (int i = 0; i < cnt; i ++) {
+        HSAttribute* a = attrs+i;
+        if (a->type == HSATTR_TYPE_INT
+            || a->type == HSATTR_TYPE_UINT) {
+            hsattribute_assign(a, "0", out);
+        }
+        else if (a->type == HSATTR_TYPE_COLOR) {
+            hsattribute_assign(a, "black", out);
+        }
+    }
+    if (out->len <= 0) {
+        g_string_free(out, true);
+        out = NULL;
+    }
+    monitors_unlock();
+    return out;
+}
+
 // initializes the specified object to edit the scheme
 static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb) {
     hsobject_init(obj);
@@ -118,6 +150,7 @@ static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallb
         ATTRIBUTE_COLOR(    "inner_color",      s->inner_color,     cb),
         ATTRIBUTE_INT(      "outer_width",      s->outer_width,     cb),
         ATTRIBUTE_COLOR(    "outer_color",      s->outer_color,     cb),
+        ATTRIBUTE_CUSTOM(   "reset",            reset_helper,       trigger_attribute_reset),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(obj, attributes);
@@ -142,6 +175,7 @@ static void init_dec_tripple_object(HSDecTripple* t, const char* name) {
         ATTRIBUTE_COLOR(    "inner_color",      t->normal.inner_color,     PROPAGATE),
         ATTRIBUTE_INT(      "outer_width",      t->normal.outer_width,     PROPAGATE),
         ATTRIBUTE_COLOR(    "outer_color",      t->normal.outer_color,     PROPAGATE),
+        ATTRIBUTE_CUSTOM(   "reset",            reset_helper,       trigger_attribute_reset),
         ATTRIBUTE_LAST,
     };
     t->object.data = t;
