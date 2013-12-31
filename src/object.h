@@ -66,9 +66,12 @@ typedef struct HSAttribute {
      * message first is displayed to the user and then freed.
      *
      * if type is custom:
-     * on_change will never be called, because custom are read-only for now.
+     * on_change will never be called. Instead, change_custom is called with
+     * the new value requested by the user. If the pointer is NULL, it is
+     * treaten read-only
      * */
     HSAttrCallback on_change;
+    GString* (*change_custom)(struct HSAttribute* attr, const char* new_value);
     bool user_attribute;    /* if this attribute was added by the user */
     /* save the user_data at a constant position that is not shifted when
      * realloc'ing the HSAttribute */
@@ -76,17 +79,17 @@ typedef struct HSAttribute {
 } HSAttribute;
 
 #define ATTRIBUTE_BOOL(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_BOOL, (N), { .b = &(V) }, NULL, (CHANGE), false }
+    { NULL, HSATTR_TYPE_BOOL, (N), { .b = &(V) }, NULL, (CHANGE), NULL, false }
 #define ATTRIBUTE_INT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_INT, (N), { .i = &(V) }, NULL, (CHANGE), false }
+    { NULL, HSATTR_TYPE_INT, (N), { .i = &(V) }, NULL, (CHANGE), NULL, false }
 #define ATTRIBUTE_UINT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, NULL, (CHANGE), false }
+    { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, NULL, (CHANGE), NULL, false }
 #define ATTRIBUTE_STRING(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, NULL, (CHANGE), false }
+    { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, NULL, (CHANGE), NULL, false }
 #define ATTRIBUTE_CUSTOM(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, NULL, (NULL), false }
+    { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, NULL, (NULL), CHANGE, false }
 #define ATTRIBUTE_CUSTOM_INT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_CUSTOM_INT, (N), { .custom_int = V }, NULL, (NULL), false }
+    { NULL, HSATTR_TYPE_CUSTOM_INT, (N), { .custom_int = V }, NULL, (NULL), CHANGE, false }
 // TODO: add reasonable unparsed_value string here:
 #define ATTRIBUTE_COLOR(N, V, CHANGE) \
     { NULL, HSATTR_TYPE_COLOR, (N), { .color = &(V) }, g_string_new(""), (CHANGE), false }
@@ -130,6 +133,7 @@ int attr_command(int argc, char* argv[], GString* output);
 int print_object_tree_command(int argc, char* argv[], GString* output);
 int hsattribute_get_command(int argc, char* argv[], GString* output);
 int hsattribute_set_command(int argc, char* argv[], GString* output);
+bool hsattribute_is_read_only(HSAttribute* attr);
 int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output);
 void hsattribute_append_to_string(HSAttribute* attribute, GString* output);
 GString* hsattribute_to_string(HSAttribute* attribute);

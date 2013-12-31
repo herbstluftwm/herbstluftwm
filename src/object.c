@@ -497,8 +497,16 @@ int hsattribute_set_command(int argc, char* argv[], GString* output) {
     return hsattribute_assign(attr, argv[2], output);
 }
 
+bool hsattribute_is_read_only(HSAttribute* attr) {
+    bool custom = attr->type == HSATTR_TYPE_CUSTOM
+                || attr->type == HSATTR_TYPE_CUSTOM_INT;
+    assert(!(custom && attr->on_change));
+    if (custom) return attr->change_custom == NULL;
+    else return attr->on_change == NULL;
+}
+
 int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) {
-    if (attr->on_change == ATTR_READ_ONLY) {
+    if (hsattribute_is_read_only(attr)) {
         g_string_append_printf(output,
             "Can not write read-only attribute \"%s\"\n",
             attr->name);
@@ -573,7 +581,9 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
     if (attr->unparsed_value) attr->unparsed_value = g_string_new(new_value_str);
 
     // ask the attribute about the change
-    GString* errormsg = attr->on_change(attr);
+    GString* errormsg = NULL;
+    if (attr->on_change) errormsg = attr->on_change(attr);
+    else errormsg = attr->change_custom(attr, new_value_str);
     int exit_status = 0;
     if (errormsg && errormsg->len > 0) {
         exit_status = HERBST_INVALID_ARGUMENT;
