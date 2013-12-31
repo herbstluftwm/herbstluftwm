@@ -558,7 +558,7 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
             break;
 
         case HSATTR_TYPE_COLOR:
-            error = (0 == (new_value.color = getcolor(new_value_str)));
+            error = !getcolor_error(new_value_str, &new_value.color);
             ATTR_DO_ASSIGN_COMPARE("color", color);
             break;
 

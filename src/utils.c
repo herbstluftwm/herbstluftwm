@@ -56,13 +56,22 @@ void die(const char *errstr, ...) {
 // get X11 color from color string
 // from dwm.c
 unsigned long getcolor(const char *colstr) {
+    HSColor ret_color;
+    if (!getcolor_error(colstr, &ret_color)) {
+        ret_color = 0;
+    }
+    return ret_color;
+}
+
+bool getcolor_error(const char *colstr, HSColor* ret_color) {
     Colormap cmap = DefaultColormap(g_display, g_screen);
     XColor color;
     if(!XAllocNamedColor(g_display, cmap, colstr, &color, &color)) {
         g_warning("error, cannot allocate color '%s'\n", colstr);
-        return 0;
+        return false;
     }
-    return color.pixel;
+    *ret_color = color.pixel;
+    return true;
 }
 
 // inspired by dwm's gettextprop()
