@@ -692,10 +692,7 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
 }
 
 Rectangle client_outer_floating_rect(HSClient* client) {
-    Rectangle rect = client->float_size;
-    rect.width  += *g_window_border_width * 2 + *g_snap_gap;
-    rect.height += *g_window_border_width * 2 + *g_snap_gap;
-    return rect;
+    return inner_rect_to_outline(client->float_size, client->dec.last_scheme);
 }
 
 int close_command(int argc, char** argv, GString* output) {
