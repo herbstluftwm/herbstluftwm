@@ -1228,18 +1228,17 @@ $ herbstclient attr tags.
  u - count                = 9
 
 $ herbstclient attr tags.focus.
-1 children:
-  frames.
-
-5 attributes:
+0 children.
+6 attributes:
  .---- type
  | .-- writeable
  V V
  s w name                 = "1"
  b w floating             = false
- i - index                = 0
  i - frame_count          = 2
  i - client_count         = 1
+ i - curframe_windex      = 0
+ i - curframe_wcount      = 1
 ----
 
 This already gives an intuition of the output: +attr+ first lists the names of
@@ -1299,21 +1298,11 @@ listed as follows:
  i - index                , index of this tag
  i - frame_count          , number of frames
  i - client_count         , number of clients on this tag
+ i - curframe_windex      , index of the focused client in the select frame
+ i - curframe_wcount      , number of clients in the selected frame
 |===========================
 
     ** +focus+: the object of the focused tag
-
-    ** +frames+:
-        *** 'FRAME': a object for each tag with the name 'FRAME' +
-        *** +focus+: the object of the focused frame
-+
-[format="csv",cols="m,"]
-|===========================
- s - layout               , its layout-name
- s - index                , its index ("root" for the root frame)
- i - windex               , index of the focused client in the frame
- i - wcount               , number of clients in the frame
-|===========================
 
   * +clients+
     ** 'WINID': a object for each client with its 'WINID' +

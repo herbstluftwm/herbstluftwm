@@ -88,8 +88,6 @@ typedef struct HSFrame {
     int    window_transparent;
     bool   window_visible;
     Rectangle  last_rect; // last rectangle when being drawn
-    struct HSObject* object;
-    struct HSObject* client_object;
 } HSFrame;
 
 
