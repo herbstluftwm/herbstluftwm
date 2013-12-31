@@ -116,6 +116,8 @@ static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallb
         ATTRIBUTE_COLOR(    "color",            s->border_color,    cb),
         ATTRIBUTE_INT(      "inner_width",      s->inner_width,     cb),
         ATTRIBUTE_COLOR(    "inner_color",      s->inner_color,     cb),
+        ATTRIBUTE_INT(      "outer_width",      s->outer_width,     cb),
+        ATTRIBUTE_COLOR(    "outer_color",      s->outer_color,     cb),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(obj, attributes);
@@ -138,6 +140,8 @@ static void init_dec_tripple_object(HSDecTripple* t, const char* name) {
         ATTRIBUTE_COLOR(    "color",            t->normal.border_color,    PROPAGATE),
         ATTRIBUTE_INT(      "inner_width",      t->normal.inner_width,     PROPAGATE),
         ATTRIBUTE_COLOR(    "inner_color",      t->normal.inner_color,     PROPAGATE),
+        ATTRIBUTE_INT(      "outer_width",      t->normal.outer_width,     PROPAGATE),
+        ATTRIBUTE_COLOR(    "outer_color",      t->normal.outer_color,     PROPAGATE),
         ATTRIBUTE_LAST,
     };
     t->object.data = t;
@@ -316,6 +320,16 @@ void decoration_redraw(struct HSClient* client) {
             inner.x - (iw - iw/2), inner.y - (iw - iw/2),
             inner.width + iw, inner.height + iw);
     }
+    int ow = s.outer_width;
+    Rectangle outer = client->dec.last_outer_rect;
+    outer.x -= client->dec.last_outer_rect.x;
+    outer.y -= client->dec.last_outer_rect.y;
+    if (ow > 0) {
+        XSetForeground(g_display, gc, s.outer_color);
+        XSetLineAttributes(g_display, gc, ow, LineSolid, CapProjecting, JoinMiter);
+        XDrawRectangle(g_display, win, gc,
+            ow/2, ow/2,
+            outer.width - ow, outer.height - ow);
     }
 }
 

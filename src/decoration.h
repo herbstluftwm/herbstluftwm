@@ -27,6 +27,8 @@ typedef struct {
                               // decoration and the window content
     HSColor inner_color;
     int     inner_width;
+    HSColor outer_color;
+    int     outer_width;
     int     padding_top;    // additional window border
     int     padding_right;  // additional window border
     int     padding_bottom; // additional window border
