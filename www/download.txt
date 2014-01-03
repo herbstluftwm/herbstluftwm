@@ -12,6 +12,7 @@ following platforms:
     link:http://trac.macports.org/browser/trunk/dports/x11/herbstluftwm/Portfile[MacPorts]
   * FreeBSD
   * Ubuntu Linux
+  * link:https://apps.fedoraproject.org/packages/herbstluftwm[Fedora]
 
 It's confirmed to run on:
 

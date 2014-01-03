@@ -40,5 +40,5 @@ tour.html: ../doc/herbstluftwm-tutorial.txt
 clean:
 	rm -f *.html *-content.html
 
-install:
+install: all
 	rsync -v $(INSTALLFILES) $(TARGET)
