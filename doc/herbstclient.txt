@@ -59,7 +59,7 @@ OPTIONS
 ENVIRONMENT VARIABLES
 ---------------------
 DISPLAY::
-    Specifies the 'DISPLAY' to use, e.g. where *herbstluftwm*(1) is running.
+    Specifies the 'DISPLAY' to use, i.e. where *herbstluftwm*(1) is running.
 
 EXIT STATUS
 -----------
@@ -69,7 +69,8 @@ Returns the exit status of the 'COMMAND' execution in *herbstluftwm*(1) server.
     Success.
 
 other::
-    Failure. See *herbstluftwm*(1) for a list of error codes.
+    Failure. See link:herbstluftwm.html[*herbstluftwm*(1)] for a list of error
+    codes.
 
 
 BUGS
@@ -84,7 +85,8 @@ Feel free to join the IRC channel '#herbstluftwm' on 'irc.freenode.net'.
 
 AUTHOR
 ------
-*herbstclient* was written by Thorsten Wißmann.
+*herbstclient* was written by Thorsten Wißmann. All contributors are listed in
+the *herbstluftwm* distribution AUTHORS file.
 
 RESOURCES
 ---------
@@ -98,7 +100,7 @@ Patch submission and bug reporting:
 
 COPYING
 -------
-Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
+Copyright 2011-2014 Thorsten Wißmann. All rights reserved.
 
 This software is licensed under the "Simplified BSD License". See LICENSE for
 details.

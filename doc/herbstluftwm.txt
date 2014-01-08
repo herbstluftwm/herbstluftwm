@@ -27,7 +27,7 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
     *-v*, *--version*::
         print version and exit
     *-l*, *--locked*::
-        set the monitors_locked setting initially to 1
+        Initially set the monitors_locked setting to 1
     *--verbose*::
         print verbose information to stderr
 
@@ -37,7 +37,7 @@ link:tutorial.html[*herbstluftwm-tutorial*(7)].
 
 TILING ALGORITHM
 ----------------
-The basic tiling concept is, that the layout is represented by a binary tree. On
+The basic tiling concept is that the layout is represented by a binary tree. On
 startup you see one big frame across the entire screen. A frame fulfills
 exactly one of the following conditions:
 
@@ -56,22 +56,22 @@ exactly one of the following conditions:
         either in a vertical or horizontal way. So it produces two *frames*
         which fulfill the same conditions (new frames always are about to
         contain *windows*). If you split a frame that already contains windows,
-        then the windows are inherited by the first new child frame.
+        the windows are inherited by the first new child frame.
 
 If a new window appears, it is put in the currently focused frame. Only the
 leaves of the frame tree can be focused.
 
-A frame can be removed, so it is merged with its neighbour frame. Due to the
+A frame can be removed, it is then merged with its neighbour frame. Due to the
 layout structure of a binary tree, each frame (i.e. node in binary tree) has
 exactly one neighbour.
 
-The analogy to a binary Tree is explained the best way with a small example:
+The analogy to a binary tree is explained the best way with a small example:
 On startup you have a simple binary tree, with one frame that can contain
 clients:
 
     C
 
-When splitting it (e.g. with command 'split vertical 0.5') you will get this:
+When splitting it (e.g. with the command 'split vertical 0.5') you will get this:
 
     V
    / \
@@ -106,8 +106,8 @@ The characters are interpreted as follows:
 
     * +0+: select the first subtree
     * +1+: select the second subtree
-    * +.+: select the subtree that has the focus
-    * +/+: select the subtree that has not the focus
+    * +.+: select the subtree having the focus
+    * +/+: select the subtree not having the focus
 
 Thus an empty string refers to the root frame, and "00" refers to the first
 subtree of the first subtree of the root frame.
@@ -151,7 +151,7 @@ COMMANDS
 --------
 // TODO examples in fixed font in html output
 *herbstluftwm* is controlled by internal commands, which can be executed via
-*herbstclient*(1) or via keybindings.
+link:herbstclient.html[*herbstclient*(1)] or via keybindings.
 
 quit::
     Quits herbstluftwm.
@@ -211,8 +211,9 @@ keybind 'KEY' 'COMMAND' ['ARGS ...']::
         * keybind Mod1-Shift-space cycle_layout -1
 
 keyunbind 'KEY'|*-F*|*--all*::
-    Removes the key binding for 'KEY'. Syntax for 'KEY' is defined in *keybind*.
-    If *-F* or *--all* is given, then all key bindings will be removed.
+    Removes the key binding for 'KEY'. The syntax for 'KEY' is defined in
+    *keybind*.  If *-F* or *--all* is given, then all key bindings will be
+    removed.
 
 mousebind 'BUTTON' 'ACTION' ['COMMAND' ...]::
     Adds a mouse binding for the floating mode. When 'BUTTON' is pressed, the
@@ -229,9 +230,9 @@ mousebind 'BUTTON' 'ACTION' ['COMMAND' ...]::
  ::
     'ACTION' must be one of the following actions:
 
-        * +move+: Moves the window by dragging the cursor
-        * +resize+: Resizes the window by dragging the bottom right corner
-        * +zoom+: Resizes the window into all four directions by keeping the
+        * +move+: Moves the window by dragging the cursor.
+        * +resize+: Resizes the window by dragging a corner.
+        * +zoom+: Resizes the window into all four directions while keeping the
           center of the window constant.
         * +call+: Only calls the specified 'COMMAND' while +client.dragged+
           links to the client on which the 'BUTTON' has been performed.
@@ -296,9 +297,9 @@ or 'SEPARATOR' ['COMMANDS' ...]::
     a zero, "!" returns a 1.
 
 focus_nth 'INDEX'::
-    Focuses nth window in a frame. The first window has 'INDEX' 0, if INDEX is
-    negative or greater than the last window index, then the last window is
-    focused.
+    Focuses the nth window in a frame. The first window has 'INDEX' 0. If
+    'INDEX' is negative or greater than the last window index, then the last
+    window is focused.
 
 cycle ['DELTA']::
     Cycles the selection within the current frame by 'DELTA'. If 'DELTA' is
@@ -387,7 +388,7 @@ focus ['-i'|'-e'] 'DIRECTION'::
     +
     The direction between frames is defined as follows: The focus is in a leaf
     of the binary tree.  Each inner node in the tree remembers the last focus
-    direction (child 0 or child 1). The algorithm is going as short as possible
+    direction (child 0 or child 1). The algorithm uses the shortest possible way
     from the leaf (the currently focused frame) to the root until it is possible
     to change focus in the specified 'DIRECTION'. From there the focus goes back
     to the leaf. +
@@ -421,7 +422,7 @@ focus ['-i'|'-e'] 'DIRECTION'::
 
 focus_edge ['-i'|'-e'] 'DIRECTION'::
     Focuses the window on the edge of the tag in the specified 'DIRECTION'. The
-    'DIRECTIONS' and behave as specified at the 'focus' command. +
+    'DIRECTIONS' and '-e' behave as specified at the 'focus' command. +
     +
     If '-i' (internal) is given or default_direction_external_only is unset,
     then the window on the edge of the tag will be focused. Else, only the frame
@@ -431,7 +432,7 @@ focus_edge ['-i'|'-e'] 'DIRECTION'::
 
 raise 'WINID'::
     Raises the specified window. See the <<WINDOW_IDS, section on WINDOW IDS>>
-    how to reference a certain window. Its result is only visible in floating
+    on how to reference a certain window. Its result is only visible in floating
     mode.
 
 TIP: The 'WINID' also can specify an unmanaged window, although the completion
@@ -440,18 +441,18 @@ for the raise command does not list the IDs of unmanaged windows.
 
 jumpto 'WINID'::
     Puts the focus to the specified window. See the <<WINDOW_IDS, section on
-    WINDOW IDS>> how to reference a certain window.
+    WINDOW IDS>> on how to reference a certain window.
 
 bring 'WINID'::
     Moves the specified window to the current frame and focuses it. See the
-    <<WINDOW_IDS, section on WINDOW IDS>> how to reference a certain window.
+    <<WINDOW_IDS, section on WINDOW IDS>> on how to reference a certain window.
 
 
 resize 'DIRECTION' 'FRACTIONDELTA'::
     Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA'.
-    'DIRECTION' is specified at the 'focus' command. You should not omit the
-    sign '-' or '+', because in future versions, the behaviour may change if the
-    sign is omitted. Example:
+    'DIRECTION' behaves as specified at the 'focus' command. You should not omit
+    the sign '-' or '+', because in future versions, the behaviour may change if
+    the sign is omitted. Example:
 
         * resize right +0.05
         * resize down -0.1
@@ -484,7 +485,7 @@ get 'NAME'::
     are listed in the <<SETTINGS, section below>>.
 
 toggle 'NAME'::
-    Toggles the setting 'NAME' if it's an integer setting: if its value is
+    Toggles the setting 'NAME' if it's an integer setting: If its value is
     unequal to 0, it becomes 0; else its previous value (which was unequal to 0)
     is restored.
 
@@ -501,7 +502,7 @@ cycle_monitor ['DELTA']::
     Cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.
 
 focus_monitor 'MONITOR'::
-    Puts focus to specified monitor.
+    Puts focus to the specified monitor.
 
 add 'TAG'::
     Creates a new empty tag named 'TAG'.
@@ -529,7 +530,7 @@ rename 'OLDTAG' 'NEWTAG'::
     Renames tag named 'OLDTAG' to 'NEWTAG'.
 
 move 'TAG'::
-    Moves the focused window to tag named 'TAG'.
+    Moves the focused window to the tag named 'TAG'.
 
 move_index 'INDEX' [*--skip-visible*]::
     Moves the focused window to the tag specified by 'INDEX'. Analogical to the
@@ -541,16 +542,16 @@ lock_tag ['MONITOR']::
     Lock the tag switching on the specified monitor. If no
     argument is given, the currently focused monitor is used. When the
     tag switching is disabled for a monitor, the commands *use* and
-    *use_index* have no effect, when executed there. When
-    'swap_monitors_to_get_tag' is enabled, switching to a tag, which
-    is located on locked monitor, switches to that monitor instead of
+    *use_index* have no effect when executed there. When
+    'swap_monitors_to_get_tag' is enabled, switching to a tag which
+    is located on a locked monitor, switches to that monitor instead of
     stealing it from there. The lock state of a monitor is indicated
     by "[LOCKED]" in the *list_monitors* output.
 
 unlock_tag ['MONITOR']::
-    Re-enables the tag switching on the specified monitor. If no
-    argument is given, the currently focused  monitor is used. This is the reverse
-    operation to *lock_tag* and has no further side effects but removing this lock.
+    Re-enables the tag switching on the specified monitor. If no argument is
+    given, the currently focused  monitor is used. This is the reverse operation
+    to *lock_tag* and has no further side effects but removing this lock.
 
 disjoin_rects 'RECTS' ...::
     Takes a list of rectangles and splits them into smaller pieces until all
@@ -624,12 +625,12 @@ rename_monitor 'MONITOR' 'NAME'::
 
 stack::
     Prints the stack of monitors with the visible tags and their layers as a
-    tree. The order printed stack is top to bottom. The style is configured by
-    the 'tree_style' setting.
+    tree. The order of the printed stack is top to bottom. The style is
+    configured by the 'tree_style' setting.
 
 monitor_rect [[-p] 'MONITOR']::
     Prints the rectangle of the specified monitor in the format: *X Y W H* +
-    If no 'MONITOR' or 'cur' is given, then the current Monitor is used. If '-p'
+    If no 'MONITOR' or 'cur' is given, then the current monitor is used. If '-p'
     is supplied, then the remaining rect without the pad around this monitor
     is printed.
 
@@ -642,9 +643,9 @@ list_padding ['MONITOR']::
     if no monitor is given.
 
 layout ['TAG' ['INDEX']]::
-    Prints the layout of frame with 'INDEX' in 'TAG', in a nice tree style.
+    Prints the layout of frame with 'INDEX' on 'TAG', in a nice tree style.
     Its style is defined by the 'tree_style' setting. If no 'TAG' is given,
-    current tag is used. If no 'INDEX' is given, the root frame is used. To
+    the current tag is used. If no 'INDEX' is given, the root frame is used. To
     specify 'INDEX' without specifying 'TAG' (i.e. use current tag), pass an
     empty string as 'TAG'.
     +
@@ -680,8 +681,8 @@ CAUTION: 'LAYOUT' is exactly one parameter. If you are calling it manually
 from your shell or from a script, quote it properly!
 
 complete 'POSITION' ['COMMAND' 'ARGS ...']::
-    Prints the result of tab completion in partial written 'COMMAND' with
-    optional 'ARGS'. You usually do not need this, because there is already tab
+    Prints the result of tab completion for the partial 'COMMAND' with optional
+    'ARGS'. You usually do not need this, because there is already tab
     completion for bash. Example:
 
         * complete 0 m +
@@ -695,14 +696,14 @@ complete_shell 'POSITION' ['COMMAND' 'ARGS ...']::
 
         * Escape sequences are removed in 'COMMAND' and 'ARGS'.
         * A space is appended to each full completion result.
-        * The special characters will be escaped in the output.
+        * Special characters will be escaped in the output.
 
 emit_hook 'ARGS ...'::
     Emits a custom hook to all idling herbstclients.
 
 tag_status ['MONITOR']::
-    Print a tab separated list of all tags for specified 'MONITOR' index. If no
-    'MONITOR' index is given, the focused monitor is used. Each tag name is
+    Print a tab separated list of all tags for the specified 'MONITOR' index. If
+    no 'MONITOR' index is given, the focused monitor is used. Each tag name is
     prefixed with one char, which indicates its state:
         * *.* the tag is empty
         * *:* the tag is not empty
@@ -719,9 +720,9 @@ quite useless for you.
 
 floating [['TAG'] *on*|*off*|*toggle*|*status*]::
     Changes the current tag to floating/tiling mode on specified 'TAG' or prints
-    it current status. If no 'TAG' is given, current tag is used. If no argument
-    is given, floating mode is toggled. If status is given, then *on* or *off*
-    is printed, depending of the floating state on 'TAG'.
+    it current status. If no 'TAG' is given, the current tag is used. If no
+    argument is given, floating mode is toggled. If *status* is given, then *on*
+    or *off* is printed, depending of the floating state of 'TAG'.
 
 rule [\[--]'FLAG'|\[--]'LABEL'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]::
     Defines a rule which will be applied to all new clients. Its behaviour is
@@ -739,7 +740,7 @@ pseudotile [*on*|*off*|*toggle*]::
     Sets or toggles the pseudotile state of the focused client. If a client is
     pseudotiled, then in tiling mode the client is only moved but not resized -
     the client size will stay the floating size. The only reason to resize the
-    client is to ensure, that it fits into its tile. If no argument is given,
+    client is to ensure that it fits into its tile. If no argument is given,
     pseudotile mode is toggled.
 
 object_tree ['PATH']::
@@ -773,7 +774,7 @@ substitute 'IDENTIFIER' 'ATTRIBUTE' 'COMMAND' ['ARGS' ...]::
     Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'ARGS'
     by the value of the 'ATTRIBUTE'. Note that the 'COMMAND' also is replaced by
     the attribute value if it equals 'IDENTIFIER'. The replaced command with its
-    arguments then is executed. Examples:
+    arguments then is executed. Example:
 
         * +substitute MYTITLE clients.focus.title echo MYTITLE+ +
           +
@@ -782,7 +783,7 @@ substitute 'IDENTIFIER' 'ATTRIBUTE' 'COMMAND' ['ARGS' ...]::
 sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
     Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'ARGS'
     by the string specified by 'FORMAT'. Each +%s+ in 'FORMAT' stands for the
-    value of the next attribute in 'ATTRIBUTES', similar to the *printf(1)*
+    value of the next attribute in 'ATTRIBUTES', similar to the *printf*(1)
     command. The replaced command with its arguments then is executed.
     Examples:
 
@@ -844,7 +845,7 @@ unsetenv 'NAME'::
 SETTINGS
 --------
 Settings configure the behaviour of herbstluftwm and can be controlled via the
-'set', 'get' and 'toggle' command. There are two types of settings: Strings and
+'set', 'get' and 'toggle' commands. There are two types of settings: Strings and
 integer values. An integer value is set, if its value is 1 or another value
 unequal to 0. An integer value is unset, if its value is 0.
 
@@ -874,20 +875,20 @@ mouse_recenter_gap (Integer)::
     is 0 (default), the mouse is never recentered.
 
 frame_border_active_color (String/Color)::
-    The border color of a focused frame
+    The border color of a focused frame.
 
 frame_border_normal_color (String/Color)::
-    The border color of an unfocused frame
+    The border color of an unfocused frame.
 
 frame_border_inner_color (String/Color)::
     The color of the inner border of a frame.
 
 frame_bg_active_color (String/Color)::
-    The fill color of a focused frame
+    The fill color of a focused frame.
 
 frame_bg_normal_color (String/Color)::
     The fill color of an unfocused frame (It is only visible if
-    always_show_frame is set)
+    always_show_frame is set).
 
 frame_bg_transparent (Integer)::
     If set, the background of frames are transparent. That means a rectangle is
@@ -900,7 +901,7 @@ frame_transparent_width (Integer)::
     'frame_bg_active_color' if 'frame_bg_transparent' is set.
 
 frame_border_width (Integer)::
-    Border width of a frame
+    Border width of a frame.
 
 frame_border_inner_width (Integer)::
     The width of the inner border of a frame. Must be less than
@@ -914,7 +915,7 @@ focus_crosses_monitor_boundaries (Integer)::
 
 raise_on_focus (Integer)::
     If set, a window is raised if it is focused. The value of this setting is
-    only noticed in floating mode.
+    only used in floating mode.
 
 raise_on_focus_temporarily (Integer)::
     If set, a window is raised temporarily if it is focused on its tag.
@@ -984,7 +985,7 @@ smart_window_surroundings (Integer)::
     regarding the focused window.
 
 focus_follows_mouse (Integer)::
-    If set and a window is focused by mouse cursor, this window is focused (This
+    If set and a window is focused by mouse cursor, this window is focused (this
     feature is also known as sloppy focus). If unset, you need to click to
     change the window focus by mouse. +
     +
@@ -1073,7 +1074,7 @@ the index of the rule since the last 'unrule -F' command (which is triggered in
 the default autostart).
 
 TIP: Rule labels default to an incremental index. These default labels are
-unique, unless you assign a different rule a custom integer 'LABEL'. Defaulted
+unique, unless you assign a different rule a custom integer 'LABEL'. Default
 labels can be captured with the 'printlabel' flag.
 
 If a new client appears, herbstluftwm tries to apply each rule to this new
@@ -1100,7 +1101,7 @@ Valid 'properties' are:
 
 +pid+::
     the client's process id (Warning: the pid is not available for every client.
-    This only matches if the client sets the pid to the _NET_WM_PID itself).
+    This only matches if the client sets _NET_WM_PID to the pid itself).
 
 +maxage+::
     matches if the age of the rule measured in seconds does not exceed 'value'.
@@ -1223,7 +1224,7 @@ the next stable release. So check this documentation again after upgrading the
 next time.
 
 The object tree is a collection of objects with attributes similar to +/sys+
-known from the Linux Kernel. Many entities (like tags, monitors, clients, ...)
+known from the Linux kernel. Many entities (like tags, monitors, clients, ...)
 have objects to access their attributes directly. The tree is printed by the
 +object_tree+ command and looks more or less as follows:
 ----
@@ -1242,7 +1243,7 @@ $ herbstclient object_tree
     ├─╼ by-name
     └─╼ focus
 ----
-To print a subtree starting at a certain object, give the 'PATH' of the object
+To print a subtree starting at a certain object, pass the 'PATH' of the object
 to +object_tree+. The object 'PATH' is the path using the separator +.+ (dot),
 e.g. +tags.by-name+:
 
@@ -1466,7 +1467,7 @@ HOOKS
 -----
 
 On special events, herbstluftwm emits some hooks (with parameters). You can
-receive or wait for them with *herbstclient*(1). Also custom hooks can be
+receive or wait for them with link:herbstclient.html[*herbstclient*(1)]. Also custom hooks can be
 emitted with the *emit_hook* command. The following hooks are emitted by
 herbstluftwm itself:
 
@@ -1516,7 +1517,7 @@ STACKING
 --------
 Every tag has its own stack of clients that are on this tag. Similar to the EWMH
 specification each tag stack contains several layers, which are from top to
-bottom contain:
+bottom:
 
   * the focused client (if raise_on_focus_temporarily is enabled)
   * clients in fullscreen
@@ -1548,7 +1549,8 @@ Feel free to join the IRC channel '#herbstluftwm' on 'irc.freenode.net'.
 
 AUTHOR
 ------
-*herbstluftwm* was written by Thorsten Wißmann.
+*herbstluftwm* was written by Thorsten Wißmann. All contributors are listed in
+the *herbstluftwm* distribution AUTHORS file.
 
 RESOURCES
 ---------
@@ -1562,9 +1564,9 @@ Patch submission and bug reporting:
 
 COPYING
 -------
-Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
+Copyright 2011-2014 Thorsten Wißmann. All rights reserved.
 
 This software is licensed under the "Simplified BSD License". See LICENSE for
-details
+details.
 
 // vim: tw=80 ft=asciidoc

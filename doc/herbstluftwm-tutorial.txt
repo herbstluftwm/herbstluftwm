@@ -9,10 +9,11 @@ herbstluftwm-tutorial - A tutorial introduction to herbstluftwm
 
 Description
 -----------
-This tutorial includes how to create a basic herbstluftwm setup and introduces
+This tutorial explains how to create a basic herbstluftwm setup and introduces
 the major herbstluftwm features. This tutorial neither covers all features nor
-specifies the mentioned features entirely; see *herbstluftwm*(1) for a compact
-and more complete description.
+specifies the mentioned features entirely; see
+link:herbstluftwm.html[*herbstluftwm*(1)] for a compact and more complete
+description.
 
 This tutorial covers these topics:
 
@@ -81,7 +82,7 @@ source path-to/herbstluftwm/share/herbstclient-completion
   - If you are using zsh, then copy the +share/_herbstclient+ file to the
     appropriate zsh-completion directory.
 
-Each time, there is an update, you have to do the following steps in your
+Each time there is an update, you have to do the following steps in your
 herbstluftwm directory:
 
 ----
@@ -106,8 +107,8 @@ After logging in the next time, you will get a default herbstluftwm session.
 
 First start
 -----------
-After starting herbstluftwm the screen is surrounded by a green frame initially,
-which indicates, that there is only one large frame. A frame is a container
+After starting herbstluftwm, the screen is surrounded by a green frame initially,
+which indicates that there is only one large frame. A frame is a container
 where actual windows can be placed or which can be split into two
 frames.
 
@@ -117,11 +118,12 @@ Start an +xterm+ by pressing Alt-Return, which will fill your entire screen.
 Using the client
 ----------------
 The only way to communicate to herbstluftwm is by using the client application
-called +herbstclient+. Its usual syntax is: +herbstclient COMMAND [ARGUMENTS]+.
-This calls a certain +COMMAND+ within your running herbstluftwm instance, causes
-some effect (which depends on the given +ARGUMENTS+). This produces some output
-which is printed by +herbstclient+ and lets +herbstclient+ exit with a exit-code
-(e.g. 0 for success) like many other UNIX tools:
+called link:herbstclient.html[+herbstclient+]. Its usual syntax is:
++herbstclient COMMAND [ARGUMENTS]+. This calls a certain +COMMAND+ within your
+running herbstluftwm instance. This causes some effect (which depends on the
+given +COMMAND+ and +ARGUMENTS+), produces some output which is printed by
++herbstclient+ and lets +herbstclient+ exit with a exit-code (e.g. 0 for
+success) like many other UNIX tools:
 
 ----
     shell              COMMANDS,
@@ -191,7 +193,7 @@ Tiling
 Initially there is one frame. Each frame has one of the two following possible
 types:
 
-  . It servers as a container for windows, i.e. it can hold zero up to
+  . It serves as a container for windows, i.e. it can hold zero up to
   arbitrarily many windows. Launch several more terminals to see what happens:
   If there are multiple windows in one frame, they are aligned below each other.
   To change this layout algorithm, press Mod-space to cycle all the available
@@ -211,8 +213,8 @@ Mod + ⎨ k (or ↑) ⎬  ═══════> focus ⎨ up
 +
 To undo splitting, you can remove a frame via Mod-r. To shift some window from
 one frame to one of its neighbours, use the same keyboard shortcut while holding
-the Shift key pressed. It is not possible to resize single windows but to resize
-frames. The according keyboard shortcut is the same while holding Control
+the Shift key pressed. It is not possible to resize single windows, only to
+resize frames. The according keyboard shortcut is the same while holding Control
 pressed. All in all it is:
 +
 ----
@@ -265,7 +267,7 @@ be move to tag i via Mod-Shift-i, i.e. with the +move+ command.
 [[monitors]]
 Monitors
 --------
-The notion of a monitor in herbstluftwm is treaten much more abstract and
+The notion of a monitor in herbstluftwm is treated much more abstract and
 general than in other window managers: A monitor just is a rectangular part of
 your screen which shows exactly one tag on it.
 
@@ -276,9 +278,9 @@ $ herbstclient list_monitors
 0: 1440x900+0+0 with tag "1" [FOCUS]
 ----
 
-It tells, that there is only one monitor with index 0 at position +0+0 of size
-1440x900 showing tag 1. In most cases, the herbstluftwm monitors will match the
-list of physical monitors. So to add another physical monitor, you have to
+The output shows that there is only one monitor with index 0 at position +0+0 of
+size 1440x900 showing tag 1. In most cases, the herbstluftwm monitors will match
+the list of physical monitors. So to add another physical monitor, you have to
 perform several steps:
 
   . Enable it, such that it shows a part of your screen. You can use +xrandr+,
@@ -296,10 +298,10 @@ Alternatively, if +xinerama+ works for your setup, simply run:
 $ herbstclient detect_monitors
 ----
 
-For even more automation, you can put +hc detect_monitors+ in your autostart and
-press Mod-r after your X11 monitor setup changed. For more advanced examples,
-look at the +q3terminal.sh+ example script, which implements a
-drop-down-terminal like monitor where you can put any application you like.
+For even more automation, you can enable the setting +auto_detect_monitors+.
+For more advanced examples, look at the +q3terminal.sh+ example script, which
+implements a drop-down-terminal like monitor where you can put any application
+you like.
 
 // TODO: add sections for:
 //      rules
