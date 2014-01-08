@@ -16,6 +16,9 @@
 #include "../src/utils.h"
 #include "../src/ipc-protocol.h"
 
+#define HERBSTCLIENT_VERSION_STRING \
+    "herbstclient " HERBSTLUFT_VERSION " (built on " __DATE__ ")\n"
+
 void print_help(char* command, FILE* file);
 void init_hook_regex(int argc, char* argv[]);
 void destroy_hook_regex();
@@ -83,6 +86,8 @@ void print_help(char* command, FILE* file) {
             "received and printed. The default of COUNT is 1.\n"
         "\t-q, --quiet: Do not print error messages if herbstclient cannot "
             "connect to the running herbstluftwm instance.\n"
+        "\t-v, --version: Print the herbstclient version. To get the "
+            "herbstluftwm version, use 'herbstclient version'.\n"
         "\t-h, --help: Print this help."
         "\n"
         "See the man page (herbstclient(1)) for more details.\n";
@@ -150,13 +155,14 @@ int main(int argc, char* argv[]) {
         {"count", 1, 0, 'c'},
         {"idle", 0, 0, 'i'},
         {"quiet", 0, 0, 'q'},
+        {"version", 0, 0, 'v'},
         {"help", 0, 0, 'h'},
         {0, 0, 0, 0}
     };
     // parse options
     while (1) {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "+nwc:iqh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "+nwc:iqhv", long_options, &option_index);
         if (c == -1) break;
         switch (c) {
             case 'i':
@@ -178,6 +184,9 @@ int main(int argc, char* argv[]) {
                 break;
             case 'h':
                 print_help(argv[0], stdout);
+                exit(EXIT_SUCCESS);
+            case 'v':
+                fputs(HERBSTCLIENT_VERSION_STRING, stdout);
                 exit(EXIT_SUCCESS);
             default:
                 exit(EXIT_FAILURE);

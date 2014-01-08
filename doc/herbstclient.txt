@@ -49,6 +49,10 @@ OPTIONS
     Do not print error messages if herbstclient cannot connect to the running
     herbstluftwm instance.
 
+*-v*, *--version*::
+    Print the herbstclient version. To get the herbstluftwm version, use
+    *herbstclient version*.
+
 *-h*, *--help*::
     Print the herbstclient usage with its command line options.
 
