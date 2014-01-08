@@ -1250,6 +1250,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
         { "horizontal", ALIGN_HORIZONTAL,   true,   0   },
         { "left",       ALIGN_HORIZONTAL,   false,  1   },
         { "explode",    ALIGN_EXPLODE,      true,   0   },
+        { "auto",       align_auto,         true,   0   },
     };
     for (int i = 0; i < LENGTH(splitModes); i++) {
         if (splitModes[i].name[0] == argv[1][0]) {

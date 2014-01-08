@@ -342,6 +342,7 @@ split 'ALIGN' ['FRACTION']::
         * 'left',
         * 'right' (= 'horizontal')
         * 'explode'
+        * 'auto' (split along longest side)
     +
     It specifies which of the two halves will be empty
     after the split. The other half will be occupied by the currently focused
