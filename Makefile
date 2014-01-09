@@ -152,9 +152,9 @@ uninstall:
 	-$(RM) '$(DESTDIR)$(EXAMPLESDIR)/README'
 	-$(RM) '$(DESTDIR)$(EXAMPLESDIR)'/*.sh
 	@echo "==> deleting directories..."
-	-$(RMDIR) '$(EXAMPLESDIR)'
-	-$(RMDIR) '$(DOCDIR)'
-	-$(RMDIR) '$(CONFIGDIR)'
+	-$(RMDIR) '$(DESTDIR)$(EXAMPLESDIR)/'
+	-$(RMDIR) '$(DESTDIR)$(DOCDIR)/'
+	-$(RMDIR) '$(DESTDIR)$(CONFIGDIR)/'
 
 www:
 	make -C www
