@@ -16,6 +16,13 @@ Runtime dependencies:
     - glib >= 2.14
     - libx11
 
+Optional run-time dependencies:
+    - xsetroot (to set wallpaper color in default autostart)
+    - xterm (used as the terminal in default autostart)
+    - dzen2 (used in the default panel.sh, it works best with a new dzen2 which
+             already supports clicking)
+    - dmenu (used in some example scripts)
+
 ==== Help/Support/Bugs ====
 A list of known bugs is listed in BUGS. If you found other bugs or want to
 request features then contact the mailing list. (The subscription process is
