@@ -791,6 +791,10 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             ewmh_update_current_desktop();
             emit_tag_changed(other->tag, monitor_index_of(other));
             emit_tag_changed(tag, g_cur_monitor);
+        } else {
+            // if we are not allowed to steal the tag, then just focus the
+            // other monitor
+            monitor_focus_by_index(monitor_index_of(other));
         }
         return 0;
     }

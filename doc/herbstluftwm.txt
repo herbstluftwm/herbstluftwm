@@ -976,7 +976,8 @@ monitors_locked (Integer)::
 swap_monitors_to_get_tag (Integer)::
     If set: If you want to view a tag, that already is viewed on another
     monitor, then the monitor contents will be swapped and you see the wanted
-    tag on the focused monitor. If not set, nothing will be swapped.
+    tag on the focused monitor. If not set, the other monitor is focused if it
+    shows the desired tag.
 
 auto_detect_monitors (Integer)::
     If set, detect_monitors is automatically executed every time a monitor is
