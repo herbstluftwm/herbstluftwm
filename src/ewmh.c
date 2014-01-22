@@ -463,3 +463,9 @@ void ewmh_set_window_opacity(Window win, double opacity) {
                     32, PropModeReplace, (unsigned char*)&int_opacity, 1);
 }
 
+void window_update_wm_state(Window win, WmState state) {
+    uint32_t int_state = state;
+    XChangeProperty(g_display, win,  ATOM("WM_STATE"), XA_CARDINAL,
+                    32, PropModeReplace, (unsigned char*)&int_state, 1);
+}
+

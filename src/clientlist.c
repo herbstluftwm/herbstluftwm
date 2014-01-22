@@ -727,6 +727,7 @@ void client_set_visible(HSClient* client, bool visible) {
            the client gets its MapNotify, i.e. to make sure the client is
            _visible_ when it gets MapNotify. */
         XGrabServer(g_display);
+        window_update_wm_state(client->window, WmStateNormalState);
         XMapWindow(g_display, client->window);
         XMapWindow(g_display, client->dec.decwin);
         XUngrabServer(g_display);
@@ -735,6 +736,7 @@ void client_set_visible(HSClient* client, bool visible) {
            events, and because the ICCCM tells us to! */
         XUnmapWindow(g_display, client->dec.decwin);
         XUnmapWindow(g_display, client->window);
+        window_update_wm_state(client->window, WmStateWithdrawnState);
         client->ignore_unmaps++;
     }
     client->visible = visible;
