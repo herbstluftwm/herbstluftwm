@@ -604,6 +604,18 @@ void scan(void) {
         if(wins)
             XFree(wins);
     }
+    // ensure every original client is managed again
+    for (int i = 0; i < cl_count; i++) {
+        if (get_client_from_window(cl[i])) continue;
+        if (!XGetWindowAttributes(g_display, cl[i], &wa)
+            || wa.override_redirect
+            || XGetTransientForHint(g_display, cl[i], &d1))
+        {
+            continue;
+        }
+        XReparentWindow(g_display, cl[i], g_root, 0,0);
+        manage_client(cl[i]);
+    }
 }
 
 void execute_autostart_file() {
