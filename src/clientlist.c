@@ -121,6 +121,7 @@ static void client_move_to_floatpos(void* key, void* client_void, void* data) {
         unsigned int h = client->float_size.height;
         XMoveResizeWindow(g_display, client->window, x, y, w, h);
         XReparentWindow(g_display, client->window, g_root, x, y);
+        ewmh_update_frame_extents(client->window, 0,0,0,0);
     }
 }
 
