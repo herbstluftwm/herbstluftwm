@@ -233,7 +233,7 @@ void decoration_init(HSDecoration* dec, struct HSClient* client) {
 void decoration_setup_frame(HSClient* client) {
     HSDecoration* dec = &(client->dec);
     XSetWindowAttributes at;
-    long mask;
+    long mask = 0;
     // copy attributes from client and not from the root window
     Visual* visual = check_32bit_client(client);
     if (visual) {
