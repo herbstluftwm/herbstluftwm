@@ -28,6 +28,8 @@ size_t      g_window_count;
 static Window      g_wm_window;
 int*        g_focus_stealing_prevention;
 
+int WM_STATE;
+
 static Window*  g_original_clients = NULL;
 static unsigned long g_original_clients_count = 0;
 static bool ewmh_read_client_list(Window** buf, unsigned long *count);
@@ -98,6 +100,9 @@ void ewmh_init() {
         g_original_clients = NULL;
         g_original_clients_count = 0;
     }
+
+    /* init other atoms */
+    WM_STATE = XInternAtom(g_display, "WM_STATE", False);
 
     /* init for the supporting wm check */
     g_wm_window = XCreateSimpleWindow(g_display, g_root,
@@ -473,7 +478,7 @@ void ewmh_update_frame_extents(Window win, int left, int right, int top, int bot
 
 void window_update_wm_state(Window win, WmState state) {
     uint32_t int_state = state;
-    XChangeProperty(g_display, win,  ATOM("WM_STATE"), XA_CARDINAL,
+    XChangeProperty(g_display, win,  WM_STATE, WM_STATE,
                     32, PropModeReplace, (unsigned char*)&int_state, 1);
 }
 
