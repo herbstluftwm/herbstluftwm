@@ -219,8 +219,8 @@ void decoration_init(HSDecoration* dec, struct HSClient* client) {
     g_hash_table_insert(g_decwin2client, &(dec->decwin), client);
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
-    hint->res_name = HERBST_FRAME_CLASS;
-    hint->res_class = HERBST_FRAME_CLASS;
+    hint->res_name = HERBST_DECORATION_CLASS;
+    hint->res_class = HERBST_DECORATION_CLASS;
     XSetClassHint(g_display, dec->decwin, hint);
     XFree(hint);
     dec->gc = XCreateGC(g_display, dec->decwin, 0, NULL);
