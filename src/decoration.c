@@ -3,6 +3,7 @@
 #include "clientlist.h"
 #include "globals.h"
 #include "settings.h"
+#include "ewmh.h"
 
 #include <stdio.h>
 
@@ -18,6 +19,9 @@ HSObject g_theme_urgent_object;
 static void init_dec_tripple_object(HSDecTripple* t, const char* name);
 static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
 static GString* PROP2FLOAT(HSAttribute* attr);
+
+// is called automatically after resize_outline
+static void decoration_update_frame_extents(struct HSClient* client);
 
 void decorations_init() {
     g_theme_object = hsobject_create_and_link(hsobject_root(), "theme");
@@ -322,8 +326,17 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
     decoration_redraw(client);
+    decoration_update_frame_extents(client);
     client_send_configure(client);
     XSync(g_display, False);
+}
+
+static void decoration_update_frame_extents(struct HSClient* client) {
+    int left = client->dec.last_inner_rect.x - client->dec.last_outer_rect.x;
+    int top  = client->dec.last_inner_rect.y - client->dec.last_outer_rect.y;
+    int right = client->dec.last_outer_rect.width - client->dec.last_inner_rect.width - left;
+    int bottom = client->dec.last_outer_rect.height - client->dec.last_inner_rect.height - top;
+    ewmh_update_frame_extents(client->window, left,right, top,bottom);
 }
 
 void decoration_change_scheme(struct HSClient* client,

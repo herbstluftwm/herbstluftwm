@@ -77,7 +77,6 @@ void decoration_resize_outline(struct HSClient* client, Rectangle rect,
 // resize such that the window content fits into rect
 void decoration_resize_inner(struct HSClient* client, Rectangle rect,
                              HSDecorationScheme scheme);
-
 void decoration_change_scheme(struct HSClient* client,
                               HSDecorationScheme scheme);
 

@@ -44,14 +44,17 @@ char* g_netatom_names[NetCOUNT] = {
     [ NetDesktopViewport            ] = "_NET_DESKTOP_VIEWPORT"             ,
     [ NetActiveWindow               ] = "_NET_ACTIVE_WINDOW"                ,
     [ NetWmName                     ] = "_NET_WM_NAME"                      ,
+    [ NetSupportingWmCheck          ] = "_NET_SUPPORTING_WM_CHECK"          ,
     [ NetWmWindowType               ] = "_NET_WM_WINDOW_TYPE"               ,
     [ NetWmState                    ] = "_NET_WM_STATE"                     ,
     [ NetWmWindowOpacity            ] = "_NET_WM_WINDOW_OPACITY"            ,
     [ NetMoveresizeWindow           ] = "_NET_MOVERESIZE_WINDOW"            ,
     [ NetWmMoveresize               ] = "_NET_WM_MOVERESIZE"                ,
+    [ NetFrameExtents               ] = "_NET_FRAME_EXTENTS"                ,
+    /* window states */
     [ NetWmStateFullscreen          ] = "_NET_WM_STATE_FULLSCREEN"          ,
     [ NetWmStateDemandsAttention    ] = "_NET_WM_STATE_DEMANDS_ATTENTION"   ,
-    [ NetSupportingWmCheck          ] = "_NET_SUPPORTING_WM_CHECK"          ,
+    /* window types */
     [ NetWmWindowTypeDesktop        ] = "_NET_WM_WINDOW_TYPE_DESKTOP"       ,
     [ NetWmWindowTypeDock           ] = "_NET_WM_WINDOW_TYPE_DOCK"          ,
     [ NetWmWindowTypeToolbar        ] = "_NET_WM_WINDOW_TYPE_TOOLBAR"       ,
@@ -461,6 +464,11 @@ void ewmh_set_window_opacity(Window win, double opacity) {
 
     XChangeProperty(g_display, win, g_netatom[NetWmWindowOpacity], XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&int_opacity, 1);
+}
+void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom) {
+    long extents[] = { left, right, top, bottom };
+    XChangeProperty(g_display, win, g_netatom[NetFrameExtents], XA_CARDINAL,
+                    32, PropModeReplace, (unsigned char*)extents, LENGTH(extents));
 }
 
 void window_update_wm_state(Window win, WmState state) {
