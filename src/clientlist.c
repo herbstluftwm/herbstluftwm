@@ -510,7 +510,9 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     }
     HSDecorationScheme scheme = client_scheme_from_triple(client, HSDecSchemeTiling);
     if (client->pseudotile) {
-        Rectangle outline = inner_rect_to_outline(client->float_size, scheme);
+        Rectangle inner = client->float_size;
+        applysizehints(client, &inner.width, &inner.height);
+        Rectangle outline = inner_rect_to_outline(inner, scheme);
         rect.x += MAX(0, (rect.width - outline.width)/2);
         rect.y += MAX(0, (rect.height - outline.height)/2);
         rect.width = MIN(outline.width, rect.width);
