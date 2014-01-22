@@ -71,6 +71,14 @@ int         g_verbose;
 #define slow_assert(ignore)((void) 0)
 #endif // DEBUG
 
+#define HSWeakAssert(X)                                                 \
+    do {                                                                \
+        if (!(X)) {                                                     \
+            fprintf(stderr, "%s:%d: %s: assertion `%s\' failed.",       \
+                    __FILE__, __LINE__, __func__, #X);                  \
+        }                                                               \
+    } while (0)
+
 // characters that need to be escaped
 // http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html
 #define ESCAPE_CHARACTERS "|&;<>()$`\\\"\' \t\n"

@@ -6,6 +6,7 @@
 #include "ewmh.h"
 
 #include <stdio.h>
+#include <string.h>
 
 HSDecTripple g_decorations[HSDecSchemeCount];
 
@@ -209,14 +210,52 @@ void decorations_destroy() {
     g_decwin2client = NULL;
 }
 
+// from openbox/frame.c
+static Visual* check_32bit_client(HSClient* c)
+{
+    XWindowAttributes wattrib;
+    Status ret;
+
+    ret = XGetWindowAttributes(g_display, c->window, &wattrib);
+    HSWeakAssert(ret != BadDrawable);
+    HSWeakAssert(ret != BadWindow);
+
+    if (wattrib.depth == 32)
+        return wattrib.visual;
+    return NULL;
+}
+
 void decoration_init(HSDecoration* dec, struct HSClient* client) {
+    memset(dec, 0, sizeof(*dec));
     dec->client = client;
+}
+
+void decoration_setup_frame(HSClient* client) {
+    HSDecoration* dec = &(client->dec);
     XSetWindowAttributes at;
+    long mask;
+    // copy attributes from client and not from the root window
+    Visual* visual = check_32bit_client(client);
+    if (visual) {
+        /* client has a 32-bit visual */
+        mask = CWColormap | CWBackPixel | CWBorderPixel;
+        /* create a colormap with the visual */
+        dec->colormap = at.colormap =
+            XCreateColormap(g_display, g_root, visual, AllocNone);
+        at.background_pixel = BlackPixel(g_display, g_screen);
+        at.border_pixel = BlackPixel(g_display, g_screen);
+    } else {
+        dec->colormap = 0;
+    }
     dec->decwin = XCreateWindow(g_display, g_root, 0,0, 30, 30, 0,
-                        DefaultDepth(g_display, DefaultScreen(g_display)),
+                        visual
+                            ? 32
+                            : (DefaultDepth(g_display, DefaultScreen(g_display))),
                         CopyFromParent,
-                        DefaultVisual(g_display, DefaultScreen(g_display)),
-                        0, &at);
+                        visual
+                            ? visual
+                            : DefaultVisual(g_display, DefaultScreen(g_display)),
+                        mask, &at);
     dec->last_rect_inner = false;
     dec->last_inner_rect.width = -1;
     dec->last_outer_rect.width = -1;
@@ -234,8 +273,15 @@ void decoration_free(HSDecoration* dec) {
     if (g_decwin2client) {
         g_hash_table_remove(g_decwin2client, &(dec->decwin));
     }
-    XFreeGC(g_display, dec->gc);
-    XDestroyWindow(g_display, dec->decwin);
+    if (dec->colormap) {
+        XFreeColormap(g_display, dec->colormap);
+    }
+    if (dec->gc) {
+        XFreeGC(g_display, dec->gc);
+    }
+    if (dec->decwin) {
+        XDestroyWindow(g_display, dec->decwin);
+    }
 }
 
 HSClient* get_client_from_decoration(Window decwin) {

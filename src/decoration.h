@@ -42,6 +42,8 @@ typedef struct {
     bool                    last_rect_inner; // whether last_rect is inner size
     Rectangle               last_inner_rect; // only valid if width >= 0
     Rectangle               last_outer_rect; // only valid if width >= 0
+    /* X specific things */
+    Colormap                colormap;
     GC                      gc;
 } HSDecoration;
 
@@ -68,6 +70,7 @@ void decorations_init();
 void decorations_destroy();
 
 void decoration_init(HSDecoration* dec, struct HSClient* client);
+void decoration_setup_frame(struct HSClient* client);
 void decoration_free(HSDecoration* dec);
 
 // resize such that the decorated outline of the window fits into rect

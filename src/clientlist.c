@@ -68,7 +68,6 @@ static HSClient* create_client() {
     hc->sizehints_floating = true;
     hc->sizehints_tiling = false;
     hc->visible = false;
-    decoration_init(&hc->dec, hc);
     return hc;
 }
 
@@ -255,6 +254,7 @@ HSClient* manage_client(Window win) {
     }
 
     // actually manage it
+    decoration_setup_frame(client);
     g_hash_table_insert(g_clients, &(client->window), client);
     client->window_str = g_string_sized_new(10);
     g_string_printf(client->window_str, "0x%lx", win);
