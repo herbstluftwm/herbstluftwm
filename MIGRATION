@@ -6,9 +6,10 @@ herbstluftwm releases and how to migrate scripts and configuration.
 
 0.5.3 to current git version
 ----------------------------
-The tag attributes curframe_windex and curframe_wcount have been removed, they
-are replaced by the more general attributes frames.focus.windex
-frames.focus.wcount.
+// Will be activated as soon as the patches are fixed and re-reverted
+//The tag attributes curframe_windex and curframe_wcount have been removed, they
+//are replaced by the more general attributes frames.focus.windex
+//frames.focus.wcount.
 
 The behaviour of swap_monitors_to_get_tag = 0 has changed. If
 swap_monitors_to_get_tag is set to 0, then focus the other monitor if the
