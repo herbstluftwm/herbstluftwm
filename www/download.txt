@@ -13,11 +13,11 @@ following platforms:
   * FreeBSD
   * Ubuntu Linux
   * link:https://apps.fedoraproject.org/packages/herbstluftwm[Fedora]
+  * link:http://www.openbsd.org/cgi-bin/cvsweb/ports/x11/herbstluftwm/[OpenBSD]
 
 It's confirmed to run on:
 
   * Cygwin
-  * OpenBSD
   * Many other Linux distributions
 
 If your distribution is not supported you can build a package on your own using
