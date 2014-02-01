@@ -797,7 +797,7 @@ void enternotify(XEvent* event) {
     HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
     if (!mouse_is_dragging()
         && *g_focus_follows_mouse
-        && false == ce->focus) {
+        && ce->focus == false) {
         HSClient* c = get_client_from_window(ce->window);
         HSFrame* target;
         if (c && c->tag->floating == false
