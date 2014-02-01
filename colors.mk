@@ -8,6 +8,8 @@ COLOR_FILE    = `$(TPUT) bold``$(TPUT) setaf 2`
 COLOR_BRACKET = $(COLOR_CLEAR)`$(TPUT) setaf 4`
 endif
 
+ifneq ($(VERBOSE),)
 define colorecho
 	@echo $(COLOR_BRACKET)"  ["$(COLOR_ACTION)$1$(COLOR_BRACKET)"]  " $(COLOR_FILE)$2$(COLOR_BRACKET)... $(COLOR_NORMAL)
 endef
+endif
