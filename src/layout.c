@@ -847,9 +847,7 @@ void frame_apply_layout(HSFrame* frame, Rectangle rect) {
             return;
         }
 
-        if (!*g_smart_window_surroundings
-            || (frame->content.clients.count != 1
-                && frame->content.clients.layout != LAYOUT_MAX)) {
+        if (!smart_window_surroundings_active(frame)) {
             // apply window gap
             rect.x += *g_window_gap;
             rect.y += *g_window_gap;
@@ -1951,5 +1949,11 @@ int frame_move_window_edge(int argc, char** argv, GString* output) {
         ;
     monitors_unlock_command(LENGTH(args), args);
     return 0;
+}
+
+bool smart_window_surroundings_active(HSFrame* frame) {
+    return *g_smart_window_surroundings
+            && (frame->content.clients.count == 1
+                || frame->content.clients.layout == LAYOUT_MAX);
 }
 

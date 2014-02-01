@@ -183,5 +183,7 @@ void frame_update_border(Window window, unsigned long color);
 int frame_focus_edge(int argc, char** argv, GString* output);
 int frame_move_window_edge(int argc, char** argv, GString* output);
 
+bool smart_window_surroundings_active(HSFrame* frame);
+
 #endif
 

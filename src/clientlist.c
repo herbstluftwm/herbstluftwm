@@ -36,7 +36,6 @@ int* g_window_border_width;
 int* g_window_border_inner_width;
 int* g_raise_on_focus;
 int* g_snap_gap;
-int* g_smart_window_surroundings;
 int* g_pseudotile_center_threshold;
 unsigned long g_window_border_active_color;
 unsigned long g_window_border_normal_color;
@@ -76,7 +75,6 @@ static void fetch_colors() {
     g_window_border_inner_width = &(settings_find("window_border_inner_width")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_snap_gap = &(settings_find("snap_gap")->value.i);
-    g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
     g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
     char* str = settings_find("window_border_normal_color")->value.s;
     g_window_border_normal_color = getcolor(str);
@@ -493,17 +491,12 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     }
     Window win = client->window;
     int border_width = *g_window_border_width;
-    if (*g_smart_window_surroundings && !client->pseudotile
-        && (frame->content.clients.count == 1
-            || frame->content.clients.layout == LAYOUT_MAX)) {
+    if (!client->pseudotile && smart_window_surroundings_active(frame)) {
         border_width = 0;
     }
 
     // apply border width
-    bool is_max_layout = frame->content.clients.layout != LAYOUT_MAX;
-    bool only_one_client = frame->content.clients.count != 1;
-    bool smart_surroundings_are_applied = *g_smart_window_surroundings && is_max_layout && only_one_client;
-    if (!client->pseudotile && !smart_surroundings_are_applied) {
+    if (!client->pseudotile && !smart_window_surroundings_active(frame)) {
         // apply window gap
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
