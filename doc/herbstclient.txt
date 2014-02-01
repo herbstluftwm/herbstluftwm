@@ -23,12 +23,11 @@ link:herbstluftwm.html[*herbstluftwm*(1)] instance via Xlib. If 'COMMAND' has an
 output, it is printed by *herbstclient*. If output does not end with a newline,
 then a newline is added to improve readability.
 
-// FIXME: this ##s## is an ugly hack... is there an other solution?
 See link:herbstluftwm.html[*herbstluftwm*(1)] for a list of available
-'COMMAND'##s## and their 'ARGS'.
+__COMMAND__s and their 'ARGS'.
 
 If '--wait' or '--idle' is passed, then it waits for hooks from *herbstluftwm*.
-The hook is printed, if it matches the optional 'FILTER'. 'FILTER'##s## are
+The hook is printed, if it matches the optional 'FILTER'. __FILTER__s are
 regular expressions. For a list of available hooks see *herbstluftwm*(1).
 
 OPTIONS

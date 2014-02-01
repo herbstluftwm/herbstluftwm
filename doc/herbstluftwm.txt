@@ -786,12 +786,12 @@ compare 'ATTRIBUTE' 'OPERATOR' 'VALUE'::
     Compares the value of 'ATTRIBUTE' with 'VALUE' using the comparation method
     'OPERATOR'. If the comparation succeeds, it returns 0, else 1. The operators
     are:
-        - *=*: 'ATTRIBUTE'##\'s## value equals 'VALUE'
-        - *!=*: 'ATTRIBUTE'##\'s## value does not equal 'VALUE'
-        - *le*: 'ATTRIBUTE'##\'s## value \<= 'VALUE'
-        - *lt*: 'ATTRIBUTE'##\'s## value <  'VALUE'
-        - *ge*: 'ATTRIBUTE'##\'s## value >= 'VALUE'
-        - *gt*: 'ATTRIBUTE'##\'s## value >  'VALUE'
+        - *=*: __ATTRIBUTE__'s value equals 'VALUE'
+        - *!=*: __ATTRIBUTE__'s value does not equal 'VALUE'
+        - *le*: __ATTRIBUTE__'s value \<= 'VALUE'
+        - *lt*: __ATTRIBUTE__'s value <  'VALUE'
+        - *ge*: __ATTRIBUTE__'s value >= 'VALUE'
+        - *gt*: __ATTRIBUTE__'s value >  'VALUE'
 
  ::
     The 'OPERATORs' *le*,*lt*,*ge*,*gt* can only be used if 'ATTRIBUTE' is of
@@ -1020,12 +1020,12 @@ RULES
 
 Rules are used to change default properties for certain clients when they
 appear. Each rule matches against a certain subset of all clients and defines a
-set of properties for them (called 'CONSEQUENCE'##s##). A rule can be defined
+set of properties for them (called __CONSEQUENCE__s). A rule can be defined
 with this command:
 
 +rule+ [\[--]'FLAG'|\[--]'LABEL'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]
 
-Each rule consists of a list of 'FLAG'##s##, 'CONDITION'##s## 'CONSEQUENCE'##s##
+Each rule consists of a list of __FLAG__s, __CONDITION__s, __CONSEQUENCE__s
 and, optionally, a 'LABEL'. (each of them can be optionally prefixed with two
 dashes (+--+) to provide a more *iptables*(8)-like feeling).
 
