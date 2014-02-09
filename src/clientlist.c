@@ -16,6 +16,7 @@
 #include "ipc-protocol.h"
 #include "object.h"
 #include "decoration.h"
+#include "key.h"
 // system
 #include "glib-backports.h"
 #include <assert.h>
@@ -245,6 +246,9 @@ HSClient* manage_client(Window win) {
         client->tag = find_tag(changes.tag_name->str);
     }
 
+    // Reuse the keymask string
+    client->keymask = changes.keymask;
+
     if (!changes.manage) {
         client_changes_free_members(&changes);
         client_destroy(client);
@@ -283,6 +287,7 @@ HSClient* manage_client(Window win) {
     HSAttribute attributes[] = {
         ATTRIBUTE_STRING(   "winid",        client->window_str,     ATTR_READ_ONLY),
         ATTRIBUTE_STRING(   "title",        client->title,          ATTR_READ_ONLY),
+        ATTRIBUTE_STRING(   "keymask",      client->keymask,        ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM(   "tag",          client_attr_tag,        ATTR_READ_ONLY),
         ATTRIBUTE_INT(      "pid",          client->pid,            ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM(   "class",        client_attr_class,      ATTR_READ_ONLY),
@@ -428,6 +433,9 @@ void client_window_unfocus_last() {
         hook_emit_list("focus_changed", "0x0", "", NULL);
         ewmh_update_active_window(None);
         tag_update_each_focus_layer();
+
+        // Enable all keys in the root window
+        key_set_keymask(get_current_monitor()->tag, 0);
     }
     lastfocus = 0;
 }
@@ -470,6 +478,7 @@ void client_window_focus(HSClient* client) {
     }
     tag_update_focus_layer(get_current_monitor()->tag);
     grab_client_buttons(client, true);
+    key_set_keymask(client->tag, client);
     client_set_urgent(client, false);
 }
 
@@ -986,4 +995,3 @@ bool client_sendevent(HSClient *client, Atom proto) {
     }
     return exists;
 }
-

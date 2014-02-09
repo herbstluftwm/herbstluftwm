@@ -310,7 +310,7 @@ cycle_all [*--skip-invisible*] ['DIRECTION']::
 cycle_frame ['DIRECTION']::
     Cycles through all frames on the current tag. 'DIRECTION' = 1 means forward,
     'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no effect. 'DIRECTION'
-    defaults to 1. 
+    defaults to 1.
 
 cycle_layout ['DELTA' ['LAYOUTS' ...]]::
     Cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'
@@ -1151,6 +1151,13 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     a new window with the id 'WINID'. This consequence can be used multiple
     times, which will cause a hook to be emitted for each occurrence of a hook
     consequence.
+
++keymask+::
+    Sets the keymask for an client. A keymask is an regular expression that is
+    matched against the string represenation (see list_keybinds). If it matches
+    the keybinding is active when this client is focused, otherwise it is
+    disabled. The default keymask is an empty string (""), which does not
+    disable any keybinding.
 
 A rule's behaviour can be configured by some special 'FLAGS':
 

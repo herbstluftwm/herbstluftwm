@@ -63,6 +63,7 @@ DECLARE_CONSEQUENCE(consequence_switchtag);
 DECLARE_CONSEQUENCE(consequence_ewmhrequests);
 DECLARE_CONSEQUENCE(consequence_ewmhnotify);
 DECLARE_CONSEQUENCE(consequence_hook);
+DECLARE_CONSEQUENCE(consequence_keymask);
 
 /// GLOBALS ///
 
@@ -91,6 +92,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "ewmhrequests",   consequence_ewmhrequests    },
     { "ewmhnotify",     consequence_ewmhnotify      },
     { "hook",           consequence_hook            },
+    { "keymask",        consequence_keymask         },
 };
 
 static GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -559,6 +561,7 @@ void client_changes_init(HSClientChanges* changes, HSClient* client) {
     changes->switchtag = false;
     changes->manage = true;
     changes->fullscreen = ewmh_is_fullscreen_set(client->window);
+    changes->keymask = g_string_new("");
 }
 
 void client_changes_free_members(HSClientChanges* changes) {
@@ -821,3 +824,11 @@ void consequence_hook(HSConsequence* cons, HSClient* client,
     g_string_free(winid, true);
 }
 
+void consequence_keymask(HSConsequence* cons,
+                         HSClient* client, HSClientChanges* changes) {
+    if (changes->keymask) {
+        g_string_assign(changes->keymask, cons->value.str);
+    } else {
+        changes->keymask = g_string_new(cons->value.str);
+    }
+}

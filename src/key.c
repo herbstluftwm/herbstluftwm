@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <regex.h>
 #include "glib-backports.h"
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
@@ -238,7 +239,24 @@ void grab_keybind(KeyBinding* binding, void* useless_pointer) {
         XGrabKey(g_display, keycode, modifiers[i]|binding->modifiers, g_root,
                  True, GrabModeAsync, GrabModeAsync);
     }
+    // mark the keybinding as enabled
+    binding->enabled = true;
 }
+
+void ungrab_keybind(KeyBinding* binding, void* useless_pointer) {
+    unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask|LockMask };
+    KeyCode keycode = XKeysymToKeycode(g_display, binding->keysym);
+    if (!keycode) {
+        // ignore unknown keysyms
+        return;
+    }
+    // grab key for each modifier that is ignored (capslock, numlock)
+    for (int i = 0; i < LENGTH(modifiers); i++) {
+        XUngrabKey(g_display, keycode, modifiers[i]|binding->modifiers, g_root);
+    }
+    binding->enabled = false;
+}
+
 
 // update the numlockmask
 // from dwm.c
@@ -361,3 +379,47 @@ void complete_against_modifiers(char* needle, char seperator,
     g_string_free(buf, true);
 }
 
+static void key_set_keymask_helper(KeyBinding* b, regex_t *keymask_regex) {
+    // add keybinding
+    bool enabled = true;
+    if (keymask_regex != NULL) {
+        GString* name = keybinding_to_g_string(b);
+        regmatch_t match;
+        int status = regexec(keymask_regex, name->str, 1, &match, 0);
+        // only accept it, if it matches the entire string
+        if (status == 0
+            && match.rm_so == 0
+            && match.rm_eo == strlen(name->str)) {
+            enabled = true;
+        } else {
+            // Keybinding did not match, therefore we disable it
+            enabled = false;
+        }
+        g_string_free(name, true);
+    }
+
+    if (enabled && !b->enabled) {
+        grab_keybind(b, NULL);
+    } else if(!enabled && b->enabled) {
+        ungrab_keybind(b, NULL);
+    }
+}
+
+void key_set_keymask(HSTag *tag, HSClient *client) {
+    regex_t     keymask_regex;
+    if (client && strlen(client->keymask->str) > 0) {
+        int status = regcomp(&keymask_regex, client->keymask->str, REG_EXTENDED);
+        if (status == 0) {
+            g_list_foreach(g_key_binds, (GFunc)key_set_keymask_helper,
+                           &keymask_regex);
+            return;
+        } else {
+            char buf[ERROR_STRING_BUF_SIZE];
+            regerror(status, &keymask_regex, buf, ERROR_STRING_BUF_SIZE);
+            HSDebug("keymask: Can not parse regex \"%s\" from keymask: %s",
+                    client->keymask->str, buf);
+        }
+    }
+    // Enable all keys again
+    g_list_foreach(g_key_binds, (GFunc)key_set_keymask_helper, 0);
+}

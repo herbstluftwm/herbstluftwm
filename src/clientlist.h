@@ -27,6 +27,7 @@ typedef struct HSClient {
     HSTag*      tag;
     Rectangle   float_size;     // floating size without the window border
     GString*    title;  // or also called window title; this is never NULL
+    GString*    keymask; // keymask applied to mask out keybindins
     bool        urgent;
     bool        fullscreen;
     bool        ewmhfullscreen; // ewmh fullscreen state
@@ -116,4 +117,3 @@ void window_set_visible(Window win, bool visible);
 unsigned long get_window_border_color(HSClient* client);
 
 #endif
-

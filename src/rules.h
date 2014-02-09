@@ -63,6 +63,7 @@ typedef struct {
     bool            manage; // whether we should manage it
     bool            fullscreen;
     bool            ewmhnotify; // whether to send ewmh-notifications
+    GString*        keymask; // Which keymask rule should be applied for this client
 } HSClientChanges;
 
 void rules_init();
@@ -83,4 +84,3 @@ int rule_print_all_command(int argc, char** argv, GString* output);
 void complete_against_rule_names(int argc, char** argv, int pos, GString* output);
 
 #endif
-

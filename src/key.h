@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <X11/Xlib.h>
 #include "glib-backports.h"
+#include "clientlist.h"
 
 #define KEY_COMBI_SEPARATORS "+-"
 
@@ -17,6 +18,7 @@ typedef struct KeyBinding {
     unsigned int modifiers;
     int     cmd_argc; // number of arguments for command
     char**  cmd_argv; // arguments for command to call
+    bool    enabled;  // Is the keybinding already grabbed
 } KeyBinding;
 
 unsigned int modifiername2mask(const char* name);
@@ -41,11 +43,10 @@ void regrab_keys();
 void grab_keybind(KeyBinding* binding, void* useless_pointer);
 void update_numlockmask();
 unsigned int* get_numlockmask_ptr();
-
+void key_set_keymask(HSTag * tag, HSClient *client);
 void handle_key_press(XEvent* ev);
 
 void key_init();
 void key_destroy();
 
 #endif
-
