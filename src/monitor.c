@@ -50,6 +50,11 @@ void monitor_init() {
     g_mouse_recenter_gap       = &(settings_find("mouse_recenter_gap")->value.i);
     g_monitor_stack = stack_create();
     g_monitor_object = hsobject_create_and_link(hsobject_root(), "monitors");
+    HSAttribute attributes[] = {
+        ATTRIBUTE_UINT("count", g_monitors->len, ATTR_READ_ONLY),
+        ATTRIBUTE_LAST,
+    };
+    hsobject_set_attributes(g_monitor_object, attributes);
     g_monitor_by_name_object = hsobject_create_and_link(g_monitor_object, "by-name");
 }
 

@@ -11,6 +11,7 @@ Current git version
     * if swap_monitors_to_get_tag is set to 0, then focus the other monitor if
       the desired tag is shown on another monitor instead of doing nothing
     * new split mode: auto
+    * new attribute monitors.count indicating the number of monitors
 
 Release 0.5.3 on 2013-12-24
 ---------------------------
