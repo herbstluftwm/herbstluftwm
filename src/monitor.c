@@ -334,6 +334,7 @@ int set_monitor_rects(Rectangle* templates, size_t count) {
     while (i < g_monitors->len) {
         remove_monitor(i);
     }
+    monitor_update_focus_objects();
     all_monitors_apply_layout();
     return 0;
 }
@@ -525,6 +526,7 @@ int remove_monitor_command(int argc, char** argv, GString* output) {
         g_string_append_printf(output,
             "%s: Can't remove the last monitor\n", argv[0]);
     }
+    monitor_update_focus_objects();
     return ret;
 }
 
