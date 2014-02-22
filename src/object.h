@@ -78,21 +78,61 @@ typedef struct HSAttribute {
     HSAttributeValue* user_data; /* data needed for user attributes */
 } HSAttribute;
 
+#define ATTRIBUTE_SIMPLE(TYPE, N, MEM, V, CHANGE) \
+    { .object = NULL,           \
+      .type = TYPE,             \
+      .name = (N),              \
+      .value = { MEM = V},      \
+      .unparsed_value = NULL,   \
+      .on_change = (CHANGE),    \
+      .change_custom = NULL,    \
+      .user_attribute = false,  \
+      .user_data = NULL         \
+    }
+
+
 #define ATTRIBUTE_BOOL(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_BOOL, (N), { .b = &(V) }, NULL, (CHANGE), NULL, false }
+    ATTRIBUTE_SIMPLE(HSATTR_TYPE_BOOL, (N), .b, &(V), (CHANGE))
 #define ATTRIBUTE_INT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_INT, (N), { .i = &(V) }, NULL, (CHANGE), NULL, false }
+    ATTRIBUTE_SIMPLE(HSATTR_TYPE_INT, (N), .i, &(V), (CHANGE))
 #define ATTRIBUTE_UINT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_UINT, (N), { .u = &(V) }, NULL, (CHANGE), NULL, false }
+    ATTRIBUTE_SIMPLE(HSATTR_TYPE_UINT, (N), .u, &(V), (CHANGE))
 #define ATTRIBUTE_STRING(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_STRING, (N), { .str = &(V) }, NULL, (CHANGE), NULL, false }
+    ATTRIBUTE_SIMPLE(HSATTR_TYPE_STRING, (N), .str, &(V), (CHANGE))
+
 #define ATTRIBUTE_CUSTOM(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_CUSTOM, (N), { .custom = V }, NULL, (NULL), CHANGE, false }
+    { .object = NULL,               \
+      .type = HSATTR_TYPE_CUSTOM,   \
+      .name = (N),                  \
+      .value = { .custom = (V)},    \
+      .unparsed_value = NULL,       \
+      .on_change = NULL,            \
+      .change_custom = (CHANGE),    \
+      .user_attribute = false,      \
+      .user_data = NULL             \
+    }
 #define ATTRIBUTE_CUSTOM_INT(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_CUSTOM_INT, (N), { .custom_int = V }, NULL, (NULL), CHANGE, false }
-// TODO: add reasonable unparsed_value string here:
-#define ATTRIBUTE_COLOR(N, V, CHANGE) \
-    { NULL, HSATTR_TYPE_COLOR, (N), { .color = &(V) }, g_string_new(""), (CHANGE), false }
+    { .object = NULL,               \
+      .type = HSATTR_TYPE_CUSTOM_INT,\
+      .name = (N),                  \
+      .value = { .custom_int = (V)},\
+      .unparsed_value = NULL,       \
+      .on_change = NULL,            \
+      .change_custom = (CHANGE),    \
+      .user_attribute = false,      \
+      .user_data = NULL             \
+    }
+#define ATTRIBUTE_COLOR(N, V, CHANGE)       \
+    { .object = NULL,                       \
+      .type = HSATTR_TYPE_COLOR,            \
+      .name = (N),                          \
+      .value = { .color = &(V)},            \
+      .unparsed_value = g_string_new(""),   \
+      .on_change = (CHANGE),                \
+      .change_custom = NULL,                \
+      .user_attribute = false,              \
+      .user_data = NULL                     \
+    }
 
 #define ATTRIBUTE_LAST { .name = NULL }
 
