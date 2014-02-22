@@ -529,12 +529,13 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
                 g_string_append_printf(output, \
                                        "Can not parse "NAME" from \"%s\"", \
                                        new_value_str); \
-            } \
-            old_value.MEM = *attr->value.MEM; \
-            if (old_value.MEM == new_value.MEM) { \
-                nothing_to_do = true; \
             } else { \
-                *attr->value.MEM = new_value.MEM; \
+                old_value.MEM = *attr->value.MEM; \
+                if (old_value.MEM == new_value.MEM) { \
+                    nothing_to_do = true; \
+                } else { \
+                    *attr->value.MEM = new_value.MEM; \
+                } \
             } \
         } while (0);
     // change the value and backup the old value
@@ -572,6 +573,9 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
 
         case HSATTR_TYPE_CUSTOM: break;
         case HSATTR_TYPE_CUSTOM_INT: break;
+    }
+    if (error) {
+        return HERBST_INVALID_ARGUMENT;
     }
     if (nothing_to_do) {
         return 0;
