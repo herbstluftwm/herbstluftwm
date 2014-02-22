@@ -568,7 +568,13 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
 
         case HSATTR_TYPE_COLOR:
             error = !getcolor_error(new_value_str, &new_value.color);
-            ATTR_DO_ASSIGN_COMPARE("color", color);
+            if (error) break;
+            if (!strcmp(new_value_str, (attr->unparsed_value)->str)) {
+                nothing_to_do = true;
+            } else {
+                old_value.color = *attr->value.color;
+                *attr->value.color = new_value.color;
+            }
             break;
 
         case HSATTR_TYPE_CUSTOM: break;
