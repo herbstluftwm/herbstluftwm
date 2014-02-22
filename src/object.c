@@ -845,6 +845,7 @@ HSAttribute* hsattribute_create(HSObject* obj, char* name, char* type_str,
     obj->attribute_count = count;
     // initialize object
     HSAttribute* attr = obj->attributes + count - 1;
+    memset(attr, 0, sizeof(*attr));
     attr->object = obj;
     attr->type = type;
     attr->name = g_strdup(name);
