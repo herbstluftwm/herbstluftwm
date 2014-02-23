@@ -308,6 +308,9 @@ HSClient* manage_client(Window win) {
     ewmh_add_client(client->window);
 
     XSetWindowBorderWidth(g_display, client->window,0);
+    // specify that the client window survives if hlwm dies, i.e. it will be
+    // reparented back to root
+    XChangeSaveSet(g_display, client->window, SetModeInsert);
     XReparentWindow(g_display, client->window, client->dec.decwin, 40, 40);
     if (g_startup) client->ignore_unmaps++;
     // get events from window
