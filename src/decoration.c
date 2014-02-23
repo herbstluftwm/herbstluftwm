@@ -54,6 +54,7 @@ void decorations_init() {
     init_scheme_object(&g_theme_active_object, &g_decorations[HSDecSchemeTiling].active, PROP2MEMBERS);
     init_scheme_object(&g_theme_normal_object, &g_decorations[HSDecSchemeTiling].normal, PROP2MEMBERS);
     init_scheme_object(&g_theme_urgent_object, &g_decorations[HSDecSchemeTiling].urgent, PROP2MEMBERS);
+    init_scheme_attributes(g_theme_object, &g_decorations[HSDecSchemeTiling].active, PROP2MEMBERS);
     hsobject_link(g_theme_object, &g_theme_active_object, "active");
     hsobject_link(g_theme_object, &g_theme_normal_object, "normal");
     hsobject_link(g_theme_object, &g_theme_urgent_object, "urgent");
@@ -82,6 +83,10 @@ static GString* PROP2MEMBERS(HSAttribute* attr) {
     } else if (attr->object == &g_theme_urgent_object) {
         members[member_cnt++] = &(g_decorations[HSDecSchemeTiling]  .obj_urgent);
         members[member_cnt++] = &(g_decorations[HSDecSchemeFloating].obj_urgent);
+    } else if (attr->object == g_theme_object) {
+        members[member_cnt++] = &g_theme_active_object;
+        members[member_cnt++] = &g_theme_normal_object;
+        members[member_cnt++] = &g_theme_urgent_object;
     }
     if (member_cnt > 0) {
         // get the index of the attribute
@@ -89,7 +94,12 @@ static GString* PROP2MEMBERS(HSAttribute* attr) {
         GString* val = hsattribute_to_string(attr);
         // set the idx'th attribute of all members of that group to the same value
         for (size_t i = 0; i < member_cnt; i++) {
-            hsattribute_assign(members[i]->attributes + idx, val->str, output);
+            HSAttribute* oth_a = hsobject_find_attribute(members[i], attr->name);
+            if (!oth_a) {
+                HSDebug("%u: Cant find attribute %s. This sould not happen!\n", i, attr->name);
+                continue;
+            }
+            hsattribute_assign(oth_a, val->str, output);
         }
         g_string_free(val, true);
     }
