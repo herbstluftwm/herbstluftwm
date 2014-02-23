@@ -89,14 +89,12 @@ static GString* PROP2MEMBERS(HSAttribute* attr) {
         members[member_cnt++] = &g_theme_urgent_object;
     }
     if (member_cnt > 0) {
-        // get the index of the attribute
-        int idx = attr - attr->object->attributes;
         GString* val = hsattribute_to_string(attr);
         // set the idx'th attribute of all members of that group to the same value
-        for (size_t i = 0; i < member_cnt; i++) {
+        for (int i = 0; i < member_cnt; i++) {
             HSAttribute* oth_a = hsobject_find_attribute(members[i], attr->name);
             if (!oth_a) {
-                HSDebug("%u: Cant find attribute %s. This sould not happen!\n", i, attr->name);
+                HSDebug("%d: Cant find attribute %s. This sould not happen!\n", i, attr->name);
                 continue;
             }
             hsattribute_assign(oth_a, val->str, output);
