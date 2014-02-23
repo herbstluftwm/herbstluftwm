@@ -568,7 +568,11 @@ int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) 
 
         case HSATTR_TYPE_COLOR:
             error = !getcolor_error(new_value_str, &new_value.color);
-            if (error) break;
+            if (error) {
+                g_string_append_printf(output,
+                    "\"%s\" is not a valid color.", new_value_str);
+                break;
+            }
             if (!strcmp(new_value_str, (attr->unparsed_value)->str)) {
                 nothing_to_do = true;
             } else {
