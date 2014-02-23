@@ -19,7 +19,8 @@ HSObject g_theme_normal_object;
 HSObject g_theme_urgent_object;
 static void init_dec_tripple_object(HSDecTripple* t, const char* name);
 static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
-static GString* PROP2FLOAT(HSAttribute* attr);
+static void init_scheme_attributes(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
+static GString* PROP2MEMBERS(HSAttribute* attr);
 
 // is called automatically after resize_outline
 static void decoration_update_frame_extents(struct HSClient* client);
@@ -50,11 +51,9 @@ void decorations_init() {
     init_dec_tripple_object(g_decorations + HSDecSchemeTiling, "tiling");
     init_dec_tripple_object(g_decorations + HSDecSchemeFloating, "floating");
     // create mass-attribute-objects
-    init_scheme_object(&g_theme_active_object,
-                       &(g_decorations[HSDecSchemeTiling].active),
-                       PROP2FLOAT);
-    init_scheme_object(&g_theme_normal_object, &(g_decorations[HSDecSchemeTiling].normal), PROP2FLOAT);
-    init_scheme_object(&g_theme_urgent_object, &(g_decorations[HSDecSchemeTiling].urgent), PROP2FLOAT);
+    init_scheme_object(&g_theme_active_object, &g_decorations[HSDecSchemeTiling].active, PROP2MEMBERS);
+    init_scheme_object(&g_theme_normal_object, &g_decorations[HSDecSchemeTiling].normal, PROP2MEMBERS);
+    init_scheme_object(&g_theme_urgent_object, &g_decorations[HSDecSchemeTiling].urgent, PROP2MEMBERS);
     hsobject_link(g_theme_object, &g_theme_active_object, "active");
     hsobject_link(g_theme_object, &g_theme_normal_object, "normal");
     hsobject_link(g_theme_object, &g_theme_urgent_object, "urgent");
@@ -66,26 +65,32 @@ static GString* RELAYOUT(HSAttribute* attr) {
     return NULL;
 }
 
-static GString* PROP2FLOAT(HSAttribute* attr) {
+static GString* PROP2MEMBERS(HSAttribute* attr) {
     monitors_lock();
     // find out which object it was
     // then copy it to the appropriate floating scheme
     GString* output = g_string_new("");
-    HSDecTripple* t = g_decorations + HSDecSchemeFloating;
+    HSObject* members[4] = { NULL };
+    size_t    member_cnt = 0;
+
     if (attr->object == &g_theme_active_object) {
-        int idx = attr - attr->object->attributes;
-        GString* val = hsattribute_to_string(attr);
-        hsattribute_assign(t->obj_active.attributes + idx, val->str, output);
-        g_string_free(val, true);
+        members[member_cnt++] = &(g_decorations[HSDecSchemeTiling]  .obj_active);
+        members[member_cnt++] = &(g_decorations[HSDecSchemeFloating].obj_active);
     } else if (attr->object == &g_theme_normal_object) {
-        int idx = attr - attr->object->attributes;
-        GString* val = hsattribute_to_string(attr);
-        hsattribute_assign(t->obj_normal.attributes + idx, val->str, output);
-        g_string_free(val, true);
+        members[member_cnt++] = &(g_decorations[HSDecSchemeTiling]  .obj_normal);
+        members[member_cnt++] = &(g_decorations[HSDecSchemeFloating].obj_normal);
     } else if (attr->object == &g_theme_urgent_object) {
+        members[member_cnt++] = &(g_decorations[HSDecSchemeTiling]  .obj_urgent);
+        members[member_cnt++] = &(g_decorations[HSDecSchemeFloating].obj_urgent);
+    }
+    if (member_cnt > 0) {
+        // get the index of the attribute
         int idx = attr - attr->object->attributes;
         GString* val = hsattribute_to_string(attr);
-        hsattribute_assign(t->obj_urgent.attributes + idx, val->str, output);
+        // set the idx'th attribute of all members of that group to the same value
+        for (size_t i = 0; i < member_cnt; i++) {
+            hsattribute_assign(members[i]->attributes + idx, val->str, output);
+        }
         g_string_free(val, true);
     }
     monitors_unlock();
@@ -102,6 +107,7 @@ GString* PROPAGATE(HSAttribute* attr) {
     GString* output = g_string_new("");
     GString* val = hsattribute_to_string(attr);
     hsattribute_assign(t->obj_active.attributes + idx, val->str, output);
+    hsattribute_assign(t->obj_normal.attributes + idx, val->str, output);
     hsattribute_assign(t->obj_urgent.attributes + idx, val->str, output);
     monitors_unlock();
     g_string_free(output, true);
@@ -144,6 +150,10 @@ static GString* trigger_attribute_reset(struct HSAttribute* attr, const char* ne
 // initializes the specified object to edit the scheme
 static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb) {
     hsobject_init(obj);
+    init_scheme_attributes(obj,s,cb);
+}
+
+static void init_scheme_attributes(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb) {
     HSAttribute attributes[] = {
         ATTRIBUTE_INT(      "border_width",     s->border_width,    cb),
         ATTRIBUTE_INT(      "padding_top",      s->padding_top,     cb),
@@ -169,22 +179,8 @@ static void init_dec_tripple_object(HSDecTripple* t, const char* name) {
     hsobject_link(&t->object, &t->obj_normal, "normal");
     hsobject_link(&t->object, &t->obj_active, "active");
     hsobject_link(&t->object, &t->obj_urgent, "urgent");
-    HSAttribute attributes[] = {
-        ATTRIBUTE_INT(      "border_width",     t->normal.border_width,    PROPAGATE),
-        ATTRIBUTE_INT(      "padding_top",      t->normal.padding_top,     PROPAGATE),
-        ATTRIBUTE_INT(      "padding_right",    t->normal.padding_right,   PROPAGATE),
-        ATTRIBUTE_INT(      "padding_bottom",   t->normal.padding_bottom,  PROPAGATE),
-        ATTRIBUTE_INT(      "padding_left",     t->normal.padding_left,    PROPAGATE),
-        ATTRIBUTE_COLOR(    "color",            t->normal.border_color,    PROPAGATE),
-        ATTRIBUTE_INT(      "inner_width",      t->normal.inner_width,     PROPAGATE),
-        ATTRIBUTE_COLOR(    "inner_color",      t->normal.inner_color,     PROPAGATE),
-        ATTRIBUTE_INT(      "outer_width",      t->normal.outer_width,     PROPAGATE),
-        ATTRIBUTE_COLOR(    "outer_color",      t->normal.outer_color,     PROPAGATE),
-        ATTRIBUTE_CUSTOM(   "reset",            reset_helper,       trigger_attribute_reset),
-        ATTRIBUTE_LAST,
-    };
+    init_scheme_attributes(&t->object, &t->normal, PROPAGATE);
     t->object.data = t;
-    hsobject_set_attributes(&t->object, attributes);
     hsobject_link(g_theme_object, &t->object, name);
 }
 
