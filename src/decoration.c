@@ -251,11 +251,12 @@ void decoration_setup_frame(HSClient* client) {
     } else {
         dec->colormap = 0;
     }
+    dec->depth = visual
+                 ? 32
+                 : (DefaultDepth(g_display, DefaultScreen(g_display)));
     dec->decwin = XCreateWindow(g_display, g_root, 0,0, 30, 30, 0,
-                        visual
-                            ? 32
-                            : (DefaultDepth(g_display, DefaultScreen(g_display))),
-                        CopyFromParent,
+                        dec->depth,
+                        InputOutput,
                         visual
                             ? visual
                             : DefaultVisual(g_display, DefaultScreen(g_display)),
@@ -270,7 +271,6 @@ void decoration_setup_frame(HSClient* client) {
     hint->res_class = HERBST_DECORATION_CLASS;
     XSetClassHint(g_display, dec->decwin, hint);
     XFree(hint);
-    dec->gc = XCreateGC(g_display, dec->decwin, 0, NULL);
 }
 
 void decoration_free(HSDecoration* dec) {
@@ -279,9 +279,6 @@ void decoration_free(HSDecoration* dec) {
     }
     if (dec->colormap) {
         XFreeColormap(g_display, dec->colormap);
-    }
-    if (dec->gc) {
-        XFreeGC(g_display, dec->gc);
     }
     if (dec->decwin) {
         XDestroyWindow(g_display, dec->decwin);
@@ -319,7 +316,8 @@ void decoration_resize_inner(HSClient* client, Rectangle inner,
 }
 
 void decoration_resize_outline(HSClient* client, Rectangle outline,
-                               HSDecorationScheme scheme) {
+                               HSDecorationScheme scheme)
+{
     Rectangle inner = outline_to_inner_rect(outline, scheme);
     // get relative coordinates
     Window decwin = client->dec.decwin;
@@ -354,10 +352,6 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
       .border_width = 0
     };
     int mask = CWX | CWY | CWWidth | CWHeight | CWBorderWidth;
-    HSColor col = scheme.border_color;
-    XSetWindowBackground(g_display, decwin, col);
-    XClearWindow(g_display, decwin);
-    XConfigureWindow(g_display, win, mask, &changes);
     //if (*g_window_border_inner_width > 0
     //    && *g_window_border_inner_width < *g_window_border_width) {
     //    unsigned long current_border_color = get_window_border_color(client);
@@ -369,13 +363,17 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     //                             current_border_color);
     //}
     // send new size to client
+    // update structs
     client->dec.last_outer_rect = outline;
     client->dec.last_rect_inner = false;
     client->last_size = inner;
     client->dec.last_scheme = scheme;
+    // redraw
+    // TODO: reduce flickering
+    XConfigureWindow(g_display, win, mask, &changes);
+    decoration_redraw(client);
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
-    decoration_redraw(client);
     decoration_update_frame_extents(client);
     client_send_configure(client);
     XSync(g_display, False);
@@ -402,31 +400,63 @@ void decoration_change_scheme(struct HSClient* client,
     }
 }
 
+static unsigned int get_client_color(HSClient* client, unsigned int pixel) {
+    if (client->dec.colormap) {
+        XColor xcol = { .pixel = pixel };
+        /* get rbg value out of default colormap */
+        XQueryColor(g_display, DefaultColormap(g_display, g_screen), &xcol);
+        /* get pixel value back appropriate for client */
+        XAllocColor(g_display, client->dec.colormap, &xcol);
+        return xcol.pixel;
+    } else {
+        return pixel;
+    }
+}
+
 void decoration_redraw(struct HSClient* client) {
     HSDecorationScheme s = client->dec.last_scheme;
     Window win = client->dec.decwin;
-    GC gc = client->dec.gc;
+    Rectangle outer = client->dec.last_outer_rect;
+    unsigned int depth = client->dec.depth;
+    Pixmap pix = XCreatePixmap(g_display, win, outer.width, outer.height, depth);
+    GC gc = XCreateGC(g_display, pix, 0, NULL);
+    // draw background
+    XSetForeground(g_display, gc, get_client_color(client, s.border_color));
+    XFillRectangle(g_display, pix, gc, 0, 0, outer.width, outer.height);
+    // Draw inner border
     int iw = s.inner_width;
     Rectangle inner = client->dec.last_inner_rect;
     inner.x -= client->dec.last_outer_rect.x;
     inner.y -= client->dec.last_outer_rect.y;
     if (iw > 0) {
-        XSetForeground(g_display, gc, s.inner_color);
-        XSetLineAttributes(g_display, gc, iw, LineSolid, CapNotLast, JoinMiter);
-        XDrawRectangle(g_display, win, gc,
-            inner.x - (iw - iw/2), inner.y - (iw - iw/2),
-            inner.width + iw, inner.height + iw);
+        /* fill rectangles because drawing does not work */
+        XRectangle rects[] = {
+            { inner.x - iw, inner.y - iw, inner.width + 2*iw, iw }, /* top */
+            { inner.x - iw, inner.y, iw, inner.height },  /* left */
+            { inner.x + inner.width, inner.y, iw, inner.height }, /* right */
+            { inner.x - iw, inner.y + inner.height, inner.width + 2*iw, iw }, /* bottom */
+        };
+        XSetForeground(g_display, gc, get_client_color(client, s.inner_color));
+        XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
     }
+    // Draw outer border
     int ow = s.outer_width;
-    Rectangle outer = client->dec.last_outer_rect;
     outer.x -= client->dec.last_outer_rect.x;
     outer.y -= client->dec.last_outer_rect.y;
     if (ow > 0) {
-        XSetForeground(g_display, gc, s.outer_color);
-        XSetLineAttributes(g_display, gc, ow, LineSolid, CapProjecting, JoinMiter);
-        XDrawRectangle(g_display, win, gc,
-            ow/2, ow/2,
-            outer.width - ow, outer.height - ow);
+        ow = MIN(ow, (outer.height+1) / 2);
+        XRectangle rects[] = {
+            { 0, 0, outer.width, ow }, /* top */
+            { 0, ow, ow, outer.height - 2*ow }, /* left */
+            { outer.width-ow, ow, ow, outer.height - 2*ow }, /* right */
+            { 0, outer.height - ow, outer.width, ow }, /* bottom */
+        };
+        XSetForeground(g_display, gc, get_client_color(client, s.outer_color));
+        XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
     }
+    // apply to window
+    XSetWindowBackgroundPixmap(g_display, win, pix);
+    XClearWindow(g_display, win);
+    XFreePixmap(g_display, pix);
 }
 

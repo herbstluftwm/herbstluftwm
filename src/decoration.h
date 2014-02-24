@@ -44,7 +44,7 @@ typedef struct {
     Rectangle               last_outer_rect; // only valid if width >= 0
     /* X specific things */
     Colormap                colormap;
-    GC                      gc;
+    unsigned int            depth;
 } HSDecoration;
 
 typedef struct {

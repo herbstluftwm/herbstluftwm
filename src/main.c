@@ -833,13 +833,9 @@ void enternotify(XEvent* event) {
 }
 
 void expose(XEvent* event) {
-    if (event->xexpose.count > 0) return;
-    Window ewin = event->xexpose.window;
-    HSDebug("name is: Expose for window %lx\n", ewin);
-    HSClient* c = get_client_from_decoration(ewin);
-    if (c) {
-        decoration_redraw(c);
-    }
+    //if (event->xexpose.count > 0) return;
+    //Window ewin = event->xexpose.window;
+    //HSDebug("name is: Expose for window %lx\n", ewin);
 }
 
 void focusin(XEvent* event) {
