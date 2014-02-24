@@ -314,7 +314,7 @@ int attr_command(int argc, char* argv[], GString* output) {
         }
         for (int i = 0; i < obj->attribute_count; i++) {
             HSAttribute* a = obj->attributes + i;
-            char write = (a->on_change == ATTR_READ_ONLY) ? '-' : 'w';
+            char write = hsattribute_is_read_only(a) ? '-' : 'w';
             char t = hsattribute_type_indicator(a->type);
             g_string_append_printf(output, " %c %c %-20s = ", t, write, a->name);
             if (a->type == HSATTR_TYPE_STRING) {
