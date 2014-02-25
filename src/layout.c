@@ -80,22 +80,22 @@ static void fetch_frame_colors() {
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
     g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
-    char* str = settings_find("frame_border_normal_color")->value.s;
+    char* str = settings_find_string("frame_border_normal_color");
     g_frame_border_normal_color = getcolor(str);
-    str = settings_find("frame_border_active_color")->value.s;
+    str = settings_find_string("frame_border_active_color");
     g_frame_border_active_color = getcolor(str);
-    str = settings_find("frame_border_inner_color")->value.s;
+    str = settings_find_string("frame_border_inner_color");
     g_frame_border_inner_color = getcolor(str);
     // background color
-    str = settings_find("frame_bg_normal_color")->value.s;
+    str = settings_find_string("frame_bg_normal_color");
     g_frame_bg_normal_color = getcolor(str);
-    str = settings_find("frame_bg_active_color")->value.s;
+    str = settings_find_string("frame_bg_active_color");
     g_frame_bg_active_color = getcolor(str);
     g_frame_active_opacity = CLAMP(settings_find("frame_active_opacity")->value.i, 0, 100);
     g_frame_normal_opacity = CLAMP(settings_find("frame_normal_opacity")->value.i, 0, 100);
 
     // tree style
-    g_tree_style = settings_find("tree_style")->value.s;
+    g_tree_style = settings_find_string("tree_style");
     if (g_utf8_strlen(g_tree_style, -1) < 8) {
         g_warning("too few characters in setting tree_style\n");
         // ensure that it is long enough

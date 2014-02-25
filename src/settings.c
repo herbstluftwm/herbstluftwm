@@ -10,6 +10,7 @@
 #include "ipc-protocol.h"
 #include "utils.h"
 #include "ewmh.h"
+#include "object.h"
 
 #include "glib-backports.h"
 #include <string.h>
@@ -24,7 +25,7 @@
 
 #define SET_STRING(NAME, DEFAULT, CALLBACK) \
     { .name = (NAME), \
-      .value = { .s = (DEFAULT) }, \
+      .value = { .s_init = (DEFAULT) }, \
       .type = HS_String, \
       .on_change = (CALLBACK), \
     }
@@ -82,6 +83,9 @@ SettingsPair g_settings[] = {
 };
 
 int             g_initial_monitors_locked = 0;
+HSObject*       g_settings_object;
+
+static GString* cb_on_change(struct HSAttribute* attr);
 
 int settings_count() {
     return LENGTH(g_settings);
@@ -89,16 +93,36 @@ int settings_count() {
 
 void settings_init() {
     // recreate all strings -> move them to heap
-    int i;
-    for (i = 0; i < LENGTH(g_settings); i++) {
+    for (int i = 0; i < LENGTH(g_settings); i++) {
         if (g_settings[i].type == HS_String) {
-            g_settings[i].value.s = g_strdup(g_settings[i].value.s);
+            g_settings[i].value.str = g_string_new(g_settings[i].value.s_init);
         }
         if (g_settings[i].type == HS_Int) {
             g_settings[i].old_value_i = 1;
         }
     }
     settings_find("monitors_locked")->value.i = g_initial_monitors_locked;
+
+    // create a settings object
+    g_settings_object = hsobject_create_and_link(hsobject_root(), "settings");
+    // ensure everything is nulled that is not explicitely initialized
+    HSAttribute* attributes = g_new0(HSAttribute, LENGTH(g_settings)+1);
+    HSAttribute last = ATTRIBUTE_LAST;
+    attributes[LENGTH(g_settings)] = last;
+    for (int i = 0; i < LENGTH(g_settings); i++) {
+        SettingsPair* sp = g_settings + i;
+        if (sp->type == HS_String) {
+            HSAttribute cur =
+                ATTRIBUTE_STRING(sp->name, sp->value.str, cb_on_change);
+            attributes[i] = cur;
+        } else if (sp->type == HS_Int) {
+            HSAttribute cur =
+                ATTRIBUTE_INT(sp->name, sp->value.i, cb_on_change);
+            attributes[i] = cur;
+        }
+    }
+    hsobject_set_attributes(g_settings_object, attributes);
+    g_free(attributes);
 }
 
 void settings_destroy() {
@@ -106,13 +130,28 @@ void settings_destroy() {
     int i;
     for (i = 0; i < LENGTH(g_settings); i++) {
         if (g_settings[i].type == HS_String) {
-            g_free(g_settings[i].value.s);
+            g_string_free(g_settings[i].value.str, true);
         }
     }
 }
 
+static GString* cb_on_change(struct HSAttribute* attr) {
+    int idx = attr - g_settings_object->attributes;
+    HSAssert (idx >= 0 || idx < LENGTH(g_settings));
+    g_settings[idx].on_change();
+    return NULL;
+}
+
 SettingsPair* settings_find(char* name) {
     return STATIC_TABLE_FIND_STR(SettingsPair, g_settings, name, name);
+}
+
+char* settings_find_string(char* name) {
+    SettingsPair* sp = settings_find(name);
+    if (!sp) return NULL;
+    HSWeakAssert(sp->type == HS_String);
+    if (sp->type != HS_String) return NULL;
+    return sp->value.str->str;
 }
 
 int settings_set_command(int argc, char** argv, GString* output) {
@@ -149,12 +188,11 @@ int settings_set(SettingsPair* pair, char* value) {
             return HERBST_INVALID_ARGUMENT;
         }
     } else { // pair->type == HS_String
-        if (!strcmp(pair->value.s, value)) {
+        if (!strcmp(pair->value.str->str, value)) {
             // nothing would be changed
             return 0;
         }
-        g_free(pair->value.s);
-        pair->value.s = g_strdup(value);
+        g_string_assign(pair->value.str, value);
     }
     // on successful change, call callback
     if (pair->on_change) {
@@ -176,7 +214,7 @@ int settings_get(int argc, char** argv, GString* output) {
     if (pair->type == HS_Int) {
         g_string_append_printf(output, "%d", pair->value.i);
     } else { // pair->type == HS_String
-        g_string_append(output, pair->value.s);
+        g_string_append(output, pair->value.str->str);
     }
     return 0;
 }
@@ -219,7 +257,7 @@ static bool memberequals_settingspair(void* pmember, void* needle) {
     if (pair->type == HS_Int) {
         return pair->value.i == atoi(str);
     } else {
-        return !strcmp(pair->value.s, str);
+        return !strcmp(pair->value.str->str, str);
     }
 }
 

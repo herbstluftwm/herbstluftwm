@@ -147,7 +147,7 @@ void ewmh_set_wmname(char* name) {
 }
 
 void ewmh_update_wmname() {
-    ewmh_set_wmname(settings_find("wmname")->value.s);
+    ewmh_set_wmname(settings_find_string("wmname"));
 }
 
 void ewmh_update_client_list() {

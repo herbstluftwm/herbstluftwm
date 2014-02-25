@@ -79,6 +79,15 @@ int         g_verbose;
         }                                                               \
     } while (0)
 
+#define HSAssert(X)                                                 \
+    do {                                                                \
+        if (!(X)) {                                                     \
+            fprintf(stderr, "%s:%d: %s: assertion `%s\' failed.",       \
+                    __FILE__, __LINE__, __func__, #X);                  \
+            exit(1);                                                    \
+        }                                                               \
+    } while (0)
+
 // characters that need to be escaped
 // http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html
 #define ESCAPE_CHARACTERS "|&;<>()$`\\\"\' \t\n"

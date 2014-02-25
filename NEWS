@@ -1,6 +1,10 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Current git version
+-------------------
+    * new settings object with an attribute for each setting.
+
 Release 0.5.3 on 2013-12-24
 ---------------------------
 

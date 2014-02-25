@@ -1337,6 +1337,9 @@ listed as follows:
 
     ** +focus+: the object of the focused monitor
 
+  * +settings+ has an attribute for each setting. See <<SETTINGS,*SETTINGS*>>
+    for a list.
+
 AUTOSTART FILE
 --------------
 
