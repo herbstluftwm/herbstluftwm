@@ -274,6 +274,7 @@ void decoration_setup_frame(HSClient* client) {
     dec->last_rect_inner = false;
     dec->last_inner_rect.width = -1;
     dec->last_outer_rect.width = -1;
+    dec->pixmap = 0;
     g_hash_table_insert(g_decwin2client, &(dec->decwin), client);
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
@@ -289,6 +290,9 @@ void decoration_free(HSDecoration* dec) {
     }
     if (dec->colormap) {
         XFreeColormap(g_display, dec->colormap);
+    }
+    if (dec->pixmap) {
+        XFreePixmap(g_display, dec->pixmap);
     }
     if (dec->decwin) {
         XDestroyWindow(g_display, dec->decwin);
@@ -425,14 +429,26 @@ static unsigned int get_client_color(HSClient* client, unsigned int pixel) {
 
 void decoration_redraw(struct HSClient* client) {
     HSDecorationScheme s = client->dec.last_scheme;
+    HSDecoration *const dec = &client->dec;
     Window win = client->dec.decwin;
     Rectangle outer = client->dec.last_outer_rect;
     unsigned int depth = client->dec.depth;
-    Pixmap pix = XCreatePixmap(g_display, win, outer.width, outer.height, depth);
+    // TODO: maybe do something like pixmap recreate threshhold?
+    bool recreate_pixmap = (dec->pixmap == 0) || (dec->pixmap_width != outer.width)
+                                              || (dec->pixmap_height != outer.height);
+    if (recreate_pixmap) {
+        if (dec->pixmap) {
+            XFreePixmap(g_display, dec->pixmap);
+        }
+        dec->pixmap = XCreatePixmap(g_display, win, outer.width, outer.height, depth);
+    }
+    Pixmap pix = dec->pixmap;
     GC gc = XCreateGC(g_display, pix, 0, NULL);
+
     // draw background
     XSetForeground(g_display, gc, get_client_color(client, s.border_color));
     XFillRectangle(g_display, pix, gc, 0, 0, outer.width, outer.height);
+
     // Draw inner border
     int iw = s.inner_width;
     Rectangle inner = client->dec.last_inner_rect;
@@ -449,6 +465,7 @@ void decoration_redraw(struct HSClient* client) {
         XSetForeground(g_display, gc, get_client_color(client, s.inner_color));
         XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
     }
+
     // Draw outer border
     int ow = s.outer_width;
     outer.x -= client->dec.last_outer_rect.x;
@@ -464,9 +481,9 @@ void decoration_redraw(struct HSClient* client) {
         XSetForeground(g_display, gc, get_client_color(client, s.outer_color));
         XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
     }
+
     // apply to window
     XSetWindowBackgroundPixmap(g_display, win, pix);
     XClearWindow(g_display, win);
-    XFreePixmap(g_display, pix);
 }
 

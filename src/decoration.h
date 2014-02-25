@@ -45,6 +45,9 @@ typedef struct {
     /* X specific things */
     Colormap                colormap;
     unsigned int            depth;
+    Pixmap                  pixmap;
+    int                     pixmap_height;
+    int                     pixmap_width;
 } HSDecoration;
 
 typedef struct {
