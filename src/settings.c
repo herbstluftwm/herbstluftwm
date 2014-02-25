@@ -29,6 +29,18 @@
       .type = HS_String, \
       .on_change = (CALLBACK), \
     }
+#define SET_COMPAT(NAME, READ, WRITE) \
+    { .name = (NAME), \
+      .value = { \
+        .compat = { \
+          .read = (READ), \
+          .write = (WRITE), \
+        }, \
+      }, \
+      .type = HS_Compatiblity, \
+      .on_change = NULL, \
+    }
+
 
 // often used callbacks:
 #define RELAYOUT all_monitors_apply_layout
@@ -57,12 +69,6 @@ SettingsPair g_settings[] = {
     SET_INT(    "frame_border_inner_width",        0,           FR_COLORS   ),
     SET_INT(    "frame_active_opacity",            100,         FR_COLORS   ),
     SET_INT(    "frame_normal_opacity",            100,         FR_COLORS   ),
-    SET_INT(    "window_border_width",             2,           CL_COLORS   ),
-    SET_INT(    "window_border_inner_width",       0,           CL_COLORS   ),
-    SET_STRING( "window_border_active_color",      "red",       CL_COLORS   ),
-    SET_STRING( "window_border_normal_color",      "blue",      CL_COLORS   ),
-    SET_STRING( "window_border_urgent_color",      "orange",    CL_COLORS   ),
-    SET_STRING( "window_border_inner_color",       "black",     CL_COLORS   ),
     SET_INT(    "always_show_frame",               0,           RELAYOUT    ),
     SET_INT(    "default_direction_external_only", 0,           NULL        ),
     SET_INT(    "default_frame_layout",            0,           FR_COLORS   ),
@@ -80,12 +86,27 @@ SettingsPair g_settings[] = {
     SET_INT(    "pseudotile_center_threshold",    10,          RELAYOUT    ),
     SET_STRING( "tree_style",                      "*| +`--.",  FR_COLORS   ),
     SET_STRING( "wmname",                  WINDOW_MANAGER_NAME, WMNAME      ),
+    // settings for compatibility:
+    SET_COMPAT( "window_border_width",
+                "theme.tiling.active.border_width", "theme.border_width"),
+    SET_COMPAT( "window_border_inner_width",
+                "theme.tiling.active.inner_width", "theme.inner_width"),
+    SET_COMPAT( "window_border_inner_color",
+                "theme.tiling.active.inner_color", "theme.inner_color"),
+    SET_COMPAT( "window_border_active_color",
+                "theme.tiling.active.color", "theme.active.color"),
+    SET_COMPAT( "window_border_normal_color",
+                "theme.tiling.normal.color", "theme.normal.color"),
+    SET_COMPAT( "window_border_urgent_color",
+                "theme.tiling.urgent.color", "theme.urgent.color"),
 };
 
 int             g_initial_monitors_locked = 0;
 HSObject*       g_settings_object;
 
 static GString* cb_on_change(struct HSAttribute* attr);
+static void cb_read_compat(void* data, GString* output);
+static GString* cb_write_compat(struct HSAttribute* attr, const char* new_value);
 
 int settings_count() {
     return LENGTH(g_settings);
@@ -119,6 +140,11 @@ void settings_init() {
             HSAttribute cur =
                 ATTRIBUTE_INT(sp->name, sp->value.i, cb_on_change);
             attributes[i] = cur;
+        } else if (sp->type == HS_Compatiblity) {
+            HSAttribute cur =
+                ATTRIBUTE_CUSTOM(sp->name, cb_read_compat, cb_write_compat);
+            cur.data = sp;
+            attributes[i] = cur;
         }
     }
     hsobject_set_attributes(g_settings_object, attributes);
@@ -140,6 +166,22 @@ static GString* cb_on_change(struct HSAttribute* attr) {
     HSAssert (idx >= 0 || idx < LENGTH(g_settings));
     g_settings[idx].on_change();
     return NULL;
+}
+
+static void cb_read_compat(void* data, GString* output) {
+    SettingsPair* sp = data;
+    char* cmd[] = { "attr_get", sp->value.compat.read, NULL };
+    HSAssert(0 == hsattribute_get_command(LENGTH(cmd) - 1, cmd, output));
+}
+
+static GString* cb_write_compat(struct HSAttribute* attr, const char* new_value) {
+    SettingsPair* sp = attr->data;
+    GString* out = NULL;
+    if (0 != settings_set(sp, new_value)) {
+        out = g_string_new("");
+        g_string_append_printf(out, "Can not set %s to \"%s\"\n", sp->name, new_value);
+    }
+    return out;
 }
 
 SettingsPair* settings_find(char* name) {
@@ -174,7 +216,7 @@ int settings_set_command(int argc, char** argv, GString* output) {
     return ret;
 }
 
-int settings_set(SettingsPair* pair, char* value) {
+int settings_set(SettingsPair* pair, const char* value) {
     if (pair->type == HS_Int) {
         int new_value;
         // parse value to int, if possible
@@ -187,12 +229,21 @@ int settings_set(SettingsPair* pair, char* value) {
         } else {
             return HERBST_INVALID_ARGUMENT;
         }
-    } else { // pair->type == HS_String
+    } else if (pair->type == HS_String) {
         if (!strcmp(pair->value.str->str, value)) {
             // nothing would be changed
             return 0;
         }
         g_string_assign(pair->value.str, value);
+    } else if (pair->type == HS_Compatiblity) {
+        HSAttribute* attr = hsattribute_parse_path(pair->value.compat.write);
+        GString* out = g_string_new("");
+        int status = hsattribute_assign(attr, value, out);
+        if (0 != status) {
+            HSError("Error when assigning: %s\n", out->str);
+        }
+        g_string_free(out, true);
+        return status;
     }
     // on successful change, call callback
     if (pair->on_change) {
@@ -213,8 +264,13 @@ int settings_get(int argc, char** argv, GString* output) {
     }
     if (pair->type == HS_Int) {
         g_string_append_printf(output, "%d", pair->value.i);
-    } else { // pair->type == HS_String
+    } else if (pair->type == HS_String) {
         g_string_append(output, pair->value.str->str);
+    } else if (pair->type == HS_Compatiblity) {
+        HSAttribute* attr = hsattribute_parse_path(pair->value.compat.read);
+        GString* str = hsattribute_to_string(attr);
+        g_string_append(output, str->str);
+        g_string_free(str, true);
     }
     return 0;
 }

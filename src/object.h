@@ -21,6 +21,8 @@ typedef struct HSObject {
     void*               data;     // user data pointer
 } HSObject;
 
+// data pointer is the data pointer of the attribute
+// if this is NULL it is the data-pointer of the object
 typedef void (*HSAttributeCustom)(void* data, GString* output);
 typedef int (*HSAttributeCustomInt)(void* data);
 
@@ -76,6 +78,7 @@ typedef struct HSAttribute {
     /* save the user_data at a constant position that is not shifted when
      * realloc'ing the HSAttribute */
     HSAttributeValue* user_data; /* data needed for user attributes */
+    void* data; /* data which is passed to value.custom and value.custom_int */
 } HSAttribute;
 
 #define ATTRIBUTE_SIMPLE(TYPE, N, MEM, V, CHANGE) \
@@ -87,7 +90,8 @@ typedef struct HSAttribute {
       .on_change = (CHANGE),    \
       .change_custom = NULL,    \
       .user_attribute = false,  \
-      .user_data = NULL         \
+      .user_data = NULL,        \
+      .data = NULL,             \
     }
 
 
@@ -109,7 +113,8 @@ typedef struct HSAttribute {
       .on_change = NULL,            \
       .change_custom = (CHANGE),    \
       .user_attribute = false,      \
-      .user_data = NULL             \
+      .user_data = NULL,            \
+      .data = NULL,                 \
     }
 #define ATTRIBUTE_CUSTOM_INT(N, V, CHANGE) \
     { .object = NULL,               \
@@ -120,7 +125,8 @@ typedef struct HSAttribute {
       .on_change = NULL,            \
       .change_custom = (CHANGE),    \
       .user_attribute = false,      \
-      .user_data = NULL             \
+      .user_data = NULL,            \
+      .data = NULL,                 \
     }
 #define ATTRIBUTE_COLOR(N, V, CHANGE)       \
     { .object = NULL,                       \
@@ -131,7 +137,8 @@ typedef struct HSAttribute {
       .on_change = (CHANGE),                \
       .change_custom = NULL,                \
       .user_attribute = false,              \
-      .user_data = NULL                     \
+      .user_data = NULL,                    \
+      .data = NULL,                         \
     }
 
 #define ATTRIBUTE_LAST { .name = NULL }
@@ -157,6 +164,7 @@ HSObject* hsobject_by_path(char* path);
 HSObject* hsobject_parse_path(char* path, char** unparsable);
 HSObject* hsobject_parse_path_verbose(char* path, char** unparsable, GString* output);
 
+HSAttribute* hsattribute_parse_path(char* path);
 HSAttribute* hsattribute_parse_path_verbose(char* path, GString* output);
 
 void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes);
@@ -174,7 +182,7 @@ int print_object_tree_command(int argc, char* argv[], GString* output);
 int hsattribute_get_command(int argc, char* argv[], GString* output);
 int hsattribute_set_command(int argc, char* argv[], GString* output);
 bool hsattribute_is_read_only(HSAttribute* attr);
-int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output);
+int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* output);
 void hsattribute_append_to_string(HSAttribute* attribute, GString* output);
 GString* hsattribute_to_string(HSAttribute* attribute);
 

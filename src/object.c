@@ -7,6 +7,7 @@
 #include "command.h"
 #include "utils.h"
 #include "assert.h"
+#include "globals.h"
 #include "ipc-protocol.h"
 
 #include <string.h>
@@ -254,11 +255,13 @@ void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
             g_string_append_printf(output, "%s", attribute->unparsed_value->str);
             break;
         case HSATTR_TYPE_CUSTOM:
-            attribute->value.custom(attribute->object->data, output);
+            attribute->value.custom(attribute->data ? attribute->data
+                                                    : attribute->object->data, output);
             break;
         case HSATTR_TYPE_CUSTOM_INT:
             g_string_append_printf(output, "%d",
-                attribute->value.custom_int(attribute->object->data));
+                attribute->value.custom_int(attribute->data ? attribute->data
+                                                            : attribute->object->data));
             break;
     }
 }
@@ -440,6 +443,16 @@ HSAttribute* hsattribute_parse_path_verbose(char* path, GString* output) {
     return attr;
 }
 
+HSAttribute* hsattribute_parse_path(char* path) {
+    GString* out = g_string_new("");
+    HSAttribute* attr = hsattribute_parse_path_verbose(path, out);
+    if (!attr) {
+        HSError("Cannot parse %s: %s", path, out->str);
+    }
+    g_string_free(out, true);
+    return attr;
+}
+
 int print_object_tree_command(int argc, char* argv[], GString* output) {
     char* unparsable;
     char* path = (argc < 2) ? "" : argv[1];
@@ -505,7 +518,7 @@ bool hsattribute_is_read_only(HSAttribute* attr) {
     else return attr->on_change == NULL;
 }
 
-int hsattribute_assign(HSAttribute* attr, char* new_value_str, GString* output) {
+int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* output) {
     if (hsattribute_is_read_only(attr)) {
         g_string_append_printf(output,
             "Can not write read-only attribute \"%s\"\n",
@@ -705,7 +718,7 @@ int compare_command(int argc, char* argv[], GString* output) {
             case HSATTR_TYPE_INT:  l = *attr->value.i; break;
             case HSATTR_TYPE_UINT: l = *attr->value.u; break;
             case HSATTR_TYPE_CUSTOM_INT:
-                l = attr->value.custom_int(attr->object->data);
+                l = attr->value.custom_int(attr->data ? attr->data : attr->object->data);
                 break;
             default: return HERBST_UNKNOWN_ERROR; break;
         }
@@ -757,7 +770,7 @@ int compare_command(int argc, char* argv[], GString* output) {
             l = *attr->value.str;
         } else { // TYPE == CUSTOM
             l = g_string_new("");
-            attr->value.custom(attr->object->data, l);
+            attr->value.custom(attr->data ? attr->data : attr->object->data, l);
             free_l = true;
         }
         bool equals = !strcmp(l->str, rvalue);

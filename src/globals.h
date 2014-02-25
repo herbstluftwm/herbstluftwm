@@ -51,6 +51,12 @@ int         g_verbose;
         } \
     } while(0)
 
+#define HSError(...) \
+    do { \
+        fprintf(stderr, "%s: %d: ", __FILE__, __LINE__); \
+        fprintf(stderr, __VA_ARGS__); \
+    } while(0)
+
 #define HSWarning(...) \
     do { \
         fprintf(stderr, "%s: %d: ", __FILE__, __LINE__); \
