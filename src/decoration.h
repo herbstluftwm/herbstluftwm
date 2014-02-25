@@ -54,6 +54,7 @@ typedef struct {
     HSObject            obj_normal;
     HSObject            obj_active;
     HSObject            obj_urgent;
+    HSDecorationScheme  propagate; // meta-scheme for propagating values to members
     HSObject            object;
 } HSDecTripple;
 

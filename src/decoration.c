@@ -17,6 +17,11 @@ HSObject* g_theme_object;
 HSObject g_theme_active_object;
 HSObject g_theme_normal_object;
 HSObject g_theme_urgent_object;
+// dummy schemes for propagation
+HSDecorationScheme g_theme_scheme;
+HSDecorationScheme g_theme_active_scheme;
+HSDecorationScheme g_theme_normal_scheme;
+HSDecorationScheme g_theme_urgent_scheme;
 static void init_dec_tripple_object(HSDecTripple* t, const char* name);
 static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
 static void init_scheme_attributes(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
@@ -51,10 +56,14 @@ void decorations_init() {
     init_dec_tripple_object(g_decorations + HSDecSchemeTiling, "tiling");
     init_dec_tripple_object(g_decorations + HSDecSchemeFloating, "floating");
     // create mass-attribute-objects
-    init_scheme_object(&g_theme_active_object, &g_decorations[HSDecSchemeTiling].active, PROP2MEMBERS);
-    init_scheme_object(&g_theme_normal_object, &g_decorations[HSDecSchemeTiling].normal, PROP2MEMBERS);
-    init_scheme_object(&g_theme_urgent_object, &g_decorations[HSDecSchemeTiling].urgent, PROP2MEMBERS);
-    init_scheme_attributes(g_theme_object, &g_decorations[HSDecSchemeTiling].active, PROP2MEMBERS);
+    g_theme_scheme
+        = g_theme_active_scheme
+        = g_theme_normal_scheme
+        = g_theme_urgent_scheme = fs.normal;
+    init_scheme_object(&g_theme_active_object, &g_theme_active_scheme, PROP2MEMBERS);
+    init_scheme_object(&g_theme_normal_object, &g_theme_normal_scheme, PROP2MEMBERS);
+    init_scheme_object(&g_theme_urgent_object, &g_theme_urgent_scheme, PROP2MEMBERS);
+    init_scheme_attributes(g_theme_object, &g_theme_scheme, PROP2MEMBERS);
     hsobject_link(g_theme_object, &g_theme_active_object, "active");
     hsobject_link(g_theme_object, &g_theme_normal_object, "normal");
     hsobject_link(g_theme_object, &g_theme_urgent_object, "urgent");
@@ -187,7 +196,8 @@ static void init_dec_tripple_object(HSDecTripple* t, const char* name) {
     hsobject_link(&t->object, &t->obj_normal, "normal");
     hsobject_link(&t->object, &t->obj_active, "active");
     hsobject_link(&t->object, &t->obj_urgent, "urgent");
-    init_scheme_attributes(&t->object, &t->normal, PROPAGATE);
+    memset(&t->propagate, 0, sizeof(t->propagate));
+    init_scheme_attributes(&t->object, &t->propagate, PROPAGATE);
     t->object.data = t;
     hsobject_link(g_theme_object, &t->object, name);
 }
