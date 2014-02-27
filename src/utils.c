@@ -401,6 +401,98 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     XFreePixmap(dpy, pix);
 }
 
+int find_rectangle_in_direction(RectangleIdx* rects, size_t cnt, int idx,
+                                enum HSDirection dir) {
+    switch (dir) {
+        case DirRight:
+            return find_rectangle_right_of(rects, cnt, idx);
+        case DirUp:
+            // just flip by the horizontal axis
+            FOR (i,0,cnt) {
+                Rectangle* r = &(rects[i].r);
+                r->y = - r->y - r->height;
+            }
+            // and then find next rectangle below it
+        case DirDown:
+            // flip by the diagonal
+            //
+            //   *-------------> x     *-------------> x
+            //   |   +------+          |   +---+[]
+            //   |   |      |     ==>  |   |   |
+            //   |   +------+          |   |   |
+            //   |   []                |   +---+
+            //   V                     V
+            FOR (i,0,cnt) {
+                Rectangle* r = &(rects[i].r);
+                SWAP(int, r->x, r->y);
+                SWAP(int, r->height, r->width);
+            }
+            // then find the next rectangle on the right
+            return find_rectangle_right_of(rects, cnt, idx);
+        case DirLeft:
+            // flip by the vertical axis
+            FOR (i,0,cnt) {
+                Rectangle* r = &(rects[i].r);
+                r->x = - r->x - r->width;
+            }
+            return find_rectangle_right_of(rects, cnt, idx);
+    }
+    return -1;
+}
+
+static bool rectangle_is_right_of(Rectangle RC, Rectangle R2) {
+    int cx = RC.x + RC.width / 2;
+    int cy = RC.y + RC.height / 2;
+    // only consider rectangles right of that with specified idx, called RC. A
+    // rectangle R2 is considered right, if the angle of the vector from the
+    // center of RC to the center of R2 is in the interval [-45 deg, + 45 deg].
+    // In a picture:   ...
+    //                /
+    //   RC +----------+
+    //      |      /   |   area right of RC
+    //      |    c     |
+    //      |      \   |
+    //      +----------+
+    //                \...
+    int rcx = R2.x + R2.width / 2;
+    int rcy = R2.y + R2.height / 2;
+    // get vector from center of RC to center of R2
+    rcx -= cx;
+    rcy -= cy;
+    if (rcx < 0) return false;
+    if (abs(rcy) > rcx) return false;
+    if (rcx == 0 && rcy == 0) {
+        // if centers match, then disallow R2 to have a larger width
+        if (R2.width > RC.width) return false;
+    }
+    return true;
+}
+
+int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx) {
+    Rectangle RC = rects[idx].r;
+    int write_i = 0; // next rectangle to write
+    // filter out rectangles not right of RC
+    FOR (i,0,cnt) {
+        if (idx == i) continue;
+        Rectangle R2 = rects[i].r;
+        if (!rectangle_is_right_of(RC, R2)) continue;
+        if (i == write_i) { write_i++; }
+        else {
+            rects[write_i++] = rects[i];
+        }
+    }
+    if (write_i == 0) return -1;
+    // find the rectangle with the smallest distance to RC
+    // 
+    int cy = RC.y + RC.height / 2;
+    FOR (i,0,write_i) {
+        Rectangle R2 = rects[i].r;
+        int rcy = R2.y + R2.height / 2;
+        int anchor_y = (rcy > cy) ? rcy : MIN(rcy + R2.height, cy);
+    }
+    return -1;
+}
+
 static void subtree_print_to(HSTreeInterface* intface, char* indent,
                           char* rootprefix, GString* output) {
     HSTree root = intface->data;
