@@ -53,8 +53,15 @@ void decorations_init() {
         { 1, getcolor("orange"),    true  },    // urgent
     };
     g_decorations[HSDecSchemeFloating] = fl;
+    HSDecTripple minimal = {
+        { 0, getcolor("black"),     true  },    // normal
+        { 0, getcolor("green"),     true  },    // active
+        { 0, getcolor("orange"),    true  },    // urgent
+    };
+    g_decorations[HSDecSchemeMinimal] = minimal;
     init_dec_tripple_object(g_decorations + HSDecSchemeTiling, "tiling");
     init_dec_tripple_object(g_decorations + HSDecSchemeFloating, "floating");
+    init_dec_tripple_object(g_decorations + HSDecSchemeMinimal, "minimal");
     // create mass-attribute-objects
     g_theme_scheme
         = g_theme_active_scheme

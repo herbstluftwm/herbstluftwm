@@ -396,12 +396,24 @@ void client_destroy(HSClient* client) {
 static int client_get_scheme_triple_idx(HSClient* client) {
     if (client->fullscreen) return HSDecSchemeFullscreen;
     else if (is_client_floated(client)) return HSDecSchemeFloating;
+    else if (client_needs_minimal_dec(client, NULL)) return HSDecSchemeMinimal;
     else return HSDecSchemeTiling;
+}
+
+bool client_needs_minimal_dec(HSClient* client, HSFrame* frame) {
+    if (!frame) {
+        frame = find_frame_with_client(client->tag->frame, client);
+        HSAssert(frame != NULL);
+    }
+    if (!*g_smart_window_surroundings) return false;
+    if (client->pseudotile) return false;
+    if (is_client_floated(client)) return false;
+    return (frame->content.clients.count == 1
+            || frame->content.clients.layout == LAYOUT_MAX);
 }
 
 void client_window_unfocus(HSClient* client) {
     if (!client) return;
-    client_setup_border(client, false);
     grab_client_buttons(client, false);
 }
 
@@ -447,7 +459,7 @@ void client_window_focus(HSClient* client) {
 
     // change window-colors
     //HSDebug("window_focus ACTIVE: 0x%lx\n", client->window);
-    client_setup_border(client, true);
+    //client_setup_border(client, true);
 
     lastfocus = client;
     /* do some specials for the max layout */
@@ -523,15 +535,11 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         rect.height = MIN(outline.height, rect.height);
         scheme.tight_decoration = true;
     }
-    // TODO: but do this on focus change as well!!
-    //if (*g_smart_window_surroundings && !client->pseudotile
-    //    && (frame->content.clients.count == 1
-    //        || frame->content.clients.layout == LAYOUT_MAX)) {
-    //    scheme = client_scheme_from_triple(client, HSDecSchemeFullscreen);
-    //}
+    if (client_needs_minimal_dec(client, frame)) {
+        scheme = client_scheme_from_triple(client, HSDecSchemeMinimal);
+    }
     decoration_resize_outline(client, rect, scheme);
 }
-
 
 // from dwm.c
 bool applysizehints(HSClient *c, int *w, int *h) {

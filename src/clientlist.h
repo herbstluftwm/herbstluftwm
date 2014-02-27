@@ -88,6 +88,7 @@ void client_resize(HSClient* client, Rectangle rect, HSFrame* frame);
 void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame);
 void client_resize_floating(HSClient* client, HSMonitor* m);
 bool is_client_floated(HSClient* client);
+bool client_needs_minimal_dec(HSClient* client, HSFrame* frame);
 void client_set_urgent(HSClient* client, bool state);
 void client_update_wm_hints(HSClient* client);
 void client_update_title(HSClient* client);

@@ -65,6 +65,7 @@ enum {
     HSDecSchemeFullscreen,
     HSDecSchemeTiling,
     HSDecSchemeFloating,
+    HSDecSchemeMinimal,
     HSDecSchemeCount,
 };
 
