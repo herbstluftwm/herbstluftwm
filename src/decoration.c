@@ -391,10 +391,12 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     client->dec.last_scheme = scheme;
     // redraw
     // TODO: reduce flickering
-    XConfigureWindow(g_display, win, mask, &changes);
-    decoration_redraw(client);
+    decoration_redraw_pixmap(client);
+    XSetWindowBackgroundPixmap(g_display, decwin, client->dec.pixmap);
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
+    XClearWindow(g_display, decwin);
+    XConfigureWindow(g_display, win, mask, &changes);
     decoration_update_frame_extents(client);
     client_send_configure(client);
     XSync(g_display, False);
@@ -434,7 +436,8 @@ static unsigned int get_client_color(HSClient* client, unsigned int pixel) {
     }
 }
 
-void decoration_redraw(struct HSClient* client) {
+// draw a decoration to the client->dec.pixmap
+void decoration_redraw_pixmap(struct HSClient* client) {
     HSDecorationScheme s = client->dec.last_scheme;
     HSDecoration *const dec = &client->dec;
     Window win = client->dec.decwin;
@@ -488,9 +491,5 @@ void decoration_redraw(struct HSClient* client) {
         XSetForeground(g_display, gc, get_client_color(client, s.outer_color));
         XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
     }
-
-    // apply to window
-    XSetWindowBackgroundPixmap(g_display, win, pix);
-    XClearWindow(g_display, win);
 }
 

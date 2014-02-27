@@ -88,7 +88,7 @@ void decoration_resize_inner(struct HSClient* client, Rectangle rect,
 void decoration_change_scheme(struct HSClient* client,
                               HSDecorationScheme scheme);
 
-void decoration_redraw(struct HSClient* client);
+void decoration_redraw_pixmap(struct HSClient* client);
 struct HSClient* get_client_from_decoration(Window decwin);
 
 Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme scheme);
