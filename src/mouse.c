@@ -75,7 +75,8 @@ void mouse_start_drag(Window win, MouseFunction function) {
         g_drag_function = NULL;
         return;
     }
-    if (g_win_drag_client->tag->floating == false) {
+    g_drag_monitor = find_monitor_with_tag(g_win_drag_client->tag);
+    if (!g_drag_monitor || g_win_drag_client->tag->floating == false) {
         // only can drag wins in  floating mode
         g_win_drag_client = NULL;
         g_drag_function = NULL;
@@ -84,7 +85,6 @@ void mouse_start_drag(Window win, MouseFunction function) {
     g_win_drag_client->dragged = true;
     g_win_drag_start = g_win_drag_client->float_size;
     g_button_drag_start = get_cursor_position();
-    g_drag_monitor = get_current_monitor();
     XGrabPointer(g_display, win, True,
         PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
             GrabModeAsync, None, None, CurrentTime);
@@ -108,10 +108,7 @@ void mouse_stop_drag() {
 }
 
 void handle_motion_event(XEvent* ev) {
-    if (g_drag_monitor != get_current_monitor()) {
-        mouse_stop_drag();
-        return;
-    }
+    if (!g_drag_monitor) { return; }
     if (!g_win_drag_client) return;
     if (!g_drag_function) return;
     if (ev->type != MotionNotify) return;
