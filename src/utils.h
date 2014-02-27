@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include "x11-types.h"
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
@@ -24,7 +25,8 @@
 void die(const char *errstr, ...);
 
 // get X11 color from color string
-unsigned long getcolor(const char *colstr);
+HSColor getcolor(const char *colstr);
+bool getcolor_error(const char *colstr, HSColor* color);
 
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
@@ -53,8 +55,8 @@ bool is_window_mapped(Display* dpy, Window window);
 
 bool window_has_property(Display* dpy, Window window, char* prop_name);
 
-bool string_to_bool_error(char* string, bool oldvalue, bool* error);
-bool string_to_bool(char* string, bool oldvalue);
+bool string_to_bool_error(const char* string, bool oldvalue, bool* error);
+bool string_to_bool(const char* string, bool oldvalue);
 
 char* strlasttoken(char* str, char* delim);
 
@@ -64,13 +66,6 @@ time_t get_monotonic_timestamp();
 char** argv_duplicate(int argc, char** argv);
 // frees all entries in argument-vector and then the vector itself
 void argv_free(int argc, char** argv);
-
-typedef struct {
-    int x;
-    int y;
-    int width;
-    int height;
-} Rectangle;
 
 Rectangle parse_rectangle(char* string);
 

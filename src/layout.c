@@ -80,22 +80,22 @@ static void fetch_frame_colors() {
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
     g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
-    char* str = settings_find("frame_border_normal_color")->value.s;
+    char* str = settings_find_string("frame_border_normal_color");
     g_frame_border_normal_color = getcolor(str);
-    str = settings_find("frame_border_active_color")->value.s;
+    str = settings_find_string("frame_border_active_color");
     g_frame_border_active_color = getcolor(str);
-    str = settings_find("frame_border_inner_color")->value.s;
+    str = settings_find_string("frame_border_inner_color");
     g_frame_border_inner_color = getcolor(str);
     // background color
-    str = settings_find("frame_bg_normal_color")->value.s;
+    str = settings_find_string("frame_bg_normal_color");
     g_frame_bg_normal_color = getcolor(str);
-    str = settings_find("frame_bg_active_color")->value.s;
+    str = settings_find_string("frame_bg_active_color");
     g_frame_bg_active_color = getcolor(str);
     g_frame_active_opacity = CLAMP(settings_find("frame_active_opacity")->value.i, 0, 100);
     g_frame_normal_opacity = CLAMP(settings_find("frame_normal_opacity")->value.i, 0, 100);
 
     // tree style
-    g_tree_style = settings_find("tree_style")->value.s;
+    g_tree_style = settings_find_string("tree_style");
     if (g_utf8_strlen(g_tree_style, -1) < 8) {
         g_warning("too few characters in setting tree_style\n");
         // ensure that it is long enough
@@ -174,7 +174,7 @@ void frame_insert_client(HSFrame* frame, struct HSClient* client) {
         if (g_cur_frame == frame
             && frame->content.clients.selection >= (count-1)) {
             frame->content.clients.selection = count - 1;
-            window_focus(client->window);
+            client_window_focus(client);
         }
     } else { /* frame->type == TYPE_FRAMES */
         HSLayout* layout = &frame->content.layout;
@@ -704,7 +704,6 @@ void frame_apply_client_layout_linear(HSFrame* frame, Rectangle rect, bool verti
         // add the space, if count does not divide frameheight without remainder
         cur.height += (i == count-1) ? last_step_y : 0;
         cur.width += (i == count-1) ? last_step_x : 0;
-        client_setup_border(client, (g_cur_frame == frame) && (i == selection));
         client_resize_tiling(client, cur, frame);
         cur.y += step_y;
         cur.x += step_x;
@@ -961,8 +960,8 @@ int frame_current_set_selection(int argc, char** argv) {
         index = frame->content.clients.count - 1;
     }
     frame->content.clients.selection = index;
-    Window window = frame->content.clients.buf[index]->window;
-    window_focus(window);
+    HSClient* client = frame->content.clients.buf[index];
+    client_window_focus(client);
     return 0;
 }
 
@@ -986,8 +985,8 @@ int frame_current_cycle_selection(int argc, char** argv) {
     index += count;
     index %= count;
     frame->content.clients.selection = index;
-    Window window = frame->content.clients.buf[index]->window;
-    window_focus(window);
+    HSClient* client = frame->content.clients.buf[index];
+    client_window_focus(client);
     return 0;
 }
 
@@ -1582,7 +1581,7 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
             for (i = 0; i < count; i++) {
                 if (buf[i] == client) {
                     frame->content.clients.selection = i;
-                    window_focus(buf[i]->window);
+                    client_window_focus(buf[i]);
                     break;
                 }
             }
@@ -1719,9 +1718,9 @@ int frame_focus_recursive(HSFrame* frame) {
     frame_unfocus();
     if (frame->content.clients.count) {
         int selection = frame->content.clients.selection;
-        window_focus(frame->content.clients.buf[selection]->window);
+        client_window_focus(frame->content.clients.buf[selection]);
     } else {
-        window_unfocus_last();
+        client_window_unfocus_last();
     }
     return 0;
 }
@@ -1771,7 +1770,7 @@ static void frame_hide(HSFrame* frame) {
         HSClient** buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            window_hide(buf[i]->window);
+            client_set_visible(buf[i], false);
         }
     }
 }
@@ -1787,7 +1786,7 @@ static void frame_show_clients(HSFrame* frame) {
         HSClient** buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            window_show(buf[i]->window);
+            client_set_visible(buf[i], true);
         }
     }
 }
@@ -1886,11 +1885,7 @@ void frame_set_visible(HSFrame* frame, bool visible) {
     if (frame->window_visible == visible) {
         return;
     }
-    if (visible) {
-        window_show(frame->window);
-    } else {
-        window_hide(frame->window);
-    }
+    window_set_visible(frame->window, visible);
     frame->window_visible = visible;
 }
 

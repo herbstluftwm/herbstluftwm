@@ -12,6 +12,7 @@ Current git version
       the desired tag is shown on another monitor instead of doing nothing
     * new split mode: auto
     * new attribute monitors.count indicating the number of monitors
+    * new settings object with an attribute for each setting.
 
 Release 0.5.3 on 2013-12-24
 ---------------------------
@@ -34,6 +35,7 @@ Release 0.5.3 on 2013-12-24
       via the client properties sizehints_tiling and sizehints_floating
     * new setting: pseudotile_center_threshold
     * new command: cycle_frame
+    * new object attribute type: color
 
 Release 0.5.2 on 2013-06-23
 ---------------------------

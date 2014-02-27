@@ -34,6 +34,9 @@ enum {
     NetWmWindowType,
     NetWmState,
     NetWmWindowOpacity,
+    NetMoveresizeWindow,
+    NetWmMoveresize,
+    NetFrameExtents,
     /* window states */
     NetWmStateFullscreen,
     NetWmStateDemandsAttention,
@@ -80,6 +83,7 @@ void ewmh_update_desktop_names();
 void ewmh_update_active_window(Window win);
 void ewmh_update_current_desktop();
 void ewmh_update_window_state(struct HSClient* client);
+void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom);
 bool ewmh_is_window_state_set(Window win, Atom hint);
 bool ewmh_is_fullscreen_set(Window win);
 
@@ -89,6 +93,16 @@ void ewmh_window_update_tag(Window win, struct HSTag* tag);
 void ewmh_handle_client_message(XEvent* event);
 
 void ewmh_set_window_opacity(Window win, double opacity);
+
+typedef enum {
+    // see icccm:
+    // http://www.x.org/releases/X11R7.7/doc/xorg-docs/icccm/icccm.html#WM_STATE_Property
+    WmStateWithdrawnState = 0,
+    WmStateNormalState    = 1,
+    WmStateIconicState    = 3,
+} WmState;
+
+void window_update_wm_state(Window win, WmState state);
 
 #endif
 

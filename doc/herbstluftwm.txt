@@ -737,7 +737,7 @@ set_attr 'ATTRIBUTE' 'NEWVALUE'::
     Assign 'NEWVALUE' to the specified 'ATTRIBUTE' as described in the
     <<OBJECTS,*OBJECTS section*>>.
 
-new_attr [*bool*|*int*|*string*|*uint*] 'PATH'::
+new_attr [*bool*|*color*|*int*|*string*|*uint*] 'PATH'::
     Creates a new attribute with the name and in the object specified by 'PATH'.
     Its type is specified by the first argument. The attribute name has to begin
     with +my_+.
@@ -1347,6 +1347,9 @@ listed as follows:
 |===========================
 
     ** +focus+: the object of the focused monitor
+
+  * +settings+ has an attribute for each setting. See <<SETTINGS,*SETTINGS*>>
+    for a list.
 
 AUTOSTART FILE
 --------------

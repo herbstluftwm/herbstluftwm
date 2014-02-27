@@ -10,6 +10,7 @@
 #include "clientlist.h"
 #include "settings.h"
 #include "stack.h"
+#include "mouse.h"
 
 #include "glib-backports.h"
 #include <string.h>
@@ -27,6 +28,8 @@ size_t      g_window_count;
 static Window      g_wm_window;
 int*        g_focus_stealing_prevention;
 
+int WM_STATE;
+
 static Window*  g_original_clients = NULL;
 static unsigned long g_original_clients_count = 0;
 static bool ewmh_read_client_list(Window** buf, unsigned long *count);
@@ -43,12 +46,17 @@ char* g_netatom_names[NetCOUNT] = {
     [ NetDesktopViewport            ] = "_NET_DESKTOP_VIEWPORT"             ,
     [ NetActiveWindow               ] = "_NET_ACTIVE_WINDOW"                ,
     [ NetWmName                     ] = "_NET_WM_NAME"                      ,
+    [ NetSupportingWmCheck          ] = "_NET_SUPPORTING_WM_CHECK"          ,
     [ NetWmWindowType               ] = "_NET_WM_WINDOW_TYPE"               ,
     [ NetWmState                    ] = "_NET_WM_STATE"                     ,
     [ NetWmWindowOpacity            ] = "_NET_WM_WINDOW_OPACITY"            ,
+    [ NetMoveresizeWindow           ] = "_NET_MOVERESIZE_WINDOW"            ,
+    [ NetWmMoveresize               ] = "_NET_WM_MOVERESIZE"                ,
+    [ NetFrameExtents               ] = "_NET_FRAME_EXTENTS"                ,
+    /* window states */
     [ NetWmStateFullscreen          ] = "_NET_WM_STATE_FULLSCREEN"          ,
     [ NetWmStateDemandsAttention    ] = "_NET_WM_STATE_DEMANDS_ATTENTION"   ,
-    [ NetSupportingWmCheck          ] = "_NET_SUPPORTING_WM_CHECK"          ,
+    /* window types */
     [ NetWmWindowTypeDesktop        ] = "_NET_WM_WINDOW_TYPE_DESKTOP"       ,
     [ NetWmWindowTypeDock           ] = "_NET_WM_WINDOW_TYPE_DOCK"          ,
     [ NetWmWindowTypeToolbar        ] = "_NET_WM_WINDOW_TYPE_TOOLBAR"       ,
@@ -93,6 +101,9 @@ void ewmh_init() {
         g_original_clients_count = 0;
     }
 
+    /* init other atoms */
+    WM_STATE = XInternAtom(g_display, "WM_STATE", False);
+
     /* init for the supporting wm check */
     g_wm_window = XCreateSimpleWindow(g_display, g_root,
                                       42, 42, 42, 42, 0, 0, 0);
@@ -136,7 +147,7 @@ void ewmh_set_wmname(char* name) {
 }
 
 void ewmh_update_wmname() {
-    ewmh_set_wmname(settings_find("wmname")->value.s);
+    ewmh_set_wmname(settings_find_string("wmname"));
 }
 
 void ewmh_update_client_list() {
@@ -386,6 +397,11 @@ void ewmh_handle_client_message(XEvent* event) {
             }
             break;
 
+        case NetWmMoveresize:
+            // TODO: handle requests more exactly
+            mouse_start_drag(me->window, mouse_function_resize);
+            break;
+
         default:
             HSDebug("no handler for the client message \"%s\"\n",
                     g_netatom_names[index]);
@@ -453,5 +469,16 @@ void ewmh_set_window_opacity(Window win, double opacity) {
 
     XChangeProperty(g_display, win, g_netatom[NetWmWindowOpacity], XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&int_opacity, 1);
+}
+void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom) {
+    long extents[] = { left, right, top, bottom };
+    XChangeProperty(g_display, win, g_netatom[NetFrameExtents], XA_CARDINAL,
+                    32, PropModeReplace, (unsigned char*)extents, LENGTH(extents));
+}
+
+void window_update_wm_state(Window win, WmState state) {
+    uint32_t int_state = state;
+    XChangeProperty(g_display, win,  WM_STATE, WM_STATE,
+                    32, PropModeReplace, (unsigned char*)&int_state, 1);
 }
 

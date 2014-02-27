@@ -15,12 +15,13 @@
     WINDOW_MANAGER_NAME " " HERBSTLUFT_VERSION " (built on " __DATE__ ")"
 
 #define HERBST_FRAME_CLASS "_HERBST_FRAME"
+#define HERBST_DECORATION_CLASS "_HERBST_DECORATION"
 #define WINDOW_MIN_HEIGHT 32
 #define WINDOW_MIN_WIDTH 32
 
 #define ROOT_EVENT_MASK (SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask)
 //#define CLIENT_EVENT_MASK (PropertyChangeMask | FocusChangeMask | StructureNotifyMask)
-#define CLIENT_EVENT_MASK (FocusChangeMask|EnterWindowMask|PropertyChangeMask)
+#define CLIENT_EVENT_MASK (StructureNotifyMask|FocusChangeMask|EnterWindowMask|PropertyChangeMask)
 
 // minimum relative fraction of split frames
 #define FRAME_MIN_FRACTION 0.1
@@ -50,6 +51,18 @@ int         g_verbose;
         } \
     } while(0)
 
+#define HSError(...) \
+    do { \
+        fprintf(stderr, "%s: %d: ", __FILE__, __LINE__); \
+        fprintf(stderr, __VA_ARGS__); \
+    } while(0)
+
+#define HSWarning(...) \
+    do { \
+        fprintf(stderr, "%s: %d: ", __FILE__, __LINE__); \
+        fprintf(stderr, __VA_ARGS__); \
+    } while(0)
+
 // macro for very slow asserts, which are only executed if DEBUG is defined
 #ifdef DEBUG
 #define slow_assert(X)                                                  \
@@ -63,6 +76,23 @@ int         g_verbose;
 #else // DEBUG
 #define slow_assert(ignore)((void) 0)
 #endif // DEBUG
+
+#define HSWeakAssert(X)                                                 \
+    do {                                                                \
+        if (!(X)) {                                                     \
+            fprintf(stderr, "%s:%d: %s: assertion `%s\' failed.",       \
+                    __FILE__, __LINE__, __func__, #X);                  \
+        }                                                               \
+    } while (0)
+
+#define HSAssert(X)                                                 \
+    do {                                                                \
+        if (!(X)) {                                                     \
+            fprintf(stderr, "%s:%d: %s: assertion `%s\' failed.",       \
+                    __FILE__, __LINE__, __func__, #X);                  \
+            exit(1);                                                    \
+        }                                                               \
+    } while (0)
 
 // characters that need to be escaped
 // http://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html

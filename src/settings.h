@@ -10,14 +10,20 @@
 
 enum {
     HS_String = 0,
-    HS_Int
+    HS_Int,
+    HS_Compatiblity,
 };
 
 typedef struct {
     char*   name;
     union {
-        int     i;
-        char*   s;
+        int         i;
+        char*       s_init;
+        GString*    str;
+        struct {
+            char* read;  // attribute address for reading
+            char* write; // attribute address for writing
+        } compat;
     }   value;
     int old_value_i;
     int type;
@@ -31,8 +37,9 @@ void settings_init();
 void settings_destroy();
 
 SettingsPair* settings_find(char* name);
+char* settings_find_string(char* name);
 
-int settings_set(SettingsPair* pair, char* value);
+int settings_set(SettingsPair* pair, const char* value);
 int settings_set_command(int argc, char** argv, GString* output);
 int settings_toggle(int argc, char** argv, GString* output);
 int settings_cycle_value(int argc, char** argv, GString* output);

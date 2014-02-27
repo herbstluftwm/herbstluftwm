@@ -16,6 +16,7 @@
 #include "layout.h"
 #include "object.h"
 #include "utils.h"
+#include "decoration.h"
 
 struct HSSlice;
 
@@ -23,7 +24,6 @@ typedef struct HSClient {
     Window      window;
     GString*    window_str;     // the window id as a string
     Rectangle   last_size;      // last size excluding the window border
-    int         last_border_width;
     HSTag*      tag;
     Rectangle   float_size;     // floating size without the window border
     GString*    title;  // or also called window title; this is never NULL
@@ -38,22 +38,32 @@ typedef struct HSClient {
     bool        sizehints_tiling;  // respect size hints regarding this client in tiling mode
     bool        dragged;  // if this client is dragged currently
     int         pid;
+    int         ignore_unmaps;  // Ignore one unmap for each reparenting
+                                // action, because reparenting creates an unmap
+                                // notify event
+    bool        visible;
     // for size hints
 	float mina, maxa;
     int basew, baseh, incw, inch, maxw, maxh, minw, minh;
     // for other modules
     HSObject    object;
     struct HSSlice* slice;
+    HSDecoration    dec;
 } HSClient;
+
+
 
 void clientlist_init();
 void clientlist_destroy();
+void clientlist_end_startup();
+
+bool clientlist_ignore_unmapnotify(Window win);
 
 void clientlist_foreach(GHFunc func, gpointer data);
 
-void window_focus(Window window);
-void window_unfocus(Window window);
-void window_unfocus_last();
+void client_window_focus(HSClient* client);
+void client_window_unfocus(HSClient* client);
+void client_window_unfocus_last();
 
 void reset_client_colors();
 void reset_client_settings();
@@ -78,6 +88,7 @@ void client_resize(HSClient* client, Rectangle rect, HSFrame* frame);
 void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame);
 void client_resize_floating(HSClient* client, HSMonitor* m);
 bool is_client_floated(HSClient* client);
+bool client_needs_minimal_dec(HSClient* client, HSFrame* frame);
 void client_set_urgent(HSClient* client, bool state);
 void client_update_wm_hints(HSClient* client);
 void client_update_title(HSClient* client);
@@ -99,11 +110,9 @@ int client_set_property_command(int argc, char** argv);
 bool is_window_class_ignored(char* window_class);
 bool is_window_ignored(Window win);
 
-void window_show(Window win);
-void window_hide(Window win);
+void client_set_visible(HSClient* client, bool visible);
 void window_set_visible(Window win, bool visible);
 
-void window_update_border(Window window, unsigned long color);
 unsigned long get_window_border_color(HSClient* client);
 
 #endif

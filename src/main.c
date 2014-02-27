@@ -19,6 +19,7 @@
 #include "ewmh.h"
 #include "stack.h"
 #include "object.h"
+#include "decoration.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -480,18 +481,23 @@ void event_on_configure(XEvent event) {
     HSClient* client = get_client_from_window(cre->window);
     if (client) {
         bool changes = false;
-        Rectangle newRect = client->last_size;
+        Rectangle newRect = client->float_size;
         if (client->sizehints_floating &&
             (is_client_floated(client) || client->pseudotile))
         {
-            cre->width += 2*cre->border_width - 2*client->last_border_width;
-            cre->height += 2*cre->border_width - 2*client->last_border_width;
-            if (newRect.width  != cre->width) changes = true;
-            if (newRect.height != cre->height) changes = true;
-            newRect.x = cre->x;
-            newRect.y = cre->y;
-            newRect.width = cre->width;
-            newRect.height = cre->height;
+            bool width_requested = 0 != (cre->value_mask & CWWidth);
+            bool height_requested = 0 != (cre->value_mask & CWHeight);
+            bool x_requested = 0 != (cre->value_mask & CWX);
+            bool y_requested = 0 != (cre->value_mask & CWY);
+            cre->width += 2*cre->border_width;
+            cre->height += 2*cre->border_width;
+            if (width_requested && newRect.width  != cre->width) changes = true;
+            if (height_requested && newRect.height != cre->height) changes = true;
+            if (x_requested || y_requested) changes = true;
+            if (x_requested) newRect.x = cre->x;
+            if (y_requested) newRect.y = cre->y;
+            if (width_requested) newRect.width = cre->width;
+            if (height_requested) newRect.height = cre->height;
         }
         if (changes && is_client_floated(client)) {
             client->float_size = newRect;
@@ -597,6 +603,18 @@ void scan(void) {
         }
         if(wins)
             XFree(wins);
+    }
+    // ensure every original client is managed again
+    for (int i = 0; i < cl_count; i++) {
+        if (get_client_from_window(cl[i])) continue;
+        if (!XGetWindowAttributes(g_display, cl[i], &wa)
+            || wa.override_redirect
+            || XGetTransientForHint(g_display, cl[i], &d1))
+        {
+            continue;
+        }
+        XReparentWindow(g_display, cl[i], g_root, 0,0);
+        manage_client(cl[i]);
     }
 }
 
@@ -733,6 +751,7 @@ static struct {
     { layout_init,      layout_destroy      },
     { tag_init,         tag_destroy         },
     { clientlist_init,  clientlist_destroy  },
+    { decorations_init, decorations_destroy },
     { monitor_init,     monitor_destroy     },
     { ewmh_init,        ewmh_destroy        },
     { mouse_init,       mouse_destroy       },
@@ -748,7 +767,7 @@ void buttonpress(XEvent* event) {
     XButtonEvent* be = &(event->xbutton);
     HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
     if (mouse_binding_find(be->state, be->button)) {
-        mouse_start_drag(event);
+        mouse_start_drag_by_event(event);
     } else {
         HSClient* client = get_client_from_window(be->window);
         if (client) {
@@ -789,12 +808,13 @@ void configurenotify(XEvent* event) {
 
 void destroynotify(XEvent* event) {
     // try to unmanage it
+    //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
     unmanage_client(event->xdestroywindow.window);
 }
 
 void enternotify(XEvent* event) {
     XCrossingEvent *ce = &event->xcrossing;
-    HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
+    //HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
     if (!mouse_is_dragging()
         && *g_focus_follows_mouse
         && ce->focus == false) {
@@ -813,15 +833,17 @@ void enternotify(XEvent* event) {
 }
 
 void expose(XEvent* event) {
-    HSDebug("name is: Expose\n");
+    //if (event->xexpose.count > 0) return;
+    //Window ewin = event->xexpose.window;
+    //HSDebug("name is: Expose for window %lx\n", ewin);
 }
 
 void focusin(XEvent* event) {
-    HSDebug("name is: FocusIn\n");
+    //HSDebug("name is: FocusIn\n");
 }
 
 void keypress(XEvent* event) {
-    HSDebug("name is: KeyPress\n");
+    //HSDebug("name is: KeyPress\n");
     handle_key_press(event);
 }
 
@@ -842,7 +864,7 @@ void motionnotify(XEvent* event) {
 }
 
 void mapnotify(XEvent* event) {
-    HSDebug("name is: MapNotify\n");
+    //HSDebug("name is: MapNotify\n");
     HSClient* c;
     if ((c = get_client_from_window(event->xmap.window))) {
         // reset focus. so a new window gets the focus if it shall have the
@@ -889,6 +911,8 @@ void propertynotify(XEvent* event) {
                     break;
                 case XA_WM_NORMAL_HINTS:
                     updatesizehints(client);
+                    HSMonitor* m = find_monitor_with_tag(client->tag);
+                    if (m) monitor_apply_layout(m);
                     break;
                 case XA_WM_NAME:
                     client_update_title(client);
@@ -902,7 +926,9 @@ void propertynotify(XEvent* event) {
 
 void unmapnotify(XEvent* event) {
     HSDebug("name is: UnmapNotify for %lx\n", event->xunmap.window);
-    unmanage_client(event->xunmap.window);
+    if (!clientlist_ignore_unmapnotify(event->xunmap.window)) {
+        unmanage_client(event->xunmap.window);
+    }
 }
 
 /* ---- */
@@ -939,6 +965,7 @@ int main(int argc, char* argv[]) {
     all_monitors_apply_layout();
     ewmh_update_all();
     execute_autostart_file();
+    clientlist_end_startup();
 
     // main loop
     XEvent event;

@@ -15,6 +15,7 @@
 #include "rules.h"
 #include "ipc-protocol.h"
 #include "object.h"
+#include "decoration.h"
 // system
 #include "glib-backports.h"
 #include <assert.h>
@@ -32,15 +33,9 @@
 
 int g_monitor_float_treshold = 24;
 
-int* g_window_border_width;
-int* g_window_border_inner_width;
 int* g_raise_on_focus;
 int* g_snap_gap;
-int* g_pseudotile_center_threshold;
-unsigned long g_window_border_active_color;
-unsigned long g_window_border_normal_color;
-unsigned long g_window_border_urgent_color;
-unsigned long g_window_border_inner_color;
+int* g_smart_window_surroundings;
 
 static GHashTable* g_clients; // container of all clients
 static HSObject*   g_client_object;
@@ -50,8 +45,13 @@ static HSObject*   g_client_object;
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
 static Atom g_wmatom[WMLast];
 
+static HSClient* lastfocus = NULL;
 static void client_set_urgent_force(HSClient* client, bool state);
+static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx);
+static int client_get_scheme_triple_idx(HSClient* client);
 
+static bool g_startup = true; // whether hlwm is starting up and is not in the
+                              // main event loop yet
 static HSClient* create_client() {
     HSClient* hc = g_new0(HSClient, 1);
     hsobject_init(&hc->object);
@@ -67,24 +67,14 @@ static HSClient* create_client() {
     hc->ewmhnotify = true;
     hc->sizehints_floating = true;
     hc->sizehints_tiling = false;
+    hc->visible = false;
     return hc;
 }
 
 static void fetch_colors() {
-    g_window_border_width = &(settings_find("window_border_width")->value.i);
-    g_window_border_inner_width = &(settings_find("window_border_inner_width")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_snap_gap = &(settings_find("snap_gap")->value.i);
     g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
-    char* str = settings_find("window_border_normal_color")->value.s;
-    g_window_border_normal_color = getcolor(str);
-    str = settings_find("window_border_active_color")->value.s;
-    g_window_border_active_color = getcolor(str);
-    str = settings_find("window_border_urgent_color")->value.s;
-    g_window_border_urgent_color = getcolor(str);
-    str = settings_find("window_border_inner_color")->value.s;
-    g_window_border_inner_color = getcolor(str);
-    g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
 }
 
 void clientlist_init() {
@@ -98,6 +88,20 @@ void clientlist_init() {
     g_client_object = hsobject_create_and_link(hsobject_root(), "clients");
     g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
                                       NULL, (GDestroyNotify)client_destroy);
+}
+
+void clientlist_end_startup() {
+    g_startup = false;
+}
+
+bool clientlist_ignore_unmapnotify(Window win) {
+    HSClient* c = get_client_from_window(win);
+    if (c && c->ignore_unmaps > 0) {
+        c->ignore_unmaps--;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void reset_client_colors() {
@@ -115,6 +119,8 @@ static void client_move_to_floatpos(void* key, void* client_void, void* data) {
         unsigned int w = client->float_size.width;
         unsigned int h = client->float_size.height;
         XMoveResizeWindow(g_display, client->window, x, y, w, h);
+        XReparentWindow(g_display, client->window, g_root, x, y);
+        ewmh_update_frame_extents(client->window, 0,0,0,0);
     }
 }
 
@@ -122,7 +128,7 @@ static void client_show_window(void* key, void* client_void, void* data) {
     (void)key;
     (void)data;
     HSClient* client = client_void;
-    window_show(client->window);
+    window_set_visible(client->window, true);
 }
 
 void clientlist_destroy() {
@@ -229,6 +235,7 @@ HSClient* manage_client(Window win) {
     client->float_size.y = y;
     client->float_size.width = w;
     client->float_size.height = h;
+    client->last_size = client->float_size;
 
     // apply rules
     HSClientChanges changes;
@@ -247,6 +254,7 @@ HSClient* manage_client(Window win) {
     }
 
     // actually manage it
+    decoration_setup_frame(client);
     g_hash_table_insert(g_clients, &(client->window), client);
     client->window_str = g_string_sized_new(10);
     g_string_printf(client->window_str, "0x%lx", win);
@@ -255,8 +263,6 @@ HSClient* manage_client(Window win) {
     if (!client->tag) {
         client->tag = m->tag;
     }
-    // get events from window
-    XSelectInput(g_display, win, CLIENT_EVENT_MASK);
     // insert window to the stack
     client->slice = slice_create_client(client);
     stack_insert_slice(client->tag->stack, client->slice);
@@ -300,6 +306,19 @@ HSClient* manage_client(Window win) {
     // this ensures a panel can read the tag property correctly at this point
     ewmh_add_client(client->window);
 
+    XSetWindowBorderWidth(g_display, client->window,0);
+    // specify that the client window survives if hlwm dies, i.e. it will be
+    // reparented back to root
+    XChangeSaveSet(g_display, client->window, SetModeInsert);
+    XReparentWindow(g_display, client->window, client->dec.decwin, 40, 40);
+    if (g_startup) client->ignore_unmaps++;
+    // get events from window
+    XSelectInput(g_display, client->dec.decwin, (EnterWindowMask | LeaveWindowMask |
+                            ButtonPressMask | ButtonReleaseMask |
+                            ExposureMask |
+                            SubstructureRedirectMask | FocusChangeMask));
+    XSelectInput(g_display, win, CLIENT_EVENT_MASK);
+
     HSMonitor* monitor = find_monitor_with_tag(client->tag);
     if (monitor) {
         if (monitor != get_current_monitor()
@@ -309,9 +328,11 @@ HSClient* manage_client(Window win) {
         // TODO: monitor_apply_layout() maybe is called twice here if it
         // already is called by monitor_set_tag()
         monitor_apply_layout(monitor);
+        client_set_visible(client, true);
     } else {
         if (changes.focus && changes.switchtag) {
             monitor_set_tag(get_current_monitor(), client->tag);
+            client_set_visible(client, true);
         }
     }
     client_send_configure(client);
@@ -336,6 +357,7 @@ void unmanage_client(Window win) {
     XSelectInput(g_display, win, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
+    XReparentWindow(g_display, win, g_root, 0, 0);
     HSTag* tag = client->tag;
     g_hash_table_remove(g_clients, &win);
     // and arrange monitor after the client has been removed from the stack
@@ -349,6 +371,10 @@ void unmanage_client(Window win) {
 // destroys a special client
 void client_destroy(HSClient* client) {
     hsobject_unlink(g_client_object, &client->object);
+    decoration_free(&client->dec);
+    if (lastfocus == client) {
+        lastfocus = NULL;
+    }
     if (client->tag && client->slice) {
         stack_remove_slice(client->tag->stack, client->slice);
     }
@@ -366,23 +392,33 @@ void client_destroy(HSClient* client) {
     g_free(client);
 }
 
-void window_unfocus(Window window) {
-    HSDebug("window_unfocus NORMAL\n");
-    window_update_border(window, g_window_border_normal_color);
-    HSClient* c = get_client_from_window(window);
-    if (c) {
-        if (c->urgent) {
-            HSDebug("window_unfocus URGENT\n");
-            window_update_border(window, g_window_border_urgent_color);
-        }
-        grab_client_buttons(c, false);
-    }
+static int client_get_scheme_triple_idx(HSClient* client) {
+    if (client->fullscreen) return HSDecSchemeFullscreen;
+    else if (is_client_floated(client)) return HSDecSchemeFloating;
+    else if (client_needs_minimal_dec(client, NULL)) return HSDecSchemeMinimal;
+    else return HSDecSchemeTiling;
 }
 
-static Window lastfocus = 0;
-void window_unfocus_last() {
+bool client_needs_minimal_dec(HSClient* client, HSFrame* frame) {
+    if (!frame) {
+        frame = find_frame_with_client(client->tag->frame, client);
+        HSAssert(frame != NULL);
+    }
+    if (!*g_smart_window_surroundings) return false;
+    if (client->pseudotile) return false;
+    if (is_client_floated(client)) return false;
+    return (frame->content.clients.count == 1
+            || frame->content.clients.layout == LAYOUT_MAX);
+}
+
+void client_window_unfocus(HSClient* client) {
+    if (!client) return;
+    grab_client_buttons(client, false);
+}
+
+void client_window_unfocus_last() {
     if (lastfocus) {
-        window_unfocus(lastfocus);
+        client_window_unfocus(lastfocus);
     }
     hsobject_unlink_by_name(g_client_object, "focus");
     // give focus to root window
@@ -396,36 +432,35 @@ void window_unfocus_last() {
     lastfocus = 0;
 }
 
-void window_focus(Window window) {
-    HSClient* client = get_client_from_window(window);
+void client_window_focus(HSClient* client) {
     assert(client != NULL);
     // set keyboard focus
     if (!client->neverfocus) {
-        XSetInputFocus(g_display, window, RevertToPointerRoot, CurrentTime);
+        XSetInputFocus(g_display, client->window, RevertToPointerRoot, CurrentTime);
     }
     else client_sendevent(client, g_wmatom[WMTakeFocus]);
 
-    if (window != lastfocus) {
+    if (client != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
          * twice.  see BUGS for more information
          *
          * only emit the hook if the focus *really* changes */
         // unfocus last one
-        window_unfocus(lastfocus);
+        client_window_unfocus(lastfocus);
         hsobject_link(g_client_object, &client->object, "focus");
-        ewmh_update_active_window(window);
+        ewmh_update_active_window(client->window);
         tag_update_each_focus_layer();
         char* title = client ? client->title->str : "?";
         char winid_str[STRING_BUF_SIZE];
-        snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)window);
+        snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)client->window);
         hook_emit_list("focus_changed", winid_str, title, NULL);
     }
 
     // change window-colors
-    HSDebug("window_focus ACTIVE\n");
-    window_update_border(window, g_window_border_active_color);
+    //HSDebug("window_focus ACTIVE: 0x%lx\n", client->window);
+    //client_setup_border(client, true);
 
-    lastfocus = window;
+    lastfocus = client;
     /* do some specials for the max layout */
     bool is_max_layout = frame_focused_client(g_cur_frame) == client
                          && g_cur_frame->content.clients.layout == LAYOUT_MAX
@@ -434,21 +469,20 @@ void window_focus(Window window) {
         client_raise(client);
     }
     tag_update_focus_layer(get_current_monitor()->tag);
-    grab_client_buttons(get_client_from_window(window), true);
+    grab_client_buttons(client, true);
     client_set_urgent(client, false);
 }
 
 void client_setup_border(HSClient* client, bool focused) {
-    unsigned long colors[] = {
-        g_window_border_normal_color,
-        g_window_border_active_color,
-    };
-    if (client->urgent) {
-        HSDebug("client_setup_border URGENT\n");
-        window_update_border(client->window, g_window_border_urgent_color);
+    if (focused) {
+        decoration_change_scheme(client,
+            g_decorations[client_get_scheme_triple_idx(client)].active);
+    } else if (client->urgent) {
+        decoration_change_scheme(client,
+            g_decorations[client_get_scheme_triple_idx(client)].urgent);
     } else {
-        HSDebug("client_setup_border %s\n", (focused ? "ACTIVE" : "NORMAL"));
-        window_update_border(client->window, colors[focused ? 1 : 0]);
+        decoration_change_scheme(client,
+            g_decorations[client_get_scheme_triple_idx(client)].normal);
     }
 }
 
@@ -457,13 +491,8 @@ static void client_resize_fullscreen(HSClient* client, HSMonitor* m) {
         HSDebug("client_resize_fullscreen() got invalid parameters\n");
         return;
     }
-    XSetWindowBorderWidth(g_display, client->window, 0);
-    client->last_size = m->rect;
-    client->last_border_width = 0;
-    XMoveResizeWindow(g_display, client->window,
-                      m->rect.x, m->rect.y, m->rect.width, m->rect.height);
-    client_send_configure(client);
-    XSync(g_display, False);
+    decoration_resize_outline(client, m->rect,
+        client_scheme_from_triple(client, HSDecSchemeFullscreen));
 }
 
 void client_raise(HSClient* client) {
@@ -471,6 +500,15 @@ void client_raise(HSClient* client) {
     stack_raise_slide(client->tag->stack, client->slice);
 }
 
+static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx) {
+    if (get_current_client() == client) {
+        return g_decorations[tripidx].active;
+    } else if (client->urgent) {
+        return g_decorations[tripidx].urgent;
+    } else {
+        return g_decorations[tripidx].normal;
+    }
+}
 
 void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     HSMonitor* m;
@@ -478,81 +516,28 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
         client_resize_fullscreen(client, m);
         return;
     }
-    // ensure minimum size
-    if (rect.width < WINDOW_MIN_WIDTH) {
-        rect.width = WINDOW_MIN_WIDTH;
-    }
-    if (rect.height < WINDOW_MIN_HEIGHT) {
-        rect.height = WINDOW_MIN_HEIGHT;
-    }
-    if (!client) {
-        HSDebug("Warning: client_resize(NULL, ...) was called\n");
-        return;
-    }
-    Window win = client->window;
-    int border_width = *g_window_border_width;
-    if (!client->pseudotile && smart_window_surroundings_active(frame)) {
-        border_width = 0;
-    }
-
     // apply border width
     if (!client->pseudotile && !smart_window_surroundings_active(frame)) {
         // apply window gap
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
     }
-    Rectangle tile = rect;
-    rect.width -= border_width * 2;
-    rect.height -= border_width * 2;
-
+    HSDecorationScheme scheme = client_scheme_from_triple(client, HSDecSchemeTiling);
     if (client->pseudotile) {
-        Rectangle size = client->float_size;
-        // ensure size is not larger than the tile
-        rect.width  = MIN(size.width,  tile.width  - 2 * border_width);
-        rect.height = MIN(size.height, tile.height - 2 * border_width);
+        Rectangle inner = client->float_size;
+        applysizehints(client, &inner.width, &inner.height);
+        Rectangle outline = inner_rect_to_outline(inner, scheme);
+        rect.x += MAX(0, (rect.width - outline.width)/2);
+        rect.y += MAX(0, (rect.height - outline.height)/2);
+        rect.width = MIN(outline.width, rect.width);
+        rect.height = MIN(outline.height, rect.height);
+        scheme.tight_decoration = true;
     }
-    applysizehints(client, &rect.width, &rect.height);
-    // force it into the tile
-    rect.width = MIN(tile.width - 2*border_width,   rect.width);
-    rect.height = MIN(tile.height - 2*border_width, rect.height);
-    // center the window in the tile
-    // but only if it's relative coordinates would not be too close to the
-    // upper left tile border
-    int threshold = *g_pseudotile_center_threshold;
-    int dx = tile.width/2 - rect.width/2 - border_width;
-    int dy = tile.height/2 - rect.height/2 - border_width;
-    rect.x = tile.x + ((dx < threshold) ? 0 : dx);
-    rect.y = tile.y + ((dy < threshold) ? 0 : dy);
-
-    if (RECTANGLE_EQUALS(client->last_size, rect)
-        && client->last_border_width == border_width) {
-        return;
+    if (client_needs_minimal_dec(client, frame)) {
+        scheme = client_scheme_from_triple(client, HSDecSchemeMinimal);
     }
-    client->last_border_width = border_width;
-
-    client->last_size = rect;
-
-    XWindowChanges changes = {
-      .x = rect.x, .y = rect.y, .width = rect.width, .height = rect.height,
-      .border_width = border_width
-    };
-    int mask = CWX | CWY | CWWidth | CWHeight | CWBorderWidth;
-    XConfigureWindow(g_display, win, mask, &changes);
-    if (*g_window_border_inner_width > 0
-        && *g_window_border_inner_width < *g_window_border_width) {
-        unsigned long current_border_color = get_window_border_color(client);
-        HSDebug("client_resize %s\n",
-                current_border_color == g_window_border_active_color
-                ? "ACTIVE" : "NORMAL");
-        set_window_double_border(g_display, win, *g_window_border_inner_width,
-                                 g_window_border_inner_color,
-                                 current_border_color);
-    }
-    // send new size to client
-    client_send_configure(client);
-    XSync(g_display, False);
+    decoration_resize_outline(client, rect, scheme);
 }
-
 
 // from dwm.c
 bool applysizehints(HSClient *c, int *w, int *h) {
@@ -663,19 +648,19 @@ void updatesizehints(HSClient *c) {
 
 
 void client_send_configure(HSClient *c) {
-    XConfigureEvent ce;
-    int bw = c->last_border_width;
-    ce.type = ConfigureNotify;
-    ce.display = g_display;
-    ce.event = c->window;
-    ce.window = c->window;
-    ce.x = c->last_size.x;
-    ce.y = c->last_size.y;
-    ce.width = c->last_size.width;
-    ce.height = c->last_size.height;
-    ce.border_width = bw;
-    ce.above = None;
-    ce.override_redirect = False;
+    XConfigureEvent ce = {
+        .type = ConfigureNotify,
+        .display = g_display,
+        .event = c->window,
+        .window = c->window,
+        .x = c->last_size.x,
+        .y = c->last_size.y,
+        .width = MAX(c->last_size.width, WINDOW_MIN_WIDTH),
+        .height = MAX(c->last_size.height, WINDOW_MIN_HEIGHT),
+        .border_width = 0,
+        .above = None,
+        .override_redirect = False,
+    };
     XSendEvent(g_display, c->window, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
@@ -685,22 +670,11 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
         client_resize_fullscreen(client, m);
         return;
     }
-
-    // ensure minimal size
-    if (client->float_size.width < WINDOW_MIN_WIDTH)
-        client->float_size.width = WINDOW_MIN_WIDTH;
-    if (client->float_size.height < WINDOW_MIN_HEIGHT)
-        client->float_size.height = WINDOW_MIN_HEIGHT;
-
-    bool border_changed = false;
-    if (client->last_border_width != *g_window_border_width) {
-        client->last_border_width = *g_window_border_width;
-        border_changed = true;
-    }
     Rectangle rect = client->float_size;
-    rect.x += m->rect.x + m->pad_left;
-    rect.y += m->rect.y + m->pad_up;
-
+    rect.x += m->rect.x;
+    rect.x += m->rect.y;
+    rect.x += m->pad_left;
+    rect.y += m->pad_up;
     // ensure position is on monitor
     int space = g_monitor_float_treshold;
     rect.x =
@@ -711,35 +685,12 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
         CLAMP(rect.y,
               m->rect.y + m->pad_up - rect.height + space,
               m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
-    if (applysizehints_xy(client, &rect.x, &rect.y, &rect.width, &rect.height)) {
-        XMoveResizeWindow(g_display, client->window,
-            rect.x, rect.y, rect.width, rect.height);
-    }
-    if (border_changed) {
-        XSetWindowBorderWidth(g_display, client->window, *g_window_border_width);
-    }
-    // add window border to last_size
-    client->last_size = rect;
-    if (*g_window_border_inner_width > 0
-        && *g_window_border_inner_width < *g_window_border_width) {
-        unsigned long current_border_color = get_window_border_color(client);
-        HSDebug("client_resize %s\n",
-                current_border_color == g_window_border_active_color
-                ? "ACTIVE" : "NORMAL");
-        set_window_double_border(g_display, client->window,
-                                 *g_window_border_inner_width,
-                                 g_window_border_inner_color,
-                                 current_border_color);
-    }
-    client_send_configure(client);
-    XSync(g_display, False);
+    decoration_resize_inner(client, rect,
+        client_scheme_from_triple(client, HSDecSchemeFloating));
 }
 
 Rectangle client_outer_floating_rect(HSClient* client) {
-    Rectangle rect = client->float_size;
-    rect.width  += *g_window_border_width * 2 + *g_snap_gap;
-    rect.height += *g_window_border_width * 2 + *g_snap_gap;
-    return rect;
+    return inner_rect_to_outline(client->float_size, client->dec.last_scheme);
 }
 
 int close_command(int argc, char** argv, GString* output) {
@@ -781,12 +732,26 @@ void window_set_visible(Window win, bool visible) {
     XUngrabServer(g_display);
 }
 
-void window_show(Window win) {
-    window_set_visible(win, true);
-}
-
-void window_hide(Window win) {
-    window_set_visible(win, false);
+void client_set_visible(HSClient* client, bool visible) {
+    if (visible == client->visible) return;
+    if (visible) {
+        /* Grab the server to make sure that the frame window is mapped before
+           the client gets its MapNotify, i.e. to make sure the client is
+           _visible_ when it gets MapNotify. */
+        XGrabServer(g_display);
+        window_update_wm_state(client->window, WmStateNormalState);
+        XMapWindow(g_display, client->window);
+        XMapWindow(g_display, client->dec.decwin);
+        XUngrabServer(g_display);
+    } else {
+        /* we unmap the client itself so that we can get MapRequest
+           events, and because the ICCCM tells us to! */
+        XUnmapWindow(g_display, client->dec.decwin);
+        XUnmapWindow(g_display, client->window);
+        window_update_wm_state(client->window, WmStateWithdrawnState);
+        client->ignore_unmaps++;
+    }
+    client->visible = visible;
 }
 
 // heavily inspired by dwm.c
@@ -885,6 +850,7 @@ HSClient* get_current_client() {
 }
 
 void client_set_fullscreen(HSClient* client, bool state) {
+    if (client->fullscreen == state) return;
     client->fullscreen = state;
     if (client->ewmhnotify) {
         client->ewmhfullscreen = state;
@@ -945,26 +911,6 @@ int client_set_property_command(int argc, char** argv) {
         properties[i].func(client, state);
     }
     return 0;
-}
-
-void window_update_border(Window window, unsigned long color) {
-    if (*g_window_border_inner_width > 0
-        && *g_window_border_inner_width < *g_window_border_width) {
-        set_window_double_border(g_display, window,
-                                 *g_window_border_inner_width,
-                                 g_window_border_inner_color, color);
-    } else {
-        XSetWindowBorder(g_display, window, color);
-    }
-}
-
-unsigned long get_window_border_color(HSClient* client) {
-    unsigned long current_border_color = (client == frame_focused_client(g_cur_frame)
-                                          ? g_window_border_active_color
-                                          : g_window_border_normal_color);
-    if (client->urgent)
-        current_border_color = g_window_border_urgent_color;
-    return current_border_color;
 }
 
 static bool is_client_urgent(void* key, HSClient* client, void* data) {
