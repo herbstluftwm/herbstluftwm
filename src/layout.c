@@ -15,6 +15,7 @@
 #include "stack.h"
 #include "monitor.h"
 
+#include <glib.h>
 #include "glib-backports.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -1504,7 +1505,18 @@ int frame_focus_command(int argc, char** argv, GString* output) {
     }
     //HSFrame* frame = g_cur_frame;
     int index;
-    if (!external_only &&
+    if (g_cur_frame->tag->floating) {
+        enum HSDirection dir;
+        switch (direction) {
+            case 'u': dir = DirUp; break;
+            case 'r': dir = DirRight; break;
+            case 'l': dir = DirLeft; break;
+            case 'd': dir = DirDown; break;
+            default:
+                return HERBST_INVALID_ARGUMENT;
+        }
+        floating_focus_direction(dir);
+    } else if (!external_only &&
         (index = frame_inner_neighbour_index(g_cur_frame, direction)) != -1) {
         g_cur_frame->content.clients.selection = index;
         frame_focus_recursive(g_cur_frame);
@@ -1951,5 +1963,43 @@ bool smart_window_surroundings_active(HSFrame* frame) {
     return *g_smart_window_surroundings
             && (frame->content.clients.count == 1
                 || frame->content.clients.layout == LAYOUT_MAX);
+}
+
+static int collectclients_helper(HSClient* client, void* data) {
+    GQueue* q = data;
+    g_queue_push_tail(q, client);
+    return 0;
+}
+
+bool floating_focus_direction(enum HSDirection dir) {
+    HSTag* tag = g_cur_frame->tag;
+    GQueue* q = g_queue_new();
+    frame_foreach_client(tag->frame, collectclients_helper, q);
+    int cnt = q->length;
+    RectangleIdx* rects = g_new0(RectangleIdx, cnt);
+    int i = 0;
+    int curfocusidx = -1;
+    HSClient* curfocus = get_current_client();
+    bool success = true;
+    if (curfocus == NULL && cnt == 0) {
+        success = false;
+    }
+    for (GList* cur = q->head; cur != NULL; cur = cur->next, i++) {
+        HSClient* client = cur->data;
+        if (curfocus == client) curfocusidx = i;
+        rects[i].idx = i;
+        rects[i].r = client->dec.last_outer_rect;
+    }
+    int idx = (cnt > 0)
+              ? find_rectangle_in_direction(rects, cnt, curfocusidx, dir)
+              : 0;
+    if (idx < 0) success = false;
+    else {
+        HSClient* client = g_queue_peek_nth(q, idx);
+        focus_client(client, false, false);
+    }
+    g_free(rects);
+    g_queue_free(q);
+    return success;
 }
 

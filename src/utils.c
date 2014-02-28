@@ -484,13 +484,23 @@ int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx) {
     if (write_i == 0) return -1;
     // find the rectangle with the smallest distance to RC
     // 
+    int cx = RC.x + RC.width / 2;
     int cy = RC.y + RC.height / 2;
+    int idxbest = -1;
+    int distbest = INT_MAX;
     FOR (i,0,write_i) {
         Rectangle R2 = rects[i].r;
         int rcy = R2.y + R2.height / 2;
         int anchor_y = (rcy > cy) ? rcy : MIN(rcy + R2.height, cy);
+        int anchor_x = MAX(cx, R2.x);
+        // get manhatten distance to the anchor
+        int dist = abs(anchor_x - cx) + abs(anchor_y - cy);
+        if (dist < distbest) {
+            distbest = dist;
+            idxbest = rects[i].idx;
+        }
     }
-    return -1;
+    return idxbest;
 }
 
 static void subtree_print_to(HSTreeInterface* intface, char* indent,

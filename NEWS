@@ -13,6 +13,8 @@ Current git version
     * new split mode: auto
     * new attribute monitors.count indicating the number of monitors
     * new settings object with an attribute for each setting.
+    * directional focus for floating clients, i.e. switch between floating
+      windows via focus left|right|up|down.
 
 Release 0.5.3 on 2013-12-24
 ---------------------------
