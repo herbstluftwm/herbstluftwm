@@ -986,8 +986,7 @@ int frame_current_cycle_selection(int argc, char** argv) {
     index += count;
     index %= count;
     frame->content.clients.selection = index;
-    HSClient* client = frame->content.clients.buf[index];
-    client_window_focus(client);
+    monitor_apply_layout(get_current_monitor());
     return 0;
 }
 
