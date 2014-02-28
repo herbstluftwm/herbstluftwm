@@ -402,6 +402,10 @@ focus ['-i'|'-e'] 'DIRECTION'::
      / \   / \          |  A  ||  D  |
     A   B C*  D         '-----''-----'
 ----
+ ::
+    If 'focus_crosses_monitor_boundaries' is set and no client or frame is found
+    in the specified 'DIRECTION', then the next monitor in that 'DIRECTION' is
+    focused.
 
 focus_edge ['-i'|'-e'] 'DIRECTION'::
     Focuses the window on the edge of the tag in the specified 'DIRECTION'. The
@@ -885,6 +889,11 @@ frame_border_inner_width (Integer)::
     The width of the inner border of a frame. Must be less than
     frame_border_width, since it does not add to the frame border width but is a
     part of it.
+
+focus_crosses_monitor_boundaries (Integer)::
+    If set, the +focus+ command crosses monitor boundaries. If there is no
+    client in the direction given to +focus+, then the monitor in the specified
+    direction is focused.
 
 raise_on_focus (Integer)::
     If set, a window is raised if it is focused. The value of this setting is

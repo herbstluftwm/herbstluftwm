@@ -69,6 +69,7 @@ SettingsPair g_settings[] = {
     SET_INT(    "frame_border_inner_width",        0,           FR_COLORS   ),
     SET_INT(    "frame_active_opacity",            100,         FR_COLORS   ),
     SET_INT(    "frame_normal_opacity",            100,         FR_COLORS   ),
+    SET_INT(    "focus_crosses_monitor_boundaries", 1,          NULL        ),
     SET_INT(    "always_show_frame",               0,           RELAYOUT    ),
     SET_INT(    "default_direction_external_only", 0,           NULL        ),
     SET_INT(    "default_frame_layout",            0,           FR_COLORS   ),

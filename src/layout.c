@@ -42,6 +42,7 @@ int* g_direction_external_only;
 int* g_gapless_grid;
 int* g_smart_frame_surroundings;
 int* g_smart_window_surroundings;
+int* g_focus_crosses_monitor_boundaries;
 int* g_frame_padding;
 unsigned long g_frame_border_active_color;
 unsigned long g_frame_border_normal_color;
@@ -80,6 +81,7 @@ static void fetch_frame_colors() {
     g_gapless_grid = &(settings_find("gapless_grid")->value.i);
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
     g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
+    g_focus_crosses_monitor_boundaries = &(settings_find("focus_crosses_monitor_boundaries")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
     char* str = settings_find_string("frame_border_normal_color");
     g_frame_border_normal_color = getcolor(str);
@@ -1504,10 +1506,11 @@ int frame_focus_command(int argc, char** argv, GString* output) {
     }
     //HSFrame* frame = g_cur_frame;
     int index;
+    bool neighbour_found = true;
     if (g_cur_frame->tag->floating) {
         enum HSDirection dir = char_to_direction(direction);
         if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        floating_focus_direction(dir);
+        neighbour_found = floating_focus_direction(dir);
     } else if (!external_only &&
         (index = frame_inner_neighbour_index(g_cur_frame, direction)) != -1) {
         g_cur_frame->content.clients.selection = index;
@@ -1525,10 +1528,25 @@ int frame_focus_command(int argc, char** argv, GString* output) {
             frame_focus_recursive(parent);
             monitor_apply_layout(get_current_monitor());
         } else {
+            neighbour_found = false;
+        }
+    }
+    if (!neighbour_found && !*g_focus_crosses_monitor_boundaries) {
+        g_string_append_printf(output,
+            "%s: No neighbour found\n", argv[0]);
+        return HERBST_FORBIDDEN;
+    }
+    if (!neighbour_found && *g_focus_crosses_monitor_boundaries) {
+        // find monitor in the specified direction
+        enum HSDirection dir = char_to_direction(direction);
+        if (dir < 0) return HERBST_INVALID_ARGUMENT;
+        int idx = monitor_index_in_direction(get_current_monitor(), dir);
+        if (idx < 0) {
             g_string_append_printf(output,
                 "%s: No neighbour found\n", argv[0]);
             return HERBST_FORBIDDEN;
         }
+        monitor_focus_by_index(idx);
     }
     return 0;
 }
@@ -1935,8 +1953,11 @@ int frame_focus_edge(int argc, char** argv, GString* output) {
     // Puts the focus to the edge in the specified direction
     char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);
+    int oldval = *g_focus_crosses_monitor_boundaries;
+    *g_focus_crosses_monitor_boundaries = 0;
     while (0 == frame_focus_command(argc,argv,output))
         ;
+    *g_focus_crosses_monitor_boundaries = oldval;
     monitors_unlock_command(LENGTH(args), args);
     return 0;
 }
