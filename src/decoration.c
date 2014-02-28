@@ -49,8 +49,8 @@ void decorations_init() {
     g_decorations[HSDecSchemeFullscreen] = fs;
     HSDecTripple fl = {
         { 1, getcolor("black"),     true  },    // normal
-        { 4, getcolor("green"),     true  },    // active
-        { 1, getcolor("orange"),    true  },    // urgent
+        { 4, getcolor("black"),     true  },    // active
+        { 1, getcolor("black"),     true  },    // urgent
     };
     g_decorations[HSDecSchemeFloating] = fl;
     HSDecTripple minimal = {
