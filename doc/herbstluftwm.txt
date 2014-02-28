@@ -139,6 +139,9 @@ A monitor can be referenced in different ways:
 
     * by its absolute index as listed in the *list_monitors* command.
     * by its relative index: a +++ or +-+ followed by a delta, e.g.: +3
+    * by its relative position to the focused monitor. +-l+ denotes the monitor
+      left of the focused monitor, +-r+ right of, +-u+ above of, and +-d+ below
+      of, respectively.
     * by "" (an empty string) which represents the current monitor.
     * by its name.
 

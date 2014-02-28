@@ -106,6 +106,7 @@ typedef struct {
     int       idx;
 } RectangleIdx;
 
+enum HSDirection char_to_direction(char ch);
 int find_rectangle_in_direction(RectangleIdx* rects, size_t cnt, int idx,
                                 enum HSDirection dir);
 int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx);

@@ -1505,15 +1505,8 @@ int frame_focus_command(int argc, char** argv, GString* output) {
     //HSFrame* frame = g_cur_frame;
     int index;
     if (g_cur_frame->tag->floating) {
-        enum HSDirection dir;
-        switch (direction) {
-            case 'u': dir = DirUp; break;
-            case 'r': dir = DirRight; break;
-            case 'l': dir = DirLeft; break;
-            case 'd': dir = DirDown; break;
-            default:
-                return HERBST_INVALID_ARGUMENT;
-        }
+        enum HSDirection dir = char_to_direction(direction);
+        if (dir < 0) return HERBST_INVALID_ARGUMENT;
         floating_focus_direction(dir);
     } else if (!external_only &&
         (index = frame_inner_neighbour_index(g_cur_frame, direction)) != -1) {

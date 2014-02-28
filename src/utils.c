@@ -401,6 +401,16 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     XFreePixmap(dpy, pix);
 }
 
+enum HSDirection char_to_direction(char ch) {
+    switch (ch) {
+        case 'u': return DirUp;
+        case 'r': return DirRight;
+        case 'l': return DirLeft;
+        case 'd': return DirDown;
+        default:  return -1;
+    }
+}
+
 int find_rectangle_in_direction(RectangleIdx* rects, size_t cnt, int idx,
                                 enum HSDirection dir) {
     switch (dir) {

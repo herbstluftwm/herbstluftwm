@@ -15,6 +15,7 @@ Current git version
     * new settings object with an attribute for each setting.
     * directional focus for floating clients, i.e. switch between floating
       windows via focus left|right|up|down.
+    * directional monitor focusing
 
 Release 0.5.3 on 2013-12-24
 ---------------------------

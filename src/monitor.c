@@ -363,12 +363,20 @@ int string_to_monitor_index(char* string) {
     if (string[0] == '\0') {
         return g_cur_monitor;
     } else if (string[0] == '-' || string[0] == '+') {
-        // relative monitor index
-        int idx = g_cur_monitor + atoi(string);
-        idx %= g_monitors->len;
-        idx += g_monitors->len;
-        idx %= g_monitors->len;
-        return idx;
+        if (isdigit(string[1])) {
+            // relative monitor index
+            int idx = g_cur_monitor + atoi(string);
+            idx %= g_monitors->len;
+            idx += g_monitors->len;
+            idx %= g_monitors->len;
+            return idx;
+        } else if (string[0] == '-') {
+            enum HSDirection dir = char_to_direction(string[1]);
+            if (dir < 0) return -1;
+            return monitor_index_in_direction(get_current_monitor(), dir);
+        } else {
+            return -1;
+        }
     } else if (isdigit(string[0])) {
         // absolute monitor index
         int idx = atoi(string);
@@ -380,6 +388,21 @@ int string_to_monitor_index(char* string) {
         // monitor string
         return find_monitor_index_by_name(string);
     }
+}
+
+int monitor_index_in_direction(HSMonitor* m, enum HSDirection dir) {
+    int cnt = monitor_count();
+    RectangleIdx* rects = g_new0(RectangleIdx, cnt);
+    int relidx = -1;
+    FOR (i,0,cnt) {
+        rects[i].idx = i;
+        rects[i].r = monitor_with_index(i)->rect;
+        if (monitor_with_index(i) == m) relidx = i;
+    }
+    HSAssert(relidx >= 0);
+    int result = find_rectangle_in_direction(rects, cnt, relidx, dir);
+    g_free(rects);
+    return result;
 }
 
 HSMonitor* string_to_monitor(char* string) {
@@ -906,7 +929,7 @@ int monitor_focus_command(int argc, char** argv, GString* output) {
         return HERBST_NEED_MORE_ARGS;
     }
     int new_selection = string_to_monitor_index(argv[1]);
-    if (new_selection == -1) {
+    if (new_selection < 0) {
         g_string_append_printf(output,
             "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
