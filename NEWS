@@ -16,6 +16,8 @@ Current git version
     * directional focus for floating clients, i.e. switch between floating
       windows via focus left|right|up|down.
     * directional monitor focusing
+    * new detect_monitors flags: --list -l --no-disjoin while detect_monitors
+      does disjoin_rects on the detected monitors per default.
 
 Release 0.5.3 on 2013-12-24
 ---------------------------

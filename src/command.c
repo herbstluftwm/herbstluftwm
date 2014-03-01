@@ -38,6 +38,8 @@ static char* completion_special_winids[]= { "urgent", "", NULL };
 static char* completion_use_index_args[]= { "--skip-visible", NULL };
 static char* completion_cycle_all_args[]= { "--skip-invisible", NULL };
 static char* completion_pm_one[]= { "+1", "-1", NULL };
+static char* completion_detect_monitors_args[] =
+    { "-l", "--list", "--no-disjoin", /* TODO: "--keep-small", */ NULL };
 static char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", NULL };
 static char* completion_split_ratios[]= {
     "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", NULL };
@@ -116,7 +118,6 @@ struct {
     { "move_index",     3,  no_completion },
     { "lock_tag",       2,  no_completion },
     { "unlock_tag",     2,  no_completion },
-    { "detect_monitors",1,  no_completion },
     { "add_monitor",    7,  no_completion },
     { "rename_monitor", 3,  no_completion },
     { "remove_monitor", 2,  no_completion },
@@ -182,6 +183,7 @@ struct {
     { "cycle_all",      EQ, 2,  .list = completion_pm_one },
     { "cycle_monitor",  EQ, 1,  .list = completion_pm_one },
     { "dump",           EQ, 1,  .function = complete_against_tags },
+    { "detect_monitors", GE, 1,  .list = completion_detect_monitors_args },
     { "floating",       EQ, 1,  .function = complete_against_tags },
     { "floating",       EQ, 1,  .list = completion_flag_args },
     { "floating",       EQ, 1,  .list = completion_status },
