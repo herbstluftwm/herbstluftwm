@@ -2009,6 +2009,7 @@ bool floating_focus_direction(enum HSDirection dir) {
     if (idx < 0) success = false;
     else {
         HSClient* client = g_queue_peek_nth(q, idx);
+        client_raise(client);
         focus_client(client, false, false);
     }
     g_free(rects);

@@ -15,7 +15,8 @@ Current git version
     * new attribute monitors.count indicating the number of monitors
     * new settings object with an attribute for each setting.
     * directional focus for floating clients, i.e. switch between floating
-      windows via focus left|right|up|down.
+      windows via focus left|right|up|down. It also raises the freshly focused
+      window.
     * directional monitor focusing
     * new detect_monitors flags: --list -l --no-disjoin while detect_monitors
       does disjoin_rects on the detected monitors per default.
