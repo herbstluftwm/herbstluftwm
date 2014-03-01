@@ -4,6 +4,7 @@ herbstluftwm NEWS -- History of user-visible changes
 Current git version
 -------------------
 
+    * Add window decorations, configurable via the theme-object
     * The tag attributes curframe_windex and curframe_wcount have been removed,
       they are replaced by the more general attributes frames.focus.windex
       frames.focus.wcount.

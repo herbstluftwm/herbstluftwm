@@ -1367,6 +1367,64 @@ listed as follows:
 
   * +settings+ has an attribute for each setting. See <<SETTINGS,*SETTINGS*>>
     for a list.
+  * +theme+ has attributes to configure the window decorations. Many objects
+    have the following attributes
++
+[format="csv",cols="m,"]
+|===========================
+ s - name                 , its name
+ i - index                , its index
+ s - tag                  , the tag currently viewed on it
+ b - lock_tag             ,
+ i w border_width         , the base width of the border
+ i w padding_top          , additional border width on the top
+ i w padding_right        , on the right
+ i w padding_bottom       , on the bottom
+ i w padding_left         , and on the left of the border
+ c w color                , the basic background color of the border
+ i w inner_width          , width of the border around the clients content
+ c w inner_color          , its color
+ i w outer_width          , width of an additional border close to the edge
+ c w outer_color          , its color
+ s w reset                , Writing this resets all attributes to a default value
+|===========================
++
+----
+inner_color/inner_width
+      ╻        outer_color/outer_width
+      │                  ╻
+      │                  │
+┌────╴│╶─────────────────┷─────┐ ⎫ border_width
+│     │      color             │ ⎬     +
+│  ┌──┷─────────────────────┐  │ ⎭ padding_top
+│  │::::::::::::::::::::::::│  │
+│  │::::::::::::::::::::::::│  │
+│  │:::: window content ::::│  │
+│  │::::::::::::::::::::::::│  │
+│  │::::::::::::::::::::::::│  │
+│  └────────────────────────┘  │ ⎱ border_width +
+└──────────────────────────────┘ ⎰ padding_bottom
+----
++
+Setting an attribute of the +theme+ object just propagates the value to the
+respective attribute of the +tiling+ and the +floating+ object.
+
+    ** +tiling+ configures the decoration of tiled clients, setting one of its
+       attributes propagates the respective attribute of the +active+, +normal+
+       and +urgent+ child objects.
+
+       *** +active+ configures the decoration of focused and tiled clients
+       *** +normal+ configures the decoration of unfocused and tiled clients
+       *** +urgent+ configures the decoration of urgent and tiled clients
+
+   ** +floating+ behavious analogously to +tiling+
+   ** +active+ propagates the attribute values to +tiling.active+ and
+      +floating.active+
+   ** +normal+ propagates the attribute values to +tiling.normal+ and
+      +floating.normal+
+   ** +urgent+ propagates the attribute values to +tiling.urgent+ and
+      +floating.urgent+
+
 
 AUTOSTART FILE
 --------------
