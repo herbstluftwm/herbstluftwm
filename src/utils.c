@@ -422,6 +422,13 @@ int find_rectangle_in_direction(RectangleIdx* rects, size_t cnt, int idx,
                 Rectangle* r = &(rects[i].r);
                 r->y = - r->y - r->height;
             }
+            // and flip order to reverse the order for rectangles with the same
+            // center
+            for (int i = 0; i < (cnt - 1 - i); i++) {
+                int j = (cnt - 1 - i);
+                SWAP(RectangleIdx, rects[i], rects[j]);
+            }
+            idx = cnt - 1 - idx;
             // and then find next rectangle below it
         case DirDown:
             // flip by the diagonal
@@ -445,6 +452,13 @@ int find_rectangle_in_direction(RectangleIdx* rects, size_t cnt, int idx,
                 Rectangle* r = &(rects[i].r);
                 r->x = - r->x - r->width;
             }
+            // and flip order to reverse the order for rectangles with the same
+            // center
+            for (int i = 0; i < (cnt - 1 - i); i++) {
+                int j = (cnt - 1 - i);
+                SWAP(RectangleIdx, rects[i], rects[j]);
+            }
+            idx = cnt - 1 - idx;
             return find_rectangle_right_of(rects, cnt, idx);
     }
     return -1;
@@ -473,41 +487,53 @@ static bool rectangle_is_right_of(Rectangle RC, Rectangle R2) {
     if (abs(rcy) > rcx) return false;
     if (rcx == 0 && rcy == 0) {
         // if centers match, then disallow R2 to have a larger width
-        if (R2.width > RC.width) return false;
+        return true;
     }
     return true;
 }
 
 int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx) {
     Rectangle RC = rects[idx].r;
+    int cx = RC.x + RC.width / 2;
+    int cy = RC.y + RC.height / 2;
     int write_i = 0; // next rectangle to write
     // filter out rectangles not right of RC
     FOR (i,0,cnt) {
         if (idx == i) continue;
         Rectangle R2 = rects[i].r;
+        int rcx = R2.x + R2.width / 2;
+        int rcy = R2.y + R2.height / 2;
         if (!rectangle_is_right_of(RC, R2)) continue;
+        // if two rectangles have exactly the same geometry, then sort by index
+        // compare centers and not topleft corner because rectangle_is_right_of
+        // does it the same way
+        if (rcx == cx && rcy == cy) {
+            if (i < idx) continue;
+        }
         if (i == write_i) { write_i++; }
         else {
             rects[write_i++] = rects[i];
         }
     }
-    if (write_i == 0) return -1;
     // find the rectangle with the smallest distance to RC
-    // 
-    int cx = RC.x + RC.width / 2;
-    int cy = RC.y + RC.height / 2;
+    if (write_i == 0) return -1;
     int idxbest = -1;
+    int ibest = -1;
     int distbest = INT_MAX;
     FOR (i,0,write_i) {
         Rectangle R2 = rects[i].r;
+        int rcx = R2.x + R2.width / 2;
         int rcy = R2.y + R2.height / 2;
-        int anchor_y = (rcy > cy) ? rcy : MIN(rcy + R2.height, cy);
-        int anchor_x = MAX(cx, R2.x);
+                            // another method that checks the closes point
+        int anchor_y = rcy; // (rcy > cy) ? rcy : MIN(rcy + R2.height, cy);
+        int anchor_x = rcx; // MAX(cx, R2.x);
         // get manhatten distance to the anchor
         int dist = abs(anchor_x - cx) + abs(anchor_y - cy);
-        if (dist < distbest) {
+        if (dist < distbest
+            || (dist == distbest && ibest > i)) {
             distbest = dist;
             idxbest = rects[i].idx;
+            ibest = i;
         }
     }
     return idxbest;
