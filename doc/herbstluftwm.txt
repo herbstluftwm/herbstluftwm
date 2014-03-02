@@ -1371,15 +1371,11 @@ listed as follows:
 
   * +settings+ has an attribute for each setting. See <<SETTINGS,*SETTINGS*>>
     for a list.
-  * +theme+ has attributes to configure the window decorations. Many objects
-    have the following attributes
+  * +theme+ has attributes to configure the window decorations. +theme+ and many
+    of its child objects have the following attributes
 +
 [format="csv",cols="m,"]
 |===========================
- s - name                 , its name
- i - index                , its index
- s - tag                  , the tag currently viewed on it
- b - lock_tag             ,
  i w border_width         , the base width of the border
  i w padding_top          , additional border width on the top
  i w padding_right        , on the right
