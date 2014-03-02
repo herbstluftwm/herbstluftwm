@@ -681,7 +681,6 @@ int frame_current_set_client_layout(int argc, char** argv, GString* output) {
 void frame_apply_client_layout_linear(HSFrame* frame, Rectangle rect, bool vertical) {
     HSClient** buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
-    int selection = frame->content.clients.selection;
     Rectangle cur = rect;
     int last_step_y;
     int last_step_x;
