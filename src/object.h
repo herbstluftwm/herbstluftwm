@@ -75,6 +75,8 @@ typedef struct HSAttribute {
     HSAttrCallback on_change;
     GString* (*change_custom)(struct HSAttribute* attr, const char* new_value);
     bool user_attribute;    /* if this attribute was added by the user */
+    bool           always_callback; /* call on_change/change_custom on earch write,
+                                     * even if the value did not change */
     /* save the user_data at a constant position that is not shifted when
      * realloc'ing the HSAttribute */
     HSAttributeValue* user_data; /* data needed for user attributes */
@@ -90,6 +92,7 @@ typedef struct HSAttribute {
       .on_change = (CHANGE),    \
       .change_custom = NULL,    \
       .user_attribute = false,  \
+      .always_callback = false, \
       .user_data = NULL,        \
       .data = NULL,             \
     }
@@ -112,6 +115,7 @@ typedef struct HSAttribute {
       .unparsed_value = NULL,       \
       .on_change = NULL,            \
       .change_custom = (CHANGE),    \
+      .always_callback = false, \
       .user_attribute = false,      \
       .user_data = NULL,            \
       .data = NULL,                 \
@@ -124,6 +128,7 @@ typedef struct HSAttribute {
       .unparsed_value = NULL,       \
       .on_change = NULL,            \
       .change_custom = (CHANGE),    \
+      .always_callback = false, \
       .user_attribute = false,      \
       .user_data = NULL,            \
       .data = NULL,                 \
@@ -136,6 +141,7 @@ typedef struct HSAttribute {
       .unparsed_value = g_string_new(""),   \
       .on_change = (CHANGE),                \
       .change_custom = NULL,                \
+      .always_callback = false, \
       .user_attribute = false,              \
       .user_data = NULL,                    \
       .data = NULL,                         \
@@ -174,6 +180,7 @@ GString* ATTR_ACCEPT_ALL(HSAttribute* attr);
 
 HSObject* hsobject_find_child(HSObject* obj, const char* name);
 HSAttribute* hsobject_find_attribute(HSObject* obj, const char* name);
+void hsobject_set_attributes_always_callback(HSObject* obj);
 
 char hsattribute_type_indicator(int type);
 

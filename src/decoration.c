@@ -74,7 +74,11 @@ void decorations_init() {
     init_scheme_object(&g_theme_active_object, &g_theme_active_scheme, PROP2MEMBERS);
     init_scheme_object(&g_theme_normal_object, &g_theme_normal_scheme, PROP2MEMBERS);
     init_scheme_object(&g_theme_urgent_object, &g_theme_urgent_scheme, PROP2MEMBERS);
+    hsobject_set_attributes_always_callback(&g_theme_active_object);
+    hsobject_set_attributes_always_callback(&g_theme_normal_object);
+    hsobject_set_attributes_always_callback(&g_theme_urgent_object);
     init_scheme_attributes(g_theme_object, &g_theme_scheme, PROP2MEMBERS);
+    hsobject_set_attributes_always_callback(g_theme_object);
     hsobject_link(g_theme_object, &g_theme_active_object, "active");
     hsobject_link(g_theme_object, &g_theme_normal_object, "normal");
     hsobject_link(g_theme_object, &g_theme_urgent_object, "urgent");
@@ -209,6 +213,7 @@ static void init_dec_tripple_object(HSDecTripple* t, const char* name) {
     hsobject_link(&t->object, &t->obj_urgent, "urgent");
     memset(&t->propagate, 0, sizeof(t->propagate));
     init_scheme_attributes(&t->object, &t->propagate, PROPAGATE);
+    hsobject_set_attributes_always_callback(&t->object);
     t->object.data = t;
     hsobject_link(g_theme_object, &t->object, name);
 }

@@ -229,6 +229,12 @@ HSAttribute* hsobject_find_attribute(HSObject* obj, const char* name) {
     return NULL;
 }
 
+void hsobject_set_attributes_always_callback(HSObject* obj) {
+    for (int i = 0; i < obj->attribute_count; i++) {
+        obj->attributes[i].always_callback = true;
+    }
+}
+
 static void print_child_name(HSObjectChild* child, GString* output) {
     g_string_append_printf(output, "  %s%c\n", child->name, OBJECT_PATH_SEPARATOR);
 }
@@ -599,6 +605,9 @@ int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* ou
     }
     if (error) {
         return HERBST_INVALID_ARGUMENT;
+    }
+    if (attr->always_callback) {
+        nothing_to_do = false; // pretend that there was a change
     }
     if (nothing_to_do) {
         return 0;
