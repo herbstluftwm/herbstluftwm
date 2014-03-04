@@ -35,24 +35,28 @@ void decorations_init() {
     g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
     g_decwin2client = g_hash_table_new(g_int_hash, g_int_equal);
     // init default schemes
+    // tiling //
     HSDecTripple tiling = {
         { 2, getcolor("black"),     false },    // normal
         { 2, getcolor("green"),     false },    // active
         { 2, getcolor("orange"),    false },    // urgent
     };
     g_decorations[HSDecSchemeTiling] = tiling;
+    // fullscreen //
     HSDecTripple fs = {
         { 0, getcolor("black"),     false },    // normal
-        { 0, getcolor("green"),     false },    // active
-        { 0, getcolor("orange"),    false },    // urgent
+        { 0, getcolor("black"),     false },    // active
+        { 0, getcolor("black"),     false },    // urgent
     };
     g_decorations[HSDecSchemeFullscreen] = fs;
+    // floating //
     HSDecTripple fl = {
         { 1, getcolor("black"),     true  },    // normal
-        { 4, getcolor("black"),     true  },    // active
-        { 1, getcolor("black"),     true  },    // urgent
+        { 4, getcolor("green"),     true  },    // active
+        { 1, getcolor("orange"),    true  },    // urgent
     };
     g_decorations[HSDecSchemeFloating] = fl;
+    // minimal //
     HSDecTripple minimal = {
         { 0, getcolor("black"),     true  },    // normal
         { 0, getcolor("green"),     true  },    // active
