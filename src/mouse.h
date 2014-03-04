@@ -23,6 +23,7 @@ enum SnapFlags {
 
 // forward declarations
 struct HSClient;
+struct HSMonitor;
 struct HSTag;
 
 void mouse_init();
@@ -49,14 +50,16 @@ MouseFunction string2mousefunction(char* name);
 
 void grab_client_buttons(struct HSClient* client, bool focused);
 
-void mouse_start_drag_by_event(XEvent* ev);
-void mouse_start_drag(Window win, MouseFunction function);
+void mouse_handle_event(XEvent* ev);
+void mouse_initiate_drag(struct HSClient* client, MouseFunction function);
+void mouse_initiate_move(struct HSClient* client);
+void mouse_initiate_resize(struct HSClient* client);
 void mouse_stop_drag();
 bool mouse_is_dragging();
 void handle_motion_event(XEvent* ev);
 
 // get the vector to snap a client to it's neighbour
-void client_snap_vector(struct HSClient* client, struct HSTag* tag,
+void client_snap_vector(struct HSClient* client, struct HSMonitor* monitor,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy);
 

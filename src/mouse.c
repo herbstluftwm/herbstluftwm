@@ -58,25 +58,31 @@ void mouse_destroy() {
     XFreeCursor(g_display, g_cursor);
 }
 
-void mouse_start_drag_by_event(XEvent* ev) {
+void mouse_handle_event(XEvent* ev) {
     XButtonEvent* be = &(ev->xbutton);
     MouseBinding* b = mouse_binding_find(be->state, be->button);
-    if (!b) {
+    HSClient* client = get_client_from_window(ev->xbutton.window);
+    if (!b || !client) {
         // there is no valid bind for this type of mouse event
         return;
     }
-    mouse_start_drag(ev->xbutton.window, b->function);
+    mouse_initiate_drag(client, b->function);
 }
 
-void mouse_start_drag(Window win, MouseFunction function) {
+void mouse_initiate_move(HSClient* client) {
+    mouse_initiate_drag(client, mouse_function_move);
+}
+
+void mouse_initiate_resize(HSClient* client) {
+    mouse_initiate_drag(client, mouse_function_resize);
+}
+
+
+void mouse_initiate_drag(HSClient* client, MouseFunction function) {
     g_drag_function = function;
-    g_win_drag_client = get_client_from_window(win);
-    if (!g_win_drag_client) {
-        g_drag_function = NULL;
-        return;
-    }
-    g_drag_monitor = find_monitor_with_tag(g_win_drag_client->tag);
-    if (!g_drag_monitor || g_win_drag_client->tag->floating == false) {
+    g_win_drag_client = client;
+    g_drag_monitor = find_monitor_with_tag(client->tag);
+    if (!g_drag_monitor || client->tag->floating == false) {
         // only can drag wins in  floating mode
         g_win_drag_client = NULL;
         g_drag_function = NULL;
@@ -85,7 +91,7 @@ void mouse_start_drag(Window win, MouseFunction function) {
     g_win_drag_client->dragged = true;
     g_win_drag_start = g_win_drag_client->float_size;
     g_button_drag_start = get_cursor_position();
-    XGrabPointer(g_display, win, True,
+    XGrabPointer(g_display, client->window, True,
         PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
             GrabModeAsync, None, None, CurrentTime);
 }
@@ -266,7 +272,7 @@ void mouse_function_move(XMotionEvent* me) {
     g_win_drag_client->float_size.y += y_diff;
     // snap it to other windows
     int dx, dy;
-    client_snap_vector(g_win_drag_client, g_win_drag_client->tag,
+    client_snap_vector(g_win_drag_client, g_drag_monitor,
                        SNAP_EDGE_ALL, &dx, &dy);
     g_win_drag_client->float_size.x += dx;
     g_win_drag_client->float_size.y += dy;
@@ -320,7 +326,7 @@ void mouse_function_resize(XMotionEvent* me) {
     else        snap_flags |= SNAP_EDGE_RIGHT;
     if (top)    snap_flags |= SNAP_EDGE_TOP;
     else        snap_flags |= SNAP_EDGE_BOTTOM;
-    client_snap_vector(g_win_drag_client, g_win_drag_client->tag,
+    client_snap_vector(g_win_drag_client, g_drag_monitor,
                        snap_flags, &dx, &dy);
     if (left) {
         g_win_drag_client->float_size.x += dx;
@@ -366,9 +372,9 @@ void mouse_function_zoom(XMotionEvent* me) {
     int right_dx, bottom_dy;
     int left_dx, top_dy;
     // we have to distinguish the direction in which we zoom
-    client_snap_vector(g_win_drag_client, g_win_drag_client->tag,
+    client_snap_vector(g_win_drag_client, m,
                      SNAP_EDGE_BOTTOM | SNAP_EDGE_RIGHT, &right_dx, &bottom_dy);
-    client_snap_vector(g_win_drag_client, g_win_drag_client->tag,
+    client_snap_vector(g_win_drag_client, m,
                        SNAP_EDGE_TOP | SNAP_EDGE_LEFT, &left_dx, &top_dy);
     // e.g. if window snaps by vector (3,3) at topleft, window has to be shrinked
     // but if the window snaps by vector (3,3) at bottomright, window has to grow
@@ -420,7 +426,12 @@ static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
         return 0;
     }
     Rectangle subject  = d->rect;
-    Rectangle other    = client_outer_floating_rect(candidate);
+    Rectangle other    = candidate->dec.last_outer_rect;
+    // increase other by snap gap
+    other.x -= *g_snap_gap;
+    other.y -= *g_snap_gap;
+    other.width += *g_snap_gap * 2;
+    other.height += *g_snap_gap * 2;
     if (intervals_intersect(other.y, other.y + other.height, subject.y, subject.y + subject.height)) {
         // check if x can snap to the right
         if (d->flags & SNAP_EDGE_RIGHT) {
@@ -445,10 +456,11 @@ static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
 }
 
 // get the vector to snap a client to it's neighbour
-void client_snap_vector(struct HSClient* client, struct HSTag* tag,
+void client_snap_vector(struct HSClient* client, struct HSMonitor* monitor,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy) {
     struct SnapData d;
+    HSTag* tag = monitor->tag;
     int distance = (*g_snap_distance > 0) ? *g_snap_distance : 0;
     // init delta
     *return_dx = 0;
@@ -458,7 +470,10 @@ void client_snap_vector(struct HSClient* client, struct HSTag* tag,
         return;
     }
     d.client    = client;
+    // translate client rectangle to global coordinates
     d.rect      = client_outer_floating_rect(client);
+    d.rect.x += monitor->rect.x + monitor->pad_left;
+    d.rect.y += monitor->rect.y + monitor->pad_up;
     d.flags     = flags;
     d.dx        = distance;
     d.dy        = distance;
@@ -466,16 +481,16 @@ void client_snap_vector(struct HSClient* client, struct HSTag* tag,
     // snap to monitor edges
     HSMonitor* m = g_drag_monitor;
     if (flags & SNAP_EDGE_TOP) {
-        snap_1d(d.rect.y, *g_snap_gap, &d.dy);
+        snap_1d(d.rect.y, m->rect.y + m->pad_up + *g_snap_gap, &d.dy);
     }
     if (flags & SNAP_EDGE_LEFT) {
-        snap_1d(d.rect.x, *g_snap_gap, &d.dx);
+        snap_1d(d.rect.x, m->rect.x + m->pad_left + *g_snap_gap, &d.dx);
     }
     if (flags & SNAP_EDGE_RIGHT) {
-        snap_1d(d.rect.x + d.rect.width, m->rect.width - m->pad_left - m->pad_right, &d.dx);
+        snap_1d(d.rect.x + d.rect.width, m->rect.x + m->rect.width - m->pad_right - *g_snap_gap, &d.dx);
     }
     if (flags & SNAP_EDGE_BOTTOM) {
-        snap_1d(d.rect.y + d.rect.height, m->rect.height - m->pad_up - m->pad_down, &d.dy);
+        snap_1d(d.rect.y + d.rect.height, m->rect.y + m->rect.height - m->pad_down - *g_snap_gap, &d.dy);
     }
 
     // snap to other clients

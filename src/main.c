@@ -767,7 +767,7 @@ void buttonpress(XEvent* event) {
     XButtonEvent* be = &(event->xbutton);
     HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
     if (mouse_binding_find(be->state, be->button)) {
-        mouse_start_drag_by_event(event);
+        mouse_handle_event(event);
     } else {
         HSClient* client = get_client_from_window(be->window);
         if (client) {
