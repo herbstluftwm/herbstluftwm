@@ -28,7 +28,7 @@ static Point2D          g_button_drag_start;
 static Rectangle        g_win_drag_start;
 static HSClient*        g_win_drag_client = NULL;
 static HSMonitor*       g_drag_monitor = NULL;
-static MouseFunction    g_drag_function = NULL;
+static MouseDragFunction g_drag_function = NULL;
 
 static Cursor g_cursor;
 static GList* g_mouse_binds = NULL;
@@ -66,19 +66,26 @@ void mouse_handle_event(XEvent* ev) {
         // there is no valid bind for this type of mouse event
         return;
     }
-    mouse_initiate_drag(client, b->function);
+    b->action(client, b->argc, b->argv);
 }
 
-void mouse_initiate_move(HSClient* client) {
+void mouse_initiate_move(HSClient* client, int argc, char** argv) {
+    (void) argc; (void) argv;
     mouse_initiate_drag(client, mouse_function_move);
 }
 
-void mouse_initiate_resize(HSClient* client) {
+void mouse_initiate_zoom(HSClient* client, int argc, char** argv) {
+    (void) argc; (void) argv;
+    mouse_initiate_drag(client, mouse_function_zoom);
+}
+
+void mouse_initiate_resize(HSClient* client, int argc, char** argv) {
+    (void) argc; (void) argv;
     mouse_initiate_drag(client, mouse_function_resize);
 }
 
 
-void mouse_initiate_drag(HSClient* client, MouseFunction function) {
+void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
     g_drag_function = function;
     g_win_drag_client = client;
     g_drag_monitor = find_monitor_with_tag(client->tag);
@@ -128,21 +135,15 @@ bool mouse_is_dragging() {
     return g_drag_function != NULL;
 }
 
-void mouse_bind_function(unsigned int modifiers, unsigned int button,
-                         MouseFunction function) {
-    MouseBinding* mb = g_new(MouseBinding, 1);
-    mb->button = button;
-    mb->modifiers = modifiers;
-    mb->function = function;
-    g_mouse_binds = g_list_prepend(g_mouse_binds, mb);
-    HSClient* client = get_current_client();
-    if (client) {
-        grab_client_buttons(client, true);
-    }
+static void mouse_binding_free(void* voidmb) {
+    MouseBinding* mb = voidmb;
+    if (!mb) return;
+    argv_free(mb->argc, mb->argv);
+    g_free(mb);
 }
 
 int mouse_unbind_all() {
-    g_list_free_full(g_mouse_binds, g_free);
+    g_list_free_full(g_mouse_binds, mouse_binding_free);
     g_mouse_binds = NULL;
     HSClient* client = get_current_client();
     if (client) {
@@ -186,7 +187,19 @@ int mouse_bind_command(int argc, char** argv, GString* output) {
             "%s: Unknown mouse action \"%s\"\n", argv[0], argv[2]);
         return HERBST_INVALID_ARGUMENT;
     }
-    mouse_bind_function(modifiers, button, function);
+
+    // actually create a binding
+    MouseBinding* mb = g_new(MouseBinding, 1);
+    mb->button = button;
+    mb->modifiers = modifiers;
+    mb->action = function;
+    mb->argc = argc - 3;
+    mb->argv = argv_duplicate(argc - 3, argv + 3);;
+    g_mouse_binds = g_list_prepend(g_mouse_binds, mb);
+    HSClient* client = get_current_client();
+    if (client) {
+        grab_client_buttons(client, true);
+    }
     return 0;
 }
 
@@ -195,9 +208,9 @@ MouseFunction string2mousefunction(char* name) {
         char* name;
         MouseFunction function;
     } table[] = {
-        { "move",       mouse_function_move },
-        { "zoom",       mouse_function_zoom },
-        { "resize",     mouse_function_resize },
+        { "move",       mouse_initiate_move },
+        { "zoom",       mouse_initiate_zoom },
+        { "resize",     mouse_initiate_resize },
     };
     int i;
     for (i = 0; i < LENGTH(table); i++) {

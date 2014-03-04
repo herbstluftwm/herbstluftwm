@@ -400,7 +400,7 @@ void ewmh_handle_client_message(XEvent* event) {
         case NetWmMoveresize:
             // TODO: handle requests more exactly
             client = get_client_from_window(me->window);
-            mouse_initiate_resize(client);
+            mouse_initiate_resize(client, 0, NULL);
             break;
 
         default:

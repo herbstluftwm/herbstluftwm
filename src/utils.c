@@ -164,6 +164,7 @@ bool window_has_property(Display* dpy, Window window, char* prop_name) {
 
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv) {
+    if (argc <= 0) return NULL;
     char** new_argv = malloc(sizeof(char*) * argc);
     if (!new_argv) {
         die("cannot malloc - there is no memory available\n");
@@ -177,6 +178,7 @@ char** argv_duplicate(int argc, char** argv) {
 
 // frees all entries in argument-vector and then the vector itself
 void argv_free(int argc, char** argv) {
+    if (argc <= 0) return;
     int i;
     for (i = 0; i < argc; i++) {
         free(argv[i]);

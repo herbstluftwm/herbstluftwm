@@ -29,18 +29,20 @@ struct HSTag;
 void mouse_init();
 void mouse_destroy();
 
-typedef void (*MouseFunction)(XMotionEvent*);
+
+typedef void (*MouseDragFunction)(XMotionEvent*);
+typedef void (*MouseFunction)(struct HSClient* client, int argc, char** argv);
 
 typedef struct MouseBinding {
     unsigned int modifiers;
     unsigned int button;
-    MouseFunction function;
+    MouseFunction action;
+    int     argc; // additional arguments
+    char**  argv;
 } MouseBinding;
 
 int mouse_binding_equals(MouseBinding* a, MouseBinding* b);
 
-void mouse_bind_function(unsigned int modifiers, unsigned int button,
-                         MouseFunction function);
 int mouse_bind_command(int argc, char** argv, GString* output);
 int mouse_unbind_all();
 MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button);
@@ -51,9 +53,7 @@ MouseFunction string2mousefunction(char* name);
 void grab_client_buttons(struct HSClient* client, bool focused);
 
 void mouse_handle_event(XEvent* ev);
-void mouse_initiate_drag(struct HSClient* client, MouseFunction function);
-void mouse_initiate_move(struct HSClient* client);
-void mouse_initiate_resize(struct HSClient* client);
+void mouse_initiate_drag(struct HSClient* client, MouseDragFunction function);
 void mouse_stop_drag();
 bool mouse_is_dragging();
 void handle_motion_event(XEvent* ev);
@@ -66,7 +66,10 @@ void client_snap_vector(struct HSClient* client, struct HSMonitor* monitor,
 bool is_point_between(int point, int left, int right);
 bool intervals_intersect(int a_left, int a_right, int b_left, int b_right);
 
-/* some mouse functions */
+void mouse_initiate_move(struct HSClient* client, int argc, char** argv);
+void mouse_initiate_zoom(struct HSClient* client, int argc, char** argv);
+void mouse_initiate_resize(struct HSClient* client, int argc, char** argv);
+/* some mouse drag functions */
 void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);
 void mouse_function_zoom(XMotionEvent* me);
