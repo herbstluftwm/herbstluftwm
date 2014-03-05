@@ -11,6 +11,7 @@
 #include "ipc-protocol.h"
 #include "utils.h"
 #include "settings.h"
+#include "command.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -84,6 +85,13 @@ void mouse_initiate_resize(HSClient* client, int argc, char** argv) {
     mouse_initiate_drag(client, mouse_function_resize);
 }
 
+void mouse_call_command(struct HSClient* client, int argc, char** argv) {
+    // TODO: add completion
+    client_set_dragged(client, true);
+    call_command_no_output(argc, argv);
+    client_set_dragged(client, false);
+}
+
 
 void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
     g_drag_function = function;
@@ -95,6 +103,7 @@ void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
         g_drag_function = NULL;
         return;
     }
+    client_set_dragged(g_win_drag_client, true);
     g_win_drag_client->dragged = true;
     g_win_drag_start = g_win_drag_client->float_size;
     g_button_drag_start = get_cursor_position();
@@ -105,7 +114,7 @@ void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
 
 void mouse_stop_drag() {
     if (g_win_drag_client) {
-        g_win_drag_client->dragged = false;
+        client_set_dragged(g_win_drag_client, false);
         // resend last size
         Rectangle r = g_win_drag_client->last_size;
         XResizeWindow(g_display, g_win_drag_client->window, r.width, r.height);
@@ -211,6 +220,7 @@ MouseFunction string2mousefunction(char* name) {
         { "move",       mouse_initiate_move },
         { "zoom",       mouse_initiate_zoom },
         { "resize",     mouse_initiate_resize },
+        { "call",       mouse_call_command },
     };
     int i;
     for (i = 0; i < LENGTH(table); i++) {
@@ -221,29 +231,36 @@ MouseFunction string2mousefunction(char* name) {
     return NULL;
 }
 
+static struct {
+    char* name;
+    unsigned int button;
+} string2button_table[] = {
+    { "Button1",       Button1 },
+    { "Button2",       Button2 },
+    { "Button3",       Button3 },
+    { "Button4",       Button4 },
+    { "Button5",       Button5 },
+    { "B1",       Button1 },
+    { "B2",       Button2 },
+    { "B3",       Button3 },
+    { "B4",       Button4 },
+    { "B5",       Button5 },
+};
 unsigned int string2button(char* name) {
-    static struct {
-        char* name;
-        unsigned int button;
-    } table[] = {
-        { "Button1",       Button1 },
-        { "Button2",       Button2 },
-        { "Button3",       Button3 },
-        { "Button4",       Button4 },
-        { "Button5",       Button5 },
-        { "B1",       Button1 },
-        { "B2",       Button2 },
-        { "B3",       Button3 },
-        { "B4",       Button4 },
-        { "B5",       Button5 },
-    };
-    int i;
-    for (i = 0; i < LENGTH(table); i++) {
-        if (!strcmp(table[i].name, name)) {
-            return table[i].button;
+    for (int i = 0; i < LENGTH(string2button_table); i++) {
+        if (!strcmp(string2button_table[i].name, name)) {
+            return string2button_table[i].button;
         }
     }
     return 0;
+}
+
+
+void complete_against_mouse_buttons(char* needle, char* prefix, GString* output) {
+    for (int i = 0; i < LENGTH(string2button_table); i++) {
+        char* buttonname = string2button_table[i].name;
+        try_complete_prefix(needle, buttonname, prefix, output);
+    }
 }
 
 MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {

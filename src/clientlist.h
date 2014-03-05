@@ -97,6 +97,8 @@ void client_raise(HSClient* client);
 int close_command(int argc, char** argv, GString* output);
 void window_close(Window window);
 
+void client_set_dragged(HSClient* client, bool drag_state);
+
 void client_send_configure(HSClient *c);
 bool applysizehints(HSClient *c, int *w, int *h);
 bool applysizehints_xy(HSClient *c, int *x, int *y, int *w, int *h);

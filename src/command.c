@@ -13,6 +13,7 @@
 #include "monitor.h"
 #include "rules.h"
 #include "object.h"
+#include "mouse.h"
 
 #include "glib-backports.h"
 #include <string.h>
@@ -38,6 +39,7 @@ static char* completion_special_winids[]= { "urgent", "", NULL };
 static char* completion_use_index_args[]= { "--skip-visible", NULL };
 static char* completion_cycle_all_args[]= { "--skip-invisible", NULL };
 static char* completion_pm_one[]= { "+1", "-1", NULL };
+static char* completion_mouse_functions[]= { "move", "zoom", "resize", "call", NULL };
 static char* completion_detect_monitors_args[] =
     { "-l", "--list", "--no-disjoin", /* TODO: "--keep-small", */ NULL };
 static char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", NULL };
@@ -50,6 +52,7 @@ static bool no_completion(int argc, char** argv, int pos) {
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
+static bool second_parameter_is_call(int argc, char** argv, int pos);
 static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
 static bool parameter_expected_offset_2(int argc, char** argv, int pos);
@@ -80,7 +83,8 @@ struct {
     { "unlock",         1,  no_completion },
     { "keybind",        2,  parameter_expected_offset_2 },
     { "keyunbind",      2,  no_completion },
-    { "mousebind",      3,  no_completion },
+    { "mousebind",      3,  second_parameter_is_call },
+    { "mousebind",      3,  parameter_expected_offset_3 },
     { "mouseunbind",    1,  no_completion },
     { "focus_nth",      2,  no_completion },
     { "cycle",          2,  no_completion },
@@ -205,6 +209,9 @@ struct {
     { "keybind",        GE, 1,  .function = complete_against_keybind_command },
     { "keyunbind",      EQ, 1,  .list = completion_keyunbind_args },
     { "keyunbind",      EQ, 1,  .function = complete_against_keybinds },
+    { "mousebind",      EQ, 1,  .function = complete_against_mouse_combinations },
+    { "mousebind",      EQ, 2,  .list = completion_mouse_functions },
+    { "mousebind",      GE, 3,  .function = complete_against_commands_3 },
     { "rename",         EQ, 1,  .function = complete_against_tags },
     { "raise",          EQ, 1,  .list = completion_special_winids },
     { "raise",          EQ, 1,  .function = complete_against_winids },
@@ -697,6 +704,28 @@ void complete_against_keybind_command(int argc, char** argv, int position,
     }
 }
 
+void complete_against_mouse_combinations(int argc, char** argv, int position,
+                                         GString* output)
+{
+    if (argc < 1 || position < 1) {
+        return;
+    }
+    // complete the mouse combination
+    char* needle = (position < argc) ? argv[position] : "";
+    char* lasttok = strlasttoken(needle, KEY_COMBI_SEPARATORS);
+    char* prefix = g_strdup(needle);
+    prefix[lasttok - needle] = '\0';
+    char separator = KEY_COMBI_SEPARATORS[0];
+    if (lasttok != needle) {
+        // if there is a suffix, then the already used separator is before
+        // the start of the last token
+        separator = lasttok[-1];
+    }
+    complete_against_modifiers(lasttok, separator, prefix, output);
+    complete_against_mouse_buttons(lasttok, prefix, output);
+    g_free(prefix);
+}
+
 void complete_against_env(int argc, char** argv, int position,
                           GString* output) {
     GString* curname = g_string_sized_new(30);
@@ -875,6 +904,14 @@ static bool first_parameter_is_tag(int argc, char** argv, int pos) {
 static bool first_parameter_is_flag(int argc, char** argv, int pos) {
     // only complete if first parameter is a flag like -i or -e
     if (argc >= 2 && argv[1][0] == '-' && pos == 2) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static bool second_parameter_is_call(int argc, char** argv, int pos) {
+    if (argc >= 3 && !strcmp(argv[2], "call")) {
         return true;
     } else {
         return false;

@@ -20,11 +20,14 @@ Current git version
     * directional monitor focusing
     * new detect_monitors flags: --list -l --no-disjoin while detect_monitors
       does disjoin_rects on the detected monitors per default.
-    * For each client a keymask can be given. A keymask is a regular expression,
-      that is matched against the string representation of a keybinding. If it matches,
-      the keybinding is enabled for this client, otherwise not. The default is an empty
-      keymask ("") that matches all keybindings, so no bindings are masked out by default.
-      A keymask is a client attribute, and can be set by a client rule.
+    * For each client a keymask can be given. A keymask is a regular
+      expression, that is matched against the string representation of a
+      keybinding. If it matches, the keybinding is enabled for this client,
+      otherwise not. The default is an empty keymask ("") that matches all
+      keybindings, so no bindings are masked out by default. A keymask is a
+      client attribute, and can be set by a client rule.
+    * add completion to the mousebind command
+    * add mouse function call to call commands on mouse button press
 
 Release 0.5.3 on 2013-12-24
 ---------------------------

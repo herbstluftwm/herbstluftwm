@@ -69,10 +69,13 @@ bool intervals_intersect(int a_left, int a_right, int b_left, int b_right);
 void mouse_initiate_move(struct HSClient* client, int argc, char** argv);
 void mouse_initiate_zoom(struct HSClient* client, int argc, char** argv);
 void mouse_initiate_resize(struct HSClient* client, int argc, char** argv);
+void mouse_call_command(struct HSClient* client, int argc, char** argv);
 /* some mouse drag functions */
 void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);
 void mouse_function_zoom(XMotionEvent* me);
+
+void complete_against_mouse_buttons(char* needle, char* prefix, GString* output);
 
 #endif
 

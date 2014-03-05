@@ -214,7 +214,7 @@ keyunbind 'KEY'|*-F*|*--all*::
     Removes the key binding for 'KEY'. Syntax for 'KEY' is defined in *keybind*.
     If *-F* or *--all* is given, then all key bindings will be removed.
 
-mousebind 'BUTTON' 'ACTION'::
+mousebind 'BUTTON' 'ACTION' ['COMMAND' ...]::
     Adds a mouse binding for the floating mode. When 'BUTTON' is pressed, the
     specified 'ACTION' will be performed. 'BUTTON' has a similar syntax to the
     'KEY' argument of keybind: It consists of a list of modifiers (separated by
@@ -233,8 +233,16 @@ mousebind 'BUTTON' 'ACTION'::
         * +resize+: Resizes the window by dragging the bottom right corner
         * +zoom+: Resizes the window into all four directions by keeping the
           center of the window constant.
+        * +call+: Only calls the specified 'COMMAND' while +client.dragged+
+          links to the client on which the 'BUTTON' has been performed.
  ::
-    E.g.: +mousebind Mod1-Button3 zoom+
+    While an 'ACTION' is performed, +client.dragged+ is the client which is
+    dragged. E.g.:
+        * +mousebind Mod1-Button3 zoom+
+        * +mousebind Mod1-B4 call substitute WID clients.dragged.winid spawn
+          transset-df --inc -i WID 0.05+
+        * +mousebind Mod1-B5 call substitute WID clients.dragged.winid spawn
+          transset-df --dec -i WID -m 0.2 0.05+
 
 mouseunbind::
     Removes all mouse bindings.
@@ -1355,6 +1363,8 @@ listed as follows:
 |===========================
 
     ** +focus+: the object of the focused client, if any
+    ** +dragged+: the object of a client which is dragged by the mouse, if any.
+      See the documentation of the +mousebind+ command for examples.
 
   * +monitors+
 +

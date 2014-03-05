@@ -995,3 +995,14 @@ bool client_sendevent(HSClient *client, Atom proto) {
     }
     return exists;
 }
+
+void client_set_dragged(HSClient* client, bool drag_state) {
+    if (drag_state == client->dragged) return;
+    client->dragged = drag_state;
+    if (drag_state == true) {
+        hsobject_link(g_client_object, &client->object, "dragged");
+    } else {
+        hsobject_unlink_by_name(g_client_object, "dragged");
+    }
+}
+

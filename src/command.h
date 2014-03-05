@@ -71,6 +71,9 @@ void complete_against_arg_1(int argc, char** argv, int position, GString* output
 void complete_against_arg_2(int argc, char** argv, int position, GString* output);
 void complete_against_keybind_command(int argc, char** argv, int position,
                                       GString* output);
+void complete_against_mouse_combinations(int argc, char** argv, int position,
+                                      GString* output);
+
 void complete_against_env(int argc, char** argv, int position, GString* output);
 void complete_chain(int argc, char** argv, int position, GString* output);
 
