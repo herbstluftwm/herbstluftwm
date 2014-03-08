@@ -1292,13 +1292,13 @@ int detect_monitors_command(int argc, char **argv, GString* output) {
     return ret;
 }
 
-int monitor_stack_window_count(bool only_clients) {
-    return stack_window_count(g_monitor_stack, only_clients);
+int monitor_stack_window_count(bool real_clients) {
+    return stack_window_count(g_monitor_stack, real_clients);
 }
 
-void monitor_stack_to_window_buf(Window* buf, int len, bool only_clients,
+void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
                                  int* remain_len) {
-    stack_to_window_buf(g_monitor_stack, buf, len, only_clients, remain_len);
+    stack_to_window_buf(g_monitor_stack, buf, len, real_clients, remain_len);
 }
 
 HSStack* get_monitor_stack() {

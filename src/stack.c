@@ -216,9 +216,9 @@ int print_stack_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int stack_window_count(HSStack* stack, bool only_clients) {
+int stack_window_count(HSStack* stack, bool real_clients) {
     int counter = 0;
-    stack_to_window_buf(stack, NULL, 0, only_clients, &counter);
+    stack_to_window_buf(stack, NULL, 0, real_clients, &counter);
     return -counter;
 }
 
@@ -227,7 +227,7 @@ struct s2wb {
     int     len;
     Window* buf;
     int     missing; /* number of slices that could not find space in buf */
-    bool    only_clients; /* whether to include windows that aren't clients */
+    bool    real_clients; /* whether to include windows that aren't clients */
     HSLayer layer;  /* the layer the slice should be added to */
 };
 
@@ -241,7 +241,11 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
     switch (s->type) {
         case SLICE_CLIENT:
             if (data->len) {
-                data->buf[0] = s->data.client->dec.decwin;
+                if (data->real_clients) {
+                    data->buf[0] = s->data.client->window;
+                } else {
+                    data->buf[0] = s->data.client->dec.decwin;
+                }
                 data->buf++;
                 data->len--;
             } else {
@@ -249,7 +253,7 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
             }
             break;
         case SLICE_WINDOW:
-            if (!data->only_clients) {
+            if (!data->real_clients) {
                 if (data->len) {
                     data->buf[0] = s->data.window;
                     data->buf++;
@@ -261,7 +265,7 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
             break;
         case SLICE_MONITOR:
             tag = s->data.monitor->tag;
-            if (!data->only_clients) {
+            if (!data->real_clients) {
                 if (data->len) {
                     data->buf[0] = s->data.monitor->stacking_window;
                     data->buf++;
@@ -272,7 +276,7 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
             }
             int remain_len = 0; /* remaining length */
             stack_to_window_buf(tag->stack, data->buf, data->len,
-                                data->only_clients, &remain_len);
+                                data->real_clients, &remain_len);
             int len_used = data->len - remain_len;
             if (remain_len >= 0) {
                 data->buf += len_used;
@@ -286,12 +290,12 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
 }
 
 void stack_to_window_buf(HSStack* stack, Window* buf, int len,
-                         bool only_clients, int* remain_len) {
+                         bool real_clients, int* remain_len) {
     struct s2wb data = {
         .len = len,
         .buf = buf,
         .missing = 0,
-        .only_clients = only_clients,
+        .real_clients = real_clients,
     };
     for (int i = 0; i < LAYER_COUNT; i++) {
         data.layer = i;
