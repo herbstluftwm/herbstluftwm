@@ -13,6 +13,7 @@ HSDecTripple g_decorations[HSDecSchemeCount];
 static GHashTable* g_decwin2client = NULL;
 
 int* g_pseudotile_center_threshold;
+int* g_update_dragged_clients;
 HSObject* g_theme_object;
 HSObject g_theme_active_object;
 HSObject g_theme_normal_object;
@@ -33,6 +34,7 @@ static void decoration_update_frame_extents(struct HSClient* client);
 void decorations_init() {
     g_theme_object = hsobject_create_and_link(hsobject_root(), "theme");
     g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
+    g_update_dragged_clients = &(settings_find("update_dragged_clients")->value.i);
     g_decwin2client = g_hash_table_new(g_int_hash, g_int_equal);
     // init default schemes
     // tiling //
@@ -405,7 +407,9 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
     XClearWindow(g_display, decwin);
-    XConfigureWindow(g_display, win, mask, &changes);
+    if (!client->dragged || *g_update_dragged_clients) {
+        XConfigureWindow(g_display, win, mask, &changes);
+    }
     decoration_update_frame_extents(client);
     client_send_configure(client);
     XSync(g_display, False);

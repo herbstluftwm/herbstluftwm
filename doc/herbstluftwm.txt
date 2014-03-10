@@ -1043,6 +1043,10 @@ pseudotile_center_threshold (Int)::
     this distance is lower than 'pseudotile_center_threshold', it is aligned to
     the top left of the client's tile.
 
+update_dragged_clients (Int)::
+    If set, a client's window content is resized immediately during resizing
+    it with the mouse. If unset, the client's content is resized after the mouse
+    button are released.
 
 [[RULES]]
 RULES

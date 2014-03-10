@@ -28,6 +28,7 @@ Current git version
       client attribute, and can be set by a client rule.
     * add completion to the mousebind command
     * add mouse function call to call commands on mouse button press
+    * add setting update_dragged_clients
 
 Release 0.5.3 on 2013-12-24
 ---------------------------
