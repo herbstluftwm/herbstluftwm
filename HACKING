@@ -59,7 +59,7 @@ When introducing new features, always
 
 You can send those patches to the mailing list[1] or via the irc[2].
 
-[1] herbstluftwm-devel@lists.sourceforge.net +
+[1] hlwm@lists.herbstluftwm.org +
 [2] #herbstluftwm on irc.freenode.net
 
 Mailing list
@@ -67,15 +67,15 @@ Mailing list
 The main mailing list for general development, discussion, release
 announcements is:
 
-    herbstluftwm-devel@lists.sourceforge.net
+    hlwm@lists.herbstluftwm.org
 
 You can subscribe by sending a mail with subscribe in the subject to
 
-    herbstluftwm-devel-request@lists.sourceforge.net
+    hlwm-request@lists.herbstluftwm.org
 
 or by using the web interface at:
 
-    https://lists.sourceforge.net/lists/listinfo/herbstluftwm-devel
+    https://lists.schokokeks.org/mailman/listinfo.cgi/hlwm
 
 Debugging with valgrind
 -----------------------

@@ -1548,13 +1548,13 @@ AUTHOR
 
 RESOURCES
 ---------
-Gitweb: <http://git.cs.fau.de/?p=re06huxa/herbstluftwm>
+Homepage: <http://herbstluftwm.org>
 
-Homepage: <http://git.cs.fau.de/~re06huxa/herbstluftwm>
+Gitweb: <http://git.cs.fau.de/?p=re06huxa/herbstluftwm>
 
 Patch submission and bug reporting:
 
-    herbstluftwm-devel@lists.sourceforge.net
+    hlwm@lists.herbstluftwm.org
 
 COPYING
 -------
