@@ -411,7 +411,9 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
         XConfigureWindow(g_display, win, mask, &changes);
     }
     decoration_update_frame_extents(client);
-    client_send_configure(client);
+    if (!client->dragged || *g_update_dragged_clients) {
+        client_send_configure(client);
+    }
     XSync(g_display, False);
 }
 
