@@ -59,7 +59,7 @@ typedef struct {
     HSObject            obj_urgent;
     HSDecorationScheme  propagate; // meta-scheme for propagating values to members
     HSObject            object;
-} HSDecTripple;
+} HSDecTriple;
 
 enum {
     HSDecSchemeFullscreen,
@@ -69,7 +69,7 @@ enum {
     HSDecSchemeCount,
 };
 
-extern HSDecTripple g_decorations[];
+extern HSDecTriple g_decorations[];
 
 void decorations_init();
 void decorations_destroy();

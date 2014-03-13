@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-HSDecTripple g_decorations[HSDecSchemeCount];
+HSDecTriple g_decorations[HSDecSchemeCount];
 
 static GHashTable* g_decwin2client = NULL;
 
@@ -23,7 +23,7 @@ HSDecorationScheme g_theme_scheme;
 HSDecorationScheme g_theme_active_scheme;
 HSDecorationScheme g_theme_normal_scheme;
 HSDecorationScheme g_theme_urgent_scheme;
-static void init_dec_tripple_object(HSDecTripple* t, const char* name);
+static void init_dec_triple_object(HSDecTriple* t, const char* name);
 static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
 static void init_scheme_attributes(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
 static GString* PROP2MEMBERS(HSAttribute* attr);
@@ -38,36 +38,36 @@ void decorations_init() {
     g_decwin2client = g_hash_table_new(g_int_hash, g_int_equal);
     // init default schemes
     // tiling //
-    HSDecTripple tiling = {
+    HSDecTriple tiling = {
         { 2, getcolor("black"),     false },    // normal
         { 2, getcolor("green"),     false },    // active
         { 2, getcolor("orange"),    false },    // urgent
     };
     g_decorations[HSDecSchemeTiling] = tiling;
     // fullscreen //
-    HSDecTripple fs = {
+    HSDecTriple fs = {
         { 0, getcolor("black"),     false },    // normal
         { 0, getcolor("black"),     false },    // active
         { 0, getcolor("black"),     false },    // urgent
     };
     g_decorations[HSDecSchemeFullscreen] = fs;
     // floating //
-    HSDecTripple fl = {
+    HSDecTriple fl = {
         { 1, getcolor("black"),     true  },    // normal
         { 4, getcolor("green"),     true  },    // active
         { 1, getcolor("orange"),    true  },    // urgent
     };
     g_decorations[HSDecSchemeFloating] = fl;
     // minimal //
-    HSDecTripple minimal = {
+    HSDecTriple minimal = {
         { 0, getcolor("black"),     true  },    // normal
         { 0, getcolor("green"),     true  },    // active
         { 0, getcolor("orange"),    true  },    // urgent
     };
     g_decorations[HSDecSchemeMinimal] = minimal;
-    init_dec_tripple_object(g_decorations + HSDecSchemeTiling, "tiling");
-    init_dec_tripple_object(g_decorations + HSDecSchemeFloating, "floating");
-    init_dec_tripple_object(g_decorations + HSDecSchemeMinimal, "minimal");
+    init_dec_triple_object(g_decorations + HSDecSchemeTiling, "tiling");
+    init_dec_triple_object(g_decorations + HSDecSchemeFloating, "floating");
+    init_dec_triple_object(g_decorations + HSDecSchemeMinimal, "minimal");
     // create mass-attribute-objects
     g_theme_scheme
         = g_theme_active_scheme
@@ -133,7 +133,7 @@ static GString* PROP2MEMBERS(HSAttribute* attr) {
 }
 
 GString* PROPAGATE(HSAttribute* attr) {
-    HSDecTripple* t = attr->object->data;
+    HSDecTriple* t = attr->object->data;
     monitors_lock();
     // find out which attribute it was
     int idx = attr - attr->object->attributes;
@@ -205,7 +205,7 @@ static void init_scheme_attributes(HSObject* obj, HSDecorationScheme* s, HSAttrC
     hsobject_set_attributes(obj, attributes);
 }
 
-static void init_dec_tripple_object(HSDecTripple* t, const char* name) {
+static void init_dec_triple_object(HSDecTriple* t, const char* name) {
     hsobject_init(&t->object);
     init_scheme_object(&t->obj_normal, &t->normal, RELAYOUT);
     init_scheme_object(&t->obj_active, &t->active, RELAYOUT);
@@ -220,7 +220,7 @@ static void init_dec_tripple_object(HSDecTripple* t, const char* name) {
     hsobject_link(g_theme_object, &t->object, name);
 }
 
-static void free_dec_tripple_object(HSDecTripple* t) {
+static void free_dec_triple_object(HSDecTriple* t) {
     hsobject_unlink(g_theme_object, &t->object);
     hsobject_free(&t->object);
     hsobject_free(&t->obj_normal);
@@ -229,8 +229,8 @@ static void free_dec_tripple_object(HSDecTripple* t) {
 }
 
 void decorations_destroy() {
-    free_dec_tripple_object(g_decorations + HSDecSchemeTiling);
-    free_dec_tripple_object(g_decorations + HSDecSchemeFloating);
+    free_dec_triple_object(g_decorations + HSDecSchemeTiling);
+    free_dec_triple_object(g_decorations + HSDecSchemeFloating);
     hsobject_unlink(g_theme_object, &g_theme_normal_object);
     hsobject_unlink(g_theme_object, &g_theme_active_object);
     hsobject_unlink(g_theme_object, &g_theme_urgent_object);
