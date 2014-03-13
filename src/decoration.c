@@ -289,9 +289,10 @@ void decoration_setup_frame(HSClient* client) {
                             ? visual
                             : DefaultVisual(g_display, DefaultScreen(g_display)),
                         mask, &at);
-    dec->last_rect_inner = false;
-    dec->last_inner_rect.width = -1;
-    dec->last_outer_rect.width = -1;
+    // use a clients requested initial floating size as the initial size
+    dec->last_rect_inner = true;
+    dec->last_inner_rect = client->float_size;
+    dec->last_outer_rect = inner_rect_to_outline(client->float_size, dec->last_scheme);
     dec->pixmap = 0;
     g_hash_table_insert(g_decwin2client, &(dec->decwin), client);
     // set wm_class for window
