@@ -71,6 +71,7 @@ void reset_client_settings();
 
 // adds a new client to list of managed client windows
 HSClient* manage_client(Window win);
+void client_fuzzy_fix_initial_position(HSClient* client);
 void unmanage_client(Window win);
 
 void window_enforce_last_size(Window in);

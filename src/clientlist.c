@@ -259,6 +259,7 @@ HSClient* manage_client(Window win) {
 
     // actually manage it
     decoration_setup_frame(client);
+    client_fuzzy_fix_initial_position(client);
     g_hash_table_insert(g_clients, &(client->window), client);
     client->window_str = g_string_sized_new(10);
     g_string_printf(client->window_str, "0x%lx", win);
@@ -1004,5 +1005,25 @@ void client_set_dragged(HSClient* client, bool drag_state) {
     } else {
         hsobject_unlink_by_name(g_client_object, "dragged");
     }
+}
+
+void client_fuzzy_fix_initial_position(HSClient* client) {
+    // find out the top-left-most position of the decoration,
+    // considering the current settings of possible floating decorations
+    int extreme_x = client->float_size.x;
+    int extreme_y = client->float_size.y;
+    HSDecTriple* t = &g_decorations[HSDecSchemeFloating];
+    Rectangle r = inner_rect_to_outline(client->float_size, t->active);
+    extreme_x = MIN(extreme_x, r.x);
+    extreme_y = MIN(extreme_y, r.y);
+    r = inner_rect_to_outline(client->float_size, t->normal);
+    extreme_x = MIN(extreme_x, r.x);
+    extreme_y = MIN(extreme_y, r.y);
+    r = inner_rect_to_outline(client->float_size, t->urgent);
+    extreme_x = MIN(extreme_x, r.x);
+    extreme_y = MIN(extreme_y, r.y);
+    // if top left corner might be outside of the monitor, move it accordingly
+    if (extreme_x < 0) { client->float_size.x += abs(extreme_x); }
+    if (extreme_y < 0) { client->float_size.y += abs(extreme_y); }
 }
 
