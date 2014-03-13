@@ -120,7 +120,7 @@ static GString* PROP2MEMBERS(HSAttribute* attr) {
         for (int i = 0; i < member_cnt; i++) {
             HSAttribute* oth_a = hsobject_find_attribute(members[i], attr->name);
             if (!oth_a) {
-                HSDebug("%d: Cant find attribute %s. This sould not happen!\n", i, attr->name);
+                HSDebug("%d: Can not find attribute %s. This should not happen!\n", i, attr->name);
                 continue;
             }
             hsattribute_assign(oth_a, val->str, output);
