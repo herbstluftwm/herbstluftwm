@@ -31,6 +31,7 @@ Current git version
     * add setting update_dragged_clients
     * new rule consequence: monitor
     * new command: try
+    * new command: silent
 
 Release 0.5.3 on 2013-12-24
 ---------------------------

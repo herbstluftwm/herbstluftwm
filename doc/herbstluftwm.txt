@@ -297,7 +297,12 @@ or 'SEPARATOR' ['COMMANDS' ...]::
     a zero, "!" returns a 1.
 
 try 'COMMAND'::
-    "try" executes the provided command, but always returns success, i.e. 0.
+    "try" executes the provided command, prints its output, but always returns
+    success, i.e. 0.
+
+silent 'COMMAND'::
+    "silent" executes the provided command, but discards its output and only
+    returns its exit code.
 
 focus_nth 'INDEX'::
     Focuses the nth window in a frame. The first window has 'INDEX' 0. If

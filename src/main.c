@@ -57,6 +57,7 @@ int echo(int argc, char* argv[], GString* output);
 int true_command();
 int false_command();
 int try_command(int argc, char* argv[], GString* output);
+int silent_command(int argc, char* argv[]);
 int print_layout_command(int argc, char** argv, GString* output);
 int load_command(int argc, char** argv, GString* output);
 int print_tag_status_command(int argc, char** argv, GString* output);
@@ -95,6 +96,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "true",           true_command),
     CMD_BIND_NO_OUTPUT(   "false",          false_command),
     CMD_BIND(             "try",            try_command),
+    CMD_BIND_NO_OUTPUT(   "silent",         silent_command),
     CMD_BIND_NO_OUTPUT(   "reload",         reload),
     CMD_BIND(             "version",        version),
     CMD_BIND(             "list_commands",  list_commands),
@@ -236,6 +238,14 @@ int try_command(int argc, char* argv[], GString* output) {
     (void)SHIFT(argc, argv);
     call_command(argc, argv, output);
     return 0;
+}
+
+int silent_command(int argc, char* argv[]) {
+    if (argc <= 1) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    (void)SHIFT(argc, argv);
+    return call_command_no_output(argc, argv);
 }
 
 // prints or dumps the layout of an given tag
