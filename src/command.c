@@ -55,6 +55,7 @@ static bool first_parameter_is_flag(int argc, char** argv, int pos);
 static bool second_parameter_is_call(int argc, char** argv, int pos);
 static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
+static bool parameter_expected_offset_1(int argc, char** argv, int pos);
 static bool parameter_expected_offset_2(int argc, char** argv, int pos);
 static bool parameter_expected_offset_3(int argc, char** argv, int pos);
 
@@ -74,6 +75,7 @@ struct {
     { "reload",         1,  no_completion },
     { "true",           1,  no_completion },
     { "false",          1,  no_completion },
+    { "!",              2,  parameter_expected_offset_1 },
     { "version",        1,  no_completion },
     { "list_commands",  1,  no_completion },
     { "list_monitors",  1,  no_completion },
@@ -204,7 +206,7 @@ struct {
     { "move",           EQ, 1,  .function = complete_against_tags },
     { "move_index",     EQ, 2,  .list = completion_use_index_args },
     { "or",             GE, 1,  .function = complete_chain },
-    { "!",              GE, 1,  .function = complete_negate },
+    { "!",              GE, 1,  .function = complete_against_commands_1 },
     { "pseudotile",     EQ, 1,  .list = completion_flag_args },
     { "keybind",        GE, 1,  .function = complete_against_keybind_command },
     { "keyunbind",      EQ, 1,  .list = completion_keyunbind_args },
@@ -429,17 +431,6 @@ void complete_against_tags(int argc, char** argv, int pos, GString* output) {
         char* name = g_array_index(g_tags, HSTag*, i)->name->str;
         try_complete(needle, name, output);
     }
-}
-
-void complete_negate(int argc, char** argv, int pos, GString* output) {
-    if (pos <= 0) {
-        return;
-    }
-    // Remove the ! from the argv
-    (void)SHIFT(argc, argv);
-    pos--;
-    // Complete as normal
-    complete_against_commands(argc, argv, pos, output);
 }
 
 void complete_against_monitors(int argc, char** argv, int pos, GString* output) {
@@ -742,6 +733,11 @@ void complete_against_env(int argc, char** argv, int position,
     g_string_free(curname, true);
 }
 
+void complete_against_commands_1(int argc, char** argv, int position,
+                                      GString* output) {
+    complete_against_commands(argc - 1, argv + 1, position - 1, output);
+}
+
 void complete_against_commands_3(int argc, char** argv, int position,
                                       GString* output) {
     complete_against_commands(argc - 3, argv + 3, position - 3, output);
@@ -937,6 +933,10 @@ static bool parameter_expected_offset(int argc, char** argv, int pos, int offset
         return true;
     }
     return parameter_expected(argc - offset, argv + offset, pos - offset);
+}
+
+static bool parameter_expected_offset_1(int argc, char** argv, int pos) {
+    return parameter_expected_offset(argc,argv, pos, 1);
 }
 
 static bool parameter_expected_offset_2(int argc, char** argv, int pos) {
