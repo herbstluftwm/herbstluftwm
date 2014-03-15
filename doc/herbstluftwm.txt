@@ -1130,10 +1130,9 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 
 +monitor+::
     moves the client to the tag on monitor 'VALUE'. If the tag consequence was
-    also specified, move the client to that tag, then display that tag on
-    monitor 'VALUE'. In the case where the tag consequence is also specified, if
-    either of the tag or monitor values do not refer to an actual monitor or
-    tag, hlwm will behave as if that consequence was not set.
+    also specified, and switchtag is set for the client, move the client to that
+    tag, then display that tag on monitor 'VALUE'. If the tag consequence was
+    specified, but switchtag was not, ignore this consequence.
 
 +focus+::
     decides whether the client gets the input focus on his tag.  The default is

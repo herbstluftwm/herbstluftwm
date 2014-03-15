@@ -250,8 +250,11 @@ HSClient* manage_client(Window win) {
         if (monitor) {
             // a valid tag was not already found, use the target monitor's tag
             if (!client->tag) { client->tag = monitor->tag; }
-            // a tag was already found, display it on the target monitor
-            else { monitor_set_tag(monitor, client->tag); }
+            // a tag was already found, display it on the target monitor, but
+            // only if switchtag is set
+            else if (changes.switchtag) {
+                monitor_set_tag(monitor, client->tag);
+            }
         }
     }
 
