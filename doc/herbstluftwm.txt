@@ -296,6 +296,9 @@ or 'SEPARATOR' ['COMMANDS' ...]::
     provided command returns a nonzero, "!" returns a 0, if the command returns
     a zero, "!" returns a 1.
 
+try 'COMMAND'::
+    "try" executes the provided command, but always returns success, i.e. 0.
+
 focus_nth 'INDEX'::
     Focuses the nth window in a frame. The first window has 'INDEX' 0. If
     'INDEX' is negative or greater than the last window index, then the last
