@@ -57,6 +57,7 @@ typedef struct {
 
 typedef struct {
     GString*        tag_name;
+    GString*        monitor_name;
     GString*        tree_index;
     bool            focus; // if client should get focus
     bool            switchtag; // if the tag may be switched for focusing it

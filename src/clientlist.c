@@ -245,6 +245,15 @@ HSClient* manage_client(Window win) {
     if (changes.tag_name) {
         client->tag = find_tag(changes.tag_name->str);
     }
+    if (changes.monitor_name) {
+        HSMonitor *monitor = string_to_monitor(changes.monitor_name->str);
+        if (monitor) {
+            // a valid tag was not already found, use the target monitor's tag
+            if (!client->tag) { client->tag = monitor->tag; }
+            // a tag was already found, display it on the target monitor
+            else { monitor_set_tag(monitor, client->tag); }
+        }
+    }
 
     // Reuse the keymask string
     client->keymask = changes.keymask;

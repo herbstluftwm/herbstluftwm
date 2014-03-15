@@ -64,6 +64,7 @@ DECLARE_CONSEQUENCE(consequence_ewmhrequests);
 DECLARE_CONSEQUENCE(consequence_ewmhnotify);
 DECLARE_CONSEQUENCE(consequence_hook);
 DECLARE_CONSEQUENCE(consequence_keymask);
+DECLARE_CONSEQUENCE(consequence_monitor);
 
 /// GLOBALS ///
 
@@ -93,6 +94,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "ewmhnotify",     consequence_ewmhnotify      },
     { "hook",           consequence_hook            },
     { "keymask",        consequence_keymask         },
+    { "monitor",        consequence_monitor         },
 };
 
 static GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
@@ -572,6 +574,9 @@ void client_changes_free_members(HSClientChanges* changes) {
     if (changes->tree_index) {
         g_string_free(changes->tree_index, true);
     }
+    if (changes->monitor_name) {
+        g_string_free(changes->monitor_name, true);
+    }
 }
 
 // apply all rules to a certain client an save changes
@@ -830,5 +835,14 @@ void consequence_keymask(HSConsequence* cons,
         g_string_assign(changes->keymask, cons->value.str);
     } else {
         changes->keymask = g_string_new(cons->value.str);
+    }
+}
+
+void consequence_monitor(HSConsequence* cons, HSClient* client,
+                            HSClientChanges* changes) {
+    if (changes->monitor_name) {
+        g_string_assign(changes->monitor_name, cons->value.str);
+    } else {
+        changes->monitor_name = g_string_new(cons->value.str);
     }
 }

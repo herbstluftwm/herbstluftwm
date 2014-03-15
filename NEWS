@@ -29,6 +29,7 @@ Current git version
     * add completion to the mousebind command
     * add mouse function call to call commands on mouse button press
     * add setting update_dragged_clients
+    * new rule consequence: monitor
 
 Release 0.5.3 on 2013-12-24
 ---------------------------
