@@ -507,5 +507,6 @@ void decoration_redraw_pixmap(struct HSClient* client) {
         XSetForeground(g_display, gc, get_client_color(client, s.outer_color));
         XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
     }
+    XFreeGC(g_display, gc);
 }
 

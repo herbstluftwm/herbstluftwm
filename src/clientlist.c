@@ -403,6 +403,9 @@ void client_destroy(HSClient* client) {
     if (client->window_str) {
         g_string_free(client->window_str, true);
     }
+    if (client->keymask) {
+        g_string_free(client->keymask, true);
+    }
     hsobject_free(&client->object);
     g_free(client);
 }
