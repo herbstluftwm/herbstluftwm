@@ -397,6 +397,8 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     //}
     // send new size to client
     // update structs
+    bool size_changed = outline.width != client->dec.last_outer_rect.width
+                     || outline.height != client->dec.last_outer_rect.height;
     client->dec.last_outer_rect = outline;
     client->dec.last_rect_inner = false;
     client->last_size = inner;
@@ -407,7 +409,10 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     XSetWindowBackgroundPixmap(g_display, decwin, client->dec.pixmap);
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
-    XClearWindow(g_display, decwin);
+    if (!size_changed) {
+        // if size changes, then the window is cleared automatically
+        XClearWindow(g_display, decwin);
+    }
     if (!client->dragged || *g_update_dragged_clients) {
         XConfigureWindow(g_display, win, mask, &changes);
     }
