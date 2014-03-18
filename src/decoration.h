@@ -48,6 +48,10 @@ typedef struct {
     Pixmap                  pixmap;
     int                     pixmap_height;
     int                     pixmap_width;
+    // fill the area behind client with another window that does nothing,
+    // especially not repainting or background filling to avoid flicker on
+    // unmap
+    Window                  bgwin;
 } HSDecoration;
 
 typedef struct {

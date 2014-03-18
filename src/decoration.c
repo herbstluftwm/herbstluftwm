@@ -289,6 +289,24 @@ void decoration_setup_frame(HSClient* client) {
                             ? visual
                             : DefaultVisual(g_display, DefaultScreen(g_display)),
                         mask, &at);
+    mask = 0;
+    if (visual) {
+        /* client has a 32-bit visual */
+        mask = CWColormap | CWBackPixel | CWBorderPixel;
+        // TODO: why does DefaultColormap work in openbox but crashes hlwm here?
+        // It somehow must be incompatible to the visual and thus causes the
+        // BadMatch on XCreateWindow
+        at.colormap = dec->colormap;
+        at.background_pixel = BlackPixel(g_display, g_screen);
+        at.border_pixel = BlackPixel(g_display, g_screen);
+    }
+    dec->bgwin = 0;
+    dec->bgwin = XCreateWindow(g_display, dec->decwin, 0,0, 30, 30, 0,
+                        dec->depth,
+                        InputOutput,
+                        CopyFromParent,
+                        mask, &at);
+    XMapWindow(g_display, dec->bgwin);
     // use a clients requested initial floating size as the initial size
     dec->last_rect_inner = true;
     dec->last_inner_rect = client->float_size;
@@ -312,6 +330,9 @@ void decoration_free(HSDecoration* dec) {
     }
     if (dec->pixmap) {
         XFreePixmap(g_display, dec->pixmap);
+    }
+    if (dec->bgwin) {
+        XDestroyWindow(g_display, dec->bgwin);
     }
     if (dec->decwin) {
         XDestroyWindow(g_display, dec->decwin);
@@ -415,6 +436,9 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     }
     if (!client->dragged || *g_update_dragged_clients) {
         XConfigureWindow(g_display, win, mask, &changes);
+        XMoveResizeWindow(g_display, client->dec.bgwin,
+                          changes.x, changes.y,
+                          changes.width, changes.height);
     }
     decoration_update_frame_extents(client);
     if (!client->dragged || *g_update_dragged_clients) {

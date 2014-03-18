@@ -375,6 +375,7 @@ void unmanage_client(Window win) {
     XSelectInput(g_display, win, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
+    XUnmapWindow(g_display, client->dec.decwin);
     XReparentWindow(g_display, win, g_root, 0, 0);
     HSTag* tag = client->tag;
     g_hash_table_remove(g_clients, &win);
