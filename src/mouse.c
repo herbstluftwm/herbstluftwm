@@ -104,7 +104,6 @@ void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
         return;
     }
     client_set_dragged(g_win_drag_client, true);
-    g_win_drag_client->dragged = true;
     g_win_drag_start = g_win_drag_client->float_size;
     g_button_drag_start = get_cursor_position();
     XGrabPointer(g_display, client->window, True,
@@ -116,8 +115,7 @@ void mouse_stop_drag() {
     if (g_win_drag_client) {
         client_set_dragged(g_win_drag_client, false);
         // resend last size
-        Rectangle r = g_win_drag_client->last_size;
-        XResizeWindow(g_display, g_win_drag_client->window, r.width, r.height);
+        monitor_apply_layout(g_drag_monitor);
     }
     g_win_drag_client = NULL;
     g_drag_function = NULL;
