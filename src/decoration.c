@@ -199,6 +199,7 @@ static void init_scheme_attributes(HSObject* obj, HSDecorationScheme* s, HSAttrC
         ATTRIBUTE_COLOR(    "inner_color",      s->inner_color,     cb),
         ATTRIBUTE_INT(      "outer_width",      s->outer_width,     cb),
         ATTRIBUTE_COLOR(    "outer_color",      s->outer_color,     cb),
+        ATTRIBUTE_COLOR(    "background_color", s->background_color,cb),
         ATTRIBUTE_CUSTOM(   "reset",            reset_helper,       trigger_attribute_reset),
         ATTRIBUTE_LAST,
     };
@@ -311,6 +312,9 @@ void decoration_setup_frame(HSClient* client) {
     dec->last_rect_inner = true;
     dec->last_inner_rect = client->float_size;
     dec->last_outer_rect = inner_rect_to_outline(client->float_size, dec->last_scheme);
+    dec->last_actual_rect = dec->last_inner_rect;
+    dec->last_actual_rect.x -= dec->last_outer_rect.x;
+    dec->last_actual_rect.y -= dec->last_outer_rect.y;
     dec->pixmap = 0;
     g_hash_table_insert(g_decwin2client, &(dec->decwin), client);
     // set wm_class for window
@@ -426,6 +430,12 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     client->dec.last_scheme = scheme;
     // redraw
     // TODO: reduce flickering
+    if (!client->dragged || *g_update_dragged_clients) {
+        client->dec.last_actual_rect.x = changes.x;
+        client->dec.last_actual_rect.y = changes.y;
+        client->dec.last_actual_rect.width = changes.width;
+        client->dec.last_actual_rect.height = changes.height;
+    }
     decoration_redraw_pixmap(client);
     XSetWindowBackgroundPixmap(g_display, decwin, client->dec.pixmap);
     XMoveResizeWindow(g_display, decwin,
@@ -536,6 +546,23 @@ void decoration_redraw_pixmap(struct HSClient* client) {
         XSetForeground(g_display, gc, get_client_color(client, s.outer_color));
         XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
     }
+    // fill inner rect that is not covered by the client
+    XSetForeground(g_display, gc, get_client_color(client, s.background_color));
+    if (dec->last_actual_rect.width < inner.width) {
+        XFillRectangle(g_display, pix, gc,
+                       dec->last_actual_rect.x + dec->last_actual_rect.width,
+                       dec->last_actual_rect.y,
+                       inner.width - dec->last_actual_rect.width,
+                       dec->last_actual_rect.height);
+    }
+    if (dec->last_actual_rect.height < inner.height) {
+        XFillRectangle(g_display, pix, gc,
+                       dec->last_actual_rect.x,
+                       dec->last_actual_rect.y + dec->last_actual_rect.height,
+                       inner.width,
+                       inner.height - dec->last_actual_rect.height);
+    }
+    // clean up
     XFreeGC(g_display, gc);
 }
 

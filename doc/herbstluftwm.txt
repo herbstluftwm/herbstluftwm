@@ -1422,6 +1422,7 @@ listed as follows:
  c w inner_color          , its color
  i w outer_width          , width of an additional border close to the edge
  c w outer_color          , its color
+ c w background_color     , color behind window contents visible on resize
  s w reset                , Writing this resets all attributes to a default value
 |===========================
 +
@@ -1433,11 +1434,10 @@ inner_color/inner_width
 ┌────╴│╶─────────────────┷─────┐ ⎫ border_width
 │     │      color             │ ⎬     +
 │  ┌──┷─────────────────────┐  │ ⎭ padding_top
-│  │::::::::::::::::::::::::│  │
-│  │::::::::::::::::::::::::│  │
-│  │:::: window content ::::│  │
-│  │::::::::::::::::::::::::│  │
-│  │::::::::::::::::::::::::│  │
+│  │====================....│  │
+│  │== window content ==....│  │
+│  │====================..╾──────── background_color
+│  │........................│  │
 │  └────────────────────────┘  │ ⎱ border_width +
 └──────────────────────────────┘ ⎰ padding_bottom
 ----

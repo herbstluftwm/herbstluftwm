@@ -33,6 +33,7 @@ typedef struct {
     int     padding_right;  // additional window border
     int     padding_bottom; // additional window border
     int     padding_left;   // additional window border
+    HSColor background_color; // color behind client contents
 } HSDecorationScheme;
 
 typedef struct {
@@ -42,6 +43,7 @@ typedef struct {
     bool                    last_rect_inner; // whether last_rect is inner size
     Rectangle               last_inner_rect; // only valid if width >= 0
     Rectangle               last_outer_rect; // only valid if width >= 0
+    Rectangle               last_actual_rect; // last actual client rect, relative to decoration
     /* X specific things */
     Colormap                colormap;
     unsigned int            depth;
