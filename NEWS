@@ -1,8 +1,8 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
-Current git version
--------------------
+Release 0.6.0 on 2014-03-19
+---------------------------
 
     * Add window decorations, configurable via the theme-object
     * The tag attributes curframe_windex and curframe_wcount have been removed,
