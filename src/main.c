@@ -767,6 +767,7 @@ static struct {
     { object_tree_init, object_tree_destroy },
     { key_init,         key_destroy         },
     { settings_init,    settings_destroy    },
+    { floating_init,    floating_destroy    },
     { stacklist_init,   stacklist_destroy   },
     { layout_init,      layout_destroy      },
     { tag_init,         tag_destroy         },

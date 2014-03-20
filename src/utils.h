@@ -95,22 +95,6 @@ void* table_find(void* start, size_t elem_size, size_t count,
 void set_window_double_border(Display *dpy, Window win, int ibw,
                               unsigned long inner_color, unsigned long outer_color);
 
-enum HSDirection {
-    DirRight,
-    DirLeft,
-    DirUp,
-    DirDown,
-};
-typedef struct {
-    Rectangle r;
-    int       idx;
-} RectangleIdx;
-
-enum HSDirection char_to_direction(char ch);
-int find_rectangle_in_direction(RectangleIdx* rects, size_t cnt, int idx,
-                                enum HSDirection dir);
-int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx);
-
 #define STATIC_TABLE_FIND(TYPE, TABLE, MEMBER, EQUALS, NEEDLE)  \
     ((TYPE*) table_find((TABLE),                                \
                         sizeof(TABLE[0]),                       \

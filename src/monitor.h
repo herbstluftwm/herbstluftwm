@@ -13,6 +13,7 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+#include "floating.h"
 #include "object.h"
 #include "utils.h"
 

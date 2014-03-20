@@ -434,6 +434,7 @@ bool is_point_between(int point, int left, int right) {
     return (point < right && point >= left);
 }
 
+// tells if the intervals [a_left, a_right) [b_left, b_right) intersect
 bool intervals_intersect(int a_left, int a_right, int b_left, int b_right) {
     return (b_left < a_right) && (a_left < b_right);
 }

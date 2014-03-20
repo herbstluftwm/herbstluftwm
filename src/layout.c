@@ -14,6 +14,7 @@
 #include "layout.h"
 #include "stack.h"
 #include "monitor.h"
+#include "floating.h"
 
 #include <glib.h>
 #include "glib-backports.h"
@@ -1554,7 +1555,7 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
     // usage: move left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
     if (!g_cur_frame) {
-        fprintf(stderr, "warning: no frame is selected\n");
+        fprintf(stderr, "error: no frame is selected\n");
         return HERBST_UNKNOWN_ERROR;
     }
     char direction = argv[1][0];
@@ -1566,6 +1567,16 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
     if (argc > 2 && !strcmp(argv[1], "-e")) {
         external_only = true;
         direction = argv[2][0];
+    }
+    if (!frame_focused_client(g_cur_frame)) {
+        return 0;
+    }
+    if (is_client_floated(get_current_client())) {
+        // try to move the floating window
+        enum HSDirection dir = char_to_direction(direction);
+        if (dir < 0) return HERBST_INVALID_ARGUMENT;
+        floating_shift_direction(dir);
+        return 0;
     }
     int index;
     if (!external_only &&
@@ -1975,44 +1986,5 @@ bool smart_window_surroundings_active(HSFrame* frame) {
     return *g_smart_window_surroundings
             && (frame->content.clients.count == 1
                 || frame->content.clients.layout == LAYOUT_MAX);
-}
-
-static int collectclients_helper(HSClient* client, void* data) {
-    GQueue* q = data;
-    g_queue_push_tail(q, client);
-    return 0;
-}
-
-bool floating_focus_direction(enum HSDirection dir) {
-    HSTag* tag = g_cur_frame->tag;
-    GQueue* q = g_queue_new();
-    frame_foreach_client(tag->frame, collectclients_helper, q);
-    int cnt = q->length;
-    RectangleIdx* rects = g_new0(RectangleIdx, cnt);
-    int i = 0;
-    int curfocusidx = -1;
-    HSClient* curfocus = get_current_client();
-    bool success = true;
-    if (curfocus == NULL && cnt == 0) {
-        success = false;
-    }
-    for (GList* cur = q->head; cur != NULL; cur = cur->next, i++) {
-        HSClient* client = cur->data;
-        if (curfocus == client) curfocusidx = i;
-        rects[i].idx = i;
-        rects[i].r = client->dec.last_outer_rect;
-    }
-    int idx = (cnt > 0)
-              ? find_rectangle_in_direction(rects, cnt, curfocusidx, dir)
-              : 0;
-    if (idx < 0) success = false;
-    else {
-        HSClient* client = g_queue_peek_nth(q, idx);
-        client_raise(client);
-        focus_client(client, false, false);
-    }
-    g_free(rects);
-    g_queue_free(q);
-    return success;
 }
 

@@ -1,6 +1,11 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Current git version
+-------------------
+
+    * directional shift of floating windows
+
 Release 0.6.0 on 2014-03-19
 ---------------------------
 
