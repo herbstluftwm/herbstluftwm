@@ -57,6 +57,7 @@ HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(struct HSTag* tag);
 HSMonitor* add_monitor(Rectangle rect, struct HSTag* tag, char* name);
+Rectangle monitor_get_floating_area(HSMonitor* m);
 void monitor_focus_by_index(int new_selection);
 int monitor_get_relative_x(HSMonitor* m, int x_root);
 int monitor_get_relative_y(HSMonitor* m, int y_root);

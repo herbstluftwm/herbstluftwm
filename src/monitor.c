@@ -1371,3 +1371,13 @@ void drop_enternotify_events() {
     XSync(g_display, False);
     while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
 }
+
+Rectangle monitor_get_floating_area(HSMonitor* m) {
+    Rectangle r = m->rect;
+    r.x += m->pad_left;
+    r.width -= m->pad_left + m->pad_right;
+    r.y += m->pad_up;
+    r.height -= m->pad_up + m->pad_down;
+    return r;
+}
+

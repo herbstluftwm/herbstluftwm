@@ -274,12 +274,12 @@ bool floating_shift_direction(enum HSDirection dir) {
     }
     // add artifical rects for screen edges
     {
-        Rectangle mr = get_current_monitor()->rect;
+        Rectangle mr = monitor_get_floating_area(get_current_monitor());
         Rectangle tmp[4] = {
-            { 0, 0, mr.width, 0 }, // top
-            { 0, 0, 0, mr.height }, // left
-            { mr.width, 0, 0, mr.height }, // right
-            { 0, mr.height, mr.width, 0 }, // bottom
+            { mr.x, mr.y,               mr.width, 0 }, // top
+            { mr.x, mr.y,               0, mr.height }, // left
+            { mr.x + mr.width, mr.y,    0, mr.height }, // right
+            { mr.x, mr.y + mr.height,   mr.y + mr.width, 0 }, // bottom
         };
         FOR (i,0,4) {
             rects[cnt + i].idx = -1;
@@ -302,8 +302,8 @@ bool floating_shift_direction(enum HSDirection dir) {
         // shift client
         int dx = 0, dy = 0;
         Rectangle r = rects[idx].r;
-        printf("edge: %dx%d at %d,%d\n", r.width, r.height, r.x, r.y);
-        printf("focus: %dx%d at %d,%d\n", focusrect.width, focusrect.height, focusrect.x, focusrect.y);
+        //printf("edge: %dx%d at %d,%d\n", r.width, r.height, r.x, r.y);
+        //printf("focus: %dx%d at %d,%d\n", focusrect.width, focusrect.height, focusrect.x, focusrect.y);
         switch (dir) {
             //          delta = new edge  -  old edge
             case DirRight: dx = r.x  -   (focusrect.x + focusrect.width); break;
@@ -311,7 +311,7 @@ bool floating_shift_direction(enum HSDirection dir) {
             case DirDown:  dy = r.y  -  (focusrect.y + focusrect.height); break;
             case DirUp:    dy = r.y + r.height  -  focusrect.y; break;
         }
-        printf("dx=%d, dy=%d\n", dx, dy);
+        //printf("dx=%d, dy=%d\n", dx, dy);
         curfocus->float_size.x += dx;
         curfocus->float_size.y += dy;
         monitor_apply_layout(get_current_monitor());
