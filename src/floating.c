@@ -12,9 +12,11 @@
 #include "settings.h"
 
 static int* g_snap_gap;
+static int* g_monitors_locked;
 
 void floating_init() {
     g_snap_gap = &(settings_find("snap_gap")->value.i);
+    g_monitors_locked = &(settings_find("monitors_locked")->value.i);
 }
 
 void floating_destroy() {
@@ -221,6 +223,7 @@ static int collectclients_helper(HSClient* client, void* data) {
 }
 
 bool floating_focus_direction(enum HSDirection dir) {
+    if (*g_monitors_locked) { return false; }
     HSTag* tag = g_cur_frame->tag;
     GQueue* q = g_queue_new();
     frame_foreach_client(tag->frame, collectclients_helper, q);
@@ -241,9 +244,10 @@ bool floating_focus_direction(enum HSDirection dir) {
     }
     int idx = (cnt > 0)
               ? find_rectangle_in_direction(rects, cnt, curfocusidx, dir)
-              : 0;
-    if (idx < 0) success = false;
-    else {
+              : -1;
+    if (idx < 0) {
+        success = false;
+    } else {
         HSClient* client = g_queue_peek_nth(q, idx);
         client_raise(client);
         focus_client(client, false, false);
@@ -254,24 +258,28 @@ bool floating_focus_direction(enum HSDirection dir) {
 }
 
 bool floating_shift_direction(enum HSDirection dir) {
+    if (*g_monitors_locked) { return false; }
     HSTag* tag = g_cur_frame->tag;
+    HSClient* curfocus = get_current_client();
+    if (!curfocus) return false;
     GQueue* q = g_queue_new();
     frame_foreach_client(tag->frame, collectclients_helper, q);
     int cnt = q->length;
+    if (cnt == 0) {
+        g_queue_free(q);
+        return false;
+    }
     RectangleIdx* rects = g_new0(RectangleIdx, cnt + 4);
     int i = 0;
     int curfocusidx = -1;
-    HSClient* curfocus = get_current_client();
     bool success = true;
-    if (curfocus == NULL && cnt == 0) {
-        success = false;
-    }
     for (GList* cur = q->head; cur != NULL; cur = cur->next, i++) {
         HSClient* client = cur->data;
         if (curfocus == client) curfocusidx = i;
         rects[i].idx = i;
         rects[i].r = client->dec.last_outer_rect;
     }
+    g_queue_free(q);
     // add artifical rects for screen edges
     {
         Rectangle mr = monitor_get_floating_area(get_current_monitor());
@@ -317,7 +325,6 @@ bool floating_shift_direction(enum HSDirection dir) {
         monitor_apply_layout(get_current_monitor());
     }
     g_free(rects);
-    g_queue_free(q);
     return success;
 }
 

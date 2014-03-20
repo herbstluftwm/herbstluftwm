@@ -1569,14 +1569,14 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
         direction = argv[2][0];
     }
     if (!frame_focused_client(g_cur_frame)) {
-        return 0;
+        return HERBST_FORBIDDEN;
     }
     if (is_client_floated(get_current_client())) {
         // try to move the floating window
         enum HSDirection dir = char_to_direction(direction);
         if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        floating_shift_direction(dir);
-        return 0;
+        bool success = floating_shift_direction(dir);
+        return success ? 0 : HERBST_FORBIDDEN;
     }
     int index;
     if (!external_only &&
@@ -1976,8 +1976,11 @@ int frame_move_window_edge(int argc, char** argv, GString* output) {
     // Moves a window to the edge in the specified direction
     char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);
+    int oldval = *g_focus_crosses_monitor_boundaries;
+    *g_focus_crosses_monitor_boundaries = 0;
     while (0 == frame_move_window_command(argc,argv,output))
         ;
+    *g_focus_crosses_monitor_boundaries = oldval;
     monitors_unlock_command(LENGTH(args), args);
     return 0;
 }
