@@ -991,8 +991,9 @@ smart_frame_surroundings (Integer)::
     regarding the focused frame.
 
 smart_window_surroundings (Integer)::
-    If set, window borders and gaps will be removed when there's no ambiguity
-    regarding the focused window.
+    If set, window borders and gaps will be removed and minimal when there's no
+    ambiguity regarding the focused window. This minimal window decoration can
+    be configured by the +theme.minimal+ object.
 
 focus_follows_mouse (Integer)::
     If set and a window is focused by mouse cursor, this window is focused (this
@@ -1455,7 +1456,9 @@ respective attribute of the +tiling+ and the +floating+ object.
        *** +normal+ configures the decoration of unfocused and tiled clients
        *** +urgent+ configures the decoration of urgent and tiled clients
 
-   ** +floating+ behavious analogously to +tiling+
+   ** +floating+ behaves analogously to +tiling+
+   ** +minimal+ behaves analogously to +tiling+ and configures those minimal
+      decorations triggered by +smart_window_surroundings+.
    ** +active+ propagates the attribute values to +tiling.active+ and
       +floating.active+
    ** +normal+ propagates the attribute values to +tiling.normal+ and
