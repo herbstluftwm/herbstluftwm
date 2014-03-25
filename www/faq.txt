@@ -202,7 +202,7 @@ Q: How can I start external panels correctly?::
     panel needs 31 pixels at the bottom of monitor 0):
 +
 ----
-# add a external panel
+# add an external panel
 {
     pids=( )
     # reserve some space for the panel on monitor 0
