@@ -1,8 +1,8 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
-Current git version
--------------------
+Release 0.6.1 on 2014-03-25
+---------------------------
 
     * directional shift of floating windows
     * fix crash of directional focus
