@@ -1206,12 +1206,15 @@ bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count) {
 
 // monitor detection that always works: one monitor across the entire screen
 bool detect_monitors_simple(Rectangle** ret_rects, size_t* ret_count) {
+    XWindowAttributes attributes;
+    XGetWindowAttributes(g_display, g_root, &attributes);
+
     *ret_count = 1;
     *ret_rects = g_new0(Rectangle, 1);
     (*ret_rects)->x = 0;
     (*ret_rects)->y = 0;
-    (*ret_rects)->width = g_screen_width;
-    (*ret_rects)->height = g_screen_height;
+    (*ret_rects)->width = attributes.width;
+    (*ret_rects)->height = attributes.height;
     return true;
 }
 
