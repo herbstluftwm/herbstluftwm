@@ -438,8 +438,6 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     }
     decoration_redraw_pixmap(client);
     XSetWindowBackgroundPixmap(g_display, decwin, client->dec.pixmap);
-    XMoveResizeWindow(g_display, decwin,
-                      outline.x, outline.y, outline.width, outline.height);
     if (!size_changed) {
         // if size changes, then the window is cleared automatically
         XClearWindow(g_display, decwin);
@@ -450,6 +448,8 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
                           changes.x, changes.y,
                           changes.width, changes.height);
     }
+    XMoveResizeWindow(g_display, decwin,
+                      outline.x, outline.y, outline.width, outline.height);
     decoration_update_frame_extents(client);
     if (!client->dragged || *g_update_dragged_clients) {
         client_send_configure(client);
