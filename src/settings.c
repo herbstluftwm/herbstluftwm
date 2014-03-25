@@ -166,7 +166,9 @@ void settings_destroy() {
 static GString* cb_on_change(struct HSAttribute* attr) {
     int idx = attr - g_settings_object->attributes;
     HSAssert (idx >= 0 || idx < LENGTH(g_settings));
-    g_settings[idx].on_change();
+    if (g_settings[idx].on_change) {
+        g_settings[idx].on_change();
+    }
     return NULL;
 }
 
