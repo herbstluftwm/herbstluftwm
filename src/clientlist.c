@@ -36,7 +36,6 @@ int g_monitor_float_treshold = 24;
 
 int* g_raise_on_focus;
 int* g_snap_gap;
-int* g_smart_window_surroundings;
 
 static GHashTable* g_clients; // container of all clients
 static HSObject*   g_client_object;
@@ -426,11 +425,10 @@ bool client_needs_minimal_dec(HSClient* client, HSFrame* frame) {
         frame = find_frame_with_client(client->tag->frame, client);
         HSAssert(frame != NULL);
     }
-    if (!*g_smart_window_surroundings) return false;
+    if (!smart_window_surroundings_active(frame)) return false;
     if (client->pseudotile) return false;
     if (is_client_floated(client)) return false;
-    return (frame->content.clients.count == 1
-            || frame->content.clients.layout == LAYOUT_MAX);
+    return true;
 }
 
 void client_window_unfocus(HSClient* client) {
