@@ -533,13 +533,7 @@ int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* ou
     }
 
     bool error = false;
-    union {
-        bool        b;
-        int         i;
-        unsigned int u;
-        GString*    str;
-        HSColor     color;
-    } new_value, old_value;
+    HSAttributeValue new_value, old_value;
     bool nothing_to_do = false;
 
 #define ATTR_DO_ASSIGN_COMPARE(NAME,MEM) \
