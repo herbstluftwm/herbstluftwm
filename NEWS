@@ -1,6 +1,16 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Release 0.6.2 on 2014-03-27
+---------------------------
+Two bug fixes:
+    * A crash has been fixed. It could be triggered by changing a
+      non-callback settings attribute e.g. settings.raise_on_focus
+    * The dialog re-mapping-problem has been fixed. So now, applications can
+      show the same dialogs again after the dialog has been closed (e.g. the
+      connection window of qjackctl).
+
+
 Release 0.6.1 on 2014-03-25
 ---------------------------
 
