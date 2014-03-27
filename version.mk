@@ -3,7 +3,7 @@
 VERSION_MAJOR = 0
 VERSION_MINOR = 6
 # patch level
-VERSION_PATCH = 1
+VERSION_PATCH = 2
 # git version
 ifneq (,$(wildcard .git))
 ifneq (,$(shell which git 2>/dev/null))
