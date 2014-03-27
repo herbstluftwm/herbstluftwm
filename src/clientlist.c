@@ -376,8 +376,14 @@ void unmanage_client(Window win) {
     // permanently remove it
     XUnmapWindow(g_display, client->dec.decwin);
     XReparentWindow(g_display, win, g_root, 0, 0);
+    // delete ewmh-properties and ICCCM-Properties such that the client knows
+    // that he has been unmanaged and now the client is allowed to be mapped
+    // again (e.g. if it is some dialog)
+    ewmh_clear_client_properties(client);
+    XDeleteProperty(g_display, client->window, g_wmatom[WMState]);
     HSTag* tag = client->tag;
     g_hash_table_remove(g_clients, &win);
+    client = NULL;
     // and arrange monitor after the client has been removed from the stack
     HSMonitor* m = find_monitor_with_tag(tag);
     tag_update_focus_layer(tag);
