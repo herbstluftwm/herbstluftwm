@@ -431,8 +431,8 @@ void complete_against_tags(int argc, char** argv, int pos, GString* output) {
     } else {
         needle = argv[pos];
     }
-    for (int i = 0; i < g_tags->len; i++) {
-        char* name = g_array_index(g_tags, HSTag*, i)->name->str;
+    for (int i = 0; i < tag_get_count(); i++) {
+        char* name = get_tag_by_index(i)->name->str;
         try_complete(needle, name, output);
     }
 }
@@ -599,8 +599,8 @@ void complete_merge_tag(int argc, char** argv, int pos, GString* output) {
     } else {
         needle = argv[pos];
     }
-    for (int i = 0; i < g_tags->len; i++) {
-        char* name = g_array_index(g_tags, HSTag*, i)->name->str;
+    for (int i = 0; i < tag_get_count(); i++) {
+        char* name = get_tag_by_index(i)->name->str;
         if (!strcmp(name, first)) {
             // merge target must not be equal to tag to remove
             continue;
@@ -620,10 +620,11 @@ void complete_against_settings(int argc, char** argv, int pos, GString* output)
     bool is_toggle_command = !strcmp(argv[0], "toggle");
     // complete with setting name
     for (int i = 0; i < settings_count(); i++) {
-        if (is_toggle_command && g_settings[i].type != HS_Int) {
+        SettingsPair* sp = settings_get_by_index(i);
+        if (is_toggle_command && sp->type != HS_Int) {
             continue;
         }
-        try_complete(needle, g_settings[i].name, output);
+        try_complete(needle, sp->name, output);
     }
 }
 

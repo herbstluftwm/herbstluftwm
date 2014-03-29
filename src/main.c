@@ -39,8 +39,11 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
-static Bool     g_otherwm;
+// globals:
 int g_verbose = 0;
+
+// module internals:
+static Bool     g_otherwm;
 static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
 static int*     g_focus_follows_mouse = NULL;
@@ -340,8 +343,8 @@ int print_tag_status_command(int argc, char** argv, GString* output) {
     }
     tag_update_flags();
     g_string_append_c(output, '\t');
-    for (int i = 0; i < g_tags->len; i++) {
-        HSTag* tag = g_array_index(g_tags, HSTag*, i);
+    for (int i = 0; i < tag_get_count(); i++) {
+        HSTag* tag = get_tag_by_index(i);
         // print flags
         char c = '.';
         if (tag->flags & TAG_FLAG_USED) {

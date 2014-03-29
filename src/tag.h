@@ -23,10 +23,6 @@ typedef struct HSTag {
     struct HSObject* object;
 } HSTag;
 
-// globals
-GArray*     g_tags; // Array of HSTag*
-bool        g_tag_flags_dirty;
-
 void tag_init();
 void tag_destroy();
 
@@ -38,6 +34,7 @@ HSTag* find_unused_tag();
 HSTag* find_tag_with_toplevel_frame(struct HSFrame* frame);
 HSTag* get_tag_by_index(int index);
 HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags);
+int    tag_get_count();
 int tag_add_command(int argc, char** argv, GString* output);
 int tag_rename_command(int argc, char** argv, GString* output);
 int tag_move_window_command(int argc, char** argv, GString* output);

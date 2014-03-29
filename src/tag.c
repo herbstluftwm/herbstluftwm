@@ -20,10 +20,11 @@
 #include "monitor.h"
 #include "settings.h"
 
-bool    g_tag_flags_dirty = true;
-HSObject* g_tag_object;
-HSObject* g_tag_by_name;
-int* g_raise_on_focus_temporarily;
+static GArray*     g_tags; // Array of HSTag*
+static bool    g_tag_flags_dirty = true;
+static HSObject* g_tag_object;
+static HSObject* g_tag_by_name;
+static int* g_raise_on_focus_temporarily;
 
 static int tag_rename(HSTag* tag, char* name, GString* output);
 
@@ -67,6 +68,9 @@ void tag_destroy() {
     hsobject_unlink_and_destroy(hsobject_root(), g_tag_object);
 }
 
+int    tag_get_count() {
+    return g_tags->len;
+}
 
 HSTag* find_tag(char* name) {
     int i;

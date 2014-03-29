@@ -30,13 +30,13 @@ typedef struct {
     void (*on_change)(); // what to call on change
 } SettingsPair;
 
-extern SettingsPair g_settings[];
 int g_initial_monitors_locked;
 
 void settings_init();
 void settings_destroy();
 
 SettingsPair* settings_find(char* name);
+SettingsPair* settings_get_by_index(int i);
 char* settings_find_string(char* name);
 
 int settings_set(SettingsPair* pair, const char* value);

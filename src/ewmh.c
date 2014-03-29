@@ -23,12 +23,13 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-Window*     g_windows; // array with Window-IDs
-size_t      g_window_count;
+// module internal globals:
+static Window*     g_windows; // array with Window-IDs
+static size_t      g_window_count;
 static Window      g_wm_window;
-int*        g_focus_stealing_prevention;
+static int*        g_focus_stealing_prevention;
 
-int WM_STATE;
+static int WM_STATE;
 
 static Window*  g_original_clients = NULL;
 static unsigned long g_original_clients_count = 0;
@@ -244,17 +245,18 @@ void ewmh_remove_client(Window win) {
 }
 
 void ewmh_update_desktops() {
+    int cnt = tag_get_count();
     XChangeProperty(g_display, g_root, g_netatom[NetNumberOfDesktops],
-        XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(g_tags->len), 1);
+        XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&cnt, 1);
 }
 
 void ewmh_update_desktop_names() {
-    char**  names = g_new(char*, g_tags->len);
-    for (int i = 0; i < g_tags->len; i++) {
-        names[i] = g_array_index(g_tags, HSTag*,i)->name->str;
+    char**  names = g_new(char*, tag_get_count());
+    for (int i = 0; i < tag_get_count(); i++) {
+        names[i] = get_tag_by_index(i)->name->str;
     }
     XTextProperty text_prop;
-    Xutf8TextListToTextProperty(g_display, names, g_tags->len,
+    Xutf8TextListToTextProperty(g_display, names, tag_get_count(),
                                 XUTF8StringStyle, &text_prop);
     XSetTextProperty(g_display, g_root, &text_prop, g_netatom[NetDesktopNames]);
     XFree(text_prop.value);
@@ -263,7 +265,7 @@ void ewmh_update_desktop_names() {
 
 void ewmh_update_current_desktop() {
     HSTag* tag = get_current_monitor()->tag;
-    int index = array_find(g_tags->data, g_tags->len, sizeof(HSTag*), &tag);
+    int index = tag_index_of(tag);
     if (index < 0) {
         g_warning("tag %s not found in internal list\n", tag->name->str);
         return;
@@ -273,7 +275,7 @@ void ewmh_update_current_desktop() {
 }
 
 void ewmh_window_update_tag(Window win, HSTag* tag) {
-    int index = array_find(g_tags->data, g_tags->len, sizeof(HSTag*), &tag);
+    int index = tag_index_of(tag);
     if (index < 0) {
         g_warning("tag %s not found in internal list\n", tag->name->str);
         return;
@@ -327,12 +329,12 @@ void ewmh_handle_client_message(XEvent* event) {
 
         case NetCurrentDesktop:
             desktop_index = me->data.l[0];
-            if (desktop_index < 0 || desktop_index >= g_tags->len) {
+            if (desktop_index < 0 || desktop_index >= tag_get_count()) {
                 HSDebug("_NET_CURRENT_DESKTOP: invalid index \"%d\"\n",
                         desktop_index);
                 break;
             }
-            HSTag* tag = g_array_index(g_tags, HSTag*, desktop_index);
+            HSTag* tag = get_tag_by_index(desktop_index);
             monitor_set_tag(get_current_monitor(), tag);
             break;
 

@@ -25,6 +25,7 @@
 #include <mach/mach.h>
 #endif
 
+// globals
 char*   g_tree_style; /* the one from layout.c */
 
 time_t get_monotonic_timestamp() {

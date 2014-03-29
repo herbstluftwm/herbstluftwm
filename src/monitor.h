@@ -45,9 +45,6 @@ typedef struct HSMonitor {
     Window      stacking_window;   // window used for making stacking easy
 } HSMonitor;
 
-// globals
-int         g_cur_monitor;
-
 void monitor_init();
 void monitor_destroy();
 

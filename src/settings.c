@@ -103,8 +103,11 @@ SettingsPair g_settings[] = {
                 "theme.tiling.urgent.color", "theme.urgent.color"),
 };
 
+// globals:
 int             g_initial_monitors_locked = 0;
-HSObject*       g_settings_object;
+
+// module internals
+static HSObject*       g_settings_object;
 
 static GString* cb_on_change(struct HSAttribute* attr);
 static void cb_read_compat(void* data, GString* output);
@@ -190,6 +193,11 @@ static GString* cb_write_compat(struct HSAttribute* attr, const char* new_value)
 
 SettingsPair* settings_find(char* name) {
     return STATIC_TABLE_FIND_STR(SettingsPair, g_settings, name, name);
+}
+
+SettingsPair* settings_get_by_index(int i) {
+    if (i < 0 || i >= LENGTH(g_settings)) return NULL;
+    return g_settings + i;
 }
 
 char* settings_find_string(char* name) {

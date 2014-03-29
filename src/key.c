@@ -23,7 +23,7 @@ unsigned int* get_numlockmask_ptr() {
     return &numlockmask;
 }
 
-GList* g_key_binds = NULL;
+static GList* g_key_binds = NULL;
 
 void key_init() {
     update_numlockmask();

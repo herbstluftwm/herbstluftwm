@@ -32,10 +32,10 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-int g_monitor_float_treshold = 24;
+static int g_monitor_float_treshold = 24;
 
-int* g_raise_on_focus;
-int* g_snap_gap;
+static int* g_raise_on_focus;
+static int* g_snap_gap;
 
 static GHashTable* g_clients; // container of all clients
 static HSObject*   g_client_object;

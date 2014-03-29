@@ -25,14 +25,16 @@
 #include "stack.h"
 #include "clientlist.h"
 
-int* g_monitors_locked;
-int* g_swap_monitors_to_get_tag;
-int* g_smart_frame_surroundings;
-int* g_mouse_recenter_gap;
-HSStack* g_monitor_stack;
-GArray*     g_monitors; // Array of HSMonitor*
-HSObject*   g_monitor_object;
-HSObject*   g_monitor_by_name_object;
+// module internals:
+static int g_cur_monitor;
+static int* g_monitors_locked;
+static int* g_swap_monitors_to_get_tag;
+static int* g_smart_frame_surroundings;
+static int* g_mouse_recenter_gap;
+static HSStack* g_monitor_stack;
+static GArray*     g_monitors; // Array of HSMonitor*
+static HSObject*   g_monitor_object;
+static HSObject*   g_monitor_by_name_object;
 
 typedef struct RectList {
     Rectangle rect;
@@ -763,7 +765,7 @@ void ensure_monitors_are_available() {
     };
     ensure_tags_are_available();
     // add monitor with first tag
-    HSMonitor* m = add_monitor(rect, g_array_index(g_tags, HSTag*, 0), NULL);
+    HSMonitor* m = add_monitor(rect, get_tag_by_index(0), NULL);
     g_cur_monitor = 0;
     g_cur_frame = m->tag->frame;
 

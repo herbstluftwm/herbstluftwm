@@ -33,26 +33,26 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-int* g_frame_border_width;
-int* g_frame_border_inner_width;
-int* g_always_show_frame;
-int* g_default_frame_layout;
-int* g_frame_bg_transparent;
-int* g_frame_transparent_width;
-int* g_direction_external_only;
-int* g_gapless_grid;
-int* g_smart_frame_surroundings;
-int* g_smart_window_surroundings;
-int* g_focus_crosses_monitor_boundaries;
-int* g_frame_padding;
-unsigned long g_frame_border_active_color;
-unsigned long g_frame_border_normal_color;
-unsigned long g_frame_border_inner_color;
-unsigned long g_frame_bg_active_color;
-unsigned long g_frame_bg_normal_color;
-unsigned long g_frame_active_opacity;
-unsigned long g_frame_normal_opacity;
-char*   g_tree_style = NULL;
+static int* g_frame_border_width;
+static int* g_frame_border_inner_width;
+static int* g_always_show_frame;
+static int* g_default_frame_layout;
+static int* g_frame_bg_transparent;
+static int* g_frame_transparent_width;
+static int* g_direction_external_only;
+static int* g_gapless_grid;
+static int* g_smart_frame_surroundings;
+static int* g_smart_window_surroundings;
+static int* g_focus_crosses_monitor_boundaries;
+static int* g_frame_padding;
+static unsigned long g_frame_border_active_color;
+static unsigned long g_frame_border_normal_color;
+static unsigned long g_frame_border_inner_color;
+static unsigned long g_frame_bg_active_color;
+static unsigned long g_frame_bg_normal_color;
+static unsigned long g_frame_active_opacity;
+static unsigned long g_frame_normal_opacity;
+static char*   g_tree_style = NULL;
 
 char* g_align_names[] = {
     "vertical",

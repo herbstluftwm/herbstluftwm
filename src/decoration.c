@@ -8,21 +8,23 @@
 #include <stdio.h>
 #include <string.h>
 
+// public globals:
 HSDecTriple g_decorations[HSDecSchemeCount];
 
+// module intern globals:
 static GHashTable* g_decwin2client = NULL;
 
-int* g_pseudotile_center_threshold;
-int* g_update_dragged_clients;
-HSObject* g_theme_object;
-HSObject g_theme_active_object;
-HSObject g_theme_normal_object;
-HSObject g_theme_urgent_object;
+static int* g_pseudotile_center_threshold;
+static int* g_update_dragged_clients;
+static HSObject* g_theme_object;
+static HSObject g_theme_active_object;
+static HSObject g_theme_normal_object;
+static HSObject g_theme_urgent_object;
 // dummy schemes for propagation
-HSDecorationScheme g_theme_scheme;
-HSDecorationScheme g_theme_active_scheme;
-HSDecorationScheme g_theme_normal_scheme;
-HSDecorationScheme g_theme_urgent_scheme;
+static HSDecorationScheme g_theme_scheme;
+static HSDecorationScheme g_theme_active_scheme;
+static HSDecorationScheme g_theme_normal_scheme;
+static HSDecorationScheme g_theme_urgent_scheme;
 static void init_dec_triple_object(HSDecTriple* t, const char* name);
 static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
 static void init_scheme_attributes(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
