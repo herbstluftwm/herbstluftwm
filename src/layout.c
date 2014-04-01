@@ -52,7 +52,7 @@ static unsigned long g_frame_bg_active_color;
 static unsigned long g_frame_bg_normal_color;
 static unsigned long g_frame_active_opacity;
 static unsigned long g_frame_normal_opacity;
-static char*   g_tree_style = NULL;
+char*   g_tree_style = NULL; // used by utils.c
 
 char* g_align_names[] = {
     "vertical",
