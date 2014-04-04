@@ -401,6 +401,9 @@ void ewmh_handle_client_message(XEvent* event) {
 
         case NetWmMoveresize:
             client = get_client_from_window(me->window);
+            if (!client) {
+                break;
+            }
             int direction = me->data.l[2];
             if (direction == _NET_WM_MOVERESIZE_MOVE
                 || direction == _NET_WM_MOVERESIZE_MOVE_KEYBOARD) {
