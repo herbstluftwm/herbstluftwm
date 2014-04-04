@@ -1,6 +1,11 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Current git version
+-------------------
+
+    * Handle EWMH request _NET_WM_MOVERESIZE more conform
+
 Release 0.6.2 on 2014-03-27
 ---------------------------
 Two bug fixes:

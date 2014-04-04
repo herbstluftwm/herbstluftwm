@@ -400,9 +400,17 @@ void ewmh_handle_client_message(XEvent* event) {
             break;
 
         case NetWmMoveresize:
-            // TODO: handle requests more exactly
             client = get_client_from_window(me->window);
-            mouse_initiate_resize(client, 0, NULL);
+            int direction = me->data.l[2];
+            if (direction == _NET_WM_MOVERESIZE_MOVE
+                || direction == _NET_WM_MOVERESIZE_MOVE_KEYBOARD) {
+                mouse_initiate_move(client, 0, NULL);
+            } else if (direction == _NET_WM_MOVERESIZE_CANCEL) {
+                if (mouse_is_dragging()) mouse_stop_drag();
+            } else {
+                // anything else is a resize
+                mouse_initiate_resize(client, 0, NULL);
+            }
             break;
 
         default:
