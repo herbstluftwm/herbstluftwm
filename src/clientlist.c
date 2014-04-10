@@ -151,7 +151,9 @@ HSClient* get_client_from_window(Window window) {
 
 #define CLIENT_UPDATE_ATTR(FUNC,MEMBER) do { \
         HSClient* client = container_of(attr->value.b, HSClient, MEMBER); \
-        FUNC(client, client->MEMBER); \
+        bool val = client->MEMBER; \
+        client->MEMBER = ! client->MEMBER ; /* enforce update of MEMBER */ \
+        FUNC(client, val); \
         return NULL; \
     }   \
     while (0);
