@@ -205,6 +205,20 @@ static int tag_attr_index(void* data) {
     return tag_index_of(tag);
 }
 
+static void tag_unlink_id_object(HSTag* tag, void* data) {
+    (void)data;
+    hsobject_unlink(g_tag_object, tag->object);
+}
+
+static void tag_link_id_object(HSTag* tag, void* data) {
+    (void)data;
+    GString* index_str = g_string_new("");
+    int index = tag_index_of(tag);
+    g_string_printf(index_str, "%d", index);
+    hsobject_link(g_tag_object, tag->object, index_str->str);
+    g_string_free(index_str, true);
+}
+
 HSTag* add_tag(char* name) {
     HSTag* find_result = find_tag(name);
     if (find_result) {
@@ -233,6 +247,7 @@ HSTag* add_tag(char* name) {
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(tag->object, attributes);
+    tag_link_id_object(tag, NULL);
 
     ewmh_update_desktops();
     ewmh_update_desktop_names();
@@ -332,6 +347,7 @@ int tag_remove_command(int argc, char** argv, GString* output) {
         }
     }
     g_free(buf);
+    tag_foreach(tag_unlink_id_object, NULL);
     // remove tag
     char* oldname = g_strdup(tag->name->str);
     tag_free(tag);
@@ -347,6 +363,7 @@ int tag_remove_command(int argc, char** argv, GString* output) {
     tag_set_flags_dirty();
     hook_emit_list("tag_removed", oldname, target->name->str, NULL);
     g_free(oldname);
+    tag_foreach(tag_link_id_object, NULL);
     return 0;
 }
 
