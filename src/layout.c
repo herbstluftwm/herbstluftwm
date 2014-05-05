@@ -808,10 +808,9 @@ void frame_apply_layout(HSFrame* frame, Rectangle rect) {
             rect.width -= *g_frame_border_width * 2;
         }
 
-        if (rect.width <= WINDOW_MIN_WIDTH || rect.height <= WINDOW_MIN_HEIGHT) {
-            // do nothing on invalid size
-            return;
-        }
+        rect.width = MAX(WINDOW_MIN_WIDTH, rect.width);
+        rect.height = MAX(WINDOW_MIN_HEIGHT, rect.height);
+
         unsigned long border_color = g_frame_border_normal_color;
         unsigned long bg_color = g_frame_bg_normal_color;
         int bw = *g_frame_border_width;
