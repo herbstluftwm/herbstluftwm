@@ -496,7 +496,7 @@ void ewmh_update_frame_extents(Window win, int left, int right, int top, int bot
 
 void window_update_wm_state(Window win, WmState state) {
     uint32_t int_state = state;
-    XChangeProperty(g_display, win,  WM_STATE, WM_STATE,
+    XChangeProperty(g_display, win,  WM_STATE, XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&int_state, 1);
 }
 
