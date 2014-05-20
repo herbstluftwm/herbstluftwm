@@ -287,6 +287,11 @@ int tag_rename_command(int argc, char** argv, GString* output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
+    if (!strcmp("", argv[2])) {
+        g_string_append_printf(output,
+            "%s: An empty tag name is not permitted\n", argv[0]);
+        return HERBST_INVALID_ARGUMENT;
+    }
     HSTag* tag = find_tag(argv[1]);
     if (!tag) {
         g_string_append_printf(output,
