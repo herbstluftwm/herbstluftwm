@@ -1348,8 +1348,9 @@ listed as follows:
 |===========================
  u - count                , number of tags
 |===========================
+    ** 'index': the object of the tag with index 'index'.
     ** +by-name+
-        *** 'TAG': a object for each tag with the name 'TAG' +
+        *** 'TAG': an object for each tag with the name 'TAG' +
 +
 [format="csv",cols="m,"]
 |===========================

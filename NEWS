@@ -5,6 +5,7 @@ Current git version
 -------------------
 
     * Handle EWMH request _NET_WM_MOVERESIZE more conform
+    * Make tag objects accessible by their index
 
 Release 0.6.2 on 2014-03-27
 ---------------------------
