@@ -3,9 +3,10 @@ Get it!
 Install herbstluftwm via your package manager! It is currently available on the
 following platforms:
 
-  * Arch Linux via the
-    link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm[Arch User
-    Repository]
+  * Arch Linux via the package in the community repository or the git-version
+    in the
+    link:https://aur.archlinux.org/packages.php?O=0&K=herbstluftwm-git[Arch
+    User Repository]
   * link:http://packages.debian.org/search?keywords=herbstluftwm[Debian]
   * link:http://packages.gentoo.org/package/x11-wm/herbstluftwm[Gentoo Linux]
   * Mac OS X via
