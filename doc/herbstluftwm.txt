@@ -405,19 +405,19 @@ focus ['-i'|'-e'] 'DIRECTION'::
     be at frame C.
 +
 ----
- Tree:  V,0     Screen: .-----..-----. (before)
-        / \             |  B  ||  C  |
-       /   \            '-----''-----'
-     H,1   H,0          .-----..-----.
-     / \   / \          |  A* ||  D  |
-    A*  B C   D         '-----''-----'
+ Tree:  V,0     Screen: ┌─────┐┌─────┐ (before)
+        ╱ ╲             │  B  ││  C  │
+       ╱   ╲            └─────┘└─────┘
+     H,1   H,0          ┌─────┐┌─────┐
+     ╱ ╲   ╱ ╲          │  A* ││  D  │
+    A*  B C   D         └─────┘└─────┘
 
- Tree:  V,0     Screen: .-----..-----. (after focus right)
-        / \             |  B  ||  C* |
-       /   \            '-----''-----'
-     H,1   H,0          .-----..-----.
-     / \   / \          |  A  ||  D  |
-    A   B C*  D         '-----''-----'
+ Tree:  V,0     Screen: ┌─────┐┌─────┐ (after focus right)
+        ╱ ╲             │  B  ││  C* │
+       ╱   ╲            └─────┘└─────┘
+     H,1   H,0          ┌─────┐┌─────┐
+     ╱ ╲   ╱ ╲          │  A  ││  D  │
+    A   B C*  D         └─────┘└─────┘
 ----
  ::
     If the currently focused client is floated, then the next floating window in
