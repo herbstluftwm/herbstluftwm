@@ -8,7 +8,7 @@
 _herbstclient() {
     local IFS=$'\n'
     # compadd is documented in zshcompwid(1)
-    compadd -QS '' "$@" $(herbstclient -q complete_shell "$((CURRENT-2))" "${(@)words[@]:1}")
+    compadd -QS '' -- "$@" $(herbstclient -q complete_shell "$((CURRENT-2))" "${(@)words[@]:1}")
 }
 
 # compdef is documented in zshcompsys(1)
