@@ -355,3 +355,29 @@ table thead th {
     background-color: white;
 }
 
+/* things for table of contents */
+.toc {
+    list-style: outside none;
+    border: 1px solid #5D9B4C;
+    background-color: #E9FEE3;
+    marker-offset: 0px;
+    padding: 0.4em;
+    margin: 1em;
+}
+
+.toc h4 {
+    font-weight: bold;
+    margin: 0px;
+    margin-bottom: 0.3em;
+}
+
+.toc li a {
+    color: black;
+}
+
+.toc li {
+    margin-top: 0.1em;
+    margin-bottom: 0.1em;
+    padding: 0pt;
+    padding-left: 1.3em;
+}

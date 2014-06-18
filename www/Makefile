@@ -37,6 +37,11 @@ herbstclient.html: ../doc/herbstclient.txt
 
 tour.html: ../doc/herbstluftwm-tutorial.txt
 
+faq-toc.html: faq-content.html ./gentoc.sh
+	./gentoc.sh $< > $@
+
+faq.html: faq-toc.html
+
 clean:
 	rm -f *.html *-content.html
 

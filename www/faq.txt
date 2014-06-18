@@ -1,43 +1,46 @@
 Hints and FAQ
--------------
+=============
 
-Hint: Don't restart::
-   To make changes in your autostart take effect immediately, just type
-   +herbstclient reload+. There is no need to restart herbstluftwm or X. +
-   +
-   Even if you just updated you herbstluftwm-binary, there's no need to restart
-   anything. Run +herbstclient wmexec+, which does an +exec+(3) on the new
-   herbstluftwm version. (You also can use +wmexec+ to switch to another window
-   manager without restarting anything)
+Hint: Don't restart
+-------------------
+To make changes in your autostart take effect immediately, just type
++herbstclient reload+. There is no need to restart herbstluftwm or X. +
 
-Hint: Use scripts!::
-   There are a bunch of scripts coming along with herbstluftwm. Check out the
-   scripts directory in the sources and the examples directory after installing.
+Even if you just updated you herbstluftwm-binary, there's no need to restart
+anything. Run +herbstclient wmexec+, which does an +exec+(3) on the new
+herbstluftwm version. (You also can use +wmexec+ to switch to another window
+manager without restarting anything)
 
-Hint: Understanding processes::
-    To understand the relationship between the different processes that running
-    in a typical herbstluftwm setup, consider the following diagram:
-+
+Hint: Use scripts!
+------------------
+There are a bunch of scripts coming along with herbstluftwm. Check out the
+scripts directory in the sources and the examples directory after installing.
+
+Hint: Understanding processes
+-----------------------------
+To understand the relationship between the different processes that running
+in a typical herbstluftwm setup, consider the following diagram:
+
 ----
-                startx
-                  | f/e
-                  V
-             ~/.xinitrc
-                  | f/e or exec
- IPC-Call         V
-   .- - - -> herbstluftwm           __________________
- ."            /     \             | Symbol | Meaning |
- .            /       \            |--------+---------|
- .       f/e /         \ f/e       |  A     | A forks |
- .          /           \          |  | f/e | and     |
- .         V             V         |  V     | execs   |
- .     autostart       xterm       |  B     | into B  |
- .         |             |         |________|_________|
- .     f/e |             | f/e
-  .        V             V
-   -- herbstclient     $SHELL
+            startx
+              | f/e
+              V
+         ~/.xinitrc
+              | f/e or exec
+IPC-Call         V
+.- - - -> herbstluftwm           __________________
+."            /     \             | Symbol | Meaning |
+.            /       \            |--------+---------|
+.       f/e /         \ f/e       |  A     | A forks |
+.          /           \          |  | f/e | and     |
+.         V             V         |  V     | execs   |
+.     autostart       xterm       |  B     | into B  |
+.         |             |         |________|_________|
+.     f/e |             | f/e
+.        V             V
+-- herbstclient     $SHELL
 ----
-+
+
 As you can see, +herbstclient+ does nothing except sending requests to
 +herbstluftwm+. Whenever a process performs a fork-and-exec, the following
 rules apply:
@@ -53,72 +56,78 @@ rules apply:
         * If a process spawns a window, then the window will spawn delayed. This
           delay differs from application to application (and from time to time).
           So a script like
-+
+
 ----
 herbstclient spawn xterm
 herbstclient spawn xev
 ----
-+
+
 does *not* guarantee that the +xterm+ window will appear before the
 +xev+ window! It only guarantees that the +xterm+ is executed before +xev+ will
 be executed.+
-+
+
 => If you want to apply some rules only for the next windows, then use a
 bash-script like the one for <<TEMP_RULES,temporary rules>>.
 
 
-Q: Why is herbstluftwm called herbstluftwm?::
-   I liked the name of the e-mail client wanderlust. Unfortunately I am a happy
-   mutt user, so I needed an other application with a similar name.
+Q: Why is herbstluftwm called herbstluftwm?
+-------------------------------------------
+I liked the name of the e-mail client wanderlust. Unfortunately I am a happy
+mutt user, so I needed an other application with a similar name.
 
 [[FORK]]
-Q: Is herbstluftwm a fork of dwm/musca/wmii/...?::
-    No. It was written from scratch, although it borrows some basic XLib function calls
-    (like updating numlock-state, sending a +WMDelete+-Message to a client,
-    updating the urgent hints, ...) from dwm.
+Q: Is herbstluftwm a fork of dwm/musca/wmii/...?
+------------------------------------------------
+No. It was written from scratch, although it borrows some basic XLib function calls
+(like updating numlock-state, sending a +WMDelete+-Message to a client,
+updating the urgent hints, ...) from dwm.
 
-Q: If the config is a bash script, does it mean it is called on each keystroke?::
-   No, the configuration file is executed once to set internal settings and
-   keybindings and so on. If a keybinding is registered and its key is pressed,
-   the according (internal) command directly is called.
+Q: If the config is a bash script, does it mean it is called on each keystroke?
+-------------------------------------------------------------------------------
+No, the configuration file is executed once to set internal settings and
+keybindings and so on. If a keybinding is registered and its key is pressed,
+the according (internal) command directly is called.
 
-Q: How can I let single clients float?::
-    Not at all. You don't need it. You have the power of manual tiling, so
-    there is no need to place clients manually by dragging. Even better:
-    You don't even need to place them manually. Use a rule to place special
-    dialogs automatically when they appear. See the GIMP-Example for a good
-    example.
+Q: How can I let single clients float?
+--------------------------------------
+Not at all. You don't need it. You have the power of manual tiling, so
+there is no need to place clients manually by dragging. Even better:
+You don't even need to place them manually. Use a rule to place special
+dialogs automatically when they appear. See the GIMP-Example for a good
+example.
 
-Q: But I use GIMP very often, how can I use it without floating?::
-    Load a predefined layout to a gimp tag. Move the GIMP-Tool windows to the
-    left and right border and put the rest in the center. Add this to your
-    autostart:
-+
+Q: But I use GIMP very often, how can I use it without floating?
+----------------------------------------------------------------
+Load a predefined layout to a gimp tag. Move the GIMP-Tool windows to the
+left and right border and put the rest in the center. Add this to your
+autostart:
+
 ----
 # GIMP
 # ensure there is a gimp tag
 hc add gimp
 hc load gimp '
 (split horizontal:0.850000:0
-  (split horizontal:0.200000:1
-    (clients vertical:0)
-    (clients grid:0))
-  (clients vertical:0))
+(split horizontal:0.200000:1
+(clients vertical:0)
+(clients grid:0))
+(clients vertical:0))
 '               # load predefined layout
 # center all other gimp windows on gimp tag
 hc rule class=Gimp tag=gimp index=01 pseudotile=on
 hc rule class=Gimp windowrole~'gimp-(image-window|toolbox|dock)' \
-    pseudotile=off
+pseudotile=off
 hc rule class=Gimp windowrole=gimp-toolbox focus=off index=00
 hc rule class=Gimp windowrole=gimp-dock focus=off index=1
 ----
-+
+
 
 [[TEMP_RULES]]
-Q: How can I add rules temporarily for some special clients?::
-    Add a rule for the clients pid, before the client appears. This script
-    creates two xterms with different behaviours:
-+
+Q: How can I add rules temporarily for some special clients?
+------------------------------------------------------------
+Add a rule for the clients pid, before the client appears. This script
+creates two xterms with different behaviours:
+
 ----
 #!/bin/bash
 
@@ -141,66 +150,72 @@ RULES=( pseudotile=on focus=on )
 spawn_with_rules xterm
 ----
 
-Q: Why doesn't a new client receive focus?::
-   The reason is the default setting of the +focus+ consequence in the rules.
-   You can change it by adding this to the link:herbstluftwm.html#RULES[rules]
-   section in the autostart file:
-+
+Q: Why doesn't a new client receive focus?
+------------------------------------------
+The reason is the default setting of the +focus+ consequence in the rules.
+You can change it by adding this to the link:herbstluftwm.html#RULES[rules]
+section in the autostart file:
+
 ----
 hc unrule --all      # clear rules
 hc rule focus=on     # focus new clients by default
 ----
-+
+
 Warning: you need the current git version to get rules!
 
-Q: herbstclient is too long to type it in the shell::
-    Use tab-completion! +her&lt;tab&gt;c&lt;tab&gt;+ expands to herbstclient.
-    There is also a tab-completion for the herbstclient parameters. After
-    installing herbstluftwm, add this to your .bashrc:
-+
+Q: herbstclient is too long to type it in the shell
+---------------------------------------------------
+Use tab-completion! +her&lt;tab&gt;c&lt;tab&gt;+ expands to herbstclient.
+There is also a tab-completion for the herbstclient parameters. After
+installing herbstluftwm, add this to your .bashrc:
+
 ----
 source /etc/bash_completion.d/herbstclient-completion
 ----
-+
+
 (The tab-completion in zsh works out of the box with most zsh-configurations).
-+
+
 You also can add an alias for herbstclient:
-+
+
 ----
 alias hc='herbstclient'
 ----
 
-Q: My rules seem to be messed up::
-    Clear them with +hc unrule -F+ and start over. It is recommended to do this
-    in the autostart file.
+Q: My rules seem to be messed up
+--------------------------------
+Clear them with +hc unrule -F+ and start over. It is recommended to do this
+in the autostart file.
 
-Q: I don't like that my mplayervideo/inputdialogs get resized to full framesize::
+Q: I don't like that my mplayervideo/inputdialogs get resized to full framesize
+-------------------------------------------------------------------------------
 
 Add this to your autostartfile:
-+
+
 ----
 hc rule instance=<instance> pseudotile=on
 ----
-+
+
 You can request the instancename with xprop by clicking on the related window.
 +<instancename>+ is the first string in the line +WM_CLASS(STRING)+ (for
 mplayer that would be +xv+, for firefox dialogs it is +Dialog+).
 
-Q: I set default_frame_layout to my favorite layout but it doesn't work with the root frame/existing frames::
-    Existing tags are not affected by a change of that variable (only new
-    ones), so be sure to set it *before* creating any tags. A current
-    workaround is to put +hc split vertical 0.5; hc remove+ at the end in your
-    autostart file.  You can also 'cycle_layout' in existing tags.
+Q: I set default_frame_layout to my favorite layout but it doesn't work with the root frame/existing frames
+-----------------------------------------------------------------------------------------------------------
+Existing tags are not affected by a change of that variable (only new
+ones), so be sure to set it *before* creating any tags. A current
+workaround is to put +hc split vertical 0.5; hc remove+ at the end in your
+autostart file.  You can also 'cycle_layout' in existing tags.
 
 [[PANELS]]
-Q: How can I start external panels correctly?::
-    The cleanest solution to start the external EWMH panel (like +xfce4-panel+)
-    from the autostart and manually reserve some space for it. Also start
-    +herbstclient+ instance that knows when to kill the panel again so that
-    there aren't multiple instances when reloading the autostart multiple
-    times. Append the following code to your +bash+ autostart (assuming the
-    panel needs 31 pixels at the bottom of monitor 0):
-+
+Q: How can I start external panels correctly?
+---------------------------------------------
+The cleanest solution to start the external EWMH panel (like +xfce4-panel+)
+from the autostart and manually reserve some space for it. Also start
++herbstclient+ instance that knows when to kill the panel again so that
+there aren't multiple instances when reloading the autostart multiple
+times. Append the following code to your +bash+ autostart (assuming the
+panel needs 31 pixels at the bottom of monitor 0):
+
 ----
 # add an external panel
 {
@@ -220,7 +235,8 @@ Q: How can I start external panels correctly?::
 } &
 ----
 
-Q: I'm using a compositing manager like xcompmgr and get ugly artifacts when switching tags or splitting frames::
-    You probably have an old version of herbstluftwm and +frame_bg_transparent+
-    enabled. Disable this setting and use +frame_active_opacity+ and/or
-    +frame_normal_opacity+ instead or upgrade to the current git version.
+Q: I'm using a compositing manager like xcompmgr and get ugly artifacts when switching tags or splitting frames
+---------------------------------------------------------------------------------------------------------------
+You probably have an old version of herbstluftwm and +frame_bg_transparent+
+enabled. Disable this setting and use +frame_active_opacity+ and/or
++frame_normal_opacity+ instead or upgrade to the current git version.

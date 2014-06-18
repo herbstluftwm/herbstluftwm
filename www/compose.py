@@ -29,6 +29,7 @@ page2tab = {}
 
 filename = sys.argv[1]
 name = filename.replace('-content.html', '')
+toc = filename.replace('-content.html', '-toc.html')
 
 windowtitle = "herbstluftwm"
 for title, subpages in tabs.iteritems():
@@ -105,10 +106,18 @@ if len(subpages) > 1:
             url = basename + ".html",title = title)
     print "</div>"
 
+
+
 print """\
     <div id="content">\
 """
 
+# possibly table of contents:
+try:
+	print open(toc).read()
+except IOError:
+	# no toc file
+	print "<!-- no toc file present -->"
 print open(filename).read()
 
 
