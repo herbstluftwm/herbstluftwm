@@ -135,7 +135,7 @@ static GString* PROP2MEMBERS(HSAttribute* attr) {
 }
 
 GString* PROPAGATE(HSAttribute* attr) {
-    HSDecTriple* t = attr->object->data;
+    HSDecTriple* t = (HSDecTriple*)attr->object->data;
     monitors_lock();
     // find out which attribute it was
     int idx = attr - attr->object->attributes;
@@ -321,8 +321,8 @@ void decoration_setup_frame(HSClient* client) {
     g_hash_table_insert(g_decwin2client, &(dec->decwin), client);
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
-    hint->res_name = HERBST_DECORATION_CLASS;
-    hint->res_class = HERBST_DECORATION_CLASS;
+    hint->res_name = (char*)HERBST_DECORATION_CLASS;
+    hint->res_class = (char*)HERBST_DECORATION_CLASS;
     XSetClassHint(g_display, dec->decwin, hint);
     XFree(hint);
 }
@@ -350,23 +350,21 @@ HSClient* get_client_from_decoration(Window decwin) {
 }
 
 Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme s) {
-    Rectangle inner = {
-        .x = rect.x + s.border_width + s.padding_left,
-        .y = rect.y + s.border_width + s.padding_top,
-        .width  = rect.width  - 2* s.border_width - s.padding_left - s.padding_right,
-        .height = rect.height - 2* s.border_width - s.padding_top - s.padding_bottom,
-    };
-    return inner;
+    return Rectangle(
+        rect.x + s.border_width + s.padding_left,
+        rect.y + s.border_width + s.padding_top,
+        rect.width  - 2* s.border_width - s.padding_left - s.padding_right,
+        rect.height - 2* s.border_width - s.padding_top - s.padding_bottom
+    );
 }
 
 Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme s) {
-    Rectangle out = {
-        .x = rect.x - s.border_width - s.padding_left,
-        .y = rect.y - s.border_width - s.padding_top,
-        .width  = rect.width  + 2* s.border_width + s.padding_left + s.padding_right,
-        .height = rect.height + 2* s.border_width + s.padding_top + s.padding_bottom,
-    };
-    return out;
+    return Rectangle(
+        rect.x - s.border_width - s.padding_left,
+        rect.y - s.border_width - s.padding_top,
+        rect.width  + 2* s.border_width + s.padding_left + s.padding_right,
+        rect.height + 2* s.border_width + s.padding_top + s.padding_bottom
+    );
 }
 
 void decoration_resize_inner(HSClient* client, Rectangle inner,
@@ -407,10 +405,13 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     client->dec.last_inner_rect = inner;
     inner.x -= outline.x;
     inner.y -= outline.y;
-    XWindowChanges changes = {
-      .x = inner.x, .y = inner.y, .width = inner.width, .height = inner.height,
-      .border_width = 0
-    };
+    XWindowChanges changes;
+    changes.x = inner.x;
+    changes.y = inner.y;
+    changes.width = inner.width;
+    changes.height = inner.height;
+    changes.border_width = 0;
+
     int mask = CWX | CWY | CWWidth | CWHeight | CWBorderWidth;
     //if (*g_window_border_inner_width > 0
     //    && *g_window_border_inner_width < *g_window_border_width) {
@@ -482,7 +483,8 @@ void decoration_change_scheme(struct HSClient* client,
 
 static unsigned int get_client_color(HSClient* client, unsigned int pixel) {
     if (client->dec.colormap) {
-        XColor xcol = { .pixel = pixel };
+        XColor xcol;
+        xcol.pixel = pixel;
         /* get rbg value out of default colormap */
         XQueryColor(g_display, DefaultColormap(g_display, g_screen), &xcol);
         /* get pixel value back appropriate for client */

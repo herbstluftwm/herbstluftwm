@@ -10,25 +10,33 @@
 #include <stdbool.h>
 
 typedef int (*HerbstCmd)(int argc,      // number of arguments
-                         char** argv,   // array of args
+                         const char** argv,   // array of args
                          GString* output  // result-data/stdout
                         );
 typedef int (*HerbstCmdNoOutput)(int argc,  // number of arguments
-                         char** argv        // array of args
+                         const char** argv        // array of args
                         );
 
 #define CMD_BIND(NAME, FUNC) \
-    { .cmd = { .standard = (FUNC) }, .name = (NAME), .has_output = 1 }
+    { CommandBindingCB(FUNC), (NAME), 1 }
 #define CMD_BIND_NO_OUTPUT(NAME, FUNC) \
-    { .cmd = { .no_output = (FUNC) }, .name = (NAME), .has_output = 0 }
+    { CommandBindingCB(FUNC), (NAME), 0 }
+
+union CommandBindingCB {
+    HerbstCmd standard;
+    HerbstCmdNoOutput no_output;
+    CommandBindingCB() : standard(NULL) { };
+    CommandBindingCB(HerbstCmd x) : standard(x) { };
+    CommandBindingCB(int (*x)(int,char**,GString*)) : standard((HerbstCmd)x) { };
+    CommandBindingCB(HerbstCmdNoOutput x) : no_output(x) { };
+    CommandBindingCB(int (*x)(int,char**)) : no_output((HerbstCmdNoOutput)x) { };
+    CommandBindingCB(int (*x)()) : no_output((HerbstCmdNoOutput)x) { };
+};
 
 typedef struct CommandBinding {
-    union {
-        HerbstCmd standard;
-        HerbstCmdNoOutput no_output;
-    } cmd;
-    char*   name;
-    bool    has_output;
+    CommandBindingCB cmd;
+    const char* name;
+    bool        has_output;
 } CommandBinding;
 
 extern CommandBinding g_commands[];
@@ -42,12 +50,12 @@ int call_command_substitute(char* needle, char* replacement,
 int list_commands(int argc, char** argv, GString* output);
 int complete_command(int argc, char** argv, GString* output);
 
-void try_complete(char* needle, char* to_check, GString* output);
-void try_complete_partial(char* needle, char* to_check, GString* output);
-void try_complete_prefix_partial(char* needle, char* to_check,
-                                 char* prefix, GString* output);
-void try_complete_prefix(char* needle, char* to_check,
-                         char* prefix, GString* output);
+void try_complete(const char* needle, const char* to_check, GString* output);
+void try_complete_partial(const char* needle, const char* to_check, GString* output);
+void try_complete_prefix_partial(const char* needle, const char* to_check,
+                                 const char* prefix, GString* output);
+void try_complete_prefix(const char* needle, const char* to_check,
+                         const char* prefix, GString* output);
 
 void complete_settings(char* str, GString* output);
 void complete_against_list(char* needle, char** list, GString* output);

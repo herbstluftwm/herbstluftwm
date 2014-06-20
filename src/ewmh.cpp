@@ -23,6 +23,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+Atom g_netatom[NetCOUNT];
+
 // module internal globals:
 static Window*     g_windows; // array with Window-IDs
 static size_t      g_window_count;
@@ -36,7 +38,7 @@ static unsigned long g_original_clients_count = 0;
 static bool ewmh_read_client_list(Window** buf, unsigned long *count);
 
 /* list of names of all _NET-atoms */
-char* g_netatom_names[NetCOUNT] = {
+const char* g_netatom_names[NetCOUNT] = {
     [ NetSupported                  ] = "_NET_SUPPORTED"                    ,
     [ NetClientList                 ] = "_NET_CLIENT_LIST"                  ,
     [ NetClientListStacking         ] = "_NET_CLIENT_LIST_STACKING"         ,
@@ -327,7 +329,7 @@ void ewmh_handle_client_message(XEvent* event) {
             }
             break;
 
-        case NetCurrentDesktop:
+        case NetCurrentDesktop: {
             desktop_index = me->data.l[0];
             if (desktop_index < 0 || desktop_index >= tag_get_count()) {
                 HSDebug("_NET_CURRENT_DESKTOP: invalid index \"%d\"\n",
@@ -337,8 +339,9 @@ void ewmh_handle_client_message(XEvent* event) {
             HSTag* tag = get_tag_by_index(desktop_index);
             monitor_set_tag(get_current_monitor(), tag);
             break;
+        }
 
-        case NetWmDesktop:
+        case NetWmDesktop: {
             desktop_index = me->data.l[0];
             if (!focus_stealing_allowed(me->data.l[1])) {
                 break;
@@ -349,8 +352,9 @@ void ewmh_handle_client_message(XEvent* event) {
                 tag_move_client(client, target);
             }
             break;
+        }
 
-        case NetWmState:
+        case NetWmState: {
             client = get_client_from_window(me->window);
             /* ignore requests for unmanaged windows */
             if (!client || !client->ewmhrequests) break;
@@ -398,8 +402,9 @@ void ewmh_handle_client_message(XEvent* event) {
                 client_atoms[i].callback(client, new_value[action]);
             }
             break;
+        }
 
-        case NetWmMoveresize:
+        case NetWmMoveresize: {
             client = get_client_from_window(me->window);
             if (!client) {
                 break;
@@ -415,6 +420,7 @@ void ewmh_handle_client_message(XEvent* event) {
                 mouse_initiate_resize(client, 0, NULL);
             }
             break;
+        }
 
         default:
             HSDebug("no handler for the client message \"%s\"\n",

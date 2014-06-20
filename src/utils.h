@@ -65,7 +65,7 @@ bool window_has_property(Display* dpy, Window window, char* prop_name);
 bool string_to_bool_error(const char* string, bool oldvalue, bool* error);
 bool string_to_bool(const char* string, bool oldvalue);
 
-char* strlasttoken(char* str, char* delim);
+const char* strlasttoken(const char* str, const char* delim);
 
 time_t get_monotonic_timestamp();
 
@@ -79,18 +79,18 @@ Rectangle parse_rectangle(char* string);
 void g_queue_remove_element(GQueue* queue, GList* elem);
 
 // find an element in an array buf with elems elements of size size.
-int array_find(void* buf, size_t elems, size_t size, void* needle);
+int array_find(const void* buf, size_t elems, size_t size, const void* needle);
 void array_reverse(void* void_buf, size_t elems, size_t size);
 
 int min(int a, int b);
 
 // utils for tables
-typedef bool (*MemberEquals)(void* pmember, void* needle);
-bool memberequals_string(void* pmember, void* needle);
-bool memberequals_int(void* pmember, void* needle);
+typedef bool (*MemberEquals)(void* pmember, const void* needle);
+bool memberequals_string(void* pmember, const void* needle);
+bool memberequals_int(void* pmember, const void* needle);
 
 void* table_find(void* start, size_t elem_size, size_t count,
-                 size_t member_offset, MemberEquals equals, void* needle);
+                 size_t member_offset, MemberEquals equals, const void* needle);
 
 void set_window_double_border(Display *dpy, Window win, int ibw,
                               unsigned long inner_color, unsigned long outer_color);
@@ -123,7 +123,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
 
 // returns an posix sh escaped string or NULL if there is nothing to escape
 // if a new string is returned, then the caller has to free it
-char* posix_sh_escape(char* source);
+char* posix_sh_escape(const char* source);
 // does the reverse action to posix_sh_escape by modifing the string
 void posix_sh_compress_inplace(char* str);
 

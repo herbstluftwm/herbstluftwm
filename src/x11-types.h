@@ -4,12 +4,15 @@
 
 typedef unsigned long HSColor;
 
-typedef struct {
+struct Rectangle {
     int x;
     int y;
     int width;
     int height;
-} Rectangle;
+    Rectangle() {};
+    Rectangle(int x, int y, int width, int height)
+        : x(x), y(y), width(width), height(height) {};
+};
 
 typedef struct {
     int x;

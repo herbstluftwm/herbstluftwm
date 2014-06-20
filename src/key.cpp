@@ -45,7 +45,7 @@ void keybinding_free(KeyBinding* binding) {
 }
 
 typedef struct {
-    char* name;
+    const char* name;
     unsigned int mask;
 } Name2Modifier;
 
@@ -74,7 +74,7 @@ unsigned int modifiername2mask(const char* name) {
  *
  * \return  the name as a char string. You must not free it.
  */
-char*   modifiermask2name(unsigned int mask) {
+const char* modifiermask2name(unsigned int mask) {
     for (int i = 0; i < LENGTH(g_modifier_names); i++) {
         if (g_modifier_names[i].mask & mask) {
             return g_modifier_names[i].name;
@@ -148,7 +148,7 @@ bool string2key(char* string, unsigned int* modmask, KeySym* keysym) {
         return false;
     }
     // last one is the key
-    char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
+    const char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
     *keysym = XStringToKeysym(last_token);
     if (*keysym == NoSymbol) {
         fprintf(stderr, "warning: unknown KeySym \"%s\"\n", last_token);
@@ -213,7 +213,7 @@ bool key_remove_bind_with_keysym(unsigned int modifiers, KeySym keysym){
     if (!element) {
         return false;
     }
-    KeyBinding* data = element->data;
+    KeyBinding* data = (KeyBinding*)element->data;
     keybinding_free(data);
     g_key_binds = g_list_remove_link(g_key_binds, element);
     g_list_free_1(element);
@@ -287,7 +287,7 @@ GString* keybinding_to_g_string(KeyBinding* binding) {
         old_mask = new_mask;
 
         /* try to find a modifier */
-        char* name = modifiermask2name(old_mask);
+        const char* name = modifiermask2name(old_mask);
         if (!name) {
             break;
         }
@@ -298,7 +298,7 @@ GString* keybinding_to_g_string(KeyBinding* binding) {
     }
 
     /* add keysym */
-    char* name = XKeysymToString(binding->keysym);
+    const char* name = XKeysymToString(binding->keysym);
     if (!name) {
         g_warning("XKeysymToString failed! using \'?\' instead\n");
         name = "?";
@@ -310,7 +310,7 @@ GString* keybinding_to_g_string(KeyBinding* binding) {
 
 struct key_find_context {
     GString*   output;
-    char*       needle;
+    const char* needle;
     size_t      needle_len;
 };
 
@@ -324,7 +324,7 @@ static void key_find_binds_helper(KeyBinding* b, struct key_find_context* c) {
     g_string_free(name, true);
 }
 
-void key_find_binds(char* needle, GString* output) {
+void key_find_binds(const char* needle, GString* output) {
     struct key_find_context c = {
         output, needle, strlen(needle)
     };
@@ -349,7 +349,7 @@ int key_list_binds(int argc, char** argv, GString* output) {
     return 0;
 }
 
-void complete_against_keysyms(char* needle, char* prefix, GString* output) {
+void complete_against_keysyms(const char* needle, char* prefix, GString* output) {
     // get all possible keysyms
     int min, max;
     XDisplayKeycodes(g_display, &min, &max);
@@ -369,7 +369,7 @@ void complete_against_keysyms(char* needle, char* prefix, GString* output) {
     XFree(keysyms);
 }
 
-void complete_against_modifiers(char* needle, char seperator,
+void complete_against_modifiers(const char* needle, char seperator,
                                 char* prefix, GString* output) {
     GString* buf = g_string_sized_new(20);
     for (int i = 0; i < LENGTH(g_modifier_names); i++) {

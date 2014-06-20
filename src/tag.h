@@ -27,8 +27,8 @@ void tag_init();
 void tag_destroy();
 
 // for tags
-HSTag* add_tag(char* name);
-HSTag* find_tag(char* name);
+HSTag* add_tag(const char* name);
+HSTag* find_tag(const char* name);
 int    tag_index_of(HSTag* tag);
 HSTag* find_unused_tag();
 HSTag* find_tag_with_toplevel_frame(struct HSFrame* frame);

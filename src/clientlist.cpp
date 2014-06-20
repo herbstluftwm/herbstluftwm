@@ -112,7 +112,7 @@ void reset_client_colors() {
 static void client_move_to_floatpos(void* key, void* client_void, void* data) {
     (void)key;
     (void)data;
-    HSClient* client = client_void;
+    HSClient* client = (HSClient*)client_void;
     if (client) {
         int x = client->float_size.x;
         int y = client->float_size.y;
@@ -127,7 +127,7 @@ static void client_move_to_floatpos(void* key, void* client_void, void* data) {
 static void client_show_window(void* key, void* client_void, void* data) {
     (void)key;
     (void)data;
-    HSClient* client = client_void;
+    HSClient* client = (HSClient*)client_void;
     window_set_visible(client->window, true);
 }
 
@@ -481,7 +481,7 @@ void client_window_focus(HSClient* client) {
         hsobject_link(g_client_object, &client->object, "focus");
         ewmh_update_active_window(client->window);
         tag_update_each_focus_layer();
-        char* title = client ? client->title->str : "?";
+        const char* title = client ? client->title->str : "?";
         char winid_str[STRING_BUF_SIZE];
         snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)client->window);
         hook_emit_list("focus_changed", winid_str, title, NULL);
@@ -680,19 +680,18 @@ void updatesizehints(HSClient *c) {
 
 
 void client_send_configure(HSClient *c) {
-    XConfigureEvent ce = {
-        .type = ConfigureNotify,
-        .display = g_display,
-        .event = c->window,
-        .window = c->window,
-        .x = c->dec.last_inner_rect.x,
-        .y = c->dec.last_inner_rect.y,
-        .width = MAX(c->dec.last_inner_rect.width, WINDOW_MIN_WIDTH),
-        .height = MAX(c->dec.last_inner_rect.height, WINDOW_MIN_HEIGHT),
-        .border_width = 0,
-        .above = None,
-        .override_redirect = False,
-    };
+    XConfigureEvent ce;
+    ce.type = ConfigureNotify,
+    ce.display = g_display,
+    ce.event = c->window,
+    ce.window = c->window,
+    ce.x = c->dec.last_inner_rect.x,
+    ce.y = c->dec.last_inner_rect.y,
+    ce.width = MAX(c->dec.last_inner_rect.width, WINDOW_MIN_WIDTH),
+    ce.height = MAX(c->dec.last_inner_rect.height, WINDOW_MIN_HEIGHT),
+    ce.border_width = 0,
+    ce.above = None,
+    ce.override_redirect = False,
     XSendEvent(g_display, c->window, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
@@ -908,7 +907,7 @@ void client_set_pseudotile(HSClient* client, bool state) {
 }
 
 int client_set_property_command(int argc, char** argv) {
-    char* action = (argc > 1) ? argv[1] : "toggle";
+    const char* action = (argc > 1) ? argv[1] : "toggle";
 
     HSClient* client = get_current_client();
     if (!client) {
@@ -917,7 +916,7 @@ int client_set_property_command(int argc, char** argv) {
     }
 
     struct {
-        char* name;
+        const char* name;
         void (*func)(HSClient*, bool);
         bool* value;
     } properties[] = {
@@ -952,7 +951,7 @@ static bool is_client_urgent(void* key, HSClient* client, void* data) {
 }
 
 HSClient* get_urgent_client() {
-    return g_hash_table_find(g_clients, (GHRFunc)is_client_urgent, NULL);
+    return (HSClient*)g_hash_table_find(g_clients, (GHRFunc)is_client_urgent, NULL);
 }
 
 /**
@@ -967,7 +966,7 @@ HSClient* get_urgent_client() {
  * \return          The resolved window id is stored there if the according
  *                  window has been found
  */
-Window string_to_client(char* str, HSClient** ret_client) {
+Window string_to_client(const char* str, HSClient** ret_client) {
     Window win = 0;
     if (!strcmp(str, "")) {
         HSClient* client = get_current_client();

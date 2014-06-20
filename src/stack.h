@@ -10,16 +10,16 @@
 #include "glib-backports.h"
 #include <stdbool.h>
 
-typedef enum Layer {
+enum HSLayer {
     /* layers on each monitor, from top to bottom */
     LAYER_FOCUS,
     LAYER_FULLSCREEN,
     LAYER_NORMAL,
     LAYER_FRAMES,
     LAYER_COUNT,
-} HSLayer;
+};
 
-extern char* g_layer_names[];
+extern const char* g_layer_names[];
 
 typedef enum SliceType {
     SLICE_CLIENT,
@@ -29,7 +29,6 @@ typedef enum SliceType {
 
 struct HSClient;
 struct HSMonitor;
-struct GList;
 
 typedef struct HSSlice {
     HSSliceType type;

@@ -28,7 +28,7 @@ enum HSDirection char_to_direction(char ch) {
         case 'r': return DirRight;
         case 'l': return DirLeft;
         case 'd': return DirDown;
-        default:  return -1;
+        default:  return (HSDirection)-1;
     }
 }
 
@@ -217,7 +217,7 @@ int find_edge_right_of(RectangleIdx* rects, size_t cnt, int idx) {
 
 
 static int collectclients_helper(HSClient* client, void* data) {
-    GQueue* q = data;
+    GQueue* q = (GQueue*)data;
     g_queue_push_tail(q, client);
     return 0;
 }
@@ -237,7 +237,7 @@ bool floating_focus_direction(enum HSDirection dir) {
         success = false;
     }
     for (GList* cur = q->head; cur != NULL; cur = cur->next, i++) {
-        HSClient* client = cur->data;
+        HSClient* client = (HSClient*)cur->data;
         if (curfocus == client) curfocusidx = i;
         rects[i].idx = i;
         rects[i].r = client->dec.last_outer_rect;
@@ -248,7 +248,7 @@ bool floating_focus_direction(enum HSDirection dir) {
     if (idx < 0) {
         success = false;
     } else {
-        HSClient* client = g_queue_peek_nth(q, idx);
+        HSClient* client = (HSClient*)g_queue_peek_nth(q, idx);
         client_raise(client);
         focus_client(client, false, false);
     }
@@ -274,7 +274,7 @@ bool floating_shift_direction(enum HSDirection dir) {
     int curfocusidx = -1;
     bool success = true;
     for (GList* cur = q->head; cur != NULL; cur = cur->next, i++) {
-        HSClient* client = cur->data;
+        HSClient* client = (HSClient*)cur->data;
         if (curfocus == client) curfocusidx = i;
         rects[i].idx = i;
         rects[i].r = client->dec.last_outer_rect;

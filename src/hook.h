@@ -11,9 +11,9 @@
 void hook_init();
 void hook_destroy();
 
-void hook_emit(int argc, char** argv);
+void hook_emit(int argc, const char** argv);
 void emit_tag_changed(HSTag* tag, int monitor);
-void hook_emit_list(char* name, ...);
+void hook_emit_list(const char* name, ...);
 
 #endif
 

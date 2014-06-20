@@ -29,14 +29,13 @@
 #define HERBST_MAX_TREE_HEIGHT 3
 
 // connection to x-server
-Display*    g_display;
-int         g_screen;
-Window      g_root;
-int         g_screen_width;
-int         g_screen_height;
-// some settings/info
-bool        g_aboutToQuit;
-int         g_verbose;
+extern Display*    g_display;
+extern int         g_screen;
+extern Window      g_root;
+extern int         g_screen_width;
+extern int         g_screen_height;
+extern bool        g_aboutToQuit;
+extern int  g_verbose;
 
 // bufsize to get some error strings
 #define ERROR_STRING_BUF_SIZE 1000

@@ -14,8 +14,10 @@
 #define USER_ATTRIBUTE_PREFIX "my_"
 #define TMP_OBJECT_PATH "tmp"
 
+class HSAttribute;
+
 typedef struct HSObject {
-    struct HSAttribute* attributes;
+    HSAttribute* attributes;
     size_t              attribute_count;
     GList*              children; // list of HSObjectChild
     void*               data;     // user data pointer
@@ -25,6 +27,7 @@ typedef struct HSObject {
 // if this is NULL it is the data-pointer of the object
 typedef void (*HSAttributeCustom)(void* data, GString* output);
 typedef int (*HSAttributeCustomInt)(void* data);
+typedef GString* (*HSAttributeChangeCustom)(HSAttribute* attr, const char* new_value);
 
 typedef union HSAttributePointer {
     bool*       b;
@@ -34,6 +37,13 @@ typedef union HSAttributePointer {
     HSColor*    color;
     HSAttributeCustom custom;
     HSAttributeCustomInt custom_int;
+    HSAttributePointer(bool* b) : b(b) { };
+    HSAttributePointer(int* x) : i(x) { };
+    HSAttributePointer(unsigned int* x) : u(x) { };
+    HSAttributePointer(GString** x) : str(x) { };
+    HSAttributePointer(HSColor* x) : color(x) { };
+    HSAttributePointer(HSAttributeCustom x) : custom(x) { };
+    HSAttributePointer(HSAttributeCustomInt x) : custom_int(x) { };
 } HSAttributePointer;
 
 typedef union HSAttributeValue {
@@ -44,12 +54,9 @@ typedef union HSAttributeValue {
     HSColor     color;
 } HSAttributeValue;
 
-struct HSAttribute;
-typedef GString* (*HSAttrCallback)(struct HSAttribute* attr);
+typedef GString* (*HSAttrCallback)(HSAttribute* attr);
 
-typedef struct HSAttribute {
-    HSObject* object;           /* the object this attribute is in */
-    enum  {
+enum  HSAttributeType {
         HSATTR_TYPE_BOOL,
         HSATTR_TYPE_UINT,
         HSATTR_TYPE_INT,
@@ -57,8 +64,13 @@ typedef struct HSAttribute {
         HSATTR_TYPE_STRING,
         HSATTR_TYPE_CUSTOM,
         HSATTR_TYPE_CUSTOM_INT,
-    } type;                     /* the datatype */
-    char*  name;                /* name as it is displayed to the user */
+};
+
+class HSAttribute {
+public:
+    HSObject* object;           /* the object this attribute is in */
+    HSAttributeType type;       /* the datatype */
+    const char*  name;          /* name as it is displayed to the user */
     HSAttributePointer value;
     GString*           unparsed_value;
     /** if type is not custom:
@@ -73,7 +85,7 @@ typedef struct HSAttribute {
      * treaten read-only
      * */
     HSAttrCallback on_change;
-    GString* (*change_custom)(struct HSAttribute* attr, const char* new_value);
+    HSAttributeChangeCustom change_custom;
     bool user_attribute;    /* if this attribute was added by the user */
     bool           always_callback; /* call on_change/change_custom on earch write,
                                      * even if the value did not change */
@@ -81,73 +93,52 @@ typedef struct HSAttribute {
      * realloc'ing the HSAttribute */
     HSAttributeValue* user_data; /* data needed for user attributes */
     void* data; /* data which is passed to value.custom and value.custom_int */
-} HSAttribute;
 
-#define ATTRIBUTE_SIMPLE(TYPE, N, MEM, V, CHANGE) \
-    { .object = NULL,           \
-      .type = TYPE,             \
-      .name = (N),              \
-      .value = { MEM = V},      \
-      .unparsed_value = NULL,   \
-      .on_change = (CHANGE),    \
-      .change_custom = NULL,    \
-      .user_attribute = false,  \
-      .always_callback = false, \
-      .user_data = NULL,        \
-      .data = NULL,             \
-    }
+#define ATTRIBUTE(N, V, CHANGE) HSAttribute(N, &(V), CHANGE)
+#define ATTRIBUTE_STRING(N, V, CHANGE) ATTRIBUTE(N, V, CHANGE)
+#define ATTRIBUTE_INT(N, V, CHANGE) ATTRIBUTE(N, V, CHANGE)
+#define ATTRIBUTE_UINT(N, V, CHANGE) ATTRIBUTE(N, V, CHANGE)
+#define ATTRIBUTE_BOOL(N, V, CHANGE) ATTRIBUTE(N, V, CHANGE)
+#define ATTRIBUTE_COLOR(N, V, CHANGE) ATTRIBUTE(N, V, CHANGE)
+#define ATTRIBUTE_CUSTOM(N, R, W) HSAttribute(N, R, W)
+#define ATTRIBUTE_CUSTOM_INT(N, R, W) HSAttribute(N, R, W)
 
+    // simple attribute
+    #define HSAttributeSimpleConstructor(ETYPE, CTYPE)\
+        HSAttribute(const char* name, CTYPE* v, HSAttrCallback on_change) \
+            : object(NULL), type(ETYPE), name(name), value(v), \
+              /* all the other attributes: */ \
+              unparsed_value(NULL), on_change(on_change), change_custom(NULL), \
+              user_attribute(false), always_callback(false), \
+              user_data(NULL), data(NULL) {}
+    HSAttributeSimpleConstructor(HSATTR_TYPE_BOOL, bool);
+    HSAttributeSimpleConstructor(HSATTR_TYPE_INT, int);
+    HSAttributeSimpleConstructor(HSATTR_TYPE_UINT, unsigned int);
+    HSAttributeSimpleConstructor(HSATTR_TYPE_COLOR, HSColor);
+    HSAttributeSimpleConstructor(HSATTR_TYPE_STRING, GString*);
+    HSAttribute(const char* name, HSAttributeCustom custom, HSAttributeChangeCustom on_change)
+        : object(NULL), type(HSATTR_TYPE_CUSTOM), name(name), value(custom),
+          // all the other attributes:
+          unparsed_value(NULL), on_change(NULL), change_custom(on_change),
+          user_attribute(false), always_callback(false),
+          user_data(NULL), data(NULL) {};
+    HSAttribute(const char* name, HSAttributeCustomInt custom, HSAttributeChangeCustom on_change)
+        : object(NULL), type(HSATTR_TYPE_CUSTOM_INT), name(name), value(custom),
+          // all the other attributes:
+          unparsed_value(NULL), on_change(NULL), change_custom(on_change),
+          user_attribute(false), always_callback(false),
+          user_data(NULL), data(NULL) {};
 
-#define ATTRIBUTE_BOOL(N, V, CHANGE) \
-    ATTRIBUTE_SIMPLE(HSATTR_TYPE_BOOL, (N), .b, &(V), (CHANGE))
-#define ATTRIBUTE_INT(N, V, CHANGE) \
-    ATTRIBUTE_SIMPLE(HSATTR_TYPE_INT, (N), .i, &(V), (CHANGE))
-#define ATTRIBUTE_UINT(N, V, CHANGE) \
-    ATTRIBUTE_SIMPLE(HSATTR_TYPE_UINT, (N), .u, &(V), (CHANGE))
-#define ATTRIBUTE_STRING(N, V, CHANGE) \
-    ATTRIBUTE_SIMPLE(HSATTR_TYPE_STRING, (N), .str, &(V), (CHANGE))
+    static HSAttribute LAST() {
+        return HSAttribute();
+    };
+private:
+    HSAttribute() : value((int*)NULL) {
+        name = NULL;
+    };
+};
 
-#define ATTRIBUTE_CUSTOM(N, V, CHANGE) \
-    { .object = NULL,               \
-      .type = HSATTR_TYPE_CUSTOM,   \
-      .name = (N),                  \
-      .value = { .custom = (V)},    \
-      .unparsed_value = NULL,       \
-      .on_change = NULL,            \
-      .change_custom = (CHANGE),    \
-      .always_callback = false, \
-      .user_attribute = false,      \
-      .user_data = NULL,            \
-      .data = NULL,                 \
-    }
-#define ATTRIBUTE_CUSTOM_INT(N, V, CHANGE) \
-    { .object = NULL,               \
-      .type = HSATTR_TYPE_CUSTOM_INT,\
-      .name = (N),                  \
-      .value = { .custom_int = (V)},\
-      .unparsed_value = NULL,       \
-      .on_change = NULL,            \
-      .change_custom = (CHANGE),    \
-      .always_callback = false, \
-      .user_attribute = false,      \
-      .user_data = NULL,            \
-      .data = NULL,                 \
-    }
-#define ATTRIBUTE_COLOR(N, V, CHANGE)       \
-    { .object = NULL,                       \
-      .type = HSATTR_TYPE_COLOR,            \
-      .name = (N),                          \
-      .value = { .color = &(V)},            \
-      .unparsed_value = g_string_new(""),   \
-      .on_change = (CHANGE),                \
-      .change_custom = NULL,                \
-      .always_callback = false, \
-      .user_attribute = false,              \
-      .user_data = NULL,                    \
-      .data = NULL,                         \
-    }
-
-#define ATTRIBUTE_LAST { .name = NULL }
+#define ATTRIBUTE_LAST HSAttribute::LAST()
 
 void object_tree_init();
 void object_tree_destroy();
@@ -161,17 +152,17 @@ HSObject* hsobject_create_and_link(HSObject* parent, const char* name);
 void hsobject_destroy(HSObject* obj);
 void hsobject_link(HSObject* parent, HSObject* child, const char* name);
 void hsobject_unlink(HSObject* parent, HSObject* child);
-void hsobject_unlink_by_name(HSObject* parent, char* name);
+void hsobject_unlink_by_name(HSObject* parent, const char* name);
 void hsobject_link_rename(HSObject* parent, char* oldname, char* newname);
 void hsobject_link_rename_object(HSObject* parent, HSObject* child, char* newname);
 void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child);
 
 HSObject* hsobject_by_path(char* path);
-HSObject* hsobject_parse_path(char* path, char** unparsable);
-HSObject* hsobject_parse_path_verbose(char* path, char** unparsable, GString* output);
+HSObject* hsobject_parse_path(const char* path, const char** unparsable);
+HSObject* hsobject_parse_path_verbose(const char* path, const char** unparsable, GString* output);
 
-HSAttribute* hsattribute_parse_path(char* path);
-HSAttribute* hsattribute_parse_path_verbose(char* path, GString* output);
+HSAttribute* hsattribute_parse_path(const char* path);
+HSAttribute* hsattribute_parse_path_verbose(const char* path, GString* output);
 
 void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes);
 
@@ -186,17 +177,17 @@ char hsattribute_type_indicator(int type);
 
 int attr_command(int argc, char* argv[], GString* output);
 int print_object_tree_command(int argc, char* argv[], GString* output);
-int hsattribute_get_command(int argc, char* argv[], GString* output);
+int hsattribute_get_command(int argc, const char* argv[], GString* output);
 int hsattribute_set_command(int argc, char* argv[], GString* output);
 bool hsattribute_is_read_only(HSAttribute* attr);
 int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* output);
 void hsattribute_append_to_string(HSAttribute* attribute, GString* output);
 GString* hsattribute_to_string(HSAttribute* attribute);
 
-void hsobject_complete_children(HSObject* obj, char* needle, char* prefix,
+void hsobject_complete_children(HSObject* obj, const char* needle, const char* prefix,
                                 GString* output);
 void hsobject_complete_attributes(HSObject* obj, bool user_only,
-                                  char* needle, char* prefix,
+                                  const char* needle, const char* prefix,
                                   GString* output);
 int substitute_command(int argc, char* argv[], GString* output);
 int sprintf_command(int argc, char* argv[], GString* output);
@@ -204,7 +195,7 @@ int compare_command(int argc, char* argv[], GString* output);
 
 int userattribute_command(int argc, char* argv[], GString* output);
 int userattribute_remove_command(int argc, char* argv[], GString* output);
-HSAttribute* hsattribute_create(HSObject* obj, char* name, char* type_str,
+HSAttribute* hsattribute_create(HSObject* obj, const char* name, char* type_str,
                                 GString* output);
 bool userattribute_remove(HSAttribute* attr);
 int tmpattribute_command(int argc, char* argv[], GString* output);

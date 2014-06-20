@@ -87,15 +87,15 @@ int monitor_set_tag_by_index_command(int argc, char** argv, GString* output);
 int monitor_set_previous_tag_command(int argc, char** argv, GString* output);
 void monitors_lock();
 void monitors_unlock();
-int monitors_lock_command(int argc, char** argv);
-int monitors_unlock_command(int argc, char** argv);
+int monitors_lock_command(int argc, const char** argv);
+int monitors_unlock_command(int argc, const char** argv);
 void monitors_lock_changed();
 int monitor_lock_tag_command(int argc, char** argv, GString* output);
 int monitor_unlock_tag_command(int argc, char** argv, GString* output);
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
-void all_monitors_replace_previous_tag(struct HSTag* old, struct HSTag* new);
+void all_monitors_replace_previous_tag(struct HSTag* old, struct HSTag* newmon);
 
 void drop_enternotify_events();
 
@@ -110,7 +110,7 @@ void monitor_update_focus_objects();
 typedef bool (*MonitorDetection)(Rectangle**, size_t*);
 bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count);
 bool detect_monitors_simple(Rectangle** ret_rects, size_t* ret_count);
-int detect_monitors_command(int argc, char **argv, GString* output);
+int detect_monitors_command(int argc, const char **argv, GString* output);
 
 int shift_to_monitor(int argc, char** argv, GString* output);
 

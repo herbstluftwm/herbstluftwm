@@ -13,9 +13,9 @@
 static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx);
 static size_t                  stack_child_count(HSTree root);
 
-char* g_layer_names[LAYER_COUNT] = {
-    [ LAYER_FULLSCREEN  ] = "Fullscreen-Layer"      ,
+const char* g_layer_names[LAYER_COUNT] = {
     [ LAYER_FOCUS       ] = "Focus-Layer"           ,
+    [ LAYER_FULLSCREEN  ] = "Fullscreen-Layer"      ,
     [ LAYER_NORMAL      ] = "Normal Layer"          ,
     [ LAYER_FRAMES      ] = "Frame Layer"           ,
 };
@@ -157,11 +157,11 @@ static struct HSTreeInterface layer_nth_child(HSTree root, size_t idx) {
     struct TmpLayer* l = (struct TmpLayer*) root;
     HSSlice* slice = (HSSlice*) g_list_nth_data(l->stack->top[l->layer], idx);
     HSTreeInterface intface = {
-        .nth_child      = slice_nth_child,
-        .child_count    = slice_child_count,
-        .append_caption = slice_append_caption,
-        .data           = slice,
-        .destructor     = NULL,
+        /* .nth_child      = */ slice_nth_child,
+        /* .child_count    = */ slice_child_count,
+        /* .append_caption = */ slice_append_caption,
+        /* .data           = */ slice,
+        /* .destructor     = */ NULL,
     };
     return intface;
 }
@@ -183,11 +183,11 @@ static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx) {
     l->layer = (HSLayer) idx;
 
     HSTreeInterface intface = {
-        .nth_child      = layer_nth_child,
-        .child_count    = layer_child_count,
-        .append_caption = layer_append_caption,
-        .data           = l,
-        .destructor     = (void (*)(HSTree))g_free,
+        /* .nth_child      = */ layer_nth_child,
+        /* .child_count    = */ layer_child_count,
+        /* .append_caption = */ layer_append_caption,
+        /* .data           = */ l,
+        /* .destructor     = */ (void (*)(HSTree))g_free,
     };
     return intface;
 }
@@ -202,15 +202,15 @@ static void monitor_stack_append_caption(HSTree root, GString* output) {
 
 int print_stack_command(int argc, char** argv, GString* output) {
     struct TmpLayer tl = {
-        .stack = get_monitor_stack(),
-        .layer = LAYER_NORMAL,
+        /* .stack = */ get_monitor_stack(),
+        /* .layer = */ LAYER_NORMAL,
     };
     HSTreeInterface intface = {
-        .nth_child      = layer_nth_child,
-        .child_count    = layer_child_count,
-        .append_caption = monitor_stack_append_caption,
-        .data           = &tl,
-        .destructor     = NULL,
+        /* .nth_child      = */ layer_nth_child,
+        /* .child_count    = */ layer_child_count,
+        /* .append_caption = */ monitor_stack_append_caption,
+        /* .data           = */ &tl,
+        /* .destructor     = */ NULL,
     };
     tree_print_to(&intface, output);
     return 0;
@@ -292,13 +292,13 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
 void stack_to_window_buf(HSStack* stack, Window* buf, int len,
                          bool real_clients, int* remain_len) {
     struct s2wb data = {
-        .len = len,
-        .buf = buf,
-        .missing = 0,
-        .real_clients = real_clients,
+        /* .len = */ len,
+        /* .buf = */ buf,
+        /* .missing = */ 0,
+        /* .real_clients = */ real_clients,
     };
     for (int i = 0; i < LAYER_COUNT; i++) {
-        data.layer = i;
+        data.layer = (HSLayer)i;
         g_list_foreach(stack->top[i], (GFunc)slice_to_window_buf, &data);
     }
     if (!remain_len) {
@@ -409,7 +409,7 @@ bool stack_is_layer_empty(HSStack* s, HSLayer layer) {
 
 void stack_clear_layer(HSStack* stack, HSLayer layer) {
     while (!stack_is_layer_empty(stack, layer)) {
-        HSSlice* slice = stack->top[layer]->data;
+        HSSlice* slice = (HSSlice*)stack->top[layer]->data;
         stack_slice_remove_layer(stack, slice, layer);
         stack->dirty = true;
     }

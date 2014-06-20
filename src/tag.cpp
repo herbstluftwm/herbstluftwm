@@ -34,7 +34,7 @@ void tag_init() {
                                      ->value.i);
     g_tag_object = hsobject_create_and_link(hsobject_root(), "tags");
     HSAttribute attributes[] = {
-        ATTRIBUTE_UINT("count", g_tags->len, ATTR_READ_ONLY),
+        ATTRIBUTE("count", g_tags->len, ATTR_READ_ONLY),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(g_tag_object, attributes);
@@ -72,7 +72,7 @@ int    tag_get_count() {
     return g_tags->len;
 }
 
-HSTag* find_tag(char* name) {
+HSTag* find_tag(const char* name) {
     int i;
     for (i = 0; i < g_tags->len; i++) {
         if (!strcmp(g_array_index(g_tags, HSTag*, i)->name->str, name)) {
@@ -219,7 +219,7 @@ static void tag_link_id_object(HSTag* tag, void* data) {
     g_string_free(index_str, true);
 }
 
-HSTag* add_tag(char* name) {
+HSTag* add_tag(const char* name) {
     HSTag* find_result = find_tag(name);
     if (find_result) {
         // nothing to do
@@ -375,7 +375,7 @@ int tag_remove_command(int argc, char** argv, GString* output) {
 int tag_set_floating_command(int argc, char** argv, GString* output) {
     // usage: floating [[tag] on|off|toggle]
     HSTag* tag = get_current_monitor()->tag;
-    char* action = (argc > 1) ? argv[1] : "toggle";
+    const char* action = (argc > 1) ? argv[1] : "toggle";
     if (argc >= 3) {
         // if a tag is specified
         tag = find_tag(argv[1]);
@@ -408,7 +408,7 @@ int tag_set_floating_command(int argc, char** argv, GString* output) {
 static void client_update_tag_flags(void* key, void* client_void, void* data) {
     (void) key;
     (void) data;
-    HSClient* client = client_void;
+    HSClient* client = (HSClient*)client_void;
     if (client) {
         TAG_SET_FLAG(client->tag, TAG_FLAG_USED);
         if (client->urgent) {

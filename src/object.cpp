@@ -58,7 +58,7 @@ void hsobject_free(HSObject* obj) {
 
 static void hsattribute_free(HSAttribute* attr) {
     if (attr->user_data) {
-        g_free(attr->name);
+        g_free((char*)attr->name);
         if (attr->type == HSATTR_TYPE_STRING) {
             g_string_free(attr->user_data->str, true);
         }
@@ -101,13 +101,13 @@ static HSObjectChild* hsobjectchild_create(const char* name, HSObject* obj) {
 
 static void hsobjectchild_destroy(HSObjectChild* oc) {
     if (!oc) return;
-    g_free(oc->name);
+    g_free((char*)oc->name);
     g_free(oc);
 }
 
 struct HSObjectComplChild {
-    char*    needle;
-    char*    prefix;
+    const char*    needle;
+    const char*    prefix;
     GString* curname;
     GString* output;
 };
@@ -118,7 +118,7 @@ static void completion_helper(HSObjectChild* child, struct HSObjectComplChild* d
     try_complete_prefix_partial(data->needle, data->curname->str, data->prefix, data->output);
 }
 
-void hsobject_complete_children(HSObject* obj, char* needle, char* prefix, GString* output) {
+void hsobject_complete_children(HSObject* obj, const char* needle, const char* prefix, GString* output) {
     struct HSObjectComplChild data = {
         needle,
         prefix,
@@ -129,8 +129,8 @@ void hsobject_complete_children(HSObject* obj, char* needle, char* prefix, GStri
     g_string_free(data.curname, true);
 }
 
-void hsobject_complete_attributes(HSObject* obj, bool user_only, char* needle,
-                                  char* prefix, GString* output) {
+void hsobject_complete_attributes(HSObject* obj, bool user_only, const char* needle,
+                                  const char* prefix, GString* output) {
     for (int i = 0; i < obj->attribute_count; i++) {
         HSAttribute* attr = obj->attributes + i;
         if (user_only && !attr->user_attribute) {
@@ -164,7 +164,7 @@ static int child_check_object(HSObjectChild* child, HSObject* obj) {
     return (child->child == obj) ? 0 : 1;
 }
 
-static void hsobject_unlink_helper(HSObject* parent, GCompareFunc f, void* data) {
+static void hsobject_unlink_helper(HSObject* parent, GCompareFunc f, const void* data) {
     GList* elem = parent->children;
     while (elem) {
         elem = g_list_find_custom(elem, data, f);
@@ -183,7 +183,7 @@ void hsobject_unlink(HSObject* parent, HSObject* child) {
                            child);
 }
 
-void hsobject_unlink_by_name(HSObject* parent, char* name) {
+void hsobject_unlink_by_name(HSObject* parent, const char* name) {
     hsobject_unlink_helper(parent,
                            (GCompareFunc)child_check_name,
                            name);
@@ -279,8 +279,8 @@ GString* hsattribute_to_string(HSAttribute* attribute) {
 }
 
 int attr_command(int argc, char* argv[], GString* output) {
-    char* path = (argc < 2) ? "" : argv[1];
-    char* unparsable;
+    const char* path = (argc < 2) ? "" : argv[1];
+    const char* unparsable;
     GString* errormsg = g_string_new("");
     HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, errormsg);
     HSAttribute* attribute = NULL;
@@ -357,18 +357,19 @@ static HSTreeInterface object_nth_child(HSTree tree, size_t idx) {
     HSObjectChild* oc = (HSObjectChild*) tree;
     assert(oc->child);
     HSTreeInterface intf = {
-        .nth_child  = object_nth_child,
-        .data       = (HSTree) g_list_nth_data(oc->child->children, idx),
-        .destructor = NULL,
-        .child_count    = object_child_count,
-        .append_caption = object_append_caption,
+        /* .nth_child  = */ object_nth_child,
+        /* .child_count    = */ object_child_count,
+        /* .append_caption = */ object_append_caption,
+        /* .data       = */ (HSTree) g_list_nth_data(oc->child->children, idx),
+        /* .destructor = */ NULL,
     };
     return intf;
 }
 
 HSObject* hsobject_by_path(char* path) {
-    HSObject* obj = hsobject_parse_path(path, &path);
-    if (!strcmp("", path)) {
+    const char* unparsable;
+    HSObject* obj = hsobject_parse_path(path, &unparsable);
+    if (!strcmp("", unparsable)) {
         return obj;
     } else {
         // an invalid path was given if it was not parsed entirely
@@ -376,12 +377,12 @@ HSObject* hsobject_by_path(char* path) {
     }
 }
 
-HSObject* hsobject_parse_path_verbose(char* path, char** unparsable,
+HSObject* hsobject_parse_path_verbose(const char* path, const char** unparsable,
                                       GString* output) {
-    char* origpath = path;
+    const char* origpath = path;
     char* pathdup = strdup(path);
     char* curname = pathdup;
-    char* lastname = "root";
+    const char* lastname = "root";
     char seps[] = { OBJECT_PATH_SEPARATOR, '\0' };
     // replace all separators by null bytes
     g_strdelimit(curname, seps, '\0');
@@ -418,14 +419,14 @@ HSObject* hsobject_parse_path_verbose(char* path, char** unparsable,
     return obj;
 }
 
-HSObject* hsobject_parse_path(char* path, char** unparsable) {
+HSObject* hsobject_parse_path(const char* path, const char** unparsable) {
     return hsobject_parse_path_verbose(path, unparsable, NULL);
 }
 
-HSAttribute* hsattribute_parse_path_verbose(char* path, GString* output) {
+HSAttribute* hsattribute_parse_path_verbose(const char* path, GString* output) {
     GString* object_error = g_string_new("");
     HSAttribute* attr;
-    char* unparsable;
+    const char* unparsable;
     HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, object_error);
     if (obj == NULL || strchr(unparsable, OBJECT_PATH_SEPARATOR) != NULL) {
         // if there is still another path separator
@@ -449,7 +450,7 @@ HSAttribute* hsattribute_parse_path_verbose(char* path, GString* output) {
     return attr;
 }
 
-HSAttribute* hsattribute_parse_path(char* path) {
+HSAttribute* hsattribute_parse_path(const char* path) {
     GString* out = g_string_new("");
     HSAttribute* attr = hsattribute_parse_path_verbose(path, out);
     if (!attr) {
@@ -460,21 +461,21 @@ HSAttribute* hsattribute_parse_path(char* path) {
 }
 
 int print_object_tree_command(int argc, char* argv[], GString* output) {
-    char* unparsable;
-    char* path = (argc < 2) ? "" : argv[1];
+    const char* unparsable;
+    const char* path = (argc < 2) ? "" : argv[1];
     HSObjectChild oc = {
-        .name = path,
-        .child = hsobject_parse_path_verbose(path, &unparsable, output),
+        (char*)path,
+        hsobject_parse_path_verbose(path, &unparsable, output),
     };
     if (strcmp("", unparsable)) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTreeInterface intf = {
-        .nth_child  = object_nth_child,
-        .data       = &oc,
-        .destructor = NULL,
-        .child_count    = object_child_count,
-        .append_caption = object_append_caption,
+        /* .nth_child  = */ object_nth_child,
+        /* .child_count    = */ object_child_count,
+        /* .append_caption = */ object_append_caption,
+        /* .data       = */ &oc,
+        /* .destructor = */ NULL,
     };
     tree_print_to(&intf, output);
     return 0;
@@ -493,7 +494,7 @@ void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes) {
     }
 }
 
-int hsattribute_get_command(int argc, char* argv[], GString* output) {
+int hsattribute_get_command(int argc, const char* argv[], GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -540,7 +541,7 @@ int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* ou
         do { \
             if (error) { \
                 g_string_append_printf(output, \
-                                       "Can not parse "NAME" from \"%s\"", \
+                                       "Can not parse " NAME " from \"%s\"", \
                                        new_value_str); \
             } else { \
                 old_value.MEM = *attr->value.MEM; \
@@ -726,7 +727,7 @@ int compare_command(int argc, char* argv[], GString* output) {
             default: return HERBST_UNKNOWN_ERROR; break;
         }
         struct {
-            char* name;
+            const char* name;
             bool  result;
         } eval[] = {
             { "=",  l == r  },
@@ -811,7 +812,7 @@ int userattribute_command(int argc, char* argv[], GString* output) {
     }
     char* type_str = argv[1];
     char* path = argv[2];
-    char* unparsable;
+    const char* unparsable;
     GString* errormsg = g_string_new("");
     HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, errormsg);
     if (obj == NULL || strchr(unparsable, OBJECT_PATH_SEPARATOR) != NULL) {
@@ -845,11 +846,11 @@ int userattribute_command(int argc, char* argv[], GString* output) {
     return 0;
 }
 
-HSAttribute* hsattribute_create(HSObject* obj, char* name, char* type_str,
+HSAttribute* hsattribute_create(HSObject* obj, const char* name, char* type_str,
                                 GString* output)
 {
     struct {
-        char* name;
+        const char* name;
         int   type;
     } types[] = {
         { "bool",   HSATTR_TYPE_BOOL    },
@@ -877,7 +878,7 @@ HSAttribute* hsattribute_create(HSObject* obj, char* name, char* type_str,
     HSAttribute* attr = obj->attributes + count - 1;
     memset(attr, 0, sizeof(*attr));
     attr->object = obj;
-    attr->type = type;
+    attr->type = (HSAttributeType)type;
     attr->name = g_strdup(name);
     attr->on_change = ATTR_ACCEPT_ALL;
     attr->user_attribute = false;
@@ -967,7 +968,7 @@ int sprintf_command(int argc, char* argv[], GString* output) {
                     g_string_append(repl, "%%");
                     break;
 
-                case 's':
+                case 's': {
                     if (nextarg >= (argc - 1)) {
                         g_string_append_printf(output,
                             "Error: Too few parameters. A %dth parameter missing. "
@@ -987,6 +988,7 @@ int sprintf_command(int argc, char* argv[], GString* output) {
                     g_string_free(gs, true);
                     nextarg++;
                     break;
+                }
 
                 default:
                     g_string_append_printf(output,

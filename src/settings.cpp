@@ -16,31 +16,36 @@
 #include <string.h>
 #include <stdio.h>
 
-#define SET_INT(NAME, DEFAULT, CALLBACK) \
-    { .name = (NAME), \
-      .value = { .i = (DEFAULT) }, \
-      .type = HS_Int, \
-      .on_change = (CALLBACK), \
-    }
+SettingsPair SET_INT(const char* name, int defaultval, void (*cb)())
+{
+    SettingsPair sp;
+    sp.name = name;
+    sp.value.i = defaultval;
+    sp.type = HS_Int;
+    sp.on_change = (cb);
+    return sp;
+}
 
-#define SET_STRING(NAME, DEFAULT, CALLBACK) \
-    { .name = (NAME), \
-      .value = { .s_init = (DEFAULT) }, \
-      .type = HS_String, \
-      .on_change = (CALLBACK), \
-    }
-#define SET_COMPAT(NAME, READ, WRITE) \
-    { .name = (NAME), \
-      .value = { \
-        .compat = { \
-          .read = (READ), \
-          .write = (WRITE), \
-        }, \
-      }, \
-      .type = HS_Compatiblity, \
-      .on_change = NULL, \
-    }
+SettingsPair SET_STRING(const char* name, const char* defaultval, void (*cb)())
+{
+    SettingsPair sp;
+    sp.name = name;
+    sp.value.s_init = defaultval;
+    sp.type = HS_String;
+    sp.on_change = (cb);
+    return sp;
+}
 
+SettingsPair SET_COMPAT(const char* name, const char* read, const char* write)
+{
+    SettingsPair sp;
+    sp.name = name;
+    sp.value.compat.read = read;
+    sp.value.compat.write = write;
+    sp.type = HS_Compatiblity;
+    sp.on_change = NULL;
+    return sp;
+}
 
 // often used callbacks:
 #define RELAYOUT all_monitors_apply_layout
@@ -104,14 +109,14 @@ SettingsPair g_settings[] = {
 };
 
 // globals:
-int             g_initial_monitors_locked = 0;
+int g_initial_monitors_locked = 0;
 
 // module internals
 static HSObject*       g_settings_object;
 
-static GString* cb_on_change(struct HSAttribute* attr);
+static GString* cb_on_change(HSAttribute* attr);
 static void cb_read_compat(void* data, GString* output);
-static GString* cb_write_compat(struct HSAttribute* attr, const char* new_value);
+static GString* cb_write_compat(HSAttribute* attr, const char* new_value);
 
 int settings_count() {
     return LENGTH(g_settings);
@@ -139,15 +144,15 @@ void settings_init() {
         SettingsPair* sp = g_settings + i;
         if (sp->type == HS_String) {
             HSAttribute cur =
-                ATTRIBUTE_STRING(sp->name, sp->value.str, cb_on_change);
+                ATTRIBUTE(sp->name, sp->value.str, cb_on_change);
             attributes[i] = cur;
         } else if (sp->type == HS_Int) {
             HSAttribute cur =
-                ATTRIBUTE_INT(sp->name, sp->value.i, cb_on_change);
+                ATTRIBUTE(sp->name, sp->value.i, cb_on_change);
             attributes[i] = cur;
         } else if (sp->type == HS_Compatiblity) {
             HSAttribute cur =
-                ATTRIBUTE_CUSTOM(sp->name, cb_read_compat, cb_write_compat);
+                ATTRIBUTE_CUSTOM(sp->name, (HSAttributeCustom)cb_read_compat, cb_write_compat);
             cur.data = sp;
             attributes[i] = cur;
         }
@@ -166,7 +171,7 @@ void settings_destroy() {
     }
 }
 
-static GString* cb_on_change(struct HSAttribute* attr) {
+static GString* cb_on_change(HSAttribute* attr) {
     int idx = attr - g_settings_object->attributes;
     HSAssert (idx >= 0 || idx < LENGTH(g_settings));
     if (g_settings[idx].on_change) {
@@ -176,13 +181,13 @@ static GString* cb_on_change(struct HSAttribute* attr) {
 }
 
 static void cb_read_compat(void* data, GString* output) {
-    SettingsPair* sp = data;
-    char* cmd[] = { "attr_get", sp->value.compat.read, NULL };
+    SettingsPair* sp = (SettingsPair*)data;
+    const char* cmd[] = { "attr_get", sp->value.compat.read, NULL };
     HSAssert(0 == hsattribute_get_command(LENGTH(cmd) - 1, cmd, output));
 }
 
-static GString* cb_write_compat(struct HSAttribute* attr, const char* new_value) {
-    SettingsPair* sp = attr->data;
+static GString* cb_write_compat(HSAttribute* attr, const char* new_value) {
+    SettingsPair* sp = (SettingsPair*)attr->data;
     GString* out = NULL;
     if (0 != settings_set(sp, new_value)) {
         out = g_string_new("");
@@ -191,7 +196,7 @@ static GString* cb_write_compat(struct HSAttribute* attr, const char* new_value)
     return out;
 }
 
-SettingsPair* settings_find(char* name) {
+SettingsPair* settings_find(const char* name) {
     return STATIC_TABLE_FIND_STR(SettingsPair, g_settings, name, name);
 }
 
@@ -200,7 +205,7 @@ SettingsPair* settings_get_by_index(int i) {
     return g_settings + i;
 }
 
-char* settings_find_string(char* name) {
+char* settings_find_string(const char* name) {
     SettingsPair* sp = settings_find(name);
     if (!sp) return NULL;
     HSWeakAssert(sp->type == HS_String);
@@ -208,7 +213,7 @@ char* settings_find_string(char* name) {
     return sp->value.str->str;
 }
 
-int settings_set_command(int argc, char** argv, GString* output) {
+int settings_set_command(int argc, const char** argv, GString* output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -319,9 +324,9 @@ int settings_toggle(int argc, char** argv, GString* output) {
     }
     return 0;
 }
-static bool memberequals_settingspair(void* pmember, void* needle) {
+static bool memberequals_settingspair(void* pmember, const void* needle) {
     char* str = *(char**)pmember;
-    SettingsPair* pair = needle;
+    const SettingsPair* pair = (const SettingsPair*) needle;
     if (pair->type == HS_Int) {
         return pair->value.i == atoi(str);
     } else {
@@ -343,7 +348,7 @@ int settings_cycle_value(int argc, char** argv, GString* output) {
     }
     (void)SHIFT(argc, argv);
     (void)SHIFT(argc, argv);
-    char** pcurrent = table_find(argv, sizeof(*argv), argc, 0,
+    char** pcurrent = (char**)table_find(argv, sizeof(*argv), argc, 0,
                                  memberequals_settingspair, pair);
     int i = pcurrent ? ((INDEX_OF(argv, pcurrent) + 1) % argc) : 0;
     int ret = settings_set(pair, argv[i]);

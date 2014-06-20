@@ -41,6 +41,12 @@
 
 // globals:
 int g_verbose = 0;
+Display*    g_display;
+int         g_screen;
+Window      g_root;
+int         g_screen_width;
+int         g_screen_height;
+bool        g_aboutToQuit;
 
 // module internals:
 static Bool     g_otherwm;
@@ -69,7 +75,7 @@ int raise_command(int argc, char** argv, GString* output);
 int spawn(int argc, char** argv);
 int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
-int custom_hook_emit(int argc, char** argv);
+int custom_hook_emit(int argc, const char** argv);
 int jumpto_command(int argc, char** argv, GString* output);
 int getenv_command(int argc, char** argv, GString* output);
 int setenv_command(int argc, char** argv, GString* output);
@@ -191,7 +197,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "getenv",         getenv_command),
     CMD_BIND(             "setenv",         setenv_command),
     CMD_BIND(             "unsetenv",       unsetenv_command),
-    {{ NULL }}
+    { CommandBindingCB() }
 };
 
 // core functions
@@ -372,7 +378,7 @@ int print_tag_status_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int custom_hook_emit(int argc, char** argv) {
+int custom_hook_emit(int argc, const char** argv) {
     hook_emit(argc - 1, argv + 1);
     return 0;
 }
@@ -671,7 +677,7 @@ void execute_autostart_file() {
         setsid();
         execl(path->str, path->str, NULL);
 
-        char* global_autostart = HERBSTLUFT_GLOBAL_AUTOSTART;
+        const char* global_autostart = HERBSTLUFT_GLOBAL_AUTOSTART;
         HSDebug("Can not execute %s, falling back to %s\n", path->str, global_autostart);
         execl(global_autostart, global_autostart, NULL);
 
@@ -742,25 +748,27 @@ static void fetch_settings() {
     g_raise_on_click = &(settings_find("raise_on_click")->value.i);
 }
 
-static HandlerTable g_default_handler = {
-    [ ButtonPress       ] = buttonpress,
-    [ ButtonRelease     ] = buttonrelease,
-    [ ClientMessage     ] = ewmh_handle_client_message,
-    [ CreateNotify      ] = createnotify,
-    [ ConfigureRequest  ] = configurerequest,
-    [ ConfigureNotify   ] = configurenotify,
-    [ DestroyNotify     ] = destroynotify,
-    [ EnterNotify       ] = enternotify,
-    [ Expose            ] = expose,
-    [ FocusIn           ] = focusin,
-    [ KeyPress          ] = keypress,
-    [ MappingNotify     ] = mappingnotify,
-    [ MotionNotify      ] = motionnotify,
-    [ MapNotify         ] = mapnotify,
-    [ MapRequest        ] = maprequest,
-    [ PropertyNotify    ] = propertynotify,
-    [ UnmapNotify       ] = unmapnotify,
-};
+HandlerTable g_default_handler;
+
+static void init_handler_table() {
+    g_default_handler[ ButtonPress       ] = buttonpress;
+    g_default_handler[ ButtonRelease     ] = buttonrelease;
+    g_default_handler[ ClientMessage     ] = ewmh_handle_client_message;
+    g_default_handler[ ConfigureNotify   ] = configurenotify;
+    g_default_handler[ ConfigureRequest  ] = configurerequest;
+    g_default_handler[ CreateNotify      ] = createnotify;
+    g_default_handler[ DestroyNotify     ] = destroynotify;
+    g_default_handler[ EnterNotify       ] = enternotify;
+    g_default_handler[ Expose            ] = expose;
+    g_default_handler[ FocusIn           ] = focusin;
+    g_default_handler[ KeyPress          ] = keypress;
+    g_default_handler[ MapNotify         ] = mapnotify;
+    g_default_handler[ MapRequest        ] = maprequest;
+    g_default_handler[ MappingNotify     ] = mappingnotify;
+    g_default_handler[ MotionNotify      ] = motionnotify;
+    g_default_handler[ PropertyNotify    ] = propertynotify;
+    g_default_handler[ UnmapNotify       ] = unmapnotify;
+}
 
 static struct {
     void (*init)();
@@ -824,7 +832,7 @@ void configurerequest(XEvent* event) {
 void configurenotify(XEvent* event) {
     if (event->xconfigure.window == g_root &&
         settings_find("auto_detect_monitors")->value.i) {
-        char* args[] = { "detect_monitors" };
+        const char* args[] = { "detect_monitors" };
         detect_monitors_command(LENGTH(args), args, NULL);
     }
     // HSDebug("name is: ConfigureNotify\n");
@@ -933,11 +941,12 @@ void propertynotify(XEvent* event) {
                 case XA_WM_HINTS:
                     client_update_wm_hints(client);
                     break;
-                case XA_WM_NORMAL_HINTS:
+                case XA_WM_NORMAL_HINTS: {
                     updatesizehints(client);
                     HSMonitor* m = find_monitor_with_tag(client->tag);
                     if (m) monitor_apply_layout(m);
                     break;
+                }
                 case XA_WM_NAME:
                     client_update_title(client);
                     break;
@@ -960,6 +969,8 @@ void unmapnotify(XEvent* event) {
 /* ---- */
 
 int main(int argc, char* argv[]) {
+    init_handler_table();
+
     parse_arguments(argc, argv);
     if(!(g_display = XOpenDisplay(NULL)))
         die("herbstluftwm: cannot open display\n");
