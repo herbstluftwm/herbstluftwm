@@ -6,7 +6,7 @@ HLWMSRC = $(wildcard src/*.c)
 HLWMOBJ = $(HLWMSRC:.c=.o)
 HLWMTARGET = herbstluftwm
 
-HCSRC = $(wildcard ipc-client/*.c) src/utils.c
+HCSRC = $(wildcard ipc-client/*.c)
 HCOBJ = $(HCSRC:.c=.o)
 HCTARGET = herbstclient
 

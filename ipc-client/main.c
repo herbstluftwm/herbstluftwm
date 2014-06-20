@@ -13,8 +13,8 @@
 
 #include "ipc-client.h"
 #include "../src/globals.h"
-#include "../src/utils.h"
 #include "../src/ipc-protocol.h"
+#include "client-utils.h"
 
 #define HERBSTCLIENT_VERSION_STRING \
     "herbstclient " HERBSTLUFT_VERSION " (built on " __DATE__ ")\n"
