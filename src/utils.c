@@ -217,7 +217,7 @@ bool string_to_bool(const char* string, bool oldvalue) {
 bool string_to_bool_error(const char* string, bool oldvalue, bool* error) {
     bool val = oldvalue;
     if (error) {
-        error = false;
+        *error = false;
     }
     if (!strcmp(string, "on")) {
         val = true;
