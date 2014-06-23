@@ -110,12 +110,14 @@ public:
               /* all the other attributes: */ \
               unparsed_value(NULL), on_change(on_change), change_custom(NULL), \
               user_attribute(false), always_callback(false), \
-              user_data(NULL), data(NULL) {}
-    HSAttributeSimpleConstructor(HSATTR_TYPE_BOOL, bool);
-    HSAttributeSimpleConstructor(HSATTR_TYPE_INT, int);
-    HSAttributeSimpleConstructor(HSATTR_TYPE_UINT, unsigned int);
-    HSAttributeSimpleConstructor(HSATTR_TYPE_COLOR, HSColor);
-    HSAttributeSimpleConstructor(HSATTR_TYPE_STRING, GString*);
+              user_data(NULL), data(NULL)
+    HSAttributeSimpleConstructor(HSATTR_TYPE_BOOL, bool) {};
+    HSAttributeSimpleConstructor(HSATTR_TYPE_INT, int) {};
+    HSAttributeSimpleConstructor(HSATTR_TYPE_UINT, unsigned int) {};
+    HSAttributeSimpleConstructor(HSATTR_TYPE_COLOR, HSColor) {
+        unparsed_value = g_string_new("");
+    };
+    HSAttributeSimpleConstructor(HSATTR_TYPE_STRING, GString*) {};
     HSAttribute(const char* name, HSAttributeCustom custom, HSAttributeChangeCustom on_change)
         : object(NULL), type(HSATTR_TYPE_CUSTOM), name(name), value(custom),
           // all the other attributes:
