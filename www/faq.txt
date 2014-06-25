@@ -121,6 +121,16 @@ hc rule class=Gimp windowrole=gimp-toolbox focus=off index=00
 hc rule class=Gimp windowrole=gimp-dock focus=off index=1
 ----
 
+Q: What about an layout for Instant Messaging applications (Gajim, Pidgin, …)?
+------------------------------------------------------------------------------
+A good layout for Instant Messaging applications where one frame on the left displays the roster, consuming ~15% of the monitor space, while the right side is used for the conversations can be configured easily with herbstluftwm. The following example configures such a layout on tag '7' and creates the rules to automatically move Gajim's windows to the right frame:
+
+----
+hc load 7 '(split horizontal:0.15:1 (clients horizontal:0) (clients grid:4))'
+hc rule class="Gajim" tag=7 index=1
+hc rule class="Gajim" windowrole="roster" tag=7 index=0
+----
+
 
 [[TEMP_RULES]]
 Q: How can I add rules temporarily for some special clients?
