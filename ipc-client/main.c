@@ -25,6 +25,7 @@ void destroy_hook_regex();
 
 int g_ensure_newline = 1; // if set, output ends with a newline
 bool g_null_char_as_delim = false; // if true, the null character is used as delimiter
+bool g_print_last_arg_only = false; // if true, prints only the last argument of a hook
 int g_wait_for_hook = 0; // if set, do not execute command but wait
 bool g_quiet = false;
 regex_t* g_hook_regex = NULL;
@@ -83,6 +84,7 @@ void print_help(char* command, FILE* file) {
             "with a newline.\n"
         "\t-0, --print0: Use the null character as delimiter between the "
             "output of hooks.\n"
+        "\t-l, --last-arg: Print only the last argument of a hook.\n"
         "\t-i, --idle: Wait for hooks instead of executing commands.\n"
         "\t-w, --wait: Same as --idle but exit after first --count hooks.\n"
         "\t-c, --count COUNT: Let --wait exit after COUNT hooks were "
@@ -128,9 +130,14 @@ int main_hook(int argc, char* argv[]) {
             }
         }
         if (print_signal) {
-            // just print as list
-            for (int i = 0; i < hook_argc; i++) {
-                printf("%s%s", i ? "\t" : "", hook_argv[i]);
+            if (g_print_last_arg_only) {
+                // This assumes that hook_argc is always > 0!
+                printf("%s", hook_argv[hook_argc-1]);
+            } else {
+                // just print as list
+                for (int i = 0; i < hook_argc; i++) {
+                    printf("%s%s", i ? "\t" : "", hook_argv[i]);
+                }
             }
             if (g_null_char_as_delim) {
                 putchar(0);
@@ -159,6 +166,7 @@ int main(int argc, char* argv[]) {
     static struct option long_options[] = {
         {"no-newline", 0, 0, 'n'},
         {"print0", 0, 0, '0'},
+        {"last-arg", 0, 0, 'l'},
         {"wait", 0, 0, 'w'},
         {"count", 1, 0, 'c'},
         {"idle", 0, 0, 'i'},
@@ -170,7 +178,7 @@ int main(int argc, char* argv[]) {
     // parse options
     while (1) {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "+n0wc:iqhv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "+n0lwc:iqhv", long_options, &option_index);
         if (c == -1) break;
         switch (c) {
             case 'i':
@@ -189,6 +197,9 @@ int main(int argc, char* argv[]) {
                 break;
             case '0':
                 g_null_char_as_delim = true;
+                break;
+            case 'l':
+                g_print_last_arg_only = true;
                 break;
             case 'q':
                 g_quiet = true;

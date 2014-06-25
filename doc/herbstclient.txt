@@ -38,6 +38,9 @@ OPTIONS
 *-0*, *--print0*::
     Use the null character as delimiter between the output of hooks.
 
+*-l*, *--last-arg*::
+    When using *-i* or *-w*, only print the last argument of the hook.
+
 *-i*, *--idle*::
     Wait for hooks instead of executing commands.
 
