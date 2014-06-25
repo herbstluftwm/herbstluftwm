@@ -35,6 +35,9 @@ OPTIONS
 *-n*, *--no-newline*::
     Do not print a newline if output does not end with a newline.
 
+*-0*, *--print0*::
+    Use the null character as delimiter between the output of hooks.
+
 *-i*, *--idle*::
     Wait for hooks instead of executing commands.
 

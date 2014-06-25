@@ -24,6 +24,7 @@ void init_hook_regex(int argc, char* argv[]);
 void destroy_hook_regex();
 
 int g_ensure_newline = 1; // if set, output ends with a newline
+bool g_null_char_as_delim = false; // if true, the null character is used as delimiter
 int g_wait_for_hook = 0; // if set, do not execute command but wait
 bool g_quiet = false;
 regex_t* g_hook_regex = NULL;
@@ -80,6 +81,8 @@ void print_help(char* command, FILE* file) {
         "Options:\n"
         "\t-n, --no-newline: Do not print a newline if output does not end "
             "with a newline.\n"
+        "\t-0, --print0: Use the null character as delimiter between the "
+            "output of hooks.\n"
         "\t-i, --idle: Wait for hooks instead of executing commands.\n"
         "\t-w, --wait: Same as --idle but exit after first --count hooks.\n"
         "\t-c, --count COUNT: Let --wait exit after COUNT hooks were "
@@ -129,7 +132,11 @@ int main_hook(int argc, char* argv[]) {
             for (int i = 0; i < hook_argc; i++) {
                 printf("%s%s", i ? "\t" : "", hook_argv[i]);
             }
-            printf("\n");
+            if (g_null_char_as_delim) {
+                putchar(0);
+            } else {
+                printf("\n");
+            }
             fflush(stdout);
         }
         argv_free(hook_argc, hook_argv);
@@ -151,6 +158,7 @@ int main_hook(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
     static struct option long_options[] = {
         {"no-newline", 0, 0, 'n'},
+        {"print0", 0, 0, '0'},
         {"wait", 0, 0, 'w'},
         {"count", 1, 0, 'c'},
         {"idle", 0, 0, 'i'},
@@ -162,7 +170,7 @@ int main(int argc, char* argv[]) {
     // parse options
     while (1) {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "+nwc:iqhv", long_options, &option_index);
+        int c = getopt_long(argc, argv, "+n0wc:iqhv", long_options, &option_index);
         if (c == -1) break;
         switch (c) {
             case 'i':
@@ -178,6 +186,9 @@ int main(int argc, char* argv[]) {
                 break;
             case 'n':
                 g_ensure_newline = 0;
+                break;
+            case '0':
+                g_null_char_as_delim = true;
                 break;
             case 'q':
                 g_quiet = true;
