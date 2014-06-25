@@ -125,6 +125,7 @@ install-nodoc: all-nodoc
 	$(INSTALL) -m 644 share/herbstclient-completion '$(DESTDIR)$(BASHCOMPLETIONDIR)/'
 	$(INSTALL) -m 644 share/_herbstclient '$(DESTDIR)$(ZSHCOMPLETIONDIR)/'
 	$(INSTALL) -m 644 share/herbstluftwm.desktop '$(DESTDIR)$(XSESSIONSDIR)/'
+	$(INSTALL) -m 755 share/dmenu_run_hlwm '$(DESTDIR)$(BINDIR)/'
 	$(INSTALL) -m 644 scripts/README '$(DESTDIR)$(EXAMPLESDIR)/'
 	$(INSTALL) -m 755 scripts/*.sh '$(DESTDIR)$(EXAMPLESDIR)/'
 
@@ -133,6 +134,7 @@ install-nodoc: all-nodoc
 uninstall:
 	@echo "==> deleting files..."
 	-$(foreach TARGET,$(TARGETS),$(RM) '$(DESTDIR)$(BINDIR)/$(TARGET)';)
+	-$(RM) '$(DESTDIR)$(BINDIR)/dmenu_run_hlwm'
 	-$(RM) '$(DESTDIR)$(LICENSEDIR)/LICENSE'
 	-$(RM) '$(DESTDIR)$(MAN1DIR)/herbstclient.1'
 	-$(RM) '$(DESTDIR)$(MAN1DIR)/herbstluftwm.1'

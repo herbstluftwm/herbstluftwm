@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if ! command -v dmenu > /dev/null 2>/dev/null ; then
+	echo "Error: Requirement dmenu not found in your PATH." >&2
+	exit 1
+fi
+
+# Get the currently active tag
+tag=$(herbstclient attr tags.focus.name)
+
+# Prints the path of of the binary in path selected by dmenu
+dmenuPrintPath() {
+	cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
+	if [ -d "$cachedir" ]; then
+		cache=$cachedir/dmenu_run
+	else
+		cache=$HOME/.dmenu_cache # if no xdg dir, fall back to dotfile in ~
+	fi
+	IFS=:
+	if stest -dqr -n "$cache" $PATH; then
+		stest -flx $PATH | sort -u | tee "$cache" | dmenu "$@"
+	else
+		dmenu "$@" < "$cache"
+	fi
+}
+
+selectedPath=$(dmenuPrintPath)
+
+# Ensure that the tag exists
+herbstclient add "$tag"
+
+# Move next window from this process to this tag. Prepend the rule so
+# that it may be overwritten by existing custom rules e.g. in the
+# autostart. Also set a maximum age for this rule of 120 seconds and
+# mark it as one-time-only rule.
+herbstclient rule prepend maxage="120" pid="$$" tag="$tag" once
+
+exec $selectedPath

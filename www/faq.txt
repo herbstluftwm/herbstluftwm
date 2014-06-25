@@ -260,3 +260,16 @@ Q: I'm using a compositing manager like xcompmgr and get ugly artifacts when swi
 You probably have an old version of herbstluftwm and +frame_bg_transparent+
 enabled. Disable this setting and use +frame_active_opacity+ and/or
 +frame_normal_opacity+ instead or upgrade to the current git version.
+
+Q: How can I keybind a simple "Run" dialog?
+-------------------------------------------
+Install dmenu and keybind +dmenu_run_hlwm+ by adding the following line to
+your autostart file:
+
+----
+hc keybind $Mod-p spawn dmenu_run_hlwm
+----
+
+Note that +$Mod-p+ is bound to +pseudotile toggle+ in the default
+autostart of herbstluftwm, so you either need to change that binding or
+use a different one for +spawn dmenu_run_hlwm+.
