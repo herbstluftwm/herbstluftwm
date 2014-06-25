@@ -131,6 +131,16 @@ hc rule class="Gajim" tag=7 index=1
 hc rule class="Gajim" windowrole="roster" tag=7 index=0
 ----
 
+For pidgin, the setup looks similar. In this case the buddy list is on the
+right with a width of 20% of the monitor space. In addition to the above, the
+buddy list will not receive input focus when it shows up:
+----
+imtag=7 # just set the name of the tag here
+hc load "$imtag" '(split horizontal:0.800000:0 (clients grid:0) (clients vertical:0))'
+hc rule class=Pidgin   windowrole=buddy_list tag=$imtag index=1 focus=off
+hc rule class=Pidgin ! windowrole=buddy_list tag=$imtag index=0
+----
+
 
 [[TEMP_RULES]]
 Q: How can I add rules temporarily for some special clients?
