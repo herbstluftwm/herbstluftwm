@@ -701,7 +701,7 @@ static void parse_arguments(int argc, char** argv) {
                 break;
             case 'v':
                 printf("%s %s\n", argv[0], HERBSTLUFT_VERSION);
-                printf("Copyright (c) 2011-2013 Thorsten Wißmann\n");
+                printf("Copyright (c) 2011-2014 Thorsten Wißmann\n");
                 printf("Released under the Simplified BSD License\n");
                 exit(0);
                 break;
