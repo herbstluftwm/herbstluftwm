@@ -131,8 +131,10 @@ int main_hook(int argc, char* argv[]) {
         }
         if (print_signal) {
             if (g_print_last_arg_only) {
-                // This assumes that hook_argc is always > 0!
-                printf("%s", hook_argv[hook_argc-1]);
+                // just drop hooks without content
+                if (hook_argc >= 1) {
+                    printf("%s", hook_argv[hook_argc-1]);
+                }
             } else {
                 // just print as list
                 for (int i = 0; i < hook_argc; i++) {
