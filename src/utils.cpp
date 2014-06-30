@@ -184,7 +184,7 @@ void argv_free(int argc, char** argv) {
     for (i = 0; i < argc; i++) {
         free(argv[i]);
     }
-    delete argv;
+    delete[] argv;
 }
 
 
@@ -287,7 +287,7 @@ void array_reverse(void* void_buf, size_t elems, size_t size) {
         memcpy(buf + size * i, buf + size * j, size);
         memcpy(buf + size * j, tmp, size);
     }
-    delete tmp;
+    delete[] tmp;
 }
 
 
