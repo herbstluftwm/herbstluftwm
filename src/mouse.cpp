@@ -143,7 +143,7 @@ bool mouse_is_dragging() {
 }
 
 static void mouse_binding_free(void* voidmb) {
-    MouseBinding* mb = voidmb;
+    MouseBinding* mb = (MouseBinding*)voidmb;
     if (!mb) return;
     argv_free(mb->argc, mb->argv);
     g_free(mb);
@@ -181,7 +181,7 @@ int mouse_bind_command(int argc, char** argv, GString* output) {
         return HERBST_INVALID_ARGUMENT;
     }
     // last one is the mouse button
-    char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
+    const char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
     unsigned int button = string2button(last_token);
     if (button == 0) {
         g_string_append_printf(output,
@@ -212,7 +212,7 @@ int mouse_bind_command(int argc, char** argv, GString* output) {
 
 MouseFunction string2mousefunction(char* name) {
     static struct {
-        char* name;
+        const char* name;
         MouseFunction function;
     } table[] = {
         { "move",       mouse_initiate_move },
@@ -230,7 +230,7 @@ MouseFunction string2mousefunction(char* name) {
 }
 
 static struct {
-    char* name;
+    const char* name;
     unsigned int button;
 } string2button_table[] = {
     { "Button1",       Button1 },
@@ -244,7 +244,7 @@ static struct {
     { "B4",       Button4 },
     { "B5",       Button5 },
 };
-unsigned int string2button(char* name) {
+unsigned int string2button(const char* name) {
     for (int i = 0; i < LENGTH(string2button_table); i++) {
         if (!strcmp(string2button_table[i].name, name)) {
             return string2button_table[i].button;
@@ -254,18 +254,20 @@ unsigned int string2button(char* name) {
 }
 
 
-void complete_against_mouse_buttons(char* needle, char* prefix, GString* output) {
+void complete_against_mouse_buttons(const char* needle, char* prefix, GString* output) {
     for (int i = 0; i < LENGTH(string2button_table); i++) {
-        char* buttonname = string2button_table[i].name;
+        const char* buttonname = string2button_table[i].name;
         try_complete_prefix(needle, buttonname, prefix, output);
     }
 }
 
 MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {
-    MouseBinding mb = { .modifiers = modifiers, .button = button, 0};
+    MouseBinding mb = { 0 };
+    mb.modifiers = modifiers;
+    mb.button = button;
     GList* elem = g_list_find_custom(g_mouse_binds, &mb,
                                      (GCompareFunc)mouse_binding_equals);
-    return elem ? elem->data : NULL;
+    return elem ? ((MouseBinding*)elem->data) : NULL;
 }
 
 static void grab_client_button(MouseBinding* bind, HSClient* client) {
@@ -355,7 +357,7 @@ void mouse_function_resize(XMotionEvent* me) {
     if (top)    snap_flags |= SNAP_EDGE_TOP;
     else        snap_flags |= SNAP_EDGE_BOTTOM;
     client_snap_vector(g_win_drag_client, g_drag_monitor,
-                       snap_flags, &dx, &dy);
+                       (SnapFlags)snap_flags, &dx, &dy);
     if (left) {
         g_win_drag_client->float_size.x += dx;
         dx *= -1;
@@ -401,9 +403,9 @@ void mouse_function_zoom(XMotionEvent* me) {
     int left_dx, top_dy;
     // we have to distinguish the direction in which we zoom
     client_snap_vector(g_win_drag_client, m,
-                     SNAP_EDGE_BOTTOM | SNAP_EDGE_RIGHT, &right_dx, &bottom_dy);
+                     (SnapFlags)(SNAP_EDGE_BOTTOM | SNAP_EDGE_RIGHT), &right_dx, &bottom_dy);
     client_snap_vector(g_win_drag_client, m,
-                       SNAP_EDGE_TOP | SNAP_EDGE_LEFT, &left_dx, &top_dy);
+                       (SnapFlags)(SNAP_EDGE_TOP | SNAP_EDGE_LEFT), &left_dx, &top_dy);
     // e.g. if window snaps by vector (3,3) at topleft, window has to be shrinked
     // but if the window snaps by vector (3,3) at bottomright, window has to grow
     if (abs(right_dx) < abs(left_dx)) {

@@ -15,14 +15,14 @@ enum {
 };
 
 typedef struct {
-    char*   name;
+    const char*   name;
     union {
         int         i;
-        char*       s_init;
+        const char* s_init;
         GString*    str;
         struct {
-            char* read;  // attribute address for reading
-            char* write; // attribute address for writing
+            const char* read;  // attribute address for reading
+            const char* write; // attribute address for writing
         } compat;
     }   value;
     int old_value_i;
@@ -30,17 +30,17 @@ typedef struct {
     void (*on_change)(); // what to call on change
 } SettingsPair;
 
-int g_initial_monitors_locked;
+extern int g_initial_monitors_locked;
 
 void settings_init();
 void settings_destroy();
 
-SettingsPair* settings_find(char* name);
+SettingsPair* settings_find(const char* name);
 SettingsPair* settings_get_by_index(int i);
-char* settings_find_string(char* name);
+char* settings_find_string(const char* name);
 
 int settings_set(SettingsPair* pair, const char* value);
-int settings_set_command(int argc, char** argv, GString* output);
+int settings_set_command(int argc, const char** argv, GString* output);
 int settings_toggle(int argc, char** argv, GString* output);
 int settings_cycle_value(int argc, char** argv, GString* output);
 int settings_count();

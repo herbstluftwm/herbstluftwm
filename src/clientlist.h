@@ -84,7 +84,7 @@ HSClient* get_current_client();
 HSClient* get_urgent_client();
 Rectangle client_outer_floating_rect(HSClient* client);
 
-Window string_to_client(char* str, HSClient** ret_client);
+Window string_to_client(const char* str, HSClient** ret_client);
 void client_setup_border(HSClient* client, bool focused);
 void client_resize(HSClient* client, Rectangle rect, HSFrame* frame);
 void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame);

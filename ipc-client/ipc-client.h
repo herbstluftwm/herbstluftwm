@@ -5,6 +5,10 @@
 
 #include <X11/Xlib.h>
 #include <glib.h>
+#include <stdbool.h>
+
+#ifndef __HERBSTLUFT_IPC_CLIENT_H_
+#define __HERBSTLUFT_IPC_CLIENT_H_
 
 typedef struct HCConnection HCConnection;
 
@@ -21,4 +25,6 @@ bool hc_send_command_once(int argc, char* argv[],
 
 bool hc_hook_window_connect(HCConnection* con);
 bool hc_next_hook(HCConnection* con, int* argc, char** argv[]);
+
+#endif
 

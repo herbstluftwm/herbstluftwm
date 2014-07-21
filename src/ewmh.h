@@ -76,9 +76,9 @@ enum {
 struct HSTag;
 struct HSClient;
 
-Atom g_netatom[NetCOUNT];
+extern Atom g_netatom[NetCOUNT];
 
-extern char* g_netatom_names[];
+extern const char* g_netatom_names[];
 
 void ewmh_init();
 void ewmh_destroy();

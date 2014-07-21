@@ -2,11 +2,11 @@ include version.mk
 include config.mk
 include colors.mk
 
-HLWMSRC = $(wildcard src/*.c)
-HLWMOBJ = $(HLWMSRC:.c=.o)
+HLWMSRC = $(wildcard src/*.cpp)
+HLWMOBJ = $(HLWMSRC:.cpp=.o)
 HLWMTARGET = herbstluftwm
 
-HCSRC = $(wildcard ipc-client/*.c) src/utils.c
+HCSRC = $(wildcard ipc-client/*.c)
 HCOBJ = $(HCSRC:.c=.o)
 HCTARGET = herbstclient
 
@@ -23,12 +23,13 @@ TUTORIAL = doc/herbstluftwm-tutorial.txt
 
 all: $(TARGETS) doc
 all-nodoc: $(TARGETS)
-$(HLWMTARGET): $(HLWMOBJ)
-$(HCTARGET): $(HCOBJ)
 
-$(TARGETS):
+$(HCTARGET): $(HCOBJ)
 	$(call colorecho,LD,$@)
 	$(VERBOSE) $(LD) -o $@ $(CFLAGS) $(LDFLAGS) $^ $(LIBS)
+
+$(HLWMTARGET): $(HLWMOBJ)
+	 $(LDXX) -o $@ $(CXXFLAGS) $(LDXXFLAGS) $^ $(LIBS)
 
 -include $(DEPS)
 
@@ -37,10 +38,17 @@ $(TARGETS):
 	$(VERBOSE) $(CC) -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
 	$(VERBOSE) $(CC) -c $(CPPFLAGS) -o $*.d -MT $@ -MM $<
 
+%.o: %.cpp version.mk
+	$(call colorecho,CXX,$<)
+	$(VERBOSE) $(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
+	$(VERBOSE) $(CXX) -c $(CPPFLAGS) -o $*.d -MT $@ -MM $<
+
+
 info:
 	@echo Some Info:
 	@echo Preprocessing with: $(CC) -E $(CPPFLAGS)
-	@echo Compiling with: $(CC) -c $(CPPFLAGS) $(CFLAGS) -o OUT INPUT
+	@echo Compiling C with: $(CC) -c $(CPPFLAGS) $(CFLAGS) -o OUT INPUT
+	@echo Compiling C++ with: $(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o OUT INPUT
 	@echo Linking with: $(LD) -o OUT $(LDFLAGS) INPUT
 
 clean: cleandoc cleandeps

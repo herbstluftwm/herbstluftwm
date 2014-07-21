@@ -24,6 +24,8 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -52,14 +54,18 @@ static unsigned long g_frame_bg_active_color;
 static unsigned long g_frame_bg_normal_color;
 static unsigned long g_frame_active_opacity;
 static unsigned long g_frame_normal_opacity;
-char*   g_tree_style = NULL; // used by utils.c
 
-char* g_align_names[] = {
+char*   g_tree_style = NULL; // used by utils.c
+HSFrame*    g_cur_frame; // currently selected frame
+int* g_frame_gap;
+int* g_window_gap;
+
+const char* g_align_names[] = {
     "vertical",
     "horizontal",
 };
 
-char* g_layout_names[] = {
+const char* g_layout_names[] = {
     "vertical",
     "horizontal",
     "max",
@@ -103,7 +109,7 @@ static void fetch_frame_colors() {
     if (g_utf8_strlen(g_tree_style, -1) < 8) {
         g_warning("too few characters in setting tree_style\n");
         // ensure that it is long enough
-        char* argv[] = { "set", "tree_style", "01234567" };
+        const char* argv[] = { "set", "tree_style", "01234567" };
         settings_set_command(LENGTH(argv), argv, NULL);
     }
 }
@@ -150,8 +156,8 @@ HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
     stack_insert_slice(frame->tag->stack, frame->slice);
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
-    hint->res_name = HERBST_FRAME_CLASS;
-    hint->res_class = HERBST_FRAME_CLASS;
+    hint->res_name = (char*)HERBST_FRAME_CLASS;
+    hint->res_class = (char*)HERBST_FRAME_CLASS;
     XSetClassHint(g_display, frame->window, hint);
     XFree(hint);
     return frame;
@@ -186,12 +192,12 @@ void frame_insert_client(HSFrame* frame, struct HSClient* client) {
     }
 }
 
-HSFrame* lookup_frame(HSFrame* root, char *index) {
+HSFrame* lookup_frame(HSFrame* root, const char *index) {
     if (index == NULL || index[0] == '\0') return root;
     if (root->type == TYPE_CLIENTS) return root;
 
     HSFrame* new_root;
-    char *new_index = index + 1;
+    const char *new_index = index + 1;
     HSLayout* layout = &root->content.layout;
 
     switch (index[0]) {
@@ -347,7 +353,8 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
     // jump to whitespaces or brackets
     size_t args_len = strcspn(description, LAYOUT_DUMP_WHITESPACES LAYOUT_DUMP_BRACKETS);
-    char args[args_len + 1];
+    char* args = new char[args_len + 1];
+    std::unique_ptr<char> free_args_correctly (args);
     strncpy(args, description, args_len);
     args[args_len] = '\0';
     // jump over args substring
@@ -369,7 +376,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         int selection;
         double fraction_double;
 #define SEP LAYOUT_DUMP_SEPARATOR_STR
-        if (3 != sscanf(args, "%[^"SEP"]"SEP"%lf"SEP"%d",
+        if (3 != sscanf(args, "%[^" SEP "]" SEP "%lf" SEP "%d",
             align_name, &fraction_double, &selection)) {
             g_string_append_printf(errormsg,
                 "Can not parse frame args \"%s\"\n", args);
@@ -413,7 +420,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         char* layout_name = g_new(char, strlen(args)+1);
         int selection;
 #define SEP LAYOUT_DUMP_SEPARATOR_STR
-        if (2 != sscanf(args, "%[^"SEP"]"SEP"%d",
+        if (2 != sscanf(args, "%[^" SEP "]" SEP "%d",
             layout_name, &selection)) {
             g_string_append_printf(errormsg,
                 "Can not parse frame args \"%s\"\n", args);
@@ -582,24 +589,24 @@ static HSTreeInterface frame_nth_child(HSTree tree, size_t idx) {
     HSFrame* frame = (HSFrame*) tree;
     assert(frame->type != TYPE_CLIENTS);
     HSTreeInterface intf = {
-        .nth_child  = frame_nth_child,
-        .data       = (idx == 0)
+        /* .nth_child  = */ frame_nth_child,
+        /* .child_count    = */ frame_child_count,
+        /* .append_caption = */ frame_append_caption,
+        /* .data       = */ (idx == 0)
                         ? frame->content.layout.a
                         : frame->content.layout.b,
-        .destructor = NULL,
-        .child_count    = frame_child_count,
-        .append_caption = frame_append_caption,
+        /* .destructor = */ NULL,
     };
     return intf;
 }
 
 void print_frame_tree(HSFrame* frame, GString* output) {
     HSTreeInterface frameintf = {
-        .child_count    = frame_child_count,
-        .nth_child      = frame_nth_child,
-        .append_caption = frame_append_caption,
-        .destructor     = NULL,
-        .data           = (HSTree) frame,
+        /* .nth_child      = */ frame_nth_child,
+        /* .child_count    = */ frame_child_count,
+        /* .append_caption = */ frame_append_caption,
+        /* .data           = */ (HSTree) frame,
+        /* .destructor     = */ NULL,
     };
     tree_print_to(&frameintf, output);
 }
@@ -636,8 +643,8 @@ int frame_current_cycle_client_layout(int argc, char** argv, GString* output) {
     int layout_index;
     if (argc > 0) {
         /* cycle through a given list of layouts */
-        char* curname = g_layout_names[g_cur_frame->content.clients.layout];
-        char** pcurrent = table_find(argv, sizeof(*argv), argc, 0,
+        const char* curname = g_layout_names[g_cur_frame->content.clients.layout];
+        char** pcurrent = (char**)table_find(argv, sizeof(*argv), argc, 0,
                                      memberequals_string, curname);
         int idx = pcurrent ? (INDEX_OF(argv, pcurrent) + delta) : 0;
         idx %= argc;
@@ -1223,7 +1230,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
     }
     int align = -1;
     bool userDefinedFraction = true;
-    char* strFraction = "0.5";
+    const char* strFraction = "0.5";
     if (argc < 3) {
         userDefinedFraction = false;
     } else {
@@ -1238,7 +1245,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
     int lw = g_cur_frame->last_rect.width;
     int align_auto = (lw > lh) ? ALIGN_HORIZONTAL : ALIGN_VERTICAL;
     struct {
-        char* name;
+        const char* name;
         int align;
         bool frameToFirst;  // if former frame moves to first child
         int selection;      // which child to select after the split
@@ -1457,7 +1464,7 @@ int frame_inner_neighbour_index(HSFrame* frame, char direction) {
             break;
         case LAYOUT_MAX:
             break;
-        case LAYOUT_GRID:
+        case LAYOUT_GRID: {
             frame_layout_grid_get_size(count, &rows, &cols);
             if (cols == 0) break;
             int r = selection / cols;
@@ -1476,6 +1483,7 @@ int frame_inner_neighbour_index(HSFrame* frame, char direction) {
                 case 'l': if (c > 0)      index = selection - 1; break;
             }
             break;
+        }
         default:
             break;
     }
@@ -1960,7 +1968,7 @@ void frame_update_border(Window window, unsigned long color) {
 
 int frame_focus_edge(int argc, char** argv, GString* output) {
     // Puts the focus to the edge in the specified direction
-    char* args[] = { "" };
+    const char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);
     int oldval = *g_focus_crosses_monitor_boundaries;
     *g_focus_crosses_monitor_boundaries = 0;
@@ -1973,7 +1981,7 @@ int frame_focus_edge(int argc, char** argv, GString* output) {
 
 int frame_move_window_edge(int argc, char** argv, GString* output) {
     // Moves a window to the edge in the specified direction
-    char* args[] = { "" };
+    const char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);
     int oldval = *g_focus_crosses_monitor_boundaries;
     *g_focus_crosses_monitor_boundaries = 0;

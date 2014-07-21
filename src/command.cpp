@@ -28,22 +28,22 @@ extern char** environ;
 // behaviour
 static bool g_shell_quoting = false;
 
-static char* completion_directions[]    = { "left", "right", "down", "up",NULL};
-static char* completion_focus_args[]    = { "-i", "-e", NULL };
-static char* completion_unrule_flags[]   = { "-F", "--all", NULL };
-static char* completion_keyunbind_args[]= { "-F", "--all", NULL };
-static char* completion_flag_args[]     = { "on", "off", "true", "false", "toggle", NULL };
-static char* completion_userattribute_types[] = { "int", "uint", "string", "bool", "color", NULL };
-static char* completion_status[]        = { "status", NULL };
-static char* completion_special_winids[]= { "urgent", "", NULL };
-static char* completion_use_index_args[]= { "--skip-visible", NULL };
-static char* completion_cycle_all_args[]= { "--skip-invisible", NULL };
-static char* completion_pm_one[]= { "+1", "-1", NULL };
-static char* completion_mouse_functions[]= { "move", "zoom", "resize", "call", NULL };
-static char* completion_detect_monitors_args[] =
-    { "-l", "--list", "--no-disjoin", /* TODO: "--keep-small", */ NULL };
-static char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", NULL };
-static char* completion_split_ratios[]= {
+static const char* completion_directions[]    = { "left", "right", "down", "up",NULL};
+static const char* completion_focus_args[]    = { "-i", "-e", NULL };
+static const char* completion_unrule_flags[]   = { "-F", "--all", NULL };
+static const char* completion_keyunbind_args[]= { "-F", "--all", NULL };
+static const char* completion_flag_args[]     = { "on", "off", "true", "false", "toggle", NULL };
+static const char* completion_userattribute_types[] = { "int", "uint", "string", "bool", "color", NULL };
+static const char* completion_status[]        = { "status", NULL };
+static const char* completion_special_winids[]= { "urgent", "", NULL };
+static const char* completion_use_index_args[]= { "--skip-visible", NULL };
+static const char* completion_cycle_all_args[]= { "--skip-invisible", NULL };
+static const char* completion_pm_one[]= { "+1", "-1", NULL };
+static const char* completion_mouse_functions[]= { "move", "zoom", "resize", "call", NULL };
+static const char* completion_detect_monitors_args[] =
+    { "const -l", "--list", "--no-disjoin", /* TODO: "--keep-small", */ NULL };
+static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", NULL };
+static const char* completion_split_ratios[]= {
     "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", NULL };
 
 static bool no_completion(int argc, char** argv, int pos) {
@@ -66,7 +66,7 @@ static bool parameter_expected_offset_3(int argc, char** argv, int pos);
  * parameter".
  */
 struct {
-    char*   command;    /* the first argument */
+    const char*   command; /* the first argument */
     int     min_index;  /* rule will only be considered */
                         /* if current pos >= min_index */
     bool    (*function)(int argc, char** argv, int pos);
@@ -160,15 +160,17 @@ struct {
     { 0 },
 };
 
+enum IndexCompare {
+    LE, /* lower equal */
+    EQ, /* equal to */
+    GE, /* greater equal */
+};
+
 /* list of completions, if a line matches, then it will be used, the order
  * does not matter */
 struct {
-    char*   command;
-    enum {
-        LE, /* lower equal */
-        EQ, /* equal to */
-        GE, /* greater equal */
-    } relation;         /* defines how the index matches */
+    const char*   command;
+    IndexCompare  relation; /* defines how the index matches */
     int     index;      /* which parameter to complete */
                         /* command name is index = 0 */
                         /* GE 0 matches any position */
@@ -177,114 +179,114 @@ struct {
     /* completion by function */
     void (*function)(int argc, char** argv, int pos, GString* output);
     /* completion by a list of strings */
-    char** list;
+    const char** list;
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
-    { "add_monitor",    EQ, 2,  .function = complete_against_tags },
-    { "and",            GE, 1,  .function = complete_chain },
-    { "bring",          EQ, 1,  .list = completion_special_winids },
-    { "bring",          EQ, 1,  .function = complete_against_winids },
-    { "cycle",          EQ, 1,  .list = completion_pm_one },
-    { "chain",          GE, 1,  .function = complete_chain },
-    { "cycle_all",      EQ, 1,  .list = completion_cycle_all_args },
-    { "cycle_all",      EQ, 1,  .list = completion_pm_one },
-    { "cycle_all",      EQ, 2,  .list = completion_pm_one },
-    { "cycle_monitor",  EQ, 1,  .list = completion_pm_one },
-    { "dump",           EQ, 1,  .function = complete_against_tags },
-    { "detect_monitors", GE, 1,  .list = completion_detect_monitors_args },
-    { "floating",       EQ, 1,  .function = complete_against_tags },
-    { "floating",       EQ, 1,  .list = completion_flag_args },
-    { "floating",       EQ, 1,  .list = completion_status },
-    { "floating",       EQ, 2,  .list = completion_flag_args },
-    { "floating",       EQ, 2,  .list = completion_status },
-    { "focus",          EQ, 1,  .list = completion_directions },
-    { "focus",          EQ, 1,  .list = completion_focus_args },
-    { "focus",          EQ, 2,  .list = completion_directions },
-    { "fullscreen",     EQ, 1,  .list = completion_flag_args },
-    { "layout",         EQ, 1,  .function = complete_against_tags },
-    { "load",           EQ, 1,  .function = complete_against_tags },
-    { "merge_tag",      EQ, 1,  .function = complete_against_tags },
-    { "merge_tag",      EQ, 2,  .function = complete_merge_tag },
-    { "move",           EQ, 1,  .function = complete_against_tags },
-    { "move_index",     EQ, 2,  .list = completion_use_index_args },
-    { "or",             GE, 1,  .function = complete_chain },
-    { "!",              GE, 1,  .function = complete_against_commands_1 },
-    { "try",            GE, 1,  .function = complete_against_commands_1 },
-    { "silent",         GE, 1,  .function = complete_against_commands_1 },
-    { "pseudotile",     EQ, 1,  .list = completion_flag_args },
-    { "keybind",        GE, 1,  .function = complete_against_keybind_command },
-    { "keyunbind",      EQ, 1,  .list = completion_keyunbind_args },
-    { "keyunbind",      EQ, 1,  .function = complete_against_keybinds },
-    { "mousebind",      EQ, 1,  .function = complete_against_mouse_combinations },
-    { "mousebind",      EQ, 2,  .list = completion_mouse_functions },
-    { "mousebind",      GE, 3,  .function = complete_against_commands_3 },
-    { "rename",         EQ, 1,  .function = complete_against_tags },
-    { "raise",          EQ, 1,  .list = completion_special_winids },
-    { "raise",          EQ, 1,  .function = complete_against_winids },
-    { "jumpto",         EQ, 1,  .list = completion_special_winids },
-    { "jumpto",         EQ, 1,  .function = complete_against_winids },
-    { "resize",         EQ, 1,  .list = completion_directions },
-    { "rule",           GE, 1,  .function = rule_complete },
-    { "shift_edge",     EQ, 1,  .list = completion_directions },
-    { "shift",          EQ, 1,  .list = completion_directions },
-    { "shift",          EQ, 1,  .list = completion_focus_args },
-    { "shift",          EQ, 2,  .list = completion_directions },
-    { "set",            EQ, 1,  .function = complete_against_settings },
-    { "split",          EQ, 1,  .list = completion_split_modes },
-    { "split",          EQ, 2,  .list = completion_split_ratios },
-    { "get",            EQ, 1,  .function = complete_against_settings },
-    { "toggle",         EQ, 1,  .function = complete_against_settings },
-    { "cycle_value",    EQ, 1,  .function = complete_against_settings },
-    { "set_layout",     EQ, 1,  .list = g_layout_names },
-    { "cycle_layout",   EQ, 1,  .list = completion_pm_one },
-    { "cycle_layout",   GE, 2,  .list = g_layout_names },
-    { "unrule",         EQ, 1,  .function = complete_against_rule_names },
-    { "unrule",         EQ, 1,  .list = completion_unrule_flags },
-    { "use",            EQ, 1,  .function = complete_against_tags },
-    { "use_index",      EQ, 1,  .list = completion_pm_one },
-    { "use_index",      EQ, 2,  .list = completion_use_index_args },
-    { "focus_monitor",  EQ, 1,  .function = complete_against_monitors },
-    { "shift_to_monitor",EQ, 1,  .function = complete_against_monitors },
-    { "lock_tag",       EQ, 1,  .function = complete_against_monitors },
-    { "unlock_tag",     EQ, 1,  .function = complete_against_monitors },
-    { "rename_monitor", EQ, 1,  .function = complete_against_monitors },
-    { "remove_monitor", EQ, 1,  .function = complete_against_monitors },
-    { "move_monitor",   EQ, 1,  .function = complete_against_monitors },
-    { "raise_monitor",  EQ, 1,  .function = complete_against_monitors },
-    { "name_monitor",   EQ, 1,  .function = complete_against_monitors },
-    { "monitor_rect",   EQ, 1,  .function = complete_against_monitors },
-    { "pad",            EQ, 1,  .function = complete_against_monitors },
-    { "list_padding",   EQ, 1,  .function = complete_against_monitors },
-    { "tag_status",     EQ, 1,  .function = complete_against_monitors },
-    { "setenv",         EQ, 1,  .function = complete_against_env },
-    { "getenv",         EQ, 1,  .function = complete_against_env },
-    { "unsetenv",       EQ, 1,  .function = complete_against_env },
-    { "attr",           EQ, 1,  .function = complete_against_objects },
-    { "attr",           EQ, 1,  .function = complete_against_attributes },
-    { "attr",           EQ, 2,  .function = complete_against_attribute_values },
-    { "compare",        EQ, 1,  .function = complete_against_objects },
-    { "compare",        EQ, 1,  .function = complete_against_attributes },
-    { "compare",        EQ, 2,  .function = complete_against_comparators },
-    { "compare",        EQ, 3,  .function = complete_against_attribute_values },
-    { "object_tree",    EQ, 1,  .function = complete_against_objects },
-    { "get_attr",       EQ, 1,  .function = complete_against_objects },
-    { "get_attr",       EQ, 1,  .function = complete_against_attributes },
-    { "set_attr",       EQ, 1,  .function = complete_against_objects },
-    { "set_attr",       EQ, 1,  .function = complete_against_attributes },
-    { "set_attr",       EQ, 2,  .function = complete_against_attribute_values },
-    { "new_attr",       EQ, 1,  .list = completion_userattribute_types },
-    { "new_attr",       EQ, 2,  .function = complete_against_objects },
-    { "new_attr",       EQ, 2,  .function = complete_against_user_attr_prefix },
-    { "remove_attr",    EQ, 1,  .function = complete_against_objects },
-    { "remove_attr",    EQ, 1,  .function = complete_against_user_attributes },
-    { "mktemp",         EQ, 1,  .list = completion_userattribute_types },
-    { "mktemp",         GE, 3,  .function = complete_against_commands_3 },
-    { "mktemp",         GE, 4,  .function = complete_against_arg_2 },
-    { "substitute",     EQ, 2,  .function = complete_against_objects },
-    { "substitute",     EQ, 2,  .function = complete_against_attributes },
-    { "substitute",     GE, 3,  .function = complete_against_commands_3 },
-    { "substitute",     GE, 3,  .function = complete_against_arg_1 },
-    { "sprintf",        GE, 3,  .function = complete_sprintf },
+    { "add_monitor",    EQ, 2,  complete_against_tags, 0 },
+    { "and",            GE, 1,  complete_chain, 0 },
+    { "bring",          EQ, 1,  NULL, completion_special_winids },
+    { "bring",          EQ, 1,  complete_against_winids, 0 },
+    { "cycle",          EQ, 1,  NULL, completion_pm_one },
+    { "chain",          GE, 1,  complete_chain, 0 },
+    { "cycle_all",      EQ, 1,  NULL, completion_cycle_all_args },
+    { "cycle_all",      EQ, 1,  NULL, completion_pm_one },
+    { "cycle_all",      EQ, 2,  NULL, completion_pm_one },
+    { "cycle_monitor",  EQ, 1,  NULL, completion_pm_one },
+    { "dump",           EQ, 1,  complete_against_tags, 0 },
+    { "detect_monitors", GE, 1,  NULL, completion_detect_monitors_args },
+    { "floating",       EQ, 1,  complete_against_tags, 0 },
+    { "floating",       EQ, 1,  NULL, completion_flag_args },
+    { "floating",       EQ, 1,  NULL, completion_status },
+    { "floating",       EQ, 2,  NULL, completion_flag_args },
+    { "floating",       EQ, 2,  NULL, completion_status },
+    { "focus",          EQ, 1,  NULL, completion_directions },
+    { "focus",          EQ, 1,  NULL, completion_focus_args },
+    { "focus",          EQ, 2,  NULL, completion_directions },
+    { "fullscreen",     EQ, 1,  NULL, completion_flag_args },
+    { "layout",         EQ, 1,  complete_against_tags, 0 },
+    { "load",           EQ, 1,  complete_against_tags, 0 },
+    { "merge_tag",      EQ, 1,  complete_against_tags, 0 },
+    { "merge_tag",      EQ, 2,  complete_merge_tag, 0 },
+    { "move",           EQ, 1,  complete_against_tags, 0 },
+    { "move_index",     EQ, 2,  NULL, completion_use_index_args },
+    { "or",             GE, 1,  complete_chain, 0 },
+    { "!",              GE, 1,  complete_against_commands_1, 0 },
+    { "try",            GE, 1,  complete_against_commands_1, 0 },
+    { "silent",         GE, 1,  complete_against_commands_1, 0 },
+    { "pseudotile",     EQ, 1,  NULL, completion_flag_args },
+    { "keybind",        GE, 1,  complete_against_keybind_command, 0 },
+    { "keyunbind",      EQ, 1,  NULL, completion_keyunbind_args },
+    { "keyunbind",      EQ, 1,  complete_against_keybinds, 0 },
+    { "mousebind",      EQ, 1,  complete_against_mouse_combinations, 0 },
+    { "mousebind",      EQ, 2,  NULL, completion_mouse_functions },
+    { "mousebind",      GE, 3,  complete_against_commands_3, 0 },
+    { "rename",         EQ, 1,  complete_against_tags, 0 },
+    { "raise",          EQ, 1,  NULL, completion_special_winids },
+    { "raise",          EQ, 1,  complete_against_winids, 0 },
+    { "jumpto",         EQ, 1,  NULL, completion_special_winids },
+    { "jumpto",         EQ, 1,  complete_against_winids, 0 },
+    { "resize",         EQ, 1,  NULL, completion_directions },
+    { "rule",           GE, 1,  rule_complete, 0 },
+    { "shift_edge",     EQ, 1,  NULL, completion_directions },
+    { "shift",          EQ, 1,  NULL, completion_directions },
+    { "shift",          EQ, 1,  NULL, completion_focus_args },
+    { "shift",          EQ, 2,  NULL, completion_directions },
+    { "set",            EQ, 1,  complete_against_settings, 0 },
+    { "split",          EQ, 1,  NULL, completion_split_modes },
+    { "split",          EQ, 2,  NULL, completion_split_ratios },
+    { "get",            EQ, 1,  complete_against_settings, 0 },
+    { "toggle",         EQ, 1,  complete_against_settings, 0 },
+    { "cycle_value",    EQ, 1,  complete_against_settings, 0 },
+    { "set_layout",     EQ, 1,  NULL, g_layout_names },
+    { "cycle_layout",   EQ, 1,  NULL, completion_pm_one },
+    { "cycle_layout",   GE, 2,  NULL, g_layout_names },
+    { "unrule",         EQ, 1,  complete_against_rule_names, 0 },
+    { "unrule",         EQ, 1,  NULL, completion_unrule_flags },
+    { "use",            EQ, 1,  complete_against_tags, 0 },
+    { "use_index",      EQ, 1,  NULL, completion_pm_one },
+    { "use_index",      EQ, 2,  NULL, completion_use_index_args },
+    { "focus_monitor",  EQ, 1,  complete_against_monitors, 0 },
+    { "shift_to_monitor",EQ, 1,  complete_against_monitors, 0 },
+    { "lock_tag",       EQ, 1,  complete_against_monitors, 0 },
+    { "unlock_tag",     EQ, 1,  complete_against_monitors, 0 },
+    { "rename_monitor", EQ, 1,  complete_against_monitors, 0 },
+    { "remove_monitor", EQ, 1,  complete_against_monitors, 0 },
+    { "move_monitor",   EQ, 1,  complete_against_monitors, 0 },
+    { "raise_monitor",  EQ, 1,  complete_against_monitors, 0 },
+    { "name_monitor",   EQ, 1,  complete_against_monitors, 0 },
+    { "monitor_rect",   EQ, 1,  complete_against_monitors, 0 },
+    { "pad",            EQ, 1,  complete_against_monitors, 0 },
+    { "list_padding",   EQ, 1,  complete_against_monitors, 0 },
+    { "tag_status",     EQ, 1,  complete_against_monitors, 0 },
+    { "setenv",         EQ, 1,  complete_against_env, 0 },
+    { "getenv",         EQ, 1,  complete_against_env, 0 },
+    { "unsetenv",       EQ, 1,  complete_against_env, 0 },
+    { "attr",           EQ, 1,  complete_against_objects, 0 },
+    { "attr",           EQ, 1,  complete_against_attributes, 0 },
+    { "attr",           EQ, 2,  complete_against_attribute_values, 0 },
+    { "compare",        EQ, 1,  complete_against_objects, 0 },
+    { "compare",        EQ, 1,  complete_against_attributes, 0 },
+    { "compare",        EQ, 2,  complete_against_comparators, 0 },
+    { "compare",        EQ, 3,  complete_against_attribute_values, 0 },
+    { "object_tree",    EQ, 1,  complete_against_objects, 0 },
+    { "get_attr",       EQ, 1,  complete_against_objects, 0 },
+    { "get_attr",       EQ, 1,  complete_against_attributes, 0 },
+    { "set_attr",       EQ, 1,  complete_against_objects, 0 },
+    { "set_attr",       EQ, 1,  complete_against_attributes, 0 },
+    { "set_attr",       EQ, 2,  complete_against_attribute_values, 0 },
+    { "new_attr",       EQ, 1,  NULL, completion_userattribute_types },
+    { "new_attr",       EQ, 2,  complete_against_objects, 0 },
+    { "new_attr",       EQ, 2,  complete_against_user_attr_prefix, 0 },
+    { "remove_attr",    EQ, 1,  complete_against_objects, 0 },
+    { "remove_attr",    EQ, 1,  complete_against_user_attributes, 0 },
+    { "mktemp",         EQ, 1,  NULL, completion_userattribute_types },
+    { "mktemp",         GE, 3,  complete_against_commands_3, 0 },
+    { "mktemp",         GE, 4,  complete_against_arg_2, 0 },
+    { "substitute",     EQ, 2,  complete_against_objects, 0 },
+    { "substitute",     EQ, 2,  complete_against_attributes, 0 },
+    { "substitute",     GE, 3,  complete_against_commands_3, 0 },
+    { "substitute",     GE, 3,  complete_against_arg_1, 0 },
+    { "sprintf",        GE, 3,  complete_sprintf, 0 },
     { 0 },
 };
 
@@ -308,10 +310,11 @@ int call_command(int argc, char** argv, GString* output) {
         return HERBST_COMMAND_NOT_FOUND;
     }
     int status;
+    // TODO why isn't the cast (char** -> const char**) done automtically?
     if (bind->has_output) {
-        status = bind->cmd.standard(argc, argv, output);
+        status = bind->cmd.standard(argc, (const char**)argv, output);
     } else {
-        status = bind->cmd.no_output(argc, argv);
+        status = bind->cmd.no_output(argc, (const char**)argv);
     }
     return status;
 }
@@ -353,8 +356,8 @@ int list_commands(int argc, char** argv, GString* output)
     return 0;
 }
 
-static void try_complete_suffix(char* needle, char* to_check, char* suffix,
-                                char* prefix, GString* output)
+static void try_complete_suffix(const char* needle, const char* to_check, const char* suffix,
+                                const char* prefix, GString* output)
 {
     bool matches = (needle == NULL);
     if (matches == false) {
@@ -396,36 +399,36 @@ static void try_complete_suffix(char* needle, char* to_check, char* suffix,
     }
 }
 
-void try_complete(char* needle, char* to_check, GString* output) {
-    char* suffix = g_shell_quoting ? " \n" : "\n";
+void try_complete(const char* needle, const char* to_check, GString* output) {
+    const char* suffix = g_shell_quoting ? " \n" : "\n";
     try_complete_suffix(needle, to_check, suffix, NULL, output);
 }
 
-void try_complete_prefix(char* needle, char* to_check,
-                         char* prefix, GString* output) {
-    char* suffix = g_shell_quoting ? " \n" : "\n";
+void try_complete_prefix(const char* needle, const char* to_check,
+                         const char* prefix, GString* output) {
+    const char* suffix = g_shell_quoting ? " \n" : "\n";
     try_complete_suffix(needle, to_check, suffix, prefix, output);
 }
 
-void try_complete_partial(char* needle, char* to_check, GString* output) {
+void try_complete_partial(const char* needle, const char* to_check, GString* output) {
     try_complete_suffix(needle, to_check, "\n", NULL, output);
 }
 
-void try_complete_prefix_partial(char* needle, char* to_check,
-                                 char* prefix, GString* output) {
+void try_complete_prefix_partial(const char* needle, const char* to_check,
+                                 const char* prefix, GString* output) {
     try_complete_suffix(needle, to_check, "\n", prefix, output);
 }
 
-void complete_against_list(char* needle, char** list, GString* output) {
+void complete_against_list(const char* needle, const char** list, GString* output) {
     while (*list) {
-        char* name = *list;
+        const char* name = *list;
         try_complete(needle, name, output);
         list++;
     }
 }
 
 void complete_against_tags(int argc, char** argv, int pos, GString* output) {
-    char* needle;
+    const char* needle;
     if (pos >= argc) {
         needle = "";
     } else {
@@ -438,7 +441,7 @@ void complete_against_tags(int argc, char** argv, int pos, GString* output) {
 }
 
 void complete_against_monitors(int argc, char** argv, int pos, GString* output) {
-    char* needle;
+    const char* needle;
     if (pos >= argc) {
         needle = "";
     } else {
@@ -466,8 +469,8 @@ void complete_against_objects(int argc, char** argv, int pos, GString* output) {
     // Remove command name
     (void)SHIFT(argc,argv);
     pos--;
-    char* needle = (pos < argc) ? argv[pos] : "";
-    char* suffix;
+    const char* needle = (pos < argc) ? argv[pos] : "";
+    const char* suffix;
     char* prefix = g_new(char, strlen(needle)+2);
     HSObject* obj = hsobject_parse_path(needle, &suffix);
     strncpy(prefix, needle, suffix-needle);
@@ -486,8 +489,8 @@ void complete_against_attributes_helper(int argc, char** argv, int pos,
     // Remove command name
     (void)SHIFT(argc,argv);
     pos--;
-    char* needle = (pos < argc) ? argv[pos] : "";
-    char* unparsable;
+    const char* needle = (pos < argc) ? argv[pos] : "";
+    const char* unparsable;
     HSObject* obj = hsobject_parse_path(needle, &unparsable);
     if (obj && strchr(unparsable, OBJECT_PATH_SEPARATOR) == NULL) {
         GString* prefix = g_string_new(needle);
@@ -515,8 +518,8 @@ void complete_against_user_attributes(int argc, char** argv, int pos, GString* o
 
 void complete_against_user_attr_prefix(int argc, char** argv, int position,
                                       GString* output) {
-    char* path = (position < argc) ? argv[position] : "";
-    char* unparsable;
+    const char* path = (position < argc) ? argv[position] : "";
+    const char* unparsable;
     GString* prefix = g_string_new(path);
     hsobject_parse_path(path, &unparsable);
 
@@ -530,8 +533,8 @@ void complete_against_user_attr_prefix(int argc, char** argv, int position,
 }
 
 void complete_against_attribute_values(int argc, char** argv, int pos, GString* output) {
-    char* needle = (pos < argc) ? argv[pos] : "";
-    char* path =  (1 < argc) ? argv[1] : "";
+    const char* needle = (pos < argc) ? argv[pos] : "";
+    const char* path =  (1 < argc) ? argv[1] : "";
     GString* path_error = g_string_new("");
     HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
     g_string_free(path_error, true);
@@ -547,13 +550,13 @@ void complete_against_attribute_values(int argc, char** argv, int pos, GString* 
 }
 
 void complete_against_comparators(int argc, char** argv, int pos, GString* output) {
-    char* needle = (pos < argc) ? argv[pos] : "";
-    char* path =  (1 < argc) ? argv[1] : "";
+    const char* needle = (pos < argc) ? argv[pos] : "";
+    const char* path =  (1 < argc) ? argv[1] : "";
     GString* path_error = g_string_new("");
     HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
     g_string_free(path_error, true);
-    char* equals[] = { "=", "!=", NULL };
-    char* order[] = { "le", "lt", "ge", "gt", NULL };
+    const char* equals[] = { "=", "!=", NULL };
+    const char* order[] = { "le", "lt", "ge", "gt", NULL };
     if (attr) {
         switch (attr->type) {
             case HSATTR_TYPE_INT:
@@ -568,7 +571,7 @@ void complete_against_comparators(int argc, char** argv, int pos, GString* outpu
 }
 
 struct wcd { /* window id completion data */
-    char* needle;
+    const char* needle;
     GString* output;
 };
 
@@ -592,8 +595,8 @@ void complete_against_winids(int argc, char** argv, int pos, GString* output) {
 }
 
 void complete_merge_tag(int argc, char** argv, int pos, GString* output) {
-    char* first = (argc > 1) ? argv[1] : "";
-    char* needle;
+    const char* first = (argc > 1) ? argv[1] : "";
+    const char* needle;
     if (pos >= argc) {
         needle = "";
     } else {
@@ -611,7 +614,7 @@ void complete_merge_tag(int argc, char** argv, int pos, GString* output) {
 
 void complete_against_settings(int argc, char** argv, int pos, GString* output)
 {
-    char* needle;
+    const char* needle;
     if (pos >= argc) {
         needle = "";
     } else {
@@ -629,7 +632,7 @@ void complete_against_settings(int argc, char** argv, int pos, GString* output)
 }
 
 void complete_against_keybinds(int argc, char** argv, int pos, GString* output) {
-    char* needle;
+    const char* needle;
     if (pos >= argc) {
         needle = "";
     } else {
@@ -681,8 +684,8 @@ void complete_against_keybind_command(int argc, char** argv, int position,
     }
     if (position == 1) {
         // complete the keycombination
-        char* needle = (position < argc) ? argv[position] : "";
-        char* lasttok = strlasttoken(needle, KEY_COMBI_SEPARATORS);
+        const char* needle = (position < argc) ? argv[position] : "";
+        const char* lasttok = strlasttoken(needle, KEY_COMBI_SEPARATORS);
         char* prefix = g_strdup(needle);
         prefix[lasttok - needle] = '\0';
         char separator = KEY_COMBI_SEPARATORS[0];
@@ -707,8 +710,8 @@ void complete_against_mouse_combinations(int argc, char** argv, int position,
         return;
     }
     // complete the mouse combination
-    char* needle = (position < argc) ? argv[position] : "";
-    char* lasttok = strlasttoken(needle, KEY_COMBI_SEPARATORS);
+    const char* needle = (position < argc) ? argv[position] : "";
+    const char* lasttok = strlasttoken(needle, KEY_COMBI_SEPARATORS);
     char* prefix = g_strdup(needle);
     prefix[lasttok - needle] = '\0';
     char separator = KEY_COMBI_SEPARATORS[0];
@@ -725,7 +728,7 @@ void complete_against_mouse_combinations(int argc, char** argv, int position,
 void complete_against_env(int argc, char** argv, int position,
                           GString* output) {
     GString* curname = g_string_sized_new(30);
-    char* needle = (position < argc) ? argv[position] : "";
+    const char* needle = (position < argc) ? argv[position] : "";
     for (char** env = environ; *env; ++env) {
         g_string_assign(curname, *env);
         char* name_end = strchr(*env, '=');
@@ -752,7 +755,7 @@ void complete_against_arg_1(int argc, char** argv, int position,
                             GString* output)
 {
     if (argc > 2 && position > 2) {
-        char* needle = (position < argc) ? argv[position] : "";
+        const char* needle = (position < argc) ? argv[position] : "";
         try_complete(needle, argv[1], output);
     }
 }
@@ -761,7 +764,7 @@ void complete_against_arg_2(int argc, char** argv, int position,
                             GString* output)
 {
     if (argc > 3 && position > 3) {
-        char* needle = (position < argc) ? argv[position] : "";
+        const char* needle = (position < argc) ? argv[position] : "";
         try_complete(needle, argv[2], output);
     }
 }
@@ -782,7 +785,7 @@ int complete_against_commands(int argc, char** argv, int position,
         return HERBST_NO_PARAMETER_EXPECTED;
     }
     if (argc >= 1) {
-        char* cmd_str = (argc >= 1) ? argv[0] : "";
+        const char* cmd_str = (argc >= 1) ? argv[0] : "";
         // complete parameters for commands
         for (int i = 0; i < LENGTH(g_completions); i++) {
             bool matches = false;
@@ -796,7 +799,7 @@ int complete_against_commands(int argc, char** argv, int position,
                 || strcmp(cmd_str, g_completions[i].command)) {
                 continue;
             }
-            char* needle = (position < argc) ? argv[position] : "";
+            const char* needle = (position < argc) ? argv[position] : "";
             if (!needle) {
                 needle = "";
             }
@@ -833,12 +836,12 @@ static void complete_chain_helper(int argc, char** argv, int position,
 
     /* find the next separator */
     size_t uargc = argc;
-    char** next_sep = lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
+    char** next_sep = (char**)lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
     int next_sep_idx = next_sep - argv;
 
     if (!next_sep || next_sep_idx >= position) {
         /* try to complete at the desired position */
-        char* needle = (position < argc) ? argv[position] : "";
+        const char* needle = (position < argc) ? argv[position] : "";
         complete_against_commands(argc, argv, position, output);
         /* at least the command name is required
          * so don't complete at position 0 */
@@ -869,7 +872,7 @@ void complete_chain(int argc, char** argv, int position, GString* output) {
 }
 
 void complete_sprintf(int argc, char** argv, int position, GString* output) {
-    char* needle = (position < argc) ? argv[position] : "";
+    const char* needle = (position < argc) ? argv[position] : "";
     int paramcount = 0;
     char* format = argv[2];
     for (int i = 0; format[i]; i++) {
@@ -956,7 +959,7 @@ static bool parameter_expected_offset_3(int argc, char** argv, int pos) {
 int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, GString* output) {
     size_t uargc = argc;
-    char** next_sep = lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
+    char** next_sep = (char**)lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
     int command_argc = next_sep ? (int)(next_sep - argv) : argc;
     int status = call_command(command_argc, argv, output);
     if (condition && false == condition(status)) {
@@ -979,7 +982,7 @@ static bool int_is_not_zero(int x) {
 }
 
 typedef struct {
-    char* cmd;
+    const char* cmd;
     bool (*condition)(int);
 } Cmd2Condition;
 

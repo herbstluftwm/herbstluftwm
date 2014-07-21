@@ -4,8 +4,8 @@
  * See LICENSE for details */
 
 #include "../src/ipc-protocol.h"
-#include "../src/utils.h"
 #include "ipc-client.h"
+#include "client-utils.h"
 
 // standard
 #include <stdio.h>
@@ -236,7 +236,7 @@ bool hc_next_hook(HCConnection* con, int* argc, char** argv[]) {
             return false;
         }
         *argc = count;
-        *argv = argv_duplicate(count, list_return);
+        *argv = argv_duplicate(count, list_return); // has to be freed by caller
         received_hook = true;
         // cleanup
         XFreeStringList(list_return);
@@ -244,4 +244,3 @@ bool hc_next_hook(HCConnection* con, int* argc, char** argv[]) {
     }
     return true;
 }
-

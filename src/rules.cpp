@@ -21,20 +21,20 @@
 /// TYPES ///
 
 typedef struct {
-    char*   name;
+    const char*   name;
     bool    (*matches)(HSCondition* condition, HSClient* client);
 } HSConditionType;
 
 typedef struct {
-    char*   name;
+    const char*   name;
     void    (*apply)(HSConsequence* consequence, HSClient* client,
                      HSClientChanges* changes);
 } HSConsequenceType;
 
 /// DECLARATIONS ///
-static int find_condition_type(char* name);
-static int find_consequence_type(char* name);
-static bool condition_string(HSCondition* rule, char* string);
+static int find_condition_type(const char* name);
+static int find_consequence_type(const char* name);
+static bool condition_string(HSCondition* rule, const char* string);
 
 /// CONDITIONS ///
 #define DECLARE_CONDITION(NAME)                         \
@@ -112,8 +112,8 @@ void rules_destroy() {
 }
 
 // condition types //
-static int find_condition_type(char* name) {
-    char* cn;
+static int find_condition_type(const char* name) {
+    const char* cn;
     for (int i = 0; i < LENGTH(g_condition_types); i++) {
         cn = g_condition_types[i].name;
         if (!cn) break;
@@ -132,7 +132,7 @@ HSCondition* condition_create(int type, char op, char* value, GString* output) {
         return NULL;
     }
     switch (op) {
-        case '=':
+        case '=': {
             if (type == g_maxage_type) {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
                 if (1 != sscanf(value, "%d", &cond.value.integer)) {
@@ -145,8 +145,9 @@ HSCondition* condition_create(int type, char op, char* value, GString* output) {
                 cond.value.str = g_strdup(value);
             }
             break;
+        }
 
-        case '~':
+        case '~': {
             cond.value_type = CONDITION_VALUE_TYPE_REGEX;
             int status = regcomp(&cond.value.reg.exp, value, REG_EXTENDED);
             if (status != 0) {
@@ -159,6 +160,7 @@ HSCondition* condition_create(int type, char op, char* value, GString* output) {
             }
             cond.value.reg.str = g_strdup(value);
             break;
+        }
 
         default:
             g_string_append_printf(output,
@@ -196,8 +198,8 @@ static void condition_destroy(HSCondition* cond) {
 }
 
 // consequence types //
-static int find_consequence_type(char* name) {
-    char* cn;
+static int find_consequence_type(const char* name) {
+    const char* cn;
     for (int i = 0; i < LENGTH(g_consequence_types); i++) {
         cn = g_consequence_types[i].name;
         if (!cn) break;
@@ -289,7 +291,7 @@ void rule_destroy(HSRule* rule) {
 }
 
 void rule_complete(int argc, char** argv, int pos, GString* output) {
-    char* needle = (pos < argc) ? argv[pos] : "";
+    const char* needle = (pos < argc) ? argv[pos] : "";
     GString* buf = g_string_sized_new(20);
 
     // complete against conditions
@@ -327,7 +329,8 @@ static gint rule_compare_label(const HSRule* a, const HSRule* b) {
 static bool rule_find_pop(char* label) {
     GList* rule = { NULL };
     bool status = false; // Will be returned as true if any is found
-    HSRule rule_find = { .label = label };
+    HSRule rule_find = { 0 };
+    rule_find.label = label;
     while ((rule = g_queue_find_custom(&g_rules, &rule_find,
                         (GCompareFunc)rule_compare_label))) {
         // Check if rule with label exists
@@ -336,7 +339,7 @@ static bool rule_find_pop(char* label) {
         }
         status = true;
         // If so, clear data
-        rule_destroy(rule->data);
+        rule_destroy((HSRule*)rule->data);
         // Remove and free empty link
         g_queue_delete_link(&g_rules, rule);
     }
@@ -438,7 +441,7 @@ int rule_add_command(int argc, char** argv, GString* output) {
     bool negated = false;
     bool prepend = false;
     struct {
-        char* name;
+        const char* name;
         bool* flag;
     } flags[] = {
         { "prepend",&prepend },
@@ -519,7 +522,7 @@ int rule_add_command(int argc, char** argv, GString* output) {
 }
 
 void complete_against_rule_names(int argc, char** argv, int pos, GString* output) {
-    char* needle;
+    const char* needle;
     if (pos >= argc) {
         needle = "";
     } else {
@@ -583,7 +586,7 @@ void client_changes_free_members(HSClientChanges* changes) {
 void rules_apply(HSClient* client, HSClientChanges* changes) {
     GList* cur = g_rules.head;
     while (cur) {
-        HSRule* rule = cur->data;
+        HSRule* rule = (HSRule*)cur->data;
         bool matches = true;    // if current condition matches
         bool rule_match = true; // if entire rule matches
         bool rule_expired = false;
@@ -628,7 +631,7 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
         // remove it if not wanted or needed anymore
         if ((rule_match && rule->once) || rule_expired) {
             GList* next = cur->next;
-            rule_destroy(cur->data);
+            rule_destroy((HSRule*)cur->data);
             g_queue_remove_element(&g_rules, cur);
             cur = next;
             continue;
@@ -640,7 +643,7 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
 }
 
 /// CONDITIONS ///
-static bool condition_string(HSCondition* rule, char* string) {
+static bool condition_string(HSCondition* rule, const char* string) {
     if (!rule || !string) {
         return false;
     }
@@ -824,7 +827,7 @@ void consequence_hook(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
     GString* winid = g_string_sized_new(20);
     g_string_printf(winid, "0x%lx", client->window);
-    char* hook_str[] = { "rule" , cons->value.str, winid->str };
+    const char* hook_str[] = { "rule" , cons->value.str, winid->str };
     hook_emit(LENGTH(hook_str), hook_str);
     g_string_free(winid, true);
 }

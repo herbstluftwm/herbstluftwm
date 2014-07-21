@@ -47,7 +47,7 @@ int mouse_bind_command(int argc, char** argv, GString* output);
 int mouse_unbind_all();
 MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button);
 
-unsigned int string2button(char* name);
+unsigned int string2button(const char* name);
 MouseFunction string2mousefunction(char* name);
 
 void grab_client_buttons(struct HSClient* client, bool focused);
@@ -76,7 +76,7 @@ void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);
 void mouse_function_zoom(XMotionEvent* me);
 
-void complete_against_mouse_buttons(char* needle, char* prefix, GString* output);
+void complete_against_mouse_buttons(const char* needle, char* prefix, GString* output);
 
 #endif
 

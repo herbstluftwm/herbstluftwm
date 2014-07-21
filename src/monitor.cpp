@@ -54,7 +54,7 @@ void monitor_init() {
     g_monitor_stack = stack_create();
     g_monitor_object = hsobject_create_and_link(hsobject_root(), "monitors");
     HSAttribute attributes[] = {
-        ATTRIBUTE_UINT("count", g_monitors->len, ATTR_READ_ONLY),
+        ATTRIBUTE("count", g_monitors->len, ATTR_READ_ONLY),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(g_monitor_object, attributes);
@@ -62,7 +62,7 @@ void monitor_init() {
 }
 
 void monitor_destroy() {
-    for (int i = 0; i < g_monitors->len; i++) {
+    for (unsigned int i = 0; i < g_monitors->len; i++) {
         HSMonitor* m = monitor_with_index(i);
         stack_remove_slice(g_monitor_stack, m->slice);
         slice_destroy(m->slice);
@@ -120,9 +120,8 @@ void monitor_apply_layout(HSMonitor* monitor) {
 int list_monitors(int argc, char** argv, GString* output) {
     (void)argc;
     (void)argv;
-    int i;
     GString* monitor_name = g_string_new("");
-    for (i = 0; i < g_monitors->len; i++) {
+    for (unsigned int i = 0; i < g_monitors->len; i++) {
         HSMonitor* monitor = monitor_with_index(i);
         if (monitor->name != NULL ) {
             g_string_printf(monitor_name, ", named \"%s\"",
@@ -136,7 +135,7 @@ int list_monitors(int argc, char** argv, GString* output) {
             monitor->rect.x, monitor->rect.y,
             monitor->tag ? monitor->tag->name->str : "???",
             monitor_name->str,
-            (g_cur_monitor == i) ? " [FOCUS]" : "",
+            ((unsigned int) g_cur_monitor == i) ? " [FOCUS]" : "",
             monitor->lock_tag ? " [LOCKED]" : "");
     }
     g_string_free(monitor_name, true);
@@ -224,7 +223,7 @@ static RectList* insert_rect_border(RectList* head,
     bottom= r(large.x, center.y + center.height, br_x, br_y);
 
     RectList* parts[] = { top, left, right, bottom };
-    for (int i = 0; i < LENGTH(parts); i++) {
+    for (unsigned int i = 0; i < LENGTH(parts); i++) {
         head = reclist_insert_disjoint(head, parts[i]);
     }
     return head;
@@ -272,7 +271,7 @@ static int rectlist_length(RectList* head) {
 static RectList* disjoin_rects(Rectangle* buf, size_t count) {
     RectList* cur;
     struct RectList* rects = NULL;
-    for (int i = 0; i < count; i++) {
+    for (unsigned int i = 0; i < count; i++) {
         cur = g_new0(RectList, 1);
         cur->rect = buf[i];
         rects = reclist_insert_disjoint(rects, cur);
@@ -472,10 +471,10 @@ HSMonitor* add_monitor(Rectangle rect, HSTag* tag, char* name) {
 
     m->object.data = m;
     HSAttribute attributes[] = {
-        ATTRIBUTE_STRING(   "name",     m->display_name,ATTR_READ_ONLY  ),
-        ATTRIBUTE_CUSTOM_INT("index",   monitor_attr_index,ATTR_READ_ONLY  ),
-        ATTRIBUTE_CUSTOM(   "tag",      monitor_attr_tag,ATTR_READ_ONLY  ),
-        ATTRIBUTE_BOOL(     "lock_tag", m->lock_tag,    ATTR_READ_ONLY  ),
+        ATTRIBUTE("name",     m->display_name,ATTR_READ_ONLY  ),
+        ATTRIBUTE("index",    monitor_attr_index,ATTR_READ_ONLY  ),
+        ATTRIBUTE("tag",      monitor_attr_tag,ATTR_READ_ONLY  ),
+        ATTRIBUTE("lock_tag", m->lock_tag,    ATTR_READ_ONLY  ),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(&m->object, attributes);
@@ -758,11 +757,9 @@ void ensure_monitors_are_available() {
         return;
     }
     // add monitor if necessary
-    Rectangle rect = {
-        .x = 0, .y = 0,
-        .width = DisplayWidth(g_display, DefaultScreen(g_display)),
-        .height = DisplayHeight(g_display, DefaultScreen(g_display)),
-    };
+    Rectangle rect = Rectangle(0,0,
+            DisplayWidth(g_display, DefaultScreen(g_display)),
+            DisplayHeight(g_display, DefaultScreen(g_display)));
     ensure_tags_are_available();
     // add monitor with first tag
     HSMonitor* m = add_monitor(rect, get_tag_by_index(0), NULL);
@@ -1070,7 +1067,7 @@ HSMonitor* monitor_with_index(int index) {
     return g_array_index(g_monitors, HSMonitor*, index);
 }
 
-int monitors_lock_command(int argc, char** argv) {
+int monitors_lock_command(int argc, const char** argv) {
     monitors_lock();
     return 0;
 }
@@ -1086,7 +1083,7 @@ void monitors_lock() {
     monitors_lock_changed();
 }
 
-int monitors_unlock_command(int argc, char** argv) {
+int monitors_unlock_command(int argc, const char** argv) {
     monitors_unlock();
     return 0;
 }
@@ -1235,7 +1232,7 @@ bool detect_monitors_debug_example(Rectangle** ret_rects, size_t* ret_count) {
 }
 
 
-int detect_monitors_command(int argc, char **argv, GString* output) {
+int detect_monitors_command(int argc, const char **argv, GString* output) {
     MonitorDetection detect[] = {
         detect_monitors_xinerama,
         detect_monitors_simple,
@@ -1361,12 +1358,12 @@ int shift_to_monitor(int argc, char** argv, GString* output) {
     return 0;
 }
 
-void all_monitors_replace_previous_tag(HSTag *old, HSTag *new) {
+void all_monitors_replace_previous_tag(HSTag *old, HSTag *newmon) {
     int i;
     for (i = 0; i < g_monitors->len; i++) {
         HSMonitor* m = monitor_with_index(i);
         if (m->tag_previous == old) {
-            m->tag_previous = new;
+            m->tag_previous = newmon;
         }
     }
 }

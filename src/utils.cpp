@@ -26,7 +26,7 @@
 #endif
 
 // globals
-char*   g_tree_style; /* the one from layout.c */
+extern char*   g_tree_style; /* the one from layout.c */
 
 time_t get_monotonic_timestamp() {
     struct timespec ts;
@@ -166,7 +166,7 @@ bool window_has_property(Display* dpy, Window window, char* prop_name) {
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv) {
     if (argc <= 0) return NULL;
-    char** new_argv = malloc(sizeof(char*) * argc);
+    char** new_argv = new char*[argc];
     if (!new_argv) {
         die("cannot malloc - there is no memory available\n");
     }
@@ -184,7 +184,7 @@ void argv_free(int argc, char** argv) {
     for (i = 0; i < argc; i++) {
         free(argv[i]);
     }
-    free(argv);
+    delete[] argv;
 }
 
 
@@ -200,8 +200,8 @@ Rectangle parse_rectangle(char* string) {
     return rect;
 }
 
-char* strlasttoken(char* str, char* delim) {
-    char* next = str;
+const char* strlasttoken(const char* str, const char* delim) {
+    const char* next = str;
     while ((next = strpbrk(str, delim))) {
         next++;;
         str = next;
@@ -217,7 +217,7 @@ bool string_to_bool(const char* string, bool oldvalue) {
 bool string_to_bool_error(const char* string, bool oldvalue, bool* error) {
     bool val = oldvalue;
     if (error) {
-        error = false;
+        *error = false;
     }
     if (!strcmp(string, "on")) {
         val = true;
@@ -270,9 +270,9 @@ void g_queue_remove_element(GQueue* queue, GList* elem) {
     }
 }
 
-int array_find(void* buf, size_t elems, size_t size, void* needle) {
+int array_find(const void* buf, size_t elems, size_t size, const void* needle) {
     for (int i = 0; i < elems; i++) {
-        if (0 == memcmp((char*)buf + (size * i), needle, size)) {
+        if (0 == memcmp((const char*)buf + (size * i), needle, size)) {
             return i;
         }
     }
@@ -281,28 +281,28 @@ int array_find(void* buf, size_t elems, size_t size, void* needle) {
 
 void array_reverse(void* void_buf, size_t elems, size_t size) {
     char* buf = (char*)void_buf;
-    char* tmp = malloc(size);
+    char* tmp = new char[size];
     for (int i = 0, j = elems - 1; i < j; i++, j--) {
         memcpy(tmp, buf + size * i, size);
         memcpy(buf + size * i, buf + size * j, size);
         memcpy(buf + size * j, tmp, size);
     }
-    free(tmp);
+    delete[] tmp;
 }
 
 
 /**
  * \brief   tells if the string needle is identical to the string *pmember
  */
-bool memberequals_string(void* pmember, void* needle) {
-    return !strcmp(*(char**)pmember, (char*)needle);
+bool memberequals_string(void* pmember, const void* needle) {
+    return !strcmp(*(char**)pmember, (const char*)needle);
 }
 
 /**
  * \brief   tells if the ints pointed by pmember and needle are identical
  */
-bool memberequals_int(void* pmember, void* needle) {
-    return (*(int*)pmember) == (*(int*)needle);
+bool memberequals_int(void* pmember, const void* needle) {
+    return (*(int*)pmember) == (*(const int*)needle);
 }
 
 /**
@@ -322,9 +322,9 @@ bool memberequals_int(void* pmember, void* needle) {
  * \return                  the found element or NULL
  */
 void* table_find(void* start, size_t elem_size, size_t count,
-                 size_t member_offset, MemberEquals equals, void* needle)
+                 size_t member_offset, MemberEquals equals, const void* needle)
 {
-    char* cstart = start;
+    char* cstart = (char*) start;
     while (count > 0) {
         /* check the element */
         if (equals(cstart + member_offset, needle)) {
@@ -404,7 +404,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     XFreePixmap(dpy, pix);
 }
 
-static void subtree_print_to(HSTreeInterface* intface, char* indent,
+static void subtree_print_to(HSTreeInterface* intface, const char* indent,
                           char* rootprefix, GString* output) {
     HSTree root = intface->data;
     size_t child_count = intface->child_count(root);
@@ -461,7 +461,7 @@ int min(int a, int b) {
     return b;
 }
 
-char* posix_sh_escape(char* source) {
+char* posix_sh_escape(const char* source) {
     size_t count = 0;
     int i;
     for (i = 0; source[i]; i++) {
@@ -482,7 +482,8 @@ char* posix_sh_escape(char* source) {
     }
     // if there is nothing to escape
     if (count == 0) return NULL;
-    char* target = malloc(sizeof(char) * (count + source_len + 1));
+    // TODO migrate to new
+    char* target = (char*)malloc(sizeof(char) * (count + source_len + 1));
     if (!target) {
         die("cannot malloc - there is no memory available\n");
     }

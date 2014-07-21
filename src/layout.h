@@ -43,8 +43,8 @@ enum {
     LAYOUT_COUNT,
 };
 
-extern char* g_align_names[];
-extern char* g_layout_names[];
+extern const char* g_align_names[];
+extern const char* g_layout_names[];
 
 enum {
     TYPE_CLIENTS = 0,
@@ -94,10 +94,10 @@ typedef struct HSFrame {
 
 
 // globals
-HSFrame*    g_cur_frame; // currently selected frame
-int* g_frame_gap;
-int* g_window_gap;
-char* g_tree_style;
+extern HSFrame*    g_cur_frame; // currently selected frame
+extern int* g_frame_gap;
+extern int* g_window_gap;
+extern char* g_tree_style;
 
 // functions
 void layout_init();
@@ -105,7 +105,7 @@ void layout_destroy();
 // for frames
 HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag);
 void frame_insert_client(HSFrame* frame, struct HSClient* client);
-HSFrame* lookup_frame(HSFrame* root, char* path);
+HSFrame* lookup_frame(HSFrame* root, const char* path);
 HSFrame* frame_current_selection();
 HSFrame* frame_current_selection_below(HSFrame* frame);
 // finds the subframe of frame that contains the window
