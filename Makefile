@@ -89,6 +89,7 @@ tar: doc
 	tar -xvf $(TARFILE) -C $(TMPTARDIR)
 	tar -czf $(TARFILE) $(TMPTARDIR)
 	rm -rf $(TMPTARDIR)
+	gpg --detach-sign $(TARFILE)
 
 doc/%.1 doc/%.7: doc/%.txt version.mk
 	$(call colorecho,DOC,$@)

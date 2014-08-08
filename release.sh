@@ -43,8 +43,8 @@ make tar
 tarball="herbstluftwm-$version.tar.gz"
 md5sum=$(md5sum "$tarball" | head -c 13 )
 echo ":: Patching www/download.txt"
-line=$(printf "| %-7s | $date | $md5sum...%15s| link:tarballs/%s[tar.gz]" \
-                $version                  ' '                 "$tarball" )
+line=$(printf "| %-7s | $date | $md5sum...%15s| link:tarballs/%s[tar.gz] |link:tarballs/%s.sig[sig]" \
+                $version                  ' '                 "$tarball" "$tarball")
 linerexp="// do not remove this: next version line will be added here"
 sed -i "s#^$linerexp\$#$line\n$linerexp#" www/download.txt
 echo ":: Commiting changes"
