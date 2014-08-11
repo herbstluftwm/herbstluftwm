@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <limits>
 #include <stdbool.h>
 
 #include <X11/Xlib.h>
@@ -489,7 +490,8 @@ bool ewmh_is_fullscreen_set(Window win) {
 }
 
 void ewmh_set_window_opacity(Window win, double opacity) {
-    uint32_t int_opacity = UINT32_MAX * CLAMP(opacity, 0, 1);
+    uint32_t int_opacity = std::numeric_limits<uint32_t>::max()
+                            * CLAMP(opacity, 0, 1);
 
     XChangeProperty(g_display, win, g_netatom[NetWmWindowOpacity], XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&int_opacity, 1);
