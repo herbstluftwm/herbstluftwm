@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # herbstcommander.sh - launch herbstluftwm-commands via dmenu
 # Written by Florian Bruhin <me@the-compiler.org>

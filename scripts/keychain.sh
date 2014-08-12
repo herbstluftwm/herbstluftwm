@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Execute this (e.g. from your autostart) to obtain basic key chaining like it
 # is known from other applications like screen.

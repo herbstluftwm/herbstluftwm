@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # aligns the output of dump command as a nice tree
 # usage:

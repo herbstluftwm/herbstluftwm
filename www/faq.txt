@@ -154,7 +154,7 @@ Add a rule for the clients pid, before the client appears. This script
 creates two xterms with different behaviours:
 
 ----
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Requirement: bash >= 4.0 (because of the usage of $BASHPID)
 

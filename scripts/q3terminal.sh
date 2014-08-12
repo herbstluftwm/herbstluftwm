@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # a q3-like (or yakuake-like) terminal for arbitrary applications.
 #

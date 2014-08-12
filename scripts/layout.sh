@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # print layout of all tags, and colorizes all window ids
 # it's useful to get a overview over the list of all windows

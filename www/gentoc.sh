@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # if you know a cleaner version then grepping everything out of html
 # then you are very welcome to improve this script!

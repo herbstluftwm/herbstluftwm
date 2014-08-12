@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if ! command -v dmenu > /dev/null 2>/dev/null ; then
 	echo "Error: Requirement dmenu not found in your PATH." >&2

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # usage: start this script in anywhere your autostart (but *after* the
 # emit_hook reload line)

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # a i3-like scratchpad for arbitrary applications.
 #
