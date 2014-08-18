@@ -97,6 +97,7 @@ struct {
     { "set_layout",     2,  no_completion },
     { "close",          1,  no_completion },
     { "close_or_remove",1,  no_completion },
+    { "close_and_remove",1, no_completion },
     { "split",          3,  no_completion },
     { "focus",          3,  no_completion },
     { "focus",          2,  first_parameter_is_flag },

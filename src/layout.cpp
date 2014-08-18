@@ -1917,6 +1917,28 @@ int close_or_remove_command(int argc, char** argv) {
     }
 }
 
+// ET: same as close or remove but remove after last client
+int close_and_remove_command(int argc, char** argv) {
+    bool remove_after_close = false;
+    HSClient* client = frame_focused_client(g_cur_frame);
+    if (client) {
+        if (g_cur_frame->content.clients.count == 1 ) {
+            remove_after_close = true;
+        }
+
+        window_close(client->window);
+
+        if (remove_after_close) {
+            frame_remove_command(argc, argv);
+        }
+
+        return 0;
+
+    } else {
+        return frame_remove_command(argc, argv);
+    }
+}
+
 void frame_set_visible(HSFrame* frame, bool visible) {
     if (!frame) {
         return;

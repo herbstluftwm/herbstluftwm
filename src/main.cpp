@@ -129,6 +129,7 @@ CommandBinding g_commands[] = {
     CMD_BIND_NO_OUTPUT(   "cycle_frame",    cycle_frame_command),
     CMD_BIND(             "close",          close_command),
     CMD_BIND_NO_OUTPUT(   "close_or_remove",close_or_remove_command),
+    CMD_BIND_NO_OUTPUT(   "close_and_remove",close_and_remove_command),
     CMD_BIND(             "split",          frame_split_command),
     CMD_BIND(             "resize",         frame_change_fraction_command),
     CMD_BIND(             "focus_edge",     frame_focus_edge),

@@ -353,6 +353,10 @@ close_or_remove::
     Closes the focused window or removes the current frame if no window is
     focused.
 
+close_and_remove::
+    Closes the focused window and removes the current frame if no other window
+    is present in that frame.
+
 split 'ALIGN' ['FRACTION']::
     Splits the focused frame into two subframes with a specified 'FRACTION'
     between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
