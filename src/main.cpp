@@ -938,21 +938,15 @@ void propertynotify(XEvent* event) {
         if (is_ipc_connectable(event->xproperty.window)) {
             ipc_handle_connection(event->xproperty.window);
         } else if((client = get_client_from_window(ev->window))) {
-            switch (ev->atom) {
-                case XA_WM_HINTS:
-                    client_update_wm_hints(client);
-                    break;
-                case XA_WM_NORMAL_HINTS: {
-                    updatesizehints(client);
-                    HSMonitor* m = find_monitor_with_tag(client->tag);
-                    if (m) monitor_apply_layout(m);
-                    break;
-                }
-                case XA_WM_NAME:
-                    client_update_title(client);
-                    break;
-                default:
-                    break;
+            if (ev->atom == XA_WM_HINTS) {
+                client_update_wm_hints(client);
+            } else if (ev->atom == XA_WM_NORMAL_HINTS) {
+                updatesizehints(client);
+                HSMonitor* m = find_monitor_with_tag(client->tag);
+                if (m) monitor_apply_layout(m);
+            } else if (ev->atom == XA_WM_NAME ||
+                       ev->atom == g_netatom[NetWmName]) {
+                client_update_title(client);
             }
         }
     }
