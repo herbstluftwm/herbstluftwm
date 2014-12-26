@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
-#include <monitor.h>
+#include "monitor.h"
 #include "tag.h"
 #include "floating.h"
 
