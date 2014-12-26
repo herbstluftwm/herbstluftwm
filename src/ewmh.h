@@ -10,6 +10,7 @@
 #include <X11/Xproto.h>
 #include <X11/Xatom.h>
 #include <stdbool.h>
+#include <array>
 
 #define ENUM_WITH_ALIAS(Identifier, Alias) \
     Identifier, Alias = Identifier
@@ -78,7 +79,7 @@ struct HSClient;
 
 extern Atom g_netatom[NetCOUNT];
 
-extern const char* g_netatom_names[];
+extern const std::array<const char*,NetCOUNT> g_netatom_names;
 
 void ewmh_init();
 void ewmh_destroy();

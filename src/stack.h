@@ -9,6 +9,7 @@
 #include <X11/Xlib.h>
 #include "glib-backports.h"
 #include <stdbool.h>
+#include <array>
 
 enum HSLayer {
     /* layers on each monitor, from top to bottom */
@@ -19,7 +20,7 @@ enum HSLayer {
     LAYER_COUNT,
 };
 
-extern const char* g_layer_names[];
+extern const std::array<const char*, LAYER_COUNT> g_layer_names;
 
 typedef enum SliceType {
     SLICE_CLIENT,

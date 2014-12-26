@@ -13,12 +13,13 @@
 static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx);
 static size_t                  stack_child_count(HSTree root);
 
-const char* g_layer_names[LAYER_COUNT] = {
-    [ LAYER_FOCUS       ] = "Focus-Layer"           ,
-    [ LAYER_FULLSCREEN  ] = "Fullscreen-Layer"      ,
-    [ LAYER_NORMAL      ] = "Normal Layer"          ,
-    [ LAYER_FRAMES      ] = "Frame Layer"           ,
-};
+const std::array<const char*, LAYER_COUNT>g_layer_names =
+    ArrayInitializer<const char*, LAYER_COUNT>({
+     { LAYER_FOCUS	 , "Focus-Layer"      },
+     { LAYER_FULLSCREEN  , "Fullscreen-Layer" },
+     { LAYER_NORMAL      , "Normal Layer"     },
+     { LAYER_FRAMES      , "Frame Layer"      },
+}).a;
 
 void stacklist_init() {
 }

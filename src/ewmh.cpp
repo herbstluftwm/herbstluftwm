@@ -39,43 +39,44 @@ static unsigned long g_original_clients_count = 0;
 static bool ewmh_read_client_list(Window** buf, unsigned long *count);
 
 /* list of names of all _NET-atoms */
-const char* g_netatom_names[NetCOUNT] = {
-    [ NetSupported                  ] = "_NET_SUPPORTED"                    ,
-    [ NetClientList                 ] = "_NET_CLIENT_LIST"                  ,
-    [ NetClientListStacking         ] = "_NET_CLIENT_LIST_STACKING"         ,
-    [ NetNumberOfDesktops           ] = "_NET_NUMBER_OF_DESKTOPS"           ,
-    [ NetCurrentDesktop             ] = "_NET_CURRENT_DESKTOP"              ,
-    [ NetDesktopNames               ] = "_NET_DESKTOP_NAMES"                ,
-    [ NetWmDesktop                  ] = "_NET_WM_DESKTOP"                   ,
-    [ NetDesktopViewport            ] = "_NET_DESKTOP_VIEWPORT"             ,
-    [ NetActiveWindow               ] = "_NET_ACTIVE_WINDOW"                ,
-    [ NetWmName                     ] = "_NET_WM_NAME"                      ,
-    [ NetSupportingWmCheck          ] = "_NET_SUPPORTING_WM_CHECK"          ,
-    [ NetWmWindowType               ] = "_NET_WM_WINDOW_TYPE"               ,
-    [ NetWmState                    ] = "_NET_WM_STATE"                     ,
-    [ NetWmWindowOpacity            ] = "_NET_WM_WINDOW_OPACITY"            ,
-    [ NetMoveresizeWindow           ] = "_NET_MOVERESIZE_WINDOW"            ,
-    [ NetWmMoveresize               ] = "_NET_WM_MOVERESIZE"                ,
-    [ NetFrameExtents               ] = "_NET_FRAME_EXTENTS"                ,
+const std::array<const char*,NetCOUNT>g_netatom_names =
+  ArrayInitializer<const char*,NetCOUNT>({
+    { NetSupported                   , "_NET_SUPPORTED"                    },
+    { NetClientList                  , "_NET_CLIENT_LIST"                  },
+    { NetClientListStacking          , "_NET_CLIENT_LIST_STACKING"         },
+    { NetNumberOfDesktops            , "_NET_NUMBER_OF_DESKTOPS"           },
+    { NetCurrentDesktop              , "_NET_CURRENT_DESKTOP"              },
+    { NetDesktopNames                , "_NET_DESKTOP_NAMES"                },
+    { NetWmDesktop                   , "_NET_WM_DESKTOP"                   },
+    { NetDesktopViewport             , "_NET_DESKTOP_VIEWPORT"             },
+    { NetActiveWindow                , "_NET_ACTIVE_WINDOW"                },
+    { NetWmName                      , "_NET_WM_NAME"                      },
+    { NetSupportingWmCheck           , "_NET_SUPPORTING_WM_CHECK"          },
+    { NetWmWindowType                , "_NET_WM_WINDOW_TYPE"               },
+    { NetWmState                     , "_NET_WM_STATE"                     },
+    { NetWmWindowOpacity             , "_NET_WM_WINDOW_OPACITY"            },
+    { NetMoveresizeWindow            , "_NET_MOVERESIZE_WINDOW"            },
+    { NetWmMoveresize                , "_NET_WM_MOVERESIZE"                },
+    { NetFrameExtents                , "_NET_FRAME_EXTENTS"                },
     /* window states */
-    [ NetWmStateFullscreen          ] = "_NET_WM_STATE_FULLSCREEN"          ,
-    [ NetWmStateDemandsAttention    ] = "_NET_WM_STATE_DEMANDS_ATTENTION"   ,
+    { NetWmStateFullscreen           , "_NET_WM_STATE_FULLSCREEN"          },
+    { NetWmStateDemandsAttention     , "_NET_WM_STATE_DEMANDS_ATTENTION"   },
     /* window types */
-    [ NetWmWindowTypeDesktop        ] = "_NET_WM_WINDOW_TYPE_DESKTOP"       ,
-    [ NetWmWindowTypeDock           ] = "_NET_WM_WINDOW_TYPE_DOCK"          ,
-    [ NetWmWindowTypeToolbar        ] = "_NET_WM_WINDOW_TYPE_TOOLBAR"       ,
-    [ NetWmWindowTypeMenu           ] = "_NET_WM_WINDOW_TYPE_MENU"          ,
-    [ NetWmWindowTypeUtility        ] = "_NET_WM_WINDOW_TYPE_UTILITY"       ,
-    [ NetWmWindowTypeSplash         ] = "_NET_WM_WINDOW_TYPE_SPLASH"        ,
-    [ NetWmWindowTypeDialog         ] = "_NET_WM_WINDOW_TYPE_DIALOG"        ,
-    [ NetWmWindowTypeDropdownMenu   ] = "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU" ,
-    [ NetWmWindowTypePopupMenu      ] = "_NET_WM_WINDOW_TYPE_POPUP_MENU"    ,
-    [ NetWmWindowTypeTooltip        ] = "_NET_WM_WINDOW_TYPE_TOOLTIP"       ,
-    [ NetWmWindowTypeNotification   ] = "_NET_WM_WINDOW_TYPE_NOTIFICATION"  ,
-    [ NetWmWindowTypeCombo          ] = "_NET_WM_WINDOW_TYPE_COMBO"         ,
-    [ NetWmWindowTypeDnd            ] = "_NET_WM_WINDOW_TYPE_DND"           ,
-    [ NetWmWindowTypeNormal         ] = "_NET_WM_WINDOW_TYPE_NORMAL"        ,
-};
+    { NetWmWindowTypeDesktop         , "_NET_WM_WINDOW_TYPE_DESKTOP"       },
+    { NetWmWindowTypeDock            , "_NET_WM_WINDOW_TYPE_DOCK"          },
+    { NetWmWindowTypeToolbar         , "_NET_WM_WINDOW_TYPE_TOOLBAR"       },
+    { NetWmWindowTypeMenu            , "_NET_WM_WINDOW_TYPE_MENU"          },
+    { NetWmWindowTypeUtility         , "_NET_WM_WINDOW_TYPE_UTILITY"       },
+    { NetWmWindowTypeSplash          , "_NET_WM_WINDOW_TYPE_SPLASH"        },
+    { NetWmWindowTypeDialog          , "_NET_WM_WINDOW_TYPE_DIALOG"        },
+    { NetWmWindowTypeDropdownMenu    , "_NET_WM_WINDOW_TYPE_DROPDOWN_MENU" },
+    { NetWmWindowTypePopupMenu       , "_NET_WM_WINDOW_TYPE_POPUP_MENU"    },
+    { NetWmWindowTypeTooltip         , "_NET_WM_WINDOW_TYPE_TOOLTIP"       },
+    { NetWmWindowTypeNotification    , "_NET_WM_WINDOW_TYPE_NOTIFICATION"  },
+    { NetWmWindowTypeCombo           , "_NET_WM_WINDOW_TYPE_COMBO"         },
+    { NetWmWindowTypeDnd             , "_NET_WM_WINDOW_TYPE_DND"           },
+    { NetWmWindowTypeNormal          , "_NET_WM_WINDOW_TYPE_NORMAL"        },
+}).a;
 
 void ewmh_init() {
     /* init globals */
@@ -390,13 +391,13 @@ void ewmh_handle_client_message(XEvent* event) {
                     /* property will not be handled */
                     continue;
                 }
-                bool new_value[] = {
-                    [ _NET_WM_STATE_REMOVE  ] = false,
-                    [ _NET_WM_STATE_ADD     ] = true,
-                    [ _NET_WM_STATE_TOGGLE  ] = !client_atoms[i].enabled,
-                };
+                auto new_value = ArrayInitializer<bool,3>({
+                    { _NET_WM_STATE_REMOVE  , false },
+                    { _NET_WM_STATE_ADD     , true },
+                    { _NET_WM_STATE_TOGGLE  , !client_atoms[i].enabled },
+                }).a;
                 int action = me->data.l[0];
-                if (action >= LENGTH(new_value)) {
+                if (action >= new_value.size()) {
                     HSDebug("_NET_WM_STATE: invalid action %d\n", action);
                 }
                 /* change the value */
