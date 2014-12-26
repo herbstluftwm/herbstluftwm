@@ -41,7 +41,7 @@ $(HLWMTARGET): $(HLWMOBJ)
 %.o: %.cpp version.mk
 	$(call colorecho,CXX,$<)
 	$(VERBOSE) $(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $@ $<
-	$(VERBOSE) $(CXX) -c $(CPPFLAGS) -o $*.d -MT $@ -MM $<
+	$(VERBOSE) $(CXX) -c $(CPPFLAGS) $(CXXFLAGS) -o $*.d -MT $@ -MM $<
 
 
 info:
