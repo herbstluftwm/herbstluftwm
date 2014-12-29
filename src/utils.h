@@ -71,7 +71,7 @@ char** argv_duplicate(int argc, char** argv);
 // frees all entries in argument-vector and then the vector itself
 void argv_free(int argc, char** argv);
 
-Rectangle parse_rectangle(char* string);
+herbstluft::Rectangle parse_rectangle(char* string);
 
 void g_queue_remove_element(GQueue* queue, GList* elem);
 

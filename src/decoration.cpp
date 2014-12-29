@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 
+using namespace herbstluft;
+
 // public globals:
 HSDecTriple g_decorations[HSDecSchemeCount];
 

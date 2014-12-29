@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+using namespace herbstluft;
+
 typedef struct {
     char*       name;
     HSObject*   child;

@@ -32,6 +32,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+using namespace herbstluft;
+
 static int g_monitor_float_treshold = 24;
 
 static int* g_raise_on_focus;

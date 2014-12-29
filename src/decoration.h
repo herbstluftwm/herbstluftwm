@@ -22,18 +22,18 @@ struct HSClient;
 
 typedef struct {
     int     border_width;
-    Color border_color;
+    herbstluft::Color border_color;
     bool    tight_decoration; // if set, there is no space between the
                               // decoration and the window content
-    Color inner_color;
+    herbstluft::Color inner_color;
     int     inner_width;
-    Color outer_color;
+    herbstluft::Color outer_color;
     int     outer_width;
     int     padding_top;    // additional window border
     int     padding_right;  // additional window border
     int     padding_bottom; // additional window border
     int     padding_left;   // additional window border
-    Color background_color; // color behind client contents
+    herbstluft::Color background_color; // color behind client contents
 } HSDecorationScheme;
 
 typedef struct {
@@ -41,9 +41,9 @@ typedef struct {
     Window                  decwin; // the decoration winodw
     HSDecorationScheme      last_scheme;
     bool                    last_rect_inner; // whether last_rect is inner size
-    Rectangle               last_inner_rect; // only valid if width >= 0
-    Rectangle               last_outer_rect; // only valid if width >= 0
-    Rectangle               last_actual_rect; // last actual client rect, relative to decoration
+    herbstluft::Rectangle   last_inner_rect; // only valid if width >= 0
+    herbstluft::Rectangle   last_outer_rect; // only valid if width >= 0
+    herbstluft::Rectangle   last_actual_rect; // last actual client rect, relative to decoration
     /* X specific things */
     Colormap                colormap;
     unsigned int            depth;
@@ -85,11 +85,13 @@ void decoration_setup_frame(struct HSClient* client);
 void decoration_free(HSDecoration* dec);
 
 // resize such that the decorated outline of the window fits into rect
-void decoration_resize_outline(struct HSClient* client, Rectangle rect,
+void decoration_resize_outline(struct HSClient* client,
+                               herbstluft::Rectangle rect,
                                HSDecorationScheme scheme);
 
 // resize such that the window content fits into rect
-void decoration_resize_inner(struct HSClient* client, Rectangle rect,
+void decoration_resize_inner(struct HSClient* client,
+                             herbstluft::Rectangle rect,
                              HSDecorationScheme scheme);
 void decoration_change_scheme(struct HSClient* client,
                               HSDecorationScheme scheme);
@@ -97,8 +99,10 @@ void decoration_change_scheme(struct HSClient* client,
 void decoration_redraw_pixmap(struct HSClient* client);
 struct HSClient* get_client_from_decoration(Window decwin);
 
-Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme scheme);
-Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme scheme);
+herbstluft::Rectangle inner_rect_to_outline(herbstluft::Rectangle rect,
+                                            HSDecorationScheme scheme);
+herbstluft::Rectangle outline_to_inner_rect(herbstluft::Rectangle rect,
+                                            HSDecorationScheme scheme);
 
 #endif
 

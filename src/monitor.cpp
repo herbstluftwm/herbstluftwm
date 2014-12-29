@@ -25,6 +25,10 @@
 #include "stack.h"
 #include "clientlist.h"
 
+#include <vector>
+
+using namespace herbstluft;
+
 // module internals:
 static int g_cur_monitor;
 static int* g_monitors_locked;

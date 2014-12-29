@@ -18,7 +18,7 @@ enum HSDirection {
 };
 
 typedef struct {
-    Rectangle r;
+    herbstluft::Rectangle r;
     int       idx;
 } RectangleIdx;
 

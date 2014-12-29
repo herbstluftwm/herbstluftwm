@@ -11,6 +11,8 @@
 #include "layout.h"
 #include "settings.h"
 
+using namespace herbstluft;
+
 static int* g_snap_gap;
 static int* g_monitors_locked;
 

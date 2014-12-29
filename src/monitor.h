@@ -41,7 +41,7 @@ typedef struct HSMonitor {
         int x;
         int y;
     } mouse;
-    Rectangle   rect;   // area for this monitor
+    herbstluft::Rectangle   rect;   // area for this monitor
     Window      stacking_window;   // window used for making stacking easy
 } HSMonitor;
 
@@ -53,8 +53,8 @@ HSMonitor* monitor_with_frame(struct HSFrame* frame);
 HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(struct HSTag* tag);
-HSMonitor* add_monitor(Rectangle rect, struct HSTag* tag, char* name);
-Rectangle monitor_get_floating_area(HSMonitor* m);
+HSMonitor* add_monitor(herbstluft::Rectangle rect, struct HSTag* tag, char* name);
+herbstluft::Rectangle monitor_get_floating_area(HSMonitor* m);
 void monitor_focus_by_index(int new_selection);
 int monitor_get_relative_x(HSMonitor* m, int x_root);
 int monitor_get_relative_y(HSMonitor* m, int y_root);
@@ -74,7 +74,7 @@ int list_monitors(int argc, char** argv, GString* output);
 int list_padding(int argc, char** argv, GString* output);
 int set_monitor_rects_command(int argc, char** argv, GString* output);
 int disjoin_rects_command(int argc, char** argv, GString* output);
-int set_monitor_rects(const RectangleVec &templates);
+int set_monitor_rects(const herbstluft::RectangleVec &templates);
 int move_monitor_command(int argc, char** argv, GString* output);
 int rename_monitor_command(int argc, char** argv, GString* output);
 int monitor_rect_command(int argc, char** argv, GString* output);
@@ -107,9 +107,9 @@ struct HSStack* get_monitor_stack();
 
 void monitor_update_focus_objects();
 
-typedef bool (*MonitorDetection)(RectangleVec &);
-bool detect_monitors_xinerama(RectangleVec &dest);
-bool detect_monitors_simple(RectangleVec &dest);
+typedef bool (*MonitorDetection)(herbstluft::RectangleVec &);
+bool detect_monitors_xinerama(herbstluft::RectangleVec &dest);
+bool detect_monitors_simple(herbstluft::RectangleVec &dest);
 int detect_monitors_command(int argc, const char **argv, GString* output);
 
 int shift_to_monitor(int argc, char** argv, GString* output);

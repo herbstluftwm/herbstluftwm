@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+namespace herbstluft {
+
     struct Color {
         //Color() : value_(0) {}
         //Color(unsigned long value) : value_(value) {}
@@ -45,5 +47,8 @@
         int x;
         int y;
     } Point2D;
+
+}
+
 #endif
 

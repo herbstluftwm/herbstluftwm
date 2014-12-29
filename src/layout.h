@@ -89,7 +89,7 @@ typedef struct HSFrame {
     Window window;
     int    window_transparent;
     bool   window_visible;
-    Rectangle  last_rect; // last rectangle when being drawn
+    herbstluft::Rectangle  last_rect; // last rectangle when being drawn
 } HSFrame;
 
 
@@ -121,7 +121,7 @@ bool frame_split(HSFrame* frame, int align, int fraction);
 int frame_split_command(int argc, char** argv, GString* output);
 int frame_change_fraction_command(int argc, char** argv, GString* output);
 
-void frame_apply_layout(HSFrame* frame, Rectangle rect);
+void frame_apply_layout(HSFrame* frame, herbstluft::Rectangle rect);
 void frame_apply_floating_layout(HSFrame* frame, struct HSMonitor* m);
 void frame_update_frame_window_visibility(HSFrame* frame);
 void reset_frame_colors();
@@ -163,9 +163,12 @@ int layout_rotate_command();
 // returns success or failure
 int frame_foreach_client(HSFrame* frame, ClientAction action, void* data);
 
-void frame_apply_client_layout_linear(HSFrame* frame, Rectangle rect, bool vertical);
-void frame_apply_client_layout_horizontal(HSFrame* frame, Rectangle rect);
-void frame_apply_client_layout_vertical(HSFrame* frame, Rectangle rect);
+void frame_apply_client_layout_linear(HSFrame* frame,
+                                      herbstluft::Rectangle rect, bool vertical);
+void frame_apply_client_layout_horizontal(HSFrame* frame,
+                                          herbstluft::Rectangle rect);
+void frame_apply_client_layout_vertical(HSFrame* frame,
+                                        herbstluft::Rectangle rect);
 int frame_current_cycle_client_layout(int argc, char** argv, GString* output);
 int frame_current_set_client_layout(int argc, char** argv, GString* output);
 int frame_split_count_to_root(HSFrame* frame, int align);

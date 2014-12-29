@@ -25,6 +25,8 @@
 #include <mach/mach.h>
 #endif
 
+using namespace herbstluft;
+
 // globals
 extern char*   g_tree_style; /* the one from layout.c */
 

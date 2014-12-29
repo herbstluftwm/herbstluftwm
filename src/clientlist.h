@@ -23,9 +23,9 @@ struct HSSlice;
 typedef struct HSClient {
     Window      window;
     GString*    window_str;     // the window id as a string
-    Rectangle   last_size;      // last size excluding the window border
+    herbstluft::Rectangle   last_size;      // last size excluding the window border
     HSTag*      tag;
-    Rectangle   float_size;     // floating size without the window border
+    herbstluft::Rectangle   float_size;     // floating size without the window border
     GString*    title;  // or also called window title; this is never NULL
     GString*    keymask; // keymask applied to mask out keybindins
     bool        urgent;
@@ -82,12 +82,13 @@ void client_destroy(HSClient* client);
 HSClient* get_client_from_window(Window window);
 HSClient* get_current_client();
 HSClient* get_urgent_client();
-Rectangle client_outer_floating_rect(HSClient* client);
+herbstluft::Rectangle client_outer_floating_rect(HSClient* client);
 
 Window string_to_client(const char* str, HSClient** ret_client);
 void client_setup_border(HSClient* client, bool focused);
-void client_resize(HSClient* client, Rectangle rect, HSFrame* frame);
-void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame);
+void client_resize(HSClient* client, herbstluft::Rectangle rect, HSFrame* frame);
+void client_resize_tiling(HSClient* client, herbstluft::Rectangle rect,
+						  HSFrame* frame);
 void client_resize_floating(HSClient* client, HSMonitor* m);
 bool is_client_floated(HSClient* client);
 bool client_needs_minimal_dec(HSClient* client, HSFrame* frame);

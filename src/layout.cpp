@@ -91,16 +91,16 @@ static void fetch_frame_colors() {
     g_focus_crosses_monitor_boundaries = &(settings_find("focus_crosses_monitor_boundaries")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
     char* str = settings_find_string("frame_border_normal_color");
-    g_frame_border_normal_color = Color::fromStr(str);
+    g_frame_border_normal_color = herbstluft::Color::fromStr(str);
     str = settings_find_string("frame_border_active_color");
-    g_frame_border_active_color = Color::fromStr(str);
+    g_frame_border_active_color = herbstluft::Color::fromStr(str);
     str = settings_find_string("frame_border_inner_color");
-    g_frame_border_inner_color = Color::fromStr(str);
+    g_frame_border_inner_color = herbstluft::Color::fromStr(str);
     // background color
     str = settings_find_string("frame_bg_normal_color");
-    g_frame_bg_normal_color = Color::fromStr(str);
+    g_frame_bg_normal_color = herbstluft::Color::fromStr(str);
     str = settings_find_string("frame_bg_active_color");
-    g_frame_bg_active_color = Color::fromStr(str);
+    g_frame_bg_active_color = herbstluft::Color::fromStr(str);
     g_frame_active_opacity = CLAMP(settings_find("frame_active_opacity")->value.i, 0, 100);
     g_frame_normal_opacity = CLAMP(settings_find("frame_normal_opacity")->value.i, 0, 100);
 
@@ -138,7 +138,7 @@ HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
     frame->tag = parent ? parent->tag : parenttag;
     // set window attributes
     XSetWindowAttributes at;
-    at.background_pixel  = Color::fromStr("red");
+    at.background_pixel  = herbstluft::Color::fromStr("red");
     at.background_pixmap = ParentRelative;
     at.override_redirect = True;
     at.bit_gravity       = StaticGravity;
@@ -686,7 +686,9 @@ int frame_current_set_client_layout(int argc, char** argv, GString* output) {
     return 0;
 }
 
-void frame_apply_client_layout_linear(HSFrame* frame, Rectangle rect, bool vertical) {
+void frame_apply_client_layout_linear(HSFrame* frame,
+                                      herbstluft::Rectangle rect,
+                                      bool vertical) {
     HSClient** buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
     auto cur = rect;
@@ -720,15 +722,18 @@ void frame_apply_client_layout_linear(HSFrame* frame, Rectangle rect, bool verti
     }
 }
 
-void frame_apply_client_layout_horizontal(HSFrame* frame, Rectangle rect) {
+void frame_apply_client_layout_horizontal(HSFrame* frame,
+                                          herbstluft::Rectangle rect) {
     frame_apply_client_layout_linear(frame, rect, false);
 }
 
-void frame_apply_client_layout_vertical(HSFrame* frame, Rectangle rect) {
+void frame_apply_client_layout_vertical(HSFrame* frame,
+                                        herbstluft::Rectangle rect) {
     frame_apply_client_layout_linear(frame, rect, true);
 }
 
-void frame_apply_client_layout_max(HSFrame* frame, Rectangle rect) {
+void frame_apply_client_layout_max(HSFrame* frame,
+                                   herbstluft::Rectangle rect) {
     HSClient** buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
     int selection = frame->content.clients.selection;
@@ -755,7 +760,8 @@ void frame_layout_grid_get_size(size_t count, int* res_rows, int* res_cols) {
     }
 }
 
-void frame_apply_client_layout_grid(HSFrame* frame, Rectangle rect) {
+void frame_apply_client_layout_grid(HSFrame* frame,
+                                    herbstluft::Rectangle rect) {
     HSClient** buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
     int selection = frame->content.clients.selection;
@@ -800,7 +806,7 @@ void frame_apply_client_layout_grid(HSFrame* frame, Rectangle rect) {
 
 }
 
-void frame_apply_layout(HSFrame* frame, Rectangle rect) {
+void frame_apply_layout(HSFrame* frame, herbstluft::Rectangle rect) {
     frame->last_rect = rect;
     if (frame->type == TYPE_CLIENTS) {
         size_t count = frame->content.clients.count;
