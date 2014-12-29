@@ -556,9 +556,9 @@ void client_resize_tiling(HSClient* client, Rectangle rect, HSFrame* frame) {
     }
     HSDecorationScheme scheme = client_scheme_from_triple(client, HSDecSchemeTiling);
     if (client->pseudotile) {
-        Rectangle inner = client->float_size;
+        auto inner = client->float_size;
         applysizehints(client, &inner.width, &inner.height);
-        Rectangle outline = inner_rect_to_outline(inner, scheme);
+        auto outline = inner_rect_to_outline(inner, scheme);
         rect.x += MAX(0, (rect.width - outline.width)/2);
         rect.y += MAX(0, (rect.height - outline.height)/2);
         rect.width = MIN(outline.width, rect.width);
@@ -701,7 +701,7 @@ void client_resize_floating(HSClient* client, HSMonitor* m) {
         client_resize_fullscreen(client, m);
         return;
     }
-    Rectangle rect = client->float_size;
+    auto rect = client->float_size;
     rect.x += m->rect.x;
     rect.x += m->rect.y;
     rect.x += m->pad_left;
@@ -1034,7 +1034,7 @@ void client_fuzzy_fix_initial_position(HSClient* client) {
     int extreme_x = client->float_size.x;
     int extreme_y = client->float_size.y;
     HSDecTriple* t = &g_decorations[HSDecSchemeFloating];
-    Rectangle r = inner_rect_to_outline(client->float_size, t->active);
+    auto r = inner_rect_to_outline(client->float_size, t->active);
     extreme_x = MIN(extreme_x, r.x);
     extreme_y = MIN(extreme_y, r.y);
     r = inner_rect_to_outline(client->float_size, t->normal);

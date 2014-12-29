@@ -376,12 +376,12 @@ void decoration_resize_inner(HSClient* client, Rectangle inner,
 void decoration_resize_outline(HSClient* client, Rectangle outline,
                                HSDecorationScheme scheme)
 {
-    Rectangle inner = outline_to_inner_rect(outline, scheme);
+    auto inner = outline_to_inner_rect(outline, scheme);
     // get relative coordinates
     Window decwin = client->dec.decwin;
     Window win = client->window;
 
-    Rectangle tile = inner;
+    auto tile = inner;
     applysizehints(client, &inner.width, &inner.height);
     if (!scheme.tight_decoration) {
         // center the window in the outline tile
@@ -500,7 +500,7 @@ void decoration_redraw_pixmap(struct HSClient* client) {
     HSDecorationScheme s = client->dec.last_scheme;
     HSDecoration *const dec = &client->dec;
     Window win = client->dec.decwin;
-    Rectangle outer = client->dec.last_outer_rect;
+    auto outer = client->dec.last_outer_rect;
     unsigned int depth = client->dec.depth;
     // TODO: maybe do something like pixmap recreate threshhold?
     bool recreate_pixmap = (dec->pixmap == 0) || (dec->pixmap_width != outer.width)
@@ -520,7 +520,7 @@ void decoration_redraw_pixmap(struct HSClient* client) {
 
     // Draw inner border
     int iw = s.inner_width;
-    Rectangle inner = client->dec.last_inner_rect;
+    auto inner = client->dec.last_inner_rect;
     inner.x -= client->dec.last_outer_rect.x;
     inner.y -= client->dec.last_outer_rect.y;
     if (iw > 0) {

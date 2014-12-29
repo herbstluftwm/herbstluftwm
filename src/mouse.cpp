@@ -456,8 +456,8 @@ static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
     if (candidate == d->client) {
         return 0;
     }
-    Rectangle subject  = d->rect;
-    Rectangle other    = candidate->dec.last_outer_rect;
+    auto subject  = d->rect;
+    auto other    = candidate->dec.last_outer_rect;
     // increase other by snap gap
     other.x -= *g_snap_gap;
     other.y -= *g_snap_gap;

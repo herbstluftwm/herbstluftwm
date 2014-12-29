@@ -511,7 +511,7 @@ void event_on_configure(XEvent event) {
     HSClient* client = get_client_from_window(cre->window);
     if (client) {
         bool changes = false;
-        Rectangle newRect = client->float_size;
+        auto newRect = client->float_size;
         if (client->sizehints_floating &&
             (is_client_floated(client) || client->pseudotile))
         {

@@ -242,8 +242,8 @@ static RectList* reclist_insert_disjoint(RectList* head, RectList* element) {
         return head;
     } else {
         // element intersects with the head rect
-        Rectangle center = intersection_area(head, element);
-        Rectangle large = head->rect;
+        auto center = intersection_area(head, element);
+        auto large = head->rect;
         head->rect = center;
         head->next = insert_rect_border(head->next, large, center);
         head->next = insert_rect_border(head->next, element->rect, center);
@@ -491,7 +491,7 @@ int add_monitor_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    Rectangle rect = parse_rectangle(argv[1]);
+    auto rect = parse_rectangle(argv[1]);
     HSTag* tag = NULL;
     char* name = NULL;
     if (argc == 2 || !strcmp("", argv[2])) {
@@ -620,7 +620,7 @@ int move_monitor_command(int argc, char** argv, GString* output) {
             "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
-    Rectangle rect = parse_rectangle(argv[2]);
+    auto rect = parse_rectangle(argv[2]);
     if (rect.width < WINDOW_MIN_WIDTH || rect.height < WINDOW_MIN_HEIGHT) {
         g_string_append_printf(output,
             "%s: Rectangle is too small\n", argv[0]);
@@ -710,7 +710,7 @@ int monitor_rect_command(int argc, char** argv, GString* output) {
     } else {
         m = get_current_monitor();
     }
-    Rectangle rect = m->rect;
+    auto rect = m->rect;
     if (with_pad) {
         rect.x += m->pad_left;
         rect.width -= m->pad_left + m->pad_right;
@@ -1375,7 +1375,7 @@ void drop_enternotify_events() {
 }
 
 Rectangle monitor_get_floating_area(HSMonitor* m) {
-    Rectangle r = m->rect;
+    auto r = m->rect;
     r.x += m->pad_left;
     r.width -= m->pad_left + m->pad_right;
     r.y += m->pad_up;

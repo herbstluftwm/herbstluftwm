@@ -689,7 +689,7 @@ int frame_current_set_client_layout(int argc, char** argv, GString* output) {
 void frame_apply_client_layout_linear(HSFrame* frame, Rectangle rect, bool vertical) {
     HSClient** buf = frame->content.clients.buf;
     size_t count = frame->content.clients.count;
-    Rectangle cur = rect;
+    auto cur = rect;
     int last_step_y;
     int last_step_x;
     int step_y;
@@ -768,7 +768,7 @@ void frame_apply_client_layout_grid(HSFrame* frame, Rectangle rect) {
     int width = rect.width / cols;
     int height = rect.height / rows;
     int i = 0;
-    Rectangle cur = rect; // current rectangle
+    auto cur = rect; // current rectangle
     for (int r = 0; r < rows; r++) {
         // reset to left
         cur.x = rect.x;
@@ -879,8 +879,8 @@ void frame_apply_layout(HSFrame* frame, Rectangle rect) {
         }
     } else { /* frame->type == TYPE_FRAMES */
         HSLayout* layout = &frame->content.layout;
-        Rectangle first = rect;
-        Rectangle second = rect;
+        auto first = rect;
+        auto second = rect;
         if (layout->align == ALIGN_VERTICAL) {
             first.height = (rect.height * layout->fraction) / FRACTION_UNIT;
             second.y += first.height;

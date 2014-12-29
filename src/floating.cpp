@@ -43,7 +43,7 @@ static void rectlist_rotate(RectangleIdx* rects, size_t cnt, int* idx,
         case DirUp:
             // just flip by the horizontal axis
             FOR (i,0,cnt) {
-                Rectangle* r = &(rects[i].r);
+                auto r = &(rects[i].r);
                 r->y = - r->y - r->height;
             }
             // and flip order to reverse the order for rectangles with the same
@@ -64,7 +64,7 @@ static void rectlist_rotate(RectangleIdx* rects, size_t cnt, int* idx,
             //   |   []                |   +---+
             //   V                     V
             FOR (i,0,cnt) {
-                Rectangle* r = &(rects[i].r);
+                auto r = &(rects[i].r);
                 SWAP(int, r->x, r->y);
                 SWAP(int, r->height, r->width);
             }
@@ -72,7 +72,7 @@ static void rectlist_rotate(RectangleIdx* rects, size_t cnt, int* idx,
         case DirLeft:
             // flip by the vertical axis
             FOR (i,0,cnt) {
-                Rectangle* r = &(rects[i].r);
+                auto r = &(rects[i].r);
                 r->x = - r->x - r->width;
             }
             // and flip order to reverse the order for rectangles with the same
@@ -122,14 +122,14 @@ static bool rectangle_is_right_of(Rectangle RC, Rectangle R2) {
 }
 
 int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx) {
-    Rectangle RC = rects[idx].r;
+    auto RC = rects[idx].r;
     int cx = RC.x + RC.width / 2;
     int cy = RC.y + RC.height / 2;
     int write_i = 0; // next rectangle to write
     // filter out rectangles not right of RC
     FOR (i,0,cnt) {
         if (idx == i) continue;
-        Rectangle R2 = rects[i].r;
+        auto R2 = rects[i].r;
         int rcx = R2.x + R2.width / 2;
         int rcy = R2.y + R2.height / 2;
         if (!rectangle_is_right_of(RC, R2)) continue;
@@ -150,7 +150,7 @@ int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx) {
     int ibest = -1;
     int distbest = INT_MAX;
     FOR (i,0,write_i) {
-        Rectangle R2 = rects[i].r;
+        auto R2 = rects[i].r;
         int rcx = R2.x + R2.width / 2;
         int rcy = R2.y + R2.height / 2;
                             // another method that checks the closes point
@@ -282,7 +282,7 @@ bool floating_shift_direction(enum HSDirection dir) {
     g_queue_free(q);
     // add artifical rects for screen edges
     {
-        Rectangle mr = monitor_get_floating_area(get_current_monitor());
+        auto mr = monitor_get_floating_area(get_current_monitor());
         Rectangle tmp[4] = {
             { mr.x, mr.y,               mr.width, 0 }, // top
             { mr.x, mr.y,               0, mr.height }, // left
@@ -303,13 +303,13 @@ bool floating_shift_direction(enum HSDirection dir) {
     }
     // don't apply snapgap to focused client, so there will be exactly
     // *g_snap_gap pixels between the focused client and the found edge
-    Rectangle focusrect = curfocus->dec.last_outer_rect;
+    auto focusrect = curfocus->dec.last_outer_rect;
     int idx = find_edge_in_direction(rects, cnt + 4, curfocusidx, dir);
     if (idx < 0) success = false;
     else {
         // shift client
         int dx = 0, dy = 0;
-        Rectangle r = rects[idx].r;
+        auto r = rects[idx].r;
         //printf("edge: %dx%d at %d,%d\n", r.width, r.height, r.x, r.y);
         //printf("focus: %dx%d at %d,%d\n", focusrect.width, focusrect.height, focusrect.x, focusrect.y);
         switch (dir) {

@@ -761,8 +761,8 @@ int compare_command(int argc, char* argv[], GString* output) {
         g_string_append_printf(output, "Invalid boolean operator \"%s\"", op);
         return HERBST_INVALID_ARGUMENT;
     } else if (attr->type == HSATTR_TYPE_COLOR) {
-        HSColor l = *attr->value.color;
-        HSColor r = getcolor(rvalue);
+        auto l = *attr->value.color;
+        auto r = getcolor(rvalue);
         if (!strcmp("=", op)) return !(l == r);
         if (!strcmp("!=", op)) return !(l != r);
         g_string_append_printf(output, "Invalid color operator \"%s\"", op);
