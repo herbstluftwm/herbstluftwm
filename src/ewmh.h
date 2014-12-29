@@ -75,7 +75,7 @@ enum {
 #define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
 struct HSTag;
-struct HSClient;
+class HSClient;
 
 extern Atom g_netatom[NetCOUNT];
 

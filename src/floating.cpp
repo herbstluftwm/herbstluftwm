@@ -251,7 +251,7 @@ bool floating_focus_direction(enum HSDirection dir) {
         success = false;
     } else {
         HSClient* client = (HSClient*)g_queue_peek_nth(q, idx);
-        client_raise(client);
+        client->raise();
         focus_client(client, false, false);
     }
     g_free(rects);

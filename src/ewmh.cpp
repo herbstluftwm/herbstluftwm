@@ -368,9 +368,9 @@ void ewmh_handle_client_message(XEvent* event) {
                 void    (*callback)(HSClient*, bool);
             } client_atoms[] = {
                 { NetWmStateFullscreen,
-                    client->fullscreen,     client_set_fullscreen },
+                    client->fullscreen,     [](HSClient* c, bool state){ c->set_fullscreen(state); } },
                 { NetWmStateDemandsAttention,
-                    client->urgent,         client_set_urgent },
+                    client->urgent,         [](HSClient* c, bool state){ c->set_urgent(state); } },
             };
 
             /* me->data.l[1] and [2] describe the properties to alter */

@@ -440,7 +440,7 @@ int raise_command(int argc, char** argv, GString* output) {
     HSClient* client = NULL;
     win = string_to_client((argc > 1) ? argv[1] : "", &client);
     if (client) {
-        client_raise(client);
+        client->raise();
     } else {
         XRaiseWindow(g_display, win);
     }
@@ -513,7 +513,7 @@ void event_on_configure(XEvent event) {
         bool changes = false;
         auto newRect = client->float_size;
         if (client->sizehints_floating &&
-            (is_client_floated(client) || client->pseudotile))
+            (client->is_client_floated() || client->pseudotile))
         {
             bool width_requested = 0 != (cre->value_mask & CWWidth);
             bool height_requested = 0 != (cre->value_mask & CWHeight);
@@ -529,15 +529,15 @@ void event_on_configure(XEvent event) {
             if (width_requested) newRect.width = cre->width;
             if (height_requested) newRect.height = cre->height;
         }
-        if (changes && is_client_floated(client)) {
+        if (changes && client->is_client_floated()) {
             client->float_size = newRect;
-            client_resize_floating(client, find_monitor_with_tag(client->tag));
+            client->resize_floating(find_monitor_with_tag(client->tag));
         } else if (changes && client->pseudotile) {
             client->float_size = newRect;
             monitor_apply_layout(find_monitor_with_tag(client->tag));
         } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
-            client_send_configure(client);
+            client->send_configure();
         }
     } else {
         // if client not known.. then allow configure.
@@ -806,7 +806,7 @@ void buttonpress(XEvent* event) {
         if (client) {
             focus_client(client, false, true);
             if (*g_raise_on_click) {
-                    client_raise(client);
+                    client->raise();
             }
         }
     }
@@ -904,7 +904,7 @@ void mapnotify(XEvent* event) {
         // input focus
         frame_focus_recursive(g_cur_frame);
         // also update the window title - just to be sure
-        client_update_title(c);
+        c->update_title();
     }
 }
 
@@ -939,14 +939,14 @@ void propertynotify(XEvent* event) {
             ipc_handle_connection(event->xproperty.window);
         } else if((client = get_client_from_window(ev->window))) {
             if (ev->atom == XA_WM_HINTS) {
-                client_update_wm_hints(client);
+                client->update_wm_hints();
             } else if (ev->atom == XA_WM_NORMAL_HINTS) {
-                updatesizehints(client);
+                client->updatesizehints();
                 HSMonitor* m = find_monitor_with_tag(client->tag);
                 if (m) monitor_apply_layout(m);
             } else if (ev->atom == XA_WM_NAME ||
                        ev->atom == g_netatom[NetWmName]) {
-                client_update_title(client);
+                client->update_title();
             }
         }
     }

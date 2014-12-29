@@ -384,7 +384,7 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     Window win = client->window;
 
     auto tile = inner;
-    applysizehints(client, &inner.width, &inner.height);
+    client->applysizehints(&inner.width, &inner.height);
     if (!scheme.tight_decoration) {
         // center the window in the outline tile
         // but only if it's relative coordinates would not be too close to the
@@ -457,7 +457,7 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
                       outline.x, outline.y, outline.width, outline.height);
     decoration_update_frame_extents(client);
     if (!client->dragged || *g_update_dragged_clients) {
-        client_send_configure(client);
+        client->send_configure();
     }
     XSync(g_display, False);
 }

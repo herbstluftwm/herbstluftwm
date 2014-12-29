@@ -184,7 +184,7 @@ void frame_insert_client(HSFrame* frame, struct HSClient* client) {
         if (g_cur_frame == frame
             && frame->content.clients.selection >= (count-1)) {
             frame->content.clients.selection = count - 1;
-            client_window_focus(client);
+            client->window_focus();
         }
     } else { /* frame->type == TYPE_FRAMES */
         HSLayout* layout = &frame->content.layout;
@@ -625,8 +625,8 @@ void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
         /* border color */
         for (int i = 0; i < count; i++) {
             HSClient* client = buf[i];
-            client_setup_border(client, (g_cur_frame == frame) && (i == selection));
-            client_resize_floating(client, m);
+            client->setup_border((g_cur_frame == frame) && (i == selection));
+            client->resize_floating(m);
         }
     }
 }
@@ -716,7 +716,7 @@ void frame_apply_client_layout_linear(HSFrame* frame,
         // add the space, if count does not divide frameheight without remainder
         cur.height += (i == count-1) ? last_step_y : 0;
         cur.width += (i == count-1) ? last_step_x : 0;
-        client_resize_tiling(client, cur, frame);
+        client->resize_tiling(cur, frame);
         cur.y += step_y;
         cur.x += step_x;
     }
@@ -739,10 +739,10 @@ void frame_apply_client_layout_max(HSFrame* frame,
     int selection = frame->content.clients.selection;
     for (int i = 0; i < count; i++) {
         HSClient* client = buf[i];
-        client_setup_border(client, (g_cur_frame == frame) && (i == selection));
-        client_resize_tiling(client, rect, frame);
+        client->setup_border((g_cur_frame == frame) && (i == selection));
+        client->resize_tiling(rect, frame);
         if (i == selection) {
-            client_raise(client);
+            client->raise();
         }
     }
 }
@@ -796,8 +796,8 @@ void frame_apply_client_layout_grid(HSFrame* frame,
 
             // apply size
             HSClient* client = buf[i];
-            client_setup_border(client, (g_cur_frame == frame) && (i == selection));
-            client_resize_tiling(client, cur, frame);
+            client->setup_border((g_cur_frame == frame) && (i == selection));
+            client->resize_tiling(cur, frame);
             cur.x += width;
             i++;
         }
@@ -976,7 +976,7 @@ int frame_current_set_selection(int argc, char** argv) {
     }
     frame->content.clients.selection = index;
     HSClient* client = frame->content.clients.buf[index];
-    client_window_focus(client);
+    client->window_focus();
     return 0;
 }
 
@@ -1056,7 +1056,7 @@ int cycle_all_command(int argc, char** argv) {
     }
     HSClient* c = frame_focused_client(g_cur_frame);
     if (c) {
-        client_raise(c);
+        c->raise();
     }
     monitor_apply_layout(get_current_monitor());
     return 0;
@@ -1584,7 +1584,8 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
     if (!frame_focused_client(g_cur_frame)) {
         return HERBST_FORBIDDEN;
     }
-    if (is_client_floated(get_current_client())) {
+    HSClient* currentClient = get_current_client();
+    if (currentClient && currentClient->is_client_floated()) {
         // try to move the floating window
         enum HSDirection dir = char_to_direction(direction);
         if (dir < 0) return HERBST_INVALID_ARGUMENT;
@@ -1626,7 +1627,7 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
             for (i = 0; i < count; i++) {
                 if (buf[i] == client) {
                     frame->content.clients.selection = i;
-                    client_window_focus(buf[i]);
+                    buf[i]->window_focus();
                     break;
                 }
             }
@@ -1763,9 +1764,9 @@ int frame_focus_recursive(HSFrame* frame) {
     frame_unfocus();
     if (frame->content.clients.count) {
         int selection = frame->content.clients.selection;
-        client_window_focus(frame->content.clients.buf[selection]);
+        frame->content.clients.buf[selection]->window_focus();
     } else {
-        client_window_unfocus_last();
+        HSClient::window_unfocus_last();
     }
     return 0;
 }
@@ -1815,7 +1816,7 @@ static void frame_hide(HSFrame* frame) {
         HSClient** buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            client_set_visible(buf[i], false);
+            buf[i]->set_visible(false);
         }
     }
 }
@@ -1831,7 +1832,7 @@ static void frame_show_clients(HSFrame* frame) {
         HSClient** buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            client_set_visible(buf[i], true);
+            buf[i]->set_visible(true);
         }
     }
 }

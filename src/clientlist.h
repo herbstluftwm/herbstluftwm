@@ -20,7 +20,8 @@
 
 struct HSSlice;
 
-typedef struct HSClient {
+class HSClient {
+public: // TODO: make members private
     Window      window;
     GString*    window_str;     // the window id as a string
     herbstluft::Rectangle   last_size;      // last size excluding the window border
@@ -50,7 +51,53 @@ typedef struct HSClient {
     HSObject    object;
     struct HSSlice* slice;
     HSDecoration    dec;
-} HSClient;
+
+public:
+
+    HSClient();
+    ~HSClient();
+
+    Window x11Window() { return window; };
+
+    void window_focus();
+    void window_unfocus();
+    static void window_unfocus_last();
+
+    void fuzzy_fix_initial_position();
+
+    herbstluft::Rectangle outer_floating_rect();
+
+    void setup_border(bool focused);
+    void resize(herbstluft::Rectangle rect, HSFrame* frame);
+    void resize_tiling(herbstluft::Rectangle rect, HSFrame* frame);
+    void resize_floating(HSMonitor* m);
+    bool is_client_floated();
+    bool needs_minimal_dec(HSFrame* frame);
+    void set_urgent(bool state);
+    void update_wm_hints();
+    void update_title();
+    void raise();
+
+    void set_dragged(bool drag_state);
+
+    void send_configure();
+    bool applysizehints(int *w, int *h);
+    bool applysizehints_xy(int *x, int *y, int *w, int *h);
+    void updatesizehints();
+
+    bool sendevent(Atom proto);
+
+    void set_visible(bool visible);
+
+    bool ignore_unmapnotify();
+
+    void set_fullscreen(bool state);
+    void set_pseudotile(bool state);
+    void set_urgent_force(bool state);
+
+private:
+    void resize_fullscreen(HSMonitor* m);
+};
 
 
 
@@ -58,66 +105,32 @@ void clientlist_init();
 void clientlist_destroy();
 void clientlist_end_startup();
 
-bool clientlist_ignore_unmapnotify(Window win);
-
 void clientlist_foreach(GHFunc func, gpointer data);
 
-void client_window_focus(HSClient* client);
-void client_window_unfocus(HSClient* client);
-void client_window_unfocus_last();
+bool clientlist_ignore_unmapnotify(Window win);
 
 void reset_client_colors();
 void reset_client_settings();
 
 // adds a new client to list of managed client windows
 HSClient* manage_client(Window win);
-void client_fuzzy_fix_initial_position(HSClient* client);
 void unmanage_client(Window win);
 
 void window_enforce_last_size(Window in);
 
-// destroys a special client
-void client_destroy(HSClient* client);
-
 HSClient* get_client_from_window(Window window);
 HSClient* get_current_client();
 HSClient* get_urgent_client();
-herbstluft::Rectangle client_outer_floating_rect(HSClient* client);
 
 Window string_to_client(const char* str, HSClient** ret_client);
-void client_setup_border(HSClient* client, bool focused);
-void client_resize(HSClient* client, herbstluft::Rectangle rect, HSFrame* frame);
-void client_resize_tiling(HSClient* client, herbstluft::Rectangle rect,
-						  HSFrame* frame);
-void client_resize_floating(HSClient* client, HSMonitor* m);
-bool is_client_floated(HSClient* client);
-bool client_needs_minimal_dec(HSClient* client, HSFrame* frame);
-void client_set_urgent(HSClient* client, bool state);
-void client_update_wm_hints(HSClient* client);
-void client_update_title(HSClient* client);
-void client_raise(HSClient* client);
 int close_command(int argc, char** argv, GString* output);
 void window_close(Window window);
 
-void client_set_dragged(HSClient* client, bool drag_state);
-
-void client_send_configure(HSClient *c);
-bool applysizehints(HSClient *c, int *w, int *h);
-bool applysizehints_xy(HSClient *c, int *x, int *y, int *w, int *h);
-void updatesizehints(HSClient *c);
-
-bool client_sendevent(HSClient *client, Atom proto);
-
-void client_set_fullscreen(HSClient* client, bool state);
-void client_set_pseudotile(HSClient* client, bool state);
 // sets a client property, depending on argv[0]
 int client_set_property_command(int argc, char** argv);
 bool is_window_class_ignored(char* window_class);
 bool is_window_ignored(Window win);
 
-void client_set_visible(HSClient* client, bool visible);
 void window_set_visible(Window win, bool visible);
-
-unsigned long get_window_border_color(HSClient* client);
 
 #endif

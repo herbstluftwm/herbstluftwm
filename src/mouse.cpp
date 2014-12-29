@@ -87,9 +87,9 @@ void mouse_initiate_resize(HSClient* client, int argc, char** argv) {
 
 void mouse_call_command(struct HSClient* client, int argc, char** argv) {
     // TODO: add completion
-    client_set_dragged(client, true);
+    client->set_dragged(true);
     call_command_no_output(argc, argv);
-    client_set_dragged(client, false);
+    client->set_dragged(false);
 }
 
 
@@ -103,7 +103,7 @@ void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
         g_drag_function = NULL;
         return;
     }
-    client_set_dragged(g_win_drag_client, true);
+    g_win_drag_client->set_dragged( true);
     g_win_drag_start = g_win_drag_client->float_size;
     g_button_drag_start = get_cursor_position();
     XGrabPointer(g_display, client->window, True,
@@ -113,7 +113,7 @@ void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
 
 void mouse_stop_drag() {
     if (g_win_drag_client) {
-        client_set_dragged(g_win_drag_client, false);
+        g_win_drag_client->set_dragged(false);
         // resend last size
         monitor_apply_layout(g_drag_monitor);
     }
@@ -306,7 +306,7 @@ void mouse_function_move(XMotionEvent* me) {
                        SNAP_EDGE_ALL, &dx, &dy);
     g_win_drag_client->float_size.x += dx;
     g_win_drag_client->float_size.y += dy;
-    client_resize_floating(g_win_drag_client, g_drag_monitor);
+    g_win_drag_client->resize_floating(g_drag_monitor);
 }
 
 void mouse_function_resize(XMotionEvent* me) {
@@ -368,7 +368,7 @@ void mouse_function_resize(XMotionEvent* me) {
     }
     g_win_drag_client->float_size.width += dx;
     g_win_drag_client->float_size.height += dy;
-    client_resize_floating(g_win_drag_client, g_drag_monitor);
+    g_win_drag_client->resize_floating(g_drag_monitor);
 }
 
 void mouse_function_zoom(XMotionEvent* me) {
@@ -416,13 +416,13 @@ void mouse_function_zoom(XMotionEvent* me) {
     }
     new_width += 2 * right_dx;
     new_height += 2 * bottom_dy;
-    applysizehints(client, &new_width, &new_height);
+    client->applysizehints(&new_width, &new_height);
     // center window again
     client->float_size.width = new_width;
     client->float_size.height = new_height;
     client->float_size.x = cent_x - new_width / 2;
     client->float_size.y = cent_y - new_height / 2;
-    client_resize_floating(g_win_drag_client, g_drag_monitor);
+    g_win_drag_client->resize_floating(g_drag_monitor);
 }
 
 struct SnapData {
@@ -502,7 +502,7 @@ void client_snap_vector(struct HSClient* client, struct HSMonitor* monitor,
     }
     d.client    = client;
     // translate client rectangle to global coordinates
-    d.rect      = client_outer_floating_rect(client);
+    d.rect      = client->outer_floating_rect();
     d.rect.x += monitor->rect.x + monitor->pad_left;
     d.rect.y += monitor->rect.y + monitor->pad_up;
     d.flags     = flags;
