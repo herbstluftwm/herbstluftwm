@@ -963,7 +963,11 @@ void unmapnotify(XEvent* event) {
 /* main */
 /* ---- */
 
+#include "testobject.h"
+
 int main(int argc, char* argv[]) {
+    herbstluft::test_object_system();
+
     init_handler_table();
 
     parse_arguments(argc, argv);
