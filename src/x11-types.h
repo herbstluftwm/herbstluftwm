@@ -43,10 +43,10 @@ namespace herbstluft {
     };
     using RectangleVec = std::vector<Rectangle>;
 
-    typedef struct {
+    struct Point2D {
         int x;
         int y;
-    } Point2D;
+    };
 
 }
 
