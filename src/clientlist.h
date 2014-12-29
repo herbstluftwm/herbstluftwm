@@ -21,16 +21,19 @@
 struct HSSlice;
 
 class HSClient {
-public: // TODO: make members private
+public:
+    HSDecoration    dec;
+    bool        fullscreen;
+    herbstluft::Rectangle   float_size;     // floating size without the window border
+    GString*    title;  // or also called window title; this is never NULL
+    struct HSSlice* slice;
+public:
     Window      window;
     GString*    window_str;     // the window id as a string
     herbstluft::Rectangle   last_size;      // last size excluding the window border
-    HSTag*      tag;
-    herbstluft::Rectangle   float_size;     // floating size without the window border
-    GString*    title;  // or also called window title; this is never NULL
+    HSTag*      tag_;
     GString*    keymask; // keymask applied to mask out keybindins
     bool        urgent;
-    bool        fullscreen;
     bool        ewmhfullscreen; // ewmh fullscreen state
     bool        pseudotile; // only move client but don't resize (if possible)
     bool        neverfocus; // do not give the focus via XSetInputFocus
@@ -49,16 +52,21 @@ public: // TODO: make members private
     int basew, baseh, incw, inch, maxw, maxh, minw, minh;
     // for other modules
     HSObject    object;
-    struct HSSlice* slice;
-    HSDecoration    dec;
 
 public:
 
     HSClient();
     ~HSClient();
 
-    Window x11Window() { return window; };
 
+    // setter and getter for attributes
+    HSTag* tag() { return tag_; };
+    void setTag(HSTag* tag) { tag_ = tag; }
+
+    Window x11Window() { return window; };
+    friend void mouse_function_resize(XMotionEvent* me);
+
+    // other member functions
     void window_focus();
     void window_unfocus();
     static void window_unfocus_last();

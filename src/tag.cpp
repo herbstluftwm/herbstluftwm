@@ -337,10 +337,10 @@ int tag_remove_command(int argc, char** argv, GString* output) {
     int i;
     for (i = 0; i < count; i++) {
         HSClient* client = buf[i];
-        stack_remove_slice(client->tag->stack, client->slice);
-        client->tag = target;
-        stack_insert_slice(client->tag->stack, client->slice);
-        ewmh_window_update_tag(client->window, client->tag);
+        stack_remove_slice(client->tag()->stack, client->slice);
+        client->setTag(target);
+        stack_insert_slice(client->tag()->stack, client->slice);
+        ewmh_window_update_tag(client->window, client->tag());
         frame_insert_client(target->frame, buf[i]);
     }
     HSMonitor* monitor_target = find_monitor_with_tag(target);
@@ -410,9 +410,9 @@ static void client_update_tag_flags(void* key, void* client_void, void* data) {
     (void) data;
     HSClient* client = (HSClient*)client_void;
     if (client) {
-        TAG_SET_FLAG(client->tag, TAG_FLAG_USED);
+        TAG_SET_FLAG(client->tag(), TAG_FLAG_USED);
         if (client->urgent) {
-            TAG_SET_FLAG(client->tag, TAG_FLAG_URGENT);
+            TAG_SET_FLAG(client->tag(), TAG_FLAG_URGENT);
         }
     }
 }
@@ -499,7 +499,7 @@ void tag_move_focused_client(HSTag* target) {
 }
 
 void tag_move_client(HSClient* client, HSTag* target) {
-    HSTag* tag_source = client->tag;
+    HSTag* tag_source = client->tag();
     HSMonitor* monitor_source = find_monitor_with_tag(tag_source);
     if (tag_source == target) {
         // nothing to do
@@ -511,10 +511,10 @@ void tag_move_client(HSClient* client, HSTag* target) {
     frame_insert_client(target->frame, client);
     // enfoce it to be focused on the target tag
     frame_focus_client(target->frame, client);
-    stack_remove_slice(client->tag->stack, client->slice);
-    client->tag = target;
-    stack_insert_slice(client->tag->stack, client->slice);
-    ewmh_window_update_tag(client->window, client->tag);
+    stack_remove_slice(client->tag()->stack, client->slice);
+    client->setTag(target);
+    stack_insert_slice(client->tag()->stack, client->slice);
+    ewmh_window_update_tag(client->window, client->tag());
 
     // refresh things, hide things, layout it, and then show it if needed
     if (monitor_source && !monitor_target) {
@@ -544,7 +544,7 @@ void tag_update_focus_layer(HSTag* tag) {
         // fullscreen window or if the tag is in tiling mode
         if (!stack_is_layer_empty(tag->stack, LAYER_FULLSCREEN)
             || *g_raise_on_focus_temporarily
-            || focus->tag->floating == false) {
+            || focus->tag()->floating == false) {
             stack_slice_add_layer(tag->stack, focus->slice, LAYER_FOCUS);
         }
     }

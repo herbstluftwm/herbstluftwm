@@ -96,8 +96,8 @@ void mouse_call_command(struct HSClient* client, int argc, char** argv) {
 void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
     g_drag_function = function;
     g_win_drag_client = client;
-    g_drag_monitor = find_monitor_with_tag(client->tag);
-    if (!g_drag_monitor || client->tag->floating == false) {
+    g_drag_monitor = find_monitor_with_tag(client->tag());
+    if (!g_drag_monitor || client->tag()->floating == false) {
         // only can drag wins in  floating mode
         g_win_drag_client = NULL;
         g_drag_function = NULL;
@@ -106,7 +106,7 @@ void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
     g_win_drag_client->set_dragged( true);
     g_win_drag_start = g_win_drag_client->float_size;
     g_button_drag_start = get_cursor_position();
-    XGrabPointer(g_display, client->window, True,
+    XGrabPointer(g_display, client->x11Window(), True,
         PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
             GrabModeAsync, None, None, CurrentTime);
 }
@@ -275,20 +275,20 @@ static void grab_client_button(MouseBinding* bind, HSClient* client) {
     for(int j = 0; j < LENGTH(modifiers); j++) {
         XGrabButton(g_display, bind->button,
                     bind->modifiers | modifiers[j],
-                    client->window, False, ButtonPressMask | ButtonReleaseMask,
+                    client->x11Window(), False, ButtonPressMask | ButtonReleaseMask,
                     GrabModeAsync, GrabModeSync, None, None);
     }
 }
 
 void grab_client_buttons(HSClient* client, bool focused) {
     update_numlockmask();
-    XUngrabButton(g_display, AnyButton, AnyModifier, client->window);
+    XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
     if (focused) {
         g_list_foreach(g_mouse_binds, (GFunc)grab_client_button, client);
     }
     unsigned int btns[] = { Button1, Button2, Button3 };
     for (int i = 0; i < LENGTH(btns); i++) {
-        XGrabButton(g_display, btns[i], AnyModifier, client->window, False,
+        XGrabButton(g_display, btns[i], AnyModifier, client->x11Window(), False,
                     ButtonPressMask|ButtonReleaseMask, GrabModeSync,
                     GrabModeSync, None, None);
     }

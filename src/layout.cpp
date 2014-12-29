@@ -308,7 +308,7 @@ void dump_frame_tree(HSFrame* frame, GString* output) {
         for (i = 0; i < count; i++) {
             g_string_append_printf(output, "%c0x%lx",
                 LAYOUT_DUMP_WHITESPACES[0],
-                buf[i]->window);
+                buf[i]->x11Window());
         }
         g_string_append_c(output, LAYOUT_DUMP_BRACKETS[1]);
     } else {
@@ -483,15 +483,15 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
             }
 
             // remove window from old tag
-            HSMonitor* clientmonitor = find_monitor_with_tag(client->tag);
-            if (!frame_remove_client(client->tag->frame, client)) {
+            HSMonitor* clientmonitor = find_monitor_with_tag(client->tag());
+            if (!frame_remove_client(client->tag()->frame, client)) {
                 g_warning("window %lx was not found on tag %s\n",
-                    win, client->tag->name->str);
+                    win, client->tag()->name->str);
             }
             if (clientmonitor) {
                 monitor_apply_layout(clientmonitor);
             }
-            stack_remove_slice(client->tag->stack, client->slice);
+            stack_remove_slice(client->tag()->stack, client->slice);
 
             // insert it to buf
             HSClient** buf = frame->content.clients.buf;
@@ -505,9 +505,9 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
             frame->content.clients.buf = buf;
             frame->content.clients.count = count;
 
-            client->tag = tag;
-            stack_insert_slice(client->tag->stack, client->slice);
-            ewmh_window_update_tag(client->window, client->tag);
+            client->setTag(tag);
+            stack_insert_slice(client->tag()->stack, client->slice);
+            ewmh_window_update_tag(client->x11Window(), client->tag());
 
             index++;
         }
@@ -566,7 +566,7 @@ static void frame_append_caption(HSTree tree, GString* output) {
         HSClient** buf = frame->content.clients.buf;
         size_t i, count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            g_string_append_printf(output, " 0x%lx", buf[i]->window);
+            g_string_append_printf(output, " 0x%lx", buf[i]->x11Window());
         }
         if (g_cur_frame == frame) {
             g_string_append(output, " [FOCUS]");
@@ -1713,8 +1713,8 @@ bool focus_client(struct HSClient* client, bool switch_tag, bool switch_monitor)
         // client is not managed
         return false;
     }
-    HSTag* tag = client->tag;
-    assert(client->tag);
+    HSTag* tag = client->tag();
+    assert(client->tag());
     HSMonitor* monitor = find_monitor_with_tag(tag);
     HSMonitor* cur_mon = get_current_monitor();
     if (monitor != cur_mon && !switch_monitor) {
@@ -1917,7 +1917,7 @@ int frame_remove_command(int argc, char** argv) {
 int close_or_remove_command(int argc, char** argv) {
     HSClient* client = frame_focused_client(g_cur_frame);
     if (client) {
-        window_close(client->window);
+        window_close(client->x11Window());
         return 0;
     } else {
         return frame_remove_command(argc, argv);
@@ -1933,7 +1933,7 @@ int close_and_remove_command(int argc, char** argv) {
             remove_after_close = true;
         }
 
-        window_close(client->window);
+        window_close(client->x11Window());
 
         if (remove_after_close) {
             frame_remove_command(argc, argv);

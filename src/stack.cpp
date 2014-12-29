@@ -117,7 +117,7 @@ static void slice_append_caption(HSTree root, GString* output) {
             break;
         case SLICE_CLIENT:
             g_string_append_printf(output, "Client 0x%lx \"%s\"",
-                                   slice->data.client->window,
+                                   slice->data.client->x11Window(),
                                    slice->data.client->title->str);
             break;
         case SLICE_MONITOR:
@@ -243,7 +243,7 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
         case SLICE_CLIENT:
             if (data->len) {
                 if (data->real_clients) {
-                    data->buf[0] = s->data.client->window;
+                    data->buf[0] = s->data.client->x11Window();
                 } else {
                     data->buf[0] = s->data.client->dec.decwin;
                 }

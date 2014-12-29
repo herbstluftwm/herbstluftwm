@@ -531,10 +531,10 @@ void event_on_configure(XEvent event) {
         }
         if (changes && client->is_client_floated()) {
             client->float_size = newRect;
-            client->resize_floating(find_monitor_with_tag(client->tag));
+            client->resize_floating(find_monitor_with_tag(client->tag()));
         } else if (changes && client->pseudotile) {
             client->float_size = newRect;
-            monitor_apply_layout(find_monitor_with_tag(client->tag));
+            monitor_apply_layout(find_monitor_with_tag(client->tag()));
         } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
             client->send_configure();
@@ -853,8 +853,8 @@ void enternotify(XEvent* event) {
         && ce->focus == false) {
         HSClient* c = get_client_from_window(ce->window);
         HSFrame* target;
-        if (c && c->tag->floating == false
-              && (target = find_frame_with_client(c->tag->frame, c))
+        if (c && c->tag()->floating == false
+              && (target = find_frame_with_client(c->tag()->frame, c))
               && target->content.clients.layout == LAYOUT_MAX
               && frame_focused_client(target) != c) {
             // don't allow focus_follows_mouse if another window would be
@@ -922,7 +922,7 @@ void maprequest(XEvent* event) {
         // client should be managed (is not ignored)
         // but is not managed yet
         HSClient* client = manage_client(mapreq->window);
-        if (client && find_monitor_with_tag(client->tag)) {
+        if (client && find_monitor_with_tag(client->tag())) {
             XMapWindow(g_display, mapreq->window);
         }
     }
@@ -942,7 +942,7 @@ void propertynotify(XEvent* event) {
                 client->update_wm_hints();
             } else if (ev->atom == XA_WM_NORMAL_HINTS) {
                 client->updatesizehints();
-                HSMonitor* m = find_monitor_with_tag(client->tag);
+                HSMonitor* m = find_monitor_with_tag(client->tag());
                 if (m) monitor_apply_layout(m);
             } else if (ev->atom == XA_WM_NAME ||
                        ev->atom == g_netatom[NetWmName]) {

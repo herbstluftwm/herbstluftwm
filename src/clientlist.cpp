@@ -69,7 +69,7 @@ HSClient::HSClient() {
     sizehints_floating = true;
     sizehints_tiling = false;
     visible = false;
-    tag = NULL;
+    tag_ = NULL;
     dragged = false;
     neverfocus = false;
     ignore_unmaps = 0;
@@ -173,19 +173,19 @@ HSClient* get_client_from_window(Window window) {
 
 static void client_attr_tag(void* data, GString* output) {
     HSClient* client = (HSClient*) data;
-    g_string_append(output, client->tag->display_name->str);
+    g_string_append(output, client->tag()->display_name->str);
 }
 
 static void client_attr_class(void* data, GString* output) {
     HSClient* client = (HSClient*) data;
-    GString* ret = window_class_to_g_string(g_display, client->window);
+    GString* ret = window_class_to_g_string(g_display, client->x11Window());
     g_string_append(output, ret->str);
     g_string_free(ret, true);
 }
 
 static void client_attr_instance(void* data, GString* output) {
     HSClient* client = (HSClient*) data;
-    GString* ret = window_instance_to_g_string(g_display, client->window);
+    GString* ret = window_instance_to_g_string(g_display, client->x11Window());
     g_string_append(output, ret->str);
     g_string_free(ret, true);
 }
@@ -205,7 +205,7 @@ static GString* client_attr_urgent(HSAttribute* attr) {
 static GString* client_attr_sh_tiling(HSAttribute* attr) {
     HSClient* client = container_of(attr->value.b, HSClient, sizehints_tiling);
     if (!client->is_client_floated() && !client->pseudotile) {
-        HSMonitor* mon = find_monitor_with_tag(client->tag);
+        HSMonitor* mon = find_monitor_with_tag(client->tag());
         if (mon) {
             monitor_apply_layout(mon);
         }
@@ -216,7 +216,7 @@ static GString* client_attr_sh_tiling(HSAttribute* attr) {
 static GString* client_attr_sh_floating(HSAttribute* attr) {
     HSClient* client = container_of(attr->value.b, HSClient, sizehints_floating);
     if (!client->is_client_floated() || client->pseudotile) {
-        HSMonitor* mon = find_monitor_with_tag(client->tag);
+        HSMonitor* mon = find_monitor_with_tag(client->tag());
         if (mon) {
             monitor_apply_layout(mon);
         }
@@ -257,17 +257,17 @@ HSClient* manage_client(Window win) {
     client_changes_init(&changes, client);
     rules_apply(client, &changes);
     if (changes.tag_name) {
-        client->tag = find_tag(changes.tag_name->str);
+        client->setTag(find_tag(changes.tag_name->str));
     }
     if (changes.monitor_name) {
         HSMonitor *monitor = string_to_monitor(changes.monitor_name->str);
         if (monitor) {
             // a valid tag was not already found, use the target monitor's tag
-            if (!client->tag) { client->tag = monitor->tag; }
+            if (!client->tag()) { client->setTag(monitor->tag); }
             // a tag was already found, display it on the target monitor, but
             // only if switchtag is set
             else if (changes.switchtag) {
-                monitor_set_tag(monitor, client->tag);
+                monitor_set_tag(monitor, client->tag());
             }
         }
     }
@@ -291,14 +291,14 @@ HSClient* manage_client(Window win) {
     g_string_printf(client->window_str, "0x%lx", win);
     hsobject_link(g_client_object, &client->object, client->window_str->str);
     // insert to layout
-    if (!client->tag) {
-        client->tag = m->tag;
+    if (!client->tag()) {
+        client->setTag(m->tag);
     }
     // insert window to the stack
     client->slice = slice_create_client(client);
-    stack_insert_slice(client->tag->stack, client->slice);
+    stack_insert_slice(client->tag()->stack, client->slice);
     // insert window to the tag
-    frame_insert_client(lookup_frame(client->tag->frame, changes.tree_index->str), client);
+    frame_insert_client(lookup_frame(client->tag()->frame, changes.tree_index->str), client);
     client->update_wm_hints();
     client->updatesizehints();
     if (changes.focus) {
@@ -306,7 +306,7 @@ HSClient* manage_client(Window win) {
         // TODO: make this faster!
         // WARNING: this solution needs O(C + exp(D)) time where W is the count
         // of clients on this tag and D is the depth of the binary layout tree
-        frame_focus_client(client->tag->frame, client);
+        frame_focus_client(client->tag()->frame, client);
     }
 
     client->object.data = client;
@@ -330,7 +330,7 @@ HSClient* manage_client(Window win) {
     };
     hsobject_set_attributes(&client->object, attributes);
 
-    ewmh_window_update_tag(client->window, client->tag);
+    ewmh_window_update_tag(client->window, client->tag());
     tag_set_flags_dirty();
     client->set_fullscreen(changes.fullscreen);
     ewmh_update_window_state(client);
@@ -351,11 +351,11 @@ HSClient* manage_client(Window win) {
                             SubstructureRedirectMask | FocusChangeMask));
     XSelectInput(g_display, win, CLIENT_EVENT_MASK);
 
-    HSMonitor* monitor = find_monitor_with_tag(client->tag);
+    HSMonitor* monitor = find_monitor_with_tag(client->tag());
     if (monitor) {
         if (monitor != get_current_monitor()
             && changes.focus && changes.switchtag) {
-            monitor_set_tag(get_current_monitor(), client->tag);
+            monitor_set_tag(get_current_monitor(), client->tag());
         }
         // TODO: monitor_apply_layout() maybe is called twice here if it
         // already is called by monitor_set_tag()
@@ -363,7 +363,7 @@ HSClient* manage_client(Window win) {
         client->set_visible(true);
     } else {
         if (changes.focus && changes.switchtag) {
-            monitor_set_tag(get_current_monitor(), client->tag);
+            monitor_set_tag(get_current_monitor(), client->tag());
             client->set_visible(true);
         }
     }
@@ -384,7 +384,7 @@ void unmanage_client(Window win) {
         mouse_stop_drag();
     }
     // remove from tag
-    frame_remove_client(client->tag->frame, client);
+    frame_remove_client(client->tag()->frame, client);
     // ignore events from it
     XSelectInput(g_display, win, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
@@ -396,7 +396,7 @@ void unmanage_client(Window win) {
     // again (e.g. if it is some dialog)
     ewmh_clear_client_properties(client);
     XDeleteProperty(g_display, client->window, g_wmatom[WMState]);
-    HSTag* tag = client->tag;
+    HSTag* tag = client->tag();
     g_hash_table_remove(g_clients, &win);
     client = NULL;
     // and arrange monitor after the client has been removed from the stack
@@ -414,8 +414,8 @@ HSClient::~HSClient() {
     if (lastfocus == this) {
         lastfocus = NULL;
     }
-    if (tag && slice) {
-        stack_remove_slice(tag->stack, slice);
+    if (tag() && slice) {
+        stack_remove_slice(tag()->stack, slice);
     }
     if (slice) {
         slice_destroy(slice);
@@ -442,7 +442,7 @@ static int client_get_scheme_triple_idx(HSClient* client) {
 
 bool HSClient::needs_minimal_dec(HSFrame* frame) {
     if (!frame) {
-        frame = find_frame_with_client(this->tag->frame, this);
+        frame = find_frame_with_client(this->tag()->frame, this);
         HSAssert(frame != NULL);
     }
     if (!smart_window_surroundings_active(frame)) return false;
@@ -513,7 +513,7 @@ void HSClient::window_focus() {
     }
     tag_update_focus_layer(get_current_monitor()->tag);
     grab_client_buttons(this, true);
-    key_set_keymask(this->tag, this);
+    key_set_keymask(this->tag(), this);
     this->set_urgent(false);
 }
 
@@ -540,7 +540,7 @@ void HSClient::resize_fullscreen(HSMonitor* m) {
 }
 
 void HSClient::raise() {
-    stack_raise_slide(this->tag->stack, this->slice);
+    stack_raise_slide(this->tag()->stack, this->slice);
 }
 
 static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx) {
@@ -555,7 +555,7 @@ static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripid
 
 void HSClient::resize_tiling(Rectangle rect, HSFrame* frame) {
     HSMonitor* m;
-    if (this->fullscreen && (m = find_monitor_with_tag(this->tag))) {
+    if (this->fullscreen && (m = find_monitor_with_tag(this->tag()))) {
         resize_fullscreen(m);
         return;
     }
@@ -745,7 +745,7 @@ int close_command(int argc, char** argv, GString* output) {
 }
 
 bool HSClient::is_client_floated() {
-    return tag->floating;
+    return tag()->floating;
 }
 
 void window_close(Window window) {
@@ -897,14 +897,14 @@ void HSClient::set_fullscreen(bool state) {
     if (this->ewmhnotify) {
         this->ewmhfullscreen = state;
     }
-    HSStack* stack = this->tag->stack;
+    HSStack* stack = this->tag()->stack;
     if (state) {
         stack_slice_add_layer(stack, this->slice, LAYER_FULLSCREEN);
     } else {
         stack_slice_remove_layer(stack, this->slice, LAYER_FULLSCREEN);
     }
-    tag_update_focus_layer(this->tag);
-    monitor_apply_layout(find_monitor_with_tag(this->tag));
+    tag_update_focus_layer(this->tag());
+    monitor_apply_layout(find_monitor_with_tag(this->tag()));
 
     char buf[STRING_BUF_SIZE];
     snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window);
@@ -914,7 +914,7 @@ void HSClient::set_fullscreen(bool state) {
 
 void HSClient::set_pseudotile(bool state) {
     this->pseudotile = state;
-    monitor_apply_layout(find_monitor_with_tag(this->tag));
+    monitor_apply_layout(find_monitor_with_tag(this->tag()));
 }
 
 int client_set_property_command(int argc, char** argv) {
