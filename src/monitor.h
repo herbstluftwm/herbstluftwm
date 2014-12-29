@@ -74,7 +74,7 @@ int list_monitors(int argc, char** argv, GString* output);
 int list_padding(int argc, char** argv, GString* output);
 int set_monitor_rects_command(int argc, char** argv, GString* output);
 int disjoin_rects_command(int argc, char** argv, GString* output);
-int set_monitor_rects(Rectangle* templates, size_t count);
+int set_monitor_rects(const RectangleVec &templates);
 int move_monitor_command(int argc, char** argv, GString* output);
 int rename_monitor_command(int argc, char** argv, GString* output);
 int monitor_rect_command(int argc, char** argv, GString* output);
@@ -107,9 +107,9 @@ struct HSStack* get_monitor_stack();
 
 void monitor_update_focus_objects();
 
-typedef bool (*MonitorDetection)(Rectangle**, size_t*);
-bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count);
-bool detect_monitors_simple(Rectangle** ret_rects, size_t* ret_count);
+typedef bool (*MonitorDetection)(RectangleVec &);
+bool detect_monitors_xinerama(RectangleVec &dest);
+bool detect_monitors_simple(RectangleVec &dest);
 int detect_monitors_command(int argc, const char **argv, GString* output);
 
 int shift_to_monitor(int argc, char** argv, GString* output);

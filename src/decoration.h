@@ -22,18 +22,18 @@ struct HSClient;
 
 typedef struct {
     int     border_width;
-    HSColor border_color;
+    Color border_color;
     bool    tight_decoration; // if set, there is no space between the
                               // decoration and the window content
-    HSColor inner_color;
+    Color inner_color;
     int     inner_width;
-    HSColor outer_color;
+    Color outer_color;
     int     outer_width;
     int     padding_top;    // additional window border
     int     padding_right;  // additional window border
     int     padding_bottom; // additional window border
     int     padding_left;   // additional window border
-    HSColor background_color; // color behind client contents
+    Color background_color; // color behind client contents
 } HSDecorationScheme;
 
 typedef struct {

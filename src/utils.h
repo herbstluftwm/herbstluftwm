@@ -32,10 +32,6 @@
 /// print a printf-like message to stderr and exit
 void die(const char *errstr, ...);
 
-// get X11 color from color string
-HSColor getcolor(const char *colstr);
-bool getcolor_error(const char *colstr, HSColor* color);
-
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom);

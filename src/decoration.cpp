@@ -41,30 +41,30 @@ void decorations_init() {
     // init default schemes
     // tiling //
     HSDecTriple tiling = {
-        { 2, getcolor("black"),     false },    // normal
-        { 2, getcolor("green"),     false },    // active
-        { 2, getcolor("orange"),    false },    // urgent
+        { 2, Color::fromStr("black"),     false },    // normal
+        { 2, Color::fromStr("green"),     false },    // active
+        { 2, Color::fromStr("orange"),    false },    // urgent
     };
     g_decorations[HSDecSchemeTiling] = tiling;
     // fullscreen //
     HSDecTriple fs = {
-        { 0, getcolor("black"),     false },    // normal
-        { 0, getcolor("black"),     false },    // active
-        { 0, getcolor("black"),     false },    // urgent
+        { 0, Color::fromStr("black"),     false },    // normal
+        { 0, Color::fromStr("black"),     false },    // active
+        { 0, Color::fromStr("black"),     false },    // urgent
     };
     g_decorations[HSDecSchemeFullscreen] = fs;
     // floating //
     HSDecTriple fl = {
-        { 1, getcolor("black"),     true  },    // normal
-        { 4, getcolor("green"),     true  },    // active
-        { 1, getcolor("orange"),    true  },    // urgent
+        { 1, Color::fromStr("black"),     true  },    // normal
+        { 4, Color::fromStr("green"),     true  },    // active
+        { 1, Color::fromStr("orange"),    true  },    // urgent
     };
     g_decorations[HSDecSchemeFloating] = fl;
     // minimal //
     HSDecTriple minimal = {
-        { 0, getcolor("black"),     true  },    // normal
-        { 0, getcolor("green"),     true  },    // active
-        { 0, getcolor("orange"),    true  },    // urgent
+        { 0, Color::fromStr("black"),     true  },    // normal
+        { 0, Color::fromStr("green"),     true  },    // active
+        { 0, Color::fromStr("orange"),    true  },    // urgent
     };
     g_decorations[HSDecSchemeMinimal] = minimal;
     init_dec_triple_object(g_decorations + HSDecSchemeTiling, "tiling");
@@ -350,21 +350,21 @@ HSClient* get_client_from_decoration(Window decwin) {
 }
 
 Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme s) {
-    return Rectangle(
+    return {
         rect.x + s.border_width + s.padding_left,
         rect.y + s.border_width + s.padding_top,
         rect.width  - 2* s.border_width - s.padding_left - s.padding_right,
         rect.height - 2* s.border_width - s.padding_top - s.padding_bottom
-    );
+    };
 }
 
 Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme s) {
-    return Rectangle(
+    return {
         rect.x - s.border_width - s.padding_left,
         rect.y - s.border_width - s.padding_top,
         rect.width  + 2* s.border_width + s.padding_left + s.padding_right,
         rect.height + 2* s.border_width + s.padding_top + s.padding_bottom
-    );
+    };
 }
 
 void decoration_resize_inner(HSClient* client, Rectangle inner,

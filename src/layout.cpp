@@ -91,16 +91,16 @@ static void fetch_frame_colors() {
     g_focus_crosses_monitor_boundaries = &(settings_find("focus_crosses_monitor_boundaries")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
     char* str = settings_find_string("frame_border_normal_color");
-    g_frame_border_normal_color = getcolor(str);
+    g_frame_border_normal_color = Color::fromStr(str);
     str = settings_find_string("frame_border_active_color");
-    g_frame_border_active_color = getcolor(str);
+    g_frame_border_active_color = Color::fromStr(str);
     str = settings_find_string("frame_border_inner_color");
-    g_frame_border_inner_color = getcolor(str);
+    g_frame_border_inner_color = Color::fromStr(str);
     // background color
     str = settings_find_string("frame_bg_normal_color");
-    g_frame_bg_normal_color = getcolor(str);
+    g_frame_bg_normal_color = Color::fromStr(str);
     str = settings_find_string("frame_bg_active_color");
-    g_frame_bg_active_color = getcolor(str);
+    g_frame_bg_active_color = Color::fromStr(str);
     g_frame_active_opacity = CLAMP(settings_find("frame_active_opacity")->value.i, 0, 100);
     g_frame_normal_opacity = CLAMP(settings_find("frame_normal_opacity")->value.i, 0, 100);
 
@@ -138,7 +138,7 @@ HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
     frame->tag = parent ? parent->tag : parenttag;
     // set window attributes
     XSetWindowAttributes at;
-    at.background_pixel  = getcolor("red");
+    at.background_pixel  = Color::fromStr("red");
     at.background_pixmap = ParentRelative;
     at.override_redirect = True;
     at.bit_gravity       = StaticGravity;

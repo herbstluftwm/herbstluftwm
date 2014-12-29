@@ -42,7 +42,7 @@ typedef struct RectList {
 } RectList;
 
 static RectList* reclist_insert_disjoint(RectList* head, RectList* mt);
-static RectList* disjoin_rects(Rectangle* buf, size_t count);
+static RectList* disjoin_rects(const RectangleVec &buf);
 
 void monitor_init() {
     g_monitors_locked = &(settings_find("monitors_locked")->value.i);
@@ -268,12 +268,12 @@ static int rectlist_length(RectList* head) {
     return rectlist_length_acc(head, 0);
 }
 
-static RectList* disjoin_rects(Rectangle* buf, size_t count) {
+static RectList* disjoin_rects(const RectangleVec &buf) {
     RectList* cur;
     struct RectList* rects = NULL;
-    for (unsigned int i = 0; i < count; i++) {
+    for (auto& rect : buf) {
         cur = g_new0(RectList, 1);
-        cur->rect = buf[i];
+        cur->rect = rect;
         rects = reclist_insert_disjoint(rects, cur);
     }
     return rects;
@@ -285,19 +285,18 @@ int disjoin_rects_command(int argc, char** argv, GString* output) {
     if (argc < 1) {
         return HERBST_NEED_MORE_ARGS;
     }
-    Rectangle* buf = g_new(Rectangle, argc);
+    RectangleVec buf(argc);
     for (int i = 0; i < argc; i++) {
-        buf[i] = parse_rectangle(argv[i]);
+        buf[i] = Rectangle::fromStr(argv[i]);
     }
 
-    RectList* rects = disjoin_rects(buf, argc);
+    RectList* rects = disjoin_rects(buf);
     for (RectList* cur = rects; cur; cur = cur->next) {
-        Rectangle r = cur->rect;
+        Rectangle &r = cur->rect;
         g_string_append_printf(output, "%dx%d%+d%+d\n",
             r.width, r.height, r.x, r.y);
     }
     rectlist_free(rects);
-    g_free(buf);
     return 0;
 }
 
@@ -306,12 +305,12 @@ int set_monitor_rects_command(int argc, char** argv, GString* output) {
     if (argc < 1) {
         return HERBST_NEED_MORE_ARGS;
     }
-    Rectangle* templates = g_new0(Rectangle, argc);
+    RectangleVec templates(argc);
     for (int i = 0; i < argc; i++) {
-        templates[i] = parse_rectangle(argv[i]);
+        templates[i] = Rectangle::fromStr(argv[i]);
     }
-    int status = set_monitor_rects(templates, argc);
-    g_free(templates);
+    int status = set_monitor_rects(templates);
+
     if (status == HERBST_TAG_IN_USE) {
         g_string_append_printf(output,
             "%s: There are not enough free tags\n", argv[0]);
@@ -322,18 +321,18 @@ int set_monitor_rects_command(int argc, char** argv, GString* output) {
     return status;
 }
 
-int set_monitor_rects(Rectangle* templates, size_t count) {
-    if (count < 1) {
+int set_monitor_rects(const RectangleVec &templates) {
+    if (templates.empty()) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTag* tag = NULL;
     int i;
-    for (i = 0; i < MIN(count, g_monitors->len); i++) {
+    for (i = 0; i < std::min(templates.size(), (size_t)g_monitors->len); i++) {
         HSMonitor* m = monitor_with_index(i);
         m->rect = templates[i];
     }
     // add additional monitors
-    for (; i < count; i++) {
+    for (; i < templates.size(); i++) {
         tag = find_unused_tag();
         if (!tag) {
             return HERBST_TAG_IN_USE;
@@ -491,7 +490,7 @@ int add_monitor_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    auto rect = parse_rectangle(argv[1]);
+    auto rect = Rectangle::fromStr(argv[1]);
     HSTag* tag = NULL;
     char* name = NULL;
     if (argc == 2 || !strcmp("", argv[2])) {
@@ -620,7 +619,7 @@ int move_monitor_command(int argc, char** argv, GString* output) {
             "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
         return HERBST_INVALID_ARGUMENT;
     }
-    auto rect = parse_rectangle(argv[2]);
+    auto rect = Rectangle::fromStr(argv[2]);
     if (rect.width < WINDOW_MIN_WIDTH || rect.height < WINDOW_MIN_HEIGHT) {
         g_string_append_printf(output,
             "%s: Rectangle is too small\n", argv[0]);
@@ -757,9 +756,9 @@ void ensure_monitors_are_available() {
         return;
     }
     // add monitor if necessary
-    Rectangle rect = Rectangle(0,0,
+    Rectangle rect = { 0, 0,
             DisplayWidth(g_display, DefaultScreen(g_display)),
-            DisplayHeight(g_display, DefaultScreen(g_display)));
+            DisplayHeight(g_display, DefaultScreen(g_display))};
     ensure_tags_are_available();
     // add monitor with first tag
     HSMonitor* m = add_monitor(rect, get_tag_by_index(0), NULL);
@@ -1163,16 +1162,13 @@ static bool geom_unique(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo
 }
 
 // inspired by dwm's updategeom()
-bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count) {
+bool detect_monitors_xinerama(RectangleVec &ret) {
     int i, j, n;
-    XineramaScreenInfo *info, *unique;
-    Rectangle *monitors;
-
     if (!XineramaIsActive(g_display)) {
         return false;
     }
-    info = XineramaQueryScreens(g_display, &n);
-    unique = g_new(XineramaScreenInfo, n);
+    XineramaScreenInfo *info = XineramaQueryScreens(g_display, &n);
+    XineramaScreenInfo *unique = g_new(XineramaScreenInfo, n);
     /* only consider unique geometries as separate screens */
     for (i = 0, j = 0; i < n; i++) {
         if (geom_unique(unique, j, &info[i]))
@@ -1183,51 +1179,38 @@ bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count) {
     XFree(info);
     n = j;
 
-    monitors = g_new(Rectangle, n);
+    RectangleVec monitors(n);
     for (i = 0; i < n; i++) {
         monitors[i].x = unique[i].x_org;
         monitors[i].y = unique[i].y_org;
         monitors[i].width = unique[i].width;
         monitors[i].height = unique[i].height;
     }
-    *ret_count = n;
-    *ret_rects = monitors;
+    ret.swap(monitors);
     g_free(unique);
     return true;
 }
 #else  /* XINERAMA */
 
-bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count) {
+bool detect_monitors_xinerama(RectangleVec &dest) {
     return false;
 }
 
 #endif /* XINERAMA */
 
 // monitor detection that always works: one monitor across the entire screen
-bool detect_monitors_simple(Rectangle** ret_rects, size_t* ret_count) {
+bool detect_monitors_simple(RectangleVec &dest) {
     XWindowAttributes attributes;
     XGetWindowAttributes(g_display, g_root, &attributes);
-
-    *ret_count = 1;
-    *ret_rects = g_new0(Rectangle, 1);
-    (*ret_rects)->x = 0;
-    (*ret_rects)->y = 0;
-    (*ret_rects)->width = attributes.width;
-    (*ret_rects)->height = attributes.height;
+    dest = {{ 0, 0, attributes.width, attributes.height }};
     return true;
 }
 
-bool detect_monitors_debug_example(Rectangle** ret_rects, size_t* ret_count) {
-    *ret_count = 2;
-    *ret_rects = g_new0(Rectangle, 2);
-    (*ret_rects)[0].x = 0;
-    (*ret_rects)[0].y = 0;
-    (*ret_rects)[0].width = g_screen_width * 2 / 3;
-    (*ret_rects)[0].height = g_screen_height * 2 / 3;
-    (*ret_rects)[1].x = g_screen_width / 3;
-    (*ret_rects)[1].y = g_screen_height / 3;
-    (*ret_rects)[1].width = g_screen_width * 2 / 3;
-    (*ret_rects)[1].height = g_screen_height * 2 / 3;
+bool detect_monitors_debug_example(RectangleVec &dest) {
+    dest = {{ 0, 0,
+              g_screen_width * 2 / 3, g_screen_height * 2 / 3 },
+            { g_screen_width / 3, g_screen_height / 3,
+              g_screen_width * 2 / 3, g_screen_height * 2 / 3}};
     return true;
 }
 
@@ -1238,16 +1221,16 @@ int detect_monitors_command(int argc, const char **argv, GString* output) {
         detect_monitors_simple,
         detect_monitors_debug_example, // move up for debugging
     };
-    Rectangle* monitors = NULL;
+    RectangleVec monitors;
     size_t count = 0;
     // search for a working monitor detection
     // at least the simple detection must work
     for (int i = 0; i < LENGTH(detect); i++) {
-        if (detect[i](&monitors, &count)) {
+        if (detect[i](monitors)) {
             break;
         }
     }
-    assert(count && monitors);
+    assert(count && !monitors.empty());
     bool list_only = false;
     bool disjoin = true;
     //bool drop_small = true;
@@ -1274,9 +1257,9 @@ int detect_monitors_command(int argc, const char **argv, GString* output) {
     } else {
         // possibly disjoin them
         if (disjoin) {
-            RectList* rl = disjoin_rects(monitors, count);
+            RectList* rl = disjoin_rects(monitors);
             count = rectlist_length(rl);
-            monitors = g_renew(Rectangle, monitors, count);
+            monitors.resize(count);
             RectList* cur = rl;
             FOR (i,0,count) {
                 monitors[i] = cur->rect;
@@ -1284,13 +1267,12 @@ int detect_monitors_command(int argc, const char **argv, GString* output) {
             }
         }
         // apply it
-        ret = set_monitor_rects(monitors, count);
+        ret = set_monitor_rects(monitors);
         if (ret == HERBST_TAG_IN_USE && output != NULL) {
             g_string_append_printf(output,
                 "%s: There are not enough free tags\n", argv[0]);
         }
     }
-    g_free(monitors);
     return ret;
 }
 

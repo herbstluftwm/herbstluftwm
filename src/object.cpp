@@ -581,7 +581,7 @@ int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* ou
             break;
 
         case HSATTR_TYPE_COLOR:
-            error = !getcolor_error(new_value_str, &new_value.color);
+            error = !Color::convert(new_value_str, new_value.color);
             if (error) {
                 g_string_append_printf(output,
                     "\"%s\" is not a valid color.", new_value_str);
@@ -762,7 +762,7 @@ int compare_command(int argc, char* argv[], GString* output) {
         return HERBST_INVALID_ARGUMENT;
     } else if (attr->type == HSATTR_TYPE_COLOR) {
         auto l = *attr->value.color;
-        auto r = getcolor(rvalue);
+        auto r = Color::fromStr(rvalue);
         if (!strcmp("=", op)) return !(l == r);
         if (!strcmp("!=", op)) return !(l != r);
         g_string_append_printf(output, "Invalid color operator \"%s\"", op);
@@ -901,7 +901,7 @@ HSAttribute* hsattribute_create(HSObject* obj, const char* name, char* type_str,
             attr->value.str = &attr->user_data->str;
             break;
         case HSATTR_TYPE_COLOR:
-            attr->user_data->color = getcolor("#000000");
+            attr->user_data->color = Color::fromStr("#000000");
             attr->unparsed_value = g_string_new("#000000");
             attr->value.color = &attr->user_data->color;
         default:

@@ -34,14 +34,14 @@ typedef union HSAttributePointer {
     int*        i;
     unsigned int* u;
     GString**   str;
-    HSColor*    color;
+    Color*    color;
     HSAttributeCustom custom;
     HSAttributeCustomInt custom_int;
     HSAttributePointer(bool* b) : b(b) { };
     HSAttributePointer(int* x) : i(x) { };
     HSAttributePointer(unsigned int* x) : u(x) { };
     HSAttributePointer(GString** x) : str(x) { };
-    HSAttributePointer(HSColor* x) : color(x) { };
+    HSAttributePointer(Color* x) : color(x) { };
     HSAttributePointer(HSAttributeCustom x) : custom(x) { };
     HSAttributePointer(HSAttributeCustomInt x) : custom_int(x) { };
 } HSAttributePointer;
@@ -51,7 +51,7 @@ typedef union HSAttributeValue {
     int         i;
     unsigned int u;
     GString*    str;
-    HSColor     color;
+    Color     color;
 } HSAttributeValue;
 
 typedef GString* (*HSAttrCallback)(HSAttribute* attr);
@@ -114,7 +114,7 @@ public:
     HSAttributeSimpleConstructor(HSATTR_TYPE_BOOL, bool) {};
     HSAttributeSimpleConstructor(HSATTR_TYPE_INT, int) {};
     HSAttributeSimpleConstructor(HSATTR_TYPE_UINT, unsigned int) {};
-    HSAttributeSimpleConstructor(HSATTR_TYPE_COLOR, HSColor) {
+    HSAttributeSimpleConstructor(HSATTR_TYPE_COLOR, Color) {
         unparsed_value = g_string_new("");
     };
     HSAttributeSimpleConstructor(HSATTR_TYPE_STRING, GString*) {};

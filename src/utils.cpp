@@ -56,22 +56,15 @@ void die(const char *errstr, ...) {
 
 // get X11 color from color string
 // from dwm.c
-unsigned long getcolor(const char *colstr) {
-    HSColor ret_color;
-    if (!getcolor_error(colstr, &ret_color)) {
-        ret_color = 0;
-    }
-    return ret_color;
-}
-
-bool getcolor_error(const char *colstr, HSColor* ret_color) {
+bool Color::convert(const char *source, Color& dest) {
     Colormap cmap = DefaultColormap(g_display, g_screen);
     XColor color;
-    if(!XAllocNamedColor(g_display, cmap, colstr, &color, &color)) {
-        g_warning("error, cannot allocate color '%s'\n", colstr);
+    if(!XAllocNamedColor(g_display, cmap, source, &color, &color)) {
+        g_warning("error, cannot allocate color '%s'\n", source);
         return false;
     }
-    *ret_color = color.pixel;
+    dest = color.pixel;
+    //dest.name_ = source;
     return true;
 }
 
@@ -188,16 +181,17 @@ void argv_free(int argc, char** argv) {
 }
 
 
-Rectangle parse_rectangle(char* string) {
-    Rectangle rect;
-    int x,y;
+Rectangle Rectangle::fromStr(const char* source) {
+    int x, y;
     unsigned int w, h;
-    int flags = XParseGeometry(string, &x, &y, &w, &h);
-    rect.x = (XValue & flags) ? (short int)x : 0;
-    rect.y = (YValue & flags) ? (short int)y : 0;
-    rect.width = (WidthValue & flags) ? (unsigned short int)w : 0;
-    rect.height = (HeightValue & flags) ? (unsigned short int)h : 0;
-    return rect;
+    int flags = XParseGeometry(source, &x, &y, &w, &h);
+
+    return {
+        (XValue & flags) ? (short int)x : 0,
+        (YValue & flags) ? (short int)y : 0,
+        (WidthValue & flags) ? (unsigned short int)w : 0,
+        (HeightValue & flags) ? (unsigned short int)h : 0
+    };
 }
 
 const char* strlasttoken(const char* str, const char* delim) {
