@@ -8,12 +8,15 @@ namespace herbstluft {
 
 template<typename T>
 class Attribute_ : public Attribute {
+public:
     // default constructor
     Attribute_() {}
-    // constructor used by Object::init
-    Attribute_(const std::string &name, std::weak_ptr<Object> owner,
-               bool readable, bool writeable)
-        : Attribute(name, owner, readable, writeable) {}
+    Attribute_(const std::string &name,
+               bool readable = true, bool writeable = true)
+        : Attribute(name, readable, writeable) {}
+    Attribute_(const std::string &name,
+               bool readable, bool writeable, const T &payload)
+        : Attribute_(name, readable, writeable) { payload_ = payload; }
 
     inline Type type();
 

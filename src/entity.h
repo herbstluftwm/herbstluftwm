@@ -26,7 +26,7 @@ class Entity {
 public:
     Entity() {}
     Entity(const std::string &name) : name_(name) {}
-    virtual ~Entity() = 0;
+    virtual ~Entity() {};
 
     std::string name() { return name_; }
     virtual Type type() = 0;

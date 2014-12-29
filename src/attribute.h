@@ -16,11 +16,10 @@ public:
           readable_(readable), writeable_(writeable) {}
     // set the owner after object creation (when pointer is available)
     void setOwner(std::weak_ptr<Object> owner) { owner_ = owner; }
-    virtual ~Attribute();
+    virtual ~Attribute() {};
 
     virtual Type type() { return Type::ATTRIBUTE; }
 
-    std::string name();
     std::shared_ptr<Object> owner();
 
     // all access to the payload is delegated to owner!
@@ -42,10 +41,11 @@ protected:
 /* attributes that don't hold reference a data field (no templating), but are
  * rather a shallow interface to the owner's getter and setter doing magic. */
 class DynamicAttribute : public Attribute {
+public:
     DynamicAttribute() {}
-    DynamicAttribute(const std::string &name, std::weak_ptr<Object> owner,
-                     bool readable, bool writeable, Type type)
-        : Attribute(name, owner, readable, writeable), type_(type) {}
+    DynamicAttribute(const std::string &name, Type type,
+                     bool readable = true, bool writeable = false)
+        : Attribute(name, readable, writeable), type_(type) {}
 
     Type type() { return type_; }
 
@@ -56,8 +56,11 @@ protected:
 class Action : public Entity {
 public:
     Action() {}
-    Action(const std::string &name, std::weak_ptr<Object> owner)
-        : Entity(name), owner_(owner) {}
+    Action(const std::string &name)
+        : Entity(name) {}
+    void setOwner(std::weak_ptr<Object> owner) { owner_ = owner; }
+
+    Type type() { return Type::ACTION; }
 
     void trigger(const std::string &args);
 private:

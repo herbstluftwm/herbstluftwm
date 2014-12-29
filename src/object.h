@@ -17,9 +17,10 @@ class Object : public Entity {
 
 public:
     Object(const std::string &name) : Entity(name) {}
+    virtual ~Object() {}
 
     // initialize all attributes, actions, use self pointer for them
-    virtual void init(std::weak_ptr<Object> self);
+    virtual void init(std::weak_ptr<Object> self)=0;
 
     virtual Type type() { return Type::OBJECT; }
 
