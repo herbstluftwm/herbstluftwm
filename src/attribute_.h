@@ -8,20 +8,23 @@ namespace herbstluft {
 
 template<typename T>
 class Attribute_ : public Attribute {
+    // default constructor
+    Attribute_() {}
+    // constructor used by Object::init
     Attribute_(const std::string &name, std::weak_ptr<Object> owner,
-               bool readable, bool writeable, T &payload)
-        : Attribute(name, owner, readable, writeable), payload_(payload) {}
+               bool readable, bool writeable)
+        : Attribute(name, owner, readable, writeable) {}
 
     inline Type type();
 
     // accessors only to be used by owner!
-    T get() { return payload_; }
+    operator T() { return payload_; }
     std::string str() { return std::to_string(payload_); }
-    void set(const T &payload) { payload_ = payload; }
+    void operator=(const T &payload) { payload_ = payload; }
     void change(const std::string &payload);
 
 private:
-    T &payload_;
+    T payload_;
 };
 
 /** Integer **/
@@ -65,7 +68,7 @@ inline std::string Attribute_<std::string>::str() { return payload_; }
 
 template<>
 inline void Attribute_<std::string>::change(const std::string &payload) {
-    set(payload);
+    payload_ = payload;
 }
 
 /** COLOR **/
