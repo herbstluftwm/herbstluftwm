@@ -24,6 +24,7 @@ enum class Type {
 
 class Entity {
 public:
+    Entity() {}
     Entity(const std::string &name) : name_(name) {}
     virtual ~Entity() = 0;
 

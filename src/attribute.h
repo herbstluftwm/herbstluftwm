@@ -9,10 +9,13 @@ class Object;
 
 class Attribute : public Entity {
 public:
-    Attribute(const std::string &name, std::weak_ptr<Object> owner,
-              bool readable, bool writeable)
-        : Entity(name), owner_(owner),
+    Attribute() {}
+    Attribute(const std::string &name,
+              bool readable = true, bool writeable = true)
+        : Entity(name),
           readable_(readable), writeable_(writeable) {}
+    // set the owner after object creation (when pointer is available)
+    void setOwner(std::weak_ptr<Object> owner) { owner_ = owner; }
     virtual ~Attribute();
 
     virtual Type type() { return Type::ATTRIBUTE; }
@@ -39,6 +42,7 @@ protected:
 /* attributes that don't hold reference a data field (no templating), but are
  * rather a shallow interface to the owner's getter and setter doing magic. */
 class DynamicAttribute : public Attribute {
+    DynamicAttribute() {}
     DynamicAttribute(const std::string &name, std::weak_ptr<Object> owner,
                      bool readable, bool writeable, Type type)
         : Attribute(name, owner, readable, writeable), type_(type) {}
@@ -51,7 +55,8 @@ protected:
 
 class Action : public Entity {
 public:
-    Action(std::weak_ptr<Object> owner, const std::string &name)
+    Action() {}
+    Action(const std::string &name, std::weak_ptr<Object> owner)
         : Entity(name), owner_(owner) {}
 
     void trigger(const std::string &args);
