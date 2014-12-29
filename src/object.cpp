@@ -14,6 +14,39 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+namespace herbstluft {
+
+bool Object::readable(const std::string &attr) {
+    return true; // reasonable default
+}
+
+std::string Object::read(const std::string &attr) {
+    auto it = attribs_.find(attr);
+    if (it != attribs_.end())
+        return it->second->str();
+    return {}; // TODO: throw
+}
+
+bool Object::writeable(const std::string &attr) {
+    return true; // reasonable default
+}
+
+void Object::write(const std::string &attr, const std::string &value) {
+    auto it = attribs_.find(attr);
+    if (it != attribs_.end()) {
+        it->second->change(value);
+    } else {
+        // TODO: throw
+    }
+}
+
+void Object::trigger(const std::string &action, const std::string &args) {
+    // do nothing, there is no default behavior for actions.
+    // TODO: throw; if we got here, there was an error, e.g. typo on user's side
+}
+
+}
+
 using namespace herbstluft;
 
 typedef struct {

@@ -159,7 +159,7 @@ void reset_helper(void* data, GString* output) {
                     "Writing this resets all attributes to a default value\n");
 }
 
-static GString* trigger_attribute_reset(class HSAttribute* attr, const char* new_value) {
+static GString* trigger_attribute_reset(struct HSAttribute* attr, const char* new_value) {
     (void) attr;
     (void) new_value;
     HSObject* obj = attr->object;

@@ -6,6 +6,37 @@
 #ifndef __HS_OBJECT_H_
 #define __HS_OBJECT_H_
 
+#include "entity.h"
+#include "attribute.h"
+
+#include <unordered_map>
+
+namespace herbstluft {
+
+class Object : public Entity {
+
+public:
+    Object(const std::string &name) : Entity(name) {}
+
+    // initialize all attributes, actions, use self pointer for them
+    virtual void init(std::weak_ptr<Object> self);
+
+    virtual Type type() { return Type::OBJECT; }
+
+    virtual bool readable(const std::string &attr);
+    virtual std::string read(const std::string &attr);
+    virtual bool writeable(const std::string &attr);
+    virtual void write(const std::string &attr, const std::string &value);
+    virtual void trigger(const std::string &action, const std::string &args);
+
+protected:
+    std::unordered_map<std::string, std::shared_ptr<Object>> children_;
+    std::unordered_map<std::string, std::shared_ptr<Attribute>> attribs_;
+    std::unordered_map<std::string, std::shared_ptr<Action>> actions_;
+};
+
+}
+
 #include <stdbool.h>
 #include "glib-backports.h"
 #include "x11-types.h"
