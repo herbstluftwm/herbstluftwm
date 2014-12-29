@@ -45,6 +45,24 @@ void Object::trigger(const std::string &action, const std::string &args) {
     // TODO: throw; if we got here, there was an error, e.g. typo on user's side
 }
 
+void Object::wireAttributes(std::weak_ptr<Object> self,
+                            std::vector<Attribute*> attrs)
+{
+    for (auto attr : attrs) {
+        attr->setOwner(self);
+        attribs_[attr->name()] = attr;
+    }
+}
+
+void Object::wireActions(std::weak_ptr<Object> self,
+                         std::vector<Action*> actions)
+{
+    for (auto action : actions) {
+        action->setOwner(self);
+        actions_[action->name()] = action;
+    }
+}
+
 }
 
 using namespace herbstluft;

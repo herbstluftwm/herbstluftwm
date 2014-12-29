@@ -31,9 +31,15 @@ public:
     virtual void trigger(const std::string &action, const std::string &args);
 
 protected:
+    // initialize an attribute (typically used by init())
+    virtual void wireAttributes(std::weak_ptr<Object> self,
+                                std::vector<Attribute*> attrs);
+    virtual void wireActions(std::weak_ptr<Object> self,
+                             std::vector<Action*> actions);
+
     std::unordered_map<std::string, std::shared_ptr<Object>> children_;
-    std::unordered_map<std::string, std::shared_ptr<Attribute>> attribs_;
-    std::unordered_map<std::string, std::shared_ptr<Action>> actions_;
+    std::unordered_map<std::string, Attribute*> attribs_;
+    std::unordered_map<std::string, Action*> actions_;
 };
 
 }
