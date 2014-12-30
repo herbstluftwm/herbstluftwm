@@ -7,6 +7,7 @@
 #include "globals.h"
 #include "utils.h"
 #include "ipc-protocol.h"
+#include "layout.h"
 // std
 #include <assert.h>
 #include <stdio.h>

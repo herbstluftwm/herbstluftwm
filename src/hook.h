@@ -6,7 +6,7 @@
 #ifndef __HERBSTLUFT_HOOK_H_
 #define __HERBSTLUFT_HOOK_H_
 
-#include "layout.h"
+struct HSTag;
 
 void hook_init();
 void hook_destroy();
