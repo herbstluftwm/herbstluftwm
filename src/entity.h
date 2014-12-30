@@ -48,6 +48,7 @@ protected:
     std::string name_;
 };
 
+/* // not yet supported
 class Symlink : public Entity {
 public:
     Symlink(const std::string name, std::shared_ptr<Entity> target)
@@ -59,6 +60,7 @@ public:
 private:
     std::shared_ptr<Entity> target_;
 };
+*/
 
 }
 
