@@ -12,6 +12,7 @@
 struct HSFrame;
 struct HSClient;
 struct HSStack;
+struct HSObject;
 
 typedef struct HSTag {
     GString*        name;   // name of this tag
