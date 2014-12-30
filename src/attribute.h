@@ -11,7 +11,7 @@ class Attribute : public Entity {
 public:
     Attribute() {}
     Attribute(const std::string &name,
-              bool readable = true, bool writeable = true)
+              bool readable, bool writeable)
         : Entity(name),
           readable_(readable), writeable_(writeable) {}
     // set the owner after object creation (when pointer is available)
@@ -44,7 +44,7 @@ class DynamicAttribute : public Attribute {
 public:
     DynamicAttribute() {}
     DynamicAttribute(const std::string &name, Type type,
-                     bool readable = true, bool writeable = false)
+                     bool readable, bool writeable)
         : Attribute(name, readable, writeable), type_(type) {}
 
     Type type() { return type_; }

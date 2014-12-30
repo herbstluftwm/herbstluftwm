@@ -12,7 +12,7 @@ public:
     // default constructor
     Attribute_() {}
     Attribute_(const std::string &name,
-               bool readable = true, bool writeable = true)
+               bool readable, bool writeable)
         : Attribute(name, readable, writeable) {}
     Attribute_(const std::string &name,
                bool readable, bool writeable, const T &payload)
