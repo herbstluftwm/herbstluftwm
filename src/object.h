@@ -30,6 +30,13 @@ public:
     virtual void write(const std::string &attr, const std::string &value);
     virtual void trigger(const std::string &action, const std::string &args);
 
+    const std::unordered_map<std::string, std::shared_ptr<Object>>&
+    children() { return children_; }
+    const std::unordered_map<std::string, Attribute*>&
+    attribs() { return attribs_; }
+    const std::unordered_map<std::string, Action*>&
+    actions() { return actions_; }
+
 protected:
     // initialize an attribute (typically used by init())
     virtual void wireAttributes(std::vector<Attribute*> attrs);
