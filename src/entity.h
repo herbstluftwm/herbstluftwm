@@ -15,6 +15,7 @@ enum class Type {
     ATTRIBUTE_BOOL,
     ATTRIBUTE_COLOR,
     ATTRIBUTE_STRING,
+    HOOK,
     OBJECT,
     MONITOR,
     TAG,
@@ -30,7 +31,17 @@ public:
 
     std::string name() { return name_; }
     virtual Type type() = 0;
-    static std::string typestr(Type type);
+    static std::string typestr(Type type) {
+        const char * const str[] = {
+            "Virtual Node", "Symbolic Link", "Action",
+            "Attribute", "Attribute(int)", "Attribute(bool)",
+            "Attribute(color)", "Attribute(string)",
+            "Hook", "Object",
+            "Monitor", "Tag", "Frame", "Client"
+        };
+        return str[(int)type];
+    }
+
     std::string typestr() { return typestr(type()); }
 
 protected:
