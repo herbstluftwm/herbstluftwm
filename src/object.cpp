@@ -10,6 +10,8 @@
 #include "globals.h"
 #include "ipc-protocol.h"
 
+#include <iostream>
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -79,6 +81,44 @@ void Object::wireActions(std::vector<Action*> actions)
     for (auto action : actions) {
         action->setOwner(self_);
         actions_[action->name()] = action;
+    }
+}
+
+void Object::print(const std::string &prefix)
+{
+    std::cout << prefix << "==== " << typestr() << " " << name_ << ":" << std::endl;
+    if (!children_.empty()) {
+        std::cout << prefix << "Children:" << std::endl;
+        for (auto it : children_) {
+            it.second->print(prefix + "\t| ");
+        }
+        std::cout << prefix << std::endl;
+    }
+    if (!attribs_.empty()) {
+        std::cout << prefix << "Attributes:" << std::endl;
+        for (auto it : attribs_) {
+            std::cout << prefix << "\t" << it.first
+                      << " (" << it.second->typestr() << ")";
+            if (it.second->readable())
+                std::cout << "\tr(" << it.second->read() << ")";
+            if (it.second->writeable())
+                std::cout << "\tw";
+            std::cout << std::endl;
+        }
+    }
+    if (!actions_.empty()) {
+        std::cout << prefix << "Actions:" << std::endl;
+        std::cout << prefix;
+        for (auto it : actions_) {
+            std::cout << "\t" << it.first;
+        }
+        std::cout << std::endl;
+    }
+    if (!hooks_.empty()) {
+        std::cout << prefix << "Current hooks:" << std::endl;
+        for (auto it : hooks_) {
+            std::cout << prefix << "\t" << it.first << std::endl;
+        }
     }
 }
 

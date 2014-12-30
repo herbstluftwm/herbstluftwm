@@ -26,6 +26,8 @@ public:
 
     virtual Type type() { return Type::OBJECT; }
 
+    virtual void print(const std::string &prefix = "\t| "); // a debug method
+
     virtual bool readable(const std::string &attr) const;
     virtual std::string read(const std::string &attr) const;
     virtual bool writeable(const std::string &attr) const;
