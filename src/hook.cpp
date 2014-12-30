@@ -46,6 +46,10 @@ void Hook::operator()(std::shared_ptr<Object> sender, const std::string &attr) {
             return;
     }
 
+    if (chain_.size() != path_.size() - 1) {
+        return; // TODO: maybe throw
+    }
+
     auto o = chain_.back().lock();
     if (!o)
         return; // TODO: throw
@@ -80,7 +84,7 @@ void Hook::complete_chain() {
             chain_.emplace_back(next->second);
             current = next->second;
         } else {
-            return; // TODO: throw
+            return; // TODO: throw, or emit hook that element got removed
         }
     }
     auto o = chain_.back().lock(); // always works as we just added it
