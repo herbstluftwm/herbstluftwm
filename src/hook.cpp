@@ -14,7 +14,7 @@ namespace herbstluft {
 void Hook::init(std::weak_ptr<Hook> self, std::shared_ptr<Directory> root) {
     self_ = self;
     chain_ = { root };
-    /* we do not register with root; zero-level objects should never change */
+    /* we don't register with root; root directory shall never change */
     complete_chain();
 }
 
@@ -47,7 +47,8 @@ void Hook::operator()(std::shared_ptr<Directory> sender,
             return;
     }
 
-    if (chain_.size() != path_.size() - 1) {
+    // note: path has all nodes minus root; chain has all nodes minus leaf
+    if (chain_.size() != path_.size()) {
         return; // TODO: maybe throw
     }
 
@@ -78,7 +79,8 @@ void Hook::complete_chain() {
     auto current = chain_[chain_.size()-1].lock();
     // current should always be o.k., in the worst case it is the root
 
-    for (size_t i = chain_.size(); i < path_.size() - 1; ++i) {
+    // note: path has all nodes minus root; chain has all nodes minus leaf
+    for (size_t i = chain_.size() - 1; i < path_.size() - 1; ++i) {
         auto next = current->children().find(path_[i]);
         if (next != current->children().end()) {
             next->second->addHook(self_.lock());
