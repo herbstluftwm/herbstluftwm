@@ -3,24 +3,11 @@
 
 namespace herbstluft {
 
-bool Attribute::readable() {
-    if (auto o = owner_.lock())
-        return o->readable(name_);
-    return false;
-}
-
-std::string Attribute::read()
+std::string Attribute::read() const
 {
     if (auto o = owner_.lock())
         return o->read(name_);
     return {};
-}
-
-bool Attribute::writeable()
-{
-    if (auto o = owner_.lock())
-        return o->writeable(name_);
-    return false;
 }
 
 void Attribute::write(const std::string &value)

@@ -22,10 +22,11 @@ public:
 
     std::shared_ptr<Object> owner();
 
+    bool readable() const { return readable_; }
+    bool writeable() const { return writeable_; }
+
     // all access to the payload is delegated to owner!
-    bool readable();
-    std::string read();
-    bool writeable();
+    std::string read() const;
     void write(const std::string &value);
 
     // accessors only to be used by owner!

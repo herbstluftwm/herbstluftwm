@@ -19,7 +19,11 @@
 namespace herbstluft {
 
 bool Object::readable(const std::string &attr) const {
-    return true; // reasonable default
+    auto it = attribs_.find(attr);
+    if (it != attribs_.end()) {
+        return it->second->readable();
+    }
+    return false; // TODO: else throw
 }
 
 std::string Object::read(const std::string &attr) const {
@@ -30,7 +34,11 @@ std::string Object::read(const std::string &attr) const {
 }
 
 bool Object::writeable(const std::string &attr) const {
-    return true; // reasonable default
+    auto it = attribs_.find(attr);
+    if (it != attribs_.end()) {
+        return it->second->readable();
+    }
+    return false; // TODO: throw
 }
 
 void Object::write(const std::string &attr, const std::string &value) {
