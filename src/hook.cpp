@@ -4,6 +4,95 @@
  * See LICENSE for details */
 
 #include "hook.h"
+#include "object.h"
+
+#include <algorithm>
+#include <iostream>
+
+namespace herbstluft {
+
+void Hook::init(std::weak_ptr<Hook> self, std::shared_ptr<Object> root) {
+    self_ = self;
+    chain_ = { root };
+    /* we do not register with root; zero-level objects should never change */
+    complete_chain();
+}
+
+void Hook::operator()(std::shared_ptr<Object> sender, const std::string &attr) {
+    if (attr.empty()) {
+        // a child of the sender got removed. check if it affects us
+        auto elem = chain_.begin();
+        for (; elem != chain_.end(); ++elem) {
+            auto e = elem->lock();
+            if (!e)
+                return; // TODO: throw
+            if (e == sender)
+                break;
+        }
+        if (elem == chain_.end())
+            return; // TODO: throw
+        if (elem == chain_.end() - 1)
+            return; // we are not affected
+
+        auto e = (elem+1)->lock();
+        if (e && e == sender->children().at(e->name()))
+            return; // everything is fine, we are not affected
+
+        // next element in our chain was removed. we need to reconstruct
+        cutoff_chain(elem);
+        complete_chain();
+    } else {
+        if (attr != path_.back())
+            return;
+    }
+
+    auto o = chain_.back().lock();
+    if (!o)
+        return; // TODO: throw
+    if (!o->readable(path_.back()))
+        return; // TODO: throw
+    auto newvalue = o->read(path_.back());
+    // TODO: properly emit
+    std::cout << "Hook " << name_ << " emitting:\t";
+    std::cout << "changed from " << value_ << " to " << newvalue
+              << std::endl;
+    value_ = newvalue;
+}
+
+void Hook::cutoff_chain(std::vector<std::weak_ptr<Object>>::iterator last) {
+    for (auto elem = last+1; elem != chain_.end(); ++elem) {
+        auto o = elem->lock();
+        if (o)
+            o->removeHook(name_);
+    }
+    chain_.erase(last+1, chain_.end());
+}
+
+
+void Hook::complete_chain() {
+    auto current = chain_[chain_.size()-1].lock();
+    // current should always be o.k., in the worst case it is the root
+
+    for (size_t i = chain_.size(); i < path_.size() - 1; ++i) {
+        auto next = current->children().find(path_[i]);
+        if (next != current->children().end()) {
+            next->second->addHook(self_.lock());
+            chain_.emplace_back(next->second);
+            current = next->second;
+        } else {
+            return; // TODO: throw
+        }
+    }
+    auto o = chain_.back().lock(); // always works as we just added it
+    if (!o->readable(path_.back()))
+        return; // TODO: throw
+    value_ = o->read(path_.back());
+}
+
+
+
+}
+
 #include "globals.h"
 #include "utils.h"
 #include "ipc-protocol.h"

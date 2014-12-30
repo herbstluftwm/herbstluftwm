@@ -45,6 +45,27 @@ void Object::trigger(const std::string &action, const std::string &args) {
     // TODO: throw; if we got here, there was an error, e.g. typo on user's side
 }
 
+void Object::notifyHooks(const std::string &attr)
+{
+    std::shared_ptr<Object> self = self_.lock(); // always works
+    for (auto hook : hooks_) {
+        auto h = hook.second.lock();
+        if (h) {
+            (*h)(self, attr);
+        } // TODO: else throw
+    }
+}
+
+void Object::addHook(std::shared_ptr<Hook> hook)
+{
+    hooks_[hook->name()] = hook;
+}
+
+void Object::removeHook(const std::string &hook)
+{
+    hooks_.erase(hook);
+}
+
 void Object::wireAttributes(std::vector<Attribute*> attrs)
 {
     for (auto attr : attrs) {

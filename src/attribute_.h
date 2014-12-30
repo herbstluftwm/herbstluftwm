@@ -24,7 +24,12 @@ public:
     // accessors only to be used by owner!
     operator T() { return payload_; }
     std::string str() { return std::to_string(payload_); }
-    void operator=(const T &payload) { payload_ = payload; }
+    void operator=(const T &payload) {
+        payload_ = payload;
+        if (auto o = owner_.lock()) {
+            o->notifyHooks(name_);
+        }
+    }
     void change(const std::string &payload);
 
 private:
