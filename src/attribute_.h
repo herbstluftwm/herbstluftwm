@@ -1,7 +1,8 @@
 #ifndef ATTRIBUTE__H
 #define ATTRIBUTE__H
 
-#include "attribute.h" // just for the editor
+#include "attribute.h"
+#include "object.h"
 #include "x11-types.h" // for hl::Color
 
 namespace herbstluft {

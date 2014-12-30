@@ -69,6 +69,4 @@ private:
 
 } // close namespace before further includes!
 
-#include "attribute_.h" // template and specializations
-
 #endif // ATTRIBUTE_H
