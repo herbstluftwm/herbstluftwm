@@ -13,6 +13,20 @@
 #include <X11/Xatom.h>
 #include "x11-types.h"
 #include <array>
+#include <string>
+#include <sstream>
+
+namespace herbstluft {
+
+    inline std::vector<std::string> split_path(const std::string &path) {
+        std::stringstream tmp(path);
+        std::vector<std::string> ret;
+        std::string item;
+        while (std::getline(tmp, item, '.'))
+            ret.push_back(item);
+        return ret;
+    }
+}
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
