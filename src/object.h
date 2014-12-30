@@ -19,8 +19,8 @@ public:
     Object(const std::string &name) : Entity(name) {}
     virtual ~Object() {}
 
-    // initialize all attributes, actions, use self pointer for them
-    virtual void init(std::weak_ptr<Object> self)=0;
+    // store pointer to ourselves, initialize all attributes, actions
+    virtual void init(std::weak_ptr<Object> self) { self_ = self; };
 
     virtual Type type() { return Type::OBJECT; }
 
@@ -32,14 +32,14 @@ public:
 
 protected:
     // initialize an attribute (typically used by init())
-    virtual void wireAttributes(std::weak_ptr<Object> self,
-                                std::vector<Attribute*> attrs);
-    virtual void wireActions(std::weak_ptr<Object> self,
-                             std::vector<Action*> actions);
+    virtual void wireAttributes(std::vector<Attribute*> attrs);
+    virtual void wireActions(std::vector<Action*> actions);
 
     std::unordered_map<std::string, std::shared_ptr<Object>> children_;
     std::unordered_map<std::string, Attribute*> attribs_;
     std::unordered_map<std::string, Action*> actions_;
+
+    std::weak_ptr<Object> self_;
 };
 
 }
