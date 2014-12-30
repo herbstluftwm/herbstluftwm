@@ -18,6 +18,16 @@
 
 namespace herbstluft {
 
+Object::Object(const std::string &name)
+    : Entity(name),
+      nameAttribute_("name", Type::ATTRIBUTE_STRING, true, false)
+{}
+
+void Object::init(std::weak_ptr<Object> self) {
+    self_ = self;
+    wireAttributes({ &nameAttribute_ });
+}
+
 bool Object::readable(const std::string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end()) {
@@ -27,6 +37,9 @@ bool Object::readable(const std::string &attr) const {
 }
 
 std::string Object::read(const std::string &attr) const {
+    if (attr == "name")
+        return name_;
+
     auto it = attribs_.find(attr);
     if (it != attribs_.end())
         return it->second->str();

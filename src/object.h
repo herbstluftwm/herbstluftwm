@@ -18,11 +18,12 @@ namespace herbstluft {
 class Object : public Entity {
 
 public:
-    Object(const std::string &name) : Entity(name) {}
+    Object(const std::string &name);
     virtual ~Object() {}
 
     // store pointer to ourselves, initialize all attributes, actions
-    virtual void init(std::weak_ptr<Object> self) { self_ = self; };
+    // when overwriting, always call the base function first as well
+    virtual void init(std::weak_ptr<Object> self);
 
     virtual Type type() { return Type::OBJECT; }
 
@@ -62,6 +63,7 @@ protected:
     std::unordered_map<std::string, std::weak_ptr<Hook>> hooks_;
 
     std::weak_ptr<Object> self_;
+    DynamicAttribute nameAttribute_;
 };
 
 }
