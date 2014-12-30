@@ -1,21 +1,32 @@
 #include "testobject.h"
+#include "hook.h"
 
 namespace herbstluft {
 
 void test_object_system()
 {
-    auto hook = std::make_shared<herbstluft::Hook>("tester.precious.name");
-    auto hookII = std::make_shared<herbstluft::Hook>("tester.precious.bar");
-    auto hookIII = std::make_shared<herbstluft::Hook>("tester.precious.sweets.name");
-    auto tester = herbstluft::TestObject::tester();
-    hook->init(hook, tester);
-    hookII->init(hookII, tester);
-    hookIII->init(hookIII, tester);
-    tester->print("| ");
+    auto root = std::make_shared<Directory>("root");
+    root->init(root);
+
+    auto tester = std::make_shared<TestObject>();
+    tester->init(tester);
+    root->addChild(tester);
+
+    auto hooks = {
+        std::make_shared<herbstluft::Hook>("tester.precious.name"),
+        std::make_shared<herbstluft::Hook>("tester.precious.bar"),
+        std::make_shared<herbstluft::Hook>("tester.precious.sweets.name"),
+        std::make_shared<herbstluft::Hook>("tester.precious.sweets.foo")
+    };
+    for (auto h : hooks) {
+        h->init(h, root);
+    }
+    root->print("");
     auto wat = std::dynamic_pointer_cast<herbstluft::TestObjectII>(
                    tester->children().begin()->second);
     wat->do_stuff();
     tester->do_stuff();
+    root->print("");
 }
 
 TestObject::TestObject()
@@ -67,18 +78,21 @@ void TestObjectII::init(std::weak_ptr<Object> self)
 
     auto foo = std::make_shared<Object>("sweets");
     foo->init(foo);
-    children_.insert(std::make_pair(foo->name(), foo));
+    addChild(foo);
     auto fooII = std::make_shared<Object>("cake");
     fooII->init(fooII);
-    children_.insert(std::make_pair(fooII->name(), fooII));
+    addChild(fooII);
 }
 
 void TestObjectII::do_stuff()
 {
     bar_ = false;
 
-    children_.erase("sweets");
-    notifyHooks();
+    removeChild("sweets");
+    auto foo = std::make_shared<TestObjectII>("sweets");
+    foo->init(foo);
+    addChild(foo);
+    foo->write("foo", "23");
 }
 
 }

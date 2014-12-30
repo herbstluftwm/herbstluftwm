@@ -12,12 +12,6 @@ public:
     TestObject();
     void init(std::weak_ptr<Object> self);
 
-    static std::shared_ptr<TestObject> tester() {
-        auto object = std::make_shared<TestObject>();
-        object->init(object);
-        return object;
-    }
-
     std::string read(const std::string &attr) const;
 
     void do_stuff();
