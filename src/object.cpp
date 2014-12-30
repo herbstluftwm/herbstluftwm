@@ -19,12 +19,12 @@
 namespace herbstluft {
 
 Object::Object(const std::string &name)
-    : Entity(name),
+    : Directory(name),
       nameAttribute_("name", Type::ATTRIBUTE_STRING, true, false)
 {}
 
 void Object::init(std::weak_ptr<Object> self) {
-    self_ = self;
+    Directory::init(self);
     wireAttributes({ &nameAttribute_ });
 }
 
@@ -68,39 +68,20 @@ void Object::trigger(const std::string &action, const std::string &args) {
     // TODO: throw; if we got here, there was an error, e.g. typo on user's side
 }
 
-void Object::notifyHooks(const std::string &attr)
-{
-    std::shared_ptr<Object> self = self_.lock(); // always works
-    for (auto hook : hooks_) {
-        auto h = hook.second.lock();
-        if (h) {
-            (*h)(self, attr);
-        } // TODO: else throw
-    }
-}
-
-void Object::addHook(std::shared_ptr<Hook> hook)
-{
-    hooks_[hook->name()] = hook;
-}
-
-void Object::removeHook(const std::string &hook)
-{
-    hooks_.erase(hook);
-}
-
 void Object::wireAttributes(std::vector<Attribute*> attrs)
 {
+    std::weak_ptr<Object> self(std::dynamic_pointer_cast<Object>(self_.lock()));
     for (auto attr : attrs) {
-        attr->setOwner(self_);
+        attr->setOwner(self);
         attribs_[attr->name()] = attr;
     }
 }
 
 void Object::wireActions(std::vector<Action*> actions)
 {
+    std::weak_ptr<Object> self(std::dynamic_pointer_cast<Object>(self_.lock()));
     for (auto action : actions) {
-        action->setOwner(self_);
+        action->setOwner(self);
         actions_[action->name()] = action;
     }
 }

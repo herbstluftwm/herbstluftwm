@@ -6,16 +6,15 @@
 #ifndef __HS_OBJECT_H_
 #define __HS_OBJECT_H_
 
-#include "entity.h"
+#include "directory.h"
 #include "attribute.h"
-#include "hook.h"
 
 #include <unordered_map>
 #include <vector>
 
 namespace herbstluft {
 
-class Object : public Entity {
+class Object : public Directory {
 
 public:
     Object(const std::string &name);
@@ -32,37 +31,24 @@ public:
     virtual bool readable(const std::string &attr) const;
     virtual std::string read(const std::string &attr) const;
     virtual bool writeable(const std::string &attr) const;
+    /* Note: when overwriting this method, you might need calls to
+     * Directory::notifyHooks() */
     virtual void write(const std::string &attr, const std::string &value);
     virtual void trigger(const std::string &action, const std::string &args);
 
-    const std::unordered_map<std::string, std::shared_ptr<Object>>&
-    children() { return children_; }
     const std::unordered_map<std::string, Attribute*>&
     attribs() { return attribs_; }
     const std::unordered_map<std::string, Action*>&
     actions() { return actions_; }
-
-    /* to be called either by static attributes, or by the object in the case
-       of a dynamic attribute (e.g. a counter).
-       The object also needs to call this function whenever children are
-       added or removed, in this case without an attribute name.
-    */
-    void notifyHooks(const std::string &attr = {});
-
-    void addHook(std::shared_ptr<Hook> hook);
-    void removeHook(const std::string &hook);
 
 protected:
     // initialize an attribute (typically used by init())
     virtual void wireAttributes(std::vector<Attribute*> attrs);
     virtual void wireActions(std::vector<Action*> actions);
 
-    std::unordered_map<std::string, std::shared_ptr<Object>> children_;
     std::unordered_map<std::string, Attribute*> attribs_;
     std::unordered_map<std::string, Action*> actions_;
-    std::unordered_map<std::string, std::weak_ptr<Hook>> hooks_;
 
-    std::weak_ptr<Object> self_;
     DynamicAttribute nameAttribute_;
 };
 

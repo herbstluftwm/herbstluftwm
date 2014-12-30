@@ -16,6 +16,7 @@ enum class Type {
     ATTRIBUTE_COLOR,
     ATTRIBUTE_STRING,
     HOOK,
+    DIRECTORY,
     OBJECT,
     MONITOR,
     TAG,
@@ -36,7 +37,7 @@ public:
             "Virtual Node", "Symbolic Link", "Action",
             "Attribute", "Attribute(int)", "Attribute(bool)",
             "Attribute(color)", "Attribute(string)",
-            "Hook", "Object",
+            "Hook", "Directory", "Object",
             "Monitor", "Tag", "Frame", "Client"
         };
         return str[(int)type];

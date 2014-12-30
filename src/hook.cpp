@@ -11,14 +11,15 @@
 
 namespace herbstluft {
 
-void Hook::init(std::weak_ptr<Hook> self, std::shared_ptr<Object> root) {
+void Hook::init(std::weak_ptr<Hook> self, std::shared_ptr<Directory> root) {
     self_ = self;
     chain_ = { root };
     /* we do not register with root; zero-level objects should never change */
     complete_chain();
 }
 
-void Hook::operator()(std::shared_ptr<Object> sender, const std::string &attr) {
+void Hook::operator()(std::shared_ptr<Directory> sender,
+                      const std::string &attr) {
     if (attr.empty()) {
         // a child of the sender got removed. check if it affects us
         auto elem = chain_.begin();
@@ -50,7 +51,7 @@ void Hook::operator()(std::shared_ptr<Object> sender, const std::string &attr) {
         return; // TODO: maybe throw
     }
 
-    auto o = chain_.back().lock();
+    auto o = std::dynamic_pointer_cast<Object>(chain_.back().lock());
     if (!o)
         return; // TODO: throw
     if (!o->readable(path_.back()))
@@ -63,7 +64,7 @@ void Hook::operator()(std::shared_ptr<Object> sender, const std::string &attr) {
     value_ = newvalue;
 }
 
-void Hook::cutoff_chain(std::vector<std::weak_ptr<Object>>::iterator last) {
+void Hook::cutoff_chain(std::vector<std::weak_ptr<Directory>>::iterator last) {
     for (auto elem = last+1; elem != chain_.end(); ++elem) {
         auto o = elem->lock();
         if (o)
@@ -87,7 +88,9 @@ void Hook::complete_chain() {
             return; // TODO: throw, or emit hook that element got removed
         }
     }
-    auto o = chain_.back().lock(); // always works as we just added it
+
+    // always works as we just added it
+    auto o = std::dynamic_pointer_cast<Object>(chain_.back().lock());
     if (!o->readable(path_.back()))
         return; // TODO: throw
     value_ = o->read(path_.back());

@@ -13,26 +13,26 @@
 
 namespace herbstluft {
 
-class Object;
+class Directory;
 
 class Hook : public Entity {
 public:
     Hook(const std::string &path) : Entity(path), path_(split_path(path)) {}
-    void init(std::weak_ptr<Hook> self, std::shared_ptr<Object> root);
+    void init(std::weak_ptr<Hook> self, std::shared_ptr<Directory> root);
 
     Type type() { return Type::HOOK; }
 
     // emit hook, used by path elements
-    void operator()(std::shared_ptr<Object> sender, const std::string &attr);
+    void operator()(std::shared_ptr<Directory> sender, const std::string &attr);
 
 private:
     // remove tail from chain
-    void cutoff_chain(std::vector<std::weak_ptr<Object>>::iterator last);
+    void cutoff_chain(std::vector<std::weak_ptr<Directory>>::iterator last);
     // rebuild chain after existing elements
     void complete_chain();
 
-    // chain of objects that report to us
-    std::vector<std::weak_ptr<Object>> chain_;
+    // chain of directories that report to us
+    std::vector<std::weak_ptr<Directory>> chain_;
     // tokenized path (derived from our name)
     std::vector<std::string> path_;
 
