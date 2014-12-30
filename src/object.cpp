@@ -16,18 +16,18 @@
 
 namespace herbstluft {
 
-bool Object::readable(const std::string &attr) {
+bool Object::readable(const std::string &attr) const {
     return true; // reasonable default
 }
 
-std::string Object::read(const std::string &attr) {
+std::string Object::read(const std::string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end())
         return it->second->str();
     return {}; // TODO: throw
 }
 
-bool Object::writeable(const std::string &attr) {
+bool Object::writeable(const std::string &attr) const {
     return true; // reasonable default
 }
 

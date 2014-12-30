@@ -24,9 +24,9 @@ public:
 
     virtual Type type() { return Type::OBJECT; }
 
-    virtual bool readable(const std::string &attr);
-    virtual std::string read(const std::string &attr);
-    virtual bool writeable(const std::string &attr);
+    virtual bool readable(const std::string &attr) const;
+    virtual std::string read(const std::string &attr) const;
+    virtual bool writeable(const std::string &attr) const;
     virtual void write(const std::string &attr, const std::string &value);
     virtual void trigger(const std::string &action, const std::string &args);
 
