@@ -57,7 +57,9 @@ bool Object::writeable(const std::string &attr) const {
 void Object::write(const std::string &attr, const std::string &value) {
     auto it = attribs_.find(attr);
     if (it != attribs_.end()) {
-        it->second->change(value);
+        if (it->second->writeable())
+            it->second->change(value);
+        // TODO: else throw
     } else {
         // TODO: throw
     }
