@@ -32,12 +32,14 @@ void Hook::operator()(std::shared_ptr<Directory> sender,
         }
         if (elem == chain_.end())
             return; // TODO: throw
-        if (elem == chain_.end() - 1)
-            return; // we are not affected
-
-        auto e = (elem+1)->lock();
-        if (e && e == sender->children().at(e->name()))
-            return; // everything is fine, we are not affected
+        if (elem == chain_.end() - 1) {
+            if (chain_.size() == path_.size())
+                return;
+        } else {
+            auto e = (elem+1)->lock();
+            if (e && e == sender->children().at(e->name()))
+                return; // everything is fine, we are not affected
+        }
 
         // next element in our chain was removed. we need to reconstruct
         cutoff_chain(elem);
