@@ -60,6 +60,9 @@ void Hook::operator()(std::shared_ptr<Directory> sender,
     if (!o->readable(path_.back()))
         return; // TODO: throw
     auto newvalue = o->read(path_.back());
+    if (newvalue == value_)
+        return;
+
     // TODO: properly emit
     std::cout << "Hook " << name_ << " emitting:\t";
     std::cout << "changed from " << value_ << " to " << newvalue
