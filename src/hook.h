@@ -31,6 +31,8 @@ private:
     // rebuild chain after existing elements
     void complete_chain();
 
+    void debug_hook(std::shared_ptr<Directory> sender, const std::string &attr);
+
     // chain of directories that report to us
     std::vector<std::weak_ptr<Directory>> chain_;
     // tokenized path (derived from our name)

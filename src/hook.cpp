@@ -103,7 +103,22 @@ void Hook::complete_chain() {
     value_ = o->read(path_.back());
 }
 
-
+void Hook::debug_hook(std::shared_ptr<Directory> sender, const std::string &attr)
+{
+    std::cerr << name_ << " triggered by " << sender->name();
+    if (!attr.empty())
+        std::cerr << " with " << attr;
+    std::cerr << std::endl;
+    std::cerr << "\tChain is: ";
+    for (auto c : chain_) {
+        auto d = c.lock();
+        if (d)
+            std::cerr << d->name() << ".";
+        else
+            std::cerr << "!";
+    }
+    std::cerr << std::endl;
+}
 
 }
 
