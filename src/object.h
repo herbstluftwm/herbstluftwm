@@ -17,7 +17,7 @@ namespace herbstluft {
 class Object : public Directory {
 
 public:
-    Object(const std::string &name);
+    Object(const std::string &name = {});
     virtual ~Object() {}
 
     virtual Type type() { return Type::OBJECT; }
