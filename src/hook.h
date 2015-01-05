@@ -17,21 +17,38 @@ class Directory;
 
 class Hook : public Entity {
 public:
+    enum class Event {
+        CHILD_ADDED,
+        CHILD_REMOVED,
+        ATTRIBUTE_CHANGED
+    };
+
     Hook(const std::string &path) : Entity(path), path_(split_path(path)) {}
     void init(std::weak_ptr<Hook> self, std::shared_ptr<Directory> root);
 
     Type type() { return Type::HOOK; }
 
     // emit hook, used by path elements
-    void operator()(std::shared_ptr<Directory> sender, const std::string &attr);
+    void operator()(std::shared_ptr<Directory> sender, Event event,
+                    const std::string &name);
 
 private:
+    /* are we listening to an object rather an attribute? If so,
+     * our complete chain is 1 element longer than the path (includes root) */
+    bool targetIsObject() { return path_.size() < chain_.size(); }
+
+    // check if chain needs to be altered
+    void check_chain(std::shared_ptr<Directory> sender, Event event,
+                     const std::string &name);
+
     // remove tail from chain
-    void cutoff_chain(std::vector<std::weak_ptr<Directory>>::iterator last);
+    void cutoff_chain(size_t length);
     // rebuild chain after existing elements
     void complete_chain();
 
-    void debug_hook(std::shared_ptr<Directory> sender, const std::string &attr);
+    void debug_hook(std::shared_ptr<Directory> sender = {},
+                    Event event = Event::ATTRIBUTE_CHANGED,
+                    const std::string &name = {});
 
     // chain of directories that report to us
     std::vector<std::weak_ptr<Directory>> chain_;

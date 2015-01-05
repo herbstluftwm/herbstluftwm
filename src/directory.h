@@ -2,6 +2,7 @@
 #define DIRECTORY_H
 
 #include "entity.h"
+#include "hook.h"
 
 #include <unordered_map>
 
@@ -23,7 +24,7 @@ public:
     children() { return children_; }
 
     /* Called by the directory whenever children are added or removed */
-    void notifyHooks(const std::string &arg = {});
+    void notifyHooks(Hook::Event event, const std::string &arg);
 
     void addChild(std::shared_ptr<Directory> child);
     void removeChild(const std::string &child);

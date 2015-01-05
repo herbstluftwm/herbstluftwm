@@ -3,6 +3,7 @@
 
 #include "attribute.h"
 #include "object.h"
+#include "hook.h"
 #include "x11-types.h" // for hl::Color
 
 namespace herbstluft {
@@ -33,7 +34,7 @@ public:
 private:
     void notifyHooks() {
         if (auto o = owner_.lock()) {
-            o->notifyHooks(name_);
+            o->notifyHooks(Hook::Event::ATTRIBUTE_CHANGED, name_);
         }
     }
 

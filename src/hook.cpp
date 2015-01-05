@@ -18,97 +18,121 @@ void Hook::init(std::weak_ptr<Hook> self, std::shared_ptr<Directory> root) {
     complete_chain();
 }
 
-void Hook::operator()(std::shared_ptr<Directory> sender,
-                      const std::string &attr) {
-    if (attr.empty()) {
-        // a child of the sender got removed. check if it affects us
-        auto elem = chain_.begin();
-        for (; elem != chain_.end(); ++elem) {
-            auto e = elem->lock();
-            if (!e)
-                return; // TODO: throw
-            if (e == sender)
-                break;
-        }
-        if (elem == chain_.end())
-            return; // TODO: throw
-        if (elem == chain_.end() - 1) {
-            if (chain_.size() == path_.size())
-                return;
-        } else {
-            auto e = (elem+1)->lock();
-            if (e && e == sender->children().at(e->name()))
-                return; // everything is fine, we are not affected
-        }
+void Hook::operator()(std::shared_ptr<Directory> sender, Event event,
+                      const std::string &name) {
+    //debug_hook(sender, event, name);
 
-        // next element in our chain was removed. we need to reconstruct
-        cutoff_chain(elem);
-        complete_chain();
-    } else {
-        if (attr != path_.back())
+    if (event == Event::ATTRIBUTE_CHANGED) {
+        if (targetIsObject())
             return;
+        if (name != path_.back())
+            return;
+        auto last = chain_.back().lock();
+        if (!last || sender != last)
+            return;
+        auto o = std::dynamic_pointer_cast<Object>(sender);
+        if (!o || !o->readable(name))
+            return; // TODO: throw
+        auto newvalue = o->read(path_.back());
+        if (newvalue == value_)
+            return;
+
+        // TODO: properly emit
+        std::cout << "Hook " << name_ << " emitting:\t";
+        std::cout << "changed from " << value_ << " to " << newvalue
+                  << std::endl;
+        value_ = newvalue;
+    }
+    if (event == Event::CHILD_ADDED || event == Event::CHILD_REMOVED) {
+        auto last = chain_.back().lock();
+        if (targetIsObject() && last && sender == last) {
+            // TODO: properly emit
+            std::cout << "Hook " << name_ << " emitting:\t";
+            std::cout << (event == Event::CHILD_ADDED ? "added" : "removed")
+                      << " child " << name << std::endl;
+        } else { // originating from somewhere in the chain
+            check_chain(sender, event, name);
+        }
     }
 
-    // note: path has all nodes minus root; chain has all nodes minus leaf
-    if (chain_.size() != path_.size()) {
-        return; // TODO: maybe throw
-    }
-
-    auto o = std::dynamic_pointer_cast<Object>(chain_.back().lock());
-    if (!o)
-        return; // TODO: throw
-    if (!o->readable(path_.back()))
-        return; // TODO: throw
-    auto newvalue = o->read(path_.back());
-    if (newvalue == value_)
-        return;
-
-    // TODO: properly emit
-    std::cout << "Hook " << name_ << " emitting:\t";
-    std::cout << "changed from " << value_ << " to " << newvalue
-              << std::endl;
-    value_ = newvalue;
+    //debug_hook();
 }
 
-void Hook::cutoff_chain(std::vector<std::weak_ptr<Directory>>::iterator last) {
-    for (auto elem = last+1; elem != chain_.end(); ++elem) {
-        auto o = elem->lock();
+void Hook::check_chain(std::shared_ptr<Directory> sender, Hook::Event event,
+                       const std::string &name) {
+    if (event == Event::CHILD_REMOVED) {
+        // find sender in chain
+        size_t i = 0;
+        for (; i < chain_.size(); ++i) {
+            auto elem = chain_[i].lock();
+            if (!elem)
+                return; // TODO: throw, element missing before sender
+            if (elem == sender)
+                break; // found sender in chain
+        }
+        if (i == chain_.size())
+            return; // TODO: throw, sender not in chain
+
+        if (name != path_[i]) // index i, not i+1, as path does not contain root
+            return; // we are not affected
+
+        // next element in our chain was removed. destroy it from there
+        cutoff_chain(i+1);
+    }
+    if (event == Event::CHILD_ADDED) {
+        auto last = chain_.back().lock();
+        if (!last || sender != last)
+            return;
+
+        // something was added. it might already contain children.
+        complete_chain();
+    }
+}
+
+void Hook::cutoff_chain(size_t length) {
+    for (auto i = length; i < chain_.size(); ++i) {
+        auto o = chain_[i].lock();
         if (o)
             o->removeHook(name_);
     }
-    chain_.erase(last+1, chain_.end());
+    chain_.resize(length);
 }
 
-
 void Hook::complete_chain() {
-    auto current = chain_[chain_.size()-1].lock();
+    auto current = chain_.back().lock();
     // current should always be o.k., in the worst case it is the root
 
-    // note: path has all nodes minus root; chain has all nodes minus leaf
-    for (size_t i = chain_.size() - 1; i < path_.size() - 1; ++i) {
+    // process everything until leaf (note: path_ does not include root)
+    for (auto i = chain_.size() - 1; i < path_.size(); ++i) {
         auto next = current->children().find(path_[i]);
         if (next != current->children().end()) {
             next->second->addHook(self_.lock());
             chain_.emplace_back(next->second);
             current = next->second;
-        } else {
-            return; // TODO: throw, or emit hook that element got removed
         }
     }
 
-    // always works as we just added it
+    // now process leaf in case it is an attribute
+    if (chain_.size() < path_.size() -1)
+        return; // no chance, we are still incomplete
+
     auto o = std::dynamic_pointer_cast<Object>(chain_.back().lock());
-    if (!o->readable(path_.back()))
+    if (!o || !o->readable(path_.back()))
         return; // TODO: throw
     value_ = o->read(path_.back());
 }
 
-void Hook::debug_hook(std::shared_ptr<Directory> sender, const std::string &attr)
+void Hook::debug_hook(std::shared_ptr<Directory> sender, Event event,
+                      const std::string &name)
 {
-    std::cerr << name_ << " triggered by " << sender->name();
-    if (!attr.empty())
-        std::cerr << " with " << attr;
-    std::cerr << std::endl;
+    if (sender) {
+        std::cerr << "\t" << name_ << " triggered by " << sender->name();
+        std::string eventstr = (event == Event::CHILD_ADDED ? "added"
+                             : (event == Event::CHILD_REMOVED ? "removed"
+                                                              : "changed"));
+        std::cerr << " with " << name << " being " << eventstr;
+        std::cerr << std::endl;
+    }
     std::cerr << "\tChain is: ";
     for (auto c : chain_) {
         auto d = c.lock();
