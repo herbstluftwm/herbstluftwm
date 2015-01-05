@@ -62,8 +62,6 @@ private:
 
     // last known value, used to print new value vs. old value
     std::string value_;
-
-    std::weak_ptr<Hook> self_;
 };
 
 }
