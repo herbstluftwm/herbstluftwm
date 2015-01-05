@@ -3,7 +3,6 @@
 
 #include "attribute.h"
 #include "object.h"
-#include "hook.h"
 #include "x11-types.h" // for hl::Color
 
 namespace herbstluft {

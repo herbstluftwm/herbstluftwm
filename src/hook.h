@@ -14,12 +14,6 @@
 
 namespace herbstluft {
 
-enum class HookEvent {
-    CHILD_ADDED,
-    CHILD_REMOVED,
-    ATTRIBUTE_CHANGED
-};
-
 class Hook : public Object {
 public:
 

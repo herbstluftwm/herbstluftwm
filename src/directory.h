@@ -9,7 +9,12 @@
 namespace herbstluft {
 
 class Hook;
-enum class HookEvent;
+
+enum class HookEvent {
+    CHILD_ADDED,
+    CHILD_REMOVED,
+    ATTRIBUTE_CHANGED
+};
 
 class Directory : public Entity, public std::enable_shared_from_this<Directory>
 {
