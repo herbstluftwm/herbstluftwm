@@ -26,13 +26,17 @@ public:
     std::string str() { return std::to_string(payload_); }
     void operator=(const T &payload) {
         payload_ = payload;
-        if (auto o = owner_.lock()) {
-            o->notifyHooks(name_);
-        }
+        notifyHooks();
     }
     void change(const std::string &payload);
 
 private:
+    void notifyHooks() {
+        if (auto o = owner_.lock()) {
+            o->notifyHooks(name_);
+        }
+    }
+
     T payload_;
 };
 
@@ -44,6 +48,7 @@ inline Type Attribute_<int>::type() { return Type::ATTRIBUTE_INT; }
 template<>
 inline void Attribute_<int>::change(const std::string &payload) {
     payload_= std::stoi(payload);
+    notifyHooks();
 }
 
 /** Boolean **/
@@ -65,6 +70,7 @@ inline void Attribute_<bool>::change(const std::string &payload) {
     if (payload == "toggle")
         payload_ = !payload_;
     // TODO: throw if string could not be parsed
+    notifyHooks();
 }
 
 /** STRING **/
@@ -78,6 +84,7 @@ inline std::string Attribute_<std::string>::str() { return payload_; }
 template<>
 inline void Attribute_<std::string>::change(const std::string &payload) {
     payload_ = payload;
+    notifyHooks();
 }
 
 /** COLOR **/
@@ -91,6 +98,7 @@ inline std::string Attribute_<Color>::str() { return payload_.str(); }
 template<>
 inline void Attribute_<Color>::change(const std::string &payload) {
     payload_ = Color::fromStr(payload.c_str());
+    notifyHooks();
 }
 
 }
