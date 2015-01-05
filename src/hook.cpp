@@ -37,25 +37,43 @@ void Hook::operator()(std::shared_ptr<Directory> sender, Event event,
         if (newvalue == value_)
             return;
 
-        // TODO: properly emit
-        std::cout << "Hook " << name_ << " emitting:\t";
-        std::cout << "changed from " << value_ << " to " << newvalue
-                  << std::endl;
+        trigger(value_, newvalue);
         value_ = newvalue;
     }
     if (event == Event::CHILD_ADDED || event == Event::CHILD_REMOVED) {
         auto last = chain_.back().lock();
         if (targetIsObject() && last && sender == last) {
-            // TODO: properly emit
-            std::cout << "Hook " << name_ << " emitting:\t";
-            std::cout << (event == Event::CHILD_ADDED ? "added" : "removed")
-                      << " child " << name << std::endl;
+            trigger(event, name);
         } else { // originating from somewhere in the chain
             check_chain(sender, event, name);
         }
     }
 
     //debug_hook();
+}
+
+void Hook::trigger(Hook::Event event, const std::string &name)
+{
+    // TODO: properly emit
+    std::cout << "Hook " << name_ << " emitting:\t";
+    std::cout << (event == Event::CHILD_ADDED ? "added" : "removed")
+              << " child " << name << std::endl;
+}
+
+void Hook::trigger(const std::string &old, const std::string &current)
+{
+    // TODO: properly emit
+    std::cout << "Hook " << name_ << " emitting:\t";
+    if (!old.empty()) {
+        if (current.empty()) {
+            std::cout << "cleared from " << old << std::endl;
+        } else {
+            std::cout << "changed from " << old << " to " << current
+                      << std::endl;
+        }
+    } else {
+        std::cout << "initialized to " << current << std::endl;
+    }
 }
 
 void Hook::check_chain(std::shared_ptr<Directory> sender, Hook::Event event,
@@ -119,7 +137,11 @@ void Hook::complete_chain() {
     auto o = std::dynamic_pointer_cast<Object>(chain_.back().lock());
     if (!o || !o->readable(path_.back()))
         return; // TODO: throw
-    value_ = o->read(path_.back());
+    auto newvalue = o->read(path_.back());
+    if (newvalue != value_) {
+        trigger(value_, newvalue);
+        value_ = newvalue;
+    }
 }
 
 void Hook::debug_hook(std::shared_ptr<Directory> sender, Event event,

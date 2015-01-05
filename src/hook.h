@@ -38,6 +38,11 @@ private:
      * our complete chain is 1 element longer than the path (includes root) */
     bool targetIsObject() { return path_.size() < chain_.size(); }
 
+    // for Event::CHILD_* cases
+    void trigger(Event event, const std::string &name);
+    // for Event::ATTRIBUTE_CHANGED case
+    void trigger(const std::string &old, const std::string &current);
+
     // check if chain needs to be altered
     void check_chain(std::shared_ptr<Directory> sender, Event event,
                      const std::string &name);
