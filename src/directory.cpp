@@ -7,11 +7,10 @@ namespace herbstluft {
 
 void Directory::notifyHooks(Hook::Event event, const std::string& arg)
 {
-    std::shared_ptr<Directory> self = self_.lock(); // always works
     for (auto hook : hooks_) {
         auto h = hook.second.lock();
         if (h) {
-            (*h)(self, event, arg);
+            (*h)(shared_from_this(), event, arg);
         } // TODO: else throw
     }
 }

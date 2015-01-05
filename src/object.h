@@ -20,10 +20,6 @@ public:
     Object(const std::string &name);
     virtual ~Object() {}
 
-    // store pointer to ourselves, initialize all attributes, actions
-    // when overwriting, always call the base function first as well
-    virtual void init(std::weak_ptr<Object> self);
-
     virtual Type type() { return Type::OBJECT; }
 
     virtual void print(const std::string &prefix = "\t| "); // a debug method

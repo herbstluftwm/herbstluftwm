@@ -11,8 +11,8 @@
 
 namespace herbstluft {
 
-void Hook::init(std::weak_ptr<Hook> self, std::shared_ptr<Directory> root) {
-    self_ = self;
+void Hook::hook_into(std::shared_ptr<Directory> root) {
+    cutoff_chain(0);
     chain_ = { root };
     /* we don't register with root; root directory shall never change */
     complete_chain();
@@ -106,7 +106,7 @@ void Hook::complete_chain() {
     for (auto i = chain_.size() - 1; i < path_.size(); ++i) {
         auto next = current->children().find(path_[i]);
         if (next != current->children().end()) {
-            next->second->addHook(self_.lock());
+            next->second->addHook(shared_from_this());
             chain_.emplace_back(next->second);
             current = next->second;
         }

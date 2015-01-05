@@ -4,17 +4,17 @@
 #include "entity.h"
 #include "hook.h"
 
+#include <memory>
 #include <unordered_map>
 
 namespace herbstluft {
 
 class Hook;
 
-class Directory : public Entity
+class Directory : public Entity, public std::enable_shared_from_this<Directory>
 {
 public:
     Directory(const std::string& name) : Entity(name) {}
-    virtual void init(std::weak_ptr<Directory> self) { self_ = self; }
 
     virtual Type type() { return Type::DIRECTORY; }
 
@@ -35,8 +35,6 @@ public:
 protected:
     std::unordered_map<std::string, std::shared_ptr<Directory>> children_;
     std::unordered_map<std::string, std::weak_ptr<Hook>> hooks_;
-
-    std::weak_ptr<Directory> self_;
 };
 
 }

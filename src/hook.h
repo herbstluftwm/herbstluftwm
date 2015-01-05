@@ -9,13 +9,14 @@
 #include "entity.h"
 #include "utils.h" // split_path
 
+#include <memory>
 #include <vector>
 
 namespace herbstluft {
 
 class Directory;
 
-class Hook : public Entity {
+class Hook : public Entity, public std::enable_shared_from_this<Hook> {
 public:
     enum class Event {
         CHILD_ADDED,
@@ -24,7 +25,7 @@ public:
     };
 
     Hook(const std::string &path) : Entity(path), path_(split_path(path)) {}
-    void init(std::weak_ptr<Hook> self, std::shared_ptr<Directory> root);
+    void hook_into(std::shared_ptr<Directory> root);
 
     Type type() { return Type::HOOK; }
 

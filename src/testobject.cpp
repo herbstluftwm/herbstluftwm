@@ -6,10 +6,8 @@ namespace herbstluft {
 void test_object_system()
 {
     auto root = std::make_shared<Directory>("root");
-    root->init(root);
 
     auto tester = std::make_shared<TestObject>();
-    tester->init(tester);
     root->addChild(tester);
 
     auto hooks = {
@@ -20,7 +18,7 @@ void test_object_system()
         std::make_shared<herbstluft::Hook>("tester.precious"),
     };
     for (auto h : hooks) {
-        h->init(h, root);
+        h->hook_into(root);
     }
     root->print("");
     auto wat = std::dynamic_pointer_cast<herbstluft::TestObjectII>(
@@ -36,17 +34,11 @@ TestObject::TestObject()
       bar_("bar", true, false, true),
       checker_("checker", Type::ATTRIBUTE_COLOR, true, false),
       killer_("killer")
-{}
-
-void TestObject::init(std::weak_ptr<Object> self)
 {
-    Object::init(self);
-
     wireAttributes({ &foo_, &bar_, &checker_ });
     wireActions({ &killer_ });
 
     auto foo = std::make_shared<TestObjectII>("precious");
-    foo->init(foo);
     children_.insert(std::make_pair(foo->name(), foo));
 }
 
@@ -68,20 +60,13 @@ TestObjectII::TestObjectII(const std::string &name)
       bar_("bar", true, false, true),
       checker_("checker", Type::ATTRIBUTE_COLOR, true, false),
       killer_("killer")
-{}
-
-void TestObjectII::init(std::weak_ptr<Object> self)
 {
-    Object::init(self);
-
     wireAttributes({ &foo_, &bar_, &checker_ });
     wireActions({ &killer_ });
 
     auto foo = std::make_shared<Object>("sweets");
-    foo->init(foo);
     addChild(foo);
     auto fooII = std::make_shared<Object>("cake");
-    fooII->init(fooII);
     addChild(fooII);
 }
 
@@ -91,7 +76,6 @@ void TestObjectII::do_stuff()
 
     removeChild("sweets");
     auto foo = std::make_shared<TestObjectII>("sweets");
-    foo->init(foo);
     foo->write("foo", "23");
     addChild(foo);
     foo->write("foo", "24");

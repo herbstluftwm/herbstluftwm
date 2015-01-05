@@ -21,10 +21,7 @@ namespace herbstluft {
 Object::Object(const std::string &name)
     : Directory(name),
       nameAttribute_("name", Type::ATTRIBUTE_STRING, true, false)
-{}
-
-void Object::init(std::weak_ptr<Object> self) {
-    Directory::init(self);
+{
     wireAttributes({ &nameAttribute_ });
 }
 
