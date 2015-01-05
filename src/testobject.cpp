@@ -79,7 +79,10 @@ void TestObjectII::do_stuff()
     foo->write("foo", "23");
     addChild(foo);
     foo->write("foo", "24");
-    std::dynamic_pointer_cast<Object>(children_["sweets"])->write("foo", "3");
+    removeChild("sweets");
+    auto footy = std::make_shared<TestObjectII>("sweets");
+    footy->write("foo", "100");
+    addChild(footy);
 }
 
 }
