@@ -72,18 +72,16 @@ void Object::trigger(const std::string &action, const std::string &args) {
 
 void Object::wireAttributes(std::vector<Attribute*> attrs)
 {
-    std::weak_ptr<Object> self(std::dynamic_pointer_cast<Object>(self_.lock()));
     for (auto attr : attrs) {
-        attr->setOwner(self);
+        attr->setOwner(this);
         attribs_[attr->name()] = attr;
     }
 }
 
 void Object::wireActions(std::vector<Action*> actions)
 {
-    std::weak_ptr<Object> self(std::dynamic_pointer_cast<Object>(self_.lock()));
     for (auto action : actions) {
-        action->setOwner(self);
+        action->setOwner(this);
         actions_[action->name()] = action;
     }
 }

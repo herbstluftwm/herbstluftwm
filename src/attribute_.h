@@ -33,8 +33,8 @@ public:
 
 private:
     void notifyHooks() {
-        if (auto o = owner_.lock()) {
-            o->notifyHooks(Hook::Event::ATTRIBUTE_CHANGED, name_);
+        if (owner_) {
+            owner_->notifyHooks(Hook::Event::ATTRIBUTE_CHANGED, name_);
         }
     }
 

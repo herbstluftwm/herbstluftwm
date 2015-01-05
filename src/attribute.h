@@ -12,15 +12,13 @@ public:
     Attribute() {}
     Attribute(const std::string &name,
               bool readable, bool writeable)
-        : Entity(name),
+        : Entity(name), owner_(nullptr),
           readable_(readable), writeable_(writeable) {}
     // set the owner after object creation (when pointer is available)
-    void setOwner(std::weak_ptr<Object> owner) { owner_ = owner; }
+    void setOwner(Object *owner) { owner_ = owner; }
     virtual ~Attribute() {};
 
     virtual Type type() { return Type::ATTRIBUTE; }
-
-    std::shared_ptr<Object> owner();
 
     bool readable() const { return readable_; }
     bool writeable() const { return writeable_; }
@@ -35,7 +33,7 @@ public:
     virtual void change(const std::string &payload) {}
 
 protected:
-    std::weak_ptr<Object> owner_;
+    Object *owner_;
     bool readable_, writeable_;
 };
 
@@ -59,13 +57,13 @@ public:
     Action() {}
     Action(const std::string &name)
         : Entity(name) {}
-    void setOwner(std::weak_ptr<Object> owner) { owner_ = owner; }
+    void setOwner(Object *owner) { owner_ = owner; }
 
     Type type() { return Type::ACTION; }
 
     void trigger(const std::string &args);
 private:
-    std::weak_ptr<Object> owner_;
+    Object *owner_;
 };
 
 } // close namespace before further includes!
