@@ -11,6 +11,16 @@
 
 namespace herbstluft {
 
+Hook::Hook(const std::string &path) :
+    Object(path),
+    counter_("counter", true, false, 0),
+    active_("active", true, false, false),
+    emit_("emit"),
+    path_(split_path(path)) {
+    wireAttributes({ &counter_, &active_ });
+    wireActions({ &emit_ });
+}
+
 void Hook::hook_into(std::shared_ptr<Directory> root) {
     cutoff_chain(0);
     chain_ = { root };
@@ -37,13 +47,13 @@ void Hook::operator()(std::shared_ptr<Directory> sender, HookEvent event,
         if (newvalue == value_)
             return;
 
-        trigger(value_, newvalue);
+        emit(value_, newvalue);
         value_ = newvalue;
     }
     if (event == HookEvent::CHILD_ADDED || event == HookEvent::CHILD_REMOVED) {
         auto last = chain_.back().lock();
         if (targetIsObject() && last && sender == last) {
-            trigger(event, name);
+            emit(event, name);
         } else { // originating from somewhere in the chain
             check_chain(sender, event, name);
         }
@@ -52,28 +62,43 @@ void Hook::operator()(std::shared_ptr<Directory> sender, HookEvent event,
     //debug_hook();
 }
 
-void Hook::trigger(HookEvent event, const std::string &name)
+void Hook::trigger(const std::string &action, const std::string &args)
 {
-    // TODO: properly emit
-    std::cout << "Hook " << name_ << " emitting:\t";
-    std::cout << (event == HookEvent::CHILD_ADDED ? "added" : "removed")
-              << " child " << name << std::endl;
+    if (action == emit_.name()) {
+        emit(args);
+        return;
+    }
+    Object::trigger(action, args);
 }
 
-void Hook::trigger(const std::string &old, const std::string &current)
+void Hook::emit(const std::string &args)
 {
+    counter_ = counter_ + 1;
     // TODO: properly emit
     std::cout << "Hook " << name_ << " emitting:\t";
+    std::cout << args << std::endl;
+}
+
+void Hook::emit(HookEvent event, const std::string &name)
+{
+    std::string args((event == HookEvent::CHILD_ADDED ? "added" : "removed"));
+    args += " child " + name;
+    emit(args);
+}
+
+void Hook::emit(const std::string &old, const std::string &current)
+{
+    std::string args;
     if (!old.empty()) {
         if (current.empty()) {
-            std::cout << "cleared from " << old << std::endl;
+            args = "cleared from " + old;
         } else {
-            std::cout << "changed from " << old << " to " << current
-                      << std::endl;
+            args = "changed from " + old + " to " + current;
         }
     } else {
-        std::cout << "initialized to " << current << std::endl;
+        args = "initialized to " + current;
     }
+    emit(args);
 }
 
 void Hook::check_chain(std::shared_ptr<Directory> sender, HookEvent event,
@@ -114,6 +139,7 @@ void Hook::cutoff_chain(size_t length) {
             o->removeHook(name_);
     }
     chain_.resize(length);
+    active_ = false;
 }
 
 void Hook::complete_chain() {
@@ -131,6 +157,11 @@ void Hook::complete_chain() {
         }
     }
 
+    if (targetIsObject()) {
+        active_ = true;
+        return;
+    }
+
     // now process leaf in case it is an attribute
     if (chain_.size() < path_.size() -1)
         return; // no chance, we are still incomplete
@@ -138,9 +169,10 @@ void Hook::complete_chain() {
     auto o = std::dynamic_pointer_cast<Object>(chain_.back().lock());
     if (!o || !o->readable(path_.back()))
         return; // TODO: throw
+    active_ = true;
     auto newvalue = o->read(path_.back());
     if (newvalue != value_) {
-        trigger(value_, newvalue);
+        emit(value_, newvalue);
         value_ = newvalue;
     }
 }

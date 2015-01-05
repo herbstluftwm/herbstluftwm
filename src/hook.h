@@ -7,6 +7,7 @@
 #define __HERBSTLUFT_HOOK_H_
 
 #include "object.h"
+#include "attribute_.h"
 #include "utils.h" // split_path
 
 #include <memory>
@@ -17,7 +18,7 @@ namespace herbstluft {
 class Hook : public Object {
 public:
 
-    Hook(const std::string &path) : Object(path), path_(split_path(path)) {}
+    Hook(const std::string &path);
     void hook_into(std::shared_ptr<Directory> root);
 
     Type type() { return Type::HOOK; }
@@ -26,15 +27,19 @@ public:
     void operator()(std::shared_ptr<Directory> sender, HookEvent event,
                     const std::string &name);
 
+    void trigger(const std::string &action, const std::string &args);
+
 private:
     /* are we listening to an object rather an attribute? If so,
      * our complete chain is 1 element longer than the path (includes root) */
     bool targetIsObject() { return path_.size() < chain_.size(); }
 
+    // for external trigger and called by others
+    void emit(const std::string &args);
     // for Event::CHILD_* cases
-    void trigger(HookEvent event, const std::string &name);
+    void emit(HookEvent event, const std::string &name);
     // for Event::ATTRIBUTE_CHANGED case
-    void trigger(const std::string &old, const std::string &current);
+    void emit(const std::string &old, const std::string &current);
 
     // check if chain needs to be altered
     void check_chain(std::shared_ptr<Directory> sender, HookEvent event,
@@ -48,6 +53,13 @@ private:
     void debug_hook(std::shared_ptr<Directory> sender = {},
                     HookEvent event = HookEvent::ATTRIBUTE_CHANGED,
                     const std::string &name = {});
+
+    // counter attribute
+    Attribute_<int> counter_;
+    // test if hook is currently working
+    Attribute_<bool> active_;
+    // external trigger for hook
+    Action emit_;
 
     // chain of directories that report to us
     std::vector<std::weak_ptr<Directory>> chain_;
