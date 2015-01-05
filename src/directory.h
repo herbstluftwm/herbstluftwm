@@ -2,7 +2,6 @@
 #define DIRECTORY_H
 
 #include "entity.h"
-#include "hook.h"
 
 #include <memory>
 #include <unordered_map>
@@ -10,6 +9,7 @@
 namespace herbstluft {
 
 class Hook;
+enum class HookEvent;
 
 class Directory : public Entity, public std::enable_shared_from_this<Directory>
 {
@@ -24,7 +24,7 @@ public:
     children() { return children_; }
 
     /* Called by the directory whenever children are added or removed */
-    void notifyHooks(Hook::Event event, const std::string &arg);
+    void notifyHooks(HookEvent event, const std::string &arg);
 
     void addChild(std::shared_ptr<Directory> child);
     void removeChild(const std::string &child);

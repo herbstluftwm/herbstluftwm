@@ -34,7 +34,7 @@ public:
 private:
     void notifyHooks() {
         if (owner_) {
-            owner_->notifyHooks(Hook::Event::ATTRIBUTE_CHANGED, name_);
+            owner_->notifyHooks(HookEvent::ATTRIBUTE_CHANGED, name_);
         }
     }
 

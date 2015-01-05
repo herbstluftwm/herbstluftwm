@@ -18,11 +18,11 @@ void Hook::hook_into(std::shared_ptr<Directory> root) {
     complete_chain();
 }
 
-void Hook::operator()(std::shared_ptr<Directory> sender, Event event,
+void Hook::operator()(std::shared_ptr<Directory> sender, HookEvent event,
                       const std::string &name) {
     //debug_hook(sender, event, name);
 
-    if (event == Event::ATTRIBUTE_CHANGED) {
+    if (event == HookEvent::ATTRIBUTE_CHANGED) {
         if (targetIsObject())
             return;
         if (name != path_.back())
@@ -40,7 +40,7 @@ void Hook::operator()(std::shared_ptr<Directory> sender, Event event,
         trigger(value_, newvalue);
         value_ = newvalue;
     }
-    if (event == Event::CHILD_ADDED || event == Event::CHILD_REMOVED) {
+    if (event == HookEvent::CHILD_ADDED || event == HookEvent::CHILD_REMOVED) {
         auto last = chain_.back().lock();
         if (targetIsObject() && last && sender == last) {
             trigger(event, name);
@@ -52,11 +52,11 @@ void Hook::operator()(std::shared_ptr<Directory> sender, Event event,
     //debug_hook();
 }
 
-void Hook::trigger(Hook::Event event, const std::string &name)
+void Hook::trigger(HookEvent event, const std::string &name)
 {
     // TODO: properly emit
     std::cout << "Hook " << name_ << " emitting:\t";
-    std::cout << (event == Event::CHILD_ADDED ? "added" : "removed")
+    std::cout << (event == HookEvent::CHILD_ADDED ? "added" : "removed")
               << " child " << name << std::endl;
 }
 
@@ -76,9 +76,9 @@ void Hook::trigger(const std::string &old, const std::string &current)
     }
 }
 
-void Hook::check_chain(std::shared_ptr<Directory> sender, Hook::Event event,
+void Hook::check_chain(std::shared_ptr<Directory> sender, HookEvent event,
                        const std::string &name) {
-    if (event == Event::CHILD_REMOVED) {
+    if (event == HookEvent::CHILD_REMOVED) {
         // find sender in chain
         size_t i = 0;
         for (; i < chain_.size(); ++i) {
@@ -97,7 +97,7 @@ void Hook::check_chain(std::shared_ptr<Directory> sender, Hook::Event event,
         // next element in our chain was removed. destroy it from there
         cutoff_chain(i+1);
     }
-    if (event == Event::CHILD_ADDED) {
+    if (event == HookEvent::CHILD_ADDED) {
         auto last = chain_.back().lock();
         if (!last || sender != last)
             return;
@@ -117,6 +117,7 @@ void Hook::cutoff_chain(size_t length) {
 }
 
 void Hook::complete_chain() {
+    auto self = std::dynamic_pointer_cast<Hook>(shared_from_this());
     auto current = chain_.back().lock();
     // current should always be o.k., in the worst case it is the root
 
@@ -124,7 +125,7 @@ void Hook::complete_chain() {
     for (auto i = chain_.size() - 1; i < path_.size(); ++i) {
         auto next = current->children().find(path_[i]);
         if (next != current->children().end()) {
-            next->second->addHook(shared_from_this());
+            next->second->addHook(self);
             chain_.emplace_back(next->second);
             current = next->second;
         }
@@ -144,14 +145,14 @@ void Hook::complete_chain() {
     }
 }
 
-void Hook::debug_hook(std::shared_ptr<Directory> sender, Event event,
+void Hook::debug_hook(std::shared_ptr<Directory> sender, HookEvent event,
                       const std::string &name)
 {
     if (sender) {
         std::cerr << "\t" << name_ << " triggered by " << sender->name();
-        std::string eventstr = (event == Event::CHILD_ADDED ? "added"
-                             : (event == Event::CHILD_REMOVED ? "removed"
-                                                              : "changed"));
+        std::string eventstr = (event == HookEvent::CHILD_ADDED ? "added"
+                             : (event == HookEvent::CHILD_REMOVED ? "removed"
+                                                                  : "changed"));
         std::cerr << " with " << name << " being " << eventstr;
         std::cerr << std::endl;
     }

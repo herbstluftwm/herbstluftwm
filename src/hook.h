@@ -6,7 +6,7 @@
 #ifndef __HERBSTLUFT_HOOK_H_
 #define __HERBSTLUFT_HOOK_H_
 
-#include "entity.h"
+#include "object.h"
 #include "utils.h" // split_path
 
 #include <memory>
@@ -14,23 +14,22 @@
 
 namespace herbstluft {
 
-class Directory;
+enum class HookEvent {
+    CHILD_ADDED,
+    CHILD_REMOVED,
+    ATTRIBUTE_CHANGED
+};
 
-class Hook : public Entity, public std::enable_shared_from_this<Hook> {
+class Hook : public Object {
 public:
-    enum class Event {
-        CHILD_ADDED,
-        CHILD_REMOVED,
-        ATTRIBUTE_CHANGED
-    };
 
-    Hook(const std::string &path) : Entity(path), path_(split_path(path)) {}
+    Hook(const std::string &path) : Object(path), path_(split_path(path)) {}
     void hook_into(std::shared_ptr<Directory> root);
 
     Type type() { return Type::HOOK; }
 
     // emit hook, used by path elements
-    void operator()(std::shared_ptr<Directory> sender, Event event,
+    void operator()(std::shared_ptr<Directory> sender, HookEvent event,
                     const std::string &name);
 
 private:
@@ -39,12 +38,12 @@ private:
     bool targetIsObject() { return path_.size() < chain_.size(); }
 
     // for Event::CHILD_* cases
-    void trigger(Event event, const std::string &name);
+    void trigger(HookEvent event, const std::string &name);
     // for Event::ATTRIBUTE_CHANGED case
     void trigger(const std::string &old, const std::string &current);
 
     // check if chain needs to be altered
-    void check_chain(std::shared_ptr<Directory> sender, Event event,
+    void check_chain(std::shared_ptr<Directory> sender, HookEvent event,
                      const std::string &name);
 
     // remove tail from chain
@@ -53,7 +52,7 @@ private:
     void complete_chain();
 
     void debug_hook(std::shared_ptr<Directory> sender = {},
-                    Event event = Event::ATTRIBUTE_CHANGED,
+                    HookEvent event = HookEvent::ATTRIBUTE_CHANGED,
                     const std::string &name = {});
 
     // chain of directories that report to us

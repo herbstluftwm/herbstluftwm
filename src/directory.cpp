@@ -5,7 +5,7 @@
 
 namespace herbstluft {
 
-void Directory::notifyHooks(Hook::Event event, const std::string& arg)
+void Directory::notifyHooks(HookEvent event, const std::string& arg)
 {
     for (auto hook : hooks_) {
         auto h = hook.second.lock();
@@ -18,13 +18,13 @@ void Directory::notifyHooks(Hook::Event event, const std::string& arg)
 void Directory::addChild(std::shared_ptr<Directory> child)
 {
     children_[child->name()] = child;
-    notifyHooks(Hook::Event::CHILD_ADDED, child->name());
+    notifyHooks(HookEvent::CHILD_ADDED, child->name());
 }
 
 void Directory::removeChild(const std::string &child)
 {
     children_.erase(child);
-    notifyHooks(Hook::Event::CHILD_REMOVED, child);
+    notifyHooks(HookEvent::CHILD_REMOVED, child);
 }
 
 void Directory::addHook(std::shared_ptr<Hook> hook)
