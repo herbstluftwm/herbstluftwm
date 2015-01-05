@@ -16,7 +16,8 @@ void test_object_system()
         std::make_shared<herbstluft::Hook>("tester.precious.name"),
         std::make_shared<herbstluft::Hook>("tester.precious.bar"),
         std::make_shared<herbstluft::Hook>("tester.precious.sweets.name"),
-        std::make_shared<herbstluft::Hook>("tester.precious.sweets.foo")
+        std::make_shared<herbstluft::Hook>("tester.precious.sweets.foo"),
+        std::make_shared<herbstluft::Hook>("tester.precious"),
     };
     for (auto h : hooks) {
         h->init(h, root);
@@ -91,8 +92,10 @@ void TestObjectII::do_stuff()
     removeChild("sweets");
     auto foo = std::make_shared<TestObjectII>("sweets");
     foo->init(foo);
-    addChild(foo);
     foo->write("foo", "23");
+    addChild(foo);
+    foo->write("foo", "24");
+    std::dynamic_pointer_cast<Object>(children_["sweets"])->write("foo", "3");
 }
 
 }
