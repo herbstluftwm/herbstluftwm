@@ -22,6 +22,14 @@ public:
 
     const std::unordered_map<std::string, std::shared_ptr<Directory>>&
     children() { return children_; }
+    template<typename T>
+    std::shared_ptr<T> child(const std::string &name) {
+        auto it = children_.find(name);
+        if (it != children_.end())
+            return std::dynamic_pointer_cast<T>(it->second);
+        else
+            return {};
+    }
 
     /* Called by the directory whenever children are added or removed */
     void notifyHooks(HookEvent event, const std::string &arg);
