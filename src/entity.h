@@ -35,8 +35,8 @@ public:
     static std::string typestr(Type type) {
         const char * const str[] = {
             "Virtual Node", "Symbolic Link", "Action",
-            "Attribute", "Attribute(int)", "Attribute(bool)",
-            "Attribute(color)", "Attribute(string)",
+            "Generic", "Integer", "Boolean",
+            "Color", "String",
             "Hook", "Directory", "Object",
             "Monitor", "Tag", "Frame", "Client"
         };
