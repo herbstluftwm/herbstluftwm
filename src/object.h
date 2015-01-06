@@ -8,6 +8,7 @@
 
 #include "directory.h"
 #include "attribute.h"
+#include "x11-types.h"
 
 #include <unordered_map>
 #include <vector>
@@ -30,7 +31,7 @@ public:
     /* Note: when overwriting this method, you might need calls to
      * Directory::notifyHooks() */
     virtual void write(const std::string &attr, const std::string &value);
-    virtual void trigger(const std::string &action, const std::string &args);
+    virtual void trigger(const std::string &action, const Arg &args);
 
     const std::unordered_map<std::string, Attribute*>&
     attribs() { return attribs_; }

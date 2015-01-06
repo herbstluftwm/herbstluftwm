@@ -18,6 +18,11 @@
 
 namespace herbstluft {
 
+    /* convenience: strip argument vector of processed front elements */
+    inline Arg back(Arg a, size_t n = 1) {
+        return { a.begin() + n, a.end() };
+    }
+
     inline std::vector<std::string> split_path(const std::string &path) {
         std::stringstream tmp(path);
         std::vector<std::string> ret;

@@ -62,7 +62,7 @@ void Hook::operator()(std::shared_ptr<Directory> sender, HookEvent event,
     //debug_hook();
 }
 
-void Hook::trigger(const std::string &action, const std::string &args)
+void Hook::trigger(const std::string &action, const Arg &args)
 {
     if (action == emit_.name()) {
         emit(args);
@@ -71,34 +71,35 @@ void Hook::trigger(const std::string &action, const std::string &args)
     Object::trigger(action, args);
 }
 
-void Hook::emit(const std::string &args)
+void Hook::emit(const Arg &args)
 {
     counter_ = counter_ + 1;
     // TODO: properly emit
     std::cout << "Hook " << name_ << " emitting:\t";
-    std::cout << args << std::endl;
+    for (auto a : args)
+        std::cout << a << " ";
+    std::cout << std::endl;
 }
 
 void Hook::emit(HookEvent event, const std::string &name)
 {
-    std::string args((event == HookEvent::CHILD_ADDED ? "added" : "removed"));
-    args += " child " + name;
-    emit(args);
+    emit({
+        (event == HookEvent::CHILD_ADDED ? "added" : "removed"),
+        "child", name
+    });
 }
 
 void Hook::emit(const std::string &old, const std::string &current)
 {
-    std::string args;
     if (!old.empty()) {
         if (current.empty()) {
-            args = "cleared from " + old;
+            emit({"cleared from", old});
         } else {
-            args = "changed from " + old + " to " + current;
+            emit({"changed from", old, "to", current});
         }
     } else {
-        args = "initialized to " + current;
+        emit({"initialized to", current});
     }
-    emit(args);
 }
 
 void Hook::check_chain(std::shared_ptr<Directory> sender, HookEvent event,

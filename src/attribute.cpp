@@ -16,10 +16,10 @@ void Attribute::write(const std::string &value)
         owner_->write(name_, value);
 }
 
-void Action::trigger(const std::string &value)
+void Action::trigger(const Arg &args)
 {
     if (owner_)
-        owner_->trigger(name_, value);
+        owner_->trigger(name_, args);
 }
 
 }

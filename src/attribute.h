@@ -1,6 +1,7 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
+#include "x11-types.h"
 #include "entity.h"
 
 namespace herbstluft {
@@ -62,7 +63,7 @@ public:
 
     Type type() { return Type::ACTION; }
 
-    void trigger(const std::string &args);
+    void trigger(const Arg &args);
 private:
     Object *owner_;
 };

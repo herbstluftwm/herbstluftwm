@@ -13,7 +13,7 @@ public:
     void add(const std::string &path);
     void remove(const std::string &path);
 
-    void trigger(const std::string &action, const std::string &args);
+    void trigger(const std::string &action, const Arg &args);
 
 private:
     Action add_;

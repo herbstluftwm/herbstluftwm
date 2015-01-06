@@ -22,14 +22,16 @@ void HookManager::remove(const std::string &path)
     removeChild(path);
 }
 
-void HookManager::trigger(const std::string &action, const std::string &args)
+void HookManager::trigger(const std::string &action, const Arg &args)
 {
     if (action == add_.name()) {
-        add(args);
+        for (auto a : args)
+            add(a);
         return;
     }
     if (action == remove_.name()) {
-        remove(args);
+        for (auto a : args)
+            remove(a);
         return;
     }
     Object::trigger(action, args);

@@ -62,7 +62,7 @@ void Object::write(const std::string &attr, const std::string &value) {
     }
 }
 
-void Object::trigger(const std::string &action, const std::string &args) {
+void Object::trigger(const std::string &action, const Arg &args) {
     // do nothing, there is no default behavior for actions.
     // TODO: throw; if we got here, there was an error, e.g. typo on user's side
 }
