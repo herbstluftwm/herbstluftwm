@@ -12,12 +12,10 @@ class Attribute_ : public Attribute {
 public:
     // default constructor
     Attribute_() {}
-    Attribute_(const std::string &name,
-               bool readable, bool writeable)
-        : Attribute(name, readable, writeable) {}
-    Attribute_(const std::string &name,
-               bool readable, bool writeable, const T &payload)
-        : Attribute_(name, readable, writeable) { payload_ = payload; }
+    Attribute_(const std::string &name, bool writeable)
+        : Attribute(name, writeable) {}
+    Attribute_(const std::string &name, bool writeable, const T &payload)
+        : Attribute_(name, writeable) { payload_ = payload; }
 
     inline Type type();
 

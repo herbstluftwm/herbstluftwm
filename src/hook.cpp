@@ -13,8 +13,8 @@ namespace herbstluft {
 
 Hook::Hook(const std::string &path) :
     Object(path),
-    counter_("counter", true, false, 0),
-    active_("active", true, false, false),
+    counter_("counter", false, 0),
+    active_("active", false, false),
     emit_("emit"),
     path_(split_path(path)) {
     wireAttributes({ &counter_, &active_ });
@@ -41,7 +41,7 @@ void Hook::operator()(std::shared_ptr<Directory> sender, HookEvent event,
         if (!last || sender != last)
             return;
         auto o = std::dynamic_pointer_cast<Object>(sender);
-        if (!o || !o->readable(name))
+        if (!o)
             return; // TODO: throw
         auto newvalue = o->read(path_.back());
         if (newvalue == value_)
@@ -168,7 +168,7 @@ void Hook::complete_chain() {
         return; // no chance, we are still incomplete
 
     auto o = std::dynamic_pointer_cast<Object>(chain_.back().lock());
-    if (!o || !o->readable(path_.back()))
+    if (!o || o->attribs().find(path_.back()) == o->attribs().end())
         return; // TODO: throw
     active_ = true;
     auto newvalue = o->read(path_.back());

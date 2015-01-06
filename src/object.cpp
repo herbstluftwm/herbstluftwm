@@ -20,17 +20,9 @@ namespace herbstluft {
 
 Object::Object(const std::string &name)
     : Directory(name),
-      nameAttribute_("name", Type::ATTRIBUTE_STRING, true, false)
+      nameAttribute_("name", Type::ATTRIBUTE_STRING, false, true)
 {
     wireAttributes({ &nameAttribute_ });
-}
-
-bool Object::readable(const std::string &attr) const {
-    auto it = attribs_.find(attr);
-    if (it != attribs_.end()) {
-        return it->second->readable();
-    }
-    return false; // TODO: else throw
 }
 
 std::string Object::read(const std::string &attr) const {
@@ -60,6 +52,14 @@ void Object::write(const std::string &attr, const std::string &value) {
     } else {
         // TODO: throw
     }
+}
+
+bool Object::hookable(const std::string &attr) const {
+    auto it = attribs_.find(attr);
+    if (it != attribs_.end()) {
+        return it->second->hookable();
+    }
+    return false; // TODO: else throw
 }
 
 void Object::trigger(const std::string &action, const Arg &args) {
@@ -98,10 +98,11 @@ void Object::print(const std::string &prefix)
         for (auto it : attribs_) {
             std::cout << prefix << "\t" << it.first
                       << " (" << it.second->typestr() << ")";
-            if (it.second->readable())
-                std::cout << "\tr(" << it.second->read() << ")";
+            std::cout << "\t[" << it.second->read() << "]";
             if (it.second->writeable())
                 std::cout << "\tw";
+            if (!it.second->hookable())
+                std::cout << "\t!h";
             std::cout << std::endl;
         }
     }

@@ -12,18 +12,20 @@ class Attribute : public Entity {
 public:
     Attribute() {}
     Attribute(const std::string &name,
-              bool readable, bool writeable)
+              bool writeable)
         : Entity(name), owner_(nullptr),
-          readable_(readable), writeable_(writeable) {}
+          writeable_(writeable), hookable_(true) {}
     virtual ~Attribute() {};
 
     // set the owner after object creation (when pointer is available)
     void setOwner(Object *owner) { owner_ = owner; }
+    // change if attribute can be expected to trigger hooks (rarely used)
+    void setHookable(bool hookable) { hookable_ = hookable; }
 
     virtual Type type() { return Type::ATTRIBUTE; }
 
-    bool readable() const { return readable_; }
     bool writeable() const { return writeable_; }
+    bool hookable() const { return hookable_; }
 
     // all access to the payload is delegated to owner!
     std::string read() const;
@@ -36,7 +38,7 @@ public:
 
 protected:
     Object *owner_;
-    bool readable_, writeable_;
+    bool writeable_, hookable_;
 };
 
 /* attributes that don't hold reference a data field (no templating), but are
@@ -45,8 +47,8 @@ class DynamicAttribute : public Attribute {
 public:
     DynamicAttribute() {}
     DynamicAttribute(const std::string &name, Type type,
-                     bool readable, bool writeable)
-        : Attribute(name, readable, writeable), type_(type) {}
+                     bool writeable, bool hookable = false)
+        : Attribute(name, writeable), type_(type) { hookable_ = hookable; }
 
     Type type() { return type_; }
 

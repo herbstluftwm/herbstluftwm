@@ -33,9 +33,9 @@ void test_object_system()
 
 TestObject::TestObject()
     : Object("tester"),
-      foo_("foo", true, true, 42),
-      bar_("bar", true, false, true),
-      checker_("checker", Type::ATTRIBUTE_COLOR, true, false),
+      foo_("foo", true, 42),
+      bar_("bar", false, true),
+      checker_("checker", Type::ATTRIBUTE_COLOR, false, false),
       killer_("killer")
 {
     wireAttributes({ &foo_, &bar_, &checker_ });
@@ -59,8 +59,8 @@ void TestObject::do_stuff()
 
 TestObjectII::TestObjectII(const std::string &name)
     : Object(name),
-      foo_("foo", true, true, 42),
-      bar_("bar", true, false, true),
+      foo_("foo", true, 42),
+      bar_("bar", false, true),
       checker_("checker", Type::ATTRIBUTE_COLOR, true, false),
       killer_("killer")
 {

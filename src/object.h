@@ -25,12 +25,11 @@ public:
 
     virtual void print(const std::string &prefix = "\t| "); // a debug method
 
-    virtual bool readable(const std::string &attr) const;
     virtual std::string read(const std::string &attr) const;
     virtual bool writeable(const std::string &attr) const;
-    /* Note: when overwriting this method, you might need calls to
-     * Directory::notifyHooks() */
     virtual void write(const std::string &attr, const std::string &value);
+    virtual bool hookable(const std::string &attr) const;
+
     virtual void trigger(const std::string &action, const Arg &args);
 
     const std::unordered_map<std::string, Attribute*>&
