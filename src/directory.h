@@ -20,6 +20,7 @@ class Directory : public Entity, public std::enable_shared_from_this<Directory>
 {
 public:
     Directory(const std::string& name) : Entity(name) {}
+    virtual ~Directory() {};
 
     virtual Type type() { return Type::DIRECTORY; }
 

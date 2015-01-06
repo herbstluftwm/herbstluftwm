@@ -14,9 +14,10 @@ public:
               bool readable, bool writeable)
         : Entity(name), owner_(nullptr),
           readable_(readable), writeable_(writeable) {}
+    virtual ~Attribute() {};
+
     // set the owner after object creation (when pointer is available)
     void setOwner(Object *owner) { owner_ = owner; }
-    virtual ~Attribute() {};
 
     virtual Type type() { return Type::ATTRIBUTE; }
 
