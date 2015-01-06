@@ -1,24 +1,27 @@
 #include "testobject.h"
-#include "hook.h"
+#include "hookmanager.h"
+#include "root.h"
 
 namespace herbstluft {
 
 void test_object_system()
 {
-    auto root = std::make_shared<Directory>("root");
+    auto root = Root::create();
 
     auto tester = std::make_shared<TestObject>();
     root->addChild(tester);
 
     auto hooks = {
-        std::make_shared<herbstluft::Hook>("tester.precious.name"),
-        std::make_shared<herbstluft::Hook>("tester.precious.bar"),
-        std::make_shared<herbstluft::Hook>("tester.precious.sweets.name"),
-        std::make_shared<herbstluft::Hook>("tester.precious.sweets.foo"),
-        std::make_shared<herbstluft::Hook>("tester.precious"),
+        "tester.precious.name",
+        "tester.precious.bar",
+        "tester.precious.sweets.name",
+        "tester.precious.sweets.foo",
+        "tester.precious",
+        "lasmiranda"
     };
     for (auto h : hooks) {
-        h->hook_into(root);
+        //root->hooks()->add(h);
+        root->hooks()->trigger("add", h);
     }
     root->print("");
     auto wat = std::dynamic_pointer_cast<herbstluft::TestObjectII>(
