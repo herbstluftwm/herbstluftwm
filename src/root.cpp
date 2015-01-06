@@ -13,6 +13,7 @@ std::shared_ptr<Root> Root::create() {
 }
 
 void Root::destroy() {
+    root_->children_.clear(); // avoid possible circular shared_ptr dependency
     root_.reset();
 }
 
