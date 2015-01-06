@@ -46,7 +46,7 @@ std::string Object::read(const std::string &attr) const {
 bool Object::writeable(const std::string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end()) {
-        return it->second->readable();
+        return it->second->writeable();
     }
     return false; // TODO: throw
 }
