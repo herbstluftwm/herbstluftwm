@@ -163,7 +163,7 @@ void Hook::complete_chain() {
     }
 
     // now process leaf in case it is an attribute
-    if (chain_.size() < path_.size() -1)
+    if (chain_.size() < path_.size())
         return; // no chance, we are still incomplete
 
     auto o = std::dynamic_pointer_cast<Object>(chain_.back().lock());
