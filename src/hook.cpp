@@ -43,7 +43,7 @@ void Hook::operator()(std::shared_ptr<Directory> sender, HookEvent event,
         auto o = std::dynamic_pointer_cast<Object>(sender);
         if (!o)
             return; // TODO: throw
-        auto newvalue = o->read(path_.back());
+        auto newvalue = o->read(name);
         if (newvalue == value_)
             return;
 
