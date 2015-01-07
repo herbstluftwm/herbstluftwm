@@ -821,8 +821,8 @@ void frame_apply_layout(HSFrame* frame, herbstluft::Rectangle rect) {
             rect.width -= *g_frame_border_width * 2;
         }
 
-        rect.width = MAX(WINDOW_MIN_WIDTH, rect.width);
-        rect.height = MAX(WINDOW_MIN_HEIGHT, rect.height);
+        rect.width = std::max(WINDOW_MIN_WIDTH, rect.width);
+        rect.height = std::max(WINDOW_MIN_HEIGHT, rect.height);
 
         unsigned long border_color = g_frame_border_normal_color;
         unsigned long bg_color = g_frame_bg_normal_color;

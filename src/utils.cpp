@@ -189,10 +189,10 @@ Rectangle Rectangle::fromStr(const char* source) {
     int flags = XParseGeometry(source, &x, &y, &w, &h);
 
     return {
-        (XValue & flags) ? (short int)x : 0,
-        (YValue & flags) ? (short int)y : 0,
-        (WidthValue & flags) ? (unsigned short int)w : 0,
-        (HeightValue & flags) ? (unsigned short int)h : 0
+        (XValue & flags) ? x : 0,
+        (YValue & flags) ? y : 0,
+        (WidthValue & flags) ? w : 0,
+        (HeightValue & flags) ? h : 0
     };
 }
 
@@ -449,12 +449,6 @@ void tree_print_to(HSTreeInterface* intface, GString* output) {
     g_string_append_unichar(root_indicator, UTF8_STRING_AT(g_tree_style, 0));
     subtree_print_to(intface, " ", root_indicator->str, output);
     g_string_free(root_indicator, true);
-}
-
-int min(int a, int b) {
-    if (a < b)
-        return a;
-    return b;
 }
 
 char* posix_sh_escape(const char* source) {

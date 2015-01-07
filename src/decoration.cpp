@@ -538,11 +538,11 @@ void decoration_redraw_pixmap(struct HSClient* client) {
     }
 
     // Draw outer border
-    int ow = s.outer_width;
+    unsigned int ow = s.outer_width;
     outer.x -= client->dec.last_outer_rect.x;
     outer.y -= client->dec.last_outer_rect.y;
     if (ow > 0) {
-        ow = MIN(ow, (outer.height+1) / 2);
+        ow = std::min(ow, (outer.height+1) / 2);
         XRectangle rects[] = {
             { 0, 0, outer.width, ow }, /* top */
             { 0, ow, ow, outer.height - 2*ow }, /* left */

@@ -570,10 +570,10 @@ void HSClient::resize_tiling(Rectangle rect, HSFrame* frame) {
         auto inner = this->float_size;
         applysizehints(&inner.width, &inner.height);
         auto outline = inner_rect_to_outline(inner, scheme);
-        rect.x += MAX(0, (rect.width - outline.width)/2);
-        rect.y += MAX(0, (rect.height - outline.height)/2);
-        rect.width = MIN(outline.width, rect.width);
-        rect.height = MIN(outline.height, rect.height);
+        rect.x += std::max(0u, (rect.width - outline.width)/2);
+        rect.y += std::max(0u, (rect.height - outline.height)/2);
+        rect.width = std::min(outline.width, rect.width);
+        rect.height = std::min(outline.height, rect.height);
         scheme.tight_decoration = true;
     }
     if (needs_minimal_dec(frame)) {
@@ -583,12 +583,12 @@ void HSClient::resize_tiling(Rectangle rect, HSFrame* frame) {
 }
 
 // from dwm.c
-bool HSClient::applysizehints(int *w, int *h) {
+bool HSClient::applysizehints(unsigned int *w, unsigned int *h) {
     bool baseismin;
 
     /* set minimum possible */
-    *w = MAX(1, *w);
-    *h = MAX(1, *h);
+    *w = std::max(1u, *w);
+    *h = std::max(1u, *h);
     if(*h < WINDOW_MIN_HEIGHT)
         *h = WINDOW_MIN_HEIGHT;
     if(*w < WINDOW_MIN_WIDTH)
@@ -622,17 +622,18 @@ bool HSClient::applysizehints(int *w, int *h) {
         /* restore base dimensions */
         *w += this->basew;
         *h += this->baseh;
-        *w = MAX(*w, this->minw);
-        *h = MAX(*h, this->minh);
+        *w = std::max(*w, this->minw);
+        *h = std::max(*h, this->minh);
         if(this->maxw)
-            *w = MIN(*w, this->maxw);
+            *w = std::min(*w, this->maxw);
         if(this->maxh)
-            *h = MIN(*h, this->maxh);
+            *h = std::min(*h, this->maxh);
     }
     return *w != this->last_size.width || *h != this->last_size.height;
 }
 
-bool HSClient::applysizehints_xy(int *x, int *y, int *w, int *h) {
+bool HSClient::applysizehints_xy(int *x, int *y,
+                                 unsigned int *w, unsigned int *h) {
     return applysizehints(w,h) || *x != this->last_size.x
                                || *y != this->last_size.y;
 }
@@ -698,8 +699,8 @@ void HSClient::send_configure() {
     ce.window = this->window,
     ce.x = this->dec.last_inner_rect.x,
     ce.y = this->dec.last_inner_rect.y,
-    ce.width = MAX(this->dec.last_inner_rect.width, WINDOW_MIN_WIDTH),
-    ce.height = MAX(this->dec.last_inner_rect.height, WINDOW_MIN_HEIGHT),
+    ce.width = std::max(this->dec.last_inner_rect.width, WINDOW_MIN_WIDTH),
+    ce.height = std::max(this->dec.last_inner_rect.height, WINDOW_MIN_HEIGHT),
     ce.border_width = 0,
     ce.above = None,
     ce.override_redirect = False,
@@ -1046,14 +1047,14 @@ void HSClient::fuzzy_fix_initial_position() {
     int extreme_y = float_size.y;
     HSDecTriple* t = &g_decorations[HSDecSchemeFloating];
     auto r = inner_rect_to_outline(float_size, t->active);
-    extreme_x = MIN(extreme_x, r.x);
-    extreme_y = MIN(extreme_y, r.y);
+    extreme_x = std::min(extreme_x, r.x);
+    extreme_y = std::min(extreme_y, r.y);
     r = inner_rect_to_outline(float_size, t->normal);
-    extreme_x = MIN(extreme_x, r.x);
-    extreme_y = MIN(extreme_y, r.y);
+    extreme_x = std::min(extreme_x, r.x);
+    extreme_y = std::min(extreme_y, r.y);
     r = inner_rect_to_outline(float_size, t->urgent);
-    extreme_x = MIN(extreme_x, r.x);
-    extreme_y = MIN(extreme_y, r.y);
+    extreme_x = std::min(extreme_x, r.x);
+    extreme_y = std::min(extreme_y, r.y);
     // if top left corner might be outside of the monitor, move it accordingly
     if (extreme_x < 0) { float_size.x += abs(extreme_x); }
     if (extreme_y < 0) { float_size.y += abs(extreme_y); }

@@ -16,8 +16,8 @@
 
 #define HERBST_FRAME_CLASS "_HERBST_FRAME"
 #define HERBST_DECORATION_CLASS "_HERBST_DECORATION"
-#define WINDOW_MIN_HEIGHT 32
-#define WINDOW_MIN_WIDTH 32
+#define WINDOW_MIN_HEIGHT 32u
+#define WINDOW_MIN_WIDTH 32u
 
 #define ROOT_EVENT_MASK (SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask)
 //#define CLIENT_EVENT_MASK (PropertyChangeMask | FocusChangeMask | StructureNotifyMask)

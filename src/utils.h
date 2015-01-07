@@ -109,8 +109,6 @@ template<class T, int S> struct ArrayInitializer {
     std::array<T, S> a;
 };
 
-int min(int a, int b);
-
 // utils for tables
 typedef bool (*MemberEquals)(void* pmember, const void* needle);
 bool memberequals_string(void* pmember, const void* needle);

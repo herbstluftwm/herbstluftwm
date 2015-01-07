@@ -178,15 +178,15 @@ static bool rects_intersect(RectList* m1, RectList* m2) {
 
 static Rectangle intersection_area(RectList* m1, RectList* m2) {
     Rectangle r; // intersection between m1->rect and m2->rect
-    r.x = MAX(m1->rect.x, m2->rect.x);
-    r.y = MAX(m1->rect.y, m2->rect.y);
+    r.x = std::max(m1->rect.x, m2->rect.x);
+    r.y = std::max(m1->rect.y, m2->rect.y);
     // the bottom right coordinates of the rects
     int br1_x = m1->rect.x + m1->rect.width;
     int br1_y = m1->rect.y + m1->rect.height;
     int br2_x = m2->rect.x + m2->rect.width;
     int br2_y = m2->rect.y + m2->rect.height;
-    r.width = MIN(br1_x, br2_x) - r.x;
-    r.height = MIN(br1_y, br2_y) - r.y;
+    r.width = std::min(br1_x, br2_x) - r.x;
+    r.height = std::min(br1_y, br2_y) - r.y;
     return r;
 }
 
@@ -1016,8 +1016,10 @@ void monitor_focus_by_index(int new_selection) {
         // If the mouse is located in a gap indicated by
         // mouse_recenter_gap at the outer border of the monitor,
         // recenter the mouse.
-        if (min(monitor->mouse.x, abs(monitor->mouse.x - monitor->rect.width)) < *g_mouse_recenter_gap
-            || min(monitor->mouse.y, abs(monitor->mouse.y - monitor->rect.height)) < *g_mouse_recenter_gap) {
+        if (std::min(monitor->mouse.x, abs(monitor->mouse.x - monitor->rect.width))
+                < *g_mouse_recenter_gap
+            || std::min(monitor->mouse.y, abs(monitor->mouse.y - monitor->rect.height))
+                < *g_mouse_recenter_gap) {
             monitor->mouse.x = monitor->rect.width / 2;
             monitor->mouse.y = monitor->rect.height / 2;
         }

@@ -48,8 +48,8 @@ public:
                                 // notify event
     bool        visible;
     // for size hints
-	float mina, maxa;
-    int basew, baseh, incw, inch, maxw, maxh, minw, minh;
+    float mina_, maxa_;
+    unsigned int basew, baseh, incw, inch, maxw, maxh, minw, minh;
     // for other modules
     HSObject    object;
 
@@ -89,8 +89,8 @@ public:
     void set_dragged(bool drag_state);
 
     void send_configure();
-    bool applysizehints(int *w, int *h);
-    bool applysizehints_xy(int *x, int *y, int *w, int *h);
+    bool applysizehints(unsigned int *w, unsigned int *h);
+    bool applysizehints_xy(int *x, int *y, unsigned int *w, unsigned int *h);
     void updatesizehints();
 
     bool sendevent(Atom proto);

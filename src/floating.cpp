@@ -156,8 +156,8 @@ int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx) {
         int rcx = R2.x + R2.width / 2;
         int rcy = R2.y + R2.height / 2;
                             // another method that checks the closes point
-        int anchor_y = rcy; // (rcy > cy) ? rcy : MIN(rcy + R2.height, cy);
-        int anchor_x = rcx; // MAX(cx, R2.x);
+        int anchor_y = rcy; // (rcy > cy) ? rcy : std::min(rcy + R2.height, cy);
+        int anchor_x = rcx; // std::max(cx, R2.x);
         // get manhatten distance to the anchor
         int dist = abs(anchor_x - cx) + abs(anchor_y - cy);
         if (dist < distbest

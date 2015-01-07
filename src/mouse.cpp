@@ -334,8 +334,8 @@ void mouse_function_resize(XMotionEvent* me) {
     int min_height = WINDOW_MIN_HEIGHT;
     HSClient* client = g_win_drag_client;
     if (client->sizehints_floating) {
-        min_width = MAX(WINDOW_MIN_WIDTH, client->minw);
-        min_height = MAX(WINDOW_MIN_HEIGHT, client->minh);
+        min_width = std::max(WINDOW_MIN_WIDTH, client->minw);
+        min_height = std::max(WINDOW_MIN_HEIGHT, client->minh);
     }
     if (new_width <  min_width) {
         new_width = min_width;
@@ -390,8 +390,8 @@ void mouse_function_zoom(XMotionEvent* me) {
     HSClient* client = g_win_drag_client;
 
     // avoid an overflow
-    int new_width  = g_win_drag_start.width  + 2 * x_diff;
-    int new_height = g_win_drag_start.height + 2 * y_diff;
+    unsigned int new_width  = g_win_drag_start.width  + 2 * x_diff;
+    unsigned int new_height = g_win_drag_start.height + 2 * y_diff;
     // apply new rect
     client->float_size = g_win_drag_start;
     client->float_size.x = cent_x - new_width / 2;

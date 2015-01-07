@@ -41,8 +41,8 @@ namespace herbstluft {
 
         int x;
         int y;
-        int width;
-        int height;
+        unsigned int width;
+        unsigned int height;
     };
     using RectangleVec = std::vector<Rectangle>;
 
