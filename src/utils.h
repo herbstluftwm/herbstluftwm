@@ -23,6 +23,7 @@ namespace herbstluft {
         return { a.begin() + n, a.end() };
     }
 
+    /* split an object tree path into its elements */
     inline std::vector<std::string> split_path(const std::string &path) {
         std::stringstream tmp(path);
         std::vector<std::string> ret;
