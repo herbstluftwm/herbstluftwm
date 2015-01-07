@@ -2,12 +2,15 @@
 #include "hookmanager.h"
 
 #include <memory>
+#include <stdexcept>
 
 namespace herbstluft {
 
 std::shared_ptr<Root> Root::root_;
 
 std::shared_ptr<Root> Root::create() {
+    if (root_)
+        throw std::logic_error("Redundant root node creation!");
     root_ = std::make_shared<Root>();
     return root_;
 }

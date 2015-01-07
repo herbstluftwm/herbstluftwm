@@ -4,6 +4,7 @@
  * See LICENSE for details */
 
 // herbstluftwm
+#include "root.h"
 #include "clientlist.h"
 #include "utils.h"
 #include "key.h"
@@ -966,6 +967,7 @@ void unmapnotify(XEvent* event) {
 #include "testobject.h"
 
 int main(int argc, char* argv[]) {
+    herbstluft::Root::create();
     herbstluft::test_object_system();
 
     init_handler_table();

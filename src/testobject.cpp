@@ -6,7 +6,7 @@ namespace herbstluft {
 
 void test_object_system()
 {
-    auto root = Root::create();
+    auto root = Root::get();
 
     auto tester = std::make_shared<TestObject>();
     root->addChild(tester);
