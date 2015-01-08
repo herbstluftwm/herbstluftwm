@@ -393,7 +393,6 @@ void mouse_function_zoom(XMotionEvent* me) {
     unsigned int new_width  = g_win_drag_start.width  + 2 * x_diff;
     unsigned int new_height = g_win_drag_start.height + 2 * y_diff;
     // apply new rect
-    client->float_size_ = g_win_drag_start;
     client->float_size_.x = cent_x - new_width / 2;
     client->float_size_.y = cent_y - new_height / 2;
     client->float_size_.width = new_width;
