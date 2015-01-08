@@ -437,13 +437,14 @@ int wmexec(int argc, char** argv) {
 }
 
 int raise_command(int argc, char** argv, GString* output) {
-    Window win;
-    HSClient* client = NULL;
-    win = string_to_client((argc > 1) ? argv[1] : "", &client);
+    auto client = get_client((argc > 1) ? argv[1] : "");
     if (client) {
         client->raise();
     } else {
-        XRaiseWindow(g_display, win);
+        auto window = get_window((argc > 1) ? argv[1] : "");
+        if (window)
+            XRaiseWindow(g_display, std::stoul(argv[1], nullptr, 0));
+        else return HERBST_INVALID_ARGUMENT;
     }
     return 0;
 }
@@ -452,8 +453,7 @@ int jumpto_command(int argc, char** argv, GString* output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    HSClient* client = NULL;
-    string_to_client(argv[1], &client);
+    auto client = get_client(argv[1]);
     if (client) {
         focus_client(client, true, true);
         return 0;
@@ -922,7 +922,7 @@ void maprequest(XEvent* event) {
     } else if (!get_client_from_window(mapreq->window)) {
         // client should be managed (is not ignored)
         // but is not managed yet
-        HSClient* client = manage_client(mapreq->window);
+        auto client = manage_client(mapreq->window);
         if (client && find_monitor_with_tag(client->tag())) {
             XMapWindow(g_display, mapreq->window);
         }

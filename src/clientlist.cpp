@@ -3,7 +3,9 @@
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
 
+#include "root.h"
 #include "clientlist.h"
+#include "clientmanager.h"
 #include "settings.h"
 #include "globals.h"
 #include "layout.h"
@@ -39,7 +41,6 @@ static int g_monitor_float_treshold = 24;
 static int* g_raise_on_focus;
 static int* g_snap_gap;
 
-static GHashTable* g_clients; // container of all clients
 static HSObject*   g_client_object;
 
 // atoms from dwm.c
@@ -87,10 +88,6 @@ static void fetch_colors() {
     g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
 }
 
-static void client_destroy(HSClient* c) {
-    delete c;
-}
-
 void clientlist_init() {
     // init regex simple..
     fetch_colors();
@@ -100,8 +97,6 @@ void clientlist_init() {
     g_wmatom[WMTakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
     // init actual client list
     g_client_object = hsobject_create_and_link(hsobject_root(), "clients");
-    g_clients = g_hash_table_new_full(g_int_hash, g_int_equal,
-                                      NULL, (GDestroyNotify)client_destroy);
 }
 
 void clientlist_end_startup() {
@@ -118,7 +113,7 @@ bool HSClient::ignore_unmapnotify() {
 }
 
 bool clientlist_ignore_unmapnotify(Window win) {
-    HSClient* c = get_client_from_window(win);
+    auto c = herbstluft::Root::clients()->client(win);
     return c && c->ignore_unmapnotify();
 }
 
@@ -127,44 +122,12 @@ void reset_client_colors() {
     all_monitors_apply_layout();
 }
 
-static void client_move_to_floatpos(void* key, void* client_void, void* data) {
-    (void)key;
-    (void)data;
-    HSClient* client = (HSClient*)client_void;
-    if (client) {
-        int x = client->float_size.x;
-        int y = client->float_size.y;
-        unsigned int w = client->float_size.width;
-        unsigned int h = client->float_size.height;
-        XMoveResizeWindow(g_display, client->x11Window(), x, y, w, h);
-        XReparentWindow(g_display, client->x11Window(), g_root, x, y);
-        ewmh_update_frame_extents(client->x11Window(), 0,0,0,0);
-    }
-}
-
-static void client_show_window(void* key, void* client_void, void* data) {
-    (void)key;
-    (void)data;
-    HSClient* client = (HSClient*)client_void;
-    window_set_visible(client->x11Window(), true);
-}
-
 void clientlist_destroy() {
-    // move all clients to their original floating position
-    g_hash_table_foreach(g_clients, client_move_to_floatpos, NULL);
-    g_hash_table_foreach(g_clients, client_show_window, NULL);
-
-    g_hash_table_destroy(g_clients);
     hsobject_unlink_and_destroy(hsobject_root(), g_client_object);
 }
 
-
-void clientlist_foreach(GHFunc func, gpointer data) {
-    g_hash_table_foreach(g_clients, func, data);
-}
-
 HSClient* get_client_from_window(Window window) {
-    return (HSClient*) g_hash_table_lookup(g_clients, &window);
+    return herbstluft::Root::clients()->client(window).get();
 }
 
 #define CLIENT_UPDATE_ATTR(FUNC,MEMBER) do { \
@@ -229,16 +192,19 @@ static GString* client_attr_sh_floating(HSAttribute* attr) {
     return NULL;
 }
 
-HSClient* manage_client(Window win) {
+std::shared_ptr<HSClient> manage_client(Window win) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
         return NULL;
     }
-    if (get_client_from_window(win)) {
+
+    auto cm = herbstluft::Root::clients();
+    if (cm->client(win)) {
         return NULL;
     }
+
     // init client
-    HSClient* client = new HSClient(win);
+    auto client = std::make_shared<HSClient>(win);
     client->pid_ = window_pid(g_display, win);
     HSMonitor* m = get_current_monitor();
     client->update_title();
@@ -254,8 +220,8 @@ HSClient* manage_client(Window win) {
 
     // apply rules
     HSClientChanges changes;
-    client_changes_init(&changes, client);
-    rules_apply(client, &changes);
+    client_changes_init(&changes, client.get());
+    rules_apply(client.get(), &changes);
     if (changes.tag_name) {
         client->setTag(find_tag(changes.tag_name->str));
     }
@@ -277,16 +243,15 @@ HSClient* manage_client(Window win) {
 
     if (!changes.manage) {
         client_changes_free_members(&changes);
-        client_destroy(client);
         // map it... just to be sure
         XMapWindow(g_display, win);
-        return NULL;
+        return {}; // client gets destroyed
     }
 
     // actually manage it
-    decoration_setup_frame(client);
+    decoration_setup_frame(client.get());
     client->fuzzy_fix_initial_position();
-    g_hash_table_insert(g_clients, &(client->window_), client);
+    cm->add(client);
     hsobject_link(g_client_object, &client->object, client->window_str_->str);
     // insert to layout
     if (!client->tag()) {
@@ -296,7 +261,8 @@ HSClient* manage_client(Window win) {
     client->slice = slice_create_client(client);
     stack_insert_slice(client->tag()->stack, client->slice);
     // insert window to the tag
-    frame_insert_client(lookup_frame(client->tag()->frame, changes.tree_index->str), client);
+    frame_insert_client(lookup_frame(client->tag()->frame,
+                                     changes.tree_index->str), client.get());
     client->update_wm_hints();
     client->updatesizehints();
     if (changes.focus) {
@@ -304,10 +270,10 @@ HSClient* manage_client(Window win) {
         // TODO: make this faster!
         // WARNING: this solution needs O(C + exp(D)) time where W is the count
         // of clients on this tag and D is the depth of the binary layout tree
-        frame_focus_client(client->tag()->frame, client);
+        frame_focus_client(client->tag()->frame, client.get());
     }
 
-    client->object.data = client;
+    client->object.data = &client;
 
     HSAttribute attributes[] = {
         ATTRIBUTE_STRING(   "winid",        client->window_str_,     ATTR_READ_ONLY),
@@ -331,7 +297,7 @@ HSClient* manage_client(Window win) {
     ewmh_window_update_tag(client->window_, client->tag());
     tag_set_flags_dirty();
     client->set_fullscreen(changes.fullscreen);
-    ewmh_update_window_state(client);
+    ewmh_update_window_state(client.get());
     // add client after setting the correct tag for the new client
     // this ensures a panel can read the tag property correctly at this point
     ewmh_add_client(client->window_);
@@ -368,13 +334,14 @@ HSClient* manage_client(Window win) {
     client->send_configure();
 
     client_changes_free_members(&changes);
-    grab_client_buttons(client, false);
+    grab_client_buttons(client.get(), false);
 
     return client;
 }
 
 void unmanage_client(Window win) {
-    HSClient* client = get_client_from_window(win);
+    auto cm = herbstluft::Root::clients();
+    auto client = cm->client(win);
     if (!client) {
         return;
     }
@@ -382,7 +349,7 @@ void unmanage_client(Window win) {
         mouse_stop_drag();
     }
     // remove from tag
-    frame_remove_client(client->tag()->frame, client);
+    frame_remove_client(client->tag()->frame, client.get());
     // ignore events from it
     XSelectInput(g_display, win, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
@@ -392,11 +359,14 @@ void unmanage_client(Window win) {
     // delete ewmh-properties and ICCCM-Properties such that the client knows
     // that he has been unmanaged and now the client is allowed to be mapped
     // again (e.g. if it is some dialog)
-    ewmh_clear_client_properties(client);
+    ewmh_clear_client_properties(client.get());
     XDeleteProperty(g_display, client->window_, g_wmatom[WMState]);
     HSTag* tag = client->tag();
-    g_hash_table_remove(g_clients, &win);
-    client = NULL;
+
+    // delete client
+    cm->remove(win);
+    client.reset();
+
     // and arrange monitor after the client has been removed from the stack
     HSMonitor* m = find_monitor_with_tag(tag);
     tag_update_focus_layer(tag);
@@ -735,10 +705,9 @@ Rectangle HSClient::outer_floating_rect() {
 }
 
 int close_command(int argc, char** argv, GString* output) {
-    Window win;
-    HSClient* client = NULL;
-    win = string_to_client((argc > 1) ? argv[1] : "", &client);
-    if (win) window_close(win);
+    auto window = get_window((argc > 1) ? argv[1] : "");
+    if (window != 0)
+        window_close(window);
     else return HERBST_INVALID_ARGUMENT;
     return 0;
 }
@@ -954,54 +923,40 @@ int client_set_property_command(int argc, char** argv) {
     return 0;
 }
 
-static bool is_client_urgent(void* key, HSClient* client, void* data) {
-    (void) key;
-    (void) data;
-    return client->urgent;
-}
-
-HSClient* get_urgent_client() {
-    return (HSClient*)g_hash_table_find(g_clients, (GHRFunc)is_client_urgent, NULL);
-}
-
 /**
- * \brief   Resolve a window description to a client or a window id
+ * \brief   Resolve a window description to a client
  *
  * \param   str     Describes the window: "" means the focused one, "urgent"
  *                  resolves to a arbitrary urgent window, "0x..." just
  *                  resolves to the given window given its hexadecimal window id,
  *                  a decimal number its decimal window id.
- * \param   ret_client  The client pointer is stored there if ret_client is
- *                      given and the specified window is managed.
- * \return          The resolved window id is stored there if the according
- *                  window has been found
+ * \return          Pointer to the resolved client, or null, if client not found
  */
-Window string_to_client(const char* str, HSClient** ret_client) {
-    Window win = 0;
+HSClient* get_client(const char* str) {
     if (!strcmp(str, "")) {
-        HSClient* client = get_current_client();
-        win = client ? client->window : 0;
-        if (ret_client) {
-            *ret_client = client;
-        }
-    } else if (!strcmp(str, "urgent")) {
-        HSClient* client = get_urgent_client();
-        if (client) {
-            win = client->window;
-        }
-        if (ret_client) {
-            *ret_client = client;
-        }
-    } else if (1 == sscanf(str, "0x%lx", (long unsigned int*)&win)) {
-        if (ret_client) {
-            *ret_client = get_client_from_window(win);
-        }
-    } else if (1 == sscanf(str, "%lu", (long unsigned int*)&win)) {
-        if (ret_client) {
-            *ret_client = get_client_from_window(win);
-        }
+        return get_current_client();
+    } else {
+        return herbstluft::Root::clients()->client(str).get();
     }
-    return win;
+}
+
+/**
+ * \brief   Resolve a window description to a window
+ *
+ * \param   str     Describes the window: "" means the focused one, "urgent"
+ *                  resolves to a arbitrary urgent window, "0x..." just
+ *                  resolves to the given window given its hexadecimal window id,
+ *                  a decimal number its decimal window id.
+ * \return          Window id, or 0, if unconvertable
+ */
+Window get_window(const char* str) {
+    // managed window?
+    auto client = get_client(str);
+    if (client)
+        return client->window_;
+
+    // unmanaged window? try to convert from base 16 or base 10 at the same time
+    return std::stoul(str, nullptr, 0);
 }
 
 // mainly from dwm.c

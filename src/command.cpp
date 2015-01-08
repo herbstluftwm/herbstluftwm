@@ -3,6 +3,7 @@
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
 
+#include "root.h"
 #include "ipc-protocol.h"
 #include "command.h"
 #include "utils.h"
@@ -10,6 +11,7 @@
 #include "layout.h"
 #include "key.h"
 #include "clientlist.h"
+#include "clientmanager.h"
 #include "monitor.h"
 #include "rules.h"
 #include "object.h"
@@ -571,28 +573,18 @@ void complete_against_comparators(int argc, char** argv, int pos, GString* outpu
     }
 }
 
-struct wcd { /* window id completion data */
-    const char* needle;
-    GString* output;
-};
-
-static void add_winid_completion(void* key, HSClient* client, struct wcd* data)
-{
-    char buf[100];
-    snprintf(buf, LENGTH(buf), "0x%lx", client->window);
-    try_complete(data->needle, buf, data->output);
-
-}
-
 void complete_against_winids(int argc, char** argv, int pos, GString* output) {
-    struct wcd data;
+    const char* needle;
     if (pos >= argc) {
-        data.needle = "";
+        needle = "";
     } else {
-        data.needle = argv[pos];
+        needle = argv[pos];
     }
-    data.output = output;
-    clientlist_foreach((GHFunc)add_winid_completion, &data);
+    for (auto c : herbstluft::Root::clients()->clients()) {
+        char buf[100];
+        snprintf(buf, LENGTH(buf), "0x%lx", c.second->window_);
+        try_complete(needle, buf, output);
+    }
 }
 
 void complete_merge_tag(int argc, char** argv, int pos, GString* output) {

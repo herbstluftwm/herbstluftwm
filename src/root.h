@@ -15,10 +15,12 @@ public:
     static void destroy();
     static std::shared_ptr<Root> get() { return root_; }
 
+    // constructor creates top-level objects
     Root();
 
     /* convenience methods */
-    std::shared_ptr<HookManager> hooks();
+    static std::shared_ptr<HookManager> hooks();
+    static std::shared_ptr<ClientManager> clients();
 
 private:
 

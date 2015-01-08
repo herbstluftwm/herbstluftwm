@@ -116,24 +116,22 @@ void clientlist_init();
 void clientlist_destroy();
 void clientlist_end_startup();
 
-void clientlist_foreach(GHFunc func, gpointer data);
-
 bool clientlist_ignore_unmapnotify(Window win);
 
 void reset_client_colors();
 void reset_client_settings();
 
 // adds a new client to list of managed client windows
-HSClient* manage_client(Window win);
+std::shared_ptr<HSClient> manage_client(Window win);
 void unmanage_client(Window win);
 
 void window_enforce_last_size(Window in);
 
 HSClient* get_client_from_window(Window window);
 HSClient* get_current_client();
-HSClient* get_urgent_client();
+HSClient* get_client(const char* str);
+Window get_window(const char* str);
 
-Window string_to_client(const char* str, HSClient** ret_client);
 int close_command(int argc, char** argv, GString* output);
 void window_close(Window window);
 

@@ -1,5 +1,6 @@
 #include "root.h"
 #include "hookmanager.h"
+#include "clientmanager.h"
 
 #include <memory>
 #include <stdexcept>
@@ -20,15 +21,19 @@ void Root::destroy() {
     root_.reset();
 }
 
-
 Root::Root() : Directory("root")
 {
     addChild(std::make_shared<HookManager>());
+    addChild(std::make_shared<ClientManager>());
 }
 
 std::shared_ptr<HookManager> Root::hooks()
 {
-    return child<HookManager>("hooks");
+    return root_->child<HookManager>("hooks");
+}
+
+std::shared_ptr<ClientManager> Root::clients() {
+    return root_->child<ClientManager>("clients");
 }
 
 }

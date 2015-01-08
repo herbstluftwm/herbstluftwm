@@ -9,8 +9,10 @@
 
 #include "tag.h"
 
+#include "root.h"
 #include "globals.h"
 #include "clientlist.h"
+#include "clientmanager.h"
 #include "ipc-protocol.h"
 #include "utils.h"
 #include "hook.h"
@@ -405,18 +407,6 @@ int tag_set_floating_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-static void client_update_tag_flags(void* key, void* client_void, void* data) {
-    (void) key;
-    (void) data;
-    HSClient* client = (HSClient*)client_void;
-    if (client) {
-        TAG_SET_FLAG(client->tag(), TAG_FLAG_USED);
-        if (client->urgent) {
-            TAG_SET_FLAG(client->tag(), TAG_FLAG_URGENT);
-        }
-    }
-}
-
 void tag_force_update_flags() {
     g_tag_flags_dirty = false;
     // unset all tags
@@ -424,7 +414,13 @@ void tag_force_update_flags() {
         g_array_index(g_tags, HSTag*, i)->flags = 0;
     }
     // update flags
-    clientlist_foreach(client_update_tag_flags, NULL);
+    for (auto c : herbstluft::Root::clients()->clients()) {
+        auto client = c.second;
+        TAG_SET_FLAG(client->tag(), TAG_FLAG_USED);
+        if (client->urgent_) {
+            TAG_SET_FLAG(client->tag(), TAG_FLAG_URGENT);
+        }
+    }
 }
 
 void tag_update_flags() {

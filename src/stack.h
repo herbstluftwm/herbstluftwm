@@ -10,6 +10,7 @@
 #include "glib-backports.h"
 #include <stdbool.h>
 #include <array>
+#include <memory>
 
 enum HSLayer {
     /* layers on each monitor, from top to bottom */
@@ -36,7 +37,7 @@ typedef struct HSSlice {
     HSLayer     layer[LAYER_COUNT]; /* layers this slice is contained in */
     size_t      layer_count;        /* count of those layers */
     union {
-        struct HSClient*    client;
+        std::shared_ptr<HSClient>    client;
         Window              window;
         struct HSMonitor*   monitor;
     } data;
@@ -52,7 +53,7 @@ void stacklist_destroy();
 
 HSSlice* slice_create_window(Window window);
 HSSlice* slice_create_frame(Window window);
-HSSlice* slice_create_client(struct HSClient* client);
+HSSlice* slice_create_client(std::shared_ptr<HSClient> client);
 HSSlice* slice_create_monitor(struct HSMonitor* monitor);
 void slice_destroy(HSSlice* slice);
 HSLayer slice_highest_layer(HSSlice* slice);
