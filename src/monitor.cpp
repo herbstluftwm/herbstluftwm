@@ -1228,7 +1228,6 @@ int detect_monitors_command(int argc, const char **argv, GString* output) {
         detect_monitors_debug_example, // move up for debugging
     };
     RectangleVec monitors;
-    size_t count = 0;
     // search for a working monitor detection
     // at least the simple detection must work
     for (int i = 0; i < LENGTH(detect); i++) {
@@ -1236,7 +1235,7 @@ int detect_monitors_command(int argc, const char **argv, GString* output) {
             break;
         }
     }
-    assert(count && !monitors.empty());
+    assert(!monitors.empty());
     bool list_only = false;
     bool disjoin = true;
     //bool drop_small = true;
@@ -1255,19 +1254,18 @@ int detect_monitors_command(int argc, const char **argv, GString* output) {
 
     int ret = 0;
     if (list_only) {
-        FOR (i,0,count) {
+        for (auto m : monitors) {
             g_string_append_printf(output, "%dx%d%+d%+d\n",
-                monitors[i].width, monitors[i].height,
-                monitors[i].x, monitors[i].y);
+                m.width, m.height,
+                m.x, m.y);
         }
     } else {
         // possibly disjoin them
         if (disjoin) {
             RectList* rl = disjoin_rects(monitors);
-            count = rectlist_length(rl);
-            monitors.resize(count);
+            monitors.resize(rectlist_length(rl));
             RectList* cur = rl;
-            FOR (i,0,count) {
+            FOR (i,0,monitors.size()) {
                 monitors[i] = cur->rect;
                 cur = cur->next;
             }
