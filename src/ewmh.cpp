@@ -359,7 +359,7 @@ void ewmh_handle_client_message(XEvent* event) {
         case NetWmState: {
             client = get_client_from_window(me->window);
             /* ignore requests for unmanaged windows */
-            if (!client || !client->ewmhrequests) break;
+            if (!client || !client->ewmhrequests_) break;
 
             /* mapping between EWMH atoms and client struct members */
             struct {
@@ -368,9 +368,9 @@ void ewmh_handle_client_message(XEvent* event) {
                 void    (*callback)(HSClient*, bool);
             } client_atoms[] = {
                 { NetWmStateFullscreen,
-                    client->fullscreen,     [](HSClient* c, bool state){ c->set_fullscreen(state); } },
+                    client->fullscreen_,     [](HSClient* c, bool state){ c->set_fullscreen(state); } },
                 { NetWmStateDemandsAttention,
-                    client->urgent,         [](HSClient* c, bool state){ c->set_urgent(state); } },
+                    client->urgent_,         [](HSClient* c, bool state){ c->set_urgent(state); } },
             };
 
             /* me->data.l[1] and [2] describe the properties to alter */
@@ -437,8 +437,8 @@ void ewmh_update_window_state(struct HSClient* client) {
         int     atom_index;
         bool    enabled;
     } client_atoms[] = {
-        { NetWmStateFullscreen,         client->ewmhfullscreen  },
-        { NetWmStateDemandsAttention,   client->urgent          },
+        { NetWmStateFullscreen,         client->ewmhfullscreen_  },
+        { NetWmStateDemandsAttention,   client->urgent_          },
     };
 
     /* find out which flags are set */
@@ -452,12 +452,12 @@ void ewmh_update_window_state(struct HSClient* client) {
     }
 
     /* write it to the window */
-    XChangeProperty(g_display, client->window, g_netatom[NetWmState], XA_ATOM,
+    XChangeProperty(g_display, client->window_, g_netatom[NetWmState], XA_ATOM,
         32, PropModeReplace, (unsigned char *) window_state, count_enabled);
 }
 
 void ewmh_clear_client_properties(struct HSClient* client) {
-    XDeleteProperty(g_display, client->window, g_netatom[NetWmState]);
+    XDeleteProperty(g_display, client->window_, g_netatom[NetWmState]);
 }
 
 bool ewmh_is_window_state_set(Window win, Atom hint) {

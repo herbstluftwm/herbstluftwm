@@ -340,7 +340,7 @@ int tag_remove_command(int argc, char** argv, GString* output) {
         stack_remove_slice(client->tag()->stack, client->slice);
         client->setTag(target);
         stack_insert_slice(client->tag()->stack, client->slice);
-        ewmh_window_update_tag(client->window, client->tag());
+        ewmh_window_update_tag(client->window_, client->tag());
         frame_insert_client(target->frame, buf[i]);
     }
     HSMonitor* monitor_target = find_monitor_with_tag(target);
@@ -514,7 +514,7 @@ void tag_move_client(HSClient* client, HSTag* target) {
     stack_remove_slice(client->tag()->stack, client->slice);
     client->setTag(target);
     stack_insert_slice(client->tag()->stack, client->slice);
-    ewmh_window_update_tag(client->window, client->tag());
+    ewmh_window_update_tag(client->window_, client->tag());
 
     // refresh things, hide things, layout it, and then show it if needed
     if (monitor_source && !monitor_target) {

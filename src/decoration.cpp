@@ -253,7 +253,7 @@ static Visual* check_32bit_client(HSClient* c)
     XWindowAttributes wattrib;
     Status ret;
 
-    ret = XGetWindowAttributes(g_display, c->window, &wattrib);
+    ret = XGetWindowAttributes(g_display, c->window_, &wattrib);
     HSWeakAssert(ret != BadDrawable);
     HSWeakAssert(ret != BadWindow);
 
@@ -314,8 +314,8 @@ void decoration_setup_frame(HSClient* client) {
     XMapWindow(g_display, dec->bgwin);
     // use a clients requested initial floating size as the initial size
     dec->last_rect_inner = true;
-    dec->last_inner_rect = client->float_size;
-    dec->last_outer_rect = inner_rect_to_outline(client->float_size, dec->last_scheme);
+    dec->last_inner_rect = client->float_size_;
+    dec->last_outer_rect = inner_rect_to_outline(client->float_size_, dec->last_scheme);
     dec->last_actual_rect = dec->last_inner_rect;
     dec->last_actual_rect.x -= dec->last_outer_rect.x;
     dec->last_actual_rect.y -= dec->last_outer_rect.y;
@@ -381,7 +381,7 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     auto inner = outline_to_inner_rect(outline, scheme);
     // get relative coordinates
     Window decwin = client->dec.decwin;
-    Window win = client->window;
+    Window win = client->window_;
 
     auto tile = inner;
     client->applysizehints(&inner.width, &inner.height);
@@ -431,11 +431,11 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
                      || outline.height != client->dec.last_outer_rect.height;
     client->dec.last_outer_rect = outline;
     client->dec.last_rect_inner = false;
-    client->last_size = inner;
+    client->last_size_ = inner;
     client->dec.last_scheme = scheme;
     // redraw
     // TODO: reduce flickering
-    if (!client->dragged || *g_update_dragged_clients) {
+    if (!client->dragged_ || *g_update_dragged_clients) {
         client->dec.last_actual_rect.x = changes.x;
         client->dec.last_actual_rect.y = changes.y;
         client->dec.last_actual_rect.width = changes.width;
@@ -447,7 +447,7 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
         // if size changes, then the window is cleared automatically
         XClearWindow(g_display, decwin);
     }
-    if (!client->dragged || *g_update_dragged_clients) {
+    if (!client->dragged_ || *g_update_dragged_clients) {
         XConfigureWindow(g_display, win, mask, &changes);
         XMoveResizeWindow(g_display, client->dec.bgwin,
                           changes.x, changes.y,
@@ -456,7 +456,7 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
     decoration_update_frame_extents(client);
-    if (!client->dragged || *g_update_dragged_clients) {
+    if (!client->dragged_ || *g_update_dragged_clients) {
         client->send_configure();
     }
     XSync(g_display, False);
@@ -467,7 +467,7 @@ static void decoration_update_frame_extents(struct HSClient* client) {
     int top  = client->dec.last_inner_rect.y - client->dec.last_outer_rect.y;
     int right = client->dec.last_outer_rect.width - client->dec.last_inner_rect.width - left;
     int bottom = client->dec.last_outer_rect.height - client->dec.last_inner_rect.height - top;
-    ewmh_update_frame_extents(client->window, left,right, top,bottom);
+    ewmh_update_frame_extents(client->window_, left,right, top,bottom);
 }
 
 void decoration_change_scheme(struct HSClient* client,

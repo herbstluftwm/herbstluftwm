@@ -54,26 +54,31 @@ static int client_get_scheme_triple_idx(HSClient* client);
 static bool g_startup = true; // whether hlwm is starting up and is not in the
                               // main event loop yet
 
-HSClient::HSClient() {
+HSClient::HSClient()
+    : float_size_({0, 0, 100, 100}),
+      urgent_(false), fullscreen_(false), ewmhfullscreen_(false),
+      pseudotile_(false), neverfocus_(false),
+      ewmhrequests_(true), ewmhnotify_(true),
+      sizehints_floating_(true), sizehints_tiling_(false),
+      visible_(false), dragged_(false), ignore_unmaps_(0) {
+
     hsobject_init(&this->object);
-    window_str = NULL;
-    float_size.width = 100;
-    float_size.height = 100;
-    title = g_string_new("");
-    urgent = false;
-    fullscreen = false;
-    ewmhfullscreen = false;
-    pseudotile = false;
-    ewmhrequests = true;
-    ewmhnotify = true;
-    sizehints_floating = true;
-    sizehints_tiling = false;
-    visible = false;
+    window_str_ = NULL;
+    title_ = g_string_new("");
     tag_ = NULL;
-    dragged = false;
-    neverfocus = false;
-    ignore_unmaps = 0;
     decoration_init(&dec, this);
+}
+
+HSClient::HSClient(Window window)
+    : HSClient() {
+    window_ = window;
+    std::stringstream tmp;
+    tmp << "0x" << std::hex << window_;
+    auto window_str = tmp.str();
+    name_ = window_str;
+    // TODO: use std::string from above
+    window_str_ = g_string_sized_new(10);
+    g_string_printf(window_str_, "0x%lx", window_);
 }
 
 static void fetch_colors() {
@@ -104,8 +109,8 @@ void clientlist_end_startup() {
 }
 
 bool HSClient::ignore_unmapnotify() {
-    if (ignore_unmaps > 0) {
-        ignore_unmaps--;
+    if (ignore_unmaps_ > 0) {
+        ignore_unmaps_--;
         return true;
     } else {
         return false;
@@ -191,20 +196,20 @@ static void client_attr_instance(void* data, GString* output) {
 }
 
 static GString* client_attr_fullscreen(HSAttribute* attr) {
-    CLIENT_UPDATE_ATTR(set_fullscreen, fullscreen);
+    CLIENT_UPDATE_ATTR(set_fullscreen, fullscreen_);
 }
 
 static GString* client_attr_pseudotile(HSAttribute* attr) {
-    CLIENT_UPDATE_ATTR(set_pseudotile, pseudotile);
+    CLIENT_UPDATE_ATTR(set_pseudotile, pseudotile_);
 }
 
 static GString* client_attr_urgent(HSAttribute* attr) {
-    CLIENT_UPDATE_ATTR(set_urgent_force, urgent);
+    CLIENT_UPDATE_ATTR(set_urgent_force, urgent_);
 }
 
 static GString* client_attr_sh_tiling(HSAttribute* attr) {
-    HSClient* client = container_of(attr->value.b, HSClient, sizehints_tiling);
-    if (!client->is_client_floated() && !client->pseudotile) {
+    HSClient* client = container_of(attr->value.b, HSClient, sizehints_tiling_);
+    if (!client->is_client_floated() && !client->pseudotile_) {
         HSMonitor* mon = find_monitor_with_tag(client->tag());
         if (mon) {
             monitor_apply_layout(mon);
@@ -214,8 +219,8 @@ static GString* client_attr_sh_tiling(HSAttribute* attr) {
 }
 
 static GString* client_attr_sh_floating(HSAttribute* attr) {
-    HSClient* client = container_of(attr->value.b, HSClient, sizehints_floating);
-    if (!client->is_client_floated() || client->pseudotile) {
+    HSClient* client = container_of(attr->value.b, HSClient, sizehints_floating_);
+    if (!client->is_client_floated() || client->pseudotile_) {
         HSMonitor* mon = find_monitor_with_tag(client->tag());
         if (mon) {
             monitor_apply_layout(mon);
@@ -233,11 +238,9 @@ HSClient* manage_client(Window win) {
         return NULL;
     }
     // init client
-    HSClient* client = new HSClient;
-    client->pid = window_pid(g_display, win);
+    HSClient* client = new HSClient(win);
+    client->pid_ = window_pid(g_display, win);
     HSMonitor* m = get_current_monitor();
-    // set to window properties
-    client->window = win;
     client->update_title();
 
     unsigned int border, depth;
@@ -246,11 +249,8 @@ HSClient* manage_client(Window win) {
     unsigned int w, h;
     XGetGeometry(g_display, win, &root_win, &x, &y, &w, &h, &border, &depth);
     // treat wanted coordinates as floating coords
-    client->float_size.x = x;
-    client->float_size.y = y;
-    client->float_size.width = w;
-    client->float_size.height = h;
-    client->last_size = client->float_size;
+    client->float_size_ = { x, y, w, h };
+    client->last_size_ = client->float_size_;
 
     // apply rules
     HSClientChanges changes;
@@ -273,7 +273,7 @@ HSClient* manage_client(Window win) {
     }
 
     // Reuse the keymask string
-    client->keymask = changes.keymask;
+    client->keymask_ = changes.keymask;
 
     if (!changes.manage) {
         client_changes_free_members(&changes);
@@ -286,10 +286,8 @@ HSClient* manage_client(Window win) {
     // actually manage it
     decoration_setup_frame(client);
     client->fuzzy_fix_initial_position();
-    g_hash_table_insert(g_clients, &(client->window), client);
-    client->window_str = g_string_sized_new(10);
-    g_string_printf(client->window_str, "0x%lx", win);
-    hsobject_link(g_client_object, &client->object, client->window_str->str);
+    g_hash_table_insert(g_clients, &(client->window_), client);
+    hsobject_link(g_client_object, &client->object, client->window_str_->str);
     // insert to layout
     if (!client->tag()) {
         client->setTag(m->tag);
@@ -312,38 +310,38 @@ HSClient* manage_client(Window win) {
     client->object.data = client;
 
     HSAttribute attributes[] = {
-        ATTRIBUTE_STRING(   "winid",        client->window_str,     ATTR_READ_ONLY),
-        ATTRIBUTE_STRING(   "title",        client->title,          ATTR_READ_ONLY),
-        ATTRIBUTE_STRING(   "keymask",      client->keymask,        ATTR_READ_ONLY),
+        ATTRIBUTE_STRING(   "winid",        client->window_str_,     ATTR_READ_ONLY),
+        ATTRIBUTE_STRING(   "title",        client->title_,          ATTR_READ_ONLY),
+        ATTRIBUTE_STRING(   "keymask",      client->keymask_,        ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM(   "tag",          client_attr_tag,        ATTR_READ_ONLY),
-        ATTRIBUTE_INT(      "pid",          client->pid,            ATTR_READ_ONLY),
+        ATTRIBUTE_INT(      "pid",          client->pid_,            ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM(   "class",        client_attr_class,      ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM(   "instance",     client_attr_instance,   ATTR_READ_ONLY),
-        ATTRIBUTE_BOOL(     "fullscreen",   client->fullscreen,     client_attr_fullscreen),
-        ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile,     client_attr_pseudotile),
-        ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests,   ATTR_ACCEPT_ALL),
-        ATTRIBUTE_BOOL(     "ewmhnotify",   client->ewmhnotify,     ATTR_ACCEPT_ALL),
-        ATTRIBUTE_BOOL(     "sizehints_tiling",   client->sizehints_tiling, client_attr_sh_tiling),
-        ATTRIBUTE_BOOL(     "sizehints_floating", client->sizehints_floating, client_attr_sh_floating),
-        ATTRIBUTE_BOOL(     "urgent",       client->urgent,         client_attr_urgent),
+        ATTRIBUTE_BOOL(     "fullscreen",   client->fullscreen_,     client_attr_fullscreen),
+        ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile_,     client_attr_pseudotile),
+        ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests_,   ATTR_ACCEPT_ALL),
+        ATTRIBUTE_BOOL(     "ewmhnotify",   client->ewmhnotify_,     ATTR_ACCEPT_ALL),
+        ATTRIBUTE_BOOL(     "sizehints_tiling",   client->sizehints_tiling_, client_attr_sh_tiling),
+        ATTRIBUTE_BOOL(     "sizehints_floating", client->sizehints_floating_, client_attr_sh_floating),
+        ATTRIBUTE_BOOL(     "urgent",       client->urgent_,         client_attr_urgent),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(&client->object, attributes);
 
-    ewmh_window_update_tag(client->window, client->tag());
+    ewmh_window_update_tag(client->window_, client->tag());
     tag_set_flags_dirty();
     client->set_fullscreen(changes.fullscreen);
     ewmh_update_window_state(client);
     // add client after setting the correct tag for the new client
     // this ensures a panel can read the tag property correctly at this point
-    ewmh_add_client(client->window);
+    ewmh_add_client(client->window_);
 
-    XSetWindowBorderWidth(g_display, client->window,0);
+    XSetWindowBorderWidth(g_display, client->window_, 0);
     // specify that the client window survives if hlwm dies, i.e. it will be
     // reparented back to root
-    XChangeSaveSet(g_display, client->window, SetModeInsert);
-    XReparentWindow(g_display, client->window, client->dec.decwin, 40, 40);
-    if (g_startup) client->ignore_unmaps++;
+    XChangeSaveSet(g_display, client->window_, SetModeInsert);
+    XReparentWindow(g_display, client->window_, client->dec.decwin, 40, 40);
+    if (g_startup) client->ignore_unmaps_++;
     // get events from window
     XSelectInput(g_display, client->dec.decwin, (EnterWindowMask | LeaveWindowMask |
                             ButtonPressMask | ButtonReleaseMask |
@@ -380,7 +378,7 @@ void unmanage_client(Window win) {
     if (!client) {
         return;
     }
-    if (client->dragged) {
+    if (client->dragged_) {
         mouse_stop_drag();
     }
     // remove from tag
@@ -395,7 +393,7 @@ void unmanage_client(Window win) {
     // that he has been unmanaged and now the client is allowed to be mapped
     // again (e.g. if it is some dialog)
     ewmh_clear_client_properties(client);
-    XDeleteProperty(g_display, client->window, g_wmatom[WMState]);
+    XDeleteProperty(g_display, client->window_, g_wmatom[WMState]);
     HSTag* tag = client->tag();
     g_hash_table_remove(g_clients, &win);
     client = NULL;
@@ -420,21 +418,21 @@ HSClient::~HSClient() {
     if (slice) {
         slice_destroy(slice);
     }
-    if (title) {
+    if (title_) {
         /* free window title */
-        g_string_free(title, true);
+        g_string_free(title_, true);
     }
-    if (window_str) {
-        g_string_free(window_str, true);
+    if (window_str_) {
+        g_string_free(window_str_, true);
     }
-    if (keymask) {
-        g_string_free(keymask, true);
+    if (keymask_) {
+        g_string_free(keymask_, true);
     }
     hsobject_free(&object);
 }
 
 static int client_get_scheme_triple_idx(HSClient* client) {
-    if (client->fullscreen) return HSDecSchemeFullscreen;
+    if (client->fullscreen_) return HSDecSchemeFullscreen;
     else if (client->is_client_floated()) return HSDecSchemeFloating;
     else if (client->needs_minimal_dec(NULL)) return HSDecSchemeMinimal;
     else return HSDecSchemeTiling;
@@ -446,7 +444,7 @@ bool HSClient::needs_minimal_dec(HSFrame* frame) {
         HSAssert(frame != NULL);
     }
     if (!smart_window_surroundings_active(frame)) return false;
-    if (this->pseudotile) return false;
+    if (this->pseudotile_) return false;
     if (this->is_client_floated()) return false;
     return true;
 }
@@ -476,8 +474,8 @@ void HSClient::window_unfocus_last() {
 
 void HSClient::window_focus() {
     // set keyboard focus
-    if (!this->neverfocus) {
-        XSetInputFocus(g_display, this->window, RevertToPointerRoot, CurrentTime);
+    if (!this->neverfocus_) {
+        XSetInputFocus(g_display, this->window_, RevertToPointerRoot, CurrentTime);
     }
     else this->sendevent(g_wmatom[WMTakeFocus]);
 
@@ -491,11 +489,11 @@ void HSClient::window_focus() {
             lastfocus->window_unfocus();
         }
         hsobject_link(g_client_object, &object, "focus");
-        ewmh_update_active_window(this->window);
+        ewmh_update_active_window(this->window_);
         tag_update_each_focus_layer();
-        const char* title = this->title->str;
+        const char* title = this->title_->str;
         char winid_str[STRING_BUF_SIZE];
-        snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)this->window);
+        snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)this->window_);
         hook_emit_list("focus_changed", winid_str, title, NULL);
     }
 
@@ -521,7 +519,7 @@ void HSClient::setup_border(bool focused) {
     if (focused) {
         decoration_change_scheme(this,
             g_decorations[client_get_scheme_triple_idx(this)].active);
-    } else if (this->urgent) {
+    } else if (this->urgent_) {
         decoration_change_scheme(this,
             g_decorations[client_get_scheme_triple_idx(this)].urgent);
     } else {
@@ -546,7 +544,7 @@ void HSClient::raise() {
 static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx) {
     if (get_current_client() == client) {
         return g_decorations[tripidx].active;
-    } else if (client->urgent) {
+    } else if (client->urgent_) {
         return g_decorations[tripidx].urgent;
     } else {
         return g_decorations[tripidx].normal;
@@ -555,19 +553,19 @@ static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripid
 
 void HSClient::resize_tiling(Rectangle rect, HSFrame* frame) {
     HSMonitor* m;
-    if (this->fullscreen && (m = find_monitor_with_tag(this->tag()))) {
+    if (this->fullscreen_ && (m = find_monitor_with_tag(this->tag()))) {
         resize_fullscreen(m);
         return;
     }
     // apply border width
-    if (!this->pseudotile && !smart_window_surroundings_active(frame)) {
+    if (!this->pseudotile_ && !smart_window_surroundings_active(frame)) {
         // apply window gap
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
     }
     HSDecorationScheme scheme = client_scheme_from_triple(this, HSDecSchemeTiling);
-    if (this->pseudotile) {
-        auto inner = this->float_size;
+    if (this->pseudotile_) {
+        auto inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);
         auto outline = inner_rect_to_outline(inner, scheme);
         rect.x += std::max(0u, (rect.width - outline.width)/2);
@@ -593,49 +591,49 @@ bool HSClient::applysizehints(unsigned int *w, unsigned int *h) {
         *h = WINDOW_MIN_HEIGHT;
     if(*w < WINDOW_MIN_WIDTH)
         *w = WINDOW_MIN_WIDTH;
-    bool sizehints = (this->is_client_floated() || this->pseudotile)
-                        ? this->sizehints_floating
-                        : this->sizehints_tiling;
-    if(sizehints) {
+    bool sizehints = (this->is_client_floated() || this->pseudotile_)
+                        ? this->sizehints_floating_
+                        : this->sizehints_tiling_;
+    if (sizehints) {
         /* see last two sentences in ICCCM 4.1.2.3 */
-        baseismin = this->basew == this->minw && this->baseh == this->minh;
+        baseismin = this->basew_ == this->minw_ && this->baseh_ == this->minh_;
         if(!baseismin) { /* temporarily remove base dimensions */
-            *w -= this->basew;
-            *h -= this->baseh;
+            *w -= this->basew_;
+            *h -= this->baseh_;
         }
         /* adjust for aspect limits */
-        if(this->mina > 0 && this->maxa > 0) {
-            if(this->maxa < (float)*w / *h)
-                *w = *h * this->maxa + 0.5;
-            else if(this->mina < (float)*h / *w)
-                *h = *w * this->mina + 0.5;
+        if(this->mina_ > 0 && this->maxa_ > 0) {
+            if(this->maxa_ < (float)*w / *h)
+                *w = *h * this->maxa_ + 0.5;
+            else if(this->mina_ < (float)*h / *w)
+                *h = *w * this->mina_ + 0.5;
         }
         if(baseismin) { /* increment calculation requires this */
-            *w -= this->basew;
-            *h -= this->baseh;
+            *w -= this->basew_;
+            *h -= this->baseh_;
         }
         /* adjust for increment value */
-        if(this->incw)
-            *w -= *w % this->incw;
-        if(this->inch)
-            *h -= *h % this->inch;
+        if(this->incw_)
+            *w -= *w % this->incw_;
+        if(this->inch_)
+            *h -= *h % this->inch_;
         /* restore base dimensions */
-        *w += this->basew;
-        *h += this->baseh;
-        *w = std::max(*w, this->minw);
-        *h = std::max(*h, this->minh);
-        if(this->maxw)
-            *w = std::min(*w, this->maxw);
-        if(this->maxh)
-            *h = std::min(*h, this->maxh);
+        *w += this->basew_;
+        *h += this->baseh_;
+        *w = std::max(*w, this->minw_);
+        *h = std::max(*h, this->minh_);
+        if(this->maxw_)
+            *w = std::min(*w, this->maxw_);
+        if(this->maxh_)
+            *h = std::min(*h, this->maxh_);
     }
-    return *w != this->last_size.width || *h != this->last_size.height;
+    return *w != this->last_size_.width || *h != this->last_size_.height;
 }
 
 bool HSClient::applysizehints_xy(int *x, int *y,
                                  unsigned int *w, unsigned int *h) {
-    return applysizehints(w,h) || *x != this->last_size.x
-                               || *y != this->last_size.y;
+    return applysizehints(w,h) || *x != this->last_size_.x
+                               || *y != this->last_size_.y;
 }
 
 // from dwm.c
@@ -643,46 +641,46 @@ void HSClient::updatesizehints() {
     long msize;
     XSizeHints size;
 
-    if(!XGetWMNormalHints(g_display, this->window, &size, &msize))
+    if(!XGetWMNormalHints(g_display, this->window_, &size, &msize))
         /* size is uninitialized, ensure that size.flags aren't used */
         size.flags = PSize;
     if(size.flags & PBaseSize) {
-        this->basew = size.base_width;
-        this->baseh = size.base_height;
+        this->basew_ = size.base_width;
+        this->baseh_ = size.base_height;
     }
     else if(size.flags & PMinSize) {
-        this->basew = size.min_width;
-        this->baseh = size.min_height;
+        this->basew_ = size.min_width;
+        this->baseh_ = size.min_height;
     } else {
-        this->basew = this->baseh = 0;
+        this->basew_ = this->baseh_ = 0;
     }
     if(size.flags & PResizeInc) {
-        this->incw = size.width_inc;
-        this->inch = size.height_inc;
+        this->incw_ = size.width_inc;
+        this->inch_ = size.height_inc;
     }
     else
-        this->incw = this->inch = 0;
+        this->incw_ = this->inch_ = 0;
     if(size.flags & PMaxSize) {
-        this->maxw = size.max_width;
-        this->maxh = size.max_height;
+        this->maxw_ = size.max_width;
+        this->maxh_ = size.max_height;
     } else {
-        this->maxw = this->maxh = 0;
+        this->maxw_ = this->maxh_ = 0;
     }
     if(size.flags & PMinSize) {
-        this->minw = size.min_width;
-        this->minh = size.min_height;
+        this->minw_ = size.min_width;
+        this->minh_ = size.min_height;
     }
     else if(size.flags & PBaseSize) {
-        this->minw = size.base_width;
-        this->minh = size.base_height;
+        this->minw_ = size.base_width;
+        this->minh_ = size.base_height;
     } else {
-        this->minw = this->minh = 0;
+        this->minw_ = this->minh_ = 0;
     }
     if(size.flags & PAspect) {
-        this->mina = (float)size.min_aspect.y / size.min_aspect.x;
-        this->maxa = (float)size.max_aspect.x / size.max_aspect.y;
+        this->mina_ = (float)size.min_aspect.y / size.min_aspect.x;
+        this->maxa_ = (float)size.max_aspect.x / size.max_aspect.y;
     } else {
-        this->maxa = this->mina = 0.0;
+        this->maxa_ = this->mina_ = 0.0;
     }
     //this->isfixed = (this->maxw && this->minw && this->maxh && this->minh
     //             && this->maxw == this->minw && this->maxh == this->minh);
@@ -695,8 +693,8 @@ void HSClient::send_configure() {
     XConfigureEvent ce;
     ce.type = ConfigureNotify,
     ce.display = g_display,
-    ce.event = this->window,
-    ce.window = this->window,
+    ce.event = this->window_,
+    ce.window = this->window_,
     ce.x = this->dec.last_inner_rect.x,
     ce.y = this->dec.last_inner_rect.y,
     ce.width = std::max(this->dec.last_inner_rect.width, WINDOW_MIN_WIDTH),
@@ -704,16 +702,16 @@ void HSClient::send_configure() {
     ce.border_width = 0,
     ce.above = None,
     ce.override_redirect = False,
-    XSendEvent(g_display, this->window, False, StructureNotifyMask, (XEvent *)&ce);
+    XSendEvent(g_display, this->window_, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
 void HSClient::resize_floating(HSMonitor* m) {
     if (!!m) return;
-    if (fullscreen) {
+    if (fullscreen_) {
         resize_fullscreen(m);
         return;
     }
-    auto rect = this->float_size;
+    auto rect = this->float_size_;
     rect.x += m->rect.x;
     rect.x += m->rect.y;
     rect.x += m->pad_left;
@@ -733,7 +731,7 @@ void HSClient::resize_floating(HSMonitor* m) {
 }
 
 Rectangle HSClient::outer_floating_rect() {
-    return inner_rect_to_outline(float_size, dec.last_scheme);
+    return inner_rect_to_outline(float_size_, dec.last_scheme);
 }
 
 int close_command(int argc, char** argv, GString* output) {
@@ -776,30 +774,30 @@ void window_set_visible(Window win, bool visible) {
 }
 
 void HSClient::set_visible(bool visible) {
-    if (visible == this->visible) return;
+    if (visible == this->visible_) return;
     if (visible) {
         /* Grab the server to make sure that the frame window is mapped before
            the client gets its MapNotify, i.e. to make sure the client is
            _visible_ when it gets MapNotify. */
         XGrabServer(g_display);
-        window_update_wm_state(this->window, WmStateNormalState);
-        XMapWindow(g_display, this->window);
+        window_update_wm_state(this->window_, WmStateNormalState);
+        XMapWindow(g_display, this->window_);
         XMapWindow(g_display, this->dec.decwin);
         XUngrabServer(g_display);
     } else {
         /* we unmap the client itself so that we can get MapRequest
            events, and because the ICCCM tells us to! */
         XUnmapWindow(g_display, this->dec.decwin);
-        XUnmapWindow(g_display, this->window);
-        window_update_wm_state(this->window, WmStateWithdrawnState);
-        this->ignore_unmaps++;
+        XUnmapWindow(g_display, this->window_);
+        window_update_wm_state(this->window_, WmStateWithdrawnState);
+        this->ignore_unmaps_++;
     }
-    this->visible = visible;
+    this->visible_ = visible;
 }
 
 // heavily inspired by dwm.c
 void HSClient::set_urgent(bool state) {
-    if (this->urgent == state) {
+    if (this->urgent_ == state) {
         // nothing to do
         return;
     }
@@ -808,15 +806,15 @@ void HSClient::set_urgent(bool state) {
 
 void HSClient::set_urgent_force(bool state) {
     char winid_str[STRING_BUF_SIZE];
-    snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window);
+    snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window_);
     hook_emit_list("urgent", state ? "on" : "off", winid_str, NULL);
 
-    this->urgent = state;
+    this->urgent_ = state;
 
     setup_border(this == frame_focused_client(g_cur_frame));
 
     XWMHints *wmh;
-    if(!(wmh = XGetWMHints(g_display, this->window)))
+    if(!(wmh = XGetWMHints(g_display, this->window_)))
         return;
 
     if (state) {
@@ -825,7 +823,7 @@ void HSClient::set_urgent_force(bool state) {
         wmh->flags &= ~XUrgencyHint;
     }
 
-    XSetWMHints(g_display, this->window, wmh);
+    XSetWMHints(g_display, this->window_, wmh);
     XFree(wmh);
     // report changes to tags
     tag_set_flags_dirty();
@@ -833,7 +831,7 @@ void HSClient::set_urgent_force(bool state) {
 
 // heavily inspired by dwm.c
 void HSClient::update_wm_hints() {
-    XWMHints* wmh = XGetWMHints(g_display, this->window);
+    XWMHints* wmh = XGetWMHints(g_display, this->window_);
     if (!wmh) {
         return;
     }
@@ -843,48 +841,48 @@ void HSClient::update_wm_hints() {
         && wmh->flags & XUrgencyHint) {
         // remove urgency hint if window is focused
         wmh->flags &= ~XUrgencyHint;
-        XSetWMHints(g_display, this->window, wmh);
+        XSetWMHints(g_display, this->window_, wmh);
     } else {
         bool newval = (wmh->flags & XUrgencyHint) ? true : false;
-        if (newval != this->urgent) {
-            this->urgent = newval;
+        if (newval != this->urgent_) {
+            this->urgent_ = newval;
             char winid_str[STRING_BUF_SIZE];
-            snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window);
+            snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window_);
             this->setup_border(focused_client == this);
-            hook_emit_list("urgent", this->urgent ? "on":"off", winid_str, NULL);
+            hook_emit_list("urgent", this->urgent_ ? "on":"off", winid_str, NULL);
             tag_set_flags_dirty();
         }
     }
     if (wmh->flags & InputHint) {
-        this->neverfocus = !wmh->input;
+        this->neverfocus_ = !wmh->input;
     } else {
-        this->neverfocus = false;
+        this->neverfocus_ = false;
     }
     XFree(wmh);
 }
 
 void HSClient::update_title() {
     GString* new_name = window_property_to_g_string(g_display,
-        this->window, g_netatom[NetWmName]);
+        this->window_, g_netatom[NetWmName]);
     if (!new_name) {
         char* ch_new_name = NULL;
         /* if ewmh name isn't set, then fall back to WM_NAME */
-        if (0 != XFetchName(g_display, this->window, &ch_new_name)) {
+        if (0 != XFetchName(g_display, this->window_, &ch_new_name)) {
             new_name = g_string_new(ch_new_name);
             XFree(ch_new_name);
         } else {
             new_name = g_string_new("");
             HSDebug("no title for window %lx found, using \"\"\n",
-                    this->window);
+                    this->window_);
         }
     }
-    bool changed = (0 != strcmp(this->title->str, new_name->str));
-    g_string_free(this->title, true);
-    this->title = new_name;
+    bool changed = (0 != strcmp(this->title_->str, new_name->str));
+    g_string_free(this->title_, true);
+    this->title_ = new_name;
     if (changed && get_current_client() == this) {
         char buf[STRING_BUF_SIZE];
-        snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window);
-        hook_emit_list("window_title_changed", buf, this->title->str, NULL);
+        snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
+        hook_emit_list("window_title_changed", buf, this->title_->str, NULL);
     }
 }
 
@@ -893,10 +891,10 @@ HSClient* get_current_client() {
 }
 
 void HSClient::set_fullscreen(bool state) {
-    if (this->fullscreen == state) return;
-    this->fullscreen = state;
-    if (this->ewmhnotify) {
-        this->ewmhfullscreen = state;
+    if (this->fullscreen_ == state) return;
+    this->fullscreen_ = state;
+    if (this->ewmhnotify_) {
+        this->ewmhfullscreen_ = state;
     }
     HSStack* stack = this->tag()->stack;
     if (state) {
@@ -908,13 +906,13 @@ void HSClient::set_fullscreen(bool state) {
     monitor_apply_layout(find_monitor_with_tag(this->tag()));
 
     char buf[STRING_BUF_SIZE];
-    snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window);
+    snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
     ewmh_update_window_state(this);
     hook_emit_list("fullscreen", state ? "on" : "off", buf, NULL);
 }
 
 void HSClient::set_pseudotile(bool state) {
-    this->pseudotile = state;
+    this->pseudotile_ = state;
     monitor_apply_layout(find_monitor_with_tag(this->tag()));
 }
 
@@ -932,8 +930,8 @@ int client_set_property_command(int argc, char** argv) {
         void (HSClient::*func) (bool);
         bool* value;
     } properties[] = {
-        { "fullscreen",   &HSClient::set_fullscreen, &client->fullscreen    },
-        { "pseudotile",   &HSClient::set_pseudotile, &client->pseudotile    },
+        { "fullscreen",   &HSClient::set_fullscreen, &client->fullscreen_    },
+        { "pseudotile",   &HSClient::set_pseudotile, &client->pseudotile_    },
     };
 
     // find the property
@@ -1013,26 +1011,26 @@ bool HSClient::sendevent(Atom proto) {
     bool exists = false;
     XEvent ev;
 
-    if (XGetWMProtocols(g_display, this->window, &protocols, &n)) {
+    if (XGetWMProtocols(g_display, this->window_, &protocols, &n)) {
         while (!exists && n--)
             exists = protocols[n] == proto;
         XFree(protocols);
     }
     if (exists) {
         ev.type = ClientMessage;
-        ev.xclient.window = this->window;
+        ev.xclient.window = this->window_;
         ev.xclient.message_type = g_wmatom[WMProtocols];
         ev.xclient.format = 32;
         ev.xclient.data.l[0] = proto;
         ev.xclient.data.l[1] = CurrentTime;
-        XSendEvent(g_display, this->window, False, NoEventMask, &ev);
+        XSendEvent(g_display, this->window_, False, NoEventMask, &ev);
     }
     return exists;
 }
 
 void HSClient::set_dragged(bool drag_state) {
-    if (drag_state == dragged) return;
-    dragged = drag_state;
+    if (drag_state == dragged_) return;
+    dragged_ = drag_state;
     if (drag_state == true) {
         hsobject_link(g_client_object, &object, "dragged");
     } else {
@@ -1043,20 +1041,20 @@ void HSClient::set_dragged(bool drag_state) {
 void HSClient::fuzzy_fix_initial_position() {
     // find out the top-left-most position of the decoration,
     // considering the current settings of possible floating decorations
-    int extreme_x = float_size.x;
-    int extreme_y = float_size.y;
+    int extreme_x = float_size_.x;
+    int extreme_y = float_size_.y;
     HSDecTriple* t = &g_decorations[HSDecSchemeFloating];
-    auto r = inner_rect_to_outline(float_size, t->active);
+    auto r = inner_rect_to_outline(float_size_, t->active);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
-    r = inner_rect_to_outline(float_size, t->normal);
+    r = inner_rect_to_outline(float_size_, t->normal);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
-    r = inner_rect_to_outline(float_size, t->urgent);
+    r = inner_rect_to_outline(float_size_, t->urgent);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
     // if top left corner might be outside of the monitor, move it accordingly
-    if (extreme_x < 0) { float_size.x += abs(extreme_x); }
-    if (extreme_y < 0) { float_size.y += abs(extreme_y); }
+    if (extreme_x < 0) { float_size_.x += abs(extreme_x); }
+    if (extreme_y < 0) { float_size_.y += abs(extreme_y); }
 }
 

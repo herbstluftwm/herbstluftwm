@@ -512,9 +512,9 @@ void event_on_configure(XEvent event) {
     HSClient* client = get_client_from_window(cre->window);
     if (client) {
         bool changes = false;
-        auto newRect = client->float_size;
-        if (client->sizehints_floating &&
-            (client->is_client_floated() || client->pseudotile))
+        auto newRect = client->float_size_;
+        if (client->sizehints_floating_ &&
+            (client->is_client_floated() || client->pseudotile_))
         {
             bool width_requested = 0 != (cre->value_mask & CWWidth);
             bool height_requested = 0 != (cre->value_mask & CWHeight);
@@ -531,10 +531,10 @@ void event_on_configure(XEvent event) {
             if (height_requested) newRect.height = cre->height;
         }
         if (changes && client->is_client_floated()) {
-            client->float_size = newRect;
+            client->float_size_ = newRect;
             client->resize_floating(find_monitor_with_tag(client->tag()));
-        } else if (changes && client->pseudotile) {
-            client->float_size = newRect;
+        } else if (changes && client->pseudotile_) {
+            client->float_size_ = newRect;
             monitor_apply_layout(find_monitor_with_tag(client->tag()));
         } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??

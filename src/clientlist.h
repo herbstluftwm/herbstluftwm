@@ -20,42 +20,45 @@
 
 struct HSSlice;
 
-class HSClient {
+class HSClient : public herbstluft::Object {
 public:
+
     HSDecoration    dec;
-    bool        fullscreen;
-    herbstluft::Rectangle   float_size;     // floating size without the window border
-    GString*    title;  // or also called window title; this is never NULL
+    herbstluft::Rectangle   float_size_;     // floating size without the window border
+    bool        urgent_;
+    bool        fullscreen_;
+    GString*    title_;  // or also called window title; this is never NULL
     struct HSSlice* slice;
+
 public:
-    Window      window;
-    GString*    window_str;     // the window id as a string
-    herbstluft::Rectangle   last_size;      // last size excluding the window border
+    Window      window_;
+    GString*    window_str_;     // the window id as a string
+    herbstluft::Rectangle   last_size_;      // last size excluding the window border
     HSTag*      tag_;
-    GString*    keymask; // keymask applied to mask out keybindins
-    bool        urgent;
-    bool        ewmhfullscreen; // ewmh fullscreen state
-    bool        pseudotile; // only move client but don't resize (if possible)
-    bool        neverfocus; // do not give the focus via XSetInputFocus
-    bool        ewmhrequests; // accept ewmh-requests for this client
-    bool        ewmhnotify; // send ewmh-notifications for this client
-    bool        sizehints_floating;  // respect size hints regarding this client in floating mode
-    bool        sizehints_tiling;  // respect size hints regarding this client in tiling mode
-    bool        dragged;  // if this client is dragged currently
-    int         pid;
-    int         ignore_unmaps;  // Ignore one unmap for each reparenting
+    GString*    keymask_; // keymask applied to mask out keybindins
+    bool        ewmhfullscreen_; // ewmh fullscreen state
+    bool        pseudotile_; // only move client but don't resize (if possible)
+    bool        neverfocus_; // do not give the focus via XSetInputFocus
+    bool        ewmhrequests_; // accept ewmh-requests for this client
+    bool        ewmhnotify_; // send ewmh-notifications for this client
+    bool        sizehints_floating_;  // respect size hints regarding this client in floating mode
+    bool        sizehints_tiling_;  // respect size hints regarding this client in tiling mode
+    bool        visible_;
+    bool        dragged_;  // if this client is dragged currently
+    int         pid_;
+    int         ignore_unmaps_;  // Ignore one unmap for each reparenting
                                 // action, because reparenting creates an unmap
                                 // notify event
-    bool        visible;
     // for size hints
     float mina_, maxa_;
-    unsigned int basew, baseh, incw, inch, maxw, maxh, minw, minh;
+    unsigned int basew_, baseh_, incw_, inch_, maxw_, maxh_, minw_, minh_;
     // for other modules
     HSObject    object;
 
 public:
 
     HSClient();
+    HSClient(Window window_);
     ~HSClient();
 
 
@@ -63,7 +66,7 @@ public:
     HSTag* tag() { return tag_; };
     void setTag(HSTag* tag) { tag_ = tag; }
 
-    Window x11Window() { return window; };
+    Window x11Window() { return window_; };
     friend void mouse_function_resize(XMotionEvent* me);
 
     // other member functions
@@ -95,7 +98,7 @@ public:
 
     bool sendevent(Atom proto);
 
-    void set_visible(bool visible);
+    void set_visible(bool visible_);
 
     bool ignore_unmapnotify();
 

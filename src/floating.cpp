@@ -322,8 +322,8 @@ bool floating_shift_direction(enum HSDirection dir) {
             case DirUp:    dy = r.y + r.height  -  focusrect.y; break;
         }
         //printf("dx=%d, dy=%d\n", dx, dy);
-        curfocus->float_size.x += dx;
-        curfocus->float_size.y += dy;
+        curfocus->float_size_.x += dx;
+        curfocus->float_size_.y += dy;
         monitor_apply_layout(get_current_monitor());
     }
     g_free(rects);

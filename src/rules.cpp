@@ -565,7 +565,7 @@ void client_changes_init(HSClientChanges* changes, HSClient* client) {
     changes->focus = false;
     changes->switchtag = false;
     changes->manage = true;
-    changes->fullscreen = ewmh_is_fullscreen_set(client->window);
+    changes->fullscreen = ewmh_is_fullscreen_set(client->window_);
     changes->keymask = g_string_new("");
 }
 
@@ -675,32 +675,32 @@ static bool condition_string(HSCondition* rule, const char* string) {
 }
 
 static bool condition_class(HSCondition* rule, HSClient* client) {
-    GString* window_class = window_class_to_g_string(g_display, client->window);
+    GString* window_class = window_class_to_g_string(g_display, client->window_);
     bool match = condition_string(rule, window_class->str);
     g_string_free(window_class, true);
     return match;
 }
 
 static bool condition_instance(HSCondition* rule, HSClient* client) {
-    GString* inst = window_instance_to_g_string(g_display, client->window);
+    GString* inst = window_instance_to_g_string(g_display, client->window_);
     bool match = condition_string(rule, inst->str);
     g_string_free(inst, true);
     return match;
 }
 
 static bool condition_title(HSCondition* rule, HSClient* client) {
-    return condition_string(rule, client->title->str);
+    return condition_string(rule, client->title_->str);
 }
 
 static bool condition_pid(HSCondition* rule, HSClient* client) {
-    if (client->pid < 0) {
+    if (client->pid_ < 0) {
         return false;
     }
     if (rule->value_type == CONDITION_VALUE_TYPE_INTEGER) {
-        return rule->value.integer == client->pid;
+        return rule->value.integer == client->pid_;
     } else {
         char buf[1000]; // 1kb ought to be enough for every int
-        sprintf(buf, "%d", client->pid);
+        sprintf(buf, "%d", client->pid_);
         return condition_string(rule, buf);
     }
 }
@@ -727,7 +727,7 @@ static bool condition_windowtype(HSCondition* rule, HSClient* client) {
 
     int status = XGetWindowProperty(
             g_display,
-            client->window,
+            client->window_,
             g_netatom[NetWmWindowType],
             offset,
             bufsize,
@@ -763,7 +763,7 @@ static bool condition_windowtype(HSCondition* rule, HSClient* client) {
 }
 
 static bool condition_windowrole(HSCondition* rule, HSClient* client) {
-    GString* role = window_property_to_g_string(g_display, client->window,
+    GString* role = window_property_to_g_string(g_display, client->window_,
         ATOM("WM_WINDOW_ROLE"));
     if (!role) return false;
     bool match = condition_string(rule, role->str);
@@ -798,7 +798,7 @@ void consequence_index(HSConsequence* cons, HSClient* client,
 
 void consequence_pseudotile(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
-    client->pseudotile = string_to_bool(cons->value.str, client->pseudotile);
+    client->pseudotile_ = string_to_bool(cons->value.str, client->pseudotile_);
 }
 
 void consequence_fullscreen(HSConsequence* cons, HSClient* client,
@@ -815,18 +815,18 @@ void consequence_ewmhrequests(HSConsequence* cons, HSClient* client,
                               HSClientChanges* changes) {
     // this is only a flag that is unused during initialization (during
     // manage()) and so can be directly changed in the client
-    client->ewmhrequests = string_to_bool(cons->value.str, client->ewmhrequests);
+    client->ewmhrequests_ = string_to_bool(cons->value.str, client->ewmhrequests_);
 }
 
 void consequence_ewmhnotify(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
-    client->ewmhnotify = string_to_bool(cons->value.str, client->ewmhnotify);
+    client->ewmhnotify_ = string_to_bool(cons->value.str, client->ewmhnotify_);
 }
 
 void consequence_hook(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
     GString* winid = g_string_sized_new(20);
-    g_string_printf(winid, "0x%lx", client->window);
+    g_string_printf(winid, "0x%lx", client->window_);
     const char* hook_str[] = { "rule" , cons->value.str, winid->str };
     hook_emit(LENGTH(hook_str), hook_str);
     g_string_free(winid, true);

@@ -407,8 +407,8 @@ static void key_set_keymask_helper(KeyBinding* b, regex_t *keymask_regex) {
 
 void key_set_keymask(HSTag *tag, HSClient *client) {
     regex_t     keymask_regex;
-    if (client && strlen(client->keymask->str) > 0) {
-        int status = regcomp(&keymask_regex, client->keymask->str, REG_EXTENDED);
+    if (client && strlen(client->keymask_->str) > 0) {
+        int status = regcomp(&keymask_regex, client->keymask_->str, REG_EXTENDED);
         if (status == 0) {
             g_list_foreach(g_key_binds, (GFunc)key_set_keymask_helper,
                            &keymask_regex);
@@ -417,7 +417,7 @@ void key_set_keymask(HSTag *tag, HSClient *client) {
             char buf[ERROR_STRING_BUF_SIZE];
             regerror(status, &keymask_regex, buf, ERROR_STRING_BUF_SIZE);
             HSDebug("keymask: Can not parse regex \"%s\" from keymask: %s",
-                    client->keymask->str, buf);
+                    client->keymask_->str, buf);
         }
     }
     // Enable all keys again

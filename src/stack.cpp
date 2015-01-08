@@ -118,7 +118,7 @@ static void slice_append_caption(HSTree root, GString* output) {
         case SLICE_CLIENT:
             g_string_append_printf(output, "Client 0x%lx \"%s\"",
                                    slice->data.client->x11Window(),
-                                   slice->data.client->title->str);
+                                   slice->data.client->title_->str);
             break;
         case SLICE_MONITOR:
             if (slice->data.monitor->name != NULL) {

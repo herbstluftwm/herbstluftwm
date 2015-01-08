@@ -28,7 +28,7 @@ typedef enum SliceType {
     SLICE_MONITOR,
 } HSSliceType;
 
-struct HSClient;
+class HSClient;
 struct HSMonitor;
 
 typedef struct HSSlice {

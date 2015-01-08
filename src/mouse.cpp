@@ -104,7 +104,7 @@ void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
         return;
     }
     g_win_drag_client->set_dragged( true);
-    g_win_drag_start = g_win_drag_client->float_size;
+    g_win_drag_start = g_win_drag_client->float_size_;
     g_button_drag_start = get_cursor_position();
     XGrabPointer(g_display, client->x11Window(), True,
         PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
@@ -297,22 +297,22 @@ void grab_client_buttons(HSClient* client, bool focused) {
 void mouse_function_move(XMotionEvent* me) {
     int x_diff = me->x_root - g_button_drag_start.x;
     int y_diff = me->y_root - g_button_drag_start.y;
-    g_win_drag_client->float_size = g_win_drag_start;
-    g_win_drag_client->float_size.x += x_diff;
-    g_win_drag_client->float_size.y += y_diff;
+    g_win_drag_client->float_size_ = g_win_drag_start;
+    g_win_drag_client->float_size_.x += x_diff;
+    g_win_drag_client->float_size_.y += y_diff;
     // snap it to other windows
     int dx, dy;
     client_snap_vector(g_win_drag_client, g_drag_monitor,
                        SNAP_EDGE_ALL, &dx, &dy);
-    g_win_drag_client->float_size.x += dx;
-    g_win_drag_client->float_size.y += dy;
+    g_win_drag_client->float_size_.x += dx;
+    g_win_drag_client->float_size_.y += dy;
     g_win_drag_client->resize_floating(g_drag_monitor);
 }
 
 void mouse_function_resize(XMotionEvent* me) {
     int x_diff = me->x_root - g_button_drag_start.x;
     int y_diff = me->y_root - g_button_drag_start.y;
-    g_win_drag_client->float_size = g_win_drag_start;
+    g_win_drag_client->float_size_ = g_win_drag_start;
     // relative x/y coords in drag window
     HSMonitor* m = g_drag_monitor;
     int rel_x = monitor_get_relative_x(m, g_button_drag_start.x) - g_win_drag_start.x;
@@ -328,27 +328,27 @@ void mouse_function_resize(XMotionEvent* me) {
         x_diff *= -1;
     }
     // avoid an overflow
-    int new_width  = g_win_drag_client->float_size.width + x_diff;
-    int new_height = g_win_drag_client->float_size.height + y_diff;
+    int new_width  = g_win_drag_client->float_size_.width + x_diff;
+    int new_height = g_win_drag_client->float_size_.height + y_diff;
     int min_width = WINDOW_MIN_WIDTH;
     int min_height = WINDOW_MIN_HEIGHT;
     HSClient* client = g_win_drag_client;
-    if (client->sizehints_floating) {
-        min_width = std::max(WINDOW_MIN_WIDTH, client->minw);
-        min_height = std::max(WINDOW_MIN_HEIGHT, client->minh);
+    if (client->sizehints_floating_) {
+        min_width = std::max(WINDOW_MIN_WIDTH, client->minw_);
+        min_height = std::max(WINDOW_MIN_HEIGHT, client->minh_);
     }
     if (new_width <  min_width) {
         new_width = min_width;
-        x_diff = new_width - g_win_drag_client->float_size.width;
+        x_diff = new_width - g_win_drag_client->float_size_.width;
     }
     if (new_height < min_height) {
         new_height = min_height;
-        y_diff = new_height - g_win_drag_client->float_size.height;
+        y_diff = new_height - g_win_drag_client->float_size_.height;
     }
-    if (left)   g_win_drag_client->float_size.x -= x_diff;
-    if (top)    g_win_drag_client->float_size.y -= y_diff;
-    g_win_drag_client->float_size.width  = new_width;
-    g_win_drag_client->float_size.height = new_height;
+    if (left)   g_win_drag_client->float_size_.x -= x_diff;
+    if (top)    g_win_drag_client->float_size_.y -= y_diff;
+    g_win_drag_client->float_size_.width  = new_width;
+    g_win_drag_client->float_size_.height = new_height;
     // snap it to other windows
     int dx, dy;
     int snap_flags = 0;
@@ -359,15 +359,15 @@ void mouse_function_resize(XMotionEvent* me) {
     client_snap_vector(g_win_drag_client, g_drag_monitor,
                        (SnapFlags)snap_flags, &dx, &dy);
     if (left) {
-        g_win_drag_client->float_size.x += dx;
+        g_win_drag_client->float_size_.x += dx;
         dx *= -1;
     }
     if (top) {
-        g_win_drag_client->float_size.y += dy;
+        g_win_drag_client->float_size_.y += dy;
         dy *= -1;
     }
-    g_win_drag_client->float_size.width += dx;
-    g_win_drag_client->float_size.height += dy;
+    g_win_drag_client->float_size_.width += dx;
+    g_win_drag_client->float_size_.height += dy;
     g_win_drag_client->resize_floating(g_drag_monitor);
 }
 
@@ -393,11 +393,11 @@ void mouse_function_zoom(XMotionEvent* me) {
     unsigned int new_width  = g_win_drag_start.width  + 2 * x_diff;
     unsigned int new_height = g_win_drag_start.height + 2 * y_diff;
     // apply new rect
-    client->float_size = g_win_drag_start;
-    client->float_size.x = cent_x - new_width / 2;
-    client->float_size.y = cent_y - new_height / 2;
-    client->float_size.width = new_width;
-    client->float_size.height = new_height;
+    client->float_size_ = g_win_drag_start;
+    client->float_size_.x = cent_x - new_width / 2;
+    client->float_size_.y = cent_y - new_height / 2;
+    client->float_size_.width = new_width;
+    client->float_size_.height = new_height;
     // snap it to other windows
     int right_dx, bottom_dy;
     int left_dx, top_dy;
@@ -418,10 +418,10 @@ void mouse_function_zoom(XMotionEvent* me) {
     new_height += 2 * bottom_dy;
     client->applysizehints(&new_width, &new_height);
     // center window again
-    client->float_size.width = new_width;
-    client->float_size.height = new_height;
-    client->float_size.x = cent_x - new_width / 2;
-    client->float_size.y = cent_y - new_height / 2;
+    client->float_size_.width = new_width;
+    client->float_size_.height = new_height;
+    client->float_size_.x = cent_x - new_width / 2;
+    client->float_size_.y = cent_y - new_height / 2;
     g_win_drag_client->resize_floating(g_drag_monitor);
 }
 
