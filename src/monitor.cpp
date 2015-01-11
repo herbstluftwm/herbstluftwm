@@ -1016,9 +1016,9 @@ void monitor_focus_by_index(int new_selection) {
         // If the mouse is located in a gap indicated by
         // mouse_recenter_gap at the outer border of the monitor,
         // recenter the mouse.
-        if (std::min(monitor->mouse.x, abs(monitor->mouse.x - monitor->rect.width))
+        if (std::min(monitor->mouse.x, abs(monitor->mouse.x - (int)monitor->rect.width))
                 < *g_mouse_recenter_gap
-            || std::min(monitor->mouse.y, abs(monitor->mouse.y - monitor->rect.height))
+            || std::min(monitor->mouse.y, abs(monitor->mouse.y - (int)monitor->rect.height))
                 < *g_mouse_recenter_gap) {
             monitor->mouse.x = monitor->rect.width / 2;
             monitor->mouse.y = monitor->rect.height / 2;
