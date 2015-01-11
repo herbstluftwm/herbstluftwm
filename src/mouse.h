@@ -22,7 +22,7 @@ enum SnapFlags {
 };
 
 // forward declarations
-struct HSClient;
+class HSClient;
 struct HSMonitor;
 struct HSTag;
 
@@ -31,7 +31,7 @@ void mouse_destroy();
 
 
 typedef void (*MouseDragFunction)(XMotionEvent*);
-typedef void (*MouseFunction)(struct HSClient* client, int argc, char** argv);
+typedef void (*MouseFunction)(HSClient* client, int argc, char** argv);
 
 typedef struct MouseBinding {
     unsigned int modifiers;
@@ -50,16 +50,16 @@ MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button);
 unsigned int string2button(const char* name);
 MouseFunction string2mousefunction(char* name);
 
-void grab_client_buttons(struct HSClient* client, bool focused);
+void grab_client_buttons(HSClient* client, bool focused);
 
 void mouse_handle_event(XEvent* ev);
-void mouse_initiate_drag(struct HSClient* client, MouseDragFunction function);
+void mouse_initiate_drag(HSClient* client, MouseDragFunction function);
 void mouse_stop_drag();
 bool mouse_is_dragging();
 void handle_motion_event(XEvent* ev);
 
 // get the vector to snap a client to it's neighbour
-void client_snap_vector(struct HSClient* client, struct HSMonitor* monitor,
+void client_snap_vector(HSClient* client, struct HSMonitor* monitor,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy);
 
@@ -67,10 +67,10 @@ bool is_point_between(int point, int left, int right);
 // tells if the intervals [a_left, a_right) [b_left, b_right) intersect
 bool intervals_intersect(int a_left, int a_right, int b_left, int b_right);
 
-void mouse_initiate_move(struct HSClient* client, int argc, char** argv);
-void mouse_initiate_zoom(struct HSClient* client, int argc, char** argv);
-void mouse_initiate_resize(struct HSClient* client, int argc, char** argv);
-void mouse_call_command(struct HSClient* client, int argc, char** argv);
+void mouse_initiate_move(HSClient* client, int argc, char** argv);
+void mouse_initiate_zoom(HSClient* client, int argc, char** argv);
+void mouse_initiate_resize(HSClient* client, int argc, char** argv);
+void mouse_call_command(HSClient* client, int argc, char** argv);
 /* some mouse drag functions */
 void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);

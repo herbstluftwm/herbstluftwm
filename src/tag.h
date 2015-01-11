@@ -10,7 +10,7 @@
 #include <stdbool.h>
 
 struct HSFrame;
-struct HSClient;
+class HSClient;
 struct HSStack;
 struct HSObject;
 
@@ -41,7 +41,7 @@ int tag_rename_command(int argc, char** argv, GString* output);
 int tag_move_window_command(int argc, char** argv, GString* output);
 int tag_move_window_by_index_command(int argc, char** argv, GString* output);
 void tag_move_focused_client(HSTag* target);
-void tag_move_client(struct HSClient* client,HSTag* target);
+void tag_move_client(HSClient* client,HSTag* target);
 int tag_remove_command(int argc, char** argv, GString* output);
 int tag_set_floating_command(int argc, char** argv, GString* output);
 void tag_update_focus_layer(HSTag* tag);

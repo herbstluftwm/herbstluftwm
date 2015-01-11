@@ -163,7 +163,7 @@ HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
     return frame;
 }
 
-void frame_insert_client(HSFrame* frame, struct HSClient* client) {
+void frame_insert_client(HSFrame* frame, HSClient* client) {
     if (frame->type == TYPE_CLIENTS) {
         // insert it here
         HSClient** buf = frame->content.clients.buf;
@@ -218,7 +218,7 @@ HSFrame* lookup_frame(HSFrame* root, const char *index) {
     return lookup_frame(new_root, new_index);
 }
 
-HSFrame* find_frame_with_client(HSFrame* frame, struct HSClient* client) {
+HSFrame* find_frame_with_client(HSFrame* frame, HSClient* client) {
     if (frame->type == TYPE_CLIENTS) {
         HSClient** buf = frame->content.clients.buf;
         size_t count = frame->content.clients.count;
@@ -1706,7 +1706,7 @@ bool frame_focus_client(HSFrame* frame, HSClient* client) {
 // switch_tag tells, whether to switch tag to focus to window
 // switch_monitor tells, whether to switch monitor to focus to window
 // returns if window was focused or not
-bool focus_client(struct HSClient* client, bool switch_tag, bool switch_monitor) {
+bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor) {
     if (!client) {
         // client is not managed
         return false;

@@ -33,7 +33,7 @@ static void init_scheme_attributes(HSObject* obj, HSDecorationScheme* s, HSAttrC
 static GString* PROP2MEMBERS(HSAttribute* attr);
 
 // is called automatically after resize_outline
-static void decoration_update_frame_extents(struct HSClient* client);
+static void decoration_update_frame_extents(HSClient* client);
 
 void decorations_init() {
     g_theme_object = hsobject_create_and_link(hsobject_root(), "theme");
@@ -159,7 +159,7 @@ void reset_helper(void* data, GString* output) {
                     "Writing this resets all attributes to a default value\n");
 }
 
-static GString* trigger_attribute_reset(struct HSAttribute* attr, const char* new_value) {
+static GString* trigger_attribute_reset(HSAttribute* attr, const char* new_value) {
     (void) attr;
     (void) new_value;
     HSObject* obj = attr->object;
@@ -262,7 +262,7 @@ static Visual* check_32bit_client(HSClient* c)
     return NULL;
 }
 
-void decoration_init(HSDecoration* dec, struct HSClient* client) {
+void decoration_init(HSDecoration* dec, HSClient* client) {
     memset(dec, 0, sizeof(*dec));
     dec->client = client;
 }
@@ -462,7 +462,7 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     XSync(g_display, False);
 }
 
-static void decoration_update_frame_extents(struct HSClient* client) {
+static void decoration_update_frame_extents(HSClient* client) {
     int left = client->dec.last_inner_rect.x - client->dec.last_outer_rect.x;
     int top  = client->dec.last_inner_rect.y - client->dec.last_outer_rect.y;
     int right = client->dec.last_outer_rect.width - client->dec.last_inner_rect.width - left;
@@ -470,7 +470,7 @@ static void decoration_update_frame_extents(struct HSClient* client) {
     ewmh_update_frame_extents(client->window_, left,right, top,bottom);
 }
 
-void decoration_change_scheme(struct HSClient* client,
+void decoration_change_scheme(HSClient* client,
                               HSDecorationScheme scheme) {
     if (client->dec.last_inner_rect.width < 0) {
         // TODO: do something useful here
@@ -498,7 +498,7 @@ static unsigned int get_client_color(HSClient* client, unsigned int pixel) {
 }
 
 // draw a decoration to the client->dec.pixmap
-void decoration_redraw_pixmap(struct HSClient* client) {
+void decoration_redraw_pixmap(HSClient* client) {
     HSDecorationScheme s = client->dec.last_scheme;
     HSDecoration *const dec = &client->dec;
     Window win = client->dec.decwin;

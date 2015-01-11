@@ -431,7 +431,7 @@ void ewmh_handle_client_message(XEvent* event) {
     }
 }
 
-void ewmh_update_window_state(struct HSClient* client) {
+void ewmh_update_window_state(HSClient* client) {
     /* mapping between EWMH atoms and client struct members */
     struct {
         int     atom_index;
@@ -456,7 +456,7 @@ void ewmh_update_window_state(struct HSClient* client) {
         32, PropModeReplace, (unsigned char *) window_state, count_enabled);
 }
 
-void ewmh_clear_client_properties(struct HSClient* client) {
+void ewmh_clear_client_properties(HSClient* client) {
     XDeleteProperty(g_display, client->window_, g_netatom[NetWmState]);
 }
 

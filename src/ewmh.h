@@ -97,11 +97,11 @@ void ewmh_update_desktops();
 void ewmh_update_desktop_names();
 void ewmh_update_active_window(Window win);
 void ewmh_update_current_desktop();
-void ewmh_update_window_state(struct HSClient* client);
+void ewmh_update_window_state(HSClient* client);
 void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom);
 bool ewmh_is_window_state_set(Window win, Atom hint);
 bool ewmh_is_fullscreen_set(Window win);
-void ewmh_clear_client_properties(struct HSClient* client);
+void ewmh_clear_client_properties(HSClient* client);
 
 // set the desktop property of a window
 void ewmh_window_update_tag(Window win, struct HSTag* tag);

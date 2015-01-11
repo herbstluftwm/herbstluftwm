@@ -10,7 +10,7 @@
 #include <regex.h>
 #include "glib-backports.h"
 
-struct HSClient;
+class HSClient;
 struct HSTag;
 
 enum {
@@ -69,9 +69,9 @@ typedef struct {
 
 void rules_init();
 void rules_destroy();
-void rules_apply(struct HSClient* client, HSClientChanges* changes);
+void rules_apply(HSClient* client, HSClientChanges* changes);
 
-void client_changes_init(HSClientChanges* changes, struct HSClient* client);
+void client_changes_init(HSClientChanges* changes, HSClient* client);
 void client_changes_free_members(HSClientChanges* changes);
 
 HSRule* rule_create();

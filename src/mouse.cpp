@@ -85,7 +85,7 @@ void mouse_initiate_resize(HSClient* client, int argc, char** argv) {
     mouse_initiate_drag(client, mouse_function_resize);
 }
 
-void mouse_call_command(struct HSClient* client, int argc, char** argv) {
+void mouse_call_command(HSClient* client, int argc, char** argv) {
     // TODO: add completion
     client->set_dragged(true);
     call_command_no_output(argc, argv);
@@ -486,7 +486,7 @@ static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
 }
 
 // get the vector to snap a client to it's neighbour
-void client_snap_vector(struct HSClient* client, struct HSMonitor* monitor,
+void client_snap_vector(HSClient* client, struct HSMonitor* monitor,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy) {
     struct SnapData d;

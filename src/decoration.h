@@ -17,7 +17,7 @@
 
 #include "utils.h"
 
-struct HSClient;
+class HSClient;
 
 
 typedef struct {
@@ -37,7 +37,7 @@ typedef struct {
 } HSDecorationScheme;
 
 typedef struct {
-    struct HSClient*        client; // the client to decorate
+    HSClient*        client; // the client to decorate
     Window                  decwin; // the decoration winodw
     HSDecorationScheme      last_scheme;
     bool                    last_rect_inner; // whether last_rect is inner size
@@ -80,24 +80,24 @@ extern HSDecTriple g_decorations[];
 void decorations_init();
 void decorations_destroy();
 
-void decoration_init(HSDecoration* dec, struct HSClient* client);
-void decoration_setup_frame(struct HSClient* client);
+void decoration_init(HSDecoration* dec, HSClient* client);
+void decoration_setup_frame(HSClient* client);
 void decoration_free(HSDecoration* dec);
 
 // resize such that the decorated outline of the window fits into rect
-void decoration_resize_outline(struct HSClient* client,
+void decoration_resize_outline(HSClient* client,
                                herbstluft::Rectangle rect,
                                HSDecorationScheme scheme);
 
 // resize such that the window content fits into rect
-void decoration_resize_inner(struct HSClient* client,
+void decoration_resize_inner(HSClient* client,
                              herbstluft::Rectangle rect,
                              HSDecorationScheme scheme);
-void decoration_change_scheme(struct HSClient* client,
+void decoration_change_scheme(HSClient* client,
                               HSDecorationScheme scheme);
 
-void decoration_redraw_pixmap(struct HSClient* client);
-struct HSClient* get_client_from_decoration(Window decwin);
+void decoration_redraw_pixmap(HSClient* client);
+HSClient* get_client_from_decoration(Window decwin);
 
 herbstluft::Rectangle inner_rect_to_outline(herbstluft::Rectangle rect,
                                             HSDecorationScheme scheme);
