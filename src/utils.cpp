@@ -182,6 +182,52 @@ void argv_free(int argc, char** argv) {
     delete[] argv;
 }
 
+size_t utf8_string_length(const std::string& str) {
+   // utf-strlen from stackoverflow:
+   // http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c
+   size_t i = 0, j = 0;
+   while (str[i]) {
+     if ((str[i] & 0xc0) != 0x80) j++;
+     i++;
+   }
+   return j;
+}
+
+std::string utf8_string_at(const std::string& str, size_t n) {
+    // utf-strlen from stackoverflow:
+    // http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c
+    //
+    // int i = 0, j = 0;
+    // while (s[i]) {
+    //   if ((s[i] & 0xc0) != 0x80) j++;
+    //     i++;
+    // }
+    // return j;
+    for (char ch : str) {
+        std::cout << "\'"<< ch << "\' -> " << ((ch&0xc0) == 0x80) << std::endl;
+    }
+    size_t i = 0, byte_offset = 0;
+    std::string result;
+    // find the beginning of the n'th character
+    // find the n'th character ch, with (ch & 0xc0) == 0x80
+    while (i < n) {
+        // we are at some byte with (ch & 0xc0) != 0x80
+        byte_offset++;
+        while ((str[byte_offset] & 0xc0) == 0x80) {
+            // if its a continuation byte, skip it
+            byte_offset++;
+        }
+        // we are at some byte with (ch & 0xc0) != 0x80 again
+        // and its the first byte of the (i+1)'th character
+        i++;
+    }
+    result += str[byte_offset]; // add its first char
+    // and add all continuation bytes
+    while ((str[++byte_offset] & 0xc0) == 0x80) {
+        result += str[byte_offset];
+    }
+    return result;
+}
 
 Rectangle Rectangle::fromStr(const char* source) {
     int x, y;
@@ -406,16 +452,16 @@ static void subtree_print_to(HSTreeInterface* intface, const char* indent,
     size_t child_count = intface->child_count(root);
     if (child_count == 0) {
         output << rootprefix;
-        output << UTF8_STRING_AT(g_tree_style, 6);
-        output << UTF8_STRING_AT(g_tree_style, 5);
+        output << utf8_string_at(g_tree_style, 6);
+        output << utf8_string_at(g_tree_style, 5);
         output << ' ';
         // append caption
         intface->append_caption(root, output);
         output << "\n";
     } else {
-        output << "%s";
-        output << UTF8_STRING_AT(g_tree_style, 6);
-        output << UTF8_STRING_AT(g_tree_style, 7);
+        output << rootprefix;
+        output << utf8_string_at(g_tree_style, 6);
+        output << utf8_string_at(g_tree_style, 7);
         // append caption
         output << ' ';
         intface->append_caption(root, output);
@@ -426,11 +472,11 @@ static void subtree_print_to(HSTreeInterface* intface, const char* indent,
         for (size_t i = 0; i < child_count; i++) {
             bool last = (i == child_count - 1);
             g_string_printf(child_indent, "%s ", indent);
-            g_string_append_unichar(child_indent,
-                UTF8_STRING_AT(g_tree_style, last ? 2 : 1));
+            g_string_append(child_indent,
+                utf8_string_at(g_tree_style, last ? 2 : 1).c_str());
             g_string_printf(child_prefix, "%s ", indent);
-            g_string_append_unichar(child_prefix,
-                UTF8_STRING_AT(g_tree_style, last ? 4 : 3));
+            g_string_append(child_prefix,
+                utf8_string_at(g_tree_style, last ? 4 : 3).c_str());
             HSTreeInterface child = intface->nth_child(root, i);
             subtree_print_to(&child, child_indent->str,
                              child_prefix->str, output);
@@ -446,7 +492,7 @@ static void subtree_print_to(HSTreeInterface* intface, const char* indent,
 
 void tree_print_to(HSTreeInterface* intface, Output output) {
     GString* root_indicator = g_string_new("");
-    g_string_append_unichar(root_indicator, UTF8_STRING_AT(g_tree_style, 0));
+    g_string_append(root_indicator, utf8_string_at(g_tree_style, 0).c_str());
     subtree_print_to(intface, " ", root_indicator->str, output);
     g_string_free(root_indicator, true);
 }

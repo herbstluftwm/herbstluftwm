@@ -135,9 +135,9 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     (((char*)(PELEM) - (char*)(ARRAY)) / (sizeof (*ARRAY)))
 
 // returns the unichar in GSTR at position GSTR
-#define UTF8_STRING_AT(GSTR, OFFS) \
-    g_utf8_get_char( \
-        g_utf8_offset_to_pointer((GSTR), (OFFS))) \
+
+size_t      utf8_string_length(const std::string& str);
+std::string utf8_string_at(const std::string& str, size_t offset);
 
 #define RECTANGLE_EQUALS(a, b) (\
         (a).x == (b).x &&   \

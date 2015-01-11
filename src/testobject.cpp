@@ -1,6 +1,7 @@
 #include "testobject.h"
 #include "hookmanager.h"
 #include "root.h"
+#include "utils.h"
 
 namespace herbstluft {
 

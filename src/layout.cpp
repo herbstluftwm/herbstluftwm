@@ -107,7 +107,7 @@ static void fetch_frame_colors() {
 
     // tree style
     g_tree_style = settings_find_string("tree_style");
-    if (g_utf8_strlen(g_tree_style, -1) < 8) {
+    if (utf8_string_length(g_tree_style) < 8) {
         g_warning("too few characters in setting tree_style\n");
         // ensure that it is long enough
         const char* argv[] = { "set", "tree_style", "01234567" };
