@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <search.h>
 #include <unistd.h>
+#include <sstream>
 
 extern char** environ;
 
@@ -180,7 +181,7 @@ struct {
                         /* LE 3 matches position from 0 to 3 */
     /* === various methods, how to complete === */
     /* completion by function */
-    void (*function)(int argc, char** argv, int pos, GString* output);
+    void (*function)(int argc, char** argv, int pos, Output output);
     /* completion by a list of strings */
     const char** list;
 } g_completions[] = {
@@ -293,7 +294,7 @@ struct {
     { 0 },
 };
 
-int call_command(int argc, char** argv, GString* output) {
+int call_command(int argc, char** argv, Output output) {
     if (argc <= 0) {
         return HERBST_COMMAND_NOT_FOUND;
     }
@@ -308,8 +309,7 @@ int call_command(int argc, char** argv, GString* output) {
         i++;
     }
     if (!bind) {
-        g_string_append_printf(output,
-            "error: Command \"%s\" not found\n", argv[0]);
+        output << "error: Command \"" << argv[0] << "\" not found\n";
         return HERBST_COMMAND_NOT_FOUND;
     }
     int status;
@@ -323,14 +323,13 @@ int call_command(int argc, char** argv, GString* output) {
 }
 
 int call_command_no_output(int argc, char** argv) {
-    GString* output = g_string_new("");
+    std::ostringstream output;
     int status = call_command(argc, argv, output);
-    g_string_free(output, true);
     return status;
 }
 
 int call_command_substitute(char* needle, char* replacement,
-                            int argc, char** argv, GString* output) {
+                            int argc, char** argv, Output output) {
     // construct the new command
     char** command = g_new(char*, argc + 1);
     command[argc] = NULL;
@@ -348,19 +347,18 @@ int call_command_substitute(char* needle, char* replacement,
     return status;
 }
 
-int list_commands(int argc, char** argv, GString* output)
+int list_commands(int argc, char** argv, Output output)
 {
     int i = 0;
     while (g_commands[i].cmd.standard != NULL) {
-        g_string_append(output, g_commands[i].name);
-        g_string_append(output, "\n");
+        output << g_commands[i].name << "\n";
         i++;
     }
     return 0;
 }
 
 static void try_complete_suffix(const char* needle, const char* to_check, const char* suffix,
-                                const char* prefix, GString* output)
+                                const char* prefix, Output output)
 {
     bool matches = (needle == NULL);
     if (matches == false) {
@@ -394,35 +392,35 @@ static void try_complete_suffix(const char* needle, const char* to_check, const 
             if (g_shell_quoting) {
                 prefix_escaped = posix_sh_escape(prefix);
             }
-            g_string_append(output, prefix_escaped ? prefix_escaped : prefix);
+            output << (prefix_escaped ? prefix_escaped : prefix);
         }
-        g_string_append(output, escaped ? escaped : to_check);
+        output << (escaped ? escaped : to_check);
         free(escaped);
-        g_string_append(output, suffix);
+        output << suffix;
     }
 }
 
-void try_complete(const char* needle, const char* to_check, GString* output) {
+void try_complete(const char* needle, const char* to_check, Output output) {
     const char* suffix = g_shell_quoting ? " \n" : "\n";
     try_complete_suffix(needle, to_check, suffix, NULL, output);
 }
 
 void try_complete_prefix(const char* needle, const char* to_check,
-                         const char* prefix, GString* output) {
+                         const char* prefix, Output output) {
     const char* suffix = g_shell_quoting ? " \n" : "\n";
     try_complete_suffix(needle, to_check, suffix, prefix, output);
 }
 
-void try_complete_partial(const char* needle, const char* to_check, GString* output) {
+void try_complete_partial(const char* needle, const char* to_check, Output output) {
     try_complete_suffix(needle, to_check, "\n", NULL, output);
 }
 
 void try_complete_prefix_partial(const char* needle, const char* to_check,
-                                 const char* prefix, GString* output) {
+                                 const char* prefix, Output output) {
     try_complete_suffix(needle, to_check, "\n", prefix, output);
 }
 
-void complete_against_list(const char* needle, const char** list, GString* output) {
+void complete_against_list(const char* needle, const char** list, Output output) {
     while (*list) {
         const char* name = *list;
         try_complete(needle, name, output);
@@ -430,7 +428,7 @@ void complete_against_list(const char* needle, const char** list, GString* outpu
     }
 }
 
-void complete_against_tags(int argc, char** argv, int pos, GString* output) {
+void complete_against_tags(int argc, char** argv, int pos, Output output) {
     const char* needle;
     if (pos >= argc) {
         needle = "";
@@ -443,7 +441,7 @@ void complete_against_tags(int argc, char** argv, int pos, GString* output) {
     }
 }
 
-void complete_against_monitors(int argc, char** argv, int pos, GString* output) {
+void complete_against_monitors(int argc, char** argv, int pos, Output output) {
     const char* needle;
     if (pos >= argc) {
         needle = "";
@@ -468,7 +466,7 @@ void complete_against_monitors(int argc, char** argv, int pos, GString* output) 
     g_string_free(index_str, true);
 }
 
-void complete_against_objects(int argc, char** argv, int pos, GString* output) {
+void complete_against_objects(int argc, char** argv, int pos, Output output) {
     // Remove command name
     (void)SHIFT(argc,argv);
     pos--;
@@ -488,7 +486,7 @@ void complete_against_objects(int argc, char** argv, int pos, GString* output) {
 }
 
 void complete_against_attributes_helper(int argc, char** argv, int pos,
-                                        GString* output, bool user_only) {
+                                        Output output, bool user_only) {
     // Remove command name
     (void)SHIFT(argc,argv);
     pos--;
@@ -510,17 +508,17 @@ void complete_against_attributes_helper(int argc, char** argv, int pos,
     }
 }
 
-void complete_against_attributes(int argc, char** argv, int pos, GString* output) {
+void complete_against_attributes(int argc, char** argv, int pos, Output output) {
     complete_against_attributes_helper(argc, argv, pos, output, false);
 }
 
-void complete_against_user_attributes(int argc, char** argv, int pos, GString* output) {
+void complete_against_user_attributes(int argc, char** argv, int pos, Output output) {
     complete_against_attributes_helper(argc, argv, pos, output, true);
 }
 
 
 void complete_against_user_attr_prefix(int argc, char** argv, int position,
-                                      GString* output) {
+                                      Output output) {
     const char* path = (position < argc) ? argv[position] : "";
     const char* unparsable;
     GString* prefix = g_string_new(path);
@@ -535,12 +533,11 @@ void complete_against_user_attr_prefix(int argc, char** argv, int position,
                                 prefix->str, output);
 }
 
-void complete_against_attribute_values(int argc, char** argv, int pos, GString* output) {
+void complete_against_attribute_values(int argc, char** argv, int pos, Output output) {
     const char* needle = (pos < argc) ? argv[pos] : "";
     const char* path =  (1 < argc) ? argv[1] : "";
-    GString* path_error = g_string_new("");
+    std::ostringstream path_error;
     HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
-    g_string_free(path_error, true);
     if (attr) {
         switch (attr->type) {
             case HSATTR_TYPE_BOOL:
@@ -552,12 +549,11 @@ void complete_against_attribute_values(int argc, char** argv, int pos, GString* 
     }
 }
 
-void complete_against_comparators(int argc, char** argv, int pos, GString* output) {
+void complete_against_comparators(int argc, char** argv, int pos, Output output) {
     const char* needle = (pos < argc) ? argv[pos] : "";
     const char* path =  (1 < argc) ? argv[1] : "";
-    GString* path_error = g_string_new("");
-    HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
-    g_string_free(path_error, true);
+    std::ostringstream void_output;
+    HSAttribute* attr = hsattribute_parse_path_verbose(path, void_output);
     const char* equals[] = { "=", "!=", NULL };
     const char* order[] = { "le", "lt", "ge", "gt", NULL };
     if (attr) {
@@ -573,7 +569,7 @@ void complete_against_comparators(int argc, char** argv, int pos, GString* outpu
     }
 }
 
-void complete_against_winids(int argc, char** argv, int pos, GString* output) {
+void complete_against_winids(int argc, char** argv, int pos, Output output) {
     const char* needle;
     if (pos >= argc) {
         needle = "";
@@ -587,7 +583,7 @@ void complete_against_winids(int argc, char** argv, int pos, GString* output) {
     }
 }
 
-void complete_merge_tag(int argc, char** argv, int pos, GString* output) {
+void complete_merge_tag(int argc, char** argv, int pos, Output output) {
     const char* first = (argc > 1) ? argv[1] : "";
     const char* needle;
     if (pos >= argc) {
@@ -605,7 +601,7 @@ void complete_merge_tag(int argc, char** argv, int pos, GString* output) {
     }
 }
 
-void complete_against_settings(int argc, char** argv, int pos, GString* output)
+void complete_against_settings(int argc, char** argv, int pos, Output output)
 {
     const char* needle;
     if (pos >= argc) {
@@ -624,7 +620,7 @@ void complete_against_settings(int argc, char** argv, int pos, GString* output)
     }
 }
 
-void complete_against_keybinds(int argc, char** argv, int pos, GString* output) {
+void complete_against_keybinds(int argc, char** argv, int pos, Output output) {
     const char* needle;
     if (pos >= argc) {
         needle = "";
@@ -651,7 +647,7 @@ static bool parameter_expected(int argc, char** argv, int pos) {
     return true;
 }
 
-int complete_command(int argc, char** argv, GString* output) {
+int complete_command(int argc, char** argv, Output output) {
     // usage: complete POSITION command to complete ...
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
@@ -671,7 +667,7 @@ int complete_command(int argc, char** argv, GString* output) {
 }
 
 void complete_against_keybind_command(int argc, char** argv, int position,
-                                      GString* output) {
+                                      Output output) {
     if (argc <  1 || position < 1) {
         return;
     }
@@ -697,7 +693,7 @@ void complete_against_keybind_command(int argc, char** argv, int position,
 }
 
 void complete_against_mouse_combinations(int argc, char** argv, int position,
-                                         GString* output)
+                                         Output output)
 {
     if (argc < 1 || position < 1) {
         return;
@@ -719,7 +715,7 @@ void complete_against_mouse_combinations(int argc, char** argv, int position,
 }
 
 void complete_against_env(int argc, char** argv, int position,
-                          GString* output) {
+                          Output output) {
     GString* curname = g_string_sized_new(30);
     const char* needle = (position < argc) ? argv[position] : "";
     for (char** env = environ; *env; ++env) {
@@ -735,17 +731,17 @@ void complete_against_env(int argc, char** argv, int position,
 }
 
 void complete_against_commands_1(int argc, char** argv, int position,
-                                      GString* output) {
+                                      Output output) {
     complete_against_commands(argc - 1, argv + 1, position - 1, output);
 }
 
 void complete_against_commands_3(int argc, char** argv, int position,
-                                      GString* output) {
+                                      Output output) {
     complete_against_commands(argc - 3, argv + 3, position - 3, output);
 }
 
 void complete_against_arg_1(int argc, char** argv, int position,
-                            GString* output)
+                            Output output)
 {
     if (argc > 2 && position > 2) {
         const char* needle = (position < argc) ? argv[position] : "";
@@ -754,7 +750,7 @@ void complete_against_arg_1(int argc, char** argv, int position,
 }
 
 void complete_against_arg_2(int argc, char** argv, int position,
-                            GString* output)
+                            Output output)
 {
     if (argc > 3 && position > 3) {
         const char* needle = (position < argc) ? argv[position] : "";
@@ -764,7 +760,7 @@ void complete_against_arg_2(int argc, char** argv, int position,
 
 
 int complete_against_commands(int argc, char** argv, int position,
-                              GString* output) {
+                              Output output) {
     // complete command
     if (position == 0) {
         char* str = (argc >= 1) ? argv[0] : NULL;
@@ -814,7 +810,7 @@ static int strpcmp(const void* key, const void* val) {
 }
 
 static void complete_chain_helper(int argc, char** argv, int position,
-                                  GString* output) {
+                                  Output output) {
     /* argv entries:
      * argv[0]      == the command separator
      * argv[1]      == an arbitrary command name
@@ -850,7 +846,7 @@ static void complete_chain_helper(int argc, char** argv, int position,
     }
 }
 
-void complete_chain(int argc, char** argv, int position, GString* output) {
+void complete_chain(int argc, char** argv, int position, Output output) {
     if (position <= 1) {
         return;
     }
@@ -864,7 +860,7 @@ void complete_chain(int argc, char** argv, int position, GString* output) {
     complete_chain_helper(argc, argv, position, output);
 }
 
-void complete_sprintf(int argc, char** argv, int position, GString* output) {
+void complete_sprintf(int argc, char** argv, int position, Output output) {
     const char* needle = (position < argc) ? argv[position] : "";
     int paramcount = 0;
     char* format = argv[2];
@@ -916,12 +912,11 @@ static bool second_parameter_is_call(int argc, char** argv, int pos) {
 }
 
 static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos) {
-    GString* dummy = g_string_new("");
+    std::ostringstream void_output;
     HSAttribute* attr = NULL;
     if (argc >= 2) {
-        attr = hsattribute_parse_path_verbose(argv[1], dummy);
+        attr = hsattribute_parse_path_verbose(argv[1], void_output);
     }
-    g_string_free(dummy, true);
     return attr && attr->on_change != ATTR_READ_ONLY;
 }
 
@@ -950,7 +945,7 @@ static bool parameter_expected_offset_3(int argc, char** argv, int pos) {
 
 
 int command_chain(char* separator, bool (*condition)(int laststatus),
-                  int argc, char** argv, GString* output) {
+                  int argc, char** argv, Output output) {
     size_t uargc = argc;
     char** next_sep = (char**)lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
     int command_argc = next_sep ? (int)(next_sep - argv) : argc;
@@ -984,7 +979,7 @@ static Cmd2Condition g_cmd2condition[] = {
     { "or",     int_is_not_zero     },
 };
 
-int command_chain_command(int argc, char** argv, GString* output) {
+int command_chain_command(int argc, char** argv, Output output) {
     Cmd2Condition* cmd;
     cmd = STATIC_TABLE_FIND_STR(Cmd2Condition, g_cmd2condition, cmd, argv[0]);
     (void)SHIFT(argc, argv);
@@ -997,7 +992,7 @@ int command_chain_command(int argc, char** argv, GString* output) {
     return command_chain(separator, condition, argc, argv, output);
 }
 
-int negate_command(int argc, char** argv, GString* output) {
+int negate_command(int argc, char** argv, Output output) {
     if (argc <= 1) {
         return HERBST_NEED_MORE_ARGS;
     }

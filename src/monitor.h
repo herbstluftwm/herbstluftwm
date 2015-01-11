@@ -13,6 +13,7 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+#include "x11-types.h"
 #include "floating.h"
 #include "object.h"
 #include "utils.h"
@@ -60,38 +61,38 @@ int monitor_get_relative_x(HSMonitor* m, int x_root);
 int monitor_get_relative_y(HSMonitor* m, int y_root);
 int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);
-int monitor_focus_command(int argc, char** argv, GString* output);
+int monitor_focus_command(int argc, char** argv, Output output);
 int find_monitor_index_by_name(char* name);
 HSMonitor* find_monitor_by_name(char* name);
 HSMonitor* string_to_monitor(char* string);
 int string_to_monitor_index(char* string);
 int monitor_index_in_direction(HSMonitor* m, enum HSDirection dir);
-int add_monitor_command(int argc, char** argv, GString* output);
-int monitor_raise_command(int argc, char** argv, GString* output);
-int remove_monitor_command(int argc, char** argv, GString* output);
+int add_monitor_command(int argc, char** argv, Output output);
+int monitor_raise_command(int argc, char** argv, Output output);
+int remove_monitor_command(int argc, char** argv, Output output);
 int remove_monitor(int index);
-int list_monitors(int argc, char** argv, GString* output);
-int list_padding(int argc, char** argv, GString* output);
-int set_monitor_rects_command(int argc, char** argv, GString* output);
-int disjoin_rects_command(int argc, char** argv, GString* output);
+int list_monitors(int argc, char** argv, Output output);
+int list_padding(int argc, char** argv, Output output);
+int set_monitor_rects_command(int argc, char** argv, Output output);
+int disjoin_rects_command(int argc, char** argv, Output output);
 int set_monitor_rects(const herbstluft::RectangleVec &templates);
-int move_monitor_command(int argc, char** argv, GString* output);
-int rename_monitor_command(int argc, char** argv, GString* output);
-int monitor_rect_command(int argc, char** argv, GString* output);
+int move_monitor_command(int argc, char** argv, Output output);
+int rename_monitor_command(int argc, char** argv, Output output);
+int monitor_rect_command(int argc, char** argv, Output output);
 HSMonitor* get_current_monitor();
 int monitor_count();
 int monitor_set_tag(HSMonitor* monitor, struct HSTag* tag);
-int monitor_set_pad_command(int argc, char** argv, GString* output);
-int monitor_set_tag_command(int argc, char** argv, GString* output);
-int monitor_set_tag_by_index_command(int argc, char** argv, GString* output);
-int monitor_set_previous_tag_command(int argc, char** argv, GString* output);
+int monitor_set_pad_command(int argc, char** argv, Output output);
+int monitor_set_tag_command(int argc, char** argv, Output output);
+int monitor_set_tag_by_index_command(int argc, char** argv, Output output);
+int monitor_set_previous_tag_command(int argc, char** argv, Output output);
 void monitors_lock();
 void monitors_unlock();
 int monitors_lock_command(int argc, const char** argv);
 int monitors_unlock_command(int argc, const char** argv);
 void monitors_lock_changed();
-int monitor_lock_tag_command(int argc, char** argv, GString* output);
-int monitor_unlock_tag_command(int argc, char** argv, GString* output);
+int monitor_lock_tag_command(int argc, char** argv, Output output);
+int monitor_unlock_tag_command(int argc, char** argv, Output output);
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
@@ -110,9 +111,9 @@ void monitor_update_focus_objects();
 typedef bool (*MonitorDetection)(herbstluft::RectangleVec &);
 bool detect_monitors_xinerama(herbstluft::RectangleVec &dest);
 bool detect_monitors_simple(herbstluft::RectangleVec &dest);
-int detect_monitors_command(int argc, const char **argv, GString* output);
+int detect_monitors_command(int argc, const char **argv, Output output);
 
-int shift_to_monitor(int argc, char** argv, GString* output);
+int shift_to_monitor(int argc, char** argv, Output output);
 
 #endif
 

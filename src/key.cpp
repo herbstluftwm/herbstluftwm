@@ -83,22 +83,20 @@ const char* modifiermask2name(unsigned int mask) {
     return NULL;
 }
 
-int keybind(int argc, char** argv, GString* output) {
+int keybind(int argc, char** argv, Output output) {
     if (argc <= 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     KeyBinding new_bind;
     // get keycode
     if (!string2key(argv[1], &(new_bind.modifiers), &(new_bind.keysym))) {
-        g_string_append_printf(output,
-            "%s: No such KeySym/modifier\n", argv[0]);
+        output << argv[0] << ": No such KeySym/modifier\n";
         return HERBST_INVALID_ARGUMENT;
     }
     KeyCode keycode = XKeysymToKeycode(g_display, new_bind.keysym);
     if (!keycode) {
-        g_string_append_printf(output,
-            "%s: No keycode for symbol %s\n",
-            argv[0], XKeysymToString(new_bind.keysym));
+        output << argv[0] << ": No keycode for symbol "
+               << XKeysymToString(new_bind.keysym) << std::endl;
         return HERBST_INVALID_ARGUMENT;
     }
     // remove existing binding with same keysym/modifiers
@@ -179,7 +177,7 @@ void handle_key_press(XEvent* ev) {
     }
 }
 
-int keyunbind(int argc, char** argv, GString* output) {
+int keyunbind(int argc, char** argv, Output output) {
     if (argc <= 1) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -192,13 +190,11 @@ int keyunbind(int argc, char** argv, GString* output) {
     KeySym keysym;
     // get keycode
     if (!string2key(argv[1], &modifiers, &keysym)) {
-        g_string_append_printf(output,
-            "%s: No such KeySym/modifier\n", argv[0]);
+        output << argv[0] << ": No such KeySym/modifier\n";
         return HERBST_INVALID_ARGUMENT;
     }
     if (key_remove_bind_with_keysym(modifiers, keysym) == false) {
-        g_string_append_printf(output,
-            "%s: Key \"%s\" is not bound\n", argv[0], argv[1]);
+        output << argv[0] << ": Key \"" << argv[1] << "\" is not bound\n";
     }
     regrab_keys();
     return 0;
@@ -308,8 +304,9 @@ GString* keybinding_to_g_string(KeyBinding* binding) {
     return str;
 }
 
+// STRTODO
 struct key_find_context {
-    GString*   output;
+    Output      output;
     const char* needle;
     size_t      needle_len;
 };
@@ -318,38 +315,36 @@ static void key_find_binds_helper(KeyBinding* b, struct key_find_context* c) {
     GString* name = keybinding_to_g_string(b);
     if (!strncmp(c->needle, name->str, c->needle_len)) {
         /* add to output if key starts with searched needle */
-        g_string_append(c->output, name->str);
-        g_string_append_c(c->output, '\n');
+        c->output << name->str << std::endl;
     }
     g_string_free(name, true);
 }
 
-void key_find_binds(const char* needle, GString* output) {
+void key_find_binds(const char* needle, Output output) {
     struct key_find_context c = {
         output, needle, strlen(needle)
     };
     g_list_foreach(g_key_binds, (GFunc)key_find_binds_helper, &c);
 }
 
-static void key_list_binds_helper(KeyBinding* b, GString* output) {
+static void key_list_binds_helper(KeyBinding* b, Output output) {
     // add keybinding
     GString* name = keybinding_to_g_string(b);
-    g_string_append(output, name->str);
+    output << name->str;
     g_string_free(name, true);
     // add associated command
     for (int i = 0; i < b->cmd_argc; i++) {
-        g_string_append_c(output, '\t');
-        g_string_append(output, b->cmd_argv[i]);
+        output << "\t" << b->cmd_argv[i];
     }
-    g_string_append_c(output, '\n');
+    output << "\n";
 }
 
-int key_list_binds(int argc, char** argv, GString* output) {
+int key_list_binds(int argc, char** argv, Output output) {
     g_list_foreach(g_key_binds, (GFunc)key_list_binds_helper, output);
     return 0;
 }
 
-void complete_against_keysyms(const char* needle, char* prefix, GString* output) {
+void complete_against_keysyms(const char* needle, char* prefix, Output output) {
     // get all possible keysyms
     int min, max;
     XDisplayKeycodes(g_display, &min, &max);
@@ -370,7 +365,7 @@ void complete_against_keysyms(const char* needle, char* prefix, GString* output)
 }
 
 void complete_against_modifiers(const char* needle, char seperator,
-                                char* prefix, GString* output) {
+                                char* prefix, Output output) {
     GString* buf = g_string_sized_new(20);
     for (int i = 0; i < LENGTH(g_modifier_names); i++) {
         g_string_printf(buf, "%s%c", g_modifier_names[i].name, seperator);

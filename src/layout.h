@@ -6,6 +6,7 @@
 #ifndef __HERBSTLUFT_LAYOUT_H_
 #define __HERBSTLUFT_LAYOUT_H_
 
+#include "x11-types.h"
 #include "glib-backports.h"
 #include "utils.h"
 #include <stdbool.h>
@@ -118,8 +119,8 @@ bool frame_remove_client(HSFrame* frame, HSClient* client);
 // YOU have to g_free the resulting window-buf
 void frame_destroy(HSFrame* frame, HSClient*** buf, size_t* count);
 bool frame_split(HSFrame* frame, int align, int fraction);
-int frame_split_command(int argc, char** argv, GString* output);
-int frame_change_fraction_command(int argc, char** argv, GString* output);
+int frame_split_command(int argc, char** argv, Output output);
+int frame_change_fraction_command(int argc, char** argv, Output output);
 
 void frame_apply_layout(HSFrame* frame, herbstluft::Rectangle rect);
 void frame_apply_floating_layout(HSFrame* frame, struct HSMonitor* m);
@@ -127,16 +128,16 @@ void frame_update_frame_window_visibility(HSFrame* frame);
 void reset_frame_colors();
 HSFrame* get_toplevel_frame(HSFrame* frame);
 
-void print_frame_tree(HSFrame* frame, GString* output);
-void dump_frame_tree(HSFrame* frame, GString* output);
+void print_frame_tree(HSFrame* frame, Output output);
+void dump_frame_tree(HSFrame* frame, Output output);
 // create apply a described layout to a frame and its subframes
 // returns pointer to string that was not parsed yet
 // or NULL on an error
-char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg);
+char* load_frame_tree(HSFrame* frame, char* description, Output errormsg);
 int find_layout_by_name(char* name);
 int find_align_by_name(char* name);
 
-int frame_current_bring(int argc, char** argv, GString* output);
+int frame_current_bring(int argc, char** argv, Output output);
 int frame_current_set_selection(int argc, char** argv);
 int frame_current_cycle_selection(int argc, char** argv);
 int cycle_all_command(int argc, char** argv);
@@ -149,7 +150,7 @@ void frame_unfocus(); // unfocus currently focused window
 // returns the neighbour or NULL if there is no one
 HSFrame* frame_neighbour(HSFrame* frame, char direction);
 int frame_inner_neighbour_index(HSFrame* frame, char direction);
-int frame_focus_command(int argc, char** argv, GString* output);
+int frame_focus_command(int argc, char** argv, Output output);
 
 // follow selection to leaf and focus this frame
 int frame_focus_recursive(HSFrame* frame);
@@ -169,8 +170,8 @@ void frame_apply_client_layout_horizontal(HSFrame* frame,
                                           herbstluft::Rectangle rect);
 void frame_apply_client_layout_vertical(HSFrame* frame,
                                         herbstluft::Rectangle rect);
-int frame_current_cycle_client_layout(int argc, char** argv, GString* output);
-int frame_current_set_client_layout(int argc, char** argv, GString* output);
+int frame_current_cycle_client_layout(int argc, char** argv, Output output);
+int frame_current_set_client_layout(int argc, char** argv, Output output);
 int frame_split_count_to_root(HSFrame* frame, int align);
 
 // returns the Window that is focused
@@ -179,7 +180,7 @@ HSClient* frame_focused_client(HSFrame* frame);
 bool frame_focus_client(HSFrame* frame, HSClient* client);
 bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor);
 // moves a window to an other frame
-int frame_move_window_command(int argc, char** argv, GString* output);
+int frame_move_window_command(int argc, char** argv, Output output);
 /// removes the current frame
 int frame_remove_command(int argc, char** argv);
 int close_or_remove_command(int argc, char** argv);
@@ -187,8 +188,8 @@ int close_and_remove_command(int argc, char** argv);
 void frame_set_visible(HSFrame* frame, bool visible);
 void frame_update_border(Window window, unsigned long color);
 
-int frame_focus_edge(int argc, char** argv, GString* output);
-int frame_move_window_edge(int argc, char** argv, GString* output);
+int frame_focus_edge(int argc, char** argv, Output output);
+int frame_move_window_edge(int argc, char** argv, Output output);
 
 bool smart_window_surroundings_active(HSFrame* frame);
 

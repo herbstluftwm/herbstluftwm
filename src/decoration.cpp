@@ -100,7 +100,7 @@ static GString* PROP2MEMBERS(HSAttribute* attr) {
     monitors_lock();
     // find out which object it was
     // then copy it to the appropriate floating scheme
-    GString* output = g_string_new("");
+    std::ostringstream output;
     HSObject* members[4] = { NULL };
     size_t    member_cnt = 0;
 
@@ -119,7 +119,7 @@ static GString* PROP2MEMBERS(HSAttribute* attr) {
         members[member_cnt++] = &g_theme_urgent_object;
     }
     if (member_cnt > 0) {
-        GString* val = hsattribute_to_string(attr);
+        std::string val = hsattribute_to_string(attr);
         // set the idx'th attribute of all members of that group to the same value
         for (int i = 0; i < member_cnt; i++) {
             HSAttribute* oth_a = hsobject_find_attribute(members[i], attr->name);
@@ -127,12 +127,10 @@ static GString* PROP2MEMBERS(HSAttribute* attr) {
                 HSDebug("%d: Can not find attribute %s. This should not happen!\n", i, attr->name);
                 continue;
             }
-            hsattribute_assign(oth_a, val->str, output);
+            hsattribute_assign(oth_a, val, output);
         }
-        g_string_free(val, true);
     }
     monitors_unlock();
-    g_string_free(output, true);
     return NULL;
 }
 
@@ -142,21 +140,18 @@ GString* PROPAGATE(HSAttribute* attr) {
     // find out which attribute it was
     int idx = attr - attr->object->attributes;
     // then copy it to active and urgent scheme
-    GString* output = g_string_new("");
-    GString* val = hsattribute_to_string(attr);
-    hsattribute_assign(t->obj_active.attributes + idx, val->str, output);
-    hsattribute_assign(t->obj_normal.attributes + idx, val->str, output);
-    hsattribute_assign(t->obj_urgent.attributes + idx, val->str, output);
+    std::ostringstream output;
+    std::string val = hsattribute_to_string(attr);
+    hsattribute_assign(t->obj_active.attributes + idx, val, output);
+    hsattribute_assign(t->obj_normal.attributes + idx, val, output);
+    hsattribute_assign(t->obj_urgent.attributes + idx, val, output);
     monitors_unlock();
-    g_string_free(output, true);
-    g_string_free(val, true);
     return NULL;
 }
 
 void reset_helper(void* data, GString* output) {
     (void) data;
-    g_string_append(output,
-                    "Writing this resets all attributes to a default value\n");
+    g_string_append(output, "Writing this resets all attributes to a default value\n");
 }
 
 static GString* trigger_attribute_reset(HSAttribute* attr, const char* new_value) {
@@ -165,24 +160,24 @@ static GString* trigger_attribute_reset(HSAttribute* attr, const char* new_value
     HSObject* obj = attr->object;
     HSAttribute* attrs = obj->attributes;
     size_t cnt = obj->attribute_count;
-    GString* out = g_string_new("");
+    std::ostringstream output;
     monitors_lock();
     for (int i = 0; i < cnt; i ++) {
         HSAttribute* a = attrs+i;
         if (a->type == HSATTR_TYPE_INT
             || a->type == HSATTR_TYPE_UINT) {
-            hsattribute_assign(a, "0", out);
+            hsattribute_assign(a, "0", output);
         }
         else if (a->type == HSATTR_TYPE_COLOR) {
-            hsattribute_assign(a, "black", out);
+            hsattribute_assign(a, "black", output);
         }
     }
-    if (out->len <= 0) {
-        g_string_free(out, true);
-        out = NULL;
-    }
     monitors_unlock();
-    return out;
+    if (output.str().size() <= 0) {
+        return NULL;
+    } else {
+        return g_string_new(output.str().c_str());
+    }
 }
 
 // initializes the specified object to edit the scheme

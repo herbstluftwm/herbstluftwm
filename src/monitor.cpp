@@ -121,7 +121,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
     }
 }
 
-int list_monitors(int argc, char** argv, GString* output) {
+int list_monitors(int argc, char** argv, Output output) {
     (void)argc;
     (void)argv;
     GString* monitor_name = g_string_new("");
@@ -133,36 +133,35 @@ int list_monitors(int argc, char** argv, GString* output) {
         } else {
             g_string_truncate(monitor_name, 0);
         }
-        g_string_append_printf(output, "%d: %dx%d%+d%+d with tag \"%s\"%s%s%s\n",
-            i,
-            monitor->rect.width, monitor->rect.height,
-            monitor->rect.x, monitor->rect.y,
-            monitor->tag ? monitor->tag->name->str : "???",
-            monitor_name->str,
-            ((unsigned int) g_cur_monitor == i) ? " [FOCUS]" : "",
-            monitor->lock_tag ? " [LOCKED]" : "");
+        output << i << ": " << monitor->rect
+               << " with tag \""
+               << (monitor->tag ? monitor->tag->name->str : "???")
+               << "\""
+               << monitor_name->str
+               << (((unsigned int) g_cur_monitor == i) ? " [FOCUS]" : "")
+               << (monitor->lock_tag ? " [LOCKED]" : "")
+               << "\n";
     }
     g_string_free(monitor_name, true);
     return 0;
 }
 
-int list_padding(int argc, char** argv, GString* output) {
+int list_padding(int argc, char** argv, Output output) {
     HSMonitor* monitor;
     if (argc < 2) {
         monitor = get_current_monitor();
     } else {
         monitor = string_to_monitor(argv[1]);
         if (monitor == NULL) {
-            g_string_append_printf(output,
-                "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+            output << argv[0] << ": Monitor \"" << argv[1] << "\" not found!\n";
             return HERBST_INVALID_ARGUMENT;
         }
     }
-    g_string_append_printf(output, "%d %d %d %d\n",
-        monitor->pad_up,
-        monitor->pad_right,
-        monitor->pad_down,
-        monitor->pad_left);
+    output     << monitor->pad_up
+        << " " << monitor->pad_right
+        << " " << monitor->pad_down
+        << " " << monitor->pad_left
+        << "\n";
     return 0;
 }
 
@@ -284,7 +283,7 @@ static RectList* disjoin_rects(const RectangleVec &buf) {
 }
 
 
-int disjoin_rects_command(int argc, char** argv, GString* output) {
+int disjoin_rects_command(int argc, char** argv, Output output) {
     (void)SHIFT(argc, argv);
     if (argc < 1) {
         return HERBST_NEED_MORE_ARGS;
@@ -297,14 +296,13 @@ int disjoin_rects_command(int argc, char** argv, GString* output) {
     RectList* rects = disjoin_rects(buf);
     for (RectList* cur = rects; cur; cur = cur->next) {
         Rectangle &r = cur->rect;
-        g_string_append_printf(output, "%dx%d%+d%+d\n",
-            r.width, r.height, r.x, r.y);
+        output << r;
     }
     rectlist_free(rects);
     return 0;
 }
 
-int set_monitor_rects_command(int argc, char** argv, GString* output) {
+int set_monitor_rects_command(int argc, char** argv, Output output) {
     (void)SHIFT(argc, argv);
     if (argc < 1) {
         return HERBST_NEED_MORE_ARGS;
@@ -316,11 +314,9 @@ int set_monitor_rects_command(int argc, char** argv, GString* output) {
     int status = set_monitor_rects(templates);
 
     if (status == HERBST_TAG_IN_USE) {
-        g_string_append_printf(output,
-            "%s: There are not enough free tags\n", argv[0]);
+        output << argv[0] << ": There are not enough free tags\n";
     } else if (status == HERBST_INVALID_ARGUMENT) {
-        g_string_append_printf(output,
-            "%s: Need at least one rectangle\n", argv[0]);
+        output << argv[0] << ": Need at least one rectangle\n";
     }
     return status;
 }
@@ -489,7 +485,7 @@ HSMonitor* add_monitor(Rectangle rect, HSTag* tag, char* name) {
     return g_array_index(g_monitors, HSMonitor*, g_monitors->len-1);
 }
 
-int add_monitor_command(int argc, char** argv, GString* output) {
+int add_monitor_command(int argc, char** argv, Output output) {
     // usage: add_monitor RECTANGLE [TAG [NAME]]
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
@@ -500,39 +496,37 @@ int add_monitor_command(int argc, char** argv, GString* output) {
     if (argc == 2 || !strcmp("", argv[2])) {
         tag = find_unused_tag();
         if (!tag) {
-            g_string_append_printf(output,
-                "%s: There are not enough free tags\n", argv[0]);
+            output << argv[0] << ": There are not enough free tags\n";
             return HERBST_TAG_IN_USE;
         }
     }
     else {
         tag = find_tag(argv[2]);
         if (!tag) {
-            g_string_append_printf(output,
-                "%s: The tag \"%s\" does not exist\n", argv[0], argv[2]);
+            output << argv[0] << ": The tag \"" << argv[2] << "\" does not exist\n";
             return HERBST_INVALID_ARGUMENT;
         }
     }
     if (find_monitor_with_tag(tag)) {
-        g_string_append_printf(output,
-            "%s: The tag \"%s\" is already viewed on a monitor\n", argv[0], argv[2]);
+        output << argv[0] <<
+            ": The tag \"" << argv[2] << "\" is already viewed on a monitor\n";
         return HERBST_TAG_IN_USE;
     }
     if (argc > 3) {
         name = argv[3];
         if (isdigit(name[0])) {
-            g_string_append_printf(output,
-                "%s: The monitor name may not start with a number\n", argv[0]);
+            output << argv[0] <<
+                ": The monitor name may not start with a number\n";
             return HERBST_INVALID_ARGUMENT;
         }
         if (!strcmp("", name)) {
-            g_string_append_printf(output,
-                "%s: An empty monitor name is not permitted\n", argv[0]);
+            output << argv[0] <<
+                ": An empty monitor name is not permitted\n";
             return HERBST_INVALID_ARGUMENT;
         }
         if (find_monitor_by_name(name)) {
-            g_string_append_printf(output,
-                "%s: A monitor with the same name already exists\n", argv[0]);
+            output << argv[0] <<
+                ": A monitor with the same name already exists\n";
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -544,24 +538,22 @@ int add_monitor_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int remove_monitor_command(int argc, char** argv, GString* output) {
+int remove_monitor_command(int argc, char** argv, Output output) {
     // usage: remove_monitor INDEX
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     int index = string_to_monitor_index(argv[1]);
     if (index == -1) {
-        g_string_append_printf(output,
-            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+        output << argv[0] << ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
     int ret = remove_monitor(index);
     if (ret == HERBST_INVALID_ARGUMENT) {
-        g_string_append_printf(output,
-            "%s: Index needs to be between 0 and %d\n", argv[0], g_monitors->len - 1);
+        output << argv[0] <<
+            ": Index needs to be between 0 and " << (g_monitors->len - 1) << "\n";
     } else if (ret == HERBST_FORBIDDEN) {
-        g_string_append_printf(output,
-            "%s: Can't remove the last monitor\n", argv[0]);
+        output << argv[0] << ": Can't remove the last monitor\n";
     }
     monitor_update_focus_objects();
     return ret;
@@ -611,7 +603,7 @@ int remove_monitor(int index) {
     return 0;
 }
 
-int move_monitor_command(int argc, char** argv, GString* output) {
+int move_monitor_command(int argc, char** argv, Output output) {
     // usage: move_monitor INDEX RECT [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]
     // moves monitor with number to RECT
     if (argc < 3) {
@@ -619,14 +611,13 @@ int move_monitor_command(int argc, char** argv, GString* output) {
     }
     HSMonitor* monitor = string_to_monitor(argv[1]);
     if (monitor == NULL) {
-        g_string_append_printf(output,
-            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+        output << argv[0] <<
+            ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
     auto rect = Rectangle::fromStr(argv[2]);
     if (rect.width < WINDOW_MIN_WIDTH || rect.height < WINDOW_MIN_HEIGHT) {
-        g_string_append_printf(output,
-            "%s: Rectangle is too small\n", argv[0]);
+        output << argv[0] << "%s: Rectangle is too small\n";
         return HERBST_INVALID_ARGUMENT;
     }
     // else: just move it:
@@ -639,19 +630,19 @@ int move_monitor_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int rename_monitor_command(int argc, char** argv, GString* output) {
+int rename_monitor_command(int argc, char** argv, Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
     HSMonitor* mon = string_to_monitor(argv[1]);
     if (mon == NULL) {
-        g_string_append_printf(output,
-            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+        output << argv[0] <<
+            ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
     if (isdigit(argv[2][0])) {
-        g_string_append_printf(output,
-            "%s: The monitor name may not start with a number\n", argv[0]);
+        output << argv[0] <<
+            ": The monitor name may not start with a number\n";
         return HERBST_INVALID_ARGUMENT;
     } else if (!strcmp("", argv[2])) {
         // empty name -> clear name
@@ -663,8 +654,8 @@ int rename_monitor_command(int argc, char** argv, GString* output) {
         return 0;
     }
     if (find_monitor_by_name(argv[2])) {
-        g_string_append_printf(output,
-            "%s: A monitor with the same name already exists\n", argv[0]);
+        output << argv[0] <<
+            "%s: A monitor with the same name already exists\n";
         return HERBST_INVALID_ARGUMENT;
     }
     g_string_assign(mon->display_name, argv[2]);
@@ -681,7 +672,7 @@ int rename_monitor_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int monitor_rect_command(int argc, char** argv, GString* output) {
+int monitor_rect_command(int argc, char** argv, Output output) {
     // usage: monitor_rect [[-p] INDEX]
     char* monitor_str = NULL;
     HSMonitor* m = NULL;
@@ -697,8 +688,8 @@ int monitor_rect_command(int argc, char** argv, GString* output) {
         if (!strcmp("-p", argv[1])) {
             with_pad = true;
         } else {
-            g_string_append_printf(output,
-                "%s: Invalid argument \"%s\"\n", argv[0], argv[1]);
+            output << argv[0] <<
+                ": Invalid argument \"" << argv[1] << "\"\n";
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -706,8 +697,8 @@ int monitor_rect_command(int argc, char** argv, GString* output) {
     if (monitor_str) {
         m = string_to_monitor(monitor_str);
         if (m == NULL) {
-            g_string_append_printf(output,
-                "%s: Monitor \"%s\" not found!\n", argv[0], monitor_str);
+            output << argv[0] <<
+                ": Monitor \"" << monitor_str << "\" not found!\n";
             return HERBST_INVALID_ARGUMENT;
         }
     } else {
@@ -720,19 +711,18 @@ int monitor_rect_command(int argc, char** argv, GString* output) {
         rect.y += m->pad_up;
         rect.height -= m->pad_up + m->pad_down;
     }
-    g_string_append_printf(output, "%d %d %d %d",
-                    rect.x, rect.y, rect.width, rect.height);
+    output << rect.x << " " << rect.y << " " << rect.width << " " << rect.height;
     return 0;
 }
 
-int monitor_set_pad_command(int argc, char** argv, GString* output) {
+int monitor_set_pad_command(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     HSMonitor* monitor = string_to_monitor(argv[1]);
     if (monitor == NULL) {
-        g_string_append_printf(output,
-            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+        output << argv[0] <<
+            ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
     if (argc > 2 && argv[2][0] != '\0') monitor->pad_up       = atoi(argv[2]);
@@ -869,7 +859,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     return 0;
 }
 
-int monitor_set_tag_command(int argc, char** argv, GString* output) {
+int monitor_set_tag_command(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -878,23 +868,21 @@ int monitor_set_tag_command(int argc, char** argv, GString* output) {
     if (monitor && tag) {
         int ret = monitor_set_tag(monitor, tag);
         if (ret != 0) {
-            g_string_append_printf(output,
-                "%s: Could not change tag", argv[0]);
+            output << argv[0] << ": Could not change tag";
             if (monitor->lock_tag) {
-                g_string_append_printf(output,
-                    " (monitor %d is locked)", monitor_index_of(monitor));
+                output << " (monitor " << monitor_index_of(monitor) << " is locked)";
             }
-            g_string_append_printf(output, "\n");
+            output << "\n";
         }
         return ret;
     } else {
-        g_string_append_printf(output,
-            "%s: Invalid tag \"%s\"\n", argv[0], argv[1]);
+        output << argv[0] <<
+            ": Invalid tag \"" << argv[1] << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
 }
 
-int monitor_set_tag_by_index_command(int argc, char** argv, GString* output) {
+int monitor_set_tag_by_index_command(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -904,19 +892,19 @@ int monitor_set_tag_by_index_command(int argc, char** argv, GString* output) {
     }
     HSTag* tag = get_tag_by_index_str(argv[1], skip_visible);
     if (!tag) {
-        g_string_append_printf(output,
-            "%s: Invalid index \"%s\"\n", argv[0], argv[1]);
+        output << argv[0] <<
+            ": Invalid index \"" << argv[1] << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     int ret = monitor_set_tag(get_current_monitor(), tag);
     if (ret != 0) {
-        g_string_append_printf(output,
-            "%s: Could not change tag (maybe monitor is locked?)\n", argv[0]);
+        output << argv[0] <<
+            ": Could not change tag (maybe monitor is locked?)\n";
     }
     return ret;
 }
 
-int monitor_set_previous_tag_command(int argc, char** argv, GString* output) {
+int monitor_set_previous_tag_command(int argc, char** argv, Output output) {
     if (argc < 1) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -925,25 +913,25 @@ int monitor_set_previous_tag_command(int argc, char** argv, GString* output) {
     if (monitor && tag) {
         int ret = monitor_set_tag(monitor, tag);
         if (ret != 0) {
-            g_string_append_printf(output,
-                    "%s: Could not change tag (maybe monitor is locked?)\n", argv[0]);
+            output << argv[0] <<
+                    ": Could not change tag (maybe monitor is locked?)\n";
         }
         return ret;
     } else {
-        g_string_append_printf(output,
-                "%s: Invalid monitor or tag\n", argv[0]);
+        output << argv[0] <<
+                ": Invalid monitor or tag\n";
         return HERBST_INVALID_ARGUMENT;
     }
 }
 
-int monitor_focus_command(int argc, char** argv, GString* output) {
+int monitor_focus_command(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     int new_selection = string_to_monitor_index(argv[1]);
     if (new_selection < 0) {
-        g_string_append_printf(output,
-            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+        output << argv[0] <<
+            ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
     // really change selection
@@ -1120,15 +1108,15 @@ void monitors_lock_changed() {
     }
 }
 
-int monitor_lock_tag_command(int argc, char** argv, GString* output) {
+int monitor_lock_tag_command(int argc, char** argv, Output output) {
     char* cmd_name = argv[0];
     (void)SHIFT(argc, argv);
     HSMonitor *monitor;
     if (argc >= 1) {
         monitor = string_to_monitor(argv[0]);
         if (monitor == NULL) {
-            g_string_append_printf(output,
-                "%s: Monitor \"%s\" not found!\n", cmd_name, argv[0]);
+            output << cmd_name <<
+                ": Monitor \"" << argv[0] << "\" not found!\n";
             return HERBST_INVALID_ARGUMENT;
         }
     } else {
@@ -1138,15 +1126,14 @@ int monitor_lock_tag_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int monitor_unlock_tag_command(int argc, char** argv, GString* output) {
+int monitor_unlock_tag_command(int argc, char** argv, Output output) {
     char* cmd_name = argv[0];
     (void)SHIFT(argc, argv);
     HSMonitor *monitor;
     if (argc >= 1) {
         monitor = string_to_monitor(argv[0]);
         if (monitor == NULL) {
-            g_string_append_printf(output,
-                "%s: Monitor \"%s\" not found!\n", cmd_name, argv[0]);
+            output << cmd_name << ": Monitor \"" << argv[0] << "\" not found!\n";
             return HERBST_INVALID_ARGUMENT;
         }
     } else {
@@ -1221,7 +1208,7 @@ bool detect_monitors_debug_example(RectangleVec &dest) {
 }
 
 
-int detect_monitors_command(int argc, const char **argv, GString* output) {
+int detect_monitors_command(int argc, const char **argv, Output output) {
     MonitorDetection detect[] = {
         detect_monitors_xinerama,
         detect_monitors_simple,
@@ -1246,8 +1233,7 @@ int detect_monitors_command(int argc, const char **argv, GString* output) {
         // TOOD:
         // else if (!strcmp(argv[i], "--keep-small"))  drop_small = false;
         else {
-            g_string_append_printf(output,
-                "detect_monitors: unknown flag \"%s\"\n", argv[i]);
+            output << "detect_monitors: unknown flag \"" << argv[i] << "\"\n";
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -1255,9 +1241,7 @@ int detect_monitors_command(int argc, const char **argv, GString* output) {
     int ret = 0;
     if (list_only) {
         for (auto m : monitors) {
-            g_string_append_printf(output, "%dx%d%+d%+d\n",
-                m.width, m.height,
-                m.x, m.y);
+            output << m << "\n";
         }
     } else {
         // possibly disjoin them
@@ -1273,8 +1257,7 @@ int detect_monitors_command(int argc, const char **argv, GString* output) {
         // apply it
         ret = set_monitor_rects(monitors);
         if (ret == HERBST_TAG_IN_USE && output != NULL) {
-            g_string_append_printf(output,
-                "%s: There are not enough free tags\n", argv[0]);
+            output << argv[0] << ": There are not enough free tags\n";
         }
     }
     return ret;
@@ -1293,15 +1276,14 @@ HSStack* get_monitor_stack() {
     return g_monitor_stack;
 }
 
-int monitor_raise_command(int argc, char** argv, GString* output) {
+int monitor_raise_command(int argc, char** argv, Output output) {
     char* cmd_name = argv[0];
     (void)SHIFT(argc, argv);
     HSMonitor* monitor;
     if (argc >= 1) {
         monitor = string_to_monitor(argv[0]);
         if (monitor == NULL) {
-            g_string_append_printf(output,
-                "%s: Monitor \"%s\" not found!\n", cmd_name, argv[0]);
+            output << cmd_name << ": Monitor \"" << argv[0] << "\" not found!\n";
             return HERBST_INVALID_ARGUMENT;
         }
     } else {
@@ -1329,15 +1311,14 @@ void monitor_restack(HSMonitor* monitor) {
     g_free(buf);
 }
 
-int shift_to_monitor(int argc, char** argv, GString* output) {
+int shift_to_monitor(int argc, char** argv, Output output) {
     if (argc <= 1) {
         return HERBST_NEED_MORE_ARGS;
     }
     char* monitor_str = argv[1];
     HSMonitor* monitor = string_to_monitor(monitor_str);
     if (!monitor) {
-        g_string_append_printf(output,
-            "%s: Invalid monitor\n", monitor_str);
+        output << monitor_str << ": Invalid monitor\n";
         return HERBST_INVALID_ARGUMENT;
     }
     tag_move_focused_client(monitor->tag);

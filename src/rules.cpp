@@ -124,11 +124,10 @@ static int find_condition_type(const char* name) {
     return -1;
 }
 
-HSCondition* condition_create(int type, char op, char* value, GString* output) {
+HSCondition* condition_create(int type, char op, char* value, Output output) {
     HSCondition cond;
     if (op != '=' && type == g_maxage_type) {
-        g_string_append_printf(output,
-            "rule: Condition maxage only supports the = operator\n");
+        output << "rule: Condition maxage only supports the = operator\n";
         return NULL;
     }
     switch (op) {
@@ -136,8 +135,7 @@ HSCondition* condition_create(int type, char op, char* value, GString* output) {
             if (type == g_maxage_type) {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
                 if (1 != sscanf(value, "%d", &cond.value.integer)) {
-                    g_string_append_printf(output,
-                        "rule: Can not integer from \"%s\"\n", value);
+                    output << "rule: Can not integer from \"" << value << "\"\n";
                     return NULL;
                 }
             } else {
@@ -153,9 +151,9 @@ HSCondition* condition_create(int type, char op, char* value, GString* output) {
             if (status != 0) {
                 char buf[ERROR_STRING_BUF_SIZE];
                 regerror(status, &cond.value.reg.exp, buf, ERROR_STRING_BUF_SIZE);
-                g_string_append_printf(output,
-                    "rule: Can not parse value \"%s\" from condition \"%s\": \"%s\"\n",
-                    value, g_condition_types[type].name, buf);
+                output << "rule: Can not parse value \"" << value
+                        << "\" from condition \"" << g_condition_types[type].name
+                        << "\": \"" << buf << "\"\n";
                 return NULL;
             }
             cond.value.reg.str = g_strdup(value);
@@ -163,8 +161,7 @@ HSCondition* condition_create(int type, char op, char* value, GString* output) {
         }
 
         default:
-            g_string_append_printf(output,
-                "rule: Unknown rule condition operation \"%c\"\n", op);
+            output << "rule: Unknown rule condition operation \"" << op << "\"\n";
             return NULL;
             break;
     }
@@ -210,7 +207,7 @@ static int find_consequence_type(const char* name) {
     return -1;
 }
 
-HSConsequence* consequence_create(int type, char op, char* value, GString* output) {
+HSConsequence* consequence_create(int type, char op, char* value, Output output) {
     HSConsequence cons;
     switch (op) {
         case '=':
@@ -219,8 +216,7 @@ HSConsequence* consequence_create(int type, char op, char* value, GString* outpu
             break;
 
         default:
-            g_string_append_printf(output,
-                "rule: Unknown rule consequence operation \"%c\"\n", op);
+            output << "rule: Unknown rule consequence operation \"" << op << "\"\n";
             return NULL;
             break;
     }
@@ -241,12 +237,11 @@ static void consequence_destroy(HSConsequence* cons) {
     g_free(cons);
 }
 
-static bool rule_label_replace(HSRule* rule, char op, char* value, GString* output) {
+static bool rule_label_replace(HSRule* rule, char op, char* value, Output output) {
     switch (op) {
         case '=':
             if (*value == '\0') {
-                g_string_append_printf(output,
-                    "rule: Rule label cannot be empty");
+                output << "rule: Rule label cannot be empty";
                 return false;
                 break;
             }
@@ -254,8 +249,7 @@ static bool rule_label_replace(HSRule* rule, char op, char* value, GString* outp
             rule->label = g_strdup(value);
             break;
         default:
-            g_string_append_printf(output,
-                "rule: Unknown rule label operation \"%c\"\n", op);
+            output << "rule: Unknown rule label operation \"" << op << "\"\n";
             return false;
             break;
     }
@@ -290,7 +284,7 @@ void rule_destroy(HSRule* rule) {
     g_free(rule);
 }
 
-void rule_complete(int argc, char** argv, int pos, GString* output) {
+void rule_complete(int argc, char** argv, int pos, Output output) {
     const char* needle = (pos < argc) ? argv[pos] : "";
     GString* buf = g_string_sized_new(20);
 
@@ -347,41 +341,36 @@ static bool rule_find_pop(char* label) {
 }
 
 // List all rules in queue
-static void rule_print_append_output(HSRule* rule, GString* output) {
-    g_string_append_printf(output, "label=%s\t", rule->label);
+static void rule_print_append_output(HSRule* rule, Output output) {
+    output << "label=" << rule->label << "\t";
     // Append conditions
     for (int i = 0; i < rule->condition_count; i++) {
         if (rule->conditions[i]->negated) { // Include flag if negated
-            g_string_append_printf(output, "not\t");
+            output << "not\t";
         }
-        g_string_append_printf(output, "%s=",
-            g_condition_types[rule->conditions[i]->condition_type].name);
+        output << g_condition_types[rule->conditions[i]->condition_type].name << "=";
         switch (rule->conditions[i]->value_type) {
             case CONDITION_VALUE_TYPE_STRING:
-                g_string_append_printf(output, "%s\t",
-                    rule->conditions[i]->value.str);
+                output << rule->conditions[i]->value.str << "\t";
                 break;
             case CONDITION_VALUE_TYPE_REGEX:
-                g_string_append_printf(output, "%s\t",
-                    rule->conditions[i]->value.reg.str);
+                output << rule->conditions[i]->value.reg.str << "\t";
                 break;
             default: /* CONDITION_VALUE_TYPE_INTEGER: */
-                g_string_append_printf(output, "%i\t",
-                    rule->conditions[i]->value.integer);
+                output << rule->conditions[i]->value.integer << "\t";
                 break;
         }
     }
     // Append consequences
     for (int i = 0; i < rule->consequence_count; i++) {
-        g_string_append_printf(output, "%s=%s\t",
-            g_consequence_types[rule->consequences[i]->type].name,
-            rule->consequences[i]->value.str);
+        output << g_consequence_types[rule->consequences[i]->type].name
+               << "=" << rule->consequences[i]->value.str << "\t";
     }
     // Print new line
-    g_string_append_c(output, '\n');
+    output << '\n';
 }
 
-int rule_print_all_command(int argc, char** argv, GString* output) {
+int rule_print_all_command(int argc, char** argv, Output output) {
     // Print entry for each in the queue
     g_queue_foreach(&g_rules, (GFunc)rule_print_append_output, output);
     return 0;
@@ -427,7 +416,7 @@ static void rule_add_consequence(HSRule* rule, HSConsequence* cons) {
 }
 
 
-int rule_add_command(int argc, char** argv, GString* output) {
+int rule_add_command(int argc, char** argv, Output output) {
     // usage: rule COND=VAL ... then
 
     if (argc < 2) {
@@ -505,15 +494,14 @@ int rule_add_command(int argc, char** argv, GString* output) {
 
         else {
             // need to hardcode "rule:" here because args are shifted
-            g_string_append_printf(output,
-                "rule: Unknown argument \"%s\"\n", *argv);
+            output << "rule: Unknown argument \"" << *argv << "\"\n";
             rule_destroy(rule);
             return HERBST_INVALID_ARGUMENT;
         }
     }
 
     if (printlabel) {
-       g_string_append_printf(output, "%s\n", rule->label);
+       output << rule->label << "\n";
     }
 
     if (prepend) g_queue_push_head(&g_rules, rule);
@@ -521,7 +509,7 @@ int rule_add_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-void complete_against_rule_names(int argc, char** argv, int pos, GString* output) {
+void complete_against_rule_names(int argc, char** argv, int pos, Output output) {
     const char* needle;
     if (pos >= argc) {
         needle = "";
@@ -537,7 +525,7 @@ void complete_against_rule_names(int argc, char** argv, int pos, GString* output
 }
 
 
-int rule_remove_command(int argc, char** argv, GString* output) {
+int rule_remove_command(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -552,7 +540,7 @@ int rule_remove_command(int argc, char** argv, GString* output) {
 
     // Deletes rule with given label
     if (!rule_find_pop(argv[1])) {
-        g_string_append_printf(output, "Couldn't find rule: \"%s\"", argv[1]);
+        output << "Couldn't find rule: \"" << argv[1] << "\"";
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;

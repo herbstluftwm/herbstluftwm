@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 namespace herbstluft {
 
@@ -51,7 +52,11 @@ namespace herbstluft {
         int y;
     };
 
+    std::ostream& operator<< (std::ostream& stream, const Rectangle& matrix);
 }
+
+// STRTODO: move this into the herbstluftwm namespace
+using Output = std::ostream&;
 
 #endif
 

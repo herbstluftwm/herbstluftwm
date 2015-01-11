@@ -401,25 +401,25 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
 }
 
 static void subtree_print_to(HSTreeInterface* intface, const char* indent,
-                          char* rootprefix, GString* output) {
+                          char* rootprefix, Output output) {
     HSTree root = intface->data;
     size_t child_count = intface->child_count(root);
     if (child_count == 0) {
-        g_string_append(output, rootprefix);
-        g_string_append_unichar(output, UTF8_STRING_AT(g_tree_style, 6));
-        g_string_append_unichar(output, UTF8_STRING_AT(g_tree_style, 5));
-        g_string_append_c(output, ' ');
+        output << rootprefix;
+        output << UTF8_STRING_AT(g_tree_style, 6);
+        output << UTF8_STRING_AT(g_tree_style, 5);
+        output << ' ';
         // append caption
         intface->append_caption(root, output);
-        g_string_append(output, "\n");
+        output << "\n";
     } else {
-        g_string_append_printf(output, "%s", rootprefix);
-        g_string_append_unichar(output, UTF8_STRING_AT(g_tree_style, 6));
-        g_string_append_unichar(output, UTF8_STRING_AT(g_tree_style, 7));
+        output << "%s";
+        output << UTF8_STRING_AT(g_tree_style, 6);
+        output << UTF8_STRING_AT(g_tree_style, 7);
         // append caption
-        g_string_append_c(output, ' ');
+        output << ' ';
         intface->append_caption(root, output);
-        g_string_append_c(output, '\n');
+        output << '\n';
         // append children
         GString* child_indent = g_string_new("");
         GString* child_prefix = g_string_new("");
@@ -444,7 +444,7 @@ static void subtree_print_to(HSTreeInterface* intface, const char* indent,
     }
 }
 
-void tree_print_to(HSTreeInterface* intface, GString* output) {
+void tree_print_to(HSTreeInterface* intface, Output output) {
     GString* root_indicator = g_string_new("");
     g_string_append_unichar(root_indicator, UTF8_STRING_AT(g_tree_style, 0));
     subtree_print_to(intface, " ", root_indicator->str, output);

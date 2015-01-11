@@ -205,10 +205,10 @@ void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child);
 
 HSObject* hsobject_by_path(char* path);
 HSObject* hsobject_parse_path(const char* path, const char** unparsable);
-HSObject* hsobject_parse_path_verbose(const char* path, const char** unparsable, GString* output);
+HSObject* hsobject_parse_path_verbose(const char* path, const char** unparsable, Output output);
 
 HSAttribute* hsattribute_parse_path(const char* path);
-HSAttribute* hsattribute_parse_path_verbose(const char* path, GString* output);
+HSAttribute* hsattribute_parse_path_verbose(const char* path, Output output);
 
 void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes);
 
@@ -221,30 +221,30 @@ void hsobject_set_attributes_always_callback(HSObject* obj);
 
 char hsattribute_type_indicator(int type);
 
-int attr_command(int argc, char* argv[], GString* output);
-int print_object_tree_command(int argc, char* argv[], GString* output);
-int hsattribute_get_command(int argc, const char* argv[], GString* output);
-int hsattribute_set_command(int argc, char* argv[], GString* output);
+int attr_command(int argc, char* argv[], Output output);
+int print_object_tree_command(int argc, char* argv[], Output output);
+int hsattribute_get_command(int argc, const char* argv[], Output output);
+int hsattribute_set_command(int argc, char* argv[], Output output);
 bool hsattribute_is_read_only(HSAttribute* attr);
-int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* output);
-void hsattribute_append_to_string(HSAttribute* attribute, GString* output);
-GString* hsattribute_to_string(HSAttribute* attribute);
+int hsattribute_assign(HSAttribute* attr, const std::string& new_value_str, Output output);
+void hsattribute_append_to_string(HSAttribute* attribute, Output output);
+std::string hsattribute_to_string(HSAttribute* attribute);
 
 void hsobject_complete_children(HSObject* obj, const char* needle, const char* prefix,
-                                GString* output);
+                                Output output);
 void hsobject_complete_attributes(HSObject* obj, bool user_only,
                                   const char* needle, const char* prefix,
-                                  GString* output);
-int substitute_command(int argc, char* argv[], GString* output);
-int sprintf_command(int argc, char* argv[], GString* output);
-int compare_command(int argc, char* argv[], GString* output);
+                                  Output output);
+int substitute_command(int argc, char* argv[], Output output);
+int sprintf_command(int argc, char* argv[], Output output);
+int compare_command(int argc, char* argv[], Output output);
 
-int userattribute_command(int argc, char* argv[], GString* output);
-int userattribute_remove_command(int argc, char* argv[], GString* output);
+int userattribute_command(int argc, char* argv[], Output output);
+int userattribute_remove_command(int argc, char* argv[], Output output);
 HSAttribute* hsattribute_create(HSObject* obj, const char* name, char* type_str,
-                                GString* output);
+                                Output output);
 bool userattribute_remove(HSAttribute* attr);
-int tmpattribute_command(int argc, char* argv[], GString* output);
+int tmpattribute_command(int argc, char* argv[], Output output);
 
 #endif
 

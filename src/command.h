@@ -8,10 +8,11 @@
 
 #include "glib-backports.h"
 #include <stdbool.h>
+#include "x11-types.h"
 
 typedef int (*HerbstCmd)(int argc,      // number of arguments
                          const char** argv,   // array of args
-                         GString* output  // result-data/stdout
+                         Output output  // result-data/stdout
                         );
 typedef int (*HerbstCmdNoOutput)(int argc,  // number of arguments
                          const char** argv        // array of args
@@ -27,7 +28,7 @@ union CommandBindingCB {
     HerbstCmdNoOutput no_output;
     CommandBindingCB() : standard(NULL) { };
     CommandBindingCB(HerbstCmd x) : standard(x) { };
-    CommandBindingCB(int (*x)(int,char**,GString*)) : standard((HerbstCmd)x) { };
+    CommandBindingCB(int (*x)(int,char**,Output)) : standard((HerbstCmd)x) { };
     CommandBindingCB(HerbstCmdNoOutput x) : no_output(x) { };
     CommandBindingCB(int (*x)(int,char**)) : no_output((HerbstCmdNoOutput)x) { };
     CommandBindingCB(int (*x)()) : no_output((HerbstCmdNoOutput)x) { };
@@ -41,62 +42,62 @@ typedef struct CommandBinding {
 
 extern CommandBinding g_commands[];
 
-int call_command(int argc, char** argv, GString* output);
+int call_command(int argc, char** argv, Output output);
 int call_command_no_output(int argc, char** argv);
 int call_command_substitute(char* needle, char* replacement,
-                            int argc, char** argv, GString* output);
+                            int argc, char** argv, Output output);
 
 // commands
-int list_commands(int argc, char** argv, GString* output);
-int complete_command(int argc, char** argv, GString* output);
+int list_commands(int argc, char** argv, Output output);
+int complete_command(int argc, char** argv, Output output);
 
-void try_complete(const char* needle, const char* to_check, GString* output);
-void try_complete_partial(const char* needle, const char* to_check, GString* output);
+void try_complete(const char* needle, const char* to_check, Output output);
+void try_complete_partial(const char* needle, const char* to_check, Output output);
 void try_complete_prefix_partial(const char* needle, const char* to_check,
-                                 const char* prefix, GString* output);
+                                 const char* prefix, Output output);
 void try_complete_prefix(const char* needle, const char* to_check,
-                         const char* prefix, GString* output);
+                         const char* prefix, Output output);
 
-void complete_settings(char* str, GString* output);
-void complete_against_list(char* needle, char** list, GString* output);
-void complete_against_tags(int argc, char** argv, int pos, GString* output);
-void complete_against_monitors(int argc, char** argv, int pos, GString* output);
-void complete_against_objects(int argc, char** argv, int pos, GString* output);
-void complete_against_attributes(int argc, char** argv, int pos, GString* output);
-void complete_against_user_attributes(int argc, char** argv, int pos, GString* output);
-void complete_against_attribute_values(int argc, char** argv, int pos, GString* output);
-void complete_against_comparators(int argc, char** argv, int pos, GString* output);
-void complete_against_winids(int argc, char** argv, int pos, GString* output);
-void complete_merge_tag(int argc, char** argv, int pos, GString* output);
-void complete_negate(int argc, char** argv, int pos, GString* output);
-void complete_against_settings(int argc, char** argv, int pos, GString* output);
-void complete_against_keybinds(int argc, char** argv, int pos, GString* output);
+void complete_settings(char* str, Output output);
+void complete_against_list(char* needle, char** list, Output output);
+void complete_against_tags(int argc, char** argv, int pos, Output output);
+void complete_against_monitors(int argc, char** argv, int pos, Output output);
+void complete_against_objects(int argc, char** argv, int pos, Output output);
+void complete_against_attributes(int argc, char** argv, int pos, Output output);
+void complete_against_user_attributes(int argc, char** argv, int pos, Output output);
+void complete_against_attribute_values(int argc, char** argv, int pos, Output output);
+void complete_against_comparators(int argc, char** argv, int pos, Output output);
+void complete_against_winids(int argc, char** argv, int pos, Output output);
+void complete_merge_tag(int argc, char** argv, int pos, Output output);
+void complete_negate(int argc, char** argv, int pos, Output output);
+void complete_against_settings(int argc, char** argv, int pos, Output output);
+void complete_against_keybinds(int argc, char** argv, int pos, Output output);
 int complete_against_commands(int argc, char** argv, int position,
-                              GString* output);
+                              Output output);
 void complete_against_commands_1(int argc, char** argv, int position,
-                                 GString* output);
+                                 Output output);
 void complete_against_commands_3(int argc, char** argv, int position,
-                                 GString* output);
-void complete_against_arg_1(int argc, char** argv, int position, GString* output);
-void complete_against_arg_2(int argc, char** argv, int position, GString* output);
+                                 Output output);
+void complete_against_arg_1(int argc, char** argv, int position, Output output);
+void complete_against_arg_2(int argc, char** argv, int position, Output output);
 void complete_against_keybind_command(int argc, char** argv, int position,
-                                      GString* output);
+                                      Output output);
 void complete_against_mouse_combinations(int argc, char** argv, int position,
-                                      GString* output);
+                                      Output output);
 
-void complete_against_env(int argc, char** argv, int position, GString* output);
-void complete_chain(int argc, char** argv, int position, GString* output);
+void complete_against_env(int argc, char** argv, int position, Output output);
+void complete_chain(int argc, char** argv, int position, Output output);
 
 int command_chain(char* separator, bool (*condition)(int laststatus),
-                  int argc, char** argv, GString* output);
+                  int argc, char** argv, Output output);
 
-void complete_sprintf(int argc, char** argv, int position, GString* output);
+void complete_sprintf(int argc, char** argv, int position, Output output);
 
 void complete_against_user_attr_prefix(int argc, char** argv, int position,
-                                       GString* output);
+                                       Output output);
 
-int command_chain_command(int argc, char** argv, GString* output);
+int command_chain_command(int argc, char** argv, Output output);
 
-int negate_command(int argc, char** argv, GString* output);
+int negate_command(int argc, char** argv, Output output);
 #endif
 

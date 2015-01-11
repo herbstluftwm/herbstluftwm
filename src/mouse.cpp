@@ -169,29 +169,29 @@ int mouse_binding_equals(MouseBinding* a, MouseBinding* b) {
     }
 }
 
-int mouse_bind_command(int argc, char** argv, GString* output) {
+int mouse_bind_command(int argc, char** argv, Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
     unsigned int modifiers = 0;
     char* string = argv[1];
     if (!string2modifiers(string, &modifiers)) {
-        g_string_append_printf(output,
-            "%s: Modifier \"%s\" does not exist\n", argv[0], string);
+        output << argv[0] <<
+            ": Modifier \"" << string << "\" does not exist\n";
         return HERBST_INVALID_ARGUMENT;
     }
     // last one is the mouse button
     const char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
     unsigned int button = string2button(last_token);
     if (button == 0) {
-        g_string_append_printf(output,
-            "%s: Unknown mouse button \"%s\"\n", argv[0], last_token);
+        output << argv[0] <<
+            ": Unknown mouse button \"" << last_token << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     MouseFunction function = string2mousefunction(argv[2]);
     if (!function) {
-        g_string_append_printf(output,
-            "%s: Unknown mouse action \"%s\"\n", argv[0], argv[2]);
+        output << argv[0] <<
+            ": Unknown mouse action \"" << argv[2] << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
 
@@ -254,7 +254,7 @@ unsigned int string2button(const char* name) {
 }
 
 
-void complete_against_mouse_buttons(const char* needle, char* prefix, GString* output) {
+void complete_against_mouse_buttons(const char* needle, char* prefix, Output output) {
     for (int i = 0; i < LENGTH(string2button_table); i++) {
         const char* buttonname = string2button_table[i].name;
         try_complete_prefix(needle, buttonname, prefix, output);

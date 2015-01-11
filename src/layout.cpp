@@ -25,6 +25,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <iomanip>
 
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
@@ -110,7 +111,8 @@ static void fetch_frame_colors() {
         g_warning("too few characters in setting tree_style\n");
         // ensure that it is long enough
         const char* argv[] = { "set", "tree_style", "01234567" };
-        settings_set_command(LENGTH(argv), argv, NULL);
+        std::ostringstream void_stream;
+        settings_set_command(LENGTH(argv), argv, void_stream);
     }
 }
 
@@ -296,45 +298,45 @@ void frame_destroy(HSFrame* frame, HSClient*** buf, size_t* count) {
     g_free(frame);
 }
 
-void dump_frame_tree(HSFrame* frame, GString* output) {
+void dump_frame_tree(HSFrame* frame, Output output) {
     if (frame->type == TYPE_CLIENTS) {
-        g_string_append_printf(output, "%cclients%c%s:%d",
-            LAYOUT_DUMP_BRACKETS[0],
-            LAYOUT_DUMP_WHITESPACES[0],
-            g_layout_names[frame->content.clients.layout],
-            frame->content.clients.selection);
+        output << LAYOUT_DUMP_BRACKETS[0]
+               << "clients"
+               << LAYOUT_DUMP_WHITESPACES[0]
+               << g_layout_names[frame->content.clients.layout] << ":"
+               << frame->content.clients.selection;
         HSClient** buf = frame->content.clients.buf;
         size_t i, count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            g_string_append_printf(output, "%c0x%lx",
-                LAYOUT_DUMP_WHITESPACES[0],
-                buf[i]->x11Window());
+            output << LAYOUT_DUMP_WHITESPACES[0]
+                   << "0x"
+                   << std::hex << buf[i]->x11Window() << std::dec;
         }
-        g_string_append_c(output, LAYOUT_DUMP_BRACKETS[1]);
+        output << LAYOUT_DUMP_BRACKETS[1];
     } else {
         /* type == TYPE_FRAMES */
-        g_string_append_printf(output, "%csplit%c%s%c%lf%c%d%c",
-            LAYOUT_DUMP_BRACKETS[0],
-            LAYOUT_DUMP_WHITESPACES[0],
-            g_align_names[frame->content.layout.align],
-            LAYOUT_DUMP_SEPARATOR,
-            ((double)frame->content.layout.fraction) / (double)FRACTION_UNIT,
-            LAYOUT_DUMP_SEPARATOR,
-            frame->content.layout.selection,
-            LAYOUT_DUMP_WHITESPACES[0]);
+        output
+            << LAYOUT_DUMP_BRACKETS[0]
+            << "split"
+            << LAYOUT_DUMP_WHITESPACES[0]
+            << g_align_names[frame->content.layout.align]
+            << LAYOUT_DUMP_SEPARATOR
+            << ((double)frame->content.layout.fraction) / (double)FRACTION_UNIT
+            << LAYOUT_DUMP_SEPARATOR
+            << frame->content.layout.selection
+            << LAYOUT_DUMP_WHITESPACES[0];
         dump_frame_tree(frame->content.layout.a, output);
-        g_string_append_c(output, LAYOUT_DUMP_WHITESPACES[0]);
+        output << LAYOUT_DUMP_WHITESPACES[0];
         dump_frame_tree(frame->content.layout.b, output);
-        g_string_append_c(output, LAYOUT_DUMP_BRACKETS[1]);
+        output << LAYOUT_DUMP_BRACKETS[1];
     }
 }
 
-char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
+char* load_frame_tree(HSFrame* frame, char* description, Output output) {
     // find next (
     description = strchr(description, LAYOUT_DUMP_BRACKETS[0]);
     if (!description) {
-        g_string_append_printf(errormsg, "Missing %c\n",
-            LAYOUT_DUMP_BRACKETS[0]);
+        output << "Missing " << LAYOUT_DUMP_BRACKETS[0] << "\n";
         return NULL;
     }
     description++; // jump over (
@@ -360,12 +362,12 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
     // jump over args substring
     description += args_len;
     if (!*description) {
-        g_string_append_printf(errormsg, "Missing %c or arguments\n", LAYOUT_DUMP_BRACKETS[1]);
+        output << "Missing " << LAYOUT_DUMP_BRACKETS[1] << " or arguments\n";
         return NULL;
     }
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
     if (!*description) {
-        g_string_append_printf(errormsg, "Missing %c or arguments\n", LAYOUT_DUMP_BRACKETS[1]);
+        output << "Missing " << LAYOUT_DUMP_BRACKETS[1] << " or arguments\n";
         return NULL;
     }
 
@@ -378,16 +380,14 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
 #define SEP LAYOUT_DUMP_SEPARATOR_STR
         if (3 != sscanf(args, "%[^" SEP "]" SEP "%lf" SEP "%d",
             align_name, &fraction_double, &selection)) {
-            g_string_append_printf(errormsg,
-                "Can not parse frame args \"%s\"\n", args);
+            output << "Can not parse frame args \"" << args << "\"\n";
             return NULL;
         }
 #undef SEP
         int align = find_align_by_name(align_name);
         g_free(align_name);
         if (align < 0) {
-            g_string_append_printf(errormsg,
-                "Invalid alignment name in args \"%s\"\n", args);
+            output << "Invalid alignment name in args \"" << args << "\"\n";
             return NULL;
         }
         selection = !!selection; // CLAMP it to [0;1]
@@ -401,8 +401,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         } else {
             frame_split(frame, align, fraction);
             if (frame->type != TYPE_FRAMES) {
-                g_string_append_printf(errormsg,
-                    "Can not split frame\n");
+                output << "Can not split frame\n";
                 return NULL;
             }
         }
@@ -410,10 +409,10 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
 
         // now parse subframes
         description = load_frame_tree(frame->content.layout.a,
-                        description, errormsg);
+                        description, output);
         if (!description) return NULL;
         description = load_frame_tree(frame->content.layout.b,
-                        description, errormsg);
+                        description, output);
         if (!description) return NULL;
     } else {
         // parse args
@@ -422,16 +421,14 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
 #define SEP LAYOUT_DUMP_SEPARATOR_STR
         if (2 != sscanf(args, "%[^" SEP "]" SEP "%d",
             layout_name, &selection)) {
-            g_string_append_printf(errormsg,
-                "Can not parse frame args \"%s\"\n", args);
+            output << "Can not parse frame args \"" << args << "\"\n";
             return NULL;
         }
 #undef SEP
         int layout = find_layout_by_name(layout_name);
         g_free(layout_name);
         if (layout < 0) {
-            g_string_append_printf(errormsg,
-                "Can not parse layout from args \"%s\"\n", args);
+            output << "Can not parse layout from args \"" << args << "\"\n";
             return NULL;
         }
 
@@ -467,8 +464,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
         while (*description != LAYOUT_DUMP_BRACKETS[1]) {
             Window win;
             if (1 != sscanf(description, "0x%lx\n", &win)) {
-                g_string_append_printf(errormsg,
-                    "Can not parse window id from \"%s\"\n", description);
+                output << "Can not parse window id from \"" << description << "\"\n";
                 return NULL;
             }
             // jump over window id and over whitespaces
@@ -521,7 +517,7 @@ char* load_frame_tree(HSFrame* frame, char* description, GString* errormsg) {
     if (*description == LAYOUT_DUMP_BRACKETS[1]) {
         description++;
     } else {
-        g_string_append_printf(errormsg, "warning: missing closing bracket %c\n", LAYOUT_DUMP_BRACKETS[1]);
+        output << "warning: missing closing bracket " << LAYOUT_DUMP_BRACKETS[1] << "\n";
     }
     // and over whitespaces
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
@@ -557,26 +553,27 @@ HSFrame* get_toplevel_frame(HSFrame* frame) {
     return frame;
 }
 
-static void frame_append_caption(HSTree tree, GString* output) {
+static void frame_append_caption(HSTree tree, Output output) {
     HSFrame* frame = (HSFrame*) tree;
     if (frame->type == TYPE_CLIENTS) {
         // list of clients
-        g_string_append_printf(output, "%s:",
-            g_layout_names[frame->content.clients.layout]);
+        output << g_layout_names[frame->content.clients.layout] << ":";
         HSClient** buf = frame->content.clients.buf;
         size_t i, count = frame->content.clients.count;
         for (i = 0; i < count; i++) {
-            g_string_append_printf(output, " 0x%lx", buf[i]->x11Window());
+            output << " 0x%lx" << std::hex << buf[i]->x11Window() << std::dec;
         }
         if (g_cur_frame == frame) {
-            g_string_append(output, " [FOCUS]");
+            output << " [FOCUS]";
         }
     } else {
         /* type == TYPE_FRAMES */
-        g_string_append_printf(output, "%s %d%% selection=%d",
-            g_layout_names[frame->content.layout.align],
-            frame->content.layout.fraction * 100 / FRACTION_UNIT,
-            frame->content.layout.selection);
+        output
+            << g_layout_names[frame->content.layout.align]
+            << " "
+            << frame->content.layout.fraction * 100 / FRACTION_UNIT
+            << "% selection="
+            << frame->content.layout.selection;
     }
 }
 
@@ -600,7 +597,7 @@ static HSTreeInterface frame_nth_child(HSTree tree, size_t idx) {
     return intf;
 }
 
-void print_frame_tree(HSFrame* frame, GString* output) {
+void print_frame_tree(HSFrame* frame, Output output) {
     HSTreeInterface frameintf = {
         /* .nth_child      = */ frame_nth_child,
         /* .child_count    = */ frame_child_count,
@@ -631,7 +628,7 @@ void frame_apply_floating_layout(HSFrame* frame, HSMonitor* m) {
     }
 }
 
-int frame_current_cycle_client_layout(int argc, char** argv, GString* output) {
+int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
     char* cmd_name = argv[0]; // save this before shifting
     int delta = 1;
     if (argc >= 2) {
@@ -652,8 +649,8 @@ int frame_current_cycle_client_layout(int argc, char** argv, GString* output) {
         idx %= argc;
         layout_index = find_layout_by_name(argv[idx]);
         if (layout_index < 0) {
-            g_string_append_printf(output,
-                "%s: Invalid layout name \"%s\"\n", cmd_name, argv[idx]);
+            output << cmd_name << ": Invalid layout name \""
+                   << argv[idx] << "\"\n";
             return HERBST_INVALID_ARGUMENT;
         }
     } else {
@@ -668,15 +665,15 @@ int frame_current_cycle_client_layout(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int frame_current_set_client_layout(int argc, char** argv, GString* output) {
+int frame_current_set_client_layout(int argc, char** argv, Output output) {
     int layout = 0;
     if (argc <= 1) {
         return HERBST_NEED_MORE_ARGS;
     }
     layout = find_layout_by_name(argv[1]);
     if (layout < 0) {
-        g_string_append_printf(output,
-            "%s: Invalid layout name \"%s\"\n", argv[0], argv[1]);
+        output << argv[0]
+               << ": Invalid layout name \"" << argv[1] << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     if (g_cur_frame && g_cur_frame->type == TYPE_CLIENTS) {
@@ -930,18 +927,17 @@ HSFrame* frame_current_selection() {
     return frame_current_selection_below(m->tag->frame);
 }
 
-int frame_current_bring(int argc, char** argv, GString* output) {
+int frame_current_bring(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     auto client = get_client(argv[1]);
     if (!client) {
-        g_string_append_printf(output,
-            "%s: Could not find client", argv[0]);
+        output << argv[0] << ": Could not find client";
         if (argc > 1) {
-            g_string_append_printf(output, " \"%s\".\n", argv[1]);
+            output << " \"" << argv[1] << "\".\n";
         } else {
-            g_string_append(output, ".\n");
+            output << ".\n";
         }
         return HERBST_INVALID_ARGUMENT;
     }
@@ -1227,7 +1223,7 @@ bool frame_split(HSFrame* frame, int align, int fraction) {
     return true;
 }
 
-int frame_split_command(int argc, char** argv, GString* output) {
+int frame_split_command(int argc, char** argv, Output output) {
     // usage: split t|b|l|r|h|v FRACTION
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
@@ -1272,8 +1268,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
         }
     }
     if (align < 0) {
-        g_string_append_printf(output,
-            "%s: Invalid alignment \"%s\"\n", argv[0], argv[1]);
+        output << argv[0] << ": Invalid alignment \"" << argv[1] << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     HSFrame* frame = frame_current_selection();
@@ -1343,7 +1338,7 @@ int frame_split_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int frame_change_fraction_command(int argc, char** argv, GString* output) {
+int frame_change_fraction_command(int argc, char** argv, Output output) {
     // usage: fraction DIRECTION DELTA
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
@@ -1361,8 +1356,7 @@ int frame_change_fraction_command(int argc, char** argv, GString* output) {
         case 'u':   delta *= -1; break;
         case 'd':   break;
         default:
-            g_string_append_printf(output,
-                "%s: Invalid direction \"%s\"\n", argv[0], argv[1]);
+            output << argv[0] << ": Invalid direction \"" << argv[1] << "\"\n";
             return HERBST_INVALID_ARGUMENT;
     }
     HSFrame* neighbour = frame_neighbour(g_cur_frame, direction);
@@ -1377,8 +1371,7 @@ int frame_change_fraction_command(int argc, char** argv, GString* output) {
         }
         neighbour = frame_neighbour(g_cur_frame, direction);
         if (!neighbour) {
-            g_string_append_printf(output,
-                "%s: No neighbour found\n", argv[0]);
+            output << argv[0] << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
         }
     }
@@ -1498,7 +1491,7 @@ int frame_inner_neighbour_index(HSFrame* frame, char direction) {
     return index;
 }
 
-int frame_focus_command(int argc, char** argv, GString* output) {
+int frame_focus_command(int argc, char** argv, Output output) {
     // usage: focus [-e|-i] left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
     if (!g_cur_frame) {
@@ -1543,8 +1536,7 @@ int frame_focus_command(int argc, char** argv, GString* output) {
         }
     }
     if (!neighbour_found && !*g_focus_crosses_monitor_boundaries) {
-        g_string_append_printf(output,
-            "%s: No neighbour found\n", argv[0]);
+        output << argv[0] << ": No neighbour found\n";
         return HERBST_FORBIDDEN;
     }
     if (!neighbour_found && *g_focus_crosses_monitor_boundaries) {
@@ -1553,8 +1545,7 @@ int frame_focus_command(int argc, char** argv, GString* output) {
         if (dir < 0) return HERBST_INVALID_ARGUMENT;
         int idx = monitor_index_in_direction(get_current_monitor(), dir);
         if (idx < 0) {
-            g_string_append_printf(output,
-                "%s: No neighbour found\n", argv[0]);
+            output << argv[0] << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
         }
         monitor_focus_by_index(idx);
@@ -1562,7 +1553,7 @@ int frame_focus_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int frame_move_window_command(int argc, char** argv, GString* output) {
+int frame_move_window_command(int argc, char** argv, Output output) {
     // usage: move left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
     if (!g_cur_frame) {
@@ -1633,8 +1624,7 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
             // layout was changed, so update it
             monitor_apply_layout(get_current_monitor());
         } else {
-            g_string_append_printf(output,
-                "%s: No neighbour found\n", argv[0]);
+            output << argv[0] << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
         }
     }
@@ -1993,7 +1983,7 @@ void frame_update_border(Window window, unsigned long color) {
     }
 }
 
-int frame_focus_edge(int argc, char** argv, GString* output) {
+int frame_focus_edge(int argc, char** argv, Output output) {
     // Puts the focus to the edge in the specified direction
     const char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);
@@ -2006,7 +1996,7 @@ int frame_focus_edge(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int frame_move_window_edge(int argc, char** argv, GString* output) {
+int frame_move_window_edge(int argc, char** argv, Output output) {
     // Moves a window to the edge in the specified direction
     const char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);

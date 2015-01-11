@@ -62,25 +62,25 @@ typedef void (*HandlerTable[LASTEvent]) (XEvent*);
 
 int quit();
 int reload();
-int version(int argc, char* argv[], GString* output);
-int echo(int argc, char* argv[], GString* output);
+int version(int argc, char* argv[], Output output);
+int echo(int argc, char* argv[], Output output);
 int true_command();
 int false_command();
-int try_command(int argc, char* argv[], GString* output);
+int try_command(int argc, char* argv[], Output output);
 int silent_command(int argc, char* argv[]);
-int print_layout_command(int argc, char** argv, GString* output);
-int load_command(int argc, char** argv, GString* output);
-int print_tag_status_command(int argc, char** argv, GString* output);
+int print_layout_command(int argc, char** argv, Output output);
+int load_command(int argc, char** argv, Output output);
+int print_tag_status_command(int argc, char** argv, Output output);
 void execute_autostart_file();
-int raise_command(int argc, char** argv, GString* output);
+int raise_command(int argc, char** argv, Output output);
 int spawn(int argc, char** argv);
 int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(int argc, const char** argv);
-int jumpto_command(int argc, char** argv, GString* output);
-int getenv_command(int argc, char** argv, GString* output);
-int setenv_command(int argc, char** argv, GString* output);
-int unsetenv_command(int argc, char** argv, GString* output);
+int jumpto_command(int argc, char** argv, Output output);
+int getenv_command(int argc, char** argv, Output output);
+int setenv_command(int argc, char** argv, Output output);
+int unsetenv_command(int argc, char** argv, Output output);
 
 // handler for X-Events
 void buttonpress(XEvent* event);
@@ -214,23 +214,22 @@ int reload() {
     return 0;
 }
 
-int version(int argc, char* argv[], GString* output) {
+int version(int argc, char* argv[], Output output) {
     (void) argc;
     (void) argv;
-    g_string_append(output, HERBSTLUFT_VERSION_STRING);
+    output << HERBSTLUFT_VERSION_STRING;
     return 0;
 }
 
-int echo(int argc, char* argv[], GString* output) {
+int echo(int argc, char* argv[], Output output) {
     if (SHIFT(argc, argv)) {
         // if there still is an argument
-        g_string_append(output, argv[0]);
+        output << argv[0];
         while (SHIFT(argc, argv)) {
-            g_string_append_c(output, ' ');
-            g_string_append(output, argv[0]);
+            output << " " << argv[0];
         }
     }
-    g_string_append_c(output, '\n');
+    output << '\n';
     return 0;
 }
 
@@ -242,7 +241,7 @@ int false_command() {
     return 1;
 }
 
-int try_command(int argc, char* argv[], GString* output) {
+int try_command(int argc, char* argv[], Output output) {
     if (argc <= 1) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -261,14 +260,13 @@ int silent_command(int argc, char* argv[]) {
 
 // prints or dumps the layout of an given tag
 // first argument tells whether to print or to dump
-int print_layout_command(int argc, char** argv, GString* output) {
+int print_layout_command(int argc, char** argv, Output output) {
     HSTag* tag = NULL;
     // an empty argv[1] means current focused tag
     if (argc >= 2 && argv[1][0] != '\0') {
         tag = find_tag(argv[1]);
         if (!tag) {
-            g_string_append_printf(output,
-                "%s: Tag \"%s\" not found\n", argv[0], argv[1]);
+            output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
             return HERBST_INVALID_ARGUMENT;
         }
     } else { // use current tag
@@ -286,7 +284,7 @@ int print_layout_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int load_command(int argc, char** argv, GString* output) {
+int load_command(int argc, char** argv, Output output) {
     // usage: load TAG LAYOUT
     HSTag* tag = NULL;
     if (argc < 2) {
@@ -297,8 +295,7 @@ int load_command(int argc, char** argv, GString* output) {
         tag = find_tag(argv[1]);
         layout_string = argv[2];
         if (!tag) {
-            g_string_append_printf(output,
-                "%s: Tag \"%s\" not found\n", argv[0], argv[1]);
+            output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
             return HERBST_INVALID_ARGUMENT;
         }
     } else { // use current tag
@@ -307,9 +304,6 @@ int load_command(int argc, char** argv, GString* output) {
     }
     assert(tag != NULL);
     char* rest = load_frame_tree(tag->frame, layout_string, output);
-    if (output->len > 0) {
-        g_string_prepend(output, "load: ");
-    }
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     HSMonitor* m = find_monitor_with_tag(tag);
@@ -323,21 +317,18 @@ int load_command(int argc, char** argv, GString* output) {
         frame_hide_recursive(tag->frame);
     }
     if (!rest) {
-        g_string_append_printf(output,
-            "%s: Error while parsing!\n", argv[0]);
+        output << argv[0] << ": Error while parsing!\n";
         return HERBST_INVALID_ARGUMENT;
     }
     if (rest[0] != '\0') { // if string was not parsed completely
-        g_string_append_printf(output,
-            "%s: Layout description was too long\n", argv[0]);
-        g_string_append_printf(output,
-            "%s: \"%s\" has not been parsed\n", argv[0], rest);
+        output << argv[0] << ": Layout description was too long\n";
+        output << argv[0] << ": \"" << rest << "\" has not been parsed\n";
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;
 }
 
-int print_tag_status_command(int argc, char** argv, GString* output) {
+int print_tag_status_command(int argc, char** argv, Output output) {
     HSMonitor* monitor;
     if (argc >= 2) {
         monitor = string_to_monitor(argv[1]);
@@ -345,12 +336,11 @@ int print_tag_status_command(int argc, char** argv, GString* output) {
         monitor = get_current_monitor();
     }
     if (monitor == NULL) {
-        g_string_append_printf(output,
-            "%s: Monitor \"%s\" not found!\n", argv[0], argv[1]);
+        output << argv[0] << ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
     tag_update_flags();
-    g_string_append_c(output, '\t');
+    output << '\t';
     for (int i = 0; i < tag_get_count(); i++) {
         HSTag* tag = get_tag_by_index(i);
         // print flags
@@ -373,9 +363,9 @@ int print_tag_status_command(int argc, char** argv, GString* output) {
         if (tag->flags & TAG_FLAG_URGENT) {
             c = '!';
         }
-        g_string_append_c(output, c);
-        g_string_append(output, tag->name->str);
-        g_string_append_c(output, '\t');
+        output << c;
+        output << tag->name->str;
+        output << '\t';
     }
     return 0;
 }
@@ -436,7 +426,7 @@ int wmexec(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
-int raise_command(int argc, char** argv, GString* output) {
+int raise_command(int argc, char** argv, Output output) {
     auto client = get_client((argc > 1) ? argv[1] : "");
     if (client) {
         client->raise();
@@ -449,7 +439,7 @@ int raise_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
-int jumpto_command(int argc, char** argv, GString* output) {
+int jumpto_command(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -458,18 +448,17 @@ int jumpto_command(int argc, char** argv, GString* output) {
         focus_client(client, true, true);
         return 0;
     } else {
-        g_string_append_printf(output,
-            "%s: Could not find client", argv[0]);
+        output << argv[0] << ": Could not find client";
         if (argc > 1) {
-            g_string_append_printf(output, " \"%s\".\n", argv[1]);
+            output << " \"" << argv[1] << "\".\n";
         } else {
-            g_string_append(output, ".\n");
+            output << ".\n";
         }
         return HERBST_INVALID_ARGUMENT;
     }
 }
 
-int getenv_command(int argc, char** argv, GString* output) {
+int getenv_command(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -477,29 +466,27 @@ int getenv_command(int argc, char** argv, GString* output) {
     if (envvar == NULL) {
         return HERBST_ENV_UNSET;
     }
-    g_string_append_printf(output, "%s\n", envvar);
+    output << envvar << "\n";
     return 0;
 }
 
-int setenv_command(int argc, char** argv, GString* output) {
+int setenv_command(int argc, char** argv, Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
     if (setenv(argv[1], argv[2], 1) != 0) {
-        g_string_append_printf(output,
-            "%s: Could not set environment variable: %s\n", argv[0], strerror(errno));
+        output << argv[0] << ": Could not set environment variable: " << strerror(errno) << "\n";
         return HERBST_UNKNOWN_ERROR;
     }
     return 0;
 }
 
-int unsetenv_command(int argc, char** argv, GString* output) {
+int unsetenv_command(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     if (unsetenv(argv[1]) != 0) {
-        g_string_append_printf(output,
-            "%s: Could not unset environment variable: %s\n", argv[0], strerror(errno));
+        output << argv[0] << ": Could not unset environment variable: " << strerror(errno) << "\n";
         return HERBST_UNKNOWN_ERROR;
     }
     return 0;
@@ -835,7 +822,8 @@ void configurenotify(XEvent* event) {
     if (event->xconfigure.window == g_root &&
         settings_find("auto_detect_monitors")->value.i) {
         const char* args[] = { "detect_monitors" };
-        detect_monitors_command(LENGTH(args), args, NULL);
+        std::ostringstream void_output;
+        detect_monitors_command(LENGTH(args), args, void_output);
     }
     // HSDebug("name is: ConfigureNotify\n");
 }

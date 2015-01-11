@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <array>
 #include <memory>
+#include "x11-types.h"
 
 enum HSLayer {
     /* layers on each monitor, from top to bottom */
@@ -67,7 +68,7 @@ void stack_slice_remove_layer(HSStack* stack, HSSlice* slice, HSLayer layer);
 bool stack_is_layer_empty(HSStack* s, HSLayer layer);
 void stack_clear_layer(HSStack* stack, HSLayer layer);
 
-int print_stack_command(int argc, char** argv, GString* output);
+int print_stack_command(int argc, char** argv, Output output);
 
 // returns the number of windows in this stack
 int stack_window_count(HSStack* stack, bool real_clients);

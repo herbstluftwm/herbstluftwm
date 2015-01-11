@@ -8,6 +8,7 @@
 
 #include "glib-backports.h"
 #include <stdbool.h>
+#include "x11-types.h"
 
 struct HSFrame;
 class HSClient;
@@ -36,14 +37,14 @@ HSTag* find_tag_with_toplevel_frame(struct HSFrame* frame);
 HSTag* get_tag_by_index(int index);
 HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags);
 int    tag_get_count();
-int tag_add_command(int argc, char** argv, GString* output);
-int tag_rename_command(int argc, char** argv, GString* output);
-int tag_move_window_command(int argc, char** argv, GString* output);
-int tag_move_window_by_index_command(int argc, char** argv, GString* output);
+int tag_add_command(int argc, char** argv, Output output);
+int tag_rename_command(int argc, char** argv, Output output);
+int tag_move_window_command(int argc, char** argv, Output output);
+int tag_move_window_by_index_command(int argc, char** argv, Output output);
 void tag_move_focused_client(HSTag* target);
 void tag_move_client(HSClient* client,HSTag* target);
-int tag_remove_command(int argc, char** argv, GString* output);
-int tag_set_floating_command(int argc, char** argv, GString* output);
+int tag_remove_command(int argc, char** argv, Output output);
+int tag_set_floating_command(int argc, char** argv, Output output);
 void tag_update_focus_layer(HSTag* tag);
 void tag_foreach(void (*action)(HSTag*,void*), void* data);
 void tag_update_each_focus_layer();

@@ -221,7 +221,7 @@ struct HSObjectComplChild {
     const char*    needle;
     const char*    prefix;
     GString* curname;
-    GString* output;
+    Output output;
 };
 
 static void completion_helper(HSObjectChild* child, struct HSObjectComplChild* data) {
@@ -230,7 +230,7 @@ static void completion_helper(HSObjectChild* child, struct HSObjectComplChild* d
     try_complete_prefix_partial(data->needle, data->curname->str, data->prefix, data->output);
 }
 
-void hsobject_complete_children(HSObject* obj, const char* needle, const char* prefix, GString* output) {
+void hsobject_complete_children(HSObject* obj, const char* needle, const char* prefix, Output output) {
     struct HSObjectComplChild data = {
         needle,
         prefix,
@@ -242,7 +242,7 @@ void hsobject_complete_children(HSObject* obj, const char* needle, const char* p
 }
 
 void hsobject_complete_attributes(HSObject* obj, bool user_only, const char* needle,
-                                  const char* prefix, GString* output) {
+                                  const char* prefix, Output output) {
     for (int i = 0; i < obj->attribute_count; i++) {
         HSAttribute* attr = obj->attributes + i;
         if (user_only && !attr->user_attribute) {
@@ -347,53 +347,58 @@ void hsobject_set_attributes_always_callback(HSObject* obj) {
     }
 }
 
-static void print_child_name(HSObjectChild* child, GString* output) {
-    g_string_append_printf(output, "  %s%c\n", child->name, OBJECT_PATH_SEPARATOR);
+static void print_child_name(HSObjectChild* child, std::ostream* output) {
+    (*output) << "  " << child->name << OBJECT_PATH_SEPARATOR << "\n";
 }
 
-void hsattribute_append_to_string(HSAttribute* attribute, GString* output) {
+void hsattribute_append_to_string(HSAttribute* attribute, Output output) {
     switch (attribute->type) {
         case HSATTR_TYPE_BOOL:
             if (*(attribute->value.b)) {
-                g_string_append_printf(output, "true");
+                output << "true";
             } else {
-                g_string_append_printf(output, "false");
+                output << "false";
             }
             break;
         case HSATTR_TYPE_INT:
-            g_string_append_printf(output, "%d", *attribute->value.i);
+            output << *attribute->value.i;
             break;
         case HSATTR_TYPE_UINT:
-            g_string_append_printf(output, "%u", *attribute->value.u);
+            output << *attribute->value.u;
             break;
         case HSATTR_TYPE_STRING:
-            g_string_append_printf(output, "%s", (*attribute->value.str)->str);
+            output << (*attribute->value.str)->str;
             break;
         case HSATTR_TYPE_COLOR:
-            g_string_append_printf(output, "%s", attribute->unparsed_value->str);
+            output << attribute->unparsed_value->str;
             break;
         case HSATTR_TYPE_CUSTOM:
+            {
+            GString* attr_output = g_string_new("");
             attribute->value.custom(attribute->data ? attribute->data
-                                                    : attribute->object->data, output);
+                                                    : attribute->object->data, attr_output);
+            output << attr_output->str;
+            g_string_free(attr_output, true);
             break;
+            }
         case HSATTR_TYPE_CUSTOM_INT:
-            g_string_append_printf(output, "%d",
+            output <<
                 attribute->value.custom_int(attribute->data ? attribute->data
-                                                            : attribute->object->data));
+                                                            : attribute->object->data);
             break;
     }
 }
 
-GString* hsattribute_to_string(HSAttribute* attribute) {
-    GString* str = g_string_new("");
-    hsattribute_append_to_string(attribute, str);
-    return str;
+std::string hsattribute_to_string(HSAttribute* attribute) {
+    std::ostringstream output;
+    hsattribute_append_to_string(attribute, output);
+    return output.str();
 }
 
-int attr_command(int argc, char* argv[], GString* output) {
+int attr_command(int argc, char* argv[], Output output) {
     const char* path = (argc < 2) ? "" : argv[1];
     const char* unparsable;
-    GString* errormsg = g_string_new("");
+    std::ostringstream errormsg;
     HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, errormsg);
     HSAttribute* attribute = NULL;
     if (strcmp("", unparsable)) {
@@ -403,49 +408,45 @@ int attr_command(int argc, char* argv[], GString* output) {
     }
     if (!obj && !attribute) {
         // if nothing was found
-        g_string_append(output, errormsg->str);
-        g_string_free(errormsg, true);
+        output << errormsg.str();
         return HERBST_INVALID_ARGUMENT;
-    } else {
-        g_string_free(errormsg, true);
     }
     char* new_value = (argc >= 3) ? argv[2] : NULL;
     if (obj && new_value) {
-        g_string_append_printf(output,
-            "%s: Can not assign value \"%s\" to object \"%s\",",
-            argv[0], new_value, path);
+        output << argv[0] <<
+            ": Can not assign value \"" << new_value << "\" to object \"" << path << "\",";
     } else if (obj && !new_value) {
         // list children
         int childcount = g_list_length(obj->children);
-        g_string_append_printf(output, "%d children%c\n", childcount,
-                               childcount ? ':' : '.');
-        g_list_foreach(obj->children, (GFunc) print_child_name, output);
+        output << childcount << " children" << (childcount ? ':' : '.') << "\n";
+        g_list_foreach(obj->children, (GFunc) print_child_name, &output);
         if (childcount > 0) {
-            g_string_append_printf(output, "\n");
+            output << "\n";
         }
         // list attributes
-        g_string_append_printf(output, "%zu attributes", obj->attribute_count);
+        output << obj->attribute_count << " attributes";
         if (obj->attribute_count > 0) {
-            g_string_append_printf(output, ":\n");
-            g_string_append_printf(output, " .---- type\n");
-            g_string_append_printf(output, " | .-- writeable\n");
-            g_string_append_printf(output, " V V\n");
+            output << ":\n";
+            output << " .---- type\n";
+            output << " | .-- writeable\n";
+            output << " V V\n";
         } else {
-            g_string_append_printf(output, ".\n");
+            output << ".\n";
         }
         for (int i = 0; i < obj->attribute_count; i++) {
             HSAttribute* a = obj->attributes + i;
             char write = hsattribute_is_read_only(a) ? '-' : 'w';
             char t = hsattribute_type_indicator(a->type);
-            g_string_append_printf(output, " %c %c %-20s = ", t, write, a->name);
+            // STRTODO: make the a->name column 20 chars wide
+            output << " " << t << " " << write << " " << a->name << " = ";
             if (a->type == HSATTR_TYPE_STRING) {
-                g_string_append_c(output, '\"');
+                output << '\"';
             }
             hsattribute_append_to_string(a, output);
             if (a->type == HSATTR_TYPE_STRING) {
-                g_string_append_c(output, '\"');
+                output << '\"';
             }
-            g_string_append_c(output, '\n');
+            output << '\n';
         }
     } else if (new_value) { // && (attribute)
         return hsattribute_assign(attribute, new_value, output);
@@ -455,9 +456,9 @@ int attr_command(int argc, char* argv[], GString* output) {
     return 0;
 }
 
-static void object_append_caption(HSTree tree, GString* output) {
+static void object_append_caption(HSTree tree, Output output) {
     HSObjectChild* oc = (HSObjectChild*) tree;
-    g_string_append(output, oc->name);
+    output << oc->name;
 }
 
 static size_t object_child_count(HSTree tree) {
@@ -490,7 +491,7 @@ HSObject* hsobject_by_path(char* path) {
 }
 
 HSObject* hsobject_parse_path_verbose(const char* path, const char** unparsable,
-                                      GString* output) {
+                                      Output output) {
     const char* origpath = path;
     char* pathdup = strdup(path);
     char* curname = pathdup;
@@ -509,9 +510,8 @@ HSObject* hsobject_parse_path_verbose(const char* path, const char** unparsable,
         child = hsobject_find_child(obj, curname);
         if (!child) {
             if (output) {
-                g_string_append_printf(output, "Invalid path \"%s\": ", origpath);
-                g_string_append_printf(output, "No child \"%s\" in object %s\n",
-                                       curname, lastname);
+                output << "Invalid path \"" << origpath << "\": ";
+                output << "No child \"" << curname << "\" in object " << lastname << "\n";
             }
             break;
         }
@@ -532,18 +532,19 @@ HSObject* hsobject_parse_path_verbose(const char* path, const char** unparsable,
 }
 
 HSObject* hsobject_parse_path(const char* path, const char** unparsable) {
-    return hsobject_parse_path_verbose(path, unparsable, NULL);
+    std::ostringstream void_output;
+    return hsobject_parse_path_verbose(path, unparsable, void_output);
 }
 
-HSAttribute* hsattribute_parse_path_verbose(const char* path, GString* output) {
-    GString* object_error = g_string_new("");
+HSAttribute* hsattribute_parse_path_verbose(const char* path, Output output) {
+    std::ostringstream object_error;
     HSAttribute* attr;
     const char* unparsable;
     HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, object_error);
     if (obj == NULL || strchr(unparsable, OBJECT_PATH_SEPARATOR) != NULL) {
         // if there is still another path separator
         // then unparsable is more than just the attribute name.
-        g_string_append(output, object_error->str);
+        output << object_error.str();
         attr = NULL;
     } else {
         // if there is no path remaining separator, then unparsable contains
@@ -552,27 +553,24 @@ HSAttribute* hsattribute_parse_path_verbose(const char* path, GString* output) {
         if (!attr) {
             GString* obj_path = g_string_new(path);
             g_string_truncate(obj_path, unparsable - path);
-            g_string_append_printf(output,
-                "Unknown attribute \"%s\" in object \"%s\".\n",
-                unparsable, obj_path->str);
+            output << "Unknown attribute \"" << unparsable
+                   << "\" in object \"" << obj_path->str << "\".\n";
             g_string_free(obj_path, true);
         }
     }
-    g_string_free(object_error, true);
     return attr;
 }
 
 HSAttribute* hsattribute_parse_path(const char* path) {
-    GString* out = g_string_new("");
+    std::ostringstream out;
     HSAttribute* attr = hsattribute_parse_path_verbose(path, out);
     if (!attr) {
-        HSError("Cannot parse %s: %s", path, out->str);
+        HSError("Cannot parse %s: %s", path, out.str().c_str());
     }
-    g_string_free(out, true);
     return attr;
 }
 
-int print_object_tree_command(int argc, char* argv[], GString* output) {
+int print_object_tree_command(int argc, char* argv[], Output output) {
     const char* unparsable;
     const char* path = (argc < 2) ? "" : argv[1];
     HSObjectChild oc = {
@@ -606,7 +604,7 @@ void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes) {
     }
 }
 
-int hsattribute_get_command(int argc, const char* argv[], GString* output) {
+int hsattribute_get_command(int argc, const char* argv[], Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -618,7 +616,7 @@ int hsattribute_get_command(int argc, const char* argv[], GString* output) {
     return 0;
 }
 
-int hsattribute_set_command(int argc, char* argv[], GString* output) {
+int hsattribute_set_command(int argc, char* argv[], Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -637,11 +635,9 @@ bool hsattribute_is_read_only(HSAttribute* attr) {
     else return attr->on_change == NULL;
 }
 
-int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* output) {
+int hsattribute_assign(HSAttribute* attr, const std::string& new_value_str, Output output) {
     if (hsattribute_is_read_only(attr)) {
-        g_string_append_printf(output,
-            "Can not write read-only attribute \"%s\"\n",
-            attr->name);
+        output << "Can not write read-only attribute \"" << attr->name << "\"\n";
         return HERBST_FORBIDDEN;
     }
 
@@ -652,9 +648,7 @@ int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* ou
 #define ATTR_DO_ASSIGN_COMPARE(NAME,MEM) \
         do { \
             if (error) { \
-                g_string_append_printf(output, \
-                                       "Can not parse " NAME " from \"%s\"", \
-                                       new_value_str); \
+                output << "Can not parse " << NAME << " from \" << new_value_str << \""; \
             } else { \
                 old_value.MEM = *attr->value.MEM; \
                 if (old_value.MEM == new_value.MEM) { \
@@ -667,39 +661,38 @@ int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* ou
     // change the value and backup the old value
     switch (attr->type) {
         case HSATTR_TYPE_BOOL:
-            new_value.b = string_to_bool_error(new_value_str,
+            new_value.b = string_to_bool_error(new_value_str.c_str(),
                                              *attr->value.b,
                                              &error);
             ATTR_DO_ASSIGN_COMPARE("boolean", b);
             break;
 
         case HSATTR_TYPE_INT:
-            error = (1 != sscanf(new_value_str, "%d", &new_value.i));
+            error = (1 != sscanf(new_value_str.c_str(), "%d", &new_value.i));
             ATTR_DO_ASSIGN_COMPARE("integer", i);
             break;
 
         case HSATTR_TYPE_UINT:
-            error = (1 != sscanf(new_value_str, "%u", &new_value.u));
+            error = (1 != sscanf(new_value_str.c_str(), "%u", &new_value.u));
             ATTR_DO_ASSIGN_COMPARE("unsigned integer", u);
             break;
 
         case HSATTR_TYPE_STRING:
-            if (!strcmp(new_value_str, (*attr->value.str)->str)) {
+            if (!strcmp(new_value_str.c_str(), (*attr->value.str)->str)) {
                 nothing_to_do = true;
             } else {
                 old_value.str = g_string_new((*attr->value.str)->str);
-                g_string_assign(*attr->value.str, new_value_str);
+                g_string_assign(*attr->value.str, new_value_str.c_str());
             }
             break;
 
         case HSATTR_TYPE_COLOR:
-            error = !Color::convert(new_value_str, new_value.color);
+            error = !Color::convert(new_value_str.c_str(), new_value.color);
             if (error) {
-                g_string_append_printf(output,
-                    "\"%s\" is not a valid color.", new_value_str);
+                output << "\"" << new_value_str << "\" is not a valid color.";
                 break;
             }
-            if (!strcmp(new_value_str, (attr->unparsed_value)->str)) {
+            if (new_value_str == (attr->unparsed_value)->str) {
                 nothing_to_do = true;
             } else {
                 old_value.color = *attr->value.color;
@@ -721,12 +714,12 @@ int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* ou
     }
 
     GString* old_unparsed_value = attr->unparsed_value;
-    if (attr->unparsed_value) attr->unparsed_value = g_string_new(new_value_str);
+    if (attr->unparsed_value) attr->unparsed_value = g_string_new(new_value_str.c_str());
 
     // ask the attribute about the change
     GString* errormsg = NULL;
     if (attr->on_change) errormsg = attr->on_change(attr);
-    else errormsg = attr->change_custom(attr, new_value_str);
+    else errormsg = attr->change_custom(attr, new_value_str.c_str());
     int exit_status = 0;
     if (errormsg && errormsg->len > 0) {
         exit_status = HERBST_INVALID_ARGUMENT;
@@ -734,10 +727,7 @@ int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* ou
         if (errormsg->str[errormsg->len - 1] == '\n') {
             g_string_truncate(errormsg, errormsg->len - 1);
         }
-        g_string_append_printf(output,
-            "Can not write attribute \"%s\": %s\n",
-            attr->name,
-            errormsg->str);
+        output << "Can not write attribute \"" << attr->name << "\": " << errormsg->str << "\n";
         g_string_free(errormsg, true);
         // restore old value
         if (old_unparsed_value) {
@@ -767,7 +757,7 @@ int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* ou
             g_string_free(old_value.str, true);
             break;
         case HSATTR_TYPE_COLOR:
-            g_string_assign(attr->unparsed_value, new_value_str);
+            g_string_assign(attr->unparsed_value, new_value_str.c_str());
             break;
         case HSATTR_TYPE_CUSTOM: break;
         case HSATTR_TYPE_CUSTOM_INT: break;
@@ -779,7 +769,7 @@ int hsattribute_assign(HSAttribute* attr, const char* new_value_str, GString* ou
 }
 
 
-int substitute_command(int argc, char* argv[], GString* output) {
+int substitute_command(int argc, char* argv[], Output output) {
     // usage: substitute identifier attribute command [args ...]
     //            0         1           2       3
     if (argc < 4) {
@@ -790,15 +780,14 @@ int substitute_command(int argc, char* argv[], GString* output) {
     if (!attribute) {
         return HERBST_INVALID_ARGUMENT;
     }
-    GString* attribute_string = hsattribute_to_string(attribute);
-    char* repl = attribute_string->str;
+    std::string replacement = hsattribute_to_string(attribute);
 
     (void) SHIFT(argc, argv); // remove command name
     (void) SHIFT(argc, argv); // remove identifier
     (void) SHIFT(argc, argv); // remove attribute
 
+    char* repl = (char*) replacement.c_str(); // STRTODO
     int status = call_command_substitute(identifier, repl, argc, argv, output);
-    g_string_free(attribute_string, true);
     return status;
 }
 
@@ -807,7 +796,7 @@ GString* ATTR_ACCEPT_ALL(HSAttribute* attr) {
     return NULL;
 }
 
-int compare_command(int argc, char* argv[], GString* output) {
+int compare_command(int argc, char* argv[], Output output) {
     // usage: compare attribute operator constant
     if (argc < 4) {
         return HERBST_NEED_MORE_ARGS;
@@ -825,9 +814,7 @@ int compare_command(int argc, char* argv[], GString* output) {
         long long l;
         long long r;
         if (1 != sscanf(rvalue, "%lld", &r)) {
-            g_string_append_printf(output,
-                                   "Can not parse integer from \"%s\"\n",
-                                   rvalue);
+            output << "Can not parse integer from \"" << rvalue << "\"\n";
             return HERBST_INVALID_ARGUMENT;
         }
         switch (attr->type) {
@@ -856,7 +843,7 @@ int compare_command(int argc, char* argv[], GString* output) {
             }
         }
         if (result == -1) {
-            g_string_append_printf(output, "Invalid operator \"%s\"", op);
+            output << "Invalid operator \"" << op << "\"";
             result = HERBST_INVALID_ARGUMENT;
         }
         return result;
@@ -865,19 +852,19 @@ int compare_command(int argc, char* argv[], GString* output) {
         bool error = false;
         bool r = string_to_bool_error(rvalue, l, &error);
         if (error) {
-            g_string_append_printf(output, "Can not parse boolean from \"%s\"\n", rvalue);
+            output << "Can not parse boolean from \"" << rvalue << "\"\n";
             return HERBST_INVALID_ARGUMENT;
         }
         if (!strcmp("=", op)) return !(l == r);
         if (!strcmp("!=", op)) return !(l != r);
-        g_string_append_printf(output, "Invalid boolean operator \"%s\"", op);
+        output << "Invalid boolean operator \"" << op << "\"";
         return HERBST_INVALID_ARGUMENT;
     } else if (attr->type == HSATTR_TYPE_COLOR) {
         auto l = *attr->value.color;
         auto r = Color::fromStr(rvalue);
         if (!strcmp("=", op)) return !(l == r);
         if (!strcmp("!=", op)) return !(l != r);
-        g_string_append_printf(output, "Invalid color operator \"%s\"", op);
+        output << "Invalid color operator \"" << op << "\"";
         return HERBST_INVALID_ARGUMENT;
     } else { // STRING or CUSTOM
         GString* l;
@@ -898,7 +885,7 @@ int compare_command(int argc, char* argv[], GString* output) {
             g_string_free(l, true);
         }
         if (status == -1) {
-            g_string_append_printf(output, "Invalid string operator \"%s\"", op);
+            output << "Invalid string operator \"" << op << "\"";
             return HERBST_INVALID_ARGUMENT;
         }
         return status;
@@ -918,26 +905,22 @@ char hsattribute_type_indicator(int type) {
     return '?';
 }
 
-int userattribute_command(int argc, char* argv[], GString* output) {
+int userattribute_command(int argc, char* argv[], Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
     char* type_str = argv[1];
     char* path = argv[2];
     const char* unparsable;
-    GString* errormsg = g_string_new("");
+    std::ostringstream errormsg;
     HSObject* obj = hsobject_parse_path_verbose(path, &unparsable, errormsg);
     if (obj == NULL || strchr(unparsable, OBJECT_PATH_SEPARATOR) != NULL) {
-        g_string_append(output, errormsg->str);
-        g_string_free(errormsg, true);
+        output << errormsg.str();
         return HERBST_INVALID_ARGUMENT;
-    } else {
-        g_string_free(errormsg, true);
     }
     // check for an already existing attribute
     if (hsobject_find_attribute(obj, unparsable)) {
-        g_string_append_printf(output, "Error: an attribute called \"%s\" already exists\n",
-                               unparsable);
+        output << "Error: an attribute called \"" << unparsable << "\" already exists\n";
         return HERBST_FORBIDDEN;
     }
     // do not check for children with that name, because they must not start
@@ -945,9 +928,8 @@ int userattribute_command(int argc, char* argv[], GString* output) {
     // now create a new attribute named unparsable at obj
     const char* prefix = USER_ATTRIBUTE_PREFIX;
     if (strncmp(unparsable, prefix, strlen(prefix))) {
-        g_string_append(output, "Error: the name of user attributes has to ");
-        g_string_append_printf(output, "start with \"%s\" but yours is \"%s\"\n",
-                                       prefix, unparsable);
+        output << "Error: the name of user attributes has to ";
+        output << "start with \"" << prefix << "\" but yours is \"" << unparsable << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     HSAttribute* attr = hsattribute_create(obj, unparsable, type_str, output);
@@ -959,7 +941,7 @@ int userattribute_command(int argc, char* argv[], GString* output) {
 }
 
 HSAttribute* hsattribute_create(HSObject* obj, const char* name, char* type_str,
-                                GString* output)
+                                Output output)
 {
     struct {
         const char* name;
@@ -979,8 +961,7 @@ HSAttribute* hsattribute_create(HSObject* obj, const char* name, char* type_str,
         }
     }
     if (type < 0) {
-        g_string_append_printf(output, "Unknown attribute type \"%s\"\n",
-                               type_str);
+        output << "Unknown attribute type \"" << type_str << "\"\n";
         return NULL;
     }
     size_t count = obj->attribute_count + 1;
@@ -1022,7 +1003,7 @@ HSAttribute* hsattribute_create(HSObject* obj, const char* name, char* type_str,
     return attr;
 }
 
-int userattribute_remove_command(int argc, char* argv[], GString* output) {
+int userattribute_remove_command(int argc, char* argv[], Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -1032,9 +1013,8 @@ int userattribute_remove_command(int argc, char* argv[], GString* output) {
         return HERBST_INVALID_ARGUMENT;
     }
     if (!attr->user_attribute) {
-        g_string_append_printf(output, "Can only user-defined attributes, "
-                                       "but \"%s\" is not user-defined.\n",
-                               path);
+        output << "Can only user-defined attributes, but \""
+               << path << "\" is not user-defined.\n";
         return HERBST_FORBIDDEN;
     }
     return userattribute_remove(attr) ? 0 : HERBST_UNKNOWN_ERROR;
@@ -1059,7 +1039,7 @@ bool userattribute_remove(HSAttribute* attr) {
 
 #define FORMAT_CHAR '%'
 
-int sprintf_command(int argc, char* argv[], GString* output) {
+int sprintf_command(int argc, char* argv[], Output output) {
     // usage: sprintf IDENTIFIER FORMAT [Params...] COMMAND [ARGS ...]
     if (argc < 4) {
         return HERBST_NEED_MORE_ARGS;
@@ -1082,10 +1062,9 @@ int sprintf_command(int argc, char* argv[], GString* output) {
 
                 case 's': {
                     if (nextarg >= (argc - 1)) {
-                        g_string_append_printf(output,
-                            "Error: Too few parameters. A %dth parameter missing. "
-                            "(treating \"%s\" as the command to execute)\n",
-                            nextarg, argv[argc - 1]);
+                        output << "Error: Too few parameters. A " << nextarg
+                               << " parameter missing. (treating \""
+                               << argv[argc - 1] << "\" as the command to execute)\n";
                         g_string_free(repl, true);
                         return HERBST_INVALID_ARGUMENT;
                     }
@@ -1095,18 +1074,18 @@ int sprintf_command(int argc, char* argv[], GString* output) {
                         g_string_free(repl, true);
                         return HERBST_INVALID_ARGUMENT;
                     }
-                    GString* gs = hsattribute_to_string(attr);
-                    g_string_append(repl, gs->str);
-                    g_string_free(gs, true);
+                    std::string gs = hsattribute_to_string(attr);
+                    g_string_append(repl, gs.c_str());
                     nextarg++;
                     break;
                 }
 
                 default:
-                    g_string_append_printf(output,
-                        "Error: unknown format specifier \'%c\' in format "
-                        "\"%s\" at position %d\n",
-                        format[i+1] ? format[i+1] : '?', format, i);
+                    output
+                        << "Error: unknown format specifier \'"
+                        << (format[i+1] ? format[i+1] : '?')
+                        << "\' in format \"" << format
+                        << "\" at position " << i << "\n";
                     g_string_free(repl, true);
                     return HERBST_INVALID_ARGUMENT;
                     break;
@@ -1124,7 +1103,7 @@ int sprintf_command(int argc, char* argv[], GString* output) {
     return status;
 }
 
-int tmpattribute_command(int argc, char* argv[], GString* output) {
+int tmpattribute_command(int argc, char* argv[], Output output) {
     // usage: tmp type IDENTIFIER COMMAND [ARGS...]
     if (argc < 4) {
         return HERBST_NEED_MORE_ARGS;

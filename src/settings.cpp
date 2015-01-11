@@ -115,7 +115,7 @@ int g_initial_monitors_locked = 0;
 static HSObject*       g_settings_object;
 
 static GString* cb_on_change(HSAttribute* attr);
-static void cb_read_compat(void* data, GString* output);
+static void cb_read_compat(void* data, Output output);
 static GString* cb_write_compat(HSAttribute* attr, const char* new_value);
 
 int settings_count() {
@@ -180,7 +180,7 @@ static GString* cb_on_change(HSAttribute* attr) {
     return NULL;
 }
 
-static void cb_read_compat(void* data, GString* output) {
+static void cb_read_compat(void* data, Output output) {
     SettingsPair* sp = (SettingsPair*)data;
     const char* cmd[] = { "attr_get", sp->value.compat.read, NULL };
     HSAssert(0 == hsattribute_get_command(LENGTH(cmd) - 1, cmd, output));
@@ -213,22 +213,20 @@ char* settings_find_string(const char* name) {
     return sp->value.str->str;
 }
 
-int settings_set_command(int argc, const char** argv, GString* output) {
+int settings_set_command(int argc, const char** argv, Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
         if (output != NULL) {
-            g_string_append_printf(output,
-                "%s: Setting \"%s\" not found\n", argv[0], argv[1]);
+            output << argv[0] << ": Setting \"" << argv[1] << "\" not found\n";
         }
         return HERBST_SETTING_NOT_FOUND;
     }
     int ret = settings_set(pair, argv[2]);
     if (ret == HERBST_INVALID_ARGUMENT) {
-        g_string_append_printf(output,
-            "%s: Invalid value for setting \"%s\"\n", argv[0], argv[1]);
+        output << argv[0] << ": Invalid value for setting \"" << argv[1] << "\"\n";
     }
     return ret;
 }
@@ -254,12 +252,11 @@ int settings_set(SettingsPair* pair, const char* value) {
         g_string_assign(pair->value.str, value);
     } else if (pair->type == HS_Compatiblity) {
         HSAttribute* attr = hsattribute_parse_path(pair->value.compat.write);
-        GString* out = g_string_new("");
+        std::ostringstream out;
         int status = hsattribute_assign(attr, value, out);
         if (0 != status) {
-            HSError("Error when assigning: %s\n", out->str);
+            HSError("Error when assigning: %s\n", out.str().c_str());
         }
-        g_string_free(out, true);
         return status;
     }
     // on successful change, call callback
@@ -269,38 +266,36 @@ int settings_set(SettingsPair* pair, const char* value) {
     return 0;
 }
 
-int settings_get(int argc, char** argv, GString* output) {
+int settings_get(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
-        g_string_append_printf(output,
-            "%s: Setting \"%s\" not found\n", argv[0], argv[1]);
+        output << argv[0] <<
+            ": Setting \"" << argv[1] << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
     if (pair->type == HS_Int) {
-        g_string_append_printf(output, "%d", pair->value.i);
+        output << pair->value.i;
     } else if (pair->type == HS_String) {
-        g_string_append(output, pair->value.str->str);
+        output << pair->value.str->str;
     } else if (pair->type == HS_Compatiblity) {
         HSAttribute* attr = hsattribute_parse_path(pair->value.compat.read);
-        GString* str = hsattribute_to_string(attr);
-        g_string_append(output, str->str);
-        g_string_free(str, true);
+        output << hsattribute_to_string(attr);
     }
     return 0;
 }
 
 // toggle integer-like values
-int settings_toggle(int argc, char** argv, GString* output) {
+int settings_toggle(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
-        g_string_append_printf(output,
-            "%s: Setting \"%s\" not found\n", argv[0], argv[1]);
+        output << argv[0] <<
+            ": Setting \"" << argv[1] << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
     if (pair->type == HS_Int) {
@@ -314,8 +309,7 @@ int settings_toggle(int argc, char** argv, GString* output) {
         }
     } else {
         // only toggle numbers
-        g_string_append_printf(output,
-            "%s: Only numbers can be toggled\n", argv[0]);
+        output << argv[0] << ": Only numbers can be toggled\n";
         return HERBST_INVALID_ARGUMENT;
     }
     // on successful change, call callback
@@ -334,7 +328,7 @@ static bool memberequals_settingspair(void* pmember, const void* needle) {
     }
 }
 
-int settings_cycle_value(int argc, char** argv, GString* output) {
+int settings_cycle_value(int argc, char** argv, Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -342,8 +336,7 @@ int settings_cycle_value(int argc, char** argv, GString* output) {
     char* setting_name = argv[1]; // save this before shifting
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
-        g_string_append_printf(output,
-            "%s: Setting \"%s\" not found\n", argv[0], argv[1]);
+        output << argv[0] << ": Setting \"" << argv[1] << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
     (void)SHIFT(argc, argv);
@@ -353,8 +346,8 @@ int settings_cycle_value(int argc, char** argv, GString* output) {
     int i = pcurrent ? ((INDEX_OF(argv, pcurrent) + 1) % argc) : 0;
     int ret = settings_set(pair, argv[i]);
     if (ret == HERBST_INVALID_ARGUMENT) {
-        g_string_append_printf(output,
-            "%s: Invalid value for setting \"%s\"\n", cmd_name, setting_name);
+        output << cmd_name <<
+            ": Invalid value for setting \"" << setting_name << "\"\n";
     }
     return ret;
 }

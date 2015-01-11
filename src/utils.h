@@ -64,12 +64,12 @@ struct HSTreeInterface;
 typedef struct HSTreeInterface {
     struct HSTreeInterface  (*nth_child)(HSTree root, size_t idx);
     size_t                  (*child_count)(HSTree root);
-    void                    (*append_caption)(HSTree root, GString* output);
+    void                    (*append_caption)(HSTree root, Output output);
     HSTree                  data;
     void                    (*destructor)(HSTree data); /* how to free the data tree */
 } HSTreeInterface;
 
-void tree_print_to(HSTreeInterface* intface, GString* output);
+void tree_print_to(HSTreeInterface* intface, Output output);
 
 
 bool is_herbstluft_window(Display* dpy, Window window);

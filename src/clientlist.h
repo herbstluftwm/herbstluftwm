@@ -12,6 +12,7 @@
 #include <X11/Xatom.h>
 #include "glib-backports.h"
 #include <stdbool.h>
+#include "x11-types.h"
 
 #include "layout.h"
 #include "object.h"
@@ -132,7 +133,7 @@ HSClient* get_current_client();
 HSClient* get_client(const char* str);
 Window get_window(const char* str);
 
-int close_command(int argc, char** argv, GString* output);
+int close_command(int argc, char** argv, Output output);
 void window_close(Window window);
 
 // sets a client property, depending on argv[0]

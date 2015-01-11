@@ -9,6 +9,7 @@
 #include <X11/Xlib.h>
 #include <stdbool.h>
 #include "glib-backports.h"
+#include "x11-types.h"
 
 // various snap-flags
 enum SnapFlags {
@@ -43,7 +44,7 @@ typedef struct MouseBinding {
 
 int mouse_binding_equals(MouseBinding* a, MouseBinding* b);
 
-int mouse_bind_command(int argc, char** argv, GString* output);
+int mouse_bind_command(int argc, char** argv, Output output);
 int mouse_unbind_all();
 MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button);
 
@@ -76,7 +77,7 @@ void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);
 void mouse_function_zoom(XMotionEvent* me);
 
-void complete_against_mouse_buttons(const char* needle, char* prefix, GString* output);
+void complete_against_mouse_buttons(const char* needle, char* prefix, Output output);
 
 #endif
 

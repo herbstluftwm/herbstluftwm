@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <regex.h>
 #include "glib-backports.h"
+#include "x11-types.h"
 
 class HSClient;
 struct HSTag;
@@ -77,11 +78,11 @@ void client_changes_free_members(HSClientChanges* changes);
 HSRule* rule_create();
 void rule_destroy(HSRule* rule);
 
-void rule_complete(int argc, char** argv, int pos, GString* output);
+void rule_complete(int argc, char** argv, int pos, Output output);
 
-int rule_add_command(int argc, char** argv, GString* output);
-int rule_remove_command(int argc, char** argv, GString* output);
-int rule_print_all_command(int argc, char** argv, GString* output);
-void complete_against_rule_names(int argc, char** argv, int pos, GString* output);
+int rule_add_command(int argc, char** argv, Output output);
+int rule_remove_command(int argc, char** argv, Output output);
+int rule_print_all_command(int argc, char** argv, Output output);
+void complete_against_rule_names(int argc, char** argv, int pos, Output output);
 
 #endif

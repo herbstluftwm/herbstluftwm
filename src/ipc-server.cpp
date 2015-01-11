@@ -18,6 +18,8 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
+#include <sstream>
+
 // public callable functions
 //
 void ipc_init() {
@@ -48,21 +50,20 @@ bool ipc_handle_connection(Window win) {
         XFree(text_prop.value);
         return false;
     }
-    GString* output = g_string_new("");
+    std::ostringstream output;
     int status = call_command(count, list_return, output);
     // send output back
     // Mark this command as executed
     XDeleteProperty(g_display, win, ATOM(HERBST_IPC_ARGS_ATOM));
     XChangeProperty(g_display, win, ATOM(HERBST_IPC_OUTPUT_ATOM),
         ATOM("UTF8_STRING"), 8, PropModeReplace,
-        (unsigned char*)output->str, 1+strlen(output->str));
+        (unsigned char*)output.str().c_str(), 1 + output.str().size());
     // and also set the exit status
     XChangeProperty(g_display, win, ATOM(HERBST_IPC_STATUS_ATOM),
         XA_ATOM, 32, PropModeReplace, (unsigned char*)&(status), 1);
     // cleanup
     XFreeStringList(list_return);
     XFree(text_prop.value);
-    g_string_free(output, true);
     return true;
 }
 

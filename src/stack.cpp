@@ -9,6 +9,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <iomanip>
 
 static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx);
 static size_t                  stack_child_count(HSTree root);
@@ -107,28 +108,30 @@ void stack_remove_slice(HSStack* s, HSSlice* elem) {
     s->dirty = true;
 }
 
-static void slice_append_caption(HSTree root, GString* output) {
+static void slice_append_caption(HSTree root, Output output) {
     HSSlice* slice = (HSSlice*)root;
     GString* monitor_name = g_string_new("");
     switch (slice->type) {
         case SLICE_WINDOW:
-            g_string_append_printf(output, "Window 0x%lx",
-                                   slice->data.window);
+            output << "Window 0x" << std::hex << slice->data.window << std::dec;
             break;
         case SLICE_CLIENT:
-            g_string_append_printf(output, "Client 0x%lx \"%s\"",
-                                   slice->data.client->x11Window(),
-                                   slice->data.client->title_->str);
+            output << "Client 0x"
+                   << std::hex << slice->data.client->x11Window() << std::dec
+                   << "\"" << slice->data.client->title_->str << "\"";
             break;
         case SLICE_MONITOR:
             if (slice->data.monitor->name != NULL) {
                 g_string_append_printf(monitor_name, " (\"%s\")",
                                        slice->data.monitor->name->str);
             }
-            g_string_append_printf(output, "Monitor %d%s with tag \"%s\"",
-                                   monitor_index_of(slice->data.monitor),
-                                   monitor_name->str,
-                                   slice->data.monitor->tag->name->str);
+            output << "Monitor "
+                   << monitor_index_of(slice->data.monitor)
+                   << monitor_name->str
+                   << " with tag \""
+                   << slice->data.monitor->tag->name->str
+                   << "\"";
+                                   
             break;
     }
     g_string_free(monitor_name, true);
@@ -172,9 +175,9 @@ static size_t layer_child_count(HSTree root) {
     return g_list_length(l->stack->top[l->layer]);
 }
 
-static void layer_append_caption(HSTree root, GString* output) {
+static void layer_append_caption(HSTree root, Output output) {
     struct TmpLayer* l = (struct TmpLayer*) root;
-    g_string_append_printf(output, "%s", g_layer_names[l->layer]);
+    output << g_layer_names[l->layer];
 }
 
 
@@ -197,11 +200,11 @@ static size_t stack_child_count(HSTree root) {
     return LAYER_COUNT;
 }
 
-static void monitor_stack_append_caption(HSTree root, GString* output) {
+static void monitor_stack_append_caption(HSTree root, Output output) {
     // g_string_append_printf(*output, "Stack of all monitors");
 }
 
-int print_stack_command(int argc, char** argv, GString* output) {
+int print_stack_command(int argc, char** argv, Output output) {
     struct TmpLayer tl = {
         /* .stack = */ get_monitor_stack(),
         /* .layer = */ LAYER_NORMAL,

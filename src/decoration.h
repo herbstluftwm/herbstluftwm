@@ -14,6 +14,7 @@
 #include "x11-utils.h"
 #include "object.h"
 #include <stdbool.h>
+#include "x11-types.h"
 
 #include "utils.h"
 

@@ -704,7 +704,7 @@ Rectangle HSClient::outer_floating_rect() {
     return inner_rect_to_outline(float_size_, dec.last_scheme);
 }
 
-int close_command(int argc, char** argv, GString* output) {
+int close_command(int argc, char** argv, Output output) {
     auto window = get_window((argc > 1) ? argv[1] : "");
     if (window != 0)
         window_close(window);
