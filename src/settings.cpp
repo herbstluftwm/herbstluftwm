@@ -219,9 +219,7 @@ int settings_set_command(int argc, const char** argv, Output output) {
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
-        if (output != NULL) {
-            output << argv[0] << ": Setting \"" << argv[1] << "\" not found\n";
-        }
+        output << argv[0] << ": Setting \"" << argv[1] << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
     int ret = settings_set(pair, argv[2]);

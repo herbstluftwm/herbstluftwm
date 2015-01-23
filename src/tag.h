@@ -9,8 +9,9 @@
 #include "glib-backports.h"
 #include <stdbool.h>
 #include "x11-types.h"
+#include <memory>
 
-struct HSFrame;
+class HSFrame;
 class HSClient;
 struct HSStack;
 struct HSObject;
@@ -18,7 +19,7 @@ struct HSObject;
 typedef struct HSTag {
     GString*        name;   // name of this tag
     GString*        display_name; // name used for object-io
-    struct HSFrame* frame;  // the master frame
+    std::shared_ptr<HSFrame>        frame;  // the master frame
     bool            floating;
     int             flags;
     struct HSStack* stack;
@@ -33,7 +34,7 @@ HSTag* add_tag(const char* name);
 HSTag* find_tag(const char* name);
 int    tag_index_of(HSTag* tag);
 HSTag* find_unused_tag();
-HSTag* find_tag_with_toplevel_frame(struct HSFrame* frame);
+HSTag* find_tag_with_toplevel_frame(class HSFrame* frame);
 HSTag* get_tag_by_index(int index);
 HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags);
 int    tag_get_count();

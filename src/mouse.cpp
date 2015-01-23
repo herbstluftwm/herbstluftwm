@@ -451,9 +451,9 @@ static void snap_1d(int x, int edge, int* delta) {
     }
 }
 
-static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
+static void client_snap_helper(HSClient* candidate, struct SnapData* d) {
     if (candidate == d->client) {
-        return 0;
+        return;
     }
     auto subject  = d->rect;
     auto other    = candidate->dec.last_outer_rect;
@@ -482,7 +482,7 @@ static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
             snap_1d(subject.y + subject.height, other.y, &d->dy);
         }
     }
-    return 0;
+    return;
 }
 
 // get the vector to snap a client to it's neighbour
@@ -524,7 +524,7 @@ void client_snap_vector(HSClient* client, struct HSMonitor* monitor,
     }
 
     // snap to other clients
-    frame_foreach_client(tag->frame, (ClientAction)client_snap_helper, &d);
+    tag->frame->foreachClient((ClientAction)client_snap_helper, &d);
 
     // write back results
     if (abs(d.dx) < abs(distance)) {
