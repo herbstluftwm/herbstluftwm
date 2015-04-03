@@ -6,6 +6,9 @@ Current git version
 
     * Handle EWMH request _NET_WM_MOVERESIZE more conform
     * Make tag objects accessible by their index
+    * Automatically unmanage desktop windows (e.g. xfdesktop), and force them
+      to stay below all other windows. (TODO: find a proper place in the man
+      page to mention that).
 
 Release 0.6.2 on 2014-03-27
 ---------------------------

@@ -711,54 +711,14 @@ static bool condition_maxage(HSCondition* rule, HSClient* client) {
 }
 
 static bool condition_windowtype(HSCondition* rule, HSClient* client) {
-    // that only works for atom-type utf8-string, _NET_WM_WINDOW_TYPE is int
-    //  GString* wintype=
-    //      window_property_to_g_string(g_display, client->window, wintype_atom);
-    // =>
-    // kinda duplicate from src/utils.c:window_properties_to_g_string()
-    // using different xatom type, and only calling XGetWindowProperty
-    // once, because we are sure we only need four bytes
-    long bufsize = 10;
-    char *buf;
-    Atom type_ret, wintype;
-    int format;
-    unsigned long items, bytes_left;
-    long offset = 0;
-
-    int status = XGetWindowProperty(
-            g_display,
-            client->window,
-            g_netatom[NetWmWindowType],
-            offset,
-            bufsize,
-            False,
-            ATOM("ATOM"),
-            &type_ret,
-            &format,
-            &items,
-            &bytes_left,
-            (unsigned char**)&buf
-            );
-    // we only need precisely four bytes (one Atom)
-    // if there are bytes left, something went wrong
-    if(status != Success || bytes_left > 0 || items < 1 || buf == NULL) {
+    int windowtype = ewmh_get_window_type(client->window);
+    if (windowtype < 0) {
         return false;
     } else {
-        wintype= *(Atom *)buf;
-        XFree(buf);
+        // if found, then treat the window type as a string value,
+        // which is registered in g_netatom_names[]
+        return condition_string(rule, g_netatom_names[windowtype]);
     }
-
-    for (int i = NetWmWindowTypeFIRST; i <= NetWmWindowTypeLAST; i++) {
-        // try to find the window type
-        if (wintype == g_netatom[i]) {
-            // if found, then treat the window type as a string value,
-            // which is registered in g_netatom_names[]
-            return condition_string(rule, g_netatom_names[i]);
-        }
-    }
-
-    // if no valid window type has been found,
-    // it can not match
     return false;
 }
 

@@ -101,6 +101,8 @@ void ewmh_update_window_state(struct HSClient* client);
 void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom);
 bool ewmh_is_window_state_set(Window win, Atom hint);
 bool ewmh_is_fullscreen_set(Window win);
+bool ewmh_is_desktop_window(Window win);
+int ewmh_get_window_type(Window win); // returns an element of the NetWm-Enum
 void ewmh_clear_client_properties(struct HSClient* client);
 
 // set the desktop property of a window

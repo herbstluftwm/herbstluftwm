@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "stack.h"
 #include "clientlist.h"
+#include "desktopwindow.h"
 
 // module internals:
 static int g_cur_monitor;
@@ -1339,6 +1340,7 @@ void monitor_restack(HSMonitor* monitor) {
         count--;
         memmove(buf + idx, buf + idx + 1, sizeof(*buf) * (count - idx));
     }
+    DesktopWindow::lowerDesktopWindows();
     XRestackWindows(g_display, buf, count);
     g_free(buf);
 }

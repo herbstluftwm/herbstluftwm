@@ -20,6 +20,7 @@
 #include "stack.h"
 #include "object.h"
 #include "decoration.h"
+#include "desktopwindow.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -578,7 +579,9 @@ int xerror(Display *dpy, XErrorEvent *ee) {
         HSDebug("Warning: ignoring X_BadDrawable");
         return 0;
     }
-    return g_xerrorxlib(dpy, ee); /* may call exit */
+    // TODO
+    //return g_xerrorxlib(dpy, ee); /* may call exit */
+    return 0;
 }
 
 int xerrordummy(Display *dpy, XErrorEvent *ee) {
@@ -843,6 +846,9 @@ void destroynotify(XEvent* event) {
     // try to unmanage it
     //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
     unmanage_client(event->xdestroywindow.window);
+    if (!is_herbstluft_window(g_display, event->xdestroywindow.window)) {
+        DesktopWindow::unregisterDesktop(event->xdestroywindow.window);
+    }
 }
 
 void enternotify(XEvent* event) {

@@ -17,6 +17,7 @@
 #include "object.h"
 #include "decoration.h"
 #include "key.h"
+#include "desktopwindow.h"
 // system
 #include "glib-backports.h"
 #include <assert.h>
@@ -217,6 +218,12 @@ HSClient* manage_client(Window win) {
         return NULL;
     }
     if (get_client_from_window(win)) {
+        return NULL;
+    }
+    if (ewmh_is_desktop_window(win)) {
+        DesktopWindow::registerDesktop(win);
+        monitor_restack(get_current_monitor());
+        XMapWindow(g_display, win);
         return NULL;
     }
     // init client

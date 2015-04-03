@@ -490,6 +490,57 @@ bool ewmh_is_fullscreen_set(Window win) {
     return ewmh_is_window_state_set(win, g_netatom[NetWmStateFullscreen]);
 }
 
+int ewmh_get_window_type(Window win) { // returns an element of the NetWm-Enum
+    // that only works for atom-type utf8-string, _NET_WM_WINDOW_TYPE is int
+    //  GString* wintype=
+    //      window_property_to_g_string(g_display, client->window, wintype_atom);
+    // =>
+    // kinda duplicate from src/utils.c:window_properties_to_g_string()
+    // using different xatom type, and only calling XGetWindowProperty
+    // once, because we are sure we only need four bytes
+    long bufsize = 10;
+    char *buf;
+    Atom type_ret, wintype;
+    int format;
+    unsigned long items, bytes_left;
+    long offset = 0;
+
+    int status = XGetWindowProperty(
+            g_display,
+            win,
+            g_netatom[NetWmWindowType],
+            offset,
+            bufsize,
+            False,
+            ATOM("ATOM"),
+            &type_ret,
+            &format,
+            &items,
+            &bytes_left,
+            (unsigned char**)&buf
+            );
+    // we only need precisely four bytes (one Atom)
+    // if there are bytes left, something went wrong
+    if(status != Success || bytes_left > 0 || items < 1 || buf == NULL) {
+        return false;
+    } else {
+        wintype= *(Atom *)buf;
+        XFree(buf);
+    }
+
+    for (int i = NetWmWindowTypeFIRST; i <= NetWmWindowTypeLAST; i++) {
+        // try to find the window type
+        if (wintype == g_netatom[i]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+bool ewmh_is_desktop_window(Window win) {
+    return ewmh_get_window_type(win) == NetWmWindowTypeDesktop;
+}
+
 void ewmh_set_window_opacity(Window win, double opacity) {
     uint32_t int_opacity = std::numeric_limits<uint32_t>::max()
                             * CLAMP(opacity, 0, 1);
