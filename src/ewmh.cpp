@@ -522,7 +522,7 @@ int ewmh_get_window_type(Window win) { // returns an element of the NetWm-Enum
     // we only need precisely four bytes (one Atom)
     // if there are bytes left, something went wrong
     if(status != Success || bytes_left > 0 || items < 1 || buf == NULL) {
-        return false;
+        return -1;
     } else {
         wintype= *(Atom *)buf;
         XFree(buf);
