@@ -399,6 +399,12 @@ void unmanage_client(Window win) {
     if (m) monitor_apply_layout(m);
     ewmh_remove_client(win);
     tag_set_flags_dirty();
+
+    // Get the current client and update the windows focus.
+    client = frame_focused_client(tag->frame);
+    if (!client) {
+        hook_emit_list("window_title_changed", NULL);
+    }
 }
 
 // destroys a special client
