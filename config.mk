@@ -2,12 +2,14 @@
 X11INC = /usr/X11R6/include
 X11LIB = /usr/X11R6/lib
 
-# Xinerama
-XINERAMALIBS = `pkg-config --silence-errors --libs xinerama`
-XINERAMAFLAGS = `pkg-config --exists xinerama && echo -DXINERAMA`
+PKG_CONFIG ?= pkg-config
 
-INCS = -Isrc/ -I/usr/include -I${X11INC}  `pkg-config --cflags glib-2.0`
-LIBS = -lc -L${X11LIB} -lXext -lX11 $(XINERAMALIBS) `pkg-config --libs glib-2.0`
+# Xinerama
+XINERAMALIBS = `$(PKG_CONFIG) --silence-errors --libs xinerama`
+XINERAMAFLAGS = `$(PKG_CONFIG) --exists xinerama && echo -DXINERAMA`
+
+INCS = -Isrc/ -I/usr/include -I${X11INC}  `$(PKG_CONFIG) --cflags glib-2.0`
+LIBS = -lc -L${X11LIB} -lXext -lX11 $(XINERAMALIBS) `$(PKG_CONFIG) --libs glib-2.0`
 
 ifeq ($(shell uname),Linux)
 LIBS += -lrt
