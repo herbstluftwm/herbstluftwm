@@ -27,11 +27,6 @@ public:
     bool writeable() const { return writeable_; }
     bool hookable() const { return hookable_; }
 
-    // all access to the payload is delegated to owner!
-    std::string read() const;
-    void write(const std::string &value);
-
-    // accessors only to be used by owner!
     // TODO for both: programming error when reached, thrown an exception.
     virtual std::string str() { return {}; }
     virtual void change(const std::string &payload) {}
@@ -65,7 +60,6 @@ public:
 
     Type type() { return Type::ACTION; }
 
-    void trigger(const Arg &args);
 private:
     Object *owner_;
 };

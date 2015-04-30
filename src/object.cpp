@@ -25,6 +25,17 @@ Object::Object(const std::string &name)
     wireAttributes({ &nameAttribute_ });
 }
 
+
+bool Object::exists(const std::string &name, Type t)
+{
+    switch (t) {
+    case Type::DIRECTORY: return Directory::exists(name);
+    case Type::ATTRIBUTE: return attribs_.find(name) != attribs_.end();
+    case Type::ACTION: return actions_.find(name) != actions_.end();
+    default: return false; // TODO: throw
+    }
+}
+
 std::string Object::read(const std::string &attr) const {
     if (attr == "name")
         return name_;
@@ -98,7 +109,7 @@ void Object::print(const std::string &prefix)
         for (auto it : attribs_) {
             std::cout << prefix << "\t" << it.first
                       << " (" << it.second->typestr() << ")";
-            std::cout << "\t[" << it.second->read() << "]";
+            std::cout << "\t[" << read(it.second->name()) << "]";
             if (it.second->writeable())
                 std::cout << "\tw";
             if (!it.second->hookable())

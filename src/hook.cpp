@@ -168,7 +168,7 @@ void Hook::complete_chain() {
         return; // no chance, we are still incomplete
 
     auto o = std::dynamic_pointer_cast<Object>(chain_.back().lock());
-    if (!o || o->attribs().find(path_.back()) == o->attribs().end())
+    if (!o || !o->exists(path_.back()))
         return; // TODO: throw
     active_ = true;
     auto newvalue = o->read(path_.back());

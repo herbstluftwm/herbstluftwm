@@ -25,17 +25,13 @@ public:
 
     virtual void print(const std::string &prefix = "\t| "); // a debug method
 
+    virtual bool exists(const std::string &name, Type t = Type::DIRECTORY);
     virtual std::string read(const std::string &attr) const;
     virtual bool writeable(const std::string &attr) const;
     virtual void write(const std::string &attr, const std::string &value);
     virtual bool hookable(const std::string &attr) const;
 
     virtual void trigger(const std::string &action, const Arg &args);
-
-    const std::unordered_map<std::string, Attribute*>&
-    attribs() { return attribs_; }
-    const std::unordered_map<std::string, Action*>&
-    actions() { return actions_; }
 
 protected:
     // initialize an attribute (typically used by init())

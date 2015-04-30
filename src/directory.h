@@ -26,8 +26,13 @@ public:
 
     virtual void print(const std::string &prefix = "\t| "); // a debug method
 
+    virtual bool exists(const std::string &name) {
+        return children_.find(name) != children_.end();
+    }
+
     const std::unordered_map<std::string, std::shared_ptr<Directory>>&
     children() { return children_; }
+
     template<typename T>
     std::shared_ptr<T> child(const std::string &name) {
         auto it = children_.find(name);
