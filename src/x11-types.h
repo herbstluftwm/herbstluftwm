@@ -56,6 +56,7 @@ namespace herbstluft {
 }
 
 // STRTODO: move this into the herbstluftwm namespace
+using Input = const std::vector<std::string>&;
 using Output = std::ostream&;
 
 #endif
