@@ -32,7 +32,7 @@ public:
     std::shared_ptr<T> child(const std::string &name) {
         auto it = children_.find(name);
         if (it != children_.end())
-            return std::dynamic_pointer_cast<T>(it->second);
+            return it->second->ptr<T>();
         else
             return {};
     }
@@ -47,6 +47,12 @@ public:
     void removeHook(const std::string &hook);
 
 protected:
+    /* convenience function to be used by objects to return themselves. */
+    template<typename T>
+    std::shared_ptr<T> ptr() {
+        return std::dynamic_pointer_cast<T>(shared_from_this());
+    }
+
     std::unordered_map<std::string, std::shared_ptr<Directory>> children_;
     std::unordered_map<std::string, std::weak_ptr<Hook>> hooks_;
 };
