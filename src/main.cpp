@@ -82,6 +82,14 @@ int getenv_command(int argc, char** argv, Output output);
 int setenv_command(int argc, char** argv, Output output);
 int unsetenv_command(int argc, char** argv, Output output);
 
+namespace herbstluft {
+int ls_command(int argc, char** argv, Output output) {
+    std::vector<std::string> input(argv + 1, argv + argc);
+    Root::ls(input, output);
+    return 0; // TODO
+}
+}
+
 // handler for X-Events
 void buttonpress(XEvent* event);
 void buttonrelease(XEvent* event);
@@ -199,6 +207,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "getenv",         getenv_command),
     CMD_BIND(             "setenv",         setenv_command),
     CMD_BIND(             "unsetenv",       unsetenv_command),
+    CMD_BIND(             "ls",             herbstluft::ls_command),
     { CommandBindingCB() }
 };
 

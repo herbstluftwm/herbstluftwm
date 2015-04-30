@@ -36,4 +36,10 @@ std::shared_ptr<ClientManager> Root::clients() {
     return root_->child<ClientManager>("clients");
 }
 
+void Root::ls(Input in, Output out)
+{
+    if (in.empty())
+        root_->ls(out);
+}
+
 }

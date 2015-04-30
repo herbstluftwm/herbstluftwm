@@ -22,6 +22,10 @@ public:
     static std::shared_ptr<HookManager> hooks();
     static std::shared_ptr<ClientManager> clients();
 
+    /* external interface */
+    static void ls(Input in, Output out);
+    void ls(Output out) { Directory::ls(out); } // needed because of static ls()
+
 private:
 
     static std::shared_ptr<Root> root_;
