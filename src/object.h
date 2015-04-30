@@ -8,7 +8,6 @@
 
 #include "directory.h"
 #include "attribute.h"
-#include "x11-types.h"
 
 #include <unordered_map>
 #include <vector>
@@ -24,6 +23,9 @@ public:
     virtual Type type() { return Type::OBJECT; }
 
     virtual void print(const std::string &prefix = "\t| "); // a debug method
+
+    // object tree ls command
+    virtual void ls(Output out);
 
     virtual bool exists(const std::string &name, Type t = Type::DIRECTORY);
     virtual std::string read(const std::string &attr) const;

@@ -94,6 +94,23 @@ void Object::wireActions(std::vector<Action*> actions)
     }
 }
 
+void Object::ls(Output out)
+{
+    Directory::ls(out);
+
+    out << attribs_.size() << " attributes"
+        << (attribs_.size() > 0 ? ":" : ".") << std::endl;
+    for (auto it : attribs_) {
+        out << "  " << it.first << "." << std::endl;
+    }
+
+    out << actions_.size() << " actions"
+        << (actions_.size() > 0 ? ":" : ".") << std::endl;
+    for (auto it : actions_) {
+        out << "  " << it.first << "." << std::endl;
+    }
+}
+
 void Object::print(const std::string &prefix)
 {
     std::cout << prefix << "==== " << typestr() << " " << name_ << ":" << std::endl;

@@ -2,6 +2,7 @@
 #define DIRECTORY_H
 
 #include "entity.h"
+#include "x11-types.h" // for Output and stuff object.h needs
 
 #include <memory>
 #include <unordered_map>
@@ -25,6 +26,9 @@ public:
     virtual Type type() { return Type::DIRECTORY; }
 
     virtual void print(const std::string &prefix = "\t| "); // a debug method
+
+    // object tree ls command
+    virtual void ls(Output out);
 
     virtual bool exists(const std::string &name) {
         return children_.find(name) != children_.end();
