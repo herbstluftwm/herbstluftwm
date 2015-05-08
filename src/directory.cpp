@@ -64,4 +64,17 @@ void Directory::ls(Output out)
     }
 }
 
+void Directory::ls(Path path, Output out)
+{
+    if (path.empty())
+        return ls(out);
+
+    auto child = path.front();
+    if (exists(child)) {
+        children_[child]->ls(path + 1, out);
+    } else {
+        out << name_ << ": " << child << " not found!" << std::endl; // TODO
+    }
+}
+
 }

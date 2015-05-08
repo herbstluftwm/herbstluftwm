@@ -85,8 +85,8 @@ int unsetenv_command(int argc, char** argv, Output output);
 
 namespace herbstluft {
 int ls_command(int argc, char** argv, Output output) {
-    std::vector<std::string> input(argv + 1, argv + argc);
-    Root::ls(input, output);
+    Input input(std::vector<std::string>(argv + 1, argv + argc));
+    Root::cmd_ls(input, output);
     return 0; // TODO
 }
 }

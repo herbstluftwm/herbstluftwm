@@ -36,10 +36,13 @@ std::shared_ptr<ClientManager> Root::clients() {
     return root_->child<ClientManager>("clients");
 }
 
-void Root::ls(Input in, Output out)
+void Root::cmd_ls(Input in, Output out)
 {
     if (in.empty())
-        root_->ls(out);
+        return root_->ls(out);
+
+    Path p(in.front());
+    root_->Directory::ls(p, out);
 }
 
 }

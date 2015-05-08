@@ -62,7 +62,7 @@ using Path = ArgList;
 }
 
 // STRTODO: move this into the herbstluftwm namespace
-using Input = const std::vector<std::string>&;
+using Input = herbstluft::ArgList;
 using Output = std::ostream&;
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))

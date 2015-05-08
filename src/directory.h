@@ -28,7 +28,8 @@ public:
     virtual void print(const std::string &prefix = "\t| "); // a debug method
 
     // object tree ls command
-    virtual void ls(Output out);
+    virtual void ls(Output out); // local version
+    virtual void ls(Path path, Output out); // traversial version
 
     virtual bool exists(const std::string &name) {
         return children_.find(name) != children_.end();
