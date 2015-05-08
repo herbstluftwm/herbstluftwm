@@ -62,7 +62,7 @@ void Hook::operator()(std::shared_ptr<Directory> sender, HookEvent event,
     //debug_hook();
 }
 
-void Hook::trigger(const std::string &action, ArgList &args)
+void Hook::trigger(const std::string &action, ArgList args)
 {
     if (action == emit_.name()) {
         emit(args);
@@ -71,7 +71,7 @@ void Hook::trigger(const std::string &action, ArgList &args)
     Object::trigger(action, args);
 }
 
-void Hook::emit(const ArgList &args)
+void Hook::emit(const ArgList args)
 {
     counter_ = counter_ + 1;
     // TODO: properly emit

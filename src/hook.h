@@ -34,7 +34,7 @@ private:
     bool targetIsObject() { return path_.size() < chain_.size(); }
 
     // for external trigger and called by others
-    void emit(const ArgList &args);
+    void emit(const ArgList args);
     // for Event::CHILD_* cases
     void emit(HookEvent event, const std::string &name);
     // for Event::ATTRIBUTE_CHANGED case
