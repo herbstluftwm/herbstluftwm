@@ -21,8 +21,7 @@ void test_object_system()
         "lasmiranda"
     };
     for (auto h : hooks) {
-        //root->hooks()->add(h);
-        root->hooks()->trigger("add", {h});
+        root->hooks()->add(h);
     }
     root->print("");
     auto wat = std::dynamic_pointer_cast<herbstluft::TestObjectII>(
