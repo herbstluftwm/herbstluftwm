@@ -26,6 +26,7 @@
 
 #include <memory>
 #include <iomanip>
+#include <sstream>
 
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>

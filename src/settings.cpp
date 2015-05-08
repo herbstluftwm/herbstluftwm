@@ -14,6 +14,7 @@
 #include "glib-backports.h"
 #include <string.h>
 #include <stdio.h>
+#include <sstream>
 
 SettingsPair SET_INT(const char* name, int defaultval, void (*cb)())
 {

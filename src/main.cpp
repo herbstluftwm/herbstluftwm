@@ -33,6 +33,7 @@
 #include <sys/wait.h>
 #include <assert.h>
 #include <errno.h>
+#include <sstream>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
