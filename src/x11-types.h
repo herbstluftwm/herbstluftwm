@@ -11,13 +11,8 @@ namespace herbstluft {
         //Color() : value_(0) {}
         //Color(unsigned long value) : value_(value) {}
 
-        // implemented in utils.h, should be moved
         static bool convert(const char *source, Color& dest);
-        static Color fromStr(const char *source) {
-            Color dest{0}; // initialize in case convert() fails
-            convert(source, dest);
-            return dest;
-        }
+        static Color fromStr(const char *source);
 
         std::string str() {
         //    if (name_.empty())
@@ -34,7 +29,6 @@ namespace herbstluft {
     };
 
     struct Rectangle {
-        // implemented in utils.h, should be moved
         static Rectangle fromStr(const char *source);
 
         int x;

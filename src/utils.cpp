@@ -105,20 +105,6 @@ void die(const char *errstr, ...) {
     exit(EXIT_FAILURE);
 }
 
-// get X11 color from color string
-// from dwm.c
-bool Color::convert(const char *source, Color& dest) {
-    Colormap cmap = DefaultColormap(g_display, g_screen);
-    XColor color;
-    if(!XAllocNamedColor(g_display, cmap, source, &color, &color)) {
-        g_warning("error, cannot allocate color '%s'\n", source);
-        return false;
-    }
-    dest = color.pixel;
-    //dest.name_ = source;
-    return true;
-}
-
 // inspired by dwm's gettextprop()
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
     GString* result = NULL;
@@ -276,19 +262,6 @@ std::string utf8_string_at(const std::string& str, size_t n) {
         result += str[byte_offset];
     }
     return result;
-}
-
-Rectangle Rectangle::fromStr(const char* source) {
-    int x, y;
-    unsigned int w, h;
-    int flags = XParseGeometry(source, &x, &y, &w, &h);
-
-    return {
-        (XValue & flags) ? x : 0,
-        (YValue & flags) ? y : 0,
-        (WidthValue & flags) ? w : 0,
-        (HeightValue & flags) ? h : 0
-    };
 }
 
 const char* strlasttoken(const char* str, const char* delim) {
