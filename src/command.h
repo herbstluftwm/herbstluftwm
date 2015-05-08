@@ -9,6 +9,7 @@
 #include "glib-backports.h"
 #include <stdbool.h>
 #include "x11-types.h"
+#include "utils.h"
 
 typedef int (*HerbstCmd)(int argc,      // number of arguments
                          const char** argv,   // array of args

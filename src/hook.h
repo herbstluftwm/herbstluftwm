@@ -8,7 +8,6 @@
 
 #include "object.h"
 #include "attribute_.h"
-#include "utils.h" // split_path
 
 #include <memory>
 #include <vector>

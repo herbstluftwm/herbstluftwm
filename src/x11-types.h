@@ -55,9 +55,5 @@ namespace herbstluft {
     std::ostream& operator<< (std::ostream& stream, const Rectangle& matrix);
 }
 
-// STRTODO: move this into the herbstluftwm namespace
-using Input = const std::vector<std::string>&;
-using Output = std::ostream&;
-
 #endif
 

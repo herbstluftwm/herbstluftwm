@@ -1,6 +1,7 @@
 #ifndef ROOT_H
 #define ROOT_H
 
+#include "utils.h"
 #include "directory.h"
 
 // new object tree root.

@@ -7,11 +7,12 @@
 #define __HERBST_UTILS_H_
 
 #include "glib-backports.h"
+#include "x11-types.h"
+
 #include <stddef.h>
 #include <stdbool.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
-#include "x11-types.h"
 #include <array>
 #include <string>
 #include <sstream>
@@ -33,6 +34,10 @@ namespace herbstluft {
         return ret;
     }
 }
+
+// STRTODO: move this into the herbstluftwm namespace
+using Input = const std::vector<std::string>&;
+using Output = std::ostream&;
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))

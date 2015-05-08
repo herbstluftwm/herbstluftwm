@@ -2,7 +2,7 @@
 #define DIRECTORY_H
 
 #include "entity.h"
-#include "x11-types.h" // for Output and stuff object.h needs
+#include "utils.h" // for Output and stuff object.h needs
 
 #include <memory>
 #include <unordered_map>

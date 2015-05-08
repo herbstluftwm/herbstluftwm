@@ -6,10 +6,11 @@
 #ifndef __HS_RULES_H_
 #define __HS_RULES_H_
 
+#include "glib-backports.h"
+#include "utils.h"
+
 #include <stdbool.h>
 #include <regex.h>
-#include "glib-backports.h"
-#include "x11-types.h"
 
 class HSClient;
 struct HSTag;

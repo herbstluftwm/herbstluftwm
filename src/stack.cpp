@@ -3,7 +3,6 @@
 #include "clientlist.h"
 #include "ewmh.h"
 #include "globals.h"
-#include "utils.h"
 
 #include <stdio.h>
 #include <string.h>

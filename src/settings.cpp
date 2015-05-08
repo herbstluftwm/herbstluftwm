@@ -8,7 +8,6 @@
 #include "clientlist.h"
 #include "layout.h"
 #include "ipc-protocol.h"
-#include "utils.h"
 #include "ewmh.h"
 #include "object.h"
 

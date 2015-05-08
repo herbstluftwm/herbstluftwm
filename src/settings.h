@@ -8,6 +8,7 @@
 
 #include "glib-backports.h"
 #include "x11-types.h"
+#include "utils.h"
 
 enum {
     HS_String = 0,

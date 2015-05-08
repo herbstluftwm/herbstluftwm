@@ -14,7 +14,6 @@
 #include "clientlist.h"
 #include "clientmanager.h"
 #include "ipc-protocol.h"
-#include "utils.h"
 #include "hook.h"
 #include "layout.h"
 #include "stack.h"

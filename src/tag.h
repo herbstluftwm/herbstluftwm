@@ -9,6 +9,7 @@
 #include "glib-backports.h"
 #include <stdbool.h>
 #include "x11-types.h"
+#include "utils.h"
 
 struct HSFrame;
 class HSClient;

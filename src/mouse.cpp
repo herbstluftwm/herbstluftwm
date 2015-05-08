@@ -9,7 +9,6 @@
 #include "layout.h"
 #include "key.h"
 #include "ipc-protocol.h"
-#include "utils.h"
 #include "settings.h"
 #include "command.h"
 
