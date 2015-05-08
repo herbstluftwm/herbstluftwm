@@ -22,7 +22,7 @@ void HookManager::remove(const std::string &path)
     removeChild(path);
 }
 
-void HookManager::trigger(const std::string &action, const Arg &args)
+void HookManager::trigger(const std::string &action, ArgList args)
 {
     if (action == add_.name()) {
         for (auto a : args)

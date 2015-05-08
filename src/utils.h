@@ -14,25 +14,51 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <array>
-#include <string>
-#include <sstream>
+#include <memory>
 
 namespace herbstluft {
 
-    /* convenience: strip argument vector of processed front elements */
-    inline Arg back(Arg a, size_t n = 1) {
-        return { a.begin() + n, a.end() };
+struct ArgList {
+    using Container = std::vector<std::string>;
+
+    // a simple split(), as C++ doesn't have it
+    static Container split(const std::string &s, char delim = '.');
+
+    // a simple join(), as C++ doesn't have it
+    static std::string join(Container::const_iterator first,
+                            Container::const_iterator last,
+                            char delim = '.');
+
+    ArgList(const std::initializer_list<std::string> &l);
+    ArgList(const Container &c);
+    // constructor that splits the given string
+    ArgList(const std::string &s, char delim = '.');
+    // operator to obtain shifted version of list (shallow copy)
+    ArgList operator+(size_t shift_amount);
+
+    Container::const_iterator begin() const { return begin_; }
+    Container::const_iterator end() const { return c_->cend(); }
+    const std::string& front() { return *begin_; }
+    const std::string& back() { return c_->back(); }
+    bool empty() const { return begin_ == c_->end(); }
+
+    void reset() { begin_ = c_->cbegin(); }
+    void shift(size_t amount = 1) {
+        begin_ += std::min(amount, (size_t)std::distance(begin_, c_->cend()));
     }
 
-    /* split an object tree path into its elements */
-    inline std::vector<std::string> split_path(const std::string &path) {
-        std::stringstream tmp(path);
-        std::vector<std::string> ret;
-        std::string item;
-        while (std::getline(tmp, item, '.'))
-            ret.push_back(item);
-        return ret;
-    }
+protected:
+    static void split(Container &ret, const std::string &s, char delim = '.');
+
+    Container::const_iterator begin_;
+    /* shared pointer to make object copy-able:
+     * 1. payload is shared (no redundant copies)
+     * 2. begin_ stays valid
+     */
+    std::shared_ptr<Container> c_;
+};
+
+using Path = ArgList;
 }
 
 // STRTODO: move this into the herbstluftwm namespace

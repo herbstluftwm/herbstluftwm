@@ -7,9 +7,6 @@
 
 namespace herbstluft {
 
-    // argument vector
-    using Arg = std::vector<std::string>;
-
     struct Color {
         //Color() : value_(0) {}
         //Color(unsigned long value) : value_(value) {}

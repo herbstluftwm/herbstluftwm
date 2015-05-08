@@ -16,7 +16,7 @@ Hook::Hook(const std::string &path) :
     counter_("counter", false, 0),
     active_("active", false, false),
     emit_("emit"),
-    path_(split_path(path)) {
+    path_(Path::split(path)) {
     wireAttributes({ &counter_, &active_ });
     wireActions({ &emit_ });
 }
@@ -62,7 +62,7 @@ void Hook::operator()(std::shared_ptr<Directory> sender, HookEvent event,
     //debug_hook();
 }
 
-void Hook::trigger(const std::string &action, const Arg &args)
+void Hook::trigger(const std::string &action, ArgList &args)
 {
     if (action == emit_.name()) {
         emit(args);
@@ -71,7 +71,7 @@ void Hook::trigger(const std::string &action, const Arg &args)
     Object::trigger(action, args);
 }
 
-void Hook::emit(const Arg &args)
+void Hook::emit(const ArgList &args)
 {
     counter_ = counter_ + 1;
     // TODO: properly emit

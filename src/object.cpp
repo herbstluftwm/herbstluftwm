@@ -73,7 +73,7 @@ bool Object::hookable(const std::string &attr) const {
     return false; // TODO: else throw
 }
 
-void Object::trigger(const std::string &action, const Arg &args) {
+void Object::trigger(const std::string &action, ArgList args) {
     // do nothing, there is no default behavior for actions.
     // TODO: throw; if we got here, there was an error, e.g. typo on user's side
 }

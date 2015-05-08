@@ -26,7 +26,7 @@ public:
     void operator()(std::shared_ptr<Directory> sender, HookEvent event,
                     const std::string &name);
 
-    void trigger(const std::string &action, const Arg &args);
+    void trigger(const std::string &action, ArgList args);
 
 private:
     /* are we listening to an object rather an attribute? If so,
@@ -34,7 +34,7 @@ private:
     bool targetIsObject() { return path_.size() < chain_.size(); }
 
     // for external trigger and called by others
-    void emit(const Arg &args);
+    void emit(const ArgList &args);
     // for Event::CHILD_* cases
     void emit(HookEvent event, const std::string &name);
     // for Event::ATTRIBUTE_CHANGED case

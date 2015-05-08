@@ -33,7 +33,7 @@ public:
     virtual void write(const std::string &attr, const std::string &value);
     virtual bool hookable(const std::string &attr) const;
 
-    virtual void trigger(const std::string &action, const Arg &args);
+    virtual void trigger(const std::string &action, ArgList args);
 
 protected:
     // initialize an attribute (typically used by init())

@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "utils.h"
 // standard
+#include <sstream>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,6 +25,54 @@
 #include <mach/clock.h>
 #include <mach/mach.h>
 #endif
+
+namespace herbstluft {
+
+ArgList::ArgList(const std::initializer_list<std::string> &l)
+    : c_(std::make_shared<Container>(l)) { reset(); }
+
+ArgList::ArgList(const ArgList::Container &c) : c_(std::make_shared<Container>(c)) { reset(); }
+
+ArgList::ArgList(const std::string &s, char delim) {
+    c_ = std::make_shared<Container>();
+    split(*c_, s, delim);
+    reset();
+}
+
+ArgList ArgList::operator+(size_t shift_amount) {
+    ArgList ret(*this);
+    ret.shift(shift_amount);
+    return ret;
+}
+
+void ArgList::split(Container &ret, const std::string &s, char delim) {
+    std::stringstream tmp(s);
+    std::string item;
+    while (std::getline(tmp, item, delim))
+        if (!item.empty()) // case for trailing delimiter
+            ret.push_back(item);
+}
+
+ArgList::Container ArgList::split(const std::string &s, char delim) {
+    Container ret;
+    split(ret, s, delim);
+    return ret;
+}
+
+std::string ArgList::join(ArgList::Container::const_iterator first,
+                          ArgList::Container::const_iterator last,
+                          char delim) {
+    if (first == last)
+        return {};
+    std::string ret;
+    std::stringstream tmp(ret);
+    tmp << *first;
+    for (auto it = first + 1; it != last; ++it)
+        tmp << delim << *it;
+    return ret;
+}
+
+}
 
 using namespace herbstluft;
 
