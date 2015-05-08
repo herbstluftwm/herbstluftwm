@@ -64,12 +64,11 @@ std::string ArgList::join(ArgList::Container::const_iterator first,
                           char delim) {
     if (first == last)
         return {};
-    std::string ret;
-    std::stringstream tmp(ret);
+    std::stringstream tmp;
     tmp << *first;
     for (auto it = first + 1; it != last; ++it)
         tmp << delim << *it;
-    return ret;
+    return tmp.str();
 }
 
 }
