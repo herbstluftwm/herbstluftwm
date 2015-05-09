@@ -57,7 +57,7 @@ void Directory::print(const std::string &prefix)
 
 void Directory::ls(Output out)
 {
-    out << children_.size() << " children"
+    out << children_.size() << (children_.size() == 1 ? " child" : " children")
         << (children_.size() > 0 ? ":" : ".") << std::endl;
     for (auto it : children_) {
         out << "  " << it.first << "." << std::endl;

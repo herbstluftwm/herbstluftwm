@@ -99,13 +99,13 @@ void Object::ls(Output out)
 {
     Directory::ls(out);
 
-    out << attribs_.size() << " attributes"
+    out << attribs_.size() << (attribs_.size() == 1 ? " attribute" : " attributes")
         << (attribs_.size() > 0 ? ":" : ".") << std::endl;
     for (auto it : attribs_) {
         out << "  " << it.first << "." << std::endl;
     }
 
-    out << actions_.size() << " actions"
+    out << actions_.size() << (actions_.size() == 1 ? " action" : " actions")
         << (actions_.size() > 0 ? ":" : ".") << std::endl;
     for (auto it : actions_) {
         out << "  " << it.first << "." << std::endl;
