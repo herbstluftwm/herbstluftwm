@@ -10,6 +10,19 @@ HookManager::HookManager()
     wireActions({ &add_, &remove_ });
 }
 
+void HookManager::ls(Path path, Output out)
+{
+    if (path.empty())
+        return Directory::ls(out);
+
+    auto child = Path::join(path.begin(), path.end());
+    if (exists(child)) {
+        children_[child]->ls({}, out);
+    } else {
+        out << name_ << ": " << child << " not found!" << std::endl; // TODO
+    }
+}
+
 void HookManager::add(const std::string &path)
 {
     auto h = std::make_shared<Hook>(path);
