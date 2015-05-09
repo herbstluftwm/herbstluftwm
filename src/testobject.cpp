@@ -59,12 +59,12 @@ void TestObject::do_stuff()
 
 TestObjectII::TestObjectII(const std::string &name)
     : Object(name),
-      foo_("foo", true, 42),
+      foorious_("foorious", true, 42),
       bar_("bar", false, true),
       checker_("checker", Type::ATTRIBUTE_COLOR, true, false),
       killer_("killer")
 {
-    wireAttributes({ &foo_, &bar_, &checker_ });
+    wireAttributes({ &foorious_, &bar_, &checker_ });
     wireActions({ &killer_ });
 
     auto foo = std::make_shared<Object>("sweets");

@@ -12,6 +12,7 @@ enum class Type {
     ACTION,
     ATTRIBUTE,
     ATTRIBUTE_INT,
+    ATTRIBUTE_ULONG,
     ATTRIBUTE_BOOL,
     ATTRIBUTE_COLOR,
     ATTRIBUTE_STRING,
@@ -35,7 +36,7 @@ public:
     static std::string typestr(Type type) {
         const char * const str[] = {
             "Virtual Node", "Symbolic Link", "Action",
-            "Generic", "Integer", "Boolean",
+            "Generic", "Integer", "Unsigned", "Boolean",
             "Color", "String",
             "Hook", "Directory", "Object",
             "Monitor", "Tag", "Frame", "Client"
@@ -47,7 +48,7 @@ public:
     static char typechar(Type type) {
         char const chr[] = {
             'v', 'l', '!',
-            '?', 'i', 'b',
+            '?', 'i', 'u', 'b',
             'c', 's',
             'h', 'o', 'o',
             'o', 'o', 'o', 'o'

@@ -49,6 +49,17 @@ inline void Attribute_<int>::change(const std::string &payload) {
     notifyHooks();
 }
 
+/** Unsigned **/
+
+template<>
+inline Type Attribute_<unsigned long>::type() { return Type::ATTRIBUTE_ULONG; }
+
+template<>
+inline void Attribute_<unsigned long>::change(const std::string &payload) {
+    payload_= std::stoul(payload);
+    notifyHooks();
+}
+
 /** Boolean **/
 
 template<>
