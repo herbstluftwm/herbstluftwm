@@ -42,8 +42,19 @@ public:
         };
         return str[(int)type];
     }
-
     std::string typestr() { return typestr(type()); }
+
+    static char typechar(Type type) {
+        char const chr[] = {
+            'v', 'l', '!',
+            '?', 'i', 'b',
+            'c', 's',
+            'h', 'o', 'o',
+            'o', 'o', 'o', 'o'
+        };
+        return chr[(int)type];
+    }
+    char typechar() { return typechar(type()); }
 
 protected:
     std::string name_;
