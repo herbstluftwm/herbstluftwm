@@ -42,7 +42,7 @@ void Root::cmd_ls(Input in, Output out)
         return root_->ls(out);
 
     Path p(in.front());
-    root_->Directory::ls(p, out);
+    root_->ls(p, out);
 }
 
 }
