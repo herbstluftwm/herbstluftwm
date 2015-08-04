@@ -1472,7 +1472,7 @@ respective attribute of the +tiling+ and the +floating+ object.
    ** +urgent+ propagates the attribute values to +tiling.urgent+ and
       +floating.urgent+
 
-
+[[AUTOSTART]]
 AUTOSTART FILE
 --------------
 
@@ -1554,10 +1554,28 @@ the visible tags put above each other. The stacking order of these monitors is
 independent from their indices and can be modified using the *raise_monitor*
 command. The current stack is illustrated by the *stack* command.
 
+[[EWMH]]
+EWMH
+----
+As far as possible, herbstluftwm tries to be EWMH compliant. That includes:
+
+  - Information about tag names and client lists is provided.
+  - Desktop windows from desktop environments are not managed and kept below the
+    other windows.
+  - Client requests like getting focused are only processed if the setting
+    'focus_stealing_prevention' is disabled.
+
 ENVIRONMENT VARIABLES
 ---------------------
 DISPLAY::
     Specifies the 'DISPLAY' to use.
+
+
+FILES
+-----
+The following files are used by herbstluftwm:
+
+  - 'autostart', see section <<AUTOSTART,*AUTOSTART FILE*>>.
 
 EXIT STATUS
 -----------
