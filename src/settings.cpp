@@ -329,6 +329,12 @@ static bool memberequals_settingspair(void* pmember, const void* needle) {
     const SettingsPair* pair = (const SettingsPair*) needle;
     if (pair->type == HS_Int) {
         return pair->value.i == atoi(str);
+    } else if (pair->type == HS_Compatiblity) {
+        HSAttribute* attr = hsattribute_parse_path(pair->value.compat.read);
+        GString* attr_str = hsattribute_to_string(attr);
+        int equals = !strcmp(attr_str->str, str);
+        g_string_free(attr_str, true);
+        return equals;
     } else {
         return !strcmp(pair->value.str->str, str);
     }
