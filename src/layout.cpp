@@ -187,7 +187,7 @@ HSFrameSplit::HSFrameSplit(struct HSTag* tag, std::weak_ptr<HSFrameSplit> parent
 
 void HSFrameLeaf::insertClient(HSClient* client) {
     // insert it after the selection
-    clients.insert(clients.begin() + (selection + 1), client);
+    clients.insert(clients.begin() + std::min((selection + 1), (int)clients.size()), client);
     // FRAMETODO: if we we are focused, and were empty before, we have to focus
     // the client now
 }
