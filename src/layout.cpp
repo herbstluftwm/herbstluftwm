@@ -60,7 +60,6 @@ static unsigned long g_frame_active_opacity;
 static unsigned long g_frame_normal_opacity;
 
 char*   g_tree_style = NULL; // used by utils.c
-HSFrame*    g_cur_frame; // currently selected frame
 int* g_frame_gap;
 int* g_window_gap;
 
@@ -1407,10 +1406,6 @@ void HSFrameLeaf::moveClient(int new_index) {
 int frame_move_window_command(int argc, char** argv, Output output) {
     // usage: move left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
-    if (!g_cur_frame) {
-        fprintf(stderr, "error: no frame is selected\n");
-        return HERBST_UNKNOWN_ERROR;
-    }
     char direction = argv[1][0];
     int external_only = *g_direction_external_only;
     if (argc > 2 && !strcmp(argv[1], "-i")) {
