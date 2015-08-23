@@ -327,7 +327,8 @@ void key_find_binds(const char* needle, Output output) {
     g_list_foreach(g_key_binds, (GFunc)key_find_binds_helper, &c);
 }
 
-static void key_list_binds_helper(KeyBinding* b, Output output) {
+static void key_list_binds_helper(KeyBinding* b, std::ostream* ptr_output) {
+    Output output = *ptr_output;
     // add keybinding
     GString* name = keybinding_to_g_string(b);
     output << name->str;
@@ -340,7 +341,7 @@ static void key_list_binds_helper(KeyBinding* b, Output output) {
 }
 
 int key_list_binds(int argc, char** argv, Output output) {
-    g_list_foreach(g_key_binds, (GFunc)key_list_binds_helper, output);
+    g_list_foreach(g_key_binds, (GFunc)key_list_binds_helper, &output);
     return 0;
 }
 

@@ -23,6 +23,8 @@
 
 #include <sstream>
 
+using namespace std;
+
 static GArray*     g_tags; // Array of HSTag*
 static bool    g_tag_flags_dirty = true;
 static HSObject* g_tag_object;
@@ -46,12 +48,7 @@ void tag_init() {
 
 static void tag_free(HSTag* tag) {
     if (tag->frame) {
-        HSClient** buf;
-        size_t count;
-        frame_destroy(tag->frame, &buf, &count);
-        if (count) {
-            g_free(buf);
-        }
+        tag->frame = std::shared_ptr<HSFrame>();
     }
     stack_destroy(tag->stack);
     hsobject_unlink_and_destroy(g_tag_by_name, tag->object);
@@ -163,45 +160,6 @@ static GString* tag_attr_name(HSAttribute* attr) {
     }
 }
 
-static void sum_up_clientframes(HSFrame* frame, void* data) {
-    if (frame->type == TYPE_CLIENTS) {
-        (*(int*)data)++;
-    }
-}
-
-static int tag_attr_frame_count(void* data) {
-    HSTag* tag = (HSTag*) data;
-    int i = 0;
-    frame_do_recursive_data(tag->frame, sum_up_clientframes, 0, &i);
-    return i;
-}
-
-static void sum_up_clients(HSFrame* frame, void* data) {
-    if (frame->type == TYPE_CLIENTS) {
-        *(int*)data += frame->content.clients.count;
-    }
-}
-
-static int tag_attr_client_count(void* data) {
-    HSTag* tag = (HSTag*) data;
-    int i = 0;
-    frame_do_recursive_data(tag->frame, sum_up_clients, 0, &i);
-    return i;
-}
-
-
-static int tag_attr_curframe_windex(void* data) {
-    HSTag* tag = (HSTag*) data;
-    HSFrame* frame = frame_current_selection_below(tag->frame);
-    return frame->content.clients.selection;
-}
-
-static int tag_attr_curframe_wcount(void* data) {
-    HSTag* tag = (HSTag*) data;
-    HSFrame* frame = frame_current_selection_below(tag->frame);
-    return frame->content.clients.count;
-}
-
 static int tag_attr_index(void* data) {
     HSTag* tag = (HSTag*) data;
     return tag_index_of(tag);
@@ -229,7 +187,7 @@ HSTag* add_tag(const char* name) {
     }
     HSTag* tag = g_new0(HSTag, 1);
     tag->stack = stack_create();
-    tag->frame = frame_create_empty(NULL, tag);
+    tag->frame = make_shared<HSFrameLeaf>(tag, shared_ptr<HSFrameSplit>());
     tag->name = g_string_new(name);
     tag->display_name = g_string_new(name);
     tag->floating = false;
@@ -242,10 +200,10 @@ HSTag* add_tag(const char* name) {
         ATTRIBUTE_STRING("name",           tag->display_name,        tag_attr_name),
         ATTRIBUTE_BOOL(  "floating",       tag->floating,            tag_attr_floating),
         ATTRIBUTE_CUSTOM_INT("index",          tag_attr_index,           ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM_INT("frame_count",    tag_attr_frame_count,     ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM_INT("client_count",   tag_attr_client_count,    ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM_INT("curframe_windex",tag_attr_curframe_windex, ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM_INT("curframe_wcount",tag_attr_curframe_wcount, ATTR_READ_ONLY),
+        //ATTRIBUTE_CUSTOM_INT("frame_count",    tag_attr_frame_count,     ATTR_READ_ONLY),
+        //ATTRIBUTE_CUSTOM_INT("client_count",   tag_attr_client_count,    ATTR_READ_ONLY),
+        //ATTRIBUTE_CUSTOM_INT("curframe_windex",tag_attr_curframe_windex, ATTR_READ_ONLY),
+        //ATTRIBUTE_CUSTOM_INT("curframe_wcount",tag_attr_curframe_wcount, ATTR_READ_ONLY),
         ATTRIBUTE_LAST,
     };
     hsobject_set_attributes(tag->object, attributes);
@@ -324,33 +282,32 @@ int tag_remove_command(int argc, char** argv, Output output) {
     // prevent dangling tag_previous pointers
     all_monitors_replace_previous_tag(tag, target);
     // save all these windows
-    HSClient** buf;
-    size_t count;
-    frame_destroy(tag->frame, &buf, &count);
-    tag->frame = NULL;
-    int i;
-    for (i = 0; i < count; i++) {
-        HSClient* client = buf[i];
+    vector<HSClient*> buf;
+    tag->frame->foreachClient([](HSClient* client, void* data) {
+        vector<HSClient*>* buf = (vector<HSClient*>*) data;
+        (*buf).push_back(client);
+    }, &buf);
+    for (auto client : buf) {
         stack_remove_slice(client->tag()->stack, client->slice);
         client->setTag(target);
         stack_insert_slice(client->tag()->stack, client->slice);
         ewmh_window_update_tag(client->window_, client->tag());
-        frame_insert_client(target->frame, buf[i]);
+        target->frame->insertClient(client);
     }
+    tag->frame = shared_ptr<HSFrame>();
     HSMonitor* monitor_target = find_monitor_with_tag(target);
     if (monitor_target) {
         // if target monitor is viewed, then show windows
         monitor_apply_layout(monitor_target);
-        for (i = 0; i < count; i++) {
-            buf[i]->set_visible(true);
+        for (auto c: buf) {
+            c->set_visible(true);
         }
     }
-    g_free(buf);
     tag_foreach(tag_unlink_id_object, NULL);
     // remove tag
     char* oldname = g_strdup(tag->name->str);
     tag_free(tag);
-    for (i = 0; i < g_tags->len; i++) {
+    for (int i = 0; i < g_tags->len; i++) {
         if (g_array_index(g_tags, HSTag*, i) == tag) {
             g_array_remove_index(g_tags, i);
             break;
@@ -437,7 +394,7 @@ HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
     int i;
     for (i = 0; i < g_tags->len; i++) {
         HSTag* m = g_array_index(g_tags, HSTag*, i);
-        if (m->frame == frame) {
+        if (&* m->frame == frame) {
             return m;
         }
     }
@@ -475,7 +432,7 @@ int tag_move_window_by_index_command(int argc, char** argv, Output output) {
 }
 
 void tag_move_focused_client(HSTag* target) {
-    HSClient* client = frame_focused_client(get_current_monitor()->tag->frame);
+    HSClient* client = get_current_monitor()->tag->frame->focusedClient();
     if (client == 0) {
         // nothing to do
         return;
@@ -491,11 +448,11 @@ void tag_move_client(HSClient* client, HSTag* target) {
         return;
     }
     HSMonitor* monitor_target = find_monitor_with_tag(target);
-    frame_remove_client(tag_source->frame, client);
+    tag_source->frame->removeClient(client);
     // insert window into target
-    frame_insert_client(target->frame, client);
+    target->frame->insertClient(client);
     // enfoce it to be focused on the target tag
-    frame_focus_client(target->frame, client);
+    target->frame->focusClient(client);
     stack_remove_slice(client->tag()->stack, client->slice);
     client->setTag(target);
     stack_insert_slice(client->tag()->stack, client->slice);
@@ -522,7 +479,7 @@ void tag_move_client(HSClient* client, HSTag* target) {
 }
 
 void tag_update_focus_layer(HSTag* tag) {
-    HSClient* focus = frame_focused_client(tag->frame);
+    HSClient* focus = tag->frame->focusedClient();
     stack_clear_layer(tag->stack, LAYER_FOCUS);
     if (focus) {
         // enforce raise_on_focus_temporarily if there is at least one

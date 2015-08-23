@@ -19,7 +19,7 @@
 #include "utils.h"
 
 struct HSTag;
-struct HSFrame;
+class HSFrame;
 struct HSSlice;
 struct HSStack;
 
@@ -50,7 +50,7 @@ void monitor_init();
 void monitor_destroy();
 
 // adds a new monitor to g_monitors and returns a pointer to it
-HSMonitor* monitor_with_frame(struct HSFrame* frame);
+HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(struct HSTag* tag);

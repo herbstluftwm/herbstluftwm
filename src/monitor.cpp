@@ -96,7 +96,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
         rect.width -= (monitor->pad_left + monitor->pad_right);
         rect.y += monitor->pad_up;
         rect.height -= (monitor->pad_up + monitor->pad_down);
-        if (!*g_smart_frame_surroundings || monitor->tag->frame->type == TYPE_FRAMES ) {
+        if (!*g_smart_frame_surroundings || monitor->tag->frame->isSplit()) {
             // apply frame gap
             rect.x += *g_frame_gap;
             rect.y += *g_frame_gap;
@@ -108,11 +108,11 @@ void monitor_apply_layout(HSMonitor* monitor) {
             frame_focus_recursive(monitor->tag->frame);
         }
         if (monitor->tag->floating) {
-            frame_apply_floating_layout(monitor->tag->frame, monitor);
+            monitor->tag->frame->applyFloatingLayout(monitor);
         } else {
-            frame_apply_layout(monitor->tag->frame, rect);
+            monitor->tag->frame->applyLayout(rect);
             if (!monitor->lock_frames && !monitor->tag->floating) {
-                frame_update_frame_window_visibility(monitor->tag->frame);
+                monitor->tag->frame->updateVisibility();
             }
         }
         // remove all enternotify-events from the event queue that were
@@ -338,7 +338,7 @@ int set_monitor_rects(const RectangleVec &templates) {
             return HERBST_TAG_IN_USE;
         }
         add_monitor(templates[i], tag, NULL);
-        frame_show_recursive(tag->frame);
+        tag->frame->setVisibleRecursive(true);
     }
     // remove monitors if there are too much
     while (i < g_monitors->len) {
@@ -532,7 +532,7 @@ int add_monitor_command(int argc, char** argv, Output output) {
     }
     HSMonitor* monitor = add_monitor(rect, tag, name);
     monitor_apply_layout(monitor);
-    frame_show_recursive(tag->frame);
+    tag->frame->setVisibleRecursive(true);
     emit_tag_changed(tag, g_monitors->len - 1);
     drop_enternotify_events();
     return 0;
@@ -575,7 +575,7 @@ int remove_monitor(int index) {
     assert(monitor->tag);
     assert(monitor->tag->frame);
     // hide clients
-    frame_hide_recursive(monitor->tag->frame);
+    monitor->tag->frame->setVisibleRecursive(false);
     // remove from monitor stack
     stack_remove_slice(g_monitor_stack, monitor->slice);
     slice_destroy(monitor->slice);
@@ -755,19 +755,15 @@ void ensure_monitors_are_available() {
             DisplayHeight(g_display, DefaultScreen(g_display))};
     ensure_tags_are_available();
     // add monitor with first tag
-    HSMonitor* m = add_monitor(rect, get_tag_by_index(0), NULL);
+    add_monitor(rect, get_tag_by_index(0), NULL);
     g_cur_monitor = 0;
-    g_cur_frame = m->tag->frame;
 
     monitor_update_focus_objects();
 }
 
 HSMonitor* monitor_with_frame(HSFrame* frame) {
     // find toplevel Frame
-    while (frame->parent) {
-        frame = frame->parent;
-    }
-    HSTag* tag = find_tag_with_toplevel_frame(frame);
+    HSTag* tag = find_tag_with_toplevel_frame(&* frame->root());
     return find_monitor_with_tag(tag);
 }
 
@@ -842,12 +838,12 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     monitor_apply_layout(monitor);
     monitor->lock_frames = false;
     // then show them (should reduce flicker)
-    frame_show_recursive(tag->frame);
+    tag->frame->setVisibleRecursive(true);
     if (!monitor->tag->floating) {
-        frame_update_frame_window_visibility(monitor->tag->frame);
+        monitor->tag->frame->updateVisibility();
     }
     // 2. hide old tag
-    frame_hide_recursive(old_tag->frame);
+    old_tag->frame->setVisibleRecursive(false);
     // focus window just has been shown
     // focus again to give input focus
     frame_focus_recursive(tag->frame);
@@ -1256,7 +1252,7 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
         }
         // apply it
         ret = set_monitor_rects(monitors);
-        if (ret == HERBST_TAG_IN_USE && output != NULL) {
+        if (ret == HERBST_TAG_IN_USE) {
             output << argv[0] << ": There are not enough free tags\n";
         }
     }
@@ -1299,7 +1295,7 @@ void monitor_restack(HSMonitor* monitor) {
     buf[0] = monitor->stacking_window;
     stack_to_window_buf(monitor->tag->stack, buf + 1, count - 1, false, NULL);
     /* remove a focused fullscreen client */
-    HSClient* client = frame_focused_client(monitor->tag->frame);
+    HSClient* client = monitor->tag->frame->focusedClient();
     if (client && client->fullscreen_) {
         XRaiseWindow(g_display, client->dec.decwin);
         int idx = array_find(buf, count, sizeof(*buf), &client->dec.decwin);

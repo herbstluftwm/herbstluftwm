@@ -262,8 +262,8 @@ std::shared_ptr<HSClient> manage_client(Window win) {
     client->slice = slice_create_client(client);
     stack_insert_slice(client->tag()->stack, client->slice);
     // insert window to the tag
-    frame_insert_client(lookup_frame(client->tag()->frame,
-                                     changes.tree_index->str), client.get());
+    client->tag()->frame->lookup(changes.tree_index->str)
+                 ->insertClient(client.get());
     client->update_wm_hints();
     client->updatesizehints();
     if (changes.focus) {
@@ -271,7 +271,7 @@ std::shared_ptr<HSClient> manage_client(Window win) {
         // TODO: make this faster!
         // WARNING: this solution needs O(C + exp(D)) time where W is the count
         // of clients on this tag and D is the depth of the binary layout tree
-        frame_focus_client(client->tag()->frame, client.get());
+        client->tag()->frame->focusClient(client.get());
     }
 
     client->object.data = &client;
@@ -350,7 +350,7 @@ void unmanage_client(Window win) {
         mouse_stop_drag();
     }
     // remove from tag
-    frame_remove_client(client->tag()->frame, client.get());
+    client->tag()->frame->removeClient(client.get());
     // ignore events from it
     XSelectInput(g_display, win, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
@@ -410,11 +410,11 @@ static int client_get_scheme_triple_idx(HSClient* client) {
 }
 
 bool HSClient::needs_minimal_dec(HSFrame* frame) {
-    if (!frame) {
-        frame = find_frame_with_client(this->tag()->frame, this);
-        HSAssert(frame != NULL);
-    }
-    if (!smart_window_surroundings_active(frame)) return false;
+    //if (!frame) {
+    //    frame = this->tag()->frame->frameWithClient(this);
+    //    HSAssert(frame != NULL);
+    //}
+    //if (!smart_window_surroundings_active(frame)) return false;
     if (this->pseudotile_) return false;
     if (this->is_client_floated()) return false;
     return true;
@@ -474,8 +474,8 @@ void HSClient::window_focus() {
 
     lastfocus = this;
     /* do some specials for the max layout */
-    bool is_max_layout = frame_focused_client(g_cur_frame) == this
-                         && g_cur_frame->content.clients.layout == LAYOUT_MAX
+    bool is_max_layout = HSFrame::getGloballyFocusedFrame()->focusedClient() == this
+                         && HSFrame::getGloballyFocusedFrame()->getLayout() == LAYOUT_MAX
                          && get_current_monitor()->tag->floating == false;
     if (*g_raise_on_focus || is_max_layout) {
         this->raise();
@@ -529,7 +529,7 @@ void HSClient::resize_tiling(Rectangle rect, HSFrame* frame) {
         return;
     }
     // apply border width
-    if (!this->pseudotile_ && !smart_window_surroundings_active(frame)) {
+    if (!this->pseudotile_ /* && !smart_window_surroundings_active(frame) */) {
         // apply window gap
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
@@ -781,7 +781,7 @@ void HSClient::set_urgent_force(bool state) {
 
     this->urgent_ = state;
 
-    setup_border(this == frame_focused_client(g_cur_frame));
+    setup_border(this == HSFrame::getGloballyFocusedFrame()->focusedClient());
 
     XWMHints *wmh;
     if(!(wmh = XGetWMHints(g_display, this->window_)))
@@ -806,7 +806,7 @@ void HSClient::update_wm_hints() {
         return;
     }
 
-    HSClient* focused_client = frame_focused_client(g_cur_frame);
+    HSClient* focused_client = HSFrame::getGloballyFocusedFrame()->focusedClient();
     if ((focused_client == this)
         && wmh->flags & XUrgencyHint) {
         // remove urgency hint if window is focused
@@ -857,7 +857,7 @@ void HSClient::update_title() {
 }
 
 HSClient* get_current_client() {
-    return frame_focused_client(g_cur_frame);
+    return HSFrame::getGloballyFocusedFrame()->focusedClient();
 }
 
 void HSClient::set_fullscreen(bool state) {
