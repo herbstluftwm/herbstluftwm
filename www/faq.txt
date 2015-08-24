@@ -45,27 +45,27 @@ As you can see, +herbstclient+ does nothing except sending requests to
 +herbstluftwm+. Whenever a process performs a fork-and-exec, the following
 rules apply:
 
-        * A child process inherits the environment variables of its parent
-          process. If you change an environment variable (like 'PATH'), then it
-          will stay unchanged in the parent process. +
-          +
-          => If you want to set some environment variables for your complete
-          session (i.e. all processes) then you have to set it in your
-          +~/.xinitrc+.
+* A child process inherits the environment variables of its parent
+  process. If you change an environment variable (like 'PATH'), then it
+  will stay unchanged in the parent process. +
+  +
+  => If you want to set some environment variables for your complete
+  session (i.e. all processes) then you have to set it in your
+  +~/.xinitrc+.
 
-        * If a process spawns a window, then the window will spawn delayed. This
-          delay differs from application to application (and from time to time).
-          So a script like
-
+* If a process spawns a window, then the window will spawn delayed. This
+delay differs from application to application (and from time to time).
+So a script like
++
 ----
 herbstclient spawn xterm
 herbstclient spawn xev
 ----
-
++
 does *not* guarantee that the +xterm+ window will appear before the
 +xev+ window! It only guarantees that the +xterm+ is executed before +xev+ will
-be executed.+
-
+be executed.
++
 => If you want to apply some rules only for the next windows, then use a
 bash-script like the one for <<TEMP_RULES,temporary rules>>.
 
