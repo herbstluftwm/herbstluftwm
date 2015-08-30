@@ -25,14 +25,13 @@
 
 using namespace std;
 
-static GArray*     g_tags; // Array of HSTag*
+vector<Ptr(HSTag)> tags;
 static bool    g_tag_flags_dirty = true;
 static int* g_raise_on_focus_temporarily;
 
 static int tag_rename(HSTag* tag, char* name, Output output);
 
 void tag_init() {
-    g_tags = g_array_new(false, false, sizeof(HSTag*));
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
 }
@@ -45,31 +44,25 @@ HSTag::~HSTag() {
 }
 
 void tag_destroy() {
-    int i;
-    for (i = 0; i < g_tags->len; i++) {
-        HSTag* tag = g_array_index(g_tags, HSTag*, i);
-        delete tag;
-    }
-    g_array_free(g_tags, true);
+    tags.clear();
 }
 
 int    tag_get_count() {
-    return g_tags->len;
+    return tags.size();
 }
 
 HSTag* find_tag(const char* name) {
-    int i;
-    for (i = 0; i < g_tags->len; i++) {
-        if (g_array_index(g_tags, HSTag*, i)->name == name) {
-            return g_array_index(g_tags, HSTag*, i);
+    for (auto t : tags) {
+        if (t->name == name) {
+            return &* t;
         }
     }
     return NULL;
 }
 
 int tag_index_of(HSTag* tag) {
-    for (int i = 0; i < g_tags->len; i++) {
-        if (g_array_index(g_tags, HSTag*, i) == tag) {
+    for (int i = 0; i < tags.size(); i++) {
+        if (&* tags[i] == tag) {
             return i;
         }
     }
@@ -77,10 +70,7 @@ int tag_index_of(HSTag* tag) {
 }
 
 HSTag* get_tag_by_index(int index) {
-    if (index < 0 || index >= g_tags->len) {
-        return NULL;
-    }
-    return g_array_index(g_tags, HSTag*, index);
+    return &* tags[index];
 }
 
 HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags) {
@@ -93,33 +83,33 @@ HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags) {
         int delta = index;
         index = delta + current;
         // ensure index is valid
-        index = MOD(index, g_tags->len);
+        index = MOD(index, tags.size());
         if (skip_visible_tags) {
-            HSTag* tag = g_array_index(g_tags, HSTag*, index);
-            for (int i = 0; find_monitor_with_tag(tag); i++) {
-                if (i >= g_tags->len) {
+            Ptr(HSTag) tag = tags[index];
+            for (int i = 0; find_monitor_with_tag(&* tag); i++) {
+                if (i >= tags.size()) {
                     // if we tried each tag then there is no invisible tag
                     return NULL;
                 }
                 index += delta;
-                index = MOD(index, g_tags->len);
-                tag = g_array_index(g_tags, HSTag*, index);
+                index = MOD(index, tags.size());
+                tag = tags[index];
             }
         }
     } else {
         // if it is absolute, then check index
-        if (index < 0 || index >= g_tags->len) {
+        if (index < 0 || index >= tags.size()) {
             HSDebug("invalid tag index %d\n", index);
             return NULL;
         }
     }
-    return g_array_index(g_tags, HSTag*, index);
+    return &* tags[index];
 }
 
 HSTag* find_unused_tag() {
-    for (int i = 0; i < g_tags->len; i++) {
-        if (!find_monitor_with_tag(g_array_index(g_tags, HSTag*, i))) {
-            return g_array_index(g_tags, HSTag*, i);
+    for (auto t : tags) {
+        if (!find_monitor_with_tag(&* t)) {
+            return &* t;
         }
     }
     return NULL;
@@ -131,17 +121,17 @@ HSTag* add_tag(const char* name) {
         // nothing to do
         return find_result;
     }
-    HSTag* tag = new HSTag();
+    Ptr(HSTag) tag = make_shared<HSTag>();
     tag->stack = stack_create();
-    tag->frame = make_shared<HSFrameLeaf>(tag, shared_ptr<HSFrameSplit>());
+    tag->frame = make_shared<HSFrameLeaf>(&* tag, shared_ptr<HSFrameSplit>());
     tag->name = name;
     tag->floating = false;
-    g_array_append_val(g_tags, tag);
+    tags.push_back(tag);
 
     ewmh_update_desktops();
     ewmh_update_desktop_names();
     tag_set_flags_dirty();
-    return tag;
+    return &* tag;
 }
 
 int tag_add_command(int argc, char** argv, Output output) {
@@ -232,10 +222,9 @@ int tag_remove_command(int argc, char** argv, Output output) {
     }
     // remove tag
     string oldname = tag->name;
-    delete tag;
-    for (int i = 0; i < g_tags->len; i++) {
-        if (g_array_index(g_tags, HSTag*, i) == tag) {
-            g_array_remove_index(g_tags, i);
+    for (int i = 0; i < tags.size(); i++) {
+        if (&* tags[i] == tag) {
+            tags.erase(tags.begin() + i);
             break;
         }
     }
@@ -282,8 +271,8 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
 void tag_force_update_flags() {
     g_tag_flags_dirty = false;
     // unset all tags
-    for (int i = 0; i < g_tags->len; i++) {
-        g_array_index(g_tags, HSTag*, i)->flags = 0;
+    for (auto t : tags) {
+        t->flags = 0;
     }
     // update flags
     for (auto c : herbstluft::Root::clients()->clients()) {
@@ -307,7 +296,7 @@ void tag_set_flags_dirty() {
 }
 
 void ensure_tags_are_available() {
-    if (g_tags->len > 0) {
+    if (tags.size() > 0) {
         // nothing to do
         return;
     }
@@ -315,11 +304,9 @@ void ensure_tags_are_available() {
 }
 
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
-    int i;
-    for (i = 0; i < g_tags->len; i++) {
-        HSTag* m = g_array_index(g_tags, HSTag*, i);
-        if (&* m->frame == frame) {
-            return m;
+    for (auto t : tags) {
+        if (&* t->frame == frame) {
+            return &* t;
         }
     }
     return NULL;
@@ -421,9 +408,8 @@ void tag_update_focus_layer(HSTag* tag) {
 }
 
 void tag_foreach(void (*action)(HSTag*,void*), void* data) {
-    for (int i = 0; i < g_tags->len; i++) {
-        HSTag* tag = g_array_index(g_tags, HSTag*, i);
-        action(tag, data);
+    for (auto tag : tags) {
+        action(&* tag, data);
     }
 }
 
