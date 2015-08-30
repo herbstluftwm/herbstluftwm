@@ -458,9 +458,9 @@ void complete_against_monitors(int argc, char** argv, int pos, Output output) {
         g_string_printf(index_str, "%d", i);
         try_complete(needle, index_str->str, output);
         // complete against the name
-        GString* name = monitor_with_index(i)->name;
-        if (name != NULL) {
-            try_complete(needle, name->str, output);
+        HSMonitor* m = monitor_with_index(i);
+        if (m->name != "") {
+            try_complete(needle, m->name.c_str(), output);
         }
     }
     g_string_free(index_str, true);

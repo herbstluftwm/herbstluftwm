@@ -28,6 +28,7 @@
 #include <vector>
 
 using namespace herbstluft;
+using namespace std;
 
 // module internals:
 static int g_cur_monitor;
@@ -56,17 +57,13 @@ void monitor_init() {
     g_monitor_stack = stack_create();
 }
 
+HSMonitor::~HSMonitor() {
+    stack_remove_slice(g_monitor_stack, slice);
+}
+
 void monitor_destroy() {
     for (unsigned int i = 0; i < g_monitors->len; i++) {
-        HSMonitor* m = monitor_with_index(i);
-        stack_remove_slice(g_monitor_stack, m->slice);
-        slice_destroy(m->slice);
-        hsobject_free(&m->object);
-        if (m->name) {
-            g_string_free(m->name, true);
-        }
-        g_string_free(m->display_name, true);
-        g_free(m);
+        delete monitor_with_index(i);
     }
     stack_destroy(g_monitor_stack);
     g_array_free(g_monitors, true);
@@ -113,25 +110,23 @@ void monitor_apply_layout(HSMonitor* monitor) {
 int list_monitors(int argc, char** argv, Output output) {
     (void)argc;
     (void)argv;
-    GString* monitor_name = g_string_new("");
+    string monitor_name = "";
     for (unsigned int i = 0; i < g_monitors->len; i++) {
         HSMonitor* monitor = monitor_with_index(i);
-        if (monitor->name != NULL ) {
-            g_string_printf(monitor_name, ", named \"%s\"",
-                            monitor->name->str);
+        if (monitor->name != "" ) {
+            monitor_name = ", named \"" + monitor->name + "\"";
         } else {
-            g_string_truncate(monitor_name, 0);
+            monitor_name = "";
         }
         output << i << ": " << monitor->rect
                << " with tag \""
                << (monitor->tag ? monitor->tag->name->str : "???")
                << "\""
-               << monitor_name->str
+               << monitor_name
                << (((unsigned int) g_cur_monitor == i) ? " [FOCUS]" : "")
                << (monitor->lock_tag ? " [LOCKED]" : "")
                << "\n";
     }
-    g_string_free(monitor_name, true);
     return 0;
 }
 
@@ -342,7 +337,7 @@ int find_monitor_index_by_name(char* name) {
     int i;
     for (i = 0; i < g_monitors->len; i++) {
         HSMonitor* mon = monitor_with_index(i);
-        if (mon != NULL && mon->name != NULL && !strcmp(mon->name->str, name)) {
+        if (mon != NULL && mon->name == name) {
             return i;
         }
     }
@@ -409,16 +404,6 @@ HSMonitor* string_to_monitor(char* string) {
     return monitor_with_index(idx);
 }
 
-static int monitor_attr_index(void* data) {
-    HSMonitor* m = (HSMonitor*) data;
-    return monitor_index_of(m);
-}
-
-static void monitor_attr_tag(void* data, GString* output) {
-    HSMonitor* m = (HSMonitor*) data;
-    g_string_append(output, m->tag->display_name->str);
-}
-
 static void monitor_foreach(void (*action)(HSMonitor*)) {
     for (int i = 0; i < g_monitors->len; i++) {
         HSMonitor* m = monitor_with_index(i);
@@ -429,28 +414,16 @@ static void monitor_foreach(void (*action)(HSMonitor*)) {
 HSMonitor* add_monitor(Rectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
     HSMonitor* m = new HSMonitor;
-    hsobject_init(&m->object);
     m->rect = rect;
     m->tag = tag;
     m->tag_previous = tag;
-    m->name = (name ? g_string_new(name) : NULL);
-    m->display_name = g_string_new(name ? name : "");
+    m->name = name ? name : "";
     m->mouse.x = 0;
     m->mouse.y = 0;
     m->dirty = true;
     m->slice = slice_create_monitor(m);
     m->stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
-
-    m->object.data = m;
-    HSAttribute attributes[] = {
-        ATTRIBUTE("name",     m->display_name,ATTR_READ_ONLY  ),
-        ATTRIBUTE("index",    monitor_attr_index,ATTR_READ_ONLY  ),
-        ATTRIBUTE("tag",      monitor_attr_tag,ATTR_READ_ONLY  ),
-        ATTRIBUTE("lock_tag", m->lock_tag,    ATTR_READ_ONLY  ),
-        ATTRIBUTE_LAST,
-    };
-    hsobject_set_attributes(&m->object, attributes);
 
     stack_insert_slice(g_monitor_stack, m->slice);
     g_array_append_val(g_monitors, m);
@@ -554,10 +527,6 @@ int remove_monitor(int index) {
     slice_destroy(monitor->slice);
     XDestroyWindow(g_display, monitor->stacking_window);
     // and remove monitor completely
-    if (monitor->name) {
-        g_string_free(monitor->name, true);
-    }
-    g_string_free(monitor->display_name, true);
     g_array_remove_index(g_monitors, index);
     delete monitor;
     if (g_cur_monitor >= g_monitors->len) {
@@ -614,11 +583,8 @@ int rename_monitor_command(int argc, char** argv, Output output) {
             ": The monitor name may not start with a number\n";
         return HERBST_INVALID_ARGUMENT;
     } else if (!strcmp("", argv[2])) {
-        // empty name -> clear name
-        if (mon->name != NULL) {
-            g_string_free(mon->name, true);
-            mon->name = NULL;
-        }
+        // empty name
+        mon->name = "";
         return 0;
     }
     if (find_monitor_by_name(argv[2])) {
@@ -626,13 +592,7 @@ int rename_monitor_command(int argc, char** argv, Output output) {
             "%s: A monitor with the same name already exists\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    g_string_assign(mon->display_name, argv[2]);
-    if (mon->name == NULL) {
-        // not named before
-        GString* name = g_string_new(argv[2]);
-        mon->name = name;
-    } else {
-    }
+    mon->name = argv[2];
     return 0;
 }
 

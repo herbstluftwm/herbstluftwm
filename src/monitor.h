@@ -6,7 +6,6 @@
 #ifndef __HERBSTLUFT_MONITOR_H_
 #define __HERBSTLUFT_MONITOR_H_
 
-#include "glib-backports.h"
 #include <stdbool.h>
 #include <X11/Xlib.h>
 #ifdef XINERAMA
@@ -15,7 +14,6 @@
 
 #include "x11-types.h"
 #include "floating.h"
-#include "object.h"
 #include "utils.h"
 
 struct HSTag;
@@ -26,6 +24,7 @@ struct HSStack;
 
 class HSMonitor {
 public:
+    ~HSMonitor();
     herbstluft::Rectangle getFloatingArea();
     int relativeX(int x_root);
     int relativeY(int y_root);
@@ -33,9 +32,7 @@ public:
     struct HSTag*      tag;    // currently viewed tag
     struct HSTag*      tag_previous;    // previously viewed tag
     struct HSSlice*    slice;  // slice in the monitor stack
-    HSObject    object;
-    GString*    name;
-    GString*    display_name;   // name used for object IO
+    std::string    name;
     int         pad_up;
     int         pad_right;
     int         pad_down;
@@ -55,7 +52,7 @@ public:
 void monitor_init();
 void monitor_destroy();
 
-// adds a new monitor to g_monitors and returns a pointer to it
+// adds a new monitor to the monitors list and returns a pointer to it
 HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);

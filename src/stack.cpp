@@ -120,9 +120,9 @@ static void slice_append_caption(HSTree root, Output output) {
                    << "\"" << slice->data.client->title_->str << "\"";
             break;
         case SLICE_MONITOR:
-            if (slice->data.monitor->name != NULL) {
+            if (slice->data.monitor->name != "") {
                 g_string_append_printf(monitor_name, " (\"%s\")",
-                                       slice->data.monitor->name->str);
+                                       slice->data.monitor->name.c_str());
             }
             output << "Monitor "
                    << monitor_index_of(slice->data.monitor)
