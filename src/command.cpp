@@ -472,17 +472,8 @@ void complete_against_objects(int argc, char** argv, int pos, Output output) {
     pos--;
     const char* needle = (pos < argc) ? argv[pos] : "";
     const char* suffix;
-    char* prefix = g_new(char, strlen(needle)+2);
-    HSObject* obj = hsobject_parse_path(needle, &suffix);
-    strncpy(prefix, needle, suffix-needle);
-    if (suffix != needle && prefix[suffix - needle - 1] != OBJECT_PATH_SEPARATOR) {
-        prefix[suffix - needle] = OBJECT_PATH_SEPARATOR;
-        prefix[suffix - needle + 1] = '\0';
-    } else {
-        prefix[suffix - needle] = '\0';
-    }
-    hsobject_complete_children(obj, suffix, prefix, output);
-    g_free(prefix);
+    // TODO
+    return;
 }
 
 void complete_against_attributes_helper(int argc, char** argv, int pos,
@@ -492,20 +483,8 @@ void complete_against_attributes_helper(int argc, char** argv, int pos,
     pos--;
     const char* needle = (pos < argc) ? argv[pos] : "";
     const char* unparsable;
-    HSObject* obj = hsobject_parse_path(needle, &unparsable);
-    if (obj && strchr(unparsable, OBJECT_PATH_SEPARATOR) == NULL) {
-        GString* prefix = g_string_new(needle);
-        g_string_truncate(prefix, unparsable - needle);
-        if (prefix->len >= 1) {
-            char last = prefix->str[prefix->len - 1];
-            if (last != OBJECT_PATH_SEPARATOR) {
-                g_string_append_c(prefix, OBJECT_PATH_SEPARATOR);
-            }
-        }
-        hsobject_complete_attributes(obj, user_only, unparsable, prefix->str,
-                                     output);
-        g_string_free(prefix, true);
-    }
+    // TODO
+    return;
 }
 
 void complete_against_attributes(int argc, char** argv, int pos, Output output) {
@@ -521,22 +500,25 @@ void complete_against_user_attr_prefix(int argc, char** argv, int position,
                                       Output output) {
     const char* path = (position < argc) ? argv[position] : "";
     const char* unparsable;
+    // TODO
+    /*
     GString* prefix = g_string_new(path);
-    hsobject_parse_path(path, &unparsable);
 
-    g_string_truncate(prefix, unparsable - path);
     if (prefix->len > 0
         && prefix->str[prefix->len - 1] != OBJECT_PATH_SEPARATOR) {
         g_string_append_c(prefix, OBJECT_PATH_SEPARATOR);
     }
     try_complete_prefix_partial(unparsable, USER_ATTRIBUTE_PREFIX,
                                 prefix->str, output);
+    */
 }
 
 void complete_against_attribute_values(int argc, char** argv, int pos, Output output) {
     const char* needle = (pos < argc) ? argv[pos] : "";
     const char* path =  (1 < argc) ? argv[1] : "";
     std::ostringstream path_error;
+    // TODO
+    /*
     HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
     if (attr) {
         switch (attr->type) {
@@ -547,12 +529,15 @@ void complete_against_attribute_values(int argc, char** argv, int pos, Output ou
                 break;
         }
     }
+    */
 }
 
 void complete_against_comparators(int argc, char** argv, int pos, Output output) {
     const char* needle = (pos < argc) ? argv[pos] : "";
     const char* path =  (1 < argc) ? argv[1] : "";
     std::ostringstream void_output;
+    // TODO
+    /*
     HSAttribute* attr = hsattribute_parse_path_verbose(path, void_output);
     const char* equals[] = { "=", "!=", NULL };
     const char* order[] = { "le", "lt", "ge", "gt", NULL };
@@ -567,6 +552,7 @@ void complete_against_comparators(int argc, char** argv, int pos, Output output)
                 break;
         }
     }
+    */
 }
 
 void complete_against_winids(int argc, char** argv, int pos, Output output) {
@@ -913,11 +899,15 @@ static bool second_parameter_is_call(int argc, char** argv, int pos) {
 
 static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos) {
     std::ostringstream void_output;
+    // TODO
+    /*
     HSAttribute* attr = NULL;
     if (argc >= 2) {
         attr = hsattribute_parse_path_verbose(argv[1], void_output);
     }
     return attr && attr->on_change != ATTR_READ_ONLY;
+    */
+    return false;
 }
 
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset) {

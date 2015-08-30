@@ -194,13 +194,8 @@ int settings_set(SettingsPair* pair, const char* value) {
         }
         g_string_assign(pair->value.str, value);
     } else if (pair->type == HS_Compatiblity) {
-        HSAttribute* attr = hsattribute_parse_path(pair->value.compat.write);
-        std::ostringstream out;
-        int status = hsattribute_assign(attr, value, out);
-        if (0 != status) {
-            HSError("Error when assigning: %s\n", out.str().c_str());
-        }
-        return status;
+        // TODO
+        return 1;
     }
     // on successful change, call callback
     if (pair->on_change) {
@@ -224,8 +219,7 @@ int settings_get(int argc, char** argv, Output output) {
     } else if (pair->type == HS_String) {
         output << pair->value.str->str;
     } else if (pair->type == HS_Compatiblity) {
-        HSAttribute* attr = hsattribute_parse_path(pair->value.compat.read);
-        output << hsattribute_to_string(attr);
+        return 1;
     }
     return 0;
 }
