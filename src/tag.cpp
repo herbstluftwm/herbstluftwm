@@ -27,8 +27,6 @@ using namespace std;
 
 static GArray*     g_tags; // Array of HSTag*
 static bool    g_tag_flags_dirty = true;
-static HSObject* g_tag_object;
-static HSObject* g_tag_by_name;
 static int* g_raise_on_focus_temporarily;
 
 static int tag_rename(HSTag* tag, char* name, Output output);
@@ -37,13 +35,6 @@ void tag_init() {
     g_tags = g_array_new(false, false, sizeof(HSTag*));
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
-    g_tag_object = hsobject_create_and_link(hsobject_root(), "tags");
-    HSAttribute attributes[] = {
-        ATTRIBUTE("count", g_tags->len, ATTR_READ_ONLY),
-        ATTRIBUTE_LAST,
-    };
-    hsobject_set_attributes(g_tag_object, attributes);
-    g_tag_by_name = hsobject_create_and_link(g_tag_object, "by-name");
 }
 
 HSTag::HSTag() {
@@ -134,34 +125,6 @@ HSTag* find_unused_tag() {
     return NULL;
 }
 
-static GString* tag_attr_floating(HSAttribute* attr) {
-    HSTag* tag = container_of(attr->value.b, HSTag, floating);
-    HSMonitor* m = find_monitor_with_tag(tag);
-    if (m != NULL) {
-        monitor_apply_layout(m);
-    }
-    return NULL;
-}
-
-static int tag_attr_index(void* data) {
-    HSTag* tag = (HSTag*) data;
-    return tag_index_of(tag);
-}
-
-static void tag_unlink_id_object(HSTag* tag, void* data) {
-    (void)data;
-    hsobject_unlink(g_tag_object, tag->object);
-}
-
-static void tag_link_id_object(HSTag* tag, void* data) {
-    (void)data;
-    GString* index_str = g_string_new("");
-    int index = tag_index_of(tag);
-    g_string_printf(index_str, "%d", index);
-    hsobject_link(g_tag_object, tag->object, index_str->str);
-    g_string_free(index_str, true);
-}
-
 HSTag* add_tag(const char* name) {
     HSTag* find_result = find_tag(name);
     if (find_result) {
@@ -174,21 +137,6 @@ HSTag* add_tag(const char* name) {
     tag->name = name;
     tag->floating = false;
     g_array_append_val(g_tags, tag);
-
-    // create object
-    tag->object = hsobject_create_and_link(g_tag_by_name, name);
-    tag->object->data = tag;
-    HSAttribute attributes[] = {
-        ATTRIBUTE_BOOL(  "floating",       tag->floating,            tag_attr_floating),
-        ATTRIBUTE_CUSTOM_INT("index",          tag_attr_index,           ATTR_READ_ONLY),
-        //ATTRIBUTE_CUSTOM_INT("frame_count",    tag_attr_frame_count,     ATTR_READ_ONLY),
-        //ATTRIBUTE_CUSTOM_INT("client_count",   tag_attr_client_count,    ATTR_READ_ONLY),
-        //ATTRIBUTE_CUSTOM_INT("curframe_windex",tag_attr_curframe_windex, ATTR_READ_ONLY),
-        //ATTRIBUTE_CUSTOM_INT("curframe_wcount",tag_attr_curframe_wcount, ATTR_READ_ONLY),
-        ATTRIBUTE_LAST,
-    };
-    hsobject_set_attributes(tag->object, attributes);
-    tag_link_id_object(tag, NULL);
 
     ewmh_update_desktops();
     ewmh_update_desktop_names();
@@ -282,7 +230,6 @@ int tag_remove_command(int argc, char** argv, Output output) {
             c->set_visible(true);
         }
     }
-    tag_foreach(tag_unlink_id_object, NULL);
     // remove tag
     string oldname = tag->name;
     delete tag;
@@ -297,7 +244,6 @@ int tag_remove_command(int argc, char** argv, Output output) {
     ewmh_update_desktop_names();
     tag_set_flags_dirty();
     hook_emit_list("tag_removed", oldname.c_str(), target->name.c_str(), NULL);
-    tag_foreach(tag_link_id_object, NULL);
     return 0;
 }
 
@@ -490,6 +436,5 @@ void tag_update_each_focus_layer() {
 }
 
 void tag_update_focus_objects() {
-    hsobject_link(g_tag_object, get_current_monitor()->tag->object, "focus");
 }
 
