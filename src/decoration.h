@@ -12,7 +12,6 @@
 #include <X11/Xatom.h>
 #include "glib-backports.h"
 #include "x11-utils.h"
-#include "object.h"
 #include <stdbool.h>
 #include "x11-types.h"
 
@@ -61,11 +60,8 @@ typedef struct {
     HSDecorationScheme  normal;
     HSDecorationScheme  active;
     HSDecorationScheme  urgent;
-    HSObject            obj_normal;
-    HSObject            obj_active;
-    HSObject            obj_urgent;
+    /* TODO: add objects for normal/active/urgent */
     HSDecorationScheme  propagate; // meta-scheme for propagating values to members
-    HSObject            object;
 } HSDecTriple;
 
 enum {
