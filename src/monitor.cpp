@@ -451,7 +451,7 @@ static void monitor_link_id_object(HSMonitor* m) {
 
 HSMonitor* add_monitor(Rectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
-    HSMonitor* m = g_new0(HSMonitor, 1);
+    HSMonitor* m = new HSMonitor;
     hsobject_init(&m->object);
     if (name) {
         hsobject_link(g_monitor_by_name_object, &m->object, name);
@@ -589,7 +589,7 @@ int remove_monitor(int index) {
     g_string_free(monitor->display_name, true);
     monitor_foreach(monitor_unlink_id_object);
     g_array_remove_index(g_monitors, index);
-    g_free(monitor);
+    delete monitor;
     monitor_foreach(monitor_link_id_object);
     if (g_cur_monitor >= g_monitors->len) {
         g_cur_monitor--;
@@ -1027,12 +1027,12 @@ void monitor_update_focus_objects() {
     tag_update_focus_objects();
 }
 
-int monitor_get_relative_x(HSMonitor* m, int x_root) {
-    return x_root - m->rect.x - m->pad_left;
+int HSMonitor::relativeX(int x_root) {
+    return x_root - rect.x - pad_left;
 }
 
-int monitor_get_relative_y(HSMonitor* m, int y_root) {
-    return y_root - m->rect.y - m->pad_up;
+int HSMonitor::relativeY(int y_root) {
+    return y_root - rect.y - pad_up;
 }
 
 HSMonitor* monitor_with_coordinate(int x, int y) {
@@ -1337,7 +1337,8 @@ void drop_enternotify_events() {
     while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
 }
 
-Rectangle monitor_get_floating_area(HSMonitor* m) {
+Rectangle HSMonitor::getFloatingArea() {
+    auto m = this;
     auto r = m->rect;
     r.x += m->pad_left;
     r.width -= m->pad_left + m->pad_right;

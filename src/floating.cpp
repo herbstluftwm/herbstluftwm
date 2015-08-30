@@ -283,7 +283,7 @@ bool floating_shift_direction(enum HSDirection dir) {
     g_queue_free(q);
     // add artifical rects for screen edges
     {
-        auto mr = monitor_get_floating_area(get_current_monitor());
+        auto mr = get_current_monitor()->getFloatingArea();
         Rectangle tmp[4] = {
             { mr.x, mr.y,               mr.width, 0 }, // top
             { mr.x, mr.y,               0, mr.height }, // left

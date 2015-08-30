@@ -23,7 +23,13 @@ class HSFrame;
 struct HSSlice;
 struct HSStack;
 
-typedef struct HSMonitor {
+
+class HSMonitor {
+public:
+    herbstluft::Rectangle getFloatingArea();
+    int relativeX(int x_root);
+    int relativeY(int y_root);
+
     struct HSTag*      tag;    // currently viewed tag
     struct HSTag*      tag_previous;    // previously viewed tag
     struct HSSlice*    slice;  // slice in the monitor stack
@@ -44,7 +50,7 @@ typedef struct HSMonitor {
     } mouse;
     herbstluft::Rectangle   rect;   // area for this monitor
     Window      stacking_window;   // window used for making stacking easy
-} HSMonitor;
+};
 
 void monitor_init();
 void monitor_destroy();
@@ -55,10 +61,7 @@ HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(struct HSTag* tag);
 HSMonitor* add_monitor(herbstluft::Rectangle rect, struct HSTag* tag, char* name);
-herbstluft::Rectangle monitor_get_floating_area(HSMonitor* m);
 void monitor_focus_by_index(int new_selection);
-int monitor_get_relative_x(HSMonitor* m, int x_root);
-int monitor_get_relative_y(HSMonitor* m, int y_root);
 int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv, Output output);
