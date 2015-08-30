@@ -239,9 +239,9 @@ std::string utf8_string_at(const std::string& str, size_t n) {
     //     i++;
     // }
     // return j;
-    for (char ch : str) {
-        std::cout << "\'"<< ch << "\' -> " << ((ch&0xc0) == 0x80) << std::endl;
-    }
+    //for (char ch : str) {
+    //    std::cout << "\'"<< ch << "\' -> " << ((ch&0xc0) == 0x80) << std::endl;
+    //}
     size_t i = 0, byte_offset = 0;
     std::string result;
     // find the beginning of the n'th character
