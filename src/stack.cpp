@@ -117,7 +117,7 @@ static void slice_append_caption(HSTree root, Output output) {
         case SLICE_CLIENT:
             output << "Client 0x"
                    << std::hex << slice->data.client->x11Window() << std::dec
-                   << "\"" << slice->data.client->title_->str << "\"";
+                   << "\"" << slice->data.client->title_ << "\"";
             break;
         case SLICE_MONITOR:
             if (slice->data.monitor->name != "") {
@@ -128,9 +128,8 @@ static void slice_append_caption(HSTree root, Output output) {
                    << monitor_index_of(slice->data.monitor)
                    << monitor_name->str
                    << " with tag \""
-                   << slice->data.monitor->tag->name.c_str()
+                   << slice->data.monitor->tag->name
                    << "\"";
-                                   
             break;
     }
     g_string_free(monitor_name, true);

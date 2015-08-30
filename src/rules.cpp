@@ -678,7 +678,7 @@ static bool condition_instance(HSCondition* rule, HSClient* client) {
 }
 
 static bool condition_title(HSCondition* rule, HSClient* client) {
-    return condition_string(rule, client->title_->str);
+    return condition_string(rule, client->title_.c_str());
 }
 
 static bool condition_pid(HSCondition* rule, HSClient* client) {

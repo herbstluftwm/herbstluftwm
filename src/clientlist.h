@@ -28,15 +28,14 @@ public:
     herbstluft::Rectangle   float_size_;     // floating size without the window border
     bool        urgent_;
     bool        fullscreen_;
-    GString*    title_;  // or also called window title; this is never NULL
+    std::string title_;  // or also called window title; this is never NULL
     struct HSSlice* slice;
 
 public:
     Window      window_;
-    GString*    window_str_;     // the window id as a string
     herbstluft::Rectangle   last_size_;      // last size excluding the window border
     HSTag*      tag_;
-    GString*    keymask_; // keymask applied to mask out keybindins
+    std::string keymask_; // keymask applied to mask out keybindins
     bool        ewmhfullscreen_; // ewmh fullscreen state
     bool        pseudotile_; // only move client but don't resize (if possible)
     bool        neverfocus_; // do not give the focus via XSetInputFocus
