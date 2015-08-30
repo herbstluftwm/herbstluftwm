@@ -42,7 +42,6 @@ static int g_monitor_float_treshold = 24;
 static int* g_raise_on_focus;
 static int* g_snap_gap;
 
-static HSObject*   g_client_object;
 
 // atoms from dwm.c
 // default atoms
@@ -64,7 +63,6 @@ HSClient::HSClient()
       sizehints_floating_(true), sizehints_tiling_(false),
       visible_(false), dragged_(false), ignore_unmaps_(0) {
 
-    hsobject_init(&this->object);
     title_ = "";
     tag_ = NULL;
     decoration_init(&dec, this);
@@ -93,7 +91,6 @@ void clientlist_init() {
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
     g_wmatom[WMTakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
     // init actual client list
-    g_client_object = hsobject_create_and_link(hsobject_root(), "clients");
 }
 
 void clientlist_end_startup() {
@@ -120,7 +117,6 @@ void reset_client_colors() {
 }
 
 void clientlist_destroy() {
-    hsobject_unlink_and_destroy(hsobject_root(), g_client_object);
 }
 
 HSClient* get_client_from_window(Window window) {
@@ -216,8 +212,6 @@ std::shared_ptr<HSClient> manage_client(Window win) {
         client->tag()->frame->focusClient(client.get());
     }
 
-    client->object.data = &client;
-
     ewmh_window_update_tag(client->window_, client->tag());
     tag_set_flags_dirty();
     client->set_fullscreen(changes.fullscreen);
@@ -301,7 +295,6 @@ void unmanage_client(Window win) {
 
 // destroys a special client
 HSClient::~HSClient() {
-    hsobject_unlink(g_client_object, &object);
     decoration_free(&dec);
     if (lastfocus == this) {
         lastfocus = NULL;
@@ -312,7 +305,6 @@ HSClient::~HSClient() {
     if (slice) {
         slice_destroy(slice);
     }
-    hsobject_free(&object);
 }
 
 static int client_get_scheme_triple_idx(HSClient* client) {
@@ -341,7 +333,6 @@ void HSClient::window_unfocus_last() {
     if (lastfocus) {
         lastfocus->window_unfocus();
     }
-    hsobject_unlink_by_name(g_client_object, "focus");
     // give focus to root window
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
     if (lastfocus) {
@@ -372,7 +363,6 @@ void HSClient::window_focus() {
         if (lastfocus) {
             lastfocus->window_unfocus();
         }
-        hsobject_link(g_client_object, &object, "focus");
         ewmh_update_active_window(this->window_);
         tag_update_each_focus_layer();
         const char* title = this->title_.c_str();
@@ -899,11 +889,6 @@ bool HSClient::sendevent(Atom proto) {
 void HSClient::set_dragged(bool drag_state) {
     if (drag_state == dragged_) return;
     dragged_ = drag_state;
-    if (drag_state == true) {
-        hsobject_link(g_client_object, &object, "dragged");
-    } else {
-        hsobject_unlink_by_name(g_client_object, "dragged");
-    }
 }
 
 void HSClient::fuzzy_fix_initial_position() {

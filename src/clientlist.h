@@ -53,7 +53,6 @@ public:
     float mina_, maxa_;
     unsigned int basew_, baseh_, incw_, inch_, maxw_, maxh_, minw_, minh_;
     // for other modules
-    HSObject    object;
 
 public:
 
