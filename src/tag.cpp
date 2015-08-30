@@ -46,26 +46,20 @@ void tag_init() {
     g_tag_by_name = hsobject_create_and_link(g_tag_object, "by-name");
 }
 
-static void tag_free(HSTag* tag) {
-    if (tag->frame) {
-        tag->frame = std::shared_ptr<HSFrame>();
-    }
-    stack_destroy(tag->stack);
-    hsobject_unlink_and_destroy(g_tag_by_name, tag->object);
-    g_string_free(tag->name, true);
-    g_string_free(tag->display_name, true);
-    g_free(tag);
+HSTag::HSTag() {
+}
+
+HSTag::~HSTag() {
+    stack_destroy(this->stack);
 }
 
 void tag_destroy() {
     int i;
     for (i = 0; i < g_tags->len; i++) {
         HSTag* tag = g_array_index(g_tags, HSTag*, i);
-        tag_free(tag);
+        delete tag;
     }
     g_array_free(g_tags, true);
-    hsobject_unlink_and_destroy(g_tag_object, g_tag_by_name);
-    hsobject_unlink_and_destroy(hsobject_root(), g_tag_object);
 }
 
 int    tag_get_count() {
@@ -75,7 +69,7 @@ int    tag_get_count() {
 HSTag* find_tag(const char* name) {
     int i;
     for (i = 0; i < g_tags->len; i++) {
-        if (!strcmp(g_array_index(g_tags, HSTag*, i)->name->str, name)) {
+        if (g_array_index(g_tags, HSTag*, i)->name == name) {
             return g_array_index(g_tags, HSTag*, i);
         }
     }
@@ -149,17 +143,6 @@ static GString* tag_attr_floating(HSAttribute* attr) {
     return NULL;
 }
 
-static GString* tag_attr_name(HSAttribute* attr) {
-    HSTag* tag = container_of(attr->value.str, HSTag, display_name);
-    std::ostringstream error;
-    int status = tag_rename(tag, tag->display_name->str, error);
-    if (status == 0) {
-        return NULL;
-    } else {
-        return g_string_new(error.str().c_str());
-    }
-}
-
 static int tag_attr_index(void* data) {
     HSTag* tag = (HSTag*) data;
     return tag_index_of(tag);
@@ -185,11 +168,10 @@ HSTag* add_tag(const char* name) {
         // nothing to do
         return find_result;
     }
-    HSTag* tag = g_new0(HSTag, 1);
+    HSTag* tag = new HSTag();
     tag->stack = stack_create();
     tag->frame = make_shared<HSFrameLeaf>(tag, shared_ptr<HSFrameSplit>());
-    tag->name = g_string_new(name);
-    tag->display_name = g_string_new(name);
+    tag->name = name;
     tag->floating = false;
     g_array_append_val(g_tags, tag);
 
@@ -197,7 +179,6 @@ HSTag* add_tag(const char* name) {
     tag->object = hsobject_create_and_link(g_tag_by_name, name);
     tag->object->data = tag;
     HSAttribute attributes[] = {
-        ATTRIBUTE_STRING("name",           tag->display_name,        tag_attr_name),
         ATTRIBUTE_BOOL(  "floating",       tag->floating,            tag_attr_floating),
         ATTRIBUTE_CUSTOM_INT("index",          tag_attr_index,           ATTR_READ_ONLY),
         //ATTRIBUTE_CUSTOM_INT("frame_count",    tag_attr_frame_count,     ATTR_READ_ONLY),
@@ -224,7 +205,7 @@ int tag_add_command(int argc, char** argv, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTag* tag = add_tag(argv[1]);
-    hook_emit_list("tag_added", tag->name->str, NULL);
+    hook_emit_list("tag_added", tag->name.c_str(), NULL);
     return 0;
 }
 
@@ -233,11 +214,9 @@ static int tag_rename(HSTag* tag, char* name, Output output) {
         output << "Error: Tag \"" << name << "\" already exists\n";
         return HERBST_TAG_IN_USE;
     }
-    hsobject_link_rename(g_tag_by_name, tag->name->str, name);
-    g_string_assign(tag->name, name);
-    g_string_assign(tag->display_name, name);
+    tag->name = name;
     ewmh_update_desktop_names();
-    hook_emit_list("tag_renamed", tag->name->str, NULL);
+    hook_emit_list("tag_renamed", tag->name.c_str(), NULL);
     return 0;
 }
 
@@ -305,8 +284,8 @@ int tag_remove_command(int argc, char** argv, Output output) {
     }
     tag_foreach(tag_unlink_id_object, NULL);
     // remove tag
-    char* oldname = g_strdup(tag->name->str);
-    tag_free(tag);
+    string oldname = tag->name;
+    delete tag;
     for (int i = 0; i < g_tags->len; i++) {
         if (g_array_index(g_tags, HSTag*, i) == tag) {
             g_array_remove_index(g_tags, i);
@@ -317,8 +296,7 @@ int tag_remove_command(int argc, char** argv, Output output) {
     ewmh_update_desktops();
     ewmh_update_desktop_names();
     tag_set_flags_dirty();
-    hook_emit_list("tag_removed", oldname, target->name->str, NULL);
-    g_free(oldname);
+    hook_emit_list("tag_removed", oldname.c_str(), target->name.c_str(), NULL);
     tag_foreach(tag_link_id_object, NULL);
     return 0;
 }
@@ -347,7 +325,7 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
         tag->floating = new_value;
 
         HSMonitor* m = find_monitor_with_tag(tag);
-        HSDebug("setting tag:%s->floating to %s\n", tag->name->str, tag->floating ? "on" : "off");
+        HSDebug("setting tag:%s->floating to %s\n", tag->name.c_str(), tag->floating ? "on" : "off");
         if (m != NULL) {
             monitor_apply_layout(m);
         }

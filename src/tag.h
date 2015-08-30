@@ -17,15 +17,17 @@ class HSClient;
 struct HSStack;
 struct HSObject;
 
-typedef struct HSTag {
-    GString*        name;   // name of this tag
-    GString*        display_name; // name used for object-io
+class HSTag {
+public:
+    HSTag();
+    ~HSTag();
+    std::string        name;   // name of this tag
     std::shared_ptr<HSFrame>        frame;  // the master frame
     bool            floating;
     int             flags;
     struct HSStack* stack;
     struct HSObject* object;
-} HSTag;
+};
 
 void tag_init();
 void tag_destroy();

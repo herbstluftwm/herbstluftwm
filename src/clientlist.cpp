@@ -140,11 +140,6 @@ HSClient* get_client_from_window(Window window) {
     }   \
     while (0);
 
-static void client_attr_tag(void* data, GString* output) {
-    HSClient* client = (HSClient*) data;
-    g_string_append(output, client->tag()->display_name->str);
-}
-
 static void client_attr_class(void* data, GString* output) {
     HSClient* client = (HSClient*) data;
     GString* ret = window_class_to_g_string(g_display, client->x11Window());
@@ -280,7 +275,7 @@ std::shared_ptr<HSClient> manage_client(Window win) {
         ATTRIBUTE_STRING(   "winid",        client->window_str_,     ATTR_READ_ONLY),
         ATTRIBUTE_STRING(   "title",        client->title_,          ATTR_READ_ONLY),
         ATTRIBUTE_STRING(   "keymask",      client->keymask_,        ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM(   "tag",          client_attr_tag,        ATTR_READ_ONLY),
+        //ATTRIBUTE_CUSTOM(   "tag",          client_attr_tag,        ATTR_READ_ONLY),
         ATTRIBUTE_INT(      "pid",          client->pid_,            ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM(   "class",        client_attr_class,      ATTR_READ_ONLY),
         ATTRIBUTE_CUSTOM(   "instance",     client_attr_instance,   ATTR_READ_ONLY),

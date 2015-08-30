@@ -374,7 +374,7 @@ int print_tag_status_command(int argc, char** argv, Output output) {
             c = '!';
         }
         output << c;
-        output << tag->name->str;
+        output << tag->name.c_str();
         output << '\t';
     }
     return 0;
