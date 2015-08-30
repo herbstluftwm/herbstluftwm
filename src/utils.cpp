@@ -28,6 +28,8 @@
 
 namespace herbstluft {
 
+using namespace std;
+
 ArgList::ArgList(const std::initializer_list<std::string> &l)
     : c_(std::make_shared<Container>(l)) { reset(); }
 
@@ -509,6 +511,47 @@ static void subtree_print_to(HSTreeInterface* intface, const char* indent,
         g_string_free(child_prefix, true);
 
     }
+}
+
+static void subtree_print_to(Ptr(TreeInterface) intface, const string& indent,
+                          const string& rootprefix, Output output) {
+    size_t child_count = intface->childCount();
+    if (child_count == 0) {
+        output << rootprefix;
+        output << utf8_string_at(g_tree_style, 6);
+        output << utf8_string_at(g_tree_style, 5);
+        output << ' ';
+        // append caption
+        intface->appendCaption(output);
+        output << "\n";
+    } else {
+        output << rootprefix;
+        output << utf8_string_at(g_tree_style, 6);
+        output << utf8_string_at(g_tree_style, 7);
+        // append caption
+        output << ' ';
+        intface->appendCaption(output);
+        output << '\n';
+        // append children
+        string child_indent;
+        string child_prefix;
+        for (size_t i = 0; i < child_count; i++) {
+            bool last = (i == child_count - 1);
+            child_indent =  indent + " ";
+            child_indent += utf8_string_at(g_tree_style, last ? 2 : 1);
+            child_prefix = indent + " ";
+            child_prefix += utf8_string_at(g_tree_style, last ? 4 : 3);
+            Ptr(TreeInterface) child = intface->nthChild(i);
+            subtree_print_to(child, child_indent,
+                             child_prefix, output);
+        }
+    }
+}
+
+void tree_print_to(Ptr(TreeInterface) intface, Output output) {
+    string rootIndicator;
+    rootIndicator += utf8_string_at(g_tree_style, 0);
+    subtree_print_to(intface, " ", rootIndicator, output);
 }
 
 void tree_print_to(HSTreeInterface* intface, Output output) {

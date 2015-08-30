@@ -45,4 +45,9 @@ void Root::cmd_ls(Input in, Output out)
     root_->Directory::ls(p, out);
 }
 
+int print_object_tree_command(int argc, char* argv[], Output output) {
+    Root::get()->printTree(output);
+}
+
+
 }

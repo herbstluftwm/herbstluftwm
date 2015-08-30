@@ -50,11 +50,13 @@ public:
     /* Called by the directory whenever children are added or removed */
     void notifyHooks(HookEvent event, const std::string &arg);
 
-    void addChild(std::shared_ptr<Directory> child);
+    void addChild(std::shared_ptr<Directory> child, std::string name = {});
     void removeChild(const std::string &child);
 
     void addHook(std::shared_ptr<Hook> hook);
     void removeHook(const std::string &hook);
+
+    void printTree(Output output);
 
 protected:
     /* convenience function to be used by objects to return themselves. */

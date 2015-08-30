@@ -24,8 +24,20 @@
 #include <sstream>
 
 using namespace std;
+using namespace herbstluft;
 
-vector<Ptr(HSTag)> tags;
+class TagManager : public  Object {
+public:
+    TagManager() : Object("tags") {
+        by_name = make_shared<Object>("by-name");
+        addChild(by_name);
+    };
+    Ptr(Object) by_name;
+};
+
+Ptr(TagManager) tag_manager;
+vector<Ptr(HSTag)> tags; // TODO: make this a tag-manager attribute
+
 static bool    g_tag_flags_dirty = true;
 static int* g_raise_on_focus_temporarily;
 
@@ -34,17 +46,21 @@ static int tag_rename(HSTag* tag, char* name, Output output);
 void tag_init() {
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
+    tag_manager = make_shared<TagManager>();
+    herbstluft::Root::get()->addChild(tag_manager);
 }
+
+void tag_destroy() {
+    tag_manager = Ptr(TagManager)();
+    tags.clear();
+}
+
 
 HSTag::HSTag() {
 }
 
 HSTag::~HSTag() {
     stack_destroy(this->stack);
-}
-
-void tag_destroy() {
-    tags.clear();
 }
 
 int    tag_get_count() {

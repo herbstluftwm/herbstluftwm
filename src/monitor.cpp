@@ -12,6 +12,7 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+#include "root.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "utils.h"
@@ -29,6 +30,17 @@
 
 using namespace herbstluft;
 using namespace std;
+
+class MonitorManager : public  Object {
+public:
+    MonitorManager() : Object("monitors") {
+        by_name = make_shared<Object>("by-name");
+        addChild(by_name);
+    };
+    Ptr(Object) by_name;
+};
+
+Ptr(MonitorManager) monitor_manager;
 
 // module internals:
 static int g_cur_monitor;
@@ -54,6 +66,8 @@ void monitor_init() {
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
     g_mouse_recenter_gap       = &(settings_find("mouse_recenter_gap")->value.i);
     g_monitor_stack = stack_create();
+    monitor_manager = make_shared<MonitorManager>();
+    Root::get()->addChild(monitor_manager);
 }
 
 HSMonitor::~HSMonitor() {

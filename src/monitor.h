@@ -21,7 +21,6 @@ class HSFrame;
 struct HSSlice;
 struct HSStack;
 
-
 class HSMonitor {
 public:
     ~HSMonitor();

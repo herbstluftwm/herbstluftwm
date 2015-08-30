@@ -41,6 +41,8 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
+using namespace herbstluft;
+
 // globals:
 int g_verbose = 0;
 Display*    g_display;
@@ -197,7 +199,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "!",              negate_command),
     //CMD_BIND(             "attr",           attr_command),
     //CMD_BIND(             "compare",        compare_command),
-    //CMD_BIND(             "object_tree",    print_object_tree_command),
+    CMD_BIND(             "object_tree",    print_object_tree_command),
     //CMD_BIND(             "get_attr",       hsattribute_get_command),
     //CMD_BIND(             "set_attr",       hsattribute_set_command),
     //CMD_BIND(             "new_attr",       userattribute_command),

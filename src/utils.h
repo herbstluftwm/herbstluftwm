@@ -100,6 +100,16 @@ typedef struct HSTreeInterface {
     void                    (*destructor)(HSTree data); /* how to free the data tree */
 } HSTreeInterface;
 
+class TreeInterface {
+public:
+    TreeInterface() {};
+    virtual ~TreeInterface() {};
+    virtual Ptr(TreeInterface) nthChild(size_t idx) = 0;
+    virtual size_t             childCount() = 0;
+    virtual void               appendCaption(Output output) = 0;
+};
+
+void tree_print_to(Ptr(TreeInterface) intface, Output output);
 void tree_print_to(HSTreeInterface* intface, Output output);
 
 
