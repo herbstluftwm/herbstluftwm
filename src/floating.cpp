@@ -218,17 +218,16 @@ int find_edge_right_of(RectangleIdx* rects, size_t cnt, int idx) {
 }
 
 
-static int collectclients_helper(HSClient* client, void* data) {
+static void collectclients_helper(HSClient* client, void* data) {
     GQueue* q = (GQueue*)data;
     g_queue_push_tail(q, client);
-    return 0;
 }
 
 bool floating_focus_direction(enum HSDirection dir) {
     if (*g_monitors_locked) { return false; }
-    HSTag* tag = g_cur_frame->tag;
+    HSTag* tag = get_current_monitor()->tag;
     GQueue* q = g_queue_new();
-    frame_foreach_client(tag->frame, collectclients_helper, q);
+    tag->frame->foreachClient(collectclients_helper, q);
     int cnt = q->length;
     RectangleIdx* rects = g_new0(RectangleIdx, cnt);
     int i = 0;
@@ -261,11 +260,11 @@ bool floating_focus_direction(enum HSDirection dir) {
 
 bool floating_shift_direction(enum HSDirection dir) {
     if (*g_monitors_locked) { return false; }
-    HSTag* tag = g_cur_frame->tag;
+    HSTag* tag = get_current_monitor()->tag;
     HSClient* curfocus = get_current_client();
     if (!curfocus) return false;
     GQueue* q = g_queue_new();
-    frame_foreach_client(tag->frame, collectclients_helper, q);
+    tag->frame->foreachClient(collectclients_helper, q);
     int cnt = q->length;
     if (cnt == 0) {
         g_queue_free(q);
@@ -284,7 +283,7 @@ bool floating_shift_direction(enum HSDirection dir) {
     g_queue_free(q);
     // add artifical rects for screen edges
     {
-        auto mr = monitor_get_floating_area(get_current_monitor());
+        auto mr = get_current_monitor()->getFloatingArea();
         Rectangle tmp[4] = {
             { mr.x, mr.y,               mr.width, 0 }, // top
             { mr.x, mr.y,               0, mr.height }, // left

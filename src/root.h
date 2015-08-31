@@ -31,6 +31,9 @@ private:
     static std::shared_ptr<Root> root_;
 };
 
+int print_object_tree_command(int argc, char* argv[], Output output);
+
+
 }
 
 #endif // ROOT_H

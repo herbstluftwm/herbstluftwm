@@ -23,71 +23,62 @@
 
 #include <sstream>
 
-static GArray*     g_tags; // Array of HSTag*
+using namespace std;
+using namespace herbstluft;
+
+class TagManager : public  Object {
+public:
+    TagManager() : Object("tags") {
+        by_name = make_shared<Object>("by-name");
+        addChild(by_name);
+    };
+    Ptr(Object) by_name;
+};
+
+Ptr(TagManager) tag_manager;
+vector<Ptr(HSTag)> tags; // TODO: make this a tag-manager attribute
+
 static bool    g_tag_flags_dirty = true;
-static HSObject* g_tag_object;
-static HSObject* g_tag_by_name;
 static int* g_raise_on_focus_temporarily;
 
 static int tag_rename(HSTag* tag, char* name, Output output);
 
 void tag_init() {
-    g_tags = g_array_new(false, false, sizeof(HSTag*));
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
-    g_tag_object = hsobject_create_and_link(hsobject_root(), "tags");
-    HSAttribute attributes[] = {
-        ATTRIBUTE("count", g_tags->len, ATTR_READ_ONLY),
-        ATTRIBUTE_LAST,
-    };
-    hsobject_set_attributes(g_tag_object, attributes);
-    g_tag_by_name = hsobject_create_and_link(g_tag_object, "by-name");
-}
-
-static void tag_free(HSTag* tag) {
-    if (tag->frame) {
-        HSClient** buf;
-        size_t count;
-        frame_destroy(tag->frame, &buf, &count);
-        if (count) {
-            g_free(buf);
-        }
-    }
-    stack_destroy(tag->stack);
-    hsobject_unlink_and_destroy(g_tag_by_name, tag->object);
-    g_string_free(tag->name, true);
-    g_string_free(tag->display_name, true);
-    g_free(tag);
+    tag_manager = make_shared<TagManager>();
+    herbstluft::Root::get()->addChild(tag_manager);
 }
 
 void tag_destroy() {
-    int i;
-    for (i = 0; i < g_tags->len; i++) {
-        HSTag* tag = g_array_index(g_tags, HSTag*, i);
-        tag_free(tag);
-    }
-    g_array_free(g_tags, true);
-    hsobject_unlink_and_destroy(g_tag_object, g_tag_by_name);
-    hsobject_unlink_and_destroy(hsobject_root(), g_tag_object);
+    tag_manager = Ptr(TagManager)();
+    tags.clear();
+}
+
+
+HSTag::HSTag() {
+}
+
+HSTag::~HSTag() {
+    stack_destroy(this->stack);
 }
 
 int    tag_get_count() {
-    return g_tags->len;
+    return tags.size();
 }
 
 HSTag* find_tag(const char* name) {
-    int i;
-    for (i = 0; i < g_tags->len; i++) {
-        if (!strcmp(g_array_index(g_tags, HSTag*, i)->name->str, name)) {
-            return g_array_index(g_tags, HSTag*, i);
+    for (auto t : tags) {
+        if (t->name == name) {
+            return &* t;
         }
     }
     return NULL;
 }
 
 int tag_index_of(HSTag* tag) {
-    for (int i = 0; i < g_tags->len; i++) {
-        if (g_array_index(g_tags, HSTag*, i) == tag) {
+    for (int i = 0; i < tags.size(); i++) {
+        if (&* tags[i] == tag) {
             return i;
         }
     }
@@ -95,10 +86,7 @@ int tag_index_of(HSTag* tag) {
 }
 
 HSTag* get_tag_by_index(int index) {
-    if (index < 0 || index >= g_tags->len) {
-        return NULL;
-    }
-    return g_array_index(g_tags, HSTag*, index);
+    return &* tags[index];
 }
 
 HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags) {
@@ -111,114 +99,36 @@ HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags) {
         int delta = index;
         index = delta + current;
         // ensure index is valid
-        index = MOD(index, g_tags->len);
+        index = MOD(index, tags.size());
         if (skip_visible_tags) {
-            HSTag* tag = g_array_index(g_tags, HSTag*, index);
-            for (int i = 0; find_monitor_with_tag(tag); i++) {
-                if (i >= g_tags->len) {
+            Ptr(HSTag) tag = tags[index];
+            for (int i = 0; find_monitor_with_tag(&* tag); i++) {
+                if (i >= tags.size()) {
                     // if we tried each tag then there is no invisible tag
                     return NULL;
                 }
                 index += delta;
-                index = MOD(index, g_tags->len);
-                tag = g_array_index(g_tags, HSTag*, index);
+                index = MOD(index, tags.size());
+                tag = tags[index];
             }
         }
     } else {
         // if it is absolute, then check index
-        if (index < 0 || index >= g_tags->len) {
+        if (index < 0 || index >= tags.size()) {
             HSDebug("invalid tag index %d\n", index);
             return NULL;
         }
     }
-    return g_array_index(g_tags, HSTag*, index);
+    return &* tags[index];
 }
 
 HSTag* find_unused_tag() {
-    for (int i = 0; i < g_tags->len; i++) {
-        if (!find_monitor_with_tag(g_array_index(g_tags, HSTag*, i))) {
-            return g_array_index(g_tags, HSTag*, i);
+    for (auto t : tags) {
+        if (!find_monitor_with_tag(&* t)) {
+            return &* t;
         }
     }
     return NULL;
-}
-
-static GString* tag_attr_floating(HSAttribute* attr) {
-    HSTag* tag = container_of(attr->value.b, HSTag, floating);
-    HSMonitor* m = find_monitor_with_tag(tag);
-    if (m != NULL) {
-        monitor_apply_layout(m);
-    }
-    return NULL;
-}
-
-static GString* tag_attr_name(HSAttribute* attr) {
-    HSTag* tag = container_of(attr->value.str, HSTag, display_name);
-    std::ostringstream error;
-    int status = tag_rename(tag, tag->display_name->str, error);
-    if (status == 0) {
-        return NULL;
-    } else {
-        return g_string_new(error.str().c_str());
-    }
-}
-
-static void sum_up_clientframes(HSFrame* frame, void* data) {
-    if (frame->type == TYPE_CLIENTS) {
-        (*(int*)data)++;
-    }
-}
-
-static int tag_attr_frame_count(void* data) {
-    HSTag* tag = (HSTag*) data;
-    int i = 0;
-    frame_do_recursive_data(tag->frame, sum_up_clientframes, 0, &i);
-    return i;
-}
-
-static void sum_up_clients(HSFrame* frame, void* data) {
-    if (frame->type == TYPE_CLIENTS) {
-        *(int*)data += frame->content.clients.count;
-    }
-}
-
-static int tag_attr_client_count(void* data) {
-    HSTag* tag = (HSTag*) data;
-    int i = 0;
-    frame_do_recursive_data(tag->frame, sum_up_clients, 0, &i);
-    return i;
-}
-
-
-static int tag_attr_curframe_windex(void* data) {
-    HSTag* tag = (HSTag*) data;
-    HSFrame* frame = frame_current_selection_below(tag->frame);
-    return frame->content.clients.selection;
-}
-
-static int tag_attr_curframe_wcount(void* data) {
-    HSTag* tag = (HSTag*) data;
-    HSFrame* frame = frame_current_selection_below(tag->frame);
-    return frame->content.clients.count;
-}
-
-static int tag_attr_index(void* data) {
-    HSTag* tag = (HSTag*) data;
-    return tag_index_of(tag);
-}
-
-static void tag_unlink_id_object(HSTag* tag, void* data) {
-    (void)data;
-    hsobject_unlink(g_tag_object, tag->object);
-}
-
-static void tag_link_id_object(HSTag* tag, void* data) {
-    (void)data;
-    GString* index_str = g_string_new("");
-    int index = tag_index_of(tag);
-    g_string_printf(index_str, "%d", index);
-    hsobject_link(g_tag_object, tag->object, index_str->str);
-    g_string_free(index_str, true);
 }
 
 HSTag* add_tag(const char* name) {
@@ -227,34 +137,17 @@ HSTag* add_tag(const char* name) {
         // nothing to do
         return find_result;
     }
-    HSTag* tag = g_new0(HSTag, 1);
+    Ptr(HSTag) tag = make_shared<HSTag>();
     tag->stack = stack_create();
-    tag->frame = frame_create_empty(NULL, tag);
-    tag->name = g_string_new(name);
-    tag->display_name = g_string_new(name);
+    tag->frame = make_shared<HSFrameLeaf>(&* tag, shared_ptr<HSFrameSplit>());
+    tag->name = name;
     tag->floating = false;
-    g_array_append_val(g_tags, tag);
-
-    // create object
-    tag->object = hsobject_create_and_link(g_tag_by_name, name);
-    tag->object->data = tag;
-    HSAttribute attributes[] = {
-        ATTRIBUTE_STRING("name",           tag->display_name,        tag_attr_name),
-        ATTRIBUTE_BOOL(  "floating",       tag->floating,            tag_attr_floating),
-        ATTRIBUTE_CUSTOM_INT("index",          tag_attr_index,           ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM_INT("frame_count",    tag_attr_frame_count,     ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM_INT("client_count",   tag_attr_client_count,    ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM_INT("curframe_windex",tag_attr_curframe_windex, ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM_INT("curframe_wcount",tag_attr_curframe_wcount, ATTR_READ_ONLY),
-        ATTRIBUTE_LAST,
-    };
-    hsobject_set_attributes(tag->object, attributes);
-    tag_link_id_object(tag, NULL);
+    tags.push_back(tag);
 
     ewmh_update_desktops();
     ewmh_update_desktop_names();
     tag_set_flags_dirty();
-    return tag;
+    return &* tag;
 }
 
 int tag_add_command(int argc, char** argv, Output output) {
@@ -266,7 +159,7 @@ int tag_add_command(int argc, char** argv, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTag* tag = add_tag(argv[1]);
-    hook_emit_list("tag_added", tag->name->str, NULL);
+    hook_emit_list("tag_added", tag->name.c_str(), NULL);
     return 0;
 }
 
@@ -275,11 +168,9 @@ static int tag_rename(HSTag* tag, char* name, Output output) {
         output << "Error: Tag \"" << name << "\" already exists\n";
         return HERBST_TAG_IN_USE;
     }
-    hsobject_link_rename(g_tag_by_name, tag->name->str, name);
-    g_string_assign(tag->name, name);
-    g_string_assign(tag->display_name, name);
+    tag->name = name;
     ewmh_update_desktop_names();
-    hook_emit_list("tag_renamed", tag->name->str, NULL);
+    hook_emit_list("tag_renamed", tag->name.c_str(), NULL);
     return 0;
 }
 
@@ -324,35 +215,32 @@ int tag_remove_command(int argc, char** argv, Output output) {
     // prevent dangling tag_previous pointers
     all_monitors_replace_previous_tag(tag, target);
     // save all these windows
-    HSClient** buf;
-    size_t count;
-    frame_destroy(tag->frame, &buf, &count);
-    tag->frame = NULL;
-    int i;
-    for (i = 0; i < count; i++) {
-        HSClient* client = buf[i];
+    vector<HSClient*> buf;
+    tag->frame->foreachClient([](HSClient* client, void* data) {
+        vector<HSClient*>* buf = (vector<HSClient*>*) data;
+        (*buf).push_back(client);
+    }, &buf);
+    for (auto client : buf) {
         stack_remove_slice(client->tag()->stack, client->slice);
         client->setTag(target);
         stack_insert_slice(client->tag()->stack, client->slice);
         ewmh_window_update_tag(client->window_, client->tag());
-        frame_insert_client(target->frame, buf[i]);
+        target->frame->insertClient(client);
     }
+    tag->frame = shared_ptr<HSFrame>();
     HSMonitor* monitor_target = find_monitor_with_tag(target);
     if (monitor_target) {
         // if target monitor is viewed, then show windows
         monitor_apply_layout(monitor_target);
-        for (i = 0; i < count; i++) {
-            buf[i]->set_visible(true);
+        for (auto c: buf) {
+            c->set_visible(true);
         }
     }
-    g_free(buf);
-    tag_foreach(tag_unlink_id_object, NULL);
     // remove tag
-    char* oldname = g_strdup(tag->name->str);
-    tag_free(tag);
-    for (i = 0; i < g_tags->len; i++) {
-        if (g_array_index(g_tags, HSTag*, i) == tag) {
-            g_array_remove_index(g_tags, i);
+    string oldname = tag->name;
+    for (int i = 0; i < tags.size(); i++) {
+        if (&* tags[i] == tag) {
+            tags.erase(tags.begin() + i);
             break;
         }
     }
@@ -360,9 +248,7 @@ int tag_remove_command(int argc, char** argv, Output output) {
     ewmh_update_desktops();
     ewmh_update_desktop_names();
     tag_set_flags_dirty();
-    hook_emit_list("tag_removed", oldname, target->name->str, NULL);
-    g_free(oldname);
-    tag_foreach(tag_link_id_object, NULL);
+    hook_emit_list("tag_removed", oldname.c_str(), target->name.c_str(), NULL);
     return 0;
 }
 
@@ -390,7 +276,7 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
         tag->floating = new_value;
 
         HSMonitor* m = find_monitor_with_tag(tag);
-        HSDebug("setting tag:%s->floating to %s\n", tag->name->str, tag->floating ? "on" : "off");
+        HSDebug("setting tag:%s->floating to %s\n", tag->name.c_str(), tag->floating ? "on" : "off");
         if (m != NULL) {
             monitor_apply_layout(m);
         }
@@ -401,8 +287,8 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
 void tag_force_update_flags() {
     g_tag_flags_dirty = false;
     // unset all tags
-    for (int i = 0; i < g_tags->len; i++) {
-        g_array_index(g_tags, HSTag*, i)->flags = 0;
+    for (auto t : tags) {
+        t->flags = 0;
     }
     // update flags
     for (auto c : herbstluft::Root::clients()->clients()) {
@@ -426,7 +312,7 @@ void tag_set_flags_dirty() {
 }
 
 void ensure_tags_are_available() {
-    if (g_tags->len > 0) {
+    if (tags.size() > 0) {
         // nothing to do
         return;
     }
@@ -434,11 +320,9 @@ void ensure_tags_are_available() {
 }
 
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
-    int i;
-    for (i = 0; i < g_tags->len; i++) {
-        HSTag* m = g_array_index(g_tags, HSTag*, i);
-        if (m->frame == frame) {
-            return m;
+    for (auto t : tags) {
+        if (&* t->frame == frame) {
+            return &* t;
         }
     }
     return NULL;
@@ -475,7 +359,7 @@ int tag_move_window_by_index_command(int argc, char** argv, Output output) {
 }
 
 void tag_move_focused_client(HSTag* target) {
-    HSClient* client = frame_focused_client(get_current_monitor()->tag->frame);
+    HSClient* client = get_current_monitor()->tag->frame->focusedClient();
     if (client == 0) {
         // nothing to do
         return;
@@ -491,11 +375,11 @@ void tag_move_client(HSClient* client, HSTag* target) {
         return;
     }
     HSMonitor* monitor_target = find_monitor_with_tag(target);
-    frame_remove_client(tag_source->frame, client);
+    tag_source->frame->removeClient(client);
     // insert window into target
-    frame_insert_client(target->frame, client);
+    target->frame->insertClient(client);
     // enfoce it to be focused on the target tag
-    frame_focus_client(target->frame, client);
+    target->frame->focusClient(client);
     stack_remove_slice(client->tag()->stack, client->slice);
     client->setTag(target);
     stack_insert_slice(client->tag()->stack, client->slice);
@@ -522,7 +406,7 @@ void tag_move_client(HSClient* client, HSTag* target) {
 }
 
 void tag_update_focus_layer(HSTag* tag) {
-    HSClient* focus = frame_focused_client(tag->frame);
+    HSClient* focus = tag->frame->focusedClient();
     stack_clear_layer(tag->stack, LAYER_FOCUS);
     if (focus) {
         // enforce raise_on_focus_temporarily if there is at least one
@@ -540,9 +424,8 @@ void tag_update_focus_layer(HSTag* tag) {
 }
 
 void tag_foreach(void (*action)(HSTag*,void*), void* data) {
-    for (int i = 0; i < g_tags->len; i++) {
-        HSTag* tag = g_array_index(g_tags, HSTag*, i);
-        action(tag, data);
+    for (auto tag : tags) {
+        action(&* tag, data);
     }
 }
 
@@ -555,6 +438,5 @@ void tag_update_each_focus_layer() {
 }
 
 void tag_update_focus_objects() {
-    hsobject_link(g_tag_object, get_current_monitor()->tag->object, "focus");
 }
 

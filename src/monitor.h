@@ -6,7 +6,6 @@
 #ifndef __HERBSTLUFT_MONITOR_H_
 #define __HERBSTLUFT_MONITOR_H_
 
-#include "glib-backports.h"
 #include <stdbool.h>
 #include <X11/Xlib.h>
 #ifdef XINERAMA
@@ -15,21 +14,24 @@
 
 #include "x11-types.h"
 #include "floating.h"
-#include "object.h"
 #include "utils.h"
 
 struct HSTag;
-struct HSFrame;
+class HSFrame;
 struct HSSlice;
 struct HSStack;
 
-typedef struct HSMonitor {
+class HSMonitor {
+public:
+    ~HSMonitor();
+    herbstluft::Rectangle getFloatingArea();
+    int relativeX(int x_root);
+    int relativeY(int y_root);
+
     struct HSTag*      tag;    // currently viewed tag
     struct HSTag*      tag_previous;    // previously viewed tag
     struct HSSlice*    slice;  // slice in the monitor stack
-    HSObject    object;
-    GString*    name;
-    GString*    display_name;   // name used for object IO
+    std::string    name;
     int         pad_up;
     int         pad_right;
     int         pad_down;
@@ -44,21 +46,18 @@ typedef struct HSMonitor {
     } mouse;
     herbstluft::Rectangle   rect;   // area for this monitor
     Window      stacking_window;   // window used for making stacking easy
-} HSMonitor;
+};
 
 void monitor_init();
 void monitor_destroy();
 
-// adds a new monitor to g_monitors and returns a pointer to it
-HSMonitor* monitor_with_frame(struct HSFrame* frame);
+// adds a new monitor to the monitors list and returns a pointer to it
+HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(struct HSTag* tag);
 HSMonitor* add_monitor(herbstluft::Rectangle rect, struct HSTag* tag, char* name);
-herbstluft::Rectangle monitor_get_floating_area(HSMonitor* m);
 void monitor_focus_by_index(int new_selection);
-int monitor_get_relative_x(HSMonitor* m, int x_root);
-int monitor_get_relative_y(HSMonitor* m, int y_root);
 int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv, Output output);

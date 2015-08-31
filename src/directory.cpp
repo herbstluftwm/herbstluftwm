@@ -2,8 +2,11 @@
 #include "hook.h"
 
 #include <iostream>
+#include <string>
 
 namespace herbstluft {
+
+using namespace std;
 
 void Directory::notifyHooks(HookEvent event, const std::string& arg)
 {
@@ -15,10 +18,13 @@ void Directory::notifyHooks(HookEvent event, const std::string& arg)
     }
 }
 
-void Directory::addChild(std::shared_ptr<Directory> child)
+void Directory::addChild(std::shared_ptr<Directory> child, std::string name)
 {
-    children_[child->name()] = child;
-    notifyHooks(HookEvent::CHILD_ADDED, child->name());
+    if (name == "") {
+        name = child->name();
+    }
+    children_[name] = child;
+    notifyHooks(HookEvent::CHILD_ADDED, name);
 }
 
 void Directory::removeChild(const std::string &child)
@@ -75,6 +81,33 @@ void Directory::ls(Path path, Output out)
     } else {
         out << name_ << ": " << child << " not found!" << std::endl; // TODO
     }
+}
+
+class DirectoryTreeInterface : public TreeInterface {
+public:
+    DirectoryTreeInterface(string label, Ptr(Directory) d) : lbl(label), dir(d) {
+        for (auto child : dir->children()) {
+            buf.push_back(child);
+        }
+    };
+    size_t childCount() {
+        return buf.size();
+    };
+    Ptr(TreeInterface) nthChild(size_t idx) {
+        return make_shared<DirectoryTreeInterface>(buf[idx].first, buf[idx].second);
+    };
+    void appendCaption(Output output) {
+        output << lbl;
+    };
+private:
+    string lbl;
+    vector<pair<string,Ptr(Directory)>> buf;
+    Ptr(Directory) dir;
+};
+
+void Directory::printTree(Output output) {
+    Ptr(TreeInterface) intface = make_shared<DirectoryTreeInterface>("", ptr<Directory>());
+    tree_print_to(intface, output);
 }
 
 }

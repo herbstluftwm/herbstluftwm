@@ -341,7 +341,8 @@ static bool rule_find_pop(char* label) {
 }
 
 // List all rules in queue
-static void rule_print_append_output(HSRule* rule, Output output) {
+static void rule_print_append_output(HSRule* rule, std::ostream* ptr_output) {
+    Output& output = *ptr_output;
     output << "label=" << rule->label << "\t";
     // Append conditions
     for (int i = 0; i < rule->condition_count; i++) {
@@ -372,7 +373,7 @@ static void rule_print_append_output(HSRule* rule, Output output) {
 
 int rule_print_all_command(int argc, char** argv, Output output) {
     // Print entry for each in the queue
-    g_queue_foreach(&g_rules, (GFunc)rule_print_append_output, output);
+    g_queue_foreach(&g_rules, (GFunc)rule_print_append_output, &output);
     return 0;
 }
 
@@ -677,7 +678,7 @@ static bool condition_instance(HSCondition* rule, HSClient* client) {
 }
 
 static bool condition_title(HSCondition* rule, HSClient* client) {
-    return condition_string(rule, client->title_->str);
+    return condition_string(rule, client->title_.c_str());
 }
 
 static bool condition_pid(HSCondition* rule, HSClient* client) {

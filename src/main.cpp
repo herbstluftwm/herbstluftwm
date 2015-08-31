@@ -41,6 +41,8 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
+using namespace herbstluft;
+
 // globals:
 int g_verbose = 0;
 Display*    g_display;
@@ -195,16 +197,16 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "and",            command_chain_command),
     CMD_BIND(             "or",             command_chain_command),
     CMD_BIND(             "!",              negate_command),
-    CMD_BIND(             "attr",           attr_command),
-    CMD_BIND(             "compare",        compare_command),
+    //CMD_BIND(             "attr",           attr_command),
+    //CMD_BIND(             "compare",        compare_command),
     CMD_BIND(             "object_tree",    print_object_tree_command),
-    CMD_BIND(             "get_attr",       hsattribute_get_command),
-    CMD_BIND(             "set_attr",       hsattribute_set_command),
-    CMD_BIND(             "new_attr",       userattribute_command),
-    CMD_BIND(             "mktemp",         tmpattribute_command),
-    CMD_BIND(             "remove_attr",    userattribute_remove_command),
-    CMD_BIND(             "substitute",     substitute_command),
-    CMD_BIND(             "sprintf",        sprintf_command),
+    //CMD_BIND(             "get_attr",       hsattribute_get_command),
+    //CMD_BIND(             "set_attr",       hsattribute_set_command),
+    //CMD_BIND(             "new_attr",       userattribute_command),
+    //CMD_BIND(             "mktemp",         tmpattribute_command),
+    //CMD_BIND(             "remove_attr",    userattribute_remove_command),
+    //CMD_BIND(             "substitute",     substitute_command),
+    //CMD_BIND(             "sprintf",        sprintf_command),
     CMD_BIND(             "getenv",         getenv_command),
     CMD_BIND(             "setenv",         setenv_command),
     CMD_BIND(             "unsetenv",       unsetenv_command),
@@ -285,9 +287,9 @@ int print_layout_command(int argc, char** argv, Output output) {
     }
     assert(tag != NULL);
 
-    HSFrame* frame = lookup_frame(tag->frame, argc >= 3 ? argv[2] : "");
+    std::shared_ptr<HSFrame> frame = tag->frame->lookup(argc >= 3 ? argv[2] : "");
     if (argc > 0 && !strcmp(argv[0], "dump")) {
-        dump_frame_tree(frame, output);
+        frame->dump(output);
     } else {
         print_frame_tree(frame, output);
     }
@@ -318,13 +320,13 @@ int load_command(int argc, char** argv, Output output) {
     // arrange monitor
     HSMonitor* m = find_monitor_with_tag(tag);
     if (m) {
-        frame_show_recursive(tag->frame);
+        tag->frame->setVisibleRecursive(true);
         if (get_current_monitor() == m) {
             frame_focus_recursive(tag->frame);
         }
         monitor_apply_layout(m);
     } else {
-        frame_hide_recursive(tag->frame);
+        tag->frame->setVisibleRecursive(false);
     }
     if (!rest) {
         output << argv[0] << ": Error while parsing!\n";
@@ -374,7 +376,7 @@ int print_tag_status_command(int argc, char** argv, Output output) {
             c = '!';
         }
         output << c;
-        output << tag->name->str;
+        output << tag->name.c_str();
         output << '\t';
     }
     return 0;
@@ -774,7 +776,6 @@ static struct {
     void (*destroy)();
 } g_modules[] = {
     { ipc_init,         ipc_destroy         },
-    { object_tree_init, object_tree_destroy },
     { key_init,         key_destroy         },
     { settings_init,    settings_destroy    },
     { floating_init,    floating_destroy    },
@@ -851,11 +852,11 @@ void enternotify(XEvent* event) {
         && *g_focus_follows_mouse
         && ce->focus == false) {
         HSClient* c = get_client_from_window(ce->window);
-        HSFrame* target;
+        std::shared_ptr<HSFrameLeaf> target;
         if (c && c->tag()->floating == false
-              && (target = find_frame_with_client(c->tag()->frame, c))
-              && target->content.clients.layout == LAYOUT_MAX
-              && frame_focused_client(target) != c) {
+              && (target = c->tag()->frame->frameWithClient(c))
+              && target->getLayout() == LAYOUT_MAX
+              && target->focusedClient() != c) {
             // don't allow focus_follows_mouse if another window would be
             // hidden during that focus change (which only occurs in max layout)
         } else if (c) {
@@ -901,7 +902,8 @@ void mapnotify(XEvent* event) {
     if ((c = get_client_from_window(event->xmap.window))) {
         // reset focus. so a new window gets the focus if it shall have the
         // input focus
-        frame_focus_recursive(g_cur_frame);
+        // TODO: reset input focus
+        //frame_focus_recursive(get_current_monitor()->tag->frame->getFocusedFrame());
         // also update the window title - just to be sure
         c->update_title();
     }
@@ -966,7 +968,7 @@ void unmapnotify(XEvent* event) {
 
 int main(int argc, char* argv[]) {
     herbstluft::Root::create();
-    herbstluft::test_object_system();
+    //herbstluft::test_object_system();
 
     init_handler_table();
 

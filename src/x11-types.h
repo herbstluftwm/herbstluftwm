@@ -4,6 +4,10 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <memory>
+
+#define Ptr(X) std::shared_ptr<X>
+#define WPtr(X) std::weak_ptr<X>
 
 namespace herbstluft {
 

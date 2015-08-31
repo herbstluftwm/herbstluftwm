@@ -42,7 +42,6 @@ static int g_monitor_float_treshold = 24;
 static int* g_raise_on_focus;
 static int* g_snap_gap;
 
-static HSObject*   g_client_object;
 
 // atoms from dwm.c
 // default atoms
@@ -64,9 +63,7 @@ HSClient::HSClient()
       sizehints_floating_(true), sizehints_tiling_(false),
       visible_(false), dragged_(false), ignore_unmaps_(0) {
 
-    hsobject_init(&this->object);
-    window_str_ = NULL;
-    title_ = g_string_new("");
+    title_ = "";
     tag_ = NULL;
     decoration_init(&dec, this);
 }
@@ -78,9 +75,6 @@ HSClient::HSClient(Window window)
     tmp << "0x" << std::hex << window_;
     auto window_str = tmp.str();
     name_ = window_str;
-    // TODO: use std::string from above
-    window_str_ = g_string_sized_new(10);
-    g_string_printf(window_str_, "0x%lx", window_);
 }
 
 static void fetch_colors() {
@@ -97,7 +91,6 @@ void clientlist_init() {
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
     g_wmatom[WMTakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
     // init actual client list
-    g_client_object = hsobject_create_and_link(hsobject_root(), "clients");
 }
 
 void clientlist_end_startup() {
@@ -124,7 +117,6 @@ void reset_client_colors() {
 }
 
 void clientlist_destroy() {
-    hsobject_unlink_and_destroy(hsobject_root(), g_client_object);
 }
 
 HSClient* get_client_from_window(Window window) {
@@ -139,59 +131,6 @@ HSClient* get_client_from_window(Window window) {
         return NULL; \
     }   \
     while (0);
-
-static void client_attr_tag(void* data, GString* output) {
-    HSClient* client = (HSClient*) data;
-    g_string_append(output, client->tag()->display_name->str);
-}
-
-static void client_attr_class(void* data, GString* output) {
-    HSClient* client = (HSClient*) data;
-    GString* ret = window_class_to_g_string(g_display, client->x11Window());
-    g_string_append(output, ret->str);
-    g_string_free(ret, true);
-}
-
-static void client_attr_instance(void* data, GString* output) {
-    HSClient* client = (HSClient*) data;
-    GString* ret = window_instance_to_g_string(g_display, client->x11Window());
-    g_string_append(output, ret->str);
-    g_string_free(ret, true);
-}
-
-static GString* client_attr_fullscreen(HSAttribute* attr) {
-    CLIENT_UPDATE_ATTR(set_fullscreen, fullscreen_);
-}
-
-static GString* client_attr_pseudotile(HSAttribute* attr) {
-    CLIENT_UPDATE_ATTR(set_pseudotile, pseudotile_);
-}
-
-static GString* client_attr_urgent(HSAttribute* attr) {
-    CLIENT_UPDATE_ATTR(set_urgent_force, urgent_);
-}
-
-static GString* client_attr_sh_tiling(HSAttribute* attr) {
-    HSClient* client = container_of(attr->value.b, HSClient, sizehints_tiling_);
-    if (!client->is_client_floated() && !client->pseudotile_) {
-        HSMonitor* mon = find_monitor_with_tag(client->tag());
-        if (mon) {
-            monitor_apply_layout(mon);
-        }
-    }
-    return NULL;
-}
-
-static GString* client_attr_sh_floating(HSAttribute* attr) {
-    HSClient* client = container_of(attr->value.b, HSClient, sizehints_floating_);
-    if (!client->is_client_floated() || client->pseudotile_) {
-        HSMonitor* mon = find_monitor_with_tag(client->tag());
-        if (mon) {
-            monitor_apply_layout(mon);
-        }
-    }
-    return NULL;
-}
 
 std::shared_ptr<HSClient> manage_client(Window win) {
     if (is_herbstluft_window(g_display, win)) {
@@ -240,7 +179,7 @@ std::shared_ptr<HSClient> manage_client(Window win) {
     }
 
     // Reuse the keymask string
-    client->keymask_ = changes.keymask;
+    client->keymask_ = changes.keymask->str;
 
     if (!changes.manage) {
         client_changes_free_members(&changes);
@@ -253,7 +192,6 @@ std::shared_ptr<HSClient> manage_client(Window win) {
     decoration_setup_frame(client.get());
     client->fuzzy_fix_initial_position();
     cm->add(client);
-    hsobject_link(g_client_object, &client->object, client->window_str_->str);
     // insert to layout
     if (!client->tag()) {
         client->setTag(m->tag);
@@ -262,8 +200,8 @@ std::shared_ptr<HSClient> manage_client(Window win) {
     client->slice = slice_create_client(client);
     stack_insert_slice(client->tag()->stack, client->slice);
     // insert window to the tag
-    frame_insert_client(lookup_frame(client->tag()->frame,
-                                     changes.tree_index->str), client.get());
+    client->tag()->frame->lookup(changes.tree_index->str)
+                 ->insertClient(client.get());
     client->update_wm_hints();
     client->updatesizehints();
     if (changes.focus) {
@@ -271,29 +209,8 @@ std::shared_ptr<HSClient> manage_client(Window win) {
         // TODO: make this faster!
         // WARNING: this solution needs O(C + exp(D)) time where W is the count
         // of clients on this tag and D is the depth of the binary layout tree
-        frame_focus_client(client->tag()->frame, client.get());
+        client->tag()->frame->focusClient(client.get());
     }
-
-    client->object.data = &client;
-
-    HSAttribute attributes[] = {
-        ATTRIBUTE_STRING(   "winid",        client->window_str_,     ATTR_READ_ONLY),
-        ATTRIBUTE_STRING(   "title",        client->title_,          ATTR_READ_ONLY),
-        ATTRIBUTE_STRING(   "keymask",      client->keymask_,        ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM(   "tag",          client_attr_tag,        ATTR_READ_ONLY),
-        ATTRIBUTE_INT(      "pid",          client->pid_,            ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM(   "class",        client_attr_class,      ATTR_READ_ONLY),
-        ATTRIBUTE_CUSTOM(   "instance",     client_attr_instance,   ATTR_READ_ONLY),
-        ATTRIBUTE_BOOL(     "fullscreen",   client->fullscreen_,     client_attr_fullscreen),
-        ATTRIBUTE_BOOL(     "pseudotile",   client->pseudotile_,     client_attr_pseudotile),
-        ATTRIBUTE_BOOL(     "ewmhrequests", client->ewmhrequests_,   ATTR_ACCEPT_ALL),
-        ATTRIBUTE_BOOL(     "ewmhnotify",   client->ewmhnotify_,     ATTR_ACCEPT_ALL),
-        ATTRIBUTE_BOOL(     "sizehints_tiling",   client->sizehints_tiling_, client_attr_sh_tiling),
-        ATTRIBUTE_BOOL(     "sizehints_floating", client->sizehints_floating_, client_attr_sh_floating),
-        ATTRIBUTE_BOOL(     "urgent",       client->urgent_,         client_attr_urgent),
-        ATTRIBUTE_LAST,
-    };
-    hsobject_set_attributes(&client->object, attributes);
 
     ewmh_window_update_tag(client->window_, client->tag());
     tag_set_flags_dirty();
@@ -350,7 +267,7 @@ void unmanage_client(Window win) {
         mouse_stop_drag();
     }
     // remove from tag
-    frame_remove_client(client->tag()->frame, client.get());
+    client->tag()->frame->removeClient(client.get());
     // ignore events from it
     XSelectInput(g_display, win, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
@@ -378,7 +295,6 @@ void unmanage_client(Window win) {
 
 // destroys a special client
 HSClient::~HSClient() {
-    hsobject_unlink(g_client_object, &object);
     decoration_free(&dec);
     if (lastfocus == this) {
         lastfocus = NULL;
@@ -389,17 +305,6 @@ HSClient::~HSClient() {
     if (slice) {
         slice_destroy(slice);
     }
-    if (title_) {
-        /* free window title */
-        g_string_free(title_, true);
-    }
-    if (window_str_) {
-        g_string_free(window_str_, true);
-    }
-    if (keymask_) {
-        g_string_free(keymask_, true);
-    }
-    hsobject_free(&object);
 }
 
 static int client_get_scheme_triple_idx(HSClient* client) {
@@ -410,11 +315,11 @@ static int client_get_scheme_triple_idx(HSClient* client) {
 }
 
 bool HSClient::needs_minimal_dec(HSFrame* frame) {
-    if (!frame) {
-        frame = find_frame_with_client(this->tag()->frame, this);
-        HSAssert(frame != NULL);
-    }
-    if (!smart_window_surroundings_active(frame)) return false;
+    //if (!frame) {
+    //    frame = this->tag()->frame->frameWithClient(this);
+    //    HSAssert(frame != NULL);
+    //}
+    //if (!smart_window_surroundings_active(frame)) return false;
     if (this->pseudotile_) return false;
     if (this->is_client_floated()) return false;
     return true;
@@ -428,7 +333,6 @@ void HSClient::window_unfocus_last() {
     if (lastfocus) {
         lastfocus->window_unfocus();
     }
-    hsobject_unlink_by_name(g_client_object, "focus");
     // give focus to root window
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
     if (lastfocus) {
@@ -459,10 +363,9 @@ void HSClient::window_focus() {
         if (lastfocus) {
             lastfocus->window_unfocus();
         }
-        hsobject_link(g_client_object, &object, "focus");
         ewmh_update_active_window(this->window_);
         tag_update_each_focus_layer();
-        const char* title = this->title_->str;
+        const char* title = this->title_.c_str();
         char winid_str[STRING_BUF_SIZE];
         snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)this->window_);
         hook_emit_list("focus_changed", winid_str, title, NULL);
@@ -474,8 +377,8 @@ void HSClient::window_focus() {
 
     lastfocus = this;
     /* do some specials for the max layout */
-    bool is_max_layout = frame_focused_client(g_cur_frame) == this
-                         && g_cur_frame->content.clients.layout == LAYOUT_MAX
+    bool is_max_layout = HSFrame::getGloballyFocusedFrame()->focusedClient() == this
+                         && HSFrame::getGloballyFocusedFrame()->getLayout() == LAYOUT_MAX
                          && get_current_monitor()->tag->floating == false;
     if (*g_raise_on_focus || is_max_layout) {
         this->raise();
@@ -529,7 +432,7 @@ void HSClient::resize_tiling(Rectangle rect, HSFrame* frame) {
         return;
     }
     // apply border width
-    if (!this->pseudotile_ && !smart_window_surroundings_active(frame)) {
+    if (!this->pseudotile_ /* && !smart_window_surroundings_active(frame) */) {
         // apply window gap
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
@@ -781,7 +684,7 @@ void HSClient::set_urgent_force(bool state) {
 
     this->urgent_ = state;
 
-    setup_border(this == frame_focused_client(g_cur_frame));
+    setup_border(this == HSFrame::getGloballyFocusedFrame()->focusedClient());
 
     XWMHints *wmh;
     if(!(wmh = XGetWMHints(g_display, this->window_)))
@@ -806,7 +709,7 @@ void HSClient::update_wm_hints() {
         return;
     }
 
-    HSClient* focused_client = frame_focused_client(g_cur_frame);
+    HSClient* focused_client = HSFrame::getGloballyFocusedFrame()->focusedClient();
     if ((focused_client == this)
         && wmh->flags & XUrgencyHint) {
         // remove urgency hint if window is focused
@@ -846,18 +749,17 @@ void HSClient::update_title() {
                     this->window_);
         }
     }
-    bool changed = (0 != strcmp(this->title_->str, new_name->str));
-    g_string_free(this->title_, true);
-    this->title_ = new_name;
+    bool changed = this->title_ != new_name->str;
+    this->title_ = new_name->str;
     if (changed && get_current_client() == this) {
         char buf[STRING_BUF_SIZE];
         snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
-        hook_emit_list("window_title_changed", buf, this->title_->str, NULL);
+        hook_emit_list("window_title_changed", buf, this->title_.c_str(), NULL);
     }
 }
 
 HSClient* get_current_client() {
-    return frame_focused_client(g_cur_frame);
+    return HSFrame::getGloballyFocusedFrame()->focusedClient();
 }
 
 void HSClient::set_fullscreen(bool state) {
@@ -987,11 +889,6 @@ bool HSClient::sendevent(Atom proto) {
 void HSClient::set_dragged(bool drag_state) {
     if (drag_state == dragged_) return;
     dragged_ = drag_state;
-    if (drag_state == true) {
-        hsobject_link(g_client_object, &object, "dragged");
-    } else {
-        hsobject_unlink_by_name(g_client_object, "dragged");
-    }
 }
 
 void HSClient::fuzzy_fix_initial_position() {

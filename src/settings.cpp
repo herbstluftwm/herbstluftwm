@@ -9,7 +9,6 @@
 #include "layout.h"
 #include "ipc-protocol.h"
 #include "ewmh.h"
-#include "object.h"
 
 #include "glib-backports.h"
 #include <string.h>
@@ -111,13 +110,6 @@ SettingsPair g_settings[] = {
 // globals:
 int g_initial_monitors_locked = 0;
 
-// module internals
-static HSObject*       g_settings_object;
-
-static GString* cb_on_change(HSAttribute* attr);
-static void cb_read_compat(void* data, Output output);
-static GString* cb_write_compat(HSAttribute* attr, const char* new_value);
-
 int settings_count() {
     return LENGTH(g_settings);
 }
@@ -135,30 +127,8 @@ void settings_init() {
     settings_find("monitors_locked")->value.i = g_initial_monitors_locked;
 
     // create a settings object
-    g_settings_object = hsobject_create_and_link(hsobject_root(), "settings");
     // ensure everything is nulled that is not explicitely initialized
-    HSAttribute* attributes = g_new0(HSAttribute, LENGTH(g_settings)+1);
-    HSAttribute last = ATTRIBUTE_LAST;
-    attributes[LENGTH(g_settings)] = last;
-    for (int i = 0; i < LENGTH(g_settings); i++) {
-        SettingsPair* sp = g_settings + i;
-        if (sp->type == HS_String) {
-            HSAttribute cur =
-                ATTRIBUTE(sp->name, sp->value.str, cb_on_change);
-            attributes[i] = cur;
-        } else if (sp->type == HS_Int) {
-            HSAttribute cur =
-                ATTRIBUTE(sp->name, sp->value.i, cb_on_change);
-            attributes[i] = cur;
-        } else if (sp->type == HS_Compatiblity) {
-            HSAttribute cur =
-                ATTRIBUTE_CUSTOM(sp->name, (HSAttributeCustom)cb_read_compat, cb_write_compat);
-            cur.data = sp;
-            attributes[i] = cur;
-        }
-    }
-    hsobject_set_attributes(g_settings_object, attributes);
-    g_free(attributes);
+    // TODO re-initialize settings here
 }
 
 void settings_destroy() {
@@ -169,31 +139,6 @@ void settings_destroy() {
             g_string_free(g_settings[i].value.str, true);
         }
     }
-}
-
-static GString* cb_on_change(HSAttribute* attr) {
-    int idx = attr - g_settings_object->attributes;
-    HSAssert (idx >= 0 || idx < LENGTH(g_settings));
-    if (g_settings[idx].on_change) {
-        g_settings[idx].on_change();
-    }
-    return NULL;
-}
-
-static void cb_read_compat(void* data, Output output) {
-    SettingsPair* sp = (SettingsPair*)data;
-    const char* cmd[] = { "attr_get", sp->value.compat.read, NULL };
-    HSAssert(0 == hsattribute_get_command(LENGTH(cmd) - 1, cmd, output));
-}
-
-static GString* cb_write_compat(HSAttribute* attr, const char* new_value) {
-    SettingsPair* sp = (SettingsPair*)attr->data;
-    GString* out = NULL;
-    if (0 != settings_set(sp, new_value)) {
-        out = g_string_new("");
-        g_string_append_printf(out, "Can not set %s to \"%s\"\n", sp->name, new_value);
-    }
-    return out;
 }
 
 SettingsPair* settings_find(const char* name) {
@@ -219,9 +164,7 @@ int settings_set_command(int argc, const char** argv, Output output) {
     }
     SettingsPair* pair = settings_find(argv[1]);
     if (!pair) {
-        if (output != NULL) {
-            output << argv[0] << ": Setting \"" << argv[1] << "\" not found\n";
-        }
+        output << argv[0] << ": Setting \"" << argv[1] << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
     int ret = settings_set(pair, argv[2]);
@@ -251,13 +194,8 @@ int settings_set(SettingsPair* pair, const char* value) {
         }
         g_string_assign(pair->value.str, value);
     } else if (pair->type == HS_Compatiblity) {
-        HSAttribute* attr = hsattribute_parse_path(pair->value.compat.write);
-        std::ostringstream out;
-        int status = hsattribute_assign(attr, value, out);
-        if (0 != status) {
-            HSError("Error when assigning: %s\n", out.str().c_str());
-        }
-        return status;
+        // TODO
+        return 1;
     }
     // on successful change, call callback
     if (pair->on_change) {
@@ -281,8 +219,7 @@ int settings_get(int argc, char** argv, Output output) {
     } else if (pair->type == HS_String) {
         output << pair->value.str->str;
     } else if (pair->type == HS_Compatiblity) {
-        HSAttribute* attr = hsattribute_parse_path(pair->value.compat.read);
-        output << hsattribute_to_string(attr);
+        return 1;
     }
     return 0;
 }

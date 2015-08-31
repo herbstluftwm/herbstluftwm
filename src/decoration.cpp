@@ -19,25 +19,16 @@ static GHashTable* g_decwin2client = NULL;
 
 static int* g_pseudotile_center_threshold;
 static int* g_update_dragged_clients;
-static HSObject* g_theme_object;
-static HSObject g_theme_active_object;
-static HSObject g_theme_normal_object;
-static HSObject g_theme_urgent_object;
 // dummy schemes for propagation
 static HSDecorationScheme g_theme_scheme;
 static HSDecorationScheme g_theme_active_scheme;
 static HSDecorationScheme g_theme_normal_scheme;
 static HSDecorationScheme g_theme_urgent_scheme;
-static void init_dec_triple_object(HSDecTriple* t, const char* name);
-static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
-static void init_scheme_attributes(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb);
-static GString* PROP2MEMBERS(HSAttribute* attr);
 
 // is called automatically after resize_outline
 static void decoration_update_frame_extents(HSClient* client);
 
 void decorations_init() {
-    g_theme_object = hsobject_create_and_link(hsobject_root(), "theme");
     g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
     g_update_dragged_clients = &(settings_find("update_dragged_clients")->value.i);
     g_decwin2client = g_hash_table_new(g_int_hash, g_int_equal);
@@ -70,84 +61,14 @@ void decorations_init() {
         { 0, Color::fromStr("orange"),    true  },    // urgent
     };
     g_decorations[HSDecSchemeMinimal] = minimal;
-    init_dec_triple_object(g_decorations + HSDecSchemeTiling, "tiling");
-    init_dec_triple_object(g_decorations + HSDecSchemeFloating, "floating");
-    init_dec_triple_object(g_decorations + HSDecSchemeMinimal, "minimal");
+    //init_dec_triple_object(g_decorations + HSDecSchemeTiling, "tiling");
+    //init_dec_triple_object(g_decorations + HSDecSchemeFloating, "floating");
+    //init_dec_triple_object(g_decorations + HSDecSchemeMinimal, "minimal");
     // create mass-attribute-objects
     g_theme_scheme
         = g_theme_active_scheme
         = g_theme_normal_scheme
         = g_theme_urgent_scheme = fs.normal;
-    init_scheme_object(&g_theme_active_object, &g_theme_active_scheme, PROP2MEMBERS);
-    init_scheme_object(&g_theme_normal_object, &g_theme_normal_scheme, PROP2MEMBERS);
-    init_scheme_object(&g_theme_urgent_object, &g_theme_urgent_scheme, PROP2MEMBERS);
-    hsobject_set_attributes_always_callback(&g_theme_active_object);
-    hsobject_set_attributes_always_callback(&g_theme_normal_object);
-    hsobject_set_attributes_always_callback(&g_theme_urgent_object);
-    init_scheme_attributes(g_theme_object, &g_theme_scheme, PROP2MEMBERS);
-    hsobject_set_attributes_always_callback(g_theme_object);
-    hsobject_link(g_theme_object, &g_theme_active_object, "active");
-    hsobject_link(g_theme_object, &g_theme_normal_object, "normal");
-    hsobject_link(g_theme_object, &g_theme_urgent_object, "urgent");
-}
-
-static GString* RELAYOUT(HSAttribute* attr) {
-    (void) attr;
-    all_monitors_apply_layout();
-    return NULL;
-}
-
-static GString* PROP2MEMBERS(HSAttribute* attr) {
-    monitors_lock();
-    // find out which object it was
-    // then copy it to the appropriate floating scheme
-    std::ostringstream output;
-    HSObject* members[4] = { NULL };
-    size_t    member_cnt = 0;
-
-    if (attr->object == &g_theme_active_object) {
-        members[member_cnt++] = &(g_decorations[HSDecSchemeTiling]  .obj_active);
-        members[member_cnt++] = &(g_decorations[HSDecSchemeFloating].obj_active);
-    } else if (attr->object == &g_theme_normal_object) {
-        members[member_cnt++] = &(g_decorations[HSDecSchemeTiling]  .obj_normal);
-        members[member_cnt++] = &(g_decorations[HSDecSchemeFloating].obj_normal);
-    } else if (attr->object == &g_theme_urgent_object) {
-        members[member_cnt++] = &(g_decorations[HSDecSchemeTiling]  .obj_urgent);
-        members[member_cnt++] = &(g_decorations[HSDecSchemeFloating].obj_urgent);
-    } else if (attr->object == g_theme_object) {
-        members[member_cnt++] = &g_theme_active_object;
-        members[member_cnt++] = &g_theme_normal_object;
-        members[member_cnt++] = &g_theme_urgent_object;
-    }
-    if (member_cnt > 0) {
-        std::string val = hsattribute_to_string(attr);
-        // set the idx'th attribute of all members of that group to the same value
-        for (int i = 0; i < member_cnt; i++) {
-            HSAttribute* oth_a = hsobject_find_attribute(members[i], attr->name);
-            if (!oth_a) {
-                HSDebug("%d: Can not find attribute %s. This should not happen!\n", i, attr->name);
-                continue;
-            }
-            hsattribute_assign(oth_a, val, output);
-        }
-    }
-    monitors_unlock();
-    return NULL;
-}
-
-GString* PROPAGATE(HSAttribute* attr) {
-    HSDecTriple* t = (HSDecTriple*)attr->object->data;
-    monitors_lock();
-    // find out which attribute it was
-    int idx = attr - attr->object->attributes;
-    // then copy it to active and urgent scheme
-    std::ostringstream output;
-    std::string val = hsattribute_to_string(attr);
-    hsattribute_assign(t->obj_active.attributes + idx, val, output);
-    hsattribute_assign(t->obj_normal.attributes + idx, val, output);
-    hsattribute_assign(t->obj_urgent.attributes + idx, val, output);
-    monitors_unlock();
-    return NULL;
 }
 
 void reset_helper(void* data, GString* output) {
@@ -155,90 +76,7 @@ void reset_helper(void* data, GString* output) {
     g_string_append(output, "Writing this resets all attributes to a default value\n");
 }
 
-static GString* trigger_attribute_reset(HSAttribute* attr, const char* new_value) {
-    (void) attr;
-    (void) new_value;
-    HSObject* obj = attr->object;
-    HSAttribute* attrs = obj->attributes;
-    size_t cnt = obj->attribute_count;
-    std::ostringstream output;
-    monitors_lock();
-    for (int i = 0; i < cnt; i ++) {
-        HSAttribute* a = attrs+i;
-        if (a->type == HSATTR_TYPE_INT
-            || a->type == HSATTR_TYPE_UINT) {
-            hsattribute_assign(a, "0", output);
-        }
-        else if (a->type == HSATTR_TYPE_COLOR) {
-            hsattribute_assign(a, "black", output);
-        }
-    }
-    monitors_unlock();
-    if (output.str().size() <= 0) {
-        return NULL;
-    } else {
-        return g_string_new(output.str().c_str());
-    }
-}
-
-// initializes the specified object to edit the scheme
-static void init_scheme_object(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb) {
-    hsobject_init(obj);
-    init_scheme_attributes(obj,s,cb);
-}
-
-static void init_scheme_attributes(HSObject* obj, HSDecorationScheme* s, HSAttrCallback cb) {
-    HSAttribute attributes[] = {
-        ATTRIBUTE_INT(      "border_width",     s->border_width,    cb),
-        ATTRIBUTE_INT(      "padding_top",      s->padding_top,     cb),
-        ATTRIBUTE_INT(      "padding_right",    s->padding_right,   cb),
-        ATTRIBUTE_INT(      "padding_bottom",   s->padding_bottom,  cb),
-        ATTRIBUTE_INT(      "padding_left",     s->padding_left,    cb),
-        ATTRIBUTE_COLOR(    "color",            s->border_color,    cb),
-        ATTRIBUTE_INT(      "inner_width",      s->inner_width,     cb),
-        ATTRIBUTE_COLOR(    "inner_color",      s->inner_color,     cb),
-        ATTRIBUTE_INT(      "outer_width",      s->outer_width,     cb),
-        ATTRIBUTE_COLOR(    "outer_color",      s->outer_color,     cb),
-        ATTRIBUTE_COLOR(    "background_color", s->background_color,cb),
-        ATTRIBUTE_CUSTOM(   "reset",            reset_helper,       trigger_attribute_reset),
-        ATTRIBUTE_LAST,
-    };
-    hsobject_set_attributes(obj, attributes);
-}
-
-static void init_dec_triple_object(HSDecTriple* t, const char* name) {
-    hsobject_init(&t->object);
-    init_scheme_object(&t->obj_normal, &t->normal, RELAYOUT);
-    init_scheme_object(&t->obj_active, &t->active, RELAYOUT);
-    init_scheme_object(&t->obj_urgent, &t->urgent, RELAYOUT);
-    hsobject_link(&t->object, &t->obj_normal, "normal");
-    hsobject_link(&t->object, &t->obj_active, "active");
-    hsobject_link(&t->object, &t->obj_urgent, "urgent");
-    memset(&t->propagate, 0, sizeof(t->propagate));
-    init_scheme_attributes(&t->object, &t->propagate, PROPAGATE);
-    hsobject_set_attributes_always_callback(&t->object);
-    t->object.data = t;
-    hsobject_link(g_theme_object, &t->object, name);
-}
-
-static void free_dec_triple_object(HSDecTriple* t) {
-    hsobject_unlink(g_theme_object, &t->object);
-    hsobject_free(&t->object);
-    hsobject_free(&t->obj_normal);
-    hsobject_free(&t->obj_active);
-    hsobject_free(&t->obj_urgent);
-}
-
 void decorations_destroy() {
-    free_dec_triple_object(g_decorations + HSDecSchemeTiling);
-    free_dec_triple_object(g_decorations + HSDecSchemeFloating);
-    hsobject_unlink(g_theme_object, &g_theme_normal_object);
-    hsobject_unlink(g_theme_object, &g_theme_active_object);
-    hsobject_unlink(g_theme_object, &g_theme_urgent_object);
-    hsobject_free(&g_theme_normal_object);
-    hsobject_free(&g_theme_active_object);
-    hsobject_free(&g_theme_urgent_object);
-    hsobject_unlink_and_destroy(hsobject_root(), g_theme_object);
     g_hash_table_destroy(g_decwin2client);
     g_decwin2client = NULL;
 }

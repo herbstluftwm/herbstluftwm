@@ -257,7 +257,7 @@ void ewmh_update_desktops() {
 void ewmh_update_desktop_names() {
     char**  names = g_new(char*, tag_get_count());
     for (int i = 0; i < tag_get_count(); i++) {
-        names[i] = get_tag_by_index(i)->name->str;
+        names[i] = (char*)get_tag_by_index(i)->name.c_str();
     }
     XTextProperty text_prop;
     Xutf8TextListToTextProperty(g_display, names, tag_get_count(),
@@ -271,7 +271,7 @@ void ewmh_update_current_desktop() {
     HSTag* tag = get_current_monitor()->tag;
     int index = tag_index_of(tag);
     if (index < 0) {
-        g_warning("tag %s not found in internal list\n", tag->name->str);
+        g_warning("tag %s not found in internal list\n", tag->name.c_str());
         return;
     }
     XChangeProperty(g_display, g_root, g_netatom[NetCurrentDesktop],
@@ -281,7 +281,7 @@ void ewmh_update_current_desktop() {
 void ewmh_window_update_tag(Window win, HSTag* tag) {
     int index = tag_index_of(tag);
     if (index < 0) {
-        g_warning("tag %s not found in internal list\n", tag->name->str);
+        g_warning("tag %s not found in internal list\n", tag->name.c_str());
         return;
     }
     XChangeProperty(g_display, win, g_netatom[NetWmDesktop],

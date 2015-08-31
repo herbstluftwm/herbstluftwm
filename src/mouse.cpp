@@ -314,8 +314,8 @@ void mouse_function_resize(XMotionEvent* me) {
     g_win_drag_client->float_size_ = g_win_drag_start;
     // relative x/y coords in drag window
     HSMonitor* m = g_drag_monitor;
-    int rel_x = monitor_get_relative_x(m, g_button_drag_start.x) - g_win_drag_start.x;
-    int rel_y = monitor_get_relative_y(m, g_button_drag_start.y) - g_win_drag_start.y;
+    int rel_x = m->relativeX(g_button_drag_start.x) - g_win_drag_start.x;
+    int rel_y = m->relativeY(g_button_drag_start.y) - g_win_drag_start.y;
     bool top = false;
     bool left = false;
     if (rel_y < g_win_drag_start.height/2) {
@@ -376,8 +376,8 @@ void mouse_function_zoom(XMotionEvent* me) {
     int y_diff = me->y_root - g_button_drag_start.y;
     // relative x/y coords in drag window
     HSMonitor* m = g_drag_monitor;
-    int rel_x = monitor_get_relative_x(m, g_button_drag_start.x) - g_win_drag_start.x;
-    int rel_y = monitor_get_relative_y(m, g_button_drag_start.y) - g_win_drag_start.y;
+    int rel_x = m->relativeX(g_button_drag_start.x) - g_win_drag_start.x;
+    int rel_y = m->relativeY(g_button_drag_start.y) - g_win_drag_start.y;
     int cent_x = g_win_drag_start.x + g_win_drag_start.width  / 2;
     int cent_y = g_win_drag_start.y + g_win_drag_start.height / 2;
     if (rel_x < g_win_drag_start.width/2) {
@@ -450,9 +450,9 @@ static void snap_1d(int x, int edge, int* delta) {
     }
 }
 
-static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
+static void client_snap_helper(HSClient* candidate, struct SnapData* d) {
     if (candidate == d->client) {
-        return 0;
+        return;
     }
     auto subject  = d->rect;
     auto other    = candidate->dec.last_outer_rect;
@@ -481,7 +481,7 @@ static int client_snap_helper(HSClient* candidate, struct SnapData* d) {
             snap_1d(subject.y + subject.height, other.y, &d->dy);
         }
     }
-    return 0;
+    return;
 }
 
 // get the vector to snap a client to it's neighbour
@@ -523,7 +523,7 @@ void client_snap_vector(HSClient* client, struct HSMonitor* monitor,
     }
 
     // snap to other clients
-    frame_foreach_client(tag->frame, (ClientAction)client_snap_helper, &d);
+    tag->frame->foreachClient((ClientAction)client_snap_helper, &d);
 
     // write back results
     if (abs(d.dx) < abs(distance)) {
