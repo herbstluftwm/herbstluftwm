@@ -278,3 +278,97 @@ hc keybind $Mod-p spawn dmenu_run_hlwm
 Note that +$Mod-p+ is bound to +pseudotile toggle+ in the default
 autostart of herbstluftwm, so you either need to change that binding or
 use a different one for +spawn dmenu_run_hlwm+.
+
+
+Q: How can I have a seperate list of tags per monitor?
+------------------------------------------------------
+
+As a solution: add the desired tags for each monitor and then configure the
+keybindings s.t. the i'th key references the i'th tag of that monitor instead
+of the i'th of all the tags. You can achieve this by replacing the section
+"tags" and "cycle through tags" in the autostart by the following:
+
+----
+# tags
+mon1_names=( 1_{1..5} ) # tag names for monitor 1
+mon2_names=( 2_{1..5} ) # tag names for monitor 2
+fallback_names=( {1..5} ) # tag names for all other monitors
+tag_keys=( {1..9} 0 )
+
+hc rename default "${mon1_names[0]}" || true
+for tag in "${mon1_names[@]}" "${mon2_names[@]}" "${fallback_names[@]}" ; do
+    hc try silent add "$tag"
+done
+
+for i in ${!tag_keys[@]} ; do
+    key="${tag_keys[$i]}"
+    # they kebinding is as follows: the or executes the commands seperated by
+    # CASE and stops executing them after the first of those succeeds.
+    # the first command is: check that we are on monitor 3 and can switch to tag "${mon1_names[$i]}"
+    # if only one of these to steps fail, try the second one (and so one).
+    # The setup for two monitors is as follows:
+    hc keybind "$Mod-$key" \
+        or CASE and . compare monitors.focus.index = 0 . use "${mon1_names[$i]}" \
+           CASE and . compare monitors.focus.index = 1 . use "${mon2_names[$i]}" \
+           CASE use "${fallback_names[$i]}"
+    hc keybind "$Mod-Shift-$key" \
+        or CASE and . compare monitors.focus.index = 0 . move "${mon1_names[$i]}" \
+           CASE and . compare monitors.focus.index = 1 . move "${mon2_names[$i]}" \
+           CASE move "${fallback_names[$i]}"
+done
+
+# cycle through tags
+# add additional information in order to cycle only through a monitor's tags
+# and not through all tags
+define-tag-cycle() {
+    local n=$#
+    local tags=( "$@" )
+    for i in "${!tags[@]}" ; do
+        local t="${tags[$i]}"
+        hc chain , new_attr string tags.by-name."$t".my_previous_tag \
+                 , set_attr tags.by-name."$t".my_previous_tag "${tags[$(((i - 1 + n) % n))]}" \
+                 , new_attr string tags.by-name."$t".my_next_tag \
+                 , set_attr tags.by-name."$t".my_next_tag "${tags[$(((i + 1) % n))]}"
+    done
+}
+
+define-tag-cycle "${mon1_names[@]}"
+define-tag-cycle "${mon2_names[@]}"
+define-tag-cycle "${fallback_names[@]}"
+
+# cycle through tags
+# check whether the current tag as a custom "next tag" configured
+# if yes, jump to that one, otherwise fall back to ordinary use_index +1
+hc keybind $Mod-period or , substitute NEXT tags.focus.my_next_tag use NEXT  \
+                          , use_index +1 --skip-visible
+hc keybind $Mod-comma  or , substitute PREV tags.focus.my_previous_tag use PREV  \
+                          , use_index +1 --skip-visible
+----
+
+You should also set +swap_monitors_to_get_tag+ to 0. Also consider the
+following hint for shifting windows between monitors:
+
+Q: How to navigate between monitors?
+------------------------------------
+In order to switch focus between the monitors, use the usual direction based
+focusing (the command +focus+). It either focuses a window on the current
+monitor or the next monitor if the boundary is reached.
+
+The analogous behaviour for +shift+ is not implemented yet, so you need to
+configure it in your +autostart+. In order to shift windows from monitor to
+monitor, replace the usual usage of +shift+ in your autostart by this one:
+
+----
+hc keybind $Mod-Shift-h or / shift left / \
+    chain , lock , shift_to_monitor -l , focus_monitor -l , unlock
+hc keybind $Mod-Shift-j or / shift down / \
+    chain , lock , shift_to_monitor -d , focus_monitor -d , unlock
+hc keybind $Mod-Shift-k or / shift up / \
+    chain , lock , shift_to_monitor -u , focus_monitor -u , unlock
+hc keybind $Mod-Shift-l or / shift right / \
+    chain , lock , shift_to_monitor -r , focus_monitor -r , unlock
+----
+(or analogously with arrow keys instead of +hjkl+).  Again, this shifts a
+window to the next monitor if the monitor boundary is reached.
+
+
