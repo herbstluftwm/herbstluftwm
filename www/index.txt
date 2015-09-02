@@ -23,7 +23,7 @@ Its main features can be described with:
 How to get it?
 --------------
 Install it via the package manager, link:download.html[download tarballs], or
-clone the git repository:
+clone the link:http://github.com/herbstluftwm/herbstluftwm[git repository]:
 
 ----
 git clone git://github.com/herbstluftwm/herbstluftwm
