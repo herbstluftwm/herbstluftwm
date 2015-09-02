@@ -1599,7 +1599,7 @@ RESOURCES
 ---------
 Homepage: <http://herbstluftwm.org>
 
-Gitweb: <http://git.cs.fau.de/?p=re06huxa/herbstluftwm>
+Github page: <http://github.com/herbstluftwm/herbstluftwm>
 
 Patch submission and bug reporting:
 
