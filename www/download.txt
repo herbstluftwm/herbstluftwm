@@ -43,11 +43,11 @@ the most current released tarball:
 // do not remove this: next version line will be added here
 |====================================================================================================================
 
-The current development version is available in the
-link:http://git.informatik.uni-erlangen.de/?p=re06huxa/herbstluftwm[GitWeb]
+The current development version is available on
+link:http://github.com/herbstluftwm/herbstluftwm[Github]
 or can be cloned with:
 
 ----
-git clone git://git.informatik.uni-erlangen.de/re06huxa/herbstluftwm
+git clone git://github.com/herbstluftwm/herbstluftwm
 ----
 
