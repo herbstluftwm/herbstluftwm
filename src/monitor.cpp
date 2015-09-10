@@ -1280,8 +1280,10 @@ int detect_monitors_command(int argc, const char **argv, GString* output) {
             monitors = g_renew(Rectangle, monitors, count);
             RectList* cur = rl;
             FOR (i,0,count) {
+                RectList* next = cur->next;
                 monitors[i] = cur->rect;
-                cur = cur->next;
+                g_free(cur);
+                cur = next;
             }
         }
         // apply it
