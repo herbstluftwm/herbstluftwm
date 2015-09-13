@@ -105,6 +105,7 @@ void layout_destroy();
 // for frames
 HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag);
 void frame_insert_client(HSFrame* frame, struct HSClient* client);
+void frame_insert_client_position(HSFrame* frame, struct HSClient* client, const int position[2]);
 HSFrame* lookup_frame(HSFrame* root, const char* path);
 HSFrame* frame_current_selection();
 HSFrame* frame_current_selection_below(HSFrame* frame);

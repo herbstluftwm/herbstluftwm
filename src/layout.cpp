@@ -192,6 +192,106 @@ void frame_insert_client(HSFrame* frame, struct HSClient* client) {
     }
 }
 
+static void rect_to_pos(const Rectangle* rect, int position[2])
+{
+    position[0] = rect->x + rect->width  / 2;
+    position[1] = rect->y + rect->height / 2;
+}
+
+// manhattan distance is sufficient for checking window distances.
+static int dist_pos_pos(const int a[2], const int b[2])
+{
+    return abs(a[0] - b[0]) + abs(a[1] - b[1]);
+}
+
+void frame_insert_client_position(HSFrame* frame, struct HSClient* client, const int position[2]) {
+    if (frame->type == TYPE_CLIENTS) {
+        // insert it here
+        HSClient** buf = frame->content.clients.buf;
+        // append it to buf
+        size_t count = frame->content.clients.count;
+
+        // insert based on position
+        int index = 0;
+        if (count > 1) {
+            int dist_best = -1;
+            int p_prev[2] = {0, 0};
+
+            for (int i = 0; i < count; i++) {
+                int p[2];
+                rect_to_pos(&buf[i]->dec.last_outer_rect, p);
+                int dist;
+
+                dist = dist_pos_pos(p, position);
+                if ((dist_best == -1) || (dist < dist_best)) {
+                    dist_best = dist;
+                    index = i;
+                    if (i >= count / 2) {
+                        index++;
+                    }
+                }
+
+                if (i != 0) {
+                    int p_mid[2] = {
+                        (p[0] + p_prev[0]) / 2,
+                        (p[1] + p_prev[1]) / 2,
+                    };
+                    dist = dist_pos_pos(p_mid, position);
+                    if (dist < dist_best) {
+                        dist_best = dist;
+                        index = i;
+                    }
+                }
+
+                p_prev[0] = p[0];
+                p_prev[1] = p[1];
+            }
+        }
+        else if (count == 1) {
+            // in this case just check which side of the window we're on
+            int p[2];
+            rect_to_pos(&buf[0]->dec.last_outer_rect, p);
+            if (frame->content.clients.layout == LAYOUT_VERTICAL) {
+                // windows to the left, add us to the right
+                if (p[1] < position[1]) {
+                    index = 1;
+                }
+            }
+            else if (frame->content.clients.layout == LAYOUT_HORIZONTAL) {
+                // windows to the below, add us ontop
+                if (p[0] < position[0]) {
+                    index = 1;
+                }
+            }
+        }
+
+        count++;
+
+        index = CLAMP(index, 0, count - 1);
+        buf = g_renew(HSClient*, buf, count);
+        // shift other windows to the back to insert the new one at index
+        memmove(buf + index + 1, buf + index, sizeof(*buf) * (count - index - 1));
+        buf[index] = client;
+        // write results back
+        frame->content.clients.count = count;
+        frame->content.clients.buf = buf;
+        // check for focus
+        if (g_cur_frame == frame
+            && frame->content.clients.selection >= (count-1)) {
+            frame->content.clients.selection = count - 1;
+            client_window_focus(client);
+        }
+    } else { /* frame->type == TYPE_FRAMES */
+        HSLayout* layout = &frame->content.layout;
+        int a_pos[2], b_pos[2];
+        rect_to_pos(&layout->a->last_rect, a_pos);
+        rect_to_pos(&layout->b->last_rect, b_pos);
+        int a_dist = dist_pos_pos(a_pos, position);
+        int b_dist = dist_pos_pos(b_pos, position);
+        frame_insert_client_position((a_dist < b_dist)? layout->a : layout->b, client, position);
+    }
+}
+
 HSFrame* lookup_frame(HSFrame* root, const char *index) {
     if (index == NULL || index[0] == '\0') return root;
     if (root->type == TYPE_CLIENTS) return root;
@@ -1603,27 +1703,15 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
         HSClient* client = frame_focused_client(g_cur_frame);
         if (client && neighbour != NULL) { // if neighbour was found
             // move window to neighbour
+            const int position[2] = {
+                client->dec.last_outer_rect.x + client->dec.last_outer_rect.width  / 2,
+                client->dec.last_outer_rect.y + client->dec.last_outer_rect.height / 2,
+            };
             frame_remove_client(g_cur_frame, client);
-            frame_insert_client(neighbour, client);
+            frame_insert_client_position(neighbour, client, position);
 
-            // change selection in parent
-            HSFrame* parent = neighbour->parent;
-            assert(parent);
-            parent->content.layout.selection = ! parent->content.layout.selection;
-            frame_focus_recursive(parent);
-            // focus right window in frame
-            HSFrame* frame = g_cur_frame;
-            assert(frame);
-            int i;
-            HSClient** buf = frame->content.clients.buf;
-            size_t count = frame->content.clients.count;
-            for (i = 0; i < count; i++) {
-                if (buf[i] == client) {
-                    frame->content.clients.selection = i;
-                    client_window_focus(buf[i]);
-                    break;
-                }
-            }
+            frame_focus_client(client->tag->frame, client);
+            frame_focus_recursive(client->tag->frame);
 
             // layout was changed, so update it
             monitor_apply_layout(get_current_monitor());
