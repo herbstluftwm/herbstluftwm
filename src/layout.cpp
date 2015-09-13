@@ -163,17 +163,48 @@ HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag) {
     return frame;
 }
 
-void frame_insert_client(HSFrame* frame, struct HSClient* client) {
+
+/* position_hv:
+ *  Insertion position, horizontal and vertical.
+ *  defaults to 'INSERT_SELECT_AFTER' when NULL.
+ */
+void frame_insert_client(HSFrame* frame, struct HSClient* client, const int position_hv[2]) {
+    int position;
+
+    if (position_hv) {
+        position = (frame->content.clients.layout == LAYOUT_VERTICAL) ? position_hv[1] : position_hv[0];
+    }
+    else {
+        position = INSERT_SELECT_AFTER;
+    }
+
     if (frame->type == TYPE_CLIENTS) {
         // insert it here
         HSClient** buf = frame->content.clients.buf;
-        // append it to buf
+        // insert into the buf based on 'position'
         size_t count = frame->content.clients.count;
         count++;
-        // insert it after the selection
-        int index = frame->content.clients.selection + 1;
-        index = CLAMP(index, 0, count - 1);
         buf = g_renew(HSClient*, buf, count);
+
+        int index;
+        switch (position) {
+            case INSERT_FIRST:
+                index = 0;
+                break;
+            case INSERT_LAST:
+                index = count - 1;
+                break;
+            case INSERT_SELECT_BEFORE:
+                index = frame->content.clients.selection - 1;
+                break;
+            default:
+                assert(position == INSERT_SELECT_AFTER);
+                index = frame->content.clients.selection + 1;
+                break;
+        }
+
+        index = CLAMP(index, 0, count - 1);
+
         // shift other windows to the back to insert the new one at index
         memmove(buf + index + 1, buf + index, sizeof(*buf) * (count - index - 1));
         buf[index] = client;
@@ -188,7 +219,22 @@ void frame_insert_client(HSFrame* frame, struct HSClient* client) {
         }
     } else { /* frame->type == TYPE_FRAMES */
         HSLayout* layout = &frame->content.layout;
-        frame_insert_client((layout->selection == 0)? layout->a : layout->b, client);
+        HSFrame* child;
+
+        switch (position) {
+            case INSERT_FIRST:
+                child = layout->a;
+                break;
+            case INSERT_LAST:
+                child = layout->b;
+                break;
+            default:
+                assert(position == INSERT_SELECT_BEFORE || position == INSERT_SELECT_AFTER);
+                child = (layout->selection == 0)? layout->a : layout->b;
+                break;
+        }
+
+        frame_insert_client(child, client, position_hv);
     }
 }
 
@@ -946,7 +992,7 @@ int frame_current_bring(int argc, char** argv, GString* output) {
     HSFrame* frame = find_frame_with_client(tag->frame, client);
     if (frame != g_cur_frame) {
         frame_remove_client(frame, client);
-        frame_insert_client(g_cur_frame, client);
+        frame_insert_client(g_cur_frame, client, NULL);
     }
     focus_client(client, false, false);
     return 0;
@@ -1594,7 +1640,6 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
         HSClient* tmp = buf[selection];
         buf[selection] = buf[index];
         buf[index] = tmp;
-
         g_cur_frame->content.clients.selection = index;
         frame_focus_recursive(g_cur_frame);
         monitor_apply_layout(get_current_monitor());
@@ -1603,30 +1648,24 @@ int frame_move_window_command(int argc, char** argv, GString* output) {
         HSClient* client = frame_focused_client(g_cur_frame);
         if (client && neighbour != NULL) { // if neighbour was found
             // move window to neighbour
-            frame_remove_client(g_cur_frame, client);
-            frame_insert_client(neighbour, client);
-
-            // change selection in parent
-            HSFrame* parent = neighbour->parent;
-            assert(parent);
-            parent->content.layout.selection = ! parent->content.layout.selection;
-            frame_focus_recursive(parent);
-            // focus right window in frame
-            HSFrame* frame = g_cur_frame;
-            assert(frame);
-            int i;
-            HSClient** buf = frame->content.clients.buf;
-            size_t count = frame->content.clients.count;
-            for (i = 0; i < count; i++) {
-                if (buf[i] == client) {
-                    frame->content.clients.selection = i;
-                    client_window_focus(buf[i]);
-                    break;
-                }
+            char direction_axis = (direction == 'u' || direction == 'd') ? LAYOUT_VERTICAL : LAYOUT_HORIZONTAL;
+            int position_hv[2];
+            if (direction_axis == LAYOUT_VERTICAL) {
+                position_hv[0] = (direction == 'u') ? INSERT_SELECT_AFTER : INSERT_SELECT_BEFORE;
+                position_hv[1] = (direction == 'u') ? INSERT_FIRST : INSERT_LAST;
             }
+            else {
+                position_hv[0] = (direction == 'r') ? INSERT_FIRST : INSERT_LAST;
+                position_hv[1] = (direction == 'r') ? INSERT_SELECT_AFTER : INSERT_SELECT_BEFORE;
+            }
+            frame_remove_client(g_cur_frame, client);
+            frame_insert_client(neighbour, client, position_hv);
 
-            // layout was changed, so update it
+            frame_focus_client(client->tag->frame, client);
+            frame_focus_recursive(client->tag->frame);
+
             monitor_apply_layout(get_current_monitor());
+
         } else {
             g_string_append_printf(output,
                 "%s: No neighbour found\n", argv[0]);
@@ -1882,7 +1921,7 @@ int frame_remove_command(int argc, char** argv) {
     // and insert them to other child.. inefficiently
     int i;
     for (i = 0; i < count; i++) {
-        frame_insert_client(second, wins[i]);
+        frame_insert_client(second, wins[i], NULL);
     }
     g_free(wins);
     XDestroyWindow(g_display, parent->window);

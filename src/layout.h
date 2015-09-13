@@ -51,6 +51,13 @@ enum {
     TYPE_FRAMES,
 };
 
+enum {
+    INSERT_FIRST = 0,
+    INSERT_LAST,
+    INSERT_SELECT_BEFORE,
+    INSERT_SELECT_AFTER,
+};
+
 // execute an action on an client
 // returns Success or failure.
 struct HSClient;
@@ -104,7 +111,7 @@ void layout_init();
 void layout_destroy();
 // for frames
 HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag);
-void frame_insert_client(HSFrame* frame, struct HSClient* client);
+void frame_insert_client(HSFrame* frame, struct HSClient* client, const int position_hv[2]);
 HSFrame* lookup_frame(HSFrame* root, const char* path);
 HSFrame* frame_current_selection();
 HSFrame* frame_current_selection_below(HSFrame* frame);
