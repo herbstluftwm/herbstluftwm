@@ -4,8 +4,8 @@
 # dependencies: wmctrl, awk,
 #               dmenu with multiline support (command line flag -l)
 
-hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
-dm() { "${dmenu_command[@]:-dmenu}" "$@" ;}
+hc() { ${herbstclient_command:-herbstclient} "$@" ;}
+dm() { ${dmenu_command:-dmenu} "$@" ;}
 dmenu_lines=${dmenu_lines:-10}
 
 case "$1" in
@@ -41,5 +41,5 @@ case "$1" in
 esac
 
 id=$(wmctrl -l |cat -n| sed 's/\t/) /g'| sed 's/^[ ]*//' \
-    | dm -l $dmenu_lines -p "$name") \
+    | dm -i -l $dmenu_lines -p "$name") \
     && action $(awk '{ print $2 ; }' <<< "$id")
