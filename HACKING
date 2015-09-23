@@ -40,6 +40,30 @@ always should remove dependency files by running:
 
     make cleandeps
 
+Alternate build system: CMake
+-----------------------------
+
+CMake has been included as an alternative build-system,
+that has some advantages including:
+
+  - Project file generation for IDEs.
+  - Flexible configuration.
+  - Multiple _out of source_ builds (debug, release... etc).
+
+You can use CMake with the following commands
+(assuming you're in the herbstluftwm repository root):
+
+    mkdir build
+    cd build
+    cmake ..
+    make
+    make install
+
+The choice of 'build' here is arbitrary,
+you can put your build directory(s) wherever you like.
+
+Note that CMake support is currently experimental.
+
 Sending patches
 ---------------
 You can use git to make commits and create patches from them via the command
