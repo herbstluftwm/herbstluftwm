@@ -294,32 +294,83 @@ struct {
     { 0 },
 };
 
-int call_command(int argc, char** argv, Output output) {
-    if (argc <= 0) {
-        return HERBST_COMMAND_NOT_FOUND;
-    }
-    int i = 0;
-    CommandBinding* bind = NULL;
-    while (g_commands[i].cmd.standard != NULL) {
-        if (!strcmp(g_commands[i].name, argv[0])) {
-            // if command was found
-            bind = g_commands + i;
-            break;
+namespace herbstluft {
+// Implementation of CommandBinding
+
+// Nearly all of the following can go away, if all C-style command functions
+// have been migrated to int(Input, Output).
+
+/* Creates an ephemeral argv array from the given ArgList */
+function <int(Input,Output)> CommandBinding::commandFromCFunc(
+        function <int(int argc, char**argv, Output output)> func) {
+    return [func](Input in, Output out) {
+        shared_ptr<char*> argv(new char*[in.size()], default_delete<char*[]>());
+
+        auto elem = in.begin();
+        for (size_t i = 0; i < in.size(); i++) {
+            // Most of the commands want a char**, not a const char**. Let's
+            // hope, they don't actually modify it.
+            argv.get()[i] = const_cast<char*>(elem->c_str());
+            ++elem;
         }
-        i++;
-    }
-    if (!bind) {
-        output << "error: Command \"" << argv[0] << "\" not found\n";
+
+        return func(in.size(), argv.get(), out);
+    };
+}
+
+CommandBinding::CommandBinding(int func(int argc, const char** argv, Output output))
+    : command(commandFromCFunc([func](int argc, char** argv, Output out) {
+                return func(argc, const_cast<const char**>(argv), out);
+            }))
+{}
+
+CommandBinding::CommandBinding(int func(int argc, char** argv))
+    : command(commandFromCFunc([func](int argc, char **argv, Output) {
+                return func(argc, argv);
+            }))
+{}
+
+CommandBinding::CommandBinding(int func(int argc, const char** argv))
+    : command(commandFromCFunc([func](int argc, char** argv, Output) {
+                return func(argc, const_cast<const char**>(argv));
+            }))
+{}
+
+CommandBinding::CommandBinding(int func())
+    : command([func](Input, Output) { return func(); })
+{}
+
+// Implementation of CommandTable
+int CommandTable::callCommand(Input in, Output out) const {
+    if (in.empty()) {
         return HERBST_COMMAND_NOT_FOUND;
     }
-    int status;
-    // TODO why isn't the cast (char** -> const char**) done automtically?
-    if (bind->has_output) {
-        status = bind->cmd.standard(argc, (const char**)argv, output);
-    } else {
-        status = bind->cmd.no_output(argc, (const char**)argv);
+
+    const string cmd_name = *in.begin();
+    const auto cmd = map.find(cmd_name);
+
+    if (cmd == map.end()) {
+        out << "error: Command \"" << cmd_name << "\" not found\n";
+        return HERBST_COMMAND_NOT_FOUND;
     }
-    return status;
+
+    return cmd->second(in, out);
+}
+
+} // end namespace herbstluft
+
+// Old C-ish interface to commands:
+
+int call_command(int argc, char** argv, Output output) {
+
+    vector<string> args;
+    args.reserve(argc);
+
+    for (int i = 0; i < argc; i++) {
+        args.emplace_back(argv[i]);
+    }
+
+    return herbstluft::g_commands.callCommand(args, output);
 }
 
 int call_command_no_output(int argc, char** argv) {
@@ -328,31 +379,10 @@ int call_command_no_output(int argc, char** argv) {
     return status;
 }
 
-int call_command_substitute(char* needle, char* replacement,
-                            int argc, char** argv, Output output) {
-    // construct the new command
-    char** command = g_new(char*, argc + 1);
-    command[argc] = NULL;
-    for (int i = 0; i < argc; i++) {
-        if (!strcmp(needle, argv[i])) {
-            // if argument equals the identifier, replace it by the attribute
-            // value
-            command[i] = replacement;
-        } else {
-            command[i] = argv[i];
-        }
-    }
-    int status = call_command(argc, command, output);
-    g_free(command);
-    return status;
-}
-
-int list_commands(int argc, char** argv, Output output)
+int list_commands(int, char**, Output output)
 {
-    int i = 0;
-    while (g_commands[i].cmd.standard != NULL) {
-        output << g_commands[i].name << "\n";
-        i++;
+    for (auto cmd : herbstluft::g_commands) {
+        output << cmd.first << endl;
     }
     return 0;
 }
@@ -750,9 +780,9 @@ int complete_against_commands(int argc, char** argv, int position,
     // complete command
     if (position == 0) {
         char* str = (argc >= 1) ? argv[0] : NULL;
-        for (int i = 0; g_commands[i].cmd.standard != NULL; i++) {
+        for (auto cmd : herbstluft::g_commands) {
             // only check the first len bytes
-            try_complete(str, g_commands[i].name, output);
+            try_complete(str, cmd.first.c_str(), output);
         }
         return 0;
     }

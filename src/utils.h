@@ -41,6 +41,7 @@ struct ArgList {
     const std::string& front() { return *begin_; }
     const std::string& back() { return c_->back(); }
     bool empty() const { return begin_ == c_->end(); }
+    Container::size_type size() const { return std::distance(begin_, c_->cend()); }
 
     void reset() { begin_ = c_->cbegin(); }
     void shift(size_t amount = 1) {

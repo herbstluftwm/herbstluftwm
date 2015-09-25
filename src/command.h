@@ -10,43 +10,95 @@
 #include <stdbool.h>
 #include "x11-types.h"
 #include "utils.h"
+// standard
+#include <string>
+#include <functional>
+#include <unordered_map>
 
-typedef int (*HerbstCmd)(int argc,      // number of arguments
-                         const char** argv,   // array of args
-                         Output output  // result-data/stdout
-                        );
-typedef int (*HerbstCmdNoOutput)(int argc,  // number of arguments
-                         const char** argv        // array of args
-                        );
+using namespace std;
 
-#define CMD_BIND(NAME, FUNC) \
-    { CommandBindingCB(FUNC), (NAME), 1 }
-#define CMD_BIND_NO_OUTPUT(NAME, FUNC) \
-    { CommandBindingCB(FUNC), (NAME), 0 }
+namespace herbstluft {
 
-union CommandBindingCB {
-    HerbstCmd standard;
-    HerbstCmdNoOutput no_output;
-    CommandBindingCB() : standard(NULL) { };
-    CommandBindingCB(HerbstCmd x) : standard(x) { };
-    CommandBindingCB(int (*x)(int,char**,Output)) : standard((HerbstCmd)x) { };
-    CommandBindingCB(HerbstCmdNoOutput x) : no_output(x) { };
-    CommandBindingCB(int (*x)(int,char**)) : no_output((HerbstCmdNoOutput)x) { };
-    CommandBindingCB(int (*x)()) : no_output((HerbstCmdNoOutput)x) { };
+/** User facing commands.
+ *
+ * A command can have one of the two forms
+ *    - (Input, Output) -> int
+ *    - (Input) -> int
+ * where the second one simply doesn't produce any output. Both return an error
+ * code or 0 on success.
+ *
+ * This class is mainly used to provide convenience constructors for the
+ * initialization of CommandTable.
+ *
+ * A command stored in here can be called with the () operator.
+ */
+class CommandBinding {
+public:
+    // A command that taks an argument list and produces output
+    CommandBinding(int cmd(Input, Output))
+        : command(cmd) {}
+    // A command that doesn't produce ouput
+    CommandBinding(int cmd(Input))
+        // Ignore the output parameter
+        : command([cmd](Input in, Output) { return cmd(in); })
+    {}
+
+    // FIXME: Remove after C++ transition
+    // The following constructors are only there to ease the transition from
+    // C functions to C++
+    CommandBinding(int func(int argc, char** argv, Output output))
+        : command(commandFromCFunc(func)) {}
+    CommandBinding(int func(int argc, const char** argv, Output output));
+    CommandBinding(int func(int argc, char** argv));
+    CommandBinding(int func(int argc, const char** argv));
+    // Some functions take no arguments. I don't know if that's an accident,
+    // because int foo() in C++ doesn't mean "unspecified many". Anyway,
+    // CommandBinding(quit) doesn't typecheck without this constructor.
+    CommandBinding(int func());
+
+    /** Call the stored command */
+    int operator()(Input in, Output out) const { return command(in, out); }
+
+private:
+    // FIXME: Remove after C++ transition
+    function<int(Input,Output)> commandFromCFunc(
+        function <int(int argc, char**argv, Output output)> func
+    );
+
+    function<int(Input, Output)> command;
 };
 
-typedef struct CommandBinding {
-    CommandBindingCB cmd;
-    const char* name;
-    bool        has_output;
-} CommandBinding;
+/** A list of all available commands.
+ *
+ * Only used for the global g_commands.
+ */
+class CommandTable {
+    using Container = unordered_map<string, CommandBinding>;
 
-extern CommandBinding g_commands[];
+public:
+    CommandTable(initializer_list<Container::value_type> values)
+        : map(values) {}
 
-int call_command(int argc, char** argv, Output output);
-int call_command_no_output(int argc, char** argv);
-int call_command_substitute(char* needle, char* replacement,
-                            int argc, char** argv, Output output);
+    int callCommand(Input in, Output out) const;
+
+    Container::const_iterator begin() const { return map.cbegin(); }
+    Container::const_iterator end() const { return map.cend(); }
+private:
+    Container map;
+};
+
+// initialized in main.cc
+extern const CommandTable g_commands;
+}
+
+// Mark the following two functions as obsolete to make it easier to detect and
+// fix call-sites gradually.
+
+int call_command(int argc, char** argv, Output output)
+   __attribute__((deprecated("Old C interface, use CommandTable")));
+
+int call_command_no_output(int argc, char** argv)
+   __attribute__((deprecated("Old C interface, use CommandTable")));
 
 // commands
 int list_commands(int argc, char** argv, Output output);
