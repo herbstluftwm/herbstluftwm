@@ -24,7 +24,7 @@ public:
     static std::shared_ptr<ClientManager> clients();
 
     /* external interface */
-    static void cmd_ls(Input in, Output out);
+    static int cmd_ls(Input in, Output out);
 
 private:
 

@@ -36,13 +36,16 @@ std::shared_ptr<ClientManager> Root::clients() {
     return root_->child<ClientManager>("clients");
 }
 
-void Root::cmd_ls(Input in, Output out)
+int Root::cmd_ls(Input in, Output out)
 {
-    if (in.empty())
-        return root_->ls(out);
+    if (in.empty()) {
+        root_->ls(out);
+    } else {
+        Path p(in.front());
+        root_->ls(p, out);
+    }
 
-    Path p(in.front());
-    root_->ls(p, out);
+    return 0;
 }
 
 int print_object_tree_command(int argc, char* argv[], Output output) {
