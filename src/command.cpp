@@ -301,20 +301,20 @@ namespace herbstluft {
 // have been migrated to int(Input, Output).
 
 /* Creates an ephemeral argv array from the given ArgList */
-function <int(Input,Output)> CommandBinding::commandFromCFunc(
+function <int(ArgList,Output)> CommandBinding::commandFromCFunc(
         function <int(int argc, char**argv, Output output)> func) {
-    return [func](Input in, Output out) {
-        shared_ptr<char*> argv(new char*[in.size()], default_delete<char*[]>());
+    return [func](ArgList args, Output out) {
+        shared_ptr<char*> argv(new char*[args.size()], default_delete<char*[]>());
 
-        auto elem = in.begin();
-        for (size_t i = 0; i < in.size(); i++) {
+        auto elem = args.begin();
+        for (size_t i = 0; i < args.size(); i++) {
             // Most of the commands want a char**, not a const char**. Let's
             // hope, they don't actually modify it.
             argv.get()[i] = const_cast<char*>(elem->c_str());
             ++elem;
         }
 
-        return func(in.size(), argv.get(), out);
+        return func(args.size(), argv.get(), out);
     };
 }
 
@@ -341,12 +341,12 @@ CommandBinding::CommandBinding(int func())
 {}
 
 // Implementation of CommandTable
-int CommandTable::callCommand(Input in, Output out) const {
-    if (in.empty()) {
+int CommandTable::callCommand(ArgList args, Output out) const {
+    if (args.empty()) {
         return HERBST_COMMAND_NOT_FOUND;
     }
 
-    const string cmd_name = *in.begin();
+    const string cmd_name = *args.begin();
     const auto cmd = map.find(cmd_name);
 
     if (cmd == map.end()) {
@@ -354,7 +354,7 @@ int CommandTable::callCommand(Input in, Output out) const {
         return HERBST_COMMAND_NOT_FOUND;
     }
 
-    return cmd->second(in, out);
+    return cmd->second(args, out);
 }
 
 } // end namespace herbstluft

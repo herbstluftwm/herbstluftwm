@@ -35,12 +35,12 @@ namespace herbstluft {
 class CommandBinding {
 public:
     // A command that taks an argument list and produces output
-    CommandBinding(int cmd(Input, Output))
+    CommandBinding(int cmd(ArgList, Output))
         : command(cmd) {}
     // A command that doesn't produce ouput
-    CommandBinding(int cmd(Input))
+    CommandBinding(int cmd(ArgList))
         // Ignore the output parameter
-        : command([cmd](Input in, Output) { return cmd(in); })
+        : command([cmd](ArgList args, Output) { return cmd(args); })
     {}
 
     // FIXME: Remove after C++ transition
@@ -57,15 +57,15 @@ public:
     CommandBinding(int func());
 
     /** Call the stored command */
-    int operator()(Input in, Output out) const { return command(in, out); }
+    int operator()(ArgList args, Output out) const { return command(args, out); }
 
 private:
     // FIXME: Remove after C++ transition
-    function<int(Input,Output)> commandFromCFunc(
+    function<int(ArgList,Output)> commandFromCFunc(
         function <int(int argc, char**argv, Output output)> func
     );
 
-    function<int(Input, Output)> command;
+    function<int(ArgList, Output)> command;
 };
 
 /** A list of all available commands.
@@ -79,7 +79,7 @@ public:
     CommandTable(initializer_list<Container::value_type> values)
         : map(values) {}
 
-    int callCommand(Input in, Output out) const;
+    int callCommand(ArgList args, Output out) const;
 
     Container::const_iterator begin() const { return map.cbegin(); }
     Container::const_iterator end() const { return map.cend(); }
