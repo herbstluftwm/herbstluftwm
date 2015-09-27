@@ -357,6 +357,31 @@ int CommandTable::callCommand(ArgList args, Output out) const {
     return cmd->second(args, out);
 }
 
+namespace Commands {
+    shared_ptr<const CommandTable> command_table;
+}
+
+void Commands::initialize(unique_ptr<const CommandTable> commands) {
+    if (!command_table) {
+        command_table = move(commands);
+    }
+    // TODO What do we do in the 'already initialized' case?
+}
+
+int Commands::call(ArgList args, Output out) {
+    if (!command_table) {
+        return HERBST_COMMAND_NOT_FOUND;
+    }
+    return command_table->callCommand(args, out);
+}
+
+shared_ptr<const CommandTable> Commands::get() {
+    if (!command_table) {
+        throw logic_error("CommandTable not initialized, but get() called.");
+    }
+    return command_table;
+}
+
 } // end namespace herbstluft
 
 // Old C-ish interface to commands:
@@ -370,7 +395,7 @@ int call_command(int argc, char** argv, Output output) {
         args.emplace_back(argv[i]);
     }
 
-    return herbstluft::g_commands.callCommand(args, output);
+    return herbstluft::Commands::call(args, output);
 }
 
 int call_command_no_output(int argc, char** argv) {
@@ -381,7 +406,7 @@ int call_command_no_output(int argc, char** argv) {
 
 int list_commands(int, char**, Output output)
 {
-    for (auto cmd : herbstluft::g_commands) {
+    for (auto cmd : *herbstluft::Commands::get()) {
         output << cmd.first << endl;
     }
     return 0;
@@ -780,7 +805,7 @@ int complete_against_commands(int argc, char** argv, int position,
     // complete command
     if (position == 0) {
         char* str = (argc >= 1) ? argv[0] : NULL;
-        for (auto cmd : herbstluft::g_commands) {
+        for (auto cmd : *herbstluft::Commands::get()) {
             // only check the first len bytes
             try_complete(str, cmd.first.c_str(), output);
         }

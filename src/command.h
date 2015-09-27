@@ -68,10 +68,6 @@ private:
     function<int(ArgList, Output)> command;
 };
 
-/** A list of all available commands.
- *
- * Only used for the global g_commands.
- */
 class CommandTable {
     using Container = unordered_map<string, CommandBinding>;
 
@@ -87,9 +83,14 @@ private:
     Container map;
 };
 
-// initialized in main.cc
-extern const CommandTable g_commands;
+namespace Commands {
+    void initialize(unique_ptr<const CommandTable> commands);
+    /* Call the command args[0] */
+    int call(ArgList args, Output out);
+    shared_ptr<const CommandTable> get();
 }
+
+} // end namespace herbstluft
 
 // Mark the following two functions as obsolete to make it easier to detect and
 // fix call-sites gradually.
