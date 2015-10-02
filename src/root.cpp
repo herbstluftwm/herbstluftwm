@@ -38,6 +38,7 @@ std::shared_ptr<ClientManager> Root::clients() {
 
 int Root::cmd_ls(Input in, Output out)
 {
+    in.shift();
     if (in.empty()) {
         root_->ls(out);
     } else {
