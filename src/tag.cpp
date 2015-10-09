@@ -301,6 +301,15 @@ int tag_rename_command(int argc, char** argv, GString* output) {
     return tag_rename(tag, argv[2], output);
 }
 
+static void client_update_tag(void* key, void* client_void, void* data) {
+    (void) key;
+    (void) data;
+    HSClient* client = (HSClient*)client_void;
+    if (client) {
+        ewmh_window_update_tag(client->window, client->tag);
+    }
+}
+
 int tag_remove_command(int argc, char** argv, GString* output) {
     // usage: remove TAG [TARGET]
     // it removes an TAG and moves all its wins to TARGET
@@ -365,6 +374,7 @@ int tag_remove_command(int argc, char** argv, GString* output) {
     ewmh_update_current_desktop();
     ewmh_update_desktops();
     ewmh_update_desktop_names();
+    clientlist_foreach(client_update_tag, NULL);
     tag_set_flags_dirty();
     hook_emit_list("tag_removed", oldname, target->name->str, NULL);
     g_free(oldname);
