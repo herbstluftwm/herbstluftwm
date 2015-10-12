@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 # A simple script for window maximization and window switching.
 # Running this the first time script will:
 #

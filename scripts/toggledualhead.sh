@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Splits the currently focused monitor into two monitors displayed side by side
 # Running this on a splitted monitor joins the two monitor halfs again.
