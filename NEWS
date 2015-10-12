@@ -10,6 +10,12 @@ Current git version
       to stay below all other windows.
     * new command: close_and_remove
     * new herbstclient flags: --last-arg --print0
+    * new example scripts:
+
+      - maximize.sh
+      - toggledualhead.sh
+      - windowmenu.sh
+      - wselect.sh (new subcommand "select_here")
 
 Release 0.6.2 on 2014-03-27
 ---------------------------
