@@ -1,0 +1,7 @@
+The utilities/ folder
+=====================
+
+This is just a collection of utility programs, used only for debugging hlwm or
+applications.
+
+// vim: tw=80 ft=asciidoc
