@@ -371,4 +371,25 @@ hc keybind $Mod-Shift-l or / shift right / \
 (or analogously with arrow keys instead of +hjkl+).  Again, this shifts a
 window to the next monitor if the monitor boundary is reached.
 
+[[firstautostart]]
+Q: How do I detect whether it is the first time that autostart is executed?
+----------------------------------------------------------------------------
+If you want to actually autostart applications on herbstluftwm startup, one
+needs to take care that they are not executed on successive reloads. The
+following command returns success on the first time, autostart is executed, and
+failure on successive calls:
+----
+herbstclient silent new_attr bool my_not_first_autostart
+----
+It tries to create a new attribute (on the root object). If it is the first
+autostart run, then this succeeds. On any successive execution, this command
+fails, because the attribute +my_not_first_autostart+ already exists.
+An example looks as follows:
+----
+if hc silent new_attr bool my_not_first_autostart ; then
+    /path/to/examples/exec_on_tag.sh web firefox &
+    pidgin &
+fi
+----
+
 
