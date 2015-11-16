@@ -375,6 +375,7 @@ int tag_remove_command(int argc, char** argv, GString* output) {
     ewmh_update_desktops();
     ewmh_update_desktop_names();
     clientlist_foreach(client_update_tag, NULL);
+    tag_update_focus_objects();
     tag_set_flags_dirty();
     hook_emit_list("tag_removed", oldname, target->name->str, NULL);
     g_free(oldname);
