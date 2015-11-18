@@ -11,7 +11,7 @@ install:
 
 script:
     - make -j2
-    - make PREFIX=/usr install
+    - sudo make PREFIX=/usr install
     - xvfb-run herbstluftwm &
     - sleep 1
     - herbstclient version
