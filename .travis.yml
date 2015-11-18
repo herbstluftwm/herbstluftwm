@@ -8,6 +8,7 @@ compiler:
 install:
     - sudo apt-get -y -q update
     - sudo apt-get -y -q build-dep herbstluftwm
+    - sudo apt-get -y -q install dzen2
 
 script:
     - make -j2
