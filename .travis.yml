@@ -1,16 +1,12 @@
-sudo: false
 dist: trusty
-
-addons:
-  apt:
-    packages:
-    - libglib2.0
-    - libx11
 
 language: cpp
 compiler:
     - clang
     - gcc
+
+install:
+    - sudo apt-get build-dep herbstluftwm
 
 script:
     - make -j2
