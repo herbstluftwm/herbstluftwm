@@ -22,7 +22,7 @@ LDXX ?= g++
 CFLAGS ?= -g
 CFLAGS += -pedantic -Wall -std=c99
 CXXFLAGS ?= -g
-CXXFLAGS += -pedantic -Wall -std=c++0x -Wno-sign-compare -Wno-narrowing -Wno-deprecated-register
+CXXFLAGS += -pedantic -Wall -std=c++11 -Wno-sign-compare -Wno-narrowing -Wno-deprecated-register
 VERSIONFLAGS = \
     -D HERBSTLUFT_VERSION=\"$(VERSION)\" \
     -D HERBSTLUFT_VERSION_MAJOR=$(VERSION_MAJOR) \
