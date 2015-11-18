@@ -6,6 +6,7 @@ compiler:
     - gcc
 
 install:
+    - sudo apt-get update
     - sudo apt-get build-dep herbstluftwm
 
 script:
