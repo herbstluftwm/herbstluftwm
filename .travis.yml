@@ -10,9 +10,14 @@ install:
     - sudo apt-get -y -q build-dep herbstluftwm
     - sudo apt-get -y -q install dzen2
 
+before_script:
+    - "export DISPLAY=:99.0"
+    - "sh -e /etc/init.d/xvfb start"
+    - sleep 3  # give xvfb some time to start
+
 script:
     - make -j2
     - sudo make PREFIX=/usr install
-    - xvfb-run herbstluftwm &
+    - herbstluftwm &
     - sleep 1
-    - DISPLAY=:99 herbstclient version
+    - herbstclient version
