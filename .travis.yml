@@ -15,4 +15,4 @@ script:
     - sudo make PREFIX=/usr install
     - xvfb-run herbstluftwm &
     - sleep 1
-    - herbstclient version
+    - DISPLAY=:99 herbstclient version
