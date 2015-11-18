@@ -1,0 +1,16 @@
+addons:
+  apt:
+    packages:
+    - libglib2.0
+    - libx11
+
+language: cpp
+compiler:
+    - clang
+    - gcc
+
+script:
+    - make -j2
+    - xvfb-run ./herbstluftwm &
+    - sleep 1
+    - ./herbstclient version
