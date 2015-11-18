@@ -16,4 +16,3 @@ script:
     - xvfb-run herbstluftwm &
     - sleep 1
     - DISPLAY=:99 herbstclient version
-
