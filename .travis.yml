@@ -11,7 +11,7 @@ install:
 
 script:
     - make -j2
-    - export PATH="$PWD:$PATH"
-    - xvfb-run herbstluftwm --autostart "$PWD/share/autostart" &
+    - make PREFIX=/usr install
+    - xvfb-run herbstluftwm &
     - sleep 1
     - herbstclient version
