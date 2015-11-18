@@ -8,7 +8,6 @@ addons:
 
 language: cpp
 compiler:
-    - clang
     - gcc
 
 script:
