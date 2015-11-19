@@ -1,0 +1,22 @@
+dist: trusty
+
+language: cpp
+compiler:
+    - clang
+    - gcc
+
+install:
+    - sudo apt-get -y -q update
+    - sudo apt-get -y -q build-dep herbstluftwm
+    - sudo apt-get -y -q install dzen2
+
+before_script:
+    - export DISPLAY=:99.0
+    - sh -e /etc/init.d/xvfb start
+
+script:
+    - make -j2
+    - sudo make PREFIX=/usr install
+    - herbstluftwm &
+    - sleep 1
+    - herbstclient version
