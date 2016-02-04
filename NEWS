@@ -1,8 +1,8 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
-Current git version
--------------------
+Release 0.7.0 on 2016-02-04
+---------------------------
 
     * Handle EWMH request _NET_WM_MOVERESIZE more conform
     * Make tag objects accessible by their index
