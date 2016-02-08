@@ -4,8 +4,8 @@ herbstluftwm migration guide
 This guide describes the list of incompatible changes between the different
 herbstluftwm releases and how to migrate scripts and configuration.
 
-0.5.3 to current git version
-----------------------------
+0.5.3 to 0.6.0
+--------------
 // Will be activated as soon as the patches are fixed and re-reverted
 //The tag attributes curframe_windex and curframe_wcount have been removed, they
 //are replaced by the more general attributes frames.focus.windex
