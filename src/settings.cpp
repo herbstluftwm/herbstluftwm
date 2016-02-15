@@ -91,7 +91,7 @@ SettingsPair g_settings[] = {
     SET_INT(    "auto_detect_monitors",            0,           NULL        ),
     SET_INT(    "pseudotile_center_threshold",    10,           RELAYOUT    ),
     SET_INT(    "update_dragged_clients",          0,           NULL        ),
-    SET_STRING( "tree_style",                      "*| +`--.",  FR_COLORS   ),
+    SET_STRING( "tree_style",                      "*| +`--.",  NULL        ),
     SET_STRING( "wmname",                  WINDOW_MANAGER_NAME, WMNAME      ),
     // settings for compatibility:
     SET_COMPAT( "window_border_width",
