@@ -16,6 +16,8 @@
 #include <string.h>
 #include <stdio.h>
 
+void update_verbose();
+
 SettingsPair SET_INT(const char* name, int defaultval, void (*cb)())
 {
     SettingsPair sp;
@@ -57,42 +59,43 @@ SettingsPair SET_COMPAT(const char* name, const char* read, const char* write)
 
 // default settings:
 SettingsPair g_settings[] = {
-    SET_INT(    "frame_gap",                       5,           RELAYOUT    ),
-    SET_INT(    "frame_padding",                   0,           RELAYOUT    ),
-    SET_INT(    "window_gap",                      0,           RELAYOUT    ),
-    SET_INT(    "snap_distance",                   10,          NULL        ),
-    SET_INT(    "snap_gap",                        5,           NULL        ),
-    SET_INT(    "mouse_recenter_gap",              0,           NULL        ),
-    SET_STRING( "frame_border_active_color",       "red",       FR_COLORS   ),
-    SET_STRING( "frame_border_normal_color",       "blue",      FR_COLORS   ),
-    SET_STRING( "frame_border_inner_color",        "black",     FR_COLORS   ),
-    SET_STRING( "frame_bg_normal_color",           "black",     FR_COLORS   ),
-    SET_STRING( "frame_bg_active_color",           "black",     FR_COLORS   ),
-    SET_INT(    "frame_bg_transparent",            0,           FR_COLORS   ),
-    SET_INT(    "frame_transparent_width",         0,           FR_COLORS   ),
-    SET_INT(    "frame_border_width",              2,           FR_COLORS   ),
-    SET_INT(    "frame_border_inner_width",        0,           FR_COLORS   ),
-    SET_INT(    "frame_active_opacity",            100,         FR_COLORS   ),
-    SET_INT(    "frame_normal_opacity",            100,         FR_COLORS   ),
-    SET_INT(    "focus_crosses_monitor_boundaries", 1,          NULL        ),
-    SET_INT(    "always_show_frame",               0,           RELAYOUT    ),
-    SET_INT(    "default_direction_external_only", 0,           NULL        ),
-    SET_INT(    "default_frame_layout",            0,           FR_COLORS   ),
-    SET_INT(    "focus_follows_mouse",             0,           NULL        ),
-    SET_INT(    "focus_stealing_prevention",       1,           NULL        ),
-    SET_INT(    "swap_monitors_to_get_tag",        1,           NULL        ),
-    SET_INT(    "raise_on_focus",                  0,           NULL        ),
-    SET_INT(    "raise_on_focus_temporarily",      0,           FOCUS_LAYER ),
-    SET_INT(    "raise_on_click",                  1,           NULL        ),
-    SET_INT(    "gapless_grid",                    1,           RELAYOUT    ),
-    SET_INT(    "smart_frame_surroundings",        0,           RELAYOUT    ),
-    SET_INT(    "smart_window_surroundings",       0,           RELAYOUT    ),
-    SET_INT(    "monitors_locked",                 0,           LOCK_CHANGED),
-    SET_INT(    "auto_detect_monitors",            0,           NULL        ),
-    SET_INT(    "pseudotile_center_threshold",    10,           RELAYOUT    ),
-    SET_INT(    "update_dragged_clients",          0,           NULL        ),
-    SET_STRING( "tree_style",                      "*| +`--.",  NULL        ),
-    SET_STRING( "wmname",                  WINDOW_MANAGER_NAME, WMNAME      ),
+    SET_INT(    "verbose",                         0,           update_verbose),
+    SET_INT(    "frame_gap",                       5,           RELAYOUT      ),
+    SET_INT(    "frame_padding",                   0,           RELAYOUT      ),
+    SET_INT(    "window_gap",                      0,           RELAYOUT      ),
+    SET_INT(    "snap_distance",                   10,          NULL          ),
+    SET_INT(    "snap_gap",                        5,           NULL          ),
+    SET_INT(    "mouse_recenter_gap",              0,           NULL          ),
+    SET_STRING( "frame_border_active_color",       "red",       FR_COLORS     ),
+    SET_STRING( "frame_border_normal_color",       "blue",      FR_COLORS     ),
+    SET_STRING( "frame_border_inner_color",        "black",     FR_COLORS     ),
+    SET_STRING( "frame_bg_normal_color",           "black",     FR_COLORS     ),
+    SET_STRING( "frame_bg_active_color",           "black",     FR_COLORS     ),
+    SET_INT(    "frame_bg_transparent",            0,           FR_COLORS     ),
+    SET_INT(    "frame_transparent_width",         0,           FR_COLORS     ),
+    SET_INT(    "frame_border_width",              2,           FR_COLORS     ),
+    SET_INT(    "frame_border_inner_width",        0,           FR_COLORS     ),
+    SET_INT(    "frame_active_opacity",            100,         FR_COLORS     ),
+    SET_INT(    "frame_normal_opacity",            100,         FR_COLORS     ),
+    SET_INT(    "focus_crosses_monitor_boundaries", 1,          NULL          ),
+    SET_INT(    "always_show_frame",               0,           RELAYOUT      ),
+    SET_INT(    "default_direction_external_only", 0,           NULL          ),
+    SET_INT(    "default_frame_layout",            0,           FR_COLORS     ),
+    SET_INT(    "focus_follows_mouse",             0,           NULL          ),
+    SET_INT(    "focus_stealing_prevention",       1,           NULL          ),
+    SET_INT(    "swap_monitors_to_get_tag",        1,           NULL          ),
+    SET_INT(    "raise_on_focus",                  0,           NULL          ),
+    SET_INT(    "raise_on_focus_temporarily",      0,           FOCUS_LAYER   ),
+    SET_INT(    "raise_on_click",                  1,           NULL          ),
+    SET_INT(    "gapless_grid",                    1,           RELAYOUT      ),
+    SET_INT(    "smart_frame_surroundings",        0,           RELAYOUT      ),
+    SET_INT(    "smart_window_surroundings",       0,           RELAYOUT      ),
+    SET_INT(    "monitors_locked",                 0,           LOCK_CHANGED  ),
+    SET_INT(    "auto_detect_monitors",            0,           NULL          ),
+    SET_INT(    "pseudotile_center_threshold",    10,           RELAYOUT      ),
+    SET_INT(    "update_dragged_clients",          0,           NULL          ),
+    SET_STRING( "tree_style",                      "*| +`--.",  NULL          ),
+    SET_STRING( "wmname",                  WINDOW_MANAGER_NAME, WMNAME        ),
     // settings for compatibility:
     SET_COMPAT( "window_border_width",
                 "theme.tiling.active.border_width", "theme.border_width"),
@@ -118,6 +121,10 @@ static GString* cb_on_change(HSAttribute* attr);
 static void cb_read_compat(void* data, GString* output);
 static GString* cb_write_compat(HSAttribute* attr, const char* new_value);
 
+void update_verbose() {
+    g_verbose = settings_find("verbose")->value.i;
+}
+
 int settings_count() {
     return LENGTH(g_settings);
 }
@@ -133,6 +140,7 @@ void settings_init() {
         }
     }
     settings_find("monitors_locked")->value.i = g_initial_monitors_locked;
+    settings_find("verbose")->value.i = g_verbose;
 
     // create a settings object
     g_settings_object = hsobject_create_and_link(hsobject_root(), "settings");
