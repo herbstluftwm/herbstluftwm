@@ -868,15 +868,24 @@ void client_update_title(HSClient* client) {
     GString* new_name = window_property_to_g_string(g_display,
         client->window, g_netatom[NetWmName]);
     if (!new_name) {
-        char* ch_new_name = NULL;
-        /* if ewmh name isn't set, then fall back to WM_NAME */
-        if (0 != XFetchName(g_display, client->window, &ch_new_name)) {
-            new_name = g_string_new(ch_new_name);
-            XFree(ch_new_name);
+        /* If no ewmh is found, fall back to WM_NAME */
+        XTextProperty xtp_new_name;
+        int len;
+        char **return_list = NULL;
+        if (0 != XGetWMName(g_display, client->window, &xtp_new_name) &&
+            0 == Xutf8TextPropertyToTextList(g_display, &xtp_new_name,
+                                             &return_list, &len) && (len >= 1)){
+            new_name = g_string_new(return_list[0]);
         } else {
             new_name = g_string_new("");
             HSDebug("no title for window %lx found, using \"\"\n",
                     client->window);
+        }
+        if (return_list != NULL) {
+            XFreeStringList(return_list);
+        }
+        if (xtp_new_name.value != NULL) {
+            XFree(xtp_new_name.value);
         }
     }
     bool changed = (0 != strcmp(client->title->str, new_name->str));
