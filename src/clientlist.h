@@ -70,7 +70,7 @@ void reset_client_colors();
 void reset_client_settings();
 
 // adds a new client to list of managed client windows
-HSClient* manage_client(Window win);
+HSClient* manage_client(Window win, bool force_unmanage = false);
 void client_fuzzy_fix_initial_position(HSClient* client);
 void unmanage_client(Window win);
 
