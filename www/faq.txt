@@ -55,19 +55,19 @@ rules apply:
 
         * If a process spawns a window, then the window will spawn delayed. This
           delay differs from application to application (and from time to time).
-          So a script like
-
+          So a script like +
++
 ----
 herbstclient spawn xterm
 herbstclient spawn xev
 ----
-
++
 does *not* guarantee that the +xterm+ window will appear before the
 +xev+ window! It only guarantees that the +xterm+ is executed before +xev+ will
-be executed.+
-
-=> If you want to apply some rules only for the next windows, then use a
-bash-script like the one for <<TEMP_RULES,temporary rules>>.
+be executed. +
+    +
+    => If you want to apply some rules only for the next windows, then use a
+    bash-script like the one for <<TEMP_RULES,temporary rules>>.
 
 
 Q: Why is herbstluftwm called herbstluftwm?
