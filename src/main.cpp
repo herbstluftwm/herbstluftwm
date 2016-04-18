@@ -903,7 +903,7 @@ void motionnotify(XEvent* event) {
 }
 
 void mapnotify(XEvent* event) {
-    //HSDebug("name is: MapNotify\n");
+    HSDebug("name is: MapNotify for %lx\n", event->xmap.window);
     HSClient* c;
     if ((c = get_client_from_window(event->xmap.window))) {
         // reset focus. so a new window gets the focus if it shall have the
