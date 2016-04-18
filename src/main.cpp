@@ -911,6 +911,9 @@ void mapnotify(XEvent* event) {
         frame_focus_recursive(g_cur_frame);
         // also update the window title - just to be sure
         client_update_title(c);
+    } else {
+        HSDebug("MapNotify: briefly managing %lx to apply rules\n", event->xmap.window);
+        manage_client(event->xmap.window, true);
     }
 }
 
