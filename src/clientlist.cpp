@@ -212,7 +212,7 @@ static GString* client_attr_sh_floating(HSAttribute* attr) {
     return NULL;
 }
 
-HSClient* manage_client(Window win) {
+HSClient* manage_client(Window win, bool force_unmanage) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
         return NULL;
@@ -269,7 +269,7 @@ HSClient* manage_client(Window win) {
     // Reuse the keymask string
     client->keymask = changes.keymask;
 
-    if (!changes.manage) {
+    if (!changes.manage || force_unmanage) {
         client_changes_free_members(&changes);
         client_destroy(client);
         // map it... just to be sure
