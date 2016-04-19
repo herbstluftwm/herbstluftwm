@@ -73,7 +73,8 @@ void mouse_initiate_resize(struct HSClient* client, int argc, char** argv);
 void mouse_call_command(struct HSClient* client, int argc, char** argv);
 /* some mouse drag functions */
 void mouse_function_move(XMotionEvent* me);
-void mouse_function_resize(XMotionEvent* me);
+void mouse_function_resize_floated(XMotionEvent* me);
+void mouse_function_resize_tiled(XMotionEvent* me);
 void mouse_function_zoom(XMotionEvent* me);
 
 void complete_against_mouse_buttons(const char* needle, char* prefix, GString* output);
