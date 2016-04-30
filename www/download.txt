@@ -16,6 +16,7 @@ following platforms:
   * link:https://apps.fedoraproject.org/packages/herbstluftwm[Fedora]
   * link:http://www.openbsd.org/cgi-bin/cvsweb/ports/x11/herbstluftwm/[OpenBSD]
   * link:http://alpinelinux.org/apk/main/x86_64/herbstluftwm[Alpine Linux]
+  * link:https://git.exherbo.org/summer/packages/x11-wm/herbstluftwm/index.html[Exherbo]
 
 It's confirmed to run on:
 
