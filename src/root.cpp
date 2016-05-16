@@ -51,6 +51,17 @@ int Root::cmd_ls(Input in, Output out)
     return 0;
 }
 
+int Root::cmd_get_attr(Input in, Output output) {
+    in.shift();
+    if (in.empty()) return HERBST_NEED_MORE_ARGS;
+
+    Attribute* a = Root::get()->getAttribute(in.front(), output);
+    if (!a) return HERBST_INVALID_ARGUMENT;
+    output << a->str();
+    return 0;
+}
+
+
 Attribute* Root::getAttribute(std::string path, Output output) {
     auto attr_path = Object::splitPath(path);
     auto child = Root::get()->child<Object>(attr_path.first);
@@ -71,17 +82,6 @@ Attribute* Root::getAttribute(std::string path, Output output) {
 int print_object_tree_command(int argc, char* argv[], Output output) {
     Root::get()->printTree(output);
     return 0;
-}
-
-int attribute_get_command(ArgList args, Output output) {
-    if (args.size() >= 2) {
-        Attribute* a = Root::get()->getAttribute(args[1], output);
-        if (!a) return HERBST_INVALID_ARGUMENT;
-        // TODO: Why is this always the empty string?
-        output << a->str() << std::endl;
-        return 0;
-    }
-    return HERBST_NEED_MORE_ARGS;
 }
 
 }

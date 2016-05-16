@@ -20,6 +20,8 @@ public:
     // constructor creates top-level objects
     Root();
 
+    Attribute* getAttribute(std::string path, Output output);
+
     /* convenience methods */
     static std::shared_ptr<HookManager> hooks();
     static std::shared_ptr<ClientManager> clients();
@@ -29,7 +31,8 @@ public:
     // find an attribute deep in the object tree.
     // on failure, the error message is printed to output and NULL
     // is returned
-    Attribute* getAttribute(std::string path, Output output);
+    static int cmd_get_attr(Input args, Output output);
+
 
 private:
 
@@ -37,8 +40,6 @@ private:
 };
 
 int print_object_tree_command(int argc, char* argv[], Output output);
-
-int attribute_get_command(ArgList args, Output output);
 
 }
 
