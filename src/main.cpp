@@ -193,6 +193,7 @@ unique_ptr<CommandTable> commands() {
         // {"attr",           attr_command},
         // {"compare",        compare_command},
         {"object_tree",    print_object_tree_command},
+        {"get_attr",       attribute_get_command},
         // {"get_attr",       hsattribute_get_command},
         // {"set_attr",       hsattribute_set_command},
         // {"new_attr",       userattribute_command},

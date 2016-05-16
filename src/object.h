@@ -31,6 +31,7 @@ public:
 
     // object tree ls command
     virtual void ls(Output out);
+    virtual void ls(Path path, Output out); // traversial version
 
     virtual bool exists(const std::string &name, Type t = Type::DIRECTORY);
     virtual std::string read(const std::string &attr) const;
@@ -39,6 +40,11 @@ public:
     virtual bool hookable(const std::string &attr) const;
 
     virtual void trigger(const std::string &action, ArgList args);
+
+    static std::pair<ArgList,std::string> splitPath(const std::string &path);
+
+    // return an attribute if it exists, else NULL
+    Attribute* attribute(const std::string &name);
 
 protected:
     // initialize an attribute (typically used by init())

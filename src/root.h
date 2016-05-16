@@ -2,15 +2,16 @@
 #define ROOT_H
 
 #include "utils.h"
-#include "directory.h"
+#include "object.h"
 
 // new object tree root.
 namespace herbstluft {
 
+class Attribute;
 class HookManager;
 class ClientManager;
 
-class Root : public Directory {
+class Root : public Object {
 public:
     static std::shared_ptr<Root> create();
     static void destroy();
@@ -25,6 +26,10 @@ public:
 
     /* external interface */
     static int cmd_ls(Input in, Output out);
+    // find an attribute deep in the object tree.
+    // on failure, the error message is printed to output and NULL
+    // is returned
+    Attribute* getAttribute(std::string path, Output output);
 
 private:
 
@@ -33,6 +38,7 @@ private:
 
 int print_object_tree_command(int argc, char* argv[], Output output);
 
+int attribute_get_command(ArgList args, Output output);
 
 }
 

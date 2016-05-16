@@ -79,6 +79,16 @@ void Object::trigger(const std::string &action, ArgList args) {
     // TODO: throw; if we got here, there was an error, e.g. typo on user's side
 }
 
+std::pair<ArgList,std::string> Object::splitPath(const std::string &path) {
+    std::vector<std::string> splitpath = ArgList(path, '.').toVector();
+    if (splitpath.empty()) {
+        return make_pair(splitpath, "");
+    }
+    std::string last = splitpath.back();
+    splitpath.pop_back();
+    return make_pair(splitpath, last);
+}
+
 void Object::wireAttributes(std::vector<Attribute*> attrs)
 {
     for (auto attr : attrs) {
@@ -117,6 +127,9 @@ void Object::ls(Output out)
         out << "  " << it.first << std::endl;
     }
 }
+void Object::ls(Path path, Output out) {
+    Directory::ls(path, out);
+}
 
 void Object::print(const std::string &prefix)
 {
@@ -154,6 +167,15 @@ void Object::print(const std::string &prefix)
         for (auto it : hooks_) {
             std::cout << prefix << "\t" << it.first << std::endl;
         }
+    }
+}
+
+Attribute* Object::attribute(const std::string &name) {
+    auto it = attribs_.find(name);
+    if (it == attribs_.end()) {
+        return NULL;
+    } else {
+        return it->second;
     }
 }
 

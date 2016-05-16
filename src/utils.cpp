@@ -47,6 +47,10 @@ ArgList ArgList::operator+(size_t shift_amount) {
     return ret;
 }
 
+std::string ArgList::operator[](size_t idx) {
+    return c_->operator[](idx);
+}
+
 void ArgList::split(Container &ret, const std::string &s, char delim) {
     std::stringstream tmp(s);
     std::string item;
@@ -71,6 +75,9 @@ std::string ArgList::join(ArgList::Container::const_iterator first,
     for (auto it = first + 1; it != last; ++it)
         tmp << delim << *it;
     return tmp.str();
+}
+std::string ArgList::join(char delim) {
+    return join(begin_, c_->cend(), delim);
 }
 
 }

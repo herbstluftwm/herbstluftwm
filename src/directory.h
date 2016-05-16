@@ -46,6 +46,17 @@ public:
         else
             return {};
     }
+    template<typename T>
+    std::shared_ptr<T> child(Path path) {
+        if (path.empty()) {
+            return ptr<T>();
+        }
+        auto it = children_.find(path.front());
+        if (it != children_.end())
+            return it->second->child<T>(path + 1);
+        else
+            return {};
+    }
 
     /* Called by the directory whenever children are added or removed */
     void notifyHooks(HookEvent event, const std::string &arg);

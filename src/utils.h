@@ -35,6 +35,7 @@ struct ArgList {
     ArgList(const std::string &s, char delim = '.');
     // operator to obtain shifted version of list (shallow copy)
     ArgList operator+(size_t shift_amount);
+    std::string operator[](size_t idx);
 
     Container::const_iterator begin() const { return begin_; }
     Container::const_iterator end() const { return c_->cend(); }
@@ -43,9 +44,14 @@ struct ArgList {
     bool empty() const { return begin_ == c_->end(); }
     Container::size_type size() const { return std::distance(begin_, c_->cend()); }
 
+    std::string join(char delim = '.');
+
     void reset() { begin_ = c_->cbegin(); }
     void shift(size_t amount = 1) {
         begin_ += std::min(amount, (size_t)std::distance(begin_, c_->cend()));
+    }
+    Container toVector() const {
+        return Container(begin_, c_->cend());
     }
 
 protected:
@@ -60,6 +66,7 @@ protected:
 };
 
 using Path = ArgList;
+
 }
 
 // STRTODO: move this into the herbstluftwm namespace

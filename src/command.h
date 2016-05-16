@@ -96,10 +96,10 @@ namespace Commands {
 // fix call-sites gradually.
 
 int call_command(int argc, char** argv, Output output)
-   __attribute__((deprecated("Old C interface, use CommandTable")));
+   /* __attribute__((deprecated("Old C interface, use CommandTable"))) */;
 
 int call_command_no_output(int argc, char** argv)
-   __attribute__((deprecated("Old C interface, use CommandTable")));
+   /* __attribute__((deprecated("Old C interface, use CommandTable"))) */;
 
 // commands
 int list_commands(int argc, char** argv, Output output);
