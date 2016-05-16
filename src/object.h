@@ -54,7 +54,7 @@ protected:
     std::unordered_map<std::string, Attribute*> attribs_;
     std::unordered_map<std::string, Action*> actions_;
 
-    DynamicAttribute nameAttribute_;
+    //DynamicAttribute nameAttribute_;
 };
 
 }

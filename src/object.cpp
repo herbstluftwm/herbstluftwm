@@ -20,10 +20,10 @@
 namespace herbstluft {
 
 Object::Object(const std::string &name)
-    : Directory(name),
-      nameAttribute_("name", Type::ATTRIBUTE_STRING, false, true)
+    : Directory(name)
+    //, nameAttribute_("name", Type::ATTRIBUTE_STRING, false, true)
 {
-    wireAttributes({ &nameAttribute_ });
+    //wireAttributes({ &nameAttribute_ });
 }
 
 
@@ -38,9 +38,6 @@ bool Object::exists(const std::string &name, Type t)
 }
 
 std::string Object::read(const std::string &attr) const {
-    if (attr == "name")
-        return name_;
-
     auto it = attribs_.find(attr);
     if (it != attribs_.end())
         return it->second->str();
