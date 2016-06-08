@@ -7,12 +7,12 @@ function _get_herbstluftwm_completion
     set -e tokens[1]
 
     # Filter herbstclient options
-    set -l index (count $tokens)
-    for token in $tokens[-1..1]
-        if string match --quiet -- "-" (string sub -l 1 -- $token)
-            set -e tokens[$index]
+    for token in $tokens
+        if string match -q -- "-*" $token
+            set -e tokens[1]
+        else
+            break
         end
-        set index (math "$index - 1")
     end
 
     set -l position (count $tokens)
