@@ -47,6 +47,7 @@ CONFIGDIR = $(SYSCONFDIR)/xdg/herbstluftwm
 XSESSIONSDIR = $(DATADIR)/xsessions
 ZSHCOMPLETIONDIR = $(DATADIR)/zsh/functions/Completion/X
 BASHCOMPLETIONDIR = $(SYSCONFDIR)/bash_completion.d
+FISHCOMPLETIONDIR = /usr/share/fish/vendor_completions.d
 TARFILE = herbstluftwm-$(SHORTVERSION).tar.gz
 A2X = a2x
 ASCIIDOC = asciidoc
