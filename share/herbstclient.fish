@@ -17,7 +17,8 @@ function _get_herbstluftwm_completion
 
     set -l position (count $tokens)
 
-    # If we have tokens but and cursor sits on a word (not space) decrease position due to 0-based in hlwm and 1-based in fish
+    # If there are tokens and cursor sits on a (possibly unfinished) word
+    # decrease position due to 0-based in hlwm and 1-based in fish
     if test $position -gt 0 -a -n (commandline -ct)
         set position (math "$position - 1")
     end
