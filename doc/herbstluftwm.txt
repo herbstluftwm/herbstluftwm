@@ -482,6 +482,7 @@ shift ['-i'|'-e'] 'DIRECTION'::
 
 shift_to_monitor 'MONITOR'::
     Moves the focused window to the tag on the specified 'MONITOR'.
+    See the <<MONITORS,MONITORS section>>, how to address a monitor.
 
 remove::
     Removes focused frame and merges its windows to its neighbour frame.
@@ -516,7 +517,8 @@ cycle_monitor ['DELTA']::
     Cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.
 
 focus_monitor 'MONITOR'::
-    Puts focus to the specified monitor.
+    Puts focus to the specified monitor. See the <<MONITORS,MONITORS section>>,
+    how to address a monitor.
 
 add 'TAG'::
     Creates a new empty tag named 'TAG'.
