@@ -1051,6 +1051,80 @@ void client_set_dragged(HSClient* client, bool drag_state) {
 }
 
 void client_fuzzy_fix_initial_position(HSClient* client) {
+    // first, find the monitors, the client is on
+    // monitor at the north-west corner:
+    HSMonitor* mon_nw = monitor_with_coordinate(client->float_size.x,
+                                                client->float_size.y),
+    // monitor at the south-east corner:
+    *mon_se = monitor_with_coordinate(client->float_size.x
+                                      + client->float_size.width,
+                                      client->float_size.y
+                                      + client->float_size.height);
+    if (mon_nw && mon_nw == mon_se) {
+        // the client is on only one monitor.
+        // so assume that this is a physical monitor and thus transform
+        // the client's global floating coordinates to coordinates relative to
+        // this monitor
+        client->float_size.x -= mon_nw->rect.x;
+        client->float_size.y -= mon_nw->rect.y;
+    } else if (mon_nw && !mon_se) {
+        // only one corner is on some monitor; then use this monitor as a
+        // reference:
+        client->float_size.x -= mon_nw->rect.x;
+        client->float_size.y -= mon_nw->rect.y;
+    } else if (!mon_nw && mon_se) {
+        // only one corner is on some monitor; then use this monitor as a
+        // reference:
+        client->float_size.x -= mon_se->rect.x;
+        client->float_size.y -= mon_se->rect.y;
+    } else  {
+        Rectangle ref;
+        if (mon_nw && mon_se) {
+            // the client spreads over multiple monitors.
+            // so assume that the client does not know about these monitors (either
+            // because of the lack of xinerama/xrandr features or because of
+            // "virtual" hlwm monitors). So scale the position from
+            // these two monitors
+            ref.x = MIN(mon_nw->rect.x, mon_se->rect.x);
+            ref.y = MIN(mon_nw->rect.y, mon_se->rect.y);
+            ref.width = MAX(mon_se->rect.x + mon_se->rect.width,
+                            mon_nw->rect.x + mon_nw->rect.width) - ref.x;
+            ref.height = MAX(mon_se->rect.y + mon_se->rect.height,
+                             mon_nw->rect.y + mon_nw->rect.height) - ref.y;
+        } else { // neither of the corners is on some monitor
+            // then use the screen edges as the reference
+            XWindowAttributes attributes;
+            XGetWindowAttributes(g_display, g_root, &attributes);
+            ref.x = 0;
+            ref.y = 0;
+            ref.width = attributes.width;
+            ref.height = attributes.height;
+        }
+        // compute the relative position of the client's center
+        HSMonitor* m = find_monitor_with_tag(client->tag);
+        if (!m) m = get_current_monitor();
+        // old coordinates of the client's center
+        int old_x = client->float_size.x + client->float_size.width/2;
+        int old_y = client->float_size.y + client->float_size.height/2;
+        // in the following we write (a*b)/c instead of (a/c) * b
+        // in order to avoid conversion to (float). To improve intuitive
+        // reading, I write it as an ascii-art-fraction
+        //  (       a
+        //  /*    -----  */  *  c       )
+        //          b
+        //  Here, a/b denotes the relative size of the client's center, and by
+        //  " * c " we scale it back to the new monitors dimensions.
+        client->float_size.x = (
+                (old_x - ref.x)
+            /* ---------------- */  *  m->rect.width)
+               /  ref.width
+               - client->float_size.width/2;
+        client->float_size.y = (
+                (old_y - ref.y)
+            /* ---------------- */  *  m->rect.height)
+               /  ref.height
+               - client->float_size.height/2;
+    }
     // find out the top-left-most position of the decoration,
     // considering the current settings of possible floating decorations
     int extreme_x = client->float_size.x;
