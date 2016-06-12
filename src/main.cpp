@@ -520,8 +520,19 @@ void event_on_configure(XEvent event) {
             bool height_requested = 0 != (cre->value_mask & CWHeight);
             bool x_requested = 0 != (cre->value_mask & CWX);
             bool y_requested = 0 != (cre->value_mask & CWY);
-            cre->width += 2*cre->border_width;
-            cre->height += 2*cre->border_width;
+            // find monitor appropriate for client
+            HSMonitor* m = find_monitor_with_tag(client->tag);
+            if (!m) {
+                m = monitor_with_coordinate(client->float_size.x,
+                                            client->float_size.y);
+                if (!m) {
+                    m = get_current_monitor();
+                }
+            }
+            // requested coordinates are relative to the root window.
+            // convert them to coordinates relative to the monitor;
+            cre->x -= m->rect.x + m->pad_left;
+            cre->y -= m->rect.y + m->pad_up;
             if (width_requested && newRect.width  != cre->width) changes = true;
             if (height_requested && newRect.height != cre->height) changes = true;
             if (x_requested || y_requested) changes = true;
