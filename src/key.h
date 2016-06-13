@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <X11/Xlib.h>
 #include "glib-backports.h"
-#include "clientlist.h"
+#include "client.h"
 #include "x11-types.h"
 
 #define KEY_COMBI_SEPARATORS "+-"

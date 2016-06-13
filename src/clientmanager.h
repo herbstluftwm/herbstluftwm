@@ -2,7 +2,7 @@
 #define CLIENTMANAGER_H
 
 #include "object.h"
-#include "clientlist.h"
+#include "client.h"
 
 #include <unordered_map>
 

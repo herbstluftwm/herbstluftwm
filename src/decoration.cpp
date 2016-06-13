@@ -1,6 +1,6 @@
 
 #include "decoration.h"
-#include "clientlist.h"
+#include "client.h"
 #include "globals.h"
 #include "settings.h"
 #include "ewmh.h"

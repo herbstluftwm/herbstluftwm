@@ -5,7 +5,7 @@
 
 #include "globals.h"
 #include "settings.h"
-#include "clientlist.h"
+#include "client.h"
 #include "layout.h"
 #include "ipc-protocol.h"
 #include "ewmh.h"

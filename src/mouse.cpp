@@ -5,7 +5,7 @@
 
 #include "mouse.h"
 #include "globals.h"
-#include "clientlist.h"
+#include "client.h"
 #include "layout.h"
 #include "key.h"
 #include "ipc-protocol.h"

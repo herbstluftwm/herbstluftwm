@@ -7,7 +7,7 @@
 #include "globals.h"
 #include "utils.h"
 #include "ewmh.h"
-#include "clientlist.h"
+#include "client.h"
 #include "ipc-protocol.h"
 #include "hook.h"
 #include "command.h"

@@ -6,7 +6,7 @@
 
 #include "utils.h"
 #include "mouse.h"
-#include "clientlist.h"
+#include "client.h"
 #include "tag.h"
 #include "layout.h"
 #include "settings.h"

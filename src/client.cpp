@@ -4,7 +4,7 @@
  * See LICENSE for details */
 
 #include "root.h"
-#include "clientlist.h"
+#include "client.h"
 #include "clientmanager.h"
 #include "settings.h"
 #include "globals.h"

@@ -7,7 +7,7 @@
 #include "utils.h"
 #include "globals.h"
 #include "layout.h"
-#include "clientlist.h"
+#include "client.h"
 #include "settings.h"
 #include "stack.h"
 #include "mouse.h"

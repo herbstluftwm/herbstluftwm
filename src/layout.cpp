@@ -3,7 +3,7 @@
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
 
-#include "clientlist.h"
+#include "client.h"
 #include "globals.h"
 #include "utils.h"
 #include "x11-utils.h"

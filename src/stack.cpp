@@ -1,6 +1,6 @@
 #include "stack.h"
 
-#include "clientlist.h"
+#include "client.h"
 #include "ewmh.h"
 #include "globals.h"
 

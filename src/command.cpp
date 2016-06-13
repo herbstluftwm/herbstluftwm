@@ -10,7 +10,7 @@
 #include "settings.h"
 #include "layout.h"
 #include "key.h"
-#include "clientlist.h"
+#include "client.h"
 #include "clientmanager.h"
 #include "monitor.h"
 #include "rules.h"

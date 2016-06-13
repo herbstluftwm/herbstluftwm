@@ -5,7 +5,7 @@
 
 // herbstluftwm
 #include "root.h"
-#include "clientlist.h"
+#include "client.h"
 #include "utils.h"
 #include "key.h"
 #include "layout.h"

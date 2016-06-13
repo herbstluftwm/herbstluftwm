@@ -24,7 +24,7 @@
 #include "monitor.h"
 #include "settings.h"
 #include "stack.h"
-#include "clientlist.h"
+#include "client.h"
 
 #include <vector>
 

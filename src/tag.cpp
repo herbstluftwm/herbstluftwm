@@ -11,7 +11,7 @@
 
 #include "root.h"
 #include "globals.h"
-#include "clientlist.h"
+#include "client.h"
 #include "clientmanager.h"
 #include "ipc-protocol.h"
 #include "hook.h"
