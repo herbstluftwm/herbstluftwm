@@ -16,6 +16,7 @@
 #include "object.h"
 #include "utils.h"
 #include "decoration.h"
+#include "attribute_.h"
 
 struct HSSlice;
 
@@ -36,9 +37,11 @@ public:
 public:
     herbstluft::Rectangle   last_size_;      // last size excluding the window border
     HSTag*      tag_;
-    std::string keymask_; // keymask applied to mask out keybindins
+    herbstluft::Attribute_<
+    std::string> keymask_; // keymask applied to mask out keybindins
     bool        ewmhfullscreen_; // ewmh fullscreen state
-    bool        pseudotile_; // only move client but don't resize (if possible)
+    herbstluft::Attribute_<
+    bool>       pseudotile_; // only move client but don't resize (if possible)
     bool        neverfocus_; // do not give the focus via XSetInputFocus
     bool        ewmhrequests_; // accept ewmh-requests for this client
     bool        ewmhnotify_; // send ewmh-notifications for this client
@@ -121,8 +124,6 @@ void clientlist_destroy();
 
 void reset_client_colors();
 void reset_client_settings();
-
-void window_enforce_last_size(Window in);
 
 HSClient* get_client_from_window(Window window);
 HSClient* get_current_client();

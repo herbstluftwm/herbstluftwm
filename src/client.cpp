@@ -54,8 +54,10 @@ static int client_get_scheme_triple_idx(HSClient* client);
 HSClient::HSClient(Window window, bool visible_already)
     : window_(window),
       float_size_({0, 0, 100, 100}),
-      urgent_(false), fullscreen_(false), ewmhfullscreen_(false),
-      pseudotile_(false), neverfocus_(false),
+      urgent_(false), fullscreen_(false),
+      ewmhfullscreen_(false),
+      pseudotile_("pseudotile", true, false),
+      neverfocus_(false),
       ewmhrequests_(true), ewmhnotify_(true),
       sizehints_floating_(true), sizehints_tiling_(false),
       visible_(visible_already), dragged_(false),
@@ -663,7 +665,7 @@ int client_set_property_command(int argc, char** argv) {
         bool* value;
     } properties[] = {
         { "fullscreen",   &HSClient::set_fullscreen, &client->fullscreen_    },
-        { "pseudotile",   &HSClient::set_pseudotile, &client->pseudotile_    },
+        //{ "pseudotile",   &HSClient::set_pseudotile, &client->pseudotile_    },
     };
 
     // find the property
