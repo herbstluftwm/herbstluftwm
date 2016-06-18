@@ -26,6 +26,12 @@ public:
         payload_ = payload;
         notifyHooks();
     }
+    bool operator==(const T &payload) {
+        return payload_ == payload;
+    }
+    bool operator!=(const T &payload) {
+        return payload_ != payload;
+    }
     void change(const std::string &payload);
 
 private:

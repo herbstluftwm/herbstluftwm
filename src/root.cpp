@@ -3,9 +3,11 @@
 #include "clientmanager.h"
 #include "attribute.h"
 #include "ipc-protocol.h"
+#include "globals.h"
 
 #include <memory>
 #include <stdexcept>
+#include <sstream>
 
 namespace herbstluft {
 
@@ -61,6 +63,32 @@ int Root::cmd_get_attr(Input in, Output output) {
     return 0;
 }
 
+int Root::cmd_attr(Input in, Output output) {
+    in.shift();
+
+    auto path = in.empty() ? std::string("") : in.front();
+    in.shift();
+    std::ostringstream dummy_output;
+    std::shared_ptr<Object> o = Root::get();
+    if (!path.empty()) {
+        o = o->child<Object>(Path::split(path));
+    }
+    if (o && in.empty()) {
+        o->ls(output);
+        return 0;
+    }
+
+    Attribute* a = Root::get()->getAttribute(path, output);
+    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (in.empty()) {
+        // no more arguments -> return the value
+        output << a->str();
+    } else {
+        // another argument -> set the value
+        a->change(in.front());
+    }
+    return 0;
+}
 
 Attribute* Root::getAttribute(std::string path, Output output) {
     auto attr_path = Object::splitPath(path);

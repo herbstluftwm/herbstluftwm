@@ -55,6 +55,7 @@ HSClient::HSClient(Window window, bool visible_already)
     : window_(window),
       float_size_({0, 0, 100, 100}),
       urgent_(false), fullscreen_(false),
+      keymask_("keymask", true, ""),
       ewmhfullscreen_(false),
       pseudotile_("pseudotile", true, false),
       neverfocus_(false),

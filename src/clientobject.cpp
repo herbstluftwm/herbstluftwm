@@ -14,6 +14,7 @@ ClientObject::ClientObject(Window w, bool already_visible)
     auto window_str = tmp.str();
     name_ = window_str;
     wireAttributes({
+        &keymask_,
         &pseudotile_,
     });
 }

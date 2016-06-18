@@ -205,6 +205,7 @@ unique_ptr<CommandTable> commands() {
         {"unsetenv",       unsetenv_command},
         {"ls",             herbstluft::Root::cmd_ls},
         {"get_attr",       herbstluft::Root::cmd_get_attr},
+        {"attr",           herbstluft::Root::cmd_attr},
     });
 }
 

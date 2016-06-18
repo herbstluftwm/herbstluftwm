@@ -32,6 +32,7 @@ public:
     // on failure, the error message is printed to output and NULL
     // is returned
     static int cmd_get_attr(Input args, Output output);
+    static int cmd_attr(Input args, Output output);
 
 
 private:
