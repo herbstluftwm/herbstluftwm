@@ -3,6 +3,7 @@
 
 #include "object.h"
 #include "client.h"
+#include "clientobject.h"
 
 #include <unordered_map>
 
@@ -16,17 +17,22 @@ public:
     ClientManager() : Object("clients") {}
     ~ClientManager();
 
-    std::shared_ptr<HSClient> client(Window window);
-    std::shared_ptr<HSClient> client(const std::string &identifier);
-    const std::unordered_map<Window, std::shared_ptr<HSClient>>&
+    std::shared_ptr<ClientObject> client(Window window);
+    std::shared_ptr<ClientObject> client(const std::string &identifier);
+    const std::unordered_map<Window, std::shared_ptr<ClientObject>>&
     clients() { return clients_; }
 
-    void add(std::shared_ptr<HSClient> client);
+    void add(std::shared_ptr<ClientObject> client);
     void remove(Window window);
 
 protected:
-    std::unordered_map<Window, std::shared_ptr<HSClient>> clients_;
+    std::unordered_map<Window, std::shared_ptr<ClientObject>> clients_;
 };
+
+// adds a new client to list of managed client windows
+std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already);
+void unmanage_client(Window win);
+
 
 }
 

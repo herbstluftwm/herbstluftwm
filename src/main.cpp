@@ -5,7 +5,7 @@
 
 // herbstluftwm
 #include "root.h"
-#include "client.h"
+#include "clientmanager.h"
 #include "utils.h"
 #include "key.h"
 #include "layout.h"
@@ -621,7 +621,7 @@ void scan(void) {
             // TODO: what would dwm do?
             if (is_window_mapped(g_display, wins[i])
                 || 0 <= array_find(cl, cl_count, sizeof(Window), wins+i)) {
-                manage_client(wins[i]);
+                manage_client(wins[i], true);
                 XMapWindow(g_display, wins[i]);
             }
         }
@@ -638,7 +638,7 @@ void scan(void) {
             continue;
         }
         XReparentWindow(g_display, cl[i], g_root, 0,0);
-        manage_client(cl[i]);
+        manage_client(cl[i], true);
     }
 }
 
@@ -916,7 +916,7 @@ void maprequest(XEvent* event) {
     } else if (!get_client_from_window(mapreq->window)) {
         // client should be managed (is not ignored)
         // but is not managed yet
-        auto client = manage_client(mapreq->window);
+        auto client = manage_client(mapreq->window, false);
         if (client && find_monitor_with_tag(client->tag())) {
             XMapWindow(g_display, mapreq->window);
         }
@@ -996,7 +996,6 @@ int main(int argc, char* argv[]) {
     all_monitors_apply_layout();
     ewmh_update_all();
     execute_autostart_file();
-    clientlist_end_startup();
 
     // main loop
     XEvent event;

@@ -42,7 +42,6 @@ static int g_monitor_float_treshold = 24;
 static int* g_raise_on_focus;
 static int* g_snap_gap;
 
-
 // atoms from dwm.c
 // default atoms
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
@@ -51,9 +50,6 @@ static Atom g_wmatom[WMLast];
 static HSClient* lastfocus = NULL;
 static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx);
 static int client_get_scheme_triple_idx(HSClient* client);
-
-static bool g_startup = true; // whether hlwm is starting up and is not in the
-                              // main event loop yet
 
 HSClient::HSClient()
     : float_size_({0, 0, 100, 100}),
@@ -71,10 +67,6 @@ HSClient::HSClient()
 HSClient::HSClient(Window window)
     : HSClient() {
     window_ = window;
-    std::stringstream tmp;
-    tmp << "0x" << std::hex << window_;
-    auto window_str = tmp.str();
-    name_ = window_str;
 }
 
 static void fetch_colors() {
@@ -91,10 +83,6 @@ void clientlist_init() {
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
     g_wmatom[WMTakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
     // init actual client list
-}
-
-void clientlist_end_startup() {
-    g_startup = false;
 }
 
 bool HSClient::ignore_unmapnotify() {
@@ -132,165 +120,21 @@ HSClient* get_client_from_window(Window window) {
     }   \
     while (0);
 
-std::shared_ptr<HSClient> manage_client(Window win) {
-    if (is_herbstluft_window(g_display, win)) {
-        // ignore our own window
-        return NULL;
-    }
-
-    auto cm = herbstluft::Root::clients();
-    if (cm->client(win)) {
-        return NULL;
-    }
-
-    // init client
-    auto client = std::make_shared<HSClient>(win);
-    client->pid_ = window_pid(g_display, win);
-    HSMonitor* m = get_current_monitor();
-    client->update_title();
-
+void HSClient::init_from_X() {
     unsigned int border, depth;
     Window root_win;
     int x, y;
     unsigned int w, h;
-    XGetGeometry(g_display, win, &root_win, &x, &y, &w, &h, &border, &depth);
+    XGetGeometry(g_display, window_, &root_win, &x, &y, &w, &h, &border, &depth);
     // treat wanted coordinates as floating coords
-    client->float_size_ = { x, y, w, h };
-    client->last_size_ = client->float_size_;
+    float_size_ = { x, y, w, h };
+    last_size_ = float_size_;
 
-    // apply rules
-    HSClientChanges changes;
-    client_changes_init(&changes, client.get());
-    rules_apply(client.get(), &changes);
-    if (changes.tag_name) {
-        client->setTag(find_tag(changes.tag_name->str));
-    }
-    if (changes.monitor_name) {
-        HSMonitor *monitor = string_to_monitor(changes.monitor_name->str);
-        if (monitor) {
-            // a valid tag was not already found, use the target monitor's tag
-            if (!client->tag()) { client->setTag(monitor->tag); }
-            // a tag was already found, display it on the target monitor, but
-            // only if switchtag is set
-            else if (changes.switchtag) {
-                monitor_set_tag(monitor, client->tag());
-            }
-        }
-    }
+    pid_ = window_pid(g_display, window_);
 
-    // Reuse the keymask string
-    client->keymask_ = changes.keymask->str;
-
-    if (!changes.manage) {
-        client_changes_free_members(&changes);
-        // map it... just to be sure
-        XMapWindow(g_display, win);
-        return {}; // client gets destroyed
-    }
-
-    // actually manage it
-    decoration_setup_frame(client.get());
-    client->fuzzy_fix_initial_position();
-    cm->add(client);
-    // insert to layout
-    if (!client->tag()) {
-        client->setTag(m->tag);
-    }
-    // insert window to the stack
-    client->slice = slice_create_client(client);
-    stack_insert_slice(client->tag()->stack, client->slice);
-    // insert window to the tag
-    client->tag()->frame->lookup(changes.tree_index->str)
-                 ->insertClient(client.get());
-    client->update_wm_hints();
-    client->updatesizehints();
-    if (changes.focus) {
-        // give focus to window if wanted
-        // TODO: make this faster!
-        // WARNING: this solution needs O(C + exp(D)) time where W is the count
-        // of clients on this tag and D is the depth of the binary layout tree
-        client->tag()->frame->focusClient(client.get());
-    }
-
-    ewmh_window_update_tag(client->window_, client->tag());
-    tag_set_flags_dirty();
-    client->set_fullscreen(changes.fullscreen);
-    ewmh_update_window_state(client.get());
-    // add client after setting the correct tag for the new client
-    // this ensures a panel can read the tag property correctly at this point
-    ewmh_add_client(client->window_);
-
-    XSetWindowBorderWidth(g_display, client->window_, 0);
-    // specify that the client window survives if hlwm dies, i.e. it will be
-    // reparented back to root
-    XChangeSaveSet(g_display, client->window_, SetModeInsert);
-    XReparentWindow(g_display, client->window_, client->dec.decwin, 40, 40);
-    if (g_startup) client->ignore_unmaps_++;
-    // get events from window
-    XSelectInput(g_display, client->dec.decwin, (EnterWindowMask | LeaveWindowMask |
-                            ButtonPressMask | ButtonReleaseMask |
-                            ExposureMask |
-                            SubstructureRedirectMask | FocusChangeMask));
-    XSelectInput(g_display, win, CLIENT_EVENT_MASK);
-
-    HSMonitor* monitor = find_monitor_with_tag(client->tag());
-    if (monitor) {
-        if (monitor != get_current_monitor()
-            && changes.focus && changes.switchtag) {
-            monitor_set_tag(get_current_monitor(), client->tag());
-        }
-        // TODO: monitor_apply_layout() maybe is called twice here if it
-        // already is called by monitor_set_tag()
-        monitor_apply_layout(monitor);
-        client->set_visible(true);
-    } else {
-        if (changes.focus && changes.switchtag) {
-            monitor_set_tag(get_current_monitor(), client->tag());
-            client->set_visible(true);
-        }
-    }
-    client->send_configure();
-
-    client_changes_free_members(&changes);
-    grab_client_buttons(client.get(), false);
-
-    return client;
-}
-
-void unmanage_client(Window win) {
-    auto cm = herbstluft::Root::clients();
-    auto client = cm->client(win);
-    if (!client) {
-        return;
-    }
-    if (client->dragged_) {
-        mouse_stop_drag();
-    }
-    // remove from tag
-    client->tag()->frame->removeClient(client.get());
-    // ignore events from it
-    XSelectInput(g_display, win, 0);
-    //XUngrabButton(g_display, AnyButton, AnyModifier, win);
-    // permanently remove it
-    XUnmapWindow(g_display, client->dec.decwin);
-    XReparentWindow(g_display, win, g_root, 0, 0);
-    // delete ewmh-properties and ICCCM-Properties such that the client knows
-    // that he has been unmanaged and now the client is allowed to be mapped
-    // again (e.g. if it is some dialog)
-    ewmh_clear_client_properties(client.get());
-    XDeleteProperty(g_display, client->window_, g_wmatom[WMState]);
-    HSTag* tag = client->tag();
-
-    // delete client
-    cm->remove(win);
-    client.reset();
-
-    // and arrange monitor after the client has been removed from the stack
-    HSMonitor* m = find_monitor_with_tag(tag);
-    tag_update_focus_layer(tag);
-    if (m) monitor_apply_layout(m);
-    ewmh_remove_client(win);
-    tag_set_flags_dirty();
+    update_title();
+    update_wm_hints();
+    updatesizehints();
 }
 
 // destroys a special client
@@ -909,5 +753,13 @@ void HSClient::fuzzy_fix_initial_position() {
     // if top left corner might be outside of the monitor, move it accordingly
     if (extreme_x < 0) { float_size_.x += abs(extreme_x); }
     if (extreme_y < 0) { float_size_.y += abs(extreme_y); }
+}
+
+void HSClient::clear_properties() {
+    // delete ewmh-properties and ICCCM-Properties such that the client knows
+    // that he has been unmanaged and now the client is allowed to be mapped
+    // again (e.g. if it is some dialog)
+    ewmh_clear_client_properties(window_);
+    XDeleteProperty(g_display, window_, g_wmatom[WMState]);
 }
 

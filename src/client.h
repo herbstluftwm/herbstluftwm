@@ -21,7 +21,7 @@
 
 struct HSSlice;
 
-class HSClient : public herbstluft::Object {
+class HSClient {
 public:
 
     HSDecoration    dec;
@@ -59,6 +59,8 @@ public:
     HSClient();
     HSClient(Window window_);
     ~HSClient();
+
+    void init_from_X();
 
 
     // setter and getter for attributes
@@ -105,6 +107,8 @@ public:
     void set_pseudotile(bool state);
     void set_urgent_force(bool state);
 
+    void clear_properties();
+
 private:
     void resize_fullscreen(HSMonitor* m);
 };
@@ -113,16 +117,11 @@ private:
 
 void clientlist_init();
 void clientlist_destroy();
-void clientlist_end_startup();
 
 bool clientlist_ignore_unmapnotify(Window win);
 
 void reset_client_colors();
 void reset_client_settings();
-
-// adds a new client to list of managed client windows
-std::shared_ptr<HSClient> manage_client(Window win);
-void unmanage_client(Window win);
 
 void window_enforce_last_size(Window in);
 

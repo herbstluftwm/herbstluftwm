@@ -456,8 +456,8 @@ void ewmh_update_window_state(HSClient* client) {
         32, PropModeReplace, (unsigned char *) window_state, count_enabled);
 }
 
-void ewmh_clear_client_properties(HSClient* client) {
-    XDeleteProperty(g_display, client->window_, g_netatom[NetWmState]);
+void ewmh_clear_client_properties(Window win) {
+    XDeleteProperty(g_display, win, g_netatom[NetWmState]);
 }
 
 bool ewmh_is_window_state_set(Window win, Atom hint) {
