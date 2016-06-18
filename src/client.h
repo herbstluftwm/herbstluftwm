@@ -61,6 +61,8 @@ public:
 
     void init_from_X();
 
+    void make_full_client();
+
 
     // setter and getter for attributes
     HSTag* tag() { return tag_; };

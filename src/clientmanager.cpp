@@ -149,18 +149,7 @@ std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already) {
     // this ensures a panel can read the tag property correctly at this point
     ewmh_add_client(client->window_);
 
-    XSetWindowBorderWidth(g_display, client->window_, 0);
-    // specify that the client window survives if hlwm dies, i.e. it will be
-    // reparented back to root
-    XChangeSaveSet(g_display, client->window_, SetModeInsert);
-    XReparentWindow(g_display, client->window_, client->dec.decwin, 40, 40);
-    if (client->visible_ == false) client->ignore_unmaps_++;
-    // get events from window
-    XSelectInput(g_display, client->dec.decwin, (EnterWindowMask | LeaveWindowMask |
-                            ButtonPressMask | ButtonReleaseMask |
-                            ExposureMask |
-                            SubstructureRedirectMask | FocusChangeMask));
-    XSelectInput(g_display, win, CLIENT_EVENT_MASK);
+    client->make_full_client();
 
     HSMonitor* monitor = find_monitor_with_tag(client->tag());
     if (monitor) {
@@ -211,7 +200,6 @@ void ClientManager::force_unmanage(std::shared_ptr<ClientObject> client) {
     client->clear_properties();
     HSTag* tag = client->tag();
 
-    client.reset();
 
     // and arrange monitor after the client has been removed from the stack
     HSMonitor* m = find_monitor_with_tag(tag);
@@ -221,5 +209,6 @@ void ClientManager::force_unmanage(std::shared_ptr<ClientObject> client) {
     tag_set_flags_dirty();
     // delete client
     this->remove(client->window_);
+    client.reset();
 }
 }

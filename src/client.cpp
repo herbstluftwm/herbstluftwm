@@ -84,6 +84,27 @@ void HSClient::init_from_X() {
     updatesizehints();
 }
 
+void HSClient::make_full_client() {
+    // setup decoration
+    XSetWindowBorderWidth(g_display, window_, 0);
+    // specify that the client window survives if hlwm dies, i.e. it will be
+    // reparented back to root
+    XChangeSaveSet(g_display, window_, SetModeInsert);
+    XReparentWindow(g_display, window_, dec.decwin, 40, 40);
+    // if this client is visible, then reparenting will make it invisible
+    // and will create a unmap notify event
+    if (visible_ == true) {
+        ignore_unmaps_++;
+        visible_ = false;
+    }
+    // get events from window
+    XSelectInput(g_display, dec.decwin, (EnterWindowMask | LeaveWindowMask |
+                            ButtonPressMask | ButtonReleaseMask |
+                            ExposureMask |
+                            SubstructureRedirectMask | FocusChangeMask));
+    XSelectInput(g_display, window_, CLIENT_EVENT_MASK);
+}
+
 static void fetch_colors() {
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_snap_gap = &(settings_find("snap_gap")->value.i);
@@ -101,6 +122,7 @@ void clientlist_init() {
 }
 
 bool HSClient::ignore_unmapnotify() {
+    DBGDO(ignore_unmaps_);
     if (ignore_unmaps_ > 0) {
         ignore_unmaps_--;
         return true;

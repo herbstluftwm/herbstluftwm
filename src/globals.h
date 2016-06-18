@@ -27,6 +27,7 @@
 #define FRAME_MIN_FRACTION 0.1
 
 #define HERBST_MAX_TREE_HEIGHT 3
+#define DBGDO(X) { if(1) std::cerr << "DBGDO: " << (#X) << " = " << (X) << std::endl; }
 
 // connection to x-server
 extern Display*    g_display;
