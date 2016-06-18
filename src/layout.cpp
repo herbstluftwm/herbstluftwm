@@ -142,7 +142,10 @@ HSFrame::~HSFrame() {
 }
 
 HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, weak_ptr<HSFrameSplit> parent)
-    : HSFrame(tag, parent) {
+    : HSFrame(tag, parent),
+    selection(0),
+    window_transparent(false)
+{
     window_visible = false;
     layout = *g_default_frame_layout;
 

@@ -968,8 +968,10 @@ int main(int argc, char* argv[]) {
     herbstluft::Commands::initialize(commands());
 
     parse_arguments(argc, argv);
-    if(!(g_display = XOpenDisplay(NULL)))
+    g_display = XOpenDisplay(NULL);
+    if (!g_display) {
         die("herbstluftwm: cannot open display\n");
+    }
     checkotherwm();
     // remove zombies on SIGCHLD
     sigaction_signal(SIGCHLD, remove_zombies);

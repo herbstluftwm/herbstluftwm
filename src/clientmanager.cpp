@@ -67,8 +67,8 @@ void ClientManager::add(std::shared_ptr<ClientObject> client)
 
 void ClientManager::remove(Window window)
 {
-    clients_.erase(window);
     removeChild(clients_[window]->name());
+    clients_.erase(window);
 }
 
 std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already) {
@@ -205,8 +205,6 @@ void unmanage_client(Window win) {
     client->clear_properties();
     HSTag* tag = client->tag();
 
-    // delete client
-    cm->remove(win);
     client.reset();
 
     // and arrange monitor after the client has been removed from the stack
@@ -215,5 +213,7 @@ void unmanage_client(Window win) {
     if (m) monitor_apply_layout(m);
     ewmh_remove_client(win);
     tag_set_flags_dirty();
+    // delete client
+    cm->remove(win);
 }
 }
