@@ -125,7 +125,6 @@ void clientlist_init() {
 }
 
 bool HSClient::ignore_unmapnotify() {
-    DBGDO(ignore_unmaps_);
     if (ignore_unmaps_ > 0) {
         ignore_unmaps_--;
         return true;

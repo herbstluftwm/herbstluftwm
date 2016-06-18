@@ -109,6 +109,8 @@ void try_complete(const char* needle, const char* to_check, Output output);
 void try_complete_partial(const char* needle, const char* to_check, Output output);
 void try_complete_prefix_partial(const char* needle, const char* to_check,
                                  const char* prefix, Output output);
+void try_complete_prefix_partial(const std::string& needle, const std::string& to_check,
+                                 const std::string& prefix, Output output);
 void try_complete_prefix(const char* needle, const char* to_check,
                          const char* prefix, Output output);
 

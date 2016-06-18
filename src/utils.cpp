@@ -54,9 +54,14 @@ std::string ArgList::operator[](size_t idx) {
 void ArgList::split(Container &ret, const std::string &s, char delim) {
     std::stringstream tmp(s);
     std::string item;
+    // read "lines" seperated by delim
     while (std::getline(tmp, item, delim))
-        if (!item.empty()) // case for trailing delimiter
-            ret.push_back(item);
+        ret.push_back(item);
+    // with this, there is no distinction whether there was a delim
+    // in the end or not; so fix this manually:
+    if (!s.empty() && s.back() == delim) {
+        ret.push_back("");
+    }
 }
 
 ArgList::Container ArgList::split(const std::string &s, char delim) {

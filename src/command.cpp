@@ -474,6 +474,10 @@ void try_complete_prefix_partial(const char* needle, const char* to_check,
                                  const char* prefix, Output output) {
     try_complete_suffix(needle, to_check, "\n", prefix, output);
 }
+void try_complete_prefix_partial(const std::string& needle, const std::string& to_check,
+                                 const std::string& prefix, Output output) {
+    try_complete_suffix(needle.c_str(), to_check.c_str(), "\n", prefix.c_str(), output);
+}
 
 void complete_against_list(const char* needle, const char** list, Output output) {
     while (*list) {
@@ -525,29 +529,51 @@ void complete_against_objects(int argc, char** argv, int pos, Output output) {
     // Remove command name
     (void)SHIFT(argc,argv);
     pos--;
-    const char* needle = (pos < argc) ? argv[pos] : "";
-    const char* suffix;
-    // TODO
+
+    std::pair<herbstluft::ArgList,std::string> p = herbstluft::Object::splitPath((pos < argc) ? argv[pos] : "");
+    auto needle = p.second;
+    std::shared_ptr<herbstluft::Object> o = herbstluft::Root::get()->child<herbstluft::Object>(p.first);
+    if (!o) {
+        return;
+    }
+    auto prefix = p.first.join();
+    if (!prefix.empty()) prefix += ".";
+    for (auto a : o->children()) {
+        try_complete_prefix_partial(needle.c_str(), (a.first + ".").c_str(), prefix.c_str(), output);
+    }
     return;
 }
+
+namespace herbstluft {
 
 void complete_against_attributes_helper(int argc, char** argv, int pos,
                                         Output output, bool user_only) {
     // Remove command name
     (void)SHIFT(argc,argv);
     pos--;
-    const char* needle = (pos < argc) ? argv[pos] : "";
-    const char* unparsable;
-    // TODO
+
+    std::pair<ArgList,std::string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
+    auto needle = p.second;
+    std::shared_ptr<Object> o = Root::get()->child<Object>(p.first);
+    if (!o) {
+        return;
+    }
+    auto prefix = p.first.join();
+    if (!prefix.empty()) prefix += ".";
+    for (auto a : o->attributes()) {
+        try_complete_prefix(needle.c_str(), a.first.c_str(), prefix.c_str(), output);
+    }
     return;
 }
 
+}
+
 void complete_against_attributes(int argc, char** argv, int pos, Output output) {
-    complete_against_attributes_helper(argc, argv, pos, output, false);
+    herbstluft::complete_against_attributes_helper(argc, argv, pos, output, false);
 }
 
 void complete_against_user_attributes(int argc, char** argv, int pos, Output output) {
-    complete_against_attributes_helper(argc, argv, pos, output, true);
+    herbstluft::complete_against_attributes_helper(argc, argv, pos, output, true);
 }
 
 

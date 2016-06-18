@@ -79,6 +79,7 @@ using Output = std::ostream&;
 
 #define container_of(ptr, type, member) \
     ((type *)( (char *)(ptr)- offsetof(type,member) ))
+#define DBGDO(X) { if(1) std::cerr << "DBGDO: " << (#X) << " = " << (X) << std::endl; }
 
 // control structures
 #define FOR(i,a,b) for (int i = (a); i < (b); i++)

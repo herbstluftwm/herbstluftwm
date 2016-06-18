@@ -46,6 +46,8 @@ public:
     // return an attribute if it exists, else NULL
     Attribute* attribute(const std::string &name);
 
+    std::unordered_map<std::string, Attribute*> attributes() { return attribs_; }
+
 protected:
     // initialize an attribute (typically used by init())
     virtual void wireAttributes(std::vector<Attribute*> attrs);
