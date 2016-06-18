@@ -25,6 +25,7 @@ class HSMonitor;
 class HSClient {
 public:
 
+    Window      window_;
     HSDecoration    dec;
     herbstluft::Rectangle   float_size_;     // floating size without the window border
     bool        urgent_;
@@ -33,7 +34,6 @@ public:
     struct HSSlice* slice;
 
 public:
-    Window      window_;
     herbstluft::Rectangle   last_size_;      // last size excluding the window border
     HSTag*      tag_;
     std::string keymask_; // keymask applied to mask out keybindins
@@ -56,9 +56,7 @@ public:
     // for other modules
 
 public:
-
-    HSClient();
-    HSClient(Window window_);
+    HSClient(Window window_, bool visible_already);
     ~HSClient();
 
     void init_from_X();
@@ -102,13 +100,12 @@ public:
 
     void set_visible(bool visible_);
 
-    bool ignore_unmapnotify();
-
     void set_fullscreen(bool state);
     void set_pseudotile(bool state);
     void set_urgent_force(bool state);
 
     void clear_properties();
+    bool ignore_unmapnotify();
 
 private:
     void resize_fullscreen(HSMonitor* m);
@@ -119,7 +116,6 @@ private:
 void clientlist_init();
 void clientlist_destroy();
 
-bool clientlist_ignore_unmapnotify(Window win);
 
 void reset_client_colors();
 void reset_client_settings();

@@ -50,22 +50,38 @@ static HSClient* lastfocus = NULL;
 static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx);
 static int client_get_scheme_triple_idx(HSClient* client);
 
-HSClient::HSClient()
-    : float_size_({0, 0, 100, 100}),
+
+HSClient::HSClient(Window window, bool visible_already)
+    : window_(window),
+      float_size_({0, 0, 100, 100}),
       urgent_(false), fullscreen_(false), ewmhfullscreen_(false),
       pseudotile_(false), neverfocus_(false),
       ewmhrequests_(true), ewmhnotify_(true),
       sizehints_floating_(true), sizehints_tiling_(false),
-      visible_(false), dragged_(false), ignore_unmaps_(0) {
-
+      visible_(visible_already), dragged_(false),
+      ignore_unmaps_(0)
+{
     title_ = "";
     tag_ = NULL;
     decoration_init(&dec, this);
+    init_from_X();
 }
 
-HSClient::HSClient(Window window)
-    : HSClient() {
-    window_ = window;
+void HSClient::init_from_X() {
+    unsigned int border, depth;
+    Window root_win;
+    int x, y;
+    unsigned int w, h;
+    XGetGeometry(g_display, window_, &root_win, &x, &y, &w, &h, &border, &depth);
+    // treat wanted coordinates as floating coords
+    float_size_ = { x, y, w, h };
+    last_size_ = float_size_;
+
+    pid_ = window_pid(g_display, window_);
+
+    update_title();
+    update_wm_hints();
+    updatesizehints();
 }
 
 static void fetch_colors() {
@@ -93,11 +109,6 @@ bool HSClient::ignore_unmapnotify() {
     }
 }
 
-bool clientlist_ignore_unmapnotify(Window win) {
-    auto c = herbstluft::Root::clients()->client(win);
-    return c && c->ignore_unmapnotify();
-}
-
 void reset_client_colors() {
     fetch_colors();
     all_monitors_apply_layout();
@@ -119,22 +130,6 @@ HSClient* get_client_from_window(Window window) {
     }   \
     while (0);
 
-void HSClient::init_from_X() {
-    unsigned int border, depth;
-    Window root_win;
-    int x, y;
-    unsigned int w, h;
-    XGetGeometry(g_display, window_, &root_win, &x, &y, &w, &h, &border, &depth);
-    // treat wanted coordinates as floating coords
-    float_size_ = { x, y, w, h };
-    last_size_ = float_size_;
-
-    pid_ = window_pid(g_display, window_);
-
-    update_title();
-    update_wm_hints();
-    updatesizehints();
-}
 
 // destroys a special client
 HSClient::~HSClient() {

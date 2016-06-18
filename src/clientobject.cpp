@@ -5,8 +5,8 @@
 
 using namespace herbstluft;
 
-ClientObject::ClientObject(Window w)
-    : HSClient(w)
+ClientObject::ClientObject(Window w, bool already_visible)
+    : HSClient(w, already_visible)
 {
     std::stringstream tmp;
     tmp << "0x" << std::hex << w;

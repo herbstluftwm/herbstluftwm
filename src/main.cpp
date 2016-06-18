@@ -836,7 +836,9 @@ void configurenotify(XEvent* event) {
 void destroynotify(XEvent* event) {
     // try to unmanage it
     //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
-    unmanage_client(event->xdestroywindow.window);
+    auto cm = herbstluft::Root::clients();
+    auto client = cm->client(event->xunmap.window);
+    if (client) cm->force_unmanage(client);
 }
 
 void enternotify(XEvent* event) {
@@ -949,9 +951,7 @@ void propertynotify(XEvent* event) {
 
 void unmapnotify(XEvent* event) {
     HSDebug("name is: UnmapNotify for %lx\n", event->xunmap.window);
-    if (!clientlist_ignore_unmapnotify(event->xunmap.window)) {
-        unmanage_client(event->xunmap.window);
-    }
+    herbstluft::Root::clients()->unmap_notify(event->xunmap.window);
 }
 
 /* ---- */

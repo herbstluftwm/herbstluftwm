@@ -25,13 +25,16 @@ public:
     void add(std::shared_ptr<ClientObject> client);
     void remove(Window window);
 
+    void unmap_notify(Window win);
+    void force_unmanage(Window win);
+    void force_unmanage(std::shared_ptr<ClientObject> client);
+
 protected:
     std::unordered_map<Window, std::shared_ptr<ClientObject>> clients_;
 };
 
 // adds a new client to list of managed client windows
 std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already);
-void unmanage_client(Window win);
 
 
 }

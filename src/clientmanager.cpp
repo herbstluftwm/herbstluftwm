@@ -86,9 +86,7 @@ std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already) {
     }
 
     // init client
-    auto client = std::make_shared<ClientObject>(win);
-    client->visible_ = visible_already;
-    client->init_from_X();
+    auto client = std::make_shared<ClientObject>(win, visible_already);
     HSMonitor* m = get_current_monitor();
 
     // apply rules
@@ -188,23 +186,28 @@ std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already) {
     return client;
 }
 
-void unmanage_client(Window win) {
-    auto cm = herbstluft::Root::clients();
-    auto client = cm->client(win);
+void ClientManager::unmap_notify(Window win) {
+    auto client = this->client(win);
     if (!client) {
         return;
     }
+    if (!client->ignore_unmapnotify()) {
+        force_unmanage(client);
+    }
+}
+
+void ClientManager::force_unmanage(std::shared_ptr<ClientObject> client) {
     if (client->dragged_) {
         mouse_stop_drag();
     }
     // remove from tag
     client->tag()->frame->removeClient(client.get());
     // ignore events from it
-    XSelectInput(g_display, win, 0);
+    XSelectInput(g_display, client->window_, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
     XUnmapWindow(g_display, client->dec.decwin);
-    XReparentWindow(g_display, win, g_root, 0, 0);
+    XReparentWindow(g_display, client->window_, g_root, 0, 0);
     client->clear_properties();
     HSTag* tag = client->tag();
 
@@ -214,9 +217,9 @@ void unmanage_client(Window win) {
     HSMonitor* m = find_monitor_with_tag(tag);
     tag_update_focus_layer(tag);
     if (m) monitor_apply_layout(m);
-    ewmh_remove_client(win);
+    ewmh_remove_client(client->window_);
     tag_set_flags_dirty();
     // delete client
-    cm->remove(win);
+    this->remove(client->window_);
 }
 }

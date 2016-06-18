@@ -8,7 +8,7 @@
 namespace herbstluft {
 class ClientObject : public Object, public HSClient {
 public:
-    ClientObject(Window w);
+    ClientObject(Window w, bool already_visible);
     virtual ~ClientObject();
 };
 }
