@@ -8,6 +8,9 @@
 #include "rules.h"
 #include "stack.h"
 #include "mouse.h"
+#include "monitor.h"
+#include "tag.h"
+#include "layout.h"
 
 namespace herbstluft {
 

@@ -717,7 +717,7 @@ void HSFrameLeaf::layoutLinear(herbstluft::Rectangle rect, bool vertical) {
         // add the space, if count does not divide frameheight without remainder
         cur.height += (i == count-1) ? last_step_y : 0;
         cur.width += (i == count-1) ? last_step_x : 0;
-        client->resize_tiling(cur, &* shared_from_this());
+        client->resize_tiling(cur);
         cur.y += step_y;
         cur.x += step_x;
         i++;
@@ -727,7 +727,7 @@ void HSFrameLeaf::layoutLinear(herbstluft::Rectangle rect, bool vertical) {
 void HSFrameLeaf::layoutMax(herbstluft::Rectangle rect) {
     for (auto client : clients) {
         client->setup_border(isFocused() && client == clients[selection]);
-        client->resize_tiling(rect, &* shared_from_this());
+        client->resize_tiling(rect);
         if (client == clients[selection]) {
             client->raise();
         }
@@ -778,7 +778,7 @@ void HSFrameLeaf::layoutGrid(herbstluft::Rectangle rect) {
 
             // apply size
             clients[i]->setup_border(isFocused() && i == selection);
-            clients[i]->resize_tiling(cur, &* shared_from_this());
+            clients[i]->resize_tiling(cur);
             cur.x += width;
             i++;
         }

@@ -14,7 +14,6 @@
 #include "hook.h"
 #include "mouse.h"
 #include "ewmh.h"
-#include "rules.h"
 #include "ipc-protocol.h"
 #include "object.h"
 #include "decoration.h"
@@ -154,11 +153,11 @@ HSClient::~HSClient() {
 static int client_get_scheme_triple_idx(HSClient* client) {
     if (client->fullscreen_) return HSDecSchemeFullscreen;
     else if (client->is_client_floated()) return HSDecSchemeFloating;
-    else if (client->needs_minimal_dec(NULL)) return HSDecSchemeMinimal;
+    else if (client->needs_minimal_dec()) return HSDecSchemeMinimal;
     else return HSDecSchemeTiling;
 }
 
-bool HSClient::needs_minimal_dec(HSFrame* frame) {
+bool HSClient::needs_minimal_dec() {
     //if (!frame) {
     //    frame = this->tag()->frame->frameWithClient(this);
     //    HSAssert(frame != NULL);
@@ -269,7 +268,7 @@ static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripid
     }
 }
 
-void HSClient::resize_tiling(Rectangle rect, HSFrame* frame) {
+void HSClient::resize_tiling(Rectangle rect) {
     HSMonitor* m;
     if (this->fullscreen_ && (m = find_monitor_with_tag(this->tag()))) {
         resize_fullscreen(m);
@@ -292,7 +291,7 @@ void HSClient::resize_tiling(Rectangle rect, HSFrame* frame) {
         rect.height = std::min(outline.height, rect.height);
         scheme.tight_decoration = true;
     }
-    if (needs_minimal_dec(frame)) {
+    if (needs_minimal_dec()) {
         scheme = client_scheme_from_triple(this, HSDecSchemeMinimal);
     }
     decoration_resize_outline(this, rect, scheme);

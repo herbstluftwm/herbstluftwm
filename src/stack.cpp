@@ -3,6 +3,8 @@
 #include "client.h"
 #include "ewmh.h"
 #include "globals.h"
+#include "monitor.h"
+#include "tag.h"
 
 #include <stdio.h>
 #include <string.h>
