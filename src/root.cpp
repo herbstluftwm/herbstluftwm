@@ -70,8 +70,10 @@ int Root::cmd_attr(Input in, Output output) {
     in.shift();
     std::ostringstream dummy_output;
     std::shared_ptr<Object> o = Root::get();
-    if (!path.empty()) {
-        o = o->child<Object>(Path::split(path));
+    auto p = Path::split(path);
+    if (!p.empty()) {
+        while (p.back().empty()) p.pop_back();
+        o = o->child<Object>(p);
     }
     if (o && in.empty()) {
         o->ls(output);

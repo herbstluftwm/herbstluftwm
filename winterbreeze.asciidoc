@@ -1,0 +1,14 @@
+Winterbreeze
+============
+This document describes the progress of migrating hlwm to proper C\+\+11. In
+the following, all user-visible changes are listed:
+
+  - Formerly, double dots in object paths were allows (similar to double
+    slashes in file paths in unix). Right now, they are only allowed at the end
+    (which is necessary for the tab-completion of attr).
+
+    * +monitors+ is valid
+    * +monitors.+ is valid
+    * +monitors..+ is valid
+    * +monitors.by-name.+ is valid
+    * +monitors..by-name.+ is *invalid*
