@@ -6,6 +6,9 @@ Current git version
 
     * Fix the initial floating position of new windows by taking their
       position relative to the nearest hlwm monitor.
+    * new example scripts:
+
+      - float-maximize.sh
 
 Release 0.7.0 on 2016-02-04
 ---------------------------
