@@ -10,40 +10,71 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
-#include "glib-backports.h"
 #include "x11-utils.h"
 #include <stdbool.h>
 #include "x11-types.h"
+#include <map>
 
 #include "utils.h"
+#include "object.h"
+#include "attribute_.h"
 
 class HSClient;
 
+namespace herbstluft {
 
-typedef struct {
-    int     border_width;
-    herbstluft::Color border_color;
-    bool    tight_decoration; // if set, there is no space between the
+class DecorationScheme : public Object {
+public:
+    DecorationScheme(std::string name);
+    virtual ~DecorationScheme() {};
+    Attribute_<unsigned long>     border_width;
+    Attribute_<Color>   border_color;
+    Attribute_<bool>    tight_decoration; // if set, there is no space between the
                               // decoration and the window content
-    herbstluft::Color inner_color;
-    int     inner_width;
-    herbstluft::Color outer_color;
-    int     outer_width;
-    int     padding_top;    // additional window border
-    int     padding_right;  // additional window border
-    int     padding_bottom; // additional window border
-    int     padding_left;   // additional window border
-    herbstluft::Color background_color; // color behind client contents
-} HSDecorationScheme;
+    Attribute_<Color>   inner_color;
+    Attribute_<unsigned long>     inner_width;
+    Attribute_<Color>   outer_color;
+    Attribute_<unsigned long>     outer_width;
+    Attribute_<unsigned long>     padding_top;    // additional window border
+    Attribute_<unsigned long>     padding_right;  // additional window border
+    Attribute_<unsigned long>     padding_bottom; // additional window border
+    Attribute_<unsigned long>     padding_left;   // additional window border
+    Attribute_<Color>   background_color; // color behind client contents
 
-typedef struct {
+    Rectangle inner_rect_to_outline(Rectangle rect) const;
+    Rectangle outline_to_inner_rect(Rectangle rect) const;
+};
+
+class Decoration {
+public:
+    Decoration(HSClient* client);
+    void createWindow();
+    virtual ~Decoration();
+    // resize such that the decorated outline of the window fits into rect
+    void resize_outline(Rectangle rect, const DecorationScheme& scheme);
+
+    // resize such that the window content fits into rect
+    void resize_inner(Rectangle rect, const DecorationScheme& scheme);
+    void change_scheme(const DecorationScheme& scheme);
+
+    static HSClient* toClient(Window decoration_window);
+
+    Window decorationWindow() { return decwin; };
+    Rectangle last_inner() const { return last_inner_rect; };
+    Rectangle last_outer() const { return last_outer_rect; };
+    Rectangle inner_to_outer(Rectangle rect);
+private:
+    void redrawPixmap();
+    void updateFrameExtends();
+    unsigned int get_client_color(Color color);
+private:
     HSClient*        client; // the client to decorate
     Window                  decwin; // the decoration winodw
-    HSDecorationScheme      last_scheme;
+    const DecorationScheme* last_scheme;
     bool                    last_rect_inner; // whether last_rect is inner size
-    herbstluft::Rectangle   last_inner_rect; // only valid if width >= 0
-    herbstluft::Rectangle   last_outer_rect; // only valid if width >= 0
-    herbstluft::Rectangle   last_actual_rect; // last actual client rect, relative to decoration
+    Rectangle   last_inner_rect; // only valid if width >= 0
+    Rectangle   last_outer_rect; // only valid if width >= 0
+    Rectangle   last_actual_rect; // last actual client rect, relative to decoration
     /* X specific things */
     Colormap                colormap;
     unsigned int            depth;
@@ -54,52 +85,39 @@ typedef struct {
     // especially not repainting or background filling to avoid flicker on
     // unmap
     Window                  bgwin;
-} HSDecoration;
-
-typedef struct {
-    HSDecorationScheme  normal;
-    HSDecorationScheme  active;
-    HSDecorationScheme  urgent;
-    /* TODO: add objects for normal/active/urgent */
-    HSDecorationScheme  propagate; // meta-scheme for propagating values to members
-} HSDecTriple;
-
-enum {
-    HSDecSchemeFullscreen,
-    HSDecSchemeTiling,
-    HSDecSchemeFloating,
-    HSDecSchemeMinimal,
-    HSDecSchemeCount,
+private:
+    static std::map<Window,HSClient*> decwin2client;
 };
 
-extern HSDecTriple g_decorations[];
+class DecTriple : public DecorationScheme {
+public:
+    DecTriple(std::string name);
+    DecorationScheme  normal;
+    DecorationScheme  active;
+    DecorationScheme  urgent;
+};
+
+class Theme : public DecorationScheme {
+public:
+    enum class Type {
+        Fullscreen,
+        Tiling,
+        Floating,
+        Minimal,
+        Count,
+    };
+    DecTriple dec[(int)Type::Count];
+    const DecTriple& operator[](Type t) const {
+        return dec[(int)t];
+    };
+    static const Theme& get();
+    Theme(std::string name);
+};
+
+}
 
 void decorations_init();
 void decorations_destroy();
-
-void decoration_init(HSDecoration* dec, HSClient* client);
-void decoration_setup_frame(HSClient* client);
-void decoration_free(HSDecoration* dec);
-
-// resize such that the decorated outline of the window fits into rect
-void decoration_resize_outline(HSClient* client,
-                               herbstluft::Rectangle rect,
-                               HSDecorationScheme scheme);
-
-// resize such that the window content fits into rect
-void decoration_resize_inner(HSClient* client,
-                             herbstluft::Rectangle rect,
-                             HSDecorationScheme scheme);
-void decoration_change_scheme(HSClient* client,
-                              HSDecorationScheme scheme);
-
-void decoration_redraw_pixmap(HSClient* client);
-HSClient* get_client_from_decoration(Window decwin);
-
-herbstluft::Rectangle inner_rect_to_outline(herbstluft::Rectangle rect,
-                                            HSDecorationScheme scheme);
-herbstluft::Rectangle outline_to_inner_rect(herbstluft::Rectangle rect,
-                                            HSDecorationScheme scheme);
 
 #endif
 

@@ -21,6 +21,7 @@ public:
 
     // accessors only to be used by owner!
     operator T() { return payload_; }
+    operator const T() const { return payload_; }
     std::string str() { return std::to_string(payload_); }
     void operator=(const T &payload) {
         payload_ = payload;
@@ -33,6 +34,16 @@ public:
         return payload_ != payload;
     }
     void change(const std::string &payload);
+
+    const T& operator*() const {
+        return payload_;
+    };
+    const T* operator->() const {
+        return &payload_;
+    };
+    const T& operator()() const {
+        return payload_;
+    };
 
 private:
     void notifyHooks() {

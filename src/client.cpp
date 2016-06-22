@@ -47,14 +47,15 @@ enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
 static Atom g_wmatom[WMLast];
 
 static HSClient* lastfocus = NULL;
-static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx);
-static int client_get_scheme_triple_idx(HSClient* client);
 
 
 HSClient::HSClient(Window window, bool visible_already)
     : window_(window),
+      dec(this),
       float_size_({0, 0, 100, 100}),
       urgent_(false), fullscreen_(false),
+      title_(""),
+      tag_(NULL),
       keymask_("keymask", true, ""),
       ewmhfullscreen_(false),
       pseudotile_("pseudotile", true, false),
@@ -64,9 +65,6 @@ HSClient::HSClient(Window window, bool visible_already)
       visible_(visible_already), dragged_(false),
       ignore_unmaps_(0)
 {
-    title_ = "";
-    tag_ = NULL;
-    decoration_init(&dec, this);
     init_from_X();
 }
 
@@ -93,7 +91,7 @@ void HSClient::make_full_client() {
     // specify that the client window survives if hlwm dies, i.e. it will be
     // reparented back to root
     XChangeSaveSet(g_display, window_, SetModeInsert);
-    XReparentWindow(g_display, window_, dec.decwin, 40, 40);
+    XReparentWindow(g_display, window_, dec.decorationWindow(), 40, 40);
     // if this client is visible, then reparenting will make it invisible
     // and will create a unmap notify event
     if (visible_ == true) {
@@ -101,7 +99,7 @@ void HSClient::make_full_client() {
         visible_ = false;
     }
     // get events from window
-    XSelectInput(g_display, dec.decwin, (EnterWindowMask | LeaveWindowMask |
+    XSelectInput(g_display, dec.decorationWindow(), (EnterWindowMask | LeaveWindowMask |
                             ButtonPressMask | ButtonReleaseMask |
                             ExposureMask |
                             SubstructureRedirectMask | FocusChangeMask));
@@ -157,7 +155,6 @@ HSClient* get_client_from_window(Window window) {
 
 // destroys a special client
 HSClient::~HSClient() {
-    decoration_free(&dec);
     if (lastfocus == this) {
         lastfocus = NULL;
     }
@@ -167,13 +164,6 @@ HSClient::~HSClient() {
     if (slice) {
         slice_destroy(slice);
     }
-}
-
-static int client_get_scheme_triple_idx(HSClient* client) {
-    if (client->fullscreen_) return HSDecSchemeFullscreen;
-    else if (client->is_client_floated()) return HSDecSchemeFloating;
-    else if (client->needs_minimal_dec()) return HSDecSchemeMinimal;
-    else return HSDecSchemeTiling;
 }
 
 bool HSClient::needs_minimal_dec() {
@@ -251,17 +241,29 @@ void HSClient::window_focus() {
     this->set_urgent(false);
 }
 
+const DecTriple& HSClient::getDecTriple() {
+    auto theme = Theme::get();
+    auto triple_idx = Theme::Type::Tiling;
+    if (fullscreen_) triple_idx = Theme::Type::Fullscreen;
+    else if (is_client_floated()) triple_idx = Theme::Type::Floating;
+    else if (needs_minimal_dec()) triple_idx = Theme::Type::Minimal;
+    else return theme[Theme::Type::Tiling];
+    return theme[triple_idx];
+}
+
+const DecorationScheme& HSClient::getScheme() {
+    return getScheme(get_current_client() == this);
+}
+
+const DecorationScheme& HSClient::getScheme(bool focused) {
+    const DecTriple& triple = getDecTriple();
+    if (focused) return triple.active;
+    else if (this->urgent_) return triple.urgent;
+    else return triple.normal;
+}
+
 void HSClient::setup_border(bool focused) {
-    if (focused) {
-        decoration_change_scheme(this,
-            g_decorations[client_get_scheme_triple_idx(this)].active);
-    } else if (this->urgent_) {
-        decoration_change_scheme(this,
-            g_decorations[client_get_scheme_triple_idx(this)].urgent);
-    } else {
-        decoration_change_scheme(this,
-            g_decorations[client_get_scheme_triple_idx(this)].normal);
-    }
+    dec.change_scheme(getScheme(focused));
 }
 
 void HSClient::resize_fullscreen(HSMonitor* m) {
@@ -269,22 +271,11 @@ void HSClient::resize_fullscreen(HSMonitor* m) {
         HSDebug("client_resize_fullscreen() got invalid parameters\n");
         return;
     }
-    decoration_resize_outline(this, m->rect,
-        client_scheme_from_triple(this, HSDecSchemeFullscreen));
+    dec.resize_outline(m->rect, getScheme());
 }
 
 void HSClient::raise() {
     stack_raise_slide(this->tag()->stack, this->slice);
-}
-
-static HSDecorationScheme client_scheme_from_triple(HSClient* client, int tripidx) {
-    if (get_current_client() == client) {
-        return g_decorations[tripidx].active;
-    } else if (client->urgent_) {
-        return g_decorations[tripidx].urgent;
-    } else {
-        return g_decorations[tripidx].normal;
-    }
 }
 
 void HSClient::resize_tiling(Rectangle rect) {
@@ -299,21 +290,17 @@ void HSClient::resize_tiling(Rectangle rect) {
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
     }
-    HSDecorationScheme scheme = client_scheme_from_triple(this, HSDecSchemeTiling);
+    const DecorationScheme& scheme = getScheme();
     if (this->pseudotile_) {
         auto inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);
-        auto outline = inner_rect_to_outline(inner, scheme);
+        auto outline = scheme.inner_rect_to_outline(inner);
         rect.x += std::max(0u, (rect.width - outline.width)/2);
         rect.y += std::max(0u, (rect.height - outline.height)/2);
         rect.width = std::min(outline.width, rect.width);
         rect.height = std::min(outline.height, rect.height);
-        scheme.tight_decoration = true;
     }
-    if (needs_minimal_dec()) {
-        scheme = client_scheme_from_triple(this, HSDecSchemeMinimal);
-    }
-    decoration_resize_outline(this, rect, scheme);
+    dec.resize_outline(rect, scheme);
 }
 
 // from dwm.c
@@ -426,15 +413,16 @@ void HSClient::updatesizehints() {
 
 
 void HSClient::send_configure() {
+    auto last_inner_rect = dec.last_inner();
     XConfigureEvent ce;
     ce.type = ConfigureNotify,
     ce.display = g_display,
     ce.event = this->window_,
     ce.window = this->window_,
-    ce.x = this->dec.last_inner_rect.x,
-    ce.y = this->dec.last_inner_rect.y,
-    ce.width = std::max(this->dec.last_inner_rect.width, WINDOW_MIN_WIDTH),
-    ce.height = std::max(this->dec.last_inner_rect.height, WINDOW_MIN_HEIGHT),
+    ce.x = last_inner_rect.x,
+    ce.y = last_inner_rect.y,
+    ce.width = std::max(last_inner_rect.width, WINDOW_MIN_WIDTH),
+    ce.height = std::max(last_inner_rect.height, WINDOW_MIN_HEIGHT),
     ce.border_width = 0,
     ce.above = None,
     ce.override_redirect = False,
@@ -462,12 +450,11 @@ void HSClient::resize_floating(HSMonitor* m) {
         CLAMP(rect.y,
               m->rect.y + m->pad_up - rect.height + space,
               m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
-    decoration_resize_inner(this, rect,
-        client_scheme_from_triple(this, HSDecSchemeFloating));
+    dec.resize_inner(rect, getScheme());
 }
 
 Rectangle HSClient::outer_floating_rect() {
-    return inner_rect_to_outline(float_size_, dec.last_scheme);
+    return dec.inner_to_outer(float_size_);
 }
 
 int close_command(int argc, char** argv, Output output) {
@@ -479,7 +466,9 @@ int close_command(int argc, char** argv, Output output) {
 }
 
 bool HSClient::is_client_floated() {
-    return tag()->floating;
+    auto t = tag();
+    if (!t) return false;
+    else return tag()->floating;
 }
 
 void window_close(Window window) {
@@ -517,12 +506,12 @@ void HSClient::set_visible(bool visible) {
         XGrabServer(g_display);
         window_update_wm_state(this->window_, WmStateNormalState);
         XMapWindow(g_display, this->window_);
-        XMapWindow(g_display, this->dec.decwin);
+        XMapWindow(g_display, this->dec.decorationWindow());
         XUngrabServer(g_display);
     } else {
         /* we unmap the client itself so that we can get MapRequest
            events, and because the ICCCM tells us to! */
-        XUnmapWindow(g_display, this->dec.decwin);
+        XUnmapWindow(g_display, this->dec.decorationWindow());
         XUnmapWindow(g_display, this->window_);
         window_update_wm_state(this->window_, WmStateWithdrawnState);
         this->ignore_unmaps_++;
@@ -758,14 +747,14 @@ void HSClient::fuzzy_fix_initial_position() {
     // considering the current settings of possible floating decorations
     int extreme_x = float_size_.x;
     int extreme_y = float_size_.y;
-    HSDecTriple* t = &g_decorations[HSDecSchemeFloating];
-    auto r = inner_rect_to_outline(float_size_, t->active);
+    const DecTriple& t = getDecTriple();
+    auto r = t.active.inner_rect_to_outline(float_size_);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
-    r = inner_rect_to_outline(float_size_, t->normal);
+    r = t.normal.inner_rect_to_outline(float_size_);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
-    r = inner_rect_to_outline(float_size_, t->urgent);
+    r = t.urgent.inner_rect_to_outline(float_size_);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
     // if top left corner might be outside of the monitor, move it accordingly

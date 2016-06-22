@@ -455,7 +455,7 @@ static void client_snap_helper(HSClient* candidate, struct SnapData* d) {
         return;
     }
     auto subject  = d->rect;
-    auto other    = candidate->dec.last_outer_rect;
+    auto other    = candidate->dec.last_outer();
     // increase other by snap gap
     other.x -= *g_snap_gap;
     other.y -= *g_snap_gap;

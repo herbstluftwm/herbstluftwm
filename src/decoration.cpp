@@ -4,71 +4,87 @@
 #include "globals.h"
 #include "settings.h"
 #include "ewmh.h"
+#include "root.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <sstream>
+#include <memory>
 
 using namespace herbstluft;
 
-// public globals:
-HSDecTriple g_decorations[HSDecSchemeCount];
-
-// module intern globals:
-static GHashTable* g_decwin2client = NULL;
+std::map<Window,HSClient*> Decoration::decwin2client;
 
 static int* g_pseudotile_center_threshold;
 static int* g_update_dragged_clients;
-// dummy schemes for propagation
-static HSDecorationScheme g_theme_scheme;
-static HSDecorationScheme g_theme_active_scheme;
-static HSDecorationScheme g_theme_normal_scheme;
-static HSDecorationScheme g_theme_urgent_scheme;
 
-// is called automatically after resize_outline
-static void decoration_update_frame_extents(HSClient* client);
+
+static std::shared_ptr<Theme> g_theme;
+
+const Theme& Theme::get() {
+    return *g_theme;
+}
+
+Theme::Theme(std::string name) : DecorationScheme(name),
+    dec {
+        DecTriple("fullscreen"),
+        DecTriple("tiling"),
+        DecTriple("floating"),
+        DecTriple("minimal")
+    }
+{
+    for (int i = 0; i < (int)Type::Count; i++) {
+        addStaticChild(&dec[i]);
+    }
+}
+
+DecorationScheme::DecorationScheme(std::string name)
+    : Object(name),
+    border_width("border_width", true, 0),
+    border_color("border_color", true, Color::fromStr("black")),
+    tight_decoration("tight_decoration", false, false),
+    inner_color("inner_color", true, Color::fromStr("black")),
+    inner_width("inner_width", true, 0),
+    outer_color("outer_color", true, Color::fromStr("black")),
+    outer_width("outer_width", true, 0),
+    padding_top("padding_top", true, 0),
+    padding_right("padding_right", true, 0),
+    padding_bottom("padding_bottom", true, 0),
+    padding_left("padding_left", true, 0),
+    background_color("background_color", true, Color::fromStr("black"))
+{
+    wireAttributes({
+        &border_width,
+        &border_color,
+        &tight_decoration,
+        &inner_color,
+        &inner_width,
+        &outer_color,
+        &outer_width,
+        &padding_top,
+        &padding_right,
+        &padding_bottom,
+        &padding_left,
+        &background_color,
+    });
+}
+
+DecTriple::DecTriple(std::string name)
+    : DecorationScheme(name),
+      normal("normal"),
+      active("active"),
+      urgent("urgent")
+{
+    addStaticChild(&normal);
+    addStaticChild(&active);
+    addStaticChild(&urgent);
+}
 
 void decorations_init() {
     g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
     g_update_dragged_clients = &(settings_find("update_dragged_clients")->value.i);
-    g_decwin2client = g_hash_table_new(g_int_hash, g_int_equal);
-    // init default schemes
-    // tiling //
-    HSDecTriple tiling = {
-        { 2, Color::fromStr("black"),     false },    // normal
-        { 2, Color::fromStr("green"),     false },    // active
-        { 2, Color::fromStr("orange"),    false },    // urgent
-    };
-    g_decorations[HSDecSchemeTiling] = tiling;
-    // fullscreen //
-    HSDecTriple fs = {
-        { 0, Color::fromStr("black"),     false },    // normal
-        { 0, Color::fromStr("black"),     false },    // active
-        { 0, Color::fromStr("black"),     false },    // urgent
-    };
-    g_decorations[HSDecSchemeFullscreen] = fs;
-    // floating //
-    HSDecTriple fl = {
-        { 1, Color::fromStr("black"),     true  },    // normal
-        { 4, Color::fromStr("green"),     true  },    // active
-        { 1, Color::fromStr("orange"),    true  },    // urgent
-    };
-    g_decorations[HSDecSchemeFloating] = fl;
-    // minimal //
-    HSDecTriple minimal = {
-        { 0, Color::fromStr("black"),     true  },    // normal
-        { 0, Color::fromStr("green"),     true  },    // active
-        { 0, Color::fromStr("orange"),    true  },    // urgent
-    };
-    g_decorations[HSDecSchemeMinimal] = minimal;
-    //init_dec_triple_object(g_decorations + HSDecSchemeTiling, "tiling");
-    //init_dec_triple_object(g_decorations + HSDecSchemeFloating, "floating");
-    //init_dec_triple_object(g_decorations + HSDecSchemeMinimal, "minimal");
-    // create mass-attribute-objects
-    g_theme_scheme
-        = g_theme_active_scheme
-        = g_theme_normal_scheme
-        = g_theme_urgent_scheme = fs.normal;
+    g_theme = std::make_shared<Theme>("theme");
+    Root::get()->addChild(g_theme);
 }
 
 void reset_helper(void* data, GString* output) {
@@ -77,8 +93,6 @@ void reset_helper(void* data, GString* output) {
 }
 
 void decorations_destroy() {
-    g_hash_table_destroy(g_decwin2client);
-    g_decwin2client = NULL;
 }
 
 // from openbox/frame.c
@@ -96,13 +110,15 @@ static Visual* check_32bit_client(HSClient* c)
     return NULL;
 }
 
-void decoration_init(HSDecoration* dec, HSClient* client) {
-    memset(dec, 0, sizeof(*dec));
-    dec->client = client;
+Decoration::Decoration(HSClient* client)
+    : client(client),
+      decwin(0),
+      last_scheme(NULL)
+{
 }
 
-void decoration_setup_frame(HSClient* client) {
-    HSDecoration* dec = &(client->dec);
+void Decoration::createWindow() {
+    Decoration* dec = this;
     XSetWindowAttributes at;
     long mask = 0;
     // copy attributes from client and not from the root window
@@ -149,12 +165,12 @@ void decoration_setup_frame(HSClient* client) {
     // use a clients requested initial floating size as the initial size
     dec->last_rect_inner = true;
     dec->last_inner_rect = client->float_size_;
-    dec->last_outer_rect = inner_rect_to_outline(client->float_size_, dec->last_scheme);
+    dec->last_outer_rect = client->float_size_; // TODO: is this correct?
     dec->last_actual_rect = dec->last_inner_rect;
     dec->last_actual_rect.x -= dec->last_outer_rect.x;
     dec->last_actual_rect.y -= dec->last_outer_rect.y;
     dec->pixmap = 0;
-    g_hash_table_insert(g_decwin2client, &(dec->decwin), client);
+    decwin2client[decwin] = client;
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
     hint->res_name = (char*)HERBST_DECORATION_CLASS;
@@ -163,63 +179,69 @@ void decoration_setup_frame(HSClient* client) {
     XFree(hint);
 }
 
-void decoration_free(HSDecoration* dec) {
-    if (g_decwin2client) {
-        g_hash_table_remove(g_decwin2client, &(dec->decwin));
+Decoration::~Decoration() {
+    decwin2client.erase(decwin);
+    if (colormap) {
+        XFreeColormap(g_display, colormap);
     }
-    if (dec->colormap) {
-        XFreeColormap(g_display, dec->colormap);
+    if (pixmap) {
+        XFreePixmap(g_display, pixmap);
     }
-    if (dec->pixmap) {
-        XFreePixmap(g_display, dec->pixmap);
+    if (bgwin) {
+        XDestroyWindow(g_display, bgwin);
     }
-    if (dec->bgwin) {
-        XDestroyWindow(g_display, dec->bgwin);
-    }
-    if (dec->decwin) {
-        XDestroyWindow(g_display, dec->decwin);
+    if (decwin) {
+        XDestroyWindow(g_display, decwin);
     }
 }
 
-HSClient* get_client_from_decoration(Window decwin) {
-    return (HSClient*) g_hash_table_lookup(g_decwin2client, &decwin);
+HSClient* Decoration::toClient(Window decoration_window)
+{
+    auto cl = decwin2client.find(decoration_window);
+    if (cl == decwin2client.end()) {
+        return NULL;
+    } else {
+        return cl->second;
+    }
 }
 
-Rectangle outline_to_inner_rect(Rectangle rect, HSDecorationScheme s) {
+Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect) const {
     return {
-        rect.x + s.border_width + s.padding_left,
-        rect.y + s.border_width + s.padding_top,
-        rect.width  - 2* s.border_width - s.padding_left - s.padding_right,
-        rect.height - 2* s.border_width - s.padding_top - s.padding_bottom
+        rect.x + *border_width + *padding_left,
+        rect.y + *border_width + *padding_top,
+        rect.width  - 2* *border_width - *padding_left - *padding_right,
+        rect.height - 2* *border_width - *padding_top - *padding_bottom
     };
 }
 
-Rectangle inner_rect_to_outline(Rectangle rect, HSDecorationScheme s) {
+Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect) const {
     return {
-        rect.x - s.border_width - s.padding_left,
-        rect.y - s.border_width - s.padding_top,
-        rect.width  + 2* s.border_width + s.padding_left + s.padding_right,
-        rect.height + 2* s.border_width + s.padding_top + s.padding_bottom
+        rect.x - *border_width - *padding_left,
+        rect.y - *border_width - *padding_top,
+        rect.width  + 2* *border_width + *padding_left + *padding_right,
+        rect.height + 2* *border_width + *padding_top + *padding_bottom
     };
 }
 
-void decoration_resize_inner(HSClient* client, Rectangle inner,
-                             HSDecorationScheme scheme) {
-    decoration_resize_outline(client, inner_rect_to_outline(inner, scheme), scheme);
+void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
+    resize_outline(scheme.inner_rect_to_outline(inner), scheme);
     client->dec.last_rect_inner = true;
 }
 
-void decoration_resize_outline(HSClient* client, Rectangle outline,
-                               HSDecorationScheme scheme)
+Rectangle Decoration::inner_to_outer(Rectangle rect) {
+    return last_scheme->inner_rect_to_outline(rect);
+}
+
+void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme)
 {
-    auto inner = outline_to_inner_rect(outline, scheme);
+    auto inner = scheme.outline_to_inner_rect(outline);
     // get relative coordinates
     Window decwin = client->dec.decwin;
     Window win = client->window_;
 
     auto tile = inner;
     client->applysizehints(&inner.width, &inner.height);
-    if (!scheme.tight_decoration) {
+    if (!false) { // formely: if (!tight_decoration)
         // center the window in the outline tile
         // but only if it's relative coordinates would not be too close to the
         // upper left tile border
@@ -235,8 +257,8 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     //    return;
     //}
 
-    if (scheme.tight_decoration) {
-        outline = inner_rect_to_outline(inner, scheme);
+    if (false) { // formely: if (tight_decoration)
+        outline = scheme.inner_rect_to_outline(inner);
     }
     client->dec.last_inner_rect = inner;
     inner.x -= outline.x;
@@ -266,7 +288,7 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     client->dec.last_outer_rect = outline;
     client->dec.last_rect_inner = false;
     client->last_size_ = inner;
-    client->dec.last_scheme = scheme;
+    client->dec.last_scheme = &scheme;
     // redraw
     // TODO: reduce flickering
     if (!client->dragged_ || *g_update_dragged_clients) {
@@ -275,7 +297,7 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
         client->dec.last_actual_rect.width = changes.width;
         client->dec.last_actual_rect.height = changes.height;
     }
-    decoration_redraw_pixmap(client);
+    redrawPixmap();
     XSetWindowBackgroundPixmap(g_display, decwin, client->dec.pixmap);
     if (!size_changed) {
         // if size changes, then the window is cleared automatically
@@ -289,42 +311,42 @@ void decoration_resize_outline(HSClient* client, Rectangle outline,
     }
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
-    decoration_update_frame_extents(client);
+    updateFrameExtends();
     if (!client->dragged_ || *g_update_dragged_clients) {
         client->send_configure();
     }
     XSync(g_display, False);
 }
 
-static void decoration_update_frame_extents(HSClient* client) {
-    int left = client->dec.last_inner_rect.x - client->dec.last_outer_rect.x;
-    int top  = client->dec.last_inner_rect.y - client->dec.last_outer_rect.y;
-    int right = client->dec.last_outer_rect.width - client->dec.last_inner_rect.width - left;
-    int bottom = client->dec.last_outer_rect.height - client->dec.last_inner_rect.height - top;
+void Decoration::updateFrameExtends() {
+    int left = last_inner_rect.x - last_outer_rect.x;
+    int top  = last_inner_rect.y - last_outer_rect.y;
+    int right = last_outer_rect.width - last_inner_rect.width - left;
+    int bottom = last_outer_rect.height - last_inner_rect.height - top;
     ewmh_update_frame_extents(client->window_, left,right, top,bottom);
 }
 
-void decoration_change_scheme(HSClient* client,
-                              HSDecorationScheme scheme) {
+void Decoration::change_scheme(const DecorationScheme& scheme) {
     if (client->dec.last_inner_rect.width < 0) {
         // TODO: do something useful here
         return;
     }
     if (client->dec.last_rect_inner) {
-        decoration_resize_inner(client, client->dec.last_inner_rect, scheme);
+        resize_inner(last_inner_rect, scheme);
     } else {
-        decoration_resize_outline(client, client->dec.last_outer_rect, scheme);
+        resize_outline(last_outer_rect, scheme);
     }
 }
 
-static unsigned int get_client_color(HSClient* client, unsigned int pixel) {
-    if (client->dec.colormap) {
+unsigned int Decoration::get_client_color(Color color) {
+    unsigned int pixel = color.toInt();
+    if (colormap) {
         XColor xcol;
         xcol.pixel = pixel;
         /* get rbg value out of default colormap */
         XQueryColor(g_display, DefaultColormap(g_display, g_screen), &xcol);
         /* get pixel value back appropriate for client */
-        XAllocColor(g_display, client->dec.colormap, &xcol);
+        XAllocColor(g_display, colormap, &xcol);
         return xcol.pixel;
     } else {
         return pixel;
@@ -332,9 +354,9 @@ static unsigned int get_client_color(HSClient* client, unsigned int pixel) {
 }
 
 // draw a decoration to the client->dec.pixmap
-void decoration_redraw_pixmap(HSClient* client) {
-    HSDecorationScheme s = client->dec.last_scheme;
-    HSDecoration *const dec = &client->dec;
+void Decoration::redrawPixmap() {
+    const DecorationScheme& s = *last_scheme;
+    auto dec = this;
     Window win = client->dec.decwin;
     auto outer = client->dec.last_outer_rect;
     unsigned int depth = client->dec.depth;
@@ -351,11 +373,11 @@ void decoration_redraw_pixmap(HSClient* client) {
     GC gc = XCreateGC(g_display, pix, 0, NULL);
 
     // draw background
-    XSetForeground(g_display, gc, get_client_color(client, s.border_color));
+    XSetForeground(g_display, gc, get_client_color(s.border_color()));
     XFillRectangle(g_display, pix, gc, 0, 0, outer.width, outer.height);
 
     // Draw inner border
-    int iw = s.inner_width;
+    int iw = s.inner_width();
     auto inner = client->dec.last_inner_rect;
     inner.x -= client->dec.last_outer_rect.x;
     inner.y -= client->dec.last_outer_rect.y;
@@ -367,27 +389,27 @@ void decoration_redraw_pixmap(HSClient* client) {
             { inner.x + inner.width, inner.y, iw, inner.height }, /* right */
             { inner.x - iw, inner.y + inner.height, inner.width + 2*iw, iw }, /* bottom */
         };
-        XSetForeground(g_display, gc, get_client_color(client, s.inner_color));
+        XSetForeground(g_display, gc, get_client_color(s.inner_color()));
         XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
     }
 
     // Draw outer border
-    unsigned int ow = s.outer_width;
+    unsigned long ow = s.outer_width;
     outer.x -= client->dec.last_outer_rect.x;
     outer.y -= client->dec.last_outer_rect.y;
     if (ow > 0) {
-        ow = std::min(ow, (outer.height+1) / 2);
+        ow = std::min((unsigned int)ow, (outer.height+1) / 2);
         XRectangle rects[] = {
             { 0, 0, outer.width, ow }, /* top */
             { 0, ow, ow, outer.height - 2*ow }, /* left */
             { outer.width-ow, ow, ow, outer.height - 2*ow }, /* right */
             { 0, outer.height - ow, outer.width, ow }, /* bottom */
         };
-        XSetForeground(g_display, gc, get_client_color(client, s.outer_color));
+        XSetForeground(g_display, gc, get_client_color(s.outer_color));
         XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
     }
     // fill inner rect that is not covered by the client
-    XSetForeground(g_display, gc, get_client_color(client, s.background_color));
+    XSetForeground(g_display, gc, get_client_color(s.background_color));
     if (dec->last_actual_rect.width < inner.width) {
         XFillRectangle(g_display, pix, gc,
                        dec->last_actual_rect.x + dec->last_actual_rect.width,

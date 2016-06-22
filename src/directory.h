@@ -62,6 +62,7 @@ public:
     void notifyHooks(HookEvent event, const std::string &arg);
 
     void addChild(std::shared_ptr<Directory> child, std::string name = {});
+    void addStaticChild(Directory *child, std::string name = {});
     void removeChild(const std::string &child);
 
     void addHook(std::shared_ptr<Hook> hook);

@@ -27,6 +27,17 @@ void Directory::addChild(std::shared_ptr<Directory> child, std::string name)
     notifyHooks(HookEvent::CHILD_ADDED, name);
 }
 
+static void null_deleter(Directory *) {}
+
+void Directory::addStaticChild(Directory *child, std::string name)
+{
+    if (name == "") {
+        name = child->name();
+    }
+    children_[name] = shared_ptr<Directory>(child, null_deleter);
+    notifyHooks(HookEvent::CHILD_ADDED, name);
+}
+
 void Directory::removeChild(const std::string &child)
 {
     children_.erase(child);

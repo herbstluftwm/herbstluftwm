@@ -25,8 +25,9 @@ namespace herbstluft {
         //        return name_;
         }
 
-        operator unsigned long() { return value_; }
+        operator unsigned long() const { return value_; }
         void operator=(unsigned long value) { value_ = value; }
+        unsigned long toInt() const { return value_; }
 
         unsigned long value_;
         //std::string name_;

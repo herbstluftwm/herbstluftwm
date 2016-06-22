@@ -27,7 +27,7 @@ class HSClient {
 public:
 
     Window      window_;
-    HSDecoration    dec;
+    herbstluft::Decoration    dec;
     herbstluft::Rectangle   float_size_;     // floating size without the window border
     bool        urgent_;
     bool        fullscreen_;
@@ -72,6 +72,7 @@ public:
     void setTag(HSTag* tag) { tag_ = tag; }
 
     Window x11Window() { return window_; };
+    Window decorationWindow() { return dec.decorationWindow(); }
     friend void mouse_function_resize(XMotionEvent* me);
 
     // other member functions
@@ -112,7 +113,11 @@ public:
     void clear_properties();
     bool ignore_unmapnotify();
 
+    const herbstluft::DecorationScheme& getScheme();
+    const herbstluft::DecorationScheme& getScheme(bool focused);
+
 private:
+    const herbstluft::DecTriple& getDecTriple();
     void resize_fullscreen(HSMonitor* m);
 };
 

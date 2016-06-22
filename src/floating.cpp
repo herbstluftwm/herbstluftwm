@@ -241,7 +241,7 @@ bool floating_focus_direction(enum HSDirection dir) {
         HSClient* client = (HSClient*)cur->data;
         if (curfocus == client) curfocusidx = i;
         rects[i].idx = i;
-        rects[i].r = client->dec.last_outer_rect;
+        rects[i].r = client->dec.last_outer();
     }
     int idx = (cnt > 0)
               ? find_rectangle_in_direction(rects, cnt, curfocusidx, dir)
@@ -278,7 +278,7 @@ bool floating_shift_direction(enum HSDirection dir) {
         HSClient* client = (HSClient*)cur->data;
         if (curfocus == client) curfocusidx = i;
         rects[i].idx = i;
-        rects[i].r = client->dec.last_outer_rect;
+        rects[i].r = client->dec.last_outer();
     }
     g_queue_free(q);
     // add artifical rects for screen edges
@@ -304,7 +304,7 @@ bool floating_shift_direction(enum HSDirection dir) {
     }
     // don't apply snapgap to focused client, so there will be exactly
     // *g_snap_gap pixels between the focused client and the found edge
-    auto focusrect = curfocus->dec.last_outer_rect;
+    auto focusrect = curfocus->dec.last_outer();
     int idx = find_edge_in_direction(rects, cnt + 4, curfocusidx, dir);
     if (idx < 0) success = false;
     else {

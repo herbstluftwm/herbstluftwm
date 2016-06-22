@@ -120,7 +120,7 @@ std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already) {
     }
 
     // actually manage it
-    decoration_setup_frame(client.get());
+    client->dec.createWindow();
     client->fuzzy_fix_initial_position();
     cm->add(client);
     // insert to layout
@@ -195,7 +195,7 @@ void ClientManager::force_unmanage(std::shared_ptr<ClientObject> client) {
     XSelectInput(g_display, client->window_, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
     // permanently remove it
-    XUnmapWindow(g_display, client->dec.decwin);
+    XUnmapWindow(g_display, client->dec.decorationWindow());
     XReparentWindow(g_display, client->window_, g_root, 0, 0);
     client->clear_properties();
     HSTag* tag = client->tag();
