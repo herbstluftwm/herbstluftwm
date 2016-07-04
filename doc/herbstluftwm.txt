@@ -334,9 +334,9 @@ cycle_layout ['DELTA' ['LAYOUTS' ...]]::
     defaults to 1. You can find a <<LIST_LAYOUT_ALGORITHMS,list of layout
     algorithms>> above. If a list of 'LAYOUTS' is given, cycle_layout will cycle
     through those instead of the default layout algorithm list. This is done by
-    finding the first occurrence of the current layout in 'LAYOUTS' and
-    picking the layout listed afterwards, or otherwise by starting again at the
-    first entry of 'LAYOUTS'. Example:
+    finding the first occurrence of the current layout in 'LAYOUTS' and picking
+    the next layout according to 'DELTA'. If the current layout doesn't occur in
+    'LAYOUTS', the first entry is picked. Example:
 
       * cycle_layout -1
       * cycle_layout 1 vertical grid
