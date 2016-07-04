@@ -333,8 +333,10 @@ cycle_layout ['DELTA' ['LAYOUTS' ...]]::
     Cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'
     defaults to 1. You can find a <<LIST_LAYOUT_ALGORITHMS,list of layout
     algorithms>> above. If a list of 'LAYOUTS' is given, cycle_layout will cycle
-    through those instead of the default layout algorithm list. Each layout name
-    should occur at most once. Example:
+    through those instead of the default layout algorithm list. This is done by
+    finding the first occurrence of the current layout in 'LAYOUTS' and
+    picking the layout listed afterwards, or otherwise by starting again at the
+    first entry of 'LAYOUTS'. Example:
 
       * cycle_layout -1
       * cycle_layout 1 vertical grid
