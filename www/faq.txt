@@ -187,8 +187,6 @@ hc unrule --all      # clear rules
 hc rule focus=on     # focus new clients by default
 ----
 
-Warning: you need the current git version to get rules!
-
 Q: herbstclient is too long to type it in the shell
 ---------------------------------------------------
 Use tab-completion! +her&lt;tab&gt;c&lt;tab&gt;+ expands to herbstclient.
@@ -265,7 +263,7 @@ Q: I'm using a compositing manager like xcompmgr and get ugly artifacts when swi
 ---------------------------------------------------------------------------------------------------------------
 You probably have an old version of herbstluftwm and +frame_bg_transparent+
 enabled. Disable this setting and use +frame_active_opacity+ and/or
-+frame_normal_opacity+ instead or upgrade to the current git version.
++frame_normal_opacity+ instead or upgrade to a current version.
 
 Q: How can I keybind a simple "Run" dialog?
 -------------------------------------------
