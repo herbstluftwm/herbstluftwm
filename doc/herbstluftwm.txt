@@ -29,7 +29,8 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
     *-l*, *--locked*::
         Initially set the monitors_locked setting to 1
     *--verbose*::
-        print verbose information to stderr
+        print verbose information to stderr. This can be switched at run-time by
+        the 'verbose' setting.
 
 This manual documents the scripting and configuration interface. For a more
 verbose introduction see
@@ -1068,6 +1069,10 @@ update_dragged_clients (Int)::
     If set, a client's window content is resized immediately during resizing
     it with the mouse. If unset, the client's content is resized after the mouse
     button are released.
+
+verbose (Int)::
+    If set, verbose output is logged to herbstluftwm's stderr. The default value
+    is controlled by the *--verbose* command line flag.
 
 [[RULES]]
 RULES
