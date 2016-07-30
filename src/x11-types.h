@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <memory>
+#include <X11/Xlib.h>
 
 #define Ptr(X) std::shared_ptr<X>
 #define WPtr(X) std::weak_ptr<X>
@@ -17,19 +18,16 @@ namespace herbstluft {
 
         static bool convert(const char *source, Color& dest);
         static Color fromStr(const char *source);
+        static Color fromStr(const std::string& source);
 
-        std::string str() {
-        //    if (name_.empty())
-                return std::to_string(value_);
-        //    else
-        //        return name_;
-        }
+        std::string str() const;
 
         operator unsigned long() const { return value_; }
         void operator=(unsigned long value) { value_ = value; }
-        unsigned long toInt() const { return value_; }
+        // return an XColor as obtained form XQueryColor
+        XColor toXColor() const;
 
-        unsigned long value_;
+        unsigned long value_; // saved as rgb (1 byte each)
         //std::string name_;
     };
 

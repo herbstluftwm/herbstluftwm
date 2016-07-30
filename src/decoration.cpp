@@ -339,17 +339,15 @@ void Decoration::change_scheme(const DecorationScheme& scheme) {
 }
 
 unsigned int Decoration::get_client_color(Color color) {
-    unsigned int pixel = color.toInt();
+    XColor xcol = color.toXColor();
     if (colormap) {
-        XColor xcol;
-        xcol.pixel = pixel;
-        /* get rbg value out of default colormap */
-        XQueryColor(g_display, DefaultColormap(g_display, g_screen), &xcol);
         /* get pixel value back appropriate for client */
         XAllocColor(g_display, colormap, &xcol);
         return xcol.pixel;
     } else {
-        return pixel;
+        /* get pixel value back appropriate for main color map*/
+        XAllocColor(g_display, DefaultColormap(g_display, g_screen), &xcol);
+        return xcol.pixel;
     }
 }
 

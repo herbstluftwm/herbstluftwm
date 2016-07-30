@@ -123,7 +123,7 @@ inline std::string Attribute_<Color>::str() { return payload_.str(); }
 
 template<>
 inline void Attribute_<Color>::change(const std::string &payload) {
-    payload_ = Color::fromStr(payload.c_str());
+    payload_ = Color::fromStr(payload);
     notifyHooks();
 }
 
