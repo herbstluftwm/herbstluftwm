@@ -242,12 +242,12 @@ void HSClient::window_focus() {
 }
 
 const DecTriple& HSClient::getDecTriple() {
-    auto theme = Theme::get();
+    const Theme& theme = Theme::get();
     auto triple_idx = Theme::Type::Tiling;
     if (fullscreen_) triple_idx = Theme::Type::Fullscreen;
     else if (is_client_floated()) triple_idx = Theme::Type::Floating;
     else if (needs_minimal_dec()) triple_idx = Theme::Type::Minimal;
-    else return theme[Theme::Type::Tiling];
+    else triple_idx = Theme::Type::Tiling;
     return theme[triple_idx];
 }
 
@@ -747,7 +747,7 @@ void HSClient::fuzzy_fix_initial_position() {
     // considering the current settings of possible floating decorations
     int extreme_x = float_size_.x;
     int extreme_y = float_size_.y;
-    const DecTriple& t = getDecTriple();
+    const auto& t = getDecTriple();
     auto r = t.active.inner_rect_to_outline(float_size_);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);

@@ -40,7 +40,7 @@ Theme::Theme(std::string name) : DecorationScheme(name),
 
 DecorationScheme::DecorationScheme(std::string name)
     : Object(name),
-    border_width("border_width", true, 0),
+    border_width("border_width", true, 1),
     border_color("border_color", true, Color::fromStr("black")),
     tight_decoration("tight_decoration", false, false),
     inner_color("inner_color", true, Color::fromStr("black")),
@@ -215,11 +215,12 @@ Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect) const {
 }
 
 Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect) const {
+	unsigned long bw = *border_width;
     return {
-        rect.x - *border_width - *padding_left,
-        rect.y - *border_width - *padding_top,
-        rect.width  + 2* *border_width + *padding_left + *padding_right,
-        rect.height + 2* *border_width + *padding_top + *padding_bottom
+        rect.x - bw - *padding_left,
+        rect.y - bw - *padding_top,
+        rect.width  + 2* bw + *padding_left + *padding_right,
+        rect.height + 2* bw + *padding_top + *padding_bottom
     };
 }
 

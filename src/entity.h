@@ -31,7 +31,7 @@ public:
     Entity(const std::string &name) : name_(name) {}
     virtual ~Entity() {};
 
-    std::string name() { return name_; }
+    std::string name() const { return name_; }
     virtual Type type() = 0;
     static std::string typestr(Type type) {
         const char * const str[] = {
