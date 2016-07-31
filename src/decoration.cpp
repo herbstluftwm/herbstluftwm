@@ -113,7 +113,10 @@ static Visual* check_32bit_client(HSClient* c)
 Decoration::Decoration(HSClient* client)
     : client(client),
       decwin(0),
-      last_scheme(NULL)
+      last_scheme(NULL),
+	  pixmap(0),
+	  pixmap_height(0),
+	  pixmap_width(0)
 {
 }
 
@@ -169,7 +172,6 @@ void Decoration::createWindow() {
     dec->last_actual_rect = dec->last_inner_rect;
     dec->last_actual_rect.x -= dec->last_outer_rect.x;
     dec->last_actual_rect.y -= dec->last_outer_rect.y;
-    dec->pixmap = 0;
     decwin2client[decwin] = client;
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
