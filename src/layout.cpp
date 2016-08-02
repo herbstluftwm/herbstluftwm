@@ -1094,7 +1094,7 @@ bool HSFrameLeaf::split(int alignment, int fraction, int childrenLeaving) {
     parent = new_this;
     if (selection >= childrenStaying) {
         second->setSelection(selection - childrenStaying);
-        selection = childrenStaying - 1;
+        selection = max(0, childrenStaying - 1);
     }
     return true;
 }
