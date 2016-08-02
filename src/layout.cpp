@@ -55,7 +55,6 @@ static unsigned long g_frame_bg_normal_color;
 static unsigned long g_frame_active_opacity;
 static unsigned long g_frame_normal_opacity;
 
-char*   g_tree_style = NULL; // used by utils.c
 HSFrame*    g_cur_frame; // currently selected frame
 int* g_frame_gap;
 int* g_window_gap;
@@ -103,15 +102,6 @@ static void fetch_frame_colors() {
     g_frame_bg_active_color = getcolor(str);
     g_frame_active_opacity = CLAMP(settings_find("frame_active_opacity")->value.i, 0, 100);
     g_frame_normal_opacity = CLAMP(settings_find("frame_normal_opacity")->value.i, 0, 100);
-
-    // tree style
-    g_tree_style = settings_find_string("tree_style");
-    if (g_utf8_strlen(g_tree_style, -1) < 8) {
-        g_warning("too few characters in setting tree_style\n");
-        // ensure that it is long enough
-        const char* argv[] = { "set", "tree_style", "01234567" };
-        settings_set_command(LENGTH(argv), argv, NULL);
-    }
 }
 
 void layout_init() {

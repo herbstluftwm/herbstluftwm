@@ -53,6 +53,7 @@ typedef struct HSTreeInterface {
     void                    (*destructor)(HSTree data); /* how to free the data tree */
 } HSTreeInterface;
 
+void reload_tree_style(); // fetch again the tree style setting
 void tree_print_to(HSTreeInterface* intface, GString* output);
 
 

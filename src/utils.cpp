@@ -5,6 +5,7 @@
 
 #include "globals.h"
 #include "utils.h"
+#include "settings.h"
 // standard
 #include <stdarg.h>
 #include <stdio.h>
@@ -26,7 +27,7 @@
 #endif
 
 // globals
-extern char*   g_tree_style; /* the one from layout.c */
+char*   g_tree_style; /* the one from layout.c */
 
 time_t get_monotonic_timestamp() {
     struct timespec ts;
@@ -402,6 +403,16 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     XSetWindowBorderPixmap(dpy, win, pix);
     XFreeGC(dpy, gc);
     XFreePixmap(dpy, pix);
+}
+
+void reload_tree_style() {
+    g_tree_style = settings_find_string("tree_style");
+    if (g_utf8_strlen(g_tree_style, -1) < 8) {
+        g_warning("too few characters in setting tree_style\n");
+        // ensure that it is long enough
+        const char* argv[] = { "set", "tree_style", "01234567" };
+        settings_set_command(LENGTH(argv), argv, NULL);
+    }
 }
 
 static void subtree_print_to(HSTreeInterface* intface, const char* indent,
