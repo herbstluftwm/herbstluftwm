@@ -1173,9 +1173,9 @@ int frame_split_command(int argc, char** argv, Output output) {
         }
     }
     // move second half of the window buf to second frame
-    size_t count1 = frame->clientCount();
+    size_t count1 = 0;
     if (exploding) {
-        count1 -= (count1 + 1) / 2;      // new count for the first frame
+        count1 -= (frame->clientCount() + 1) / 2;      // new count for the first frame
     }
     if (!frame->split(align, fraction, count1)) {
         return 0;
