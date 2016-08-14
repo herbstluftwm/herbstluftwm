@@ -27,7 +27,7 @@
 #endif
 
 // globals
-char*   g_tree_style; /* the one from layout.c */
+static const char*   g_tree_style = "                "; /* the one from layout.c */
 
 time_t get_monotonic_timestamp() {
     struct timespec ts;

@@ -793,6 +793,7 @@ static struct {
     { object_tree_init, object_tree_destroy },
     { key_init,         key_destroy         },
     { settings_init,    settings_destroy    },
+    { reload_tree_style,NULL                },
     { floating_init,    floating_destroy    },
     { stacklist_init,   stacklist_destroy   },
     { layout_init,      layout_destroy      },
@@ -1004,7 +1005,9 @@ int main(int argc, char* argv[]) {
 
     // initialize subsystems
     for (int i = 0; i < LENGTH(g_modules); i++) {
-        g_modules[i].init();
+        if (g_modules[i].init) {
+            g_modules[i].init();
+        }
     }
     fetch_settings();
 
@@ -1041,7 +1044,9 @@ int main(int argc, char* argv[]) {
 
     // destroy all subsystems
     for (int i = LENGTH(g_modules); i --> 0;) {
-        g_modules[i].destroy();
+        if (g_modules[i].destroy) {
+            g_modules[i].destroy();
+        }
     }
     XCloseDisplay(g_display);
     // check if we shall restart an other window manager
