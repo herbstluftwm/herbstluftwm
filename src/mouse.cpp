@@ -321,100 +321,100 @@ void mouse_function_resize_tiled(XMotionEvent* me) {
     static HSFrame* parent;
     static int orig_fraction;
     if (g_drag_init_done == false) {
-	g_drag_init_done = true;
-	/* initialize local state */
-	HSMonitor* monitor = g_drag_monitor;
-	HSClient* client = g_win_drag_client;
-	HSTag* tag = client->tag;
-	HSFrame* root = tag->frame;
-	HSFrame* frame = find_frame_with_client(root, client);
-	Rectangle* rect = &frame->last_rect;
+        g_drag_init_done = true;
+        /* initialize local state */
+        HSMonitor* monitor = g_drag_monitor;
+        HSClient* client = g_win_drag_client;
+        HSTag* tag = client->tag;
+        HSFrame* root = tag->frame;
+        HSFrame* frame = find_frame_with_client(root, client);
+        Rectangle* rect = &frame->last_rect;
 
-	// relative x/y coords in drag window
-	int rel_x = monitor_get_relative_x(monitor, g_button_drag_start.x)
-	    - rect->x;
-	int rel_y = monitor_get_relative_y(monitor, g_button_drag_start.y)
-	    - rect->y;
-	/*
-	 * In which order should we search for neighbours?
-	 * If we end up in the upper left triangle (M),
-	 * the search order is "lurd" - left, up, right, down.
-	 *
-	 *          Up
-	 *       +-------+
-	 *       |\  |  /|
-	 *       |M\ | / |
-	 *       |MM\|/  |
-	 * Left  |---X---| Right
-	 *       |  /|\  |
-	 *       | / | \ |
-	 *       |/  |  \|
-	 *       +-------+
-	 *         Down
-	 */
+        // relative x/y coords in drag window
+        int rel_x = monitor_get_relative_x(monitor, g_button_drag_start.x)
+            - rect->x;
+        int rel_y = monitor_get_relative_y(monitor, g_button_drag_start.y)
+            - rect->y;
+        /*
+         * In which order should we search for neighbours?
+         * If we end up in the upper left triangle (M),
+         * the search order is "lurd" - left, up, right, down.
+         *
+         *          Up
+         *       +-------+
+         *       |\  |  /|
+         *       |M\ | / |
+         *       |MM\|/  |
+         * Left  |---X---| Right
+         *       |  /|\  |
+         *       | / | \ |
+         *       |/  |  \|
+         *       +-------+
+         *         Down
+         */
 
-	bool tr = false; /* top-right half */
-	bool tl = false; /* top-left half */
-	double slope = (double)rect->height / rect->width;
-	char direction[4];
-	if (rel_y < slope * rel_x)
-	    tr = true;
-	if (rel_y < rect->height - slope * rel_x)
-	    tl = true;
-	if (tl && tr) { direction[0] = 'u'; direction[2] = 'd'; }
-	else if (tl)  { direction[0] = 'l'; direction[2] = 'r'; }
-	else if (tr)  { direction[0] = 'r'; direction[2] = 'l'; }
-	else	      { direction[0] = 'd'; direction[2] = 'u'; }
+        bool tr = false; /* top-right half */
+        bool tl = false; /* top-left half */
+        double slope = (double)rect->height / rect->width;
+        char direction[4];
+        if (rel_y < slope * rel_x)
+            tr = true;
+        if (rel_y < rect->height - slope * rel_x)
+            tl = true;
+        if (tl && tr) { direction[0] = 'u'; direction[2] = 'd'; }
+        else if (tl)  { direction[0] = 'l'; direction[2] = 'r'; }
+        else if (tr)  { direction[0] = 'r'; direction[2] = 'l'; }
+        else	      { direction[0] = 'd'; direction[2] = 'u'; }
 
-	switch (direction[0]) {
-	    case 'l':
-	    case 'r':
-		if (rel_y < rect->height/2)
-		     { direction[1] = 'u'; direction[3] = 'd'; }
-		else { direction[1] = 'd'; direction[3] = 'u'; }
-		break;
-	    case 'u':
-	    case 'd':
-		if (rel_x < rect->width/2)
-		     { direction[1] = 'l'; direction[3] = 'r'; }
-		else { direction[1] = 'r'; direction[3] = 'l'; }
-		break;
-	    default:
-		assert(false); break;
-	}
+        switch (direction[0]) {
+            case 'l':
+            case 'r':
+                if (rel_y < rect->height/2)
+                { direction[1] = 'u'; direction[3] = 'd'; }
+                else { direction[1] = 'd'; direction[3] = 'u'; }
+                break;
+            case 'u':
+            case 'd':
+                if (rel_x < rect->width/2)
+                { direction[1] = 'l'; direction[3] = 'r'; }
+                else { direction[1] = 'r'; direction[3] = 'l'; }
+                break;
+            default:
+                assert(false); break;
+        }
 
-	HSFrame* neighbour = NULL;
-	int i=0;
-	do neighbour = frame_neighbour(frame, direction[i]);
-	while (!neighbour && ++i < sizeof(direction));
-	if (!neighbour) return;
+        HSFrame* neighbour = NULL;
+        int i=0;
+        do neighbour = frame_neighbour(frame, direction[i]);
+        while (!neighbour && ++i < sizeof(direction));
+        if (!neighbour) return;
 
-	parent = neighbour->parent;
-	assert(parent != NULL); // if has neighbour, it also must have a parent
-	assert(parent->type == TYPE_FRAMES);
-	assert(direction[i] == 'l' || direction[i] == 'r'
-	    || direction[i] == 'u' || direction[i] == 'd');
-	assert(parent->content.layout.align ==
-		(direction[i] == 'r' || direction[i] == 'l'
-		 ? ALIGN_HORIZONTAL : ALIGN_VERTICAL));
-	orig_fraction = parent->content.layout.fraction;
+        parent = neighbour->parent;
+        assert(parent != NULL); // if has neighbour, it also must have a parent
+        assert(parent->type == TYPE_FRAMES);
+        assert(direction[i] == 'l' || direction[i] == 'r'
+                || direction[i] == 'u' || direction[i] == 'd');
+        assert(parent->content.layout.align ==
+                (direction[i] == 'r' || direction[i] == 'l'
+                 ? ALIGN_HORIZONTAL : ALIGN_VERTICAL));
+        orig_fraction = parent->content.layout.fraction;
     }
 
     int delta, total;
     if (parent->content.layout.align == ALIGN_HORIZONTAL) {
-	delta = me->x_root - g_button_drag_start.x;
-	total = parent->last_rect.width;
+        delta = me->x_root - g_button_drag_start.x;
+        total = parent->last_rect.width;
     }
     else {
-	delta = me->y_root - g_button_drag_start.y;
-	total = parent->last_rect.height;
+        delta = me->y_root - g_button_drag_start.y;
+        total = parent->last_rect.height;
     }
     assert(total > 0);
 
     parent->content.layout.fraction =
-	CLAMP(orig_fraction + FRACTION_UNIT * delta / total,
-		(int)(FRAME_MIN_FRACTION * FRACTION_UNIT),
-		(int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
+        CLAMP(orig_fraction + FRACTION_UNIT * delta / total,
+                (int)(FRAME_MIN_FRACTION * FRACTION_UNIT),
+                (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
 
     frame_apply_layout(parent, parent->last_rect);
 
