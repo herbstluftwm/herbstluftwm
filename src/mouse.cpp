@@ -401,6 +401,7 @@ void mouse_function_resize_tiled(XMotionEvent* me) {
         orig_fraction = parent->content.layout.fraction;
     }
 
+    if (!parent) return;
     int delta, total;
     if (parent->content.layout.align == ALIGN_HORIZONTAL) {
         delta = me->x_root - g_button_drag_start.x;
