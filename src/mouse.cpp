@@ -87,10 +87,11 @@ void mouse_initiate_zoom(HSClient* client, int argc, char** argv) {
 
 void mouse_initiate_resize(HSClient* client, int argc, char** argv) {
     (void) argc; (void) argv;
-    if (is_client_floated(client))
-	mouse_initiate_drag(client, mouse_function_resize_floated);
-    else
-	mouse_initiate_drag(client, mouse_function_resize_tiled);
+    if (is_client_floated(client)) {
+        mouse_initiate_drag(client, mouse_function_resize_floated);
+    } else {
+        mouse_initiate_drag(client, mouse_function_resize_tiled);
+    }
 }
 
 void mouse_call_command(struct HSClient* client, int argc, char** argv) {
@@ -404,8 +405,7 @@ void mouse_function_resize_tiled(XMotionEvent* me) {
     if (parent->content.layout.align == ALIGN_HORIZONTAL) {
         delta = me->x_root - g_button_drag_start.x;
         total = parent->last_rect.width;
-    }
-    else {
+    } else {
         delta = me->y_root - g_button_drag_start.y;
         total = parent->last_rect.height;
     }
@@ -417,8 +417,6 @@ void mouse_function_resize_tiled(XMotionEvent* me) {
                 (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
 
     frame_apply_layout(parent, parent->last_rect);
-
-    return;
 }
 
 void mouse_function_resize_floated(XMotionEvent* me) {
