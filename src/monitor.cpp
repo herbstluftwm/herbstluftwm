@@ -11,6 +11,11 @@
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
+#ifdef XRANDR
+#include <X11/extensions/Xrandr.h>
+#include <stdlib.h>
+
+#endif /* XRANDR */
 
 #include "globals.h"
 #include "ipc-protocol.h"
@@ -1154,8 +1159,71 @@ int monitor_unlock_tag_command(int argc, char** argv, GString* output) {
     return 0;
 }
 
+#ifdef XRANDR
+
+static int compare_monitors(const void* a, const void* b) {
+
+    Rectangle* ar = (Rectangle*) a;
+    Rectangle* br = (Rectangle*) b;
+
+    if (ar->x < br->x) {
+        return -1;
+    }
+
+    if (ar->x > br->x) {
+        return 1;
+    }
+
+
+    if (ar->y < br->y) {
+        return -1;
+    }
+
+    if (ar->y > br->y) {
+        return 1;
+    }
+
+    return 0;
+
+}
+
+bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count) {
+
+    Rectangle* monitors;
+
+    Window win = XDefaultRootWindow(g_display);
+
+    int outputs;
+    XRRMonitorInfo *monitorInfo = XRRGetMonitors(g_display, win, true, &outputs);
+
+    if (outputs == 0) {
+        return false;
+    }
+
+    monitors = g_new(Rectangle, outputs);
+
+    for (int i = 0; i < outputs; i++) {
+        XRRMonitorInfo monInfo = monitorInfo[i];
+
+        monitors[i].x = monInfo.x;
+        monitors[i].y = monInfo.y;
+        monitors[i].width = monInfo.width;
+        monitors[i].height = monInfo.height;
+
+    }
+
+    qsort(monitors, outputs, sizeof(Rectangle), compare_monitors);
+
+    *ret_count = outputs;
+    *ret_rects = monitors;
+
+    return true;
+}
+
+
+
 // monitor detection using xinerama (if available)
-#ifdef XINERAMA
+#elif XINERAMA /* XRANDR */
 // inspired by dwm's isuniquegeom()
 static bool geom_unique(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info) {
     while (n--)

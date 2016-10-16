@@ -26,6 +26,7 @@ project(Herbstluftwm)
 
 option(WITH_DOCUMENTATION "Build with documentation" ON)
 option(WITH_XINERAMA "Use multi-monitor support" ON)
+option(WITH_XRANDR "Use better multi-monitor support" ON)
 
 set(DESTDIR "" CACHE PATH "Root directory, prefix for CMAKE_INSTALL_PREFIX and CMAKE_INSTALL_SYSCONF_PREFIX when set")
 set(CMAKE_INSTALL_SYSCONF_PREFIX "/etc" CACHE PATH "Directory to install configuration files")
@@ -54,6 +55,13 @@ if(WITH_XINERAMA)
     endif()
 endif()
 
+if(WITH_XRANDR)
+    find_package(X11 REQUIRED)
+
+    if(NOT X11_Xrandr_FOUND)
+        set(WITH_XRANDR OFF)
+    endif()
+endif()
 
 # ----------------------------------------------------------------------------
 # Find Vars
@@ -139,6 +147,12 @@ if(WITH_XINERAMA)
     list(APPEND INC_SYS ${X11_Xinerama_INCLUDE_PATH})
     list(APPEND DEF -DXINERAMA)
     list(APPEND LIB ${X11_Xinerama_LIB})
+endif()
+
+if(WITH_XRANDR)
+    list(APPEND INC_SYS ${X11_Xrandr_INCLUDE_PATH})
+    list(APPEND DEF -DXRANDR)
+    list(APPEND LIB ${X11_Xrandr_LIB})
 endif()
 
 add_executable(herbstluftwm ${SRC})
