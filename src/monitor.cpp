@@ -1212,6 +1212,8 @@ bool detect_monitors_xinerama(Rectangle** ret_rects, size_t* ret_count) {
 
     }
 
+    XRRFreeMonitors(monitorInfo);
+
     qsort(monitors, outputs, sizeof(Rectangle), compare_monitors);
 
     *ret_count = outputs;

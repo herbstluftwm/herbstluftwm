@@ -4,6 +4,7 @@ herbstluftwm NEWS -- History of user-visible changes
 Current git version
 -------------------
 
+    * XRandR support
     * New setting: verbose
     * Fix the initial floating position of new windows by taking their
       position relative to the nearest hlwm monitor.
