@@ -24,10 +24,7 @@ dmenuPrintPath() {
 	fi
 }
 
-selectedPath=$(dmenuPrintPath)
-
-# Ensure that the tag exists
-herbstclient add "$tag"
+selectedPath=$(dmenuPrintPath "$@")
 
 # Move next window from this process to this tag. Prepend the rule so
 # that it may be overwritten by existing custom rules e.g. in the
