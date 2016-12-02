@@ -8,57 +8,78 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdio>
+#include <sstream>
 
 namespace herbstluft {
 
-// get X11 color from color string
+// get X11 color from color string. This fails if there is no x connection
 // from dwm.c
-bool Color::convert(const char *source, Color& dest) {
+bool queryX11Color(const char *source, XColor& dest_color) {
+	if (!g_display) {
+		return false;
+	}
 	Colormap cmap = DefaultColormap(g_display, g_screen);
-	XColor color;
-	if(!XAllocNamedColor(g_display, cmap, source, &color, &color)) {
+	XColor screen_color;
+	if(!XAllocNamedColor(g_display, cmap, source, &screen_color, &dest_color)) {
 		g_warning("error, cannot allocate color '%s'\n", source);
 		return false;
 	}
-	dest = color.pixel;
 	//dest.name_ = source;
 	return true;
 }
 
-Color Color::fromStr(const char *source) {
-	Color dest{0}; // initialize in case convert() fails
-	//convert(source, dest);
-	unsigned long val = 0;
-	if (1 == sscanf(source, "#%lx", &val)) {
-		dest.value_ = val;
-	}
-	return dest;
+Color Color::black() {
+    // currently, the constructor without arguments constructs black
+    Color c;
+    return c;
 }
 
-Color Color::fromStr(const std::string& source) {
-    return fromStr(source.c_str());
+Color::Color()
+    : red_(0)
+    , green_(0)
+    , blue_(0)
+    , x11pixelValue_(0)
+{
+}
+
+Color::Color(std::string name) {
+    XColor xcol;
+    if (queryX11Color(name.c_str(), xcol)) {
+        // TODO: how to interpret these fields if
+        // xcol.flags lacks one of DoRed, DoGreen, DoBlue?
+        red_ = xcol.red;
+        green_ = xcol.green;
+        blue_ = xcol.blue;
+        x11pixelValue_ = xcol.pixel;
+    } else {
+        *this = black();
+    }
 }
 
 std::string Color::str() const {
-	// I do not know how to do this in C++, so do it the
-	// C-Style way -- thorsten.
-	char tmp_buf[100];
-	snprintf(tmp_buf, 100, "#%06lx", value_);
-	return std::string(tmp_buf);
+    unsigned long divisor =  (65536 + 1) / (0xFF + 1);
+    std::stringstream ss;
+    ss << "#"
+       << std::hex << std::setfill('0') << std::setw(2) << (red_ / divisor)
+       << std::hex << std::setfill('0') << std::setw(2) << (green_ / divisor)
+       << std::hex << std::setfill('0') << std::setw(2) << (blue_ / divisor)
+    ;
+    return ss.str();
+}
+
+Color Color::fromStr(const char *source) {
+	return Color(source);
+}
+Color Color::fromStr(const std::string& source) {
+	return Color(source);
 }
 
 XColor Color::toXColor() const {
 	XColor xcol;
-	xcol.pixel = 0;
-	unsigned long tmp = value_;
-	// xcol.{red,green,blue} are shorts ranging form 0 to 65535 inclusive
-	// so we need our format (0 to 255 inclusive) to the full scale
-	xcol.red = (tmp & 0xFF) * (65536 / 256);
-	tmp /= 256;
-	xcol.green = (tmp & 0xFF) * (65536 / 256);
-	tmp /= 256;
-	xcol.blue = (tmp & 0xFF) * (65536 / 256);
-	tmp /= 256;
+	xcol.pixel = x11pixelValue_;
+    xcol.red = red_;
+    xcol.green = green_;
+    xcol.blue = blue_;
 	xcol.flags = DoRed | DoGreen | DoBlue;
 	return xcol;
 }

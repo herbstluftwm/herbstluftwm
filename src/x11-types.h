@@ -12,41 +12,50 @@
 
 namespace herbstluft {
 
-    struct Color {
-        //Color() : value_(0) {}
-        //Color(unsigned long value) : value_(value) {}
+class Color {
+public:
+    Color();
+    Color(std::string name);
 
-        static bool convert(const char *source, Color& dest);
-        static Color fromStr(const char *source);
-        static Color fromStr(const std::string& source);
+    static Color fromStr(const char *source);
+    static Color fromStr(const std::string& source);
+    static Color black();
 
-        std::string str() const;
+    std::string str() const;
 
-        operator unsigned long() const { return value_; }
-        void operator=(unsigned long value) { value_ = value; }
-        // return an XColor as obtained form XQueryColor
-        XColor toXColor() const;
+    // return an XColor as obtained form XQueryColor
+    XColor toXColor() const;
+    unsigned long toX11Pixel() const { return x11pixelValue_; }
 
-        unsigned long value_; // saved as rgb (1 byte each)
-        //std::string name_;
-    };
+private:
+    // use the X-style definition of colors:
+    // each of the color components is a value
+    // in the range 0 to 65535 inclusive. (all 0 means black, all 65535 is
+    // white)
+    unsigned short red_, green_, blue_;
 
-    struct Rectangle {
-        static Rectangle fromStr(const char *source);
+    // the x11 internal pixel value.
+    unsigned long x11pixelValue_;
+};
 
-        int x;
-        int y;
-        unsigned int width;
-        unsigned int height;
-    };
-    using RectangleVec = std::vector<Rectangle>;
+struct Rectangle {
+    static Rectangle fromStr(const char *source);
 
-    struct Point2D {
-        int x;
-        int y;
-    };
+    int x;
+    int y;
+    unsigned int width;
+    unsigned int height;
+};
 
-    std::ostream& operator<< (std::ostream& stream, const Rectangle& matrix);
+using RectangleVec = std::vector<Rectangle>;
+
+struct Point2D {
+    int x;
+    int y;
+};
+
+std::ostream& operator<< (std::ostream& stream, const Rectangle& matrix);
+
 }
 
 #endif

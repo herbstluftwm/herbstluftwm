@@ -95,16 +95,16 @@ static void fetch_frame_colors() {
     g_focus_crosses_monitor_boundaries = &(settings_find("focus_crosses_monitor_boundaries")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
     char* str = settings_find_string("frame_border_normal_color");
-    g_frame_border_normal_color = herbstluft::Color::fromStr(str);
+    g_frame_border_normal_color = herbstluft::Color(str).toX11Pixel();
     str = settings_find_string("frame_border_active_color");
-    g_frame_border_active_color = herbstluft::Color::fromStr(str);
+    g_frame_border_active_color = herbstluft::Color(str).toX11Pixel();
     str = settings_find_string("frame_border_inner_color");
-    g_frame_border_inner_color = herbstluft::Color::fromStr(str);
+    g_frame_border_inner_color = herbstluft::Color(str).toX11Pixel();
     // background color
     str = settings_find_string("frame_bg_normal_color");
-    g_frame_bg_normal_color = herbstluft::Color::fromStr(str);
+    g_frame_bg_normal_color = herbstluft::Color(str).toX11Pixel();
     str = settings_find_string("frame_bg_active_color");
-    g_frame_bg_active_color = herbstluft::Color::fromStr(str);
+    g_frame_bg_active_color = herbstluft::Color(str).toX11Pixel();
     g_frame_active_opacity = CLAMP(settings_find("frame_active_opacity")->value.i, 0, 100);
     g_frame_normal_opacity = CLAMP(settings_find("frame_normal_opacity")->value.i, 0, 100);
 
@@ -151,7 +151,7 @@ HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, weak_ptr<HSFrameSplit> parent)
 
     // set window attributes
     XSetWindowAttributes at;
-    at.background_pixel  = herbstluft::Color::fromStr("red");
+    at.background_pixel  = herbstluft::Color("red").toX11Pixel();
     at.background_pixmap = ParentRelative;
     at.override_redirect = True;
     at.bit_gravity       = StaticGravity;
