@@ -48,8 +48,8 @@ static int* g_monitors_locked;
 static int* g_swap_monitors_to_get_tag;
 static int* g_smart_frame_surroundings;
 static int* g_mouse_recenter_gap;
-static HSStack* g_monitor_stack;
-vector<Ptr(HSMonitor)> monitors;
+static ::HSStack* g_monitor_stack;
+vector<Ptr(::HSMonitor)> monitors;
 
 typedef struct RectList {
     Rectangle rect;

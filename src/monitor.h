@@ -16,7 +16,7 @@
 #include "floating.h"
 #include "utils.h"
 
-struct HSTag;
+class HSTag;
 class HSFrame;
 struct HSSlice;
 struct HSStack;
@@ -28,8 +28,8 @@ public:
     int relativeX(int x_root);
     int relativeY(int y_root);
 
-    struct HSTag*      tag;    // currently viewed tag
-    struct HSTag*      tag_previous;    // previously viewed tag
+    HSTag*      tag;    // currently viewed tag
+    HSTag*      tag_previous;    // previously viewed tag
     struct HSSlice*    slice;  // slice in the monitor stack
     std::string    name;
     int         pad_up;
@@ -55,8 +55,8 @@ void monitor_destroy();
 HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);
-HSMonitor* find_monitor_with_tag(struct HSTag* tag);
-HSMonitor* add_monitor(herbstluft::Rectangle rect, struct HSTag* tag, char* name);
+HSMonitor* find_monitor_with_tag(HSTag* tag);
+HSMonitor* add_monitor(herbstluft::Rectangle rect,  HSTag* tag, char* name);
 void monitor_focus_by_index(int new_selection);
 int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);
@@ -80,7 +80,7 @@ int rename_monitor_command(int argc, char** argv, Output output);
 int monitor_rect_command(int argc, char** argv, Output output);
 HSMonitor* get_current_monitor();
 int monitor_count();
-int monitor_set_tag(HSMonitor* monitor, struct HSTag* tag);
+int monitor_set_tag(HSMonitor* monitor, HSTag* tag);
 int monitor_set_pad_command(int argc, char** argv, Output output);
 int monitor_set_tag_command(int argc, char** argv, Output output);
 int monitor_set_tag_by_index_command(int argc, char** argv, Output output);
@@ -95,7 +95,7 @@ int monitor_unlock_tag_command(int argc, char** argv, Output output);
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
-void all_monitors_replace_previous_tag(struct HSTag* old, struct HSTag* newmon);
+void all_monitors_replace_previous_tag(HSTag* old, HSTag* newmon);
 
 void drop_enternotify_events();
 

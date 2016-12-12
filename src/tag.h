@@ -11,13 +11,13 @@
 #include "x11-types.h"
 #include "utils.h"
 #include <memory>
+#include "object.h"
 
+struct HSStack;
 class HSFrame;
 class HSClient;
-struct HSStack;
-struct HSObject;
 
-class HSTag {
+class HSTag : public herbstluft::Object {
 public:
     HSTag();
     ~HSTag();
@@ -26,7 +26,6 @@ public:
     bool            floating;
     int             flags;
     struct HSStack* stack;
-    struct HSObject* object;
 };
 
 void tag_init();

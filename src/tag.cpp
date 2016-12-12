@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "tag.h"
+#include "tagmanager.h"
 
 #include "root.h"
 #include "globals.h"
@@ -21,22 +22,13 @@
 #include "monitor.h"
 #include "settings.h"
 
+#include "childbyindex.h"
 #include <sstream>
 
 using namespace std;
 using namespace herbstluft;
 
-class TagManager : public  Object {
-public:
-    TagManager() : Object("tags") {
-        by_name = make_shared<Object>("by-name");
-        addChild(by_name);
-    };
-    Ptr(Object) by_name;
-};
-
-Ptr(TagManager) tag_manager;
-vector<Ptr(HSTag)> tags; // TODO: make this a tag-manager attribute
+Ptr(TagManager) tags;
 
 static bool    g_tag_flags_dirty = true;
 static int* g_raise_on_focus_temporarily;
@@ -46,13 +38,12 @@ static int tag_rename(HSTag* tag, char* name, Output output);
 void tag_init() {
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
-    tag_manager = make_shared<TagManager>();
-    herbstluft::Root::get()->addChild(tag_manager);
+    tags = make_shared<TagManager>();
+    herbstluft::Root::get()->addChild(tags);
 }
 
 void tag_destroy() {
-    tag_manager = Ptr(TagManager)();
-    tags.clear();
+    tags = Ptr(TagManager)();
 }
 
 
@@ -64,11 +55,11 @@ HSTag::~HSTag() {
 }
 
 int    tag_get_count() {
-    return tags.size();
+    return tags->size();
 }
 
 HSTag* find_tag(const char* name) {
-    for (auto t : tags) {
+    for (auto t : *tags) {
         if (t->name == name) {
             return &* t;
         }
@@ -77,16 +68,11 @@ HSTag* find_tag(const char* name) {
 }
 
 int tag_index_of(HSTag* tag) {
-    for (int i = 0; i < tags.size(); i++) {
-        if (&* tags[i] == tag) {
-            return i;
-        }
-    }
-    return -1;
+    return tags->index_of(tag);
 }
 
 HSTag* get_tag_by_index(int index) {
-    return &* tags[index];
+    return &* tags->byIdx(index);
 }
 
 HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags) {
@@ -99,31 +85,31 @@ HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags) {
         int delta = index;
         index = delta + current;
         // ensure index is valid
-        index = MOD(index, tags.size());
+        index = MOD(index, tags->size());
         if (skip_visible_tags) {
-            Ptr(HSTag) tag = tags[index];
+            Ptr(HSTag) tag = tags->byIdx(index);
             for (int i = 0; find_monitor_with_tag(&* tag); i++) {
-                if (i >= tags.size()) {
+                if (i >= tags->size()) {
                     // if we tried each tag then there is no invisible tag
                     return NULL;
                 }
                 index += delta;
-                index = MOD(index, tags.size());
-                tag = tags[index];
+                index = MOD(index, tags->size());
+                tag = tags->byIdx(index);
             }
         }
     } else {
         // if it is absolute, then check index
-        if (index < 0 || index >= tags.size()) {
+        if (index < 0 || index >= tags->size()) {
             HSDebug("invalid tag index %d\n", index);
             return NULL;
         }
     }
-    return &* tags[index];
+    return &* tags->byIdx(index);
 }
 
 HSTag* find_unused_tag() {
-    for (auto t : tags) {
+    for (auto t : *tags) {
         if (!find_monitor_with_tag(&* t)) {
             return &* t;
         }
@@ -142,7 +128,7 @@ HSTag* add_tag(const char* name) {
     tag->frame = make_shared<HSFrameLeaf>(&* tag, shared_ptr<HSFrameSplit>());
     tag->name = name;
     tag->floating = false;
-    tags.push_back(tag);
+    tags->addIndexed(tag);
 
     ewmh_update_desktops();
     ewmh_update_desktop_names();
@@ -238,12 +224,7 @@ int tag_remove_command(int argc, char** argv, Output output) {
     }
     // remove tag
     string oldname = tag->name;
-    for (int i = 0; i < tags.size(); i++) {
-        if (&* tags[i] == tag) {
-            tags.erase(tags.begin() + i);
-            break;
-        }
-    }
+    tags->removeIndexed(tags->index_of(tag));
     ewmh_update_current_desktop();
     ewmh_update_desktops();
     ewmh_update_desktop_names();
@@ -287,7 +268,7 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
 void tag_force_update_flags() {
     g_tag_flags_dirty = false;
     // unset all tags
-    for (auto t : tags) {
+    for (auto t : *tags) {
         t->flags = 0;
     }
     // update flags
@@ -312,7 +293,7 @@ void tag_set_flags_dirty() {
 }
 
 void ensure_tags_are_available() {
-    if (tags.size() > 0) {
+    if (tags->size() > 0) {
         // nothing to do
         return;
     }
@@ -320,7 +301,7 @@ void ensure_tags_are_available() {
 }
 
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
-    for (auto t : tags) {
+    for (auto t : *tags) {
         if (&* t->frame == frame) {
             return &* t;
         }
@@ -424,7 +405,7 @@ void tag_update_focus_layer(HSTag* tag) {
 }
 
 void tag_foreach(void (*action)(HSTag*,void*), void* data) {
-    for (auto tag : tags) {
+    for (auto tag : *tags) {
         action(&* tag, data);
     }
 }
