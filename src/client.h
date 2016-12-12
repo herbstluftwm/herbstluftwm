@@ -20,7 +20,7 @@
 
 struct HSSlice;
 
-struct HSTag;
+class HSTag;
 class HSMonitor;
 
 class HSClient {

@@ -265,7 +265,7 @@ void emit_tag_changed(HSTag* tag, int monitor) {
     snprintf(monitor_name, STRING_BUF_SIZE, "%d", monitor);
     const char* argv[3];
     argv[0] = "tag_changed";
-    argv[1] = tag->name.c_str();
+    argv[1] = tag->name->c_str();
     argv[2] = monitor_name;
     hook_emit(LENGTH(argv), argv);
 }

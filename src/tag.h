@@ -12,6 +12,7 @@
 #include "utils.h"
 #include <memory>
 #include "object.h"
+#include "attribute_.h"
 
 struct HSStack;
 class HSFrame;
@@ -19,11 +20,11 @@ class HSClient;
 
 class HSTag : public herbstluft::Object {
 public:
-    HSTag();
+    HSTag(std::string name);
     ~HSTag();
-    std::string        name;   // name of this tag
     std::shared_ptr<HSFrame>        frame;  // the master frame
-    bool            floating;
+    herbstluft::Attribute_<bool>         floating;
+    herbstluft::Attribute_<std::string>  name;   // name of this tag
     int             flags;
     struct HSStack* stack;
 };

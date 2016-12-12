@@ -132,7 +132,7 @@ static void slice_append_caption(HSTree root, Output output) {
                    << monitor_index_of(slice->data.monitor)
                    << monitor_name->str
                    << " with tag \""
-                   << slice->data.monitor->tag->name
+                   << *(slice->data.monitor->tag->name)
                    << "\"";
             break;
     }

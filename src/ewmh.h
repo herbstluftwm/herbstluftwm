@@ -74,7 +74,7 @@ enum {
 #define _NET_WM_MOVERESIZE_MOVE_KEYBOARD    10   /* move via keyboard */
 #define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
-struct HSTag;
+class HSTag;
 class HSClient;
 
 extern Atom g_netatom[NetCOUNT];
@@ -104,7 +104,7 @@ bool ewmh_is_fullscreen_set(Window win);
 void ewmh_clear_client_properties(Window win);
 
 // set the desktop property of a window
-void ewmh_window_update_tag(Window win, struct HSTag* tag);
+void ewmh_window_update_tag(Window win, HSTag* tag);
 
 void ewmh_handle_client_message(XEvent* event);
 

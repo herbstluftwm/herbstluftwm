@@ -47,7 +47,16 @@ void tag_destroy() {
 }
 
 
-HSTag::HSTag() {
+HSTag::HSTag(std::string name_)
+    : floating("floating", true, false)
+    , name("name", false, name_)
+{
+    stack = stack_create();
+    frame = make_shared<HSFrameLeaf>(this, shared_ptr<HSFrameSplit>());
+    wireAttributes({
+        &name,
+        &floating,
+    });
 }
 
 HSTag::~HSTag() {
@@ -123,11 +132,7 @@ HSTag* add_tag(const char* name) {
         // nothing to do
         return find_result;
     }
-    Ptr(HSTag) tag = make_shared<HSTag>();
-    tag->stack = stack_create();
-    tag->frame = make_shared<HSFrameLeaf>(&* tag, shared_ptr<HSFrameSplit>());
-    tag->name = name;
-    tag->floating = false;
+    Ptr(HSTag) tag = make_shared<HSTag>(name);
     tags->addIndexed(tag);
 
     ewmh_update_desktops();
@@ -145,7 +150,7 @@ int tag_add_command(int argc, char** argv, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTag* tag = add_tag(argv[1]);
-    hook_emit_list("tag_added", tag->name.c_str(), NULL);
+    hook_emit_list("tag_added", tag->name->c_str(), NULL);
     return 0;
 }
 
@@ -156,7 +161,7 @@ static int tag_rename(HSTag* tag, char* name, Output output) {
     }
     tag->name = name;
     ewmh_update_desktop_names();
-    hook_emit_list("tag_renamed", tag->name.c_str(), NULL);
+    hook_emit_list("tag_renamed", tag->name->c_str(), NULL);
     return 0;
 }
 
@@ -229,7 +234,7 @@ int tag_remove_command(int argc, char** argv, Output output) {
     ewmh_update_desktops();
     ewmh_update_desktop_names();
     tag_set_flags_dirty();
-    hook_emit_list("tag_removed", oldname.c_str(), target->name.c_str(), NULL);
+    hook_emit_list("tag_removed", oldname.c_str(), target->name->c_str(), NULL);
     return 0;
 }
 
@@ -257,7 +262,7 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
         tag->floating = new_value;
 
         HSMonitor* m = find_monitor_with_tag(tag);
-        HSDebug("setting tag:%s->floating to %s\n", tag->name.c_str(), tag->floating ? "on" : "off");
+        HSDebug("setting tag:%s->floating to %s\n", tag->name->c_str(), tag->floating ? "on" : "off");
         if (m != NULL) {
             monitor_apply_layout(m);
         }

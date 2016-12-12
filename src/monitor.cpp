@@ -130,7 +130,7 @@ int list_monitors(int argc, char** argv, Output output) {
         }
         output << i << ": " << monitor->rect
                << " with tag \""
-               << (monitor->tag ? monitor->tag->name.c_str() : "???")
+               << (monitor->tag ? monitor->tag->name->c_str() : "???")
                << "\""
                << monitor_name
                << (((unsigned int) g_cur_monitor == i) ? " [FOCUS]" : "")

@@ -495,7 +495,7 @@ void complete_against_tags(int argc, char** argv, int pos, Output output) {
         needle = argv[pos];
     }
     for (int i = 0; i < tag_get_count(); i++) {
-        const char* name = get_tag_by_index(i)->name.c_str();
+        const char* name = get_tag_by_index(i)->name->c_str();
         try_complete(needle, name, output);
     }
 }
@@ -659,7 +659,7 @@ void complete_merge_tag(int argc, char** argv, int pos, Output output) {
         needle = argv[pos];
     }
     for (int i = 0; i < tag_get_count(); i++) {
-        const char* name = get_tag_by_index(i)->name.c_str();
+        const char* name = get_tag_by_index(i)->name->c_str();
         if (!strcmp(name, first)) {
             // merge target must not be equal to tag to remove
             continue;
