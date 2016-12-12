@@ -9,7 +9,7 @@
 #include "directory.h"
 #include "attribute.h"
 
-#include <unordered_map>
+#include <map>
 #include <vector>
 
 
@@ -46,15 +46,15 @@ public:
     // return an attribute if it exists, else NULL
     Attribute* attribute(const std::string &name);
 
-    std::unordered_map<std::string, Attribute*> attributes() { return attribs_; }
+    std::map<std::string, Attribute*> attributes() { return attribs_; }
 
 protected:
     // initialize an attribute (typically used by init())
     virtual void wireAttributes(std::vector<Attribute*> attrs);
     virtual void wireActions(std::vector<Action*> actions);
 
-    std::unordered_map<std::string, Attribute*> attribs_;
-    std::unordered_map<std::string, Action*> actions_;
+    std::map<std::string, Attribute*> attribs_;
+    std::map<std::string, Action*> actions_;
 
     //DynamicAttribute nameAttribute_;
 };

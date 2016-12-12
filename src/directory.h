@@ -5,7 +5,7 @@
 #include "utils.h" // for Output and stuff object.h needs
 
 #include <memory>
-#include <unordered_map>
+#include <map>
 
 namespace herbstluft {
 
@@ -35,7 +35,7 @@ public:
         return children_.find(name) != children_.end();
     }
 
-    const std::unordered_map<std::string, std::shared_ptr<Directory>>&
+    const std::map<std::string, std::shared_ptr<Directory>>&
     children() { return children_; }
 
     template<typename T>
@@ -77,8 +77,8 @@ protected:
         return std::dynamic_pointer_cast<T>(shared_from_this());
     }
 
-    std::unordered_map<std::string, std::shared_ptr<Directory>> children_;
-    std::unordered_map<std::string, std::weak_ptr<Hook>> hooks_;
+    std::map<std::string, std::shared_ptr<Directory>> children_;
+    std::map<std::string, std::weak_ptr<Hook>> hooks_;
 };
 
 }
