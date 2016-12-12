@@ -7,25 +7,50 @@
 
 namespace herbstluft {
 
+// a member function of an object that validates a new attribute value
+// if the attribute value is valid, then the ValueValidator has to return the
+// empty string.
+// if the attribute value is invalid, then ValueValidator has to return an
+// error message. In this case, the original value will be restored and the
+// error message is escalated to the user.
+// if the ValueValidator is itself just NULL, then any value is rejected, i.e.
+// the attribute is read-only.
+typedef std::string (Object::*ValueValidator)();
+
+#define READ_ONLY ((ValueValidator)NULL)
+
 template<typename T>
 class Attribute_ : public Attribute {
 public:
     // default constructor
-    Attribute_() {}
-    Attribute_(const std::string &name, bool writeable)
-        : Attribute(name, writeable) {}
-    Attribute_(const std::string &name, bool writeable, const T &payload)
-        : Attribute_(name, writeable) { payload_ = payload; }
+    //Attribute_(const std::string &name, ValueValidator onChange)
+    //    : Attribute(name, writeable) {}
+    Attribute_(const std::string &name, ValueValidator onChange, const T &payload)
+        : Attribute(name, onChange != NULL)
+        , m_onChange (onChange)
+        , payload_ (payload)
+    {
+    }
 
     inline Type type();
+    ValueValidator m_onChange;
 
     // accessors only to be used by owner!
     operator T() { return payload_; }
     operator const T() const { return payload_; }
     std::string str() { return std::to_string(payload_); }
     void operator=(const T &payload) {
+        T old_payload = payload_;
         payload_ = payload;
-        notifyHooks();
+        std::string error_message = m_onChange ? ((*owner_).*m_onChange)() : "";
+        if (error_message != "") {
+            // no error -> keep value
+            notifyHooks();
+        } else {
+            // error -> restore value
+            payload_ = old_payload;
+            // FIXME: also return the error message
+        }
     }
     bool operator==(const T &payload) {
         return payload_ == payload;

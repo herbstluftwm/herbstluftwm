@@ -13,8 +13,8 @@ namespace herbstluft {
 
 Hook::Hook(const std::string &path) :
     Object(path),
-    counter_("counter", false, 0),
-    active_("active", false, false),
+    counter_("counter", READ_ONLY, 0),
+    active_("active", READ_ONLY, false),
     emit_("emit"),
     path_(Path::split(path)) {
     wireAttributes({ &counter_, &active_ });

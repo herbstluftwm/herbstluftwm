@@ -33,8 +33,8 @@ void test_object_system()
 
 TestObject::TestObject()
     : Object("tester"),
-      foo_("foo", true, 42),
-      bar_("bar", false, true),
+      foo_("foo", ACCEPT_ALL, 42),
+      bar_("bar", ACCEPT_ALL, true),
       checker_("checker", Type::ATTRIBUTE_COLOR, false, false),
       killer_("killer")
 {
@@ -59,8 +59,8 @@ void TestObject::do_stuff()
 
 TestObjectII::TestObjectII(const std::string &name)
     : Object(name),
-      foorious_("foorious", true, 42),
-      bar_("bar", false, true),
+      foorious_("foorious", ACCEPT_ALL, 42),
+      bar_("bar", ACCEPT_ALL, true),
       checker_("checker", Type::ATTRIBUTE_COLOR, true, false),
       killer_("killer")
 {

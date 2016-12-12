@@ -40,18 +40,18 @@ Theme::Theme(std::string name) : DecorationScheme(name),
 
 DecorationScheme::DecorationScheme(std::string name)
     : Object(name),
-    border_width("border_width", true, 1),
-    border_color("border_color", true, Color::fromStr("black")),
-    tight_decoration("tight_decoration", false, false),
-    inner_color("inner_color", true, Color::fromStr("black")),
-    inner_width("inner_width", true, 0),
-    outer_color("outer_color", true, Color::fromStr("black")),
-    outer_width("outer_width", true, 0),
-    padding_top("padding_top", true, 0),
-    padding_right("padding_right", true, 0),
-    padding_bottom("padding_bottom", true, 0),
-    padding_left("padding_left", true, 0),
-    background_color("background_color", true, Color::fromStr("black"))
+    border_width("border_width", ACCEPT_ALL, 1),
+    border_color("border_color", ACCEPT_ALL, Color::fromStr("black")),
+    tight_decoration("tight_decoration", READ_ONLY, false),
+    inner_color("inner_color", ACCEPT_ALL, Color::fromStr("black")),
+    inner_width("inner_width", ACCEPT_ALL, 0),
+    outer_color("outer_color", ACCEPT_ALL, Color::fromStr("black")),
+    outer_width("outer_width", ACCEPT_ALL, 0),
+    padding_top("padding_top", ACCEPT_ALL, 0),
+    padding_right("padding_right", ACCEPT_ALL, 0),
+    padding_bottom("padding_bottom", ACCEPT_ALL, 0),
+    padding_left("padding_left", ACCEPT_ALL, 0),
+    background_color("background_color", ACCEPT_ALL, Color::fromStr("black"))
 {
     wireAttributes({
         &border_width,

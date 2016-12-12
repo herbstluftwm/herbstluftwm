@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <sstream>
 
 #include "tag.h"
 #include "tagmanager.h"
@@ -48,8 +49,8 @@ void tag_destroy() {
 
 
 HSTag::HSTag(std::string name_)
-    : floating("floating", true, false)
-    , name("name", false, name_)
+    : floating("floating", ACCEPT_ALL, false)
+    , name("name", READ_ONLY, name_)
 {
     stack = stack_create();
     frame = make_shared<HSFrameLeaf>(this, shared_ptr<HSFrameSplit>());
@@ -61,6 +62,16 @@ HSTag::HSTag(std::string name_)
 
 HSTag::~HSTag() {
     stack_destroy(this->stack);
+}
+
+std::string HSTag::onNameChange() {
+    if (find_tag(name->c_str())) {
+        stringstream output;
+        output << "Tag \"" << *name << "\" already exists";
+        return output.str();
+    } else {
+        return {};
+    }
 }
 
 int    tag_get_count() {

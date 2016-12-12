@@ -27,6 +27,8 @@ public:
     herbstluft::Attribute_<std::string>  name;   // name of this tag
     int             flags;
     struct HSStack* stack;
+private:
+    std::string onNameChange();
 };
 
 void tag_init();
