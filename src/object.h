@@ -11,12 +11,13 @@
 
 #include <map>
 #include <vector>
+#include <functional>
 
 
 #define OBJECT_PATH_SEPARATOR '.'
 #define USER_ATTRIBUTE_PREFIX "my_"
 #define TMP_OBJECT_PATH "tmp"
-#define ACCEPT_ALL (&Object::acceptAllValueValidator)
+#define ACCEPT_ALL (AcceptAll())
 
 namespace herbstluft {
 
@@ -50,6 +51,9 @@ public:
     std::map<std::string, Attribute*> attributes() { return attribs_; }
 
     std::string acceptAllValueValidator() { return {}; };
+    static std::function<std::string()> AcceptAll() {
+        return []() { return ""; };
+    };
 
 protected:
     // initialize an attribute (typically used by init())

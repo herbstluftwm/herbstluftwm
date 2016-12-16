@@ -50,7 +50,7 @@ void tag_destroy() {
 
 HSTag::HSTag(std::string name_)
     : floating("floating", ACCEPT_ALL, false)
-    , name("name", READ_ONLY, name_)
+    , name("name", name_)
 {
     stack = stack_create();
     frame = make_shared<HSFrameLeaf>(this, shared_ptr<HSFrameSplit>());

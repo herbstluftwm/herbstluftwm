@@ -42,7 +42,7 @@ DecorationScheme::DecorationScheme(std::string name)
     : Object(name),
     border_width("border_width", ACCEPT_ALL, 1),
     border_color("border_color", ACCEPT_ALL, Color::fromStr("black")),
-    tight_decoration("tight_decoration", READ_ONLY, false),
+    tight_decoration("tight_decoration", false),
     inner_color("inner_color", ACCEPT_ALL, Color::fromStr("black")),
     inner_width("inner_width", ACCEPT_ALL, 0),
     outer_color("outer_color", ACCEPT_ALL, Color::fromStr("black")),

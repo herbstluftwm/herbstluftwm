@@ -4,6 +4,7 @@
 #include "attribute.h"
 #include "object.h"
 #include "x11-types.h" // for hl::Color
+#include <functional>
 
 namespace herbstluft {
 
@@ -15,9 +16,8 @@ namespace herbstluft {
 // error message is escalated to the user.
 // if the ValueValidator is itself just NULL, then any value is rejected, i.e.
 // the attribute is read-only.
-typedef std::string (Object::*ValueValidator)();
-
-#define READ_ONLY ((ValueValidator)NULL)
+//typedef std::string (Object::*ValueValidator)();
+typedef std::function<std::string()> ValueValidator;
 
 template<typename T>
 class Attribute_ : public Attribute {
@@ -25,8 +25,14 @@ public:
     // default constructor
     //Attribute_(const std::string &name, ValueValidator onChange)
     //    : Attribute(name, writeable) {}
+    // a read-only attribute
+    Attribute_(const std::string &name, const T &payload)
+        : Attribute(name, false)
+        , payload_ (payload)
+    {
+    }
     Attribute_(const std::string &name, ValueValidator onChange, const T &payload)
-        : Attribute(name, onChange != NULL)
+        : Attribute(name, true)
         , m_onChange (onChange)
         , payload_ (payload)
     {
@@ -42,7 +48,7 @@ public:
     void operator=(const T &payload) {
         T old_payload = payload_;
         payload_ = payload;
-        std::string error_message = m_onChange ? ((*owner_).*m_onChange)() : "";
+        std::string error_message = this->writeable() ? (m_onChange)() : "";
         if (error_message != "") {
             // no error -> keep value
             notifyHooks();
