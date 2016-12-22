@@ -8,8 +8,12 @@ fi
 # Get the currently active tag
 tag=$(herbstclient attr tags.focus.name)
 
-# Prints the path of of the binary in path selected by dmenu
-dmenuPrintPath() {
+# Redirect to dmenu_path if available
+if command -v dmenu_path > /dev/null 2>/dev/null ; then
+        selectedPath=$(dmenu_path | dmenu "$@")
+
+# If at least stest is present use the code from latest dmenu_path directly
+elif command -v stest > /dev/null 2>/dev/null ; then
 	cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
 	if [ -d "$cachedir" ]; then
 		cache=$cachedir/dmenu_run
@@ -18,13 +22,19 @@ dmenuPrintPath() {
 	fi
 	IFS=:
 	if stest -dqr -n "$cache" $PATH; then
-		stest -flx $PATH | sort -u | tee "$cache" | dmenu "$@"
+		selectedPath=$(stest -flx $PATH | sort -u | tee "$cache" | dmenu "$@")
 	else
-		dmenu "$@" < "$cache"
+		selectedPath=$(dmenu "$@" < "$cache")
 	fi
-}
 
-selectedPath=$(dmenuPrintPath "$@")
+# Both not found -> unable to continue
+else
+	echo "Error: Requirements dmenu_path or stest not found in your PATH." >&2
+	exit 2
+fi
+
+# Stop here if the user aborted
+[ -z $selectedPath ] && exit 0
 
 # Move next window from this process to this tag. Prepend the rule so
 # that it may be overwritten by existing custom rules e.g. in the
