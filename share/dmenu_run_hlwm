@@ -8,23 +8,10 @@ fi
 # Get the currently active tag
 tag=$(herbstclient attr tags.focus.name)
 
-# Prints the path of of the binary in path selected by dmenu
-dmenuPrintPath() {
-	cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
-	if [ -d "$cachedir" ]; then
-		cache=$cachedir/dmenu_run
-	else
-		cache=$HOME/.dmenu_cache # if no xdg dir, fall back to dotfile in ~
-	fi
-	IFS=:
-	if stest -dqr -n "$cache" $PATH; then
-		stest -flx $PATH | sort -u | tee "$cache" | dmenu "$@"
-	else
-		dmenu "$@" < "$cache"
-	fi
-}
+selectedPath=$(dmenu_path | dmenu "$@")
 
-selectedPath=$(dmenuPrintPath "$@")
+# Stop here if the user aborted
+[ -z $selectedPath ] && exit 0
 
 # Move next window from this process to this tag. Prepend the rule so
 # that it may be overwritten by existing custom rules e.g. in the
