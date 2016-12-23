@@ -87,9 +87,14 @@ int Root::cmd_attr(Input in, Output output) {
         output << a->str();
     } else {
         // another argument -> set the value
-        a->change(in.front());
+        std::string error_message = a->change(in.front());
+        if (error_message == "") {
+            return 0;
+        } else {
+            output << error_message << std::endl;
+            return HERBST_INVALID_ARGUMENT;
+        }
     }
-    return 0;
 }
 
 Attribute* Root::getAttribute(std::string path, Output output) {

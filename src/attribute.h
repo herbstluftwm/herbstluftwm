@@ -27,9 +27,8 @@ public:
     bool writeable() const { return writeable_; }
     bool hookable() const { return hookable_; }
 
-    // TODO for both: programming error when reached, thrown an exception.
     virtual std::string str() { return {}; }
-    virtual void change(const std::string &payload) {}
+    virtual std::string change(const std::string &payload) = 0;
 
 protected:
     Object *owner_;

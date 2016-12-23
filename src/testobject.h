@@ -19,7 +19,7 @@ public:
 private:
     Attribute_<int> foo_;
     Attribute_<bool> bar_;
-    DynamicAttribute checker_;
+    // DynamicAttribute checker_;
     Action killer_;
 };
 
@@ -34,7 +34,7 @@ public:
 private:
     Attribute_<unsigned long> foorious_;
     Attribute_<bool> bar_;
-    DynamicAttribute checker_;
+    // DynamicAttribute checker_;
     Action killer_;
 };
 

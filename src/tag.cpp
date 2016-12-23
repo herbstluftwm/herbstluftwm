@@ -50,7 +50,7 @@ void tag_destroy() {
 
 HSTag::HSTag(std::string name_)
     : floating("floating", ACCEPT_ALL, false)
-    , name("name", name_)
+    , name("name", AT_THIS(onNameChange), name_)
 {
     stack = stack_create();
     frame = make_shared<HSFrameLeaf>(this, shared_ptr<HSFrameSplit>());
@@ -65,9 +65,15 @@ HSTag::~HSTag() {
 }
 
 std::string HSTag::onNameChange() {
-    if (find_tag(name->c_str())) {
+    HSTag* found_tag = NULL;
+    for (auto t : *tags) {
+        if (&* t != this && t->name == *name) {
+            found_tag = &* t;
+        }
+    }
+    if (found_tag != NULL) {
         stringstream output;
-        output << "Tag \"" << *name << "\" already exists";
+        output << "Tag \"" << *name << "\" already exists ";
         return output.str();
     } else {
         return {};

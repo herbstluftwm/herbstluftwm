@@ -35,10 +35,10 @@ TestObject::TestObject()
     : Object("tester"),
       foo_("foo", ACCEPT_ALL, 42),
       bar_("bar", ACCEPT_ALL, true),
-      checker_("checker", Type::ATTRIBUTE_COLOR, false, false),
+      // checker_("checker", Type::ATTRIBUTE_COLOR, false, false),
       killer_("killer")
 {
-    wireAttributes({ &foo_, &bar_, &checker_ });
+    wireAttributes({ &foo_, &bar_, });
     wireActions({ &killer_ });
 
     auto foo = std::make_shared<TestObjectII>("precious");
@@ -61,10 +61,10 @@ TestObjectII::TestObjectII(const std::string &name)
     : Object(name),
       foorious_("foorious", ACCEPT_ALL, 42),
       bar_("bar", ACCEPT_ALL, true),
-      checker_("checker", Type::ATTRIBUTE_COLOR, true, false),
+      // checker_("checker", Type::ATTRIBUTE_COLOR, true, false),
       killer_("killer")
 {
-    wireAttributes({ &foorious_, &bar_, &checker_ });
+    wireAttributes({ &foorious_, &bar_  });
     wireActions({ &killer_ });
 
     auto foo = std::make_shared<Object>("sweets");
