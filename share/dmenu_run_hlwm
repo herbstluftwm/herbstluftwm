@@ -8,7 +8,30 @@ fi
 # Get the currently active tag
 tag=$(herbstclient attr tags.focus.name)
 
-selectedPath=$(dmenu_path | dmenu "$@")
+# Redirect to dmenu_path if available
+if command -v dmenu_path > /dev/null 2>/dev/null ; then
+        selectedPath=$(dmenu_path | dmenu "$@")
+
+# If at least stest is present use the code from latest dmenu_path directly
+elif command -v stest > /dev/null 2>/dev/null ; then
+	cachedir=${XDG_CACHE_HOME:-"$HOME/.cache"}
+	if [ -d "$cachedir" ]; then
+		cache=$cachedir/dmenu_run
+	else
+		cache=$HOME/.dmenu_cache # if no xdg dir, fall back to dotfile in ~
+	fi
+	IFS=:
+	if stest -dqr -n "$cache" $PATH; then
+		selectedPath=$(stest -flx $PATH | sort -u | tee "$cache" | dmenu "$@")
+	else
+		selectedPath=$(dmenu "$@" < "$cache")
+	fi
+
+# Both not found -> unable to continue
+else
+	echo "Error: Requirements dmenu_path or stest not found in your PATH." >&2
+	exit 2
+fi
 
 # Stop here if the user aborted
 [ -z $selectedPath ] && exit 0
