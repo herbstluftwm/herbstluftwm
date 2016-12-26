@@ -17,10 +17,12 @@ class ChildByIndex : public Object {
 public:
     ChildByIndex(const std::string& name) : Object(name) {}
     void addIndexed(std::shared_ptr<T> newChild) {
-        std::string index = std::to_string(data.size());
+        unsigned long index_int = data.size();
+        std::string index = std::to_string(index_int);
         data.push_back(newChild);
         // add a child object
         addChild(newChild, index);
+        newChild->setIndexAttribute(index_int);
     }
     ~ChildByIndex() {
         clearChildren();

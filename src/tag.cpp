@@ -49,12 +49,14 @@ void tag_destroy() {
 
 
 HSTag::HSTag(std::string name_)
-    : floating("floating", ACCEPT_ALL, false)
+    : index("index", 0)
+    , floating("floating", ACCEPT_ALL, false)
     , name("name", AT_THIS(onNameChange), name_)
 {
     stack = stack_create();
     frame = make_shared<HSFrameLeaf>(this, shared_ptr<HSFrameSplit>());
     wireAttributes({
+        &index,
         &name,
         &floating,
     });
@@ -62,6 +64,10 @@ HSTag::HSTag(std::string name_)
 
 HSTag::~HSTag() {
     stack_destroy(this->stack);
+}
+
+void HSTag::setIndexAttribute(unsigned long new_index) {
+    index = new_index;
 }
 
 std::string HSTag::onNameChange() {

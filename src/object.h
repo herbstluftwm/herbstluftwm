@@ -55,6 +55,11 @@ public:
         return []() { return ""; };
     };
 
+    // if a concrete object maintains its index within the parent as an
+    // attribute (e.g. monitors and tags do), then they should implement the
+    // following, such that the parent can tell the child its index.
+    virtual void setIndexAttribute(unsigned long index) { };
+
 protected:
     // initialize an attribute (typically used by init())
     virtual void wireAttributes(std::vector<Attribute*> attrs);
