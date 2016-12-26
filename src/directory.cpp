@@ -116,8 +116,8 @@ private:
     Ptr(Directory) dir;
 };
 
-void Directory::printTree(Output output) {
-    Ptr(TreeInterface) intface = make_shared<DirectoryTreeInterface>("", ptr<Directory>());
+void Directory::printTree(Output output, std::string rootLabel) {
+    Ptr(TreeInterface) intface = make_shared<DirectoryTreeInterface>(rootLabel, ptr<Directory>());
     tree_print_to(intface, output);
 }
 

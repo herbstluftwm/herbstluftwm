@@ -85,6 +85,7 @@ int Root::cmd_attr(Input in, Output output) {
     if (in.empty()) {
         // no more arguments -> return the value
         output << a->str();
+        return 0;
     } else {
         // another argument -> set the value
         std::string error_message = a->change(in.front());
@@ -114,8 +115,18 @@ Attribute* Root::getAttribute(std::string path, Output output) {
     return a;
 }
 
-int print_object_tree_command(int argc, char* argv[], Output output) {
-    Root::get()->printTree(output);
+int print_object_tree_command(ArgList in, Output output) {
+    in.shift();
+    auto path = Path(in.empty() ? std::string("") : in.front()).toVector();
+    while (!path.empty() && path.back() == "") {
+        path.pop_back();
+    }
+    auto child = Root::get()->child<Object>(path);
+    if (!child) {
+        output << "No such object " << Path(path).join('.') << std::endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    child->printTree(output, Path(path).join('.'));
     return 0;
 }
 

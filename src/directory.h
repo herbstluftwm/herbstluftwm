@@ -68,7 +68,7 @@ public:
     void addHook(std::shared_ptr<Hook> hook);
     void removeHook(const std::string &hook);
 
-    void printTree(Output output);
+    void printTree(Output output, std::string rootLabel = {});
 
 protected:
     /* convenience function to be used by objects to return themselves. */
