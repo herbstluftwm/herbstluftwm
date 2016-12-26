@@ -109,13 +109,20 @@ void Object::ls(Output out)
     out << attribs_.size() << (attribs_.size() == 1 ? " attribute" : " attributes")
         << (attribs_.size() > 0 ? ":" : ".") << std::endl;
 
-    out << " .---- type\n" << " | .-- writeable\n" << " | | .-- hookable\n";
-    out << " V V V" << std::endl;
+    out << " .---- type\n"
+        << " | .-- writeable\n"
+        << " | | .-- hookable\n"
+        << " V V V" << std::endl;
     for (auto it : attribs_) {
         out << " " << it.second->typechar();
         out << " " << (it.second->writeable() ? "w" : "-");
         out << " " << (it.second->hookable() ? "h" : "-");
-        out << " " << it.first << " = " << read(it.first) << std::endl;
+        out << " " << it.first;
+        if (it.second->type() == Type::ATTRIBUTE_STRING) {
+            out << " = \"" << it.second->str() << "\"" << std::endl;
+        } else {
+            out << " = " << it.second->str() << std::endl;
+        }
     }
 
     out << actions_.size() << (actions_.size() == 1 ? " action" : " actions")
@@ -143,7 +150,7 @@ void Object::print(const std::string &prefix)
         for (auto it : attribs_) {
             std::cout << prefix << "\t" << it.first
                       << " (" << it.second->typestr() << ")";
-            std::cout << "\t[" << read(it.second->name()) << "]";
+            std::cout << "\t[" << it.second->str() << "]";
             if (it.second->writeable())
                 std::cout << "\tw";
             if (!it.second->hookable())
