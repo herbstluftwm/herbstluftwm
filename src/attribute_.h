@@ -8,20 +8,6 @@
 
 namespace herbstluft {
 
-// a member function of an object that validates a new attribute value
-// if the attribute value is valid, then the ValueValidator has to return the
-// empty string.
-// if the attribute value is invalid, then ValueValidator has to return an
-// error message. In this case, the original value will be restored and the
-// error message is escalated to the user.
-// if the ValueValidator is itself just NULL, then any value is rejected, i.e.
-// the attribute is read-only.
-//typedef std::string (Object::*ValueValidator)();
-typedef std::function<std::string()> ValueValidator;
-
-// binds away the first parameter with *this
-#define AT_THIS(X) ([this]() { return this->X(); })
-
 template<typename T>
 class Attribute_ : public Attribute {
 public:
@@ -36,13 +22,15 @@ public:
     }
     Attribute_(const std::string &name, ValueValidator onChange, const T &payload)
         : Attribute(name, true)
-        , m_onChange (onChange)
+        , m_onChange(onChange)
         , payload_ (payload)
     {
     }
 
-    inline Type type();
     ValueValidator m_onChange;
+    void setOnChange(ValueValidator vv) { m_onChange = vv; }
+
+    inline Type type();
 
     // accessors only to be used by owner!
     operator T() { return payload_; }

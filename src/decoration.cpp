@@ -25,7 +25,7 @@ const Theme& Theme::get() {
     return *g_theme;
 }
 
-Theme::Theme(std::string name) : DecorationScheme(name),
+Theme::Theme(std::string name) : DecTriple(name),
     dec {
         DecTriple("fullscreen"),
         DecTriple("tiling"),
@@ -36,12 +36,25 @@ Theme::Theme(std::string name) : DecorationScheme(name),
     for (int i = 0; i < (int)Type::Count; i++) {
         addStaticChild(&dec[i]);
     }
+    // forward attribute changes only to tiling and floating
+    active.makeProxyFor({
+        &dec[(int)Type::Tiling].active,
+        &dec[(int)Type::Floating].active,
+    });
+    normal.makeProxyFor({
+        &dec[(int)Type::Tiling].normal,
+        &dec[(int)Type::Floating].normal,
+    });
+    urgent.makeProxyFor({
+        &dec[(int)Type::Tiling].urgent,
+        &dec[(int)Type::Floating].urgent,
+    });
 }
 
 DecorationScheme::DecorationScheme(std::string name)
     : Object(name),
     border_width("border_width", ACCEPT_ALL, 1),
-    border_color("border_color", ACCEPT_ALL, Color::fromStr("black")),
+    border_color("color", ACCEPT_ALL, Color::fromStr("black")),
     tight_decoration("tight_decoration", false),
     inner_color("inner_color", ACCEPT_ALL, Color::fromStr("black")),
     inner_width("inner_width", ACCEPT_ALL, 0),
@@ -78,6 +91,38 @@ DecTriple::DecTriple(std::string name)
     addStaticChild(&normal);
     addStaticChild(&active);
     addStaticChild(&urgent);
+    makeProxyFor({
+        &normal,
+        &active,
+        &urgent,
+    });
+}
+
+void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
+    for (auto it : attributes()) {
+        std::string attrib_name = it.first;
+        auto this_attribute = it.second;
+        // if an attribute of this DecorationScheme is changed, then
+        ValueValidator vv = [decs, attrib_name, this_attribute] () {
+            // for each decoration to forward the value to
+            for (auto dec_it : decs) {
+                auto target_attribute = dec_it->attribute(attrib_name);
+                // consider only those having an attribute of the same name
+                if (target_attribute) {
+                    // if writing the attribute fails, abort forwarding.
+                    // usually, all attributes should have the same type, so
+                    // writing should fail for either all or none.
+                    std::string error_msg = target_attribute->change(this_attribute->str());
+                    if (error_msg != "") {
+                        return error_msg;
+                    }
+                }
+            }
+            // if all writes succeeds, then this succeeds as well.
+            return std::string("");
+        };
+        it.second->setOnChange(vv);
+    }
 }
 
 void decorations_init() {

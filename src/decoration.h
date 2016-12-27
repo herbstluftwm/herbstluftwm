@@ -43,6 +43,11 @@ public:
 
     Rectangle inner_rect_to_outline(Rectangle rect) const;
     Rectangle outline_to_inner_rect(Rectangle rect) const;
+
+    // after having called this with some vector 'decs', then if an attribute
+    // is changed here, then the attribute with the same name is changed
+    // accordingly in each of the elements of 'decs'.
+    void makeProxyFor(std::vector<DecorationScheme*> decs);
 };
 
 class Decoration {
@@ -97,7 +102,7 @@ public:
     DecorationScheme  urgent;
 };
 
-class Theme : public DecorationScheme {
+class Theme : public DecTriple {
 public:
     enum class Type {
         Fullscreen,
