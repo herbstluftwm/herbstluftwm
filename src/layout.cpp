@@ -1249,7 +1249,7 @@ shared_ptr<HSFrame> HSFrameLeaf::neighbour(char direction) {
     shared_ptr<HSFrame> other;
     shared_ptr<HSFrame> child = shared_from_this();
     shared_ptr<HSFrameSplit> frame = getParent();
-    do {
+    while (frame) {
         // find frame, where we can change the
         // selection in the desired direction
         switch(direction) {
@@ -1291,7 +1291,7 @@ shared_ptr<HSFrame> HSFrameLeaf::neighbour(char direction) {
         // else: go one step closer to root
         child = frame;
         frame = frame->getParent();
-    } while(frame);
+    }
     if (!found) {
         return shared_ptr<HSFrame>();
     }
