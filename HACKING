@@ -40,6 +40,16 @@ always should remove dependency files by running:
 
     make cleandeps
 
+Running tests
+-------------
+
+Tests are run using pytest[1] and tox[2]. With tox and Xvfb[3] installed, you
+can simply run `tox` to run the testsuite.
+
+[1] http://pytest.org/
+[2] https://tox.readthedocs.io/
+[3] https://www.x.org/archive/current/doc/man/man1/Xvfb.1.xhtml
+
 Sending patches
 ---------------
 You can use git to make commits and create patches from them via the command
