@@ -12,7 +12,6 @@
 #include <stdbool.h>
 #include <iomanip>
 
-using namespace herbstluft;
 
 static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx);
 static size_t                  stack_child_count(HSTree root);

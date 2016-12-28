@@ -5,7 +5,6 @@
 #include "object.h"
 
 // new object tree root.
-namespace herbstluft {
 
 class Attribute;
 class HookManager;
@@ -42,6 +41,5 @@ private:
 
 int print_object_tree_command(ArgList args, Output output);
 
-}
 
 #endif // ROOT_H

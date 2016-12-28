@@ -294,7 +294,6 @@ struct {
     { 0 },
 };
 
-namespace herbstluft {
 // Implementation of CommandBinding
 
 // Nearly all of the following can go away, if all C-style command functions
@@ -382,7 +381,6 @@ shared_ptr<const CommandTable> Commands::get() {
     return command_table;
 }
 
-} // end namespace herbstluft
 
 // Old C-ish interface to commands:
 
@@ -395,7 +393,7 @@ int call_command(int argc, char** argv, Output output) {
         args.emplace_back(argv[i]);
     }
 
-    return herbstluft::Commands::call(args, output);
+    return Commands::call(args, output);
 }
 
 int call_command_no_output(int argc, char** argv) {
@@ -406,7 +404,7 @@ int call_command_no_output(int argc, char** argv) {
 
 int list_commands(int, char**, Output output)
 {
-    for (auto cmd : *herbstluft::Commands::get()) {
+    for (auto cmd : *Commands::get()) {
         output << cmd.first << endl;
     }
     return 0;
@@ -530,9 +528,9 @@ void complete_against_objects(int argc, char** argv, int pos, Output output) {
     (void)SHIFT(argc,argv);
     pos--;
 
-    std::pair<herbstluft::ArgList,std::string> p = herbstluft::Object::splitPath((pos < argc) ? argv[pos] : "");
+    std::pair<ArgList,std::string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
     auto needle = p.second;
-    std::shared_ptr<herbstluft::Object> o = herbstluft::Root::get()->child<herbstluft::Object>(p.first);
+    std::shared_ptr<Object> o = Root::get()->child<Object>(p.first);
     if (!o) {
         return;
     }
@@ -544,7 +542,6 @@ void complete_against_objects(int argc, char** argv, int pos, Output output) {
     return;
 }
 
-namespace herbstluft {
 
 void complete_against_attributes_helper(int argc, char** argv, int pos,
                                         Output output, bool user_only) {
@@ -566,14 +563,13 @@ void complete_against_attributes_helper(int argc, char** argv, int pos,
     return;
 }
 
-}
 
 void complete_against_attributes(int argc, char** argv, int pos, Output output) {
-    herbstluft::complete_against_attributes_helper(argc, argv, pos, output, false);
+    complete_against_attributes_helper(argc, argv, pos, output, false);
 }
 
 void complete_against_user_attributes(int argc, char** argv, int pos, Output output) {
-    herbstluft::complete_against_attributes_helper(argc, argv, pos, output, true);
+    complete_against_attributes_helper(argc, argv, pos, output, true);
 }
 
 
@@ -643,7 +639,7 @@ void complete_against_winids(int argc, char** argv, int pos, Output output) {
     } else {
         needle = argv[pos];
     }
-    for (auto c : herbstluft::Root::clients()->clients()) {
+    for (auto c : Root::clients()->clients()) {
         char buf[100];
         snprintf(buf, LENGTH(buf), "0x%lx", c.second->window_);
         try_complete(needle, buf, output);
@@ -831,7 +827,7 @@ int complete_against_commands(int argc, char** argv, int position,
     // complete command
     if (position == 0) {
         char* str = (argc >= 1) ? argv[0] : NULL;
-        for (auto cmd : *herbstluft::Commands::get()) {
+        for (auto cmd : *Commands::get()) {
             // only check the first len bytes
             try_complete(str, cmd.first.c_str(), output);
         }

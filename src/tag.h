@@ -18,14 +18,14 @@ struct HSStack;
 class HSFrame;
 class HSClient;
 
-class HSTag : public herbstluft::Object {
+class HSTag : public Object {
 public:
     HSTag(std::string name);
     ~HSTag();
     std::shared_ptr<HSFrame>        frame;  // the master frame
-    herbstluft::Attribute_<unsigned long> index;
-    herbstluft::Attribute_<bool>         floating;
-    herbstluft::Attribute_<std::string>  name;   // name of this tag
+    Attribute_<unsigned long> index;
+    Attribute_<bool>         floating;
+    Attribute_<std::string>  name;   // name of this tag
     int             flags;
     struct HSStack* stack;
     void setIndexAttribute(unsigned long new_index);

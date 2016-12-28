@@ -2,7 +2,6 @@
 #include "hook.h"
 #include "root.h"
 
-namespace herbstluft {
 
 HookManager::HookManager()
     : Object("hooks"),
@@ -50,4 +49,3 @@ void HookManager::trigger(const std::string &action, ArgList args)
     Object::trigger(action, args);
 }
 
-}

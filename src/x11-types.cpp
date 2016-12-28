@@ -10,7 +10,6 @@
 #include <cstdio>
 #include <sstream>
 
-namespace herbstluft {
 
 // get X11 color from color string. This fails if there is no x connection
 // from dwm.c
@@ -106,4 +105,3 @@ std::ostream& operator<< (std::ostream& stream, const Rectangle& rect) {
     return stream;
 }
 
-}

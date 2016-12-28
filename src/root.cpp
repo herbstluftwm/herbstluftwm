@@ -9,7 +9,6 @@
 #include <stdexcept>
 #include <sstream>
 
-namespace herbstluft {
 
 std::shared_ptr<Root> Root::root_;
 
@@ -130,4 +129,3 @@ int print_object_tree_command(ArgList in, Output output) {
     return 0;
 }
 
-}

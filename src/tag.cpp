@@ -27,7 +27,6 @@
 #include <sstream>
 
 using namespace std;
-using namespace herbstluft;
 
 Ptr(TagManager) tags;
 
@@ -40,7 +39,7 @@ void tag_init() {
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
     tags = make_shared<TagManager>();
-    herbstluft::Root::get()->addChild(tags);
+    Root::get()->addChild(tags);
 }
 
 void tag_destroy() {
@@ -300,7 +299,7 @@ void tag_force_update_flags() {
         t->flags = 0;
     }
     // update flags
-    for (auto c : herbstluft::Root::clients()->clients()) {
+    for (auto c : Root::clients()->clients()) {
         auto client = c.second;
         TAG_SET_FLAG(client->tag(), TAG_FLAG_USED);
         if (client->urgent_) {

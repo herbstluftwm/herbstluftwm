@@ -27,20 +27,20 @@ class HSClient {
 public:
 
     Window      window_;
-    herbstluft::Decoration    dec;
-    herbstluft::Rectangle   float_size_;     // floating size without the window border
+    Decoration    dec;
+    Rectangle   float_size_;     // floating size without the window border
     bool        urgent_;
     bool        fullscreen_;
     std::string title_;  // or also called window title; this is never NULL
     struct HSSlice* slice;
 
 public:
-    herbstluft::Rectangle   last_size_;      // last size excluding the window border
+    Rectangle   last_size_;      // last size excluding the window border
     HSTag*      tag_;
-    herbstluft::Attribute_<
+    Attribute_<
     std::string> keymask_; // keymask applied to mask out keybindins
     bool        ewmhfullscreen_; // ewmh fullscreen state
-    herbstluft::Attribute_<
+    Attribute_<
     bool>       pseudotile_; // only move client but don't resize (if possible)
     bool        neverfocus_; // do not give the focus via XSetInputFocus
     bool        ewmhrequests_; // accept ewmh-requests for this client
@@ -82,11 +82,11 @@ public:
 
     void fuzzy_fix_initial_position();
 
-    herbstluft::Rectangle outer_floating_rect();
+    Rectangle outer_floating_rect();
 
     void setup_border(bool focused);
-    void resize(herbstluft::Rectangle rect);
-    void resize_tiling(herbstluft::Rectangle rect);
+    void resize(Rectangle rect);
+    void resize_tiling(Rectangle rect);
     void resize_floating(HSMonitor* m);
     bool is_client_floated();
     bool needs_minimal_dec();
@@ -113,11 +113,11 @@ public:
     void clear_properties();
     bool ignore_unmapnotify();
 
-    const herbstluft::DecorationScheme& getScheme();
-    const herbstluft::DecorationScheme& getScheme(bool focused);
+    const DecorationScheme& getScheme();
+    const DecorationScheme& getScheme(bool focused);
 
 private:
-    const herbstluft::DecTriple& getDecTriple();
+    const DecTriple& getDecTriple();
     void resize_fullscreen(HSMonitor* m);
 };
 

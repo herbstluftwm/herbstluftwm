@@ -17,7 +17,6 @@
 #include <stdio.h>
 #include <sstream>
 
-namespace herbstluft {
 
 Object::Object(const std::string &name)
     : Directory(name)
@@ -183,6 +182,5 @@ Attribute* Object::attribute(const std::string &name) {
     }
 }
 
-}
 
 

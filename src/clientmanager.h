@@ -7,7 +7,6 @@
 
 #include <unordered_map>
 
-namespace herbstluft {
 
 // Note: this is basically a singleton
 
@@ -37,6 +36,5 @@ protected:
 std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already);
 
 
-}
 
 #endif

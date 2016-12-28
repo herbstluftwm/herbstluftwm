@@ -3,7 +3,6 @@
 
 #include "object.h"
 
-namespace herbstluft {
 
 class HookManager : public Object
 {
@@ -23,6 +22,5 @@ private:
     Action remove_;
 };
 
-}
 
 #endif // HOOKMANAGER_H

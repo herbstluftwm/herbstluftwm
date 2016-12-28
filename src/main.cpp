@@ -42,7 +42,6 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
-using namespace herbstluft;
 
 // globals:
 int g_verbose = 0;
@@ -204,9 +203,9 @@ unique_ptr<CommandTable> commands() {
         {"getenv",         getenv_command},
         {"setenv",         setenv_command},
         {"unsetenv",       unsetenv_command},
-        {"ls",             herbstluft::Root::cmd_ls},
-        {"get_attr",       herbstluft::Root::cmd_get_attr},
-        {"attr",           herbstluft::Root::cmd_attr},
+        {"ls",             Root::cmd_ls},
+        {"get_attr",       Root::cmd_get_attr},
+        {"attr",           Root::cmd_attr},
     });
 }
 
@@ -838,7 +837,7 @@ void configurenotify(XEvent* event) {
 void destroynotify(XEvent* event) {
     // try to unmanage it
     //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
-    auto cm = herbstluft::Root::clients();
+    auto cm = Root::clients();
     auto client = cm->client(event->xunmap.window);
     if (client) cm->force_unmanage(client);
 }
@@ -953,7 +952,7 @@ void propertynotify(XEvent* event) {
 
 void unmapnotify(XEvent* event) {
     HSDebug("name is: UnmapNotify for %lx\n", event->xunmap.window);
-    herbstluft::Root::clients()->unmap_notify(event->xunmap.window);
+    Root::clients()->unmap_notify(event->xunmap.window);
 }
 
 /* ---- */
@@ -963,11 +962,11 @@ void unmapnotify(XEvent* event) {
 #include "testobject.h"
 
 int main(int argc, char* argv[]) {
-    herbstluft::Root::create();
-    //herbstluft::test_object_system();
+    Root::create();
+    //test_object_system();
 
     init_handler_table();
-    herbstluft::Commands::initialize(commands());
+    Commands::initialize(commands());
 
     parse_arguments(argc, argv);
     g_display = XOpenDisplay(NULL);

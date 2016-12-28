@@ -21,7 +21,6 @@
 
 class HSClient;
 
-namespace herbstluft {
 
 class DecorationScheme : public Object {
 public:
@@ -119,7 +118,6 @@ public:
     Theme(std::string name);
 };
 
-}
 
 void decorations_init();
 void decorations_destroy();

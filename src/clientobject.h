@@ -5,13 +5,11 @@
 #include "object.h"
 #include "client.h"
 
-namespace herbstluft {
 class ClientObject : public Object, public HSClient {
 public:
     ClientObject(Window w, bool already_visible);
     virtual ~ClientObject();
 };
-}
 
 
 

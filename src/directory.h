@@ -7,7 +7,6 @@
 #include <memory>
 #include <map>
 
-namespace herbstluft {
 
 class Hook;
 
@@ -81,6 +80,5 @@ protected:
     std::map<std::string, std::weak_ptr<Hook>> hooks_;
 };
 
-}
 
 #endif // DIRECTORY_H

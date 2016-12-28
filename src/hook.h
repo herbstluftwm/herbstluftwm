@@ -12,7 +12,6 @@
 #include <memory>
 #include <vector>
 
-namespace herbstluft {
 
 class Hook : public Object {
 public:
@@ -69,7 +68,6 @@ private:
     std::string value_;
 };
 
-}
 
 struct HSTag;
 

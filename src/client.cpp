@@ -34,7 +34,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 
-using namespace herbstluft;
 
 static int g_monitor_float_treshold = 24;
 
@@ -140,7 +139,7 @@ void clientlist_destroy() {
 }
 
 HSClient* get_client_from_window(Window window) {
-    return herbstluft::Root::clients()->client(window).get();
+    return Root::clients()->client(window).get();
 }
 
 #define CLIENT_UPDATE_ATTR(FUNC,MEMBER) do { \
@@ -690,7 +689,7 @@ HSClient* get_client(const char* str) {
     if (!strcmp(str, "")) {
         return get_current_client();
     } else {
-        return herbstluft::Root::clients()->client(str).get();
+        return Root::clients()->client(str).get();
     }
 }
 

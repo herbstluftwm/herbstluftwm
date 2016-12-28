@@ -11,7 +11,6 @@
 #include <sstream>
 #include <memory>
 
-using namespace herbstluft;
 
 std::map<Window,HSClient*> Decoration::decwin2client;
 

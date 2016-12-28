@@ -12,7 +12,6 @@
 #include "tag.h"
 #include "layout.h"
 
-namespace herbstluft {
 
 ClientManager::~ClientManager()
 {
@@ -80,7 +79,7 @@ std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already) {
         return NULL;
     }
 
-    auto cm = herbstluft::Root::clients();
+    auto cm = Root::clients();
     if (cm->client(win)) {
         return NULL;
     }
@@ -210,5 +209,4 @@ void ClientManager::force_unmanage(std::shared_ptr<ClientObject> client) {
     // delete client
     this->remove(client->window_);
     client.reset();
-}
 }

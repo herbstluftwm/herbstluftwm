@@ -16,7 +16,6 @@
 #include <array>
 #include <memory>
 
-namespace herbstluft {
 
 struct ArgList {
     using Container = std::vector<std::string>;
@@ -67,10 +66,9 @@ protected:
 
 using Path = ArgList;
 
-}
 
 // STRTODO: move this into the herbstluftwm namespace
-using Input = herbstluft::ArgList;
+using Input = ArgList;
 using Output = std::ostream&;
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
@@ -141,7 +139,7 @@ char** argv_duplicate(int argc, char** argv);
 // frees all entries in argument-vector and then the vector itself
 void argv_free(int argc, char** argv);
 
-herbstluft::Rectangle parse_rectangle(char* string);
+Rectangle parse_rectangle(char* string);
 
 void g_queue_remove_element(GQueue* queue, GList* elem);
 

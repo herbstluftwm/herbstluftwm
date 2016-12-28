@@ -17,8 +17,6 @@
 
 using namespace std;
 
-namespace herbstluft {
-
 /** User facing commands.
  *
  * A command can have one of the two forms
@@ -89,8 +87,6 @@ namespace Commands {
     int call(ArgList args, Output out);
     shared_ptr<const CommandTable> get();
 }
-
-} // end namespace herbstluft
 
 // Mark the following two functions as obsolete to make it easier to detect and
 // fix call-sites gradually.

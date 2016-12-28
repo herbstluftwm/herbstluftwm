@@ -19,7 +19,6 @@
 #define TMP_OBJECT_PATH "tmp"
 #define ACCEPT_ALL (AcceptAll())
 
-namespace herbstluft {
 
 class Object : public Directory {
 
@@ -71,7 +70,6 @@ protected:
     //DynamicAttribute nameAttribute_;
 };
 
-}
 
 #endif
 

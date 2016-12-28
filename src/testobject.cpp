@@ -3,7 +3,6 @@
 #include "root.h"
 #include "utils.h"
 
-namespace herbstluft {
 
 void test_object_system()
 {
@@ -24,7 +23,7 @@ void test_object_system()
         root->hooks()->add(h);
     }
     root->print("");
-    auto wat = std::dynamic_pointer_cast<herbstluft::TestObjectII>(
+    auto wat = std::dynamic_pointer_cast<TestObjectII>(
                    tester->children().begin()->second);
     wat->do_stuff();
     tester->do_stuff();
@@ -88,4 +87,3 @@ void TestObjectII::do_stuff()
     addChild(footy);
 }
 
-}

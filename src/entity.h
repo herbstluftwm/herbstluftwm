@@ -4,7 +4,6 @@
 #include <string>
 #include <memory>
 
-namespace herbstluft {
 
 enum class Type {
     VIRTUAL,
@@ -75,7 +74,6 @@ private:
 };
 */
 
-}
 
 #endif // ENTITY
 

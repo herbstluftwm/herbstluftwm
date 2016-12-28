@@ -4,7 +4,6 @@
 #include "object.h"
 #include "attribute_.h"
 
-namespace herbstluft {
 
 class TestObject : public Object
 {
@@ -40,6 +39,5 @@ private:
 
 void test_object_system();
 
-}
 
 #endif // TESTOBJECT_H

@@ -80,7 +80,7 @@ public:
     virtual void applyFloatingLayout(HSMonitor* m) = 0;
     virtual bool isFocused();
     virtual std::shared_ptr<HSFrameLeaf> getFocusedFrame() = 0;
-    virtual void applyLayout(herbstluft::Rectangle rect) = 0;
+    virtual void applyLayout(Rectangle rect) = 0;
     virtual bool focusClient(HSClient* client) = 0;
     virtual HSClient* focusedClient() = 0;
 
@@ -126,7 +126,7 @@ public:
 
     void applyFloatingLayout(HSMonitor* m);
     std::shared_ptr<HSFrameLeaf> getFocusedFrame();
-    void applyLayout(herbstluft::Rectangle rect);
+    void applyLayout(Rectangle rect);
     bool focusClient(HSClient* client);
 
     void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order);
@@ -155,14 +155,14 @@ public:
 
     friend class HSFrame;
     void setVisible(bool visible);
-    herbstluft::Rectangle lastRect() { return last_rect; };
+    Rectangle lastRect() { return last_rect; };
 private:
     // layout algorithms
-    void layoutLinear(herbstluft::Rectangle rect, bool vertical);
-    void layoutHorizontal(herbstluft::Rectangle rect) { layoutLinear(rect, false); };
-    void layoutVertical(herbstluft::Rectangle rect) { layoutLinear(rect, true); };
-    void layoutMax(herbstluft::Rectangle rect);
-    void layoutGrid(herbstluft::Rectangle rect);
+    void layoutLinear(Rectangle rect, bool vertical);
+    void layoutHorizontal(Rectangle rect) { layoutLinear(rect, false); };
+    void layoutVertical(Rectangle rect) { layoutLinear(rect, true); };
+    void layoutMax(Rectangle rect);
+    void layoutGrid(Rectangle rect);
 
     // members
     std::vector<HSClient*> clients;
@@ -173,7 +173,7 @@ private:
     Window window;
     int    window_transparent;
     bool   window_visible;
-    herbstluft::Rectangle  last_rect; // last rectangle when being drawn
+    Rectangle  last_rect; // last rectangle when being drawn
 };
 
 class HSFrameSplit : public HSFrame {
@@ -190,7 +190,7 @@ public:
 
     void applyFloatingLayout(HSMonitor* m);
     std::shared_ptr<HSFrameLeaf> getFocusedFrame();
-    void applyLayout(herbstluft::Rectangle rect);
+    void applyLayout(Rectangle rect);
     bool focusClient(HSClient* client);
 
     void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order);
@@ -284,11 +284,11 @@ void frame_do_recursive_data(HSFrame* frame, void (*action)(HSFrame*,void*),
 int layout_rotate_command();
 
 void frame_apply_client_layout_linear(HSFrame* frame,
-                                      herbstluft::Rectangle rect, bool vertical);
+                                      Rectangle rect, bool vertical);
 void frame_apply_client_layout_horizontal(HSFrame* frame,
-                                          herbstluft::Rectangle rect);
+                                          Rectangle rect);
 void frame_apply_client_layout_vertical(HSFrame* frame,
-                                        herbstluft::Rectangle rect);
+                                        Rectangle rect);
 int frame_current_cycle_client_layout(int argc, char** argv, Output output);
 int frame_current_set_client_layout(int argc, char** argv, Output output);
 int frame_split_count_to_root(HSFrame* frame, int align);

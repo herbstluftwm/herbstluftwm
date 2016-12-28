@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <iostream>
 
-namespace herbstluft {
 
 Hook::Hook(const std::string &path) :
     Object(path),
@@ -200,7 +199,6 @@ void Hook::debug_hook(std::shared_ptr<Directory> sender, HookEvent event,
     std::cerr << std::endl;
 }
 
-}
 
 #include "globals.h"
 #include "utils.h"

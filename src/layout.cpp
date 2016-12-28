@@ -95,16 +95,16 @@ static void fetch_frame_colors() {
     g_focus_crosses_monitor_boundaries = &(settings_find("focus_crosses_monitor_boundaries")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
     char* str = settings_find_string("frame_border_normal_color");
-    g_frame_border_normal_color = herbstluft::Color(str).toX11Pixel();
+    g_frame_border_normal_color = Color(str).toX11Pixel();
     str = settings_find_string("frame_border_active_color");
-    g_frame_border_active_color = herbstluft::Color(str).toX11Pixel();
+    g_frame_border_active_color = Color(str).toX11Pixel();
     str = settings_find_string("frame_border_inner_color");
-    g_frame_border_inner_color = herbstluft::Color(str).toX11Pixel();
+    g_frame_border_inner_color = Color(str).toX11Pixel();
     // background color
     str = settings_find_string("frame_bg_normal_color");
-    g_frame_bg_normal_color = herbstluft::Color(str).toX11Pixel();
+    g_frame_bg_normal_color = Color(str).toX11Pixel();
     str = settings_find_string("frame_bg_active_color");
-    g_frame_bg_active_color = herbstluft::Color(str).toX11Pixel();
+    g_frame_bg_active_color = Color(str).toX11Pixel();
     g_frame_active_opacity = CLAMP(settings_find("frame_active_opacity")->value.i, 0, 100);
     g_frame_normal_opacity = CLAMP(settings_find("frame_normal_opacity")->value.i, 0, 100);
 
@@ -151,7 +151,7 @@ HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, weak_ptr<HSFrameSplit> parent)
 
     // set window attributes
     XSetWindowAttributes at;
-    at.background_pixel  = herbstluft::Color("red").toX11Pixel();
+    at.background_pixel  = Color("red").toX11Pixel();
     at.background_pixmap = ParentRelative;
     at.override_redirect = True;
     at.bit_gravity       = StaticGravity;
@@ -690,7 +690,7 @@ int frame_current_set_client_layout(int argc, char** argv, Output output) {
     return 0;
 }
 
-void HSFrameLeaf::layoutLinear(herbstluft::Rectangle rect, bool vertical) {
+void HSFrameLeaf::layoutLinear(Rectangle rect, bool vertical) {
     auto cur = rect;
     int last_step_y;
     int last_step_x;
@@ -724,7 +724,7 @@ void HSFrameLeaf::layoutLinear(herbstluft::Rectangle rect, bool vertical) {
     }
 }
 
-void HSFrameLeaf::layoutMax(herbstluft::Rectangle rect) {
+void HSFrameLeaf::layoutMax(Rectangle rect) {
     for (auto client : clients) {
         client->setup_border(isFocused() && client == clients[selection]);
         client->resize_tiling(rect);
@@ -747,7 +747,7 @@ void frame_layout_grid_get_size(size_t count, int* res_rows, int* res_cols) {
     }
 }
 
-void HSFrameLeaf::layoutGrid(herbstluft::Rectangle rect) {
+void HSFrameLeaf::layoutGrid(Rectangle rect) {
     if (clients.size() == 0) return;
 
     int rows, cols;
@@ -786,7 +786,7 @@ void HSFrameLeaf::layoutGrid(herbstluft::Rectangle rect) {
     }
 }
 
-void HSFrameLeaf::applyLayout(herbstluft::Rectangle rect) {
+void HSFrameLeaf::applyLayout(Rectangle rect) {
     last_rect = rect;
     if (!*g_smart_frame_surroundings || parent.lock()) {
         // apply frame gap
@@ -864,7 +864,7 @@ void HSFrameLeaf::applyLayout(herbstluft::Rectangle rect) {
     }
 }
 
-void HSFrameSplit::applyLayout(herbstluft::Rectangle rect) {
+void HSFrameSplit::applyLayout(Rectangle rect) {
     auto first = rect;
     auto second = rect;
     if (align == ALIGN_VERTICAL) {

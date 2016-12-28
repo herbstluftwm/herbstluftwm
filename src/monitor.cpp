@@ -28,7 +28,6 @@
 
 #include <vector>
 
-using namespace herbstluft;
 using namespace std;
 
 class MonitorManager : public  Object {

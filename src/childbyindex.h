@@ -6,7 +6,6 @@
 #include <string>
 #include "object.h"
 
-namespace herbstluft {
 
 
 /** an object that carries a vector of children objects, each accessible by its
@@ -81,6 +80,5 @@ private:
     std::vector<std::shared_ptr<T>> data;
 };
 
-}
 
 #endif

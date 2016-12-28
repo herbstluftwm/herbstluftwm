@@ -24,8 +24,8 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
-static herbstluft::Point2D          g_button_drag_start;
-static herbstluft::Rectangle        g_win_drag_start;
+static Point2D          g_button_drag_start;
+static Rectangle        g_win_drag_start;
 static HSClient*        g_win_drag_client = NULL;
 static HSMonitor*       g_drag_monitor = NULL;
 static MouseDragFunction g_drag_function = NULL;
@@ -425,7 +425,7 @@ void mouse_function_zoom(XMotionEvent* me) {
 
 struct SnapData {
     HSClient*       client;
-    herbstluft::Rectangle      rect;
+    Rectangle      rect;
     enum SnapFlags  flags;
     int             dx, dy; // the vector from client to other to make them snap
 };

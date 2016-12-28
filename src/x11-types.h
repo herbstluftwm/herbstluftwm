@@ -10,7 +10,6 @@
 #define Ptr(X) std::shared_ptr<X>
 #define WPtr(X) std::weak_ptr<X>
 
-namespace herbstluft {
 
 class Color {
 public:
@@ -56,7 +55,6 @@ struct Point2D {
 
 std::ostream& operator<< (std::ostream& stream, const Rectangle& matrix);
 
-}
 
 #endif
 

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <string>
 
-namespace herbstluft {
 
 using namespace std;
 
@@ -121,4 +120,3 @@ void Directory::printTree(Output output, std::string rootLabel) {
     tree_print_to(intface, output);
 }
 
-}

@@ -26,7 +26,6 @@
 #include <mach/mach.h>
 #endif
 
-namespace herbstluft {
 
 using namespace std;
 
@@ -85,9 +84,6 @@ std::string ArgList::join(char delim) {
     return join(begin_, c_->cend(), delim);
 }
 
-}
-
-using namespace herbstluft;
 
 // globals
 extern char*   g_tree_style; /* the one from layout.c */

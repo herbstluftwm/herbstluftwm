@@ -4,7 +4,6 @@
 #include "x11-types.h"
 #include "entity.h"
 
-namespace herbstluft {
 
 // a member function of an object that validates a new attribute value
 // if the attribute value is valid, then the ValueValidator has to return the
@@ -80,6 +79,5 @@ private:
     Object *owner_;
 };
 
-} // close namespace before further includes!
 
 #endif // ATTRIBUTE_H

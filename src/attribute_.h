@@ -6,7 +6,6 @@
 #include "x11-types.h" // for hl::Color
 #include <functional>
 
-namespace herbstluft {
 
 template<typename T>
 class Attribute_ : public Attribute {
@@ -156,7 +155,6 @@ inline std::string Attribute_<Color>::change(const std::string &payload) {
     return assignByUser(Color::fromStr(payload));
 }
 
-}
 
 #endif // ATTRIBUTE__H
 
