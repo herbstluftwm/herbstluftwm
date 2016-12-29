@@ -24,16 +24,15 @@ const Theme& Theme::get() {
     return *g_theme;
 }
 
-Theme::Theme(std::string name) : DecTriple(name),
-    dec {
-        DecTriple("fullscreen"),
-        DecTriple("tiling"),
-        DecTriple("floating"),
-        DecTriple("minimal")
-    }
-{
+Theme::Theme() {
+    std::vector<std::string> type_names = {
+        "fullscreen",
+        "tiling",
+        "floating",
+        "minimal",
+    };
     for (int i = 0; i < (int)Type::Count; i++) {
-        addStaticChild(&dec[i]);
+        addStaticChild(&dec[i], type_names[i]);
     }
     // forward attribute changes only to tiling and floating
     active.makeProxyFor({
@@ -50,8 +49,8 @@ Theme::Theme(std::string name) : DecTriple(name),
     });
 }
 
-DecorationScheme::DecorationScheme(std::string name)
-    : Object(name),
+DecorationScheme::DecorationScheme()
+    :
     border_width("border_width", ACCEPT_ALL, 1),
     border_color("color", ACCEPT_ALL, Color::fromStr("black")),
     tight_decoration("tight_decoration", false),
@@ -81,15 +80,11 @@ DecorationScheme::DecorationScheme(std::string name)
     });
 }
 
-DecTriple::DecTriple(std::string name)
-    : DecorationScheme(name),
-      normal("normal"),
-      active("active"),
-      urgent("urgent")
+DecTriple::DecTriple()
 {
-    addStaticChild(&normal);
-    addStaticChild(&active);
-    addStaticChild(&urgent);
+    addStaticChild(&normal, "normal");
+    addStaticChild(&active, "active");
+    addStaticChild(&urgent, "urgent");
     makeProxyFor({
         &normal,
         &active,
@@ -127,8 +122,8 @@ void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
 void decorations_init() {
     g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
     g_update_dragged_clients = &(settings_find("update_dragged_clients")->value.i);
-    g_theme = std::make_shared<Theme>("theme");
-    Root::get()->addChild(g_theme);
+    g_theme = std::make_shared<Theme>();
+    Root::get()->addChild(g_theme, "theme");
 }
 
 void reset_helper(void* data, GString* output) {

@@ -24,19 +24,14 @@ void Root::destroy() {
     root_.reset();
 }
 
-Root::Root() : Object("root")
+Root::Root()
 {
-    addChild(std::make_shared<HookManager>());
-    addChild(std::make_shared<ClientManager>());
-}
-
-std::shared_ptr<HookManager> Root::hooks()
-{
-    return root_->child<HookManager>("hooks");
+    addChild(std::make_shared<HookManager>(), "hooks");
+    addChild(std::make_shared<ClientManager>(), "clients");
 }
 
 std::shared_ptr<ClientManager> Root::clients() {
-    return root_->child<ClientManager>("clients");
+    return std::dynamic_pointer_cast<ClientManager>(root_->child("clients"));
 }
 
 int Root::cmd_ls(Input in, Output out)
@@ -72,7 +67,7 @@ int Root::cmd_attr(Input in, Output output) {
     auto p = Path::split(path);
     if (!p.empty()) {
         while (p.back().empty()) p.pop_back();
-        o = o->child<Object>(p);
+        o = o->child(p);
     }
     if (o && in.empty()) {
         o->ls(output);
@@ -99,7 +94,7 @@ int Root::cmd_attr(Input in, Output output) {
 
 Attribute* Root::getAttribute(std::string path, Output output) {
     auto attr_path = Object::splitPath(path);
-    auto child = Root::get()->child<Object>(attr_path.first);
+    auto child = Root::get()->child(attr_path.first);
     if (!child) {
         output << "No such object " << attr_path.first.join('.') << std::endl;
         return NULL;
@@ -120,7 +115,7 @@ int print_object_tree_command(ArgList in, Output output) {
     while (!path.empty() && path.back() == "") {
         path.pop_back();
     }
-    auto child = Root::get()->child<Object>(path);
+    auto child = Root::get()->child(path);
     if (!child) {
         output << "No such object " << Path(path).join('.') << std::endl;
         return HERBST_INVALID_ARGUMENT;

@@ -17,15 +17,17 @@ class Hook : public Object {
 public:
 
     Hook(const std::string &path);
-    void hook_into(std::shared_ptr<Directory> root);
+    void hook_into(std::shared_ptr<Object> root);
 
     Type type() { return Type::HOOK; }
 
     // emit hook, used by path elements
-    void operator()(std::shared_ptr<Directory> sender, HookEvent event,
+    void operator()(std::shared_ptr<Object> sender, HookEvent event,
                     const std::string &name);
 
     void trigger(const std::string &action, ArgList args);
+
+    std::string name() { return name_; }
 
 private:
     /* are we listening to an object rather an attribute? If so,
@@ -40,7 +42,7 @@ private:
     void emit(const std::string &old, const std::string &current);
 
     // check if chain needs to be altered
-    void check_chain(std::shared_ptr<Directory> sender, HookEvent event,
+    void check_chain(std::shared_ptr<Object> sender, HookEvent event,
                      const std::string &name);
 
     // remove tail from chain
@@ -48,10 +50,11 @@ private:
     // rebuild chain after existing elements
     void complete_chain();
 
-    void debug_hook(std::shared_ptr<Directory> sender = {},
+    void debug_hook(std::shared_ptr<Object> sender = {},
                     HookEvent event = HookEvent::ATTRIBUTE_CHANGED,
                     const std::string &name = {});
 
+    std::string name_;
     // counter attribute
     Attribute_<int> counter_;
     // test if hook is currently working
@@ -60,7 +63,7 @@ private:
     Action emit_;
 
     // chain of directories that report to us
-    std::vector<std::weak_ptr<Directory>> chain_;
+    std::vector<std::weak_ptr<Object>> chain_;
     // tokenized path (derived from our name)
     std::vector<std::string> path_;
 

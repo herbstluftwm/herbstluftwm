@@ -9,6 +9,7 @@
 #include "assert.h"
 #include "globals.h"
 #include "ipc-protocol.h"
+#include "hook.h"
 
 #include <iostream>
 
@@ -18,8 +19,7 @@
 #include <sstream>
 
 
-Object::Object(const std::string &name)
-    : Directory(name)
+Object::Object()
     //, nameAttribute_("name", Type::ATTRIBUTE_STRING, false, true)
 {
     //wireAttributes({ &nameAttribute_ });
@@ -29,7 +29,6 @@ Object::Object(const std::string &name)
 bool Object::exists(const std::string &name, Type t)
 {
     switch (t) {
-    case Type::DIRECTORY: return Directory::exists(name);
     case Type::ATTRIBUTE: return attribs_.find(name) != attribs_.end();
     case Type::ACTION: return actions_.find(name) != actions_.end();
     default: return false; // TODO: throw
@@ -103,7 +102,11 @@ void Object::wireActions(std::vector<Action*> actions)
 
 void Object::ls(Output out)
 {
-    Directory::ls(out);
+    out << children_.size() << (children_.size() == 1 ? " child" : " children")
+        << (children_.size() > 0 ? ":" : ".") << std::endl;
+    for (auto it : children_) {
+        out << "  " << it.first << "." << std::endl;
+    }
 
     out << attribs_.size() << (attribs_.size() == 1 ? " attribute" : " attributes")
         << (attribs_.size() > 0 ? ":" : ".") << std::endl;
@@ -131,12 +134,19 @@ void Object::ls(Output out)
     }
 }
 void Object::ls(Path path, Output out) {
-    Directory::ls(path, out);
+    if (path.empty())
+        return ls(out);
+
+    auto child = path.front();
+    if (exists(child)) {
+        children_[child]->ls(path + 1, out);
+    } else {
+        out << "child " << child << " not found!" << std::endl; // TODO
+    }
 }
 
 void Object::print(const std::string &prefix)
 {
-    std::cout << prefix << "==== " << typestr() << " " << name_ << ":" << std::endl;
     if (!children_.empty()) {
         std::cout << prefix << "Children:" << std::endl;
         for (auto it : children_) {
@@ -182,5 +192,93 @@ Attribute* Object::attribute(const std::string &name) {
     }
 }
 
+
+std::shared_ptr<Object> Object::child(const std::string &name) {
+    auto it = children_.find(name);
+    if (it != children_.end())
+        return it->second;
+    else
+        return {};
+}
+
+
+std::shared_ptr<Object> Object::child(Path path) {
+    if (path.empty()) {
+        return ptr<Object>();
+    }
+    auto it = children_.find(path.front());
+    if (it != children_.end())
+        return it->second->child(path + 1);
+    else
+        return {};
+}
+
+void Object::notifyHooks(HookEvent event, const std::string& arg)
+{
+    for (auto hook : hooks_) {
+        auto h = hook.second.lock();
+        if (h) {
+            (*h)(shared_from_this(), event, arg);
+        } // TODO: else throw
+    }
+}
+
+void Object::addChild(std::shared_ptr<Object> child, std::string name)
+{
+    children_[name] = child;
+    notifyHooks(HookEvent::CHILD_ADDED, name);
+}
+
+void Object::removeChild(const std::string &child)
+{
+    children_.erase(child);
+    notifyHooks(HookEvent::CHILD_REMOVED, child);
+}
+
+
+void Object::addHook(std::shared_ptr<Hook> hook)
+{
+    hooks_[hook->name()] = hook;
+}
+
+void Object::removeHook(const std::string &hook)
+{
+    hooks_.erase(hook);
+}
+
+class DirectoryTreeInterface : public TreeInterface {
+public:
+    DirectoryTreeInterface(string label, Ptr(Object) d) : lbl(label), dir(d) {
+        for (auto child : dir->children()) {
+            buf.push_back(child);
+        }
+    };
+    size_t childCount() {
+        return buf.size();
+    };
+    Ptr(TreeInterface) nthChild(size_t idx) {
+        return make_shared<DirectoryTreeInterface>(buf[idx].first, buf[idx].second);
+    };
+    void appendCaption(Output output) {
+        output << lbl;
+    };
+private:
+    string lbl;
+    vector<pair<string,Ptr(Object)>> buf;
+    Ptr(Object) dir;
+};
+
+void Object::printTree(Output output, std::string rootLabel) {
+    Ptr(TreeInterface) intface = make_shared<DirectoryTreeInterface>(rootLabel, ptr<Object>());
+    tree_print_to(intface, output);
+}
+
+static void null_deleter(Object *) {}
+
+void Object::addStaticChild(Object* child, std::string name)
+{
+    children_[name] = shared_ptr<Object>(child, null_deleter);
+    notifyHooks(HookEvent::CHILD_ADDED, name);
+}
 
 

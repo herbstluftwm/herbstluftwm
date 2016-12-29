@@ -530,7 +530,7 @@ void complete_against_objects(int argc, char** argv, int pos, Output output) {
 
     std::pair<ArgList,std::string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
     auto needle = p.second;
-    std::shared_ptr<Object> o = Root::get()->child<Object>(p.first);
+    std::shared_ptr<Object> o = Root::get()->child(p.first);
     if (!o) {
         return;
     }
@@ -551,7 +551,7 @@ void complete_against_attributes_helper(int argc, char** argv, int pos,
 
     std::pair<ArgList,std::string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
     auto needle = p.second;
-    std::shared_ptr<Object> o = Root::get()->child<Object>(p.first);
+    std::shared_ptr<Object> o = Root::get()->child(p.first);
     if (!o) {
         return;
     }

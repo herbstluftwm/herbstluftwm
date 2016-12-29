@@ -64,12 +64,12 @@ std::shared_ptr<ClientObject> ClientManager::client(const std::string &identifie
 void ClientManager::add(std::shared_ptr<ClientObject> client)
 {
     clients_[client->window_] = client;
-    addChild(client);
+    addChild(client, client->window_id_str);
 }
 
 void ClientManager::remove(Window window)
 {
-    removeChild(clients_[window]->name());
+    removeChild(*clients_[window]->window_id_str);
     clients_.erase(window);
 }
 

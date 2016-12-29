@@ -24,7 +24,7 @@ class HSClient;
 
 class DecorationScheme : public Object {
 public:
-    DecorationScheme(std::string name);
+    DecorationScheme();
     virtual ~DecorationScheme() {};
     Attribute_<unsigned long>     border_width;
     Attribute_<Color>   border_color;
@@ -95,7 +95,7 @@ private:
 
 class DecTriple : public DecorationScheme {
 public:
-    DecTriple(std::string name);
+    DecTriple();
     DecorationScheme  normal;
     DecorationScheme  active;
     DecorationScheme  urgent;
@@ -115,7 +115,7 @@ public:
         return dec[(int)t];
     };
     static const Theme& get();
-    Theme(std::string name);
+    Theme();
 };
 
 

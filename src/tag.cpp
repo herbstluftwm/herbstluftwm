@@ -39,7 +39,7 @@ void tag_init() {
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
     tags = make_shared<TagManager>();
-    Root::get()->addChild(tags);
+    Root::get()->addChild(tags, "tags");
 }
 
 void tag_destroy() {

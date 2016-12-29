@@ -11,7 +11,6 @@
 
 
 Hook::Hook(const std::string &path) :
-    Object(path),
     counter_("counter", 0),
     active_("active", false),
     emit_("emit"),
@@ -20,14 +19,14 @@ Hook::Hook(const std::string &path) :
     wireActions({ &emit_ });
 }
 
-void Hook::hook_into(std::shared_ptr<Directory> root) {
+void Hook::hook_into(std::shared_ptr<Object> root) {
     cutoff_chain(0);
     chain_ = { root };
-    /* we don't register with root; root directory shall never change */
+    /* we don't register with root; root Object shall never change */
     complete_chain();
 }
 
-void Hook::operator()(std::shared_ptr<Directory> sender, HookEvent event,
+void Hook::operator()(std::shared_ptr<Object> sender, HookEvent event,
                       const std::string &name) {
     //debug_hook(sender, event, name);
 
@@ -101,7 +100,7 @@ void Hook::emit(const std::string &old, const std::string &current)
     }
 }
 
-void Hook::check_chain(std::shared_ptr<Directory> sender, HookEvent event,
+void Hook::check_chain(std::shared_ptr<Object> sender, HookEvent event,
                        const std::string &name) {
     if (event == HookEvent::CHILD_REMOVED) {
         // find sender in chain
@@ -177,26 +176,26 @@ void Hook::complete_chain() {
     }
 }
 
-void Hook::debug_hook(std::shared_ptr<Directory> sender, HookEvent event,
+void Hook::debug_hook(std::shared_ptr<Object> sender, HookEvent event,
                       const std::string &name)
 {
     if (sender) {
-        std::cerr << "\t" << name_ << " triggered by " << sender->name();
+        std::cerr << "\t" << name_ << " triggered";
         std::string eventstr = (event == HookEvent::CHILD_ADDED ? "added"
                              : (event == HookEvent::CHILD_REMOVED ? "removed"
                                                                   : "changed"));
         std::cerr << " with " << name << " being " << eventstr;
         std::cerr << std::endl;
     }
-    std::cerr << "\tChain is: ";
-    for (auto c : chain_) {
-        auto d = c.lock();
-        if (d)
-            std::cerr << d->name() << ".";
-        else
-            std::cerr << "!";
-    }
-    std::cerr << std::endl;
+    // std::cerr << "\tChain is: ";
+    // for (auto c : chain_) {
+    //     auto d = c.lock();
+    //     if (d)
+    //         std::cerr << d->name() << ".";
+    //     else
+    //         std::cerr << "!";
+    // }
+    // std::cerr << std::endl;
 }
 
 

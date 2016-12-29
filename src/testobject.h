@@ -25,7 +25,7 @@ private:
 class TestObjectII : public Object
 {
 public:
-    TestObjectII(const std::string &name);
+    TestObjectII();
     void init(std::weak_ptr<Object> self);
 
     void do_stuff();

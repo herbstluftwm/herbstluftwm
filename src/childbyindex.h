@@ -14,7 +14,7 @@
 template<typename T>
 class ChildByIndex : public Object {
 public:
-    ChildByIndex(const std::string& name) : Object(name) {}
+    ChildByIndex() {}
     void addIndexed(std::shared_ptr<T> newChild) {
         unsigned long index_int = data.size();
         std::string index = std::to_string(index_int);

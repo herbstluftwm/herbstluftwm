@@ -32,9 +32,9 @@ using namespace std;
 
 class MonitorManager : public  Object {
 public:
-    MonitorManager() : Object("monitors") {
-        by_name = make_shared<Object>("by-name");
-        addChild(by_name);
+    MonitorManager() {
+        by_name = make_shared<Object>();
+        addChild(by_name, "by-name");
     };
     Ptr(Object) by_name;
 };
@@ -66,7 +66,7 @@ void monitor_init() {
     g_mouse_recenter_gap       = &(settings_find("mouse_recenter_gap")->value.i);
     g_monitor_stack = stack_create();
     monitor_manager = make_shared<MonitorManager>();
-    Root::get()->addChild(monitor_manager);
+    Root::get()->addChild(monitor_manager, "monitors");
 }
 
 HSMonitor::~HSMonitor() {

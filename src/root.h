@@ -20,9 +20,6 @@ public:
     Root();
 
     Attribute* getAttribute(std::string path, Output output);
-
-    /* convenience methods */
-    static std::shared_ptr<HookManager> hooks();
     static std::shared_ptr<ClientManager> clients();
 
     /* external interface */

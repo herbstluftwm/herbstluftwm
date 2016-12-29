@@ -3,8 +3,8 @@
 
 using namespace std;
 
-TagManager::TagManager() : ChildByIndex("tags") {
-    by_name = make_shared<Object>("by-name");
-    addChild(by_name);
+TagManager::TagManager() : ChildByIndex() {
+    by_name = make_shared<Object>();
+    addChild(by_name, "by-name");
 }
 

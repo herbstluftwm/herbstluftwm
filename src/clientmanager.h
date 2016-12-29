@@ -13,7 +13,7 @@
 class ClientManager : public Object
 {
 public:
-    ClientManager() : Object("clients") {}
+    ClientManager() {}
     ~ClientManager();
 
     std::shared_ptr<ClientObject> client(Window window);

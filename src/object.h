@@ -6,10 +6,11 @@
 #ifndef __HS_OBJECT_H_
 #define __HS_OBJECT_H_
 
-#include "directory.h"
+#include "utils.h" // for Output and stuff object.h needs
 #include "attribute.h"
 
 #include <map>
+#include <memory>
 #include <vector>
 #include <functional>
 
@@ -19,14 +20,19 @@
 #define TMP_OBJECT_PATH "tmp"
 #define ACCEPT_ALL (AcceptAll())
 
+class Hook;
 
-class Object : public Directory {
+enum class HookEvent {
+    CHILD_ADDED,
+    CHILD_REMOVED,
+    ATTRIBUTE_CHANGED
+};
+
+class Object : public std::enable_shared_from_this<Object> {
 
 public:
-    Object(const std::string &name = {});
+    Object();
     virtual ~Object() {}
-
-    virtual Type type() { return Type::OBJECT; }
 
     virtual void print(const std::string &prefix = "\t| "); // a debug method
 
@@ -59,6 +65,25 @@ public:
     // following, such that the parent can tell the child its index.
     virtual void setIndexAttribute(unsigned long index) { };
 
+    std::shared_ptr<Object> child(const std::string &name);
+
+    std::shared_ptr<Object> child(Path path);
+
+    /* Called by the directory whenever children are added or removed */
+    void notifyHooks(HookEvent event, const std::string &arg);
+
+    void addChild(std::shared_ptr<Object> child, std::string name);
+    void addStaticChild(Object *child, std::string name);
+    void removeChild(const std::string &child);
+
+    void addHook(std::shared_ptr<Hook> hook);
+    void removeHook(const std::string &hook);
+
+    const std::map<std::string, std::shared_ptr<Object>>&
+    children() { return children_; }
+
+    void printTree(Output output, std::string rootLabel);
+
 protected:
     // initialize an attribute (typically used by init())
     virtual void wireAttributes(std::vector<Attribute*> attrs);
@@ -66,6 +91,15 @@ protected:
 
     std::map<std::string, Attribute*> attribs_;
     std::map<std::string, Action*> actions_;
+
+    /* convenience function to be used by objects to return themselves. */
+    template<typename T>
+    std::shared_ptr<T> ptr() {
+        return std::dynamic_pointer_cast<T>(shared_from_this());
+    }
+
+    std::map<std::string, std::shared_ptr<Object>> children_;
+    std::map<std::string, std::weak_ptr<Hook>> hooks_;
 
     //DynamicAttribute nameAttribute_;
 };
