@@ -485,7 +485,7 @@ static void client_snap_helper(HSClient* candidate, struct SnapData* d) {
 }
 
 // get the vector to snap a client to it's neighbour
-void client_snap_vector(HSClient* client, struct HSMonitor* monitor,
+void client_snap_vector(HSClient* client, HSMonitor* monitor,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy) {
     struct SnapData d;

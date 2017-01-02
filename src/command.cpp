@@ -517,7 +517,7 @@ void complete_against_monitors(int argc, char** argv, int pos, Output output) {
         // complete against the name
         HSMonitor* m = monitor_with_index(i);
         if (m->name != "") {
-            try_complete(needle, m->name.c_str(), output);
+            try_complete(needle, m->name->c_str(), output);
         }
     }
     g_string_free(index_str, true);

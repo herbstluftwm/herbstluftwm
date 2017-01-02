@@ -32,7 +32,7 @@ typedef enum SliceType {
 } HSSliceType;
 
 class HSClient;
-struct HSMonitor;
+class HSMonitor;
 
 typedef struct HSSlice {
     HSSliceType type;
@@ -41,7 +41,7 @@ typedef struct HSSlice {
     union {
         std::shared_ptr<HSClient>    client;
         Window              window;
-        struct HSMonitor*   monitor;
+        HSMonitor*          monitor;
     } data;
 } HSSlice;
 
@@ -56,7 +56,7 @@ void stacklist_destroy();
 HSSlice* slice_create_window(Window window);
 HSSlice* slice_create_frame(Window window);
 HSSlice* slice_create_client(std::shared_ptr<HSClient> client);
-HSSlice* slice_create_monitor(struct HSMonitor* monitor);
+HSSlice* slice_create_monitor(HSMonitor* monitor);
 void slice_destroy(HSSlice* slice);
 HSLayer slice_highest_layer(HSSlice* slice);
 

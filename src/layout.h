@@ -62,13 +62,13 @@ typedef void (*ClientAction)(HSClient*, void* data);
 #define FRACTION_UNIT 10000
 
 struct HSSlice;
-struct HSTag;
+class HSTag;
 class HSFrameLeaf;
 class HSFrameSplit;
 
 class HSFrame : public std::enable_shared_from_this<HSFrame> {
 protected:
-    HSFrame(struct HSTag* tag, std::weak_ptr<HSFrameSplit> parent);
+    HSFrame(HSTag* tag, std::weak_ptr<HSFrameSplit> parent);
     virtual ~HSFrame();
 public:
     virtual void insertClient(HSClient* client) = 0;
@@ -113,7 +113,7 @@ protected:
 
 class HSFrameLeaf : public HSFrame {
 public:
-    HSFrameLeaf(struct HSTag* tag, std::weak_ptr<HSFrameSplit> parent);
+    HSFrameLeaf(HSTag* tag, std::weak_ptr<HSFrameSplit> parent);
     virtual ~HSFrameLeaf();
 
     // inherited:
@@ -178,7 +178,7 @@ private:
 
 class HSFrameSplit : public HSFrame {
 public:
-    HSFrameSplit(struct HSTag* tag, std::weak_ptr<HSFrameSplit> parent, int align,
+    HSFrameSplit(HSTag* tag, std::weak_ptr<HSFrameSplit> parent, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b);
     virtual ~HSFrameSplit();
     // inherited:

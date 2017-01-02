@@ -13,7 +13,6 @@
 #include <regex.h>
 
 class HSClient;
-struct HSTag;
 
 enum {
     CONDITION_VALUE_TYPE_STRING,

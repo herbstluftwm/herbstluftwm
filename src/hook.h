@@ -72,7 +72,7 @@ private:
 };
 
 
-struct HSTag;
+class HSTag;
 
 void hook_init();
 void hook_destroy();

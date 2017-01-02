@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <sstream>
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
@@ -60,8 +61,54 @@ void monitor_init() {
     Root::get()->addChild(monitors, "monitors");
 }
 
+HSMonitor::HSMonitor()
+    : name("name", AT_THIS(onNameChange), "")
+    , index("index", 0)
+    , pad_up("pad_up", AT_THIS(onPadChange), 0)
+    , pad_right("pad_right", AT_THIS(onPadChange), 0)
+    , pad_down("pad_down", AT_THIS(onPadChange), 0)
+    , pad_left("pad_left", AT_THIS(onPadChange), 0)
+    , lock_tag("lock_tag", ACCEPT_ALL, false)
+{
+    wireAttributes({
+        &index,
+        &name,
+        &pad_up,
+        &pad_right,
+        &pad_down,
+        &pad_left,
+        &lock_tag,
+    });
+}
+
 HSMonitor::~HSMonitor() {
     stack_remove_slice(g_monitor_stack, slice);
+}
+
+std::string HSMonitor::onNameChange() {
+    if (isdigit(name()[0])) {
+        return "The monitor name may not start with a number";
+    }
+    for (auto m : *monitors) {
+        if (&* m != this && name() == m->name()) {
+            stringstream output;
+            output << "Monitor " << m->index()
+                   << " already has the name \""
+                   << name() << "\"";
+            return output.str();
+        }
+    }
+    return {};
+}
+
+std::string HSMonitor::onPadChange() {
+    monitor_apply_layout(this);
+    return {};
+}
+
+
+void HSMonitor::setIndexAttribute(unsigned long new_index) {
+    index = new_index;
 }
 
 void monitor_destroy() {
@@ -78,6 +125,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
         monitor->dirty = false;
         Rectangle rect = monitor->rect;
         // apply pad
+        // FIXME: why does the following + work for attributes pad_* ?
         rect.x += monitor->pad_left;
         rect.width -= (monitor->pad_left + monitor->pad_right);
         rect.y += monitor->pad_up;
@@ -114,7 +162,7 @@ int list_monitors(int argc, char** argv, Output output) {
     int i = 0;
     for (auto monitor : *monitors) {
         if (monitor->name != "" ) {
-            monitor_name = ", named \"" + monitor->name + "\"";
+            monitor_name = ", named \"" + *monitor->name + "\"";
         } else {
             monitor_name = "";
         }
@@ -575,22 +623,13 @@ int rename_monitor_command(int argc, char** argv, Output output) {
             ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    if (isdigit(argv[2][0])) {
-        output << argv[0] <<
-            ": The monitor name may not start with a number\n";
+    string error = mon->name.change(argv[2]);
+    if (!error.empty()) {
+        output << argv[0] << ": " << error << "\n";
         return HERBST_INVALID_ARGUMENT;
-    } else if (!strcmp("", argv[2])) {
-        // empty name
-        mon->name = "";
+    } else {
         return 0;
     }
-    if (find_monitor_by_name(argv[2])) {
-        output << argv[0] <<
-            "%s: A monitor with the same name already exists\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    mon->name = argv[2];
-    return 0;
 }
 
 int monitor_rect_command(int argc, char** argv, Output output) {

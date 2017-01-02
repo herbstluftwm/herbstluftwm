@@ -14,6 +14,10 @@ public:
     //Attribute_(const std::string &name, ValueValidator onChange)
     //    : Attribute(name, writeable) {}
     // a read-only attribute
+
+    // Attribute_()
+    //    __attribute__((deprecated("You have to initialize an Attribute explicitly"))) {};
+
     Attribute_(const std::string &name, const T &payload)
         : Attribute(name, false)
         , payload_ (payload)

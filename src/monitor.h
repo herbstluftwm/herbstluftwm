@@ -16,6 +16,7 @@
 #include "floating.h"
 #include "utils.h"
 #include "object.h"
+#include "attribute_.h"
 
 class HSTag;
 class HSFrame;
@@ -24,6 +25,7 @@ struct HSStack;
 
 class HSMonitor : public Object {
 public:
+    HSMonitor();
     ~HSMonitor();
     Rectangle getFloatingArea();
     int relativeX(int x_root);
@@ -32,14 +34,15 @@ public:
     HSTag*      tag;    // currently viewed tag
     HSTag*      tag_previous;    // previously viewed tag
     struct HSSlice*    slice;  // slice in the monitor stack
-    std::string    name;
-    int         pad_up;
-    int         pad_right;
-    int         pad_down;
-    int         pad_left;
+    Attribute_<std::string>   name;
+    Attribute_<unsigned long> index;
+    Attribute_<int>         pad_up;
+    Attribute_<int>         pad_right;
+    Attribute_<int>         pad_down;
+    Attribute_<int>         pad_left;
     bool        dirty;
     bool        lock_frames;
-    bool        lock_tag;
+    Attribute_<bool>        lock_tag;
     struct {
         // last saved mouse position
         int x;
@@ -47,6 +50,10 @@ public:
     } mouse;
     Rectangle   rect;   // area for this monitor
     Window      stacking_window;   // window used for making stacking easy
+    void setIndexAttribute(unsigned long index);
+private:
+    std::string onNameChange();
+    std::string onPadChange();
 };
 
 void monitor_init();
