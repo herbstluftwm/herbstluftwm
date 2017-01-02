@@ -15,13 +15,14 @@
 #include "x11-types.h"
 #include "floating.h"
 #include "utils.h"
+#include "object.h"
 
 class HSTag;
 class HSFrame;
 struct HSSlice;
 struct HSStack;
 
-class HSMonitor {
+class HSMonitor : public Object {
 public:
     ~HSMonitor();
     Rectangle getFloatingArea();
