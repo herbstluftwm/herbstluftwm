@@ -75,8 +75,8 @@ public:
     void addStaticChild(Object *child, std::string name);
     void removeChild(const std::string &child);
 
-    void addHook(std::shared_ptr<Hook> hook);
-    void removeHook(std::weak_ptr<Hook> hook);
+    void addHook(Hook* hook);
+    void removeHook(Hook* hook);
 
     const std::map<std::string, std::shared_ptr<Object>>&
     children() { return children_; }
@@ -98,7 +98,7 @@ protected:
     }
 
     std::map<std::string, std::shared_ptr<Object>> children_;
-    std::vector<std::weak_ptr<Hook>> hooks_;
+    std::vector<Hook*> hooks_;
 
     //DynamicAttribute nameAttribute_;
 };

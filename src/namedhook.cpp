@@ -131,7 +131,7 @@ void NamedHook::cutoff_chain(size_t length) {
     for (auto i = length; i < chain_.size(); ++i) {
         auto o = chain_[i].lock();
         if (o)
-            o->removeHook(self);
+            o->removeHook(this);
     }
     chain_.resize(length);
     active_ = false;
@@ -146,7 +146,7 @@ void NamedHook::complete_chain() {
     for (auto i = chain_.size() - 1; i < path_.size(); ++i) {
         auto next = current->children().find(path_[i]);
         if (next != current->children().end()) {
-            next->second->addHook(self);
+            next->second->addHook(this);
             chain_.emplace_back(next->second);
             current = next->second;
         }

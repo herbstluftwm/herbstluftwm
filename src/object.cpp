@@ -211,18 +211,17 @@ std::shared_ptr<Object> Object::child(Path path) {
 
 void Object::notifyHooks(HookEvent event, const std::string& arg)
 {
-    for (auto hook : hooks_) {
-        auto h = hook.lock();
+    for (auto h : hooks_) {
         if (h) {
             switch (event) {
                 case HookEvent::CHILD_ADDED:
-                    h->childAdded(arg);
+                    h->childAdded(ptr<Object>(), arg);
                     break;
                 case HookEvent::CHILD_REMOVED:
-                    h->childRemoved(arg);
+                    h->childRemoved(ptr<Object>(), arg);
                     break;
                 case HookEvent::ATTRIBUTE_CHANGED:
-                    h->attributeChanged(arg);
+                    h->attributeChanged(ptr<Object>(), arg);
                     break;
             }
         } // TODO: else throw
@@ -237,25 +236,29 @@ void Object::addChild(std::shared_ptr<Object> child, std::string name)
 
 void Object::removeChild(const std::string &child)
 {
-    children_.erase(child);
     notifyHooks(HookEvent::CHILD_REMOVED, child);
+    children_.erase(child);
 }
 
 
-void Object::addHook(std::shared_ptr<Hook> hook)
+void Object::addHook(Hook* hook)
 {
     hooks_.push_back(hook);
 }
 
-void Object::removeHook(std::weak_ptr<Hook> hook)
+void Object::removeHook(Hook* hook)
 {
-    auto hook_locked = hook.lock();
-    hooks_.erase(std::remove_if(
+    //auto hook_locked = hook.lock();
+    //hooks_.erase(std::remove_if(
+    //                hooks_.begin(),
+    //                hooks_.end(),
+    //                [hook_locked](std::weak_ptr<Hook> el) {
+    //                    return el.lock() == hook_locked;
+    //                }), hooks_.end());
+    hooks_.erase(std::remove(
                     hooks_.begin(),
                     hooks_.end(),
-                    [hook_locked](std::weak_ptr<Hook> el) {
-                        return el.lock() == hook_locked;
-                    }), hooks_.end());
+                    hook), hooks_.end());
 }
 
 class DirectoryTreeInterface : public TreeInterface {

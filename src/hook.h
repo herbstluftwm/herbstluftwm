@@ -8,15 +8,21 @@
 
 #include <memory>
 #include <vector>
+#include "x11-types.h"
+class Object;
 
 // a Hook monitors a given object, i.e. gets callbacks
 // each time a the object changes its attributes or its children.
 class Hook {
 public:
     Hook();
-    virtual void childAdded(std::string child_name) {};
-    virtual void childRemoved(std::string child_name) {};
-    virtual void attributeChanged(std::string attribute_name) {};
+    virtual ~Hook() {};
+    // this is called after a child has been added
+    virtual void childAdded(Ptr(Object) parent, std::string child_name) {};
+    // this is called immediately before a child is removed
+    virtual void childRemoved(Ptr(Object) parent, std::string child_name) {};
+    // this is called after an attribute value has changed
+    virtual void attributeChanged(Ptr(Object) sender, std::string attribute_name) {};
 };
 
 

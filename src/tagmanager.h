@@ -3,13 +3,14 @@
 
 #include "tag.h"
 #include "childbyindex.h"
+#include "byname.h"
 
 
 class TagManager : public ChildByIndex<HSTag> {
 public:
     TagManager();
 private:
-    Ptr(Object) by_name;
+    ByName by_name;
 };
 
 

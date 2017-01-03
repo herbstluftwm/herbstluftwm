@@ -5,6 +5,7 @@
 using namespace std;
 
 MonitorManager::MonitorManager()
-    : by_name(this)
+    : ChildByIndex<HSMonitor>()
+    , by_name(*this)
 {
 }
