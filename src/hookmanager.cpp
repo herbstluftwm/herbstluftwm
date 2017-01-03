@@ -1,5 +1,6 @@
 #include "hookmanager.h"
 #include "hook.h"
+#include "namedhook.h"
 #include "root.h"
 
 
@@ -23,7 +24,7 @@ void HookManager::ls(Path path, Output out)
 
 void HookManager::add(const std::string &path)
 {
-    auto h = std::make_shared<Hook>(path);
+    auto h = std::make_shared<NamedHook>(path);
     h->hook_into(Root::get());
     addChild(h, "???");
 }

@@ -4,7 +4,7 @@
 
 using namespace std;
 
-MonitorManager::MonitorManager() {
-    by_name = make_shared<Object>();
-    addChild(by_name, "by-name");
+MonitorManager::MonitorManager()
+    : by_name(this)
+{
 }

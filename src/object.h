@@ -8,6 +8,7 @@
 
 #include "utils.h" // for Output and stuff object.h needs
 #include "attribute.h"
+#include "hook.h"
 
 #include <map>
 #include <memory>
@@ -19,8 +20,6 @@
 #define USER_ATTRIBUTE_PREFIX "my_"
 #define TMP_OBJECT_PATH "tmp"
 #define ACCEPT_ALL (AcceptAll())
-
-class Hook;
 
 enum class HookEvent {
     CHILD_ADDED,
@@ -77,7 +76,7 @@ public:
     void removeChild(const std::string &child);
 
     void addHook(std::shared_ptr<Hook> hook);
-    void removeHook(const std::string &hook);
+    void removeHook(std::weak_ptr<Hook> hook);
 
     const std::map<std::string, std::shared_ptr<Object>>&
     children() { return children_; }
@@ -99,7 +98,7 @@ protected:
     }
 
     std::map<std::string, std::shared_ptr<Object>> children_;
-    std::map<std::string, std::weak_ptr<Hook>> hooks_;
+    std::vector<std::weak_ptr<Hook>> hooks_;
 
     //DynamicAttribute nameAttribute_;
 };

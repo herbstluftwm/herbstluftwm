@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sstream>
+#include <algorithm>
 
 
 Object::Object()
@@ -175,12 +176,7 @@ void Object::print(const std::string &prefix)
         }
         std::cout << std::endl;
     }
-    if (!hooks_.empty()) {
-        std::cout << prefix << "Current hooks:" << std::endl;
-        for (auto it : hooks_) {
-            std::cout << prefix << "\t" << it.first << std::endl;
-        }
-    }
+    std::cout << prefix << "Currently " << hooks_.size() << " hooks:" << std::endl;
 }
 
 Attribute* Object::attribute(const std::string &name) {
@@ -216,9 +212,19 @@ std::shared_ptr<Object> Object::child(Path path) {
 void Object::notifyHooks(HookEvent event, const std::string& arg)
 {
     for (auto hook : hooks_) {
-        auto h = hook.second.lock();
+        auto h = hook.lock();
         if (h) {
-            (*h)(shared_from_this(), event, arg);
+            switch (event) {
+                case HookEvent::CHILD_ADDED:
+                    h->childAdded(arg);
+                    break;
+                case HookEvent::CHILD_REMOVED:
+                    h->childRemoved(arg);
+                    break;
+                case HookEvent::ATTRIBUTE_CHANGED:
+                    h->attributeChanged(arg);
+                    break;
+            }
         } // TODO: else throw
     }
 }
@@ -238,12 +244,18 @@ void Object::removeChild(const std::string &child)
 
 void Object::addHook(std::shared_ptr<Hook> hook)
 {
-    hooks_[hook->name()] = hook;
+    hooks_.push_back(hook);
 }
 
-void Object::removeHook(const std::string &hook)
+void Object::removeHook(std::weak_ptr<Hook> hook)
 {
-    hooks_.erase(hook);
+    auto hook_locked = hook.lock();
+    hooks_.erase(std::remove_if(
+                    hooks_.begin(),
+                    hooks_.end(),
+                    [hook_locked](std::weak_ptr<Hook> el) {
+                        return el.lock() == hook_locked;
+                    }), hooks_.end());
 }
 
 class DirectoryTreeInterface : public TreeInterface {

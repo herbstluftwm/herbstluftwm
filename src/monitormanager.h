@@ -8,11 +8,13 @@
 
 #include "monitor.h"
 #include "childbyindex.h"
+#include "byname.h"
 
 class MonitorManager : public ChildByIndex<HSMonitor> {
 public:
     MonitorManager();
-    Ptr(Object) by_name;
+private:
+    ByName by_name;
 };
 
 
