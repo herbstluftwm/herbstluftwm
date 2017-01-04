@@ -976,6 +976,7 @@ void monitor_focus_by_index(int new_selection) {
 }
 
 void monitor_update_focus_objects() {
+    monitors->focus = monitors->byIdx(g_cur_monitor);
     tag_update_focus_objects();
 }
 

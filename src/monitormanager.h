@@ -9,10 +9,12 @@
 #include "monitor.h"
 #include "childbyindex.h"
 #include "byname.h"
+#include "child.h"
 
 class MonitorManager : public ChildByIndex<HSMonitor> {
 public:
     MonitorManager();
+    Child_<HSMonitor> focus;
 private:
     ByName by_name;
 };
