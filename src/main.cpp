@@ -158,6 +158,7 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "rename",         tag_rename_command),
     CMD_BIND(             "move",           tag_move_window_command),
     CMD_BIND_NO_OUTPUT(   "rotate",         layout_rotate_command),
+    CMD_BIND_NO_OUTPUT(   "mirror",         layout_mirror_command),
     CMD_BIND(             "move_index",     tag_move_window_by_index_command),
     CMD_BIND(             "add_monitor",    add_monitor_command),
     CMD_BIND(             "raise_monitor",  monitor_raise_command),

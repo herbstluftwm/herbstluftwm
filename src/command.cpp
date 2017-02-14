@@ -111,6 +111,7 @@ struct {
     { "shift",          2,  first_parameter_is_flag },
     { "remove",         1,  no_completion },
     { "rotate",         1,  no_completion },
+    { "mirror",         1,  no_completion },
     { "set",            3,  no_completion },
     { "get",            2,  no_completion },
     { "toggle",         2,  no_completion },

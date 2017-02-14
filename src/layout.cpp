@@ -1825,6 +1825,25 @@ void frame_show_recursive(HSFrame* frame) {
     frame_do_recursive(frame, frame_show_clients, 2);
 }
 
+static void frame_mirror(HSFrame* frame) {
+    if (frame && frame->type == TYPE_FRAMES) {
+        HSLayout* l = &frame->content.layout;
+        if (l->align == ALIGN_HORIZONTAL){
+            l->selection = l->selection ? 0 : 1;
+            HSFrame* temp = l->a;
+            l->a = l->b;
+            l->b = temp;
+            l->fraction = FRACTION_UNIT - l->fraction;
+        }
+    }
+}
+
+int layout_mirror_command() {
+    frame_do_recursive(get_current_monitor()->tag->frame, frame_mirror, -1);
+    monitor_apply_layout(get_current_monitor());
+    return 0;
+}
+
 static void frame_rotate(HSFrame* frame) {
     if (frame && frame->type == TYPE_FRAMES) {
         HSLayout* l = &frame->content.layout;
