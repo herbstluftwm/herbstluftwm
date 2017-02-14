@@ -494,6 +494,9 @@ rotate::
     Rotates the layout on the focused tag counterclockwise by 90 degrees. This
     only manipulates the alignment of frames, not the content of them.
 
+mirror::
+    Similar to rotate. Mirrors the layout on the focused tag at the vertical axis.
+
 set 'NAME' 'VALUE'::
     Sets the specified setting 'NAME' to 'VALUE'. All <<SETTINGS,*SETTINGS*>>
     are listed in the <<SETTINGS, section below>>.
