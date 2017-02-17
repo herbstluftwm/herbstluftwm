@@ -54,6 +54,7 @@ HSClient::HSClient(Window window, bool visible_already)
       float_size_({0, 0, 100, 100}),
       urgent_(false), fullscreen_(false),
       title_(""),
+      window_id_str("winid", ""),
       tag_(NULL),
       keymask_("keymask", Object::AcceptAll(), ""),
       ewmhfullscreen_(false),
@@ -64,6 +65,13 @@ HSClient::HSClient(Window window, bool visible_already)
       visible_(visible_already), dragged_(false),
       ignore_unmaps_(0)
 {
+    std::stringstream tmp;
+    tmp << "0x" << std::hex << window;
+    window_id_str = tmp.str();
+    wireAttributes({
+        &keymask_,
+        &pseudotile_,
+    });
     init_from_X();
 }
 

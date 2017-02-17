@@ -23,8 +23,10 @@ struct HSSlice;
 class HSTag;
 class HSMonitor;
 
-class HSClient {
+class HSClient : public Object {
 public:
+    HSClient(Window w, bool already_visible);
+    ~HSClient();
 
     Window      window_;
     Decoration    dec;
@@ -36,6 +38,8 @@ public:
 
 public:
     Rectangle   last_size_;      // last size excluding the window border
+    Attribute_<std::string> window_id_str;
+
     HSTag*      tag_;
     Attribute_<
     std::string> keymask_; // keymask applied to mask out keybindins
@@ -57,10 +61,6 @@ public:
     float mina_, maxa_;
     unsigned int basew_, baseh_, incw_, inch_, maxw_, maxh_, minw_, minh_;
     // for other modules
-
-public:
-    HSClient(Window window_, bool visible_already);
-    ~HSClient();
 
     void init_from_X();
 

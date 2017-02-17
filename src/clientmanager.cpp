@@ -26,7 +26,7 @@ ClientManager::~ClientManager()
     }
 }
 
-std::shared_ptr<ClientObject> ClientManager::client(Window window)
+std::shared_ptr<HSClient> ClientManager::client(Window window)
 {
     auto entry = clients_.find(window);
     if (entry != clients_.end())
@@ -43,7 +43,7 @@ std::shared_ptr<ClientObject> ClientManager::client(Window window)
  *                  a decimal number its decimal window id.
  * \return          Pointer to the resolved client, or null, if client not found
  */
-std::shared_ptr<ClientObject> ClientManager::client(const std::string &identifier)
+std::shared_ptr<HSClient> ClientManager::client(const std::string &identifier)
 {
     if (identifier.empty()) {
         // TODO: the frame doesn't provide us with a shared pointer yet
@@ -61,7 +61,7 @@ std::shared_ptr<ClientObject> ClientManager::client(const std::string &identifie
     return client(win);
 }
 
-void ClientManager::add(std::shared_ptr<ClientObject> client)
+void ClientManager::add(std::shared_ptr<HSClient> client)
 {
     clients_[client->window_] = client;
     addChild(client, client->window_id_str);
@@ -73,7 +73,7 @@ void ClientManager::remove(Window window)
     clients_.erase(window);
 }
 
-std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already) {
+std::shared_ptr<HSClient> manage_client(Window win, bool visible_already) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
         return NULL;
@@ -85,7 +85,7 @@ std::shared_ptr<ClientObject> manage_client(Window win, bool visible_already) {
     }
 
     // init client
-    auto client = std::make_shared<ClientObject>(win, visible_already);
+    auto client = std::make_shared<HSClient>(win, visible_already);
     HSMonitor* m = get_current_monitor();
 
     // apply rules
@@ -184,7 +184,7 @@ void ClientManager::unmap_notify(Window win) {
     }
 }
 
-void ClientManager::force_unmanage(std::shared_ptr<ClientObject> client) {
+void ClientManager::force_unmanage(std::shared_ptr<HSClient> client) {
     if (client->dragged_) {
         mouse_stop_drag();
     }
