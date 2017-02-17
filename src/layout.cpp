@@ -587,21 +587,6 @@ void print_frame_tree(shared_ptr<HSFrame> frame, Output output) {
 //}
 
 
-void HSFrameLeaf::applyFloatingLayout(HSMonitor* m) {
-    setVisible(false); //FRAMETODO
-    //auto selection_it = clients.begin() + selection;
-    /* border color */
-    for (auto client : clients) {
-        client->setup_border(isFocused() && (client == clients[selection]));
-        client->resize_floating(m);
-    }
-}
-
-void HSFrameSplit::applyFloatingLayout(HSMonitor* m) {
-    a->applyFloatingLayout(m);
-    b->applyFloatingLayout(m);
-}
-
 bool HSFrame::isFocused() {
     auto p = parent.lock();
     if (!p) {
@@ -690,7 +675,8 @@ int frame_current_set_client_layout(int argc, char** argv, Output output) {
     return 0;
 }
 
-void HSFrameLeaf::layoutLinear(Rectangle rect, bool vertical) {
+TilingResult HSFrameLeaf::layoutLinear(Rectangle rect, bool vertical) {
+    TilingResult res;
     auto cur = rect;
     int last_step_y;
     int last_step_x;
@@ -717,21 +703,24 @@ void HSFrameLeaf::layoutLinear(Rectangle rect, bool vertical) {
         // add the space, if count does not divide frameheight without remainder
         cur.height += (i == count-1) ? last_step_y : 0;
         cur.width += (i == count-1) ? last_step_x : 0;
-        client->resize_tiling(cur);
+        res[client] = TilingStep(cur);
         cur.y += step_y;
         cur.x += step_x;
         i++;
     }
+    return res;
 }
 
-void HSFrameLeaf::layoutMax(Rectangle rect) {
+TilingResult HSFrameLeaf::layoutMax(Rectangle rect) {
+    TilingResult res;
     for (auto client : clients) {
-        client->setup_border(isFocused() && client == clients[selection]);
-        client->resize_tiling(rect);
+        TilingStep step(rect);
         if (client == clients[selection]) {
-            client->raise();
+            step.needsRaise = true;
         }
+        res[client] = step;
     }
+    return res;
 }
 
 void frame_layout_grid_get_size(size_t count, int* res_rows, int* res_cols) {
@@ -747,8 +736,9 @@ void frame_layout_grid_get_size(size_t count, int* res_rows, int* res_cols) {
     }
 }
 
-void HSFrameLeaf::layoutGrid(Rectangle rect) {
-    if (clients.size() == 0) return;
+TilingResult HSFrameLeaf::layoutGrid(Rectangle rect) {
+    TilingResult res;
+    if (clients.size() == 0) return res;
 
     int rows, cols;
     frame_layout_grid_get_size(clients.size(), &rows, &cols);
@@ -777,16 +767,16 @@ void HSFrameLeaf::layoutGrid(Rectangle rect) {
             }
 
             // apply size
-            clients[i]->setup_border(isFocused() && i == selection);
-            clients[i]->resize_tiling(cur);
+            res[clients[i]] = TilingStep(cur);
             cur.x += width;
             i++;
         }
         cur.y += height;
     }
+    return res;
 }
 
-void HSFrameLeaf::applyLayout(Rectangle rect) {
+TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
     last_rect = rect;
     if (!*g_smart_frame_surroundings || parent.lock()) {
         // apply frame gap
@@ -834,9 +824,11 @@ void HSFrameLeaf::applyLayout(Rectangle rect) {
         ewmh_set_window_opacity(window, g_frame_normal_opacity/100.0);
     }
     XClearWindow(g_display, window);
+
     // move windows
+    TilingResult res;
     if (clients.size() == 0) {
-        return;
+        return res;
     }
 
     if (!smart_window_surroundings_active(this)) {
@@ -852,19 +844,20 @@ void HSFrameLeaf::applyLayout(Rectangle rect) {
         rect.width  -= *g_frame_padding * 2;
         rect.height -= *g_frame_padding * 2;
     }
-
     if (layout == LAYOUT_MAX) {
-        layoutMax(rect);
+        res = layoutMax(rect);
     } else if (layout == LAYOUT_GRID) {
-        layoutGrid(rect);
+        res = layoutGrid(rect);
     } else if (layout == LAYOUT_VERTICAL) {
-        layoutVertical(rect);
+        res = layoutVertical(rect);
     } else {
-        layoutHorizontal(rect);
+        res = layoutHorizontal(rect);
     }
+    res.focus = clients[selection];
+    return res;
 }
 
-void HSFrameSplit::applyLayout(Rectangle rect) {
+TilingResult HSFrameSplit::computeLayout(Rectangle rect) {
     auto first = rect;
     auto second = rect;
     if (align == ALIGN_VERTICAL) {
@@ -876,8 +869,13 @@ void HSFrameSplit::applyLayout(Rectangle rect) {
         second.x += first.width;
         second.width -= first.width;
     }
-    a->applyLayout(first);
-    b->applyLayout(second);
+    TilingResult res;
+    auto res1 = a->computeLayout(first);
+    auto res2 = b->computeLayout(second);
+    res.mergeFrom(res1);
+    res.mergeFrom(res2);
+    res.focus = (selection == 0) ? res1.focus : res2.focus;
+    return res;
 }
 
 void HSFrameSplit::fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) {

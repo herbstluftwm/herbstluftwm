@@ -15,6 +15,7 @@
 #include "monitor.h"
 #include "tag.h"
 #include "floating.h"
+#include "tilingresult.h"
 
 #include <memory>
 
@@ -77,10 +78,9 @@ public:
     virtual bool removeClient(HSClient* client) = 0;
     virtual void dump(Output output) = 0;
 
-    virtual void applyFloatingLayout(HSMonitor* m) = 0;
     virtual bool isFocused();
     virtual std::shared_ptr<HSFrameLeaf> getFocusedFrame() = 0;
-    virtual void applyLayout(Rectangle rect) = 0;
+    virtual TilingResult computeLayout(Rectangle rect) = 0;
     virtual bool focusClient(HSClient* client) = 0;
     virtual HSClient* focusedClient() = 0;
 
@@ -124,9 +124,8 @@ public:
     void moveClient(int new_index);
     void dump(Output output);
 
-    void applyFloatingLayout(HSMonitor* m);
     std::shared_ptr<HSFrameLeaf> getFocusedFrame();
-    void applyLayout(Rectangle rect);
+    TilingResult computeLayout(Rectangle rect);
     bool focusClient(HSClient* client);
 
     void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order);
@@ -158,11 +157,11 @@ public:
     Rectangle lastRect() { return last_rect; };
 private:
     // layout algorithms
-    void layoutLinear(Rectangle rect, bool vertical);
-    void layoutHorizontal(Rectangle rect) { layoutLinear(rect, false); };
-    void layoutVertical(Rectangle rect) { layoutLinear(rect, true); };
-    void layoutMax(Rectangle rect);
-    void layoutGrid(Rectangle rect);
+    TilingResult layoutLinear(Rectangle rect, bool vertical);
+    TilingResult layoutHorizontal(Rectangle rect) { return layoutLinear(rect, false); };
+    TilingResult layoutVertical(Rectangle rect) { return layoutLinear(rect, true); };
+    TilingResult layoutMax(Rectangle rect);
+    TilingResult layoutGrid(Rectangle rect);
 
     // members
     std::vector<HSClient*> clients;
@@ -188,9 +187,8 @@ public:
     bool removeClient(HSClient* client);
     void dump(Output output);
 
-    void applyFloatingLayout(HSMonitor* m);
     std::shared_ptr<HSFrameLeaf> getFocusedFrame();
-    void applyLayout(Rectangle rect);
+    TilingResult computeLayout(Rectangle rect);
     bool focusClient(HSClient* client);
 
     void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order);
@@ -283,12 +281,6 @@ void frame_do_recursive_data(HSFrame* frame, void (*action)(HSFrame*,void*),
                              int order, void* data);
 int layout_rotate_command();
 
-void frame_apply_client_layout_linear(HSFrame* frame,
-                                      Rectangle rect, bool vertical);
-void frame_apply_client_layout_horizontal(HSFrame* frame,
-                                          Rectangle rect);
-void frame_apply_client_layout_vertical(HSFrame* frame,
-                                        Rectangle rect);
 int frame_current_cycle_client_layout(int argc, char** argv, Output output);
 int frame_current_set_client_layout(int argc, char** argv, Output output);
 int frame_split_count_to_root(HSFrame* frame, int align);

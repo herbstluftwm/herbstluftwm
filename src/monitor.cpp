@@ -142,9 +142,23 @@ void monitor_apply_layout(HSMonitor* monitor) {
             frame_focus_recursive(monitor->tag->frame);
         }
         if (monitor->tag->floating) {
-            monitor->tag->frame->applyFloatingLayout(monitor);
+            TilingResult res = monitor->tag->frame->computeLayout(rect);
+            for (auto& p : res.data) {
+                HSClient* c = p.first;
+                p.second.geometry = c->float_size_;
+                c->setup_border(res.focus == c);
+                c->resize_floating(monitor);
+            }
         } else {
-            monitor->tag->frame->applyLayout(rect);
+            TilingResult res = monitor->tag->frame->computeLayout(rect);
+            for (auto& p : res.data) {
+                HSClient* c = p.first;
+                c->setup_border(res.focus == c);
+                c->resize_tiling(p.second.geometry);
+                if (p.second.needsRaise) {
+                    c->raise();
+                }
+            }
             if (!monitor->lock_frames && !monitor->tag->floating) {
                 monitor->tag->frame->updateVisibility();
             }
