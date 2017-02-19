@@ -3,6 +3,7 @@
 
 #include "object.h"
 #include "client.h"
+#include "child.h"
 
 #include <unordered_map>
 
@@ -12,7 +13,7 @@
 class ClientManager : public Object
 {
 public:
-    ClientManager() {}
+    ClientManager();
     ~ClientManager();
 
     std::shared_ptr<HSClient> client(Window window);
@@ -26,6 +27,8 @@ public:
     void unmap_notify(Window win);
     void force_unmanage(Window win);
     void force_unmanage(std::shared_ptr<HSClient> client);
+
+    Child_<HSClient> focus;
 
 protected:
     std::unordered_map<Window, std::shared_ptr<HSClient>> clients_;

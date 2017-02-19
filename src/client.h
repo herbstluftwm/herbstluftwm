@@ -35,6 +35,7 @@ public:
     bool        fullscreen_;
     std::string title_;  // or also called window title; this is never NULL
     struct HSSlice* slice;
+    std::shared_ptr<HSClient> ptr() { return Object::ptr<HSClient>(); };
 
 public:
     Rectangle   last_size_;      // last size excluding the window border

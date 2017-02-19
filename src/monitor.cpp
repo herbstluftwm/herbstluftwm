@@ -27,6 +27,8 @@
 #include "stack.h"
 #include "client.h"
 #include "monitormanager.h"
+#include "root.h"
+#include "clientmanager.h"
 
 #include <vector>
 
@@ -138,35 +140,43 @@ void monitor_apply_layout(HSMonitor* monitor) {
             rect.width -= *g_frame_gap;
         }
         monitor_restack(monitor);
-        if (get_current_monitor() == monitor) {
+        bool isFocused = get_current_monitor() == monitor;
+        if (isFocused) {
             frame_focus_recursive(monitor->tag->frame);
         }
+        TilingResult res = monitor->tag->frame->computeLayout(rect);
         if (monitor->tag->floating) {
-            TilingResult res = monitor->tag->frame->computeLayout(rect);
             for (auto& p : res.data) {
                 HSClient* c = p.first;
                 p.second.geometry = c->float_size_;
-                c->setup_border(res.focus == c);
+                c->setup_border(res.focus == c && isFocused);
                 c->resize_floating(monitor);
             }
             for (auto& p : res.frames) {
                 p.first->hide();
             }
         } else {
-            TilingResult res = monitor->tag->frame->computeLayout(rect);
             for (auto& p : res.data) {
                 HSClient* c = p.first;
-                c->setup_border(res.focus == c);
+                c->setup_border(res.focus == c && isFocused);
                 c->resize_tiling(p.second.geometry);
                 if (p.second.needsRaise) {
                     c->raise();
                 }
             }
             for (auto& p : res.frames) {
-                p.first->render(p.second, p.first == res.focused_frame);
-                p.first->updateVisibility(p.second, p.first == res.focused_frame);
+                p.first->render(p.second, p.first == res.focused_frame && isFocused);
+                p.first->updateVisibility(p.second, p.first == res.focused_frame && isFocused);
             }
         }
+        if (isFocused) {
+            if (res.focus) {
+                Root::get()->clients()->focus = res.focus->ptr();
+            } else {
+                Root::get()->clients()->focus = {};
+            }
+        }
+
         // remove all enternotify-events from the event queue that were
         // generated while arranging the clients on this monitor
         drop_enternotify_events();

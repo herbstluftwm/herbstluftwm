@@ -12,6 +12,10 @@
 #include "tag.h"
 #include "layout.h"
 
+ClientManager::ClientManager()
+    : focus(*this, "focus")
+{
+}
 
 ClientManager::~ClientManager()
 {
