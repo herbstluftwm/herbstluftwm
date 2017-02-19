@@ -16,6 +16,7 @@
 #include "tag.h"
 #include "floating.h"
 #include "tilingresult.h"
+#include "framedecoration.h"
 
 #include <memory>
 
@@ -91,7 +92,6 @@ public:
     virtual void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) = 0;
     virtual void foreachClient(ClientAction action, void* data) = 0;
 
-    void updateVisibility();
     std::shared_ptr<HSFrameSplit> getParent() { return parent.lock(); };
     std::shared_ptr<HSFrame> root();
     virtual std::shared_ptr<HSFrameSplit> isSplit() { return std::shared_ptr<HSFrameSplit>(); };
@@ -168,10 +168,7 @@ private:
     int     selection;
     int     layout;
 
-    HSSlice* slice;
-    Window window;
-    int    window_transparent;
-    bool   window_visible;
+    FrameDecoration* decoration;
     Rectangle  last_rect; // last rectangle when being drawn
 };
 

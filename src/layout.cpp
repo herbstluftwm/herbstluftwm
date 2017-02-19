@@ -29,36 +29,16 @@
 #include <sstream>
 #include <algorithm>
 
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
-
 using namespace std;
 
 static int* g_frame_border_width;
-static int* g_frame_border_inner_width;
-static int* g_always_show_frame;
 static int* g_default_frame_layout;
-static int* g_frame_bg_transparent;
-static int* g_frame_transparent_width;
 static int* g_direction_external_only;
 static int* g_gapless_grid;
 static int* g_smart_frame_surroundings;
 static int* g_smart_window_surroundings;
 static int* g_focus_crosses_monitor_boundaries;
 static int* g_frame_padding;
-static unsigned long g_frame_border_active_color;
-static unsigned long g_frame_border_normal_color;
-static unsigned long g_frame_border_inner_color;
-static unsigned long g_frame_bg_active_color;
-static unsigned long g_frame_bg_normal_color;
-static unsigned long g_frame_active_opacity;
-static unsigned long g_frame_normal_opacity;
 
 char*   g_tree_style = NULL; // used by utils.c
 int* g_frame_gap;
@@ -83,10 +63,6 @@ static void fetch_frame_colors() {
     g_frame_padding = &(settings_find("frame_padding")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
     g_frame_border_width = &(settings_find("frame_border_width")->value.i);
-    g_frame_border_inner_width = &(settings_find("frame_border_inner_width")->value.i);
-    g_always_show_frame = &(settings_find("always_show_frame")->value.i);
-    g_frame_bg_transparent = &(settings_find("frame_bg_transparent")->value.i);
-    g_frame_transparent_width = &(settings_find("frame_transparent_width")->value.i);
     g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
     g_direction_external_only = &(settings_find("default_direction_external_only")->value.i);
     g_gapless_grid = &(settings_find("gapless_grid")->value.i);
@@ -94,19 +70,6 @@ static void fetch_frame_colors() {
     g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
     g_focus_crosses_monitor_boundaries = &(settings_find("focus_crosses_monitor_boundaries")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
-    char* str = settings_find_string("frame_border_normal_color");
-    g_frame_border_normal_color = Color(str).toX11Pixel();
-    str = settings_find_string("frame_border_active_color");
-    g_frame_border_active_color = Color(str).toX11Pixel();
-    str = settings_find_string("frame_border_inner_color");
-    g_frame_border_inner_color = Color(str).toX11Pixel();
-    // background color
-    str = settings_find_string("frame_bg_normal_color");
-    g_frame_bg_normal_color = Color(str).toX11Pixel();
-    str = settings_find_string("frame_bg_active_color");
-    g_frame_bg_active_color = Color(str).toX11Pixel();
-    g_frame_active_opacity = CLAMP(settings_find("frame_active_opacity")->value.i, 0, 100);
-    g_frame_normal_opacity = CLAMP(settings_find("frame_normal_opacity")->value.i, 0, 100);
 
     // tree style
     g_tree_style = settings_find_string("tree_style");
@@ -142,40 +105,12 @@ HSFrame::~HSFrame() {
 }
 
 HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, weak_ptr<HSFrameSplit> parent)
-    : HSFrame(tag, parent),
-    selection(0),
-    window_transparent(false)
+    : HSFrame(tag, parent)
+    , selection(0)
 {
-    window_visible = false;
     layout = *g_default_frame_layout;
 
-    // set window attributes
-    XSetWindowAttributes at;
-    at.background_pixel  = Color("red").toX11Pixel();
-    at.background_pixmap = ParentRelative;
-    at.override_redirect = True;
-    at.bit_gravity       = StaticGravity;
-    at.event_mask        = SubstructureRedirectMask|SubstructureNotifyMask
-         |ExposureMask|VisibilityChangeMask
-         |EnterWindowMask|LeaveWindowMask|FocusChangeMask;
-
-    window = XCreateWindow(g_display, g_root,
-                        42, 42, 42, 42, *g_frame_border_width,
-                        DefaultDepth(g_display, DefaultScreen(g_display)),
-                        CopyFromParent,
-                        DefaultVisual(g_display, DefaultScreen(g_display)),
-                        CWOverrideRedirect | CWBackPixmap | CWEventMask, &at);
-
-    // set wm_class for window
-    XClassHint *hint = XAllocClassHint();
-    hint->res_name = (char*)HERBST_FRAME_CLASS;
-    hint->res_class = (char*)HERBST_FRAME_CLASS;
-    XSetClassHint(g_display, window, hint);
-
-    XFree(hint);
-    // insert it to the stack
-    slice = slice_create_frame(window);
-    stack_insert_slice(tag->stack, slice);
+    decoration = new FrameDecoration(tag);
 }
 
 HSFrameSplit::HSFrameSplit(struct HSTag* tag, std::weak_ptr<HSFrameSplit> parent, int align,
@@ -265,10 +200,8 @@ HSFrameSplit::~HSFrameSplit() {
 }
 
 HSFrameLeaf::~HSFrameLeaf() {
-    stack_remove_slice(tag->stack, slice);
-    slice_destroy(slice);
     // free other things
-    XDestroyWindow(g_display, window);
+    delete decoration;
 }
 
 void HSFrameLeaf::dump(Output output) {
@@ -792,41 +725,15 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
     rect.width = std::max(WINDOW_MIN_WIDTH, rect.width);
     rect.height = std::max(WINDOW_MIN_HEIGHT, rect.height);
 
-    unsigned long border_color = g_frame_border_normal_color;
-    unsigned long bg_color = g_frame_bg_normal_color;
-    int bw = *g_frame_border_width;
-    if (isFocused()) {
-        border_color = g_frame_border_active_color;
-        bg_color = g_frame_bg_active_color;
-    }
-    if (*g_smart_frame_surroundings && !parent.lock()) {
-        bw = 0;
-    }
-    XSetWindowBorderWidth(g_display, window, bw);
-    XMoveResizeWindow(g_display, window,
-                      rect.x - bw,
-                      rect.y - bw,
-                      rect.width, rect.height);
-
-    frame_update_border(window, border_color);
-
-    XSetWindowBackground(g_display, window, bg_color);
-    if (*g_frame_bg_transparent) {
-        window_cut_rect_hole(window, rect.width, rect.height,
-                             *g_frame_transparent_width);
-    } else if (window_transparent) {
-        window_make_intransparent(window, rect.width, rect.height);
-    }
-    window_transparent = *g_frame_bg_transparent;
-    if (isFocused()) {
-        ewmh_set_window_opacity(window, g_frame_active_opacity/100.0);
-    } else {
-        ewmh_set_window_opacity(window, g_frame_normal_opacity/100.0);
-    }
-    XClearWindow(g_display, window);
-
     // move windows
     TilingResult res;
+    FrameDecorationData frame_data;
+    frame_data.geometry = rect;
+    frame_data.visible = true;
+    frame_data.hasClients = clients.size() > 0;
+    frame_data.hasParent = (bool)parent.lock();
+    res.focused_frame = decoration;
+    res.add(decoration, frame_data);
     if (clients.size() == 0) {
         return res;
     }
@@ -844,15 +751,17 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
         rect.width  -= *g_frame_padding * 2;
         rect.height -= *g_frame_padding * 2;
     }
+    TilingResult layoutResult;
     if (layout == LAYOUT_MAX) {
-        res = layoutMax(rect);
+        layoutResult = layoutMax(rect);
     } else if (layout == LAYOUT_GRID) {
-        res = layoutGrid(rect);
+        layoutResult = layoutGrid(rect);
     } else if (layout == LAYOUT_VERTICAL) {
-        res = layoutVertical(rect);
+        layoutResult = layoutVertical(rect);
     } else {
-        res = layoutHorizontal(rect);
+        layoutResult = layoutHorizontal(rect);
     }
+    res.mergeFrom(layoutResult);
     res.focus = clients[selection];
     return res;
 }
@@ -875,6 +784,7 @@ TilingResult HSFrameSplit::computeLayout(Rectangle rect) {
     res.mergeFrom(res1);
     res.mergeFrom(res2);
     res.focus = (selection == 0) ? res1.focus : res2.focus;
+    res.focused_frame = (selection == 0) ? res1.focused_frame : res2.focused_frame;
     return res;
 }
 
@@ -901,20 +811,6 @@ void HSFrameLeaf::foreachClient(ClientAction action, void* data) {
     for (HSClient* client : clients) {
         action(client, data);
     }
-}
-
-void HSFrame::updateVisibility() {
-    void (*onSplit)(HSFrameSplit*) =
-        [] (HSFrameSplit* frame) {
-        };
-    void (*onLeaf)(HSFrameLeaf*) =
-        [] (HSFrameLeaf* frame) {
-            bool show = *g_always_show_frame
-                      || (frame->clientCount() != 0)
-                      || frame->isFocused();
-            frame->setVisible(show);
-        };
-    fmap(onSplit, onLeaf, 2);
 }
 
 int frame_current_bring(int argc, char** argv, Output output) {
@@ -1560,20 +1456,14 @@ void HSFrame::setVisibleRecursive(bool visible) {
         ? /* if visible */
             [](HSFrameLeaf* frame) {
                 for (auto c : frame->clients) c->set_visible(true);
-                frame->setVisible(true);
             }
         : /* if invisible */
             [](HSFrameLeaf* frame) {
-                frame->setVisible(false);
+                frame->decoration->hide();
                 for (auto c : frame->clients) c->set_visible(false);
             };
     // first hide children => order = 2
     fmap(onSplit, onLeaf, 2);
-}
-
-void HSFrameLeaf::setVisible(bool visible) {
-    window_visible = visible;
-    window_set_visible(window, visible);
 }
 
 void HSFrameSplit::rotate() {
@@ -1665,14 +1555,6 @@ int close_and_remove_command(int argc, char** argv) {
 
     } else {
         return frame_remove_command(argc, argv);
-    }
-}
-
-void frame_update_border(Window window, unsigned long color) {
-    if (*g_frame_border_inner_width > 0 && *g_frame_border_inner_width < *g_frame_border_width) {
-        set_window_double_border(g_display, window, *g_frame_border_inner_width, g_frame_border_inner_color, color);
-    } else {
-        XSetWindowBorder(g_display, window, color);
     }
 }
 

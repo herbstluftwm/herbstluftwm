@@ -62,6 +62,7 @@ HSTag::HSTag(std::string name_)
 }
 
 HSTag::~HSTag() {
+    frame = {};
     stack_destroy(this->stack);
 }
 

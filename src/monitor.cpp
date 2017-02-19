@@ -159,8 +159,9 @@ void monitor_apply_layout(HSMonitor* monitor) {
                     c->raise();
                 }
             }
-            if (!monitor->lock_frames && !monitor->tag->floating) {
-                monitor->tag->frame->updateVisibility();
+            for (auto& p : res.frames) {
+                p.first->render(p.second, p.first == res.focused_frame);
+                p.first->updateVisibility(p.second, p.first == res.focused_frame);
             }
         }
         // remove all enternotify-events from the event queue that were
@@ -727,7 +728,8 @@ void ensure_monitors_are_available() {
             DisplayHeight(g_display, DefaultScreen(g_display))};
     ensure_tags_are_available();
     // add monitor with first tag
-    add_monitor(rect, get_tag_by_index(0), NULL);
+    HSMonitor* m = add_monitor(rect, get_tag_by_index(0), NULL);
+    m->tag->frame->setVisibleRecursive(true);
     g_cur_monitor = 0;
 
     monitor_update_focus_objects();
@@ -812,7 +814,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     // then show them (should reduce flicker)
     tag->frame->setVisibleRecursive(true);
     if (!monitor->tag->floating) {
-        monitor->tag->frame->updateVisibility();
+        // monitor->tag->frame->updateVisibility();
     }
     // 2. hide old tag
     old_tag->frame->setVisibleRecursive(false);
