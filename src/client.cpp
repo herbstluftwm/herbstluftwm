@@ -53,7 +53,7 @@ HSClient::HSClient(Window window, bool visible_already)
       dec(this),
       float_size_({0, 0, 100, 100}),
       urgent_(false), fullscreen_(false),
-      title_(""),
+      title_("title", ""),
       window_id_str("winid", ""),
       tag_(NULL),
       keymask_("keymask", Object::AcceptAll(), ""),
@@ -69,6 +69,8 @@ HSClient::HSClient(Window window, bool visible_already)
     tmp << "0x" << std::hex << window;
     window_id_str = tmp.str();
     wireAttributes({
+        &title_,
+        &window_id_str,
         &keymask_,
         &pseudotile_,
     });
@@ -224,7 +226,7 @@ void HSClient::window_focus() {
         }
         ewmh_update_active_window(this->window_);
         tag_update_each_focus_layer();
-        const char* title = this->title_.c_str();
+        const char* title = this->title_().c_str();
         char winid_str[STRING_BUF_SIZE];
         snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)this->window_);
         hook_emit_list("focus_changed", winid_str, title, NULL);
@@ -607,12 +609,13 @@ void HSClient::update_title() {
                     this->window_);
         }
     }
-    bool changed = this->title_ != new_name->str;
-    this->title_ = new_name->str;
+    bool changed = this->title_() != new_name->str;
+    std::string new_name_str = new_name->str;
+    title_ = new_name_str;
     if (changed && get_current_client() == this) {
         char buf[STRING_BUF_SIZE];
         snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
-        hook_emit_list("window_title_changed", buf, this->title_.c_str(), NULL);
+        hook_emit_list("window_title_changed", buf, this->title_().c_str(), NULL);
     }
 }
 

@@ -33,7 +33,7 @@ public:
     Rectangle   float_size_;     // floating size without the window border
     bool        urgent_;
     bool        fullscreen_;
-    std::string title_;  // or also called window title; this is never NULL
+    Attribute_<std::string> title_;  // or also called window title; this is never NULL
     struct HSSlice* slice;
     std::shared_ptr<HSClient> ptr() { return Object::ptr<HSClient>(); };
 
