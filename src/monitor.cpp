@@ -149,6 +149,9 @@ void monitor_apply_layout(HSMonitor* monitor) {
                 c->setup_border(res.focus == c);
                 c->resize_floating(monitor);
             }
+            for (auto& p : res.frames) {
+                p.first->hide();
+            }
         } else {
             TilingResult res = monitor->tag->frame->computeLayout(rect);
             for (auto& p : res.data) {

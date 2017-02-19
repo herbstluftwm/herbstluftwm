@@ -59,7 +59,7 @@ public:
                                 // notify event
     // for size hints
     float mina_, maxa_;
-    unsigned int basew_, baseh_, incw_, inch_, maxw_, maxh_, minw_, minh_;
+    int basew_, baseh_, incw_, inch_, maxw_, maxh_, minw_, minh_;
     // for other modules
 
     void init_from_X();
@@ -98,8 +98,8 @@ public:
     void set_dragged(bool drag_state);
 
     void send_configure();
-    bool applysizehints(unsigned int *w, unsigned int *h);
-    bool applysizehints_xy(int *x, int *y, unsigned int *w, unsigned int *h);
+    bool applysizehints(int *w, int *h);
+    bool applysizehints_xy(int *x, int *y, int *w, int *h);
     void updatesizehints();
 
     bool sendevent(Atom proto);

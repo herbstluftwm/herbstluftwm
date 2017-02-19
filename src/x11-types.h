@@ -42,8 +42,8 @@ struct Rectangle {
 
     int x;
     int y;
-    unsigned int width;
-    unsigned int height;
+    int width;
+    int height;
 };
 
 using RectangleVec = std::vector<Rectangle>;

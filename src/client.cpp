@@ -302,8 +302,8 @@ void HSClient::resize_tiling(Rectangle rect) {
         auto inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);
         auto outline = scheme.inner_rect_to_outline(inner);
-        rect.x += std::max(0u, (rect.width - outline.width)/2);
-        rect.y += std::max(0u, (rect.height - outline.height)/2);
+        rect.x += std::max(0, (rect.width - outline.width)/2);
+        rect.y += std::max(0, (rect.height - outline.height)/2);
         rect.width = std::min(outline.width, rect.width);
         rect.height = std::min(outline.height, rect.height);
     }
@@ -311,12 +311,12 @@ void HSClient::resize_tiling(Rectangle rect) {
 }
 
 // from dwm.c
-bool HSClient::applysizehints(unsigned int *w, unsigned int *h) {
+bool HSClient::applysizehints(int *w, int *h) {
     bool baseismin;
 
     /* set minimum possible */
-    *w = std::max(1u, *w);
-    *h = std::max(1u, *h);
+    *w = std::max(1, *w);
+    *h = std::max(1, *h);
     if(*h < WINDOW_MIN_HEIGHT)
         *h = WINDOW_MIN_HEIGHT;
     if(*w < WINDOW_MIN_WIDTH)
@@ -361,7 +361,7 @@ bool HSClient::applysizehints(unsigned int *w, unsigned int *h) {
 }
 
 bool HSClient::applysizehints_xy(int *x, int *y,
-                                 unsigned int *w, unsigned int *h) {
+                                 int *w, int *h) {
     return applysizehints(w,h) || *x != this->last_size_.x
                                || *y != this->last_size_.y;
 }
@@ -437,7 +437,7 @@ void HSClient::send_configure() {
 }
 
 void HSClient::resize_floating(HSMonitor* m) {
-    if (!!m) return;
+    if (!m) return;
     if (fullscreen_) {
         resize_fullscreen(m);
         return;
@@ -445,18 +445,18 @@ void HSClient::resize_floating(HSMonitor* m) {
     auto rect = this->float_size_;
     rect.x += m->rect.x;
     rect.x += m->rect.y;
-    rect.x += m->pad_left;
-    rect.y += m->pad_up;
+    rect.x += m->pad_left();
+    rect.y += m->pad_up();
     // ensure position is on monitor
     int space = g_monitor_float_treshold;
     rect.x =
         CLAMP(rect.x,
-              m->rect.x + m->pad_left - rect.width + space,
-              m->rect.x + m->rect.width - m->pad_left - m->pad_right - space);
+              m->rect.x + m->pad_left() - rect.width + space,
+              m->rect.x + m->rect.width - m->pad_left() - m->pad_right() - space);
     rect.y =
         CLAMP(rect.y,
-              m->rect.y + m->pad_up - rect.height + space,
-              m->rect.y + m->rect.height - m->pad_up - m->pad_down - space);
+              m->rect.y + m->pad_up() - rect.height + space,
+              m->rect.y + m->rect.height - m->pad_up() - m->pad_down() - space);
     dec.resize_inner(rect, getScheme());
 }
 

@@ -329,21 +329,7 @@ void mouse_function_resize(XMotionEvent* me) {
     // avoid an overflow
     int new_width  = g_win_drag_client->float_size_.width + x_diff;
     int new_height = g_win_drag_client->float_size_.height + y_diff;
-    int min_width = WINDOW_MIN_WIDTH;
-    int min_height = WINDOW_MIN_HEIGHT;
     HSClient* client = g_win_drag_client;
-    if (client->sizehints_floating_) {
-        min_width = std::max(WINDOW_MIN_WIDTH, client->minw_);
-        min_height = std::max(WINDOW_MIN_HEIGHT, client->minh_);
-    }
-    if (new_width <  min_width) {
-        new_width = min_width;
-        x_diff = new_width - g_win_drag_client->float_size_.width;
-    }
-    if (new_height < min_height) {
-        new_height = min_height;
-        y_diff = new_height - g_win_drag_client->float_size_.height;
-    }
     if (left)   g_win_drag_client->float_size_.x -= x_diff;
     if (top)    g_win_drag_client->float_size_.y -= y_diff;
     g_win_drag_client->float_size_.width  = new_width;
@@ -367,6 +353,18 @@ void mouse_function_resize(XMotionEvent* me) {
     }
     g_win_drag_client->float_size_.width += dx;
     g_win_drag_client->float_size_.height += dy;
+    client->applysizehints(&g_win_drag_client->float_size_.width,
+                           &g_win_drag_client->float_size_.height);
+    if (left) {
+        client->float_size_.x =
+            g_win_drag_start.x + g_win_drag_start.width
+            - g_win_drag_client->float_size_.width;
+    }
+    if (top) {
+        client->float_size_.y =
+            g_win_drag_start.y + g_win_drag_start.height
+            - g_win_drag_client->float_size_.height;
+    }
     g_win_drag_client->resize_floating(g_drag_monitor);
 }
 
@@ -389,8 +387,8 @@ void mouse_function_zoom(XMotionEvent* me) {
     HSClient* client = g_win_drag_client;
 
     // avoid an overflow
-    unsigned int new_width  = g_win_drag_start.width  + 2 * x_diff;
-    unsigned int new_height = g_win_drag_start.height + 2 * y_diff;
+    int new_width  = g_win_drag_start.width  + 2 * x_diff;
+    int new_height = g_win_drag_start.height + 2 * y_diff;
     // apply new rect
     client->float_size_.x = cent_x - new_width / 2;
     client->float_size_.y = cent_y - new_height / 2;

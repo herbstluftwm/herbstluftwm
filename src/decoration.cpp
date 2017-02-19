@@ -434,11 +434,11 @@ void Decoration::redrawPixmap() {
     }
 
     // Draw outer border
-    unsigned long ow = s.outer_width;
+    int ow = s.outer_width;
     outer.x -= client->dec.last_outer_rect.x;
     outer.y -= client->dec.last_outer_rect.y;
     if (ow > 0) {
-        ow = std::min((unsigned int)ow, (outer.height+1) / 2);
+        ow = std::min(ow, (outer.height+1) / 2);
         XRectangle rects[] = {
             { 0, 0, outer.width, ow }, /* top */
             { 0, ow, ow, outer.height - 2*ow }, /* left */
