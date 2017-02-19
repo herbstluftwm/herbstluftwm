@@ -10,3 +10,8 @@ MonitorManager::MonitorManager()
     , by_name(*this)
 {
 }
+
+void MonitorManager::clearChildren() {
+    ChildByIndex<HSMonitor>::clearChildren();
+    focus = {};
+}

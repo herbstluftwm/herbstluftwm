@@ -15,6 +15,8 @@ class MonitorManager : public ChildByIndex<HSMonitor> {
 public:
     MonitorManager();
     Child_<HSMonitor> focus;
+
+    void clearChildren();
 private:
     ByName by_name;
 };
