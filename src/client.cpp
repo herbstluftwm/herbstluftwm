@@ -183,10 +183,10 @@ bool HSClient::needs_minimal_dec() {
     //    frame = this->tag()->frame->frameWithClient(this);
     //    HSAssert(frame != NULL);
     //}
-    //if (!smart_window_surroundings_active(frame)) return false;
-    if (this->pseudotile_) return false;
+    if (this->pseudotile_()) return false;
     if (this->is_client_floated()) return false;
-    return true;
+    //if (smart_window_surroundings_active(frame)) return true;
+    return false;
 }
 
 void HSClient::window_unfocus() {
