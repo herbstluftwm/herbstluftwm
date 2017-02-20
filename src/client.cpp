@@ -52,7 +52,8 @@ HSClient::HSClient(Window window, bool visible_already)
     : window_(window),
       dec(this),
       float_size_({0, 0, 100, 100}),
-      urgent_(false), fullscreen_(false),
+      urgent_("urgent", false),
+      fullscreen_("fullscreen", Object::AcceptAll(), false),
       title_("title", ""),
       window_id_str("winid", ""),
       tag_(NULL),
@@ -70,6 +71,8 @@ HSClient::HSClient(Window window, bool visible_already)
     window_id_str = tmp.str();
     wireAttributes({
         &title_,
+        &fullscreen_,
+        &urgent_,
         &window_id_str,
         &keymask_,
         &pseudotile_,
@@ -253,21 +256,17 @@ void HSClient::window_focus() {
 const DecTriple& HSClient::getDecTriple() {
     const Theme& theme = Theme::get();
     auto triple_idx = Theme::Type::Tiling;
-    if (fullscreen_) triple_idx = Theme::Type::Fullscreen;
+    if (fullscreen_()) triple_idx = Theme::Type::Fullscreen;
     else if (is_client_floated()) triple_idx = Theme::Type::Floating;
     else if (needs_minimal_dec()) triple_idx = Theme::Type::Minimal;
     else triple_idx = Theme::Type::Tiling;
     return theme[triple_idx];
 }
 
-const DecorationScheme& HSClient::getScheme() {
-    return getScheme(get_current_client() == this);
-}
-
 const DecorationScheme& HSClient::getScheme(bool focused) {
     const DecTriple& triple = getDecTriple();
     if (focused) return triple.active;
-    else if (this->urgent_) return triple.urgent;
+    else if (this->urgent_()) return triple.urgent;
     else return triple.normal;
 }
 
@@ -275,22 +274,22 @@ void HSClient::setup_border(bool focused) {
     dec.change_scheme(getScheme(focused));
 }
 
-void HSClient::resize_fullscreen(HSMonitor* m) {
+void HSClient::resize_fullscreen(HSMonitor* m, bool isFocused) {
     if (!!m) {
         HSDebug("client_resize_fullscreen() got invalid parameters\n");
         return;
     }
-    dec.resize_outline(m->rect, getScheme());
+    dec.resize_outline(m->rect, getScheme(isFocused));
 }
 
 void HSClient::raise() {
     stack_raise_slide(this->tag()->stack, this->slice);
 }
 
-void HSClient::resize_tiling(Rectangle rect) {
+void HSClient::resize_tiling(Rectangle rect, bool isFocused) {
     HSMonitor* m;
-    if (this->fullscreen_ && (m = find_monitor_with_tag(this->tag()))) {
-        resize_fullscreen(m);
+    if (fullscreen_() && (m = find_monitor_with_tag(this->tag()))) {
+        resize_fullscreen(m, isFocused);
         return;
     }
     // apply border width
@@ -299,7 +298,7 @@ void HSClient::resize_tiling(Rectangle rect) {
         rect.width -= *g_window_gap;
         rect.height -= *g_window_gap;
     }
-    const DecorationScheme& scheme = getScheme();
+    const DecorationScheme& scheme = getScheme(isFocused);
     if (this->pseudotile_) {
         auto inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);
@@ -438,10 +437,10 @@ void HSClient::send_configure() {
     XSendEvent(g_display, this->window_, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
-void HSClient::resize_floating(HSMonitor* m) {
+void HSClient::resize_floating(HSMonitor* m, bool isFocused) {
     if (!m) return;
-    if (fullscreen_) {
-        resize_fullscreen(m);
+    if (fullscreen_()) {
+        resize_fullscreen(m, isFocused);
         return;
     }
     auto rect = this->float_size_;
@@ -459,7 +458,7 @@ void HSClient::resize_floating(HSMonitor* m) {
         CLAMP(rect.y,
               m->rect.y + m->pad_up() - rect.height + space,
               m->rect.y + m->rect.height - m->pad_up() - m->pad_down() - space);
-    dec.resize_inner(rect, getScheme());
+    dec.resize_inner(rect, getScheme(isFocused));
 }
 
 Rectangle HSClient::outer_floating_rect() {
@@ -530,7 +529,7 @@ void HSClient::set_visible(bool visible) {
 
 // heavily inspired by dwm.c
 void HSClient::set_urgent(bool state) {
-    if (this->urgent_ == state) {
+    if (this->urgent_() == state) {
         // nothing to do
         return;
     }
@@ -577,12 +576,12 @@ void HSClient::update_wm_hints() {
         XSetWMHints(g_display, this->window_, wmh);
     } else {
         bool newval = (wmh->flags & XUrgencyHint) ? true : false;
-        if (newval != this->urgent_) {
+        if (newval != this->urgent_()) {
             this->urgent_ = newval;
             char winid_str[STRING_BUF_SIZE];
             snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window_);
             this->setup_border(focused_client == this);
-            hook_emit_list("urgent", this->urgent_ ? "on":"off", winid_str, NULL);
+            hook_emit_list("urgent", this->urgent_() ? "on":"off", winid_str, NULL);
             tag_set_flags_dirty();
         }
     }
@@ -624,8 +623,8 @@ HSClient* get_current_client() {
 }
 
 void HSClient::set_fullscreen(bool state) {
-    if (this->fullscreen_ == state) return;
-    this->fullscreen_ = state;
+    if (fullscreen_() == state) return;
+    fullscreen_ = state;
     if (this->ewmhnotify_) {
         this->ewmhfullscreen_ = state;
     }
@@ -658,32 +657,32 @@ int client_set_property_command(int argc, char** argv) {
         return 0;
     }
 
-    struct {
-        const char* name;
-        void (HSClient::*func) (bool);
-        bool* value;
-    } properties[] = {
-        { "fullscreen",   &HSClient::set_fullscreen, &client->fullscreen_    },
-        //{ "pseudotile",   &HSClient::set_pseudotile, &client->pseudotile_    },
-    };
+    //struct {
+    //    const char* name;
+    //    void (HSClient::*func) (bool);
+    //    bool* value;
+    //} properties[] = {
+    //    //{ "fullscreen",   &HSClient::set_fullscreen, &client->fullscreen_    },
+    //    //{ "pseudotile",   &HSClient::set_pseudotile, &client->pseudotile_    },
+    //};
 
-    // find the property
-    int i;
-    for  (i = 0; i < LENGTH(properties); i++) {
-        if (!strcmp(properties[i].name, argv[0])) {
-            break;
-        }
-    }
-    if (i >= LENGTH(properties)) {
-        return HERBST_INVALID_ARGUMENT;
-    }
+    //// find the property
+    //int i;
+    //for  (i = 0; i < LENGTH(properties); i++) {
+    //    if (!strcmp(properties[i].name, argv[0])) {
+    //        break;
+    //    }
+    //}
+    //if (i >= LENGTH(properties)) {
+    //    return HERBST_INVALID_ARGUMENT;
+    //}
 
-    // if found, then change it
-    bool old_value = *(properties[i].value);
-    bool state = string_to_bool(action, *(properties[i].value));
-    if (state != old_value) {
-        (client->*(properties[i].func))(state);
-    }
+    //// if found, then change it
+    //bool old_value = *(properties[i].value);
+    //bool state = string_to_bool(action, *(properties[i].value));
+    //if (state != old_value) {
+    //    (client->*(properties[i].func))(state);
+    //}
     return 0;
 }
 

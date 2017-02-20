@@ -31,8 +31,8 @@ public:
     Window      window_;
     Decoration    dec;
     Rectangle   float_size_;     // floating size without the window border
-    bool        urgent_;
-    bool        fullscreen_;
+    Attribute_<bool> urgent_;
+    Attribute_<bool> fullscreen_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
     struct HSSlice* slice;
     std::shared_ptr<HSClient> ptr() { return Object::ptr<HSClient>(); };
@@ -87,8 +87,8 @@ public:
 
     void setup_border(bool focused);
     void resize(Rectangle rect);
-    void resize_tiling(Rectangle rect);
-    void resize_floating(HSMonitor* m);
+    void resize_tiling(Rectangle rect, bool isFocused);
+    void resize_floating(HSMonitor* m, bool isFocused);
     bool is_client_floated();
     bool needs_minimal_dec();
     void set_urgent(bool state);
@@ -114,12 +114,11 @@ public:
     void clear_properties();
     bool ignore_unmapnotify();
 
-    const DecorationScheme& getScheme();
     const DecorationScheme& getScheme(bool focused);
 
 private:
     const DecTriple& getDecTriple();
-    void resize_fullscreen(HSMonitor* m);
+    void resize_fullscreen(HSMonitor* m, bool isFocused);
 };
 
 

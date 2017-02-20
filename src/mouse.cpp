@@ -305,7 +305,7 @@ void mouse_function_move(XMotionEvent* me) {
                        SNAP_EDGE_ALL, &dx, &dy);
     g_win_drag_client->float_size_.x += dx;
     g_win_drag_client->float_size_.y += dy;
-    g_win_drag_client->resize_floating(g_drag_monitor);
+    g_win_drag_client->resize_floating(g_drag_monitor, get_current_client() == g_win_drag_client);
 }
 
 void mouse_function_resize(XMotionEvent* me) {
@@ -365,7 +365,7 @@ void mouse_function_resize(XMotionEvent* me) {
             g_win_drag_start.y + g_win_drag_start.height
             - g_win_drag_client->float_size_.height;
     }
-    g_win_drag_client->resize_floating(g_drag_monitor);
+    g_win_drag_client->resize_floating(g_drag_monitor, get_current_client() == g_win_drag_client);
 }
 
 void mouse_function_zoom(XMotionEvent* me) {
@@ -418,7 +418,7 @@ void mouse_function_zoom(XMotionEvent* me) {
     client->float_size_.height = new_height;
     client->float_size_.x = cent_x - new_width / 2;
     client->float_size_.y = cent_y - new_height / 2;
-    g_win_drag_client->resize_floating(g_drag_monitor);
+    g_win_drag_client->resize_floating(g_drag_monitor, get_current_client() == g_win_drag_client);
 }
 
 struct SnapData {

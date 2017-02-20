@@ -526,7 +526,7 @@ void event_on_configure(XEvent event) {
         }
         if (changes && client->is_client_floated()) {
             client->float_size_ = newRect;
-            client->resize_floating(find_monitor_with_tag(client->tag()));
+            client->resize_floating(find_monitor_with_tag(client->tag()), client == get_current_client());
         } else if (changes && client->pseudotile_) {
             client->float_size_ = newRect;
             monitor_apply_layout(find_monitor_with_tag(client->tag()));

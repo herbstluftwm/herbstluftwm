@@ -150,7 +150,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
                 HSClient* c = p.first;
                 p.second.geometry = c->float_size_;
                 c->setup_border(res.focus == c && isFocused);
-                c->resize_floating(monitor);
+                c->resize_floating(monitor, res.focus == c && isFocused);
             }
             for (auto& p : res.frames) {
                 p.first->hide();
@@ -158,8 +158,8 @@ void monitor_apply_layout(HSMonitor* monitor) {
         } else {
             for (auto& p : res.data) {
                 HSClient* c = p.first;
-                c->setup_border(res.focus == c && isFocused);
-                c->resize_tiling(p.second.geometry);
+                //c->setup_border(res.focus == c && isFocused);
+                c->resize_tiling(p.second.geometry, res.focus == c && isFocused);
                 if (p.second.needsRaise) {
                     c->raise();
                 }
