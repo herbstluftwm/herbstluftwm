@@ -639,7 +639,7 @@ void complete_against_winids(int argc, char** argv, int pos, Output output) {
     } else {
         needle = argv[pos];
     }
-    for (auto c : Root::clients()->clients()) {
+    for (auto c : Root::get()->clients()->clients()) {
         char buf[100];
         snprintf(buf, LENGTH(buf), "0x%lx", c.second->window_);
         try_complete(needle, buf, output);

@@ -29,6 +29,9 @@ public:
             owner.removeChild(name);
         }
     }
+    const std::shared_ptr<T>& operator()() {
+        return pointer;
+    }
 private:
     Object& owner;
     std::string name;

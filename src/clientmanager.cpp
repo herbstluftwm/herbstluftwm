@@ -83,7 +83,7 @@ std::shared_ptr<HSClient> manage_client(Window win, bool visible_already) {
         return NULL;
     }
 
-    auto cm = Root::clients();
+    auto cm = Root::get()->clients();
     if (cm->client(win)) {
         return NULL;
     }

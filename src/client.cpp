@@ -152,7 +152,7 @@ void clientlist_destroy() {
 }
 
 HSClient* get_client_from_window(Window window) {
-    return Root::clients()->client(window).get();
+    return Root::get()->clients()->client(window).get();
 }
 
 #define CLIENT_UPDATE_ATTR(FUNC,MEMBER) do { \
@@ -699,7 +699,7 @@ HSClient* get_client(const char* str) {
     if (!strcmp(str, "")) {
         return get_current_client();
     } else {
-        return Root::clients()->client(str).get();
+        return Root::get()->clients()->client(str).get();
     }
 }
 

@@ -300,7 +300,7 @@ void tag_force_update_flags() {
         t->flags = 0;
     }
     // update flags
-    for (auto c : Root::clients()->clients()) {
+    for (auto c : Root::get()->clients()->clients()) {
         auto client = c.second;
         TAG_SET_FLAG(client->tag(), TAG_FLAG_USED);
         if (client->urgent_) {

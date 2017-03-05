@@ -12,26 +12,15 @@
 
 std::shared_ptr<Root> Root::root_;
 
-std::shared_ptr<Root> Root::create() {
-    if (root_)
-        throw std::logic_error("Redundant root node creation!");
-    root_ = std::make_shared<Root>();
-    return root_;
-}
-
-void Root::destroy() {
-    root_->children_.clear(); // avoid possible circular shared_ptr dependency
-    root_.reset();
-}
-
 Root::Root()
+    : clients(*this, "clients")
 {
+    clients = std::make_shared<ClientManager>();
     addChild(std::make_shared<HookManager>(), "hooks");
-    addChild(std::make_shared<ClientManager>(), "clients");
 }
-
-std::shared_ptr<ClientManager> Root::clients() {
-    return std::dynamic_pointer_cast<ClientManager>(root_->child("clients"));
+Root::~Root()
+{
+    children_.clear(); // avoid possible circular shared_ptr dependency
 }
 
 int Root::cmd_ls(Input in, Output out)

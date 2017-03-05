@@ -837,7 +837,7 @@ void configurenotify(XEvent* event) {
 void destroynotify(XEvent* event) {
     // try to unmanage it
     //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
-    auto cm = Root::clients();
+    auto cm = Root::get()->clients();
     auto client = cm->client(event->xunmap.window);
     if (client) cm->force_unmanage(client);
 }
@@ -952,7 +952,7 @@ void propertynotify(XEvent* event) {
 
 void unmapnotify(XEvent* event) {
     HSDebug("name is: UnmapNotify for %lx\n", event->xunmap.window);
-    Root::clients()->unmap_notify(event->xunmap.window);
+    Root::get()->clients()->unmap_notify(event->xunmap.window);
 }
 
 /* ---- */
@@ -962,12 +962,6 @@ void unmapnotify(XEvent* event) {
 #include "testobject.h"
 
 int main(int argc, char* argv[]) {
-    Root::create();
-    //test_object_system();
-
-    init_handler_table();
-    Commands::initialize(commands());
-
     parse_arguments(argc, argv);
     g_display = XOpenDisplay(NULL);
     if (!g_display) {
@@ -986,6 +980,14 @@ int main(int argc, char* argv[]) {
     g_screen_height = X.screenHeight();
     g_root = X.root();
     XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
+
+    auto root = std::make_shared<Root>();
+    Root::setRoot(root);
+    //test_object_system();
+
+    init_handler_table();
+    Commands::initialize(commands());
+
 
     // initialize subsystems
     for (int i = 0; i < LENGTH(g_modules); i++) {
@@ -1027,6 +1029,7 @@ int main(int argc, char* argv[]) {
     for (int i = LENGTH(g_modules); i --> 0;) {
         g_modules[i].destroy();
     }
+    root.reset();
     // check if we shall restart an other window manager
     if (g_exec_before_quit) {
         if (g_exec_args) {
