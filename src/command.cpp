@@ -818,7 +818,7 @@ int complete_against_commands(int argc, char** argv, int position,
 }
 
 static int strpcmp(const void* key, const void* val) {
-    return strcmp((const char*) key, *(const char**)val);
+    return strcmp(*(const char**) key, *(const char**)val);
 }
 
 static void complete_chain_helper(int argc, char** argv, int position,
@@ -837,7 +837,7 @@ static void complete_chain_helper(int argc, char** argv, int position,
 
     /* find the next separator */
     size_t uargc = argc;
-    char** next_sep = (char**)lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
+    char** next_sep = (char**)lfind(&separator, argv, &uargc, sizeof(*argv), strpcmp);
     int next_sep_idx = next_sep - argv;
 
     if (!next_sep || next_sep_idx >= position) {
@@ -960,7 +960,7 @@ static bool parameter_expected_offset_3(int argc, char** argv, int pos) {
 int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, GString* output) {
     size_t uargc = argc;
-    char** next_sep = (char**)lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
+    char** next_sep = (char**)lfind(&separator, argv, &uargc, sizeof(*argv), strpcmp);
     int command_argc = next_sep ? (int)(next_sep - argv) : argc;
     int status = call_command(command_argc, argv, output);
     if (condition && false == condition(status)) {
