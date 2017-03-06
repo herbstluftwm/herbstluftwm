@@ -1,4 +1,5 @@
 #include "root.h"
+#include "tagmanager.h"
 #include "hookmanager.h"
 #include "clientmanager.h"
 #include "attribute.h"
@@ -9,17 +10,24 @@
 #include <stdexcept>
 #include <sstream>
 
-
 std::shared_ptr<Root> Root::root_;
 
 Root::Root()
     : clients(*this, "clients")
+    , tags(*this, "tags")
 {
     clients = std::make_shared<ClientManager>();
+    tags = std::make_shared<TagManager>();
     addChild(std::make_shared<HookManager>(), "hooks");
+
+    // set temporary globals
+    ::tags = tags();
 }
+
 Root::~Root()
 {
+    clients = {};
+    tags = {};
     children_.clear(); // avoid possible circular shared_ptr dependency
 }
 

@@ -28,8 +28,6 @@
 
 using namespace std;
 
-Ptr(TagManager) tags;
-
 static bool    g_tag_flags_dirty = true;
 static int* g_raise_on_focus_temporarily;
 
@@ -38,12 +36,9 @@ static int tag_rename(HSTag* tag, char* name, Output output);
 void tag_init() {
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
-    tags = make_shared<TagManager>();
-    Root::get()->addChild(tags, "tags");
 }
 
 void tag_destroy() {
-    tags = Ptr(TagManager)();
 }
 
 

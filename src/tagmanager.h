@@ -13,5 +13,6 @@ private:
     ByName by_name;
 };
 
+extern Ptr(TagManager) tags; // temporarily
 
 #endif

@@ -8,6 +8,7 @@
 // new object tree root.
 
 class Attribute;
+class TagManager;
 class HookManager;
 class ClientManager;
 
@@ -32,6 +33,7 @@ public:
     int cmd_attr(Input args, Output output);
 
     Child_<ClientManager> clients;
+    Child_<TagManager> tags;
 
 private:
 
