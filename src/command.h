@@ -17,6 +17,13 @@
 
 using namespace std;
 
+// returns a command binding that internalizes object to given a command that
+// calls the member function of the given object
+#define BIND_OBJECT(OBJECT, MEMBER) \
+    (CommandBinding([OBJECT](ArgList in, Output out) { \
+        return OBJECT->MEMBER(in, out); \
+    }))
+
 /** User facing commands.
  *
  * A command can have one of the two forms
@@ -32,6 +39,8 @@ using namespace std;
  */
 class CommandBinding {
 public:
+    CommandBinding(function<int(ArgList, Output)> cmd)
+        : command(cmd) {}
     // A command that taks an argument list and produces output
     CommandBinding(int cmd(ArgList, Output))
         : command(cmd) {}

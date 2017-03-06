@@ -23,24 +23,11 @@ Root::~Root()
     children_.clear(); // avoid possible circular shared_ptr dependency
 }
 
-int Root::cmd_ls(Input in, Output out)
-{
-    in.shift();
-    if (in.empty()) {
-        root_->ls(out);
-    } else {
-        Path p(in.front());
-        root_->ls(p, out);
-    }
-
-    return 0;
-}
-
 int Root::cmd_get_attr(Input in, Output output) {
     in.shift();
     if (in.empty()) return HERBST_NEED_MORE_ARGS;
 
-    Attribute* a = Root::get()->getAttribute(in.front(), output);
+    Attribute* a = getAttribute(in.front(), output);
     if (!a) return HERBST_INVALID_ARGUMENT;
     output << a->str();
     return 0;
@@ -52,7 +39,7 @@ int Root::cmd_attr(Input in, Output output) {
     auto path = in.empty() ? std::string("") : in.front();
     in.shift();
     std::ostringstream dummy_output;
-    std::shared_ptr<Object> o = Root::get();
+    std::shared_ptr<Object> o = shared_from_this();
     auto p = Path::split(path);
     if (!p.empty()) {
         while (p.back().empty()) p.pop_back();
@@ -63,7 +50,7 @@ int Root::cmd_attr(Input in, Output output) {
         return 0;
     }
 
-    Attribute* a = Root::get()->getAttribute(path, output);
+    Attribute* a = getAttribute(path, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
     if (in.empty()) {
         // no more arguments -> return the value

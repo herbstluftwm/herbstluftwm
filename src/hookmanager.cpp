@@ -15,7 +15,7 @@ void HookManager::ls(Path path, Output out)
         return Object::ls(out);
 
     auto child = Path::join(path.begin(), path.end());
-    if (exists(child)) {
+    if (children_.find(child) != children_.end()) {
         children_[child]->ls({}, out);
     } else {
         out << "child " << child << " not found!" << std::endl; // TODO

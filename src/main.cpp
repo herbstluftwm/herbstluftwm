@@ -103,7 +103,7 @@ void maprequest(XEvent* event);
 void propertynotify(XEvent* event);
 void unmapnotify(XEvent* event);
 
-unique_ptr<CommandTable> commands() {
+unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     return unique_ptr<CommandTable>(new CommandTable{
         {"quit",           quit},
         {"echo",           echo},
@@ -203,9 +203,8 @@ unique_ptr<CommandTable> commands() {
         {"getenv",         getenv_command},
         {"setenv",         setenv_command},
         {"unsetenv",       unsetenv_command},
-        {"ls",             Root::cmd_ls},
-        {"get_attr",       Root::cmd_get_attr},
-        {"attr",           Root::cmd_attr},
+        {"get_attr",       BIND_OBJECT(root, cmd_get_attr) },
+        {"attr",           BIND_OBJECT(root, cmd_attr) },
     });
 }
 
@@ -986,7 +985,7 @@ int main(int argc, char* argv[]) {
     //test_object_system();
 
     init_handler_table();
-    Commands::initialize(commands());
+    Commands::initialize(commands(root));
 
 
     // initialize subsystems

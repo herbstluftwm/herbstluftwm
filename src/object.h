@@ -39,7 +39,6 @@ public:
     virtual void ls(Output out);
     virtual void ls(Path path, Output out); // traversial version
 
-    virtual bool exists(const std::string &name, Type t = Type::DIRECTORY);
     virtual std::string read(const std::string &attr) const;
     virtual bool writeable(const std::string &attr) const;
     virtual void write(const std::string &attr, const std::string &value);

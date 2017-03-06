@@ -27,15 +27,6 @@ Object::Object()
 }
 
 
-bool Object::exists(const std::string &name, Type t)
-{
-    switch (t) {
-    case Type::ATTRIBUTE: return attribs_.find(name) != attribs_.end();
-    case Type::ACTION: return actions_.find(name) != actions_.end();
-    default: return false; // TODO: throw
-    }
-}
-
 std::string Object::read(const std::string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end())
@@ -139,7 +130,7 @@ void Object::ls(Path path, Output out) {
         return ls(out);
 
     auto child = path.front();
-    if (exists(child)) {
+    if (children_.find(child) != children_.end()) {
         children_[child]->ls(path + 1, out);
     } else {
         out << "child " << child << " not found!" << std::endl; // TODO
