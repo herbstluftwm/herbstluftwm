@@ -30,13 +30,11 @@ public:
 
     Child_<HSClient> focus;
 
+    // adds a new client to list of managed client windows
+    std::shared_ptr<HSClient> manage_client(Window win, bool visible_already);
+
 protected:
     std::unordered_map<Window, std::shared_ptr<HSClient>> clients_;
 };
-
-// adds a new client to list of managed client windows
-std::shared_ptr<HSClient> manage_client(Window win, bool visible_already);
-
-
 
 #endif

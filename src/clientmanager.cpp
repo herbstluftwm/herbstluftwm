@@ -77,14 +77,13 @@ void ClientManager::remove(Window window)
     clients_.erase(window);
 }
 
-std::shared_ptr<HSClient> manage_client(Window win, bool visible_already) {
+std::shared_ptr<HSClient> ClientManager::manage_client(Window win, bool visible_already) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
         return NULL;
     }
 
-    auto cm = Root::get()->clients();
-    if (cm->client(win)) {
+    if (client(win)) { // if the client is managed already
         return NULL;
     }
 
@@ -125,7 +124,7 @@ std::shared_ptr<HSClient> manage_client(Window win, bool visible_already) {
     // actually manage it
     client->dec.createWindow();
     client->fuzzy_fix_initial_position();
-    cm->add(client);
+    add(client);
     // insert to layout
     if (!client->tag()) {
         client->setTag(m->tag);

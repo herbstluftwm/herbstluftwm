@@ -607,6 +607,7 @@ void scan(void) {
     Window d1, d2, *cl, *wins = NULL;
     unsigned long cl_count;
     XWindowAttributes wa;
+    auto clientmanager = Root::get()->clients();
 
     ewmh_get_original_client_list(&cl, &cl_count);
     if (XQueryTree(g_display, g_root, &d1, &d2, &wins, &num)) {
@@ -621,7 +622,7 @@ void scan(void) {
             // TODO: what would dwm do?
             if (is_window_mapped(g_display, wins[i])
                 || 0 <= array_find(cl, cl_count, sizeof(Window), wins+i)) {
-                manage_client(wins[i], true);
+                clientmanager->manage_client(wins[i], true);
                 XMapWindow(g_display, wins[i]);
             }
         }
@@ -638,7 +639,7 @@ void scan(void) {
             continue;
         }
         XReparentWindow(g_display, cl[i], g_root, 0,0);
-        manage_client(cl[i], true);
+        clientmanager->manage_client(cl[i], true);
     }
 }
 
@@ -918,7 +919,8 @@ void maprequest(XEvent* event) {
     } else if (!get_client_from_window(mapreq->window)) {
         // client should be managed (is not ignored)
         // but is not managed yet
-        auto client = manage_client(mapreq->window, false);
+        auto clientmanager = Root::get()->clients();
+        auto client = clientmanager->manage_client(mapreq->window, false);
         if (client && find_monitor_with_tag(client->tag())) {
             XMapWindow(g_display, mapreq->window);
         }
