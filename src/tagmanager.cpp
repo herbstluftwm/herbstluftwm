@@ -5,6 +5,8 @@
 #include "monitor.h"
 #include "ipc-protocol.h"
 #include "ewmh.h"
+#include "monitormanager.h"
+#include "client.h"
 
 using namespace std;
 
@@ -14,6 +16,10 @@ TagManager::TagManager()
     : ChildByIndex()
     , by_name(*this)
 {
+}
+
+void TagManager::setMonitorManager(const std::shared_ptr<MonitorManager>& m_) {
+    monitors = m_;
 }
 
 std::shared_ptr<HSTag> TagManager::find(const std::string& name) {

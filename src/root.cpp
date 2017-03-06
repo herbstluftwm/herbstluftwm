@@ -22,6 +22,7 @@ Root::Root()
     clients = std::make_shared<ClientManager>();
     tags = std::make_shared<TagManager>();
     monitors = std::make_shared<MonitorManager>(tags());
+    tags()->setMonitorManager(monitors());
     hooks = std::make_shared<HookManager>();
 
     // set temporary globals
@@ -32,6 +33,7 @@ Root::Root()
 Root::~Root()
 {
     clients = {};
+    tags()->setMonitorManager({});
     tags = {};
     children_.clear(); // avoid possible circular shared_ptr dependency
 }
