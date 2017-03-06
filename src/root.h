@@ -11,6 +11,7 @@ class Attribute;
 class TagManager;
 class HookManager;
 class ClientManager;
+class MonitorManager;
 
 class Root : public Object {
 public:
@@ -34,6 +35,7 @@ public:
 
     Child_<ClientManager> clients;
     Child_<TagManager> tags;
+    Child_<MonitorManager> monitors;
     Child_<HookManager> hooks;
 
 private:

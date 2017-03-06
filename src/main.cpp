@@ -22,6 +22,8 @@
 #include "object.h"
 #include "decoration.h"
 #include "xconnection.h"
+#include "tagmanager.h"
+#include "monitormanager.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -104,6 +106,7 @@ void propertynotify(XEvent* event);
 void unmapnotify(XEvent* event);
 
 unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
+    std::shared_ptr<TagManager> tags = root->tags();
     return unique_ptr<CommandTable>(new CommandTable{
         {"quit",           quit},
         {"echo",           echo},
@@ -149,7 +152,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"cycle_monitor",  monitor_cycle_command},
         {"focus_monitor",  monitor_focus_command},
         {"get",            settings_get},
-        {"add",            tag_add_command},
+        {"add",            BIND_OBJECT(tags, tag_add_command) },
         {"use",            monitor_set_tag_command},
         {"use_index",      monitor_set_tag_by_index_command},
         {"use_previous",   monitor_set_previous_tag_command},
@@ -159,7 +162,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"pseudotile",     client_set_property_command},
         {"tag_status",     print_tag_status_command},
         {"merge_tag",      tag_remove_command},
-        {"rename",         tag_rename_command},
+        {"rename",         BIND_OBJECT(tags, tag_rename_command) },
         {"move",           tag_move_window_command},
         {"rotate",         layout_rotate_command},
         {"move_index",     tag_move_window_by_index_command},
@@ -997,7 +1000,7 @@ int main(int argc, char* argv[]) {
     fetch_settings();
 
     // setup
-    ensure_monitors_are_available();
+    root->monitors()->ensure_monitors_are_available();
     scan();
     tag_force_update_flags();
     all_monitors_apply_layout();

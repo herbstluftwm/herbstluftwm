@@ -29,6 +29,7 @@
 #include "monitormanager.h"
 #include "root.h"
 #include "clientmanager.h"
+#include "tagmanager.h"
 
 #include <vector>
 
@@ -36,7 +37,7 @@ using namespace std;
 
 
 // module internals:
-static int g_cur_monitor;
+int g_cur_monitor;
 static int* g_monitors_locked;
 static int* g_swap_monitors_to_get_tag;
 static int* g_smart_frame_surroundings;
@@ -59,8 +60,6 @@ void monitor_init() {
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
     g_mouse_recenter_gap       = &(settings_find("mouse_recenter_gap")->value.i);
     g_monitor_stack = stack_create();
-    monitors = make_shared<MonitorManager>();
-    Root::get()->addChild(monitors, "monitors");
 }
 
 HSMonitor::HSMonitor()
@@ -730,24 +729,6 @@ HSMonitor* find_monitor_with_tag(HSTag* tag) {
     return NULL;
 }
 
-void ensure_monitors_are_available() {
-    if (monitors->size() > 0) {
-        // nothing to do
-        return;
-    }
-    // add monitor if necessary
-    Rectangle rect = { 0, 0,
-            DisplayWidth(g_display, DefaultScreen(g_display)),
-            DisplayHeight(g_display, DefaultScreen(g_display))};
-    ensure_tags_are_available();
-    // add monitor with first tag
-    HSMonitor* m = add_monitor(rect, get_tag_by_index(0), NULL);
-    m->tag->frame->setVisibleRecursive(true);
-    g_cur_monitor = 0;
-
-    monitor_update_focus_objects();
-}
-
 HSMonitor* monitor_with_frame(HSFrame* frame) {
     // find toplevel Frame
     HSTag* tag = find_tag_with_toplevel_frame(&* frame->root());
@@ -873,13 +854,13 @@ int monitor_set_tag_by_index_command(int argc, char** argv, Output output) {
     if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
         skip_visible = true;
     }
-    HSTag* tag = get_tag_by_index_str(argv[1], skip_visible);
+    Ptr(HSTag) tag = tags->byIndexStr(argv[1], skip_visible);
     if (!tag) {
         output << argv[0] <<
             ": Invalid index \"" << argv[1] << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    int ret = monitor_set_tag(get_current_monitor(), tag);
+    int ret = monitor_set_tag(get_current_monitor(), &* tag);
     if (ret != 0) {
         output << argv[0] <<
             ": Could not change tag (maybe monitor is locked?)\n";

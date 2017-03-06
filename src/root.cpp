@@ -2,6 +2,7 @@
 #include "tagmanager.h"
 #include "hookmanager.h"
 #include "clientmanager.h"
+#include "monitormanager.h"
 #include "attribute.h"
 #include "ipc-protocol.h"
 #include "globals.h"
@@ -15,14 +16,17 @@ std::shared_ptr<Root> Root::root_;
 Root::Root()
     : clients(*this, "clients")
     , tags(*this, "tags")
+    , monitors(*this, "monitors")
     , hooks(*this, "hooks")
 {
     clients = std::make_shared<ClientManager>();
     tags = std::make_shared<TagManager>();
+    monitors = std::make_shared<MonitorManager>(tags());
     hooks = std::make_shared<HookManager>();
 
     // set temporary globals
     ::tags = tags();
+    ::monitors = monitors();
 }
 
 Root::~Root()

@@ -11,6 +11,7 @@
 #include "settings.h"
 #include "stack.h"
 #include "mouse.h"
+#include "tagmanager.h"
 
 #include "glib-backports.h"
 #include <string.h>
@@ -269,7 +270,7 @@ void ewmh_update_desktop_names() {
 
 void ewmh_update_current_desktop() {
     HSTag* tag = get_current_monitor()->tag;
-    int index = tag_index_of(tag);
+    int index = tags->index_of(tag);
     if (index < 0) {
         g_warning("tag %s not found in internal list\n", tag->name->c_str());
         return;
@@ -279,7 +280,7 @@ void ewmh_update_current_desktop() {
 }
 
 void ewmh_window_update_tag(Window win, HSTag* tag) {
-    int index = tag_index_of(tag);
+    int index = tags->index_of(tag);
     if (index < 0) {
         g_warning("tag %s not found in internal list\n", tag->name->c_str());
         return;

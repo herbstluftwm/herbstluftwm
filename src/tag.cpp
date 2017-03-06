@@ -31,8 +31,6 @@ using namespace std;
 static bool    g_tag_flags_dirty = true;
 static int* g_raise_on_focus_temporarily;
 
-static int tag_rename(HSTag* tag, char* name, Output output);
-
 void tag_init() {
     g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
                                      ->value.i);
@@ -94,44 +92,7 @@ HSTag* find_tag(const char* name) {
     return NULL;
 }
 
-int tag_index_of(HSTag* tag) {
-    return tags->index_of(tag);
-}
-
 HSTag* get_tag_by_index(int index) {
-    return &* tags->byIdx(index);
-}
-
-HSTag* get_tag_by_index_str(char* index_str, bool skip_visible_tags) {
-    int index = atoi(index_str);
-    // index must be treated relative, if it's first char is + or -
-    bool is_relative = array_find("+-", 2, sizeof(char), &index_str[0]) >= 0;
-    HSMonitor* monitor = get_current_monitor();
-    if (is_relative) {
-        int current = tag_index_of(monitor->tag);
-        int delta = index;
-        index = delta + current;
-        // ensure index is valid
-        index = MOD(index, tags->size());
-        if (skip_visible_tags) {
-            Ptr(HSTag) tag = tags->byIdx(index);
-            for (int i = 0; find_monitor_with_tag(&* tag); i++) {
-                if (i >= tags->size()) {
-                    // if we tried each tag then there is no invisible tag
-                    return NULL;
-                }
-                index += delta;
-                index = MOD(index, tags->size());
-                tag = tags->byIdx(index);
-            }
-        }
-    } else {
-        // if it is absolute, then check index
-        if (index < 0 || index >= tags->size()) {
-            HSDebug("invalid tag index %d\n", index);
-            return NULL;
-        }
-    }
     return &* tags->byIdx(index);
 }
 
@@ -142,61 +103,6 @@ HSTag* find_unused_tag() {
         }
     }
     return NULL;
-}
-
-HSTag* add_tag(const char* name) {
-    HSTag* find_result = find_tag(name);
-    if (find_result) {
-        // nothing to do
-        return find_result;
-    }
-    Ptr(HSTag) tag = make_shared<HSTag>(name);
-    tags->addIndexed(tag);
-
-    ewmh_update_desktops();
-    ewmh_update_desktop_names();
-    tag_set_flags_dirty();
-    return &* tag;
-}
-
-int tag_add_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    if (!strcmp("", argv[1])) {
-        output << argv[0] << ": An empty tag name is not permitted\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    HSTag* tag = add_tag(argv[1]);
-    hook_emit_list("tag_added", tag->name->c_str(), NULL);
-    return 0;
-}
-
-static int tag_rename(HSTag* tag, char* name, Output output) {
-    if (find_tag(name)) {
-        output << "Error: Tag \"" << name << "\" already exists\n";
-        return HERBST_TAG_IN_USE;
-    }
-    tag->name = name;
-    ewmh_update_desktop_names();
-    hook_emit_list("tag_renamed", tag->name->c_str(), NULL);
-    return 0;
-}
-
-int tag_rename_command(int argc, char** argv, Output output) {
-    if (argc < 3) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    if (!strcmp("", argv[2])) {
-        output << argv[0] << ": An empty tag name is not permitted\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    HSTag* tag = find_tag(argv[1]);
-    if (!tag) {
-        output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    return tag_rename(tag, argv[2], output);
 }
 
 int tag_remove_command(int argc, char** argv, Output output) {
@@ -315,14 +221,6 @@ void tag_set_flags_dirty() {
     hook_emit_list("tag_flags", NULL);
 }
 
-void ensure_tags_are_available() {
-    if (tags->size() > 0) {
-        // nothing to do
-        return;
-    }
-    add_tag("default");
-}
-
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
     for (auto t : *tags) {
         if (&* t->frame == frame) {
@@ -353,12 +251,12 @@ int tag_move_window_by_index_command(int argc, char** argv, Output output) {
     if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
         skip_visible = true;
     }
-    HSTag* tag = get_tag_by_index_str(argv[1], skip_visible);
+    Ptr(HSTag) tag = tags->byIndexStr(argv[1], skip_visible);
     if (!tag) {
         output << argv[0] << ": Invalid index \"" << argv[1] << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    tag_move_focused_client(tag);
+    tag_move_focused_client(&* tag);
     return 0;
 }
 

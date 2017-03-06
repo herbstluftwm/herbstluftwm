@@ -11,14 +11,18 @@
 #include "byname.h"
 #include "child.h"
 
+class TagManager;
+
 class MonitorManager : public ChildByIndex<HSMonitor> {
 public:
-    MonitorManager();
+    MonitorManager(Ptr(TagManager) tags);
     Child_<HSMonitor> focus;
 
     void clearChildren();
+    void ensure_monitors_are_available();
 private:
     ByName by_name;
+    Ptr(TagManager) tags;
 };
 
 

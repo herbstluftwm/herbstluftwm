@@ -52,6 +52,14 @@ struct ArgList {
     Container toVector() const {
         return Container(begin_, c_->cend());
     }
+    // the first element without any shifts.
+    std::string command() const {
+        if (c_->begin() != c_->end()) {
+            return *c_->begin();
+        } else {
+            return std::string("");
+        }
+    }
 
 protected:
     static void split(Container &ret, const std::string &s, char delim = '.');
