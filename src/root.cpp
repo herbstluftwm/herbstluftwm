@@ -15,10 +15,11 @@ std::shared_ptr<Root> Root::root_;
 Root::Root()
     : clients(*this, "clients")
     , tags(*this, "tags")
+    , hooks(*this, "hooks")
 {
     clients = std::make_shared<ClientManager>();
     tags = std::make_shared<TagManager>();
-    addChild(std::make_shared<HookManager>(), "hooks");
+    hooks = std::make_shared<HookManager>();
 
     // set temporary globals
     ::tags = tags();

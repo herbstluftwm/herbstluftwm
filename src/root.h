@@ -34,6 +34,7 @@ public:
 
     Child_<ClientManager> clients;
     Child_<TagManager> tags;
+    Child_<HookManager> hooks;
 
 private:
 
