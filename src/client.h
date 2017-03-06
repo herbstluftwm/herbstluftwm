@@ -22,10 +22,11 @@ struct HSSlice;
 
 class HSTag;
 class HSMonitor;
+class Theme;
 
 class HSClient : public Object {
 public:
-    HSClient(Window w, bool already_visible);
+    HSClient(Window w, bool already_visible, Theme& theme);
     ~HSClient();
 
     Window      window_;
@@ -35,7 +36,6 @@ public:
     Attribute_<bool> fullscreen_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
     struct HSSlice* slice;
-    std::shared_ptr<HSClient> ptr() { return Object::ptr<HSClient>(); };
 
 public:
     Rectangle   last_size_;      // last size excluding the window border
@@ -117,6 +117,7 @@ public:
     const DecorationScheme& getScheme(bool focused);
 
 private:
+    Theme& theme;
     const DecTriple& getDecTriple();
     void resize_fullscreen(HSMonitor* m, bool isFocused);
 };

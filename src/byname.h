@@ -13,13 +13,13 @@ public:
     ByName(Object& parent);
     ~ByName();
 
-    void childAdded(std::shared_ptr<Object> parent, std::string child_name);
-    void childRemoved(std::shared_ptr<Object> parent, std::string child_name);
-    void attributeChanged(std::shared_ptr<Object> child, std::string attribute_name);
+    void childAdded(Object* parent, std::string child_name);
+    void childRemoved(Object* parent, std::string child_name);
+    void attributeChanged(Object* child, std::string attribute_name);
 private:
     Object& parent;
     // for each child, remember it's last name
-    std::map<std::shared_ptr<Object>, std::string> last_name;
+    std::map<Object*, std::string> last_name;
 };
 
 #endif

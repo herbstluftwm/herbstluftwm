@@ -48,7 +48,7 @@ static Atom g_wmatom[WMLast];
 static HSClient* lastfocus = NULL;
 
 
-HSClient::HSClient(Window window, bool visible_already)
+HSClient::HSClient(Window window, bool visible_already, Theme& theme_)
     : window_(window),
       dec(this),
       float_size_({0, 0, 100, 100}),
@@ -64,7 +64,8 @@ HSClient::HSClient(Window window, bool visible_already)
       ewmhrequests_(true), ewmhnotify_(true),
       sizehints_floating_(true), sizehints_tiling_(false),
       visible_(visible_already), dragged_(false),
-      ignore_unmaps_(0)
+      ignore_unmaps_(0),
+      theme(theme_)
 {
     std::stringstream tmp;
     tmp << "0x" << std::hex << window;
@@ -152,7 +153,7 @@ void clientlist_destroy() {
 }
 
 HSClient* get_client_from_window(Window window) {
-    return Root::get()->clients()->client(window).get();
+    return Root::get()->clients()->client(window);
 }
 
 #define CLIENT_UPDATE_ATTR(FUNC,MEMBER) do { \
@@ -254,7 +255,6 @@ void HSClient::window_focus() {
 }
 
 const DecTriple& HSClient::getDecTriple() {
-    const Theme& theme = Theme::get();
     auto triple_idx = Theme::Type::Tiling;
     if (fullscreen_()) triple_idx = Theme::Type::Fullscreen;
     else if (is_client_floated()) triple_idx = Theme::Type::Floating;
@@ -699,7 +699,7 @@ HSClient* get_client(const char* str) {
     if (!strcmp(str, "")) {
         return get_current_client();
     } else {
-        return Root::get()->clients()->client(str).get();
+        return Root::get()->clients()->client(str);
     }
 }
 

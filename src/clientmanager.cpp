@@ -12,8 +12,9 @@
 #include "tag.h"
 #include "layout.h"
 
-ClientManager::ClientManager()
+ClientManager::ClientManager(Theme& theme_)
     : focus(*this, "focus")
+    , theme(theme_)
 {
 }
 
@@ -30,7 +31,7 @@ ClientManager::~ClientManager()
     }
 }
 
-std::shared_ptr<HSClient> ClientManager::client(Window window)
+HSClient* ClientManager::client(Window window)
 {
     auto entry = clients_.find(window);
     if (entry != clients_.end())
@@ -47,7 +48,7 @@ std::shared_ptr<HSClient> ClientManager::client(Window window)
  *                  a decimal number its decimal window id.
  * \return          Pointer to the resolved client, or null, if client not found
  */
-std::shared_ptr<HSClient> ClientManager::client(const std::string &identifier)
+HSClient* ClientManager::client(const std::string &identifier)
 {
     if (identifier.empty()) {
         // TODO: the frame doesn't provide us with a shared pointer yet
@@ -65,7 +66,7 @@ std::shared_ptr<HSClient> ClientManager::client(const std::string &identifier)
     return client(win);
 }
 
-void ClientManager::add(std::shared_ptr<HSClient> client)
+void ClientManager::add(HSClient* client)
 {
     clients_[client->window_] = client;
     addChild(client, client->window_id_str);
@@ -77,7 +78,7 @@ void ClientManager::remove(Window window)
     clients_.erase(window);
 }
 
-std::shared_ptr<HSClient> ClientManager::manage_client(Window win, bool visible_already) {
+HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
         return NULL;
@@ -88,13 +89,13 @@ std::shared_ptr<HSClient> ClientManager::manage_client(Window win, bool visible_
     }
 
     // init client
-    auto client = std::make_shared<HSClient>(win, visible_already);
+    auto client = new HSClient(win, visible_already, theme);
     HSMonitor* m = get_current_monitor();
 
     // apply rules
     HSClientChanges changes;
-    client_changes_init(&changes, client.get());
-    rules_apply(client.get(), &changes);
+    client_changes_init(&changes, client);
+    rules_apply(client, &changes);
     if (changes.tag_name) {
         client->setTag(find_tag(changes.tag_name->str));
     }
@@ -134,19 +135,19 @@ std::shared_ptr<HSClient> ClientManager::manage_client(Window win, bool visible_
     stack_insert_slice(client->tag()->stack, client->slice);
     // insert window to the tag
     client->tag()->frame->lookup(changes.tree_index->str)
-                 ->insertClient(client.get());
+                 ->insertClient(client);
     if (changes.focus) {
         // give focus to window if wanted
         // TODO: make this faster!
         // WARNING: this solution needs O(C + exp(D)) time where W is the count
         // of clients on this tag and D is the depth of the binary layout tree
-        client->tag()->frame->focusClient(client.get());
+        client->tag()->frame->focusClient(client);
     }
 
     ewmh_window_update_tag(client->window_, client->tag());
     tag_set_flags_dirty();
     client->set_fullscreen(changes.fullscreen);
-    ewmh_update_window_state(client.get());
+    ewmh_update_window_state(client);
     // add client after setting the correct tag for the new client
     // this ensures a panel can read the tag property correctly at this point
     ewmh_add_client(client->window_);
@@ -172,7 +173,7 @@ std::shared_ptr<HSClient> ClientManager::manage_client(Window win, bool visible_
     client->send_configure();
 
     client_changes_free_members(&changes);
-    grab_client_buttons(client.get(), false);
+    grab_client_buttons(client, false);
 
     return client;
 }
@@ -187,12 +188,12 @@ void ClientManager::unmap_notify(Window win) {
     }
 }
 
-void ClientManager::force_unmanage(std::shared_ptr<HSClient> client) {
+void ClientManager::force_unmanage(HSClient* client) {
     if (client->dragged_) {
         mouse_stop_drag();
     }
     // remove from tag
-    client->tag()->frame->removeClient(client.get());
+    client->tag()->frame->removeClient(client);
     // ignore events from it
     XSelectInput(g_display, client->window_, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
@@ -211,5 +212,5 @@ void ClientManager::force_unmanage(std::shared_ptr<HSClient> client) {
     tag_set_flags_dirty();
     // delete client
     this->remove(client->window_);
-    client.reset();
+    delete client;
 }

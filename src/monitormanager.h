@@ -15,14 +15,14 @@ class TagManager;
 
 class MonitorManager : public ChildByIndex<HSMonitor> {
 public:
-    MonitorManager(Ptr(TagManager) tags);
+    MonitorManager(TagManager* tags);
     Child_<HSMonitor> focus;
 
     void clearChildren();
     void ensure_monitors_are_available();
 private:
     ByName by_name;
-    Ptr(TagManager) tags;
+    TagManager* tags;
 };
 
 

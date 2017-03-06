@@ -3,6 +3,7 @@
 #include "hookmanager.h"
 #include "clientmanager.h"
 #include "monitormanager.h"
+#include "monitor.h"
 #include "attribute.h"
 #include "ipc-protocol.h"
 #include "globals.h"
@@ -18,12 +19,14 @@ Root::Root()
     , tags(*this, "tags")
     , monitors(*this, "monitors")
     , hooks(*this, "hooks")
+    , theme(*this, "theme")
 {
-    clients = std::make_shared<ClientManager>();
-    tags = std::make_shared<TagManager>();
-    monitors = std::make_shared<MonitorManager>(tags());
+    theme = new Theme;
+    clients = new ClientManager(*theme());
+    tags = new TagManager;
+    monitors = new MonitorManager(tags());
     tags()->setMonitorManager(monitors());
-    hooks = std::make_shared<HookManager>();
+    hooks = new HookManager;
 
     // set temporary globals
     ::tags = tags();
@@ -32,9 +35,12 @@ Root::Root()
 
 Root::~Root()
 {
-    clients = {};
     tags()->setMonitorManager({});
-    tags = {};
+    delete hooks();
+    delete monitors();
+    delete tags();
+    delete clients();
+    delete theme();
     children_.clear(); // avoid possible circular shared_ptr dependency
 }
 
@@ -54,7 +60,7 @@ int Root::cmd_attr(Input in, Output output) {
     auto path = in.empty() ? std::string("") : in.front();
     in.shift();
     std::ostringstream dummy_output;
-    std::shared_ptr<Object> o = shared_from_this();
+    Object* o = this;
     auto p = Path::split(path);
     if (!p.empty()) {
         while (p.back().empty()) p.pop_back();

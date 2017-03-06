@@ -1,7 +1,6 @@
 #ifndef CHILDBYINDEX_H
 #define CHILDBYINDEX_H
 
-#include <memory>
 #include <unordered_map>
 #include <string>
 #include "object.h"
@@ -15,7 +14,7 @@ template<typename T>
 class ChildByIndex : public Object {
 public:
     ChildByIndex() {}
-    void addIndexed(std::shared_ptr<T> newChild) {
+    void addIndexed(T* newChild) {
         unsigned long index_int = data.size();
         std::string index = std::to_string(index_int);
         data.push_back(newChild);
@@ -55,7 +54,7 @@ public:
         return *data[idx];
     }
 
-    std::shared_ptr<T> byIdx(size_t idx) {
+    T* byIdx(size_t idx) {
         return data[idx];
     }
 
@@ -73,11 +72,11 @@ public:
 
 
     // iterators
-    typedef typename std::vector<std::shared_ptr<T>>::iterator iterator_type;
+    typedef typename std::vector<T*>::iterator iterator_type;
     iterator_type begin() { return data.begin(); }
     iterator_type end() { return data.end(); }
 private:
-    std::vector<std::shared_ptr<T>> data;
+    std::vector<T*> data;
 };
 
 

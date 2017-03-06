@@ -14,13 +14,13 @@ ByName::~ByName() {
     parent.removeHook(this);
 }
 
-void ByName::childAdded(std::shared_ptr<Object> sender_parent, std::string child_name)
+void ByName::childAdded(Object* sender_parent, std::string child_name)
 {
     if (&* sender_parent != &parent) {
         return;
     }
     // child_name is the value how sender_parent calls the child
-    std::shared_ptr<Object> child = parent.child(child_name);
+    Object* child = parent.child(child_name);
     Attribute* name_attrib = child->attribute("name");
     // if the new child has a name attribute, then we list it as well
     if (name_attrib) {
@@ -33,13 +33,13 @@ void ByName::childAdded(std::shared_ptr<Object> sender_parent, std::string child
     }
 }
 
-void ByName::childRemoved(std::shared_ptr<Object> sender_parent, std::string child_name)
+void ByName::childRemoved(Object* sender_parent, std::string child_name)
 {
     if (&* sender_parent != &parent) {
         return;
     }
     // child_name is the value how sender_parent calls the child
-    std::shared_ptr<Object> child = parent.child(child_name);
+    Object* child = parent.child(child_name);
     auto it = last_name.find(child);
     // if we cared about this child previously
     if (it != last_name.end()) {
@@ -50,7 +50,7 @@ void ByName::childRemoved(std::shared_ptr<Object> sender_parent, std::string chi
     }
 }
 
-void ByName::attributeChanged(std::shared_ptr<Object> child, std::string attribute_name)
+void ByName::attributeChanged(Object* child, std::string attribute_name)
 {
     //std::cerr << "Attribute " << attribute_name << " changed" << std::endl;
     if (attribute_name != "name" || &* child == &parent) {

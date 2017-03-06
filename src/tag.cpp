@@ -251,7 +251,7 @@ int tag_move_window_by_index_command(int argc, char** argv, Output output) {
     if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
         skip_visible = true;
     }
-    Ptr(HSTag) tag = tags->byIndexStr(argv[1], skip_visible);
+    HSTag* tag = tags->byIndexStr(argv[1], skip_visible);
     if (!tag) {
         output << argv[0] << ": Invalid index \"" << argv[1] << "\"\n";
         return HERBST_INVALID_ARGUMENT;

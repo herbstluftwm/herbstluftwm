@@ -66,7 +66,7 @@ HSSlice* slice_create_frame(Window window) {
 }
 
 
-HSSlice* slice_create_client(std::shared_ptr<HSClient> client) {
+HSSlice* slice_create_client(HSClient* client) {
     HSSlice* s = slice_create();
     s->type = SLICE_CLIENT;
     s->data.client = client;

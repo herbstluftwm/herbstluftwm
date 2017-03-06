@@ -2,6 +2,8 @@
 #ifndef __HLWM_NAMED_HOOK_H_
 #define __HLWM_NAMED_HOOK_H_
 
+#ifdef ENABLE_NAMED_HOOK
+
 #include "object.h"
 #include "hook.h"
 #include "attribute_.h"
@@ -10,12 +12,12 @@ class NamedHook : public Object, public Hook {
 public:
 
     NamedHook(const std::string &path);
-    void hook_into(std::shared_ptr<Object> root);
+    void hook_into(Object* root);
 
     Type type() { return Type::HOOK; }
 
     // emit hook, used by path elements
-    void operator()(std::shared_ptr<Object> sender, HookEvent event,
+    void operator()(Object* sender, HookEvent event,
                     const std::string &name);
 
     void trigger(const std::string &action, ArgList args);
@@ -63,6 +65,8 @@ private:
     // last known value, used to print new value vs. old value
     std::string value_;
 };
+
+#endif // ENABLE_NAMED_HOOK
 
 #endif
 

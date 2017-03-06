@@ -12,6 +12,7 @@
 #include "hook.h"
 
 #include <iostream>
+#include <memory>
 
 #include <string.h>
 #include <stdlib.h>
@@ -180,7 +181,7 @@ Attribute* Object::attribute(const std::string &name) {
 }
 
 
-std::shared_ptr<Object> Object::child(const std::string &name) {
+Object* Object::child(const std::string &name) {
     auto it = children_.find(name);
     if (it != children_.end())
         return it->second;
@@ -189,9 +190,9 @@ std::shared_ptr<Object> Object::child(const std::string &name) {
 }
 
 
-std::shared_ptr<Object> Object::child(Path path) {
+Object* Object::child(Path path) {
     if (path.empty()) {
-        return ptr<Object>();
+        return this;
     }
     auto it = children_.find(path.front());
     if (it != children_.end())
@@ -206,20 +207,20 @@ void Object::notifyHooks(HookEvent event, const std::string& arg)
         if (h) {
             switch (event) {
                 case HookEvent::CHILD_ADDED:
-                    h->childAdded(ptr<Object>(), arg);
+                    h->childAdded(this, arg);
                     break;
                 case HookEvent::CHILD_REMOVED:
-                    h->childRemoved(ptr<Object>(), arg);
+                    h->childRemoved(this, arg);
                     break;
                 case HookEvent::ATTRIBUTE_CHANGED:
-                    h->attributeChanged(ptr<Object>(), arg);
+                    h->attributeChanged(this, arg);
                     break;
             }
         } // TODO: else throw
     }
 }
 
-void Object::addChild(std::shared_ptr<Object> child, std::string name)
+void Object::addChild(Object* child, std::string name)
 {
     children_[name] = child;
     notifyHooks(HookEvent::CHILD_ADDED, name);
@@ -254,7 +255,7 @@ void Object::removeHook(Hook* hook)
 
 class DirectoryTreeInterface : public TreeInterface {
 public:
-    DirectoryTreeInterface(string label, Ptr(Object) d) : lbl(label), dir(d) {
+    DirectoryTreeInterface(string label, Object* d) : lbl(label), dir(d) {
         for (auto child : dir->children()) {
             buf.push_back(child);
         }
@@ -270,20 +271,18 @@ public:
     };
 private:
     string lbl;
-    vector<pair<string,Ptr(Object)>> buf;
-    Ptr(Object) dir;
+    vector<pair<string,Object*>> buf;
+    Object* dir;
 };
 
 void Object::printTree(Output output, std::string rootLabel) {
-    Ptr(TreeInterface) intface = make_shared<DirectoryTreeInterface>(rootLabel, ptr<Object>());
+    Ptr(TreeInterface) intface = make_shared<DirectoryTreeInterface>(rootLabel, this);
     tree_print_to(intface, output);
 }
 
-static void null_deleter(Object *) {}
-
 void Object::addStaticChild(Object* child, std::string name)
 {
-    children_[name] = shared_ptr<Object>(child, null_deleter);
+    children_[name] = child;
     notifyHooks(HookEvent::CHILD_ADDED, name);
 }
 

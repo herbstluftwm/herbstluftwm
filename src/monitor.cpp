@@ -43,7 +43,7 @@ static int* g_swap_monitors_to_get_tag;
 static int* g_smart_frame_surroundings;
 static int* g_mouse_recenter_gap;
 static ::HSStack* g_monitor_stack;
-Ptr(MonitorManager) monitors;
+MonitorManager* monitors;
 
 typedef struct RectList {
     Rectangle rect;
@@ -170,7 +170,7 @@ void monitor_apply_layout(HSMonitor* monitor) {
         }
         if (isFocused) {
             if (res.focus) {
-                Root::get()->clients()->focus = res.focus->ptr();
+                Root::get()->clients()->focus = res.focus;
             } else {
                 Root::get()->clients()->focus = {};
             }
@@ -486,7 +486,7 @@ static void monitor_foreach(void (*action)(HSMonitor*)) {
 
 HSMonitor* add_monitor(Rectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
-    Ptr(HSMonitor) m = make_shared<HSMonitor>();
+    HSMonitor* m = new HSMonitor;
     m->rect = rect;
     m->tag = tag;
     m->tag_previous = tag;
@@ -501,7 +501,7 @@ HSMonitor* add_monitor(Rectangle rect, HSTag* tag, char* name) {
     stack_insert_slice(g_monitor_stack, m->slice);
     monitors->addIndexed(m);
 
-    return &* m;
+    return m;
 }
 
 int add_monitor_command(int argc, char** argv, Output output) {
@@ -854,7 +854,7 @@ int monitor_set_tag_by_index_command(int argc, char** argv, Output output) {
     if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
         skip_visible = true;
     }
-    Ptr(HSTag) tag = tags->byIndexStr(argv[1], skip_visible);
+    HSTag* tag = tags->byIndexStr(argv[1], skip_visible);
     if (!tag) {
         output << argv[0] <<
             ": Invalid index \"" << argv[1] << "\"\n";

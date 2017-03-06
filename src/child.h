@@ -1,7 +1,6 @@
 #ifndef __HLWM_CHILD_H_
 #define __HLWM_CHILD_H_
 
-#include <memory>
 #include "object.h"
 
 template<typename T>
@@ -17,7 +16,7 @@ public:
         : owner(owner_)
         , name(name_)
     { };
-    void operator=(std::shared_ptr<T> new_value) {
+    void operator=(T* new_value) {
         if (new_value == pointer) {
             // nothing to do
             return;
@@ -29,13 +28,13 @@ public:
             owner.removeChild(name);
         }
     }
-    const std::shared_ptr<T>& operator()() {
+    T* operator()() {
         return pointer;
     }
 private:
     Object& owner;
     std::string name;
-    std::shared_ptr<T> pointer;
+    T* pointer;
 };
 
 #endif

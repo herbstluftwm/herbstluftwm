@@ -10,19 +10,20 @@
 
 using namespace std;
 
-Ptr(TagManager) tags;
+TagManager* tags;
 
 TagManager::TagManager()
     : ChildByIndex()
     , by_name(*this)
+    , monitors(NULL)
 {
 }
 
-void TagManager::setMonitorManager(const std::shared_ptr<MonitorManager>& m_) {
+void TagManager::setMonitorManager(MonitorManager* m_) {
     monitors = m_;
 }
 
-std::shared_ptr<HSTag> TagManager::find(const std::string& name) {
+HSTag* TagManager::find(const std::string& name) {
     for (auto t : *this) {
         if (t->name == name) {
             return t;
@@ -31,13 +32,13 @@ std::shared_ptr<HSTag> TagManager::find(const std::string& name) {
     return {};
 }
 
-std::shared_ptr<HSTag> TagManager::add_tag(const std::string& name) {
-    Ptr(HSTag) find_result = find(name);
+HSTag* TagManager::add_tag(const std::string& name) {
+    HSTag* find_result = find(name);
     if (find_result) {
         // nothing to do
         return find_result;
     }
-    Ptr(HSTag) tag = make_shared<HSTag>(name);
+    HSTag* tag = new HSTag(name);
     addIndexed(tag);
 
     ewmh_update_desktops();
@@ -55,7 +56,7 @@ int TagManager::tag_add_command(Input input, Output output) {
         output << input.command() << ": An empty tag name is not permitted\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    Ptr(HSTag) tag = add_tag(input.front());
+    HSTag* tag = add_tag(input.front());
     hook_emit_list("tag_added", tag->name->c_str(), NULL);
     return 0;
 }
@@ -72,7 +73,7 @@ int TagManager::tag_rename_command(Input input, Output output) {
         output << input.command() << ": An empty tag name is not permitted\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    Ptr(HSTag) tag = find(old_name);
+    HSTag* tag = find(old_name);
     if (!tag) {
         output << input.command() << ": Tag \"" << old_name << "\" not found\n";
         return HERBST_INVALID_ARGUMENT;
@@ -87,7 +88,7 @@ int TagManager::tag_rename_command(Input input, Output output) {
     return 0;
 }
 
-std::shared_ptr<HSTag> TagManager::ensure_tags_are_available() {
+HSTag* TagManager::ensure_tags_are_available() {
     if (size() > 0) {
         return byIdx(0);
     } else {
@@ -95,7 +96,7 @@ std::shared_ptr<HSTag> TagManager::ensure_tags_are_available() {
     }
 }
 
-shared_ptr<HSTag> TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
+HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
     int index = stoi(index_str);
     // index must be treated relative, if it's first char is + or -
     bool is_relative = index_str[0] == '+' || index_str[0] == '-';
@@ -107,7 +108,7 @@ shared_ptr<HSTag> TagManager::byIndexStr(const string& index_str, bool skip_visi
         // ensure index is valid
         index = MOD(index, size());
         if (skip_visible_tags) {
-            Ptr(HSTag) tag = tags->byIdx(index);
+            HSTag* tag = tags->byIdx(index);
             for (int i = 0; find_monitor_with_tag(&* tag); i++) {
                 if (i >= tags->size()) {
                     // if we tried each tag then there is no invisible tag

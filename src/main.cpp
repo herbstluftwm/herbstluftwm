@@ -106,7 +106,7 @@ void propertynotify(XEvent* event);
 void unmapnotify(XEvent* event);
 
 unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
-    std::shared_ptr<TagManager> tags = root->tags();
+    TagManager* tags = root->tags();
     return unique_ptr<CommandTable>(new CommandTable{
         {"quit",           quit},
         {"echo",           echo},

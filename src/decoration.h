@@ -114,7 +114,6 @@ public:
     const DecTriple& operator[](Type t) const {
         return dec[(int)t];
     };
-    static const Theme& get();
     Theme();
 };
 

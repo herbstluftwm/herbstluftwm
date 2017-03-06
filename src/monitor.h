@@ -60,7 +60,7 @@ void monitor_init();
 void monitor_destroy();
 
 class MonitorManager;
-extern Ptr(MonitorManager) monitors; // temporarily
+extern MonitorManager* monitors; // temporarily
 extern int g_cur_monitor; // temporarily
 
 // adds a new monitor to the monitors list and returns a pointer to it

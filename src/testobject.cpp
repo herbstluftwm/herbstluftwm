@@ -38,7 +38,7 @@ TestObject::TestObject()
     wireAttributes({ &foo_, &bar_, });
     wireActions({ &killer_ });
 
-    auto foo = std::make_shared<TestObjectII>();
+    auto foo = new TestObjectII();
     //children_.insert(std::make_pair(foo->name(), foo));
 }
 
@@ -62,9 +62,9 @@ TestObjectII::TestObjectII()
     wireAttributes({ &foorious_, &bar_  });
     wireActions({ &killer_ });
 
-    auto foo = std::make_shared<Object>();
+    auto foo = new Object();
     addChild(foo, "sweets");
-    auto fooII = std::make_shared<Object>();
+    auto fooII = new Object();
     addChild(fooII, "cake");
 }
 
@@ -73,12 +73,12 @@ void TestObjectII::do_stuff()
     bar_ = false;
 
     removeChild("sweets");
-    auto foo = std::make_shared<TestObjectII>();
+    auto foo = new TestObjectII();
     foo->write("foo", "23");
     addChild(foo, "sweets");
     foo->write("foo", "24");
     removeChild("sweets");
-    auto footy = std::make_shared<TestObjectII>();
+    auto footy = new TestObjectII();
     footy->write("foo", "100");
     addChild(footy, "sweets");
 }

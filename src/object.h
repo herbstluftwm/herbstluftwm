@@ -11,7 +11,6 @@
 #include "hook.h"
 
 #include <map>
-#include <memory>
 #include <vector>
 #include <functional>
 
@@ -27,7 +26,7 @@ enum class HookEvent {
     ATTRIBUTE_CHANGED
 };
 
-class Object : public std::enable_shared_from_this<Object> {
+class Object {
 
 public:
     Object();
@@ -63,22 +62,21 @@ public:
     // following, such that the parent can tell the child its index.
     virtual void setIndexAttribute(unsigned long index) { };
 
-    std::shared_ptr<Object> child(const std::string &name);
+    Object* child(const std::string &name);
 
-    std::shared_ptr<Object> child(Path path);
+    Object* child(Path path);
 
     /* Called by the directory whenever children are added or removed */
     void notifyHooks(HookEvent event, const std::string &arg);
 
-    void addChild(std::shared_ptr<Object> child, std::string name);
-    void addStaticChild(Object *child, std::string name);
+    void addChild(Object* child, std::string name);
+    void addStaticChild(Object* child, std::string name);
     void removeChild(const std::string &child);
 
     void addHook(Hook* hook);
     void removeHook(Hook* hook);
 
-    const std::map<std::string, std::shared_ptr<Object>>&
-    children() { return children_; }
+    const std::map<std::string, Object*>& children() { return children_; }
 
     void printTree(Output output, std::string rootLabel);
 
@@ -90,13 +88,7 @@ protected:
     std::map<std::string, Attribute*> attribs_;
     std::map<std::string, Action*> actions_;
 
-    /* convenience function to be used by objects to return themselves. */
-    template<typename T>
-    std::shared_ptr<T> ptr() {
-        return std::dynamic_pointer_cast<T>(shared_from_this());
-    }
-
-    std::map<std::string, std::shared_ptr<Object>> children_;
+    std::map<std::string, Object*> children_;
     std::vector<Hook*> hooks_;
 
     //DynamicAttribute nameAttribute_;

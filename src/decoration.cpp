@@ -18,12 +18,6 @@ static int* g_pseudotile_center_threshold;
 static int* g_update_dragged_clients;
 
 
-static std::shared_ptr<Theme> g_theme;
-
-const Theme& Theme::get() {
-    return *g_theme;
-}
-
 Theme::Theme() {
     std::vector<std::string> type_names = {
         "fullscreen",
@@ -122,8 +116,6 @@ void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
 void decorations_init() {
     g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
     g_update_dragged_clients = &(settings_find("update_dragged_clients")->value.i);
-    g_theme = std::make_shared<Theme>();
-    Root::get()->addChild(g_theme, "theme");
 }
 
 void reset_helper(void* data, GString* output) {

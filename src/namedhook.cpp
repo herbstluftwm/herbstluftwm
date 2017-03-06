@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iostream>
 
+#ifdef ENABLE_NAMED_HOOK
 
 NamedHook::NamedHook(const std::string &path) :
     counter_("counter", 0),
@@ -14,14 +15,14 @@ NamedHook::NamedHook(const std::string &path) :
     wireActions({ &emit_ });
 }
 
-void NamedHook::hook_into(std::shared_ptr<Object> root) {
+void NamedHook::hook_into(Object* root) {
     cutoff_chain(0);
     chain_ = { root };
     /* we don't register with root; root Object shall never change */
     complete_chain();
 }
 
-void NamedHook::operator()(std::shared_ptr<Object> sender, HookEvent event,
+void NamedHook::operator()(Object* sender, HookEvent event,
                       const std::string &name) {
     //debug_hook(sender, event, name);
 
@@ -95,7 +96,7 @@ void NamedHook::emit(const std::string &old, const std::string &current)
     }
 }
 
-void NamedHook::check_chain(std::shared_ptr<Object> sender, HookEvent event,
+void NamedHook::check_chain(Object* sender, HookEvent event,
                        const std::string &name) {
     if (event == HookEvent::CHILD_REMOVED) {
         // find sender in chain
@@ -193,4 +194,5 @@ void NamedHook::debug_hook(std::shared_ptr<Object> sender, HookEvent event,
     // }
     // std::cerr << std::endl;
 }
+#endif // ENABLE_NAMED_HOOK
 
