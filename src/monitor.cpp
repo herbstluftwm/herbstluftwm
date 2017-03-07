@@ -1275,7 +1275,7 @@ int shift_to_monitor(int argc, char** argv, Output output) {
         output << monitor_str << ": Invalid monitor\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    tag_move_focused_client(monitor->tag);
+    tags->moveFocusedClient(monitor->tag);
     return 0;
 }
 

@@ -352,7 +352,7 @@ void ewmh_handle_client_message(XEvent* event) {
             HSTag* target = get_tag_by_index(desktop_index);
             client = get_client_from_window(me->window);
             if (client && target) {
-                tag_move_client(client, target);
+                tags->moveClient(client, target);
             }
             break;
         }

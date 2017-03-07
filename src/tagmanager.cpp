@@ -7,6 +7,8 @@
 #include "ewmh.h"
 #include "monitormanager.h"
 #include "client.h"
+#include "layout.h"
+#include "stack.h"
 
 using namespace std;
 
@@ -127,5 +129,81 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
         }
     }
     return byIdx(index);
+}
+
+void TagManager::moveFocusedClient(HSTag* target) {
+    HSClient* client = monitors->focus()->tag->frame->focusedClient();
+    if (!client) {
+        return;
+    }
+    moveClient(client, target);
+}
+
+void TagManager::moveClient(HSClient* client, HSTag* target) {
+    HSTag* tag_source = client->tag();
+    HSMonitor* monitor_source = find_monitor_with_tag(tag_source);
+    if (tag_source == target) {
+        // nothing to do
+        return;
+    }
+    HSMonitor* monitor_target = find_monitor_with_tag(target);
+    tag_source->frame->removeClient(client);
+    // insert window into target
+    target->frame->insertClient(client);
+    // enfoce it to be focused on the target tag
+    target->frame->focusClient(client);
+    stack_remove_slice(client->tag()->stack, client->slice);
+    client->setTag(target);
+    stack_insert_slice(client->tag()->stack, client->slice);
+    ewmh_window_update_tag(client->window_, client->tag());
+
+    // refresh things, hide things, layout it, and then show it if needed
+    if (monitor_source && !monitor_target) {
+        // window is moved to invisible tag
+        // so hide it
+        client->set_visible(false);
+    }
+    monitor_apply_layout(monitor_source);
+    monitor_apply_layout(monitor_target);
+    if (!monitor_source && monitor_target) {
+        client->set_visible(true);
+    }
+    if (monitor_target == get_current_monitor()) {
+        frame_focus_recursive(monitor_target->tag->frame);
+    }
+    else if (monitor_source == get_current_monitor()) {
+        frame_focus_recursive(monitor_source->tag->frame);
+    }
+    tag_set_flags_dirty();
+}
+
+int TagManager::tag_move_window_command(Input argv, Output output) {
+    if (argv.size() < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    HSTag* target = find(argv[1]);
+    if (!target) {
+        output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    moveFocusedClient(target);
+    return 0;
+}
+
+int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
+    if (argv.size() < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    bool skip_visible = false;
+    if (argv.size() >= 3 && argv[2] == "--skip-visible") {
+        skip_visible = true;
+    }
+    HSTag* tag = tags->byIndexStr(argv[1], skip_visible);
+    if (!tag) {
+        output << argv[0] << ": Invalid index \"" << argv[1] << "\"\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    moveFocusedClient(tag);
+    return 0;
 }
 
