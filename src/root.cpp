@@ -86,7 +86,10 @@ int Root::cmd_attr(Input in, Output output) {
         if (error_message == "") {
             return 0;
         } else {
-            output << error_message << std::endl;
+            output << in.command() << ": \""
+                << in.front() << "\" is not a valid value for "
+                << a->name() << ": "
+                << error_message << std::endl;
             return HERBST_INVALID_ARGUMENT;
         }
     }

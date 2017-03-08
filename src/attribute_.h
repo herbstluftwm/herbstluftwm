@@ -96,7 +96,11 @@ inline Type Attribute_<int>::type() { return Type::ATTRIBUTE_INT; }
 
 template<>
 inline std::string Attribute_<int>::change(const std::string &payload) {
-    return assignByUser(std::stoi(payload));
+    try {
+        return assignByUser(std::stoi(payload));
+    } catch (std::exception const& e) {
+        return "not a valid integer";
+    }
 }
 
 /** Unsigned **/
