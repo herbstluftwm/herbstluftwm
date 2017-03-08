@@ -50,6 +50,9 @@ public:
     // return an attribute if it exists, else NULL
     Attribute* attribute(const std::string &name);
 
+    // return an attribute by parsing the path and possibly looking at children
+    Attribute* deepAttribute(const std::string &path);
+
     std::map<std::string, Attribute*> attributes() { return attribs_; }
 
     std::string acceptAllValueValidator() { return {}; };

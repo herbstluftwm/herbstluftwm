@@ -53,18 +53,18 @@ protected:
 
 /* attributes that don't hold reference a data field (no templating), but are
  * rather a shallow interface to the owner's getter and setter doing magic. */
-class DynamicAttribute : public Attribute {
-public:
-    DynamicAttribute() {}
-    DynamicAttribute(const std::string &name, Type type,
-                     bool writeable, bool hookable = false)
-        : Attribute(name, writeable), type_(type) { hookable_ = hookable; }
-
-    Type type() { return type_; }
-
-protected:
-    Type type_;
-};
+//class DynamicAttribute : public Attribute {
+//public:
+//    DynamicAttribute() {}
+//    DynamicAttribute(const std::string &name, Type type,
+//                     bool writeable, bool hookable = false)
+//        : Attribute(name, writeable), type_(type) { hookable_ = hookable; }
+//
+//    Type type() { return type_; }
+//
+//protected:
+//    Type type_;
+//};
 
 class Action : public Entity {
 public:

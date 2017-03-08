@@ -79,7 +79,7 @@ public:
         return payload_;
     };
 
-private:
+protected:
     void notifyHooks() {
         if (owner_) {
             owner_->notifyHooks(HookEvent::ATTRIBUTE_CHANGED, name_);
@@ -159,6 +159,39 @@ inline std::string Attribute_<Color>::change(const std::string &payload) {
     return assignByUser(Color::fromStr(payload));
 }
 
+template<typename T>
+class DynAttribute_ : public Attribute_<T> {
+public:
+    // each time a dynamic attribute is read, the getter_ is called in order to
+    // get the actual value
+    DynAttribute_(const std::string &name, std::function<T()> getter_)
+        : Attribute_<T>(name, {})
+        , setter()
+        , getter(getter_)
+    {
+        Attribute_<T>::hookable_ = false;
+    }
+
+    DynAttribute_(const std::string &name, std::function<std::string(T)> setter_, std::function<T()> getter_)
+        : Attribute_<T>(name, ([this]() {
+                return this->setter(this->lastPayload());
+            }), {})
+        , setter(setter_)
+        , getter(getter_)
+    {
+        Attribute_<T>::hookable_ = false;
+    }
+    std::string str() {
+        Attribute_<T>::payload_ = getter();
+        return Attribute_<T>::str();
+    }
+private:
+    T lastPayload() {
+        return Attribute_<T>::payload_;
+    };
+    std::function<std::string(T)> setter;
+    std::function<T()> getter;
+};
 
 #endif // ATTRIBUTE__H
 

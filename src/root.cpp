@@ -23,7 +23,7 @@ Root::Root()
     , hooks(*this, "hooks")
     , theme(*this, "theme")
 {
-    settings = new Settings;
+    settings = new Settings(this);
     theme = new Theme;
     clients = new ClientManager(*theme());
     tags = new TagManager;

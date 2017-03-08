@@ -38,7 +38,7 @@ typedef struct {
 class Settings : public Object {
 public:
     using string = std::string;
-    Settings();
+    Settings(Object* root);
     Attribute_<int>         frame_gap;
     Attribute_<int>         frame_padding;
     Attribute_<int>         window_gap;
@@ -76,13 +76,17 @@ public:
     Attribute_<string>      tree_style;
     Attribute_<string>      wmname;
     // for compatibility
-    Attribute_<int>         window_border_width;
-    Attribute_<int>         window_border_inner_width;
-    Attribute_<Color>       window_border_inner_color;
-    Attribute_<Color>       window_border_active_color;
-    Attribute_<Color>       window_border_normal_color;
-    Attribute_<Color>       window_border_urgent_color;
+    DynAttribute_<int>         window_border_width;
+    DynAttribute_<int>         window_border_inner_width;
+    DynAttribute_<Color>       window_border_inner_color;
+    DynAttribute_<Color>       window_border_active_color;
+    DynAttribute_<Color>       window_border_normal_color;
+    DynAttribute_<Color>       window_border_urgent_color;
 private:
+    static std::function<int()> getIntAttr(Object* root, std::string name);
+    static std::function<Color()> getColorAttr(Object* root, std::string name);
+    static std::function<string(int)> setIntAttr(Object* root, std::string name);
+    static std::function<string(Color)> setColorAttr(Object* root, std::string name);
     // callbacks for settings
     string relayout();
     string fr_colors();

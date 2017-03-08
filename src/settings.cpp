@@ -112,7 +112,7 @@ SettingsPair g_settings[] = {
 #define SAME_NAME(NAME, UPDATE, DEFAULT) \
     NAME(#NAME, UPDATE, DEFAULT)
 
-Settings::Settings()
+Settings::Settings(Object* root)
     : frame_gap(                "frame_gap",        AT_THIS(relayout), 5)
     , frame_padding(            "frame_padding",    AT_THIS(relayout),                   0)
     , window_gap(               "window_gap",       AT_THIS(relayout),                      0)
@@ -149,12 +149,24 @@ Settings::Settings()
     , update_dragged_clients(   "update_dragged_clients",       ACCEPT_ALL,          0)
     , tree_style(               "tree_style",                   AT_THIS(fr_colors),                      "*| +`--.")
     , wmname(                   "wmname",                       AT_THIS(update_wmname),                  WINDOW_MANAGER_NAME)
-    , window_border_width("window_border_width", 0)
-    , window_border_inner_width("window_border_inner_width", 0)
-    , window_border_inner_color("window_border_inner_color",   Color("black"))
-    , window_border_active_color("window_border_active_color", Color("black"))
-    , window_border_normal_color("window_border_normal_color", Color("black"))
-    , window_border_urgent_color("window_border_urgent_color", Color("black"))
+    , window_border_width("window_border_width",
+        setIntAttr(root, "theme.border_width"),
+        getIntAttr(root, "theme.tiling.active.border_width"))
+    , window_border_inner_width("window_border_inner_width",
+        setIntAttr(root, "theme.inner_width"),
+        getIntAttr(root, "theme.tiling.active.inner_width"))
+    , window_border_inner_color("window_border_inner_color",
+        setColorAttr(root, "theme.inner_color"),
+        getColorAttr(root, "theme.tiling.active.inner_color"))
+    , window_border_active_color("window_border_active_color",
+        setColorAttr(root, "theme.active.color"),
+        getColorAttr(root, "theme.tiling.active.color"))
+    , window_border_normal_color("window_border_normal_color",
+        setColorAttr(root, "theme.normal.color"),
+        getColorAttr(root, "theme.tiling.normal.color"))
+    , window_border_urgent_color("window_border_urgent_color",
+        setColorAttr(root, "theme.urgent.color"),
+        getColorAttr(root, "theme.tiling.urgent.color"))
 {
     wireAttributes({
         &frame_gap,
@@ -202,6 +214,60 @@ Settings::Settings()
         &window_border_urgent_color,
     });
 }
+
+std::function<int()> Settings::getIntAttr(Object* root, std::string name) {
+    return [root, name]() {
+        Attribute* a = root->deepAttribute(name);
+        if (a) {
+            return std::stoi(a->str());
+        } else {
+            HSDebug("Internal Error: No such attribute %s\n", name.c_str());
+            return 0;
+        }
+    };
+}
+
+std::function<Color()> Settings::getColorAttr(Object* root, std::string name) {
+    return [root, name]() {
+        Attribute* a = root->deepAttribute(name);
+        if (a) {
+            return Color(a->str());
+        } else {
+            HSDebug("Internal Error: No such attribute %s\n", name.c_str());
+            return Color("black");
+        }
+    };
+}
+
+std::function<string(int)> Settings::setIntAttr(Object* root, std::string name) {
+    return [root, name](int val) {
+        Attribute* a = root->deepAttribute(name);
+        if (a) {
+            return a->change(to_string(val));
+        } else {
+            string msg = "Internal Error: No such attribute ";
+            msg += name;
+            msg += "\"";
+            return msg;
+        }
+    };
+}
+std::function<string(Color)> Settings::setColorAttr(Object* root, std::string name) {
+    return [root, name](Color val) {
+        Attribute* a = root->deepAttribute(name);
+        if (a) {
+            return a->change(val.str());
+        } else {
+            string msg = "Internal Error: No such attribute ";
+            msg += name;
+            msg += "\"";
+            return msg;
+        }
+    };
+}
+
+
+
 
 string Settings::relayout() {
     return {};

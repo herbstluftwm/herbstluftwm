@@ -286,4 +286,12 @@ void Object::addStaticChild(Object* child, std::string name)
     notifyHooks(HookEvent::CHILD_ADDED, name);
 }
 
+Attribute* Object::deepAttribute(const std::string &path) {
+    auto attr_path = splitPath(path);
+    auto attribute_owner = child(attr_path.first);
+    if (!attribute_owner) {
+        return NULL;
+    }
+    return attribute_owner->attribute(attr_path.second);
+}
 
