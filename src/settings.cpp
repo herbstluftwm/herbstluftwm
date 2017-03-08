@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <sstream>
 
+using namespace std;
+
 SettingsPair SET_INT(const char* name, int defaultval, void (*cb)())
 {
     SettingsPair sp;
@@ -106,6 +108,119 @@ SettingsPair g_settings[] = {
     SET_COMPAT( "window_border_urgent_color",
                 "theme.tiling.urgent.color", "theme.urgent.color"),
 };
+
+#define SAME_NAME(NAME, UPDATE, DEFAULT) \
+    NAME(#NAME, UPDATE, DEFAULT)
+
+Settings::Settings()
+    : frame_gap(                "frame_gap",        AT_THIS(relayout), 5)
+    , frame_padding(            "frame_padding",    AT_THIS(relayout),                   0)
+    , window_gap(               "window_gap",       AT_THIS(relayout),                      0)
+    , snap_distance(            "snap_distance",    ACCEPT_ALL,                   10)
+    , snap_gap(                 "snap_gap",         ACCEPT_ALL,                        5)
+    , mouse_recenter_gap(       "mouse_recenter_gap",           ACCEPT_ALL,              0)
+    , frame_border_active_color("frame_border_active_color",    AT_THIS(fr_colors),       Color("red"))
+    , frame_border_normal_color("frame_border_normal_color",    AT_THIS(fr_colors),       Color("blue"))
+    , frame_border_inner_color( "frame_border_inner_color",     AT_THIS(fr_colors),        Color("black"))
+    , frame_bg_normal_color(    "frame_bg_normal_color",        AT_THIS(fr_colors),           Color("black"))
+    , frame_bg_active_color(    "frame_bg_active_color",        AT_THIS(fr_colors),           Color("black"))
+    , frame_bg_transparent(     "frame_bg_transparent",         AT_THIS(fr_colors),            0)
+    , frame_transparent_width(  "frame_transparent_width",      AT_THIS(fr_colors),         0)
+    , frame_border_width(       "frame_border_width",           AT_THIS(fr_colors),              2)
+    , frame_border_inner_width( "frame_border_inner_width",     AT_THIS(fr_colors),        0)
+    , frame_active_opacity(     "frame_active_opacity",         AT_THIS(fr_colors),            100)
+    , frame_normal_opacity(     "frame_normal_opacity",         AT_THIS(fr_colors),            100)
+    , focus_crosses_monitor_boundaries("focus_crosses_monitor_boundaries", ACCEPT_ALL, 1)
+    , always_show_frame(        "always_show_frame",            AT_THIS(relayout),               0)
+    , default_direction_external_only("default_direction_external_only",           ACCEPT_ALL, 0)
+    , default_frame_layout(     "default_frame_layout",         AT_THIS(fr_colors),            0)
+    , focus_follows_mouse(      "focus_follows_mouse",          ACCEPT_ALL,             0)
+    , focus_stealing_prevention("focus_stealing_prevention",    ACCEPT_ALL,       1)
+    , swap_monitors_to_get_tag( "swap_monitors_to_get_tag",     ACCEPT_ALL,        1)
+    , raise_on_focus(           "raise_on_focus",               ACCEPT_ALL,                  0)
+    , raise_on_focus_temporarily("raise_on_focus_temporarily",  AT_THIS(focus_layer),      0)
+    , raise_on_click(           "raise_on_click",               ACCEPT_ALL,                  1)
+    , gapless_grid(             "gapless_grid",                 AT_THIS(relayout),                    1)
+    , smart_frame_surroundings( "smart_frame_surroundings",     AT_THIS(relayout),        0)
+    , smart_window_surroundings("smart_window_surroundings",    AT_THIS(relayout),       0)
+    , monitors_locked(          "monitors_locked",              AT_THIS(lock_changed), 0)
+    , auto_detect_monitors(     "auto_detect_monitors",         ACCEPT_ALL,            0)
+    , pseudotile_center_threshold("pseudotile_center_threshold",AT_THIS(relayout),    10)
+    , update_dragged_clients(   "update_dragged_clients",       ACCEPT_ALL,          0)
+    , tree_style(               "tree_style",                   AT_THIS(fr_colors),                      "*| +`--.")
+    , wmname(                   "wmname",                       AT_THIS(update_wmname),                  WINDOW_MANAGER_NAME)
+    , window_border_width("window_border_width", 0)
+    , window_border_inner_width("window_border_inner_width", 0)
+    , window_border_inner_color("window_border_inner_color",   Color("black"))
+    , window_border_active_color("window_border_active_color", Color("black"))
+    , window_border_normal_color("window_border_normal_color", Color("black"))
+    , window_border_urgent_color("window_border_urgent_color", Color("black"))
+{
+    wireAttributes({
+        &frame_gap,
+        &frame_padding,
+        &window_gap,
+        &snap_distance,
+        &snap_gap,
+        &mouse_recenter_gap,
+        &frame_border_active_color,
+        &frame_border_normal_color,
+        &frame_border_inner_color,
+        &frame_bg_normal_color,
+        &frame_bg_active_color,
+        &frame_bg_transparent,
+        &frame_transparent_width,
+        &frame_border_width,
+        &frame_border_inner_width,
+        &frame_active_opacity,
+        &frame_normal_opacity,
+        &focus_crosses_monitor_boundaries,
+        &always_show_frame,
+        &default_direction_external_only,
+        &default_frame_layout,
+        &focus_follows_mouse,
+        &focus_stealing_prevention,
+        &swap_monitors_to_get_tag,
+        &raise_on_focus,
+        &raise_on_focus_temporarily,
+        &raise_on_click,
+        &gapless_grid,
+        &smart_frame_surroundings,
+        &smart_window_surroundings,
+        &monitors_locked,
+        &auto_detect_monitors,
+        &pseudotile_center_threshold,
+        &update_dragged_clients,
+        &tree_style,
+        &wmname,
+
+        &window_border_width,
+        &window_border_inner_width,
+        &window_border_inner_color,
+        &window_border_active_color,
+        &window_border_normal_color,
+        &window_border_urgent_color,
+    });
+}
+
+string Settings::relayout() {
+    return {};
+}
+string Settings::fr_colors() {
+    return {};
+}
+string Settings::cl_colors() {
+    return {};
+}
+string Settings::lock_changed() {
+    return {};
+}
+string Settings::focus_layer() {
+    return {};
+}
+string Settings::update_wmname() {
+    return {};
+}
 
 // globals:
 int g_initial_monitors_locked = 0;

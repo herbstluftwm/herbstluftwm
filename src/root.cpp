@@ -7,6 +7,7 @@
 #include "attribute.h"
 #include "ipc-protocol.h"
 #include "globals.h"
+#include "settings.h"
 
 #include <memory>
 #include <stdexcept>
@@ -15,12 +16,14 @@
 std::shared_ptr<Root> Root::root_;
 
 Root::Root()
-    : clients(*this, "clients")
+    : settings(*this, "settings")
+    , clients(*this, "clients")
     , tags(*this, "tags")
     , monitors(*this, "monitors")
     , hooks(*this, "hooks")
     , theme(*this, "theme")
 {
+    settings = new Settings;
     theme = new Theme;
     clients = new ClientManager(*theme());
     tags = new TagManager;

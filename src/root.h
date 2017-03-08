@@ -13,6 +13,7 @@ class HookManager;
 class ClientManager;
 class MonitorManager;
 class Theme;
+class Settings;
 
 class Root : public Object {
 public:
@@ -34,6 +35,7 @@ public:
     int cmd_get_attr(Input args, Output output);
     int cmd_attr(Input args, Output output);
 
+    Child_<Settings> settings;
     Child_<ClientManager> clients;
     Child_<TagManager> tags;
     Child_<MonitorManager> monitors;
