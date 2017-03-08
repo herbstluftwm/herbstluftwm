@@ -16,8 +16,9 @@ public:
     Color();
     Color(std::string name);
 
-    static Color fromStr(const char *source);
-    static Color fromStr(const std::string& source);
+    // parse a color from source into target. if parsing fails, an error
+    // message is returned and target is left unchanged.
+    static std::string fromStr(const std::string& source, Color& target);
     static Color black();
 
     std::string str() const;

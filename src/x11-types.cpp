@@ -13,18 +13,17 @@
 
 // get X11 color from color string. This fails if there is no x connection
 // from dwm.c
-bool queryX11Color(const char *source, XColor& dest_color) {
+std::string queryX11Color(const char *source, XColor& dest_color) {
 	if (!g_display) {
-		return false;
+		return "g_display is not set";
 	}
 	Colormap cmap = DefaultColormap(g_display, g_screen);
 	XColor screen_color;
 	if(!XAllocNamedColor(g_display, cmap, source, &screen_color, &dest_color)) {
-		g_warning("error, cannot allocate color '%s'\n", source);
-		return false;
+		return std::string("cannot allocate color \'") + source + "\'";
 	}
 	//dest.name_ = source;
-	return true;
+	return "";
 }
 
 Color Color::black() {
@@ -42,15 +41,7 @@ Color::Color()
 }
 
 Color::Color(std::string name) {
-    XColor xcol;
-    if (queryX11Color(name.c_str(), xcol)) {
-        // TODO: how to interpret these fields if
-        // xcol.flags lacks one of DoRed, DoGreen, DoBlue?
-        red_ = xcol.red;
-        green_ = xcol.green;
-        blue_ = xcol.blue;
-        x11pixelValue_ = xcol.pixel;
-    } else {
+    if ("" != fromStr(name, *this)) {
         *this = black();
     }
 }
@@ -66,11 +57,20 @@ std::string Color::str() const {
     return ss.str();
 }
 
-Color Color::fromStr(const char *source) {
-	return Color(source);
-}
-Color Color::fromStr(const std::string& source) {
-	return Color(source);
+std::string Color::fromStr(const std::string& source, Color& target) {
+    XColor xcol;
+    std::string msg = queryX11Color(source.c_str(), xcol);
+    if (msg != "") {
+        return msg;
+    } else {
+        // TODO: how to interpret these fields if
+        // xcol.flags lacks one of DoRed, DoGreen, DoBlue?
+        target.red_ = xcol.red;
+        target.green_ = xcol.green;
+        target.blue_ = xcol.blue;
+        target.x11pixelValue_ = xcol.pixel;
+        return "";
+    }
 }
 
 XColor Color::toXColor() const {

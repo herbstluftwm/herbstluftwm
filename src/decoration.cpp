@@ -46,17 +46,17 @@ Theme::Theme() {
 DecorationScheme::DecorationScheme()
     :
     border_width("border_width", ACCEPT_ALL, 1),
-    border_color("color", ACCEPT_ALL, Color::fromStr("black")),
+    border_color("color", ACCEPT_ALL, Color("black")),
     tight_decoration("tight_decoration", false),
-    inner_color("inner_color", ACCEPT_ALL, Color::fromStr("black")),
+    inner_color("inner_color", ACCEPT_ALL, Color("black")),
     inner_width("inner_width", ACCEPT_ALL, 0),
-    outer_color("outer_color", ACCEPT_ALL, Color::fromStr("black")),
+    outer_color("outer_color", ACCEPT_ALL, Color("black")),
     outer_width("outer_width", ACCEPT_ALL, 0),
     padding_top("padding_top", ACCEPT_ALL, 0),
     padding_right("padding_right", ACCEPT_ALL, 0),
     padding_bottom("padding_bottom", ACCEPT_ALL, 0),
     padding_left("padding_left", ACCEPT_ALL, 0),
-    background_color("background_color", ACCEPT_ALL, Color::fromStr("black"))
+    background_color("background_color", ACCEPT_ALL, Color("black"))
 {
     wireAttributes({
         &border_width,

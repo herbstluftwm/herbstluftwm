@@ -160,7 +160,10 @@ inline std::string Attribute_<Color>::str() { return payload_.str(); }
 
 template<>
 inline std::string Attribute_<Color>::change(const std::string &payload) {
-    return assignByUser(Color::fromStr(payload));
+    Color new_color;
+    std::string msg = Color::fromStr(payload, new_color);
+    if (msg != "") return msg;
+    return assignByUser(new_color);
 }
 
 template<typename T>
