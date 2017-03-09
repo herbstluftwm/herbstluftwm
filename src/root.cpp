@@ -98,7 +98,7 @@ int Root::cmd_attr(Input in, Output output) {
 
 Attribute* Root::getAttribute(std::string path, Output output) {
     auto attr_path = Object::splitPath(path);
-    auto child = Root::get()->child(attr_path.first);
+    auto child = this->child(attr_path.first);
     if (!child) {
         output << "No such object " << attr_path.first.join('.') << std::endl;
         return NULL;
@@ -113,13 +113,13 @@ Attribute* Root::getAttribute(std::string path, Output output) {
     return a;
 }
 
-int print_object_tree_command(ArgList in, Output output) {
+int Root::print_object_tree_command(ArgList in, Output output) {
     in.shift();
     auto path = Path(in.empty() ? std::string("") : in.front()).toVector();
     while (!path.empty() && path.back() == "") {
         path.pop_back();
     }
-    auto child = Root::get()->child(path);
+    auto child = this->child(path);
     if (!child) {
         output << "No such object " << Path(path).join('.') << std::endl;
         return HERBST_INVALID_ARGUMENT;

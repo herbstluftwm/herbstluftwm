@@ -34,6 +34,7 @@ public:
     // is returned
     int cmd_get_attr(Input args, Output output);
     int cmd_attr(Input args, Output output);
+    int print_object_tree_command(ArgList args, Output output);
 
     Child_<Settings> settings;
     Child_<ClientManager> clients;
@@ -47,7 +48,6 @@ private:
     static std::shared_ptr<Root> root_;
 };
 
-int print_object_tree_command(ArgList args, Output output);
 
 
 #endif // ROOT_H

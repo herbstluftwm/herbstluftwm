@@ -193,7 +193,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"!",              negate_command},
         // {"attr",           attr_command},
         // {"compare",        compare_command},
-        {"object_tree",    print_object_tree_command},
+        {"object_tree",    BIND_OBJECT(root, print_object_tree_command) },
         // {"get_attr",       hsattribute_get_command},
         // {"set_attr",       hsattribute_set_command},
         // {"new_attr",       userattribute_command},
@@ -551,12 +551,12 @@ void event_on_configure(Root* root, XEvent event) {
 
 // scan for windows and add them to the list of managed clients
 // from dwm.c
-void scan(void) {
+void scan(Root* root) {
     unsigned int num;
     Window d1, d2, *cl, *wins = NULL;
     unsigned long cl_count;
     XWindowAttributes wa;
-    auto clientmanager = Root::get()->clients();
+    auto clientmanager = root->clients();
 
     ewmh_get_original_client_list(&cl, &cl_count);
     if (XQueryTree(g_display, g_root, &d1, &d2, &wins, &num)) {
@@ -786,7 +786,7 @@ void configurenotify(Root* root, XEvent* event) {
 void destroynotify(Root* root, XEvent* event) {
     // try to unmanage it
     //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
-    auto cm = Root::get()->clients();
+    auto cm = root->clients();
     auto client = cm->client(event->xunmap.window);
     if (client) cm->force_unmanage(client);
 }
@@ -868,7 +868,7 @@ void maprequest(Root* root, XEvent* event) {
     } else if (!get_client_from_window(mapreq->window)) {
         // client should be managed (is not ignored)
         // but is not managed yet
-        auto clientmanager = Root::get()->clients();
+        auto clientmanager = root->clients();
         auto client = clientmanager->manage_client(mapreq->window, false);
         if (client && find_monitor_with_tag(client->tag())) {
             XMapWindow(g_display, mapreq->window);
@@ -902,7 +902,7 @@ void propertynotify(Root* root, XEvent* event) {
 
 void unmapnotify(Root* root, XEvent* event) {
     HSDebug("name is: UnmapNotify for %lx\n", event->xunmap.window);
-    Root::get()->clients()->unmap_notify(event->xunmap.window);
+    root->clients()->unmap_notify(event->xunmap.window);
 }
 
 /* ---- */
@@ -949,7 +949,7 @@ int main(int argc, char* argv[]) {
 
     // setup
     root->monitors()->ensure_monitors_are_available();
-    scan();
+    scan(&* root);
     tag_force_update_flags();
     all_monitors_apply_layout();
     ewmh_update_all();
