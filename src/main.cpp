@@ -967,7 +967,8 @@ void unmapnotify(XEvent* event) {
 
 int main(int argc, char* argv[]) {
     parse_arguments(argc, argv);
-    g_display = XOpenDisplay(NULL);
+    XConnection X = XConnection::connect();
+    g_display = X.display();
     if (!g_display) {
         die("herbstluftwm: cannot open display\n");
     }
@@ -978,7 +979,6 @@ int main(int argc, char* argv[]) {
     sigaction_signal(SIGQUIT, handle_signal);
     sigaction_signal(SIGTERM, handle_signal);
     // set some globals
-    XConnection X = XConnection::connect();
     g_screen = X.screen();
     g_screen_width = X.screenWidth();
     g_screen_height = X.screenHeight();
