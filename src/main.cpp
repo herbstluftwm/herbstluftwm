@@ -61,7 +61,7 @@ static bool     g_exec_before_quit = false;
 static char**   g_exec_args = NULL;
 static int*     g_raise_on_click = NULL;
 
-typedef void (*HandlerTable[LASTEvent]) (XEvent*);
+typedef void (*HandlerTable[LASTEvent]) (Root*, XEvent*);
 
 int quit();
 int reload();
@@ -86,22 +86,22 @@ int setenv_command(int argc, char** argv, Output output);
 int unsetenv_command(int argc, char** argv, Output output);
 
 // handler for X-Events
-void buttonpress(XEvent* event);
-void buttonrelease(XEvent* event);
-void createnotify(XEvent* event);
-void configurerequest(XEvent* event);
-void configurenotify(XEvent* event);
-void destroynotify(XEvent* event);
-void enternotify(XEvent* event);
-void expose(XEvent* event);
-void focusin(XEvent* event);
-void keypress(XEvent* event);
-void mappingnotify(XEvent* event);
-void motionnotify(XEvent* event);
-void mapnotify(XEvent* event);
-void maprequest(XEvent* event);
-void propertynotify(XEvent* event);
-void unmapnotify(XEvent* event);
+void buttonpress(Root* root, XEvent* event);
+void buttonrelease(Root* root, XEvent* event);
+void createnotify(Root* root, XEvent* event);
+void configurerequest(Root* root, XEvent* event);
+void configurenotify(Root* root, XEvent* event);
+void destroynotify(Root* root, XEvent* event);
+void enternotify(Root* root, XEvent* event);
+void expose(Root* root, XEvent* event);
+void focusin(Root* root, XEvent* event);
+void keypress(Root* root, XEvent* event);
+void mappingnotify(Root* root, XEvent* event);
+void motionnotify(Root* root, XEvent* event);
+void mapnotify(Root* root, XEvent* event);
+void maprequest(Root* root, XEvent* event);
+void propertynotify(Root* root, XEvent* event);
+void unmapnotify(Root* root, XEvent* event);
 
 unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     TagManager* tags = root->tags();
@@ -501,7 +501,7 @@ int unsetenv_command(int argc, char** argv, Output output) {
 
 // handle x-events:
 
-void event_on_configure(XEvent event) {
+void event_on_configure(Root* root, XEvent event) {
     XConfigureRequestEvent* cre = &event.xconfigurerequest;
     HSClient* client = get_client_from_window(cre->window);
     if (client) {
@@ -739,7 +739,7 @@ static struct {
 /* event handler implementations */
 /* ----------------------------- */
 
-void buttonpress(XEvent* event) {
+void buttonpress(Root* root, XEvent* event) {
     XButtonEvent* be = &(event->xbutton);
     HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
     if (mouse_binding_find(be->state, be->button)) {
@@ -756,24 +756,24 @@ void buttonpress(XEvent* event) {
     XAllowEvents(g_display, ReplayPointer, be->time);
 }
 
-void buttonrelease(XEvent* event) {
+void buttonrelease(Root* root, XEvent* event) {
     HSDebug("name is: ButtonRelease\n");
     mouse_stop_drag();
 }
 
-void createnotify(XEvent* event) {
+void createnotify(Root* root, XEvent* event) {
     // printf("name is: CreateNotify\n");
     if (is_ipc_connectable(event->xcreatewindow.window)) {
         ipc_add_connection(event->xcreatewindow.window);
     }
 }
 
-void configurerequest(XEvent* event) {
+void configurerequest(Root* root, XEvent* event) {
     HSDebug("name is: ConfigureRequest\n");
-    event_on_configure(*event);
+    event_on_configure(root, *event);
 }
 
-void configurenotify(XEvent* event) {
+void configurenotify(Root* root, XEvent* event) {
     if (event->xconfigure.window == g_root &&
         settings_find("auto_detect_monitors")->value.i) {
         const char* args[] = { "detect_monitors" };
@@ -783,7 +783,7 @@ void configurenotify(XEvent* event) {
     // HSDebug("name is: ConfigureNotify\n");
 }
 
-void destroynotify(XEvent* event) {
+void destroynotify(Root* root, XEvent* event) {
     // try to unmanage it
     //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
     auto cm = Root::get()->clients();
@@ -791,7 +791,7 @@ void destroynotify(XEvent* event) {
     if (client) cm->force_unmanage(client);
 }
 
-void enternotify(XEvent* event) {
+void enternotify(Root* root, XEvent* event) {
     XCrossingEvent *ce = &event->xcrossing;
     //HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
     if (!mouse_is_dragging()
@@ -811,22 +811,22 @@ void enternotify(XEvent* event) {
     }
 }
 
-void expose(XEvent* event) {
+void expose(Root* root, XEvent* event) {
     //if (event->xexpose.count > 0) return;
     //Window ewin = event->xexpose.window;
     //HSDebug("name is: Expose for window %lx\n", ewin);
 }
 
-void focusin(XEvent* event) {
+void focusin(Root* root, XEvent* event) {
     //HSDebug("name is: FocusIn\n");
 }
 
-void keypress(XEvent* event) {
+void keypress(Root* root, XEvent* event) {
     //HSDebug("name is: KeyPress\n");
     handle_key_press(event);
 }
 
-void mappingnotify(XEvent* event) {
+void mappingnotify(Root* root, XEvent* event) {
     {
         // regrab when keyboard map changes
         XMappingEvent *ev = &event->xmapping;
@@ -838,11 +838,11 @@ void mappingnotify(XEvent* event) {
     }
 }
 
-void motionnotify(XEvent* event) {
+void motionnotify(Root* root, XEvent* event) {
     handle_motion_event(event);
 }
 
-void mapnotify(XEvent* event) {
+void mapnotify(Root* root, XEvent* event) {
     //HSDebug("name is: MapNotify\n");
     HSClient* c;
     if ((c = get_client_from_window(event->xmap.window))) {
@@ -855,7 +855,7 @@ void mapnotify(XEvent* event) {
     }
 }
 
-void maprequest(XEvent* event) {
+void maprequest(Root* root, XEvent* event) {
     HSDebug("name is: MapRequest\n");
     XMapRequestEvent* mapreq = &event->xmaprequest;
     if (is_herbstluft_window(g_display, mapreq->window)) {
@@ -878,7 +878,7 @@ void maprequest(XEvent* event) {
     // that are managed already
 }
 
-void propertynotify(XEvent* event) {
+void propertynotify(Root* root, XEvent* event) {
     // printf("name is: PropertyNotify\n");
     XPropertyEvent *ev = &event->xproperty;
     HSClient* client;
@@ -900,7 +900,7 @@ void propertynotify(XEvent* event) {
     }
 }
 
-void unmapnotify(XEvent* event) {
+void unmapnotify(Root* root, XEvent* event) {
     HSDebug("name is: UnmapNotify for %lx\n", event->xunmap.window);
     Root::get()->clients()->unmap_notify(event->xunmap.window);
 }
@@ -970,9 +970,9 @@ int main(int argc, char* argv[]) {
         }
         while (XPending(g_display)) {
             XNextEvent(g_display, &event);
-            void (*handler) (XEvent*) = g_default_handler[event.type];
+            void (*handler) (Root*,XEvent*) = g_default_handler[event.type];
             if (handler != NULL) {
-                handler(&event);
+                handler(&* root, &event);
             }
         }
     }

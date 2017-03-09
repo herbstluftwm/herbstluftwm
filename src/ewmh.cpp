@@ -304,7 +304,7 @@ static bool focus_stealing_allowed(long source) {
     }
 }
 
-void ewmh_handle_client_message(XEvent* event) {
+void ewmh_handle_client_message(Root* root, XEvent* event) {
     HSDebug("Received event: ClientMessage\n");
     XClientMessageEvent* me = &(event->xclient);
     int index;

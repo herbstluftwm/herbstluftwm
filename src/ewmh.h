@@ -20,6 +20,8 @@
 #define _NET_WM_STATE_ADD           1    /* add/set property */
 #define _NET_WM_STATE_TOGGLE        2    /* toggle property  */
 
+class Root;
+
 enum {
     NetSupported = 0,
     NetClientList,
@@ -106,7 +108,7 @@ void ewmh_clear_client_properties(Window win);
 // set the desktop property of a window
 void ewmh_window_update_tag(Window win, HSTag* tag);
 
-void ewmh_handle_client_message(XEvent* event);
+void ewmh_handle_client_message(Root* root, XEvent* event);
 
 void ewmh_set_window_opacity(Window win, double opacity);
 
