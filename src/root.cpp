@@ -44,6 +44,7 @@ Root::~Root()
     delete tags();
     delete clients();
     delete theme();
+    delete settings();
     children_.clear(); // avoid possible circular shared_ptr dependency
 }
 
