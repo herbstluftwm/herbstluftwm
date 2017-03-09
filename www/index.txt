@@ -26,7 +26,7 @@ Install it via the package manager, link:download.html[download tarballs], or
 clone the link:http://github.com/herbstluftwm/herbstluftwm[git repository]:
 
 ----
-git clone git://github.com/herbstluftwm/herbstluftwm
+git clone https://github.com/herbstluftwm/herbstluftwm.git
 ----
 
 How to use it?

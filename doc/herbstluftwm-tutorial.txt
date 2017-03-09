@@ -56,7 +56,7 @@ If there is no package for your platform or if you want to use the current git
 version, then you can pull directly from the main repository:
 
 ----
-git clone git://github.com/herbstluftwm/herbstluftwm
+git clone https://github.com/herbstluftwm/herbstluftwm.git
 cd herbstluftwm
 make # build the binaries
 

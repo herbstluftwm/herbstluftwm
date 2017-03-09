@@ -50,6 +50,6 @@ link:http://github.com/herbstluftwm/herbstluftwm[Github]
 or can be cloned with:
 
 ----
-git clone git://github.com/herbstluftwm/herbstluftwm
+git clone https://github.com/herbstluftwm/herbstluftwm.git
 ----
 
