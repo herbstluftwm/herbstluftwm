@@ -15,6 +15,7 @@ public:
     Window root() { return m_root; }
     Window screenWidth() { return m_screen_width; }
     Window screenHeight() { return m_screen_height; }
+    bool checkotherwm(); // return whether another WM is running
 private:
     Display* m_display;
     int      m_screen;
