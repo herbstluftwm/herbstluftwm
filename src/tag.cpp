@@ -350,7 +350,7 @@ int tag_remove_command(int argc, char** argv, GString* output) {
         client->tag = target;
         stack_insert_slice(client->tag->stack, client->slice);
         ewmh_window_update_tag(client->window, client->tag);
-        frame_insert_client(target->frame, buf[i]);
+        frame_insert_client(target->frame, buf[i], NULL);
     }
     HSMonitor* monitor_target = find_monitor_with_tag(target);
     if (monitor_target) {
@@ -519,7 +519,7 @@ void tag_move_client(HSClient* client, HSTag* target) {
     HSMonitor* monitor_target = find_monitor_with_tag(target);
     frame_remove_client(tag_source->frame, client);
     // insert window into target
-    frame_insert_client(target->frame, client);
+    frame_insert_client(target->frame, client, NULL);
     // enfoce it to be focused on the target tag
     frame_focus_client(target->frame, client);
     stack_remove_slice(client->tag->stack, client->slice);
