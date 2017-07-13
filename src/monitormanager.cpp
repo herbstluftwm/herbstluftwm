@@ -25,7 +25,7 @@ void MonitorManager::clearChildren() {
 }
 
 void MonitorManager::ensure_monitors_are_available() {
-    if (monitors->size() > 0) {
+    if (size() > 0) {
         // nothing to do
         return;
     }
@@ -64,9 +64,9 @@ int MonitorManager::string_to_monitor_index(std::string string) {
         if (isdigit(string[1])) {
             // relative monitor index
             int idx = g_cur_monitor + atoi(string.c_str());
-            idx %= monitors->size();
-            idx += monitors->size();
-            idx %= monitors->size();
+            idx %= size();
+            idx += size();
+            idx %= size();
             return idx;
         } else if (string[0] == '-') {
             enum HSDirection dir = char_to_direction(string[1]);
