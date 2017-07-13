@@ -105,6 +105,7 @@ void unmapnotify(Root* root, XEvent* event);
 
 unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     TagManager* tags = root->tags();
+    MonitorManager* monitors = root->monitors();
     return unique_ptr<CommandTable>(new CommandTable{
         {"quit",           quit},
         {"echo",           echo},
@@ -115,11 +116,11 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"reload",         reload},
         {"version",        version},
         {"list_commands",  list_commands},
-        {"list_monitors",  list_monitors},
+        {"list_monitors",  BIND_OBJECT(monitors, list_monitors) },
         {"set_monitors",   set_monitor_rects_command},
         {"disjoin_rects",  disjoin_rects_command},
         {"list_keybinds",  key_list_binds},
-        {"list_padding",   list_padding},
+        {"list_padding",   BIND_OBJECT(monitors, list_padding) },
         {"keybind",        keybind},
         {"keyunbind",      keyunbind},
         {"mousebind",      mouse_bind_command},

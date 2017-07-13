@@ -16,6 +16,7 @@
 #include "monitor.h"
 #include "floating.h"
 #include "tagmanager.h"
+#include "monitormanager.h"
 
 #include <glib.h>
 #include "glib-backports.h"

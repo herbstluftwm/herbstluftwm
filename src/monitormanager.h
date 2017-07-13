@@ -10,6 +10,7 @@
 #include "childbyindex.h"
 #include "byname.h"
 #include "child.h"
+#include <string>
 
 class TagManager;
 
@@ -20,10 +21,15 @@ public:
 
     void clearChildren();
     void ensure_monitors_are_available();
+    HSMonitor* byString(std::string str);
+    int list_monitors(Input argv, Output output);
+    int list_padding(Input input, Output output);
+    int string_to_monitor_index(std::string string);
 private:
     ByName by_name;
     TagManager* tags;
 };
 
+int monitor_index_in_direction(HSMonitor* m, enum HSDirection dir);
 
 #endif

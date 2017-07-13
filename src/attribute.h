@@ -4,6 +4,7 @@
 #include "x11-types.h"
 #include "entity.h"
 
+#include <functional>
 
 // a member function of an object that validates a new attribute value
 // if the attribute value is valid, then the ValueValidator has to return the

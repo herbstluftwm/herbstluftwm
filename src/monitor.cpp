@@ -182,48 +182,6 @@ void monitor_apply_layout(HSMonitor* monitor) {
     }
 }
 
-int list_monitors(int argc, char** argv, Output output) {
-    (void)argc;
-    (void)argv;
-    string monitor_name = "";
-    int i = 0;
-    for (auto monitor : *monitors) {
-        if (monitor->name != "" ) {
-            monitor_name = ", named \"" + *monitor->name + "\"";
-        } else {
-            monitor_name = "";
-        }
-        output << i << ": " << monitor->rect
-               << " with tag \""
-               << (monitor->tag ? monitor->tag->name->c_str() : "???")
-               << "\""
-               << monitor_name
-               << (((unsigned int) g_cur_monitor == i) ? " [FOCUS]" : "")
-               << (monitor->lock_tag ? " [LOCKED]" : "")
-               << "\n";
-        i++;
-    }
-    return 0;
-}
-
-int list_padding(int argc, char** argv, Output output) {
-    HSMonitor* monitor;
-    if (argc < 2) {
-        monitor = get_current_monitor();
-    } else {
-        monitor = string_to_monitor(argv[1]);
-        if (monitor == NULL) {
-            output << argv[0] << ": Monitor \"" << argv[1] << "\" not found!\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    }
-    output     << monitor->pad_up
-        << " " << monitor->pad_right
-        << " " << monitor->pad_down
-        << " " << monitor->pad_left
-        << "\n";
-    return 0;
-}
 
 static bool rects_intersect(RectList* m1, RectList* m2) {
     Rectangle *r1 = &m1->rect, *r2 = &m2->rect;
@@ -427,55 +385,8 @@ HSMonitor* find_monitor_by_name(char* name) {
     }
 }
 
-int string_to_monitor_index(char* string) {
-    if (string[0] == '\0') {
-        return g_cur_monitor;
-    } else if (string[0] == '-' || string[0] == '+') {
-        if (isdigit(string[1])) {
-            // relative monitor index
-            int idx = g_cur_monitor + atoi(string);
-            idx %= monitors->size();
-            idx += monitors->size();
-            idx %= monitors->size();
-            return idx;
-        } else if (string[0] == '-') {
-            enum HSDirection dir = char_to_direction(string[1]);
-            if (dir < 0) return -1;
-            return monitor_index_in_direction(get_current_monitor(), dir);
-        } else {
-            return -1;
-        }
-    } else if (isdigit(string[0])) {
-        // absolute monitor index
-        int idx = atoi(string);
-        if (idx < 0 || idx >= monitors->size()) {
-            return -1;
-        }
-        return idx;
-    } else {
-        // monitor string
-        return find_monitor_index_by_name(string);
-    }
-}
-
-int monitor_index_in_direction(HSMonitor* m, enum HSDirection dir) {
-    int cnt = monitor_count();
-    RectangleIdx* rects = g_new0(RectangleIdx, cnt);
-    int relidx = -1;
-    FOR (i,0,cnt) {
-        rects[i].idx = i;
-        rects[i].r = monitor_with_index(i)->rect;
-        if (monitor_with_index(i) == m) relidx = i;
-    }
-    HSAssert(relidx >= 0);
-    int result = find_rectangle_in_direction(rects, cnt, relidx, dir);
-    g_free(rects);
-    return result;
-}
-
-HSMonitor* string_to_monitor(char* string) {
-    int idx = string_to_monitor_index(string);
-    return monitor_with_index(idx);
+HSMonitor* string_to_monitor(char* str) {
+  return monitors->byString(str);
 }
 
 static void monitor_foreach(void (*action)(HSMonitor*)) {
@@ -562,7 +473,7 @@ int remove_monitor_command(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    int index = string_to_monitor_index(argv[1]);
+    int index = monitors->string_to_monitor_index(argv[1]);
     if (index == -1) {
         output << argv[0] << ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
@@ -619,7 +530,7 @@ int move_monitor_command(int argc, char** argv, Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
-    HSMonitor* monitor = string_to_monitor(argv[1]);
+    HSMonitor* monitor = monitors->byString(argv[1]);
     if (monitor == NULL) {
         output << argv[0] <<
             ": Monitor \"" << argv[1] << "\" not found!\n";
@@ -644,7 +555,7 @@ int rename_monitor_command(int argc, char** argv, Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
-    HSMonitor* mon = string_to_monitor(argv[1]);
+    HSMonitor* mon = monitors->byString(argv[1]);
     if (mon == NULL) {
         output << argv[0] <<
             ": Monitor \"" << argv[1] << "\" not found!\n";
@@ -892,7 +803,7 @@ int monitor_focus_command(int argc, char** argv, Output output) {
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    int new_selection = string_to_monitor_index(argv[1]);
+    int new_selection = monitors->string_to_monitor_index(argv[1]);
     if (new_selection < 0) {
         output << argv[0] <<
             ": Monitor \"" << argv[1] << "\" not found!\n";
