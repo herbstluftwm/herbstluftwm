@@ -326,6 +326,7 @@ int tag_remove_command(int argc, char** argv, GString* output) {
     } else if (!target) {
         g_string_append_printf(output,
             "%s: Tag \"%s\" not found\n", argv[0], argv[2]);
+        return HERBST_INVALID_ARGUMENT;
     } else if (tag == target) {
         g_string_append_printf(output,
             "%s: Cannot merge tag \"%s\" into itself\n", argv[0], argv[1]);
