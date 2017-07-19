@@ -320,7 +320,7 @@ cycle_all [*--skip-invisible*] ['DIRECTION']::
     means forward, 'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no
     effect. 'DIRECTION' defaults to 1. If there are multiple windows within on
     frame, then it acts similar to the 'cycle' command. (The 'cycle_all' command
-    focuses the next/previous leave in the 'layout' tree.). If
+    focuses the next/previous leaf in the 'layout' tree.). If
     *--skip-invisible* is given, then this only cycles through all visible
     windows and skips invisible windows in the max layout. The focused window
     is raised.
