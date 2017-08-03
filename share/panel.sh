@@ -82,7 +82,6 @@ hc pad $monitor $panel_height
         # This part prints dzen data based on the _previous_ data handling run,
         # and then waits for the next event to happen.
 
-        bordercolor="#26221C"
         separator="^bg()^fg($selbg)|"
         # draw tags
         for i in "${tags[@]}" ; do
