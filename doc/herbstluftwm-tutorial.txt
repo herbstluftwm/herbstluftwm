@@ -236,7 +236,7 @@ $ herbstclient layout
   └─╼ max: 0x1a00009 [FOCUS]
 ----
 
-Just play with it a bit to how it works. You also can permanently save the
+Just play with it a bit to understand how it works. You also can permanently save the
 layout using the +dump+ command:
 
 ----
