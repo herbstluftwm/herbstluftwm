@@ -14,6 +14,7 @@ following platforms:
   * FreeBSD
   * Ubuntu Linux
   * link:https://apps.fedoraproject.org/packages/herbstluftwm[Fedora]
+  * link:https://software.opensuse.org/package/herbstluftwm[openSUSE]
   * link:http://www.openbsd.org/cgi-bin/cvsweb/ports/x11/herbstluftwm/[OpenBSD]
   * link:http://alpinelinux.org/apk/main/x86_64/herbstluftwm[Alpine Linux]
   * link:https://git.exherbo.org/summer/packages/x11-wm/herbstluftwm/index.html[Exherbo]
