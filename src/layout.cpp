@@ -248,7 +248,7 @@ bool frame_remove_client(HSFrame* frame, HSClient* client) {
                 // else shift it by 1
                 selection -= (selection < i) ? 0 : 1;
                 // ensure, that it's a valid index
-                selection = count ? CLAMP(selection, 0, count-1) : 0;
+                selection = count ? CLAMP(selection, 0, (int)(count-1)) : 0;
                 frame->content.clients.selection = selection;
                 return true;
             }
