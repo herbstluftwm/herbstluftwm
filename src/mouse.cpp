@@ -324,7 +324,6 @@ void mouse_function_resize_tiled(XMotionEvent* me) {
     if (g_drag_init_done == false) {
         g_drag_init_done = true;
         /* initialize local state */
-        HSMonitor* monitor = g_drag_monitor;
         HSClient* client = g_win_drag_client;
         HSTag* tag = client->tag;
         HSFrame* root = tag->frame;
@@ -332,10 +331,9 @@ void mouse_function_resize_tiled(XMotionEvent* me) {
         Rectangle* rect = &frame->last_rect;
 
         // relative x/y coords in drag window
-        int rel_x = monitor_get_relative_x(monitor, g_button_drag_start.x)
-            - rect->x;
-        int rel_y = monitor_get_relative_y(monitor, g_button_drag_start.y)
-            - rect->y;
+        int rel_x = g_button_drag_start.x - rect->x;
+        int rel_y = g_button_drag_start.y - rect->y;
+
         /*
          * In which order should we search for neighbours?
          * If we end up in the upper left triangle (M),
