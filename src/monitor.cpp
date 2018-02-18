@@ -112,6 +112,25 @@ void HSMonitor::setIndexAttribute(unsigned long new_index) {
     index = new_index;
 }
 
+int HSMonitor::lock_tag_cmd(Input argv, Output output) {
+    lock_tag = true;
+    return 0;
+}
+
+int HSMonitor::unlock_tag_cmd(Input argv, Output output) {
+    lock_tag = false;
+    return 0;
+}
+
+int HSMonitor::list_padding(Input input, Output output) {
+    output     << pad_up()
+        << " " << pad_right()
+        << " " << pad_down()
+        << " " << pad_left()
+        << "\n";
+    return 0;
+}
+
 void monitor_destroy() {
     monitors->clearChildren();
     stack_destroy(g_monitor_stack);
@@ -970,41 +989,6 @@ void monitors_lock_changed() {
             }
         }
     }
-}
-
-int monitor_lock_tag_command(int argc, char** argv, Output output) {
-    char* cmd_name = argv[0];
-    (void)SHIFT(argc, argv);
-    HSMonitor *monitor;
-    if (argc >= 1) {
-        monitor = string_to_monitor(argv[0]);
-        if (monitor == NULL) {
-            output << cmd_name <<
-                ": Monitor \"" << argv[0] << "\" not found!\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    } else {
-        monitor = get_current_monitor();
-    }
-    monitor->lock_tag = true;
-    return 0;
-}
-
-int monitor_unlock_tag_command(int argc, char** argv, Output output) {
-    char* cmd_name = argv[0];
-    (void)SHIFT(argc, argv);
-    HSMonitor *monitor;
-    if (argc >= 1) {
-        monitor = string_to_monitor(argv[0]);
-        if (monitor == NULL) {
-            output << cmd_name << ": Monitor \"" << argv[0] << "\" not found!\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    } else {
-        monitor = get_current_monitor();
-    }
-    monitor->lock_tag = false;
-    return 0;
 }
 
 // monitor detection using xinerama (if available)

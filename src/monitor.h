@@ -51,6 +51,9 @@ public:
     Rectangle   rect;   // area for this monitor
     Window      stacking_window;   // window used for making stacking easy
     void setIndexAttribute(unsigned long index);
+    int lock_tag_cmd(Input argv, Output output);
+    int unlock_tag_cmd(Input argv, Output output);
+    int list_padding(Input input, Output output);
 private:
     std::string onNameChange();
     std::string onPadChange();
@@ -99,8 +102,6 @@ void monitors_unlock();
 int monitors_lock_command(int argc, const char** argv);
 int monitors_unlock_command(int argc, const char** argv);
 void monitors_lock_changed();
-int monitor_lock_tag_command(int argc, char** argv, Output output);
-int monitor_unlock_tag_command(int argc, char** argv, Output output);
 void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();

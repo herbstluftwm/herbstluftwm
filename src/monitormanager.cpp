@@ -122,24 +122,23 @@ HSMonitor* MonitorManager::byString(string str) {
     return ((idx >= 0) && idx < size()) ? byIdx(idx) : NULL;
 }
 
-int MonitorManager::list_padding(Input input, Output output) {
-    HSMonitor* monitor;
-    input.shift();
-    if (input.empty()) {
-        monitor = get_current_monitor();
-    } else {
-        monitor = byString(input.front());
-        if (monitor == NULL) {
-            output << input.command() << ": Monitor \"" << input.front() << "\" not found!\n";
-            return HERBST_INVALID_ARGUMENT;
+function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
+{
+    const HSMonitorCommand cmd_captured(cmd);
+    return [this,cmd_captured](Input input, Output output) -> int {
+        HSMonitor *monitor;
+        input.shift();
+        if (input.empty()) {
+            monitor = get_current_monitor();
+        } else {
+            monitor = byString(input.front());
+            if (monitor == NULL) {
+                output << input.command() <<
+                    ": Monitor \"" << input.front() << "\" not found!\n";
+                return HERBST_INVALID_ARGUMENT;
+            }
         }
-    }
-    output     << monitor->pad_up()
-        << " " << monitor->pad_right()
-        << " " << monitor->pad_down()
-        << " " << monitor->pad_left()
-        << "\n";
-    return 0;
+        return (monitor ->* cmd_captured)(input, output);
+    };
 }
-
 
