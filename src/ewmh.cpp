@@ -119,7 +119,7 @@ void ewmh_init() {
     ewmh_update_wmname();
 
     /* init atoms that never change */
-    int buf[] = { 0, 0 };
+    long buf[] = { 0, 0 };
     XChangeProperty(g_display, g_root, g_netatom[NetDesktopViewport],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char *) buf, LENGTH(buf));
 }
