@@ -969,12 +969,14 @@ int main(int argc, char* argv[]) {
         if (g_aboutToQuit) {
             break;
         }
-        while (XPending(g_display)) {
+        XSync(g_display, False);
+        while (XQLength(g_display)) {
             XNextEvent(g_display, &event);
             void (*handler) (Root*,XEvent*) = g_default_handler[event.type];
             if (handler != NULL) {
                 handler(&* root, &event);
             }
+            XSync(g_display, False);
         }
     }
 
