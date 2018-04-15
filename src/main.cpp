@@ -1033,12 +1033,14 @@ int main(int argc, char* argv[]) {
         if (g_aboutToQuit) {
             break;
         }
-        while (XPending(g_display)) {
+        XSync(g_display, False);
+        while (XQLength(g_display)) {
             XNextEvent(g_display, &event);
             void (*handler) (XEvent*) = g_default_handler[event.type];
             if (handler != NULL) {
                 handler(&event);
             }
+            XSync(g_display, False);
         }
     }
 
