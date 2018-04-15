@@ -18,7 +18,7 @@ hc() { "${herbstclient_command[@]:-herbstclient}" "$@" ;}
 termwidth_percent=${WIDTH_PERC:-100}
 mrect=( $(hc monitor_rect -p "" ) )
 termwidth=$(( (${mrect[2]} * termwidth_percent) / 100 ))
-termheight=400
+termheight=${HEIGHT_PIXELS:-400}
 
 rect=(
     $termwidth
