@@ -910,8 +910,6 @@ void unmapnotify(Root* root, XEvent* event) {
 /* main */
 /* ---- */
 
-#include "testobject.h"
-
 int main(int argc, char* argv[]) {
     parse_arguments(argc, argv);
     XConnection X = XConnection::connect();
