@@ -1,0 +1,14 @@
+
+
+Privacy Policy
+--------------
+herbstluftwm.org does not collect personal information from clients accessing
+the website. The Wiki subsection uses the usual session cookie. If you do not
+want to get cookies, then configure your browser accordingly.
+
+Imprint
+-------
+Thorsten Wißmann +
+edu _at_ thorsten-wissmann _dot_ de
+
+// vim: nowrap
