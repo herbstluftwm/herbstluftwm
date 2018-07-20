@@ -42,7 +42,6 @@ static int* g_smart_window_surroundings;
 static int* g_focus_crosses_monitor_boundaries;
 static int* g_frame_padding;
 
-char*   g_tree_style = NULL; // used by utils.c
 int* g_frame_gap;
 int* g_window_gap;
 
@@ -72,16 +71,6 @@ static void fetch_frame_colors() {
     g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
     g_focus_crosses_monitor_boundaries = &(settings_find("focus_crosses_monitor_boundaries")->value.i);
     *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
-
-    // tree style
-    g_tree_style = settings_find_string("tree_style");
-    if (utf8_string_length(g_tree_style) < 8) {
-        g_warning("too few characters in setting tree_style\n");
-        // ensure that it is long enough
-        const char* argv[] = { "set", "tree_style", "01234567" };
-        std::ostringstream void_stream;
-        settings_set_command(LENGTH(argv), argv, void_stream);
-    }
 }
 
 void layout_init() {

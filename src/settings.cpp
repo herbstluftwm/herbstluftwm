@@ -149,7 +149,7 @@ Settings::Settings(Object* root)
     , auto_detect_monitors(     "auto_detect_monitors",         ACCEPT_ALL,            0)
     , pseudotile_center_threshold("pseudotile_center_threshold",AT_THIS(relayout),    10)
     , update_dragged_clients(   "update_dragged_clients",       ACCEPT_ALL,          0)
-    , tree_style(               "tree_style",                   AT_THIS(fr_colors),                      "*| +`--.")
+    , tree_style(               "tree_style",                   AT_THIS(onTreeStyleChange), "*| +`--.")
     , wmname(                   "wmname",                       AT_THIS(update_wmname),                  WINDOW_MANAGER_NAME)
     , window_border_width("window_border_width",
         setIntAttr(root, "theme.border_width"),
@@ -268,6 +268,13 @@ std::function<string(Color)> Settings::setColorAttr(Object* root, std::string na
             return msg;
         }
     };
+}
+
+string Settings::onTreeStyleChange() {
+    if (utf8_string_length(tree_style()) < 8) {
+        return "tree_style needs 8 characters";
+    }
+    return {};
 }
 
 string Settings::relayout() {

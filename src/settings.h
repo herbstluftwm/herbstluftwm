@@ -93,6 +93,7 @@ private:
     static std::function<string(int)> setIntAttr(Object* root, std::string name);
     static std::function<string(Color)> setColorAttr(Object* root, std::string name);
     // callbacks for settings
+    string onTreeStyleChange();
     string relayout();
     string fr_colors();
     string cl_colors();
@@ -112,11 +113,9 @@ SettingsPair* settings_get_by_index(int i);
 char* settings_find_string(const char* name);
 
 int settings_set(SettingsPair* pair, const char* value);
-int settings_set_command(int argc, const char** argv, Output output);
 int settings_toggle(int argc, char** argv, Output output);
 int settings_cycle_value(int argc, char** argv, Output output);
 int settings_count();
-int settings_get(int argc, char** argv, Output output);
 
 #endif
 
