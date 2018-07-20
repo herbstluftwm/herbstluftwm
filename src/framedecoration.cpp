@@ -19,11 +19,6 @@ using namespace std;
 static int* g_frame_border_width;
 static int* g_frame_border_inner_width;
 static int* g_always_show_frame;
-static unsigned long g_frame_border_active_color;
-static unsigned long g_frame_border_normal_color;
-static unsigned long g_frame_border_inner_color;
-static unsigned long g_frame_bg_active_color;
-static unsigned long g_frame_bg_normal_color;
 static unsigned long g_frame_active_opacity;
 static unsigned long g_frame_normal_opacity;
 static int* g_frame_bg_transparent;
@@ -34,17 +29,6 @@ static void fetch_frame_colors() {
     g_frame_border_width = &(settings_find("frame_border_width")->value.i);
     g_frame_border_inner_width = &(settings_find("frame_border_inner_width")->value.i);
     g_always_show_frame = &(settings_find("always_show_frame")->value.i);
-    char* str = settings_find_string("frame_border_normal_color");
-    g_frame_border_normal_color = Color(str).toX11Pixel();
-    str = settings_find_string("frame_border_active_color");
-    g_frame_border_active_color = Color(str).toX11Pixel();
-    str = settings_find_string("frame_border_inner_color");
-    g_frame_border_inner_color = Color(str).toX11Pixel();
-    // background color
-    str = settings_find_string("frame_bg_normal_color");
-    g_frame_bg_normal_color = Color(str).toX11Pixel();
-    str = settings_find_string("frame_bg_active_color");
-    g_frame_bg_active_color = Color(str).toX11Pixel();
     g_frame_active_opacity = CLAMP(settings_find("frame_active_opacity")->value.i, 0, 100);
     g_frame_normal_opacity = CLAMP(settings_find("frame_normal_opacity")->value.i, 0, 100);
     g_frame_bg_transparent = &(settings_find("frame_bg_transparent")->value.i);
@@ -104,12 +88,12 @@ FrameDecoration::~FrameDecoration() {
 
 void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
     fetch_frame_colors();
-    unsigned long border_color = g_frame_border_normal_color;
-    unsigned long bg_color = g_frame_bg_normal_color;
+    unsigned long border_color = g_settings->frame_border_normal_color->toX11Pixel();
+    unsigned long bg_color = g_settings->frame_bg_normal_color->toX11Pixel();
     int bw = *g_frame_border_width;
     if (isFocused) {
-        border_color = g_frame_border_active_color;
-        bg_color = g_frame_bg_active_color;
+        border_color = g_settings->frame_border_active_color->toX11Pixel();
+        bg_color = g_settings->frame_bg_active_color->toX11Pixel();
     }
     if (*g_smart_frame_surroundings && !data.hasParent) {
         bw = 0;
@@ -121,8 +105,12 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
                       rect.y - bw,
                       rect.width, rect.height);
 
-    if (*g_frame_border_inner_width > 0 && *g_frame_border_inner_width < *g_frame_border_width) {
-        set_window_double_border(g_display, window, *g_frame_border_inner_width, g_frame_border_inner_color, border_color);
+    if (*g_frame_border_inner_width > 0
+        && g_settings->frame_border_inner_width() < g_settings->frame_border_width()) {
+        set_window_double_border(g_display, window,
+                g_settings->frame_border_inner_width(),
+                g_settings->frame_border_inner_color->toX11Pixel(),
+                border_color);
     } else {
         XSetWindowBorder(g_display, window, border_color);
     }
