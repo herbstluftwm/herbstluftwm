@@ -56,6 +56,8 @@ public:
     int unlock_tag_cmd(Input argv, Output output);
     int list_padding(Input input, Output output);
     HSMonitor* setTag(HSTag* new_tag);
+    void applyLayout();
+    void restack();
 private:
     std::string onNameChange();
     std::string onPadChange();
@@ -106,14 +108,12 @@ void monitors_unlock();
 int monitors_lock_command(int argc, const char** argv);
 int monitors_unlock_command(int argc, const char** argv);
 void monitors_lock_changed();
-void monitor_apply_layout(HSMonitor* monitor);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
 void all_monitors_replace_previous_tag(HSTag* old, HSTag* newmon);
 
 void drop_enternotify_events();
 
-void monitor_restack(HSMonitor* monitor);
 int monitor_stack_window_count(bool real_clients);
 void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
                                  int* remain_len);

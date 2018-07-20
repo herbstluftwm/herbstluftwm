@@ -320,7 +320,7 @@ int load_command(int argc, char** argv, Output output) {
         if (get_current_monitor() == m) {
             frame_focus_recursive(tag->frame);
         }
-        monitor_apply_layout(m);
+        m->applyLayout();
     } else {
         tag->frame->setVisibleRecursive(false);
     }
@@ -530,7 +530,8 @@ void event_on_configure(Root* root, XEvent event) {
             client->resize_floating(find_monitor_with_tag(client->tag()), client == get_current_client());
         } else if (changes && client->pseudotile_) {
             client->float_size_ = newRect;
-            monitor_apply_layout(find_monitor_with_tag(client->tag()));
+            HSMonitor* m = find_monitor_with_tag(client->tag());
+            if (m) m->applyLayout();
         } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
             client->send_configure();
@@ -892,7 +893,7 @@ void propertynotify(Root* root, XEvent* event) {
             } else if (ev->atom == XA_WM_NORMAL_HINTS) {
                 client->updatesizehints();
                 HSMonitor* m = find_monitor_with_tag(client->tag());
-                if (m) monitor_apply_layout(m);
+                if (m) m->applyLayout();
             } else if (ev->atom == XA_WM_NAME ||
                        ev->atom == g_netatom[NetWmName]) {
                 client->update_title();

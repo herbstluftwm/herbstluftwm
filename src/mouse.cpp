@@ -114,7 +114,7 @@ void mouse_stop_drag() {
     if (g_win_drag_client) {
         g_win_drag_client->set_dragged(false);
         // resend last size
-        monitor_apply_layout(g_drag_monitor);
+        g_drag_monitor->applyLayout();
     }
     g_win_drag_client = NULL;
     g_drag_function = NULL;

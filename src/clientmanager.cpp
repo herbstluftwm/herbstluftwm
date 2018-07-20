@@ -162,7 +162,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
         }
         // TODO: monitor_apply_layout() maybe is called twice here if it
         // already is called by monitor_set_tag()
-        monitor_apply_layout(monitor);
+        monitor->applyLayout();
         client->set_visible(true);
     } else {
         if (changes.focus && changes.switchtag) {
@@ -207,7 +207,7 @@ void ClientManager::force_unmanage(HSClient* client) {
     // and arrange monitor after the client has been removed from the stack
     HSMonitor* m = find_monitor_with_tag(tag);
     tag_update_focus_layer(tag);
-    if (m) monitor_apply_layout(m);
+    if (m) m->applyLayout();
     ewmh_remove_client(client->window_);
     tag_set_flags_dirty();
     // delete client

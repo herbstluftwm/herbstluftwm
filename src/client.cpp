@@ -635,7 +635,8 @@ void HSClient::set_fullscreen(bool state) {
         stack_slice_remove_layer(stack, this->slice, LAYER_FULLSCREEN);
     }
     tag_update_focus_layer(this->tag());
-    monitor_apply_layout(find_monitor_with_tag(this->tag()));
+    auto m = find_monitor_with_tag(this->tag());
+    if (m) m->applyLayout();
 
     char buf[STRING_BUF_SIZE];
     snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
@@ -645,7 +646,8 @@ void HSClient::set_fullscreen(bool state) {
 
 void HSClient::set_pseudotile(bool state) {
     this->pseudotile_ = state;
-    monitor_apply_layout(find_monitor_with_tag(this->tag()));
+    auto m = find_monitor_with_tag(this->tag());
+    if (m) m->applyLayout();
 }
 
 int client_set_property_command(int argc, char** argv) {

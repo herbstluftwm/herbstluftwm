@@ -163,8 +163,8 @@ void TagManager::moveClient(HSClient* client, HSTag* target) {
         // so hide it
         client->set_visible(false);
     }
-    monitor_apply_layout(monitor_source);
-    monitor_apply_layout(monitor_target);
+    if (monitor_source) monitor_source->applyLayout();
+    if (monitor_target) monitor_target->applyLayout();
     if (!monitor_source && monitor_target) {
         client->set_visible(true);
     }

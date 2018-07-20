@@ -322,7 +322,7 @@ bool floating_shift_direction(enum HSDirection dir) {
         //printf("dx=%d, dy=%d\n", dx, dy);
         curfocus->float_size_.x += dx;
         curfocus->float_size_.y += dy;
-        monitor_apply_layout(get_current_monitor());
+        get_current_monitor()->applyLayout();
     }
     g_free(rects);
     return success;

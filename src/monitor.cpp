@@ -121,7 +121,7 @@ std::string HSMonitor::setTagString(std::string new_tag_string) {
 }
 
 std::string HSMonitor::onPadChange() {
-    monitor_apply_layout(this);
+    applyLayout();
     return {};
 }
 
@@ -165,69 +165,67 @@ void monitor_destroy() {
     stack_destroy(g_monitor_stack);
 }
 
-void monitor_apply_layout(HSMonitor* monitor) {
-    if (monitor) {
-        if (*g_monitors_locked) {
-            monitor->dirty = true;
-            return;
-        }
-        monitor->dirty = false;
-        Rectangle rect = monitor->rect;
-        // apply pad
-        // FIXME: why does the following + work for attributes pad_* ?
-        rect.x += monitor->pad_left;
-        rect.width -= (monitor->pad_left + monitor->pad_right);
-        rect.y += monitor->pad_up;
-        rect.height -= (monitor->pad_up + monitor->pad_down);
-        if (!*g_smart_frame_surroundings || monitor->tag->frame->isSplit()) {
-            // apply frame gap
-            rect.x += *g_frame_gap;
-            rect.y += *g_frame_gap;
-            rect.height -= *g_frame_gap;
-            rect.width -= *g_frame_gap;
-        }
-        monitor_restack(monitor);
-        bool isFocused = get_current_monitor() == monitor;
-        if (isFocused) {
-            frame_focus_recursive(monitor->tag->frame);
-        }
-        TilingResult res = monitor->tag->frame->computeLayout(rect);
-        if (monitor->tag->floating) {
-            for (auto& p : res.data) {
-                HSClient* c = p.first;
-                p.second.geometry = c->float_size_;
-                c->setup_border(res.focus == c && isFocused);
-                c->resize_floating(monitor, res.focus == c && isFocused);
-            }
-            for (auto& p : res.frames) {
-                p.first->hide();
-            }
-        } else {
-            for (auto& p : res.data) {
-                HSClient* c = p.first;
-                //c->setup_border(res.focus == c && isFocused);
-                c->resize_tiling(p.second.geometry, res.focus == c && isFocused);
-                if (p.second.needsRaise) {
-                    c->raise();
-                }
-            }
-            for (auto& p : res.frames) {
-                p.first->render(p.second, p.first == res.focused_frame && isFocused);
-                p.first->updateVisibility(p.second, p.first == res.focused_frame && isFocused);
-            }
-        }
-        if (isFocused) {
-            if (res.focus) {
-                Root::get()->clients()->focus = res.focus;
-            } else {
-                Root::get()->clients()->focus = {};
-            }
-        }
-
-        // remove all enternotify-events from the event queue that were
-        // generated while arranging the clients on this monitor
-        drop_enternotify_events();
+void HSMonitor::applyLayout() {
+    if (*g_monitors_locked) {
+        dirty = true;
+        return;
     }
+    dirty = false;
+    Rectangle cur_rect = rect;
+    // apply pad
+    // FIXME: why does the following + work for attributes pad_* ?
+    cur_rect.x += pad_left();
+    cur_rect.width -= (pad_left() + pad_right());
+    cur_rect.y += pad_up();
+    cur_rect.height -= (pad_up() + pad_down());
+    if (!*g_smart_frame_surroundings || tag->frame->isSplit()) {
+        // apply frame gap
+        cur_rect.x += *g_frame_gap;
+        cur_rect.y += *g_frame_gap;
+        cur_rect.height -= *g_frame_gap;
+        cur_rect.width -= *g_frame_gap;
+    }
+    restack();
+    bool isFocused = get_current_monitor() == this;
+    if (isFocused) {
+        frame_focus_recursive(tag->frame);
+    }
+    TilingResult res = tag->frame->computeLayout(cur_rect);
+    if (tag->floating) {
+        for (auto& p : res.data) {
+            HSClient* c = p.first;
+            p.second.geometry = c->float_size_;
+            c->setup_border(res.focus == c && isFocused);
+            c->resize_floating(this, res.focus == c && isFocused);
+        }
+        for (auto& p : res.frames) {
+            p.first->hide();
+        }
+    } else {
+        for (auto& p : res.data) {
+            HSClient* c = p.first;
+            //c->setup_border(res.focus == c && isFocused);
+            c->resize_tiling(p.second.geometry, res.focus == c && isFocused);
+            if (p.second.needsRaise) {
+                c->raise();
+            }
+        }
+        for (auto& p : res.frames) {
+            p.first->render(p.second, p.first == res.focused_frame && isFocused);
+            p.first->updateVisibility(p.second, p.first == res.focused_frame && isFocused);
+        }
+    }
+    if (isFocused) {
+        if (res.focus) {
+            Root::get()->clients()->focus = res.focus;
+        } else {
+            Root::get()->clients()->focus = {};
+        }
+    }
+
+    // remove all enternotify-events from the event queue that were
+    // generated while arranging the clients on this monitor
+    drop_enternotify_events();
 }
 
 
@@ -437,12 +435,6 @@ HSMonitor* string_to_monitor(char* str) {
   return monitors->byString(str);
 }
 
-static void monitor_foreach(void (*action)(HSMonitor*)) {
-    for (auto m : *monitors) {
-        action(&* m);
-    }
-}
-
 HSMonitor* add_monitor(Rectangle rect, HSTag* tag, char* name) {
     assert(tag != NULL);
     HSMonitor* m = new HSMonitor;
@@ -509,7 +501,7 @@ int add_monitor_command(int argc, char** argv, Output output) {
         }
     }
     HSMonitor* monitor = add_monitor(rect, tag, name);
-    monitor_apply_layout(monitor);
+    monitor->applyLayout();
     tag->frame->setVisibleRecursive(true);
     emit_tag_changed(tag, monitors->size() - 1);
     drop_enternotify_events();
@@ -563,7 +555,7 @@ int remove_monitor(int index) {
     if (g_cur_monitor >= monitors->size()) {
         g_cur_monitor--;
         // if selection has changed, then relayout focused monitor
-        monitor_apply_layout(get_current_monitor());
+        get_current_monitor()->applyLayout();
         monitor_update_focus_objects();
         // also announce the new selection
         ewmh_update_current_desktop();
@@ -595,7 +587,7 @@ int move_monitor_command(int argc, char** argv, Output output) {
     if (argc > 4 && argv[4][0] != '\0') monitor->pad_right    = atoi(argv[4]);
     if (argc > 5 && argv[5][0] != '\0') monitor->pad_down     = atoi(argv[5]);
     if (argc > 6 && argv[6][0] != '\0') monitor->pad_left     = atoi(argv[6]);
-    monitor_apply_layout(monitor);
+    monitor->applyLayout();
     return 0;
 }
 
@@ -675,7 +667,7 @@ int monitor_set_pad_command(int argc, char** argv, Output output) {
     if (argc > 3 && argv[3][0] != '\0') monitor->pad_right    = atoi(argv[3]);
     if (argc > 4 && argv[4][0] != '\0') monitor->pad_down     = atoi(argv[4]);
     if (argc > 5 && argv[5][0] != '\0') monitor->pad_left     = atoi(argv[5]);
-    monitor_apply_layout(monitor);
+    monitor->applyLayout();
     return 0;
 }
 
@@ -703,7 +695,7 @@ int monitor_count() {
 }
 
 void all_monitors_apply_layout() {
-    monitor_foreach(monitor_apply_layout);
+    for (auto m : *monitors) m->applyLayout();
 }
 
 int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
@@ -736,10 +728,10 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             // reset focus
             frame_focus_recursive(tag->frame);
             /* TODO: find the best order of restacking and layouting */
-            monitor_restack(other);
-            monitor_restack(monitor);
-            monitor_apply_layout(other);
-            monitor_apply_layout(monitor);
+            other->restack();
+            monitor->restack();
+            other->applyLayout();
+            monitor->applyLayout();
             // discard enternotify-events
             drop_enternotify_events();
             monitor_update_focus_objects();
@@ -760,9 +752,9 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     monitor->tag = tag;
     // first reset focus and arrange windows
     frame_focus_recursive(tag->frame);
-    monitor_restack(monitor);
+    monitor->restack();
     monitor->lock_frames = true;
-    monitor_apply_layout(monitor);
+    monitor->applyLayout();
     monitor->lock_frames = false;
     // then show them (should reduce flicker)
     tag->frame->setVisibleRecursive(true);
@@ -896,8 +888,8 @@ void monitor_focus_by_index(int new_selection) {
     g_cur_monitor = new_selection;
     frame_focus_recursive(monitor->tag->frame);
     // repaint monitors
-    monitor_apply_layout(old);
-    monitor_apply_layout(monitor);
+    old->applyLayout();
+    monitor->applyLayout();
     int rx, ry;
     {
         // save old mouse position
@@ -1014,7 +1006,7 @@ void monitors_lock_changed() {
         // if not locked anymore, then repaint all the dirty monitors
         for (auto m : *monitors) {
             if (m->dirty) {
-                monitor_apply_layout(&* m);
+                m->applyLayout();
             }
         }
     }
@@ -1171,12 +1163,16 @@ int monitor_raise_command(int argc, char** argv, Output output) {
 }
 
 void monitor_restack(HSMonitor* monitor) {
-    int count = 1 + stack_window_count(monitor->tag->stack, false);
+    monitor->restack();
+}
+
+void HSMonitor::restack() {
+    int count = 1 + stack_window_count(tag->stack, false);
     Window* buf = g_new(Window, count);
-    buf[0] = monitor->stacking_window;
-    stack_to_window_buf(monitor->tag->stack, buf + 1, count - 1, false, NULL);
+    buf[0] = stacking_window;
+    stack_to_window_buf(tag->stack, buf + 1, count - 1, false, NULL);
     /* remove a focused fullscreen client */
-    HSClient* client = monitor->tag->frame->focusedClient();
+    HSClient* client = tag->frame->focusedClient();
     if (client && client->fullscreen_) {
         Window win = client->decorationWindow();
         XRaiseWindow(g_display, win);

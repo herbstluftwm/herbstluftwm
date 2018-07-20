@@ -146,7 +146,7 @@ int tag_remove_command(int argc, char** argv, Output output) {
     HSMonitor* monitor_target = find_monitor_with_tag(target);
     if (monitor_target) {
         // if target monitor is viewed, then show windows
-        monitor_apply_layout(monitor_target);
+        monitor_target->applyLayout();
         for (auto c: buf) {
             c->set_visible(true);
         }
@@ -188,7 +188,7 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
         HSMonitor* m = find_monitor_with_tag(tag);
         HSDebug("setting tag:%s->floating to %s\n", tag->name->c_str(), tag->floating ? "on" : "off");
         if (m != NULL) {
-            monitor_apply_layout(m);
+            m->applyLayout();
         }
     }
     return 0;
@@ -244,7 +244,7 @@ void tag_update_focus_layer(HSTag* tag) {
     }
     HSMonitor* monitor = find_monitor_with_tag(tag);
     if (monitor) {
-        monitor_restack(monitor);
+        monitor->restack();
     }
 }
 

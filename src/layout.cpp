@@ -396,7 +396,7 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
                     win, client->tag()->name->str);
             }
             if (clientmonitor) {
-                monitor_apply_layout(clientmonitor);
+                clientmonitor->applyLayout();
             }
             stack_remove_slice(client->tag()->stack, client->slice);
 
@@ -589,7 +589,7 @@ int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
         layout_index %= LAYOUT_COUNT;
     }
     cur_frame->setLayout(layout_index);
-    monitor_apply_layout(get_current_monitor());
+    get_current_monitor()->applyLayout();
     return 0;
 }
 
@@ -606,7 +606,7 @@ int frame_current_set_client_layout(int argc, char** argv, Output output) {
     }
     auto cur_frame = HSFrame::getGloballyFocusedFrame();
     cur_frame->setLayout(layout);
-    monitor_apply_layout(get_current_monitor());
+    get_current_monitor()->applyLayout();
     return 0;
 }
 
@@ -847,7 +847,7 @@ void HSFrameLeaf::setSelection(int index) {
     }
     selection = index;
     clients[selection]->window_focus();
-    monitor_apply_layout(get_current_monitor());
+    get_current_monitor()->applyLayout();
 }
 
 int frame_current_set_selection(int argc, char** argv) {
@@ -936,7 +936,7 @@ int cycle_all_command(int argc, char** argv) {
     if (c) {
         c->raise();
     }
-    monitor_apply_layout(get_current_monitor());
+    get_current_monitor()->applyLayout();
     return 0;
     **/
 
@@ -1081,7 +1081,7 @@ int frame_split_command(int argc, char** argv, Output output) {
     }
     frame->getParent()->setSelection(selection);
     // redraw monitor
-    monitor_apply_layout(get_current_monitor());
+    get_current_monitor()->applyLayout();
     return 0;
 }
 
@@ -1130,7 +1130,7 @@ int frame_change_fraction_command(int argc, char** argv, Output output) {
     assert(parent); // if has neighbour, it also must have a parent
     parent->adjustFraction(delta);
     // arrange monitor
-    monitor_apply_layout(get_current_monitor());
+    get_current_monitor()->applyLayout();
     return 0;
 }
 
@@ -1266,7 +1266,7 @@ int frame_focus_command(int argc, char** argv, Output output) {
         (index = frame_inner_neighbour_index(frame, direction)) != -1) {
         frame->setSelection(index);
         frame_focus_recursive(frame);
-        monitor_apply_layout(get_current_monitor());
+        get_current_monitor()->applyLayout();
     } else {
         shared_ptr<HSFrame> neighbour = frame->neighbour(direction);
         if (neighbour) { // if neighbour was found
@@ -1275,7 +1275,7 @@ int frame_focus_command(int argc, char** argv, Output output) {
             parent->swapSelection();
             // change focus if possible
             frame_focus_recursive(parent);
-            monitor_apply_layout(get_current_monitor());
+            get_current_monitor()->applyLayout();
         } else {
             neighbour_found = false;
         }
@@ -1330,7 +1330,7 @@ int frame_move_window_command(int argc, char** argv, Output output) {
         (index = frame_inner_neighbour_index(frame, direction)) != -1) {
         frame->moveClient(index);
         frame_focus_recursive(frame);
-        monitor_apply_layout(get_current_monitor());
+        get_current_monitor()->applyLayout();
     } else {
         shared_ptr<HSFrame> neighbour = frame->neighbour(direction);
         HSClient* client = frame->focusedClient();
@@ -1347,7 +1347,7 @@ int frame_move_window_command(int argc, char** argv, Output output) {
             frame_focus_recursive(parent);
 
             // layout was changed, so update it
-            monitor_apply_layout(get_current_monitor());
+            get_current_monitor()->applyLayout();
         } else {
             output << argv[0] << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
@@ -1443,7 +1443,7 @@ bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor) {
     // now the right tag is visible
     // now focus it
     bool found = tag->frame->focusClient(client);
-    monitor_apply_layout(cur_mon);
+    cur_mon->applyLayout();
     monitors_unlock();
     return found;
 }
@@ -1492,7 +1492,7 @@ int layout_rotate_command() {
         };
     // first hide children => order = 2
     get_current_monitor()->tag->frame->fmap(onSplit, onLeaf, -1);
-    monitor_apply_layout(get_current_monitor());
+    get_current_monitor()->applyLayout();
     return 0;
 }
 
@@ -1523,7 +1523,7 @@ int frame_remove_command(int argc, char** argv) {
         frame->getTag()->frame = newparent;
     }
     frame_focus_recursive(parent);
-    monitor_apply_layout(get_current_monitor());
+    get_current_monitor()->applyLayout();
     return 0;
 }
 
