@@ -2,6 +2,7 @@
 #include "rectangle.h"
 #include "floating.h"
 #include "mouse.h"
+#include "ipc-protocol.h"
 #include <glib.h>
 
 static bool rects_intersect(RectList* m1, RectList* m2) {
@@ -121,3 +122,22 @@ RectList* disjoin_rects(const RectangleVec &buf) {
     return rects;
 }
 
+
+int disjoin_rects_command(int argc, char** argv, Output output) {
+    (void)SHIFT(argc, argv);
+    if (argc < 1) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    RectangleVec buf(argc);
+    for (int i = 0; i < argc; i++) {
+        buf[i] = Rectangle::fromStr(argv[i]);
+    }
+
+    RectList* rects = disjoin_rects(buf);
+    for (RectList* cur = rects; cur; cur = cur->next) {
+        Rectangle &r = cur->rect;
+        output << r << std::endl;
+    }
+    rectlist_free(rects);
+    return 0;
+}

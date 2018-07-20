@@ -7,6 +7,7 @@
 #define __HERBSTLUFT_RECTANGLE_H_
 
 #include "x11-types.h"
+#include "utils.h"
 
 typedef struct RectList {
     Rectangle rect;
@@ -18,6 +19,7 @@ int rectlist_length(RectList* head);
 void rectlist_free(RectList* head);
 
 RectList* disjoin_rects(const RectangleVec &buf);
+int disjoin_rects_command(int argc, char** argv, Output output);
 
 #endif
 

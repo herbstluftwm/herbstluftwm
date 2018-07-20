@@ -91,7 +91,6 @@ int monitor_raise_command(int argc, char** argv, Output output);
 int remove_monitor_command(int argc, char** argv, Output output);
 int remove_monitor(int index);
 int set_monitor_rects_command(int argc, char** argv, Output output);
-int disjoin_rects_command(int argc, char** argv, Output output);
 int set_monitor_rects(const RectangleVec &templates);
 int move_monitor_command(int argc, char** argv, Output output);
 int rename_monitor_command(int argc, char** argv, Output output);

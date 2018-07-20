@@ -24,6 +24,7 @@
 #include "xconnection.h"
 #include "tagmanager.h"
 #include "monitormanager.h"
+#include "rectangle.h"
 // standard
 #include <string.h>
 #include <stdio.h>
