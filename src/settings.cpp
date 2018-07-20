@@ -270,25 +270,28 @@ std::function<string(Color)> Settings::setColorAttr(Object* root, std::string na
     };
 }
 
-
-
-
 string Settings::relayout() {
+    all_monitors_apply_layout();
     return {};
 }
 string Settings::fr_colors() {
+    reset_frame_colors();
     return {};
 }
 string Settings::cl_colors() {
+    reset_client_colors();
     return {};
 }
 string Settings::lock_changed() {
+    monitors_lock_changed();
     return {};
 }
 string Settings::focus_layer() {
+    tag_update_each_focus_layer();
     return {};
 }
 string Settings::update_wmname() {
+    ewmh_update_wmname();
     return {};
 }
 
