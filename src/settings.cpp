@@ -397,6 +397,8 @@ char* settings_find_string(const char* name) {
     return sp->value.str->str;
 }
 
+static int settings_set(SettingsPair* pair, const char* value);
+
 int settings_set_command(int argc, const char** argv, Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;

@@ -109,13 +109,10 @@ void settings_init();
 void settings_destroy();
 
 SettingsPair* settings_find(const char* name);
-SettingsPair* settings_get_by_index(int i);
 char* settings_find_string(const char* name);
 
-int settings_set(SettingsPair* pair, const char* value);
 int settings_toggle(int argc, char** argv, Output output);
 int settings_cycle_value(int argc, char** argv, Output output);
-int settings_count();
 
 #endif
 
