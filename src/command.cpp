@@ -673,13 +673,11 @@ void complete_against_settings(int argc, char** argv, int pos, Output output)
         needle = argv[pos];
     }
     bool is_toggle_command = !strcmp(argv[0], "toggle");
-    // complete with setting name
-    for (int i = 0; i < settings_count(); i++) {
-        SettingsPair* sp = settings_get_by_index(i);
-        if (is_toggle_command && sp->type != HS_Int) {
+    for (auto a : g_settings->attributes()) {
+        if (is_toggle_command && a.second->type() != Type::ATTRIBUTE_INT) {
             continue;
         }
-        try_complete(needle, sp->name, output);
+        try_complete(needle, a.first.c_str(), output);
     }
 }
 
