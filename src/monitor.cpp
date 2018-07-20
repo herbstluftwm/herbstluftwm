@@ -65,6 +65,7 @@ void monitor_init() {
 HSMonitor::HSMonitor()
     : name("name", AT_THIS(onNameChange), "")
     , index("index", 0)
+    , tag_string("tag", ([this](string s) { return this->setTagString(s); }), AT_THIS(getTagString))
     , pad_up("pad_up", AT_THIS(onPadChange), 0)
     , pad_right("pad_right", AT_THIS(onPadChange), 0)
     , pad_down("pad_down", AT_THIS(onPadChange), 0)
@@ -74,6 +75,7 @@ HSMonitor::HSMonitor()
     wireAttributes({
         &index,
         &name,
+        &tag_string,
         &pad_up,
         &pad_right,
         &pad_down,
@@ -100,6 +102,22 @@ std::string HSMonitor::onNameChange() {
         }
     }
     return {};
+}
+
+std::string HSMonitor::getTagString() {
+    return tag->name();
+}
+
+std::string HSMonitor::setTagString(std::string new_tag_string) {
+    HSTag* new_tag = find_tag(new_tag_string.c_str());
+    if (new_tag == NULL) {
+        return "no tag named \"" + new_tag_string + "\" exists.";
+    }
+    if (new_tag == tag) return ""; // nothing to do
+    if (NULL != this->setTag(new_tag)) {
+        return "tag \"" + new_tag_string + "\" is already on another monitor";
+    }
+    return "to be implemented"; // TODO
 }
 
 std::string HSMonitor::onPadChange() {
@@ -129,6 +147,17 @@ int HSMonitor::list_padding(Input input, Output output) {
         << " " << pad_left()
         << "\n";
     return 0;
+}
+
+/** Set the tag shown on the monitor. If the tag is already used
+ * by another monitor, return that other monitor. Return NULL on success.
+ */
+HSMonitor* HSMonitor::setTag(HSTag* new_tag) {
+    HSMonitor* m = find_monitor_with_tag(new_tag);
+    if (m != NULL) {
+        return m;
+    }
+    return NULL;
 }
 
 void monitor_destroy() {

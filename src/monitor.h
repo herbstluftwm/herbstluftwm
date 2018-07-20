@@ -36,6 +36,7 @@ public:
     struct HSSlice*    slice;  // slice in the monitor stack
     Attribute_<std::string>   name;
     Attribute_<unsigned long> index;
+    DynAttribute_<std::string>   tag_string;
     Attribute_<int>         pad_up;
     Attribute_<int>         pad_right;
     Attribute_<int>         pad_down;
@@ -54,9 +55,12 @@ public:
     int lock_tag_cmd(Input argv, Output output);
     int unlock_tag_cmd(Input argv, Output output);
     int list_padding(Input input, Output output);
+    HSMonitor* setTag(HSTag* new_tag);
 private:
     std::string onNameChange();
     std::string onPadChange();
+    std::string getTagString();
+    std::string setTagString(std::string new_tag);
 };
 
 void monitor_init();
