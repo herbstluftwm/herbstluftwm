@@ -107,6 +107,7 @@ void unmapnotify(Root* root, XEvent* event);
 unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     TagManager* tags = root->tags();
     MonitorManager* monitors = root->monitors();
+    Settings* settings = root->settings();
     return unique_ptr<CommandTable>(new CommandTable{
         {"quit",           quit},
         {"echo",           echo},
@@ -146,12 +147,12 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"shift",          frame_move_window_command},
         {"shift_to_monitor",shift_to_monitor},
         {"remove",         frame_remove_command},
-        {"set",            settings_set_command},
+        {"set",            BIND_OBJECT(settings, set_cmd) },
         {"toggle",         settings_toggle},
         {"cycle_value",    settings_cycle_value},
         {"cycle_monitor",  monitor_cycle_command},
         {"focus_monitor",  monitor_focus_command},
-        {"get",            settings_get},
+        {"get",            BIND_OBJECT(settings, get_cmd) },
         {"add",            BIND_OBJECT(tags, tag_add_command) },
         {"use",            monitor_set_tag_command},
         {"use_index",      monitor_set_tag_by_index_command},
@@ -798,7 +799,7 @@ void enternotify(Root* root, XEvent* event) {
     XCrossingEvent *ce = &event->xcrossing;
     //HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
     if (!mouse_is_dragging()
-        && *g_focus_follows_mouse
+        && root->settings()->focus_follows_mouse()
         && ce->focus == false) {
         HSClient* c = get_client_from_window(ce->window);
         std::shared_ptr<HSFrameLeaf> target;

@@ -17,6 +17,8 @@
 
 using namespace std;
 
+Settings* g_settings = NULL; // the global settings object
+
 SettingsPair SET_INT(const char* name, int defaultval, void (*cb)())
 {
     SettingsPair sp;
@@ -57,7 +59,7 @@ SettingsPair SET_COMPAT(const char* name, const char* read, const char* write)
 #define WMNAME ewmh_update_wmname
 
 // default settings:
-SettingsPair g_settings[] = {
+SettingsPair g_settings_old[] = {
     SET_INT(    "frame_gap",                       5,           RELAYOUT    ),
     SET_INT(    "frame_padding",                   0,           RELAYOUT    ),
     SET_INT(    "window_gap",                      0,           RELAYOUT    ),
@@ -213,6 +215,8 @@ Settings::Settings(Object* root)
         &window_border_normal_color,
         &window_border_urgent_color,
     });
+
+    g_settings = this;
 }
 
 std::function<int()> Settings::getIntAttr(Object* root, std::string name) {
@@ -288,21 +292,65 @@ string Settings::update_wmname() {
     return {};
 }
 
+
+int Settings::set_cmd(Input argv, Output output) {
+    argv.shift();
+    if (argv.empty()) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    auto set_name = argv.front();
+    argv.shift();
+    if (argv.empty()) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    auto value = argv.front();
+    auto attr = attribute(set_name);
+    if (!attr) {
+        output << argv.command() <<
+            ": Setting \"" << set_name << "\" not found\n";
+        return HERBST_SETTING_NOT_FOUND;
+    }
+    auto msg = attr->change(value);
+    if (msg != "") {
+        output << argv.command()
+               << ": Invalid value \"" << value
+               << "\" for setting \"" << set_name << "\": "
+               << msg << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    return 0;
+}
+
+int Settings::get_cmd(Input argv, Output output) {
+    argv.shift();
+    if (argv.empty()) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    auto attr = attribute(argv.front());
+    if (!attr) {
+        output << argv.command() <<
+            ": Setting \"" << argv.front() << "\" not found\n";
+        return HERBST_SETTING_NOT_FOUND;
+    }
+    output << attr->str();
+    return 0;
+}
+
 // globals:
 int g_initial_monitors_locked = 0;
 
 int settings_count() {
-    return LENGTH(g_settings);
+    return LENGTH(g_settings_old);
 }
 
 void settings_init() {
     // recreate all strings -> move them to heap
-    for (int i = 0; i < LENGTH(g_settings); i++) {
-        if (g_settings[i].type == HS_String) {
-            g_settings[i].value.str = g_string_new(g_settings[i].value.s_init);
+    for (int i = 0; i < LENGTH(g_settings_old); i++) {
+        if (g_settings_old[i].type == HS_String) {
+            g_settings_old[i].value.str = g_string_new(g_settings_old[i].value.s_init);
         }
-        if (g_settings[i].type == HS_Int) {
-            g_settings[i].old_value_i = 1;
+        if (g_settings_old[i].type == HS_Int) {
+            g_settings_old[i].old_value_i = 1;
         }
     }
     settings_find("monitors_locked")->value.i = g_initial_monitors_locked;
@@ -315,20 +363,20 @@ void settings_init() {
 void settings_destroy() {
     // free all strings
     int i;
-    for (i = 0; i < LENGTH(g_settings); i++) {
-        if (g_settings[i].type == HS_String) {
-            g_string_free(g_settings[i].value.str, true);
+    for (i = 0; i < LENGTH(g_settings_old); i++) {
+        if (g_settings_old[i].type == HS_String) {
+            g_string_free(g_settings_old[i].value.str, true);
         }
     }
 }
 
 SettingsPair* settings_find(const char* name) {
-    return STATIC_TABLE_FIND_STR(SettingsPair, g_settings, name, name);
+    return STATIC_TABLE_FIND_STR(SettingsPair, g_settings_old, name, name);
 }
 
 SettingsPair* settings_get_by_index(int i) {
-    if (i < 0 || i >= LENGTH(g_settings)) return NULL;
-    return g_settings + i;
+    if (i < 0 || i >= LENGTH(g_settings_old)) return NULL;
+    return g_settings_old + i;
 }
 
 char* settings_find_string(const char* name) {

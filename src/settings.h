@@ -39,6 +39,11 @@ class Settings : public Object {
 public:
     using string = std::string;
     Settings(Object* root);
+    // commands:
+    int set_cmd(Input argv, Output output);
+    int get_cmd(Input argv, Output output);
+
+    // all the settings:
     Attribute_<int>         frame_gap;
     Attribute_<int>         frame_padding;
     Attribute_<int>         window_gap;
@@ -97,6 +102,7 @@ private:
 };
 
 extern int g_initial_monitors_locked;
+extern Settings* g_settings;
 
 void settings_init();
 void settings_destroy();
