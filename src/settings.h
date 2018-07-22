@@ -42,6 +42,7 @@ public:
     // commands:
     int set_cmd(Input argv, Output output);
     int get_cmd(Input argv, Output output);
+    int toggle_cmd(Input argv, Output output);
 
     // all the settings:
     Attribute_<int>         frame_gap;
