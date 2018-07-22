@@ -12,6 +12,8 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+#include <unistd.h>
+
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "utils.h"
@@ -861,6 +863,8 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     // focus window just has been shown
     // focus again to give input focus
     frame_focus_recursive(tag->frame);
+	// change working_directory
+	chdir(tag->working_directory->str);
     // discard enternotify-events
     drop_enternotify_events();
     monitor_update_focus_objects();

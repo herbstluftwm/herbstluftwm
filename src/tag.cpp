@@ -6,6 +6,10 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <cstdlib>
+#include <filesystem>
+
+#include <unistd.h>
 
 #include "tag.h"
 
@@ -232,6 +236,10 @@ HSTag* add_tag(const char* name) {
     tag->display_name = g_string_new(name);
     tag->floating = false;
     g_array_append_val(g_tags, tag);
+
+	char* cwd = getcwd(NULL, 0);
+	tag->working_directory = g_string_new(cwd);
+	free(cwd);
 
     // create object
     tag->object = hsobject_create_and_link(g_tag_by_name, name);
