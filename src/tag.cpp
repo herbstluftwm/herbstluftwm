@@ -58,6 +58,7 @@ static void tag_free(HSTag* tag) {
     hsobject_unlink_and_destroy(g_tag_by_name, tag->object);
     g_string_free(tag->name, true);
     g_string_free(tag->display_name, true);
+	g_string_free(tag->working_directory);
     g_free(tag);
 }
 
