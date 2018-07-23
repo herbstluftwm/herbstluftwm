@@ -524,7 +524,7 @@ int cwd_command(int argc, char** argv, GString* output) {
 }
 
 int pwd_command(int argc, char** argv, GString* output) {
-	g_string_append(output, getcwd(NULL, 0));
+	g_string_append(output, get_current_monitor()->tag->working_directory->str);
 	return 0;
 }
 
