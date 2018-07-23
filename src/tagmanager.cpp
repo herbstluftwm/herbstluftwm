@@ -9,15 +9,17 @@
 #include "client.h"
 #include "layout.h"
 #include "stack.h"
+#include "settings.h"
 
 using namespace std;
 
 TagManager* tags;
 
-TagManager::TagManager()
+TagManager::TagManager(Settings* settings_)
     : ChildByIndex()
     , by_name(*this)
     , monitors(NULL)
+    , settings(settings_)
 {
 }
 
@@ -40,7 +42,7 @@ HSTag* TagManager::add_tag(const std::string& name) {
         // nothing to do
         return find_result;
     }
-    HSTag* tag = new HSTag(name);
+    HSTag* tag = new HSTag(name, settings);
     addIndexed(tag);
 
     ewmh_update_desktops();

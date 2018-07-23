@@ -40,13 +40,13 @@ void tag_destroy() {
 }
 
 
-HSTag::HSTag(std::string name_)
+HSTag::HSTag(std::string name_, Settings* settings)
     : index("index", 0)
     , floating("floating", ACCEPT_ALL, false)
     , name("name", AT_THIS(onNameChange), name_)
 {
     stack = stack_create();
-    frame = make_shared<HSFrameLeaf>(this, shared_ptr<HSFrameSplit>());
+    frame = make_shared<HSFrameLeaf>(this, settings, shared_ptr<HSFrameSplit>());
     wireAttributes({
         &index,
         &name,

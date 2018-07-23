@@ -27,7 +27,7 @@ Root::Root(Globals g)
     settings = new Settings(this);
     theme = new Theme;
     clients = new ClientManager(*theme());
-    tags = new TagManager;
+    tags = new TagManager(settings());
     monitors = new MonitorManager(tags());
     tags()->setMonitorManager(monitors());
     hooks = new HookManager;

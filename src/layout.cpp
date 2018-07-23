@@ -88,25 +88,26 @@ void layout_destroy() {
 /* create a new frame
  * you can either specify a frame or a tag as its parent
  */
-HSFrame::HSFrame(struct HSTag* tag, weak_ptr<HSFrameSplit> parent) {
+HSFrame::HSFrame(struct HSTag* tag, Settings* settings_, weak_ptr<HSFrameSplit> parent)
+    : settings(settings_) {
     this->parent = parent;
     this->tag = tag;
 }
 HSFrame::~HSFrame() {
 }
 
-HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, weak_ptr<HSFrameSplit> parent)
-    : HSFrame(tag, parent)
+HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
+    : HSFrame(tag, settings, parent)
     , selection(0)
 {
     layout = *g_default_frame_layout;
 
-    decoration = new FrameDecoration(tag, g_settings);
+    decoration = new FrameDecoration(tag, settings);
 }
 
-HSFrameSplit::HSFrameSplit(struct HSTag* tag, std::weak_ptr<HSFrameSplit> parent, int align,
+HSFrameSplit::HSFrameSplit(struct HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b)
-             : HSFrame(tag, parent) {
+             : HSFrame(tag, settings, parent) {
     this->align = align;
     selection = 0;
     fraction = FRACTION_UNIT / 2;
@@ -967,8 +968,8 @@ bool HSFrameLeaf::split(int alignment, int fraction, int childrenLeaving) {
                      FRACTION_UNIT * (0.0 + FRAME_MIN_FRACTION),
                      FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
     auto first = shared_from_this();
-    auto second = make_shared<HSFrameLeaf>(tag, std::weak_ptr<HSFrameSplit>());
-    auto new_this = make_shared<HSFrameSplit>(tag, parent, alignment, first, second);
+    auto second = make_shared<HSFrameLeaf>(tag, settings, std::weak_ptr<HSFrameSplit>());
+    auto new_this = make_shared<HSFrameSplit>(tag, settings, parent, alignment, first, second);
     second->parent = new_this;
     second->addClients(leaves);
     if (parent.lock()) {

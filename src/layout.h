@@ -67,10 +67,11 @@ struct HSSlice;
 class HSTag;
 class HSFrameLeaf;
 class HSFrameSplit;
+class Settings;
 
 class HSFrame : public std::enable_shared_from_this<HSFrame> {
 protected:
-    HSFrame(HSTag* tag, std::weak_ptr<HSFrameSplit> parent);
+    HSFrame(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent);
     virtual ~HSFrame();
 public:
     virtual void insertClient(HSClient* client) = 0;
@@ -108,12 +109,13 @@ public:
     friend class HSFrameSplit;
 protected:
     HSTag*   tag;
+    Settings* settings;
     std::weak_ptr<HSFrameSplit> parent;
 };
 
 class HSFrameLeaf : public HSFrame {
 public:
-    HSFrameLeaf(HSTag* tag, std::weak_ptr<HSFrameSplit> parent);
+    HSFrameLeaf(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent);
     virtual ~HSFrameLeaf();
 
     // inherited:
@@ -174,7 +176,7 @@ private:
 
 class HSFrameSplit : public HSFrame {
 public:
-    HSFrameSplit(HSTag* tag, std::weak_ptr<HSFrameSplit> parent, int align,
+    HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b);
     virtual ~HSFrameSplit();
     // inherited:

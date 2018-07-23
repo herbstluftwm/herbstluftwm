@@ -17,10 +17,11 @@
 struct HSStack;
 class HSFrame;
 class HSClient;
+class Settings;
 
 class HSTag : public Object {
 public:
-    HSTag(std::string name);
+    HSTag(std::string name, Settings* settings);
     ~HSTag();
     std::shared_ptr<HSFrame>        frame;  // the master frame
     Attribute_<unsigned long> index;
@@ -31,6 +32,7 @@ public:
     void setIndexAttribute(unsigned long new_index);
 private:
     std::string onNameChange();
+    Settings* settings;
 };
 
 void tag_init();

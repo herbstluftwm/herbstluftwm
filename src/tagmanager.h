@@ -5,11 +5,12 @@
 #include "childbyindex.h"
 #include "byname.h"
 
+class Settings;
 class MonitorManager;
 
 class TagManager : public ChildByIndex<HSTag> {
 public:
-    TagManager();
+    TagManager(Settings* settings);
     void setMonitorManager(MonitorManager* monitors);
     int tag_add_command(Input input, Output output);
     int tag_rename_command(Input input, Output output);
@@ -24,6 +25,7 @@ public:
 private:
     ByName by_name;
     MonitorManager* monitors;
+    Settings* settings;
 };
 
 extern TagManager* tags; // temporarily
