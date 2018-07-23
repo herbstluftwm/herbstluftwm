@@ -6,6 +6,7 @@
 class HSTag;
 class HSSlice;
 class FrameDecoration;
+class Settings;
 
 class FrameDecorationData {
 public:
@@ -18,7 +19,7 @@ public:
 
 class FrameDecoration {
 public:
-    FrameDecoration(HSTag* tag);
+    FrameDecoration(HSTag* tag, Settings* settings);
     ~FrameDecoration();
     void render(const FrameDecorationData& data, bool isFocused);
     void updateVisibility(const FrameDecorationData& data, bool isFocused);
@@ -30,6 +31,7 @@ private:
     bool window_transparent; // whether the window has a mask at the moment
     HSSlice* slice;
     HSTag* tag;
+    Settings* settings;
 };
 
 #endif

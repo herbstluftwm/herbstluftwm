@@ -101,7 +101,7 @@ HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, weak_ptr<HSFrameSplit> parent)
 {
     layout = *g_default_frame_layout;
 
-    decoration = new FrameDecoration(tag);
+    decoration = new FrameDecoration(tag, g_settings);
 }
 
 HSFrameSplit::HSFrameSplit(struct HSTag* tag, std::weak_ptr<HSFrameSplit> parent, int align,
