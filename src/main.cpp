@@ -149,7 +149,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"remove",         frame_remove_command},
         {"set",            BIND_OBJECT(settings, set_cmd) },
         {"toggle",         BIND_OBJECT(settings, toggle_cmd) },
-        {"cycle_value",    settings_cycle_value},
+        {"cycle_value",    BIND_OBJECT(settings, cycle_value_cmd) },
         {"cycle_monitor",  monitor_cycle_command},
         {"focus_monitor",  monitor_focus_command},
         {"get",            BIND_OBJECT(settings, get_cmd) },

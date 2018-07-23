@@ -4,6 +4,8 @@
 #include "x11-types.h"
 #include "entity.h"
 
+#include <string>
+#include <vector>
 #include <functional>
 
 // a member function of an object that validates a new attribute value
@@ -46,6 +48,9 @@ public:
 
     virtual std::string str() { return {}; }
     virtual std::string change(const std::string &payload) = 0;
+
+    std::string cycleValue(std::vector<std::string>::const_iterator begin,
+                           std::vector<std::string>::const_iterator end);
 
 protected:
     Object *owner_;
