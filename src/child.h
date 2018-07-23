@@ -32,6 +32,9 @@ public:
     T* operator()() {
         return pointer;
     }
+    T* operator->() {
+        return pointer;
+    }
 private:
     Object& owner;
     std::string name;

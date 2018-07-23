@@ -57,10 +57,8 @@ bool        g_aboutToQuit;
 
 // module internals:
 static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
-static int*     g_focus_follows_mouse = NULL;
 static bool     g_exec_before_quit = false;
 static char**   g_exec_args = NULL;
-static int*     g_raise_on_click = NULL;
 
 typedef void (*HandlerTable[LASTEvent]) (Root*, XEvent*);
 
@@ -691,12 +689,6 @@ static void sigaction_signal(int signum, void (*handler)(int)) {
     sigaction(signum, &act, NULL);
 }
 
-static void fetch_settings() {
-    // fetch settings only for this main.c file from settings table
-    g_focus_follows_mouse = &(settings_find("focus_follows_mouse")->value.i);
-    g_raise_on_click = &(settings_find("raise_on_click")->value.i);
-}
-
 HandlerTable g_default_handler;
 
 static void init_handler_table() {
@@ -752,7 +744,7 @@ void buttonpress(Root* root, XEvent* event) {
         HSClient* client = get_client_from_window(be->window);
         if (client) {
             focus_client(client, false, true);
-            if (*g_raise_on_click) {
+            if (root->settings->raise_on_click()) {
                     client->raise();
             }
         }
@@ -779,7 +771,7 @@ void configurerequest(Root* root, XEvent* event) {
 
 void configurenotify(Root* root, XEvent* event) {
     if (event->xconfigure.window == g_root &&
-        settings_find("auto_detect_monitors")->value.i) {
+        root->settings->auto_detect_monitors()) {
         const char* args[] = { "detect_monitors" };
         std::ostringstream void_output;
         detect_monitors_command(LENGTH(args), args, void_output);
@@ -948,7 +940,6 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < LENGTH(g_modules); i++) {
         g_modules[i].init();
     }
-    fetch_settings();
 
     // setup
     root->monitors()->ensure_monitors_are_available();
