@@ -114,8 +114,5 @@ void settings_destroy();
 SettingsPair* settings_find(const char* name);
 char* settings_find_string(const char* name);
 
-int settings_toggle(int argc, char** argv, Output output);
-int settings_cycle_value(int argc, char** argv, Output output);
-
 #endif
 
