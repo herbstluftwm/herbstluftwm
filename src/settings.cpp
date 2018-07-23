@@ -3,6 +3,7 @@
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
 
+#include "root.h"
 #include "globals.h"
 #include "settings.h"
 #include "client.h"
@@ -114,7 +115,7 @@ SettingsPair g_settings_old[] = {
 #define SAME_NAME(NAME, UPDATE, DEFAULT) \
     NAME(#NAME, UPDATE, DEFAULT)
 
-Settings::Settings(Object* root)
+Settings::Settings(Root* root)
     : frame_gap(                "frame_gap",        AT_THIS(relayout), 5)
     , frame_padding(            "frame_padding",    AT_THIS(relayout),                   0)
     , window_gap(               "window_gap",       AT_THIS(relayout),                      0)
@@ -145,7 +146,7 @@ Settings::Settings(Object* root)
     , gapless_grid(             "gapless_grid",                 AT_THIS(relayout),                    1)
     , smart_frame_surroundings( "smart_frame_surroundings",     AT_THIS(relayout),        0)
     , smart_window_surroundings("smart_window_surroundings",    AT_THIS(relayout),       0)
-    , monitors_locked(          "monitors_locked",              AT_THIS(lock_changed), 0)
+    , monitors_locked(          "monitors_locked",              AT_THIS(lock_changed), root->globals.initial_monitors_locked)
     , auto_detect_monitors(     "auto_detect_monitors",         ACCEPT_ALL,            0)
     , pseudotile_center_threshold("pseudotile_center_threshold",AT_THIS(relayout),    10)
     , update_dragged_clients(   "update_dragged_clients",       ACCEPT_ALL,          0)
@@ -402,9 +403,6 @@ int Settings::get_cmd(Input argv, Output output) {
     return 0;
 }
 
-// globals:
-int g_initial_monitors_locked = 0;
-
 int settings_count() {
     return LENGTH(g_settings_old);
 }
@@ -419,7 +417,6 @@ void settings_init() {
             g_settings_old[i].old_value_i = 1;
         }
     }
-    settings_find("monitors_locked")->value.i = g_initial_monitors_locked;
 
     // create a settings object
     // ensure everything is nulled that is not explicitely initialized

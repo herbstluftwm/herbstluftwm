@@ -15,13 +15,14 @@
 
 std::shared_ptr<Root> Root::root_;
 
-Root::Root()
+Root::Root(Globals g)
     : settings(*this, "settings")
     , clients(*this, "clients")
     , tags(*this, "tags")
     , monitors(*this, "monitors")
     , hooks(*this, "hooks")
     , theme(*this, "theme")
+    , globals(g)
 {
     settings = new Settings(this);
     theme = new Theme;

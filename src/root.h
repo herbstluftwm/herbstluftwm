@@ -15,6 +15,12 @@ class MonitorManager;
 class Theme;
 class Settings;
 
+class Globals {
+public:
+    Globals() : initial_monitors_locked(0) {};
+    int initial_monitors_locked;
+};
+
 class Root : public Object {
 public:
     //static std::shared_ptr<Root> create();
@@ -23,7 +29,7 @@ public:
     static void setRoot(const std::shared_ptr<Root>& r) { root_ = r; }
 
     // constructor creates top-level objects
-    Root();
+    Root(Globals g);
     ~Root();
 
     Attribute* getAttribute(std::string path, Output output);
@@ -42,9 +48,9 @@ public:
     Child_<MonitorManager> monitors;
     Child_<HookManager> hooks;
     Child_<Theme> theme;
+    Globals globals;
 
 private:
-
     static std::shared_ptr<Root> root_;
 };
 

@@ -35,10 +35,12 @@ typedef struct {
     void (*on_change)(); // what to call on change
 } SettingsPair;
 
+class Root;
+
 class Settings : public Object {
 public:
     using string = std::string;
-    Settings(Object* root);
+    Settings(Root* root);
     // commands:
     int set_cmd(Input argv, Output output);
     int get_cmd(Input argv, Output output);
@@ -104,7 +106,6 @@ private:
     string update_wmname();
 };
 
-extern int g_initial_monitors_locked;
 extern Settings* g_settings;
 
 void settings_init();

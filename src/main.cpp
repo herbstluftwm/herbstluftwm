@@ -637,7 +637,7 @@ void execute_autostart_file() {
     g_string_free(path, true);
 }
 
-static void parse_arguments(int argc, char** argv) {
+static void parse_arguments(int argc, char** argv, Globals& g) {
     static struct option long_options[] = {
         {"autostart",   1, 0, 'c'},
         {"version",     0, 0, 'v'},
@@ -664,7 +664,7 @@ static void parse_arguments(int argc, char** argv) {
                 g_autostart_path = optarg;
                 break;
             case 'l':
-                g_initial_monitors_locked = 1;
+                g.initial_monitors_locked = 1;
                 break;
             default:
                 exit(EXIT_FAILURE);
@@ -914,7 +914,8 @@ void unmapnotify(Root* root, XEvent* event) {
 /* ---- */
 
 int main(int argc, char* argv[]) {
-    parse_arguments(argc, argv);
+    Globals g;
+    parse_arguments(argc, argv, g);
     XConnection X = XConnection::connect();
     g_display = X.display();
     if (!g_display) {
@@ -935,7 +936,7 @@ int main(int argc, char* argv[]) {
     g_root = X.root();
     XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
 
-    auto root = std::make_shared<Root>();
+    auto root = std::make_shared<Root>(g);
     Root::setRoot(root);
     //test_object_system();
 
