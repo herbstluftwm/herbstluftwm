@@ -249,6 +249,12 @@ mousebind 'BUTTON' 'ACTION' ['COMMAND' ...]::
 mouseunbind::
     Removes all mouse bindings.
 
+cwd 'PATH'::
+	Changes the current working directory to 'PATH'.
+
+pwd::
+	Prints the current working directory.
+
 spawn 'EXECUTABLE' ['ARGS ...']::
     Spawns an 'EXECUTABLE' with its 'ARGS'. For details see 'man 3 execvp'.
     Example:
