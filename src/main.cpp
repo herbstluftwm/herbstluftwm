@@ -512,20 +512,20 @@ int unsetenv_command(int argc, char** argv, GString* output) {
 }
 
 int cwd_command(int argc, char** argv, GString* output) {
-	if (argc < 2) {
-		return HERBST_NEED_MORE_ARGS;
-	}
+    if (argc < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
 
-	HSTag* curr_tag = get_current_monitor()->tag;
-	g_string_assign(curr_tag->working_directory, argv[1]);
-	chdir(argv[1]);
+    HSTag* curr_tag = get_current_monitor()->tag;
+    g_string_assign(curr_tag->working_directory, argv[1]);
+    chdir(argv[1]);
 
-	return 0;
+    return 0;
 }
 
 int pwd_command(int argc, char** argv, GString* output) {
-	g_string_append(output, get_current_monitor()->tag->working_directory->str);
-	return 0;
+    g_string_append(output, get_current_monitor()->tag->working_directory->str);
+    return 0;
 }
 
 // handle x-events:

@@ -81,7 +81,7 @@ void mouse_initiate_move(HSClient* client, int argc, char** argv) {
 void mouse_initiate_zoom(HSClient* client, int argc, char** argv) {
     (void) argc; (void) argv;
     if (is_client_floated(client))
-	mouse_initiate_drag(client, mouse_function_zoom);
+    mouse_initiate_drag(client, mouse_function_zoom);
     else return;
 }
 
@@ -363,7 +363,7 @@ void mouse_function_resize_tiled(XMotionEvent* me) {
         if (tl && tr) { direction[0] = 'u'; direction[2] = 'd'; }
         else if (tl)  { direction[0] = 'l'; direction[2] = 'r'; }
         else if (tr)  { direction[0] = 'r'; direction[2] = 'l'; }
-        else	      { direction[0] = 'd'; direction[2] = 'u'; }
+        else          { direction[0] = 'd'; direction[2] = 'u'; }
 
         switch (direction[0]) {
             case 'l':

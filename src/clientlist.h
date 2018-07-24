@@ -44,7 +44,7 @@ typedef struct HSClient {
                                 // notify event
     bool        visible;
     // for size hints
-	float mina, maxa;
+    float mina, maxa;
     int basew, baseh, incw, inch, maxw, maxh, minw, minh;
     // for other modules
     HSObject    object;

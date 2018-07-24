@@ -86,9 +86,9 @@ void array_reverse(void* void_buf, size_t elems, size_t size);
 
 template<class T, int S> struct ArrayInitializer {
     ArrayInitializer(std::initializer_list<std::pair<int,T> > il) {
-	for (auto i = il.begin(); i != il.end(); i++) {
-	    a[i->first] = i->second;
-	}
+    for (auto i = il.begin(); i != il.end(); i++) {
+        a[i->first] = i->second;
+    }
     }
 
     std::array<T, S> a;
