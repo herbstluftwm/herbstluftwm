@@ -14,7 +14,3 @@ for the first steps (also available as `man herbstluftwm-tutorial` after
 installing herbstluftwm on your system).
 
 You are welcome to join the IRC channel `#herbstluftwm` on `irc.freenode.net`.
-
-## halflifewm
-
-For some reason this needs to be wd-aware, because I imagine it could work with my workflow. /shrug
