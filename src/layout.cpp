@@ -100,7 +100,7 @@ HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, Settings* settings, weak_ptr<HSFrame
     : HSFrame(tag, settings, parent)
     , selection(0)
 {
-    layout = *g_default_frame_layout;
+    layout = settings->default_frame_layout();
 
     decoration = new FrameDecoration(tag, settings);
 }
@@ -703,7 +703,7 @@ TilingResult HSFrameLeaf::layoutGrid(Rectangle rect) {
 
 TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
     last_rect = rect;
-    if (!*g_smart_frame_surroundings || parent.lock()) {
+    if (!settings->smart_frame_surroundings() || parent.lock()) {
         // apply frame gap
         rect.height -= *g_frame_gap;
         rect.width -= *g_frame_gap;
@@ -732,16 +732,18 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
 
     if (!smart_window_surroundings_active(this)) {
         // apply window gap
-        rect.x += *g_window_gap;
-        rect.y += *g_window_gap;
-        rect.width -= *g_window_gap;
-        rect.height -= *g_window_gap;
+        auto window_gap = settings->window_gap();
+        rect.x += window_gap;
+        rect.y += window_gap;
+        rect.width -= window_gap;
+        rect.height -= window_gap;
 
         // apply frame padding
-        rect.x += *g_frame_padding;
-        rect.y += *g_frame_padding;
-        rect.width  -= *g_frame_padding * 2;
-        rect.height -= *g_frame_padding * 2;
+        auto frame_padding = settings->frame_padding();
+        rect.x += frame_padding;
+        rect.y += frame_padding;
+        rect.width  -= frame_padding * 2;
+        rect.height -= frame_padding * 2;
     }
     TilingResult layoutResult;
     if (layout == LAYOUT_MAX) {
@@ -1210,7 +1212,7 @@ int frame_inner_neighbour_index(shared_ptr<HSFrameLeaf> frame, char direction) {
             switch (direction) {
                 case 'd':
                     index = selection + cols;
-                    if (*g_gapless_grid && index >= count && r == (rows - 2)) {
+                    if (g_settings->gapless_grid() && index >= count && r == (rows - 2)) {
                         // if grid is gapless and we're in the second-last row
                         // then it means last client is below us
                         index = count - 1;
@@ -1235,7 +1237,7 @@ int frame_inner_neighbour_index(shared_ptr<HSFrameLeaf> frame, char direction) {
 int frame_focus_command(int argc, char** argv, Output output) {
     // usage: focus [-e|-i] left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
-    int external_only = *g_direction_external_only;
+    int external_only = g_settings->default_direction_external_only();
     char direction = argv[1][0];
     if (argc > 2 && !strcmp(argv[1], "-i")) {
         external_only = false;
@@ -1270,11 +1272,11 @@ int frame_focus_command(int argc, char** argv, Output output) {
             neighbour_found = false;
         }
     }
-    if (!neighbour_found && !*g_focus_crosses_monitor_boundaries) {
+    if (!neighbour_found && !g_settings->focus_crosses_monitor_boundaries()) {
         output << argv[0] << ": No neighbour found\n";
         return HERBST_FORBIDDEN;
     }
-    if (!neighbour_found && *g_focus_crosses_monitor_boundaries) {
+    if (!neighbour_found && g_settings->focus_crosses_monitor_boundaries()) {
         // find monitor in the specified direction
         enum HSDirection dir = char_to_direction(direction);
         if (dir < 0) return HERBST_INVALID_ARGUMENT;
@@ -1297,7 +1299,7 @@ int frame_move_window_command(int argc, char** argv, Output output) {
     // usage: move left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
     char direction = argv[1][0];
-    int external_only = *g_direction_external_only;
+    int external_only = g_settings->default_direction_external_only();
     if (argc > 2 && !strcmp(argv[1], "-i")) {
         external_only = false;
         direction = argv[2][0];
@@ -1554,11 +1556,11 @@ int frame_focus_edge(int argc, char** argv, Output output) {
     // Puts the focus to the edge in the specified direction
     const char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);
-    int oldval = *g_focus_crosses_monitor_boundaries;
-    *g_focus_crosses_monitor_boundaries = 0;
+    int oldval = g_settings->focus_crosses_monitor_boundaries();
+    g_settings->focus_crosses_monitor_boundaries = 0;
     while (0 == frame_focus_command(argc,argv,output))
         ;
-    *g_focus_crosses_monitor_boundaries = oldval;
+    g_settings->focus_crosses_monitor_boundaries = oldval;
     monitors_unlock_command(LENGTH(args), args);
     return 0;
 }
@@ -1567,17 +1569,17 @@ int frame_move_window_edge(int argc, char** argv, Output output) {
     // Moves a window to the edge in the specified direction
     const char* args[] = { "" };
     monitors_lock_command(LENGTH(args), args);
-    int oldval = *g_focus_crosses_monitor_boundaries;
-    *g_focus_crosses_monitor_boundaries = 0;
+    int oldval = g_settings->focus_crosses_monitor_boundaries();
+    g_settings->focus_crosses_monitor_boundaries = 0;
     while (0 == frame_move_window_command(argc,argv,output))
         ;
-    *g_focus_crosses_monitor_boundaries = oldval;
+    g_settings->focus_crosses_monitor_boundaries = oldval;
     monitors_unlock_command(LENGTH(args), args);
     return 0;
 }
 
 bool smart_window_surroundings_active(HSFrameLeaf* frame) {
-    return *g_smart_window_surroundings
+    return g_settings->smart_window_surroundings()
             && (frame->clientCount() == 1
                 || frame->getLayout() == LAYOUT_MAX);
 }
