@@ -39,7 +39,6 @@ using namespace std;
 
 // module internals:
 int g_cur_monitor;
-static int* g_monitors_locked;
 static int* g_swap_monitors_to_get_tag;
 static int* g_smart_frame_surroundings;
 static int* g_mouse_recenter_gap;
@@ -47,7 +46,6 @@ static ::HSStack* g_monitor_stack;
 MonitorManager* monitors;
 
 void monitor_init() {
-    g_monitors_locked = &(settings_find("monitors_locked")->value.i);
     g_cur_monitor = 0;
     g_swap_monitors_to_get_tag = &(settings_find("swap_monitors_to_get_tag")->value.i);
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
@@ -172,7 +170,7 @@ void monitor_destroy() {
 }
 
 void HSMonitor::applyLayout() {
-    if (*g_monitors_locked) {
+    if (settings->monitors_locked) {
         dirty = true;
         return;
     }
@@ -807,53 +805,6 @@ HSMonitor* monitor_with_coordinate(int x, int y) {
 
 HSMonitor* monitor_with_index(int index) {
     return &* monitors->byIdx(index);
-}
-
-int monitors_lock_command(int argc, const char** argv) {
-    monitors_lock();
-    return 0;
-}
-
-void monitors_lock() {
-    // lock-number must never be negative
-    // ensure that lock value is valid
-    if (*g_monitors_locked < 0) {
-        *g_monitors_locked = 0;
-    }
-    // increase lock => it is definitely > 0, i.e. locked
-    (*g_monitors_locked)++;
-    monitors_lock_changed();
-}
-
-int monitors_unlock_command(int argc, const char** argv) {
-    monitors_unlock();
-    return 0;
-}
-
-void monitors_unlock() {
-    // lock-number must never be lower than 1 if unlocking
-    // so: ensure that lock value is valid
-    if (*g_monitors_locked < 1) {
-        *g_monitors_locked = 1;
-    }
-    // decrease lock => unlock
-    (*g_monitors_locked)--;
-    monitors_lock_changed();
-}
-
-void monitors_lock_changed() {
-    if (*g_monitors_locked < 0) {
-        *g_monitors_locked = 0;
-        HSDebug("fixing invalid monitors_locked value to 0\n");
-    }
-    if (!*g_monitors_locked) {
-        // if not locked anymore, then repaint all the dirty monitors
-        for (auto m : *monitors) {
-            if (m->dirty) {
-                m->applyLayout();
-            }
-        }
-    }
 }
 
 // monitor detection using xinerama (if available)

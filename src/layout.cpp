@@ -1401,19 +1401,19 @@ bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor) {
             assert(cur_mon == monitor);
         }
     }
-    monitors_lock();
+    monitors->lock();
     monitor_set_tag(cur_mon, tag);
     cur_mon = get_current_monitor();
     if (cur_mon->tag != tag) {
         // could not set tag on monitor
-        monitors_unlock();
+        monitors->unlock();
         return false;
     }
     // now the right tag is visible
     // now focus it
     bool found = tag->frame->focusClient(client);
     cur_mon->applyLayout();
-    monitors_unlock();
+    monitors->unlock();
     return found;
 }
 
@@ -1531,27 +1531,25 @@ int close_and_remove_command(int argc, char** argv) {
 
 int frame_focus_edge(int argc, char** argv, Output output) {
     // Puts the focus to the edge in the specified direction
-    const char* args[] = { "" };
-    monitors_lock_command(LENGTH(args), args);
+    monitors->lock();
     int oldval = g_settings->focus_crosses_monitor_boundaries();
     g_settings->focus_crosses_monitor_boundaries = 0;
     while (0 == frame_focus_command(argc,argv,output))
         ;
     g_settings->focus_crosses_monitor_boundaries = oldval;
-    monitors_unlock_command(LENGTH(args), args);
+    monitors->unlock();
     return 0;
 }
 
 int frame_move_window_edge(int argc, char** argv, Output output) {
     // Moves a window to the edge in the specified direction
-    const char* args[] = { "" };
-    monitors_lock_command(LENGTH(args), args);
+    monitors->lock();
     int oldval = g_settings->focus_crosses_monitor_boundaries();
     g_settings->focus_crosses_monitor_boundaries = 0;
     while (0 == frame_move_window_command(argc,argv,output))
         ;
     g_settings->focus_crosses_monitor_boundaries = oldval;
-    monitors_unlock_command(LENGTH(args), args);
+    monitors->unlock();
     return 0;
 }
 

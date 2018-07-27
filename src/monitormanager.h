@@ -32,6 +32,12 @@ public:
     // return a command that interprets the first argument
     // as a monitor description and then calls the given command on this monitor
     std::function<int(Input, Output)> byFirstArg(HSMonitorCommand cmd);
+
+    void lock();
+    void unlock();
+    int lock_cmd(Input, Output);
+    int unlock_cmd(Input, Output);
+    std::string lock_number_changed();
 private:
     ByName by_name;
     TagManager* tags;

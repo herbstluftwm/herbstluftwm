@@ -104,6 +104,7 @@ private:
     string lock_changed();
     string focus_layer();
     string update_wmname();
+    Root* root;
 };
 
 extern Settings* g_settings;

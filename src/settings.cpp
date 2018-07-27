@@ -10,6 +10,7 @@
 #include "layout.h"
 #include "ipc-protocol.h"
 #include "ewmh.h"
+#include "monitormanager.h"
 
 #include "glib-backports.h"
 #include <string.h>
@@ -55,7 +56,6 @@ SettingsPair SET_COMPAT(const char* name, const char* read, const char* write)
 #define RELAYOUT all_monitors_apply_layout
 #define FR_COLORS reset_frame_colors
 #define CL_COLORS reset_client_colors
-#define LOCK_CHANGED monitors_lock_changed
 #define FOCUS_LAYER tag_update_each_focus_layer
 #define WMNAME ewmh_update_wmname
 
@@ -91,7 +91,7 @@ SettingsPair g_settings_old[] = {
     SET_INT(    "gapless_grid",                    1,           RELAYOUT    ),
     SET_INT(    "smart_frame_surroundings",        0,           RELAYOUT    ),
     SET_INT(    "smart_window_surroundings",       0,           RELAYOUT    ),
-    SET_INT(    "monitors_locked",                 0,           LOCK_CHANGED),
+    SET_INT(    "monitors_locked",                 0,           NULL        ),
     SET_INT(    "auto_detect_monitors",            0,           NULL        ),
     SET_INT(    "pseudotile_center_threshold",    10,           RELAYOUT    ),
     SET_INT(    "update_dragged_clients",          0,           NULL        ),
@@ -170,6 +170,7 @@ Settings::Settings(Root* root)
     , window_border_urgent_color("window_border_urgent_color",
         setColorAttr(root, "theme.urgent.color"),
         getColorAttr(root, "theme.tiling.urgent.color"))
+    , root(root)
 {
     wireAttributes({
         &frame_gap,
@@ -294,8 +295,7 @@ string Settings::cl_colors() {
     return {};
 }
 string Settings::lock_changed() {
-    monitors_lock_changed();
-    return {};
+    return root->monitors()->lock_number_changed();
 }
 string Settings::focus_layer() {
     tag_update_each_focus_layer();

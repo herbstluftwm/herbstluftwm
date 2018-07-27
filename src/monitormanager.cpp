@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "layout.h"
 #include "monitor.h"
+#include "settings.h"
 #include "ipc-protocol.h"
 
 using namespace std;
@@ -147,5 +148,41 @@ HSMonitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
     HSMonitor* m = new HSMonitor(settings, this, rect, tag);
     monitors->addIndexed(m);
     return m;
+}
+
+
+int MonitorManager::lock_cmd(Input, Output) {
+    lock();
+    return 0;
+}
+
+void MonitorManager::lock() {
+    settings->monitors_locked = settings->monitors_locked() + 1;
+    lock_number_changed();
+}
+
+void MonitorManager::unlock() {
+    settings->monitors_locked = max(0, settings->monitors_locked() - 1);
+    lock_number_changed();
+}
+
+int MonitorManager::unlock_cmd(Input, Output) {
+    unlock();
+    return 0;
+}
+
+std::string MonitorManager::lock_number_changed() {
+    if (settings->monitors_locked() < 0) {
+        return "must be non-negative";
+    }
+    if (!settings->monitors_locked()) {
+        // if not locked anymore, then repaint all the dirty monitors
+        for (auto m : *this) {
+            if (m->dirty) {
+                m->applyLayout();
+            }
+        }
+    }
+    return {};
 }
 
