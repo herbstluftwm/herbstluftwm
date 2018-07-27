@@ -283,6 +283,9 @@ string Settings::relayout() {
     return {};
 }
 string Settings::fr_colors() {
+    if (default_frame_layout < 0 || default_frame_layout >= LAYOUT_COUNT) {
+        return "layout number must be between 0 and " + to_string(LAYOUT_COUNT - 1);
+    }
     reset_frame_colors();
     return {};
 }

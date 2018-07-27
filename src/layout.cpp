@@ -33,7 +33,6 @@
 
 using namespace std;
 
-static int* g_default_frame_layout;
 static int* g_direction_external_only;
 static int* g_gapless_grid;
 static int* g_smart_frame_surroundings;
@@ -62,13 +61,11 @@ static void fetch_frame_colors() {
     g_frame_gap = &(settings_find("frame_gap")->value.i);
     g_frame_padding = &(settings_find("frame_padding")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
-    g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
     g_direction_external_only = &(settings_find("default_direction_external_only")->value.i);
     g_gapless_grid = &(settings_find("gapless_grid")->value.i);
     g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
     g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
     g_focus_crosses_monitor_boundaries = &(settings_find("focus_crosses_monitor_boundaries")->value.i);
-    *g_default_frame_layout = CLAMP(*g_default_frame_layout, 0, LAYOUT_COUNT - 1);
 }
 
 void layout_init() {
