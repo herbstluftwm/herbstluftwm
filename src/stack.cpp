@@ -120,7 +120,7 @@ static void slice_append_caption(HSTree root, Output output) {
         case SLICE_CLIENT:
             output << "Client 0x"
                    << std::hex << slice->data.client->x11Window() << std::dec
-                   << "\"" << slice->data.client->title_() << "\"";
+                   << " \"" << slice->data.client->title_() << "\"";
             break;
         case SLICE_MONITOR:
             if (slice->data.monitor->name != "") {
