@@ -1396,7 +1396,7 @@ bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor) {
             return false;
         } else {
             // switch monitor
-            monitor_focus_by_index(monitor_index_of(monitor));
+            monitor_focus_by_index(monitor->index());
             cur_mon = get_current_monitor();
             assert(cur_mon == monitor);
         }

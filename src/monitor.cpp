@@ -557,7 +557,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
         if (other != NULL) {
             // but if the tag is already visible, change to the
             // displaying monitor
-            monitor_focus_by_index(monitor_index_of(other));
+            monitor_focus_by_index(other->index());
             return 0;
         }
         return 1;
@@ -567,7 +567,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             if (other->lock_tag) {
                 // the monitor we want to steal the tag from is
                 // locked. focus that monitor instead
-                monitor_focus_by_index(monitor_index_of(other));
+                monitor_focus_by_index(other->index());
                 return 0;
             }
             // swap tags
@@ -584,12 +584,12 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             drop_enternotify_events();
             monitor_update_focus_objects();
             ewmh_update_current_desktop();
-            emit_tag_changed(other->tag, monitor_index_of(other));
+            emit_tag_changed(other->tag, other->index());
             emit_tag_changed(tag, g_cur_monitor);
         } else {
             // if we are not allowed to steal the tag, then just focus the
             // other monitor
-            monitor_focus_by_index(monitor_index_of(other));
+            monitor_focus_by_index(other->index());
         }
         return 0;
     }
@@ -633,7 +633,7 @@ int monitor_set_tag_command(int argc, char** argv, Output output) {
         if (ret != 0) {
             output << argv[0] << ": Could not change tag";
             if (monitor->lock_tag) {
-                output << " (monitor " << monitor_index_of(monitor) << " is locked)";
+                output << " (monitor " << monitor->index() << " is locked)";
             }
             output << "\n";
         }
@@ -716,10 +716,6 @@ int monitor_cycle_command(int argc, char** argv) {
     // really change selection
     monitor_focus_by_index(new_selection);
     return 0;
-}
-
-int monitor_index_of(HSMonitor* monitor) {
-    return monitors->index_of(monitor);
 }
 
 void monitor_focus_by_index(int new_selection) {

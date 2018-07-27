@@ -83,7 +83,6 @@ HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 void monitor_focus_by_index(int new_selection);
-int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv, Output output);
 int find_monitor_index_by_name(char* name);
