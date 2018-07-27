@@ -110,7 +110,6 @@ void all_monitors_replace_previous_tag(HSTag* old, HSTag* newmon);
 
 void drop_enternotify_events();
 
-int monitor_stack_window_count(bool real_clients);
 void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
                                  int* remain_len);
 struct HSStack* get_monitor_stack();
