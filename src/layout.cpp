@@ -33,7 +33,6 @@
 
 using namespace std;
 
-static int* g_frame_border_width;
 static int* g_default_frame_layout;
 static int* g_direction_external_only;
 static int* g_gapless_grid;
@@ -63,7 +62,6 @@ static void fetch_frame_colors() {
     g_frame_gap = &(settings_find("frame_gap")->value.i);
     g_frame_padding = &(settings_find("frame_padding")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
-    g_frame_border_width = &(settings_find("frame_border_width")->value.i);
     g_default_frame_layout = &(settings_find("default_frame_layout")->value.i);
     g_direction_external_only = &(settings_find("default_direction_external_only")->value.i);
     g_gapless_grid = &(settings_find("gapless_grid")->value.i);
@@ -705,13 +703,13 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
     last_rect = rect;
     if (!settings->smart_frame_surroundings() || parent.lock()) {
         // apply frame gap
-        rect.height -= *g_frame_gap;
-        rect.width -= *g_frame_gap;
+        rect.height -= settings->frame_gap();
+        rect.width -= settings->frame_gap();
         // apply frame border
-        rect.x += *g_frame_border_width;
-        rect.y += *g_frame_border_width;
-        rect.height -= *g_frame_border_width * 2;
-        rect.width -= *g_frame_border_width * 2;
+        rect.x += settings->frame_border_width();
+        rect.y += settings->frame_border_width();
+        rect.height -= settings->frame_border_width() * 2;
+        rect.width -= settings->frame_border_width() * 2;
     }
 
     rect.width = std::max(WINDOW_MIN_WIDTH, rect.width);
