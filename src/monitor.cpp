@@ -413,30 +413,29 @@ int remove_monitor(int index) {
     return 0;
 }
 
-int move_monitor_command(int argc, char** argv, Output output) {
+int HSMonitor::move_cmd(Input input, Output output) {
     // usage: move_monitor INDEX RECT [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]
     // moves monitor with number to RECT
-    if (argc < 3) {
+    input.shift();
+    if (input.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
-    HSMonitor* monitor = monitors->byString(argv[1]);
-    if (monitor == NULL) {
-        output << argv[0] <<
-            ": Monitor \"" << argv[1] << "\" not found!\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    auto rect = Rectangle::fromStr(argv[2]);
+    auto rect = Rectangle::fromStr(input.front().c_str());
     if (rect.width < WINDOW_MIN_WIDTH || rect.height < WINDOW_MIN_HEIGHT) {
-        output << argv[0] << "%s: Rectangle is too small\n";
+        output << input.command() << "%s: Rectangle is too small\n";
         return HERBST_INVALID_ARGUMENT;
     }
     // else: just move it:
-    monitor->rect = rect;
-    if (argc > 3 && argv[3][0] != '\0') monitor->pad_up       = atoi(argv[3]);
-    if (argc > 4 && argv[4][0] != '\0') monitor->pad_right    = atoi(argv[4]);
-    if (argc > 5 && argv[5][0] != '\0') monitor->pad_down     = atoi(argv[5]);
-    if (argc > 6 && argv[6][0] != '\0') monitor->pad_left     = atoi(argv[6]);
-    monitor->applyLayout();
+    this->rect = rect;
+    input.shift();
+    if (!input.empty()) pad_up       = stoi(input.front());
+    input.shift();
+    if (!input.empty()) pad_right    = stoi(input.front());
+    input.shift();
+    if (!input.empty()) pad_down     = stoi(input.front());
+    input.shift();
+    if (!input.empty()) pad_left     = stoi(input.front());
+    applyLayout();
     return 0;
 }
 

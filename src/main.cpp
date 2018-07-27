@@ -168,7 +168,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"add_monitor",    add_monitor_command},
         {"raise_monitor",  monitor_raise_command},
         {"remove_monitor", remove_monitor_command},
-        {"move_monitor",   move_monitor_command},
+        {"move_monitor",   monitors->byFirstArg(&HSMonitor::move_cmd) } ,
         {"rename_monitor", rename_monitor_command},
         {"monitor_rect",   monitor_rect_command},
         {"pad",            monitor_set_pad_command},
