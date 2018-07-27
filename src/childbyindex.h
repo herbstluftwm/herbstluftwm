@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include "object.h"
+#include "attribute_.h"
 
 
 
@@ -13,7 +14,9 @@
 template<typename T>
 class ChildByIndex : public Object {
 public:
-    ChildByIndex() {}
+    ChildByIndex()
+    : count("count", [this]() { return this->size(); })
+    { wireAttributes({ &count }); }
     void addIndexed(T* newChild) {
         unsigned long index_int = data.size();
         std::string index = std::to_string(index_int);
@@ -70,6 +73,7 @@ public:
         data.erase(data.begin(), data.end());
     }
 
+    DynAttribute_<unsigned long> count;
 
     // iterators
     typedef typename std::vector<T*>::iterator iterator_type;
