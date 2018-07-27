@@ -33,13 +33,6 @@
 
 using namespace std;
 
-static int* g_direction_external_only;
-static int* g_gapless_grid;
-static int* g_smart_frame_surroundings;
-static int* g_smart_window_surroundings;
-static int* g_focus_crosses_monitor_boundaries;
-static int* g_frame_padding;
-
 int* g_frame_gap;
 int* g_window_gap;
 
@@ -56,23 +49,12 @@ const char* g_layout_names[] = {
     NULL,
 };
 
-static void fetch_frame_colors() {
-    // load settings
+void layout_init() {
     g_frame_gap = &(settings_find("frame_gap")->value.i);
-    g_frame_padding = &(settings_find("frame_padding")->value.i);
     g_window_gap = &(settings_find("window_gap")->value.i);
-    g_direction_external_only = &(settings_find("default_direction_external_only")->value.i);
-    g_gapless_grid = &(settings_find("gapless_grid")->value.i);
-    g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
-    g_smart_window_surroundings = &(settings_find("smart_window_surroundings")->value.i);
-    g_focus_crosses_monitor_boundaries = &(settings_find("focus_crosses_monitor_boundaries")->value.i);
 }
 
-void layout_init() {
-    fetch_frame_colors();
-}
 void reset_frame_colors() {
-    fetch_frame_colors();
     all_monitors_apply_layout();
 }
 
@@ -677,7 +659,7 @@ TilingResult HSFrameLeaf::layoutGrid(Rectangle rect) {
         }
         int count = clients.size();
         for (int c = 0; c < cols && i < count; c++) {
-            if (*g_gapless_grid && (i == count - 1) // if last client
+            if (settings->gapless_grid() && (i == count - 1) // if last client
                 && (count % cols != 0)) {           // if cols remain
                 // fill remaining cols with client
                 cur.width = rect.x + rect.width - cur.x;
