@@ -10,11 +10,12 @@
 
 using namespace std;
 
-MonitorManager::MonitorManager(TagManager* tags_)
+MonitorManager::MonitorManager(Settings* settings_, TagManager* tags_)
     : ChildByIndex<HSMonitor>()
     , focus(*this, "focus")
     , by_name(*this)
     , tags(tags_)
+    , settings(settings_)
 {
 }
 
@@ -35,7 +36,7 @@ void MonitorManager::ensure_monitors_are_available() {
             DisplayHeight(g_display, DefaultScreen(g_display))};
     HSTag* tag = tags->ensure_tags_are_available();
     // add monitor with first tag
-    HSMonitor* m = add_monitor(rect, &* tag, NULL);
+    HSMonitor* m = addMonitor(rect, tag);
     m->tag->frame->setVisibleRecursive(true);
     g_cur_monitor = 0;
 
@@ -140,5 +141,11 @@ function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
         }
         return (monitor ->* cmd_captured)(input, output);
     };
+}
+
+HSMonitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
+    HSMonitor* m = new HSMonitor(settings, this, rect, tag);
+    monitors->addIndexed(m);
+    return m;
 }
 

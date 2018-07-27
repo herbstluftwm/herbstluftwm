@@ -55,15 +55,22 @@ void monitor_init() {
     g_monitor_stack = stack_create();
 }
 
-HSMonitor::HSMonitor()
-    : name("name", AT_THIS(onNameChange), "")
+HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, HSTag* tag_)
+    : tag(tag_)
+    , tag_previous(tag_)
+    , name("name", AT_THIS(onNameChange), "")
     , index("index", 0)
     , tag_string("tag", ([this](string s) { return this->setTagString(s); }), AT_THIS(getTagString))
     , pad_up("pad_up", AT_THIS(onPadChange), 0)
     , pad_right("pad_right", AT_THIS(onPadChange), 0)
     , pad_down("pad_down", AT_THIS(onPadChange), 0)
     , pad_left("pad_left", AT_THIS(onPadChange), 0)
+    , dirty(true)
     , lock_tag("lock_tag", ACCEPT_ALL, false)
+    , mouse { 0, 0 }
+    , rect(rect_)
+    , settings(settings_)
+    , monman(monman_)
 {
     wireAttributes({
         &index,
@@ -75,6 +82,12 @@ HSMonitor::HSMonitor()
         &pad_left,
         &lock_tag,
     });
+
+    slice = slice_create_monitor(this);
+    stacking_window = XCreateSimpleWindow(g_display, g_root,
+                                             42, 42, 42, 42, 1, 0, 0);
+
+    stack_insert_slice(g_monitor_stack, slice);
 }
 
 HSMonitor::~HSMonitor() {
@@ -256,7 +269,7 @@ int set_monitor_rects(const RectangleVec &templates) {
         if (!tag) {
             return HERBST_TAG_IN_USE;
         }
-        add_monitor(templates[i], tag, NULL);
+        monitors->addMonitor(templates[i], tag);
         tag->frame->setVisibleRecursive(true);
     }
     // remove monitors if there are too much
@@ -288,26 +301,6 @@ HSMonitor* find_monitor_by_name(char* name) {
 
 HSMonitor* string_to_monitor(char* str) {
   return monitors->byString(str);
-}
-
-HSMonitor* add_monitor(Rectangle rect, HSTag* tag, char* name) {
-    assert(tag != NULL);
-    HSMonitor* m = new HSMonitor;
-    m->rect = rect;
-    m->tag = tag;
-    m->tag_previous = tag;
-    m->name = name ? name : "";
-    m->mouse.x = 0;
-    m->mouse.y = 0;
-    m->dirty = true;
-    m->slice = slice_create_monitor(&* m);
-    m->stacking_window = XCreateSimpleWindow(g_display, g_root,
-                                             42, 42, 42, 42, 1, 0, 0);
-
-    stack_insert_slice(g_monitor_stack, m->slice);
-    monitors->addIndexed(m);
-
-    return m;
 }
 
 int add_monitor_command(int argc, char** argv, Output output) {
@@ -355,7 +348,8 @@ int add_monitor_command(int argc, char** argv, Output output) {
             return HERBST_INVALID_ARGUMENT;
         }
     }
-    HSMonitor* monitor = add_monitor(rect, tag, name);
+    HSMonitor* monitor = monitors->addMonitor(rect, tag);
+    if (name) monitor->name = name;
     monitor->applyLayout();
     tag->frame->setVisibleRecursive(true);
     emit_tag_changed(tag, monitors->size() - 1);

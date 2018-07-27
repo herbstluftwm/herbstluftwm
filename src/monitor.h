@@ -20,12 +20,14 @@
 
 class HSTag;
 class HSFrame;
+class Settings;
+class MonitorManager;
 struct HSSlice;
 struct HSStack;
 
 class HSMonitor : public Object {
 public:
-    HSMonitor();
+    HSMonitor(Settings* settings, MonitorManager* monman, Rectangle Rect, HSTag* tag);
     ~HSMonitor();
     Rectangle getFloatingArea();
     int relativeX(int x_root);
@@ -63,6 +65,8 @@ private:
     std::string onPadChange();
     std::string getTagString();
     std::string setTagString(std::string new_tag);
+    Settings* settings;
+    MonitorManager* monman;
 };
 
 void monitor_init();
@@ -77,7 +81,6 @@ HSMonitor* monitor_with_frame(HSFrame* frame);
 HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
-HSMonitor* add_monitor(Rectangle rect,  HSTag* tag, char* name);
 void monitor_focus_by_index(int new_selection);
 int monitor_index_of(HSMonitor* monitor);
 int monitor_cycle_command(int argc, char** argv);

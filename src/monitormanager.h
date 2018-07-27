@@ -19,7 +19,7 @@ typedef int (HSMonitor::*HSMonitorCommand)(Input,Output);
 
 class MonitorManager : public ChildByIndex<HSMonitor> {
 public:
-    MonitorManager(TagManager* tags);
+    MonitorManager(Settings* settings, TagManager* tags);
     Child_<HSMonitor> focus;
 
     void clearChildren();
@@ -28,12 +28,14 @@ public:
     int list_monitors(Input argv, Output output);
     int list_padding(Input input, Output output);
     int string_to_monitor_index(std::string string);
+    HSMonitor* addMonitor(Rectangle rect, HSTag* tag);
     // return a command that interprets the first argument
     // as a monitor description and then calls the given command on this monitor
     std::function<int(Input, Output)> byFirstArg(HSMonitorCommand cmd);
 private:
     ByName by_name;
     TagManager* tags;
+    Settings* settings;
 };
 
 int monitor_index_in_direction(HSMonitor* m, enum HSDirection dir);
