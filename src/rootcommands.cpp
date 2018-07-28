@@ -77,9 +77,10 @@ int new_attr_cmd(Root* root, Input input, Output output)
     string attr_name = obj_path_and_attr.second;
     Object* obj = root->child(obj_path_and_attr.first, output);
     if (!obj) return HERBST_INVALID_ARGUMENT;
-    if (attr_name.substr(0,3) != "my_") {
+    if (attr_name.substr(0,strlen(USER_ATTRIBUTE_PREFIX)) != USER_ATTRIBUTE_PREFIX) {
         output
-            << cmd << ": attribute name must start with \"my_\""
+            << cmd << ": attribute name must start with \""
+            << USER_ATTRIBUTE_PREFIX << "\""
             << " but is actually \"" << attr_name << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
