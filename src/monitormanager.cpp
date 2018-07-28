@@ -45,7 +45,7 @@ void MonitorManager::ensure_monitors_are_available() {
 }
 
 int monitor_index_in_direction(HSMonitor* m, enum HSDirection dir) {
-    int cnt = monitor_count();
+    int cnt = monitors->size();
     RectangleIdx* rects = g_new0(RectangleIdx, cnt);
     int relidx = -1;
     FOR (i,0,cnt) {

@@ -97,7 +97,6 @@ int set_monitor_rects(const RectangleVec &templates);
 int rename_monitor_command(int argc, char** argv, Output output);
 int monitor_rect_command(int argc, char** argv, Output output);
 HSMonitor* get_current_monitor();
-int monitor_count();
 int monitor_set_tag(HSMonitor* monitor, HSTag* tag);
 int monitor_set_pad_command(int argc, char** argv, Output output);
 int monitor_set_tag_command(int argc, char** argv, Output output);

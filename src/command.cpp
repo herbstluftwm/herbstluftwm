@@ -13,6 +13,7 @@
 #include "client.h"
 #include "clientmanager.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "rules.h"
 #include "object.h"
 #include "mouse.h"
@@ -453,6 +454,10 @@ static void try_complete_suffix(const char* needle, const char* to_check, const 
     }
 }
 
+void try_complete(const char* needle, std::string to_check, Output output) {
+    try_complete(needle, to_check.c_str(), output);
+}
+
 void try_complete(const char* needle, const char* to_check, Output output) {
     const char* suffix = g_shell_quoting ? " \n" : "\n";
     try_complete_suffix(needle, to_check, suffix, NULL, output);
@@ -509,18 +514,14 @@ void complete_against_monitors(int argc, char** argv, int pos, Output output) {
     try_complete(needle, "-1", output);
     try_complete(needle, "+1", output);
     try_complete(needle, "+0", output);
-    GString* index_str = g_string_sized_new(10);
-    for (int i = 0; i < monitor_count(); i++) {
+    for (auto m : *monitors) {
         // complete against the absolute index
-        g_string_printf(index_str, "%d", i);
-        try_complete(needle, index_str->str, output);
+        try_complete(needle, to_string(m->index()), output);
         // complete against the name
-        HSMonitor* m = monitor_with_index(i);
         if (m->name != "") {
             try_complete(needle, m->name->c_str(), output);
         }
     }
-    g_string_free(index_str, true);
 }
 
 void complete_against_objects(int argc, char** argv, int pos, Output output) {

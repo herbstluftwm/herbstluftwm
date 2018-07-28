@@ -530,10 +530,6 @@ HSMonitor* get_current_monitor() {
     return &* monitors->byIdx(g_cur_monitor);
 }
 
-int monitor_count() {
-    return monitors->size();
-}
-
 void all_monitors_apply_layout() {
     for (auto m : *monitors) m->applyLayout();
 }
