@@ -85,6 +85,11 @@ void Object::wireAttributes(std::vector<Attribute*> attrs)
     }
 }
 
+void Object::addAttribute(Attribute* attr) {
+    attr->setOwner(this);
+    attribs_[attr->name()] = attr;
+}
+
 void Object::wireActions(std::vector<Action*> actions)
 {
     for (auto action : actions) {

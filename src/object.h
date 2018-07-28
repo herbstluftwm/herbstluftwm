@@ -53,6 +53,7 @@ public:
     // return an attribute by parsing the path and possibly looking at children
     Attribute* deepAttribute(const std::string &path);
 
+    void addAttribute(Attribute* a);
     std::map<std::string, Attribute*> attributes() { return attribs_; }
 
     std::string acceptAllValueValidator() { return {}; };
