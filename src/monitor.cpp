@@ -526,12 +526,6 @@ HSMonitor* find_monitor_with_tag(HSTag* tag) {
     return NULL;
 }
 
-HSMonitor* monitor_with_frame(HSFrame* frame) {
-    // find toplevel Frame
-    HSTag* tag = find_tag_with_toplevel_frame(&* frame->root());
-    return find_monitor_with_tag(tag);
-}
-
 HSMonitor* get_current_monitor() {
     return &* monitors->byIdx(g_cur_monitor);
 }
