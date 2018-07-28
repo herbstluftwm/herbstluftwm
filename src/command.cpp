@@ -514,7 +514,7 @@ void complete_against_monitors(int argc, char** argv, int pos, Output output) {
     try_complete(needle, "-1", output);
     try_complete(needle, "+1", output);
     try_complete(needle, "+0", output);
-    for (auto m : *monitors) {
+    for (auto m : *g_monitors) {
         // complete against the absolute index
         try_complete(needle, to_string(m->index()), output);
         // complete against the name

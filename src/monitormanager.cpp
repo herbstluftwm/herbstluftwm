@@ -45,7 +45,7 @@ void MonitorManager::ensure_monitors_are_available() {
 }
 
 int monitor_index_in_direction(HSMonitor* m, enum HSDirection dir) {
-    int cnt = monitors->size();
+    int cnt = g_monitors->size();
     RectangleIdx* rects = g_new0(RectangleIdx, cnt);
     int relidx = -1;
     FOR (i,0,cnt) {
@@ -146,7 +146,7 @@ function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
 
 HSMonitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
     HSMonitor* m = new HSMonitor(settings, this, rect, tag);
-    monitors->addIndexed(m);
+    g_monitors->addIndexed(m);
     return m;
 }
 

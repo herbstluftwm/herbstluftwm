@@ -34,7 +34,7 @@ Root::Root(Globals g)
 
     // set temporary globals
     ::tags = tags();
-    ::monitors = monitors();
+    ::g_monitors = monitors();
 }
 
 Root::~Root()
