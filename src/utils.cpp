@@ -99,6 +99,18 @@ bool ArgList::read(std::initializer_list<std::string*> targets) {
     return true;
 }
 
+ArgList ArgList::replace(const std::string& from, const std::string& to) {
+    int i = 0;
+    vector<std::string> new_list(size());
+    for (auto v : *this) {
+        if (v == from) new_list[i] = to;
+        else new_list[i] = v;
+        ++i;
+    }
+    return ArgList(new_list);
+}
+
+
 time_t get_monotonic_timestamp() {
     struct timespec ts;
 #if defined(__MACH__) && ! defined(CLOCK_REALTIME) // OS X does not have clock_gettime, use clock_get_time

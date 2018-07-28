@@ -56,6 +56,9 @@ struct ArgList {
      * the original shift is restored
      */
     bool read(std::initializer_list<std::string*> targets);
+    /** construct a new ArgList with every occurence of 'from' replaced by 'to'
+     */
+    ArgList replace(const std::string& from, const std::string& to);
     // the first element without any shifts.
     std::string command() const {
         if (c_->begin() != c_->end()) {
