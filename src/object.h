@@ -69,6 +69,8 @@ public:
 
     Object* child(Path path);
 
+    Object* child(Path path, Output output);
+
     /* Called by the directory whenever children are added or removed */
     void notifyHooks(HookEvent event, const std::string &arg);
 

@@ -191,14 +191,28 @@ Object* Object::child(const std::string &name) {
 
 
 Object* Object::child(Path path) {
-    if (path.empty()) {
-        return this;
+    std::ostringstream out;
+    return child(path, out);
+}
+
+Object* Object::child(Path path, Output output) {
+    Object* cur = this;
+    std::string cur_path = "";
+    while (!path.empty()) {
+        auto it = cur->children_.find(path.front());
+        if (it != cur->children_.end()) {
+            cur = it->second;
+            cur_path += path.front();
+            cur_path += ".";
+        } else {
+            output << "Object \"" << cur_path << "\""
+                << " has no child named \"" << path.front()
+                << "\"" << endl;
+            return NULL;
+        }
+        path.shift();
     }
-    auto it = children_.find(path.front());
-    if (it != children_.end())
-        return it->second->child(path + 1);
-    else
-        return {};
+    return cur;
 }
 
 void Object::notifyHooks(HookEvent event, const std::string& arg)
