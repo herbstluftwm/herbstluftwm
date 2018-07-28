@@ -39,6 +39,7 @@ public:
     // on failure, the error message is printed to output and NULL
     // is returned
     int cmd_get_attr(Input args, Output output);
+    int cmd_set_attr(Input args, Output output);
     int cmd_attr(Input args, Output output);
     int print_object_tree_command(ArgList args, Output output);
 

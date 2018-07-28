@@ -192,11 +192,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"and",            command_chain_command},
         {"or",             command_chain_command},
         {"!",              negate_command},
-        // {"attr",           attr_command},
         // {"compare",        compare_command},
         {"object_tree",    BIND_OBJECT(root, print_object_tree_command) },
-        // {"get_attr",       hsattribute_get_command},
-        // {"set_attr",       hsattribute_set_command},
         // {"new_attr",       userattribute_command},
         // {"mktemp",         tmpattribute_command},
         // {"remove_attr",    userattribute_remove_command},
@@ -206,6 +203,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"setenv",         setenv_command},
         {"unsetenv",       unsetenv_command},
         {"get_attr",       BIND_OBJECT(root, cmd_get_attr) },
+        {"set_attr",       BIND_OBJECT(root, cmd_set_attr) },
         {"attr",           BIND_OBJECT(root, cmd_attr) },
     });
 }

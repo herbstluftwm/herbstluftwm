@@ -59,6 +59,28 @@ int Root::cmd_get_attr(Input in, Output output) {
     return 0;
 }
 
+int Root::cmd_set_attr(Input in, Output output) {
+    in.shift();
+    if (in.empty()) return HERBST_NEED_MORE_ARGS;
+    auto path = in.front();
+    in.shift();
+    if (in.empty()) return HERBST_NEED_MORE_ARGS;
+    auto new_value = in.front();
+
+    Attribute* a = getAttribute(path, output);
+    if (!a) return HERBST_INVALID_ARGUMENT;
+    std::string error_message = a->change(new_value);
+    if (error_message == "") {
+        return 0;
+    } else {
+        output << in.command() << ": \""
+            << in.front() << "\" is not a valid value for "
+            << a->name() << ": "
+            << error_message << std::endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+}
+
 int Root::cmd_attr(Input in, Output output) {
     in.shift();
 
