@@ -24,6 +24,11 @@ using namespace std;
         return OBJECT->MEMBER(in, out); \
     }))
 
+#define BIND_PARAMETER(PARAM, FUNCTION) \
+    (CommandBinding([PARAM](ArgList in, Output out) { \
+        return FUNCTION(PARAM, in, out); \
+    }))
+
 /** User facing commands.
  *
  * A command can have one of the two forms

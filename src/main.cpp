@@ -25,6 +25,7 @@
 #include "tagmanager.h"
 #include "monitormanager.h"
 #include "rectangle.h"
+#include "rootcommands.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -103,6 +104,7 @@ void propertynotify(Root* root, XEvent* event);
 void unmapnotify(Root* root, XEvent* event);
 
 unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
+    Root* root_ptr = &* root;
     TagManager* tags = root->tags();
     MonitorManager* monitors = root->monitors();
     Settings* settings = root->settings();
@@ -197,8 +199,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         // {"new_attr",       userattribute_command},
         // {"mktemp",         tmpattribute_command},
         // {"remove_attr",    userattribute_remove_command},
-        // {"substitute",     substitute_command},
-        // {"sprintf",        sprintf_command},
+        {"substitute",     BIND_PARAMETER(root_ptr, substitute_cmd) },
+        {"sprintf",        BIND_PARAMETER(root_ptr, sprintf_cmd) },
         {"getenv",         getenv_command},
         {"setenv",         setenv_command},
         {"unsetenv",       unsetenv_command},
