@@ -85,6 +85,20 @@ std::string ArgList::join(char delim) {
     return join(begin_, c_->cend(), delim);
 }
 
+
+bool ArgList::read(std::initializer_list<std::string*> targets) {
+    auto begin_backup = begin_;
+    for (auto cur_target : targets) {
+        if (empty()) {
+            begin_ = begin_backup;
+            return false;
+        }
+        *cur_target = front();
+        shift();
+    }
+    return true;
+}
+
 time_t get_monotonic_timestamp() {
     struct timespec ts;
 #if defined(__MACH__) && ! defined(CLOCK_REALTIME) // OS X does not have clock_gettime, use clock_get_time

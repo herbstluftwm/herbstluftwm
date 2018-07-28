@@ -52,6 +52,10 @@ struct ArgList {
     Container toVector() const {
         return Container(begin_, c_->cend());
     }
+    /** try to read as many values as in target. If this fails
+     * the original shift is restored
+     */
+    bool read(std::initializer_list<std::string*> targets);
     // the first element without any shifts.
     std::string command() const {
         if (c_->begin() != c_->end()) {
