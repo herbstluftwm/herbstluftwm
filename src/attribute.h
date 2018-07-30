@@ -52,6 +52,8 @@ public:
     std::string cycleValue(std::vector<std::string>::const_iterator begin,
                            std::vector<std::string>::const_iterator end);
 
+    void detachFromOwner();
+
 protected:
     Object *owner_;
     bool writeable_, hookable_;

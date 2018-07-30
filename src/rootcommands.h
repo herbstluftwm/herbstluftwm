@@ -11,5 +11,6 @@ class Root;
 int substitute_cmd(Root* root, Input input, Output output);
 int sprintf_cmd(Root* root, Input input, Output output);
 int new_attr_cmd(Root* root, Input input, Output output);
+int remove_attr_cmd(Root* root, Input input, Output output);
 
 #endif

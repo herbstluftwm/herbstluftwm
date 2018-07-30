@@ -90,6 +90,13 @@ void Object::addAttribute(Attribute* attr) {
     attribs_[attr->name()] = attr;
 }
 
+void Object::removeAttribute(Attribute* attr) {
+    auto it = attribs_.find(attr->name());
+    if (it == attribs_.end()) return;
+    if (it->second != attr) return;
+    attribs_.erase(it);
+}
+
 void Object::wireActions(std::vector<Action*> actions)
 {
     for (auto action : actions) {
@@ -306,11 +313,24 @@ void Object::addStaticChild(Object* child, std::string name)
 }
 
 Attribute* Object::deepAttribute(const std::string &path) {
+    std::ostringstream output;
+    return deepAttribute(path, output);
+}
+
+Attribute* Object::deepAttribute(const std::string &path, Output output) {
     auto attr_path = splitPath(path);
-    auto attribute_owner = child(attr_path.first);
+    auto attribute_owner = child(attr_path.first, output);
     if (!attribute_owner) {
         return NULL;
     }
-    return attribute_owner->attribute(attr_path.second);
+    Attribute* a = attribute_owner->attribute(attr_path.second);
+    if (!a) {
+        output << "Object \"" << attr_path.first.join()
+            << "\" has no attribute \"" << attr_path.second
+            << "\"."
+            << endl;
+        return NULL;
+    }
+    return a;
 }
 

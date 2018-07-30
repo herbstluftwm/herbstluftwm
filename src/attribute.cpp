@@ -31,3 +31,8 @@ std::string Attribute::cycleValue(std::vector<std::string>::const_iterator begin
     // set the value to the first in the range
     return change(*begin);
 }
+
+void Attribute::detachFromOwner() {
+    owner_->removeAttribute(this);
+    owner_ = NULL;
+}

@@ -110,3 +110,21 @@ int new_attr_cmd(Root* root, Input input, Output output)
     return 0;
 }
 
+int remove_attr_cmd(Root* root, Input input, Output output)
+{
+    string cmd, path;
+    if (!input.read({ &cmd, &path })) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    Attribute* a = root->deepAttribute(path, output);
+    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (a->name().substr(0,strlen(USER_ATTRIBUTE_PREFIX)) != USER_ATTRIBUTE_PREFIX) {
+        output << cmd << ": \"" << path
+               << "\" is not a user defined attribute. can not remove it." << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    a->detachFromOwner();
+    delete a;
+    return 0;
+}
+
