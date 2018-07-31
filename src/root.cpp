@@ -23,7 +23,7 @@ Root::Root(Globals g)
     , monitors(*this, "monitors")
     , hooks(*this, "hooks")
     , theme(*this, "theme")
-    , tmp(*this, "tmp")
+    , tmp(*this, TMP_OBJECT_PATH)
     , globals(g)
 {
     settings = new Settings(this);
