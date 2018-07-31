@@ -65,11 +65,12 @@ public:
     static T parse(const std::string& source, T const* reference);
 
     std::string change(const std::string &payload_str) {
+        if (!writeable()) return "attribute is read only";
         try {
             T new_payload = parse(payload_str, &payload_);
             T old_payload = payload_;
             payload_ = new_payload;
-            std::string error_message = this->writeable() ? (m_onChange)() : "";
+            std::string error_message = (m_onChange)();
             if (error_message == "") {
                 // no error -> keep value
                 notifyHooks();

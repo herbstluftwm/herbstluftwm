@@ -94,11 +94,11 @@ int new_attr_cmd(Root* root, Input input, Output output)
     }
 
     std::map<string, function<Attribute*(string)>> name2constructor {
-    { "bool",  [](string n) { return new Attribute_<bool>(n, false); }},
-    { "color", [](string n) { return new Attribute_<Color>(n, Color("black")); }},
-    { "int",   [](string n) { return new Attribute_<int>(n, 0); }},
-    { "string",[](string n) { return new Attribute_<string>(n, ""); }},
-    { "uint",  [](string n) { return new Attribute_<unsigned long>(n, 0); }},
+    { "bool",  [](string n) { return new Attribute_<bool>(n, ACCEPT_ALL, false); }},
+    { "color", [](string n) { return new Attribute_<Color>(n, ACCEPT_ALL, Color("black")); }},
+    { "int",   [](string n) { return new Attribute_<int>(n, ACCEPT_ALL, 0); }},
+    { "string",[](string n) { return new Attribute_<string>(n, ACCEPT_ALL, ""); }},
+    { "uint",  [](string n) { return new Attribute_<unsigned long>(n, ACCEPT_ALL, 0); }},
     };
     auto it = name2constructor.find(type);
     if (it == name2constructor.end()) {

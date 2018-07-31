@@ -18,7 +18,6 @@
 #define OBJECT_PATH_SEPARATOR '.'
 #define USER_ATTRIBUTE_PREFIX "my_"
 #define TMP_OBJECT_PATH "tmp"
-#define ACCEPT_ALL (AcceptAll())
 
 enum class HookEvent {
     CHILD_ADDED,

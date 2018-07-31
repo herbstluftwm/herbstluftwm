@@ -21,7 +21,7 @@ typedef std::function<std::string()> ValueValidator;
 
 // binds away the first parameter with *this
 #define AT_THIS(X) ([this]() { return this->X(); })
-
+std::string ACCEPT_ALL();
 
 class Object;
 
