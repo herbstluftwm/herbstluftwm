@@ -24,6 +24,8 @@ enum class Type {
     CLIENT // TODO: etc. pp.
 };
 
+bool operator<(Type t1, Type t2);
+
 class Entity {
 public:
     Entity() {}
