@@ -5,6 +5,7 @@
 #include "command.h"
 #include "attribute_.h"
 
+#include <algorithm>
 #include <map>
 #include <functional>
 
@@ -126,5 +127,97 @@ int remove_attr_cmd(Root* root, Input input, Output output)
     a->detachFromOwner();
     delete a;
     return 0;
+}
+
+template <typename T> int do_comparison(const T& a, const T& b) {
+    return (a == b) ? 0 : 1;
+}
+
+template <> int do_comparison<int>(const int& a, const int& b) {
+    if (a < b) return -1;
+    else if (a > b) return 1;
+    else return 0;
+}
+template <> int do_comparison<unsigned long>(const unsigned long& a, const unsigned long& b) {
+    if (a < b) return -1;
+    else if (a > b) return 1;
+    else return 0;
+}
+
+template <typename T> int parse_and_compare(string a, string b, Output o) {
+    vector<string> strings = { a, b };
+    vector<T> vals;
+    for (auto & x : strings) {
+        try {
+            vals.push_back(Attribute_<T>::parse(x, NULL));
+        } catch(std::exception& e) {
+            o << "can not parse \"" << x << "\" to "
+              << typeid(T).name() << ": " << e.what() << endl;
+            return (int) HERBST_INVALID_ARGUMENT;
+        }
+    }
+    return do_comparison<T>(vals[0], vals[1]);
+}
+
+int compare_cmd(Root* root, Input input, Output output)
+{
+    string cmd, path, oper, value;
+    if (!input.read({ &cmd, &path, &oper, &value })) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    Attribute* a = root->deepAttribute(path, output);
+    if (!a) return HERBST_INVALID_ARGUMENT;
+    // the following compare functions returns
+    //   -1 if the first value is smaller
+    //    1 if the first value is greater
+    //    0 if the the values match
+    //    HERBST_INVALID_ARGUMENT if there was a parsing error
+    map<string, pair<bool, vector<int> > > operators {
+        // map operator names to "for numeric types only" and possible return codes
+        { "=",  { false, { 0 }, }, },
+        { "!=", { false, { -1, 1 } }, },
+        { "ge", { true, { 1, 0 } }, },
+        { "gt", { true, { 1    } }, },
+        { "le", { true, { -1, 0 } }, },
+        { "lt", { true, { -1    } }, },
+    };
+    map<Type, pair<bool, function<int(string,string,Output)>>> type2compare {
+        // map a type name to "is it numeric" and a comperator function
+        { Type::ATTRIBUTE_INT,      { true,  parse_and_compare<int> }, },
+        { Type::ATTRIBUTE_ULONG,    { true,  parse_and_compare<int> }, },
+        { Type::ATTRIBUTE_STRING,   { false, parse_and_compare<string> }, },
+        { Type::ATTRIBUTE_BOOL,     { false, parse_and_compare<bool> }, },
+        { Type::ATTRIBUTE_COLOR,    { false, parse_and_compare<Color> }, },
+    };
+    auto it = type2compare.find(a->type());
+    if (it == type2compare.end()) {
+        output << "attribute " << path << " has unknown type" << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    auto op_it = operators.find(oper);
+    if (op_it == operators.end()) {
+        output << "unknown operator \"" << oper
+            << "\". Possible values are:";
+        for (auto i : operators) {
+            // only list operators suitable for the attribute type
+            if (!it->second.first && i.second.first) continue;
+            output << " " << i.first;
+        }
+        output << endl;
+    }
+    if (op_it->second.first && !it->second.first) {
+        output << "operator \"" << oper << "\" "
+            << "only allowed for numeric types, but the attribute "
+            << path << " is of non-numeric type "
+            << Entity::typestr(a->type()) << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    int comparison_result = it->second.second(a->str(), value, output);
+    if (comparison_result > 1) return comparison_result;
+    vector<int>& possible_values = op_it->second.second;
+    auto found = std::find(possible_values.begin(),
+                           possible_values.end(),
+                           comparison_result);
+    return (found == possible_values.end()) ? 1 : 0;
 }
 

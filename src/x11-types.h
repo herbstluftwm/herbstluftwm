@@ -27,6 +27,15 @@ public:
     XColor toXColor() const;
     unsigned long toX11Pixel() const { return x11pixelValue_; }
 
+    bool operator==(const Color& other) const {
+        return red_ == other.red_
+            && green_ == other.green_
+            && blue_ == other.blue_;
+    };
+    bool operator!=(const Color& other) const {
+        return !operator==(other);
+    }
+
 private:
     // use the X-style definition of colors:
     // each of the color components is a value
