@@ -8,6 +8,7 @@
 #include "ipc-protocol.h"
 #include "globals.h"
 #include "settings.h"
+#include "tmp.h"
 
 #include <memory>
 #include <stdexcept>
@@ -22,6 +23,7 @@ Root::Root(Globals g)
     , monitors(*this, "monitors")
     , hooks(*this, "hooks")
     , theme(*this, "theme")
+    , tmp(*this, "tmp")
     , globals(g)
 {
     settings = new Settings(this);
@@ -31,6 +33,7 @@ Root::Root(Globals g)
     monitors = new MonitorManager(settings(), tags());
     tags()->setMonitorManager(monitors());
     hooks = new HookManager;
+    tmp = new Tmp(this);
 
     // set temporary globals
     ::tags = tags();

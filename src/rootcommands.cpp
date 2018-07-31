@@ -68,6 +68,23 @@ int sprintf_cmd(Root* root, Input input, Output output)
     return Commands::call(input.replace(ident, blobs), output);
 }
 
+
+Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Output output) {
+    std::map<string, function<Attribute*(string)>> name2constructor {
+    { "bool",  [](string n) { return new Attribute_<bool>(n, ACCEPT_ALL, false); }},
+    { "color", [](string n) { return new Attribute_<Color>(n, ACCEPT_ALL, Color("black")); }},
+    { "int",   [](string n) { return new Attribute_<int>(n, ACCEPT_ALL, 0); }},
+    { "string",[](string n) { return new Attribute_<string>(n, ACCEPT_ALL, ""); }},
+    { "uint",  [](string n) { return new Attribute_<unsigned long>(n, ACCEPT_ALL, 0); }},
+    };
+    auto it = name2constructor.find(typestr);
+    if (it == name2constructor.end()) {
+        output << "error: unknown type \"" << typestr << "\"";
+        return NULL;
+    }
+    return it->second(attr_name);
+}
+
 int new_attr_cmd(Root* root, Input input, Output output)
 {
     string cmd, type, path;
@@ -92,21 +109,9 @@ int new_attr_cmd(Root* root, Input input, Output output)
             <<  "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-
-    std::map<string, function<Attribute*(string)>> name2constructor {
-    { "bool",  [](string n) { return new Attribute_<bool>(n, ACCEPT_ALL, false); }},
-    { "color", [](string n) { return new Attribute_<Color>(n, ACCEPT_ALL, Color("black")); }},
-    { "int",   [](string n) { return new Attribute_<int>(n, ACCEPT_ALL, 0); }},
-    { "string",[](string n) { return new Attribute_<string>(n, ACCEPT_ALL, ""); }},
-    { "uint",  [](string n) { return new Attribute_<unsigned long>(n, ACCEPT_ALL, 0); }},
-    };
-    auto it = name2constructor.find(type);
-    if (it == name2constructor.end()) {
-        output << cmd << ": unknown type \"" << type << "\"";
-        return HERBST_INVALID_ARGUMENT;
-    }
     // create the new attribute and add it
-    Attribute* a = it->second(attr_name);
+    Attribute* a = newAttributeWithType(type, attr_name, output);
+    if (!a) return HERBST_INVALID_ARGUMENT;
     obj->addAttribute(a);
     return 0;
 }

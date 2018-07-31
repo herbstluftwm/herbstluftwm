@@ -14,6 +14,7 @@ class ClientManager;
 class MonitorManager;
 class Theme;
 class Settings;
+class Tmp;
 
 class Globals {
 public:
@@ -49,6 +50,7 @@ public:
     Child_<MonitorManager> monitors;
     Child_<HookManager> hooks;
     Child_<Theme> theme;
+    Child_<Tmp> tmp;
     Globals globals;
 
 private:

@@ -26,6 +26,7 @@
 #include "monitormanager.h"
 #include "rectangle.h"
 #include "rootcommands.h"
+#include "tmp.h"
 // standard
 #include <string.h>
 #include <stdio.h>
@@ -108,6 +109,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     TagManager* tags = root->tags();
     MonitorManager* monitors = root->monitors();
     Settings* settings = root->settings();
+    Tmp* tmp = root->tmp();
     return unique_ptr<CommandTable>(new CommandTable{
         {"quit",           quit},
         {"echo",           echo},
@@ -195,7 +197,6 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"or",             command_chain_command},
         {"!",              negate_command},
         {"object_tree",    BIND_OBJECT(root, print_object_tree_command) },
-        // {"mktemp",         tmpattribute_command},
         {"substitute",     BIND_PARAMETER(root_ptr, substitute_cmd) },
         {"sprintf",        BIND_PARAMETER(root_ptr, sprintf_cmd) },
         {"new_attr",       BIND_PARAMETER(root_ptr, new_attr_cmd) },
@@ -207,6 +208,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"get_attr",       BIND_OBJECT(root, cmd_get_attr) },
         {"set_attr",       BIND_OBJECT(root, cmd_set_attr) },
         {"attr",           BIND_OBJECT(root, cmd_attr) },
+        {"mktemp",         BIND_OBJECT(tmp, mktemp) },
     });
 }
 
