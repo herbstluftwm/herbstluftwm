@@ -824,7 +824,7 @@ sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
 
 mktemp [*bool*|*int*|*string*|*uint*] 'IDENTIFIER' 'COMMAND' ['ARGS' ...]::
     Creates a temporary attribute with the given type and replaces all
-    occurrences of 'IDENTIFIER' in 'COMMAND' and 'ARGS' by by the path of the
+    occurrences of 'IDENTIFIER' in 'COMMAND' and 'ARGS' by the path of the
     temporary attribute. The replaced command with its arguments is executed
     then. The exit status of 'COMMAND' is returned.
 
