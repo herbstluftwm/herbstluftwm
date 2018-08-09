@@ -16,6 +16,7 @@ struct HSStack;
 typedef struct HSTag {
     GString*        name;   // name of this tag
     GString*        display_name; // name used for object-io
+    GString*        working_directory; // current working directory of the tag
     struct HSFrame* frame;  // the master frame
     bool            floating;
     int             flags;

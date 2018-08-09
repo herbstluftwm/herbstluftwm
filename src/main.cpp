@@ -81,6 +81,8 @@ int jumpto_command(int argc, char** argv, GString* output);
 int getenv_command(int argc, char** argv, GString* output);
 int setenv_command(int argc, char** argv, GString* output);
 int unsetenv_command(int argc, char** argv, GString* output);
+int cwd_command(int argc, char** argv, GString* output);
+int pwd_command(int argc, char** argv, GString* output);
 
 // handler for X-Events
 void buttonpress(XEvent* event);
@@ -199,8 +201,12 @@ CommandBinding g_commands[] = {
     CMD_BIND(             "getenv",         getenv_command),
     CMD_BIND(             "setenv",         setenv_command),
     CMD_BIND(             "unsetenv",       unsetenv_command),
+    CMD_BIND(             "cwd",            cwd_command),
+    CMD_BIND(             "pwd",            pwd_command),
     { CommandBindingCB() }
 };
+
+
 
 // core functions
 int quit() {
@@ -502,6 +508,23 @@ int unsetenv_command(int argc, char** argv, GString* output) {
             "%s: Could not unset environment variable: %s\n", argv[0], strerror(errno));
         return HERBST_UNKNOWN_ERROR;
     }
+    return 0;
+}
+
+int cwd_command(int argc, char** argv, GString* output) {
+    if (argc < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+
+    HSTag* curr_tag = get_current_monitor()->tag;
+    g_string_assign(curr_tag->working_directory, argv[1]);
+    chdir(argv[1]);
+
+    return 0;
+}
+
+int pwd_command(int argc, char** argv, GString* output) {
+    g_string_append(output, get_current_monitor()->tag->working_directory->str);
     return 0;
 }
 
