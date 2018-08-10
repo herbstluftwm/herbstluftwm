@@ -1257,7 +1257,7 @@ int frame_focus_command(int argc, char** argv, Output output) {
         // find monitor in the specified direction
         enum HSDirection dir = char_to_direction(direction);
         if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        int idx = monitor_index_in_direction(get_current_monitor(), dir);
+        int idx = g_monitors->indexInDirection(get_current_monitor(), dir);
         if (idx < 0) {
             output << argv[0] << ": No neighbour found\n";
             return HERBST_FORBIDDEN;

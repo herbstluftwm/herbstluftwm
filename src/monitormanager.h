@@ -33,6 +33,8 @@ public:
     // as a monitor description and then calls the given command on this monitor
     std::function<int(Input, Output)> byFirstArg(HSMonitorCommand cmd);
 
+    int indexInDirection(HSMonitor* m, enum HSDirection dir);
+
     void lock();
     void unlock();
     int lock_cmd(Input, Output);
@@ -43,7 +45,5 @@ private:
     TagManager* tags;
     Settings* settings;
 };
-
-int monitor_index_in_direction(HSMonitor* m, enum HSDirection dir);
 
 #endif

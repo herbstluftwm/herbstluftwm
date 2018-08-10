@@ -44,17 +44,16 @@ void MonitorManager::ensure_monitors_are_available() {
     monitor_update_focus_objects();
 }
 
-int monitor_index_in_direction(HSMonitor* m, enum HSDirection dir) {
-    int cnt = g_monitors->size();
-    RectangleIdx* rects = g_new0(RectangleIdx, cnt);
+int MonitorManager::indexInDirection(HSMonitor* m, enum HSDirection dir) {
+    RectangleIdx* rects = g_new0(RectangleIdx, size());
     int relidx = -1;
-    FOR (i,0,cnt) {
+    FOR (i,0,size()) {
         rects[i].idx = i;
         rects[i].r = monitor_with_index(i)->rect;
         if (monitor_with_index(i) == m) relidx = i;
     }
     HSAssert(relidx >= 0);
-    int result = find_rectangle_in_direction(rects, cnt, relidx, dir);
+    int result = find_rectangle_in_direction(rects, size(), relidx, dir);
     g_free(rects);
     return result;
 }
@@ -73,7 +72,7 @@ int MonitorManager::string_to_monitor_index(std::string string) {
         } else if (string[0] == '-') {
             enum HSDirection dir = char_to_direction(string[1]);
             if (dir < 0) return -1;
-            return monitor_index_in_direction(focus(), dir);
+            return indexInDirection(focus(), dir);
         } else {
             return -1;
         }
