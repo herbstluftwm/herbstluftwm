@@ -131,10 +131,9 @@ int tag_remove_command(int argc, char** argv, Output output) {
     all_monitors_replace_previous_tag(tag, target);
     // save all these windows
     vector<HSClient*> buf;
-    tag->frame->foreachClient([](HSClient* client, void* data) {
-        vector<HSClient*>* buf = (vector<HSClient*>*) data;
-        (*buf).push_back(client);
-    }, &buf);
+    tag->frame->foreachClient([&buf](HSClient* client) {
+        buf.push_back(client);
+    });
     for (auto client : buf) {
         stack_remove_slice(client->tag()->stack, client->slice);
         client->setTag(target);

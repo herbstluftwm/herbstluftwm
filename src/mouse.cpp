@@ -521,7 +521,7 @@ void client_snap_vector(HSClient* client, HSMonitor* monitor,
     }
 
     // snap to other clients
-    tag->frame->foreachClient((ClientAction)client_snap_helper, &d);
+    tag->frame->foreachClient([&d] (HSClient* c) { client_snap_helper(c, &d); });
 
     // write back results
     if (abs(d.dx) < abs(distance)) {

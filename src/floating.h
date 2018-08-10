@@ -17,23 +17,18 @@ enum HSDirection {
     DirDown,
 };
 
-typedef struct {
-    Rectangle r;
-    int       idx;
-} RectangleIdx;
-
 void floating_init();
 void floating_destroy();
 
+typedef std::vector<std::pair<int,Rectangle>> RectangleIdxVec;
 
 // utilities
 enum HSDirection char_to_direction(char ch);
-int find_rectangle_in_direction(RectangleIdx* rects, size_t cnt, int idx,
+int find_rectangle_in_direction(RectangleIdxVec& rects, int idx, enum HSDirection dir);
+int find_rectangle_right_of(RectangleIdxVec rects, int idx);
+int find_edge_in_direction(RectangleIdxVec& rects, int idx,
                                 enum HSDirection dir);
-int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx);
-int find_edge_in_direction(RectangleIdx* rects, size_t cnt, int idx,
-                                enum HSDirection dir);
-int find_edge_right_of(RectangleIdx* rects, size_t cnt, int idx);
+int find_edge_right_of(RectangleIdxVec rects, int idx);
 
 // actual implementations
 bool floating_focus_direction(enum HSDirection dir);

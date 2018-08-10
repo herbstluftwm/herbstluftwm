@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
+#include <functional>
 #include "monitor.h"
 #include "tag.h"
 #include "floating.h"
@@ -59,7 +60,7 @@ enum {
 // execute an action on an client
 // returns Success or failure.
 class HSClient;
-typedef void (*ClientAction)(HSClient*, void* data);
+typedef std::function<void(HSClient*)> ClientAction;
 
 #define FRACTION_UNIT 10000
 
@@ -91,7 +92,7 @@ public:
     // if order == 1 -> action(left); action(node); action(right);
     // if order >= 2 -> action(left); action(right); action(node);
     virtual void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) = 0;
-    virtual void foreachClient(ClientAction action, void* data) = 0;
+    virtual void foreachClient(ClientAction action) = 0;
 
     std::shared_ptr<HSFrameSplit> getParent() { return parent.lock(); };
     std::shared_ptr<HSFrame> root();
@@ -131,7 +132,7 @@ public:
     bool focusClient(HSClient* client);
 
     void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order);
-    virtual void foreachClient(ClientAction action, void* data);
+    virtual void foreachClient(ClientAction action);
 
 
     // own members
@@ -191,7 +192,7 @@ public:
     bool focusClient(HSClient* client);
 
     void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order);
-    virtual void foreachClient(ClientAction action, void* data);
+    virtual void foreachClient(ClientAction action);
 
     HSClient* focusedClient();
 

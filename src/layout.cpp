@@ -773,14 +773,14 @@ void HSFrameLeaf::fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLea
     onLeaf(this);
 }
 
-void HSFrameSplit::foreachClient(ClientAction action, void* data) {
-    a->foreachClient(action, data);
-    b->foreachClient(action, data);
+void HSFrameSplit::foreachClient(ClientAction action) {
+    a->foreachClient(action);
+    b->foreachClient(action);
 }
 
-void HSFrameLeaf::foreachClient(ClientAction action, void* data) {
+void HSFrameLeaf::foreachClient(ClientAction action) {
     for (HSClient* client : clients) {
-        action(client, data);
+        action(client);
     }
 }
 

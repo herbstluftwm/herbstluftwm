@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <algorithm>
 
 #include "utils.h"
 #include "mouse.h"
@@ -11,6 +12,7 @@
 #include "layout.h"
 #include "settings.h"
 
+using namespace std;
 
 static int* g_snap_gap;
 static int* g_monitors_locked;
@@ -36,24 +38,20 @@ enum HSDirection char_to_direction(char ch) {
 // rectlist_rotate rotates the list of given rectangles, s.t. the direction dir
 // becomes the direction "right". idx is some distinguished element, whose
 // index may change
-static void rectlist_rotate(RectangleIdx* rects, size_t cnt, int* idx,
+static void rectlist_rotate(RectangleIdxVec& rects, int& idx,
                                 enum HSDirection dir) {
     switch (dir) {
         case DirRight:
             return; // nothing to do
         case DirUp:
             // just flip by the horizontal axis
-            FOR (i,0,cnt) {
-                auto r = &(rects[i].r);
-                r->y = - r->y - r->height;
+            for (auto& r : rects) {
+                r.second.y = - r.second.y - r.second.height;
             }
             // and flip order to reverse the order for rectangles with the same
             // center
-            for (int i = 0; i < (cnt - 1 - i); i++) {
-                int j = (cnt - 1 - i);
-                SWAP(RectangleIdx, rects[i], rects[j]);
-            }
-            *idx = cnt - 1 - *idx;
+            reverse(rects.begin(), rects.end());
+            idx = rects.size() - 1 - idx;
             // and then direction up now has become direction down
         case DirDown:
             // flip by the diagonal
@@ -64,34 +62,29 @@ static void rectlist_rotate(RectangleIdx* rects, size_t cnt, int* idx,
             //   |   +------+          |   |   |
             //   |   []                |   +---+
             //   V                     V
-            FOR (i,0,cnt) {
-                auto r = &(rects[i].r);
-                SWAP(int, r->x, r->y);
-                SWAP(int, r->height, r->width);
+            for (auto& r : rects) {
+                SWAP(int, r.second.x, r.second.y);
+                SWAP(int, r.second.height, r.second.width);
             }
             return;
         case DirLeft:
             // flip by the vertical axis
-            FOR (i,0,cnt) {
-                auto r = &(rects[i].r);
-                r->x = - r->x - r->width;
+            for (auto& r : rects) {
+                r.second.x = - r.second.x - r.second.width;
             }
             // and flip order to reverse the order for rectangles with the same
             // center
-            for (int i = 0; i < (cnt - 1 - i); i++) {
-                int j = (cnt - 1 - i);
-                SWAP(RectangleIdx, rects[i], rects[j]);
-            }
-            *idx = cnt - 1 - *idx;
+            reverse(rects.begin(), rects.end());
+            idx = rects.size() - 1 - idx;
             return;
     }
 }
 
 // returns the found index in the original buffer
-int find_rectangle_in_direction(RectangleIdx* rects, size_t cnt, int idx,
+int find_rectangle_in_direction(RectangleIdxVec& rects, int idx,
                                 enum HSDirection dir) {
-    rectlist_rotate(rects, cnt, &idx, dir);
-    return find_rectangle_right_of(rects, cnt, idx);
+    rectlist_rotate(rects, idx, dir);
+    return find_rectangle_right_of(rects, idx);
 }
 
 static bool rectangle_is_right_of(Rectangle RC, Rectangle R2) {
@@ -122,15 +115,15 @@ static bool rectangle_is_right_of(Rectangle RC, Rectangle R2) {
     return true;
 }
 
-int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx) {
-    auto RC = rects[idx].r;
+int find_rectangle_right_of(RectangleIdxVec rects, int idx) {
+    auto RC = rects[idx].second;
     int cx = RC.x + RC.width / 2;
     int cy = RC.y + RC.height / 2;
     int write_i = 0; // next rectangle to write
     // filter out rectangles not right of RC
-    FOR (i,0,cnt) {
+    FOR (i,0,rects.size()) {
         if (idx == i) continue;
-        auto R2 = rects[i].r;
+        auto R2 = rects[i].second;
         int rcx = R2.x + R2.width / 2;
         int rcy = R2.y + R2.height / 2;
         if (!rectangle_is_right_of(RC, R2)) continue;
@@ -151,7 +144,7 @@ int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx) {
     int ibest = -1;
     int distbest = INT_MAX;
     FOR (i,0,write_i) {
-        auto R2 = rects[i].r;
+        auto R2 = rects[i].second;
         int rcx = R2.x + R2.width / 2;
         int rcy = R2.y + R2.height / 2;
                             // another method that checks the closes point
@@ -162,7 +155,7 @@ int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx) {
         if (dist < distbest
             || (dist == distbest && ibest > i)) {
             distbest = dist;
-            idxbest = rects[i].idx;
+            idxbest = rects[i].first;
             ibest = i;
         }
     }
@@ -170,10 +163,10 @@ int find_rectangle_right_of(RectangleIdx* rects, size_t cnt, int idx) {
 }
 
 // returns the found index in the modified buffer
-int find_edge_in_direction(RectangleIdx* rects, size_t cnt, int idx,
-                                enum HSDirection dir) {
-    rectlist_rotate(rects, cnt, &idx, dir);
-    int found = find_edge_right_of(rects, cnt, idx);
+int find_edge_in_direction(RectangleIdxVec& rects, int idx, enum HSDirection dir)
+{
+    rectlist_rotate(rects, idx, dir);
+    int found = find_edge_right_of(rects, idx);
     if (found < 0) return found;
     // rotate back, by requesting the inverse rotation
     //switch (dir) {
@@ -183,15 +176,15 @@ int find_edge_in_direction(RectangleIdx* rects, size_t cnt, int idx,
     //                                      // now has to be rotate 90 deg clockwise back
     //    case DirDown: dir = DirUp; break;
     //}
-    rectlist_rotate(rects, cnt, &found, dir);
-    rectlist_rotate(rects, cnt, &found, dir);
-    rectlist_rotate(rects, cnt, &found, dir);
+    rectlist_rotate(rects, found, dir);
+    rectlist_rotate(rects, found, dir);
+    rectlist_rotate(rects, found, dir);
     return found;
 }
-int find_edge_right_of(RectangleIdx* rects, size_t cnt, int idx) {
-    int xbound = rects[idx].r.x + rects[idx].r.width;
-    int ylow = rects[idx].r.y;
-    int yhigh = rects[idx].r.y + rects[idx].r.height;
+int find_edge_right_of(RectangleIdxVec rects, int idx) {
+    int xbound = rects[idx].second.x + rects[idx].second.width;
+    int ylow = rects[idx].second.y;
+    int yhigh = rects[idx].second.y + rects[idx].second.height;
     // only keep rectangles with a x coordinate right of the xbound
     // and with an appropriate y/height
     //
@@ -200,16 +193,16 @@ int find_edge_right_of(RectangleIdx* rects, size_t cnt, int idx) {
     //      +---------+ - - - - - - - - - - -
     int leftmost = -1;
     int dist = INT_MAX;
-    FOR (i,0,cnt) {
+    FOR (i,0,rects.size()) {
         if (i == idx) continue;
-        if (rects[i].r.x <= xbound) continue;
-        int low = rects[i].r.y;
-        int high = low + rects[i].r.height;
+        if (rects[i].second.x <= xbound) continue;
+        int low = rects[i].second.y;
+        int high = low + rects[i].second.height;
         if (!intervals_intersect(ylow, yhigh, low, high)) {
             continue;
         }
-        if (rects[i].r.x - xbound < dist) {
-            dist = rects[i].r.x - xbound;
+        if (rects[i].second.x - xbound < dist) {
+            dist = rects[i].second.x - xbound;
             leftmost = i;
         }
     }
@@ -217,69 +210,49 @@ int find_edge_right_of(RectangleIdx* rects, size_t cnt, int idx) {
 }
 
 
-static void collectclients_helper(HSClient* client, void* data) {
-    GQueue* q = (GQueue*)data;
-    g_queue_push_tail(q, client);
-}
-
 bool floating_focus_direction(enum HSDirection dir) {
     if (*g_monitors_locked) { return false; }
     HSTag* tag = get_current_monitor()->tag;
-    GQueue* q = g_queue_new();
-    tag->frame->foreachClient(collectclients_helper, q);
-    int cnt = q->length;
-    RectangleIdx* rects = g_new0(RectangleIdx, cnt);
-    int i = 0;
+    vector<HSClient*> clients;
+    RectangleIdxVec rects;
+    int idx = 0;
     int curfocusidx = -1;
     HSClient* curfocus = get_current_client();
-    bool success = true;
-    if (curfocus == NULL && cnt == 0) {
-        success = false;
+    tag->frame->foreachClient([&](HSClient* c) {
+        clients.push_back(c);
+        rects.push_back(make_pair(idx,c->dec.last_outer()));
+        if (c == curfocus) curfocusidx = idx;
+        idx++;
+    });
+    if (curfocusidx < 0 || idx <= 0) {
+        return false;
     }
-    for (GList* cur = q->head; cur != NULL; cur = cur->next, i++) {
-        HSClient* client = (HSClient*)cur->data;
-        if (curfocus == client) curfocusidx = i;
-        rects[i].idx = i;
-        rects[i].r = client->dec.last_outer();
-    }
-    int idx = (cnt > 0)
-              ? find_rectangle_in_direction(rects, cnt, curfocusidx, dir)
-              : -1;
+    idx = find_rectangle_in_direction(rects, curfocusidx, dir);
     if (idx < 0) {
-        success = false;
-    } else {
-        HSClient* client = (HSClient*)g_queue_peek_nth(q, idx);
-        client->raise();
-        focus_client(client, false, false);
+        return false;
     }
-    g_free(rects);
-    g_queue_free(q);
-    return success;
+    clients[idx]->raise();
+    focus_client(clients[idx], false, false);
+    return true;
 }
 
 bool floating_shift_direction(enum HSDirection dir) {
     if (*g_monitors_locked) { return false; }
     HSTag* tag = get_current_monitor()->tag;
+    vector<HSClient*> clients;
+    RectangleIdxVec rects;
+    int idx = 0;
+    int curfocusidx = -1;
     HSClient* curfocus = get_current_client();
-    if (!curfocus) return false;
-    GQueue* q = g_queue_new();
-    tag->frame->foreachClient(collectclients_helper, q);
-    int cnt = q->length;
-    if (cnt == 0) {
-        g_queue_free(q);
+    tag->frame->foreachClient([&](HSClient* c) {
+        clients.push_back(c);
+        rects.push_back(make_pair(idx,c->dec.last_outer()));
+        if (c == curfocus) curfocusidx = idx;
+        idx++;
+    });
+    if (curfocusidx < 0 || idx <= 0) {
         return false;
     }
-    RectangleIdx* rects = g_new0(RectangleIdx, cnt + 4);
-    int i = 0;
-    int curfocusidx = -1;
-    bool success = true;
-    for (GList* cur = q->head; cur != NULL; cur = cur->next, i++) {
-        HSClient* client = (HSClient*)cur->data;
-        if (curfocus == client) curfocusidx = i;
-        rects[i].idx = i;
-        rects[i].r = client->dec.last_outer();
-    }
-    g_queue_free(q);
     // add artifical rects for screen edges
     {
         auto mr = get_current_monitor()->getFloatingArea();
@@ -290,41 +263,37 @@ bool floating_shift_direction(enum HSDirection dir) {
             { mr.x, mr.y + mr.height,   mr.y + mr.width, 0 }, // bottom
         };
         FOR (i,0,4) {
-            rects[cnt + i].idx = -1;
-            rects[cnt + i].r = tmp[i];
+            rects.push_back(make_pair(-1, tmp[i]));
         }
     }
-    FOR (i,0, cnt + 4) {
+    for (auto& r : rects) {
         // expand anything by the snap gap
-        rects[i].r.x -= *g_snap_gap;
-        rects[i].r.y -= *g_snap_gap;
-        rects[i].r.width += 2 * *g_snap_gap;
-        rects[i].r.height += 2 * *g_snap_gap;
+        r.second.x -= *g_snap_gap;
+        r.second.y -= *g_snap_gap;
+        r.second.width += 2 * *g_snap_gap;
+        r.second.height += 2 * *g_snap_gap;
     }
     // don't apply snapgap to focused client, so there will be exactly
     // *g_snap_gap pixels between the focused client and the found edge
     auto focusrect = curfocus->dec.last_outer();
-    int idx = find_edge_in_direction(rects, cnt + 4, curfocusidx, dir);
-    if (idx < 0) success = false;
-    else {
-        // shift client
-        int dx = 0, dy = 0;
-        auto r = rects[idx].r;
-        //printf("edge: %dx%d at %d,%d\n", r.width, r.height, r.x, r.y);
-        //printf("focus: %dx%d at %d,%d\n", focusrect.width, focusrect.height, focusrect.x, focusrect.y);
-        switch (dir) {
-            //          delta = new edge  -  old edge
-            case DirRight: dx = r.x  -   (focusrect.x + focusrect.width); break;
-            case DirLeft:  dx = r.x + r.width   -   focusrect.x; break;
-            case DirDown:  dy = r.y  -  (focusrect.y + focusrect.height); break;
-            case DirUp:    dy = r.y + r.height  -  focusrect.y; break;
-        }
-        //printf("dx=%d, dy=%d\n", dx, dy);
-        curfocus->float_size_.x += dx;
-        curfocus->float_size_.y += dy;
-        get_current_monitor()->applyLayout();
+    idx = find_edge_in_direction(rects, curfocusidx, dir);
+    if (idx < 0) return false;
+    // shift client
+    int dx = 0, dy = 0;
+    auto r = rects[idx].second;
+    //printf("edge: %dx%d at %d,%d\n", r.width, r.height, r.x, r.y);
+    //printf("focus: %dx%d at %d,%d\n", focusrect.width, focusrect.height, focusrect.x, focusrect.y);
+    switch (dir) {
+        //          delta = new edge  -  old edge
+        case DirRight: dx = r.x  -   (focusrect.x + focusrect.width); break;
+        case DirLeft:  dx = r.x + r.width   -   focusrect.x; break;
+        case DirDown:  dy = r.y  -  (focusrect.y + focusrect.height); break;
+        case DirUp:    dy = r.y + r.height  -  focusrect.y; break;
     }
-    g_free(rects);
-    return success;
+    //printf("dx=%d, dy=%d\n", dx, dy);
+    curfocus->float_size_.x += dx;
+    curfocus->float_size_.y += dy;
+    get_current_monitor()->applyLayout();
+    return true;
 }
 
