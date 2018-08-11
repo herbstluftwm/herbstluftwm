@@ -6,34 +6,11 @@
 #ifndef __HERBSTLUFT_SETTINGS_H_
 #define __HERBSTLUFT_SETTINGS_H_
 
-#include "glib-backports.h"
 #include "x11-types.h"
 #include "utils.h"
 #include "object.h"
 #include "attribute_.h"
 #include <string>
-
-enum {
-    HS_String = 0,
-    HS_Int,
-    HS_Compatiblity,
-};
-
-typedef struct {
-    const char*   name;
-    union {
-        int         i;
-        const char* s_init;
-        GString*    str;
-        struct {
-            const char* read;  // attribute address for reading
-            const char* write; // attribute address for writing
-        } compat;
-    }   value;
-    int old_value_i;
-    int type;
-    void (*on_change)(); // what to call on change
-} SettingsPair;
 
 class Root;
 
@@ -108,12 +85,6 @@ private:
 };
 
 extern Settings* g_settings;
-
-void settings_init();
-void settings_destroy();
-
-SettingsPair* settings_find(const char* name);
-char* settings_find_string(const char* name);
 
 #endif
 

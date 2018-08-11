@@ -719,7 +719,6 @@ static struct {
 } g_modules[] = {
     { ipc_init,         ipc_destroy         },
     { key_init,         key_destroy         },
-    { settings_init,    settings_destroy    },
     { floating_init,    floating_destroy    },
     { stacklist_init,   stacklist_destroy   },
     { layout_init,      layout_destroy      },

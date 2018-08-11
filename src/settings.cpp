@@ -12,108 +12,14 @@
 #include "ewmh.h"
 #include "monitormanager.h"
 
-#include "glib-backports.h"
 #include <string.h>
 #include <stdio.h>
 #include <sstream>
 
+
 using namespace std;
 
 Settings* g_settings = NULL; // the global settings object
-
-SettingsPair SET_INT(const char* name, int defaultval, void (*cb)())
-{
-    SettingsPair sp;
-    sp.name = name;
-    sp.value.i = defaultval;
-    sp.type = HS_Int;
-    sp.on_change = (cb);
-    return sp;
-}
-
-SettingsPair SET_STRING(const char* name, const char* defaultval, void (*cb)())
-{
-    SettingsPair sp;
-    sp.name = name;
-    sp.value.s_init = defaultval;
-    sp.type = HS_String;
-    sp.on_change = (cb);
-    return sp;
-}
-
-SettingsPair SET_COMPAT(const char* name, const char* read, const char* write)
-{
-    SettingsPair sp;
-    sp.name = name;
-    sp.value.compat.read = read;
-    sp.value.compat.write = write;
-    sp.type = HS_Compatiblity;
-    sp.on_change = NULL;
-    return sp;
-}
-
-// often used callbacks:
-#define RELAYOUT all_monitors_apply_layout
-#define FR_COLORS reset_frame_colors
-#define CL_COLORS reset_client_colors
-#define FOCUS_LAYER tag_update_each_focus_layer
-#define WMNAME ewmh_update_wmname
-
-// default settings:
-SettingsPair g_settings_old[] = {
-    SET_INT(    "frame_gap",                       5,           RELAYOUT    ),
-    SET_INT(    "frame_padding",                   0,           RELAYOUT    ),
-    SET_INT(    "window_gap",                      0,           RELAYOUT    ),
-    SET_INT(    "snap_distance",                   10,          NULL        ),
-    SET_INT(    "snap_gap",                        5,           NULL        ),
-    SET_INT(    "mouse_recenter_gap",              0,           NULL        ),
-    SET_STRING( "frame_border_active_color",       "red",       FR_COLORS   ),
-    SET_STRING( "frame_border_normal_color",       "blue",      FR_COLORS   ),
-    SET_STRING( "frame_border_inner_color",        "black",     FR_COLORS   ),
-    SET_STRING( "frame_bg_normal_color",           "black",     FR_COLORS   ),
-    SET_STRING( "frame_bg_active_color",           "black",     FR_COLORS   ),
-    SET_INT(    "frame_bg_transparent",            0,           FR_COLORS   ),
-    SET_INT(    "frame_transparent_width",         0,           FR_COLORS   ),
-    SET_INT(    "frame_border_width",              2,           FR_COLORS   ),
-    SET_INT(    "frame_border_inner_width",        0,           FR_COLORS   ),
-    SET_INT(    "frame_active_opacity",            100,         FR_COLORS   ),
-    SET_INT(    "frame_normal_opacity",            100,         FR_COLORS   ),
-    SET_INT(    "focus_crosses_monitor_boundaries", 1,          NULL        ),
-    SET_INT(    "always_show_frame",               0,           RELAYOUT    ),
-    SET_INT(    "default_direction_external_only", 0,           NULL        ),
-    SET_INT(    "default_frame_layout",            0,           FR_COLORS   ),
-    SET_INT(    "focus_follows_mouse",             0,           NULL        ),
-    SET_INT(    "focus_stealing_prevention",       1,           NULL        ),
-    SET_INT(    "swap_monitors_to_get_tag",        1,           NULL        ),
-    SET_INT(    "raise_on_focus",                  0,           NULL        ),
-    SET_INT(    "raise_on_focus_temporarily",      0,           FOCUS_LAYER ),
-    SET_INT(    "raise_on_click",                  1,           NULL        ),
-    SET_INT(    "gapless_grid",                    1,           RELAYOUT    ),
-    SET_INT(    "smart_frame_surroundings",        0,           RELAYOUT    ),
-    SET_INT(    "smart_window_surroundings",       0,           RELAYOUT    ),
-    SET_INT(    "monitors_locked",                 0,           NULL        ),
-    SET_INT(    "auto_detect_monitors",            0,           NULL        ),
-    SET_INT(    "pseudotile_center_threshold",    10,           RELAYOUT    ),
-    SET_INT(    "update_dragged_clients",          0,           NULL        ),
-    SET_STRING( "tree_style",                      "*| +`--.",  FR_COLORS   ),
-    SET_STRING( "wmname",                  WINDOW_MANAGER_NAME, WMNAME      ),
-    // settings for compatibility:
-    SET_COMPAT( "window_border_width",
-                "theme.tiling.active.border_width", "theme.border_width"),
-    SET_COMPAT( "window_border_inner_width",
-                "theme.tiling.active.inner_width", "theme.inner_width"),
-    SET_COMPAT( "window_border_inner_color",
-                "theme.tiling.active.inner_color", "theme.inner_color"),
-    SET_COMPAT( "window_border_active_color",
-                "theme.tiling.active.color", "theme.active.color"),
-    SET_COMPAT( "window_border_normal_color",
-                "theme.tiling.normal.color", "theme.normal.color"),
-    SET_COMPAT( "window_border_urgent_color",
-                "theme.tiling.urgent.color", "theme.urgent.color"),
-};
-
-#define SAME_NAME(NAME, UPDATE, DEFAULT) \
-    NAME(#NAME, UPDATE, DEFAULT)
 
 Settings::Settings(Root* root)
     : frame_gap(                "frame_gap",        AT_THIS(relayout), 5)
@@ -406,50 +312,4 @@ int Settings::get_cmd(Input argv, Output output) {
     return 0;
 }
 
-int settings_count() {
-    return LENGTH(g_settings_old);
-}
-
-void settings_init() {
-    // recreate all strings -> move them to heap
-    for (int i = 0; i < LENGTH(g_settings_old); i++) {
-        if (g_settings_old[i].type == HS_String) {
-            g_settings_old[i].value.str = g_string_new(g_settings_old[i].value.s_init);
-        }
-        if (g_settings_old[i].type == HS_Int) {
-            g_settings_old[i].old_value_i = 1;
-        }
-    }
-
-    // create a settings object
-    // ensure everything is nulled that is not explicitely initialized
-    // TODO re-initialize settings here
-}
-
-void settings_destroy() {
-    // free all strings
-    int i;
-    for (i = 0; i < LENGTH(g_settings_old); i++) {
-        if (g_settings_old[i].type == HS_String) {
-            g_string_free(g_settings_old[i].value.str, true);
-        }
-    }
-}
-
-SettingsPair* settings_find(const char* name) {
-    return STATIC_TABLE_FIND_STR(SettingsPair, g_settings_old, name, name);
-}
-
-SettingsPair* settings_get_by_index(int i) {
-    if (i < 0 || i >= LENGTH(g_settings_old)) return NULL;
-    return g_settings_old + i;
-}
-
-char* settings_find_string(const char* name) {
-    SettingsPair* sp = settings_find(name);
-    if (!sp) return NULL;
-    HSWeakAssert(sp->type == HS_String);
-    if (sp->type != HS_String) return NULL;
-    return sp->value.str->str;
-}
 
