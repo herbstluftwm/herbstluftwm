@@ -33,8 +33,6 @@ static MouseDragFunction g_drag_function = NULL;
 static Cursor g_cursor;
 static GList* g_mouse_binds = NULL;
 static unsigned int* g_numlockmask_ptr;
-static int* g_snap_distance;
-static int* g_snap_gap;
 
 #define CLEANMASK(mask)         ((mask) & ~(*g_numlockmask_ptr|LockMask))
 #define REMOVEBUTTONMASK(mask) ((mask) & \
@@ -46,8 +44,6 @@ static int* g_snap_gap;
 
 void mouse_init() {
     g_numlockmask_ptr = get_numlockmask_ptr();
-    g_snap_distance = &(settings_find("snap_distance")->value.i);
-    g_snap_gap = &(settings_find("snap_gap")->value.i);
     /* set cursor theme */
     g_cursor = XCreateFontCursor(g_display, XC_left_ptr);
     XDefineCursor(g_display, g_root, g_cursor);
@@ -455,10 +451,10 @@ static void client_snap_helper(HSClient* candidate, struct SnapData* d) {
     auto subject  = d->rect;
     auto other    = candidate->dec.last_outer();
     // increase other by snap gap
-    other.x -= *g_snap_gap;
-    other.y -= *g_snap_gap;
-    other.width += *g_snap_gap * 2;
-    other.height += *g_snap_gap * 2;
+    other.x -= g_settings->snap_gap();
+    other.y -= g_settings->snap_gap();
+    other.width += g_settings->snap_gap() * 2;
+    other.height += g_settings->snap_gap() * 2;
     if (intervals_intersect(other.y, other.y + other.height, subject.y, subject.y + subject.height)) {
         // check if x can snap to the right
         if (d->flags & SNAP_EDGE_RIGHT) {
@@ -488,7 +484,7 @@ void client_snap_vector(HSClient* client, HSMonitor* monitor,
                         int* return_dx, int* return_dy) {
     struct SnapData d;
     HSTag* tag = monitor->tag;
-    int distance = (*g_snap_distance > 0) ? *g_snap_distance : 0;
+    int distance = max(0, g_settings->snap_distance());
     // init delta
     *return_dx = 0;
     *return_dy = 0;
@@ -508,16 +504,16 @@ void client_snap_vector(HSClient* client, HSMonitor* monitor,
     // snap to monitor edges
     HSMonitor* m = g_drag_monitor;
     if (flags & SNAP_EDGE_TOP) {
-        snap_1d(d.rect.y, m->rect.y + m->pad_up + *g_snap_gap, &d.dy);
+        snap_1d(d.rect.y, m->rect.y + m->pad_up + g_settings->snap_gap(), &d.dy);
     }
     if (flags & SNAP_EDGE_LEFT) {
-        snap_1d(d.rect.x, m->rect.x + m->pad_left + *g_snap_gap, &d.dx);
+        snap_1d(d.rect.x, m->rect.x + m->pad_left + g_settings->snap_gap(), &d.dx);
     }
     if (flags & SNAP_EDGE_RIGHT) {
-        snap_1d(d.rect.x + d.rect.width, m->rect.x + m->rect.width - m->pad_right - *g_snap_gap, &d.dx);
+        snap_1d(d.rect.x + d.rect.width, m->rect.x + m->rect.width - m->pad_right - g_settings->snap_gap(), &d.dx);
     }
     if (flags & SNAP_EDGE_BOTTOM) {
-        snap_1d(d.rect.y + d.rect.height, m->rect.y + m->rect.height - m->pad_down - *g_snap_gap, &d.dy);
+        snap_1d(d.rect.y + d.rect.height, m->rect.y + m->rect.height - m->pad_down - g_settings->snap_gap(), &d.dy);
     }
 
     // snap to other clients
