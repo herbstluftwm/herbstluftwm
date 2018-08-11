@@ -39,17 +39,11 @@ using namespace std;
 
 // module internals:
 int g_cur_monitor;
-static int* g_swap_monitors_to_get_tag;
-static int* g_smart_frame_surroundings;
-static int* g_mouse_recenter_gap;
 static ::HSStack* g_monitor_stack;
 MonitorManager* g_monitors;
 
 void monitor_init() {
     g_cur_monitor = 0;
-    g_swap_monitors_to_get_tag = &(settings_find("swap_monitors_to_get_tag")->value.i);
-    g_smart_frame_surroundings = &(settings_find("smart_frame_surroundings")->value.i);
-    g_mouse_recenter_gap       = &(settings_find("mouse_recenter_gap")->value.i);
     g_monitor_stack = stack_create();
 }
 
@@ -182,7 +176,7 @@ void HSMonitor::applyLayout() {
     cur_rect.width -= (pad_left() + pad_right());
     cur_rect.y += pad_up();
     cur_rect.height -= (pad_up() + pad_down());
-    if (!*g_smart_frame_surroundings || tag->frame->isSplit()) {
+    if (!g_settings->smart_frame_surroundings() || tag->frame->isSplit()) {
         // apply frame gap
         cur_rect.x += settings->frame_gap();
         cur_rect.y += settings->frame_gap();
@@ -551,7 +545,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
         return 1;
     }
     if (other != NULL) {
-        if (*g_swap_monitors_to_get_tag) {
+        if (g_settings->swap_monitors_to_get_tag()) {
             if (other->lock_tag) {
                 // the monitor we want to steal the tag from is
                 // locked. focus that monitor instead
@@ -747,9 +741,9 @@ void monitor_focus_by_index(int new_selection) {
         // mouse_recenter_gap at the outer border of the monitor,
         // recenter the mouse.
         if (std::min(monitor->mouse.x, abs(monitor->mouse.x - (int)monitor->rect.width))
-                < *g_mouse_recenter_gap
+                < g_settings->mouse_recenter_gap()
             || std::min(monitor->mouse.y, abs(monitor->mouse.y - (int)monitor->rect.height))
-                < *g_mouse_recenter_gap) {
+                < g_settings->mouse_recenter_gap()) {
             monitor->mouse.x = monitor->rect.width / 2;
             monitor->mouse.y = monitor->rect.height / 2;
         }
