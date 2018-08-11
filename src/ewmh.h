@@ -89,7 +89,7 @@ void ewmh_update_all();
 
 void ewmh_add_client(Window win);
 void ewmh_remove_client(Window win);
-void ewmh_set_wmname(char* name);
+void ewmh_set_wmname(const char* name);
 void ewmh_update_wmname();
 
 void ewmh_update_client_list();

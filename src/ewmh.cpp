@@ -31,7 +31,6 @@ Atom g_netatom[NetCOUNT];
 static Window*     g_windows; // array with Window-IDs
 static size_t      g_window_count;
 static Window      g_wm_window;
-static int*        g_focus_stealing_prevention;
 
 static int WM_STATE;
 
@@ -80,10 +79,6 @@ const std::array<const char*,NetCOUNT>g_netatom_names =
 }).a;
 
 void ewmh_init() {
-    /* init globals */
-    g_focus_stealing_prevention =
-        &(settings_find("focus_stealing_prevention")->value.i);
-
     /* init ewmh net atoms */
     for (int i = 0; i < NetCOUNT; i++) {
         if (g_netatom_names[i] == NULL) {
@@ -143,7 +138,7 @@ void ewmh_destroy() {
     XDestroyWindow(g_display, g_wm_window);
 }
 
-void ewmh_set_wmname(char* name) {
+void ewmh_set_wmname(const char* name) {
     XChangeProperty(g_display, g_wm_window, g_netatom[NetWmName],
         ATOM("UTF8_STRING"), 8, PropModeReplace,
         (unsigned char*)name, strlen(name));
@@ -153,7 +148,7 @@ void ewmh_set_wmname(char* name) {
 }
 
 void ewmh_update_wmname() {
-    ewmh_set_wmname(settings_find_string("wmname"));
+    ewmh_set_wmname(g_settings->wmname().c_str());
 }
 
 void ewmh_update_client_list() {
@@ -295,7 +290,7 @@ void ewmh_update_active_window(Window win) {
 }
 
 static bool focus_stealing_allowed(long source) {
-    if (*g_focus_stealing_prevention) {
+    if (g_settings->focus_stealing_prevention()) {
         /* only allow it to pagers/taskbars */
         return (source == 2);
     } else {
