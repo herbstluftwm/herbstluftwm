@@ -8,13 +8,14 @@
 #include <unordered_map>
 
 class Theme;
+class Settings;
 
 // Note: this is basically a singleton
 
 class ClientManager : public Object
 {
 public:
-    ClientManager(Theme& theme);
+    ClientManager(Theme& theme, Settings& settings);
     ~ClientManager();
 
     HSClient* client(Window window);
@@ -36,6 +37,7 @@ public:
 
 protected:
     Theme& theme;
+    Settings& settings;
     std::unordered_map<Window, HSClient*> clients_;
 };
 

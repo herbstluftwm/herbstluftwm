@@ -184,10 +184,10 @@ void HSMonitor::applyLayout() {
     cur_rect.height -= (pad_up() + pad_down());
     if (!*g_smart_frame_surroundings || tag->frame->isSplit()) {
         // apply frame gap
-        cur_rect.x += *g_frame_gap;
-        cur_rect.y += *g_frame_gap;
-        cur_rect.height -= *g_frame_gap;
-        cur_rect.width -= *g_frame_gap;
+        cur_rect.x += settings->frame_gap();
+        cur_rect.y += settings->frame_gap();
+        cur_rect.height -= settings->frame_gap();
+        cur_rect.width -= settings->frame_gap();
     }
     restack();
     bool isFocused = get_current_monitor() == this;

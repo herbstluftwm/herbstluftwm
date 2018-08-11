@@ -23,10 +23,11 @@ struct HSSlice;
 class HSTag;
 class HSMonitor;
 class Theme;
+class Settings;
 
 class HSClient : public Object {
 public:
-    HSClient(Window w, bool already_visible, Theme& theme);
+    HSClient(Window w, bool already_visible, Theme& theme, Settings& settings);
     ~HSClient();
 
     Window      window_;
@@ -118,6 +119,7 @@ public:
 
 private:
     Theme& theme;
+    Settings& settings;
     const DecTriple& getDecTriple();
     void resize_fullscreen(HSMonitor* m, bool isFocused);
 };

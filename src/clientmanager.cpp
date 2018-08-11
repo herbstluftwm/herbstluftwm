@@ -12,9 +12,10 @@
 #include "tag.h"
 #include "layout.h"
 
-ClientManager::ClientManager(Theme& theme_)
+ClientManager::ClientManager(Theme& theme_, Settings& settings_)
     : focus(*this, "focus")
     , theme(theme_)
+    , settings(settings_)
 {
 }
 
@@ -89,7 +90,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     }
 
     // init client
-    auto client = new HSClient(win, visible_already, theme);
+    auto client = new HSClient(win, visible_already, theme, settings);
     HSMonitor* m = get_current_monitor();
 
     // apply rules

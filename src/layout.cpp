@@ -33,9 +33,6 @@
 
 using namespace std;
 
-int* g_frame_gap;
-int* g_window_gap;
-
 const char* g_align_names[] = {
     "vertical",
     "horizontal",
@@ -50,8 +47,6 @@ const char* g_layout_names[] = {
 };
 
 void layout_init() {
-    g_frame_gap = &(settings_find("frame_gap")->value.i);
-    g_window_gap = &(settings_find("window_gap")->value.i);
 }
 
 void reset_frame_colors() {

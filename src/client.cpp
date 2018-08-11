@@ -37,9 +37,6 @@
 
 static int g_monitor_float_treshold = 24;
 
-static int* g_raise_on_focus;
-static int* g_snap_gap;
-
 // atoms from dwm.c
 // default atoms
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
@@ -48,7 +45,7 @@ static Atom g_wmatom[WMLast];
 static HSClient* lastfocus = NULL;
 
 
-HSClient::HSClient(Window window, bool visible_already, Theme& theme_)
+HSClient::HSClient(Window window, bool visible_already, Theme& theme_, Settings& settings_)
     : window_(window),
       dec(this),
       float_size_({0, 0, 100, 100}),
@@ -65,7 +62,8 @@ HSClient::HSClient(Window window, bool visible_already, Theme& theme_)
       sizehints_floating_(true), sizehints_tiling_(false),
       visible_(visible_already), dragged_(false),
       ignore_unmaps_(0),
-      theme(theme_)
+      theme(theme_),
+      settings(settings_)
 {
     std::stringstream tmp;
     tmp << "0x" << std::hex << window;
@@ -119,15 +117,8 @@ void HSClient::make_full_client() {
     XSelectInput(g_display, window_, CLIENT_EVENT_MASK);
 }
 
-static void fetch_colors() {
-    g_window_gap = &(settings_find("window_gap")->value.i);
-    g_snap_gap = &(settings_find("snap_gap")->value.i);
-    g_raise_on_focus = &(settings_find("raise_on_focus")->value.i);
-}
-
 void clientlist_init() {
     // init regex simple..
-    fetch_colors();
     g_wmatom[WMProtocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
     g_wmatom[WMDelete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
     g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
@@ -145,7 +136,6 @@ bool HSClient::ignore_unmapnotify() {
 }
 
 void reset_client_colors() {
-    fetch_colors();
     all_monitors_apply_layout();
 }
 
@@ -245,7 +235,7 @@ void HSClient::window_focus() {
     bool is_max_layout = HSFrame::getGloballyFocusedFrame()->focusedClient() == this
                          && HSFrame::getGloballyFocusedFrame()->getLayout() == LAYOUT_MAX
                          && get_current_monitor()->tag->floating == false;
-    if (*g_raise_on_focus || is_max_layout) {
+    if (settings.raise_on_focus() || is_max_layout) {
         this->raise();
     }
     tag_update_focus_layer(get_current_monitor()->tag);
@@ -295,8 +285,8 @@ void HSClient::resize_tiling(Rectangle rect, bool isFocused) {
     // apply border width
     if (!this->pseudotile_ /* && !smart_window_surroundings_active(frame) */) {
         // apply window gap
-        rect.width -= *g_window_gap;
-        rect.height -= *g_window_gap;
+        rect.width -= settings.window_gap();
+        rect.height -= settings.window_gap();
     }
     const DecorationScheme& scheme = getScheme(isFocused);
     if (this->pseudotile_) {
