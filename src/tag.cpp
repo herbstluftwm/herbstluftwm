@@ -29,11 +29,8 @@
 using namespace std;
 
 static bool    g_tag_flags_dirty = true;
-static int* g_raise_on_focus_temporarily;
 
 void tag_init() {
-    g_raise_on_focus_temporarily = &(settings_find("raise_on_focus_temporarily")
-                                     ->value.i);
 }
 
 void tag_destroy() {
@@ -236,7 +233,7 @@ void tag_update_focus_layer(HSTag* tag) {
         // enforce raise_on_focus_temporarily if there is at least one
         // fullscreen window or if the tag is in tiling mode
         if (!stack_is_layer_empty(tag->stack, LAYER_FULLSCREEN)
-            || *g_raise_on_focus_temporarily
+            || g_settings->raise_on_focus_temporarily()
             || focus->tag()->floating == false) {
             stack_slice_add_layer(tag->stack, focus->slice, LAYER_FOCUS);
         }
