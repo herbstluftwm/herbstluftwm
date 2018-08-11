@@ -14,10 +14,6 @@
 
 std::map<Window,HSClient*> Decoration::decwin2client;
 
-static int* g_pseudotile_center_threshold;
-static int* g_update_dragged_clients;
-
-
 Theme::Theme() {
     std::vector<std::string> type_names = {
         "fullscreen",
@@ -114,8 +110,6 @@ void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
 }
 
 void decorations_init() {
-    g_pseudotile_center_threshold = &(settings_find("pseudotile_center_threshold")->value.i);
-    g_update_dragged_clients = &(settings_find("update_dragged_clients")->value.i);
 }
 
 void reset_helper(void* data, GString* output) {
@@ -141,13 +135,14 @@ static Visual* check_32bit_client(HSClient* c)
     return NULL;
 }
 
-Decoration::Decoration(HSClient* client)
+Decoration::Decoration(HSClient* client, Settings& settings_)
     : client(client),
       decwin(0),
       last_scheme(NULL),
-	  pixmap(0),
-	  pixmap_height(0),
-	  pixmap_width(0)
+      pixmap(0),
+      pixmap_height(0),
+      pixmap_width(0),
+      settings(settings_)
 {
 }
 
@@ -279,7 +274,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
         // center the window in the outline tile
         // but only if it's relative coordinates would not be too close to the
         // upper left tile border
-        int threshold = *g_pseudotile_center_threshold;
+        int threshold = settings.pseudotile_center_threshold;
         int dx = tile.width/2 - inner.width/2;
         int dy = tile.height/2 - inner.height/2;
         inner.x = tile.x + ((dx < threshold) ? 0 : dx);
@@ -325,7 +320,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
     client->dec.last_scheme = &scheme;
     // redraw
     // TODO: reduce flickering
-    if (!client->dragged_ || *g_update_dragged_clients) {
+    if (!client->dragged_ || settings.update_dragged_clients()) {
         client->dec.last_actual_rect.x = changes.x;
         client->dec.last_actual_rect.y = changes.y;
         client->dec.last_actual_rect.width = changes.width;
@@ -337,7 +332,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
         // if size changes, then the window is cleared automatically
         XClearWindow(g_display, decwin);
     }
-    if (!client->dragged_ || *g_update_dragged_clients) {
+    if (!client->dragged_ || settings.update_dragged_clients()) {
         XConfigureWindow(g_display, win, mask, &changes);
         XMoveResizeWindow(g_display, client->dec.bgwin,
                           changes.x, changes.y,
@@ -346,7 +341,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
     updateFrameExtends();
-    if (!client->dragged_ || *g_update_dragged_clients) {
+    if (!client->dragged_ || settings.update_dragged_clients()) {
         client->send_configure();
     }
     XSync(g_display, False);

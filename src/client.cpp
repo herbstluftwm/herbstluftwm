@@ -47,7 +47,7 @@ static HSClient* lastfocus = NULL;
 
 HSClient::HSClient(Window window, bool visible_already, ClientManager& cm)
     : window_(window),
-      dec(this),
+      dec(this, cm.settings),
       float_size_({0, 0, 100, 100}),
       urgent_("urgent", false),
       fullscreen_("fullscreen", Object::AcceptAll(), false),

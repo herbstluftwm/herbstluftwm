@@ -119,6 +119,7 @@ public:
     const DecorationScheme& getScheme(bool focused);
 
 private:
+    friend Decoration;
     ClientManager& manager;
     Theme& theme;
     Settings& settings;

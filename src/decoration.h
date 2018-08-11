@@ -20,6 +20,7 @@
 #include "attribute_.h"
 
 class HSClient;
+class Settings;
 
 
 class DecorationScheme : public Object {
@@ -51,7 +52,7 @@ public:
 
 class Decoration {
 public:
-    Decoration(HSClient* client);
+    Decoration(HSClient* client, Settings& settings);
     void createWindow();
     virtual ~Decoration();
     // resize such that the decorated outline of the window fits into rect
@@ -89,6 +90,7 @@ private:
     // especially not repainting or background filling to avoid flicker on
     // unmap
     Window                  bgwin;
+    Settings&               settings;
 private:
     static std::map<Window,HSClient*> decwin2client;
 };
