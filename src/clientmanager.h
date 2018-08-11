@@ -2,12 +2,12 @@
 #define CLIENTMANAGER_H
 
 #include "object.h"
-#include "client.h"
 #include "child.h"
 
 #include <unordered_map>
 
 class Theme;
+class HSClient;
 class Settings;
 
 // Note: this is basically a singleton
@@ -39,6 +39,7 @@ protected:
     Theme& theme;
     Settings& settings;
     std::unordered_map<Window, HSClient*> clients_;
+    friend class HSClient;
 };
 
 #endif

@@ -45,7 +45,7 @@ static Atom g_wmatom[WMLast];
 static HSClient* lastfocus = NULL;
 
 
-HSClient::HSClient(Window window, bool visible_already, Theme& theme_, Settings& settings_)
+HSClient::HSClient(Window window, bool visible_already, ClientManager& cm)
     : window_(window),
       dec(this),
       float_size_({0, 0, 100, 100}),
@@ -62,8 +62,9 @@ HSClient::HSClient(Window window, bool visible_already, Theme& theme_, Settings&
       sizehints_floating_(true), sizehints_tiling_(false),
       visible_(visible_already), dragged_(false),
       ignore_unmaps_(0),
-      theme(theme_),
-      settings(settings_)
+      manager(cm),
+      theme(cm.theme),
+      settings(cm.settings)
 {
     std::stringstream tmp;
     tmp << "0x" << std::hex << window;

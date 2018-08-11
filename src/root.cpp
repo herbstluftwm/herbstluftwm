@@ -9,6 +9,8 @@
 #include "globals.h"
 #include "settings.h"
 #include "tmp.h"
+#include "decoration.h"
+#include "client.h"
 
 #include <memory>
 #include <stdexcept>

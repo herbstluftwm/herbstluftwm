@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "clientmanager.h"
+#include "client.h"
 
 #include <string>
 #include <X11/Xlib.h>
@@ -90,7 +91,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     }
 
     // init client
-    auto client = new HSClient(win, visible_already, theme, settings);
+    auto client = new HSClient(win, visible_already, *this);
     HSMonitor* m = get_current_monitor();
 
     // apply rules

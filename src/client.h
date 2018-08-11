@@ -24,10 +24,11 @@ class HSTag;
 class HSMonitor;
 class Theme;
 class Settings;
+class ClientManager;
 
 class HSClient : public Object {
 public:
-    HSClient(Window w, bool already_visible, Theme& theme, Settings& settings);
+    HSClient(Window w, bool already_visible, ClientManager& cm);
     ~HSClient();
 
     Window      window_;
@@ -118,6 +119,7 @@ public:
     const DecorationScheme& getScheme(bool focused);
 
 private:
+    ClientManager& manager;
     Theme& theme;
     Settings& settings;
     const DecTriple& getDecTriple();
