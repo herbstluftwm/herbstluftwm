@@ -14,12 +14,7 @@
 
 using namespace std;
 
-static int* g_snap_gap;
-static int* g_monitors_locked;
-
 void floating_init() {
-    g_snap_gap = &(settings_find("snap_gap")->value.i);
-    g_monitors_locked = &(settings_find("monitors_locked")->value.i);
 }
 
 void floating_destroy() {
@@ -211,7 +206,7 @@ int find_edge_right_of(RectangleIdxVec rects, int idx) {
 
 
 bool floating_focus_direction(enum HSDirection dir) {
-    if (*g_monitors_locked) { return false; }
+    if (g_settings->monitors_locked()) { return false; }
     HSTag* tag = get_current_monitor()->tag;
     vector<HSClient*> clients;
     RectangleIdxVec rects;
@@ -237,7 +232,7 @@ bool floating_focus_direction(enum HSDirection dir) {
 }
 
 bool floating_shift_direction(enum HSDirection dir) {
-    if (*g_monitors_locked) { return false; }
+    if (g_settings->monitors_locked()) { return false; }
     HSTag* tag = get_current_monitor()->tag;
     vector<HSClient*> clients;
     RectangleIdxVec rects;
@@ -268,13 +263,13 @@ bool floating_shift_direction(enum HSDirection dir) {
     }
     for (auto& r : rects) {
         // expand anything by the snap gap
-        r.second.x -= *g_snap_gap;
-        r.second.y -= *g_snap_gap;
-        r.second.width += 2 * *g_snap_gap;
-        r.second.height += 2 * *g_snap_gap;
+        r.second.x -= g_settings->snap_gap();
+        r.second.y -= g_settings->snap_gap();
+        r.second.width += 2 * g_settings->snap_gap();
+        r.second.height += 2 * g_settings->snap_gap();
     }
     // don't apply snapgap to focused client, so there will be exactly
-    // *g_snap_gap pixels between the focused client and the found edge
+    // snap_gap pixels between the focused client and the found edge
     auto focusrect = curfocus->dec.last_outer();
     idx = find_edge_in_direction(rects, curfocusidx, dir);
     if (idx < 0) return false;
