@@ -829,8 +829,8 @@ mktemp [*bool*|*int*|*string*|*uint*] 'IDENTIFIER' 'COMMAND' ['ARGS' ...]::
     then. The exit status of 'COMMAND' is returned.
 
 compare 'ATTRIBUTE' 'OPERATOR' 'VALUE'::
-    Compares the value of 'ATTRIBUTE' with 'VALUE' using the comparation method
-    'OPERATOR'. If the comparation succeeds, it returns 0, else 1. The operators
+    Compares the value of 'ATTRIBUTE' with 'VALUE' using the comparison method
+    'OPERATOR'. If the comparison succeeds, it returns 0, else 1. The operators
     are:
         - *=*: __ATTRIBUTE__'s value equals 'VALUE'
         - *!=*: __ATTRIBUTE__'s value does not equal 'VALUE'
@@ -1531,7 +1531,7 @@ urgent [on|off] 'WINID'::
     The urgent state of client with given 'WINID' has been changed to [on|off].
 
 rule 'NAME' 'WINID'::
-    A window with the id 'WINID' appeared which triggerd a rule with the
+    A window with the id 'WINID' appeared which triggered a rule with the
     consequence hook='NAME'.
 
 There are also other useful hooks, which never will be emitted by herbstluftwm
