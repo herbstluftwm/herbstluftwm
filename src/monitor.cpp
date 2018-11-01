@@ -191,23 +191,25 @@ void HSMonitor::applyLayout() {
     TilingResult res = tag->frame->computeLayout(cur_rect);
     if (tag->floating) {
         for (auto& p : res.data) {
-            HSClient* c = p.first;
-            p.second.geometry = c->float_size_;
-            c->setup_border(res.focus == c && isFocused);
-            c->resize_floating(this, res.focus == c && isFocused);
+            p.second.floated = true;
         }
+    }
+    for (auto& p : res.data) {
+        HSClient* c = p.first;
+        if (p.second.floated) {
+            c->resize_floating(this, res.focus == c && isFocused);
+        } else {
+            c->resize_tiling(p.second.geometry, res.focus == c && isFocused);
+        }
+        if (p.second.needsRaise) {
+            c->raise();
+        }
+    }
+    if (tag->floating) {
         for (auto& p : res.frames) {
             p.first->hide();
         }
     } else {
-        for (auto& p : res.data) {
-            HSClient* c = p.first;
-            //c->setup_border(res.focus == c && isFocused);
-            c->resize_tiling(p.second.geometry, res.focus == c && isFocused);
-            if (p.second.needsRaise) {
-                c->raise();
-            }
-        }
         for (auto& p : res.frames) {
             p.first->render(p.second, p.first == res.focused_frame && isFocused);
             p.first->updateVisibility(p.second, p.first == res.focused_frame && isFocused);
