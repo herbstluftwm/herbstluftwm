@@ -15,7 +15,7 @@
 
 class TagManager;
 
-typedef int (HSMonitor::*HSMonitorCommand)(Input,Output);
+typedef std::function<int(HSMonitor&,Input,Output)> HSMonitorCommand;
 
 class MonitorManager : public ChildByIndex<HSMonitor> {
 public:

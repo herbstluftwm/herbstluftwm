@@ -123,8 +123,7 @@ HSMonitor* MonitorManager::byString(string str) {
 
 function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
 {
-    const HSMonitorCommand cmd_captured(cmd);
-    return [this,cmd_captured](Input input, Output output) -> int {
+    return [this,cmd](Input input, Output output) -> int {
         HSMonitor *monitor;
         input.shift();
         if (input.empty()) {
@@ -137,7 +136,7 @@ function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
                 return HERBST_INVALID_ARGUMENT;
             }
         }
-        return (monitor ->* cmd_captured)(input, output);
+        return cmd(*monitor, input, output);
     };
 }
 
