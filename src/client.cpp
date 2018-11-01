@@ -254,15 +254,8 @@ const DecTriple& HSClient::getDecTriple() {
     return theme[triple_idx];
 }
 
-const DecorationScheme& HSClient::getScheme(bool focused) {
-    const DecTriple& triple = getDecTriple();
-    if (focused) return triple.active;
-    else if (this->urgent_()) return triple.urgent;
-    else return triple.normal;
-}
-
 void HSClient::setup_border(bool focused) {
-    dec.change_scheme(getScheme(focused));
+    dec.change_scheme(getDecTriple()(focused, urgent_()));
 }
 
 void HSClient::resize_fullscreen(HSMonitor* m, bool isFocused) {
@@ -270,7 +263,7 @@ void HSClient::resize_fullscreen(HSMonitor* m, bool isFocused) {
         HSDebug("client_resize_fullscreen() got invalid parameters\n");
         return;
     }
-    dec.resize_outline(m->rect, getScheme(isFocused));
+    dec.resize_outline(m->rect, theme[Theme::Type::Fullscreen](isFocused,urgent_()));
 }
 
 void HSClient::raise() {
@@ -289,7 +282,7 @@ void HSClient::resize_tiling(Rectangle rect, bool isFocused) {
         rect.width -= settings.window_gap();
         rect.height -= settings.window_gap();
     }
-    const DecorationScheme& scheme = getScheme(isFocused);
+    auto& scheme = theme[Theme::Type::Tiling](isFocused, urgent_());
     if (this->pseudotile_) {
         auto inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);
@@ -449,7 +442,7 @@ void HSClient::resize_floating(HSMonitor* m, bool isFocused) {
         CLAMP(rect.y,
               m->rect.y + m->pad_up() - rect.height + space,
               m->rect.y + m->rect.height - m->pad_up() - m->pad_down() - space);
-    dec.resize_inner(rect, getScheme(isFocused));
+    dec.resize_inner(rect, theme[Theme::Type::Floating](isFocused,urgent_()));
 }
 
 Rectangle HSClient::outer_floating_rect() {
@@ -749,7 +742,7 @@ void HSClient::fuzzy_fix_initial_position() {
     // considering the current settings of possible floating decorations
     int extreme_x = float_size_.x;
     int extreme_y = float_size_.y;
-    const auto& t = getDecTriple();
+    const auto& t = theme[Theme::Type::Floating];
     auto r = t.active.inner_rect_to_outline(float_size_);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);

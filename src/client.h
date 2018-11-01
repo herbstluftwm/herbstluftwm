@@ -115,8 +115,6 @@ public:
     void clear_properties();
     bool ignore_unmapnotify();
 
-    const DecorationScheme& getScheme(bool focused);
-
 private:
     friend Decoration;
     ClientManager& manager;
