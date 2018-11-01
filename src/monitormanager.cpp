@@ -142,7 +142,7 @@ function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
 
 HSMonitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
     HSMonitor* m = new HSMonitor(settings, this, rect, tag);
-    g_monitors->addIndexed(m);
+    addIndexed(m);
     return m;
 }
 
