@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <map>
 #include <functional>
+#include <cstring>
 
 using namespace std;
 
