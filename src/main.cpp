@@ -589,14 +589,14 @@ void scan(Root* root) {
 }
 
 void execute_autostart_file() {
-    GString* path = NULL;
+    std::string path;
     if (g_autostart_path) {
-        path = g_string_new(g_autostart_path);
+        path = g_autostart_path;
     } else {
         // find right directory
         char* xdg_config_home = getenv("XDG_CONFIG_HOME");
         if (xdg_config_home) {
-            path = g_string_new(xdg_config_home);
+            path = xdg_config_home;
         } else {
             char* home = getenv("HOME");
             if (!home) {
@@ -604,29 +604,25 @@ void execute_autostart_file() {
                           "Neither $HOME or $XDG_CONFIG_HOME is set.\n");
                 return;
             }
-            path = g_string_new(home);
-            g_string_append_c(path, G_DIR_SEPARATOR);
-            g_string_append(path, ".config");
+            path = std::string(home) + "/.config";
         }
-        g_string_append_c(path, G_DIR_SEPARATOR);
-        g_string_append(path, HERBSTLUFT_AUTOSTART);
+        path += "/" HERBSTLUFT_AUTOSTART;
     }
     if (0 == fork()) {
         if (g_display) {
             close(ConnectionNumber(g_display));
         }
         setsid();
-        execl(path->str, path->str, NULL);
+        execl(path.c_str(), path.c_str(), nullptr);
 
         const char* global_autostart = HERBSTLUFT_GLOBAL_AUTOSTART;
-        HSDebug("Can not execute %s, falling back to %s\n", path->str, global_autostart);
+        HSDebug("Can not execute %s, falling back to %s\n", path.c_str(), global_autostart);
         execl(global_autostart, global_autostart, NULL);
 
         fprintf(stderr, "herbstluftwm: execvp \"%s\"", global_autostart);
         perror(" failed");
         exit(EXIT_FAILURE);
     }
-    g_string_free(path, true);
 }
 
 static void parse_arguments(int argc, char** argv, Globals& g) {
