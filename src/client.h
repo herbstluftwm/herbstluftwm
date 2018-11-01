@@ -88,7 +88,6 @@ public:
     Rectangle outer_floating_rect();
 
     void setup_border(bool focused);
-    void resize(Rectangle rect);
     void resize_tiling(Rectangle rect, bool isFocused);
     void resize_floating(HSMonitor* m, bool isFocused);
     bool is_client_floated();
