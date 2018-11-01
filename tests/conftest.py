@@ -14,9 +14,10 @@ class HlwmBridge:
 
     HC_PATH = os.path.join(GIT_ROOT, 'herbstclient')
 
-    def send_command(self, *args, check=True):
+    def call(self, *args, check=True):
         assert args
-        proc = subprocess.run([self.HC_PATH, '-n'] + list(args), check=check,
+        str_args = [ str(i) for i in args]
+        proc = subprocess.run([self.HC_PATH, '-n'] + str_args, check=check,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               universal_newlines=True)
         print(list(args))
@@ -25,7 +26,8 @@ class HlwmBridge:
         if check:
             assert not proc.stderr
         return proc
-
+    def get_attr(self, attribute_path, check=True):
+        return self.call('get_attr', attribute_path).stdout
 
 @pytest.fixture
 def hlwm():

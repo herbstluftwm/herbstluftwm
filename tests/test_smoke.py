@@ -1,3 +1,3 @@
 def test_version(hlwm):
-    proc = hlwm.send_command('version')
+    proc = hlwm.call('version')
     assert proc.stdout.startswith('herbstluftwm')
