@@ -144,7 +144,7 @@ inline bool Attribute_<bool>::parse(const std::string &payload, bool const* ref)
     else if (payload == "on" || payload == "true")
         return true;
     else if (payload == "toggle" && ref != NULL)
-        return ! ref;
+        return !*ref;
     else throw std::invalid_argument(
             (ref != NULL)
             ? "only on/off/true/false/toggle are valid booleans"
