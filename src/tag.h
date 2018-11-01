@@ -31,7 +31,7 @@ public:
     struct HSStack* stack;
     void setIndexAttribute(unsigned long new_index);
 private:
-    std::string onNameChange();
+    std::string validateNameChange();
     Settings* settings;
 };
 
