@@ -113,8 +113,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     return unique_ptr<CommandTable>(new CommandTable{
         {"quit",           quit},
         {"echo",           echo},
-        {"true",           true_command},
-        {"false",          false_command},
+        {"true",           {[] { return 0; }}},
+        {"false",          {[] { return 1; }}},
         {"try",            try_command},
         {"silent",         silent_command},
         {"reload",         reload},
@@ -241,14 +241,6 @@ int echo(int argc, char* argv[], Output output) {
     }
     output << '\n';
     return 0;
-}
-
-int true_command() {
-    return 0;
-}
-
-int false_command() {
-    return 1;
 }
 
 int try_command(int argc, char* argv[], Output output) {
