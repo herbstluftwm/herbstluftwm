@@ -647,7 +647,6 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                 printf("Copyright (c) 2011-2014 Thorsten Wißmann\n");
                 printf("Released under the Simplified BSD License\n");
                 exit(0);
-                break;
             case 'c':
                 g_autostart_path = optarg;
                 break;
