@@ -50,13 +50,13 @@ HSClient::HSClient(Window window, bool visible_already, ClientManager& cm)
       dec(this, cm.settings),
       float_size_({0, 0, 100, 100}),
       urgent_("urgent", false),
-      fullscreen_("fullscreen", Object::AcceptAll(), false),
+      fullscreen_("fullscreen", AT_THIS(triggerRelayoutMonitor), false),
       title_("title", ""),
       window_id_str("winid", ""),
       tag_(NULL),
       keymask_("keymask", Object::AcceptAll(), ""),
       ewmhfullscreen_(false),
-      pseudotile_("pseudotile", Object::AcceptAll(), false),
+      pseudotile_("pseudotile", AT_THIS(triggerRelayoutMonitor), false),
       neverfocus_(false),
       ewmhrequests_(true), ewmhnotify_(true),
       sizehints_floating_(true), sizehints_tiling_(false),
@@ -134,6 +134,12 @@ bool HSClient::ignore_unmapnotify() {
     } else {
         return false;
     }
+}
+
+std::string HSClient::triggerRelayoutMonitor() {
+    auto m = find_monitor_with_tag(this->tag());
+    if (m) m->applyLayout();
+    return {};
 }
 
 void reset_client_colors() {
@@ -254,23 +260,12 @@ const DecTriple& HSClient::getDecTriple() {
     return theme[triple_idx];
 }
 
-const DecorationScheme& HSClient::getScheme(bool focused) {
-    const DecTriple& triple = getDecTriple();
-    if (focused) return triple.active;
-    else if (this->urgent_()) return triple.urgent;
-    else return triple.normal;
-}
-
 void HSClient::setup_border(bool focused) {
-    dec.change_scheme(getScheme(focused));
+    dec.change_scheme(getDecTriple()(focused, urgent_()));
 }
 
-void HSClient::resize_fullscreen(HSMonitor* m, bool isFocused) {
-    if (!!m) {
-        HSDebug("client_resize_fullscreen() got invalid parameters\n");
-        return;
-    }
-    dec.resize_outline(m->rect, getScheme(isFocused));
+void HSClient::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
+    dec.resize_outline(monitor_rect, theme[Theme::Type::Fullscreen](isFocused,urgent_()));
 }
 
 void HSClient::raise() {
@@ -278,18 +273,13 @@ void HSClient::raise() {
 }
 
 void HSClient::resize_tiling(Rectangle rect, bool isFocused) {
-    HSMonitor* m;
-    if (fullscreen_() && (m = find_monitor_with_tag(this->tag()))) {
-        resize_fullscreen(m, isFocused);
-        return;
-    }
     // apply border width
     if (!this->pseudotile_ /* && !smart_window_surroundings_active(frame) */) {
         // apply window gap
         rect.width -= settings.window_gap();
         rect.height -= settings.window_gap();
     }
-    const DecorationScheme& scheme = getScheme(isFocused);
+    auto& scheme = theme[Theme::Type::Tiling](isFocused, urgent_());
     if (this->pseudotile_) {
         auto inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);
@@ -430,10 +420,6 @@ void HSClient::send_configure() {
 
 void HSClient::resize_floating(HSMonitor* m, bool isFocused) {
     if (!m) return;
-    if (fullscreen_()) {
-        resize_fullscreen(m, isFocused);
-        return;
-    }
     auto rect = this->float_size_;
     rect.x += m->rect.x;
     rect.x += m->rect.y;
@@ -449,7 +435,7 @@ void HSClient::resize_floating(HSMonitor* m, bool isFocused) {
         CLAMP(rect.y,
               m->rect.y + m->pad_up() - rect.height + space,
               m->rect.y + m->rect.height - m->pad_up() - m->pad_down() - space);
-    dec.resize_inner(rect, getScheme(isFocused));
+    dec.resize_inner(rect, theme[Theme::Type::Floating](isFocused,urgent_()));
 }
 
 Rectangle HSClient::outer_floating_rect() {
@@ -749,7 +735,7 @@ void HSClient::fuzzy_fix_initial_position() {
     // considering the current settings of possible floating decorations
     int extreme_x = float_size_.x;
     int extreme_y = float_size_.y;
-    const auto& t = getDecTriple();
+    const auto& t = theme[Theme::Type::Floating];
     auto r = t.active.inner_rect_to_outline(float_size_);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);

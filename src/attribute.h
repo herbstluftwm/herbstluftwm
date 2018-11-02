@@ -49,6 +49,8 @@ public:
     virtual std::string str() { return {}; }
     virtual std::string change(const std::string &payload) = 0;
 
+    // find the current value of the attribute in the given range and then
+    // assign the succeeding value to the attribute (wth wrap around)
     std::string cycleValue(std::vector<std::string>::const_iterator begin,
                            std::vector<std::string>::const_iterator end);
 

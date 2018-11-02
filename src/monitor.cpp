@@ -196,7 +196,9 @@ void HSMonitor::applyLayout() {
     }
     for (auto& p : res.data) {
         HSClient* c = p.first;
-        if (p.second.floated) {
+        if (c->fullscreen_()) {
+            c->resize_fullscreen(rect, res.focus == c && isFocused);
+        } else if (p.second.floated) {
             c->resize_floating(this, res.focus == c && isFocused);
         } else {
             c->resize_tiling(p.second.geometry, res.focus == c && isFocused);

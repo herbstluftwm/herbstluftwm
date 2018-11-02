@@ -90,6 +90,7 @@ public:
     void setup_border(bool focused);
     void resize_tiling(Rectangle rect, bool isFocused);
     void resize_floating(HSMonitor* m, bool isFocused);
+    void resize_fullscreen(Rectangle m, bool isFocused);
     bool is_client_floated();
     bool needs_minimal_dec();
     void set_urgent(bool state);
@@ -115,15 +116,13 @@ public:
     void clear_properties();
     bool ignore_unmapnotify();
 
-    const DecorationScheme& getScheme(bool focused);
-
 private:
+    std::string triggerRelayoutMonitor();
     friend Decoration;
     ClientManager& manager;
     Theme& theme;
     Settings& settings;
     const DecTriple& getDecTriple();
-    void resize_fullscreen(HSMonitor* m, bool isFocused);
 };
 
 

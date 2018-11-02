@@ -101,6 +101,12 @@ public:
     DecorationScheme  normal;
     DecorationScheme  active;
     DecorationScheme  urgent;
+    // pick the right scheme, depending on whether a window is active/urgent
+    const DecorationScheme& operator()(bool active, bool urgent) const {
+        if (active) return this->active;
+        else if (urgent) return this->urgent;
+        else return normal;
+    }
 };
 
 class Theme : public DecTriple {
