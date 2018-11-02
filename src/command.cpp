@@ -50,7 +50,7 @@ static const char* completion_split_modes[]= { "horizontal", "vertical", "left",
 static const char* completion_split_ratios[]= {
     "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", nullptr };
 
-static bool no_completion(int argc, char** argv, int pos) {
+static bool no_completion(int, char**, int) {
     return false;
 }
 

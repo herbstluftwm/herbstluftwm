@@ -132,17 +132,17 @@ void HSMonitor::setIndexAttribute(unsigned long new_index) {
     index = new_index;
 }
 
-int HSMonitor::lock_tag_cmd(Input argv, Output output) {
+int HSMonitor::lock_tag_cmd(Input, Output) {
     lock_tag = true;
     return 0;
 }
 
-int HSMonitor::unlock_tag_cmd(Input argv, Output output) {
+int HSMonitor::unlock_tag_cmd(Input, Output) {
     lock_tag = false;
     return 0;
 }
 
-int HSMonitor::list_padding(Input input, Output output) {
+int HSMonitor::list_padding(Input, Output output) {
     output     << pad_up()
         << " " << pad_right()
         << " " << pad_down()

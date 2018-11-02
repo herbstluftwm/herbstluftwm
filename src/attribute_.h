@@ -158,7 +158,7 @@ template<>
 inline std::string Attribute_<std::string>::str() { return payload_; }
 
 template<>
-inline std::string Attribute_<std::string>::parse(const std::string &payload, std::string const* ref) {
+inline std::string Attribute_<std::string>::parse(const std::string &payload, std::string const*) {
     return payload;
 }
 

@@ -99,8 +99,8 @@ void HSFrameSplit::insertClient(HSClient* client) {
     else                b->insertClient(client);
 }
 
-std::shared_ptr<HSFrame> HSFrameLeaf::lookup(const char* index) {
-    return shared_from_this();
+std::shared_ptr<HSFrame> HSFrameLeaf::lookup(const char*) {
+    return shared_from_this(); // we are last one left
 }
 
 std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
@@ -1452,7 +1452,7 @@ int layout_rotate_command() {
             frame->rotate();
         };
     void (*onLeaf)(HSFrameLeaf*) =
-        [] (HSFrameLeaf* frame) {
+        [] (HSFrameLeaf*) {
         };
     // first hide children => order = 2
     get_current_monitor()->tag->frame->fmap(onSplit, onLeaf, -1);

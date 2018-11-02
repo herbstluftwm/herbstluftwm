@@ -416,19 +416,19 @@ int wmexec(int argc, char** argv) {
         for (i = 0; i < argc-1; i++) {
             execargs[i] = execargs[i+1];
         }
-        execargs[i] = NULL;
+        execargs[i] = nullptr;
         // quit and exec to new window manger
         g_exec_args = execargs;
     } else {
         // exec into same command
-        g_exec_args = NULL;
+        g_exec_args = nullptr;
     }
     g_exec_before_quit = true;
     g_aboutToQuit = true;
     return EXIT_SUCCESS;
 }
 
-int raise_command(int argc, char** argv, Output output) {
+int raise_command(int argc, char** argv, Output) {
     auto client = get_client((argc > 1) ? argv[1] : "");
     if (client) {
         client->raise();
@@ -496,7 +496,7 @@ int unsetenv_command(int argc, char** argv, Output output) {
 
 // handle x-events:
 
-void event_on_configure(Root* root, XEvent event) {
+void event_on_configure(Root*, XEvent event) {
     XConfigureRequestEvent* cre = &event.xconfigurerequest;
     HSClient* client = get_client_from_window(cre->window);
     if (client) {
