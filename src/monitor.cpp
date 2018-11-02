@@ -108,7 +108,7 @@ std::string HSMonitor::getTagString() {
 
 std::string HSMonitor::setTagString(std::string new_tag_string) {
     HSTag* new_tag = find_tag(new_tag_string.c_str());
-    if (new_tag == NULL) {
+    if (!new_tag) {
         return "no tag named \"" + new_tag_string + "\" exists.";
     }
     if (new_tag == tag) return ""; // nothing to do
@@ -253,7 +253,7 @@ int set_monitor_rects(const RectangleVec &templates) {
     if (templates.empty()) {
         return HERBST_INVALID_ARGUMENT;
     }
-    HSTag* tag = NULL;
+    HSTag* tag = nullptr;
     int i;
     for (i = 0; i < std::min(templates.size(), g_monitors->size()); i++) {
         HSMonitor* m = monitor_with_index(i);
@@ -305,8 +305,8 @@ int add_monitor_command(int argc, char** argv, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     auto rect = Rectangle::fromStr(argv[1]);
-    HSTag* tag = NULL;
-    char* name = NULL;
+    HSTag* tag = nullptr;
+    char* name = nullptr;
     if (argc == 2 || !strcmp("", argv[2])) {
         tag = find_unused_tag();
         if (!tag) {
@@ -440,7 +440,7 @@ int rename_monitor_command(int argc, char** argv, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     HSMonitor* mon = g_monitors->byString(argv[1]);
-    if (mon == NULL) {
+    if (!mon) {
         output << argv[0] <<
             ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
@@ -456,8 +456,8 @@ int rename_monitor_command(int argc, char** argv, Output output) {
 
 int monitor_rect_command(int argc, char** argv, Output output) {
     // usage: monitor_rect [[-p] INDEX]
-    char* monitor_str = NULL;
-    HSMonitor* m = NULL;
+    char* monitor_str = nullptr;
+    HSMonitor* m = nullptr;
     bool with_pad = false;
 
     // if monitor is supplied
@@ -478,7 +478,7 @@ int monitor_rect_command(int argc, char** argv, Output output) {
     // if an index is set
     if (monitor_str) {
         m = string_to_monitor(monitor_str);
-        if (m == NULL) {
+        if (!m) {
             output << argv[0] <<
                 ": Monitor \"" << monitor_str << "\" not found!\n";
             return HERBST_INVALID_ARGUMENT;
@@ -502,7 +502,7 @@ int monitor_set_pad_command(int argc, char** argv, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     HSMonitor* monitor = string_to_monitor(argv[1]);
-    if (monitor == NULL) {
+    if (!monitor) {
         output << argv[0] <<
             ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
@@ -539,7 +539,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     }
     if (monitor->lock_tag) {
         // If the monitor tag is locked, do not change the tag
-        if (other != NULL) {
+        if (other) {
             // but if the tag is already visible, change to the
             // displaying monitor
             monitor_focus_by_index(other->index());
@@ -547,7 +547,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
         }
         return 1;
     }
-    if (other != NULL) {
+    if (other) {
         if (g_settings->swap_monitors_to_get_tag()) {
             if (other->lock_tag) {
                 // the monitor we want to steal the tag from is
@@ -929,7 +929,7 @@ int monitor_raise_command(int argc, char** argv, Output output) {
     HSMonitor* monitor;
     if (argc >= 1) {
         monitor = string_to_monitor(argv[0]);
-        if (monitor == NULL) {
+        if (!monitor) {
             output << cmd_name << ": Monitor \"" << argv[0] << "\" not found!\n";
             return HERBST_INVALID_ARGUMENT;
         }
@@ -948,7 +948,7 @@ void HSMonitor::restack() {
     int count = 1 + stack_window_count(tag->stack, false);
     Window* buf = g_new(Window, count);
     buf[0] = stacking_window;
-    stack_to_window_buf(tag->stack, buf + 1, count - 1, false, NULL);
+    stack_to_window_buf(tag->stack, buf + 1, count - 1, false, nullptr);
     /* remove a focused fullscreen client */
     HSClient* client = tag->frame->focusedClient();
     if (client && client->fullscreen_) {

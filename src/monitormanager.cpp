@@ -118,7 +118,7 @@ int MonitorManager::list_monitors(Input argv, Output output) {
 
 HSMonitor* MonitorManager::byString(string str) {
     int idx = string_to_monitor_index(str);
-    return ((idx >= 0) && idx < size()) ? byIdx(idx) : NULL;
+    return ((idx >= 0) && idx < size()) ? byIdx(idx) : nullptr;
 }
 
 function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
@@ -130,7 +130,7 @@ function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
             monitor = get_current_monitor();
         } else {
             monitor = byString(input.front());
-            if (monitor == NULL) {
+            if (!monitor) {
                 output << input.command() <<
                     ": Monitor \"" << input.front() << "\" not found!\n";
                 return HERBST_INVALID_ARGUMENT;

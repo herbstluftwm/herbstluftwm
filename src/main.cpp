@@ -58,9 +58,9 @@ int         g_screen_height;
 bool        g_aboutToQuit;
 
 // module internals:
-static char*    g_autostart_path = NULL; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
+static char*    g_autostart_path = nullptr; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
 static bool     g_exec_before_quit = false;
-static char**   g_exec_args = NULL;
+static char**   g_exec_args = nullptr;
 
 typedef void (*HandlerTable[LASTEvent]) (Root*, XEvent*);
 
@@ -263,7 +263,7 @@ int silent_command(int argc, char* argv[]) {
 // prints or dumps the layout of an given tag
 // first argument tells whether to print or to dump
 int print_layout_command(int argc, char** argv, Output output) {
-    HSTag* tag = NULL;
+    HSTag* tag = nullptr;
     // an empty argv[1] means current focused tag
     if (argc >= 2 && argv[1][0] != '\0') {
         tag = find_tag(argv[1]);
@@ -275,7 +275,7 @@ int print_layout_command(int argc, char** argv, Output output) {
         HSMonitor* m = get_current_monitor();
         tag = m->tag;
     }
-    assert(tag != NULL);
+    assert(tag);
 
     std::shared_ptr<HSFrame> frame = tag->frame->lookup(argc >= 3 ? argv[2] : "");
     if (argc > 0 && !strcmp(argv[0], "dump")) {
@@ -288,7 +288,7 @@ int print_layout_command(int argc, char** argv, Output output) {
 
 int load_command(int argc, char** argv, Output output) {
     // usage: load TAG LAYOUT
-    HSTag* tag = NULL;
+    HSTag* tag = nullptr;
     if (argc < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -304,7 +304,7 @@ int load_command(int argc, char** argv, Output output) {
         HSMonitor* m = get_current_monitor();
         tag = m->tag;
     }
-    assert(tag != NULL);
+    assert(tag != nullptr);
     char* rest = load_frame_tree(tag->frame, layout_string, output);
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
@@ -337,7 +337,7 @@ int print_tag_status_command(int argc, char** argv, Output output) {
     } else {
         monitor = get_current_monitor();
     }
-    if (monitor == NULL) {
+    if (!monitor) {
         output << argv[0] << ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
@@ -395,7 +395,7 @@ int spawn(int argc, char** argv) {
         for (i = 0; i < argc-1; i++) {
             execargs[i] = execargs[i+1];
         }
-        execargs[i] = NULL;
+        execargs[i] = nullptr;
         // do actual exec
         setsid();
         execvp(execargs[0], execargs);
@@ -465,7 +465,7 @@ int getenv_command(int argc, char** argv, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     char* envvar = getenv(argv[1]);
-    if (envvar == NULL) {
+    if (!envvar) {
         return HERBST_ENV_UNSET;
     }
     output << envvar << "\n";
@@ -549,7 +549,7 @@ void event_on_configure(Root* root, XEvent event) {
 // from dwm.c
 void scan(Root* root) {
     unsigned int num;
-    Window d1, d2, *cl, *wins = NULL;
+    Window d1, d2, *cl, *wins = nullptr;
     unsigned long cl_count;
     XWindowAttributes wa;
     auto clientmanager = root->clients();
@@ -617,7 +617,7 @@ void execute_autostart_file() {
 
         const char* global_autostart = HERBSTLUFT_GLOBAL_AUTOSTART;
         HSDebug("Can not execute %s, falling back to %s\n", path.c_str(), global_autostart);
-        execl(global_autostart, global_autostart, NULL);
+        execl(global_autostart, global_autostart, nullptr);
 
         fprintf(stderr, "herbstluftwm: execvp \"%s\"", global_autostart);
         perror(" failed");
@@ -676,7 +676,7 @@ static void sigaction_signal(int signum, void (*handler)(int)) {
     act.sa_handler = handler;
     sigemptyset(&act.sa_mask);
     act.sa_flags = SA_NOCLDSTOP | SA_RESTART;
-    sigaction(signum, &act, NULL);
+    sigaction(signum, &act, nullptr);
 }
 
 HandlerTable g_default_handler;
@@ -947,7 +947,7 @@ int main(int argc, char* argv[]) {
         FD_ZERO(&in_fds);
         FD_SET(x11_fd, &in_fds);
         // wait for an event or a signal
-        select(x11_fd + 1, &in_fds, 0, 0, NULL);
+        select(x11_fd + 1, &in_fds, 0, 0, nullptr);
         if (g_aboutToQuit) {
             break;
         }
@@ -955,7 +955,7 @@ int main(int argc, char* argv[]) {
         while (XQLength(g_display)) {
             XNextEvent(g_display, &event);
             void (*handler) (Root*,XEvent*) = g_default_handler[event.type];
-            if (handler != NULL) {
+            if (handler != nullptr) {
                 handler(&* root, &event);
             }
             XSync(g_display, False);

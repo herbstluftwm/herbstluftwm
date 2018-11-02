@@ -130,14 +130,14 @@ Attribute* Root::getAttribute(std::string path, Output output) {
     auto child = this->child(attr_path.first);
     if (!child) {
         output << "No such object " << attr_path.first.join('.') << std::endl;
-        return NULL;
+        return nullptr;
     }
     Attribute* a = child->attribute(attr_path.second);
     if (!a) {
         output << "Object " << attr_path.first.join('.')
                << " has no attribute \"" << attr_path.second << "\""
                << std::endl;
-        return NULL;
+        return nullptr;
     }
     return a;
 }

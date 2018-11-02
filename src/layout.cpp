@@ -43,7 +43,7 @@ const char* g_layout_names[] = {
     "horizontal",
     "max",
     "grid",
-    NULL,
+    nullptr,
 };
 
 void layout_init() {
@@ -104,7 +104,7 @@ std::shared_ptr<HSFrame> HSFrameLeaf::lookup(const char* index) {
 }
 
 std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
-    if (index == NULL || index[0] == '\0') return shared_from_this();
+    if (!index || index[0] == '\0') return shared_from_this();
     std::shared_ptr<HSFrame> new_root;
     const char *new_index = index + 1;
 
@@ -210,7 +210,7 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
     description = strchr(description, LAYOUT_DUMP_BRACKETS[0]);
     if (!description) {
         output << "Missing " << LAYOUT_DUMP_BRACKETS[0] << "\n";
-        return NULL;
+        return nullptr;
     }
     description++; // jump over (
 
@@ -236,12 +236,12 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
     description += args_len;
     if (!*description) {
         output << "Missing " << LAYOUT_DUMP_BRACKETS[1] << " or arguments\n";
-        return NULL;
+        return nullptr;
     }
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
     if (!*description) {
         output << "Missing " << LAYOUT_DUMP_BRACKETS[1] << " or arguments\n";
-        return NULL;
+        return nullptr;
     }
 
     // apply type to frame
@@ -254,14 +254,14 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
         if (3 != sscanf(args, "%[^" SEP "]" SEP "%lf" SEP "%d",
             align_name, &fraction_double, &selection)) {
             output << "Can not parse frame args \"" << args << "\"\n";
-            return NULL;
+            return nullptr;
         }
 #undef SEP
         int align = find_align_by_name(align_name);
         g_free(align_name);
         if (align < 0) {
             output << "Invalid alignment name in args \"" << args << "\"\n";
-            return NULL;
+            return nullptr;
         }
         selection = !!selection; // CLAMP it to [0;1]
         int fraction = (int)(fraction_double * (double)FRACTION_UNIT);
@@ -275,7 +275,7 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
             frame_split(frame, align, fraction);
             if (frame->type != TYPE_FRAMES) {
                 output << "Can not split frame\n";
-                return NULL;
+                return nullptr;
             }
         }
         frame->content.layout.selection = selection;
@@ -283,10 +283,10 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
         // now parse subframes
         description = load_frame_tree(frame->content.layout.a,
                         description, output);
-        if (!description) return NULL;
+        if (!description) return nullptr;
         description = load_frame_tree(frame->content.layout.b,
                         description, output);
-        if (!description) return NULL;
+        if (!description) return nullptr;
     } else {
         // parse args
         char* layout_name = g_new(char, strlen(args)+1);
@@ -295,14 +295,14 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
         if (2 != sscanf(args, "%[^" SEP "]" SEP "%d",
             layout_name, &selection)) {
             output << "Can not parse frame args \"" << args << "\"\n";
-            return NULL;
+            return nullptr;
         }
 #undef SEP
         int layout = find_layout_by_name(layout_name);
         g_free(layout_name);
         if (layout < 0) {
             output << "Can not parse layout from args \"" << args << "\"\n";
-            return NULL;
+            return nullptr;
         }
 
         // ensure that it is a client frame
@@ -338,7 +338,7 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
             Window win;
             if (1 != sscanf(description, "0x%lx\n", &win)) {
                 output << "Can not parse window id from \"" << description << "\"\n";
-                return NULL;
+                return nullptr;
             }
             // jump over window id and over whitespaces
             description += strspn(description, "0x123456789abcdef");
@@ -465,7 +465,7 @@ std::shared_ptr<HSFrame> HSFrame::root() {
 //        /* .data       = */ (idx == 0)
 //                        ? frame->content.layout.a
 //                        : frame->content.layout.b,
-//        /* .destructor = */ NULL,
+//        /* .destructor = */ nullptr,
 //    };
 //    return intf;
 //}
@@ -478,7 +478,7 @@ void print_frame_tree(shared_ptr<HSFrame> frame, Output output) {
 //        /* .child_count    = */ frame_child_count,
 //        /* .append_caption = */ frame_append_caption,
 //        /* .data           = */ (HSTree) frame,
-//        /* .destructor     = */ NULL,
+//        /* .destructor     = */ nullptr,
 //    };
 //    tree_print_to(&frameintf, output);
 //}

@@ -42,7 +42,7 @@ static int g_monitor_float_treshold = 24;
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
 static Atom g_wmatom[WMLast];
 
-static HSClient* lastfocus = NULL;
+static HSClient* lastfocus = nullptr;
 
 
 HSClient::HSClient(Window window, bool visible_already, ClientManager& cm)
@@ -156,7 +156,7 @@ HSClient* get_client_from_window(Window window) {
 // destroys a special client
 HSClient::~HSClient() {
     if (lastfocus == this) {
-        lastfocus = NULL;
+        lastfocus = nullptr;
     }
     if (tag() && slice) {
         stack_remove_slice(tag()->stack, slice);
@@ -169,7 +169,7 @@ HSClient::~HSClient() {
 bool HSClient::needs_minimal_dec() {
     //if (!frame) {
     //    frame = this->tag()->frame->frameWithClient(this);
-    //    HSAssert(frame != NULL);
+    //    HSAssert(frame != nullptr);
     //}
     if (this->pseudotile_()) return false;
     if (this->is_client_floated()) return false;
@@ -189,7 +189,7 @@ void HSClient::window_unfocus_last() {
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
     if (lastfocus) {
         /* only emit the hook if the focus *really* changes */
-        hook_emit_list("focus_changed", "0x0", "", NULL);
+        hook_emit_list("focus_changed", "0x0", "", nullptr);
         ewmh_update_active_window(None);
         tag_update_each_focus_layer();
 
@@ -220,7 +220,7 @@ void HSClient::window_focus() {
         const char* title = this->title_().c_str();
         char winid_str[STRING_BUF_SIZE];
         snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)this->window_);
-        hook_emit_list("focus_changed", winid_str, title, NULL);
+        hook_emit_list("focus_changed", winid_str, title, nullptr);
     }
 
     // change window-colors
@@ -506,7 +506,7 @@ void HSClient::set_urgent(bool state) {
 void HSClient::set_urgent_force(bool state) {
     char winid_str[STRING_BUF_SIZE];
     snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window_);
-    hook_emit_list("urgent", state ? "on" : "off", winid_str, NULL);
+    hook_emit_list("urgent", state ? "on" : "off", winid_str, nullptr);
 
     this->urgent_ = state;
 
@@ -548,7 +548,7 @@ void HSClient::update_wm_hints() {
             char winid_str[STRING_BUF_SIZE];
             snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window_);
             this->setup_border(focused_client == this);
-            hook_emit_list("urgent", this->urgent_() ? "on":"off", winid_str, NULL);
+            hook_emit_list("urgent", this->urgent_() ? "on":"off", winid_str, nullptr);
             tag_set_flags_dirty();
         }
     }
@@ -564,7 +564,7 @@ void HSClient::update_title() {
     GString* new_name = window_property_to_g_string(g_display,
         this->window_, g_netatom[NetWmName]);
     if (!new_name) {
-        char* ch_new_name = NULL;
+        char* ch_new_name = nullptr;
         /* if ewmh name isn't set, then fall back to WM_NAME */
         if (0 != XFetchName(g_display, this->window_, &ch_new_name)) {
             new_name = g_string_new(ch_new_name);
@@ -581,7 +581,7 @@ void HSClient::update_title() {
     if (changed && get_current_client() == this) {
         char buf[STRING_BUF_SIZE];
         snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
-        hook_emit_list("window_title_changed", buf, this->title_().c_str(), NULL);
+        hook_emit_list("window_title_changed", buf, this->title_().c_str(), nullptr);
     }
 }
 
@@ -608,7 +608,7 @@ void HSClient::set_fullscreen(bool state) {
     char buf[STRING_BUF_SIZE];
     snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
     ewmh_update_window_state(this);
-    hook_emit_list("fullscreen", state ? "on" : "off", buf, NULL);
+    hook_emit_list("fullscreen", state ? "on" : "off", buf, nullptr);
 }
 
 void HSClient::set_pseudotile(bool state) {

@@ -81,7 +81,7 @@ Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Outp
     auto it = name2constructor.find(typestr);
     if (it == name2constructor.end()) {
         output << "error: unknown type \"" << typestr << "\"";
-        return NULL;
+        return nullptr;
     }
     return it->second(attr_name);
 }
@@ -103,7 +103,7 @@ int new_attr_cmd(Root* root, Input input, Output output)
             << " but is actually \"" << attr_name << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-    if (NULL != obj->attribute(attr_name)) {
+    if (obj->attribute(attr_name)) {
         output
             << cmd << ": object \"" << obj_path_and_attr.first.join()
             << "\" already has an attribute named \"" << attr_name
@@ -155,7 +155,7 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
     vector<T> vals;
     for (auto & x : strings) {
         try {
-            vals.push_back(Attribute_<T>::parse(x, NULL));
+            vals.push_back(Attribute_<T>::parse(x, nullptr));
         } catch(std::exception& e) {
             o << "can not parse \"" << x << "\" to "
               << typeid(T).name() << ": " << e.what() << endl;

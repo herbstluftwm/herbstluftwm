@@ -186,7 +186,7 @@ void Object::print(const std::string &prefix)
 Attribute* Object::attribute(const std::string &name) {
     auto it = attribs_.find(name);
     if (it == attribs_.end()) {
-        return NULL;
+        return nullptr;
     } else {
         return it->second;
     }
@@ -220,7 +220,7 @@ Object* Object::child(Path path, Output output) {
             output << "Object \"" << cur_path << "\""
                 << " has no child named \"" << path.front()
                 << "\"" << endl;
-            return NULL;
+            return nullptr;
         }
         path.shift();
     }
@@ -321,7 +321,7 @@ Attribute* Object::deepAttribute(const std::string &path, Output output) {
     auto attr_path = splitPath(path);
     auto attribute_owner = child(attr_path.first, output);
     if (!attribute_owner) {
-        return NULL;
+        return nullptr;
     }
     Attribute* a = attribute_owner->attribute(attr_path.second);
     if (!a) {
@@ -329,7 +329,7 @@ Attribute* Object::deepAttribute(const std::string &path, Output output) {
             << "\" has no attribute \"" << attr_path.second
             << "\"."
             << endl;
-        return NULL;
+        return nullptr;
     }
     return a;
 }

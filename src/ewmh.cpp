@@ -34,7 +34,7 @@ static Window      g_wm_window;
 
 static int WM_STATE;
 
-static Window*  g_original_clients = NULL;
+static Window*  g_original_clients = nullptr;
 static unsigned long g_original_clients_count = 0;
 static bool ewmh_read_client_list(Window** buf, unsigned long *count);
 
@@ -81,7 +81,7 @@ const std::array<const char*,NetCOUNT>g_netatom_names =
 void ewmh_init() {
     /* init ewmh net atoms */
     for (int i = 0; i < NetCOUNT; i++) {
-        if (g_netatom_names[i] == NULL) {
+        if (!g_netatom_names[i]) {
             g_warning("no name specified in g_netatom_names "
                       "for atom number %d\n", i);
             continue;
@@ -94,11 +94,11 @@ void ewmh_init() {
         PropModeReplace, (unsigned char *) g_netatom, NetCOUNT);
 
     /* init some globals */
-    g_windows = NULL;
+    g_windows = nullptr;
     g_window_count = 0;
     if (!ewmh_read_client_list(&g_original_clients, &g_original_clients_count))
     {
-        g_original_clients = NULL;
+        g_original_clients = nullptr;
         g_original_clients_count = 0;
     }
 
@@ -410,12 +410,12 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
             int direction = me->data.l[2];
             if (direction == _NET_WM_MOVERESIZE_MOVE
                 || direction == _NET_WM_MOVERESIZE_MOVE_KEYBOARD) {
-                mouse_initiate_move(client, 0, NULL);
+                mouse_initiate_move(client, 0, nullptr);
             } else if (direction == _NET_WM_MOVERESIZE_CANCEL) {
                 if (mouse_is_dragging()) mouse_stop_drag();
             } else {
                 // anything else is a resize
-                mouse_initiate_resize(client, 0, NULL);
+                mouse_initiate_resize(client, 0, nullptr);
             }
             break;
         }
@@ -467,7 +467,7 @@ bool ewmh_is_window_state_set(Window win, Atom hint) {
         // NetWmState just is not set properly
         return false;
     }
-    if (actual_type != XA_ATOM || format != 32 || states == NULL) {
+    if (actual_type != XA_ATOM || format != 32 || !states) {
         // invalid format or no entries
         return false;
     }

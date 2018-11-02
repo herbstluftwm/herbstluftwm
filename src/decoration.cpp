@@ -132,7 +132,7 @@ static Visual* check_32bit_client(HSClient* c)
 
     if (wattrib.depth == 32)
         return wattrib.visual;
-    return NULL;
+    return nullptr;
 }
 
 Decoration::Decoration(HSClient* client, Settings& settings_)
@@ -227,7 +227,7 @@ HSClient* Decoration::toClient(Window decoration_window)
 {
     auto cl = decwin2client.find(decoration_window);
     if (cl == decwin2client.end()) {
-        return NULL;
+        return nullptr;
     } else {
         return cl->second;
     }
@@ -397,7 +397,7 @@ void Decoration::redrawPixmap() {
         dec->pixmap = XCreatePixmap(g_display, win, outer.width, outer.height, depth);
     }
     Pixmap pix = dec->pixmap;
-    GC gc = XCreateGC(g_display, pix, 0, NULL);
+    GC gc = XCreateGC(g_display, pix, 0, nullptr);
 
     // draw background
     XSetForeground(g_display, gc, get_client_color(s.border_color()));

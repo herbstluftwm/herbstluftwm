@@ -61,7 +61,7 @@ int TagManager::tag_add_command(Input input, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTag* tag = add_tag(input.front());
-    hook_emit_list("tag_added", tag->name->c_str(), NULL);
+    hook_emit_list("tag_added", tag->name->c_str(), nullptr);
     return 0;
 }
 
@@ -88,7 +88,7 @@ int TagManager::tag_rename_command(Input input, Output output) {
     }
     tag->name = new_name;
     ewmh_update_desktop_names();
-    hook_emit_list("tag_renamed", new_name.c_str(), NULL);
+    hook_emit_list("tag_renamed", new_name.c_str(), nullptr);
     return 0;
 }
 
@@ -116,7 +116,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
             for (int i = 0; find_monitor_with_tag(&* tag); i++) {
                 if (i >= tags->size()) {
                     // if we tried each tag then there is no invisible tag
-                    return NULL;
+                    return nullptr;
                 }
                 index += delta;
                 index = MOD(index, tags->size());
@@ -127,7 +127,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
         // if it is absolute, then check index
         if (index < 0 || index >= tags->size()) {
             HSDebug("invalid tag index %d\n", index);
-            return NULL;
+            return nullptr;
         }
     }
     return byIdx(index);

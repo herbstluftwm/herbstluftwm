@@ -83,11 +83,11 @@ void ClientManager::remove(Window window)
 HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
-        return NULL;
+        return nullptr;
     }
 
     if (client(win)) { // if the client is managed already
-        return NULL;
+        return nullptr;
     }
 
     // init client

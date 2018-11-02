@@ -23,7 +23,7 @@ unsigned int* get_numlockmask_ptr() {
     return &numlockmask;
 }
 
-static GList* g_key_binds = NULL;
+static GList* g_key_binds = nullptr;
 
 void key_init() {
     update_numlockmask();
@@ -35,7 +35,7 @@ void key_destroy() {
 
 void key_remove_all_binds() {
     g_list_free_full(g_key_binds, (GDestroyNotify)keybinding_free);
-    g_key_binds = NULL;
+    g_key_binds = nullptr;
     regrab_keys();
 }
 
@@ -80,7 +80,7 @@ const char* modifiermask2name(unsigned int mask) {
             return g_modifier_names[i].name;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 int keybind(int argc, char** argv, Output output) {
@@ -109,7 +109,7 @@ int keybind(int argc, char** argv, Output output) {
     *data = new_bind;
     g_key_binds = g_list_append(g_key_binds, data);
     // grab for events on this keycode
-    grab_keybind(data, NULL);
+    grab_keybind(data, nullptr);
     return 0;
 }
 
@@ -118,7 +118,7 @@ bool string2modifiers(char* string, unsigned int* modmask) {
     // split string at "+-"
     char** splitted = g_strsplit_set(string, KEY_COMBI_SEPARATORS, 0);
     // this should give at least one part
-    if (NULL == splitted[0]) {
+    if (!splitted[0]) {
         fprintf(stderr, "warning: empty keysym\n");
         g_strfreev(splitted);
         return false;
@@ -126,7 +126,7 @@ bool string2modifiers(char* string, unsigned int* modmask) {
     // all parts except last one are modifiers
     int i;
     *modmask = 0;
-    for (i = 0; splitted[i+1] != NULL; i++) {
+    for (i = 0; splitted[i+1] != nullptr; i++) {
         // while the i'th element is not the last part
         unsigned int cur_mask = modifiername2mask(splitted[i]);
         if (cur_mask == 0) {
@@ -220,7 +220,7 @@ void regrab_keys() {
     update_numlockmask();
     // init modifiers after updating numlockmask
     XUngrabKey(g_display, AnyKey, AnyModifier, g_root); // remove all current grabs
-    g_list_foreach(g_key_binds, (GFunc)grab_keybind, NULL);
+    g_list_foreach(g_key_binds, (GFunc)grab_keybind, nullptr);
 }
 
 void grab_keybind(KeyBinding* binding, void* useless_pointer) {
@@ -378,7 +378,7 @@ void complete_against_modifiers(const char* needle, char seperator,
 static void key_set_keymask_helper(KeyBinding* b, regex_t *keymask_regex) {
     // add keybinding
     bool enabled = true;
-    if (keymask_regex != NULL) {
+    if (keymask_regex) {
         GString* name = keybinding_to_g_string(b);
         regmatch_t match;
         int status = regexec(keymask_regex, name->str, 1, &match, 0);
@@ -395,9 +395,9 @@ static void key_set_keymask_helper(KeyBinding* b, regex_t *keymask_regex) {
     }
 
     if (enabled && !b->enabled) {
-        grab_keybind(b, NULL);
+        grab_keybind(b, nullptr);
     } else if(!enabled && b->enabled) {
-        ungrab_keybind(b, NULL);
+        ungrab_keybind(b, nullptr);
     }
 }
 

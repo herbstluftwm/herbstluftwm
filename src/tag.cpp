@@ -61,13 +61,13 @@ void HSTag::setIndexAttribute(unsigned long new_index) {
 }
 
 std::string HSTag::validateNameChange() {
-    HSTag* found_tag = NULL;
+    HSTag* found_tag = nullptr;
     for (auto t : *tags) {
         if (&* t != this && t->name == *name) {
             found_tag = &* t;
         }
     }
-    if (found_tag != NULL) {
+    if (found_tag) {
         stringstream output;
         output << "Tag \"" << *name << "\" already exists ";
         return output.str();
@@ -86,7 +86,7 @@ HSTag* find_tag(const char* name) {
             return &* t;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 HSTag* get_tag_by_index(int index) {
@@ -99,7 +99,7 @@ HSTag* find_unused_tag() {
             return &* t;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 int tag_remove_command(int argc, char** argv, Output output) {
@@ -154,7 +154,7 @@ int tag_remove_command(int argc, char** argv, Output output) {
     ewmh_update_desktops();
     ewmh_update_desktop_names();
     tag_set_flags_dirty();
-    hook_emit_list("tag_removed", oldname.c_str(), target->name->c_str(), NULL);
+    hook_emit_list("tag_removed", oldname.c_str(), target->name->c_str(), nullptr);
     return 0;
 }
 
@@ -183,7 +183,7 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
 
         HSMonitor* m = find_monitor_with_tag(tag);
         HSDebug("setting tag:%s->floating to %s\n", tag->name->c_str(), tag->floating ? "on" : "off");
-        if (m != NULL) {
+        if (m) {
             m->applyLayout();
         }
     }
@@ -214,7 +214,7 @@ void tag_update_flags() {
 
 void tag_set_flags_dirty() {
     g_tag_flags_dirty = true;
-    hook_emit_list("tag_flags", NULL);
+    hook_emit_list("tag_flags", nullptr);
 }
 
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
@@ -223,7 +223,7 @@ HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
             return &* t;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void tag_update_focus_layer(HSTag* tag) {
@@ -255,7 +255,7 @@ static void tag_update_focus_layer_helper(HSTag* tag, void* data) {
     tag_update_focus_layer(tag);
 }
 void tag_update_each_focus_layer() {
-    tag_foreach(tag_update_focus_layer_helper, NULL);
+    tag_foreach(tag_update_focus_layer_helper, nullptr);
 }
 
 void tag_update_focus_objects() {

@@ -166,7 +166,7 @@ static struct HSTreeInterface layer_nth_child(HSTree root, size_t idx) {
         /* .child_count    = */ slice_child_count,
         /* .append_caption = */ slice_append_caption,
         /* .data           = */ slice,
-        /* .destructor     = */ NULL,
+        /* .destructor     = */ nullptr,
     };
     return intface;
 }
@@ -215,7 +215,7 @@ int print_stack_command(int argc, char** argv, Output output) {
         /* .child_count    = */ layer_child_count,
         /* .append_caption = */ monitor_stack_append_caption,
         /* .data           = */ &tl,
-        /* .destructor     = */ NULL,
+        /* .destructor     = */ nullptr,
     };
     tree_print_to(&intface, output);
     return 0;
@@ -223,7 +223,7 @@ int print_stack_command(int argc, char** argv, Output output) {
 
 int stack_window_count(HSStack* stack, bool real_clients) {
     int counter = 0;
-    stack_to_window_buf(stack, NULL, 0, real_clients, &counter);
+    stack_to_window_buf(stack, nullptr, 0, real_clients, &counter);
     return -counter;
 }
 
@@ -323,7 +323,7 @@ void stack_restack(HSStack* stack) {
     }
     int count = stack_window_count(stack, false);
     Window* buf = g_new0(Window, count);
-    stack_to_window_buf(stack, buf, count, false, NULL);
+    stack_to_window_buf(stack, buf, count, false, nullptr);
     XRestackWindows(g_display, buf, count);
     stack->dirty = false;
     ewmh_update_client_list_stacking();
@@ -409,7 +409,7 @@ Window stack_lowest_window(HSStack* stack) {
 }
 
 bool stack_is_layer_empty(HSStack* s, HSLayer layer) {
-    return s->top[layer] == NULL;
+    return !s->top[layer];
 }
 
 void stack_clear_layer(HSStack* stack, HSLayer layer) {

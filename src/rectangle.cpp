@@ -31,14 +31,14 @@ static Rectangle intersection_area(RectList* m1, RectList* m2) {
 
 static RectList* rectlist_create_simple(int x1, int y1, int x2, int y2) {
     if (x1 >= x2 || y1 >= y2) {
-        return NULL;
+        return nullptr;
     }
     RectList* r = g_new0(RectList, 1);
     r->rect.x = x1;
     r->rect.y = y1;
     r->rect.width  = x2 - x1;
     r->rect.height = y2 - y1;
-    r->next = NULL;
+    r->next = nullptr;
     return r;
 }
 
@@ -78,7 +78,7 @@ RectList* reclist_insert_disjoint(RectList* head, RectList* element) {
         return head;
     } else if (!head) {
         // if the list is empty, then intersection-free insertion is trivial
-        element->next = NULL;
+        element->next = nullptr;
         return element;
     } else if (!rects_intersect(head, element)) {
         head->next = reclist_insert_disjoint(head->next, element);
@@ -113,7 +113,7 @@ int rectlist_length(RectList* head) {
 
 RectList* disjoin_rects(const RectangleVec &buf) {
     RectList* cur;
-    struct RectList* rects = NULL;
+    struct RectList* rects = nullptr;
     for (auto& rect : buf) {
         cur = g_new0(RectList, 1);
         cur->rect = rect;
