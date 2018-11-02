@@ -263,7 +263,7 @@ int set_monitor_rects(const RectangleVec &templates) {
     HSTag* tag = nullptr;
     int i;
     for (i = 0; i < std::min(templates.size(), g_monitors->size()); i++) {
-        HSMonitor* m = monitor_with_index(i);
+        auto m = g_monitors->byIdx(i);
         m->rect = templates[i];
     }
     // add additional monitors
@@ -277,29 +277,19 @@ int set_monitor_rects(const RectangleVec &templates) {
     }
     // remove monitors if there are too much
     while (i < g_monitors->size()) {
-        remove_monitor(i);
+        remove_monitor((int)i);
     }
     monitor_update_focus_objects();
     all_monitors_apply_layout();
     return 0;
 }
 
-int find_monitor_index_by_name(char* name) {
-    for (int i = 0; i < g_monitors->size(); i++) {
-        if (g_monitors->byIdx(i)->name == name) {
-            return i;
-        }
-    }
-    return -1;
-}
-
 HSMonitor* find_monitor_by_name(char* name) {
-    int i = find_monitor_index_by_name(name);
-    if (i == -1) {
-        return NULL;
-    } else {
-        return monitor_with_index(i);
+    for (auto m : *g_monitors) {
+        if (m->name == name)
+            return m;
     }
+    return nullptr;
 }
 
 HSMonitor* string_to_monitor(char* str) {
@@ -388,22 +378,25 @@ int remove_monitor(int index) {
     if (g_monitors->size() <= 1) {
         return HERBST_FORBIDDEN;
     }
-    HSMonitor* monitor = monitor_with_index(index);
-    // adjust selection
-    if (g_cur_monitor > index) {
-        // same monitor shall be selected after remove
-        g_cur_monitor--;
-    }
-    assert(monitor->tag);
-    assert(monitor->tag->frame);
-    // hide clients
-    monitor->tag->frame->setVisibleRecursive(false);
-    // remove from monitor stack
-    stack_remove_slice(g_monitor_stack, monitor->slice);
-    slice_destroy(monitor->slice);
-    XDestroyWindow(g_display, monitor->stacking_window);
-    // and remove monitor completely
-    g_monitors->removeIndexed(index);
+
+    {
+        auto monitor = g_monitors->byIdx(index);
+        if (g_cur_monitor > index) {
+            // same monitor shall be selected after remove
+            g_cur_monitor--;
+        }
+        assert(monitor->tag);
+        assert(monitor->tag->frame);
+        // hide clients
+        monitor->tag->frame->setVisibleRecursive(false);
+        // remove from monitor stack
+        stack_remove_slice(g_monitor_stack, monitor->slice);
+        slice_destroy(monitor->slice);
+        XDestroyWindow(g_display, monitor->stacking_window);
+    } // monitor becomes invalid
+
+    // remove monitor completely
+    g_monitors->removeIndexed((unsigned)index);
     if (g_cur_monitor >= g_monitors->size()) {
         g_cur_monitor--;
         // if selection has changed, then relayout focused monitor
@@ -713,7 +706,7 @@ int monitor_cycle_command(int argc, char** argv) {
 void monitor_focus_by_index(int new_selection) {
     new_selection = CLAMP(new_selection, 0, g_monitors->size() - 1);
     HSMonitor* old = get_current_monitor();
-    HSMonitor* monitor = monitor_with_index(new_selection);
+    HSMonitor* monitor = g_monitors->byIdx(new_selection);
     if (old == monitor) {
         // nothing to do
         return;
@@ -794,11 +787,7 @@ HSMonitor* monitor_with_coordinate(int x, int y) {
             return &* m;
         }
     }
-    return NULL;
-}
-
-HSMonitor* monitor_with_index(int index) {
-    return &* g_monitors->byIdx(index);
+    return nullptr;
 }
 
 // monitor detection using xinerama (if available)

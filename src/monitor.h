@@ -79,12 +79,10 @@ extern int g_cur_monitor; // temporarily
 
 // adds a new monitor to the monitors list and returns a pointer to it
 HSMonitor* monitor_with_coordinate(int x, int y);
-HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
 void monitor_focus_by_index(int new_selection);
 int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv, Output output);
-int find_monitor_index_by_name(char* name);
 HSMonitor* find_monitor_by_name(char* name);
 HSMonitor* string_to_monitor(char* string);
 int string_to_monitor_index(char* string);
