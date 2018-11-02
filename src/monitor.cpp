@@ -112,10 +112,14 @@ std::string HSMonitor::setTagString(std::string new_tag_string) {
         return "no tag named \"" + new_tag_string + "\" exists.";
     }
     if (new_tag == tag) return ""; // nothing to do
-    if (NULL != this->setTag(new_tag)) {
+    bool success = this->setTag(new_tag);
+    if (!success) {
         return "tag \"" + new_tag_string + "\" is already on another monitor";
+        /* Note: To change this to tag-swapping between monitors, implement a method
+         * MonitorManager::stealTag() that will fetch the corresponding monitor
+         * and perform the swap */
     }
-    return "to be implemented"; // TODO
+    return "to be implemented"; // TODO: implement in setTag()
 }
 
 std::string HSMonitor::onPadChange() {
@@ -147,17 +151,20 @@ int HSMonitor::list_padding(Input input, Output output) {
     return 0;
 }
 
-/** Set the tag shown on the monitor. If the tag is already used
- * by another monitor, return that other monitor. Return NULL on success.
+/** Set the tag shown on the monitor.
+ * Return false if tag is already shown on another monitor.
  */
-HSMonitor* HSMonitor::setTag(HSTag* new_tag) {
-    HSMonitor* m = find_monitor_with_tag(new_tag);
-    if (m != NULL) {
-        return m;
+// TODO this is the job of monitormanager
+bool HSMonitor::setTag(HSTag* new_tag) {
+    auto owner = find_monitor_with_tag(new_tag);
+    if (!owner || owner != this) {
+        // TODO do the work!
+        return true;
     }
-    return NULL;
+    return owner == this;
 }
 
+// TODO this is the job of monitormanager
 void monitor_destroy() {
     g_monitors->clearChildren();
     stack_destroy(g_monitor_stack);

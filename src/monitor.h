@@ -58,7 +58,7 @@ public:
     int unlock_tag_cmd(Input argv, Output output);
     int list_padding(Input input, Output output);
     int move_cmd(Input input, Output output);
-    HSMonitor* setTag(HSTag* new_tag);
+    bool setTag(HSTag* new_tag);
     void applyLayout();
     void restack();
 private:
