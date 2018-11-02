@@ -50,13 +50,13 @@ HSClient::HSClient(Window window, bool visible_already, ClientManager& cm)
       dec(this, cm.settings),
       float_size_({0, 0, 100, 100}),
       urgent_("urgent", false),
-      fullscreen_("fullscreen", Object::AcceptAll(), false),
+      fullscreen_("fullscreen", AT_THIS(triggerRelayoutMonitor), false),
       title_("title", ""),
       window_id_str("winid", ""),
       tag_(NULL),
       keymask_("keymask", Object::AcceptAll(), ""),
       ewmhfullscreen_(false),
-      pseudotile_("pseudotile", Object::AcceptAll(), false),
+      pseudotile_("pseudotile", AT_THIS(triggerRelayoutMonitor), false),
       neverfocus_(false),
       ewmhrequests_(true), ewmhnotify_(true),
       sizehints_floating_(true), sizehints_tiling_(false),
@@ -134,6 +134,12 @@ bool HSClient::ignore_unmapnotify() {
     } else {
         return false;
     }
+}
+
+std::string HSClient::triggerRelayoutMonitor() {
+    auto m = find_monitor_with_tag(this->tag());
+    if (m) m->applyLayout();
+    return {};
 }
 
 void reset_client_colors() {
@@ -258,12 +264,8 @@ void HSClient::setup_border(bool focused) {
     dec.change_scheme(getDecTriple()(focused, urgent_()));
 }
 
-void HSClient::resize_fullscreen(HSMonitor* m, bool isFocused) {
-    if (!!m) {
-        HSDebug("client_resize_fullscreen() got invalid parameters\n");
-        return;
-    }
-    dec.resize_outline(m->rect, theme[Theme::Type::Fullscreen](isFocused,urgent_()));
+void HSClient::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
+    dec.resize_outline(monitor_rect, theme[Theme::Type::Fullscreen](isFocused,urgent_()));
 }
 
 void HSClient::raise() {
@@ -271,11 +273,6 @@ void HSClient::raise() {
 }
 
 void HSClient::resize_tiling(Rectangle rect, bool isFocused) {
-    HSMonitor* m;
-    if (fullscreen_() && (m = find_monitor_with_tag(this->tag()))) {
-        resize_fullscreen(m, isFocused);
-        return;
-    }
     // apply border width
     if (!this->pseudotile_ /* && !smart_window_surroundings_active(frame) */) {
         // apply window gap
@@ -423,10 +420,6 @@ void HSClient::send_configure() {
 
 void HSClient::resize_floating(HSMonitor* m, bool isFocused) {
     if (!m) return;
-    if (fullscreen_()) {
-        resize_fullscreen(m, isFocused);
-        return;
-    }
     auto rect = this->float_size_;
     rect.x += m->rect.x;
     rect.x += m->rect.y;
