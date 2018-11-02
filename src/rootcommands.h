@@ -10,12 +10,21 @@
 class Root;
 class Attribute;
 
-int substitute_cmd(Root* root, Input input, Output output);
-int sprintf_cmd(Root* root, Input input, Output output);
-int new_attr_cmd(Root* root, Input input, Output output);
-int remove_attr_cmd(Root* root, Input input, Output output);
-int compare_cmd(Root* root, Input input, Output output);
+class RootCommands {
+public:
+    // this class collects high-level commands that don't need any internal
+    // structures but just the object tree as the user sees it.
+    // Hence, this does not inherit from Object and is not exposed to the user as an object.
+    RootCommands(Root* root);
+    int substitute_cmd(Input input, Output output);
+    int sprintf_cmd(Input input, Output output);
+    int new_attr_cmd(Input input, Output output);
+    int remove_attr_cmd(Input input, Output output);
+    int compare_cmd(Input input, Output output);
+    static Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Output output);
+private:
+    Root* root;
+};
 
-Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Output output);
 
 #endif

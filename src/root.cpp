@@ -11,6 +11,7 @@
 #include "tmp.h"
 #include "decoration.h"
 #include "client.h"
+#include "rootcommands.h"
 
 #include <memory>
 #include <stdexcept>
@@ -36,6 +37,7 @@ Root::Root(Globals g)
     tags()->setMonitorManager(monitors());
     hooks = new HookManager;
     tmp = new Tmp(this);
+    root_commands = new RootCommands(this);
 
     // set temporary globals
     ::tags = tags();
@@ -45,6 +47,7 @@ Root::Root(Globals g)
 Root::~Root()
 {
     tags()->setMonitorManager({});
+    delete root_commands;
     delete tmp();
     delete hooks();
     delete monitors();

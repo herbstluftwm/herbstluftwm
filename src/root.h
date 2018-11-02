@@ -15,6 +15,7 @@ class MonitorManager;
 class Theme;
 class Settings;
 class Tmp;
+class RootCommands;
 
 class Globals {
 public:
@@ -51,6 +52,7 @@ public:
     Child_<HookManager> hooks;
     Child_<Theme> theme;
     Child_<Tmp> tmp;
+    RootCommands* root_commands;
     Globals globals;
 
 private:

@@ -105,7 +105,7 @@ void propertynotify(Root* root, XEvent* event);
 void unmapnotify(Root* root, XEvent* event);
 
 unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
-    Root* root_ptr = &* root;
+    RootCommands* root_commands = root->root_commands;
     TagManager* tags = root->tags();
     MonitorManager* monitors = root->monitors();
     Settings* settings = root->settings();
@@ -197,11 +197,11 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"or",             command_chain_command},
         {"!",              negate_command},
         {"object_tree",    BIND_OBJECT(root, print_object_tree_command) },
-        {"substitute",     BIND_PARAMETER(root_ptr, substitute_cmd) },
-        {"sprintf",        BIND_PARAMETER(root_ptr, sprintf_cmd) },
-        {"new_attr",       BIND_PARAMETER(root_ptr, new_attr_cmd) },
-        {"remove_attr",    BIND_PARAMETER(root_ptr, remove_attr_cmd) },
-        {"compare",        BIND_PARAMETER(root_ptr, compare_cmd) },
+        {"substitute",     BIND_OBJECT(root_commands, substitute_cmd) },
+        {"sprintf",        BIND_OBJECT(root_commands, sprintf_cmd) },
+        {"new_attr",       BIND_OBJECT(root_commands, new_attr_cmd) },
+        {"remove_attr",    BIND_OBJECT(root_commands, remove_attr_cmd) },
+        {"compare",        BIND_OBJECT(root_commands, compare_cmd) },
         {"getenv",         getenv_command},
         {"setenv",         setenv_command},
         {"unsetenv",       unsetenv_command},

@@ -12,7 +12,10 @@
 
 using namespace std;
 
-int substitute_cmd(Root* root, Input input, Output output)
+RootCommands::RootCommands(Root* root_) : root(root_) {
+}
+
+int RootCommands::substitute_cmd(Input input, Output output)
 {
     string cmd, ident, path;
     if (!input.read({ &cmd, &ident, &path })) {
@@ -24,7 +27,7 @@ int substitute_cmd(Root* root, Input input, Output output)
     return Commands::call(input.replace(ident, a->str()), output);
 }
 
-int sprintf_cmd(Root* root, Input input, Output output)
+int RootCommands::sprintf_cmd(Input input, Output output)
 {
     string cmd, ident, format;
     if (!input.read({ &cmd, &ident, &format })) return HERBST_NEED_MORE_ARGS;
@@ -70,7 +73,7 @@ int sprintf_cmd(Root* root, Input input, Output output)
 }
 
 
-Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Output output) {
+Attribute* RootCommands::newAttributeWithType(std::string typestr, std::string attr_name, Output output) {
     std::map<string, function<Attribute*(string)>> name2constructor {
     { "bool",  [](string n) { return new Attribute_<bool>(n, ACCEPT_ALL, false); }},
     { "color", [](string n) { return new Attribute_<Color>(n, ACCEPT_ALL, Color("black")); }},
@@ -86,7 +89,7 @@ Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Outp
     return it->second(attr_name);
 }
 
-int new_attr_cmd(Root* root, Input input, Output output)
+int RootCommands::new_attr_cmd(Input input, Output output)
 {
     string cmd, type, path;
     if (!input.read({ &cmd, &type, &path })) {
@@ -117,7 +120,7 @@ int new_attr_cmd(Root* root, Input input, Output output)
     return 0;
 }
 
-int remove_attr_cmd(Root* root, Input input, Output output)
+int RootCommands::remove_attr_cmd(Input input, Output output)
 {
     string cmd, path;
     if (!input.read({ &cmd, &path })) {
@@ -165,7 +168,7 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
     return do_comparison<T>(vals[0], vals[1]);
 }
 
-int compare_cmd(Root* root, Input input, Output output)
+int RootCommands::compare_cmd(Input input, Output output)
 {
     string cmd, path, oper, value;
     if (!input.read({ &cmd, &path, &oper, &value })) {
