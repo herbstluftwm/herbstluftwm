@@ -58,9 +58,9 @@ public:
 
     /** parse a text into the right type,
      * possibly raising a std::invalid_argument exception. The string can be
-     * a specification in relative to 'reference', e.g. "toggle" for booleans.
+     * a specification in relative to 'previous', e.g. "toggle" for booleans.
      */
-    static T parse(const std::string& source, T const* reference);
+    static T parse(const std::string& source, T const* previous);
 
     std::string change(const std::string &payload_str) {
         if (!writeable()) return "attribute is read only";
@@ -136,15 +136,15 @@ inline std::string Attribute_<bool>::str() {
 }
 
 template<>
-inline bool Attribute_<bool>::parse(const std::string &payload, bool const* ref) {
+inline bool Attribute_<bool>::parse(const std::string &payload, bool const* previous) {
     if (payload == "off" || payload == "false")
         return false;
     else if (payload == "on" || payload == "true")
         return true;
-    else if (payload == "toggle" && ref != NULL)
-        return !*ref;
+    else if (payload == "toggle" && previous)
+        return !*previous;
     else throw std::invalid_argument(
-            (ref != NULL)
+            previous
             ? "only on/off/true/false/toggle are valid booleans"
             : "only on/off/true/false are valid booleans");
 }
