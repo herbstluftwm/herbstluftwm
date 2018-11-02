@@ -109,17 +109,6 @@ void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
     }
 }
 
-void decorations_init() {
-}
-
-void reset_helper(void* data, GString* output) {
-    (void) data;
-    g_string_append(output, "Writing this resets all attributes to a default value\n");
-}
-
-void decorations_destroy() {
-}
-
 // from openbox/frame.c
 static Visual* check_32bit_client(HSClient* c)
 {

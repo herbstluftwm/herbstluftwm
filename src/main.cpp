@@ -712,7 +712,6 @@ static struct {
     { layout_init,      layout_destroy      },
     { tag_init,         tag_destroy         },
     { clientlist_init,  clientlist_destroy  },
-    { decorations_init, decorations_destroy },
     { monitor_init,     monitor_destroy     },
     { ewmh_init,        ewmh_destroy        },
     { mouse_init,       mouse_destroy       },

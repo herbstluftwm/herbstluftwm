@@ -126,8 +126,5 @@ public:
 };
 
 
-void decorations_init();
-void decorations_destroy();
-
 #endif
 
