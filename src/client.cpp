@@ -431,7 +431,7 @@ Rectangle HSClient::outer_floating_rect() {
     return dec.inner_to_outer(float_size_);
 }
 
-int close_command(int argc, char** argv, Output output) {
+int close_command(int argc, char** argv, Output) {
     auto window = get_window((argc > 1) ? argv[1] : "");
     if (window != 0)
         window_close(window);

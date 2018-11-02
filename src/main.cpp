@@ -660,7 +660,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
     }
 }
 
-static void remove_zombies(int signal) {
+static void remove_zombies(int) {
     int bgstatus;
     while (waitpid(-1, &bgstatus, WNOHANG) > 0);
 }
@@ -740,12 +740,12 @@ void buttonpress(Root* root, XEvent* event) {
     XAllowEvents(g_display, ReplayPointer, be->time);
 }
 
-void buttonrelease(Root* root, XEvent* event) {
+void buttonrelease(Root*, XEvent*) {
     HSDebug("name is: ButtonRelease\n");
     mouse_stop_drag();
 }
 
-void createnotify(Root* root, XEvent* event) {
+void createnotify(Root*, XEvent* event) {
     // printf("name is: CreateNotify\n");
     if (is_ipc_connectable(event->xcreatewindow.window)) {
         ipc_add_connection(event->xcreatewindow.window);
@@ -805,12 +805,12 @@ void focusin(Root* root, XEvent* event) {
     //HSDebug("name is: FocusIn\n");
 }
 
-void keypress(Root* root, XEvent* event) {
+void keypress(Root*, XEvent* event) {
     //HSDebug("name is: KeyPress\n");
     handle_key_press(event);
 }
 
-void mappingnotify(Root* root, XEvent* event) {
+void mappingnotify(Root*, XEvent* event) {
     {
         // regrab when keyboard map changes
         XMappingEvent *ev = &event->xmapping;
@@ -822,11 +822,11 @@ void mappingnotify(Root* root, XEvent* event) {
     }
 }
 
-void motionnotify(Root* root, XEvent* event) {
+void motionnotify(Root*, XEvent* event) {
     handle_motion_event(event);
 }
 
-void mapnotify(Root* root, XEvent* event) {
+void mapnotify(Root*, XEvent* event) {
     //HSDebug("name is: MapNotify\n");
     HSClient* c;
     if ((c = get_client_from_window(event->xmap.window))) {
@@ -862,7 +862,7 @@ void maprequest(Root* root, XEvent* event) {
     // that are managed already
 }
 
-void propertynotify(Root* root, XEvent* event) {
+void propertynotify(Root*, XEvent* event) {
     // printf("name is: PropertyNotify\n");
     XPropertyEvent *ev = &event->xproperty;
     HSClient* client;

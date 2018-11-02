@@ -205,7 +205,7 @@ bool is_window_mapped(Display* dpy, Window window) {
     return (wa.map_state == IsViewable);
 }
 
-bool window_has_property(Display* dpy, Window window, char* prop_name) {
+bool window_has_property(Display*, Window window, char* prop_name) {
     // find the properties this window has
     int num_properties_ret;
     Atom* properties= XListProperties(g_display, window, &num_properties_ret);
