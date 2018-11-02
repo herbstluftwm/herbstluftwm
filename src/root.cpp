@@ -45,7 +45,7 @@ Root::Root(Globals g)
 
 
     // connect slots
-    clients->needsRelayout.connect(monitors(), {&MonitorManager::relayoutTag});
+    clients->needsRelayout.connect(monitors(), &MonitorManager::relayoutTag);
 }
 
 Root::~Root()
