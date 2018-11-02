@@ -6,7 +6,7 @@ X11LIB = /usr/X11R6/lib
 XINERAMALIBS = `pkg-config --silence-errors --libs xinerama`
 XINERAMAFLAGS = `pkg-config --exists xinerama && echo -DXINERAMA`
 
-INCS = -Isrc/ -I/usr/include -I${X11INC}  `pkg-config --cflags glib-2.0`
+INCS = -I/usr/include -I${X11INC}  `pkg-config --cflags glib-2.0`
 LIBS = -lc -L${X11LIB} -lXext -lX11 $(XINERAMALIBS) `pkg-config --libs glib-2.0`
 
 ifeq ($(shell uname),Linux)
