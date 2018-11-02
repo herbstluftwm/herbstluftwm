@@ -45,6 +45,7 @@ Root::Root(Globals g)
 Root::~Root()
 {
     tags()->setMonitorManager({});
+    delete tmp();
     delete hooks();
     delete monitors();
     delete tags();
