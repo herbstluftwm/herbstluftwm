@@ -517,15 +517,14 @@ int monitor_set_pad_command(int argc, char** argv, Output output) {
 
 HSMonitor* find_monitor_with_tag(HSTag* tag) {
     for (auto m : *g_monitors) {
-        if (m->tag == tag) {
-            return &* m;
-        }
+        if (m->tag == tag)
+            return m;
     }
-    return NULL;
+    return nullptr;
 }
 
 HSMonitor* get_current_monitor() {
-    return &* g_monitors->byIdx(g_cur_monitor);
+    return g_monitors->byIdx(g_cur_monitor);
 }
 
 void all_monitors_apply_layout() {

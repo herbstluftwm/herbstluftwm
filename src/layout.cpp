@@ -60,7 +60,7 @@ void layout_destroy() {
 /* create a new frame
  * you can either specify a frame or a tag as its parent
  */
-HSFrame::HSFrame(struct HSTag* tag, Settings* settings_, weak_ptr<HSFrameSplit> parent)
+HSFrame::HSFrame(HSTag* tag, Settings* settings_, weak_ptr<HSFrameSplit> parent)
     : settings(settings_) {
     this->parent = parent;
     this->tag = tag;
@@ -68,7 +68,7 @@ HSFrame::HSFrame(struct HSTag* tag, Settings* settings_, weak_ptr<HSFrameSplit> 
 HSFrame::~HSFrame() {
 }
 
-HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
+HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
     : HSFrame(tag, settings, parent)
     , selection(0)
 {
@@ -77,7 +77,7 @@ HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, Settings* settings, weak_ptr<HSFrame
     decoration = new FrameDecoration(tag, settings);
 }
 
-HSFrameSplit::HSFrameSplit(struct HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
+HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b)
              : HSFrame(tag, settings, parent) {
     this->align = align;
@@ -1328,16 +1328,14 @@ void HSFrameLeaf::select(HSClient* client) {
 }
 
 HSClient* HSFrameSplit::focusedClient() {
-    if (selection == 0) return a->focusedClient();
-    else return b->focusedClient();
+    return (selection == 0 ? a->focusedClient() : b->focusedClient());
 }
 
 HSClient* HSFrameLeaf::focusedClient() {
     if (clients.size() > 0) {
         return clients[selection];
-    } else {
-        return NULL;
     }
+    return nullptr;
 }
 
 // try to focus window in frame
@@ -1351,7 +1349,8 @@ bool HSFrameSplit::focusClient(HSClient* client) {
     } else if (b->focusClient(client)) {
         selection = 1;
         return true;
-    } else return false;
+    }
+    return false;
 }
 
 bool HSFrameLeaf::focusClient(HSClient* client) {
@@ -1566,6 +1565,7 @@ void frame_focus_recursive(shared_ptr<HSFrame> frame) {
 
 int cycle_frame_command(int argc, char** argv) {
     // FRAMETODO
+    return 0;
 }
 
 

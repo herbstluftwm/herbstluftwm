@@ -576,10 +576,11 @@ void complete_against_user_attributes(int argc, char** argv, int pos, Output out
 
 void complete_against_user_attr_prefix(int argc, char** argv, int position,
                                       Output output) {
-    const char* path = (position < argc) ? argv[position] : "";
-    const char* unparsable;
     // TODO
     /*
+    const char* path = (position < argc) ? argv[position] : "";
+    const char* unparsable;
+
     GString* prefix = g_string_new(path);
 
     if (prefix->len > 0
@@ -592,11 +593,11 @@ void complete_against_user_attr_prefix(int argc, char** argv, int position,
 }
 
 void complete_against_attribute_values(int argc, char** argv, int pos, Output output) {
+    // TODO
+    /*
     const char* needle = (pos < argc) ? argv[pos] : "";
     const char* path =  (1 < argc) ? argv[1] : "";
     std::ostringstream path_error;
-    // TODO
-    /*
     HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
     if (attr) {
         switch (attr->type) {
@@ -611,11 +612,11 @@ void complete_against_attribute_values(int argc, char** argv, int pos, Output ou
 }
 
 void complete_against_comparators(int argc, char** argv, int pos, Output output) {
+    // TODO
+    /*
     const char* needle = (pos < argc) ? argv[pos] : "";
     const char* path =  (1 < argc) ? argv[1] : "";
     std::ostringstream void_output;
-    // TODO
-    /*
     HSAttribute* attr = hsattribute_parse_path_verbose(path, void_output);
     const char* equals[] = { "=", "!=", NULL };
     const char* order[] = { "le", "lt", "ge", "gt", NULL };

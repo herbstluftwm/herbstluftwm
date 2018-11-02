@@ -49,8 +49,6 @@ public:
     // in case of further constraints.
     // (i.e. a tag name should not clash with any other tag name)
 
-public:
-
     bool operator==(const T &payload) {
         return payload_ == payload;
     }
@@ -89,13 +87,13 @@ public:
 
     const T& operator*() const {
         return payload_;
-    };
+    }
     const T* operator->() const {
         return &payload_;
-    };
+    }
     const T& operator()() const {
         return payload_;
-    };
+    }
 
 protected:
     void notifyHooks() {
@@ -209,7 +207,7 @@ public:
 private:
     T lastPayload() {
         return Attribute_<T>::payload_;
-    };
+    }
     std::function<std::string(T)> setter;
     std::function<T()> getter;
 };

@@ -153,16 +153,6 @@ HSClient* get_client_from_window(Window window) {
     return Root::get()->clients()->client(window);
 }
 
-#define CLIENT_UPDATE_ATTR(FUNC,MEMBER) do { \
-        HSClient* client = container_of(attr->value.b, HSClient, MEMBER); \
-        bool val = client->MEMBER; \
-        client->MEMBER = ! client->MEMBER ; /* enforce update of MEMBER */ \
-        client->FUNC(val); \
-        return NULL; \
-    }   \
-    while (0);
-
-
 // destroys a special client
 HSClient::~HSClient() {
     if (lastfocus == this) {
@@ -625,44 +615,6 @@ void HSClient::set_pseudotile(bool state) {
     this->pseudotile_ = state;
     auto m = find_monitor_with_tag(this->tag());
     if (m) m->applyLayout();
-}
-
-int client_set_property_command(int argc, char** argv) {
-    const char* action = (argc > 1) ? argv[1] : "toggle";
-
-    HSClient* client = get_current_client();
-    if (!client) {
-        // nothing to do
-        return 0;
-    }
-
-    //struct {
-    //    const char* name;
-    //    void (HSClient::*func) (bool);
-    //    bool* value;
-    //} properties[] = {
-    //    //{ "fullscreen",   &HSClient::set_fullscreen, &client->fullscreen_    },
-    //    //{ "pseudotile",   &HSClient::set_pseudotile, &client->pseudotile_    },
-    //};
-
-    //// find the property
-    //int i;
-    //for  (i = 0; i < LENGTH(properties); i++) {
-    //    if (!strcmp(properties[i].name, argv[0])) {
-    //        break;
-    //    }
-    //}
-    //if (i >= LENGTH(properties)) {
-    //    return HERBST_INVALID_ARGUMENT;
-    //}
-
-    //// if found, then change it
-    //bool old_value = *(properties[i].value);
-    //bool state = string_to_bool(action, *(properties[i].value));
-    //if (state != old_value) {
-    //    (client->*(properties[i].func))(state);
-    //}
-    return 0;
 }
 
 /**

@@ -16,7 +16,7 @@ public:
         : owner(owner_)
         , name(name_)
         , pointer(NULL)
-    { };
+    { }
     void operator=(T* new_value) {
         if (new_value == pointer) {
             // nothing to do
