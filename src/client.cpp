@@ -137,8 +137,7 @@ bool HSClient::ignore_unmapnotify() {
 }
 
 std::string HSClient::triggerRelayoutMonitor() {
-    auto m = find_monitor_with_tag(this->tag());
-    if (m) m->applyLayout();
+    needsRelayout.emit(this->tag());
     return {};
 }
 

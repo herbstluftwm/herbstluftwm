@@ -71,6 +71,7 @@ HSClient* ClientManager::client(const std::string &identifier)
 void ClientManager::add(HSClient* client)
 {
     clients_[client->window_] = client;
+    client->needsRelayout.connect(needsRelayout);
     addChild(client, client->window_id_str);
 }
 

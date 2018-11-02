@@ -14,6 +14,7 @@
 #include <functional>
 
 class TagManager;
+class HSTag;
 
 typedef std::function<int(HSMonitor&,Input,Output)> HSMonitorCommand;
 
@@ -32,6 +33,7 @@ public:
     // return a command that interprets the first argument
     // as a monitor description and then calls the given command on this monitor
     std::function<int(Input, Output)> byFirstArg(HSMonitorCommand cmd);
+    HSMonitor* byTag(HSTag* tag);
 
     int indexInDirection(HSMonitor* m, enum HSDirection dir);
 

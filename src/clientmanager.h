@@ -3,6 +3,7 @@
 
 #include "object.h"
 #include "child.h"
+#include "signal.h"
 
 #include <unordered_map>
 
@@ -30,6 +31,7 @@ public:
     void force_unmanage(Window win);
     void force_unmanage(HSClient* client);
 
+    Signal_<HSTag*> needsRelayout;
     Child_<HSClient> focus;
 
     // adds a new client to list of managed client windows

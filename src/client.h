@@ -17,6 +17,7 @@
 #include "utils.h"
 #include "decoration.h"
 #include "attribute_.h"
+#include "signal.h"
 
 struct HSSlice;
 
@@ -38,7 +39,6 @@ public:
     Attribute_<bool> fullscreen_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
     struct HSSlice* slice;
-
 public:
     Rectangle   last_size_;      // last size excluding the window border
     Attribute_<std::string> window_id_str;
@@ -64,7 +64,7 @@ public:
     float mina_, maxa_;
     int basew_, baseh_, incw_, inch_, maxw_, maxh_, minw_, minh_;
     // for other modules
-
+    Signal_<HSTag*> needsRelayout;
     void init_from_X();
 
     void make_full_client();

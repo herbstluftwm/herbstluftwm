@@ -42,6 +42,12 @@ Root::Root(Globals g)
     // set temporary globals
     ::tags = tags();
     ::g_monitors = monitors();
+
+    // connect slots
+    clients->needsRelayout.connect([this](HSTag* t) {
+        auto m = monitors->byTag(t);
+        if (m) m->applyLayout();
+    });
 }
 
 Root::~Root()
