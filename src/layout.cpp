@@ -1377,24 +1377,20 @@ bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor) {
     assert(client->tag());
     HSMonitor* monitor = find_monitor_with_tag(tag);
     HSMonitor* cur_mon = get_current_monitor();
+    if (!monitor && !switch_tag) {
+        return false;
+    }
     if (monitor != cur_mon && !switch_monitor) {
         // if we are not allowed to switch tag
         // and tag is not on current monitor (or on no monitor)
         // than we cannot focus the window
         return false;
     }
-    if (monitor == NULL && !switch_tag) {
-        return false;
-    }
-    if (monitor != cur_mon && monitor != NULL) {
-        if (!switch_monitor) {
-            return false;
-        } else {
-            // switch monitor
-            monitor_focus_by_index(monitor->index());
-            cur_mon = get_current_monitor();
-            assert(cur_mon == monitor);
-        }
+    if (monitor && monitor != cur_mon) {
+        // switch monitor
+        monitor_focus_by_index((int)monitor->index());
+        cur_mon = get_current_monitor();
+        assert(cur_mon == monitor);
     }
     g_monitors->lock();
     monitor_set_tag(cur_mon, tag);
