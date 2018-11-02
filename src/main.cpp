@@ -627,11 +627,11 @@ void execute_autostart_file() {
 
 static void parse_arguments(int argc, char** argv, Globals& g) {
     static struct option long_options[] = {
-        {"autostart",   1, 0, 'c'},
-        {"version",     0, 0, 'v'},
-        {"locked",      0, 0, 'l'},
+        {"autostart",   1, nullptr, 'c'},
+        {"version",     0, nullptr, 'v'},
+        {"locked",      0, nullptr, 'l'},
         {"verbose",     0, &g_verbose, 1},
-        {0, 0, 0, 0}
+        {}
     };
     // parse options
     while (1) {
@@ -946,7 +946,7 @@ int main(int argc, char* argv[]) {
         FD_ZERO(&in_fds);
         FD_SET(x11_fd, &in_fds);
         // wait for an event or a signal
-        select(x11_fd + 1, &in_fds, 0, 0, nullptr);
+        select(x11_fd + 1, &in_fds, nullptr, nullptr, nullptr);
         if (g_aboutToQuit) {
             break;
         }
