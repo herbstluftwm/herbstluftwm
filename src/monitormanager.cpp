@@ -68,9 +68,9 @@ int MonitorManager::string_to_monitor_index(std::string string) {
             idx %= size();
             return idx;
         } else if (string[0] == '-') {
-            enum HSDirection dir = char_to_direction(string[1]);
+            int dir = char_to_direction(string[1]);
             if (dir < 0) return -1;
-            return indexInDirection(focus(), dir);
+            return indexInDirection(focus(), (enum HSDirection)dir);
         } else {
             return -1;
         }
