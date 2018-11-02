@@ -925,7 +925,7 @@ int main(int argc, char* argv[]) {
 
 
     // initialize subsystems
-    for (int i = 0; i < LENGTH(g_modules); i++) {
+    for (unsigned i = 0; i < LENGTH(g_modules); i++) {
         g_modules[i].init();
     }
 
