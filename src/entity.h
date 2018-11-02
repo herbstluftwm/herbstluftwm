@@ -30,7 +30,7 @@ class Entity {
 public:
     Entity() {}
     Entity(const std::string &name) : name_(name) {}
-    virtual ~Entity() {};
+    virtual ~Entity() {}
 
     std::string name() const { return name_; }
     virtual Type type() = 0;

@@ -58,7 +58,7 @@ public:
     int unlock_tag_cmd(Input argv, Output output);
     int list_padding(Input input, Output output);
     int move_cmd(Input input, Output output);
-    HSMonitor* setTag(HSTag* new_tag);
+    bool setTag(HSTag* new_tag);
     void applyLayout();
     void restack();
 private:
@@ -79,12 +79,10 @@ extern int g_cur_monitor; // temporarily
 
 // adds a new monitor to the monitors list and returns a pointer to it
 HSMonitor* monitor_with_coordinate(int x, int y);
-HSMonitor* monitor_with_index(int index);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
-void monitor_focus_by_index(int new_selection);
+void monitor_focus_by_index(unsigned new_selection);
 int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv, Output output);
-int find_monitor_index_by_name(char* name);
 HSMonitor* find_monitor_by_name(char* name);
 HSMonitor* string_to_monitor(char* string);
 int string_to_monitor_index(char* string);

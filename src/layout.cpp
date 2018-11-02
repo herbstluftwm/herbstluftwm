@@ -43,7 +43,7 @@ const char* g_layout_names[] = {
     "horizontal",
     "max",
     "grid",
-    NULL,
+    nullptr,
 };
 
 void layout_init() {
@@ -60,7 +60,7 @@ void layout_destroy() {
 /* create a new frame
  * you can either specify a frame or a tag as its parent
  */
-HSFrame::HSFrame(struct HSTag* tag, Settings* settings_, weak_ptr<HSFrameSplit> parent)
+HSFrame::HSFrame(HSTag* tag, Settings* settings_, weak_ptr<HSFrameSplit> parent)
     : settings(settings_) {
     this->parent = parent;
     this->tag = tag;
@@ -68,7 +68,7 @@ HSFrame::HSFrame(struct HSTag* tag, Settings* settings_, weak_ptr<HSFrameSplit> 
 HSFrame::~HSFrame() {
 }
 
-HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
+HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
     : HSFrame(tag, settings, parent)
     , selection(0)
 {
@@ -77,7 +77,7 @@ HSFrameLeaf::HSFrameLeaf(struct HSTag* tag, Settings* settings, weak_ptr<HSFrame
     decoration = new FrameDecoration(tag, settings);
 }
 
-HSFrameSplit::HSFrameSplit(struct HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
+HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b)
              : HSFrame(tag, settings, parent) {
     this->align = align;
@@ -99,12 +99,12 @@ void HSFrameSplit::insertClient(HSClient* client) {
     else                b->insertClient(client);
 }
 
-std::shared_ptr<HSFrame> HSFrameLeaf::lookup(const char* index) {
-    return shared_from_this();
+std::shared_ptr<HSFrame> HSFrameLeaf::lookup(const char*) {
+    return shared_from_this(); // we are last one left
 }
 
 std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
-    if (index == NULL || index[0] == '\0') return shared_from_this();
+    if (!index || index[0] == '\0') return shared_from_this();
     std::shared_ptr<HSFrame> new_root;
     const char *new_index = index + 1;
 
@@ -140,15 +140,15 @@ std::shared_ptr<HSFrameLeaf> HSFrameLeaf::frameWithClient(HSClient* client) {
 bool HSFrameLeaf::removeClient(HSClient* client) {
     auto it = find(clients.begin(), clients.end(), client);
     if (it != clients.end()) {
-        int idx = it - clients.begin();
+        auto idx = it - clients.begin();
         clients.erase(it);
         // find out new selection
         // if selection was before removed window
         // then do nothing
         // else shift it by 1
         selection -= (selection < idx) ? 0 : 1;
-        // ensure, that it's a valid index
-        selection = clients.size() ? CLAMP(selection, 0, clients.size()-1) : 0;
+        // ensure valid index
+        selection = std::max(std::min(selection, (int)clients.size()), 0);
         return true;
     } else {
         return false;
@@ -210,7 +210,7 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
     description = strchr(description, LAYOUT_DUMP_BRACKETS[0]);
     if (!description) {
         output << "Missing " << LAYOUT_DUMP_BRACKETS[0] << "\n";
-        return NULL;
+        return nullptr;
     }
     description++; // jump over (
 
@@ -236,12 +236,12 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
     description += args_len;
     if (!*description) {
         output << "Missing " << LAYOUT_DUMP_BRACKETS[1] << " or arguments\n";
-        return NULL;
+        return nullptr;
     }
     description += strspn(description, LAYOUT_DUMP_WHITESPACES);
     if (!*description) {
         output << "Missing " << LAYOUT_DUMP_BRACKETS[1] << " or arguments\n";
-        return NULL;
+        return nullptr;
     }
 
     // apply type to frame
@@ -254,14 +254,14 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
         if (3 != sscanf(args, "%[^" SEP "]" SEP "%lf" SEP "%d",
             align_name, &fraction_double, &selection)) {
             output << "Can not parse frame args \"" << args << "\"\n";
-            return NULL;
+            return nullptr;
         }
 #undef SEP
         int align = find_align_by_name(align_name);
         g_free(align_name);
         if (align < 0) {
             output << "Invalid alignment name in args \"" << args << "\"\n";
-            return NULL;
+            return nullptr;
         }
         selection = !!selection; // CLAMP it to [0;1]
         int fraction = (int)(fraction_double * (double)FRACTION_UNIT);
@@ -275,7 +275,7 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
             frame_split(frame, align, fraction);
             if (frame->type != TYPE_FRAMES) {
                 output << "Can not split frame\n";
-                return NULL;
+                return nullptr;
             }
         }
         frame->content.layout.selection = selection;
@@ -283,10 +283,10 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
         // now parse subframes
         description = load_frame_tree(frame->content.layout.a,
                         description, output);
-        if (!description) return NULL;
+        if (!description) return nullptr;
         description = load_frame_tree(frame->content.layout.b,
                         description, output);
-        if (!description) return NULL;
+        if (!description) return nullptr;
     } else {
         // parse args
         char* layout_name = g_new(char, strlen(args)+1);
@@ -295,14 +295,14 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
         if (2 != sscanf(args, "%[^" SEP "]" SEP "%d",
             layout_name, &selection)) {
             output << "Can not parse frame args \"" << args << "\"\n";
-            return NULL;
+            return nullptr;
         }
 #undef SEP
         int layout = find_layout_by_name(layout_name);
         g_free(layout_name);
         if (layout < 0) {
             output << "Can not parse layout from args \"" << args << "\"\n";
-            return NULL;
+            return nullptr;
         }
 
         // ensure that it is a client frame
@@ -338,7 +338,7 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
             Window win;
             if (1 != sscanf(description, "0x%lx\n", &win)) {
                 output << "Can not parse window id from \"" << description << "\"\n";
-                return NULL;
+                return nullptr;
             }
             // jump over window id and over whitespaces
             description += strspn(description, "0x123456789abcdef");
@@ -465,7 +465,7 @@ std::shared_ptr<HSFrame> HSFrame::root() {
 //        /* .data       = */ (idx == 0)
 //                        ? frame->content.layout.a
 //                        : frame->content.layout.b,
-//        /* .destructor = */ NULL,
+//        /* .destructor = */ nullptr,
 //    };
 //    return intf;
 //}
@@ -478,7 +478,7 @@ void print_frame_tree(shared_ptr<HSFrame> frame, Output output) {
 //        /* .child_count    = */ frame_child_count,
 //        /* .append_caption = */ frame_append_caption,
 //        /* .data           = */ (HSTree) frame,
-//        /* .destructor     = */ NULL,
+//        /* .destructor     = */ nullptr,
 //    };
 //    tree_print_to(&frameintf, output);
 //}
@@ -1223,9 +1223,9 @@ int frame_focus_command(int argc, char** argv, Output output) {
     int index;
     bool neighbour_found = true;
     if (frame->getTag()->floating) {
-        enum HSDirection dir = char_to_direction(direction);
+        auto dir = char_to_direction(direction);
         if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        neighbour_found = floating_focus_direction(dir);
+        neighbour_found = floating_focus_direction((enum HSDirection)dir);
     } else if (!external_only &&
         (index = frame_inner_neighbour_index(frame, direction)) != -1) {
         frame->setSelection(index);
@@ -1250,9 +1250,10 @@ int frame_focus_command(int argc, char** argv, Output output) {
     }
     if (!neighbour_found && g_settings->focus_crosses_monitor_boundaries()) {
         // find monitor in the specified direction
-        enum HSDirection dir = char_to_direction(direction);
+        int dir = char_to_direction(direction);
         if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        int idx = g_monitors->indexInDirection(get_current_monitor(), dir);
+        int idx = g_monitors->indexInDirection(get_current_monitor(),
+                                               (enum HSDirection)dir);
         if (idx < 0) {
             output << argv[0] << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
@@ -1284,9 +1285,9 @@ int frame_move_window_command(int argc, char** argv, Output output) {
     HSClient* currentClient = get_current_client();
     if (currentClient && currentClient->is_client_floated()) {
         // try to move the floating window
-        enum HSDirection dir = char_to_direction(direction);
+        auto dir = char_to_direction(direction);
         if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        bool success = floating_shift_direction(dir);
+        bool success = floating_shift_direction((enum HSDirection)dir);
         return success ? 0 : HERBST_FORBIDDEN;
     }
     int index;
@@ -1328,16 +1329,14 @@ void HSFrameLeaf::select(HSClient* client) {
 }
 
 HSClient* HSFrameSplit::focusedClient() {
-    if (selection == 0) return a->focusedClient();
-    else return b->focusedClient();
+    return (selection == 0 ? a->focusedClient() : b->focusedClient());
 }
 
 HSClient* HSFrameLeaf::focusedClient() {
     if (clients.size() > 0) {
         return clients[selection];
-    } else {
-        return NULL;
     }
+    return nullptr;
 }
 
 // try to focus window in frame
@@ -1351,7 +1350,8 @@ bool HSFrameSplit::focusClient(HSClient* client) {
     } else if (b->focusClient(client)) {
         selection = 1;
         return true;
-    } else return false;
+    }
+    return false;
 }
 
 bool HSFrameLeaf::focusClient(HSClient* client) {
@@ -1377,24 +1377,20 @@ bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor) {
     assert(client->tag());
     HSMonitor* monitor = find_monitor_with_tag(tag);
     HSMonitor* cur_mon = get_current_monitor();
+    if (!monitor && !switch_tag) {
+        return false;
+    }
     if (monitor != cur_mon && !switch_monitor) {
         // if we are not allowed to switch tag
         // and tag is not on current monitor (or on no monitor)
         // than we cannot focus the window
         return false;
     }
-    if (monitor == NULL && !switch_tag) {
-        return false;
-    }
-    if (monitor != cur_mon && monitor != NULL) {
-        if (!switch_monitor) {
-            return false;
-        } else {
-            // switch monitor
-            monitor_focus_by_index(monitor->index());
-            cur_mon = get_current_monitor();
-            assert(cur_mon == monitor);
-        }
+    if (monitor && monitor != cur_mon) {
+        // switch monitor
+        monitor_focus_by_index((int)monitor->index());
+        cur_mon = get_current_monitor();
+        assert(cur_mon == monitor);
     }
     g_monitors->lock();
     monitor_set_tag(cur_mon, tag);
@@ -1452,7 +1448,7 @@ int layout_rotate_command() {
             frame->rotate();
         };
     void (*onLeaf)(HSFrameLeaf*) =
-        [] (HSFrameLeaf* frame) {
+        [] (HSFrameLeaf*) {
         };
     // first hide children => order = 2
     get_current_monitor()->tag->frame->fmap(onSplit, onLeaf, -1);
@@ -1566,6 +1562,7 @@ void frame_focus_recursive(shared_ptr<HSFrame> frame) {
 
 int cycle_frame_command(int argc, char** argv) {
     // FRAMETODO
+    return 0;
 }
 
 

@@ -20,7 +20,7 @@ XConnection::~XConnection() {
 }
 
 XConnection XConnection::connect(std::string display_name) {
-    char* display_str = (display_name != "") ? (char*)display_name.c_str() : NULL;
+    char* display_str = (display_name != "") ? (char*)display_name.c_str() : nullptr;
     Display* d = XOpenDisplay(display_str);
     return XConnection(d);
 }

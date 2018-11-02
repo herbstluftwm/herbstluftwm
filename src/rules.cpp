@@ -107,7 +107,7 @@ void rules_init() {
 }
 
 void rules_destroy() {
-    g_queue_foreach(&g_rules, (GFunc)rule_destroy, NULL);
+    g_queue_foreach(&g_rules, (GFunc)rule_destroy, nullptr);
     g_queue_clear(&g_rules);
 }
 
@@ -128,7 +128,7 @@ HSCondition* condition_create(int type, char op, char* value, Output output) {
     HSCondition cond;
     if (op != '=' && type == g_maxage_type) {
         output << "rule: Condition maxage only supports the = operator\n";
-        return NULL;
+        return nullptr;
     }
     switch (op) {
         case '=': {
@@ -136,7 +136,7 @@ HSCondition* condition_create(int type, char op, char* value, Output output) {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
                 if (1 != sscanf(value, "%d", &cond.value.integer)) {
                     output << "rule: Can not integer from \"" << value << "\"\n";
-                    return NULL;
+                    return nullptr;
                 }
             } else {
                 cond.value_type = CONDITION_VALUE_TYPE_STRING;
@@ -154,7 +154,7 @@ HSCondition* condition_create(int type, char op, char* value, Output output) {
                 output << "rule: Can not parse value \"" << value
                         << "\" from condition \"" << g_condition_types[type].name
                         << "\": \"" << buf << "\"\n";
-                return NULL;
+                return nullptr;
             }
             cond.value.reg.str = g_strdup(value);
             break;
@@ -162,7 +162,7 @@ HSCondition* condition_create(int type, char op, char* value, Output output) {
 
         default:
             output << "rule: Unknown rule condition operation \"" << op << "\"\n";
-            return NULL;
+            return nullptr;
             break;
     }
 
@@ -217,7 +217,7 @@ HSConsequence* consequence_create(int type, char op, char* value, Output output)
 
         default:
             output << "rule: Unknown rule consequence operation \"" << op << "\"\n";
-            return NULL;
+            return nullptr;
             break;
     }
 
@@ -321,14 +321,14 @@ static gint rule_compare_label(const HSRule* a, const HSRule* b) {
 
 // Looks up rules of a given label and removes them from the queue
 static bool rule_find_pop(char* label) {
-    GList* rule = { NULL };
+    GList* rule = { nullptr };
     bool status = false; // Will be returned as true if any is found
     HSRule rule_find = { 0 };
     rule_find.label = label;
     while ((rule = g_queue_find_custom(&g_rules, &rule_find,
                         (GCompareFunc)rule_compare_label))) {
         // Check if rule with label exists
-        if ( rule == NULL ) {
+        if ( rule == nullptr ) {
             break;
         }
         status = true;
@@ -519,7 +519,7 @@ void complete_against_rule_names(int argc, char** argv, int pos, Output output) 
     }
     // Complete labels
     GList* cur_rule = g_queue_peek_head_link(&g_rules);
-    while (cur_rule != NULL) {
+    while (cur_rule != nullptr) {
         try_complete(needle, ((HSRule*)cur_rule->data)->label, output);
         cur_rule = g_list_next(cur_rule);
     }
@@ -533,7 +533,7 @@ int rule_remove_command(int argc, char** argv, Output output) {
 
     if (!strcmp(argv[1], "--all") || !strcmp(argv[1], "-F")) {
         // remove all rules
-        g_queue_foreach(&g_rules, (GFunc)rule_destroy, NULL);
+        g_queue_foreach(&g_rules, (GFunc)rule_destroy, nullptr);
         g_queue_clear(&g_rules);
         g_rule_label_index = 0;
         return 0;
@@ -627,7 +627,7 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
         }
 
         // try next
-        cur = cur ? cur->next : NULL;
+        cur = cur ? cur->next : nullptr;
     }
 }
 
@@ -730,7 +730,7 @@ static bool condition_windowtype(HSCondition* rule, HSClient* client) {
             );
     // we only need precisely four bytes (one Atom)
     // if there are bytes left, something went wrong
-    if(status != Success || bytes_left > 0 || items < 1 || buf == NULL) {
+    if(status != Success || bytes_left > 0 || items < 1 || buf == nullptr) {
         return false;
     } else {
         wintype= *(Atom *)buf;

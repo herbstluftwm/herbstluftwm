@@ -19,7 +19,7 @@
 
 using namespace std;
 
-Settings* g_settings = NULL; // the global settings object
+Settings* g_settings = nullptr; // the global settings object
 
 Settings::Settings(Root* root)
     : frame_gap(                "frame_gap",        AT_THIS(relayout), 5)

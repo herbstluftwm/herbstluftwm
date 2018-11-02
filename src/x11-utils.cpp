@@ -23,7 +23,7 @@ void window_cut_rect_hole(Window win, int width, int height, int framewidth) {
 
     /* create the pixmap that specifies the shape */
     Pixmap p = XCreatePixmap(d, win, width, height, 1);
-    gp = XCreateGC(d, p, 0, NULL);
+    gp = XCreateGC(d, p, 0, nullptr);
     XSetForeground(d, gp, WhitePixel(d, g_screen));
     XFillRectangle(d, p, gp, 0, 0, width, height);
     XSetForeground(d, gp, BlackPixel(d, g_screen));
@@ -53,7 +53,7 @@ void window_make_intransparent(Window win, int width, int height) {
 
     /* create the pixmap that specifies the shape */
     Pixmap p = XCreatePixmap(d, win, width, height, 1);
-    gp = XCreateGC(d, p, 0, NULL);
+    gp = XCreateGC(d, p, 0, nullptr);
     XSetForeground(d, gp, WhitePixel(d, g_screen));
     XFillRectangle(d, p, gp, 0, 0, width, height);
     /* set the pixmap as the new window mask;

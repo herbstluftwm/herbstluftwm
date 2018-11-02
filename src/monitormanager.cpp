@@ -68,24 +68,24 @@ int MonitorManager::string_to_monitor_index(std::string string) {
             idx %= size();
             return idx;
         } else if (string[0] == '-') {
-            enum HSDirection dir = char_to_direction(string[1]);
+            int dir = char_to_direction(string[1]);
             if (dir < 0) return -1;
-            return indexInDirection(focus(), dir);
+            return indexInDirection(focus(), (enum HSDirection)dir);
         } else {
             return -1;
         }
     } else if (isdigit(string[0])) {
         // absolute monitor index
         int idx = atoi(string.c_str());
-        if (idx < 0 || idx >= size()) {
+        if (idx < 0 || idx >= (int)size()) {
             return -1;
         }
         return idx;
     } else {
         // monitor string
-        for (int i = 0; i < size(); i++) {
+        for (unsigned i = 0; i < size(); i++) {
           if (byIdx(i)->name == string) {
-            return i;
+            return (int)i;
           }
         }
         return -1;
@@ -118,7 +118,7 @@ int MonitorManager::list_monitors(Input argv, Output output) {
 
 HSMonitor* MonitorManager::byString(string str) {
     int idx = string_to_monitor_index(str);
-    return ((idx >= 0) && idx < size()) ? byIdx(idx) : NULL;
+    return ((idx >= 0) && idx < size()) ? byIdx(idx) : nullptr;
 }
 
 function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
@@ -130,7 +130,7 @@ function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
             monitor = get_current_monitor();
         } else {
             monitor = byString(input.front());
-            if (monitor == NULL) {
+            if (!monitor) {
                 output << input.command() <<
                     ": Monitor \"" << input.front() << "\" not found!\n";
                 return HERBST_INVALID_ARGUMENT;

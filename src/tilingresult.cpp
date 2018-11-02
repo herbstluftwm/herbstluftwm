@@ -5,14 +5,6 @@ using namespace std;
 
 TilingStep::TilingStep(Rectangle rect)
     : geometry(rect)
-    , floated(false)
-    , needsRaise(false)
-{ }
-
-
-TilingResult::TilingResult()
-    : focus(NULL)
-    , focused_frame(NULL)
 { }
 
 TilingStep& TilingResult::operator[](HSClient* client) {

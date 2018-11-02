@@ -23,7 +23,7 @@ void floating_destroy();
 typedef std::vector<std::pair<int,Rectangle>> RectangleIdxVec;
 
 // utilities
-enum HSDirection char_to_direction(char ch);
+int char_to_direction(char ch);
 int find_rectangle_in_direction(RectangleIdxVec& rects, int idx, enum HSDirection dir);
 int find_rectangle_right_of(RectangleIdxVec rects, int idx);
 int find_edge_in_direction(RectangleIdxVec& rects, int idx,

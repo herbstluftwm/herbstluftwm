@@ -32,14 +32,14 @@ public:
               bool writeable)
         : Entity(name), owner_(nullptr)
         , writeable_(writeable), hookable_(true) {}
-    virtual ~Attribute() {};
+    virtual ~Attribute() {}
 
     // set the owner after object creation (when pointer is available)
     void setOwner(Object *owner) { owner_ = owner; }
     // change if attribute can be expected to trigger hooks (rarely used)
     void setHookable(bool hookable) { hookable_ = hookable; }
 
-    virtual void setOnChange(ValueValidator vv) {} ;
+    virtual void setOnChange(ValueValidator) {}
 
     virtual Type type() { return Type::ATTRIBUTE; }
 
@@ -60,21 +60,6 @@ protected:
     Object *owner_;
     bool writeable_, hookable_;
 };
-
-/* attributes that don't hold reference a data field (no templating), but are
- * rather a shallow interface to the owner's getter and setter doing magic. */
-//class DynamicAttribute : public Attribute {
-//public:
-//    DynamicAttribute() {}
-//    DynamicAttribute(const std::string &name, Type type,
-//                     bool writeable, bool hookable = false)
-//        : Attribute(name, writeable), type_(type) { hookable_ = hookable; }
-//
-//    Type type() { return type_; }
-//
-//protected:
-//    Type type_;
-//};
 
 class Action : public Entity {
 public:

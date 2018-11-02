@@ -53,6 +53,7 @@ Root::Root(Globals g)
 Root::~Root()
 {
     tags()->setMonitorManager({});
+    // Note: delete in the right order!
     delete root_commands;
     delete tmp();
     delete hooks();

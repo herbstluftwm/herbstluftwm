@@ -38,5 +38,5 @@ std::string Attribute::cycleValue(std::vector<std::string>::const_iterator begin
 
 void Attribute::detachFromOwner() {
     owner_->removeAttribute(this);
-    owner_ = NULL;
+    owner_ = nullptr;
 }

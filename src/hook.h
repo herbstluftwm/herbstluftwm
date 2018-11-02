@@ -16,13 +16,13 @@ class Object;
 class Hook {
 public:
     Hook();
-    virtual ~Hook() {};
+    virtual ~Hook() {}
     // this is called after a child has been added
-    virtual void childAdded(Object* parent, std::string child_name) {};
+    virtual void childAdded(Object* parent, std::string child_name) {}
     // this is called immediately before a child is removed
-    virtual void childRemoved(Object* parent, std::string child_name) {};
+    virtual void childRemoved(Object* parent, std::string child_name) {}
     // this is called after an attribute value has changed
-    virtual void attributeChanged(Object* sender, std::string attribute_name) {};
+    virtual void attributeChanged(Object* sender, std::string attribute_name) {}
 };
 
 

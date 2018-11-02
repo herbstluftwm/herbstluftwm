@@ -20,13 +20,13 @@ void floating_init() {
 void floating_destroy() {
 }
 
-enum HSDirection char_to_direction(char ch) {
+int char_to_direction(char ch) {
     switch (ch) {
         case 'u': return DirUp;
         case 'r': return DirRight;
         case 'l': return DirLeft;
         case 'd': return DirDown;
-        default:  return (HSDirection)-1;
+        default:  return -1;
     }
 }
 

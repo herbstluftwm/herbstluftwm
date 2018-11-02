@@ -32,25 +32,25 @@ extern char** environ;
 // behaviour
 static bool g_shell_quoting = false;
 
-static const char* completion_directions[]    = { "left", "right", "down", "up",NULL};
-static const char* completion_focus_args[]    = { "-i", "-e", NULL };
-static const char* completion_unrule_flags[]   = { "-F", "--all", NULL };
-static const char* completion_keyunbind_args[]= { "-F", "--all", NULL };
-static const char* completion_flag_args[]     = { "on", "off", "true", "false", "toggle", NULL };
-static const char* completion_userattribute_types[] = { "int", "uint", "string", "bool", "color", NULL };
-static const char* completion_status[]        = { "status", NULL };
-static const char* completion_special_winids[]= { "urgent", "", NULL };
-static const char* completion_use_index_args[]= { "--skip-visible", NULL };
-static const char* completion_cycle_all_args[]= { "--skip-invisible", NULL };
-static const char* completion_pm_one[]= { "+1", "-1", NULL };
-static const char* completion_mouse_functions[]= { "move", "zoom", "resize", "call", NULL };
+static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
+static const char* completion_focus_args[]    = { "-i", "-e", nullptr };
+static const char* completion_unrule_flags[]   = { "-F", "--all", nullptr };
+static const char* completion_keyunbind_args[]= { "-F", "--all", nullptr };
+static const char* completion_flag_args[]     = { "on", "off", "true", "false", "toggle", nullptr };
+static const char* completion_userattribute_types[] = { "int", "uint", "string", "bool", "color", nullptr };
+static const char* completion_status[]        = { "status", nullptr };
+static const char* completion_special_winids[]= { "urgent", "", nullptr };
+static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
+static const char* completion_cycle_all_args[]= { "--skip-invisible", nullptr };
+static const char* completion_pm_one[]= { "+1", "-1", nullptr };
+static const char* completion_mouse_functions[]= { "move", "zoom", "resize", "call", nullptr };
 static const char* completion_detect_monitors_args[] =
-    { "const -l", "--list", "--no-disjoin", /* TODO: "--keep-small", */ NULL };
-static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", NULL };
+    { "const -l", "--list", "--no-disjoin", /* TODO: "--keep-small", */ nullptr };
+static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
 static const char* completion_split_ratios[]= {
-    "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", NULL };
+    "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", nullptr };
 
-static bool no_completion(int argc, char** argv, int pos) {
+static bool no_completion(int, char**, int) {
     return false;
 }
 
@@ -189,67 +189,67 @@ struct {
     /* name , relation, index,  completion method                   */
     { "add_monitor",    EQ, 2,  complete_against_tags, 0 },
     { "and",            GE, 1,  complete_chain, 0 },
-    { "bring",          EQ, 1,  NULL, completion_special_winids },
+    { "bring",          EQ, 1,  nullptr, completion_special_winids },
     { "bring",          EQ, 1,  complete_against_winids, 0 },
-    { "cycle",          EQ, 1,  NULL, completion_pm_one },
+    { "cycle",          EQ, 1,  nullptr, completion_pm_one },
     { "chain",          GE, 1,  complete_chain, 0 },
-    { "cycle_all",      EQ, 1,  NULL, completion_cycle_all_args },
-    { "cycle_all",      EQ, 1,  NULL, completion_pm_one },
-    { "cycle_all",      EQ, 2,  NULL, completion_pm_one },
-    { "cycle_monitor",  EQ, 1,  NULL, completion_pm_one },
+    { "cycle_all",      EQ, 1,  nullptr, completion_cycle_all_args },
+    { "cycle_all",      EQ, 1,  nullptr, completion_pm_one },
+    { "cycle_all",      EQ, 2,  nullptr, completion_pm_one },
+    { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
     { "dump",           EQ, 1,  complete_against_tags, 0 },
-    { "detect_monitors", GE, 1,  NULL, completion_detect_monitors_args },
+    { "detect_monitors", GE, 1,  nullptr, completion_detect_monitors_args },
     { "floating",       EQ, 1,  complete_against_tags, 0 },
-    { "floating",       EQ, 1,  NULL, completion_flag_args },
-    { "floating",       EQ, 1,  NULL, completion_status },
-    { "floating",       EQ, 2,  NULL, completion_flag_args },
-    { "floating",       EQ, 2,  NULL, completion_status },
-    { "focus",          EQ, 1,  NULL, completion_directions },
-    { "focus",          EQ, 1,  NULL, completion_focus_args },
-    { "focus",          EQ, 2,  NULL, completion_directions },
-    { "fullscreen",     EQ, 1,  NULL, completion_flag_args },
+    { "floating",       EQ, 1,  nullptr, completion_flag_args },
+    { "floating",       EQ, 1,  nullptr, completion_status },
+    { "floating",       EQ, 2,  nullptr, completion_flag_args },
+    { "floating",       EQ, 2,  nullptr, completion_status },
+    { "focus",          EQ, 1,  nullptr, completion_directions },
+    { "focus",          EQ, 1,  nullptr, completion_focus_args },
+    { "focus",          EQ, 2,  nullptr, completion_directions },
+    { "fullscreen",     EQ, 1,  nullptr, completion_flag_args },
     { "layout",         EQ, 1,  complete_against_tags, 0 },
     { "load",           EQ, 1,  complete_against_tags, 0 },
     { "merge_tag",      EQ, 1,  complete_against_tags, 0 },
     { "merge_tag",      EQ, 2,  complete_merge_tag, 0 },
     { "move",           EQ, 1,  complete_against_tags, 0 },
-    { "move_index",     EQ, 2,  NULL, completion_use_index_args },
+    { "move_index",     EQ, 2,  nullptr, completion_use_index_args },
     { "or",             GE, 1,  complete_chain, 0 },
     { "!",              GE, 1,  complete_against_commands_1, 0 },
     { "try",            GE, 1,  complete_against_commands_1, 0 },
     { "silent",         GE, 1,  complete_against_commands_1, 0 },
-    { "pseudotile",     EQ, 1,  NULL, completion_flag_args },
+    { "pseudotile",     EQ, 1,  nullptr, completion_flag_args },
     { "keybind",        GE, 1,  complete_against_keybind_command, 0 },
-    { "keyunbind",      EQ, 1,  NULL, completion_keyunbind_args },
+    { "keyunbind",      EQ, 1,  nullptr, completion_keyunbind_args },
     { "keyunbind",      EQ, 1,  complete_against_keybinds, 0 },
     { "mousebind",      EQ, 1,  complete_against_mouse_combinations, 0 },
-    { "mousebind",      EQ, 2,  NULL, completion_mouse_functions },
+    { "mousebind",      EQ, 2,  nullptr, completion_mouse_functions },
     { "mousebind",      GE, 3,  complete_against_commands_3, 0 },
     { "rename",         EQ, 1,  complete_against_tags, 0 },
-    { "raise",          EQ, 1,  NULL, completion_special_winids },
+    { "raise",          EQ, 1,  nullptr, completion_special_winids },
     { "raise",          EQ, 1,  complete_against_winids, 0 },
-    { "jumpto",         EQ, 1,  NULL, completion_special_winids },
+    { "jumpto",         EQ, 1,  nullptr, completion_special_winids },
     { "jumpto",         EQ, 1,  complete_against_winids, 0 },
-    { "resize",         EQ, 1,  NULL, completion_directions },
+    { "resize",         EQ, 1,  nullptr, completion_directions },
     { "rule",           GE, 1,  rule_complete, 0 },
-    { "shift_edge",     EQ, 1,  NULL, completion_directions },
-    { "shift",          EQ, 1,  NULL, completion_directions },
-    { "shift",          EQ, 1,  NULL, completion_focus_args },
-    { "shift",          EQ, 2,  NULL, completion_directions },
+    { "shift_edge",     EQ, 1,  nullptr, completion_directions },
+    { "shift",          EQ, 1,  nullptr, completion_directions },
+    { "shift",          EQ, 1,  nullptr, completion_focus_args },
+    { "shift",          EQ, 2,  nullptr, completion_directions },
     { "set",            EQ, 1,  complete_against_settings, 0 },
-    { "split",          EQ, 1,  NULL, completion_split_modes },
-    { "split",          EQ, 2,  NULL, completion_split_ratios },
+    { "split",          EQ, 1,  nullptr, completion_split_modes },
+    { "split",          EQ, 2,  nullptr, completion_split_ratios },
     { "get",            EQ, 1,  complete_against_settings, 0 },
     { "toggle",         EQ, 1,  complete_against_settings, 0 },
     { "cycle_value",    EQ, 1,  complete_against_settings, 0 },
-    { "set_layout",     EQ, 1,  NULL, g_layout_names },
-    { "cycle_layout",   EQ, 1,  NULL, completion_pm_one },
-    { "cycle_layout",   GE, 2,  NULL, g_layout_names },
+    { "set_layout",     EQ, 1,  nullptr, g_layout_names },
+    { "cycle_layout",   EQ, 1,  nullptr, completion_pm_one },
+    { "cycle_layout",   GE, 2,  nullptr, g_layout_names },
     { "unrule",         EQ, 1,  complete_against_rule_names, 0 },
-    { "unrule",         EQ, 1,  NULL, completion_unrule_flags },
+    { "unrule",         EQ, 1,  nullptr, completion_unrule_flags },
     { "use",            EQ, 1,  complete_against_tags, 0 },
-    { "use_index",      EQ, 1,  NULL, completion_pm_one },
-    { "use_index",      EQ, 2,  NULL, completion_use_index_args },
+    { "use_index",      EQ, 1,  nullptr, completion_pm_one },
+    { "use_index",      EQ, 2,  nullptr, completion_use_index_args },
     { "focus_monitor",  EQ, 1,  complete_against_monitors, 0 },
     { "shift_to_monitor",EQ, 1,  complete_against_monitors, 0 },
     { "lock_tag",       EQ, 1,  complete_against_monitors, 0 },
@@ -279,12 +279,12 @@ struct {
     { "set_attr",       EQ, 1,  complete_against_objects, 0 },
     { "set_attr",       EQ, 1,  complete_against_attributes, 0 },
     { "set_attr",       EQ, 2,  complete_against_attribute_values, 0 },
-    { "new_attr",       EQ, 1,  NULL, completion_userattribute_types },
+    { "new_attr",       EQ, 1,  nullptr, completion_userattribute_types },
     { "new_attr",       EQ, 2,  complete_against_objects, 0 },
     { "new_attr",       EQ, 2,  complete_against_user_attr_prefix, 0 },
     { "remove_attr",    EQ, 1,  complete_against_objects, 0 },
     { "remove_attr",    EQ, 1,  complete_against_user_attributes, 0 },
-    { "mktemp",         EQ, 1,  NULL, completion_userattribute_types },
+    { "mktemp",         EQ, 1,  nullptr, completion_userattribute_types },
     { "mktemp",         GE, 3,  complete_against_commands_3, 0 },
     { "mktemp",         GE, 4,  complete_against_arg_2, 0 },
     { "substitute",     EQ, 2,  complete_against_objects, 0 },
@@ -414,8 +414,8 @@ int list_commands(int, char**, Output output)
 static void try_complete_suffix(const char* needle, const char* to_check, const char* suffix,
                                 const char* prefix, Output output)
 {
-    bool matches = (needle == NULL);
-    if (matches == false) {
+    bool matches = !needle;
+    if (!matches) {
         matches = true; // set it to true if the loop successfully runs
         // find the first difference between needle and to_check
         for (int i = 0; true ; i++) {
@@ -437,11 +437,11 @@ static void try_complete_suffix(const char* needle, const char* to_check, const 
         }
     }
     if (matches) {
-        char* escaped = NULL;
+        char* escaped = nullptr;
         if (g_shell_quoting) {
             escaped = posix_sh_escape(to_check);
         }
-        char* prefix_escaped = NULL;
+        char* prefix_escaped = nullptr;
         if (prefix) {
             if (g_shell_quoting) {
                 prefix_escaped = posix_sh_escape(prefix);
@@ -460,7 +460,7 @@ void try_complete(const char* needle, std::string to_check, Output output) {
 
 void try_complete(const char* needle, const char* to_check, Output output) {
     const char* suffix = g_shell_quoting ? " \n" : "\n";
-    try_complete_suffix(needle, to_check, suffix, NULL, output);
+    try_complete_suffix(needle, to_check, suffix, nullptr, output);
 }
 
 void try_complete_prefix(const char* needle, const char* to_check,
@@ -470,7 +470,7 @@ void try_complete_prefix(const char* needle, const char* to_check,
 }
 
 void try_complete_partial(const char* needle, const char* to_check, Output output) {
-    try_complete_suffix(needle, to_check, "\n", NULL, output);
+    try_complete_suffix(needle, to_check, "\n", nullptr, output);
 }
 
 void try_complete_prefix_partial(const char* needle, const char* to_check,
@@ -576,10 +576,11 @@ void complete_against_user_attributes(int argc, char** argv, int pos, Output out
 
 void complete_against_user_attr_prefix(int argc, char** argv, int position,
                                       Output output) {
-    const char* path = (position < argc) ? argv[position] : "";
-    const char* unparsable;
     // TODO
     /*
+    const char* path = (position < argc) ? argv[position] : "";
+    const char* unparsable;
+
     GString* prefix = g_string_new(path);
 
     if (prefix->len > 0
@@ -592,11 +593,11 @@ void complete_against_user_attr_prefix(int argc, char** argv, int position,
 }
 
 void complete_against_attribute_values(int argc, char** argv, int pos, Output output) {
+    // TODO
+    /*
     const char* needle = (pos < argc) ? argv[pos] : "";
     const char* path =  (1 < argc) ? argv[1] : "";
     std::ostringstream path_error;
-    // TODO
-    /*
     HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
     if (attr) {
         switch (attr->type) {
@@ -611,14 +612,14 @@ void complete_against_attribute_values(int argc, char** argv, int pos, Output ou
 }
 
 void complete_against_comparators(int argc, char** argv, int pos, Output output) {
+    // TODO
+    /*
     const char* needle = (pos < argc) ? argv[pos] : "";
     const char* path =  (1 < argc) ? argv[1] : "";
     std::ostringstream void_output;
-    // TODO
-    /*
     HSAttribute* attr = hsattribute_parse_path_verbose(path, void_output);
-    const char* equals[] = { "=", "!=", NULL };
-    const char* order[] = { "le", "lt", "ge", "gt", NULL };
+    const char* equals[] = { "=", "!=", nullptr };
+    const char* order[] = { "le", "lt", "ge", "gt", nullptr };
     if (attr) {
         switch (attr->type) {
             case HSATTR_TYPE_INT:
@@ -827,7 +828,7 @@ int complete_against_commands(int argc, char** argv, int position,
                               Output output) {
     // complete command
     if (position == 0) {
-        char* str = (argc >= 1) ? argv[0] : NULL;
+        char* str = (argc >= 1) ? argv[0] : nullptr;
         for (auto cmd : *Commands::get()) {
             // only check the first len bytes
             try_complete(str, cmd.first.c_str(), output);
@@ -979,7 +980,7 @@ static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos
     std::ostringstream void_output;
     // TODO
     /*
-    HSAttribute* attr = NULL;
+    HSAttribute* attr = nullptr;
     if (argc >= 2) {
         attr = hsattribute_parse_path_verbose(argv[1], void_output);
     }
@@ -1056,7 +1057,7 @@ int command_chain_command(int argc, char** argv, Output output) {
     }
     char* separator = argv[0];
     (void)SHIFT(argc, argv);
-    bool (*condition)(int) = cmd ? cmd->condition : NULL;
+    bool (*condition)(int) = cmd ? cmd->condition : nullptr;
     return command_chain(separator, condition, argc, argv, output);
 }
 

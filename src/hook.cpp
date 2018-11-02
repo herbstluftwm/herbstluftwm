@@ -65,7 +65,7 @@ void hook_emit(int argc, const char** argv) {
 }
 
 void emit_tag_changed(HSTag* tag, int monitor) {
-    assert(tag != NULL);
+    assert(tag != nullptr);
     static char monitor_name[STRING_BUF_SIZE];
     snprintf(monitor_name, STRING_BUF_SIZE, "%d", monitor);
     const char* argv[3];
@@ -76,7 +76,7 @@ void emit_tag_changed(HSTag* tag, int monitor) {
 }
 
 void hook_emit_list(const char* name, ...) {
-    assert(name != NULL);
+    assert(name != nullptr);
     int count = 1;
     va_list ap;
     // first count number of arguments

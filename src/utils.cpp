@@ -139,13 +139,13 @@ void die(const char *errstr, ...) {
 
 // inspired by dwm's gettextprop()
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
-    GString* result = NULL;
-    char** list = NULL;
+    GString* result = nullptr;
+    char** list = nullptr;
     int n = 0;
     XTextProperty prop;
 
     if (0 == XGetTextProperty(dpy, window, &prop, atom)) {
-        return NULL;
+        return nullptr;
     }
     // convert text property to a gstring
     if (prop.encoding == XA_STRING
@@ -227,7 +227,7 @@ bool window_has_property(Display* dpy, Window window, char* prop_name) {
 
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv) {
-    if (argc <= 0) return NULL;
+    if (argc <= 0) return nullptr;
     char** new_argv = new char*[argc];
     if (!new_argv) {
         die("cannot malloc - there is no memory available\n");
@@ -307,7 +307,7 @@ const char* strlasttoken(const char* str, const char* delim) {
 
 
 bool string_to_bool(const char* string, bool oldvalue) {
-    return string_to_bool_error(string, oldvalue, NULL);
+    return string_to_bool_error(string, oldvalue, nullptr);
 }
 
 bool string_to_bool_error(const char* string, bool oldvalue, bool* error) {
@@ -430,7 +430,7 @@ void* table_find(void* start, size_t elem_size, size_t count,
         cstart += elem_size;
         count--;
     }
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -485,7 +485,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     };
 
     Pixmap pix = XCreatePixmap(dpy, win, full_width, full_height, depth);
-    GC gc = XCreateGC(dpy, pix, 0, NULL);
+    GC gc = XCreateGC(dpy, pix, 0, nullptr);
 
     /* outer border */
     XSetForeground(dpy, gc, outer_color);
@@ -614,7 +614,7 @@ char* posix_sh_escape(const char* source) {
         count++;
     }
     // if there is nothing to escape
-    if (count == 0) return NULL;
+    if (count == 0) return nullptr;
     // TODO migrate to new
     char* target = (char*)malloc(sizeof(char) * (count + source_len + 1));
     if (!target) {
