@@ -140,12 +140,14 @@ function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
     };
 }
 
-HSMonitor *MonitorManager::byTag(HSTag *tag)
+void MonitorManager::relayoutTag(HSTag *tag)
 {
     for (HSMonitor* m : *this) {
-        if (m->tag == tag) return m;
+        if (m->tag == tag) {
+            m->applyLayout();
+            break;
+        }
     }
-    return nullptr;
 }
 
 HSMonitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {

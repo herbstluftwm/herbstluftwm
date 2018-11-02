@@ -43,11 +43,9 @@ Root::Root(Globals g)
     ::tags = tags();
     ::g_monitors = monitors();
 
+
     // connect slots
-    clients->needsRelayout.connect([this](HSTag* t) {
-        auto m = monitors->byTag(t);
-        if (m) m->applyLayout();
-    });
+    clients->needsRelayout.connect(monitors(), {&MonitorManager::relayoutTag});
 }
 
 Root::~Root()

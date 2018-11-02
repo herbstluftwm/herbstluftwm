@@ -15,6 +15,11 @@ public:
     void connect(std::function<void(T)> slot) {
         slots_.push_back(slot);
     }
+    template<typename Owner>
+    void connect(Owner* owner, void(Owner::*slot)(T)) {
+        slots_.push_back([owner,slot](const T& data) { (owner ->* slot)(data); });
+    }
+
     void connect(const Signal_<T>& slot) {
         slots_.push_back([slot](const T& data){ slot.emit(data); });
     }
