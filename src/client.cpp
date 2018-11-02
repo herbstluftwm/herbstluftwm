@@ -394,17 +394,17 @@ void HSClient::updatesizehints() {
 void HSClient::send_configure() {
     auto last_inner_rect = dec.last_inner();
     XConfigureEvent ce;
-    ce.type = ConfigureNotify,
-    ce.display = g_display,
-    ce.event = this->window_,
-    ce.window = this->window_,
-    ce.x = last_inner_rect.x,
-    ce.y = last_inner_rect.y,
-    ce.width = std::max(last_inner_rect.width, WINDOW_MIN_WIDTH),
-    ce.height = std::max(last_inner_rect.height, WINDOW_MIN_HEIGHT),
-    ce.border_width = 0,
-    ce.above = None,
-    ce.override_redirect = False,
+    ce.type = ConfigureNotify;
+    ce.display = g_display;
+    ce.event = this->window_;
+    ce.window = this->window_;
+    ce.x = last_inner_rect.x;
+    ce.y = last_inner_rect.y;
+    ce.width = std::max(last_inner_rect.width, WINDOW_MIN_WIDTH);
+    ce.height = std::max(last_inner_rect.height, WINDOW_MIN_HEIGHT);
+    ce.border_width = 0;
+    ce.above = None;
+    ce.override_redirect = False;
     XSendEvent(g_display, this->window_, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
