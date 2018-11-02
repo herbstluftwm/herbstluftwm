@@ -242,9 +242,9 @@ int set_monitor_rects_command(int argc, char** argv, Output output) {
     if (argc < 1) {
         return HERBST_NEED_MORE_ARGS;
     }
-    RectangleVec templates(argc);
+    RectangleVec templates;
     for (int i = 0; i < argc; i++) {
-        templates[i] = Rectangle::fromStr(argv[i]);
+        templates.push_back(Rectangle::fromStr(argv[i]));
     }
     int status = set_monitor_rects(templates);
 
@@ -261,7 +261,7 @@ int set_monitor_rects(const RectangleVec &templates) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTag* tag = nullptr;
-    int i;
+    unsigned i;
     for (i = 0; i < std::min(templates.size(), g_monitors->size()); i++) {
         auto m = g_monitors->byIdx(i);
         m->rect = templates[i];
@@ -683,28 +683,29 @@ int monitor_focus_command(int argc, char** argv, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     // really change selection
-    monitor_focus_by_index(new_selection);
+    monitor_focus_by_index((unsigned)new_selection);
     return 0;
 }
 
 int monitor_cycle_command(int argc, char** argv) {
     int delta = 1;
-    int count = g_monitors->size();
+    auto count = g_monitors->size();
     if (argc >= 2) {
         delta = atoi(argv[1]);
     }
-    int new_selection = g_cur_monitor + delta;
+    int new_selection = g_cur_monitor + delta; // signed for delta calculations
     // fix range of index
     new_selection %= count;
     new_selection += count;
     new_selection %= count;
     // really change selection
-    monitor_focus_by_index(new_selection);
+    monitor_focus_by_index((unsigned)new_selection);
     return 0;
 }
 
-void monitor_focus_by_index(int new_selection) {
-    new_selection = CLAMP(new_selection, 0, g_monitors->size() - 1);
+void monitor_focus_by_index(unsigned new_selection) {
+    // clamp to last
+    new_selection = std::min((unsigned)g_monitors->size() - 1, new_selection);
     HSMonitor* old = get_current_monitor();
     HSMonitor* monitor = g_monitors->byIdx(new_selection);
     if (old == monitor) {

@@ -140,15 +140,15 @@ std::shared_ptr<HSFrameLeaf> HSFrameLeaf::frameWithClient(HSClient* client) {
 bool HSFrameLeaf::removeClient(HSClient* client) {
     auto it = find(clients.begin(), clients.end(), client);
     if (it != clients.end()) {
-        int idx = it - clients.begin();
+        auto idx = it - clients.begin();
         clients.erase(it);
         // find out new selection
         // if selection was before removed window
         // then do nothing
         // else shift it by 1
         selection -= (selection < idx) ? 0 : 1;
-        // ensure, that it's a valid index
-        selection = clients.size() ? CLAMP(selection, 0, clients.size()-1) : 0;
+        // ensure valid index
+        selection = std::max(std::min(selection, (int)clients.size()), 0);
         return true;
     } else {
         return false;

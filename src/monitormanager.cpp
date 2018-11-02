@@ -77,15 +77,15 @@ int MonitorManager::string_to_monitor_index(std::string string) {
     } else if (isdigit(string[0])) {
         // absolute monitor index
         int idx = atoi(string.c_str());
-        if (idx < 0 || idx >= size()) {
+        if (idx < 0 || idx >= (int)size()) {
             return -1;
         }
         return idx;
     } else {
         // monitor string
-        for (int i = 0; i < size(); i++) {
+        for (unsigned i = 0; i < size(); i++) {
           if (byIdx(i)->name == string) {
-            return i;
+            return (int)i;
           }
         }
         return -1;

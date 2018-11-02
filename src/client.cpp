@@ -87,7 +87,7 @@ void HSClient::init_from_X() {
     unsigned int w, h;
     XGetGeometry(g_display, window_, &root_win, &x, &y, &w, &h, &border, &depth);
     // treat wanted coordinates as floating coords
-    float_size_ = { x, y, w, h };
+    float_size_ = { x, y, (int)w, (int)h };
     last_size_ = float_size_;
 
     pid_ = window_pid(g_display, window_);
@@ -306,9 +306,9 @@ bool HSClient::applysizehints(int *w, int *h) {
         /* adjust for aspect limits */
         if(this->mina_ > 0 && this->maxa_ > 0) {
             if(this->maxa_ < (float)*w / *h)
-                *w = *h * this->maxa_ + 0.5;
+                *w = *h * int(this->maxa_ + 0.5f);
             else if(this->mina_ < (float)*h / *w)
-                *h = *w * this->mina_ + 0.5;
+                *h = *w * int(this->mina_ + 0.5f);
         }
         if(baseismin) { /* increment calculation requires this */
             *w -= this->basew_;

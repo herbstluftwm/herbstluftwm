@@ -556,7 +556,7 @@ void scan(Root* root) {
 
     ewmh_get_original_client_list(&cl, &cl_count);
     if (XQueryTree(g_display, g_root, &d1, &d2, &wins, &num)) {
-        for (int i = 0; i < num; i++) {
+        for (unsigned i = 0; i < num; i++) {
             if(!XGetWindowAttributes(g_display, wins[i], &wa)
             || wa.override_redirect || XGetTransientForHint(g_display, wins[i], &d1))
                 continue;
@@ -575,7 +575,7 @@ void scan(Root* root) {
             XFree(wins);
     }
     // ensure every original client is managed again
-    for (int i = 0; i < cl_count; i++) {
+    for (unsigned i = 0; i < cl_count; i++) {
         if (get_client_from_window(cl[i])) continue;
         if (!XGetWindowAttributes(g_display, cl[i], &wa)
             || wa.override_redirect
