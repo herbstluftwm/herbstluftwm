@@ -16,6 +16,18 @@ public:
     // structures but just the object tree as the user sees it.
     // Hence, this does not inherit from Object and is not exposed to the user as an object.
     RootCommands(Root* root);
+
+    Attribute* getAttribute(std::string path, Output output);
+
+    /* external interface */
+    // find an attribute deep in the object tree.
+    // on failure, the error message is printed to output and NULL
+    // is returned
+    int get_attr_cmd(Input args, Output output);
+    int set_attr_cmd(Input args, Output output);
+    int attr_cmd(Input args, Output output);
+    int print_object_tree_command(ArgList args, Output output);
+
     int substitute_cmd(Input input, Output output);
     int sprintf_cmd(Input input, Output output);
     int new_attr_cmd(Input input, Output output);

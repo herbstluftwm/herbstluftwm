@@ -14,6 +14,8 @@ class HlwmBridge:
 
     HC_PATH = os.path.join(GIT_ROOT, 'herbstclient')
 
+    def callstr(self, args, check=True):
+        return self.call(*(args.split(' ')), check=check)
     def call(self, *args, check=True):
         assert args
         str_args = [ str(i) for i in args]
@@ -24,8 +26,12 @@ class HlwmBridge:
         print(proc.stdout)
         print(proc.stderr, file=sys.stderr)
         if check:
+            assert proc.returncode == 0
             assert not proc.stderr
         return proc
+    def fails(self, *args):
+        assert self.call(*args, check=False).returncode != 0
+
     def get_attr(self, attribute_path, check=True):
         return self.call('get_attr', attribute_path).stdout
 

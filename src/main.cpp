@@ -196,7 +196,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"and",            command_chain_command},
         {"or",             command_chain_command},
         {"!",              negate_command},
-        {"object_tree",    BIND_OBJECT(root, print_object_tree_command) },
+        {"object_tree",    BIND_OBJECT(root_commands, print_object_tree_command) },
         {"substitute",     BIND_OBJECT(root_commands, substitute_cmd) },
         {"sprintf",        BIND_OBJECT(root_commands, sprintf_cmd) },
         {"new_attr",       BIND_OBJECT(root_commands, new_attr_cmd) },
@@ -205,9 +205,9 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"getenv",         getenv_command},
         {"setenv",         setenv_command},
         {"unsetenv",       unsetenv_command},
-        {"get_attr",       BIND_OBJECT(root, cmd_get_attr) },
-        {"set_attr",       BIND_OBJECT(root, cmd_set_attr) },
-        {"attr",           BIND_OBJECT(root, cmd_attr) },
+        {"get_attr",       BIND_OBJECT(root_commands, get_attr_cmd) },
+        {"set_attr",       BIND_OBJECT(root_commands, set_attr_cmd) },
+        {"attr",           BIND_OBJECT(root_commands, attr_cmd) },
         {"mktemp",         BIND_OBJECT(tmp, mktemp) },
     });
 }

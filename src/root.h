@@ -34,17 +34,6 @@ public:
     Root(Globals g);
     ~Root();
 
-    Attribute* getAttribute(std::string path, Output output);
-
-    /* external interface */
-    // find an attribute deep in the object tree.
-    // on failure, the error message is printed to output and NULL
-    // is returned
-    int cmd_get_attr(Input args, Output output);
-    int cmd_set_attr(Input args, Output output);
-    int cmd_attr(Input args, Output output);
-    int print_object_tree_command(ArgList args, Output output);
-
     Child_<Settings> settings;
     Child_<ClientManager> clients;
     Child_<TagManager> tags;

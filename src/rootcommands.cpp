@@ -8,12 +8,116 @@
 #include <algorithm>
 #include <map>
 #include <functional>
+#include <sstream>
 #include <cstring>
 
 using namespace std;
 
 RootCommands::RootCommands(Root* root_) : root(root_) {
 }
+
+int RootCommands::get_attr_cmd(Input in, Output output) {
+    in.shift();
+    if (in.empty()) return HERBST_NEED_MORE_ARGS;
+
+    Attribute* a = getAttribute(in.front(), output);
+    if (!a) return HERBST_INVALID_ARGUMENT;
+    output << a->str();
+    return 0;
+}
+
+int RootCommands::set_attr_cmd(Input in, Output output) {
+    in.shift();
+    if (in.empty()) return HERBST_NEED_MORE_ARGS;
+    auto path = in.front();
+    in.shift();
+    if (in.empty()) return HERBST_NEED_MORE_ARGS;
+    auto new_value = in.front();
+
+    Attribute* a = getAttribute(path, output);
+    if (!a) return HERBST_INVALID_ARGUMENT;
+    std::string error_message = a->change(new_value);
+    if (error_message == "") {
+        return 0;
+    } else {
+        output << in.command() << ": \""
+            << in.front() << "\" is not a valid value for "
+            << a->name() << ": "
+            << error_message << std::endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+}
+
+int RootCommands::attr_cmd(Input in, Output output) {
+    in.shift();
+
+    auto path = in.empty() ? std::string("") : in.front();
+    in.shift();
+    std::ostringstream dummy_output;
+    Object* o = root;
+    auto p = Path::split(path);
+    if (!p.empty()) {
+        while (p.back().empty()) p.pop_back();
+        o = o->child(p);
+    }
+    if (o && in.empty()) {
+        o->ls(output);
+        return 0;
+    }
+
+    Attribute* a = getAttribute(path, output);
+    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (in.empty()) {
+        // no more arguments -> return the value
+        output << a->str();
+        return 0;
+    } else {
+        // another argument -> set the value
+        std::string error_message = a->change(in.front());
+        if (error_message == "") {
+            return 0;
+        } else {
+            output << in.command() << ": \""
+                << in.front() << "\" is not a valid value for "
+                << a->name() << ": "
+                << error_message << std::endl;
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
+}
+
+Attribute* RootCommands::getAttribute(std::string path, Output output) {
+    auto attr_path = Object::splitPath(path);
+    auto child = root->child(attr_path.first);
+    if (!child) {
+        output << "No such object " << attr_path.first.join('.') << std::endl;
+        return nullptr;
+    }
+    Attribute* a = child->attribute(attr_path.second);
+    if (!a) {
+        output << "Object " << attr_path.first.join('.')
+               << " has no attribute \"" << attr_path.second << "\""
+               << std::endl;
+        return nullptr;
+    }
+    return a;
+}
+
+int RootCommands::print_object_tree_command(ArgList in, Output output) {
+    in.shift();
+    auto path = Path(in.empty() ? std::string("") : in.front()).toVector();
+    while (!path.empty() && path.back() == "") {
+        path.pop_back();
+    }
+    auto child = root->child(path);
+    if (!child) {
+        output << "No such object " << Path(path).join('.') << std::endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    child->printTree(output, Path(path).join('.'));
+    return 0;
+}
+
 
 int RootCommands::substitute_cmd(Input input, Output output)
 {
@@ -22,7 +126,7 @@ int RootCommands::substitute_cmd(Input input, Output output)
         return HERBST_NEED_MORE_ARGS;
     }
     if (input.empty()) return HERBST_NEED_MORE_ARGS;
-    Attribute* a = root->getAttribute(path, output);
+    Attribute* a = getAttribute(path, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
     return Commands::call(input.replace(ident, a->str()), output);
 }
@@ -53,7 +157,7 @@ int RootCommands::sprintf_cmd(Input input, Output output)
                 if (!input.read({ &path })) {
                     return HERBST_NEED_MORE_ARGS;
                 }
-                Attribute* a = root->getAttribute(path, output);
+                Attribute* a = getAttribute(path, output);
                 if (!a) return HERBST_INVALID_ARGUMENT;
                 blobs += a->str();
             } else {
@@ -84,7 +188,7 @@ Attribute* RootCommands::newAttributeWithType(std::string typestr, std::string a
     auto it = name2constructor.find(typestr);
     if (it == name2constructor.end()) {
         output << "error: unknown type \"" << typestr << "\"";
-        return NULL;
+        return nullptr;
     }
     return it->second(attr_name);
 }
@@ -106,7 +210,7 @@ int RootCommands::new_attr_cmd(Input input, Output output)
             << " but is actually \"" << attr_name << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-    if (NULL != obj->attribute(attr_name)) {
+    if (obj->attribute(attr_name)) {
         output
             << cmd << ": object \"" << obj_path_and_attr.first.join()
             << "\" already has an attribute named \"" << attr_name
@@ -158,7 +262,7 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
     vector<T> vals;
     for (auto & x : strings) {
         try {
-            vals.push_back(Attribute_<T>::parse(x, NULL));
+            vals.push_back(Attribute_<T>::parse(x, nullptr));
         } catch(std::exception& e) {
             o << "can not parse \"" << x << "\" to "
               << typeid(T).name() << ": " << e.what() << endl;
