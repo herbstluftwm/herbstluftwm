@@ -14,14 +14,14 @@ class TilingStep {
 public:
     TilingStep(Rectangle rect);
     Rectangle geometry;
-    bool floated;
-    bool needsRaise;
+    bool floated = false;
+    bool needsRaise = false;
 };
 
 // a tiling result contains the movement commands etc. for all clients
 class TilingResult {
 public:
-    TilingResult();
+    TilingResult() {}
     TilingStep& operator[](HSClient* client);
     void add(FrameDecoration* dec, const FrameDecorationData& frame_data);
 
