@@ -108,6 +108,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     RootCommands* root_commands = root->root_commands;
     TagManager* tags = root->tags();
     MonitorManager* monitors = root->monitors();
+    ClientManager* clients = root->clients();
     Settings* settings = root->settings();
     Tmp* tmp = root->tmp();
     return unique_ptr<CommandTable>(new CommandTable{
@@ -161,8 +162,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"use_previous",   monitor_set_previous_tag_command},
         {"jumpto",         jumpto_command},
         {"floating",       tag_set_floating_command},
-       // {"fullscreen",     client_set_property_command},
-       // {"pseudotile",     client_set_property_command},
+        {"fullscreen",     BIND_OBJECT(clients, fullscreen_cmd)},
+        {"pseudotile",     BIND_OBJECT(clients, pseudotile_cmd)},
         {"tag_status",     print_tag_status_command},
         {"merge_tag",      tag_remove_command},
         {"rename",         BIND_OBJECT(tags, tag_rename_command) },

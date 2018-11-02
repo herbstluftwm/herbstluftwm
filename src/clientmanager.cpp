@@ -12,6 +12,9 @@
 #include "monitor.h"
 #include "tag.h"
 #include "layout.h"
+#include "ipc-protocol.h"
+
+using namespace std;
 
 ClientManager::ClientManager(Theme& theme_, Settings& settings_)
     : focus(*this, "focus")
@@ -215,4 +218,35 @@ void ClientManager::force_unmanage(HSClient* client) {
     // delete client
     this->remove(client->window_);
     delete client;
+}
+
+int ClientManager::clientSetAttribute(string attribute,
+                                      Input input,
+                                      Output output)
+{
+    input.shift();
+    string value = input.empty() ? "toggle" : input.front();
+    HSClient* c = get_current_client();
+    if (c) {
+        Attribute* a = c->attribute(attribute);
+        if (!a) return HERBST_UNKNOWN_ERROR;
+        string error_message = a->change(value);
+        if (error_message != "") {
+            output << input.command() << ": illegal argument \""
+                   << value << "\": "
+                   << error_message << std::endl;
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
+    return 0;
+}
+
+int ClientManager::pseudotile_cmd(Input input, Output output)
+{
+    return clientSetAttribute("pseudotile", input, output);
+}
+
+int ClientManager::fullscreen_cmd(Input input, Output output)
+{
+    return clientSetAttribute("fullscreen", input, output);
 }

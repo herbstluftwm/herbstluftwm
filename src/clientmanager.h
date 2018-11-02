@@ -4,6 +4,7 @@
 #include "object.h"
 #include "child.h"
 #include "signal.h"
+#include "utils.h"
 
 #include <unordered_map>
 
@@ -34,10 +35,14 @@ public:
     Signal_<HSTag*> needsRelayout;
     Child_<HSClient> focus;
 
+    int pseudotile_cmd(Input input, Output output);
+    int fullscreen_cmd(Input input, Output output);
+
     // adds a new client to list of managed client windows
     HSClient* manage_client(Window win, bool visible_already);
 
 protected:
+    int clientSetAttribute(std::string attribute, Input input, Output output);
     Theme& theme;
     Settings& settings;
     std::unordered_map<Window, HSClient*> clients_;
