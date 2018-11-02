@@ -679,7 +679,7 @@ static void sigaction_signal(int signum, void (*handler)(int)) {
     sigaction(signum, &act, nullptr);
 }
 
-HandlerTable g_default_handler;
+static HandlerTable g_default_handler;
 
 static void init_handler_table() {
     g_default_handler[ ButtonPress       ] = buttonpress;
