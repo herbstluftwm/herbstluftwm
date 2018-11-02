@@ -15,11 +15,10 @@ using namespace std;
 
 TagManager* tags;
 
-TagManager::TagManager(Settings* settings_)
+TagManager::TagManager(Settings* settings)
     : ChildByIndex()
     , by_name(*this)
-    , monitors(NULL)
-    , settings(settings_)
+    , settings(settings)
 {
 }
 

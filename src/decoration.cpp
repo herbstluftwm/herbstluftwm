@@ -135,14 +135,9 @@ static Visual* check_32bit_client(HSClient* c)
     return nullptr;
 }
 
-Decoration::Decoration(HSClient* client, Settings& settings_)
+Decoration::Decoration(HSClient* client, Settings& settings)
     : client(client),
-      decwin(0),
-      last_scheme(NULL),
-      pixmap(0),
-      pixmap_height(0),
-      pixmap_width(0),
-      settings(settings_)
+      settings(settings)
 {
 }
 

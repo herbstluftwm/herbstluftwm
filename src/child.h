@@ -15,7 +15,6 @@ public:
     Child_(Object& owner_, std::string name_)
         : owner(owner_)
         , name(name_)
-        , pointer(NULL)
     { }
     void operator=(T* new_value) {
         if (new_value == pointer) {
