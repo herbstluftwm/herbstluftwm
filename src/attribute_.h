@@ -5,6 +5,7 @@
 #include "object.h"
 #include "signal.h"
 #include "x11-types.h" // for hl::Color
+#include <set>
 #include <functional>
 #include <stdexcept>
 
@@ -140,9 +141,11 @@ inline std::string Attribute_<bool>::str(bool payload) {
 
 template<>
 inline bool Attribute_<bool>::parse(const std::string &payload, bool const* previous) {
-    if (payload == "off" || payload == "false")
+    std::set<std::string> t = {"true", "on", "1"};
+    std::set<std::string> f = {"false", "off", "0"};
+    if (f.find(payload) != f.end())
         return false;
-    else if (payload == "on" || payload == "true")
+    else if (t.find(payload) != t.end())
         return true;
     else if (payload == "toggle" && previous)
         return !*previous;
