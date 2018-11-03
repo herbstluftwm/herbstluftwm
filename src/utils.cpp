@@ -378,7 +378,7 @@ int array_find(const void* buf, size_t elems, size_t size, const void* needle) {
 void array_reverse(void* void_buf, size_t elems, size_t size) {
     char* buf = (char*)void_buf;
     char* tmp = new char[size];
-    for (size_t i = 0, j = elems - 1; i < j; i++, j--) {
+    for (int i = 0, j = elems - 1; i < j; i++, j--) {
         memcpy(tmp, buf + size * i, size);
         memcpy(buf + size * i, buf + size * j, size);
         memcpy(buf + size * j, tmp, size);
