@@ -33,7 +33,7 @@ public:
     ~HSClient();
 
     Window      window_;
-    Decoration    dec;
+    Decoration  dec;
     Rectangle   float_size_ = {0, 0, 100, 100};     // floating size without the window border
     Attribute_<bool> urgent_ = {"urgent", false};
     Attribute_<bool> fullscreen_ = {"fullscreen", false};
@@ -46,8 +46,7 @@ public:
     Attribute_<
     std::string> keymask_ = {"keymask", {}}; // keymask applied to mask out keybindins
     bool        ewmhfullscreen_ = false; // ewmh fullscreen state
-    Attribute_<
-    bool>       pseudotile_ = {"pseudotile", false}; // only move client but don't resize (if possible)
+    Attribute_<bool> pseudotile_ = {"pseudotile", false}; // only move client but don't resize (if possible)
     bool        neverfocus_ = false; // do not give the focus via XSetInputFocus
     bool        ewmhrequests_ = true; // accept ewmh-requests for this client
     bool        ewmhnotify_ = true; // send ewmh-notifications for this client
