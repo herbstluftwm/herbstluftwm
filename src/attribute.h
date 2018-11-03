@@ -11,6 +11,36 @@
 class Object;
 class Signal;
 
+/* Attributes.
+ * Attributes are members of Objects that expose internal state variables to the
+ * object tree accessible through the 'attr' command.
+ * The class Attribute is abstract and is used to form a common base.
+ *
+ * Attribute_<T> are regular (static) attributes.
+ * They provide static methods for conversion from/to string (parse() and str()).
+ * A validator can be specified that performs checks before accepting external
+ * input. Error messages produced by the validator are propagated back to the user.
+ * The validator is not called when the attribute is set internally.
+ * Static attributes are read-only by default and need to set writeable either
+ * explicitely or by setting a validator.
+ * Static attributes provide a signal "changed" that emits whenever the attribute
+ * is altered (internally or externally).
+ * Likewise, they are by-default hookable. For some attributes a hook does not make
+ * sense, so it can be disabled on an individual basis.
+ *
+ * DynAttribute_<T> are shallow attributes and not physically present.
+ * A common reason for having a dynamic attribute is for backwards-compatibility
+ * or to provide some kind of magic in an attribute.
+ * However, for allowing triggers by the user, an Action should be used instead.
+ * Actions are designated properly and can accept multiple arguments.
+ * The can be read-only using a getter callback, or rw with an additional
+ * setter callback. Validation is done within the setter.
+ * Dynamic attributes do not provide a changed signal. They could do it easily in
+ * theory, however it would most-probably be a bad idea to attach to such a signal
+ * instead of to the underlying mechanics.
+ * Note that for similar reasons, dynamic attributes are not hookable.
+ */
+
 class Attribute : public Entity {
 
 public:
