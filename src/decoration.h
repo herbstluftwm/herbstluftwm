@@ -15,7 +15,7 @@
 #include "x11-types.h"
 #include <map>
 
-#include "utils.h"
+#include "types.h"
 #include "object.h"
 #include "attribute_.h"
 

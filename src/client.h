@@ -14,7 +14,7 @@
 #include "x11-types.h"
 
 #include "object.h"
-#include "utils.h"
+#include "types.h"
 #include "decoration.h"
 #include "attribute_.h"
 #include "signal.h"

@@ -5,6 +5,7 @@
 #include "settings.h"
 #include "ewmh.h"
 #include "root.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <string.h>

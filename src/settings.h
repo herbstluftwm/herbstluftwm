@@ -7,7 +7,7 @@
 #define __HERBSTLUFT_SETTINGS_H_
 
 #include "x11-types.h"
-#include "utils.h"
+#include "types.h"
 #include "object.h"
 #include "attribute_.h"
 #include <string>

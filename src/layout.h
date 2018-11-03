@@ -8,7 +8,7 @@
 
 #include "x11-types.h"
 #include "glib-backports.h"
-#include "utils.h"
+#include "types.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>

@@ -7,7 +7,7 @@
 #define __HS_RULES_H_
 
 #include "glib-backports.h"
-#include "utils.h"
+#include "types.h"
 
 #include <stdbool.h>
 #include <regex.h>

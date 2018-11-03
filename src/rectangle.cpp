@@ -2,6 +2,7 @@
 #include "rectangle.h"
 #include "floating.h"
 #include "mouse.h"
+#include "utils.h"
 #include "ipc-protocol.h"
 #include <glib.h>
 

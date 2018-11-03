@@ -11,6 +11,7 @@
 #include "ipc-protocol.h"
 #include "settings.h"
 #include "command.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <stdio.h>

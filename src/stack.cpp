@@ -5,6 +5,7 @@
 #include "globals.h"
 #include "monitor.h"
 #include "tag.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <string.h>

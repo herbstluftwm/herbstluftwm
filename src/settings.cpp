@@ -11,6 +11,7 @@
 #include "ipc-protocol.h"
 #include "ewmh.h"
 #include "monitormanager.h"
+#include "utils.h"
 
 #include <string.h>
 #include <stdio.h>
