@@ -64,7 +64,7 @@ typedef std::function<void(HSClient*)> ClientAction;
 
 #define FRACTION_UNIT 10000
 
-struct HSSlice;
+class HSSlice;
 class HSTag;
 class HSFrameLeaf;
 class HSFrameSplit;
@@ -145,19 +145,19 @@ public:
     HSClient* focusedClient();
 
     bool split(int alignment, int fraction, int childrenLeaving = 0);
-    int getLayout() { return layout; };
-    void setLayout(int l) { layout = l; };
-    int getSelection() { return selection; };
-    size_t clientCount() { return clients.size(); };
+    int getLayout() { return layout; }
+    void setLayout(int l) { layout = l; }
+    int getSelection() { return selection; }
+    size_t clientCount() { return clients.size(); }
     std::shared_ptr<HSFrame> neighbour(char direction);
     std::vector<HSClient*> removeAllClients();
 
     std::shared_ptr<HSFrameLeaf> thisLeaf();
-    std::shared_ptr<HSFrameLeaf> isLeaf() { return thisLeaf(); };
+    std::shared_ptr<HSFrameLeaf> isLeaf() { return thisLeaf(); }
 
     friend class HSFrame;
     void setVisible(bool visible);
-    Rectangle lastRect() { return last_rect; };
+    Rectangle lastRect() { return last_rect; }
 private:
     // layout algorithms
     TilingResult layoutLinear(Rectangle rect, bool vertical);
@@ -199,17 +199,17 @@ public:
     // own members
     virtual int splitsToRoot(int align);
     void replaceChild(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> newchild);
-    std::shared_ptr<HSFrame> firstChild() { return a; };
-    std::shared_ptr<HSFrame> secondChild() { return b; };
-    std::shared_ptr<HSFrame> selectedChild() { return selection ? b : a; };
+    std::shared_ptr<HSFrame> firstChild() { return a; }
+    std::shared_ptr<HSFrame> secondChild() { return b; }
+    std::shared_ptr<HSFrame> selectedChild() { return selection ? b : a; }
     void swapChildren();
     void adjustFraction(int delta);
     std::shared_ptr<HSFrameSplit> thisSplit();
-    std::shared_ptr<HSFrameSplit> isSplit() { return thisSplit(); };
-    int getAlign() { return align; };
+    std::shared_ptr<HSFrameSplit> isSplit() { return thisSplit(); }
+    int getAlign() { return align; }
     void rotate();
-    void swapSelection() { selection = 1 - selection; };
-    void setSelection(int s) { selection = s; };
+    void swapSelection() { selection = 1 - selection; }
+    void setSelection(int s) { selection = s; }
 private:
     int align;         // ALIGN_VERTICAL or ALIGN_HORIZONTAL
     std::shared_ptr<HSFrame> a; // first child

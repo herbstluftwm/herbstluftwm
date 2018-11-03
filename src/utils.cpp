@@ -205,7 +205,7 @@ bool is_window_mapped(Display* dpy, Window window) {
     return (wa.map_state == IsViewable);
 }
 
-bool window_has_property(Display* dpy, Window window, char* prop_name) {
+bool window_has_property(Display*, Window window, char* prop_name) {
     // find the properties this window has
     int num_properties_ret;
     Atom* properties= XListProperties(g_display, window, &num_properties_ret);
@@ -367,9 +367,9 @@ void g_queue_remove_element(GQueue* queue, GList* elem) {
 }
 
 int array_find(const void* buf, size_t elems, size_t size, const void* needle) {
-    for (int i = 0; i < elems; i++) {
+    for (size_t i = 0; i < elems; i++) {
         if (0 == memcmp((const char*)buf + (size * i), needle, size)) {
-            return i;
+            return (int)i;
         }
     }
     return -1;
@@ -378,7 +378,7 @@ int array_find(const void* buf, size_t elems, size_t size, const void* needle) {
 void array_reverse(void* void_buf, size_t elems, size_t size) {
     char* buf = (char*)void_buf;
     char* tmp = new char[size];
-    for (int i = 0, j = elems - 1; i < j; i++, j--) {
+    for (size_t i = 0, j = elems - 1; i < j; i++, j--) {
         memcpy(tmp, buf + size * i, size);
         memcpy(buf + size * i, buf + size * j, size);
         memcpy(buf + size * j, tmp, size);
@@ -453,7 +453,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     int width = wa.width;
     int height = wa.height;
 
-    unsigned int depth = wa.depth;
+    auto depth = (unsigned)wa.depth;
 
     int full_width = width + 2 * bw;
     int full_height = height + 2 * bw;
@@ -608,7 +608,7 @@ char* posix_sh_escape(const char* source) {
             }
         }
     }
-    size_t source_len = i;
+    auto source_len = (size_t)i;
     // special chars:
     if (source[0] == '~') {
         count++;

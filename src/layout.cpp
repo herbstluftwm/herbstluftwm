@@ -399,21 +399,21 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
 */
 
 int find_layout_by_name(char* name) {
-    for (int i = 0; i < LENGTH(g_layout_names); i++) {
+    for (size_t i = 0; i < LENGTH(g_layout_names); i++) {
         if (!g_layout_names[i]) {
             break;
         }
         if (!strcmp(name, g_layout_names[i])) {
-            return i;
+            return (int)i;
         }
     }
     return -1;
 }
 
 int find_align_by_name(char* name) {
-    for (int i = 0; i < LENGTH(g_align_names); i++) {
+    for (size_t i = 0; i < LENGTH(g_align_names); i++) {
         if (!strcmp(name, g_align_names[i])) {
-            return i;
+            return (int)i;
         }
     }
     return -1;
@@ -533,6 +533,7 @@ int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
         const char* curname = g_layout_names[cur_frame->getLayout()];
         char** pcurrent = (char**)table_find(argv, sizeof(*argv), argc, 0,
                                      memberequals_string, curname);
+        // signed for delta calculations
         int idx = pcurrent ? (INDEX_OF(argv, pcurrent) + delta) : 0;
         idx %= argc;
         idx += argc;

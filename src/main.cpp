@@ -628,11 +628,11 @@ void execute_autostart_file() {
 
 static void parse_arguments(int argc, char** argv, Globals& g) {
     static struct option long_options[] = {
-        {"autostart",   1, 0, 'c'},
-        {"version",     0, 0, 'v'},
-        {"locked",      0, 0, 'l'},
+        {"autostart",   1, nullptr, 'c'},
+        {"version",     0, nullptr, 'v'},
+        {"locked",      0, nullptr, 'l'},
         {"verbose",     0, &g_verbose, 1},
-        {0, 0, 0, 0}
+        {}
     };
     // parse options
     while (1) {
@@ -648,7 +648,6 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                 printf("Copyright (c) 2011-2014 Thorsten Wißmann\n");
                 printf("Released under the Simplified BSD License\n");
                 exit(0);
-                break;
             case 'c':
                 g_autostart_path = optarg;
                 break;
@@ -661,7 +660,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
     }
 }
 
-static void remove_zombies(int signal) {
+static void remove_zombies(int) {
     int bgstatus;
     while (waitpid(-1, &bgstatus, WNOHANG) > 0);
 }
@@ -741,12 +740,12 @@ void buttonpress(Root* root, XEvent* event) {
     XAllowEvents(g_display, ReplayPointer, be->time);
 }
 
-void buttonrelease(Root* root, XEvent* event) {
+void buttonrelease(Root*, XEvent*) {
     HSDebug("name is: ButtonRelease\n");
     mouse_stop_drag();
 }
 
-void createnotify(Root* root, XEvent* event) {
+void createnotify(Root*, XEvent* event) {
     // printf("name is: CreateNotify\n");
     if (is_ipc_connectable(event->xcreatewindow.window)) {
         ipc_add_connection(event->xcreatewindow.window);
@@ -806,12 +805,12 @@ void focusin(Root* root, XEvent* event) {
     //HSDebug("name is: FocusIn\n");
 }
 
-void keypress(Root* root, XEvent* event) {
+void keypress(Root*, XEvent* event) {
     //HSDebug("name is: KeyPress\n");
     handle_key_press(event);
 }
 
-void mappingnotify(Root* root, XEvent* event) {
+void mappingnotify(Root*, XEvent* event) {
     {
         // regrab when keyboard map changes
         XMappingEvent *ev = &event->xmapping;
@@ -823,11 +822,11 @@ void mappingnotify(Root* root, XEvent* event) {
     }
 }
 
-void motionnotify(Root* root, XEvent* event) {
+void motionnotify(Root*, XEvent* event) {
     handle_motion_event(event);
 }
 
-void mapnotify(Root* root, XEvent* event) {
+void mapnotify(Root*, XEvent* event) {
     //HSDebug("name is: MapNotify\n");
     HSClient* c;
     if ((c = get_client_from_window(event->xmap.window))) {
@@ -863,7 +862,7 @@ void maprequest(Root* root, XEvent* event) {
     // that are managed already
 }
 
-void propertynotify(Root* root, XEvent* event) {
+void propertynotify(Root*, XEvent* event) {
     // printf("name is: PropertyNotify\n");
     XPropertyEvent *ev = &event->xproperty;
     HSClient* client;
@@ -926,7 +925,7 @@ int main(int argc, char* argv[]) {
 
 
     // initialize subsystems
-    for (int i = 0; i < LENGTH(g_modules); i++) {
+    for (unsigned i = 0; i < LENGTH(g_modules); i++) {
         g_modules[i].init();
     }
 
@@ -947,7 +946,7 @@ int main(int argc, char* argv[]) {
         FD_ZERO(&in_fds);
         FD_SET(x11_fd, &in_fds);
         // wait for an event or a signal
-        select(x11_fd + 1, &in_fds, 0, 0, nullptr);
+        select(x11_fd + 1, &in_fds, nullptr, nullptr, nullptr);
         if (g_aboutToQuit) {
             break;
         }
