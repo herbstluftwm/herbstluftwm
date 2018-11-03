@@ -146,9 +146,6 @@ HSClient::~HSClient() {
     if (lastfocus == this) {
         lastfocus = nullptr;
     }
-    if (tag() && slice) {
-        stack_remove_slice(tag()->stack, slice);
-    }
     if (slice) {
         slice_destroy(slice);
     }

@@ -199,6 +199,9 @@ void ClientManager::force_unmanage(HSClient* client) {
     if (client->dragged_) {
         mouse_stop_drag();
     }
+    if (client->tag() && client->slice) {
+        stack_remove_slice(client->tag()->stack, client->slice);
+    }
     // remove from tag
     client->tag()->frame->removeClient(client);
     // ignore events from it
