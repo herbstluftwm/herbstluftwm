@@ -12,6 +12,7 @@ class TagManager : public ChildByIndex<HSTag> {
 public:
     TagManager(Settings* settings);
     void setMonitorManager(MonitorManager* monitors);
+
     int tag_add_command(Input input, Output output);
     int tag_rename_command(Input input, Output output);
     int tag_move_window_command(Input input, Output output);
@@ -28,6 +29,6 @@ private:
     Settings* settings;
 };
 
-extern TagManager* tags; // temporarily
+extern TagManager* tags; // temporary, set in Root constr.
 
 #endif
