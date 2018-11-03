@@ -12,6 +12,7 @@
 #include "decoration.h"
 #include "client.h"
 #include "rootcommands.h"
+#include "utils.h"
 
 #include <memory>
 #include <stdexcept>

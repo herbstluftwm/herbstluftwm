@@ -18,6 +18,7 @@
 #include "object.h"
 #include "decoration.h"
 #include "key.h"
+#include "utils.h"
 // system
 #include "glib-backports.h"
 #include <assert.h>

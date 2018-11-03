@@ -7,7 +7,7 @@
 #define __HERBSTLUFT_RECTANGLE_H_
 
 #include "x11-types.h"
-#include "utils.h"
+#include "types.h"
 
 typedef struct RectList {
     Rectangle rect;

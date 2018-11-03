@@ -12,7 +12,7 @@
 #include <array>
 #include <memory>
 #include "x11-types.h"
-#include "utils.h"
+#include "types.h"
 
 enum HSLayer {
     /* layers on each monitor, from top to bottom */

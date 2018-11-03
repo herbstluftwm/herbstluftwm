@@ -22,6 +22,7 @@
 #include "ewmh.h"
 #include "monitor.h"
 #include "settings.h"
+#include "utils.h"
 
 #include "childbyindex.h"
 #include <sstream>
@@ -163,12 +164,13 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
         }
     }
 
-    bool new_value = string_to_bool(action, tag->floating);
-
     if (!strcmp(action, "status")) {
         // just print status
         output << (tag->floating ? "on" : "off");
     } else {
+        // after deleting this, delete include utils.h line
+        bool new_value = string_to_bool(action, tag->floating);
+
         // assign new value and rearrange if needed
         tag->floating = new_value;
 

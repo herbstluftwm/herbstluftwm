@@ -2,7 +2,7 @@
 #define HOOKMANAGER_H
 
 #include "object.h"
-
+#include "attribute.h"
 
 class HookManager : public Object
 {

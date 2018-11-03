@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include "glib-backports.h"
 #include "x11-types.h"
-#include "utils.h"
+#include "types.h"
 
 // various snap-flags
 enum SnapFlags {

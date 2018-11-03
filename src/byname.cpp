@@ -2,6 +2,7 @@
 #include "byname.h"
 #include "hook.h"
 #include <cassert>
+#include "attribute.h"
 
 ByName::ByName(Object& parent_)
     : parent(parent_)

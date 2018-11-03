@@ -8,6 +8,7 @@
 #include "monitor.h"
 #include "settings.h"
 #include "ipc-protocol.h"
+#include "utils.h"
 
 using namespace std;
 

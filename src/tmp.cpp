@@ -4,6 +4,7 @@
 #include "rootcommands.h"
 #include "command.h"
 #include "ipc-protocol.h"
+#include "attribute.h"
 
 using namespace std;
 

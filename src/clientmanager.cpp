@@ -13,6 +13,7 @@
 #include "tag.h"
 #include "layout.h"
 #include "ipc-protocol.h"
+#include "utils.h"
 
 using namespace std;
 

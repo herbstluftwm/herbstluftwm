@@ -6,8 +6,7 @@
 #ifndef __HS_OBJECT_H_
 #define __HS_OBJECT_H_
 
-#include "utils.h" // for Output and stuff object.h needs
-#include "attribute.h"
+#include "types.h"
 #include "hook.h"
 
 #include <map>
@@ -18,6 +17,9 @@
 #define OBJECT_PATH_SEPARATOR '.'
 #define USER_ATTRIBUTE_PREFIX "my_"
 #define TMP_OBJECT_PATH "tmp"
+
+class Attribute;
+class Action;
 
 enum class HookEvent {
     CHILD_ADDED,

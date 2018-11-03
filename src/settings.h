@@ -8,7 +8,7 @@
 
 #include "x11-types.h"
 #include "globals.h"
-#include "utils.h"
+#include "types.h"
 #include "object.h"
 #include "attribute_.h"
 #include <string>

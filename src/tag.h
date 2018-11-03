@@ -9,7 +9,7 @@
 #include "glib-backports.h"
 #include <stdbool.h>
 #include "x11-types.h"
-#include "utils.h"
+#include "types.h"
 #include <memory>
 #include "object.h"
 #include "attribute_.h"

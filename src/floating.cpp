@@ -11,6 +11,7 @@
 #include "tag.h"
 #include "layout.h"
 #include "settings.h"
+#include "utils.h"
 
 using namespace std;
 
