@@ -25,8 +25,8 @@ public:
     TilingStep& operator[](HSClient* client);
     void add(FrameDecoration* dec, const FrameDecorationData& frame_data);
 
-    HSClient* focus; // the focused client
-    FrameDecoration* focused_frame;
+    HSClient* focus = {}; // the focused client
+    FrameDecoration* focused_frame = {};
 
     // merge all the tiling steps from other into this
     void mergeFrom(TilingResult& other);
