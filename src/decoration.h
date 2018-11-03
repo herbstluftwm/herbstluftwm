@@ -74,8 +74,8 @@ private:
     unsigned int get_client_color(Color color);
 private:
     HSClient*        client; // the client to decorate
-    Window                  decwin; // the decoration winodw
-    const DecorationScheme* last_scheme;
+    Window                  decwin = 0; // the decoration window
+    const DecorationScheme* last_scheme = {};
     bool                    last_rect_inner; // whether last_rect is inner size
     Rectangle   last_inner_rect; // only valid if width >= 0
     Rectangle   last_outer_rect; // only valid if width >= 0
@@ -83,9 +83,9 @@ private:
     /* X specific things */
     Colormap                colormap;
     unsigned int            depth;
-    Pixmap                  pixmap;
-    int                     pixmap_height;
-    int                     pixmap_width;
+    Pixmap                  pixmap = 0;
+    int                     pixmap_height = 0;
+    int                     pixmap_width = 0;
     // fill the area behind client with another window that does nothing,
     // especially not repainting or background filling to avoid flicker on
     // unmap

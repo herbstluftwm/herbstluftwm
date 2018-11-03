@@ -24,7 +24,7 @@ public:
     void moveFocusedClient(HSTag* target);
 private:
     ByName by_name;
-    MonitorManager* monitors;
+    MonitorManager* monitors = {}; // circular dependency
     Settings* settings;
 };
 

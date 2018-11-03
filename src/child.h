@@ -37,7 +37,7 @@ public:
 private:
     Object& owner;
     std::string name;
-    T* pointer;
+    T* pointer = nullptr;
 };
 
 #endif
