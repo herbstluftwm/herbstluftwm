@@ -7,56 +7,57 @@
 class Signal {
 public:
     Signal();
+    virtual ~Signal() {}
+
+    // connect signal to anonymous/top-level method
+    void connect(std::function<void()> slot) {
+        slots_0arg_.push_back(slot);
+    }
+
+    // connect signal to object method
+    template<typename Owner>
+    void connect(Owner* owner, void(Owner::*slot)()) {
+        slots_0arg_.push_back(std::bind(slot, owner));
+    }
+
+    // connect signal to slot
+    void connect(const Signal& slot) {
+        slots_0arg_.push_back(std::bind(&Signal::emit, slot));
+    }
+
+    // emit the signal
+    // instantly calls all receiving slots
+    virtual void emit() const {
+        for (const auto& s : slots_0arg_) s();
+    }
+
+protected:
+    std::vector<std::function<void()>> slots_0arg_;
 };
 
 template<typename T>
 class Signal_ : public Signal {
 public:
-
-    // connect signal to anonymous/top-level method
+    using Signal::connect;
     void connect(std::function<void(T)> slot) {
-        slots_.push_back(slot);
+        slots_1arg_.push_back(slot);
     }
-
-    // connect signal to object method
     template<typename Owner>
     void connect(Owner* owner, void(Owner::*slot)(T)) {
-        slots_.push_back(std::bind(slot, owner, std::placeholders::_1));
+        slots_1arg_.push_back(std::bind(slot, owner, std::placeholders::_1));
     }
-
-    // connect signal to slot
     void connect(const Signal_<T>& slot) {
-        slots_.push_back(std::bind(&Signal_<T>::emit, slot, std::placeholders::_1));
+        slots_1arg_.push_back([&slot](T data){ slot.emit(data); });
     }
-
-    // emit the signal
-    // instantly calls all receiving slots
+    void emit() const override {
+        throw new std::invalid_argument("emit() called without data argument");
+    }
     void emit(const T& data) const {
-        for (const auto& s : slots_) s(data);
+        Signal::emit();
+        for (const auto& s : slots_1arg_) s(data);
     }
 private:
-    std::vector<std::function<void(T)>> slots_;
-};
-
-/* void-specialization for parameter-less signals */
-template<>
-class Signal_<void> : public Signal {
-public:
-    void connect(std::function<void()> slot) {
-        slots_.push_back(slot);
-    }
-    template<typename Owner>
-    void connect(Owner* owner, void(Owner::*slot)()) {
-        slots_.push_back(std::bind(slot, owner));
-    }
-    void connect(const Signal_<void>& slot) {
-        slots_.push_back(std::bind(&Signal_<void>::emit, slot));
-    }
-    void emit() const {
-        for (const auto& s : slots_) s();
-    }
-private:
-    std::vector<std::function<void()>> slots_;
+    std::vector<std::function<void(T)>> slots_1arg_;
 };
 
 #endif

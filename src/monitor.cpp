@@ -50,15 +50,11 @@ void monitor_init() {
 HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, HSTag* tag_)
     : tag(tag_)
     , tag_previous(tag_)
-    , name("name", AT_THIS(onNameChange), "")
-    , index("index", 0)
-    , tag_string("tag", ([this](string s) { return this->setTagString(s); }), AT_THIS(getTagString))
-    , pad_up("pad_up", AT_THIS(onPadChange), 0)
-    , pad_right("pad_right", AT_THIS(onPadChange), 0)
-    , pad_down("pad_down", AT_THIS(onPadChange), 0)
-    , pad_left("pad_left", AT_THIS(onPadChange), 0)
+    , tag_string("tag",
+                 std::bind(&HSMonitor::getTagString, this),
+                 std::bind(&HSMonitor::setTagString, this, std::placeholders::_1))
     , dirty(true)
-    , lock_tag("lock_tag", ACCEPT_ALL, false)
+    , lock_tag("lock_tag", false) // TODO
     , mouse { 0, 0 }
     , rect(rect_)
     , settings(settings_)
@@ -75,6 +71,29 @@ HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rec
         &lock_tag,
     });
 
+    name.setValidator([this] (std::string new_name) {
+        if (isdigit(new_name[0])) {
+            return std::string("The monitor name may not start with a number");
+        }
+        if (new_name == name())
+            return std::string();
+        for (auto m : *monman) {
+            if (m->name() == new_name) {
+                stringstream output;
+                output << "Monitor " << m->index()
+                       << " already has the name \""
+                       << new_name << "\"";
+                return output.str();
+            }
+        }
+        return std::string();
+    });
+
+    for (auto i : {&pad_up, &pad_left, &pad_right, &pad_down}) {
+        i->setWriteable();
+        i->changed().connect(this, &HSMonitor::applyLayout);
+    }
+
     slice = slice_create_monitor(this);
     stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
@@ -84,22 +103,6 @@ HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rec
 
 HSMonitor::~HSMonitor() {
     stack_remove_slice(g_monitor_stack, slice);
-}
-
-std::string HSMonitor::onNameChange() {
-    if (isdigit(name()[0])) {
-        return "The monitor name may not start with a number";
-    }
-    for (auto m : *g_monitors) {
-        if (&* m != this && name() == m->name()) {
-            stringstream output;
-            output << "Monitor " << m->index()
-                   << " already has the name \""
-                   << name() << "\"";
-            return output.str();
-        }
-    }
-    return {};
 }
 
 std::string HSMonitor::getTagString() {
@@ -121,12 +124,6 @@ std::string HSMonitor::setTagString(std::string new_tag_string) {
     }
     return "to be implemented"; // TODO: implement in setTag()
 }
-
-std::string HSMonitor::onPadChange() {
-    applyLayout();
-    return {};
-}
-
 
 void HSMonitor::setIndexAttribute(unsigned long new_index) {
     index = new_index;

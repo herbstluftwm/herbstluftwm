@@ -179,18 +179,20 @@ int RootCommands::sprintf_cmd(Input input, Output output)
 
 Attribute* RootCommands::newAttributeWithType(std::string typestr, std::string attr_name, Output output) {
     std::map<string, function<Attribute*(string)>> name2constructor {
-    { "bool",  [](string n) { return new Attribute_<bool>(n, ACCEPT_ALL, false); }},
-    { "color", [](string n) { return new Attribute_<Color>(n, ACCEPT_ALL, Color("black")); }},
-    { "int",   [](string n) { return new Attribute_<int>(n, ACCEPT_ALL, 0); }},
-    { "string",[](string n) { return new Attribute_<string>(n, ACCEPT_ALL, ""); }},
-    { "uint",  [](string n) { return new Attribute_<unsigned long>(n, ACCEPT_ALL, 0); }},
+    { "bool",  [](string n) { return new Attribute_<bool>(n, false); }},
+    { "color", [](string n) { return new Attribute_<Color>(n, {"black"}); }},
+    { "int",   [](string n) { return new Attribute_<int>(n, 0); }},
+    { "string",[](string n) { return new Attribute_<string>(n, ""); }},
+    { "uint",  [](string n) { return new Attribute_<unsigned long>(n, 0); }},
     };
     auto it = name2constructor.find(typestr);
     if (it == name2constructor.end()) {
         output << "error: unknown type \"" << typestr << "\"";
         return nullptr;
     }
-    return it->second(attr_name);
+    auto attr = it->second(attr_name);
+    attr->setWriteable(true);
+    return attr;
 }
 
 int RootCommands::new_attr_cmd(Input input, Output output)

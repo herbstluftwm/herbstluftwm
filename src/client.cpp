@@ -48,20 +48,7 @@ static HSClient* lastfocus = nullptr;
 HSClient::HSClient(Window window, bool visible_already, ClientManager& cm)
     : window_(window),
       dec(this, cm.settings),
-      float_size_({0, 0, 100, 100}),
-      urgent_("urgent", false),
-      fullscreen_("fullscreen", AT_THIS(triggerRelayoutMonitor), false),
-      title_("title", ""),
-      window_id_str("winid", ""),
-      tag_(NULL),
-      keymask_("keymask", Object::AcceptAll(), ""),
-      ewmhfullscreen_(false),
-      pseudotile_("pseudotile", AT_THIS(triggerRelayoutMonitor), false),
-      neverfocus_(false),
-      ewmhrequests_(true), ewmhnotify_(true),
-      sizehints_floating_(true), sizehints_tiling_(false),
-      visible_(visible_already), dragged_(false),
-      ignore_unmaps_(0),
+      visible_(visible_already),
       manager(cm),
       theme(cm.theme),
       settings(cm.settings)
@@ -77,6 +64,12 @@ HSClient::HSClient(Window window, bool visible_already, ClientManager& cm)
         &keymask_,
         &pseudotile_,
     });
+    keymask_.setWriteable();
+    for (auto i : {&fullscreen_, &pseudotile_}) {
+        i->setWriteable();
+        i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
+    }
+
     init_from_X();
 }
 
@@ -134,11 +127,6 @@ bool HSClient::ignore_unmapnotify() {
     } else {
         return false;
     }
-}
-
-std::string HSClient::triggerRelayoutMonitor() {
-    needsRelayout.emit(this->tag());
-    return {};
 }
 
 void reset_client_colors() {

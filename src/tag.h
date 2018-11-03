@@ -24,14 +24,13 @@ public:
     HSTag(std::string name, Settings* settings);
     ~HSTag();
     std::shared_ptr<HSFrame>        frame;  // the master frame
-    Attribute_<unsigned long> index;
-    Attribute_<bool>         floating;
-    Attribute_<std::string>  name;   // name of this tag
+    Attribute_<unsigned long> index = {"index", 0};
+    Attribute_<bool>         floating = {"floating", false};
+    Attribute_<std::string>  name = {"name", {}};   // name of this tag
     int             flags;
     struct HSStack* stack;
     void setIndexAttribute(unsigned long new_index);
 private:
-    std::string validateNameChange();
     Settings* settings;
 };
 

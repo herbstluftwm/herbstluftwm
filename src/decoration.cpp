@@ -41,20 +41,20 @@ Theme::Theme() {
 
 DecorationScheme::DecorationScheme()
     :
-    border_width("border_width", ACCEPT_ALL, 1),
-    border_color("color", ACCEPT_ALL, Color("black")),
+    border_width("border_width", 1),
+    border_color("color", {"black"}),
     tight_decoration("tight_decoration", false),
-    inner_color("inner_color", ACCEPT_ALL, Color("black")),
-    inner_width("inner_width", ACCEPT_ALL, 0),
-    outer_color("outer_color", ACCEPT_ALL, Color("black")),
-    outer_width("outer_width", ACCEPT_ALL, 0),
-    padding_top("padding_top", ACCEPT_ALL, 0),
-    padding_right("padding_right", ACCEPT_ALL, 0),
-    padding_bottom("padding_bottom", ACCEPT_ALL, 0),
-    padding_left("padding_left", ACCEPT_ALL, 0),
-    background_color("background_color", ACCEPT_ALL, Color("black"))
+    inner_color("inner_color", {"black"}),
+    inner_width("inner_width", 0),
+    outer_color("outer_color", {"black"}),
+    outer_width("outer_width", 0),
+    padding_top("padding_top", 0),
+    padding_right("padding_right", 0),
+    padding_bottom("padding_bottom", 0),
+    padding_left("padding_left", 0),
+    background_color("background_color", {"black"})
 {
-    wireAttributes({
+    std::vector<Attribute*> attrs = {
         &border_width,
         &border_color,
         &tight_decoration,
@@ -67,7 +67,10 @@ DecorationScheme::DecorationScheme()
         &padding_bottom,
         &padding_left,
         &background_color,
-    });
+    };
+    wireAttributes(attrs);
+    for (auto i : attrs)
+        i->setWriteable();
 }
 
 DecTriple::DecTriple()
@@ -87,7 +90,7 @@ void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
         std::string attrib_name = it.first;
         auto this_attribute = it.second;
         // if an attribute of this DecorationScheme is changed, then
-        ValueValidator vv = [decs, attrib_name, this_attribute] () {
+        auto handler = [decs, attrib_name, this_attribute] () {
             // for each decoration to forward the value to
             for (auto dec_it : decs) {
                 auto target_attribute = dec_it->attribute(attrib_name);
@@ -105,7 +108,7 @@ void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
             // if all writes succeeds, then this succeeds as well.
             return std::string("");
         };
-        it.second->setOnChange(vv);
+        //it.second->changed.; TODO
     }
 }
 

@@ -1,11 +1,6 @@
 #include "attribute.h"
 #include "object.h"
 
-
-std::string ACCEPT_ALL() {
-    return "";
-}
-
 /**
  * In the given range of values, find the current value of the attribute and set the
  * attribute to the next value in the range. If the value is not found or last

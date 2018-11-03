@@ -31,8 +31,8 @@ void test_object_system()
 }
 
 TestObject::TestObject()
-    : foo_("foo", ACCEPT_ALL, 42)
-    , bar_("bar", ACCEPT_ALL, true)
+    : foo_("foo", 42)
+    , bar_("bar", true)
       // checker_("checker", Type::ATTRIBUTE_COLOR, false, false),
 {
     wireAttributes({ &foo_, &bar_, });
@@ -55,8 +55,8 @@ void TestObject::do_stuff()
 }
 
 TestObjectII::TestObjectII()
-    : foorious_("foorious", ACCEPT_ALL, 42),
-      bar_("bar", ACCEPT_ALL, true)
+    : foorious_("foorious", 42),
+      bar_("bar", true)
       // checker_("checker", Type::ATTRIBUTE_COLOR, true, false),
 {
     wireAttributes({ &foorious_, &bar_  });

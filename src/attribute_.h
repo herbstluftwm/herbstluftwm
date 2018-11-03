@@ -3,6 +3,7 @@
 
 #include "attribute.h"
 #include "object.h"
+#include "signal.h"
 #include "x11-types.h" // for hl::Color
 #include <functional>
 #include <stdexcept>
@@ -11,43 +12,43 @@
 template<typename T>
 class Attribute_ : public Attribute {
 public:
-    // default constructor
-    //Attribute_(const std::string &name, ValueValidator onChange)
-    //    : Attribute(name, writeable) {}
-    // a read-only attribute
-
-    // Attribute_()
-    //    __attribute__((deprecated("You have to initialize an Attribute explicitly"))) {};
+    // function that validates a new attribute value against the current state
+    // if the attribute value is valid, returns the empty string.
+    // if the attribute value is invalid, returns an error message to be
+    // escalated to the user.
+    using Validator = std::function<std::string(T)>;
 
     Attribute_(const std::string &name, const T &payload)
         : Attribute(name, false)
         , payload_ (payload)
     {
     }
-    Attribute_(const std::string &name, ValueValidator onChange, const T &payload)
-        : Attribute(name, true)
-        , m_onChange(onChange)
-        , payload_ (payload)
-    {
+
+    // set the method called for validation of external changes
+    // this implicitely makes the attribute writeable
+    void setValidator(Validator v) {
+        validator_ = v;
+        writeable_ = true;
     }
 
-    ValueValidator m_onChange;
-    void setOnChange(ValueValidator vv) { m_onChange = vv; }
+    // delegate type(), str() to a static methods in specializations,
+    // so they can also be used by DynAttribute_<T>
+    Type type() override { return Attribute_<T>::staticType(); }
+    std::string str() override { return Attribute_<T>::str(payload_); }
+    static Type staticType();
+    static std::string str(T payload) { return std::to_string(payload); }
 
-    inline Type type();
+    Signal_<T>& changed() override { return changed_; }
 
     // accessors only to be used by owner!
     operator T() { return payload_; }
     operator const T() const { return payload_; }
-    std::string str() { return std::to_string(payload_); }
-    // operator= is only used by the owner
+    // operator= is only used by the owner and us
     void operator=(const T &payload) {
         payload_ = payload;
         notifyHooks();
+        changed_.emit(payload);
     }
-    // this assigns and checks the validity of the data
-    // in case of further constraints.
-    // (i.e. a tag name should not clash with any other tag name)
 
     bool operator==(const T &payload) {
         return payload_ == payload;
@@ -62,27 +63,27 @@ public:
      */
     static T parse(const std::string& source, T const* previous);
 
-    std::string change(const std::string &payload_str) {
-        if (!writeable()) return "attribute is read only";
+    std::string change(const std::string &payload_str) override {
+        if (!writeable()) return "attribute is read-only";
         try {
-            T new_payload = parse(payload_str, &payload_);
-            T old_payload = payload_;
-            payload_ = new_payload;
-            std::string error_message = (m_onChange)();
-            if (error_message == "") {
-                // no error -> keep value
-                notifyHooks();
-                return {};
-            } else {
-                // error -> restore value
-                payload_ = old_payload;
-                return error_message;
+            T new_payload = parse(payload_str, &payload_); // throws
+
+            // validate, if needed
+            if (validator_) {
+                auto error_message = (validator_)(new_payload);
+                if (error_message != "")
+                    return error_message;
             }
+
+            // set and trigger stuff
+            if (new_payload != payload_)
+                this->operator=(new_payload);
         } catch (std::invalid_argument const& e) {
             return std::string("invalid argument: ") + e.what();
         } catch (std::out_of_range const& e) {
             return std::string("out of range: ") + e.what();
         }
+        return {}; // all good
     }
 
     const T& operator*() const {
@@ -102,13 +103,15 @@ protected:
         }
     }
 
+    Validator validator_;
+    Signal_<T> changed_;
     T payload_;
 };
 
 /** Integer **/
 
 template<>
-inline Type Attribute_<int>::type() { return Type::ATTRIBUTE_INT; }
+inline Type Attribute_<int>::staticType() { return Type::ATTRIBUTE_INT; }
 
 template<>
 inline int Attribute_<int>::parse(const std::string &payload, int const*) {
@@ -118,7 +121,7 @@ inline int Attribute_<int>::parse(const std::string &payload, int const*) {
 /** Unsigned **/
 
 template<>
-inline Type Attribute_<unsigned long>::type() { return Type::ATTRIBUTE_ULONG; }
+inline Type Attribute_<unsigned long>::staticType() { return Type::ATTRIBUTE_ULONG; }
 
 template<>
 inline unsigned long Attribute_<unsigned long>::parse(const std::string &payload, unsigned long const*) {
@@ -128,11 +131,11 @@ inline unsigned long Attribute_<unsigned long>::parse(const std::string &payload
 /** Boolean **/
 
 template<>
-inline Type Attribute_<bool>::type() { return Type::ATTRIBUTE_BOOL; }
+inline Type Attribute_<bool>::staticType() { return Type::ATTRIBUTE_BOOL; }
 
 template<>
-inline std::string Attribute_<bool>::str() {
-    return { payload_ ? "true" : "false" };
+inline std::string Attribute_<bool>::str(bool payload) {
+    return { payload ? "true" : "false" };
 }
 
 template<>
@@ -152,10 +155,10 @@ inline bool Attribute_<bool>::parse(const std::string &payload, bool const* prev
 /** STRING **/
 
 template<>
-inline Type Attribute_<std::string>::type() { return Type::ATTRIBUTE_STRING; }
+inline Type Attribute_<std::string>::staticType() { return Type::ATTRIBUTE_STRING; }
 
 template<>
-inline std::string Attribute_<std::string>::str() { return payload_; }
+inline std::string Attribute_<std::string>::str(std::string payload) { return payload; }
 
 template<>
 inline std::string Attribute_<std::string>::parse(const std::string &payload, std::string const*) {
@@ -165,13 +168,13 @@ inline std::string Attribute_<std::string>::parse(const std::string &payload, st
 /** COLOR **/
 
 template<>
-inline Type Attribute_<Color>::type() { return Type::ATTRIBUTE_COLOR; }
+inline Type Attribute_<Color>::staticType() { return Type::ATTRIBUTE_COLOR; }
 
 template<>
-inline std::string Attribute_<Color>::str() { return payload_.str(); }
+inline std::string Attribute_<Color>::str(Color payload) { return payload.str(); }
 
 template<>
-inline Color Attribute_<Color>::parse(const std::string &payload, Color const* ref) {
+inline Color Attribute_<Color>::parse(const std::string &payload, Color const*) {
     Color new_color;
     std::string msg = Color::fromStr(payload, new_color);
     if (msg != "") throw std::invalid_argument(msg);
@@ -179,37 +182,57 @@ inline Color Attribute_<Color>::parse(const std::string &payload, Color const* r
 }
 
 template<typename T>
-class DynAttribute_ : public Attribute_<T> {
+class DynAttribute_ : public Attribute {
 public:
     // each time a dynamic attribute is read, the getter_ is called in order to
     // get the actual value
-    DynAttribute_(const std::string &name, std::function<T()> getter_)
-        : Attribute_<T>(name, {})
-        , setter()
-        , getter(getter_)
+    DynAttribute_(const std::string &name, std::function<T()> getter)
+        : Attribute(name, false)
+        , getter_(getter)
     {
-        Attribute_<T>::hookable_ = false;
+        hookable_ = false;
     }
 
-    DynAttribute_(const std::string &name, std::function<std::string(T)> setter_, std::function<T()> getter_)
-        : Attribute_<T>(name, ([this]() {
-                return this->setter(this->lastPayload());
-            }), {})
-        , setter(setter_)
-        , getter(getter_)
+    // in this case, also write operations are delegated
+    DynAttribute_(const std::string &name, std::function<T()> getter, std::function<std::string(T)> setter)
+        : Attribute(name, true)
+        , getter_(getter)
+        , setter_(setter)
     {
-        Attribute_<T>::hookable_ = false;
+        hookable_ = false;
+        writeable_ = true;
     }
+
+    Type type() { return Attribute_<T>::staticType(); }
+
+    Signal_<T>& changed() override {
+        throw new std::logic_error(
+                    "No change signalling on dynamic attributes.");
+    }
+
+    static T parse(const std::string& source) {
+        return Attribute_<T>::parse(source, {});
+    }
+
     std::string str() {
-        Attribute_<T>::payload_ = getter();
-        return Attribute_<T>::str();
+        return Attribute_<T>::str(getter_());
     }
+
+    std::string change(const std::string &payload_str) {
+        if (!writeable()) return "attribute is read-only";
+        try {
+            T new_payload = parse(payload_str); // throws
+            return setter_(new_payload);
+        } catch (std::invalid_argument const& e) {
+            return std::string("invalid argument: ") + e.what();
+        } catch (std::out_of_range const& e) {
+            return std::string("out of range: ") + e.what();
+        }
+    }
+
 private:
-    T lastPayload() {
-        return Attribute_<T>::payload_;
-    }
-    std::function<std::string(T)> setter;
-    std::function<T()> getter;
+    std::function<T()> getter_;
+    std::function<std::string(T)> setter_;
 };
 
 #endif // ATTRIBUTE__H
