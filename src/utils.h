@@ -20,7 +20,8 @@
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
-#define MOD(X, N) ((((X) % (signed)(N)) + (signed)(N)) % (signed)(N))
+
+int MOD(int x, int n);
 
 #define container_of(ptr, type, member) \
     ((type *)( (char *)(ptr)- offsetof(type,member) ))
