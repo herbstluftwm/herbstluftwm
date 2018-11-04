@@ -84,19 +84,13 @@ void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
                 auto target_attribute = dec_it->attribute(attrib_name);
                 // consider only those having an attribute of the same name
                 if (target_attribute) {
-                    // if writing the attribute fails, abort forwarding.
-                    // usually, all attributes should have the same type, so
-                    // writing should fail for either all or none.
-                    std::string error_msg = target_attribute->change(this_attribute->str());
-                    if (error_msg != "") {
-                        return error_msg;
-                    }
+                    // note: clumsy, but we have no explicit 'get()'/'set()'
+                    target_attribute->change(this_attribute->str());
+                    auto a = 0;
                 }
             }
-            // if all writes succeeds, then this succeeds as well.
-            return std::string("");
         };
-        //it.second->changed.; TODO
+        it.second->changed().connect(handler);
     }
 }
 
