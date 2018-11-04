@@ -41,19 +41,6 @@ Theme::Theme() {
 }
 
 DecorationScheme::DecorationScheme()
-    :
-    border_width("border_width", 1),
-    border_color("color", {"black"}),
-    tight_decoration("tight_decoration", false),
-    inner_color("inner_color", {"black"}),
-    inner_width("inner_width", 0),
-    outer_color("outer_color", {"black"}),
-    outer_width("outer_width", 0),
-    padding_top("padding_top", 0),
-    padding_right("padding_right", 0),
-    padding_bottom("padding_bottom", 0),
-    padding_left("padding_left", 0),
-    background_color("background_color", {"black"})
 {
     std::vector<Attribute*> attrs = {
         &border_width,

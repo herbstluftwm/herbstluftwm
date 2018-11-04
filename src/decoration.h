@@ -26,20 +26,20 @@ class Settings;
 class DecorationScheme : public Object {
 public:
     DecorationScheme();
-    virtual ~DecorationScheme() {};
-    Attribute_<unsigned long>     border_width;
-    Attribute_<Color>   border_color;
-    Attribute_<bool>    tight_decoration; // if set, there is no space between the
+    virtual ~DecorationScheme() {}
+    Attribute_<unsigned long>     border_width = {"border_width", 1};
+    Attribute_<Color>   border_color = {"border_color", {"black"}};
+    Attribute_<bool>    tight_decoration = {"tight_decoration", false}; // if set, there is no space between the
                               // decoration and the window content
-    Attribute_<Color>   inner_color;
-    Attribute_<unsigned long>     inner_width;
-    Attribute_<Color>   outer_color;
-    Attribute_<unsigned long>     outer_width;
-    Attribute_<unsigned long>     padding_top;    // additional window border
-    Attribute_<unsigned long>     padding_right;  // additional window border
-    Attribute_<unsigned long>     padding_bottom; // additional window border
-    Attribute_<unsigned long>     padding_left;   // additional window border
-    Attribute_<Color>   background_color; // color behind client contents
+    Attribute_<Color>   inner_color = {"inner_color", {"black"}};
+    Attribute_<unsigned long>     inner_width = {"inner_width", 0};
+    Attribute_<Color>   outer_color = {"outer_color", {"black"}};
+    Attribute_<unsigned long>     outer_width = {"outer_width", 0};
+    Attribute_<unsigned long>     padding_top = {"padding_top", 0};    // additional window border
+    Attribute_<unsigned long>     padding_right = {"padding_right", 0};  // additional window border
+    Attribute_<unsigned long>     padding_bottom = {"padding_bottom", 0}; // additional window border
+    Attribute_<unsigned long>     padding_left = {"padding_left", 0};   // additional window border
+    Attribute_<Color>   background_color = {"background_color", {"black"}}; // color behind client contents
 
     Rectangle inner_rect_to_outline(Rectangle rect) const;
     Rectangle outline_to_inner_rect(Rectangle rect) const;
