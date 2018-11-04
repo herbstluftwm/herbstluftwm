@@ -118,11 +118,13 @@ public:
         Minimal,
         Count,
     };
-    DecTriple dec[(int)Type::Count];
     const DecTriple& operator[](Type t) const {
         return dec[(int)t];
     };
     Theme();
+
+    // a sub-decoration for each type
+    DecTriple dec[(int)Type::Count];
 };
 
 

@@ -1,4 +1,3 @@
-
 #include "decoration.h"
 #include "client.h"
 #include "globals.h"
@@ -16,6 +15,7 @@
 std::map<Window,HSClient*> Decoration::decwin2client;
 
 Theme::Theme() {
+    // add sub-decorations array as children
     std::vector<std::string> type_names = {
         "fullscreen",
         "tiling",
@@ -25,19 +25,12 @@ Theme::Theme() {
     for (int i = 0; i < (int)Type::Count; i++) {
         addStaticChild(&dec[i], type_names[i]);
     }
-    // forward attribute changes only to tiling and floating
-    active.makeProxyFor({
-        &dec[(int)Type::Tiling].active,
-        &dec[(int)Type::Floating].active,
-    });
-    normal.makeProxyFor({
-        &dec[(int)Type::Tiling].normal,
-        &dec[(int)Type::Floating].normal,
-    });
-    urgent.makeProxyFor({
-        &dec[(int)Type::Tiling].urgent,
-        &dec[(int)Type::Floating].urgent,
-    });
+
+    // forward attribute changes: only to tiling and floating
+    auto &t = dec[(int)Type::Tiling], &f = dec[(int)Type::Floating];
+    active.makeProxyFor({&t.active, &f.active});
+    normal.makeProxyFor({&t.normal, &f.normal});
+    urgent.makeProxyFor({&t.urgent, &f.urgent});
 }
 
 DecorationScheme::DecorationScheme()
@@ -57,8 +50,10 @@ DecorationScheme::DecorationScheme()
         &background_color,
     };
     wireAttributes(attrs);
-    for (auto i : attrs)
+    for (auto i : attrs) {
         i->setWriteable();
+        // TODO: signal decoration change (leading to relayout)
+    }
 }
 
 DecTriple::DecTriple()
