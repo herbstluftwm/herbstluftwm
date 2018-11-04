@@ -247,7 +247,7 @@ void Object::notifyHooks(HookEvent event, const std::string& arg)
     }
 }
 
-void Object::addChild(Object* child, std::string name)
+void Object::addChild(Object* child, const std::string &name)
 {
     children_[name] = child;
     notifyHooks(HookEvent::CHILD_ADDED, name);
@@ -307,7 +307,7 @@ void Object::printTree(Output output, std::string rootLabel) {
     tree_print_to(intface, output);
 }
 
-void Object::addStaticChild(Object* child, std::string name)
+void Object::addStaticChild(Object* child, const std::string &name)
 {
     children_[name] = child;
     notifyHooks(HookEvent::CHILD_ADDED, name);
