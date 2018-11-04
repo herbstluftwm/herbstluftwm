@@ -76,7 +76,7 @@ public:
 protected:
     Object *owner_;
 
-    bool writeable_, hookable_;
+    bool writeable_ = false, hookable_ = true;
 };
 
 class Action : public Entity {
