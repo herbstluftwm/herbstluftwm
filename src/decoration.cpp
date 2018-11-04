@@ -76,17 +76,16 @@ DecTriple::DecTriple()
 void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
     for (auto it : attributes()) {
         std::string attrib_name = it.first;
-        auto this_attribute = it.second;
+        auto source_attribute = it.second;
         // if an attribute of this DecorationScheme is changed, then
-        auto handler = [decs, attrib_name, this_attribute] () {
+        auto handler = [decs, attrib_name, source_attribute] () {
             // for each decoration to forward the value to
             for (auto dec_it : decs) {
                 auto target_attribute = dec_it->attribute(attrib_name);
                 // consider only those having an attribute of the same name
                 if (target_attribute) {
                     // note: clumsy, but we have no explicit 'get()'/'set()'
-                    target_attribute->change(this_attribute->str());
-                    auto a = 0;
+                    target_attribute->change(source_attribute->str());
                 }
             }
         };
