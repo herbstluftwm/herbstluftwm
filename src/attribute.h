@@ -86,7 +86,7 @@ public:
         : Entity(name) {}
     void setOwner(Object *owner) { owner_ = owner; }
 
-    Type type() { return Type::ACTION; }
+    Type type() override { return Type::ACTION; }
 
 private:
     Object *owner_;

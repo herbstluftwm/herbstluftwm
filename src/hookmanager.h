@@ -15,7 +15,7 @@ public:
     void add(const std::string &path);
     void remove(const std::string &path);
 
-    void trigger(const std::string &action, ArgList args);
+    void trigger(const std::string &action, ArgList args) override;
 
 private:
     Action add_;
