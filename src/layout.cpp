@@ -122,6 +122,7 @@ std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
         case '0': new_root = a; break;
         case '1': new_root = b; break;
         case '/': new_root = not_selected; break;
+        case '.':
         default: new_root = selected;
     }
 
