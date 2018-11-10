@@ -1,0 +1,4 @@
+---
+Checks: '-*,modernize-use-override'
+WarningsAsErrors: true
+HeaderFilterRegex: '.*'

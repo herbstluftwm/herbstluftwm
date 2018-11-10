@@ -172,3 +172,13 @@ www:
 
 cleanwww:
 	make -C www clean
+
+
+HLWMCLANGTIDY = $(HLWMSRC:.cpp=.clang-tidy)
+.PHONY: $(HLWMCLANGTIDY)
+
+clang-tidy: $(HLWMCLANGTIDY)
+
+$(HLWMCLANGTIDY): %.clang-tidy: %.cpp
+	$(call colorecho,CLANG-TIDY,$@)
+	$(VERBOSE) clang-tidy $< -- $(CPPFLAGS) $(CXXFLAGS)
