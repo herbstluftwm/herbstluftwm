@@ -217,11 +217,11 @@ public:
         return Attribute_<T>::parse(source, {});
     }
 
-    std::string str() {
+    std::string str() override {
         return Attribute_<T>::str(getter_());
     }
 
-    std::string change(const std::string &payload_str) {
+    std::string change(const std::string &payload_str) override {
         if (!writeable()) return "attribute is read-only";
         try {
             T new_payload = parse(payload_str); // throws
