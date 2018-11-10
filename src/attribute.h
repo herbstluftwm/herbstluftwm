@@ -48,7 +48,7 @@ public:
               bool writeable)
         : Entity(name), owner_(nullptr)
         , writeable_(writeable), hookable_(true) {}
-    virtual ~Attribute() {}
+    ~Attribute() override {}
 
     // set the owner after object creation (when pointer is available)
     void setOwner(Object *owner) { owner_ = owner; }
@@ -57,7 +57,7 @@ public:
     // change if attribute can be expected to trigger hooks (rarely used)
     void setHookable(bool hookable) { hookable_ = hookable; }
 
-    virtual Type type() { return Type::ATTRIBUTE; }
+    Type type() override { return Type::ATTRIBUTE; }
 
     bool writeable() const { return writeable_; }
     bool hookable() const { return hookable_; }

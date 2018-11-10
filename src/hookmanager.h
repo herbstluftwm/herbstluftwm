@@ -10,7 +10,7 @@ public:
     HookManager();
 
     // custom handling (hook names contain '.', they never have children)
-    virtual void ls(Path path, Output out);
+    void ls(Path path, Output out) override;
 
     void add(const std::string &path);
     void remove(const std::string &path);
