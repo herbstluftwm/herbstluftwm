@@ -64,7 +64,7 @@ typedef std::function<void(HSClient*)> ClientAction;
 
 #define FRACTION_UNIT 10000
 
-class HSSlice;
+struct HSSlice;
 class HSTag;
 class HSFrameLeaf;
 class HSFrameSplit;
