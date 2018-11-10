@@ -206,7 +206,7 @@ public:
         writeable_ = true;
     }
 
-    Type type() { return Attribute_<T>::staticType(); }
+    Type type() override { return Attribute_<T>::staticType(); }
 
     Signal_<T>& changed() override {
         throw new std::logic_error(
