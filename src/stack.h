@@ -8,7 +8,6 @@
 
 #include <X11/Xlib.h>
 #include "glib-backports.h"
-#include <stdbool.h>
 #include <array>
 #include <memory>
 #include "x11-types.h"

@@ -10,7 +10,6 @@
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
-#include <stdbool.h>
 #include "x11-types.h"
 
 #include "object.h"

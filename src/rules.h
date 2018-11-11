@@ -9,7 +9,6 @@
 #include "glib-backports.h"
 #include "types.h"
 
-#include <stdbool.h>
 #include <regex.h>
 
 class HSClient;
