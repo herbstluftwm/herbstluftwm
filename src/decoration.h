@@ -102,9 +102,9 @@ public:
     DecorationScheme  active;
     DecorationScheme  urgent;
     // pick the right scheme, depending on whether a window is active/urgent
-    const DecorationScheme& operator()(bool active, bool urgent) const {
-        if (active) return this->active;
-        else if (urgent) return this->urgent;
+    const DecorationScheme& operator()(bool active_, bool urgent_) const {
+        if (active_) return this->active;
+        else if (urgent_) return this->urgent;
         else return normal;
     }
 };
