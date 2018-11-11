@@ -8,7 +8,6 @@
 
 #include <sys/types.h>
 #include "x11-types.h"
-#include <stdbool.h>
 
 enum HSDirection {
     DirRight,

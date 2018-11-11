@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <limits>
-#include <stdbool.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>

@@ -11,7 +11,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include "x11-utils.h"
-#include <stdbool.h>
 #include "x11-types.h"
 #include <map>
 

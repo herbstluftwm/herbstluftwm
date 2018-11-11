@@ -7,7 +7,6 @@
 #define __HERBSTLUFT_COMMAND_H_
 
 #include "glib-backports.h"
-#include <stdbool.h>
 #include "x11-types.h"
 #include "types.h"
 // standard

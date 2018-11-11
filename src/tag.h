@@ -7,7 +7,6 @@
 #define __HERBSTLUFT_TAG_H_
 
 #include "glib-backports.h"
-#include <stdbool.h>
 #include "x11-types.h"
 #include "types.h"
 #include <memory>

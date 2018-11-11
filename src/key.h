@@ -6,7 +6,6 @@
 #ifndef __HERBST_KEY_H_
 #define __HERBST_KEY_H_
 
-#include <stdbool.h>
 #include <X11/Xlib.h>
 #include "glib-backports.h"
 #include "client.h"

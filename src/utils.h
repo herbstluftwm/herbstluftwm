@@ -10,7 +10,6 @@
 #include "x11-types.h"
 
 #include <stddef.h>
-#include <stdbool.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <array>

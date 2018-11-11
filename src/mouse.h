@@ -7,7 +7,6 @@
 #define __HERBSTLUFT_MOUSE_H_
 
 #include <X11/Xlib.h>
-#include <stdbool.h>
 #include "glib-backports.h"
 #include "x11-types.h"
 #include "types.h"
