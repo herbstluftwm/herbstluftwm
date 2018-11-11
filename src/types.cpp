@@ -13,7 +13,7 @@ ArgList::ArgList(const std::string &s, char delim) {
     reset();
 }
 
-ArgList ArgList::operator+(size_t shift_amount) {
+ArgList ArgList::operator+(Container::difference_type shift_amount) {
     ArgList ret(*this);
     ret.shift(shift_amount);
     return ret;
