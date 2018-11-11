@@ -1,6 +1,7 @@
 #ifndef ENTITY
 #define ENTITY
 
+#include <map>
 #include <string>
 
 enum class Type {
@@ -22,6 +23,25 @@ enum class Type {
     CLIENT // TODO: etc. pp.
 };
 
+static const std::map<Type, std::pair<std::string, char>> type_strings = {
+    {Type::VIRTUAL,         {"Virtual Node", 'v'}},
+    {Type::SYMLINK,         {"Symbolic Link",'l'}},
+    {Type::ACTION,          {"Action",       '!'}},
+    {Type::ATTRIBUTE,       {"Generic",      '?'}},
+    {Type::ATTRIBUTE_INT,   {"Integer",      'i'}},
+    {Type::ATTRIBUTE_ULONG, {"Unsigned",     'u'}},
+    {Type::ATTRIBUTE_BOOL,  {"Boolean",      'b'}},
+    {Type::ATTRIBUTE_COLOR, {"Color",        'c'}},
+    {Type::ATTRIBUTE_STRING,{"String",       's'}},
+    {Type::HOOK,            {"Hook",         'h'}},
+    {Type::DIRECTORY,       {"Directory",    'o'}},
+    {Type::OBJECT,          {"Object",       'o'}},
+    {Type::MONITOR,         {"Monitor",      'o'}},
+    {Type::TAG,             {"Tag",          'o'}},
+    {Type::FRAME,           {"Frame",        'o'}},
+    {Type::CLIENT,          {"Client",       'o'}},
+};
+
 bool operator<(Type t1, Type t2);
 
 class Entity {
@@ -33,26 +53,12 @@ public:
     std::string name() const { return name_; }
     virtual Type type() = 0;
     static std::string typestr(Type type) {
-        const char * const str[] = {
-            "Virtual Node", "Symbolic Link", "Action",
-            "Generic", "Integer", "Unsigned", "Boolean",
-            "Color", "String",
-            "Hook", "Directory", "Object",
-            "Monitor", "Tag", "Frame", "Client"
-        };
-        return str[(int)type];
+        return type_strings.at(type).first;
     }
     std::string typestr() { return typestr(type()); }
 
     static char typechar(Type type) {
-        char const chr[] = {
-            'v', 'l', '!',
-            '?', 'i', 'u', 'b',
-            'c', 's',
-            'h', 'o', 'o',
-            'o', 'o', 'o', 'o'
-        };
-        return chr[(int)type];
+        return type_strings.at(type).second;
     }
     char typechar() { return typechar(type()); }
 
