@@ -51,13 +51,9 @@ int MOD(int x, int n) {
     return ((((x) % (signed)(n)) + (signed)(n)) % (signed)(n));
 }
 
-/// print a printf-like message to stderr and exit
-// from dwm.c
-void die(const char *errstr, ...) {
-    va_list ap;
-    va_start(ap, errstr);
-    vfprintf(stderr, errstr, ap);
-    va_end(ap);
+// print a message to stderr and exit
+void die(const char *errstr) {
+    std::cerr << errstr;
     exit(EXIT_FAILURE);
 }
 
