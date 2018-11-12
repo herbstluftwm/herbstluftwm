@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __DECORATION_H_
 #define __DECORATION_H_
 
@@ -11,7 +6,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include "x11-utils.h"
-#include <stdbool.h>
 #include "x11-types.h"
 #include <map>
 

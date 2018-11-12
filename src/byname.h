@@ -11,11 +11,11 @@ public:
     // ByName is an object making each child of 'parent' addressible by its
     // name
     ByName(Object& parent);
-    ~ByName();
+    ~ByName() override;
 
-    void childAdded(Object* parent, std::string child_name);
-    void childRemoved(Object* parent, std::string child_name);
-    void attributeChanged(Object* child, std::string attribute_name);
+    void childAdded(Object* parent, std::string child_name) override;
+    void childRemoved(Object* parent, std::string child_name) override;
+    void attributeChanged(Object* child, std::string attribute_name) override;
 private:
     Object& parent;
     // for each child, remember it's last name

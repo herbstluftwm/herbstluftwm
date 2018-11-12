@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #include "root.h"
 #include "client.h"
 #include "clientmanager.h"
@@ -26,7 +21,6 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <regex.h>
-#include <stdbool.h>
 #include <string.h>
 #include <sstream>
 // gui

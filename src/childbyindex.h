@@ -25,7 +25,7 @@ public:
         addChild(newChild, index);
         newChild->setIndexAttribute(index_int);
     }
-    ~ChildByIndex() {
+    ~ChildByIndex() override {
         clearChildren();
     }
 

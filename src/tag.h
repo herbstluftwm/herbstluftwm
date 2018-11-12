@@ -1,13 +1,7 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HERBSTLUFT_TAG_H_
 #define __HERBSTLUFT_TAG_H_
 
 #include "glib-backports.h"
-#include <stdbool.h>
 #include "x11-types.h"
 #include "types.h"
 #include <memory>
@@ -30,8 +24,6 @@ public:
     int             flags;
     struct HSStack* stack;
     void setIndexAttribute(unsigned long new_index);
-private:
-    Settings* settings;
 };
 
 void tag_init();

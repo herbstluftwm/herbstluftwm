@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HERBST_UTILS_H_
 #define __HERBST_UTILS_H_
 
@@ -10,7 +5,6 @@
 #include "x11-types.h"
 
 #include <stddef.h>
-#include <stdbool.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <array>

@@ -1,15 +1,9 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HS_RULES_H_
 #define __HS_RULES_H_
 
 #include "glib-backports.h"
 #include "types.h"
 
-#include <stdbool.h>
 #include <regex.h>
 
 class HSClient;

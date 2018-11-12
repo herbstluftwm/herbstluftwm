@@ -1,15 +1,9 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HERBSTLUFT_LAYOUT_H_
 #define __HERBSTLUFT_LAYOUT_H_
 
 #include "x11-types.h"
 #include "glib-backports.h"
 #include "types.h"
-#include <stdbool.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
 #include <functional>
@@ -64,7 +58,7 @@ typedef std::function<void(HSClient*)> ClientAction;
 
 #define FRACTION_UNIT 10000
 
-class HSSlice;
+struct HSSlice;
 class HSTag;
 class HSFrameLeaf;
 class HSFrameSplit;
