@@ -10,27 +10,29 @@
 #include <signal.h>
 #include <regex.h>
 #include <assert.h>
+#include <string.h>
+
+#include "../src/ipc-protocol.h"
 
 #include "ipc-client.h"
-#include "../src/globals.h"
-#include "../src/ipc-protocol.h"
 #include "client-utils.h"
+#include "../src/ipc-protocol.h"
 
 #define HERBSTCLIENT_VERSION_STRING \
     "herbstclient " HERBSTLUFT_VERSION " (built on " __DATE__ ")\n"
 
-void print_help(char* command, FILE* file);
-void init_hook_regex(int argc, char* argv[]);
-void destroy_hook_regex();
+static void print_help(char* command, FILE* file);
+static void init_hook_regex(int argc, char* argv[]);
+static void destroy_hook_regex();
 
-int g_ensure_newline = 1; // if set, output ends with a newline
-bool g_null_char_as_delim = false; // if true, the null character is used as delimiter
-bool g_print_last_arg_only = false; // if true, prints only the last argument of a hook
-int g_wait_for_hook = 0; // if set, do not execute command but wait
-bool g_quiet = false;
-regex_t* g_hook_regex = NULL;
-int g_hook_regex_count = 0;
-int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
+static int g_ensure_newline = 1; // if set, output ends with a newline
+static bool g_null_char_as_delim = false; // if true, the null character is used as delimiter
+static bool g_print_last_arg_only = false; // if true, prints only the last argument of a hook
+static int g_wait_for_hook = 0; // if set, do not execute command but wait
+static bool g_quiet = false;
+static regex_t* g_hook_regex = NULL;
+static int g_hook_regex_count = 0;
+static int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
 
 static void quit_herbstclient(int signal) {
     // TODO: better solution to quit x connection more softly?
@@ -47,8 +49,8 @@ void init_hook_regex(int argc, char* argv[]) {
     for (i = 0; i < argc; i++) {
         int status = regcomp(g_hook_regex + i, argv[i], REG_NOSUB|REG_EXTENDED);
         if (status != 0) {
-            char buf[ERROR_STRING_BUF_SIZE];
-            regerror(status, g_hook_regex + i, buf, ERROR_STRING_BUF_SIZE);
+            char buf[1000];
+            regerror(status, g_hook_regex + i, buf, sizeof(buf));
             fprintf(stderr, "Cannot parse regex \"%s\": ", argv[i]);
             fprintf(stderr, "%s\n", buf);
             destroy_hook_regex();
@@ -229,7 +231,7 @@ int main(int argc, char* argv[]) {
         // install signals
         command_status = main_hook(argc-arg_index, argv+arg_index);
     } else {
-        GString* output;
+        char* output;
         bool suc = hc_send_command_once(argc-arg_index, argv+arg_index,
                                         &output, &command_status);
         if (!suc) {
@@ -240,16 +242,17 @@ int main(int argc, char* argv[]) {
         if (command_status != 0) { // any error, output to stderr
             file = stderr;
         }
-        fputs(output->str, file);
+        fputs(output, file);
         if (g_ensure_newline) {
-            if (output->len > 0 && output->str[output->len - 1] != '\n') {
+            size_t output_len = strlen(output);
+            if (output_len > 0 && output[output_len - 1] != '\n') {
                 fputs("\n", file);
             }
         }
         if (command_status == HERBST_NEED_MORE_ARGS) { // needs more arguments
             fprintf(stderr, "%s: not enough arguments\n", argv[arg_index]); // first argument == cmd
         }
-        g_string_free(output, true);
+        free(output);
     }
     return command_status;
 }
