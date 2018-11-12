@@ -796,7 +796,7 @@ int frame_current_bring(int argc, char** argv, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTag* tag = get_current_monitor()->tag;
-    tags->moveClient(client, tag);
+    global_tags->moveClient(client, tag);
     auto frame = tag->frame->frameWithClient(client);
     if (!frame->isFocused()) {
         frame->removeClient(client);

@@ -629,7 +629,7 @@ int monitor_set_tag_by_index_command(int argc, char** argv, Output output) {
     if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
         skip_visible = true;
     }
-    HSTag* tag = tags->byIndexStr(argv[1], skip_visible);
+    HSTag* tag = global_tags->byIndexStr(argv[1], skip_visible);
     if (!tag) {
         output << argv[0] <<
             ": Invalid index \"" << argv[1] << "\"\n";
@@ -961,7 +961,7 @@ int shift_to_monitor(int argc, char** argv, Output output) {
         output << monitor_str << ": Invalid monitor\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    tags->moveFocusedClient(monitor->tag);
+    global_tags->moveFocusedClient(monitor->tag);
     return 0;
 }
 

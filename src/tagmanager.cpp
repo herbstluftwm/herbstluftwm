@@ -14,7 +14,7 @@
 
 using namespace std;
 
-TagManager* tags;
+TagManager* global_tags;
 
 TagManager::TagManager(Settings* settings)
     : ChildByIndex()
@@ -112,20 +112,20 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
         // ensure index is valid
         index = MOD(index, size());
         if (skip_visible_tags) {
-            HSTag* tag = tags->byIdx(index);
+            HSTag* tag = global_tags->byIdx(index);
             for (int i = 0; find_monitor_with_tag(&* tag); i++) {
-                if (i >= tags->size()) {
+                if (i >= global_tags->size()) {
                     // if we tried each tag then there is no invisible tag
                     return nullptr;
                 }
                 index += delta;
-                index = MOD(index, tags->size());
-                tag = tags->byIdx(index);
+                index = MOD(index, global_tags->size());
+                tag = global_tags->byIdx(index);
             }
         }
     } else {
         // if it is absolute, then check index
-        if (index < 0 || index >= tags->size()) {
+        if (index < 0 || index >= global_tags->size()) {
             HSDebug("invalid tag index %d\n", index);
             return nullptr;
         }
@@ -200,7 +200,7 @@ int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
     if (argv.size() >= 3 && argv[2] == "--skip-visible") {
         skip_visible = true;
     }
-    HSTag* tag = tags->byIndexStr(argv[1], skip_visible);
+    HSTag* tag = global_tags->byIndexStr(argv[1], skip_visible);
     if (!tag) {
         output << argv[0] << ": Invalid index \"" << argv[1] << "\"\n";
         return HERBST_INVALID_ARGUMENT;
