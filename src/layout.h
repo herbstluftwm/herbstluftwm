@@ -114,19 +114,19 @@ public:
     virtual ~HSFrameLeaf();
 
     // inherited:
-    void insertClient(HSClient* client);
-    std::shared_ptr<HSFrame> lookup(const char* path);
-    std::shared_ptr<HSFrameLeaf> frameWithClient(HSClient* client);
-    bool removeClient(HSClient* client);
+    void insertClient(HSClient* client) override;
+    std::shared_ptr<HSFrame> lookup(const char* path) override;
+    std::shared_ptr<HSFrameLeaf> frameWithClient(HSClient* client) override;
+    bool removeClient(HSClient* client) override;
     void moveClient(int new_index);
-    void dump(Output output);
+    void dump(Output output) override;
 
-    std::shared_ptr<HSFrameLeaf> getFocusedFrame();
-    TilingResult computeLayout(Rectangle rect);
-    bool focusClient(HSClient* client);
+    std::shared_ptr<HSFrameLeaf> getFocusedFrame() override;
+    TilingResult computeLayout(Rectangle rect) override;
+    bool focusClient(HSClient* client) override;
 
-    void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order);
-    virtual void foreachClient(ClientAction action);
+    void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) override;
+    virtual void foreachClient(ClientAction action) override;
 
 
     // own members
@@ -147,7 +147,7 @@ public:
     std::vector<HSClient*> removeAllClients();
 
     std::shared_ptr<HSFrameLeaf> thisLeaf();
-    std::shared_ptr<HSFrameLeaf> isLeaf() { return thisLeaf(); }
+    std::shared_ptr<HSFrameLeaf> isLeaf() override { return thisLeaf(); }
 
     friend class HSFrame;
     void setVisible(bool visible);
@@ -175,18 +175,18 @@ public:
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b);
     virtual ~HSFrameSplit();
     // inherited:
-    void insertClient(HSClient* client);
-    std::shared_ptr<HSFrame> lookup(const char* path);
-    std::shared_ptr<HSFrameLeaf> frameWithClient(HSClient* client);
-    bool removeClient(HSClient* client);
-    void dump(Output output);
+    void insertClient(HSClient* client) override;
+    std::shared_ptr<HSFrame> lookup(const char* path) override;
+    std::shared_ptr<HSFrameLeaf> frameWithClient(HSClient* client) override;
+    bool removeClient(HSClient* client) override;
+    void dump(Output output) override;
 
-    std::shared_ptr<HSFrameLeaf> getFocusedFrame();
-    TilingResult computeLayout(Rectangle rect);
-    bool focusClient(HSClient* client);
+    std::shared_ptr<HSFrameLeaf> getFocusedFrame() override;
+    TilingResult computeLayout(Rectangle rect) override;
+    bool focusClient(HSClient* client) override;
 
-    void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order);
-    virtual void foreachClient(ClientAction action);
+    void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) override;
+    virtual void foreachClient(ClientAction action) override;
 
     HSClient* focusedClient();
 
