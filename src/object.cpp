@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #include "object.h"
 #include "command.h"
 #include "utils.h"
@@ -287,13 +282,13 @@ public:
             buf.push_back(child);
         }
     };
-    size_t childCount() {
+    size_t childCount() override {
         return buf.size();
     };
-    Ptr(TreeInterface) nthChild(size_t idx) {
+    Ptr(TreeInterface) nthChild(size_t idx) override {
         return make_shared<DirectoryTreeInterface>(buf[idx].first, buf[idx].second);
     };
-    void appendCaption(Output output) {
+    void appendCaption(Output output) override {
         output << lbl;
     };
 private:

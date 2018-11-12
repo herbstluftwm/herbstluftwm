@@ -1,12 +1,6 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HERBSTLUFT_GLOBALS_H_
 #define __HERBSTLUFT_GLOBALS_H_
 
-#include <stdbool.h>
 #include <X11/Xlib.h>
 
 #define HERBSTLUFT_AUTOSTART "herbstluftwm/autostart"

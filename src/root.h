@@ -32,7 +32,7 @@ public:
 
     // constructor creates top-level objects
     Root(Globals g);
-    ~Root();
+    ~Root() override;
 
     Child_<Settings> settings;
     Child_<ClientManager> clients;

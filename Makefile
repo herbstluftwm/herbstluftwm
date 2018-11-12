@@ -29,7 +29,8 @@ $(HCTARGET): $(HCOBJ)
 	$(VERBOSE) $(LD) -o $@ $(CFLAGS) $(LDFLAGS) $^ $(LIBS)
 
 $(HLWMTARGET): $(HLWMOBJ)
-	 $(LDXX) -o $@ $(CXXFLAGS) $(LDXXFLAGS) $^ $(LIBS)
+	$(call colorecho,LDXX,$@)
+	$(VERBOSE) $(LDXX) -o $@ $(CXXFLAGS) $(LDXXFLAGS) $^ $(LIBS)
 
 -include $(DEPS)
 

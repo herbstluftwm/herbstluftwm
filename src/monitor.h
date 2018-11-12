@@ -1,12 +1,6 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HERBSTLUFT_MONITOR_H_
 #define __HERBSTLUFT_MONITOR_H_
 
-#include <stdbool.h>
 #include <X11/Xlib.h>
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>

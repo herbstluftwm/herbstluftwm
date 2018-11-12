@@ -1,12 +1,6 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <ctype.h>
 #include <sstream>
 #ifdef XINERAMA

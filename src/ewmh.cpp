@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #include "ewmh.h"
 #include "utils.h"
 #include "globals.h"
@@ -18,7 +13,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <limits>
-#include <stdbool.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
