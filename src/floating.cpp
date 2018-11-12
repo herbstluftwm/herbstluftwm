@@ -60,7 +60,6 @@ static void rectlist_rotate(RectangleIdxVec& rects, int& idx,
             SWAP(int, r.second.x, r.second.y);
             SWAP(int, r.second.height, r.second.width);
         }
-        return;
     }
 
     if (dir == DirLeft) {
