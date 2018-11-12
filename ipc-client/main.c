@@ -10,11 +10,13 @@
 #include <signal.h>
 #include <regex.h>
 #include <assert.h>
+#include <string.h>
 
 #include "../src/ipc-protocol.h"
 
 #include "ipc-client.h"
 #include "client-utils.h"
+#include "../src/ipc-protocol.h"
 
 #define HERBSTCLIENT_VERSION_STRING \
     "herbstclient " HERBSTLUFT_VERSION " (built on " __DATE__ ")\n"
@@ -229,7 +231,7 @@ int main(int argc, char* argv[]) {
         // install signals
         command_status = main_hook(argc-arg_index, argv+arg_index);
     } else {
-        GString* output;
+        char* output;
         bool suc = hc_send_command_once(argc-arg_index, argv+arg_index,
                                         &output, &command_status);
         if (!suc) {
@@ -240,16 +242,17 @@ int main(int argc, char* argv[]) {
         if (command_status != 0) { // any error, output to stderr
             file = stderr;
         }
-        fputs(output->str, file);
+        fputs(output, file);
         if (g_ensure_newline) {
-            if (output->len > 0 && output->str[output->len - 1] != '\n') {
+            size_t output_len = strlen(output);
+            if (output_len > 0 && output[output_len - 1] != '\n') {
                 fputs("\n", file);
             }
         }
         if (command_status == HERBST_NEED_MORE_ARGS) { // needs more arguments
             fprintf(stderr, "%s: not enough arguments\n", argv[arg_index]); // first argument == cmd
         }
-        g_string_free(output, true);
+        free(output);
     }
     return command_status;
 }

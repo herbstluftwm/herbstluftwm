@@ -4,7 +4,6 @@
  * See LICENSE for details */
 
 #include <X11/Xlib.h>
-#include <glib.h>
 #include <stdbool.h>
 
 #ifndef __HERBSTLUFT_IPC_CLIENT_H_
@@ -19,9 +18,9 @@ void hc_disconnect(HCConnection* con);
 bool hc_create_client_window(HCConnection* con);
 
 bool hc_send_command(HCConnection* con, int argc, char* argv[],
-                     GString** ret_out, int* ret_status);
+                     char** ret_out, int* ret_status);
 bool hc_send_command_once(int argc, char* argv[],
-                          GString** ret_out, int* ret_status);
+                          char** ret_out, int* ret_status);
 
 bool hc_hook_window_connect(HCConnection* con);
 bool hc_next_hook(HCConnection* con, int* argc, char** argv[]);

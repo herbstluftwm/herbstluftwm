@@ -2,13 +2,15 @@
 #include "client-utils.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
+#include <stdarg.h>
 
 // inspired by dwm's gettextprop()
-GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
-    GString* result = NULL;
+char* read_window_property(Display* dpy, Window window, Atom atom) {
+    char* result = NULL;
     char** list = NULL;
     int n = 0;
     XTextProperty prop;
@@ -19,12 +21,12 @@ GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
     // convert text property to a gstring
     if (prop.encoding == XA_STRING
         || prop.encoding == XInternAtom(dpy, "UTF8_STRING", False)) {
-        result = g_string_new((char*)prop.value);
+        result = strdup((char*)prop.value);
     } else {
         if (XmbTextPropertyToTextList(dpy, &prop, &list, &n) >= Success
             && n > 0 && *list)
         {
-            result = g_string_new(*list);
+            result = strdup((char*)*list);
             XFreeStringList(list);
         }
     }
@@ -41,7 +43,7 @@ char** argv_duplicate(int argc, char** argv) {
     }
     int i;
     for (i = 0; i < argc; i++) {
-        new_argv[i] = g_strdup(argv[i]);
+        new_argv[i] = strdup(argv[i]);
     }
     return new_argv;
 }
