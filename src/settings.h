@@ -74,7 +74,7 @@ private:
     static std::function<Color()> getColorAttr(Object* root, std::string name);
     static std::function<string(int)> setIntAttr(Object* root, std::string name);
     static std::function<string(Color)> setColorAttr(Object* root, std::string name);
-    Root* root;
+    Root* root_;
 };
 
 extern Settings* g_settings;

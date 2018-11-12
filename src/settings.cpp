@@ -21,26 +21,26 @@ using namespace std;
 
 Settings* g_settings = nullptr; // the global settings object
 
-Settings::Settings(Root* root_)
+Settings::Settings(Root* root)
     : window_border_width("window_border_width",
-                          getIntAttr(root_, "theme.tiling.active.border_width"),
-                          setIntAttr(root_, "theme.border_width"))
+                          getIntAttr(root, "theme.tiling.active.border_width"),
+                          setIntAttr(root, "theme.border_width"))
     , window_border_inner_width("window_border_inner_width",
-                                getIntAttr(root_, "theme.tiling.active.inner_width"),
-                                setIntAttr(root_, "theme.inner_width"))
+                                getIntAttr(root, "theme.tiling.active.inner_width"),
+                                setIntAttr(root, "theme.inner_width"))
     , window_border_inner_color("window_border_inner_color",
-                                getColorAttr(root_, "theme.tiling.active.inner_color"),
-                                setColorAttr(root_, "theme.inner_color"))
+                                getColorAttr(root, "theme.tiling.active.inner_color"),
+                                setColorAttr(root, "theme.inner_color"))
     , window_border_active_color("window_border_active_color",
-                                 getColorAttr(root_, "theme.tiling.active.color"),
-                                 setColorAttr(root_, "theme.active.color"))
+                                 getColorAttr(root, "theme.tiling.active.color"),
+                                 setColorAttr(root, "theme.active.color"))
     , window_border_normal_color("window_border_normal_color",
-                                 getColorAttr(root_, "theme.tiling.normal.color"),
-                                 setColorAttr(root_, "theme.normal.color"))
+                                 getColorAttr(root, "theme.tiling.normal.color"),
+                                 setColorAttr(root, "theme.normal.color"))
     , window_border_urgent_color("window_border_urgent_color",
-                                 getColorAttr(root_, "theme.tiling.urgent.color"),
-                                 setColorAttr(root_, "theme.urgent.color"))
-    , root(root_)
+                                 getColorAttr(root, "theme.tiling.urgent.color"),
+                                 setColorAttr(root, "theme.urgent.color"))
+    , root_(root)
 {
     wireAttributes({
         &frame_gap,
@@ -135,7 +135,7 @@ Settings::Settings(Root* root_)
 
     // TODO: the lock level is not a setting! should move somewhere else
     monitors_locked = root->globals.initial_monitors_locked;
-    monitors_locked.changed().connect([this](bool) {
+    monitors_locked.changed().connect([root](bool) {
         root->monitors()->lock_number_changed();
     });
     g_settings = this;
