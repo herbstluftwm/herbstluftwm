@@ -35,6 +35,8 @@ int char_to_direction(char ch) {
 // index may change
 static void rectlist_rotate(RectangleIdxVec& rects, int& idx,
                                 enum HSDirection dir) {
+    // Note: For DirRight, there is nothing to do.
+
     if (dir == DirUp) {
         // just flip by the horizontal axis
         for (auto& r : rects) {
