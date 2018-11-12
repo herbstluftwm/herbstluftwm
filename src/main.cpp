@@ -899,10 +899,12 @@ int main(int argc, char* argv[]) {
     XConnection X = XConnection::connect();
     g_display = X.display();
     if (!g_display) {
-        die("herbstluftwm: cannot open display\n");
+        std::cerr << "herbstluftwm: cannot open display" << std::endl;
+        exit(EXIT_FAILURE);
     }
     if (X.checkotherwm()) {
-        die("herbstluftwm: another window manager is already running\n");
+        std::cerr << "herbstluftwm: another window manager is already running" << std::endl;
+        exit(EXIT_FAILURE);
     }
     // remove zombies on SIGCHLD
     sigaction_signal(SIGCHLD, remove_zombies);

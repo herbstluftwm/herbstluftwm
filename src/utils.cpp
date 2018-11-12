@@ -143,9 +143,6 @@ bool window_has_property(Display*, Window window, char* prop_name) {
 char** argv_duplicate(int argc, char** argv) {
     if (argc <= 0) return nullptr;
     char** new_argv = new char*[argc];
-    if (!new_argv) {
-        die("cannot malloc - there is no memory available\n");
-    }
     int i;
     for (i = 0; i < argc; i++) {
         new_argv[i] = g_strdup(argv[i]);
@@ -531,9 +528,6 @@ char* posix_sh_escape(const char* source) {
     if (count == 0) return nullptr;
     // TODO migrate to new
     char* target = (char*)malloc(sizeof(char) * (count + source_len + 1));
-    if (!target) {
-        die("cannot malloc - there is no memory available\n");
-    }
 
     // do the actual escaping
     // special chars:
