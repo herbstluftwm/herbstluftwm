@@ -9,7 +9,6 @@
 char* read_window_property(Display* dpy, Window window, Atom atom);
 char** argv_duplicate(int argc, char** argv);
 void argv_free(int argc, char** argv);
-void die(const char *errstr, ...);
 
 
 #endif

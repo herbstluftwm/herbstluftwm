@@ -39,7 +39,8 @@ char** argv_duplicate(int argc, char** argv) {
     if (argc <= 0) return NULL;
     char** new_argv = malloc(sizeof(char*) * argc);
     if (!new_argv) {
-        die("cannot malloc - there is no memory available\n");
+        fprintf(stderr, "cannot malloc - there is no memory available\n");
+        exit(EXIT_FAILURE);
     }
     int i;
     for (i = 0; i < argc; i++) {
@@ -56,12 +57,4 @@ void argv_free(int argc, char** argv) {
         free(argv[i]);
     }
     free(argv);
-}
-
-void die(const char *errstr, ...) {
-    va_list ap;
-    va_start(ap, errstr);
-    vfprintf(stderr, errstr, ap);
-    va_end(ap);
-    exit(EXIT_FAILURE);
 }
