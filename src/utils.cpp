@@ -51,12 +51,6 @@ int MOD(int x, int n) {
     return ((((x) % (signed)(n)) + (signed)(n)) % (signed)(n));
 }
 
-// print a message to stderr and exit
-void die(const char *errstr) {
-    std::cerr << errstr;
-    exit(EXIT_FAILURE);
-}
-
 // inspired by dwm's gettextprop()
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
     GString* result = nullptr;

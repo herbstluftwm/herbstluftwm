@@ -35,9 +35,6 @@ int MOD(int x, int n);
             (b) = TMPNAME; \
         } while(0);
 
-// print a message to stderr and exit
-void die(const char *errstr);
-
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom);
