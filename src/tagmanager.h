@@ -24,9 +24,9 @@ public:
     void moveClient(HSClient* client, HSTag* target);
     void moveFocusedClient(HSTag* target);
 private:
-    ByName by_name;
-    MonitorManager* monitors = {}; // circular dependency
-    Settings* settings;
+    ByName by_name_;
+    MonitorManager* monitors_ = {}; // circular dependency
+    Settings* settings_;
 };
 
 extern TagManager* global_tags; // temporary, set in Root constr.
