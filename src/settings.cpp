@@ -121,8 +121,8 @@ Settings::Settings(Root* root)
         }
         return std::string();
     });
-    tree_style.setValidator([] (std::string tree_style) {
-        if (utf8_string_length(tree_style) < 8) {
+    tree_style.setValidator([] (std::string new_value) {
+        if (utf8_string_length(new_value) < 8) {
             return std::string("tree_style needs 8 characters");
         }
         return std::string();
