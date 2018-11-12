@@ -21,18 +21,18 @@
 #define HERBSTCLIENT_VERSION_STRING \
     "herbstclient " HERBSTLUFT_VERSION " (built on " __DATE__ ")\n"
 
-void print_help(char* command, FILE* file);
-void init_hook_regex(int argc, char* argv[]);
-void destroy_hook_regex();
+static void print_help(char* command, FILE* file);
+static void init_hook_regex(int argc, char* argv[]);
+static void destroy_hook_regex();
 
-int g_ensure_newline = 1; // if set, output ends with a newline
-bool g_null_char_as_delim = false; // if true, the null character is used as delimiter
-bool g_print_last_arg_only = false; // if true, prints only the last argument of a hook
-int g_wait_for_hook = 0; // if set, do not execute command but wait
-bool g_quiet = false;
-regex_t* g_hook_regex = NULL;
-int g_hook_regex_count = 0;
-int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
+static int g_ensure_newline = 1; // if set, output ends with a newline
+static bool g_null_char_as_delim = false; // if true, the null character is used as delimiter
+static bool g_print_last_arg_only = false; // if true, prints only the last argument of a hook
+static int g_wait_for_hook = 0; // if set, do not execute command but wait
+static bool g_quiet = false;
+static regex_t* g_hook_regex = NULL;
+static int g_hook_regex_count = 0;
+static int g_hook_count = 1; // count of hooks to wait for, 0 means: forever
 
 static void quit_herbstclient(int signal) {
     // TODO: better solution to quit x connection more softly?
