@@ -12,8 +12,11 @@ script:
     - make -j2
     - sudo make PREFIX=/usr install
     - herbstluftwm &
+    - hlwmpid=$!
     - sleep 1
     - herbstclient version
+    - herbstclient quit
+    - wait $hlwmpid
 
 jobs:
     include:
