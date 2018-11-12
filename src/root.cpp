@@ -41,7 +41,7 @@ Root::Root(Globals g)
     root_commands = new RootCommands(this);
 
     // set temporary globals
-    ::tags = tags();
+    ::tags_global = tags();
     ::g_monitors = monitors();
 
 

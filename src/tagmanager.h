@@ -29,6 +29,6 @@ private:
     Settings* settings;
 };
 
-extern TagManager* tags; // temporary, set in Root constr.
+extern TagManager* tags_global; // temporary, set in Root constr.
 
 #endif
