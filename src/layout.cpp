@@ -100,23 +100,28 @@ std::shared_ptr<HSFrame> HSFrameLeaf::lookup(const char*) {
 }
 
 std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
-    if (!index || index[0] == '\0') return shared_from_this();
-    std::shared_ptr<HSFrame> new_root;
-    const char *new_index = index + 1;
+    if (!index || index[0] == '\0') {
+        return shared_from_this();
+    }
 
+    auto selected = (selection == 0) ? a : b;
+    auto not_selected = (selection == 0) ? b : a;
+
+    if (index[0] == '@') {
+        // Special case: always follow selection
+        return selected->lookup("@");
+    }
+
+    std::shared_ptr<HSFrame> new_root;
     switch (index[0]) {
         case '0': new_root = a; break;
         case '1': new_root = b; break;
-        /* opposite selection */
-        case '/': new_root = (selection == 0) ?  b :  a;
-                  break;
-        /* else just follow selection */
-        case '@': new_index = index;
-        case '.':
-        default:  new_root = (selection == 0) ?  a : b;
-                  break;
+        case '/': new_root = not_selected; break;
+        case '.': /* fallthru */
+        default: new_root = selected;
     }
-    return new_root->lookup(new_index);
+
+    return new_root->lookup(index + 1);
 }
 
 std::shared_ptr<HSFrameLeaf> HSFrameSplit::frameWithClient(HSClient* client) {
