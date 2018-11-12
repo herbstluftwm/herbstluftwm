@@ -54,11 +54,6 @@ public:
     void removeAttribute(Attribute* a);
     std::map<std::string, Attribute*> attributes() { return attribs_; }
 
-    std::string acceptAllValueValidator() { return {}; };
-    static std::function<std::string()> AcceptAll() {
-        return []() { return ""; };
-    };
-
     // if a concrete object maintains its index within the parent as an
     // attribute (e.g. monitors and tags do), then they should implement the
     // following, such that the parent can tell the child its index.
