@@ -44,7 +44,7 @@ HSTag::HSTag(std::string name_, Settings* settings)
     });
     floating.setWriteable();
     name.setValidator([this] (std::string new_name) {
-        for (auto t : *tags_global) {
+        for (auto t : *global_tags) {
             if (t != this && t->name == new_name) {
                 return std::string("Tag \"") + new_name + "\" already exists ";
             }
@@ -64,11 +64,11 @@ void HSTag::setIndexAttribute(unsigned long new_index) {
 }
 
 int    tag_get_count() {
-    return tags_global->size();
+    return global_tags->size();
 }
 
 HSTag* find_tag(const char* name) {
-    for (auto t : *tags_global) {
+    for (auto t : *global_tags) {
         if (t->name == name) {
             return &* t;
         }
@@ -77,11 +77,11 @@ HSTag* find_tag(const char* name) {
 }
 
 HSTag* get_tag_by_index(int index) {
-    return &* tags_global->byIdx(index);
+    return &* global_tags->byIdx(index);
 }
 
 HSTag* find_unused_tag() {
-    for (auto t : *tags_global) {
+    for (auto t : *global_tags) {
         if (!find_monitor_with_tag(&* t)) {
             return &* t;
         }
@@ -136,7 +136,7 @@ int tag_remove_command(int argc, char** argv, Output output) {
     }
     // remove tag
     string oldname = tag->name;
-    tags_global->removeIndexed(tags_global->index_of(tag));
+    global_tags->removeIndexed(global_tags->index_of(tag));
     ewmh_update_current_desktop();
     ewmh_update_desktops();
     ewmh_update_desktop_names();
@@ -181,7 +181,7 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
 void tag_force_update_flags() {
     g_tag_flags_dirty = false;
     // unset all tags
-    for (auto t : *tags_global) {
+    for (auto t : *global_tags) {
         t->flags = 0;
     }
     // update flags
@@ -206,7 +206,7 @@ void tag_set_flags_dirty() {
 }
 
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
-    for (auto t : *tags_global) {
+    for (auto t : *global_tags) {
         if (&* t->frame == frame) {
             return &* t;
         }
@@ -233,7 +233,7 @@ void tag_update_focus_layer(HSTag* tag) {
 }
 
 void tag_foreach(void (*action)(HSTag*,void*), void* data) {
-    for (auto tag : *tags_global) {
+    for (auto tag : *global_tags) {
         action(&* tag, data);
     }
 }
