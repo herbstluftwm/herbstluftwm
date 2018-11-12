@@ -35,7 +35,7 @@ Settings::Settings(Root* root)
     , window_border_urgent_color("window_border_urgent_color",
                                  getColorAttr(root, "theme.tiling.urgent.color"),
                                  setColorAttr(root, "theme.urgent.color"))
-    , root(root)
+    , root_(root)
 {
     wireAttributes({
         &frame_gap,
