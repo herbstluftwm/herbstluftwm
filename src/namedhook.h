@@ -1,4 +1,3 @@
-
 #ifndef __HLWM_NAMED_HOOK_H_
 #define __HLWM_NAMED_HOOK_H_
 

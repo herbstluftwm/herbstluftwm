@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HERBSTLUFT_MOUSE_H_
 #define __HERBSTLUFT_MOUSE_H_
 

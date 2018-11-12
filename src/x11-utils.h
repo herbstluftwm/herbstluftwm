@@ -1,4 +1,3 @@
-
 #ifndef __HERBST_X11_UTILS_H_
 #define __HERBST_X11_UTILS_H_
 

@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HERBST_IPC_PROTOCOL_H_
 #define __HERBST_IPC_PROTOCOL_H_
 
