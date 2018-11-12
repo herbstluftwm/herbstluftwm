@@ -11,9 +11,9 @@
 #include <regex.h>
 #include <assert.h>
 
-#include "ipc-client.h"
-#include "../src/globals.h"
 #include "../src/ipc-protocol.h"
+
+#include "ipc-client.h"
 #include "client-utils.h"
 
 #define HERBSTCLIENT_VERSION_STRING \
@@ -47,8 +47,8 @@ void init_hook_regex(int argc, char* argv[]) {
     for (i = 0; i < argc; i++) {
         int status = regcomp(g_hook_regex + i, argv[i], REG_NOSUB|REG_EXTENDED);
         if (status != 0) {
-            char buf[ERROR_STRING_BUF_SIZE];
-            regerror(status, g_hook_regex + i, buf, ERROR_STRING_BUF_SIZE);
+            char buf[1000];
+            regerror(status, g_hook_regex + i, buf, sizeof(buf));
             fprintf(stderr, "Cannot parse regex \"%s\": ", argv[i]);
             fprintf(stderr, "%s\n", buf);
             destroy_hook_regex();
