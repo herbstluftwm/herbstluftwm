@@ -11,10 +11,9 @@ class Root;
 
 class Tmp : public Object {
 public:
-    Tmp(Root* root);
+    Tmp();
     int mktemp(Input input, Output output);
 private:
-    Root* root;
     unsigned long number_active;
     unsigned long number_total;
 };
