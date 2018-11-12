@@ -24,7 +24,8 @@ XConnection XConnection::connect(std::string display_name) {
     char* display_str = (display_name != "") ? (char*)display_name.c_str() : nullptr;
     Display* d = XOpenDisplay(display_str);
     if (d == NULL) {
-        die("herbstluftwm: XOpenDisplay() failed\n");
+        std::cerr << "herbstluftwm: XOpenDisplay() failed" << std::endl;
+        exit(EXIT_FAILURE);
     }
     return XConnection(d);
 }
