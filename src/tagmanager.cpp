@@ -18,13 +18,13 @@ TagManager* tags;
 
 TagManager::TagManager(Settings* settings)
     : ChildByIndex()
-    , by_name(*this)
-    , settings(settings)
+    , by_name_(*this)
+    , settings_(settings)
 {
 }
 
 void TagManager::setMonitorManager(MonitorManager* m_) {
-    monitors = m_;
+    monitors_ = m_;
 }
 
 HSTag* TagManager::find(const std::string& name) {
@@ -42,7 +42,7 @@ HSTag* TagManager::add_tag(const std::string& name) {
         // nothing to do
         return find_result;
     }
-    HSTag* tag = new HSTag(name, settings);
+    HSTag* tag = new HSTag(name, settings_);
     addIndexed(tag);
 
     ewmh_update_desktops();
@@ -134,7 +134,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
 }
 
 void TagManager::moveFocusedClient(HSTag* target) {
-    HSClient* client = monitors->focus()->tag->frame->focusedClient();
+    HSClient* client = monitors_->focus()->tag->frame->focusedClient();
     if (!client) {
         return;
     }
