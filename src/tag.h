@@ -29,8 +29,6 @@ public:
     int             flags;
     struct HSStack* stack;
     void setIndexAttribute(unsigned long new_index);
-private:
-    Settings* settings;
 };
 
 void tag_init();
