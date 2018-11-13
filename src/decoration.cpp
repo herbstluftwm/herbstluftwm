@@ -227,8 +227,6 @@ Rectangle Decoration::inner_to_outer(Rectangle rect) {
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme)
 {
     auto inner = scheme.outline_to_inner_rect(outline);
-    // get relative coordinates
-    Window decwin = client->dec.decwin;
     Window win = client->window_;
 
     auto tile = inner;
@@ -347,7 +345,6 @@ unsigned int Decoration::get_client_color(Color color) {
 void Decoration::redrawPixmap() {
     const DecorationScheme& s = *last_scheme;
     auto dec = this;
-    Window win = client->dec.decwin;
     auto outer = client->dec.last_outer_rect;
     unsigned int depth = client->dec.depth;
     // TODO: maybe do something like pixmap recreate threshhold?
@@ -357,7 +354,7 @@ void Decoration::redrawPixmap() {
         if (dec->pixmap) {
             XFreePixmap(g_display, dec->pixmap);
         }
-        dec->pixmap = XCreatePixmap(g_display, win, outer.width, outer.height, depth);
+        dec->pixmap = XCreatePixmap(g_display, decwin, outer.width, outer.height, depth);
     }
     Pixmap pix = dec->pixmap;
     GC gc = XCreateGC(g_display, pix, 0, nullptr);
