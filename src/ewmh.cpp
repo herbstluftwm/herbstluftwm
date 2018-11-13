@@ -306,20 +306,20 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
         HSDebug("received unknown client message\n");
         return;
     }
-    HSClient* client;
 
     int desktop_index;
     switch (index) {
-        case NetActiveWindow:
+        case NetActiveWindow: {
             // only steal focus it allowed to the current source
             // (i.e.  me->data.l[0] in this case as specified by EWMH)
             if (focus_stealing_allowed(me->data.l[0])) {
-                HSClient* client = get_client_from_window(me->window);
+                auto client = get_client_from_window(me->window);
                 if (client) {
                     focus_client(client, true, true);
                 }
             }
             break;
+        }
 
         case NetCurrentDesktop: {
             desktop_index = me->data.l[0];
@@ -339,7 +339,7 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
                 break;
             }
             HSTag* target = get_tag_by_index(desktop_index);
-            client = get_client_from_window(me->window);
+            auto client = get_client_from_window(me->window);
             if (client && target) {
                 global_tags->moveClient(client, target);
             }
@@ -347,7 +347,7 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
         }
 
         case NetWmState: {
-            client = get_client_from_window(me->window);
+            auto client = get_client_from_window(me->window);
             /* ignore requests for unmanaged windows */
             if (!client || !client->ewmhrequests_) break;
 
@@ -397,7 +397,7 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
         }
 
         case NetWmMoveresize: {
-            client = get_client_from_window(me->window);
+            auto client = get_client_from_window(me->window);
             if (!client) {
                 break;
             }
