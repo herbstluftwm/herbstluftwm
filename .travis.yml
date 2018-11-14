@@ -23,7 +23,10 @@ jobs:
     include:
         - name: "Ubuntu 16.04, gcc-8, run tests"
           dist: xenial
-          before_install: CC=gcc-8 CXX=g++-8
+          before_install:
+              - CC=gcc-8 CXX=g++-8
+              # This is new in gcc-8 and not easily fixed:
+              - export CXXFLAGS="-Wno-error=cast-function-type"
           addons:
               apt:
                   sources:
