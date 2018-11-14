@@ -1225,9 +1225,9 @@ int frame_focus_command(int argc, char** argv, Output output) {
     int index;
     bool neighbour_found = true;
     if (frame->getTag()->floating) {
-        auto dir = char_to_direction(direction);
-        if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        neighbour_found = floating_focus_direction((enum HSDirection)dir);
+        Direction dir(direction);
+        if (!dir.valid) return HERBST_INVALID_ARGUMENT;
+        neighbour_found = floating_focus_direction(dir);
     } else if (!external_only &&
         (index = frame_inner_neighbour_index(frame, direction)) != -1) {
         frame->setSelection(index);
@@ -1252,10 +1252,9 @@ int frame_focus_command(int argc, char** argv, Output output) {
     }
     if (!neighbour_found && g_settings->focus_crosses_monitor_boundaries()) {
         // find monitor in the specified direction
-        int dir = char_to_direction(direction);
-        if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        int idx = g_monitors->indexInDirection(get_current_monitor(),
-                                               (enum HSDirection)dir);
+        Direction dir(direction);
+        if (!dir.valid) return HERBST_INVALID_ARGUMENT;
+        int idx = g_monitors->indexInDirection(get_current_monitor(), dir);
         if (idx < 0) {
             output << argv[0] << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
@@ -1287,9 +1286,9 @@ int frame_move_window_command(int argc, char** argv, Output output) {
     HSClient* currentClient = get_current_client();
     if (currentClient && currentClient->is_client_floated()) {
         // try to move the floating window
-        auto dir = char_to_direction(direction);
-        if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        bool success = floating_shift_direction((enum HSDirection)dir);
+        Direction dir(direction);
+        if (!dir.valid) return HERBST_INVALID_ARGUMENT;
+        bool success = floating_shift_direction(dir);
         return success ? 0 : HERBST_FORBIDDEN;
     }
     int index;

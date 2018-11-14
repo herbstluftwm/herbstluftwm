@@ -31,7 +31,7 @@ public:
     // relayout the monitor showing this tag, if there is any
     void relayoutTag(HSTag* tag);
 
-    int indexInDirection(HSMonitor* m, enum HSDirection dir);
+    int indexInDirection(HSMonitor* m, Direction dir);
 
     void lock();
     void unlock();

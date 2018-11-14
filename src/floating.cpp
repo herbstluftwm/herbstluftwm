@@ -14,30 +14,35 @@
 
 using namespace std;
 
+Direction::Direction(char ch)
+{
+    std::map<char, V> mapping = {
+        {'u', Up}, {'r', Right}, {'d', Down}, {'l', Left},
+    };
+    auto it = mapping.find(ch);
+    if (it != mapping.end()) {
+        value = it->second;
+        valid = true;
+    }
+}
+
+bool operator==(const Direction &lhs, const Direction::V &rhs) {
+    return lhs.valid && lhs.value == rhs;
+}
+
 void floating_init() {
 }
 
 void floating_destroy() {
 }
 
-int char_to_direction(char ch) {
-    switch (ch) {
-        case 'u': return DirUp;
-        case 'r': return DirRight;
-        case 'l': return DirLeft;
-        case 'd': return DirDown;
-        default:  return -1;
-    }
-}
-
 // rectlist_rotate rotates the list of given rectangles, s.t. the direction dir
 // becomes the direction "right". idx is some distinguished element, whose
 // index may change
-static void rectlist_rotate(RectangleIdxVec& rects, int& idx,
-                                enum HSDirection dir) {
+static void rectlist_rotate(RectangleIdxVec& rects, int& idx, Direction dir) {
     // Note: For DirRight, there is nothing to do.
 
-    if (dir == DirUp) {
+    if (dir == Direction::Up) {
         // just flip by the horizontal axis
         for (auto& r : rects) {
             r.second.y = - r.second.y - r.second.height;
@@ -49,7 +54,7 @@ static void rectlist_rotate(RectangleIdxVec& rects, int& idx,
         // and then direction up now has become direction down
     }
 
-    if (dir == DirUp || dir == DirDown) {
+    if (dir == Direction::Up || dir == Direction::Down) {
         // flip by the diagonal
         //
         //   *-------------> x     *-------------> x
@@ -64,7 +69,7 @@ static void rectlist_rotate(RectangleIdxVec& rects, int& idx,
         }
     }
 
-    if (dir == DirLeft) {
+    if (dir == Direction::Left) {
         // flip by the vertical axis
         for (auto& r : rects) {
             r.second.x = - r.second.x - r.second.width;
@@ -77,8 +82,7 @@ static void rectlist_rotate(RectangleIdxVec& rects, int& idx,
 }
 
 // returns the found index in the original buffer
-int find_rectangle_in_direction(RectangleIdxVec& rects, int idx,
-                                enum HSDirection dir) {
+int find_rectangle_in_direction(RectangleIdxVec& rects, int idx, Direction dir) {
     rectlist_rotate(rects, idx, dir);
     return find_rectangle_right_of(rects, idx);
 }
@@ -159,7 +163,7 @@ int find_rectangle_right_of(RectangleIdxVec rects, int idx) {
 }
 
 // returns the found index in the modified buffer
-int find_edge_in_direction(RectangleIdxVec& rects, int idx, enum HSDirection dir)
+int find_edge_in_direction(RectangleIdxVec& rects, int idx, Direction dir)
 {
     rectlist_rotate(rects, idx, dir);
     int found = find_edge_right_of(rects, idx);
@@ -206,7 +210,7 @@ int find_edge_right_of(RectangleIdxVec rects, int idx) {
 }
 
 
-bool floating_focus_direction(enum HSDirection dir) {
+bool floating_focus_direction(Direction dir) {
     if (g_settings->monitors_locked()) { return false; }
     HSTag* tag = get_current_monitor()->tag;
     vector<HSClient*> clients;
@@ -232,7 +236,7 @@ bool floating_focus_direction(enum HSDirection dir) {
     return true;
 }
 
-bool floating_shift_direction(enum HSDirection dir) {
+bool floating_shift_direction(Direction dir) {
     if (g_settings->monitors_locked()) { return false; }
     HSTag* tag = get_current_monitor()->tag;
     vector<HSClient*> clients;
@@ -279,12 +283,12 @@ bool floating_shift_direction(enum HSDirection dir) {
     auto r = rects[idx].second;
     //printf("edge: %dx%d at %d,%d\n", r.width, r.height, r.x, r.y);
     //printf("focus: %dx%d at %d,%d\n", focusrect.width, focusrect.height, focusrect.x, focusrect.y);
-    switch (dir) {
+    switch (dir.value) {
         //          delta = new edge  -  old edge
-        case DirRight: dx = r.x  -   (focusrect.x + focusrect.width); break;
-        case DirLeft:  dx = r.x + r.width   -   focusrect.x; break;
-        case DirDown:  dy = r.y  -  (focusrect.y + focusrect.height); break;
-        case DirUp:    dy = r.y + r.height  -  focusrect.y; break;
+        case Direction::Right: dx = r.x  -   (focusrect.x + focusrect.width); break;
+        case Direction::Left:  dx = r.x + r.width   -   focusrect.x; break;
+        case Direction::Down:  dy = r.y  -  (focusrect.y + focusrect.height); break;
+        case Direction::Up:    dy = r.y + r.height  -  focusrect.y; break;
     }
     //printf("dx=%d, dy=%d\n", dx, dy);
     curfocus->float_size_.x += dx;
