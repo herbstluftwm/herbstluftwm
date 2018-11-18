@@ -1526,7 +1526,7 @@ int frame_focus_edge(int argc, char** argv, Output output) {
     // Puts the focus to the edge in the specified direction
     g_monitors->lock();
     int oldval = g_settings->focus_crosses_monitor_boundaries();
-    g_settings->focus_crosses_monitor_boundaries = 0;
+    g_settings->focus_crosses_monitor_boundaries = false;
     while (0 == frame_focus_command(argc,argv,output))
         ;
     g_settings->focus_crosses_monitor_boundaries = oldval;
@@ -1538,7 +1538,7 @@ int frame_move_window_edge(int argc, char** argv, Output output) {
     // Moves a window to the edge in the specified direction
     g_monitors->lock();
     int oldval = g_settings->focus_crosses_monitor_boundaries();
-    g_settings->focus_crosses_monitor_boundaries = 0;
+    g_settings->focus_crosses_monitor_boundaries = false;
     while (0 == frame_move_window_command(argc,argv,output))
         ;
     g_settings->focus_crosses_monitor_boundaries = oldval;
