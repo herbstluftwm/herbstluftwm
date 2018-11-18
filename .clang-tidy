@@ -1,4 +1,6 @@
 ---
-Checks: '-*,modernize-use-override'
+# First enable all, then disable the unsuitable ones:
+Checks: '*,-android-*,-objc-*,-mpi-*,-performance-*,-llvm-include-order'
+
 WarningsAsErrors: true
 HeaderFilterRegex: '.*'
