@@ -623,7 +623,7 @@ TilingResult HSFrameLeaf::layoutMax(Rectangle rect) {
 }
 
 void frame_layout_grid_get_size(size_t count, int* res_rows, int* res_cols) {
-    int cols = 0;
+    unsigned cols = 0;
     while (cols * cols < count) {
         cols++;
     }
@@ -999,11 +999,11 @@ int frame_split_command(int argc, char** argv, Output output) {
         { "explode",    ALIGN_EXPLODE,      true,   0   },
         { "auto",       align_auto,         true,   0   },
     };
-    for (int i = 0; i < LENGTH(splitModes); i++) {
-        if (splitModes[i].name[0] == argv[1][0]) {
-            align           = splitModes[i].align;
-            frameToFirst    = splitModes[i].frameToFirst;
-            selection       = splitModes[i].selection;
+    for (auto &m : splitModes) {
+        if (m.name[0] == argv[1][0]) {
+            align           = m.align;
+            frameToFirst    = m.frameToFirst;
+            selection       = m.selection;
             break;
         }
     }
@@ -1357,7 +1357,7 @@ bool HSFrameSplit::focusClient(HSClient* client) {
 }
 
 bool HSFrameLeaf::focusClient(HSClient* client) {
-    for (int i = 0; i < clients.size(); i++) {
+    for (unsigned i = 0; i < clients.size(); i++) {
         if (clients[i] == client) {
             selection = i;
             return true;

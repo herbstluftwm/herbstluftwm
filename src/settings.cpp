@@ -37,6 +37,8 @@ Settings::Settings(Root* root)
                                  setColorAttr(root, "theme.urgent.color"))
     , root_(root)
 {
+    (void) root_; /* Suppress warning for (yet) unused root pointer */
+
     wireAttributes({
         &frame_gap,
         &frame_padding,
