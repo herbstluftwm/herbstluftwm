@@ -88,14 +88,14 @@ public:
     virtual void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) = 0;
     virtual void foreachClient(ClientAction action) = 0;
 
-    std::shared_ptr<HSFrameSplit> getParent() { return parent.lock(); };
+    std::shared_ptr<HSFrameSplit> getParent() { return parent_.lock(); };
     std::shared_ptr<HSFrame> root();
     virtual std::shared_ptr<HSFrameSplit> isSplit() { return std::shared_ptr<HSFrameSplit>(); };
     virtual std::shared_ptr<HSFrameLeaf> isLeaf() { return std::shared_ptr<HSFrameLeaf>(); };
     // count the number of splits to the root with alignment "align"
     virtual int splitsToRoot(int align);
 
-    HSTag* getTag() { return tag; };
+    HSTag* getTag() { return tag_; };
 
     void setVisibleRecursive(bool visible);
 
@@ -103,9 +103,9 @@ public:
 
     friend class HSFrameSplit;
 protected:
-    HSTag*   tag;
-    Settings* settings;
-    std::weak_ptr<HSFrameSplit> parent;
+    HSTag* tag_;
+    Settings* settings_;
+    std::weak_ptr<HSFrameSplit> parent_;
 };
 
 class HSFrameLeaf : public HSFrame {
