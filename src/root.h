@@ -19,8 +19,8 @@ class RootCommands;
 
 class Globals {
 public:
-    Globals() : initial_monitors_locked(0) {};
-    int initial_monitors_locked;
+    Globals() = default;
+    int initial_monitors_locked{0};
 };
 
 class Root : public Object {

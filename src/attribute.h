@@ -47,7 +47,7 @@ public:
     Attribute(const std::string &name,
               bool writeable)
         : Entity(name), owner_(nullptr)
-        , writeable_(writeable), hookable_(true) {}
+        , writeable_(writeable) {}
     ~Attribute() override = default;
 
     // set the owner after object creation (when pointer is available)
