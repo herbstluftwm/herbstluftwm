@@ -183,4 +183,4 @@ clang-tidy-list-checks:
 
 $(HLWMCLANGTIDY): %.clang-tidy: %.cpp
 	$(call colorecho,CLANG-TIDY,$@)
-	$(VERBOSE) clang-tidy $< -- $(CPPFLAGS) $(CXXFLAGS)
+	$(VERBOSE) clang-tidy -header-filter='$(CURDIR)' $< -- $(CPPFLAGS) $(CXXFLAGS)
