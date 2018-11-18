@@ -9,8 +9,8 @@
 
 #include "glib-backports.h"
 #include "glib-backports.h"
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <sys/types.h>
 
 /// TYPES ///

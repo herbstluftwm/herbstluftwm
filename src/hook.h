@@ -10,8 +10,8 @@ class Object;
 // each time a the object changes its attributes or its children.
 class Hook {
 public:
-    Hook();
-    virtual ~Hook() {}
+    Hook() = default;
+    virtual ~Hook() = default;
     // this is called after a child has been added
     virtual void childAdded(Object* parent, std::string child_name) {}
     // this is called immediately before a child is removed

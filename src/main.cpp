@@ -22,15 +22,15 @@
 #include "rootcommands.h"
 #include "tmp.h"
 // standard
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
 #include <getopt.h>
-#include <signal.h>
+#include <csignal>
 #include <sys/select.h>
 #include <sys/wait.h>
-#include <assert.h>
+#include <cassert>
 #include <errno.h>
 #include <sstream>
 // gui
@@ -628,7 +628,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
         {}
     };
     // parse options
-    while (1) {
+    while (true) {
         int option_index = 0;
         int c = getopt_long(argc, argv, "+c:vl", long_options, &option_index);
         if (c == -1) break;

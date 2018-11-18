@@ -1,7 +1,7 @@
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
+#include <cassert>
+#include <cstring>
+#include <cstdio>
+#include <cctype>
 #include <sstream>
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>

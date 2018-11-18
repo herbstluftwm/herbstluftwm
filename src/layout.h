@@ -4,7 +4,7 @@
 #include "x11-types.h"
 #include "glib-backports.h"
 #include "types.h"
-#include <stdlib.h>
+#include <cstdlib>
 #include <X11/Xlib.h>
 #include <functional>
 #include "monitor.h"

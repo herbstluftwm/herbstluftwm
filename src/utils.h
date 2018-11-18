@@ -4,7 +4,7 @@
 #include "glib-backports.h"
 #include "x11-types.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <array>
@@ -48,8 +48,8 @@ typedef struct HSTreeInterface {
 
 class TreeInterface {
 public:
-    TreeInterface() {}
-    virtual ~TreeInterface() {}
+    TreeInterface() = default;
+    virtual ~TreeInterface() = default;
     virtual Ptr(TreeInterface) nthChild(size_t idx) = 0;
     virtual size_t             childCount() = 0;
     virtual void               appendCaption(Output output) = 0;

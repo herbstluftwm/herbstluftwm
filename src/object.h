@@ -25,8 +25,8 @@ enum class HookEvent {
 class Object {
 
 public:
-    Object();
-    virtual ~Object() {}
+    Object() = default;
+    virtual ~Object() = default;
 
     virtual void print(const std::string &prefix = "\t| "); // a debug method
 

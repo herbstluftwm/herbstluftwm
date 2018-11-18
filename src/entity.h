@@ -28,9 +28,9 @@ bool operator<(Type t1, Type t2);
 
 class Entity {
 public:
-    Entity() {}
+    Entity() = default;
     Entity(const std::string &name) : name_(name) {}
-    virtual ~Entity() {}
+    virtual ~Entity() = default;
 
     std::string name() const { return name_; }
     virtual Type type() = 0;

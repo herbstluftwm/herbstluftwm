@@ -8,9 +8,9 @@
 #include "command.h"
 #include "utils.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 #include "glib-backports.h"
 
 // gui

@@ -16,10 +16,10 @@
 
 #include <glib.h>
 #include "glib-backports.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
 #include <stdint.h>
 
 #include <memory>
@@ -61,8 +61,7 @@ HSFrame::HSFrame(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
     , settings_(settings)
     , parent_(parent)
 {}
-HSFrame::~HSFrame()
-{}
+HSFrame::~HSFrame() = default;
 
 HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
     : HSFrame(tag, settings, parent)
@@ -161,8 +160,7 @@ bool HSFrameSplit::removeClient(HSClient* client) {
 }
 
 
-HSFrameSplit::~HSFrameSplit() {
-}
+HSFrameSplit::~HSFrameSplit() = default;
 
 HSFrameLeaf::~HSFrameLeaf() {
     // free other things
@@ -1526,7 +1524,7 @@ int frame_focus_edge(int argc, char** argv, Output output) {
     // Puts the focus to the edge in the specified direction
     g_monitors->lock();
     int oldval = g_settings->focus_crosses_monitor_boundaries();
-    g_settings->focus_crosses_monitor_boundaries = 0;
+    g_settings->focus_crosses_monitor_boundaries = false;
     while (0 == frame_focus_command(argc,argv,output))
         ;
     g_settings->focus_crosses_monitor_boundaries = oldval;
@@ -1538,7 +1536,7 @@ int frame_move_window_edge(int argc, char** argv, Output output) {
     // Moves a window to the edge in the specified direction
     g_monitors->lock();
     int oldval = g_settings->focus_crosses_monitor_boundaries();
-    g_settings->focus_crosses_monitor_boundaries = 0;
+    g_settings->focus_crosses_monitor_boundaries = false;
     while (0 == frame_move_window_command(argc,argv,output))
         ;
     g_settings->focus_crosses_monitor_boundaries = oldval;

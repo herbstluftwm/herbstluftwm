@@ -3,8 +3,8 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 // std
-#include <assert.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
 #include <stdarg.h>
 // other
 #include "glib-backports.h"
@@ -15,9 +15,6 @@
 #include <X11/Xatom.h>
 
 static Window g_event_window;
-
-Hook::Hook() {
-}
 
 void hook_init() {
     g_event_window = XCreateSimpleWindow(g_display, g_root, 42, 42, 42, 42, 0, 0, 0);

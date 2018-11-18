@@ -1,7 +1,7 @@
 #include "object.h"
 #include "command.h"
 #include "utils.h"
-#include "assert.h"
+#include "cassert"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "hook.h"
@@ -10,19 +10,11 @@
 #include <iostream>
 #include <memory>
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include <sstream>
 #include <algorithm>
-
-
-Object::Object()
-    //, nameAttribute_("name", Type::ATTRIBUTE_STRING, false, true)
-{
-    //wireAttributes({ &nameAttribute_ });
-}
-
 
 std::string Object::read(const std::string &attr) const {
     auto it = attribs_.find(attr);

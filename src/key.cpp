@@ -5,8 +5,8 @@
 #include "command.h"
 #include "utils.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <regex.h>
 #include "glib-backports.h"
 #include <X11/keysym.h>

@@ -20,7 +20,7 @@ class Settings;
 class DecorationScheme : public Object {
 public:
     DecorationScheme();
-    ~DecorationScheme() override {}
+    ~DecorationScheme() override = default;
     Attribute_<unsigned long>     border_width = {"border_width", 1};
     Attribute_<Color>   border_color = {"border_color", {"black"}};
     Attribute_<bool>    tight_decoration = {"tight_decoration", false}; // if set, there is no space between the
