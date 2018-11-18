@@ -21,7 +21,7 @@ public:
 // a tiling result contains the movement commands etc. for all clients
 class TilingResult {
 public:
-    TilingResult() {}
+    TilingResult() = default;
     TilingStep& operator[](HSClient* client);
     void add(FrameDecoration* dec, const FrameDecorationData& frame_data);
 

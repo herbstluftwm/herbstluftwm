@@ -6,8 +6,8 @@
 
 class Signal {
 public:
-    Signal();
-    virtual ~Signal() {}
+    Signal() = default;
+    virtual ~Signal() = default;
 
     // connect signal to anonymous/top-level method
     void connect(std::function<void()> slot) {
