@@ -8,10 +8,9 @@
 
 using namespace std;
 
-Tmp::Tmp(Root* root_)
-  : root(root_)
-  , number_active(0)
-  , number_total(0)
+Tmp::Tmp()
+    : number_active(0)
+    , number_total(0)
 {
 }
 

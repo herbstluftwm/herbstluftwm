@@ -1,13 +1,7 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HERBSTLUFT_MOUSE_H_
 #define __HERBSTLUFT_MOUSE_H_
 
 #include <X11/Xlib.h>
-#include <stdbool.h>
 #include "glib-backports.h"
 #include "x11-types.h"
 #include "types.h"

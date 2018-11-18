@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #include "ewmh.h"
 #include "utils.h"
 #include "globals.h"
@@ -18,7 +13,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <limits>
-#include <stdbool.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -265,7 +259,7 @@ void ewmh_update_desktop_names() {
 
 void ewmh_update_current_desktop() {
     HSTag* tag = get_current_monitor()->tag;
-    int index = tags->index_of(tag);
+    int index = global_tags->index_of(tag);
     if (index < 0) {
         g_warning("tag %s not found in internal list\n", tag->name->c_str());
         return;
@@ -275,7 +269,7 @@ void ewmh_update_current_desktop() {
 }
 
 void ewmh_window_update_tag(Window win, HSTag* tag) {
-    int index = tags->index_of(tag);
+    int index = global_tags->index_of(tag);
     if (index < 0) {
         g_warning("tag %s not found in internal list\n", tag->name->c_str());
         return;
@@ -312,20 +306,20 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
         HSDebug("received unknown client message\n");
         return;
     }
-    HSClient* client;
 
     int desktop_index;
     switch (index) {
-        case NetActiveWindow:
+        case NetActiveWindow: {
             // only steal focus it allowed to the current source
             // (i.e.  me->data.l[0] in this case as specified by EWMH)
             if (focus_stealing_allowed(me->data.l[0])) {
-                HSClient* client = get_client_from_window(me->window);
+                auto client = get_client_from_window(me->window);
                 if (client) {
                     focus_client(client, true, true);
                 }
             }
             break;
+        }
 
         case NetCurrentDesktop: {
             desktop_index = me->data.l[0];
@@ -345,15 +339,15 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
                 break;
             }
             HSTag* target = get_tag_by_index(desktop_index);
-            client = get_client_from_window(me->window);
+            auto client = get_client_from_window(me->window);
             if (client && target) {
-                tags->moveClient(client, target);
+                global_tags->moveClient(client, target);
             }
             break;
         }
 
         case NetWmState: {
-            client = get_client_from_window(me->window);
+            auto client = get_client_from_window(me->window);
             /* ignore requests for unmanaged windows */
             if (!client || !client->ewmhrequests_) break;
 
@@ -403,7 +397,7 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
         }
 
         case NetWmMoveresize: {
-            client = get_client_from_window(me->window);
+            auto client = get_client_from_window(me->window);
             if (!client) {
                 break;
             }

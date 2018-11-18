@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HS_OBJECT_H_
 #define __HS_OBJECT_H_
 
@@ -58,11 +53,6 @@ public:
     void addAttribute(Attribute* a);
     void removeAttribute(Attribute* a);
     std::map<std::string, Attribute*> attributes() { return attribs_; }
-
-    std::string acceptAllValueValidator() { return {}; };
-    static std::function<std::string()> AcceptAll() {
-        return []() { return ""; };
-    };
 
     // if a concrete object maintains its index within the parent as an
     // attribute (e.g. monitors and tags do), then they should implement the

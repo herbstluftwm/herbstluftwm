@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HERBSTLUFT_SETTINGS_H_
 #define __HERBSTLUFT_SETTINGS_H_
 
@@ -74,7 +69,7 @@ private:
     static std::function<Color()> getColorAttr(Object* root, std::string name);
     static std::function<string(int)> setIntAttr(Object* root, std::string name);
     static std::function<string(Color)> setColorAttr(Object* root, std::string name);
-    Root* root;
+    Root* root_;
 };
 
 extern Settings* g_settings;

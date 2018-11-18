@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __HERBSTLUFT_MONITOR_MANAGER_H_
 #define __HERBSTLUFT_MONITOR_MANAGER_H_
 
@@ -44,9 +39,9 @@ public:
     int unlock_cmd(Input, Output);
     std::string lock_number_changed();
 private:
-    ByName by_name;
-    TagManager* tags;
-    Settings* settings;
+    ByName by_name_;
+    TagManager* tags_;
+    Settings* settings_;
 };
 
 #endif

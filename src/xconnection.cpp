@@ -1,5 +1,6 @@
 #include "xconnection.h"
 #include "globals.h"
+#include "utils.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
@@ -22,6 +23,10 @@ XConnection::~XConnection() {
 XConnection XConnection::connect(std::string display_name) {
     char* display_str = (display_name != "") ? (char*)display_name.c_str() : nullptr;
     Display* d = XOpenDisplay(display_str);
+    if (d == NULL) {
+        std::cerr << "herbstluftwm: XOpenDisplay() failed" << std::endl;
+        exit(EXIT_FAILURE);
+    }
     return XConnection(d);
 }
 

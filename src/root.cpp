@@ -37,11 +37,11 @@ Root::Root(Globals g)
     monitors = new MonitorManager(settings(), tags());
     tags()->setMonitorManager(monitors());
     hooks = new HookManager;
-    tmp = new Tmp(this);
+    tmp = new Tmp();
     root_commands = new RootCommands(this);
 
     // set temporary globals
-    ::tags = tags();
+    ::global_tags = tags();
     ::g_monitors = monitors();
 
 

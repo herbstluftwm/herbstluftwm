@@ -1,7 +1,6 @@
 #include "floating.h"
 
 #include <stdlib.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <algorithm>
 
@@ -36,43 +35,44 @@ int char_to_direction(char ch) {
 // index may change
 static void rectlist_rotate(RectangleIdxVec& rects, int& idx,
                                 enum HSDirection dir) {
-    switch (dir) {
-        case DirRight:
-            return; // nothing to do
-        case DirUp:
-            // just flip by the horizontal axis
-            for (auto& r : rects) {
-                r.second.y = - r.second.y - r.second.height;
-            }
-            // and flip order to reverse the order for rectangles with the same
-            // center
-            reverse(rects.begin(), rects.end());
-            idx = rects.size() - 1 - idx;
-            // and then direction up now has become direction down
-        case DirDown:
-            // flip by the diagonal
-            //
-            //   *-------------> x     *-------------> x
-            //   |   +------+          |   +---+[]
-            //   |   |      |     ==>  |   |   |
-            //   |   +------+          |   |   |
-            //   |   []                |   +---+
-            //   V                     V
-            for (auto& r : rects) {
-                SWAP(int, r.second.x, r.second.y);
-                SWAP(int, r.second.height, r.second.width);
-            }
-            return;
-        case DirLeft:
-            // flip by the vertical axis
-            for (auto& r : rects) {
-                r.second.x = - r.second.x - r.second.width;
-            }
-            // and flip order to reverse the order for rectangles with the same
-            // center
-            reverse(rects.begin(), rects.end());
-            idx = rects.size() - 1 - idx;
-            return;
+    // Note: For DirRight, there is nothing to do.
+
+    if (dir == DirUp) {
+        // just flip by the horizontal axis
+        for (auto& r : rects) {
+            r.second.y = - r.second.y - r.second.height;
+        }
+        // and flip order to reverse the order for rectangles with the same
+        // center
+        reverse(rects.begin(), rects.end());
+        idx = rects.size() - 1 - idx;
+        // and then direction up now has become direction down
+    }
+
+    if (dir == DirUp || dir == DirDown) {
+        // flip by the diagonal
+        //
+        //   *-------------> x     *-------------> x
+        //   |   +------+          |   +---+[]
+        //   |   |      |     ==>  |   |   |
+        //   |   +------+          |   |   |
+        //   |   []                |   +---+
+        //   V                     V
+        for (auto& r : rects) {
+            SWAP(int, r.second.x, r.second.y);
+            SWAP(int, r.second.height, r.second.width);
+        }
+    }
+
+    if (dir == DirLeft) {
+        // flip by the vertical axis
+        for (auto& r : rects) {
+            r.second.x = - r.second.x - r.second.width;
+        }
+        // and flip order to reverse the order for rectangles with the same
+        // center
+        reverse(rects.begin(), rects.end());
+        idx = rects.size() - 1 - idx;
     }
 }
 

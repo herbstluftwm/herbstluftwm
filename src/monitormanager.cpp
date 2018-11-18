@@ -12,19 +12,19 @@
 
 using namespace std;
 
-MonitorManager::MonitorManager(Settings* settings_, TagManager* tags_)
+MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
     : ChildByIndex<HSMonitor>()
     , focus(*this, "focus")
-    , by_name(*this)
-    , tags(tags_)
-    , settings(settings_)
+    , by_name_(*this)
+    , tags_(tags)
+    , settings_(settings)
 {
 }
 
 void MonitorManager::clearChildren() {
     ChildByIndex<HSMonitor>::clearChildren();
     focus = {};
-    tags = {};
+    tags_ = {};
 }
 
 void MonitorManager::ensure_monitors_are_available() {
@@ -36,7 +36,7 @@ void MonitorManager::ensure_monitors_are_available() {
     Rectangle rect = { 0, 0,
             DisplayWidth(g_display, DefaultScreen(g_display)),
             DisplayHeight(g_display, DefaultScreen(g_display))};
-    HSTag* tag = tags->ensure_tags_are_available();
+    HSTag* tag = tags_->ensure_tags_are_available();
     // add monitor with first tag
     HSMonitor* m = addMonitor(rect, tag);
     m->tag->frame->setVisibleRecursive(true);
@@ -152,7 +152,7 @@ void MonitorManager::relayoutTag(HSTag *tag)
 }
 
 HSMonitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
-    HSMonitor* m = new HSMonitor(settings, this, rect, tag);
+    HSMonitor* m = new HSMonitor(settings_, this, rect, tag);
     addIndexed(m);
     return m;
 }
@@ -164,12 +164,12 @@ int MonitorManager::lock_cmd(Input, Output) {
 }
 
 void MonitorManager::lock() {
-    settings->monitors_locked = settings->monitors_locked() + 1;
+    settings_->monitors_locked = settings_->monitors_locked() + 1;
     lock_number_changed();
 }
 
 void MonitorManager::unlock() {
-    settings->monitors_locked = max(0, settings->monitors_locked() - 1);
+    settings_->monitors_locked = max(0, settings_->monitors_locked() - 1);
     lock_number_changed();
 }
 
@@ -179,10 +179,10 @@ int MonitorManager::unlock_cmd(Input, Output) {
 }
 
 std::string MonitorManager::lock_number_changed() {
-    if (settings->monitors_locked() < 0) {
+    if (settings_->monitors_locked() < 0) {
         return "must be non-negative";
     }
-    if (!settings->monitors_locked()) {
+    if (!settings_->monitors_locked()) {
         // if not locked anymore, then repaint all the dirty monitors
         for (auto m : *this) {
             if (m->dirty) {

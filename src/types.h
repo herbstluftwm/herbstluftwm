@@ -22,7 +22,7 @@ struct ArgList {
     // constructor that splits the given string
     ArgList(const std::string &s, char delim = '.');
     // operator to obtain shifted version of list (shallow copy)
-    ArgList operator+(size_t shift_amount);
+    ArgList operator+(Container::difference_type shift_amount);
     std::string operator[](size_t idx);
 
     Container::const_iterator begin() const { return begin_; }
@@ -35,8 +35,8 @@ struct ArgList {
     std::string join(char delim = '.');
 
     void reset() { begin_ = c_->cbegin(); }
-    void shift(size_t amount = 1) {
-        begin_ += std::min(amount, (size_t)std::distance(begin_, c_->cend()));
+    void shift(Container::difference_type amount = 1) {
+        begin_ += std::min(amount, std::distance(begin_, c_->cend()));
     }
     Container toVector() const {
         return Container(begin_, c_->cend());

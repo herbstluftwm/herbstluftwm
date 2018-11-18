@@ -1,9 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
-// herbstluftwm
 #include "root.h"
 #include "clientmanager.h"
 #include "utils.h"
@@ -31,7 +25,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <unistd.h>
 #include <getopt.h>
 #include <signal.h>
@@ -899,10 +892,12 @@ int main(int argc, char* argv[]) {
     XConnection X = XConnection::connect();
     g_display = X.display();
     if (!g_display) {
-        die("herbstluftwm: cannot open display\n");
+        std::cerr << "herbstluftwm: cannot open display" << std::endl;
+        exit(EXIT_FAILURE);
     }
     if (X.checkotherwm()) {
-        die("herbstluftwm: another window manager is already running\n");
+        std::cerr << "herbstluftwm: another window manager is already running" << std::endl;
+        exit(EXIT_FAILURE);
     }
     // remove zombies on SIGCHLD
     sigaction_signal(SIGCHLD, remove_zombies);

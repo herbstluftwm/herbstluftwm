@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #include "root.h"
 #include "settings.h"
 #include "client.h"
@@ -40,7 +35,7 @@ Settings::Settings(Root* root)
     , window_border_urgent_color("window_border_urgent_color",
                                  getColorAttr(root, "theme.tiling.urgent.color"),
                                  setColorAttr(root, "theme.urgent.color"))
-    , root(root)
+    , root_(root)
 {
     wireAttributes({
         &frame_gap,
@@ -126,8 +121,8 @@ Settings::Settings(Root* root)
         }
         return std::string();
     });
-    tree_style.setValidator([] (std::string tree_style) {
-        if (utf8_string_length(tree_style) < 8) {
+    tree_style.setValidator([] (std::string new_value) {
+        if (utf8_string_length(new_value) < 8) {
             return std::string("tree_style needs 8 characters");
         }
         return std::string();

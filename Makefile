@@ -26,10 +26,11 @@ all-nodoc: $(TARGETS)
 
 $(HCTARGET): $(HCOBJ)
 	$(call colorecho,LD,$@)
-	$(VERBOSE) $(LD) -o $@ $(CFLAGS) $(LDFLAGS) $^ $(LIBS)
+	$(VERBOSE) $(LD) -o $@ $(LDFLAGS) $^ $(LIBS)
 
 $(HLWMTARGET): $(HLWMOBJ)
-	 $(LDXX) -o $@ $(CXXFLAGS) $(LDXXFLAGS) $^ $(LIBS)
+	$(call colorecho,LDXX,$@)
+	$(VERBOSE) $(LDXX) -o $@ $(LDXXFLAGS) $^ $(LIBS)
 
 -include $(DEPS)
 

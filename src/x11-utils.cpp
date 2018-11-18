@@ -1,5 +1,3 @@
-
-
 #include "x11-utils.h"
 #include "globals.h"
 #include <stdio.h>

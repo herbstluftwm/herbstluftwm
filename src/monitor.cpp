@@ -1,12 +1,6 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <ctype.h>
 #include <sstream>
 #ifdef XINERAMA
@@ -413,13 +407,13 @@ int HSMonitor::move_cmd(Input input, Output output) {
     if (input.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
-    auto rect = Rectangle::fromStr(input.front().c_str());
-    if (rect.width < WINDOW_MIN_WIDTH || rect.height < WINDOW_MIN_HEIGHT) {
+    auto new_rect = Rectangle::fromStr(input.front().c_str());
+    if (new_rect.width < WINDOW_MIN_WIDTH || new_rect.height < WINDOW_MIN_HEIGHT) {
         output << input.command() << "%s: Rectangle is too small\n";
         return HERBST_INVALID_ARGUMENT;
     }
     // else: just move it:
-    this->rect = rect;
+    this->rect = new_rect;
     input.shift();
     if (!input.empty()) pad_up       = stoi(input.front());
     input.shift();
@@ -635,7 +629,7 @@ int monitor_set_tag_by_index_command(int argc, char** argv, Output output) {
     if (argc >= 3 && !strcmp(argv[2], "--skip-visible")) {
         skip_visible = true;
     }
-    HSTag* tag = tags->byIndexStr(argv[1], skip_visible);
+    HSTag* tag = global_tags->byIndexStr(argv[1], skip_visible);
     if (!tag) {
         output << argv[0] <<
             ": Invalid index \"" << argv[1] << "\"\n";
@@ -967,7 +961,7 @@ int shift_to_monitor(int argc, char** argv, Output output) {
         output << monitor_str << ": Invalid monitor\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    tags->moveFocusedClient(monitor->tag);
+    global_tags->moveFocusedClient(monitor->tag);
     return 0;
 }
 

@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #ifndef __DECORATION_H_
 #define __DECORATION_H_
 
@@ -11,7 +6,6 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include "x11-utils.h"
-#include <stdbool.h>
 #include "x11-types.h"
 #include <map>
 
@@ -102,9 +96,9 @@ public:
     DecorationScheme  active;
     DecorationScheme  urgent;
     // pick the right scheme, depending on whether a window is active/urgent
-    const DecorationScheme& operator()(bool active, bool urgent) const {
-        if (active) return this->active;
-        else if (urgent) return this->urgent;
+    const DecorationScheme& operator()(bool if_active, bool if_urgent) const {
+        if (if_active) return this->active;
+        else if (if_urgent) return this->urgent;
         else return normal;
     }
 };

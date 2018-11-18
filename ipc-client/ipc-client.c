@@ -91,7 +91,7 @@ bool hc_create_client_window(HCConnection* con) {
 }
 
 bool hc_send_command(HCConnection* con, int argc, char* argv[],
-                     GString** ret_out, int* ret_status) {
+                     char** ret_out, int* ret_status) {
     if (!hc_create_client_window(con)) {
         return false;
     }
@@ -106,7 +106,7 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
     // get output
     int command_status = 0;
     XEvent event;
-    GString* output = NULL;
+    char* output = NULL;
     bool output_received = false, status_received = false;
     while (!output_received || !status_received) {
         XNextEvent(con->display, &event);
@@ -121,8 +121,8 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
         }
         if (!output_received
             && pe->atom == con->atom_output) {
-            output = window_property_to_g_string(con->display, con->client_window,
-                                                 con->atom_output);
+            output = read_window_property(con->display, con->client_window,
+                                          con->atom_output);
             if (!output) {
                 fprintf(stderr, "could not get WindowProperty \"%s\"\n",
                                 HERBST_IPC_OUTPUT_ATOM);
@@ -154,7 +154,7 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
 }
 
 bool hc_send_command_once(int argc, char* argv[],
-                          GString** ret_out, int* ret_status) {
+                          char** ret_out, int* ret_status) {
     HCConnection* con = hc_connect();
     if (con == NULL) {
         return false;
