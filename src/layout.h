@@ -136,7 +136,7 @@ public:
     void addClients(const std::vector<HSClient*>& vec);
 
 
-    HSClient* focusedClient();
+    HSClient* focusedClient() override;
 
     bool split(int alignment, int fraction, int childrenLeaving = 0);
     int getLayout() { return layout; }
@@ -188,10 +188,10 @@ public:
     void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) override;
     virtual void foreachClient(ClientAction action) override;
 
-    HSClient* focusedClient();
+    HSClient* focusedClient() override;
 
     // own members
-    virtual int splitsToRoot(int align);
+    virtual int splitsToRoot(int align) override;
     void replaceChild(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> newchild);
     std::shared_ptr<HSFrame> firstChild() { return a; }
     std::shared_ptr<HSFrame> secondChild() { return b; }
@@ -199,7 +199,7 @@ public:
     void swapChildren();
     void adjustFraction(int delta);
     std::shared_ptr<HSFrameSplit> thisSplit();
-    std::shared_ptr<HSFrameSplit> isSplit() { return thisSplit(); }
+    std::shared_ptr<HSFrameSplit> isSplit() override { return thisSplit(); }
     int getAlign() { return align; }
     void rotate();
     void swapSelection() { selection = 1 - selection; }
