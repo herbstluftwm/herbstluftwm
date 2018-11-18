@@ -1,7 +1,7 @@
 #include "object.h"
 #include "command.h"
 #include "utils.h"
-#include "assert.h"
+#include "cassert"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "hook.h"
@@ -10,9 +10,9 @@
 #include <iostream>
 #include <memory>
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include <sstream>
 #include <algorithm>
 

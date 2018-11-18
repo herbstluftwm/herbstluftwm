@@ -7,8 +7,8 @@
 #include "monitormanager.h"
 #include "utils.h"
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <sstream>
 
 

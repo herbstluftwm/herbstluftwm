@@ -14,9 +14,9 @@
 #include "mouse.h"
 
 #include "glib-backports.h"
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include <search.h>
 #include <unistd.h>
 #include <sstream>

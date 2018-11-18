@@ -16,12 +16,12 @@
 #include "utils.h"
 // system
 #include "glib-backports.h"
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <sys/types.h>
 #include <regex.h>
-#include <string.h>
+#include <cstring>
 #include <sstream>
 // gui
 #include <X11/Xlib.h>

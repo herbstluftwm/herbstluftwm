@@ -4,8 +4,8 @@
 #include "ipc-protocol.h"
 #include "ipc-server.h"
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include "glib-backports.h"
 
 #include <X11/Xlib.h>
