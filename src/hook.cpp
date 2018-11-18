@@ -16,9 +16,6 @@
 
 static Window g_event_window;
 
-Hook::Hook() {
-}
-
 void hook_init() {
     g_event_window = XCreateSimpleWindow(g_display, g_root, 42, 42, 42, 42, 0, 0, 0);
     // set wm_class for window

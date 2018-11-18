@@ -16,14 +16,6 @@
 #include <sstream>
 #include <algorithm>
 
-
-Object::Object()
-    //, nameAttribute_("name", Type::ATTRIBUTE_STRING, false, true)
-{
-    //wireAttributes({ &nameAttribute_ });
-}
-
-
 std::string Object::read(const std::string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end())

@@ -61,8 +61,7 @@ HSFrame::HSFrame(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
     , settings_(settings)
     , parent_(parent)
 {}
-HSFrame::~HSFrame()
-{}
+HSFrame::~HSFrame() = default;
 
 HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
     : HSFrame(tag, settings, parent)
@@ -161,8 +160,7 @@ bool HSFrameSplit::removeClient(HSClient* client) {
 }
 
 
-HSFrameSplit::~HSFrameSplit() {
-}
+HSFrameSplit::~HSFrameSplit() = default;
 
 HSFrameLeaf::~HSFrameLeaf() {
     // free other things
