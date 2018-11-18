@@ -1,6 +1,6 @@
 ---
 # First enable all, then disable the unsuitable ones:
-Checks: '*,-android-*,-objc-*,-mpi-*,-performance-*,-llvm-include-order'
+Checks: '*,-android-*,-objc-*,-fuchsia-*,-mpi-*,-performance-*,-llvm-include-order'
 
 WarningsAsErrors: true
 HeaderFilterRegex: '.*'
