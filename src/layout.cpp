@@ -56,11 +56,11 @@ void layout_destroy() {
 /* create a new frame
  * you can either specify a frame or a tag as its parent
  */
-HSFrame::HSFrame(HSTag* tag, Settings* settings_, weak_ptr<HSFrameSplit> parent)
-    : settings(settings_) {
-    this->parent = parent;
-    this->tag = tag;
-}
+HSFrame::HSFrame(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
+    : tag_(tag)
+    , settings_(settings)
+    , parent_(parent)
+{}
 HSFrame::~HSFrame() = default;
 
 HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
@@ -419,7 +419,7 @@ int find_align_by_name(char* name) {
 }
 
 std::shared_ptr<HSFrame> HSFrame::root() {
-    auto parent_shared = parent.lock();
+    auto parent_shared = parent_.lock();
     if (parent_shared) return parent_shared->root();
     else return shared_from_this();
 }
@@ -484,7 +484,7 @@ void print_frame_tree(shared_ptr<HSFrame> frame, Output output) {
 
 
 bool HSFrame::isFocused() {
-    auto p = parent.lock();
+    auto p = parent_.lock();
     if (!p) {
         return true;
     } else {
@@ -654,7 +654,7 @@ TilingResult HSFrameLeaf::layoutGrid(Rectangle rect) {
         }
         int count = clients.size();
         for (int c = 0; c < cols && i < count; c++) {
-            if (settings->gapless_grid() && (i == count - 1) // if last client
+            if (settings_->gapless_grid() && (i == count - 1) // if last client
                 && (count % cols != 0)) {           // if cols remain
                 // fill remaining cols with client
                 cur.width = rect.x + rect.width - cur.x;
@@ -675,15 +675,15 @@ TilingResult HSFrameLeaf::layoutGrid(Rectangle rect) {
 
 TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
     last_rect = rect;
-    if (!settings->smart_frame_surroundings() || parent.lock()) {
+    if (!settings_->smart_frame_surroundings() || parent_.lock()) {
         // apply frame gap
-        rect.height -= settings->frame_gap();
-        rect.width -= settings->frame_gap();
+        rect.height -= settings_->frame_gap();
+        rect.width -= settings_->frame_gap();
         // apply frame border
-        rect.x += settings->frame_border_width();
-        rect.y += settings->frame_border_width();
-        rect.height -= settings->frame_border_width() * 2;
-        rect.width -= settings->frame_border_width() * 2;
+        rect.x += settings_->frame_border_width();
+        rect.y += settings_->frame_border_width();
+        rect.height -= settings_->frame_border_width() * 2;
+        rect.width -= settings_->frame_border_width() * 2;
     }
 
     rect.width = std::max(WINDOW_MIN_WIDTH, rect.width);
@@ -695,7 +695,7 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
     frame_data.geometry = rect;
     frame_data.visible = true;
     frame_data.hasClients = clients.size() > 0;
-    frame_data.hasParent = (bool)parent.lock();
+    frame_data.hasParent = (bool)parent_.lock();
     res.focused_frame = decoration;
     res.add(decoration, frame_data);
     if (clients.size() == 0) {
@@ -704,14 +704,14 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
 
     if (!smart_window_surroundings_active(this)) {
         // apply window gap
-        auto window_gap = settings->window_gap();
+        auto window_gap = settings_->window_gap();
         rect.x += window_gap;
         rect.y += window_gap;
         rect.width -= window_gap;
         rect.height -= window_gap;
 
         // apply frame padding
-        auto frame_padding = settings->frame_padding();
+        auto frame_padding = settings_->frame_padding();
         rect.x += frame_padding;
         rect.y += frame_padding;
         rect.width  -= frame_padding * 2;
@@ -905,24 +905,24 @@ int cycle_all_command(int argc, char** argv) {
     **/
 
 int HSFrame::splitsToRoot(int align) {
-    if (!parent.lock()) return 0;
-    return parent.lock()->splitsToRoot(align);
+    if (!parent_.lock()) return 0;
+    return parent_.lock()->splitsToRoot(align);
 }
 int HSFrameSplit::splitsToRoot(int align) {
-    if (!parent.lock()) return 0;
+    if (!parent_.lock()) return 0;
     int delta = 0;
     if (this->align == align) delta = 1;
-    return delta + parent.lock()->splitsToRoot(align);
+    return delta + parent_.lock()->splitsToRoot(align);
 }
 
 void HSFrameSplit::replaceChild(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> newchild) {
     if (a == old) {
         a = newchild;
-        newchild->parent = thisSplit();
+        newchild->parent_ = thisSplit();
     }
     if (b == old) {
         b = newchild;
-        newchild->parent = thisSplit();
+        newchild->parent_ = thisSplit();
     }
 }
 
@@ -942,16 +942,16 @@ bool HSFrameLeaf::split(int alignment, int fraction, int childrenLeaving) {
                      FRACTION_UNIT * (0.0 + FRAME_MIN_FRACTION),
                      FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
     auto first = shared_from_this();
-    auto second = make_shared<HSFrameLeaf>(tag, settings, std::weak_ptr<HSFrameSplit>());
-    auto new_this = make_shared<HSFrameSplit>(tag, settings, parent, alignment, first, second);
-    second->parent = new_this;
+    auto second = make_shared<HSFrameLeaf>(tag_, settings_, std::weak_ptr<HSFrameSplit>());
+    auto new_this = make_shared<HSFrameSplit>(tag_, settings_, parent_, alignment, first, second);
+    second->parent_ = new_this;
     second->addClients(leaves);
-    if (parent.lock()) {
-        parent.lock()->replaceChild(shared_from_this(), new_this);
+    if (parent_.lock()) {
+        parent_.lock()->replaceChild(shared_from_this(), new_this);
     } else {
-        tag->frame = new_this;
+        tag_->frame = new_this;
     }
-    parent = new_this;
+    parent_ = new_this;
     if (selection >= childrenStaying) {
         second->setSelection(selection - childrenStaying);
         selection = max(0, childrenStaying - 1);

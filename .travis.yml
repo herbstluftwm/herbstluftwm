@@ -9,6 +9,7 @@ install:
 script:
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
+    - echo Using $CC / $CXX
     - make -j2
     - sudo make PREFIX=/usr install
     - herbstluftwm &
@@ -20,26 +21,82 @@ script:
 
 jobs:
     include:
-        - name: "Ubuntu 14.04, gcc-4.8"
-          dist: trusty
-          env: CC=gcc-4.8 CXX=g++-4.8
-        - name: "Ubuntu 14.04, clang-5"
-          dist: trusty
-          env: CC=clang-5 CXX=clang++-5
-        - name: "Ubuntu 16.04, gcc-5"
+        - name: "Ubuntu 16.04, gcc-8, run tests"
           dist: xenial
-          env: CC=gcc-5 CXX=g++-5
-        - name: "Ubuntu 16.04, gcc-7"
-          dist: xenial
-          env: CC=gcc-7 CXX=g++-7
-        - name: "Ubuntu 16.04, clang-7, run tests"
-          dist: xenial
-          env: CC=clang-7 CXX=clang++-7
+          before_install:
+              - CC=gcc-8 CXX=g++-8
+              # This is new in gcc-8 and not easily fixed:
+              - export CXXFLAGS="-Wno-error=cast-function-type"
           addons:
               apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
                   packages:
+                      - g++-8
                       - xterm
                       - tox
           script:
+              - echo Using $CC / $CXX
               - make -j2
               - tox
+
+        - name: "Ubuntu 16.04, gcc-7"
+          dist: xenial
+          before_install: CC=gcc-7 CXX=g++-7
+          addons:
+              apt:
+                  sources:
+                      - ubuntu-toolchain-r-test
+                  packages:
+                      - g++-7
+
+        - name: "Ubuntu 16.04, clang-7"
+          dist: xenial
+          before_install:
+              - CC=clang-7 CXX=clang++-7
+              # Disable warning until its causes are fixed:
+              - export CXXFLAGS="-Wno-error=inconsistent-missing-override"
+          addons:
+              apt:
+                  sources:
+                      - llvm-toolchain-xenial-7
+                  packages:
+                      - clang-7
+
+        - name: "Ubuntu 16.04, clang-6"
+          dist: xenial
+          before_install:
+              - CC=clang-6.0 CXX=clang++-6.0
+              # Disable warning until its causes are fixed:
+              - export CXXFLAGS="-Wno-error=inconsistent-missing-override"
+          addons:
+              apt:
+                  sources:
+                      - llvm-toolchain-xenial-6.0
+                  packages:
+                      - clang-6.0
+
+        - name: "Ubuntu 16.04, gcc-5"
+          # Note: On xenial, gcc-5 is the most recent GCC that is officially
+          # available.
+          dist: xenial
+          before_install: CC=gcc-5 CXX=g++-5
+
+        - name: "Ubuntu 14.04, clang-3.9"
+          # Note: Travis provides a newer clang on trusty (5.0.0), but
+          # clang-3.9 is the version provided by Ubuntu, so we use that one.
+          dist: trusty
+          before_install:
+              - CC=clang-3.9 CXX=clang++-3.9
+              # Disable some warnings until their causes are fixed:
+              - export CXXFLAGS="-Wno-error=deprecated-register -Wno-error=inconsistent-missing-override"
+          addons:
+              apt:
+                  packages:
+                      - clang-3.9
+
+        - name: "Ubuntu 14.04, gcc-4.8"
+          # Note: Travis provides a newer GCC on trusty (5.4), but gcc-4.8 is
+          # the version provided by Ubuntu, so we use that one.
+          dist: trusty
+          before_install: CC=gcc-4.8 CXX=g++-4.8
