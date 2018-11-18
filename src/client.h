@@ -24,7 +24,7 @@ class ClientManager;
 class HSClient : public Object {
 public:
     HSClient(Window w, bool already_visible, ClientManager& cm);
-    ~HSClient();
+    ~HSClient() override;
 
     Window      window_;
     Decoration  dec;

@@ -111,7 +111,7 @@ protected:
 class HSFrameLeaf : public HSFrame {
 public:
     HSFrameLeaf(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent);
-    virtual ~HSFrameLeaf();
+    ~HSFrameLeaf() override;
 
     // inherited:
     void insertClient(HSClient* client) override;
@@ -173,7 +173,7 @@ class HSFrameSplit : public HSFrame {
 public:
     HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b);
-    virtual ~HSFrameSplit();
+    ~HSFrameSplit() override;
     // inherited:
     void insertClient(HSClient* client) override;
     std::shared_ptr<HSFrame> lookup(const char* path) override;
@@ -191,7 +191,7 @@ public:
     HSClient* focusedClient() override;
 
     // own members
-    virtual int splitsToRoot(int align) override;
+    int splitsToRoot(int align) override;
     void replaceChild(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> newchild);
     std::shared_ptr<HSFrame> firstChild() { return a; }
     std::shared_ptr<HSFrame> secondChild() { return b; }

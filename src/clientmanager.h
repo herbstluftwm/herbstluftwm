@@ -18,7 +18,7 @@ class ClientManager : public Object
 {
 public:
     ClientManager(Theme& theme, Settings& settings);
-    ~ClientManager();
+    ~ClientManager() override;
 
     HSClient* client(Window window);
     HSClient* client(const std::string &identifier);
