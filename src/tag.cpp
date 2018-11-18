@@ -1,6 +1,6 @@
-#include <assert.h>
-#include <string.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstring>
+#include <cstdio>
 #include <sstream>
 
 #include "tag.h"

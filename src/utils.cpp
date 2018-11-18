@@ -4,9 +4,9 @@
 #include <string>
 #include <sstream>
 #include <stdarg.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 // gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>

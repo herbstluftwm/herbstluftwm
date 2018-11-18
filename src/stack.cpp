@@ -7,9 +7,9 @@
 #include "tag.h"
 #include "utils.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstring>
+#include <cassert>
 #include <iomanip>
 
 

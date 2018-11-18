@@ -9,8 +9,8 @@
 #include "tagmanager.h"
 
 #include "glib-backports.h"
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <stdint.h>
 #include <limits>
 

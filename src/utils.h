@@ -4,7 +4,7 @@
 #include "glib-backports.h"
 #include "x11-types.h"
 
-#include <stddef.h>
+#include <cstddef>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <array>

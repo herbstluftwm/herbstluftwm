@@ -3,8 +3,8 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 // std
-#include <assert.h>
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
 #include <stdarg.h>
 // other
 #include "glib-backports.h"
