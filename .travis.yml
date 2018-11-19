@@ -63,12 +63,6 @@ jobs:
                   packages:
                       - clang-7
 
-        - name: "Ubuntu 16.04, gcc-5"
-          # Note: On xenial, gcc-5 is the most recent GCC that is officially
-          # available.
-          dist: xenial
-          before_install: CC=gcc-5 CXX=g++-5
-
         - name: "Ubuntu 14.04, gcc-4.8"
           # Note: Travis provides a newer GCC on trusty (5.4), but gcc-4.8 is
           # the version provided by Ubuntu, so we use that one.
