@@ -25,8 +25,13 @@ jobs:
           dist: xenial
           before_install:
               - CC=gcc-8 CXX=g++-8
+
+              # Enable sanitizers for test execution:
+              - san="-fsanitize=address,leak,undefined -fno-omit-frame-pointer -g -O1 -fuse-ld=gold"
+              - export CXXFLAGS="$san" CFLAGS="$san" LDFLAGS="$san" LDXXFLAGS="$san"
+
               # This is new in gcc-8 and not easily fixed:
-              - export CXXFLAGS="-Wno-error=cast-function-type"
+              - CXXFLAGS="$CXXFLAGS -Wno-error=cast-function-type"
           addons:
               apt:
                   sources:
