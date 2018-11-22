@@ -54,15 +54,12 @@ jobs:
           dist: xenial
           before_install:
               - CC=clang-7 CXX=clang++-7
-              # Disable warning until its causes are fixed:
-              - export CXXFLAGS="-Wno-error=inconsistent-missing-override"
           addons:
               apt:
                   sources:
                       - llvm-toolchain-xenial-7
                   packages:
                       - clang-7
-
         - name: "Ubuntu 14.04, gcc-4.8"
           # Note: Travis provides a newer GCC on trusty (5.4), but gcc-4.8 is
           # the version provided by Ubuntu, so we use that one.
