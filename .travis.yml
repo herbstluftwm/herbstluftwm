@@ -54,8 +54,6 @@ jobs:
           dist: xenial
           before_install:
               - CC=clang-7 CXX=clang++-7
-              # Disable warning until its causes are fixed:
-              - export CXXFLAGS="-Wno-error=inconsistent-missing-override"
           addons:
               apt:
                   sources:
@@ -67,8 +65,6 @@ jobs:
           dist: xenial
           before_install:
               - CC=clang-6.0 CXX=clang++-6.0
-              # Disable warning until its causes are fixed:
-              - export CXXFLAGS="-Wno-error=inconsistent-missing-override"
           addons:
               apt:
                   sources:
@@ -89,7 +85,7 @@ jobs:
           before_install:
               - CC=clang-3.9 CXX=clang++-3.9
               # Disable some warnings until their causes are fixed:
-              - export CXXFLAGS="-Wno-error=deprecated-register -Wno-error=inconsistent-missing-override"
+              - export CXXFLAGS="-Wno-error=deprecated-register"
           addons:
               apt:
                   packages:

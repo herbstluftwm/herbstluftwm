@@ -16,14 +16,14 @@ class Settings;
 class HSTag : public Object {
 public:
     HSTag(std::string name, Settings* settings);
-    ~HSTag();
+    ~HSTag() override;
     std::shared_ptr<HSFrame>        frame;  // the master frame
     Attribute_<unsigned long> index = {"index", 0};
     Attribute_<bool>         floating = {"floating", false};
     Attribute_<std::string>  name = {"name", {}};   // name of this tag
     int             flags;
     struct HSStack* stack;
-    void setIndexAttribute(unsigned long new_index);
+    void setIndexAttribute(unsigned long new_index) override;
 };
 
 void tag_init();
