@@ -31,7 +31,7 @@ Color::Color(XColor xcol)
 Color::Color(std::string name) {
     try {
         *this = fromStr(name);
-    } catch (std::invalid_argument) {
+    } catch (...) {
         *this = black();
     }
 }
