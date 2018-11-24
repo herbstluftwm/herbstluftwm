@@ -16,7 +16,7 @@ endif
 # FLAGS
 CC ?= gcc
 LD = $(CC)
-LDXX ?= g++
+LDXX ?= $(CXX)
 CFLAGS ?= -g
 CFLAGS += -pedantic -Wall -std=c99
 CXXFLAGS ?= -g
