@@ -70,12 +70,20 @@ int TagManager::removeTag(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     input.shift();
-    auto tagToRemove = find(input.front());
+    auto tagNameToRemove = input.front();
     input.shift();
-    auto targetTag = input.empty() ? get_current_monitor()->tag : find(input.front());
+    auto targetTagName = input.empty() ? get_current_monitor()->tag->name : input.front();
 
-    for (auto tag : {tagToRemove, targetTag}) {
-        output << input.command() << ": Tag \"" << tag << "\" not found\n";
+    auto targetTag = find(targetTagName);
+    auto tagToRemove = find(tagNameToRemove);
+
+    if (tagToRemove == nullptr) {
+        output << input.command() << ": Tag \"" << tagNameToRemove << "\" not found\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    if (targetTag == nullptr) {
+        output << input.command() << ": Tag \"" << targetTagName << "\" not found\n";
         return HERBST_INVALID_ARGUMENT;
     }
 
