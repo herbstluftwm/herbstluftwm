@@ -66,10 +66,10 @@ XColor Color::toXColor() const {
     return XColor{x11pixelValue_, red_, green_, blue_, DoRed | DoGreen | DoBlue, 0};
 }
 
-Rectangle Rectangle::fromStr(const char* source) {
+Rectangle Rectangle::fromStr(const std::string &source) {
     int x, y;
     unsigned int w, h;
-    int flags = XParseGeometry(source, &x, &y, &w, &h);
+    int flags = XParseGeometry(source.c_str(), &x, &y, &w, &h);
 
     return {
         (XValue & flags) ? x : 0,
