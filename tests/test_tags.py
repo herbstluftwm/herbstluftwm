@@ -21,3 +21,19 @@ def test_move_focused_client_to_new_tag(hlwm):
 
     proc.terminate()
     proc.wait(2)
+
+
+def test_merge_tag_into_another_tag(hlwm):
+    hlwm.callstr('add foobar')
+    (proc, winid) = hlwm.create_client()
+    hlwm.callstr('use_index 1')
+
+    hlwm.callstr('attr tags.0')
+    hlwm.callstr('attr tags.1')
+    hlwm.callstr('merge_tag default foobar')
+
+    #  assert hlwm.get_attr('tags.count') == '1'
+    #  assert hlwm.get_attr('tags.0.name') == 'foobar'
+
+    proc.terminate()
+    proc.wait(2)
