@@ -110,9 +110,6 @@ int TagManager::removeTag(Input input, Output output) {
         targetTag->frame->insertClient(client);
     }
 
-    // FIXME: Seems pointless?
-    tagToRemove->frame = shared_ptr<HSFrame>();
-
     // Make transferred clients visible if target tag is visible
     HSMonitor* monitor_target = find_monitor_with_tag(targetTag);
     if (monitor_target != nullptr) {
@@ -123,7 +120,6 @@ int TagManager::removeTag(Input input, Output output) {
     }
 
     // Remove tag
-    return HERBST_EXIT_SUCCESS;
     string removedName = tagToRemove->name;
     removeIndexed(index_of(tagToRemove));
     delete tagToRemove;
