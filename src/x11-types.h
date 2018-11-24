@@ -48,7 +48,7 @@ private:
 };
 
 struct Rectangle {
-    static Rectangle fromStr(const char *source);
+    static Rectangle fromStr(const std::string &source);
 
     int x;
     int y;

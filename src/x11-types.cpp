@@ -83,10 +83,10 @@ XColor Color::toXColor() const {
 	return xcol;
 }
 
-Rectangle Rectangle::fromStr(const char* source) {
+Rectangle Rectangle::fromStr(const std::string &source) {
     int x, y;
     unsigned int w, h;
-    int flags = XParseGeometry(source, &x, &y, &w, &h);
+    int flags = XParseGeometry(source.c_str(), &x, &y, &w, &h);
 
     return {
         (XValue & flags) ? x : 0,
