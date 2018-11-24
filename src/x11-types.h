@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <X11/Xlib.h>
 
@@ -65,6 +66,20 @@ struct Rectangle {
     int width;
     int height;
 };
+std::ostream& operator<< (std::ostream& stream, const Rectangle& matrix);
+
+template<>
+inline std::string Converter<Rectangle>::str(Rectangle payload) {
+    std::stringstream ss;
+    ss << payload;
+    return ss.str();
+}
+
+template<>
+inline Rectangle Converter<Rectangle>::parse(const std::string &payload, Rectangle const*) {
+    // TODO: relative modifiers, ie a syntax for shifts, might be cool
+    return Rectangle::fromStr(payload.c_str());
+}
 
 using RectangleVec = std::vector<Rectangle>;
 
@@ -72,9 +87,6 @@ struct Point2D {
     int x;
     int y;
 };
-
-std::ostream& operator<< (std::ostream& stream, const Rectangle& matrix);
-
 
 #endif
 
