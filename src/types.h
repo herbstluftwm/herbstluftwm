@@ -2,7 +2,6 @@
 #define HERBSTLUFT_TYPES_H
 
 #include "arglist.h"
-#include "x11-types.h" // for hl::Color
 #include <set>
 
 /* A path in the object tree */
@@ -64,16 +63,6 @@ inline std::string Converter<std::string>::parse(const std::string &payload, std
     return payload;
 }
 
-// Colors
-template<>
-inline std::string Converter<Color>::str(Color payload) { return payload.str(); }
-
-template<>
-inline Color Converter<Color>::parse(const std::string &payload, Color const*) {
-    Color new_color;
-    std::string msg = Color::fromStr(payload, new_color);
-    if (msg != "") throw std::invalid_argument(msg);
-    return new_color;
-}
+// Note: include x11-types.h for colors
 
 #endif

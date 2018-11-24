@@ -4,9 +4,9 @@
 #include "attribute.h"
 #include "object.h"
 #include "signal.h"
+#include "x11-types.h" // for Color
 #include <functional>
 #include <stdexcept>
-
 
 template<typename T>
 class Attribute_ : public Attribute {

@@ -1,6 +1,7 @@
 #ifndef __HERBST_X11_TYPES_H_
 #define __HERBST_X11_TYPES_H_
 
+#include "types.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -14,13 +15,13 @@
 class Color {
 public:
     Color();
+    Color(XColor xcol);
     Color(std::string name);
 
-    // parse a color from source into target. if parsing fails, an error
-    // message is returned and target is left unchanged.
-    static std::string fromStr(const std::string& source, Color& target);
     static Color black();
 
+    // throws std::invalid_argument
+    static Color fromStr(const std::string& payload);
     std::string str() const;
 
     // return an XColor as obtained form XQueryColor
@@ -46,6 +47,15 @@ private:
     // the x11 internal pixel value.
     unsigned long x11pixelValue_;
 };
+
+template<>
+inline std::string Converter<Color>::str(Color payload) { return payload.str(); }
+
+template<>
+inline Color Converter<Color>::parse(const std::string &payload, Color const*) {
+    // TODO: relative modifiers, ie brightness+10/red-20 would be cool
+    return Color::fromStr(payload);
+}
 
 struct Rectangle {
     static Rectangle fromStr(const char *source);
