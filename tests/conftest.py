@@ -29,6 +29,7 @@ class HlwmBridge:
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               env=self.env,
                               universal_newlines=True)
+        # TODO: Do not needlessly print empty output
         print(list(args))
         print(proc.stdout)
         print(proc.stderr, file=sys.stderr)
