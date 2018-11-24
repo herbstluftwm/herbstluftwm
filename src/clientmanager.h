@@ -6,6 +6,7 @@
 #include "signal.h"
 #include "types.h"
 
+#include <X11/Xlib.h>
 #include <unordered_map>
 
 class Theme;
