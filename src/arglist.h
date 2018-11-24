@@ -53,13 +53,11 @@ struct ArgList {
         if (c_->begin() != c_->end()) {
             return *c_->begin();
         } else {
-            return std::string("");
+            return {};
         }
     }
 
 protected:
-    static void split(Container &ret, const std::string &s, char delim = '.');
-
     Container::const_iterator begin_;
     /* shared pointer to make object copy-able:
      * 1. payload is shared (no redundant copies)
