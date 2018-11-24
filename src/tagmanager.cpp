@@ -65,6 +65,77 @@ int TagManager::tag_add_command(Input input, Output output) {
     return 0;
 }
 
+int TagManager::removeTag(Input input, Output output) {
+    if (input.size() < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    input.shift();
+    auto tagNameToRemove = input.front();
+    input.shift();
+    auto targetTagName = input.empty() ? get_current_monitor()->tag->name : input.front();
+
+    auto targetTag = find(targetTagName);
+    auto tagToRemove = find(tagNameToRemove);
+
+    if (tagToRemove == nullptr) {
+        output << input.command() << ": Tag \"" << tagNameToRemove << "\" not found\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    if (targetTag == nullptr) {
+        output << input.command() << ": Tag \"" << targetTagName << "\" not found\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    if (find_monitor_with_tag(tagToRemove) != nullptr) {
+        output << input.command() << ": Cannot merge the currently viewed tag\n";
+        return HERBST_TAG_IN_USE;
+    }
+
+    // Prevent dangling tag_previous pointers
+    all_monitors_replace_previous_tag(tagToRemove, targetTag);
+
+    // Collect all clients in tag
+    vector<HSClient*> clients;
+    tagToRemove->frame->foreachClient([&clients](HSClient* client) {
+        clients.push_back(client);
+    });
+
+    // Move clients to target tag
+    for (auto client : clients) {
+        stack_remove_slice(client->tag()->stack, client->slice);
+        client->setTag(targetTag);
+        stack_insert_slice(client->tag()->stack, client->slice);
+        ewmh_window_update_tag(client->window_, client->tag());
+        targetTag->frame->insertClient(client);
+    }
+
+    // FIXME: Seems pointless?
+    tagToRemove->frame = shared_ptr<HSFrame>();
+
+    // Make transferred clients visible if target tag is visible
+    HSMonitor* monitor_target = find_monitor_with_tag(targetTag);
+    if (monitor_target != nullptr) {
+        monitor_target->applyLayout();
+        for (auto c : clients) {
+            c->set_visible(true);
+        }
+    }
+
+    // Remove tag
+    return HERBST_EXIT_SUCCESS;
+    string removedName = tagToRemove->name;
+    removeIndexed(index_of(tagToRemove));
+    delete tagToRemove;
+    ewmh_update_current_desktop();
+    ewmh_update_desktops();
+    ewmh_update_desktop_names();
+    tag_set_flags_dirty();
+    hook_emit_list("tag_removed", removedName.c_str(), targetTag->name->c_str(), nullptr);
+
+    return HERBST_EXIT_SUCCESS;
+}
+
 int TagManager::tag_rename_command(Input input, Output output) {
     if (input.size() < 3) {
         return HERBST_NEED_MORE_ARGS;
