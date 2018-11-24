@@ -143,7 +143,7 @@ public:
     void setLayout(int l) { layout = l; }
     int getSelection() { return selection; }
     size_t clientCount() { return clients.size(); }
-    std::shared_ptr<HSFrame> neighbour(char direction);
+    std::shared_ptr<HSFrame> neighbour(Direction direction);
     std::vector<HSClient*> removeAllClients();
 
     std::shared_ptr<HSFrameLeaf> thisLeaf();
@@ -264,7 +264,7 @@ void frame_unfocus(); // unfocus currently focused window
 // get neighbour in a specific direction 'l' 'r' 'u' 'd' (left, right,...)
 // returns the neighbour or NULL if there is no one
 HSFrame* frame_neighbour(HSFrame* frame, char direction);
-int frame_inner_neighbour_index(std::shared_ptr<HSFrameLeaf> frame, char direction);
+int frame_inner_neighbour_index(std::shared_ptr<HSFrameLeaf> frame, Direction direction);
 int frame_focus_command(int argc, char** argv, Output output);
 
 // follow selection to leaf and focus this frame

@@ -45,7 +45,7 @@ void MonitorManager::ensure_monitors_are_available() {
     monitor_update_focus_objects();
 }
 
-int MonitorManager::indexInDirection(HSMonitor* m, enum HSDirection dir) {
+int MonitorManager::indexInDirection(HSMonitor* m, Direction dir) {
     RectangleIdxVec rects;
     int relidx = -1;
     FOR (i,0,size()) {
@@ -69,9 +69,12 @@ int MonitorManager::string_to_monitor_index(std::string string) {
             idx %= size();
             return idx;
         } else if (string[0] == '-') {
-            int dir = char_to_direction(string[1]);
-            if (dir < 0) return -1;
-            return indexInDirection(focus(), (enum HSDirection)dir);
+            try {
+                auto dir = Converter<Direction>::parse(string.substr(1), {});
+                return indexInDirection(focus(), dir);
+            } catch (...) {
+                return -1;
+            }
         } else {
             return -1;
         }

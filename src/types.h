@@ -3,6 +3,7 @@
 
 #include "arglist.h"
 #include <set>
+#include <map>
 
 /* A path in the object tree */
 using Path = ArgList;
@@ -62,6 +63,21 @@ template<>
 inline std::string Converter<std::string>::parse(const std::string &payload, std::string const*) {
     return payload;
 }
+
+// Directions (used in frames, floating)
+enum class Direction { Right, Left, Up, Down };
+template<>
+inline Direction Converter<Direction>::parse(const std::string &payload, Direction const*) {
+    std::map<char, Direction> mapping = {
+        {'u', Direction::Up},   {'r', Direction::Right},
+        {'d', Direction::Down}, {'l', Direction::Left},
+    };
+    auto it = mapping.find(payload.at(0));
+    if (it == mapping.end())
+        throw std::invalid_argument("Invalid direction \"" + payload + "\"");
+    return it->second;
+}
+
 
 // Note: include x11-types.h for colors
 
