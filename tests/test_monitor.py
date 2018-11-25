@@ -28,3 +28,19 @@ def test_remove_monitor(hlwm):
 
     assert hlwm.get_attr('monitors.count') == '1'
     assert hlwm.get_attr('monitors.focus.name') == 'monitor2'
+
+
+def test_cannot_remove_nonexistant_monitor(hlwm):
+    call = hlwm.call('remove_monitor', '1', check=False)
+
+    assert call.returncode != 0
+    assert call.stderr.endswith(' not found!\n')
+    assert hlwm.get_attr('monitors.count') == '1'
+
+
+def test_cannot_remove_last_monitor(hlwm):
+    call = hlwm.call('remove_monitor', '0', check=False)
+
+    assert call.returncode != 0
+    assert call.stderr.endswith(' last monitor\n')
+    assert hlwm.get_attr('monitors.count') == '1'
