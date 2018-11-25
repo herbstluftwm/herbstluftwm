@@ -78,7 +78,7 @@ inline std::string Converter<Rectangle>::str(Rectangle payload) {
 template<>
 inline Rectangle Converter<Rectangle>::parse(const std::string &payload, Rectangle const*) {
     // TODO: relative modifiers, ie a syntax for shifts, might be cool
-    return Rectangle::fromStr(payload.c_str());
+    return Rectangle::fromStr(payload);
 }
 
 using RectangleVec = std::vector<Rectangle>;
