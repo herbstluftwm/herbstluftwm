@@ -270,7 +270,7 @@ int set_monitor_rects(const RectangleVec &templates) {
     }
     // remove monitors if there are too much
     while (i < g_monitors->size()) {
-        remove_monitor((int)i);
+        g_monitors->removeMonitor(g_monitors->byIdx(i));
     }
     monitor_update_focus_objects();
     all_monitors_apply_layout();
@@ -343,44 +343,6 @@ int add_monitor_command(int argc, char** argv, Output output) {
     return 0;
 }
 
-
-int remove_monitor(int index) {
-    if (index < 0 || index >= g_monitors->size()) {
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (g_monitors->size() <= 1) {
-        return HERBST_FORBIDDEN;
-    }
-
-    {
-        auto monitor = g_monitors->byIdx(index);
-        if (g_cur_monitor > index) {
-            // same monitor shall be selected after remove
-            g_cur_monitor--;
-        }
-        assert(monitor->tag);
-        assert(monitor->tag->frame);
-        // hide clients
-        monitor->tag->frame->setVisibleRecursive(false);
-        // remove from monitor stack
-        stack_remove_slice(g_monitor_stack, monitor->slice);
-        slice_destroy(monitor->slice);
-        XDestroyWindow(g_display, monitor->stacking_window);
-    } // monitor becomes invalid
-
-    // remove monitor completely
-    g_monitors->removeIndexed((unsigned)index);
-    if (g_cur_monitor >= g_monitors->size()) {
-        g_cur_monitor--;
-        // if selection has changed, then relayout focused monitor
-        get_current_monitor()->applyLayout();
-        monitor_update_focus_objects();
-        // also announce the new selection
-        ewmh_update_current_desktop();
-        emit_tag_changed(get_current_monitor()->tag, g_cur_monitor);
-    }
-    return 0;
-}
 
 int HSMonitor::move_cmd(Input input, Output output) {
     // usage: move_monitor INDEX RECT [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]
