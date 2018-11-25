@@ -28,7 +28,9 @@ class HlwmBridge:
         proc = subprocess.run([self.HC_PATH, '-n'] + str_args,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               env=self.env,
-                              universal_newlines=True)
+                              universal_newlines=True,
+                              timeout=2
+                              )
         print(list(args))
         print(proc.stdout)
         print(proc.stderr, file=sys.stderr)
