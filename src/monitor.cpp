@@ -97,6 +97,8 @@ HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rec
 
 HSMonitor::~HSMonitor() {
     stack_remove_slice(g_monitor_stack, slice);
+    slice_destroy(slice);
+    XDestroyWindow(g_display, stacking_window);
 }
 
 std::string HSMonitor::getTagString() {
@@ -341,26 +343,6 @@ int add_monitor_command(int argc, char** argv, Output output) {
     return 0;
 }
 
-int remove_monitor_command(int argc, char** argv, Output output) {
-    // usage: remove_monitor INDEX
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    int index = g_monitors->string_to_monitor_index(argv[1]);
-    if (index == -1) {
-        output << argv[0] << ": Monitor \"" << argv[1] << "\" not found!\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    int ret = remove_monitor(index);
-    if (ret == HERBST_INVALID_ARGUMENT) {
-        output << argv[0] <<
-            ": Index needs to be between 0 and " << (g_monitors->size() - 1) << "\n";
-    } else if (ret == HERBST_FORBIDDEN) {
-        output << argv[0] << ": Can't remove the last monitor\n";
-    }
-    monitor_update_focus_objects();
-    return ret;
-}
 
 int remove_monitor(int index) {
     if (index < 0 || index >= g_monitors->size()) {
