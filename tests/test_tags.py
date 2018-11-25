@@ -25,9 +25,7 @@ def test_merge_tag_into_another_tag(hlwm, create_client):
     create_client()
     hlwm.callstr('use_index 1')
 
-    hlwm.callstr('attr tags.0')
-    hlwm.callstr('attr tags.1')
-    hlwm.callstr('merge_tag default foobar', check=False)
+    hlwm.callstr('merge_tag default foobar')
 
     assert hlwm.get_attr('tags.count') == '1'
     assert hlwm.get_attr('tags.0.name') == 'foobar'
