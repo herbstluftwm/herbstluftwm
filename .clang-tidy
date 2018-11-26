@@ -1,0 +1,6 @@
+---
+# First enable all, then disable the unsuitable ones:
+Checks: '*,-android-*,-objc-*,-fuchsia-*,-mpi-*,-performance-*,-llvm-include-order'
+
+# Uncomment this to make clang-tidy fail on any findings:
+# WarningsAsErrors: '*'

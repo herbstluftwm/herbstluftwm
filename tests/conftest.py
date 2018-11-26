@@ -29,8 +29,10 @@ class HlwmBridge:
         proc = subprocess.run([self.HC_PATH, '-n'] + str_args,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               env=self.env,
-                              universal_newlines=True)
-        # TODO: Do not needlessly print empty output
+                              universal_newlines=True,
+                              # Kill hc when it hangs due to crashed server:
+                              timeout=2
+                              )
         print(list(args))
         print(proc.stdout)
         print(proc.stderr, file=sys.stderr)

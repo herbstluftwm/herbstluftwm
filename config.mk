@@ -14,13 +14,14 @@ LIBS += -lrt
 endif
 
 # FLAGS
-CC ?= gcc
+CC ?= gcc # used for ipc client
+CXX ?= g++
 LD = $(CC)
 LDXX ?= $(CXX)
 CFLAGS ?= -g
 CFLAGS += -pedantic -Wall -std=c99
 CXXFLAGS ?= -g
-CXXFLAGS += -pedantic -Wall -Werror -std=c++11 -Wno-sign-compare -Wno-narrowing -Wno-invalid-offsetof
+CXXFLAGS += -pedantic -Wall -Werror -std=c++11 -Wno-sign-compare -Wno-narrowing
 VERSIONFLAGS = \
     -D HERBSTLUFT_VERSION=\"$(VERSION)\" \
     -D HERBSTLUFT_VERSION_MAJOR=$(VERSION_MAJOR) \
