@@ -1,6 +1,7 @@
 
 #include "monitormanager.h"
 #include <memory>
+#include <cassert>
 
 #include "tagmanager.h"
 #include "globals.h"
@@ -9,6 +10,8 @@
 #include "settings.h"
 #include "ipc-protocol.h"
 #include "utils.h"
+#include "stack.h"
+#include "ewmh.h"
 
 using namespace std;
 
@@ -150,6 +153,63 @@ void MonitorManager::relayoutTag(HSTag *tag)
         }
     }
 }
+
+int MonitorManager::removeMonitor(Input input, Output output)
+{
+    if (input.size() < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+
+    input.shift();
+    string monitorIdxString = input.front();
+    auto monitor = byString(monitorIdxString);
+
+    if (monitor == nullptr) {
+        output << input.command() << ": Monitor \"" << monitorIdxString << "\" not found!\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    if (size() <= 1) {
+        output << input.command() << ": Can't remove the last monitor\n";
+        return HERBST_FORBIDDEN;
+    }
+
+    removeMonitor(monitor);
+
+    return HERBST_EXIT_SUCCESS;
+}
+
+void MonitorManager::removeMonitor(HSMonitor* monitor)
+{
+    auto monitorIdx = index_of(monitor);
+
+    if (g_cur_monitor > index_of(monitor)) {
+        // Take into account that the current monitor will have a new
+        // index after removal:
+        g_cur_monitor--;
+    }
+
+    // Hide all clients visible in monitor
+    assert(monitor->tag != nullptr);
+    assert(monitor->tag->frame != nullptr);
+    monitor->tag->frame->setVisibleRecursive(false);
+
+    g_monitors->removeIndexed(monitorIdx);
+
+    delete monitor;
+
+    if (g_cur_monitor >= g_monitors->size()) {
+        g_cur_monitor--;
+        // if selection has changed, then relayout focused monitor
+        get_current_monitor()->applyLayout();
+        monitor_update_focus_objects();
+        // also announce the new selection
+        ewmh_update_current_desktop();
+        emit_tag_changed(get_current_monitor()->tag, g_cur_monitor);
+    }
+    monitor_update_focus_objects();
+}
+
 
 HSMonitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
     HSMonitor* m = new HSMonitor(settings_, this, rect, tag);
