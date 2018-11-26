@@ -30,6 +30,8 @@ public:
     std::function<int(Input, Output)> byFirstArg(HSMonitorCommand cmd);
     // relayout the monitor showing this tag, if there is any
     void relayoutTag(HSTag* tag);
+    int removeMonitor(Input input, Output output);
+    void removeMonitor(HSMonitor* monitor);
 
     int indexInDirection(HSMonitor* m, enum HSDirection dir);
 
