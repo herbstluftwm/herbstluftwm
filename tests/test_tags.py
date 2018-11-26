@@ -22,6 +22,7 @@ def test_move_focused_client_to_new_tag(hlwm):
     proc.terminate()
     proc.wait(2)
 
+
 def test_merge_tag_into_another_tag(hlwm, create_client):
     hlwm.callstr('add foobar')
     create_client()
