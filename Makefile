@@ -4,6 +4,7 @@ include colors.mk
 
 HLWMSRC = $(wildcard src/*.cpp)
 HLWMOBJ = $(HLWMSRC:.cpp=.o)
+HLWMCLANGTIDY = $(HLWMSRC:.cpp=.clang-tidy)
 HLWMTARGET = herbstluftwm
 
 HCSRC = $(wildcard ipc-client/*.c)
@@ -20,6 +21,7 @@ TUTORIAL = doc/herbstluftwm-tutorial.txt
 
 .PHONY: depend all all-nodoc doc install install-nodoc info www
 .PHONY: cleandoc cleanwww cleandeps clean
+.PHONY: clang-tidy clang-tidy-list-checks $(HLWMCLANGTIDY)
 
 all: $(TARGETS) doc
 all-nodoc: $(TARGETS)
@@ -173,3 +175,12 @@ www:
 
 cleanwww:
 	make -C www clean
+
+clang-tidy: clang-tidy-list-checks $(HLWMCLANGTIDY)
+
+clang-tidy-list-checks:
+	$(VERBOSE) clang-tidy -list-checks
+
+$(HLWMCLANGTIDY): %.clang-tidy: %.cpp
+	$(call colorecho,CLANG-TIDY,$@)
+	$(VERBOSE) clang-tidy -header-filter='$(CURDIR)' $< -- $(CPPFLAGS) $(CXXFLAGS)

@@ -83,17 +83,17 @@ XColor Color::toXColor() const {
 	return xcol;
 }
 
-Rectangle Rectangle::fromStr(const char* source) {
-	int x, y;
-	unsigned int w, h;
-	int flags = XParseGeometry(source, &x, &y, &w, &h);
+Rectangle Rectangle::fromStr(const std::string &source) {
+    int x, y;
+    unsigned int w, h;
+    int flags = XParseGeometry(source.c_str(), &x, &y, &w, &h);
 
-	return {
-		(XValue & flags) ? x : 0,
-		(YValue & flags) ? y : 0,
-		(WidthValue & flags) ? w : 0,
-		(HeightValue & flags) ? h : 0
-	};
+    return {
+        (XValue & flags) ? x : 0,
+        (YValue & flags) ? y : 0,
+        (WidthValue & flags) ? (int)w : 0,
+        (HeightValue & flags) ? (int)h : 0
+    };
 }
 
 std::ostream& operator<< (std::ostream& stream, const Rectangle& rect) {

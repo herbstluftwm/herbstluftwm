@@ -3,6 +3,7 @@ import os.path
 import os
 import sys
 import textwrap
+from types import SimpleNamespace
 
 import pytest
 
@@ -28,7 +29,10 @@ class HlwmBridge:
         proc = subprocess.run([self.HC_PATH, '-n'] + str_args,
                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                               env=self.env,
-                              universal_newlines=True)
+                              universal_newlines=True,
+                              # Kill hc when it hangs due to crashed server:
+                              timeout=2
+                              )
         print(list(args))
         print(proc.stdout)
         print(proc.stderr, file=sys.stderr)
@@ -57,7 +61,8 @@ class HlwmBridge:
         # once the window appears, the hook is fired, and the --wait exits:
         hc_wait.wait(2)
         winid = hc_wait.stdout.read().decode().rstrip('\n').split('\t')[-1]
-        return (proc,winid)
+
+        return SimpleNamespace(proc=proc, winid=winid)
 
 
 @pytest.fixture
@@ -93,3 +98,23 @@ def hlwm_process(tmpdir):
     proc.terminate()
     #proc.wait()
     assert proc.wait(2) == 0
+
+
+@pytest.fixture
+def create_client(hlwm):
+    """
+    Callable fixture that allows to create clients that will be terminated on
+    teardown.
+    """
+    clients = []
+
+    def create_and_track_client():
+        new_client = hlwm.create_client()
+        clients.append(new_client)
+        return new_client.winid
+
+    yield create_and_track_client
+
+    for client in clients:
+        client.proc.terminate()
+        client.proc.wait(2)
