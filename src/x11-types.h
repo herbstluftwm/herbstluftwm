@@ -41,10 +41,12 @@ private:
     // each of the color components is a value
     // in the range 0 to 65535 inclusive. (all 0 means black, all 65535 is
     // white)
-    unsigned short red_{0}, green_{0}, blue_{0};
+    unsigned short red_ = 0;
+    unsigned short green_ = 0;
+    unsigned short blue_ = 0;
 
     // the x11 internal pixel value.
-    unsigned long x11pixelValue_{0};
+    unsigned long x11pixelValue_ = 0;
 };
 
 struct Rectangle {

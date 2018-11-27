@@ -9,8 +9,8 @@ public:
     Tmp() = default;
     int mktemp(Input input, Output output);
 private:
-    unsigned long number_active{0};
-    unsigned long number_total{0};
+    unsigned long number_active = 0;
+    unsigned long number_total = 0;
 };
 
 #endif
