@@ -138,7 +138,7 @@ public:
 
     HSClient* focusedClient() override;
 
-    bool split(int alignment, int fraction, int childrenLeaving = 0);
+    bool split(int alignment, int fraction, size_t childrenLeaving = 0);
     int getLayout() { return layout; }
     void setLayout(int l) { layout = l; }
     int getSelection() { return selection; }

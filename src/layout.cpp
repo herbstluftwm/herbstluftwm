@@ -930,7 +930,7 @@ void HSFrameLeaf::addClients(const std::vector<HSClient*>& vec) {
     for (auto c : vec) clients.push_back(c);
 }
 
-bool HSFrameLeaf::split(int alignment, int fraction, int childrenLeaving) {
+bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
     if (splitsToRoot(alignment) > HERBST_MAX_TREE_HEIGHT) {
         return false;
     }
@@ -1033,11 +1033,11 @@ int frame_split_command(int argc, char** argv, Output output) {
         }
     }
     // move second half of the window buf to second frame
-    size_t count1 = 0;
+    size_t childrenLeaving = 0;
     if (exploding) {
-        count1 -= (frame->clientCount() + 1) / 2;      // new count for the first frame
+        childrenLeaving = frame->clientCount() / 2;
     }
-    if (!frame->split(align, fraction, count1)) {
+    if (!frame->split(align, fraction, childrenLeaving)) {
         return 0;
     }
     if (!frameToFirst) {
