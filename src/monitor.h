@@ -22,7 +22,7 @@ struct HSStack;
 class HSMonitor : public Object {
 public:
     HSMonitor(Settings* settings, MonitorManager* monman, Rectangle Rect, HSTag* tag);
-    ~HSMonitor();
+    ~HSMonitor() override;
     Rectangle getFloatingArea();
     int relativeX(int x_root);
     int relativeY(int y_root);
@@ -47,7 +47,7 @@ public:
     } mouse;
     Rectangle   rect;   // area for this monitor
     Window      stacking_window;   // window used for making stacking easy
-    void setIndexAttribute(unsigned long index);
+    void setIndexAttribute(unsigned long index) override;
     int lock_tag_cmd(Input argv, Output output);
     int unlock_tag_cmd(Input argv, Output output);
     int list_padding(Input input, Output output);
