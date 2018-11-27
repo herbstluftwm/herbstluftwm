@@ -66,7 +66,7 @@ bool ArgList::read(std::initializer_list<std::string*> targets) {
     return true;
 }
 
-ArgList ArgList::replace(const std::string& from, const std::string& to) {
+ArgList ArgList::replaced(const std::string& from, const std::string& to) const {
     int i = 0;
     vector<std::string> new_list(size());
     for (auto v : *this) {
