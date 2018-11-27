@@ -33,7 +33,7 @@ public:
     int removeMonitor(Input input, Output output);
     void removeMonitor(HSMonitor* monitor);
 
-    int indexInDirection(HSMonitor* m, enum HSDirection dir);
+    int indexInDirection(HSMonitor* m, Direction dir);
 
     void lock();
     void unlock();

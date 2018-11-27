@@ -1,4 +1,4 @@
-#include "types.h"
+#include "arglist.h"
 
 using namespace std;
 
@@ -8,8 +8,7 @@ ArgList::ArgList(const std::initializer_list<std::string> &l)
 ArgList::ArgList(const ArgList::Container &c) : c_(std::make_shared<Container>(c)) { reset(); }
 
 ArgList::ArgList(const std::string &s, char delim) {
-    c_ = std::make_shared<Container>();
-    split(*c_, s, delim);
+    c_ = std::make_shared<Container>(split(s, delim));
     reset();
 }
 
@@ -23,7 +22,8 @@ std::string ArgList::operator[](size_t idx) {
     return c_->operator[](idx);
 }
 
-void ArgList::split(Container &ret, const std::string &s, char delim) {
+ArgList::Container ArgList::split(const std::string &s, char delim) {
+    Container ret;
     std::stringstream tmp(s);
     std::string item;
     // read "lines" seperated by delim
@@ -34,11 +34,6 @@ void ArgList::split(Container &ret, const std::string &s, char delim) {
     if (!s.empty() && s.back() == delim) {
         ret.push_back("");
     }
-}
-
-ArgList::Container ArgList::split(const std::string &s, char delim) {
-    Container ret;
-    split(ret, s, delim);
     return ret;
 }
 

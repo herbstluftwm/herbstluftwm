@@ -260,11 +260,10 @@ template <> int do_comparison<unsigned long>(const unsigned long& a, const unsig
 }
 
 template <typename T> int parse_and_compare(string a, string b, Output o) {
-    vector<string> strings = { a, b };
     vector<T> vals;
-    for (auto & x : strings) {
+    for (auto &x : {a, b}) {
         try {
-            vals.push_back(Attribute_<T>::parse(x, nullptr));
+            vals.push_back(Converter<T>::parse(x, nullptr));
         } catch(std::exception& e) {
             o << "can not parse \"" << x << "\" to "
               << typeid(T).name() << ": " << e.what() << endl;
