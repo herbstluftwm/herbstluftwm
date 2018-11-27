@@ -113,7 +113,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
         index = MOD(index, size());
         if (skip_visible_tags) {
             HSTag* tag = global_tags->byIdx(index);
-            for (int i = 0; find_monitor_with_tag(&* tag); i++) {
+            for (size_t i = 0; find_monitor_with_tag(tag); i++) {
                 if (i >= global_tags->size()) {
                     // if we tried each tag then there is no invisible tag
                     return nullptr;
@@ -125,7 +125,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
         }
     } else {
         // if it is absolute, then check index
-        if (index < 0 || index >= global_tags->size()) {
+        if (index < 0 || (size_t)index >= global_tags->size()) {
             HSDebug("invalid tag index %d\n", index);
             return nullptr;
         }
