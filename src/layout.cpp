@@ -72,12 +72,12 @@ HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> 
     decoration = new FrameDecoration(tag, settings);
 }
 
-HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
+HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b)
              : HSFrame(tag, settings, parent) {
     this->align = align;
     selection = 0;
-    fraction = FRACTION_UNIT / 2;
+    this->fraction = fraction;
     this->a = a;
     this->b = b;
 }
@@ -943,7 +943,7 @@ bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
                      FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
     auto first = shared_from_this();
     auto second = make_shared<HSFrameLeaf>(tag_, settings_, std::weak_ptr<HSFrameSplit>());
-    auto new_this = make_shared<HSFrameSplit>(tag_, settings_, parent_, alignment, first, second);
+    auto new_this = make_shared<HSFrameSplit>(tag_, settings_, parent_, fraction, alignment, first, second);
     second->parent_ = new_this;
     second->addClients(leaves);
     if (parent_.lock()) {

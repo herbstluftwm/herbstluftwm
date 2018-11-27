@@ -171,7 +171,7 @@ private:
 
 class HSFrameSplit : public HSFrame {
 public:
-    HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
+    HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b);
     ~HSFrameSplit() override;
     // inherited:
