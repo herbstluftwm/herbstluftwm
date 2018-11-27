@@ -183,9 +183,10 @@ int TagManager::tag_move_window_command(Input argv, Output output) {
     if (argv.size() < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    HSTag* target = find(argv[1]);
+    argv.shift();
+    HSTag* target = find(argv.front());
     if (!target) {
-        output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
+        output << argv.command() << ": Tag \"" << argv.front() << "\" not found\n";
         return HERBST_INVALID_ARGUMENT;
     }
     moveFocusedClient(target);
@@ -196,13 +197,14 @@ int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
     if (argv.size() < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
+    argv.shift();
     bool skip_visible = false;
-    if (argv.size() >= 3 && argv[2] == "--skip-visible") {
+    if (argv.size() >= 2 && *(argv.begin()+1) == "--skip-visible") {
         skip_visible = true;
     }
-    HSTag* tag = global_tags->byIndexStr(argv[1], skip_visible);
+    HSTag* tag = global_tags->byIndexStr(argv.front(), skip_visible);
     if (!tag) {
-        output << argv[0] << ": Invalid index \"" << argv[1] << "\"\n";
+        output << argv.command() << ": Invalid index \"" << argv.front() << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     moveFocusedClient(tag);

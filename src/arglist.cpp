@@ -18,10 +18,6 @@ ArgList ArgList::operator+(Container::difference_type shift_amount) {
     return ret;
 }
 
-std::string ArgList::operator[](size_t idx) {
-    return c_->operator[](idx);
-}
-
 ArgList::Container ArgList::split(const std::string &s, char delim) {
     Container ret;
     std::stringstream tmp(s);

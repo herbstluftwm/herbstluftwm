@@ -23,7 +23,6 @@ struct ArgList {
     ArgList(const std::string &s, char delim = '.');
     // operator to obtain shifted version of list (shallow copy)
     ArgList operator+(Container::difference_type shift_amount);
-    std::string operator[](size_t idx);
 
     Container::const_iterator begin() const { return begin_; }
     Container::const_iterator end() const { return c_->cend(); }
