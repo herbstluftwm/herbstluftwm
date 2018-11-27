@@ -78,7 +78,8 @@ char** argv_duplicate(int argc, char** argv);
 // frees all entries in argument-vector and then the vector itself
 void argv_free(int argc, char** argv);
 
-Rectangle parse_rectangle(char* string);
+// tells if the intervals [a_left, a_right) [b_left, b_right) intersect
+bool intervals_intersect(int a_left, int a_right, int b_left, int b_right);
 
 void g_queue_remove_element(GQueue* queue, GList* elem);
 
