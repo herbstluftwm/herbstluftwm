@@ -237,7 +237,7 @@ bool frame_remove_client(HSFrame* frame, HSClient* client);
 // YOU have to g_free the resulting window-buf
 void frame_destroy(HSFrame* frame, HSClient*** buf, size_t* count);
 bool frame_split(HSFrame* frame, int align, int fraction);
-int frame_split_command(int argc, char** argv, Output output);
+int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
 
 void reset_frame_colors();
