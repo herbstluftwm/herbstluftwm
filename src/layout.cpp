@@ -943,6 +943,7 @@ bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
                      FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
     auto first = shared_from_this();
     auto second = make_shared<HSFrameLeaf>(tag_, settings_, std::weak_ptr<HSFrameSplit>());
+    second->layout = layout;
     auto new_this = make_shared<HSFrameSplit>(tag_, settings_, parent_, fraction, alignment, first, second);
     second->parent_ = new_this;
     second->addClients(leaves);
