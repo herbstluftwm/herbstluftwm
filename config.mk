@@ -14,9 +14,10 @@ LIBS += -lrt
 endif
 
 # FLAGS
-CC ?= gcc
+CC ?= gcc # used for ipc client
+CXX ?= g++
 LD = $(CC)
-LDXX ?= g++
+LDXX ?= $(CXX)
 CFLAGS ?= -g
 CFLAGS += -pedantic -Wall -std=c99
 CXXFLAGS ?= -g
