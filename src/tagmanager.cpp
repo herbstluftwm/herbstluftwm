@@ -154,9 +154,9 @@ void TagManager::moveClient(HSClient* client, HSTag* target) {
     target->frame->insertClient(client);
     // enfoce it to be focused on the target tag
     target->frame->focusClient(client);
-    stack_remove_slice(client->tag()->stack, client->slice);
+    client->tag()->stack->remove_slice(client->slice);
     client->setTag(target);
-    stack_insert_slice(client->tag()->stack, client->slice);
+    client->tag()->stack->insert_slice(client->slice);
     ewmh_window_update_tag(client->window_, client->tag());
 
     // refresh things, hide things, layout it, and then show it if needed

@@ -415,7 +415,7 @@ bool HSStack::is_layer_empty(HSLayer layer) {
 void HSStack::clear_layer(HSLayer layer) {
     while (!is_layer_empty(layer)) {
         HSSlice* slice = (HSSlice*) top[layer]->data;
-        remove_layer(slice, layer);
+        slice_remove_layer(slice, layer);
         dirty = true;
     }
 }

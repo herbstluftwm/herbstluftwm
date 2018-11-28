@@ -40,6 +40,7 @@ typedef struct HSSlice {
 } HSSlice;
 
 class HSStack {
+    public:
     GList*  top[LAYER_COUNT];
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
 

@@ -238,7 +238,7 @@ void HSClient::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
 }
 
 void HSClient::raise() {
-    stack_raise_slide(this->tag()->stack, this->slice);
+    this->tag()->stack->raise_slide(this->slice);
 }
 
 void HSClient::resize_tiling(Rectangle rect, bool isFocused) {
@@ -576,9 +576,9 @@ void HSClient::set_fullscreen(bool state) {
     }
     HSStack* stack = this->tag()->stack;
     if (state) {
-        stack_slice_add_layer(stack, this->slice, LAYER_FULLSCREEN);
+        stack->slice_add_layer(this->slice, LAYER_FULLSCREEN);
     } else {
-        stack_slice_remove_layer(stack, this->slice, LAYER_FULLSCREEN);
+        stack->slice_remove_layer( this->slice, LAYER_FULLSCREEN);
     }
     tag_update_focus_layer(this->tag());
     auto m = find_monitor_with_tag(this->tag());

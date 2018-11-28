@@ -184,7 +184,7 @@ static void ewmh_add_tag_stack(HSTag* tag, void* data) {
         return;
     }
     int remain;
-    stack_to_window_buf(tag->stack, stack->buf + stack->i,
+    tag->stack->to_window_buf(stack->buf + stack->i,
                         stack->count - stack->i, true, &remain);
     if (remain >= 0) {
         stack->i = stack->count - remain;

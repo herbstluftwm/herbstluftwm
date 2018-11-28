@@ -139,7 +139,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     }
     // insert window to the stack
     client->slice = slice_create_client(client);
-    stack_insert_slice(client->tag()->stack, client->slice);
+    client->tag()->stack->insert_slice(client->slice);
     // insert window to the tag
     client->tag()->frame->lookup(changes.tree_index->str)
                  ->insertClient(client);
@@ -200,7 +200,7 @@ void ClientManager::force_unmanage(HSClient* client) {
         mouse_stop_drag();
     }
     if (client->tag() && client->slice) {
-        stack_remove_slice(client->tag()->stack, client->slice);
+        client->tag()->stack->remove_slice(client->slice);
     }
     // remove from tag
     client->tag()->frame->removeClient(client);
