@@ -30,19 +30,13 @@ void stacklist_init() {
 void stacklist_destroy() {
 }
 
-
-HSStack* stack_create() {
-    return g_new0(HSStack, 1);
-}
-
-void stack_destroy(HSStack* s) {
+HSStack::~HSStack() {
     for (int i = 0; i < LAYER_COUNT; i++) {
-        if (s->top[i]) {
+        if (top[i]) {
             HSDebug("Warning: %s of stack %p was not empty on destroy\n",
-                    g_layer_names[i], (void*)s);
+                    g_layer_names[i], (void*)this);
         }
     }
-    g_free(s);
 }
 
 static HSSlice* slice_create() {

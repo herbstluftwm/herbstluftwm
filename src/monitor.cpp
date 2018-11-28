@@ -38,7 +38,7 @@ MonitorManager* g_monitors;
 
 void monitor_init() {
     g_cur_monitor = 0;
-    g_monitor_stack = stack_create();
+    g_monitor_stack = new HSStack();
 }
 
 HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, HSTag* tag_)
@@ -160,7 +160,7 @@ bool HSMonitor::setTag(HSTag* new_tag) {
 // TODO this is the job of monitormanager
 void monitor_destroy() {
     g_monitors->clearChildren();
-    stack_destroy(g_monitor_stack);
+    delete g_monitor_stack;
 }
 
 void HSMonitor::applyLayout() {

@@ -41,6 +41,9 @@ typedef struct HSSlice {
 
 class HSStack {
     public:
+    HSStack() = default;
+    ~HSStack();
+
     GList*  top[LAYER_COUNT];
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
 
@@ -71,9 +74,6 @@ void slice_destroy(HSSlice* slice);
 HSLayer slice_highest_layer(HSSlice* slice);
 
 int print_stack_command(int argc, char** argv, Output output);
-
-HSStack* stack_create();
-void stack_destroy(HSStack* s);
 
 #endif
 
