@@ -1058,32 +1058,32 @@ int frame_change_fraction_command(int argc, char** argv, Output output) {
     if (argc < 3) {
         return HERBST_NEED_MORE_ARGS;
     }
-    char direction = argv[1][0];
+    Direction direction;
+    try {
+        direction = Converter<Direction>::parse(argv[1], nullptr);
+    } catch (const std::exception& e) {
+        output << argv[0] << ": " << e.what() << "\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
     double delta_double = atof(argv[2]);
     delta_double = CLAMP(delta_double, -1.0, 1.0);
     int delta = FRACTION_UNIT * delta_double;
     // if direction is left or up we have to flip delta
     // because e.g. resize up by 0.1 actually means:
     // reduce fraction by 0.1, i.e. delta = -0.1
-    switch (direction) {
-        case 'l':   delta *= -1; break;
-        case 'r':   break;
-        case 'u':   delta *= -1; break;
-        case 'd':   break;
-        default:
-            output << argv[0] << ": Invalid direction \"" << argv[1] << "\"\n";
-            return HERBST_INVALID_ARGUMENT;
-    }
+    if (direction == Direction::Left || direction == Direction::Up)
+        delta *= -1;
+
     shared_ptr<HSFrame> neighbour = HSFrame::getGloballyFocusedFrame()->neighbour(direction);
     if (!neighbour) {
         // then try opposite direction
-        switch (direction) {
-            case 'l':   direction = 'r'; break;
-            case 'r':   direction = 'l'; break;
-            case 'u':   direction = 'd'; break;
-            case 'd':   direction = 'u'; break;
-            default:    assert(false); break;
-        }
+        std::map<Direction, Direction> flip = {
+            {Direction::Left, Direction::Right},
+            {Direction::Right, Direction::Left},
+            {Direction::Down, Direction::Up},
+            {Direction::Up, Direction::Down},
+        };
+        direction = flip[direction];
         neighbour = HSFrame::getGloballyFocusedFrame()->neighbour(direction);
         if (!neighbour) {
             output << argv[0] << ": No neighbour found\n";
@@ -1104,7 +1104,7 @@ void HSFrameSplit::adjustFraction(int delta) {
                                (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
 }
 
-shared_ptr<HSFrame> HSFrameLeaf::neighbour(char direction) {
+shared_ptr<HSFrame> HSFrameLeaf::neighbour(Direction direction) {
     bool found = false;
     shared_ptr<HSFrame> other;
     shared_ptr<HSFrame> child = shared_from_this();
@@ -1113,37 +1113,33 @@ shared_ptr<HSFrame> HSFrameLeaf::neighbour(char direction) {
         // find frame, where we can change the
         // selection in the desired direction
         switch(direction) {
-            case 'r':
+            case Direction::Right:
                 if (frame->getAlign() == ALIGN_HORIZONTAL
                     && frame->firstChild() == child) {
                     found = true;
                     other = frame->secondChild();
                 }
                 break;
-            case 'l':
+            case Direction::Left:
                 if (frame->getAlign() == ALIGN_HORIZONTAL
                     && frame->secondChild() == child) {
                     found = true;
                     other = frame->firstChild();
                 }
                 break;
-            case 'd':
+            case Direction::Down:
                 if (frame->getAlign() == ALIGN_VERTICAL
                     && frame->firstChild() == child) {
                     found = true;
                     other = frame->secondChild();
                 }
                 break;
-            case 'u':
+            case Direction::Up:
                 if (frame->getAlign() == ALIGN_VERTICAL
                     && frame->secondChild() == child) {
                     found = true;
                     other = frame->firstChild();
                 }
-                break;
-            default:
-                return shared_ptr<HSFrame>();
-                break;
         }
         if (found) {
             break;
@@ -1160,19 +1156,19 @@ shared_ptr<HSFrame> HSFrameLeaf::neighbour(char direction) {
 
 // finds a neighbour within frame in the specified direction
 // returns its index or -1 if there is none
-int frame_inner_neighbour_index(shared_ptr<HSFrameLeaf> frame, char direction) {
+int frame_inner_neighbour_index(shared_ptr<HSFrameLeaf> frame, Direction direction) {
     int index = -1;
     int selection = frame->getSelection();
     int count = frame->clientCount();
     int rows, cols;
     switch (frame->getLayout()) {
         case LAYOUT_VERTICAL:
-            if (direction == 'd') index = selection + 1;
-            if (direction == 'u') index = selection - 1;
+            if (direction == Direction::Down) index = selection + 1;
+            if (direction == Direction::Up) index = selection - 1;
             break;
         case LAYOUT_HORIZONTAL:
-            if (direction == 'r') index = selection + 1;
-            if (direction == 'l') index = selection - 1;
+            if (direction == Direction::Right) index = selection + 1;
+            if (direction == Direction::Left) index = selection - 1;
             break;
         case LAYOUT_MAX:
             break;
@@ -1182,7 +1178,7 @@ int frame_inner_neighbour_index(shared_ptr<HSFrameLeaf> frame, char direction) {
             int r = selection / cols;
             int c = selection % cols;
             switch (direction) {
-                case 'd':
+                case Direction::Down:
                     index = selection + cols;
                     if (g_settings->gapless_grid() && index >= count && r == (rows - 2)) {
                         // if grid is gapless and we're in the second-last row
@@ -1190,9 +1186,9 @@ int frame_inner_neighbour_index(shared_ptr<HSFrameLeaf> frame, char direction) {
                         index = count - 1;
                     }
                     break;
-                case 'u': index = selection - cols; break;
-                case 'r': if (c < cols-1) index = selection + 1; break;
-                case 'l': if (c > 0)      index = selection - 1; break;
+                case Direction::Up: index = selection - cols; break;
+                case Direction::Right: if (c < cols-1) index = selection + 1; break;
+                case Direction::Left:  if (c > 0)      index = selection - 1; break;
             }
             break;
         }
@@ -1210,22 +1206,27 @@ int frame_focus_command(int argc, char** argv, Output output) {
     // usage: focus [-e|-i] left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
     int external_only = g_settings->default_direction_external_only();
-    char direction = argv[1][0];
+    std::string dirstr = argv[1];
     if (argc > 2 && !strcmp(argv[1], "-i")) {
         external_only = false;
-        direction = argv[2][0];
+        dirstr = argv[2];
     }
     if (argc > 2 && !strcmp(argv[1], "-e")) {
         external_only = true;
-        direction = argv[2][0];
+        dirstr = argv[2];
+    }
+    Direction direction;
+    try {
+        direction = Converter<Direction>::parse(dirstr, nullptr);
+    } catch (const std::exception& e) {
+        output << argv[0] << ": " << e.what() << "\n";
+        return HERBST_INVALID_ARGUMENT;
     }
     shared_ptr<HSFrameLeaf> frame = HSFrame::getGloballyFocusedFrame();
     int index;
     bool neighbour_found = true;
     if (frame->getTag()->floating) {
-        auto dir = char_to_direction(direction);
-        if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        neighbour_found = floating_focus_direction((enum HSDirection)dir);
+        neighbour_found = floating_focus_direction(direction);
     } else if (!external_only &&
         (index = frame_inner_neighbour_index(frame, direction)) != -1) {
         frame->setSelection(index);
@@ -1250,10 +1251,7 @@ int frame_focus_command(int argc, char** argv, Output output) {
     }
     if (!neighbour_found && g_settings->focus_crosses_monitor_boundaries()) {
         // find monitor in the specified direction
-        int dir = char_to_direction(direction);
-        if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        int idx = g_monitors->indexInDirection(get_current_monitor(),
-                                               (enum HSDirection)dir);
+        int idx = g_monitors->indexInDirection(get_current_monitor(), direction);
         if (idx < 0) {
             output << argv[0] << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
@@ -1271,23 +1269,28 @@ void HSFrameLeaf::moveClient(int new_index) {
 int frame_move_window_command(int argc, char** argv, Output output) {
     // usage: move left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
-    char direction = argv[1][0];
+    std::string dirstr = argv[1];
     int external_only = g_settings->default_direction_external_only();
     if (argc > 2 && !strcmp(argv[1], "-i")) {
         external_only = false;
-        direction = argv[2][0];
+        dirstr = argv[2];
     }
     if (argc > 2 && !strcmp(argv[1], "-e")) {
         external_only = true;
-        direction = argv[2][0];
+        dirstr = argv[2];
+    }
+    Direction direction;
+    try {
+        direction = Converter<Direction>::parse(dirstr, nullptr);
+    } catch (const std::exception& e) {
+        output << argv[0] << ": " << e.what() << "\n";
+        return HERBST_INVALID_ARGUMENT;
     }
     shared_ptr<HSFrameLeaf> frame = HSFrame::getGloballyFocusedFrame();
     HSClient* currentClient = get_current_client();
     if (currentClient && currentClient->is_client_floated()) {
         // try to move the floating window
-        auto dir = char_to_direction(direction);
-        if (dir < 0) return HERBST_INVALID_ARGUMENT;
-        bool success = floating_shift_direction((enum HSDirection)dir);
+        bool success = floating_shift_direction(direction);
         return success ? 0 : HERBST_FORBIDDEN;
     }
     int index;

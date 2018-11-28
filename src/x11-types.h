@@ -1,9 +1,11 @@
 #ifndef __HERBST_X11_TYPES_H_
 #define __HERBST_X11_TYPES_H_
 
+#include "types.h"
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <X11/Xlib.h>
 
@@ -14,13 +16,13 @@
 class Color {
 public:
     Color();
+    Color(XColor xcol);
     Color(std::string name);
 
-    // parse a color from source into target. if parsing fails, an error
-    // message is returned and target is left unchanged.
-    static std::string fromStr(const std::string& source, Color& target);
     static Color black();
 
+    // throws std::invalid_argument
+    static Color fromStr(const std::string& payload);
     std::string str() const;
 
     // return an XColor as obtained form XQueryColor
@@ -47,6 +49,15 @@ private:
     unsigned long x11pixelValue_;
 };
 
+template<>
+inline std::string Converter<Color>::str(Color payload) { return payload.str(); }
+
+template<>
+inline Color Converter<Color>::parse(const std::string &payload, Color const*) {
+    // TODO: relative modifiers, ie brightness+10/red-20 would be cool
+    return Color::fromStr(payload);
+}
+
 struct Rectangle {
     static Rectangle fromStr(const std::string &source);
 
@@ -55,6 +66,20 @@ struct Rectangle {
     int width;
     int height;
 };
+std::ostream& operator<< (std::ostream& stream, const Rectangle& matrix);
+
+template<>
+inline std::string Converter<Rectangle>::str(Rectangle payload) {
+    std::stringstream ss;
+    ss << payload;
+    return ss.str();
+}
+
+template<>
+inline Rectangle Converter<Rectangle>::parse(const std::string &payload, Rectangle const*) {
+    // TODO: relative modifiers, ie a syntax for shifts, might be cool
+    return Rectangle::fromStr(payload);
+}
 
 using RectangleVec = std::vector<Rectangle>;
 
@@ -62,9 +87,6 @@ struct Point2D {
     int x;
     int y;
 };
-
-std::ostream& operator<< (std::ostream& stream, const Rectangle& matrix);
-
 
 #endif
 
