@@ -1,7 +1,6 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
-#include "x11-types.h"
 #include "entity.h"
 
 #include <string>

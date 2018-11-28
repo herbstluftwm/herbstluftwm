@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <vector>
-#include "x11-types.h"
+
 class Object;
 
 // a Hook monitors a given object, i.e. gets callbacks

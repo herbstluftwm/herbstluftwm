@@ -6,42 +6,32 @@
 #include <X11/Xutil.h>
 
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include <cstdio>
-#include <sstream>
-
-
-// get X11 color from color string. This fails if there is no x connection
-// from dwm.c
-std::string queryX11Color(const char *source, XColor& dest_color) {
-	if (!g_display) {
-		return "g_display is not set";
-	}
-	Colormap cmap = DefaultColormap(g_display, g_screen);
-	XColor screen_color;
-	if(!XAllocNamedColor(g_display, cmap, source, &screen_color, &dest_color)) {
-		return std::string("cannot allocate color \'") + source + "\'";
-	}
-	//dest.name_ = source;
-	return "";
-}
+#include <cassert>
 
 Color Color::black() {
     // currently, the constructor without arguments constructs black
-    Color c;
-    return c;
+    return {};
 }
 
 Color::Color()
-    : red_(0)
-    , green_(0)
-    , blue_(0)
-    , x11pixelValue_(0)
+    : red_(0), green_(0), blue_(0), x11pixelValue_(0)
 {
 }
 
+Color::Color(XColor xcol)
+    : red_(xcol.red), green_(xcol.green), blue_(xcol.blue), x11pixelValue_(xcol.pixel)
+{
+    // TODO: special interpretation of red, green, blue when
+    // xcol.flags lacks one of DoRed, DoGreen, DoBlue?
+}
+
 Color::Color(std::string name) {
-    if ("" != fromStr(name, *this)) {
+    try {
+        *this = fromStr(name);
+    } catch (...) {
         *this = black();
     }
 }
@@ -57,30 +47,23 @@ std::string Color::str() const {
     return ss.str();
 }
 
-std::string Color::fromStr(const std::string& source, Color& target) {
-    XColor xcol;
-    std::string msg = queryX11Color(source.c_str(), xcol);
-    if (msg != "") {
-        return msg;
-    } else {
-        // TODO: how to interpret these fields if
-        // xcol.flags lacks one of DoRed, DoGreen, DoBlue?
-        target.red_ = xcol.red;
-        target.green_ = xcol.green;
-        target.blue_ = xcol.blue;
-        target.x11pixelValue_ = xcol.pixel;
-        return "";
-    }
+Color Color::fromStr(const std::string& payload) {
+    // get X11 color from color string. This fails if there is no x connection
+    // from dwm.c
+    assert(g_display);
+    Colormap cmap = DefaultColormap(g_display, g_screen);
+    XColor screen_color, ret_color;
+    auto success = XAllocNamedColor(g_display, cmap,
+                                    payload.c_str(), &screen_color, &ret_color);
+    if (!success)
+        throw std::invalid_argument(
+                std::string("cannot allocate color \'") + payload + "\'");
+
+    return Color(ret_color);
 }
 
 XColor Color::toXColor() const {
-	XColor xcol;
-	xcol.pixel = x11pixelValue_;
-    xcol.red = red_;
-    xcol.green = green_;
-    xcol.blue = blue_;
-	xcol.flags = DoRed | DoGreen | DoBlue;
-	return xcol;
+    return XColor{x11pixelValue_, red_, green_, blue_, DoRed | DoGreen | DoBlue, 0};
 }
 
 Rectangle Rectangle::fromStr(const std::string &source) {
