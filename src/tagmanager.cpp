@@ -77,17 +77,17 @@ int TagManager::removeTag(Input input, Output output) {
     auto targetTag = find(targetTagName);
     auto tagToRemove = find(tagNameToRemove);
 
-    if (tagToRemove == nullptr) {
+    if (!tagToRemove) {
         output << input.command() << ": Tag \"" << tagNameToRemove << "\" not found\n";
         return HERBST_INVALID_ARGUMENT;
     }
 
-    if (targetTag == nullptr) {
+    if (!targetTag) {
         output << input.command() << ": Tag \"" << targetTagName << "\" not found\n";
         return HERBST_INVALID_ARGUMENT;
     }
 
-    if (find_monitor_with_tag(tagToRemove) != nullptr) {
+    if (find_monitor_with_tag(tagToRemove)) {
         output << input.command() << ": Cannot merge the currently viewed tag\n";
         return HERBST_TAG_IN_USE;
     }
@@ -112,7 +112,7 @@ int TagManager::removeTag(Input input, Output output) {
 
     // Make transferred clients visible if target tag is visible
     HSMonitor* monitor_target = find_monitor_with_tag(targetTag);
-    if (monitor_target != nullptr) {
+    if (monitor_target) {
         monitor_target->applyLayout();
         for (auto c : clients) {
             c->set_visible(true);
