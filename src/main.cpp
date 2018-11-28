@@ -163,7 +163,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"move",           BIND_OBJECT(tags, tag_move_window_command) },
         {"rotate",         layout_rotate_command},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
-        {"add_monitor",    add_monitor_command},
+        {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
         {"raise_monitor",  monitor_raise_command},
         {"remove_monitor", BIND_OBJECT(monitors, removeMonitor)},
         {"move_monitor",   monitors->byFirstArg(&HSMonitor::move_cmd) } ,
