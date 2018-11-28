@@ -22,7 +22,7 @@ public:
     Attribute_<bool>         floating = {"floating", false};
     Attribute_<std::string>  name = {"name", {}};   // name of this tag
     int             flags;
-    HSStack* stack;
+    std::shared_ptr<HSStack> stack;
     void setIndexAttribute(unsigned long new_index) override;
 };
 

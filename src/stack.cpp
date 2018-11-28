@@ -13,8 +13,8 @@
 #include <iomanip>
 
 
-static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx);
-static size_t                  stack_child_count(HSTree root);
+static struct HSTreeInterface stack_nth_child(std::shared_ptr<HSStack> root, size_t idx);
+static size_t                  stack_child_count(std::shared_ptr<HSStack> root);
 
 const std::array<const char*, LAYER_COUNT>g_layer_names =
     ArrayInitializer<const char*, LAYER_COUNT>({
@@ -176,9 +176,9 @@ static void layer_append_caption(HSTree root, Output output) {
 }
 
 
-static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx) {
+static struct HSTreeInterface stack_nth_child(std::shared_ptr<HSStack> root, size_t idx) {
     struct TmpLayer* l = g_new(struct TmpLayer, 1);
-    l->stack = (HSStack*) root;
+    l->stack = root.get(); // TODO: Turn lhs of this assignment into a shared_ptr
     l->layer = (HSLayer) idx;
 
     HSTreeInterface intface = {
@@ -191,7 +191,7 @@ static struct HSTreeInterface stack_nth_child(HSTree root, size_t idx) {
     return intface;
 }
 
-static size_t stack_child_count(HSTree root) {
+static size_t stack_child_count(std::shared_ptr<HSStack> root) {
     return LAYER_COUNT;
 }
 

@@ -574,7 +574,7 @@ void HSClient::set_fullscreen(bool state) {
     if (this->ewmhnotify_) {
         this->ewmhfullscreen_ = state;
     }
-    HSStack* stack = this->tag()->stack;
+    auto stack = this->tag()->stack;
     if (state) {
         stack->slice_add_layer(this->slice, LAYER_FULLSCREEN);
     } else {

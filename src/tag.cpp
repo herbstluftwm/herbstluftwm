@@ -35,7 +35,7 @@ void tag_destroy() {
 
 HSTag::HSTag(std::string name_, Settings* settings)
 {
-    stack = new HSStack();
+    stack = make_shared<HSStack>();
     frame = make_shared<HSFrameLeaf>(this, settings, shared_ptr<HSFrameSplit>());
     wireAttributes({
         &index,
@@ -56,7 +56,6 @@ HSTag::HSTag(std::string name_, Settings* settings)
 
 HSTag::~HSTag() {
     frame = {};
-    delete this->stack;
 }
 
 void HSTag::setIndexAttribute(unsigned long new_index) {
