@@ -40,12 +40,9 @@ typedef struct HSSlice {
 } HSSlice;
 
 class HSStack {
-    public:
+public:
     HSStack() = default;
     ~HSStack();
-
-    GList*  top[LAYER_COUNT];
-    bool    dirty;  /* stacking order changed but it wasn't restacked yet */
 
     void insert_slice(HSSlice* elem);
     void remove_slice(HSSlice* elem);
@@ -61,6 +58,11 @@ class HSStack {
     void to_window_buf(Window* buf, int len, bool real_clients, int* remain_len);
     void restack();
     Window lowest_window();
+
+    GList*  top[LAYER_COUNT];
+
+private:
+    bool    dirty;  /* stacking order changed but it wasn't restacked yet */
 };
 
 void stacklist_init();
