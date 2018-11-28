@@ -8,12 +8,6 @@
 
 using namespace std;
 
-Tmp::Tmp()
-    : number_active(0)
-    , number_total(0)
-{
-}
-
 int Tmp::mktemp(Input input, Output output) {
     std::string cmd, type, identifier;
     if (!input.read({ &cmd, &type, &identifier })) {
