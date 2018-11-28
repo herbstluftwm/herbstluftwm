@@ -198,13 +198,13 @@ int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     argv.shift();
-    bool skip_visible = false;
-    if (argv.size() >= 2 && *(argv.begin()+1) == "--skip-visible") {
-        skip_visible = true;
-    }
-    HSTag* tag = global_tags->byIndexStr(argv.front(), skip_visible);
+    auto tagIndex = argv.front();
+    argv.shift();
+    bool skip_visible = (!argv.empty() && argv.front() == "--skip-visible");
+
+    HSTag* tag = global_tags->byIndexStr(tagIndex, skip_visible);
     if (!tag) {
-        output << argv.command() << ": Invalid index \"" << argv.front() << "\"\n";
+        output << argv.command() << ": Invalid index \"" << tagIndex << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     moveFocusedClient(tag);
