@@ -13,6 +13,7 @@ public:
     TagManager(Settings* settings);
     void setMonitorManager(MonitorManager* monitors);
 
+    int removeTag(Input input, Output output);
     int tag_add_command(Input input, Output output);
     int tag_rename_command(Input input, Output output);
     int tag_move_window_command(Input input, Output output);

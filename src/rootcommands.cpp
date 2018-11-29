@@ -128,7 +128,7 @@ int RootCommands::substitute_cmd(Input input, Output output)
     if (input.empty()) return HERBST_NEED_MORE_ARGS;
     Attribute* a = getAttribute(path, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
-    return Commands::call(input.replace(ident, a->str()), output);
+    return Commands::call(input.replaced(ident, a->str()), output);
 }
 
 int RootCommands::sprintf_cmd(Input input, Output output)
@@ -173,7 +173,7 @@ int RootCommands::sprintf_cmd(Input input, Output output)
     if (lastpos < format.size()) {
         blobs += format.substr(lastpos, format.size()-lastpos);
     }
-    return Commands::call(input.replace(ident, blobs), output);
+    return Commands::call(input.replaced(ident, blobs), output);
 }
 
 

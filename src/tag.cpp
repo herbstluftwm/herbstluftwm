@@ -88,62 +88,6 @@ HSTag* find_unused_tag() {
     return nullptr;
 }
 
-int tag_remove_command(int argc, char** argv, Output output) {
-    // usage: remove TAG [TARGET]
-    // it removes an TAG and moves all its wins to TARGET
-    // if no TARGET is given, current tag is used
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    HSTag* tag = find_tag(argv[1]);
-    HSTag* target = (argc >= 3) ? find_tag(argv[2]) : get_current_monitor()->tag;
-    if (!tag) {
-        output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
-        return HERBST_INVALID_ARGUMENT;
-    } else if (!target) {
-        output << argv[0] << ": Tag \"" << argv[2] << "\" not found\n";
-    } else if (tag == target) {
-        output << argv[0] << ": Cannot merge tag \"" << argv[1] << "\" into itself\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (find_monitor_with_tag(tag)) {
-        output << argv[0] << ": Cannot merge the currently viewed tag\n";
-        return HERBST_TAG_IN_USE;
-    }
-    // prevent dangling tag_previous pointers
-    all_monitors_replace_previous_tag(tag, target);
-    // save all these windows
-    vector<HSClient*> buf;
-    tag->frame->foreachClient([&buf](HSClient* client) {
-        buf.push_back(client);
-    });
-    for (auto client : buf) {
-        client->tag()->stack->remove_slice(client->slice);
-        client->setTag(target);
-        client->tag()->stack->insert_slice(client->slice);
-        ewmh_window_update_tag(client->window_, client->tag());
-        target->frame->insertClient(client);
-    }
-    tag->frame = shared_ptr<HSFrame>();
-    HSMonitor* monitor_target = find_monitor_with_tag(target);
-    if (monitor_target) {
-        // if target monitor is viewed, then show windows
-        monitor_target->applyLayout();
-        for (auto c: buf) {
-            c->set_visible(true);
-        }
-    }
-    // remove tag
-    string oldname = tag->name;
-    global_tags->removeIndexed(global_tags->index_of(tag));
-    ewmh_update_current_desktop();
-    ewmh_update_desktops();
-    ewmh_update_desktop_names();
-    tag_set_flags_dirty();
-    hook_emit_list("tag_removed", oldname.c_str(), target->name->c_str(), nullptr);
-    return 0;
-}
-
 int tag_set_floating_command(int argc, char** argv, Output output) {
     // usage: floating [[tag] on|off|toggle]
     HSTag* tag = get_current_monitor()->tag;

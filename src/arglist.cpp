@@ -18,10 +18,6 @@ ArgList ArgList::operator+(Container::difference_type shift_amount) {
     return ret;
 }
 
-std::string ArgList::operator[](size_t idx) {
-    return c_->operator[](idx);
-}
-
 ArgList::Container ArgList::split(const std::string &s, char delim) {
     Container ret;
     std::stringstream tmp(s);
@@ -66,7 +62,7 @@ bool ArgList::read(std::initializer_list<std::string*> targets) {
     return true;
 }
 
-ArgList ArgList::replace(const std::string& from, const std::string& to) {
+ArgList ArgList::replaced(const std::string& from, const std::string& to) const {
     int i = 0;
     vector<std::string> new_list(size());
     for (auto v : *this) {

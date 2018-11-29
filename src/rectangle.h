@@ -14,7 +14,7 @@ int rectlist_length(RectList* head);
 void rectlist_free(RectList* head);
 
 RectList* disjoin_rects(const RectangleVec &buf);
-int disjoin_rects_command(int argc, char** argv, Output output);
+int disjoin_rects_command(Input input, Output output);
 
 #endif
 
