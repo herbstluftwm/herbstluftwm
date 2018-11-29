@@ -60,8 +60,16 @@ inline Color Converter<Color>::parse(const std::string &payload, Color const*) {
     return Color::fromStr(payload);
 }
 
+struct Point2D {
+    int x;
+    int y;
+};
+
 struct Rectangle {
     static Rectangle fromStr(const std::string &source);
+
+    Point2D tl() const { return {x, y}; }
+    Point2D br() const { return {x + width, y + height}; }
 
     int x;
     int y;
@@ -84,11 +92,6 @@ inline Rectangle Converter<Rectangle>::parse(const std::string &payload, Rectang
 }
 
 using RectangleVec = std::vector<Rectangle>;
-
-struct Point2D {
-    int x;
-    int y;
-};
 
 #endif
 
