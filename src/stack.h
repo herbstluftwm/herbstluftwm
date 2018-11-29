@@ -59,7 +59,7 @@ public:
     void restack();
     Window lowest_window();
 
-    GList*  top[LAYER_COUNT];
+    vector<HSSlice*> top[LAYER_COUNT];
 
 private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */

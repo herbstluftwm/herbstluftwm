@@ -91,7 +91,7 @@ HSLayer slice_highest_layer(HSSlice* slice) {
 void HSStack::insert_slice(HSSlice* elem) {
     for (int i = 0; i < elem->layer_count; i++) {
         int layer = elem->layer[i];
-        top[layer] = g_list_prepend(top[layer], elem);
+        top[layer].insert(top[layer].begin(), elem);
     }
     dirty = true;
 }
@@ -99,7 +99,8 @@ void HSStack::insert_slice(HSSlice* elem) {
 void HSStack::remove_slice(HSSlice* elem) {
     for (int i = 0; i < elem->layer_count; i++) {
         int layer = elem->layer[i];
-        top[layer] = g_list_remove(top[layer], elem);
+        auto v = top[layer];
+        v.erase(std::remove(v.begin(), v.end(), elem));
     }
     dirty = true;
 }
@@ -298,7 +299,9 @@ void HSStack::to_window_buf(Window* buf, int len,
     };
     for (int i = 0; i < LAYER_COUNT; i++) {
         data.layer = (HSLayer)i;
-        g_list_foreach(top[i], (GFunc)slice_to_window_buf, &data);
+        for (auto slice : top) {
+            slice_to_window_buf(slice, &data);
+        }
     }
     if (!remain_len) {
         // nothing to do
@@ -326,10 +329,12 @@ void HSStack::restack() {
 
 void HSStack::raise_slide(HSSlice* slice) {
     for (int i = 0; i < slice->layer_count; i++) {
+        auto v = top[slice->layer[i]];
         // remove slice from list
+        v.erase(std::remove(v.begin(), v.end(), slice));
         top[slice->layer[i]] = g_list_remove(top[slice->layer[i]], slice);
         // and insert it again at the top
-        top[slice->layer[i]] = g_list_prepend(top[slice->layer[i]], slice);
+        v.insert(v.begin(), slice);
     }
     dirty = true;
     // TODO: maybe only update the specific range and not the entire stack
@@ -350,7 +355,7 @@ void HSStack::slice_add_layer(HSSlice* slice, HSLayer layer) {
     }
     slice->layer[slice->layer_count] = layer;
     slice->layer_count++;
-    top[layer] = g_list_prepend(top[layer], slice);
+    top[layer].insert(top[layer].begin(), slice);
     dirty = true;
 }
 
