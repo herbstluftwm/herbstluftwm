@@ -5,7 +5,6 @@
 #include <algorithm>
 
 #include "utils.h"
-#include "mouse.h"
 #include "client.h"
 #include "tag.h"
 #include "layout.h"

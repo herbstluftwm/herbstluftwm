@@ -23,7 +23,6 @@ struct ArgList {
     ArgList(const std::string &s, char delim = '.');
     // operator to obtain shifted version of list (shallow copy)
     ArgList operator+(Container::difference_type shift_amount);
-    std::string operator[](size_t idx);
 
     Container::const_iterator begin() const { return begin_; }
     Container::const_iterator end() const { return c_->cend(); }
@@ -47,7 +46,7 @@ struct ArgList {
     bool read(std::initializer_list<std::string*> targets);
     /** construct a new ArgList with every occurence of 'from' replaced by 'to'
      */
-    ArgList replace(const std::string& from, const std::string& to);
+    ArgList replaced(const std::string& from, const std::string& to) const;
     // the first element without any shifts.
     std::string command() const {
         if (c_->begin() != c_->end()) {

@@ -16,13 +16,6 @@
 
 using namespace std;
 
-FrameDecorationData::FrameDecorationData()
-    : visible(false)
-    , hasClients(false)
-    , hasParent(false)
-{
-}
-
 FrameDecoration::FrameDecoration(HSTag* tag_, Settings* settings_)
     : visible(false)
     , window_transparent(false)

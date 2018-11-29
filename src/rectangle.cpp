@@ -1,18 +1,16 @@
 
 #include "rectangle.h"
 #include "floating.h"
-#include "mouse.h"
 #include "utils.h"
 #include "ipc-protocol.h"
 #include <glib.h>
 
-static bool rects_intersect(RectList* m1, RectList* m2) {
-    Rectangle *r1 = &m1->rect, *r2 = &m2->rect;
-    bool is = TRUE;
-    is = is && intervals_intersect(r1->x, r1->x + r1->width,
-                                   r2->x, r2->x + r2->width);
-    is = is && intervals_intersect(r1->y, r1->y + r1->height,
-                                   r2->y, r2->y + r2->height);
+static bool rects_intersect(const Rectangle &a, const Rectangle &b) {
+    bool is = true;
+    is = is && intervals_intersect(a.x, a.x + a.width,
+                                   b.x, b.x + b.width);
+    is = is && intervals_intersect(a.y, a.y + a.height,
+                                   b.y, b.y + b.height);
     return is;
 }
 
@@ -81,7 +79,7 @@ RectList* reclist_insert_disjoint(RectList* head, RectList* element) {
         // if the list is empty, then intersection-free insertion is trivial
         element->next = nullptr;
         return element;
-    } else if (!rects_intersect(head, element)) {
+    } else if (!rects_intersect(head->rect, element->rect)) {
         head->next = reclist_insert_disjoint(head->next, element);
         return head;
     } else {
@@ -124,14 +122,15 @@ RectList* disjoin_rects(const RectangleVec &buf) {
 }
 
 
-int disjoin_rects_command(int argc, char** argv, Output output) {
-    (void)SHIFT(argc, argv);
-    if (argc < 1) {
+int disjoin_rects_command(Input input, Output output) {
+    input.shift();
+    if (input.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
-    RectangleVec buf(argc);
-    for (int i = 0; i < argc; i++) {
-        buf[i] = Rectangle::fromStr(argv[i]);
+
+    RectangleVec buf;
+    for (auto &i : input) {
+        buf.push_back(Rectangle::fromStr(i));
     }
 
     RectList* rects = disjoin_rects(buf);
