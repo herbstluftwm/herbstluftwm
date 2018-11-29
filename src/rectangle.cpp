@@ -2,6 +2,28 @@
 #include "floating.h"
 #include "utils.h"
 #include "ipc-protocol.h"
+
+static bool rects_intersect(const Rectangle &a, const Rectangle &b) {
+    bool is = true;
+    is = is && intervals_intersect(a.x, a.x + a.width,
+                                   b.x, b.x + b.width);
+    is = is && intervals_intersect(a.y, a.y + a.height,
+                                   b.y, b.y + b.height);
+    return is;
+}
+
+static Rectangle intersection_area(const Rectangle &a, const Rectangle &b) {
+    /* determine top-left as maximum of both */
+    Point2D tr = {std::max(a.x, b.x), std::max(a.y, b.y)};
+
+    /* determine bottom-right as minimum of both */
+    auto abr = a.br(), bbr = b.br();
+    Point2D br = {std::min(abr.x, bbr.x), std::min(abr.y, bbr.y)};
+
+    return {tr.x, tr.y, br.x - tr.x, br.y - tr.y};
+}
+
+/* TODO: rewrite with std container instead of RectList */
 #include <glib.h>
 
 typedef struct RectList {
@@ -23,29 +45,6 @@ static int rectlist_length_acc(RectList* head, int acc) {
 
 int rectlist_length(RectList* head) {
     return rectlist_length_acc(head, 0);
-}
-
-static bool rects_intersect(const Rectangle &a, const Rectangle &b) {
-    bool is = true;
-    is = is && intervals_intersect(a.x, a.x + a.width,
-                                   b.x, b.x + b.width);
-    is = is && intervals_intersect(a.y, a.y + a.height,
-                                   b.y, b.y + b.height);
-    return is;
-}
-
-static Rectangle intersection_area(RectList* m1, RectList* m2) {
-    Rectangle r; // intersection between m1->rect and m2->rect
-    r.x = std::max(m1->rect.x, m2->rect.x);
-    r.y = std::max(m1->rect.y, m2->rect.y);
-    // the bottom right coordinates of the rects
-    int br1_x = m1->rect.x + m1->rect.width;
-    int br1_y = m1->rect.y + m1->rect.height;
-    int br2_x = m2->rect.x + m2->rect.width;
-    int br2_y = m2->rect.y + m2->rect.height;
-    r.width = std::min(br1_x, br2_x) - r.x;
-    r.height = std::min(br1_y, br2_y) - r.y;
-    return r;
 }
 
 static RectList* rectlist_create_simple(int x1, int y1, int x2, int y2) {
@@ -107,7 +106,7 @@ RectList* reclist_insert_disjoint(RectList* head, RectList* element) {
         return head;
     } else {
         // element intersects with the head rect
-        auto center = intersection_area(head, element);
+        auto center = intersection_area(head->rect, element->rect);
         auto large = head->rect;
         head->rect = center;
         head->next = insert_rect_border(head->next, large, center);
@@ -134,7 +133,7 @@ RectangleVec disjoin_rects(const RectangleVec &buf) {
     rectlist_free(rects);
     return ret;
 }
-
+/* end of TODO to remove RectList */
 
 int disjoin_rects_command(Input input, Output output) {
     input.shift();
