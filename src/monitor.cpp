@@ -775,13 +775,7 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
     } else {
         // possibly disjoin them
         if (disjoin) {
-            RectList* rl = disjoin_rects(monitor_rects);
-            monitor_rects.resize(rectlist_length(rl));
-            RectList* cur = rl;
-            FOR (i,0,monitor_rects.size()) {
-                monitor_rects[i] = cur->rect;
-                cur = cur->next;
-            }
+            monitor_rects = disjoin_rects(monitor_rects);
         }
         // apply it
         ret = set_monitor_rects(monitor_rects);
