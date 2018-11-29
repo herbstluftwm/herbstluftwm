@@ -247,7 +247,7 @@ int MonitorManager::addMonitor(Input input, Output output)
 
     input.shift();
     std::string name;
-    if (!input.read({ &name })) {
+    if (input.read({ &name })) {
         if (isdigit(name[0])) {
             output << input.command() <<
                 ": The monitor name may not start with a number\n";
