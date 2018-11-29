@@ -103,9 +103,9 @@ int TagManager::removeTag(Input input, Output output) {
 
     // Move clients to target tag
     for (auto client : clients) {
-        stack_remove_slice(client->tag()->stack, client->slice);
+        client->tag()->stack->remove_slice(client->slice);
         client->setTag(targetTag);
-        stack_insert_slice(client->tag()->stack, client->slice);
+        client->tag()->stack->insert_slice(client->slice);
         ewmh_window_update_tag(client->window_, client->tag());
         targetTag->frame->insertClient(client);
     }
