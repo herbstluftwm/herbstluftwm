@@ -10,10 +10,10 @@ class Settings;
 
 class FrameDecorationData {
 public:
-    FrameDecorationData();
-    bool visible;
-    bool hasClients; // whether this frame holds clients at the moment
-    bool hasParent;
+    FrameDecorationData() = default;
+    bool visible = false;
+    bool hasClients = false; // whether this frame holds clients at the moment
+    bool hasParent = false;
     Rectangle geometry;
 };
 

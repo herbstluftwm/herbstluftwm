@@ -8,7 +8,7 @@
 #include "object.h"
 #include "attribute_.h"
 
-struct HSStack;
+class HSStack;
 class HSFrame;
 class HSClient;
 class Settings;
@@ -22,7 +22,7 @@ public:
     Attribute_<bool>         floating = {"floating", false};
     Attribute_<std::string>  name = {"name", {}};   // name of this tag
     int             flags;
-    struct HSStack* stack;
+    std::shared_ptr<HSStack> stack;
     void setIndexAttribute(unsigned long new_index) override;
 };
 
@@ -35,7 +35,6 @@ HSTag* find_unused_tag();
 HSTag* find_tag_with_toplevel_frame(class HSFrame* frame);
 HSTag* get_tag_by_index(int index);
 int    tag_get_count();
-int tag_remove_command(int argc, char** argv, Output output);
 int tag_set_floating_command(int argc, char** argv, Output output);
 void tag_update_focus_layer(HSTag* tag);
 void tag_foreach(void (*action)(HSTag*,void*), void* data);

@@ -60,8 +60,6 @@ void client_snap_vector(HSClient* client, HSMonitor* monitor,
                         int* return_dx, int* return_dy);
 
 bool is_point_between(int point, int left, int right);
-// tells if the intervals [a_left, a_right) [b_left, b_right) intersect
-bool intervals_intersect(int a_left, int a_right, int b_left, int b_right);
 
 void mouse_initiate_move(HSClient* client, int argc, char** argv);
 void mouse_initiate_zoom(HSClient* client, int argc, char** argv);
