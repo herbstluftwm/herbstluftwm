@@ -180,7 +180,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
         index = MOD(index, size());
         if (skip_visible_tags) {
             HSTag* tag = global_tags->byIdx(index);
-            for (int i = 0; find_monitor_with_tag(&* tag); i++) {
+            for (size_t i = 0; find_monitor_with_tag(tag); i++) {
                 if (i >= global_tags->size()) {
                     // if we tried each tag then there is no invisible tag
                     return nullptr;
@@ -192,7 +192,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
         }
     } else {
         // if it is absolute, then check index
-        if (index < 0 || index >= global_tags->size()) {
+        if (index < 0 || (size_t)index >= global_tags->size()) {
             HSDebug("invalid tag index %d\n", index);
             return nullptr;
         }
@@ -250,9 +250,10 @@ int TagManager::tag_move_window_command(Input argv, Output output) {
     if (argv.size() < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    HSTag* target = find(argv[1]);
+    argv.shift();
+    HSTag* target = find(argv.front());
     if (!target) {
-        output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
+        output << argv.command() << ": Tag \"" << argv.front() << "\" not found\n";
         return HERBST_INVALID_ARGUMENT;
     }
     moveFocusedClient(target);
@@ -263,13 +264,14 @@ int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
     if (argv.size() < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    bool skip_visible = false;
-    if (argv.size() >= 3 && argv[2] == "--skip-visible") {
-        skip_visible = true;
-    }
-    HSTag* tag = global_tags->byIndexStr(argv[1], skip_visible);
+    argv.shift();
+    auto tagIndex = argv.front();
+    argv.shift();
+    bool skip_visible = (!argv.empty() && argv.front() == "--skip-visible");
+
+    HSTag* tag = global_tags->byIndexStr(tagIndex, skip_visible);
     if (!tag) {
-        output << argv[0] << ": Invalid index \"" << argv[1] << "\"\n";
+        output << argv.command() << ": Invalid index \"" << tagIndex << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     moveFocusedClient(tag);

@@ -155,6 +155,11 @@ void argv_free(int argc, char** argv) {
     delete[] argv;
 }
 
+// tells if the intervals [a_left, a_right) [b_left, b_right) intersect
+bool intervals_intersect(int a_left, int a_right, int b_left, int b_right) {
+    return (b_left < a_right) && (a_left < b_right);
+}
+
 size_t utf8_string_length(const std::string& str) {
    // utf-strlen from stackoverflow:
    // http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c
