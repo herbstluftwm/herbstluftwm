@@ -1,9 +1,29 @@
-
 #include "rectangle.h"
 #include "floating.h"
 #include "utils.h"
 #include "ipc-protocol.h"
 #include <glib.h>
+
+typedef struct RectList {
+    Rectangle rect;
+    struct RectList* next;
+} RectList;
+
+void rectlist_free(RectList* head) {
+    if (!head) return;
+    RectList* next = head->next;
+    g_free(head);
+    rectlist_free(next);
+}
+
+static int rectlist_length_acc(RectList* head, int acc) {
+    if (!head) return acc;
+    else return rectlist_length_acc(head->next, acc + 1);
+}
+
+int rectlist_length(RectList* head) {
+    return rectlist_length_acc(head, 0);
+}
 
 static bool rects_intersect(const Rectangle &a, const Rectangle &b) {
     bool is = true;
@@ -40,6 +60,9 @@ static RectList* rectlist_create_simple(int x1, int y1, int x2, int y2) {
     r->next = nullptr;
     return r;
 }
+
+// forward decl for circular calls
+RectList* reclist_insert_disjoint(RectList* head, RectList* element);
 
 static RectList* insert_rect_border(RectList* head,
                                     Rectangle large, Rectangle center)
@@ -94,23 +117,7 @@ RectList* reclist_insert_disjoint(RectList* head, RectList* element) {
     }
 }
 
-void rectlist_free(RectList* head) {
-    if (!head) return;
-    RectList* next = head->next;
-    g_free(head);
-    rectlist_free(next);
-}
-
-static int rectlist_length_acc(RectList* head, int acc) {
-    if (!head) return acc;
-    else return rectlist_length_acc(head->next, acc + 1);
-}
-
-int rectlist_length(RectList* head) {
-    return rectlist_length_acc(head, 0);
-}
-
-RectList* disjoin_rects(const RectangleVec &buf) {
+RectangleVec disjoin_rects(const RectangleVec &buf) {
     RectList* cur;
     struct RectList* rects = nullptr;
     for (auto& rect : buf) {
@@ -118,7 +125,14 @@ RectList* disjoin_rects(const RectangleVec &buf) {
         cur->rect = rect;
         rects = reclist_insert_disjoint(rects, cur);
     }
-    return rects;
+    cur = rects;
+    RectangleVec ret(rectlist_length(rects));
+    FOR (i,0,ret.size()) {
+        ret[i] = cur->rect;
+        cur = cur->next;
+    }
+    rectlist_free(rects);
+    return ret;
 }
 
 
@@ -128,16 +142,13 @@ int disjoin_rects_command(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
 
-    RectangleVec buf;
+    RectangleVec rects;
     for (auto &i : input) {
-        buf.push_back(Rectangle::fromStr(i));
+        rects.push_back(Rectangle::fromStr(i));
     }
 
-    RectList* rects = disjoin_rects(buf);
-    for (RectList* cur = rects; cur; cur = cur->next) {
-        Rectangle &r = cur->rect;
+    for (auto &r : disjoin_rects(rects)) {
         output << r << std::endl;
     }
-    rectlist_free(rects);
     return 0;
 }
