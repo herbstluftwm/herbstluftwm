@@ -17,7 +17,7 @@ class HSFrame;
 class Settings;
 class MonitorManager;
 struct HSSlice;
-struct HSStack;
+class HSStack;
 
 class HSMonitor : public Object {
 public:
@@ -100,7 +100,7 @@ void drop_enternotify_events();
 
 void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
                                  int* remain_len);
-struct HSStack* get_monitor_stack();
+HSStack* get_monitor_stack();
 
 void monitor_update_focus_objects();
 

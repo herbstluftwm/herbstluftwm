@@ -39,10 +39,31 @@ typedef struct HSSlice {
     } data;
 } HSSlice;
 
-typedef struct HSStack {
+class HSStack {
+public:
+    HSStack() = default;
+    ~HSStack();
+
+    void insert_slice(HSSlice* elem);
+    void remove_slice(HSSlice* elem);
+    void raise_slide(HSSlice* slice);
+    void mark_dirty();
+    void slice_add_layer(HSSlice* slice, HSLayer layer);
+    void slice_remove_layer(HSSlice* slice, HSLayer layer);
+    bool is_layer_empty(HSLayer layer);
+    void clear_layer(HSLayer layer);
+
+    // returns the number of windows in this stack
+    int window_count(bool real_clients);
+    void to_window_buf(Window* buf, int len, bool real_clients, int* remain_len);
+    void restack();
+    Window lowest_window();
+
     GList*  top[LAYER_COUNT];
+
+private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
-} HSStack;
+};
 
 void stacklist_init();
 void stacklist_destroy();
@@ -54,26 +75,7 @@ HSSlice* slice_create_monitor(HSMonitor* monitor);
 void slice_destroy(HSSlice* slice);
 HSLayer slice_highest_layer(HSSlice* slice);
 
-void stack_insert_slice(HSStack* s, HSSlice* elem);
-void stack_remove_slice(HSStack* s, HSSlice* elem);
-void stack_raise_slide(HSStack* stack, HSSlice* slice);
-void stack_mark_dirty(HSStack* s);
-void stack_slice_add_layer(HSStack* stack, HSSlice* slice, HSLayer layer);
-void stack_slice_remove_layer(HSStack* stack, HSSlice* slice, HSLayer layer);
-bool stack_is_layer_empty(HSStack* s, HSLayer layer);
-void stack_clear_layer(HSStack* stack, HSLayer layer);
-
 int print_stack_command(int argc, char** argv, Output output);
-
-// returns the number of windows in this stack
-int stack_window_count(HSStack* stack, bool real_clients);
-void stack_to_window_buf(HSStack* stack, Window* buf, int len, bool real_clients,
-                         int* remain_len);
-void stack_restack(HSStack* stack);
-Window stack_lowest_window(HSStack* stack);
-
-HSStack* stack_create();
-void stack_destroy(HSStack* s);
 
 #endif
 
