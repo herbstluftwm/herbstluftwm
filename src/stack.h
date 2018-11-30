@@ -59,7 +59,7 @@ public:
     void restack();
     Window lowest_window();
 
-    vector<HSSlice*> top[LAYER_COUNT];
+    std::vector<HSSlice*> top[LAYER_COUNT];
 
 private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
