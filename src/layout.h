@@ -85,7 +85,8 @@ public:
     // if order <= 0 -> action(node); action(left); action(right);
     // if order == 1 -> action(left); action(node); action(right);
     // if order >= 2 -> action(left); action(right); action(node);
-    virtual void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) = 0;
+    virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
+                      std::function<void(HSFrameLeaf*)> onLeaf, int order) = 0;
     virtual void foreachClient(ClientAction action) = 0;
 
     std::shared_ptr<HSFrameSplit> getParent() { return parent_.lock(); };
@@ -125,7 +126,8 @@ public:
     TilingResult computeLayout(Rectangle rect) override;
     bool focusClient(HSClient* client) override;
 
-    void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) override;
+    virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
+                      std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
     virtual void foreachClient(ClientAction action) override;
 
 
@@ -185,7 +187,8 @@ public:
     TilingResult computeLayout(Rectangle rect) override;
     bool focusClient(HSClient* client) override;
 
-    void fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) override;
+    virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
+                      std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
     virtual void foreachClient(ClientAction action) override;
 
     HSClient* focusedClient() override;
