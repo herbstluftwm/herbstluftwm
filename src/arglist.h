@@ -73,11 +73,11 @@ struct ArgList {
 
 protected:
     Container::const_iterator begin_;
+    bool shiftedToFar_ = false;
     /* shared pointer to make object copy-able:
      * 1. payload is shared (no redundant copies)
      * 2. begin_ stays valid
      */
-    bool shiftedToFar_ = false;
     std::shared_ptr<Container> c_;
 };
 
