@@ -215,58 +215,42 @@ void MonitorManager::removeMonitor(HSMonitor* monitor)
 int MonitorManager::addMonitor(Input input, Output output)
 {
     // usage: add_monitor RECTANGLE [TAG [NAME]]
-    if (input.size() < 2) {
+    std::string cmd, rectString, tagName, monitorName;
+    input >> cmd >> rectString;
+    if (!input) {
         return HERBST_NEED_MORE_ARGS;
     }
-
-    input.shift();
-    auto rect = Rectangle::fromStr(input.front());
-
-    input.shift();
-    HSTag* tag;
-    if (input.empty()) {
+    HSTag* tag = NULL;
+    if (input >> tagName) {
+        tag = find_tag(tagName.c_str());
+        if (!tag) {
+            output << input.command() << ": Tag \"" << tagName << "\" does not exist\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+        if (find_monitor_with_tag(tag)) {
+            output << input.command() <<
+                ": Tag \"" << tagName << "\" is already being viewed on a monitor\n";
+            return HERBST_TAG_IN_USE;
+        }
+    } else { // if no tag is supplied
         tag = find_unused_tag();
         if (!tag) {
             output << input.command() << ": There are not enough free tags\n";
             return HERBST_TAG_IN_USE;
         }
-    } else {
-        tag = find_tag(input.front().c_str());
-        if (!tag) {
-            output << input.command() << ": Tag \"" << input.front() << "\" does not exist\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-        if (find_monitor_with_tag(tag)) {
-            output << input.command() <<
-                ": Tag \"" << input.front() << "\" is already being viewed on a monitor\n";
-            return HERBST_TAG_IN_USE;
-        }
     }
-
-    input.shift();
-    std::string name;
-    if (input.read({ &name })) {
-        if (isdigit(name[0])) {
-            output << input.command() <<
-                ": The monitor name may not start with a number\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-        if (name.empty()) {
-            output << input.command() <<
-                ": An empty monitor name is not permitted\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-        if (find_monitor_by_name(name.c_str())) {
-            output << input.command() <<
-                ": A monitor with the same name already exists\n";
+    // TODO: error message on invalid rectString
+    auto rect = Rectangle::fromStr(rectString);
+    if (input >> monitorName) {
+        auto error = isValidMonitorName(monitorName);
+        if (error != "") {
+            output << input.command() << ": " << error;
             return HERBST_INVALID_ARGUMENT;
         }
     }
-
     auto monitor = addMonitor(rect, tag);
-
-    if (!name.empty()) {
-        monitor->name = name;
+    if (!monitorName.empty()) {
+        monitor->name = monitorName;
     }
 
     monitor->applyLayout();
@@ -275,6 +259,19 @@ int MonitorManager::addMonitor(Input input, Output output)
     drop_enternotify_events();
 
     return HERBST_EXIT_SUCCESS;
+}
+
+std::string MonitorManager::isValidMonitorName(std::string name) {
+    if (isdigit(name[0])) {
+        return "Invalid name \"" + name + "\": The monitor name may not start with a number\n";
+    }
+    if (name.empty()) {
+        return "An empty monitor name is not permitted\n";
+    }
+    if (find_monitor_by_name(name.c_str())) {
+        return "A monitor with the name \"" + name + "\" already exists\n";
+    }
+    return "";
 }
 
 HSMonitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {

@@ -21,8 +21,6 @@ struct ArgList {
     ArgList(const Container &c);
     // constructor that splits the given string
     ArgList(const std::string &s, char delim = '.');
-    // operator to obtain shifted version of list (shallow copy)
-    ArgList operator+(Container::difference_type shift_amount);
 
     Container::const_iterator begin() const { return begin_; }
     Container::const_iterator end() const { return c_->cend(); }
@@ -33,7 +31,10 @@ struct ArgList {
 
     std::string join(char delim = '.');
 
-    void reset() { begin_ = c_->cbegin(); }
+    void reset() {
+        begin_ = c_->cbegin();
+        shiftedToFar = false;
+    }
     void shift(Container::difference_type amount = 1) {
         begin_ += std::min(amount, std::distance(begin_, c_->cend()));
     }
@@ -44,6 +45,20 @@ struct ArgList {
      * the original shift is restored
      */
     bool read(std::initializer_list<std::string*> targets);
+    /** try read a value if possible */
+    ArgList& operator>>(std::string& val) {
+        if (!empty()) {
+            val = front();
+            shift();
+        } else {
+            shiftedToFar = true;
+        }
+        return *this;
+    }
+    /** tell whether all previous operator>>() succeeded */
+    operator bool() const {
+        return !shiftedToFar;
+    }
     /** construct a new ArgList with every occurence of 'from' replaced by 'to'
      */
     ArgList replaced(const std::string& from, const std::string& to) const;
@@ -62,6 +77,7 @@ protected:
      * 1. payload is shared (no redundant copies)
      * 2. begin_ stays valid
      */
+    bool shiftedToFar = false;
     std::shared_ptr<Container> c_;
 };
 
