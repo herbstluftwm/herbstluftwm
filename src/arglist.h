@@ -33,7 +33,7 @@ struct ArgList {
 
     void reset() {
         begin_ = c_->cbegin();
-        shiftedToFar = false;
+        shiftedToFar_ = false;
     }
     void shift(Container::difference_type amount = 1) {
         begin_ += std::min(amount, std::distance(begin_, c_->cend()));
@@ -51,13 +51,13 @@ struct ArgList {
             val = front();
             shift();
         } else {
-            shiftedToFar = true;
+            shiftedToFar_ = true;
         }
         return *this;
     }
     /** tell whether all previous operator>>() succeeded */
     operator bool() const {
-        return !shiftedToFar;
+        return !shiftedToFar_;
     }
     /** construct a new ArgList with every occurence of 'from' replaced by 'to'
      */
@@ -77,7 +77,7 @@ protected:
      * 1. payload is shared (no redundant copies)
      * 2. begin_ stays valid
      */
-    bool shiftedToFar = false;
+    bool shiftedToFar_ = false;
     std::shared_ptr<Container> c_;
 };
 
