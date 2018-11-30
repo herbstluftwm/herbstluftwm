@@ -72,12 +72,12 @@ HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> 
     decoration = new FrameDecoration(tag, settings);
 }
 
-HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
+HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b)
              : HSFrame(tag, settings, parent) {
     this->align = align;
     selection = 0;
-    fraction = FRACTION_UNIT / 2;
+    this->fraction = fraction;
     this->a = a;
     this->b = b;
 }
@@ -930,7 +930,7 @@ void HSFrameLeaf::addClients(const std::vector<HSClient*>& vec) {
     for (auto c : vec) clients.push_back(c);
 }
 
-bool HSFrameLeaf::split(int alignment, int fraction, int childrenLeaving) {
+bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
     if (splitsToRoot(alignment) > HERBST_MAX_TREE_HEIGHT) {
         return false;
     }
@@ -943,7 +943,8 @@ bool HSFrameLeaf::split(int alignment, int fraction, int childrenLeaving) {
                      FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
     auto first = shared_from_this();
     auto second = make_shared<HSFrameLeaf>(tag_, settings_, std::weak_ptr<HSFrameSplit>());
-    auto new_this = make_shared<HSFrameSplit>(tag_, settings_, parent_, alignment, first, second);
+    second->layout = layout;
+    auto new_this = make_shared<HSFrameSplit>(tag_, settings_, parent_, fraction, alignment, first, second);
     second->parent_ = new_this;
     second->addClients(leaves);
     if (parent_.lock()) {
@@ -960,23 +961,19 @@ bool HSFrameLeaf::split(int alignment, int fraction, int childrenLeaving) {
 }
 
 
-int frame_split_command(int argc, char** argv, Output output) {
+int frame_split_command(Input input, Output output) {
     // usage: split t|b|l|r|h|v FRACTION
-    if (argc < 2) {
+    std::string cmd, splitType, strFraction;
+    if (!input.read({ &cmd, &splitType })) {
         return HERBST_NEED_MORE_ARGS;
     }
+    bool userDefinedFraction = input.read({ &strFraction });
     int align = -1;
-    bool userDefinedFraction = true;
-    const char* strFraction = "0.5";
-    if (argc < 3) {
-        userDefinedFraction = false;
-    } else {
-        strFraction = argv[2];
-    }
     bool frameToFirst = true;
-    int fraction = FRACTION_UNIT* CLAMP(atof(strFraction),
-                                        0.0 + FRAME_MIN_FRACTION,
-                                        1.0 - FRAME_MIN_FRACTION);
+    double fractionFloat = userDefinedFraction ? atof(strFraction.c_str()) : 0.5;
+    fractionFloat = CLAMP(fractionFloat, 0.0 + FRAME_MIN_FRACTION,
+                                         1.0 - FRAME_MIN_FRACTION);
+    int fraction = FRACTION_UNIT * fractionFloat;
     int selection = 0;
     auto cur_frame = HSFrame::getGloballyFocusedFrame();
     int lh = cur_frame->lastRect().height;
@@ -998,7 +995,7 @@ int frame_split_command(int argc, char** argv, Output output) {
         { "auto",       align_auto,         true,   0   },
     };
     for (auto &m : splitModes) {
-        if (m.name[0] == argv[1][0]) {
+        if (m.name[0] == splitType[0]) {
             align           = m.align;
             frameToFirst    = m.frameToFirst;
             selection       = m.selection;
@@ -1006,13 +1003,13 @@ int frame_split_command(int argc, char** argv, Output output) {
         }
     }
     if (align < 0) {
-        output << argv[0] << ": Invalid alignment \"" << argv[1] << "\"\n";
+        output << cmd << ": Invalid alignment \"" << splitType << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     auto frame = HSFrame::getGloballyFocusedFrame();
     bool exploding = align == ALIGN_EXPLODE;
     int layout = frame->getLayout();
-    int windowcount = frame->clientCount();
+    auto windowcount = frame->clientCount();
     if (exploding) {
         if (windowcount <= 1) {
             align = align_auto;
@@ -1033,11 +1030,11 @@ int frame_split_command(int argc, char** argv, Output output) {
         }
     }
     // move second half of the window buf to second frame
-    size_t count1 = 0;
+    size_t childrenLeaving = 0;
     if (exploding) {
-        count1 -= (frame->clientCount() + 1) / 2;      // new count for the first frame
+        childrenLeaving = frame->clientCount() / 2;
     }
-    if (!frame->split(align, fraction, count1)) {
+    if (!frame->split(align, fraction, childrenLeaving)) {
         return 0;
     }
     if (!frameToFirst) {

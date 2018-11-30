@@ -138,7 +138,7 @@ public:
 
     HSClient* focusedClient() override;
 
-    bool split(int alignment, int fraction, int childrenLeaving = 0);
+    bool split(int alignment, int fraction, size_t childrenLeaving = 0);
     int getLayout() { return layout; }
     void setLayout(int l) { layout = l; }
     int getSelection() { return selection; }
@@ -171,7 +171,7 @@ private:
 
 class HSFrameSplit : public HSFrame {
 public:
-    HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int align,
+    HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b);
     ~HSFrameSplit() override;
     // inherited:
@@ -237,7 +237,7 @@ bool frame_remove_client(HSFrame* frame, HSClient* client);
 // YOU have to g_free the resulting window-buf
 void frame_destroy(HSFrame* frame, HSClient*** buf, size_t* count);
 bool frame_split(HSFrame* frame, int align, int fraction);
-int frame_split_command(int argc, char** argv, Output output);
+int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
 
 void reset_frame_colors();

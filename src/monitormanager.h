@@ -25,6 +25,7 @@ public:
     int list_padding(Input input, Output output);
     int string_to_monitor_index(std::string string);
     HSMonitor* addMonitor(Rectangle rect, HSTag* tag);
+    int addMonitor(Input input, Output output);
     // return a command that interprets the first argument
     // as a monitor description and then calls the given command on this monitor
     std::function<int(Input, Output)> byFirstArg(HSMonitorCommand cmd);
