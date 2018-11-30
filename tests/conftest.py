@@ -10,29 +10,32 @@ import pytest
 
 GIT_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
 
-
 class HlwmBridge:
 
     HC_PATH = os.path.join(GIT_ROOT, 'herbstclient')
 
-    def __init__(self,display):
+    def __init__(self, display, hlwm_process):
         self.next_client_id = 0;
         self.env = {
             'DISPLAY': display,
         }
+        self.hlwm_process = hlwm_process
 
     def callstr(self, args, check=True):
         return self.call(*(args.split(' ')), check=check)
     def call(self, *args, check=True):
         assert args
         str_args = [ str(i) for i in args]
-        proc = subprocess.run([self.HC_PATH, '-n'] + str_args,
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                              env=self.env,
-                              universal_newlines=True,
-                              # Kill hc when it hangs due to crashed server:
-                              timeout=2
-                              )
+        try:
+            proc = subprocess.run([self.HC_PATH, '-n'] + str_args,
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                  env=self.env,
+                                  universal_newlines=True,
+                                  # Kill hc when it hangs due to crashed server:
+                                  timeout=2
+                                  )
+        except subprocess.TimeoutExpired:
+            self.hlwm_process.investigate_timeout('calling ' + str(str_args))
         print(list(args))
         print(proc.stdout)
         print(proc.stderr, file=sys.stderr)
@@ -52,26 +55,52 @@ class HlwmBridge:
         command = ['xterm', '-hold', '-class', wmclass, '-e', 'true']
         # enforce a hook when the window appears
         self.call('rule', 'once', 'class='+wmclass, 'hook=here_is_'+wmclass)
-        # run process that wait for the hook
+        # the following is still racy because xterm might connect to X before
+        # the herbstclient --wait does.
+        # 1. run process that wait for the hook
         hc_wait = subprocess.Popen([self.HC_PATH, '--wait', 'rule', 'here_is_'+wmclass],
                     env=self.env,
                     stdout=subprocess.PIPE)
-        # start the process...
-        proc = subprocess.Popen(command,env=self.env)
+        # 2. start the process...
+        proc = subprocess.Popen(command, env=self.env)
         # once the window appears, the hook is fired, and the --wait exits:
-        hc_wait.wait(2)
+        try:
+            if hc_wait.wait(2) != 0:
+                self.hlwm_process.investigate_timeout( \
+                    'waiting for client triggering the hook {}'.format(wmclass))
+        except subprocess.TimeoutExpired:
+            self.hlwm_process.investigate_timeout( \
+                'waiting for client triggering the hook {}'.format(wmclass))
         winid = hc_wait.stdout.read().decode().rstrip('\n').split('\t')[-1]
 
         return SimpleNamespace(proc=proc, winid=winid)
 
 
 @pytest.fixture
-def hlwm():
+def hlwm(hlwm_process):
     display = os.environ['DISPLAY']
     #display = ':13'
-    return HlwmBridge(display)
+    return HlwmBridge(display, hlwm_process)
 
 
+class HlwmProcess:
+    def __init__(self, proc):
+        self.proc = proc
+
+    def investigate_timeout(self, reason):
+        """if some kind of client request observes a timeout, investigate the
+        herbstluftwm server process. 'reason' is best phrased using present
+        participle"""
+        try:
+            self.proc.wait(0)
+        except subprocess.TimeoutExpired:
+            pass
+        if self.proc.returncode is None:
+            raise Exception(str(reason) + " took too long" \
+                            + " but hlwm still running") from None
+        else:
+            raise Exception("{} made herbstluftwm quit with exit code {}"\
+                .format(str(reason), self.proc.returncode)) from None
 
 @pytest.fixture(autouse=True)
 def hlwm_process(tmpdir):
@@ -91,14 +120,22 @@ def hlwm_process(tmpdir):
 
     proc = subprocess.Popen([bin_path, '--verbose'], env=env,
                             stdout=subprocess.PIPE)
+    hlwm_proc = HlwmProcess(proc)
     line = proc.stdout.readline()
     assert line == b'hlwm started\n'
 
-    yield
+    yield hlwm_proc
     proc.terminate()
-    #proc.wait()
-    assert proc.wait(2) == 0
-
+    if proc.returncode is None:
+        # only wait the process if it hasn't been cleaned up
+        # this also avoids the second exception if hlwm crashed
+        try:
+            assert proc.wait(2) == 0
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait(2)
+            raise Exception("herbstluftwm did not quit on sigterm"
+                            + " and had to be killed") from None
 
 @pytest.fixture
 def create_clients(hlwm):
