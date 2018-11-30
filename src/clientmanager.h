@@ -8,6 +8,7 @@
 
 #include <X11/Xlib.h>
 #include <unordered_map>
+#include "attribute_.h"
 
 class Theme;
 class HSClient;
@@ -35,6 +36,7 @@ public:
 
     Signal_<HSTag*> needsRelayout;
     Child_<HSClient> focus;
+    Attribute_<bool> crashOnClient {"crash_on_client", false}; // remove this before merging
 
     int pseudotile_cmd(Input input, Output output);
     int fullscreen_cmd(Input input, Output output);

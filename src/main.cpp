@@ -110,6 +110,9 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"echo",           echo},
         {"true",           {[] { return 0; }}},
         {"false",          {[] { return 1; }}},
+        {"crash",          {[] { exit(3); return 1; }}}, // remove this before mergin the branch
+        {"sleep-10",       {[] { sleep(10); return 1; }}}, // remove this before mergin the branch
+        {"freeze",         {[] { while(1) {}; return 1; }}}, // remove this before mergin the branch
         {"try",            try_command},
         {"silent",         silent_command},
         {"reload",         reload},
