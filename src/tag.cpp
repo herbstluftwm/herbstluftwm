@@ -34,6 +34,10 @@ void tag_destroy() {
 
 
 HSTag::HSTag(std::string name_, Settings* settings)
+    : frame_count(      "frame_count",      BIND_THIS(getFrameCount))
+    , client_count(     "client_count",     BIND_THIS(getClientCount))
+    , curframe_windex(  "curframe_windex",  BIND_THIS(getCurFrameWindowIndex))
+    , curframe_wcount(  "curframe_wcount",  BIND_THIS(getCurFrameWindowCount))
 {
     stack = make_shared<HSStack>();
     frame = make_shared<HSFrameLeaf>(this, settings, shared_ptr<HSFrameSplit>());
@@ -41,6 +45,10 @@ HSTag::HSTag(std::string name_, Settings* settings)
         &index,
         &name,
         &floating,
+        &frame_count,
+        &client_count,
+        &curframe_windex,
+        &curframe_wcount,
     });
     floating.setWriteable();
     name.setValidator([this] (std::string new_name) {
@@ -61,6 +69,31 @@ HSTag::~HSTag() {
 void HSTag::setIndexAttribute(unsigned long new_index) {
     index = new_index;
 }
+
+int HSTag::getFrameCount() {
+    int count = 0;
+    frame->fmap([](HSFrameSplit*) {},
+                [&count](HSFrameLeaf*) { count++; },
+                0);
+    return count;
+}
+
+int HSTag::getClientCount() {
+    int count = 0;
+    frame->fmap([](HSFrameSplit*) {},
+                [&count](HSFrameLeaf* l) { count += l->clientCount(); },
+                0);
+    return count;
+}
+
+int HSTag::getCurFrameWindowIndex() {
+    return frame->getFocusedFrame()->getSelection();
+}
+
+int HSTag::getCurFrameWindowCount() {
+    return frame->getFocusedFrame()->clientCount();;
+}
+
 
 int    tag_get_count() {
     return global_tags->size();

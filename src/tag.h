@@ -21,9 +21,22 @@ public:
     Attribute_<unsigned long> index = {"index", 0};
     Attribute_<bool>         floating = {"floating", false};
     Attribute_<std::string>  name = {"name", {}};   // name of this tag
+    DynAttribute_<int> frame_count;
+    DynAttribute_<int> client_count;
+    DynAttribute_<int> curframe_windex;
+    DynAttribute_<int> curframe_wcount;
     int             flags;
     std::shared_ptr<HSStack> stack;
     void setIndexAttribute(unsigned long new_index) override;
+private:
+    //! get the number of frames on this tag
+    int getFrameCount();
+    //! get the number of clients on this tag
+    int getClientCount();
+    //! get the focus index within the current frame
+    int getCurFrameWindowIndex();
+    //! get the count of windows in  the current frame
+    int getCurFrameWindowCount();
 };
 
 void tag_init();
