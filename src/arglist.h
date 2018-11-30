@@ -45,7 +45,7 @@ struct ArgList {
      * the original shift is restored
      */
     bool read(std::initializer_list<std::string*> targets);
-    /** try read a value if possible */
+    //! try read a value if possible
     ArgList& operator>>(std::string& val) {
         if (!empty()) {
             val = front();
@@ -55,7 +55,7 @@ struct ArgList {
         }
         return *this;
     }
-    /** tell whether all previous operator>>() succeeded */
+    //! tell whether all previous operator>>() succeeded
     operator bool() const {
         return !shiftedToFar_;
     }
