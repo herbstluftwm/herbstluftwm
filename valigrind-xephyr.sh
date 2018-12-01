@@ -7,6 +7,8 @@ die() {
     exit 1
 }
 
+set -e
+
 # find free display number
 # ------------------------
 xephyr_displaynr= # only the display number without the colon
@@ -20,6 +22,14 @@ done
 if [[ -z "$xephyr_displaynr" ]] ; then
     die "No free display found"
 fi
+
+# set up herbstluftwm
+# -------------------
+project_root=$(dirname "$0") # find out herbstluftwm root
+project_root=$(cd "$project_root" && pwd) # make path absolute
+
+export PATH="$project_root:$PATH"
+make -C "$project_root" herbstluftwm herbstclient
 
 # boot up Xephyr
 # --------------
@@ -35,14 +45,13 @@ done
 
 # boot up herbstluftwm
 # --------------------
-# TODO: force the current herbstclient to be used?
-
 # don't let glib cause valgrind errors
 export G_SLICE=always-malloc
 export G_DEBUG=gc-friendly
 DISPLAY=":$xephyr_displaynr" \
     valgrind -- \
-        ./herbstluftwm --verbose -c ./share/autostart
+        ./herbstluftwm --verbose -c ./share/autostart \
+    || echo "Warning: valgrind had non-zero exit code"
 
 # clean up xephyr
 kill "$xephyr_pid"
