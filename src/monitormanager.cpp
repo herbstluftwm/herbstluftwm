@@ -220,7 +220,7 @@ int MonitorManager::addMonitor(Input input, Output output)
     if (!input) {
         return HERBST_NEED_MORE_ARGS;
     }
-    HSTag* tag = NULL;
+    HSTag* tag = nullptr;
     if (input >> tagName) {
         tag = find_tag(tagName.c_str());
         if (!tag) {
