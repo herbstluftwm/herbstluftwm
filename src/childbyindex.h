@@ -70,6 +70,9 @@ public:
         for (size_t idx = 0; idx < data.size(); idx++) {
             removeChild(std::to_string(idx));
         }
+        for (auto child : data) {
+            delete child;
+        }
         data.erase(data.begin(), data.end());
     }
 
