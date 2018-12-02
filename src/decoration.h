@@ -56,15 +56,16 @@ public:
 
     static HSClient* toClient(Window decoration_window);
 
-    Window decorationWindow() { return decwin; };
-    Rectangle last_inner() const { return last_inner_rect; };
-    Rectangle last_outer() const { return last_outer_rect; };
+    Window decorationWindow() { return decwin; }
+    Rectangle last_inner() const { return last_inner_rect; }
+    Rectangle last_outer() const { return last_outer_rect; }
     Rectangle inner_to_outer(Rectangle rect);
+
 private:
     void redrawPixmap();
     void updateFrameExtends();
     unsigned int get_client_color(Color color);
-private:
+
     HSClient*        client; // the client to decorate
     Window                  decwin = 0; // the decoration window
     const DecorationScheme* last_scheme = {};
