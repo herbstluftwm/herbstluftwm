@@ -30,8 +30,7 @@ class HSMonitor;
 
 typedef struct HSSlice {
     HSSliceType type;
-    HSLayer     layer[LAYER_COUNT]; /* layers this slice is contained in */
-    size_t      layer_count;        /* count of those layers */
+    std::set<HSLayer> layers; //!< layers this slice is contained in
     union {
         HSClient*    client;
         Window              window;
