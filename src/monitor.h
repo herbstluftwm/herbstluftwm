@@ -7,13 +7,10 @@
 #endif /* XINERAMA */
 
 #include "x11-types.h"
-#include "floating.h"
-#include "types.h"
 #include "object.h"
 #include "attribute_.h"
 
 class HSTag;
-class HSFrame;
 class Settings;
 class MonitorManager;
 struct HSSlice;

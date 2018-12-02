@@ -3,6 +3,7 @@
 #include "globals.h"
 #include "layout.h"
 #include "client.h"
+#include "monitor.h"
 #include "settings.h"
 #include "stack.h"
 #include "mouse.h"

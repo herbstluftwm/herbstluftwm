@@ -5,6 +5,9 @@
 #include <set>
 #include <map>
 
+#define Ptr(X) std::shared_ptr<X>
+#define WPtr(X) std::weak_ptr<X>
+
 /* A path in the object tree */
 using Path = ArgList;
 

@@ -2,6 +2,7 @@
 #include "settings.h"
 #include "client.h"
 #include "layout.h"
+#include "tag.h"
 #include "ipc-protocol.h"
 #include "ewmh.h"
 #include "monitormanager.h"

@@ -9,10 +9,6 @@
 #include <memory>
 #include <X11/Xlib.h>
 
-#define Ptr(X) std::shared_ptr<X>
-#define WPtr(X) std::weak_ptr<X>
-
-
 class Color {
 public:
     Color();
@@ -92,6 +88,7 @@ inline Rectangle Converter<Rectangle>::parse(const std::string &payload, Rectang
 }
 
 using RectangleVec = std::vector<Rectangle>;
+using RectangleIdxVec = std::vector<std::pair<int, Rectangle>>;
 
 #endif
 
