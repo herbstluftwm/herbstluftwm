@@ -84,8 +84,19 @@ def hlwm(hlwm_process):
 
 
 class HlwmProcess:
-    def __init__(self, proc):
-        self.proc = proc
+    def __init__(self, tmpdir, env):
+        autostart = tmpdir / 'herbstluftwm' / 'autostart'
+        autostart.ensure()
+        autostart.write(textwrap.dedent("""
+            #!/usr/bin/env bash
+            echo "hlwm started"
+        """.lstrip('\n')))
+        autostart.chmod(0o755)
+        bin_path = os.path.join(GIT_ROOT, 'herbstluftwm')
+        self.proc = subprocess.Popen([bin_path, '--verbose'], env=env,
+                                stdout=subprocess.PIPE)
+        line = self.proc.stdout.readline()
+        assert line == b'hlwm started\n'
 
     def investigate_timeout(self, reason):
         """if some kind of client request observes a timeout, investigate the
@@ -102,6 +113,19 @@ class HlwmProcess:
             raise Exception("{} made herbstluftwm quit with exit code {}"\
                 .format(str(reason), self.proc.returncode)) from None
 
+    def shutdown(self):
+        self.proc.terminate()
+        if self.proc.returncode is None:
+            # only wait the process if it hasn't been cleaned up
+            # this also avoids the second exception if hlwm crashed
+            try:
+                assert self.proc.wait(2) == 0
+            except subprocess.TimeoutExpired:
+                self.proc.kill()
+                self.proc.wait(2)
+                raise Exception("herbstluftwm did not quit on sigterm"
+                                + " and had to be killed") from None
+
 @pytest.fixture(autouse=True)
 def hlwm_process(tmpdir):
     env = {
@@ -109,33 +133,12 @@ def hlwm_process(tmpdir):
         'XDG_CONFIG_HOME': str(tmpdir),
     }
     #env['DISPLAY'] = ':13'
-    autostart = tmpdir / 'herbstluftwm' / 'autostart'
-    autostart.ensure()
-    autostart.write(textwrap.dedent("""
-        #!/usr/bin/env bash
-        echo "hlwm started"
-    """.lstrip('\n')))
-    autostart.chmod(0o755)
-    bin_path = os.path.join(GIT_ROOT, 'herbstluftwm')
-
-    proc = subprocess.Popen([bin_path, '--verbose'], env=env,
-                            stdout=subprocess.PIPE)
-    hlwm_proc = HlwmProcess(proc)
-    line = proc.stdout.readline()
-    assert line == b'hlwm started\n'
+    hlwm_proc = HlwmProcess(tmpdir, env)
 
     yield hlwm_proc
-    proc.terminate()
-    if proc.returncode is None:
-        # only wait the process if it hasn't been cleaned up
-        # this also avoids the second exception if hlwm crashed
-        try:
-            assert proc.wait(2) == 0
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.wait(2)
-            raise Exception("herbstluftwm did not quit on sigterm"
-                            + " and had to be killed") from None
+
+    hlwm_proc.shutdown()
+
 
 @pytest.fixture
 def create_clients(hlwm):
