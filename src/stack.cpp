@@ -383,7 +383,8 @@ void HSStack::slice_remove_layer(HSSlice* slice, HSLayer layer) {
 }
 
 Window HSStack::lowest_window() {
-    for (auto v : top) {
+    for (int i = LAYER_COUNT - 1; i >= 0; i--) {
+        auto v = top[i];
         for (auto it = v.rbegin(); it != v.rend(); it++) {
             auto slice = *it;
             Window w = 0;
