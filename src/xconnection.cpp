@@ -22,14 +22,14 @@ XConnection::~XConnection() {
     XCloseDisplay(m_display);
 }
 
-XConnection XConnection::connect(std::string display_name) {
+XConnection* XConnection::connect(std::string display_name) {
     char* display_str = (display_name != "") ? (char*)display_name.c_str() : nullptr;
     Display* d = XOpenDisplay(display_str);
     if (d == NULL) {
         std::cerr << "herbstluftwm: XOpenDisplay() failed" << std::endl;
         exit(EXIT_FAILURE);
     }
-    return XConnection(d);
+    return new XConnection(d);
 }
 
 static bool g_other_wm_running = false;
