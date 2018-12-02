@@ -200,8 +200,6 @@ void MonitorManager::removeMonitor(HSMonitor* monitor)
 
     g_monitors->removeIndexed(monitorIdx);
 
-    delete monitor;
-
     if (g_cur_monitor >= g_monitors->size()) {
         g_cur_monitor--;
         // if selection has changed, then relayout focused monitor

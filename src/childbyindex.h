@@ -30,18 +30,24 @@ public:
     }
 
     void removeIndexed(size_t idx) {
-        auto remove_it = data.begin() + idx;
-        if (idx < 0 || remove_it == data.end()) {
+        if (idx >= data.size()) {
+            // index does not exist
             return;
         }
-        // remove that value
+
+        T* child = byIdx(idx);
+        data.erase(data.begin() + idx);
+
         removeChild(std::to_string(idx));
-        data.erase(remove_it);
+
+        // Update indices for remaining children
         for (size_t new_idx = idx; new_idx < data.size(); new_idx++) {
             std::string old_idx_str = std::to_string(new_idx + 1);
             removeChild(old_idx_str);
             addChild(data[new_idx], std::to_string(new_idx));
         }
+
+        delete child;
     }
 
     int index_of(T* child) {
