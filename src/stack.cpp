@@ -40,7 +40,7 @@ HSStack::~HSStack() {
 }
 
 static HSSlice* slice_create() {
-    HSSlice* s = g_new0(HSSlice, 1);
+    HSSlice* s = new HSSlice();
     s->layers.insert(LAYER_NORMAL);
     return s;
 }
@@ -74,7 +74,7 @@ HSSlice* slice_create_monitor(HSMonitor* monitor) {
 }
 
 void slice_destroy(HSSlice* slice) {
-    g_free(slice);
+    delete slice;
 }
 
 HSLayer slice_highest_layer(HSSlice* slice) {
