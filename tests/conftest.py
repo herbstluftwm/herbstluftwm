@@ -137,7 +137,7 @@ def create_client(hlwm, create_clients):
 @pytest.fixture(params=[0])
 def running_clients(hlwm, create_clients, running_clients_num):
     """
-    Fixture that provides a number of already running clients, a defined by a
+    Fixture that provides a number of already running clients, as defined by a
     "running_clients_num" test parameter.
     """
     yield create_clients(running_clients_num)
