@@ -9,7 +9,7 @@ private:
     XConnection(Display* disp);
 public:
     ~XConnection();
-    static XConnection connect(std::string display_name = {});
+    static XConnection* connect(std::string display_name = {});
     Display* display() { return m_display; }
     int screen() { return m_screen; }
     Window root() { return m_root; }
