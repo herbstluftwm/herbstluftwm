@@ -20,6 +20,14 @@ class HlwmBridge:
             'DISPLAY': display,
         }
         self.hlwm_process = hlwm_process
+        self.hc_idle = subprocess.Popen(\
+                    [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
+                    bufsize=1, # line buffered
+                    env=self.env,
+                    stdout=subprocess.PIPE)
+        # a dictionary mapping wmclasses to window ids as reported
+        # by self.hc_idle
+        self.wmclass2winid = {}
 
     def callstr(self, args, check=True):
         return self.call(*(args.split(' ')), check=check)
@@ -55,32 +63,37 @@ class HlwmBridge:
         command = ['xterm', '-hold', '-class', wmclass, '-e', 'true']
         # enforce a hook when the window appears
         self.call('rule', 'once', 'class='+wmclass, 'hook=here_is_'+wmclass)
-        # the following is still racy because xterm might connect to X before
-        # the herbstclient --wait does.
-        # 1. run process that wait for the hook
-        hc_wait = subprocess.Popen([self.HC_PATH, '--wait', 'rule', 'here_is_'+wmclass],
-                    env=self.env,
-                    stdout=subprocess.PIPE)
-        # 2. start the process...
         proc = subprocess.Popen(command, env=self.env)
         # once the window appears, the hook is fired, and the --wait exits:
-        try:
-            if hc_wait.wait(2) != 0:
-                self.hlwm_process.investigate_timeout( \
-                    'waiting for client triggering the hook {}'.format(wmclass))
-        except subprocess.TimeoutExpired:
-            self.hlwm_process.investigate_timeout( \
-                'waiting for client triggering the hook {}'.format(wmclass))
-        winid = hc_wait.stdout.read().decode().rstrip('\n').split('\t')[-1]
+        winid = self.wait_for_window_of(wmclass)
 
         return SimpleNamespace(proc=proc, winid=winid)
 
+    def wait_for_window_of(self, wmclass):
+        """Wait for a rule hook of the form "here_is_" + wmclass """
+        # we don't need to investigate the rule here
+        # because we never create clients in parallel
+        line = self.hc_idle.stdout.readline().decode().rstrip('\n').split('\t')
+        try:
+            self.hc_idle.wait(0)
+        except subprocess.TimeoutExpired:
+            pass
+        if not self.hc_idle.returncode is None:
+            self.hlwm_process.investigate_timeout( \
+                'waiting for hook triggered by client \"{}\"'.format(wmclass))
+        return line[-1]
+
+    def shutdown(self):
+        self.hc_idle.terminate()
+        self.hc_idle.wait(2)
 
 @pytest.fixture
 def hlwm(hlwm_process):
     display = os.environ['DISPLAY']
     #display = ':13'
-    return HlwmBridge(display, hlwm_process)
+    hlwm_bridge = HlwmBridge(display, hlwm_process)
+    yield hlwm_bridge
+    hlwm_bridge.shutdown()
 
 
 class HlwmProcess:
