@@ -45,8 +45,7 @@ class Attribute : public Entity {
 public:
     Attribute(const std::string &name,
               bool writeable)
-        : Entity(name), owner_(nullptr)
-        , writeable_(writeable) {}
+        : Entity(name), writeable_(writeable) {}
     ~Attribute() override = default;
 
     // set the owner after object creation (when pointer is available)
@@ -88,7 +87,7 @@ public:
     Type type() override { return Type::ACTION; }
 
 private:
-    Object *owner_;
+    Object *owner_ = {};
 };
 
 
