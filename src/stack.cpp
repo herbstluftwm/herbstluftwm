@@ -41,9 +41,8 @@ HSStack::~HSStack() {
 }
 
 static HSSlice* slice_create() {
-    HSSlice* s = g_new0(HSSlice, 1);
-    s->layer[0] = LAYER_NORMAL;
-    s->layer_count = 1;
+    HSSlice* s = new HSSlice();
+    s->layers.insert(LAYER_NORMAL);
     return s;
 }
 
@@ -56,7 +55,7 @@ HSSlice* slice_create_window(Window window) {
 
 HSSlice* slice_create_frame(Window window) {
     HSSlice* s = slice_create_window(window);
-    s->layer[0] = LAYER_FRAMES;
+    s->layers.insert(LAYER_FRAMES);
     return s;
 }
 
@@ -76,30 +75,26 @@ HSSlice* slice_create_monitor(HSMonitor* monitor) {
 }
 
 void slice_destroy(HSSlice* slice) {
-    g_free(slice);
+    delete slice;
 }
 
 HSLayer slice_highest_layer(HSSlice* slice) {
-    HSLayer highest = LAYER_COUNT;
-    for (int i = 0; i < slice->layer_count; i++) {
-        if (slice->layer[i] < highest) {
-            highest = slice->layer[i];
-        }
+    if (slice->layers.empty()) {
+        return LAYER_COUNT;
+    } else {
+        return *(slice->layers.begin());
     }
-    return highest;
 }
 
 void HSStack::insert_slice(HSSlice* elem) {
-    for (int i = 0; i < elem->layer_count; i++) {
-        int layer = elem->layer[i];
+    for (auto layer : elem->layers) {
         top[layer].insert(top[layer].begin(), elem);
     }
     dirty = true;
 }
 
 void HSStack::remove_slice(HSSlice* elem) {
-    for (int i = 0; i < elem->layer_count; i++) {
-        int layer = elem->layer[i];
+    for (auto layer : elem->layers) {
         auto v = top[layer];
         v.erase(std::remove(v.begin(), v.end(), elem));
     }
@@ -329,8 +324,8 @@ void HSStack::restack() {
 }
 
 void HSStack::raise_slide(HSSlice* slice) {
-    for (int i = 0; i < slice->layer_count; i++) {
-        auto v = top[slice->layer[i]];
+    for (auto layer : slice->layers) {
+        auto v = top[layer];
         auto it = std::find(v.begin(), v.end(), slice);
         assert(it != v.end());
         // rotate the range [begin, it+1) in such a way
@@ -348,38 +343,29 @@ void HSStack::mark_dirty() {
 }
 
 void HSStack::slice_add_layer(HSSlice* slice, HSLayer layer) {
-    for (int i = 0; i < slice->layer_count; i++) {
-        if (slice->layer[i] == layer) {
-            /* nothing to do */
-            return;
-        }
+    if (slice->layers.count(layer) != 0) {
+        /* nothing to do */
+        return;
     }
-    slice->layer[slice->layer_count] = layer;
-    slice->layer_count++;
+
+    slice->layers.insert(layer);
     top[layer].insert(top[layer].begin(), slice);
     dirty = true;
 }
 
 void HSStack::slice_remove_layer(HSSlice* slice, HSLayer layer) {
-    int i;
-    for (i = 0; i < slice->layer_count; i++) {
-        if (slice->layer[i] == layer) {
-            break;
-        }
-    }
     /* remove slice from layer in the stack */
     auto v = top[layer];
     v.erase(std::remove(v.begin(), v.end(), slice));
     dirty = true;
-    if (i >= slice->layer_count) {
+
+    if (slice->layers.count(layer) == 0) {
         HSDebug("remove layer: slice %p not in %s\n", (void*)slice,
                 g_layer_names[layer]);
         return;
     }
-    /* remove layer in slice */
-    slice->layer_count--;
-    size_t len = sizeof(HSLayer) * (slice->layer_count - i);
-    memmove(slice->layer + i, slice->layer + i + 1, len);
+
+    slice->layers.erase(layer);
 }
 
 Window HSStack::lowest_window() {
