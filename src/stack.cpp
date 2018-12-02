@@ -95,7 +95,7 @@ void HSStack::insert_slice(HSSlice* elem) {
 
 void HSStack::remove_slice(HSSlice* elem) {
     for (auto layer : elem->layers) {
-        auto v = top[layer];
+        auto &v = top[layer];
         v.erase(std::remove(v.begin(), v.end(), elem));
     }
     dirty = true;
@@ -325,7 +325,7 @@ void HSStack::restack() {
 
 void HSStack::raise_slide(HSSlice* slice) {
     for (auto layer : slice->layers) {
-        auto v = top[layer];
+        auto &v = top[layer];
         auto it = std::find(v.begin(), v.end(), slice);
         assert(it != v.end());
         // rotate the range [begin, it+1) in such a way
@@ -355,7 +355,7 @@ void HSStack::slice_add_layer(HSSlice* slice, HSLayer layer) {
 
 void HSStack::slice_remove_layer(HSSlice* slice, HSLayer layer) {
     /* remove slice from layer in the stack */
-    auto v = top[layer];
+    auto &v = top[layer];
     v.erase(std::remove(v.begin(), v.end(), slice));
     dirty = true;
 
@@ -370,7 +370,7 @@ void HSStack::slice_remove_layer(HSSlice* slice, HSLayer layer) {
 
 Window HSStack::lowest_window() {
     for (int i = LAYER_COUNT - 1; i >= 0; i--) {
-        auto v = top[i];
+        auto &v = top[i];
         for (auto it = v.rbegin(); it != v.rend(); it++) {
             auto slice = *it;
             Window w = 0;
