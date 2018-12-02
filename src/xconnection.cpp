@@ -8,6 +8,8 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
+#include <iostream>
+
 XConnection::XConnection(Display* disp)
     : m_display(disp) {
     m_screen = DefaultScreen(m_display);

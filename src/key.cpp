@@ -1,4 +1,5 @@
 #include "key.h"
+#include "client.h"
 #include "globals.h"
 #include "utils.h"
 #include "ipc-protocol.h"

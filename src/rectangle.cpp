@@ -1,5 +1,4 @@
 #include "rectangle.h"
-#include "floating.h"
 #include "utils.h"
 #include "ipc-protocol.h"
 

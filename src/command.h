@@ -2,9 +2,8 @@
 #define __HERBSTLUFT_COMMAND_H_
 
 #include "glib-backports.h"
-#include "x11-types.h"
 #include "types.h"
-// standard
+
 #include <string>
 #include <functional>
 #include <unordered_map>
