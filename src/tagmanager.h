@@ -7,6 +7,7 @@
 
 class Settings;
 class MonitorManager;
+class HSClient;
 
 class TagManager : public ChildByIndex<HSTag> {
 public:

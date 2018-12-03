@@ -4,9 +4,9 @@
 #include <cstdio>
 #include <algorithm>
 
-#include "utils.h"
 #include "client.h"
 #include "tag.h"
+#include "monitor.h"
 #include "layout.h"
 #include "settings.h"
 #include "utils.h"

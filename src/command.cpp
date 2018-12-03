@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "settings.h"
 #include "layout.h"
+#include "tag.h"
 #include "key.h"
 #include "client.h"
 #include "clientmanager.h"
