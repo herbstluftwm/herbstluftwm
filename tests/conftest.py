@@ -20,7 +20,7 @@ class HlwmBridge:
             'DISPLAY': display,
         }
         self.hlwm_process = hlwm_process
-        self.hc_idle = subprocess.Popen(\
+        self.hc_idle = subprocess.Popen(
                     [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
                     bufsize=1, # line buffered
                     env=self.env,
@@ -79,7 +79,7 @@ class HlwmBridge:
         except subprocess.TimeoutExpired:
             pass
         if not self.hc_idle.returncode is None:
-            self.hlwm_process.investigate_timeout( \
+            self.hlwm_process.investigate_timeout(
                 'waiting for hook triggered by client \"{}\"'.format(wmclass))
         return line[-1]
 
@@ -120,10 +120,10 @@ class HlwmProcess:
         except subprocess.TimeoutExpired:
             pass
         if self.proc.returncode is None:
-            raise Exception(str(reason) + " took too long" \
+            raise Exception(str(reason) + " took too long"
                             + " but hlwm still running") from None
         else:
-            raise Exception("{} made herbstluftwm quit with exit code {}"\
+            raise Exception("{} made herbstluftwm quit with exit code {}"
                 .format(str(reason), self.proc.returncode)) from None
 
     def shutdown(self):
