@@ -54,6 +54,7 @@ HSSlice* slice_create_window(Window window) {
 
 HSSlice* slice_create_frame(Window window) {
     HSSlice* s = slice_create_window(window);
+    s->layers.clear();
     s->layers.insert(LAYER_FRAMES);
     return s;
 }
