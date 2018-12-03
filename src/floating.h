@@ -7,8 +7,6 @@
 void floating_init();
 void floating_destroy();
 
-typedef std::vector<std::pair<int,Rectangle>> RectangleIdxVec;
-
 // utilities
 int char_to_direction(char ch);
 int find_rectangle_in_direction(RectangleIdxVec& rects, int idx, Direction dir);

@@ -2,7 +2,6 @@
 #define __HS_OBJECT_H_
 
 #include "types.h"
-#include "hook.h"
 
 #include <map>
 #include <vector>
@@ -15,6 +14,7 @@
 
 class Attribute;
 class Action;
+class Hook;
 
 enum class HookEvent {
     CHILD_ADDED,

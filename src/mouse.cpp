@@ -2,11 +2,14 @@
 #include "globals.h"
 #include "client.h"
 #include "layout.h"
+#include "monitor.h"
+#include "tag.h"
 #include "key.h"
 #include "ipc-protocol.h"
 #include "settings.h"
 #include "command.h"
 #include "utils.h"
+#include "x11-utils.h"
 
 #include <cstdlib>
 #include <cstdio>
