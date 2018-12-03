@@ -4,6 +4,8 @@
 #include "settings.h"
 #include "globals.h"
 #include "layout.h"
+#include "monitor.h"
+#include "tag.h"
 #include "stack.h"
 #include "utils.h"
 #include "hook.h"

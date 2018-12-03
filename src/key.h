@@ -1,12 +1,15 @@
 #ifndef __HERBST_KEY_H_
 #define __HERBST_KEY_H_
 
-#include <X11/Xlib.h>
 #include "glib-backports.h"
-#include "client.h"
-#include "x11-types.h"
+#include "types.h"
+
+#include <X11/Xlib.h>
 
 #define KEY_COMBI_SEPARATORS "+-"
+
+class HSTag;
+class HSClient;
 
 typedef struct KeyBinding {
     KeySym keysym;
