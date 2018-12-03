@@ -101,20 +101,43 @@ def hlwm_process(tmpdir):
 
 
 @pytest.fixture
-def create_client(hlwm):
+def create_clients(hlwm):
     """
-    Callable fixture that allows to create clients that will be terminated on
-    teardown.
+    Callable fixture that allows to create a number of clients that will be
+    terminated on teardown.
     """
     clients = []
 
-    def create_and_track_client():
-        new_client = hlwm.create_client()
-        clients.append(new_client)
-        return new_client.winid
+    def create_and_track_clients(num):
+        new_winids = []
+        for i in range(num):
+            new_client = hlwm.create_client()
+            clients.append(new_client)
+            new_winids.append(new_client.winid)
 
-    yield create_and_track_client
+        return new_winids
+
+    yield create_and_track_clients
 
     for client in clients:
         client.proc.terminate()
         client.proc.wait(2)
+
+
+@pytest.fixture
+def create_client(hlwm, create_clients):
+#  def create_client(hlwm):
+    """
+    Callable fixture that allows to create a client that will be terminated on
+    teardown.
+    """
+    yield lambda: create_clients(1)[0]
+
+
+@pytest.fixture(params=[0])
+def running_clients(hlwm, create_clients, running_clients_num):
+    """
+    Fixture that provides a number of already running clients, as defined by a
+    "running_clients_num" test parameter.
+    """
+    yield create_clients(running_clients_num)
