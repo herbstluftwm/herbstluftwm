@@ -22,8 +22,6 @@ ClientManager::ClientManager(Theme& theme_, Settings& settings_)
     , theme(theme_)
     , settings(settings_)
 {
-    wireAttributes({ &crashOnClient }); // remove this before merging
-    crashOnClient.setWriteable(); // remove this before merging
 }
 
 ClientManager::~ClientManager()
@@ -96,7 +94,6 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     if (client(win)) { // if the client is managed already
         return nullptr;
     }
-    if (crashOnClient()) exit(4); // remove this before merging
 
     // init client
     auto client = new HSClient(win, visible_already, *this);
