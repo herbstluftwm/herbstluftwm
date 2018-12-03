@@ -23,6 +23,7 @@ class HlwmBridge:
         self.hc_idle = subprocess.Popen(
                     [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
                     bufsize=1, # line buffered
+                    universal_newlines=True,
                     env=self.env,
                     stdout=subprocess.PIPE)
         # a dictionary mapping wmclasses to window ids as reported
@@ -64,21 +65,22 @@ class HlwmBridge:
         # enforce a hook when the window appears
         self.call('rule', 'once', 'class='+wmclass, 'hook=here_is_'+wmclass)
         proc = subprocess.Popen(command, env=self.env)
-        # once the window appears, the hook is fired, and the --wait exits:
+        # once the window appears, the hook is fired:
         winid = self.wait_for_window_of(wmclass)
 
         return SimpleNamespace(proc=proc, winid=winid)
 
     def wait_for_window_of(self, wmclass):
         """Wait for a rule hook of the form "here_is_" + wmclass """
-        # we don't need to investigate the rule here
-        # because we never create clients in parallel
-        line = self.hc_idle.stdout.readline().decode().rstrip('\n').split('\t')
+        # We don't need to read the second argument of the hook and don't need
+        # to check that is indeed equals "here_is_" + wmclass. But we need to
+        # check this once we create clients simultaneously.
+        line = self.hc_idle.stdout.readline().rstrip('\n').split('\t')
         try:
             self.hc_idle.wait(0)
         except subprocess.TimeoutExpired:
             pass
-        if not self.hc_idle.returncode is None:
+        if self.hc_idle.returncode is not None:
             self.hlwm_process.investigate_timeout(
                 'waiting for hook triggered by client \"{}\"'.format(wmclass))
         return line[-1]
