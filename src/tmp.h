@@ -2,7 +2,6 @@
 #define __HERBSTLUFT_TMP_H_
 
 #include "object.h"
-class Root;
 
 class Tmp : public Object {
 public:

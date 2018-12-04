@@ -13,6 +13,7 @@
 #include "rules.h"
 #include "ewmh.h"
 #include "stack.h"
+#include "client.h"
 #include "object.h"
 #include "decoration.h"
 #include "xconnection.h"
@@ -163,7 +164,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"move",           BIND_OBJECT(tags, tag_move_window_command) },
         {"rotate",         layout_rotate_command},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
-        {"add_monitor",    add_monitor_command},
+        {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
         {"raise_monitor",  monitor_raise_command},
         {"remove_monitor", BIND_OBJECT(monitors, removeMonitor)},
         {"move_monitor",   monitors->byFirstArg(&HSMonitor::move_cmd) } ,
@@ -889,13 +890,13 @@ void unmapnotify(Root* root, XEvent* event) {
 int main(int argc, char* argv[]) {
     Globals g;
     parse_arguments(argc, argv, g);
-    XConnection X = XConnection::connect();
-    g_display = X.display();
+    XConnection* X = XConnection::connect();
+    g_display = X->display();
     if (!g_display) {
         std::cerr << "herbstluftwm: cannot open display" << std::endl;
         exit(EXIT_FAILURE);
     }
-    if (X.checkotherwm()) {
+    if (X->checkotherwm()) {
         std::cerr << "herbstluftwm: another window manager is already running" << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -905,10 +906,10 @@ int main(int argc, char* argv[]) {
     sigaction_signal(SIGQUIT, handle_signal);
     sigaction_signal(SIGTERM, handle_signal);
     // set some globals
-    g_screen = X.screen();
-    g_screen_width = X.screenWidth();
-    g_screen_height = X.screenHeight();
-    g_root = X.root();
+    g_screen = X->screen();
+    g_screen_width = X->screenWidth();
+    g_screen_height = X->screenHeight();
+    g_root = X->root();
     XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
 
     auto root = std::make_shared<Root>(g);
@@ -960,7 +961,11 @@ int main(int argc, char* argv[]) {
     for (int i = LENGTH(g_modules); i --> 0;) {
         g_modules[i].destroy();
     }
+    // enforce to clear the root
     root.reset();
+    Root::setRoot(root);
+    // and then close the x connection
+    delete X;
     // check if we shall restart an other window manager
     if (g_exec_before_quit) {
         if (g_exec_args) {

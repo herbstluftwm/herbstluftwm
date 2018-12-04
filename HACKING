@@ -3,29 +3,22 @@ HACKING
 
 If you want to contribute to herbstluftwm, this file is for you!
 
+Testing herbstluftwm
+--------------------
+You can test herbstluftwm under any window manager. Install Xephyr and valgrind,
+and make sure you have herbstluftwm compiled. Then run the script:
+
+    ./valigrind-xephyr.sh
+
+It creates a Xephyr window in which herbstluftwm runs using the default
+autostart. Any crashes or memory leaks are reported in detail by valgrind. Quit
+herbstluftwm (Alt-Shift-q or run herbstclient quit) to end testing.
+
 Contributing
 ------------
 Beside writing code you can help herbstluftwm by testing, reporting bugs,
 writing/fixing documentation (e.g. by fixing spelling mistakes) or packaging it
 for distributions.
-
-Coding style
-------------
-The coding style is similar to the Linux-kernel style with some changes:
-
-  - Use 4 spaces instead of tabs.
-  - Do not add any trailing spaces at the end of a line.
-  - Data type names are CamelCase
-  - Globals must be prefixed with g_
-  - If a function returns success or failure, then encode it in a bool (from
-    stdbool.h). Only use main()-like exit codes (0 = success, non zero =
-    failure) for commands.
-  - Always typedef struct, e.g.:
-
-    typedef struct {
-        int         first_member;
-        long long   other_member;
-    } MyStruct;
 
 Build system
 ------------
@@ -87,16 +80,18 @@ or by using the web interface at:
 
     https://lists.schokokeks.org/mailman/listinfo.cgi/hlwm
 
-Debugging with valgrind
------------------------
-If you use tools like valgrind, then it is needed to turn of the memory
-optimization settings for glib. So export this before running herbstluftwm
-within valgrind:
 
-    export G_SLICE=always-malloc
-    export G_DEBUG=gc-friendly
+Coding style
+------------
+The coding style is similar to the Linux-kernel style with some changes:
 
-    valgrind --leak-check=full ./herbstluftwm  -c share/autostart
+  - Use 4 spaces instead of tabs.
+  - Do not add any trailing spaces at the end of a line.
+  - Data type names are CamelCase
+  - Globals must be prefixed with g_
+  - If a function returns success or failure, then encode it in a bool (from
+    stdbool.h). Use main()-like exit codes (0 = success, non zero =
+    failure) only for commands.
 
 
 Internal structure
@@ -125,54 +120,5 @@ herbstclient is rather simple:
                                  |      |   X11
                     stdout  <----|      |<---'
                                  +------+
-
-Objects
--------
-There is one tree of objects in herbstluftwm to provide an easy access for the
-user to many options. The usage is similar to kobjects known from the Linux
-kernel. The most important functions are:
-
-  - HSObject* hsobject_create_and_link(HSObject* parent, char* name): Create a
-    new child object under parent. If name already exists it will be replaced.
-  - void hsobject_unlink_and_destroy(HSObject* parent, HSObject* child): Remove
-    all child entries at the parent object and destroys the object afterwards.
-  - HSObject* hsobject_root(): Return the root node of the object tree.
-  - void hsobject_set_attributes(HSObject* obj, HSAttribute* attributes): Set
-    the attributes of an object, attributes is an array terminated by
-    ATTRIBUTE_LAST.
-
-For a full list see src/object.h. Each object has a certain set of attributes.
-Each attribute has a type, which is defined by the according constructor:
-
-  - ATTRIBUTE_BOOL(N, V, CHANGE): accords to bool
-  - ATTRIBUTE_INT(N, V, CHANGE): accords to int
-  - ATTRIBUTE_UINT(N, V, CHANGE): accords to unsigned int
-  - ATTRIBUTE_STRING(N, V, CHANGE): accords to GString*
-  - ATTRIBUTE_CUSTOM(N, V, CHANGE): accords to HSAttributeCustom
-  - ATTRIBUTE_CUSTOM_INT(N, V, CHANGE): accords to HSAttributeCustomInt
-
-N is the name of the attribute as displayed to the user, V is the value in the
-struct; the macro automatically prepends a '&' to it to get the pointer. To
-check if attributes are changed properly (or to do certain actions after a
-change), the callback CHANGE is definied:
-
-    GString* (*on_change)  (struct HSAttribute* attr);
-
-It is called after the attribute is changed by the user. If this function
-returns something != NULL, this string is put as an error message to the user
-and the original value is restored. To mark a attribute as read-only for the
-user, give ATTR_READ_ONLY as CHANGE.
-
-The "custom" attributes do not give a pointer to a variable but give a function
-that returns the variable. HSAttributeCustom returns a GString,
-HSAttributeCustomInt an int.
-
-    typedef void (*HSAttributeCustom)(void* data, GString* output);
-    typedef int (*HSAttributeCustomInt)(void* data);
-
-They both get a data-pointer, it is exactly the data-pointer you can give as the
-data-member of the HSObject struct. For an example see, add_tag(char*) in
-src/tag.c, it covers most cases.
-
 
 // vim: nowrap ft=asciidoc tw=80

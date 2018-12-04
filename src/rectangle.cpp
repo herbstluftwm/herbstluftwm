@@ -1,9 +1,6 @@
-
 #include "rectangle.h"
-#include "floating.h"
 #include "utils.h"
 #include "ipc-protocol.h"
-#include <glib.h>
 
 static bool rects_intersect(const Rectangle &a, const Rectangle &b) {
     bool is = true;
@@ -14,18 +11,39 @@ static bool rects_intersect(const Rectangle &a, const Rectangle &b) {
     return is;
 }
 
-static Rectangle intersection_area(RectList* m1, RectList* m2) {
-    Rectangle r; // intersection between m1->rect and m2->rect
-    r.x = std::max(m1->rect.x, m2->rect.x);
-    r.y = std::max(m1->rect.y, m2->rect.y);
-    // the bottom right coordinates of the rects
-    int br1_x = m1->rect.x + m1->rect.width;
-    int br1_y = m1->rect.y + m1->rect.height;
-    int br2_x = m2->rect.x + m2->rect.width;
-    int br2_y = m2->rect.y + m2->rect.height;
-    r.width = std::min(br1_x, br2_x) - r.x;
-    r.height = std::min(br1_y, br2_y) - r.y;
-    return r;
+static Rectangle intersection_area(const Rectangle &a, const Rectangle &b) {
+    /* determine top-left as maximum of both */
+    Point2D tr = {std::max(a.x, b.x), std::max(a.y, b.y)};
+
+    /* determine bottom-right as minimum of both */
+    auto abr = a.br(), bbr = b.br();
+    Point2D br = {std::min(abr.x, bbr.x), std::min(abr.y, bbr.y)};
+
+    return {tr.x, tr.y, br.x - tr.x, br.y - tr.y};
+}
+
+/* TODO: rewrite with std container instead of RectList */
+#include <glib.h>
+
+typedef struct RectList {
+    Rectangle rect;
+    struct RectList* next;
+} RectList;
+
+void rectlist_free(RectList* head) {
+    if (!head) return;
+    RectList* next = head->next;
+    g_free(head);
+    rectlist_free(next);
+}
+
+static int rectlist_length_acc(RectList* head, int acc) {
+    if (!head) return acc;
+    else return rectlist_length_acc(head->next, acc + 1);
+}
+
+int rectlist_length(RectList* head) {
+    return rectlist_length_acc(head, 0);
 }
 
 static RectList* rectlist_create_simple(int x1, int y1, int x2, int y2) {
@@ -40,6 +58,9 @@ static RectList* rectlist_create_simple(int x1, int y1, int x2, int y2) {
     r->next = nullptr;
     return r;
 }
+
+// forward decl for circular calls
+RectList* reclist_insert_disjoint(RectList* head, RectList* element);
 
 static RectList* insert_rect_border(RectList* head,
                                     Rectangle large, Rectangle center)
@@ -84,7 +105,7 @@ RectList* reclist_insert_disjoint(RectList* head, RectList* element) {
         return head;
     } else {
         // element intersects with the head rect
-        auto center = intersection_area(head, element);
+        auto center = intersection_area(head->rect, element->rect);
         auto large = head->rect;
         head->rect = center;
         head->next = insert_rect_border(head->next, large, center);
@@ -94,23 +115,7 @@ RectList* reclist_insert_disjoint(RectList* head, RectList* element) {
     }
 }
 
-void rectlist_free(RectList* head) {
-    if (!head) return;
-    RectList* next = head->next;
-    g_free(head);
-    rectlist_free(next);
-}
-
-static int rectlist_length_acc(RectList* head, int acc) {
-    if (!head) return acc;
-    else return rectlist_length_acc(head->next, acc + 1);
-}
-
-int rectlist_length(RectList* head) {
-    return rectlist_length_acc(head, 0);
-}
-
-RectList* disjoin_rects(const RectangleVec &buf) {
+RectangleVec disjoin_rects(const RectangleVec &buf) {
     RectList* cur;
     struct RectList* rects = nullptr;
     for (auto& rect : buf) {
@@ -118,9 +123,16 @@ RectList* disjoin_rects(const RectangleVec &buf) {
         cur->rect = rect;
         rects = reclist_insert_disjoint(rects, cur);
     }
-    return rects;
+    cur = rects;
+    RectangleVec ret(rectlist_length(rects));
+    FOR (i,0,ret.size()) {
+        ret[i] = cur->rect;
+        cur = cur->next;
+    }
+    rectlist_free(rects);
+    return ret;
 }
-
+/* end of TODO to remove RectList */
 
 int disjoin_rects_command(Input input, Output output) {
     input.shift();
@@ -128,16 +140,13 @@ int disjoin_rects_command(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
 
-    RectangleVec buf;
+    RectangleVec rects;
     for (auto &i : input) {
-        buf.push_back(Rectangle::fromStr(i));
+        rects.push_back(Rectangle::fromStr(i));
     }
 
-    RectList* rects = disjoin_rects(buf);
-    for (RectList* cur = rects; cur; cur = cur->next) {
-        Rectangle &r = cur->rect;
+    for (auto &r : disjoin_rects(rects)) {
         output << r << std::endl;
     }
-    rectlist_free(rects);
     return 0;
 }

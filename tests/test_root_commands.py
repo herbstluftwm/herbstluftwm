@@ -23,3 +23,15 @@ def test_sprintf(hlwm):
     hlwm.fails('sprintf X %s/%s tags.count')
     assert printed == cnt + '/' + wmname + '\n'
     assert '%\n' == hlwm.callstr('sprintf X %% echo X').stdout
+
+def test_disjoint_rects(hlwm):
+    # test the example from the manpage
+    expected = '\n'.join((
+        '300x150+300+250',
+        '600x250+0+0',
+        '300x150+0+250',
+        '300x150+600+250',
+        '600x250+300+400',
+        '')) # trailing newline
+    response = hlwm.callstr('disjoin_rects 600x400+0+0 600x400+300+250').stdout
+    assert response == expected

@@ -1,16 +1,14 @@
 #ifndef __HERBSTLUFT_TAG_H_
 #define __HERBSTLUFT_TAG_H_
 
-#include "glib-backports.h"
-#include "x11-types.h"
-#include "types.h"
-#include <memory>
 #include "object.h"
 #include "attribute_.h"
 
+#include "glib-backports.h"
+#include <memory>
+
 class HSStack;
 class HSFrame;
-class HSClient;
 class Settings;
 
 class HSTag : public Object {

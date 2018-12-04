@@ -277,7 +277,7 @@ int set_monitor_rects(const RectangleVec &templates) {
     return 0;
 }
 
-HSMonitor* find_monitor_by_name(char* name) {
+HSMonitor* find_monitor_by_name(const char* name) {
     for (auto m : *g_monitors) {
         if (m->name == name)
             return m;
@@ -287,60 +287,6 @@ HSMonitor* find_monitor_by_name(char* name) {
 
 HSMonitor* string_to_monitor(char* str) {
   return g_monitors->byString(str);
-}
-
-int add_monitor_command(int argc, char** argv, Output output) {
-    // usage: add_monitor RECTANGLE [TAG [NAME]]
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    auto rect = Rectangle::fromStr(argv[1]);
-    HSTag* tag = nullptr;
-    char* name = nullptr;
-    if (argc == 2 || !strcmp("", argv[2])) {
-        tag = find_unused_tag();
-        if (!tag) {
-            output << argv[0] << ": There are not enough free tags\n";
-            return HERBST_TAG_IN_USE;
-        }
-    }
-    else {
-        tag = find_tag(argv[2]);
-        if (!tag) {
-            output << argv[0] << ": The tag \"" << argv[2] << "\" does not exist\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    }
-    if (find_monitor_with_tag(tag)) {
-        output << argv[0] <<
-            ": The tag \"" << argv[2] << "\" is already viewed on a monitor\n";
-        return HERBST_TAG_IN_USE;
-    }
-    if (argc > 3) {
-        name = argv[3];
-        if (isdigit(name[0])) {
-            output << argv[0] <<
-                ": The monitor name may not start with a number\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-        if (!strcmp("", name)) {
-            output << argv[0] <<
-                ": An empty monitor name is not permitted\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-        if (find_monitor_by_name(name)) {
-            output << argv[0] <<
-                ": A monitor with the same name already exists\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    }
-    HSMonitor* monitor = g_monitors->addMonitor(rect, tag);
-    if (name) monitor->name = name;
-    monitor->applyLayout();
-    tag->frame->setVisibleRecursive(true);
-    emit_tag_changed(tag, g_monitors->size() - 1);
-    drop_enternotify_events();
-    return 0;
 }
 
 
@@ -829,13 +775,7 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
     } else {
         // possibly disjoin them
         if (disjoin) {
-            RectList* rl = disjoin_rects(monitor_rects);
-            monitor_rects.resize(rectlist_length(rl));
-            RectList* cur = rl;
-            FOR (i,0,monitor_rects.size()) {
-                monitor_rects[i] = cur->rect;
-                cur = cur->next;
-            }
+            monitor_rects = disjoin_rects(monitor_rects);
         }
         // apply it
         ret = set_monitor_rects(monitor_rects);

@@ -1,17 +1,15 @@
 #ifndef __DECORATION_H_
 #define __DECORATION_H_
 
+#include "object.h"
+#include "attribute_.h"
+#include "x11-types.h"
+
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
-#include "x11-utils.h"
-#include "x11-types.h"
 #include <map>
-
-#include "types.h"
-#include "object.h"
-#include "attribute_.h"
 
 class HSClient;
 class Settings;
@@ -58,15 +56,16 @@ public:
 
     static HSClient* toClient(Window decoration_window);
 
-    Window decorationWindow() { return decwin; };
-    Rectangle last_inner() const { return last_inner_rect; };
-    Rectangle last_outer() const { return last_outer_rect; };
+    Window decorationWindow() { return decwin; }
+    Rectangle last_inner() const { return last_inner_rect; }
+    Rectangle last_outer() const { return last_outer_rect; }
     Rectangle inner_to_outer(Rectangle rect);
+
 private:
     void redrawPixmap();
     void updateFrameExtends();
     unsigned int get_client_color(Color color);
-private:
+
     HSClient*        client; // the client to decorate
     Window                  decwin = 0; // the decoration window
     const DecorationScheme* last_scheme = {};
