@@ -18,6 +18,7 @@ struct ArgList {
                             char delim = '.');
 
     ArgList(const std::initializer_list<std::string> &l);
+    ArgList(const ArgList &al);
     ArgList(const Container &c);
     // constructor that splits the given string
     ArgList(const std::string &s, char delim = '.');
@@ -41,10 +42,6 @@ struct ArgList {
     Container toVector() const {
         return Container(begin_, c_->cend());
     }
-    /** try to read as many values as in target. If this fails
-     * the original shift is restored
-     */
-    bool read(std::initializer_list<std::string*> targets);
     //! try read a value if possible
     ArgList& operator>>(std::string& val) {
         if (!empty()) {
@@ -62,14 +59,6 @@ struct ArgList {
     /** construct a new ArgList with every occurence of 'from' replaced by 'to'
      */
     ArgList replaced(const std::string& from, const std::string& to) const;
-    // the first element without any shifts.
-    std::string command() const {
-        if (c_->begin() != c_->end()) {
-            return *c_->begin();
-        } else {
-            return {};
-        }
-    }
 
 protected:
     Container::const_iterator begin_;

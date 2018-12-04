@@ -215,8 +215,8 @@ void MonitorManager::removeMonitor(HSMonitor* monitor)
 int MonitorManager::addMonitor(Input input, Output output)
 {
     // usage: add_monitor RECTANGLE [TAG [NAME]]
-    std::string cmd, rectString, tagName, monitorName;
-    input >> cmd >> rectString;
+    std::string rectString, tagName, monitorName;
+    input >> rectString;
     if (!input) {
         return HERBST_NEED_MORE_ARGS;
     }
