@@ -44,42 +44,21 @@ void monitor_init() {
 HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, HSTag* tag_)
     : tag(tag_)
     , tag_previous(tag_)
+    , name      (this, "name", "",
+           [monman_](std::string n) { return monman_->isValidMonitorName(n); })
+    , index     (this, "index", 0)
     , tag_string(this, "tag", &HSMonitor::getTagString, &HSMonitor::setTagString)
+    , pad_up    (this, "pad_up", 0)
+    , pad_right (this, "pad_right", 0)
+    , pad_down  (this, "pad_down", 0)
+    , pad_left  (this, "pad_left", 0)
+    , lock_tag  (this, "lock_tag", false)
     , dirty(true)
-    , lock_tag("lock_tag", false) // TODO
     , mouse { 0, 0 }
     , rect(rect_)
     , settings(settings_)
     , monman(monman_)
 {
-    wireAttributes({
-        &index,
-        &name,
-        &pad_up,
-        &pad_right,
-        &pad_down,
-        &pad_left,
-        &lock_tag,
-    });
-
-    name.setValidator([this] (std::string new_name) {
-        if (isdigit(new_name[0])) {
-            return std::string("The monitor name may not start with a number");
-        }
-        if (new_name == name())
-            return std::string();
-        for (auto m : *monman) {
-            if (m->name() == new_name) {
-                stringstream output;
-                output << "Monitor " << m->index()
-                       << " already has the name \""
-                       << new_name << "\"";
-                return output.str();
-            }
-        }
-        return std::string();
-    });
-
     for (auto i : {&pad_up, &pad_left, &pad_right, &pad_down}) {
         i->setWriteable();
         i->changed().connect(this, &HSMonitor::applyLayout);
