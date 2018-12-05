@@ -1,11 +1,11 @@
-def test_first_client_gets_focus(hlwm, create_client):
+def test_first_client_gets_focus(hlwm):
     hlwm.fails('get_attr', 'clients.focus.winid')
-    client = create_client()
+    client = hlwm.create_client()
     assert hlwm.get_attr('clients.focus.winid') == client
 
 
-def test_alter_fullscreen(hlwm, create_client):
-    create_client()
+def test_alter_fullscreen(hlwm):
+    hlwm.create_client()
     positives = ('true', 'on', '1')
     negatives = ('false', 'off', '0')
     for on, off in zip(positives, negatives):
