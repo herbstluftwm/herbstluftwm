@@ -8,9 +8,6 @@
 #include <functional>
 #include <stdexcept>
 
-// binds away the first parameter with *this
-#define BIND_THIS(X) ([this]() { return this->X(); })
-
 template<typename T>
 class Attribute_ : public Attribute {
 public:
