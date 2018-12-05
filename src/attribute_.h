@@ -17,14 +17,33 @@ public:
     // escalated to the user.
     using Validator = std::function<std::string(T)>;
 
-    Attribute_(const std::string &name, const T &payload)
-        : Attribute(name, false)
-        , payload_ (payload)
-    {
-    }
+    /** The constructors for Attribute_ and also for DynAttribute_ follow
+     * the a common pattern:
+     *
+     *   - The first argument is the owner object
+     *
+     *   - The second argument is the name displayed to the user
+     *
+     *   - The third argument the reading behaviour of the attribute:
+     *     * for a plain Attribute_ this is simply the initial value
+     *     * for a DynAttribute_ this is a member of the owner that returns the
+     *       value of the attribute.
+     *
+     *   - The fourth argument describes the writing behaviour of the
+     *     attribute: If the fourth argument is absent, the attribute is
+     *     read-only.
+     *     * The fourth argument for an Attribute_ is a member of owner that
+     *       validates a new value of the attribute and returns an error
+     *       message if the new value is not acceptable for this attribute
+     *       (E.g. because a name is already taken or does not resepct a
+     *       certain format).
+     *     * The fourth argument of a DynAttribute_ is a member of owner that
+     *       internally processes the new value (e.g. parsing) and returns
+     *       an error message if the new value is not acceptable.
+     */
 
     //! A read-only attribute of owner of type T
-    Attribute_(const std::string &name, Object* owner, const T &payload)
+    Attribute_(Object* owner, const std::string &name, const T &payload)
         : Attribute(name, false)
         , payload_ (payload)
     {
@@ -36,17 +55,24 @@ public:
 
     //! A writable attribute of owner of type T
     template <typename Owner>
-    Attribute_(const std::string &name, Owner* owner, const T &payload,
-               std::string(Owner::*validator)(T))
+    Attribute_(Owner* owner, const std::string &name, const T &payload,
+              std::string(Owner::*validator)(T))
         : Attribute(name, true)
-        , payload_ (payload)
         , validator_(validator)
+        , payload_ (payload)
     {
         // the following will call Attribute::setOwner()
         // maybe this should be changed at some point,
         // e.g. when we got rid of Object::wireAttributes()
         owner->addAttribute(this);
-        writeable_ = true;
+    }
+
+    //! Deprecated constructor, that will be removed and only remains for
+    //compatibility
+    Attribute_(const std::string &name, const T &payload)
+        : Attribute(name, false)
+        , payload_ (payload)
+    {
     }
 
     // set the method called for validation of external changes
@@ -151,7 +177,7 @@ public:
     {
         hookable_ = false;
     }
-    DynAttribute_(const std::string &name, Object* owner, std::function<T()> getter)
+    DynAttribute_(Object* owner, const std::string &name, std::function<T()> getter)
         : Attribute(name, false)
         , getter_(getter)
     {
@@ -173,7 +199,7 @@ public:
     // get the actual value. Here, we use C++-style member function pointers such that
     // the type checker fills the template argument 'Owner' automatically
     template <typename Owner>
-    DynAttribute_(const std::string &name, Owner* owner,
+    DynAttribute_(Owner* owner, const std::string &name,
                   // std::function<T(Owner*)> getter // this does not work!
                   T (Owner::*getter)()
                   )
@@ -187,7 +213,7 @@ public:
         owner->addAttribute(this);
     }
     template <typename Owner>
-    DynAttribute_(const std::string &name, Owner* owner,
+    DynAttribute_(Owner* owner, const std::string &name,
                   T (Owner::*getter)(),
                   std::string (Owner::*setter)(T)
                   )

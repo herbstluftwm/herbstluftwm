@@ -44,7 +44,7 @@ void monitor_init() {
 HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, HSTag* tag_)
     : tag(tag_)
     , tag_previous(tag_)
-    , tag_string("tag", this, &HSMonitor::getTagString, &HSMonitor::setTagString)
+    , tag_string(this, "tag", &HSMonitor::getTagString, &HSMonitor::setTagString)
     , dirty(true)
     , lock_tag("lock_tag", false) // TODO
     , mouse { 0, 0 }
