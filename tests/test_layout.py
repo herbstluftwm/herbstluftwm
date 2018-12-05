@@ -37,7 +37,7 @@ def test_remove(hlwm, running_clients, running_clients_num):
 
 
 @pytest.mark.parametrize("running_clients_num", [3, 4])
-def test_focus_wrap(hlwm,running_clients,running_clients_num):
+def test_focus_wrap(hlwm, running_clients, running_clients_num):
     assert running_clients_num >= 2, "explode behaves as auto for one client"
     # TODO: create the layout explicitly once we have the 'load' command again
     #       instead of calling explode
