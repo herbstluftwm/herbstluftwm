@@ -26,20 +26,20 @@ public:
      *
      *   - The third argument the reading behaviour of the attribute:
      *     * for a plain Attribute_ this is simply the initial value
-     *     * for a DynAttribute_ this is a member of the owner that returns the
-     *       value of the attribute.
+     *     * for a DynAttribute_ this is a member of the owner (or a lambda)
+     *       that returns the value of the attribute.
      *
      *   - The fourth argument describes the writing behaviour of the
      *     attribute: If the fourth argument is absent, the attribute is
      *     read-only.
-     *     * The fourth argument for an Attribute_ is a member of owner that
-     *       validates a new value of the attribute and returns an error
-     *       message if the new value is not acceptable for this attribute
-     *       (E.g. because a name is already taken or does not resepct a
-     *       certain format).
-     *     * The fourth argument of a DynAttribute_ is a member of owner that
-     *       internally processes the new value (e.g. parsing) and returns
-     *       an error message if the new value is not acceptable.
+     *     * The fourth argument for an Attribute_ is a member of owner (or
+     *       lambda) that validates a new value of the attribute and returns an
+     *       error message if the new value is not acceptable for this
+     *       attribute (E.g. because a name is already taken or does not
+     *       resepct a certain format).
+     *     * The fourth argument of a DynAttribute_ is a member of owner (or
+     *       lambda) that internally processes the new value (e.g. parsing) and
+     *       returns an error message if the new value is not acceptable.
      */
 
     //! A read-only attribute of owner of type T
@@ -57,6 +57,18 @@ public:
     template <typename Owner>
     Attribute_(Owner* owner, const std::string &name, const T &payload,
               std::string(Owner::*validator)(T))
+        : Attribute(name, true)
+        , validator_(std::bind(validator, owner, std::placeholders::_1))
+        , payload_ (payload)
+    {
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
+        owner->addAttribute(this);
+    }
+    //! A writable attribute of owner of type T
+    Attribute_(Object* owner, const std::string &name, const T &payload,
+              Validator validator)
         : Attribute(name, true)
         , validator_(validator)
         , payload_ (payload)

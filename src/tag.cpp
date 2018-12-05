@@ -35,28 +35,17 @@ void tag_destroy() {
 
 HSTag::HSTag(std::string name_, Settings* settings)
     : index(this, "index", 0)
-    , floating(this, "floating", false)
-    , name(this, "name", name_)
+    , floating(this, "floating", false, [](bool){return "";})
+    , name(this, "name", name_, &HSTag::validateNewName)
     , frame_count(this, "frame_count", &HSTag::computeFrameCount)
     , client_count(this, "client_count", &HSTag::computeClientCount)
-    , curframe_windex("curframe_windex",
+    , curframe_windex(this, "curframe_windex",
         [this] () { return frame->getFocusedFrame()->getSelection(); } )
-    , curframe_wcount("curframe_wcount",
+    , curframe_wcount(this, "curframe_wcount",
         [this] () { return frame->getFocusedFrame()->clientCount(); } )
 {
     stack = make_shared<HSStack>();
     frame = make_shared<HSFrameLeaf>(this, settings, shared_ptr<HSFrameSplit>());
-    wireAttributes({
-        &name,
-        &floating,
-        &frame_count,
-        &curframe_windex,
-        &curframe_wcount,
-    });
-    floating.setWriteable();
-    name.setValidator([this] (std::string new_name) {
-        return this->validateNewName(new_name);
-    });
 }
 
 HSTag::~HSTag() {
