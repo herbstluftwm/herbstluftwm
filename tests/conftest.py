@@ -52,8 +52,11 @@ class HlwmBridge:
             assert proc.returncode == 0
             assert not proc.stderr
         return proc
-    def fails(self, *args):
-        assert self.call(*args, check=False).returncode != 0
+
+    def call_xfail(self, *args):
+        call = self.call(*args, check=False)
+        assert call.returncode != 0
+        return call
 
     def get_attr(self, attribute_path, check=True):
         return self.call('get_attr', attribute_path).stdout

@@ -4,7 +4,7 @@ def test_default_monitor(hlwm):
 
 
 def test_add_monitor_requires_unfocused_tag(hlwm):
-    call = hlwm.call('add_monitor', '800x600+40+40', 'default', 'monitor2', check=False)
+    call = hlwm.call_xfail('add_monitor', '800x600+40+40', 'default', 'monitor2')
 
     assert call.returncode != 0
     assert hlwm.get_attr('monitors.count') == '1'
@@ -21,7 +21,7 @@ def test_add_monitor(hlwm):
 
 
 def test_cannot_add_monitor_without_free_tag(hlwm):
-    call = hlwm.call('add_monitor', '800x600+40+40', check=False)
+    call = hlwm.call_xfail('add_monitor', '800x600+40+40')
 
     assert call.returncode != 0
     assert call.stderr.endswith(' not enough free tags\n')
@@ -29,7 +29,7 @@ def test_cannot_add_monitor_without_free_tag(hlwm):
 
 
 def test_cannot_add_monitor_with_nonexistent_tag(hlwm):
-    call = hlwm.call('add_monitor', '800x600+40+40', 'derp', check=False)
+    call = hlwm.call_xfail('add_monitor', '800x600+40+40', 'derp')
 
     assert call.returncode != 0
     assert call.stderr.endswith(' does not exist\n')
@@ -38,7 +38,7 @@ def test_cannot_add_monitor_with_nonexistent_tag(hlwm):
 
 def test_cannot_add_monitor_with_already_viewed_tag(hlwm):
     hlwm.call('add', 'tag2')
-    call = hlwm.call('add_monitor', '800x600+40+40', 'default', check=False)
+    call = hlwm.call_xfail('add_monitor', '800x600+40+40', 'default')
 
     assert call.returncode != 0
     assert call.stderr.endswith(' already being viewed on a monitor\n')
@@ -47,7 +47,7 @@ def test_cannot_add_monitor_with_already_viewed_tag(hlwm):
 
 def test_cannot_add_monitor_with_numeric_name(hlwm):
     hlwm.call('add', 'tag2')
-    call = hlwm.call('add_monitor', '800x600+40+40', 'tag2', '123foo', check=False)
+    call = hlwm.call_xfail('add_monitor', '800x600+40+40', 'tag2', '123foo')
 
     assert call.returncode != 0
     assert call.stderr.endswith(' may not start with a number\n')
@@ -56,7 +56,7 @@ def test_cannot_add_monitor_with_numeric_name(hlwm):
 
 def test_cannot_add_monitor_with_empty_name(hlwm):
     hlwm.call('add', 'tag2')
-    call = hlwm.call('add_monitor', '800x600+40+40', 'tag2', '', check=False)
+    call = hlwm.call_xfail('add_monitor', '800x600+40+40', 'tag2', '')
 
     assert call.returncode != 0
     assert call.stderr.endswith(' empty monitor name is not permitted\n')
@@ -66,7 +66,7 @@ def test_cannot_add_monitor_with_empty_name(hlwm):
 def test_cannot_add_monitor_with_existing_name(hlwm):
     hlwm.call('rename_monitor', '0', 'mon1')
     hlwm.call('add', 'tag2')
-    call = hlwm.call('add_monitor', '800x600+40+40', 'tag2', 'mon1', check=False)
+    call = hlwm.call_xfail('add_monitor', '800x600+40+40', 'tag2', 'mon1')
 
     assert call.returncode != 0
     assert call.stderr.endswith('" already exists\n')
@@ -84,7 +84,7 @@ def test_remove_monitor(hlwm):
 
 
 def test_cannot_remove_nonexistent_monitor(hlwm):
-    call = hlwm.call('remove_monitor', '1', check=False)
+    call = hlwm.call_xfail('remove_monitor', '1')
 
     assert call.returncode != 0
     assert call.stderr.endswith(' not found!\n')
@@ -92,7 +92,7 @@ def test_cannot_remove_nonexistent_monitor(hlwm):
 
 
 def test_cannot_remove_last_monitor(hlwm):
-    call = hlwm.call('remove_monitor', '0', check=False)
+    call = hlwm.call_xfail('remove_monitor', '0')
 
     assert call.returncode != 0
     assert call.stderr.endswith(' last monitor\n')
