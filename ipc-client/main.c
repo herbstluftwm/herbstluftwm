@@ -114,14 +114,17 @@ int main_hook(int argc, char* argv[]) {
     signal(SIGTERM, quit_herbstclient);
     signal(SIGINT,  quit_herbstclient);
     signal(SIGQUIT, quit_herbstclient);
+    int exit_code = 0;
     while (1) {
         bool print_signal = true;
         int hook_argc;
         char** hook_argv;
         if (!hc_next_hook(con, &hook_argc, &hook_argv)) {
             fprintf(stderr, "Cannot listen for hooks\n");
-            destroy_hook_regex();
-            return EXIT_FAILURE;
+            exit_code = EXIT_FAILURE;
+            // clean up HCConnection and regexes before
+            // returning
+            break;
         }
         for (int i = 0; i < argc && i < hook_argc; i++) {
             if (0 != regexec(g_hook_regex + i, hook_argv[i], 0, NULL, 0)) {
@@ -163,7 +166,7 @@ int main_hook(int argc, char* argv[]) {
     hc_disconnect(con);
     XCloseDisplay(display);
     destroy_hook_regex();
-    return 0;
+    return exit_code;
 }
 
 int main(int argc, char* argv[]) {
