@@ -9,8 +9,8 @@
 using namespace std;
 
 int Tmp::mktemp(Input input, Output output) {
-    std::string cmd, type, identifier;
-    if (!input.read({ &cmd, &type, &identifier })) {
+    std::string type, identifier;
+    if (!(input >> type >> identifier)) {
         return HERBST_NEED_MORE_ARGS;
     }
     number_active++;

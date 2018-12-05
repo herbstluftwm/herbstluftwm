@@ -69,7 +69,7 @@ def test_cannot_add_monitor_with_existing_name(hlwm):
     call = hlwm.call('add_monitor', '800x600+40+40', 'tag2', 'mon1', check=False)
 
     assert call.returncode != 0
-    assert call.stderr.endswith(' same name already exists\n')
+    assert call.stderr.endswith('" already exists\n')
     assert hlwm.get_attr('monitors.count') == '1'
 
 

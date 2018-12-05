@@ -132,7 +132,8 @@ void Object::ls(Path path, Output out) {
 
     auto child = path.front();
     if (children_.find(child) != children_.end()) {
-        children_[child]->ls(path + 1, out);
+        path.shift();
+        children_[child]->ls(path, out);
     } else {
         out << "child " << child << " not found!" << std::endl; // TODO
     }

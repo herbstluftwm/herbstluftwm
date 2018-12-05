@@ -17,22 +17,18 @@ RootCommands::RootCommands(Root* root_) : root(root_) {
 }
 
 int RootCommands::get_attr_cmd(Input in, Output output) {
-    in.shift();
-    if (in.empty()) return HERBST_NEED_MORE_ARGS;
+    std::string attrName;
+    if (!(in >> attrName)) return HERBST_NEED_MORE_ARGS;
 
-    Attribute* a = getAttribute(in.front(), output);
+    Attribute* a = getAttribute(attrName, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
     output << a->str();
     return 0;
 }
 
 int RootCommands::set_attr_cmd(Input in, Output output) {
-    in.shift();
-    if (in.empty()) return HERBST_NEED_MORE_ARGS;
-    auto path = in.front();
-    in.shift();
-    if (in.empty()) return HERBST_NEED_MORE_ARGS;
-    auto new_value = in.front();
+    std::string path, new_value;
+    if (!(in >> path >> new_value)) return HERBST_NEED_MORE_ARGS;
 
     Attribute* a = getAttribute(path, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
@@ -49,10 +45,8 @@ int RootCommands::set_attr_cmd(Input in, Output output) {
 }
 
 int RootCommands::attr_cmd(Input in, Output output) {
-    in.shift();
-
-    auto path = in.empty() ? std::string("") : in.front();
-    in.shift();
+    std::string path = "", new_value = "";
+    in >> path >> new_value;
     std::ostringstream dummy_output;
     Object* o = root;
     auto p = Path::split(path);
@@ -60,25 +54,25 @@ int RootCommands::attr_cmd(Input in, Output output) {
         while (p.back().empty()) p.pop_back();
         o = o->child(p);
     }
-    if (o && in.empty()) {
+    if (o && new_value.empty()) {
         o->ls(output);
         return 0;
     }
 
     Attribute* a = getAttribute(path, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
-    if (in.empty()) {
+    if (new_value.empty()) {
         // no more arguments -> return the value
         output << a->str();
         return 0;
     } else {
         // another argument -> set the value
-        std::string error_message = a->change(in.front());
+        std::string error_message = a->change(new_value);
         if (error_message == "") {
             return 0;
         } else {
             output << in.command() << ": \""
-                << in.front() << "\" is not a valid value for "
+                << new_value << "\" is not a valid value for "
                 << a->name() << ": "
                 << error_message << std::endl;
             return HERBST_INVALID_ARGUMENT;
@@ -121,8 +115,8 @@ int RootCommands::print_object_tree_command(ArgList in, Output output) {
 
 int RootCommands::substitute_cmd(Input input, Output output)
 {
-    string cmd, ident, path;
-    if (!input.read({ &cmd, &ident, &path })) {
+    string ident, path;
+    if (!(input >> ident >> path )) {
         return HERBST_NEED_MORE_ARGS;
     }
     if (input.empty()) return HERBST_NEED_MORE_ARGS;
@@ -133,14 +127,14 @@ int RootCommands::substitute_cmd(Input input, Output output)
 
 int RootCommands::sprintf_cmd(Input input, Output output)
 {
-    string cmd, ident, format;
-    if (!input.read({ &cmd, &ident, &format })) return HERBST_NEED_MORE_ARGS;
+    string ident, format;
+    if (!(input >> ident >> format )) return HERBST_NEED_MORE_ARGS;
     string blobs;
     size_t lastpos = 0; // the position where the last plaintext blob started
     for (size_t i = 0; i < format.size(); i++) if (format[i] == '%') {
         if (i + 1 >= format.size()) {
             output
-                << cmd << ": dangling % at the end of format \""
+                << input.command() << ": dangling % at the end of format \""
                 << format << "\"" << endl;
             return HERBST_INVALID_ARGUMENT;
         } else {
@@ -154,7 +148,7 @@ int RootCommands::sprintf_cmd(Input input, Output output)
                 blobs += "%";
             } else if (format_type == 's') {
                 string path;
-                if (!input.read({ &path })) {
+                if (!(input >> path )) {
                     return HERBST_NEED_MORE_ARGS;
                 }
                 Attribute* a = getAttribute(path, output);
@@ -162,7 +156,7 @@ int RootCommands::sprintf_cmd(Input input, Output output)
                 blobs += a->str();
             } else {
                 output
-                    << cmd << ": invalid format type %"
+                    << input.command() << ": invalid format type %"
                     << format_type << " at position "
                     << i << " in format string \""
                     << format << "\"" << endl;
@@ -197,8 +191,8 @@ Attribute* RootCommands::newAttributeWithType(std::string typestr, std::string a
 
 int RootCommands::new_attr_cmd(Input input, Output output)
 {
-    string cmd, type, path;
-    if (!input.read({ &cmd, &type, &path })) {
+    string type, path;
+    if (!(input >> type >> path )) {
         return HERBST_NEED_MORE_ARGS;
     }
     auto obj_path_and_attr = Object::splitPath(path);
@@ -207,14 +201,14 @@ int RootCommands::new_attr_cmd(Input input, Output output)
     if (!obj) return HERBST_INVALID_ARGUMENT;
     if (attr_name.substr(0,strlen(USER_ATTRIBUTE_PREFIX)) != USER_ATTRIBUTE_PREFIX) {
         output
-            << cmd << ": attribute name must start with \""
+            << input.command() << ": attribute name must start with \""
             << USER_ATTRIBUTE_PREFIX << "\""
             << " but is actually \"" << attr_name << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     if (obj->attribute(attr_name)) {
         output
-            << cmd << ": object \"" << obj_path_and_attr.first.join()
+            << input.command() << ": object \"" << obj_path_and_attr.first.join()
             << "\" already has an attribute named \"" << attr_name
             <<  "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
@@ -228,14 +222,14 @@ int RootCommands::new_attr_cmd(Input input, Output output)
 
 int RootCommands::remove_attr_cmd(Input input, Output output)
 {
-    string cmd, path;
-    if (!input.read({ &cmd, &path })) {
+    string path;
+    if (!(input >> path )) {
         return HERBST_NEED_MORE_ARGS;
     }
     Attribute* a = root->deepAttribute(path, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
     if (a->name().substr(0,strlen(USER_ATTRIBUTE_PREFIX)) != USER_ATTRIBUTE_PREFIX) {
-        output << cmd << ": \"" << path
+        output << input.command() << ": \"" << path
                << "\" is not a user defined attribute. can not remove it." << endl;
         return HERBST_INVALID_ARGUMENT;
     }
@@ -275,8 +269,8 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
 
 int RootCommands::compare_cmd(Input input, Output output)
 {
-    string cmd, path, oper, value;
-    if (!input.read({ &cmd, &path, &oper, &value })) {
+    string path, oper, value;
+    if (!(input >> path >> oper >> value)) {
         return HERBST_NEED_MORE_ARGS;
     }
     Attribute* a = root->deepAttribute(path, output);
