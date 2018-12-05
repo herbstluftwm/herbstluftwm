@@ -34,7 +34,7 @@ void tag_destroy() {
 
 
 HSTag::HSTag(std::string name_, Settings* settings)
-    : frame_count("frame_count", std::bind(&HSTag::computeFrameCount, this))
+    : frame_count("frame_count", this, &HSTag::computeFrameCount)
     , client_count("client_count", this, &HSTag::computeClientCount)
     , curframe_windex("curframe_windex",
         [this] () { return frame->getFocusedFrame()->getSelection(); } )

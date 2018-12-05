@@ -140,11 +140,29 @@ public:
     // get the actual value. Here, we use C++-style member function pointers such that
     // the type checker fills the template argument 'Owner' automatically
     template <typename Owner>
-    DynAttribute_(const std::string &name, Owner* owner, T (Owner::*getter)())
+    DynAttribute_(const std::string &name, Owner* owner,
+                  // std::function<T(Owner*)> getter // this does not work!
+                  T (Owner::*getter)()
+                  )
         : Attribute(name, false)
         , getter_(std::bind(getter, owner))
     {
         hookable_ = false;
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point
+        owner->addAttribute(this);
+    }
+    template <typename Owner>
+    DynAttribute_(const std::string &name, Owner* owner,
+                  T (Owner::*getter)(),
+                  std::string (Owner::*setter)(T)
+                  )
+        : Attribute(name, false)
+        , getter_(std::bind(getter, owner))
+        , setter_(std::bind(setter, owner, std::placeholders::_1))
+    {
+        hookable_ = false;
+        writeable_ = true;
         // the following will call Attribute::setOwner()
         // maybe this should be changed at some point
         owner->addAttribute(this);
