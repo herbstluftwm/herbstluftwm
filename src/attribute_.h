@@ -136,6 +136,20 @@ public:
         writeable_ = true;
     }
 
+    // each time a dynamic attribute is read, the getter_ is called in order to
+    // get the actual value. Here, we use C++-style member function pointers such that
+    // the type checker fills the template argument 'Owner' automatically
+    template <typename Owner>
+    DynAttribute_(const std::string &name, Owner* owner, T (Owner::*getter)())
+        : Attribute(name, false)
+        , getter_(std::bind(getter, owner))
+    {
+        hookable_ = false;
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point
+        owner->addAttribute(this);
+    }
+
     Type type() override { return Attribute_<T>::staticType(); }
 
     Signal_<T>& changed() override {

@@ -44,9 +44,7 @@ void monitor_init() {
 HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, HSTag* tag_)
     : tag(tag_)
     , tag_previous(tag_)
-    , tag_string("tag",
-                 std::bind(&HSMonitor::getTagString, this),
-                 std::bind(&HSMonitor::setTagString, this, std::placeholders::_1))
+    , tag_string("tag", this, &HSMonitor::getTagString)
     , dirty(true)
     , lock_tag("lock_tag", false) // TODO
     , mouse { 0, 0 }
@@ -57,7 +55,6 @@ HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rec
     wireAttributes({
         &index,
         &name,
-        &tag_string,
         &pad_up,
         &pad_right,
         &pad_down,
