@@ -30,8 +30,7 @@ class HSMonitor;
 
 typedef struct HSSlice {
     HSSliceType type;
-    HSLayer     layer[LAYER_COUNT]; /* layers this slice is contained in */
-    size_t      layer_count;        /* count of those layers */
+    std::set<HSLayer> layers; //!< layers this slice is contained in
     union {
         HSClient*    client;
         Window              window;
@@ -59,7 +58,7 @@ public:
     void restack();
     Window lowest_window();
 
-    GList*  top[LAYER_COUNT];
+    std::vector<HSSlice*> top[LAYER_COUNT];
 
 private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */

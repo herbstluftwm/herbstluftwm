@@ -7,11 +7,7 @@
 #include <cstdlib>
 #include <X11/Xlib.h>
 #include <functional>
-#include "monitor.h"
-#include "tag.h"
-#include "floating.h"
 #include "tilingresult.h"
-#include "framedecoration.h"
 
 #include <memory>
 
@@ -58,7 +54,6 @@ typedef std::function<void(HSClient*)> ClientAction;
 
 #define FRACTION_UNIT 10000
 
-struct HSSlice;
 class HSTag;
 class HSFrameLeaf;
 class HSFrameSplit;

@@ -1,16 +1,14 @@
 #ifndef __HERBSTLUFT_TAG_H_
 #define __HERBSTLUFT_TAG_H_
 
-#include "glib-backports.h"
-#include "x11-types.h"
-#include "types.h"
-#include <memory>
 #include "object.h"
 #include "attribute_.h"
 
+#include "glib-backports.h"
+#include <memory>
+
 class HSStack;
 class HSFrame;
-class HSClient;
 class Settings;
 
 class HSTag : public Object {
@@ -29,14 +27,10 @@ public:
     std::shared_ptr<HSStack> stack;
     void setIndexAttribute(unsigned long new_index) override;
 private:
-    //! get the number of frames on this tag
-    int getFrameCount();
     //! get the number of clients on this tag
-    int getClientCount();
-    //! get the focus index within the current frame
-    int getCurFrameWindowIndex();
-    //! get the count of windows in  the current frame
-    int getCurFrameWindowCount();
+    int computeClientCount();
+    //! get the number of clients on this tag
+    int computeFrameCount();
 };
 
 void tag_init();

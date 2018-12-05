@@ -122,7 +122,6 @@ int TagManager::removeTag(Input input, Output output) {
     // Remove tag
     string removedName = tagToRemove->name;
     removeIndexed(index_of(tagToRemove));
-    delete tagToRemove;
     ewmh_update_current_desktop();
     ewmh_update_desktops();
     ewmh_update_desktop_names();

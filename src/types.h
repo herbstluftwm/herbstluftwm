@@ -5,12 +5,36 @@
 #include <set>
 #include <map>
 
+#define Ptr(X) std::shared_ptr<X>
+#define WPtr(X) std::weak_ptr<X>
+
 /* A path in the object tree */
 using Path = ArgList;
 
 /* Types for I/O with the user */
-using Input = ArgList;
 using Output = std::ostream&;
+
+/** The Input for a command consists of a command name
+ * (known as argv[0] in a C main()) and of arguments (argv[1] up to
+ * argv[argc] in a C main()).
+ *
+ * This class is in transition and not yet in its final state!
+ * Currently, this class behaves as the ArgList. But later, ArgList will become
+ * protected and so one can only use >> to access the arguments
+ *
+ * This means that currently, the base class holds the entire argv. Later, the
+ * base class will only hold the arguments and not the command name and
+ * furthermore the ArgList parent class will become private.
+ */
+class Input : public ArgList {
+public:
+    //! Initialize from a C-style main() argv array:
+    //! argv[0] is the command name and the remaining entries are the
+    //! parameters
+    Input(const ArgList& argv);
+    Input& operator>>(std::string& val);
+    std::string command() const;
+};
 
 /* Primitive types that can be converted from/to user input/output */
 template<typename T>

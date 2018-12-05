@@ -963,11 +963,11 @@ bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
 
 int frame_split_command(Input input, Output output) {
     // usage: split t|b|l|r|h|v FRACTION
-    std::string cmd, splitType, strFraction;
-    if (!input.read({ &cmd, &splitType })) {
+    std::string splitType, strFraction;
+    if (!(input >> splitType )) {
         return HERBST_NEED_MORE_ARGS;
     }
-    bool userDefinedFraction = input.read({ &strFraction });
+    bool userDefinedFraction = input >> strFraction;
     int align = -1;
     bool frameToFirst = true;
     double fractionFloat = userDefinedFraction ? atof(strFraction.c_str()) : 0.5;
@@ -1003,7 +1003,7 @@ int frame_split_command(Input input, Output output) {
         }
     }
     if (align < 0) {
-        output << cmd << ": Invalid alignment \"" << splitType << "\"\n";
+        output << input.command() << ": Invalid alignment \"" << splitType << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     auto frame = HSFrame::getGloballyFocusedFrame();

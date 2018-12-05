@@ -4,6 +4,7 @@
 #include "utils.h"
 #include "settings.h"
 #include "layout.h"
+#include "tag.h"
 #include "key.h"
 #include "client.h"
 #include "clientmanager.h"
@@ -295,10 +296,10 @@ struct {
 // Nearly all of the following can go away, if all C-style command functions
 // have been migrated to int(Input, Output).
 
-/* Creates an ephemeral argv array from the given ArgList */
-function <int(ArgList,Output)> CommandBinding::commandFromCFunc(
+/* Creates an ephemeral argv array from the given Input */
+function <int(Input,Output)> CommandBinding::commandFromCFunc(
         function <int(int argc, char**argv, Output output)> func) {
-    return [func](ArgList args, Output out) {
+    return [func](Input args, Output out) {
         shared_ptr<char*> argv(new char*[args.size()], default_delete<char*[]>());
 
         auto elem = args.begin();
@@ -336,7 +337,7 @@ CommandBinding::CommandBinding(int func())
 {}
 
 // Implementation of CommandTable
-int CommandTable::callCommand(ArgList args, Output out) const {
+int CommandTable::callCommand(Input args, Output out) const {
     if (args.empty()) {
         return HERBST_COMMAND_NOT_FOUND;
     }
@@ -363,7 +364,7 @@ void Commands::initialize(unique_ptr<const CommandTable> commands) {
     // TODO What do we do in the 'already initialized' case?
 }
 
-int Commands::call(ArgList args, Output out) {
+int Commands::call(Input args, Output out) {
     if (!command_table) {
         return HERBST_COMMAND_NOT_FOUND;
     }
@@ -389,7 +390,7 @@ int call_command(int argc, char** argv, Output output) {
         args.emplace_back(argv[i]);
     }
 
-    return Commands::call(args, output);
+    return Commands::call(ArgList(args), output);
 }
 
 int call_command_no_output(int argc, char** argv) {

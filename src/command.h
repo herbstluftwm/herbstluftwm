@@ -2,9 +2,8 @@
 #define __HERBSTLUFT_COMMAND_H_
 
 #include "glib-backports.h"
-#include "x11-types.h"
 #include "types.h"
-// standard
+
 #include <string>
 #include <functional>
 #include <unordered_map>
@@ -38,15 +37,15 @@ using namespace std;
  */
 class CommandBinding {
 public:
-    CommandBinding(function<int(ArgList, Output)> cmd)
+    CommandBinding(function<int(Input, Output)> cmd)
         : command(cmd) {}
     // A command that taks an argument list and produces output
-    CommandBinding(int cmd(ArgList, Output))
+    CommandBinding(int cmd(Input, Output))
         : command(cmd) {}
     // A command that doesn't produce ouput
-    CommandBinding(int cmd(ArgList))
+    CommandBinding(int cmd(Input))
         // Ignore the output parameter
-        : command([cmd](ArgList args, Output) { return cmd(args); })
+        : command([cmd](Input args, Output) { return cmd(args); })
     {}
 
     // FIXME: Remove after C++ transition
@@ -67,11 +66,11 @@ public:
 
 private:
     // FIXME: Remove after C++ transition
-    function<int(ArgList,Output)> commandFromCFunc(
+    function<int(Input,Output)> commandFromCFunc(
         function <int(int argc, char**argv, Output output)> func
     );
 
-    function<int(ArgList, Output)> command;
+    function<int(Input, Output)> command;
 };
 
 class CommandTable {
@@ -81,7 +80,7 @@ public:
     CommandTable(initializer_list<Container::value_type> values)
         : map(values) {}
 
-    int callCommand(ArgList args, Output out) const;
+    int callCommand(Input args, Output out) const;
 
     Container::const_iterator begin() const { return map.cbegin(); }
     Container::const_iterator end() const { return map.cend(); }
@@ -92,7 +91,7 @@ private:
 namespace Commands {
     void initialize(unique_ptr<const CommandTable> commands);
     /* Call the command args[0] */
-    int call(ArgList args, Output out);
+    int call(Input args, Output out);
     shared_ptr<const CommandTable> get();
 }
 

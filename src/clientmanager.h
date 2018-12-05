@@ -1,10 +1,10 @@
 #ifndef CLIENTMANAGER_H
 #define CLIENTMANAGER_H
 
+#include "client.h"
 #include "object.h"
 #include "child.h"
 #include "signal.h"
-#include "types.h"
 
 #include <X11/Xlib.h>
 #include <unordered_map>

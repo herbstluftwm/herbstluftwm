@@ -7,15 +7,11 @@ ArgList::ArgList(const std::initializer_list<std::string> &l)
 
 ArgList::ArgList(const ArgList::Container &c) : c_(std::make_shared<Container>(c)) { reset(); }
 
+ArgList::ArgList(const ArgList &al) : c_(al.c_) { reset(); }
+
 ArgList::ArgList(const std::string &s, char delim) {
     c_ = std::make_shared<Container>(split(s, delim));
     reset();
-}
-
-ArgList ArgList::operator+(Container::difference_type shift_amount) {
-    ArgList ret(*this);
-    ret.shift(shift_amount);
-    return ret;
 }
 
 ArgList::Container ArgList::split(const std::string &s, char delim) {
@@ -46,20 +42,6 @@ std::string ArgList::join(ArgList::Container::const_iterator first,
 }
 std::string ArgList::join(char delim) {
     return join(begin_, c_->cend(), delim);
-}
-
-
-bool ArgList::read(std::initializer_list<std::string*> targets) {
-    auto begin_backup = begin_;
-    for (auto cur_target : targets) {
-        if (empty()) {
-            begin_ = begin_backup;
-            return false;
-        }
-        *cur_target = front();
-        shift();
-    }
-    return true;
 }
 
 ArgList ArgList::replaced(const std::string& from, const std::string& to) const {

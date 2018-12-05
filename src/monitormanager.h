@@ -5,6 +5,8 @@
 #include "childbyindex.h"
 #include "byname.h"
 #include "child.h"
+#include "floating.h" // for find_rectangle_in_direction(), maybe move?
+
 #include <string>
 #include <functional>
 
@@ -33,6 +35,8 @@ public:
     void relayoutTag(HSTag* tag);
     int removeMonitor(Input input, Output output);
     void removeMonitor(HSMonitor* monitor);
+    // if the name is valid monitor name, return "", otherwise return an error message
+    std::string isValidMonitorName(std::string name);
 
     int indexInDirection(HSMonitor* m, Direction dir);
 

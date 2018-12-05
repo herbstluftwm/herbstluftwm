@@ -8,6 +8,8 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
+#include <iostream>
+
 XConnection::XConnection(Display* disp)
     : m_display(disp) {
     m_screen = DefaultScreen(m_display);
@@ -20,14 +22,14 @@ XConnection::~XConnection() {
     XCloseDisplay(m_display);
 }
 
-XConnection XConnection::connect(std::string display_name) {
+XConnection* XConnection::connect(std::string display_name) {
     char* display_str = (display_name != "") ? (char*)display_name.c_str() : nullptr;
     Display* d = XOpenDisplay(display_str);
     if (d == NULL) {
         std::cerr << "herbstluftwm: XOpenDisplay() failed" << std::endl;
         exit(EXIT_FAILURE);
     }
-    return XConnection(d);
+    return new XConnection(d);
 }
 
 static bool g_other_wm_running = false;

@@ -47,4 +47,3 @@ def test_focus_wrap(hlwm,running_clients,running_clients_num):
         assert int(hlwm.get_attr('tags.0.curframe_windex')) == expected_idx
         if i < running_clients_num - 1:
             hlwm.callstr('focus down')
-
