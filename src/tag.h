@@ -31,6 +31,8 @@ private:
     int computeClientCount();
     //! get the number of clients on this tag
     int computeFrameCount();
+    //! check whether a name is valid and return error message otherwise
+    std::string isValidName(std::string newName);
 };
 
 void tag_init();

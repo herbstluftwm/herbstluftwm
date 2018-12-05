@@ -23,6 +23,32 @@ public:
     {
     }
 
+    //! A read-only attribute of owner of type T
+    Attribute_(const std::string &name, Object* owner, const T &payload)
+        : Attribute(name, false)
+        , payload_ (payload)
+    {
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
+        owner->addAttribute(this);
+    }
+
+    //! A writable attribute of owner of type T
+    template <typename Owner>
+    Attribute_(const std::string &name, Owner* owner, const T &payload,
+               std::string(Owner::*validator)(T))
+        : Attribute(name, true)
+        , payload_ (payload)
+        , validator_(validator)
+    {
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
+        owner->addAttribute(this);
+        writeable_ = true;
+    }
+
     // set the method called for validation of external changes
     // this implicitely makes the attribute writeable
     void setValidator(Validator v) {
@@ -125,6 +151,13 @@ public:
     {
         hookable_ = false;
     }
+    DynAttribute_(const std::string &name, Object* owner, std::function<T()> getter)
+        : Attribute(name, false)
+        , getter_(getter)
+    {
+        hookable_ = false;
+        owner->addAttribute(this);
+    }
 
     // in this case, also write operations are delegated
     DynAttribute_(const std::string &name, std::function<T()> getter, std::function<std::string(T)> setter)
@@ -149,7 +182,8 @@ public:
     {
         hookable_ = false;
         // the following will call Attribute::setOwner()
-        // maybe this should be changed at some point
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
         owner->addAttribute(this);
     }
     template <typename Owner>
@@ -164,7 +198,8 @@ public:
         hookable_ = false;
         writeable_ = true;
         // the following will call Attribute::setOwner()
-        // maybe this should be changed at some point
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
         owner->addAttribute(this);
     }
 
