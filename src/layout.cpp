@@ -754,7 +754,7 @@ TilingResult HSFrameSplit::computeLayout(Rectangle rect) {
     return res;
 }
 
-void HSFrameSplit::fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) {
+void HSFrameSplit::fmap(std::function<void(HSFrameSplit*)> onSplit, std::function<void(HSFrameLeaf*)> onLeaf, int order) {
     if (order <= 0) onSplit(this);
     a->fmap(onSplit, onLeaf, order);
     if (order == 1) onSplit(this);
@@ -762,7 +762,7 @@ void HSFrameSplit::fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLe
     if (order >= 1) onSplit(this);
 }
 
-void HSFrameLeaf::fmap(void (*onSplit)(HSFrameSplit*), void (*onLeaf)(HSFrameLeaf*), int order) {
+void HSFrameLeaf::fmap(std::function<void(HSFrameSplit*)> onSplit, std::function<void(HSFrameLeaf*)> onLeaf, int order) {
     (void) onSplit;
     (void) order;
     onLeaf(this);
@@ -1409,21 +1409,15 @@ bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor) {
 }
 
 void HSFrame::setVisibleRecursive(bool visible) {
-    void (*onSplit)(HSFrameSplit*) =
-        [] (HSFrameSplit* frame) {
-        };
+    auto onSplit = [] (HSFrameSplit* frame) { };
     // X11 tweaks here.
-    void (*onLeaf)(HSFrameLeaf*) =
-        visible
-        ? /* if visible */
-            [](HSFrameLeaf* frame) {
-                for (auto c : frame->clients) c->set_visible(true);
-            }
-        : /* if invisible */
-            [](HSFrameLeaf* frame) {
+    auto onLeaf =
+        [visible] (HSFrameLeaf* frame) {
+            if (!visible) {
                 frame->decoration->hide();
-                for (auto c : frame->clients) c->set_visible(false);
-            };
+            }
+            for (auto c : frame->clients) c->set_visible(visible);
+        };
     // first hide children => order = 2
     fmap(onSplit, onLeaf, 2);
 }
