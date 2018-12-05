@@ -19,9 +19,18 @@ public:
     Attribute_<unsigned long> index = {"index", 0};
     Attribute_<bool>         floating = {"floating", false};
     Attribute_<std::string>  name = {"name", {}};   // name of this tag
+    DynAttribute_<int> frame_count;
+    DynAttribute_<int> client_count;
+    DynAttribute_<int> curframe_windex;
+    DynAttribute_<int> curframe_wcount;
     int             flags;
     std::shared_ptr<HSStack> stack;
     void setIndexAttribute(unsigned long new_index) override;
+private:
+    //! get the number of clients on this tag
+    int computeClientCount();
+    //! get the number of clients on this tag
+    int computeFrameCount();
 };
 
 void tag_init();

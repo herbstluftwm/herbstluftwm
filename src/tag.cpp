@@ -34,6 +34,12 @@ void tag_destroy() {
 
 
 HSTag::HSTag(std::string name_, Settings* settings)
+    : frame_count("frame_count", std::bind(&HSTag::computeFrameCount, this))
+    , client_count("client_count", std::bind(&HSTag::computeClientCount, this))
+    , curframe_windex("curframe_windex",
+        [this] () { return frame->getFocusedFrame()->getSelection(); } )
+    , curframe_wcount("curframe_wcount",
+        [this] () { return frame->getFocusedFrame()->clientCount(); } )
 {
     stack = make_shared<HSStack>();
     frame = make_shared<HSFrameLeaf>(this, settings, shared_ptr<HSFrameSplit>());
@@ -41,6 +47,10 @@ HSTag::HSTag(std::string name_, Settings* settings)
         &index,
         &name,
         &floating,
+        &frame_count,
+        &client_count,
+        &curframe_windex,
+        &curframe_wcount,
     });
     floating.setWriteable();
     name.setValidator([this] (std::string new_name) {
@@ -60,6 +70,22 @@ HSTag::~HSTag() {
 
 void HSTag::setIndexAttribute(unsigned long new_index) {
     index = new_index;
+}
+
+int HSTag::computeFrameCount() {
+    int count = 0;
+    frame->fmap([](HSFrameSplit*) {},
+                [&count](HSFrameLeaf*) { count++; },
+                0);
+    return count;
+}
+
+int HSTag::computeClientCount() {
+    int count = 0;
+    frame->fmap([](HSFrameSplit*) {},
+                [&count](HSFrameLeaf* l) { count += l->clientCount(); },
+                0);
+    return count;
 }
 
 int    tag_get_count() {
