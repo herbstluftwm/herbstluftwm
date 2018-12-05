@@ -16,9 +16,6 @@ Input& Input::operator>>(std::string& val) {
 }
 
 std::string Input::command() const {
-    if (c_->cbegin() != c_->cend()) {
-        return *c_->cbegin();
-    }
     // access the first element without any shifts.
     if (c_->begin() != c_->end()) {
         return *c_->begin();
