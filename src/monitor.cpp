@@ -57,7 +57,7 @@ HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rec
     , mouse { 0, 0 }
     , rect(rect_)
     , settings(settings_)
-    , monman(monman_)
+    //, monman(monman_)
 {
     for (auto i : {&pad_up, &pad_left, &pad_right, &pad_down}) {
         i->setWriteable();

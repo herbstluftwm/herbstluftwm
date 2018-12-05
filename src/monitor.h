@@ -56,7 +56,7 @@ private:
     std::string getTagString();
     std::string setTagString(std::string new_tag);
     Settings* settings;
-    MonitorManager* monman;
+    //MonitorManager* monman;
 };
 
 void monitor_init();
