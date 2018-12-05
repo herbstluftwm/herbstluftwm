@@ -72,7 +72,7 @@ public:
     void detachFromOwner();
 
 protected:
-    Object *owner_;
+    Object *owner_ = nullptr;
 
     bool writeable_ = false, hookable_ = true;
 };
