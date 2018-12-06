@@ -6,7 +6,7 @@ def test_attr_cmd(hlwm):
     hlwm.callstr('attr tags.')
     hlwm.callstr('attr tags.count')
     assert hlwm.call('attr', 'tags.count').stdout == hlwm.get_attr('tags.count')
-    hlwm.fails('attr', 'tags.co')
+    hlwm.call_xfail('attr', 'tags.co')
 
 def test_object_tree(hlwm):
     t1 = hlwm.call('object_tree').stdout.splitlines()
@@ -19,8 +19,8 @@ def test_sprintf(hlwm):
     cnt = hlwm.get_attr('tags.count')
     wmname = hlwm.get_attr('settings.wmname')
     printed = hlwm.callstr('sprintf X %s/%s tags.count settings.wmname echo X').stdout
-    hlwm.fails('sprintf X %s/%s tags.count settings.wmname')
-    hlwm.fails('sprintf X %s/%s tags.count')
+    hlwm.call_xfail('sprintf X %s/%s tags.count settings.wmname')
+    hlwm.call_xfail('sprintf X %s/%s tags.count')
     assert printed == cnt + '/' + wmname + '\n'
     assert '%\n' == hlwm.callstr('sprintf X %% echo X').stdout
 
