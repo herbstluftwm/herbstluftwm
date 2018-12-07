@@ -1,5 +1,5 @@
 def test_first_client_gets_focus(hlwm):
-    hlwm.fails('get_attr', 'clients.focus.winid')
+    hlwm.call_xfail('get_attr', 'clients.focus.winid')
     client = hlwm.create_client()
     assert hlwm.get_attr('clients.focus.winid') == client
 
