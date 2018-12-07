@@ -26,7 +26,12 @@ def test_new_clients_increase_client_count(hlwm, running_clients, running_client
 
 def test_move_focused_client_to_new_tag(hlwm):
     hlwm.callstr('add foobar')
+    assert hlwm.get_attr('tags.0.client_count') == '0'
+    assert hlwm.get_attr('tags.1.client_count') == '0'
+
     hlwm.create_client()
+    assert hlwm.get_attr('tags.0.client_count') == '1'
+    assert hlwm.get_attr('tags.1.client_count') == '0'
 
     hlwm.callstr('move foobar')
 
