@@ -7,8 +7,8 @@ def test_single_frame_layout(hlwm, running_clients, running_clients_num):
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == running_clients_num
 
 
-def test_single_frame_layout_three(hlwm, create_clients):
-    create_clients(3)
+def test_single_frame_layout_three(hlwm):
+    hlwm.create_clients(3)
     assert hlwm.get_attr('tags.0.curframe_windex') == '0'
     assert int(hlwm.get_attr('tags.0.client_count')) == 3
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == 3
