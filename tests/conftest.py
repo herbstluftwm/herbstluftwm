@@ -1,9 +1,9 @@
-import subprocess
-import os.path
 import os
+import os.path
+import shlex
+import subprocess
 import sys
 import textwrap
-from types import SimpleNamespace
 
 import pytest
 
@@ -31,9 +31,7 @@ class HlwmBridge:
         # by self.hc_idle
         self.wmclass2winid = {}
 
-    def callstr(self, args, check=True):
-        return self.call(*(args.split(' ')), check=check)
-    def call(self, *args, check=True):
+    def _checked_call(self, *args, expect_success=True):
         assert args
         str_args = [ str(i) for i in args]
         try:
@@ -49,15 +47,27 @@ class HlwmBridge:
         print(list(args))
         print(proc.stdout)
         print(proc.stderr, file=sys.stderr)
-        if check:
+
+        if expect_success:
             assert proc.returncode == 0
             assert not proc.stderr
+        else:
+            assert proc.returncode != 0
+            assert proc.stderr != ""
+
         return proc
 
+    def call(self, *args):
+        return self._checked_call(*args, expect_success=True)
+
     def call_xfail(self, *args):
-        call = self.call(*args, check=False)
-        assert call.returncode != 0
-        return call
+        return self._checked_call(*args, expect_success=False)
+
+    def callstr(self, args):
+        return self.call(*(shlex.split(args)))
+
+    def callstr_xfail(self, args):
+        return self.call_xfail(*(shlex.split(args)))
 
     def get_attr(self, attribute_path, check=True):
         return self.call('get_attr', attribute_path).stdout
