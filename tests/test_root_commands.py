@@ -29,16 +29,12 @@ def test_sprintf(hlwm):
 def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
     call = hlwm.callstr_xfail('sprintf X %s/%s tags.count echo X')
 
-    # FYI, before winterbreeze, this used to yield:
-    #   Unknown attribute "echo" in object "".
-    assert call.stderr == 'Object  has no attribute "echo"\n'
+    assert call.stderr == 'The root object has no attribute "echo"\n'
 
 
 def test_sprintf_too_few_attributes_in_total(hlwm):
     call = hlwm.callstr_xfail('sprintf X %s/%s tags.count')
 
-    # FYI, before winterbreeze, this used to yield:
-    #   Error: Too few parameters. A 0th parameter missing. (treating "tags.count" as the command to execute)
     assert call.stderr == 'sprintf: not enough arguments\n'
 
 
