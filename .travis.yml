@@ -11,7 +11,7 @@ script:
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
     - echo Using $CC / $CXX
-    - cmake -DCMAKE_INSTALL_PREFIX=/usr
+    - cmake -DCMAKE_INSTALL_PREFIX=/usr .
     - make -j2
     - sudo make install
     - herbstluftwm &
@@ -44,7 +44,7 @@ jobs:
                       - tox
           script:
               - echo Using $CC / $CXX
-              - cmake
+              - cmake .
               - make -j2
               - tox
 
