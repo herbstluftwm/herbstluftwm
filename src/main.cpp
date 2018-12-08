@@ -60,7 +60,7 @@ typedef void (*HandlerTable[LASTEvent]) (Root*, XEvent*);
 
 int quit();
 int reload();
-int version(int argc, char* argv[], Output output);
+int version(Input args, Output output);
 int echo(int argc, char* argv[], Output output);
 int true_command();
 int false_command();
@@ -219,10 +219,10 @@ int reload() {
     return 0;
 }
 
-int version(int argc, char* argv[], Output output) {
-    (void) argc;
-    (void) argv;
-    output << HERBSTLUFT_VERSION_STRING;
+int version(Input, Output output) {
+    output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION_STRING << std::endl;
+    output << "Copyright (c) 2011-2014 Thorsten Wißmann" << std::endl;
+    output << "Released under the Simplified BSD License" << std::endl;
     return 0;
 }
 
@@ -638,9 +638,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                 /* ignore recognized long option */
                 break;
             case 'v':
-                printf("%s %s\n", argv[0], HERBSTLUFT_VERSION);
-                printf("Copyright (c) 2011-2014 Thorsten Wißmann\n");
-                printf("Released under the Simplified BSD License\n");
+                version({{}}, std::cout);
                 exit(0);
             case 'c':
                 g_autostart_path = optarg;
