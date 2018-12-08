@@ -1,9 +1,9 @@
-import subprocess
-import os.path
 import os
+import os.path
+import shlex
+import subprocess
 import sys
 import textwrap
-from types import SimpleNamespace
 
 import pytest
 
@@ -15,6 +15,7 @@ class HlwmBridge:
     HC_PATH = os.path.join(GIT_ROOT, 'herbstclient')
 
     def __init__(self, display, hlwm_process):
+        self.client_procs = []
         self.next_client_id = 0;
         self.env = {
             'DISPLAY': display,
@@ -30,9 +31,7 @@ class HlwmBridge:
         # by self.hc_idle
         self.wmclass2winid = {}
 
-    def callstr(self, args, check=True):
-        return self.call(*(args.split(' ')), check=check)
-    def call(self, *args, check=True):
+    def _checked_call(self, *args, expect_success=True):
         assert args
         str_args = [ str(i) for i in args]
         try:
@@ -48,17 +47,35 @@ class HlwmBridge:
         print(list(args))
         print(proc.stdout)
         print(proc.stderr, file=sys.stderr)
-        if check:
+
+        if expect_success:
             assert proc.returncode == 0
             assert not proc.stderr
+        else:
+            assert proc.returncode != 0
+            assert proc.stderr != ""
+
         return proc
-    def fails(self, *args):
-        assert self.call(*args, check=False).returncode != 0
+
+    def call(self, *args):
+        return self._checked_call(*args, expect_success=True)
+
+    def call_xfail(self, *args):
+        return self._checked_call(*args, expect_success=False)
+
+    def callstr(self, args):
+        return self.call(*(shlex.split(args)))
+
+    def callstr_xfail(self, args):
+        return self.call_xfail(*(shlex.split(args)))
 
     def get_attr(self, attribute_path, check=True):
         return self.call('get_attr', attribute_path).stdout
 
     def create_client(self):
+        """
+        Launch a client that will be terminated on shutdown.
+        """
         self.next_client_id += 1
         wmclass = 'client_{}'.format(self.next_client_id)
         command = ['xterm', '-hold', '-class', wmclass, '-e', 'true']
@@ -68,7 +85,11 @@ class HlwmBridge:
         # once the window appears, the hook is fired:
         winid = self.wait_for_window_of(wmclass)
 
-        return SimpleNamespace(proc=proc, winid=winid)
+        self.client_procs.append(proc)
+        return winid
+
+    def create_clients(self, num):
+        return [self.create_client() for i in range(num)]
 
     def wait_for_window_of(self, wmclass):
         """Wait for a rule hook of the form "here_is_" + wmclass """
@@ -86,6 +107,10 @@ class HlwmBridge:
         return line[-1]
 
     def shutdown(self):
+        for client_proc in self.client_procs:
+            client_proc.terminate()
+            client_proc.wait(2)
+
         self.hc_idle.terminate()
         self.hc_idle.wait(2)
 
@@ -155,44 +180,10 @@ def hlwm_process(tmpdir):
     hlwm_proc.shutdown()
 
 
-@pytest.fixture
-def create_clients(hlwm):
-    """
-    Callable fixture that allows to create a number of clients that will be
-    terminated on teardown.
-    """
-    clients = []
-
-    def create_and_track_clients(num):
-        new_winids = []
-        for i in range(num):
-            new_client = hlwm.create_client()
-            clients.append(new_client)
-            new_winids.append(new_client.winid)
-
-        return new_winids
-
-    yield create_and_track_clients
-
-    for client in clients:
-        client.proc.terminate()
-        client.proc.wait(2)
-
-
-@pytest.fixture
-def create_client(hlwm, create_clients):
-#  def create_client(hlwm):
-    """
-    Callable fixture that allows to create a client that will be terminated on
-    teardown.
-    """
-    yield lambda: create_clients(1)[0]
-
-
 @pytest.fixture(params=[0])
-def running_clients(hlwm, create_clients, running_clients_num):
+def running_clients(hlwm, running_clients_num):
     """
     Fixture that provides a number of already running clients, as defined by a
     "running_clients_num" test parameter.
     """
-    yield create_clients(running_clients_num)
+    return hlwm.create_clients(running_clients_num)

@@ -108,6 +108,7 @@ int call_command_no_output(int argc, char** argv)
 int list_commands(int argc, char** argv, Output output);
 int complete_command(int argc, char** argv, Output output);
 
+void try_complete(const char* needle, std::string to_check, Output output);
 void try_complete(const char* needle, const char* to_check, Output output);
 void try_complete_partial(const char* needle, const char* to_check, Output output);
 void try_complete_prefix_partial(const char* needle, const char* to_check,

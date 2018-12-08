@@ -12,6 +12,8 @@
 #include <cstring>
 #include <cstdio>
 #include <sys/types.h>
+#include <list>
+#include <algorithm>
 
 /// TYPES ///
 
@@ -92,7 +94,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "monitor",        consequence_monitor         },
 };
 
-static GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
+static std::list<HSRule *> g_rules;
 
 /// FUNCTIONS ///
 // RULES //
@@ -102,8 +104,10 @@ void rules_init() {
 }
 
 void rules_destroy() {
-    g_queue_foreach(&g_rules, (GFunc)rule_destroy, nullptr);
-    g_queue_clear(&g_rules);
+    for (auto rule : g_rules) {
+        delete rule;
+    }
+    g_rules.clear();
 }
 
 // condition types //
@@ -232,7 +236,7 @@ static void consequence_destroy(HSConsequence* cons) {
     g_free(cons);
 }
 
-static bool rule_label_replace(HSRule* rule, char op, char* value, Output output) {
+bool HSRule::replaceLabel(char op, char* value, Output output) {
     switch (op) {
         case '=':
             if (*value == '\0') {
@@ -240,8 +244,7 @@ static bool rule_label_replace(HSRule* rule, char op, char* value, Output output
                 return false;
                 break;
             }
-            g_free(rule->label);
-            rule->label = g_strdup(value);
+            label = value;
             break;
         default:
             output << "rule: Unknown rule label operation \"" << op << "\"\n";
@@ -253,30 +256,22 @@ static bool rule_label_replace(HSRule* rule, char op, char* value, Output output
 
 // rules parsing //
 
-HSRule* rule_create() {
-    HSRule* rule = g_new0(HSRule, 1);
-    rule->once = false;
-    rule->birth_time = get_monotonic_timestamp();
-    // Add name. Defaults to index number.
-    rule->label = g_strdup_printf("%llu", g_rule_label_index++);
-    return rule;
+HSRule::HSRule() {
+    birth_time = get_monotonic_timestamp();
+    label = std::to_string(g_rule_label_index++); // label defaults to index number
 }
 
-void rule_destroy(HSRule* rule) {
+HSRule::~HSRule() {
     // free conditions
-    for (int i = 0; i < rule->condition_count; i++) {
-        condition_destroy(rule->conditions[i]);
+    for (int i = 0; i < condition_count; i++) {
+        condition_destroy(conditions[i]);
     }
-    g_free(rule->conditions);
+    g_free(conditions);
     // free consequences
-    for (int i = 0; i < rule->consequence_count; i++) {
-        consequence_destroy(rule->consequences[i]);
+    for (int i = 0; i < consequence_count; i++) {
+        consequence_destroy(consequences[i]);
     }
-    g_free(rule->consequences);
-    // free label
-    g_free(rule->label);
-    // free rule itself
-    g_free(rule);
+    g_free(consequences);
 }
 
 void rule_complete(int argc, char** argv, int pos, Output output) {
@@ -309,29 +304,24 @@ void rule_complete(int argc, char** argv, int pos, Output output) {
     g_string_free(buf, true);
 }
 
-// Compares the id of two rules.
-static gint rule_compare_label(const HSRule* a, const HSRule* b) {
-    return strcmp(a->label, b->label);
-}
-
 // Looks up rules of a given label and removes them from the queue
 static bool rule_find_pop(char* label) {
-    GList* rule = { nullptr };
     bool status = false; // Will be returned as true if any is found
-    HSRule rule_find = { 0 };
-    rule_find.label = label;
-    while ((rule = g_queue_find_custom(&g_rules, &rule_find,
-                        (GCompareFunc)rule_compare_label))) {
-        // Check if rule with label exists
-        if ( rule == nullptr ) {
-            break;
+
+    // Note: This ugly loop can be replaced by a single std::erase statement
+    // once g_rules is a container of unique pointers.
+    auto ruleIter = g_rules.begin();
+    while (ruleIter != g_rules.end()) {
+        auto rule = *ruleIter;
+        if (rule->label == label) {
+            delete rule;
+            status = true;
+            ruleIter = g_rules.erase(ruleIter);
+        } else {
+            ruleIter++;
         }
-        status = true;
-        // If so, clear data
-        rule_destroy((HSRule*)rule->data);
-        // Remove and free empty link
-        g_queue_delete_link(&g_rules, rule);
     }
+
     return status;
 }
 
@@ -368,7 +358,9 @@ static void rule_print_append_output(HSRule* rule, std::ostream* ptr_output) {
 
 int rule_print_all_command(int argc, char** argv, Output output) {
     // Print entry for each in the queue
-    g_queue_foreach(&g_rules, (GFunc)rule_print_append_output, &output);
+    for (auto rule : g_rules) {
+        rule_print_append_output(rule, &output);
+    }
     return 0;
 }
 
@@ -419,7 +411,7 @@ int rule_add_command(int argc, char** argv, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     // temporary data structures
-    HSRule* rule = rule_create();
+    HSRule* rule = new HSRule();
     HSCondition* cond;
     HSConsequence* cons;
     bool printlabel = false;
@@ -463,7 +455,7 @@ int rule_add_command(int argc, char** argv, Output output) {
         else if (consorcond && (type = find_condition_type(name)) >= 0) {
             cond = condition_create(type, op, value, output);
             if (!cond) {
-                rule_destroy(rule);
+                delete rule;
                 return HERBST_INVALID_ARGUMENT;
             }
             cond->negated = negated;
@@ -474,7 +466,7 @@ int rule_add_command(int argc, char** argv, Output output) {
         else if (consorcond && (type = find_consequence_type(name)) >= 0) {
             cons = consequence_create(type, op, value, output);
             if (!cons) {
-                rule_destroy(rule);
+                delete rule;
                 return HERBST_INVALID_ARGUMENT;
             }
             rule_add_consequence(rule, cons);
@@ -482,8 +474,8 @@ int rule_add_command(int argc, char** argv, Output output) {
 
         // Check for a provided label, and replace default index if so
         else if (consorcond && (!strcmp(name,"label"))) {
-            if (!rule_label_replace(rule, op, value, output)) {
-                rule_destroy(rule);
+            if (!rule->replaceLabel(op, value, output)) {
+                delete rule;
                 return HERBST_INVALID_ARGUMENT;
             }
         }
@@ -491,7 +483,7 @@ int rule_add_command(int argc, char** argv, Output output) {
         else {
             // need to hardcode "rule:" here because args are shifted
             output << "rule: Unknown argument \"" << *argv << "\"\n";
-            rule_destroy(rule);
+            delete rule;
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -500,8 +492,8 @@ int rule_add_command(int argc, char** argv, Output output) {
        output << rule->label << "\n";
     }
 
-    if (prepend) g_queue_push_head(&g_rules, rule);
-    else         g_queue_push_tail(&g_rules, rule);
+    if (prepend) g_rules.push_front(rule);
+    else         g_rules.push_back(rule);
     return 0;
 }
 
@@ -513,10 +505,8 @@ void complete_against_rule_names(int argc, char** argv, int pos, Output output) 
         needle = argv[pos];
     }
     // Complete labels
-    GList* cur_rule = g_queue_peek_head_link(&g_rules);
-    while (cur_rule != nullptr) {
-        try_complete(needle, ((HSRule*)cur_rule->data)->label, output);
-        cur_rule = g_list_next(cur_rule);
+    for (auto rule : g_rules) {
+        try_complete(needle, rule->label.c_str(), output);
     }
 }
 
@@ -528,8 +518,7 @@ int rule_remove_command(int argc, char** argv, Output output) {
 
     if (!strcmp(argv[1], "--all") || !strcmp(argv[1], "-F")) {
         // remove all rules
-        g_queue_foreach(&g_rules, (GFunc)rule_destroy, nullptr);
-        g_queue_clear(&g_rules);
+        rules_destroy();
         g_rule_label_index = 0;
         return 0;
     }
@@ -568,9 +557,9 @@ void client_changes_free_members(HSClientChanges* changes) {
 
 // apply all rules to a certain client an save changes
 void rules_apply(HSClient* client, HSClientChanges* changes) {
-    GList* cur = g_rules.head;
-    while (cur) {
-        HSRule* rule = (HSRule*)cur->data;
+    auto ruleIter = g_rules.begin();
+    while (ruleIter != g_rules.end()) {
+        auto rule = *ruleIter;
         bool matches = true;    // if current condition matches
         bool rule_match = true; // if entire rule matches
         bool rule_expired = false;
@@ -614,15 +603,12 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
 
         // remove it if not wanted or needed anymore
         if ((rule_match && rule->once) || rule_expired) {
-            GList* next = cur->next;
-            rule_destroy((HSRule*)cur->data);
-            g_queue_remove_element(&g_rules, cur);
-            cur = next;
-            continue;
+            delete rule;
+            ruleIter = g_rules.erase(ruleIter);
+        } else {
+            // try next
+            ruleIter++;
         }
-
-        // try next
-        cur = cur ? cur->next : nullptr;
     }
 }
 
