@@ -1,9 +1,9 @@
-import subprocess
-import os.path
 import os
+import os.path
+import shlex
+import subprocess
 import sys
 import textwrap
-from types import SimpleNamespace
 
 import pytest
 
@@ -64,10 +64,10 @@ class HlwmBridge:
         return self._checked_call(*args, expect_success=False)
 
     def callstr(self, args):
-        return self.call(*(args.split(' ')))
+        return self.call(*(shlex.split(args)))
 
     def callstr_xfail(self, args):
-        return self.call_xfail(*(args.split(' ')))
+        return self.call_xfail(*(shlex.split(args)))
 
     def get_attr(self, attribute_path, check=True):
         return self.call('get_attr', attribute_path).stdout
