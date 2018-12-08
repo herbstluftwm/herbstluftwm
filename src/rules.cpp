@@ -317,18 +317,19 @@ void rule_complete(int argc, char** argv, int pos, Output output) {
 static bool rule_find_pop(char* label) {
     bool status = false; // Will be returned as true if any is found
 
-    auto hasMatchingLabel = [=] (HSRule *r) { return strcmp(r->label, label); };
-
-    // Note: This ugly loop will be obsolete once g_rules is a container of
-    // unique pointers.
-    for (auto rule : g_rules) {
-        if (hasMatchingLabel(rule)) {
+    // Note: This ugly loop can be replaced by a single std::erase statement
+    // once g_rules is a container of unique pointers.
+    auto ruleIter = g_rules.begin();
+    while (ruleIter != g_rules.end()) {
+        auto rule = *ruleIter;
+        if (!strcmp(rule->label, label)) {
             rule_destroy(rule);
             status = true;
+            ruleIter = g_rules.erase(ruleIter);
+        } else {
+            ruleIter++;
         }
     }
-
-    g_rules.erase(std::remove_if(g_rules.begin(), g_rules.end(), hasMatchingLabel));
 
     return status;
 }
