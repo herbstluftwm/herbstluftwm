@@ -44,12 +44,12 @@ class HSRule {
 public:
     HSRule();
     ~HSRule();
-    char*           label;
-    HSCondition**   conditions;
-    int             condition_count;
-    HSConsequence** consequences;
-    int             consequence_count;
-    bool            once;
+    char*           label = nullptr;
+    HSCondition**   conditions = nullptr;
+    int             condition_count = 0;
+    HSConsequence** consequences = nullptr;
+    int             consequence_count = 0;
+    bool            once = false;
     time_t          birth_time; // timestamp of at creation
 };
 

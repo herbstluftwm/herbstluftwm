@@ -258,10 +258,10 @@ static bool rule_label_replace(HSRule* rule, char op, char* value, Output output
 // rules parsing //
 
 HSRule::HSRule()
-    : label(g_strdup_printf("%llu", g_rule_label_index++)) // name defaults to index number
-    , once(false)
-    , birth_time(get_monotonic_timestamp())
-{}
+    : birth_time(get_monotonic_timestamp())
+{
+    label = g_strdup_printf("%llu", g_rule_label_index++); // name defaults to index number
+}
 
 HSRule::~HSRule() {
     // free conditions
