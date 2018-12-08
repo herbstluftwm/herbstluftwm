@@ -89,7 +89,14 @@ Attribute* RootCommands::getAttribute(std::string path, Output output) {
     }
     Attribute* a = child->attribute(attr_path.second);
     if (!a) {
-        output << "Object " << attr_path.first.join('.')
+        auto object_path = attr_path.first.join('.');
+        if (object_path == "" ) {
+            object_path = "The root object";
+        } else {
+            // equip object_path with quotes
+            object_path = "Object \"" + object_path + "\"";
+        }
+        output << object_path
                << " has no attribute \"" << attr_path.second << "\""
                << std::endl;
         return nullptr;

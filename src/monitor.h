@@ -2,9 +2,6 @@
 #define __HERBSTLUFT_MONITOR_H_
 
 #include <X11/Xlib.h>
-#ifdef XINERAMA
-#include <X11/extensions/Xinerama.h>
-#endif /* XINERAMA */
 
 #include "x11-types.h"
 #include "object.h"
