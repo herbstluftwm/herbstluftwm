@@ -12,6 +12,7 @@
 #include <cstring>
 #include <cstdio>
 #include <sys/types.h>
+#include <list>
 #include <algorithm>
 
 /// TYPES ///
@@ -93,7 +94,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "monitor",        consequence_monitor         },
 };
 
-static std::vector<HSRule *> g_rules; // or std::queue?
+static std::list<HSRule *> g_rules; // or std::queue?
 
 /// FUNCTIONS ///
 // RULES //
@@ -499,7 +500,7 @@ int rule_add_command(int argc, char** argv, Output output) {
        output << rule->label << "\n";
     }
 
-    if (prepend) g_rules.insert(g_rules.begin(), rule);
+    if (prepend) g_rules.push_front(rule);
     else         g_rules.push_back(rule);
     return 0;
 }
