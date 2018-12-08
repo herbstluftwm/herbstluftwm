@@ -27,16 +27,16 @@ public:
     HSTag*      tag;    // currently viewed tag
     HSTag*      tag_previous;    // previously viewed tag
     struct HSSlice*    slice;  // slice in the monitor stack
-    Attribute_<std::string>   name = {"name", {}};
-    Attribute_<unsigned long> index = {"index", 0};
+    Attribute_<std::string>   name;
+    Attribute_<unsigned long> index;
     DynAttribute_<std::string>   tag_string;
-    Attribute_<int>         pad_up = {"pad_up", 0};
-    Attribute_<int>         pad_right = {"pad_right", 0};
-    Attribute_<int>         pad_down = {"pad_down", 0};
-    Attribute_<int>         pad_left = {"pad_left", 0};
+    Attribute_<int>         pad_up;
+    Attribute_<int>         pad_right;
+    Attribute_<int>         pad_down;
+    Attribute_<int>         pad_left;
+    Attribute_<bool>        lock_tag;
     bool        dirty;
     bool        lock_frames;
-    Attribute_<bool>        lock_tag;
     struct {
         // last saved mouse position
         int x;
@@ -56,7 +56,7 @@ private:
     std::string getTagString();
     std::string setTagString(std::string new_tag);
     Settings* settings;
-    MonitorManager* monman;
+    //MonitorManager* monman;
 };
 
 void monitor_init();
