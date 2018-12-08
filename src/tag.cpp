@@ -34,34 +34,18 @@ void tag_destroy() {
 
 
 HSTag::HSTag(std::string name_, Settings* settings)
-    : frame_count("frame_count", std::bind(&HSTag::computeFrameCount, this))
-    , client_count("client_count", std::bind(&HSTag::computeClientCount, this))
-    , curframe_windex("curframe_windex",
+    : index(this, "index", 0)
+    , floating(this, "floating", false, [](bool){return "";})
+    , name(this, "name", name_, &HSTag::validateNewName)
+    , frame_count(this, "frame_count", &HSTag::computeFrameCount)
+    , client_count(this, "client_count", &HSTag::computeClientCount)
+    , curframe_windex(this, "curframe_windex",
         [this] () { return frame->getFocusedFrame()->getSelection(); } )
-    , curframe_wcount("curframe_wcount",
+    , curframe_wcount(this, "curframe_wcount",
         [this] () { return frame->getFocusedFrame()->clientCount(); } )
 {
     stack = make_shared<HSStack>();
     frame = make_shared<HSFrameLeaf>(this, settings, shared_ptr<HSFrameSplit>());
-    wireAttributes({
-        &index,
-        &name,
-        &floating,
-        &frame_count,
-        &client_count,
-        &curframe_windex,
-        &curframe_wcount,
-    });
-    floating.setWriteable();
-    name.setValidator([this] (std::string new_name) {
-        for (auto t : *global_tags) {
-            if (t != this && t->name == new_name) {
-                return std::string("Tag \"") + new_name + "\" already exists ";
-            }
-        }
-        return std::string();
-    });
-    name = name_;
 }
 
 HSTag::~HSTag() {
@@ -70,6 +54,16 @@ HSTag::~HSTag() {
 
 void HSTag::setIndexAttribute(unsigned long new_index) {
     index = new_index;
+}
+
+
+std::string HSTag::validateNewName(std::string newName) {
+    for (auto t : *global_tags) {
+        if (t != this && t->name == newName) {
+            return std::string("Tag \"") + newName + "\" already exists ";
+        }
+    }
+    return std::string();
 }
 
 int HSTag::computeFrameCount() {

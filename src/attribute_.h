@@ -17,6 +17,70 @@ public:
     // escalated to the user.
     using Validator = std::function<std::string(T)>;
 
+    /** The constructors for Attribute_ and also for DynAttribute_ follow
+     * the a common pattern:
+     *
+     *   - The first argument is the owner object
+     *
+     *   - The second argument is the name displayed to the user
+     *
+     *   - The third argument the reading behaviour of the attribute:
+     *     * for a plain Attribute_ this is simply the initial value
+     *     * for a DynAttribute_ this is a member of the owner (or a lambda)
+     *       that returns the value of the attribute.
+     *
+     *   - The fourth argument describes the writing behaviour of the
+     *     attribute: If the fourth argument is absent, the attribute is
+     *     read-only.
+     *     * The fourth argument for an Attribute_ is a member of owner (or
+     *       lambda) that validates a new value of the attribute and returns an
+     *       error message if the new value is not acceptable for this
+     *       attribute (E.g. because a name is already taken or does not
+     *       resepct a certain format).
+     *     * The fourth argument of a DynAttribute_ is a member of owner (or
+     *       lambda) that internally processes the new value (e.g. parsing) and
+     *       returns an error message if the new value is not acceptable.
+     */
+
+    //! A read-only attribute of owner of type T
+    Attribute_(Object* owner, const std::string &name, const T &payload)
+        : Attribute(name, false)
+        , payload_ (payload)
+    {
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
+        owner->addAttribute(this);
+    }
+
+    //! A writable attribute of owner of type T
+    template <typename Owner>
+    Attribute_(Owner* owner, const std::string &name, const T &payload,
+              std::string(Owner::*validator)(T))
+        : Attribute(name, true)
+        , validator_(std::bind(validator, owner, std::placeholders::_1))
+        , payload_ (payload)
+    {
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
+        owner->addAttribute(this);
+    }
+    //! A writable attribute of owner of type T
+    Attribute_(Object* owner, const std::string &name, const T &payload,
+              Validator validator)
+        : Attribute(name, true)
+        , validator_(validator)
+        , payload_ (payload)
+    {
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
+        owner->addAttribute(this);
+    }
+
+    //! Deprecated constructor, that will be removed and only remains for
+    //compatibility
     Attribute_(const std::string &name, const T &payload)
         : Attribute(name, false)
         , payload_ (payload)
@@ -125,6 +189,13 @@ public:
     {
         hookable_ = false;
     }
+    DynAttribute_(Object* owner, const std::string &name, std::function<T()> getter)
+        : Attribute(name, false)
+        , getter_(getter)
+    {
+        hookable_ = false;
+        owner->addAttribute(this);
+    }
 
     // in this case, also write operations are delegated
     DynAttribute_(const std::string &name, std::function<T()> getter, std::function<std::string(T)> setter)
@@ -134,6 +205,40 @@ public:
     {
         hookable_ = false;
         writeable_ = true;
+    }
+
+    // each time a dynamic attribute is read, the getter_ is called in order to
+    // get the actual value. Here, we use C++-style member function pointers such that
+    // the type checker fills the template argument 'Owner' automatically
+    template <typename Owner>
+    DynAttribute_(Owner* owner, const std::string &name,
+                  // std::function<T(Owner*)> getter // this does not work!
+                  T (Owner::*getter)()
+                  )
+        : Attribute(name, false)
+        , getter_(std::bind(getter, owner))
+    {
+        hookable_ = false;
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
+        owner->addAttribute(this);
+    }
+    template <typename Owner>
+    DynAttribute_(Owner* owner, const std::string &name,
+                  T (Owner::*getter)(),
+                  std::string (Owner::*setter)(T)
+                  )
+        : Attribute(name, false)
+        , getter_(std::bind(getter, owner))
+        , setter_(std::bind(setter, owner, std::placeholders::_1))
+    {
+        hookable_ = false;
+        writeable_ = true;
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
+        owner->addAttribute(this);
     }
 
     Type type() override { return Attribute_<T>::staticType(); }

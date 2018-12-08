@@ -16,9 +16,9 @@ public:
     HSTag(std::string name, Settings* settings);
     ~HSTag() override;
     std::shared_ptr<HSFrame>        frame;  // the master frame
-    Attribute_<unsigned long> index = {"index", 0};
-    Attribute_<bool>         floating = {"floating", false};
-    Attribute_<std::string>  name = {"name", {}};   // name of this tag
+    Attribute_<unsigned long> index;
+    Attribute_<bool>         floating;
+    Attribute_<std::string>  name;   // name of this tag
     DynAttribute_<int> frame_count;
     DynAttribute_<int> client_count;
     DynAttribute_<int> curframe_windex;
@@ -31,6 +31,8 @@ private:
     int computeClientCount();
     //! get the number of clients on this tag
     int computeFrameCount();
+    //! check whether a name is valid and return error message otherwise
+    std::string validateNewName(std::string newName);
 };
 
 void tag_init();
