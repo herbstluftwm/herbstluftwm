@@ -12,6 +12,7 @@
 #include <cstring>
 #include <cstdio>
 #include <sys/types.h>
+#include <algorithm>
 
 /// TYPES ///
 
@@ -102,8 +103,10 @@ void rules_init() {
 }
 
 void rules_destroy() {
-    g_queue_foreach(&g_rules, (GFunc)rule_destroy, nullptr);
-    g_queue_clear(&g_rules);
+    for (auto rule : g_rules) {
+        rule_destroy(rule);
+    }
+    g_rules.clear();
 }
 
 // condition types //
@@ -316,22 +319,21 @@ static gint rule_compare_label(const HSRule* a, const HSRule* b) {
 
 // Looks up rules of a given label and removes them from the queue
 static bool rule_find_pop(char* label) {
-    GList* rule = { nullptr };
     bool status = false; // Will be returned as true if any is found
-    HSRule rule_find = { 0 };
-    rule_find.label = label;
-    while ((rule = g_queue_find_custom(&g_rules, &rule_find,
-                        (GCompareFunc)rule_compare_label))) {
-        // Check if rule with label exists
-        if ( rule == nullptr ) {
-            break;
+
+    auto hasMatchingLabel = [=] (HSRule *r) { return strcmp(r->label, label); };
+
+    // Note: This ugly loop will be obsolete once g_rules is a container of
+    // unique pointers.
+    for (auto rule : g_rules) {
+        if (hasMatchingLabel(rule)) {
+            rule_destroy(rule);
+            status = true;
         }
-        status = true;
-        // If so, clear data
-        rule_destroy((HSRule*)rule->data);
-        // Remove and free empty link
-        g_queue_delete_link(&g_rules, rule);
     }
+
+    g_rules.erase(std::remove_if(g_rules.begin(), g_rules.end(), hasMatchingLabel));
+
     return status;
 }
 
