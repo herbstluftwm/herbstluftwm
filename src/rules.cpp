@@ -244,7 +244,7 @@ bool HSRule::replaceLabel(char op, char* value, Output output) {
                 return false;
                 break;
             }
-            rule->label = value;
+            label = value;
             break;
         default:
             output << "rule: Unknown rule label operation \"" << op << "\"\n";
