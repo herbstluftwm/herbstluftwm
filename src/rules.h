@@ -44,7 +44,6 @@ class HSRule {
 public:
     HSRule();
     ~HSRule();
-
     std::string     label;
     HSCondition**   conditions = nullptr;
     int             condition_count = 0;
