@@ -18,9 +18,6 @@
 #include "client-utils.h"
 #include "../src/ipc-protocol.h"
 
-#define HERBSTCLIENT_VERSION_STRING \
-    "herbstclient " HERBSTLUFT_VERSION " (built on " __DATE__ ")\n"
-
 static void print_help(char* command, FILE* file);
 static void init_hook_regex(int argc, char* argv[]);
 static void destroy_hook_regex();
@@ -215,7 +212,7 @@ int main(int argc, char* argv[]) {
                 print_help(argv[0], stdout);
                 exit(EXIT_SUCCESS);
             case 'v':
-                fputs(HERBSTCLIENT_VERSION_STRING, stdout);
+                fputs("herbstclient " HERBSTLUFT_VERSION "\n", stdout);
                 exit(EXIT_SUCCESS);
             default:
                 exit(EXIT_FAILURE);

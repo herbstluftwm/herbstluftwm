@@ -7,7 +7,8 @@ See LICENSE for details.
 
 ==== Requirements ====
 Build dependencies:
-    - build-environment (gcc/other compiler, make)
+    - build environment (e.g. gcc, clang; make, ninja)
+    - CMake 3.1 or later
     - asciidoc (only when building from git, not when building from tarball)
     - a posix system with _POSIX_TIMERS and _POSIX_MONOTONIC_CLOCK or a system
       with a current mach kernel
@@ -40,35 +41,44 @@ software, then contact your system administrator.
 You only need to install it manually if you do not like package managers or if
 you are creating a package for your distribution.
 
-The compilation and installation is configured by the following make-variables
-in config.mk:
+The CMake build system is used. It is recommended to use an out-of-tree build
+directory. The compilation and installation is configured by the following CMake
+variables which you can set on the initial cmake call and alter with ccmake:
 
-DESTDIR = /                     # the path to your root-directory
-PREFIX = /usr/                  # the prefix
-SYSCONFDIR = $(DESTDIR)/etc/    # path to etc directory
+CMAKE_INSTALL_PREFIX   = /usr/            # the prefix
+CMAKE_INSTALL_SYSCONF_ = $(DESTDIR)/etc/  # path to etc directory
 
-Normally you should build it with DESTDIR=/ and install it with
-DESTDIR=./path/to/fakeroot if you are building a package.
+Individual paths for special files can be set with the *DIR variables, typically
+relative to CMAKE_INSTALL_PREFIX. If you are building package, you would
+typically build as usual, but install with DESTDIR=./path/to/fakeroot argument.
 
-    make DESTDIR=/
-    sudo make DESTDIR=./build/ install
+    make
+    sudo make DESTDIR=./pkg/ install
+ 
+To use the software locally, create your own autostart file:
+
     mkdir -p ~/.config/herbstluftwm/
     cp /etc/xdg/herbstluftwm/autostart ~/.config/herbstluftwm/autostart
 
 ==== First steps without installing ====
-1. compile it:
+1. create and switch to a build directory:
 
+    mkdir build; cd build
+
+2. compile:
+
+    cmake ../
     make
 
-2. copy herbstclient to a bin-folder or adjust path in autostart file
-3. copy default autostart file to the config-dir:
+3. copy herbstclient to a bin-folder or adjust path in autostart file
+4. copy default autostart file to the config-dir:
 
     mkdir -p ~/.config/herbstluftwm
     cp share/autostart ~/.config/herbstluftwm/
 
-4. add the share/herbstclient-completion to your /etc/bash_completion.d/ folder
+5. add the share/herbstclient-completion to your /etc/bash_completion.d/ folder
    or source it in your bashrc
-5. run it in a session that has no windowmanager yet
+6. run it in a session that has no windowmanager yet
 
 ==== Starting it ====
 Start it within a running X-session with:
