@@ -17,13 +17,35 @@ def test_object_tree(hlwm):
 
 
 def test_sprintf(hlwm):
-    cnt = hlwm.get_attr('tags.count')
-    wmname = hlwm.get_attr('settings.wmname')
-    printed = hlwm.call('sprintf X %s/%s tags.count settings.wmname echo X').stdout
-    hlwm.call_xfail('"sprintf X %s/%s tags.count settings.wmname"')
-    hlwm.call_xfail('"sprintf X %s/%s tags.count"')
-    assert printed == cnt + '/' + wmname + '\n'
-    assert '%\n' == hlwm.call('sprintf X %% echo X').stdout
+    expected_count = hlwm.get_attr('tags.count')
+    expected_wmname = hlwm.get_attr('settings.wmname')
+    expected_output = expected_count + '/' + expected_wmname + '\n'
+
+    call = hlwm.call('sprintf X %s/%s tags.count settings.wmname echo X')
+
+    assert call.stdout == expected_output
+
+
+def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
+    call = hlwm.call_xfail('sprintf X %s/%s tags.count echo X')
+
+    # FYI, before winterbreeze, this used to yield:
+    #   Unknown attribute "echo" in object "".
+    assert call.stderr == 'Object  has no attribute "echo"\n'
+
+
+def test_sprintf_too_few_attributes_in_total(hlwm):
+    call = hlwm.call_xfail('sprintf X %s/%s tags.count')
+
+    # FYI, before winterbreeze, this used to yield:
+    #   Error: Too few parameters. A 0th parameter missing. (treating "tags.count" as the command to execute)
+    assert call.stderr == 'sprintf: not enough arguments\n'
+
+
+def test_sprintf_double_percentage_escapes(hlwm):
+    call = hlwm.call('sprintf X %% echo X')
+
+    assert call.stdout == '%\n'
 
 
 def test_disjoint_rects(hlwm):
