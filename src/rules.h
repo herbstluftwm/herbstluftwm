@@ -51,6 +51,8 @@ public:
     int             consequence_count = 0;
     bool            once = false;
     time_t          birth_time; // timestamp of at creation
+
+    bool replaceLabel(char op, char* value, Output output);
 };
 
 typedef struct {

@@ -236,7 +236,7 @@ static void consequence_destroy(HSConsequence* cons) {
     g_free(cons);
 }
 
-static bool rule_label_replace(HSRule* rule, char op, char* value, Output output) {
+bool HSRule::replaceLabel(char op, char* value, Output output) {
     switch (op) {
         case '=':
             if (*value == '\0') {
@@ -244,8 +244,8 @@ static bool rule_label_replace(HSRule* rule, char op, char* value, Output output
                 return false;
                 break;
             }
-            g_free(rule->label);
-            rule->label = g_strdup(value);
+            g_free(label);
+            label = g_strdup(value);
             break;
         default:
             output << "rule: Unknown rule label operation \"" << op << "\"\n";
@@ -477,7 +477,7 @@ int rule_add_command(int argc, char** argv, Output output) {
 
         // Check for a provided label, and replace default index if so
         else if (consorcond && (!strcmp(name,"label"))) {
-            if (!rule_label_replace(rule, op, value, output)) {
+            if (!rule->replaceLabel(op, value, output)) {
                 delete rule;
                 return HERBST_INVALID_ARGUMENT;
             }
