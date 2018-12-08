@@ -85,3 +85,9 @@ def test_rule_labels_are_not_reused(hlwm, rules_count):
     # Remaining rule has a high label number (not zero)
     rules = hlwm.call('list_rules')
     assert rules.stdout == 'label={}\tclass=meh\ttag=moo\t\n'.format(rules_count)
+
+
+def test_cannot_use_invalid_operator_for_consequence(hlwm):
+    call = hlwm.call_xfail('rule', 'class=Foo', 'tag~bar')
+
+    assert call.stderr == 'rule: Unknown rule consequence operation "~"\n'
