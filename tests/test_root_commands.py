@@ -21,13 +21,13 @@ def test_sprintf(hlwm):
     expected_wmname = hlwm.get_attr('settings.wmname')
     expected_output = expected_count + '/' + expected_wmname + '\n'
 
-    call = hlwm.call('sprintf X %s/%s tags.count settings.wmname echo X')
+    call = hlwm.callstr('sprintf X %s/%s tags.count settings.wmname echo X')
 
     assert call.stdout == expected_output
 
 
 def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
-    call = hlwm.call_xfail('sprintf X %s/%s tags.count echo X')
+    call = hlwm.callstr_xfail('sprintf X %s/%s tags.count echo X')
 
     # FYI, before winterbreeze, this used to yield:
     #   Unknown attribute "echo" in object "".
@@ -35,7 +35,7 @@ def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
 
 
 def test_sprintf_too_few_attributes_in_total(hlwm):
-    call = hlwm.call_xfail('sprintf X %s/%s tags.count')
+    call = hlwm.callstr_xfail('sprintf X %s/%s tags.count')
 
     # FYI, before winterbreeze, this used to yield:
     #   Error: Too few parameters. A 0th parameter missing. (treating "tags.count" as the command to execute)
@@ -43,7 +43,7 @@ def test_sprintf_too_few_attributes_in_total(hlwm):
 
 
 def test_sprintf_double_percentage_escapes(hlwm):
-    call = hlwm.call('sprintf X %% echo X')
+    call = hlwm.callstr('sprintf X %% echo X')
 
     assert call.stdout == '%\n'
 
