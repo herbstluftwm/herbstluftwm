@@ -73,10 +73,3 @@ jobs:
           # the version provided by Ubuntu, so we use that one.
           dist: trusty
           before_install: CC=gcc-4.8 CXX=g++-4.8
-          addons:
-              apt:
-                  sources:
-                      - george-edison55-precise-backports
-                  packages:
-                      - cmake-data
-                      - cmake
