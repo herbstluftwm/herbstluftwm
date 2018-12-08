@@ -216,6 +216,9 @@ const char* strlasttoken(const char* str, const char* delim) {
     return str;
 }
 
+bool string_to_bool(const std::string& string, bool oldvalue) {
+    return string_to_bool_error(string.c_str(), oldvalue, nullptr);
+}
 
 bool string_to_bool(const char* string, bool oldvalue) {
     return string_to_bool_error(string, oldvalue, nullptr);

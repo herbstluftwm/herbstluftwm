@@ -206,34 +206,29 @@ static int find_consequence_type(const char* name) {
     return -1;
 }
 
-HSConsequence* consequence_create(int type, char op, char* value, Output output) {
+/**
+ * Add consequence to this rule.
+ *
+ * @retval false if the consequence cannot be added (malformed)
+ */
+bool HSRule::addConsequence(int type, char op, char* value, Output output) {
     HSConsequence cons;
     switch (op) {
         case '=':
             cons.value_type = CONSEQUENCE_VALUE_TYPE_STRING;
-            cons.value.str = g_strdup(value);
+            cons.value = value;
             break;
 
         default:
             output << "rule: Unknown rule consequence operation \"" << op << "\"\n";
-            return nullptr;
+            return false;
             break;
     }
 
     cons.type = type;
-    // move to heap
-    HSConsequence* ptr = g_new(HSConsequence, 1);
-    *ptr = cons;
-    return ptr;
-}
 
-static void consequence_destroy(HSConsequence* cons) {
-    switch (cons->value_type) {
-        case CONSEQUENCE_VALUE_TYPE_STRING:
-            g_free(cons->value.str);
-            break;
-    }
-    g_free(cons);
+    consequences.push_back(cons);
+    return true;
 }
 
 bool HSRule::replaceLabel(char op, char* value, Output output) {
@@ -267,11 +262,6 @@ HSRule::~HSRule() {
         condition_destroy(conditions[i]);
     }
     g_free(conditions);
-    // free consequences
-    for (int i = 0; i < consequence_count; i++) {
-        consequence_destroy(consequences[i]);
-    }
-    g_free(consequences);
 }
 
 void rule_complete(int argc, char** argv, int pos, Output output) {
@@ -348,9 +338,9 @@ static void rule_print_append_output(HSRule* rule, std::ostream* ptr_output) {
         }
     }
     // Append consequences
-    for (int i = 0; i < rule->consequence_count; i++) {
-        output << g_consequence_types[rule->consequences[i]->type].name
-               << "=" << rule->consequences[i]->value.str << "\t";
+    for (auto const& cons : rule->consequences) {
+        output << g_consequence_types[cons.type].name
+               << "=" << cons.value << "\t";
     }
     // Print new line
     output << '\n';
@@ -396,14 +386,6 @@ static void rule_add_condition(HSRule* rule, HSCondition* cond) {
     rule->condition_count++;
 }
 
-static void rule_add_consequence(HSRule* rule, HSConsequence* cons) {
-    rule->consequences = g_renew(HSConsequence*,
-                               rule->consequences, rule->consequence_count + 1);
-    rule->consequences[rule->consequence_count] = cons;
-    rule->consequence_count++;
-}
-
-
 int rule_add_command(int argc, char** argv, Output output) {
     // usage: rule COND=VAL ... then
 
@@ -413,7 +395,6 @@ int rule_add_command(int argc, char** argv, Output output) {
     // temporary data structures
     HSRule* rule = new HSRule();
     HSCondition* cond;
-    HSConsequence* cons;
     bool printlabel = false;
     bool negated = false;
     bool prepend = false;
@@ -464,12 +445,11 @@ int rule_add_command(int argc, char** argv, Output output) {
         }
 
         else if (consorcond && (type = find_consequence_type(name)) >= 0) {
-            cons = consequence_create(type, op, value, output);
-            if (!cons) {
+            bool success = rule->addConsequence(type, op, value, output);
+            if (!success) {
                 delete rule;
                 return HERBST_INVALID_ARGUMENT;
             }
-            rule_add_consequence(rule, cons);
         }
 
         // Check for a provided label, and replace default index if so
@@ -593,12 +573,10 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
 
         if (rule_match) {
             // apply all consequences
-            for (int i = 0; i < rule->consequence_count; i++) {
-                int type = rule->consequences[i]->type;
-                g_consequence_types[type].
-                    apply(rule->consequences[i], client, changes);
+            for (auto & cons : rule->consequences) {
+                g_consequence_types[cons.type].
+                    apply(&cons, client, changes);
             }
-
         }
 
         // remove it if not wanted or needed anymore
@@ -745,59 +723,59 @@ static bool condition_windowrole(HSCondition* rule, HSClient* client) {
 void consequence_tag(HSConsequence* cons,
                      HSClient* client, HSClientChanges* changes) {
     if (changes->tag_name) {
-        g_string_assign(changes->tag_name, cons->value.str);
+        g_string_assign(changes->tag_name, cons->value.c_str());
     } else {
-        changes->tag_name = g_string_new(cons->value.str);
+        changes->tag_name = g_string_new(cons->value.c_str());
     }
 }
 
 void consequence_focus(HSConsequence* cons, HSClient* client,
                        HSClientChanges* changes) {
-    changes->focus = string_to_bool(cons->value.str, changes->focus);
+    changes->focus = string_to_bool(cons->value, changes->focus);
 }
 
 void consequence_manage(HSConsequence* cons, HSClient* client,
                         HSClientChanges* changes) {
-    changes->manage = string_to_bool(cons->value.str, changes->manage);
+    changes->manage = string_to_bool(cons->value, changes->manage);
 }
 
 void consequence_index(HSConsequence* cons, HSClient* client,
                                HSClientChanges* changes) {
-    g_string_assign(changes->tree_index, cons->value.str);
+    g_string_assign(changes->tree_index, cons->value.c_str());
 }
 
 void consequence_pseudotile(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
-    client->pseudotile_ = string_to_bool(cons->value.str, client->pseudotile_);
+    client->pseudotile_ = string_to_bool(cons->value, client->pseudotile_);
 }
 
 void consequence_fullscreen(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
-    changes->fullscreen = string_to_bool(cons->value.str, changes->fullscreen);
+    changes->fullscreen = string_to_bool(cons->value, changes->fullscreen);
 }
 
 void consequence_switchtag(HSConsequence* cons, HSClient* client,
                            HSClientChanges* changes) {
-    changes->switchtag = string_to_bool(cons->value.str, changes->switchtag);
+    changes->switchtag = string_to_bool(cons->value, changes->switchtag);
 }
 
 void consequence_ewmhrequests(HSConsequence* cons, HSClient* client,
                               HSClientChanges* changes) {
     // this is only a flag that is unused during initialization (during
     // manage()) and so can be directly changed in the client
-    client->ewmhrequests_ = string_to_bool(cons->value.str, client->ewmhrequests_);
+    client->ewmhrequests_ = string_to_bool(cons->value, client->ewmhrequests_);
 }
 
 void consequence_ewmhnotify(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
-    client->ewmhnotify_ = string_to_bool(cons->value.str, client->ewmhnotify_);
+    client->ewmhnotify_ = string_to_bool(cons->value, client->ewmhnotify_);
 }
 
 void consequence_hook(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
     GString* winid = g_string_sized_new(20);
     g_string_printf(winid, "0x%lx", client->window_);
-    const char* hook_str[] = { "rule" , cons->value.str, winid->str };
+    const char* hook_str[] = { "rule" , cons->value.c_str(), winid->str };
     hook_emit(LENGTH(hook_str), hook_str);
     g_string_free(winid, true);
 }
@@ -805,17 +783,17 @@ void consequence_hook(HSConsequence* cons, HSClient* client,
 void consequence_keymask(HSConsequence* cons,
                          HSClient* client, HSClientChanges* changes) {
     if (changes->keymask) {
-        g_string_assign(changes->keymask, cons->value.str);
+        g_string_assign(changes->keymask, cons->value.c_str());
     } else {
-        changes->keymask = g_string_new(cons->value.str);
+        changes->keymask = g_string_new(cons->value.c_str());
     }
 }
 
 void consequence_monitor(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
     if (changes->monitor_name) {
-        g_string_assign(changes->monitor_name, cons->value.str);
+        g_string_assign(changes->monitor_name, cons->value.c_str());
     } else {
-        changes->monitor_name = g_string_new(cons->value.str);
+        changes->monitor_name = g_string_new(cons->value.c_str());
     }
 }
