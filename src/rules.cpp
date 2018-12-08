@@ -12,6 +12,8 @@
 #include <cstring>
 #include <cstdio>
 #include <sys/types.h>
+#include <list>
+#include <algorithm>
 
 /// TYPES ///
 
@@ -92,7 +94,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "monitor",        consequence_monitor         },
 };
 
-static GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
+static std::list<HSRule *> g_rules;
 
 /// FUNCTIONS ///
 // RULES //
@@ -102,8 +104,10 @@ void rules_init() {
 }
 
 void rules_destroy() {
-    g_queue_foreach(&g_rules, (GFunc)rule_destroy, nullptr);
-    g_queue_clear(&g_rules);
+    for (auto rule : g_rules) {
+        rule_destroy(rule);
+    }
+    g_rules.clear();
 }
 
 // condition types //
@@ -309,29 +313,24 @@ void rule_complete(int argc, char** argv, int pos, Output output) {
     g_string_free(buf, true);
 }
 
-// Compares the id of two rules.
-static gint rule_compare_label(const HSRule* a, const HSRule* b) {
-    return strcmp(a->label, b->label);
-}
-
 // Looks up rules of a given label and removes them from the queue
 static bool rule_find_pop(char* label) {
-    GList* rule = { nullptr };
     bool status = false; // Will be returned as true if any is found
-    HSRule rule_find = { 0 };
-    rule_find.label = label;
-    while ((rule = g_queue_find_custom(&g_rules, &rule_find,
-                        (GCompareFunc)rule_compare_label))) {
-        // Check if rule with label exists
-        if ( rule == nullptr ) {
-            break;
+
+    // Note: This ugly loop can be replaced by a single std::erase statement
+    // once g_rules is a container of unique pointers.
+    auto ruleIter = g_rules.begin();
+    while (ruleIter != g_rules.end()) {
+        auto rule = *ruleIter;
+        if (!strcmp(rule->label, label)) {
+            rule_destroy(rule);
+            status = true;
+            ruleIter = g_rules.erase(ruleIter);
+        } else {
+            ruleIter++;
         }
-        status = true;
-        // If so, clear data
-        rule_destroy((HSRule*)rule->data);
-        // Remove and free empty link
-        g_queue_delete_link(&g_rules, rule);
     }
+
     return status;
 }
 
@@ -368,7 +367,9 @@ static void rule_print_append_output(HSRule* rule, std::ostream* ptr_output) {
 
 int rule_print_all_command(int argc, char** argv, Output output) {
     // Print entry for each in the queue
-    g_queue_foreach(&g_rules, (GFunc)rule_print_append_output, &output);
+    for (auto rule : g_rules) {
+        rule_print_append_output(rule, &output);
+    }
     return 0;
 }
 
@@ -500,8 +501,8 @@ int rule_add_command(int argc, char** argv, Output output) {
        output << rule->label << "\n";
     }
 
-    if (prepend) g_queue_push_head(&g_rules, rule);
-    else         g_queue_push_tail(&g_rules, rule);
+    if (prepend) g_rules.push_front(rule);
+    else         g_rules.push_back(rule);
     return 0;
 }
 
@@ -513,10 +514,8 @@ void complete_against_rule_names(int argc, char** argv, int pos, Output output) 
         needle = argv[pos];
     }
     // Complete labels
-    GList* cur_rule = g_queue_peek_head_link(&g_rules);
-    while (cur_rule != nullptr) {
-        try_complete(needle, ((HSRule*)cur_rule->data)->label, output);
-        cur_rule = g_list_next(cur_rule);
+    for (auto rule : g_rules) {
+        try_complete(needle, rule->label, output);
     }
 }
 
@@ -528,8 +527,8 @@ int rule_remove_command(int argc, char** argv, Output output) {
 
     if (!strcmp(argv[1], "--all") || !strcmp(argv[1], "-F")) {
         // remove all rules
-        g_queue_foreach(&g_rules, (GFunc)rule_destroy, nullptr);
-        g_queue_clear(&g_rules);
+        std::for_each(g_rules.begin(), g_rules.end(), rule_destroy);
+        g_rules.clear();
         g_rule_label_index = 0;
         return 0;
     }
@@ -568,9 +567,9 @@ void client_changes_free_members(HSClientChanges* changes) {
 
 // apply all rules to a certain client an save changes
 void rules_apply(HSClient* client, HSClientChanges* changes) {
-    GList* cur = g_rules.head;
-    while (cur) {
-        HSRule* rule = (HSRule*)cur->data;
+    auto ruleIter = g_rules.begin();
+    while (ruleIter != g_rules.end()) {
+        auto rule = *ruleIter;
         bool matches = true;    // if current condition matches
         bool rule_match = true; // if entire rule matches
         bool rule_expired = false;
@@ -614,15 +613,12 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
 
         // remove it if not wanted or needed anymore
         if ((rule_match && rule->once) || rule_expired) {
-            GList* next = cur->next;
-            rule_destroy((HSRule*)cur->data);
-            g_queue_remove_element(&g_rules, cur);
-            cur = next;
-            continue;
+            rule_destroy(rule);
+            ruleIter = g_rules.erase(ruleIter);
+        } else {
+            // try next
+            ruleIter++;
         }
-
-        // try next
-        cur = cur ? cur->next : nullptr;
     }
 }
 
