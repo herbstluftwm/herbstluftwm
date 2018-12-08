@@ -105,7 +105,7 @@ void rules_init() {
 
 void rules_destroy() {
     for (auto rule : g_rules) {
-        rule_destroy(rule);
+        delete rule;
     }
     g_rules.clear();
 }
@@ -257,30 +257,25 @@ static bool rule_label_replace(HSRule* rule, char op, char* value, Output output
 
 // rules parsing //
 
-HSRule* rule_create() {
-    HSRule* rule = g_new0(HSRule, 1);
-    rule->once = false;
-    rule->birth_time = get_monotonic_timestamp();
-    // Add name. Defaults to index number.
-    rule->label = g_strdup_printf("%llu", g_rule_label_index++);
-    return rule;
-}
+HSRule::HSRule()
+    : label(g_strdup_printf("%llu", g_rule_label_index++)) // name defaults to index number
+    , once(false)
+    , birth_time(get_monotonic_timestamp())
+{}
 
-void rule_destroy(HSRule* rule) {
+HSRule::~HSRule() {
     // free conditions
-    for (int i = 0; i < rule->condition_count; i++) {
-        condition_destroy(rule->conditions[i]);
+    for (int i = 0; i < condition_count; i++) {
+        condition_destroy(conditions[i]);
     }
-    g_free(rule->conditions);
+    g_free(conditions);
     // free consequences
-    for (int i = 0; i < rule->consequence_count; i++) {
-        consequence_destroy(rule->consequences[i]);
+    for (int i = 0; i < consequence_count; i++) {
+        consequence_destroy(consequences[i]);
     }
-    g_free(rule->consequences);
+    g_free(consequences);
     // free label
-    g_free(rule->label);
-    // free rule itself
-    g_free(rule);
+    g_free(label);
 }
 
 void rule_complete(int argc, char** argv, int pos, Output output) {
@@ -323,7 +318,7 @@ static bool rule_find_pop(char* label) {
     // unique pointers.
     for (auto rule : g_rules) {
         if (hasMatchingLabel(rule)) {
-            rule_destroy(rule);
+            delete rule;
             status = true;
         }
     }
@@ -419,7 +414,7 @@ int rule_add_command(int argc, char** argv, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     // temporary data structures
-    HSRule* rule = rule_create();
+    HSRule* rule = new HSRule();
     HSCondition* cond;
     HSConsequence* cons;
     bool printlabel = false;
@@ -463,7 +458,7 @@ int rule_add_command(int argc, char** argv, Output output) {
         else if (consorcond && (type = find_condition_type(name)) >= 0) {
             cond = condition_create(type, op, value, output);
             if (!cond) {
-                rule_destroy(rule);
+                delete rule;
                 return HERBST_INVALID_ARGUMENT;
             }
             cond->negated = negated;
@@ -474,7 +469,7 @@ int rule_add_command(int argc, char** argv, Output output) {
         else if (consorcond && (type = find_consequence_type(name)) >= 0) {
             cons = consequence_create(type, op, value, output);
             if (!cons) {
-                rule_destroy(rule);
+                delete rule;
                 return HERBST_INVALID_ARGUMENT;
             }
             rule_add_consequence(rule, cons);
@@ -483,7 +478,7 @@ int rule_add_command(int argc, char** argv, Output output) {
         // Check for a provided label, and replace default index if so
         else if (consorcond && (!strcmp(name,"label"))) {
             if (!rule_label_replace(rule, op, value, output)) {
-                rule_destroy(rule);
+                delete rule;
                 return HERBST_INVALID_ARGUMENT;
             }
         }
@@ -491,7 +486,7 @@ int rule_add_command(int argc, char** argv, Output output) {
         else {
             // need to hardcode "rule:" here because args are shifted
             output << "rule: Unknown argument \"" << *argv << "\"\n";
-            rule_destroy(rule);
+            delete rule;
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -526,8 +521,7 @@ int rule_remove_command(int argc, char** argv, Output output) {
 
     if (!strcmp(argv[1], "--all") || !strcmp(argv[1], "-F")) {
         // remove all rules
-        std::for_each(g_rules.begin(), g_rules.end(), rule_destroy);
-        g_rules.clear();
+        rules_destroy();
         g_rule_label_index = 0;
         return 0;
     }
@@ -612,7 +606,7 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
 
         // remove it if not wanted or needed anymore
         if ((rule_match && rule->once) || rule_expired) {
-            rule_destroy(rule);
+            delete rule;
             ruleIter = g_rules.erase(ruleIter);
         } else {
             // try next

@@ -40,7 +40,10 @@ typedef struct {
     } value;
 } HSConsequence;
 
-typedef struct {
+class HSRule {
+public:
+    HSRule();
+    ~HSRule();
     char*           label;
     HSCondition**   conditions;
     int             condition_count;
@@ -48,7 +51,7 @@ typedef struct {
     int             consequence_count;
     bool            once;
     time_t          birth_time; // timestamp of at creation
-} HSRule;
+};
 
 typedef struct {
     GString*        tag_name;
@@ -68,9 +71,6 @@ void rules_apply(HSClient* client, HSClientChanges* changes);
 
 void client_changes_init(HSClientChanges* changes, HSClient* client);
 void client_changes_free_members(HSClientChanges* changes);
-
-HSRule* rule_create();
-void rule_destroy(HSRule* rule);
 
 void rule_complete(int argc, char** argv, int pos, Output output);
 
