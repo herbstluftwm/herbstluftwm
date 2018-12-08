@@ -92,7 +92,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "monitor",        consequence_monitor         },
 };
 
-static GQueue g_rules = G_QUEUE_INIT; // a list of HSRule* elements
+static std::vector<HSRule *> g_rules; // or std::queue?
 
 /// FUNCTIONS ///
 // RULES //
