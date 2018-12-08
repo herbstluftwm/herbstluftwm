@@ -244,8 +244,7 @@ bool HSRule::replaceLabel(char op, char* value, Output output) {
                 return false;
                 break;
             }
-            g_free(label);
-            label = g_strdup(value);
+            rule->label = value;
             break;
         default:
             output << "rule: Unknown rule label operation \"" << op << "\"\n";
@@ -259,7 +258,7 @@ bool HSRule::replaceLabel(char op, char* value, Output output) {
 
 HSRule::HSRule() {
     birth_time = get_monotonic_timestamp();
-    label = g_strdup_printf("%llu", g_rule_label_index++); // name defaults to index number
+    label = std::to_string(g_rule_label_index++); // label defaults to index number
 }
 
 HSRule::~HSRule() {
@@ -273,8 +272,6 @@ HSRule::~HSRule() {
         consequence_destroy(consequences[i]);
     }
     g_free(consequences);
-    // free label
-    g_free(label);
 }
 
 void rule_complete(int argc, char** argv, int pos, Output output) {
@@ -316,7 +313,7 @@ static bool rule_find_pop(char* label) {
     auto ruleIter = g_rules.begin();
     while (ruleIter != g_rules.end()) {
         auto rule = *ruleIter;
-        if (!strcmp(rule->label, label)) {
+        if (rule->label == label) {
             delete rule;
             status = true;
             ruleIter = g_rules.erase(ruleIter);
@@ -509,7 +506,7 @@ void complete_against_rule_names(int argc, char** argv, int pos, Output output) 
     }
     // Complete labels
     for (auto rule : g_rules) {
-        try_complete(needle, rule->label, output);
+        try_complete(needle, rule->label.c_str(), output);
     }
 }
 

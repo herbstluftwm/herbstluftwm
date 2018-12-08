@@ -44,7 +44,7 @@ class HSRule {
 public:
     HSRule();
     ~HSRule();
-    char*           label = nullptr;
+    std::string     label;
     HSCondition**   conditions = nullptr;
     int             condition_count = 0;
     HSConsequence** consequences = nullptr;
