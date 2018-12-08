@@ -4,14 +4,16 @@ python: "3.7"
 install:
     - sudo apt-get -y -q update
     - sudo apt-get -y -q build-dep herbstluftwm
+    - sudo apt-get -y -q install cmake
     - sudo apt-get -y -q install dzen2
 
 script:
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
     - echo Using $CC / $CXX
+    - cmake -DCMAKE_INSTALL_PREFIX=/usr
     - make -j2
-    - sudo make PREFIX=/usr install
+    - sudo make install
     - herbstluftwm &
     - hlwmpid=$!
     - sleep 1
@@ -42,6 +44,7 @@ jobs:
                       - tox
           script:
               - echo Using $CC / $CXX
+              - cmake
               - make -j2
               - tox
 
@@ -70,3 +73,10 @@ jobs:
           # the version provided by Ubuntu, so we use that one.
           dist: trusty
           before_install: CC=gcc-4.8 CXX=g++-4.8
+          addons:
+              apt:
+                  sources:
+                      - george-edison55-precise-backports
+                  packages:
+                      - cmake-data
+                      - cmake
