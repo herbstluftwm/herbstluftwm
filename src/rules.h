@@ -35,24 +35,22 @@ typedef struct {
 typedef struct {
     int     type;
     int value_type;
-    union {
-        char*       str;
-    } value;
+    std::string value;
 } HSConsequence;
 
 class HSRule {
 public:
     HSRule();
     ~HSRule();
-    std::string     label;
-    HSCondition**   conditions = nullptr;
-    int             condition_count = 0;
-    HSConsequence** consequences = nullptr;
-    int             consequence_count = 0;
-    bool            once = false;
-    time_t          birth_time; // timestamp of at creation
+    std::string label;
+    HSCondition** conditions = nullptr;
+    int condition_count = 0;
+    std::vector<HSConsequence> consequences;
+    bool once = false;
+    time_t birth_time; // timestamp of at creation
 
     bool replaceLabel(char op, char* value, Output output);
+    bool addConsequence(int type, char op, char* value, Output output);
 };
 
 typedef struct {
