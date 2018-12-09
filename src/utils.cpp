@@ -389,13 +389,15 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     //
     //   ██████████████████████████  ██
 
-    XRectangle rectangles[] =
-    {
-        { width, 0, ibw, height + ibw },
-        { full_width - ibw, 0, ibw, height + ibw },
-        { 0, height, width + ibw, ibw },
-        { 0, full_height - ibw, width + ibw, ibw },
-        { full_width - ibw, full_height - ibw, ibw, ibw }
+    // use intermediates for casting (to avoid narrowing)
+    short fw_ibw = full_width - ibw, fh_ibw = full_height - ibw;
+    unsigned short uibw = ibw, h_ibw = height + ibw, w_ibw = width + ibw;
+    std::vector<XRectangle> rectangles{
+        { (short)width, 0, uibw, h_ibw },
+        { fw_ibw, 0, uibw, h_ibw },
+        { 0, (short)height, w_ibw, uibw },
+        { 0, fh_ibw, w_ibw, uibw },
+        { fw_ibw, fh_ibw, uibw, uibw }
     };
 
     Pixmap pix = XCreatePixmap(dpy, win, full_width, full_height, depth);
@@ -407,7 +409,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
 
     /* inner border */
     XSetForeground(dpy, gc, inner_color);
-    XFillRectangles(dpy, pix, gc, rectangles, LENGTH(rectangles));
+    XFillRectangles(dpy, pix, gc, &rectangles.front(), rectangles.size());
 
     XSetWindowBorderPixmap(dpy, win, pix);
     XFreeGC(dpy, gc);

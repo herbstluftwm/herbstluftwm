@@ -110,9 +110,9 @@ void ewmh_init() {
     ewmh_update_wmname();
 
     /* init atoms that never change */
-    int buf[] = { 0, 0 };
+    std::vector<int> buf{ 0, 0 };
     XChangeProperty(g_display, g_root, g_netatom[NetDesktopViewport],
-        XA_CARDINAL, 32, PropModeReplace, (unsigned char *) buf, LENGTH(buf));
+        XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&buf.front(), buf.size());
 }
 
 void ewmh_update_all() {
@@ -489,9 +489,9 @@ void ewmh_set_window_opacity(Window win, double opacity) {
                     32, PropModeReplace, (unsigned char*)&int_opacity, 1);
 }
 void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom) {
-    long extents[] = { left, right, top, bottom };
+    std::vector<long> extents = { left, right, top, bottom };
     XChangeProperty(g_display, win, g_netatom[NetFrameExtents], XA_CARDINAL,
-                    32, PropModeReplace, (unsigned char*)extents, LENGTH(extents));
+                    32, PropModeReplace, (unsigned char*)&extents.front(), extents.size());
 }
 
 void window_update_wm_state(Window win, WmState state) {
