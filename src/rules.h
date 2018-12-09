@@ -22,14 +22,11 @@ typedef struct {
     int condition_type;
     int value_type;
     bool negated;
-    union {
-        char*       str;
-        struct {
-            regex_t     exp;
-            char*       str;
-        } reg;
-        int         integer;
-    } value;
+
+    std::string value_str;
+    int value_integer;
+    regex_t value_reg_exp;
+    std::string value_reg_str;
 } HSCondition;
 
 typedef struct {
@@ -43,14 +40,14 @@ public:
     HSRule();
     ~HSRule();
     std::string label;
-    HSCondition** conditions = nullptr;
-    int condition_count = 0;
+    std::vector<HSCondition> conditions;
     std::vector<HSConsequence> consequences;
     bool once = false;
     time_t birth_time; // timestamp of at creation
 
     bool replaceLabel(char op, char* value, Output output);
     bool addConsequence(int type, char op, char* value, Output output);
+    bool addCondition(int type, char op, char* value, Output output);
 };
 
 typedef struct {
