@@ -3,6 +3,14 @@
 #include "ipc-protocol.h"
 
 /*!
+ * Implements the "rule" IPC command
+ */
+int RuleManager::addRuleCommand(Input input, Output output) {
+    // not implemented yet (add more tests first)
+    return -1;
+}
+
+/*!
  * Removes all rules with the given label
  *
  * \returns number of removed rules

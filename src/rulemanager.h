@@ -13,6 +13,7 @@ extern unsigned long long g_rule_label_index; // incremental index of rule label
 
 class RuleManager : public Object {
 public:
+    int addRuleCommand(Input input, Output output);
     int unruleCommand(Input input, Output output);
     int listRulesCommand(Input input, Output output);
 
