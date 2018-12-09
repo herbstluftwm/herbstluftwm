@@ -57,7 +57,6 @@ target_sources(herbstluftwm PRIVATE
 set_target_properties(herbstluftwm PROPERTIES
 	CXX_STANDARD 11
 	CXX_STANDARD_REQUIRED ON)
-add_debugflags(herbstluftwm)
 
 ## options
 include(CMakeDependentOption)

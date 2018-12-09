@@ -47,18 +47,33 @@ function (export_version SOURCEFILE)
 endfunction()
 
 # add custom build flags to the DEBUG build type
-function (add_debugflags TARGET)
+function (add_debugflags)
 	set(FLAGS
-		-Og
+		-g -Og
 		-pedantic -Wall -Werror
 		-Wno-sign-compare -Wno-narrowing -Wno-error=cast-function-type
 		-fsanitize=address,leak,undefined
 		-fno-omit-frame-pointer)
-	list(TRANSFORM FLAGS PREPEND "$<$<CONFIG:Debug>:")
-	list(TRANSFORM FLAGS APPEND ">")
-	target_compile_options(${TARGET} PRIVATE ${FLAGS})
-	# note: CMake up to 3.12 does not have target_link_options()
-	target_link_libraries(${TARGET} PRIVATE ${FLAGS})
+	string(REPLACE ";" " " FLAGS "${FLAGS}")
+	
+	# Note: it is discouraged in CMake to alter these variables, but instead you
+	# should set flags on the target. However, those flags are hidden from the
+	# user. In our case, we want the user to be able to see and alter the
+	# flags of the build type.
+	
+	set(TYPES C;CXX;EXE_LINKER)
+	foreach (TYPE ${TYPES})
+		set(VAR "CMAKE_${TYPE}_FLAGS_DEBUG")
+		
+		# Note: we need to apply FORCE for our flags to override the default,
+		# but we don't want to override user changes. So we only override if
+		# empty or default ("-g")
+		string(COMPARE EQUAL "${${VAR}}" "-g" ISDEFAULT)
+		if (NOT ${VAR} OR "${ISDEFAULT}")
+			set(${VAR} ${FLAGS} CACHE STRING
+			"Flags used during DEBUG builds." FORCE)
+		endif()
+	endforeach()
 endfunction()
 
 ## install variables
@@ -83,6 +98,7 @@ set(BASHCOMPLETIONDIR ${CMAKE_INSTALL_SYSCONF_PREFIX}/bash_completion.d
 ## do the actual work
 get_external_deps()
 set_gitversion()
+add_debugflags()
 add_subdirectory(ipc-client)
 add_subdirectory(src)
 add_subdirectory(doc)
