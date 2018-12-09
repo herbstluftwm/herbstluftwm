@@ -283,6 +283,38 @@ static bool rule_find_pop(char* label) {
     return status;
 }
 
+void HSRule::print(Output output) {
+    output << "label=" << label << "\t";
+
+    // Append conditions
+    for (auto const& cond : conditions) {
+        if (cond.negated) {
+            output << "not\t";
+        }
+        output << g_condition_types[cond.condition_type].name << "=";
+        switch (cond.value_type) {
+            case CONDITION_VALUE_TYPE_STRING:
+                output << cond.value_str << "\t";
+                break;
+            case CONDITION_VALUE_TYPE_REGEX:
+                output << cond.value_reg_str << "\t";
+                break;
+            default: /* CONDITION_VALUE_TYPE_INTEGER: */
+                output << cond.value_integer << "\t";
+                break;
+        }
+    }
+
+    // Append consequences
+    for (auto const& cons : consequences) {
+        output << g_consequence_types[cons.type].name
+            << "=" << cons.value << "\t";
+    }
+
+    // Append separating or final newline
+    output << '\n';
+}
+
 // parses an arg like NAME=VALUE to res_name, res_operation and res_value
 bool tokenize_arg(char* condition,
                   char** res_name, char* res_operation, char** res_value) {

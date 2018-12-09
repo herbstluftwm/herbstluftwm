@@ -48,6 +48,8 @@ public:
     bool replaceLabel(char op, char* value, Output output);
     bool addConsequence(int type, char op, char* value, Output output);
     bool addCondition(int type, char op, char* value, Output output);
+
+    void print(Output output);
 };
 
 typedef struct {
