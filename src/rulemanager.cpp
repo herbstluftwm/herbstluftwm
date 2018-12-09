@@ -11,31 +11,6 @@ int RuleManager::addRuleCommand(Input input, Output output) {
 }
 
 /*!
- * Removes all rules with the given label
- *
- * \returns number of removed rules
- */
-size_t RuleManager::removeRule(std::string label) {
-    size_t removedCount = 0;
-
-    // Note: This ugly loop can be replaced by a single std::erase statement
-    // once g_rules is a container of unique pointers.
-    auto ruleIter = g_rules.begin();
-    while (ruleIter != g_rules.end()) {
-        auto rule = *ruleIter;
-        if (rule->label == label) {
-            delete rule;
-            removedCount++;
-            ruleIter = g_rules.erase(ruleIter);
-        } else {
-            ruleIter++;
-        }
-    }
-
-    return removedCount;
-}
-
-/*!
  * Implements the "unrule" IPC command
  */
 int RuleManager::unruleCommand(Input input, Output output) {
@@ -70,4 +45,29 @@ int RuleManager::listRulesCommand(Input input, Output output) {
     }
 
     return HERBST_EXIT_SUCCESS;
+}
+
+/*!
+ * Removes all rules with the given label
+ *
+ * \returns number of removed rules
+ */
+size_t RuleManager::removeRule(std::string label) {
+    size_t removedCount = 0;
+
+    // Note: This ugly loop can be replaced by a single std::erase statement
+    // once g_rules is a container of unique pointers.
+    auto ruleIter = g_rules.begin();
+    while (ruleIter != g_rules.end()) {
+        auto rule = *ruleIter;
+        if (rule->label == label) {
+            delete rule;
+            removedCount++;
+            ruleIter = g_rules.erase(ruleIter);
+        } else {
+            ruleIter++;
+        }
+    }
+
+    return removedCount;
 }
