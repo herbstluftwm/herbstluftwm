@@ -281,16 +281,16 @@ void HSRule::print(Output output) {
         if (cond.negated) {
             output << "not\t";
         }
-        output << g_condition_types[cond.condition_type].name << "=";
+        output << g_condition_types[cond.condition_type].name;
         switch (cond.value_type) {
             case CONDITION_VALUE_TYPE_STRING:
-                output << cond.value_str << "\t";
+                output << "=" << cond.value_str << "\t";
                 break;
             case CONDITION_VALUE_TYPE_REGEX:
-                output << cond.value_reg_str << "\t";
+                output << "~" << cond.value_reg_str << "\t";
                 break;
             default: /* CONDITION_VALUE_TYPE_INTEGER: */
-                output << cond.value_integer << "\t";
+                output << "=" cond.value_integer << "\t";
                 break;
         }
     }
