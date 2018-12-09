@@ -43,14 +43,14 @@ public:
     HSRule();
     ~HSRule();
     std::string label;
-    HSCondition** conditions = nullptr;
-    int condition_count = 0;
+    std::vector<HSCondition> conditions;
     std::vector<HSConsequence> consequences;
     bool once = false;
     time_t birth_time; // timestamp of at creation
 
     bool replaceLabel(char op, char* value, Output output);
     bool addConsequence(int type, char op, char* value, Output output);
+    bool addCondition(int type, char op, char* value, Output output);
 };
 
 typedef struct {
