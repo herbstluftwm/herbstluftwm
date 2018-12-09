@@ -392,8 +392,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     // use intermediates for casting (to avoid narrowing)
     short fw_ibw = full_width - ibw, fh_ibw = full_height - ibw;
     unsigned short uibw = ibw, h_ibw = height + ibw, w_ibw = width + ibw;
-    XRectangle rectangles[] =
-    {
+    std::vector<XRectangle> rectangles{
         { (short)width, 0, uibw, h_ibw },
         { fw_ibw, 0, uibw, h_ibw },
         { 0, (short)height, w_ibw, uibw },
@@ -410,7 +409,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
 
     /* inner border */
     XSetForeground(dpy, gc, inner_color);
-    XFillRectangles(dpy, pix, gc, rectangles, LENGTH(rectangles));
+    XFillRectangles(dpy, pix, gc, &rectangles.front(), rectangles.size());
 
     XSetWindowBorderPixmap(dpy, win, pix);
     XFreeGC(dpy, gc);
