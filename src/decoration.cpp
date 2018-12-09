@@ -197,22 +197,13 @@ HSClient* Decoration::toClient(Window decoration_window)
 }
 
 Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect) const {
-    return {
-        rect.x + *border_width + *padding_left,
-        rect.y + *border_width + *padding_top,
-        rect.width  - 2* *border_width - *padding_left - *padding_right,
-        rect.height - 2* *border_width - *padding_top - *padding_bottom
-    };
+    return rect.adjusted(-*border_width, -*border_width)
+            .adjusted(-*padding_left, -*padding_top, -*padding_right, -*padding_bottom);
 }
 
 Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect) const {
-	unsigned long bw = *border_width;
-    return {
-        rect.x - bw - *padding_left,
-        rect.y - bw - *padding_top,
-        rect.width  + 2* bw + *padding_left + *padding_right,
-        rect.height + 2* bw + *padding_top + *padding_bottom
-    };
+    return rect.adjusted(*border_width, *border_width)
+            .adjusted(*padding_left, *padding_top, *padding_right, *padding_bottom);
 }
 
 void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
