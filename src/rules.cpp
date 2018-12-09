@@ -290,7 +290,7 @@ void HSRule::print(Output output) {
                 output << "~" << cond.value_reg_str << "\t";
                 break;
             default: /* CONDITION_VALUE_TYPE_INTEGER: */
-                output << "=" cond.value_integer << "\t";
+                output << "=" << cond.value_integer << "\t";
                 break;
         }
     }
