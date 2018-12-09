@@ -112,6 +112,12 @@ def test_remove_labeled_rule(hlwm):
     assert rules.stdout == ''
 
 
+def test_remove_nonexistent_rule(hlwm):
+    call = hlwm.call_xfail('unrule nope')
+
+    assert call.stderr == 'Couldn\'t find rule: "nope"'
+
+
 def test_singleuse_rule_disappears_after_matching(hlwm):
     hlwm.call('rule once hook=dummy_hook')
 
@@ -140,3 +146,14 @@ def test_cannot_use_invalid_operator_for_consequence(hlwm):
     call = hlwm.call_xfail('rule class=Foo tag~bar')
 
     assert call.stderr == 'rule: Unknown rule consequence operation "~"\n'
+
+
+@pytest.mark.parametrize('rules_count', [1, 2, 10])
+def test_complete_unrule_offers_all_rules(hlwm, rules_count):
+    rules = [str(i) for i in range(rules_count)]
+    for i in rules:
+        hlwm.call('rule class=Foo{0} tag=bar{0}'.format(i))
+
+    call = hlwm.call('complete 1 unrule')
+
+    assert call.stdout == '\n'.join(rules + ['-F', '--all']) + '\n'
