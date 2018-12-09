@@ -220,7 +220,7 @@ int reload() {
 }
 
 int version(Input, Output output) {
-    output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION_STRING << std::endl;
+    output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << std::endl;
     output << "Copyright (c) 2011-2014 Thorsten Wißmann" << std::endl;
     output << "Released under the Simplified BSD License" << std::endl;
     return 0;
