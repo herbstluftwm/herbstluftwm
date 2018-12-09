@@ -91,3 +91,14 @@ def test_cannot_use_invalid_operator_for_consequence(hlwm):
     call = hlwm.call_xfail('rule', 'class=Foo', 'tag~bar')
 
     assert call.stderr == 'rule: Unknown rule consequence operation "~"\n'
+
+
+@pytest.mark.parametrize('rules_count', [1, 2, 10])
+def test_complete_unrule_offers_all_rules(hlwm, rules_count):
+    rules = [str(i) for i in range(rules_count)]
+    for i in rules:
+        hlwm.call('rule class=Foo{0} tag=bar{0}'.format(i))
+
+    call = hlwm.call('complete 1 unrule')
+
+    assert call.stdout == '\n'.join(rules + ['-F', '--all']) + '\n'
