@@ -4,15 +4,15 @@ python: "3.7"
 install:
     - sudo apt-get -y -q update
     - sudo apt-get -y -q build-dep herbstluftwm
-    - sudo apt-get -y -q install cmake
+    - sudo apt-get -y -q install cmake ninja-build
     - sudo apt-get -y -q install dzen2
 
 script:
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
-    - cmake -DCMAKE_INSTALL_PREFIX=/usr .
-    - make -j2
-    - sudo make install
+    - cmake -G'Ninja' -DCMAKE_INSTALL_PREFIX=/usr .
+    - ninja -v -k 10
+    - sudo ninja install
     - herbstluftwm &
     - hlwmpid=$!
     - sleep 1
@@ -37,8 +37,8 @@ jobs:
                       - xterm
                       - tox
           script:
-              - cmake -DCMAKE_BUILD_TYPE=Debug . # run tests with sanitizer
-              - make -j2
+              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug . # run tests with sanitizer
+              - ninja -v -k 10
               - tox
 
         - name: "Ubuntu 16.04, gcc-7"
