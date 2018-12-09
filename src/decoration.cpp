@@ -355,33 +355,33 @@ void Decoration::redrawPixmap() {
     XFillRectangle(g_display, pix, gc, 0, 0, outer.width, outer.height);
 
     // Draw inner border
-    int iw = s.inner_width();
+    unsigned short iw = s.inner_width();
     auto inner = client->dec.last_inner_rect;
     inner.x -= client->dec.last_outer_rect.x;
     inner.y -= client->dec.last_outer_rect.y;
     if (iw > 0) {
         /* fill rectangles because drawing does not work */
         std::vector<XRectangle> rects{
-            { inner.x - iw, inner.y - iw, inner.width + 2*iw, iw }, /* top */
-            { inner.x - iw, inner.y, iw, inner.height },  /* left */
-            { inner.x + inner.width, inner.y, iw, inner.height }, /* right */
-            { inner.x - iw, inner.y + inner.height, inner.width + 2*iw, iw }, /* bottom */
+            { (short)(inner.x - iw), (short)(inner.y - iw), (unsigned short)(inner.width + 2*iw), iw }, /* top */
+            { (short)(inner.x - iw), (short)(inner.y), iw, (unsigned short)(inner.height) },  /* left */
+            { (short)(inner.x + inner.width), (short)(inner.y), iw, (unsigned short)(inner.height) }, /* right */
+            { (short)(inner.x - iw), (short)(inner.y + inner.height), (unsigned short)(inner.width + 2*iw), iw }, /* bottom */
         };
         XSetForeground(g_display, gc, get_client_color(s.inner_color()));
         XFillRectangles(g_display, pix, gc, &rects.front(), rects.size());
     }
 
     // Draw outer border
-    int ow = s.outer_width;
+    unsigned short ow = s.outer_width;
     outer.x -= client->dec.last_outer_rect.x;
     outer.y -= client->dec.last_outer_rect.y;
     if (ow > 0) {
-        ow = std::min(ow, (outer.height+1) / 2);
+        ow = std::min((int)ow, (outer.height+1) / 2);
         std::vector<XRectangle> rects{
-            { 0, 0, outer.width, ow }, /* top */
-            { 0, ow, ow, outer.height - 2*ow }, /* left */
-            { outer.width-ow, ow, ow, outer.height - 2*ow }, /* right */
-            { 0, outer.height - ow, outer.width, ow }, /* bottom */
+            { 0, 0, (unsigned short)(outer.width), ow }, /* top */
+            { 0, (short)ow, ow, (unsigned short)(outer.height - 2*ow) }, /* left */
+            { (short)(outer.width - ow), (short)ow, ow, (unsigned short)(outer.height - 2*ow) }, /* right */
+            { 0, (short)(outer.height - ow), (unsigned short)(outer.width), ow }, /* bottom */
         };
         XSetForeground(g_display, gc, get_client_color(s.outer_color));
         XFillRectangles(g_display, pix, gc, &rects.front(), rects.size());
