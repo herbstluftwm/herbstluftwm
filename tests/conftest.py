@@ -31,11 +31,15 @@ class HlwmBridge:
         # by self.hc_idle
         self.wmclass2winid = {}
 
-    def _checked_call(self, *args, expect_success=True):
-        assert args
-        str_args = [ str(i) for i in args]
+    def _checked_call(self, cmd, expect_success=True):
+        if isinstance(cmd, list):
+            args = [str(x) for x in cmd]
+            assert args
+        else:
+            args = shlex.split(cmd)
+
         try:
-            proc = subprocess.run([self.HC_PATH, '-n'] + str_args,
+            proc = subprocess.run([self.HC_PATH, '-n'] + args,
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                   env=self.env,
                                   universal_newlines=True,
@@ -43,7 +47,7 @@ class HlwmBridge:
                                   timeout=2
                                   )
         except subprocess.TimeoutExpired:
-            self.hlwm_process.investigate_timeout('calling ' + str(str_args))
+            self.hlwm_process.investigate_timeout('calling ' + str(args))
         print(list(args))
         print(proc.stdout)
         print(proc.stderr, file=sys.stderr)
@@ -57,20 +61,14 @@ class HlwmBridge:
 
         return proc
 
-    def call(self, *args):
-        return self._checked_call(*args, expect_success=True)
+    def call(self, cmd):
+        return self._checked_call(cmd, expect_success=True)
 
-    def call_xfail(self, *args):
-        return self._checked_call(*args, expect_success=False)
-
-    def callstr(self, args):
-        return self.call(*(shlex.split(args)))
-
-    def callstr_xfail(self, args):
-        return self.call_xfail(*(shlex.split(args)))
+    def call_xfail(self, cmd):
+        return self._checked_call(cmd, expect_success=False)
 
     def get_attr(self, attribute_path, check=True):
-        return self.call('get_attr', attribute_path).stdout
+        return self.call(['get_attr', attribute_path]).stdout
 
     def create_client(self):
         """
@@ -80,7 +78,7 @@ class HlwmBridge:
         wmclass = 'client_{}'.format(self.next_client_id)
         command = ['xterm', '-hold', '-class', wmclass, '-e', 'true']
         # enforce a hook when the window appears
-        self.call('rule', 'once', 'class='+wmclass, 'hook=here_is_'+wmclass)
+        self.call(['rule', 'once', 'class='+wmclass, 'hook=here_is_'+wmclass])
         proc = subprocess.Popen(command, env=self.env)
         # once the window appears, the hook is fired:
         winid = self.wait_for_window_of(wmclass)

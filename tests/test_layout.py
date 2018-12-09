@@ -17,7 +17,7 @@ def test_single_frame_layout_three(hlwm):
 @pytest.mark.parametrize("running_clients_num", [2, 3])
 def test_explode(hlwm, running_clients, running_clients_num):
     assert running_clients_num >= 2, "explode behaves as auto for one client"
-    hlwm.callstr('split explode')
+    hlwm.call('split explode')
     assert hlwm.get_attr('tags.0.curframe_windex') == '0'
     number_upper = (running_clients_num + 1) // 2
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == number_upper
@@ -27,8 +27,8 @@ def test_explode(hlwm, running_clients, running_clients_num):
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 4])
 def test_remove(hlwm, running_clients, running_clients_num):
-    hlwm.callstr('split explode')
-    hlwm.callstr('remove')
+    hlwm.call('split explode')
+    hlwm.call('remove')
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == running_clients_num
     assert int(hlwm.get_attr('tags.0.client_count')) == running_clients_num
     assert hlwm.get_attr('tags.0.frame_count') == '1'
@@ -41,9 +41,9 @@ def test_focus_wrap(hlwm, running_clients, running_clients_num):
     assert running_clients_num >= 2, "explode behaves as auto for one client"
     # TODO: create the layout explicitly once we have the 'load' command again
     #       instead of calling explode
-    hlwm.callstr('split explode')
+    hlwm.call('split explode')
     for i in range(0, running_clients_num):
         expected_idx = i % ((running_clients_num + 1) // 2)
         assert int(hlwm.get_attr('tags.0.curframe_windex')) == expected_idx
         if i < running_clients_num - 1:
-            hlwm.callstr('focus down')
+            hlwm.call('focus down')
