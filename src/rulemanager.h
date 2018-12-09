@@ -9,4 +9,6 @@
 extern std::list<HSRule *> g_rules;
 
 class RuleManager : public Object {
+public:
+    int listRules(Input input, Output output);
 };

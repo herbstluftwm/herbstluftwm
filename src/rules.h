@@ -62,6 +62,17 @@ typedef struct {
     GString*        keymask; // Which keymask rule should be applied for this client
 } HSClientChanges;
 
+typedef struct {
+    const char*   name;
+    bool    (*matches)(HSCondition* condition, HSClient* client);
+} HSConditionType;
+
+typedef struct {
+    const char*   name;
+    void    (*apply)(HSConsequence* consequence, HSClient* client,
+                     HSClientChanges* changes);
+} HSConsequenceType;
+
 void rules_init();
 void rules_destroy();
 void rules_apply(HSClient* client, HSClientChanges* changes);

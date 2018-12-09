@@ -17,17 +17,6 @@
 
 /// TYPES ///
 
-typedef struct {
-    const char*   name;
-    bool    (*matches)(HSCondition* condition, HSClient* client);
-} HSConditionType;
-
-typedef struct {
-    const char*   name;
-    void    (*apply)(HSConsequence* consequence, HSClient* client,
-                     HSClientChanges* changes);
-} HSConsequenceType;
-
 /// DECLARATIONS ///
 static int find_condition_type(const char* name);
 static int find_consequence_type(const char* name);
@@ -65,7 +54,7 @@ DECLARE_CONSEQUENCE(consequence_monitor);
 
 /// GLOBALS ///
 
-static HSConditionType g_condition_types[] = {
+HSConditionType g_condition_types[] = {
     { "class",          condition_class             },
     { "instance",       condition_instance          },
     { "title",          condition_title             },
@@ -79,7 +68,7 @@ static int     g_maxage_type; // index of "maxage"
 static time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
 static unsigned long long g_rule_label_index; // incremental index of rule label
 
-static HSConsequenceType g_consequence_types[] = {
+HSConsequenceType g_consequence_types[] = {
     { "tag",            consequence_tag             },
     { "index",          consequence_index           },
     { "focus",          consequence_focus           },
@@ -292,45 +281,6 @@ static bool rule_find_pop(char* label) {
     }
 
     return status;
-}
-
-// List all rules in queue
-static void rule_print_append_output(HSRule* rule, std::ostream* ptr_output) {
-    Output& output = *ptr_output;
-    output << "label=" << rule->label << "\t";
-    // Append conditions
-    for (auto const& cond : rule->conditions) {
-        if (cond.negated) { // Include flag if negated
-            output << "not\t";
-        }
-        output << g_condition_types[cond.condition_type].name << "=";
-        switch (cond.value_type) {
-            case CONDITION_VALUE_TYPE_STRING:
-                output << cond.value_str << "\t";
-                break;
-            case CONDITION_VALUE_TYPE_REGEX:
-                output << cond.value_reg_str << "\t";
-                break;
-            default: /* CONDITION_VALUE_TYPE_INTEGER: */
-                output << cond.value_integer << "\t";
-                break;
-        }
-    }
-    // Append consequences
-    for (auto const& cons : rule->consequences) {
-        output << g_consequence_types[cons.type].name
-               << "=" << cons.value << "\t";
-    }
-    // Print new line
-    output << '\n';
-}
-
-int rule_print_all_command(int argc, char** argv, Output output) {
-    // Print entry for each in the queue
-    for (auto rule : g_rules) {
-        rule_print_append_output(rule, &output);
-    }
-    return 0;
 }
 
 // parses an arg like NAME=VALUE to res_name, res_operation and res_value
