@@ -10,7 +10,6 @@ install:
 script:
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
-    - echo Using $CC / $CXX
     - cmake -DCMAKE_INSTALL_PREFIX=/usr .
     - make -j2
     - sudo make install
@@ -38,7 +37,6 @@ jobs:
                       - xterm
                       - tox
           script:
-              - echo Using $CC / $CXX
               - cmake -DCMAKE_BUILD_TYPE=Debug . # run tests with sanitizer
               - make -j2
               - tox
