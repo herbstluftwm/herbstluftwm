@@ -53,7 +53,7 @@ function (add_debugflags TARGET)
 		-pedantic -Wall -Werror
 		-Wno-sign-compare -Wno-narrowing -Wno-error=cast-function-type
 		-fsanitize=address,leak,undefined
-		-fno-omit-frame-pointer -fuse-ld=gold)
+		-fno-omit-frame-pointer)
 	list(TRANSFORM FLAGS PREPEND "$<$<CONFIG:Debug>:")
 	list(TRANSFORM FLAGS APPEND ">")
 	target_compile_options(${TARGET} PRIVATE ${FLAGS})
