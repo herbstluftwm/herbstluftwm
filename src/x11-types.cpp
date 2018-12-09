@@ -79,6 +79,17 @@ Rectangle Rectangle::fromStr(const std::string &source) {
     };
 }
 
+Rectangle Rectangle::adjusted(int dx, int dy) const
+{
+    return adjusted(dx, dy, dx, dy);
+}
+
+Rectangle Rectangle::adjusted(int left, int top, int right, int bottom) const
+{
+    return {x - left, y - top, width + left + right, height + top + bottom};
+}
+
+
 std::ostream& operator<< (std::ostream& stream, const Rectangle& rect) {
     stream
         << rect.width << "x" << rect.height

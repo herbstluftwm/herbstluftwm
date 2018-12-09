@@ -123,11 +123,11 @@ static int find_condition_type(const char* name) {
     return -1;
 }
 
-HSCondition* condition_create(int type, char op, char* value, Output output) {
+bool HSRule::addCondition(int type, char op, char* value, Output output) {
     HSCondition cond;
     if (op != '=' && type == g_maxage_type) {
         output << "rule: Condition maxage only supports the = operator\n";
-        return nullptr;
+        return false;
     }
     switch (op) {
         case '=': {
@@ -135,7 +135,7 @@ HSCondition* condition_create(int type, char op, char* value, Output output) {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
                 if (1 != sscanf(value, "%d", &cond.value.integer)) {
                     output << "rule: Can not integer from \"" << value << "\"\n";
-                    return nullptr;
+                    return false;
                 }
             } else {
                 cond.value_type = CONDITION_VALUE_TYPE_STRING;
@@ -153,7 +153,7 @@ HSCondition* condition_create(int type, char op, char* value, Output output) {
                 output << "rule: Can not parse value \"" << value
                         << "\" from condition \"" << g_condition_types[type].name
                         << "\": \"" << buf << "\"\n";
-                return nullptr;
+                return false;
             }
             cond.value.reg.str = g_strdup(value);
             break;
@@ -161,15 +161,14 @@ HSCondition* condition_create(int type, char op, char* value, Output output) {
 
         default:
             output << "rule: Unknown rule condition operation \"" << op << "\"\n";
-            return nullptr;
+            return false;
             break;
     }
 
     cond.condition_type = type;
-    // move to heap
-    HSCondition* ptr = g_new(HSCondition, 1);
-    *ptr = cond;
-    return ptr;
+
+    conditions.push_back(cond);
+    return true;
 }
 
 static void condition_destroy(HSCondition* cond) {
@@ -188,9 +187,6 @@ static void condition_destroy(HSCondition* cond) {
         default:
             break;
     }
-
-    // free cond itself
-    g_free(cond);
 }
 
 // consequence types //
@@ -258,10 +254,9 @@ HSRule::HSRule() {
 
 HSRule::~HSRule() {
     // free conditions
-    for (int i = 0; i < condition_count; i++) {
-        condition_destroy(conditions[i]);
+    for (auto& cond : conditions) {
+        condition_destroy(&cond);
     }
-    g_free(conditions);
 }
 
 void rule_complete(int argc, char** argv, int pos, Output output) {
@@ -320,20 +315,20 @@ static void rule_print_append_output(HSRule* rule, std::ostream* ptr_output) {
     Output& output = *ptr_output;
     output << "label=" << rule->label << "\t";
     // Append conditions
-    for (int i = 0; i < rule->condition_count; i++) {
-        if (rule->conditions[i]->negated) { // Include flag if negated
+    for (auto const& cond : rule->conditions) {
+        if (cond.negated) { // Include flag if negated
             output << "not\t";
         }
-        output << g_condition_types[rule->conditions[i]->condition_type].name << "=";
-        switch (rule->conditions[i]->value_type) {
+        output << g_condition_types[cond.condition_type].name << "=";
+        switch (cond.value_type) {
             case CONDITION_VALUE_TYPE_STRING:
-                output << rule->conditions[i]->value.str << "\t";
+                output << cond.value.str << "\t";
                 break;
             case CONDITION_VALUE_TYPE_REGEX:
-                output << rule->conditions[i]->value.reg.str << "\t";
+                output << cond.value.reg.str << "\t";
                 break;
             default: /* CONDITION_VALUE_TYPE_INTEGER: */
-                output << rule->conditions[i]->value.integer << "\t";
+                output << cond.value.integer << "\t";
                 break;
         }
     }
@@ -379,13 +374,6 @@ bool tokenize_arg(char* condition,
     return true;
 }
 
-static void rule_add_condition(HSRule* rule, HSCondition* cond) {
-    rule->conditions = g_renew(HSCondition*,
-                               rule->conditions, rule->condition_count + 1);
-    rule->conditions[rule->condition_count] = cond;
-    rule->condition_count++;
-}
-
 int rule_add_command(int argc, char** argv, Output output) {
     // usage: rule COND=VAL ... then
 
@@ -394,7 +382,6 @@ int rule_add_command(int argc, char** argv, Output output) {
     }
     // temporary data structures
     HSRule* rule = new HSRule();
-    HSCondition* cond;
     bool printlabel = false;
     bool negated = false;
     bool prepend = false;
@@ -434,14 +421,13 @@ int rule_add_command(int argc, char** argv, Output output) {
         }
 
         else if (consorcond && (type = find_condition_type(name)) >= 0) {
-            cond = condition_create(type, op, value, output);
-            if (!cond) {
+            auto success = rule->addCondition(type, op, value, output);
+            if (!success) {
                 delete rule;
                 return HERBST_INVALID_ARGUMENT;
             }
-            cond->negated = negated;
+            rule->conditions.back().negated = negated;
             negated = false;
-            rule_add_condition(rule, cond);
         }
 
         else if (consorcond && (type = find_consequence_type(name)) >= 0) {
@@ -546,8 +532,8 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
         g_current_rule_birth_time = rule->birth_time;
 
         // check all conditions
-        for (int i = 0; i < rule->condition_count; i++) {
-            int type = rule->conditions[i]->condition_type;
+        for (auto& cond : rule->conditions) {
+            int type = cond.condition_type;
 
             if (!rule_match && type != g_maxage_type) {
                 // implement lazy AND &&
@@ -556,16 +542,16 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
             }
 
             matches = g_condition_types[type].
-                matches(rule->conditions[i], client);
+                matches(&cond, client);
 
-            if (!matches && !rule->conditions[i]->negated
-                && rule->conditions[i]->condition_type == g_maxage_type) {
+            if (!matches && !cond.negated
+                && cond.condition_type == g_maxage_type) {
                 // if if not negated maxage does not match anymore
                 // then it will never match again in the future
                 rule_expired = true;
             }
 
-            if (rule->conditions[i]->negated) {
+            if (cond.negated) {
                 matches = ! matches;
             }
             rule_match = rule_match && matches;
