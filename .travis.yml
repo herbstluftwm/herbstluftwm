@@ -55,7 +55,6 @@ jobs:
           dist: xenial
           before_install:
               - CC=clang-7 CXX=clang++-7
-              - CXXFLAGS="$CXXFLAGS -Wno-sign-compare -Wno-narrowing"
           addons:
               apt:
                   sources:
