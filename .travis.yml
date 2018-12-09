@@ -27,7 +27,7 @@ jobs:
           before_install:
               - CC=gcc-8 CXX=g++-8
               - linkerfix="-fuse-ld=gold" # needed to avoid linker error
-              - export LDFLAGS="$san" LDXXFLAGS="$san"
+              - export LDFLAGS="$linkerfix" LDXXFLAGS="$linkerfix"
           addons:
               apt:
                   sources:
