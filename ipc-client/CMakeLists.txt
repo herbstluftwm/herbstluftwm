@@ -18,7 +18,7 @@ set_target_properties(herbstclient PROPERTIES
 # dependencies X11 & GLIB2
 target_include_directories(herbstclient SYSTEM PUBLIC
 	${X11_X11_INCLUDE_PATH} ${GLIB2_INCLUDE_DIRS})
-target_link_libraries(herbstclient
+target_link_libraries(herbstclient PUBLIC
 	${X11_X11_LIB} ${GLIB2_LIBRARIES})
 
 # communicate version string

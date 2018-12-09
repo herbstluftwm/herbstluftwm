@@ -65,13 +65,13 @@ cmake_dependent_option(WITH_XINERAMA "Use multi-monitor support" ON
 
 if (WITH_XINERAMA)
 	set_property(SOURCE monitor.cpp PROPERTY COMPILE_DEFINITIONS XINERAMA)
-	target_link_libraries(herbstluftwm ${X11_Xinerama_LIB})
+	target_link_libraries(herbstluftwm PRIVATE ${X11_Xinerama_LIB})
 endif()
 
 ## dependencies X11 & GLIB2 (link to Xext for XShape())
 target_include_directories(herbstluftwm SYSTEM PUBLIC
 	${X11_X11_INCLUDE_PATH} ${X11_Xinerama_INCLUDE_PATH} ${GLIB2_INCLUDE_DIRS})
-target_link_libraries(herbstluftwm
+target_link_libraries(herbstluftwm PUBLIC
 	${X11_X11_LIB} ${X11_Xext_LIB} ${GLIB2_LIBRARIES})
 
 ## export variables to the code
