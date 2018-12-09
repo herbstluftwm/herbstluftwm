@@ -370,14 +370,14 @@ void Decoration::redrawPixmap() {
     inner.y -= client->dec.last_outer_rect.y;
     if (iw > 0) {
         /* fill rectangles because drawing does not work */
-        XRectangle rects[] = {
+        std::vector<XRectangle> rects{
             { inner.x - iw, inner.y - iw, inner.width + 2*iw, iw }, /* top */
             { inner.x - iw, inner.y, iw, inner.height },  /* left */
             { inner.x + inner.width, inner.y, iw, inner.height }, /* right */
             { inner.x - iw, inner.y + inner.height, inner.width + 2*iw, iw }, /* bottom */
         };
         XSetForeground(g_display, gc, get_client_color(s.inner_color()));
-        XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
+        XFillRectangles(g_display, pix, gc, &rects.front(), rects.size());
     }
 
     // Draw outer border
@@ -386,14 +386,14 @@ void Decoration::redrawPixmap() {
     outer.y -= client->dec.last_outer_rect.y;
     if (ow > 0) {
         ow = std::min(ow, (outer.height+1) / 2);
-        XRectangle rects[] = {
+        std::vector<XRectangle> rects{
             { 0, 0, outer.width, ow }, /* top */
             { 0, ow, ow, outer.height - 2*ow }, /* left */
             { outer.width-ow, ow, ow, outer.height - 2*ow }, /* right */
             { 0, outer.height - ow, outer.width, ow }, /* bottom */
         };
         XSetForeground(g_display, gc, get_client_color(s.outer_color));
-        XFillRectangles(g_display, pix, gc, rects, LENGTH(rects));
+        XFillRectangles(g_display, pix, gc, &rects.front(), rects.size());
     }
     // fill inner rect that is not covered by the client
     XSetForeground(g_display, gc, get_client_color(s.background_color));
