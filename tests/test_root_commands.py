@@ -15,14 +15,34 @@ def test_object_tree(hlwm):
     assert len(t1) > len(t2)
     assert len(t2) > len(t3)
 
+
 def test_sprintf(hlwm):
-    cnt = hlwm.get_attr('tags.count')
-    wmname = hlwm.get_attr('settings.wmname')
-    printed = hlwm.callstr('sprintf X %s/%s tags.count settings.wmname echo X').stdout
-    hlwm.call_xfail('sprintf X %s/%s tags.count settings.wmname')
-    hlwm.call_xfail('sprintf X %s/%s tags.count')
-    assert printed == cnt + '/' + wmname + '\n'
-    assert '%\n' == hlwm.callstr('sprintf X %% echo X').stdout
+    expected_count = hlwm.get_attr('tags.count')
+    expected_wmname = hlwm.get_attr('settings.wmname')
+    expected_output = expected_count + '/' + expected_wmname + '\n'
+
+    call = hlwm.callstr('sprintf X %s/%s tags.count settings.wmname echo X')
+
+    assert call.stdout == expected_output
+
+
+def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
+    call = hlwm.callstr_xfail('sprintf X %s/%s tags.count echo X')
+
+    assert call.stderr == 'The root object has no attribute "echo"\n'
+
+
+def test_sprintf_too_few_attributes_in_total(hlwm):
+    call = hlwm.callstr_xfail('sprintf X %s/%s tags.count')
+
+    assert call.stderr == 'sprintf: not enough arguments\n'
+
+
+def test_sprintf_double_percentage_escapes(hlwm):
+    call = hlwm.callstr('sprintf X %% echo X')
+
+    assert call.stdout == '%\n'
+
 
 def test_disjoint_rects(hlwm):
     # test the example from the manpage
