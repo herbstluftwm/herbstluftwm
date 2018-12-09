@@ -17,6 +17,17 @@
 
 /// TYPES ///
 
+typedef struct {
+    const char*   name;
+    bool    (*matches)(HSCondition* condition, HSClient* client);
+} HSConditionType;
+
+typedef struct {
+    const char*   name;
+    void    (*apply)(HSConsequence* consequence, HSClient* client,
+                     HSClientChanges* changes);
+} HSConsequenceType;
+
 /// DECLARATIONS ///
 static int find_condition_type(const char* name);
 static int find_consequence_type(const char* name);
@@ -54,7 +65,7 @@ DECLARE_CONSEQUENCE(consequence_monitor);
 
 /// GLOBALS ///
 
-HSConditionType g_condition_types[] = {
+static HSConditionType g_condition_types[] = {
     { "class",          condition_class             },
     { "instance",       condition_instance          },
     { "title",          condition_title             },
@@ -68,7 +79,7 @@ static int     g_maxage_type; // index of "maxage"
 static time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
 static unsigned long long g_rule_label_index; // incremental index of rule label
 
-HSConsequenceType g_consequence_types[] = {
+static HSConsequenceType g_consequence_types[] = {
     { "tag",            consequence_tag             },
     { "index",          consequence_index           },
     { "focus",          consequence_focus           },
