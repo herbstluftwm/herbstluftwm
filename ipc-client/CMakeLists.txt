@@ -14,6 +14,7 @@ set_target_properties(herbstclient PROPERTIES
 	C_STANDARD 99
 	C_STANDARD_REQUIRED ON
 	COMPILE_DEFINITIONS _XOPEN_SOURCE=600)
+add_debugflags(herbstclient)
 
 # dependencies X11 & GLIB2
 target_include_directories(herbstclient SYSTEM PUBLIC

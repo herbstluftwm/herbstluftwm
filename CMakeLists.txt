@@ -46,6 +46,21 @@ function (export_version SOURCEFILE)
 		HERBSTLUFT_VERSION=\"${PROJECT_VERSION_GIT}\")
 endfunction()
 
+# add custom build flags to the DEBUG build type
+function (add_debugflags TARGET)
+	set(FLAGS
+		-Og
+		-pedantic -Wall -Werror
+		-Wno-sign-compare -Wno-narrowing -Wno-error=cast-function-type
+		-fsanitize=address,leak,undefined
+		-fno-omit-frame-pointer -fuse-ld=gold)
+	list(TRANSFORM FLAGS PREPEND "$<$<CONFIG:Debug>:")
+	list(TRANSFORM FLAGS APPEND ">")
+	target_compile_options(${TARGET} PRIVATE ${FLAGS})
+	# note: CMake up to 3.12 does not have target_link_options()
+	target_link_libraries(${TARGET} PRIVATE ${FLAGS})
+endfunction()
+
 ## install variables
 # prefix for systemwide configuration, accompanies CMAKE_INSTALL_PREFIX
 set(CMAKE_INSTALL_SYSCONF_PREFIX "/etc" CACHE PATH
