@@ -7,7 +7,7 @@ def test_default_tag_exists_and_has_name(hlwm):
 
 
 def test_add_tag(hlwm):
-    hlwm.callstr('add foobar')
+    hlwm.call('add foobar')
 
     assert hlwm.get_attr('tags.count') == '2'
     assert hlwm.get_attr('tags.1.client_count') == '0'
@@ -25,7 +25,7 @@ def test_new_clients_increase_client_count(hlwm, running_clients, running_client
 
 
 def test_move_focused_client_to_new_tag(hlwm):
-    hlwm.callstr('add foobar')
+    hlwm.call('add foobar')
     assert hlwm.get_attr('tags.0.client_count') == '0'
     assert hlwm.get_attr('tags.1.client_count') == '0'
 
@@ -33,7 +33,7 @@ def test_move_focused_client_to_new_tag(hlwm):
     assert hlwm.get_attr('tags.0.client_count') == '1'
     assert hlwm.get_attr('tags.1.client_count') == '0'
 
-    hlwm.callstr('move foobar')
+    hlwm.call('move foobar')
 
     assert hlwm.get_attr('tags.0.client_count') == '0'
     assert hlwm.get_attr('tags.0.curframe_wcount') == '0'
@@ -43,11 +43,11 @@ def test_move_focused_client_to_new_tag(hlwm):
 
 
 def test_merge_tag_into_another_tag(hlwm):
-    hlwm.callstr('add foobar')
+    hlwm.call('add foobar')
     hlwm.create_client()
-    hlwm.callstr('use_index 1')
+    hlwm.call('use_index 1')
 
-    hlwm.callstr('merge_tag default foobar')
+    hlwm.call('merge_tag default foobar')
 
     assert hlwm.get_attr('tags.count') == '1'
     assert hlwm.get_attr('tags.0.name') == 'foobar'
