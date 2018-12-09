@@ -94,7 +94,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "monitor",        consequence_monitor         },
 };
 
-static std::list<HSRule *> g_rules;
+std::list<HSRule *> g_rules;
 
 /// FUNCTIONS ///
 // RULES //
