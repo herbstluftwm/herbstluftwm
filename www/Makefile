@@ -1,12 +1,9 @@
 
-include ../version.mk
-include ../config.mk
-include ../colors.mk
-
 .PHONY: all clean install
 
 TARGET = herbstluftwm.org:www/
 
+ASCIIDOC = asciidoc
 ASCIIDOCFLAGS = -s
 TXT = $(wildcard *.txt)
 INSTALLFILES = $(TXT:.txt=.html) \
