@@ -22,14 +22,11 @@ typedef struct {
     int condition_type;
     int value_type;
     bool negated;
-    union {
-        char*       str;
-        struct {
-            regex_t     exp;
-            char*       str;
-        } reg;
-        int         integer;
-    } value;
+
+    std::string value_str;
+    int value_integer;
+    regex_t value_reg_exp;
+    std::string value_reg_str;
 } HSCondition;
 
 typedef struct {
