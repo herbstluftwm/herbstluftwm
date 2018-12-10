@@ -1,36 +1,11 @@
-
-# ignore objects
-*.o
-# ignore dependency files
-*.d
-
 # ignore backups/vim's files
 *~
 .*.swp
 
-# ignore binaries
-herbstluftwm
-herbstclient
-
-# ignore generated doc
-doc/herbstclient.1
-doc/herbstclient.html
-doc/herbstluftwm.1
-doc/herbstluftwm.html
-doc/herbstluftwm-tutorial.7
-doc/herbstluftwm-tutorial.html
-
 # ignore build dirs
-build/
-etc/
+build*/
 
-# ignore tag files
-src/tags
-src/TAGS
-ipc-client/tags
-ipc-client/TAGS
-
-# tests
+# ignore tests
 /.cache
 /.tox
 __pycache__
