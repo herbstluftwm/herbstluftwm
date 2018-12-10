@@ -47,15 +47,8 @@ public:
         return Container(begin_, c_->cend());
     }
     //! try read a value if possible
-    ArgList& operator>>(std::string& val) {
-        if (!empty()) {
-            val = front();
-            shift();
-        } else {
-            shiftedTooFar_ = true;
-        }
-        return *this;
-    }
+    ArgList& operator>>(std::string& val);
+
     //! tell whether all previous operator>>() succeeded
     operator bool() const {
         return !shiftedTooFar_;
