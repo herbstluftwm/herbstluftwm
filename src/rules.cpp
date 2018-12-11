@@ -303,17 +303,16 @@ static void rule_print_append_output(HSRule* rule, std::ostream* ptr_output) {
         if (cond.negated) { // Include flag if negated
             output << "not\t";
         }
-        output << g_condition_types[cond.condition_type].name << "=";
+        output << g_condition_types[cond.condition_type].name;
         switch (cond.value_type) {
             case CONDITION_VALUE_TYPE_STRING:
-                output << cond.value_str << "\t";
+                output << "=" << cond.value_str << "\t";
                 break;
             case CONDITION_VALUE_TYPE_REGEX:
-                output << cond.value_reg_str << "\t";
+                output << "~" << cond.value_reg_str << "\t";
                 break;
             default: /* CONDITION_VALUE_TYPE_INTEGER: */
-                output << cond.value_integer << "\t";
-                break;
+                output << "=" << cond.value_integer << "\t";
         }
     }
     // Append consequences
