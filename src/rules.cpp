@@ -480,10 +480,7 @@ int rule_remove_command(int argc, char** argv, Output output) {
 
 // rules applying //
 HSClientChanges::HSClientChanges(HSClient *client)
-    : focus(false)
-    , switchtag(false)
-    , manage(true)
-    , fullscreen(ewmh_is_fullscreen_set(client->window_))
+    : fullscreen(ewmh_is_fullscreen_set(client->window_))
 {}
 
 // apply all rules to a certain client an save changes
