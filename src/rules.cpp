@@ -7,8 +7,6 @@
 #include "hook.h"
 #include "command.h"
 
-#include "glib-backports.h"
-#include "glib-backports.h"
 #include <cstring>
 #include <cstdio>
 #include <sys/types.h>
@@ -481,28 +479,12 @@ int rule_remove_command(int argc, char** argv, Output output) {
 }
 
 // rules applying //
-void client_changes_init(HSClientChanges* changes, HSClient* client) {
-    memset(changes, 0, sizeof(HSClientChanges));
-    changes->tree_index = g_string_new("");
-    changes->focus = false;
-    changes->switchtag = false;
-    changes->manage = true;
-    changes->fullscreen = ewmh_is_fullscreen_set(client->window_);
-    changes->keymask = g_string_new("");
-}
-
-void client_changes_free_members(HSClientChanges* changes) {
-    if (!changes) return;
-    if (changes->tag_name) {
-        g_string_free(changes->tag_name, true);
-    }
-    if (changes->tree_index) {
-        g_string_free(changes->tree_index, true);
-    }
-    if (changes->monitor_name) {
-        g_string_free(changes->monitor_name, true);
-    }
-}
+HSClientChanges::HSClientChanges(HSClient *client)
+    : focus(false)
+    , switchtag(false)
+    , manage(true)
+    , fullscreen(ewmh_is_fullscreen_set(client->window_))
+{}
 
 // apply all rules to a certain client an save changes
 void rules_apply(HSClient* client, HSClientChanges* changes) {
@@ -691,11 +673,7 @@ static bool condition_windowrole(HSCondition* rule, HSClient* client) {
 /// CONSEQUENCES ///
 void consequence_tag(HSConsequence* cons,
                      HSClient* client, HSClientChanges* changes) {
-    if (changes->tag_name) {
-        g_string_assign(changes->tag_name, cons->value.c_str());
-    } else {
-        changes->tag_name = g_string_new(cons->value.c_str());
-    }
+    changes->tag_name = cons->value;
 }
 
 void consequence_focus(HSConsequence* cons, HSClient* client,
@@ -710,7 +688,7 @@ void consequence_manage(HSConsequence* cons, HSClient* client,
 
 void consequence_index(HSConsequence* cons, HSClient* client,
                                HSClientChanges* changes) {
-    g_string_assign(changes->tree_index, cons->value.c_str());
+    changes->tree_index = cons->value;
 }
 
 void consequence_pseudotile(HSConsequence* cons, HSClient* client,
@@ -751,18 +729,10 @@ void consequence_hook(HSConsequence* cons, HSClient* client,
 
 void consequence_keymask(HSConsequence* cons,
                          HSClient* client, HSClientChanges* changes) {
-    if (changes->keymask) {
-        g_string_assign(changes->keymask, cons->value.c_str());
-    } else {
-        changes->keymask = g_string_new(cons->value.c_str());
-    }
+    changes->keymask = cons->value;
 }
 
 void consequence_monitor(HSConsequence* cons, HSClient* client,
                             HSClientChanges* changes) {
-    if (changes->monitor_name) {
-        g_string_assign(changes->monitor_name, cons->value.c_str());
-    } else {
-        changes->monitor_name = g_string_new(cons->value.c_str());
-    }
+    changes->monitor_name = cons->value;
 }

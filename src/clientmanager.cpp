@@ -100,14 +100,13 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     HSMonitor* m = get_current_monitor();
 
     // apply rules
-    HSClientChanges changes;
-    client_changes_init(&changes, client);
+    HSClientChanges changes(client);
     rules_apply(client, &changes);
-    if (changes.tag_name) {
-        client->setTag(find_tag(changes.tag_name->str));
+    if (!changes.tag_name.empty()) {
+        client->setTag(find_tag(changes.tag_name.c_str()));
     }
-    if (changes.monitor_name) {
-        HSMonitor *monitor = string_to_monitor(changes.monitor_name->str);
+    if (!changes.monitor_name.empty()) {
+        HSMonitor *monitor = string_to_monitor(changes.monitor_name.c_str());
         if (monitor) {
             // a valid tag was not already found, use the target monitor's tag
             if (!client->tag()) { client->setTag(monitor->tag); }
@@ -120,10 +119,9 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     }
 
     // Reuse the keymask string
-    client->keymask_ = changes.keymask->str;
+    client->keymask_ = changes.keymask;
 
     if (!changes.manage) {
-        client_changes_free_members(&changes);
         // map it... just to be sure
         XMapWindow(g_display, win);
         return {}; // client gets destroyed
@@ -141,7 +139,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     client->slice = slice_create_client(client);
     client->tag()->stack->insert_slice(client->slice);
     // insert window to the tag
-    client->tag()->frame->lookup(changes.tree_index->str)
+    client->tag()->frame->lookup(changes.tree_index.c_str())
                  ->insertClient(client);
     if (changes.focus) {
         // give focus to window if wanted
@@ -179,7 +177,6 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     }
     client->send_configure();
 
-    client_changes_free_members(&changes);
     grab_client_buttons(client, false);
 
     return client;
