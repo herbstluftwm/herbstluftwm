@@ -48,6 +48,8 @@ public:
     bool replaceLabel(char op, char* value, Output output);
     bool addConsequence(int type, char op, char* value, Output output);
     bool addCondition(int type, char op, char* value, Output output);
+
+    void print(Output output);
 };
 
 typedef struct {
@@ -72,7 +74,6 @@ void client_changes_free_members(HSClientChanges* changes);
 void rule_complete(int argc, char** argv, int pos, Output output);
 
 int rule_add_command(int argc, char** argv, Output output);
-int rule_remove_command(int argc, char** argv, Output output);
 int rule_print_all_command(int argc, char** argv, Output output);
 void complete_against_rule_names(int argc, char** argv, int pos, Output output);
 

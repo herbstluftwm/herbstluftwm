@@ -16,6 +16,7 @@ class Theme;
 class Settings;
 class Tmp;
 class RootCommands;
+class RuleManager;
 
 class Globals {
 public:
@@ -41,6 +42,7 @@ public:
     Child_<HookManager> hooks;
     Child_<Theme> theme;
     Child_<Tmp> tmp;
+    Child_<RuleManager> rules;
     RootCommands* root_commands;
     Globals globals;
 
