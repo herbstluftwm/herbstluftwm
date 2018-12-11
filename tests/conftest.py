@@ -8,11 +8,11 @@ import textwrap
 import pytest
 
 
-GIT_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..')
+BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
 
 class HlwmBridge:
 
-    HC_PATH = os.path.join(GIT_ROOT, 'herbstclient')
+    HC_PATH = os.path.join(BINDIR, 'herbstclient')
 
     def __init__(self, display, hlwm_process):
         self.client_procs = []
@@ -130,7 +130,7 @@ class HlwmProcess:
             echo "hlwm started"
         """.lstrip('\n')))
         autostart.chmod(0o755)
-        bin_path = os.path.join(GIT_ROOT, 'herbstluftwm')
+        bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen([bin_path, '--verbose'], env=env,
                                 stdout=subprocess.PIPE)
         line = self.proc.stdout.readline()
