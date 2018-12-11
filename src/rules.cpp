@@ -133,29 +133,29 @@ bool HSRule::addCondition(int type, char op, char* value, Output output) {
         case '=': {
             if (type == g_maxage_type) {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
-                if (1 != sscanf(value, "%d", &cond.value.integer)) {
+                if (1 != sscanf(value, "%d", &cond.value_integer)) {
                     output << "rule: Can not integer from \"" << value << "\"\n";
                     return false;
                 }
             } else {
                 cond.value_type = CONDITION_VALUE_TYPE_STRING;
-                cond.value.str = g_strdup(value);
+                cond.value_str = value;
             }
             break;
         }
 
         case '~': {
             cond.value_type = CONDITION_VALUE_TYPE_REGEX;
-            int status = regcomp(&cond.value.reg.exp, value, REG_EXTENDED);
+            int status = regcomp(&cond.value_reg_exp, value, REG_EXTENDED);
             if (status != 0) {
                 char buf[ERROR_STRING_BUF_SIZE];
-                regerror(status, &cond.value.reg.exp, buf, ERROR_STRING_BUF_SIZE);
+                regerror(status, &cond.value_reg_exp, buf, ERROR_STRING_BUF_SIZE);
                 output << "rule: Can not parse value \"" << value
                         << "\" from condition \"" << g_condition_types[type].name
                         << "\": \"" << buf << "\"\n";
                 return false;
             }
-            cond.value.reg.str = g_strdup(value);
+            cond.value_reg_str = value;
             break;
         }
 
@@ -169,24 +169,6 @@ bool HSRule::addCondition(int type, char op, char* value, Output output) {
 
     conditions.push_back(cond);
     return true;
-}
-
-static void condition_destroy(HSCondition* cond) {
-    if (!cond) {
-        return;
-    }
-    // free members
-    switch(cond->value_type) {
-        case CONDITION_VALUE_TYPE_STRING:
-            free(cond->value.str);
-            break;
-        case CONDITION_VALUE_TYPE_REGEX:
-            regfree(&cond->value.reg.exp);
-            g_free(cond->value.reg.str);
-            break;
-        default:
-            break;
-    }
 }
 
 // consequence types //
@@ -253,9 +235,11 @@ HSRule::HSRule() {
 }
 
 HSRule::~HSRule() {
-    // free conditions
+    // free regexps in conditions
     for (auto& cond : conditions) {
-        condition_destroy(&cond);
+        if (cond.value_type == CONDITION_VALUE_TYPE_REGEX) {
+            regfree(&cond.value_reg_exp);
+        }
     }
 }
 
@@ -329,7 +313,6 @@ static void rule_print_append_output(HSRule* rule, std::ostream* ptr_output) {
                 break;
             default: /* CONDITION_VALUE_TYPE_INTEGER: */
                 output << "=" << cond.value.integer << "\t";
-                break;
         }
     }
     // Append consequences
@@ -587,10 +570,10 @@ static bool condition_string(HSCondition* rule, const char* string) {
     int int_value;
     switch (rule->value_type) {
         case CONDITION_VALUE_TYPE_STRING:
-            return !strcmp(string, rule->value.str);
+            return rule->value_str == string;
             break;
         case CONDITION_VALUE_TYPE_REGEX:
-            status = regexec(&rule->value.reg.exp, string, 1, &match, 0);
+            status = regexec(&rule->value_reg_exp, string, 1, &match, 0);
             // only accept it, if it matches the entire string
             if (status == 0
                 && match.rm_so == 0
@@ -602,7 +585,7 @@ static bool condition_string(HSCondition* rule, const char* string) {
             break;
         case CONDITION_VALUE_TYPE_INTEGER:
             return (1 == sscanf(string, "%d", &int_value)
-                && int_value == rule->value.integer);
+                && int_value == rule->value_integer);
             break;
     }
     return false;
@@ -631,7 +614,7 @@ static bool condition_pid(HSCondition* rule, HSClient* client) {
         return false;
     }
     if (rule->value_type == CONDITION_VALUE_TYPE_INTEGER) {
-        return rule->value.integer == client->pid_;
+        return rule->value_integer == client->pid_;
     } else {
         char buf[1000]; // 1kb ought to be enough for every int
         sprintf(buf, "%d", client->pid_);
@@ -641,7 +624,7 @@ static bool condition_pid(HSCondition* rule, HSClient* client) {
 
 static bool condition_maxage(HSCondition* rule, HSClient* client) {
     time_t diff = get_monotonic_timestamp() - g_current_rule_birth_time;
-    return (rule->value.integer >= diff);
+    return (rule->value_integer >= diff);
 }
 
 static bool condition_windowtype(HSCondition* rule, HSClient* client) {
