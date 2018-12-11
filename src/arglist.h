@@ -6,13 +6,15 @@
 #include <sstream>
 #include <memory>
 
-struct ArgList {
+class ArgList {
+
+public:
     using Container = std::vector<std::string>;
 
-    // a simple split(), as C++ doesn't have it
+    //! a simple split(), as C++ doesn't have it
     static Container split(const std::string &s, char delim = '.');
 
-    // a simple join(), as C++ doesn't have it
+    //! a simple join(), as C++ doesn't have it
     static std::string join(Container::const_iterator first,
                             Container::const_iterator last,
                             char delim = '.');
@@ -32,10 +34,12 @@ struct ArgList {
 
     std::string join(char delim = '.');
 
+    //! reset internal pointer to begin of arguments
     void reset() {
         begin_ = c_->cbegin();
-        shiftedToFar_ = false;
+        shiftedTooFar_ = false;
     }
+    //! shift the internal pointer by amount
     void shift(Container::difference_type amount = 1) {
         begin_ += std::min(amount, std::distance(begin_, c_->cend()));
     }
@@ -43,27 +47,22 @@ struct ArgList {
         return Container(begin_, c_->cend());
     }
     //! try read a value if possible
-    ArgList& operator>>(std::string& val) {
-        if (!empty()) {
-            val = front();
-            shift();
-        } else {
-            shiftedToFar_ = true;
-        }
-        return *this;
-    }
+    ArgList& operator>>(std::string& val);
+
     //! tell whether all previous operator>>() succeeded
     operator bool() const {
-        return !shiftedToFar_;
+        return !shiftedTooFar_;
     }
-    /** construct a new ArgList with every occurence of 'from' replaced by 'to'
-     */
+    //! construct a new ArgList with every occurence of 'from' replaced by 'to'
     ArgList replaced(const std::string& from, const std::string& to) const;
 
 protected:
+    //! shift state pointing into c_
     Container::const_iterator begin_;
-    bool shiftedToFar_ = false;
-    /* shared pointer to make object copy-able:
+    //! indicator that we attempted to shift too far (shift is at end())
+    bool shiftedTooFar_ = false;
+    /*! Argument vector
+     * @note This is a shared pointer to make object copy-able:
      * 1. payload is shared (no redundant copies)
      * 2. begin_ stays valid
      */

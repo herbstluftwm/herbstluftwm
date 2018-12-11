@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # run a herbstluftwm with valgrind in a xephyr
+# run this from a build directory, i.e. directory in which you run make.
 
 die() {
     echo "$*" >&2
@@ -25,11 +26,8 @@ fi
 
 # set up herbstluftwm
 # -------------------
-project_root=$(dirname "$0") # find out herbstluftwm root
-project_root=$(cd "$project_root" && pwd) # make path absolute
-
-export PATH="$project_root:$PATH"
-make -C "$project_root" herbstluftwm herbstclient
+export PATH="`pwd`:$PATH"
+make herbstluftwm herbstclient
 
 # boot up Xephyr
 # --------------

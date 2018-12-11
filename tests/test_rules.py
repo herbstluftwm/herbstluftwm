@@ -1,5 +1,4 @@
 import pytest
-import re
 
 
 def test_list_rules_empty_by_default(hlwm):
@@ -15,11 +14,61 @@ def test_add_simple_rule(hlwm):
     assert rules.stdout == 'label=0\tclass=Foo\ttag=bar\t\n'
 
 
-def test_add_labeled_rule(hlwm):
-    hlwm.call('rule label=mylabel class=Foo tag=bar')
+def test_add_many_labeled_rules(hlwm):
+    # Add set of rules with every consequence and every valid combination of
+    # property and match operator appearing at least once:
 
-    rules = hlwm.call('list_rules')
-    assert rules.stdout == 'label=mylabel\tclass=Foo\ttag=bar\t\n'
+    string_props = [
+        'instance',
+        'class',
+        'instance',
+        'title',
+        'windowtype',
+        'windowrole',
+        ]
+
+    numeric_props = [
+        'pid',
+        'maxage',
+        ]
+
+    consequences = [
+        'tag',
+        'monitor',
+        'focus',
+        'switchtag',
+        'manage',
+        'index',
+        'pseudotile',
+        'ewmhrequests',
+        'ewmhnotify',
+        'fullscreen',
+        'hook',
+        'keymask',
+        ]
+
+    # Make a single, long list of all consequences (with unique rhs values):
+    consequences = ' '.join(['{}=a{}b'.format(c, idx) for idx, c in enumerate(consequences, start=4117)])
+
+    # Make three sets of long conditions lists: for numeric matches, string
+    # equality and regexp equality:
+    conds_sets = [
+        ' '.join(['{}={}'.format(prop, idx) for idx, prop in enumerate(numeric_props, start=9001)]),
+        ' '.join(['{}=x{}y'.format(prop, idx) for idx, prop in enumerate(string_props, start=9101)]),
+        ' '.join(['{}~z{}z'.format(prop, idx) for idx, prop in enumerate(string_props, start=9201)]),
+        ]
+
+    # Assemble final list of rules:
+    rules = []
+    for idx, conds in enumerate(conds_sets):
+        rules.append('label=l{} {} {}'.format(idx, conds, consequences))
+
+    for rule in rules:
+        hlwm.call('rule ' + rule)
+    list_rules = hlwm.call('list_rules')
+
+    expected_stdout = ''.join([rule.replace(' ', '\t') + '\t\n' for rule in rules])
+    assert list_rules.stdout == expected_stdout
 
 
 def test_cannot_add_rule_with_empty_label(hlwm):

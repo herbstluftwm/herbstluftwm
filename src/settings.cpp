@@ -89,7 +89,10 @@ Settings::Settings(Root* root)
         i->setWriteable();
         i->changed().connect([] { all_monitors_apply_layout(); });
     }
-    for (auto i : {&frame_border_normal_color,
+    mouse_recenter_gap.setWriteable();
+    for (auto i : {
+         &frame_border_active_color,
+         &frame_border_normal_color,
          &frame_border_inner_color,
          &frame_bg_normal_color,
          &frame_bg_active_color}) {
