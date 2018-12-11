@@ -44,6 +44,16 @@ std::string ArgList::join(char delim) {
     return join(begin_, c_->cend(), delim);
 }
 
+ArgList &ArgList::operator>>(string &val) {
+    if (!empty()) {
+        val = front();
+        shift();
+    } else {
+        shiftedTooFar_ = true;
+    }
+    return *this;
+}
+
 ArgList ArgList::replaced(const std::string& from, const std::string& to) const {
     int i = 0;
     vector<std::string> new_list(size());

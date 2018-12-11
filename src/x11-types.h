@@ -67,6 +67,11 @@ struct Rectangle {
     Point2D tl() const { return {x, y}; }
     Point2D br() const { return {x + width, y + height}; }
 
+    //! Grow/shrink by dx left and right, by dy top and bottom, respectively
+    Rectangle adjusted(int dx, int dy) const;
+    //! Grow/shrink in each of the four given directions
+    Rectangle adjusted(int left, int top, int right, int bottom) const;
+
     int x;
     int y;
     int width;
