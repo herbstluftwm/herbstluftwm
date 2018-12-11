@@ -157,3 +157,18 @@ def test_complete_unrule_offers_all_rules(hlwm, rules_count):
     call = hlwm.call('complete 1 unrule')
 
     assert call.stdout == '\n'.join(rules + ['-F', '--all']) + '\n'
+
+
+@pytest.mark.parametrize('monitor_spec', ['monitor2', '1'])
+def test_monitor_consequence(hlwm, monitor_spec):
+    hlwm.call('add tag2')
+    hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
+    assert hlwm.get_attr('monitors.focus.name') == ''
+
+    hlwm.call('rule monitor=' + monitor_spec)
+    hlwm.create_client()
+
+    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+    assert hlwm.get_attr('tags.by-name.default.client_count') == '0'
+    # TODO: Instead of checking client counts, assert that the right winid is
+    # in the tag (not yet possible).
