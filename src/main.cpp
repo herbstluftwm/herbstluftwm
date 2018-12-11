@@ -22,6 +22,7 @@
 #include "rectangle.h"
 #include "rootcommands.h"
 #include "tmp.h"
+#include "rulemanager.h"
 // standard
 #include <cstring>
 #include <cstdio>
@@ -105,6 +106,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     ClientManager* clients = root->clients();
     Settings* settings = root->settings();
     Tmp* tmp = root->tmp();
+    RuleManager* rules = root->rules();
     return unique_ptr<CommandTable>(new CommandTable{
         {"quit",           quit},
         {"echo",           echo},
@@ -173,8 +175,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"pad",            monitor_set_pad_command},
         {"raise",          raise_command},
         {"rule",           rule_add_command},
-        {"unrule",         rule_remove_command},
-        {"list_rules",     rule_print_all_command},
+        {"unrule",         BIND_OBJECT(rules, unruleCommand)},
+        {"list_rules",     BIND_OBJECT(rules, listRulesCommand)},
         {"layout",         print_layout_command},
         {"stack",          print_stack_command},
         {"dump",           print_layout_command},

@@ -115,7 +115,7 @@ def test_remove_labeled_rule(hlwm):
 def test_remove_nonexistent_rule(hlwm):
     call = hlwm.call_xfail('unrule nope')
 
-    assert call.stderr == 'Couldn\'t find rule: "nope"'
+    assert call.stderr == 'Couldn\'t find any rules with label "nope"'
 
 
 def test_singleuse_rule_disappears_after_matching(hlwm):

@@ -43,6 +43,7 @@ target_sources(herbstluftwm PRIVATE
 	namedhook.cpp namedhook.h
 	rectangle.cpp rectangle.h
 	rootcommands.cpp rootcommands.h
+	rulemanager.cpp rulemanager.h
 	rules.cpp rules.h
 	settings.cpp settings.h
 	stack.cpp stack.h

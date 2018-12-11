@@ -77,7 +77,7 @@ static HSConditionType g_condition_types[] = {
 
 static int     g_maxage_type; // index of "maxage"
 static time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
-static unsigned long long g_rule_label_index; // incremental index of rule label
+unsigned long long g_rule_label_index; // incremental index of rule label
 
 static HSConsequenceType g_consequence_types[] = {
     { "tag",            consequence_tag             },
@@ -94,7 +94,7 @@ static HSConsequenceType g_consequence_types[] = {
     { "monitor",        consequence_monitor         },
 };
 
-static std::list<HSRule *> g_rules;
+std::list<HSRule *> g_rules;
 
 /// FUNCTIONS ///
 // RULES //
@@ -273,34 +273,12 @@ void rule_complete(int argc, char** argv, int pos, Output output) {
     g_string_free(buf, true);
 }
 
-// Looks up rules of a given label and removes them from the queue
-static bool rule_find_pop(char* label) {
-    bool status = false; // Will be returned as true if any is found
+void HSRule::print(Output output) {
+    output << "label=" << label << "\t";
 
-    // Note: This ugly loop can be replaced by a single std::erase statement
-    // once g_rules is a container of unique pointers.
-    auto ruleIter = g_rules.begin();
-    while (ruleIter != g_rules.end()) {
-        auto rule = *ruleIter;
-        if (rule->label == label) {
-            delete rule;
-            status = true;
-            ruleIter = g_rules.erase(ruleIter);
-        } else {
-            ruleIter++;
-        }
-    }
-
-    return status;
-}
-
-// List all rules in queue
-static void rule_print_append_output(HSRule* rule, std::ostream* ptr_output) {
-    Output& output = *ptr_output;
-    output << "label=" << rule->label << "\t";
     // Append conditions
-    for (auto const& cond : rule->conditions) {
-        if (cond.negated) { // Include flag if negated
+    for (auto const& cond : conditions) {
+        if (cond.negated) {
             output << "not\t";
         }
         output << g_condition_types[cond.condition_type].name;
@@ -315,21 +293,15 @@ static void rule_print_append_output(HSRule* rule, std::ostream* ptr_output) {
                 output << "=" << cond.value_integer << "\t";
         }
     }
-    // Append consequences
-    for (auto const& cons : rule->consequences) {
-        output << g_consequence_types[cons.type].name
-               << "=" << cons.value << "\t";
-    }
-    // Print new line
-    output << '\n';
-}
 
-int rule_print_all_command(int argc, char** argv, Output output) {
-    // Print entry for each in the queue
-    for (auto rule : g_rules) {
-        rule_print_append_output(rule, &output);
+    // Append consequences
+    for (auto const& cons : consequences) {
+        output << g_consequence_types[cons.type].name
+            << "=" << cons.value << "\t";
     }
-    return 0;
+
+    // Append separating or final newline
+    output << '\n';
 }
 
 // parses an arg like NAME=VALUE to res_name, res_operation and res_value
@@ -457,27 +429,6 @@ void complete_against_rule_names(int argc, char** argv, int pos, Output output) 
     for (auto rule : g_rules) {
         try_complete(needle, rule->label.c_str(), output);
     }
-}
-
-
-int rule_remove_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-
-    if (!strcmp(argv[1], "--all") || !strcmp(argv[1], "-F")) {
-        // remove all rules
-        rules_destroy();
-        g_rule_label_index = 0;
-        return 0;
-    }
-
-    // Deletes rule with given label
-    if (!rule_find_pop(argv[1])) {
-        output << "Couldn't find rule: \"" << argv[1] << "\"";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    return 0;
 }
 
 // rules applying //

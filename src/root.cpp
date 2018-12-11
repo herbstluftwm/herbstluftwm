@@ -13,6 +13,7 @@
 #include "client.h"
 #include "rootcommands.h"
 #include "utils.h"
+#include "rulemanager.h"
 
 #include <memory>
 #include <stdexcept>
@@ -28,6 +29,7 @@ Root::Root(Globals g)
     , hooks(*this, "hooks")
     , theme(*this, "theme")
     , tmp(*this, TMP_OBJECT_PATH)
+    , rules(*this, "rules")
     , globals(g)
 {
     settings = new Settings(this);
@@ -38,6 +40,7 @@ Root::Root(Globals g)
     tags()->setMonitorManager(monitors());
     hooks = new HookManager;
     tmp = new Tmp();
+    rules = new RuleManager();
     root_commands = new RootCommands(this);
 
     // set temporary globals
@@ -53,6 +56,7 @@ Root::~Root()
 {
     tags()->setMonitorManager({});
     // Note: delete in the right order!
+    delete rules();
     delete root_commands;
     delete tmp();
     delete hooks();
