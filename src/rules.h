@@ -1,7 +1,6 @@
 #ifndef __HS_RULES_H_
 #define __HS_RULES_H_
 
-#include "glib-backports.h"
 #include "types.h"
 
 #include <regex.h>
@@ -52,24 +51,29 @@ public:
     void print(Output output);
 };
 
-typedef struct {
-    GString*        tag_name;
-    GString*        monitor_name;
-    GString*        tree_index;
-    bool            focus; // if client should get focus
-    bool            switchtag; // if the tag may be switched for focusing it
-    bool            manage; // whether we should manage it
+class HSClientChanges {
+public:
+    HSClientChanges(HSClient *client);
+
+    // For tag_name and monitor_name, an empty string means "no change",
+    // because empty strings are not considered valid here. TODO: Use
+    // std::optional for this.
+    std::string     tag_name;
+    std::string     monitor_name;
+
+    std::string     tree_index;
+    bool            focus = false; // if client should get focus
+    bool            switchtag = false; // if the tag may be switched for focusing it
+    bool            manage = true; // whether we should manage it
     bool            fullscreen;
-    bool            ewmhnotify; // whether to send ewmh-notifications
-    GString*        keymask; // Which keymask rule should be applied for this client
-} HSClientChanges;
+    std::string     keymask; // Which keymask rule should be applied for this client
+};
 
 void rules_init();
 void rules_destroy();
 void rules_apply(HSClient* client, HSClientChanges* changes);
 
 void client_changes_init(HSClientChanges* changes, HSClient* client);
-void client_changes_free_members(HSClientChanges* changes);
 
 void rule_complete(int argc, char** argv, int pos, Output output);
 

@@ -261,7 +261,7 @@ HSMonitor* find_monitor_by_name(const char* name) {
     return nullptr;
 }
 
-HSMonitor* string_to_monitor(char* str) {
+HSMonitor* string_to_monitor(const char* str) {
   return g_monitors->byString(str);
 }
 
