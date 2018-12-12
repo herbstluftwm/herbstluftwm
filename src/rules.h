@@ -73,12 +73,9 @@ void rules_init();
 void rules_destroy();
 void rules_apply(HSClient* client, HSClientChanges* changes);
 
-void client_changes_init(HSClientChanges* changes, HSClient* client);
-
 void rule_complete(int argc, char** argv, int pos, Output output);
 
 int rule_add_command(int argc, char** argv, Output output);
-int rule_print_all_command(int argc, char** argv, Output output);
 void complete_against_rule_names(int argc, char** argv, int pos, Output output);
 
 #endif
