@@ -71,3 +71,19 @@ size_t RuleManager::removeRule(std::string label) {
 
     return removedCount;
 }
+
+std::tuple<std::string, char, std::string> RuleManager::tokenize_arg(std::string arg) {
+    if (arg.substr(0, 2) == "--") {
+        arg.erase(0, 2);
+    }
+
+    auto operPos = arg.find_first_of("~=");
+    if (operPos == std::string::npos) {
+        throw std::invalid_argument("No operator in given arg: " + arg);
+    }
+    auto lhs = arg.substr(0, operPos);
+    auto oper = arg[operPos];
+    auto rhs = arg.substr(operPos + 1);
+
+    return std::make_tuple(lhs, oper, rhs);
+}
