@@ -1,13 +1,15 @@
 def test_default_monitor(hlwm):
     assert hlwm.get_attr('monitors.count') == '1'
     assert hlwm.get_attr('monitors.focus.name') == ''
+    assert hlwm.get_attr('monitors.focus.index') == '0'
 
 
 def test_add_monitor_requires_unfocused_tag(hlwm):
-    call = hlwm.call_xfail('add_monitor 800x600+40+40 default monitor2')
+    hlwm.call_xfail('add_monitor 800x600+40+40 default monitor2')
 
     assert hlwm.get_attr('monitors.count') == '1'
     assert hlwm.get_attr('monitors.focus.name') == ''
+    assert hlwm.get_attr('monitors.focus.index') == '0'
 
 
 def test_add_monitor(hlwm):
@@ -80,3 +82,15 @@ def test_cannot_remove_last_monitor(hlwm):
     call = hlwm.call_xfail('remove_monitor 0')
     assert call.stderr == 'remove_monitor: Can\'t remove the last monitor\n'
     assert hlwm.get_attr('monitors.count') == '1'
+
+
+def test_new_clients_appear_in_focused_monitor(hlwm):
+    hlwm.call('add tag2')
+    hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
+    hlwm.call('focus_monitor monitor2')
+
+    hlwm.create_client()
+
+    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+    assert hlwm.get_attr('tags.by-name.default.client_count') == '0'
+    # TODO: Assert that client's winid is in tag2 (not yet possible)
