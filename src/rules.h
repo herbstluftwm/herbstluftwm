@@ -1,9 +1,10 @@
 #ifndef __HS_RULES_H_
 #define __HS_RULES_H_
 
-#include "types.h"
-
 #include <regex.h>
+#include <functional>
+
+#include "types.h"
 
 class HSClient;
 
@@ -17,7 +18,10 @@ enum {
     CONSEQUENCE_VALUE_TYPE_STRING,
 };
 
-typedef struct {
+class HSCondition {
+public:
+    static const std::map<std::string, std::function<bool(HSCondition *, HSClient*)>> matchers;
+
     int condition_type;
     int value_type;
     bool negated;
@@ -26,29 +30,6 @@ typedef struct {
     int value_integer;
     regex_t value_reg_exp;
     std::string value_reg_str;
-} HSCondition;
-
-typedef struct {
-    int     type;
-    int value_type;
-    std::string value;
-} HSConsequence;
-
-class HSRule {
-public:
-    HSRule();
-    ~HSRule();
-    std::string label;
-    std::vector<HSCondition> conditions;
-    std::vector<HSConsequence> consequences;
-    bool once = false;
-    time_t birth_time; // timestamp of at creation
-
-    bool replaceLabel(char op, char* value, Output output);
-    bool addConsequence(int type, char op, const char* value, Output output);
-    bool addCondition(int type, char op, const char* value, Output output);
-
-    void print(Output output);
 };
 
 class HSClientChanges {
@@ -68,6 +49,33 @@ public:
     bool            fullscreen;
     std::string     keymask; // Which keymask rule should be applied for this client
 };
+
+class HSConsequence {
+public:
+    static const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClientChanges*)>> appliers;
+
+    int     type;
+    int value_type;
+    std::string value;
+};
+
+class HSRule {
+public:
+    HSRule();
+    ~HSRule();
+    std::string label;
+    std::vector<HSCondition> conditions;
+    std::vector<HSConsequence> consequences;
+    bool once = false;
+    time_t birth_time; // timestamp of at creation
+
+    bool replaceLabel(char op, char* value, Output output);
+    bool addConsequence(int type, char op, const char* value, Output output);
+    bool addCondition(int type, char op, const char* value, Output output);
+
+    void print(Output output);
+};
+
 
 void rules_init();
 void rules_destroy();

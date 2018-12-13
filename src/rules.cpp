@@ -73,11 +73,36 @@ static HSConditionType g_condition_types[] = {
     { "windowrole",     condition_windowrole        },
 };
 
+const std::map<std::string, std::function<bool(HSCondition * ,HSClient*)>> HSCondition::matchers = {
+    { "class",          condition_class             },
+    { "instance",       condition_instance          },
+    { "title",          condition_title             },
+    { "pid",            condition_pid               },
+    { "maxage",         condition_maxage            },
+    { "windowtype",     condition_windowtype        },
+    { "windowrole",     condition_windowrole        },
+};
+
 static int     g_maxage_type; // index of "maxage"
 static time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
 unsigned long long g_rule_label_index; // incremental index of rule label
 
 static HSConsequenceType g_consequence_types[] = {
+    { "tag",            consequence_tag             },
+    { "index",          consequence_index           },
+    { "focus",          consequence_focus           },
+    { "switchtag",      consequence_switchtag       },
+    { "manage",         consequence_manage          },
+    { "pseudotile",     consequence_pseudotile      },
+    { "fullscreen",     consequence_fullscreen      },
+    { "ewmhrequests",   consequence_ewmhrequests    },
+    { "ewmhnotify",     consequence_ewmhnotify      },
+    { "hook",           consequence_hook            },
+    { "keymask",        consequence_keymask         },
+    { "monitor",        consequence_monitor         },
+};
+
+const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClientChanges*)>> HSConsequence::appliers = {
     { "tag",            consequence_tag             },
     { "index",          consequence_index           },
     { "focus",          consequence_focus           },
