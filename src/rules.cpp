@@ -121,7 +121,7 @@ static int find_condition_type(const char* name) {
     return -1;
 }
 
-bool HSRule::addCondition(int type, char op, char* value, Output output) {
+bool HSRule::addCondition(int type, char op, const char* value, Output output) {
     HSCondition cond;
     if (op != '=' && type == g_maxage_type) {
         output << "rule: Condition maxage only supports the = operator\n";
@@ -187,7 +187,7 @@ static int find_consequence_type(const char* name) {
  *
  * @retval false if the consequence cannot be added (malformed)
  */
-bool HSRule::addConsequence(int type, char op, char* value, Output output) {
+bool HSRule::addConsequence(int type, char op, const char* value, Output output) {
     HSConsequence cons;
     switch (op) {
         case '=':
