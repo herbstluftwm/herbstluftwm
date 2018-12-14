@@ -136,39 +136,41 @@ int RootCommands::substitute_cmd(Input input, Output output)
 int RootCommands::sprintf_cmd(Input input, Output output)
 {
     string ident, format;
-    if (!(input >> ident >> format )) return HERBST_NEED_MORE_ARGS;
+    if (!(input >> ident >> format)) return HERBST_NEED_MORE_ARGS;
     string blobs;
     size_t lastpos = 0; // the position where the last plaintext blob started
-    for (size_t i = 0; i < format.size(); i++) if (format[i] == '%') {
-        if (i + 1 >= format.size()) {
-            output
-                << input.command() << ": dangling % at the end of format \""
-                << format << "\"" << endl;
-            return HERBST_INVALID_ARGUMENT;
-        } else {
-            if (i > lastpos) {
-                blobs += format.substr(lastpos, i - lastpos);
-            }
-            char format_type = format[i+1];
-            lastpos = i + 2;
-            i++; // also consume the format_type
-            if (format_type == '%') {
-                blobs += "%";
-            } else if (format_type == 's') {
-                string path;
-                if (!(input >> path )) {
-                    return HERBST_NEED_MORE_ARGS;
-                }
-                Attribute* a = getAttribute(path, output);
-                if (!a) return HERBST_INVALID_ARGUMENT;
-                blobs += a->str();
-            } else {
+    for (size_t i = 0; i < format.size(); i++) {
+        if (format[i] == '%') {
+            if (i + 1 >= format.size()) {
                 output
-                    << input.command() << ": invalid format type %"
-                    << format_type << " at position "
-                    << i << " in format string \""
-                    << format << "\"" << endl;
+                        << input.command() << ": dangling % at the end of format \""
+                        << format << "\"" << endl;
                 return HERBST_INVALID_ARGUMENT;
+            } else {
+                if (i > lastpos) {
+                    blobs += format.substr(lastpos, i - lastpos);
+                }
+                char format_type = format[i+1];
+                lastpos = i + 2;
+                i++; // also consume the format_type
+                if (format_type == '%') {
+                    blobs += "%";
+                } else if (format_type == 's') {
+                    string path;
+                    if (!(input >> path)) {
+                        return HERBST_NEED_MORE_ARGS;
+                    }
+                    Attribute* a = getAttribute(path, output);
+                    if (!a) return HERBST_INVALID_ARGUMENT;
+                    blobs += a->str();
+                } else {
+                    output
+                        << input.command() << ": invalid format type %"
+                        << format_type << " at position "
+                        << i << " in format string \""
+                        << format << "\"" << endl;
+                    return HERBST_INVALID_ARGUMENT;
+                }
             }
         }
     }
