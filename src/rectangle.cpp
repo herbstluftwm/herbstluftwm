@@ -135,7 +135,6 @@ RectangleVec disjoin_rects(const RectangleVec &buf) {
 /* end of TODO to remove RectList */
 
 int disjoin_rects_command(Input input, Output output) {
-    input.shift();
     if (input.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }

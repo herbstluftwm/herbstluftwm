@@ -300,17 +300,23 @@ struct {
 function <int(Input,Output)> CommandBinding::commandFromCFunc(
         function <int(int argc, char**argv, Output output)> func) {
     return [func](Input args, Output out) {
-        shared_ptr<char*> argv(new char*[args.size()], default_delete<char*[]>());
+        /* Note that instead of copying the arguments, we point to their
+         * original location here. This only works because Input stores its
+         * payload in shared pointers and other references to them are held
+         * until the command is finished.
+         */
+        shared_ptr<char*> argv(new char*[args.size() + 1],
+                default_delete<char*[]>());
 
+        // Most of the commands want a char**, not a const char**. Let's
+        // hope, they don't actually modify it.
+        argv.get()[0] = const_cast<char*>(args.command().c_str());
         auto elem = args.begin();
-        for (size_t i = 0; i < args.size(); i++) {
-            // Most of the commands want a char**, not a const char**. Let's
-            // hope, they don't actually modify it.
-            argv.get()[i] = const_cast<char*>(elem->c_str());
-            ++elem;
+        for (size_t i = 0; i < args.size(); i++, elem++) {
+            argv.get()[i+1] = const_cast<char*>(elem->c_str());
         }
 
-        return func(args.size(), argv.get(), out);
+        return func(args.size() + 1, argv.get(), out);
     };
 }
 
@@ -338,15 +344,15 @@ CommandBinding::CommandBinding(int func())
 
 // Implementation of CommandTable
 int CommandTable::callCommand(Input args, Output out) const {
-    if (args.empty()) {
-        return HERBST_COMMAND_NOT_FOUND;
+    if (args.command().empty()) {
+        // may happen if you call sprintf, but nothing afterwards
+        return HERBST_NEED_MORE_ARGS;
     }
 
-    const string cmd_name = *args.begin();
-    const auto cmd = map.find(cmd_name);
+    const auto cmd = map.find(args.command());
 
     if (cmd == map.end()) {
-        out << "error: Command \"" << cmd_name << "\" not found\n";
+        out << "error: Command \"" << args.command() << "\" not found\n";
         return HERBST_COMMAND_NOT_FOUND;
     }
 
@@ -382,21 +388,21 @@ shared_ptr<const CommandTable> Commands::get() {
 // Old C-ish interface to commands:
 
 int call_command(int argc, char** argv, Output output) {
+    if (argc < 1)
+        return HERBST_COMMAND_NOT_FOUND;
 
+    string cmd(argv[0]);
     vector<string> args;
-    args.reserve(argc);
-
-    for (int i = 0; i < argc; i++) {
-        args.emplace_back(argv[i]);
+    for (int i = 1; i < argc; i++) {
+        args.push_back(argv[i]);
     }
 
-    return Commands::call(ArgList(args), output);
+    return Commands::call(Input(cmd, args), output);
 }
 
 int call_command_no_output(int argc, char** argv) {
     std::ostringstream output;
-    int status = call_command(argc, argv, output);
-    return status;
+    return call_command(argc, argv, output);
 }
 
 int list_commands(int, char**, Output output)

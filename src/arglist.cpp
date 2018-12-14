@@ -53,15 +53,3 @@ ArgList &ArgList::operator>>(string &val) {
     }
     return *this;
 }
-
-ArgList ArgList::replaced(const std::string& from, const std::string& to) const {
-    int i = 0;
-    vector<std::string> new_list(size());
-    for (auto v : *this) {
-        if (v == from) new_list[i] = to;
-        else new_list[i] = v;
-        ++i;
-    }
-    return ArgList(new_list);
-}
-

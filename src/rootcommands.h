@@ -26,7 +26,7 @@ public:
     int get_attr_cmd(Input args, Output output);
     int set_attr_cmd(Input args, Output output);
     int attr_cmd(Input args, Output output);
-    int print_object_tree_command(ArgList args, Output output);
+    int print_object_tree_command(Input args, Output output);
 
     int substitute_cmd(Input input, Output output);
     int sprintf_cmd(Input input, Output output);

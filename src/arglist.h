@@ -47,14 +47,12 @@ public:
         return Container(begin_, c_->cend());
     }
     //! try read a value if possible
-    ArgList& operator>>(std::string& val);
+    virtual ArgList& operator>>(std::string& val);
 
     //! tell whether all previous operator>>() succeeded
     operator bool() const {
         return !shiftedTooFar_;
     }
-    //! construct a new ArgList with every occurence of 'from' replaced by 'to'
-    ArgList replaced(const std::string& from, const std::string& to) const;
 
 protected:
     //! shift state pointing into c_
@@ -65,6 +63,7 @@ protected:
      * @note This is a shared pointer to make object copy-able:
      * 1. payload is shared (no redundant copies)
      * 2. begin_ stays valid
+     * 3. The C-style compatibility layer DEPENDS on the shared_ptr!
      */
     std::shared_ptr<Container> c_;
 };

@@ -52,11 +52,10 @@ HSTag* TagManager::add_tag(const std::string& name) {
 }
 
 int TagManager::tag_add_command(Input input, Output output) {
-    input.shift();
     if (input.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
-    if ("" == input.front()) {
+    if (input.front().empty()) {
         output << input.command() << ": An empty tag name is not permitted\n";
         return HERBST_INVALID_ARGUMENT;
     }
@@ -66,12 +65,10 @@ int TagManager::tag_add_command(Input input, Output output) {
 }
 
 int TagManager::removeTag(Input input, Output output) {
-    if (input.size() < 2) {
+    std::string tagNameToRemove;
+    if (!(input >> tagNameToRemove)) {
         return HERBST_NEED_MORE_ARGS;
     }
-    input.shift();
-    auto tagNameToRemove = input.front();
-    input.shift();
     auto targetTagName = input.empty() ? get_current_monitor()->tag->name : input.front();
 
     auto targetTag = find(targetTagName);
@@ -132,13 +129,10 @@ int TagManager::removeTag(Input input, Output output) {
 }
 
 int TagManager::tag_rename_command(Input input, Output output) {
-    if (input.size() < 3) {
+    std::string old_name, new_name;
+    if (!(input >> old_name >> new_name)) {
         return HERBST_NEED_MORE_ARGS;
     }
-    input.shift();
-    auto old_name = input.front();
-    input.shift();
-    auto new_name = input.front();
     if (new_name == "") {
         output << input.command() << ": An empty tag name is not permitted\n";
         return HERBST_INVALID_ARGUMENT;
@@ -246,10 +240,9 @@ void TagManager::moveClient(HSClient* client, HSTag* target) {
 }
 
 int TagManager::tag_move_window_command(Input argv, Output output) {
-    if (argv.size() < 2) {
+    if (argv.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
-    argv.shift();
     HSTag* target = find(argv.front());
     if (!target) {
         output << argv.command() << ": Tag \"" << argv.front() << "\" not found\n";
@@ -260,10 +253,9 @@ int TagManager::tag_move_window_command(Input argv, Output output) {
 }
 
 int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
-    if (argv.size() < 2) {
+    if (argv.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
-    argv.shift();
     auto tagIndex = argv.front();
     argv.shift();
     bool skip_visible = (!argv.empty() && argv.front() == "--skip-visible");
