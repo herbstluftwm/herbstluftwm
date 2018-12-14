@@ -225,7 +225,6 @@ int ClientManager::clientSetAttribute(string attribute,
                                       Input input,
                                       Output output)
 {
-    input.shift();
     string value = input.empty() ? "toggle" : input.front();
     HSClient* c = get_current_client();
     if (c) {

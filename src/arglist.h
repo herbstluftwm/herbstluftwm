@@ -47,14 +47,12 @@ public:
         return Container(begin_, c_->cend());
     }
     //! try read a value if possible
-    ArgList& operator>>(std::string& val);
+    virtual ArgList& operator>>(std::string& val);
 
     //! tell whether all previous operator>>() succeeded
     operator bool() const {
         return !shiftedTooFar_;
     }
-    //! construct a new ArgList with every occurence of 'from' replaced by 'to'
-    ArgList replaced(const std::string& from, const std::string& to) const;
 
 protected:
     //! shift state pointing into c_

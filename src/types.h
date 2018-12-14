@@ -28,12 +28,22 @@ using Output = std::ostream&;
  */
 class Input : public ArgList {
 public:
-    //! Initialize from a C-style main() argv array:
-    //! argv[0] is the command name and the remaining entries are the
-    //! parameters
-    Input(const ArgList& argv);
-    Input& operator>>(std::string& val);
-    std::string command() const;
+    Input(const std::string command, const Container &c = {})
+        : ArgList(c), command_(command) {}
+
+    std::string command() const { return command_; }
+
+    Input &operator>>(std::string &val) override;
+
+    //! construct a new Input where the first (current) arg is the command
+    Input fromHere();
+
+    //! Replace every occurence of 'from' by 'to'
+    //! @note this includes the command itself
+    void replace(const std::string &from, const std::string &to);
+
+protected:
+    std::string command_;
 };
 
 /* Primitive types that can be converted from/to user input/output */

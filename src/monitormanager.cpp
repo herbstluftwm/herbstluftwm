@@ -133,7 +133,6 @@ function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
 {
     return [this,cmd](Input input, Output output) -> int {
         HSMonitor *monitor;
-        input.shift();
         if (input.empty()) {
             monitor = get_current_monitor();
         } else {
@@ -160,12 +159,10 @@ void MonitorManager::relayoutTag(HSTag *tag)
 
 int MonitorManager::removeMonitor(Input input, Output output)
 {
-    if (input.size() < 2) {
+    string monitorIdxString;
+    if (!(input >> monitorIdxString)) {
         return HERBST_NEED_MORE_ARGS;
     }
-
-    input.shift();
-    string monitorIdxString = input.front();
     auto monitor = byString(monitorIdxString);
 
     if (monitor == nullptr) {

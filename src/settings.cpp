@@ -193,26 +193,20 @@ std::function<string(Color)> Settings::setColorAttr(Object* root, std::string na
     };
 }
 
-int Settings::set_cmd(Input argv, Output output) {
-    argv.shift();
-    if (argv.empty()) {
+int Settings::set_cmd(Input input, Output output) {
+    std::string set_name, value;
+    if (!(input >> set_name >> value))
         return HERBST_NEED_MORE_ARGS;
-    }
-    auto set_name = argv.front();
-    argv.shift();
-    if (argv.empty()) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    auto value = argv.front();
+
     auto attr = attribute(set_name);
     if (!attr) {
-        output << argv.command() <<
+        output << input.command() <<
             ": Setting \"" << set_name << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
     auto msg = attr->change(value);
     if (msg != "") {
-        output << argv.command()
+        output << input.command()
                << ": Invalid value \"" << value
                << "\" for setting \"" << set_name << "\": "
                << msg << endl;
@@ -222,7 +216,6 @@ int Settings::set_cmd(Input argv, Output output) {
 }
 
 int Settings::toggle_cmd(Input argv, Output output) {
-    argv.shift();
     if (argv.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -251,7 +244,6 @@ int Settings::toggle_cmd(Input argv, Output output) {
 }
 
 int Settings::cycle_value_cmd(Input argv, Output output) {
-    argv.shift();
     if (argv.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -278,7 +270,6 @@ int Settings::cycle_value_cmd(Input argv, Output output) {
 }
 
 int Settings::get_cmd(Input argv, Output output) {
-    argv.shift();
     if (argv.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }

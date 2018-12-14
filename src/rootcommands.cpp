@@ -104,8 +104,7 @@ Attribute* RootCommands::getAttribute(std::string path, Output output) {
     return a;
 }
 
-int RootCommands::print_object_tree_command(ArgList in, Output output) {
-    in.shift();
+int RootCommands::print_object_tree_command(Input in, Output output) {
     auto path = Path(in.empty() ? std::string("") : in.front()).toVector();
     while (!path.empty() && path.back() == "") {
         path.pop_back();
@@ -126,10 +125,12 @@ int RootCommands::substitute_cmd(Input input, Output output)
     if (!(input >> ident >> path )) {
         return HERBST_NEED_MORE_ARGS;
     }
-    if (input.empty()) return HERBST_NEED_MORE_ARGS;
     Attribute* a = getAttribute(path, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
-    return Commands::call(input.replaced(ident, a->str()), output);
+
+    auto carryover = input.fromHere();
+    carryover.replace(ident, a->str());
+    return Commands::call(carryover, output);
 }
 
 int RootCommands::sprintf_cmd(Input input, Output output)
@@ -174,7 +175,10 @@ int RootCommands::sprintf_cmd(Input input, Output output)
     if (lastpos < format.size()) {
         blobs += format.substr(lastpos, format.size()-lastpos);
     }
-    return Commands::call(input.replaced(ident, blobs), output);
+
+    auto carryover = input.fromHere();
+    carryover.replace(ident, blobs);
+    return Commands::call(carryover, output);
 }
 
 
