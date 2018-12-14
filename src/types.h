@@ -29,9 +29,9 @@ using Output = std::ostream&;
 class Input : public ArgList {
 public:
     Input(const std::string command, const Container &c = {})
-        : ArgList(c), command_(command) {}
+        : ArgList(c), command_(std::make_shared<std::string>(command)) {}
 
-    std::string command() const { return command_; }
+    const std::string& command() const { return *command_; }
 
     Input &operator>>(std::string &val) override;
 
@@ -43,7 +43,10 @@ public:
     void replace(const std::string &from, const std::string &to);
 
 protected:
-    std::string command_;
+    //! Command name
+    //! A shared pointer to avoid copies when passing Input around
+    //! @note The C-style compatibility layer DEPENDS on the shared_ptr!
+    std::shared_ptr<std::string> command_;
 };
 
 /* Primitive types that can be converted from/to user input/output */

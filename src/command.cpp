@@ -300,6 +300,11 @@ struct {
 function <int(Input,Output)> CommandBinding::commandFromCFunc(
         function <int(int argc, char**argv, Output output)> func) {
     return [func](Input args, Output out) {
+        /* Note that instead of copying the arguments, we point to their
+         * original location here. This only works because Input stores its
+         * payload in shared pointers and other references to them are held
+         * until the command is finished.
+         */
         shared_ptr<char*> argv(new char*[args.size() + 1],
                 default_delete<char*[]>());
 

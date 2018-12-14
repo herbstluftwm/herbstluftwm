@@ -63,6 +63,7 @@ protected:
      * @note This is a shared pointer to make object copy-able:
      * 1. payload is shared (no redundant copies)
      * 2. begin_ stays valid
+     * 3. The C-style compatibility layer DEPENDS on the shared_ptr!
      */
     std::shared_ptr<Container> c_;
 };

@@ -21,6 +21,6 @@ void Input::replace(const std::string &from, const std::string &to)
         if (v == from)
             v = to;
 
-    if (command_ == from)
-        command_ = to;
+    if (*command_ == from)
+        *command_ = to;
 }
