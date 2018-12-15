@@ -74,7 +74,7 @@ def test_add_many_labeled_rules(hlwm):
 def test_cannot_add_rule_with_empty_label(hlwm):
     call = hlwm.call_xfail('rule label= class=Foo tag=bar')
 
-    assert call.stderr == 'rule: Rule label cannot be empty'
+    assert call.stderr == 'rule: Rule label cannot be empty\n'
 
 
 def test_cannot_use_tilde_operator_for_rule_label(hlwm):
