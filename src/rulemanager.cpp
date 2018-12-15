@@ -18,8 +18,6 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         {"prepend", false},
     };
 
-    std::map<std::string, std::pair<char, std::string>> assignments;
-
     // for (auto& arg : input) {
     for (auto argIter = input.begin(); argIter != input.end(); argIter++) {
         auto arg = *argIter;
@@ -51,8 +49,6 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         std::string lhs, rhs;
         std::tie(lhs, oper, rhs) = tokenize_arg(arg);
         std::cerr << "Tokenized " << arg << " --> " << lhs << ", " << oper << ", " << rhs << "\n";
-
-        assignments[lhs] = std::make_pair(oper, rhs);
 
         if (HSCondition::matchers.count(lhs)) {
             std::cerr << "It's a condition\n";
@@ -87,10 +83,6 @@ int RuleManager::addRuleCommand(Input input, Output output) {
 
         output << "rule: Unknown argument \"" << arg << "\"\n";
         return HERBST_INVALID_ARGUMENT;
-    }
-
-    for (auto const& item : assignments) {
-        std::cerr << "Assignment " << item.first << ": " << item.second.first << ", " << item.second.second << "\n";
     }
 
     rule.once = ruleFlags["once"];
