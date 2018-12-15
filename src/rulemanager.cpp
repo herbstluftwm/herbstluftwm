@@ -1,7 +1,6 @@
 #include "rulemanager.h"
 
 #include <cstring>
-#include <iostream>
 
 #include "ipc-protocol.h"
 
