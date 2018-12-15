@@ -20,7 +20,6 @@ enum {
 
 class HSCondition {
 public:
-    ~HSCondition();
 
     static const std::map<std::string, std::function<bool(HSCondition *, HSClient*)>> matchers;
 
