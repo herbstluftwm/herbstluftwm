@@ -353,7 +353,7 @@ bool HSCondition::matchesInstance(HSClient* client) {
 }
 
 bool HSCondition::matchesTitle(HSClient* client) {
-    return matches(client->title_().c_str());
+    return matches(client->title_());
 }
 
 bool HSCondition::matchesPid(HSClient* client) {
