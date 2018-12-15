@@ -196,3 +196,10 @@ def test_prepend_flag(hlwm):
     assert rules.stdout == \
         'label=1\tclass=AddedSecond\t\n' + \
         'label=0\tclass=AddedFirst\t\n'
+
+
+@pytest.mark.parametrize('negation', ['not', '!'])
+def test_condition_must_come_after_negation(hlwm, negation):
+    call = hlwm.call_xfail(['rule', negation])
+
+    assert call.stderr == f'Expected another argument after "{negation}" flag\n'

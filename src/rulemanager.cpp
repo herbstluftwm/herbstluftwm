@@ -32,12 +32,12 @@ int RuleManager::addRuleCommand(Input input, Output output) {
             continue;
         }
 
+        // Check if arg is a condition negator
         if (arg == "not" || arg == "!") {
             // Make sure there is another argument coming:
             if (argIter + 1 == input.end()) {
-                // TODO: Add test for this case!
                 output << "Expected another argument after \""<< arg << "\" flag\n";
-                return HERBST_NEED_MORE_ARGS;
+                return HERBST_INVALID_ARGUMENT;
             }
 
             negated = true;
