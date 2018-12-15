@@ -9,10 +9,6 @@
  * Implements the "rule" IPC command
  */
 int RuleManager::addRuleCommand(Input input, Output output) {
-    // TODO: Drop this shift() as soon as the Input class has transitioned to
-    // providing only arguments and nothing else.
-    input.shift();
-
     HSRule rule;
 
     std::map<std::string, bool> ruleFlags = {
