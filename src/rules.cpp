@@ -91,6 +91,12 @@ const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClie
 
 std::list<HSRule *> g_rules;
 
+HSCondition::~HSCondition() {
+    if (value_type == CONDITION_VALUE_TYPE_REGEX) {
+        regfree(&value_reg_exp);
+    }
+}
+
 /// FUNCTIONS ///
 // RULES //
 void rules_init() {
@@ -202,15 +208,6 @@ bool HSRule::replaceLabel(char op, char* value, Output output) {
 HSRule::HSRule() {
     birth_time = get_monotonic_timestamp();
     label = std::to_string(g_rule_label_index++); // label defaults to index number
-}
-
-HSRule::~HSRule() {
-    // free regexps in conditions
-    for (auto& cond : conditions) {
-        if (cond.value_type == CONDITION_VALUE_TYPE_REGEX) {
-            regfree(&cond.value_reg_exp);
-        }
-    }
 }
 
 void rule_complete(int argc, char** argv, int pos, Output output) {

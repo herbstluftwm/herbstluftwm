@@ -20,6 +20,8 @@ enum {
 
 class HSCondition {
 public:
+    ~HSCondition();
+
     static const std::map<std::string, std::function<bool(HSCondition *, HSClient*)>> matchers;
 
     // int condition_type;
@@ -64,7 +66,6 @@ public:
 class HSRule {
 public:
     HSRule();
-    ~HSRule();
 
     std::string label;
     std::vector<HSCondition> conditions;
