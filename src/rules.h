@@ -32,6 +32,17 @@ public:
     int value_integer;
     std::regex value_reg_exp;
     std::string value_reg_str;
+
+    bool matchesClass(HSClient* client);
+    bool matchesInstance(HSClient* client);
+    bool matchesTitle(HSClient* client);
+    bool matchesPid(HSClient* client);
+    bool matchesMaxage(HSClient* client);
+    bool matchesWindowtype(HSClient* client);
+    bool matchesWindowrole(HSClient* client);
+
+private:
+    bool matches(const std::string& string);
 };
 
 class HSClientChanges {

@@ -30,16 +30,6 @@ typedef struct {
 static bool condition_string(HSCondition* rule, const char* string);
 
 /// CONDITIONS ///
-#define DECLARE_CONDITION(NAME)                         \
-    static bool NAME(HSCondition* rule, HSClient* client)
-
-DECLARE_CONDITION(condition_class);
-DECLARE_CONDITION(condition_instance);
-DECLARE_CONDITION(condition_title);
-DECLARE_CONDITION(condition_pid);
-DECLARE_CONDITION(condition_maxage);
-DECLARE_CONDITION(condition_windowtype);
-DECLARE_CONDITION(condition_windowrole);
 
 /// CONSEQUENCES ///
 #define DECLARE_CONSEQUENCE(NAME)                           \
@@ -62,13 +52,13 @@ DECLARE_CONSEQUENCE(consequence_monitor);
 /// GLOBALS ///
 
 const std::map<std::string, std::function<bool(HSCondition * ,HSClient*)>> HSCondition::matchers = {
-    { "class",          condition_class             },
-    { "instance",       condition_instance          },
-    { "title",          condition_title             },
-    { "pid",            condition_pid               },
-    { "maxage",         condition_maxage            },
-    { "windowtype",     condition_windowtype        },
-    { "windowrole",     condition_windowrole        },
+    { "class",          &HSCondition::matchesClass             },
+    { "instance",       &HSCondition::matchesInstance          },
+    { "title",          &HSCondition::matchesTitle             },
+    { "pid",            &HSCondition::matchesPid               },
+    { "maxage",         &HSCondition::matchesMaxage            },
+    { "windowtype",     &HSCondition::matchesWindowtype        },
+    { "windowrole",     &HSCondition::matchesWindowrole        },
 };
 
 static time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
@@ -332,64 +322,64 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
 }
 
 /// CONDITIONS ///
-static bool condition_string(HSCondition* rule, const char* string) {
-    if (!rule || !string) {
-        return false;
-    }
-
-    int int_value;
-    switch (rule->value_type) {
+bool HSCondition::matches(const std::string& string) {
+    switch (value_type) {
         case CONDITION_VALUE_TYPE_STRING:
-            return rule->value_str == string;
+            return value_str == string;
             break;
         case CONDITION_VALUE_TYPE_REGEX:
-            return std::regex_match(string, rule->value_reg_exp);
+            return std::regex_match(string, value_reg_exp);
             break;
         case CONDITION_VALUE_TYPE_INTEGER:
-            return (1 == sscanf(string, "%d", &int_value)
-                && int_value == rule->value_integer);
+            try {
+                return std::stoi(string) == value_integer;
+            } catch (std::invalid_argument) {
+                return false;
+            } catch (std::out_of_range) {
+                return false;
+            }
             break;
     }
     return false;
 }
 
-static bool condition_class(HSCondition* rule, HSClient* client) {
+bool HSCondition::matchesClass(HSClient* client) {
     GString* window_class = window_class_to_g_string(g_display, client->window_);
-    bool match = condition_string(rule, window_class->str);
+    bool match = matches(window_class->str);
     g_string_free(window_class, true);
     return match;
 }
 
-static bool condition_instance(HSCondition* rule, HSClient* client) {
+bool HSCondition::matchesInstance(HSClient* client) {
     GString* inst = window_instance_to_g_string(g_display, client->window_);
-    bool match = condition_string(rule, inst->str);
+    bool match = matches(inst->str);
     g_string_free(inst, true);
     return match;
 }
 
-static bool condition_title(HSCondition* rule, HSClient* client) {
-    return condition_string(rule, client->title_().c_str());
+bool HSCondition::matchesTitle(HSClient* client) {
+    return matches(client->title_().c_str());
 }
 
-static bool condition_pid(HSCondition* rule, HSClient* client) {
+bool HSCondition::matchesPid(HSClient* client) {
     if (client->pid_ < 0) {
         return false;
     }
-    if (rule->value_type == CONDITION_VALUE_TYPE_INTEGER) {
-        return rule->value_integer == client->pid_;
+    if (value_type == CONDITION_VALUE_TYPE_INTEGER) {
+        return value_integer == client->pid_;
     } else {
         char buf[1000]; // 1kb ought to be enough for every int
         sprintf(buf, "%d", client->pid_);
-        return condition_string(rule, buf);
+        return matches(buf);
     }
 }
 
-static bool condition_maxage(HSCondition* rule, HSClient* client) {
+bool HSCondition::matchesMaxage(HSClient* client) {
     time_t diff = get_monotonic_timestamp() - g_current_rule_birth_time;
-    return (rule->value_integer >= diff);
+    return (value_integer >= diff);
 }
 
-static bool condition_windowtype(HSCondition* rule, HSClient* client) {
+bool HSCondition::matchesWindowtype(HSClient* client) {
     // that only works for atom-type utf8-string, _NET_WM_WINDOW_TYPE is int
     //  GString* wintype=
     //      window_property_to_g_string(g_display, client->window, wintype_atom);
@@ -432,7 +422,7 @@ static bool condition_windowtype(HSCondition* rule, HSClient* client) {
         if (wintype == g_netatom[i]) {
             // if found, then treat the window type as a string value,
             // which is registered in g_netatom_names[]
-            return condition_string(rule, g_netatom_names[i]);
+            return matches(g_netatom_names[i]);
         }
     }
 
@@ -441,11 +431,11 @@ static bool condition_windowtype(HSCondition* rule, HSClient* client) {
     return false;
 }
 
-static bool condition_windowrole(HSCondition* rule, HSClient* client) {
+bool HSCondition::matchesWindowrole(HSClient* client) {
     GString* role = window_property_to_g_string(g_display, client->window_,
         ATOM("WM_WINDOW_ROLE"));
     if (!role) return false;
-    bool match = condition_string(rule, role->str);
+    bool match = matches(role->str);
     g_string_free(role, true);
     return match;
 }
