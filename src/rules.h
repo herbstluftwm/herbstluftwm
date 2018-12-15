@@ -23,7 +23,6 @@ public:
 
     static const std::map<std::string, std::function<bool(HSCondition *, HSClient*)>> matchers;
 
-    // int condition_type;
     std::string name;
     int value_type;
     bool negated;
@@ -56,7 +55,6 @@ class HSConsequence {
 public:
     static const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClientChanges*)>> appliers;
 
-    // int     type;
     std::string name;
     int value_type;
     std::string value;
