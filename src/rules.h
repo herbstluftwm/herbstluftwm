@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#include <regex.h>
+#include <regex>
 
 class HSClient;
 
@@ -17,16 +17,17 @@ enum {
     CONSEQUENCE_VALUE_TYPE_STRING,
 };
 
-typedef struct {
+class HSCondition {
+public:
     int condition_type;
     int value_type;
     bool negated;
 
     std::string value_str;
     int value_integer;
-    regex_t value_reg_exp;
+    std::regex value_reg_exp;
     std::string value_reg_str;
-} HSCondition;
+};
 
 typedef struct {
     int     type;
