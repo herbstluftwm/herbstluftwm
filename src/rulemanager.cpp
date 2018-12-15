@@ -55,7 +55,6 @@ int RuleManager::addRuleCommand(Input input, Output output) {
             if (!success) {
                 return HERBST_INVALID_ARGUMENT;
             }
-
             continue;
         }
 
@@ -73,6 +72,8 @@ int RuleManager::addRuleCommand(Input input, Output output) {
             continue;
         }
 
+
+        // Check if arg is a custom label for this rule
         if (lhs == "label") {
             bool success = rule.setLabel(oper, rhs, output);
             if (!success) {
@@ -85,12 +86,15 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
 
+    // Store "once" flag in rule
     rule.once = ruleFlags["once"];
 
+    // Comply with "printlabel" flag
     if (ruleFlags["printlabel"]) {
        output << rule.label << "\n";
     }
 
+    // Insert rule into list according to "prepend" flag
     auto insertAt = ruleFlags["prepend"] ? g_rules.begin() : g_rules.end();
     g_rules.insert(insertAt, new HSRule(rule));
 
