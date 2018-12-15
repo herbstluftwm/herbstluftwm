@@ -178,21 +178,18 @@ bool HSRule::addConsequence(std::string name, char op, const char* value, Output
     return true;
 }
 
-bool HSRule::replaceLabel(char op, char* value, Output output) {
-    switch (op) {
-        case '=':
-            if (*value == '\0') {
-                output << "rule: Rule label cannot be empty";
-                return false;
-                break;
-            }
-            label = value;
-            break;
-        default:
-            output << "rule: Unknown rule label operation \"" << op << "\"\n";
-            return false;
-            break;
+bool HSRule::setLabel(char op, std::string value, Output output) {
+    if (op != '=') {
+        output << "rule: Unknown rule label operation \"" << op << "\"\n";
+        return false;
     }
+
+    if (value.empty()) {
+        output << "rule: Rule label cannot be empty\n";
+        return false;
+    }
+
+    label = value;
     return true;
 }
 

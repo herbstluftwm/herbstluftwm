@@ -74,7 +74,10 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         }
 
         if (lhs == "label") {
-            rule.label = rhs;
+            bool success = rule.setLabel(oper, rhs, output);
+            if (!success) {
+                return HERBST_INVALID_ARGUMENT;
+            }
         }
 
         output << "rule: Unknown argument \"" << arg << "\"\n";
