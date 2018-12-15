@@ -186,3 +186,13 @@ def test_printlabel_flag(hlwm):
 
     assert call1.stdout == 'bla\n'
     assert call2.stdout == '1\n'
+
+
+def test_prepend_flag(hlwm):
+    hlwm.call('rule class=AddedFirst')
+    hlwm.call('rule prepend class=AddedSecond')
+    rules = hlwm.call('list_rules')
+
+    assert rules.stdout == \
+        'label=1\tclass=AddedSecond\t\n' + \
+        'label=0\tclass=AddedFirst\t\n'
