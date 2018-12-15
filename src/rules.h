@@ -69,6 +69,19 @@ public:
     std::string name;
     int value_type;
     std::string value;
+
+    void applyTag(HSClient* client, HSClientChanges* changes);
+    void applyIndex(HSClient* client, HSClientChanges* changes);
+    void applyFocus(HSClient* client, HSClientChanges* changes);
+    void applySwitchtag(HSClient* client, HSClientChanges* changes);
+    void applyManage(HSClient* client, HSClientChanges* changes);
+    void applyPseudotile(HSClient* client, HSClientChanges* changes);
+    void applyFullscreen(HSClient* client, HSClientChanges* changes);
+    void applyEwmhrequests(HSClient* client, HSClientChanges* changes);
+    void applyEwmhnotify(HSClient* client, HSClientChanges* changes);
+    void applyHook(HSClient* client, HSClientChanges* changes);
+    void applyKeymask(HSClient* client, HSClientChanges* changes);
+    void applyMonitor(HSClient* client, HSClientChanges* changes);
 };
 
 class HSRule {
