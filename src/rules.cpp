@@ -26,9 +26,6 @@ typedef struct {
                      HSClientChanges* changes);
 } HSConsequenceType;
 
-/// DECLARATIONS ///
-static bool condition_string(HSCondition* rule, const char* string);
-
 /// CONDITIONS ///
 
 /// CONSEQUENCES ///
@@ -333,9 +330,7 @@ bool HSCondition::matches(const std::string& string) {
         case CONDITION_VALUE_TYPE_INTEGER:
             try {
                 return std::stoi(string) == value_integer;
-            } catch (std::invalid_argument) {
-                return false;
-            } catch (std::out_of_range) {
+            } catch (std::exception&) {
                 return false;
             }
             break;
