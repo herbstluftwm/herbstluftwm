@@ -26,8 +26,10 @@ fi
 
 # set up herbstluftwm
 # -------------------
-export PATH="`pwd`:$PATH"
+export PATH="$(pwd):$PATH"
 make herbstluftwm herbstclient
+project_dir=$(dirname "$0")
+project_dir=${project_dir%/*}
 
 # boot up Xephyr
 # --------------
@@ -48,7 +50,7 @@ export G_SLICE=always-malloc
 export G_DEBUG=gc-friendly
 DISPLAY=":$xephyr_displaynr" \
     valgrind -- \
-        ./herbstluftwm --verbose -c ./share/autostart \
+        ./herbstluftwm --verbose -c "$project_dir"/share/autostart \
     || echo "Warning: valgrind had non-zero exit code"
 
 # clean up xephyr

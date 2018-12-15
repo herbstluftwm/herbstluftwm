@@ -1,25 +1,26 @@
 #include "types.h"
 
-
-Input::Input(const ArgList& argv)
-    : ArgList(argv)
+Input &Input::operator>>(std::string &val)
 {
-}
-
-Input& Input::operator>>(std::string& val) {
-    // if we are on the beginning, skip the command name;
-    if (c_->begin() == begin_) {
-        shift();
-    }
     ArgList::operator>>(val);
     return *this;
 }
 
-std::string Input::command() const {
-    // access the first element without any shifts.
-    if (c_->begin() != c_->end()) {
-        return *c_->begin();
-    } else {
-        return {};
-    }
+Input Input::fromHere()
+{
+    std::string cmd;
+    if (!(*this >> cmd))
+        return {{}, {}};
+
+    return Input(cmd, toVector());
+}
+
+void Input::replace(const std::string &from, const std::string &to)
+{
+    for (auto &v : *c_)
+        if (v == from)
+            v = to;
+
+    if (*command_ == from)
+        *command_ = to;
 }

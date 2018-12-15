@@ -13,12 +13,12 @@ using namespace std;
 // returns a command binding that internalizes object to given a command that
 // calls the member function of the given object
 #define BIND_OBJECT(OBJECT, MEMBER) \
-    (CommandBinding([OBJECT](ArgList in, Output out) { \
+    (CommandBinding([OBJECT](Input in, Output out) { \
         return OBJECT->MEMBER(in, out); \
     }))
 
 #define BIND_PARAMETER(PARAM, FUNCTION) \
-    (CommandBinding([PARAM](ArgList in, Output out) { \
+    (CommandBinding([PARAM](Input in, Output out) { \
         return FUNCTION(PARAM, in, out); \
     }))
 
@@ -39,7 +39,7 @@ class CommandBinding {
 public:
     CommandBinding(function<int(Input, Output)> cmd)
         : command(cmd) {}
-    // A command that taks an argument list and produces output
+    // A command that takes an argument list and produces output
     CommandBinding(int cmd(Input, Output))
         : command(cmd) {}
     // A command that doesn't produce ouput
@@ -62,7 +62,7 @@ public:
     CommandBinding(int func());
 
     /** Call the stored command */
-    int operator()(ArgList args, Output out) const { return command(args, out); }
+    int operator()(Input args, Output out) const { return command(args, out); }
 
 private:
     // FIXME: Remove after C++ transition

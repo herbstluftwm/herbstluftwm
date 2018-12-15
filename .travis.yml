@@ -1,5 +1,4 @@
-language: cpp
-python: "3.7"
+language: python
 
 install:
     - sudo apt-get -y -q update
@@ -24,8 +23,9 @@ jobs:
     include:
         - name: "Ubuntu 16.04, gcc-8, run tests"
           dist: xenial
+          python: "3.7"
           before_install:
-              - CC=gcc-8 CXX=g++-8
+              - export CC=gcc-8 CXX=g++-8
               - linkerfix="-fuse-ld=gold" # needed to avoid linker error
               - export LDFLAGS="$linkerfix" LDXXFLAGS="$linkerfix"
           addons:
@@ -39,11 +39,12 @@ jobs:
           script:
               - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug . # run tests with sanitizer
               - ninja -v -k 10
-              - tox
+              - tox -- -n auto
 
         - name: "Ubuntu 16.04, gcc-7"
           dist: xenial
-          before_install: CC=gcc-7 CXX=g++-7
+          before_install:
+              - export CC=gcc-7 CXX=g++-7
           addons:
               apt:
                   sources:
@@ -54,7 +55,7 @@ jobs:
         - name: "Ubuntu 16.04, clang-7"
           dist: xenial
           before_install:
-              - CC=clang-7 CXX=clang++-7
+              - export CC=clang-7 CXX=clang++-7
           addons:
               apt:
                   sources:
@@ -65,4 +66,5 @@ jobs:
           # Note: Travis provides a newer GCC on trusty (5.4), but gcc-4.8 is
           # the version provided by Ubuntu, so we use that one.
           dist: trusty
-          before_install: CC=gcc-4.8 CXX=g++-4.8
+          before_install:
+            - export CC=gcc-4.8 CXX=g++-4.8

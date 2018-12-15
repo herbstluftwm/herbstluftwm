@@ -16,6 +16,26 @@ def test_object_tree(hlwm):
     assert len(t2) > len(t3)
 
 
+def test_substitute(hlwm):
+    expected_output = hlwm.get_attr('tags.count') + '\n'
+
+    call = hlwm.call('substitute X tags.count echo X')
+
+    assert call.stdout == expected_output
+
+
+def test_substitute_missing_attribute__command_treated_as_attribute(hlwm):
+    call = hlwm.call_xfail('substitute X echo X')
+
+    assert call.stderr == 'The root object has no attribute "echo"\n'
+
+
+def test_substitute_command_missing(hlwm):
+    call = hlwm.call_xfail('substitute X tags.count')
+
+    assert call.stderr == 'substitute: not enough arguments\n'
+
+
 def test_sprintf(hlwm):
     expected_count = hlwm.get_attr('tags.count')
     expected_wmname = hlwm.get_attr('settings.wmname')
@@ -34,6 +54,12 @@ def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
 
 def test_sprintf_too_few_attributes_in_total(hlwm):
     call = hlwm.call_xfail('sprintf X %s/%s tags.count')
+
+    assert call.stderr == 'sprintf: not enough arguments\n'
+
+
+def test_sprintf_command_missing(hlwm):
+    call = hlwm.call_xfail('sprintf X %s tags.count')
 
     assert call.stderr == 'sprintf: not enough arguments\n'
 

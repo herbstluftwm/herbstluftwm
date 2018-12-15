@@ -91,12 +91,6 @@ const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClie
 
 std::list<HSRule *> g_rules;
 
-HSCondition::~HSCondition() {
-    if (value_type == CONDITION_VALUE_TYPE_REGEX) {
-        regfree(&value_reg_exp);
-    }
-}
-
 /// FUNCTIONS ///
 // RULES //
 void rules_init() {
@@ -135,13 +129,12 @@ bool HSRule::addCondition(std::string name, char op, const char* value, bool neg
 
         case '~': {
             cond.value_type = CONDITION_VALUE_TYPE_REGEX;
-            int status = regcomp(&cond.value_reg_exp, value, REG_EXTENDED);
-            if (status != 0) {
-                char buf[ERROR_STRING_BUF_SIZE];
-                regerror(status, &cond.value_reg_exp, buf, ERROR_STRING_BUF_SIZE);
+            try {
+                cond.value_reg_exp = std::regex(value, std::regex::extended);
+            } catch(std::regex_error& err) {
                 output << "rule: Can not parse value \"" << value
                         << "\" from condition \"" << name
-                        << "\": \"" << buf << "\"\n";
+                        << "\": \"" << err.what() << "\"\n";
                 return false;
             }
             cond.value_reg_str = value;
@@ -347,23 +340,13 @@ static bool condition_string(HSCondition* rule, const char* string) {
         return false;
     }
 
-    int status;
-    regmatch_t match;
     int int_value;
     switch (rule->value_type) {
         case CONDITION_VALUE_TYPE_STRING:
             return rule->value_str == string;
             break;
         case CONDITION_VALUE_TYPE_REGEX:
-            status = regexec(&rule->value_reg_exp, string, 1, &match, 0);
-            // only accept it, if it matches the entire string
-            if (status == 0
-                && match.rm_so == 0
-                && match.rm_eo == strlen(string)) {
-                return true;
-            } else {
-                return false;
-            }
+            return std::regex_match(string, rule->value_reg_exp);
             break;
         case CONDITION_VALUE_TYPE_INTEGER:
             return (1 == sscanf(string, "%d", &int_value)

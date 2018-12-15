@@ -102,7 +102,8 @@ int RuleManager::addRuleCommand(Input input, Output output) {
  */
 int RuleManager::unruleCommand(Input input, Output output) {
     std::string arg;
-    input >> arg;
+    if (!(input >> arg))
+        return HERBST_NEED_MORE_ARGS;
 
     if (arg == "--all" || arg == "-F") {
         // Remove all rules

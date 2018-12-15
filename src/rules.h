@@ -1,8 +1,8 @@
 #ifndef __HS_RULES_H_
 #define __HS_RULES_H_
 
-#include <regex.h>
 #include <functional>
+#include <regex>
 
 #include "types.h"
 
@@ -31,7 +31,7 @@ public:
 
     std::string value_str;
     int value_integer;
-    regex_t value_reg_exp;
+    std::regex value_reg_exp;
     std::string value_reg_str;
 };
 

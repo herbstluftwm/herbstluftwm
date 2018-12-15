@@ -24,7 +24,11 @@ int Tmp::mktemp(Input input, Output output) {
     if (!a) return HERBST_INVALID_ARGUMENT;
     addAttribute(a);
     string path = string(TMP_OBJECT_PATH) + "." + attr_name;
-    int retval = Commands::call(input.replaced(identifier, path), output);
+
+    auto carryover = input.fromHere();
+    carryover.replace(identifier, path);
+    int retval = Commands::call(carryover, output);
+
     a->detachFromOwner();
     delete a;
     number_active--;

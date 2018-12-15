@@ -269,7 +269,6 @@ HSMonitor* string_to_monitor(const char* str) {
 int HSMonitor::move_cmd(Input input, Output output) {
     // usage: move_monitor INDEX RECT [PADUP [PADRIGHT [PADDOWN [PADLEFT]]]]
     // moves monitor with number to RECT
-    input.shift();
     if (input.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
