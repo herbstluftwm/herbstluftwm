@@ -27,7 +27,6 @@ int RuleManager::addRuleCommand(Input input, Output output) {
 
         // Check if arg is a flag for the whole rule
         if (ruleFlags.count(arg)) {
-            // output << "Setting rule flag: " << arg << "\n";
             ruleFlags[arg] = true;
             continue;
         }
@@ -40,19 +39,18 @@ int RuleManager::addRuleCommand(Input input, Output output) {
                 return HERBST_INVALID_ARGUMENT;
             }
 
+            // Skip forward to next argument, but remember that it is negated:
             negated = true;
             arg = *(++argIter);
-            output << "Encountered 'not', looking at next token: " << arg << "\n";
         }
 
-        // Expect arg to be of form foo=bar or foo~bar
+        // Tokenize arg, expect something like foo=bar or foo~bar:
         char oper;
         std::string lhs, rhs;
         std::tie(lhs, oper, rhs) = tokenize_arg(arg);
-        std::cerr << "Tokenized " << arg << " --> " << lhs << ", " << oper << ", " << rhs << "\n";
 
+        // Check if lhs is a condition name
         if (HSCondition::matchers.count(lhs)) {
-            std::cerr << "It's a condition\n";
             bool success = rule.addCondition(lhs, oper, rhs.c_str(), negated, output);
             if (!success) {
                 return HERBST_INVALID_ARGUMENT;
@@ -61,12 +59,13 @@ int RuleManager::addRuleCommand(Input input, Output output) {
             continue;
         }
 
+        // Check if lhs is a consequence name
         if (HSConsequence::appliers.count(lhs)) {
             if (oper == '~') {
                 output << "rule: Operator ~ not valid for consequence \"" << lhs << "\"\n";
                 return HERBST_INVALID_ARGUMENT;
             }
-            std::cerr << "It's a consequence\n";
+
             bool success = rule.addConsequence(lhs, oper, rhs.c_str(), output);
             if (!success) {
                 return HERBST_INVALID_ARGUMENT;
