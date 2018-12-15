@@ -104,8 +104,10 @@ void rules_destroy() {
     g_rules.clear();
 }
 
-bool HSRule::addCondition(std::string name, char op, const char* value, Output output) {
+bool HSRule::addCondition(std::string name, char op, const char* value, bool negated, Output output) {
     HSCondition cond;
+    cond.negated = negated;
+
     if (op != '=' && name == "maxage") {
         output << "rule: Condition maxage only supports the = operator\n";
         return false;

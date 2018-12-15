@@ -59,7 +59,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
 
         if (HSCondition::matchers.count(lhs)) {
             output << "It's a condition\n";
-            rule.addCondition(lhs, oper, rhs.c_str(), output);
+            rule.addCondition(lhs, oper, rhs.c_str(), negated, output);
             continue;
         }
 

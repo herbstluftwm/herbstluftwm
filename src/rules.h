@@ -73,8 +73,8 @@ public:
     time_t birth_time; // timestamp of at creation
 
     bool replaceLabel(char op, char* value, Output output);
+    bool addCondition(std::string name, char op, const char* value, bool negated, Output output);
     bool addConsequence(std::string name, char op, const char* value, Output output);
-    bool addCondition(std::string name, char op, const char* value, Output output);
 
     void print(Output output);
 };
