@@ -144,13 +144,12 @@ bool HSRule::addCondition(int type, char op, char* value, Output output) {
 
         case '~': {
             cond.value_type = CONDITION_VALUE_TYPE_REGEX;
-            int status = regcomp(&cond.value_reg_exp, value, REG_EXTENDED);
-            if (status != 0) {
-                char buf[ERROR_STRING_BUF_SIZE];
-                regerror(status, &cond.value_reg_exp, buf, ERROR_STRING_BUF_SIZE);
+            try {
+                cond.value_reg_exp = std::regex(value, std::regex::extended);
+            } catch(std::regex_error& err) {
                 output << "rule: Can not parse value \"" << value
                         << "\" from condition \"" << g_condition_types[type].name
-                        << "\": \"" << buf << "\"\n";
+                        << "\": \"" << err.what() << "\"\n";
                 return false;
             }
             cond.value_reg_str = value;
@@ -230,15 +229,6 @@ bool HSRule::replaceLabel(char op, char* value, Output output) {
 HSRule::HSRule() {
     birth_time = get_monotonic_timestamp();
     label = std::to_string(g_rule_label_index++); // label defaults to index number
-}
-
-HSRule::~HSRule() {
-    // free regexps in conditions
-    for (auto& cond : conditions) {
-        if (cond.value_type == CONDITION_VALUE_TYPE_REGEX) {
-            regfree(&cond.value_reg_exp);
-        }
-    }
 }
 
 void rule_complete(int argc, char** argv, int pos, Output output) {
@@ -495,23 +485,13 @@ static bool condition_string(HSCondition* rule, const char* string) {
         return false;
     }
 
-    int status;
-    regmatch_t match;
     int int_value;
     switch (rule->value_type) {
         case CONDITION_VALUE_TYPE_STRING:
             return rule->value_str == string;
             break;
         case CONDITION_VALUE_TYPE_REGEX:
-            status = regexec(&rule->value_reg_exp, string, 1, &match, 0);
-            // only accept it, if it matches the entire string
-            if (status == 0
-                && match.rm_so == 0
-                && match.rm_eo == strlen(string)) {
-                return true;
-            } else {
-                return false;
-            }
+            return std::regex_match(string, rule->value_reg_exp);
             break;
         case CONDITION_VALUE_TYPE_INTEGER:
             return (1 == sscanf(string, "%d", &int_value)
