@@ -172,3 +172,9 @@ def test_monitor_consequence(hlwm, monitor_spec):
     assert hlwm.get_attr('tags.by-name.default.client_count') == '0'
     # TODO: Instead of checking client counts, assert that the right winid is
     # in the tag (not yet possible).
+
+
+def test_invalid_regex_in_condition(hlwm):
+    call = hlwm.call_xfail('rule class~[b-a]')
+
+    assert call.stderr == 'rule: Can not parse value "[b-a]" from condition "class": "Invalid range in bracket expression."\n'
