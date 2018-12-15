@@ -1,13 +1,100 @@
 #include "rulemanager.h"
 
+#include <cstring>
+
 #include "ipc-protocol.h"
+
 
 /*!
  * Implements the "rule" IPC command
  */
 int RuleManager::addRuleCommand(Input input, Output output) {
-    // not implemented yet (add more tests first)
-    return -1;
+    // TODO: Drop this shift() as soon as the Input class has transitioned to
+    // providing only arguments and nothing else.
+    input.shift();
+
+    HSRule rule;
+
+    std::map<std::string, bool> ruleFlags = {
+        {"once", false},
+        {"printlabel", false},
+        {"prepend", false},
+    };
+
+    std::map<std::string, std::pair<char, std::string>> assignments;
+
+    // for (auto& arg : input) {
+    for (auto argIter = input.begin(); argIter != input.end(); argIter++) {
+        auto arg = *argIter;
+        bool negated = false;
+        (void) negated;
+
+        // Check if arg is a general rule flag
+        if (ruleFlags.count(arg)) {
+            output << "Setting rule flag: " << arg << "\n";
+            ruleFlags[arg] = true;
+            continue;
+        }
+
+        if (arg == "not" || arg == "!") {
+            // Make sure there is another argument coming:
+            if (argIter + 1 == input.end()) {
+                // TODO: Add test for this case!
+                output << "Expected another argument after \""<< arg << "\" flag\n";
+                return HERBST_NEED_MORE_ARGS;
+            }
+
+            negated = true;
+            arg = *(++argIter);
+            output << "Encountered 'not', looking at next token: " << arg << "\n";
+        }
+
+        // Expect arg to be of form foo=bar or foo~bar
+        char oper;
+        std::string lhs, rhs;
+        std::tie(lhs, oper, rhs) = tokenize_arg(arg);
+        output << "Tokenized " << arg << " --> " << lhs << ", " << oper << ", " << rhs << "\n";
+
+        assignments[lhs] = std::make_pair(oper, rhs);
+
+        if (HSCondition::matchers.count(lhs)) {
+            output << "It's a condition\n";
+            rule.addCondition(lhs, oper, rhs.c_str(), output);
+            continue;
+        }
+
+        if (HSConsequence::appliers.count(lhs)) {
+            if (oper == '~') {
+                output << "Operator ~ not valid for consequence " << lhs << "\n";
+                return HERBST_INVALID_ARGUMENT;
+            }
+            output << "It's a consequence\n";
+            rule.addConsequence(lhs, oper, rhs.c_str(), output);
+            continue;
+        }
+
+        if (lhs == "label") {
+            rule.label = rhs;
+        }
+
+        output << "rule: Unknown argument \"" << arg << "\"\n";
+        // return HERBST_INVALID_ARGUMENT;
+    }
+
+    for (auto const& item : assignments) {
+        output << "Assignment " << item.first << ": " << item.second.first << ", " << item.second.second << "\n";
+    }
+
+    rule.once = ruleFlags["once"];
+
+    if (ruleFlags["printlabel"]) {
+       output << rule.label << "\n";
+    }
+
+    auto insertAt = ruleFlags["prepend"] ? g_rules.begin() : g_rules.end();
+    g_rules.insert(insertAt, new HSRule(rule));
+
+    return HERBST_EXIT_SUCCESS;
 }
 
 /*!

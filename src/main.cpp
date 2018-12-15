@@ -174,7 +174,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"monitor_rect",   monitor_rect_command},
         {"pad",            monitor_set_pad_command},
         {"raise",          raise_command},
-        {"rule",           rule_add_command},
+        {"rule",           BIND_OBJECT(rules, addRuleCommand)},
         {"unrule",         BIND_OBJECT(rules, unruleCommand)},
         {"list_rules",     BIND_OBJECT(rules, listRulesCommand)},
         {"layout",         print_layout_command},

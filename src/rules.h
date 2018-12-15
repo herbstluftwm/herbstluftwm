@@ -22,7 +22,8 @@ class HSCondition {
 public:
     static const std::map<std::string, std::function<bool(HSCondition *, HSClient*)>> matchers;
 
-    int condition_type;
+    // int condition_type;
+    std::string name;
     int value_type;
     bool negated;
 
@@ -54,7 +55,8 @@ class HSConsequence {
 public:
     static const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClientChanges*)>> appliers;
 
-    int     type;
+    // int     type;
+    std::string name;
     int value_type;
     std::string value;
 };
@@ -63,6 +65,7 @@ class HSRule {
 public:
     HSRule();
     ~HSRule();
+
     std::string label;
     std::vector<HSCondition> conditions;
     std::vector<HSConsequence> consequences;
@@ -70,8 +73,8 @@ public:
     time_t birth_time; // timestamp of at creation
 
     bool replaceLabel(char op, char* value, Output output);
-    bool addConsequence(int type, char op, const char* value, Output output);
-    bool addCondition(int type, char op, const char* value, Output output);
+    bool addConsequence(std::string name, char op, const char* value, Output output);
+    bool addCondition(std::string name, char op, const char* value, Output output);
 
     void print(Output output);
 };
@@ -83,7 +86,6 @@ void rules_apply(HSClient* client, HSClientChanges* changes);
 
 void rule_complete(int argc, char** argv, int pos, Output output);
 
-int rule_add_command(int argc, char** argv, Output output);
 void complete_against_rule_names(int argc, char** argv, int pos, Output output);
 
 #endif
