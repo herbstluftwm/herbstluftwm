@@ -1,6 +1,7 @@
 #include "rulemanager.h"
 
 #include <cstring>
+#include <iostream>
 
 #include "ipc-protocol.h"
 
@@ -49,23 +50,30 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         char oper;
         std::string lhs, rhs;
         std::tie(lhs, oper, rhs) = tokenize_arg(arg);
-        output << "Tokenized " << arg << " --> " << lhs << ", " << oper << ", " << rhs << "\n";
+        std::cerr << "Tokenized " << arg << " --> " << lhs << ", " << oper << ", " << rhs << "\n";
 
         assignments[lhs] = std::make_pair(oper, rhs);
 
         if (HSCondition::matchers.count(lhs)) {
-            output << "It's a condition\n";
-            rule.addCondition(lhs, oper, rhs.c_str(), negated, output);
+            std::cerr << "It's a condition\n";
+            bool success = rule.addCondition(lhs, oper, rhs.c_str(), negated, output);
+            if (!success) {
+                return HERBST_INVALID_ARGUMENT;
+            }
+
             continue;
         }
 
         if (HSConsequence::appliers.count(lhs)) {
             if (oper == '~') {
-                output << "Operator ~ not valid for consequence " << lhs << "\n";
+                output << "rule: Operator ~ not valid for consequence \"" << lhs << "\"\n";
                 return HERBST_INVALID_ARGUMENT;
             }
-            output << "It's a consequence\n";
-            rule.addConsequence(lhs, oper, rhs.c_str(), output);
+            std::cerr << "It's a consequence\n";
+            bool success = rule.addConsequence(lhs, oper, rhs.c_str(), output);
+            if (!success) {
+                return HERBST_INVALID_ARGUMENT;
+            }
             continue;
         }
 
@@ -74,14 +82,15 @@ int RuleManager::addRuleCommand(Input input, Output output) {
             if (!success) {
                 return HERBST_INVALID_ARGUMENT;
             }
+            continue;
         }
 
         output << "rule: Unknown argument \"" << arg << "\"\n";
-        // return HERBST_INVALID_ARGUMENT;
+        return HERBST_INVALID_ARGUMENT;
     }
 
     for (auto const& item : assignments) {
-        output << "Assignment " << item.first << ": " << item.second.first << ", " << item.second.second << "\n";
+        std::cerr << "Assignment " << item.first << ": " << item.second.first << ", " << item.second.second << "\n";
     }
 
     rule.once = ruleFlags["once"];
