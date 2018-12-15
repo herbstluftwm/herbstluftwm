@@ -51,7 +51,7 @@ class HlwmBridge:
 
         outcome = 'succeeded' if proc.returncode == 0 else 'failed'
         allout = proc.stdout + proc.stderr
-        if allout != '':
+        if allout:
             print(f'Client command {args} {outcome} with output:\n{allout}')
         else:
             print(f'Client command {args} {outcome} (no output)')
