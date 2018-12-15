@@ -12,17 +12,16 @@
 int RuleManager::addRuleCommand(Input input, Output output) {
     HSRule rule;
 
+    // Possible flags that apply to the rule as a whole:
     std::map<std::string, bool> ruleFlags = {
         {"once", false},
         {"printlabel", false},
         {"prepend", false},
     };
 
-    // for (auto& arg : input) {
     for (auto argIter = input.begin(); argIter != input.end(); argIter++) {
         auto arg = *argIter;
         bool negated = false;
-        (void) negated;
 
         // Check if arg is a general rule flag
         if (ruleFlags.count(arg)) {
