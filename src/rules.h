@@ -29,6 +29,24 @@ public:
     std::string value_reg_str;
 };
 
+class HSClientChanges {
+public:
+    HSClientChanges(HSClient *client);
+
+    // For tag_name and monitor_name, an empty string means "no change",
+    // because empty strings are not considered valid here. TODO: Use
+    // std::optional for this.
+    std::string     tag_name;
+    std::string     monitor_name;
+
+    std::string     tree_index;
+    bool            focus = false; // if client should get focus
+    bool            switchtag = false; // if the tag may be switched for focusing it
+    bool            manage = true; // whether we should manage it
+    bool            fullscreen;
+    std::string     keymask; // Which keymask rule should be applied for this client
+};
+
 typedef struct {
     int     type;
     int value_type;
@@ -50,24 +68,6 @@ public:
     bool addCondition(int type, char op, char* value, Output output);
 
     void print(Output output);
-};
-
-class HSClientChanges {
-public:
-    HSClientChanges(HSClient *client);
-
-    // For tag_name and monitor_name, an empty string means "no change",
-    // because empty strings are not considered valid here. TODO: Use
-    // std::optional for this.
-    std::string     tag_name;
-    std::string     monitor_name;
-
-    std::string     tree_index;
-    bool            focus = false; // if client should get focus
-    bool            switchtag = false; // if the tag may be switched for focusing it
-    bool            manage = true; // whether we should manage it
-    bool            fullscreen;
-    std::string     keymask; // Which keymask rule should be applied for this client
 };
 
 void rules_init();
