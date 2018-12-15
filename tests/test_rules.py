@@ -178,3 +178,11 @@ def test_invalid_regex_in_condition(hlwm):
     call = hlwm.call_xfail('rule class~[b-a]')
 
     assert call.stderr == 'rule: Can not parse value "[b-a]" from condition "class": "Invalid range in bracket expression."\n'
+
+
+def test_printlabel_flag(hlwm):
+    call1 = hlwm.call('rule printlabel label=bla class=Foo')
+    call2 = hlwm.call('rule printlabel class=Foo')
+
+    assert call1.stdout == 'bla\n'
+    assert call2.stdout == '1\n'
