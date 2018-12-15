@@ -21,11 +21,13 @@ int RuleManager::addRuleCommand(Input input, Output output) {
 
     for (auto argIter = input.begin(); argIter != input.end(); argIter++) {
         auto arg = *argIter;
+
+        // Whether this argument is negated (only applies to conditions)
         bool negated = false;
 
-        // Check if arg is a general rule flag
+        // Check if arg is a flag for the whole rule
         if (ruleFlags.count(arg)) {
-            output << "Setting rule flag: " << arg << "\n";
+            // output << "Setting rule flag: " << arg << "\n";
             ruleFlags[arg] = true;
             continue;
         }
