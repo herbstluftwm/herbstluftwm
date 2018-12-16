@@ -29,7 +29,7 @@ void Completion::operator=(const Completion& other) {
 }
 
 void Completion::full(const std::string& word) {
-    output_ << word << " \n";
+    output_ << escape(word) << (shellOutput_ ? " \n" : "\n");
 }
 
 void Completion::full(const std::vector<std::string>& wordList) {
@@ -39,5 +39,15 @@ void Completion::full(const std::vector<std::string>& wordList) {
 }
 
 void Completion::none() {
+    noParameterExpected_ = true;
 }
 
+//! Return the given string posix sh escaped if in shell output mode
+std::string Completion::escape(const std::string& str) {
+    return str;
+}
+
+//! the requested position is beyond the number of expected parameters
+bool Completion::noParameterExpected() const {
+    return noParameterExpected_;
+}

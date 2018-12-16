@@ -257,6 +257,8 @@ void ClientManager::fullscreen_complete(Completion& complete)
     if (complete == 0) {
         complete.full("status");
         complete.full({ "on", "off", "toggle" });
+    } else {
+        complete.none();
     }
 }
 

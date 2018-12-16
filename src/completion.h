@@ -37,6 +37,8 @@ public:
     //! there is no more parameter expected
     void none();
 
+    bool noParameterExpected() const;
+
     /** compare the position of the argument that is completed
      * The first parameter has index 0
      */
@@ -47,10 +49,14 @@ public:
 private:
     Completion(const Completion& other);
     void operator=(const Completion& other);
+
+    std::string escape(const std::string& str);
+
     ArgList args_;
     size_t index_;
     Output output_;
     bool   shellOutput_;
+    bool   noParameterExpected_ = false;
 };
 
 #endif

@@ -78,7 +78,7 @@ public:
     CommandBinding(int func());
 
     bool hasCompletion() const { return (bool)completion_; }
-    void complete(ArgList args, size_t index, Output output);
+    void complete(Completion& completion) const;
 
     /** Call the stored command */
     int operator()(Input args, Output out) const { return command(args, out); }
@@ -104,6 +104,7 @@ public:
 
     Container::const_iterator begin() const { return map.cbegin(); }
     Container::const_iterator end() const { return map.cend(); }
+    Container::const_iterator find(const string& str) const { return map.find(str); }
 private:
     Container map;
 };

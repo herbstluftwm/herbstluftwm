@@ -1,6 +1,7 @@
 #include "root.h"
 #include "ipc-protocol.h"
 #include "command.h"
+#include "completion.h"
 #include "utils.h"
 #include "settings.h"
 #include "layout.h"
@@ -343,7 +344,10 @@ CommandBinding::CommandBinding(int func())
 
 /** Complete the given list of arguments
  */
-void CommandBinding::complete(ArgList args, size_t index, Output output) {
+void CommandBinding::complete(Completion& completion) const {
+    if ((bool) completion_) {
+        completion_(completion);
+    }
 }
 
 // Implementation of CommandTable
@@ -840,6 +844,25 @@ int complete_against_commands(int argc, char** argv, int position,
             try_complete(str, cmd.first.c_str(), output);
         }
         return 0;
+    }
+    // try to get completion from the command binding
+    std::string commandName = argv[0];
+    auto commandTable = Commands::get();
+    auto it = commandTable->find(commandName);
+    if (it == commandTable->end()) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (it->second.hasCompletion()) {
+        vector<string> arguments;
+        for (int i = 1; i < argc; i++) {
+            arguments.push_back(argv[0]);
+        }
+        // the new completion context has the command name removed
+        Completion completion(arguments, position - 1, g_shell_quoting, output);
+        it->second.complete(completion);
+        return completion.noParameterExpected() ?
+            HERBST_NO_PARAMETER_EXPECTED
+            : 0;
     }
     if (!parameter_expected(argc, argv, position)) {
         return HERBST_NO_PARAMETER_EXPECTED;
