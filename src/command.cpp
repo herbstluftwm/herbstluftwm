@@ -855,7 +855,7 @@ int complete_against_commands(int argc, char** argv, int position,
     if (it->second.hasCompletion()) {
         vector<string> arguments;
         for (int i = 1; i < argc; i++) {
-            arguments.push_back(argv[0]);
+            arguments.push_back(argv[i]);
         }
         // the new completion context has the command name removed
         Completion completion(arguments, position - 1, g_shell_quoting, output);
