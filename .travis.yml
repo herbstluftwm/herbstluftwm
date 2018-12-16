@@ -23,7 +23,7 @@ jobs:
     include:
         - name: "Ubuntu 16.04, gcc-8, run tests"
           dist: xenial
-          python: "3.7"
+          python: "3.6"
           before_install:
               - export CC=gcc-8 CXX=g++-8
               - linkerfix="-fuse-ld=gold" # needed to avoid linker error

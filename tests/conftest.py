@@ -48,9 +48,13 @@ class HlwmBridge:
                                   )
         except subprocess.TimeoutExpired:
             self.hlwm_process.investigate_timeout('calling ' + str(args))
-        print(list(args))
-        print(proc.stdout)
-        print(proc.stderr, file=sys.stderr)
+
+        outcome = 'succeeded' if proc.returncode == 0 else 'failed'
+        allout = proc.stdout + proc.stderr
+        if allout:
+            print(f'Client command {args} {outcome} with output:\n{allout}')
+        else:
+            print(f'Client command {args} {outcome} (no output)')
 
         if expect_success:
             assert proc.returncode == 0
