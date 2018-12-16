@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "clientmanager.h"
 #include "client.h"
+#include "completion.h"
 
 #include <string>
 #include <X11/Xlib.h>
@@ -250,3 +251,12 @@ int ClientManager::fullscreen_cmd(Input input, Output output)
 {
     return clientSetAttribute("fullscreen", input, output);
 }
+
+void ClientManager::fullscreen_complete(Completion& complete)
+{
+    if (complete == 0) {
+        complete.full("status");
+        complete.full({ "on", "off", "toggle" });
+    }
+}
+

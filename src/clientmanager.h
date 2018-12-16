@@ -12,6 +12,7 @@
 class Theme;
 class HSClient;
 class Settings;
+class Completion;
 
 // Note: this is basically a singleton
 
@@ -38,6 +39,7 @@ public:
 
     int pseudotile_cmd(Input input, Output output);
     int fullscreen_cmd(Input input, Output output);
+    void fullscreen_complete(Completion& complete);
 
     // adds a new client to list of managed client windows
     HSClient* manage_client(Window win, bool visible_already);

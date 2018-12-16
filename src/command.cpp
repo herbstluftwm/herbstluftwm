@@ -340,6 +340,12 @@ CommandBinding::CommandBinding(int func())
     : command([func](Input, Output) { return func(); })
 {}
 
+
+/** Complete the given list of arguments
+ */
+void CommandBinding::complete(ArgList args, size_t index, Output output) {
+}
+
 // Implementation of CommandTable
 int CommandTable::callCommand(Input args, Output out) const {
     if (args.command().empty()) {
