@@ -74,15 +74,18 @@ class HlwmBridge:
     def get_attr(self, attribute_path, check=True):
         return self.call(['get_attr', attribute_path]).stdout
 
-    def create_client(self):
+    def create_client(self, title=None):
         """
         Launch a client that will be terminated on shutdown.
         """
         self.next_client_id += 1
         wmclass = 'client_{}'.format(self.next_client_id)
-        command = ['xterm', '-hold', '-class', wmclass, '-e', 'true']
+        title = ['-title', str(title)] if title else []
+        command = ['xterm'] + title + ['-hold', '-class', wmclass, '-e', 'true']
+
         # enforce a hook when the window appears
         self.call(['rule', 'once', 'class='+wmclass, 'hook=here_is_'+wmclass])
+
         proc = subprocess.Popen(command, env=self.env)
         # once the window appears, the hook is fired:
         winid = self.wait_for_window_of(wmclass)
