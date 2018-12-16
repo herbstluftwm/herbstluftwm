@@ -203,3 +203,45 @@ def test_condition_must_come_after_negation(hlwm, negation):
     call = hlwm.call_xfail(['rule', negation])
 
     assert call.stderr == f'Expected another argument after "{negation}" flag\n'
+
+
+def test_condition_string_match(hlwm):
+    hlwm.call('add tag2')
+
+    hlwm.call('rule title=foo tag=tag2')
+    hlwm.create_client(title='foo')
+
+    # TODO: Use more direct assertion (not yet possible)
+    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+
+
+def test_condition_regexp_match(hlwm):
+    hlwm.call('add tag2')
+
+    hlwm.call('rule title~ba+r tag=tag2')
+    hlwm.create_client(title='baaaaar')
+
+    # TODO: Use more direct assertion (not yet possible)
+    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+
+
+def test_condition_maxage(hlwm):
+    hlwm.call('add tag2')
+
+    hlwm.call('rule maxage=1 tag=tag2')
+    import time
+    time.sleep(2)
+    hlwm.create_client()
+
+    # TODO: Use more direct assertion (not yet possible)
+    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '0'
+
+
+def test_condition_numeric_equal(hlwm):
+    hlwm.call('add tag2')
+
+    hlwm.call('rule not pid=1 tag=tag2')
+    hlwm.create_client()
+
+    # TODO: Use more direct assertion (not yet possible)
+    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
