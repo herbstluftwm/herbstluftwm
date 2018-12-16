@@ -46,6 +46,7 @@ public:
     bool operator<=(int index) const { return index_ <= index; }
     bool operator<(int index) const { return index_ < index; }
 
+    static bool prefixOf(const std::string& shorter, const std::string& longer);
 private:
     Completion(const Completion& other);
     void operator=(const Completion& other);
@@ -54,6 +55,7 @@ private:
 
     ArgList args_;
     size_t index_;
+    std::string needle_;
     Output output_;
     bool   shellOutput_;
     bool   noParameterExpected_ = false;

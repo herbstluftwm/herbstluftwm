@@ -1,6 +1,8 @@
 #include "completion.h"
 #include <string>
 #include <vector>
+#include <algorithm>
+// #include <iostream>
 
 
 /** Construct a completion context
@@ -15,13 +17,15 @@ Completion::Completion(ArgList args, size_t index, bool shellOutput, Output outp
     , output_(output)
     , shellOutput_(shellOutput)
 {
+    if (index_ < args_.size()) {
+        needle_ = args_.toVector()[index_];
+    } else {
+        needle_ = "";
+    }
 }
 
 Completion::Completion(const Completion& other)
-    : args_(other.args_)
-    , index_(other.index_)
-    , output_(other.output_)
-    , shellOutput_(other.shellOutput_)
+    : Completion(other.args_, other.index_, other.shellOutput_, other.output_)
 {
 }
 
@@ -29,7 +33,12 @@ void Completion::operator=(const Completion& other) {
 }
 
 void Completion::full(const std::string& word) {
-    output_ << escape(word) << (shellOutput_ ? " \n" : "\n");
+    if (prefixOf(needle_, word)) {
+        output_ << escape(word) << (shellOutput_ ? " \n" : "\n");
+        // std::cout << "add " << word << std::endl;
+    } else {
+        // std::cout << needle_ << " not prefix of " << word << std::endl;
+    }
 }
 
 void Completion::full(const std::vector<std::string>& wordList) {
@@ -51,3 +60,10 @@ std::string Completion::escape(const std::string& str) {
 bool Completion::noParameterExpected() const {
     return noParameterExpected_;
 }
+
+bool Completion::prefixOf(const std::string& shorter, const std::string& longer)
+{
+    auto res = std::mismatch(shorter.begin(), shorter.end(), longer.begin());
+    return res.first == shorter.end();
+}
+
