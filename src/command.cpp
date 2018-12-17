@@ -158,7 +158,6 @@ struct {
     { "getenv",         2,  no_completion },
     { "setenv",         3,  no_completion },
     { "unsetenv",       2,  no_completion },
-    { 0 },
 };
 
 enum IndexCompare {
@@ -288,7 +287,6 @@ struct {
     { "substitute",     GE, 3,  complete_against_commands_3, 0 },
     { "substitute",     GE, 3,  complete_against_arg_1, 0 },
     { "sprintf",        GE, 3,  complete_sprintf, 0 },
-    { 0 },
 };
 
 // Implementation of CommandBinding
