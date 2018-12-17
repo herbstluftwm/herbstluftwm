@@ -8,9 +8,6 @@
 // TODO: Turn this into a private member of RuleManager after the transition:
 extern std::list<HSRule *> g_rules;
 
-// TODO: Turn this into a private member of RuleManager after the transition:
-extern unsigned long long g_rule_label_index; // incremental index of rule label
-
 class RuleManager : public Object {
 public:
     int addRuleCommand(Input input, Output output);
@@ -20,4 +17,7 @@ public:
 private:
     size_t removeRule(std::string label);
     std::tuple<std::string, char, std::string> tokenize_arg(std::string arg);
+
+    //! Ever-incrementing index for labeling new rules
+    unsigned long long rule_label_index_ = 0;
 };
