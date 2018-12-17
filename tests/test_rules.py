@@ -74,7 +74,7 @@ def test_add_many_labeled_rules(hlwm):
 def test_cannot_add_rule_with_empty_label(hlwm):
     call = hlwm.call_xfail('rule label= class=Foo tag=bar')
 
-    assert call.stderr == 'rule: Rule label cannot be empty'
+    assert call.stderr == 'rule: Rule label cannot be empty\n'
 
 
 def test_cannot_use_tilde_operator_for_rule_label(hlwm):
@@ -145,7 +145,7 @@ def test_rule_labels_are_not_reused(hlwm, rules_count):
 def test_cannot_use_invalid_operator_for_consequence(hlwm):
     call = hlwm.call_xfail('rule class=Foo tag~bar')
 
-    assert call.stderr == 'rule: Unknown rule consequence operation "~"\n'
+    assert call.stderr == 'rule: Operator ~ not valid for consequence "tag"\n'
 
 
 @pytest.mark.parametrize('rules_count', [1, 2, 10])
@@ -178,6 +178,31 @@ def test_invalid_regex_in_condition(hlwm):
     call = hlwm.call_xfail('rule class~[b-a]')
 
     assert call.stderr == 'rule: Can not parse value "[b-a]" from condition "class": "Invalid range in bracket expression."\n'
+
+
+def test_printlabel_flag(hlwm):
+    call1 = hlwm.call('rule printlabel label=bla class=Foo')
+    call2 = hlwm.call('rule printlabel class=Foo')
+
+    assert call1.stdout == 'bla\n'
+    assert call2.stdout == '1\n'
+
+
+def test_prepend_flag(hlwm):
+    hlwm.call('rule class=AddedFirst')
+    hlwm.call('rule prepend class=AddedSecond')
+    rules = hlwm.call('list_rules')
+
+    assert rules.stdout == \
+        'label=1\tclass=AddedSecond\t\n' + \
+        'label=0\tclass=AddedFirst\t\n'
+
+
+@pytest.mark.parametrize('negation', ['not', '!'])
+def test_condition_must_come_after_negation(hlwm, negation):
+    call = hlwm.call_xfail(['rule', negation])
+
+    assert call.stderr == f'Expected another argument after "{negation}" flag\n'
 
 
 def test_condition_string_match(hlwm):
