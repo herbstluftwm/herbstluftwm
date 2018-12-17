@@ -53,9 +53,18 @@ function (add_debugflags)
 		-pedantic -Wall -Werror
 		-Wnull-dereference -Wdouble-promotion -Wformat=2
 		-Wextra -Wno-unused-parameter
-		-Wno-sign-compare -Wno-narrowing -Wno-error=cast-function-type
+		-Wno-sign-compare -Wno-narrowing
 		-fsanitize=address,leak,undefined
-		-fno-omit-frame-pointer)
+		-fno-omit-frame-pointer
+		)
+
+	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+		# Add GCC-specific flags
+		set(FLAGS ${FLAGS}
+			-Wno-error=cast-function-type
+			)
+	endif()
+
 	string(REPLACE ";" " " FLAGS "${FLAGS}")
 	
 	# Note: it is discouraged in CMake to alter these variables, but instead you
