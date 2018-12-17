@@ -31,12 +31,19 @@ class HlwmBridge:
         # by self.hc_idle
         self.wmclass2winid = {}
 
-    def _checked_call(self, cmd, expect_success=True):
+    def _possibly_split_command(self, cmd):
+        """
+        Split a string using shlex but keep a list of strings intact.
+        """
         if isinstance(cmd, list):
             args = [str(x) for x in cmd]
             assert args
         else:
             args = shlex.split(cmd)
+        return args
+
+    def _checked_call(self, cmd, expect_success=True):
+        args = self._possibly_split_command(cmd)
 
         try:
             proc = subprocess.run([self.HC_PATH, '-n'] + args,
@@ -92,6 +99,16 @@ class HlwmBridge:
 
         self.client_procs.append(proc)
         return winid
+
+    def complete(self, cmd):
+        """
+        List all completions for the next argument for the given command.
+        This is more a helper to test completions.
+        """
+        args = self._possibly_split_command(cmd)
+        position = len(args)
+        res = self.call(['complete', position] + args)
+        return sorted(res.stdout.splitlines(False))
 
     def create_clients(self, num):
         return [self.create_client() for i in range(num)]
