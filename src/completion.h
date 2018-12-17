@@ -29,7 +29,7 @@ public:
 
     //! the given word is a possible argument, e.g. full("status")
     void full(const std::string& word);
-    void full(const std::vector<std::string>& wordList);
+    void full(const std::initializer_list<std::string>& wordList);
 
     //! the given word is a partial argument, e.g. partial("fullscreen=")
     void partial(const std::string& word);

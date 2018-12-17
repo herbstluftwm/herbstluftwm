@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "ipc-protocol.h"
+#include "completion.h"
 
 
 /*!
@@ -186,3 +187,11 @@ std::tuple<std::string, char, std::string> RuleManager::tokenize_arg(std::string
 
     return std::make_tuple(lhs, oper, rhs);
 }
+
+void RuleManager::unruleCompletion(Completion& complete) {
+    complete.full({ "-F", "--all" });
+    for (auto& it : g_rules) {
+        complete.full(it->label);
+    }
+}
+

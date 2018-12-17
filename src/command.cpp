@@ -31,7 +31,6 @@ static bool g_shell_quoting = false;
 
 static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
 static const char* completion_focus_args[]    = { "-i", "-e", nullptr };
-static const char* completion_unrule_flags[]   = { "-F", "--all", nullptr };
 static const char* completion_keyunbind_args[]= { "-F", "--all", nullptr };
 static const char* completion_flag_args[]     = { "on", "off", "true", "false", "toggle", nullptr };
 static const char* completion_userattribute_types[] = { "int", "uint", "string", "bool", "color", nullptr };
@@ -144,7 +143,6 @@ struct {
     { "tag_status",     2,  no_completion },
     { "floating",       3,  no_completion },
     { "floating",       2,  first_parameter_is_tag },
-    { "unrule",         2,  no_completion },
     { "attr",           2,  first_parameter_is_writable_attribute },
     { "attr",           3,  no_completion },
     { "object_tree",    2,  no_completion },
@@ -237,8 +235,6 @@ struct {
     { "set_layout",     EQ, 1,  nullptr, g_layout_names },
     { "cycle_layout",   EQ, 1,  nullptr, completion_pm_one },
     { "cycle_layout",   GE, 2,  nullptr, g_layout_names },
-    { "unrule",         EQ, 1,  complete_against_rule_names, 0 },
-    { "unrule",         EQ, 1,  nullptr, completion_unrule_flags },
     { "use",            EQ, 1,  complete_against_tags, 0 },
     { "use_index",      EQ, 1,  nullptr, completion_pm_one },
     { "use_index",      EQ, 2,  nullptr, completion_use_index_args },

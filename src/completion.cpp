@@ -41,7 +41,7 @@ void Completion::full(const std::string& word) {
     }
 }
 
-void Completion::full(const std::vector<std::string>& wordList) {
+void Completion::full(const std::initializer_list<std::string>& wordList) {
     for (auto& w : wordList) {
         full(w);
     }

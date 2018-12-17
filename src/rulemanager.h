@@ -12,6 +12,7 @@ class RuleManager : public Object {
 public:
     int addRuleCommand(Input input, Output output);
     int unruleCommand(Input input, Output output);
+    void unruleCompletion(Completion& complete);
     int listRulesCommand(Input input, Output output);
 
 private:
