@@ -256,7 +256,7 @@ void complete_against_mouse_buttons(const char* needle, char* prefix, Output out
 }
 
 MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {
-    MouseBinding mb = { 0 };
+    MouseBinding mb = {};
     mb.modifiers = modifiers;
     mb.button = button;
     GList* elem = g_list_find_custom(g_mouse_binds, &mb,
