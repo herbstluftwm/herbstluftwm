@@ -1,13 +1,103 @@
 #include "rulemanager.h"
 
+#include <cstring>
+
 #include "ipc-protocol.h"
+
 
 /*!
  * Implements the "rule" IPC command
  */
 int RuleManager::addRuleCommand(Input input, Output output) {
-    // not implemented yet (add more tests first)
-    return -1;
+    HSRule rule;
+
+    // Possible flags that apply to the rule as a whole:
+    std::map<std::string, bool> ruleFlags = {
+        {"once", false},
+        {"printlabel", false},
+        {"prepend", false},
+    };
+
+    for (auto argIter = input.begin(); argIter != input.end(); argIter++) {
+        auto arg = *argIter;
+
+        // Whether this argument is negated (only applies to conditions)
+        bool negated = false;
+
+        // Check if arg is a flag for the whole rule
+        if (ruleFlags.count(arg)) {
+            ruleFlags[arg] = true;
+            continue;
+        }
+
+        // Check if arg is a condition negator
+        if (arg == "not" || arg == "!") {
+            // Make sure there is another argument coming:
+            if (argIter + 1 == input.end()) {
+                output << "Expected another argument after \""<< arg << "\" flag\n";
+                return HERBST_INVALID_ARGUMENT;
+            }
+
+            // Skip forward to next argument, but remember that it is negated:
+            negated = true;
+            arg = *(++argIter);
+        }
+
+        // Tokenize arg, expect something like foo=bar or foo~bar:
+        char oper;
+        std::string lhs, rhs;
+        std::tie(lhs, oper, rhs) = tokenize_arg(arg);
+
+        // Check if lhs is a condition name
+        if (HSCondition::matchers.count(lhs)) {
+            bool success = rule.addCondition(lhs, oper, rhs.c_str(), negated, output);
+            if (!success) {
+                return HERBST_INVALID_ARGUMENT;
+            }
+            continue;
+        }
+
+        // Check if lhs is a consequence name
+        if (HSConsequence::appliers.count(lhs)) {
+            if (oper == '~') {
+                output << "rule: Operator ~ not valid for consequence \"" << lhs << "\"\n";
+                return HERBST_INVALID_ARGUMENT;
+            }
+
+            bool success = rule.addConsequence(lhs, oper, rhs.c_str(), output);
+            if (!success) {
+                return HERBST_INVALID_ARGUMENT;
+            }
+            continue;
+        }
+
+
+        // Check if arg is a custom label for this rule
+        if (lhs == "label") {
+            bool success = rule.setLabel(oper, rhs, output);
+            if (!success) {
+                return HERBST_INVALID_ARGUMENT;
+            }
+            continue;
+        }
+
+        output << "rule: Unknown argument \"" << arg << "\"\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    // Store "once" flag in rule
+    rule.once = ruleFlags["once"];
+
+    // Comply with "printlabel" flag
+    if (ruleFlags["printlabel"]) {
+       output << rule.label << "\n";
+    }
+
+    // Insert rule into list according to "prepend" flag
+    auto insertAt = ruleFlags["prepend"] ? g_rules.begin() : g_rules.end();
+    g_rules.insert(insertAt, new HSRule(rule));
+
+    return HERBST_EXIT_SUCCESS;
 }
 
 /*!
@@ -71,4 +161,20 @@ size_t RuleManager::removeRule(std::string label) {
     }
 
     return removedCount;
+}
+
+std::tuple<std::string, char, std::string> RuleManager::tokenize_arg(std::string arg) {
+    if (arg.substr(0, 2) == "--") {
+        arg.erase(0, 2);
+    }
+
+    auto operPos = arg.find_first_of("~=");
+    if (operPos == std::string::npos) {
+        throw std::invalid_argument("No operator in given arg: " + arg);
+    }
+    auto lhs = arg.substr(0, operPos);
+    auto oper = arg[operPos];
+    auto rhs = arg.substr(operPos + 1);
+
+    return std::make_tuple(lhs, oper, rhs);
 }
