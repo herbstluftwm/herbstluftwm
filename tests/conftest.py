@@ -32,9 +32,10 @@ class HlwmBridge:
         # by self.hc_idle
         self.wmclass2winid = {}
 
-    def _possibly_split_command(self, cmd):
+    def _parse_command(self, cmd):
         """
-        Split a string using shlex but keep a list of strings intact.
+        Parse a command (a string using shell quotes or
+        a string list) to a string list.
         """
         if isinstance(cmd, list):
             args = [str(x) for x in cmd]
@@ -44,7 +45,7 @@ class HlwmBridge:
         return args
 
     def _checked_call(self, cmd, expect_success=True):
-        args = self._possibly_split_command(cmd)
+        args = self._parse_command(cmd)
 
         try:
             proc = subprocess.run([self.HC_PATH, '-n'] + args,
@@ -110,7 +111,7 @@ class HlwmBridge:
         Set 'partial' if some of the completions for the given command are
         partial. If not in 'partial' mode, trailing spaces are stripped.
         """
-        args = self._possibly_split_command(cmd)
+        args = self._parse_command(cmd)
         if position is None:
             position = len(args)
         proc = self.call(['complete_shell', position] + args)
@@ -129,7 +130,7 @@ class HlwmBridge:
 
     def list_children_via_attr(self, object_path):
         """
-        list the names of children of the
+        List the names of children of the
         given object, using the attr command internally.
         """
         # regexes for list_children:
@@ -148,7 +149,7 @@ class HlwmBridge:
 
     def list_children(self, object_path):
         """
-        list the names of children of the
+        List the names of children of the
         given object, using the complete_shell command.
         """
         if not object_path.endswith('.') and object_path != '':
