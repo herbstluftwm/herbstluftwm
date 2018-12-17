@@ -100,15 +100,29 @@ class HlwmBridge:
         self.client_procs.append(proc)
         return winid
 
-    def complete(self, cmd):
+    def complete(self, cmd, partial=False):
         """
-        List all completions for the next argument for the given command.
-        This is more a helper to test completions.
+        Return a sorted list of all completions for the next argument for the
+        given command. This is more a helper to test completions. Set 'partial'
+        if some of the completions for the given command are partial. If not in
+        'partial' mode, trailing spaces are stripped.
         """
         args = self._possibly_split_command(cmd)
         position = len(args)
-        res = self.call(['complete', position] + args)
-        return sorted(res.stdout.splitlines(False))
+        proc = self.call(['complete_shell', position] + args)
+        items = [ ]
+        for i in proc.stdout.splitlines(False):
+            if partial:
+                items.append(i)
+            else:
+                if not i.endswith(' '):
+                    raise Exception(("completion for \"{}\" returned the partial "
+                                    + "completion item \"{}\"").format(cmd, i)
+                                    ) from None
+                else:
+                    items.append(i[0:-1])
+        return sorted(items)
+
 
     def create_clients(self, num):
         return [self.create_client() for i in range(num)]
