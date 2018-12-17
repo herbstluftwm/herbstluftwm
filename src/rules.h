@@ -1,9 +1,10 @@
 #ifndef __HS_RULES_H_
 #define __HS_RULES_H_
 
-#include "types.h"
-
+#include <functional>
 #include <regex>
+
+#include "types.h"
 
 class HSClient;
 
@@ -19,7 +20,10 @@ enum {
 
 class HSCondition {
 public:
-    int condition_type;
+
+    static const std::map<std::string, std::function<bool(HSCondition *, HSClient*)>> matchers;
+
+    std::string name;
     int value_type;
     bool negated;
 
@@ -47,11 +51,14 @@ public:
     std::string     keymask; // Which keymask rule should be applied for this client
 };
 
-typedef struct {
-    int     type;
+class HSConsequence {
+public:
+    static const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClientChanges*)>> appliers;
+
+    std::string name;
     int value_type;
     std::string value;
-} HSConsequence;
+};
 
 class HSRule {
 public:
@@ -63,12 +70,13 @@ public:
     bool once = false;
     time_t birth_time; // timestamp of at creation
 
-    bool replaceLabel(char op, char* value, Output output);
-    bool addConsequence(int type, char op, char* value, Output output);
-    bool addCondition(int type, char op, char* value, Output output);
+    bool setLabel(char op, std::string value, Output output);
+    bool addCondition(std::string name, char op, const char* value, bool negated, Output output);
+    bool addConsequence(std::string name, char op, const char* value, Output output);
 
     void print(Output output);
 };
+
 
 void rules_init();
 void rules_destroy();
@@ -76,7 +84,6 @@ void rules_apply(HSClient* client, HSClientChanges* changes);
 
 void rule_complete(int argc, char** argv, int pos, Output output);
 
-int rule_add_command(int argc, char** argv, Output output);
 void complete_against_rule_names(int argc, char** argv, int pos, Output output);
 
 #endif

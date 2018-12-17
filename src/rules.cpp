@@ -27,8 +27,6 @@ typedef struct {
 } HSConsequenceType;
 
 /// DECLARATIONS ///
-static int find_condition_type(const char* name);
-static int find_consequence_type(const char* name);
 static bool condition_string(HSCondition* rule, const char* string);
 
 /// CONDITIONS ///
@@ -63,7 +61,7 @@ DECLARE_CONSEQUENCE(consequence_monitor);
 
 /// GLOBALS ///
 
-static HSConditionType g_condition_types[] = {
+const std::map<std::string, std::function<bool(HSCondition * ,HSClient*)>> HSCondition::matchers = {
     { "class",          condition_class             },
     { "instance",       condition_instance          },
     { "title",          condition_title             },
@@ -73,11 +71,10 @@ static HSConditionType g_condition_types[] = {
     { "windowrole",     condition_windowrole        },
 };
 
-static int     g_maxage_type; // index of "maxage"
 static time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
 unsigned long long g_rule_label_index; // incremental index of rule label
 
-static HSConsequenceType g_consequence_types[] = {
+const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClientChanges*)>> HSConsequence::appliers = {
     { "tag",            consequence_tag             },
     { "index",          consequence_index           },
     { "focus",          consequence_focus           },
@@ -97,7 +94,6 @@ std::list<HSRule *> g_rules;
 /// FUNCTIONS ///
 // RULES //
 void rules_init() {
-    g_maxage_type = find_condition_type("maxage");
     g_rule_label_index = 0;
 }
 
@@ -108,28 +104,17 @@ void rules_destroy() {
     g_rules.clear();
 }
 
-// condition types //
-static int find_condition_type(const char* name) {
-    const char* cn;
-    for (int i = 0; i < LENGTH(g_condition_types); i++) {
-        cn = g_condition_types[i].name;
-        if (!cn) break;
-        if (!strcmp(cn, name)) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-bool HSRule::addCondition(int type, char op, char* value, Output output) {
+bool HSRule::addCondition(std::string name, char op, const char* value, bool negated, Output output) {
     HSCondition cond;
-    if (op != '=' && type == g_maxage_type) {
+    cond.negated = negated;
+
+    if (op != '=' && name == "maxage") {
         output << "rule: Condition maxage only supports the = operator\n";
         return false;
     }
     switch (op) {
         case '=': {
-            if (type == g_maxage_type) {
+            if (name == "maxage") {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
                 if (1 != sscanf(value, "%d", &cond.value_integer)) {
                     output << "rule: Can not integer from \"" << value << "\"\n";
@@ -148,7 +133,7 @@ bool HSRule::addCondition(int type, char op, char* value, Output output) {
                 cond.value_reg_exp = std::regex(value, std::regex::extended);
             } catch(std::regex_error& err) {
                 output << "rule: Can not parse value \"" << value
-                        << "\" from condition \"" << g_condition_types[type].name
+                        << "\" from condition \"" << name
                         << "\": \"" << err.what() << "\"\n";
                 return false;
             }
@@ -162,23 +147,10 @@ bool HSRule::addCondition(int type, char op, char* value, Output output) {
             break;
     }
 
-    cond.condition_type = type;
+    cond.name = name;
 
     conditions.push_back(cond);
     return true;
-}
-
-// consequence types //
-static int find_consequence_type(const char* name) {
-    const char* cn;
-    for (int i = 0; i < LENGTH(g_consequence_types); i++) {
-        cn = g_consequence_types[i].name;
-        if (!cn) break;
-        if (!strcmp(cn, name)) {
-            return i;
-        }
-    }
-    return -1;
 }
 
 /**
@@ -186,7 +158,7 @@ static int find_consequence_type(const char* name) {
  *
  * @retval false if the consequence cannot be added (malformed)
  */
-bool HSRule::addConsequence(int type, char op, char* value, Output output) {
+bool HSRule::addConsequence(std::string name, char op, const char* value, Output output) {
     HSConsequence cons;
     switch (op) {
         case '=':
@@ -200,27 +172,24 @@ bool HSRule::addConsequence(int type, char op, char* value, Output output) {
             break;
     }
 
-    cons.type = type;
+    cons.name = name;
 
     consequences.push_back(cons);
     return true;
 }
 
-bool HSRule::replaceLabel(char op, char* value, Output output) {
-    switch (op) {
-        case '=':
-            if (*value == '\0') {
-                output << "rule: Rule label cannot be empty";
-                return false;
-                break;
-            }
-            label = value;
-            break;
-        default:
-            output << "rule: Unknown rule label operation \"" << op << "\"\n";
-            return false;
-            break;
+bool HSRule::setLabel(char op, std::string value, Output output) {
+    if (op != '=') {
+        output << "rule: Unknown rule label operation \"" << op << "\"\n";
+        return false;
     }
+
+    if (value.empty()) {
+        output << "rule: Rule label cannot be empty\n";
+        return false;
+    }
+
+    label = value;
     return true;
 }
 
@@ -236,16 +205,18 @@ void rule_complete(int argc, char** argv, int pos, Output output) {
     GString* buf = g_string_sized_new(20);
 
     // complete against conditions
-    for (int i = 0; i < LENGTH(g_condition_types); i++) {
-        g_string_printf(buf, "%s=", g_condition_types[i].name);
+    for (auto&& matcher : HSCondition::matchers) {
+        auto condName = matcher.first;
+        g_string_printf(buf, "%s=", condName.c_str());
         try_complete_partial(needle, buf->str, output);
-        g_string_printf(buf, "%s~", g_condition_types[i].name);
+        g_string_printf(buf, "%s~", condName.c_str());
         try_complete_partial(needle, buf->str, output);
     }
 
     // complete against consequences
-    for (int i = 0; i < LENGTH(g_consequence_types); i++) {
-        g_string_printf(buf, "%s=", g_consequence_types[i].name);
+    for (auto&& applier : HSConsequence::appliers) {
+        auto applierName = applier.first;
+        g_string_printf(buf, "%s=", applierName.c_str());
         try_complete_partial(needle, buf->str, output);
     }
 
@@ -269,7 +240,7 @@ void HSRule::print(Output output) {
         if (cond.negated) {
             output << "not\t";
         }
-        output << g_condition_types[cond.condition_type].name;
+        output << cond.name;
         switch (cond.value_type) {
             case CONDITION_VALUE_TYPE_STRING:
                 output << "=" << cond.value_str << "\t";
@@ -284,126 +255,11 @@ void HSRule::print(Output output) {
 
     // Append consequences
     for (auto const& cons : consequences) {
-        output << g_consequence_types[cons.type].name
-            << "=" << cons.value << "\t";
+        output << cons.name << "=" << cons.value << "\t";
     }
 
     // Append separating or final newline
     output << '\n';
-}
-
-// parses an arg like NAME=VALUE to res_name, res_operation and res_value
-bool tokenize_arg(char* condition,
-                  char** res_name, char* res_operation, char** res_value) {
-    // ignore two leading dashes
-    if (condition[0] == '-' && condition[1] == '-') {
-        condition += 2;
-    }
-
-    // get name
-    *res_name = condition;
-
-
-    // locate operation
-    char* op = strpbrk(condition, "=~");
-    if (!op) {
-        return false;
-    }
-    *res_operation = *op;
-    *op = '\0'; // separate string at operation char
-
-    // value is second one (starting after op character)
-    *res_value = op + 1;
-    return true;
-}
-
-int rule_add_command(int argc, char** argv, Output output) {
-    // usage: rule COND=VAL ... then
-
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    // temporary data structures
-    HSRule* rule = new HSRule();
-    bool printlabel = false;
-    bool negated = false;
-    bool prepend = false;
-    struct {
-        const char* name;
-        bool* flag;
-    } flags[] = {
-        { "prepend",&prepend },
-        { "not",    &negated },
-        { "!",      &negated },
-        { "once",   &rule->once },
-        { "printlabel",&printlabel },
-    };
-
-    // parse rule incrementally. always maintain a correct rule in rule
-    while (SHIFT(argc, argv)) {
-        char* name;
-        char* value;
-        char op;
-
-        // is it a consequence or a condition?
-        bool consorcond = tokenize_arg(*argv, &name, &op, &value);
-        int type;
-        bool flag_found = false;
-        int flag_index = -1;
-
-        for (int i = 0; i < LENGTH(flags); i++) {
-            if (!strcmp(flags[i].name, name)) {
-                flag_found = true;
-                flag_index = i;
-                break;
-            }
-        }
-
-        if (flag_found) {
-            *flags[flag_index].flag = ! *flags[flag_index].flag;
-        }
-
-        else if (consorcond && (type = find_condition_type(name)) >= 0) {
-            auto success = rule->addCondition(type, op, value, output);
-            if (!success) {
-                delete rule;
-                return HERBST_INVALID_ARGUMENT;
-            }
-            rule->conditions.back().negated = negated;
-            negated = false;
-        }
-
-        else if (consorcond && (type = find_consequence_type(name)) >= 0) {
-            bool success = rule->addConsequence(type, op, value, output);
-            if (!success) {
-                delete rule;
-                return HERBST_INVALID_ARGUMENT;
-            }
-        }
-
-        // Check for a provided label, and replace default index if so
-        else if (consorcond && (!strcmp(name,"label"))) {
-            if (!rule->replaceLabel(op, value, output)) {
-                delete rule;
-                return HERBST_INVALID_ARGUMENT;
-            }
-        }
-
-        else {
-            // need to hardcode "rule:" here because args are shifted
-            output << "rule: Unknown argument \"" << *argv << "\"\n";
-            delete rule;
-            return HERBST_INVALID_ARGUMENT;
-        }
-    }
-
-    if (printlabel) {
-       output << rule->label << "\n";
-    }
-
-    if (prepend) g_rules.push_front(rule);
-    else         g_rules.push_back(rule);
-    return 0;
 }
 
 void complete_against_rule_names(int argc, char** argv, int pos, Output output) {
@@ -436,19 +292,16 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
 
         // check all conditions
         for (auto& cond : rule->conditions) {
-            int type = cond.condition_type;
-
-            if (!rule_match && type != g_maxage_type) {
+            if (!rule_match && cond.name != "maxage") {
                 // implement lazy AND &&
                 // ... except for maxage
                 continue;
             }
 
-            matches = g_condition_types[type].
-                matches(&cond, client);
+            matches = HSCondition::matchers.at(cond.name)(&cond, client);
 
             if (!matches && !cond.negated
-                && cond.condition_type == g_maxage_type) {
+                && cond.name == "maxage") {
                 // if if not negated maxage does not match anymore
                 // then it will never match again in the future
                 rule_expired = true;
@@ -462,9 +315,8 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
 
         if (rule_match) {
             // apply all consequences
-            for (auto & cons : rule->consequences) {
-                g_consequence_types[cons.type].
-                    apply(&cons, client, changes);
+            for (auto& cons : rule->consequences) {
+                HSConsequence::appliers.at(cons.name)(&cons, client, changes);
             }
         }
 

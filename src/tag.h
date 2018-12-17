@@ -35,9 +35,6 @@ private:
     std::string validateNewName(std::string newName);
 };
 
-void tag_init();
-void tag_destroy();
-
 // for tags
 HSTag* find_tag(const char* name);
 HSTag* find_unused_tag();
