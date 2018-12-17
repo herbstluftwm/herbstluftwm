@@ -1,5 +1,6 @@
 import os
 import os.path
+import re
 import shlex
 import subprocess
 import sys
@@ -100,15 +101,18 @@ class HlwmBridge:
         self.client_procs.append(proc)
         return winid
 
-    def complete(self, cmd, partial=False):
+    def complete(self, cmd, partial=False, position=None):
         """
         Return a sorted list of all completions for the next argument for the
-        given command. This is more a helper to test completions. Set 'partial'
-        if some of the completions for the given command are partial. If not in
-        'partial' mode, trailing spaces are stripped.
+        given command, if position=None. If position is given, then the argument
+        of the given position is completed.
+
+        Set 'partial' if some of the completions for the given command are
+        partial. If not in 'partial' mode, trailing spaces are stripped.
         """
         args = self._possibly_split_command(cmd)
-        position = len(args)
+        if position is None:
+            position = len(args)
         proc = self.call(['complete_shell', position] + args)
         items = [ ]
         for i in proc.stdout.splitlines(False):
@@ -122,6 +126,40 @@ class HlwmBridge:
                 else:
                     items.append(i[0:-1])
         return sorted(items)
+
+    def list_children_via_attr(self, object_path):
+        """
+        list the names of children of the
+        given object, using the attr command internally.
+        """
+        # regexes for list_children:
+
+        children_re = re.compile(r'^[0-9]* (child|children)[\\.:]((\n  [^\n]*)*)')
+        line_re = re.compile('^  (.*)\\.$')
+        output = self.call(['attr', object_path]).stdout
+        section_match = children_re.match(output)
+        assert section_match
+        children = []
+        for i in section_match.group(2).split('\n')[1:]:
+            child_match = line_re.match(i)
+            assert child_match
+            children.append(child_match.group(1))
+        return sorted(children)
+
+    def list_children(self, object_path):
+        """
+        list the names of children of the
+        given object, using the complete_shell command.
+        """
+        if not object_path.endswith('.') and object_path != '':
+            object_path += '.'
+        items = self.complete(['object_tree', object_path],
+                              partial=True, position=1)
+        children = [ ]
+        for i in items:
+            children.append(i.split('.')[-2])
+        return sorted(children)
+
 
 
     def create_clients(self, num):
