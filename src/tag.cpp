@@ -26,12 +26,6 @@ using namespace std;
 
 static bool    g_tag_flags_dirty = true;
 
-void tag_init() {
-}
-
-void tag_destroy() {
-}
-
 
 HSTag::HSTag(std::string name_, Settings* settings)
     : index(this, "index", 0)

@@ -19,4 +19,5 @@ public:
 
 private:
     size_t removeRule(std::string label);
+    std::tuple<std::string, char, std::string> tokenize_arg(std::string arg);
 };
