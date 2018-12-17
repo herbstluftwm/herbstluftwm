@@ -56,9 +56,6 @@ private:
     //MonitorManager* monman;
 };
 
-void monitor_init();
-void monitor_destroy();
-
 class MonitorManager;
 extern MonitorManager* g_monitors; // temporarily
 extern int g_cur_monitor; // temporarily
