@@ -704,7 +704,6 @@ static struct {
     { floating_init,    floating_destroy    },
     { stacklist_init,   stacklist_destroy   },
     { layout_init,      layout_destroy      },
-    { tag_init,         tag_destroy         },
     { clientlist_init,  clientlist_destroy  },
     { monitor_init,     monitor_destroy     },
     { ewmh_init,        ewmh_destroy        },
