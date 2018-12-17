@@ -10,6 +10,8 @@
 #include <string>
 #include <functional>
 
+extern MonitorManager* g_monitors;
+
 class TagManager;
 class HSTag;
 
@@ -46,6 +48,10 @@ public:
     int lock_cmd(Input, Output);
     int unlock_cmd(Input, Output);
     std::string lock_number_changed();
+
+    int cur_monitor;
+    HSStack* monitor_stack;
+
 private:
     ByName by_name_;
     TagManager* tags_;
