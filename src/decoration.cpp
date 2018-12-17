@@ -337,7 +337,6 @@ void Decoration::redrawPixmap() {
     const DecorationScheme& s = *last_scheme;
     auto dec = this;
     auto outer = client->dec.last_outer_rect;
-    unsigned int depth = client->dec.depth;
     // TODO: maybe do something like pixmap recreate threshhold?
     bool recreate_pixmap = (dec->pixmap == 0) || (dec->pixmap_width != outer.width)
                                               || (dec->pixmap_height != outer.height);
