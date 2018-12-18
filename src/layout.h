@@ -168,8 +168,8 @@ private:
 
 class HSFrameSplit : public HSFrame {
 public:
-    HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction, int align,
-                 std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b);
+    HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction_, int align_,
+                 std::shared_ptr<HSFrame> a_, std::shared_ptr<HSFrame> b_);
     ~HSFrameSplit() override;
     // inherited:
     void insertClient(HSClient* client) override;
@@ -189,26 +189,26 @@ public:
     HSClient* focusedClient() override;
 
     // own members
-    int splitsToRoot(int align) override;
+    int splitsToRoot(int align_) override;
     void replaceChild(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> newchild);
-    std::shared_ptr<HSFrame> firstChild() { return a; }
-    std::shared_ptr<HSFrame> secondChild() { return b; }
-    std::shared_ptr<HSFrame> selectedChild() { return selection ? b : a; }
+    std::shared_ptr<HSFrame> firstChild() { return a_; }
+    std::shared_ptr<HSFrame> secondChild() { return b_; }
+    std::shared_ptr<HSFrame> selectedChild() { return selection_ ? b_ : a_; }
     void swapChildren();
     void adjustFraction(int delta);
     std::shared_ptr<HSFrameSplit> thisSplit();
     std::shared_ptr<HSFrameSplit> isSplit() override { return thisSplit(); }
-    int getAlign() { return align; }
+    int getAlign() { return align_; }
     void rotate();
-    void swapSelection() { selection = 1 - selection; }
-    void setSelection(int s) { selection = s; }
+    void swapSelection() { selection_ = 1 - selection_; }
+    void setSelection(int s) { selection_ = s; }
 private:
-    int align;         // ALIGN_VERTICAL or ALIGN_HORIZONTAL
-    std::shared_ptr<HSFrame> a; // first child
-    std::shared_ptr<HSFrame> b; // second child
+    int align_;         // ALIGN_VERTICAL or ALIGN_HORIZONTAL
+    std::shared_ptr<HSFrame> a_; // first child
+    std::shared_ptr<HSFrame> b_; // second child
 
-    int selection;
-    int fraction; // size of first child relative to whole size
+    int selection_;
+    int fraction_; // size of first child relative to whole size
                   // FRACTION_UNIT means full size
                   // FRACTION_UNIT/2 means 50%
 };
