@@ -75,11 +75,11 @@ HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> 
 HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction, int align,
                  std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b)
              : HSFrame(tag, settings, parent) {
-    this->align = align;
-    selection = 0;
-    this->fraction = fraction;
-    this->a = a;
-    this->b = b;
+    this->align_ = align;
+    selection_ = 0;
+    this->fraction_ = fraction;
+    this->a_ = a;
+    this->b_ = b;
 }
 
 void HSFrameLeaf::insertClient(HSClient* client) {
@@ -90,8 +90,8 @@ void HSFrameLeaf::insertClient(HSClient* client) {
 }
 
 void HSFrameSplit::insertClient(HSClient* client) {
-    if (selection == 0) a->insertClient(client);
-    else                b->insertClient(client);
+    if (selection_ == 0) a_->insertClient(client);
+    else                b_->insertClient(client);
 }
 
 std::shared_ptr<HSFrame> HSFrameLeaf::lookup(const char*) {
@@ -103,8 +103,8 @@ std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
         return shared_from_this();
     }
 
-    auto selected = (selection == 0) ? a : b;
-    auto not_selected = (selection == 0) ? b : a;
+    auto selected = (selection_ == 0) ? a_ : b_;
+    auto not_selected = (selection_ == 0) ? b_ : a_;
 
     if (index[0] == '@') {
         // Special case: always follow selection
@@ -113,8 +113,8 @@ std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
 
     std::shared_ptr<HSFrame> new_root;
     switch (index[0]) {
-        case '0': new_root = a; break;
-        case '1': new_root = b; break;
+        case '0': new_root = a_; break;
+        case '1': new_root = b_; break;
         case '/': new_root = not_selected; break;
         case '.': /* fallthru */
         default: new_root = selected;
@@ -124,9 +124,9 @@ std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
 }
 
 std::shared_ptr<HSFrameLeaf> HSFrameSplit::frameWithClient(HSClient* client) {
-    auto found = a->frameWithClient(client);
+    auto found = a_->frameWithClient(client);
     if (found) return found;
-    else return b->frameWithClient(client);
+    else return b_->frameWithClient(client);
 }
 
 std::shared_ptr<HSFrameLeaf> HSFrameLeaf::frameWithClient(HSClient* client) {
@@ -156,7 +156,7 @@ bool HSFrameLeaf::removeClient(HSClient* client) {
 }
 
 bool HSFrameSplit::removeClient(HSClient* client) {
-    return a->removeClient(client) || b->removeClient(client);
+    return a_->removeClient(client) || b_->removeClient(client);
 }
 
 
@@ -186,15 +186,15 @@ void HSFrameSplit::dump(Output output) {
         << LAYOUT_DUMP_BRACKETS[0]
         << "split"
         << LAYOUT_DUMP_WHITESPACES[0]
-        << g_align_names[align]
+        << g_align_names[align_]
         << LAYOUT_DUMP_SEPARATOR
-        << ((double)fraction) / (double)FRACTION_UNIT
+        << ((double)fraction_) / (double)FRACTION_UNIT
         << LAYOUT_DUMP_SEPARATOR
-        << selection
+        << selection_
         << LAYOUT_DUMP_WHITESPACES[0];
-    a->dump(output);
+    a_->dump(output);
     output << LAYOUT_DUMP_WHITESPACES[0];
-    b->dump(output);
+    b_->dump(output);
     output << LAYOUT_DUMP_BRACKETS[1];
 }
 
@@ -506,10 +506,10 @@ std::shared_ptr<HSFrameLeaf> HSFrameLeaf::getFocusedFrame() {
 }
 
 std::shared_ptr<HSFrameLeaf> HSFrameSplit::getFocusedFrame() {
-    if (selection == 0) {
-        return a->getFocusedFrame();
+    if (selection_ == 0) {
+        return a_->getFocusedFrame();
     } else {
-        return b->getFocusedFrame();
+        return b_->getFocusedFrame();
     }
 }
 
@@ -735,30 +735,30 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
 TilingResult HSFrameSplit::computeLayout(Rectangle rect) {
     auto first = rect;
     auto second = rect;
-    if (align == ALIGN_VERTICAL) {
-        first.height = (rect.height * fraction) / FRACTION_UNIT;
+    if (align_ == ALIGN_VERTICAL) {
+        first.height = (rect.height * fraction_) / FRACTION_UNIT;
         second.y += first.height;
         second.height -= first.height;
     } else { // (align == ALIGN_HORIZONTAL)
-        first.width = (rect.width * fraction) / FRACTION_UNIT;
+        first.width = (rect.width * fraction_) / FRACTION_UNIT;
         second.x += first.width;
         second.width -= first.width;
     }
     TilingResult res;
-    auto res1 = a->computeLayout(first);
-    auto res2 = b->computeLayout(second);
+    auto res1 = a_->computeLayout(first);
+    auto res2 = b_->computeLayout(second);
     res.mergeFrom(res1);
     res.mergeFrom(res2);
-    res.focus = (selection == 0) ? res1.focus : res2.focus;
-    res.focused_frame = (selection == 0) ? res1.focused_frame : res2.focused_frame;
+    res.focus = (selection_ == 0) ? res1.focus : res2.focus;
+    res.focused_frame = (selection_ == 0) ? res1.focused_frame : res2.focused_frame;
     return res;
 }
 
 void HSFrameSplit::fmap(std::function<void(HSFrameSplit*)> onSplit, std::function<void(HSFrameLeaf*)> onLeaf, int order) {
     if (order <= 0) onSplit(this);
-    a->fmap(onSplit, onLeaf, order);
+    a_->fmap(onSplit, onLeaf, order);
     if (order == 1) onSplit(this);
-    b->fmap(onSplit, onLeaf, order);
+    b_->fmap(onSplit, onLeaf, order);
     if (order >= 1) onSplit(this);
 }
 
@@ -769,8 +769,8 @@ void HSFrameLeaf::fmap(std::function<void(HSFrameSplit*)> onSplit, std::function
 }
 
 void HSFrameSplit::foreachClient(ClientAction action) {
-    a->foreachClient(action);
-    b->foreachClient(action);
+    a_->foreachClient(action);
+    b_->foreachClient(action);
 }
 
 void HSFrameLeaf::foreachClient(ClientAction action) {
@@ -911,17 +911,17 @@ int HSFrame::splitsToRoot(int align) {
 int HSFrameSplit::splitsToRoot(int align) {
     if (!parent_.lock()) return 0;
     int delta = 0;
-    if (this->align == align) delta = 1;
+    if (this->align_ == align) delta = 1;
     return delta + parent_.lock()->splitsToRoot(align);
 }
 
 void HSFrameSplit::replaceChild(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> newchild) {
-    if (a == old) {
-        a = newchild;
+    if (a_ == old) {
+        a_ = newchild;
         newchild->parent_ = thisSplit();
     }
-    if (b == old) {
-        b = newchild;
+    if (b_ == old) {
+        b_ = newchild;
         newchild->parent_ = thisSplit();
     }
 }
@@ -1047,7 +1047,7 @@ int frame_split_command(Input input, Output output) {
 }
 
 void HSFrameSplit::swapChildren() {
-    swap(a,b);
+    swap(a_,b_);
 }
 
 int frame_change_fraction_command(int argc, char** argv, Output output) {
@@ -1096,8 +1096,8 @@ int frame_change_fraction_command(int argc, char** argv, Output output) {
 }
 
 void HSFrameSplit::adjustFraction(int delta) {
-    fraction += delta;
-    fraction = CLAMP(fraction, (int)(FRAME_MIN_FRACTION * FRACTION_UNIT),
+    fraction_ += delta;
+    fraction_ = CLAMP(fraction_, (int)(FRAME_MIN_FRACTION * FRACTION_UNIT),
                                (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
 }
 
@@ -1329,7 +1329,7 @@ void HSFrameLeaf::select(HSClient* client) {
 }
 
 HSClient* HSFrameSplit::focusedClient() {
-    return (selection == 0 ? a->focusedClient() : b->focusedClient());
+    return (selection_ == 0 ? a_->focusedClient() : b_->focusedClient());
 }
 
 HSClient* HSFrameLeaf::focusedClient() {
@@ -1344,11 +1344,11 @@ HSClient* HSFrameLeaf::focusedClient() {
 // hidden.
 // returns true if win was found and focused, else returns false
 bool HSFrameSplit::focusClient(HSClient* client) {
-    if (a->focusClient(client)) {
-        selection = 0;
+    if (a_->focusClient(client)) {
+        selection_ = 0;
         return true;
-    } else if (b->focusClient(client)) {
-        selection = 1;
+    } else if (b_->focusClient(client)) {
+        selection_ = 1;
         return true;
     }
     return false;
@@ -1423,15 +1423,15 @@ void HSFrame::setVisibleRecursive(bool visible) {
 }
 
 void HSFrameSplit::rotate() {
-    switch (align) {
+    switch (align_) {
         case ALIGN_VERTICAL:
-            align = ALIGN_HORIZONTAL;
+            align_ = ALIGN_HORIZONTAL;
             break;
         case ALIGN_HORIZONTAL:
-            align = ALIGN_VERTICAL;
-            selection = selection ? 0 : 1;
-            swap(a, b);
-            fraction = FRACTION_UNIT - fraction;
+            align_ = ALIGN_VERTICAL;
+            selection_ = selection_ ? 0 : 1;
+            swap(a_, b_);
+            fraction_ = FRACTION_UNIT - fraction_;
             break;
     }
 }
