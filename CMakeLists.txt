@@ -77,15 +77,8 @@ function (add_debugflags)
 	endforeach()
 endfunction()
 
-# use ccache if available
-find_program(CCACHE ccache)
-if (CCACHE)
-	message(STATUS "Using compiler wrapper: ${CCACHE}")
-	set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE}
-		CACHE FILEPATH "Wrapper for C++ compiler invocations")
-	set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE}
-		CACHE FILEPATH "Wrapper for C compiler invocations")
-endif()
+# find ccache (offered via ENABLE_CCACHE if available)
+include(cmake/ccache.cmake)
 
 ## install variables
 # prefix for systemwide configuration, accompanies CMAKE_INSTALL_PREFIX
