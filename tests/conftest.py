@@ -105,8 +105,8 @@ class HlwmBridge:
     def complete(self, cmd, partial=False, position=None):
         """
         Return a sorted list of all completions for the next argument for the
-        given command, if position=None. If position is given, then the argument
-        of the given position is completed.
+        given command, if position=None. If position is given, then the
+        argument of the given position is completed.
 
         Set 'partial' if some of the completions for the given command are
         partial. If not in 'partial' mode, trailing spaces are stripped.
@@ -115,7 +115,7 @@ class HlwmBridge:
         if position is None:
             position = len(args)
         proc = self.call(['complete_shell', position] + args)
-        items = [ ]
+        items = []
         for i in proc.stdout.splitlines(False):
             if partial:
                 items.append(i)
@@ -135,7 +135,8 @@ class HlwmBridge:
         """
         # regexes for list_children:
 
-        children_re = re.compile(r'^[0-9]* (child|children)[\\.:]((\n  [^\n]*)*)')
+        children_re = \
+            re.compile(r'^[0-9]* (child|children)[\\.:]((\n  [^\n]*)*)')
         line_re = re.compile('^  (.*)\\.$')
         output = self.call(['attr', object_path]).stdout
         section_match = children_re.match(output)
@@ -156,12 +157,10 @@ class HlwmBridge:
             object_path += '.'
         items = self.complete(['object_tree', object_path],
                               partial=True, position=1)
-        children = [ ]
+        children = []
         for i in items:
             children.append(i.split('.')[-2])
         return sorted(children)
-
-
 
     def create_clients(self, num):
         return [self.create_client() for i in range(num)]

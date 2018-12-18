@@ -29,6 +29,7 @@ consequences = [
     'keymask',
     ]
 
+
 def test_list_rules_empty_by_default(hlwm):
     rules = hlwm.call('list_rules')
 
@@ -45,10 +46,11 @@ def test_add_simple_rule(hlwm):
 def test_add_many_labeled_rules(hlwm):
     # Add set of rules with every consequence and every valid combination of
     # property and match operator appearing at least once:
-    global string_props, numeric_props, consequences
 
     # Make a single, long list of all consequences (with unique rhs values):
-    consequences_str = ' '.join(['{}=a{}b'.format(c, idx) for idx, c in enumerate(consequences, start=4117)])
+    consequences_str = \
+        ' '.join(['{}=a{}b'.format(c, idx)
+                  for idx, c in enumerate(consequences, start=4117)])
 
     # Make three sets of long conditions lists: for numeric matches, string
     # equality and regexp equality:
@@ -158,13 +160,13 @@ def test_complete_unrule_offers_all_rules(hlwm, rules_count):
 
     assert call.stdout == '\n'.join(rules + ['-F', '--all']) + '\n'
 
+
 def test_complete_rule(hlwm):
-    global string_props, numeric_props, consequences
     assert hlwm.complete('rule', partial=True) == sorted(
-        [ i + ' ' for i in '! not prepend once printlabel'.split(' ')]
-        + [ i + '=' for i in string_props + numeric_props ]
-        + [ i + '~' for i in string_props + numeric_props ]
-        + [ i + '=' for i in consequences + ['label'] ]
+        [i + ' ' for i in '! not prepend once printlabel'.split(' ')]
+        + [i + '=' for i in string_props + numeric_props]
+        + [i + '~' for i in string_props + numeric_props]
+        + [i + '=' for i in consequences + ['label']]
         )
 
 
