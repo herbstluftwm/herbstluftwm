@@ -32,6 +32,7 @@ public:
     std::regex value_reg_exp;
     std::string value_reg_str;
 
+private:
     bool matchesClass(HSClient* client);
     bool matchesInstance(HSClient* client);
     bool matchesTitle(HSClient* client);
@@ -40,7 +41,6 @@ public:
     bool matchesWindowtype(HSClient* client);
     bool matchesWindowrole(HSClient* client);
 
-private:
     bool matches(const std::string& string);
 };
 
@@ -70,6 +70,7 @@ public:
     int value_type;
     std::string value;
 
+private:
     void applyTag(HSClient* client, HSClientChanges* changes);
     void applyIndex(HSClient* client, HSClientChanges* changes);
     void applyFocus(HSClient* client, HSClientChanges* changes);
