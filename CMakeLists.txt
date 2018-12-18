@@ -12,7 +12,7 @@ project(Herbstluftwm
 # write all executables to root of build directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# use our cmake dir for include(...) statements
+# use our cmake dir for include(…) statements
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 ## macros & functions (may be moved to cmake/ and included)
