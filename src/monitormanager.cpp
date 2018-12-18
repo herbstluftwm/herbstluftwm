@@ -16,6 +16,10 @@
 
 using namespace std;
 
+int g_cur_monitor;
+::HSStack* g_monitor_stack;
+MonitorManager* g_monitors;
+
 MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
     : ChildByIndex<HSMonitor>()
     , focus(*this, "focus")
@@ -23,6 +27,13 @@ MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
     , tags_(tags)
     , settings_(settings)
 {
+    g_cur_monitor = 0;
+    g_monitor_stack = new HSStack();
+}
+
+MonitorManager::~MonitorManager() {
+    clearChildren();
+    delete g_monitor_stack;
 }
 
 void MonitorManager::clearChildren() {
