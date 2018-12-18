@@ -51,6 +51,7 @@ function (add_debugflags)
 	set(FLAGS
 		-g -Og
 		-pedantic -Wall -Werror
+		-Wnull-dereference -Wdouble-promotion -Wformat=2
 		-Wno-sign-compare -Wno-narrowing -Wno-error=cast-function-type
 		-fsanitize=address,leak,undefined
 		-fno-omit-frame-pointer)

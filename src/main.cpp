@@ -705,7 +705,6 @@ static struct {
     { stacklist_init,   stacklist_destroy   },
     { layout_init,      layout_destroy      },
     { clientlist_init,  clientlist_destroy  },
-    { monitor_init,     monitor_destroy     },
     { ewmh_init,        ewmh_destroy        },
     { mouse_init,       mouse_destroy       },
     { hook_init,        hook_destroy        },

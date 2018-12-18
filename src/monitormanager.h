@@ -18,6 +18,7 @@ typedef std::function<int(HSMonitor&,Input,Output)> HSMonitorCommand;
 class MonitorManager : public ChildByIndex<HSMonitor> {
 public:
     MonitorManager(Settings* settings, TagManager* tags);
+    ~MonitorManager();
     Child_<HSMonitor> focus;
 
     void clearChildren();
