@@ -31,15 +31,9 @@
 using namespace std;
 
 
-// module internals:
-int g_cur_monitor;
-static ::HSStack* g_monitor_stack;
-MonitorManager* g_monitors;
-
-void monitor_init() {
-    g_cur_monitor = 0;
-    g_monitor_stack = new HSStack();
-}
+extern int g_cur_monitor;
+extern ::HSStack* g_monitor_stack;
+extern MonitorManager* g_monitors;
 
 HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, HSTag* tag_)
     : tag(tag_)
@@ -131,12 +125,6 @@ bool HSMonitor::setTag(HSTag* new_tag) {
         return true;
     }
     return owner == this;
-}
-
-// TODO this is the job of monitormanager
-void monitor_destroy() {
-    g_monitors->clearChildren();
-    delete g_monitor_stack;
 }
 
 void HSMonitor::applyLayout() {
