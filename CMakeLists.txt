@@ -65,6 +65,13 @@ function (add_debugflags)
 			)
 	endif()
 
+	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+		# Add clang-specific flags
+		set(FLAGS ${FLAGS}
+			-Wshadow -Wno-shadow-field-in-constructor
+			)
+	endif()
+
 	string(REPLACE ";" " " FLAGS "${FLAGS}")
 	
 	# Note: it is discouraged in CMake to alter these variables, but instead you
