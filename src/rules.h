@@ -31,6 +31,17 @@ public:
     int value_integer;
     std::regex value_reg_exp;
     std::string value_reg_str;
+
+private:
+    bool matchesClass(HSClient* client);
+    bool matchesInstance(HSClient* client);
+    bool matchesTitle(HSClient* client);
+    bool matchesPid(HSClient* client);
+    bool matchesMaxage(HSClient* client);
+    bool matchesWindowtype(HSClient* client);
+    bool matchesWindowrole(HSClient* client);
+
+    bool matches(const std::string& string);
 };
 
 class HSClientChanges {
@@ -58,6 +69,20 @@ public:
     std::string name;
     int value_type;
     std::string value;
+
+private:
+    void applyTag(HSClient* client, HSClientChanges* changes);
+    void applyIndex(HSClient* client, HSClientChanges* changes);
+    void applyFocus(HSClient* client, HSClientChanges* changes);
+    void applySwitchtag(HSClient* client, HSClientChanges* changes);
+    void applyManage(HSClient* client, HSClientChanges* changes);
+    void applyPseudotile(HSClient* client, HSClientChanges* changes);
+    void applyFullscreen(HSClient* client, HSClientChanges* changes);
+    void applyEwmhrequests(HSClient* client, HSClientChanges* changes);
+    void applyEwmhnotify(HSClient* client, HSClientChanges* changes);
+    void applyHook(HSClient* client, HSClientChanges* changes);
+    void applyKeymask(HSClient* client, HSClientChanges* changes);
+    void applyMonitor(HSClient* client, HSClientChanges* changes);
 };
 
 class HSRule {
