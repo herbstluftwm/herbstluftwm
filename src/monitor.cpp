@@ -30,9 +30,6 @@
 
 using namespace std;
 
-
-extern int g_cur_monitor;
-extern ::HSStack* g_monitor_stack;
 extern MonitorManager* g_monitors;
 
 HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, HSTag* tag_)
@@ -62,11 +59,11 @@ HSMonitor::HSMonitor(Settings* settings_, MonitorManager* monman_, Rectangle rec
     stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
 
-    g_monitor_stack->insert_slice(slice);
+    g_monitors->monitor_stack->insert_slice(slice);
 }
 
 HSMonitor::~HSMonitor() {
-    g_monitor_stack->remove_slice(slice);
+    g_monitors->monitor_stack->remove_slice(slice);
     slice_destroy(slice);
     XDestroyWindow(g_display, stacking_window);
 }
@@ -368,7 +365,7 @@ HSMonitor* find_monitor_with_tag(HSTag* tag) {
 }
 
 HSMonitor* get_current_monitor() {
-    return g_monitors->byIdx(g_cur_monitor);
+    return g_monitors->byIdx(g_monitors->cur_monitor);
 }
 
 void all_monitors_apply_layout() {
@@ -414,7 +411,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
             monitor_update_focus_objects();
             ewmh_update_current_desktop();
             emit_tag_changed(other->tag, other->index());
-            emit_tag_changed(tag, g_cur_monitor);
+            emit_tag_changed(tag, g_monitors->cur_monitor);
         } else {
             // if we are not allowed to steal the tag, then just focus the
             // other monitor
@@ -447,7 +444,7 @@ int monitor_set_tag(HSMonitor* monitor, HSTag* tag) {
     drop_enternotify_events();
     monitor_update_focus_objects();
     ewmh_update_current_desktop();
-    emit_tag_changed(tag, g_cur_monitor);
+    emit_tag_changed(tag, g_monitors->cur_monitor);
     return 0;
 }
 
@@ -537,7 +534,7 @@ int monitor_cycle_command(int argc, char** argv) {
     if (argc >= 2) {
         delta = atoi(argv[1]);
     }
-    int new_selection = g_cur_monitor + delta; // signed for delta calculations
+    int new_selection = g_monitors->cur_monitor + delta; // signed for delta calculations
     // fix range of index
     new_selection %= count;
     new_selection += count;
@@ -559,7 +556,7 @@ void monitor_focus_by_index(unsigned new_selection) {
     // change selection globals
     assert(monitor->tag);
     assert(monitor->tag->frame);
-    g_cur_monitor = new_selection;
+    g_monitors->cur_monitor = new_selection;
     frame_focus_recursive(monitor->tag->frame);
     // repaint g_monitors
     old->applyLayout();
@@ -611,7 +608,7 @@ void monitor_focus_by_index(unsigned new_selection) {
 }
 
 void monitor_update_focus_objects() {
-    g_monitors->focus = g_monitors->byIdx(g_cur_monitor);
+    g_monitors->focus = g_monitors->byIdx(g_monitors->cur_monitor);
     tag_update_focus_objects();
 }
 
@@ -751,11 +748,11 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
 
 void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
                                  int* remain_len) {
-    g_monitor_stack->to_window_buf(buf, len, real_clients, remain_len);
+    g_monitors->monitor_stack->to_window_buf(buf, len, real_clients, remain_len);
 }
 
 HSStack* get_monitor_stack() {
-    return g_monitor_stack;
+    return g_monitors->monitor_stack;
 }
 
 int monitor_raise_command(int argc, char** argv, Output output) {
@@ -771,7 +768,7 @@ int monitor_raise_command(int argc, char** argv, Output output) {
     } else {
         monitor = get_current_monitor();
     }
-    g_monitor_stack->raise_slide(monitor->slice);
+    g_monitors->monitor_stack->raise_slide(monitor->slice);
     return 0;
 }
 

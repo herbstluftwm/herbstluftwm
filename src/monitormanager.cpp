@@ -16,8 +16,6 @@
 
 using namespace std;
 
-int g_cur_monitor;
-::HSStack* g_monitor_stack;
 MonitorManager* g_monitors;
 
 MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
@@ -27,13 +25,13 @@ MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
     , tags_(tags)
     , settings_(settings)
 {
-    g_cur_monitor = 0;
-    g_monitor_stack = new HSStack();
+    cur_monitor = 0;
+    monitor_stack = new HSStack();
 }
 
 MonitorManager::~MonitorManager() {
     clearChildren();
-    delete g_monitor_stack;
+    delete monitor_stack;
 }
 
 void MonitorManager::clearChildren() {
@@ -55,7 +53,7 @@ void MonitorManager::ensure_monitors_are_available() {
     // add monitor with first tag
     HSMonitor* m = addMonitor(rect, tag);
     m->tag->frame->setVisibleRecursive(true);
-    g_cur_monitor = 0;
+    cur_monitor = 0;
 
     monitor_update_focus_objects();
 }
@@ -74,11 +72,11 @@ int MonitorManager::indexInDirection(HSMonitor* m, Direction dir) {
 
 int MonitorManager::string_to_monitor_index(std::string string) {
     if (string[0] == '\0') {
-        return g_cur_monitor;
+        return cur_monitor;
     } else if (string[0] == '-' || string[0] == '+') {
         if (isdigit(string[1])) {
             // relative monitor index
-            int idx = g_cur_monitor + atoi(string.c_str());
+            int idx = cur_monitor + atoi(string.c_str());
             idx %= size();
             idx += size();
             idx %= size();
@@ -127,7 +125,7 @@ int MonitorManager::list_monitors(Input argv, Output output) {
                << (monitor->tag ? monitor->tag->name->c_str() : "???")
                << "\""
                << monitor_name
-               << (((unsigned int) g_cur_monitor == i) ? " [FOCUS]" : "")
+               << (((unsigned int) cur_monitor == i) ? " [FOCUS]" : "")
                << (monitor->lock_tag ? " [LOCKED]" : "")
                << "\n";
         i++;
@@ -195,10 +193,10 @@ void MonitorManager::removeMonitor(HSMonitor* monitor)
 {
     auto monitorIdx = index_of(monitor);
 
-    if (g_cur_monitor > index_of(monitor)) {
+    if (cur_monitor > index_of(monitor)) {
         // Take into account that the current monitor will have a new
         // index after removal:
-        g_cur_monitor--;
+        cur_monitor--;
     }
 
     // Hide all clients visible in monitor
@@ -208,14 +206,14 @@ void MonitorManager::removeMonitor(HSMonitor* monitor)
 
     g_monitors->removeIndexed(monitorIdx);
 
-    if (g_cur_monitor >= g_monitors->size()) {
-        g_cur_monitor--;
+    if (cur_monitor >= g_monitors->size()) {
+        cur_monitor--;
         // if selection has changed, then relayout focused monitor
         get_current_monitor()->applyLayout();
         monitor_update_focus_objects();
         // also announce the new selection
         ewmh_update_current_desktop();
-        emit_tag_changed(get_current_monitor()->tag, g_cur_monitor);
+        emit_tag_changed(get_current_monitor()->tag, cur_monitor);
     }
     monitor_update_focus_objects();
 }
