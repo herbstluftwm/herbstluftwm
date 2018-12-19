@@ -288,12 +288,12 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
 
 void HSStack::to_window_buf(Window* buf, int len,
                          bool real_clients, int* remain_len) {
-    struct s2wb data = {
-        /* .len = */ len,
-        /* .buf = */ buf,
-        /* .missing = */ 0,
-        /* .real_clients = */ real_clients,
-    };
+    struct s2wb data = {};
+    data.len = len;
+    data.buf = buf;
+    data.missing = 0;
+    data.real_clients = real_clients;
+
     for (int i = 0; i < LAYER_COUNT; i++) {
         data.layer = (HSLayer)i;
         for (auto slice : top[i]) {

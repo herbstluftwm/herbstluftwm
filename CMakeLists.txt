@@ -55,6 +55,7 @@ function (add_debugflags)
 		-g -Og
 		-pedantic -Wall -Werror
 		-Wnull-dereference -Wdouble-promotion -Wformat=2
+		-Wextra -Wno-unused-parameter
 		-Wno-sign-compare -Wno-narrowing -Wno-error=cast-function-type
 		-fsanitize=address,leak,undefined
 		-fno-omit-frame-pointer)

@@ -56,10 +56,6 @@ private:
     //MonitorManager* monman;
 };
 
-class MonitorManager;
-extern MonitorManager* g_monitors; // temporarily
-extern int g_cur_monitor; // temporarily
-
 // adds a new monitor to the monitors list and returns a pointer to it
 HSMonitor* monitor_with_coordinate(int x, int y);
 HSMonitor* find_monitor_with_tag(HSTag* tag);
