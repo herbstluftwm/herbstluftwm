@@ -21,7 +21,7 @@ script:
 
 jobs:
     include:
-        - name: "Ubuntu 16.04, gcc-8, run tests"
+        - name: "Ubuntu 16.04, gcc-8, Debug build, run tests"
           dist: xenial
           python: "3.6"
           before_install:
@@ -52,7 +52,7 @@ jobs:
                   packages:
                       - g++-7
 
-        - name: "Ubuntu 16.04, clang-7"
+        - name: "Ubuntu 16.04, clang-7, Debug build"
           dist: xenial
           before_install:
               - export CC=clang-7 CXX=clang++-7
@@ -62,6 +62,9 @@ jobs:
                       - llvm-toolchain-xenial-7
                   packages:
                       - clang-7
+          script:
+              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug .
+              - ninja -v -k 10
         - name: "Ubuntu 14.04, gcc-4.8"
           # Note: Travis provides a newer GCC on trusty (5.4), but gcc-4.8 is
           # the version provided by Ubuntu, so we use that one.

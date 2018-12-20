@@ -12,6 +12,9 @@ project(Herbstluftwm
 # write all executables to root of build directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+# use our cmake dir for include(…) statements
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
 ## macros & functions (may be moved to cmake/ and included)
 # get project dependencies
 macro (get_external_deps) # – macro for scope
@@ -53,9 +56,18 @@ function (add_debugflags)
 		-pedantic -Wall -Werror
 		-Wnull-dereference -Wdouble-promotion -Wformat=2
 		-Wextra -Wno-unused-parameter
-		-Wno-sign-compare -Wno-narrowing -Wno-error=cast-function-type
+		-Wno-sign-compare -Wno-narrowing
 		-fsanitize=address,leak,undefined
-		-fno-omit-frame-pointer)
+		-fno-omit-frame-pointer
+		)
+
+	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+		# Add GCC-specific flags
+		set(FLAGS ${FLAGS}
+			-Wno-error=cast-function-type
+			)
+	endif()
+
 	string(REPLACE ";" " " FLAGS "${FLAGS}")
 	
 	# Note: it is discouraged in CMake to alter these variables, but instead you
@@ -77,6 +89,9 @@ function (add_debugflags)
 		endif()
 	endforeach()
 endfunction()
+
+# find ccache (offered via ENABLE_CCACHE if available)
+include(ccache)
 
 ## install variables
 # prefix for systemwide configuration, accompanies CMAKE_INSTALL_PREFIX
