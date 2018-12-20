@@ -1,6 +1,35 @@
 import pytest
 
 
+string_props = [
+    'instance',
+    'class',
+    'title',
+    'windowtype',
+    'windowrole',
+    ]
+
+numeric_props = [
+    'pid',
+    'maxage',
+    ]
+
+consequences = [
+    'tag',
+    'monitor',
+    'focus',
+    'switchtag',
+    'manage',
+    'index',
+    'pseudotile',
+    'ewmhrequests',
+    'ewmhnotify',
+    'fullscreen',
+    'hook',
+    'keymask',
+    ]
+
+
 def test_list_rules_empty_by_default(hlwm):
     rules = hlwm.call('list_rules')
 
@@ -18,37 +47,10 @@ def test_add_many_labeled_rules(hlwm):
     # Add set of rules with every consequence and every valid combination of
     # property and match operator appearing at least once:
 
-    string_props = [
-        'instance',
-        'class',
-        'instance',
-        'title',
-        'windowtype',
-        'windowrole',
-        ]
-
-    numeric_props = [
-        'pid',
-        'maxage',
-        ]
-
-    consequences = [
-        'tag',
-        'monitor',
-        'focus',
-        'switchtag',
-        'manage',
-        'index',
-        'pseudotile',
-        'ewmhrequests',
-        'ewmhnotify',
-        'fullscreen',
-        'hook',
-        'keymask',
-        ]
-
     # Make a single, long list of all consequences (with unique rhs values):
-    consequences = ' '.join(['{}=a{}b'.format(c, idx) for idx, c in enumerate(consequences, start=4117)])
+    consequences_str = \
+        ' '.join(['{}=a{}b'.format(c, idx)
+                  for idx, c in enumerate(consequences, start=4117)])
 
     # Make three sets of long conditions lists: for numeric matches, string
     # equality and regexp equality:
@@ -61,7 +63,7 @@ def test_add_many_labeled_rules(hlwm):
     # Assemble final list of rules:
     rules = []
     for idx, conds in enumerate(conds_sets):
-        rules.append('label=l{} {} {}'.format(idx, conds, consequences))
+        rules.append('label=l{} {} {}'.format(idx, conds, consequences_str))
 
     for rule in rules:
         hlwm.call('rule ' + rule)
@@ -157,6 +159,15 @@ def test_complete_unrule_offers_all_rules(hlwm, rules_count):
     call = hlwm.call('complete 1 unrule')
 
     assert call.stdout == '\n'.join(rules + ['-F', '--all']) + '\n'
+
+
+def test_complete_rule(hlwm):
+    assert hlwm.complete('rule', partial=True) == sorted(
+        [i + ' ' for i in '! not prepend once printlabel'.split(' ')]
+        + [i + '=' for i in string_props + numeric_props]
+        + [i + '~' for i in string_props + numeric_props]
+        + [i + '=' for i in consequences + ['label']]
+        )
 
 
 @pytest.mark.parametrize('monitor_spec', ['monitor2', '1'])

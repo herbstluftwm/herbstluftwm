@@ -1,3 +1,5 @@
+import pytest
+
 def test_attr_cmd(hlwm):
     assert hlwm.get_attr('monitors.focus.name') == ''
     hlwm.call('attr')
@@ -7,6 +9,10 @@ def test_attr_cmd(hlwm):
     assert hlwm.call('attr tags.count').stdout == hlwm.get_attr('tags.count')
     hlwm.call_xfail('attr tags.co')
 
+@pytest.mark.parametrize('object_path', ['', 'clients', 'theme', 'monitors'])
+def test_object_completion(hlwm, object_path):
+    assert hlwm.list_children(object_path) \
+        == hlwm.list_children_via_attr(object_path)
 
 def test_object_tree(hlwm):
     t1 = hlwm.call('object_tree').stdout.splitlines()
@@ -14,7 +20,6 @@ def test_object_tree(hlwm):
     t3 = hlwm.call('object_tree theme.tiling.').stdout.splitlines()
     assert len(t1) > len(t2)
     assert len(t2) > len(t3)
-
 
 def test_substitute(hlwm):
     expected_output = hlwm.get_attr('tags.count') + '\n'
