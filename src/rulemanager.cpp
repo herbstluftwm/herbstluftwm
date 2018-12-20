@@ -11,6 +11,10 @@
 int RuleManager::addRuleCommand(Input input, Output output) {
     HSRule rule;
 
+    // Assign default label (index will be incremented if adding the rule
+    // actually succeeds)
+    rule.label = std::to_string(rule_label_index_);
+
     // Possible flags that apply to the rule as a whole:
     std::map<std::string, bool> ruleFlags = {
         {"once", false},
@@ -93,6 +97,10 @@ int RuleManager::addRuleCommand(Input input, Output output) {
        output << rule.label << "\n";
     }
 
+    // At this point, adding the rule will be successful, so increment the
+    // label index (as it says in the docs):
+    rule_label_index_++;
+
     // Insert rule into list according to "prepend" flag
     auto insertAt = ruleFlags["prepend"] ? g_rules.begin() : g_rules.end();
     g_rules.insert(insertAt, new HSRule(rule));
@@ -114,7 +122,7 @@ int RuleManager::unruleCommand(Input input, Output output) {
             delete rule;
         }
         g_rules.clear();
-        g_rule_label_index = 0;
+        rule_label_index_ = 0;
     } else {
         // Remove rule specified by argument
         auto removedCount = removeRule(arg);
