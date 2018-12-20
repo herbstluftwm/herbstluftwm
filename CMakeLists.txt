@@ -4,16 +4,13 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12) # do the best we can in this case
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
-file(STRINGS VERSION VERSION) # read hlwm version from file 'VERSION'
-project(Herbstluftwm
-	VERSION ${VERSION}
-	DESCRIPTION "A manual tiling window manager for X11")
-
 # write all executables to root of build directory
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # use our cmake dir for include(…) statements
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
+include(version)
 
 ## macros & functions (may be moved to cmake/ and included)
 # get project dependencies
@@ -22,32 +19,6 @@ macro (get_external_deps) # – macro for scope
 	include(FindPkgConfig)
 	pkg_check_modules(GLIB2 REQUIRED glib-2.0)
 endmacro()
-
-# extract git commit hash and append to project version
-function (set_gitversion)
-	set(PROJECT_VERSION_GIT ${PROJECT_VERSION} PARENT_SCOPE)
-	if (EXISTS ${CMAKE_SOURCE_DIR}/.git)
-		find_package(Git)
-		if (GIT_FOUND)
-			execute_process(
-				COMMAND git rev-parse --short HEAD
-				WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-				OUTPUT_VARIABLE GIT_HASH
-				OUTPUT_STRIP_TRAILING_WHITESPACE
-			)
-			string(TIMESTAMP DATE "%Y-%m-%d")
-			set(PROJECT_VERSION_GIT 
-				"${PROJECT_VERSION} (${GIT_HASH} built on ${DATE})"
-				PARENT_SCOPE)
-		endif()
-	endif()
-endfunction()
-
-# export version string as a define
-function (export_version SOURCEFILE)
-	set_property(SOURCE ${SOURCEFILE} APPEND PROPERTY COMPILE_DEFINITIONS
-		HERBSTLUFT_VERSION=\"${PROJECT_VERSION_GIT}\")
-endfunction()
 
 # add custom build flags to the DEBUG build type
 function (add_debugflags)
@@ -121,7 +92,6 @@ set(BASHCOMPLETIONDIR ${CMAKE_INSTALL_SYSCONF_PREFIX}/bash_completion.d
 
 ## do the actual work
 get_external_deps()
-set_gitversion()
 add_debugflags()
 add_subdirectory(ipc-client)
 add_subdirectory(src)
