@@ -44,7 +44,7 @@ public:
 
 class Decoration {
 public:
-    Decoration(HSClient* client, Settings& settings);
+    Decoration(HSClient* client_, Settings& settings_);
     void createWindow();
     virtual ~Decoration();
     // resize such that the decorated outline of the window fits into rect
@@ -66,7 +66,6 @@ private:
     void updateFrameExtends();
     unsigned int get_client_color(Color color);
 
-    HSClient*        client; // the client to decorate
     Window                  decwin = 0; // the decoration window
     const DecorationScheme* last_scheme = {};
     bool                    last_rect_inner; // whether last_rect is inner size
@@ -83,8 +82,9 @@ private:
     // especially not repainting or background filling to avoid flicker on
     // unmap
     Window                  bgwin;
-    Settings&               settings;
 private:
+    HSClient* client_; // the client to decorate
+    Settings& settings_;
     static std::map<Window,HSClient*> decwin2client;
 };
 
