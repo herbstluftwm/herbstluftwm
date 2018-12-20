@@ -67,3 +67,10 @@ bool Completion::prefixOf(const std::string& shorter, const std::string& longer)
     return res.first == shorter.end();
 }
 
+void Completion::partial(const std::string& word) {
+    if (prefixOf(needle_, word)) {
+        // partial completions never end with a space, regardless of
+        // shellOutput mode
+        output_ << escape(word) << "\n";
+    }
+}
