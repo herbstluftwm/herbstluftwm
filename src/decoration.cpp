@@ -104,8 +104,8 @@ static Visual* check_32bit_client(HSClient* c)
 }
 
 Decoration::Decoration(HSClient* client, Settings& settings)
-    : client(client),
-      settings(settings)
+    : client_(client),
+      settings_(settings)
 {
 }
 
@@ -114,7 +114,7 @@ void Decoration::createWindow() {
     XSetWindowAttributes at;
     long mask = 0;
     // copy attributes from client and not from the root window
-    Visual* visual = check_32bit_client(client);
+    Visual* visual = check_32bit_client(client_);
     if (visual) {
         /* client has a 32-bit visual */
         mask = CWColormap | CWBackPixel | CWBorderPixel;
@@ -156,12 +156,12 @@ void Decoration::createWindow() {
     XMapWindow(g_display, dec->bgwin);
     // use a clients requested initial floating size as the initial size
     dec->last_rect_inner = true;
-    dec->last_inner_rect = client->float_size_;
-    dec->last_outer_rect = client->float_size_; // TODO: is this correct?
+    dec->last_inner_rect = client_->float_size_;
+    dec->last_outer_rect = client_->float_size_; // TODO: is this correct?
     dec->last_actual_rect = dec->last_inner_rect;
     dec->last_actual_rect.x -= dec->last_outer_rect.x;
     dec->last_actual_rect.y -= dec->last_outer_rect.y;
-    decwin2client[decwin] = client;
+    decwin2client[decwin] = client_;
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
     hint->res_name = (char*)HERBST_DECORATION_CLASS;
@@ -208,7 +208,7 @@ Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect) const {
 
 void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
     resize_outline(scheme.inner_rect_to_outline(inner), scheme);
-    client->dec.last_rect_inner = true;
+    client_->dec.last_rect_inner = true;
 }
 
 Rectangle Decoration::inner_to_outer(Rectangle rect) {
@@ -218,15 +218,15 @@ Rectangle Decoration::inner_to_outer(Rectangle rect) {
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme)
 {
     auto inner = scheme.outline_to_inner_rect(outline);
-    Window win = client->window_;
+    Window win = client_->window_;
 
     auto tile = inner;
-    client->applysizehints(&inner.width, &inner.height);
+    client_->applysizehints(&inner.width, &inner.height);
     if (!false) { // formely: if (!tight_decoration)
         // center the window in the outline tile
         // but only if it's relative coordinates would not be too close to the
         // upper left tile border
-        int threshold = settings.pseudotile_center_threshold;
+        int threshold = settings_.pseudotile_center_threshold;
         int dx = tile.width/2 - inner.width/2;
         int dy = tile.height/2 - inner.height/2;
         inner.x = tile.x + ((dx < threshold) ? 0 : dx);
@@ -241,7 +241,7 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
     if (false) { // formely: if (tight_decoration)
         outline = scheme.inner_rect_to_outline(inner);
     }
-    client->dec.last_inner_rect = inner;
+    client_->dec.last_inner_rect = inner;
     inner.x -= outline.x;
     inner.y -= outline.y;
     XWindowChanges changes;
@@ -264,37 +264,37 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
     //}
     // send new size to client
     // update structs
-    bool size_changed = outline.width != client->dec.last_outer_rect.width
-                     || outline.height != client->dec.last_outer_rect.height;
-    client->dec.last_outer_rect = outline;
-    client->dec.last_rect_inner = false;
-    client->last_size_ = inner;
-    client->dec.last_scheme = &scheme;
+    bool size_changed = outline.width != client_->dec.last_outer_rect.width
+                     || outline.height != client_->dec.last_outer_rect.height;
+    client_->dec.last_outer_rect = outline;
+    client_->dec.last_rect_inner = false;
+    client_->last_size_ = inner;
+    client_->dec.last_scheme = &scheme;
     // redraw
     // TODO: reduce flickering
-    if (!client->dragged_ || settings.update_dragged_clients()) {
-        client->dec.last_actual_rect.x = changes.x;
-        client->dec.last_actual_rect.y = changes.y;
-        client->dec.last_actual_rect.width = changes.width;
-        client->dec.last_actual_rect.height = changes.height;
+    if (!client_->dragged_ || settings_.update_dragged_clients()) {
+        client_->dec.last_actual_rect.x = changes.x;
+        client_->dec.last_actual_rect.y = changes.y;
+        client_->dec.last_actual_rect.width = changes.width;
+        client_->dec.last_actual_rect.height = changes.height;
     }
     redrawPixmap();
-    XSetWindowBackgroundPixmap(g_display, decwin, client->dec.pixmap);
+    XSetWindowBackgroundPixmap(g_display, decwin, client_->dec.pixmap);
     if (!size_changed) {
         // if size changes, then the window is cleared automatically
         XClearWindow(g_display, decwin);
     }
-    if (!client->dragged_ || settings.update_dragged_clients()) {
+    if (!client_->dragged_ || settings_.update_dragged_clients()) {
         XConfigureWindow(g_display, win, mask, &changes);
-        XMoveResizeWindow(g_display, client->dec.bgwin,
+        XMoveResizeWindow(g_display, client_->dec.bgwin,
                           changes.x, changes.y,
                           changes.width, changes.height);
     }
     XMoveResizeWindow(g_display, decwin,
                       outline.x, outline.y, outline.width, outline.height);
     updateFrameExtends();
-    if (!client->dragged_ || settings.update_dragged_clients()) {
-        client->send_configure();
+    if (!client_->dragged_ || settings_.update_dragged_clients()) {
+        client_->send_configure();
     }
     XSync(g_display, False);
 }
@@ -304,15 +304,15 @@ void Decoration::updateFrameExtends() {
     int top  = last_inner_rect.y - last_outer_rect.y;
     int right = last_outer_rect.width - last_inner_rect.width - left;
     int bottom = last_outer_rect.height - last_inner_rect.height - top;
-    ewmh_update_frame_extents(client->window_, left,right, top,bottom);
+    ewmh_update_frame_extents(client_->window_, left,right, top,bottom);
 }
 
 void Decoration::change_scheme(const DecorationScheme& scheme) {
-    if (client->dec.last_inner_rect.width < 0) {
+    if (client_->dec.last_inner_rect.width < 0) {
         // TODO: do something useful here
         return;
     }
-    if (client->dec.last_rect_inner) {
+    if (client_->dec.last_rect_inner) {
         resize_inner(last_inner_rect, scheme);
     } else {
         resize_outline(last_outer_rect, scheme);
@@ -336,7 +336,7 @@ unsigned int Decoration::get_client_color(Color color) {
 void Decoration::redrawPixmap() {
     const DecorationScheme& s = *last_scheme;
     auto dec = this;
-    auto outer = client->dec.last_outer_rect;
+    auto outer = client_->dec.last_outer_rect;
     // TODO: maybe do something like pixmap recreate threshhold?
     bool recreate_pixmap = (dec->pixmap == 0) || (dec->pixmap_width != outer.width)
                                               || (dec->pixmap_height != outer.height);
@@ -355,9 +355,9 @@ void Decoration::redrawPixmap() {
 
     // Draw inner border
     unsigned short iw = s.inner_width();
-    auto inner = client->dec.last_inner_rect;
-    inner.x -= client->dec.last_outer_rect.x;
-    inner.y -= client->dec.last_outer_rect.y;
+    auto inner = client_->dec.last_inner_rect;
+    inner.x -= client_->dec.last_outer_rect.x;
+    inner.y -= client_->dec.last_outer_rect.y;
     if (iw > 0) {
         /* fill rectangles because drawing does not work */
         std::vector<XRectangle> rects{
@@ -372,8 +372,8 @@ void Decoration::redrawPixmap() {
 
     // Draw outer border
     unsigned short ow = s.outer_width;
-    outer.x -= client->dec.last_outer_rect.x;
-    outer.y -= client->dec.last_outer_rect.y;
+    outer.x -= client_->dec.last_outer_rect.x;
+    outer.y -= client_->dec.last_outer_rect.y;
     if (ow > 0) {
         ow = std::min((int)ow, (outer.height+1) / 2);
         std::vector<XRectangle> rects{
