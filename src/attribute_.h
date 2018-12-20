@@ -213,7 +213,7 @@ public:
         writeable_ = true;
     }
 
-    void complete(Completion& completion) {
+    void complete(Completion& completion) override {
         Converter<T>::complete(completion, nullptr);
     }
 
