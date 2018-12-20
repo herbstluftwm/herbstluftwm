@@ -195,19 +195,6 @@ void HSRule::print(Output output) {
     output << '\n';
 }
 
-void complete_against_rule_names(int argc, char** argv, int pos, Output output) {
-    const char* needle;
-    if (pos >= argc) {
-        needle = "";
-    } else {
-        needle = argv[pos];
-    }
-    // Complete labels
-    for (auto rule : g_rules) {
-        try_complete(needle, rule->label.c_str(), output);
-    }
-}
-
 // rules applying //
 HSClientChanges::HSClientChanges(HSClient *client)
     : fullscreen(ewmh_is_fullscreen_set(client->window_))
