@@ -165,38 +165,6 @@ HSRule::HSRule() {
     birth_time = get_monotonic_timestamp();
 }
 
-void rule_complete(int argc, char** argv, int pos, Output output) {
-    const char* needle = (pos < argc) ? argv[pos] : "";
-    GString* buf = g_string_sized_new(20);
-
-    // complete against conditions
-    for (auto&& matcher : HSCondition::matchers) {
-        auto condName = matcher.first;
-        g_string_printf(buf, "%s=", condName.c_str());
-        try_complete_partial(needle, buf->str, output);
-        g_string_printf(buf, "%s~", condName.c_str());
-        try_complete_partial(needle, buf->str, output);
-    }
-
-    // complete against consequences
-    for (auto&& applier : HSConsequence::appliers) {
-        auto applierName = applier.first;
-        g_string_printf(buf, "%s=", applierName.c_str());
-        try_complete_partial(needle, buf->str, output);
-    }
-
-    // complete label
-    try_complete_partial(needle, "label=", output);
-    // complete flags
-    try_complete(needle, "prepend", output);
-    try_complete(needle, "once",    output);
-    try_complete(needle, "not",     output);
-    try_complete(needle, "!",       output);
-    try_complete(needle, "printlabel", output);
-
-    g_string_free(buf, true);
-}
-
 void HSRule::print(Output output) {
     output << "label=" << label << "\t";
 

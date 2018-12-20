@@ -195,3 +195,17 @@ void RuleManager::unruleCompletion(Completion& complete) {
     }
 }
 
+void RuleManager::addRuleCompletion(Completion& complete) {
+    complete.full({ "not", "!", "prepend", "once", "printlabel" });
+    complete.partial("label=");
+    for (auto&& matcher : HSCondition::matchers) {
+        auto condName = matcher.first;
+        complete.partial(condName + "=");
+        complete.partial(condName + "~");
+    }
+    for (auto&& applier : HSConsequence::appliers) {
+        complete.partial(applier.first + "=");
+    }
+}
+
+

@@ -11,7 +11,6 @@
 #include "clientmanager.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "rules.h"
 #include "object.h"
 #include "mouse.h"
 
@@ -221,7 +220,6 @@ struct {
     { "jumpto",         EQ, 1,  nullptr, completion_special_winids },
     { "jumpto",         EQ, 1,  complete_against_winids, 0 },
     { "resize",         EQ, 1,  nullptr, completion_directions },
-    { "rule",           GE, 1,  rule_complete, 0 },
     { "shift_edge",     EQ, 1,  nullptr, completion_directions },
     { "shift",          EQ, 1,  nullptr, completion_directions },
     { "shift",          EQ, 1,  nullptr, completion_focus_args },

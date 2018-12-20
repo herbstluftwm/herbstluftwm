@@ -11,6 +11,7 @@ extern std::list<HSRule *> g_rules;
 class RuleManager : public Object {
 public:
     int addRuleCommand(Input input, Output output);
+    void addRuleCompletion(Completion& complete);
     int unruleCommand(Input input, Output output);
     void unruleCompletion(Completion& complete);
     int listRulesCommand(Input input, Output output);
