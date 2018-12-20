@@ -40,7 +40,6 @@ const std::map<std::string, std::function<bool(HSCondition * ,HSClient*)>> HSCon
 };
 
 static time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
-unsigned long long g_rule_label_index; // incremental index of rule label
 
 const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClientChanges*)>> HSConsequence::appliers = {
     { "tag",            &HSConsequence::applyTag             },
@@ -62,7 +61,6 @@ std::list<HSRule *> g_rules;
 /// FUNCTIONS ///
 // RULES //
 void rules_init() {
-    g_rule_label_index = 0;
 }
 
 void rules_destroy() {
@@ -165,7 +163,6 @@ bool HSRule::setLabel(char op, std::string value, Output output) {
 
 HSRule::HSRule() {
     birth_time = get_monotonic_timestamp();
-    label = std::to_string(g_rule_label_index++); // label defaults to index number
 }
 
 void rule_complete(int argc, char** argv, int pos, Output output) {
