@@ -42,9 +42,9 @@ public:
     /** compare the position of the argument that is completed
      * The first parameter has index 0
      */
-    bool operator==(int index) const { return index_ == index; }
-    bool operator<=(int index) const { return index_ <= index; }
-    bool operator<(int index) const { return index_ < index; }
+    bool operator==(size_t index) const { return index_ == index; }
+    bool operator<=(size_t index) const { return index_ <= index; }
+    bool operator<(size_t index) const { return index_ < index; }
 
     static bool prefixOf(const std::string& shorter, const std::string& longer);
 private:
