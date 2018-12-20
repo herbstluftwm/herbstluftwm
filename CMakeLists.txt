@@ -59,6 +59,7 @@ function (add_debugflags)
 		-Wno-sign-compare -Wno-narrowing
 		-fsanitize=address,leak,undefined
 		-fno-omit-frame-pointer
+		-Wshadow
 		)
 
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -71,7 +72,7 @@ function (add_debugflags)
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 		# Add clang-specific flags
 		set(FLAGS ${FLAGS}
-			-Wshadow -Wno-shadow-field-in-constructor
+			-Wshadow-all
 			)
 	endif()
 
