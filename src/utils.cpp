@@ -43,7 +43,7 @@ time_t get_monotonic_timestamp() {
 }
 
 int MOD(int x, int n) {
-    return ((((x) % (signed)(n)) + (signed)(n)) % (signed)(n));
+    return (((x % n) + n) % n);
 }
 
 // inspired by dwm's gettextprop()
