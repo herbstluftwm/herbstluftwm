@@ -8,7 +8,7 @@ Testing herbstluftwm
 You can test herbstluftwm under any window manager. Install Xephyr and valgrind,
 and make sure you have herbstluftwm compiled. Then run the script:
 
-    ./valigrind-xephyr.sh
+    ./valgrind-xephyr.sh
 
 It creates a Xephyr window in which herbstluftwm runs using the default
 autostart. Any crashes or memory leaks are reported in detail by valgrind. Quit
