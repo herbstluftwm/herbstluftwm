@@ -6,12 +6,8 @@
 
 /** The completion object holds the state of a running
  * command completion, that is the list of args and the index
- * of the element in the arglist that needs to be completed.
- *
- * The intended use is to pass the completion state as the reference and to
- * return possible completions via this Completion object. This is why the
- * operator= and the copy constructor are private. It ensures that a completion
- * object is not accidentally duplicated.
+ * of the element in the arglist that needs to be completed. A completion
+ * object shall be passed around and not be copied.
  *
  * == Additional Information for the creator of the Completion-object: ==
  *
@@ -49,6 +45,11 @@ public:
     static bool prefixOf(const std::string& shorter, const std::string& longer);
     const std::string& needle() const;
 private:
+    /** The intended use is to pass the completion state as the reference and
+     * to return possible completions via this Completion object. This is why
+     * the operator= and the copy constructor are private. It ensures that a
+     * completion object is not accidentally duplicated.
+     */
     Completion(const Completion& other);
     void operator=(const Completion& other);
 
