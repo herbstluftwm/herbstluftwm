@@ -24,6 +24,7 @@ public:
     ArgList(const Container &c);
     // constructor that splits the given string
     ArgList(const std::string &s, char delim = '.');
+    virtual ~ArgList() {}
 
     Container::const_iterator begin() const { return begin_; }
     Container::const_iterator end() const { return c_->cend(); }
