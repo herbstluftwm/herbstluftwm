@@ -52,30 +52,51 @@ endfunction()
 # add custom build flags to the DEBUG build type
 function (add_debugflags)
 	set(FLAGS
-		-g -Og
-		-pedantic -Wall -Werror
-		-Wnull-dereference -Wdouble-promotion -Wformat=2
-		-Wextra -Wno-unused-parameter
-		-Wno-sign-compare -Wno-narrowing
+		# General debug flags:
+		-g -Og -fno-omit-frame-pointer
+		-Werror
+
+		# Sanitizers:
 		-fsanitize=address,leak,undefined
-		-fno-omit-frame-pointer
+
+		# All kinds of pedantic warnings:
+		-pedantic -Wall -Wextra
+		-Wnull-dereference -Wdouble-promotion -Wformat=2 -Wshadow
+
+		# Disable unused parameter warnings (most cases are on purpose):
+		-Wno-unused-parameter
+
+		# Disable warnings that trigger due to known unresolved issues:
+		-Wno-sign-compare -Wno-narrowing
 		)
 
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 		# Add GCC-specific flags
 		set(FLAGS ${FLAGS}
+			# Additional warnings that don't come with Wall/Wextra:
+			-Wduplicated-cond -Wduplicated-branches -Wlogical-op
+
+			# This is since in GCC-8 and triggers on known issues:
 			-Wno-error=cast-function-type
+			)
+
+		# Add GCC- *and* C++-specific flags
+		set(CXX_FLAGS ${CXX_FLAGS}
+			# Additional warnings that don't come with Wall/Wextra:
+			-Wuseless-cast
 			)
 	endif()
 
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 		# Add clang-specific flags
 		set(FLAGS ${FLAGS}
-			-Wshadow -Wno-shadow-field-in-constructor
+			# Additional warnings that don't come with Wall/Wextra:
+			-Wshadow-all
 			)
 	endif()
 
 	string(REPLACE ";" " " FLAGS "${FLAGS}")
+	string(REPLACE ";" " " CXX_FLAGS "${CXX_FLAGS}")
 	
 	# Note: it is discouraged in CMake to alter these variables, but instead you
 	# should set flags on the target. However, those flags are hidden from the
@@ -91,7 +112,7 @@ function (add_debugflags)
 		# empty or default ("-g")
 		string(COMPARE EQUAL "${${VAR}}" "-g" ISDEFAULT)
 		if (NOT ${VAR} OR "${ISDEFAULT}")
-			set(${VAR} ${FLAGS} CACHE STRING
+			set(${VAR} "${FLAGS} ${${TYPE}_FLAGS}" CACHE STRING
 			"Flags used during DEBUG builds." FORCE)
 		endif()
 	endforeach()
