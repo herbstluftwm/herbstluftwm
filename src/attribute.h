@@ -9,6 +9,7 @@
 
 class Object;
 class Signal;
+class Completion;
 
 /* Attributes.
  * Attributes are members of Objects that expose internal state variables to the
@@ -63,6 +64,8 @@ public:
 
     virtual std::string str() { return {}; }
     virtual std::string change(const std::string &payload) = 0;
+    //! suggestions for a new value of the attribute
+    virtual void complete(Completion& complete) = 0;
 
     // find the current value of the attribute in the given range and then
     // assign the succeeding value to the attribute (wth wrap around)

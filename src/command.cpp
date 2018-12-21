@@ -1,6 +1,7 @@
 #include "root.h"
 #include "ipc-protocol.h"
 #include "command.h"
+#include "completion.h"
 #include "utils.h"
 #include "settings.h"
 #include "layout.h"
@@ -10,7 +11,6 @@
 #include "clientmanager.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "rules.h"
 #include "object.h"
 #include "mouse.h"
 
@@ -30,7 +30,6 @@ static bool g_shell_quoting = false;
 
 static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
 static const char* completion_focus_args[]    = { "-i", "-e", nullptr };
-static const char* completion_unrule_flags[]   = { "-F", "--all", nullptr };
 static const char* completion_keyunbind_args[]= { "-F", "--all", nullptr };
 static const char* completion_flag_args[]     = { "on", "off", "true", "false", "toggle", nullptr };
 static const char* completion_userattribute_types[] = { "int", "uint", "string", "bool", "color", nullptr };
@@ -143,13 +142,9 @@ struct {
     { "tag_status",     2,  no_completion },
     { "floating",       3,  no_completion },
     { "floating",       2,  first_parameter_is_tag },
-    { "unrule",         2,  no_completion },
-    { "fullscreen",     2,  no_completion },
-    { "pseudotile",     2,  no_completion },
     { "attr",           2,  first_parameter_is_writable_attribute },
     { "attr",           3,  no_completion },
     { "object_tree",    2,  no_completion },
-    { "get_attr",       2,  no_completion },
     { "set_attr",       3,  no_completion },
     { "new_attr",       3,  no_completion },
     { "remove_attr",    2,  no_completion },
@@ -202,7 +197,6 @@ struct {
     { "focus",          EQ, 1,  nullptr, completion_directions },
     { "focus",          EQ, 1,  nullptr, completion_focus_args },
     { "focus",          EQ, 2,  nullptr, completion_directions },
-    { "fullscreen",     EQ, 1,  nullptr, completion_flag_args },
     { "layout",         EQ, 1,  complete_against_tags, 0 },
     { "load",           EQ, 1,  complete_against_tags, 0 },
     { "merge_tag",      EQ, 1,  complete_against_tags, 0 },
@@ -213,7 +207,6 @@ struct {
     { "!",              GE, 1,  complete_against_commands_1, 0 },
     { "try",            GE, 1,  complete_against_commands_1, 0 },
     { "silent",         GE, 1,  complete_against_commands_1, 0 },
-    { "pseudotile",     EQ, 1,  nullptr, completion_flag_args },
     { "keybind",        GE, 1,  complete_against_keybind_command, 0 },
     { "keyunbind",      EQ, 1,  nullptr, completion_keyunbind_args },
     { "keyunbind",      EQ, 1,  complete_against_keybinds, 0 },
@@ -226,7 +219,6 @@ struct {
     { "jumpto",         EQ, 1,  nullptr, completion_special_winids },
     { "jumpto",         EQ, 1,  complete_against_winids, 0 },
     { "resize",         EQ, 1,  nullptr, completion_directions },
-    { "rule",           GE, 1,  rule_complete, 0 },
     { "shift_edge",     EQ, 1,  nullptr, completion_directions },
     { "shift",          EQ, 1,  nullptr, completion_directions },
     { "shift",          EQ, 1,  nullptr, completion_focus_args },
@@ -240,8 +232,6 @@ struct {
     { "set_layout",     EQ, 1,  nullptr, g_layout_names },
     { "cycle_layout",   EQ, 1,  nullptr, completion_pm_one },
     { "cycle_layout",   GE, 2,  nullptr, g_layout_names },
-    { "unrule",         EQ, 1,  complete_against_rule_names, 0 },
-    { "unrule",         EQ, 1,  nullptr, completion_unrule_flags },
     { "use",            EQ, 1,  complete_against_tags, 0 },
     { "use_index",      EQ, 1,  nullptr, completion_pm_one },
     { "use_index",      EQ, 2,  nullptr, completion_use_index_args },
@@ -268,9 +258,6 @@ struct {
     { "compare",        EQ, 1,  complete_against_attributes, 0 },
     { "compare",        EQ, 2,  complete_against_comparators, 0 },
     { "compare",        EQ, 3,  complete_against_attribute_values, 0 },
-    { "object_tree",    EQ, 1,  complete_against_objects, 0 },
-    { "get_attr",       EQ, 1,  complete_against_objects, 0 },
-    { "get_attr",       EQ, 1,  complete_against_attributes, 0 },
     { "set_attr",       EQ, 1,  complete_against_objects, 0 },
     { "set_attr",       EQ, 1,  complete_against_attributes, 0 },
     { "set_attr",       EQ, 2,  complete_against_attribute_values, 0 },
@@ -339,6 +326,15 @@ CommandBinding::CommandBinding(int func(int argc, const char** argv))
 CommandBinding::CommandBinding(int func())
     : command([func](Input, Output) { return func(); })
 {}
+
+
+/** Complete the given list of arguments
+ */
+void CommandBinding::complete(Completion& completion) const {
+    if ((bool) completion_) {
+        completion_(completion);
+    }
+}
 
 // Implementation of CommandTable
 int CommandTable::callCommand(Input args, Output out) const {
@@ -834,6 +830,25 @@ int complete_against_commands(int argc, char** argv, int position,
             try_complete(str, cmd.first.c_str(), output);
         }
         return 0;
+    }
+    // try to get completion from the command binding
+    std::string commandName = argv[0];
+    auto commandTable = Commands::get();
+    auto it = commandTable->find(commandName);
+    if (it == commandTable->end()) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (it->second.hasCompletion()) {
+        vector<string> arguments;
+        for (int i = 1; i < argc; i++) {
+            arguments.push_back(argv[i]);
+        }
+        // the new completion context has the command name removed
+        Completion completion(arguments, position - 1, g_shell_quoting, output);
+        it->second.complete(completion);
+        return completion.noParameterExpected() ?
+            HERBST_NO_PARAMETER_EXPECTED
+            : 0;
     }
     if (!parameter_expected(argc, argv, position)) {
         return HERBST_NO_PARAMETER_EXPECTED;

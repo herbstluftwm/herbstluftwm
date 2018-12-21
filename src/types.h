@@ -8,6 +8,8 @@
 #define Ptr(X) std::shared_ptr<X>
 #define WPtr(X) std::weak_ptr<X>
 
+class Completion;
+
 /* A path in the object tree */
 using Path = ArgList;
 
@@ -60,6 +62,11 @@ struct Converter {
 
     /** Return a user-friendly string representation */
     static std::string str(T payload) { return std::to_string(payload); }
+
+    /** Give possible completion values. The completion can be relative to 'relativeTo', e.g.
+     * "toggle" in booleans will be proposed only if relativeTo is present
+     */
+    static void complete(Completion& complete, T const* relativeTo) { }
 };
 
 // Integers
@@ -92,6 +99,8 @@ inline bool Converter<bool>::parse(const std::string &payload, bool const* previ
             ? "only on/off/true/false/toggle are valid booleans"
             : "only on/off/true/false are valid booleans");
 }
+
+template<> void Converter<bool>::complete(Completion& complete, bool const* relativeTo);
 
 // Strings
 template<>

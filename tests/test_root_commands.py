@@ -86,3 +86,24 @@ def test_disjoint_rects(hlwm):
         '')) # trailing newline
     response = hlwm.call('disjoin_rects 600x400+0+0 600x400+300+250').stdout
     assert response == expected
+
+
+def test_attribute_completion(hlwm):
+    def complete(partialPath):
+        return hlwm.complete('get_attr ' + partialPath,
+                             partial=True, position=1)
+
+    assert complete('monitors.') == ['monitors.0.',
+                                     'monitors.by-name.',
+                                     'monitors.count ',
+                                     'monitors.focus.']
+    assert complete('monitors.fo') == ['monitors.focus.']
+    assert complete('monitors.count') == ['monitors.count ']
+    assert complete('monitors.focus') == ['monitors.focus.']
+    assert complete('monitors.fooob') == []
+    assert complete('monitors.fooo.bar') == []
+    assert len(complete('monitors.focus.')) >= 8
+    assert complete('t') == ['tags.', 'theme.', 'tmp.']
+    assert complete('') == [l + '.' for l in hlwm.list_children_via_attr('')]
+
+
