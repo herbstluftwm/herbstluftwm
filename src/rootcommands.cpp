@@ -4,12 +4,14 @@
 #include "root.h"
 #include "command.h"
 #include "attribute_.h"
+#include "completion.h"
 
 #include <algorithm>
 #include <map>
 #include <functional>
 #include <sstream>
 #include <cstring>
+#include <iostream>
 
 using namespace std;
 
@@ -116,6 +118,11 @@ int RootCommands::print_object_tree_command(Input in, Output output) {
     }
     child->printTree(output, Path(path).join('.'));
     return 0;
+}
+
+void RootCommands::print_object_tree_complete(Completion& complete) {
+    if (complete == 0) completeObjectPath(complete);
+    else complete.none();
 }
 
 
@@ -340,5 +347,31 @@ int RootCommands::compare_cmd(Input input, Output output)
                            possible_values.end(),
                            comparison_result);
     return (found == possible_values.end()) ? 1 : 0;
+}
+
+void RootCommands::completeObjectPath(Completion& complete, bool attributes)
+{
+    ArgList objectPathArgs = get<0>(Object::splitPath(complete.needle()));
+    string objectPath = objectPathArgs.join(OBJECT_PATH_SEPARATOR);
+    if (objectPath != "") objectPath += OBJECT_PATH_SEPARATOR;
+    Object* object = root->child(objectPathArgs);
+    if (!object) return;
+    if (attributes) {
+        for (auto& it : object->attributes()) {
+            complete.full(objectPath + it.first);
+        }
+    }
+    for (auto& it : object->children()) {
+        complete.partial(objectPath + it.first + OBJECT_PATH_SEPARATOR);
+    }
+}
+
+void RootCommands::completeAttributePath(Completion& complete) {
+    completeObjectPath(complete, true);
+}
+
+void RootCommands::get_attr_complete(Completion& complete) {
+    if (complete == 0) completeAttributePath(complete);
+    else complete.none();
 }
 

@@ -58,7 +58,7 @@ void Object::trigger(const std::string &action, ArgList args) {
 }
 
 std::pair<ArgList,std::string> Object::splitPath(const std::string &path) {
-    std::vector<std::string> splitpath = ArgList(path, '.').toVector();
+    std::vector<std::string> splitpath = ArgList(path, OBJECT_PATH_SEPARATOR).toVector();
     if (splitpath.empty()) {
         return make_pair(splitpath, "");
     }

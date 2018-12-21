@@ -47,6 +47,7 @@ public:
     bool operator<(size_t index) const { return index_ < index; }
 
     static bool prefixOf(const std::string& shorter, const std::string& longer);
+    const std::string& needle() const;
 private:
     Completion(const Completion& other);
     void operator=(const Completion& other);

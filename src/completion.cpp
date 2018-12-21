@@ -74,3 +74,9 @@ void Completion::partial(const std::string& word) {
         output_ << escape(word) << "\n";
     }
 }
+
+const std::string& Completion::needle() const
+{
+    return needle_;
+}
+
