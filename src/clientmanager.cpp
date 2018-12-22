@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "clientmanager.h"
 #include "client.h"
+#include "completion.h"
 
 #include <string>
 #include <X11/Xlib.h>
@@ -250,3 +251,21 @@ int ClientManager::fullscreen_cmd(Input input, Output output)
 {
     return clientSetAttribute("fullscreen", input, output);
 }
+
+void ClientManager::pseudotile_complete(Completion& complete)
+{
+    fullscreen_complete(complete);
+}
+
+void ClientManager::fullscreen_complete(Completion& complete)
+{
+    if (complete == 0) {
+        // we want this command to have a completion, even if no client
+        // is focused at the moment.
+        bool value = true;
+        Converter<bool>::complete(complete, &value);
+    } else {
+        complete.none();
+    }
+}
+

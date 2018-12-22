@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "ipc-protocol.h"
+#include "completion.h"
 
 
 /*!
@@ -186,3 +187,25 @@ std::tuple<std::string, char, std::string> RuleManager::tokenize_arg(std::string
 
     return std::make_tuple(lhs, oper, rhs);
 }
+
+void RuleManager::unruleCompletion(Completion& complete) {
+    complete.full({ "-F", "--all" });
+    for (auto& it : g_rules) {
+        complete.full(it->label);
+    }
+}
+
+void RuleManager::addRuleCompletion(Completion& complete) {
+    complete.full({ "not", "!", "prepend", "once", "printlabel" });
+    complete.partial("label=");
+    for (auto&& matcher : HSCondition::matchers) {
+        auto condName = matcher.first;
+        complete.partial(condName + "=");
+        complete.partial(condName + "~");
+    }
+    for (auto&& applier : HSConsequence::appliers) {
+        complete.partial(applier.first + "=");
+    }
+}
+
+

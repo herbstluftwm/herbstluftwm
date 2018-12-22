@@ -107,8 +107,4 @@ void rules_init();
 void rules_destroy();
 void rules_apply(HSClient* client, HSClientChanges* changes);
 
-void rule_complete(int argc, char** argv, int pos, Output output);
-
-void complete_against_rule_names(int argc, char** argv, int pos, Output output);
-
 #endif

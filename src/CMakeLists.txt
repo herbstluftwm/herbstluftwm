@@ -10,6 +10,7 @@ target_sources(herbstluftwm PRIVATE
 	byname.cpp byname.h
 	childbyindex.cpp childbyindex.h
 	child.h
+	completion.h
 	entity.cpp entity.h
 	glib-backports.h
 	globals.h
@@ -28,6 +29,7 @@ target_sources(herbstluftwm PRIVATE
 	client.cpp client.h
 	clientmanager.cpp clientmanager.h
 	command.cpp command.h
+	completion.h completion.cpp
 	decoration.cpp decoration.h
 	ewmh.cpp ewmh.h
 	floating.cpp floating.h

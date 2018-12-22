@@ -22,6 +22,8 @@ using namespace std;
         return FUNCTION(PARAM, in, out); \
     }))
 
+class Completion;
+
 /** User facing commands.
  *
  * A command can have one of the two forms
@@ -48,6 +50,20 @@ public:
         : command([cmd](Input args, Output) { return cmd(args); })
     {}
 
+    /** Binding to a command in a given object, together with
+     * a completion function in the same object
+     */
+    template <typename ClassName>
+    CommandBinding(ClassName* object,
+                   int(ClassName::*member_cmd)(Input,Output),
+                   void (ClassName::*completer)(Completion&))
+        : command(std::bind(member_cmd, object,
+                            std::placeholders::_1, std::placeholders::_2))
+        , completion_(std::bind(completer, object,
+                                std::placeholders::_1))
+    {
+    }
+
     // FIXME: Remove after C++ transition
     // The following constructors are only there to ease the transition from
     // C functions to C++
@@ -61,6 +77,9 @@ public:
     // CommandBinding(quit) doesn't typecheck without this constructor.
     CommandBinding(int func());
 
+    bool hasCompletion() const { return (bool)completion_; }
+    void complete(Completion& completion) const;
+
     /** Call the stored command */
     int operator()(Input args, Output out) const { return command(args, out); }
 
@@ -71,6 +90,7 @@ private:
     );
 
     function<int(Input, Output)> command;
+    function<void(Completion&)>  completion_;
 };
 
 class CommandTable {
@@ -84,6 +104,7 @@ public:
 
     Container::const_iterator begin() const { return map.cbegin(); }
     Container::const_iterator end() const { return map.cend(); }
+    Container::const_iterator find(const string& str) const { return map.find(str); }
 private:
     Container map;
 };
