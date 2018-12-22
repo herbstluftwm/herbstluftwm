@@ -1,4 +1,5 @@
 #include "types.h"
+#include "completion.h"
 
 Input &Input::operator>>(std::string &val)
 {
@@ -23,4 +24,10 @@ void Input::replace(const std::string &from, const std::string &to)
 
     if (*command_ == from)
         *command_ = to;
+}
+
+template<> void Converter<bool>::complete(Completion& complete, bool const* relativeTo)
+{
+    complete.full({ "on", "off", "true", "false" });
+    if (relativeTo) complete.full("toggle");
 }

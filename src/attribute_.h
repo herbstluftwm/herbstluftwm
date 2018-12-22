@@ -8,6 +8,8 @@
 #include <functional>
 #include <stdexcept>
 
+class Completion;
+
 template<typename T>
 class Attribute_ : public Attribute {
 public:
@@ -101,6 +103,10 @@ public:
 
     // wrap Converter::str() for convenience
     std::string str() override { return Converter<T>::str(payload_); }
+
+    void complete(Completion& complete) override {
+        //Converter<T>::complete(complete, &payload_);
+    }
 
     Signal_<T>& changed() override { return changed_; }
 
@@ -205,6 +211,10 @@ public:
     {
         hookable_ = false;
         writeable_ = true;
+    }
+
+    void complete(Completion& completion) override {
+        Converter<T>::complete(completion, nullptr);
     }
 
     // each time a dynamic attribute is read, the getter_ is called in order to

@@ -1,5 +1,5 @@
 #include "object.h"
-#include "command.h"
+#include "arglist.h"
 #include "utils.h"
 #include "cassert"
 #include "globals.h"
@@ -15,6 +15,8 @@
 #include <cstdio>
 #include <sstream>
 #include <algorithm>
+
+using namespace std;
 
 std::string Object::read(const std::string &attr) const {
     auto it = attribs_.find(attr);
@@ -56,7 +58,7 @@ void Object::trigger(const std::string &action, ArgList args) {
 }
 
 std::pair<ArgList,std::string> Object::splitPath(const std::string &path) {
-    std::vector<std::string> splitpath = ArgList(path, '.').toVector();
+    std::vector<std::string> splitpath = ArgList(path, OBJECT_PATH_SEPARATOR).toVector();
     if (splitpath.empty()) {
         return make_pair(splitpath, "");
     }

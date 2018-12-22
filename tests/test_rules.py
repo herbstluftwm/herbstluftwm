@@ -156,9 +156,7 @@ def test_complete_unrule_offers_all_rules(hlwm, rules_count):
     for i in rules:
         hlwm.call('rule class=Foo{0} tag=bar{0}'.format(i))
 
-    call = hlwm.call('complete 1 unrule')
-
-    assert call.stdout == '\n'.join(rules + ['-F', '--all']) + '\n'
+    assert hlwm.complete('unrule') == sorted(rules + ['-F', '--all'])
 
 
 def test_complete_rule(hlwm):
