@@ -12,6 +12,7 @@
 #include <cstring>
 #include <cstdio>
 #include <sstream>
+#include <algorithm>
 
 
 using namespace std;
@@ -252,6 +253,18 @@ int Settings::toggle_cmd(Input argv, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;
+}
+
+void Settings::toggle_complete(Completion& complete) {
+    if (complete == 0) {
+        for (auto a : attributes()) {
+            if (a.second->type() == Type::ATTRIBUTE_BOOL) {
+                complete.full(a.first);
+            }
+        }
+    } else {
+        complete.none();
+    }
 }
 
 int Settings::cycle_value_cmd(Input argv, Output output) {

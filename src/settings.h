@@ -21,6 +21,7 @@ public:
     int get_cmd(Input argv, Output output);
     void get_complete(Completion& complete);
     int toggle_cmd(Input argv, Output output);
+    void toggle_complete(Completion& complete);
     int cycle_value_cmd(Input argv, Output output);
 
     // all the settings:
