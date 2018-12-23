@@ -105,7 +105,7 @@ public:
     std::string str() override { return Converter<T>::str(payload_); }
 
     void complete(Completion& complete) override {
-        //Converter<T>::complete(complete, &payload_);
+        Converter<T>::complete(complete, &payload_);
     }
 
     Signal_<T>& changed() override { return changed_; }
