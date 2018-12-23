@@ -381,7 +381,7 @@ void RootCommands::get_attr_complete(Completion& complete) {
 
 void RootCommands::set_attr_complete(Completion& complete) {
     if (complete == 0) {
-        completeObjectPath(complete, true, \
+        completeObjectPath(complete, true,
             [](Attribute* a) { return a->writeable(); } );
     } else if (complete == 1) {
         Attribute* a = root->deepAttribute(complete[0]);
