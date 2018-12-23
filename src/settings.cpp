@@ -295,7 +295,7 @@ int Settings::cycle_value_cmd(Input argv, Output output) {
 
 void Settings::cycle_value_complete(Completion& complete) {
     if (complete == 0) {
-        for (auto& a : attributes()) {
+        for (auto a : attributes()) {
             complete.full(a.first);
         }
     } else {
