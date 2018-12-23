@@ -27,6 +27,7 @@ public:
     int get_attr_cmd(Input args, Output output);
     void get_attr_complete(Completion& complete);
     int set_attr_cmd(Input args, Output output);
+    void set_attr_complete(Completion& complete);
     int attr_cmd(Input args, Output output);
     int print_object_tree_command(Input args, Output output);
     void print_object_tree_complete(Completion& complete);

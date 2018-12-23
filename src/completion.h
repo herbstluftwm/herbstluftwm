@@ -42,6 +42,8 @@ public:
     bool operator<=(size_t index) const { return index_ <= index; }
     bool operator<(size_t index) const { return index_ < index; }
 
+    std::string operator[](size_t index) const;
+
     static bool prefixOf(const std::string& shorter, const std::string& longer);
     const std::string& needle() const;
 private:

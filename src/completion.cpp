@@ -80,3 +80,17 @@ const std::string& Completion::needle() const
     return needle_;
 }
 
+/** get a positional argument in the current completion situation
+ *
+ * if for a int 'index' the expression operator==(index) is true, then
+ * operator[](index) is the same as needle();
+ */
+std::string Completion::operator[](size_t index) const {
+    auto it = args_.begin() + index;
+    if (it == args_.end()) {
+        return "";
+    } else {
+        return *it;
+    }
+}
+

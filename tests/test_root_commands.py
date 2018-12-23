@@ -1,5 +1,6 @@
 import pytest
 
+
 def test_attr_cmd(hlwm):
     assert hlwm.get_attr('monitors.focus.name') == ''
     hlwm.call('attr')
@@ -21,12 +22,18 @@ def test_object_tree(hlwm):
     assert len(t1) > len(t2)
     assert len(t2) > len(t3)
 
+
 def test_substitute(hlwm):
     expected_output = hlwm.get_attr('tags.count') + '\n'
 
     call = hlwm.call('substitute X tags.count echo X')
 
     assert call.stdout == expected_output
+
+
+def test_set_attr_completion(hlwm):
+    assert hlwm.complete("set_attr settings.swap_monitors_to_get_tag") \
+        == 'false off on toggle true'.split(' ')
 
 
 def test_substitute_missing_attribute__command_treated_as_attribute(hlwm):

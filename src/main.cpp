@@ -209,7 +209,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"unsetenv",       unsetenv_command},
         {"get_attr",       { root_commands, &RootCommands::get_attr_cmd,
                                             &RootCommands::get_attr_complete }},
-        {"set_attr",       BIND_OBJECT(root_commands, set_attr_cmd) },
+        {"set_attr",       { root_commands, &RootCommands::set_attr_cmd,
+                                            &RootCommands::set_attr_complete }},
         {"attr",           BIND_OBJECT(root_commands, attr_cmd) },
         {"mktemp",         BIND_OBJECT(tmp, mktemp) },
     });
