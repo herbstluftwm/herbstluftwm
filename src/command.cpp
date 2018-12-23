@@ -52,7 +52,6 @@ static bool no_completion(int, char**, int) {
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
 static bool second_parameter_is_call(int argc, char** argv, int pos);
-static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
 static bool parameter_expected_offset_1(int argc, char** argv, int pos);
 static bool parameter_expected_offset_2(int argc, char** argv, int pos);
@@ -974,19 +973,6 @@ static bool second_parameter_is_call(int argc, char** argv, int pos) {
     } else {
         return false;
     }
-}
-
-static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos) {
-    std::ostringstream void_output;
-    // TODO
-    /*
-    HSAttribute* attr = nullptr;
-    if (argc >= 2) {
-        attr = hsattribute_parse_path_verbose(argv[1], void_output);
-    }
-    return attr && attr->on_change != ATTR_READ_ONLY;
-    */
-    return false;
 }
 
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset) {
