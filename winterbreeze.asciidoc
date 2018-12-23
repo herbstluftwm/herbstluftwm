@@ -14,7 +14,7 @@ the following, all user-visible changes are listed:
     * +monitors..by-name.+ is *invalid*
 
  - the 'toggle' command does not toggle between zero and the last non-zero value
-   anymore but simply between 0 and 1. For the former behaivour, one needs to use
+   anymore but simply between 0 and 1. For the former behaviour, one needs to use
    'cycle_value'.
 
  - Writing '%%' in the 'sprintf' format string now gives a literate '%', just

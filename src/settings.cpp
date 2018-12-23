@@ -226,7 +226,9 @@ int Settings::toggle_cmd(Input argv, Output output) {
             ": Setting \"" << set_name << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
-    if (attr->type() == Type::ATTRIBUTE_INT) {
+    if (attr->type() == Type::ATTRIBUTE_INT
+        || attr->type() == Type::ATTRIBUTE_ULONG)
+    {
         if (attr->str() == "0") {
             attr->change("1");
         } else {
