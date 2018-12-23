@@ -140,6 +140,9 @@ Settings::Settings(Root* root)
         root->monitors()->lock_number_changed();
     });
     g_settings = this;
+    for (auto i : attributes()) {
+        i.second->setWriteable();
+    }
 }
 
 std::function<int()> Settings::getIntAttr(Object* root, std::string name) {
