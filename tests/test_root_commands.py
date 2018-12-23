@@ -31,8 +31,10 @@ def test_substitute(hlwm):
     assert call.stdout == expected_output
 
 
-def test_set_attr_completion(hlwm):
-    assert hlwm.complete("set_attr settings.swap_monitors_to_get_tag") \
+# TODO: add 'set ' to the following list
+@pytest.mark.parametrize('prefix', ['set_attr settings.', 'attr settings.'])
+def test_set_attr_completion(hlwm, prefix):
+    assert hlwm.complete(prefix + "swap_monitors_to_get_tag") \
         == 'false off on toggle true'.split(' ')
 
 

@@ -211,7 +211,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
                                             &RootCommands::get_attr_complete }},
         {"set_attr",       { root_commands, &RootCommands::set_attr_cmd,
                                             &RootCommands::set_attr_complete }},
-        {"attr",           BIND_OBJECT(root_commands, attr_cmd) },
+        {"attr",           { root_commands, &RootCommands::attr_cmd,
+                                            &RootCommands::attr_complete }},
         {"mktemp",         BIND_OBJECT(tmp, mktemp) },
     });
 }

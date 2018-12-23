@@ -388,3 +388,8 @@ void RootCommands::set_attr_complete(Completion& complete) {
     }
 }
 
+void RootCommands::attr_complete(Completion& complete)
+{
+    set_attr_complete(complete);
+}
+
