@@ -349,7 +349,8 @@ int RootCommands::compare_cmd(Input input, Output output)
     return (found == possible_values.end()) ? 1 : 0;
 }
 
-void RootCommands::completeObjectPath(Completion& complete, bool attributes)
+void RootCommands::completeObjectPath(Completion& complete, bool attributes,
+                                      std::function<bool(Attribute*)> attributeFilter)
 {
     ArgList objectPathArgs = get<0>(Object::splitPath(complete.needle()));
     string objectPath = objectPathArgs.join(OBJECT_PATH_SEPARATOR);
@@ -358,6 +359,9 @@ void RootCommands::completeObjectPath(Completion& complete, bool attributes)
     if (!object) return;
     if (attributes) {
         for (auto& it : object->attributes()) {
+            if (attributeFilter && !attributeFilter(it.second)) {
+                continue;
+            }
             complete.full(objectPath + it.first);
         }
     }
@@ -377,7 +381,8 @@ void RootCommands::get_attr_complete(Completion& complete) {
 
 void RootCommands::set_attr_complete(Completion& complete) {
     if (complete == 0) {
-        completeAttributePath(complete);
+        completeObjectPath(complete, true, \
+            [](Attribute* a) { return a->writeable(); } );
     } else if (complete == 1) {
         Attribute* a = root->deepAttribute(complete[0]);
         if (a) a->complete(complete);
@@ -388,6 +393,15 @@ void RootCommands::set_attr_complete(Completion& complete) {
 
 void RootCommands::attr_complete(Completion& complete)
 {
-    set_attr_complete(complete);
+    if (complete == 0) {
+        completeAttributePath(complete);
+    } else if (complete == 1) {
+        Attribute* a = root->deepAttribute(complete[0]);
+        if (!a) return;
+        if (a->writeable()) a->complete(complete);
+        else complete.none();
+    } else {
+        complete.none();
+    }
 }
 

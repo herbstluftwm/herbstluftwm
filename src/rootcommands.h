@@ -39,7 +39,8 @@ public:
     int remove_attr_cmd(Input input, Output output);
     int compare_cmd(Input input, Output output);
     static Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Output output);
-    void completeObjectPath(Completion& complete, bool attributes = false);
+    void completeObjectPath(Completion& complete, bool attributes = false,
+                            std::function<bool(Attribute*)> attributeFilter = {});
     void completeAttributePath(Completion& complete);
 private:
     Root* root;

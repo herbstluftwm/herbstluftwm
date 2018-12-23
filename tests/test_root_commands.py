@@ -31,11 +31,27 @@ def test_substitute(hlwm):
     assert call.stdout == expected_output
 
 
-# TODO: add 'set ' to the following list
-@pytest.mark.parametrize('prefix', ['set_attr settings.', 'attr settings.'])
+@pytest.mark.parametrize('prefix', ['set_attr settings.',
+                                    'attr settings.',
+                                    'set '])
 def test_set_attr_completion(hlwm, prefix):
     assert hlwm.complete(prefix + "swap_monitors_to_get_tag") \
         == 'false off on toggle true'.split(' ')
+
+
+def test_set_attr_only_writable(hlwm):
+    # attr completes read-only attributes
+    assert hlwm.complete('attr monitors.c', position=1, partial=True) \
+        == ['monitors.count ']
+    # but set_attr does not
+    assert hlwm.complete('set_attr monitors.c', position=1, partial=True) \
+        == []
+
+
+def test_attr_only_second_argument_if_writable(hlwm):
+    # attr does not complete values for read-only attributes
+    assert hlwm.call_xfail_no_output('complete 2 attr monitors.count') \
+        .returncode == 7
 
 
 def test_substitute_missing_attribute__command_treated_as_attribute(hlwm):
