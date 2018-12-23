@@ -142,17 +142,18 @@ function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
 {
     return [this,cmd](Input input, Output output) -> int {
         HSMonitor *monitor;
-        if (input.empty()) {
+        std::string monitor_name;
+        if (!(input >> monitor_name)) {
             monitor = get_current_monitor();
         } else {
-            monitor = byString(input.front());
+            monitor = byString(monitor_name);
             if (!monitor) {
                 output << input.command() <<
                     ": Monitor \"" << input.front() << "\" not found!\n";
                 return HERBST_INVALID_ARGUMENT;
             }
         }
-        return cmd(*monitor, input, output);
+        return cmd(*monitor, Input(input.command(), input.toVector()), output);
     };
 }
 

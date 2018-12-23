@@ -259,7 +259,7 @@ int HSMonitor::move_cmd(Input input, Output output) {
     }
     auto new_rect = Rectangle::fromStr(input.front());
     if (new_rect.width < WINDOW_MIN_WIDTH || new_rect.height < WINDOW_MIN_HEIGHT) {
-        output << input.command() << "%s: Rectangle is too small\n";
+        output << input.command() << ": Rectangle is too small\n";
         return HERBST_INVALID_ARGUMENT;
     }
     // else: just move it:

@@ -84,6 +84,12 @@ def test_cannot_remove_last_monitor(hlwm):
     assert hlwm.get_attr('monitors.count') == '1'
 
 
+def test_move_monitor(hlwm):
+    r = [8, 4, 400, 300]  # x,y,width,height
+    hlwm.call('move_monitor \"0\" %dx%d%+d%+d' % (r[2], r[3], r[0], r[1]))
+    assert hlwm.call('monitor_rect \"\"').stdout == ' '.join(map(str, r))
+
+
 def test_new_clients_appear_in_focused_monitor(hlwm):
     hlwm.call('add tag2')
     hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
