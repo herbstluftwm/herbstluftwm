@@ -151,7 +151,6 @@ void complete_against_comparators(int argc, char** argv, int pos, Output output)
 void complete_against_winids(int argc, char** argv, int pos, Output output);
 void complete_merge_tag(int argc, char** argv, int pos, Output output);
 void complete_negate(int argc, char** argv, int pos, Output output);
-void complete_against_settings(int argc, char** argv, int pos, Output output);
 void complete_against_keybinds(int argc, char** argv, int pos, Output output);
 int complete_against_commands(int argc, char** argv, int position,
                               Output output);

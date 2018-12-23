@@ -645,25 +645,6 @@ void complete_merge_tag(int argc, char** argv, int pos, Output output) {
     }
 }
 
-void complete_against_settings(int argc, char** argv, int pos, Output output)
-{
-    const char* needle;
-    if (pos >= argc) {
-        needle = "";
-    } else {
-        needle = argv[pos];
-    }
-    bool is_toggle_command = !strcmp(argv[0], "toggle");
-    for (auto a : g_settings->attributes()) {
-        if (is_toggle_command
-            && a.second->type() != Type::ATTRIBUTE_INT
-            && a.second->type() != Type::ATTRIBUTE_BOOL) {
-            continue;
-        }
-        try_complete(needle, a.first.c_str(), output);
-    }
-}
-
 void complete_against_keybinds(int argc, char** argv, int pos, Output output) {
     const char* needle;
     if (pos >= argc) {
