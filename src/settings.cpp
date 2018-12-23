@@ -7,6 +7,7 @@
 #include "ewmh.h"
 #include "monitormanager.h"
 #include "utils.h"
+#include "completion.h"
 
 #include <cstring>
 #include <cstdio>
@@ -218,6 +219,19 @@ int Settings::set_cmd(Input input, Output output) {
     return 0;
 }
 
+void Settings::set_complete(Completion& complete) {
+    if (complete == 0) {
+        for (auto& a : attributes()) {
+            complete.full(a.first);
+        }
+    } else if (complete == 1) {
+        Attribute* a = attribute(complete[0]);
+        if (a) a->complete(complete);
+    } else {
+        complete.none();
+    }
+}
+
 int Settings::toggle_cmd(Input argv, Output output) {
     if (argv.empty()) {
         return HERBST_NEED_MORE_ARGS;
@@ -279,5 +293,19 @@ int Settings::get_cmd(Input argv, Output output) {
     output << attr->str();
     return 0;
 }
+
+void Settings::get_complete(Completion& complete) {
+    if (complete == 0) {
+        for (auto& a : attributes()) {
+            complete.full(a.first);
+        }
+    } else if (complete == 1) {
+        Attribute* a = attribute(complete[0]);
+        if (a) a->complete(complete);
+    } else {
+        complete.none();
+    }
+}
+
 
 
