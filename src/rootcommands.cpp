@@ -380,8 +380,6 @@ void RootCommands::set_attr_complete(Completion& complete) {
         completeAttributePath(complete);
     } else if (complete == 1) {
         Attribute* a = root->deepAttribute(complete[0]);
-        cerr << "a = " << a << endl;
-        cerr << "c[0] = " << complete[0] << endl;
         if (a) a->complete(complete);
     } else {
         complete.none();
