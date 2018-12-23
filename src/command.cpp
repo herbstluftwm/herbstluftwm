@@ -218,7 +218,6 @@ struct {
     { "shift",          EQ, 2,  nullptr, completion_directions },
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },
-    { "cycle_value",    EQ, 1,  complete_against_settings, 0 },
     { "set_layout",     EQ, 1,  nullptr, g_layout_names },
     { "cycle_layout",   EQ, 1,  nullptr, completion_pm_one },
     { "cycle_layout",   GE, 2,  nullptr, g_layout_names },

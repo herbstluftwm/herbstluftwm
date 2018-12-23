@@ -293,6 +293,17 @@ int Settings::cycle_value_cmd(Input argv, Output output) {
     return 0;
 }
 
+void Settings::cycle_value_complete(Completion& complete) {
+    if (complete == 0) {
+        for (auto& a : attributes()) {
+            complete.full(a.first);
+        }
+    } else {
+        Attribute* a = attribute(complete[0]);
+        if (a) a->complete(complete);
+    }
+}
+
 int Settings::get_cmd(Input argv, Output output) {
     if (argv.empty()) {
         return HERBST_NEED_MORE_ARGS;

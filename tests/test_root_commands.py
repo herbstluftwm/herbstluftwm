@@ -33,6 +33,7 @@ def test_substitute(hlwm):
 
 @pytest.mark.parametrize('prefix', ['set_attr settings.',
                                     'attr settings.',
+                                    'cycle_value ',
                                     'set '])
 def test_set_attr_completion(hlwm, prefix):
     assert hlwm.complete(prefix + "swap_monitors_to_get_tag") \
