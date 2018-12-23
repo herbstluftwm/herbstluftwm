@@ -88,17 +88,14 @@ Settings::Settings(Root* root)
         &window_border_urgent_color,
     });
     for (auto i : {&frame_gap, &frame_padding, &window_gap}) {
-        i->setWriteable();
         i->changed().connect([] { all_monitors_apply_layout(); });
     }
-    mouse_recenter_gap.setWriteable();
     for (auto i : {
          &frame_border_active_color,
          &frame_border_normal_color,
          &frame_border_inner_color,
          &frame_bg_normal_color,
          &frame_bg_active_color}) {
-        i->setWriteable();
         i->changed().connect(&reset_client_colors);
     }
     frame_bg_transparent.changed().connect(&reset_client_colors);
@@ -107,7 +104,6 @@ Settings::Settings(Root* root)
          &frame_border_inner_width,
          &frame_active_opacity,
          &frame_normal_opacity}) {
-        i->setWriteable();
         i->changed().connect(&reset_client_colors);
     }
     frame_bg_transparent.setWriteable();
@@ -115,12 +111,9 @@ Settings::Settings(Root* root)
          &gapless_grid,
          &smart_frame_surroundings,
          &smart_window_surroundings}) {
-        i->setWriteable();
         i->changed().connect(&all_monitors_apply_layout);
     }
-    raise_on_focus_temporarily.setWriteable();
     raise_on_focus_temporarily.changed().connect(&tag_update_each_focus_layer);
-    wmname.setWriteable();
     wmname.changed().connect(&ewmh_update_wmname);
 
     default_frame_layout.setValidator([] (int layout) {
