@@ -44,7 +44,7 @@ class HlwmBridge:
             args = shlex.split(cmd)
         return args
 
-    def _checked_call(self, cmd, expect_success=True):
+    def _checked_call(self, cmd, expect_success=True, expect_error_output=False):
         args = self._parse_command(cmd)
 
         try:
@@ -70,7 +70,8 @@ class HlwmBridge:
             assert not proc.stderr
         else:
             assert proc.returncode != 0
-            assert proc.stderr != ""
+            if expect_error_output:
+                assert proc.stderr != ""
 
         return proc
 
@@ -78,7 +79,10 @@ class HlwmBridge:
         return self._checked_call(cmd, expect_success=True)
 
     def call_xfail(self, cmd):
-        return self._checked_call(cmd, expect_success=False)
+        return self._checked_call(cmd, expect_success=False, expect_error_output=True)
+
+    def call_xfail_no_output(self, cmd):
+        return self._checked_call(cmd, expect_success=False, expect_error_output=False)
 
     def get_attr(self, attribute_path, check=True):
         return self.call(['get_attr', attribute_path]).stdout

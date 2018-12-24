@@ -7,10 +7,12 @@
 #include "ewmh.h"
 #include "monitormanager.h"
 #include "utils.h"
+#include "completion.h"
 
 #include <cstring>
 #include <cstdio>
 #include <sstream>
+#include <algorithm>
 
 
 using namespace std;
@@ -86,17 +88,14 @@ Settings::Settings(Root* root)
         &window_border_urgent_color,
     });
     for (auto i : {&frame_gap, &frame_padding, &window_gap}) {
-        i->setWriteable();
         i->changed().connect([] { all_monitors_apply_layout(); });
     }
-    mouse_recenter_gap.setWriteable();
     for (auto i : {
          &frame_border_active_color,
          &frame_border_normal_color,
          &frame_border_inner_color,
          &frame_bg_normal_color,
          &frame_bg_active_color}) {
-        i->setWriteable();
         i->changed().connect(&reset_client_colors);
     }
     frame_bg_transparent.changed().connect(&reset_client_colors);
@@ -105,7 +104,6 @@ Settings::Settings(Root* root)
          &frame_border_inner_width,
          &frame_active_opacity,
          &frame_normal_opacity}) {
-        i->setWriteable();
         i->changed().connect(&reset_client_colors);
     }
     frame_bg_transparent.setWriteable();
@@ -113,12 +111,9 @@ Settings::Settings(Root* root)
          &gapless_grid,
          &smart_frame_surroundings,
          &smart_window_surroundings}) {
-        i->setWriteable();
         i->changed().connect(&all_monitors_apply_layout);
     }
-    raise_on_focus_temporarily.setWriteable();
     raise_on_focus_temporarily.changed().connect(&tag_update_each_focus_layer);
-    wmname.setWriteable();
     wmname.changed().connect(&ewmh_update_wmname);
 
     default_frame_layout.setValidator([] (int layout) {
@@ -140,6 +135,9 @@ Settings::Settings(Root* root)
         root->monitors()->lock_number_changed();
     });
     g_settings = this;
+    for (auto i : attributes()) {
+        i.second->setWriteable();
+    }
 }
 
 std::function<int()> Settings::getIntAttr(Object* root, std::string name) {
@@ -215,6 +213,19 @@ int Settings::set_cmd(Input input, Output output) {
     return 0;
 }
 
+void Settings::set_complete(Completion& complete) {
+    if (complete == 0) {
+        for (auto& a : attributes()) {
+            complete.full(a.first);
+        }
+    } else if (complete == 1) {
+        Attribute* a = attribute(complete[0]);
+        if (a) a->complete(complete);
+    } else {
+        complete.none();
+    }
+}
+
 int Settings::toggle_cmd(Input argv, Output output) {
     if (argv.empty()) {
         return HERBST_NEED_MORE_ARGS;
@@ -235,6 +246,18 @@ int Settings::toggle_cmd(Input argv, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;
+}
+
+void Settings::toggle_complete(Completion& complete) {
+    if (complete == 0) {
+        for (auto a : attributes()) {
+            if (a.second->type() == Type::ATTRIBUTE_BOOL) {
+                complete.full(a.first);
+            }
+        }
+    } else {
+        complete.none();
+    }
 }
 
 int Settings::cycle_value_cmd(Input argv, Output output) {
@@ -263,6 +286,17 @@ int Settings::cycle_value_cmd(Input argv, Output output) {
     return 0;
 }
 
+void Settings::cycle_value_complete(Completion& complete) {
+    if (complete == 0) {
+        for (auto a : attributes()) {
+            complete.full(a.first);
+        }
+    } else {
+        Attribute* a = attribute(complete[0]);
+        if (a) a->complete(complete);
+    }
+}
+
 int Settings::get_cmd(Input argv, Output output) {
     if (argv.empty()) {
         return HERBST_NEED_MORE_ARGS;
@@ -276,5 +310,19 @@ int Settings::get_cmd(Input argv, Output output) {
     output << attr->str();
     return 0;
 }
+
+void Settings::get_complete(Completion& complete) {
+    if (complete == 0) {
+        for (auto& a : attributes()) {
+            complete.full(a.first);
+        }
+    } else if (complete == 1) {
+        Attribute* a = attribute(complete[0]);
+        if (a) a->complete(complete);
+    } else {
+        complete.none();
+    }
+}
+
 
 

@@ -52,7 +52,6 @@ static bool no_completion(int, char**, int) {
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
 static bool second_parameter_is_call(int argc, char** argv, int pos);
-static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
 static bool parameter_expected_offset_1(int argc, char** argv, int pos);
 static bool parameter_expected_offset_2(int argc, char** argv, int pos);
@@ -110,9 +109,6 @@ struct {
     { "shift",          2,  first_parameter_is_flag },
     { "remove",         1,  no_completion },
     { "rotate",         1,  no_completion },
-    { "set",            3,  no_completion },
-    { "get",            2,  no_completion },
-    { "toggle",         2,  no_completion },
     { "cycle_monitor",  2,  no_completion },
     { "focus_monitor",  2,  no_completion },
     { "shift_to_monitor",2,  no_completion },
@@ -142,10 +138,7 @@ struct {
     { "tag_status",     2,  no_completion },
     { "floating",       3,  no_completion },
     { "floating",       2,  first_parameter_is_tag },
-    { "attr",           2,  first_parameter_is_writable_attribute },
-    { "attr",           3,  no_completion },
     { "object_tree",    2,  no_completion },
-    { "set_attr",       3,  no_completion },
     { "new_attr",       3,  no_completion },
     { "remove_attr",    2,  no_completion },
     { "mktemp",         3,  parameter_expected_offset_3 },
@@ -223,12 +216,8 @@ struct {
     { "shift",          EQ, 1,  nullptr, completion_directions },
     { "shift",          EQ, 1,  nullptr, completion_focus_args },
     { "shift",          EQ, 2,  nullptr, completion_directions },
-    { "set",            EQ, 1,  complete_against_settings, 0 },
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },
-    { "get",            EQ, 1,  complete_against_settings, 0 },
-    { "toggle",         EQ, 1,  complete_against_settings, 0 },
-    { "cycle_value",    EQ, 1,  complete_against_settings, 0 },
     { "set_layout",     EQ, 1,  nullptr, g_layout_names },
     { "cycle_layout",   EQ, 1,  nullptr, completion_pm_one },
     { "cycle_layout",   GE, 2,  nullptr, g_layout_names },
@@ -251,16 +240,10 @@ struct {
     { "setenv",         EQ, 1,  complete_against_env, 0 },
     { "getenv",         EQ, 1,  complete_against_env, 0 },
     { "unsetenv",       EQ, 1,  complete_against_env, 0 },
-    { "attr",           EQ, 1,  complete_against_objects, 0 },
-    { "attr",           EQ, 1,  complete_against_attributes, 0 },
-    { "attr",           EQ, 2,  complete_against_attribute_values, 0 },
     { "compare",        EQ, 1,  complete_against_objects, 0 },
     { "compare",        EQ, 1,  complete_against_attributes, 0 },
     { "compare",        EQ, 2,  complete_against_comparators, 0 },
     { "compare",        EQ, 3,  complete_against_attribute_values, 0 },
-    { "set_attr",       EQ, 1,  complete_against_objects, 0 },
-    { "set_attr",       EQ, 1,  complete_against_attributes, 0 },
-    { "set_attr",       EQ, 2,  complete_against_attribute_values, 0 },
     { "new_attr",       EQ, 1,  nullptr, completion_userattribute_types },
     { "new_attr",       EQ, 2,  complete_against_objects, 0 },
     { "new_attr",       EQ, 2,  complete_against_user_attr_prefix, 0 },
@@ -662,25 +645,6 @@ void complete_merge_tag(int argc, char** argv, int pos, Output output) {
     }
 }
 
-void complete_against_settings(int argc, char** argv, int pos, Output output)
-{
-    const char* needle;
-    if (pos >= argc) {
-        needle = "";
-    } else {
-        needle = argv[pos];
-    }
-    bool is_toggle_command = !strcmp(argv[0], "toggle");
-    for (auto a : g_settings->attributes()) {
-        if (is_toggle_command
-            && a.second->type() != Type::ATTRIBUTE_INT
-            && a.second->type() != Type::ATTRIBUTE_BOOL) {
-            continue;
-        }
-        try_complete(needle, a.first.c_str(), output);
-    }
-}
-
 void complete_against_keybinds(int argc, char** argv, int pos, Output output) {
     const char* needle;
     if (pos >= argc) {
@@ -989,19 +953,6 @@ static bool second_parameter_is_call(int argc, char** argv, int pos) {
     } else {
         return false;
     }
-}
-
-static bool first_parameter_is_writable_attribute(int argc, char** argv, int pos) {
-    std::ostringstream void_output;
-    // TODO
-    /*
-    HSAttribute* attr = nullptr;
-    if (argc >= 2) {
-        attr = hsattribute_parse_path_verbose(argv[1], void_output);
-    }
-    return attr && attr->on_change != ATTR_READ_ONLY;
-    */
-    return false;
 }
 
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset) {

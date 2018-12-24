@@ -27,7 +27,9 @@ public:
     int get_attr_cmd(Input args, Output output);
     void get_attr_complete(Completion& complete);
     int set_attr_cmd(Input args, Output output);
+    void set_attr_complete(Completion& complete);
     int attr_cmd(Input args, Output output);
+    void attr_complete(Completion& complete);
     int print_object_tree_command(Input args, Output output);
     void print_object_tree_complete(Completion& complete);
 
@@ -37,7 +39,8 @@ public:
     int remove_attr_cmd(Input input, Output output);
     int compare_cmd(Input input, Output output);
     static Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Output output);
-    void completeObjectPath(Completion& complete, bool attributes = false);
+    void completeObjectPath(Completion& complete, bool attributes = false,
+                            std::function<bool(Attribute*)> attributeFilter = {});
     void completeAttributePath(Completion& complete);
 private:
     Root* root;

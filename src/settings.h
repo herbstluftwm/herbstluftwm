@@ -9,6 +9,7 @@
 #include <string>
 
 class Root;
+class Completion;
 
 class Settings : public Object {
 public:
@@ -16,9 +17,13 @@ public:
     Settings(Root* root);
     // commands:
     int set_cmd(Input argv, Output output);
+    void set_complete(Completion& complete);
     int get_cmd(Input argv, Output output);
+    void get_complete(Completion& complete);
     int toggle_cmd(Input argv, Output output);
+    void toggle_complete(Completion& complete);
     int cycle_value_cmd(Input argv, Output output);
+    void cycle_value_complete(Completion& complete);
 
     // all the settings:
     Attribute_<int>           frame_gap = {"frame_gap", 5};

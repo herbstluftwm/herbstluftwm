@@ -1,5 +1,6 @@
 import pytest
 
+
 def test_attr_cmd(hlwm):
     assert hlwm.get_attr('monitors.focus.name') == ''
     hlwm.call('attr')
@@ -21,12 +22,37 @@ def test_object_tree(hlwm):
     assert len(t1) > len(t2)
     assert len(t2) > len(t3)
 
+
 def test_substitute(hlwm):
     expected_output = hlwm.get_attr('tags.count') + '\n'
 
     call = hlwm.call('substitute X tags.count echo X')
 
     assert call.stdout == expected_output
+
+
+@pytest.mark.parametrize('prefix', ['set_attr settings.',
+                                    'attr settings.',
+                                    'cycle_value ',
+                                    'set '])
+def test_set_attr_completion(hlwm, prefix):
+    assert hlwm.complete(prefix + "swap_monitors_to_get_tag") \
+        == 'false off on toggle true'.split(' ')
+
+
+def test_set_attr_only_writable(hlwm):
+    # attr completes read-only attributes
+    assert hlwm.complete('attr monitors.c', position=1, partial=True) \
+        == ['monitors.count ']
+    # but set_attr does not
+    assert hlwm.complete('set_attr monitors.c', position=1, partial=True) \
+        == []
+
+
+def test_attr_only_second_argument_if_writable(hlwm):
+    # attr does not complete values for read-only attributes
+    assert hlwm.call_xfail_no_output('complete 2 attr monitors.count') \
+        .returncode == 7
 
 
 def test_substitute_missing_attribute__command_treated_as_attribute(hlwm):
