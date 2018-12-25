@@ -20,6 +20,7 @@ public:
                             char delim = '.');
 
     ArgList(const std::initializer_list<std::string> &l);
+    ArgList(Container::const_iterator from, Container::const_iterator to);
     ArgList(const ArgList &al);
     ArgList(const Container &c);
     // constructor that splits the given string

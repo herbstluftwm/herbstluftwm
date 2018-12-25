@@ -361,6 +361,28 @@ shared_ptr<const CommandTable> Commands::get() {
     return command_table;
 }
 
+void Commands::complete(Completion& completion) {
+    // wrap around complete_against_commands
+    // Once we have migrated all completions, we can implement command
+    // completion directly with the minimal interface that Completion provides.
+    // Then we can also unfriend this function from the Completion class.
+    char** argv = new char*[completion.args_.size() + 1];
+    argv[completion.args_.size()] = nullptr;
+    for (size_t i = 0; i < completion.args_.size(); i++) {
+        argv[i] = const_cast<char*>((completion.args_.begin() + i)->c_str());
+    }
+    int res = complete_against_commands(completion.args_.size(),
+                                        argv,
+                                        completion.index_,
+                                        completion.output_);
+    delete argv;
+    if (res == HERBST_NO_PARAMETER_EXPECTED) {
+        completion.noParameterExpected();
+    } else if (res != 0) {
+        completion.invalidArguments();
+    }
+}
+
 
 // Old C-ish interface to commands:
 

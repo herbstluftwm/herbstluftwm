@@ -113,6 +113,7 @@ namespace Commands {
     void initialize(unique_ptr<const CommandTable> commands);
     /* Call the command args[0] */
     int call(Input args, Output out);
+    void complete(Completion& completion);
     shared_ptr<const CommandTable> get();
 }
 

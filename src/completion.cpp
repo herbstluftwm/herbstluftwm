@@ -94,3 +94,27 @@ std::string Completion::operator[](size_t index) const {
     }
 }
 
+/** create a new Completion context with the first 'offset' args dropped.
+ * the offset can be at most the index_. That is for every size_t offs
+ * if operator>=(offs) is true, then shifted(offs) is save.
+ */
+Completion Completion::shifted(size_t offset) const {
+    if (offset > index_) {
+        throw std::logic_error("Can shift at most index_ many elements!");
+    }
+    offset = std::min(offset, args_.size());
+    return Completion(
+        ArgList(args_.begin() + offset, args_.end()),
+        index_ - offset,
+        shellOutput_,
+        output_);
+}
+
+void Completion::invalidArguments() {
+    invalidArgument_ = true;
+}
+
+bool Completion::ifInvalidArguments() const {
+    return invalidArgument_;
+}
+

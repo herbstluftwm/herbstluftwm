@@ -4,6 +4,10 @@
 #include "arglist.h"
 #include "types.h"
 
+namespace Commands {
+void complete(Completion& completion);
+}
+
 /** The completion object holds the state of a running
  * command completion, that is the list of args and the index
  * of the element in the arglist that needs to be completed. A completion
@@ -33,7 +37,16 @@ public:
     //! there is no more parameter expected
     void none();
 
+    //! some of the previous arguments are invalid
+    void invalidArguments();
+
+
+    /** State queries:
+     */
+    //! if none(); was called
     bool noParameterExpected() const;
+    //! if invalidArguments() was called;
+    bool ifInvalidArguments() const;
 
     /** compare the position of the argument that is completed
      * The first parameter has index 0
@@ -46,6 +59,13 @@ public:
 
     static bool prefixOf(const std::string& shorter, const std::string& longer);
     const std::string& needle() const;
+
+    Completion shifted(size_t offset) const;
+
+    /** grand access to private members as long as Commands::complete is still
+     * wraper around complete_against_commands.
+     */
+    friend void Commands::complete(Completion& completion);
 private:
     /** The intended use is to pass the completion state as the reference and
      * to return possible completions via this Completion object. This is why
@@ -63,6 +83,7 @@ private:
     Output output_;
     bool   shellOutput_;
     bool   noParameterExpected_ = false;
+    bool   invalidArgument_ = false;
 };
 
 #endif
