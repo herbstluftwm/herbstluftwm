@@ -69,14 +69,9 @@ struct {
                         /* if current pos >= min_index */
     bool    (*function)(int argc, char** argv, int pos);
 } g_parameter_expected[] = {
-    { "quit",           1,  no_completion },
-    { "reload",         1,  no_completion },
-    { "true",           1,  no_completion },
-    { "false",          1,  no_completion },
     { "!",              2,  parameter_expected_offset_1 },
     { "try",            2,  parameter_expected_offset_1 },
     { "silent",         2,  parameter_expected_offset_1 },
-    { "version",        1,  no_completion },
     { "list_commands",  1,  no_completion },
     { "list_monitors",  1,  no_completion },
     { "list_keybinds",  1,  no_completion },
@@ -87,7 +82,6 @@ struct {
     { "keyunbind",      2,  no_completion },
     { "mousebind",      3,  second_parameter_is_call },
     { "mousebind",      3,  parameter_expected_offset_3 },
-    { "mouseunbind",    1,  no_completion },
     { "focus_nth",      2,  no_completion },
     { "cycle",          2,  no_completion },
     { "cycle_all",      3,  no_completion },
@@ -261,6 +255,16 @@ struct {
 
 // Implementation of CommandBinding
 
+CommandBinding::CommandBinding(function<int(Output)> cmd)
+    : command([cmd](Input, Output output) { return cmd(output); })
+    , completion_([](Completion& c) { c.none(); })
+{}
+
+CommandBinding::CommandBinding(function<int()> cmd)
+    : command([cmd](Input, Output) { return cmd(); })
+    , completion_([](Completion& c) { c.none(); })
+{}
+
 // Nearly all of the following can go away, if all C-style command functions
 // have been migrated to int(Input, Output).
 
@@ -304,10 +308,6 @@ CommandBinding::CommandBinding(int func(int argc, const char** argv))
     : command(commandFromCFunc([func](int argc, char** argv, Output) {
                 return func(argc, const_cast<const char**>(argv));
             }))
-{}
-
-CommandBinding::CommandBinding(int func())
-    : command([func](Input, Output) { return func(); })
 {}
 
 
@@ -404,7 +404,7 @@ int call_command_no_output(int argc, char** argv) {
     return call_command(argc, argv, output);
 }
 
-int list_commands(int, char**, Output output)
+int list_commands(Output output)
 {
     for (auto cmd : *Commands::get()) {
         output << cmd.first << endl;

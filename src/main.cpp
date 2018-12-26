@@ -23,6 +23,7 @@
 #include "rootcommands.h"
 #include "tmp.h"
 #include "rulemanager.h"
+#include "completion.h"
 // standard
 #include <cstring>
 #include <cstdio>
@@ -60,8 +61,7 @@ static char**   g_exec_args = nullptr;
 typedef void (*HandlerTable[LASTEvent]) (Root*, XEvent*);
 
 int quit();
-int reload();
-int version(Input args, Output output);
+int version(Output output);
 int echo(int argc, char* argv[], Output output);
 int true_command();
 int false_command();
@@ -107,16 +107,19 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     Settings* settings = root->settings();
     Tmp* tmp = root->tmp();
     RuleManager* rules = root->rules();
-    return unique_ptr<CommandTable>(new CommandTable{
-        {"quit",           quit},
+    function<void(Completion&)> noParameters =
+        [] (Completion& c) { c.none(); };
+    return unique_ptr<CommandTable>(new CommandTable(
+        (std::initializer_list<std::pair<const std::string,CommandBinding>>){
+        {"quit",           { quit } },
         {"echo",           echo},
         {"true",           {[] { return 0; }}},
         {"false",          {[] { return 1; }}},
         {"try",            try_command},
         {"silent",         silent_command},
-        {"reload",         reload},
-        {"version",        version},
-        {"list_commands",  list_commands},
+        {"reload",         {[] { execute_autostart_file(); return 0; }}},
+        {"version",        { version }},
+        {"list_commands",  { list_commands }},
         {"list_monitors",  BIND_OBJECT(monitors, list_monitors) },
         {"set_monitors",   set_monitor_rects_command},
         {"disjoin_rects",  disjoin_rects_command},
@@ -125,7 +128,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"keybind",        keybind},
         {"keyunbind",      keyunbind},
         {"mousebind",      mouse_bind_command},
-        {"mouseunbind",    mouse_unbind_all},
+        {"mouseunbind",    { mouse_unbind_all }},
         {"spawn",          spawn},
         {"wmexec",         wmexec},
         {"emit_hook",      custom_hook_emit},
@@ -170,7 +173,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"merge_tag",      BIND_OBJECT(tags, removeTag)},
         {"rename",         BIND_OBJECT(tags, tag_rename_command) },
         {"move",           BIND_OBJECT(tags, tag_move_window_command) },
-        {"rotate",         layout_rotate_command},
+        {"rotate",         { layout_rotate_command }},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
         {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
         {"raise_monitor",  monitor_raise_command},
@@ -218,7 +221,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"attr",           { root_commands, &RootCommands::attr_cmd,
                                             &RootCommands::attr_complete }},
         {"mktemp",         BIND_OBJECT(tmp, mktemp) },
-    });
+    }));
 }
 
 // core functions
@@ -227,13 +230,7 @@ int quit() {
     return 0;
 }
 
-// reload config
-int reload() {
-    execute_autostart_file();
-    return 0;
-}
-
-int version(Input, Output output) {
+int version(Output output) {
     output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << std::endl;
     output << "Copyright (c) 2011-2014 Thorsten Wißmann" << std::endl;
     output << "Released under the Simplified BSD License" << std::endl;
@@ -652,7 +649,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                 /* ignore recognized long option */
                 break;
             case 'v':
-                version({"version"}, std::cout);
+                version(std::cout);
                 exit(0);
             case 'c':
                 g_autostart_path = optarg;
