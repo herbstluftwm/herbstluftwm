@@ -44,7 +44,7 @@ class HlwmBridge:
             args = shlex.split(cmd)
         return args
 
-    def unchecked_call(self, cmd):
+    def unchecked_call(self, cmd, log_output=True):
         args = self._parse_command(cmd)
 
         try:
@@ -61,7 +61,10 @@ class HlwmBridge:
         outcome = 'succeeded' if proc.returncode == 0 else 'failed'
         allout = proc.stdout + proc.stderr
         if allout:
-            print(f'Client command {args} {outcome} with output:\n{allout}')
+            if log_output:
+                print(f'Client command {args} {outcome} with output:\n{allout}')
+            else:
+                print(f'Client command {args} {outcome} with output.')
         else:
             print(f'Client command {args} {outcome} (no output)')
         return proc

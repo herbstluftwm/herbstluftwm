@@ -15,6 +15,103 @@ commands_without_input = shlex.split(
     """)
 
 
+def command2str(command):
+    s = ' '.join(command)
+    maxlen = 20
+    if len(s) > maxlen:
+        s = s[0:maxlen - 3] + '...'
+    return s
+
+
+# TODO: can we use something like this?
+# def pytest_generate_tests(metafunc):
+#     if 'completable_command' in metafunc.fixturenames:
+#         metafunc.parametrize('completable_command',
+#         [
+#             ['echo', 'foo'],
+#             ['echo', 'foo', 'some very very very long argument'],
+#             ['try', 'false'],
+#             ['true'],
+#         ], ids=command2str)
+
+def generate_commands(hlwm, length, steps_per_argument=5, prefix=[]):
+    """
+    yield all commands of a given maximal length (plus the given prefix) that
+    do not accept further arguments according to the completion.
+
+    When generating parameters, allow at most `steps_per_argument` many
+    completion steps per parameter.
+    """
+    if length < 0:
+        return []
+    proc = hlwm.unchecked_call(['complete_shell', len(prefix)] + prefix,
+                               log_output=False)
+    if proc.returncode == 7:
+        # if no more parameter expected,
+        # then prefix is a full command already:
+        return [prefix]
+    assert proc.returncode == 0, "completion failed for " + str(prefix)
+    commands = []
+    # otherwise
+    for arg in proc.stdout.split('\n'):
+        if arg.endswith(' '):
+            arg = [arg[0:-1]]
+            if arg in prefix:
+                # ignore commands where the same flag is passed twice
+                continue
+            commands += generate_commands(hlwm,
+                                          length - 1,
+                                          steps_per_argument,
+                                          prefix + arg)
+        # ignore partial completions for the moment
+    return commands
+
+
+def test_generate_completable_commands(hlwm, request):
+    # run pytest with --cache-clear to force renewal
+    if request.config.cache.get('all_completable_commands', None) is None:
+        cmds = generate_commands(hlwm, 3)
+        request.config.cache.set('all_completable_commands', cmds)
+
+
+@pytest.mark.parametrize('run_destructives', [False, True])
+def test_completable_commands(hlwm, request, run_destructives):
+    commands = request.config.cache.get('all_completable_commands', None)
+    assert commands is not None, "command cache needs to be filled"
+    allowed_returncodes = {
+        'false': {1},
+        'close': {3},
+        'raise': {3},
+        'jumpto': {3},
+        'remove_monitor': {6},
+        'use_index': {3},
+        'bring': {3},
+        '!': {1},
+        'shift': {6},
+        'focus': {6},
+    }
+    # a set of commands that make other commands break
+    # hence we need to run them separately
+    destructive_commands = {
+        'unsetenv'
+    }
+    for command in commands:
+        # the command mentions a destructive command,
+        # if and only if the sets are not disjoint
+        mentions_destructive_command = \
+            not(destructive_commands.isdisjoint(set(command)))
+        if mentions_destructive_command != run_destructives:
+            # run commands involving destructive commands
+            # iff run_destructives is set, and skip otherwise
+            continue
+        returncodes = {0}
+        for k, v in allowed_returncodes.items():
+            if k in command:
+                returncodes |= v
+        assert hlwm.unchecked_call(command, log_output=False).returncode \
+            in returncodes, "Running " + ' '.join(command)
+
+
 @pytest.mark.parametrize('name', commands_without_input)
 def test_inputless_commands(hlwm, name):
     assert hlwm.call_xfail_no_output('complete 1 ' + name) \
