@@ -40,7 +40,7 @@ static const char* completion_cycle_all_args[]= { "--skip-invisible", nullptr };
 static const char* completion_pm_one[]= { "+1", "-1", nullptr };
 static const char* completion_mouse_functions[]= { "move", "zoom", "resize", "call", nullptr };
 static const char* completion_detect_monitors_args[] =
-    { "const -l", "--list", "--no-disjoin", /* TODO: "--keep-small", */ nullptr };
+    { "-l", "--list", "--no-disjoin", /* TODO: "--keep-small", */ nullptr };
 static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
 static const char* completion_split_ratios[]= {
     "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", nullptr };
