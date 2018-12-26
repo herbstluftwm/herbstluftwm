@@ -19,5 +19,11 @@ def test_alter_fullscreen(hlwm):
     hlwm.call('attr clients.focus.fullscreen toggle')
     assert hlwm.get_attr('clients.focus.fullscreen') == 'false'
 
+
 def test_fullscreen_completion(hlwm):
     assert hlwm.complete("fullscreen") == 'false off on toggle true'.split(' ')
+
+
+def test_close_without_clients(hlwm):
+    # close may return HERBST_INVALID_ARGUMENT if there is no window to close
+    assert hlwm.unchecked_call('close').returncode in [0, 3]
