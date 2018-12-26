@@ -51,9 +51,18 @@ def generate_commands(hlwm, length, steps_per_argument=5, prefix=[]):
         # then prefix is a full command already:
         return [prefix]
     assert proc.returncode == 0, "completion failed for " + str(prefix)
+    if prefix == []:
+        generate_commands.commands_list = set(proc.stdout.split('\n'))
     commands = []
     # otherwise
-    for arg in proc.stdout.split('\n'):
+    completion_suggestions = set(proc.stdout.split('\n'))
+    if generate_commands.commands_list <= completion_suggestions \
+            and prefix != []:
+        # if the commands are among the completions, then remove
+        # all the commands except for 'true'
+        completion_suggestions -= generate_commands.commands_list
+        completion_suggestions.add('true ')
+    for arg in completion_suggestions:
         if arg.endswith(' '):
             arg = [arg[0:-1]]
             if arg in prefix:
@@ -70,7 +79,7 @@ def generate_commands(hlwm, length, steps_per_argument=5, prefix=[]):
 def test_generate_completable_commands(hlwm, request):
     # run pytest with --cache-clear to force renewal
     if request.config.cache.get('all_completable_commands', None) is None:
-        cmds = generate_commands(hlwm, 3)
+        cmds = generate_commands(hlwm, 4)
         request.config.cache.set('all_completable_commands', cmds)
 
 
@@ -96,6 +105,8 @@ def test_completable_commands(hlwm, request, run_destructives):
         'unsetenv'
     }
     for command in commands:
+        if 'quit' in command:
+            continue
         # the command mentions a destructive command,
         # if and only if the sets are not disjoint
         mentions_destructive_command = \
