@@ -375,7 +375,7 @@ void Commands::complete(Completion& completion) {
                                         argv,
                                         completion.index_,
                                         completion.output_);
-    delete argv;
+    delete[] argv;
     if (res == HERBST_NO_PARAMETER_EXPECTED) {
         completion.noParameterExpected();
     } else if (res != 0) {
