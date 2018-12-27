@@ -39,7 +39,7 @@ jobs:
           script:
               - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug . # run tests with sanitizer
               - ninja -v -k 10
-              - tox -- -n auto
+              - tox # -- -n auto # TEMPORARILY deactivate parallelization
 
         - name: "Ubuntu 16.04, gcc-7"
           dist: xenial
