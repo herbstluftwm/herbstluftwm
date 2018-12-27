@@ -107,10 +107,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     Settings* settings = root->settings();
     Tmp* tmp = root->tmp();
     RuleManager* rules = root->rules();
-    function<void(Completion&)> noParameters =
-        [] (Completion& c) { c.none(); };
-    return unique_ptr<CommandTable>(new CommandTable(
-        (std::initializer_list<std::pair<const std::string,CommandBinding>>){
+    std::initializer_list<std::pair<const std::string,CommandBinding>> init =
+    {
         {"quit",           { quit } },
         {"echo",           echo},
         {"true",           {[] { return 0; }}},
@@ -221,7 +219,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"attr",           { root_commands, &RootCommands::attr_cmd,
                                             &RootCommands::attr_complete }},
         {"mktemp",         BIND_OBJECT(tmp, mktemp) },
-    }));
+    };
+    return unique_ptr<CommandTable>(new CommandTable(init));
 }
 
 // core functions
