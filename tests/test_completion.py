@@ -4,8 +4,13 @@ import shlex
 commands_without_input = shlex.split(
     """
         quit true false reload version
-        list_commands list_monitors list_rules
-        mouseunbind rotate
+        list_commands list_monitors
+        list_rules list_keybinds
+        lock unlock
+        close close_or_remove close_and_remove
+        remove rotate
+        mouseunbind
+        use_previous
         lock unlock
     """)
 
