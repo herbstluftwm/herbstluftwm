@@ -28,7 +28,7 @@ int keybind(int argc, char** argv, Output output);
 int keyunbind(int argc, char** argv, Output output); //removes a keybinding
 void keybinding_free(KeyBinding* binding);
 
-int key_list_binds(int argc, char** argv, Output output);
+int key_list_binds(Output output);
 int list_keysyms(int argc, char** argv, Output output);
 bool key_remove_bind_with_keysym(unsigned int modifiers, KeySym sym);
 void key_remove_all_binds();

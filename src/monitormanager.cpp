@@ -110,8 +110,7 @@ int MonitorManager::string_to_monitor_index(std::string string) {
 }
 
 
-int MonitorManager::list_monitors(Input argv, Output output) {
-    (void)argv;
+int MonitorManager::list_monitors(Output output) {
     string monitor_name = "";
     int i = 0;
     for (auto monitor : *this) {
@@ -288,11 +287,6 @@ HSMonitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
 }
 
 
-int MonitorManager::lock_cmd(Input, Output) {
-    lock();
-    return 0;
-}
-
 void MonitorManager::lock() {
     settings_->monitors_locked = settings_->monitors_locked() + 1;
     lock_number_changed();
@@ -301,11 +295,6 @@ void MonitorManager::lock() {
 void MonitorManager::unlock() {
     settings_->monitors_locked = max(0, settings_->monitors_locked() - 1);
     lock_number_changed();
-}
-
-int MonitorManager::unlock_cmd(Input, Output) {
-    unlock();
-    return 0;
 }
 
 std::string MonitorManager::lock_number_changed() {

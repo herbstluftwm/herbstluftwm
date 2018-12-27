@@ -14,7 +14,7 @@ public:
     void addRuleCompletion(Completion& complete);
     int unruleCommand(Input input, Output output);
     void unruleCompletion(Completion& complete);
-    int listRulesCommand(Input input, Output output);
+    int listRulesCommand(Output output);
 
 private:
     size_t removeRule(std::string label);
