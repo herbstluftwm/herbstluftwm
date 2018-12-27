@@ -7,7 +7,7 @@ commands_without_input = shlex.split(
         list_commands list_monitors
         list_rules list_keybinds
         lock unlock
-        close close_or_remove close_and_remove
+        close_or_remove close_and_remove
         remove rotate
         mouseunbind
         use_previous
