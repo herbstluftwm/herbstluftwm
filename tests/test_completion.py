@@ -52,7 +52,6 @@ def generate_command_argument(hlwm, command, argument_prefix, steps):
     if command[-1] in ignore_commands:
         return []
     hc_cmd = ['complete_shell', len(command)] + command + [argument_prefix]
-    print(str(hc_cmd))
     proc = hlwm.unchecked_call(hc_cmd, log_output=False)
     assert proc.returncode == 0, "completion failed for " + str(hc_cmd)
     completion_suggestions = set(proc.stdout.split('\n'))
@@ -90,12 +89,16 @@ def generate_commands(hlwm, length, steps_per_argument=2, prefix=[]):
     # otherwise
     completion_suggestions = set(proc.stdout.split('\n'))
     if generate_commands.commands_list <= completion_suggestions \
+            and len(generate_commands.commands_list) > 0 \
             and prefix != []:
         # if the commands are among the completions, then remove
         # all the commands except for 'true'
         completion_suggestions -= generate_commands.commands_list
         completion_suggestions.add('true ')
     for arg in completion_suggestions:
+        if arg == '':
+            # TODO: where does the empty string come from?
+            continue
         if arg.endswith(' '):
             arg = arg[0:-1]  # strip trailing ' '
             if arg in prefix:
@@ -114,6 +117,9 @@ def generate_commands(hlwm, length, steps_per_argument=2, prefix=[]):
                                               steps_per_argument,
                                               prefix + [a])
     return commands
+
+
+generate_commands.commands_list = set([])
 
 
 def test_generate_completable_commands(hlwm, request):
@@ -172,3 +178,20 @@ def test_completable_commands(hlwm, request, run_destructives):
 def test_inputless_commands(hlwm, name):
     assert hlwm.call_xfail_no_output('complete 1 ' + name) \
         .returncode == 7
+
+
+def test_remove_attr(hlwm):
+    attr_path = "monitors.my_test"
+    # assume you have a user-defined attribute
+    hlwm.call("new_attr bool " + attr_path)
+    hlwm.get_attr(attr_path)
+    # then run all the available command completions
+    cmds = generate_commands(hlwm,
+                             1,
+                             steps_per_argument=2,
+                             prefix=['remove_attr'])
+    for c in cmds:
+        hlwm.call(c)
+    # then expect that the attribute is gone
+    hlwm.call_xfail('get_attr ' + attr_path)
+
