@@ -66,7 +66,7 @@ def generate_command_argument(hlwm, command, argument_prefix, steps):
     return results
 
 
-def generate_commands(hlwm, length, steps_per_argument=2, prefix=[]):
+def generate_commands(hlwm, length, steps_per_argument=4, prefix=[]):
     """
     yield all commands of a given maximal length (plus the given prefix) that
     do not accept further arguments according to the completion.
@@ -125,7 +125,7 @@ generate_commands.commands_list = set([])
 def test_generate_completable_commands(hlwm, request):
     # run pytest with --cache-clear to force renewal
     if request.config.cache.get('all_completable_commands', None) is None:
-        cmds = generate_commands(hlwm, 2)
+        cmds = generate_commands(hlwm, 4)
         request.config.cache.set('all_completable_commands', cmds)
 
 
