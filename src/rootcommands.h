@@ -37,6 +37,7 @@ public:
     int sprintf_cmd(Input input, Output output);
     int new_attr_cmd(Input input, Output output);
     int remove_attr_cmd(Input input, Output output);
+    void remove_attr_complete(Completion& complete);
     int compare_cmd(Input input, Output output);
     static Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Output output);
     void completeObjectPath(Completion& complete, bool attributes = false,
