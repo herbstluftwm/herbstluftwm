@@ -1,5 +1,6 @@
 import pytest
 import shlex
+from time import sleep
 
 commands_without_input = shlex.split(
     """
@@ -85,8 +86,13 @@ def test_generate_completable_commands(hlwm, request):
 
 @pytest.mark.parametrize('run_destructives', [False, True])
 def test_completable_commands(hlwm, request, run_destructives):
-    commands = request.config.cache.get('all_completable_commands', None)
-    assert commands is not None, "command cache needs to be filled"
+    # wait for test_generate_completable_commands to finish
+    # Note that for run_destructives=True, we need a fresh hlwm
+    # instance.
+    commands = None
+    while commands is None:
+        commands = request.config.cache.get('all_completable_commands', None)
+        sleep(0.5)
     allowed_returncodes = {
         'false': {1},
         'close': {3},
