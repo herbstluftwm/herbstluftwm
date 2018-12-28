@@ -35,7 +35,39 @@ def command2str(command):
 #             ['true'],
 #         ], ids=command2str)
 
-def generate_commands(hlwm, length, steps_per_argument=5, prefix=[]):
+def generate_command_argument(hlwm, command, argument_prefix, steps):
+    """
+    generate the next argument of the command which has the given
+    argument_prefix.
+
+    This function makes at most 'step' many recursive calls.
+
+    It returns a list of full arguments starting with the argument_prefix.
+    """
+    if steps <= 0:
+        return []
+    if command == []:
+        return []
+    ignore_commands = ['keybind', 'mousebind']
+    if command[-1] in ignore_commands:
+        return []
+    hc_cmd = ['complete_shell', len(command)] + command + [argument_prefix]
+    print(str(hc_cmd))
+    proc = hlwm.unchecked_call(hc_cmd, log_output=False)
+    assert proc.returncode == 0, "completion failed for " + str(hc_cmd)
+    completion_suggestions = set(proc.stdout.split('\n'))
+    results = []
+    for arg in completion_suggestions:
+        if arg.endswith(' '):
+            results.append(arg[0:-1])
+        else:
+            if len(arg) <= len(argument_prefix):
+                continue
+            results += generate_command_argument(hlwm, command, arg, steps - 1)
+    return results
+
+
+def generate_commands(hlwm, length, steps_per_argument=2, prefix=[]):
     """
     yield all commands of a given maximal length (plus the given prefix) that
     do not accept further arguments according to the completion.
@@ -65,22 +97,29 @@ def generate_commands(hlwm, length, steps_per_argument=5, prefix=[]):
         completion_suggestions.add('true ')
     for arg in completion_suggestions:
         if arg.endswith(' '):
-            arg = [arg[0:-1]]
+            arg = arg[0:-1]  # strip trailing ' '
             if arg in prefix:
                 # ignore commands where the same flag is passed twice
                 continue
             commands += generate_commands(hlwm,
                                           length - 1,
                                           steps_per_argument,
-                                          prefix + arg)
-        # ignore partial completions for the moment
+                                          prefix + [arg])
+        else:
+            args = generate_command_argument(hlwm, prefix, arg,
+                                             steps_per_argument)
+            for a in args:
+                commands += generate_commands(hlwm,
+                                              length - 1,
+                                              steps_per_argument,
+                                              prefix + [a])
     return commands
 
 
 def test_generate_completable_commands(hlwm, request):
     # run pytest with --cache-clear to force renewal
     if request.config.cache.get('all_completable_commands', None) is None:
-        cmds = generate_commands(hlwm, 4)
+        cmds = generate_commands(hlwm, 2)
         request.config.cache.set('all_completable_commands', cmds)
 
 
