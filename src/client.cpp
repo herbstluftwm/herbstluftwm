@@ -633,7 +633,7 @@ Window get_window(const std::string& str) {
 
     // unmanaged window? try to convert from base 16 or base 10 at the same time
     try {
-        return std::stoul(str, nullptr, 0);
+        return std::stoul(str);
     } catch (std::invalid_argument const& e) {
         return 0;
     } catch (std::out_of_range const& e) {
