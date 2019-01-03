@@ -65,7 +65,8 @@ class HlwmBridge:
             if log_output:
                 print(f'Client command {args} {outcome} with output:\n{allout}')
             else:
-                print(f'Client command {args} {outcome} with output.')
+                print(f'Client command {args} {outcome} with output', end='')
+                print(' (output suppressed).')
         else:
             print(f'Client command {args} {outcome} (no output)')
         return proc
