@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_first_client_gets_focus(hlwm):
     hlwm.call_xfail('get_attr clients.focus.winid')
     client = hlwm.create_client()
@@ -25,5 +28,10 @@ def test_fullscreen_completion(hlwm):
 
 
 def test_close_without_clients(hlwm):
-    # close may return HERBST_INVALID_ARGUMENT if there is no window to close
-    assert hlwm.unchecked_call('close').returncode in [0, 3]
+    assert hlwm.unchecked_call('close').returncode == 3
+
+
+@pytest.mark.parametrize("running_clients_num", [1, 2, 3, 4])
+def test_close(hlwm, running_clients_num):
+    hlwm.create_clients(running_clients_num)
+    hlwm.call('close')
