@@ -4,15 +4,23 @@ from time import sleep
 
 commands_without_input = shlex.split(
     """
-        quit true false reload version
-        list_commands list_monitors
-        list_rules list_keybinds
-        lock unlock
-        close_or_remove close_and_remove
-        remove rotate
-        mouseunbind
-        use_previous
-        lock unlock
+    close_and_remove
+    close_or_remove
+    false
+    list_commands
+    list_keybinds
+    list_monitors
+    list_rules
+    lock
+    mouseunbind
+    quit
+    reload
+    remove
+    rotate
+    true
+    unlock
+    use_previous
+    version
     """)
 
 
@@ -176,6 +184,7 @@ def test_completable_commands(hlwm, request, run_destructives):
 
 @pytest.mark.parametrize('name', commands_without_input)
 def test_inputless_commands(hlwm, name):
+    # FIXME: document exit code. Here, 7 = NO_PARAMETER_EXPECTED
     assert hlwm.call_xfail_no_output('complete 1 ' + name) \
         .returncode == 7
 

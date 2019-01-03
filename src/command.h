@@ -51,9 +51,9 @@ public:
     {}
     // A command that doesn't have input
     CommandBinding(function<int(Output)> cmd);
-    // A command that doesn't have input or output
+    // A command that doesn't have input nor output
     CommandBinding(function<int()> cmd);
-    // A normal command and it's completion
+    // A regular command and its completion
     CommandBinding(function<int(Input, Output)> cmd,
                    function<void(Completion&)> completion)
         : command(cmd)
