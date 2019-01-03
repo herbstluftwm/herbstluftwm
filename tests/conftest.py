@@ -45,6 +45,7 @@ class HlwmBridge:
         return args
 
     def unchecked_call(self, cmd, log_output=True):
+        """call the command but do not check exit code or stderr"""
         args = self._parse_command(cmd)
 
         try:
@@ -70,6 +71,8 @@ class HlwmBridge:
         return proc
 
     def call(self, cmd):
+        """call the command and expect it to have exit code zero
+        and no output on stderr"""
         proc = self.unchecked_call(cmd)
         assert proc.returncode == 0
         assert not proc.stderr
