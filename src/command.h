@@ -53,7 +53,7 @@ public:
     CommandBinding(function<int(Output)> cmd);
     // A command that doesn't have input or output
     CommandBinding(function<int()> cmd);
-    // A normal command and it's completion
+    // A normal command and its completion
     CommandBinding(function<int(Input, Output)> cmd,
                    function<void(Completion&)> completion)
         : command(cmd)
