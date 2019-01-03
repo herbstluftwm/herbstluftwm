@@ -24,12 +24,12 @@ commands_without_input = shlex.split(
     """)
 
 
-def command2str(command):
-    s = ' '.join(command)
-    maxlen = 20
-    if len(s) > maxlen:
-        s = s[0:maxlen - 3] + '...'
-    return s
+# def command2str(command):
+#     s = ' '.join(command)
+#     maxlen = 20
+#     if len(s) > maxlen:
+#         s = s[0:maxlen - 3] + '...'
+#     return s
 
 
 # TODO: can we use something like this?
