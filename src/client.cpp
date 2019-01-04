@@ -414,8 +414,9 @@ Rectangle HSClient::outer_floating_rect() {
 }
 
 int close_command(Input input, Output) {
-    std::string winid;
-    auto window = get_window((input >> winid) ? winid : "");
+    std::string winid = "";
+    input >> winid; // try to read, use "" otherwise
+    auto window = get_window(winid);
     if (window != 0)
         window_close(window);
     else return HERBST_INVALID_ARGUMENT;
@@ -634,9 +635,7 @@ Window get_window(const std::string& str) {
     // unmanaged window? try to convert from base 16 or base 10 at the same time
     try {
         return std::stoul(str);
-    } catch (std::invalid_argument const& e) {
-        return 0;
-    } catch (std::out_of_range const& e) {
+    } catch (...) {
         return 0;
     }
 }
