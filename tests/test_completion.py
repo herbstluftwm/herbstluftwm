@@ -203,4 +203,3 @@ def test_remove_attr(hlwm):
         hlwm.call(c)
     # then expect that the attribute is gone
     hlwm.call_xfail('get_attr ' + attr_path)
-
