@@ -18,7 +18,7 @@ Input Input::fromHere()
 
 void Input::replace(const std::string &from, const std::string &to)
 {
-    for (auto &v : *c_)
+    for (auto &v : *container_)
         if (v == from)
             v = to;
 

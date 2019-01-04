@@ -3,20 +3,23 @@
 using namespace std;
 
 ArgList::ArgList(const std::initializer_list<std::string> &l)
-    : c_(std::make_shared<Container>(l)) { reset(); }
+    : container_(std::make_shared<Container>(l))
+{ reset(); }
 
-ArgList::ArgList(const ArgList::Container &c) : c_(std::make_shared<Container>(c)) { reset(); }
+ArgList::ArgList(const ArgList::Container &c)
+    : container_(std::make_shared<Container>(c))
+{ reset(); }
 
-ArgList::ArgList(const ArgList &al) : c_(al.c_) { reset(); }
+ArgList::ArgList(const ArgList &al) : container_(al.container_) { reset(); }
 
 ArgList::ArgList(const std::string &s, char delim) {
-    c_ = std::make_shared<Container>(split(s, delim));
+    container_ = std::make_shared<Container>(split(s, delim));
     reset();
 }
 
 ArgList::ArgList(Container::const_iterator from, Container::const_iterator to)
 {
-    c_ = std::make_shared<Container>(from, to);
+    container_ = std::make_shared<Container>(from, to);
     reset();
 }
 
@@ -47,7 +50,7 @@ std::string ArgList::join(ArgList::Container::const_iterator first,
     return tmp.str();
 }
 std::string ArgList::join(char delim) {
-    return join(begin_, c_->cend(), delim);
+    return join(begin_, container_->cend(), delim);
 }
 
 ArgList &ArgList::operator>>(string &val) {
