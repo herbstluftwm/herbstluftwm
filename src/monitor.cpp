@@ -493,22 +493,17 @@ int monitor_set_tag_by_index_command(int argc, char** argv, Output output) {
     return ret;
 }
 
-int monitor_set_previous_tag_command(int argc, char** argv, Output output) {
-    if (argc < 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
+int monitor_set_previous_tag_command(Output output) {
     HSMonitor* monitor = get_current_monitor();
     HSTag*  tag = monitor->tag_previous;
     if (monitor && tag) {
         int ret = monitor_set_tag(monitor, tag);
         if (ret != 0) {
-            output << argv[0] <<
-                    ": Could not change tag (maybe monitor is locked?)\n";
+            output << "use_previous: Could not change tag (maybe monitor is locked?)\n";
         }
         return ret;
     } else {
-        output << argv[0] <<
-                ": Invalid monitor or tag\n";
+        output << "use_previous: Invalid monitor or tag\n";
         return HERBST_INVALID_ARGUMENT;
     }
 }

@@ -337,7 +337,7 @@ static void key_list_binds_helper(KeyBinding* b, std::ostream* ptr_output) {
     output << "\n";
 }
 
-int key_list_binds(int argc, char** argv, Output output) {
+int key_list_binds(Output output) {
     g_list_foreach(g_key_binds, (GFunc)key_list_binds_helper, &output);
     return 0;
 }

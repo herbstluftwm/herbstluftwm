@@ -14,6 +14,12 @@ ArgList::ArgList(const std::string &s, char delim) {
     reset();
 }
 
+ArgList::ArgList(Container::const_iterator from, Container::const_iterator to)
+{
+    c_ = std::make_shared<Container>(from, to);
+    reset();
+}
+
 ArgList::Container ArgList::split(const std::string &s, char delim) {
     Container ret;
     std::stringstream tmp(s);

@@ -49,6 +49,16 @@ public:
         // Ignore the output parameter
         : command([cmd](Input args, Output) { return cmd(args); })
     {}
+    // A command that doesn't have input
+    CommandBinding(function<int(Output)> cmd);
+    // A command that doesn't have input nor output
+    CommandBinding(function<int()> cmd);
+    // A regular command and its completion
+    CommandBinding(function<int(Input, Output)> cmd,
+                   function<void(Completion&)> completion)
+        : command(cmd)
+        , completion_(completion)
+    {}
 
     /** Binding to a command in a given object, together with
      * a completion function in the same object
@@ -72,10 +82,6 @@ public:
     CommandBinding(int func(int argc, const char** argv, Output output));
     CommandBinding(int func(int argc, char** argv));
     CommandBinding(int func(int argc, const char** argv));
-    // Some functions take no arguments. I don't know if that's an accident,
-    // because int foo() in C++ doesn't mean "unspecified many". Anyway,
-    // CommandBinding(quit) doesn't typecheck without this constructor.
-    CommandBinding(int func());
 
     bool hasCompletion() const { return (bool)completion_; }
     void complete(Completion& completion) const;
@@ -113,6 +119,7 @@ namespace Commands {
     void initialize(unique_ptr<const CommandTable> commands);
     /* Call the command args[0] */
     int call(Input args, Output out);
+    void complete(Completion& completion);
     shared_ptr<const CommandTable> get();
 }
 
@@ -126,7 +133,7 @@ int call_command_no_output(int argc, char** argv)
    /* __attribute__((deprecated("Old C interface, use CommandTable"))) */;
 
 // commands
-int list_commands(int argc, char** argv, Output output);
+int list_commands(Output output);
 int complete_command(int argc, char** argv, Output output);
 
 void try_complete(const char* needle, std::string to_check, Output output);

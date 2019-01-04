@@ -5,7 +5,6 @@
 #include "client.h"
 #include "ipc-protocol.h"
 #include "hook.h"
-#include "command.h"
 
 #include <cstring>
 #include <cstdio>

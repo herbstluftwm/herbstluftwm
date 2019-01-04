@@ -26,7 +26,7 @@ public:
     void clearChildren();
     void ensure_monitors_are_available();
     HSMonitor* byString(std::string str);
-    int list_monitors(Input argv, Output output);
+    int list_monitors(Output output);
     int list_padding(Input input, Output output);
     int string_to_monitor_index(std::string string);
     HSMonitor* addMonitor(Rectangle rect, HSTag* tag);
@@ -45,8 +45,6 @@ public:
 
     void lock();
     void unlock();
-    int lock_cmd(Input, Output);
-    int unlock_cmd(Input, Output);
     std::string lock_number_changed();
 
     int cur_monitor;

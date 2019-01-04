@@ -139,7 +139,7 @@ int RuleManager::unruleCommand(Input input, Output output) {
 /*!
  * Implements the "list_rules" IPC command
  */
-int RuleManager::listRulesCommand(Input input, Output output) {
+int RuleManager::listRulesCommand(Output output) {
     for (auto rule : g_rules) {
         rule->print(output);
     }

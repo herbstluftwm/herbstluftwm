@@ -1457,7 +1457,7 @@ std::vector<HSClient*> HSFrameLeaf::removeAllClients() {
     return result;
 }
 
-int frame_remove_command(int argc, char** argv) {
+int frame_remove_command() {
     auto frame = HSFrame::getGloballyFocusedFrame();
     if (!frame->getParent()) {
         // do nothing if is toplevel frame
@@ -1481,18 +1481,18 @@ int frame_remove_command(int argc, char** argv) {
     return 0;
 }
 
-int close_or_remove_command(int argc, char** argv) {
+int close_or_remove_command() {
     HSClient* client = HSFrame::getGloballyFocusedFrame()->focusedClient();
     if (client) {
         window_close(client->x11Window());
         return 0;
     } else {
-        return frame_remove_command(argc, argv);
+        return frame_remove_command();
     }
 }
 
 // ET: same as close or remove but remove after last client
-int close_and_remove_command(int argc, char** argv) {
+int close_and_remove_command() {
     bool remove_after_close = false;
     auto cur_frame = HSFrame::getGloballyFocusedFrame();
     HSClient* client = cur_frame->focusedClient();
@@ -1504,13 +1504,13 @@ int close_and_remove_command(int argc, char** argv) {
         window_close(client->x11Window());
 
         if (remove_after_close) {
-            frame_remove_command(argc, argv);
+            frame_remove_command();
         }
 
         return 0;
 
     } else {
-        return frame_remove_command(argc, argv);
+        return frame_remove_command();
     }
 }
 

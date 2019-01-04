@@ -23,6 +23,7 @@
 #include "rootcommands.h"
 #include "tmp.h"
 #include "rulemanager.h"
+#include "completion.h"
 // standard
 #include <cstring>
 #include <cstdio>
@@ -60,8 +61,7 @@ static char**   g_exec_args = nullptr;
 typedef void (*HandlerTable[LASTEvent]) (Root*, XEvent*);
 
 int quit();
-int reload();
-int version(Input args, Output output);
+int version(Output output);
 int echo(int argc, char* argv[], Output output);
 int true_command();
 int false_command();
@@ -107,25 +107,26 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     Settings* settings = root->settings();
     Tmp* tmp = root->tmp();
     RuleManager* rules = root->rules();
-    return unique_ptr<CommandTable>(new CommandTable{
-        {"quit",           quit},
+    std::initializer_list<std::pair<const std::string,CommandBinding>> init =
+    {
+        {"quit",           { quit } },
         {"echo",           echo},
         {"true",           {[] { return 0; }}},
         {"false",          {[] { return 1; }}},
         {"try",            try_command},
         {"silent",         silent_command},
-        {"reload",         reload},
-        {"version",        version},
-        {"list_commands",  list_commands},
-        {"list_monitors",  BIND_OBJECT(monitors, list_monitors) },
+        {"reload",         {[] { execute_autostart_file(); return 0; }}},
+        {"version",        { version }},
+        {"list_commands",  { list_commands }},
+        {"list_monitors",  {[monitors] (Output o) { return monitors->list_monitors(o);}}},
         {"set_monitors",   set_monitor_rects_command},
         {"disjoin_rects",  disjoin_rects_command},
-        {"list_keybinds",  key_list_binds},
+        {"list_keybinds",  { key_list_binds }},
         {"list_padding",   monitors->byFirstArg(&HSMonitor::list_padding) },
         {"keybind",        keybind},
         {"keyunbind",      keyunbind},
         {"mousebind",      mouse_bind_command},
-        {"mouseunbind",    mouse_unbind_all},
+        {"mouseunbind",    { mouse_unbind_all }},
         {"spawn",          spawn},
         {"wmexec",         wmexec},
         {"emit_hook",      custom_hook_emit},
@@ -135,9 +136,9 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"cycle_all",      cycle_all_command},
         {"cycle_layout",   frame_current_cycle_client_layout},
         {"cycle_frame",    cycle_frame_command},
-        {"close",          close_command},
-        {"close_or_remove",close_or_remove_command},
-        {"close_and_remove",close_and_remove_command},
+        {"close",          { close_command }},
+        {"close_or_remove",{ close_or_remove_command }},
+        {"close_and_remove",{close_and_remove_command }},
         {"split",          frame_split_command},
         {"resize",         frame_change_fraction_command},
         {"focus_edge",     frame_focus_edge},
@@ -145,7 +146,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"shift_edge",     frame_move_window_edge},
         {"shift",          frame_move_window_command},
         {"shift_to_monitor",shift_to_monitor},
-        {"remove",         frame_remove_command},
+        {"remove",         { frame_remove_command }},
         {"set",            { settings, &Settings::set_cmd,
                                        &Settings::set_complete }},
         {"get",            { settings, &Settings::get_cmd,
@@ -159,7 +160,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"add",            BIND_OBJECT(tags, tag_add_command) },
         {"use",            monitor_set_tag_command},
         {"use_index",      monitor_set_tag_by_index_command},
-        {"use_previous",   monitor_set_previous_tag_command},
+        {"use_previous",   { monitor_set_previous_tag_command }},
         {"jumpto",         jumpto_command},
         {"floating",       tag_set_floating_command},
         {"fullscreen",     {clients, &ClientManager::fullscreen_cmd,
@@ -170,7 +171,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"merge_tag",      BIND_OBJECT(tags, removeTag)},
         {"rename",         BIND_OBJECT(tags, tag_rename_command) },
         {"move",           BIND_OBJECT(tags, tag_move_window_command) },
-        {"rotate",         layout_rotate_command},
+        {"rotate",         { layout_rotate_command }},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
         {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
         {"raise_monitor",  monitor_raise_command},
@@ -184,15 +185,15 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
                                    &RuleManager::addRuleCompletion}},
         {"unrule",         {rules, &RuleManager::unruleCommand,
                                    &RuleManager::unruleCompletion}},
-        {"list_rules",     BIND_OBJECT(rules, listRulesCommand)},
+        {"list_rules",     {[rules] (Output o) { return rules->listRulesCommand(o); }}},
         {"layout",         print_layout_command},
         {"stack",          print_stack_command},
         {"dump",           print_layout_command},
         {"load",           load_command},
         {"complete",       complete_command},
         {"complete_shell", complete_command},
-        {"lock",           BIND_OBJECT(monitors, lock_cmd) },
-        {"unlock",         BIND_OBJECT(monitors, unlock_cmd) },
+        {"lock",           { [monitors] { monitors->lock(); return 0; } }},
+        {"unlock",         { [monitors] { monitors->unlock(); return 0; } }},
         {"lock_tag",       monitors->byFirstArg(&HSMonitor::lock_tag_cmd) },
         {"unlock_tag",     monitors->byFirstArg(&HSMonitor::unlock_tag_cmd) },
         {"set_layout",     frame_current_set_client_layout},
@@ -218,7 +219,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"attr",           { root_commands, &RootCommands::attr_cmd,
                                             &RootCommands::attr_complete }},
         {"mktemp",         BIND_OBJECT(tmp, mktemp) },
-    });
+    };
+    return unique_ptr<CommandTable>(new CommandTable(init));
 }
 
 // core functions
@@ -227,13 +229,7 @@ int quit() {
     return 0;
 }
 
-// reload config
-int reload() {
-    execute_autostart_file();
-    return 0;
-}
-
-int version(Input, Output output) {
+int version(Output output) {
     output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << std::endl;
     output << "Copyright (c) 2011-2014 Thorsten Wißmann" << std::endl;
     output << "Released under the Simplified BSD License" << std::endl;
@@ -652,7 +648,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                 /* ignore recognized long option */
                 break;
             case 'v':
-                version({"version"}, std::cout);
+                version(std::cout);
                 exit(0);
             case 'c':
                 g_autostart_path = optarg;

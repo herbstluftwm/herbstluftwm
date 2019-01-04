@@ -69,33 +69,19 @@ struct {
                         /* if current pos >= min_index */
     bool    (*function)(int argc, char** argv, int pos);
 } g_parameter_expected[] = {
-    { "quit",           1,  no_completion },
-    { "reload",         1,  no_completion },
-    { "true",           1,  no_completion },
-    { "false",          1,  no_completion },
     { "!",              2,  parameter_expected_offset_1 },
     { "try",            2,  parameter_expected_offset_1 },
     { "silent",         2,  parameter_expected_offset_1 },
-    { "version",        1,  no_completion },
-    { "list_commands",  1,  no_completion },
-    { "list_monitors",  1,  no_completion },
-    { "list_keybinds",  1,  no_completion },
-    { "list_rules",     1,  no_completion },
-    { "lock",           1,  no_completion },
-    { "unlock",         1,  no_completion },
     { "keybind",        2,  parameter_expected_offset_2 },
     { "keyunbind",      2,  no_completion },
     { "mousebind",      3,  second_parameter_is_call },
     { "mousebind",      3,  parameter_expected_offset_3 },
-    { "mouseunbind",    1,  no_completion },
     { "focus_nth",      2,  no_completion },
+    { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
     { "cycle_all",      3,  no_completion },
     { "cycle_layout",   LAYOUT_COUNT+2, no_completion },
     { "set_layout",     2,  no_completion },
-    { "close",          1,  no_completion },
-    { "close_or_remove",1,  no_completion },
-    { "close_and_remove",1, no_completion },
     { "split",          3,  no_completion },
     { "focus",          3,  no_completion },
     { "focus",          2,  first_parameter_is_flag },
@@ -107,15 +93,12 @@ struct {
     { "shift_edge",     2,  no_completion },
     { "shift",          3,  no_completion },
     { "shift",          2,  first_parameter_is_flag },
-    { "remove",         1,  no_completion },
-    { "rotate",         1,  no_completion },
     { "cycle_monitor",  2,  no_completion },
     { "focus_monitor",  2,  no_completion },
     { "shift_to_monitor",2,  no_completion },
     { "add",            2,  no_completion },
     { "use",            2,  no_completion },
     { "use_index",      3,  no_completion },
-    { "use_previous",   1,  no_completion },
     { "merge_tag",      3,  no_completion },
     { "rename",         3,  no_completion },
     { "move",           2,  no_completion },
@@ -174,6 +157,7 @@ struct {
     { "and",            GE, 1,  complete_chain, 0 },
     { "bring",          EQ, 1,  nullptr, completion_special_winids },
     { "bring",          EQ, 1,  complete_against_winids, 0 },
+    { "close",          EQ, 1,  complete_against_winids, 0 },
     { "cycle",          EQ, 1,  nullptr, completion_pm_one },
     { "chain",          GE, 1,  complete_chain, 0 },
     { "cycle_all",      EQ, 1,  nullptr, completion_cycle_all_args },
@@ -261,6 +245,16 @@ struct {
 
 // Implementation of CommandBinding
 
+CommandBinding::CommandBinding(function<int(Output)> cmd)
+    : command([cmd](Input, Output output) { return cmd(output); })
+    , completion_([](Completion& c) { c.none(); })
+{}
+
+CommandBinding::CommandBinding(function<int()> cmd)
+    : command([cmd](Input, Output) { return cmd(); })
+    , completion_([](Completion& c) { c.none(); })
+{}
+
 // Nearly all of the following can go away, if all C-style command functions
 // have been migrated to int(Input, Output).
 
@@ -304,10 +298,6 @@ CommandBinding::CommandBinding(int func(int argc, const char** argv))
     : command(commandFromCFunc([func](int argc, char** argv, Output) {
                 return func(argc, const_cast<const char**>(argv));
             }))
-{}
-
-CommandBinding::CommandBinding(int func())
-    : command([func](Input, Output) { return func(); })
 {}
 
 
@@ -361,6 +351,28 @@ shared_ptr<const CommandTable> Commands::get() {
     return command_table;
 }
 
+void Commands::complete(Completion& completion) {
+    // wrap around complete_against_commands
+    // Once we have migrated all completions, we can implement command
+    // completion directly with the minimal interface that Completion provides.
+    // Then we can also unfriend this function from the Completion class.
+    char** argv = new char*[completion.args_.size() + 1];
+    argv[completion.args_.size()] = nullptr;
+    for (size_t i = 0; i < completion.args_.size(); i++) {
+        argv[i] = const_cast<char*>((completion.args_.begin() + i)->c_str());
+    }
+    int res = complete_against_commands(completion.args_.size(),
+                                        argv,
+                                        completion.index_,
+                                        completion.output_);
+    delete[] argv;
+    if (res == HERBST_NO_PARAMETER_EXPECTED) {
+        completion.noParameterExpected();
+    } else if (res != 0) {
+        completion.invalidArguments();
+    }
+}
+
 
 // Old C-ish interface to commands:
 
@@ -382,7 +394,7 @@ int call_command_no_output(int argc, char** argv) {
     return call_command(argc, argv, output);
 }
 
-int list_commands(int, char**, Output output)
+int list_commands(Output output)
 {
     for (auto cmd : *Commands::get()) {
         output << cmd.first << endl;
