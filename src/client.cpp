@@ -413,8 +413,10 @@ Rectangle HSClient::outer_floating_rect() {
     return dec.inner_to_outer(float_size_);
 }
 
-int close_command(int argc, char** argv, Output) {
-    auto window = get_window((argc > 1) ? argv[1] : "");
+int close_command(Input input, Output) {
+    std::string winid = "";
+    input >> winid; // try to read, use "" otherwise
+    auto window = get_window(winid);
     if (window != 0)
         window_close(window);
     else return HERBST_INVALID_ARGUMENT;
@@ -624,14 +626,18 @@ HSClient* get_client(const char* str) {
  *                  a decimal number its decimal window id.
  * \return          Window id, or 0, if unconvertable
  */
-Window get_window(const char* str) {
+Window get_window(const std::string& str) {
     // managed window?
-    auto client = get_client(str);
+    auto client = get_client(str.c_str());
     if (client)
         return client->window_;
 
     // unmanaged window? try to convert from base 16 or base 10 at the same time
-    return std::stoul(str, nullptr, 0);
+    try {
+        return std::stoul(str);
+    } catch (...) {
+        return 0;
+    }
 }
 
 // mainly from dwm.c

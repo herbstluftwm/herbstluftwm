@@ -258,6 +258,17 @@ int RootCommands::remove_attr_cmd(Input input, Output output)
     return 0;
 }
 
+void RootCommands::remove_attr_complete(Completion& complete) {
+    if (complete == 0) {
+        completeObjectPath(complete, true, [] (Attribute* a) {
+            return a->name().substr(0,strlen(USER_ATTRIBUTE_PREFIX)) 
+                    == USER_ATTRIBUTE_PREFIX;
+        });
+    } else {
+        complete.none();
+    }
+}
+
 template <typename T> int do_comparison(const T& a, const T& b) {
     return (a == b) ? 0 : 1;
 }

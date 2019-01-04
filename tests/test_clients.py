@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_first_client_gets_focus(hlwm):
     hlwm.call_xfail('get_attr clients.focus.winid')
     client = hlwm.create_client()
@@ -19,5 +22,16 @@ def test_alter_fullscreen(hlwm):
     hlwm.call('attr clients.focus.fullscreen toggle')
     assert hlwm.get_attr('clients.focus.fullscreen') == 'false'
 
+
 def test_fullscreen_completion(hlwm):
     assert hlwm.complete("fullscreen") == 'false off on toggle true'.split(' ')
+
+
+def test_close_without_clients(hlwm):
+    assert hlwm.unchecked_call('close').returncode == 3
+
+
+@pytest.mark.parametrize("running_clients_num", [1, 2, 3, 4])
+def test_close(hlwm, running_clients_num):
+    hlwm.create_clients(running_clients_num)
+    hlwm.call('close')

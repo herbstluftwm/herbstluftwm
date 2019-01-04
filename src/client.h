@@ -124,9 +124,9 @@ void reset_client_settings();
 HSClient* get_client_from_window(Window window);
 HSClient* get_current_client();
 HSClient* get_client(const char* str);
-Window get_window(const char* str);
+Window get_window(const std::string& str);
 
-int close_command(int argc, char** argv, Output output);
+int close_command(Input input, Output output);
 void window_close(Window window);
 
 // sets a client property, depending on argv[0]
