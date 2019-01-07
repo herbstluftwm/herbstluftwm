@@ -7,3 +7,5 @@ if (ENABLE_CCACHE)
     set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
     set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
 endif()
+
+# vim: et:ts=4:sw=4
