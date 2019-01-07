@@ -11,6 +11,7 @@
 #include "stack.h"
 #include "mouse.h"
 #include "monitor.h"
+#include "rulemanager.h"
 #include "tag.h"
 #include "layout.h"
 #include "ipc-protocol.h"
@@ -101,8 +102,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     HSMonitor* m = get_current_monitor();
 
     // apply rules
-    HSClientChanges changes(client);
-    rules_apply(client, &changes);
+    HSClientChanges changes = Root::get()->rules()->evaluateRules(client);
     if (!changes.tag_name.empty()) {
         client->setTag(find_tag(changes.tag_name.c_str()));
     }

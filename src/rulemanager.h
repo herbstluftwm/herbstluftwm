@@ -15,6 +15,7 @@ public:
     int unruleCommand(Input input, Output output);
     void unruleCompletion(Completion& complete);
     int listRulesCommand(Output output);
+    HSClientChanges evaluateRules(HSClient* client);
 
 private:
     size_t removeRule(std::string label);
