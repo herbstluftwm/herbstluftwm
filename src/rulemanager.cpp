@@ -209,3 +209,58 @@ void RuleManager::addRuleCompletion(Completion& complete) {
 }
 
 
+//! Evaluate rules against a given client
+HSClientChanges RuleManager::evaluateRules(HSClient* client) {
+    HSClientChanges changes(client);
+
+    auto ruleIter = g_rules.begin();
+    while (ruleIter != g_rules.end()) {
+        auto rule = *ruleIter;
+        bool matches = true;    // if current condition matches
+        bool rule_match = true; // if entire rule matches
+        bool rule_expired = false;
+
+        // check all conditions
+        for (auto& cond : rule->conditions) {
+            if (!rule_match && cond.name != "maxage") {
+                // implement lazy AND &&
+                // ... except for maxage
+                continue;
+            }
+
+            matches = HSCondition::matchers.at(cond.name)(&cond, client);
+
+            if (!matches && !cond.negated
+                && cond.name == "maxage") {
+                // if if not negated maxage does not match anymore
+                // then it will never match again in the future
+                rule_expired = true;
+            }
+
+            if (cond.negated) {
+                matches = ! matches;
+            }
+            rule_match = rule_match && matches;
+        }
+
+        if (rule_match) {
+            // apply all consequences
+            for (auto& cons : rule->consequences) {
+                HSConsequence::appliers.at(cons.name)(&cons, client, &changes);
+            }
+        }
+
+        // remove it if not wanted or needed anymore
+        if ((rule_match && rule->once) || rule_expired) {
+            delete rule;
+            ruleIter = g_rules.erase(ruleIter);
+        } else {
+            // try next
+            ruleIter++;
+        }
+    }
+
+    return changes;
+}
+
+
