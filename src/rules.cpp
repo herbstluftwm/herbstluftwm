@@ -38,8 +38,6 @@ const std::map<std::string, std::function<bool(HSCondition * ,HSClient*)>> HSCon
     { "windowrole",     &HSCondition::matchesWindowrole        },
 };
 
-static time_t  g_current_rule_birth_time; // data from rules_apply() to condition_maxage()
-
 const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClientChanges*)>> HSConsequence::appliers = {
     { "tag",            &HSConsequence::applyTag             },
     { "index",          &HSConsequence::applyIndex           },
@@ -72,6 +70,8 @@ void rules_destroy() {
 bool HSRule::addCondition(std::string name, char op, const char* value, bool negated, Output output) {
     HSCondition cond;
     cond.negated = negated;
+
+    cond.conditionCreationTime = get_monotonic_timestamp();
 
     if (op != '=' && name == "maxage") {
         output << "rule: Condition maxage only supports the = operator\n";
@@ -207,7 +207,6 @@ void rules_apply(HSClient* client, HSClientChanges* changes) {
         bool matches = true;    // if current condition matches
         bool rule_match = true; // if entire rule matches
         bool rule_expired = false;
-        g_current_rule_birth_time = rule->birth_time;
 
         // check all conditions
         for (auto& cond : rule->conditions) {
@@ -302,7 +301,7 @@ bool HSCondition::matchesPid(HSClient* client) {
 }
 
 bool HSCondition::matchesMaxage(HSClient* client) {
-    time_t diff = get_monotonic_timestamp() - g_current_rule_birth_time;
+    time_t diff = get_monotonic_timestamp() - conditionCreationTime;
     return (value_integer >= diff);
 }
 

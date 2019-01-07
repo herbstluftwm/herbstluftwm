@@ -5,6 +5,7 @@
 #include <regex>
 
 #include "types.h"
+#include "utils.h"
 
 class HSClient;
 
@@ -31,6 +32,15 @@ public:
     int value_integer;
     std::regex value_reg_exp;
     std::string value_reg_str;
+
+    /*! Timestamp of when this condition (i.e. rule) was created, which is
+     * needed for the maxage matcher.
+     *
+     * (KISS: Storing this for all conditions saves us from needing an entire
+     * class hierarchy of specialized conditions/matchers, or extending all
+     * matcher signatures.)
+     */
+    time_t conditionCreationTime;
 
 private:
     bool matchesClass(HSClient* client);
