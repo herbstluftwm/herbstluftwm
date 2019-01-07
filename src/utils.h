@@ -138,5 +138,15 @@ char* posix_sh_escape(const char* source);
 // does the reverse action to posix_sh_escape by modifing the string
 void posix_sh_compress_inplace(char* str);
 
+
+/**
+ *  Substitute for std::make_unique in C++11
+ */
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args)
+{
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 #endif
 
