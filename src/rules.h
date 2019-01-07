@@ -115,6 +115,5 @@ public:
 
 void rules_init();
 void rules_destroy();
-void rules_apply(HSClient* client, HSClientChanges* changes);
 
 #endif
