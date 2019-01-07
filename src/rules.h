@@ -43,13 +43,13 @@ public:
     time_t conditionCreationTime;
 
 private:
-    bool matchesClass(HSClient* client);
-    bool matchesInstance(HSClient* client);
-    bool matchesTitle(HSClient* client);
-    bool matchesPid(HSClient* client);
-    bool matchesMaxage(HSClient* client);
-    bool matchesWindowtype(HSClient* client);
-    bool matchesWindowrole(HSClient* client);
+    bool matchesClass(const HSClient* client);
+    bool matchesInstance(const HSClient* client);
+    bool matchesTitle(const HSClient* client);
+    bool matchesPid(const HSClient* client);
+    bool matchesMaxage(const HSClient* client);
+    bool matchesWindowtype(const HSClient* client);
+    bool matchesWindowrole(const HSClient* client);
 
     bool matches(const std::string& string);
 };

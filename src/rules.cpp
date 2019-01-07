@@ -219,25 +219,25 @@ bool HSCondition::matches(const std::string& string) {
     return false;
 }
 
-bool HSCondition::matchesClass(HSClient* client) {
+bool HSCondition::matchesClass(const HSClient* client) {
     GString* window_class = window_class_to_g_string(g_display, client->window_);
     bool match = matches(window_class->str);
     g_string_free(window_class, true);
     return match;
 }
 
-bool HSCondition::matchesInstance(HSClient* client) {
+bool HSCondition::matchesInstance(const HSClient* client) {
     GString* inst = window_instance_to_g_string(g_display, client->window_);
     bool match = matches(inst->str);
     g_string_free(inst, true);
     return match;
 }
 
-bool HSCondition::matchesTitle(HSClient* client) {
+bool HSCondition::matchesTitle(const HSClient* client) {
     return matches(client->title_());
 }
 
-bool HSCondition::matchesPid(HSClient* client) {
+bool HSCondition::matchesPid(const HSClient* client) {
     if (client->pid_ < 0) {
         return false;
     }
@@ -250,12 +250,12 @@ bool HSCondition::matchesPid(HSClient* client) {
     }
 }
 
-bool HSCondition::matchesMaxage(HSClient* client) {
+bool HSCondition::matchesMaxage(const HSClient* client) {
     time_t diff = get_monotonic_timestamp() - conditionCreationTime;
     return (value_integer >= diff);
 }
 
-bool HSCondition::matchesWindowtype(HSClient* client) {
+bool HSCondition::matchesWindowtype(const HSClient* client) {
     // that only works for atom-type utf8-string, _NET_WM_WINDOW_TYPE is int
     //  GString* wintype=
     //      window_property_to_g_string(g_display, client->window, wintype_atom);
@@ -307,7 +307,7 @@ bool HSCondition::matchesWindowtype(HSClient* client) {
     return false;
 }
 
-bool HSCondition::matchesWindowrole(HSClient* client) {
+bool HSCondition::matchesWindowrole(const HSClient* client) {
     GString* role = window_property_to_g_string(g_display, client->window_,
         ATOM("WM_WINDOW_ROLE"));
     if (!role) return false;
