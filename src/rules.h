@@ -112,8 +112,4 @@ public:
     void print(Output output);
 };
 
-
-void rules_init();
-void rules_destroy();
-
 #endif

@@ -53,20 +53,6 @@ const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClie
     { "monitor",        &HSConsequence::applyMonitor         },
 };
 
-std::list<HSRule *> g_rules;
-
-/// FUNCTIONS ///
-// RULES //
-void rules_init() {
-}
-
-void rules_destroy() {
-    for (auto rule : g_rules) {
-        delete rule;
-    }
-    g_rules.clear();
-}
-
 bool HSRule::addCondition(std::string name, char op, const char* value, bool negated, Output output) {
     HSCondition cond;
     cond.negated = negated;

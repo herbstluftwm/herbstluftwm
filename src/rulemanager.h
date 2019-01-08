@@ -1,12 +1,11 @@
 #pragma once
 
 #include <list>
+#include <memory>
 
 #include "object.h"
 #include "rules.h"
 
-// TODO: Turn this into a private member of RuleManager after the transition:
-extern std::list<HSRule *> g_rules;
 
 class RuleManager : public Object {
 public:
@@ -23,4 +22,7 @@ private:
 
     //! Ever-incrementing index for labeling new rules
     unsigned long long rule_label_index_ = 0;
+
+    //! Currently active rules
+    std::list<std::unique_ptr<HSRule>> rules_;
 };

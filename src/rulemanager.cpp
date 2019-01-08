@@ -2,8 +2,9 @@
 
 #include <cstring>
 
-#include "ipc-protocol.h"
 #include "completion.h"
+#include "ipc-protocol.h"
+#include "utils.h"
 
 
 /*!
@@ -103,8 +104,8 @@ int RuleManager::addRuleCommand(Input input, Output output) {
     rule_label_index_++;
 
     // Insert rule into list according to "prepend" flag
-    auto insertAt = ruleFlags["prepend"] ? g_rules.begin() : g_rules.end();
-    g_rules.insert(insertAt, new HSRule(rule));
+    auto insertAt = ruleFlags["prepend"] ? rules_.begin() : rules_.end();
+    rules_.insert(insertAt, make_unique<HSRule>(rule));
 
     return HERBST_EXIT_SUCCESS;
 }
@@ -118,11 +119,7 @@ int RuleManager::unruleCommand(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
 
     if (arg == "--all" || arg == "-F") {
-        // Remove all rules
-        for (auto rule : g_rules) {
-            delete rule;
-        }
-        g_rules.clear();
+        rules_.clear();
         rule_label_index_ = 0;
     } else {
         // Remove rule specified by argument
@@ -140,7 +137,7 @@ int RuleManager::unruleCommand(Input input, Output output) {
  * Implements the "list_rules" IPC command
  */
 int RuleManager::listRulesCommand(Output output) {
-    for (auto rule : g_rules) {
+    for (auto& rule : rules_) {
         rule->print(output);
     }
 
@@ -153,23 +150,19 @@ int RuleManager::listRulesCommand(Output output) {
  * \returns number of removed rules
  */
 size_t RuleManager::removeRule(std::string label) {
-    size_t removedCount = 0;
+    auto countBefore = rules_.size();
 
-    // Note: This ugly loop can be replaced by a single std::erase statement
-    // once g_rules is a container of unique pointers.
-    auto ruleIter = g_rules.begin();
-    while (ruleIter != g_rules.end()) {
-        auto rule = *ruleIter;
-        if (rule->label == label) {
-            delete rule;
-            removedCount++;
-            ruleIter = g_rules.erase(ruleIter);
+    for (auto ruleIter = rules_.begin(); ruleIter != rules_.end();) {
+        if ((*ruleIter)->label == label) {
+            ruleIter = rules_.erase(ruleIter);
         } else {
             ruleIter++;
         }
     }
 
-    return removedCount;
+    auto countAfter = rules_.size();
+
+    return countAfter - countBefore;
 }
 
 std::tuple<std::string, char, std::string> RuleManager::tokenize_arg(std::string arg) {
@@ -190,7 +183,7 @@ std::tuple<std::string, char, std::string> RuleManager::tokenize_arg(std::string
 
 void RuleManager::unruleCompletion(Completion& complete) {
     complete.full({ "-F", "--all" });
-    for (auto& it : g_rules) {
+    for (auto& it : rules_) {
         complete.full(it->label);
     }
 }
@@ -213,9 +206,9 @@ void RuleManager::addRuleCompletion(Completion& complete) {
 HSClientChanges RuleManager::evaluateRules(HSClient* client) {
     HSClientChanges changes(client);
 
-    auto ruleIter = g_rules.begin();
-    while (ruleIter != g_rules.end()) {
-        auto rule = *ruleIter;
+    auto ruleIter = rules_.begin();
+    while (ruleIter != rules_.end()) {
+        auto& rule = *ruleIter;
         bool matches = true;    // if current condition matches
         bool rule_match = true; // if entire rule matches
         bool rule_expired = false;
@@ -252,8 +245,7 @@ HSClientChanges RuleManager::evaluateRules(HSClient* client) {
 
         // remove it if not wanted or needed anymore
         if ((rule_match && rule->once) || rule_expired) {
-            delete rule;
-            ruleIter = g_rules.erase(ruleIter);
+            ruleIter = rules_.erase(ruleIter);
         } else {
             // try next
             ruleIter++;
