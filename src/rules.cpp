@@ -319,8 +319,8 @@ void HSConsequence::applyIndex(const HSClient* client, HSClientChanges* changes)
     changes->tree_index = value;
 }
 
-void HSConsequence::applyPseudotile(HSClient* client, HSClientChanges* changes) const {
-    client->pseudotile_ = string_to_bool(value, client->pseudotile_);
+void HSConsequence::applyPseudotile(const HSClient* client, HSClientChanges* changes) const {
+    changes->pseudotile = string_to_bool(value, client->pseudotile_);
 }
 
 void HSConsequence::applyFullscreen(const HSClient* client, HSClientChanges* changes) const {

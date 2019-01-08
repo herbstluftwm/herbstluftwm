@@ -6,6 +6,7 @@
 
 #include "types.h"
 #include "utils.h"
+#include "optional.h"
 
 class HSClient;
 
@@ -71,6 +72,8 @@ public:
     bool            manage = true; // whether we should manage it
     bool            fullscreen;
     std::string     keymask; // Which keymask rule should be applied for this client
+
+    std::experimental::optional<int> pseudotile;
 };
 
 class HSConsequence {
