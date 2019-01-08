@@ -25,12 +25,6 @@ const std::array<const char*, LAYER_COUNT>g_layer_names =
      { LAYER_FRAMES      , "Frame Layer"      },
 }).a;
 
-void stacklist_init() {
-}
-
-void stacklist_destroy() {
-}
-
 HSStack::~HSStack() {
     for (int i = 0; i < LAYER_COUNT; i++) {
         if (!top[i].empty()) {
