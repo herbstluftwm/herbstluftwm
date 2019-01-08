@@ -92,7 +92,7 @@ private:
     void applyFocus(const HSClient* client, HSClientChanges* changes) const;
     void applySwitchtag(const HSClient* client, HSClientChanges* changes) const;
     void applyManage(const HSClient* client, HSClientChanges* changes) const;
-    void applyPseudotile(HSClient* client, HSClientChanges* changes) const;
+    void applyPseudotile(const HSClient* client, HSClientChanges* changes) const;
     void applyFullscreen(const HSClient* client, HSClientChanges* changes) const;
     void applyEwmhrequests(HSClient* client, HSClientChanges* changes) const;
     void applyEwmhnotify(HSClient* client, HSClientChanges* changes) const;
