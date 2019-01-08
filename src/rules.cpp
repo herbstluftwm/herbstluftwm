@@ -28,7 +28,7 @@ typedef struct {
 
 /// GLOBALS ///
 
-const std::map<std::string, std::function<bool(HSCondition * ,HSClient*)>> HSCondition::matchers = {
+const std::map<std::string, HSCondition::Matcher> HSCondition::matchers = {
     { "class",          &HSCondition::matchesClass             },
     { "instance",       &HSCondition::matchesInstance          },
     { "title",          &HSCondition::matchesTitle             },
