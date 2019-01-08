@@ -17,7 +17,7 @@ public:
     HSClientChanges evaluateRules(HSClient* client);
 
 private:
-    size_t removeRule(std::string label);
+    size_t removeRules(std::string label);
     std::tuple<std::string, char, std::string> tokenize_arg(std::string arg);
 
     //! Ever-incrementing index for labeling new rules
