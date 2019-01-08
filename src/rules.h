@@ -73,7 +73,7 @@ public:
     bool            fullscreen;
     std::string     keymask; // Which keymask rule should be applied for this client
 
-    std::experimental::optional<int> pseudotile;
+    std::experimental::optional<bool> pseudotile;
 };
 
 class HSConsequence {
