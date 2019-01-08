@@ -22,7 +22,8 @@ enum {
 class HSCondition {
 public:
 
-    static const std::map<std::string, std::function<bool(HSCondition *, HSClient*)>> matchers;
+    using Matcher = std::function<bool(const HSCondition*, const HSClient*)>;
+    static const std::map<std::string, Matcher> matchers;
 
     std::string name;
     int value_type;
@@ -43,15 +44,15 @@ public:
     time_t conditionCreationTime;
 
 private:
-    bool matchesClass(HSClient* client);
-    bool matchesInstance(HSClient* client);
-    bool matchesTitle(HSClient* client);
-    bool matchesPid(HSClient* client);
-    bool matchesMaxage(HSClient* client);
-    bool matchesWindowtype(HSClient* client);
-    bool matchesWindowrole(HSClient* client);
+    bool matchesClass(const HSClient* client) const;
+    bool matchesInstance(const HSClient* client) const;
+    bool matchesTitle(const HSClient* client) const;
+    bool matchesPid(const HSClient* client) const;
+    bool matchesMaxage(const HSClient* client) const;
+    bool matchesWindowtype(const HSClient* client) const;
+    bool matchesWindowrole(const HSClient* client) const;
 
-    bool matches(const std::string& string);
+    bool matches(const std::string& string) const;
 };
 
 class HSClientChanges {
