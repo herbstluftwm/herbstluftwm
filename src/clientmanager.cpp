@@ -119,6 +119,10 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
         }
     }
 
+    if (changes.pseudotile.has_value()) {
+        client->pseudotile_ = changes.pseudotile.value();
+    }
+
     // Reuse the keymask string
     client->keymask_ = changes.keymask;
 
