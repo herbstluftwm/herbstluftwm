@@ -186,7 +186,7 @@ HSClientChanges::HSClientChanges(HSClient *client)
 {}
 
 /// CONDITIONS ///
-bool HSCondition::matches(const std::string& string) {
+bool HSCondition::matches(const std::string& string) const {
     switch (value_type) {
         case CONDITION_VALUE_TYPE_STRING:
             return value_str == string;
@@ -205,25 +205,25 @@ bool HSCondition::matches(const std::string& string) {
     return false;
 }
 
-bool HSCondition::matchesClass(const HSClient* client) {
+bool HSCondition::matchesClass(const HSClient* client) const {
     GString* window_class = window_class_to_g_string(g_display, client->window_);
     bool match = matches(window_class->str);
     g_string_free(window_class, true);
     return match;
 }
 
-bool HSCondition::matchesInstance(const HSClient* client) {
+bool HSCondition::matchesInstance(const HSClient* client) const {
     GString* inst = window_instance_to_g_string(g_display, client->window_);
     bool match = matches(inst->str);
     g_string_free(inst, true);
     return match;
 }
 
-bool HSCondition::matchesTitle(const HSClient* client) {
+bool HSCondition::matchesTitle(const HSClient* client) const {
     return matches(client->title_());
 }
 
-bool HSCondition::matchesPid(const HSClient* client) {
+bool HSCondition::matchesPid(const HSClient* client) const {
     if (client->pid_ < 0) {
         return false;
     }
@@ -236,12 +236,12 @@ bool HSCondition::matchesPid(const HSClient* client) {
     }
 }
 
-bool HSCondition::matchesMaxage(const HSClient* client) {
+bool HSCondition::matchesMaxage(const HSClient* client) const {
     time_t diff = get_monotonic_timestamp() - conditionCreationTime;
     return (value_integer >= diff);
 }
 
-bool HSCondition::matchesWindowtype(const HSClient* client) {
+bool HSCondition::matchesWindowtype(const HSClient* client) const {
     // that only works for atom-type utf8-string, _NET_WM_WINDOW_TYPE is int
     //  GString* wintype=
     //      window_property_to_g_string(g_display, client->window, wintype_atom);
@@ -293,7 +293,7 @@ bool HSCondition::matchesWindowtype(const HSClient* client) {
     return false;
 }
 
-bool HSCondition::matchesWindowrole(const HSClient* client) {
+bool HSCondition::matchesWindowrole(const HSClient* client) const {
     GString* role = window_property_to_g_string(g_display, client->window_,
         ATOM("WM_WINDOW_ROLE"));
     if (!role) return false;
