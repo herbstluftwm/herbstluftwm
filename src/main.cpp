@@ -10,7 +10,6 @@
 #include "settings.h"
 #include "hook.h"
 #include "mouse.h"
-#include "rules.h"
 #include "ewmh.h"
 #include "stack.h"
 #include "client.h"
