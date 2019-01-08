@@ -7,7 +7,7 @@
 #include "glib-backports.h"
 #include <memory>
 
-class HSStack;
+class Stack;
 class HSFrame;
 class Settings;
 
@@ -24,7 +24,7 @@ public:
     DynAttribute_<int> curframe_windex;
     DynAttribute_<int> curframe_wcount;
     int             flags;
-    std::shared_ptr<HSStack> stack;
+    std::shared_ptr<Stack> stack;
     void setIndexAttribute(unsigned long new_index) override;
 private:
     //! get the number of clients on this tag

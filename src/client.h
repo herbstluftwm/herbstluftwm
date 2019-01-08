@@ -27,7 +27,7 @@ public:
     Attribute_<bool> urgent_ = {"urgent", false};
     Attribute_<bool> fullscreen_ = {"fullscreen", false};
     Attribute_<std::string> title_ = {"title", {}};  // or also called window title; this is never NULL
-    struct HSSlice* slice = {};
+    struct Slice* slice = {};
     Rectangle   last_size_;      // last size excluding the window border
     Attribute_<std::string> window_id_str = {"winid", {}};
 

@@ -23,32 +23,32 @@ typedef enum SliceType {
     SLICE_CLIENT,
     SLICE_WINDOW,
     SLICE_MONITOR,
-} HSSliceType;
+} SliceType;
 
 class HSClient;
 class HSMonitor;
 
-typedef struct HSSlice {
-    HSSliceType type;
+typedef struct Slice {
+    SliceType type;
     std::set<HSLayer> layers; //!< layers this slice is contained in
     union {
         HSClient*    client;
         Window              window;
         HSMonitor*          monitor;
     } data;
-} HSSlice;
+} Slice;
 
-class HSStack {
+class Stack {
 public:
-    HSStack() = default;
-    ~HSStack();
+    Stack() = default;
+    ~Stack();
 
-    void insert_slice(HSSlice* elem);
-    void remove_slice(HSSlice* elem);
-    void raise_slide(HSSlice* slice);
+    void insert_slice(Slice* elem);
+    void remove_slice(Slice* elem);
+    void raise_slide(Slice* slice);
     void mark_dirty();
-    void slice_add_layer(HSSlice* slice, HSLayer layer);
-    void slice_remove_layer(HSSlice* slice, HSLayer layer);
+    void slice_add_layer(Slice* slice, HSLayer layer);
+    void slice_remove_layer(Slice* slice, HSLayer layer);
     bool is_layer_empty(HSLayer layer);
     void clear_layer(HSLayer layer);
 
@@ -58,7 +58,7 @@ public:
     void restack();
     Window lowest_window();
 
-    std::vector<HSSlice*> top[LAYER_COUNT];
+    std::vector<Slice*> top[LAYER_COUNT];
 
 private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
@@ -67,12 +67,12 @@ private:
 void stacklist_init();
 void stacklist_destroy();
 
-HSSlice* slice_create_window(Window window);
-HSSlice* slice_create_frame(Window window);
-HSSlice* slice_create_client(HSClient* client);
-HSSlice* slice_create_monitor(HSMonitor* monitor);
-void slice_destroy(HSSlice* slice);
-HSLayer slice_highest_layer(HSSlice* slice);
+Slice* slice_create_window(Window window);
+Slice* slice_create_frame(Window window);
+Slice* slice_create_client(HSClient* client);
+Slice* slice_create_monitor(HSMonitor* monitor);
+void slice_destroy(Slice* slice);
+HSLayer slice_highest_layer(Slice* slice);
 
 int print_stack_command(int argc, char** argv, Output output);
 

@@ -14,8 +14,8 @@
 #include <iomanip>
 
 
-static struct HSTreeInterface stack_nth_child(std::shared_ptr<HSStack> root, size_t idx);
-static size_t                  stack_child_count(std::shared_ptr<HSStack> root);
+static struct HSTreeInterface stack_nth_child(std::shared_ptr<Stack> root, size_t idx);
+static size_t                  stack_child_count(std::shared_ptr<Stack> root);
 
 const std::array<const char*, LAYER_COUNT>g_layer_names =
     ArrayInitializer<const char*, LAYER_COUNT>({
@@ -31,7 +31,7 @@ void stacklist_init() {
 void stacklist_destroy() {
 }
 
-HSStack::~HSStack() {
+Stack::~Stack() {
     for (int i = 0; i < LAYER_COUNT; i++) {
         if (!top[i].empty()) {
             HSDebug("Warning: %s of stack %p was not empty on destroy\n",
@@ -40,46 +40,46 @@ HSStack::~HSStack() {
     }
 }
 
-static HSSlice* slice_create() {
-    HSSlice* s = new HSSlice();
+static Slice* slice_create() {
+    Slice* s = new Slice();
     s->layers.insert(LAYER_NORMAL);
     return s;
 }
 
-HSSlice* slice_create_window(Window window) {
-    HSSlice* s = slice_create();
+Slice* slice_create_window(Window window) {
+    Slice* s = slice_create();
     s->type = SLICE_WINDOW;
     s->data.window = window;
     return s;
 }
 
-HSSlice* slice_create_frame(Window window) {
-    HSSlice* s = slice_create_window(window);
+Slice* slice_create_frame(Window window) {
+    Slice* s = slice_create_window(window);
     s->layers.clear();
     s->layers.insert(LAYER_FRAMES);
     return s;
 }
 
 
-HSSlice* slice_create_client(HSClient* client) {
-    HSSlice* s = slice_create();
+Slice* slice_create_client(HSClient* client) {
+    Slice* s = slice_create();
     s->type = SLICE_CLIENT;
     s->data.client = client;
     return s;
 }
 
-HSSlice* slice_create_monitor(HSMonitor* monitor) {
-    HSSlice* s = slice_create();
+Slice* slice_create_monitor(HSMonitor* monitor) {
+    Slice* s = slice_create();
     s->type = SLICE_MONITOR;
     s->data.monitor = monitor;
     return s;
 }
 
-void slice_destroy(HSSlice* slice) {
+void slice_destroy(Slice* slice) {
     delete slice;
 }
 
-HSLayer slice_highest_layer(HSSlice* slice) {
+HSLayer slice_highest_layer(Slice* slice) {
     if (slice->layers.empty()) {
         return LAYER_COUNT;
     } else {
@@ -87,14 +87,14 @@ HSLayer slice_highest_layer(HSSlice* slice) {
     }
 }
 
-void HSStack::insert_slice(HSSlice* elem) {
+void Stack::insert_slice(Slice* elem) {
     for (auto layer : elem->layers) {
         top[layer].insert(top[layer].begin(), elem);
     }
     dirty = true;
 }
 
-void HSStack::remove_slice(HSSlice* elem) {
+void Stack::remove_slice(Slice* elem) {
     for (auto layer : elem->layers) {
         auto &v = top[layer];
         v.erase(std::remove(v.begin(), v.end(), elem));
@@ -103,7 +103,7 @@ void HSStack::remove_slice(HSSlice* elem) {
 }
 
 static void slice_append_caption(HSTree root, Output output) {
-    HSSlice* slice = (HSSlice*)root;
+    Slice* slice = (Slice*)root;
     GString* monitor_name = g_string_new("");
     switch (slice->type) {
         case SLICE_WINDOW:
@@ -131,13 +131,13 @@ static void slice_append_caption(HSTree root, Output output) {
 }
 
 static struct HSTreeInterface slice_nth_child(HSTree root, size_t idx) {
-    HSSlice* slice = (HSSlice*)root;
+    Slice* slice = (Slice*)root;
     assert(slice->type == SLICE_MONITOR);
     return stack_nth_child(slice->data.monitor->tag->stack, idx);
 }
 
 static size_t slice_child_count(HSTree root) {
-    HSSlice* slice = (HSSlice*)root;
+    Slice* slice = (Slice*)root;
     if (slice->type == SLICE_MONITOR) {
         return stack_child_count(slice->data.monitor->tag->stack);
     } else {
@@ -146,13 +146,13 @@ static size_t slice_child_count(HSTree root) {
 }
 
 struct TmpLayer {
-    HSStack* stack;
+    Stack* stack;
     HSLayer    layer;
 };
 
 static struct HSTreeInterface layer_nth_child(HSTree root, size_t idx) {
     struct TmpLayer* l = (struct TmpLayer*) root;
-    HSSlice* slice = l->stack->top[l->layer].at(idx);
+    Slice* slice = l->stack->top[l->layer].at(idx);
     HSTreeInterface intface = {
         /* .nth_child      = */ slice_nth_child,
         /* .child_count    = */ slice_child_count,
@@ -174,7 +174,7 @@ static void layer_append_caption(HSTree root, Output output) {
 }
 
 
-static struct HSTreeInterface stack_nth_child(std::shared_ptr<HSStack> root, size_t idx) {
+static struct HSTreeInterface stack_nth_child(std::shared_ptr<Stack> root, size_t idx) {
     struct TmpLayer* l = g_new(struct TmpLayer, 1);
     l->stack = root.get(); // TODO: Turn lhs of this assignment into a shared_ptr
     l->layer = (HSLayer) idx;
@@ -189,7 +189,7 @@ static struct HSTreeInterface stack_nth_child(std::shared_ptr<HSStack> root, siz
     return intface;
 }
 
-static size_t stack_child_count(std::shared_ptr<HSStack> root) {
+static size_t stack_child_count(std::shared_ptr<Stack> root) {
     return LAYER_COUNT;
 }
 
@@ -213,7 +213,7 @@ int print_stack_command(int argc, char** argv, Output output) {
     return 0;
 }
 
-int HSStack::window_count(bool real_clients) {
+int Stack::window_count(bool real_clients) {
     int counter = 0;
     to_window_buf(nullptr, 0, real_clients, &counter);
     return -counter;
@@ -228,7 +228,7 @@ struct s2wb {
     HSLayer layer;  /* the layer the slice should be added to */
 };
 
-static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
+static void slice_to_window_buf(Slice* s, struct s2wb* data) {
     HSTag* tag;
     if (slice_highest_layer(s) != data->layer) {
         /** slice only is added to its highest layer.
@@ -286,7 +286,7 @@ static void slice_to_window_buf(HSSlice* s, struct s2wb* data) {
     }
 }
 
-void HSStack::to_window_buf(Window* buf, int len,
+void Stack::to_window_buf(Window* buf, int len,
                          bool real_clients, int* remain_len) {
     struct s2wb data = {};
     data.len = len;
@@ -311,7 +311,7 @@ void HSStack::to_window_buf(Window* buf, int len,
     }
 }
 
-void HSStack::restack() {
+void Stack::restack() {
     if (!dirty) {
         return;
     }
@@ -324,7 +324,7 @@ void HSStack::restack() {
     g_free(buf);
 }
 
-void HSStack::raise_slide(HSSlice* slice) {
+void Stack::raise_slide(Slice* slice) {
     for (auto layer : slice->layers) {
         auto &v = top[layer];
         auto it = std::find(v.begin(), v.end(), slice);
@@ -339,11 +339,11 @@ void HSStack::raise_slide(HSSlice* slice) {
     restack();
 }
 
-void HSStack::mark_dirty() {
+void Stack::mark_dirty() {
     dirty = true;
 }
 
-void HSStack::slice_add_layer(HSSlice* slice, HSLayer layer) {
+void Stack::slice_add_layer(Slice* slice, HSLayer layer) {
     if (slice->layers.count(layer) != 0) {
         /* nothing to do */
         return;
@@ -354,7 +354,7 @@ void HSStack::slice_add_layer(HSSlice* slice, HSLayer layer) {
     dirty = true;
 }
 
-void HSStack::slice_remove_layer(HSSlice* slice, HSLayer layer) {
+void Stack::slice_remove_layer(Slice* slice, HSLayer layer) {
     /* remove slice from layer in the stack */
     auto &v = top[layer];
     v.erase(std::remove(v.begin(), v.end(), slice));
@@ -369,7 +369,7 @@ void HSStack::slice_remove_layer(HSSlice* slice, HSLayer layer) {
     slice->layers.erase(layer);
 }
 
-Window HSStack::lowest_window() {
+Window Stack::lowest_window() {
     for (int i = LAYER_COUNT - 1; i >= 0; i--) {
         auto &v = top[i];
         for (auto it = v.rbegin(); it != v.rend(); it++) {
@@ -395,11 +395,11 @@ Window HSStack::lowest_window() {
     return 0;
 }
 
-bool HSStack::is_layer_empty(HSLayer layer) {
+bool Stack::is_layer_empty(HSLayer layer) {
     return top[layer].empty();
 }
 
-void HSStack::clear_layer(HSLayer layer) {
+void Stack::clear_layer(HSLayer layer) {
     while (!is_layer_empty(layer)) {
         slice_remove_layer(top[layer].front(), layer);
         dirty = true;
