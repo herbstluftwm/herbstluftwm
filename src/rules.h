@@ -78,7 +78,7 @@ public:
 
 class HSConsequence {
 public:
-    // using Applier = std::function<void(const HSConsequence*, HSClient*, HSClientChanges*)>;
+    // TODO: Make HSClient* parameter const (requires changes to applyEwmh… methods)
     using Applier = std::function<void(const HSConsequence*, HSClient*, HSClientChanges*)>;
     static const std::map<std::string, Applier> appliers;
 
