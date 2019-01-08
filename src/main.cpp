@@ -717,7 +717,6 @@ static struct {
     { ewmh_init,        ewmh_destroy        },
     { mouse_init,       mouse_destroy       },
     { hook_init,        hook_destroy        },
-    { rules_init,       rules_destroy       },
 };
 
 /* ----------------------------- */
