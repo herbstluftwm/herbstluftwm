@@ -22,7 +22,7 @@ enum {
 class HSCondition {
 public:
 
-    using Matcher = std::function<bool(HSCondition *, const HSClient*)>;
+    using Matcher = std::function<bool(HSCondition*, const HSClient*)>;
     static const std::map<std::string, Matcher> matchers;
 
     std::string name;
