@@ -123,7 +123,7 @@ int RuleManager::unruleCommand(Input input, Output output) {
         rule_label_index_ = 0;
     } else {
         // Remove rule specified by argument
-        auto removedCount = removeRule(arg);
+        auto removedCount = removeRules(arg);
         if (removedCount == 0) {
             output << "Couldn't find any rules with label \"" << arg << "\"";
             return HERBST_INVALID_ARGUMENT;
@@ -149,7 +149,7 @@ int RuleManager::listRulesCommand(Output output) {
  *
  * \returns number of removed rules
  */
-size_t RuleManager::removeRule(std::string label) {
+size_t RuleManager::removeRules(std::string label) {
     auto countBefore = rules_.size();
 
     for (auto ruleIter = rules_.begin(); ruleIter != rules_.end();) {
