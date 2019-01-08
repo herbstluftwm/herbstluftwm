@@ -7,7 +7,6 @@
 #include <X11/Xlib.h>
 #include "ewmh.h"
 #include "root.h"
-#include "rules.h"
 #include "stack.h"
 #include "mouse.h"
 #include "monitor.h"
