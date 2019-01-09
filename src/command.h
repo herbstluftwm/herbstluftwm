@@ -8,8 +8,6 @@
 #include <functional>
 #include <unordered_map>
 
-using namespace std;
-
 // returns a command binding that internalizes object to given a command that
 // calls the member function of the given object
 #define BIND_OBJECT(OBJECT, MEMBER) \

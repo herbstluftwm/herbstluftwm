@@ -478,7 +478,7 @@ void client_snap_vector(HSClient* client, HSMonitor* monitor,
                         int* return_dx, int* return_dy) {
     struct SnapData d;
     HSTag* tag = monitor->tag;
-    int distance = max(0, g_settings->snap_distance());
+    int distance = std::max(0, g_settings->snap_distance());
     // init delta
     *return_dx = 0;
     *return_dy = 0;
