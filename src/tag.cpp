@@ -38,7 +38,7 @@ HSTag::HSTag(std::string name_, Settings* settings)
     , curframe_wcount(this, "curframe_wcount",
         [this] () { return frame->getFocusedFrame()->clientCount(); } )
 {
-    stack = make_shared<HSStack>();
+    stack = make_shared<Stack>();
     frame = make_shared<HSFrameLeaf>(this, settings, shared_ptr<HSFrameSplit>());
 }
 

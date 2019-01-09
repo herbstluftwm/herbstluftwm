@@ -746,7 +746,7 @@ void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
     g_monitors->monitor_stack->to_window_buf(buf, len, real_clients, remain_len);
 }
 
-HSStack* get_monitor_stack() {
+Stack* get_monitor_stack() {
     return g_monitors->monitor_stack;
 }
 
