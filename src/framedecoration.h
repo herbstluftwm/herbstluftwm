@@ -4,7 +4,7 @@
 #include "x11-types.h"
 
 class HSTag;
-struct HSSlice;
+struct Slice;
 class FrameDecoration;
 class Settings;
 
@@ -29,7 +29,7 @@ private:
     Window window;
     bool visible; // whether the window is visible at the moment
     bool window_transparent; // whether the window has a mask at the moment
-    HSSlice* slice;
+    Slice* slice;
     HSTag* tag;
     Settings* settings;
 };
