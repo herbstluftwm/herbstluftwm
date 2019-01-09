@@ -64,9 +64,6 @@ private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
 };
 
-void stacklist_init();
-void stacklist_destroy();
-
 Slice* slice_create_window(Window window);
 Slice* slice_create_frame(Window window);
 Slice* slice_create_client(HSClient* client);
