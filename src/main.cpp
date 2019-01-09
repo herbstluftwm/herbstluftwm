@@ -122,7 +122,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"set_monitors",   set_monitor_rects_command},
         {"disjoin_rects",  disjoin_rects_command},
         {"list_keybinds",  { key_list_binds }},
-        {"list_padding",   monitors->byFirstArg(&HSMonitor::list_padding) },
+        {"list_padding",   monitors->byFirstArg(&Monitor::list_padding) },
         {"keybind",        keybind},
         {"keyunbind",      keyunbind},
         {"mousebind",      mouse_bind_command},
@@ -176,7 +176,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
         {"raise_monitor",  monitor_raise_command},
         {"remove_monitor", BIND_OBJECT(monitors, removeMonitor)},
-        {"move_monitor",   monitors->byFirstArg(&HSMonitor::move_cmd) } ,
+        {"move_monitor",   monitors->byFirstArg(&Monitor::move_cmd) } ,
         {"rename_monitor", rename_monitor_command},
         {"monitor_rect",   monitor_rect_command},
         {"pad",            monitor_set_pad_command},
@@ -194,8 +194,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"complete_shell", complete_command},
         {"lock",           { [monitors] { monitors->lock(); return 0; } }},
         {"unlock",         { [monitors] { monitors->unlock(); return 0; } }},
-        {"lock_tag",       monitors->byFirstArg(&HSMonitor::lock_tag_cmd) },
-        {"unlock_tag",     monitors->byFirstArg(&HSMonitor::unlock_tag_cmd) },
+        {"lock_tag",       monitors->byFirstArg(&Monitor::lock_tag_cmd) },
+        {"unlock_tag",     monitors->byFirstArg(&Monitor::unlock_tag_cmd) },
         {"set_layout",     frame_current_set_client_layout},
         {"detect_monitors",detect_monitors_command},
         {"chain",          command_chain_command},
@@ -278,7 +278,7 @@ int print_layout_command(int argc, char** argv, Output output) {
             return HERBST_INVALID_ARGUMENT;
         }
     } else { // use current tag
-        HSMonitor* m = get_current_monitor();
+        Monitor* m = get_current_monitor();
         tag = m->tag;
     }
     assert(tag);
@@ -307,14 +307,14 @@ int load_command(int argc, char** argv, Output output) {
             return HERBST_INVALID_ARGUMENT;
         }
     } else { // use current tag
-        HSMonitor* m = get_current_monitor();
+        Monitor* m = get_current_monitor();
         tag = m->tag;
     }
     assert(tag != nullptr);
     char* rest = load_frame_tree(tag->frame, layout_string, output);
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
-    HSMonitor* m = find_monitor_with_tag(tag);
+    Monitor* m = find_monitor_with_tag(tag);
     if (m) {
         tag->frame->setVisibleRecursive(true);
         if (get_current_monitor() == m) {
@@ -337,7 +337,7 @@ int load_command(int argc, char** argv, Output output) {
 }
 
 int print_tag_status_command(int argc, char** argv, Output output) {
-    HSMonitor* monitor;
+    Monitor* monitor;
     if (argc >= 2) {
         monitor = string_to_monitor(argv[1]);
     } else {
@@ -356,7 +356,7 @@ int print_tag_status_command(int argc, char** argv, Output output) {
         if (tag->flags & TAG_FLAG_USED) {
             c = ':';
         }
-        HSMonitor *tag_monitor = find_monitor_with_tag(tag);
+        Monitor *tag_monitor = find_monitor_with_tag(tag);
         if (tag_monitor == monitor) {
             c = '+';
             if (monitor == get_current_monitor()) {
@@ -530,7 +530,7 @@ void event_on_configure(Root*, XEvent event) {
             client->resize_floating(find_monitor_with_tag(client->tag()), client == get_current_client());
         } else if (changes && client->pseudotile_) {
             client->float_size_ = newRect;
-            HSMonitor* m = find_monitor_with_tag(client->tag());
+            Monitor* m = find_monitor_with_tag(client->tag());
             if (m) m->applyLayout();
         } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
@@ -870,7 +870,7 @@ void propertynotify(Root*, XEvent* event) {
                 client->update_wm_hints();
             } else if (ev->atom == XA_WM_NORMAL_HINTS) {
                 client->updatesizehints();
-                HSMonitor* m = find_monitor_with_tag(client->tag());
+                Monitor* m = find_monitor_with_tag(client->tag());
                 if (m) m->applyLayout();
             } else if (ev->atom == XA_WM_NAME ||
                        ev->atom == g_netatom[NetWmName]) {

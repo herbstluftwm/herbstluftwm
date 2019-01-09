@@ -320,7 +320,7 @@ void HSConsequence::applyIndex(HSClient* client, HSClientChanges* changes) {
 }
 
 void HSConsequence::applyPseudotile(HSClient* client, HSClientChanges* changes) {
-    client->pseudotile_ = string_to_bool(value, client->pseudotile_);
+    changes->pseudotile = string_to_bool(value, client->pseudotile_);
 }
 
 void HSConsequence::applyFullscreen(HSClient* client, HSClientChanges* changes) {
@@ -332,13 +332,11 @@ void HSConsequence::applySwitchtag(HSClient* client, HSClientChanges* changes) {
 }
 
 void HSConsequence::applyEwmhrequests(HSClient* client, HSClientChanges* changes) {
-    // this is only a flag that is unused during initialization (during
-    // manage()) and so can be directly changed in the client
-    client->ewmhrequests_ = string_to_bool(value, client->ewmhrequests_);
+    changes->ewmhRequests = string_to_bool(value, client->ewmhrequests_);
 }
 
 void HSConsequence::applyEwmhnotify(HSClient* client, HSClientChanges* changes) {
-    client->ewmhnotify_ = string_to_bool(value, client->ewmhnotify_);
+    changes->ewmhNotify = string_to_bool(value, client->ewmhnotify_);
 }
 
 void HSConsequence::applyHook(HSClient* client, HSClientChanges* changes) {

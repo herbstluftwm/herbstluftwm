@@ -26,7 +26,7 @@
 static Point2D          g_button_drag_start;
 static Rectangle        g_win_drag_start;
 static HSClient*        g_win_drag_client = nullptr;
-static HSMonitor*       g_drag_monitor = nullptr;
+static Monitor*       g_drag_monitor = nullptr;
 static MouseDragFunction g_drag_function = nullptr;
 
 static Cursor g_cursor;
@@ -308,7 +308,7 @@ void mouse_function_resize(XMotionEvent* me) {
     int y_diff = me->y_root - g_button_drag_start.y;
     g_win_drag_client->float_size_ = g_win_drag_start;
     // relative x/y coords in drag window
-    HSMonitor* m = g_drag_monitor;
+    Monitor* m = g_drag_monitor;
     int rel_x = m->relativeX(g_button_drag_start.x) - g_win_drag_start.x;
     int rel_y = m->relativeY(g_button_drag_start.y) - g_win_drag_start.y;
     bool top = false;
@@ -368,7 +368,7 @@ void mouse_function_zoom(XMotionEvent* me) {
     int x_diff = me->x_root - g_button_drag_start.x;
     int y_diff = me->y_root - g_button_drag_start.y;
     // relative x/y coords in drag window
-    HSMonitor* m = g_drag_monitor;
+    Monitor* m = g_drag_monitor;
     int rel_x = m->relativeX(g_button_drag_start.x) - g_win_drag_start.x;
     int rel_y = m->relativeY(g_button_drag_start.y) - g_win_drag_start.y;
     int cent_x = g_win_drag_start.x + g_win_drag_start.width  / 2;
@@ -473,7 +473,7 @@ static void client_snap_helper(HSClient* candidate, struct SnapData* d) {
 }
 
 // get the vector to snap a client to it's neighbour
-void client_snap_vector(HSClient* client, HSMonitor* monitor,
+void client_snap_vector(HSClient* client, Monitor* monitor,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy) {
     struct SnapData d;
@@ -496,7 +496,7 @@ void client_snap_vector(HSClient* client, HSMonitor* monitor,
     d.dy        = distance;
 
     // snap to monitor edges
-    HSMonitor* m = g_drag_monitor;
+    Monitor* m = g_drag_monitor;
     if (flags & SNAP_EDGE_TOP) {
         snap_1d(d.rect.y, m->rect.y + m->pad_up + g_settings->snap_gap(), &d.dy);
     }
