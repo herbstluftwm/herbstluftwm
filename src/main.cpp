@@ -707,11 +707,7 @@ static struct {
     void (*init)();
     void (*destroy)();
 } g_modules[] = {
-    { ipc_init,         ipc_destroy         },
     { key_init,         key_destroy         },
-    { floating_init,    floating_destroy    },
-    { stacklist_init,   stacklist_destroy   },
-    { layout_init,      layout_destroy      },
     { clientlist_init,  clientlist_destroy  },
     { ewmh_init,        ewmh_destroy        },
     { mouse_init,       mouse_destroy       },

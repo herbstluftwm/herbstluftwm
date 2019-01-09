@@ -17,11 +17,6 @@
 
 // public callable functions
 //
-void ipc_init() {
-}
-
-void ipc_destroy() {
-}
 
 void ipc_add_connection(Window window) {
     XSelectInput(g_display, window, PropertyChangeMask);

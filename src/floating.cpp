@@ -13,12 +13,6 @@
 
 using namespace std;
 
-void floating_init() {
-}
-
-void floating_destroy() {
-}
-
 // rectlist_rotate rotates the list of given rectangles, s.t. the direction dir
 // becomes the direction "right". idx is some distinguished element, whose
 // index may change
