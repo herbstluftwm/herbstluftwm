@@ -15,40 +15,40 @@ extern MonitorManager* g_monitors;
 class TagManager;
 class HSTag;
 
-typedef std::function<int(HSMonitor&,Input,Output)> HSMonitorCommand;
+typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
 
-class MonitorManager : public ChildByIndex<HSMonitor> {
+class MonitorManager : public ChildByIndex<Monitor> {
 public:
     MonitorManager(Settings* settings, TagManager* tags);
     ~MonitorManager();
-    Child_<HSMonitor> focus;
+    Child_<Monitor> focus;
 
     void clearChildren();
     void ensure_monitors_are_available();
-    HSMonitor* byString(std::string str);
+    Monitor* byString(std::string str);
     int list_monitors(Output output);
     int list_padding(Input input, Output output);
     int string_to_monitor_index(std::string string);
-    HSMonitor* addMonitor(Rectangle rect, HSTag* tag);
+    Monitor* addMonitor(Rectangle rect, HSTag* tag);
     int addMonitor(Input input, Output output);
     // return a command that interprets the first argument
     // as a monitor description and then calls the given command on this monitor
-    std::function<int(Input, Output)> byFirstArg(HSMonitorCommand cmd);
+    std::function<int(Input, Output)> byFirstArg(MonitorCommand cmd);
     // relayout the monitor showing this tag, if there is any
     void relayoutTag(HSTag* tag);
     int removeMonitor(Input input, Output output);
-    void removeMonitor(HSMonitor* monitor);
+    void removeMonitor(Monitor* monitor);
     // if the name is valid monitor name, return "", otherwise return an error message
     std::string isValidMonitorName(std::string name);
 
-    int indexInDirection(HSMonitor* m, Direction dir);
+    int indexInDirection(Monitor* m, Direction dir);
 
     void lock();
     void unlock();
     std::string lock_number_changed();
 
     int cur_monitor;
-    HSStack* monitor_stack;
+    Stack* monitor_stack;
 
 private:
     ByName by_name_;

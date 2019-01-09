@@ -12,7 +12,7 @@
 #include "attribute_.h"
 
 class HSTag;
-class HSMonitor;
+class Monitor;
 class Settings;
 class ClientManager;
 
@@ -27,7 +27,7 @@ public:
     Attribute_<bool> urgent_ = {"urgent", false};
     Attribute_<bool> fullscreen_ = {"fullscreen", false};
     Attribute_<std::string> title_ = {"title", {}};  // or also called window title; this is never NULL
-    struct HSSlice* slice = {};
+    struct Slice* slice = {};
     Rectangle   last_size_;      // last size excluding the window border
     Attribute_<std::string> window_id_str = {"winid", {}};
 
@@ -76,7 +76,7 @@ public:
 
     void setup_border(bool focused);
     void resize_tiling(Rectangle rect, bool isFocused);
-    void resize_floating(HSMonitor* m, bool isFocused);
+    void resize_floating(Monitor* m, bool isFocused);
     void resize_fullscreen(Rectangle m, bool isFocused);
     bool is_client_floated();
     bool needs_minimal_dec();

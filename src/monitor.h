@@ -10,20 +10,20 @@
 class HSTag;
 class Settings;
 class MonitorManager;
-struct HSSlice;
-class HSStack;
+struct Slice;
+class Stack;
 
-class HSMonitor : public Object {
+class Monitor : public Object {
 public:
-    HSMonitor(Settings* settings, MonitorManager* monman, Rectangle Rect, HSTag* tag);
-    ~HSMonitor() override;
+    Monitor(Settings* settings, MonitorManager* monman, Rectangle Rect, HSTag* tag);
+    ~Monitor() override;
     Rectangle getFloatingArea();
     int relativeX(int x_root);
     int relativeY(int y_root);
 
     HSTag*      tag;    // currently viewed tag
     HSTag*      tag_previous;    // previously viewed tag
-    struct HSSlice*    slice;  // slice in the monitor stack
+    struct Slice*    slice;  // slice in the monitor stack
     Attribute_<std::string>   name;
     Attribute_<unsigned long> index;
     DynAttribute_<std::string>   tag_string;
@@ -57,13 +57,13 @@ private:
 };
 
 // adds a new monitor to the monitors list and returns a pointer to it
-HSMonitor* monitor_with_coordinate(int x, int y);
-HSMonitor* find_monitor_with_tag(HSTag* tag);
+Monitor* monitor_with_coordinate(int x, int y);
+Monitor* find_monitor_with_tag(HSTag* tag);
 void monitor_focus_by_index(unsigned new_selection);
 int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv, Output output);
-HSMonitor* find_monitor_by_name(const char* name);
-HSMonitor* string_to_monitor(const char* string);
+Monitor* find_monitor_by_name(const char* name);
+Monitor* string_to_monitor(const char* string);
 int monitor_raise_command(int argc, char** argv, Output output);
 int remove_monitor_command(int argc, char** argv, Output output);
 int remove_monitor(int index);
@@ -71,8 +71,8 @@ int set_monitor_rects_command(int argc, char** argv, Output output);
 int set_monitor_rects(const RectangleVec &templates);
 int rename_monitor_command(int argc, char** argv, Output output);
 int monitor_rect_command(int argc, char** argv, Output output);
-HSMonitor* get_current_monitor();
-int monitor_set_tag(HSMonitor* monitor, HSTag* tag);
+Monitor* get_current_monitor();
+int monitor_set_tag(Monitor* monitor, HSTag* tag);
 int monitor_set_pad_command(int argc, char** argv, Output output);
 int monitor_set_tag_command(int argc, char** argv, Output output);
 int monitor_set_tag_by_index_command(int argc, char** argv, Output output);
@@ -85,7 +85,7 @@ void drop_enternotify_events();
 
 void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
                                  int* remain_len);
-HSStack* get_monitor_stack();
+Stack* get_monitor_stack();
 
 void monitor_update_focus_objects();
 

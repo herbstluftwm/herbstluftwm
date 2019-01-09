@@ -42,16 +42,9 @@ const char* g_layout_names[] = {
     nullptr,
 };
 
-void layout_init() {
-}
-
 void reset_frame_colors() {
     all_monitors_apply_layout();
 }
-
-void layout_destroy() {
-}
-
 
 /* create a new frame
  * you can either specify a frame or a tag as its parent
@@ -351,7 +344,7 @@ char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output outpu
             }
 
             // remove window from old tag
-            HSMonitor* clientmonitor = find_monitor_with_tag(client->tag());
+            Monitor* clientmonitor = find_monitor_with_tag(client->tag());
             if (!frame_remove_client(client->tag()->frame, client)) {
                 g_warning("window %lx was not found on tag %s\n",
                     win, client->tag()->name->str);
@@ -1375,8 +1368,8 @@ bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor) {
     }
     HSTag* tag = client->tag();
     assert(client->tag());
-    HSMonitor* monitor = find_monitor_with_tag(tag);
-    HSMonitor* cur_mon = get_current_monitor();
+    Monitor* monitor = find_monitor_with_tag(tag);
+    Monitor* cur_mon = get_current_monitor();
     if (!monitor && !switch_tag) {
         return false;
     }

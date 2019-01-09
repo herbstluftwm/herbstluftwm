@@ -19,14 +19,14 @@ using namespace std;
 MonitorManager* g_monitors;
 
 MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
-    : ChildByIndex<HSMonitor>()
+    : ChildByIndex<Monitor>()
     , focus(*this, "focus")
     , by_name_(*this)
     , tags_(tags)
     , settings_(settings)
 {
     cur_monitor = 0;
-    monitor_stack = new HSStack();
+    monitor_stack = new Stack();
 }
 
 MonitorManager::~MonitorManager() {
@@ -35,7 +35,7 @@ MonitorManager::~MonitorManager() {
 }
 
 void MonitorManager::clearChildren() {
-    ChildByIndex<HSMonitor>::clearChildren();
+    ChildByIndex<Monitor>::clearChildren();
     focus = {};
     tags_ = {};
 }
@@ -51,14 +51,14 @@ void MonitorManager::ensure_monitors_are_available() {
             DisplayHeight(g_display, DefaultScreen(g_display))};
     HSTag* tag = tags_->ensure_tags_are_available();
     // add monitor with first tag
-    HSMonitor* m = addMonitor(rect, tag);
+    Monitor* m = addMonitor(rect, tag);
     m->tag->frame->setVisibleRecursive(true);
     cur_monitor = 0;
 
     monitor_update_focus_objects();
 }
 
-int MonitorManager::indexInDirection(HSMonitor* m, Direction dir) {
+int MonitorManager::indexInDirection(Monitor* m, Direction dir) {
     RectangleIdxVec rects;
     int relidx = -1;
     FOR (i,0,size()) {
@@ -132,15 +132,15 @@ int MonitorManager::list_monitors(Output output) {
     return 0;
 }
 
-HSMonitor* MonitorManager::byString(string str) {
+Monitor* MonitorManager::byString(string str) {
     int idx = string_to_monitor_index(str);
     return ((idx >= 0) && idx < size()) ? byIdx(idx) : nullptr;
 }
 
-function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
+function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
 {
     return [this,cmd](Input input, Output output) -> int {
-        HSMonitor *monitor;
+        Monitor *monitor;
         std::string monitor_name;
         if (!(input >> monitor_name)) {
             monitor = get_current_monitor();
@@ -158,7 +158,7 @@ function<int(Input, Output)> MonitorManager::byFirstArg(HSMonitorCommand cmd)
 
 void MonitorManager::relayoutTag(HSTag *tag)
 {
-    for (HSMonitor* m : *this) {
+    for (Monitor* m : *this) {
         if (m->tag == tag) {
             m->applyLayout();
             break;
@@ -189,7 +189,7 @@ int MonitorManager::removeMonitor(Input input, Output output)
     return HERBST_EXIT_SUCCESS;
 }
 
-void MonitorManager::removeMonitor(HSMonitor* monitor)
+void MonitorManager::removeMonitor(Monitor* monitor)
 {
     auto monitorIdx = index_of(monitor);
 
@@ -280,8 +280,8 @@ std::string MonitorManager::isValidMonitorName(std::string name) {
     return "";
 }
 
-HSMonitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
-    HSMonitor* m = new HSMonitor(settings_, this, rect, tag);
+Monitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
+    Monitor* m = new Monitor(settings_, this, rect, tag);
     addIndexed(m);
     return m;
 }

@@ -108,7 +108,7 @@ int TagManager::removeTag(Input input, Output output) {
     }
 
     // Make transferred clients visible if target tag is visible
-    HSMonitor* monitor_target = find_monitor_with_tag(targetTag);
+    Monitor* monitor_target = find_monitor_with_tag(targetTag);
     if (monitor_target) {
         monitor_target->applyLayout();
         for (auto c : clients) {
@@ -164,7 +164,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
     int index = stoi(index_str);
     // index must be treated relative, if it's first char is + or -
     bool is_relative = index_str[0] == '+' || index_str[0] == '-';
-    HSMonitor* monitor = get_current_monitor();
+    Monitor* monitor = get_current_monitor();
     if (is_relative) {
         int current = index_of(monitor->tag);
         int delta = index;
@@ -203,12 +203,12 @@ void TagManager::moveFocusedClient(HSTag* target) {
 
 void TagManager::moveClient(HSClient* client, HSTag* target) {
     HSTag* tag_source = client->tag();
-    HSMonitor* monitor_source = find_monitor_with_tag(tag_source);
+    Monitor* monitor_source = find_monitor_with_tag(tag_source);
     if (tag_source == target) {
         // nothing to do
         return;
     }
-    HSMonitor* monitor_target = find_monitor_with_tag(target);
+    Monitor* monitor_target = find_monitor_with_tag(target);
     tag_source->frame->removeClient(client);
     // insert window into target
     target->frame->insertClient(client);
