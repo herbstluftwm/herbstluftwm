@@ -26,7 +26,7 @@ typedef enum SliceType {
 } SliceType;
 
 class HSClient;
-class HSMonitor;
+class Monitor;
 
 typedef struct Slice {
     SliceType type;
@@ -34,7 +34,7 @@ typedef struct Slice {
     union {
         HSClient*    client;
         Window              window;
-        HSMonitor*          monitor;
+        Monitor*          monitor;
     } data;
 } Slice;
 
@@ -67,7 +67,7 @@ private:
 Slice* slice_create_window(Window window);
 Slice* slice_create_frame(Window window);
 Slice* slice_create_client(HSClient* client);
-Slice* slice_create_monitor(HSMonitor* monitor);
+Slice* slice_create_monitor(Monitor* monitor);
 void slice_destroy(Slice* slice);
 HSLayer slice_highest_layer(Slice* slice);
 
