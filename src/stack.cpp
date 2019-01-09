@@ -63,7 +63,7 @@ Slice* slice_create_client(HSClient* client) {
     return s;
 }
 
-Slice* slice_create_monitor(HSMonitor* monitor) {
+Slice* slice_create_monitor(Monitor* monitor) {
     Slice* s = slice_create();
     s->type = SLICE_MONITOR;
     s->data.monitor = monitor;

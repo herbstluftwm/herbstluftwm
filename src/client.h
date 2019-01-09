@@ -12,7 +12,7 @@
 #include "attribute_.h"
 
 class HSTag;
-class HSMonitor;
+class Monitor;
 class Settings;
 class ClientManager;
 
@@ -76,7 +76,7 @@ public:
 
     void setup_border(bool focused);
     void resize_tiling(Rectangle rect, bool isFocused);
-    void resize_floating(HSMonitor* m, bool isFocused);
+    void resize_floating(Monitor* m, bool isFocused);
     void resize_fullscreen(Rectangle m, bool isFocused);
     bool is_client_floated();
     bool needs_minimal_dec();

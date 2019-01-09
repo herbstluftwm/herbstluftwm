@@ -98,7 +98,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
 
     // init client
     auto client = new HSClient(win, visible_already, *this);
-    HSMonitor* m = get_current_monitor();
+    Monitor* m = get_current_monitor();
 
     // apply rules
     HSClientChanges changes = Root::get()->rules()->evaluateRules(client);
@@ -106,7 +106,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
         client->setTag(find_tag(changes.tag_name.c_str()));
     }
     if (!changes.monitor_name.empty()) {
-        HSMonitor *monitor = string_to_monitor(changes.monitor_name.c_str());
+        Monitor *monitor = string_to_monitor(changes.monitor_name.c_str());
         if (monitor) {
             // a valid tag was not already found, use the target monitor's tag
             if (!client->tag()) { client->setTag(monitor->tag); }
@@ -171,7 +171,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
 
     client->make_full_client();
 
-    HSMonitor* monitor = find_monitor_with_tag(client->tag());
+    Monitor* monitor = find_monitor_with_tag(client->tag());
     if (monitor) {
         if (monitor != get_current_monitor()
             && changes.focus && changes.switchtag) {
