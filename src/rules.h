@@ -74,6 +74,8 @@ public:
     std::string     keymask; // Which keymask rule should be applied for this client
 
     std::experimental::optional<bool> pseudotile;
+    std::experimental::optional<bool> ewmhRequests;
+    std::experimental::optional<bool> ewmhNotify;
 };
 
 class HSConsequence {
