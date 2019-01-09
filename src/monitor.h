@@ -10,8 +10,8 @@
 class HSTag;
 class Settings;
 class MonitorManager;
-struct HSSlice;
-class HSStack;
+struct Slice;
+class Stack;
 
 class HSMonitor : public Object {
 public:
@@ -23,7 +23,7 @@ public:
 
     HSTag*      tag;    // currently viewed tag
     HSTag*      tag_previous;    // previously viewed tag
-    struct HSSlice*    slice;  // slice in the monitor stack
+    struct Slice*    slice;  // slice in the monitor stack
     Attribute_<std::string>   name;
     Attribute_<unsigned long> index;
     DynAttribute_<std::string>   tag_string;
@@ -85,7 +85,7 @@ void drop_enternotify_events();
 
 void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
                                  int* remain_len);
-HSStack* get_monitor_stack();
+Stack* get_monitor_stack();
 
 void monitor_update_focus_objects();
 

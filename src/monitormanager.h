@@ -48,7 +48,7 @@ public:
     std::string lock_number_changed();
 
     int cur_monitor;
-    HSStack* monitor_stack;
+    Stack* monitor_stack;
 
 private:
     ByName by_name_;

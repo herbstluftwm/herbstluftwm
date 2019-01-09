@@ -26,7 +26,7 @@ MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
     , settings_(settings)
 {
     cur_monitor = 0;
-    monitor_stack = new HSStack();
+    monitor_stack = new Stack();
 }
 
 MonitorManager::~MonitorManager() {

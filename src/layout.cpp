@@ -42,16 +42,9 @@ const char* g_layout_names[] = {
     nullptr,
 };
 
-void layout_init() {
-}
-
 void reset_frame_colors() {
     all_monitors_apply_layout();
 }
-
-void layout_destroy() {
-}
-
 
 /* create a new frame
  * you can either specify a frame or a tag as its parent
