@@ -22,6 +22,12 @@
 #include <unistd.h>
 #include <sstream>
 
+using std::function;
+using std::string;
+using std::to_string;
+using std::unique_ptr;
+using std::vector;
+
 extern char** environ;
 
 // if the current completion needs shell quoting and other shell specific

@@ -39,7 +39,7 @@ class Completion;
  */
 class CommandBinding {
 public:
-    CommandBinding(function<int(Input, Output)> cmd)
+    CommandBinding(std::function<int(Input, Output)> cmd)
         : command(cmd) {}
     // A command that takes an argument list and produces output
     CommandBinding(int cmd(Input, Output))
@@ -50,12 +50,12 @@ public:
         : command([cmd](Input args, Output) { return cmd(args); })
     {}
     // A command that doesn't have input
-    CommandBinding(function<int(Output)> cmd);
+    CommandBinding(std::function<int(Output)> cmd);
     // A command that doesn't have input nor output
-    CommandBinding(function<int()> cmd);
+    CommandBinding(std::function<int()> cmd);
     // A regular command and its completion
-    CommandBinding(function<int(Input, Output)> cmd,
-                   function<void(Completion&)> completion)
+    CommandBinding(std::function<int(Input, Output)> cmd,
+                   std::function<void(Completion&)> completion)
         : command(cmd)
         , completion_(completion)
     {}
@@ -91,36 +91,36 @@ public:
 
 private:
     // FIXME: Remove after C++ transition
-    function<int(Input,Output)> commandFromCFunc(
-        function <int(int argc, char**argv, Output output)> func
+    std::function<int(Input,Output)> commandFromCFunc(
+        std::function <int(int argc, char**argv, Output output)> func
     );
 
-    function<int(Input, Output)> command;
-    function<void(Completion&)>  completion_;
+    std::function<int(Input, Output)> command;
+    std::function<void(Completion&)>  completion_;
 };
 
 class CommandTable {
-    using Container = unordered_map<string, CommandBinding>;
+    using Container = std::unordered_map<std::string, CommandBinding>;
 
 public:
-    CommandTable(initializer_list<Container::value_type> values)
+    CommandTable(std::initializer_list<Container::value_type> values)
         : map(values) {}
 
     int callCommand(Input args, Output out) const;
 
     Container::const_iterator begin() const { return map.cbegin(); }
     Container::const_iterator end() const { return map.cend(); }
-    Container::const_iterator find(const string& str) const { return map.find(str); }
+    Container::const_iterator find(const std::string& str) const { return map.find(str); }
 private:
     Container map;
 };
 
 namespace Commands {
-    void initialize(unique_ptr<const CommandTable> commands);
+    void initialize(std::unique_ptr<const CommandTable> commands);
     /* Call the command args[0] */
     int call(Input args, Output out);
     void complete(Completion& completion);
-    shared_ptr<const CommandTable> get();
+    std::shared_ptr<const CommandTable> get();
 }
 
 // Mark the following two functions as obsolete to make it easier to detect and
