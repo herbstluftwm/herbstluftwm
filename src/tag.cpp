@@ -15,10 +15,10 @@
 #include "tagmanager.h"
 #include "utils.h"
 
-using namespace std;
+using std::make_shared;
+using std::shared_ptr;
 
 static bool    g_tag_flags_dirty = true;
-
 
 HSTag::HSTag(std::string name_, Settings* settings)
     : index(this, "index", 0)

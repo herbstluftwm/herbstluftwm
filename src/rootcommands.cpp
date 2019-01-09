@@ -12,8 +12,6 @@
 #include "ipc-protocol.h"
 #include "root.h"
 
-using namespace std;
-
 RootCommands::RootCommands(Root* root_) : root(root_) {
 }
 

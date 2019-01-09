@@ -12,8 +12,6 @@
 #include "stack.h"
 #include "utils.h"
 
-using namespace std;
-
 TagManager* global_tags;
 
 TagManager::TagManager(Settings* settings)
@@ -93,7 +91,7 @@ int TagManager::removeTag(Input input, Output output) {
     all_monitors_replace_previous_tag(tagToRemove, targetTag);
 
     // Collect all clients in tag
-    vector<HSClient*> clients;
+    std::vector<HSClient*> clients;
     tagToRemove->frame->foreachClient([&clients](HSClient* client) {
         clients.push_back(client);
     });
@@ -117,7 +115,7 @@ int TagManager::removeTag(Input input, Output output) {
     }
 
     // Remove tag
-    string removedName = tagToRemove->name;
+    std::string removedName = tagToRemove->name;
     removeIndexed(index_of(tagToRemove));
     ewmh_update_current_desktop();
     ewmh_update_desktops();
@@ -160,7 +158,7 @@ HSTag* TagManager::ensure_tags_are_available() {
     }
 }
 
-HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
+HSTag* TagManager::byIndexStr(const std::string& index_str, bool skip_visible_tags) {
     int index = stoi(index_str);
     // index must be treated relative, if it's first char is + or -
     bool is_relative = index_str[0] == '+' || index_str[0] == '-';

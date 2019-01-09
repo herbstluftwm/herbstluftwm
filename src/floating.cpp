@@ -10,7 +10,8 @@
 #include "tag.h"
 #include "utils.h"
 
-using namespace std;
+using std::vector;
+using std::make_pair;
 
 // rectlist_rotate rotates the list of given rectangles, s.t. the direction dir
 // becomes the direction "right". idx is some distinguished element, whose
