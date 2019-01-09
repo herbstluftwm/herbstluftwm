@@ -78,8 +78,7 @@ public:
 
 class HSConsequence {
 public:
-    // TODO: Make HSClient* parameter const (requires changes to applyEwmh… methods)
-    using Applier = std::function<void(const HSConsequence*, HSClient*, HSClientChanges*)>;
+    using Applier = std::function<void(const HSConsequence*, const HSClient*, HSClientChanges*)>;
     static const std::map<std::string, Applier> appliers;
 
     std::string name;
@@ -94,8 +93,8 @@ private:
     void applyManage(const HSClient* client, HSClientChanges* changes) const;
     void applyPseudotile(const HSClient* client, HSClientChanges* changes) const;
     void applyFullscreen(const HSClient* client, HSClientChanges* changes) const;
-    void applyEwmhrequests(HSClient* client, HSClientChanges* changes) const;
-    void applyEwmhnotify(HSClient* client, HSClientChanges* changes) const;
+    void applyEwmhrequests(const HSClient* client, HSClientChanges* changes) const;
+    void applyEwmhnotify(const HSClient* client, HSClientChanges* changes) const;
     void applyHook(const HSClient* client, HSClientChanges* changes) const;
     void applyKeymask(const HSClient* client, HSClientChanges* changes) const;
     void applyMonitor(const HSClient* client, HSClientChanges* changes) const;

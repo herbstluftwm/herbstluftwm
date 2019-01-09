@@ -331,13 +331,13 @@ void HSConsequence::applySwitchtag(const HSClient* client, HSClientChanges* chan
     changes->switchtag = string_to_bool(value, changes->switchtag);
 }
 
-void HSConsequence::applyEwmhrequests(HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyEwmhrequests(const HSClient* client, HSClientChanges* changes) const {
     // this is only a flag that is unused during initialization (during
     // manage()) and so can be directly changed in the client
     client->ewmhrequests_ = string_to_bool(value, client->ewmhrequests_);
 }
 
-void HSConsequence::applyEwmhnotify(HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyEwmhnotify(const HSClient* client, HSClientChanges* changes) const {
     client->ewmhnotify_ = string_to_bool(value, client->ewmhnotify_);
 }
 
