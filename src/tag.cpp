@@ -126,7 +126,7 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
         // assign new value and rearrange if needed
         tag->floating = new_value;
 
-        HSMonitor* m = find_monitor_with_tag(tag);
+        Monitor* m = find_monitor_with_tag(tag);
         HSDebug("setting tag:%s->floating to %s\n", tag->name->c_str(), tag->floating ? "on" : "off");
         if (m) {
             m->applyLayout();
@@ -183,7 +183,7 @@ void tag_update_focus_layer(HSTag* tag) {
             tag->stack->slice_add_layer(focus->slice, LAYER_FOCUS);
         }
     }
-    HSMonitor* monitor = find_monitor_with_tag(tag);
+    Monitor* monitor = find_monitor_with_tag(tag);
     if (monitor) {
         monitor->restack();
     }

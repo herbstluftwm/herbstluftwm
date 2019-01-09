@@ -389,7 +389,7 @@ void HSClient::send_configure() {
     XSendEvent(g_display, this->window_, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
-void HSClient::resize_floating(HSMonitor* m, bool isFocused) {
+void HSClient::resize_floating(Monitor* m, bool isFocused) {
     if (!m) return;
     auto rect = this->float_size_;
     rect.x += m->rect.x;

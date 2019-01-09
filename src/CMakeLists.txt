@@ -16,6 +16,7 @@ target_sources(herbstluftwm PRIVATE
 	globals.h
 	hook.cpp hook.h
 	object.cpp object.h
+	optional.h
 	root.cpp root.h
 	signal.h
 	types.cpp types.h

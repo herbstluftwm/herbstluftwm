@@ -183,6 +183,15 @@ def test_monitor_consequence(hlwm, monitor_spec):
     # in the tag (not yet possible).
 
 
+@pytest.mark.parametrize('value', ['true', 'false'])
+def test_pseudotile_consequence(hlwm, value):
+    hlwm.call('rule pseudotile=' + value)
+
+    hlwm.create_client()
+
+    assert hlwm.get_attr('clients.focus.pseudotile') == value
+
+
 def test_invalid_regex_in_condition(hlwm):
     call = hlwm.call_xfail('rule class~[b-a]')
 

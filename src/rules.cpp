@@ -320,7 +320,7 @@ void HSConsequence::applyIndex(HSClient* client, HSClientChanges* changes) {
 }
 
 void HSConsequence::applyPseudotile(HSClient* client, HSClientChanges* changes) {
-    client->pseudotile_ = string_to_bool(value, client->pseudotile_);
+    changes->pseudotile = string_to_bool(value, client->pseudotile_);
 }
 
 void HSConsequence::applyFullscreen(HSClient* client, HSClientChanges* changes) {
