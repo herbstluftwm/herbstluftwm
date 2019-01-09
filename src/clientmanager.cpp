@@ -122,6 +122,14 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
         client->pseudotile_ = changes.pseudotile.value();
     }
 
+    if (changes.ewmhNotify.has_value()) {
+        client->ewmhnotify_ = changes.ewmhNotify.value();
+    }
+
+    if (changes.ewmhRequests.has_value()) {
+        client->ewmhrequests_ = changes.ewmhRequests.value();
+    }
+
     // Reuse the keymask string
     client->keymask_ = changes.keymask;
 
