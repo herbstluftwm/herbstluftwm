@@ -133,3 +133,9 @@ def test_attribute_completion(hlwm):
     assert complete('') == [l + '.' for l in hlwm.list_children_via_attr('')]
 
 
+def test_list_keybinds(hlwm):
+    hlwm.call('keybind Mod1-x quit')
+
+    keybinds = hlwm.call('list_keybinds')
+
+    assert keybinds.stdout == 'Mod1+x\tquit\n'
