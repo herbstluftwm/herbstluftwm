@@ -1,7 +1,5 @@
 #include <cassert>
 #include <cstring>
-#include <cstdio>
-#include <cctype>
 #include <sstream>
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
@@ -11,7 +9,6 @@
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "utils.h"
-#include "mouse.h"
 #include "hook.h"
 #include "layout.h"
 #include "tag.h"
@@ -22,7 +19,6 @@
 #include "client.h"
 #include "rectangle.h"
 #include "monitormanager.h"
-#include "root.h"
 #include "clientmanager.h"
 #include "tagmanager.h"
 

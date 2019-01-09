@@ -12,11 +12,9 @@
 #include "glib-backports.h"
 #include <cstring>
 #include <cstdio>
-#include <stdint.h>
 #include <limits>
 
 #include <X11/Xlib.h>
-#include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 

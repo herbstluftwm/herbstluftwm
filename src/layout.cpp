@@ -1,13 +1,9 @@
 #include "client.h"
 #include "globals.h"
 #include "utils.h"
-#include "x11-utils.h"
-#include "hook.h"
-#include "ewmh.h"
 #include "ipc-protocol.h"
 #include "settings.h"
 #include "layout.h"
-#include "stack.h"
 #include "monitor.h"
 #include "floating.h"
 #include "tagmanager.h"
@@ -17,13 +13,10 @@
 #include <glib.h>
 #include "glib-backports.h"
 #include <cstdlib>
-#include <cstdio>
 #include <cstring>
 #include <cassert>
-#include <stdint.h>
 
 #include <memory>
-#include <iomanip>
 #include <sstream>
 #include <algorithm>
 

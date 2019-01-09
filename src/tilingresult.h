@@ -1,8 +1,8 @@
 #ifndef __HLWM_TILINGSTEP_H_
 #define __HLWM_TILINGSTEP_H_
 
-#include <tuple>
 #include <list>
+
 #include "x11-types.h"
 #include "framedecoration.h"
 

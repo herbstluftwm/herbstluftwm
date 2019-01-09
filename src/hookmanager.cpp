@@ -1,8 +1,4 @@
 #include "hookmanager.h"
-#include "hook.h"
-//#include "namedhook.h"
-#include "root.h"
-
 
 HookManager::HookManager()
     : add_("add"), remove_("remove") {

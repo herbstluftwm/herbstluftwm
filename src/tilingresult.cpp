@@ -1,5 +1,4 @@
 #include "tilingresult.h"
-#include "utils.h"
 
 using namespace std;
 

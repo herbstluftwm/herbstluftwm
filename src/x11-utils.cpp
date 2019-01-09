@@ -1,6 +1,5 @@
 #include "x11-utils.h"
 #include "globals.h"
-#include <cstdio>
 
 #include<X11/extensions/shape.h>
 

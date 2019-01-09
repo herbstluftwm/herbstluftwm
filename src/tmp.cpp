@@ -1,6 +1,5 @@
-
 #include "tmp.h"
-#include "utils.h"
+
 #include "rootcommands.h"
 #include "command.h"
 #include "ipc-protocol.h"

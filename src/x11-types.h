@@ -6,7 +6,6 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include <memory>
 #include <X11/Xlib.h>
 
 class Color {

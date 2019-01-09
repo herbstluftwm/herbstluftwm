@@ -1,13 +1,11 @@
 #ifndef ROOT_H
 #define ROOT_H
 
-#include "types.h"
 #include "object.h"
 #include "child.h"
 
 // new object tree root.
 
-class Attribute;
 class TagManager;
 class HookManager;
 class ClientManager;

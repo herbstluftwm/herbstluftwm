@@ -9,7 +9,6 @@
 #include "client.h"
 #include "layout.h"
 #include "stack.h"
-#include "settings.h"
 #include "utils.h"
 
 using namespace std;

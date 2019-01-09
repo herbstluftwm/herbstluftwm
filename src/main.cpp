@@ -13,8 +13,6 @@
 #include "ewmh.h"
 #include "stack.h"
 #include "client.h"
-#include "object.h"
-#include "decoration.h"
 #include "xconnection.h"
 #include "tagmanager.h"
 #include "monitormanager.h"
@@ -22,7 +20,6 @@
 #include "rootcommands.h"
 #include "tmp.h"
 #include "rulemanager.h"
-#include "completion.h"
 // standard
 #include <cstring>
 #include <cstdio>

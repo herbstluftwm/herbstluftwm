@@ -3,21 +3,15 @@
 #include "hookmanager.h"
 #include "clientmanager.h"
 #include "monitormanager.h"
-#include "monitor.h"
-#include "attribute.h"
-#include "ipc-protocol.h"
 #include "globals.h"
 #include "settings.h"
 #include "tmp.h"
 #include "decoration.h"
-#include "client.h"
 #include "rootcommands.h"
 #include "utils.h"
 #include "rulemanager.h"
 
 #include <memory>
-#include <stdexcept>
-#include <sstream>
 
 std::shared_ptr<Root> Root::root_;
 

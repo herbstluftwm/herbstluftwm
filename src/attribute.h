@@ -5,7 +5,6 @@
 
 #include <string>
 #include <vector>
-#include <functional>
 
 class Object;
 class Signal;

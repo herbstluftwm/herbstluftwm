@@ -2,8 +2,6 @@
 #define ENTITY
 
 #include <string>
-#include <memory>
-
 
 enum class Type {
     VIRTUAL,

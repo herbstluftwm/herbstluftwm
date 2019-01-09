@@ -3,14 +3,6 @@
 #include "globals.h"
 #include "settings.h"
 #include "ewmh.h"
-#include "root.h"
-#include "utils.h"
-
-#include <cstdio>
-#include <cstring>
-#include <sstream>
-#include <memory>
-
 
 std::map<Window,HSClient*> Decoration::decwin2client;
 
