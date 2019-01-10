@@ -5,8 +5,6 @@
 
 #include <map>
 #include <vector>
-#include <functional>
-
 
 #define OBJECT_PATH_SEPARATOR '.'
 #define USER_ATTRIBUTE_PREFIX "my_"

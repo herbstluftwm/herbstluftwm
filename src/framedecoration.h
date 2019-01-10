@@ -5,7 +5,6 @@
 
 class HSTag;
 struct Slice;
-class FrameDecoration;
 class Settings;
 
 class FrameDecorationData {

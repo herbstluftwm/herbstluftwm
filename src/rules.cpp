@@ -1,15 +1,12 @@
 #include "rules.h"
+
 #include "globals.h"
 #include "utils.h"
 #include "ewmh.h"
 #include "client.h"
-#include "ipc-protocol.h"
 #include "hook.h"
 
-#include <cstring>
 #include <cstdio>
-#include <sys/types.h>
-#include <list>
 #include <algorithm>
 
 /// TYPES ///

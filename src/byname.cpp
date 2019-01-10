@@ -1,6 +1,5 @@
 
 #include "byname.h"
-#include "hook.h"
 #include <cassert>
 #include "attribute.h"
 

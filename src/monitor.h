@@ -10,7 +10,6 @@
 class HSTag;
 class Settings;
 class MonitorManager;
-struct Slice;
 class Stack;
 
 class Monitor : public Object {

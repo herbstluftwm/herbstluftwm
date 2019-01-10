@@ -3,7 +3,6 @@
 #include "utils.h"
 #include "cassert"
 #include "globals.h"
-#include "ipc-protocol.h"
 #include "hook.h"
 #include "attribute.h"
 

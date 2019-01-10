@@ -12,15 +12,11 @@
 #include "x11-utils.h"
 
 #include <cstdlib>
-#include <cstdio>
 #include <cstring>
 #include "glib-backports.h"
 
 // gui
 #include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
 static Point2D          g_button_drag_start;

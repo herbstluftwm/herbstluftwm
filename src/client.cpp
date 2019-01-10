@@ -12,17 +12,13 @@
 #include "mouse.h"
 #include "ewmh.h"
 #include "ipc-protocol.h"
-#include "object.h"
 #include "decoration.h"
 #include "key.h"
 #include "utils.h"
 // system
 #include "glib-backports.h"
-#include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include <sys/types.h>
-#include <regex.h>
 #include <cstring>
 #include <sstream>
 // gui

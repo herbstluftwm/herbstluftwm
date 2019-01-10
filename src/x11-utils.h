@@ -1,7 +1,6 @@
 #ifndef __HERBST_X11_UTILS_H_
 #define __HERBST_X11_UTILS_H_
 
-#include <cstddef>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 

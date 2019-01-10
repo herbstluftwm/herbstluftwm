@@ -9,10 +9,7 @@
 #include "utils.h"
 #include "completion.h"
 
-#include <cstring>
-#include <cstdio>
 #include <sstream>
-#include <algorithm>
 
 
 using namespace std;

@@ -5,7 +5,6 @@
 #include "glib-backports.h"
 #include "types.h"
 #include <cstdlib>
-#include <X11/Xlib.h>
 #include <functional>
 #include "tilingresult.h"
 

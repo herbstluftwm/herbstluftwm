@@ -6,7 +6,6 @@
 #include <X11/Xutil.h>
 
 #include <iostream>
-#include <sstream>
 #include <iomanip>
 #include <cstdio>
 #include <cassert>

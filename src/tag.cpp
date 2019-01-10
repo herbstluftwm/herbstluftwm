@@ -1,7 +1,4 @@
-#include <cassert>
 #include <cstring>
-#include <cstdio>
-#include <sstream>
 
 #include "tag.h"
 #include "tagmanager.h"
@@ -14,13 +11,9 @@
 #include "hook.h"
 #include "layout.h"
 #include "stack.h"
-#include "ewmh.h"
 #include "monitor.h"
 #include "settings.h"
 #include "utils.h"
-
-#include "childbyindex.h"
-#include <sstream>
 
 using namespace std;
 

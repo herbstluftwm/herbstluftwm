@@ -1,8 +1,8 @@
 #ifndef __HLWM_BY_NAME_H_
 #define __HLWM_BY_NAME_H_
 
-#include <memory>
 #include <map>
+
 #include "object.h"
 #include "hook.h"
 

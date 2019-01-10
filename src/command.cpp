@@ -3,7 +3,6 @@
 #include "command.h"
 #include "completion.h"
 #include "utils.h"
-#include "settings.h"
 #include "layout.h"
 #include "tag.h"
 #include "key.h"
@@ -19,7 +18,6 @@
 #include <cstdlib>
 #include <cstdio>
 #include <search.h>
-#include <unistd.h>
 #include <sstream>
 
 using std::function;

@@ -2,8 +2,6 @@
 #define __HERBSTLUFT_EWMH_H_
 
 #include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xatom.h>
 #include <array>
 
 #define ENUM_WITH_ALIAS(Identifier, Alias) \

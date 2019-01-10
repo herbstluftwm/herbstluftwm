@@ -1,7 +1,6 @@
 #include "globals.h"
 #include "utils.h"
 #include "ipc-protocol.h"
-#include "layout.h"
 #include "tag.h"
 
 #include <cassert>

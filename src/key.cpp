@@ -4,7 +4,6 @@
 #include "utils.h"
 #include "ipc-protocol.h"
 #include "command.h"
-#include "utils.h"
 
 #include <cstdio>
 #include <cstring>

@@ -1,8 +1,4 @@
 #include "namedhook.h"
-#include "object.h"
-
-#include <algorithm>
-#include <iostream>
 
 #ifdef ENABLE_NAMED_HOOK
 
