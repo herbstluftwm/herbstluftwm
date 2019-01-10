@@ -70,20 +70,20 @@ int MonitorManager::indexInDirection(Monitor* m, Direction dir) {
     return result;
 }
 
-int MonitorManager::string_to_monitor_index(std::string string) {
-    if (string[0] == '\0') {
+int MonitorManager::string_to_monitor_index(string str) {
+    if (str[0] == '\0') {
         return cur_monitor;
-    } else if (string[0] == '-' || string[0] == '+') {
-        if (isdigit(string[1])) {
+    } else if (str[0] == '-' || str[0] == '+') {
+        if (isdigit(str[1])) {
             // relative monitor index
-            int idx = cur_monitor + atoi(string.c_str());
+            int idx = cur_monitor + atoi(str.c_str());
             idx %= size();
             idx += size();
             idx %= size();
             return idx;
-        } else if (string[0] == '-') {
+        } else if (str[0] == '-') {
             try {
-                auto dir = Converter<Direction>::parse(string.substr(1), {});
+                auto dir = Converter<Direction>::parse(str.substr(1), {});
                 return indexInDirection(focus(), dir);
             } catch (...) {
                 return -1;
@@ -91,9 +91,9 @@ int MonitorManager::string_to_monitor_index(std::string string) {
         } else {
             return -1;
         }
-    } else if (isdigit(string[0])) {
+    } else if (isdigit(str[0])) {
         // absolute monitor index
-        int idx = atoi(string.c_str());
+        int idx = atoi(str.c_str());
         if (idx < 0 || idx >= (int)size()) {
             return -1;
         }
@@ -101,7 +101,7 @@ int MonitorManager::string_to_monitor_index(std::string string) {
     } else {
         // monitor string
         for (unsigned i = 0; i < size(); i++) {
-          if (byIdx(i)->name == string) {
+          if (byIdx(i)->name == str) {
             return (int)i;
           }
         }
