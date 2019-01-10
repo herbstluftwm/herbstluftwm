@@ -1,4 +1,5 @@
 #include "types.h"
+
 #include "completion.h"
 
 Input &Input::operator>>(std::string &val)

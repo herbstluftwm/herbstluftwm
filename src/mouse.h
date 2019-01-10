@@ -1,10 +1,10 @@
 #ifndef __HERBSTLUFT_MOUSE_H_
 #define __HERBSTLUFT_MOUSE_H_
 
-#include "types.h"
-
 #include <X11/Xlib.h>
+
 #include "glib-backports.h"
+#include "types.h"
 
 // various snap-flags
 enum SnapFlags {

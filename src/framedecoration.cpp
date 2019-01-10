@@ -1,16 +1,16 @@
 #include "framedecoration.h"
 
-#include "tag.h"
-#include "stack.h"
-#include "settings.h"
-#include "globals.h"
-#include "x11-utils.h"
-#include "utils.h"
-#include "ewmh.h"
-#include "client.h"
-
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+
+#include "client.h"
+#include "ewmh.h"
+#include "globals.h"
+#include "settings.h"
+#include "stack.h"
+#include "tag.h"
+#include "utils.h"
+#include "x11-utils.h"
 
 using namespace std;
 

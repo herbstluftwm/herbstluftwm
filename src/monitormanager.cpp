@@ -1,18 +1,18 @@
-
 #include "monitormanager.h"
-#include <memory>
-#include <cassert>
 
-#include "tagmanager.h"
+#include <cassert>
+#include <memory>
+
+#include "ewmh.h"
 #include "globals.h"
+#include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
 #include "settings.h"
-#include "ipc-protocol.h"
-#include "utils.h"
 #include "stack.h"
-#include "ewmh.h"
 #include "tag.h"
+#include "tagmanager.h"
+#include "utils.h"
 
 using namespace std;
 

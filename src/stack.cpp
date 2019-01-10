@@ -1,17 +1,16 @@
 #include "stack.h"
 
+#include <algorithm>
+#include <cassert>
+#include <cstdio>
+#include <iomanip>
+
 #include "client.h"
 #include "ewmh.h"
 #include "globals.h"
 #include "monitor.h"
 #include "tag.h"
 #include "utils.h"
-
-#include <algorithm>
-#include <cstdio>
-#include <cassert>
-#include <iomanip>
-
 
 static struct HSTreeInterface stack_nth_child(std::shared_ptr<Stack> root, size_t idx);
 static size_t                  stack_child_count(std::shared_ptr<Stack> root);

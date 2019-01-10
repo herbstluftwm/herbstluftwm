@@ -6,7 +6,6 @@
 #include "ipc-protocol.h"
 #include "utils.h"
 
-
 /*!
  * Implements the "rule" IPC command
  */

@@ -1,19 +1,20 @@
-#include "globals.h"
 #include "clientmanager.h"
+
+#include <X11/Xlib.h>
+#include <string>
+
 #include "client.h"
 #include "completion.h"
-
-#include <string>
-#include <X11/Xlib.h>
 #include "ewmh.h"
-#include "root.h"
-#include "stack.h"
-#include "mouse.h"
-#include "monitor.h"
-#include "rulemanager.h"
-#include "tag.h"
-#include "layout.h"
+#include "globals.h"
 #include "ipc-protocol.h"
+#include "layout.h"
+#include "monitor.h"
+#include "mouse.h"
+#include "root.h"
+#include "rulemanager.h"
+#include "stack.h"
+#include "tag.h"
 #include "utils.h"
 
 using namespace std;

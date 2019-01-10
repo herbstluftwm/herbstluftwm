@@ -3,22 +3,19 @@
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
 
-#include "../src/ipc-protocol.h"
-#include "ipc-client.h"
-#include "client-utils.h"
-
-// standard
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
-
-// gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+
+#include "../src/ipc-protocol.h"
+#include "ipc-client.h"
+#include "client-utils.h"
 
 struct HCConnection {
     Display*    display;

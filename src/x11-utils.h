@@ -1,11 +1,10 @@
 #ifndef __HERBST_X11_UTILS_H_
 #define __HERBST_X11_UTILS_H_
 
-#include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
 
 #include "x11-types.h"
-
 
 // cut a rect out of the window, s.t. the window has geometry rect and a frame
 // of width framewidth remains

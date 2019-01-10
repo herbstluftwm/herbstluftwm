@@ -1,7 +1,8 @@
 #include "x11-utils.h"
-#include "globals.h"
 
-#include<X11/extensions/shape.h>
+#include <X11/extensions/shape.h>
+
+#include "globals.h"
 
 /**
  * \brief   cut a rect out of the window, s.t. the window has geometry rect and

@@ -4,9 +4,9 @@
 #include <functional>
 #include <regex>
 
+#include "optional.h"
 #include "types.h"
 #include "utils.h"
-#include "optional.h"
 
 class HSClient;
 

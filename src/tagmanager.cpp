@@ -1,13 +1,14 @@
 #include "tagmanager.h"
+
 #include <memory>
 
-#include "globals.h"
-#include "monitor.h"
-#include "ipc-protocol.h"
-#include "ewmh.h"
-#include "monitormanager.h"
 #include "client.h"
+#include "ewmh.h"
+#include "globals.h"
+#include "ipc-protocol.h"
 #include "layout.h"
+#include "monitor.h"
+#include "monitormanager.h"
 #include "stack.h"
 #include "utils.h"
 

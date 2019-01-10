@@ -1,9 +1,10 @@
 #ifndef HERBSTLUFT_TYPES_H
 #define HERBSTLUFT_TYPES_H
 
-#include "arglist.h"
-#include <set>
 #include <map>
+#include <set>
+
+#include "arglist.h"
 
 #define Ptr(X) std::shared_ptr<X>
 #define WPtr(X) std::weak_ptr<X>

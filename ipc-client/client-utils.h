@@ -1,4 +1,3 @@
-
 #ifndef __HERBSTLUFT_CLIENT_UTILS_H_
 #define __HERBSTLUFT_CLIENT_UTILS_H_
 

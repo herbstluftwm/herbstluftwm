@@ -1,9 +1,8 @@
 #include "completion.h"
+
+#include <algorithm>
 #include <string>
 #include <vector>
-#include <algorithm>
-// #include <iostream>
-
 
 /** Construct a completion context
  *

@@ -1,18 +1,18 @@
+#include "tag.h"
+
 #include <cstring>
 
-#include "tag.h"
-#include "tagmanager.h"
-
-#include "root.h"
-#include "globals.h"
 #include "client.h"
 #include "clientmanager.h"
-#include "ipc-protocol.h"
+#include "globals.h"
 #include "hook.h"
+#include "ipc-protocol.h"
 #include "layout.h"
-#include "stack.h"
 #include "monitor.h"
+#include "root.h"
 #include "settings.h"
+#include "stack.h"
+#include "tagmanager.h"
 #include "utils.h"
 
 using namespace std;

@@ -4,8 +4,9 @@
 /** commands that don't belong to a particular object
  * but modify the global state */
 
-#include "types.h"
 #include <functional>
+
+#include "types.h"
 
 class Root;
 class Attribute;

@@ -1,14 +1,14 @@
 #ifndef __HERBSTLUFT_LAYOUT_H_
 #define __HERBSTLUFT_LAYOUT_H_
 
-#include "x11-types.h"
-#include "glib-backports.h"
-#include "types.h"
 #include <cstdlib>
 #include <functional>
-#include "tilingresult.h"
-
 #include <memory>
+
+#include "glib-backports.h"
+#include "tilingresult.h"
+#include "types.h"
+#include "x11-types.h"
 
 #define LAYOUT_DUMP_BRACKETS "()" /* must consist of exactly two chars */
 #define LAYOUT_DUMP_WHITESPACES " \t\n" /* must be at least one char */

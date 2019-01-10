@@ -1,6 +1,7 @@
-
 #include "byname.h"
+
 #include <cassert>
+
 #include "attribute.h"
 
 ByName::ByName(Object& parent_)

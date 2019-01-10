@@ -1,8 +1,8 @@
 #ifndef HOOKMANAGER_H
 #define HOOKMANAGER_H
 
-#include "object.h"
 #include "attribute.h"
+#include "object.h"
 
 class HookManager : public Object
 {

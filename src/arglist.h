@@ -1,10 +1,10 @@
 #ifndef HERBSTLUFT_ARGLIST_H
 #define HERBSTLUFT_ARGLIST_H
 
-#include <vector>
-#include <string>
-#include <sstream>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 class ArgList {
 

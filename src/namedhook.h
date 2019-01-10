@@ -3,9 +3,9 @@
 
 #ifdef ENABLE_NAMED_HOOK
 
-#include "object.h"
-#include "hook.h"
 #include "attribute_.h"
+#include "hook.h"
+#include "object.h"
 
 class NamedHook : public Object, public Hook {
 public:

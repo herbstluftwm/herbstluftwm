@@ -1,6 +1,7 @@
 #include "rectangle.h"
-#include "utils.h"
+
 #include "ipc-protocol.h"
+#include "utils.h"
 
 static bool rects_intersect(const Rectangle &a, const Rectangle &b) {
     bool is = true;

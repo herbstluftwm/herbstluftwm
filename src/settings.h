@@ -1,12 +1,13 @@
 #ifndef __HERBSTLUFT_SETTINGS_H_
 #define __HERBSTLUFT_SETTINGS_H_
 
-#include "x11-types.h"
-#include "globals.h"
-#include "types.h"
-#include "object.h"
-#include "attribute_.h"
 #include <string>
+
+#include "attribute_.h"
+#include "globals.h"
+#include "object.h"
+#include "types.h"
+#include "x11-types.h"
 
 class Root;
 class Completion;
