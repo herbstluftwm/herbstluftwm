@@ -34,7 +34,7 @@ int RootCommands::set_attr_cmd(Input in, Output output) {
     Attribute* a = getAttribute(path, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
     std::string error_message = a->change(new_value);
-    if (error_message == "") {
+    if (error_message.empty()) {
         return 0;
     } else {
         output << in.command() << ": \""
@@ -69,7 +69,7 @@ int RootCommands::attr_cmd(Input in, Output output) {
     } else {
         // another argument -> set the value
         std::string error_message = a->change(new_value);
-        if (error_message == "") {
+        if (error_message.empty()) {
             return 0;
         } else {
             output << in.command() << ": \""
@@ -91,7 +91,7 @@ Attribute* RootCommands::getAttribute(std::string path, Output output) {
     Attribute* a = child->attribute(attr_path.second);
     if (!a) {
         auto object_path = attr_path.first.join('.');
-        if (object_path == "" ) {
+        if (object_path.empty()) {
             object_path = "The root object";
         } else {
             // equip object_path with quotes
@@ -107,7 +107,7 @@ Attribute* RootCommands::getAttribute(std::string path, Output output) {
 
 int RootCommands::print_object_tree_command(Input in, Output output) {
     auto path = Path(in.empty() ? std::string("") : in.front()).toVector();
-    while (!path.empty() && path.back() == "") {
+    while (!path.empty() && path.back().empty()) {
         path.pop_back();
     }
     auto child = root->child(path);

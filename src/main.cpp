@@ -39,6 +39,7 @@
 #include <X11/Xatom.h>
 #include <X11/cursorfont.h>
 
+using std::unique_ptr;
 
 // globals:
 int g_verbose = 0;

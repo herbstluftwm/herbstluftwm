@@ -132,7 +132,7 @@ int TagManager::tag_rename_command(Input input, Output output) {
     if (!(input >> old_name >> new_name)) {
         return HERBST_NEED_MORE_ARGS;
     }
-    if (new_name == "") {
+    if (new_name.empty()) {
         output << input.command() << ": An empty tag name is not permitted\n";
         return HERBST_INVALID_ARGUMENT;
     }

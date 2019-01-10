@@ -74,29 +74,32 @@ public:
     std::string     keymask; // Which keymask rule should be applied for this client
 
     std::experimental::optional<bool> pseudotile;
+    std::experimental::optional<bool> ewmhRequests;
+    std::experimental::optional<bool> ewmhNotify;
 };
 
 class HSConsequence {
 public:
-    static const std::map<std::string, std::function<void(HSConsequence*, HSClient*, HSClientChanges*)>> appliers;
+    using Applier = std::function<void(const HSConsequence*, const HSClient*, HSClientChanges*)>;
+    static const std::map<std::string, Applier> appliers;
 
     std::string name;
     int value_type;
     std::string value;
 
 private:
-    void applyTag(HSClient* client, HSClientChanges* changes);
-    void applyIndex(HSClient* client, HSClientChanges* changes);
-    void applyFocus(HSClient* client, HSClientChanges* changes);
-    void applySwitchtag(HSClient* client, HSClientChanges* changes);
-    void applyManage(HSClient* client, HSClientChanges* changes);
-    void applyPseudotile(HSClient* client, HSClientChanges* changes);
-    void applyFullscreen(HSClient* client, HSClientChanges* changes);
-    void applyEwmhrequests(HSClient* client, HSClientChanges* changes);
-    void applyEwmhnotify(HSClient* client, HSClientChanges* changes);
-    void applyHook(HSClient* client, HSClientChanges* changes);
-    void applyKeymask(HSClient* client, HSClientChanges* changes);
-    void applyMonitor(HSClient* client, HSClientChanges* changes);
+    void applyTag(const HSClient* client, HSClientChanges* changes) const;
+    void applyIndex(const HSClient* client, HSClientChanges* changes) const;
+    void applyFocus(const HSClient* client, HSClientChanges* changes) const;
+    void applySwitchtag(const HSClient* client, HSClientChanges* changes) const;
+    void applyManage(const HSClient* client, HSClientChanges* changes) const;
+    void applyPseudotile(const HSClient* client, HSClientChanges* changes) const;
+    void applyFullscreen(const HSClient* client, HSClientChanges* changes) const;
+    void applyEwmhrequests(const HSClient* client, HSClientChanges* changes) const;
+    void applyEwmhnotify(const HSClient* client, HSClientChanges* changes) const;
+    void applyHook(const HSClient* client, HSClientChanges* changes) const;
+    void applyKeymask(const HSClient* client, HSClientChanges* changes) const;
+    void applyMonitor(const HSClient* client, HSClientChanges* changes) const;
 };
 
 class HSRule {

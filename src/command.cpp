@@ -20,6 +20,13 @@
 #include <search.h>
 #include <sstream>
 
+using std::function;
+using std::shared_ptr;
+using std::string;
+using std::to_string;
+using std::unique_ptr;
+using std::vector;
+
 extern char** environ;
 
 // if the current completion needs shell quoting and other shell specific
@@ -263,7 +270,7 @@ function <int(Input,Output)> CommandBinding::commandFromCFunc(
          * until the command is finished.
          */
         shared_ptr<char*> argv(new char*[args.size() + 1],
-                default_delete<char*[]>());
+                std::default_delete<char*[]>());
 
         // Most of the commands want a char**, not a const char**. Let's
         // hope, they don't actually modify it.
@@ -341,7 +348,7 @@ int Commands::call(Input args, Output out) {
 
 shared_ptr<const CommandTable> Commands::get() {
     if (!command_table) {
-        throw logic_error("CommandTable not initialized, but get() called.");
+        throw std::logic_error("CommandTable not initialized, but get() called.");
     }
     return command_table;
 }
@@ -392,7 +399,7 @@ int call_command_no_output(int argc, char** argv) {
 int list_commands(Output output)
 {
     for (auto cmd : *Commands::get()) {
-        output << cmd.first << endl;
+        output << cmd.first << std::endl;
     }
     return 0;
 }
