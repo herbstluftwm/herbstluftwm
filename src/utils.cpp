@@ -77,10 +77,10 @@ GString* window_class_to_g_string(Display* dpy, Window window) {
     if (0 == XGetClassHint(dpy, window, &hint)) {
         return g_string_new("");
     }
-    GString* string = g_string_new(hint.res_class ? hint.res_class : "");
+    GString* str = g_string_new(hint.res_class ? hint.res_class : "");
     if (hint.res_name) XFree(hint.res_name);
     if (hint.res_class) XFree(hint.res_class);
-    return string;
+    return str;
 }
 
 GString* window_instance_to_g_string(Display* dpy, Window window) {
@@ -88,18 +88,18 @@ GString* window_instance_to_g_string(Display* dpy, Window window) {
     if (0 == XGetClassHint(dpy, window, &hint)) {
         return g_string_new("");
     }
-    GString* string = g_string_new(hint.res_name ? hint.res_name : "");
+    GString* str = g_string_new(hint.res_name ? hint.res_name : "");
     if (hint.res_name) XFree(hint.res_name);
     if (hint.res_class) XFree(hint.res_class);
-    return string;
+    return str;
 }
 
 
 bool is_herbstluft_window(Display* dpy, Window window) {
-    GString* string = window_class_to_g_string(dpy, window);
+    GString* str = window_class_to_g_string(dpy, window);
     bool result;
-    result = !strcmp(string->str, HERBST_FRAME_CLASS);
-    g_string_free(string, true);
+    result = !strcmp(str->str, HERBST_FRAME_CLASS);
+    g_string_free(str, true);
     return result;
 }
 
@@ -216,28 +216,28 @@ const char* strlasttoken(const char* str, const char* delim) {
     return str;
 }
 
-bool string_to_bool(const std::string& string, bool oldvalue) {
-    return string_to_bool_error(string.c_str(), oldvalue, nullptr);
+bool string_to_bool(const std::string& str, bool oldvalue) {
+    return string_to_bool_error(str.c_str(), oldvalue, nullptr);
 }
 
-bool string_to_bool(const char* string, bool oldvalue) {
-    return string_to_bool_error(string, oldvalue, nullptr);
+bool string_to_bool(const char* str, bool oldvalue) {
+    return string_to_bool_error(str, oldvalue, nullptr);
 }
 
-bool string_to_bool_error(const char* string, bool oldvalue, bool* error) {
+bool string_to_bool_error(const char* str, bool oldvalue, bool* error) {
     bool val = oldvalue;
     if (error) {
         *error = false;
     }
-    if (!strcmp(string, "on")) {
+    if (!strcmp(str, "on")) {
         val = true;
-    } else if (!strcmp(string, "off")) {
+    } else if (!strcmp(str, "off")) {
         val = false;
-    } else if (!strcmp(string, "true")) {
+    } else if (!strcmp(str, "true")) {
         val = true;
-    } else if (!strcmp(string, "false")) {
+    } else if (!strcmp(str, "false")) {
         val = false;
-    } else if (!strcmp(string, "toggle")) {
+    } else if (!strcmp(str, "toggle")) {
         val = ! oldvalue;
     } else if (error) {
         *error = true;
