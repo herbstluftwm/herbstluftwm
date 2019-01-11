@@ -1,13 +1,13 @@
 #ifndef __HERBST_UTILS_H_
 #define __HERBST_UTILS_H_
 
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#include <array>
+#include <cstddef>
+
 #include "glib-backports.h"
 #include "types.h"
-
-#include <cstddef>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <array>
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))

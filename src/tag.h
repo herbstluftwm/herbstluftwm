@@ -1,11 +1,11 @@
 #ifndef __HERBSTLUFT_TAG_H_
 #define __HERBSTLUFT_TAG_H_
 
-#include "object.h"
-#include "attribute_.h"
-
-#include "glib-backports.h"
 #include <memory>
+
+#include "attribute_.h"
+#include "glib-backports.h"
+#include "object.h"
 
 class Stack;
 class HSFrame;

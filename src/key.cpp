@@ -1,16 +1,18 @@
 #include "key.h"
-#include "client.h"
-#include "globals.h"
-#include "utils.h"
-#include "ipc-protocol.h"
-#include "command.h"
 
-#include <cstdio>
-#include <cstring>
 #include <regex.h>
-#include "glib-backports.h"
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
+#include <cstdio>
+#include <cstring>
+
+#include "client.h"
+#include "command.h"
+#include "glib-backports.h"
+#include "globals.h"
+#include "ipc-protocol.h"
+#include "utils.h"
+
 
 static unsigned int numlockmask = 0;
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask))

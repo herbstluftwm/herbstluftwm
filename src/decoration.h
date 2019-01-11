@@ -1,15 +1,15 @@
 #ifndef __DECORATION_H_
 #define __DECORATION_H_
 
-#include "object.h"
-#include "attribute_.h"
-#include "x11-types.h"
-
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
-#include <X11/Xatom.h>
 #include <map>
+
+#include "attribute_.h"
+#include "object.h"
+#include "x11-types.h"
 
 class HSClient;
 class Settings;

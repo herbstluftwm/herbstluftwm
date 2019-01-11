@@ -1,4 +1,3 @@
-
 #include "entity.h"
 
 bool operator<(Type t1, Type t2)

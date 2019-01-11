@@ -1,10 +1,10 @@
 #include "xconnection.h"
-#include "globals.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
-
 #include <iostream>
+
+#include "globals.h"
 
 XConnection::XConnection(Display* disp)
     : m_display(disp) {

@@ -92,6 +92,10 @@ The coding style is similar to the Linux-kernel style with some changes:
   - If a function returns success or failure, then encode it in a bool (from
     stdbool.h). Use main()-like exit codes (0 = success, non zero =
     failure) only for commands.
+  - Order includes according to the Google C++ Style Guide:
+    https://google.github.io/styleguide/cppguide.html#Names_and_Order_of_Includes
+    (Note that for the purposes of this rule, all <…> headers are system headers)
+
 
 
 Internal structure

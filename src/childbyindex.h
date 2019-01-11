@@ -2,10 +2,9 @@
 #define CHILDBYINDEX_H
 
 #include <string>
-#include "object.h"
+
 #include "attribute_.h"
-
-
+#include "object.h"
 
 /** an object that carries a vector of children objects, each accessible by its
  * index

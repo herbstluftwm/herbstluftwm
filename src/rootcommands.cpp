@@ -1,16 +1,16 @@
 #include "rootcommands.h"
 
+#include <algorithm>
+#include <cstring>
+#include <functional>
+#include <iostream>
+#include <map>
+
+#include "attribute_.h"
+#include "command.h"
+#include "completion.h"
 #include "ipc-protocol.h"
 #include "root.h"
-#include "command.h"
-#include "attribute_.h"
-#include "completion.h"
-
-#include <algorithm>
-#include <map>
-#include <functional>
-#include <cstring>
-#include <iostream>
 
 using namespace std;
 

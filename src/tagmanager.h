@@ -1,9 +1,9 @@
 #ifndef __HLWM_TAGMANAGER_H_
 #define __HLWM_TAGMANAGER_H_
 
-#include "tag.h"
-#include "childbyindex.h"
 #include "byname.h"
+#include "childbyindex.h"
+#include "tag.h"
 
 class Settings;
 class MonitorManager;

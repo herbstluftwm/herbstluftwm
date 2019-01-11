@@ -3,8 +3,8 @@
 
 #include <list>
 
-#include "x11-types.h"
 #include "framedecoration.h"
+#include "x11-types.h"
 
 class HSClient;
 

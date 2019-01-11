@@ -1,10 +1,10 @@
 #ifndef __HS_OBJECT_H_
 #define __HS_OBJECT_H_
 
-#include "types.h"
-
 #include <map>
 #include <vector>
+
+#include "types.h"
 
 #define OBJECT_PATH_SEPARATOR '.'
 #define USER_ATTRIBUTE_PREFIX "my_"

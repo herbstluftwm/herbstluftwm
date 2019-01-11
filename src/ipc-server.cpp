@@ -1,18 +1,17 @@
-#include "globals.h"
-#include "command.h"
-#include "utils.h"
-#include "ipc-protocol.h"
 #include "ipc-server.h"
 
-#include <cstring>
-#include <cstdio>
-#include "glib-backports.h"
-
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/Xatom.h>
-
+#include <cstdio>
+#include <cstring>
 #include <sstream>
+
+#include "command.h"
+#include "glib-backports.h"
+#include "globals.h"
+#include "ipc-protocol.h"
+#include "utils.h"
 
 // public callable functions
 //

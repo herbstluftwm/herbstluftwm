@@ -1,32 +1,30 @@
-#include "root.h"
 #include "client.h"
-#include "clientmanager.h"
-#include "settings.h"
-#include "globals.h"
-#include "layout.h"
-#include "monitor.h"
-#include "tag.h"
-#include "stack.h"
-#include "utils.h"
-#include "hook.h"
-#include "mouse.h"
-#include "ewmh.h"
-#include "ipc-protocol.h"
-#include "decoration.h"
-#include "key.h"
-#include "utils.h"
-// system
-#include "glib-backports.h"
+
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#include <X11/Xproto.h>
+#include <X11/Xutil.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
-// gui
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
-#include <X11/Xatom.h>
 
+#include "clientmanager.h"
+#include "decoration.h"
+#include "ewmh.h"
+#include "glib-backports.h"
+#include "globals.h"
+#include "hook.h"
+#include "ipc-protocol.h"
+#include "key.h"
+#include "layout.h"
+#include "monitor.h"
+#include "mouse.h"
+#include "root.h"
+#include "settings.h"
+#include "stack.h"
+#include "tag.h"
+#include "utils.h"
 
 static int g_monitor_float_treshold = 24;
 
