@@ -3,10 +3,11 @@ install(FILES _herbstclient           DESTINATION ${ZSHCOMPLETIONDIR})
 install(FILES herbstluftwm.desktop    DESTINATION ${XSESSIONSDIR})
 
 install(PROGRAMS
-	autostart
-	panel.sh
-	restartpanels.sh
-	dmenu_run_hlwm
-	DESTINATION ${CONFIGDIR}
+    autostart
+    panel.sh
+    restartpanels.sh
+    dmenu_run_hlwm
+    DESTINATION ${CONFIGDIR}
 )
 
+# vim: et:ts=4:sw=4
