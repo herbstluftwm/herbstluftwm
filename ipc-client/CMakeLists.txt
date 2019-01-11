@@ -5,22 +5,23 @@ install(TARGETS herbstclient DESTINATION ${BINDIR})
 
 # additional sources
 target_sources(herbstclient PRIVATE
-	client-utils.c	client-utils.h
-	ipc-client.c	ipc-client.h
-)
+    client-utils.c	client-utils.h
+    ipc-client.c	ipc-client.h
+    )
 
 # we require C99, X/Open 6 for POSIC 2004
 set_target_properties(herbstclient PROPERTIES
-	C_STANDARD 99
-	C_STANDARD_REQUIRED ON
-	COMPILE_DEFINITIONS _XOPEN_SOURCE=600)
+    C_STANDARD 99
+    C_STANDARD_REQUIRED ON
+    COMPILE_DEFINITIONS _XOPEN_SOURCE=600)
 
 # dependencies X11 & GLIB2
 target_include_directories(herbstclient SYSTEM PUBLIC
-	${X11_X11_INCLUDE_PATH} ${GLIB2_INCLUDE_DIRS})
+    ${X11_X11_INCLUDE_PATH} ${GLIB2_INCLUDE_DIRS})
 target_link_libraries(herbstclient PUBLIC
-	${X11_X11_LIB} ${GLIB2_LIBRARIES})
+    ${X11_X11_LIB} ${GLIB2_LIBRARIES})
 
 # communicate version string
 export_version(main.c)
 
+# vim: et:ts=4:sw=4
