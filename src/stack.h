@@ -2,9 +2,9 @@
 #define __HERBST_STACK_H_
 
 #include <X11/Xlib.h>
-#include "glib-backports.h"
 #include <array>
 
+#include "glib-backports.h"
 #include "types.h"
 
 enum HSLayer {

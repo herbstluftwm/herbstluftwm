@@ -1,20 +1,19 @@
-#include "globals.h"
 #include "utils.h"
-// standard
-#include <string>
-#include <sstream>
-#include <cstring>
-#include <cstdlib>
-// gui
+
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include "glib-backports.h"
-#include "settings.h"
-
-#include <time.h>
 #include <sys/time.h>
+#include <time.h>
+#include <cstdlib>
+#include <cstring>
+#include <sstream>
+#include <string>
+
+#include "glib-backports.h"
+#include "globals.h"
+#include "settings.h"
 
 using namespace std;
 

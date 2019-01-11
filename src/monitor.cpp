@@ -1,28 +1,29 @@
+#include "monitor.h"
+
 #include <cassert>
 #include <cstring>
 #include <sstream>
+#include <vector>
+
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
-#include "root.h"
-#include "globals.h"
-#include "ipc-protocol.h"
-#include "utils.h"
-#include "hook.h"
-#include "layout.h"
-#include "tag.h"
+#include "client.h"
+#include "clientmanager.h"
 #include "ewmh.h"
-#include "monitor.h"
+#include "globals.h"
+#include "hook.h"
+#include "ipc-protocol.h"
+#include "layout.h"
+#include "monitormanager.h"
+#include "rectangle.h"
+#include "root.h"
 #include "settings.h"
 #include "stack.h"
-#include "client.h"
-#include "rectangle.h"
-#include "monitormanager.h"
-#include "clientmanager.h"
+#include "tag.h"
 #include "tagmanager.h"
-
-#include <vector>
+#include "utils.h"
 
 using namespace std;
 

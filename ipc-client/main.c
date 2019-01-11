@@ -13,10 +13,8 @@
 #include <string.h>
 
 #include "../src/ipc-protocol.h"
-
 #include "ipc-client.h"
 #include "client-utils.h"
-#include "../src/ipc-protocol.h"
 
 static void print_help(char* command, FILE* file);
 static void init_hook_regex(int argc, char* argv[]);

@@ -1,24 +1,23 @@
-#include "client.h"
-#include "globals.h"
-#include "utils.h"
-#include "ipc-protocol.h"
-#include "settings.h"
 #include "layout.h"
-#include "monitor.h"
-#include "floating.h"
-#include "tagmanager.h"
-#include "monitormanager.h"
-#include "utils.h"
 
 #include <glib.h>
-#include "glib-backports.h"
+#include <algorithm>
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
-#include <cassert>
-
 #include <memory>
 #include <sstream>
-#include <algorithm>
+
+#include "client.h"
+#include "floating.h"
+#include "glib-backports.h"
+#include "globals.h"
+#include "ipc-protocol.h"
+#include "monitor.h"
+#include "monitormanager.h"
+#include "settings.h"
+#include "tagmanager.h"
+#include "utils.h"
 
 using namespace std;
 

@@ -1,14 +1,14 @@
-#include "globals.h"
 #include "x11-types.h"
-#include "glib-backports.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
+#include <iomanip>
+#include <iostream>
+
+#include "glib-backports.h"
+#include "globals.h"
 
 Color Color::black() {
     // currently, the constructor without arguments constructs black

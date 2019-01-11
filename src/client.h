@@ -1,15 +1,15 @@
 #ifndef __CLIENTLIST_H_
 #define __CLIENTLIST_H_
 
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
-#include <X11/Xatom.h>
-#include "x11-types.h"
 
-#include "object.h"
-#include "decoration.h"
 #include "attribute_.h"
+#include "decoration.h"
+#include "object.h"
+#include "x11-types.h"
 
 class HSTag;
 class Monitor;

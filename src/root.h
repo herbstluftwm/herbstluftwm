@@ -1,8 +1,8 @@
 #ifndef ROOT_H
 #define ROOT_H
 
-#include "object.h"
 #include "child.h"
+#include "object.h"
 
 // new object tree root.
 

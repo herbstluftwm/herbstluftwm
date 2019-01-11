@@ -1,23 +1,22 @@
 #include "mouse.h"
-#include "globals.h"
-#include "client.h"
-#include "layout.h"
-#include "monitor.h"
-#include "tag.h"
-#include "key.h"
-#include "ipc-protocol.h"
-#include "settings.h"
-#include "command.h"
-#include "utils.h"
-#include "x11-utils.h"
 
+#include <X11/cursorfont.h>
+#include <X11/Xlib.h>
 #include <cstdlib>
 #include <cstring>
-#include "glib-backports.h"
 
-// gui
-#include <X11/Xlib.h>
-#include <X11/cursorfont.h>
+#include "client.h"
+#include "command.h"
+#include "glib-backports.h"
+#include "globals.h"
+#include "ipc-protocol.h"
+#include "key.h"
+#include "layout.h"
+#include "monitor.h"
+#include "settings.h"
+#include "tag.h"
+#include "utils.h"
+#include "x11-utils.h"
 
 static Point2D          g_button_drag_start;
 static Rectangle        g_win_drag_start;

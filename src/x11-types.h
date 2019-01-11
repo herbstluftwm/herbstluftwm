@@ -1,12 +1,13 @@
 #ifndef __HERBST_X11_TYPES_H_
 #define __HERBST_X11_TYPES_H_
 
-#include "types.h"
-#include <vector>
-#include <string>
+#include <X11/Xlib.h>
 #include <iostream>
 #include <sstream>
-#include <X11/Xlib.h>
+#include <string>
+#include <vector>
+
+#include "types.h"
 
 class Color {
 public:

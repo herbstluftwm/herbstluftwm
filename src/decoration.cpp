@@ -1,8 +1,9 @@
 #include "decoration.h"
+
 #include "client.h"
+#include "ewmh.h"
 #include "globals.h"
 #include "settings.h"
-#include "ewmh.h"
 
 std::map<Window,HSClient*> Decoration::decwin2client;
 

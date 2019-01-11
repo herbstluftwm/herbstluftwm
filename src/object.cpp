@@ -1,19 +1,19 @@
 #include "object.h"
+
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <memory>
+#include <sstream>
+
 #include "arglist.h"
 #include "utils.h"
 #include "cassert"
 #include "globals.h"
 #include "hook.h"
 #include "attribute.h"
-
-#include <iostream>
-#include <memory>
-
-#include <cstring>
-#include <cstdlib>
-#include <cstdio>
-#include <sstream>
-#include <algorithm>
 
 using namespace std;
 

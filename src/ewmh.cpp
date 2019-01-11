@@ -1,22 +1,22 @@
 #include "ewmh.h"
-#include "utils.h"
-#include "globals.h"
-#include "layout.h"
-#include "client.h"
-#include "monitor.h"
-#include "settings.h"
-#include "stack.h"
-#include "mouse.h"
-#include "tagmanager.h"
 
-#include "glib-backports.h"
-#include <cstring>
-#include <cstdio>
-#include <limits>
-
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/Xatom.h>
+#include <cstdio>
+#include <cstring>
+#include <limits>
+
+#include "client.h"
+#include "glib-backports.h"
+#include "globals.h"
+#include "layout.h"
+#include "monitor.h"
+#include "mouse.h"
+#include "settings.h"
+#include "stack.h"
+#include "tagmanager.h"
+#include "utils.h"
 
 Atom g_netatom[NetCOUNT];
 

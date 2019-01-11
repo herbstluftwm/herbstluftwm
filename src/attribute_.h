@@ -1,12 +1,13 @@
 #ifndef ATTRIBUTE__H
 #define ATTRIBUTE__H
 
+#include <functional>
+#include <stdexcept>
+
 #include "attribute.h"
 #include "object.h"
 #include "signal.h"
 #include "x11-types.h" // for Color
-#include <functional>
-#include <stdexcept>
 
 class Completion;
 

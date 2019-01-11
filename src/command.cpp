@@ -1,24 +1,30 @@
-#include "root.h"
-#include "ipc-protocol.h"
 #include "command.h"
-#include "completion.h"
-#include "utils.h"
-#include "layout.h"
-#include "tag.h"
-#include "key.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <sstream>
+
 #include "client.h"
 #include "clientmanager.h"
+#include "completion.h"
+#include "glib-backports.h"
+#include "ipc-protocol.h"
+#include "key.h"
+#include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "object.h"
 #include "mouse.h"
+#include "object.h"
+#include "root.h"
+#include "tag.h"
+#include "utils.h"
 
-#include "glib-backports.h"
-#include <cstring>
-#include <cstdlib>
-#include <cstdio>
-#include <search.h>
-#include <sstream>
+// Quarantined inclusion to avoid polluting the global namespace:
+namespace search_h {
+    #include <search.h>
+} // namespace search_h
+using search_h::lfind;
 
 using std::function;
 using std::shared_ptr;

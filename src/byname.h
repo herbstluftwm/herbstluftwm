@@ -3,8 +3,8 @@
 
 #include <map>
 
-#include "object.h"
 #include "hook.h"
+#include "object.h"
 
 class ByName : public Object, public Hook {
 public:

@@ -1,13 +1,13 @@
 #include "floating.h"
 
-#include <cstdlib>
 #include <algorithm>
+#include <cstdlib>
 
 #include "client.h"
-#include "tag.h"
-#include "monitor.h"
 #include "layout.h"
+#include "monitor.h"
 #include "settings.h"
+#include "tag.h"
 #include "utils.h"
 
 using namespace std;

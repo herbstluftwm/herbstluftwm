@@ -1,13 +1,13 @@
 #ifndef CLIENTMANAGER_H
 #define CLIENTMANAGER_H
 
-#include "client.h"
-#include "object.h"
-#include "child.h"
-#include "signal.h"
-
 #include <X11/Xlib.h>
 #include <unordered_map>
+
+#include "child.h"
+#include "client.h"
+#include "object.h"
+#include "signal.h"
 
 class Theme;
 class HSClient;

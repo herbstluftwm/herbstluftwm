@@ -1,17 +1,18 @@
 #include "root.h"
-#include "tagmanager.h"
-#include "hookmanager.h"
-#include "clientmanager.h"
-#include "monitormanager.h"
-#include "globals.h"
-#include "settings.h"
-#include "tmp.h"
-#include "decoration.h"
-#include "rootcommands.h"
-#include "utils.h"
-#include "rulemanager.h"
 
 #include <memory>
+
+#include "clientmanager.h"
+#include "decoration.h"
+#include "globals.h"
+#include "hookmanager.h"
+#include "monitormanager.h"
+#include "rootcommands.h"
+#include "rulemanager.h"
+#include "settings.h"
+#include "tagmanager.h"
+#include "tmp.h"
+#include "utils.h"
 
 std::shared_ptr<Root> Root::root_;
 

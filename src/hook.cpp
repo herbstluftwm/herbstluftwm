@@ -1,18 +1,19 @@
-#include "globals.h"
-#include "utils.h"
-#include "ipc-protocol.h"
-#include "tag.h"
+#include "hook.h"
 
-#include <cassert>
-#include <cstdio>
 #include <stdarg.h>
-// other
-#include "glib-backports.h"
-// gui
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#include <cassert>
+#include <cstdio>
+
+#include "glib-backports.h"
+#include "globals.h"
+#include "ipc-protocol.h"
+#include "tag.h"
+#include "utils.h"
+
 
 static Window g_event_window;
 

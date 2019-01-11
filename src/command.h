@@ -1,12 +1,12 @@
 #ifndef __HERBSTLUFT_COMMAND_H_
 #define __HERBSTLUFT_COMMAND_H_
 
+#include <functional>
+#include <string>
+#include <unordered_map>
+
 #include "glib-backports.h"
 #include "types.h"
-
-#include <string>
-#include <functional>
-#include <unordered_map>
 
 // returns a command binding that internalizes object to given a command that
 // calls the member function of the given object

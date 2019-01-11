@@ -1,8 +1,8 @@
 #ifndef __HLWM_XCONNECTION_H_
 #define __HLWM_XCONNECTION_H_
 
-#include <string>
 #include <X11/Xlib.h>
+#include <string>
 
 class XConnection {
 private:

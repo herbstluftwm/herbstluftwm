@@ -1,16 +1,16 @@
-#include "root.h"
 #include "settings.h"
-#include "client.h"
-#include "layout.h"
-#include "tag.h"
-#include "ipc-protocol.h"
-#include "ewmh.h"
-#include "monitormanager.h"
-#include "utils.h"
-#include "completion.h"
 
 #include <sstream>
 
+#include "client.h"
+#include "completion.h"
+#include "ewmh.h"
+#include "ipc-protocol.h"
+#include "layout.h"
+#include "monitormanager.h"
+#include "root.h"
+#include "tag.h"
+#include "utils.h"
 
 using namespace std;
 

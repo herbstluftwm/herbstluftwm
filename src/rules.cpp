@@ -1,13 +1,13 @@
 #include "rules.h"
 
+#include <algorithm>
+#include <cstdio>
+
 #include "globals.h"
 #include "utils.h"
 #include "ewmh.h"
 #include "client.h"
 #include "hook.h"
-
-#include <cstdio>
-#include <algorithm>
 
 /// TYPES ///
 

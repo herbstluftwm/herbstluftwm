@@ -6,7 +6,6 @@
 #include "object.h"
 #include "rules.h"
 
-
 class RuleManager : public Object {
 public:
     int addRuleCommand(Input input, Output output);

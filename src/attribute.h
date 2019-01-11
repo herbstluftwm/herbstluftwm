@@ -1,10 +1,10 @@
 #ifndef ATTRIBUTE_H
 #define ATTRIBUTE_H
 
-#include "entity.h"
-
 #include <string>
 #include <vector>
+
+#include "entity.h"
 
 class Object;
 class Signal;
