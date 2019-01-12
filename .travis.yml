@@ -68,9 +68,18 @@ jobs:
               - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug .
               - ninja -v -k 10
               - ./iwyu.sh
+
         - name: "Ubuntu 14.04, gcc-4.8"
           # Note: Travis provides a newer GCC on trusty (5.4), but gcc-4.8 is
           # the version provided by Ubuntu, so we use that one.
           dist: trusty
           before_install:
             - export CC=gcc-4.8 CXX=g++-4.8
+
+        - name: "include-what-you-use"
+          dist: xenial
+          services: docker
+          before_install:
+              - docker pull ubuntu:disco-20181220
+          script:
+              - docker run -v $PWD:/hlwm:ro ubuntu:disco-20181220 bash -c 'apt-get update && apt-get -y install cmake iwyu && cd /hlwm && ./iwyu.sh'
