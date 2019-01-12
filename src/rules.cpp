@@ -203,17 +203,13 @@ bool HSCondition::matches(const std::string& string) const {
 }
 
 bool HSCondition::matchesClass(const HSClient* client) const {
-    GString* window_class = window_class_to_g_string(g_display, client->window_);
-    bool match = matches(window_class->str);
-    g_string_free(window_class, true);
-    return match;
+    auto window_class = window_class_to_string(g_display, client->window_);
+    return matches(window_class);
 }
 
 bool HSCondition::matchesInstance(const HSClient* client) const {
-    GString* inst = window_instance_to_g_string(g_display, client->window_);
-    bool match = matches(inst->str);
-    g_string_free(inst, true);
-    return match;
+    auto inst = window_instance_to_string(g_display, client->window_);
+    return matches(inst);
 }
 
 bool HSCondition::matchesTitle(const HSClient* client) const {
@@ -291,12 +287,14 @@ bool HSCondition::matchesWindowtype(const HSClient* client) const {
 }
 
 bool HSCondition::matchesWindowrole(const HSClient* client) const {
-    GString* role = window_property_to_g_string(g_display, client->window_,
+    auto role = window_property_to_string(g_display, client->window_,
         ATOM("WM_WINDOW_ROLE"));
-    if (!role) return false;
-    bool match = matches(role->str);
-    g_string_free(role, true);
-    return match;
+
+    if (!role.has_value()) {
+        return false;
+    }
+
+    return matches(role.value());
 }
 
 /// CONSEQUENCES ///
@@ -337,11 +335,11 @@ void HSConsequence::applyEwmhnotify(const HSClient* client, HSClientChanges* cha
 }
 
 void HSConsequence::applyHook(const HSClient* client, HSClientChanges* changes) const {
-    GString* winid = g_string_sized_new(20);
-    g_string_printf(winid, "0x%lx", client->window_);
-    const char* hook_str[] = { "rule" , value.c_str(), winid->str };
+    std::stringstream winidSs;
+    winidSs << "0x" << std::hex << client->window_;
+    auto winidStr = winidSs.str();
+    const char* hook_str[] = { "rule", value.c_str(), winidStr.c_str() };
     hook_emit(LENGTH(hook_str), hook_str);
-    g_string_free(winid, true);
 }
 
 void HSConsequence::applyKeymask(const HSClient* client, HSClientChanges* changes) const {

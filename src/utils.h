@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "glib-backports.h"
+#include "optional.h"
 #include "types.h"
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
@@ -29,8 +30,9 @@ int MOD(int x, int n);
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
 GString* window_property_to_g_string(Display* dpy, Window window, Atom atom);
-GString* window_class_to_g_string(Display* dpy, Window window);
-GString* window_instance_to_g_string(Display* dpy, Window window);
+std::string window_class_to_string(Display* dpy, Window window);
+std::experimental::optional<std::string> window_property_to_string(Display* dpy, Window window, Atom atom);
+std::string window_instance_to_string(Display* dpy, Window window);
 int window_pid(Display* dpy, Window window);
 
 typedef void* HSTree;

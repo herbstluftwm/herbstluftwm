@@ -69,23 +69,48 @@ GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
     return result;
 }
 
-GString* window_class_to_g_string(Display* dpy, Window window) {
+std::string window_class_to_string(Display* dpy, Window window) {
     XClassHint hint;
     if (0 == XGetClassHint(dpy, window, &hint)) {
-        return g_string_new("");
+        return "";
     }
-    GString* str = g_string_new(hint.res_class ? hint.res_class : "");
+    std::string str = hint.res_class ? hint.res_class : "";
     if (hint.res_name) XFree(hint.res_name);
     if (hint.res_class) XFree(hint.res_class);
     return str;
 }
 
-GString* window_instance_to_g_string(Display* dpy, Window window) {
+std::experimental::optional<std::string> window_property_to_string(Display* dpy, Window window, Atom atom) {
+    std::string result;
+    char** list = nullptr;
+    int n = 0;
+    XTextProperty prop;
+
+    if (0 == XGetTextProperty(dpy, window, &prop, atom)) {
+        return std::experimental::optional<std::string>();
+    }
+    // convert text property to a gstring
+    if (prop.encoding == XA_STRING
+        || prop.encoding == XInternAtom(dpy, "UTF8_STRING", False)) {
+        result = reinterpret_cast<char *>(prop.value);
+    } else {
+        if (XmbTextPropertyToTextList(dpy, &prop, &list, &n) >= Success
+            && n > 0 && *list)
+        {
+            result = *list;
+            XFreeStringList(list);
+        }
+    }
+    XFree(prop.value);
+    return result;
+}
+
+std::string window_instance_to_string(Display* dpy, Window window) {
     XClassHint hint;
     if (0 == XGetClassHint(dpy, window, &hint)) {
-        return g_string_new("");
+        return "";
     }
-    GString* str = g_string_new(hint.res_name ? hint.res_name : "");
+    std::string str = hint.res_name ? hint.res_name : "";
     if (hint.res_name) XFree(hint.res_name);
     if (hint.res_class) XFree(hint.res_class);
     return str;
@@ -93,11 +118,8 @@ GString* window_instance_to_g_string(Display* dpy, Window window) {
 
 
 bool is_herbstluft_window(Display* dpy, Window window) {
-    GString* str = window_class_to_g_string(dpy, window);
-    bool result;
-    result = !strcmp(str->str, HERBST_FRAME_CLASS);
-    g_string_free(str, true);
-    return result;
+    auto str = window_class_to_string(dpy, window);
+    return str == HERBST_FRAME_CLASS;
 }
 
 bool is_window_mapable(Display* dpy, Window window) {
