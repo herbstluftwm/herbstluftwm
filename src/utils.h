@@ -13,6 +13,10 @@
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
 
+// CLAMP taken from GLib:
+#undef	CLAMP
+#define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
+
 int MOD(int x, int n);
 
 #define container_of(ptr, type, member) \
@@ -29,7 +33,6 @@ int MOD(int x, int n);
 
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
-GString* window_property_to_g_string(Display* dpy, Window window, Atom atom);
 std::string window_class_to_string(Display* dpy, Window window);
 std::experimental::optional<std::string> window_property_to_string(Display* dpy, Window window, Atom atom);
 std::string window_instance_to_string(Display* dpy, Window window);

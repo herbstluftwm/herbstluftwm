@@ -12,7 +12,6 @@
 #include "clientmanager.h"
 #include "decoration.h"
 #include "ewmh.h"
-#include "glib-backports.h"
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
@@ -538,23 +537,23 @@ void HSClient::update_wm_hints() {
 }
 
 void HSClient::update_title() {
-    GString* new_name = window_property_to_g_string(g_display,
-        this->window_, g_netatom[NetWmName]);
-    if (!new_name) {
+    std::experimental::optional<std::string> newName =
+        window_property_to_string(g_display, this->window_, g_netatom[NetWmName]);
+
+    if (!newName.has_value()) {
         char* ch_new_name = nullptr;
-        /* if ewmh name isn't set, then fall back to WM_NAME */
+        /* if EWMH name isn't set, then fall back to WM_NAME */
         if (0 != XFetchName(g_display, this->window_, &ch_new_name)) {
-            new_name = g_string_new(ch_new_name);
+            newName = std::string(ch_new_name);
             XFree(ch_new_name);
         } else {
-            new_name = g_string_new("");
+            newName = std::string("");
             HSDebug("no title for window %lx found, using \"\"\n",
                     this->window_);
         }
     }
-    bool changed = this->title_() != new_name->str;
-    std::string new_name_str = new_name->str;
-    title_ = new_name_str;
+    bool changed = this->title_() != newName;
+    title_ = newName.value();
     if (changed && get_current_client() == this) {
         char buf[STRING_BUF_SIZE];
         snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
