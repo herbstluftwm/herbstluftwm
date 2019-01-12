@@ -79,8 +79,6 @@ void argv_free(int argc, char** argv);
 // tells if the intervals [a_left, a_right) [b_left, b_right) intersect
 bool intervals_intersect(int a_left, int a_right, int b_left, int b_right);
 
-void g_queue_remove_element(GQueue* queue, GList* elem);
-
 // find an element in an array buf with elems elements of size size.
 int array_find(const void* buf, size_t elems, size_t size, const void* needle);
 void array_reverse(void* void_buf, size_t elems, size_t size);
