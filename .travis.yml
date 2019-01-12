@@ -52,7 +52,7 @@ jobs:
                   packages:
                       - g++-7
 
-        - name: "Ubuntu 16.04, clang-7, Debug build"
+        - name: "Ubuntu 16.04, clang-7, Debug build, run iwyu"
           dist: xenial
           before_install:
               - export CC=clang-7 CXX=clang++-7
@@ -60,8 +60,8 @@ jobs:
               apt:
                   sources:
                       - llvm-toolchain-xenial-7
-                      - iwyu
                   packages:
+                      - iwyu
                       - clang-7
           script:
               - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE='iwyu;-Xiwyu;--transitive_includes_only' .
