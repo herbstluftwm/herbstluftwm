@@ -33,6 +33,7 @@ jobs:
                   sources:
                       - ubuntu-toolchain-r-test
                   packages:
+                      - iwyu
                       - g++-8
                       - xterm
                       - tox
