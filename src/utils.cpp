@@ -43,32 +43,6 @@ int MOD(int x, int n) {
     return (((x % n) + n) % n);
 }
 
-// inspired by dwm's gettextprop()
-GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
-    GString* result = nullptr;
-    char** list = nullptr;
-    int n = 0;
-    XTextProperty prop;
-
-    if (0 == XGetTextProperty(dpy, window, &prop, atom)) {
-        return nullptr;
-    }
-    // convert text property to a gstring
-    if (prop.encoding == XA_STRING
-        || prop.encoding == XInternAtom(dpy, "UTF8_STRING", False)) {
-        result = g_string_new((char*)prop.value);
-    } else {
-        if (XmbTextPropertyToTextList(dpy, &prop, &list, &n) >= Success
-            && n > 0 && *list)
-        {
-            result = g_string_new(*list);
-            XFreeStringList(list);
-        }
-    }
-    XFree(prop.value);
-    return result;
-}
-
 std::string window_class_to_string(Display* dpy, Window window) {
     XClassHint hint;
     if (0 == XGetClassHint(dpy, window, &hint)) {
