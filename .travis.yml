@@ -64,7 +64,7 @@ jobs:
                   packages:
                       - clang-7
           script:
-              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE='iwyu;-Xiwyu;--transitive_includes_only .
+              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE='iwyu;-Xiwyu;--transitive_includes_only' .
               - ninja -v -k 10
               - ./iwyu.sh
         - name: "Ubuntu 14.04, gcc-4.8"
