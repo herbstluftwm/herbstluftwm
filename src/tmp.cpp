@@ -5,6 +5,9 @@
 #include "ipc-protocol.h"
 #include "rootcommands.h"
 
+using std::string;
+using std::to_string;
+
 int Tmp::mktemp(Input input, Output output) {
     std::string type, identifier;
     if (!(input >> type >> identifier)) {
