@@ -60,6 +60,7 @@ jobs:
               apt:
                   sources:
                       - llvm-toolchain-xenial-7
+                      - iwyu
                   packages:
                       - clang-7
           script:
