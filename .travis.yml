@@ -33,12 +33,11 @@ jobs:
                   sources:
                       - ubuntu-toolchain-r-test
                   packages:
-                      - iwyu
                       - g++-8
                       - xterm
                       - tox
           script:
-              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE='iwyu;-Xiwyu;--transitive_includes_only' . # run tests with sanitizer
+              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug' . # run tests with sanitizer
               - ninja -v -k 10
               - tox -- -n auto
 
@@ -65,7 +64,7 @@ jobs:
                   packages:
                       - clang-7
           script:
-              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug .
+              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE='iwyu;-Xiwyu;--transitive_includes_only .
               - ninja -v -k 10
               - ./iwyu.sh
         - name: "Ubuntu 14.04, gcc-4.8"
