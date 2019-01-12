@@ -37,7 +37,7 @@ jobs:
                       - xterm
                       - tox
           script:
-              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug . # run tests with sanitizer
+              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE='iwyu;--transitive_includes_only' . # run tests with sanitizer
               - ninja -v -k 10
               - tox -- -n auto
 
