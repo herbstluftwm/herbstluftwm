@@ -9,7 +9,7 @@ using std::string;
 using std::to_string;
 
 int Tmp::mktemp(Input input, Output output) {
-    std::string type, identifier;
+    string type, identifier;
     if (!(input >> type >> identifier)) {
         return HERBST_NEED_MORE_ARGS;
     }
