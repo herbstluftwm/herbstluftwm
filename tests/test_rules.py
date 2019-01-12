@@ -263,3 +263,25 @@ def test_condition_numeric_equal(hlwm):
 
     # TODO: Use more direct assertion (not yet possible)
     assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+
+
+def test_condition_instance(hlwm):
+    hlwm.call('add tag2')
+
+    # Note: We're relying on the knowledge that xterm is used as test client:
+    hlwm.call('rule instance=xterm tag=tag2')
+    hlwm.create_client()
+
+    # TODO: Use more direct assertion (not yet possible)
+    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+
+
+def test_condition_class(hlwm):
+    hlwm.call('add tag2')
+
+    # Note: We're relying on knowledge about the test client class here:
+    hlwm.call('rule class~client_.* tag=tag2')
+    hlwm.create_client()
+
+    # TODO: Use more direct assertion (not yet possible)
+    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
