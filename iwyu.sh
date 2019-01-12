@@ -25,7 +25,7 @@ srcdir=$PWD
 pushd "$tmpdir"
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "$srcdir"
 
-iwyu_tool.py -p . -j "$(nproc)" > iwyu.log
+iwyu_tool -p . -j "$(nproc)" > iwyu.log
 
 if [[ -s iwyu.log ]]; then
     echo >&2 "Error: include-what-you-use has the following change requests:"
