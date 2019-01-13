@@ -14,7 +14,7 @@
 #include "tagmanager.h"
 #include "utils.h"
 
-using namespace std;
+using std::string;
 
 MonitorManager* g_monitors;
 
@@ -62,7 +62,7 @@ int MonitorManager::indexInDirection(Monitor* m, Direction dir) {
     RectangleIdxVec rects;
     int relidx = -1;
     FOR (i,0,size()) {
-        rects.push_back(make_pair(i, byIdx(i)->rect));
+        rects.push_back(std::make_pair(i, byIdx(i)->rect));
         if (byIdx(i) == m) relidx = i;
     }
     HSAssert(relidx >= 0);
@@ -137,11 +137,11 @@ Monitor* MonitorManager::byString(string str) {
     return ((idx >= 0) && idx < size()) ? byIdx(idx) : nullptr;
 }
 
-function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
+std::function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
 {
     return [this,cmd](Input input, Output output) -> int {
         Monitor *monitor;
-        std::string monitor_name;
+        string monitor_name;
         if (!(input >> monitor_name)) {
             monitor = get_current_monitor();
         } else {
@@ -221,7 +221,7 @@ void MonitorManager::removeMonitor(Monitor* monitor)
 int MonitorManager::addMonitor(Input input, Output output)
 {
     // usage: add_monitor RECTANGLE [TAG [NAME]]
-    std::string rectString, tagName, monitorName;
+    string rectString, tagName, monitorName;
     input >> rectString;
     if (!input) {
         return HERBST_NEED_MORE_ARGS;
@@ -267,7 +267,7 @@ int MonitorManager::addMonitor(Input input, Output output)
     return HERBST_EXIT_SUCCESS;
 }
 
-std::string MonitorManager::isValidMonitorName(std::string name) {
+string MonitorManager::isValidMonitorName(string name) {
     if (isdigit(name[0])) {
         return "Invalid name \"" + name + "\": The monitor name may not start with a number\n";
     }
@@ -293,11 +293,11 @@ void MonitorManager::lock() {
 }
 
 void MonitorManager::unlock() {
-    settings_->monitors_locked = max(0, settings_->monitors_locked() - 1);
+    settings_->monitors_locked = std::max(0, settings_->monitors_locked() - 1);
     lock_number_changed();
 }
 
-std::string MonitorManager::lock_number_changed() {
+string MonitorManager::lock_number_changed() {
     if (settings_->monitors_locked() < 0) {
         return "must be non-negative";
     }

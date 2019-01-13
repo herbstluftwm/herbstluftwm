@@ -19,7 +19,12 @@
 #include "tagmanager.h"
 #include "utils.h"
 
-using namespace std;
+using std::dynamic_pointer_cast;
+using std::make_shared;
+using std::shared_ptr;
+using std::swap;
+using std::vector;
+using std::weak_ptr;
 
 const char* g_align_names[] = {
     "vertical",
@@ -57,8 +62,8 @@ HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> 
     decoration = new FrameDecoration(tag, settings);
 }
 
-HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction, int align,
-                 std::shared_ptr<HSFrame> a, std::shared_ptr<HSFrame> b)
+HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent, int fraction, int align,
+                 shared_ptr<HSFrame> a, shared_ptr<HSFrame> b)
              : HSFrame(tag, settings, parent) {
     this->align_ = align;
     selection_ = 0;
@@ -79,11 +84,11 @@ void HSFrameSplit::insertClient(HSClient* client) {
     else                b_->insertClient(client);
 }
 
-std::shared_ptr<HSFrame> HSFrameLeaf::lookup(const char*) {
+shared_ptr<HSFrame> HSFrameLeaf::lookup(const char*) {
     return shared_from_this(); // we are last one left
 }
 
-std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
+shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
     if (!index || index[0] == '\0') {
         return shared_from_this();
     }
@@ -96,7 +101,7 @@ std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
         return selected->lookup("@");
     }
 
-    std::shared_ptr<HSFrame> new_root;
+    shared_ptr<HSFrame> new_root;
     switch (index[0]) {
         case '0': new_root = a_; break;
         case '1': new_root = b_; break;
@@ -108,17 +113,17 @@ std::shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
     return new_root->lookup(index + 1);
 }
 
-std::shared_ptr<HSFrameLeaf> HSFrameSplit::frameWithClient(HSClient* client) {
+shared_ptr<HSFrameLeaf> HSFrameSplit::frameWithClient(HSClient* client) {
     auto found = a_->frameWithClient(client);
     if (found) return found;
     else return b_->frameWithClient(client);
 }
 
-std::shared_ptr<HSFrameLeaf> HSFrameLeaf::frameWithClient(HSClient* client) {
+shared_ptr<HSFrameLeaf> HSFrameLeaf::frameWithClient(HSClient* client) {
     if (find(clients.begin(), clients.end(), client) != clients.end()) {
         return thisLeaf();
     } else {
-        return std::shared_ptr<HSFrameLeaf>();
+        return shared_ptr<HSFrameLeaf>();
     }
 }
 
@@ -403,7 +408,7 @@ int find_align_by_name(char* name) {
     return -1;
 }
 
-std::shared_ptr<HSFrame> HSFrame::root() {
+shared_ptr<HSFrame> HSFrame::root() {
     auto parent_shared = parent_.lock();
     if (parent_shared) return parent_shared->root();
     else return shared_from_this();
@@ -478,19 +483,19 @@ bool HSFrame::isFocused() {
     }
 }
 
-std::shared_ptr<HSFrameLeaf> HSFrameLeaf::thisLeaf() {
+shared_ptr<HSFrameLeaf> HSFrameLeaf::thisLeaf() {
     return dynamic_pointer_cast<HSFrameLeaf>(shared_from_this());
 }
 
-std::shared_ptr<HSFrameSplit> HSFrameSplit::thisSplit() {
+shared_ptr<HSFrameSplit> HSFrameSplit::thisSplit() {
     return dynamic_pointer_cast<HSFrameSplit>(shared_from_this());
 }
 
-std::shared_ptr<HSFrameLeaf> HSFrameLeaf::getFocusedFrame() {
+shared_ptr<HSFrameLeaf> HSFrameLeaf::getFocusedFrame() {
     return thisLeaf();
 }
 
-std::shared_ptr<HSFrameLeaf> HSFrameSplit::getFocusedFrame() {
+shared_ptr<HSFrameLeaf> HSFrameSplit::getFocusedFrame() {
     if (selection_ == 0) {
         return a_->getFocusedFrame();
     } else {
@@ -498,7 +503,7 @@ std::shared_ptr<HSFrameLeaf> HSFrameSplit::getFocusedFrame() {
     }
 }
 
-std::shared_ptr<HSFrameLeaf> HSFrame::getGloballyFocusedFrame() {
+shared_ptr<HSFrameLeaf> HSFrame::getGloballyFocusedFrame() {
     return get_current_monitor()->tag->frame->getFocusedFrame();
 }
 
@@ -900,7 +905,7 @@ int HSFrameSplit::splitsToRoot(int align) {
     return delta + parent_.lock()->splitsToRoot(align);
 }
 
-void HSFrameSplit::replaceChild(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> newchild) {
+void HSFrameSplit::replaceChild(shared_ptr<HSFrame> old, shared_ptr<HSFrame> newchild) {
     if (a_ == old) {
         a_ = newchild;
         newchild->parent_ = thisSplit();
@@ -911,7 +916,7 @@ void HSFrameSplit::replaceChild(std::shared_ptr<HSFrame> old, std::shared_ptr<HS
     }
 }
 
-void HSFrameLeaf::addClients(const std::vector<HSClient*>& vec) {
+void HSFrameLeaf::addClients(const vector<HSClient*>& vec) {
     for (auto c : vec) clients.push_back(c);
 }
 
@@ -927,7 +932,7 @@ bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
                      FRACTION_UNIT * (0.0 + FRAME_MIN_FRACTION),
                      FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
     auto first = shared_from_this();
-    auto second = make_shared<HSFrameLeaf>(tag_, settings_, std::weak_ptr<HSFrameSplit>());
+    auto second = make_shared<HSFrameLeaf>(tag_, settings_, weak_ptr<HSFrameSplit>());
     second->layout = layout;
     auto new_this = make_shared<HSFrameSplit>(tag_, settings_, parent_, fraction, alignment, first, second);
     second->parent_ = new_this;
@@ -940,7 +945,7 @@ bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
     parent_ = new_this;
     if (selection >= childrenStaying) {
         second->setSelection(selection - childrenStaying);
-        selection = max(0, childrenStaying - 1);
+        selection = std::max(0, childrenStaying - 1);
     }
     return true;
 }
@@ -1435,8 +1440,8 @@ int layout_rotate_command() {
     return 0;
 }
 
-std::vector<HSClient*> HSFrameLeaf::removeAllClients() {
-    std::vector<HSClient*> result;
+vector<HSClient*> HSFrameLeaf::removeAllClients() {
+    vector<HSClient*> result;
     swap(result, clients);
     selection = 0;
     return result;

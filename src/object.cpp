@@ -15,16 +15,19 @@
 #include "hook.h"
 #include "attribute.h"
 
-using namespace std;
+using std::make_shared;
+using std::pair;
+using std::string;
+using std::vector;
 
-std::string Object::read(const std::string &attr) const {
+string Object::read(const string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end())
         return it->second->str();
     return {}; // TODO: throw
 }
 
-bool Object::writeable(const std::string &attr) const {
+bool Object::writeable(const string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end()) {
         return it->second->writeable();
@@ -32,7 +35,7 @@ bool Object::writeable(const std::string &attr) const {
     return false; // TODO: throw
 }
 
-void Object::write(const std::string &attr, const std::string &value) {
+void Object::write(const string &attr, const string &value) {
     auto it = attribs_.find(attr);
     if (it != attribs_.end()) {
         if (it->second->writeable())
@@ -43,7 +46,7 @@ void Object::write(const std::string &attr, const std::string &value) {
     }
 }
 
-bool Object::hookable(const std::string &attr) const {
+bool Object::hookable(const string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end()) {
         return it->second->hookable();
@@ -51,22 +54,22 @@ bool Object::hookable(const std::string &attr) const {
     return false; // TODO: else throw
 }
 
-void Object::trigger(const std::string &action, ArgList args) {
+void Object::trigger(const string &action, ArgList args) {
     // do nothing, there is no default behavior for actions.
     // TODO: throw; if we got here, there was an error, e.g. typo on user's side
 }
 
-std::pair<ArgList,std::string> Object::splitPath(const std::string &path) {
-    std::vector<std::string> splitpath = ArgList(path, OBJECT_PATH_SEPARATOR).toVector();
+pair<ArgList,string> Object::splitPath(const string &path) {
+    vector<string> splitpath = ArgList(path, OBJECT_PATH_SEPARATOR).toVector();
     if (splitpath.empty()) {
         return make_pair(splitpath, "");
     }
-    std::string last = splitpath.back();
+    string last = splitpath.back();
     splitpath.pop_back();
     return make_pair(splitpath, last);
 }
 
-void Object::wireAttributes(std::vector<Attribute*> attrs)
+void Object::wireAttributes(vector<Attribute*> attrs)
 {
     for (auto attr : attrs) {
         attr->setOwner(this);
@@ -86,7 +89,7 @@ void Object::removeAttribute(Attribute* attr) {
     attribs_.erase(it);
 }
 
-void Object::wireActions(std::vector<Action*> actions)
+void Object::wireActions(vector<Action*> actions)
 {
     for (auto action : actions) {
         action->setOwner(this);
@@ -140,7 +143,7 @@ void Object::ls(Path path, Output out) {
     }
 }
 
-void Object::print(const std::string &prefix)
+void Object::print(const string &prefix)
 {
     if (!children_.empty()) {
         std::cout << prefix << "Children:" << std::endl;
@@ -173,7 +176,7 @@ void Object::print(const std::string &prefix)
     std::cout << prefix << "Currently " << hooks_.size() << " hooks:" << std::endl;
 }
 
-Attribute* Object::attribute(const std::string &name) {
+Attribute* Object::attribute(const string &name) {
     auto it = attribs_.find(name);
     if (it == attribs_.end()) {
         return nullptr;
@@ -183,7 +186,7 @@ Attribute* Object::attribute(const std::string &name) {
 }
 
 
-Object* Object::child(const std::string &name) {
+Object* Object::child(const string &name) {
     auto it = children_.find(name);
     if (it != children_.end())
         return it->second;
@@ -199,7 +202,7 @@ Object* Object::child(Path path) {
 
 Object* Object::child(Path path, Output output) {
     Object* cur = this;
-    std::string cur_path = "";
+    string cur_path = "";
     while (!path.empty()) {
         auto it = cur->children_.find(path.front());
         if (it != cur->children_.end()) {
@@ -209,7 +212,7 @@ Object* Object::child(Path path, Output output) {
         } else {
             output << "Object \"" << cur_path << "\""
                 << " has no child named \"" << path.front()
-                << "\"" << endl;
+                << "\"" << std::endl;
             return nullptr;
         }
         path.shift();
@@ -217,7 +220,7 @@ Object* Object::child(Path path, Output output) {
     return cur;
 }
 
-void Object::notifyHooks(HookEvent event, const std::string& arg)
+void Object::notifyHooks(HookEvent event, const string& arg)
 {
     for (auto h : hooks_) {
         if (h) {
@@ -236,13 +239,13 @@ void Object::notifyHooks(HookEvent event, const std::string& arg)
     }
 }
 
-void Object::addChild(Object* child, const std::string &name)
+void Object::addChild(Object* child, const string &name)
 {
     children_[name] = child;
     notifyHooks(HookEvent::CHILD_ADDED, name);
 }
 
-void Object::removeChild(const std::string &child)
+void Object::removeChild(const string &child)
 {
     notifyHooks(HookEvent::CHILD_REMOVED, child);
     children_.erase(child);
@@ -291,23 +294,23 @@ private:
     Object* dir;
 };
 
-void Object::printTree(Output output, std::string rootLabel) {
+void Object::printTree(Output output, string rootLabel) {
     Ptr(TreeInterface) intface = make_shared<DirectoryTreeInterface>(rootLabel, this);
     tree_print_to(intface, output);
 }
 
-void Object::addStaticChild(Object* child, const std::string &name)
+void Object::addStaticChild(Object* child, const string &name)
 {
     children_[name] = child;
     notifyHooks(HookEvent::CHILD_ADDED, name);
 }
 
-Attribute* Object::deepAttribute(const std::string &path) {
+Attribute* Object::deepAttribute(const string &path) {
     std::ostringstream output;
     return deepAttribute(path, output);
 }
 
-Attribute* Object::deepAttribute(const std::string &path, Output output) {
+Attribute* Object::deepAttribute(const string &path, Output output) {
     auto attr_path = splitPath(path);
     auto attribute_owner = child(attr_path.first, output);
     if (!attribute_owner) {
@@ -318,7 +321,7 @@ Attribute* Object::deepAttribute(const std::string &path, Output output) {
         output << "Object \"" << attr_path.first.join()
             << "\" has no attribute \"" << attr_path.second
             << "\"."
-            << endl;
+            << std::endl;
         return nullptr;
     }
     return a;

@@ -15,13 +15,12 @@
 #include "globals.h"
 #include "settings.h"
 
-using namespace std;
-
 #if defined(__MACH__) && ! defined(CLOCK_REALTIME)
 #include <mach/clock.h>
 #include <mach/mach.h>
 #endif
 
+using std::string;
 
 time_t get_monotonic_timestamp() {
     struct timespec ts;
@@ -153,7 +152,7 @@ bool intervals_intersect(int a_left, int a_right, int b_left, int b_right) {
     return (b_left < a_right) && (a_left < b_right);
 }
 
-size_t utf8_string_length(const std::string& str) {
+size_t utf8_string_length(const string& str) {
    // utf-strlen from stackoverflow:
    // http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c
    size_t i = 0, j = 0;
@@ -164,7 +163,7 @@ size_t utf8_string_length(const std::string& str) {
    return j;
 }
 
-std::string utf8_string_at(const std::string& str, size_t n) {
+string utf8_string_at(const string& str, size_t n) {
     // utf-strlen from stackoverflow:
     // http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c
     //
@@ -178,7 +177,7 @@ std::string utf8_string_at(const std::string& str, size_t n) {
     //    std::cout << "\'"<< ch << "\' -> " << ((ch&0xc0) == 0x80) << std::endl;
     //}
     size_t i = 0, byte_offset = 0;
-    std::string result;
+    string result;
     // find the beginning of the n'th character
     // find the n'th character ch, with (ch & 0xc0) == 0x80
     while (i < n) {
@@ -209,7 +208,7 @@ const char* strlasttoken(const char* str, const char* delim) {
     return str;
 }
 
-bool string_to_bool(const std::string& str, bool oldvalue) {
+bool string_to_bool(const string& str, bool oldvalue) {
     return string_to_bool_error(str.c_str(), oldvalue, nullptr);
 }
 
@@ -395,7 +394,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
 
 static void subtree_print_to(HSTreeInterface* intface, const char* indent,
                           char* rootprefix, Output output) {
-    std::string tree_style = g_settings->tree_style();
+    string tree_style = g_settings->tree_style();
     HSTree root = intface->data;
     size_t child_count = intface->child_count(root);
     if (child_count == 0) {
@@ -441,7 +440,7 @@ static void subtree_print_to(HSTreeInterface* intface, const char* indent,
 static void subtree_print_to(Ptr(TreeInterface) intface, const string& indent,
                           const string& rootprefix, Output output) {
     size_t child_count = intface->childCount();
-    std::string tree_style = g_settings->tree_style();
+    string tree_style = g_settings->tree_style();
     if (child_count == 0) {
         output << rootprefix;
         output << utf8_string_at(tree_style, 6);
