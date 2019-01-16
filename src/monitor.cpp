@@ -823,3 +823,12 @@ Rectangle Monitor::getFloatingArea() {
     return r;
 }
 
+std::string Monitor::getDescription() {
+    std::stringstream label;
+    label << "Monitor " << index();
+    if (!name().empty()) {
+        label << " (\"" << name() << "\")";
+    }
+    label << " with tag \"" << tag->name() << "\"";
+    return label.str();
+}

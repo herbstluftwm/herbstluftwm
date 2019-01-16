@@ -113,16 +113,6 @@ static string getSliceLabel(const Slice* slice) {
     return label.str();
 }
 
-static string getMonitorLabel(const Monitor* monitor) {
-    std::stringstream label;
-    label << "Monitor " << monitor->index();
-    if (!monitor->name().empty()) {
-        label << " (\"" << monitor->name() << "\")";
-    }
-    label << " with tag \"" << monitor->tag->name() << "\"";
-    return label.str();
-}
-
 class StringTree : public TreeInterface {
 public:
     StringTree(string label, vector<shared_ptr<StringTree>> children = {})
@@ -165,8 +155,7 @@ int print_stack_command(int argc, char** argv, Output output) {
             layers.push_back(make_shared<StringTree>(layerLabel, slices));
         }
 
-        auto monitorLabel = getMonitorLabel(monitor);
-        monitors.push_back(make_shared<StringTree>(monitorLabel, layers));
+        monitors.push_back(make_shared<StringTree>(monitor->getDescription(), layers));
     }
 
     auto stackRoot = make_shared<StringTree>("", monitors);
