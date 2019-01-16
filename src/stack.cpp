@@ -97,32 +97,20 @@ void Stack::remove_slice(Slice* elem) {
     dirty = true;
 }
 
-static void slice_append_caption(HSTree root, Output output) {
-    Slice* slice = (Slice*)root;
-    GString* monitor_name = g_string_new("");
+static string getSliceLabel(const Slice* slice) {
+    std::stringstream label;
     switch (slice->type) {
         case SLICE_WINDOW:
-            output << "Window 0x" << std::hex << slice->data.window << std::dec;
+            label << "Window 0x" << std::hex << slice->data.window << std::dec;
             break;
         case SLICE_CLIENT:
-            output << "Client 0x"
-                   << std::hex << slice->data.client->x11Window() << std::dec
-                   << " \"" << slice->data.client->title_() << "\"";
+            label << "Client 0x"
+                  << std::hex << slice->data.client->x11Window() << std::dec
+                  << " \"" << slice->data.client->title_() << "\"";
             break;
-        case SLICE_MONITOR:
-            if (slice->data.monitor->name != "") {
-                g_string_append_printf(monitor_name, " (\"%s\")",
-                                       slice->data.monitor->name->c_str());
-            }
-            output << "Monitor "
-                   << slice->data.monitor->index()
-                   << monitor_name->str
-                   << " with tag \""
-                   << *(slice->data.monitor->tag->name)
-                   << "\"";
-            break;
+        default: ;
     }
-    g_string_free(monitor_name, true);
+    return label.str();
 }
 
 static string getMonitorLabel(const Monitor* monitor) {
@@ -170,9 +158,8 @@ int print_stack_command(int argc, char** argv, Output output) {
 
             vector<shared_ptr<StringTree>> slices;
             for (auto& slice : layer) {
-                std::stringstream childLabel;
-                slice_append_caption(slice, childLabel);
-                slices.push_back(make_shared<StringTree>(childLabel.str()));
+                auto sliceLabel = getSliceLabel(slice);
+                slices.push_back(make_shared<StringTree>(sliceLabel));
             }
 
             auto layerLabel = g_layer_names[layerIdx];
