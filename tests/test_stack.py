@@ -1,6 +1,13 @@
 import re
 import pytest
 
+def strip_winids(string):
+    """
+    Replaces all substrings that look like window IDs with a fixed string.
+    """
+    return re.sub(r'0x([0-9a-f]+)', '0xanywinid', string)
+
+
 def helper_get_stack_as_list(hlwm):
     # extract all window IDs out of the stack command
     return re.findall(r'0x[0-9a-f]+', hlwm.call('stack').stdout)
@@ -72,4 +79,4 @@ def test_stack_tree(hlwm):
       - Frame Layer
         - Window 0x200008
 '''
-    assert stack.stdout == expected_stack
+    assert strip_winids(stack.stdout) == strip_winids(expected_stack)
