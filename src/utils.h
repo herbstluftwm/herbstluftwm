@@ -58,7 +58,6 @@ public:
 };
 
 void tree_print_to(Ptr(TreeInterface) intface, Output output);
-void tree_print_to(HSTreeInterface* intface, Output output);
 
 
 bool is_herbstluft_window(Display* dpy, Window window);
