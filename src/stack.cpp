@@ -12,6 +12,11 @@
 #include "tag.h"
 #include "utils.h"
 
+using std::vector;
+using std::shared_ptr;
+using std::make_shared;
+using std::string;
+
 static struct HSTreeInterface stack_nth_child(std::shared_ptr<Stack> root, size_t idx);
 static size_t                  stack_child_count(std::shared_ptr<Stack> root);
 
@@ -190,7 +195,62 @@ static void monitor_stack_append_caption(HSTree root, Output output) {
     // g_string_append_printf(*output, "Stack of all monitors");
 }
 
-int print_stack_command(int argc, char** argv, Output output) {
+class StringTree : public TreeInterface {
+public:
+    StringTree(string label, vector<shared_ptr<StringTree>> children = {})
+        : children_(children)
+        , label_(label)
+    {};
+
+    size_t childCount() override {
+        return children_.size();
+    };
+
+    Ptr(TreeInterface) nthChild(size_t idx) override {
+        return children_.at(idx);
+    };
+
+    void appendCaption(Output output) override {
+        output << label_;
+    };
+
+private:
+    vector<shared_ptr<StringTree>> children_;
+    string label_;
+};
+
+int print_stack_command_new(int argc, char** argv, Output output) {
+    auto monitorStack = get_monitor_stack();
+    vector<shared_ptr<StringTree>> monitors;
+    for (auto& monitorSlice : monitorStack->top[LAYER_NORMAL]) {
+        std::stringstream monitorLabel;
+        // monitorLabel << "Monitor " << monitorSlice->data.monitor->index();
+        slice_append_caption(monitorSlice, monitorLabel);
+
+        vector<shared_ptr<StringTree>> layers;
+        for (size_t layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++) {
+            auto layer = monitorSlice->data.monitor->tag->stack->top[layerIdx];
+            auto layerLabel = g_layer_names[layerIdx];
+
+            vector<shared_ptr<StringTree>> slices;
+            for (auto& slice : layer) {
+                std::stringstream childLabel;
+                slice_append_caption(slice, childLabel);
+                slices.push_back(make_shared<StringTree>(childLabel.str()));
+            }
+
+            layers.push_back(make_shared<StringTree>(layerLabel, slices));
+        }
+
+        monitors.push_back(make_shared<StringTree>(monitorLabel.str(), layers));
+    }
+
+    auto stackRoot = make_shared<StringTree>("", monitors);
+    tree_print_to(stackRoot, output);
+    return 0;
+}
+
+int print_stack_command_old(int argc, char** argv, Output output) {
     struct TmpLayer tl = {
         /* .stack = */ get_monitor_stack(),
         /* .layer = */ LAYER_NORMAL,
@@ -204,6 +264,10 @@ int print_stack_command(int argc, char** argv, Output output) {
     };
     tree_print_to(&intface, output);
     return 0;
+}
+
+int print_stack_command(int argc, char** argv, Output output) {
+    return print_stack_command_new(argc, argv, output);
 }
 
 int Stack::window_count(bool real_clients) {
