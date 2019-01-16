@@ -823,6 +823,7 @@ Rectangle Monitor::getFloatingArea() {
     return r;
 }
 
+//! Returns a textual description of the monitor
 std::string Monitor::getDescription() {
     std::stringstream label;
     label << "Monitor " << index();
