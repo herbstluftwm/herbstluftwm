@@ -125,6 +125,17 @@ static void slice_append_caption(HSTree root, Output output) {
     g_string_free(monitor_name, true);
 }
 
+static string getMonitorLabel(const Monitor* monitor) {
+    std::stringstream label;
+    label << "Monitor "
+        << monitor->index()
+        << monitor->name()
+        << " with tag \""
+        << monitor->tag->name()
+        << "\"";
+    return label.str();
+}
+
 class StringTree : public TreeInterface {
 public:
     StringTree(string label, vector<shared_ptr<StringTree>> children = {})
@@ -153,14 +164,10 @@ int print_stack_command(int argc, char** argv, Output output) {
     auto monitorStack = get_monitor_stack();
     vector<shared_ptr<StringTree>> monitors;
     for (auto& monitorSlice : monitorStack->top[LAYER_NORMAL]) {
-        std::stringstream monitorLabel;
-        // monitorLabel << "Monitor " << monitorSlice->data.monitor->index();
-        slice_append_caption(monitorSlice, monitorLabel);
-
+        auto monitor = monitorSlice->data.monitor;
         vector<shared_ptr<StringTree>> layers;
         for (size_t layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++) {
-            auto layer = monitorSlice->data.monitor->tag->stack->top[layerIdx];
-            auto layerLabel = g_layer_names[layerIdx];
+            auto layer = monitor->tag->stack->top[layerIdx];
 
             vector<shared_ptr<StringTree>> slices;
             for (auto& slice : layer) {
@@ -169,10 +176,12 @@ int print_stack_command(int argc, char** argv, Output output) {
                 slices.push_back(make_shared<StringTree>(childLabel.str()));
             }
 
+            auto layerLabel = g_layer_names[layerIdx];
             layers.push_back(make_shared<StringTree>(layerLabel, slices));
         }
 
-        monitors.push_back(make_shared<StringTree>(monitorLabel.str(), layers));
+        auto monitorLabel = getMonitorLabel(monitor);
+        monitors.push_back(make_shared<StringTree>(monitorLabel, layers));
     }
 
     auto stackRoot = make_shared<StringTree>("", monitors);
