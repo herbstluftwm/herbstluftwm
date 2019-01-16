@@ -38,8 +38,8 @@ def test_raise_bottom_client(hlwm):
 
 
 def test_stack_tree(hlwm):
-    # Simplified tree style: inner nodes get dots, leaves get dashes.
-    hlwm.call('set tree_style "     - ."')
+    # Simplified tree style:
+    hlwm.call('set tree_style "     - -"')
 
     # Populate the stack:
     hlwm.call('add tag2')
@@ -53,24 +53,23 @@ def test_stack_tree(hlwm):
     stack = hlwm.call('stack')
 
     expected_stack = '''\
-  . 
-    . Monitor 1 ("monitor2") with tag "tag2"
-      . Focus-Layer
+  - 
+    - Monitor 1 ("monitor2") with tag "tag2"
+      - Focus-Layer
         - Client 0x800022 "true"
       - Fullscreen-Layer
-      . Normal Layer
+      - Normal Layer
         - Client 0x800022 "true"
-      . Frame Layer
+      - Frame Layer
         - Window 0x200012
         - Window 0x20000a
-    . Monitor 0 with tag "default"
-      . Focus-Layer
+    - Monitor 0 with tag "default"
+      - Focus-Layer
         - Client 0x600022 "true"
       - Fullscreen-Layer
-      . Normal Layer
+      - Normal Layer
         - Client 0x600022 "true"
-      . Frame Layer
+      - Frame Layer
         - Window 0x200008
 '''
     assert stack.stdout == expected_stack
-
