@@ -38,16 +38,6 @@ std::experimental::optional<std::string> window_property_to_string(Display* dpy,
 std::string window_instance_to_string(Display* dpy, Window window);
 int window_pid(Display* dpy, Window window);
 
-typedef void* HSTree;
-struct HSTreeInterface;
-typedef struct HSTreeInterface {
-    struct HSTreeInterface  (*nth_child)(HSTree root, size_t idx);
-    size_t                  (*child_count)(HSTree root);
-    void                    (*append_caption)(HSTree root, Output output);
-    HSTree                  data;
-    void                    (*destructor)(HSTree data); /* how to free the data tree */
-} HSTreeInterface;
-
 class TreeInterface {
 public:
     TreeInterface() = default;
@@ -58,7 +48,6 @@ public:
 };
 
 void tree_print_to(Ptr(TreeInterface) intface, Output output);
-void tree_print_to(HSTreeInterface* intface, Output output);
 
 
 bool is_herbstluft_window(Display* dpy, Window window);
