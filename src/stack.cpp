@@ -127,12 +127,11 @@ static void slice_append_caption(HSTree root, Output output) {
 
 static string getMonitorLabel(const Monitor* monitor) {
     std::stringstream label;
-    label << "Monitor "
-        << monitor->index()
-        << monitor->name()
-        << " with tag \""
-        << monitor->tag->name()
-        << "\"";
+    label << "Monitor " << monitor->index();
+    if (!monitor->name().empty()) {
+        label << " (\"" << monitor->name() << "\")";
+    }
+    label << " with tag \"" << monitor->tag->name() << "\"";
     return label.str();
 }
 
