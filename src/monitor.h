@@ -48,6 +48,7 @@ public:
     bool setTag(HSTag* new_tag);
     void applyLayout();
     void restack();
+    std::string getDescription();
 private:
     std::string getTagString();
     std::string setTagString(std::string new_tag);
