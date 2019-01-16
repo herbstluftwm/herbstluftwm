@@ -38,8 +38,6 @@ std::experimental::optional<std::string> window_property_to_string(Display* dpy,
 std::string window_instance_to_string(Display* dpy, Window window);
 int window_pid(Display* dpy, Window window);
 
-typedef void* HSTree;
-
 class TreeInterface {
 public:
     TreeInterface() = default;
