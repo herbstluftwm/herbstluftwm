@@ -35,3 +35,42 @@ def test_raise_bottom_client(hlwm):
     hlwm.call(['raise', c1])
 
     assert helper_get_stack_as_list(hlwm)[:-1] == [c1, c2]
+
+
+def test_stack_tree(hlwm):
+    # Simplified tree style: inner nodes get dots, leaves get dashes.
+    hlwm.call('set tree_style "     - ."')
+
+    # Populate the stack:
+    hlwm.call('add tag2')
+    hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
+    hlwm.create_client()
+    hlwm.call('focus_monitor monitor2')
+    hlwm.call('split left')
+    hlwm.create_client()
+    # TODO: Make one client fullscreen (doesn't seem to work yet)
+
+    stack = hlwm.call('stack')
+
+    expected_stack = '''\
+  . 
+    . Monitor 1 ("monitor2") with tag "tag2"
+      . Focus-Layer
+        - Client 0x800022 "true"
+      - Fullscreen-Layer
+      . Normal Layer
+        - Client 0x800022 "true"
+      . Frame Layer
+        - Window 0x200012
+        - Window 0x20000a
+    . Monitor 0 with tag "default"
+      . Focus-Layer
+        - Client 0x600022 "true"
+      - Fullscreen-Layer
+      . Normal Layer
+        - Client 0x600022 "true"
+      . Frame Layer
+        - Window 0x200008
+'''
+    assert stack.stdout == expected_stack
+
