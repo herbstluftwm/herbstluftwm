@@ -190,12 +190,12 @@ int find_edge_right_of(RectangleIdxVec rects, int idx) {
 bool floating_focus_direction(Direction dir) {
     if (g_settings->monitors_locked()) { return false; }
     HSTag* tag = get_current_monitor()->tag;
-    vector<HSClient*> clients;
+    vector<Client*> clients;
     RectangleIdxVec rects;
     int idx = 0;
     int curfocusidx = -1;
-    HSClient* curfocus = get_current_client();
-    tag->frame->foreachClient([&](HSClient* c) {
+    Client* curfocus = get_current_client();
+    tag->frame->foreachClient([&](Client* c) {
         clients.push_back(c);
         rects.push_back(make_pair(idx,c->dec.last_outer()));
         if (c == curfocus) curfocusidx = idx;
@@ -216,12 +216,12 @@ bool floating_focus_direction(Direction dir) {
 bool floating_shift_direction(Direction dir) {
     if (g_settings->monitors_locked()) { return false; }
     HSTag* tag = get_current_monitor()->tag;
-    vector<HSClient*> clients;
+    vector<Client*> clients;
     RectangleIdxVec rects;
     int idx = 0;
     int curfocusidx = -1;
-    HSClient* curfocus = get_current_client();
-    tag->frame->foreachClient([&](HSClient* c) {
+    Client* curfocus = get_current_client();
+    tag->frame->foreachClient([&](Client* c) {
         clients.push_back(c);
         rects.push_back(make_pair(idx,c->dec.last_outer()));
         if (c == curfocus) curfocusidx = idx;

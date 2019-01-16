@@ -6,7 +6,7 @@ TilingStep::TilingStep(Rectangle rect)
     : geometry(rect)
 { }
 
-TilingStep& TilingResult::operator[](HSClient* client) {
+TilingStep& TilingResult::operator[](Client* client) {
     TilingStep someStep = Rectangle();
     data.push_back(make_pair(client, someStep));
     return data.rbegin()->second;

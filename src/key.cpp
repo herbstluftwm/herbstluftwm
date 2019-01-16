@@ -399,7 +399,7 @@ static void key_set_keymask_helper(KeyBinding* b, regex_t *keymask_regex) {
     }
 }
 
-void key_set_keymask(HSTag *tag, HSClient *client) {
+void key_set_keymask(HSTag *tag, Client *client) {
     regex_t     keymask_regex;
     if (client && client->keymask_ != "") {
         int status = regcomp(&keymask_regex, ((std::string)client->keymask_).c_str(), REG_EXTENDED);

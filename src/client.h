@@ -16,10 +16,10 @@ class Monitor;
 class Settings;
 class ClientManager;
 
-class HSClient : public Object {
+class Client : public Object {
 public:
-    HSClient(Window w, bool already_visible, ClientManager& cm);
-    ~HSClient() override;
+    Client(Window w, bool already_visible, ClientManager& cm);
+    ~Client() override;
 
     Window      window_;
     Decoration  dec;
@@ -121,9 +121,9 @@ void clientlist_destroy();
 void reset_client_colors();
 void reset_client_settings();
 
-HSClient* get_client_from_window(Window window);
-HSClient* get_current_client();
-HSClient* get_client(const char* str);
+Client* get_client_from_window(Window window);
+Client* get_current_client();
+Client* get_client(const char* str);
 Window get_window(const std::string& str);
 
 int close_command(Input input, Output output);

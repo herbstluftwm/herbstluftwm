@@ -6,7 +6,7 @@
 #include "framedecoration.h"
 #include "x11-types.h"
 
-class HSClient;
+class Client;
 
 // a tilingstep describes for the given window how the tiling affects the
 // window
@@ -22,17 +22,17 @@ public:
 class TilingResult {
 public:
     TilingResult() = default;
-    TilingStep& operator[](HSClient* client);
+    TilingStep& operator[](Client* client);
     void add(FrameDecoration* dec, const FrameDecorationData& frame_data);
 
-    HSClient* focus = {}; // the focused client
+    Client* focus = {}; // the focused client
     FrameDecoration* focused_frame = {};
 
     // merge all the tiling steps from other into this
     void mergeFrom(TilingResult& other);
 
     std::list<std::pair<FrameDecoration*,FrameDecorationData>> frames;
-    std::list<std::pair<HSClient*,TilingStep>> data;
+    std::list<std::pair<Client*,TilingStep>> data;
 };
 
 

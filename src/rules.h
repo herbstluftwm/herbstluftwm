@@ -8,7 +8,7 @@
 #include "types.h"
 #include "utils.h"
 
-class HSClient;
+class Client;
 
 enum {
     CONDITION_VALUE_TYPE_STRING,
@@ -23,7 +23,7 @@ enum {
 class HSCondition {
 public:
 
-    using Matcher = std::function<bool(const HSCondition*, const HSClient*)>;
+    using Matcher = std::function<bool(const HSCondition*, const Client*)>;
     static const std::map<std::string, Matcher> matchers;
 
     std::string name;
@@ -45,20 +45,20 @@ public:
     time_t conditionCreationTime;
 
 private:
-    bool matchesClass(const HSClient* client) const;
-    bool matchesInstance(const HSClient* client) const;
-    bool matchesTitle(const HSClient* client) const;
-    bool matchesPid(const HSClient* client) const;
-    bool matchesMaxage(const HSClient* client) const;
-    bool matchesWindowtype(const HSClient* client) const;
-    bool matchesWindowrole(const HSClient* client) const;
+    bool matchesClass(const Client* client) const;
+    bool matchesInstance(const Client* client) const;
+    bool matchesTitle(const Client* client) const;
+    bool matchesPid(const Client* client) const;
+    bool matchesMaxage(const Client* client) const;
+    bool matchesWindowtype(const Client* client) const;
+    bool matchesWindowrole(const Client* client) const;
 
     bool matches(const std::string& string) const;
 };
 
 class HSClientChanges {
 public:
-    HSClientChanges(HSClient *client);
+    HSClientChanges(Client *client);
 
     // For tag_name and monitor_name, an empty string means "no change",
     // because empty strings are not considered valid here. TODO: Use
@@ -80,7 +80,7 @@ public:
 
 class HSConsequence {
 public:
-    using Applier = std::function<void(const HSConsequence*, const HSClient*, HSClientChanges*)>;
+    using Applier = std::function<void(const HSConsequence*, const Client*, HSClientChanges*)>;
     static const std::map<std::string, Applier> appliers;
 
     std::string name;
@@ -88,18 +88,18 @@ public:
     std::string value;
 
 private:
-    void applyTag(const HSClient* client, HSClientChanges* changes) const;
-    void applyIndex(const HSClient* client, HSClientChanges* changes) const;
-    void applyFocus(const HSClient* client, HSClientChanges* changes) const;
-    void applySwitchtag(const HSClient* client, HSClientChanges* changes) const;
-    void applyManage(const HSClient* client, HSClientChanges* changes) const;
-    void applyPseudotile(const HSClient* client, HSClientChanges* changes) const;
-    void applyFullscreen(const HSClient* client, HSClientChanges* changes) const;
-    void applyEwmhrequests(const HSClient* client, HSClientChanges* changes) const;
-    void applyEwmhnotify(const HSClient* client, HSClientChanges* changes) const;
-    void applyHook(const HSClient* client, HSClientChanges* changes) const;
-    void applyKeymask(const HSClient* client, HSClientChanges* changes) const;
-    void applyMonitor(const HSClient* client, HSClientChanges* changes) const;
+    void applyTag(const Client* client, HSClientChanges* changes) const;
+    void applyIndex(const Client* client, HSClientChanges* changes) const;
+    void applyFocus(const Client* client, HSClientChanges* changes) const;
+    void applySwitchtag(const Client* client, HSClientChanges* changes) const;
+    void applyManage(const Client* client, HSClientChanges* changes) const;
+    void applyPseudotile(const Client* client, HSClientChanges* changes) const;
+    void applyFullscreen(const Client* client, HSClientChanges* changes) const;
+    void applyEwmhrequests(const Client* client, HSClientChanges* changes) const;
+    void applyEwmhnotify(const Client* client, HSClientChanges* changes) const;
+    void applyHook(const Client* client, HSClientChanges* changes) const;
+    void applyKeymask(const Client* client, HSClientChanges* changes) const;
+    void applyMonitor(const Client* client, HSClientChanges* changes) const;
 };
 
 class HSRule {

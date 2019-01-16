@@ -20,7 +20,7 @@
 
 static Point2D          g_button_drag_start;
 static Rectangle        g_win_drag_start;
-static HSClient*        g_win_drag_client = nullptr;
+static Client*        g_win_drag_client = nullptr;
 static Monitor*       g_drag_monitor = nullptr;
 static MouseDragFunction g_drag_function = nullptr;
 
@@ -51,7 +51,7 @@ void mouse_destroy() {
 void mouse_handle_event(XEvent* ev) {
     XButtonEvent* be = &(ev->xbutton);
     MouseBinding* b = mouse_binding_find(be->state, be->button);
-    HSClient* client = get_client_from_window(ev->xbutton.window);
+    Client* client = get_client_from_window(ev->xbutton.window);
     if (!b || !client) {
         // there is no valid bind for this type of mouse event
         return;
@@ -59,22 +59,22 @@ void mouse_handle_event(XEvent* ev) {
     b->action(client, b->argc, b->argv);
 }
 
-void mouse_initiate_move(HSClient* client, int argc, char** argv) {
+void mouse_initiate_move(Client* client, int argc, char** argv) {
     (void) argc; (void) argv;
     mouse_initiate_drag(client, mouse_function_move);
 }
 
-void mouse_initiate_zoom(HSClient* client, int argc, char** argv) {
+void mouse_initiate_zoom(Client* client, int argc, char** argv) {
     (void) argc; (void) argv;
     mouse_initiate_drag(client, mouse_function_zoom);
 }
 
-void mouse_initiate_resize(HSClient* client, int argc, char** argv) {
+void mouse_initiate_resize(Client* client, int argc, char** argv) {
     (void) argc; (void) argv;
     mouse_initiate_drag(client, mouse_function_resize);
 }
 
-void mouse_call_command(HSClient* client, int argc, char** argv) {
+void mouse_call_command(Client* client, int argc, char** argv) {
     // TODO: add completion
     client->set_dragged(true);
     call_command_no_output(argc, argv);
@@ -82,7 +82,7 @@ void mouse_call_command(HSClient* client, int argc, char** argv) {
 }
 
 
-void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
+void mouse_initiate_drag(Client* client, MouseDragFunction function) {
     g_drag_function = function;
     g_win_drag_client = client;
     g_drag_monitor = find_monitor_with_tag(client->tag());
@@ -141,7 +141,7 @@ static void mouse_binding_free(void* voidmb) {
 int mouse_unbind_all() {
     g_list_free_full(g_mouse_binds, mouse_binding_free);
     g_mouse_binds = nullptr;
-    HSClient* client = get_current_client();
+    Client* client = get_current_client();
     if (client) {
         grab_client_buttons(client, true);
     }
@@ -192,7 +192,7 @@ int mouse_bind_command(int argc, char** argv, Output output) {
     mb->argc = argc - 3;
     mb->argv = argv_duplicate(argc - 3, argv + 3);;
     g_mouse_binds = g_list_prepend(g_mouse_binds, mb);
-    HSClient* client = get_current_client();
+    Client* client = get_current_client();
     if (client) {
         grab_client_buttons(client, true);
     }
@@ -259,7 +259,7 @@ MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {
     return elem ? ((MouseBinding*)elem->data) : nullptr;
 }
 
-static void grab_client_button(MouseBinding* bind, HSClient* client) {
+static void grab_client_button(MouseBinding* bind, Client* client) {
     unsigned int modifiers[] = { 0, LockMask, *g_numlockmask_ptr, *g_numlockmask_ptr|LockMask };
     for(int j = 0; j < LENGTH(modifiers); j++) {
         XGrabButton(g_display, bind->button,
@@ -269,7 +269,7 @@ static void grab_client_button(MouseBinding* bind, HSClient* client) {
     }
 }
 
-void grab_client_buttons(HSClient* client, bool focused) {
+void grab_client_buttons(Client* client, bool focused) {
     update_numlockmask();
     XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
     if (focused) {
@@ -319,7 +319,7 @@ void mouse_function_resize(XMotionEvent* me) {
     // avoid an overflow
     int new_width  = g_win_drag_client->float_size_.width + x_diff;
     int new_height = g_win_drag_client->float_size_.height + y_diff;
-    HSClient* client = g_win_drag_client;
+    Client* client = g_win_drag_client;
     if (left)   g_win_drag_client->float_size_.x -= x_diff;
     if (top)    g_win_drag_client->float_size_.y -= y_diff;
     g_win_drag_client->float_size_.width  = new_width;
@@ -374,7 +374,7 @@ void mouse_function_zoom(XMotionEvent* me) {
     if (rel_y < g_win_drag_start.height/2) {
         y_diff *= -1;
     }
-    HSClient* client = g_win_drag_client;
+    Client* client = g_win_drag_client;
 
     // avoid an overflow
     int new_width  = g_win_drag_start.width  + 2 * x_diff;
@@ -412,7 +412,7 @@ void mouse_function_zoom(XMotionEvent* me) {
 }
 
 struct SnapData {
-    HSClient*       client;
+    Client*       client;
     Rectangle      rect;
     enum SnapFlags  flags;
     int             dx, dy; // the vector from client to other to make them snap
@@ -433,7 +433,7 @@ static void snap_1d(int x, int edge, int* delta) {
     }
 }
 
-static void client_snap_helper(HSClient* candidate, struct SnapData* d) {
+static void client_snap_helper(Client* candidate, struct SnapData* d) {
     if (candidate == d->client) {
         return;
     }
@@ -468,7 +468,7 @@ static void client_snap_helper(HSClient* candidate, struct SnapData* d) {
 }
 
 // get the vector to snap a client to it's neighbour
-void client_snap_vector(HSClient* client, Monitor* monitor,
+void client_snap_vector(Client* client, Monitor* monitor,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy) {
     struct SnapData d;
@@ -506,7 +506,7 @@ void client_snap_vector(HSClient* client, Monitor* monitor,
     }
 
     // snap to other clients
-    tag->frame->foreachClient([&d] (HSClient* c) { client_snap_helper(c, &d); });
+    tag->frame->foreachClient([&d] (Client* c) { client_snap_helper(c, &d); });
 
     // write back results
     if (abs(d.dx) < abs(distance)) {
