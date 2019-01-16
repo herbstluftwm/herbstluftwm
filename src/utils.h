@@ -6,7 +6,6 @@
 #include <array>
 #include <cstddef>
 
-#include "glib-backports.h"
 #include "optional.h"
 #include "types.h"
 
