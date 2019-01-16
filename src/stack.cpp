@@ -158,8 +158,7 @@ int print_stack_command(int argc, char** argv, Output output) {
 
             vector<shared_ptr<StringTree>> slices;
             for (auto& slice : layer) {
-                auto sliceLabel = getSliceLabel(slice);
-                slices.push_back(make_shared<StringTree>(sliceLabel));
+                slices.push_back(make_shared<StringTree>(getSliceLabel(slice)));
             }
 
             auto layerLabel = g_layer_names[layerIdx];
