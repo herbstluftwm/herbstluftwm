@@ -97,7 +97,6 @@ void Stack::remove_slice(Slice* elem) {
 
 static void slice_append_caption(HSTree root, Output output) {
     Slice* slice = (Slice*)root;
-    GString* monitor_name = g_string_new("");
     switch (slice->type) {
         case SLICE_WINDOW:
             output << "Window 0x" << std::hex << slice->data.window << std::dec;
@@ -111,7 +110,6 @@ static void slice_append_caption(HSTree root, Output output) {
             output << slice->data.monitor->getDescription();
             break;
     }
-    g_string_free(monitor_name, true);
 }
 
 static struct HSTreeInterface slice_nth_child(HSTree root, size_t idx) {
