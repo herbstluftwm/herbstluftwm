@@ -56,9 +56,9 @@ private:
     bool matches(const std::string& string) const;
 };
 
-class HSClientChanges {
+class ClientChanges {
 public:
-    HSClientChanges(Client *client);
+    ClientChanges(Client *client);
 
     // For tag_name and monitor_name, an empty string means "no change",
     // because empty strings are not considered valid here. TODO: Use
@@ -80,7 +80,7 @@ public:
 
 class Consequence {
 public:
-    using Applier = std::function<void(const Consequence*, const Client*, HSClientChanges*)>;
+    using Applier = std::function<void(const Consequence*, const Client*, ClientChanges*)>;
     static const std::map<std::string, Applier> appliers;
 
     std::string name;
@@ -88,18 +88,18 @@ public:
     std::string value;
 
 private:
-    void applyTag(const Client* client, HSClientChanges* changes) const;
-    void applyIndex(const Client* client, HSClientChanges* changes) const;
-    void applyFocus(const Client* client, HSClientChanges* changes) const;
-    void applySwitchtag(const Client* client, HSClientChanges* changes) const;
-    void applyManage(const Client* client, HSClientChanges* changes) const;
-    void applyPseudotile(const Client* client, HSClientChanges* changes) const;
-    void applyFullscreen(const Client* client, HSClientChanges* changes) const;
-    void applyEwmhrequests(const Client* client, HSClientChanges* changes) const;
-    void applyEwmhnotify(const Client* client, HSClientChanges* changes) const;
-    void applyHook(const Client* client, HSClientChanges* changes) const;
-    void applyKeymask(const Client* client, HSClientChanges* changes) const;
-    void applyMonitor(const Client* client, HSClientChanges* changes) const;
+    void applyTag(const Client* client, ClientChanges* changes) const;
+    void applyIndex(const Client* client, ClientChanges* changes) const;
+    void applyFocus(const Client* client, ClientChanges* changes) const;
+    void applySwitchtag(const Client* client, ClientChanges* changes) const;
+    void applyManage(const Client* client, ClientChanges* changes) const;
+    void applyPseudotile(const Client* client, ClientChanges* changes) const;
+    void applyFullscreen(const Client* client, ClientChanges* changes) const;
+    void applyEwmhrequests(const Client* client, ClientChanges* changes) const;
+    void applyEwmhnotify(const Client* client, ClientChanges* changes) const;
+    void applyHook(const Client* client, ClientChanges* changes) const;
+    void applyKeymask(const Client* client, ClientChanges* changes) const;
+    void applyMonitor(const Client* client, ClientChanges* changes) const;
 };
 
 class Rule {
