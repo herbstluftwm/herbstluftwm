@@ -56,7 +56,7 @@ Slice* slice_create_frame(Window window) {
 }
 
 
-Slice* slice_create_client(HSClient* client) {
+Slice* slice_create_client(Client* client) {
     Slice* s = slice_create();
     s->type = SLICE_CLIENT;
     s->data.client = client;

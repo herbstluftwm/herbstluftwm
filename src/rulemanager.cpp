@@ -202,7 +202,7 @@ void RuleManager::addRuleCompletion(Completion& complete) {
 
 
 //! Evaluate rules against a given client
-HSClientChanges RuleManager::evaluateRules(HSClient* client) {
+HSClientChanges RuleManager::evaluateRules(Client* client) {
     HSClientChanges changes(client);
 
     auto ruleIter = rules_.begin();

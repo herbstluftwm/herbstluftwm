@@ -5,7 +5,7 @@
 #include "globals.h"
 #include "settings.h"
 
-std::map<Window,HSClient*> Decoration::decwin2client;
+std::map<Window,Client*> Decoration::decwin2client;
 
 Theme::Theme() {
     // add sub-decorations array as children
@@ -82,7 +82,7 @@ void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
 }
 
 // from openbox/frame.c
-static Visual* check_32bit_client(HSClient* c)
+static Visual* check_32bit_client(Client* c)
 {
     XWindowAttributes wattrib;
     Status ret;
@@ -96,7 +96,7 @@ static Visual* check_32bit_client(HSClient* c)
     return nullptr;
 }
 
-Decoration::Decoration(HSClient* client, Settings& settings)
+Decoration::Decoration(Client* client, Settings& settings)
     : client_(client),
       settings_(settings)
 {
@@ -179,7 +179,7 @@ Decoration::~Decoration() {
     }
 }
 
-HSClient* Decoration::toClient(Window decoration_window)
+Client* Decoration::toClient(Window decoration_window)
 {
     auto cl = decwin2client.find(decoration_window);
     if (cl == decwin2client.end()) {

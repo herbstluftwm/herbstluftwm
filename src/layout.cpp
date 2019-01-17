@@ -72,14 +72,14 @@ HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit
     this->b_ = b;
 }
 
-void HSFrameLeaf::insertClient(HSClient* client) {
+void HSFrameLeaf::insertClient(Client* client) {
     // insert it after the selection
     clients.insert(clients.begin() + std::min((selection + 1), (int)clients.size()), client);
     // FRAMETODO: if we we are focused, and were empty before, we have to focus
     // the client now
 }
 
-void HSFrameSplit::insertClient(HSClient* client) {
+void HSFrameSplit::insertClient(Client* client) {
     if (selection_ == 0) a_->insertClient(client);
     else                b_->insertClient(client);
 }
@@ -113,13 +113,13 @@ shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
     return new_root->lookup(index + 1);
 }
 
-shared_ptr<HSFrameLeaf> HSFrameSplit::frameWithClient(HSClient* client) {
+shared_ptr<HSFrameLeaf> HSFrameSplit::frameWithClient(Client* client) {
     auto found = a_->frameWithClient(client);
     if (found) return found;
     else return b_->frameWithClient(client);
 }
 
-shared_ptr<HSFrameLeaf> HSFrameLeaf::frameWithClient(HSClient* client) {
+shared_ptr<HSFrameLeaf> HSFrameLeaf::frameWithClient(Client* client) {
     if (find(clients.begin(), clients.end(), client) != clients.end()) {
         return thisLeaf();
     } else {
@@ -127,7 +127,7 @@ shared_ptr<HSFrameLeaf> HSFrameLeaf::frameWithClient(HSClient* client) {
     }
 }
 
-bool HSFrameLeaf::removeClient(HSClient* client) {
+bool HSFrameLeaf::removeClient(Client* client) {
     auto it = find(clients.begin(), clients.end(), client);
     if (it != clients.end()) {
         auto idx = it - clients.begin();
@@ -145,7 +145,7 @@ bool HSFrameLeaf::removeClient(HSClient* client) {
     }
 }
 
-bool HSFrameSplit::removeClient(HSClient* client) {
+bool HSFrameSplit::removeClient(Client* client) {
     return a_->removeClient(client) || b_->removeClient(client);
 }
 
@@ -764,7 +764,7 @@ void HSFrameSplit::foreachClient(ClientAction action) {
 }
 
 void HSFrameLeaf::foreachClient(ClientAction action) {
-    for (HSClient* client : clients) {
+    for (Client* client : clients) {
         action(client);
     }
 }
@@ -916,7 +916,7 @@ void HSFrameSplit::replaceChild(shared_ptr<HSFrame> old, shared_ptr<HSFrame> new
     }
 }
 
-void HSFrameLeaf::addClients(const vector<HSClient*>& vec) {
+void HSFrameLeaf::addClients(const vector<Client*>& vec) {
     for (auto c : vec) clients.push_back(c);
 }
 
@@ -925,7 +925,7 @@ bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
         return false;
     }
     int childrenStaying = std::max((size_t)0, clients.size() - childrenLeaving);
-    vector<HSClient*> leaves(clients.begin() + childrenStaying, clients.end());
+    vector<Client*> leaves(clients.begin() + childrenStaying, clients.end());
     clients.erase(clients.begin() + childrenStaying, clients.end());
     // ensure fraction is allowed
     fraction = CLAMP(fraction,
@@ -1274,7 +1274,7 @@ int frame_move_window_command(int argc, char** argv, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     shared_ptr<HSFrameLeaf> frame = HSFrame::getGloballyFocusedFrame();
-    HSClient* currentClient = get_current_client();
+    Client* currentClient = get_current_client();
     if (currentClient && currentClient->is_client_floated()) {
         // try to move the floating window
         bool success = floating_shift_direction(direction);
@@ -1288,7 +1288,7 @@ int frame_move_window_command(int argc, char** argv, Output output) {
         get_current_monitor()->applyLayout();
     } else {
         shared_ptr<HSFrame> neighbour = frame->neighbour(direction);
-        HSClient* client = frame->focusedClient();
+        Client* client = frame->focusedClient();
         if (client && neighbour) { // if neighbour was found
             // move window to neighbour
             frame->removeClient(client);
@@ -1311,18 +1311,18 @@ int frame_move_window_command(int argc, char** argv, Output output) {
     return 0;
 }
 
-void HSFrameLeaf::select(HSClient* client) {
+void HSFrameLeaf::select(Client* client) {
     auto it = find(clients.begin(), clients.end(), client);
     if (it != clients.end()) {
         selection = it - clients.begin();
     }
 }
 
-HSClient* HSFrameSplit::focusedClient() {
+Client* HSFrameSplit::focusedClient() {
     return (selection_ == 0 ? a_->focusedClient() : b_->focusedClient());
 }
 
-HSClient* HSFrameLeaf::focusedClient() {
+Client* HSFrameLeaf::focusedClient() {
     if (clients.size() > 0) {
         return clients[selection];
     }
@@ -1333,7 +1333,7 @@ HSClient* HSFrameLeaf::focusedClient() {
 // it does not require anything from the frame. it may be infocused or even
 // hidden.
 // returns true if win was found and focused, else returns false
-bool HSFrameSplit::focusClient(HSClient* client) {
+bool HSFrameSplit::focusClient(Client* client) {
     if (a_->focusClient(client)) {
         selection_ = 0;
         return true;
@@ -1344,7 +1344,7 @@ bool HSFrameSplit::focusClient(HSClient* client) {
     return false;
 }
 
-bool HSFrameLeaf::focusClient(HSClient* client) {
+bool HSFrameLeaf::focusClient(Client* client) {
     for (unsigned i = 0; i < clients.size(); i++) {
         if (clients[i] == client) {
             selection = i;
@@ -1358,7 +1358,7 @@ bool HSFrameLeaf::focusClient(HSClient* client) {
 // switch_tag tells, whether to switch tag to focus to window
 // switch_monitor tells, whether to switch monitor to focus to window
 // returns if window was focused or not
-bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor) {
+bool focus_client(Client* client, bool switch_tag, bool switch_monitor) {
     if (!client) {
         // client is not managed
         return false;
@@ -1440,8 +1440,8 @@ int layout_rotate_command() {
     return 0;
 }
 
-vector<HSClient*> HSFrameLeaf::removeAllClients() {
-    vector<HSClient*> result;
+vector<Client*> HSFrameLeaf::removeAllClients() {
+    vector<Client*> result;
     swap(result, clients);
     selection = 0;
     return result;
@@ -1472,7 +1472,7 @@ int frame_remove_command() {
 }
 
 int close_or_remove_command() {
-    HSClient* client = HSFrame::getGloballyFocusedFrame()->focusedClient();
+    Client* client = HSFrame::getGloballyFocusedFrame()->focusedClient();
     if (client) {
         window_close(client->x11Window());
         return 0;
@@ -1485,7 +1485,7 @@ int close_or_remove_command() {
 int close_and_remove_command() {
     bool remove_after_close = false;
     auto cur_frame = HSFrame::getGloballyFocusedFrame();
-    HSClient* client = cur_frame->focusedClient();
+    Client* client = cur_frame->focusedClient();
     if (client) {
         if (cur_frame->clientCount() == 1 ) {
             remove_after_close = true;
@@ -1536,11 +1536,11 @@ bool smart_window_surroundings_active(HSFrameLeaf* frame) {
 
 void frame_focus_recursive(shared_ptr<HSFrame> frame) {
     shared_ptr<HSFrameLeaf> leaf = frame->getFocusedFrame();
-    HSClient* client = leaf->focusedClient();
+    Client* client = leaf->focusedClient();
     if (client) {
         client->window_focus();
     } else {
-        HSClient::window_unfocus_last();
+        Client::window_unfocus_last();
     }
 }
 

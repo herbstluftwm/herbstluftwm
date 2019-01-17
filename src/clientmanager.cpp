@@ -39,7 +39,7 @@ ClientManager::~ClientManager()
     }
 }
 
-HSClient* ClientManager::client(Window window)
+Client* ClientManager::client(Window window)
 {
     auto entry = clients_.find(window);
     if (entry != clients_.end())
@@ -56,7 +56,7 @@ HSClient* ClientManager::client(Window window)
  *                  a decimal number its decimal window id.
  * \return          Pointer to the resolved client, or null, if client not found
  */
-HSClient* ClientManager::client(const string &identifier)
+Client* ClientManager::client(const string &identifier)
 {
     if (identifier.empty()) {
         // TODO: the frame doesn't provide us with a shared pointer yet
@@ -74,7 +74,7 @@ HSClient* ClientManager::client(const string &identifier)
     return client(win);
 }
 
-void ClientManager::add(HSClient* client)
+void ClientManager::add(Client* client)
 {
     clients_[client->window_] = client;
     client->needsRelayout.connect(needsRelayout);
@@ -87,7 +87,7 @@ void ClientManager::remove(Window window)
     clients_.erase(window);
 }
 
-HSClient* ClientManager::manage_client(Window win, bool visible_already) {
+Client* ClientManager::manage_client(Window win, bool visible_already) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
         return nullptr;
@@ -98,7 +98,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     }
 
     // init client
-    auto client = new HSClient(win, visible_already, *this);
+    auto client = new Client(win, visible_already, *this);
     Monitor* m = get_current_monitor();
 
     // apply rules
@@ -205,7 +205,7 @@ void ClientManager::unmap_notify(Window win) {
     }
 }
 
-void ClientManager::force_unmanage(HSClient* client) {
+void ClientManager::force_unmanage(Client* client) {
     if (client->dragged_) {
         mouse_stop_drag();
     }
@@ -239,7 +239,7 @@ int ClientManager::clientSetAttribute(string attribute,
                                       Output output)
 {
     string value = input.empty() ? "toggle" : input.front();
-    HSClient* c = get_current_client();
+    Client* c = get_current_client();
     if (c) {
         Attribute* a = c->attribute(attribute);
         if (!a) return HERBST_UNKNOWN_ERROR;

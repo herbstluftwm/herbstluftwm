@@ -48,8 +48,8 @@ enum {
 
 // execute an action on an client
 // returns Success or failure.
-class HSClient;
-typedef std::function<void(HSClient*)> ClientAction;
+class Client;
+typedef std::function<void(Client*)> ClientAction;
 
 #define FRACTION_UNIT 10000
 
@@ -63,17 +63,17 @@ protected:
     HSFrame(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent);
     virtual ~HSFrame();
 public:
-    virtual void insertClient(HSClient* client) = 0;
+    virtual void insertClient(Client* client) = 0;
     virtual std::shared_ptr<HSFrame> lookup(const char* path) = 0;
-    virtual std::shared_ptr<HSFrameLeaf> frameWithClient(HSClient* client) = 0;
-    virtual bool removeClient(HSClient* client) = 0;
+    virtual std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) = 0;
+    virtual bool removeClient(Client* client) = 0;
     virtual void dump(Output output) = 0;
 
     virtual bool isFocused();
     virtual std::shared_ptr<HSFrameLeaf> getFocusedFrame() = 0;
     virtual TilingResult computeLayout(Rectangle rect) = 0;
-    virtual bool focusClient(HSClient* client) = 0;
-    virtual HSClient* focusedClient() = 0;
+    virtual bool focusClient(Client* client) = 0;
+    virtual Client* focusedClient() = 0;
 
     // do recursive for each element of the (binary) frame tree
     // if order <= 0 -> action(node); action(left); action(right);
@@ -109,16 +109,16 @@ public:
     ~HSFrameLeaf() override;
 
     // inherited:
-    void insertClient(HSClient* client) override;
+    void insertClient(Client* client) override;
     std::shared_ptr<HSFrame> lookup(const char* path) override;
-    std::shared_ptr<HSFrameLeaf> frameWithClient(HSClient* client) override;
-    bool removeClient(HSClient* client) override;
+    std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
+    bool removeClient(Client* client) override;
     void moveClient(int new_index);
     void dump(Output output) override;
 
     std::shared_ptr<HSFrameLeaf> getFocusedFrame() override;
     TilingResult computeLayout(Rectangle rect) override;
-    bool focusClient(HSClient* client) override;
+    bool focusClient(Client* client) override;
 
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
@@ -127,12 +127,12 @@ public:
 
     // own members
     void setSelection(int idx);
-    void select(HSClient* client);
+    void select(Client* client);
     void cycleSelection(int delta);
-    void addClients(const std::vector<HSClient*>& vec);
+    void addClients(const std::vector<Client*>& vec);
 
 
-    HSClient* focusedClient() override;
+    Client* focusedClient() override;
 
     bool split(int alignment, int fraction, size_t childrenLeaving = 0);
     int getLayout() { return layout; }
@@ -140,7 +140,7 @@ public:
     int getSelection() { return selection; }
     size_t clientCount() { return clients.size(); }
     std::shared_ptr<HSFrame> neighbour(Direction direction);
-    std::vector<HSClient*> removeAllClients();
+    std::vector<Client*> removeAllClients();
 
     std::shared_ptr<HSFrameLeaf> thisLeaf();
     std::shared_ptr<HSFrameLeaf> isLeaf() override { return thisLeaf(); }
@@ -157,7 +157,7 @@ private:
     TilingResult layoutGrid(Rectangle rect);
 
     // members
-    std::vector<HSClient*> clients;
+    std::vector<Client*> clients;
     int     selection;
     int     layout;
 
@@ -171,21 +171,21 @@ public:
                  std::shared_ptr<HSFrame> a_, std::shared_ptr<HSFrame> b_);
     ~HSFrameSplit() override;
     // inherited:
-    void insertClient(HSClient* client) override;
+    void insertClient(Client* client) override;
     std::shared_ptr<HSFrame> lookup(const char* path) override;
-    std::shared_ptr<HSFrameLeaf> frameWithClient(HSClient* client) override;
-    bool removeClient(HSClient* client) override;
+    std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
+    bool removeClient(Client* client) override;
     void dump(Output output) override;
 
     std::shared_ptr<HSFrameLeaf> getFocusedFrame() override;
     TilingResult computeLayout(Rectangle rect) override;
-    bool focusClient(HSClient* client) override;
+    bool focusClient(Client* client) override;
 
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
     virtual void foreachClient(ClientAction action) override;
 
-    HSClient* focusedClient() override;
+    Client* focusedClient() override;
 
     // own members
     int splitsToRoot(int align_) override;
@@ -221,18 +221,18 @@ void layout_init();
 void layout_destroy();
 // for frames
 HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag);
-void frame_insert_client(HSFrame* frame, HSClient* client);
+void frame_insert_client(HSFrame* frame, Client* client);
 HSFrame* frame_current_selection();
 HSFrame* frame_current_selection_below(HSFrame* frame);
 // finds the subframe of frame that contains the window
-HSFrameLeaf* find_frame_with_client(HSFrame* frame, HSClient* client);
+HSFrameLeaf* find_frame_with_client(HSFrame* frame, Client* client);
 // removes window from a frame/subframes
 // returns true, if window was found. else: false
-bool frame_remove_client(HSFrame* frame, HSClient* client);
+bool frame_remove_client(HSFrame* frame, Client* client);
 // destroys a frame and all its childs
 // then all Windows in it are collected and returned
 // YOU have to g_free the resulting window-buf
-void frame_destroy(HSFrame* frame, HSClient*** buf, size_t* count);
+void frame_destroy(HSFrame* frame, Client*** buf, size_t* count);
 bool frame_split(HSFrame* frame, int align, int fraction);
 int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
@@ -277,9 +277,9 @@ int frame_split_count_to_root(HSFrame* frame, int align);
 
 // returns the Window that is focused
 // returns 0 if there is none
-HSClient* frame_focused_client(HSFrame* frame);
-bool frame_focus_client(HSFrame* frame, HSClient* client);
-bool focus_client(HSClient* client, bool switch_tag, bool switch_monitor);
+Client* frame_focused_client(HSFrame* frame);
+bool frame_focus_client(HSFrame* frame, Client* client);
+bool focus_client(Client* client, bool switch_tag, bool switch_monitor);
 // moves a window to an other frame
 int frame_move_window_command(int argc, char** argv, Output output);
 /// removes the current frame

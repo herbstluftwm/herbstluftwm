@@ -165,7 +165,7 @@ HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
 }
 
 void tag_update_focus_layer(HSTag* tag) {
-    HSClient* focus = tag->frame->focusedClient();
+    Client* focus = tag->frame->focusedClient();
     tag->stack->clear_layer(LAYER_FOCUS);
     if (focus) {
         // enforce raise_on_focus_temporarily if there is at least one

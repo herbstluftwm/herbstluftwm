@@ -24,14 +24,14 @@ typedef enum SliceType {
     SLICE_MONITOR,
 } SliceType;
 
-class HSClient;
+class Client;
 class Monitor;
 
 typedef struct Slice {
     SliceType type;
     std::set<HSLayer> layers; //!< layers this slice is contained in
     union {
-        HSClient*    client;
+        Client*    client;
         Window              window;
         Monitor*          monitor;
     } data;
@@ -65,7 +65,7 @@ private:
 
 Slice* slice_create_window(Window window);
 Slice* slice_create_frame(Window window);
-Slice* slice_create_client(HSClient* client);
+Slice* slice_create_client(Client* client);
 Slice* slice_create_monitor(Monitor* monitor);
 void slice_destroy(Slice* slice);
 HSLayer slice_highest_layer(Slice* slice);

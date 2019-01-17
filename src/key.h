@@ -9,7 +9,7 @@
 #define KEY_COMBI_SEPARATORS "+-"
 
 class HSTag;
-class HSClient;
+class Client;
 
 typedef struct KeyBinding {
     KeySym keysym;
@@ -41,7 +41,7 @@ void regrab_keys();
 void grab_keybind(KeyBinding* binding, void* useless_pointer);
 void update_numlockmask();
 unsigned int* get_numlockmask_ptr();
-void key_set_keymask(HSTag * tag, HSClient *client);
+void key_set_keymask(HSTag * tag, Client *client);
 void handle_key_press(XEvent* ev);
 
 void key_init();

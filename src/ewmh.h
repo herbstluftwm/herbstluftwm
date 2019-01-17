@@ -69,7 +69,7 @@ enum {
 #define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
 class HSTag;
-class HSClient;
+class Client;
 
 extern Atom g_netatom[NetCOUNT];
 
@@ -91,7 +91,7 @@ void ewmh_update_desktops();
 void ewmh_update_desktop_names();
 void ewmh_update_active_window(Window win);
 void ewmh_update_current_desktop();
-void ewmh_update_window_state(HSClient* client);
+void ewmh_update_window_state(Client* client);
 void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom);
 bool ewmh_is_window_state_set(Window win, Atom hint);
 bool ewmh_is_fullscreen_set(Window win);

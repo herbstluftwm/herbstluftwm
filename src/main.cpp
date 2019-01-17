@@ -500,7 +500,7 @@ int unsetenv_command(int argc, char** argv, Output output) {
 
 void event_on_configure(Root*, XEvent event) {
     XConfigureRequestEvent* cre = &event.xconfigurerequest;
-    HSClient* client = get_client_from_window(cre->window);
+    Client* client = get_client_from_window(cre->window);
     if (client) {
         bool changes = false;
         auto newRect = client->float_size_;
@@ -721,7 +721,7 @@ void buttonpress(Root* root, XEvent* event) {
     if (mouse_binding_find(be->state, be->button)) {
         mouse_handle_event(event);
     } else {
-        HSClient* client = get_client_from_window(be->window);
+        Client* client = get_client_from_window(be->window);
         if (client) {
             focus_client(client, false, true);
             if (root->settings->raise_on_click()) {
@@ -773,7 +773,7 @@ void enternotify(Root* root, XEvent* event) {
     if (!mouse_is_dragging()
         && root->settings()->focus_follows_mouse()
         && ce->focus == false) {
-        HSClient* c = get_client_from_window(ce->window);
+        Client* c = get_client_from_window(ce->window);
         std::shared_ptr<HSFrameLeaf> target;
         if (c && c->tag()->floating == false
               && (target = c->tag()->frame->frameWithClient(c))
@@ -820,7 +820,7 @@ void motionnotify(Root*, XEvent* event) {
 
 void mapnotify(Root*, XEvent* event) {
     //HSDebug("name is: MapNotify\n");
-    HSClient* c;
+    Client* c;
     if ((c = get_client_from_window(event->xmap.window))) {
         // reset focus. so a new window gets the focus if it shall have the
         // input focus
@@ -857,7 +857,7 @@ void maprequest(Root* root, XEvent* event) {
 void propertynotify(Root*, XEvent* event) {
     // printf("name is: PropertyNotify\n");
     XPropertyEvent *ev = &event->xproperty;
-    HSClient* client;
+    Client* client;
     if (ev->state == PropertyNewValue) {
         if (is_ipc_connectable(event->xproperty.window)) {
             ipc_handle_connection(event->xproperty.window);
