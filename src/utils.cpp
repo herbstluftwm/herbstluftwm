@@ -11,7 +11,6 @@
 #include <sstream>
 #include <string>
 
-#include "glib-backports.h"
 #include "globals.h"
 #include "settings.h"
 
@@ -132,7 +131,7 @@ char** argv_duplicate(int argc, char** argv) {
     char** new_argv = new char*[argc];
     int i;
     for (i = 0; i < argc; i++) {
-        new_argv[i] = g_strdup(argv[i]);
+        new_argv[i] = strdup(argv[i]);
     }
     return new_argv;
 }
