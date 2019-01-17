@@ -19,7 +19,7 @@ typedef struct {
 typedef struct {
     const char*   name;
     void    (*apply)(Consequence* consequence, Client* client,
-                     HSClientChanges* changes);
+                     ClientChanges* changes);
 } HSConsequenceType;
 
 
@@ -178,7 +178,7 @@ void Rule::print(Output output) {
 }
 
 // rules applying //
-HSClientChanges::HSClientChanges(Client *client)
+ClientChanges::ClientChanges(Client *client)
     : fullscreen(ewmh_is_fullscreen_set(client->window_))
 {}
 
@@ -298,43 +298,43 @@ bool Condition::matchesWindowrole(const Client* client) const {
 }
 
 /// CONSEQUENCES ///
-void Consequence::applyTag(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyTag(const Client* client, ClientChanges* changes) const {
     changes->tag_name = value;
 }
 
-void Consequence::applyFocus(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyFocus(const Client* client, ClientChanges* changes) const {
     changes->focus = string_to_bool(value, changes->focus);
 }
 
-void Consequence::applyManage(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyManage(const Client* client, ClientChanges* changes) const {
     changes->manage = string_to_bool(value, changes->manage);
 }
 
-void Consequence::applyIndex(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyIndex(const Client* client, ClientChanges* changes) const {
     changes->tree_index = value;
 }
 
-void Consequence::applyPseudotile(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyPseudotile(const Client* client, ClientChanges* changes) const {
     changes->pseudotile = string_to_bool(value, client->pseudotile_);
 }
 
-void Consequence::applyFullscreen(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyFullscreen(const Client* client, ClientChanges* changes) const {
     changes->fullscreen = string_to_bool(value, changes->fullscreen);
 }
 
-void Consequence::applySwitchtag(const Client* client, HSClientChanges* changes) const {
+void Consequence::applySwitchtag(const Client* client, ClientChanges* changes) const {
     changes->switchtag = string_to_bool(value, changes->switchtag);
 }
 
-void Consequence::applyEwmhrequests(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyEwmhrequests(const Client* client, ClientChanges* changes) const {
     changes->ewmhRequests = string_to_bool(value, client->ewmhrequests_);
 }
 
-void Consequence::applyEwmhnotify(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyEwmhnotify(const Client* client, ClientChanges* changes) const {
     changes->ewmhNotify = string_to_bool(value, client->ewmhnotify_);
 }
 
-void Consequence::applyHook(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyHook(const Client* client, ClientChanges* changes) const {
     std::stringstream winidSs;
     winidSs << "0x" << std::hex << client->window_;
     auto winidStr = winidSs.str();
@@ -342,10 +342,10 @@ void Consequence::applyHook(const Client* client, HSClientChanges* changes) cons
     hook_emit(LENGTH(hook_str), hook_str);
 }
 
-void Consequence::applyKeymask(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyKeymask(const Client* client, ClientChanges* changes) const {
     changes->keymask = value;
 }
 
-void Consequence::applyMonitor(const Client* client, HSClientChanges* changes) const {
+void Consequence::applyMonitor(const Client* client, ClientChanges* changes) const {
     changes->monitor_name = value;
 }
