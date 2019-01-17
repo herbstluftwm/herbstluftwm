@@ -9,20 +9,6 @@
 #include "client.h"
 #include "hook.h"
 
-/// TYPES ///
-
-typedef struct {
-    const char*   name;
-    bool    (*matches)(Condition* condition, Client* client);
-} HSConditionType;
-
-typedef struct {
-    const char*   name;
-    void    (*apply)(Consequence* consequence, Client* client,
-                     HSClientChanges* changes);
-} HSConsequenceType;
-
-
 /// GLOBALS ///
 
 const std::map<std::string, Condition::Matcher> Condition::matchers = {
