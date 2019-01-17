@@ -20,10 +20,10 @@ enum {
     CONSEQUENCE_VALUE_TYPE_STRING,
 };
 
-class HSCondition {
+class Condition {
 public:
 
-    using Matcher = std::function<bool(const HSCondition*, const Client*)>;
+    using Matcher = std::function<bool(const Condition*, const Client*)>;
     static const std::map<std::string, Matcher> matchers;
 
     std::string name;
@@ -78,9 +78,9 @@ public:
     std::experimental::optional<bool> ewmhNotify;
 };
 
-class HSConsequence {
+class Consequence {
 public:
-    using Applier = std::function<void(const HSConsequence*, const Client*, HSClientChanges*)>;
+    using Applier = std::function<void(const Consequence*, const Client*, HSClientChanges*)>;
     static const std::map<std::string, Applier> appliers;
 
     std::string name;
@@ -102,13 +102,13 @@ private:
     void applyMonitor(const Client* client, HSClientChanges* changes) const;
 };
 
-class HSRule {
+class Rule {
 public:
-    HSRule();
+    Rule();
 
     std::string label;
-    std::vector<HSCondition> conditions;
-    std::vector<HSConsequence> consequences;
+    std::vector<Condition> conditions;
+    std::vector<Consequence> consequences;
     bool once = false;
     time_t birth_time; // timestamp of at creation
 
