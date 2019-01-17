@@ -91,8 +91,8 @@ int TagManager::removeTag(Input input, Output output) {
     all_monitors_replace_previous_tag(tagToRemove, targetTag);
 
     // Collect all clients in tag
-    std::vector<HSClient*> clients;
-    tagToRemove->frame->foreachClient([&clients](HSClient* client) {
+    std::vector<Client*> clients;
+    tagToRemove->frame->foreachClient([&clients](Client* client) {
         clients.push_back(client);
     });
 
@@ -192,14 +192,14 @@ HSTag* TagManager::byIndexStr(const std::string& index_str, bool skip_visible_ta
 }
 
 void TagManager::moveFocusedClient(HSTag* target) {
-    HSClient* client = monitors_->focus()->tag->frame->focusedClient();
+    Client* client = monitors_->focus()->tag->frame->focusedClient();
     if (!client) {
         return;
     }
     moveClient(client, target);
 }
 
-void TagManager::moveClient(HSClient* client, HSTag* target) {
+void TagManager::moveClient(Client* client, HSTag* target) {
     HSTag* tag_source = client->tag();
     Monitor* monitor_source = find_monitor_with_tag(tag_source);
     if (tag_source == target) {

@@ -6,19 +6,6 @@ install:
     - sudo apt-get -y -q install cmake ninja-build
     - sudo apt-get -y -q install dzen2
 
-script:
-    - export DISPLAY=:99.0
-    - sh -e /etc/init.d/xvfb start
-    - cmake -G'Ninja' -DCMAKE_INSTALL_PREFIX=/usr .
-    - ninja -v -k 10
-    - sudo ninja install
-    - herbstluftwm &
-    - hlwmpid=$!
-    - sleep 1
-    - herbstclient version
-    - herbstclient quit
-    - wait $hlwmpid
-
 jobs:
     include:
         - name: "Ubuntu 16.04, gcc-8, Debug build, run tests"
@@ -51,6 +38,16 @@ jobs:
                       - ubuntu-toolchain-r-test
                   packages:
                       - g++-7
+          services:
+            - xvfb
+          script:
+            - cmake -G'Ninja' -DCMAKE_INSTALL_PREFIX=/usr .
+            - sudo ninja -v -k 10 install
+            - herbstluftwm &
+            - sleep 1
+            - herbstclient version
+            - herbstclient quit
+            - wait
 
         - name: "Ubuntu 16.04, clang-7, Debug build"
           dist: xenial
@@ -65,9 +62,21 @@ jobs:
           script:
               - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug .
               - ninja -v -k 10
+
         - name: "Ubuntu 14.04, gcc-4.8"
           # Note: Travis provides a newer GCC on trusty (5.4), but gcc-4.8 is
           # the version provided by Ubuntu, so we use that one.
           dist: trusty
           before_install:
             - export CC=gcc-4.8 CXX=g++-4.8
+          script:
+            - export DISPLAY=:99.0
+            - sh -e /etc/init.d/xvfb start
+            - cmake -G'Ninja' -DCMAKE_INSTALL_PREFIX=/usr .
+            - sudo ninja -v -k 10 install
+            - herbstluftwm &
+            - hlwmpid=$!
+            - sleep 1
+            - herbstclient version
+            - herbstclient quit
+            - wait $hlwmpid

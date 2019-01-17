@@ -7,7 +7,7 @@
 
 class Settings;
 class MonitorManager;
-class HSClient;
+class Client;
 
 class TagManager : public ChildByIndex<HSTag> {
 public:
@@ -23,7 +23,7 @@ public:
     HSTag* find(const std::string& name);
     HSTag* ensure_tags_are_available();
     HSTag* byIndexStr(const std::string& index_str, bool skip_visible_tags);
-    void moveClient(HSClient* client, HSTag* target);
+    void moveClient(Client* client, HSTag* target);
     void moveFocusedClient(HSTag* target);
 private:
     ByName by_name_;

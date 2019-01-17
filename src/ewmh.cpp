@@ -354,12 +354,12 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
             struct {
                 int     atom_index;
                 bool    enabled;
-                void    (*callback)(HSClient*, bool);
+                void    (*callback)(Client*, bool);
             } client_atoms[] = {
                 { NetWmStateFullscreen,
-                    client->fullscreen_,     [](HSClient* c, bool state){ c->set_fullscreen(state); } },
+                    client->fullscreen_,     [](Client* c, bool state){ c->set_fullscreen(state); } },
                 { NetWmStateDemandsAttention,
-                    client->urgent_,         [](HSClient* c, bool state){ c->set_urgent(state); } },
+                    client->urgent_,         [](Client* c, bool state){ c->set_urgent(state); } },
             };
 
             /* me->data.l[1] and [2] describe the properties to alter */
@@ -420,7 +420,7 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
     }
 }
 
-void ewmh_update_window_state(HSClient* client) {
+void ewmh_update_window_state(Client* client) {
     /* mapping between EWMH atoms and client struct members */
     struct {
         int     atom_index;

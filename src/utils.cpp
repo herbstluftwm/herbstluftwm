@@ -391,51 +391,6 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     XFreePixmap(dpy, pix);
 }
 
-static void subtree_print_to(HSTreeInterface* intface, const char* indent,
-                          char* rootprefix, Output output) {
-    string tree_style = g_settings->tree_style();
-    HSTree root = intface->data;
-    size_t child_count = intface->child_count(root);
-    if (child_count == 0) {
-        output << rootprefix;
-        output << utf8_string_at(tree_style, 6);
-        output << utf8_string_at(tree_style, 5);
-        output << ' ';
-        // append caption
-        intface->append_caption(root, output);
-        output << "\n";
-    } else {
-        output << rootprefix;
-        output << utf8_string_at(tree_style, 6);
-        output << utf8_string_at(tree_style, 7);
-        // append caption
-        output << ' ';
-        intface->append_caption(root, output);
-        output << '\n';
-        // append children
-        GString* child_indent = g_string_new("");
-        GString* child_prefix = g_string_new("");
-        for (size_t i = 0; i < child_count; i++) {
-            bool last = (i == child_count - 1);
-            g_string_printf(child_indent, "%s ", indent);
-            g_string_append(child_indent,
-                utf8_string_at(tree_style, last ? 2 : 1).c_str());
-            g_string_printf(child_prefix, "%s ", indent);
-            g_string_append(child_prefix,
-                utf8_string_at(tree_style, last ? 4 : 3).c_str());
-            HSTreeInterface child = intface->nth_child(root, i);
-            subtree_print_to(&child, child_indent->str,
-                             child_prefix->str, output);
-            if (child.destructor) {
-                child.destructor(child.data);
-            }
-        }
-        g_string_free(child_indent, true);
-        g_string_free(child_prefix, true);
-
-    }
-}
-
 static void subtree_print_to(Ptr(TreeInterface) intface, const string& indent,
                           const string& rootprefix, Output output) {
     size_t child_count = intface->childCount();
@@ -476,13 +431,6 @@ void tree_print_to(Ptr(TreeInterface) intface, Output output) {
     string rootIndicator;
     rootIndicator += utf8_string_at(g_settings->tree_style(), 0);
     subtree_print_to(intface, " ", rootIndicator, output);
-}
-
-void tree_print_to(HSTreeInterface* intface, Output output) {
-    GString* root_indicator = g_string_new("");
-    g_string_append(root_indicator, utf8_string_at(g_settings->tree_style(), 0).c_str());
-    subtree_print_to(intface, " ", root_indicator->str, output);
-    g_string_free(root_indicator, true);
 }
 
 char* posix_sh_escape(const char* source) {

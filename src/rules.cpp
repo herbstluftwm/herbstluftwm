@@ -13,12 +13,12 @@
 
 typedef struct {
     const char*   name;
-    bool    (*matches)(HSCondition* condition, HSClient* client);
+    bool    (*matches)(HSCondition* condition, Client* client);
 } HSConditionType;
 
 typedef struct {
     const char*   name;
-    void    (*apply)(HSConsequence* consequence, HSClient* client,
+    void    (*apply)(HSConsequence* consequence, Client* client,
                      HSClientChanges* changes);
 } HSConsequenceType;
 
@@ -178,7 +178,7 @@ void HSRule::print(Output output) {
 }
 
 // rules applying //
-HSClientChanges::HSClientChanges(HSClient *client)
+HSClientChanges::HSClientChanges(Client *client)
     : fullscreen(ewmh_is_fullscreen_set(client->window_))
 {}
 
@@ -202,21 +202,21 @@ bool HSCondition::matches(const std::string& string) const {
     return false;
 }
 
-bool HSCondition::matchesClass(const HSClient* client) const {
+bool HSCondition::matchesClass(const Client* client) const {
     auto window_class = window_class_to_string(g_display, client->window_);
     return matches(window_class);
 }
 
-bool HSCondition::matchesInstance(const HSClient* client) const {
+bool HSCondition::matchesInstance(const Client* client) const {
     auto inst = window_instance_to_string(g_display, client->window_);
     return matches(inst);
 }
 
-bool HSCondition::matchesTitle(const HSClient* client) const {
+bool HSCondition::matchesTitle(const Client* client) const {
     return matches(client->title_());
 }
 
-bool HSCondition::matchesPid(const HSClient* client) const {
+bool HSCondition::matchesPid(const Client* client) const {
     if (client->pid_ < 0) {
         return false;
     }
@@ -229,12 +229,12 @@ bool HSCondition::matchesPid(const HSClient* client) const {
     }
 }
 
-bool HSCondition::matchesMaxage(const HSClient* client) const {
+bool HSCondition::matchesMaxage(const Client* client) const {
     time_t diff = get_monotonic_timestamp() - conditionCreationTime;
     return (value_integer >= diff);
 }
 
-bool HSCondition::matchesWindowtype(const HSClient* client) const {
+bool HSCondition::matchesWindowtype(const Client* client) const {
     // that only works for atom-type utf8-string, _NET_WM_WINDOW_TYPE is int
     //  GString* wintype=
     //      window_property_to_g_string(g_display, client->window, wintype_atom);
@@ -286,7 +286,7 @@ bool HSCondition::matchesWindowtype(const HSClient* client) const {
     return false;
 }
 
-bool HSCondition::matchesWindowrole(const HSClient* client) const {
+bool HSCondition::matchesWindowrole(const Client* client) const {
     auto role = window_property_to_string(g_display, client->window_,
         ATOM("WM_WINDOW_ROLE"));
 
@@ -298,43 +298,43 @@ bool HSCondition::matchesWindowrole(const HSClient* client) const {
 }
 
 /// CONSEQUENCES ///
-void HSConsequence::applyTag(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyTag(const Client* client, HSClientChanges* changes) const {
     changes->tag_name = value;
 }
 
-void HSConsequence::applyFocus(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyFocus(const Client* client, HSClientChanges* changes) const {
     changes->focus = string_to_bool(value, changes->focus);
 }
 
-void HSConsequence::applyManage(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyManage(const Client* client, HSClientChanges* changes) const {
     changes->manage = string_to_bool(value, changes->manage);
 }
 
-void HSConsequence::applyIndex(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyIndex(const Client* client, HSClientChanges* changes) const {
     changes->tree_index = value;
 }
 
-void HSConsequence::applyPseudotile(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyPseudotile(const Client* client, HSClientChanges* changes) const {
     changes->pseudotile = string_to_bool(value, client->pseudotile_);
 }
 
-void HSConsequence::applyFullscreen(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyFullscreen(const Client* client, HSClientChanges* changes) const {
     changes->fullscreen = string_to_bool(value, changes->fullscreen);
 }
 
-void HSConsequence::applySwitchtag(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applySwitchtag(const Client* client, HSClientChanges* changes) const {
     changes->switchtag = string_to_bool(value, changes->switchtag);
 }
 
-void HSConsequence::applyEwmhrequests(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyEwmhrequests(const Client* client, HSClientChanges* changes) const {
     changes->ewmhRequests = string_to_bool(value, client->ewmhrequests_);
 }
 
-void HSConsequence::applyEwmhnotify(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyEwmhnotify(const Client* client, HSClientChanges* changes) const {
     changes->ewmhNotify = string_to_bool(value, client->ewmhnotify_);
 }
 
-void HSConsequence::applyHook(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyHook(const Client* client, HSClientChanges* changes) const {
     std::stringstream winidSs;
     winidSs << "0x" << std::hex << client->window_;
     auto winidStr = winidSs.str();
@@ -342,10 +342,10 @@ void HSConsequence::applyHook(const HSClient* client, HSClientChanges* changes) 
     hook_emit(LENGTH(hook_str), hook_str);
 }
 
-void HSConsequence::applyKeymask(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyKeymask(const Client* client, HSClientChanges* changes) const {
     changes->keymask = value;
 }
 
-void HSConsequence::applyMonitor(const HSClient* client, HSClientChanges* changes) const {
+void HSConsequence::applyMonitor(const Client* client, HSClientChanges* changes) const {
     changes->monitor_name = value;
 }

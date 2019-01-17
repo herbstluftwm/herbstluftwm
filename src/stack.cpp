@@ -12,8 +12,10 @@
 #include "tag.h"
 #include "utils.h"
 
-static struct HSTreeInterface stack_nth_child(std::shared_ptr<Stack> root, size_t idx);
-static size_t                  stack_child_count(std::shared_ptr<Stack> root);
+using std::vector;
+using std::shared_ptr;
+using std::make_shared;
+using std::string;
 
 const std::array<const char*, LAYER_COUNT>g_layer_names =
     ArrayInitializer<const char*, LAYER_COUNT>({
@@ -54,7 +56,7 @@ Slice* slice_create_frame(Window window) {
 }
 
 
-Slice* slice_create_client(HSClient* client) {
+Slice* slice_create_client(Client* client) {
     Slice* s = slice_create();
     s->type = SLICE_CLIENT;
     s->data.client = client;
@@ -95,114 +97,69 @@ void Stack::remove_slice(Slice* elem) {
     dirty = true;
 }
 
-static void slice_append_caption(HSTree root, Output output) {
-    Slice* slice = (Slice*)root;
-    GString* monitor_name = g_string_new("");
+static string getSliceLabel(const Slice* slice) {
+    std::stringstream label;
     switch (slice->type) {
         case SLICE_WINDOW:
-            output << "Window 0x" << std::hex << slice->data.window << std::dec;
+            label << "Window 0x" << std::hex << slice->data.window << std::dec;
             break;
         case SLICE_CLIENT:
-            output << "Client 0x"
-                   << std::hex << slice->data.client->x11Window() << std::dec
-                   << " \"" << slice->data.client->title_() << "\"";
+            label << "Client 0x"
+                  << std::hex << slice->data.client->x11Window() << std::dec
+                  << " \"" << slice->data.client->title_() << "\"";
             break;
-        case SLICE_MONITOR:
-            if (slice->data.monitor->name != "") {
-                g_string_append_printf(monitor_name, " (\"%s\")",
-                                       slice->data.monitor->name->c_str());
-            }
-            output << "Monitor "
-                   << slice->data.monitor->index()
-                   << monitor_name->str
-                   << " with tag \""
-                   << *(slice->data.monitor->tag->name)
-                   << "\"";
-            break;
+        default: ;
     }
-    g_string_free(monitor_name, true);
+    return label.str();
 }
 
-static struct HSTreeInterface slice_nth_child(HSTree root, size_t idx) {
-    Slice* slice = (Slice*)root;
-    assert(slice->type == SLICE_MONITOR);
-    return stack_nth_child(slice->data.monitor->tag->stack, idx);
-}
+class StringTree : public TreeInterface {
+public:
+    StringTree(string label, vector<shared_ptr<StringTree>> children = {})
+        : children_(children)
+        , label_(label)
+    {};
 
-static size_t slice_child_count(HSTree root) {
-    Slice* slice = (Slice*)root;
-    if (slice->type == SLICE_MONITOR) {
-        return stack_child_count(slice->data.monitor->tag->stack);
-    } else {
-        return 0;
-    }
-}
+    size_t childCount() override {
+        return children_.size();
+    };
 
-struct TmpLayer {
-    Stack* stack;
-    HSLayer    layer;
+    Ptr(TreeInterface) nthChild(size_t idx) override {
+        return children_.at(idx);
+    };
+
+    void appendCaption(Output output) override {
+        output << label_;
+    };
+
+private:
+    vector<shared_ptr<StringTree>> children_;
+    string label_;
 };
 
-static struct HSTreeInterface layer_nth_child(HSTree root, size_t idx) {
-    struct TmpLayer* l = (struct TmpLayer*) root;
-    Slice* slice = l->stack->top[l->layer].at(idx);
-    HSTreeInterface intface = {
-        /* .nth_child      = */ slice_nth_child,
-        /* .child_count    = */ slice_child_count,
-        /* .append_caption = */ slice_append_caption,
-        /* .data           = */ slice,
-        /* .destructor     = */ nullptr,
-    };
-    return intface;
-}
-
-static size_t layer_child_count(HSTree root) {
-    struct TmpLayer* l = (struct TmpLayer*) root;
-    return l->stack->top[l->layer].size();
-}
-
-static void layer_append_caption(HSTree root, Output output) {
-    struct TmpLayer* l = (struct TmpLayer*) root;
-    output << g_layer_names[l->layer];
-}
-
-
-static struct HSTreeInterface stack_nth_child(std::shared_ptr<Stack> root, size_t idx) {
-    struct TmpLayer* l = g_new(struct TmpLayer, 1);
-    l->stack = root.get(); // TODO: Turn lhs of this assignment into a shared_ptr
-    l->layer = (HSLayer) idx;
-
-    HSTreeInterface intface = {
-        /* .nth_child      = */ layer_nth_child,
-        /* .child_count    = */ layer_child_count,
-        /* .append_caption = */ layer_append_caption,
-        /* .data           = */ l,
-        /* .destructor     = */ (void (*)(HSTree))g_free,
-    };
-    return intface;
-}
-
-static size_t stack_child_count(std::shared_ptr<Stack> root) {
-    return LAYER_COUNT;
-}
-
-static void monitor_stack_append_caption(HSTree root, Output output) {
-    // g_string_append_printf(*output, "Stack of all monitors");
-}
-
 int print_stack_command(int argc, char** argv, Output output) {
-    struct TmpLayer tl = {
-        /* .stack = */ get_monitor_stack(),
-        /* .layer = */ LAYER_NORMAL,
-    };
-    HSTreeInterface intface = {
-        /* .nth_child      = */ layer_nth_child,
-        /* .child_count    = */ layer_child_count,
-        /* .append_caption = */ monitor_stack_append_caption,
-        /* .data           = */ &tl,
-        /* .destructor     = */ nullptr,
-    };
-    tree_print_to(&intface, output);
+    auto monitorStack = get_monitor_stack();
+    vector<shared_ptr<StringTree>> monitors;
+    for (auto& monitorSlice : monitorStack->top[LAYER_NORMAL]) {
+        auto monitor = monitorSlice->data.monitor;
+        vector<shared_ptr<StringTree>> layers;
+        for (size_t layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++) {
+            auto layer = monitor->tag->stack->top[layerIdx];
+
+            vector<shared_ptr<StringTree>> slices;
+            for (auto& slice : layer) {
+                slices.push_back(make_shared<StringTree>(getSliceLabel(slice)));
+            }
+
+            auto layerLabel = g_layer_names[layerIdx];
+            layers.push_back(make_shared<StringTree>(layerLabel, slices));
+        }
+
+        monitors.push_back(make_shared<StringTree>(monitor->getDescription(), layers));
+    }
+
+    auto stackRoot = make_shared<StringTree>("", monitors);
+    tree_print_to(stackRoot, output);
     return 0;
 }
 

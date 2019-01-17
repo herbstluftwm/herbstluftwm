@@ -151,7 +151,7 @@ void Monitor::applyLayout() {
         }
     }
     for (auto& p : res.data) {
-        HSClient* c = p.first;
+        Client* c = p.first;
         if (c->fullscreen_()) {
             c->resize_fullscreen(rect, res.focus == c && isFocused);
         } else if (p.second.floated) {
@@ -772,7 +772,7 @@ void Monitor::restack() {
     buf[0] = stacking_window;
     tag->stack->to_window_buf(buf + 1, count - 1, false, nullptr);
     /* remove a focused fullscreen client */
-    HSClient* client = tag->frame->focusedClient();
+    Client* client = tag->frame->focusedClient();
     if (client && client->fullscreen_) {
         Window win = client->decorationWindow();
         XRaiseWindow(g_display, win);
@@ -823,3 +823,13 @@ Rectangle Monitor::getFloatingArea() {
     return r;
 }
 
+//! Returns a textual description of the monitor
+std::string Monitor::getDescription() {
+    std::stringstream label;
+    label << "Monitor " << index();
+    if (!name().empty()) {
+        label << " (\"" << name() << "\")";
+    }
+    label << " with tag \"" << tag->name() << "\"";
+    return label.str();
+}
