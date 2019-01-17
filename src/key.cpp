@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <regex.h>
 #include <string>
 
 #include "client.h"
