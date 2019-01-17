@@ -19,6 +19,7 @@
 #include <mach/mach.h>
 #endif
 
+using std::shared_ptr;
 using std::string;
 
 time_t get_monotonic_timestamp() {
@@ -391,7 +392,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     XFreePixmap(dpy, pix);
 }
 
-static void subtree_print_to(Ptr(TreeInterface) intface, const string& indent,
+static void subtree_print_to(shared_ptr<TreeInterface> intface, const string& indent,
                           const string& rootprefix, Output output) {
     size_t child_count = intface->childCount();
     string tree_style = g_settings->tree_style();
@@ -420,14 +421,14 @@ static void subtree_print_to(Ptr(TreeInterface) intface, const string& indent,
             child_indent += utf8_string_at(tree_style, last ? 2 : 1);
             child_prefix = indent + " ";
             child_prefix += utf8_string_at(tree_style, last ? 4 : 3);
-            Ptr(TreeInterface) child = intface->nthChild(i);
+            shared_ptr<TreeInterface> child = intface->nthChild(i);
             subtree_print_to(child, child_indent,
                              child_prefix, output);
         }
     }
 }
 
-void tree_print_to(Ptr(TreeInterface) intface, Output output) {
+void tree_print_to(shared_ptr<TreeInterface> intface, Output output) {
     string rootIndicator;
     rootIndicator += utf8_string_at(g_settings->tree_style(), 0);
     subtree_print_to(intface, " ", rootIndicator, output);

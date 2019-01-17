@@ -17,6 +17,7 @@
 
 using std::make_shared;
 using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -282,7 +283,7 @@ public:
     size_t childCount() override {
         return buf.size();
     };
-    Ptr(TreeInterface) nthChild(size_t idx) override {
+    shared_ptr<TreeInterface> nthChild(size_t idx) override {
         return make_shared<DirectoryTreeInterface>(buf[idx].first, buf[idx].second);
     };
     void appendCaption(Output output) override {
@@ -295,7 +296,7 @@ private:
 };
 
 void Object::printTree(Output output, string rootLabel) {
-    Ptr(TreeInterface) intface = make_shared<DirectoryTreeInterface>(rootLabel, this);
+    shared_ptr<TreeInterface> intface = make_shared<DirectoryTreeInterface>(rootLabel, this);
     tree_print_to(intface, output);
 }
 
