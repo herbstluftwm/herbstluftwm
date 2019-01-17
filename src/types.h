@@ -6,9 +6,6 @@
 
 #include "arglist.h"
 
-#define Ptr(X) std::shared_ptr<X>
-#define WPtr(X) std::weak_ptr<X>
-
 class Completion;
 
 /* A path in the object tree */

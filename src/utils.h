@@ -41,12 +41,12 @@ class TreeInterface {
 public:
     TreeInterface() = default;
     virtual ~TreeInterface() = default;
-    virtual Ptr(TreeInterface) nthChild(size_t idx) = 0;
+    virtual std::shared_ptr<TreeInterface> nthChild(size_t idx) = 0;
     virtual size_t             childCount() = 0;
     virtual void               appendCaption(Output output) = 0;
 };
 
-void tree_print_to(Ptr(TreeInterface) intface, Output output);
+void tree_print_to(std::shared_ptr<TreeInterface> intface, Output output);
 
 
 bool is_herbstluft_window(Display* dpy, Window window);

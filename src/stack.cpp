@@ -124,7 +124,7 @@ public:
         return children_.size();
     };
 
-    Ptr(TreeInterface) nthChild(size_t idx) override {
+    shared_ptr<TreeInterface> nthChild(size_t idx) override {
         return children_.at(idx);
     };
 
