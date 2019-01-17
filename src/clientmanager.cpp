@@ -102,7 +102,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
     Monitor* m = get_current_monitor();
 
     // apply rules
-    HSClientChanges changes = Root::get()->rules()->evaluateRules(client);
+    ClientChanges changes = Root::get()->rules()->evaluateRules(client);
     if (!changes.tag_name.empty()) {
         client->setTag(find_tag(changes.tag_name.c_str()));
     }
