@@ -23,5 +23,5 @@ private:
     unsigned long long rule_label_index_ = 0;
 
     //! Currently active rules
-    std::list<std::unique_ptr<HSRule>> rules_;
+    std::list<std::unique_ptr<Rule>> rules_;
 };
