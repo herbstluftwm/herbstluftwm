@@ -22,8 +22,8 @@ typedef struct KeyBinding {
 unsigned int modifiername2mask(const char* name);
 const char* modifiermask2name(unsigned int mask);
 
-bool string2modifiers(char* string, unsigned int* modmask);
-bool string2key(char* string, unsigned int* modmask, KeySym* keysym);
+bool string2modifiers(const std::string& string, unsigned int* modmask);
+bool string2key(const std::string& str, unsigned int* modmask, KeySym* keysym);
 int keybind(int argc, char** argv, Output output);
 int keyunbind(int argc, char** argv, Output output); //removes a keybinding
 void keybinding_free(KeyBinding* binding);

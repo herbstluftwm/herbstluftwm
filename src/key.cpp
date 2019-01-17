@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
-#include <regex.h>
+#include <string>
 
 #include "client.h"
 #include "command.h"
@@ -112,43 +112,54 @@ int keybind(int argc, char** argv, Output output) {
     return 0;
 }
 
-bool string2modifiers(char* string, unsigned int* modmask) {
+vector<std::string> splitKeySpec(std::string keySpec)
+{
+    // Normalize spec to use a single separator:
+    char baseSep = KEY_COMBI_SEPARATORS[0];
+    for (auto &sep : KEY_COMBI_SEPARATORS) {
+        std::replace(keySpec.begin(), keySpec.end(), sep, baseSep);
+    }
+
+    // Split spec into tokens:
+    vector<std::string> tokens;
+    std::string token;
+    std::istringstream tokenStream(keySpec);
+    while (std::getline(tokenStream, token, baseSep)) {
+        tokens.push_back(token);
+    }
+    return tokens;
+}
+
+bool string2modifiers(const std::string& str, unsigned int* modmask) {
     // example strings: "Mod1-space" "Mod4+f" "f"
-    // split string at "+-"
-    char** splitted = g_strsplit_set(string, KEY_COMBI_SEPARATORS, 0);
+    auto splitted = splitKeySpec(str);
     // this should give at least one part
-    if (!splitted[0]) {
-        fprintf(stderr, "warning: empty keysym\n");
-        g_strfreev(splitted);
+    if (splitted.empty()) {
+        HSWarning("empty keysym\n");
         return false;
     }
     // all parts except last one are modifiers
-    int i;
     *modmask = 0;
-    for (i = 0; splitted[i+1] != nullptr; i++) {
-        // while the i'th element is not the last part
-        unsigned int cur_mask = modifiername2mask(splitted[i]);
+    for (auto iter = splitted.begin(); iter + 1 != splitted.end(); iter++) {
+        unsigned int cur_mask = modifiername2mask(iter->c_str());
         if (cur_mask == 0) {
-            fprintf(stderr, "warning: unknown Modifier \"%s\"\n", splitted[i]);
-            g_strfreev(splitted);
+            HSWarning("unknown modifier key \"%s\"\n", iter->c_str());
             return false;
         }
         *modmask |= cur_mask;
     }
-    // splitted string is not needed anymore
-    g_strfreev(splitted);
     return true;
 }
 
-bool string2key(char* string, unsigned int* modmask, KeySym* keysym) {
-    if (!string2modifiers(string, modmask)) {
+bool string2key(const std::string& str, unsigned int* modmask, KeySym* keysym) {
+    if (!string2modifiers(str, modmask)) {
         return false;
     }
     // last one is the key
-    const char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
-    *keysym = XStringToKeysym(last_token);
+    auto lastToken = splitKeySpec(str).back();
+    *keysym = XStringToKeysym(lastToken.c_str());
     if (*keysym == NoSymbol) {
-        fprintf(stderr, "warning: unknown KeySym \"%s\"\n", last_token);
+        HSWarning("unknown KeySym \"%s\"\n", lastToken.c_str());
         return false;
     }
     return true;
