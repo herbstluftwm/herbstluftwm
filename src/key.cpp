@@ -1,11 +1,11 @@
 #include "key.h"
 
-#include <algorithm>
-#include <regex.h>
-#include <X11/keysym.h>
 #include <X11/XKBlib.h>
+#include <X11/keysym.h>
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <regex.h>
 
 #include "client.h"
 #include "command.h"
