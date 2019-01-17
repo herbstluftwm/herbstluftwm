@@ -1,10 +1,11 @@
 #include "key.h"
 
-#include <regex.h>
-#include <X11/keysym.h>
 #include <X11/XKBlib.h>
+#include <X11/keysym.h>
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <regex.h>
 
 #include "client.h"
 #include "command.h"
@@ -13,6 +14,7 @@
 #include "ipc-protocol.h"
 #include "utils.h"
 
+using std::vector;
 
 static unsigned int numlockmask = 0;
 #define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask))
@@ -21,7 +23,7 @@ unsigned int* get_numlockmask_ptr() {
     return &numlockmask;
 }
 
-static GList* g_key_binds = nullptr;
+static vector<KeyBinding> g_key_binds = {};
 
 void key_init() {
     update_numlockmask();
@@ -32,14 +34,15 @@ void key_destroy() {
 }
 
 void key_remove_all_binds() {
-    g_list_free_full(g_key_binds, (GDestroyNotify)keybinding_free);
-    g_key_binds = nullptr;
+    for (auto&& binding : g_key_binds) {
+        keybinding_free(&binding);
+    }
+    g_key_binds.clear();
     regrab_keys();
 }
 
 void keybinding_free(KeyBinding* binding) {
     argv_free(binding->cmd_argc, binding->cmd_argv);
-    g_free(binding);
 }
 
 typedef struct {
@@ -103,11 +106,9 @@ int keybind(int argc, char** argv, Output output) {
     new_bind.cmd_argc = argc - 2;
     new_bind.cmd_argv = argv_duplicate(new_bind.cmd_argc, argv+2);
     // add keybinding
-    KeyBinding* data = g_new(KeyBinding, 1);
-    *data = new_bind;
-    g_key_binds = g_list_append(g_key_binds, data);
+    g_key_binds.push_back(new_bind);
     // grab for events on this keycode
-    grab_keybind(data, nullptr);
+    grab_keybind(&g_key_binds.back());
     return 0;
 }
 
@@ -163,9 +164,11 @@ void handle_key_press(XEvent* ev) {
     KeyBinding pressed;
     pressed.keysym = XkbKeycodeToKeysym(g_display, ev->xkey.keycode, 0, 0);
     pressed.modifiers = ev->xkey.state;
-    GList* element = g_list_find_custom(g_key_binds, &pressed, (GCompareFunc)keysym_equals);
-    if (element && element->data) {
-        KeyBinding* found = (KeyBinding*)element->data;
+    auto found = std::find_if(g_key_binds.begin(), g_key_binds.end(),
+            [=](const KeyBinding &other) {
+                return keysym_equals(&pressed, &other) == 0;
+                });
+    if (found != g_key_binds.end()) {
         // duplicate the args in the case this keybinding removes itself
         char** argv =  argv_duplicate(found->cmd_argc, found->cmd_argv);
         int argc = found->cmd_argc;
@@ -203,25 +206,26 @@ bool key_remove_bind_with_keysym(unsigned int modifiers, KeySym keysym){
     bind.modifiers = modifiers;
     bind.keysym = keysym;
     // search this keysym in list and remove it
-    GList* element = g_list_find_custom(g_key_binds, &bind, (GCompareFunc)keysym_equals);
-    if (!element) {
-        return false;
+    for (auto iter = g_key_binds.begin(); iter != g_key_binds.end(); iter++) {
+        if (keysym_equals(&bind, &(*iter)) == 0) {
+            keybinding_free(&(*iter));
+            g_key_binds.erase(iter);
+            return true;
+        }
     }
-    KeyBinding* data = (KeyBinding*)element->data;
-    keybinding_free(data);
-    g_key_binds = g_list_remove_link(g_key_binds, element);
-    g_list_free_1(element);
-    return true;
+    return false;
 }
 
 void regrab_keys() {
     update_numlockmask();
     // init modifiers after updating numlockmask
     XUngrabKey(g_display, AnyKey, AnyModifier, g_root); // remove all current grabs
-    g_list_foreach(g_key_binds, (GFunc)grab_keybind, nullptr);
+    for (auto& binding : g_key_binds) {
+        grab_keybind(&binding);
+    }
 }
 
-void grab_keybind(KeyBinding* binding, void* useless_pointer) {
+void grab_keybind(KeyBinding* binding) {
     unsigned int modifiers[] = { 0, LockMask, numlockmask, numlockmask|LockMask };
     KeyCode keycode = XKeysymToKeycode(g_display, binding->keysym);
     if (!keycode) {
@@ -322,7 +326,9 @@ void key_find_binds(const char* needle, Output output) {
     struct key_find_context c = {
         output, needle, strlen(needle)
     };
-    g_list_foreach(g_key_binds, (GFunc)key_find_binds_helper, &c);
+    for (auto& binding : g_key_binds) {
+        key_find_binds_helper(&binding, &c);
+    }
 }
 
 static void key_list_binds_helper(KeyBinding* b, std::ostream* ptr_output) {
@@ -339,7 +345,9 @@ static void key_list_binds_helper(KeyBinding* b, std::ostream* ptr_output) {
 }
 
 int key_list_binds(Output output) {
-    g_list_foreach(g_key_binds, (GFunc)key_list_binds_helper, &output);
+    for (auto& binding : g_key_binds) {
+        key_list_binds_helper(&binding, &output);
+    }
     return 0;
 }
 
@@ -393,7 +401,7 @@ static void key_set_keymask_helper(KeyBinding* b, regex_t *keymask_regex) {
     }
 
     if (enabled && !b->enabled) {
-        grab_keybind(b, nullptr);
+        grab_keybind(b);
     } else if(!enabled && b->enabled) {
         ungrab_keybind(b, nullptr);
     }
@@ -404,8 +412,9 @@ void key_set_keymask(HSTag *tag, Client *client) {
     if (client && client->keymask_ != "") {
         int status = regcomp(&keymask_regex, ((std::string)client->keymask_).c_str(), REG_EXTENDED);
         if (status == 0) {
-            g_list_foreach(g_key_binds, (GFunc)key_set_keymask_helper,
-                           &keymask_regex);
+            for (auto& binding : g_key_binds) {
+                key_set_keymask_helper(&binding, &keymask_regex);
+            }
             return;
         } else {
             char buf[ERROR_STRING_BUF_SIZE];
@@ -415,5 +424,7 @@ void key_set_keymask(HSTag *tag, Client *client) {
         }
     }
     // Enable all keys again
-    g_list_foreach(g_key_binds, (GFunc)key_set_keymask_helper, 0);
+    for (auto& binding : g_key_binds) {
+        key_set_keymask_helper(&binding, 0);
+    }
 }
