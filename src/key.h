@@ -38,7 +38,7 @@ void complete_against_modifiers(const char* needle, char seperator,
                                 char* prefix, Output output);
 void complete_against_keysyms(const char* needle, char* prefix, Output output);
 void regrab_keys();
-void grab_keybind(KeyBinding* binding, void* useless_pointer);
+void grab_keybind(KeyBinding* binding);
 void update_numlockmask();
 unsigned int* get_numlockmask_ptr();
 void key_set_keymask(HSTag * tag, Client *client);
