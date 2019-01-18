@@ -11,22 +11,24 @@
 class HSTag;
 class Client;
 
-typedef struct KeyBinding {
+class KeyBinding {
+public:
     KeySym keysym;
     unsigned int modifiers;
-    int     cmd_argc; // number of arguments for command
-    char**  cmd_argv; // arguments for command to call
+
+    //! Command to call
+    std::vector<std::string> cmd;
+
     bool    enabled;  // Is the keybinding already grabbed
-} KeyBinding;
+};
 
 unsigned int modifiername2mask(const char* name);
 const char* modifiermask2name(unsigned int mask);
 
 bool string2modifiers(const std::string& string, unsigned int* modmask);
 bool string2key(const std::string& str, unsigned int* modmask, KeySym* keysym);
-int keybind(int argc, char** argv, Output output);
+int keybind(Input input, Output output);
 int keyunbind(int argc, char** argv, Output output); //removes a keybinding
-void keybinding_free(KeyBinding* binding);
 
 int key_list_binds(Output output);
 int list_keysyms(int argc, char** argv, Output output);
