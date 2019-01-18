@@ -2,13 +2,16 @@ import pytest
 import subprocess
 
 
-@pytest.mark.parametrize('separator', ['-', '+'])
-def test_list_keybinds(hlwm, separator):
-    hlwm.call(f'keybind Mod1{separator}x quit')
+@pytest.mark.parametrize('sep', ['-', '+'])
+def test_list_keybinds(hlwm, sep):
+    # single key, 1-word command:
+    hlwm.call(f'keybind x quit')
+    # 2 modifiers, 3-word command:
+    hlwm.call(f'keybind Mod1{sep}Shift{sep}a resize left +5')
 
     keybinds = hlwm.call('list_keybinds')
 
-    assert keybinds.stdout == 'Mod1+x\tquit\n'
+    assert keybinds.stdout == 'x\tquit\nMod1+Shift+a\tresize\tleft\t+5\n'
 
 
 def test_keybind_unknown_modifier(hlwm):
@@ -52,6 +55,12 @@ def test_keyunbind_all(hlwm, method):
     assert hlwm.call('list_keybinds').stdout == ''
 
 
+def test_keyunbind_nonexistent_binding(hlwm):
+    unbind = hlwm.call('keyunbind n')
+
+    assert unbind.stdout == 'keyunbind: Key "n" is not bound\n'
+
+
 def test_trigger_single_key_binding(hlwm):
     hlwm.call('keybind x use tag2')
     hlwm.call('add tag2')
@@ -60,3 +69,11 @@ def test_trigger_single_key_binding(hlwm):
     subprocess.call('xdotool key x'.split())
 
     assert hlwm.get_attr('monitors.0.tag') == 'tag2'
+
+
+def test_trigger_selfremoving_binding(hlwm):
+    hlwm.call('keybind x keyunbind x')
+
+    subprocess.call('xdotool key x'.split())
+
+    assert hlwm.call('list_keybinds').stdout == ''

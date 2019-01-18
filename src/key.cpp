@@ -15,6 +15,7 @@
 #include "ipc-protocol.h"
 #include "utils.h"
 
+using std::unique_ptr;
 using std::vector;
 
 static unsigned int numlockmask = 0;
@@ -24,7 +25,7 @@ unsigned int* get_numlockmask_ptr() {
     return &numlockmask;
 }
 
-static vector<KeyBinding> g_key_binds = {};
+static vector<unique_ptr<KeyBinding>> g_key_binds = {};
 
 void key_init() {
     update_numlockmask();
@@ -35,15 +36,8 @@ void key_destroy() {
 }
 
 void key_remove_all_binds() {
-    for (auto&& binding : g_key_binds) {
-        keybinding_free(&binding);
-    }
     g_key_binds.clear();
     regrab_keys();
-}
-
-void keybinding_free(KeyBinding* binding) {
-    argv_free(binding->cmd_argc, binding->cmd_argv);
 }
 
 typedef struct {
@@ -85,31 +79,39 @@ const char* modifiermask2name(unsigned int mask) {
     return nullptr;
 }
 
-int keybind(int argc, char** argv, Output output) {
-    if (argc <= 2) {
+int keybind(Input input, Output output) {
+    if (input.size() < 2) {
         return HERBST_NEED_MORE_ARGS;
     }
-    KeyBinding new_bind;
-    // get keycode
-    if (!string2key(argv[1], &(new_bind.modifiers), &(new_bind.keysym))) {
-        output << argv[0] << ": No such KeySym/modifier\n";
+
+    auto newBinding = make_unique<KeyBinding>();
+
+    // Extract modifiers/keysym
+    if (!string2key(input.front(), &(newBinding->modifiers), &(newBinding->keysym))) {
+        output << input.command() << ": No such KeySym/modifier\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    KeyCode keycode = XKeysymToKeycode(g_display, new_bind.keysym);
+
+    // Validate keysym
+    KeyCode keycode = XKeysymToKeycode(g_display, newBinding->keysym);
     if (!keycode) {
-        output << argv[0] << ": No keycode for symbol "
-               << XKeysymToString(new_bind.keysym) << std::endl;
+        output << input.command() << ": No keycode for symbol "
+               << XKeysymToString(newBinding->keysym) << std::endl;
         return HERBST_INVALID_ARGUMENT;
     }
-    // remove existing binding with same keysym/modifiers
-    key_remove_bind_with_keysym(new_bind.modifiers, new_bind.keysym);
-    // create a copy of the command to execute on this key
-    new_bind.cmd_argc = argc - 2;
-    new_bind.cmd_argv = argv_duplicate(new_bind.cmd_argc, argv+2);
-    // add keybinding
-    g_key_binds.push_back(new_bind);
-    // grab for events on this keycode
-    grab_keybind(&g_key_binds.back());
+
+    input.shift();
+    // Store remaining input as the associated command
+    newBinding->cmd = {input.begin(), input.end()};
+
+    // Remove existing binding with same keysym/modifiers
+    key_remove_bind_with_keysym(newBinding->modifiers, newBinding->keysym);
+
+    // Grab for events on this keycode
+    grab_keybind(newBinding.get());
+
+    // Add keybinding to list
+    g_key_binds.push_back(std::move(newBinding));
     return 0;
 }
 
@@ -177,16 +179,15 @@ void handle_key_press(XEvent* ev) {
     pressed.keysym = XkbKeycodeToKeysym(g_display, ev->xkey.keycode, 0, 0);
     pressed.modifiers = ev->xkey.state;
     auto found = std::find_if(g_key_binds.begin(), g_key_binds.end(),
-            [=](const KeyBinding &other) {
-                return keysym_equals(&pressed, &other) == 0;
+            [=](const unique_ptr<KeyBinding> &other) {
+                return keysym_equals(&pressed, other.get()) == 0;
                 });
     if (found != g_key_binds.end()) {
-        // duplicate the args in the case this keybinding removes itself
-        char** argv =  argv_duplicate(found->cmd_argc, found->cmd_argv);
-        int argc = found->cmd_argc;
         // call the command
-        call_command_no_output(argc, argv);
-        argv_free(argc, argv);
+        std::ostringstream discardedOutput;
+        auto& cmd = (*found)->cmd;
+        Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
+        Commands::call(input, discardedOutput);
     }
 }
 
@@ -219,8 +220,7 @@ bool key_remove_bind_with_keysym(unsigned int modifiers, KeySym keysym){
     bind.keysym = keysym;
     // search this keysym in list and remove it
     for (auto iter = g_key_binds.begin(); iter != g_key_binds.end(); iter++) {
-        if (keysym_equals(&bind, &(*iter)) == 0) {
-            keybinding_free(&(*iter));
+        if (keysym_equals(&bind, iter->get()) == 0) {
             g_key_binds.erase(iter);
             return true;
         }
@@ -233,7 +233,7 @@ void regrab_keys() {
     // init modifiers after updating numlockmask
     XUngrabKey(g_display, AnyKey, AnyModifier, g_root); // remove all current grabs
     for (auto& binding : g_key_binds) {
-        grab_keybind(&binding);
+        grab_keybind(binding.get());
     }
 }
 
@@ -339,7 +339,7 @@ void key_find_binds(const char* needle, Output output) {
         output, needle, strlen(needle)
     };
     for (auto& binding : g_key_binds) {
-        key_find_binds_helper(&binding, &c);
+        key_find_binds_helper(binding.get(), &c);
     }
 }
 
@@ -350,15 +350,13 @@ static void key_list_binds_helper(KeyBinding* b, std::ostream* ptr_output) {
     output << name->str;
     g_string_free(name, true);
     // add associated command
-    for (int i = 0; i < b->cmd_argc; i++) {
-        output << "\t" << b->cmd_argv[i];
-    }
+    output << "\t" << ArgList(b->cmd).join('\t');
     output << "\n";
 }
 
 int key_list_binds(Output output) {
     for (auto& binding : g_key_binds) {
-        key_list_binds_helper(&binding, &output);
+        key_list_binds_helper(binding.get(), &output);
     }
     return 0;
 }
@@ -425,7 +423,7 @@ void key_set_keymask(HSTag *tag, Client *client) {
         int status = regcomp(&keymask_regex, ((std::string)client->keymask_).c_str(), REG_EXTENDED);
         if (status == 0) {
             for (auto& binding : g_key_binds) {
-                key_set_keymask_helper(&binding, &keymask_regex);
+                key_set_keymask_helper(binding.get(), &keymask_regex);
             }
             return;
         } else {
@@ -437,6 +435,6 @@ void key_set_keymask(HSTag *tag, Client *client) {
     }
     // Enable all keys again
     for (auto& binding : g_key_binds) {
-        key_set_keymask_helper(&binding, 0);
+        key_set_keymask_helper(binding.get(), 0);
     }
 }
