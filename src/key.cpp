@@ -25,7 +25,8 @@ unsigned int* get_numlockmask_ptr() {
     return &numlockmask;
 }
 
-static vector<unique_ptr<KeyBinding>> g_key_binds = {};
+// TODO: Turn this into a private member of KeyManager as soon as possible.
+vector<unique_ptr<KeyBinding>> g_key_binds = {};
 
 void key_init() {
     update_numlockmask();
@@ -77,42 +78,6 @@ const char* modifiermask2name(unsigned int mask) {
         }
     }
     return nullptr;
-}
-
-int keybind(Input input, Output output) {
-    if (input.size() < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-
-    auto newBinding = make_unique<KeyBinding>();
-
-    // Extract modifiers/keysym
-    if (!string2key(input.front(), &(newBinding->modifiers), &(newBinding->keysym))) {
-        output << input.command() << ": No such KeySym/modifier\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-
-    // Validate keysym
-    KeyCode keycode = XKeysymToKeycode(g_display, newBinding->keysym);
-    if (!keycode) {
-        output << input.command() << ": No keycode for symbol "
-               << XKeysymToString(newBinding->keysym) << std::endl;
-        return HERBST_INVALID_ARGUMENT;
-    }
-
-    input.shift();
-    // Store remaining input as the associated command
-    newBinding->cmd = {input.begin(), input.end()};
-
-    // Remove existing binding with same keysym/modifiers
-    key_remove_bind_with_keysym(newBinding->modifiers, newBinding->keysym);
-
-    // Grab for events on this keycode
-    grab_keybind(newBinding.get());
-
-    // Add keybinding to list
-    g_key_binds.push_back(std::move(newBinding));
-    return 0;
 }
 
 vector<std::string> splitKeySpec(std::string keySpec)
@@ -189,31 +154,6 @@ void handle_key_press(XEvent* ev) {
         Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
         Commands::call(input, discardedOutput);
     }
-}
-
-int keyunbind(Input input, Output output) {
-    std::string arg;
-    if (!(input >> arg)) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-
-    if (arg == "--all" || arg == "-F") {
-        key_remove_all_binds();
-    } else {
-        unsigned int modifiers;
-        KeySym keysym;
-        // get keycode
-        if (!string2key(arg, &modifiers, &keysym)) {
-            output << arg << ": No such KeySym/modifier\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-        if (key_remove_bind_with_keysym(modifiers, keysym) == false) {
-            output << input.command() << ": Key \"" << arg << "\" is not bound\n";
-        }
-        regrab_keys();
-    }
-
-    return HERBST_EXIT_SUCCESS;
 }
 
 bool key_remove_bind_with_keysym(unsigned int modifiers, KeySym keysym){
@@ -340,22 +280,6 @@ void key_find_binds(const char* needle, Output output) {
     for (auto& binding : g_key_binds) {
         key_find_binds_helper(binding.get(), &c);
     }
-}
-
-static void key_list_binds_helper(KeyBinding* b, std::ostream* ptr_output) {
-    Output output = *ptr_output;
-    // add keybinding
-    output << keybinding_to_string(b);
-    // add associated command
-    output << "\t" << ArgList(b->cmd).join('\t');
-    output << "\n";
-}
-
-int key_list_binds(Output output) {
-    for (auto& binding : g_key_binds) {
-        key_list_binds_helper(binding.get(), &output);
-    }
-    return 0;
 }
 
 void complete_against_keysyms(const char* needle, char* prefix, Output output) {
