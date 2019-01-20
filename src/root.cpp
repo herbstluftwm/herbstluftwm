@@ -6,6 +6,7 @@
 #include "decoration.h"
 #include "globals.h"
 #include "hookmanager.h"
+#include "keymanager.h"
 #include "monitormanager.h"
 #include "rootcommands.h"
 #include "rulemanager.h"
@@ -19,6 +20,7 @@ std::shared_ptr<Root> Root::root_;
 Root::Root(Globals g)
     : clients(*this, "clients")
     , hooks(*this, "hooks")
+    , keys(*this, "keys")
     , monitors(*this, "monitors")
     , rules(*this, "rules")
     , settings(*this, "settings")
@@ -29,6 +31,7 @@ Root::Root(Globals g)
 {
     // initialize non-dependant children (alphabetically)
     hooks = new HookManager;
+    keys = new KeyManager();
     root_commands = new RootCommands(this);
     rules = new RuleManager();
     settings = new Settings(this);
@@ -65,6 +68,7 @@ Root::~Root()
     delete settings();
     delete rules();
     delete root_commands;
+    delete keys();
     delete hooks();
 
     children_.clear(); // avoid possible circular shared_ptr dependency

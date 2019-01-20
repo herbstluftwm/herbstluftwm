@@ -24,6 +24,7 @@
 #include "ipc-protocol.h"
 #include "ipc-server.h"
 #include "key.h"
+#include "keymanager.h"
 #include "layout.h"
 #include "monitormanager.h"
 #include "mouse.h"
@@ -97,12 +98,15 @@ void unmapnotify(Root* root, XEvent* event);
 
 unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     RootCommands* root_commands = root->root_commands;
-    TagManager* tags = root->tags();
-    MonitorManager* monitors = root->monitors();
+
     ClientManager* clients = root->clients();
-    Settings* settings = root->settings();
-    Tmp* tmp = root->tmp();
+    KeyManager *keys = root->keys();
+    MonitorManager* monitors = root->monitors();
     RuleManager* rules = root->rules();
+    Settings* settings = root->settings();
+    TagManager* tags = root->tags();
+    Tmp* tmp = root->tmp();
+
     std::initializer_list<std::pair<const std::string,CommandBinding>> init =
     {
         {"quit",           { quit } },
@@ -117,10 +121,10 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"list_monitors",  {[monitors] (Output o) { return monitors->list_monitors(o);}}},
         {"set_monitors",   set_monitor_rects_command},
         {"disjoin_rects",  disjoin_rects_command},
-        {"list_keybinds",  { key_list_binds }},
+        {"list_keybinds",  { [keys] (Output o) { return keys->listKeybindsCommand(o); } }},
         {"list_padding",   monitors->byFirstArg(&Monitor::list_padding) },
-        {"keybind",        keybind},
-        {"keyunbind",      keyunbind},
+        {"keybind",        { [keys] (Input i, Output o) { return keys->addKeybindCommand(i, o); } }},
+        {"keyunbind",      { [keys] (Input i, Output o) { return keys->removeKeybindCommand(i, o); } }},
         {"mousebind",      mouse_bind_command},
         {"mouseunbind",    { mouse_unbind_all }},
         {"spawn",          spawn},

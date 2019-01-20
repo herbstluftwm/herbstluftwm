@@ -8,6 +8,7 @@
 
 class ClientManager;
 class HookManager;
+class KeyManager;
 class MonitorManager;
 class RootCommands;
 class RuleManager;
@@ -36,6 +37,7 @@ public:
     // (in alphabetical order)
     Child_<ClientManager> clients;
     Child_<HookManager> hooks;
+    Child_<KeyManager> keys;
     Child_<MonitorManager> monitors;
     Child_<RuleManager> rules;
     Child_<Settings> settings;
