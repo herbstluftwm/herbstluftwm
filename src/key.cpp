@@ -285,11 +285,10 @@ void update_numlockmask() {
 }
 
 /**
- * \brief   converts the given binding to a GString
- * \return  the new created GString. You have to destroy it.
+ * Converts the given binding to a string
  */
-GString* keybinding_to_g_string(KeyBinding* binding) {
-    GString* str = g_string_new("");
+std::string keybinding_to_string(KeyBinding* binding) {
+    std::stringstream str;
 
     /* add modifiers */
     unsigned int old_mask = 0, new_mask = binding->modifiers;
@@ -301,8 +300,7 @@ GString* keybinding_to_g_string(KeyBinding* binding) {
         if (!name) {
             break;
         }
-        g_string_append(str, name);
-        g_string_append_c(str, KEY_COMBI_SEPARATORS[0]);
+        str << name << KEY_COMBI_SEPARATORS[0];
         /* remove found mask from mask */
         new_mask = old_mask & ~ modifiername2mask(name);
     }
@@ -313,9 +311,9 @@ GString* keybinding_to_g_string(KeyBinding* binding) {
         g_warning("XKeysymToString failed! using \'?\' instead\n");
         name = "?";
     }
-    g_string_append(str, name);
+    str << name;
 
-    return str;
+    return str.str();
 }
 
 // STRTODO
@@ -326,12 +324,11 @@ struct key_find_context {
 };
 
 static void key_find_binds_helper(KeyBinding* b, struct key_find_context* c) {
-    GString* name = keybinding_to_g_string(b);
-    if (!strncmp(c->needle, name->str, c->needle_len)) {
+    auto name = keybinding_to_string(b);
+    if (name.find(c->needle) == 0) {
         /* add to output if key starts with searched needle */
-        c->output << name->str << std::endl;
+        c->output << name << std::endl;
     }
-    g_string_free(name, true);
 }
 
 void key_find_binds(const char* needle, Output output) {
@@ -346,9 +343,7 @@ void key_find_binds(const char* needle, Output output) {
 static void key_list_binds_helper(KeyBinding* b, std::ostream* ptr_output) {
     Output output = *ptr_output;
     // add keybinding
-    GString* name = keybinding_to_g_string(b);
-    output << name->str;
-    g_string_free(name, true);
+    output << keybinding_to_string(b);
     // add associated command
     output << "\t" << ArgList(b->cmd).join('\t');
     output << "\n";
@@ -395,19 +390,18 @@ static void key_set_keymask_helper(KeyBinding* b, regex_t *keymask_regex) {
     // add keybinding
     bool enabled = true;
     if (keymask_regex) {
-        GString* name = keybinding_to_g_string(b);
+        auto name = keybinding_to_string(b);
         regmatch_t match;
-        int status = regexec(keymask_regex, name->str, 1, &match, 0);
+        int status = regexec(keymask_regex, name.c_str(), 1, &match, 0);
         // only accept it, if it matches the entire string
         if (status == 0
             && match.rm_so == 0
-            && match.rm_eo == strlen(name->str)) {
+            && match.rm_eo == name.length()) {
             enabled = true;
         } else {
             // Keybinding did not match, therefore we disable it
             enabled = false;
         }
-        g_string_free(name, true);
     }
 
     if (enabled && !b->enabled) {
