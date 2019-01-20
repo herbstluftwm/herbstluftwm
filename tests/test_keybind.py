@@ -77,3 +77,17 @@ def test_trigger_selfremoving_binding(hlwm):
     subprocess.call('xdotool key x'.split())
 
     assert hlwm.call('list_keybinds').stdout == ''
+
+
+def test_complete_keybind_offers_all_mods_and_syms(hlwm):
+    complete = hlwm.complete('keybind', partial=True, position=1)
+
+    assert len(complete) > 200  # plausibility check
+    assert sorted([c[:-1] for c in complete if c.endswith('+')]) == \
+        ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super']
+
+
+def test_complete_keybind_after_combo_offers_all_commands(hlwm):
+    complete = hlwm.complete('keybind x', position=2)
+
+    assert complete == hlwm.complete('', position=0)
