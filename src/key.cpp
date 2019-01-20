@@ -191,27 +191,29 @@ void handle_key_press(XEvent* ev) {
     }
 }
 
-int keyunbind(int argc, char** argv, Output output) {
-    if (argc <= 1) {
+int keyunbind(Input input, Output output) {
+    std::string arg;
+    if (!(input >> arg)) {
         return HERBST_NEED_MORE_ARGS;
     }
-    // remove all keybinds if wanted
-    if (!strcmp(argv[1], "-F") || !strcmp(argv[1], "--all")) {
+
+    if (arg == "--all" || arg == "-F") {
         key_remove_all_binds();
-        return 0;
+    } else {
+        unsigned int modifiers;
+        KeySym keysym;
+        // get keycode
+        if (!string2key(arg, &modifiers, &keysym)) {
+            output << arg << ": No such KeySym/modifier\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+        if (key_remove_bind_with_keysym(modifiers, keysym) == false) {
+            output << input.command() << ": Key \"" << arg << "\" is not bound\n";
+        }
+        regrab_keys();
     }
-    unsigned int modifiers;
-    KeySym keysym;
-    // get keycode
-    if (!string2key(argv[1], &modifiers, &keysym)) {
-        output << argv[0] << ": No such KeySym/modifier\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (key_remove_bind_with_keysym(modifiers, keysym) == false) {
-        output << argv[0] << ": Key \"" << argv[1] << "\" is not bound\n";
-    }
-    regrab_keys();
-    return 0;
+
+    return HERBST_EXIT_SUCCESS;
 }
 
 bool key_remove_bind_with_keysym(unsigned int modifiers, KeySym keysym){
