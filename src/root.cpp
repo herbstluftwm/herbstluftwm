@@ -17,31 +17,35 @@
 std::shared_ptr<Root> Root::root_;
 
 Root::Root(Globals g)
-    : settings(*this, "settings")
-    , clients(*this, "clients")
-    , tags(*this, "tags")
-    , monitors(*this, "monitors")
+    : clients(*this, "clients")
     , hooks(*this, "hooks")
+    , monitors(*this, "monitors")
+    , rules(*this, "rules")
+    , settings(*this, "settings")
+    , tags(*this, "tags")
     , theme(*this, "theme")
     , tmp(*this, TMP_OBJECT_PATH)
-    , rules(*this, "rules")
     , globals(g)
 {
-    settings = new Settings(this);
-    theme = new Theme;
-    clients = new ClientManager(*theme(), *settings());
-    tags = new TagManager(settings());
-    monitors = new MonitorManager(settings(), tags());
-    tags()->setMonitorManager(monitors());
+    // initialize non-dependant children (alphabetically)
     hooks = new HookManager;
-    tmp = new Tmp();
-    rules = new RuleManager();
     root_commands = new RootCommands(this);
+    rules = new RuleManager();
+    settings = new Settings(this);
+    tags = new TagManager(settings());
+    theme = new Theme;
+    tmp = new Tmp();
+
+    // initialize dependant children
+    clients = new ClientManager(*theme(), *settings());
+    monitors = new MonitorManager(settings(), tags());
+
+    // provide dependencies
+    tags()->setMonitorManager(monitors());
 
     // set temporary globals
     ::global_tags = tags();
     ::g_monitors = monitors();
-
 
     // connect slots
     clients->needsRelayout.connect(monitors(), &MonitorManager::relayoutTag);
@@ -50,16 +54,19 @@ Root::Root(Globals g)
 Root::~Root()
 {
     tags()->setMonitorManager({});
-    // Note: delete in the right order!
+
+    // Note: delete in reverse order of initialization!
+    delete monitors();
+    delete clients();
+
+    delete tmp();
+    delete theme();
+    delete tags();
+    delete settings();
     delete rules();
     delete root_commands;
-    delete tmp();
     delete hooks();
-    delete monitors();
-    delete tags();
-    delete clients();
-    delete theme();
-    delete settings();
+
     children_.clear(); // avoid possible circular shared_ptr dependency
 }
 

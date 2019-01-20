@@ -6,15 +6,15 @@
 
 // new object tree root.
 
-class TagManager;
-class HookManager;
 class ClientManager;
+class HookManager;
 class MonitorManager;
-class Theme;
-class Settings;
-class Tmp;
 class RootCommands;
 class RuleManager;
+class Settings;
+class TagManager;
+class Theme;
+class Tmp;
 
 class Globals {
 public:
@@ -33,14 +33,16 @@ public:
     Root(Globals g);
     ~Root() override;
 
-    Child_<Settings> settings;
+    // (in alphabetical order)
     Child_<ClientManager> clients;
-    Child_<TagManager> tags;
-    Child_<MonitorManager> monitors;
     Child_<HookManager> hooks;
+    Child_<MonitorManager> monitors;
+    Child_<RuleManager> rules;
+    Child_<Settings> settings;
+    Child_<TagManager> tags;
     Child_<Theme> theme;
     Child_<Tmp> tmp;
-    Child_<RuleManager> rules;
+
     RootCommands* root_commands;
     Globals globals;
 
