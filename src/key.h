@@ -34,7 +34,7 @@ int key_list_binds(Output output);
 int list_keysyms(int argc, char** argv, Output output);
 bool key_remove_bind_with_keysym(unsigned int modifiers, KeySym sym);
 void key_remove_all_binds();
-GString* keybinding_to_g_string(KeyBinding* binding);
+std::string keybinding_to_string(KeyBinding* binding);
 void key_find_binds(const char* needle, Output output);
 void complete_against_modifiers(const char* needle, char seperator,
                                 char* prefix, Output output);
