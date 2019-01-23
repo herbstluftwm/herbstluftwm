@@ -942,7 +942,7 @@ bool userattribute_remove(HSAttribute* attr) {
     memmove(obj->attributes + idx, obj->attributes + idx + 1, bytes);
     obj->attributes = g_renew(HSAttribute, obj->attributes, count);
     obj->attribute_count = count;
-    return 0;
+    return true;
 }
 
 #define FORMAT_CHAR '%'
