@@ -26,14 +26,6 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
 
-    // Validate keysym
-    KeyCode keycode = XKeysymToKeycode(g_display, newBinding->keysym);
-    if (!keycode) {
-        output << input.command() << ": No keycode for symbol "
-               << XKeysymToString(newBinding->keysym) << std::endl;
-        return HERBST_INVALID_ARGUMENT;
-    }
-
     input.shift();
     // Store remaining input as the associated command
     newBinding->cmd = {input.begin(), input.end()};
