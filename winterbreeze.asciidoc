@@ -21,3 +21,6 @@ the following, all user-visible changes are listed:
 
   - Writing '%%' in the 'sprintf' format string now gives a literate '%', just
     as printf. Formely it stayed '%%'.
+
+  - The 'keybind' command now accepts all valid key symbols, even if they are
+    not present on the current keyboard layout at the time of setup.
