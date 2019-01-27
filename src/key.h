@@ -40,7 +40,7 @@ void regrab_keys();
 void grab_keybind(KeyBinding* binding);
 void update_numlockmask();
 unsigned int* get_numlockmask_ptr();
-void key_set_keymask(HSTag * tag, Client *client);
+void key_set_keymask(const std::string& keymask);
 void handle_key_press(XEvent* ev);
 
 void key_init();

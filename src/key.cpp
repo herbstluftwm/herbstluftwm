@@ -337,10 +337,10 @@ static void key_set_keymask_helper(KeyBinding* b, regex_t *keymask_regex) {
     }
 }
 
-void key_set_keymask(HSTag *tag, Client *client) {
+void key_set_keymask(const std::string& keymask) {
     regex_t     keymask_regex;
-    if (client && client->keymask_ != "") {
-        int status = regcomp(&keymask_regex, ((std::string)client->keymask_).c_str(), REG_EXTENDED);
+    if (keymask != "") {
+        int status = regcomp(&keymask_regex, keymask.c_str(), REG_EXTENDED);
         if (status == 0) {
             for (auto& binding : g_key_binds) {
                 key_set_keymask_helper(binding.get(), &keymask_regex);
@@ -350,7 +350,7 @@ void key_set_keymask(HSTag *tag, Client *client) {
             char buf[ERROR_STRING_BUF_SIZE];
             regerror(status, &keymask_regex, buf, ERROR_STRING_BUF_SIZE);
             HSDebug("keymask: Can not parse regex \"%s\" from keymask: %s",
-                    ((std::string)client->keymask_).c_str(), buf);
+                    keymask.c_str(), buf);
         }
     }
     // Enable all keys again
