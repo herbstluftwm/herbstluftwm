@@ -168,7 +168,7 @@ void Client::window_unfocus_last() {
         tag_update_each_focus_layer();
 
         // Enable all keys in the root window
-        key_set_keymask(get_current_monitor()->tag, 0);
+        key_set_keymask(0);
     }
     lastfocus = 0;
 }
@@ -211,7 +211,7 @@ void Client::window_focus() {
     }
     tag_update_focus_layer(get_current_monitor()->tag);
     grab_client_buttons(this, true);
-    key_set_keymask(this->tag(), this);
+    key_set_keymask(this->keymask_());
     this->set_urgent(false);
 }
 
