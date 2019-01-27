@@ -168,7 +168,7 @@ void Client::window_unfocus_last() {
         tag_update_each_focus_layer();
 
         // Enable all keys in the root window
-        key_set_keymask(0);
+        key_set_keymask("");
     }
     lastfocus = 0;
 }
