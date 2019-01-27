@@ -2,10 +2,12 @@
 
 #include <memory>
 
+#include "clientmanager.h"
 #include "completion.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "key.h"
+#include "root.h"
 #include "utils.h"
 
 using std::vector;
@@ -38,6 +40,12 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
 
     // Add keybinding to list
     g_key_binds.push_back(std::move(newBinding));
+
+    // Reapply the current keymask (if any)
+    auto focusedClient = Root::get()->clients()->focus();
+    if (focusedClient != nullptr) {
+        key_set_keymask(focusedClient->keymask_());
+    }
 
     return HERBST_EXIT_SUCCESS;
 }
