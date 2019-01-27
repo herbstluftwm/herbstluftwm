@@ -79,6 +79,34 @@ def test_trigger_selfremoving_binding(hlwm):
     assert hlwm.call('list_keybinds').stdout == ''
 
 
+@pytest.mark.parametrize('maskmethod,order', [
+    ('rule', 'existing_keybinding'),
+    pytest.param('rule', 'keybinding_added_later', marks=pytest.mark.xfail(reason='not working yet')),
+    pytest.param('set_attr', 'existing_keybinding', marks=pytest.mark.xfail(reason='not working yet')),
+    pytest.param('set_attr', 'keybinding_added_later', marks=pytest.mark.xfail(reason='not working yet')),
+    ])
+def test_keymask(hlwm, keyboard, maskmethod, order):
+    if order == 'existing_keybinding':
+        hlwm.call('keybind x close')
+    if maskmethod == 'rule':
+        hlwm.call('rule once keymask=^x$')
+    hlwm.create_client()
+    if maskmethod == 'set_attr':
+        hlwm.call('set_attr clients.focus.keymask ^x$')
+    if order == 'keybinding_added_later':
+        hlwm.call('keybind x close')
+
+    keyboard.press('x')
+
+    assert hlwm.get_attr('tags.0.client_count') == '1'
+
+    # As a verification of the test itself, check that the client *would* have
+    # been removed without the mask:
+    hlwm.call('set_attr clients.focus.keymask ""')
+    keyboard.press('x')
+    assert hlwm.get_attr('tags.0.client_count') == '0'
+
+
 def test_complete_keybind_offers_all_mods_and_syms(hlwm):
     complete = hlwm.complete('keybind', partial=True, position=1)
 

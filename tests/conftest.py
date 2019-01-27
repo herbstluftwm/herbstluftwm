@@ -5,6 +5,7 @@ import shlex
 import subprocess
 import sys
 import textwrap
+import time
 
 import pytest
 
@@ -271,3 +272,14 @@ def running_clients(hlwm, running_clients_num):
     "running_clients_num" test parameter.
     """
     return hlwm.create_clients(running_clients_num)
+
+
+@pytest.fixture()
+def keyboard():
+    class KeyBoard:
+        def press(self, s):
+            subprocess.call('xdotool key x'.split())
+            # Bad workaround for keypress injection not being synchronous:
+            time.sleep(.5)
+
+    return KeyBoard()

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
-#include <regex.h>
+#include <regex>
 #include <string>
 
 #include "client.h"
@@ -312,49 +312,38 @@ void complete_against_modifiers(const char* needle, char seperator,
     g_string_free(buf, true);
 }
 
-static void key_set_keymask_helper(KeyBinding* b, regex_t *keymask_regex) {
+static void key_set_keymask_helper(KeyBinding* b, const std::regex &maskRegex) {
     // add keybinding
-    bool enabled = true;
-    if (keymask_regex) {
-        auto name = keybinding_to_string(b);
-        regmatch_t match;
-        int status = regexec(keymask_regex, name.c_str(), 1, &match, 0);
-        // only accept it, if it matches the entire string
-        if (status == 0
-            && match.rm_so == 0
-            && match.rm_eo == name.length()) {
-            enabled = true;
-        } else {
-            // Keybinding did not match, therefore we disable it
-            enabled = false;
-        }
-    }
+    auto name = keybinding_to_string(b);
+    bool isMasked = std::regex_match(name, maskRegex);
 
-    if (enabled && !b->enabled) {
+    if (!isMasked && !b->enabled) {
+        HSDebug("Not masking binding: %s\n", name.c_str());
         grab_keybind(b);
-    } else if(!enabled && b->enabled) {
+    } else if(isMasked && b->enabled) {
+        HSDebug("Masking binding: %s\n", name.c_str());
         ungrab_keybind(b, nullptr);
     }
 }
 
 void key_set_keymask(const std::string& keymask) {
-    regex_t     keymask_regex;
-    if (keymask != "") {
-        int status = regcomp(&keymask_regex, keymask.c_str(), REG_EXTENDED);
-        if (status == 0) {
+    try {
+        if (keymask != "") {
+            auto maskRegex = std::regex(keymask, std::regex::extended);
             for (auto& binding : g_key_binds) {
-                key_set_keymask_helper(binding.get(), &keymask_regex);
+                key_set_keymask_helper(binding.get(), maskRegex);
             }
             return;
         } else {
-            char buf[ERROR_STRING_BUF_SIZE];
-            regerror(status, &keymask_regex, buf, ERROR_STRING_BUF_SIZE);
-            HSDebug("keymask: Can not parse regex \"%s\" from keymask: %s",
-                    keymask.c_str(), buf);
+            HSDebug("Ignoring empty keymask\n");
         }
+    } catch(std::regex_error& err) {
+        HSDebug("keymask: Can not parse regex \"%s\" from keymask: %s\n",
+                keymask.c_str(), err.what());
     }
-    // Enable all keys again
+
+    // Failure fallthrough: Make sure that all bindings end up enabled.
     for (auto& binding : g_key_binds) {
-        key_set_keymask_helper(binding.get(), 0);
+        grab_keybind(binding.get());
     }
 }
