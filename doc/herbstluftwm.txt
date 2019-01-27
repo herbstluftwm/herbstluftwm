@@ -1189,10 +1189,10 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 
 +keymask+::
     Sets the keymask for an client. A keymask is an regular expression that is
-    matched against the string represenation (see list_keybinds). If it matches
-    the keybinding is active when this client is focused, otherwise it is
-    disabled. The default keymask is an empty string (""), which does not
-    disable any keybinding.
+    matched against the string represenation (see list_keybinds). While this
+    client is focused, only bindings that match the expression will be active.
+    Any other bindings will be disabled. The default keymask is an empty string
+    (""), which does not disable any keybinding.
 
 A rule's behaviour can be configured by some special 'FLAGS':
 
