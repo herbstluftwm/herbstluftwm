@@ -5,6 +5,7 @@ import shlex
 import subprocess
 import sys
 import textwrap
+import time
 
 import pytest
 
@@ -271,3 +272,12 @@ def running_clients(hlwm, running_clients_num):
     "running_clients_num" test parameter.
     """
     return hlwm.create_clients(running_clients_num)
+
+
+@pytest.fixture()
+def keyboard():
+    class KeyBoard:
+        def press(self, key_spec):
+            subprocess.call(['xdotool', 'key', key_spec])
+
+    return KeyBoard()

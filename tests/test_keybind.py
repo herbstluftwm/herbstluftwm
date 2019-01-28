@@ -61,22 +61,55 @@ def test_keyunbind_nonexistent_binding(hlwm):
     assert unbind.stdout == 'keyunbind: Key "n" is not bound\n'
 
 
-def test_trigger_single_key_binding(hlwm):
+def test_trigger_single_key_binding(hlwm, keyboard):
     hlwm.call('keybind x use tag2')
     hlwm.call('add tag2')
     assert hlwm.get_attr('monitors.0.tag') != 'tag2'
 
-    subprocess.call('xdotool key x'.split())
+    keyboard.press('x')
 
     assert hlwm.get_attr('monitors.0.tag') == 'tag2'
 
 
-def test_trigger_selfremoving_binding(hlwm):
+def test_trigger_selfremoving_binding(hlwm, keyboard):
     hlwm.call('keybind x keyunbind x')
 
-    subprocess.call('xdotool key x'.split())
+    keyboard.press('x')
 
     assert hlwm.call('list_keybinds').stdout == ''
+
+
+@pytest.mark.parametrize('maskmethod,order', [
+    ('rule', 'existing_keybinding'),
+    pytest.param('rule', 'keybinding_added_later', marks=pytest.mark.xfail(reason='not working yet')),
+    pytest.param('set_attr', 'existing_keybinding', marks=pytest.mark.xfail(reason='not working yet')),
+    pytest.param('set_attr', 'keybinding_added_later', marks=pytest.mark.xfail(reason='not working yet')),
+    ])
+def test_keymask(hlwm, keyboard, maskmethod, order):
+    if order == 'existing_keybinding':
+        hlwm.call('keybind x add tag2')
+    if maskmethod == 'rule':
+        hlwm.call('rule once keymask=^x$')
+
+    _, client_proc = hlwm.create_client(term_command='read -n 1')
+
+    if maskmethod == 'set_attr':
+        hlwm.call('set_attr clients.focus.keymask ^x$')
+    if order == 'keybinding_added_later':
+        hlwm.call('keybind x add tag2')
+
+    keyboard.press('x')
+
+    # Expect client to have quit because of received keypress:
+    try:
+        print(f"waiting for client proc {client_proc.pid}")
+        client_proc.wait(5)
+    except subprocess.TimeoutExpired:
+        assert False, "Expected client to quit, but it is still running"
+
+    # As a verification of the test itself, check that the keybinding was not
+    # triggered:
+    hlwm.call_xfail('attr tags.1')
 
 
 def test_complete_keybind_offers_all_mods_and_syms(hlwm):
