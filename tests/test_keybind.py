@@ -87,24 +87,29 @@ def test_trigger_selfremoving_binding(hlwm, keyboard):
     ])
 def test_keymask(hlwm, keyboard, maskmethod, order):
     if order == 'existing_keybinding':
-        hlwm.call('keybind x close')
+        hlwm.call('keybind x add tag2')
     if maskmethod == 'rule':
         hlwm.call('rule once keymask=^x$')
-    hlwm.create_client()
+
+    _, client_proc = hlwm.create_client(term_command='read -n 1')
+
     if maskmethod == 'set_attr':
         hlwm.call('set_attr clients.focus.keymask ^x$')
     if order == 'keybinding_added_later':
-        hlwm.call('keybind x close')
+        hlwm.call('keybind x add tag2')
 
     keyboard.press('x')
 
-    assert hlwm.get_attr('tags.0.client_count') == '1'
+    # Expect client to have quit because of received keypress:
+    try:
+        print(f"waiting for client proc {client_proc.pid}")
+        client_proc.wait(5)
+    except subprocess.TimeoutExpired:
+        assert False, "Expected client to quit, but it is still running"
 
-    # As a verification of the test itself, check that the client *would* have
-    # been removed without the mask:
-    hlwm.call('set_attr clients.focus.keymask ""')
-    keyboard.press('x')
-    assert hlwm.get_attr('tags.0.client_count') == '0'
+    # As a verification of the test itself, check that the keybinding was not
+    # triggered:
+    hlwm.call_xfail('attr tags.1')
 
 
 def test_complete_keybind_offers_all_mods_and_syms(hlwm):

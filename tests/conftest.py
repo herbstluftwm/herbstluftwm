@@ -279,7 +279,5 @@ def keyboard():
     class KeyBoard:
         def press(self, key_spec):
             subprocess.call(['xdotool', 'key', key_spec])
-            # Bad workaround for keypress injection not being synchronous:
-            time.sleep(.5)
 
     return KeyBoard()
