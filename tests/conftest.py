@@ -111,7 +111,7 @@ class HlwmBridge:
         winid = self.wait_for_window_of(wmclass)
 
         self.client_procs.append(proc)
-        return winid
+        return winid, proc
 
     def complete(self, cmd, partial=False, position=None):
         """
@@ -174,7 +174,7 @@ class HlwmBridge:
         return sorted(children)
 
     def create_clients(self, num):
-        return [self.create_client() for i in range(num)]
+        return [self.create_client()[0] for i in range(num)]
 
     def wait_for_window_of(self, wmclass):
         """Wait for a rule hook of the form "here_is_" + wmclass """
