@@ -61,8 +61,8 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
     }
 
-    keymask_.changed().connect([] (const std::string& newMask) {
-            Root::get()->keys()->setKeymask(newMask);
+    keymask_.changed().connect([] {
+            Root::get()->keys()->ensureKeymask();
             });
 
     init_from_X();

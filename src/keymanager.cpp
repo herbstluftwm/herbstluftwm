@@ -41,11 +41,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     // Add keybinding to list
     g_key_binds.push_back(std::move(newBinding));
 
-    // Reapply the current keymask (if any)
-    auto focusedClient = Root::get()->clients()->focus();
-    if (focusedClient != nullptr) {
-        key_set_keymask(focusedClient->keymask_());
-    }
+    ensureKeymask();
 
     return HERBST_EXIT_SUCCESS;
 }
@@ -84,4 +80,17 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
     }
 
     return HERBST_EXIT_SUCCESS;
+}
+
+
+/*!
+ * Ensures that the keymask of the currently focused client is applied.
+ */
+void KeyManager::ensureKeymask() {
+    // Reapply the current keymask (if any)
+    auto focusedClient = Root::get()->clients()->focus();
+    if (focusedClient != nullptr) {
+        key_set_keymask(focusedClient->keymask_());
+    }
+
 }

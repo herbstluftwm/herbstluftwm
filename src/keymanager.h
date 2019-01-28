@@ -8,5 +8,5 @@ public:
     int listKeybindsCommand(Output output);
     int removeKeybindCommand(Input input, Output output);
 
-    void setKeymask(const std::string &mask);
+    void ensureKeymask();
 };
