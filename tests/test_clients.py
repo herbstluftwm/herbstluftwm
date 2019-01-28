@@ -3,8 +3,8 @@ import pytest
 
 def test_first_client_gets_focus(hlwm):
     hlwm.call_xfail('get_attr clients.focus.winid')
-    client = hlwm.create_client()
-    assert hlwm.get_attr('clients.focus.winid') == client
+    winid, _ = hlwm.create_client()
+    assert hlwm.get_attr('clients.focus.winid') == winid
 
 
 def test_alter_fullscreen(hlwm):
