@@ -7,4 +7,6 @@ public:
     int addKeybindCommand(Input input, Output output);
     int listKeybindsCommand(Output output);
     int removeKeybindCommand(Input input, Output output);
+
+    void setKeymask(const std::string &mask);
 };
