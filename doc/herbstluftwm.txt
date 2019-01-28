@@ -1188,11 +1188,7 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     consequence.
 
 +keymask+::
-    Sets the keymask for an client. A keymask is an regular expression that is
-    matched against the string represenation (see list_keybinds). If it matches
-    the keybinding is active when this client is focused, otherwise it is
-    disabled. The default keymask is an empty string (""), which does not
-    disable any keybinding.
+    sets the keymask for a client
 
 A rule's behaviour can be configured by some special 'FLAGS':
 
@@ -1373,21 +1369,28 @@ listed as follows:
   * +clients+
     ** 'WINID': a object for each client with its 'WINID' +
 +
-[format="csv",cols="m,"]
+[cols="m,"]
 |===========================
- s - winid                , its window id
- s - title                , its window title
- s - tag                  , the tag it's currently on
- i - pid                  , the process id of it (-1 if unset)
- s - class                , the class of it (second entry in WM_CLASS)
- s - instance             , the instance of it (first entry in WM_CLASS)
- b w fullscreen           ,
- b w pseudotile           ,
- b w ewmhrequests         , if ewmh requests are permitted for this client
- b w ewmhnotify           , if the client is told about its state via ewmh
- b w urgent               , its urgent state
- b w sizehints_tiling     , if sizehints for this client should be respected in tiling mode
- b w sizehints_flaoting   , if sizehints for this client should be respected in floating mode
+|s - winid                | its window id
+|s - title                | its window title
+|s - keymask              | A regular expression that is matched against the
+                            string representation of all key bindings (see
+                            list_keybinds). While this client is focused, only
+                            bindings that match the expression will be active.
+                            Any other bindings will be disabled. The default
+                            keymask is an empty string (""), which does not
+                            disable any keybinding.
+|s - tag                  | the tag it's currently on
+|i - pid                  | the process id of it (-1 if unset)
+|s - class                | the class of it (second entry in WM_CLASS)
+|s - instance             | the instance of it (first entry in WM_CLASS)
+|b w fullscreen           |
+|b w pseudotile           |
+|b w ewmhrequests         | if ewmh requests are permitted for this client
+|b w ewmhnotify           | if the client is told about its state via ewmh
+|b w urgent               | its urgent state
+|b w sizehints_tiling     | if sizehints for this client should be respected in tiling mode
+|b w sizehints_flaoting   | if sizehints for this client should be respected in floating mode
 |===========================
 
     ** +focus+: the object of the focused client, if any

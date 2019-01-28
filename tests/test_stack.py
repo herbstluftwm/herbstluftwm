@@ -63,19 +63,19 @@ def test_stack_tree(hlwm):
   - 
     - Monitor 1 ("monitor2") with tag "tag2"
       - Focus-Layer
-        - Client 0x800022 "true"
+        - Client 0x800022 "sleep infinity"
       - Fullscreen-Layer
       - Normal Layer
-        - Client 0x800022 "true"
+        - Client 0x800022 "sleep infinity"
       - Frame Layer
         - Window 0x200012
         - Window 0x20000a
     - Monitor 0 with tag "default"
       - Focus-Layer
-        - Client 0x600022 "true"
+        - Client 0x600022 "sleep infinity"
       - Fullscreen-Layer
       - Normal Layer
-        - Client 0x600022 "true"
+        - Client 0x600022 "sleep infinity"
       - Frame Layer
         - Window 0x200008
 '''

@@ -94,14 +94,14 @@ class HlwmBridge:
     def get_attr(self, attribute_path, check=True):
         return self.call(['get_attr', attribute_path]).stdout
 
-    def create_client(self, title=None):
+    def create_client(self, term_command='sleep infinity', title=None):
         """
         Launch a client that will be terminated on shutdown.
         """
         self.next_client_id += 1
         wmclass = 'client_{}'.format(self.next_client_id)
         title = ['-title', str(title)] if title else []
-        command = ['xterm'] + title + ['-hold', '-class', wmclass, '-e', 'true']
+        command = ['xterm'] + title + ['-class', wmclass, '-e', term_command]
 
         # enforce a hook when the window appears
         self.call(['rule', 'once', 'class='+wmclass, 'hook=here_is_'+wmclass])
@@ -111,7 +111,7 @@ class HlwmBridge:
         winid = self.wait_for_window_of(wmclass)
 
         self.client_procs.append(proc)
-        return winid
+        return winid, proc
 
     def complete(self, cmd, partial=False, position=None):
         """
@@ -174,7 +174,7 @@ class HlwmBridge:
         return sorted(children)
 
     def create_clients(self, num):
-        return [self.create_client() for i in range(num)]
+        return [self.create_client()[0] for i in range(num)]
 
     def wait_for_window_of(self, wmclass):
         """Wait for a rule hook of the form "here_is_" + wmclass """
@@ -277,9 +277,7 @@ def running_clients(hlwm, running_clients_num):
 @pytest.fixture()
 def keyboard():
     class KeyBoard:
-        def press(self, s):
-            subprocess.call('xdotool key x'.split())
-            # Bad workaround for keypress injection not being synchronous:
-            time.sleep(.5)
+        def press(self, key_spec):
+            subprocess.call(['xdotool', 'key', key_spec])
 
     return KeyBoard()
