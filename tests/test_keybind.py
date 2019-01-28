@@ -61,20 +61,20 @@ def test_keyunbind_nonexistent_binding(hlwm):
     assert unbind.stdout == 'keyunbind: Key "n" is not bound\n'
 
 
-def test_trigger_single_key_binding(hlwm):
+def test_trigger_single_key_binding(hlwm, keyboard):
     hlwm.call('keybind x use tag2')
     hlwm.call('add tag2')
     assert hlwm.get_attr('monitors.0.tag') != 'tag2'
 
-    subprocess.call('xdotool key x'.split())
+    keyboard.press('x')
 
     assert hlwm.get_attr('monitors.0.tag') == 'tag2'
 
 
-def test_trigger_selfremoving_binding(hlwm):
+def test_trigger_selfremoving_binding(hlwm, keyboard):
     hlwm.call('keybind x keyunbind x')
 
-    subprocess.call('xdotool key x'.split())
+    keyboard.press('x')
 
     assert hlwm.call('list_keybinds').stdout == ''
 
