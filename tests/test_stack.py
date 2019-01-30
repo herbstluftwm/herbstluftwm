@@ -5,7 +5,7 @@ def strip_winids(string):
     """
     Replaces all substrings that look like window IDs with a fixed string.
     """
-    return re.sub(r'0x([0-9a-f]+)', '0xanywinid', string)
+    return re.sub(r'0x([0-9a-f]+)', '<windowid>', string)
 
 
 def helper_get_stack_as_list(hlwm):
@@ -63,20 +63,20 @@ def test_stack_tree(hlwm):
   - 
     - Monitor 1 ("monitor2") with tag "tag2"
       - Focus-Layer
-        - Client 0x800022 "sleep infinity"
+        - Client <windowid> "sleep infinity"
       - Fullscreen-Layer
       - Normal Layer
-        - Client 0x800022 "sleep infinity"
+        - Client <windowid> "sleep infinity"
       - Frame Layer
-        - Window 0x200012
-        - Window 0x20000a
+        - Window <windowid>
+        - Window <windowid>
     - Monitor 0 with tag "default"
       - Focus-Layer
-        - Client 0x600022 "sleep infinity"
+        - Client <windowid> "sleep infinity"
       - Fullscreen-Layer
       - Normal Layer
-        - Client 0x600022 "sleep infinity"
+        - Client <windowid> "sleep infinity"
       - Frame Layer
-        - Window 0x200008
+        - Window <windowid>
 '''
-    assert strip_winids(stack.stdout) == strip_winids(expected_stack)
+    assert strip_winids(stack.stdout) == expected_stack
