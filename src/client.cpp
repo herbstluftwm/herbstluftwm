@@ -16,6 +16,7 @@
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "key.h"
+#include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
 #include "mouse.h"
@@ -59,6 +60,10 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         i->setWriteable();
         i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
     }
+
+    keymask_.changed().connect([] {
+            Root::get()->keys()->ensureKeymask();
+            });
 
     init_from_X();
 }

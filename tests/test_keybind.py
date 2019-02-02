@@ -81,9 +81,9 @@ def test_trigger_selfremoving_binding(hlwm, keyboard):
 
 @pytest.mark.parametrize('maskmethod,order', [
     ('rule', 'existing_keybinding'),
-    pytest.param('rule', 'keybinding_added_later', marks=pytest.mark.xfail(reason='not working yet')),
-    pytest.param('set_attr', 'existing_keybinding', marks=pytest.mark.xfail(reason='not working yet')),
-    pytest.param('set_attr', 'keybinding_added_later', marks=pytest.mark.xfail(reason='not working yet')),
+    ('rule', 'keybinding_added_later'),
+    ('set_attr', 'existing_keybinding'),
+    ('set_attr', 'keybinding_added_later'),
     ])
 def test_keymask(hlwm, keyboard, maskmethod, order):
     if order == 'existing_keybinding':
