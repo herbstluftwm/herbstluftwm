@@ -205,6 +205,10 @@ def hlwm(hlwm_process):
     #display = ':13'
     hlwm_bridge = HlwmBridge(display, hlwm_process)
     yield hlwm_bridge
+
+    # Make sure that hlwm survived:
+    hlwm_bridge.call('version')
+
     hlwm_bridge.shutdown()
 
 
