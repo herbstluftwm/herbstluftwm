@@ -708,7 +708,6 @@ static struct {
     void (*init)();
     void (*destroy)();
 } g_modules[] = {
-    { key_init,         key_destroy         },
     { clientlist_init,  clientlist_destroy  },
     { ewmh_init,        ewmh_destroy        },
     { mouse_init,       mouse_destroy       },

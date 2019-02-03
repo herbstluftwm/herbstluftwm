@@ -13,7 +13,13 @@
 using std::vector;
 using std::unique_ptr;
 
-extern vector<unique_ptr<KeyBinding>> g_key_binds;
+KeyManager::KeyManager() {
+    update_numlockmask();
+}
+
+KeyManager::~KeyManager() {
+    ungrab_all();
+}
 
 int KeyManager::addKeybindCommand(Input input, Output output) {
     if (input.size() < 2) {
@@ -39,7 +45,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     grab_keybind(newBinding.get());
 
     // Add keybinding to list
-    g_key_binds.push_back(std::move(newBinding));
+    binds.push_back(std::move(newBinding));
 
     ensureKeymask();
 
@@ -47,7 +53,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
 }
 
 int KeyManager::listKeybindsCommand(Output output) {
-    for (auto& binding : g_key_binds) {
+    for (auto& binding : binds) {
         // add keybinding
         output << keybinding_to_string(binding.get());
         // add associated command
@@ -64,7 +70,8 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
     }
 
     if (arg == "--all" || arg == "-F") {
-        key_remove_all_binds();
+        binds.clear();
+        ungrab_all();
     } else {
         unsigned int modifiers;
         KeySym keysym;
