@@ -7,6 +7,7 @@
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "key.h"
+#include "keycombo.h"
 #include "root.h"
 #include "utils.h"
 
@@ -28,9 +29,10 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
 
     auto newBinding = make_unique<KeyBinding>();
 
-    // Extract modifiers/keysym
-    if (!string2key(input.front(), &(newBinding->modifiers), &(newBinding->keysym))) {
-        output << input.command() << ": No such KeySym/modifier\n";
+    try {
+        newBinding->keyCombo = KeyCombo::fromString(input.front());
+    } catch (std::runtime_error &error) {
+        output << input.command() << ": " << error.what() << std::endl;
         return HERBST_INVALID_ARGUMENT;
     }
 
@@ -39,7 +41,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     newBinding->cmd = {input.begin(), input.end()};
 
     // Remove existing binding with same keysym/modifiers
-    key_remove_bind_with_keysym(newBinding->modifiers, newBinding->keysym);
+    key_remove_bind_with_keysym(newBinding->keyCombo.modifiers, newBinding->keyCombo.keysym);
 
     // Grab for events on this keycode
     grab_keybind(newBinding.get());
@@ -54,8 +56,8 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
 
 int KeyManager::listKeybindsCommand(Output output) {
     for (auto& binding : binds) {
-        // add keybinding
-        output << keybinding_to_string(binding.get());
+        // add key combo
+        output << binding->keyCombo.str();
         // add associated command
         output << "\t" << ArgList(binding->cmd).join('\t');
         output << "\n";
@@ -73,14 +75,14 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
         binds.clear();
         ungrab_all();
     } else {
-        unsigned int modifiers;
-        KeySym keysym;
-        // get keycode
-        if (!string2key(arg, &modifiers, &keysym)) {
-            output << arg << ": No such KeySym/modifier\n";
+        KeyCombo comboToRemove;
+        try {
+            comboToRemove = KeyCombo::fromString(arg);
+        } catch (std::runtime_error &error) {
+            output << input.command() << ": " << arg << ": " << error.what() << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
-        if (key_remove_bind_with_keysym(modifiers, keysym) == false) {
+        if (key_remove_bind_with_keysym(comboToRemove.modifiers, comboToRemove.keysym) == false) {
             output << input.command() << ": Key \"" << arg << "\" is not bound\n";
         }
         regrab_keys();

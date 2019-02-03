@@ -11,9 +11,6 @@
 unsigned int modifiername2mask(const char* name);
 const char* modifiermask2name(unsigned int mask);
 
-bool string2modifiers(const std::string& string, unsigned int* modmask);
-bool string2key(const std::string& str, unsigned int* modmask, KeySym* keysym);
-
 int list_keysyms(int argc, char** argv, Output output);
 bool key_remove_bind_with_keysym(unsigned int modifiers, KeySym sym);
 void key_remove_all_binds();
