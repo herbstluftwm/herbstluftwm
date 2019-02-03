@@ -164,11 +164,14 @@ int mouse_bind_command(int argc, char** argv, Output output) {
     }
     unsigned int modifiers = 0;
     char* string = argv[1];
-    if (!string2modifiers(string, &modifiers)) {
-        output << argv[0] <<
-            ": Modifier \"" << string << "\" does not exist\n";
+
+    try {
+        modifiers = KeyCombo::string2modifiers(string);
+    } catch (std::runtime_error &error) {
+        output << argv[0] << error.what();
         return HERBST_INVALID_ARGUMENT;
     }
+
     // last one is the mouse button
     const char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
     unsigned int button = string2button(last_token);

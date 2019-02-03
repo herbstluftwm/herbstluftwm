@@ -39,6 +39,7 @@ target_sources(herbstluftwm PRIVATE
     ipc-protocol.h
     ipc-server.cpp ipc-server.h
     key.cpp key.h
+    keycombo.cpp keycombo.h
     keymanager.cpp keymanager.h
     layout.cpp layout.h
     monitor.cpp monitor.h
