@@ -35,25 +35,27 @@ def test_replace_keybind(hlwm):
     assert hlwm.call('list_keybinds').stdout == 'Mod1+x\tcycle\n'
 
 
-def test_keyunbind_specific_binding(hlwm):
-    hlwm.call('keybind Mod1+x quit')
-    hlwm.call('keybind Mod1+y cycle')
+def test_keyunbind_specific_binding(hlwm, keyboard):
+    hlwm.call('keybind Mod1+x cycle')
+    hlwm.call('keybind Ctrl+y quit')
     hlwm.call('keybind Mod1+z close')
 
-    unbind = hlwm.call('keyunbind Mod1+y')
+    unbind = hlwm.call('keyunbind Ctrl+y')
 
     assert unbind.stdout == ''
-    assert hlwm.call('list_keybinds').stdout == 'Mod1+x\tquit\nMod1+z\tclose\n'
+    assert hlwm.call('list_keybinds').stdout == 'Mod1+x\tcycle\nMod1+z\tclose\n'
+    keyboard.press('Ctrl+y')  # verify that key got ungrabbed
 
 
 @pytest.mark.parametrize('method', ['-F', '--all'])
-def test_keyunbind_all(hlwm, method):
-    hlwm.call('keybind Mod1+x quit')
+def test_keyunbind_all(hlwm, method, keyboard):
+    hlwm.call('keybind Alt+x quit')
 
     unbind = hlwm.call(['keyunbind', method])
 
     assert unbind.stdout == ''
     assert hlwm.call('list_keybinds').stdout == ''
+    keyboard.press('Alt+x')  # verify that key got ungrabbed
 
 
 def test_keyunbind_nonexistent_binding(hlwm):
