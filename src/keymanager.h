@@ -5,14 +5,14 @@
 #include <string>
 #include <vector>
 
+#include "keycombo.h"
 #include "object.h"
 #include "types.h"
 
 // TODO: Turn this into a nested class of KeyManager (will be easier later on)
 class KeyBinding {
 public:
-    KeySym keysym;
-    unsigned int modifiers;
+    KeyCombo keyCombo;
 
     //! Command to call
     std::vector<std::string> cmd;

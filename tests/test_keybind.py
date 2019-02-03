@@ -18,13 +18,13 @@ def test_list_keybinds(hlwm, sep):
 def test_keybind_unknown_modifier(hlwm):
     call = hlwm.call_xfail('keybind Moep1-x quit')
 
-    assert call.stderr == 'keybind: No such KeySym/modifier\n'
+    assert call.stderr == 'keybind: Unknown modifier "Moep1"\n'
 
 
 def test_keybind_unknown_keysym(hlwm):
     call = hlwm.call_xfail('keybind Mod1-_ quit')
 
-    assert call.stderr == 'keybind: No such KeySym/modifier\n'
+    assert call.stderr == 'keybind: Unknown KeySym "_"\n'
 
 
 def test_replace_keybind(hlwm):
