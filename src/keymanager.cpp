@@ -89,6 +89,15 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
     return HERBST_EXIT_SUCCESS;
 }
 
+void KeyManager::removeKeybindCompletion(Completion &complete) {
+    if (complete == 0) {
+        complete.full({ "-F", "--all" });
+
+        for (auto& binding : binds) {
+            complete.full(binding->keyCombo.str());
+        }
+    }
+}
 
 /*!
  * Ensures that the keymask of the currently focused client is applied.
