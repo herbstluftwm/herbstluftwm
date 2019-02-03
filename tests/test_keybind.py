@@ -121,6 +121,22 @@ def test_keymask(hlwm, keyboard, maskmethod, whenbind, refocus):
     hlwm.call_xfail('attr tags.1')
 
 
+@pytest.mark.parametrize('maskmethod', ('rule', 'set_attr'))
+def test_invalid_keymask_has_no_effect(hlwm, keyboard, maskmethod):
+    hlwm.call('keybind x close')
+    if maskmethod == 'rule':
+        hlwm.call('rule once keymask=[b-a]')
+    hlwm.create_client()
+    if maskmethod == 'set_attr':
+        # Note: In future work, we could make this fail right away. But
+        # currently, that is not the case.
+        hlwm.call('set_attr clients.focus.keymask [b-a]')
+
+    keyboard.press('x')
+
+    assert hlwm.get_attr('tags.0.client_count') == '0'
+
+
 def test_complete_keybind_offers_all_mods_and_syms(hlwm):
     complete = hlwm.complete('keybind', partial=True, position=1)
 
