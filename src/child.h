@@ -23,24 +23,24 @@ public:
     template<typename... Args>
     void init(Args&&... args)
     {
-        pointer = std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-        owner.addChild(pointer.get(), name);
+        pointer_ = std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+        owner.addChild(pointer_.get(), name);
     }
 
     void reset() {
-        pointer.reset();
+        pointer_.reset();
     }
 
     T* operator()() {
-        return pointer.get();
+        return pointer_.get();
     }
     T* operator->() {
-        return pointer.get();
+        return pointer_.get();
     }
 private:
     Object& owner;
     std::string name;
-    std::unique_ptr<T> pointer = nullptr;
+    std::unique_ptr<T> pointer_ = nullptr;
 };
 
 #endif
