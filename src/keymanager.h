@@ -30,6 +30,8 @@ public:
     int listKeybindsCommand(Output output);
     int removeKeybindCommand(Input input, Output output);
 
+    void removeKeybindCompletion(Completion &complete);
+
     void ensureKeymask();
 
     //! Currently defined keybindings (TODO: Make this private as soon as possible)

@@ -220,23 +220,6 @@ struct key_find_context {
     size_t      needle_len;
 };
 
-static void key_find_binds_helper(KeyBinding* b, struct key_find_context* c) {
-    auto name = keybinding_to_string(b);
-    if (name.find(c->needle) == 0) {
-        /* add to output if key starts with searched needle */
-        c->output << name << std::endl;
-    }
-}
-
-void key_find_binds(const char* needle, Output output) {
-    struct key_find_context c = {
-        output, needle, strlen(needle)
-    };
-    for (auto& binding : Root::get()->keys()->binds) {
-        key_find_binds_helper(binding.get(), &c);
-    }
-}
-
 void complete_against_keysyms(const char* needle, char* prefix, Output output) {
     // get all possible keysyms
     int min, max;
