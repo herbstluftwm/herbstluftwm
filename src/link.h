@@ -3,12 +3,12 @@
 
 #include "object.h"
 
+/*! A pointer to another object in the object tree. if this is
+ * assigned a new value, then the child object in the owner is updated
+ * automatically.
+ */
 template<typename T>
 class Link_ {
-    // implement a pointer to another object
-    // in the object tree.
-    // if this is assigned a new value, then the child object
-    // in the owner is updated automatically
 public:
     // 'name' is the name of the child pointer
     Link_(Object& parent, std::string name)
