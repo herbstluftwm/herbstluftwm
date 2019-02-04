@@ -4,10 +4,14 @@
 #include "object.h"
 #include <memory>
 
+/*! implement a static child object in the object tree. Static means that
+ * init() is called on start up and reset() is called on shutdown.
+ *
+ * This is a wrapper around unique_ptr that updates the object tree
+ * accordingly.
+ */
 template<typename T>
 class Child_ {
-    // implement a static child object in the object tree. Static means that
-    // init() is called on start up and reset() is called on shutdown.
 public:
     // owner is the 'parent' object
     // 'name' is the name of the child pointer
