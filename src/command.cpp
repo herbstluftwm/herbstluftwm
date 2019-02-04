@@ -41,7 +41,6 @@ static bool g_shell_quoting = false;
 
 static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
 static const char* completion_focus_args[]    = { "-i", "-e", nullptr };
-static const char* completion_keyunbind_args[]= { "-F", "--all", nullptr };
 static const char* completion_flag_args[]     = { "on", "off", "true", "false", "toggle", nullptr };
 static const char* completion_userattribute_types[] = { "int", "uint", "string", "bool", "color", nullptr };
 static const char* completion_status[]        = { "status", nullptr };
@@ -84,7 +83,6 @@ struct {
     { "try",            2,  parameter_expected_offset_1 },
     { "silent",         2,  parameter_expected_offset_1 },
     { "keybind",        2,  parameter_expected_offset_2 },
-    { "keyunbind",      2,  no_completion },
     { "mousebind",      3,  second_parameter_is_call },
     { "mousebind",      3,  parameter_expected_offset_3 },
     { "focus_nth",      2,  no_completion },
@@ -195,8 +193,6 @@ struct {
     { "try",            GE, 1,  complete_against_commands_1, 0 },
     { "silent",         GE, 1,  complete_against_commands_1, 0 },
     { "keybind",        GE, 1,  complete_against_keybind_command, 0 },
-    { "keyunbind",      EQ, 1,  nullptr, completion_keyunbind_args },
-    { "keyunbind",      EQ, 1,  complete_against_keybinds, 0 },
     { "mousebind",      EQ, 1,  complete_against_mouse_combinations, 0 },
     { "mousebind",      EQ, 2,  nullptr, completion_mouse_functions },
     { "mousebind",      GE, 3,  complete_against_commands_3, 0 },
@@ -663,16 +659,6 @@ void complete_merge_tag(int argc, char** argv, int pos, Output output) {
         }
         try_complete(needle, name, output);
     }
-}
-
-void complete_against_keybinds(int argc, char** argv, int pos, Output output) {
-    const char* needle;
-    if (pos >= argc) {
-        needle = "";
-    } else {
-        needle = argv[pos];
-    }
-    key_find_binds(needle, output);
 }
 
 static bool parameter_expected(int argc, char** argv, int pos) {
