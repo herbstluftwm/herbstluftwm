@@ -30,18 +30,18 @@ Root::Root(Globals g)
     , globals(g)
 {
     // initialize non-dependant children (alphabetically)
-    hooks = new HookManager;
-    keys = new KeyManager();
+    hooks.init();
+    keys.init();
     root_commands = new RootCommands(this);
-    rules = new RuleManager();
-    settings = new Settings(this);
-    tags = new TagManager(settings());
-    theme = new Theme;
-    tmp = new Tmp();
+    rules.init();
+    settings.init(this);
+    tags.init(settings());
+    theme.init();
+    tmp.init();
 
     // initialize dependant children
-    clients = new ClientManager(*theme(), *settings());
-    monitors = new MonitorManager(settings(), tags());
+    clients.init(*theme(), *settings());
+    monitors.init(settings(), tags());
 
     // provide dependencies
     tags()->setMonitorManager(monitors());
@@ -59,17 +59,17 @@ Root::~Root()
     tags()->setMonitorManager({});
 
     // Note: delete in reverse order of initialization!
-    delete monitors();
-    delete clients();
+    monitors.reset();
+    clients.reset();
 
-    delete tmp();
-    delete theme();
-    delete tags();
-    delete settings();
-    delete rules();
+    tmp.reset();
+    theme.reset();
+    tags.reset();
+    settings.reset();
+    rules.reset();
     delete root_commands;
-    delete keys();
-    delete hooks();
+    keys.reset();
+    hooks.reset();
 
     children_.clear(); // avoid possible circular shared_ptr dependency
 }
