@@ -1,17 +1,17 @@
-#ifndef HLWM_SYMLINK_H_
-#define HLWM_SYMLINK_H_
+#ifndef HLWM_LINK_H_
+#define HLWM_LINK_H_
 
 #include "object.h"
 
 template<typename T>
-class SymLink_ {
+class Link_ {
     // implement a pointer to another object
     // in the object tree.
     // if this is assigned a new value, then the child object
     // in the owner is updated automatically
 public:
     // 'name' is the name of the child pointer
-    SymLink_(Object& parent, std::string name)
+    Link_(Object& parent, std::string name)
         : parent_(parent)
         , name_(name)
     { }

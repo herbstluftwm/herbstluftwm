@@ -5,7 +5,7 @@
 #include <functional>
 
 #include "byname.h"
-#include "symlink.h"
+#include "link.h"
 #include "childbyindex.h"
 #include "floating.h" // for find_rectangle_in_direction(), maybe move?
 #include "monitor.h"
@@ -21,7 +21,7 @@ class MonitorManager : public ChildByIndex<Monitor> {
 public:
     MonitorManager(Settings* settings, TagManager* tags);
     ~MonitorManager();
-    SymLink_<Monitor> focus;
+    Link_<Monitor> focus;
 
     void clearChildren();
     void ensure_monitors_are_available();
