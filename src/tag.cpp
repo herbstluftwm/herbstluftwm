@@ -7,6 +7,7 @@
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
+#include "frametree.h"
 #include "layout.h"
 #include "monitor.h"
 #include "root.h"
@@ -27,12 +28,12 @@ HSTag::HSTag(std::string name_, Settings* settings)
     , frame_count(this, "frame_count", &HSTag::computeFrameCount)
     , client_count(this, "client_count", &HSTag::computeClientCount)
     , curframe_windex(this, "curframe_windex",
-        [this] () { return frame->getFocusedFrame()->getSelection(); } )
+        [this] () { return frame->root_->getFocusedFrame()->getSelection(); } )
     , curframe_wcount(this, "curframe_wcount",
-        [this] () { return frame->getFocusedFrame()->clientCount(); } )
+        [this] () { return frame->root_->getFocusedFrame()->clientCount(); } )
 {
     stack = make_shared<Stack>();
-    frame = make_shared<HSFrameLeaf>(this, settings, shared_ptr<HSFrameSplit>());
+    frame = make_shared<FrameTree>(this, settings);
 }
 
 HSTag::~HSTag() {
@@ -55,7 +56,7 @@ std::string HSTag::validateNewName(std::string newName) {
 
 int HSTag::computeFrameCount() {
     int count = 0;
-    frame->fmap([](HSFrameSplit*) {},
+    frame->root_->fmap([](HSFrameSplit*) {},
                 [&count](HSFrameLeaf*) { count++; },
                 0);
     return count;
@@ -63,7 +64,7 @@ int HSTag::computeFrameCount() {
 
 int HSTag::computeClientCount() {
     int count = 0;
-    frame->fmap([](HSFrameSplit*) {},
+    frame->root_->fmap([](HSFrameSplit*) {},
                 [&count](HSFrameLeaf* l) { count += l->clientCount(); },
                 0);
     return count;
@@ -157,7 +158,7 @@ void tag_set_flags_dirty() {
 
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
     for (auto t : *global_tags) {
-        if (&* t->frame == frame) {
+        if (&* t->frame->root_ == frame) {
             return &* t;
         }
     }
@@ -165,7 +166,7 @@ HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
 }
 
 void tag_update_focus_layer(HSTag* tag) {
-    Client* focus = tag->frame->focusedClient();
+    Client* focus = tag->frame->root_->focusedClient();
     tag->stack->clear_layer(LAYER_FOCUS);
     if (focus) {
         // enforce raise_on_focus_temporarily if there is at least one

@@ -15,14 +15,6 @@
 #define LAYOUT_DUMP_SEPARATOR_STR ":" /* must be a string with one char */
 #define LAYOUT_DUMP_SEPARATOR LAYOUT_DUMP_SEPARATOR_STR[0]
 
-#define TAG_SET_FLAG(tag, flag) \
-    ((tag)->flags |= (flag))
-
-enum {
-    TAG_FLAG_URGENT = 0x01, // is there a urgent window?
-    TAG_FLAG_USED   = 0x02, // the opposite of empty
-};
-
 enum {
     ALIGN_VERTICAL = 0,
     ALIGN_HORIZONTAL,
@@ -242,10 +234,6 @@ HSFrame* get_toplevel_frame(HSFrame* frame);
 
 void print_frame_tree(std::shared_ptr<HSFrame> frame, Output output);
 void dump_frame_tree(std::shared_ptr<HSFrame> frame, Output output);
-// create apply a described layout to a frame and its subframes
-// returns pointer to string that was not parsed yet
-// or NULL on an error
-char* load_frame_tree(std::shared_ptr<HSFrame> frame, char* description, Output errormsg);
 int find_layout_by_name(char* name);
 int find_align_by_name(char* name);
 

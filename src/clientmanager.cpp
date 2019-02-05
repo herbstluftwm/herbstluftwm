@@ -6,6 +6,7 @@
 #include "client.h"
 #include "completion.h"
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "layout.h"
@@ -152,14 +153,14 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
     client->slice = slice_create_client(client);
     client->tag()->stack->insert_slice(client->slice);
     // insert window to the tag
-    client->tag()->frame->lookup(changes.tree_index.c_str())
+    client->tag()->frame->root_->lookup(changes.tree_index.c_str())
                  ->insertClient(client);
     if (changes.focus) {
         // give focus to window if wanted
         // TODO: make this faster!
         // WARNING: this solution needs O(C + exp(D)) time where W is the count
         // of clients on this tag and D is the depth of the binary layout tree
-        client->tag()->frame->focusClient(client);
+        client->tag()->frame->root_->focusClient(client);
     }
 
     ewmh_window_update_tag(client->window_, client->tag());
@@ -213,7 +214,7 @@ void ClientManager::force_unmanage(Client* client) {
         client->tag()->stack->remove_slice(client->slice);
     }
     // remove from tag
-    client->tag()->frame->removeClient(client);
+    client->tag()->frame->root_->removeClient(client);
     // ignore events from it
     XSelectInput(g_display, client->window_, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);

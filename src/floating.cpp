@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include "client.h"
+#include "frametree.h"
 #include "layout.h"
 #include "monitor.h"
 #include "settings.h"

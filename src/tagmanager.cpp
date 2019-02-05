@@ -4,6 +4,7 @@
 
 #include "client.h"
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "layout.h"
@@ -92,7 +93,7 @@ int TagManager::removeTag(Input input, Output output) {
 
     // Collect all clients in tag
     std::vector<Client*> clients;
-    tagToRemove->frame->foreachClient([&clients](Client* client) {
+    tagToRemove->frame->root_->foreachClient([&clients](Client* client) {
         clients.push_back(client);
     });
 
@@ -102,7 +103,7 @@ int TagManager::removeTag(Input input, Output output) {
         client->setTag(targetTag);
         client->tag()->stack->insert_slice(client->slice);
         ewmh_window_update_tag(client->window_, client->tag());
-        targetTag->frame->insertClient(client);
+        targetTag->frame->root_->insertClient(client);
     }
 
     // Make transferred clients visible if target tag is visible
@@ -192,7 +193,7 @@ HSTag* TagManager::byIndexStr(const std::string& index_str, bool skip_visible_ta
 }
 
 void TagManager::moveFocusedClient(HSTag* target) {
-    Client* client = monitors_->focus()->tag->frame->focusedClient();
+    Client* client = monitors_->focus()->tag->frame->root_->focusedClient();
     if (!client) {
         return;
     }
@@ -207,11 +208,11 @@ void TagManager::moveClient(Client* client, HSTag* target) {
         return;
     }
     Monitor* monitor_target = find_monitor_with_tag(target);
-    tag_source->frame->removeClient(client);
+    tag_source->frame->root_->removeClient(client);
     // insert window into target
-    target->frame->insertClient(client);
+    target->frame->root_->insertClient(client);
     // enfoce it to be focused on the target tag
-    target->frame->focusClient(client);
+    target->frame->root_->focusClient(client);
     client->tag()->stack->remove_slice(client->slice);
     client->setTag(target);
     client->tag()->stack->insert_slice(client->slice);
@@ -229,10 +230,10 @@ void TagManager::moveClient(Client* client, HSTag* target) {
         client->set_visible(true);
     }
     if (monitor_target == get_current_monitor()) {
-        frame_focus_recursive(monitor_target->tag->frame);
+        frame_focus_recursive(monitor_target->tag->frame->root_);
     }
     else if (monitor_source == get_current_monitor()) {
-        frame_focus_recursive(monitor_source->tag->frame);
+        frame_focus_recursive(monitor_source->tag->frame->root_);
     }
     tag_set_flags_dirty();
 }
