@@ -312,6 +312,7 @@ int load_command(int argc, char** argv, Output output) {
         Monitor* m = get_current_monitor();
         tag = m->tag;
     }
+    (void) layout_string;
     assert(tag != nullptr);
     const char* rest = "To be implemented...";
     tag_set_flags_dirty(); // we probably changed some window positions
