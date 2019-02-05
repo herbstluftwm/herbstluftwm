@@ -89,8 +89,8 @@ public:
      * The return value is passed through.
      */
     template <typename ReturnType>
-    ReturnType switchcase(std::function<ReturnType(std::shared_ptr<HSFrameSplit>)> onSplit,
-                          std::function<ReturnType(std::shared_ptr<HSFrameLeaf>)> onLeaf) {
+    ReturnType switchcase(std::function<ReturnType(std::shared_ptr<HSFrameLeaf>)> onLeaf,
+                          std::function<ReturnType(std::shared_ptr<HSFrameSplit>)> onSplit) {
         auto s = isSplit();
         if (s) {
             return onSplit(s);
@@ -102,8 +102,8 @@ public:
     }
     /*! The same for ReturnType = void
      */
-    void switchcase(std::function<void(std::shared_ptr<HSFrameSplit>)> onSplit,
-                    std::function<void(std::shared_ptr<HSFrameLeaf>)> onLeaf) {
+    void switchcase(std::function<void(std::shared_ptr<HSFrameLeaf>)> onLeaf,
+                    std::function<void(std::shared_ptr<HSFrameSplit>)> onSplit) {
         auto s = isSplit();
         if (s) {
             onSplit(s);

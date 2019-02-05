@@ -48,7 +48,7 @@ void FrameTree::dump(std::shared_ptr<HSFrame> frame, Output output)
         FrameTree::dump(s->b_, output);
         output << LAYOUT_DUMP_BRACKETS[1];
     };
-    frame->switchcase(onSplit, onLeaf);
+    frame->switchcase(onLeaf, onSplit);
 }
 
 
@@ -62,6 +62,10 @@ std::shared_ptr<HSFrame> FrameTree::lookup(const std::string& path) {
     }
     for (char c : path) {
         node = node->switchcase<std::shared_ptr<HSFrame>>(
+            [](std::shared_ptr<HSFrameLeaf> l) {
+                // nothing to do on a leaf
+                return l;
+            },
             [c](std::shared_ptr<HSFrameSplit> l) {
                 switch (c) {
                     case '0': return l->a_;
@@ -70,10 +74,6 @@ std::shared_ptr<HSFrame> FrameTree::lookup(const std::string& path) {
                     case '.': /* fallthru */
                     default: return (l->selection_ == 0) ? l->a_ : l->b_;
                 }
-            },
-            [](std::shared_ptr<HSFrameLeaf> l) {
-                // nothing to do on a leaf
-                return l;
             }
         );
     }
