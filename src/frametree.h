@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <functional>
+#include "types.h"
 
 class Client;
 class HSFrame;
@@ -16,6 +17,8 @@ class FrameTree {
 public:
     FrameTree(HSTag* tag, Settings* settings);
     void foreachClient(std::function<void(Client*)> action);
+
+    static void dump(std::shared_ptr<HSFrame> frame, Output output);
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:

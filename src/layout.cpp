@@ -158,37 +158,6 @@ HSFrameLeaf::~HSFrameLeaf() {
     delete decoration;
 }
 
-void HSFrameLeaf::dump(Output output) {
-    output << LAYOUT_DUMP_BRACKETS[0]
-           << "clients"
-           << LAYOUT_DUMP_WHITESPACES[0]
-           << g_layout_names[layout] << ":"
-           << selection;
-    for (auto client : clients) {
-        output << LAYOUT_DUMP_WHITESPACES[0]
-               << "0x"
-               << std::hex << client->x11Window() << std::dec;
-    }
-    output << LAYOUT_DUMP_BRACKETS[1];
-}
-
-void HSFrameSplit::dump(Output output) {
-    output
-        << LAYOUT_DUMP_BRACKETS[0]
-        << "split"
-        << LAYOUT_DUMP_WHITESPACES[0]
-        << g_align_names[align_]
-        << LAYOUT_DUMP_SEPARATOR
-        << ((double)fraction_) / (double)FRACTION_UNIT
-        << LAYOUT_DUMP_SEPARATOR
-        << selection_
-        << LAYOUT_DUMP_WHITESPACES[0];
-    a_->dump(output);
-    output << LAYOUT_DUMP_WHITESPACES[0];
-    b_->dump(output);
-    output << LAYOUT_DUMP_BRACKETS[1];
-}
-
 int find_layout_by_name(char* name) {
     for (size_t i = 0; i < LENGTH(g_layout_names); i++) {
         if (!g_layout_names[i]) {

@@ -59,7 +59,6 @@ public:
     virtual std::shared_ptr<HSFrame> lookup(const char* path) = 0;
     virtual std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) = 0;
     virtual bool removeClient(Client* client) = 0;
-    virtual void dump(Output output) = 0;
 
     virtual bool isFocused();
     virtual std::shared_ptr<HSFrameLeaf> getFocusedFrame() = 0;
@@ -77,8 +76,6 @@ public:
 
     std::shared_ptr<HSFrameSplit> getParent() { return parent_.lock(); };
     std::shared_ptr<HSFrame> root();
-    virtual std::shared_ptr<HSFrameSplit> isSplit() { return std::shared_ptr<HSFrameSplit>(); };
-    virtual std::shared_ptr<HSFrameLeaf> isLeaf() { return std::shared_ptr<HSFrameLeaf>(); };
     // count the number of splits to the root with alignment "align"
     virtual int splitsToRoot(int align);
 
@@ -88,7 +85,43 @@ public:
 
     static std::shared_ptr<HSFrameLeaf> getGloballyFocusedFrame();
 
+    /*! a case distinction on the type of tree node. If `this` is a
+     * HSFrameSplit, then onSplit is called, and otherwise onLeaf is called.
+     * The return value is passed through.
+     */
+    template <typename ReturnType>
+    ReturnType switchcase(std::function<ReturnType(std::shared_ptr<HSFrameSplit>)> onSplit,
+                          std::function<ReturnType(std::shared_ptr<HSFrameLeaf>)> onLeaf) {
+        auto s = isSplit();
+        if (s) {
+            return onSplit(s);
+        }
+        // if it is not a split, it must be a leaf
+        auto l = isLeaf();
+        if (l) {
+            return onLeaf(l);
+        }
+    }
+    /*! The same for ReturnType = void
+     */
+    void switchcase(std::function<void(std::shared_ptr<HSFrameSplit>)> onSplit,
+                    std::function<void(std::shared_ptr<HSFrameLeaf>)> onLeaf) {
+        auto s = isSplit();
+        if (s) {
+            onSplit(s);
+        }
+        // if it is not a split, it must be a leaf
+        auto l = isLeaf();
+        if (l) {
+            onLeaf(l);
+        }
+    }
+
     friend class HSFrameSplit;
+    friend class FrameTree;
+public: // soon will be protected:
+    virtual std::shared_ptr<HSFrameSplit> isSplit() { return std::shared_ptr<HSFrameSplit>(); };
+    virtual std::shared_ptr<HSFrameLeaf> isLeaf() { return std::shared_ptr<HSFrameLeaf>(); };
 protected:
     HSTag* tag_;
     Settings* settings_;
@@ -106,7 +139,6 @@ public:
     std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
     bool removeClient(Client* client) override;
     void moveClient(int new_index);
-    void dump(Output output) override;
 
     std::shared_ptr<HSFrameLeaf> getFocusedFrame() override;
     TilingResult computeLayout(Rectangle rect) override;
@@ -141,6 +173,7 @@ public:
     void setVisible(bool visible);
     Rectangle lastRect() { return last_rect; }
 private:
+    friend class FrameTree;
     // layout algorithms
     TilingResult layoutLinear(Rectangle rect, bool vertical);
     TilingResult layoutHorizontal(Rectangle rect) { return layoutLinear(rect, false); };
@@ -167,7 +200,6 @@ public:
     std::shared_ptr<HSFrame> lookup(const char* path) override;
     std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
     bool removeClient(Client* client) override;
-    void dump(Output output) override;
 
     std::shared_ptr<HSFrameLeaf> getFocusedFrame() override;
     TilingResult computeLayout(Rectangle rect) override;
@@ -194,6 +226,7 @@ public:
     void swapSelection() { selection_ = 1 - selection_; }
     void setSelection(int s) { selection_ = s; }
 private:
+    friend class FrameTree;
     int align_;         // ALIGN_VERTICAL or ALIGN_HORIZONTAL
     std::shared_ptr<HSFrame> a_; // first child
     std::shared_ptr<HSFrame> b_; // second child
@@ -233,7 +266,6 @@ void reset_frame_colors();
 HSFrame* get_toplevel_frame(HSFrame* frame);
 
 void print_frame_tree(std::shared_ptr<HSFrame> frame, Output output);
-void dump_frame_tree(std::shared_ptr<HSFrame> frame, Output output);
 int find_layout_by_name(char* name);
 int find_align_by_name(char* name);
 
