@@ -22,6 +22,7 @@ public:
 
     static void dump(std::shared_ptr<HSFrame> frame, Output output);
     std::shared_ptr<HSFrame> lookup(const std::string& path);
+    static std::shared_ptr<HSFrameLeaf> focusedFrame(std::shared_ptr<HSFrame> node);
     std::shared_ptr<HSFrameLeaf> focusedFrame();
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;

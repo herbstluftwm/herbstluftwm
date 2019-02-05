@@ -83,6 +83,17 @@ std::shared_ptr<HSFrame> FrameTree::lookup(const std::string& path) {
 /*! get the frame leaf that is focused within this frame tree.
  */
 std::shared_ptr<HSFrameLeaf> FrameTree::focusedFrame() {
-    return {};
+    return focusedFrame(root_);
+}
+
+/*! get the focused frame within the subtree of the given node
+ */
+std::shared_ptr<HSFrameLeaf> FrameTree::focusedFrame(std::shared_ptr<HSFrame> node) {
+    while (node->isLeaf() == nullptr) {
+        // node must be a frame split
+        auto s = node->isSplit();
+        node = (s->selection_ == 0) ? s->a_ : s->b_;
+    }
+    return node->isLeaf();
 }
 

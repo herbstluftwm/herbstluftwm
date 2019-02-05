@@ -28,9 +28,9 @@ HSTag::HSTag(std::string name_, Settings* settings)
     , frame_count(this, "frame_count", &HSTag::computeFrameCount)
     , client_count(this, "client_count", &HSTag::computeClientCount)
     , curframe_windex(this, "curframe_windex",
-        [this] () { return frame->root_->getFocusedFrame()->getSelection(); } )
+        [this] () { return frame->focusedFrame()->getSelection(); } )
     , curframe_wcount(this, "curframe_wcount",
-        [this] () { return frame->root_->getFocusedFrame()->clientCount(); } )
+        [this] () { return frame->focusedFrame()->clientCount(); } )
 {
     stack = make_shared<Stack>();
     frame = make_shared<FrameTree>(this, settings);

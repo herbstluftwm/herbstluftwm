@@ -60,7 +60,6 @@ public:
     virtual bool removeClient(Client* client) = 0;
 
     virtual bool isFocused();
-    virtual std::shared_ptr<HSFrameLeaf> getFocusedFrame() = 0;
     virtual TilingResult computeLayout(Rectangle rect) = 0;
     virtual bool focusClient(Client* client) = 0;
     virtual Client* focusedClient() = 0;
@@ -136,7 +135,6 @@ public:
     bool removeClient(Client* client) override;
     void moveClient(int new_index);
 
-    std::shared_ptr<HSFrameLeaf> getFocusedFrame() override;
     TilingResult computeLayout(Rectangle rect) override;
     bool focusClient(Client* client) override;
 
@@ -196,7 +194,6 @@ public:
     std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
     bool removeClient(Client* client) override;
 
-    std::shared_ptr<HSFrameLeaf> getFocusedFrame() override;
     TilingResult computeLayout(Rectangle rect) override;
     bool focusClient(Client* client) override;
 

@@ -233,20 +233,8 @@ shared_ptr<HSFrameSplit> HSFrameSplit::thisSplit() {
     return dynamic_pointer_cast<HSFrameSplit>(shared_from_this());
 }
 
-shared_ptr<HSFrameLeaf> HSFrameLeaf::getFocusedFrame() {
-    return thisLeaf();
-}
-
-shared_ptr<HSFrameLeaf> HSFrameSplit::getFocusedFrame() {
-    if (selection_ == 0) {
-        return a_->getFocusedFrame();
-    } else {
-        return b_->getFocusedFrame();
-    }
-}
-
 shared_ptr<HSFrameLeaf> HSFrame::getGloballyFocusedFrame() {
-    return get_current_monitor()->tag->frame->root_->getFocusedFrame();
+    return get_current_monitor()->tag->frame->focusedFrame();
 }
 
 int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
@@ -1190,7 +1178,8 @@ vector<Client*> HSFrameLeaf::removeAllClients() {
 }
 
 int frame_remove_command() {
-    auto frame = HSFrame::getGloballyFocusedFrame();
+    auto frametree = get_current_monitor()->tag->frame;
+    auto frame = frametree->focusedFrame();
     if (!frame->getParent()) {
         // do nothing if is toplevel frame
         return 0;
@@ -1200,13 +1189,13 @@ int frame_remove_command() {
     auto newparent = (frame == parent->firstChild())
                      ? parent->secondChild()
                      : parent->firstChild();
-    newparent->getFocusedFrame()->addClients(frame->removeAllClients());
+    FrameTree::focusedFrame(newparent)->addClients(frame->removeAllClients());
     // now, frame is empty
     if (pp) {
         pp->replaceChild(parent, newparent);
     } else {
         // if parent was root frame
-        frame->getTag()->frame->root_ = newparent;
+        frametree->root_ = newparent;
     }
     frame_focus_recursive(parent);
     get_current_monitor()->applyLayout();
@@ -1277,7 +1266,7 @@ bool smart_window_surroundings_active(HSFrameLeaf* frame) {
 }
 
 void frame_focus_recursive(shared_ptr<HSFrame> frame) {
-    shared_ptr<HSFrameLeaf> leaf = frame->getFocusedFrame();
+    shared_ptr<HSFrameLeaf> leaf = FrameTree::focusedFrame(frame);
     Client* client = leaf->focusedClient();
     if (client) {
         client->window_focus();
