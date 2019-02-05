@@ -85,35 +85,6 @@ void HSFrameSplit::insertClient(Client* client) {
     else                b_->insertClient(client);
 }
 
-shared_ptr<HSFrame> HSFrameLeaf::lookup(const char*) {
-    return shared_from_this(); // we are last one left
-}
-
-shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
-    if (!index || index[0] == '\0') {
-        return shared_from_this();
-    }
-
-    auto selected = (selection_ == 0) ? a_ : b_;
-    auto not_selected = (selection_ == 0) ? b_ : a_;
-
-    if (index[0] == '@') {
-        // Special case: always follow selection
-        return selected->lookup("@");
-    }
-
-    shared_ptr<HSFrame> new_root;
-    switch (index[0]) {
-        case '0': new_root = a_; break;
-        case '1': new_root = b_; break;
-        case '/': new_root = not_selected; break;
-        case '.': /* fallthru */
-        default: new_root = selected;
-    }
-
-    return new_root->lookup(index + 1);
-}
-
 shared_ptr<HSFrameLeaf> HSFrameSplit::frameWithClient(Client* client) {
     auto found = a_->frameWithClient(client);
     if (found) return found;

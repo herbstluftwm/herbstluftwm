@@ -2,11 +2,13 @@
 #define HERBSTLUFT_FRAME_TREE_H
 
 #include <memory>
+#include <string>
 #include <functional>
 #include "types.h"
 
 class Client;
 class HSFrame;
+class HSFrameLeaf;
 class HSTag;
 class Settings;
 
@@ -19,6 +21,8 @@ public:
     void foreachClient(std::function<void(Client*)> action);
 
     static void dump(std::shared_ptr<HSFrame> frame, Output output);
+    std::shared_ptr<HSFrame> lookup(const std::string& path);
+    std::shared_ptr<HSFrameLeaf> focusedFrame();
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:

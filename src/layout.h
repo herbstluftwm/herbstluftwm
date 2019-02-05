@@ -56,7 +56,6 @@ protected:
     virtual ~HSFrame();
 public:
     virtual void insertClient(Client* client) = 0;
-    virtual std::shared_ptr<HSFrame> lookup(const char* path) = 0;
     virtual std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) = 0;
     virtual bool removeClient(Client* client) = 0;
 
@@ -98,9 +97,8 @@ public:
         }
         // if it is not a split, it must be a leaf
         auto l = isLeaf();
-        if (l) {
-            return onLeaf(l);
-        }
+        // assert(l != nullptr)
+        return onLeaf(l);
     }
     /*! The same for ReturnType = void
      */
@@ -112,9 +110,8 @@ public:
         }
         // if it is not a split, it must be a leaf
         auto l = isLeaf();
-        if (l) {
-            onLeaf(l);
-        }
+        // assert(l != nullptr)
+        onLeaf(l);
     }
 
     friend class HSFrameSplit;
@@ -135,7 +132,6 @@ public:
 
     // inherited:
     void insertClient(Client* client) override;
-    std::shared_ptr<HSFrame> lookup(const char* path) override;
     std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
     bool removeClient(Client* client) override;
     void moveClient(int new_index);
@@ -197,7 +193,6 @@ public:
     ~HSFrameSplit() override;
     // inherited:
     void insertClient(Client* client) override;
-    std::shared_ptr<HSFrame> lookup(const char* path) override;
     std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
     bool removeClient(Client* client) override;
 
