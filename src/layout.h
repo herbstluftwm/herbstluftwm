@@ -70,7 +70,7 @@ public:
     // if order >= 2 -> action(left); action(right); action(node);
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) = 0;
-    virtual void foreachClient(ClientAction action) = 0;
+    void foreachClient(ClientAction action);
 
     std::shared_ptr<HSFrameSplit> getParent() { return parent_.lock(); };
     std::shared_ptr<HSFrame> root();
@@ -127,7 +127,6 @@ public:
 
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
-    virtual void foreachClient(ClientAction action) override;
 
 
     // own members
@@ -168,6 +167,7 @@ private:
 
     FrameDecoration* decoration;
     Rectangle  last_rect; // last rectangle when being drawn
+                          // this is only used for 'split explode'
 };
 
 class HSFrameSplit : public HSFrame {
@@ -184,7 +184,6 @@ public:
 
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
-    virtual void foreachClient(ClientAction action) override;
 
     Client* focusedClient() override;
 

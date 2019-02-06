@@ -483,15 +483,14 @@ void HSFrameLeaf::fmap(std::function<void(HSFrameSplit*)> onSplit, std::function
     onLeaf(this);
 }
 
-void HSFrameSplit::foreachClient(ClientAction action) {
-    a_->foreachClient(action);
-    b_->foreachClient(action);
-}
-
-void HSFrameLeaf::foreachClient(ClientAction action) {
-    for (Client* client : clients) {
-        action(client);
-    }
+void HSFrame::foreachClient(ClientAction action) {
+    fmap([action] (HSFrameSplit* s) {},
+         [action] (HSFrameLeaf* l) {
+            for (Client* client : l->clients) {
+                action(client);
+            }
+         },
+         0);
 }
 
 int frame_current_bring(int argc, char** argv, Output output) {
