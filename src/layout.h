@@ -133,7 +133,6 @@ public:
     // own members
     void setSelection(int idx);
     void select(Client* client);
-    void cycleSelection(int delta);
     void addClients(const std::vector<Client*>& vec);
 
 

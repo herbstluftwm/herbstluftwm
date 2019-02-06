@@ -4,6 +4,7 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
+#include "utils.h"
 
 FrameTree::FrameTree(HSTag* tag, Settings* settings)
     : tag_(tag)
@@ -109,7 +110,8 @@ int FrameTree::cycle_selection(Input input, Output output) {
     }
     // find current selection
     auto frame = focusedFrame();
-    frame->cycleSelection(delta);
+    auto new_index = MOD(frame->getSelection() + delta, frame->clientCount());
+    frame->setSelection(new_index);
     return 0;
 }
 

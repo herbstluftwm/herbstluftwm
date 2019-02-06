@@ -529,11 +529,6 @@ void HSFrameLeaf::setSelection(int index) {
     get_current_monitor()->applyLayout();
 }
 
-void HSFrameLeaf::cycleSelection(int delta) {
-    if (clients.size() == 0) return;
-    setSelection(MOD(selection + delta, clients.size()));
-}
-
 int cycle_all_command(int argc, char** argv) {
     return 0;
 }
