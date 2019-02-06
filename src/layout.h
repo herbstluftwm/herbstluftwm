@@ -253,9 +253,6 @@ int frame_focus_command(int argc, char** argv, Output output);
 
 // follow selection to leaf and focus this frame
 void frame_focus_recursive(std::shared_ptr<HSFrame> frame);
-void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order);
-void frame_do_recursive_data(HSFrame* frame, void (*action)(HSFrame*,void*),
-                             int order, void* data);
 int frame_current_cycle_client_layout(int argc, char** argv, Output output);
 int frame_current_set_client_layout(int argc, char** argv, Output output);
 int frame_split_count_to_root(HSFrame* frame, int align);
