@@ -74,7 +74,8 @@ def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_del
     wcount = int(hlwm.get_attr('tags.0.curframe_wcount'))
     hlwm.call('cycle {}'.format(cycle_delta))
     new_windex = int(hlwm.get_attr('tags.0.curframe_windex'))
-    assert ((windex + cycle_delta + wcount) % wcount) == new_windex
+    expected_index = (windex + cycle_delta + wcount) % wcount if wcount > 0 else 0
+    assert expected_index == new_windex
 
 @pytest.mark.parametrize("running_clients_num", [0,1,5])
 @pytest.mark.parametrize("index", [0,1,3,5])
