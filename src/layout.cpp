@@ -1161,64 +1161,6 @@ vector<Client*> HSFrameLeaf::removeAllClients() {
     return result;
 }
 
-int frame_remove_command() {
-    auto frametree = get_current_monitor()->tag->frame;
-    auto frame = frametree->focusedFrame();
-    if (!frame->getParent()) {
-        // do nothing if is toplevel frame
-        return 0;
-    }
-    auto parent = frame->getParent();
-    auto pp = parent->getParent();
-    auto newparent = (frame == parent->firstChild())
-                     ? parent->secondChild()
-                     : parent->firstChild();
-    FrameTree::focusedFrame(newparent)->addClients(frame->removeAllClients());
-    // now, frame is empty
-    if (pp) {
-        pp->replaceChild(parent, newparent);
-    } else {
-        // if parent was root frame
-        frametree->root_ = newparent;
-    }
-    frame_focus_recursive(parent);
-    get_current_monitor()->applyLayout();
-    return 0;
-}
-
-int close_or_remove_command() {
-    Client* client = HSFrame::getGloballyFocusedFrame()->focusedClient();
-    if (client) {
-        window_close(client->x11Window());
-        return 0;
-    } else {
-        return frame_remove_command();
-    }
-}
-
-// ET: same as close or remove but remove after last client
-int close_and_remove_command() {
-    bool remove_after_close = false;
-    auto cur_frame = HSFrame::getGloballyFocusedFrame();
-    Client* client = cur_frame->focusedClient();
-    if (client) {
-        if (cur_frame->clientCount() == 1 ) {
-            remove_after_close = true;
-        }
-
-        window_close(client->x11Window());
-
-        if (remove_after_close) {
-            frame_remove_command();
-        }
-
-        return 0;
-
-    } else {
-        return frame_remove_command();
-    }
-}
-
 int frame_focus_edge(int argc, char** argv, Output output) {
     // Puts the focus to the edge in the specified direction
     g_monitors->lock();

@@ -2,6 +2,7 @@
 
 #include "client.h"
 #include "layout.h"
+#include "monitor.h"
 
 FrameTree::FrameTree(HSTag* tag, Settings* settings)
     : tag_(tag)
@@ -108,6 +109,58 @@ int FrameTree::cycle_selection(Input input, Output output) {
     // find current selection
     auto frame = focusedFrame();
     frame->cycleSelection(delta);
+    return 0;
+}
+
+//! command that removes the focused frame
+int FrameTree::removeFrame() {
+    auto frame = focusedFrame();
+    if (!frame->getParent()) {
+        // do nothing if is toplevel frame
+        return 0;
+    }
+    auto parent = frame->getParent();
+    auto pp = parent->getParent();
+    auto newparent = (frame == parent->firstChild())
+                     ? parent->secondChild()
+                     : parent->firstChild();
+    focusedFrame(newparent)->addClients(frame->removeAllClients());
+    // now, frame is empty
+    if (pp) {
+        pp->replaceChild(parent, newparent);
+    } else {
+        // if parent was root frame
+        root_ = newparent;
+    }
+    frame_focus_recursive(parent);
+    get_current_monitor()->applyLayout();
+    return 0;
+}
+
+//! close the focused client or remove if the frame is empty
+int FrameTree::close_or_remove() {
+    Client* client = focusedFrame()->focusedClient();
+    if (client) {
+        window_close(client->x11Window());
+        return 0;
+    } else {
+        return removeFrame();
+    }
+}
+
+//! same as close or remove but directly remove frame after last client
+int FrameTree::close_and_remove() {
+    bool remove_after_close = false;
+    auto cur_frame = focusedFrame();
+    Client* client = cur_frame->focusedClient();
+    if (client) {
+        // note that this just sends the closing signal
+        window_close(client->x11Window());
+        // so the window is still in the frame at this point
+    }
+    if (cur_frame->clientCount() <= 1) {
+        return removeFrame();
+    }
     return 0;
 }
 

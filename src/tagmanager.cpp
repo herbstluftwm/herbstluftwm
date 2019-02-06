@@ -274,5 +274,11 @@ std::function<int(Input, Output)> TagManager::frameCommand(FrameCommand cmd) {
         return cmd(*(get_current_monitor()->tag->frame), input, output);
     };
 }
+std::function<int(Input, Output)> TagManager::frameCommand(std::function<int(FrameTree&)> cmd) {
+    return [cmd](Input, Output) -> int {
+        // TODO: use this->focus->frame as soon as we have it.
+        return cmd(*(get_current_monitor()->tag->frame));
+    };
+}
 
 

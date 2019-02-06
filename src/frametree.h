@@ -25,6 +25,9 @@ public:
     static std::shared_ptr<HSFrameLeaf> focusedFrame(std::shared_ptr<HSFrame> node);
     std::shared_ptr<HSFrameLeaf> focusedFrame();
     int cycle_selection(Input input, Output output);
+    int removeFrame();
+    int close_and_remove();
+    int close_or_remove();
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:
