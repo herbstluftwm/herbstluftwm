@@ -222,11 +222,6 @@ extern int* g_window_gap;
 // functions
 void layout_init();
 void layout_destroy();
-// for frames
-HSFrame* frame_create_empty(HSFrame* parent, HSTag* parenttag);
-void frame_insert_client(HSFrame* frame, Client* client);
-HSFrame* frame_current_selection();
-HSFrame* frame_current_selection_below(HSFrame* frame);
 // finds the subframe of frame that contains the window
 HSFrameLeaf* find_frame_with_client(HSFrame* frame, Client* client);
 // removes window from a frame/subframes
@@ -235,8 +230,6 @@ bool frame_remove_client(HSFrame* frame, Client* client);
 // destroys a frame and all its childs
 // then all Windows in it are collected and returned
 // YOU have to g_free the resulting window-buf
-void frame_destroy(HSFrame* frame, Client*** buf, size_t* count);
-bool frame_split(HSFrame* frame, int align, int fraction);
 int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
 
