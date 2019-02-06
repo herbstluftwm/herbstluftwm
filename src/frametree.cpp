@@ -110,8 +110,10 @@ int FrameTree::cycle_selection(Input input, Output output) {
     }
     // find current selection
     auto frame = focusedFrame();
-    auto new_index = MOD(frame->getSelection() + delta, frame->clientCount());
-    frame->setSelection(new_index);
+    auto count = frame->clientCount();
+    if (count != 0) {
+        frame->setSelection(MOD(frame->getSelection() + delta, count));
+    }
     return 0;
 }
 
