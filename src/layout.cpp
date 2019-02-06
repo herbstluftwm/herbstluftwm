@@ -543,7 +543,7 @@ int frame_current_set_selection(int argc, char** argv) {
 }
 void HSFrameLeaf::cycleSelection(int delta) {
     if (clients.size() == 0) return;
-    setSelection(((selection % clients.size()) + delta) % clients.size());
+    setSelection(MOD(selection + delta, clients.size()));
 }
 
 int cycle_all_command(int argc, char** argv) {
