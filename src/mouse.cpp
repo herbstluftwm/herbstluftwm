@@ -11,8 +11,10 @@
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "key.h"
+#include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
+#include "root.h"
 #include "settings.h"
 #include "tag.h"
 #include "utils.h"
@@ -26,9 +28,8 @@ static MouseDragFunction g_drag_function = nullptr;
 
 static Cursor g_cursor;
 static GList* g_mouse_binds = nullptr;
-static unsigned int* g_numlockmask_ptr;
 
-#define CLEANMASK(mask)         ((mask) & ~(*g_numlockmask_ptr|LockMask))
+#define CLEANMASK(mask)         ((mask) & ~(numlockMask|LockMask))
 #define REMOVEBUTTONMASK(mask) ((mask) & \
     ~( Button1Mask \
      | Button2Mask \
@@ -37,7 +38,6 @@ static unsigned int* g_numlockmask_ptr;
      | Button5Mask ))
 
 void mouse_init() {
-    g_numlockmask_ptr = get_numlockmask_ptr();
     /* set cursor theme */
     g_cursor = XCreateFontCursor(g_display, XC_left_ptr);
     XDefineCursor(g_display, g_root, g_cursor);
@@ -149,6 +149,7 @@ int mouse_unbind_all() {
 }
 
 int mouse_binding_equals(MouseBinding* a, MouseBinding* b) {
+    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
     if((REMOVEBUTTONMASK(CLEANMASK(a->modifiers))
         == REMOVEBUTTONMASK(CLEANMASK(b->modifiers)))
         && (a->button == b->button)) {
@@ -263,7 +264,8 @@ MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {
 }
 
 static void grab_client_button(MouseBinding* bind, Client* client) {
-    unsigned int modifiers[] = { 0, LockMask, *g_numlockmask_ptr, *g_numlockmask_ptr|LockMask };
+    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
+    unsigned int modifiers[] = { 0, LockMask, numlockMask, numlockMask | LockMask };
     for(int j = 0; j < LENGTH(modifiers); j++) {
         XGrabButton(g_display, bind->button,
                     bind->modifiers | modifiers[j],
@@ -273,7 +275,6 @@ static void grab_client_button(MouseBinding* bind, Client* client) {
 }
 
 void grab_client_buttons(Client* client, bool focused) {
-    update_numlockmask();
     XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
     if (focused) {
         g_list_foreach(g_mouse_binds, (GFunc)grab_client_button, client);

@@ -1,25 +1,26 @@
 #include "keymanager.h"
 
+#include <X11/keysym.h>
+#include <algorithm>
 #include <memory>
+#include <stdexcept>
+#include <utility>
 
+#include "arglist.h"
 #include "clientmanager.h"
+#include "command.h"
 #include "completion.h"
 #include "globals.h"
 #include "ipc-protocol.h"
-#include "key.h"
 #include "keycombo.h"
 #include "root.h"
 #include "utils.h"
 
-using std::vector;
+using std::string;
 using std::unique_ptr;
 
-KeyManager::KeyManager() {
-    update_numlockmask();
-}
-
 KeyManager::~KeyManager() {
-    ungrab_all();
+    xKeyGrabber_.ungrabAll();
 }
 
 int KeyManager::addKeybindCommand(Input input, Output output) {
@@ -40,11 +41,14 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     // Store remaining input as the associated command
     newBinding->cmd = {input.begin(), input.end()};
 
-    // Remove existing binding with same keysym/modifiers
-    key_remove_bind_with_keysym(newBinding->keyCombo.modifiers, newBinding->keyCombo.keysym);
+    // Make sure there is no existing binding with same keysym/modifiers
+    removeKeybinding(newBinding->keyCombo);
 
-    // Grab for events on this keycode
-    grab_keybind(newBinding.get());
+    if (!newBinding->keyCombo.matches(activeKeymask_.regex)) {
+        // Grab for events on this keycode
+        xKeyGrabber_.grabKeyCombo(newBinding->keyCombo);
+        newBinding->grabbed = true;
+    }
 
     // Add keybinding to list
     binds.push_back(std::move(newBinding));
@@ -66,14 +70,14 @@ int KeyManager::listKeybindsCommand(Output output) {
 }
 
 int KeyManager::removeKeybindCommand(Input input, Output output) {
-    std::string arg;
+    string arg;
     if (!(input >> arg)) {
         return HERBST_NEED_MORE_ARGS;
     }
 
     if (arg == "--all" || arg == "-F") {
         binds.clear();
-        ungrab_all();
+        xKeyGrabber_.ungrabAll();
     } else {
         KeyCombo comboToRemove;
         try {
@@ -82,10 +86,13 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
             output << input.command() << ": " << arg << ": " << error.what() << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
-        if (key_remove_bind_with_keysym(comboToRemove.modifiers, comboToRemove.keysym) == false) {
+
+        // Remove binding (or moan if none was found)
+        if (removeKeybinding(comboToRemove)) {
+            regrabAll();
+        } else {
             output << input.command() << ": Key \"" << arg << "\" is not bound\n";
         }
-        regrab_keys();
     }
 
     return HERBST_EXIT_SUCCESS;
@@ -101,14 +108,109 @@ void KeyManager::removeKeybindCompletion(Completion &complete) {
     }
 }
 
+void KeyManager::handleKeyPress(XEvent* ev) const {
+    KeyCombo pressed = xKeyGrabber_.xEventToKeyCombo(ev);
+
+    auto found = std::find_if(binds.begin(), binds.end(),
+            [=](const unique_ptr<KeyBinding> &other) {
+                return pressed == other->keyCombo;
+            });
+    if (found != binds.end()) {
+        // execute the bound command
+        std::ostringstream discardedOutput;
+        auto& cmd = (*found)->cmd;
+        Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
+        Commands::call(input, discardedOutput);
+    }
+}
+
+void KeyManager::regrabAll() {
+    xKeyGrabber_.updateNumlockMask();
+
+     // Remove all current grabs:
+    xKeyGrabber_.ungrabAll();
+
+    for (auto& binding : binds) {
+        xKeyGrabber_.grabKeyCombo(binding->keyCombo);
+        binding->grabbed = true;
+    }
+}
+
 /*!
- * Ensures that the keymask of the currently focused client is applied.
+ * Makes sure that the currently active keymask is correct for the currently
+ * focused client and regrabs keys if necessary
+ *
+ * FIXME: The Client* argument only exists because I failed to find a place to
+ * call this function on focus changes where ClientManager::focus is already
+ * updated.
  */
-void KeyManager::ensureKeymask() {
-    // Reapply the current keymask (if any)
-    auto focusedClient = Root::get()->clients()->focus();
-    if (focusedClient != nullptr) {
-        key_set_keymask(focusedClient->keymask_());
+void KeyManager::ensureKeymask(const Client* client) {
+    if (client == nullptr) {
+        client = Root::get()->clients()->focus();
     }
 
+    string targetMaskStr = (client != nullptr) ? client->keymask_() : "";
+
+    if (activeKeymask_.str == targetMaskStr) {
+        // nothing to do
+        return;
+    }
+
+    try {
+        auto newMask = Keymask::fromString(targetMaskStr);
+        setActiveKeymask(newMask);
+    } catch (std::regex_error& err) {
+        HSWarning("Failed to parse keymask \"%s\"is invalid (falling back to empty mask): %s\n",
+                targetMaskStr.c_str(), err.what());
+
+        // Fall back to empty mask:
+        setActiveKeymask({});
+    }
+}
+
+//! Apply new keymask by grabbing/ungrabbing current bindings accordingly
+void KeyManager::setActiveKeymask(const Keymask& newMask) {
+    for (auto& binding : binds) {
+        auto name = binding->keyCombo.str();
+        bool isMasked = binding->keyCombo.matches(newMask.regex);
+
+        if (!isMasked && !binding->grabbed) {
+            xKeyGrabber_.grabKeyCombo(binding->keyCombo);
+            binding->grabbed = true;
+        } else if (isMasked && binding->grabbed) {
+            xKeyGrabber_.ungrabKeyCombo(binding->keyCombo);
+            binding->grabbed = false;
+        }
+    }
+    activeKeymask_ = newMask;
+}
+
+//! Set the active keymask to an empty exception
+void KeyManager::clearActiveKeymask() {
+    auto newMask = Keymask::fromString("");
+    setActiveKeymask(newMask);
+}
+
+/*!
+ * Removes a given key combo from the list of bindings (no ungrabbing)
+ *
+ * \return True if a matching binding was found and removed
+ * \return False if no matching binding was found
+ */
+bool KeyManager::removeKeybinding(const KeyCombo& comboToRemove) {
+    // Find binding to remove
+    auto removeIter = binds.begin();
+    for (; removeIter != binds.end(); removeIter++) {
+        if (comboToRemove == (*removeIter)->keyCombo) {
+            break;
+        }
+    }
+
+    if (removeIter == binds.end()) {
+        return False; // no matching binding found
+    }
+
+    // Remove binding
+    binds.erase(removeIter);
+    return True;
 }

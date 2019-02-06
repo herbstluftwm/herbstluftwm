@@ -58,6 +58,7 @@ target_sources(herbstluftwm PRIVATE
     tilingresult.cpp tilingresult.h
     tmp.cpp tmp.h
     xconnection.cpp xconnection.h
+    xkeygrabber.cpp xkeygrabber.h
     )
 
 # we require C++11
