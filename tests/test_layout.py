@@ -64,7 +64,7 @@ def test_dump(hlwm, running_clients, path, running_clients_num, num_splits):
         assert layout_part == layout
 
 
-@pytest.mark.parametrize("running_clients_num", [5])
+@pytest.mark.parametrize("running_clients_num", [0, 5])
 @pytest.mark.parametrize("num_splits", [0, 2])
 @pytest.mark.parametrize("cycle_delta", [-2, -1, 0, 1, 2])
 def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_delta):
