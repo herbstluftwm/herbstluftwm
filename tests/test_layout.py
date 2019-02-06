@@ -63,3 +63,16 @@ def test_dump(hlwm, running_clients, path, running_clients_num, num_splits):
     else:
         assert layout_part == layout
 
+
+@pytest.mark.parametrize("running_clients_num", [5])
+@pytest.mark.parametrize("num_splits", [0, 2])
+@pytest.mark.parametrize("cycle_delta", [-2, -1, 0, 1, 2])
+def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_delta):
+    for i in range(0, num_splits):
+        hlwm.call('split explode')
+    windex = int(hlwm.get_attr('tags.0.curframe_windex'))
+    wcount = int(hlwm.get_attr('tags.0.curframe_wcount'))
+    hlwm.call('cycle {}'.format(cycle_delta))
+    new_windex = int(hlwm.get_attr('tags.0.curframe_windex'))
+    assert ((windex + cycle_delta + wcount) % wcount) == new_windex
+
