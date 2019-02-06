@@ -241,7 +241,6 @@ int find_layout_by_name(char* name);
 int find_align_by_name(char* name);
 
 int frame_current_bring(int argc, char** argv, Output output);
-int frame_current_set_selection(int argc, char** argv);
 int cycle_all_command(int argc, char** argv);
 int cycle_frame_command(int argc, char** argv);
 void cycle_frame(int direction, int new_window_index, bool skip_invisible);

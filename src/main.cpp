@@ -133,7 +133,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"wmexec",         wmexec},
         {"emit_hook",      custom_hook_emit},
         {"bring",          frame_current_bring},
-        {"focus_nth",      frame_current_set_selection},
+        {"focus_nth",      { tags->frameCommand(&FrameTree::focus_nth) }},
         {"cycle",          { tags->frameCommand(&FrameTree::cycle_selection) }},
         {"cycle_all",      cycle_all_command},
         {"cycle_layout",   frame_current_cycle_client_layout},

@@ -1,6 +1,7 @@
 #include "frametree.h"
 
 #include "client.h"
+#include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
 
@@ -109,6 +110,16 @@ int FrameTree::cycle_selection(Input input, Output output) {
     // find current selection
     auto frame = focusedFrame();
     frame->cycleSelection(delta);
+    return 0;
+}
+
+//! focus the nth window within the focused frame
+int FrameTree::focus_nth(Input input, Output output) {
+    std::string index;
+    if (!(input >> index)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    focusedFrame()->setSelection(atoi(index.c_str()));
     return 0;
 }
 

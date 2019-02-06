@@ -529,18 +529,6 @@ void HSFrameLeaf::setSelection(int index) {
     get_current_monitor()->applyLayout();
 }
 
-int frame_current_set_selection(int argc, char** argv) {
-    int index = 0;
-    if (argc >= 2) {
-        index = atoi(argv[1]);
-    } else {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    // find current selection
-    auto frame = HSFrame::getGloballyFocusedFrame();
-    frame->setSelection(index);
-    return 0;
-}
 void HSFrameLeaf::cycleSelection(int delta) {
     if (clients.size() == 0) return;
     setSelection(MOD(selection + delta, clients.size()));
