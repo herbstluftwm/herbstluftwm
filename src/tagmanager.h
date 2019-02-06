@@ -28,7 +28,7 @@ public:
     void moveClient(Client* client, HSTag* target);
     void moveFocusedClient(HSTag* target);
     std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
-    std::function<int(Input, Output)> frameCommand(std::function<int(FrameTree&)> cmd);
+    std::function<int()> frameCommand(std::function<int(FrameTree&)> cmd);
 private:
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
