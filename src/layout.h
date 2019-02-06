@@ -270,8 +270,6 @@ bool frame_focus_client(HSFrame* frame, Client* client);
 bool focus_client(Client* client, bool switch_tag, bool switch_monitor);
 // moves a window to an other frame
 int frame_move_window_command(int argc, char** argv, Output output);
-void frame_set_visible(HSFrame* frame, bool visible);
-void frame_update_border(Window window, unsigned long color);
 
 int frame_focus_edge(int argc, char** argv, Output output);
 int frame_move_window_edge(int argc, char** argv, Output output);
