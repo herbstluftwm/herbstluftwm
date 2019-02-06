@@ -1,4 +1,5 @@
 import pytest
+import re
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
 def test_single_frame_layout(hlwm, running_clients, running_clients_num):
@@ -64,4 +65,72 @@ def test_dump(hlwm, running_clients, path, running_clients_num, num_splits):
         assert len(layout_part) < len(layout)
     else:
         assert layout_part == layout
+
+
+@pytest.mark.parametrize("running_clients_num", [0, 5])
+@pytest.mark.parametrize("num_splits", [0, 2])
+@pytest.mark.parametrize("cycle_delta", [-2, -1, 0, 1, 2])
+def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_delta):
+    for i in range(0, num_splits):
+        hlwm.call('split explode')
+    windex = int(hlwm.get_attr('tags.0.curframe_windex'))
+    wcount = int(hlwm.get_attr('tags.0.curframe_wcount'))
+    hlwm.call('cycle {}'.format(cycle_delta))
+    new_windex = int(hlwm.get_attr('tags.0.curframe_windex'))
+    expected_index = (windex + cycle_delta + wcount) % wcount if wcount > 0 else 0
+    assert expected_index == new_windex
+
+@pytest.mark.parametrize("running_clients_num", [0,1,5])
+@pytest.mark.parametrize("index", [0,1,3,5])
+def test_focus_nth(hlwm, running_clients, running_clients_num, index):
+    hlwm.call('focus_nth {}'.format(index))
+    windex = int(hlwm.get_attr('tags.0.curframe_windex'))
+    assert windex == max(0, min(index, running_clients_num - 1))
+
+@pytest.mark.parametrize("running_clients_num", [5])
+def test_rotate(hlwm, running_clients, running_clients_num):
+    # generate some layout with clients in it
+    for i in range(0, 3):
+        hlwm.call('split explode')
+    # rotate 4 times and remember the layout before
+    layouts = []
+    for i in range(0,4):
+        layouts.append(hlwm.call('dump').stdout)
+        hlwm.call('rotate')
+    # then the final layout matches the first
+    assert hlwm.call('dump').stdout == layouts[0]
+    # but all the intermediate layouts are distinct
+    for i1, l1 in enumerate(layouts):
+        for i2, l2 in enumerate(layouts[0:i1]):
+            assert l1 != l2
+
+@pytest.mark.parametrize("running_clients_num", [5])
+@pytest.mark.parametrize("num_splits", [0, 1, 2, 3])
+def test_layout_command(hlwm, running_clients, running_clients_num, num_splits):
+    hlwm.call('set tree_style "     C S"')
+    # create some layout
+    for i in range(0, num_splits):
+        hlwm.call('split explode')
+
+    layout_str = hlwm.call('layout').stdout
+
+    # we're on the focused tag, so:
+    assert '[FOCUS]' in layout_str
+    layout_str = layout_str.replace(' [FOCUS]', '')
+
+    lines = [l.strip() for l in layout_str.splitlines()]
+    # count the client frames
+    assert len([l for l in lines if l[0] == 'C']) \
+        == int(hlwm.get_attr('tags.0.frame_count'))
+    # count the split frames
+    assert len([l for l in lines if l[0] == 'S']) == num_splits
+    # transform dump-output to something similar
+    dumped = hlwm.call('dump').stdout \
+        .replace('(', '\n').replace(')', '').strip() \
+        .replace('split', 'S').replace('clients', 'C')
+    # remove all information except for align/layout names
+    dumped = re.sub(r':[^ ]*', '', dumped)
+    dumped = re.sub(r'[ ]*\n', '\n', dumped)
+    lines = [re.sub(r' [0-9]+% selection=[01]', '', l) for l in lines]
+    assert dumped == '\n'.join(lines).replace(':', '')
 

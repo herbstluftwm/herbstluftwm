@@ -483,15 +483,14 @@ void HSFrameLeaf::fmap(std::function<void(HSFrameSplit*)> onSplit, std::function
     onLeaf(this);
 }
 
-void HSFrameSplit::foreachClient(ClientAction action) {
-    a_->foreachClient(action);
-    b_->foreachClient(action);
-}
-
-void HSFrameLeaf::foreachClient(ClientAction action) {
-    for (Client* client : clients) {
-        action(client);
-    }
+void HSFrame::foreachClient(ClientAction action) {
+    fmap([action] (HSFrameSplit* s) {},
+         [action] (HSFrameLeaf* l) {
+            for (Client* client : l->clients) {
+                action(client);
+            }
+         },
+         0);
 }
 
 int frame_current_bring(int argc, char** argv, Output output) {
@@ -527,34 +526,6 @@ void HSFrameLeaf::setSelection(int index) {
     selection = index;
     clients[selection]->window_focus();
     get_current_monitor()->applyLayout();
-}
-
-int frame_current_set_selection(int argc, char** argv) {
-    int index = 0;
-    if (argc >= 2) {
-        index = atoi(argv[1]);
-    } else {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    // find current selection
-    auto frame = HSFrame::getGloballyFocusedFrame();
-    frame->setSelection(index);
-    return 0;
-}
-void HSFrameLeaf::cycleSelection(int delta) {
-    if (clients.size() == 0) return;
-    setSelection(((selection % clients.size()) + delta) % clients.size());
-}
-
-int frame_current_cycle_selection(int argc, char** argv) {
-    int delta = 1;
-    if (argc >= 2) {
-        delta = atoi(argv[1]);
-    }
-    // find current selection
-    auto frame = HSFrame::getGloballyFocusedFrame();
-    frame->cycleSelection(delta);
-    return 0;
 }
 
 int cycle_all_command(int argc, char** argv) {
@@ -611,7 +582,7 @@ int cycle_all_command(int argc, char** argv) {
         index %= frame->content.clients.count;
         frame->content.clients.selection = index;
     }
-    HSClient* c = frame_focused_client(g_cur_frame);
+    HSClient* c = get_current_monitor()->tag->frame->focusedClient();
     if (c) {
         c->raise();
     }
@@ -1137,97 +1108,11 @@ void HSFrame::setVisibleRecursive(bool visible) {
     fmap(onSplit, onLeaf, 2);
 }
 
-void HSFrameSplit::rotate() {
-    switch (align_) {
-        case ALIGN_VERTICAL:
-            align_ = ALIGN_HORIZONTAL;
-            break;
-        case ALIGN_HORIZONTAL:
-            align_ = ALIGN_VERTICAL;
-            selection_ = selection_ ? 0 : 1;
-            swap(a_, b_);
-            fraction_ = FRACTION_UNIT - fraction_;
-            break;
-    }
-}
-
-int layout_rotate_command() {
-    void (*onSplit)(HSFrameSplit*) =
-        [] (HSFrameSplit* frame) {
-            frame->rotate();
-        };
-    void (*onLeaf)(HSFrameLeaf*) =
-        [] (HSFrameLeaf*) {
-        };
-    // first hide children => order = 2
-    get_current_monitor()->tag->frame->root_->fmap(onSplit, onLeaf, -1);
-    get_current_monitor()->applyLayout();
-    return 0;
-}
-
 vector<Client*> HSFrameLeaf::removeAllClients() {
     vector<Client*> result;
     swap(result, clients);
     selection = 0;
     return result;
-}
-
-int frame_remove_command() {
-    auto frametree = get_current_monitor()->tag->frame;
-    auto frame = frametree->focusedFrame();
-    if (!frame->getParent()) {
-        // do nothing if is toplevel frame
-        return 0;
-    }
-    auto parent = frame->getParent();
-    auto pp = parent->getParent();
-    auto newparent = (frame == parent->firstChild())
-                     ? parent->secondChild()
-                     : parent->firstChild();
-    FrameTree::focusedFrame(newparent)->addClients(frame->removeAllClients());
-    // now, frame is empty
-    if (pp) {
-        pp->replaceChild(parent, newparent);
-    } else {
-        // if parent was root frame
-        frametree->root_ = newparent;
-    }
-    frame_focus_recursive(parent);
-    get_current_monitor()->applyLayout();
-    return 0;
-}
-
-int close_or_remove_command() {
-    Client* client = HSFrame::getGloballyFocusedFrame()->focusedClient();
-    if (client) {
-        window_close(client->x11Window());
-        return 0;
-    } else {
-        return frame_remove_command();
-    }
-}
-
-// ET: same as close or remove but remove after last client
-int close_and_remove_command() {
-    bool remove_after_close = false;
-    auto cur_frame = HSFrame::getGloballyFocusedFrame();
-    Client* client = cur_frame->focusedClient();
-    if (client) {
-        if (cur_frame->clientCount() == 1 ) {
-            remove_after_close = true;
-        }
-
-        window_close(client->x11Window());
-
-        if (remove_after_close) {
-            frame_remove_command();
-        }
-
-        return 0;
-
-    } else {
-        return frame_remove_command();
-    }
 }
 
 int frame_focus_edge(int argc, char** argv, Output output) {
