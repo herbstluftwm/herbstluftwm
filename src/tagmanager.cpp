@@ -269,7 +269,8 @@ int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
 }
 
 std::function<int(Input, Output)> TagManager::frameCommand(FrameCommand cmd) {
-    return [this,cmd](Input input, Output output) -> int {
+    return [cmd](Input input, Output output) -> int {
+        // TODO: use this->focus->frame as soon as we have it.
         return cmd(*(get_current_monitor()->tag->frame), input, output);
     };
 }
