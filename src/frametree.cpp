@@ -98,3 +98,16 @@ std::shared_ptr<HSFrameLeaf> FrameTree::focusedFrame(std::shared_ptr<HSFrame> no
     return node->isLeaf();
 }
 
+
+int FrameTree::cycle_selection(Input input, Output output) {
+    int delta = 1;
+    std::string deltaStr;
+    if (input >> deltaStr) {
+        delta = atoi(deltaStr.c_str());
+    }
+    // find current selection
+    auto frame = focusedFrame();
+    frame->cycleSelection(delta);
+    return 0;
+}
+

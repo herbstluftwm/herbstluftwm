@@ -546,17 +546,6 @@ void HSFrameLeaf::cycleSelection(int delta) {
     setSelection(((selection % clients.size()) + delta) % clients.size());
 }
 
-int frame_current_cycle_selection(int argc, char** argv) {
-    int delta = 1;
-    if (argc >= 2) {
-        delta = atoi(argv[1]);
-    }
-    // find current selection
-    auto frame = HSFrame::getGloballyFocusedFrame();
-    frame->cycleSelection(delta);
-    return 0;
-}
-
 int cycle_all_command(int argc, char** argv) {
     return 0;
 }

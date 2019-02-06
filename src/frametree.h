@@ -24,6 +24,7 @@ public:
     std::shared_ptr<HSFrame> lookup(const std::string& path);
     static std::shared_ptr<HSFrameLeaf> focusedFrame(std::shared_ptr<HSFrame> node);
     std::shared_ptr<HSFrameLeaf> focusedFrame();
+    int cycle_selection(Input input, Output output);
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:

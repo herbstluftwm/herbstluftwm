@@ -8,7 +8,9 @@
 class Settings;
 class MonitorManager;
 class Client;
+class FrameTree;
 
+typedef std::function<int(FrameTree&,Input,Output)> FrameCommand;
 class TagManager : public ChildByIndex<HSTag> {
 public:
     TagManager(Settings* settings);
@@ -25,6 +27,7 @@ public:
     HSTag* byIndexStr(const std::string& index_str, bool skip_visible_tags);
     void moveClient(Client* client, HSTag* target);
     void moveFocusedClient(HSTag* target);
+    std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
 private:
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
