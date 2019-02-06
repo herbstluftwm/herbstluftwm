@@ -62,8 +62,7 @@ void XKeyGrabber::ungrabAll() {
 
 //! Grabs/ungrabs a given key combo
 void XKeyGrabber::changeGrabbedState(const KeyCombo& keyCombo, bool grabbed) {
-    // List of ignored modifiers (key combo needs to be grabbed for each of
-    // them):
+    // List of ignored modifiers (key combo will be grabbed for each of them):
     const unsigned int ignModifiers[] = { 0, LockMask, numlockMask_, numlockMask_ | LockMask };
 
     KeyCode keycode = XKeysymToKeycode(g_display, keyCombo.keysym);
