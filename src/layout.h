@@ -220,11 +220,6 @@ extern int* g_window_gap;
 // functions
 void layout_init();
 void layout_destroy();
-// finds the subframe of frame that contains the window
-HSFrameLeaf* find_frame_with_client(HSFrame* frame, Client* client);
-// removes window from a frame/subframes
-// returns true, if window was found. else: false
-bool frame_remove_client(HSFrame* frame, Client* client);
 // destroys a frame and all its childs
 // then all Windows in it are collected and returned
 // YOU have to g_free the resulting window-buf
@@ -232,7 +227,6 @@ int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
 
 void reset_frame_colors();
-HSFrame* get_toplevel_frame(HSFrame* frame);
 
 void print_frame_tree(std::shared_ptr<HSFrame> frame, Output output);
 int find_layout_by_name(char* name);
@@ -242,8 +236,6 @@ int frame_current_bring(int argc, char** argv, Output output);
 int cycle_all_command(int argc, char** argv);
 int cycle_frame_command(int argc, char** argv);
 void cycle_frame(int direction, int new_window_index, bool skip_invisible);
-
-void frame_unfocus(); // unfocus currently focused window
 
 // get neighbour in a specific direction 'l' 'r' 'u' 'd' (left, right,...)
 // returns the neighbour or NULL if there is no one
@@ -257,10 +249,6 @@ int frame_current_cycle_client_layout(int argc, char** argv, Output output);
 int frame_current_set_client_layout(int argc, char** argv, Output output);
 int frame_split_count_to_root(HSFrame* frame, int align);
 
-// returns the Window that is focused
-// returns 0 if there is none
-Client* frame_focused_client(HSFrame* frame);
-bool frame_focus_client(HSFrame* frame, Client* client);
 bool focus_client(Client* client, bool switch_tag, bool switch_monitor);
 // moves a window to an other frame
 int frame_move_window_command(int argc, char** argv, Output output);

@@ -583,7 +583,7 @@ int cycle_all_command(int argc, char** argv) {
         index %= frame->content.clients.count;
         frame->content.clients.selection = index;
     }
-    HSClient* c = frame_focused_client(g_cur_frame);
+    HSClient* c = get_current_monitor()->tag->frame->focusedClient();
     if (c) {
         c->raise();
     }
