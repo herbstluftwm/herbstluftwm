@@ -47,3 +47,19 @@ def test_focus_wrap(hlwm, running_clients, running_clients_num):
         assert int(hlwm.get_attr('tags.0.curframe_windex')) == expected_idx
         if i < running_clients_num - 1:
             hlwm.call('focus down')
+
+
+@pytest.mark.parametrize("path", '@ 0 1 00 11 . / /. ./'.split(' '))
+@pytest.mark.parametrize("running_clients_num", [3])
+@pytest.mark.parametrize("num_splits", [0, 1, 2])
+def test_dump(hlwm, running_clients, path, running_clients_num, num_splits):
+    for i in range(0, num_splits):
+        hlwm.call('split explode')
+    layout = hlwm.call('dump').stdout
+    layout_part = hlwm.call('dump "" ' + path).stdout
+    if num_splits > 0:
+        assert layout_part in layout
+        assert len(layout_part) < len(layout)
+    else:
+        assert layout_part == layout
+
