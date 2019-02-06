@@ -199,7 +199,6 @@ public:
     std::shared_ptr<HSFrameSplit> thisSplit();
     std::shared_ptr<HSFrameSplit> isSplit() override { return thisSplit(); }
     int getAlign() { return align_; }
-    void rotate();
     void swapSelection() { selection_ = 1 - selection_; }
     void setSelection(int s) { selection_ = s; }
 private:
@@ -257,8 +256,6 @@ void frame_focus_recursive(std::shared_ptr<HSFrame> frame);
 void frame_do_recursive(HSFrame* frame, void (*action)(HSFrame*), int order);
 void frame_do_recursive_data(HSFrame* frame, void (*action)(HSFrame*,void*),
                              int order, void* data);
-int layout_rotate_command();
-
 int frame_current_cycle_client_layout(int argc, char** argv, Output output);
 int frame_current_set_client_layout(int argc, char** argv, Output output);
 int frame_split_count_to_root(HSFrame* frame, int align);

@@ -31,6 +31,7 @@ public:
     int removeFrame();
     int close_and_remove();
     int close_or_remove();
+    int rotate();
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:

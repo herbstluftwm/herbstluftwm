@@ -177,3 +177,27 @@ int FrameTree::close_and_remove() {
     return 0;
 }
 
+
+int FrameTree::rotate() {
+    void (*onSplit)(HSFrameSplit*) =
+        [] (HSFrameSplit* s) {
+            switch (s->align_) {
+                case ALIGN_VERTICAL:
+                    s->align_ = ALIGN_HORIZONTAL;
+                    break;
+                case ALIGN_HORIZONTAL:
+                    s->align_ = ALIGN_VERTICAL;
+                    s->selection_ = s->selection_ ? 0 : 1;
+                    swap(s->a_, s->b_);
+                    s->fraction_ = FRACTION_UNIT - s->fraction_;
+                    break;
+            }
+        };
+    void (*onLeaf)(HSFrameLeaf*) =
+        [] (HSFrameLeaf*) {
+        };
+    // first hide children => order = 2
+    root_->fmap(onSplit, onLeaf, -1);
+    get_current_monitor()->applyLayout();
+    return 0;
+}

@@ -83,3 +83,19 @@ def test_focus_nth(hlwm, running_clients, running_clients_num, index):
     windex = int(hlwm.get_attr('tags.0.curframe_windex'))
     assert windex == max(0, min(index, running_clients_num - 1))
 
+@pytest.mark.parametrize("running_clients_num", [5])
+def test_rotate(hlwm, running_clients, running_clients_num):
+    # generate some layout with clients in it
+    for i in range(0, 3):
+        hlwm.call('split explode')
+    # rotate 4 times and remember the layout before
+    layouts = []
+    for i in range(0,4):
+        layouts.append(hlwm.call('dump').stdout)
+        hlwm.call('rotate')
+    # then the final layout matches the first
+    assert hlwm.call('dump').stdout == layouts[0]
+    # but all the intermediate layouts are distinct
+    for i1, l1 in enumerate(layouts):
+        for i2, l2 in enumerate(layouts[0:i1]):
+            assert l1 != l2

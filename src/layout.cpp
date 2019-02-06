@@ -1109,34 +1109,6 @@ void HSFrame::setVisibleRecursive(bool visible) {
     fmap(onSplit, onLeaf, 2);
 }
 
-void HSFrameSplit::rotate() {
-    switch (align_) {
-        case ALIGN_VERTICAL:
-            align_ = ALIGN_HORIZONTAL;
-            break;
-        case ALIGN_HORIZONTAL:
-            align_ = ALIGN_VERTICAL;
-            selection_ = selection_ ? 0 : 1;
-            swap(a_, b_);
-            fraction_ = FRACTION_UNIT - fraction_;
-            break;
-    }
-}
-
-int layout_rotate_command() {
-    void (*onSplit)(HSFrameSplit*) =
-        [] (HSFrameSplit* frame) {
-            frame->rotate();
-        };
-    void (*onLeaf)(HSFrameLeaf*) =
-        [] (HSFrameLeaf*) {
-        };
-    // first hide children => order = 2
-    get_current_monitor()->tag->frame->root_->fmap(onSplit, onLeaf, -1);
-    get_current_monitor()->applyLayout();
-    return 0;
-}
-
 vector<Client*> HSFrameLeaf::removeAllClients() {
     vector<Client*> result;
     swap(result, clients);
