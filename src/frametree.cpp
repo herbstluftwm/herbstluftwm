@@ -163,7 +163,6 @@ int FrameTree::close_or_remove() {
 
 //! same as close or remove but directly remove frame after last client
 int FrameTree::close_and_remove() {
-    bool remove_after_close = false;
     auto cur_frame = focusedFrame();
     Client* client = cur_frame->focusedClient();
     if (client) {
