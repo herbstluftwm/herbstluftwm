@@ -56,7 +56,6 @@ protected:
     HSFrame(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent);
     virtual ~HSFrame();
 public:
-    virtual void insertClient(Client* client) = 0;
     virtual std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) = 0;
     virtual bool removeClient(Client* client) = 0;
 
@@ -118,7 +117,7 @@ public:
     ~HSFrameLeaf() override;
 
     // inherited:
-    void insertClient(Client* client) override;
+    void insertClient(Client* client);
     std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
     bool removeClient(Client* client) override;
     void moveClient(int new_index);
@@ -178,7 +177,6 @@ public:
                  std::shared_ptr<HSFrame> a_, std::shared_ptr<HSFrame> b_);
     ~HSFrameSplit() override;
     // inherited:
-    void insertClient(Client* client) override;
     std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
     bool removeClient(Client* client) override;
 

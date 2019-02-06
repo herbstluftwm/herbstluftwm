@@ -153,7 +153,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
     client->slice = slice_create_client(client);
     client->tag()->stack->insert_slice(client->slice);
     // insert window to the tag
-    client->tag()->frame->lookup(changes.tree_index.c_str())
+    FrameTree::focusedFrame(client->tag()->frame->lookup(changes.tree_index))
                  ->insertClient(client);
     if (changes.focus) {
         // give focus to window if wanted

@@ -80,11 +80,6 @@ void HSFrameLeaf::insertClient(Client* client) {
     // the client now
 }
 
-void HSFrameSplit::insertClient(Client* client) {
-    if (selection_ == 0) a_->insertClient(client);
-    else                b_->insertClient(client);
-}
-
 shared_ptr<HSFrameLeaf> HSFrameSplit::frameWithClient(Client* client) {
     auto found = a_->frameWithClient(client);
     if (found) return found;
@@ -518,7 +513,7 @@ int frame_current_bring(int argc, char** argv, Output output) {
     auto frame = tag->frame->root_->frameWithClient(client);
     if (!frame->isFocused()) {
         frame->removeClient(client);
-        tag->frame->root_->insertClient(client);
+        tag->frame->focusedFrame()->insertClient(client);
     }
     focus_client(client, false, false);
     return 0;
@@ -1022,7 +1017,7 @@ int frame_move_window_command(int argc, char** argv, Output output) {
         if (client && neighbour) { // if neighbour was found
             // move window to neighbour
             frame->removeClient(client);
-            neighbour->insertClient(client);
+            FrameTree::focusedFrame(neighbour)->insertClient(client);
             neighbour->frameWithClient(client)->select(client);
 
             // change selection in parent

@@ -103,7 +103,7 @@ int TagManager::removeTag(Input input, Output output) {
         client->setTag(targetTag);
         client->tag()->stack->insert_slice(client->slice);
         ewmh_window_update_tag(client->window_, client->tag());
-        targetTag->frame->root_->insertClient(client);
+        targetTag->frame->focusedFrame()->insertClient(client);
     }
 
     // Make transferred clients visible if target tag is visible
@@ -210,7 +210,7 @@ void TagManager::moveClient(Client* client, HSTag* target) {
     Monitor* monitor_target = find_monitor_with_tag(target);
     tag_source->frame->root_->removeClient(client);
     // insert window into target
-    target->frame->root_->insertClient(client);
+    target->frame->focusedFrame()->insertClient(client);
     // enfoce it to be focused on the target tag
     target->frame->root_->focusClient(client);
     client->tag()->stack->remove_slice(client->slice);
