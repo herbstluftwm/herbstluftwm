@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <functional>
 #include <memory>
+#include <cassert>
 
 #include "glib-backports.h"
 #include "tilingresult.h"
@@ -96,21 +97,8 @@ public:
         }
         // if it is not a split, it must be a leaf
         auto l = isLeaf();
-        // assert(l != nullptr)
+        assert(l);
         return onLeaf(l);
-    }
-    /*! The same for ReturnType = void
-     */
-    void switchcase(std::function<void(std::shared_ptr<HSFrameLeaf>)> onLeaf,
-                    std::function<void(std::shared_ptr<HSFrameSplit>)> onSplit) {
-        auto s = isSplit();
-        if (s) {
-            onSplit(s);
-        }
-        // if it is not a split, it must be a leaf
-        auto l = isLeaf();
-        // assert(l != nullptr)
-        onLeaf(l);
     }
 
     friend class HSFrameSplit;

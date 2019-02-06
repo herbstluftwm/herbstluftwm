@@ -19,7 +19,8 @@ void FrameTree::foreachClient(std::function<void(Client*)> action)
 
 void FrameTree::dump(std::shared_ptr<HSFrame> frame, Output output)
 {
-    auto onLeaf = [&output](std::shared_ptr<HSFrameLeaf> l) {
+    auto l = frame->isLeaf();
+    if (l) {
         output << LAYOUT_DUMP_BRACKETS[0]
                << "clients"
                << LAYOUT_DUMP_WHITESPACES[0]
@@ -31,8 +32,9 @@ void FrameTree::dump(std::shared_ptr<HSFrame> frame, Output output)
                    << std::hex << client->x11Window() << std::dec;
         }
         output << LAYOUT_DUMP_BRACKETS[1];
-    };
-    auto onSplit = [&output](std::shared_ptr<HSFrameSplit> s) {
+    }
+    auto s = frame->isSplit();
+    if (s) {
         output
             << LAYOUT_DUMP_BRACKETS[0]
             << "split"
@@ -47,8 +49,7 @@ void FrameTree::dump(std::shared_ptr<HSFrame> frame, Output output)
         output << LAYOUT_DUMP_WHITESPACES[0];
         FrameTree::dump(s->b_, output);
         output << LAYOUT_DUMP_BRACKETS[1];
-    };
-    frame->switchcase(onLeaf, onSplit);
+    }
 }
 
 

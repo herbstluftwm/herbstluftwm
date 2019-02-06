@@ -286,6 +286,7 @@ int print_layout_command(int argc, char** argv, Output output) {
     assert(tag);
 
     std::shared_ptr<HSFrame> frame = tag->frame->lookup(argc >= 3 ? argv[2] : "");
+    assert(frame);
     if (argc > 0 && !strcmp(argv[0], "dump")) {
         FrameTree::dump(frame, output);
     } else {
