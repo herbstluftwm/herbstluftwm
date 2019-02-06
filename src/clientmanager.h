@@ -4,7 +4,7 @@
 #include <X11/Xlib.h>
 #include <unordered_map>
 
-#include "child.h"
+#include "link.h"
 #include "client.h"
 #include "object.h"
 #include "signal.h"
@@ -35,7 +35,7 @@ public:
     void force_unmanage(Client* client);
 
     Signal_<HSTag*> needsRelayout;
-    Child_<Client> focus;
+    Link_<Client> focus;
 
     int pseudotile_cmd(Input input, Output output);
     int fullscreen_cmd(Input input, Output output);
