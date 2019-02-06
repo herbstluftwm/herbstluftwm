@@ -19,6 +19,7 @@ target_sources(herbstluftwm PRIVATE
     optional.h
     root.cpp root.h
     signal.h
+    link.h
     types.cpp types.h
     utils.cpp utils.h
     x11-types.cpp x11-types.h
