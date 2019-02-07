@@ -801,18 +801,18 @@ void focusin(Root* root, XEvent* event) {
     //HSDebug("name is: FocusIn\n");
 }
 
-void keypress(Root*, XEvent* event) {
+void keypress(Root* root, XEvent* event) {
     //HSDebug("name is: KeyPress\n");
-    handle_key_press(event);
+    root->keys()->handleKeyPress(event);
 }
 
-void mappingnotify(Root*, XEvent* event) {
+void mappingnotify(Root* root, XEvent* event) {
     {
         // regrab when keyboard map changes
         XMappingEvent *ev = &event->xmapping;
         XRefreshKeyboardMapping(ev);
         if(ev->request == MappingKeyboard) {
-            regrab_keys();
+            root->keys()->regrabAll();
             //TODO: mouse_regrab_all();
         }
     }
