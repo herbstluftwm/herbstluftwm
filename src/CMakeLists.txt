@@ -19,6 +19,7 @@ target_sources(herbstluftwm PRIVATE
     optional.h
     root.cpp root.h
     signal.h
+    link.h
     types.cpp types.h
     utils.cpp utils.h
     x11-types.cpp x11-types.h
@@ -58,6 +59,7 @@ target_sources(herbstluftwm PRIVATE
     tilingresult.cpp tilingresult.h
     tmp.cpp tmp.h
     xconnection.cpp xconnection.h
+    xkeygrabber.cpp xkeygrabber.h
     )
 
 # we require C++11
