@@ -54,7 +54,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     return HERBST_EXIT_SUCCESS;
 }
 
-int KeyManager::listKeybindsCommand(Output output) {
+int KeyManager::listKeybindsCommand(Output output) const {
     for (auto& binding : binds) {
         // add key combo
         output << binding->keyCombo.str();
