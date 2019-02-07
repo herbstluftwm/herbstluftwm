@@ -4,7 +4,10 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
+#include "tag.h"
 #include "utils.h"
+
+using std::shared_ptr;
 
 FrameTree::FrameTree(HSTag* tag, Settings* settings)
     : tag_(tag)
@@ -98,6 +101,7 @@ std::shared_ptr<HSFrameLeaf> FrameTree::focusedFrame(std::shared_ptr<HSFrame> no
         auto s = node->isSplit();
         node = (s->selection_ == 0) ? s->a_ : s->b_;
     }
+    assert(node->isLeaf() != nullptr);
     return node->isLeaf();
 }
 
@@ -202,3 +206,67 @@ int FrameTree::rotate() {
     get_current_monitor()->applyLayout();
     return 0;
 }
+
+shared_ptr<TreeInterface> FrameTree::treeInterface(
+        shared_ptr<HSFrame> frame,
+        shared_ptr<HSFrameLeaf> focus)
+{
+    class LeafTI : public TreeInterface {
+    public:
+        LeafTI(shared_ptr<HSFrameLeaf> l, shared_ptr<HSFrameLeaf> focus)
+            : l_(l), focus_(focus)
+        {}
+        shared_ptr<TreeInterface> nthChild(size_t idx) override {
+            return {};
+        }
+        size_t childCount() override { return 0; };
+        void appendCaption(Output output) override {
+            output << g_layout_names[l_->layout] << ":";
+            for (auto client : l_->clients) {
+                output << " 0x"
+                       << std::hex << client->x11Window() << std::dec;
+            }
+            if (l_ == focus_) {
+                output << " [FOCUS]";
+            }
+        }
+    private:
+        shared_ptr<HSFrameLeaf> l_;
+        shared_ptr<HSFrameLeaf> focus_;
+    };
+    class SplitTI : public TreeInterface {
+    public:
+        SplitTI(shared_ptr<HSFrameSplit> s, shared_ptr<HSFrameLeaf> focus)
+            : s_(s), focus_(focus) {}
+        shared_ptr<TreeInterface> nthChild(size_t idx) override {
+            return treeInterface(((idx == 0) ? s_->firstChild()
+                                            : s_->secondChild()),
+                                 focus_);
+        }
+        size_t childCount() override { return 2; };
+        void appendCaption(Output output) override {
+            output << g_align_names[s_->align_]
+                   << " " << (s_->fraction_ * 100 / FRACTION_UNIT) << "%"
+                   << " selection=" << s_->selection_;
+        }
+    private:
+        shared_ptr<HSFrameSplit> s_;
+        shared_ptr<HSFrameLeaf> focus_;
+    };
+    return frame->switchcase<shared_ptr<TreeInterface>>(
+        [focus] (shared_ptr<HSFrameLeaf> l) {
+            return std::static_pointer_cast<TreeInterface>(
+                    std::make_shared<LeafTI>(l, focus));
+        },
+        [focus] (shared_ptr<HSFrameSplit> s) {
+            return std::static_pointer_cast<TreeInterface>(
+                    std::make_shared<SplitTI>(s, focus));
+        }
+    );
+}
+
+void FrameTree::prettyPrint(shared_ptr<HSFrame> frame, Output output) {
+    auto focus = get_current_monitor()->tag->frame->focusedFrame();
+    tree_print_to(treeInterface(frame, focus), output);
+}
+

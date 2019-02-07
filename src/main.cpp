@@ -290,7 +290,7 @@ int print_layout_command(int argc, char** argv, Output output) {
     if (argc > 0 && !strcmp(argv[0], "dump")) {
         FrameTree::dump(frame, output);
     } else {
-        print_frame_tree(frame, output);
+        FrameTree::prettyPrint(frame, output);
     }
     return 0;
 }
