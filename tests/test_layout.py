@@ -1,4 +1,5 @@
 import pytest
+import re
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
 def test_single_frame_layout(hlwm, running_clients, running_clients_num):
@@ -100,3 +101,34 @@ def test_rotate(hlwm, running_clients, running_clients_num):
     for i1, l1 in enumerate(layouts):
         for i2, l2 in enumerate(layouts[0:i1]):
             assert l1 != l2
+
+@pytest.mark.parametrize("running_clients_num", [5])
+@pytest.mark.parametrize("num_splits", [0, 1, 2, 3])
+def test_layout_command(hlwm, running_clients, running_clients_num, num_splits):
+    hlwm.call('set tree_style "     C S"')
+    # create some layout
+    for i in range(0, num_splits):
+        hlwm.call('split explode')
+
+    layout_str = hlwm.call('layout').stdout
+
+    # we're on the focused tag, so:
+    assert '[FOCUS]' in layout_str
+    layout_str = layout_str.replace(' [FOCUS]', '')
+
+    lines = [l.strip() for l in layout_str.splitlines()]
+    # count the client frames
+    assert len([l for l in lines if l[0] == 'C']) \
+        == int(hlwm.get_attr('tags.0.frame_count'))
+    # count the split frames
+    assert len([l for l in lines if l[0] == 'S']) == num_splits
+    # transform dump-output to something similar
+    dumped = hlwm.call('dump').stdout \
+        .replace('(', '\n').replace(')', '').strip() \
+        .replace('split', 'S').replace('clients', 'C')
+    # remove all information except for align/layout names
+    dumped = re.sub(r':[^ ]*', '', dumped)
+    dumped = re.sub(r'[ ]*\n', '\n', dumped)
+    lines = [re.sub(r' [0-9]+% selection=[01]', '', l) for l in lines]
+    assert dumped == '\n'.join(lines).replace(':', '')
+
