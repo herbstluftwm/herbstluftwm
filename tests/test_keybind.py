@@ -1,4 +1,3 @@
-import itertools
 import pytest
 import subprocess
 
@@ -82,13 +81,9 @@ def test_trigger_selfremoving_binding(hlwm, keyboard):
     assert hlwm.call('list_keybinds').stdout == ''
 
 
-@pytest.mark.parametrize('maskmethod,whenbind,refocus',
-    list(itertools.product(
-        ('rule', 'set_attr'),  # how keymask gets set
-        ('existing', 'added_later'),  # when keybinding is set up
-        (True, False),  # whether to defocus+refocus before keypress
-        )
-    ))
+@pytest.mark.parametrize('maskmethod', ('rule', 'set_attr'))  # how keymask gets set
+@pytest.mark.parametrize('whenbind', ('existing', 'added_later'))  # when keybinding is set up
+@pytest.mark.parametrize('refocus', (True, False))  # whether to defocus+refocus before keypress
 def test_keymask(hlwm, keyboard, maskmethod, whenbind, refocus):
     if whenbind == 'existing':
         hlwm.call('keybind x add tag2')

@@ -66,7 +66,7 @@ public:
     ~KeyManager();
 
     int addKeybindCommand(Input input, Output output);
-    int listKeybindsCommand(Output output);
+    int listKeybindsCommand(Output output) const;
     int removeKeybindCommand(Input input, Output output);
 
     void removeKeybindCompletion(Completion &complete);
