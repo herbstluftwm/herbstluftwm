@@ -55,8 +55,10 @@ def test_focus_wrap(hlwm, running_clients, running_clients_num):
 def test_dump(hlwm, running_clients, path, running_clients_num, num_splits):
     for i in range(0, num_splits):
         hlwm.call('split explode')
+
     layout = hlwm.call('dump').stdout
     layout_part = hlwm.call('dump "" ' + path).stdout
+
     if num_splits > 0:
         assert layout_part in layout
         assert len(layout_part) < len(layout)
