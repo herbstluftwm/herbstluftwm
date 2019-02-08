@@ -133,14 +133,14 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"wmexec",         wmexec},
         {"emit_hook",      custom_hook_emit},
         {"bring",          frame_current_bring},
-        {"focus_nth",      frame_current_set_selection},
-        {"cycle",          frame_current_cycle_selection},
+        {"focus_nth",      { tags->frameCommand(&FrameTree::focus_nth) }},
+        {"cycle",          { tags->frameCommand(&FrameTree::cycle_selection) }},
         {"cycle_all",      cycle_all_command},
         {"cycle_layout",   frame_current_cycle_client_layout},
         {"cycle_frame",    cycle_frame_command},
         {"close",          { close_command }},
-        {"close_or_remove",{ close_or_remove_command }},
-        {"close_and_remove",{close_and_remove_command }},
+        {"close_or_remove",{ tags->frameCommand(&FrameTree::close_or_remove) }},
+        {"close_and_remove",{ tags->frameCommand(&FrameTree::close_and_remove) }},
         {"split",          frame_split_command},
         {"resize",         frame_change_fraction_command},
         {"focus_edge",     frame_focus_edge},
@@ -148,7 +148,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"shift_edge",     frame_move_window_edge},
         {"shift",          frame_move_window_command},
         {"shift_to_monitor",shift_to_monitor},
-        {"remove",         { frame_remove_command }},
+        {"remove",         { tags->frameCommand(&FrameTree::removeFrame) }},
         {"set",            { settings, &Settings::set_cmd,
                                        &Settings::set_complete }},
         {"get",            { settings, &Settings::get_cmd,
@@ -173,7 +173,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"merge_tag",      BIND_OBJECT(tags, removeTag)},
         {"rename",         BIND_OBJECT(tags, tag_rename_command) },
         {"move",           BIND_OBJECT(tags, tag_move_window_command) },
-        {"rotate",         { layout_rotate_command }},
+        {"rotate",         { tags->frameCommand(&FrameTree::rotate) }},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
         {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
         {"raise_monitor",  monitor_raise_command},
@@ -290,7 +290,7 @@ int print_layout_command(int argc, char** argv, Output output) {
     if (argc > 0 && !strcmp(argv[0], "dump")) {
         FrameTree::dump(frame, output);
     } else {
-        print_frame_tree(frame, output);
+        FrameTree::prettyPrint(frame, output);
     }
     return 0;
 }
