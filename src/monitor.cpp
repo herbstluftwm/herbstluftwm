@@ -12,6 +12,7 @@
 #include "client.h"
 #include "clientmanager.h"
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
@@ -132,7 +133,7 @@ void Monitor::applyLayout() {
     cur_rect.width -= (pad_left() + pad_right());
     cur_rect.y += pad_up();
     cur_rect.height -= (pad_up() + pad_down());
-    if (!g_settings->smart_frame_surroundings() || tag->frame->isSplit()) {
+    if (!g_settings->smart_frame_surroundings() || tag->frame->root_->isSplit()) {
         // apply frame gap
         cur_rect.x += settings->frame_gap();
         cur_rect.y += settings->frame_gap();
@@ -142,9 +143,9 @@ void Monitor::applyLayout() {
     restack();
     bool isFocused = get_current_monitor() == this;
     if (isFocused) {
-        frame_focus_recursive(tag->frame);
+        frame_focus_recursive(tag->frame->root_);
     }
-    TilingResult res = tag->frame->computeLayout(cur_rect);
+    TilingResult res = tag->frame->root_->computeLayout(cur_rect);
     if (tag->floating) {
         for (auto& p : res.data) {
             p.second.floated = true;
@@ -222,7 +223,7 @@ int set_monitor_rects(const RectangleVec &templates) {
             return HERBST_TAG_IN_USE;
         }
         g_monitors->addMonitor(templates[i], tag);
-        tag->frame->setVisibleRecursive(true);
+        tag->frame->root_->setVisibleRecursive(true);
     }
     // remove monitors if there are too much
     while (i < g_monitors->size()) {
@@ -395,7 +396,7 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
             other->tag = monitor->tag;
             monitor->tag = tag;
             // reset focus
-            frame_focus_recursive(tag->frame);
+            frame_focus_recursive(tag->frame->root_);
             /* TODO: find the best order of restacking and layouting */
             other->restack();
             monitor->restack();
@@ -420,21 +421,21 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     // 1. show new tag
     monitor->tag = tag;
     // first reset focus and arrange windows
-    frame_focus_recursive(tag->frame);
+    frame_focus_recursive(tag->frame->root_);
     monitor->restack();
     monitor->lock_frames = true;
     monitor->applyLayout();
     monitor->lock_frames = false;
     // then show them (should reduce flicker)
-    tag->frame->setVisibleRecursive(true);
+    tag->frame->root_->setVisibleRecursive(true);
     if (!monitor->tag->floating) {
-        // monitor->tag->frame->updateVisibility();
+        // monitor->tag->frame->root_->updateVisibility();
     }
     // 2. hide old tag
-    old_tag->frame->setVisibleRecursive(false);
+    old_tag->frame->root_->setVisibleRecursive(false);
     // focus window just has been shown
     // focus again to give input focus
-    frame_focus_recursive(tag->frame);
+    frame_focus_recursive(tag->frame->root_);
     // discard enternotify-events
     drop_enternotify_events();
     monitor_update_focus_objects();
@@ -545,9 +546,9 @@ void monitor_focus_by_index(unsigned new_selection) {
     }
     // change selection globals
     assert(monitor->tag);
-    assert(monitor->tag->frame);
+    assert(monitor->tag->frame->root_);
     g_monitors->cur_monitor = new_selection;
-    frame_focus_recursive(monitor->tag->frame);
+    frame_focus_recursive(monitor->tag->frame->root_);
     // repaint g_monitors
     old->applyLayout();
     monitor->applyLayout();
@@ -772,7 +773,7 @@ void Monitor::restack() {
     buf[0] = stacking_window;
     tag->stack->to_window_buf(buf + 1, count - 1, false, nullptr);
     /* remove a focused fullscreen client */
-    Client* client = tag->frame->focusedClient();
+    Client* client = tag->frame->root_->focusedClient();
     if (client && client->fullscreen_) {
         Window win = client->decorationWindow();
         XRaiseWindow(g_display, win);

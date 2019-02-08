@@ -7,15 +7,23 @@
 #include "glib-backports.h"
 #include "object.h"
 
+#define TAG_SET_FLAG(tag, flag) \
+    ((tag)->flags |= (flag))
+
+enum {
+    TAG_FLAG_URGENT = 0x01, // is there a urgent window?
+    TAG_FLAG_USED   = 0x02, // the opposite of empty
+};
+
 class Stack;
-class HSFrame;
+class FrameTree;
 class Settings;
 
 class HSTag : public Object {
 public:
     HSTag(std::string name, Settings* settings);
     ~HSTag() override;
-    std::shared_ptr<HSFrame>        frame;  // the master frame
+    std::shared_ptr<FrameTree>        frame;  // the master frame
     Attribute_<unsigned long> index;
     Attribute_<bool>         floating;
     Attribute_<std::string>  name;   // name of this tag

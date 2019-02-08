@@ -7,6 +7,7 @@
 
 #include "client.h"
 #include "command.h"
+#include "frametree.h"
 #include "glib-backports.h"
 #include "globals.h"
 #include "ipc-protocol.h"
@@ -510,7 +511,7 @@ void client_snap_vector(Client* client, Monitor* monitor,
     }
 
     // snap to other clients
-    tag->frame->foreachClient([&d] (Client* c) { client_snap_helper(c, &d); });
+    tag->frame->root_->foreachClient([&d] (Client* c) { client_snap_helper(c, &d); });
 
     // write back results
     if (abs(d.dx) < abs(distance)) {

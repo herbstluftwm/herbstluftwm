@@ -36,6 +36,7 @@ target_sources(herbstluftwm PRIVATE
     ewmh.cpp ewmh.h
     floating.cpp floating.h
     framedecoration.cpp framedecoration.h
+    frametree.h frametree.cpp
     hookmanager.cpp hookmanager.h
     ipc-protocol.h
     ipc-server.cpp ipc-server.h

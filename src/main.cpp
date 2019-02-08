@@ -19,6 +19,7 @@
 #include "clientmanager.h"
 #include "command.h"
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
@@ -285,8 +286,9 @@ int print_layout_command(int argc, char** argv, Output output) {
     assert(tag);
 
     std::shared_ptr<HSFrame> frame = tag->frame->lookup(argc >= 3 ? argv[2] : "");
+    assert(frame);
     if (argc > 0 && !strcmp(argv[0], "dump")) {
-        frame->dump(output);
+        FrameTree::dump(frame, output);
     } else {
         print_frame_tree(frame, output);
     }
@@ -311,19 +313,20 @@ int load_command(int argc, char** argv, Output output) {
         Monitor* m = get_current_monitor();
         tag = m->tag;
     }
+    (void) layout_string;
     assert(tag != nullptr);
-    char* rest = load_frame_tree(tag->frame, layout_string, output);
+    const char* rest = "To be implemented...";
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     Monitor* m = find_monitor_with_tag(tag);
     if (m) {
-        tag->frame->setVisibleRecursive(true);
+        tag->frame->root_->setVisibleRecursive(true);
         if (get_current_monitor() == m) {
-            frame_focus_recursive(tag->frame);
+            frame_focus_recursive(tag->frame->root_);
         }
         m->applyLayout();
     } else {
-        tag->frame->setVisibleRecursive(false);
+        tag->frame->root_->setVisibleRecursive(false);
     }
     if (!rest) {
         output << argv[0] << ": Error while parsing!\n";
@@ -780,7 +783,7 @@ void enternotify(Root* root, XEvent* event) {
         Client* c = get_client_from_window(ce->window);
         std::shared_ptr<HSFrameLeaf> target;
         if (c && c->tag()->floating == false
-              && (target = c->tag()->frame->frameWithClient(c))
+              && (target = c->tag()->frame->root_->frameWithClient(c))
               && target->getLayout() == LAYOUT_MAX
               && target->focusedClient() != c) {
             // don't allow focus_follows_mouse if another window would be

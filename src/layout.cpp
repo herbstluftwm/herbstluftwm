@@ -10,6 +10,7 @@
 
 #include "client.h"
 #include "floating.h"
+#include "frametree.h" // TODO: remove this dependency!
 #include "glib-backports.h"
 #include "globals.h"
 #include "ipc-protocol.h"
@@ -79,40 +80,6 @@ void HSFrameLeaf::insertClient(Client* client) {
     // the client now
 }
 
-void HSFrameSplit::insertClient(Client* client) {
-    if (selection_ == 0) a_->insertClient(client);
-    else                b_->insertClient(client);
-}
-
-shared_ptr<HSFrame> HSFrameLeaf::lookup(const char*) {
-    return shared_from_this(); // we are last one left
-}
-
-shared_ptr<HSFrame> HSFrameSplit::lookup(const char* index) {
-    if (!index || index[0] == '\0') {
-        return shared_from_this();
-    }
-
-    auto selected = (selection_ == 0) ? a_ : b_;
-    auto not_selected = (selection_ == 0) ? b_ : a_;
-
-    if (index[0] == '@') {
-        // Special case: always follow selection
-        return selected->lookup("@");
-    }
-
-    shared_ptr<HSFrame> new_root;
-    switch (index[0]) {
-        case '0': new_root = a_; break;
-        case '1': new_root = b_; break;
-        case '/': new_root = not_selected; break;
-        case '.': /* fallthru */
-        default: new_root = selected;
-    }
-
-    return new_root->lookup(index + 1);
-}
-
 shared_ptr<HSFrameLeaf> HSFrameSplit::frameWithClient(Client* client) {
     auto found = a_->frameWithClient(client);
     if (found) return found;
@@ -156,236 +123,6 @@ HSFrameLeaf::~HSFrameLeaf() {
     // free other things
     delete decoration;
 }
-
-void HSFrameLeaf::dump(Output output) {
-    output << LAYOUT_DUMP_BRACKETS[0]
-           << "clients"
-           << LAYOUT_DUMP_WHITESPACES[0]
-           << g_layout_names[layout] << ":"
-           << selection;
-    for (auto client : clients) {
-        output << LAYOUT_DUMP_WHITESPACES[0]
-               << "0x"
-               << std::hex << client->x11Window() << std::dec;
-    }
-    output << LAYOUT_DUMP_BRACKETS[1];
-}
-
-void HSFrameSplit::dump(Output output) {
-    output
-        << LAYOUT_DUMP_BRACKETS[0]
-        << "split"
-        << LAYOUT_DUMP_WHITESPACES[0]
-        << g_align_names[align_]
-        << LAYOUT_DUMP_SEPARATOR
-        << ((double)fraction_) / (double)FRACTION_UNIT
-        << LAYOUT_DUMP_SEPARATOR
-        << selection_
-        << LAYOUT_DUMP_WHITESPACES[0];
-    a_->dump(output);
-    output << LAYOUT_DUMP_WHITESPACES[0];
-    b_->dump(output);
-    output << LAYOUT_DUMP_BRACKETS[1];
-}
-
-/*
- * FRAMETODO: clean up this shit...
- */
-char* load_frame_tree(shared_ptr<HSFrame> frame, char* description, Output output) {
-    return description;
-}
-/*
-    // find next (
-    description = strchr(description, LAYOUT_DUMP_BRACKETS[0]);
-    if (!description) {
-        output << "Missing " << LAYOUT_DUMP_BRACKETS[0] << "\n";
-        return nullptr;
-    }
-    description++; // jump over (
-
-    // goto frame type
-    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
-    int type = TYPE_CLIENTS;
-    if (description[0] == 's') {
-        // if it could be "split"
-        type = TYPE_FRAMES;
-    }
-
-    // get substring with frame args
-    // jump to whitespaces and over them
-    description += strcspn(description, LAYOUT_DUMP_WHITESPACES);
-    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
-    // jump to whitespaces or brackets
-    size_t args_len = strcspn(description, LAYOUT_DUMP_WHITESPACES LAYOUT_DUMP_BRACKETS);
-    char* args = new char[args_len + 1];
-    std::unique_ptr<char> free_args_correctly (args);
-    strncpy(args, description, args_len);
-    args[args_len] = '\0';
-    // jump over args substring
-    description += args_len;
-    if (!*description) {
-        output << "Missing " << LAYOUT_DUMP_BRACKETS[1] << " or arguments\n";
-        return nullptr;
-    }
-    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
-    if (!*description) {
-        output << "Missing " << LAYOUT_DUMP_BRACKETS[1] << " or arguments\n";
-        return nullptr;
-    }
-
-    // apply type to frame
-    if (type == TYPE_FRAMES) {
-        // parse args
-        char* align_name = g_new(char, strlen(args)+1);
-        int selection;
-        double fraction_double;
-#define SEP LAYOUT_DUMP_SEPARATOR_STR
-        if (3 != sscanf(args, "%[^" SEP "]" SEP "%lf" SEP "%d",
-            align_name, &fraction_double, &selection)) {
-            output << "Can not parse frame args \"" << args << "\"\n";
-            return nullptr;
-        }
-#undef SEP
-        int align = find_align_by_name(align_name);
-        g_free(align_name);
-        if (align < 0) {
-            output << "Invalid alignment name in args \"" << args << "\"\n";
-            return nullptr;
-        }
-        selection = !!selection; // CLAMP it to [0;1]
-        int fraction = (int)(fraction_double * (double)FRACTION_UNIT);
-
-        // ensure that it is split
-        if (frame->type == TYPE_FRAMES) {
-            // nothing to do
-            frame->content.layout.align = align;
-            frame->content.layout.fraction = fraction;
-        } else {
-            frame_split(frame, align, fraction);
-            if (frame->type != TYPE_FRAMES) {
-                output << "Can not split frame\n";
-                return nullptr;
-            }
-        }
-        frame->content.layout.selection = selection;
-
-        // now parse subframes
-        description = load_frame_tree(frame->content.layout.a,
-                        description, output);
-        if (!description) return nullptr;
-        description = load_frame_tree(frame->content.layout.b,
-                        description, output);
-        if (!description) return nullptr;
-    } else {
-        // parse args
-        char* layout_name = g_new(char, strlen(args)+1);
-        int selection;
-#define SEP LAYOUT_DUMP_SEPARATOR_STR
-        if (2 != sscanf(args, "%[^" SEP "]" SEP "%d",
-            layout_name, &selection)) {
-            output << "Can not parse frame args \"" << args << "\"\n";
-            return nullptr;
-        }
-#undef SEP
-        int layout = find_layout_by_name(layout_name);
-        g_free(layout_name);
-        if (layout < 0) {
-            output << "Can not parse layout from args \"" << args << "\"\n";
-            return nullptr;
-        }
-
-        // ensure that it is a client frame
-        if (frame->type == TYPE_FRAMES) {
-            // remove childs
-            HSClient **buf1, **buf2;
-            size_t count1, count2;
-            frame_destroy(frame->content.layout.a, &buf1, &count1);
-            frame_destroy(frame->content.layout.b, &buf2, &count2);
-
-            // merge bufs
-            size_t count = count1 + count2;
-            HSClient** buf = g_new(HSClient*, count);
-            memcpy(buf,             buf1, sizeof(buf[0]) * count1);
-            memcpy(buf + count1,    buf2, sizeof(buf[0]) * count2);
-            g_free(buf1);
-            g_free(buf2);
-
-            // setup frame
-            frame->type = TYPE_CLIENTS;
-            frame->content.clients.buf = buf;
-            frame->content.clients.count = count;
-            frame->content.clients.selection = 0; // only some sane defaults
-            frame->content.clients.layout = 0; // only some sane defaults
-        }
-
-        // bring child wins
-        // jump over whitespaces
-        description += strspn(description, LAYOUT_DUMP_WHITESPACES);
-        int index = 0;
-        HSTag* tag = find_tag_with_toplevel_frame(get_toplevel_frame(frame));
-        while (*description != LAYOUT_DUMP_BRACKETS[1]) {
-            Window win;
-            if (1 != sscanf(description, "0x%lx\n", &win)) {
-                output << "Can not parse window id from \"" << description << "\"\n";
-                return nullptr;
-            }
-            // jump over window id and over whitespaces
-            description += strspn(description, "0x123456789abcdef");
-            description += strspn(description, LAYOUT_DUMP_WHITESPACES);
-
-            // bring window here
-            HSClient* client = get_client_from_window(win);
-            if (!client) {
-                // client not managed... ignore it
-                continue;
-            }
-
-            // remove window from old tag
-            Monitor* clientmonitor = find_monitor_with_tag(client->tag());
-            if (!frame_remove_client(client->tag()->frame, client)) {
-                g_warning("window %lx was not found on tag %s\n",
-                    win, client->tag()->name->str);
-            }
-            if (clientmonitor) {
-                clientmonitor->applyLayout();
-            }
-            stack_remove_slice(client->tag()->stack, client->slice);
-
-            // insert it to buf
-            HSClient** buf = frame->content.clients.buf;
-            size_t count = frame->content.clients.count;
-            count++;
-            index = CLAMP(index, 0, count - 1);
-            buf = g_renew(HSClient*, buf, count);
-            memmove(buf + index + 1, buf + index,
-                    sizeof(buf[0]) * (count - index - 1));
-            buf[index] = client;
-            frame->content.clients.buf = buf;
-            frame->content.clients.count = count;
-
-            client->setTag(tag);
-            stack_insert_slice(client->tag()->stack, client->slice);
-            ewmh_window_update_tag(client->x11Window(), client->tag());
-
-            index++;
-        }
-        // apply layout and selection
-        selection = (selection < frame->content.clients.count) ? selection : 0;
-        selection = (selection >= 0) ? selection : 0;
-        frame->content.clients.layout = layout;
-        frame->content.clients.selection = selection;
-    }
-    // jump over closing bracket
-    if (*description == LAYOUT_DUMP_BRACKETS[1]) {
-        description++;
-    } else {
-        output << "warning: missing closing bracket " << LAYOUT_DUMP_BRACKETS[1] << "\n";
-    }
-    // and over whitespaces
-    description += strspn(description, LAYOUT_DUMP_WHITESPACES);
-    return description;
-}
-*/
 
 int find_layout_by_name(char* name) {
     for (size_t i = 0; i < LENGTH(g_layout_names); i++) {
@@ -491,20 +228,8 @@ shared_ptr<HSFrameSplit> HSFrameSplit::thisSplit() {
     return dynamic_pointer_cast<HSFrameSplit>(shared_from_this());
 }
 
-shared_ptr<HSFrameLeaf> HSFrameLeaf::getFocusedFrame() {
-    return thisLeaf();
-}
-
-shared_ptr<HSFrameLeaf> HSFrameSplit::getFocusedFrame() {
-    if (selection_ == 0) {
-        return a_->getFocusedFrame();
-    } else {
-        return b_->getFocusedFrame();
-    }
-}
-
 shared_ptr<HSFrameLeaf> HSFrame::getGloballyFocusedFrame() {
-    return get_current_monitor()->tag->frame->getFocusedFrame();
+    return get_current_monitor()->tag->frame->focusedFrame();
 }
 
 int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
@@ -785,10 +510,10 @@ int frame_current_bring(int argc, char** argv, Output output) {
     }
     HSTag* tag = get_current_monitor()->tag;
     global_tags->moveClient(client, tag);
-    auto frame = tag->frame->frameWithClient(client);
+    auto frame = tag->frame->root_->frameWithClient(client);
     if (!frame->isFocused()) {
         frame->removeClient(client);
-        tag->frame->insertClient(client);
+        tag->frame->focusedFrame()->insertClient(client);
     }
     focus_client(client, false, false);
     return 0;
@@ -940,7 +665,7 @@ bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
     if (parent_.lock()) {
         parent_.lock()->replaceChild(shared_from_this(), new_this);
     } else {
-        tag_->frame = new_this;
+        tag_->frame->root_ = new_this;
     }
     parent_ = new_this;
     if (selection >= childrenStaying) {
@@ -1292,7 +1017,7 @@ int frame_move_window_command(int argc, char** argv, Output output) {
         if (client && neighbour) { // if neighbour was found
             // move window to neighbour
             frame->removeClient(client);
-            neighbour->insertClient(client);
+            FrameTree::focusedFrame(neighbour)->insertClient(client);
             neighbour->frameWithClient(client)->select(client);
 
             // change selection in parent
@@ -1392,7 +1117,7 @@ bool focus_client(Client* client, bool switch_tag, bool switch_monitor) {
     }
     // now the right tag is visible
     // now focus it
-    bool found = tag->frame->focusClient(client);
+    bool found = tag->frame->root_->focusClient(client);
     cur_mon->applyLayout();
     g_monitors->unlock();
     return found;
@@ -1435,7 +1160,7 @@ int layout_rotate_command() {
         [] (HSFrameLeaf*) {
         };
     // first hide children => order = 2
-    get_current_monitor()->tag->frame->fmap(onSplit, onLeaf, -1);
+    get_current_monitor()->tag->frame->root_->fmap(onSplit, onLeaf, -1);
     get_current_monitor()->applyLayout();
     return 0;
 }
@@ -1448,7 +1173,8 @@ vector<Client*> HSFrameLeaf::removeAllClients() {
 }
 
 int frame_remove_command() {
-    auto frame = HSFrame::getGloballyFocusedFrame();
+    auto frametree = get_current_monitor()->tag->frame;
+    auto frame = frametree->focusedFrame();
     if (!frame->getParent()) {
         // do nothing if is toplevel frame
         return 0;
@@ -1458,13 +1184,13 @@ int frame_remove_command() {
     auto newparent = (frame == parent->firstChild())
                      ? parent->secondChild()
                      : parent->firstChild();
-    newparent->getFocusedFrame()->addClients(frame->removeAllClients());
+    FrameTree::focusedFrame(newparent)->addClients(frame->removeAllClients());
     // now, frame is empty
     if (pp) {
         pp->replaceChild(parent, newparent);
     } else {
         // if parent was root frame
-        frame->getTag()->frame = newparent;
+        frametree->root_ = newparent;
     }
     frame_focus_recursive(parent);
     get_current_monitor()->applyLayout();
@@ -1535,7 +1261,7 @@ bool smart_window_surroundings_active(HSFrameLeaf* frame) {
 }
 
 void frame_focus_recursive(shared_ptr<HSFrame> frame) {
-    shared_ptr<HSFrameLeaf> leaf = frame->getFocusedFrame();
+    shared_ptr<HSFrameLeaf> leaf = FrameTree::focusedFrame(frame);
     Client* client = leaf->focusedClient();
     if (client) {
         client->window_focus();

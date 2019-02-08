@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "layout.h"
@@ -52,7 +53,7 @@ void MonitorManager::ensure_monitors_are_available() {
     HSTag* tag = tags_->ensure_tags_are_available();
     // add monitor with first tag
     Monitor* m = addMonitor(rect, tag);
-    m->tag->frame->setVisibleRecursive(true);
+    m->tag->frame->root_->setVisibleRecursive(true);
     cur_monitor = 0;
 
     monitor_update_focus_objects();
@@ -201,8 +202,8 @@ void MonitorManager::removeMonitor(Monitor* monitor)
 
     // Hide all clients visible in monitor
     assert(monitor->tag != nullptr);
-    assert(monitor->tag->frame != nullptr);
-    monitor->tag->frame->setVisibleRecursive(false);
+    assert(monitor->tag->frame->root_ != nullptr);
+    monitor->tag->frame->root_->setVisibleRecursive(false);
 
     g_monitors->removeIndexed(monitorIdx);
 
@@ -260,7 +261,7 @@ int MonitorManager::addMonitor(Input input, Output output)
     }
 
     monitor->applyLayout();
-    tag->frame->setVisibleRecursive(true);
+    tag->frame->root_->setVisibleRecursive(true);
     emit_tag_changed(tag, g_monitors->size() - 1);
     drop_enternotify_events();
 
