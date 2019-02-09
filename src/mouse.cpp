@@ -165,17 +165,19 @@ int mouse_bind_command(int argc, char** argv, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     unsigned int modifiers = 0;
-    char* string = argv[1];
+    char* str = argv[1];
 
     try {
-        modifiers = KeyCombo::string2modifiers(string);
+        auto tokens = KeyCombo::tokensFromString(str);
+        auto modifierSlice = std::vector<std::string>({tokens.begin(), tokens.end() - 1});
+        modifiers = KeyCombo::modifierMaskFromTokens(modifierSlice);
     } catch (std::runtime_error &error) {
         output << argv[0] << error.what();
         return HERBST_INVALID_ARGUMENT;
     }
 
     // last one is the mouse button
-    const char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
+    const char* last_token = strlasttoken(str, KeyCombo::separators);
     unsigned int button = string2button(last_token);
     if (button == 0) {
         output << argv[0] <<

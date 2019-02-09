@@ -11,6 +11,7 @@
 #include "glib-backports.h"
 #include "ipc-protocol.h"
 #include "key.h"
+#include "keycombo.h"
 #include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
@@ -705,10 +706,10 @@ void complete_against_keybind_command(int argc, char** argv, int position,
     if (position == 1) {
         // complete the keycombination
         const char* needle = (position < argc) ? argv[position] : "";
-        const char* lasttok = strlasttoken(needle, KEY_COMBI_SEPARATORS);
+        const char* lasttok = strlasttoken(needle, KeyCombo::separators);
         char* prefix = g_strdup(needle);
         prefix[lasttok - needle] = '\0';
-        char separator = KEY_COMBI_SEPARATORS[0];
+        char separator = KeyCombo::separators[0];
         if (lasttok != needle) {
             // if there is a suffix, then the already used separator is before
             // the start of the last token
@@ -731,10 +732,10 @@ void complete_against_mouse_combinations(int argc, char** argv, int position,
     }
     // complete the mouse combination
     const char* needle = (position < argc) ? argv[position] : "";
-    const char* lasttok = strlasttoken(needle, KEY_COMBI_SEPARATORS);
+    const char* lasttok = strlasttoken(needle, KeyCombo::separators);
     char* prefix = g_strdup(needle);
     prefix[lasttok - needle] = '\0';
-    char separator = KEY_COMBI_SEPARATORS[0];
+    char separator = KeyCombo::separators[0];
     if (lasttok != needle) {
         // if there is a suffix, then the already used separator is before
         // the start of the last token
