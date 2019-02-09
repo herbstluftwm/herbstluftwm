@@ -14,6 +14,7 @@
 #include "keycombo.h"
 #include "root.h"
 #include "utils.h"
+#include "xkeygrabber.h"
 
 // STRTODO
 struct key_find_context {
@@ -23,23 +24,10 @@ struct key_find_context {
 };
 
 void complete_against_keysyms(const char* needle, char* prefix, Output output) {
-    // get all possible keysyms
-    int min, max;
-    XDisplayKeycodes(g_display, &min, &max);
-    int kc_count = max - min + 1;
-    int ks_per_kc; // count of keysysms per keycode
-    KeySym* keysyms;
-    keysyms = XGetKeyboardMapping(g_display, min, kc_count, &ks_per_kc);
-    // only symbols at a position i*ks_per_kc are symbols that are recieved in
-    // a keyevent, it should be the symbol for the keycode if no modifier is
-    // pressed
-    for (int i = 0; i < kc_count; i++) {
-        if (keysyms[i * ks_per_kc] != NoSymbol) {
-            char* str = XKeysymToString(keysyms[i * ks_per_kc]);
-            try_complete_prefix(needle, str, prefix, output);
-        }
+    auto keySyms = XKeyGrabber::getPossibleKeySyms();
+    for (auto& keySym : keySyms) {
+        try_complete_prefix(needle, keySym.c_str(), prefix, output);
     }
-    XFree(keysyms);
 }
 
 void complete_against_modifiers(const char* needle, char seperator,
