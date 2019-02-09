@@ -140,7 +140,28 @@ def test_complete_keybind_offers_all_mods_and_syms(hlwm):
         ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super']
 
 
+@pytest.mark.skip
 def test_complete_keybind_after_combo_offers_all_commands(hlwm):
     complete = hlwm.complete('keybind x', position=2)
 
     assert complete == hlwm.complete('', position=0)
+
+
+def test_complete_keybind_offers_additional_mods_without_duplication(hlwm):
+    complete = hlwm.complete('keybind Mod2+Mo', partial=True, position=1)
+
+    assert set(complete) == {
+        'Mod2+Mod1+',
+        'Mod2+Mod3+',
+        'Mod2+Mod4+',
+        'Mod2+Mod5+',
+        'Mod2+Mode_switch ',
+        }
+
+
+def test_complete_keybind_validates_all_tokens(hlwm):
+    # Note: This might seem like a stupid test, but previous implementations
+    # ignored the invalid first modifier.
+    complete = hlwm.complete('keybind Moo+Mo', partial=True, position=1)
+
+    assert complete == []

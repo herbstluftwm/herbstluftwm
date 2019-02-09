@@ -6,6 +6,9 @@
 
 #include "globals.h"
 
+using std::vector;
+using std::string;
+
 XKeyGrabber::XKeyGrabber() {
     updateNumlockMask();
 }
@@ -80,4 +83,26 @@ void XKeyGrabber::changeGrabbedState(const KeyCombo& keyCombo, bool grabbed) {
             XUngrabKey(g_display, keycode, ignModifier | keyCombo.modifiers, g_root);
         }
     }
+}
+
+vector<string> XKeyGrabber::getPossibleKeySyms() {
+    vector<string> ret;
+    int min, max;
+    XDisplayKeycodes(g_display, &min, &max);
+    int kc_count = max - min + 1;
+    int ks_per_kc; // count of keysysms per keycode
+    KeySym* keysyms;
+    keysyms = XGetKeyboardMapping(g_display, min, kc_count, &ks_per_kc);
+    // only symbols at a position i*ks_per_kc are symbols that are recieved in
+    // a keyevent, it should be the symbol for the keycode if no modifier is
+    // pressed
+    for (int i = 0; i < kc_count; i++) {
+        if (keysyms[i * ks_per_kc] != NoSymbol) {
+            char* str = XKeysymToString(keysyms[i * ks_per_kc]);
+            ret.push_back(str);
+        }
+    }
+    XFree(keysyms);
+
+    return ret;
 }

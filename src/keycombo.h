@@ -36,6 +36,7 @@ public:
     static unsigned int modifierMaskFromTokens(const std::vector<std::string>& tokens);
     static KeySym keySymFromString(const std::string& str);
     static KeyCombo fromString(const std::string& str);
+    static std::vector<std::string> getPossibleKeySyms();
 
     KeySym keysym;
     unsigned int modifiers;

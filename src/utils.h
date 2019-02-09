@@ -5,6 +5,8 @@
 #include <X11/Xlib.h>
 #include <array>
 #include <cstddef>
+#include <ostream>
+#include <string>
 
 #include "optional.h"
 #include "types.h"
@@ -138,6 +140,25 @@ std::unique_ptr<T> make_unique(Args&&... args)
 {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+
+/**
+ * Joins a list of strings using a given delimiter string.
+ */
+template<class InContainer>
+std::string join_strings(InContainer in, const std::string& delim) {
+    auto first = in.begin();
+    auto last = in.end();
+    if (first == last) {
+        return {};
+    }
+
+    std::stringstream out;
+    out << *first;
+    for (auto iter = first + 1; iter != last; iter++)
+        out << delim << *iter;
+    return out.str();
+}
+
 
 #endif
 

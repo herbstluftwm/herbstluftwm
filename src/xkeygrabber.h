@@ -1,6 +1,8 @@
 #pragma once
 
 #include <X11/Xlib.h>
+#include <string>
+#include <vector>
 
 #include "keycombo.h"
 
@@ -28,6 +30,8 @@ public:
     unsigned int getNumlockMask() const {
         return numlockMask_;
     }
+
+    static std::vector<std::string> getPossibleKeySyms();
 
 private:
     void changeGrabbedState(const KeyCombo& keyCombo, bool grabbed);
