@@ -62,9 +62,7 @@ bool KeyCombo::matches(const std::regex& regex) const {
  */
 unsigned int KeyCombo::modifierMaskFromTokens(const vector<string>& tokens) {
     unsigned int modifiers = 0;
-
-    for (auto iter = tokens.begin(); iter != tokens.end(); iter++) {
-        auto modName = *iter;
+    for (auto& modName : tokens) {
         modifiers |= getMaskForModifierName(modName);
     }
     return modifiers;
