@@ -15,13 +15,6 @@
 #include "root.h"
 #include "utils.h"
 
-// STRTODO
-struct key_find_context {
-    Output      output;
-    const char* needle;
-    size_t      needle_len;
-};
-
 void complete_against_keysyms(const char* needle, char* prefix, Output output) {
     // get all possible keysyms
     int min, max;
