@@ -30,15 +30,15 @@ public:
     std::string str() const;
     bool matches(const std::regex& regex) const;
     bool operator==(const KeyCombo& other) const;
-    static unsigned int string2modifiers(const std::string& str);
-    static KeySym string2keysym(const std::string& str);
+    static std::vector<std::string> tokensFromString(std::string keySpec);
+    static unsigned int modifierMaskFromTokens(const std::vector<std::string>& tokens);
+    static KeySym keySymFromString(const std::string& str);
     static KeyCombo fromString(const std::string& str);
 
     KeySym keysym;
     unsigned int modifiers;
 
 private:
-    static std::vector<std::string> splitKeySpec(std::string keySpec);
     static unsigned int getMaskForModifierName(std::string name);
     static std::vector<std::string> getNamesForModifierMask(unsigned int mask);
 };
