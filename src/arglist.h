@@ -14,11 +14,6 @@ public:
     //! a simple split(), as C++ doesn't have it
     static Container split(const std::string &s, char delim = '.');
 
-    //! a simple join(), as C++ doesn't have it
-    static std::string join(Container::const_iterator first,
-                            Container::const_iterator last,
-                            char delim = '.');
-
     ArgList(const std::initializer_list<std::string> &l);
     ArgList(Container::const_iterator from, Container::const_iterator to);
     ArgList(const ArgList &al);

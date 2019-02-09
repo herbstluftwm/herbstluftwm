@@ -141,9 +141,9 @@ std::unique_ptr<T> make_unique(Args&&... args)
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-//! Joins a list of strings using a given delimiter string.
+//! Joins a container of strings with a given delimiter string
 template<class InContainer>
-std::string join_strings(InContainer in, const std::string& delim) {
+std::string join_strings(const InContainer& in, const std::string& delim) {
     auto first = in.begin();
     auto last = in.end();
     if (first == last) {
