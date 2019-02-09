@@ -1,5 +1,7 @@
 #include "hookmanager.h"
 
+#include "utils.h"
+
 HookManager::HookManager()
     : add_("add"), remove_("remove") {
     wireActions({ &add_, &remove_ });
@@ -10,7 +12,7 @@ void HookManager::ls(Path path, Output out)
     if (path.empty())
         return Object::ls(out);
 
-    auto child = Path::join(path.begin(), path.end());
+    auto child = join_strings(path, ".");
     if (children_.find(child) != children_.end()) {
         children_[child]->ls({}, out);
     } else {
