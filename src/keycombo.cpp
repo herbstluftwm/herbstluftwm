@@ -56,36 +56,27 @@ bool KeyCombo::matches(const std::regex& regex) const {
 }
 
 /*!
- * Parses the modifiers part of a key combo string into a mask value.
+ * Determines a modifier mask value from a list of key combo tokens
  *
  * \throws meaningful exceptions on parsing errors
  */
-unsigned int KeyCombo::string2modifiers(const string& str) {
-    auto splitted = splitKeySpec(str);
-
-    if (splitted.empty()) {
-        throw std::runtime_error("Empty keysym");
-    }
-
+unsigned int KeyCombo::modifierMaskFromTokens(const vector<string>& tokens) {
     unsigned int modifiers = 0;
-    // all parts except last one are modifiers
-    for (auto iter = splitted.begin(); iter + 1 != splitted.end(); iter++) {
-        modifiers |= getMaskForModifierName(*iter);
+    for (auto& modName : tokens) {
+        modifiers |= getMaskForModifierName(modName);
     }
     return modifiers;
 }
 
 /*!
- * Parses the keysym part of a key combo string into a KeySym.
+ * Parses a given key sym string into an X11 KeySym.
  *
  * \throws meaningful exceptions on parsing errors
  */
-KeySym KeyCombo::string2keysym(const string& str) {
-    // last one is the key
-    auto lastToken = splitKeySpec(str).back();
-    auto keysym = XStringToKeysym(lastToken.c_str());
+KeySym KeyCombo::keySymFromString(const string& str) {
+    auto keysym = XStringToKeysym(str.c_str());
     if (keysym == NoSymbol) {
-        throw std::runtime_error("Unknown KeySym \"" + lastToken + "\"");
+        throw std::runtime_error("Unknown KeySym \"" + str + "\"");
     }
     return keysym;
 }
@@ -100,10 +91,19 @@ KeySym KeyCombo::string2keysym(const string& str) {
  *
  * \throws meaningful exceptions on parsing errors
  */
-KeyCombo KeyCombo::fromString(const std::string& str) {
+KeyCombo KeyCombo::fromString(const string& str) {
     KeyCombo combo;
-    combo.modifiers = string2modifiers(str);
-    combo.keysym = string2keysym(str);
+    auto tokens = tokensFromString(str);
+
+    if (tokens.empty()) {
+        throw std::runtime_error("Empty keysym");
+    }
+
+    auto modifierSlice = vector<string>({tokens.begin(), tokens.end() - 1});
+    auto keySymString = tokens.back();
+
+    combo.modifiers = modifierMaskFromTokens(modifierSlice);
+    combo.keysym = keySymFromString(keySymString);
     return combo;
 }
 
@@ -113,7 +113,8 @@ bool KeyCombo::operator==(const KeyCombo& other) const {
     return sameMods && sameKeySym;
 }
 
-vector<string> KeyCombo::splitKeySpec(string keySpec)
+//! Splits a given key combo string into a list of tokens
+vector<string> KeyCombo::tokensFromString(string keySpec)
 {
     // Normalize spec to use a single separator:
     char baseSep = KEY_COMBI_SEPARATORS[0];
