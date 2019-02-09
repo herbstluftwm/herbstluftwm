@@ -177,7 +177,7 @@ int mouse_bind_command(int argc, char** argv, Output output) {
     }
 
     // last one is the mouse button
-    const char* last_token = strlasttoken(str, KEY_COMBI_SEPARATORS);
+    const char* last_token = strlasttoken(str, KeyCombo::separators);
     unsigned int button = string2button(last_token);
     if (button == 0) {
         output << argv[0] <<

@@ -3,8 +3,6 @@
 
 #include "types.h"
 
-#define KEY_COMBI_SEPARATORS "+-"
-
 unsigned int modifiername2mask(const char* name);
 const char* modifiermask2name(unsigned int mask);
 
