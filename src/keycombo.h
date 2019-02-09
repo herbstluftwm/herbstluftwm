@@ -27,6 +27,8 @@ public:
      */
     static const std::vector<ModifierNameAndMask> modifierMasks;
 
+    static constexpr auto separators = "+-";
+
     std::string str() const;
     bool matches(const std::regex& regex) const;
     bool operator==(const KeyCombo& other) const;

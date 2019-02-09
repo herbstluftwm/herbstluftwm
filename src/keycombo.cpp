@@ -7,10 +7,8 @@
 
 #include "globals.h"
 
-using std::vector;
 using std::string;
-
-#define KEY_COMBI_SEPARATORS "+-"
+using std::vector;
 
 const vector<KeyCombo::ModifierNameAndMask> KeyCombo::modifierMasks = {
     { "Mod1",       Mod1Mask },
@@ -33,7 +31,7 @@ std::string KeyCombo::str() const {
 
     /* add modifiers */
     for (auto& modName : getNamesForModifierMask(modifiers)) {
-        str << modName << KEY_COMBI_SEPARATORS[0];
+        str << modName << separators[0];
     }
 
     /* add keysym */
@@ -116,9 +114,9 @@ bool KeyCombo::operator==(const KeyCombo& other) const {
 //! Splits a given key combo string into a list of tokens
 vector<string> KeyCombo::tokensFromString(string keySpec)
 {
-    // Normalize spec to use a single separator:
-    char baseSep = KEY_COMBI_SEPARATORS[0];
-    for (auto &sep : KEY_COMBI_SEPARATORS) {
+    // Normalize spec to use the default separator:
+    char baseSep = separators[0];
+    for (auto &sep : string(separators)) {
         std::replace(keySpec.begin(), keySpec.end(), sep, baseSep);
     }
 
