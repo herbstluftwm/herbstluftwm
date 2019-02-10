@@ -297,7 +297,7 @@ def keyboard():
 def mouse():
     class Mouse:
         def move_into(self, win_id):
-            subprocess.call(f'xdotool mousemove --window {win_id} 1 1', shell=True)
+            subprocess.call(f'xdotool mousemove --sync --window {win_id} 1 1', shell=True)
 
         def click(self, button, into_win_id=None):
             if into_win_id:
