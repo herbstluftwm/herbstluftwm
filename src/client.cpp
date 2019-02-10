@@ -143,7 +143,7 @@ Client::~Client() {
         lastfocus = nullptr;
     }
     if (slice) {
-        slice_destroy(slice);
+        delete slice;
     }
 }
 
