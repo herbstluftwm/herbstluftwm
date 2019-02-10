@@ -4,6 +4,7 @@
 #include "glib-backports.h"
 #include "globals.h"
 #include "keycombo.h"
+#include "xkeygrabber.h"
 
 void complete_against_keysyms(const char* needle, char* prefix, Output output) {
     auto keySyms = XKeyGrabber::getPossibleKeySyms();
