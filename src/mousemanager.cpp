@@ -5,15 +5,13 @@
 #include "globals.h"
 #include "mouse.h"
 
-extern Cursor g_cursor;
-
 MouseManager::MouseManager() {
     /* set cursor theme */
-    g_cursor = XCreateFontCursor(g_display, XC_left_ptr);
-    XDefineCursor(g_display, g_root, g_cursor);
+    cursor = XCreateFontCursor(g_display, XC_left_ptr);
+    XDefineCursor(g_display, g_root, cursor);
 }
 
 MouseManager::~MouseManager() {
     mouse_unbind_all();
-    XFreeCursor(g_display, g_cursor);
+    XFreeCursor(g_display, cursor);
 }

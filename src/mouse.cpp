@@ -27,7 +27,6 @@ static Client*        g_win_drag_client = nullptr;
 static Monitor*       g_drag_monitor = nullptr;
 static MouseDragFunction g_drag_function = nullptr;
 
-Cursor g_cursor;
 static GList* g_mouse_binds = nullptr;
 
 #define CLEANMASK(mask)         ((mask) & ~(numlockMask|LockMask))
