@@ -15,21 +15,25 @@ def test_mouseunbind_all(hlwm, method, mouse):
 
 @pytest.mark.parametrize('button', [1, 2, 3, 4, 5])
 def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
-    hlwm.call(f'mousebind Button{button} call close')
+    hlwm.call('new_attr string my_press')
+    hlwm.call(f'mousebind Button{button} call set_attr my_press yup')
     client_id, _ = hlwm.create_client()
 
     mouse.click(str(button), client_id)
 
-    assert hlwm.get_attr('tags.0.client_count') == '0'
+    assert hlwm.get_attr('my_press') == 'yup'
+    hlwm.call('remove_attr my_press')  # avoids memory leak (TODO: plug the leak)
 
 
 @pytest.mark.parametrize('button', [1, 2, 3, 4, 5])
 def test_trigger_mouse_binding_with_modifier(hlwm, keyboard, mouse, button):
-    hlwm.call(f'mousebind Mod1-Button{button} call close')
+    hlwm.call('new_attr string my_press')
+    hlwm.call(f'mousebind Mod1-Button{button} call set_attr my_press yup')
     client_id, _ = hlwm.create_client()
 
     keyboard.down('Alt')
     mouse.click(str(button), client_id)
     keyboard.up('Alt')
 
-    assert hlwm.get_attr('tags.0.client_count') == '0'
+    assert hlwm.get_attr('my_press') == 'yup'
+    hlwm.call('remove_attr my_press')  # avoids memory leak (TODO: plug the leak)
