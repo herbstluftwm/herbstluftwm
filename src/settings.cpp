@@ -17,29 +17,26 @@ using std::to_string;
 
 Settings* g_settings = nullptr; // the global settings object
 
-Settings::Settings(Root* root)
+Settings::Settings()
     : window_border_width("window_border_width",
-                          getIntAttr(root, "theme.tiling.active.border_width"),
-                          setIntAttr(root, "theme.border_width"))
+                          getIntAttr("theme.tiling.active.border_width"),
+                          setIntAttr("theme.border_width"))
     , window_border_inner_width("window_border_inner_width",
-                                getIntAttr(root, "theme.tiling.active.inner_width"),
-                                setIntAttr(root, "theme.inner_width"))
+                                getIntAttr("theme.tiling.active.inner_width"),
+                                setIntAttr("theme.inner_width"))
     , window_border_inner_color("window_border_inner_color",
-                                getColorAttr(root, "theme.tiling.active.inner_color"),
-                                setColorAttr(root, "theme.inner_color"))
+                                getColorAttr("theme.tiling.active.inner_color"),
+                                setColorAttr("theme.inner_color"))
     , window_border_active_color("window_border_active_color",
-                                 getColorAttr(root, "theme.tiling.active.color"),
-                                 setColorAttr(root, "theme.active.color"))
+                                 getColorAttr("theme.tiling.active.color"),
+                                 setColorAttr("theme.active.color"))
     , window_border_normal_color("window_border_normal_color",
-                                 getColorAttr(root, "theme.tiling.normal.color"),
-                                 setColorAttr(root, "theme.normal.color"))
+                                 getColorAttr("theme.tiling.normal.color"),
+                                 setColorAttr("theme.normal.color"))
     , window_border_urgent_color("window_border_urgent_color",
-                                 getColorAttr(root, "theme.tiling.urgent.color"),
-                                 setColorAttr(root, "theme.urgent.color"))
-    , root_(root)
+                                 getColorAttr("theme.tiling.urgent.color"),
+                                 setColorAttr("theme.urgent.color"))
 {
-    (void) root_; /* Suppress warning for (yet) unused root pointer */
-
     wireAttributes({
         &frame_gap,
         &frame_padding,
@@ -126,21 +123,24 @@ Settings::Settings(Root* root)
         }
         return string();
     });
-
-    // TODO: the lock level is not a setting! should move somewhere else
-    monitors_locked = root->globals.initial_monitors_locked;
-    monitors_locked.changed().connect([root](bool) {
-        root->monitors()->lock_number_changed();
-    });
     g_settings = this;
     for (auto i : attributes()) {
         i.second->setWriteable();
     }
 }
 
-std::function<int()> Settings::getIntAttr(Object* root, string name) {
-    return [root, name]() {
-        Attribute* a = root->deepAttribute(name);
+void Settings::injectDependencies(Root* root) {
+    root_ = root;
+    // TODO: the lock level is not a setting! should move somewhere else
+    monitors_locked = root->globals.initial_monitors_locked;
+    monitors_locked.changed().connect([root](bool) {
+        root->monitors()->lock_number_changed();
+    });
+}
+
+std::function<int()> Settings::getIntAttr(string name) {
+    return [this, name]() {
+        Attribute* a = this->root_->deepAttribute(name);
         if (a) {
             return std::stoi(a->str());
         } else {
@@ -150,9 +150,9 @@ std::function<int()> Settings::getIntAttr(Object* root, string name) {
     };
 }
 
-std::function<Color()> Settings::getColorAttr(Object* root, string name) {
-    return [root, name]() {
-        Attribute* a = root->deepAttribute(name);
+std::function<Color()> Settings::getColorAttr(string name) {
+    return [this, name]() {
+        Attribute* a = this->root_->deepAttribute(name);
         if (a) {
             return Color(a->str());
         } else {
@@ -162,9 +162,9 @@ std::function<Color()> Settings::getColorAttr(Object* root, string name) {
     };
 }
 
-std::function<string(int)> Settings::setIntAttr(Object* root, string name) {
-    return [root, name](int val) {
-        Attribute* a = root->deepAttribute(name);
+std::function<string(int)> Settings::setIntAttr(string name) {
+    return [this, name](int val) {
+        Attribute* a = this->root_->deepAttribute(name);
         if (a) {
             return a->change(to_string(val));
         } else {
@@ -175,9 +175,9 @@ std::function<string(int)> Settings::setIntAttr(Object* root, string name) {
         }
     };
 }
-std::function<string(Color)> Settings::setColorAttr(Object* root, string name) {
-    return [root, name](Color val) {
-        Attribute* a = root->deepAttribute(name);
+std::function<string(Color)> Settings::setColorAttr(string name) {
+    return [this, name](Color val) {
+        Attribute* a = this->root_->deepAttribute(name);
         if (a) {
             return a->change(val.str());
         } else {

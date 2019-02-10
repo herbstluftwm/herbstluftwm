@@ -36,12 +36,13 @@ Root::Root(Globals g)
     monitors.init();
     root_commands = new RootCommands(this);
     rules.init();
-    settings.init(this);
+    settings.init();
     tags.init();
     theme.init();
     tmp.init();
 
     // inject dependencies where needed
+    settings()->injectDependencies(this);
     tags()->injectDependencies(monitors(), settings());
     clients()->injectDependencies(settings(), theme());
     monitors()->injectDependencies(settings(), tags());
