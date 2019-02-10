@@ -133,7 +133,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
     }
 
     // Reuse the keymask string
-    client->keymask_ = changes.keymask;
+    client->keyMask_ = changes.keyMask;
 
     if (!changes.manage) {
         // map it... just to be sure
@@ -151,7 +151,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
     }
     // insert window to the stack
     client->slice = slice_create_client(client);
-    client->tag()->stack->insert_slice(client->slice);
+    client->tag()->stack->insertSlice(client->slice);
     // insert window to the tag
     FrameTree::focusedFrame(client->tag()->frame->lookup(changes.tree_index))
                  ->insertClient(client);
@@ -211,7 +211,7 @@ void ClientManager::force_unmanage(Client* client) {
         mouse_stop_drag();
     }
     if (client->tag() && client->slice) {
-        client->tag()->stack->remove_slice(client->slice);
+        client->tag()->stack->removeSlice(client->slice);
     }
     // remove from tag
     client->tag()->frame->root_->removeClient(client);

@@ -45,12 +45,12 @@ FrameDecoration::FrameDecoration(HSTag* tag_, Settings* settings_)
 
     // insert it to the stack
     slice = slice_create_frame(window);
-    tag->stack->insert_slice(slice);
+    tag->stack->insertSlice(slice);
 }
 
 FrameDecoration::~FrameDecoration() {
     XDestroyWindow(g_display, window);
-    tag->stack->remove_slice(slice);
+    tag->stack->removeSlice(slice);
     slice_destroy(slice);
 }
 

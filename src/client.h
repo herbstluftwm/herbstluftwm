@@ -33,7 +33,7 @@ public:
 
     HSTag*      tag_ = {};
     Attribute_<
-    std::string> keymask_ = {"keymask", {}}; // keymask applied to mask out keybindins
+    std::string> keyMask_ = {"keymask", {}}; // keymask applied to mask out keybindins
     bool        ewmhfullscreen_ = false; // ewmh fullscreen state
     Attribute_<bool> pseudotile_ = {"pseudotile", false}; // only move client but don't resize (if possible)
     bool        neverfocus_ = false; // do not give the focus via XSetInputFocus
