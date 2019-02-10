@@ -70,6 +70,7 @@ Root::~Root()
     tags.reset();
     settings.reset();
     rules.reset();
+    mouse.reset();
     delete root_commands;
     keys.reset();
     hooks.reset();
