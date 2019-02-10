@@ -60,8 +60,6 @@ public:
     static bool prefixOf(const std::string& shorter, const std::string& longer);
     const std::string& needle() const;
 
-    Completion shifted(size_t offset) const;
-
     /** Grants access to private members as long as Commands::complete is still
      * wrapper around complete_against_commands.
      */
@@ -77,6 +75,7 @@ private:
     void operator=(const Completion& other);
     Completion(const Completion& other);
 
+    Completion shifted(size_t offset) const;
     std::string escape(const std::string& str);
 
     ArgList args_;
