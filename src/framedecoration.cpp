@@ -44,14 +44,14 @@ FrameDecoration::FrameDecoration(HSTag* tag_, Settings* settings_)
     XFree(hint);
 
     // insert it to the stack
-    slice = slice_create_frame(window);
+    slice = Slice::makeFrameSlice(window);
     tag->stack->insertSlice(slice);
 }
 
 FrameDecoration::~FrameDecoration() {
     XDestroyWindow(g_display, window);
     tag->stack->removeSlice(slice);
-    slice_destroy(slice);
+    delete slice;
 }
 
 void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
