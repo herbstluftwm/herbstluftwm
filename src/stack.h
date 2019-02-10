@@ -42,20 +42,20 @@ public:
     Stack() = default;
     ~Stack();
 
-    void insert_slice(Slice* elem);
-    void remove_slice(Slice* elem);
-    void raise_slide(Slice* slice);
-    void mark_dirty();
-    void slice_add_layer(Slice* slice, HSLayer layer);
-    void slice_remove_layer(Slice* slice, HSLayer layer);
-    bool is_layer_empty(HSLayer layer);
-    void clear_layer(HSLayer layer);
+    void insertSlice(Slice* elem);
+    void removeSlice(Slice* elem);
+    void raiseSlice(Slice* slice);
+    void markDirty();
+    void sliceAddLayer(Slice* slice, HSLayer layer);
+    void sliceRemoveLayer(Slice* slice, HSLayer layer);
+    bool isLayerEmpty(HSLayer layer);
+    void clearLayer(HSLayer layer);
 
     // returns the number of windows in this stack
-    int window_count(bool real_clients);
-    void to_window_buf(Window* buf, int len, bool real_clients, int* remain_len);
+    int windowCount(bool real_clients);
+    void toWindowBuf(Window* buf, int len, bool real_clients, int* remain_len);
     void restack();
-    Window lowest_window();
+    Window lowestWindow();
 
     std::vector<Slice*> top[LAYER_COUNT];
 
