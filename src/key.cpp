@@ -1,27 +1,9 @@
 #include "key.h"
 
-#include <X11/XKBlib.h>
-#include <X11/keysym.h>
-#include <algorithm>
-#include <cstdio>
-#include <cstring>
-#include <regex>
-#include <string>
-
 #include "command.h"
 #include "glib-backports.h"
 #include "globals.h"
 #include "keycombo.h"
-#include "root.h"
-#include "utils.h"
-#include "xkeygrabber.h"
-
-// STRTODO
-struct key_find_context {
-    Output      output;
-    const char* needle;
-    size_t      needle_len;
-};
 
 void complete_against_keysyms(const char* needle, char* prefix, Output output) {
     auto keySyms = XKeyGrabber::getPossibleKeySyms();
