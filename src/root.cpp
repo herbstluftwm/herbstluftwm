@@ -34,7 +34,6 @@ Root::Root(Globals g)
     // initialize non-dependant children (alphabetically)
     hooks.init();
     keys.init();
-    mouse.init();
     root_commands = new RootCommands(this);
     rules.init();
     settings.init(this);
@@ -45,6 +44,7 @@ Root::Root(Globals g)
     // initialize dependant children
     clients.init(*theme(), *settings());
     monitors.init(settings(), tags());
+    mouse.init(); // needs MonitorManager (implicitly)
 
     // provide dependencies
     tags()->setMonitorManager(monitors());
@@ -62,6 +62,7 @@ Root::~Root()
     tags()->setMonitorManager({});
 
     // Note: delete in reverse order of initialization!
+    mouse.reset();
     monitors.reset();
     clients.reset();
 
@@ -70,7 +71,6 @@ Root::~Root()
     tags.reset();
     settings.reset();
     rules.reset();
-    mouse.reset();
     delete root_commands;
     keys.reset();
     hooks.reset();
