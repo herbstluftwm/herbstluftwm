@@ -42,10 +42,10 @@ Root::Root(Globals g)
     tmp.init();
 
     // inject dependencies where needed
-    settings()->injectDependencies(this);
-    tags()->injectDependencies(monitors(), settings());
-    clients()->injectDependencies(settings(), theme());
-    monitors()->injectDependencies(settings(), tags());
+    settings->injectDependencies(this);
+    tags->injectDependencies(monitors(), settings());
+    clients->injectDependencies(settings(), theme());
+    monitors->injectDependencies(settings(), tags());
 
     // set temporary globals
     ::global_tags = tags();
