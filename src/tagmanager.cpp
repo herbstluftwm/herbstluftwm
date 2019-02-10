@@ -99,9 +99,9 @@ int TagManager::removeTag(Input input, Output output) {
 
     // Move clients to target tag
     for (auto client : clients) {
-        client->tag()->stack->remove_slice(client->slice);
+        client->tag()->stack->removeSlice(client->slice);
         client->setTag(targetTag);
-        client->tag()->stack->insert_slice(client->slice);
+        client->tag()->stack->insertSlice(client->slice);
         ewmh_window_update_tag(client->window_, client->tag());
         targetTag->frame->focusedFrame()->insertClient(client);
     }
@@ -213,9 +213,9 @@ void TagManager::moveClient(Client* client, HSTag* target) {
     target->frame->focusedFrame()->insertClient(client);
     // enfoce it to be focused on the target tag
     target->frame->root_->focusClient(client);
-    client->tag()->stack->remove_slice(client->slice);
+    client->tag()->stack->removeSlice(client->slice);
     client->setTag(target);
-    client->tag()->stack->insert_slice(client->slice);
+    client->tag()->stack->insertSlice(client->slice);
     ewmh_window_update_tag(client->window_, client->tag());
 
     // refresh things, hide things, layout it, and then show it if needed

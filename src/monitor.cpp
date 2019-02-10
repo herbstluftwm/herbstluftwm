@@ -55,11 +55,11 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
 
-    g_monitors->monitor_stack->insert_slice(slice);
+    g_monitors->monitor_stack->insertSlice(slice);
 }
 
 Monitor::~Monitor() {
-    g_monitors->monitor_stack->remove_slice(slice);
+    g_monitors->monitor_stack->removeSlice(slice);
     slice_destroy(slice);
     XDestroyWindow(g_display, stacking_window);
 }
@@ -739,7 +739,7 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
 
 void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
                                  int* remain_len) {
-    g_monitors->monitor_stack->to_window_buf(buf, len, real_clients, remain_len);
+    g_monitors->monitor_stack->toWindowBuf(buf, len, real_clients, remain_len);
 }
 
 Stack* get_monitor_stack() {
@@ -759,7 +759,7 @@ int monitor_raise_command(int argc, char** argv, Output output) {
     } else {
         monitor = get_current_monitor();
     }
-    g_monitors->monitor_stack->raise_slide(monitor->slice);
+    g_monitors->monitor_stack->raiseSlice(monitor->slice);
     return 0;
 }
 
@@ -768,10 +768,10 @@ void monitor_restack(Monitor* monitor) {
 }
 
 void Monitor::restack() {
-    int count = 1 + tag->stack->window_count(false);
+    int count = 1 + tag->stack->windowCount(false);
     Window* buf = g_new(Window, count);
     buf[0] = stacking_window;
-    tag->stack->to_window_buf(buf + 1, count - 1, false, nullptr);
+    tag->stack->toWindowBuf(buf + 1, count - 1, false, nullptr);
     /* remove a focused fullscreen client */
     Client* client = tag->frame->root_->focusedClient();
     if (client && client->fullscreen_) {
