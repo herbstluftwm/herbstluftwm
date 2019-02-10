@@ -19,8 +19,9 @@ class Completion;
 class ClientManager : public Object
 {
 public:
-    ClientManager(Theme& theme, Settings& settings);
+    ClientManager();
     ~ClientManager() override;
+    void injectDependencies(Settings* s, Theme* t);
 
     Client* client(Window window);
     Client* client(const std::string &identifier);
@@ -47,8 +48,8 @@ public:
 
 protected:
     int clientSetAttribute(std::string attribute, Input input, Output output);
-    Theme& theme;
-    Settings& settings;
+    Theme* theme;
+    Settings* settings;
     std::unordered_map<Window, Client*> clients_;
     friend class Client;
 };
