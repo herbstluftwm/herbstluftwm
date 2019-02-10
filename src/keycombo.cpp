@@ -162,4 +162,3 @@ vector<string> KeyCombo::getNamesForModifierMask(unsigned int mask) {
 
     return names;
 }
-
