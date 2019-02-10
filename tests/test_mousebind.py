@@ -29,6 +29,7 @@ def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
 def test_trigger_mouse_binding_with_modifier(hlwm, keyboard, mouse, button):
     hlwm.call('new_attr string my_press')
     hlwm.call(f'mousebind Mod1-Button{button} call set_attr my_press yup')
+    hlwm.call(f'mousebind Button{button} call remove_attr my_press')  # canary bind (should not trigger)
     client_id, _ = hlwm.create_client()
 
     keyboard.down('Alt')
