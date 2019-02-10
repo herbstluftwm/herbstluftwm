@@ -44,7 +44,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     // Make sure there is no existing binding with same keysym/modifiers
     removeKeybinding(newBinding->keyCombo);
 
-    if (!newBinding->keyCombo.matches(activeKeymask_.regex)) {
+    if (!newBinding->keyCombo.matches(activeKeyMask_.regex)) {
         // Grab for events on this keycode
         xKeyGrabber_.grabKeyCombo(newBinding->keyCombo);
         newBinding->grabbed = true;
@@ -53,7 +53,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     // Add keybinding to list
     binds.push_back(std::move(newBinding));
 
-    ensureKeymask();
+    ensureKeyMask();
 
     return HERBST_EXIT_SUCCESS;
 }
@@ -144,32 +144,32 @@ void KeyManager::regrabAll() {
  * call this function on focus changes where ClientManager::focus is already
  * updated.
  */
-void KeyManager::ensureKeymask(const Client* client) {
+void KeyManager::ensureKeyMask(const Client* client) {
     if (client == nullptr) {
         client = Root::get()->clients()->focus();
     }
 
-    string targetMaskStr = (client != nullptr) ? client->keymask_() : "";
+    string targetMaskStr = (client != nullptr) ? client->keyMask_() : "";
 
-    if (activeKeymask_.str == targetMaskStr) {
+    if (activeKeyMask_.str == targetMaskStr) {
         // nothing to do
         return;
     }
 
     try {
-        auto newMask = Keymask::fromString(targetMaskStr);
-        setActiveKeymask(newMask);
+        auto newMask = KeyMask::fromString(targetMaskStr);
+        setActiveKeyMask(newMask);
     } catch (std::regex_error& err) {
         HSWarning("Failed to parse keymask \"%s\"is invalid (falling back to empty mask): %s\n",
                 targetMaskStr.c_str(), err.what());
 
         // Fall back to empty mask:
-        setActiveKeymask({});
+        setActiveKeyMask({});
     }
 }
 
 //! Apply new keymask by grabbing/ungrabbing current bindings accordingly
-void KeyManager::setActiveKeymask(const Keymask& newMask) {
+void KeyManager::setActiveKeyMask(const KeyMask& newMask) {
     for (auto& binding : binds) {
         auto name = binding->keyCombo.str();
         bool isMasked = binding->keyCombo.matches(newMask.regex);
@@ -182,13 +182,13 @@ void KeyManager::setActiveKeymask(const Keymask& newMask) {
             binding->grabbed = false;
         }
     }
-    activeKeymask_ = newMask;
+    activeKeyMask_ = newMask;
 }
 
 //! Set the active keymask to an empty exception
-void KeyManager::clearActiveKeymask() {
-    auto newMask = Keymask::fromString("");
-    setActiveKeymask(newMask);
+void KeyManager::clearActiveKeyMask() {
+    auto newMask = KeyMask::fromString("");
+    setActiveKeyMask(newMask);
 }
 
 /*!
