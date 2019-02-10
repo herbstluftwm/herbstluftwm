@@ -140,7 +140,6 @@ def test_complete_keybind_offers_all_mods_and_syms(hlwm):
         ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super']
 
 
-@pytest.mark.skip
 def test_complete_keybind_after_combo_offers_all_commands(hlwm):
     complete = hlwm.complete('keybind x', position=2)
 
