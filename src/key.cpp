@@ -1,19 +1,17 @@
 #include "key.h"
 
-#include <X11/XKBlib.h>
-#include <X11/keysym.h>
-#include <algorithm>
-#include <cstdio>
-#include <cstring>
-#include <regex>
-#include <string>
-
 #include "command.h"
 #include "glib-backports.h"
 #include "globals.h"
 #include "keycombo.h"
-#include "root.h"
-#include "utils.h"
+#include "xkeygrabber.h"
+
+void complete_against_keysyms(const char* needle, char* prefix, Output output) {
+    auto keySyms = XKeyGrabber::getPossibleKeySyms();
+    for (auto& keySym : keySyms) {
+        try_complete_prefix(needle, keySym.c_str(), prefix, output);
+    }
+}
 
 void complete_against_modifiers(const char* needle, char seperator,
                                 char* prefix, Output output) {
