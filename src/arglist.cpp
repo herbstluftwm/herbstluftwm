@@ -1,5 +1,7 @@
 #include "arglist.h"
 
+#include "utils.h"
+
 using std::string;
 using std::stringstream;
 
@@ -39,19 +41,8 @@ ArgList::Container ArgList::split(const string &s, char delim) {
     return ret;
 }
 
-string ArgList::join(ArgList::Container::const_iterator first,
-                          ArgList::Container::const_iterator last,
-                          char delim) {
-    if (first == last)
-        return {};
-    stringstream tmp;
-    tmp << *first;
-    for (auto it = first + 1; it != last; ++it)
-        tmp << delim << *it;
-    return tmp.str();
-}
 string ArgList::join(char delim) {
-    return join(begin_, container_->cend(), delim);
+    return join_strings(*this, {delim});
 }
 
 ArgList &ArgList::operator>>(string &val) {
