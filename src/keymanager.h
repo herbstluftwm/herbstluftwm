@@ -25,15 +25,15 @@ class KeyManager : public Object {
      * Simple parser/container for a keymask regex (only needed internally by
      * KeyManager)
      */
-    class Keymask {
+    class KeyMask {
     public:
         /*!
          * Creates a Keymask object from the given regex string
          *
          * /throws exceptions thrown by std::regex
          */
-        static Keymask fromString(const std::string& str = "") {
-            Keymask ret;
+        static KeyMask fromString(const std::string& str = "") {
+            KeyMask ret;
             if (str != "") {
                 // Simply pass on any exceptions thrown here:
                 ret.regex = std::regex(str, std::regex::extended);
@@ -41,7 +41,7 @@ class KeyManager : public Object {
             return ret;
         }
 
-        bool operator==(const Keymask& other) const {
+        bool operator==(const KeyMask& other) const {
             return other.str == str;
         }
 
@@ -69,14 +69,15 @@ public:
     int listKeybindsCommand(Output output) const;
     int removeKeybindCommand(Input input, Output output);
 
+    void addKeybindCompletion(Completion &complete);
     void removeKeybindCompletion(Completion &complete);
 
     void handleKeyPress(XEvent* ev) const;
 
     void regrabAll();
-    void ensureKeymask(const Client* client = nullptr);
-    void setActiveKeymask(const Keymask& newMask);
-    void clearActiveKeymask();
+    void ensureKeyMask(const Client* client = nullptr);
+    void setActiveKeyMask(const KeyMask& newMask);
+    void clearActiveKeyMask();
 
     // TODO: This is not supposed to exist. It only does as a workaround,
     // because mouse.cpp still wants to know the numlock mask.
@@ -93,5 +94,5 @@ private:
     XKeyGrabber xKeyGrabber_;
 
     // The last known keymask (for comparison on change)
-    Keymask activeKeymask_;
+    KeyMask activeKeyMask_;
 };

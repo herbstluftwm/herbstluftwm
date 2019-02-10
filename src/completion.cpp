@@ -109,6 +109,20 @@ Completion Completion::shifted(size_t offset) const {
         output_);
 }
 
+//! Complete against all available commands, starting at the given offset
+void Completion::completeCommands(size_t offset) {
+    Completion thisShifted = shifted(offset);
+    Commands::complete(thisShifted);
+
+    if (thisShifted.ifInvalidArguments()) {
+        thisShifted.invalidArguments();
+    }
+    if (thisShifted.noParameterExpected()) {
+        thisShifted.none();
+    }
+}
+
+
 void Completion::invalidArguments() {
     invalidArgument_ = true;
 }

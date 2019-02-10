@@ -1,8 +1,8 @@
 #include "keymanager.h"
 
-#include <X11/keysym.h>
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <stdexcept>
 #include <utility>
 
@@ -44,7 +44,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     // Make sure there is no existing binding with same keysym/modifiers
     removeKeybinding(newBinding->keyCombo);
 
-    if (!newBinding->keyCombo.matches(activeKeymask_.regex)) {
+    if (!newBinding->keyCombo.matches(activeKeyMask_.regex)) {
         // Grab for events on this keycode
         xKeyGrabber_.grabKeyCombo(newBinding->keyCombo);
         newBinding->grabbed = true;
@@ -53,7 +53,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     // Add keybinding to list
     binds.push_back(std::move(newBinding));
 
-    ensureKeymask();
+    ensureKeyMask();
 
     return HERBST_EXIT_SUCCESS;
 }
@@ -96,6 +96,54 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
     }
 
     return HERBST_EXIT_SUCCESS;
+}
+
+void KeyManager::addKeybindCompletion(Completion &complete) {
+    if (complete == 0) {
+        auto needle = complete.needle();
+
+        // Use the first separator char that appears in the needle as default:
+        const string seps = KeyCombo::separators;
+        string sep = {seps.front()};
+        for (auto& needleChar : needle) {
+            if (seps.find(needleChar) != std::string::npos) {
+                sep = needleChar;
+                break;
+            }
+        }
+
+        // Normalize needle by chopping off tokens until they all are valid
+        // modifiers:
+        auto tokens = KeyCombo::tokensFromString(needle);
+        while (tokens.size() > 0) {
+            try {
+                KeyCombo::modifierMaskFromTokens(tokens);
+                break;
+            } catch (std::runtime_error &error) {
+                tokens.pop_back();
+            }
+        }
+
+        auto normNeedle = join_strings(tokens, sep);
+        normNeedle += tokens.empty() ? "" : sep;
+        auto modifiersInNeedle = std::set<string>(tokens.begin(), tokens.end());
+
+        // Offer partial completions for an additional modifier (excluding the
+        // ones already mentioned in the needle):
+        for (auto& modifier : KeyCombo::modifierMasks) {
+            if (modifiersInNeedle.count(modifier.name) == 0) {
+                complete.partial(normNeedle + modifier.name + sep);
+            }
+        }
+
+        // Offer full completions for a final keysym:
+        auto keySyms = XKeyGrabber::getPossibleKeySyms();
+        for (auto keySym : keySyms) {
+            complete.full(normNeedle + keySym);
+        }
+    } else {
+        complete.completeCommands(1);
+    }
 }
 
 void KeyManager::removeKeybindCompletion(Completion &complete) {
@@ -144,32 +192,32 @@ void KeyManager::regrabAll() {
  * call this function on focus changes where ClientManager::focus is already
  * updated.
  */
-void KeyManager::ensureKeymask(const Client* client) {
+void KeyManager::ensureKeyMask(const Client* client) {
     if (client == nullptr) {
         client = Root::get()->clients()->focus();
     }
 
-    string targetMaskStr = (client != nullptr) ? client->keymask_() : "";
+    string targetMaskStr = (client != nullptr) ? client->keyMask_() : "";
 
-    if (activeKeymask_.str == targetMaskStr) {
+    if (activeKeyMask_.str == targetMaskStr) {
         // nothing to do
         return;
     }
 
     try {
-        auto newMask = Keymask::fromString(targetMaskStr);
-        setActiveKeymask(newMask);
+        auto newMask = KeyMask::fromString(targetMaskStr);
+        setActiveKeyMask(newMask);
     } catch (std::regex_error& err) {
         HSWarning("Failed to parse keymask \"%s\"is invalid (falling back to empty mask): %s\n",
                 targetMaskStr.c_str(), err.what());
 
         // Fall back to empty mask:
-        setActiveKeymask({});
+        setActiveKeyMask({});
     }
 }
 
 //! Apply new keymask by grabbing/ungrabbing current bindings accordingly
-void KeyManager::setActiveKeymask(const Keymask& newMask) {
+void KeyManager::setActiveKeyMask(const KeyMask& newMask) {
     for (auto& binding : binds) {
         auto name = binding->keyCombo.str();
         bool isMasked = binding->keyCombo.matches(newMask.regex);
@@ -182,13 +230,13 @@ void KeyManager::setActiveKeymask(const Keymask& newMask) {
             binding->grabbed = false;
         }
     }
-    activeKeymask_ = newMask;
+    activeKeyMask_ = newMask;
 }
 
 //! Set the active keymask to an empty exception
-void KeyManager::clearActiveKeymask() {
-    auto newMask = Keymask::fromString("");
-    setActiveKeymask(newMask);
+void KeyManager::clearActiveKeyMask() {
+    auto newMask = KeyMask::fromString("");
+    setActiveKeyMask(newMask);
 }
 
 /*!
