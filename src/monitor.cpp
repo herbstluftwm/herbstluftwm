@@ -51,7 +51,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
         i->changed().connect(this, &Monitor::applyLayout);
     }
 
-    slice = slice_create_monitor(this);
+    slice = Slice::makeMonitorSlice(this);
     stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
 
@@ -60,7 +60,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
 
 Monitor::~Monitor() {
     g_monitors->monitor_stack->removeSlice(slice);
-    slice_destroy(slice);
+    delete slice;
     XDestroyWindow(g_display, stacking_window);
 }
 

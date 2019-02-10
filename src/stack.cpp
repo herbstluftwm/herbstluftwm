@@ -35,36 +35,34 @@ Stack::~Stack() {
     }
 }
 
-static Slice* slice_create() {
-    Slice* s = new Slice();
-    s->layers.insert(LAYER_NORMAL);
-    return s;
+Slice::Slice() {
+    layers.insert(LAYER_NORMAL);
 }
 
-Slice* slice_create_window(Window window) {
-    Slice* s = slice_create();
+Slice* Slice::makeWindowSlice(Window window) {
+    auto s = new Slice();
     s->type = SLICE_WINDOW;
     s->data.window = window;
     return s;
 }
 
-Slice* slice_create_frame(Window window) {
-    Slice* s = slice_create_window(window);
+Slice* Slice::makeFrameSlice(Window window) {
+    auto s = Slice::makeWindowSlice(window);
     s->layers.clear();
     s->layers.insert(LAYER_FRAMES);
     return s;
 }
 
 
-Slice* slice_create_client(Client* client) {
-    Slice* s = slice_create();
+Slice* Slice::makeClientSlice(Client* client) {
+    auto s = new Slice();
     s->type = SLICE_CLIENT;
     s->data.client = client;
     return s;
 }
 
-Slice* slice_create_monitor(Monitor* monitor) {
-    Slice* s = slice_create();
+Slice* Slice::makeMonitorSlice(Monitor* monitor) {
+    auto s = new Slice();
     s->type = SLICE_MONITOR;
     s->data.monitor = monitor;
     return s;
