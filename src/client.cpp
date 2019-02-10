@@ -244,7 +244,7 @@ void Client::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
 }
 
 void Client::raise() {
-    this->tag()->stack->raise_slide(this->slice);
+    this->tag()->stack->raiseSlice(this->slice);
 }
 
 void Client::resize_tiling(Rectangle rect, bool isFocused) {
@@ -584,9 +584,9 @@ void Client::set_fullscreen(bool state) {
     }
     auto stack = this->tag()->stack;
     if (state) {
-        stack->slice_add_layer(this->slice, LAYER_FULLSCREEN);
+        stack->sliceAddLayer(this->slice, LAYER_FULLSCREEN);
     } else {
-        stack->slice_remove_layer( this->slice, LAYER_FULLSCREEN);
+        stack->sliceRemoveLayer( this->slice, LAYER_FULLSCREEN);
     }
     tag_update_focus_layer(this->tag());
     auto m = find_monitor_with_tag(this->tag());
