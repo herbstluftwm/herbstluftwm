@@ -27,7 +27,7 @@ static Client*        g_win_drag_client = nullptr;
 static Monitor*       g_drag_monitor = nullptr;
 static MouseDragFunction g_drag_function = nullptr;
 
-static Cursor g_cursor;
+Cursor g_cursor;
 static GList* g_mouse_binds = nullptr;
 
 #define CLEANMASK(mask)         ((mask) & ~(numlockMask|LockMask))
@@ -37,17 +37,6 @@ static GList* g_mouse_binds = nullptr;
      | Button3Mask \
      | Button4Mask \
      | Button5Mask ))
-
-void mouse_init() {
-    /* set cursor theme */
-    g_cursor = XCreateFontCursor(g_display, XC_left_ptr);
-    XDefineCursor(g_display, g_root, g_cursor);
-}
-
-void mouse_destroy() {
-    mouse_unbind_all();
-    XFreeCursor(g_display, g_cursor);
-}
 
 void mouse_handle_event(XEvent* ev) {
     XButtonEvent* be = &(ev->xbutton);

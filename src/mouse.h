@@ -21,10 +21,6 @@ enum SnapFlags {
 class Client;
 class Monitor;
 
-void mouse_init();
-void mouse_destroy();
-
-
 typedef void (*MouseDragFunction)(XMotionEvent*);
 typedef void (*MouseFunction)(Client* client, int argc, char** argv);
 

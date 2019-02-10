@@ -8,6 +8,7 @@
 #include "hookmanager.h"
 #include "keymanager.h"
 #include "monitormanager.h"
+#include "mousemanager.h"
 #include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
@@ -22,6 +23,7 @@ Root::Root(Globals g)
     , hooks(*this, "hooks")
     , keys(*this, "keys")
     , monitors(*this, "monitors")
+    , mouse(*this, "mouse")
     , rules(*this, "rules")
     , settings(*this, "settings")
     , tags(*this, "tags")
@@ -32,6 +34,7 @@ Root::Root(Globals g)
     // initialize non-dependant children (alphabetically)
     hooks.init();
     keys.init();
+    mouse.init();
     root_commands = new RootCommands(this);
     rules.init();
     settings.init(this);
