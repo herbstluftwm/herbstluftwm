@@ -32,7 +32,7 @@ const std::map<std::string, Consequence::Applier> Consequence::appliers = {
     { "ewmhrequests",   &Consequence::applyEwmhrequests    },
     { "ewmhnotify",     &Consequence::applyEwmhnotify      },
     { "hook",           &Consequence::applyHook            },
-    { "keymask",        &Consequence::applyKeymask         },
+    { "keymask",        &Consequence::applyKeyMask         },
     { "monitor",        &Consequence::applyMonitor         },
 };
 
@@ -328,8 +328,8 @@ void Consequence::applyHook(const Client* client, ClientChanges* changes) const 
     hook_emit(LENGTH(hook_str), hook_str);
 }
 
-void Consequence::applyKeymask(const Client* client, ClientChanges* changes) const {
-    changes->keymask = value;
+void Consequence::applyKeyMask(const Client* client, ClientChanges* changes) const {
+    changes->keyMask = value;
 }
 
 void Consequence::applyMonitor(const Client* client, ClientChanges* changes) const {

@@ -133,7 +133,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
     }
 
     // Reuse the keymask string
-    client->keymask_ = changes.keymask;
+    client->keyMask_ = changes.keyMask;
 
     if (!changes.manage) {
         // map it... just to be sure
