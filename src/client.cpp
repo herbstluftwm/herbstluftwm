@@ -52,18 +52,18 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         &fullscreen_,
         &urgent_,
         &window_id_str,
-        &keymask_,
+        &keyMask_,
         &pseudotile_,
     });
-    keymask_.setWriteable();
+    keyMask_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_}) {
         i->setWriteable();
         i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
     }
 
-    keymask_.changed().connect([this] {
+    keyMask_.changed().connect([this] {
             if (Root::get()->clients()->focus() == this) {
-                Root::get()->keys()->ensureKeymask();
+                Root::get()->keys()->ensureKeyMask();
             }
             });
 
@@ -175,7 +175,7 @@ void Client::window_unfocus_last() {
         tag_update_each_focus_layer();
 
         // Enable all keys in the root window
-        Root::get()->keys()->clearActiveKeymask();
+        Root::get()->keys()->clearActiveKeyMask();
     }
     lastfocus = 0;
 }
@@ -221,7 +221,7 @@ void Client::window_focus() {
 
     // XXX: At this point, ClientManager does not yet know about the focus
     // change. So as a workaround, we pass ourselves directly to KeyManager:
-    Root::get()->keys()->ensureKeymask(this);
+    Root::get()->keys()->ensureKeyMask(this);
 
     this->set_urgent(false);
 }

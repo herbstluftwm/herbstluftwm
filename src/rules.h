@@ -71,7 +71,7 @@ public:
     bool            switchtag = false; // if the tag may be switched for focusing it
     bool            manage = true; // whether we should manage it
     bool            fullscreen;
-    std::string     keymask; // Which keymask rule should be applied for this client
+    std::string     keyMask; // Which keymask rule should be applied for this client
 
     std::experimental::optional<bool> pseudotile;
     std::experimental::optional<bool> ewmhRequests;
@@ -98,7 +98,7 @@ private:
     void applyEwmhrequests(const Client* client, ClientChanges* changes) const;
     void applyEwmhnotify(const Client* client, ClientChanges* changes) const;
     void applyHook(const Client* client, ClientChanges* changes) const;
-    void applyKeymask(const Client* client, ClientChanges* changes) const;
+    void applyKeyMask(const Client* client, ClientChanges* changes) const;
     void applyMonitor(const Client* client, ClientChanges* changes) const;
 };
 
