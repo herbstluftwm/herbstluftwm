@@ -17,15 +17,15 @@ using std::string;
 
 TagManager* global_tags;
 
-TagManager::TagManager(Settings* settings)
+TagManager::TagManager()
     : ChildByIndex()
     , by_name_(*this)
-    , settings_(settings)
 {
 }
 
-void TagManager::setMonitorManager(MonitorManager* m_) {
-    monitors_ = m_;
+void TagManager::injectDependencies(MonitorManager* m, Settings *s) {
+    monitors_ = m;
+    settings_ = s;
 }
 
 HSTag* TagManager::find(const string& name) {

@@ -19,12 +19,10 @@ using std::string;
 
 MonitorManager* g_monitors;
 
-MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
+MonitorManager::MonitorManager()
     : ChildByIndex<Monitor>()
     , focus(*this, "focus")
     , by_name_(*this)
-    , tags_(tags)
-    , settings_(settings)
 {
     cur_monitor = 0;
     monitor_stack = new Stack();
@@ -33,6 +31,11 @@ MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
 MonitorManager::~MonitorManager() {
     clearChildren();
     delete monitor_stack;
+}
+
+void MonitorManager::injectDependencies(Settings* s, TagManager* t) {
+    settings_ = s;
+    tags_ = t;
 }
 
 void MonitorManager::clearChildren() {
