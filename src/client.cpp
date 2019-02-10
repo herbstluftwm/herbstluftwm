@@ -38,11 +38,11 @@ static Client* lastfocus = nullptr;
 
 Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window),
-      dec(this, cm.settings),
+      dec(this, *cm.settings),
       visible_(visible_already),
       manager(cm),
-      theme(cm.theme),
-      settings(cm.settings)
+      theme(*cm.theme),
+      settings(*cm.settings)
 {
     std::stringstream tmp;
     tmp << "0x" << std::hex << window;

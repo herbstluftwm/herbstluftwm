@@ -20,10 +20,8 @@
 
 using std::string;
 
-ClientManager::ClientManager(Theme& theme_, Settings& settings_)
+ClientManager::ClientManager()
     : focus(*this, "focus")
-    , theme(theme_)
-    , settings(settings_)
 {
 }
 
@@ -38,6 +36,11 @@ ClientManager::~ClientManager()
         ewmh_update_frame_extents(window, 0,0,0,0);
         window_set_visible(window, true);
     }
+}
+
+void ClientManager::injectDependencies(Settings* s, Theme* t) {
+    settings = s;
+    theme = t;
 }
 
 Client* ClientManager::client(Window window)
