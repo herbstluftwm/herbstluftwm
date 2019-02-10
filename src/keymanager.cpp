@@ -141,6 +141,18 @@ void KeyManager::addKeybindCompletion(Completion &complete) {
         for (auto keySym : keySyms) {
             complete.full(normNeedle + keySym);
         }
+    } else {
+        // FIXME: This only works if the default ctor of Completion is not
+        // private.
+        Completion shifted = complete.shifted(1);
+        Commands::complete(shifted);
+
+        if (shifted.ifInvalidArguments()) {
+            complete.invalidArguments();
+        }
+        if (shifted.noParameterExpected()) {
+            complete.none();
+        }
     }
 }
 

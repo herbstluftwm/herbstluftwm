@@ -66,14 +66,18 @@ public:
      * wraper around complete_against_commands.
      */
     friend void Commands::complete(Completion& completion);
+
 private:
     /** The intended use is to pass the completion state as the reference and
      * to return possible completions via this Completion object. This is why
      * the operator= and the copy constructor are private. It ensures that a
      * completion object is not accidentally duplicated.
      */
-    Completion(const Completion& other);
     void operator=(const Completion& other);
+public:
+    // FIXME: This public as a workaround. It's not supposed to be that way.
+    Completion(const Completion& other);
+private:
 
     std::string escape(const std::string& str);
 
