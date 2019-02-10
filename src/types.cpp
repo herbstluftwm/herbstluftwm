@@ -2,7 +2,9 @@
 
 #include "completion.h"
 
-Input &Input::operator>>(std::string &val)
+using std::string;
+
+Input &Input::operator>>(string &val)
 {
     ArgList::operator>>(val);
     return *this;
@@ -10,14 +12,14 @@ Input &Input::operator>>(std::string &val)
 
 Input Input::fromHere()
 {
-    std::string cmd;
+    string cmd;
     if (!(*this >> cmd))
         return {{}, {}};
 
     return Input(cmd, toVector());
 }
 
-void Input::replace(const std::string &from, const std::string &to)
+void Input::replace(const string &from, const std::string &to)
 {
     for (auto &v : *container_)
         if (v == from)

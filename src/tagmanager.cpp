@@ -13,6 +13,8 @@
 #include "stack.h"
 #include "utils.h"
 
+using std::string;
+
 TagManager* global_tags;
 
 TagManager::TagManager(Settings* settings)
@@ -26,7 +28,7 @@ void TagManager::setMonitorManager(MonitorManager* m_) {
     monitors_ = m_;
 }
 
-HSTag* TagManager::find(const std::string& name) {
+HSTag* TagManager::find(const string& name) {
     for (auto t : *this) {
         if (t->name == name) {
             return t;
@@ -35,7 +37,7 @@ HSTag* TagManager::find(const std::string& name) {
     return {};
 }
 
-HSTag* TagManager::add_tag(const std::string& name) {
+HSTag* TagManager::add_tag(const string& name) {
     HSTag* find_result = find(name);
     if (find_result) {
         // nothing to do
@@ -64,7 +66,7 @@ int TagManager::tag_add_command(Input input, Output output) {
 }
 
 int TagManager::removeTag(Input input, Output output) {
-    std::string tagNameToRemove;
+    string tagNameToRemove;
     if (!(input >> tagNameToRemove)) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -116,7 +118,7 @@ int TagManager::removeTag(Input input, Output output) {
     }
 
     // Remove tag
-    std::string removedName = tagToRemove->name;
+    string removedName = tagToRemove->name;
     removeIndexed(index_of(tagToRemove));
     ewmh_update_current_desktop();
     ewmh_update_desktops();
@@ -128,7 +130,7 @@ int TagManager::removeTag(Input input, Output output) {
 }
 
 int TagManager::tag_rename_command(Input input, Output output) {
-    std::string old_name, new_name;
+    string old_name, new_name;
     if (!(input >> old_name >> new_name)) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -159,7 +161,7 @@ HSTag* TagManager::ensure_tags_are_available() {
     }
 }
 
-HSTag* TagManager::byIndexStr(const std::string& index_str, bool skip_visible_tags) {
+HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
     int index = stoi(index_str);
     // index must be treated relative, if it's first char is + or -
     bool is_relative = index_str[0] == '+' || index_str[0] == '-';

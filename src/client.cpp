@@ -26,6 +26,8 @@
 #include "tag.h"
 #include "utils.h"
 
+using std::string;
+
 static int g_monitor_float_treshold = 24;
 
 // atoms from dwm.c
@@ -418,7 +420,7 @@ Rectangle Client::outer_floating_rect() {
 }
 
 int close_command(Input input, Output) {
-    std::string winid = "";
+    string winid = "";
     input >> winid; // try to read, use "" otherwise
     auto window = get_window(winid);
     if (window != 0)
@@ -548,17 +550,17 @@ void Client::update_wm_hints() {
 }
 
 void Client::update_title() {
-    std::experimental::optional<std::string> newName =
+    std::experimental::optional<string> newName =
         window_property_to_string(g_display, this->window_, g_netatom[NetWmName]);
 
     if (!newName.has_value()) {
         char* ch_new_name = nullptr;
         /* if EWMH name isn't set, then fall back to WM_NAME */
         if (0 != XFetchName(g_display, this->window_, &ch_new_name)) {
-            newName = std::string(ch_new_name);
+            newName = string(ch_new_name);
             XFree(ch_new_name);
         } else {
-            newName = std::string("");
+            newName = string("");
             HSDebug("no title for window %lx found, using \"\"\n",
                     this->window_);
         }
@@ -630,7 +632,7 @@ Client* get_client(const char* str) {
  *                  a decimal number its decimal window id.
  * \return          Window id, or 0, if unconvertable
  */
-Window get_window(const std::string& str) {
+Window get_window(const string& str) {
     // managed window?
     auto client = get_client(str.c_str());
     if (client)

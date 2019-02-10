@@ -8,6 +8,7 @@
 #include "utils.h"
 
 using std::shared_ptr;
+using std::string;
 
 FrameTree::FrameTree(HSTag* tag, Settings* settings)
     : tag_(tag)
@@ -61,7 +62,7 @@ void FrameTree::dump(std::shared_ptr<HSFrame> frame, Output output)
 
 /*! look up a specific frame in the frame tree
  */
-std::shared_ptr<HSFrame> FrameTree::lookup(const std::string& path) {
+std::shared_ptr<HSFrame> FrameTree::lookup(const string& path) {
     std::shared_ptr<HSFrame> node = root_;
     // the string "@" is a special case
     if (path == "@") {
@@ -108,7 +109,7 @@ std::shared_ptr<HSFrameLeaf> FrameTree::focusedFrame(std::shared_ptr<HSFrame> no
 
 int FrameTree::cycle_selection(Input input, Output output) {
     int delta = 1;
-    std::string deltaStr;
+    string deltaStr;
     if (input >> deltaStr) {
         delta = atoi(deltaStr.c_str());
     }
@@ -123,7 +124,7 @@ int FrameTree::cycle_selection(Input input, Output output) {
 
 //! focus the nth window within the focused frame
 int FrameTree::focus_nth(Input input, Output output) {
-    std::string index;
+    string index;
     if (!(input >> index)) {
         return HERBST_NEED_MORE_ARGS;
     }

@@ -2,18 +2,20 @@
 
 #include "object.h"
 
+using std::string;
+
 /**
  * In the given range of values, find the current value of the attribute and set the
  * attribute to the next value in the range. If the value is not found or last
  * in the range, then the attribute is set to the first element in the range.
  */
-std::string Attribute::cycleValue(std::vector<std::string>::const_iterator begin,
-                                  std::vector<std::string>::const_iterator end)
+string Attribute::cycleValue(std::vector<string>::const_iterator begin,
+                                  std::vector<string>::const_iterator end)
 {
     if (begin == end) {
         return {};
     }
-    std::string cur_value = str();
+    string cur_value = str();
     for (auto it = begin; it != end; ++it) {
         if (*it == cur_value) {
             // if the value is found

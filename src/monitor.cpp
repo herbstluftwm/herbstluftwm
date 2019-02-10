@@ -26,13 +26,15 @@
 #include "tagmanager.h"
 #include "utils.h"
 
+using std::string;
+
 extern MonitorManager* g_monitors;
 
 Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, HSTag* tag_)
     : tag(tag_)
     , tag_previous(tag_)
     , name      (this, "name", "",
-           [monman_](std::string n) { return monman_->isValidMonitorName(n); })
+           [monman_](string n) { return monman_->isValidMonitorName(n); })
     , index     (this, "index", 0)
     , tag_string(this, "tag", &Monitor::getTagString, &Monitor::setTagString)
     , pad_up    (this, "pad_up", 0)
@@ -64,11 +66,11 @@ Monitor::~Monitor() {
     XDestroyWindow(g_display, stacking_window);
 }
 
-std::string Monitor::getTagString() {
+string Monitor::getTagString() {
     return tag->name();
 }
 
-std::string Monitor::setTagString(std::string new_tag_string) {
+string Monitor::setTagString(std::string new_tag_string) {
     HSTag* new_tag = find_tag(new_tag_string.c_str());
     if (!new_tag) {
         return "no tag named \"" + new_tag_string + "\" exists.";
@@ -282,7 +284,7 @@ int rename_monitor_command(int argc, char** argv, Output output) {
             ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    std::string error = mon->name.change(argv[2]);
+    string error = mon->name.change(argv[2]);
     if (!error.empty()) {
         output << argv[0] << ": " << error << "\n";
         return HERBST_INVALID_ARGUMENT;
@@ -825,7 +827,7 @@ Rectangle Monitor::getFloatingArea() {
 }
 
 //! Returns a textual description of the monitor
-std::string Monitor::getDescription() {
+string Monitor::getDescription() {
     std::stringstream label;
     label << "Monitor " << index();
     if (!name().empty()) {

@@ -18,10 +18,11 @@
 
 using std::make_shared;
 using std::shared_ptr;
+using std::string;
 
 static bool    g_tag_flags_dirty = true;
 
-HSTag::HSTag(std::string name_, Settings* settings)
+HSTag::HSTag(string name_, Settings* settings)
     : index(this, "index", 0)
     , floating(this, "floating", false, [](bool){return "";})
     , name(this, "name", name_, &HSTag::validateNewName)
@@ -45,13 +46,13 @@ void HSTag::setIndexAttribute(unsigned long new_index) {
 }
 
 
-std::string HSTag::validateNewName(std::string newName) {
+string HSTag::validateNewName(std::string newName) {
     for (auto t : *global_tags) {
         if (t != this && t->name == newName) {
-            return std::string("Tag \"") + newName + "\" already exists ";
+            return string("Tag \"") + newName + "\" already exists ";
         }
     }
-    return std::string();
+    return string();
 }
 
 int HSTag::computeFrameCount() {

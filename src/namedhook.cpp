@@ -2,7 +2,7 @@
 
 #ifdef ENABLE_NAMED_HOOK
 
-NamedHook::NamedHook(const std::string &path) :
+NamedHook::NamedHook(const string &path) :
     counter_("counter", 0),
     active_("active", false),
     emit_("emit"),
@@ -19,7 +19,7 @@ void NamedHook::hook_into(Object* root) {
 }
 
 void NamedHook::operator()(Object* sender, HookEvent event,
-                      const std::string &name) {
+                      const string &name) {
     //debug_hook(sender, event, name);
 
     if (event == HookEvent::ATTRIBUTE_CHANGED) {
@@ -52,7 +52,7 @@ void NamedHook::operator()(Object* sender, HookEvent event,
     //debug_hook();
 }
 
-void NamedHook::trigger(const std::string &action, ArgList args)
+void NamedHook::trigger(const string &action, ArgList args)
 {
     if (action == emit_.name()) {
         emit(args);
@@ -71,7 +71,7 @@ void NamedHook::emit(const ArgList args)
     std::cout << std::endl;
 }
 
-void NamedHook::emit(HookEvent event, const std::string &name)
+void NamedHook::emit(HookEvent event, const string &name)
 {
     emit({
         (event == HookEvent::CHILD_ADDED ? "added" : "removed"),
@@ -79,7 +79,7 @@ void NamedHook::emit(HookEvent event, const std::string &name)
     });
 }
 
-void NamedHook::emit(const std::string &old, const std::string &current)
+void NamedHook::emit(const string &old, const std::string &current)
 {
     if (!old.empty()) {
         if (current.empty()) {
@@ -93,7 +93,7 @@ void NamedHook::emit(const std::string &old, const std::string &current)
 }
 
 void NamedHook::check_chain(Object* sender, HookEvent event,
-                       const std::string &name) {
+                       const string &name) {
     if (event == HookEvent::CHILD_REMOVED) {
         // find sender in chain
         size_t i = 0;
@@ -170,11 +170,11 @@ void NamedHook::complete_chain() {
 }
 
 void NamedHook::debug_hook(std::shared_ptr<Object> sender, HookEvent event,
-                      const std::string &name)
+                      const string &name)
 {
     if (sender) {
         std::cerr << "\t" << name_ << " triggered";
-        std::string eventstr = (event == HookEvent::CHILD_ADDED ? "added"
+        string eventstr = (event == HookEvent::CHILD_ADDED ? "added"
                              : (event == HookEvent::CHILD_REMOVED ? "removed"
                                                                   : "changed"));
         std::cerr << " with " << name << " being " << eventstr;
