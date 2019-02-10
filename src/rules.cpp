@@ -169,17 +169,17 @@ ClientChanges::ClientChanges(Client *client)
 {}
 
 /// CONDITIONS ///
-bool Condition::matches(const std::string& string) const {
+bool Condition::matches(const std::string& str) const {
     switch (value_type) {
         case CONDITION_VALUE_TYPE_STRING:
-            return value_str == string;
+            return value_str == str;
             break;
         case CONDITION_VALUE_TYPE_REGEX:
-            return std::regex_match(string, value_reg_exp);
+            return std::regex_match(str, value_reg_exp);
             break;
         case CONDITION_VALUE_TYPE_INTEGER:
             try {
-                return std::stoi(string) == value_integer;
+                return std::stoi(str) == value_integer;
             } catch (std::exception&) {
                 return false;
             }
