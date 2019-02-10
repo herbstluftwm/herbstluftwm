@@ -167,14 +167,14 @@ HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
 
 void tag_update_focus_layer(HSTag* tag) {
     Client* focus = tag->frame->root_->focusedClient();
-    tag->stack->clear_layer(LAYER_FOCUS);
+    tag->stack->clearLayer(LAYER_FOCUS);
     if (focus) {
         // enforce raise_on_focus_temporarily if there is at least one
         // fullscreen window or if the tag is in tiling mode
-        if (!tag->stack->is_layer_empty(LAYER_FULLSCREEN)
+        if (!tag->stack->isLayerEmpty(LAYER_FULLSCREEN)
             || g_settings->raise_on_focus_temporarily()
             || focus->tag()->floating == false) {
-            tag->stack->slice_add_layer(focus->slice, LAYER_FOCUS);
+            tag->stack->sliceAddLayer(focus->slice, LAYER_FOCUS);
         }
     }
     Monitor* monitor = find_monitor_with_tag(tag);
