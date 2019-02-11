@@ -191,6 +191,23 @@ class HlwmBridge:
                 'waiting for hook triggered by client \"{}\"'.format(wmclass))
         return line[-1]
 
+    def wait_queue_empty(self, timeout=5):
+        """Wait for the hlwm process to be in sleep state"""
+        pid = self.hlwm_process.proc.pid
+        ps_cmd = 'ps --no-headers -o state -p {}'.format(pid)
+        sleeping_time = 0.3
+        time_passed = 0.0
+        while time_passed <= timeout:
+            ps = subprocess.Popen(ps_cmd.split(' '), stdout=subprocess.PIPE)
+            out, _ = ps.communicate()
+            out = out.strip().decode()
+            if out.strip() == 'S':
+                break
+            print(out.strip())
+            time.sleep(sleeping_time)
+            time_passed += sleeping_time
+
+
     def shutdown(self):
         for client_proc in self.client_procs:
             client_proc.terminate()
