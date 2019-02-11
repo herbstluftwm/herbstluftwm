@@ -23,7 +23,6 @@ def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
 
     hlwm.wait_queue_empty()
     assert hlwm.get_attr('my_press') == 'yup'
-    hlwm.call('remove_attr my_press')  # avoids memory leak (TODO: plug the leak)
 
 
 @pytest.mark.parametrize('button', [1, 2, 3, 4, 5])
@@ -39,4 +38,3 @@ def test_trigger_mouse_binding_with_modifier(hlwm, keyboard, mouse, button):
 
     hlwm.wait_queue_empty()
     assert hlwm.get_attr('my_press') == 'yup'
-    hlwm.call('remove_attr my_press')  # avoids memory leak (TODO: plug the leak)
