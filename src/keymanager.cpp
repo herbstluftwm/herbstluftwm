@@ -106,7 +106,7 @@ void KeyManager::addKeybindCompletion(Completion &complete) {
         const string seps = KeyCombo::separators;
         string sep = {seps.front()};
         for (auto& needleChar : needle) {
-            if (seps.find(needleChar) != std::string::npos) {
+            if (seps.find(needleChar) != string::npos) {
                 sep = needleChar;
                 break;
             }

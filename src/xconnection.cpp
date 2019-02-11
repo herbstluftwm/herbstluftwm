@@ -6,6 +6,8 @@
 
 #include "globals.h"
 
+using std::string;
+
 XConnection::XConnection(Display* disp)
     : m_display(disp) {
     m_screen = DefaultScreen(m_display);
@@ -18,7 +20,7 @@ XConnection::~XConnection() {
     XCloseDisplay(m_display);
 }
 
-XConnection* XConnection::connect(std::string display_name) {
+XConnection* XConnection::connect(string display_name) {
     char* display_str = (display_name != "") ? (char*)display_name.c_str() : nullptr;
     Display* d = XOpenDisplay(display_str);
     if (d == NULL) {

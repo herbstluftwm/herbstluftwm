@@ -5,11 +5,13 @@
 #include "globals.h"
 #include "settings.h"
 
+using std::string;
+
 std::map<Window,Client*> Decoration::decwin2client;
 
 Theme::Theme() {
     // add sub-decorations array as children
-    std::vector<std::string> type_names = {
+    std::vector<string> type_names = {
         "fullscreen",
         "tiling",
         "floating",
@@ -63,7 +65,7 @@ DecTriple::DecTriple()
 
 void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
     for (auto it : attributes()) {
-        std::string attrib_name = it.first;
+        string attrib_name = it.first;
         auto source_attribute = it.second;
         // if an attribute of this DecorationScheme is changed, then
         auto handler = [decs, attrib_name, source_attribute] () {
