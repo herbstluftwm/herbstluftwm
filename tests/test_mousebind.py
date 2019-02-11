@@ -21,6 +21,7 @@ def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
 
     mouse.click(str(button), client_id)
 
+    hlwm.wait_queue_empty()
     assert hlwm.get_attr('my_press') == 'yup'
     hlwm.call('remove_attr my_press')  # avoids memory leak (TODO: plug the leak)
 
@@ -36,5 +37,6 @@ def test_trigger_mouse_binding_with_modifier(hlwm, keyboard, mouse, button):
     mouse.click(str(button), client_id)
     keyboard.up('Alt')
 
+    hlwm.wait_queue_empty()
     assert hlwm.get_attr('my_press') == 'yup'
     hlwm.call('remove_attr my_press')  # avoids memory leak (TODO: plug the leak)
