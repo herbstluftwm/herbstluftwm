@@ -40,6 +40,7 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::string;
 using std::unique_ptr;
 
 // globals:
@@ -108,7 +109,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     TagManager* tags = root->tags();
     Tmp* tmp = root->tmp();
 
-    std::initializer_list<std::pair<const std::string,CommandBinding>> init =
+    std::initializer_list<std::pair<const string,CommandBinding>> init =
     {
         {"quit",           { quit } },
         {"echo",           echo},
@@ -600,7 +601,7 @@ void scan(Root* root) {
 }
 
 void execute_autostart_file() {
-    std::string path;
+    string path;
     if (g_autostart_path) {
         path = g_autostart_path;
     } else {
@@ -615,7 +616,7 @@ void execute_autostart_file() {
                           "Neither $HOME or $XDG_CONFIG_HOME is set.\n");
                 return;
             }
-            path = std::string(home) + "/.config";
+            path = string(home) + "/.config";
         }
         path += "/" HERBSTLUFT_AUTOSTART;
     }

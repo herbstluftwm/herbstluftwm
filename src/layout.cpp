@@ -23,6 +23,7 @@
 using std::dynamic_pointer_cast;
 using std::make_shared;
 using std::shared_ptr;
+using std::string;
 using std::swap;
 using std::vector;
 using std::weak_ptr;
@@ -649,7 +650,7 @@ bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
 
 int frame_split_command(Input input, Output output) {
     // usage: split t|b|l|r|h|v FRACTION
-    std::string splitType, strFraction;
+    string splitType, strFraction;
     if (!(input >> splitType )) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -889,7 +890,7 @@ int frame_focus_command(int argc, char** argv, Output output) {
     // usage: focus [-e|-i] left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
     int external_only = g_settings->default_direction_external_only();
-    std::string dirstr = argv[1];
+    string dirstr = argv[1];
     if (argc > 2 && !strcmp(argv[1], "-i")) {
         external_only = false;
         dirstr = argv[2];
@@ -952,7 +953,7 @@ void HSFrameLeaf::moveClient(int new_index) {
 int frame_move_window_command(int argc, char** argv, Output output) {
     // usage: move left|right|up|down
     if (argc < 2) return HERBST_NEED_MORE_ARGS;
-    std::string dirstr = argv[1];
+    string dirstr = argv[1];
     int external_only = g_settings->default_direction_external_only();
     if (argc > 2 && !strcmp(argv[1], "-i")) {
         external_only = false;

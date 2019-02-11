@@ -447,7 +447,7 @@ static void try_complete_suffix(const char* needle, const char* to_check, const 
     }
 }
 
-void try_complete(const char* needle, std::string to_check, Output output) {
+void try_complete(const char* needle, string to_check, Output output) {
     try_complete(needle, to_check.c_str(), output);
 }
 
@@ -470,8 +470,8 @@ void try_complete_prefix_partial(const char* needle, const char* to_check,
                                  const char* prefix, Output output) {
     try_complete_suffix(needle, to_check, "\n", prefix, output);
 }
-void try_complete_prefix_partial(const std::string& needle, const std::string& to_check,
-                                 const std::string& prefix, Output output) {
+void try_complete_prefix_partial(const string& needle, const std::string& to_check,
+                                 const string& prefix, Output output) {
     try_complete_suffix(needle.c_str(), to_check.c_str(), "\n", prefix.c_str(), output);
 }
 
@@ -522,7 +522,7 @@ void complete_against_objects(int argc, char** argv, int pos, Output output) {
     (void)SHIFT(argc,argv);
     pos--;
 
-    std::pair<ArgList,std::string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
+    std::pair<ArgList,string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
     auto needle = p.second;
     Object* o = Root::get()->child(p.first);
     if (!o) {
@@ -543,7 +543,7 @@ void complete_against_attributes_helper(int argc, char** argv, int pos,
     (void)SHIFT(argc,argv);
     pos--;
 
-    std::pair<ArgList,std::string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
+    std::pair<ArgList,string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
     auto needle = p.second;
     Object* o = Root::get()->child(p.first);
     if (!o) {
@@ -774,7 +774,7 @@ int complete_against_commands(int argc, char** argv, int position,
         return 0;
     }
     // try to get completion from the command binding
-    std::string commandName = argv[0];
+    string commandName = argv[0];
     auto commandTable = Commands::get();
     auto it = commandTable->find(commandName);
     if (it == commandTable->end()) {
