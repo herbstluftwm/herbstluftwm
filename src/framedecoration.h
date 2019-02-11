@@ -4,7 +4,7 @@
 #include "x11-types.h"
 
 class HSTag;
-struct Slice;
+class Slice;
 class Settings;
 
 class FrameDecorationData {

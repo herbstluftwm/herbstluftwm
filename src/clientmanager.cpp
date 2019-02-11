@@ -20,10 +20,8 @@
 
 using std::string;
 
-ClientManager::ClientManager(Theme& theme_, Settings& settings_)
+ClientManager::ClientManager()
     : focus(*this, "focus")
-    , theme(theme_)
-    , settings(settings_)
 {
 }
 
@@ -38,6 +36,11 @@ ClientManager::~ClientManager()
         ewmh_update_frame_extents(window, 0,0,0,0);
         window_set_visible(window, true);
     }
+}
+
+void ClientManager::injectDependencies(Settings* s, Theme* t) {
+    settings = s;
+    theme = t;
 }
 
 Client* ClientManager::client(Window window)
@@ -150,7 +153,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
         client->setTag(m->tag);
     }
     // insert window to the stack
-    client->slice = slice_create_client(client);
+    client->slice = Slice::makeClientSlice(client);
     client->tag()->stack->insertSlice(client->slice);
     // insert window to the tag
     FrameTree::focusedFrame(client->tag()->frame->lookup(changes.tree_index))

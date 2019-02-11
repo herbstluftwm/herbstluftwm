@@ -31,23 +31,24 @@ Root::Root(Globals g)
     , tmp(*this, TMP_OBJECT_PATH)
     , globals(g)
 {
-    // initialize non-dependant children (alphabetically)
+    // initialize root children (alphabetically)
+    clients.init();
     hooks.init();
     keys.init();
+    monitors.init();
     root_commands = new RootCommands(this);
     rules.init();
-    settings.init(this);
-    tags.init(settings());
+    settings.init();
+    tags.init();
     theme.init();
     tmp.init();
-
-    // initialize dependant children
-    clients.init(*theme(), *settings());
-    monitors.init(settings(), tags());
     mouse.init(); // needs MonitorManager (implicitly)
 
-    // provide dependencies
-    tags()->setMonitorManager(monitors());
+    // inject dependencies where needed
+    settings->injectDependencies(this);
+    tags->injectDependencies(monitors(), settings());
+    clients->injectDependencies(settings(), theme());
+    monitors->injectDependencies(settings(), tags());
 
     // set temporary globals
     ::global_tags = tags();
@@ -59,21 +60,24 @@ Root::Root(Globals g)
 
 Root::~Root()
 {
-    tags()->setMonitorManager({});
-
     // Note: delete in reverse order of initialization!
     mouse.reset();
+    // ClientManager and MonitorManager have circular dependencies, but only
+    // MonitorManager needs the other for shutting down, so we do that first:
     monitors.reset();
-    clients.reset();
 
-    tmp.reset();
-    theme.reset();
+    // Shut down children with dependencies first:
+    clients.reset();
     tags.reset();
-    settings.reset();
-    rules.reset();
+
+    // For the rest, order does not matter (do it alphabetically):
     delete root_commands;
-    keys.reset();
     hooks.reset();
+    keys.reset();
+    rules.reset();
+    settings.reset();
+    theme.reset();
+    tmp.reset();
 
     children_.clear(); // avoid possible circular shared_ptr dependency
 }

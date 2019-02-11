@@ -42,7 +42,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     newBinding->cmd = {input.begin(), input.end()};
 
     // Make sure there is no existing binding with same keysym/modifiers
-    removeKeybinding(newBinding->keyCombo);
+    removeKeyBinding(newBinding->keyCombo);
 
     if (!newBinding->keyCombo.matches(activeKeyMask_.regex)) {
         // Grab for events on this keycode
@@ -88,7 +88,7 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
         }
 
         // Remove binding (or moan if none was found)
-        if (removeKeybinding(comboToRemove)) {
+        if (removeKeyBinding(comboToRemove)) {
             regrabAll();
         } else {
             output << input.command() << ": Key \"" << arg << "\" is not bound\n";
@@ -106,7 +106,7 @@ void KeyManager::addKeybindCompletion(Completion &complete) {
         const string seps = KeyCombo::separators;
         string sep = {seps.front()};
         for (auto& needleChar : needle) {
-            if (seps.find(needleChar) != std::string::npos) {
+            if (seps.find(needleChar) != string::npos) {
                 sep = needleChar;
                 break;
             }
@@ -245,7 +245,7 @@ void KeyManager::clearActiveKeyMask() {
  * \return True if a matching binding was found and removed
  * \return False if no matching binding was found
  */
-bool KeyManager::removeKeybinding(const KeyCombo& comboToRemove) {
+bool KeyManager::removeKeyBinding(const KeyCombo& comboToRemove) {
     // Find binding to remove
     auto removeIter = binds.begin();
     for (; removeIter != binds.end(); removeIter++) {

@@ -21,6 +21,8 @@
 #include "utils.h"
 #include "x11-utils.h"
 
+using std::string;
+
 static Point2D          g_button_drag_start;
 static Rectangle        g_win_drag_start;
 static Client*        g_win_drag_client = nullptr;
@@ -157,7 +159,7 @@ int mouse_bind_command(int argc, char** argv, Output output) {
 
     try {
         auto tokens = KeyCombo::tokensFromString(str);
-        auto modifierSlice = std::vector<std::string>({tokens.begin(), tokens.end() - 1});
+        auto modifierSlice = std::vector<string>({tokens.begin(), tokens.end() - 1});
         modifiers = KeyCombo::modifierMaskFromTokens(modifierSlice);
     } catch (std::runtime_error &error) {
         output << argv[0] << error.what();

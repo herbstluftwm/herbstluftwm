@@ -89,7 +89,7 @@ public:
     std::vector<std::unique_ptr<KeyBinding>> binds;
 
 private:
-    bool removeKeybinding(const KeyCombo& comboToRemove);
+    bool removeKeyBinding(const KeyCombo& comboToRemove);
 
     XKeyGrabber xKeyGrabber_;
 

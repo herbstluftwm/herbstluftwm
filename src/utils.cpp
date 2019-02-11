@@ -42,25 +42,25 @@ int MOD(int x, int n) {
     return (((x % n) + n) % n);
 }
 
-std::string window_class_to_string(Display* dpy, Window window) {
+string window_class_to_string(Display* dpy, Window window) {
     XClassHint hint;
     if (0 == XGetClassHint(dpy, window, &hint)) {
         return "";
     }
-    std::string str = hint.res_class ? hint.res_class : "";
+    string str = hint.res_class ? hint.res_class : "";
     if (hint.res_name) XFree(hint.res_name);
     if (hint.res_class) XFree(hint.res_class);
     return str;
 }
 
-std::experimental::optional<std::string> window_property_to_string(Display* dpy, Window window, Atom atom) {
-    std::string result;
+std::experimental::optional<string> window_property_to_string(Display* dpy, Window window, Atom atom) {
+    string result;
     char** list = nullptr;
     int n = 0;
     XTextProperty prop;
 
     if (0 == XGetTextProperty(dpy, window, &prop, atom)) {
-        return std::experimental::optional<std::string>();
+        return std::experimental::optional<string>();
     }
     // convert text property to a gstring
     if (prop.encoding == XA_STRING
@@ -78,12 +78,12 @@ std::experimental::optional<std::string> window_property_to_string(Display* dpy,
     return result;
 }
 
-std::string window_instance_to_string(Display* dpy, Window window) {
+string window_instance_to_string(Display* dpy, Window window) {
     XClassHint hint;
     if (0 == XGetClassHint(dpy, window, &hint)) {
         return "";
     }
-    std::string str = hint.res_name ? hint.res_name : "";
+    string str = hint.res_name ? hint.res_name : "";
     if (hint.res_name) XFree(hint.res_name);
     if (hint.res_class) XFree(hint.res_class);
     return str;
