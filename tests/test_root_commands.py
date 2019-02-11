@@ -135,15 +135,9 @@ def test_attribute_completion(hlwm):
 @pytest.mark.parametrize('attrtype', ['int', 'bool', 'string', 'color', 'uint'])
 @pytest.mark.parametrize('name', ['my_test', 'my_foo'])
 @pytest.mark.parametrize('object_path', ['', 'clients', 'theme.tiling.active'])
-def test_new_attr(hlwm, attrtype, name, object_path):
+def test_user_attributes_without_removal(hlwm, attrtype, name, object_path):
     path = (object_path + '.' + name).lstrip('.')
 
     hlwm.call(['new_attr', attrtype, path])
 
     hlwm.get_attr(path)
-
-    hlwm.call(['remove_attr', path])
-
-    hlwm.call_xfail(['get_attr', path])
-
-
