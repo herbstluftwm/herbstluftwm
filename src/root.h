@@ -4,6 +4,8 @@
 #include "child.h"
 #include "object.h"
 
+#include <memory>
+
 // new object tree root.
 
 class ClientManager;
@@ -45,7 +47,7 @@ public:
     Child_<Theme> theme;
     Child_<Tmp> tmp;
 
-    RootCommands* root_commands;
+    std::unique_ptr<RootCommands> root_commands;
     Globals globals;
 
 private:
