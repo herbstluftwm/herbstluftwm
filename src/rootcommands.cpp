@@ -238,7 +238,7 @@ int RootCommands::new_attr_cmd(Input input, Output output)
     Attribute* a = newAttributeWithType(type, attr_name, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
     obj->addAttribute(a);
-    userAttributes_.push_back(std::shared_ptr<Attribute>(a));
+    userAttributes_.push_back(std::unique_ptr<Attribute>(a));
     return 0;
 }
 
@@ -260,7 +260,7 @@ int RootCommands::remove_attr_cmd(Input input, Output output)
         std::remove_if(
             userAttributes_.begin(),
             userAttributes_.end(),
-            [a](std::shared_ptr<Attribute> p) { return p.get() == a; }),
+            [a](const std::unique_ptr<Attribute>& p) { return p.get() == a; }),
         userAttributes_.end());
     return 0;
 }

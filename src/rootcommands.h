@@ -48,7 +48,7 @@ public:
     void completeAttributePath(Completion& complete);
 private:
     Root* root;
-    std::vector<std::shared_ptr<Attribute>> userAttributes_;
+    std::vector<std::unique_ptr<Attribute>> userAttributes_;
 };
 
 
