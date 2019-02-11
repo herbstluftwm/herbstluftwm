@@ -47,8 +47,8 @@ public:
     Child_<Theme> theme;
     Child_<Tmp> tmp;
 
-    std::unique_ptr<RootCommands> root_commands;
     Globals globals;
+    std::unique_ptr<RootCommands> root_commands;
 
 private:
     static std::shared_ptr<Root> root_;
