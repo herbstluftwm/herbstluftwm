@@ -51,7 +51,7 @@ public:
     std::unique_ptr<RootCommands> root_commands;
 
 private:
-    static std::shared_ptr<Root> root_;
+    static std::shared_ptr<Root> root_; // Using "pimpl" to avoid include
 };
 
 
