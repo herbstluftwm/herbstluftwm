@@ -28,13 +28,13 @@ Root::Root(Globals g)
     , theme(*this, "theme")
     , tmp(*this, TMP_OBJECT_PATH)
     , globals(g)
+    , root_commands(make_unique<RootCommands>(this))
 {
     // initialize root children (alphabetically)
     clients.init();
     hooks.init();
     keys.init();
     monitors.init();
-    root_commands = new RootCommands(this);
     rules.init();
     settings.init();
     tags.init();
@@ -66,7 +66,6 @@ Root::~Root()
     tags.reset();
 
     // For the rest, order does not matter (do it alphabetically):
-    delete root_commands;
     hooks.reset();
     keys.reset();
     rules.reset();

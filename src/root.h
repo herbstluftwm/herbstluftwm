@@ -4,6 +4,8 @@
 #include "child.h"
 #include "object.h"
 
+#include <memory>
+
 // new object tree root.
 
 class ClientManager;
@@ -45,11 +47,11 @@ public:
     Child_<Theme> theme;
     Child_<Tmp> tmp;
 
-    RootCommands* root_commands;
     Globals globals;
+    std::unique_ptr<RootCommands> root_commands;
 
 private:
-    static std::shared_ptr<Root> root_;
+    static std::shared_ptr<Root> root_; // Using "pimpl" to avoid include
 };
 
 
