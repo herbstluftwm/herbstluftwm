@@ -26,7 +26,7 @@ const vector<KeyCombo::ModifierNameAndMask> KeyCombo::modifierMasks = {
 /*!
  * Provides a canonical string representation of the key combo
  */
-std::string KeyCombo::str() const {
+string KeyCombo::str() const {
     std::stringstream str;
 
     /* add modifiers */
@@ -162,4 +162,3 @@ vector<string> KeyCombo::getNamesForModifierMask(unsigned int mask) {
 
     return names;
 }
-

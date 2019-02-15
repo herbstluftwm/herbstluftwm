@@ -65,7 +65,6 @@ static bool first_parameter_is_flag(int argc, char** argv, int pos);
 static bool second_parameter_is_call(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
 static bool parameter_expected_offset_1(int argc, char** argv, int pos);
-static bool parameter_expected_offset_2(int argc, char** argv, int pos);
 static bool parameter_expected_offset_3(int argc, char** argv, int pos);
 
 /* find out, if a command still expects a parameter at a certain index.
@@ -83,7 +82,6 @@ struct {
     { "!",              2,  parameter_expected_offset_1 },
     { "try",            2,  parameter_expected_offset_1 },
     { "silent",         2,  parameter_expected_offset_1 },
-    { "keybind",        2,  parameter_expected_offset_2 },
     { "mousebind",      3,  second_parameter_is_call },
     { "mousebind",      3,  parameter_expected_offset_3 },
     { "focus_nth",      2,  no_completion },
@@ -193,7 +191,6 @@ struct {
     { "!",              GE, 1,  complete_against_commands_1, 0 },
     { "try",            GE, 1,  complete_against_commands_1, 0 },
     { "silent",         GE, 1,  complete_against_commands_1, 0 },
-    { "keybind",        GE, 1,  complete_against_keybind_command, 0 },
     { "mousebind",      EQ, 1,  complete_against_mouse_combinations, 0 },
     { "mousebind",      EQ, 2,  nullptr, completion_mouse_functions },
     { "mousebind",      GE, 3,  complete_against_commands_3, 0 },
@@ -372,7 +369,7 @@ void Commands::complete(Completion& completion) {
                                         completion.output_);
     delete[] argv;
     if (res == HERBST_NO_PARAMETER_EXPECTED) {
-        completion.noParameterExpected();
+        completion.none();
     } else if (res != 0) {
         completion.invalidArguments();
     }
@@ -450,7 +447,7 @@ static void try_complete_suffix(const char* needle, const char* to_check, const 
     }
 }
 
-void try_complete(const char* needle, std::string to_check, Output output) {
+void try_complete(const char* needle, string to_check, Output output) {
     try_complete(needle, to_check.c_str(), output);
 }
 
@@ -473,8 +470,8 @@ void try_complete_prefix_partial(const char* needle, const char* to_check,
                                  const char* prefix, Output output) {
     try_complete_suffix(needle, to_check, "\n", prefix, output);
 }
-void try_complete_prefix_partial(const std::string& needle, const std::string& to_check,
-                                 const std::string& prefix, Output output) {
+void try_complete_prefix_partial(const string& needle, const std::string& to_check,
+                                 const string& prefix, Output output) {
     try_complete_suffix(needle.c_str(), to_check.c_str(), "\n", prefix.c_str(), output);
 }
 
@@ -525,7 +522,7 @@ void complete_against_objects(int argc, char** argv, int pos, Output output) {
     (void)SHIFT(argc,argv);
     pos--;
 
-    std::pair<ArgList,std::string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
+    std::pair<ArgList,string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
     auto needle = p.second;
     Object* o = Root::get()->child(p.first);
     if (!o) {
@@ -546,7 +543,7 @@ void complete_against_attributes_helper(int argc, char** argv, int pos,
     (void)SHIFT(argc,argv);
     pos--;
 
-    std::pair<ArgList,std::string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
+    std::pair<ArgList,string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
     auto needle = p.second;
     Object* o = Root::get()->child(p.first);
     if (!o) {
@@ -698,32 +695,6 @@ int complete_command(int argc, char** argv, Output output) {
     return complete_against_commands(argc, argv, position, output);
 }
 
-void complete_against_keybind_command(int argc, char** argv, int position,
-                                      Output output) {
-    if (argc <  1 || position < 1) {
-        return;
-    }
-    if (position == 1) {
-        // complete the keycombination
-        const char* needle = (position < argc) ? argv[position] : "";
-        const char* lasttok = strlasttoken(needle, KeyCombo::separators);
-        char* prefix = g_strdup(needle);
-        prefix[lasttok - needle] = '\0';
-        char separator = KeyCombo::separators[0];
-        if (lasttok != needle) {
-            // if there is a suffix, then the already used separator is before
-            // the start of the last token
-            separator = lasttok[-1];
-        }
-        complete_against_modifiers(lasttok, separator, prefix, output);
-        complete_against_keysyms(lasttok, prefix, output);
-        g_free(prefix);
-    } else if (position >= 2 && argc >= 2) {
-        // complete the command
-        complete_against_commands(argc - 2, argv + 2, position - 2, output);
-    }
-}
-
 void complete_against_mouse_combinations(int argc, char** argv, int position,
                                          Output output)
 {
@@ -803,7 +774,7 @@ int complete_against_commands(int argc, char** argv, int position,
         return 0;
     }
     // try to get completion from the command binding
-    std::string commandName = argv[0];
+    string commandName = argv[0];
     auto commandTable = Commands::get();
     auto it = commandTable->find(commandName);
     if (it == commandTable->end()) {
@@ -975,10 +946,6 @@ static bool parameter_expected_offset(int argc, char** argv, int pos, int offset
 
 static bool parameter_expected_offset_1(int argc, char** argv, int pos) {
     return parameter_expected_offset(argc,argv, pos, 1);
-}
-
-static bool parameter_expected_offset_2(int argc, char** argv, int pos) {
-    return parameter_expected_offset(argc,argv, pos, 2);
 }
 
 static bool parameter_expected_offset_3(int argc, char** argv, int pos) {

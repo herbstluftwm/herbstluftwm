@@ -6,6 +6,8 @@
 #include "ipc-protocol.h"
 #include "utils.h"
 
+using std::string;
+
 /*!
  * Implements the "rule" IPC command
  */
@@ -17,7 +19,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
     rule.label = std::to_string(rule_label_index_);
 
     // Possible flags that apply to the rule as a whole:
-    std::map<std::string, bool> ruleFlags = {
+    std::map<string, bool> ruleFlags = {
         {"once", false},
         {"printlabel", false},
         {"prepend", false},
@@ -50,7 +52,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
 
         // Tokenize arg, expect something like foo=bar or foo~bar:
         char oper;
-        std::string lhs, rhs;
+        string lhs, rhs;
         std::tie(lhs, oper, rhs) = tokenize_arg(arg);
 
         // Check if lhs is a condition name
@@ -113,7 +115,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
  * Implements the "unrule" IPC command
  */
 int RuleManager::unruleCommand(Input input, Output output) {
-    std::string arg;
+    string arg;
     if (!(input >> arg))
         return HERBST_NEED_MORE_ARGS;
 
@@ -148,7 +150,7 @@ int RuleManager::listRulesCommand(Output output) {
  *
  * \returns number of removed rules
  */
-size_t RuleManager::removeRules(std::string label) {
+size_t RuleManager::removeRules(string label) {
     auto countBefore = rules_.size();
 
     for (auto ruleIter = rules_.begin(); ruleIter != rules_.end();) {
@@ -164,13 +166,13 @@ size_t RuleManager::removeRules(std::string label) {
     return countAfter - countBefore;
 }
 
-std::tuple<std::string, char, std::string> RuleManager::tokenize_arg(std::string arg) {
+std::tuple<string, char, std::string> RuleManager::tokenize_arg(std::string arg) {
     if (arg.substr(0, 2) == "--") {
         arg.erase(0, 2);
     }
 
     auto operPos = arg.find_first_of("~=");
-    if (operPos == std::string::npos) {
+    if (operPos == string::npos) {
         throw std::invalid_argument("No operator in given arg: " + arg);
     }
     auto lhs = arg.substr(0, operPos);

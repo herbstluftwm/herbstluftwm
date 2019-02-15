@@ -5,6 +5,8 @@
  * but modify the global state */
 
 #include <functional>
+#include <memory>
+#include <vector>
 
 #include "types.h"
 
@@ -46,6 +48,7 @@ public:
     void completeAttributePath(Completion& complete);
 private:
     Root* root;
+    std::vector<std::unique_ptr<Attribute>> userAttributes_;
 };
 
 

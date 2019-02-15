@@ -9,9 +9,11 @@
 #include "client.h"
 #include "hook.h"
 
+using std::string;
+
 /// GLOBALS ///
 
-const std::map<std::string, Condition::Matcher> Condition::matchers = {
+const std::map<string, Condition::Matcher> Condition::matchers = {
     { "class",          &Condition::matchesClass             },
     { "instance",       &Condition::matchesInstance          },
     { "title",          &Condition::matchesTitle             },
@@ -21,7 +23,7 @@ const std::map<std::string, Condition::Matcher> Condition::matchers = {
     { "windowrole",     &Condition::matchesWindowrole        },
 };
 
-const std::map<std::string, Consequence::Applier> Consequence::appliers = {
+const std::map<string, Consequence::Applier> Consequence::appliers = {
     { "tag",            &Consequence::applyTag             },
     { "index",          &Consequence::applyIndex           },
     { "focus",          &Consequence::applyFocus           },
@@ -36,7 +38,7 @@ const std::map<std::string, Consequence::Applier> Consequence::appliers = {
     { "monitor",        &Consequence::applyMonitor         },
 };
 
-bool Rule::addCondition(std::string name, char op, const char* value, bool negated, Output output) {
+bool Rule::addCondition(string name, char op, const char* value, bool negated, Output output) {
     Condition cond;
     cond.negated = negated;
 
@@ -92,7 +94,7 @@ bool Rule::addCondition(std::string name, char op, const char* value, bool negat
  *
  * @retval false if the consequence cannot be added (malformed)
  */
-bool Rule::addConsequence(std::string name, char op, const char* value, Output output) {
+bool Rule::addConsequence(string name, char op, const char* value, Output output) {
     Consequence cons;
     switch (op) {
         case '=':
@@ -112,7 +114,7 @@ bool Rule::addConsequence(std::string name, char op, const char* value, Output o
     return true;
 }
 
-bool Rule::setLabel(char op, std::string value, Output output) {
+bool Rule::setLabel(char op, string value, Output output) {
     if (op != '=') {
         output << "rule: Unknown rule label operation \"" << op << "\"\n";
         return false;
@@ -169,17 +171,17 @@ ClientChanges::ClientChanges(Client *client)
 {}
 
 /// CONDITIONS ///
-bool Condition::matches(const std::string& string) const {
+bool Condition::matches(const string& str) const {
     switch (value_type) {
         case CONDITION_VALUE_TYPE_STRING:
-            return value_str == string;
+            return value_str == str;
             break;
         case CONDITION_VALUE_TYPE_REGEX:
-            return std::regex_match(string, value_reg_exp);
+            return std::regex_match(str, value_reg_exp);
             break;
         case CONDITION_VALUE_TYPE_INTEGER:
             try {
-                return std::stoi(string) == value_integer;
+                return std::stoi(str) == value_integer;
             } catch (std::exception&) {
                 return false;
             }

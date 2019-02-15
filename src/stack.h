@@ -27,7 +27,16 @@ typedef enum SliceType {
 class Client;
 class Monitor;
 
-typedef struct Slice {
+class Slice {
+public:
+    Slice();
+    ~Slice() = default;
+
+    static Slice* makeWindowSlice(Window window);
+    static Slice* makeFrameSlice(Window window);
+    static Slice* makeClientSlice(Client* client);
+    static Slice* makeMonitorSlice(Monitor* monitor);
+
     SliceType type;
     std::set<HSLayer> layers; //!< layers this slice is contained in
     union {
@@ -35,7 +44,7 @@ typedef struct Slice {
         Window              window;
         Monitor*          monitor;
     } data;
-} Slice;
+};
 
 class Stack {
 public:
@@ -63,11 +72,6 @@ private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
 };
 
-Slice* slice_create_window(Window window);
-Slice* slice_create_frame(Window window);
-Slice* slice_create_client(Client* client);
-Slice* slice_create_monitor(Monitor* monitor);
-void slice_destroy(Slice* slice);
 HSLayer slice_highest_layer(Slice* slice);
 
 int print_stack_command(int argc, char** argv, Output output);

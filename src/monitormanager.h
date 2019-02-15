@@ -19,8 +19,10 @@ typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
 
 class MonitorManager : public ChildByIndex<Monitor> {
 public:
-    MonitorManager(Settings* settings, TagManager* tags);
+    MonitorManager();
     ~MonitorManager();
+    void injectDependencies(Settings* s, TagManager* t);
+
     Link_<Monitor> focus;
 
     void clearChildren();

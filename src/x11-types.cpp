@@ -10,6 +10,8 @@
 #include "glib-backports.h"
 #include "globals.h"
 
+using std::string;
+
 Color Color::black() {
     // currently, the constructor without arguments constructs black
     return {};
@@ -27,7 +29,7 @@ Color::Color(XColor xcol)
     // xcol.flags lacks one of DoRed, DoGreen, DoBlue?
 }
 
-Color::Color(std::string name) {
+Color::Color(string name) {
     try {
         *this = fromStr(name);
     } catch (...) {
@@ -35,7 +37,7 @@ Color::Color(std::string name) {
     }
 }
 
-std::string Color::str() const {
+string Color::str() const {
     unsigned long divisor =  (65536 + 1) / (0xFF + 1);
     std::stringstream ss;
     ss << "#"
@@ -46,7 +48,7 @@ std::string Color::str() const {
     return ss.str();
 }
 
-Color Color::fromStr(const std::string& payload) {
+Color Color::fromStr(const string& payload) {
     // get X11 color from color string. This fails if there is no x connection
     // from dwm.c
     assert(g_display);
@@ -56,7 +58,7 @@ Color Color::fromStr(const std::string& payload) {
                                     payload.c_str(), &screen_color, &ret_color);
     if (!success)
         throw std::invalid_argument(
-                std::string("cannot allocate color \'") + payload + "\'");
+                string("cannot allocate color \'") + payload + "\'");
 
     return Color(ret_color);
 }
@@ -65,7 +67,7 @@ XColor Color::toXColor() const {
     return XColor{x11pixelValue_, red_, green_, blue_, DoRed | DoGreen | DoBlue, 0};
 }
 
-Rectangle Rectangle::fromStr(const std::string &source) {
+Rectangle Rectangle::fromStr(const string &source) {
     int x, y;
     unsigned int w, h;
     int flags = XParseGeometry(source.c_str(), &x, &y, &w, &h);

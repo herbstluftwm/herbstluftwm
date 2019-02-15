@@ -1,8 +1,8 @@
 #include "keymanager.h"
 
-#include <X11/keysym.h>
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <stdexcept>
 #include <utility>
 
@@ -42,7 +42,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     newBinding->cmd = {input.begin(), input.end()};
 
     // Make sure there is no existing binding with same keysym/modifiers
-    removeKeybinding(newBinding->keyCombo);
+    removeKeyBinding(newBinding->keyCombo);
 
     if (!newBinding->keyCombo.matches(activeKeyMask_.regex)) {
         // Grab for events on this keycode
@@ -88,7 +88,7 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
         }
 
         // Remove binding (or moan if none was found)
-        if (removeKeybinding(comboToRemove)) {
+        if (removeKeyBinding(comboToRemove)) {
             regrabAll();
         } else {
             output << input.command() << ": Key \"" << arg << "\" is not bound\n";
@@ -96,6 +96,54 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
     }
 
     return HERBST_EXIT_SUCCESS;
+}
+
+void KeyManager::addKeybindCompletion(Completion &complete) {
+    if (complete == 0) {
+        auto needle = complete.needle();
+
+        // Use the first separator char that appears in the needle as default:
+        const string seps = KeyCombo::separators;
+        string sep = {seps.front()};
+        for (auto& needleChar : needle) {
+            if (seps.find(needleChar) != string::npos) {
+                sep = needleChar;
+                break;
+            }
+        }
+
+        // Normalize needle by chopping off tokens until they all are valid
+        // modifiers:
+        auto tokens = KeyCombo::tokensFromString(needle);
+        while (tokens.size() > 0) {
+            try {
+                KeyCombo::modifierMaskFromTokens(tokens);
+                break;
+            } catch (std::runtime_error &error) {
+                tokens.pop_back();
+            }
+        }
+
+        auto normNeedle = join_strings(tokens, sep);
+        normNeedle += tokens.empty() ? "" : sep;
+        auto modifiersInNeedle = std::set<string>(tokens.begin(), tokens.end());
+
+        // Offer partial completions for an additional modifier (excluding the
+        // ones already mentioned in the needle):
+        for (auto& modifier : KeyCombo::modifierMasks) {
+            if (modifiersInNeedle.count(modifier.name) == 0) {
+                complete.partial(normNeedle + modifier.name + sep);
+            }
+        }
+
+        // Offer full completions for a final keysym:
+        auto keySyms = XKeyGrabber::getPossibleKeySyms();
+        for (auto keySym : keySyms) {
+            complete.full(normNeedle + keySym);
+        }
+    } else {
+        complete.completeCommands(1);
+    }
 }
 
 void KeyManager::removeKeybindCompletion(Completion &complete) {
@@ -197,7 +245,7 @@ void KeyManager::clearActiveKeyMask() {
  * \return True if a matching binding was found and removed
  * \return False if no matching binding was found
  */
-bool KeyManager::removeKeybinding(const KeyCombo& comboToRemove) {
+bool KeyManager::removeKeyBinding(const KeyCombo& comboToRemove) {
     // Find binding to remove
     auto removeIter = binds.begin();
     for (; removeIter != binds.end(); removeIter++) {

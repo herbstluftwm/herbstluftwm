@@ -40,6 +40,7 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::string;
 using std::unique_ptr;
 
 // globals:
@@ -98,7 +99,7 @@ void propertynotify(Root* root, XEvent* event);
 void unmapnotify(Root* root, XEvent* event);
 
 unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
-    RootCommands* root_commands = root->root_commands;
+    RootCommands* root_commands = root->root_commands.get();
 
     ClientManager* clients = root->clients();
     KeyManager *keys = root->keys();
@@ -108,7 +109,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
     TagManager* tags = root->tags();
     Tmp* tmp = root->tmp();
 
-    std::initializer_list<std::pair<const std::string,CommandBinding>> init =
+    std::initializer_list<std::pair<const string,CommandBinding>> init =
     {
         {"quit",           { quit } },
         {"echo",           echo},
@@ -124,7 +125,8 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"disjoin_rects",  disjoin_rects_command},
         {"list_keybinds",  { [keys] (Output o) { return keys->listKeybindsCommand(o); } }},
         {"list_padding",   monitors->byFirstArg(&Monitor::list_padding) },
-        {"keybind",        { [keys] (Input i, Output o) { return keys->addKeybindCommand(i, o); } }},
+        {"keybind",        {keys, &KeyManager::addKeybindCommand,
+                                  &KeyManager::addKeybindCompletion}},
         {"keyunbind",      {keys, &KeyManager::removeKeybindCommand,
                                   &KeyManager::removeKeybindCompletion}},
         {"mousebind",      mouse_bind_command},
@@ -599,7 +601,7 @@ void scan(Root* root) {
 }
 
 void execute_autostart_file() {
-    std::string path;
+    string path;
     if (g_autostart_path) {
         path = g_autostart_path;
     } else {
@@ -614,7 +616,7 @@ void execute_autostart_file() {
                           "Neither $HOME or $XDG_CONFIG_HOME is set.\n");
                 return;
             }
-            path = std::string(home) + "/.config";
+            path = string(home) + "/.config";
         }
         path += "/" HERBSTLUFT_AUTOSTART;
     }

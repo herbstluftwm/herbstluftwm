@@ -15,7 +15,8 @@ class Completion;
 class Settings : public Object {
 public:
     using string = std::string;
-    Settings(Root* root);
+    Settings();
+    void injectDependencies(Root* root);
     // commands:
     int set_cmd(Input argv, Output output);
     void set_complete(Completion& complete);
@@ -71,11 +72,11 @@ public:
     DynAttribute_<Color>       window_border_normal_color;
     DynAttribute_<Color>       window_border_urgent_color;
 private:
-    static std::function<int()> getIntAttr(Object* root, std::string name);
-    static std::function<Color()> getColorAttr(Object* root, std::string name);
-    static std::function<string(int)> setIntAttr(Object* root, std::string name);
-    static std::function<string(Color)> setColorAttr(Object* root, std::string name);
-    Root* root_;
+    std::function<int()> getIntAttr(std::string name);
+    std::function<Color()> getColorAttr(std::string name);
+    std::function<string(int)> setIntAttr(std::string name);
+    std::function<string(Color)> setColorAttr(std::string name);
+    Root* root_ = nullptr;
 };
 
 extern Settings* g_settings;

@@ -13,8 +13,8 @@ class FrameTree;
 typedef std::function<int(FrameTree&,Input,Output)> FrameCommand;
 class TagManager : public ChildByIndex<HSTag> {
 public:
-    TagManager(Settings* settings);
-    void setMonitorManager(MonitorManager* monitors);
+    TagManager();
+    void injectDependencies(MonitorManager* m, Settings *s);
 
     int removeTag(Input input, Output output);
     int tag_add_command(Input input, Output output);
