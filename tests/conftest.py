@@ -376,13 +376,13 @@ def running_clients(hlwm, running_clients_num):
 def keyboard():
     class KeyBoard:
         def press(self, key_spec):
-            subprocess.call(['xdotool', 'key', key_spec])
+            subprocess.check_call(['xdotool', 'key', key_spec])
 
         def down(self, key_spec):
-            subprocess.call(['xdotool', 'keydown', key_spec])
+            subprocess.check_call(['xdotool', 'keydown', key_spec])
 
         def up(self, key_spec):
-            subprocess.call(['xdotool', 'keyup', key_spec])
+            subprocess.check_call(['xdotool', 'keyup', key_spec])
 
     return KeyBoard()
 
@@ -391,12 +391,12 @@ def keyboard():
 def mouse(hlwm_process):
     class Mouse:
         def move_into(self, win_id):
-            subprocess.call(f'xdotool mousemove --sync --window {win_id} 1 1', shell=True)
+            subprocess.check_call(f'xdotool mousemove --sync --window {win_id} 1 1', shell=True)
 
         def click(self, button, into_win_id=None):
             if into_win_id:
                 self.move_into(into_win_id)
             with hlwm_process.wait_stderr_match('ButtonPress'):
-                subprocess.call(['xdotool', 'click', button])
+                subprocess.check_call(['xdotool', 'click', button])
 
     return Mouse()
