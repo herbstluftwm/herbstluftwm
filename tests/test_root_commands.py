@@ -191,3 +191,24 @@ def test_new_attr_right_type(hlwm, attrtype):
     m = re.search('(.) . . ' + path, hlwm.call(['attr', '']).stdout)
 
     assert m.group(1)[0] == attrtype[0]
+
+
+def test_remove_attr_invalid_path(hlwm):
+    hlwm.call_xfail('remove_attr foo.bar.invalid')
+
+
+def test_remove_attr_non_user_path(hlwm):
+    hlwm.call_xfail('remove_attr monitors.focus')
+
+
+def test_remove_attr_user_attribute(hlwm):
+    path = 'my_user_attr'
+    hlwm.call(['new_attr', 'string', path])
+
+    hlwm.call(['remove_attr', path])
+
+    hlwm.call_xfail(['get_attr', path])  # attribute does not exist
+    hlwm.call(['new_attr', 'string', path])  # and is free again
+
+
+
