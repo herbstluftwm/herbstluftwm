@@ -1,4 +1,13 @@
 import pytest
+import re
+
+ATTRIBUTE_TYPES = ['int', 'bool', 'string', 'color', 'uint']
+# example values for the respective types
+ATTRIBUTE_VALUES = [[23, 42, -8],
+                    ['true', 'false'],
+                    ['foo', 'baz', 'bar'],
+                    ['#ff00ff', '#9fbc00'],  # FIXME: include named colors
+                    [23, 42]]
 
 
 def test_attr_cmd(hlwm):
@@ -132,12 +141,53 @@ def test_attribute_completion(hlwm):
     assert complete('t') == ['tags.', 'theme.', 'tmp.']
     assert complete('') == [l + '.' for l in hlwm.list_children_via_attr('')]
 
-@pytest.mark.parametrize('attrtype', ['int', 'bool', 'string', 'color', 'uint'])
+
+@pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
 @pytest.mark.parametrize('name', ['my_test', 'my_foo'])
 @pytest.mark.parametrize('object_path', ['', 'clients', 'theme.tiling.active'])
-def test_user_attributes_without_removal(hlwm, attrtype, name, object_path):
+def test_new_attr_without_removal(hlwm, attrtype, name, object_path):
     path = (object_path + '.' + name).lstrip('.')
 
     hlwm.call(['new_attr', attrtype, path])
 
     hlwm.get_attr(path)
+
+
+@pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
+def test_new_attr_existing_attribute(hlwm, attrtype):
+    hlwm.get_attr('monitors.count')
+    hlwm.call_xfail(['new_attr', attrtype, 'monitors.count'])
+
+
+@pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
+def test_new_attr_existing_user_attribute(hlwm, attrtype):
+    path = 'theme.my_user_attr'
+    hlwm.call(['new_attr', attrtype, path])
+    hlwm.get_attr(path)
+
+    hlwm.call_xfail(['new_attr', attrtype, path])
+
+
+@pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
+@pytest.mark.parametrize('path', ['foo', 'monitors.bar'])
+def test_new_attr_missing_prefix(hlwm, attrtype, path):
+    hlwm.call_xfail(['new_attr', attrtype, path])
+
+
+@pytest.mark.parametrize('attrtype,values', zip(ATTRIBUTE_TYPES, ATTRIBUTE_VALUES))
+@pytest.mark.parametrize('path', ['my_foo', 'monitors.my_bar'])
+def test_new_attr_writable(hlwm, attrtype, values, path):
+    hlwm.call(['new_attr', attrtype, path])
+    for v in values:
+        hlwm.call(['set_attr', path, v])
+        assert hlwm.get_attr(path) == str(v)
+
+
+@pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
+def test_new_attr_right_type(hlwm, attrtype):
+    path = 'my_user_attr'
+    hlwm.call(['new_attr', attrtype, path])
+
+    m = re.search('(.) . . ' + path, hlwm.call(['attr', '']).stdout)
+
+    assert m.group(1)[0] == attrtype[0]
