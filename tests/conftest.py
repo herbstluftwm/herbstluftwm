@@ -6,6 +6,7 @@ import subprocess
 import sys
 import textwrap
 import time
+import types
 
 import pytest
 
@@ -84,6 +85,9 @@ class HlwmBridge:
         proc = self.unchecked_call(cmd)
         assert proc.returncode != 0
         assert proc.stderr != ""
+        def f(self2, reg):
+            assert re.search(reg, self2.stderr)
+        proc.match = types.MethodType(f, proc)
         return proc
 
     def call_xfail_no_output(self, cmd):

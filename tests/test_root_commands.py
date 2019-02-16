@@ -156,7 +156,8 @@ def test_new_attr_without_removal(hlwm, attrtype, name, object_path):
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
 def test_new_attr_existing_attribute(hlwm, attrtype):
     hlwm.get_attr('monitors.count')
-    hlwm.call_xfail(['new_attr', attrtype, 'monitors.count'])
+    hlwm.call_xfail(['new_attr', attrtype, 'monitors.count']) \
+        .match('already has an attribute')
 
 
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
@@ -165,13 +166,15 @@ def test_new_attr_existing_user_attribute(hlwm, attrtype):
     hlwm.call(['new_attr', attrtype, path])
     hlwm.get_attr(path)
 
-    hlwm.call_xfail(['new_attr', attrtype, path])
+    hlwm.call_xfail(['new_attr', attrtype, path]) \
+        .match('already has an attribute')
 
 
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
 @pytest.mark.parametrize('path', ['foo', 'monitors.bar'])
 def test_new_attr_missing_prefix(hlwm, attrtype, path):
-    hlwm.call_xfail(['new_attr', attrtype, path])
+    hlwm.call_xfail(['new_attr', attrtype, path]) \
+        .match('must start with "my_"')
 
 
 @pytest.mark.parametrize('attrtype,values', zip(ATTRIBUTE_TYPES, ATTRIBUTE_VALUES))
@@ -194,11 +197,15 @@ def test_new_attr_right_type(hlwm, attrtype):
 
 
 def test_remove_attr_invalid_path(hlwm):
-    hlwm.call_xfail('remove_attr foo.bar.invalid')
+    hlwm.call_xfail('remove_attr invalid') \
+        .match('has no attribute')
+    hlwm.call_xfail('remove_attr foo.bar.invalid') \
+        .match('has no child')
 
 
 def test_remove_attr_non_user_path(hlwm):
-    hlwm.call_xfail('remove_attr monitors.focus')
+    hlwm.call_xfail('remove_attr monitors.count') \
+        .match('is not a user defined attribute')
 
 
 def test_remove_attr_user_attribute(hlwm):
@@ -207,7 +214,7 @@ def test_remove_attr_user_attribute(hlwm):
 
     hlwm.call(['remove_attr', path])
 
-    hlwm.call_xfail(['get_attr', path])  # attribute does not exist
+    hlwm.call_xfail(['get_attr', path]).match('has no attribute')  # attribute does not exist
     hlwm.call(['new_attr', 'string', path])  # and is free again
 
 
