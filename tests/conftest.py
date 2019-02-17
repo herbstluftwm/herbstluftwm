@@ -392,6 +392,6 @@ def mouse(hlwm_process):
             if into_win_id:
                 self.move_into(into_win_id)
             with hlwm_process.wait_stderr_match('ButtonPress'):
-                subprocess.call(['xdotool', 'click', button])
+                subprocess.check_call(['xdotool', 'click', button])
 
     return Mouse()
