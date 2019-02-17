@@ -1,4 +1,16 @@
 import pytest
+import re
+
+# example values for the respective types
+ATTRIBUTE_TYPE_EXAMPLE_VALUES = \
+    {
+        'int': [23, 42, -8],
+        'bool': ['true', 'false'],
+        'string': ['foo', 'baz', 'bar'],
+        'color': ['#ff00ff', '#9fbc00'],  # FIXME: include named colors
+        'uint': [23, 42]
+    }
+ATTRIBUTE_TYPES = list(ATTRIBUTE_TYPE_EXAMPLE_VALUES.keys())
 
 
 def test_attr_cmd(hlwm):
@@ -131,3 +143,83 @@ def test_attribute_completion(hlwm):
     assert len(complete('monitors.focus.')) >= 8
     assert complete('t') == ['tags.', 'theme.', 'tmp.']
     assert complete('') == [l + '.' for l in hlwm.list_children_via_attr('')]
+
+
+@pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
+@pytest.mark.parametrize('name', ['my_test', 'my_foo'])
+@pytest.mark.parametrize('object_path', ['', 'clients', 'theme.tiling.active'])
+def test_new_attr_without_removal(hlwm, attrtype, name, object_path):
+    path = (object_path + '.' + name).lstrip('.')
+
+    hlwm.call(['new_attr', attrtype, path])
+
+    hlwm.get_attr(path)
+
+
+@pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
+def test_new_attr_existing_builtin_attribute(hlwm, attrtype):
+    hlwm.get_attr('monitors.count')
+    hlwm.call_xfail(['new_attr', attrtype, 'monitors.count']) \
+        .match('attribute name must start with "my_"')
+
+
+@pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
+def test_new_attr_existing_user_attribute(hlwm, attrtype):
+    path = 'theme.my_user_attr'
+    hlwm.call(['new_attr', attrtype, path])
+    hlwm.get_attr(path)
+
+    hlwm.call_xfail(['new_attr', attrtype, path]) \
+        .match('already has an attribute')
+
+
+@pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
+@pytest.mark.parametrize('path', ['foo', 'monitors.bar'])
+def test_new_attr_missing_prefix(hlwm, attrtype, path):
+    hlwm.call_xfail(['new_attr', attrtype, path]) \
+        .match('must start with "my_"')
+
+
+@pytest.mark.parametrize('attrtypevalues', ATTRIBUTE_TYPE_EXAMPLE_VALUES.items())
+@pytest.mark.parametrize('path', ['my_foo', 'monitors.my_bar'])
+def test_new_attr_is_writable(hlwm, attrtypevalues, path):
+    (attrtype, values) = attrtypevalues
+    hlwm.call(['new_attr', attrtype, path])
+    for v in values:
+        hlwm.call(['set_attr', path, v])
+        assert hlwm.get_attr(path) == str(v)
+
+
+@pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
+def test_new_attr_has_right_type(hlwm, attrtype):
+    path = 'my_user_attr'
+    hlwm.call(['new_attr', attrtype, path])
+
+    m = re.search('(.) . . ' + path, hlwm.call(['attr', '']).stdout)
+
+    assert m.group(1)[0] == attrtype[0]
+
+
+def test_remove_attr_invalid_path(hlwm):
+    hlwm.call_xfail('remove_attr invalid') \
+        .match('has no attribute')
+    hlwm.call_xfail('remove_attr foo.bar.invalid') \
+        .match('has no child')
+
+
+def test_remove_attr_non_user_path(hlwm):
+    hlwm.call_xfail('remove_attr monitors.count') \
+        .match('is not a user defined attribute')
+
+
+def test_remove_attr_user_attribute(hlwm):
+    path = 'my_user_attr'
+    hlwm.call(['new_attr', 'string', path])
+
+    hlwm.call(['remove_attr', path])
+
+    hlwm.call_xfail(['get_attr', path]).match('has no attribute')  # attribute does not exist
+    hlwm.call(['new_attr', 'string', path])  # and is free again
+
+
+

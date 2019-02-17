@@ -99,7 +99,7 @@ void propertynotify(Root* root, XEvent* event);
 void unmapnotify(Root* root, XEvent* event);
 
 unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
-    RootCommands* root_commands = root->root_commands;
+    RootCommands* root_commands = root->root_commands.get();
 
     ClientManager* clients = root->clients();
     KeyManager *keys = root->keys();

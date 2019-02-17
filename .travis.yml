@@ -11,6 +11,7 @@ jobs:
           dist: xenial
           python: "3.6"
           before_install:
+              - ./ci-check-using-std.sh
               - export CC=gcc-8 CXX=g++-8
               - linkerfix="-fuse-ld=gold" # needed to avoid linker error
               - export LDFLAGS="$linkerfix" LDXXFLAGS="$linkerfix"

@@ -1,5 +1,10 @@
 import pytest
 
+# Note: Actually, buttons 4 and 5 (scroll wheel) should also be tested. But for
+# some unknown reason, those don't work in Xvfb when running tests on Travis,
+# so they are not included here.
+MOUSE_BUTTONS = [1, 2, 3]
+
 
 @pytest.mark.parametrize('method', ['-F', '--all'])
 def test_mouseunbind_all(hlwm, method, mouse):
@@ -13,7 +18,7 @@ def test_mouseunbind_all(hlwm, method, mouse):
     mouse.click('1')  # verify that binding got ungrabbed
 
 
-@pytest.mark.parametrize('button', [1, 2, 3, 4, 5])
+@pytest.mark.parametrize('button', MOUSE_BUTTONS)
 def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
     hlwm.call('new_attr string my_press')
     hlwm.call(f'mousebind Button{button} call set_attr my_press yup')
@@ -22,10 +27,9 @@ def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
     mouse.click(str(button), client_id)
 
     assert hlwm.get_attr('my_press') == 'yup'
-    hlwm.call('remove_attr my_press')  # avoids memory leak (TODO: plug the leak)
 
 
-@pytest.mark.parametrize('button', [1, 2, 3, 4, 5])
+@pytest.mark.parametrize('button', MOUSE_BUTTONS)
 def test_trigger_mouse_binding_with_modifier(hlwm, keyboard, mouse, button):
     hlwm.call('new_attr string my_press')
     hlwm.call(f'mousebind Mod1-Button{button} call set_attr my_press yup')
@@ -37,4 +41,3 @@ def test_trigger_mouse_binding_with_modifier(hlwm, keyboard, mouse, button):
     keyboard.up('Alt')
 
     assert hlwm.get_attr('my_press') == 'yup'
-    hlwm.call('remove_attr my_press')  # avoids memory leak (TODO: plug the leak)
