@@ -157,7 +157,7 @@ def test_new_attr_without_removal(hlwm, attrtype, name, object_path):
 def test_new_attr_existing_attribute(hlwm, attrtype):
     hlwm.get_attr('monitors.count')
     hlwm.call_xfail(['new_attr', attrtype, 'monitors.count']) \
-        .match('already has an attribute')
+        .match('attribute name must start with "my_"')
 
 
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
