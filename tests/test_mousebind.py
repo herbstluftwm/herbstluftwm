@@ -1,5 +1,10 @@
 import pytest
 
+# Note: Actually, buttons 4 and 5 (scroll wheel) should also be tested. But for
+# some unknown reason, those don't work in Xvfb when running tests on Travis,
+# so they are not included here.
+MOUSE_BUTTONS = [1, 2, 3]
+
 
 @pytest.mark.parametrize('method', ['-F', '--all'])
 def test_mouseunbind_all(hlwm, method, mouse):
