@@ -82,11 +82,17 @@ class HlwmBridge:
         return proc
 
     def call_xfail(self, cmd):
+        """call the command and expect it to have non-zero exit code
+        and some output on stderr. The returned finished process handle is
+        extende by a match() method that runs a regex against the process sterr
+        """
         proc = self.unchecked_call(cmd)
         assert proc.returncode != 0
         assert proc.stderr != ""
+
         def f(self2, reg):
             assert re.search(reg, self2.stderr)
+
         proc.match = types.MethodType(f, proc)
         return proc
 
