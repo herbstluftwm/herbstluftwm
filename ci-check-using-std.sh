@@ -19,7 +19,7 @@ usethis=$(grep -r --no-filename 'using std::' "$reporoot/src/"*.cpp \
     | sort -u)
 
 # Fall back to hardcoded list until the rule is actually enforced:
-usethis="string"
+usethis="string vector"
 
 found_something=0
 for symbol in $usethis; do

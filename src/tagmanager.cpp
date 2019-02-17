@@ -14,6 +14,7 @@
 #include "utils.h"
 
 using std::string;
+using std::vector;
 
 TagManager* global_tags;
 
@@ -94,7 +95,7 @@ int TagManager::removeTag(Input input, Output output) {
     all_monitors_replace_previous_tag(tagToRemove, targetTag);
 
     // Collect all clients in tag
-    std::vector<Client*> clients;
+    vector<Client*> clients;
     tagToRemove->frame->root_->foreachClient([&clients](Client* client) {
         clients.push_back(client);
     });
