@@ -18,6 +18,8 @@
 #include "tagmanager.h"
 #include "utils.h"
 
+using std::vector;
+
 Atom g_netatom[NetCOUNT];
 
 // module internal globals:
@@ -108,7 +110,7 @@ void ewmh_init() {
     ewmh_update_wmname();
 
     /* init atoms that never change */
-    std::vector<long> buf{ 0, 0 };
+    vector<long> buf{ 0, 0 };
     XChangeProperty(g_display, g_root, g_netatom[NetDesktopViewport],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&buf.front(), buf.size());
 }
@@ -487,7 +489,7 @@ void ewmh_set_window_opacity(Window win, double opacity) {
                     32, PropModeReplace, (unsigned char*)&int_opacity, 1);
 }
 void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom) {
-    std::vector<long> extents = { left, right, top, bottom };
+    vector<long> extents = { left, right, top, bottom };
     XChangeProperty(g_display, win, g_netatom[NetFrameExtents], XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&extents.front(), extents.size());
 }

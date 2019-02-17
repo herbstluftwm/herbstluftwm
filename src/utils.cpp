@@ -21,6 +21,7 @@
 
 using std::shared_ptr;
 using std::string;
+using std::vector;
 
 time_t get_monotonic_timestamp() {
     struct timespec ts;
@@ -368,7 +369,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     // use intermediates for casting (to avoid narrowing)
     short fw_ibw = full_width - ibw, fh_ibw = full_height - ibw;
     unsigned short uibw = ibw, h_ibw = height + ibw, w_ibw = width + ibw;
-    std::vector<XRectangle> rectangles{
+    vector<XRectangle> rectangles{
         { (short)width, 0, uibw, h_ibw },
         { fw_ibw, 0, uibw, h_ibw },
         { 0, (short)height, w_ibw, uibw },

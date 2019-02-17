@@ -6,12 +6,13 @@
 #include "settings.h"
 
 using std::string;
+using std::vector;
 
 std::map<Window,Client*> Decoration::decwin2client;
 
 Theme::Theme() {
     // add sub-decorations array as children
-    std::vector<string> type_names = {
+    vector<string> type_names = {
         "fullscreen",
         "tiling",
         "floating",
@@ -30,7 +31,7 @@ Theme::Theme() {
 
 DecorationScheme::DecorationScheme()
 {
-    std::vector<Attribute*> attrs = {
+    vector<Attribute*> attrs = {
         &border_width,
         &border_color,
         &tight_decoration,
@@ -63,7 +64,7 @@ DecTriple::DecTriple()
     });
 }
 
-void DecorationScheme::makeProxyFor(std::vector<DecorationScheme*> decs) {
+void DecorationScheme::makeProxyFor(vector<DecorationScheme*> decs) {
     for (auto it : attributes()) {
         string attrib_name = it.first;
         auto source_attribute = it.second;
@@ -355,7 +356,7 @@ void Decoration::redrawPixmap() {
     inner.y -= client_->dec.last_outer_rect.y;
     if (iw > 0) {
         /* fill rectangles because drawing does not work */
-        std::vector<XRectangle> rects{
+        vector<XRectangle> rects{
             { (short)(inner.x - iw), (short)(inner.y - iw), (unsigned short)(inner.width + 2*iw), iw }, /* top */
             { (short)(inner.x - iw), (short)(inner.y), iw, (unsigned short)(inner.height) },  /* left */
             { (short)(inner.x + inner.width), (short)(inner.y), iw, (unsigned short)(inner.height) }, /* right */
@@ -371,7 +372,7 @@ void Decoration::redrawPixmap() {
     outer.y -= client_->dec.last_outer_rect.y;
     if (ow > 0) {
         ow = std::min((int)ow, (outer.height+1) / 2);
-        std::vector<XRectangle> rects{
+        vector<XRectangle> rects{
             { 0, 0, (unsigned short)(outer.width), ow }, /* top */
             { 0, (short)ow, ow, (unsigned short)(outer.height - 2*ow) }, /* left */
             { (short)(outer.width - ow), (short)ow, ow, (unsigned short)(outer.height - 2*ow) }, /* right */
