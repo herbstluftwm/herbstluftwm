@@ -262,7 +262,7 @@ class HlwmProcess:
 
     def read_and_echo_output(self, until_stdout=None, until_stderr=None):
         expect_sth = (until_stdout or until_stderr) is not None
-        max_wait = 30
+        max_wait = 5
 
         stderr = ''
         stdout = ''
