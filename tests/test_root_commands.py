@@ -1,13 +1,16 @@
 import pytest
 import re
 
-ATTRIBUTE_TYPES = ['int', 'bool', 'string', 'color', 'uint']
 # example values for the respective types
-ATTRIBUTE_VALUES = [[23, 42, -8],
-                    ['true', 'false'],
-                    ['foo', 'baz', 'bar'],
-                    ['#ff00ff', '#9fbc00'],  # FIXME: include named colors
-                    [23, 42]]
+ATTRIBUTE_TYPE_EXAMPLE_VALUES = \
+    {
+        'int': [23, 42, -8],
+        'bool': ['true', 'false'],
+        'string': ['foo', 'baz', 'bar'],
+        'color': ['#ff00ff', '#9fbc00'],  # FIXME: include named colors
+        'uint': [23, 42]
+    }
+ATTRIBUTE_TYPES = list(ATTRIBUTE_TYPE_EXAMPLE_VALUES.keys())
 
 
 def test_attr_cmd(hlwm):
@@ -177,9 +180,10 @@ def test_new_attr_missing_prefix(hlwm, attrtype, path):
         .match('must start with "my_"')
 
 
-@pytest.mark.parametrize('attrtype,values', zip(ATTRIBUTE_TYPES, ATTRIBUTE_VALUES))
+@pytest.mark.parametrize('attrtypevalues', ATTRIBUTE_TYPE_EXAMPLE_VALUES.items())
 @pytest.mark.parametrize('path', ['my_foo', 'monitors.my_bar'])
-def test_new_attr_writable(hlwm, attrtype, values, path):
+def test_new_attr_writable(hlwm, attrtypevalues, path):
+    (attrtype, values) = attrtypevalues
     hlwm.call(['new_attr', attrtype, path])
     for v in values:
         hlwm.call(['set_attr', path, v])
