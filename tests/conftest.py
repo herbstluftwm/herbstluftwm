@@ -1,11 +1,15 @@
+from datetime import datetime
+from contextlib import contextmanager
 import os
 import os.path
 import re
+import selectors
 import shlex
 import subprocess
 import sys
 import textwrap
 import time
+import types
 
 import pytest
 
@@ -70,6 +74,11 @@ class HlwmBridge:
                 print(' (output suppressed).')
         else:
             print(f'Client command {args} {outcome} (no output)')
+
+        # Take this opportunity read and echo any hlwm output captured in the
+        # meantime:
+        self.hlwm_process.read_and_echo_output()
+
         return proc
 
     def call(self, cmd):
@@ -81,9 +90,19 @@ class HlwmBridge:
         return proc
 
     def call_xfail(self, cmd):
+        """call the command and expect it to have non-zero exit code
+        and some output on stderr. The returned finished process handle is
+        extended by a match() method that runs a regex against the process
+        stderr
+        """
         proc = self.unchecked_call(cmd)
         assert proc.returncode != 0
         assert proc.stderr != ""
+
+        def f(self2, reg):
+            assert re.search(reg, self2.stderr)
+
+        proc.match = types.MethodType(f, proc)
         return proc
 
     def call_xfail_no_output(self, cmd):
@@ -199,6 +218,7 @@ class HlwmBridge:
         self.hc_idle.terminate()
         self.hc_idle.wait(2)
 
+
 @pytest.fixture
 def hlwm(hlwm_process):
     display = os.environ['DISPLAY']
@@ -223,9 +243,77 @@ class HlwmProcess:
         autostart.chmod(0o755)
         bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen([bin_path, '--verbose'], env=env,
-                                stdout=subprocess.PIPE)
-        line = self.proc.stdout.readline()
-        assert line == b'hlwm started\n'
+                bufsize=0,  # essential for reading output with selectors!
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
+
+        sel = selectors.DefaultSelector()
+        sel.register(self.proc.stdout, selectors.EVENT_READ, data=sys.stdout)
+        sel.register(self.proc.stderr, selectors.EVENT_READ, data=sys.stderr)
+        self.output_selector = sel
+
+        # Wait for marker output from wrapper script:
+        self.read_and_echo_output(until_stdout='hlwm started')
+
+    def read_and_echo_output(self, until_stdout=None, until_stderr=None):
+        expect_sth = (until_stdout or until_stderr) is not None
+        max_wait = 5
+
+        stderr = ''
+        stdout = ''
+
+        def match_found():
+            if until_stdout and (until_stdout in stdout):
+                return True
+            if until_stderr and (until_stderr in stderr):
+                return True
+            return False
+
+        started = datetime.now()
+        while (datetime.now() - started).total_seconds() < max_wait:
+            select_timeout = 1
+            # If we're not polling for a matching string (anymore), there is no
+            # need for a dampening timeout:
+            if not expect_sth or match_found():
+                select_timeout = 0
+            selected = self.output_selector.select(timeout=select_timeout)
+            for key, events in selected:
+                # Read only single byte, otherwise we might block:
+                ch = key.fileobj.read(1).decode('ascii')
+
+                # Pass it through to the real stdout/stderr:
+                key.data.write(ch)
+                key.data.flush()
+
+                # Store in temporary buffer for string matching:
+                if key.fileobj == self.proc.stderr:
+                    stderr += ch
+                if key.fileobj == self.proc.stdout:
+                    stdout += ch
+
+            if selected != []:
+                # There is still data available, so keep reading (no matter
+                # what):
+                continue
+
+            # But stop reading if there is nothing to look for or we have
+            # already found it:
+            if not expect_sth or match_found():
+                break
+
+        duration = (datetime.now() - started).total_seconds()
+        if expect_sth and not match_found():
+            assert False, f'Expected string not encountered within {duration:.1f} seconds'
+
+    @contextmanager
+    def wait_stderr_match(self, match):
+        """
+        Context manager for wrapping commands that are expected to result in
+        certain output on hlwm's stderr (e.g., input events).
+        """
+        self.read_and_echo_output()
+        yield
+        self.read_and_echo_output(until_stderr=match)
 
     def investigate_timeout(self, reason):
         """if some kind of client request observes a timeout, investigate the
@@ -255,6 +343,7 @@ class HlwmProcess:
                 raise Exception("herbstluftwm did not quit on sigterm"
                                 + " and had to be killed") from None
 
+
 @pytest.fixture(autouse=True)
 def hlwm_process(tmpdir):
     env = {
@@ -282,6 +371,27 @@ def running_clients(hlwm, running_clients_num):
 def keyboard():
     class KeyBoard:
         def press(self, key_spec):
-            subprocess.call(['xdotool', 'key', key_spec])
+            subprocess.check_call(['xdotool', 'key', key_spec])
+
+        def down(self, key_spec):
+            subprocess.check_call(['xdotool', 'keydown', key_spec])
+
+        def up(self, key_spec):
+            subprocess.check_call(['xdotool', 'keyup', key_spec])
 
     return KeyBoard()
+
+
+@pytest.fixture()
+def mouse(hlwm_process):
+    class Mouse:
+        def move_into(self, win_id):
+            subprocess.check_call(f'xdotool mousemove --sync --window {win_id} 1 1', shell=True)
+
+        def click(self, button, into_win_id=None):
+            if into_win_id:
+                self.move_into(into_win_id)
+            with hlwm_process.wait_stderr_match('ButtonPress'):
+                subprocess.check_call(['xdotool', 'click', button])
+
+    return Mouse()
