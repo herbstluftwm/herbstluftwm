@@ -18,7 +18,7 @@ def test_mouseunbind_all(hlwm, method, mouse):
     mouse.click('1')  # verify that binding got ungrabbed
 
 
-@pytest.mark.parametrize('button', [1, 2, 3, 4, 5])
+@pytest.mark.parametrize('button', MOUSE_BUTTONS)
 def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
     hlwm.call('new_attr string my_press')
     hlwm.call(f'mousebind Button{button} call set_attr my_press yup')
@@ -30,7 +30,7 @@ def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
     assert hlwm.get_attr('my_press') == 'yup'
 
 
-@pytest.mark.parametrize('button', [1, 2, 3, 4, 5])
+@pytest.mark.parametrize('button', MOUSE_BUTTONS)
 def test_trigger_mouse_binding_with_modifier(hlwm, keyboard, mouse, button):
     hlwm.call('new_attr string my_press')
     hlwm.call(f'mousebind Mod1-Button{button} call set_attr my_press yup')
