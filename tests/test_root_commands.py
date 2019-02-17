@@ -157,7 +157,7 @@ def test_new_attr_without_removal(hlwm, attrtype, name, object_path):
 
 
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
-def test_new_attr_existing_attribute(hlwm, attrtype):
+def test_new_attr_existing_builtin_attribute(hlwm, attrtype):
     hlwm.get_attr('monitors.count')
     hlwm.call_xfail(['new_attr', attrtype, 'monitors.count']) \
         .match('attribute name must start with "my_"')
@@ -182,7 +182,7 @@ def test_new_attr_missing_prefix(hlwm, attrtype, path):
 
 @pytest.mark.parametrize('attrtypevalues', ATTRIBUTE_TYPE_EXAMPLE_VALUES.items())
 @pytest.mark.parametrize('path', ['my_foo', 'monitors.my_bar'])
-def test_new_attr_writable(hlwm, attrtypevalues, path):
+def test_new_attr_is_writable(hlwm, attrtypevalues, path):
     (attrtype, values) = attrtypevalues
     hlwm.call(['new_attr', attrtype, path])
     for v in values:
@@ -191,7 +191,7 @@ def test_new_attr_writable(hlwm, attrtypevalues, path):
 
 
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
-def test_new_attr_right_type(hlwm, attrtype):
+def test_new_attr_has_right_type(hlwm, attrtype):
     path = 'my_user_attr'
     hlwm.call(['new_attr', attrtype, path])
 
