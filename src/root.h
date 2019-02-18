@@ -12,6 +12,7 @@ class ClientManager;
 class HookManager;
 class KeyManager;
 class MonitorManager;
+class MouseManager;
 class RootCommands;
 class RuleManager;
 class Settings;
@@ -41,6 +42,7 @@ public:
     Child_<HookManager> hooks;
     Child_<KeyManager> keys;
     Child_<MonitorManager> monitors;
+    Child_<MouseManager> mouse;
     Child_<RuleManager> rules;
     Child_<Settings> settings;
     Child_<TagManager> tags;

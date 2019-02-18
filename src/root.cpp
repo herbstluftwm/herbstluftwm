@@ -8,6 +8,7 @@
 #include "hookmanager.h"
 #include "keymanager.h"
 #include "monitormanager.h"
+#include "mousemanager.h"
 #include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
@@ -22,6 +23,7 @@ Root::Root(Globals g)
     , hooks(*this, "hooks")
     , keys(*this, "keys")
     , monitors(*this, "monitors")
+    , mouse(*this, "mouse")
     , rules(*this, "rules")
     , settings(*this, "settings")
     , tags(*this, "tags")
@@ -40,6 +42,7 @@ Root::Root(Globals g)
     tags.init();
     theme.init();
     tmp.init();
+    mouse.init(); // needs MonitorManager (implicitly)
 
     // inject dependencies where needed
     settings->injectDependencies(this);
@@ -57,6 +60,8 @@ Root::Root(Globals g)
 
 Root::~Root()
 {
+    // Note: delete in reverse order of initialization!
+    mouse.reset();
     // ClientManager and MonitorManager have circular dependencies, but only
     // MonitorManager needs the other for shutting down, so we do that first:
     monitors.reset();

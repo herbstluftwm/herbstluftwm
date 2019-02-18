@@ -716,7 +716,6 @@ static struct {
 } g_modules[] = {
     { clientlist_init,  clientlist_destroy  },
     { ewmh_init,        ewmh_destroy        },
-    { mouse_init,       mouse_destroy       },
     { hook_init,        hook_destroy        },
 };
 
