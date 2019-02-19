@@ -22,9 +22,10 @@ usethis=$(grep -r --no-filename 'using std::' "$reporoot/src/"*.cpp \
 usethis="string vector"
 
 found_something=0
+# set -x
 for symbol in $usethis; do
-    # Find offending occurences of "std::" prefixes:
-    grep -r --color=auto "[^(using ) ]std::$symbol" src/*.cpp
+    # Find offending occurrences of "std::" prefixes:
+    grep --perl-regexp -r --color=auto '(?<!using )std::'"$symbol"'\b' src/*.cpp
     grepret=$?
     if [[ $grepret == 0 ]]; then
         found_something=1
