@@ -70,7 +70,7 @@ string Monitor::getTagString() {
     return tag->name();
 }
 
-string Monitor::setTagString(std::string new_tag_string) {
+string Monitor::setTagString(string new_tag_string) {
     HSTag* new_tag = find_tag(new_tag_string.c_str());
     if (!new_tag) {
         return "no tag named \"" + new_tag_string + "\" exists.";

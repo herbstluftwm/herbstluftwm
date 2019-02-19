@@ -166,7 +166,7 @@ size_t RuleManager::removeRules(string label) {
     return countAfter - countBefore;
 }
 
-std::tuple<string, char, std::string> RuleManager::tokenize_arg(std::string arg) {
+std::tuple<string, char, string> RuleManager::tokenize_arg(string arg) {
     if (arg.substr(0, 2) == "--") {
         arg.erase(0, 2);
     }

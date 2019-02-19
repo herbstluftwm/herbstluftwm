@@ -46,7 +46,7 @@ void HSTag::setIndexAttribute(unsigned long new_index) {
 }
 
 
-string HSTag::validateNewName(std::string newName) {
+string HSTag::validateNewName(string newName) {
     for (auto t : *global_tags) {
         if (t != this && t->name == newName) {
             return string("Tag \"") + newName + "\" already exists ";
