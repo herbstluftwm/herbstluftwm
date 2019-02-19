@@ -7,6 +7,7 @@
 #include "tag.h"
 #include "utils.h"
 
+using std::make_shared;
 using std::shared_ptr;
 using std::string;
 
@@ -14,7 +15,7 @@ FrameTree::FrameTree(HSTag* tag, Settings* settings)
     : tag_(tag)
     , settings_(settings)
 {
-    root_ = std::make_shared<HSFrameLeaf>(tag, settings, std::shared_ptr<HSFrameSplit>());
+    root_ = make_shared<HSFrameLeaf>(tag, settings, shared_ptr<HSFrameSplit>());
     (void) tag_;
     (void) settings_;
 }
@@ -24,7 +25,7 @@ void FrameTree::foreachClient(std::function<void(Client*)> action)
     root_->foreachClient(action);
 }
 
-void FrameTree::dump(std::shared_ptr<HSFrame> frame, Output output)
+void FrameTree::dump(shared_ptr<HSFrame> frame, Output output)
 {
     auto l = frame->isLeaf();
     if (l) {
@@ -62,19 +63,19 @@ void FrameTree::dump(std::shared_ptr<HSFrame> frame, Output output)
 
 /*! look up a specific frame in the frame tree
  */
-std::shared_ptr<HSFrame> FrameTree::lookup(const string& path) {
-    std::shared_ptr<HSFrame> node = root_;
+shared_ptr<HSFrame> FrameTree::lookup(const string& path) {
+    shared_ptr<HSFrame> node = root_;
     // the string "@" is a special case
     if (path == "@") {
         return focusedFrame();
     }
     for (char c : path) {
-        node = node->switchcase<std::shared_ptr<HSFrame>>(
-            [](std::shared_ptr<HSFrameLeaf> l) {
+        node = node->switchcase<shared_ptr<HSFrame>>(
+            [](shared_ptr<HSFrameLeaf> l) {
                 // nothing to do on a leaf
                 return l;
             },
-            [c](std::shared_ptr<HSFrameSplit> l) {
+            [c](shared_ptr<HSFrameSplit> l) {
                 switch (c) {
                     case '0': return l->a_;
                     case '1': return l->b_;
@@ -90,13 +91,13 @@ std::shared_ptr<HSFrame> FrameTree::lookup(const string& path) {
 
 /*! get the frame leaf that is focused within this frame tree.
  */
-std::shared_ptr<HSFrameLeaf> FrameTree::focusedFrame() {
+shared_ptr<HSFrameLeaf> FrameTree::focusedFrame() {
     return focusedFrame(root_);
 }
 
 /*! get the focused frame within the subtree of the given node
  */
-std::shared_ptr<HSFrameLeaf> FrameTree::focusedFrame(std::shared_ptr<HSFrame> node) {
+shared_ptr<HSFrameLeaf> FrameTree::focusedFrame(shared_ptr<HSFrame> node) {
     while (node->isLeaf() == nullptr) {
         // node must be a frame split
         auto s = node->isSplit();
@@ -257,11 +258,11 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
     return frame->switchcase<shared_ptr<TreeInterface>>(
         [focus] (shared_ptr<HSFrameLeaf> l) {
             return std::static_pointer_cast<TreeInterface>(
-                    std::make_shared<LeafTI>(l, focus));
+                    make_shared<LeafTI>(l, focus));
         },
         [focus] (shared_ptr<HSFrameSplit> s) {
             return std::static_pointer_cast<TreeInterface>(
-                    std::make_shared<SplitTI>(s, focus));
+                    make_shared<SplitTI>(s, focus));
         }
     );
 }

@@ -24,7 +24,7 @@ void HookManager::ls(Path path, Output out)
 
 void HookManager::add(const string &path)
 {
-    //auto h = std::make_shared<NamedHook>(path);
+    //auto h = make_shared<NamedHook>(path);
     //h->hook_into(Root::get());
     //addChild(h, "???");
 }

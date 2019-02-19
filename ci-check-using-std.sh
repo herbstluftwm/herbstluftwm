@@ -19,7 +19,15 @@ usethis=$(grep --no-filename 'using std::' "$reporoot/src/"*.cpp \
     | sort -u)
 
 # Fall back to hardcoded list until the rule is actually enforced:
-usethis="string vector"
+usethis=" \
+    make_shared \
+    make_unique \
+    shared_ptr \
+    string \
+    unique_ptr \
+    vector \
+    weak_ptr \
+    "
 
 found_something=0
 # set -x

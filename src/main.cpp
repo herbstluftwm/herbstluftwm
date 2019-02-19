@@ -40,6 +40,8 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::make_shared;
+using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
 
@@ -98,7 +100,7 @@ void maprequest(Root* root, XEvent* event);
 void propertynotify(Root* root, XEvent* event);
 void unmapnotify(Root* root, XEvent* event);
 
-unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
+unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     RootCommands* root_commands = root->root_commands.get();
 
     ClientManager* clients = root->clients();
@@ -287,7 +289,7 @@ int print_layout_command(int argc, char** argv, Output output) {
     }
     assert(tag);
 
-    std::shared_ptr<HSFrame> frame = tag->frame->lookup(argc >= 3 ? argv[2] : "");
+    shared_ptr<HSFrame> frame = tag->frame->lookup(argc >= 3 ? argv[2] : "");
     assert(frame);
     if (argc > 0 && !strcmp(argv[0], "dump")) {
         FrameTree::dump(frame, output);
@@ -782,7 +784,7 @@ void enternotify(Root* root, XEvent* event) {
         && root->settings()->focus_follows_mouse()
         && ce->focus == false) {
         Client* c = get_client_from_window(ce->window);
-        std::shared_ptr<HSFrameLeaf> target;
+        shared_ptr<HSFrameLeaf> target;
         if (c && c->tag()->floating == false
               && (target = c->tag()->frame->root_->frameWithClient(c))
               && target->getLayout() == LAYOUT_MAX
@@ -918,7 +920,7 @@ int main(int argc, char* argv[]) {
     g_root = X->root();
     XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
 
-    auto root = std::make_shared<Root>(g);
+    auto root = make_shared<Root>(g);
     Root::setRoot(root);
     //test_object_system();
 

@@ -2,27 +2,28 @@
 
 #include "utils.h"
 
+using std::make_shared;
 using std::string;
 using std::stringstream;
 
 ArgList::ArgList(const std::initializer_list<string> &l)
-    : container_(std::make_shared<Container>(l))
+    : container_(make_shared<Container>(l))
 { reset(); }
 
 ArgList::ArgList(const ArgList::Container &c)
-    : container_(std::make_shared<Container>(c))
+    : container_(make_shared<Container>(c))
 { reset(); }
 
 ArgList::ArgList(const ArgList &al) : container_(al.container_) { reset(); }
 
 ArgList::ArgList(const string &s, char delim) {
-    container_ = std::make_shared<Container>(split(s, delim));
+    container_ = make_shared<Container>(split(s, delim));
     reset();
 }
 
 ArgList::ArgList(Container::const_iterator from, Container::const_iterator to)
 {
-    container_ = std::make_shared<Container>(from, to);
+    container_ = make_shared<Container>(from, to);
     reset();
 }
 
