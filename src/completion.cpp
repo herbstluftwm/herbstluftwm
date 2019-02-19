@@ -53,7 +53,7 @@ void Completion::none() {
 }
 
 //! Return the given string posix sh escaped if in shell output mode
-string Completion::escape(const std::string& str) {
+string Completion::escape(const string& str) {
     return str;
 }
 
@@ -62,7 +62,7 @@ bool Completion::noParameterExpected() const {
     return noParameterExpected_;
 }
 
-bool Completion::prefixOf(const string& shorter, const std::string& longer)
+bool Completion::prefixOf(const string& shorter, const string& longer)
 {
     auto res = std::mismatch(shorter.begin(), shorter.end(), longer.begin());
     return res.first == shorter.end();

@@ -470,7 +470,7 @@ void try_complete_prefix_partial(const char* needle, const char* to_check,
                                  const char* prefix, Output output) {
     try_complete_suffix(needle, to_check, "\n", prefix, output);
 }
-void try_complete_prefix_partial(const string& needle, const std::string& to_check,
+void try_complete_prefix_partial(const string& needle, const string& to_check,
                                  const string& prefix, Output output) {
     try_complete_suffix(needle.c_str(), to_check.c_str(), "\n", prefix.c_str(), output);
 }

@@ -19,7 +19,7 @@ Input Input::fromHere()
     return Input(cmd, toVector());
 }
 
-void Input::replace(const string &from, const std::string &to)
+void Input::replace(const string &from, const string &to)
 {
     for (auto &v : *container_)
         if (v == from)

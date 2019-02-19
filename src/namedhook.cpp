@@ -1,5 +1,9 @@
 #include "namedhook.h"
 
+#include <string>
+
+using std::string;
+
 #ifdef ENABLE_NAMED_HOOK
 
 NamedHook::NamedHook(const string &path) :
@@ -79,7 +83,7 @@ void NamedHook::emit(HookEvent event, const string &name)
     });
 }
 
-void NamedHook::emit(const string &old, const std::string &current)
+void NamedHook::emit(const string &old, const string &current)
 {
     if (!old.empty()) {
         if (current.empty()) {
