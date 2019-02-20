@@ -14,20 +14,18 @@ set -o nounset
 reporoot=$(realpath "$(dirname "$0")")
 
 # Assemble list of std symbols to pull in:
+# (exclude some that are not enforced yet)
 usethis=$(grep --no-filename 'using std::' "$reporoot/src/"*.cpp \
     | sed -r 's/^\s*using std::(.*);/\1/' \
-    | sort -u)
-
-# Fall back to hardcoded list until the rule is actually enforced:
-usethis=" \
-    make_shared \
-    make_unique \
-    shared_ptr \
-    string \
-    unique_ptr \
-    vector \
-    weak_ptr \
-    "
+    | sort -u \
+    | grep -xv dynamic_pointer_cast \
+    | grep -xv endl \
+    | grep -xv function \
+    | grep -xv make_pair \
+    | grep -xv pair \
+    | grep -xv stringstream \
+    | grep -xv to_string \
+    )
 
 found_something=0
 # set -x
