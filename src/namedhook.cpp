@@ -1,7 +1,9 @@
 #include "namedhook.h"
 
+#include <memory>
 #include <string>
 
+using std::shared_ptr;
 using std::string;
 
 #ifdef ENABLE_NAMED_HOOK
@@ -173,7 +175,7 @@ void NamedHook::complete_chain() {
     }
 }
 
-void NamedHook::debug_hook(std::shared_ptr<Object> sender, HookEvent event,
+void NamedHook::debug_hook(shared_ptr<Object> sender, HookEvent event,
                       const string &name)
 {
     if (sender) {

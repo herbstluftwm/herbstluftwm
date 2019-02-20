@@ -16,7 +16,9 @@
 #include "tmp.h"
 #include "utils.h"
 
-std::shared_ptr<Root> Root::root_;
+using std::shared_ptr;
+
+shared_ptr<Root> Root::root_;
 
 Root::Root(Globals g)
     : clients(*this, "clients")

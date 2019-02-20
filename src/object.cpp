@@ -264,7 +264,7 @@ void Object::removeHook(Hook* hook)
     //hooks_.erase(std::remove_if(
     //                hooks_.begin(),
     //                hooks_.end(),
-    //                [hook_locked](std::weak_ptr<Hook> el) {
+    //                [hook_locked](weak_ptr<Hook> el) {
     //                    return el.lock() == hook_locked;
     //                }), hooks_.end());
     hooks_.erase(std::remove(
