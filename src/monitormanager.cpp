@@ -16,6 +16,7 @@
 #include "utils.h"
 
 using std::function;
+using std::make_pair;
 using std::string;
 
 MonitorManager* g_monitors;
@@ -67,7 +68,7 @@ int MonitorManager::indexInDirection(Monitor* m, Direction dir) {
     RectangleIdxVec rects;
     int relidx = -1;
     FOR (i,0,size()) {
-        rects.push_back(std::make_pair(i, byIdx(i)->rect));
+        rects.push_back(make_pair(i, byIdx(i)->rect));
         if (byIdx(i) == m) relidx = i;
     }
     HSAssert(relidx >= 0);
