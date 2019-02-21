@@ -7,6 +7,7 @@
 #include "tag.h"
 #include "utils.h"
 
+using std::function;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
@@ -20,7 +21,7 @@ FrameTree::FrameTree(HSTag* tag, Settings* settings)
     (void) settings_;
 }
 
-void FrameTree::foreachClient(std::function<void(Client*)> action)
+void FrameTree::foreachClient(function<void(Client*)> action)
 {
     root_->foreachClient(action);
 }

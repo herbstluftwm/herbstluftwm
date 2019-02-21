@@ -15,6 +15,7 @@
 #include "tagmanager.h"
 #include "utils.h"
 
+using std::function;
 using std::string;
 
 MonitorManager* g_monitors;
@@ -141,7 +142,7 @@ Monitor* MonitorManager::byString(string str) {
     return ((idx >= 0) && idx < size()) ? byIdx(idx) : nullptr;
 }
 
-std::function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
+function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
 {
     return [this,cmd](Input input, Output output) -> int {
         Monitor *monitor;

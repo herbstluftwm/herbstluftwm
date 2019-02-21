@@ -21,6 +21,7 @@
 #include "utils.h"
 
 using std::dynamic_pointer_cast;
+using std::function;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
@@ -470,7 +471,7 @@ TilingResult HSFrameSplit::computeLayout(Rectangle rect) {
     return res;
 }
 
-void HSFrameSplit::fmap(std::function<void(HSFrameSplit*)> onSplit, std::function<void(HSFrameLeaf*)> onLeaf, int order) {
+void HSFrameSplit::fmap(function<void(HSFrameSplit*)> onSplit, function<void(HSFrameLeaf*)> onLeaf, int order) {
     if (order <= 0) onSplit(this);
     a_->fmap(onSplit, onLeaf, order);
     if (order == 1) onSplit(this);
@@ -478,7 +479,7 @@ void HSFrameSplit::fmap(std::function<void(HSFrameSplit*)> onSplit, std::functio
     if (order >= 1) onSplit(this);
 }
 
-void HSFrameLeaf::fmap(std::function<void(HSFrameSplit*)> onSplit, std::function<void(HSFrameLeaf*)> onLeaf, int order) {
+void HSFrameLeaf::fmap(function<void(HSFrameSplit*)> onSplit, function<void(HSFrameLeaf*)> onLeaf, int order) {
     (void) onSplit;
     (void) order;
     onLeaf(this);

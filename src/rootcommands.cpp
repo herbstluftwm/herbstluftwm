@@ -14,6 +14,7 @@
 #include "root.h"
 
 using std::endl;
+using std::function;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -195,7 +196,7 @@ int RootCommands::sprintf_cmd(Input input, Output output)
 
 
 Attribute* RootCommands::newAttributeWithType(string typestr, string attr_name, Output output) {
-    std::map<string, std::function<Attribute*(string)>> name2constructor {
+    std::map<string, function<Attribute*(string)>> name2constructor {
     { "bool",  [](string n) { return new Attribute_<bool>(n, false); }},
     { "color", [](string n) { return new Attribute_<Color>(n, {"black"}); }},
     { "int",   [](string n) { return new Attribute_<int>(n, 0); }},
@@ -329,7 +330,7 @@ int RootCommands::compare_cmd(Input input, Output output)
         { "le", { true, { -1, 0 } }, },
         { "lt", { true, { -1    } }, },
     };
-    std::map<Type, std::pair<bool, std::function<int(string,string,Output)>>> type2compare {
+    std::map<Type, std::pair<bool, function<int(string,string,Output)>>> type2compare {
         // map a type name to "is it numeric" and a comperator function
         { Type::ATTRIBUTE_INT,      { true,  parse_and_compare<int> }, },
         { Type::ATTRIBUTE_ULONG,    { true,  parse_and_compare<int> }, },
@@ -370,7 +371,7 @@ int RootCommands::compare_cmd(Input input, Output output)
 }
 
 void RootCommands::completeObjectPath(Completion& complete, bool attributes,
-                                      std::function<bool(Attribute*)> attributeFilter)
+                                      function<bool(Attribute*)> attributeFilter)
 {
     ArgList objectPathArgs = std::get<0>(Object::splitPath(complete.needle()));
     string objectPath = objectPathArgs.join(OBJECT_PATH_SEPARATOR);

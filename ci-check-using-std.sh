@@ -18,7 +18,6 @@ reporoot=$(realpath "$(dirname "$0")")
 usethis=$(grep --no-filename 'using std::' "$reporoot/src/"*.cpp \
     | sed -r 's/^\s*using std::(.*);/\1/' \
     | sort -u \
-    | grep -xv function \
     | grep -xv make_pair \
     | grep -xv pair \
     | grep -xv stringstream \
