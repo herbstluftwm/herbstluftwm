@@ -15,6 +15,7 @@
 
 using std::endl;
 using std::function;
+using std::pair;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -321,7 +322,7 @@ int RootCommands::compare_cmd(Input input, Output output)
     //    1 if the first value is greater
     //    0 if the the values match
     //    HERBST_INVALID_ARGUMENT if there was a parsing error
-    std::map<string, std::pair<bool, vector<int> > > operators {
+    std::map<string, pair<bool, vector<int> > > operators {
         // map operator names to "for numeric types only" and possible return codes
         { "=",  { false, { 0 }, }, },
         { "!=", { false, { -1, 1 } }, },
@@ -330,7 +331,7 @@ int RootCommands::compare_cmd(Input input, Output output)
         { "le", { true, { -1, 0 } }, },
         { "lt", { true, { -1    } }, },
     };
-    std::map<Type, std::pair<bool, function<int(string,string,Output)>>> type2compare {
+    std::map<Type, pair<bool, function<int(string,string,Output)>>> type2compare {
         // map a type name to "is it numeric" and a comperator function
         { Type::ATTRIBUTE_INT,      { true,  parse_and_compare<int> }, },
         { Type::ATTRIBUTE_ULONG,    { true,  parse_and_compare<int> }, },

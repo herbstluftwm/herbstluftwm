@@ -42,6 +42,7 @@
 
 using std::endl;
 using std::make_shared;
+using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
@@ -112,7 +113,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     TagManager* tags = root->tags();
     Tmp* tmp = root->tmp();
 
-    std::initializer_list<std::pair<const string,CommandBinding>> init =
+    std::initializer_list<pair<const string,CommandBinding>> init =
     {
         {"quit",           { quit } },
         {"echo",           echo},
