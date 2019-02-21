@@ -12,6 +12,7 @@
 #include "tag.h"
 #include "utils.h"
 
+using std::endl;
 using std::string;
 using std::to_string;
 
@@ -205,7 +206,7 @@ int Settings::set_cmd(Input input, Output output) {
         output << input.command()
                << ": Invalid value \"" << value
                << "\" for setting \"" << set_name << "\": "
-               << msg << std::endl;
+               << msg << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;
@@ -278,7 +279,7 @@ int Settings::cycle_value_cmd(Input argv, Output output) {
         output << argv.command()
                << ": Invalid value for setting \""
                << set_name << "\": "
-               << msg << std::endl;
+               << msg << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;

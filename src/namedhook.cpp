@@ -75,7 +75,7 @@ void NamedHook::emit(const ArgList args)
     std::cout << "Hook " << name_ << " emitting:\t";
     for (auto a : args)
         std::cout << a << " ";
-    std::cout << std::endl;
+    std::cout << endl;
 }
 
 void NamedHook::emit(HookEvent event, const string &name)
@@ -185,7 +185,7 @@ void NamedHook::debug_hook(shared_ptr<Object> sender, HookEvent event,
                              : (event == HookEvent::CHILD_REMOVED ? "removed"
                                                                   : "changed"));
         std::cerr << " with " << name << " being " << eventstr;
-        std::cerr << std::endl;
+        std::cerr << endl;
     }
     // std::cerr << "\tChain is: ";
     // for (auto c : chain_) {
@@ -195,7 +195,7 @@ void NamedHook::debug_hook(shared_ptr<Object> sender, HookEvent event,
     //     else
     //         std::cerr << "!";
     // }
-    // std::cerr << std::endl;
+    // std::cerr << endl;
 }
 #endif // ENABLE_NAMED_HOOK
 

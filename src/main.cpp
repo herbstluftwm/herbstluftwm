@@ -40,6 +40,7 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::endl;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
@@ -237,9 +238,9 @@ int quit() {
 }
 
 int version(Output output) {
-    output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << std::endl;
-    output << "Copyright (c) 2011-2014 Thorsten Wißmann" << std::endl;
-    output << "Released under the Simplified BSD License" << std::endl;
+    output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << endl;
+    output << "Copyright (c) 2011-2014 Thorsten Wißmann" << endl;
+    output << "Released under the Simplified BSD License" << endl;
     return 0;
 }
 
@@ -901,11 +902,11 @@ int main(int argc, char* argv[]) {
     XConnection* X = XConnection::connect();
     g_display = X->display();
     if (!g_display) {
-        std::cerr << "herbstluftwm: cannot open display" << std::endl;
+        std::cerr << "herbstluftwm: cannot open display" << endl;
         exit(EXIT_FAILURE);
     }
     if (X->checkotherwm()) {
-        std::cerr << "herbstluftwm: another window manager is already running" << std::endl;
+        std::cerr << "herbstluftwm: another window manager is already running" << endl;
         exit(EXIT_FAILURE);
     }
     // remove zombies on SIGCHLD

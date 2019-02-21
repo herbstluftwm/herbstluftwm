@@ -36,9 +36,9 @@ void Completion::operator=(const Completion& other) {
 void Completion::full(const string& word) {
     if (prefixOf(needle_, word)) {
         output_ << escape(word) << (shellOutput_ ? " \n" : "\n");
-        // std::cout << "add " << word << std::endl;
+        // std::cout << "add " << word << endl;
     } else {
-        // std::cout << needle_ << " not prefix of " << word << std::endl;
+        // std::cout << needle_ << " not prefix of " << word << endl;
     }
 }
 

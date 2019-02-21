@@ -27,6 +27,7 @@ namespace search_h {
 } // namespace search_h
 using search_h::lfind;
 
+using std::endl;
 using std::function;
 using std::shared_ptr;
 using std::string;
@@ -399,7 +400,7 @@ int call_command_no_output(int argc, char** argv) {
 int list_commands(Output output)
 {
     for (auto cmd : *Commands::get()) {
-        output << cmd.first << std::endl;
+        output << cmd.first << endl;
     }
     return 0;
 }
