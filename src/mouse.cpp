@@ -15,6 +15,7 @@
 #include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
+#include "mousemanager.h"
 #include "root.h"
 #include "settings.h"
 #include "tag.h"
@@ -30,8 +31,6 @@ static Client*        g_win_drag_client = nullptr;
 static Monitor*       g_drag_monitor = nullptr;
 static MouseDragFunction g_drag_function = nullptr;
 
-static vector<MouseBinding> g_mouse_binds;
-
 #define CLEANMASK(mask)         ((mask) & ~(numlockMask|LockMask))
 #define REMOVEBUTTONMASK(mask) ((mask) & \
     ~( Button1Mask \
@@ -42,9 +41,14 @@ static vector<MouseBinding> g_mouse_binds;
 
 void mouse_handle_event(XEvent* ev) {
     XButtonEvent* be = &(ev->xbutton);
-    MouseBinding* b = mouse_binding_find(be->state, be->button);
+    auto b = mouse_binding_find(be->state, be->button);
+
+    if (!b.has_value()) {
+        // No binding find for this event
+    }
+
     Client* client = get_client_from_window(ev->xbutton.window);
-    if (!b || !client) {
+    if (!client) {
         // there is no valid bind for this type of mouse event
         return;
     }
@@ -129,7 +133,7 @@ bool mouse_is_dragging() {
 }
 
 int mouse_unbind_all() {
-    g_mouse_binds.clear();
+    Root::get()->mouse->binds.clear();
     Client* client = get_current_client();
     if (client) {
         grab_client_buttons(client, true);
@@ -187,7 +191,7 @@ int mouse_bind_command(int argc, char** argv, Output output) {
     for (int i = 3; i < argc; i++) {
         mb.cmd.push_back(argv[i]);
     }
-    g_mouse_binds.push_back(mb);
+    Root::get()->mouse->binds.push_back(mb);
     Client* client = get_current_client();
     if (client) {
         grab_client_buttons(client, true);
@@ -246,19 +250,20 @@ void complete_against_mouse_buttons(const char* needle, char* prefix, Output out
     }
 }
 
-MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {
+std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button) {
     MouseBinding mb = {};
     mb.modifiers = modifiers;
     mb.button = button;
 
-    auto found = std::find_if(g_mouse_binds.begin(), g_mouse_binds.end(),
+    auto binds = Root::get()->mouse->binds;
+    auto found = std::find_if(binds.begin(), binds.end(),
             [=](const MouseBinding &other) {
                 return mouse_binding_equals(&other, &mb) == 0;
             });
-    if (found != g_mouse_binds.end()) {
-        return &*found;
+    if (found != binds.end()) {
+        return *found;
     } else {
-        return nullptr;
+        return {};
     }
 }
 
@@ -276,7 +281,7 @@ static void grab_client_button(MouseBinding* bind, Client* client) {
 void grab_client_buttons(Client* client, bool focused) {
     XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
     if (focused) {
-        for (auto& bind : g_mouse_binds) {
+        for (auto& bind : Root::get()->mouse->binds) {
             grab_client_button(&bind, client);
         }
     }

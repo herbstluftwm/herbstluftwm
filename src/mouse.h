@@ -4,6 +4,7 @@
 #include <X11/Xlib.h>
 
 #include "glib-backports.h"
+#include "optional.h"
 #include "types.h"
 
 // various snap-flags
@@ -36,7 +37,7 @@ int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b);
 
 int mouse_bind_command(int argc, char** argv, Output output);
 int mouse_unbind_all();
-MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button);
+std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button);
 
 unsigned int string2button(const char* name);
 MouseFunction string2mousefunction(char* name);

@@ -2,6 +2,7 @@
 
 #include <X11/cursorfont.h>
 
+#include "client.h"
 #include "globals.h"
 #include "mouse.h"
 
@@ -12,6 +13,5 @@ MouseManager::MouseManager() {
 }
 
 MouseManager::~MouseManager() {
-    mouse_unbind_all();
     XFreeCursor(g_display, cursor);
 }
