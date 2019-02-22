@@ -51,22 +51,22 @@ void mouse_handle_event(XEvent* ev) {
     b->action(client, b->cmd);
 }
 
-void mouse_initiate_move(Client* client, const std::vector<std::string> &cmd) {
+void mouse_initiate_move(Client* client, const vector<string> &cmd) {
     (void) cmd;
     mouse_initiate_drag(client, mouse_function_move);
 }
 
-void mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd) {
+void mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
     (void) cmd;
     mouse_initiate_drag(client, mouse_function_zoom);
 }
 
-void mouse_initiate_resize(Client* client, const std::vector<std::string> &cmd) {
+void mouse_initiate_resize(Client* client, const vector<string> &cmd) {
     (void) cmd;
     mouse_initiate_drag(client, mouse_function_resize);
 }
 
-void mouse_call_command(Client* client, const std::vector<std::string> &cmd) {
+void mouse_call_command(Client* client, const vector<string> &cmd) {
     // TODO: add completion
     client->set_dragged(true);
 
