@@ -24,13 +24,14 @@ class Monitor;
 typedef void (*MouseDragFunction)(XMotionEvent*);
 typedef void (*MouseFunction)(Client* client, int argc, char** argv);
 
-typedef struct MouseBinding {
+class MouseBinding {
+public:
     unsigned int modifiers;
     unsigned int button;
     MouseFunction action;
     int     argc; // additional arguments
     char**  argv;
-} MouseBinding;
+};
 
 int mouse_binding_equals(MouseBinding* a, MouseBinding* b);
 

@@ -127,7 +127,7 @@ static void mouse_binding_free(void* voidmb) {
     MouseBinding* mb = (MouseBinding*)voidmb;
     if (!mb) return;
     argv_free(mb->argc, mb->argv);
-    g_free(mb);
+    delete mb;
 }
 
 int mouse_unbind_all() {
@@ -183,7 +183,7 @@ int mouse_bind_command(int argc, char** argv, Output output) {
     }
 
     // actually create a binding
-    MouseBinding* mb = g_new(MouseBinding, 1);
+    MouseBinding* mb = new MouseBinding();
     mb->button = button;
     mb->modifiers = modifiers;
     mb->action = function;
