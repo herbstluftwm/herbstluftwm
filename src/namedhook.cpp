@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+using std::dynamic_pointer_cast;
 using std::shared_ptr;
 using std::string;
 
@@ -36,7 +37,7 @@ void NamedHook::operator()(Object* sender, HookEvent event,
         auto last = chain_.back().lock();
         if (!last || sender != last)
             return;
-        auto o = std::dynamic_pointer_cast<Object>(sender);
+        auto o = dynamic_pointer_cast<Object>(sender);
         if (!o)
             return; // TODO: throw
         auto newvalue = o->read(name);
@@ -74,7 +75,7 @@ void NamedHook::emit(const ArgList args)
     std::cout << "Hook " << name_ << " emitting:\t";
     for (auto a : args)
         std::cout << a << " ";
-    std::cout << std::endl;
+    std::cout << endl;
 }
 
 void NamedHook::emit(HookEvent event, const string &name)
@@ -130,7 +131,7 @@ void NamedHook::check_chain(Object* sender, HookEvent event,
 }
 
 void NamedHook::cutoff_chain(size_t length) {
-    auto self = std::dynamic_pointer_cast<NamedHook>(shared_from_this());
+    auto self = dynamic_pointer_cast<NamedHook>(shared_from_this());
     for (auto i = length; i < chain_.size(); ++i) {
         auto o = chain_[i].lock();
         if (o)
@@ -141,7 +142,7 @@ void NamedHook::cutoff_chain(size_t length) {
 }
 
 void NamedHook::complete_chain() {
-    auto self = std::dynamic_pointer_cast<NamedHook>(shared_from_this());
+    auto self = dynamic_pointer_cast<NamedHook>(shared_from_this());
     auto current = chain_.back().lock();
     // current should always be o.k., in the worst case it is the root
 
@@ -164,7 +165,7 @@ void NamedHook::complete_chain() {
     if (chain_.size() < path_.size())
         return; // no chance, we are still incomplete
 
-    auto o = std::dynamic_pointer_cast<Object>(chain_.back().lock());
+    auto o = dynamic_pointer_cast<Object>(chain_.back().lock());
     if (!o || !o->attribute(path_.back()))
         return; // TODO: throw
     active_ = true;
@@ -184,7 +185,7 @@ void NamedHook::debug_hook(shared_ptr<Object> sender, HookEvent event,
                              : (event == HookEvent::CHILD_REMOVED ? "removed"
                                                                   : "changed"));
         std::cerr << " with " << name << " being " << eventstr;
-        std::cerr << std::endl;
+        std::cerr << endl;
     }
     // std::cerr << "\tChain is: ";
     // for (auto c : chain_) {
@@ -194,7 +195,7 @@ void NamedHook::debug_hook(shared_ptr<Object> sender, HookEvent event,
     //     else
     //         std::cerr << "!";
     // }
-    // std::cerr << std::endl;
+    // std::cerr << endl;
 }
 #endif // ENABLE_NAMED_HOOK
 

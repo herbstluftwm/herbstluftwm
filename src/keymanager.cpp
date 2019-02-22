@@ -16,6 +16,7 @@
 #include "root.h"
 #include "utils.h"
 
+using std::endl;
 using std::string;
 using std::unique_ptr;
 
@@ -33,7 +34,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     try {
         newBinding->keyCombo = KeyCombo::fromString(input.front());
     } catch (std::runtime_error &error) {
-        output << input.command() << ": " << error.what() << std::endl;
+        output << input.command() << ": " << error.what() << endl;
         return HERBST_INVALID_ARGUMENT;
     }
 

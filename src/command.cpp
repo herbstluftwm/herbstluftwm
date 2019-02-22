@@ -27,7 +27,9 @@ namespace search_h {
 } // namespace search_h
 using search_h::lfind;
 
+using std::endl;
 using std::function;
+using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::to_string;
@@ -399,7 +401,7 @@ int call_command_no_output(int argc, char** argv) {
 int list_commands(Output output)
 {
     for (auto cmd : *Commands::get()) {
-        output << cmd.first << std::endl;
+        output << cmd.first << endl;
     }
     return 0;
 }
@@ -522,7 +524,7 @@ void complete_against_objects(int argc, char** argv, int pos, Output output) {
     (void)SHIFT(argc,argv);
     pos--;
 
-    std::pair<ArgList,string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
+    pair<ArgList,string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
     auto needle = p.second;
     Object* o = Root::get()->child(p.first);
     if (!o) {
@@ -543,7 +545,7 @@ void complete_against_attributes_helper(int argc, char** argv, int pos,
     (void)SHIFT(argc,argv);
     pos--;
 
-    std::pair<ArgList,string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
+    pair<ArgList,string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
     auto needle = p.second;
     Object* o = Root::get()->child(p.first);
     if (!o) {

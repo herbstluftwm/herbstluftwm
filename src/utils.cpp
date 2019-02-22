@@ -175,7 +175,7 @@ string utf8_string_at(const string& str, size_t n) {
     // }
     // return j;
     //for (char ch : str) {
-    //    std::cout << "\'"<< ch << "\' -> " << ((ch&0xc0) == 0x80) << std::endl;
+    //    std::cout << "\'"<< ch << "\' -> " << ((ch&0xc0) == 0x80) << endl;
     //}
     size_t i = 0, byte_offset = 0;
     string result;

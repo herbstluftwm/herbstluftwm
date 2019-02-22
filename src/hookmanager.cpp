@@ -2,6 +2,7 @@
 
 #include "utils.h"
 
+using std::endl;
 using std::string;
 
 HookManager::HookManager()
@@ -18,7 +19,7 @@ void HookManager::ls(Path path, Output out)
     if (children_.find(child) != children_.end()) {
         children_[child]->ls({}, out);
     } else {
-        out << "child " << child << " not found!" << std::endl; // TODO
+        out << "child " << child << " not found!" << endl; // TODO
     }
 }
 

@@ -7,6 +7,7 @@
 #include "utils.h"
 
 using std::string;
+using std::to_string;
 
 /*!
  * Implements the "rule" IPC command
@@ -16,7 +17,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
 
     // Assign default label (index will be incremented if adding the rule
     // actually succeeds)
-    rule.label = std::to_string(rule_label_index_);
+    rule.label = to_string(rule_label_index_);
 
     // Possible flags that apply to the rule as a whole:
     std::map<string, bool> ruleFlags = {

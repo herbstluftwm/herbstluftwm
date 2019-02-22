@@ -15,6 +15,8 @@
 #include "tagmanager.h"
 #include "utils.h"
 
+using std::function;
+using std::make_pair;
 using std::string;
 
 MonitorManager* g_monitors;
@@ -66,7 +68,7 @@ int MonitorManager::indexInDirection(Monitor* m, Direction dir) {
     RectangleIdxVec rects;
     int relidx = -1;
     FOR (i,0,size()) {
-        rects.push_back(std::make_pair(i, byIdx(i)->rect));
+        rects.push_back(make_pair(i, byIdx(i)->rect));
         if (byIdx(i) == m) relidx = i;
     }
     HSAssert(relidx >= 0);
@@ -141,7 +143,7 @@ Monitor* MonitorManager::byString(string str) {
     return ((idx >= 0) && idx < size()) ? byIdx(idx) : nullptr;
 }
 
-std::function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
+function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
 {
     return [this,cmd](Input input, Output output) -> int {
         Monitor *monitor;

@@ -12,6 +12,8 @@
 #include "tag.h"
 #include "utils.h"
 
+using std::endl;
+using std::function;
 using std::string;
 using std::to_string;
 
@@ -138,7 +140,7 @@ void Settings::injectDependencies(Root* root) {
     });
 }
 
-std::function<int()> Settings::getIntAttr(string name) {
+function<int()> Settings::getIntAttr(string name) {
     return [this, name]() {
         Attribute* a = this->root_->deepAttribute(name);
         if (a) {
@@ -150,7 +152,7 @@ std::function<int()> Settings::getIntAttr(string name) {
     };
 }
 
-std::function<Color()> Settings::getColorAttr(string name) {
+function<Color()> Settings::getColorAttr(string name) {
     return [this, name]() {
         Attribute* a = this->root_->deepAttribute(name);
         if (a) {
@@ -162,7 +164,7 @@ std::function<Color()> Settings::getColorAttr(string name) {
     };
 }
 
-std::function<string(int)> Settings::setIntAttr(string name) {
+function<string(int)> Settings::setIntAttr(string name) {
     return [this, name](int val) {
         Attribute* a = this->root_->deepAttribute(name);
         if (a) {
@@ -175,7 +177,7 @@ std::function<string(int)> Settings::setIntAttr(string name) {
         }
     };
 }
-std::function<string(Color)> Settings::setColorAttr(string name) {
+function<string(Color)> Settings::setColorAttr(string name) {
     return [this, name](Color val) {
         Attribute* a = this->root_->deepAttribute(name);
         if (a) {
@@ -205,7 +207,7 @@ int Settings::set_cmd(Input input, Output output) {
         output << input.command()
                << ": Invalid value \"" << value
                << "\" for setting \"" << set_name << "\": "
-               << msg << std::endl;
+               << msg << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;
@@ -278,7 +280,7 @@ int Settings::cycle_value_cmd(Input argv, Output output) {
         output << argv.command()
                << ": Invalid value for setting \""
                << set_name << "\": "
-               << msg << std::endl;
+               << msg << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     return 0;

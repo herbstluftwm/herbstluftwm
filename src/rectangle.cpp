@@ -3,6 +3,8 @@
 #include "ipc-protocol.h"
 #include "utils.h"
 
+using std::endl;
+
 static bool rects_intersect(const Rectangle &a, const Rectangle &b) {
     bool is = true;
     is = is && intervals_intersect(a.x, a.x + a.width,
@@ -146,7 +148,7 @@ int disjoin_rects_command(Input input, Output output) {
     }
 
     for (auto &r : disjoin_rects(rects)) {
-        output << r << std::endl;
+        output << r << endl;
     }
     return 0;
 }

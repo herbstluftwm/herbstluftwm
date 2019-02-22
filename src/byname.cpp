@@ -55,7 +55,7 @@ void ByName::childRemoved(Object* sender_parent, string child_name)
 
 void ByName::attributeChanged(Object* child, string attribute_name)
 {
-    //std::cerr << "Attribute " << attribute_name << " changed" << std::endl;
+    //std::cerr << "Attribute " << attribute_name << " changed" << endl;
     if (attribute_name != "name" || &* child == &parent) {
         return;
     }

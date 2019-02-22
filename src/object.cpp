@@ -15,6 +15,7 @@
 #include "hook.h"
 #include "attribute.h"
 
+using std::endl;
 using std::make_shared;
 using std::pair;
 using std::shared_ptr;
@@ -101,34 +102,34 @@ void Object::wireActions(vector<Action*> actions)
 void Object::ls(Output out)
 {
     out << children_.size() << (children_.size() == 1 ? " child" : " children")
-        << (children_.size() > 0 ? ":" : ".") << std::endl;
+        << (children_.size() > 0 ? ":" : ".") << endl;
     for (auto it : children_) {
-        out << "  " << it.first << "." << std::endl;
+        out << "  " << it.first << "." << endl;
     }
 
     out << attribs_.size() << (attribs_.size() == 1 ? " attribute" : " attributes")
-        << (attribs_.size() > 0 ? ":" : ".") << std::endl;
+        << (attribs_.size() > 0 ? ":" : ".") << endl;
 
     out << " .---- type\n"
         << " | .-- writeable\n"
         << " | | .-- hookable\n"
-        << " V V V" << std::endl;
+        << " V V V" << endl;
     for (auto it : attribs_) {
         out << " " << it.second->typechar();
         out << " " << (it.second->writeable() ? "w" : "-");
         out << " " << (it.second->hookable() ? "h" : "-");
         out << " " << it.first;
         if (it.second->type() == Type::ATTRIBUTE_STRING) {
-            out << " = \"" << it.second->str() << "\"" << std::endl;
+            out << " = \"" << it.second->str() << "\"" << endl;
         } else {
-            out << " = " << it.second->str() << std::endl;
+            out << " = " << it.second->str() << endl;
         }
     }
 
     out << actions_.size() << (actions_.size() == 1 ? " action" : " actions")
-        << (actions_.size() > 0 ? ":" : ".") << std::endl;
+        << (actions_.size() > 0 ? ":" : ".") << endl;
     for (auto it : actions_) {
-        out << "  " << it.first << std::endl;
+        out << "  " << it.first << endl;
     }
 }
 void Object::ls(Path path, Output out) {
@@ -140,21 +141,21 @@ void Object::ls(Path path, Output out) {
         path.shift();
         children_[child]->ls(path, out);
     } else {
-        out << "child " << child << " not found!" << std::endl; // TODO
+        out << "child " << child << " not found!" << endl; // TODO
     }
 }
 
 void Object::print(const string &prefix)
 {
     if (!children_.empty()) {
-        std::cout << prefix << "Children:" << std::endl;
+        std::cout << prefix << "Children:" << endl;
         for (auto it : children_) {
             it.second->print(prefix + "\t| ");
         }
-        std::cout << prefix << std::endl;
+        std::cout << prefix << endl;
     }
     if (!attribs_.empty()) {
-        std::cout << prefix << "Attributes:" << std::endl;
+        std::cout << prefix << "Attributes:" << endl;
         for (auto it : attribs_) {
             std::cout << prefix << "\t" << it.first
                       << " (" << it.second->typestr() << ")";
@@ -163,18 +164,18 @@ void Object::print(const string &prefix)
                 std::cout << "\tw";
             if (!it.second->hookable())
                 std::cout << "\t!h";
-            std::cout << std::endl;
+            std::cout << endl;
         }
     }
     if (!actions_.empty()) {
-        std::cout << prefix << "Actions:" << std::endl;
+        std::cout << prefix << "Actions:" << endl;
         std::cout << prefix;
         for (auto it : actions_) {
             std::cout << "\t" << it.first;
         }
-        std::cout << std::endl;
+        std::cout << endl;
     }
-    std::cout << prefix << "Currently " << hooks_.size() << " hooks:" << std::endl;
+    std::cout << prefix << "Currently " << hooks_.size() << " hooks:" << endl;
 }
 
 Attribute* Object::attribute(const string &name) {
@@ -213,7 +214,7 @@ Object* Object::child(Path path, Output output) {
         } else {
             output << "Object \"" << cur_path << "\""
                 << " has no child named \"" << path.front()
-                << "\"" << std::endl;
+                << "\"" << endl;
             return nullptr;
         }
         path.shift();
@@ -322,7 +323,7 @@ Attribute* Object::deepAttribute(const string &path, Output output) {
         output << "Object \"" << attr_path.first.join()
             << "\" has no attribute \"" << attr_path.second
             << "\"."
-            << std::endl;
+            << endl;
         return nullptr;
     }
     return a;

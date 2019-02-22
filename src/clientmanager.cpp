@@ -18,6 +18,7 @@
 #include "tag.h"
 #include "utils.h"
 
+using std::endl;
 using std::string;
 
 ClientManager::ClientManager()
@@ -251,7 +252,7 @@ int ClientManager::clientSetAttribute(string attribute,
         if (error_message != "") {
             output << input.command() << ": illegal argument \""
                    << value << "\": "
-                   << error_message << std::endl;
+                   << error_message << endl;
             return HERBST_INVALID_ARGUMENT;
         }
     }
