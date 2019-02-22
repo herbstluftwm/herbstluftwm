@@ -255,9 +255,13 @@ class HlwmProcess:
         # Wait for marker output from wrapper script:
         self.read_and_echo_output(until_stdout='hlwm started')
 
-    def read_and_echo_output(self, until_stdout=None, until_stderr=None):
-        expect_sth = (until_stdout or until_stderr) is not None
+    def read_and_echo_output(self, until_stdout=None, until_stderr=None, until_eof=False):
+        expect_sth = ((until_stdout or until_stderr) is not None)
         max_wait = 5
+
+        # Track which file objects have EOFed:
+        eof_fileobjs = set()
+        fileobjs = set(k.fileobj for k in self.output_selector.get_map().values())
 
         stderr = ''
         stdout = ''
@@ -281,6 +285,9 @@ class HlwmProcess:
                 # Read only single byte, otherwise we might block:
                 ch = key.fileobj.read(1).decode('ascii')
 
+                if ch == '':
+                    eof_fileobjs.add(key.fileobj)
+
                 # Pass it through to the real stdout/stderr:
                 key.data.write(ch)
                 key.data.flush()
@@ -290,6 +297,14 @@ class HlwmProcess:
                     stderr += ch
                 if key.fileobj == self.proc.stdout:
                     stdout += ch
+
+            if until_eof:
+                # We are going to the very end, so carry on until all file
+                # objects have returned EOF:
+                if eof_fileobjs == fileobjs:
+                    break
+                else:
+                    continue
 
             if selected != []:
                 # There is still data available, so keep reading (no matter
@@ -332,6 +347,10 @@ class HlwmProcess:
 
     def shutdown(self):
         self.proc.terminate()
+
+        # Make sure to read and echo all remaining output (esp. ASAN messages):
+        self.read_and_echo_output(until_eof=True)
+
         if self.proc.returncode is None:
             # only wait the process if it hasn't been cleaned up
             # this also avoids the second exception if hlwm crashed
