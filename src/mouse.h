@@ -32,7 +32,7 @@ public:
     std::vector<std::string> cmd;
 };
 
-int mouse_binding_equals(MouseBinding* a, MouseBinding* b);
+int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b);
 
 int mouse_bind_command(int argc, char** argv, Output output);
 int mouse_unbind_all();

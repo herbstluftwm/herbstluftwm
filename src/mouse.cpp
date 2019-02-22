@@ -30,7 +30,7 @@ static Client*        g_win_drag_client = nullptr;
 static Monitor*       g_drag_monitor = nullptr;
 static MouseDragFunction g_drag_function = nullptr;
 
-static GList* g_mouse_binds = nullptr;
+static vector<MouseBinding> g_mouse_binds;
 
 #define CLEANMASK(mask)         ((mask) & ~(numlockMask|LockMask))
 #define REMOVEBUTTONMASK(mask) ((mask) & \
@@ -128,15 +128,8 @@ bool mouse_is_dragging() {
     return g_drag_function != nullptr;
 }
 
-static void mouse_binding_free(void* voidmb) {
-    MouseBinding* mb = (MouseBinding*)voidmb;
-    if (!mb) return;
-    delete mb;
-}
-
 int mouse_unbind_all() {
-    g_list_free_full(g_mouse_binds, mouse_binding_free);
-    g_mouse_binds = nullptr;
+    g_mouse_binds.clear();
     Client* client = get_current_client();
     if (client) {
         grab_client_buttons(client, true);
@@ -144,7 +137,7 @@ int mouse_unbind_all() {
     return 0;
 }
 
-int mouse_binding_equals(MouseBinding* a, MouseBinding* b) {
+int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b) {
     unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
     if((REMOVEBUTTONMASK(CLEANMASK(a->modifiers))
         == REMOVEBUTTONMASK(CLEANMASK(b->modifiers)))
@@ -187,14 +180,14 @@ int mouse_bind_command(int argc, char** argv, Output output) {
     }
 
     // actually create a binding
-    MouseBinding* mb = new MouseBinding();
-    mb->button = button;
-    mb->modifiers = modifiers;
-    mb->action = function;
+    MouseBinding mb;
+    mb.button = button;
+    mb.modifiers = modifiers;
+    mb.action = function;
     for (int i = 3; i < argc; i++) {
-        mb->cmd.push_back(argv[i]);
+        mb.cmd.push_back(argv[i]);
     }
-    g_mouse_binds = g_list_prepend(g_mouse_binds, mb);
+    g_mouse_binds.push_back(mb);
     Client* client = get_current_client();
     if (client) {
         grab_client_buttons(client, true);
@@ -257,9 +250,16 @@ MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {
     MouseBinding mb = {};
     mb.modifiers = modifiers;
     mb.button = button;
-    GList* elem = g_list_find_custom(g_mouse_binds, &mb,
-                                     (GCompareFunc)mouse_binding_equals);
-    return elem ? ((MouseBinding*)elem->data) : nullptr;
+
+    auto found = std::find_if(g_mouse_binds.begin(), g_mouse_binds.end(),
+            [=](const MouseBinding &other) {
+                return mouse_binding_equals(&other, &mb) == 0;
+            });
+    if (found != g_mouse_binds.end()) {
+        return &*found;
+    } else {
+        return nullptr;
+    }
 }
 
 static void grab_client_button(MouseBinding* bind, Client* client) {
@@ -276,7 +276,9 @@ static void grab_client_button(MouseBinding* bind, Client* client) {
 void grab_client_buttons(Client* client, bool focused) {
     XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
     if (focused) {
-        g_list_foreach(g_mouse_binds, (GFunc)grab_client_button, client);
+        for (auto& bind : g_mouse_binds) {
+            grab_client_button(&bind, client);
+        }
     }
     unsigned int btns[] = { Button1, Button2, Button3 };
     for (int i = 0; i < LENGTH(btns); i++) {
