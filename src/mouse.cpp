@@ -48,28 +48,33 @@ void mouse_handle_event(XEvent* ev) {
         // there is no valid bind for this type of mouse event
         return;
     }
-    b->action(client, b->argc, b->argv);
+    b->action(client, b->cmd);
 }
 
-void mouse_initiate_move(Client* client, int argc, char** argv) {
-    (void) argc; (void) argv;
+void mouse_initiate_move(Client* client, const std::vector<std::string> &cmd) {
+    (void) cmd;
     mouse_initiate_drag(client, mouse_function_move);
 }
 
-void mouse_initiate_zoom(Client* client, int argc, char** argv) {
-    (void) argc; (void) argv;
+void mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd) {
+    (void) cmd;
     mouse_initiate_drag(client, mouse_function_zoom);
 }
 
-void mouse_initiate_resize(Client* client, int argc, char** argv) {
-    (void) argc; (void) argv;
+void mouse_initiate_resize(Client* client, const std::vector<std::string> &cmd) {
+    (void) cmd;
     mouse_initiate_drag(client, mouse_function_resize);
 }
 
-void mouse_call_command(Client* client, int argc, char** argv) {
+void mouse_call_command(Client* client, const std::vector<std::string> &cmd) {
     // TODO: add completion
     client->set_dragged(true);
-    call_command_no_output(argc, argv);
+
+    // Execute the bound command
+    std::ostringstream discardedOutput;
+    Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
+    Commands::call(input, discardedOutput);
+
     client->set_dragged(false);
 }
 
@@ -126,7 +131,6 @@ bool mouse_is_dragging() {
 static void mouse_binding_free(void* voidmb) {
     MouseBinding* mb = (MouseBinding*)voidmb;
     if (!mb) return;
-    argv_free(mb->argc, mb->argv);
     delete mb;
 }
 
@@ -187,8 +191,9 @@ int mouse_bind_command(int argc, char** argv, Output output) {
     mb->button = button;
     mb->modifiers = modifiers;
     mb->action = function;
-    mb->argc = argc - 3;
-    mb->argv = argv_duplicate(argc - 3, argv + 3);;
+    for (int i = 3; i < argc; i++) {
+        mb->cmd.push_back(argv[i]);
+    }
     g_mouse_binds = g_list_prepend(g_mouse_binds, mb);
     Client* client = get_current_client();
     if (client) {
