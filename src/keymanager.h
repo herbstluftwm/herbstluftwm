@@ -21,6 +21,7 @@ class Completion;
  * the help of XKeyGrabber
  */
 class KeyManager : public Object {
+private:
     /*!
      * Simple parser/container for a keymask regex (only needed internally by
      * KeyManager)
@@ -50,10 +51,9 @@ class KeyManager : public Object {
     };
 
     /*!
-     * Simple container class for tracking a keybinding (only supposed to be
-     * needed internally by KeyManager)
+     * Simple container class for tracking a keybinding (only used internally
+     * by KeyManager)
      */
-public: // still public for now because it is used elsewhere (TODO: fix that)
     class KeyBinding {
     public:
         KeyCombo keyCombo;
@@ -85,11 +85,11 @@ public:
         return xKeyGrabber_.getNumlockMask();
     }
 
-    //! Currently defined keybindings (TODO: Make this private as soon as possible)
-    std::vector<std::unique_ptr<KeyBinding>> binds;
-
 private:
     bool removeKeyBinding(const KeyCombo& comboToRemove);
+
+    //! Currently defined keybindings
+    std::vector<std::unique_ptr<KeyBinding>> binds;
 
     XKeyGrabber xKeyGrabber_;
 

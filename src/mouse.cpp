@@ -8,8 +8,6 @@
 #include "command.h"
 #include "frametree.h"
 #include "globals.h"
-#include "ipc-protocol.h"
-#include "keycombo.h"
 #include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
@@ -150,54 +148,7 @@ int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b) {
     }
 }
 
-int mouse_bind_command(int argc, char** argv, Output output) {
-    if (argc < 3) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    unsigned int modifiers = 0;
-    char* str = argv[1];
-
-    try {
-        auto tokens = KeyCombo::tokensFromString(str);
-        auto modifierSlice = vector<string>({tokens.begin(), tokens.end() - 1});
-        modifiers = KeyCombo::modifierMaskFromTokens(modifierSlice);
-    } catch (std::runtime_error &error) {
-        output << argv[0] << error.what();
-        return HERBST_INVALID_ARGUMENT;
-    }
-
-    // last one is the mouse button
-    const char* last_token = strlasttoken(str, KeyCombo::separators);
-    unsigned int button = string2button(last_token);
-    if (button == 0) {
-        output << argv[0] <<
-            ": Unknown mouse button \"" << last_token << "\"\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    MouseFunction function = string2mousefunction(argv[2]);
-    if (!function) {
-        output << argv[0] <<
-            ": Unknown mouse action \"" << argv[2] << "\"\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-
-    // actually create a binding
-    MouseBinding mb;
-    mb.button = button;
-    mb.modifiers = modifiers;
-    mb.action = function;
-    for (int i = 3; i < argc; i++) {
-        mb.cmd.push_back(argv[i]);
-    }
-    Root::get()->mouse->binds.push_front(mb);
-    Client* client = get_current_client();
-    if (client) {
-        grab_client_buttons(client, true);
-    }
-    return 0;
-}
-
-MouseFunction string2mousefunction(char* name) {
+MouseFunction string2mousefunction(const char* name) {
     static struct {
         const char* name;
         MouseFunction function;
@@ -240,13 +191,6 @@ unsigned int string2button(const char* name) {
     return 0;
 }
 
-
-void complete_against_mouse_buttons(const char* needle, char* prefix, Output output) {
-    for (int i = 0; i < LENGTH(string2button_table); i++) {
-        const char* buttonname = string2button_table[i].name;
-        try_complete_prefix(needle, buttonname, prefix, output);
-    }
-}
 
 std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button) {
     MouseBinding mb = {};
