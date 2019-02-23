@@ -23,14 +23,23 @@ trap "{ rm -rf $tmpdir; }" EXIT
 
 srcdir=$PWD
 pushd "$tmpdir"
-cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "$srcdir"
 
+###
+# Check #include order
+###
+fix_include --dry_run --sort_only --reorder "$srcdir"/src/*.h >&2
+
+###
+# Actually run include-what-you-use
+###
+export CXX=clang++ CC=clang LDXX=clang++ LD=clang
+cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "$srcdir"
 iwyu_tool -p . -j "$(nproc)" > iwyu.log
 
 if [[ -s iwyu.log ]]; then
     echo >&2 "Error: include-what-you-use has the following change requests:"
     cat >&2 iwyu.log
-    exit 1
-fi
 
-cat >&2 iwyu.log
+    # Do not make it fail yet:
+    # exit 1
+fi
