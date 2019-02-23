@@ -134,3 +134,18 @@ def test_layout_command(hlwm, running_clients, running_clients_num, num_splits):
     lines = [re.sub(r' [0-9]+% selection=[01]', '', l) for l in lines]
     assert dumped == '\n'.join(lines).replace(':', '')
 
+
+@pytest.mark.parametrize("running_clients_num,client2focus",
+            [(cnt, idx) for cnt in [3, 5] for idx in range(0, cnt)])
+@pytest.mark.parametrize("num_splits", [0, 1, 2, 3])
+def test_jumpto_within_tag(hlwm, running_clients, client2focus, num_splits):
+    for i in range(0, num_splits):
+        hlwm.call('split explode')
+    c = running_clients[client2focus]
+    if client2focus != 0:
+        assert hlwm.get_attr('clients.focus.winid') != c
+
+    hlwm.call(['jumpto', c])
+
+    assert hlwm.get_attr('clients.focus.winid') == c
+
