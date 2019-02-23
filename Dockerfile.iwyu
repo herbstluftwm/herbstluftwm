@@ -1,6 +1,7 @@
 FROM ubuntu:disco-20190204
 RUN apt-get update && apt-get -y install \
     cmake \
+    clang-7 \
     git \
     iwyu \
     libglib2.0-dev \
