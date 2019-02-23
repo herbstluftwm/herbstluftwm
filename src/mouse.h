@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "optional.h"
-#include "types.h"
 
 // various snap-flags
 enum SnapFlags {
@@ -65,8 +64,6 @@ void mouse_call_command(Client* client, const std::vector<std::string> &cmd);
 void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);
 void mouse_function_zoom(XMotionEvent* me);
-
-void complete_against_mouse_buttons(const char* needle, char* prefix, Output output);
 
 #endif
 

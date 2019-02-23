@@ -1,9 +1,10 @@
 import pytest
 
-# Note: Actually, buttons 4 and 5 (scroll wheel) should also be tested. But for
-# some unknown reason, those don't work in Xvfb when running tests on Travis,
-# so they are not included here.
-MOUSE_BUTTONS = [1, 2, 3]
+# Note: For unknown reasons, mouse buttons 4 and 5 (scroll wheel) do not work
+# in Xvfb when running tests on Travis. Therefore, we maintain two lists of
+# buttons:
+MOUSE_BUTTONS_THAT_EXIST = [1, 2, 3, 4, 5]
+MOUSE_BUTTONS_THAT_WORK = [1, 2, 3]
 
 
 @pytest.mark.parametrize('method', ['-F', '--all'])
@@ -33,7 +34,7 @@ def test_mousebind_unknown_action(hlwm):
     call.match('mousebind: Unknown mouse action "get"')
 
 
-@pytest.mark.parametrize('button', MOUSE_BUTTONS)
+@pytest.mark.parametrize('button', MOUSE_BUTTONS_THAT_WORK)
 def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
     hlwm.call('new_attr string my_press')
     hlwm.call(f'mousebind Button{button} call set_attr my_press yup')
@@ -44,7 +45,7 @@ def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
     assert hlwm.get_attr('my_press') == 'yup'
 
 
-@pytest.mark.parametrize('button', MOUSE_BUTTONS)
+@pytest.mark.parametrize('button', MOUSE_BUTTONS_THAT_WORK)
 def test_trigger_mouse_binding_with_modifier(hlwm, keyboard, mouse, button):
     hlwm.call('new_attr string my_press')
     hlwm.call(f'mousebind Mod1-Button{button} call set_attr my_press yup')
@@ -67,3 +68,31 @@ def test_overlapping_bindings_most_recent_one_counts(hlwm, mouse):
     mouse.click('2', client_id)
 
     assert hlwm.get_attr('my_press') == 'secondbind'
+
+
+def test_complete_mousebind_offers_all_mods_and_buttons(hlwm):
+    complete = hlwm.complete('mousebind', partial=True, position=1)
+
+    buttons = sum(([f'Button{i}', f'B{i}'] for i in MOUSE_BUTTONS_THAT_EXIST), [])
+    mods = ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super']
+    assert sorted(c[:-1] for c in complete) == sorted(mods + buttons)
+
+
+def test_complete_mousebind_after_button_offers_action(hlwm):
+    complete = hlwm.complete('mousebind B3', partial=False, position=2)
+
+    assert set(complete) == {'move', 'resize', 'zoom', 'call'}
+
+
+def test_complete_mousebind_with_call_action_offers_all_commands(hlwm):
+    complete = hlwm.complete('mousebind B1 call', position=3)
+
+    assert complete == hlwm.complete('', position=0)
+
+
+def test_complete_mousebind_validates_all_button(hlwm):
+    # Note: This might seem like a stupid test, but previous implementations
+    # ignored the invalid first modifier.
+    complete = hlwm.complete('mousebind Moo+Mo', partial=True, position=1)
+
+    assert complete == []
