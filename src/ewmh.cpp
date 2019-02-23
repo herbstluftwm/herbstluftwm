@@ -405,12 +405,12 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
             int direction = me->data.l[2];
             if (direction == _NET_WM_MOVERESIZE_MOVE
                 || direction == _NET_WM_MOVERESIZE_MOVE_KEYBOARD) {
-                mouse_initiate_move(client, 0, nullptr);
+                mouse_initiate_move(client, {});
             } else if (direction == _NET_WM_MOVERESIZE_CANCEL) {
                 if (mouse_is_dragging()) mouse_stop_drag();
             } else {
                 // anything else is a resize
-                mouse_initiate_resize(client, 0, nullptr);
+                mouse_initiate_resize(client, {});
             }
             break;
         }

@@ -22,15 +22,15 @@ class Client;
 class Monitor;
 
 typedef void (*MouseDragFunction)(XMotionEvent*);
-typedef void (*MouseFunction)(Client* client, int argc, char** argv);
+typedef void (*MouseFunction)(Client* client, const std::vector<std::string> &cmd);
 
-typedef struct MouseBinding {
+class MouseBinding {
+public:
     unsigned int modifiers;
     unsigned int button;
     MouseFunction action;
-    int     argc; // additional arguments
-    char**  argv;
-} MouseBinding;
+    std::vector<std::string> cmd;
+};
 
 int mouse_binding_equals(MouseBinding* a, MouseBinding* b);
 
@@ -56,10 +56,10 @@ void client_snap_vector(Client* client, Monitor* monitor,
 
 bool is_point_between(int point, int left, int right);
 
-void mouse_initiate_move(Client* client, int argc, char** argv);
-void mouse_initiate_zoom(Client* client, int argc, char** argv);
-void mouse_initiate_resize(Client* client, int argc, char** argv);
-void mouse_call_command(Client* client, int argc, char** argv);
+void mouse_initiate_move(Client* client, const std::vector<std::string> &cmd);
+void mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd);
+void mouse_initiate_resize(Client* client, const std::vector<std::string> &cmd);
+void mouse_call_command(Client* client, const std::vector<std::string> &cmd);
 /* some mouse drag functions */
 void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);
