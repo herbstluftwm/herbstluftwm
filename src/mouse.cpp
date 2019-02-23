@@ -193,13 +193,6 @@ unsigned int string2button(const char* name) {
 }
 
 
-void complete_against_mouse_buttons(const char* needle, char* prefix, Output output) {
-    for (int i = 0; i < LENGTH(string2button_table); i++) {
-        const char* buttonname = string2button_table[i].name;
-        try_complete_prefix(needle, buttonname, prefix, output);
-    }
-}
-
 std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button) {
     MouseBinding mb = {};
     mb.modifiers = modifiers;

@@ -10,12 +10,9 @@
 #include "completion.h"
 #include "glib-backports.h"
 #include "ipc-protocol.h"
-#include "key.h"
-#include "keycombo.h"
 #include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "mouse.h"
 #include "object.h"
 #include "root.h"
 #include "tag.h"
@@ -51,7 +48,6 @@ static const char* completion_special_winids[]= { "urgent", "", nullptr };
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
 static const char* completion_cycle_all_args[]= { "--skip-invisible", nullptr };
 static const char* completion_pm_one[]= { "+1", "-1", nullptr };
-static const char* completion_mouse_functions[]= { "move", "zoom", "resize", "call", nullptr };
 static const char* completion_detect_monitors_args[] =
     { "-l", "--list", "--no-disjoin", /* TODO: "--keep-small", */ nullptr };
 static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
@@ -64,7 +60,6 @@ static bool no_completion(int, char**, int) {
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
-static bool second_parameter_is_call(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
 static bool parameter_expected_offset_1(int argc, char** argv, int pos);
 static bool parameter_expected_offset_3(int argc, char** argv, int pos);
@@ -84,8 +79,6 @@ struct {
     { "!",              2,  parameter_expected_offset_1 },
     { "try",            2,  parameter_expected_offset_1 },
     { "silent",         2,  parameter_expected_offset_1 },
-    { "mousebind",      3,  second_parameter_is_call },
-    { "mousebind",      3,  parameter_expected_offset_3 },
     { "focus_nth",      2,  no_completion },
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
@@ -193,9 +186,6 @@ struct {
     { "!",              GE, 1,  complete_against_commands_1, 0 },
     { "try",            GE, 1,  complete_against_commands_1, 0 },
     { "silent",         GE, 1,  complete_against_commands_1, 0 },
-    { "mousebind",      EQ, 1,  complete_against_mouse_combinations, 0 },
-    { "mousebind",      EQ, 2,  nullptr, completion_mouse_functions },
-    { "mousebind",      GE, 3,  complete_against_commands_3, 0 },
     { "rename",         EQ, 1,  complete_against_tags, 0 },
     { "raise",          EQ, 1,  nullptr, completion_special_winids },
     { "raise",          EQ, 1,  complete_against_winids, 0 },
@@ -697,28 +687,6 @@ int complete_command(int argc, char** argv, Output output) {
     return complete_against_commands(argc, argv, position, output);
 }
 
-void complete_against_mouse_combinations(int argc, char** argv, int position,
-                                         Output output)
-{
-    if (argc < 1 || position < 1) {
-        return;
-    }
-    // complete the mouse combination
-    const char* needle = (position < argc) ? argv[position] : "";
-    const char* lasttok = strlasttoken(needle, KeyCombo::separators);
-    char* prefix = g_strdup(needle);
-    prefix[lasttok - needle] = '\0';
-    char separator = KeyCombo::separators[0];
-    if (lasttok != needle) {
-        // if there is a suffix, then the already used separator is before
-        // the start of the last token
-        separator = lasttok[-1];
-    }
-    complete_against_modifiers(lasttok, separator, prefix, output);
-    complete_against_mouse_buttons(lasttok, prefix, output);
-    g_free(prefix);
-}
-
 void complete_against_env(int argc, char** argv, int position,
                           Output output) {
     GString* curname = g_string_sized_new(30);
@@ -921,14 +889,6 @@ static bool first_parameter_is_tag(int argc, char** argv, int pos) {
 static bool first_parameter_is_flag(int argc, char** argv, int pos) {
     // only complete if first parameter is a flag like -i or -e
     if (argc >= 2 && argv[1][0] == '-' && pos == 2) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-static bool second_parameter_is_call(int argc, char** argv, int pos) {
-    if (argc >= 3 && !strcmp(argv[2], "call")) {
         return true;
     } else {
         return false;
