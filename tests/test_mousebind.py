@@ -18,6 +18,21 @@ def test_mouseunbind_all(hlwm, method, mouse):
     mouse.click('1')  # verify that binding got ungrabbed
 
 
+def test_mousebind_empty_command(hlwm):
+    call = hlwm.call_xfail('mousebind Button3 call')
+    call.match('mousebind: not enough arguments')
+
+
+def test_mousebind_unknown_button(hlwm):
+    call = hlwm.call_xfail('mousebind Button42 call quit')
+    call.match('mousebind: Unknown mouse button "Button42"')
+
+
+def test_mousebind_unknown_action(hlwm):
+    call = hlwm.call_xfail('mousebind Button1 get schwifty')
+    call.match('mousebind: Unknown mouse action "get"')
+
+
 @pytest.mark.parametrize('button', MOUSE_BUTTONS)
 def test_trigger_mouse_binding_without_modifier(hlwm, mouse, button):
     hlwm.call('new_attr string my_press')
