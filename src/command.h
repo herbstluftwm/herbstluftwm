@@ -5,7 +5,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "glib-backports.h"
 #include "types.h"
 
 // returns a command binding that internalizes object to given a command that

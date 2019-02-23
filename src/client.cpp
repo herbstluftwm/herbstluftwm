@@ -15,7 +15,6 @@
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
-#include "key.h"
 #include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
