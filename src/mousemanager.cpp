@@ -2,7 +2,6 @@
 
 #include <X11/cursorfont.h>
 
-#include "client.h"
 #include "globals.h"
 #include "mouse.h"
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <X11/Xlib.h>
+#include <vector>
 
 #include "mouse.h"
 #include "object.h"
