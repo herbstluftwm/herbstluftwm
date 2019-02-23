@@ -19,7 +19,7 @@ if ! (( iwyu_ver_maj > 0 || iwyu_ver_min >= 11 )); then
 fi
 
 tmpdir=$(mktemp -d)
-trap "{ rm -rf $tmpdir; }" EXIT
+trap '{ rm -rf "$tmpdir"; }' EXIT
 
 srcdir=$PWD
 pushd "$tmpdir"
