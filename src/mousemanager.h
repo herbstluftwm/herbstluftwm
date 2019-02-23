@@ -11,6 +11,8 @@ public:
     MouseManager();
     ~MouseManager();
 
+    int addMouseBindCommand(Input input, Output output);
+
     //! Currently defined mouse bindings (TODO: make this private as soon as possible)
     std::list<MouseBinding> binds;
 

@@ -36,12 +36,11 @@ public:
 
 int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b);
 
-int mouse_bind_command(int argc, char** argv, Output output);
 int mouse_unbind_all();
 std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button);
 
 unsigned int string2button(const char* name);
-MouseFunction string2mousefunction(char* name);
+MouseFunction string2mousefunction(const char* name);
 
 void grab_client_buttons(Client* client, bool focused);
 
