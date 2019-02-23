@@ -27,7 +27,7 @@ pushd "$tmpdir"
 ###
 # Check #include order
 ###
-fix_include --dry_run --sort_only --reorder "$srcdir"/src/*.h >&2
+fix_include --dry_run --sort_only --reorder "$srcdir"/src/*.h
 
 ###
 # Actually run include-what-you-use
