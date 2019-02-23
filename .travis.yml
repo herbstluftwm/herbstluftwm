@@ -91,4 +91,4 @@ jobs:
               # Installing IWYU in a container to get the most recent version:
               - docker build -t iwyu - <Dockerfile.iwyu
           script:
-              - docker run -v $PWD:/hlwm:ro iwyu bash -c 'cd /hlwm && ./iwyu.sh'
+              - docker run --rm -v $PWD:/hlwm:ro iwyu bash -c 'cd /hlwm && ./iwyu.sh'
