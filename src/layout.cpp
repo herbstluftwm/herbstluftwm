@@ -153,65 +153,6 @@ shared_ptr<HSFrame> HSFrame::root() {
     else return shared_from_this();
 }
 
-// /* FRAMETODO: Implement all this stuff... */
-//static void frame_append_caption(HSTree tree, Output output) {
-//    HSFrame* frame = (HSFrame*) tree;
-//    if (frame->type == TYPE_CLIENTS) {
-//        // list of clients
-//        output << g_layout_names[frame->content.clients.layout] << ":";
-//        HSClient** buf = frame->content.clients.buf;
-//        size_t i, count = frame->content.clients.count;
-//        for (i = 0; i < count; i++) {
-//            output << " 0x%lx" << std::hex << buf[i]->x11Window() << std::dec;
-//        }
-//        if (g_cur_frame == frame) {
-//            output << " [FOCUS]";
-//        }
-//    } else {
-//        // type == TYPE_FRAMES
-//        output
-//            << g_layout_names[frame->content.layout.align]
-//            << " "
-//            << frame->content.layout.fraction * 100 / FRACTION_UNIT
-//            << "% selection="
-//            << frame->content.layout.selection;
-//    }
-//}
-//
-//static size_t frame_child_count(HSTree tree) {
-//    HSFrame* frame = (HSFrame*) tree;
-//    return (frame->type == TYPE_CLIENTS) ? 0 : 2;
-//}
-//
-//static HSTreeInterface frame_nth_child(HSTree tree, size_t idx) {
-//    HSFrame* frame = (HSFrame*) tree;
-//    assert(frame->type != TYPE_CLIENTS);
-//    HSTreeInterface intf = {
-//        /* .nth_child  = */ frame_nth_child,
-//        /* .child_count    = */ frame_child_count,
-//        /* .append_caption = */ frame_append_caption,
-//        /* .data       = */ (idx == 0)
-//                        ? frame->content.layout.a
-//                        : frame->content.layout.b,
-//        /* .destructor = */ nullptr,
-//    };
-//    return intf;
-//}
-//
-void print_frame_tree(shared_ptr<HSFrame> frame, Output output) {
-    output << "TODO: implement print_frame_tree()\n";
-}
-//    HSTreeInterface frameintf = {
-//        /* .nth_child      = */ frame_nth_child,
-//        /* .child_count    = */ frame_child_count,
-//        /* .append_caption = */ frame_append_caption,
-//        /* .data           = */ (HSTree) frame,
-//        /* .destructor     = */ nullptr,
-//    };
-//    tree_print_to(&frameintf, output);
-//}
-
-
 bool HSFrame::isFocused() {
     auto p = parent_.lock();
     if (!p) {

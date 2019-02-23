@@ -226,7 +226,6 @@ int frame_change_fraction_command(int argc, char** argv, Output output);
 
 void reset_frame_colors();
 
-void print_frame_tree(std::shared_ptr<HSFrame> frame, Output output);
 int find_layout_by_name(char* name);
 int find_align_by_name(char* name);
 
