@@ -1,9 +1,10 @@
 #ifndef HERBSTLUFT_FRAME_TREE_H
 #define HERBSTLUFT_FRAME_TREE_H
 
+#include <functional>
 #include <memory>
 #include <string>
-#include <functional>
+
 #include "types.h"
 
 class Client;

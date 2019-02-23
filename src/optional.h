@@ -36,13 +36,13 @@
 # ifndef ___AK_STD_EXPERIMENTAL_OPTIONAL_HPP___
 # define ___AK_STD_EXPERIMENTAL_OPTIONAL_HPP___
 
-# include <utility>
-# include <type_traits>
-# include <initializer_list>
 # include <cassert>
 # include <functional>
-# include <string>
+# include <initializer_list>
 # include <stdexcept>
+# include <string>
+# include <type_traits>
+# include <utility>
 
 # define TR2_OPTIONAL_REQUIRES(...) typename ::std::enable_if<__VA_ARGS__::value, bool>::type = false
 

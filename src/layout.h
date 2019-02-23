@@ -1,10 +1,10 @@
 #ifndef __HERBSTLUFT_LAYOUT_H_
 #define __HERBSTLUFT_LAYOUT_H_
 
+#include <cassert>
 #include <cstdlib>
 #include <functional>
 #include <memory>
-#include <cassert>
 
 #include "glib-backports.h"
 #include "tilingresult.h"
