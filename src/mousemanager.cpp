@@ -143,5 +143,7 @@ void MouseManager::addMouseBindCompletion(Completion &complete) {
         complete.full({"move", "resize", "zoom", "call"});
     } else if (complete[1] == "call") {
         complete.completeCommands(2);
+    } else {
+        complete.none();
     }
 }
