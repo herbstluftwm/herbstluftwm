@@ -1,6 +1,13 @@
 import re
 import pytest
 
+def strip_winids(string):
+    """
+    Replaces all substrings that look like window IDs with a fixed string.
+    """
+    return re.sub(r'0x([0-9a-f]+)', '<windowid>', string)
+
+
 def helper_get_stack_as_list(hlwm):
     # extract all window IDs out of the stack command
     return re.findall(r'0x[0-9a-f]+', hlwm.call('stack').stdout)
@@ -35,3 +42,41 @@ def test_raise_bottom_client(hlwm):
     hlwm.call(['raise', c1])
 
     assert helper_get_stack_as_list(hlwm)[:-1] == [c1, c2]
+
+
+def test_stack_tree(hlwm):
+    # Simplified tree style:
+    hlwm.call('set tree_style "     - -"')
+
+    # Populate the stack:
+    hlwm.call('add tag2')
+    hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
+    hlwm.create_client()
+    hlwm.call('focus_monitor monitor2')
+    hlwm.call('split left')
+    hlwm.create_client()
+    # TODO: Make one client fullscreen (doesn't seem to work yet)
+
+    stack = hlwm.call('stack')
+
+    expected_stack = '''\
+  - 
+    - Monitor 1 ("monitor2") with tag "tag2"
+      - Focus-Layer
+        - Client <windowid> "sleep infinity"
+      - Fullscreen-Layer
+      - Normal Layer
+        - Client <windowid> "sleep infinity"
+      - Frame Layer
+        - Window <windowid>
+        - Window <windowid>
+    - Monitor 0 with tag "default"
+      - Focus-Layer
+        - Client <windowid> "sleep infinity"
+      - Fullscreen-Layer
+      - Normal Layer
+        - Client <windowid> "sleep infinity"
+      - Frame Layer
+        - Window <windowid>
+'''
+    assert strip_winids(stack.stdout) == expected_stack

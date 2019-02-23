@@ -2,8 +2,10 @@
 #define __HERBSTLUFT_MOUSE_H_
 
 #include <X11/Xlib.h>
+#include <string>
+#include <vector>
 
-#include "glib-backports.h"
+#include "optional.h"
 #include "types.h"
 
 // various snap-flags
@@ -18,52 +20,48 @@ enum SnapFlags {
 };
 
 // forward declarations
-class HSClient;
+class Client;
 class Monitor;
 
-void mouse_init();
-void mouse_destroy();
-
-
 typedef void (*MouseDragFunction)(XMotionEvent*);
-typedef void (*MouseFunction)(HSClient* client, int argc, char** argv);
+typedef void (*MouseFunction)(Client* client, const std::vector<std::string> &cmd);
 
-typedef struct MouseBinding {
+class MouseBinding {
+public:
     unsigned int modifiers;
     unsigned int button;
     MouseFunction action;
-    int     argc; // additional arguments
-    char**  argv;
-} MouseBinding;
+    std::vector<std::string> cmd;
+};
 
-int mouse_binding_equals(MouseBinding* a, MouseBinding* b);
+int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b);
 
 int mouse_bind_command(int argc, char** argv, Output output);
 int mouse_unbind_all();
-MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button);
+std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button);
 
 unsigned int string2button(const char* name);
 MouseFunction string2mousefunction(char* name);
 
-void grab_client_buttons(HSClient* client, bool focused);
+void grab_client_buttons(Client* client, bool focused);
 
 void mouse_handle_event(XEvent* ev);
-void mouse_initiate_drag(HSClient* client, MouseDragFunction function);
+void mouse_initiate_drag(Client* client, MouseDragFunction function);
 void mouse_stop_drag();
 bool mouse_is_dragging();
 void handle_motion_event(XEvent* ev);
 
 // get the vector to snap a client to it's neighbour
-void client_snap_vector(HSClient* client, Monitor* monitor,
+void client_snap_vector(Client* client, Monitor* monitor,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy);
 
 bool is_point_between(int point, int left, int right);
 
-void mouse_initiate_move(HSClient* client, int argc, char** argv);
-void mouse_initiate_zoom(HSClient* client, int argc, char** argv);
-void mouse_initiate_resize(HSClient* client, int argc, char** argv);
-void mouse_call_command(HSClient* client, int argc, char** argv);
+void mouse_initiate_move(Client* client, const std::vector<std::string> &cmd);
+void mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd);
+void mouse_initiate_resize(Client* client, const std::vector<std::string> &cmd);
+void mouse_call_command(Client* client, const std::vector<std::string> &cmd);
 /* some mouse drag functions */
 void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);

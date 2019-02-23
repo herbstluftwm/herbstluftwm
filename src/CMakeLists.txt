@@ -19,6 +19,7 @@ target_sources(herbstluftwm PRIVATE
     optional.h
     root.cpp root.h
     signal.h
+    link.h
     types.cpp types.h
     utils.cpp utils.h
     x11-types.cpp x11-types.h
@@ -35,14 +36,18 @@ target_sources(herbstluftwm PRIVATE
     ewmh.cpp ewmh.h
     floating.cpp floating.h
     framedecoration.cpp framedecoration.h
+    frametree.h frametree.cpp
     hookmanager.cpp hookmanager.h
     ipc-protocol.h
     ipc-server.cpp ipc-server.h
-    key.cpp	key.h
+    key.cpp key.h
+    keycombo.cpp keycombo.h
+    keymanager.cpp keymanager.h
     layout.cpp layout.h
     monitor.cpp monitor.h
     monitormanager.cpp monitormanager.h
     mouse.cpp mouse.h
+    mousemanager.cpp mousemanager.h
     namedhook.cpp namedhook.h
     rectangle.cpp rectangle.h
     rootcommands.cpp rootcommands.h
@@ -55,6 +60,7 @@ target_sources(herbstluftwm PRIVATE
     tilingresult.cpp tilingresult.h
     tmp.cpp tmp.h
     xconnection.cpp xconnection.h
+    xkeygrabber.cpp xkeygrabber.h
     )
 
 # we require C++11

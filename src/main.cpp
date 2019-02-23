@@ -19,11 +19,13 @@
 #include "clientmanager.h"
 #include "command.h"
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "ipc-server.h"
 #include "key.h"
+#include "keymanager.h"
 #include "layout.h"
 #include "monitormanager.h"
 #include "mouse.h"
@@ -38,6 +40,11 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::endl;
+using std::make_shared;
+using std::pair;
+using std::shared_ptr;
+using std::string;
 using std::unique_ptr;
 
 // globals:
@@ -95,15 +102,18 @@ void maprequest(Root* root, XEvent* event);
 void propertynotify(Root* root, XEvent* event);
 void unmapnotify(Root* root, XEvent* event);
 
-unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
-    RootCommands* root_commands = root->root_commands;
-    TagManager* tags = root->tags();
-    MonitorManager* monitors = root->monitors();
+unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
+    RootCommands* root_commands = root->root_commands.get();
+
     ClientManager* clients = root->clients();
-    Settings* settings = root->settings();
-    Tmp* tmp = root->tmp();
+    KeyManager *keys = root->keys();
+    MonitorManager* monitors = root->monitors();
     RuleManager* rules = root->rules();
-    std::initializer_list<std::pair<const std::string,CommandBinding>> init =
+    Settings* settings = root->settings();
+    TagManager* tags = root->tags();
+    Tmp* tmp = root->tmp();
+
+    std::initializer_list<pair<const string,CommandBinding>> init =
     {
         {"quit",           { quit } },
         {"echo",           echo},
@@ -117,24 +127,26 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"list_monitors",  {[monitors] (Output o) { return monitors->list_monitors(o);}}},
         {"set_monitors",   set_monitor_rects_command},
         {"disjoin_rects",  disjoin_rects_command},
-        {"list_keybinds",  { key_list_binds }},
+        {"list_keybinds",  { [keys] (Output o) { return keys->listKeybindsCommand(o); } }},
         {"list_padding",   monitors->byFirstArg(&Monitor::list_padding) },
-        {"keybind",        keybind},
-        {"keyunbind",      keyunbind},
+        {"keybind",        {keys, &KeyManager::addKeybindCommand,
+                                  &KeyManager::addKeybindCompletion}},
+        {"keyunbind",      {keys, &KeyManager::removeKeybindCommand,
+                                  &KeyManager::removeKeybindCompletion}},
         {"mousebind",      mouse_bind_command},
         {"mouseunbind",    { mouse_unbind_all }},
         {"spawn",          spawn},
         {"wmexec",         wmexec},
         {"emit_hook",      custom_hook_emit},
         {"bring",          frame_current_bring},
-        {"focus_nth",      frame_current_set_selection},
-        {"cycle",          frame_current_cycle_selection},
+        {"focus_nth",      { tags->frameCommand(&FrameTree::focus_nth) }},
+        {"cycle",          { tags->frameCommand(&FrameTree::cycle_selection) }},
         {"cycle_all",      cycle_all_command},
         {"cycle_layout",   frame_current_cycle_client_layout},
         {"cycle_frame",    cycle_frame_command},
         {"close",          { close_command }},
-        {"close_or_remove",{ close_or_remove_command }},
-        {"close_and_remove",{close_and_remove_command }},
+        {"close_or_remove",{ tags->frameCommand(&FrameTree::close_or_remove) }},
+        {"close_and_remove",{ tags->frameCommand(&FrameTree::close_and_remove) }},
         {"split",          frame_split_command},
         {"resize",         frame_change_fraction_command},
         {"focus_edge",     frame_focus_edge},
@@ -142,7 +154,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"shift_edge",     frame_move_window_edge},
         {"shift",          frame_move_window_command},
         {"shift_to_monitor",shift_to_monitor},
-        {"remove",         { frame_remove_command }},
+        {"remove",         { tags->frameCommand(&FrameTree::removeFrame) }},
         {"set",            { settings, &Settings::set_cmd,
                                        &Settings::set_complete }},
         {"get",            { settings, &Settings::get_cmd,
@@ -167,7 +179,7 @@ unique_ptr<CommandTable> commands(std::shared_ptr<Root> root) {
         {"merge_tag",      BIND_OBJECT(tags, removeTag)},
         {"rename",         BIND_OBJECT(tags, tag_rename_command) },
         {"move",           BIND_OBJECT(tags, tag_move_window_command) },
-        {"rotate",         { layout_rotate_command }},
+        {"rotate",         { tags->frameCommand(&FrameTree::rotate) }},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
         {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
         {"raise_monitor",  monitor_raise_command},
@@ -227,9 +239,9 @@ int quit() {
 }
 
 int version(Output output) {
-    output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << std::endl;
-    output << "Copyright (c) 2011-2014 Thorsten Wißmann" << std::endl;
-    output << "Released under the Simplified BSD License" << std::endl;
+    output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << endl;
+    output << "Copyright (c) 2011-2014 Thorsten Wißmann" << endl;
+    output << "Released under the Simplified BSD License" << endl;
     return 0;
 }
 
@@ -279,11 +291,12 @@ int print_layout_command(int argc, char** argv, Output output) {
     }
     assert(tag);
 
-    std::shared_ptr<HSFrame> frame = tag->frame->lookup(argc >= 3 ? argv[2] : "");
+    shared_ptr<HSFrame> frame = tag->frame->lookup(argc >= 3 ? argv[2] : "");
+    assert(frame);
     if (argc > 0 && !strcmp(argv[0], "dump")) {
-        frame->dump(output);
+        FrameTree::dump(frame, output);
     } else {
-        print_frame_tree(frame, output);
+        FrameTree::prettyPrint(frame, output);
     }
     return 0;
 }
@@ -306,19 +319,20 @@ int load_command(int argc, char** argv, Output output) {
         Monitor* m = get_current_monitor();
         tag = m->tag;
     }
+    (void) layout_string;
     assert(tag != nullptr);
-    char* rest = load_frame_tree(tag->frame, layout_string, output);
+    const char* rest = "To be implemented...";
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     Monitor* m = find_monitor_with_tag(tag);
     if (m) {
-        tag->frame->setVisibleRecursive(true);
+        tag->frame->root_->setVisibleRecursive(true);
         if (get_current_monitor() == m) {
-            frame_focus_recursive(tag->frame);
+            frame_focus_recursive(tag->frame->root_);
         }
         m->applyLayout();
     } else {
-        tag->frame->setVisibleRecursive(false);
+        tag->frame->root_->setVisibleRecursive(false);
     }
     if (!rest) {
         output << argv[0] << ": Error while parsing!\n";
@@ -500,7 +514,7 @@ int unsetenv_command(int argc, char** argv, Output output) {
 
 void event_on_configure(Root*, XEvent event) {
     XConfigureRequestEvent* cre = &event.xconfigurerequest;
-    HSClient* client = get_client_from_window(cre->window);
+    Client* client = get_client_from_window(cre->window);
     if (client) {
         bool changes = false;
         auto newRect = client->float_size_;
@@ -591,7 +605,7 @@ void scan(Root* root) {
 }
 
 void execute_autostart_file() {
-    std::string path;
+    string path;
     if (g_autostart_path) {
         path = g_autostart_path;
     } else {
@@ -606,7 +620,7 @@ void execute_autostart_file() {
                           "Neither $HOME or $XDG_CONFIG_HOME is set.\n");
                 return;
             }
-            path = std::string(home) + "/.config";
+            path = string(home) + "/.config";
         }
         path += "/" HERBSTLUFT_AUTOSTART;
     }
@@ -704,10 +718,8 @@ static struct {
     void (*init)();
     void (*destroy)();
 } g_modules[] = {
-    { key_init,         key_destroy         },
     { clientlist_init,  clientlist_destroy  },
     { ewmh_init,        ewmh_destroy        },
-    { mouse_init,       mouse_destroy       },
     { hook_init,        hook_destroy        },
 };
 
@@ -721,7 +733,7 @@ void buttonpress(Root* root, XEvent* event) {
     if (mouse_binding_find(be->state, be->button)) {
         mouse_handle_event(event);
     } else {
-        HSClient* client = get_client_from_window(be->window);
+        Client* client = get_client_from_window(be->window);
         if (client) {
             focus_client(client, false, true);
             if (root->settings->raise_on_click()) {
@@ -773,10 +785,10 @@ void enternotify(Root* root, XEvent* event) {
     if (!mouse_is_dragging()
         && root->settings()->focus_follows_mouse()
         && ce->focus == false) {
-        HSClient* c = get_client_from_window(ce->window);
-        std::shared_ptr<HSFrameLeaf> target;
+        Client* c = get_client_from_window(ce->window);
+        shared_ptr<HSFrameLeaf> target;
         if (c && c->tag()->floating == false
-              && (target = c->tag()->frame->frameWithClient(c))
+              && (target = c->tag()->frame->root_->frameWithClient(c))
               && target->getLayout() == LAYOUT_MAX
               && target->focusedClient() != c) {
             // don't allow focus_follows_mouse if another window would be
@@ -797,18 +809,18 @@ void focusin(Root* root, XEvent* event) {
     //HSDebug("name is: FocusIn\n");
 }
 
-void keypress(Root*, XEvent* event) {
+void keypress(Root* root, XEvent* event) {
     //HSDebug("name is: KeyPress\n");
-    handle_key_press(event);
+    root->keys()->handleKeyPress(event);
 }
 
-void mappingnotify(Root*, XEvent* event) {
+void mappingnotify(Root* root, XEvent* event) {
     {
         // regrab when keyboard map changes
         XMappingEvent *ev = &event->xmapping;
         XRefreshKeyboardMapping(ev);
         if(ev->request == MappingKeyboard) {
-            regrab_keys();
+            root->keys()->regrabAll();
             //TODO: mouse_regrab_all();
         }
     }
@@ -820,7 +832,7 @@ void motionnotify(Root*, XEvent* event) {
 
 void mapnotify(Root*, XEvent* event) {
     //HSDebug("name is: MapNotify\n");
-    HSClient* c;
+    Client* c;
     if ((c = get_client_from_window(event->xmap.window))) {
         // reset focus. so a new window gets the focus if it shall have the
         // input focus
@@ -857,7 +869,7 @@ void maprequest(Root* root, XEvent* event) {
 void propertynotify(Root*, XEvent* event) {
     // printf("name is: PropertyNotify\n");
     XPropertyEvent *ev = &event->xproperty;
-    HSClient* client;
+    Client* client;
     if (ev->state == PropertyNewValue) {
         if (is_ipc_connectable(event->xproperty.window)) {
             ipc_handle_connection(event->xproperty.window);
@@ -891,11 +903,11 @@ int main(int argc, char* argv[]) {
     XConnection* X = XConnection::connect();
     g_display = X->display();
     if (!g_display) {
-        std::cerr << "herbstluftwm: cannot open display" << std::endl;
+        std::cerr << "herbstluftwm: cannot open display" << endl;
         exit(EXIT_FAILURE);
     }
     if (X->checkotherwm()) {
-        std::cerr << "herbstluftwm: another window manager is already running" << std::endl;
+        std::cerr << "herbstluftwm: another window manager is already running" << endl;
         exit(EXIT_FAILURE);
     }
     // remove zombies on SIGCHLD
@@ -910,7 +922,7 @@ int main(int argc, char* argv[]) {
     g_root = X->root();
     XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
 
-    auto root = std::make_shared<Root>(g);
+    auto root = make_shared<Root>(g);
     Root::setRoot(root);
     //test_object_system();
 

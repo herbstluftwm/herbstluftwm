@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "layout.h"
@@ -14,16 +15,16 @@
 #include "tagmanager.h"
 #include "utils.h"
 
-using namespace std;
+using std::function;
+using std::make_pair;
+using std::string;
 
 MonitorManager* g_monitors;
 
-MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
+MonitorManager::MonitorManager()
     : ChildByIndex<Monitor>()
     , focus(*this, "focus")
     , by_name_(*this)
-    , tags_(tags)
-    , settings_(settings)
 {
     cur_monitor = 0;
     monitor_stack = new Stack();
@@ -32,6 +33,11 @@ MonitorManager::MonitorManager(Settings* settings, TagManager* tags)
 MonitorManager::~MonitorManager() {
     clearChildren();
     delete monitor_stack;
+}
+
+void MonitorManager::injectDependencies(Settings* s, TagManager* t) {
+    settings_ = s;
+    tags_ = t;
 }
 
 void MonitorManager::clearChildren() {
@@ -52,7 +58,7 @@ void MonitorManager::ensure_monitors_are_available() {
     HSTag* tag = tags_->ensure_tags_are_available();
     // add monitor with first tag
     Monitor* m = addMonitor(rect, tag);
-    m->tag->frame->setVisibleRecursive(true);
+    m->tag->frame->root_->setVisibleRecursive(true);
     cur_monitor = 0;
 
     monitor_update_focus_objects();
@@ -141,7 +147,7 @@ function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
 {
     return [this,cmd](Input input, Output output) -> int {
         Monitor *monitor;
-        std::string monitor_name;
+        string monitor_name;
         if (!(input >> monitor_name)) {
             monitor = get_current_monitor();
         } else {
@@ -201,8 +207,8 @@ void MonitorManager::removeMonitor(Monitor* monitor)
 
     // Hide all clients visible in monitor
     assert(monitor->tag != nullptr);
-    assert(monitor->tag->frame != nullptr);
-    monitor->tag->frame->setVisibleRecursive(false);
+    assert(monitor->tag->frame->root_ != nullptr);
+    monitor->tag->frame->root_->setVisibleRecursive(false);
 
     g_monitors->removeIndexed(monitorIdx);
 
@@ -221,7 +227,7 @@ void MonitorManager::removeMonitor(Monitor* monitor)
 int MonitorManager::addMonitor(Input input, Output output)
 {
     // usage: add_monitor RECTANGLE [TAG [NAME]]
-    std::string rectString, tagName, monitorName;
+    string rectString, tagName, monitorName;
     input >> rectString;
     if (!input) {
         return HERBST_NEED_MORE_ARGS;
@@ -260,14 +266,14 @@ int MonitorManager::addMonitor(Input input, Output output)
     }
 
     monitor->applyLayout();
-    tag->frame->setVisibleRecursive(true);
+    tag->frame->root_->setVisibleRecursive(true);
     emit_tag_changed(tag, g_monitors->size() - 1);
     drop_enternotify_events();
 
     return HERBST_EXIT_SUCCESS;
 }
 
-std::string MonitorManager::isValidMonitorName(std::string name) {
+string MonitorManager::isValidMonitorName(string name) {
     if (isdigit(name[0])) {
         return "Invalid name \"" + name + "\": The monitor name may not start with a number\n";
     }
@@ -293,11 +299,11 @@ void MonitorManager::lock() {
 }
 
 void MonitorManager::unlock() {
-    settings_->monitors_locked = max(0, settings_->monitors_locked() - 1);
+    settings_->monitors_locked = std::max(0, settings_->monitors_locked() - 1);
     lock_number_changed();
 }
 
-std::string MonitorManager::lock_number_changed() {
+string MonitorManager::lock_number_changed() {
     if (settings_->monitors_locked() < 0) {
         return "must be non-negative";
     }

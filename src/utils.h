@@ -5,12 +5,18 @@
 #include <X11/Xlib.h>
 #include <array>
 #include <cstddef>
+#include <ostream>
+#include <string>
 
-#include "glib-backports.h"
+#include "optional.h"
 #include "types.h"
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
+
+// CLAMP taken from GLib:
+#undef	CLAMP
+#define CLAMP(x, low, high)  (((x) > (high)) ? (high) : (((x) < (low)) ? (low) : (x)))
 
 int MOD(int x, int n);
 
@@ -28,32 +34,21 @@ int MOD(int x, int n);
 
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
-GString* window_property_to_g_string(Display* dpy, Window window, Atom atom);
-GString* window_class_to_g_string(Display* dpy, Window window);
-GString* window_instance_to_g_string(Display* dpy, Window window);
+std::string window_class_to_string(Display* dpy, Window window);
+std::experimental::optional<std::string> window_property_to_string(Display* dpy, Window window, Atom atom);
+std::string window_instance_to_string(Display* dpy, Window window);
 int window_pid(Display* dpy, Window window);
-
-typedef void* HSTree;
-struct HSTreeInterface;
-typedef struct HSTreeInterface {
-    struct HSTreeInterface  (*nth_child)(HSTree root, size_t idx);
-    size_t                  (*child_count)(HSTree root);
-    void                    (*append_caption)(HSTree root, Output output);
-    HSTree                  data;
-    void                    (*destructor)(HSTree data); /* how to free the data tree */
-} HSTreeInterface;
 
 class TreeInterface {
 public:
     TreeInterface() = default;
     virtual ~TreeInterface() = default;
-    virtual Ptr(TreeInterface) nthChild(size_t idx) = 0;
+    virtual std::shared_ptr<TreeInterface> nthChild(size_t idx) = 0;
     virtual size_t             childCount() = 0;
     virtual void               appendCaption(Output output) = 0;
 };
 
-void tree_print_to(Ptr(TreeInterface) intface, Output output);
-void tree_print_to(HSTreeInterface* intface, Output output);
+void tree_print_to(std::shared_ptr<TreeInterface> intface, Output output);
 
 
 bool is_herbstluft_window(Display* dpy, Window window);
@@ -78,8 +73,6 @@ void argv_free(int argc, char** argv);
 
 // tells if the intervals [a_left, a_right) [b_left, b_right) intersect
 bool intervals_intersect(int a_left, int a_right, int b_left, int b_right);
-
-void g_queue_remove_element(GQueue* queue, GList* elem);
 
 // find an element in an array buf with elems elements of size size.
 int array_find(const void* buf, size_t elems, size_t size, const void* needle);
@@ -147,6 +140,23 @@ std::unique_ptr<T> make_unique(Args&&... args)
 {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+
+//! Joins a container of strings with a given delimiter string
+template<class InContainer>
+std::string join_strings(const InContainer& in, const std::string& delim) {
+    auto first = in.begin();
+    auto last = in.end();
+    if (first == last) {
+        return {};
+    }
+
+    std::stringstream out;
+    out << *first;
+    for (auto iter = first + 1; iter != last; iter++)
+        out << delim << *iter;
+    return out.str();
+}
+
 
 #endif
 

@@ -4,13 +4,13 @@
 #include <X11/Xlib.h>
 #include <unordered_map>
 
-#include "child.h"
+#include "link.h"
 #include "client.h"
 #include "object.h"
 #include "signal.h"
 
 class Theme;
-class HSClient;
+class Client;
 class Settings;
 class Completion;
 
@@ -19,23 +19,24 @@ class Completion;
 class ClientManager : public Object
 {
 public:
-    ClientManager(Theme& theme, Settings& settings);
+    ClientManager();
     ~ClientManager() override;
+    void injectDependencies(Settings* s, Theme* t);
 
-    HSClient* client(Window window);
-    HSClient* client(const std::string &identifier);
-    const std::unordered_map<Window, HSClient*>&
+    Client* client(Window window);
+    Client* client(const std::string &identifier);
+    const std::unordered_map<Window, Client*>&
     clients() { return clients_; }
 
-    void add(HSClient* client);
+    void add(Client* client);
     void remove(Window window);
 
     void unmap_notify(Window win);
     void force_unmanage(Window win);
-    void force_unmanage(HSClient* client);
+    void force_unmanage(Client* client);
 
     Signal_<HSTag*> needsRelayout;
-    Child_<HSClient> focus;
+    Link_<Client> focus;
 
     int pseudotile_cmd(Input input, Output output);
     int fullscreen_cmd(Input input, Output output);
@@ -43,14 +44,14 @@ public:
     void fullscreen_complete(Completion& complete);
 
     // adds a new client to list of managed client windows
-    HSClient* manage_client(Window win, bool visible_already);
+    Client* manage_client(Window win, bool visible_already);
 
 protected:
     int clientSetAttribute(std::string attribute, Input input, Output output);
-    Theme& theme;
-    Settings& settings;
-    std::unordered_map<Window, HSClient*> clients_;
-    friend class HSClient;
+    Theme* theme;
+    Settings* settings;
+    std::unordered_map<Window, Client*> clients_;
+    friend class Client;
 };
 
 #endif

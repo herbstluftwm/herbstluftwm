@@ -13,11 +13,14 @@ the following, all user-visible changes are listed:
     * +monitors.by-name.+ is valid
     * +monitors..by-name.+ is *invalid*
 
- - Many boolean style settings were formely of type int. Now, these are
-   boolean settings.
+  - Many boolean style settings were formely of type int. Now, these are
+    boolean settings.
 
- - The 'toggle' command only works for boolean settings. For the former
-   behaviour for int-typed settings, use 'cycle_value'.
+  - The 'toggle' command only works for boolean settings. For the former
+    behaviour for int-typed settings, use 'cycle_value'.
 
- - Writing '%%' in the 'sprintf' format string now gives a literate '%', just
-   as printf. Formely it stayed '%%'.
+  - Writing '%%' in the 'sprintf' format string now gives a literate '%', just
+    as printf. Formely it stayed '%%'.
+
+  - The 'keybind' command now accepts all valid key symbols, even if they are
+    not present on the current keyboard layout at the time of setup.

@@ -6,18 +6,21 @@
 #include "ipc-protocol.h"
 #include "utils.h"
 
+using std::string;
+using std::to_string;
+
 /*!
  * Implements the "rule" IPC command
  */
 int RuleManager::addRuleCommand(Input input, Output output) {
-    HSRule rule;
+    Rule rule;
 
     // Assign default label (index will be incremented if adding the rule
     // actually succeeds)
-    rule.label = std::to_string(rule_label_index_);
+    rule.label = to_string(rule_label_index_);
 
     // Possible flags that apply to the rule as a whole:
-    std::map<std::string, bool> ruleFlags = {
+    std::map<string, bool> ruleFlags = {
         {"once", false},
         {"printlabel", false},
         {"prepend", false},
@@ -50,11 +53,11 @@ int RuleManager::addRuleCommand(Input input, Output output) {
 
         // Tokenize arg, expect something like foo=bar or foo~bar:
         char oper;
-        std::string lhs, rhs;
+        string lhs, rhs;
         std::tie(lhs, oper, rhs) = tokenize_arg(arg);
 
         // Check if lhs is a condition name
-        if (HSCondition::matchers.count(lhs)) {
+        if (Condition::matchers.count(lhs)) {
             bool success = rule.addCondition(lhs, oper, rhs.c_str(), negated, output);
             if (!success) {
                 return HERBST_INVALID_ARGUMENT;
@@ -63,7 +66,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         }
 
         // Check if lhs is a consequence name
-        if (HSConsequence::appliers.count(lhs)) {
+        if (Consequence::appliers.count(lhs)) {
             if (oper == '~') {
                 output << "rule: Operator ~ not valid for consequence \"" << lhs << "\"\n";
                 return HERBST_INVALID_ARGUMENT;
@@ -104,7 +107,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
 
     // Insert rule into list according to "prepend" flag
     auto insertAt = ruleFlags["prepend"] ? rules_.begin() : rules_.end();
-    rules_.insert(insertAt, make_unique<HSRule>(rule));
+    rules_.insert(insertAt, make_unique<Rule>(rule));
 
     return HERBST_EXIT_SUCCESS;
 }
@@ -113,7 +116,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
  * Implements the "unrule" IPC command
  */
 int RuleManager::unruleCommand(Input input, Output output) {
-    std::string arg;
+    string arg;
     if (!(input >> arg))
         return HERBST_NEED_MORE_ARGS;
 
@@ -148,7 +151,7 @@ int RuleManager::listRulesCommand(Output output) {
  *
  * \returns number of removed rules
  */
-size_t RuleManager::removeRules(std::string label) {
+size_t RuleManager::removeRules(string label) {
     auto countBefore = rules_.size();
 
     for (auto ruleIter = rules_.begin(); ruleIter != rules_.end();) {
@@ -164,13 +167,13 @@ size_t RuleManager::removeRules(std::string label) {
     return countAfter - countBefore;
 }
 
-std::tuple<std::string, char, std::string> RuleManager::tokenize_arg(std::string arg) {
+std::tuple<string, char, string> RuleManager::tokenize_arg(string arg) {
     if (arg.substr(0, 2) == "--") {
         arg.erase(0, 2);
     }
 
     auto operPos = arg.find_first_of("~=");
-    if (operPos == std::string::npos) {
+    if (operPos == string::npos) {
         throw std::invalid_argument("No operator in given arg: " + arg);
     }
     auto lhs = arg.substr(0, operPos);
@@ -190,20 +193,20 @@ void RuleManager::unruleCompletion(Completion& complete) {
 void RuleManager::addRuleCompletion(Completion& complete) {
     complete.full({ "not", "!", "prepend", "once", "printlabel" });
     complete.partial("label=");
-    for (auto&& matcher : HSCondition::matchers) {
+    for (auto&& matcher : Condition::matchers) {
         auto condName = matcher.first;
         complete.partial(condName + "=");
         complete.partial(condName + "~");
     }
-    for (auto&& applier : HSConsequence::appliers) {
+    for (auto&& applier : Consequence::appliers) {
         complete.partial(applier.first + "=");
     }
 }
 
 
 //! Evaluate rules against a given client
-HSClientChanges RuleManager::evaluateRules(HSClient* client) {
-    HSClientChanges changes(client);
+ClientChanges RuleManager::evaluateRules(Client* client) {
+    ClientChanges changes(client);
 
     auto ruleIter = rules_.begin();
     while (ruleIter != rules_.end()) {
@@ -220,7 +223,7 @@ HSClientChanges RuleManager::evaluateRules(HSClient* client) {
                 continue;
             }
 
-            matches = HSCondition::matchers.at(cond.name)(&cond, client);
+            matches = Condition::matchers.at(cond.name)(&cond, client);
 
             if (!matches && !cond.negated
                 && cond.name == "maxage") {
@@ -238,7 +241,7 @@ HSClientChanges RuleManager::evaluateRules(HSClient* client) {
         if (rule_match) {
             // apply all consequences
             for (auto& cons : rule->consequences) {
-                HSConsequence::appliers.at(cons.name)(&cons, client, &changes);
+                Consequence::appliers.at(cons.name)(&cons, client, &changes);
             }
         }
 

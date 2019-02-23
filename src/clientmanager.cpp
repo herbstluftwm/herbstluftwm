@@ -6,6 +6,7 @@
 #include "client.h"
 #include "completion.h"
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "layout.h"
@@ -17,12 +18,11 @@
 #include "tag.h"
 #include "utils.h"
 
-using namespace std;
+using std::endl;
+using std::string;
 
-ClientManager::ClientManager(Theme& theme_, Settings& settings_)
+ClientManager::ClientManager()
     : focus(*this, "focus")
-    , theme(theme_)
-    , settings(settings_)
 {
 }
 
@@ -39,7 +39,12 @@ ClientManager::~ClientManager()
     }
 }
 
-HSClient* ClientManager::client(Window window)
+void ClientManager::injectDependencies(Settings* s, Theme* t) {
+    settings = s;
+    theme = t;
+}
+
+Client* ClientManager::client(Window window)
 {
     auto entry = clients_.find(window);
     if (entry != clients_.end())
@@ -56,7 +61,7 @@ HSClient* ClientManager::client(Window window)
  *                  a decimal number its decimal window id.
  * \return          Pointer to the resolved client, or null, if client not found
  */
-HSClient* ClientManager::client(const std::string &identifier)
+Client* ClientManager::client(const string &identifier)
 {
     if (identifier.empty()) {
         // TODO: the frame doesn't provide us with a shared pointer yet
@@ -74,7 +79,7 @@ HSClient* ClientManager::client(const std::string &identifier)
     return client(win);
 }
 
-void ClientManager::add(HSClient* client)
+void ClientManager::add(Client* client)
 {
     clients_[client->window_] = client;
     client->needsRelayout.connect(needsRelayout);
@@ -87,7 +92,7 @@ void ClientManager::remove(Window window)
     clients_.erase(window);
 }
 
-HSClient* ClientManager::manage_client(Window win, bool visible_already) {
+Client* ClientManager::manage_client(Window win, bool visible_already) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
         return nullptr;
@@ -98,11 +103,11 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     }
 
     // init client
-    auto client = new HSClient(win, visible_already, *this);
+    auto client = new Client(win, visible_already, *this);
     Monitor* m = get_current_monitor();
 
     // apply rules
-    HSClientChanges changes = Root::get()->rules()->evaluateRules(client);
+    ClientChanges changes = Root::get()->rules()->evaluateRules(client);
     if (!changes.tag_name.empty()) {
         client->setTag(find_tag(changes.tag_name.c_str()));
     }
@@ -132,7 +137,7 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
     }
 
     // Reuse the keymask string
-    client->keymask_ = changes.keymask;
+    client->keyMask_ = changes.keyMask;
 
     if (!changes.manage) {
         // map it... just to be sure
@@ -149,17 +154,17 @@ HSClient* ClientManager::manage_client(Window win, bool visible_already) {
         client->setTag(m->tag);
     }
     // insert window to the stack
-    client->slice = slice_create_client(client);
-    client->tag()->stack->insert_slice(client->slice);
+    client->slice = Slice::makeClientSlice(client);
+    client->tag()->stack->insertSlice(client->slice);
     // insert window to the tag
-    client->tag()->frame->lookup(changes.tree_index.c_str())
+    FrameTree::focusedFrame(client->tag()->frame->lookup(changes.tree_index))
                  ->insertClient(client);
     if (changes.focus) {
         // give focus to window if wanted
         // TODO: make this faster!
         // WARNING: this solution needs O(C + exp(D)) time where W is the count
         // of clients on this tag and D is the depth of the binary layout tree
-        client->tag()->frame->focusClient(client);
+        client->tag()->frame->root_->focusClient(client);
     }
 
     ewmh_window_update_tag(client->window_, client->tag());
@@ -205,15 +210,15 @@ void ClientManager::unmap_notify(Window win) {
     }
 }
 
-void ClientManager::force_unmanage(HSClient* client) {
+void ClientManager::force_unmanage(Client* client) {
     if (client->dragged_) {
         mouse_stop_drag();
     }
     if (client->tag() && client->slice) {
-        client->tag()->stack->remove_slice(client->slice);
+        client->tag()->stack->removeSlice(client->slice);
     }
     // remove from tag
-    client->tag()->frame->removeClient(client);
+    client->tag()->frame->root_->removeClient(client);
     // ignore events from it
     XSelectInput(g_display, client->window_, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);
@@ -239,7 +244,7 @@ int ClientManager::clientSetAttribute(string attribute,
                                       Output output)
 {
     string value = input.empty() ? "toggle" : input.front();
-    HSClient* c = get_current_client();
+    Client* c = get_current_client();
     if (c) {
         Attribute* a = c->attribute(attribute);
         if (!a) return HERBST_UNKNOWN_ERROR;
@@ -247,7 +252,7 @@ int ClientManager::clientSetAttribute(string attribute,
         if (error_message != "") {
             output << input.command() << ": illegal argument \""
                    << value << "\": "
-                   << error_message << std::endl;
+                   << error_message << endl;
             return HERBST_INVALID_ARGUMENT;
         }
     }

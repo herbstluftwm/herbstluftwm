@@ -4,17 +4,21 @@
 #include "child.h"
 #include "object.h"
 
+#include <memory>
+
 // new object tree root.
 
-class TagManager;
-class HookManager;
 class ClientManager;
+class HookManager;
+class KeyManager;
 class MonitorManager;
-class Theme;
-class Settings;
-class Tmp;
+class MouseManager;
 class RootCommands;
 class RuleManager;
+class Settings;
+class TagManager;
+class Theme;
+class Tmp;
 
 class Globals {
 public:
@@ -33,19 +37,23 @@ public:
     Root(Globals g);
     ~Root() override;
 
-    Child_<Settings> settings;
+    // (in alphabetical order)
     Child_<ClientManager> clients;
-    Child_<TagManager> tags;
-    Child_<MonitorManager> monitors;
     Child_<HookManager> hooks;
+    Child_<KeyManager> keys;
+    Child_<MonitorManager> monitors;
+    Child_<MouseManager> mouse;
+    Child_<RuleManager> rules;
+    Child_<Settings> settings;
+    Child_<TagManager> tags;
     Child_<Theme> theme;
     Child_<Tmp> tmp;
-    Child_<RuleManager> rules;
-    RootCommands* root_commands;
+
     Globals globals;
+    std::unique_ptr<RootCommands> root_commands;
 
 private:
-    static std::shared_ptr<Root> root_;
+    static std::shared_ptr<Root> root_; // Using "pimpl" to avoid include
 };
 
 

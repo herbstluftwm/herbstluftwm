@@ -4,6 +4,7 @@
 
 #include "client.h"
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "layout.h"
@@ -12,22 +13,24 @@
 #include "stack.h"
 #include "utils.h"
 
-using namespace std;
+using std::function;
+using std::string;
+using std::vector;
 
 TagManager* global_tags;
 
-TagManager::TagManager(Settings* settings)
+TagManager::TagManager()
     : ChildByIndex()
     , by_name_(*this)
-    , settings_(settings)
 {
 }
 
-void TagManager::setMonitorManager(MonitorManager* m_) {
-    monitors_ = m_;
+void TagManager::injectDependencies(MonitorManager* m, Settings *s) {
+    monitors_ = m;
+    settings_ = s;
 }
 
-HSTag* TagManager::find(const std::string& name) {
+HSTag* TagManager::find(const string& name) {
     for (auto t : *this) {
         if (t->name == name) {
             return t;
@@ -36,7 +39,7 @@ HSTag* TagManager::find(const std::string& name) {
     return {};
 }
 
-HSTag* TagManager::add_tag(const std::string& name) {
+HSTag* TagManager::add_tag(const string& name) {
     HSTag* find_result = find(name);
     if (find_result) {
         // nothing to do
@@ -65,7 +68,7 @@ int TagManager::tag_add_command(Input input, Output output) {
 }
 
 int TagManager::removeTag(Input input, Output output) {
-    std::string tagNameToRemove;
+    string tagNameToRemove;
     if (!(input >> tagNameToRemove)) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -93,18 +96,18 @@ int TagManager::removeTag(Input input, Output output) {
     all_monitors_replace_previous_tag(tagToRemove, targetTag);
 
     // Collect all clients in tag
-    vector<HSClient*> clients;
-    tagToRemove->frame->foreachClient([&clients](HSClient* client) {
+    vector<Client*> clients;
+    tagToRemove->frame->root_->foreachClient([&clients](Client* client) {
         clients.push_back(client);
     });
 
     // Move clients to target tag
     for (auto client : clients) {
-        client->tag()->stack->remove_slice(client->slice);
+        client->tag()->stack->removeSlice(client->slice);
         client->setTag(targetTag);
-        client->tag()->stack->insert_slice(client->slice);
+        client->tag()->stack->insertSlice(client->slice);
         ewmh_window_update_tag(client->window_, client->tag());
-        targetTag->frame->insertClient(client);
+        targetTag->frame->focusedFrame()->insertClient(client);
     }
 
     // Make transferred clients visible if target tag is visible
@@ -129,7 +132,7 @@ int TagManager::removeTag(Input input, Output output) {
 }
 
 int TagManager::tag_rename_command(Input input, Output output) {
-    std::string old_name, new_name;
+    string old_name, new_name;
     if (!(input >> old_name >> new_name)) {
         return HERBST_NEED_MORE_ARGS;
     }
@@ -194,14 +197,14 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
 }
 
 void TagManager::moveFocusedClient(HSTag* target) {
-    HSClient* client = monitors_->focus()->tag->frame->focusedClient();
+    Client* client = monitors_->focus()->tag->frame->root_->focusedClient();
     if (!client) {
         return;
     }
     moveClient(client, target);
 }
 
-void TagManager::moveClient(HSClient* client, HSTag* target) {
+void TagManager::moveClient(Client* client, HSTag* target) {
     HSTag* tag_source = client->tag();
     Monitor* monitor_source = find_monitor_with_tag(tag_source);
     if (tag_source == target) {
@@ -209,14 +212,14 @@ void TagManager::moveClient(HSClient* client, HSTag* target) {
         return;
     }
     Monitor* monitor_target = find_monitor_with_tag(target);
-    tag_source->frame->removeClient(client);
+    tag_source->frame->root_->removeClient(client);
     // insert window into target
-    target->frame->insertClient(client);
+    target->frame->focusedFrame()->insertClient(client);
     // enfoce it to be focused on the target tag
-    target->frame->focusClient(client);
-    client->tag()->stack->remove_slice(client->slice);
+    target->frame->root_->focusClient(client);
+    client->tag()->stack->removeSlice(client->slice);
     client->setTag(target);
-    client->tag()->stack->insert_slice(client->slice);
+    client->tag()->stack->insertSlice(client->slice);
     ewmh_window_update_tag(client->window_, client->tag());
 
     // refresh things, hide things, layout it, and then show it if needed
@@ -231,10 +234,10 @@ void TagManager::moveClient(HSClient* client, HSTag* target) {
         client->set_visible(true);
     }
     if (monitor_target == get_current_monitor()) {
-        frame_focus_recursive(monitor_target->tag->frame);
+        frame_focus_recursive(monitor_target->tag->frame->root_);
     }
     else if (monitor_source == get_current_monitor()) {
-        frame_focus_recursive(monitor_source->tag->frame);
+        frame_focus_recursive(monitor_source->tag->frame->root_);
     }
     tag_set_flags_dirty();
 }
@@ -268,4 +271,18 @@ int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
     moveFocusedClient(tag);
     return 0;
 }
+
+function<int(Input, Output)> TagManager::frameCommand(FrameCommand cmd) {
+    return [cmd](Input input, Output output) -> int {
+        // TODO: use this->focus->frame as soon as we have it.
+        return cmd(*(get_current_monitor()->tag->frame), input, output);
+    };
+}
+function<int()> TagManager::frameCommand(function<int(FrameTree&)> cmd) {
+    return [cmd]() -> int {
+        // TODO: use this->focus->frame as soon as we have it.
+        return cmd(*(get_current_monitor()->tag->frame));
+    };
+}
+
 

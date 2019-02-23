@@ -7,12 +7,14 @@
 
 class Settings;
 class MonitorManager;
-class HSClient;
+class Client;
+class FrameTree;
 
+typedef std::function<int(FrameTree&,Input,Output)> FrameCommand;
 class TagManager : public ChildByIndex<HSTag> {
 public:
-    TagManager(Settings* settings);
-    void setMonitorManager(MonitorManager* monitors);
+    TagManager();
+    void injectDependencies(MonitorManager* m, Settings *s);
 
     int removeTag(Input input, Output output);
     int tag_add_command(Input input, Output output);
@@ -23,8 +25,10 @@ public:
     HSTag* find(const std::string& name);
     HSTag* ensure_tags_are_available();
     HSTag* byIndexStr(const std::string& index_str, bool skip_visible_tags);
-    void moveClient(HSClient* client, HSTag* target);
+    void moveClient(Client* client, HSTag* target);
     void moveFocusedClient(HSTag* target);
+    std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
+    std::function<int()> frameCommand(std::function<int(FrameTree&)> cmd);
 private:
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency

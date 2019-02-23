@@ -11,7 +11,7 @@
 #include "object.h"
 #include "x11-types.h"
 
-class HSClient;
+class Client;
 class Settings;
 
 
@@ -44,7 +44,7 @@ public:
 
 class Decoration {
 public:
-    Decoration(HSClient* client_, Settings& settings_);
+    Decoration(Client* client_, Settings& settings_);
     void createWindow();
     virtual ~Decoration();
     // resize such that the decorated outline of the window fits into rect
@@ -54,7 +54,7 @@ public:
     void resize_inner(Rectangle rect, const DecorationScheme& scheme);
     void change_scheme(const DecorationScheme& scheme);
 
-    static HSClient* toClient(Window decoration_window);
+    static Client* toClient(Window decoration_window);
 
     Window decorationWindow() { return decwin; }
     Rectangle last_inner() const { return last_inner_rect; }
@@ -83,9 +83,9 @@ private:
     // unmap
     Window                  bgwin;
 private:
-    HSClient* client_; // the client to decorate
+    Client* client_; // the client to decorate
     Settings& settings_;
-    static std::map<Window,HSClient*> decwin2client;
+    static std::map<Window,Client*> decwin2client;
 };
 
 class DecTriple : public DecorationScheme {

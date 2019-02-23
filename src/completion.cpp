@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+using std::string;
+
 /** Construct a completion context
  *
  * args         The arguments (without the command name)
@@ -31,16 +33,16 @@ Completion::Completion(const Completion& other)
 void Completion::operator=(const Completion& other) {
 }
 
-void Completion::full(const std::string& word) {
+void Completion::full(const string& word) {
     if (prefixOf(needle_, word)) {
         output_ << escape(word) << (shellOutput_ ? " \n" : "\n");
-        // std::cout << "add " << word << std::endl;
+        // std::cout << "add " << word << endl;
     } else {
-        // std::cout << needle_ << " not prefix of " << word << std::endl;
+        // std::cout << needle_ << " not prefix of " << word << endl;
     }
 }
 
-void Completion::full(const std::initializer_list<std::string>& wordList) {
+void Completion::full(const std::initializer_list<string>& wordList) {
     for (auto& w : wordList) {
         full(w);
     }
@@ -51,7 +53,7 @@ void Completion::none() {
 }
 
 //! Return the given string posix sh escaped if in shell output mode
-std::string Completion::escape(const std::string& str) {
+string Completion::escape(const string& str) {
     return str;
 }
 
@@ -60,13 +62,13 @@ bool Completion::noParameterExpected() const {
     return noParameterExpected_;
 }
 
-bool Completion::prefixOf(const std::string& shorter, const std::string& longer)
+bool Completion::prefixOf(const string& shorter, const string& longer)
 {
     auto res = std::mismatch(shorter.begin(), shorter.end(), longer.begin());
     return res.first == shorter.end();
 }
 
-void Completion::partial(const std::string& word) {
+void Completion::partial(const string& word) {
     if (prefixOf(needle_, word)) {
         // partial completions never end with a space, regardless of
         // shellOutput mode
@@ -74,7 +76,7 @@ void Completion::partial(const std::string& word) {
     }
 }
 
-const std::string& Completion::needle() const
+const string& Completion::needle() const
 {
     return needle_;
 }
@@ -84,7 +86,7 @@ const std::string& Completion::needle() const
  * if for a int 'index' the expression operator==(index) is true, then
  * operator[](index) is the same as needle();
  */
-std::string Completion::operator[](size_t index) const {
+string Completion::operator[](size_t index) const {
     auto it = args_.begin() + index;
     if (it == args_.end()) {
         return "";
@@ -108,6 +110,20 @@ Completion Completion::shifted(size_t offset) const {
         shellOutput_,
         output_);
 }
+
+//! Complete against all available commands, starting at the given offset
+void Completion::completeCommands(size_t offset) {
+    Completion thisShifted = shifted(offset);
+    Commands::complete(thisShifted);
+
+    if (thisShifted.ifInvalidArguments()) {
+        thisShifted.invalidArguments();
+    }
+    if (thisShifted.noParameterExpected()) {
+        thisShifted.none();
+    }
+}
+
 
 void Completion::invalidArguments() {
     invalidArgument_ = true;

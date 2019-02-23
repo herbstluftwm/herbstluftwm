@@ -5,6 +5,7 @@
 
 #include "attribute_.h"
 #include "object.h"
+#include "stack.h"
 #include "x11-types.h"
 
 class HSTag;
@@ -22,7 +23,7 @@ public:
 
     HSTag*      tag;    // currently viewed tag
     HSTag*      tag_previous;    // previously viewed tag
-    struct Slice*    slice;  // slice in the monitor stack
+    Slice* slice;  // slice in the monitor stack
     Attribute_<std::string>   name;
     Attribute_<unsigned long> index;
     DynAttribute_<std::string>   tag_string;
@@ -48,6 +49,7 @@ public:
     bool setTag(HSTag* new_tag);
     void applyLayout();
     void restack();
+    std::string getDescription();
 private:
     std::string getTagString();
     std::string setTagString(std::string new_tag);

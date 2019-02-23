@@ -12,8 +12,6 @@
 #include "utils.h"
 #include "x11-utils.h"
 
-using namespace std;
-
 FrameDecoration::FrameDecoration(HSTag* tag_, Settings* settings_)
     : visible(false)
     , window_transparent(false)
@@ -46,14 +44,14 @@ FrameDecoration::FrameDecoration(HSTag* tag_, Settings* settings_)
     XFree(hint);
 
     // insert it to the stack
-    slice = slice_create_frame(window);
-    tag->stack->insert_slice(slice);
+    slice = Slice::makeFrameSlice(window);
+    tag->stack->insertSlice(slice);
 }
 
 FrameDecoration::~FrameDecoration() {
     XDestroyWindow(g_display, window);
-    tag->stack->remove_slice(slice);
-    slice_destroy(slice);
+    tag->stack->removeSlice(slice);
+    delete slice;
 }
 
 void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {

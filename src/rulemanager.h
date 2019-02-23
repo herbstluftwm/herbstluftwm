@@ -13,7 +13,7 @@ public:
     int unruleCommand(Input input, Output output);
     void unruleCompletion(Completion& complete);
     int listRulesCommand(Output output);
-    HSClientChanges evaluateRules(HSClient* client);
+    ClientChanges evaluateRules(Client* client);
 
 private:
     size_t removeRules(std::string label);
@@ -23,5 +23,5 @@ private:
     unsigned long long rule_label_index_ = 0;
 
     //! Currently active rules
-    std::list<std::unique_ptr<HSRule>> rules_;
+    std::list<std::unique_ptr<Rule>> rules_;
 };

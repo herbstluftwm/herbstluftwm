@@ -5,6 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <memory>
 
 #include "attribute_.h"
 #include "command.h"
@@ -12,13 +13,18 @@
 #include "ipc-protocol.h"
 #include "root.h"
 
-using namespace std;
+using std::endl;
+using std::function;
+using std::pair;
+using std::string;
+using std::unique_ptr;
+using std::vector;
 
 RootCommands::RootCommands(Root* root_) : root(root_) {
 }
 
 int RootCommands::get_attr_cmd(Input in, Output output) {
-    std::string attrName;
+    string attrName;
     if (!(in >> attrName)) return HERBST_NEED_MORE_ARGS;
 
     Attribute* a = getAttribute(attrName, output);
@@ -28,25 +34,25 @@ int RootCommands::get_attr_cmd(Input in, Output output) {
 }
 
 int RootCommands::set_attr_cmd(Input in, Output output) {
-    std::string path, new_value;
+    string path, new_value;
     if (!(in >> path >> new_value)) return HERBST_NEED_MORE_ARGS;
 
     Attribute* a = getAttribute(path, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
-    std::string error_message = a->change(new_value);
+    string error_message = a->change(new_value);
     if (error_message.empty()) {
         return 0;
     } else {
         output << in.command() << ": \""
             << in.front() << "\" is not a valid value for "
             << a->name() << ": "
-            << error_message << std::endl;
+            << error_message << endl;
         return HERBST_INVALID_ARGUMENT;
     }
 }
 
 int RootCommands::attr_cmd(Input in, Output output) {
-    std::string path = "", new_value = "";
+    string path = "", new_value = "";
     in >> path >> new_value;
     std::ostringstream dummy_output;
     Object* o = root;
@@ -68,24 +74,24 @@ int RootCommands::attr_cmd(Input in, Output output) {
         return 0;
     } else {
         // another argument -> set the value
-        std::string error_message = a->change(new_value);
+        string error_message = a->change(new_value);
         if (error_message.empty()) {
             return 0;
         } else {
             output << in.command() << ": \""
                 << new_value << "\" is not a valid value for "
                 << a->name() << ": "
-                << error_message << std::endl;
+                << error_message << endl;
             return HERBST_INVALID_ARGUMENT;
         }
     }
 }
 
-Attribute* RootCommands::getAttribute(std::string path, Output output) {
+Attribute* RootCommands::getAttribute(string path, Output output) {
     auto attr_path = Object::splitPath(path);
     auto child = root->child(attr_path.first);
     if (!child) {
-        output << "No such object " << attr_path.first.join('.') << std::endl;
+        output << "No such object " << attr_path.first.join('.') << endl;
         return nullptr;
     }
     Attribute* a = child->attribute(attr_path.second);
@@ -99,20 +105,20 @@ Attribute* RootCommands::getAttribute(std::string path, Output output) {
         }
         output << object_path
                << " has no attribute \"" << attr_path.second << "\""
-               << std::endl;
+               << endl;
         return nullptr;
     }
     return a;
 }
 
 int RootCommands::print_object_tree_command(Input in, Output output) {
-    auto path = Path(in.empty() ? std::string("") : in.front()).toVector();
+    auto path = Path(in.empty() ? string("") : in.front()).toVector();
     while (!path.empty() && path.back().empty()) {
         path.pop_back();
     }
     auto child = root->child(path);
     if (!child) {
-        output << "No such object " << Path(path).join('.') << std::endl;
+        output << "No such object " << Path(path).join('.') << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     child->printTree(output, Path(path).join('.'));
@@ -190,7 +196,7 @@ int RootCommands::sprintf_cmd(Input input, Output output)
 }
 
 
-Attribute* RootCommands::newAttributeWithType(std::string typestr, std::string attr_name, Output output) {
+Attribute* RootCommands::newAttributeWithType(string typestr, string attr_name, Output output) {
     std::map<string, function<Attribute*(string)>> name2constructor {
     { "bool",  [](string n) { return new Attribute_<bool>(n, false); }},
     { "color", [](string n) { return new Attribute_<Color>(n, {"black"}); }},
@@ -236,6 +242,7 @@ int RootCommands::new_attr_cmd(Input input, Output output)
     Attribute* a = newAttributeWithType(type, attr_name, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
     obj->addAttribute(a);
+    userAttributes_.push_back(unique_ptr<Attribute>(a));
     return 0;
 }
 
@@ -253,7 +260,12 @@ int RootCommands::remove_attr_cmd(Input input, Output output)
         return HERBST_INVALID_ARGUMENT;
     }
     a->detachFromOwner();
-    delete a;
+    userAttributes_.erase(
+        std::remove_if(
+            userAttributes_.begin(),
+            userAttributes_.end(),
+            [a](const unique_ptr<Attribute>& p) { return p.get() == a; }),
+        userAttributes_.end());
     return 0;
 }
 
@@ -310,7 +322,7 @@ int RootCommands::compare_cmd(Input input, Output output)
     //    1 if the first value is greater
     //    0 if the the values match
     //    HERBST_INVALID_ARGUMENT if there was a parsing error
-    map<string, pair<bool, vector<int> > > operators {
+    std::map<string, pair<bool, vector<int> > > operators {
         // map operator names to "for numeric types only" and possible return codes
         { "=",  { false, { 0 }, }, },
         { "!=", { false, { -1, 1 } }, },
@@ -319,7 +331,7 @@ int RootCommands::compare_cmd(Input input, Output output)
         { "le", { true, { -1, 0 } }, },
         { "lt", { true, { -1    } }, },
     };
-    map<Type, pair<bool, function<int(string,string,Output)>>> type2compare {
+    std::map<Type, pair<bool, function<int(string,string,Output)>>> type2compare {
         // map a type name to "is it numeric" and a comperator function
         { Type::ATTRIBUTE_INT,      { true,  parse_and_compare<int> }, },
         { Type::ATTRIBUTE_ULONG,    { true,  parse_and_compare<int> }, },
@@ -360,9 +372,9 @@ int RootCommands::compare_cmd(Input input, Output output)
 }
 
 void RootCommands::completeObjectPath(Completion& complete, bool attributes,
-                                      std::function<bool(Attribute*)> attributeFilter)
+                                      function<bool(Attribute*)> attributeFilter)
 {
-    ArgList objectPathArgs = get<0>(Object::splitPath(complete.needle()));
+    ArgList objectPathArgs = std::get<0>(Object::splitPath(complete.needle()));
     string objectPath = objectPathArgs.join(OBJECT_PATH_SEPARATOR);
     if (objectPath != "") objectPath += OBJECT_PATH_SEPARATOR;
     Object* object = root->child(objectPathArgs);

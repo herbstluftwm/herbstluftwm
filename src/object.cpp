@@ -15,16 +15,21 @@
 #include "hook.h"
 #include "attribute.h"
 
-using namespace std;
+using std::endl;
+using std::make_shared;
+using std::pair;
+using std::shared_ptr;
+using std::string;
+using std::vector;
 
-std::string Object::read(const std::string &attr) const {
+string Object::read(const string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end())
         return it->second->str();
     return {}; // TODO: throw
 }
 
-bool Object::writeable(const std::string &attr) const {
+bool Object::writeable(const string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end()) {
         return it->second->writeable();
@@ -32,7 +37,7 @@ bool Object::writeable(const std::string &attr) const {
     return false; // TODO: throw
 }
 
-void Object::write(const std::string &attr, const std::string &value) {
+void Object::write(const string &attr, const string &value) {
     auto it = attribs_.find(attr);
     if (it != attribs_.end()) {
         if (it->second->writeable())
@@ -43,7 +48,7 @@ void Object::write(const std::string &attr, const std::string &value) {
     }
 }
 
-bool Object::hookable(const std::string &attr) const {
+bool Object::hookable(const string &attr) const {
     auto it = attribs_.find(attr);
     if (it != attribs_.end()) {
         return it->second->hookable();
@@ -51,22 +56,22 @@ bool Object::hookable(const std::string &attr) const {
     return false; // TODO: else throw
 }
 
-void Object::trigger(const std::string &action, ArgList args) {
+void Object::trigger(const string &action, ArgList args) {
     // do nothing, there is no default behavior for actions.
     // TODO: throw; if we got here, there was an error, e.g. typo on user's side
 }
 
-std::pair<ArgList,std::string> Object::splitPath(const std::string &path) {
-    std::vector<std::string> splitpath = ArgList(path, OBJECT_PATH_SEPARATOR).toVector();
+pair<ArgList,string> Object::splitPath(const string &path) {
+    vector<string> splitpath = ArgList(path, OBJECT_PATH_SEPARATOR).toVector();
     if (splitpath.empty()) {
         return make_pair(splitpath, "");
     }
-    std::string last = splitpath.back();
+    string last = splitpath.back();
     splitpath.pop_back();
     return make_pair(splitpath, last);
 }
 
-void Object::wireAttributes(std::vector<Attribute*> attrs)
+void Object::wireAttributes(vector<Attribute*> attrs)
 {
     for (auto attr : attrs) {
         attr->setOwner(this);
@@ -86,7 +91,7 @@ void Object::removeAttribute(Attribute* attr) {
     attribs_.erase(it);
 }
 
-void Object::wireActions(std::vector<Action*> actions)
+void Object::wireActions(vector<Action*> actions)
 {
     for (auto action : actions) {
         action->setOwner(this);
@@ -97,34 +102,34 @@ void Object::wireActions(std::vector<Action*> actions)
 void Object::ls(Output out)
 {
     out << children_.size() << (children_.size() == 1 ? " child" : " children")
-        << (children_.size() > 0 ? ":" : ".") << std::endl;
+        << (children_.size() > 0 ? ":" : ".") << endl;
     for (auto it : children_) {
-        out << "  " << it.first << "." << std::endl;
+        out << "  " << it.first << "." << endl;
     }
 
     out << attribs_.size() << (attribs_.size() == 1 ? " attribute" : " attributes")
-        << (attribs_.size() > 0 ? ":" : ".") << std::endl;
+        << (attribs_.size() > 0 ? ":" : ".") << endl;
 
     out << " .---- type\n"
         << " | .-- writeable\n"
         << " | | .-- hookable\n"
-        << " V V V" << std::endl;
+        << " V V V" << endl;
     for (auto it : attribs_) {
         out << " " << it.second->typechar();
         out << " " << (it.second->writeable() ? "w" : "-");
         out << " " << (it.second->hookable() ? "h" : "-");
         out << " " << it.first;
         if (it.second->type() == Type::ATTRIBUTE_STRING) {
-            out << " = \"" << it.second->str() << "\"" << std::endl;
+            out << " = \"" << it.second->str() << "\"" << endl;
         } else {
-            out << " = " << it.second->str() << std::endl;
+            out << " = " << it.second->str() << endl;
         }
     }
 
     out << actions_.size() << (actions_.size() == 1 ? " action" : " actions")
-        << (actions_.size() > 0 ? ":" : ".") << std::endl;
+        << (actions_.size() > 0 ? ":" : ".") << endl;
     for (auto it : actions_) {
-        out << "  " << it.first << std::endl;
+        out << "  " << it.first << endl;
     }
 }
 void Object::ls(Path path, Output out) {
@@ -136,21 +141,21 @@ void Object::ls(Path path, Output out) {
         path.shift();
         children_[child]->ls(path, out);
     } else {
-        out << "child " << child << " not found!" << std::endl; // TODO
+        out << "child " << child << " not found!" << endl; // TODO
     }
 }
 
-void Object::print(const std::string &prefix)
+void Object::print(const string &prefix)
 {
     if (!children_.empty()) {
-        std::cout << prefix << "Children:" << std::endl;
+        std::cout << prefix << "Children:" << endl;
         for (auto it : children_) {
             it.second->print(prefix + "\t| ");
         }
-        std::cout << prefix << std::endl;
+        std::cout << prefix << endl;
     }
     if (!attribs_.empty()) {
-        std::cout << prefix << "Attributes:" << std::endl;
+        std::cout << prefix << "Attributes:" << endl;
         for (auto it : attribs_) {
             std::cout << prefix << "\t" << it.first
                       << " (" << it.second->typestr() << ")";
@@ -159,21 +164,21 @@ void Object::print(const std::string &prefix)
                 std::cout << "\tw";
             if (!it.second->hookable())
                 std::cout << "\t!h";
-            std::cout << std::endl;
+            std::cout << endl;
         }
     }
     if (!actions_.empty()) {
-        std::cout << prefix << "Actions:" << std::endl;
+        std::cout << prefix << "Actions:" << endl;
         std::cout << prefix;
         for (auto it : actions_) {
             std::cout << "\t" << it.first;
         }
-        std::cout << std::endl;
+        std::cout << endl;
     }
-    std::cout << prefix << "Currently " << hooks_.size() << " hooks:" << std::endl;
+    std::cout << prefix << "Currently " << hooks_.size() << " hooks:" << endl;
 }
 
-Attribute* Object::attribute(const std::string &name) {
+Attribute* Object::attribute(const string &name) {
     auto it = attribs_.find(name);
     if (it == attribs_.end()) {
         return nullptr;
@@ -183,7 +188,7 @@ Attribute* Object::attribute(const std::string &name) {
 }
 
 
-Object* Object::child(const std::string &name) {
+Object* Object::child(const string &name) {
     auto it = children_.find(name);
     if (it != children_.end())
         return it->second;
@@ -199,7 +204,7 @@ Object* Object::child(Path path) {
 
 Object* Object::child(Path path, Output output) {
     Object* cur = this;
-    std::string cur_path = "";
+    string cur_path = "";
     while (!path.empty()) {
         auto it = cur->children_.find(path.front());
         if (it != cur->children_.end()) {
@@ -217,7 +222,7 @@ Object* Object::child(Path path, Output output) {
     return cur;
 }
 
-void Object::notifyHooks(HookEvent event, const std::string& arg)
+void Object::notifyHooks(HookEvent event, const string& arg)
 {
     for (auto h : hooks_) {
         if (h) {
@@ -236,13 +241,13 @@ void Object::notifyHooks(HookEvent event, const std::string& arg)
     }
 }
 
-void Object::addChild(Object* child, const std::string &name)
+void Object::addChild(Object* child, const string &name)
 {
     children_[name] = child;
     notifyHooks(HookEvent::CHILD_ADDED, name);
 }
 
-void Object::removeChild(const std::string &child)
+void Object::removeChild(const string &child)
 {
     notifyHooks(HookEvent::CHILD_REMOVED, child);
     children_.erase(child);
@@ -260,7 +265,7 @@ void Object::removeHook(Hook* hook)
     //hooks_.erase(std::remove_if(
     //                hooks_.begin(),
     //                hooks_.end(),
-    //                [hook_locked](std::weak_ptr<Hook> el) {
+    //                [hook_locked](weak_ptr<Hook> el) {
     //                    return el.lock() == hook_locked;
     //                }), hooks_.end());
     hooks_.erase(std::remove(
@@ -279,7 +284,7 @@ public:
     size_t childCount() override {
         return buf.size();
     };
-    Ptr(TreeInterface) nthChild(size_t idx) override {
+    shared_ptr<TreeInterface> nthChild(size_t idx) override {
         return make_shared<DirectoryTreeInterface>(buf[idx].first, buf[idx].second);
     };
     void appendCaption(Output output) override {
@@ -291,23 +296,23 @@ private:
     Object* dir;
 };
 
-void Object::printTree(Output output, std::string rootLabel) {
-    Ptr(TreeInterface) intface = make_shared<DirectoryTreeInterface>(rootLabel, this);
+void Object::printTree(Output output, string rootLabel) {
+    shared_ptr<TreeInterface> intface = make_shared<DirectoryTreeInterface>(rootLabel, this);
     tree_print_to(intface, output);
 }
 
-void Object::addStaticChild(Object* child, const std::string &name)
+void Object::addStaticChild(Object* child, const string &name)
 {
     children_[name] = child;
     notifyHooks(HookEvent::CHILD_ADDED, name);
 }
 
-Attribute* Object::deepAttribute(const std::string &path) {
+Attribute* Object::deepAttribute(const string &path) {
     std::ostringstream output;
     return deepAttribute(path, output);
 }
 
-Attribute* Object::deepAttribute(const std::string &path, Output output) {
+Attribute* Object::deepAttribute(const string &path, Output output) {
     auto attr_path = splitPath(path);
     auto attribute_owner = child(attr_path.first, output);
     if (!attribute_owner) {

@@ -18,6 +18,8 @@
 #include "tagmanager.h"
 #include "utils.h"
 
+using std::vector;
+
 Atom g_netatom[NetCOUNT];
 
 // module internal globals:
@@ -108,7 +110,7 @@ void ewmh_init() {
     ewmh_update_wmname();
 
     /* init atoms that never change */
-    std::vector<long> buf{ 0, 0 };
+    vector<long> buf{ 0, 0 };
     XChangeProperty(g_display, g_root, g_netatom[NetDesktopViewport],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&buf.front(), buf.size());
 }
@@ -183,7 +185,7 @@ static void ewmh_add_tag_stack(HSTag* tag, void* data) {
         return;
     }
     int remain;
-    tag->stack->to_window_buf(stack->buf + stack->i,
+    tag->stack->toWindowBuf(stack->buf + stack->i,
                         stack->count - stack->i, true, &remain);
     if (remain >= 0) {
         stack->i = stack->count - remain;
@@ -354,12 +356,12 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
             struct {
                 int     atom_index;
                 bool    enabled;
-                void    (*callback)(HSClient*, bool);
+                void    (*callback)(Client*, bool);
             } client_atoms[] = {
                 { NetWmStateFullscreen,
-                    client->fullscreen_,     [](HSClient* c, bool state){ c->set_fullscreen(state); } },
+                    client->fullscreen_,     [](Client* c, bool state){ c->set_fullscreen(state); } },
                 { NetWmStateDemandsAttention,
-                    client->urgent_,         [](HSClient* c, bool state){ c->set_urgent(state); } },
+                    client->urgent_,         [](Client* c, bool state){ c->set_urgent(state); } },
             };
 
             /* me->data.l[1] and [2] describe the properties to alter */
@@ -403,12 +405,12 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
             int direction = me->data.l[2];
             if (direction == _NET_WM_MOVERESIZE_MOVE
                 || direction == _NET_WM_MOVERESIZE_MOVE_KEYBOARD) {
-                mouse_initiate_move(client, 0, nullptr);
+                mouse_initiate_move(client, {});
             } else if (direction == _NET_WM_MOVERESIZE_CANCEL) {
                 if (mouse_is_dragging()) mouse_stop_drag();
             } else {
                 // anything else is a resize
-                mouse_initiate_resize(client, 0, nullptr);
+                mouse_initiate_resize(client, {});
             }
             break;
         }
@@ -420,7 +422,7 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
     }
 }
 
-void ewmh_update_window_state(HSClient* client) {
+void ewmh_update_window_state(Client* client) {
     /* mapping between EWMH atoms and client struct members */
     struct {
         int     atom_index;
@@ -487,7 +489,7 @@ void ewmh_set_window_opacity(Window win, double opacity) {
                     32, PropModeReplace, (unsigned char*)&int_opacity, 1);
 }
 void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom) {
-    std::vector<long> extents = { left, right, top, bottom };
+    vector<long> extents = { left, right, top, bottom };
     XChangeProperty(g_display, win, g_netatom[NetFrameExtents], XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&extents.front(), extents.size());
 }

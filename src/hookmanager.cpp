@@ -1,5 +1,10 @@
 #include "hookmanager.h"
 
+#include "utils.h"
+
+using std::endl;
+using std::string;
+
 HookManager::HookManager()
     : add_("add"), remove_("remove") {
     wireActions({ &add_, &remove_ });
@@ -10,27 +15,27 @@ void HookManager::ls(Path path, Output out)
     if (path.empty())
         return Object::ls(out);
 
-    auto child = Path::join(path.begin(), path.end());
+    auto child = join_strings(path, ".");
     if (children_.find(child) != children_.end()) {
         children_[child]->ls({}, out);
     } else {
-        out << "child " << child << " not found!" << std::endl; // TODO
+        out << "child " << child << " not found!" << endl; // TODO
     }
 }
 
-void HookManager::add(const std::string &path)
+void HookManager::add(const string &path)
 {
-    //auto h = std::make_shared<NamedHook>(path);
+    //auto h = make_shared<NamedHook>(path);
     //h->hook_into(Root::get());
     //addChild(h, "???");
 }
 
-void HookManager::remove(const std::string &path)
+void HookManager::remove(const string &path)
 {
     removeChild(path);
 }
 
-void HookManager::trigger(const std::string &action, ArgList args)
+void HookManager::trigger(const string &action, ArgList args)
 {
     if (action == add_.name()) {
         for (auto a : args)

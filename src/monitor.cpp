@@ -12,6 +12,7 @@
 #include "client.h"
 #include "clientmanager.h"
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
@@ -25,7 +26,7 @@
 #include "tagmanager.h"
 #include "utils.h"
 
-using namespace std;
+using std::string;
 
 extern MonitorManager* g_monitors;
 
@@ -33,7 +34,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     : tag(tag_)
     , tag_previous(tag_)
     , name      (this, "name", "",
-           [monman_](std::string n) { return monman_->isValidMonitorName(n); })
+           [monman_](string n) { return monman_->isValidMonitorName(n); })
     , index     (this, "index", 0)
     , tag_string(this, "tag", &Monitor::getTagString, &Monitor::setTagString)
     , pad_up    (this, "pad_up", 0)
@@ -52,24 +53,24 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
         i->changed().connect(this, &Monitor::applyLayout);
     }
 
-    slice = slice_create_monitor(this);
+    slice = Slice::makeMonitorSlice(this);
     stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
 
-    g_monitors->monitor_stack->insert_slice(slice);
+    g_monitors->monitor_stack->insertSlice(slice);
 }
 
 Monitor::~Monitor() {
-    g_monitors->monitor_stack->remove_slice(slice);
-    slice_destroy(slice);
+    g_monitors->monitor_stack->removeSlice(slice);
+    delete slice;
     XDestroyWindow(g_display, stacking_window);
 }
 
-std::string Monitor::getTagString() {
+string Monitor::getTagString() {
     return tag->name();
 }
 
-std::string Monitor::setTagString(std::string new_tag_string) {
+string Monitor::setTagString(string new_tag_string) {
     HSTag* new_tag = find_tag(new_tag_string.c_str());
     if (!new_tag) {
         return "no tag named \"" + new_tag_string + "\" exists.";
@@ -134,7 +135,7 @@ void Monitor::applyLayout() {
     cur_rect.width -= (pad_left() + pad_right());
     cur_rect.y += pad_up();
     cur_rect.height -= (pad_up() + pad_down());
-    if (!g_settings->smart_frame_surroundings() || tag->frame->isSplit()) {
+    if (!g_settings->smart_frame_surroundings() || tag->frame->root_->isSplit()) {
         // apply frame gap
         cur_rect.x += settings->frame_gap();
         cur_rect.y += settings->frame_gap();
@@ -144,16 +145,16 @@ void Monitor::applyLayout() {
     restack();
     bool isFocused = get_current_monitor() == this;
     if (isFocused) {
-        frame_focus_recursive(tag->frame);
+        frame_focus_recursive(tag->frame->root_);
     }
-    TilingResult res = tag->frame->computeLayout(cur_rect);
+    TilingResult res = tag->frame->root_->computeLayout(cur_rect);
     if (tag->floating) {
         for (auto& p : res.data) {
             p.second.floated = true;
         }
     }
     for (auto& p : res.data) {
-        HSClient* c = p.first;
+        Client* c = p.first;
         if (c->fullscreen_()) {
             c->resize_fullscreen(rect, res.focus == c && isFocused);
         } else if (p.second.floated) {
@@ -224,7 +225,7 @@ int set_monitor_rects(const RectangleVec &templates) {
             return HERBST_TAG_IN_USE;
         }
         g_monitors->addMonitor(templates[i], tag);
-        tag->frame->setVisibleRecursive(true);
+        tag->frame->root_->setVisibleRecursive(true);
     }
     // remove monitors if there are too much
     while (i < g_monitors->size()) {
@@ -397,7 +398,7 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
             other->tag = monitor->tag;
             monitor->tag = tag;
             // reset focus
-            frame_focus_recursive(tag->frame);
+            frame_focus_recursive(tag->frame->root_);
             /* TODO: find the best order of restacking and layouting */
             other->restack();
             monitor->restack();
@@ -422,21 +423,21 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     // 1. show new tag
     monitor->tag = tag;
     // first reset focus and arrange windows
-    frame_focus_recursive(tag->frame);
+    frame_focus_recursive(tag->frame->root_);
     monitor->restack();
     monitor->lock_frames = true;
     monitor->applyLayout();
     monitor->lock_frames = false;
     // then show them (should reduce flicker)
-    tag->frame->setVisibleRecursive(true);
+    tag->frame->root_->setVisibleRecursive(true);
     if (!monitor->tag->floating) {
-        // monitor->tag->frame->updateVisibility();
+        // monitor->tag->frame->root_->updateVisibility();
     }
     // 2. hide old tag
-    old_tag->frame->setVisibleRecursive(false);
+    old_tag->frame->root_->setVisibleRecursive(false);
     // focus window just has been shown
     // focus again to give input focus
-    frame_focus_recursive(tag->frame);
+    frame_focus_recursive(tag->frame->root_);
     // discard enternotify-events
     drop_enternotify_events();
     monitor_update_focus_objects();
@@ -547,9 +548,9 @@ void monitor_focus_by_index(unsigned new_selection) {
     }
     // change selection globals
     assert(monitor->tag);
-    assert(monitor->tag->frame);
+    assert(monitor->tag->frame->root_);
     g_monitors->cur_monitor = new_selection;
-    frame_focus_recursive(monitor->tag->frame);
+    frame_focus_recursive(monitor->tag->frame->root_);
     // repaint g_monitors
     old->applyLayout();
     monitor->applyLayout();
@@ -740,7 +741,7 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
 
 void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
                                  int* remain_len) {
-    g_monitors->monitor_stack->to_window_buf(buf, len, real_clients, remain_len);
+    g_monitors->monitor_stack->toWindowBuf(buf, len, real_clients, remain_len);
 }
 
 Stack* get_monitor_stack() {
@@ -760,7 +761,7 @@ int monitor_raise_command(int argc, char** argv, Output output) {
     } else {
         monitor = get_current_monitor();
     }
-    g_monitors->monitor_stack->raise_slide(monitor->slice);
+    g_monitors->monitor_stack->raiseSlice(monitor->slice);
     return 0;
 }
 
@@ -769,12 +770,12 @@ void monitor_restack(Monitor* monitor) {
 }
 
 void Monitor::restack() {
-    int count = 1 + tag->stack->window_count(false);
+    int count = 1 + tag->stack->windowCount(false);
     Window* buf = g_new(Window, count);
     buf[0] = stacking_window;
-    tag->stack->to_window_buf(buf + 1, count - 1, false, nullptr);
+    tag->stack->toWindowBuf(buf + 1, count - 1, false, nullptr);
     /* remove a focused fullscreen client */
-    HSClient* client = tag->frame->focusedClient();
+    Client* client = tag->frame->root_->focusedClient();
     if (client && client->fullscreen_) {
         Window win = client->decorationWindow();
         XRaiseWindow(g_display, win);
@@ -825,3 +826,13 @@ Rectangle Monitor::getFloatingArea() {
     return r;
 }
 
+//! Returns a textual description of the monitor
+string Monitor::getDescription() {
+    std::stringstream label;
+    label << "Monitor " << index();
+    if (!name().empty()) {
+        label << " (\"" << name() << "\")";
+    }
+    label << " with tag \"" << tag->name() << "\"";
+    return label.str();
+}

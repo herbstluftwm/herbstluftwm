@@ -4,6 +4,8 @@
 
 #include "attribute.h"
 
+using std::string;
+
 ByName::ByName(Object& parent_)
     : parent(parent_)
 {
@@ -15,7 +17,7 @@ ByName::~ByName() {
     parent.removeHook(this);
 }
 
-void ByName::childAdded(Object* sender_parent, std::string child_name)
+void ByName::childAdded(Object* sender_parent, string child_name)
 {
     if (&* sender_parent != &parent) {
         return;
@@ -34,7 +36,7 @@ void ByName::childAdded(Object* sender_parent, std::string child_name)
     }
 }
 
-void ByName::childRemoved(Object* sender_parent, std::string child_name)
+void ByName::childRemoved(Object* sender_parent, string child_name)
 {
     if (&* sender_parent != &parent) {
         return;
@@ -51,9 +53,9 @@ void ByName::childRemoved(Object* sender_parent, std::string child_name)
     }
 }
 
-void ByName::attributeChanged(Object* child, std::string attribute_name)
+void ByName::attributeChanged(Object* child, string attribute_name)
 {
-    //std::cerr << "Attribute " << attribute_name << " changed" << std::endl;
+    //std::cerr << "Attribute " << attribute_name << " changed" << endl;
     if (attribute_name != "name" || &* child == &parent) {
         return;
     }

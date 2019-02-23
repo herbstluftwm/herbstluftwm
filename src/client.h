@@ -9,6 +9,7 @@
 #include "attribute_.h"
 #include "decoration.h"
 #include "object.h"
+#include "stack.h"
 #include "x11-types.h"
 
 class HSTag;
@@ -16,10 +17,10 @@ class Monitor;
 class Settings;
 class ClientManager;
 
-class HSClient : public Object {
+class Client : public Object {
 public:
-    HSClient(Window w, bool already_visible, ClientManager& cm);
-    ~HSClient() override;
+    Client(Window w, bool already_visible, ClientManager& cm);
+    ~Client() override;
 
     Window      window_;
     Decoration  dec;
@@ -27,13 +28,13 @@ public:
     Attribute_<bool> urgent_ = {"urgent", false};
     Attribute_<bool> fullscreen_ = {"fullscreen", false};
     Attribute_<std::string> title_ = {"title", {}};  // or also called window title; this is never NULL
-    struct Slice* slice = {};
+    Slice* slice = {};
     Rectangle   last_size_;      // last size excluding the window border
     Attribute_<std::string> window_id_str = {"winid", {}};
 
     HSTag*      tag_ = {};
     Attribute_<
-    std::string> keymask_ = {"keymask", {}}; // keymask applied to mask out keybindins
+    std::string> keyMask_ = {"keymask", {}}; // keymask applied to mask out keybindins
     bool        ewmhfullscreen_ = false; // ewmh fullscreen state
     Attribute_<bool> pseudotile_ = {"pseudotile", false}; // only move client but don't resize (if possible)
     bool        neverfocus_ = false; // do not give the focus via XSetInputFocus
@@ -121,9 +122,9 @@ void clientlist_destroy();
 void reset_client_colors();
 void reset_client_settings();
 
-HSClient* get_client_from_window(Window window);
-HSClient* get_current_client();
-HSClient* get_client(const char* str);
+Client* get_client_from_window(Window window);
+Client* get_current_client();
+Client* get_client(const char* str);
 Window get_window(const std::string& str);
 
 int close_command(Input input, Output output);

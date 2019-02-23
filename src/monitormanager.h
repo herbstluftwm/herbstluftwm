@@ -5,7 +5,7 @@
 #include <functional>
 
 #include "byname.h"
-#include "child.h"
+#include "link.h"
 #include "childbyindex.h"
 #include "floating.h" // for find_rectangle_in_direction(), maybe move?
 #include "monitor.h"
@@ -19,9 +19,11 @@ typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
 
 class MonitorManager : public ChildByIndex<Monitor> {
 public:
-    MonitorManager(Settings* settings, TagManager* tags);
+    MonitorManager();
     ~MonitorManager();
-    Child_<Monitor> focus;
+    void injectDependencies(Settings* s, TagManager* t);
+
+    Link_<Monitor> focus;
 
     void clearChildren();
     void ensure_monitors_are_available();

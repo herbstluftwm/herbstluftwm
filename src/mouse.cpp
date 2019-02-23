@@ -7,28 +7,30 @@
 
 #include "client.h"
 #include "command.h"
-#include "glib-backports.h"
+#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
-#include "key.h"
+#include "keycombo.h"
+#include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
+#include "mousemanager.h"
+#include "root.h"
 #include "settings.h"
 #include "tag.h"
 #include "utils.h"
 #include "x11-utils.h"
 
+using std::string;
+using std::vector;
+
 static Point2D          g_button_drag_start;
 static Rectangle        g_win_drag_start;
-static HSClient*        g_win_drag_client = nullptr;
+static Client*        g_win_drag_client = nullptr;
 static Monitor*       g_drag_monitor = nullptr;
 static MouseDragFunction g_drag_function = nullptr;
 
-static Cursor g_cursor;
-static GList* g_mouse_binds = nullptr;
-static unsigned int* g_numlockmask_ptr;
-
-#define CLEANMASK(mask)         ((mask) & ~(*g_numlockmask_ptr|LockMask))
+#define CLEANMASK(mask)         ((mask) & ~(numlockMask|LockMask))
 #define REMOVEBUTTONMASK(mask) ((mask) & \
     ~( Button1Mask \
      | Button2Mask \
@@ -36,53 +38,51 @@ static unsigned int* g_numlockmask_ptr;
      | Button4Mask \
      | Button5Mask ))
 
-void mouse_init() {
-    g_numlockmask_ptr = get_numlockmask_ptr();
-    /* set cursor theme */
-    g_cursor = XCreateFontCursor(g_display, XC_left_ptr);
-    XDefineCursor(g_display, g_root, g_cursor);
-}
-
-void mouse_destroy() {
-    mouse_unbind_all();
-    XFreeCursor(g_display, g_cursor);
-}
-
 void mouse_handle_event(XEvent* ev) {
     XButtonEvent* be = &(ev->xbutton);
-    MouseBinding* b = mouse_binding_find(be->state, be->button);
-    HSClient* client = get_client_from_window(ev->xbutton.window);
-    if (!b || !client) {
+    auto b = mouse_binding_find(be->state, be->button);
+
+    if (!b.has_value()) {
+        // No binding find for this event
+    }
+
+    Client* client = get_client_from_window(ev->xbutton.window);
+    if (!client) {
         // there is no valid bind for this type of mouse event
         return;
     }
-    b->action(client, b->argc, b->argv);
+    b->action(client, b->cmd);
 }
 
-void mouse_initiate_move(HSClient* client, int argc, char** argv) {
-    (void) argc; (void) argv;
+void mouse_initiate_move(Client* client, const vector<string> &cmd) {
+    (void) cmd;
     mouse_initiate_drag(client, mouse_function_move);
 }
 
-void mouse_initiate_zoom(HSClient* client, int argc, char** argv) {
-    (void) argc; (void) argv;
+void mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
+    (void) cmd;
     mouse_initiate_drag(client, mouse_function_zoom);
 }
 
-void mouse_initiate_resize(HSClient* client, int argc, char** argv) {
-    (void) argc; (void) argv;
+void mouse_initiate_resize(Client* client, const vector<string> &cmd) {
+    (void) cmd;
     mouse_initiate_drag(client, mouse_function_resize);
 }
 
-void mouse_call_command(HSClient* client, int argc, char** argv) {
+void mouse_call_command(Client* client, const vector<string> &cmd) {
     // TODO: add completion
     client->set_dragged(true);
-    call_command_no_output(argc, argv);
+
+    // Execute the bound command
+    std::ostringstream discardedOutput;
+    Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
+    Commands::call(input, discardedOutput);
+
     client->set_dragged(false);
 }
 
 
-void mouse_initiate_drag(HSClient* client, MouseDragFunction function) {
+void mouse_initiate_drag(Client* client, MouseDragFunction function) {
     g_drag_function = function;
     g_win_drag_client = client;
     g_drag_monitor = find_monitor_with_tag(client->tag());
@@ -131,24 +131,17 @@ bool mouse_is_dragging() {
     return g_drag_function != nullptr;
 }
 
-static void mouse_binding_free(void* voidmb) {
-    MouseBinding* mb = (MouseBinding*)voidmb;
-    if (!mb) return;
-    argv_free(mb->argc, mb->argv);
-    g_free(mb);
-}
-
 int mouse_unbind_all() {
-    g_list_free_full(g_mouse_binds, mouse_binding_free);
-    g_mouse_binds = nullptr;
-    HSClient* client = get_current_client();
+    Root::get()->mouse->binds.clear();
+    Client* client = get_current_client();
     if (client) {
         grab_client_buttons(client, true);
     }
     return 0;
 }
 
-int mouse_binding_equals(MouseBinding* a, MouseBinding* b) {
+int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b) {
+    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
     if((REMOVEBUTTONMASK(CLEANMASK(a->modifiers))
         == REMOVEBUTTONMASK(CLEANMASK(b->modifiers)))
         && (a->button == b->button)) {
@@ -163,14 +156,19 @@ int mouse_bind_command(int argc, char** argv, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     unsigned int modifiers = 0;
-    char* string = argv[1];
-    if (!string2modifiers(string, &modifiers)) {
-        output << argv[0] <<
-            ": Modifier \"" << string << "\" does not exist\n";
+    char* str = argv[1];
+
+    try {
+        auto tokens = KeyCombo::tokensFromString(str);
+        auto modifierSlice = vector<string>({tokens.begin(), tokens.end() - 1});
+        modifiers = KeyCombo::modifierMaskFromTokens(modifierSlice);
+    } catch (std::runtime_error &error) {
+        output << argv[0] << error.what();
         return HERBST_INVALID_ARGUMENT;
     }
+
     // last one is the mouse button
-    const char* last_token = strlasttoken(string, KEY_COMBI_SEPARATORS);
+    const char* last_token = strlasttoken(str, KeyCombo::separators);
     unsigned int button = string2button(last_token);
     if (button == 0) {
         output << argv[0] <<
@@ -185,14 +183,15 @@ int mouse_bind_command(int argc, char** argv, Output output) {
     }
 
     // actually create a binding
-    MouseBinding* mb = g_new(MouseBinding, 1);
-    mb->button = button;
-    mb->modifiers = modifiers;
-    mb->action = function;
-    mb->argc = argc - 3;
-    mb->argv = argv_duplicate(argc - 3, argv + 3);;
-    g_mouse_binds = g_list_prepend(g_mouse_binds, mb);
-    HSClient* client = get_current_client();
+    MouseBinding mb;
+    mb.button = button;
+    mb.modifiers = modifiers;
+    mb.action = function;
+    for (int i = 3; i < argc; i++) {
+        mb.cmd.push_back(argv[i]);
+    }
+    Root::get()->mouse->binds.push_front(mb);
+    Client* client = get_current_client();
     if (client) {
         grab_client_buttons(client, true);
     }
@@ -250,17 +249,26 @@ void complete_against_mouse_buttons(const char* needle, char* prefix, Output out
     }
 }
 
-MouseBinding* mouse_binding_find(unsigned int modifiers, unsigned int button) {
+std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button) {
     MouseBinding mb = {};
     mb.modifiers = modifiers;
     mb.button = button;
-    GList* elem = g_list_find_custom(g_mouse_binds, &mb,
-                                     (GCompareFunc)mouse_binding_equals);
-    return elem ? ((MouseBinding*)elem->data) : nullptr;
+
+    auto binds = Root::get()->mouse->binds;
+    auto found = std::find_if(binds.begin(), binds.end(),
+            [=](const MouseBinding &other) {
+                return mouse_binding_equals(&other, &mb) == 0;
+            });
+    if (found != binds.end()) {
+        return *found;
+    } else {
+        return {};
+    }
 }
 
-static void grab_client_button(MouseBinding* bind, HSClient* client) {
-    unsigned int modifiers[] = { 0, LockMask, *g_numlockmask_ptr, *g_numlockmask_ptr|LockMask };
+static void grab_client_button(MouseBinding* bind, Client* client) {
+    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
+    unsigned int modifiers[] = { 0, LockMask, numlockMask, numlockMask | LockMask };
     for(int j = 0; j < LENGTH(modifiers); j++) {
         XGrabButton(g_display, bind->button,
                     bind->modifiers | modifiers[j],
@@ -269,11 +277,12 @@ static void grab_client_button(MouseBinding* bind, HSClient* client) {
     }
 }
 
-void grab_client_buttons(HSClient* client, bool focused) {
-    update_numlockmask();
+void grab_client_buttons(Client* client, bool focused) {
     XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
     if (focused) {
-        g_list_foreach(g_mouse_binds, (GFunc)grab_client_button, client);
+        for (auto& bind : Root::get()->mouse->binds) {
+            grab_client_button(&bind, client);
+        }
     }
     unsigned int btns[] = { Button1, Button2, Button3 };
     for (int i = 0; i < LENGTH(btns); i++) {
@@ -319,7 +328,7 @@ void mouse_function_resize(XMotionEvent* me) {
     // avoid an overflow
     int new_width  = g_win_drag_client->float_size_.width + x_diff;
     int new_height = g_win_drag_client->float_size_.height + y_diff;
-    HSClient* client = g_win_drag_client;
+    Client* client = g_win_drag_client;
     if (left)   g_win_drag_client->float_size_.x -= x_diff;
     if (top)    g_win_drag_client->float_size_.y -= y_diff;
     g_win_drag_client->float_size_.width  = new_width;
@@ -374,7 +383,7 @@ void mouse_function_zoom(XMotionEvent* me) {
     if (rel_y < g_win_drag_start.height/2) {
         y_diff *= -1;
     }
-    HSClient* client = g_win_drag_client;
+    Client* client = g_win_drag_client;
 
     // avoid an overflow
     int new_width  = g_win_drag_start.width  + 2 * x_diff;
@@ -412,7 +421,7 @@ void mouse_function_zoom(XMotionEvent* me) {
 }
 
 struct SnapData {
-    HSClient*       client;
+    Client*       client;
     Rectangle      rect;
     enum SnapFlags  flags;
     int             dx, dy; // the vector from client to other to make them snap
@@ -433,7 +442,7 @@ static void snap_1d(int x, int edge, int* delta) {
     }
 }
 
-static void client_snap_helper(HSClient* candidate, struct SnapData* d) {
+static void client_snap_helper(Client* candidate, struct SnapData* d) {
     if (candidate == d->client) {
         return;
     }
@@ -468,7 +477,7 @@ static void client_snap_helper(HSClient* candidate, struct SnapData* d) {
 }
 
 // get the vector to snap a client to it's neighbour
-void client_snap_vector(HSClient* client, Monitor* monitor,
+void client_snap_vector(Client* client, Monitor* monitor,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy) {
     struct SnapData d;
@@ -506,7 +515,7 @@ void client_snap_vector(HSClient* client, Monitor* monitor,
     }
 
     // snap to other clients
-    tag->frame->foreachClient([&d] (HSClient* c) { client_snap_helper(c, &d); });
+    tag->frame->root_->foreachClient([&d] (Client* c) { client_snap_helper(c, &d); });
 
     // write back results
     if (abs(d.dx) < abs(distance)) {

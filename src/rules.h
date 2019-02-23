@@ -8,7 +8,7 @@
 #include "types.h"
 #include "utils.h"
 
-class HSClient;
+class Client;
 
 enum {
     CONDITION_VALUE_TYPE_STRING,
@@ -20,10 +20,10 @@ enum {
     CONSEQUENCE_VALUE_TYPE_STRING,
 };
 
-class HSCondition {
+class Condition {
 public:
 
-    using Matcher = std::function<bool(const HSCondition*, const HSClient*)>;
+    using Matcher = std::function<bool(const Condition*, const Client*)>;
     static const std::map<std::string, Matcher> matchers;
 
     std::string name;
@@ -45,20 +45,20 @@ public:
     time_t conditionCreationTime;
 
 private:
-    bool matchesClass(const HSClient* client) const;
-    bool matchesInstance(const HSClient* client) const;
-    bool matchesTitle(const HSClient* client) const;
-    bool matchesPid(const HSClient* client) const;
-    bool matchesMaxage(const HSClient* client) const;
-    bool matchesWindowtype(const HSClient* client) const;
-    bool matchesWindowrole(const HSClient* client) const;
+    bool matchesClass(const Client* client) const;
+    bool matchesInstance(const Client* client) const;
+    bool matchesTitle(const Client* client) const;
+    bool matchesPid(const Client* client) const;
+    bool matchesMaxage(const Client* client) const;
+    bool matchesWindowtype(const Client* client) const;
+    bool matchesWindowrole(const Client* client) const;
 
     bool matches(const std::string& string) const;
 };
 
-class HSClientChanges {
+class ClientChanges {
 public:
-    HSClientChanges(HSClient *client);
+    ClientChanges(Client *client);
 
     // For tag_name and monitor_name, an empty string means "no change",
     // because empty strings are not considered valid here. TODO: Use
@@ -71,16 +71,16 @@ public:
     bool            switchtag = false; // if the tag may be switched for focusing it
     bool            manage = true; // whether we should manage it
     bool            fullscreen;
-    std::string     keymask; // Which keymask rule should be applied for this client
+    std::string     keyMask; // Which keymask rule should be applied for this client
 
     std::experimental::optional<bool> pseudotile;
     std::experimental::optional<bool> ewmhRequests;
     std::experimental::optional<bool> ewmhNotify;
 };
 
-class HSConsequence {
+class Consequence {
 public:
-    using Applier = std::function<void(const HSConsequence*, const HSClient*, HSClientChanges*)>;
+    using Applier = std::function<void(const Consequence*, const Client*, ClientChanges*)>;
     static const std::map<std::string, Applier> appliers;
 
     std::string name;
@@ -88,27 +88,27 @@ public:
     std::string value;
 
 private:
-    void applyTag(const HSClient* client, HSClientChanges* changes) const;
-    void applyIndex(const HSClient* client, HSClientChanges* changes) const;
-    void applyFocus(const HSClient* client, HSClientChanges* changes) const;
-    void applySwitchtag(const HSClient* client, HSClientChanges* changes) const;
-    void applyManage(const HSClient* client, HSClientChanges* changes) const;
-    void applyPseudotile(const HSClient* client, HSClientChanges* changes) const;
-    void applyFullscreen(const HSClient* client, HSClientChanges* changes) const;
-    void applyEwmhrequests(const HSClient* client, HSClientChanges* changes) const;
-    void applyEwmhnotify(const HSClient* client, HSClientChanges* changes) const;
-    void applyHook(const HSClient* client, HSClientChanges* changes) const;
-    void applyKeymask(const HSClient* client, HSClientChanges* changes) const;
-    void applyMonitor(const HSClient* client, HSClientChanges* changes) const;
+    void applyTag(const Client* client, ClientChanges* changes) const;
+    void applyIndex(const Client* client, ClientChanges* changes) const;
+    void applyFocus(const Client* client, ClientChanges* changes) const;
+    void applySwitchtag(const Client* client, ClientChanges* changes) const;
+    void applyManage(const Client* client, ClientChanges* changes) const;
+    void applyPseudotile(const Client* client, ClientChanges* changes) const;
+    void applyFullscreen(const Client* client, ClientChanges* changes) const;
+    void applyEwmhrequests(const Client* client, ClientChanges* changes) const;
+    void applyEwmhnotify(const Client* client, ClientChanges* changes) const;
+    void applyHook(const Client* client, ClientChanges* changes) const;
+    void applyKeyMask(const Client* client, ClientChanges* changes) const;
+    void applyMonitor(const Client* client, ClientChanges* changes) const;
 };
 
-class HSRule {
+class Rule {
 public:
-    HSRule();
+    Rule();
 
     std::string label;
-    std::vector<HSCondition> conditions;
-    std::vector<HSConsequence> consequences;
+    std::vector<Condition> conditions;
+    std::vector<Consequence> consequences;
     bool once = false;
     time_t birth_time; // timestamp of at creation
 

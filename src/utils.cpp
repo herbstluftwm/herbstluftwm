@@ -11,17 +11,17 @@
 #include <sstream>
 #include <string>
 
-#include "glib-backports.h"
 #include "globals.h"
 #include "settings.h"
-
-using namespace std;
 
 #if defined(__MACH__) && ! defined(CLOCK_REALTIME)
 #include <mach/clock.h>
 #include <mach/mach.h>
 #endif
 
+using std::shared_ptr;
+using std::string;
+using std::vector;
 
 time_t get_monotonic_timestamp() {
     struct timespec ts;
@@ -43,25 +43,35 @@ int MOD(int x, int n) {
     return (((x % n) + n) % n);
 }
 
-// inspired by dwm's gettextprop()
-GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
-    GString* result = nullptr;
+string window_class_to_string(Display* dpy, Window window) {
+    XClassHint hint;
+    if (0 == XGetClassHint(dpy, window, &hint)) {
+        return "";
+    }
+    string str = hint.res_class ? hint.res_class : "";
+    if (hint.res_name) XFree(hint.res_name);
+    if (hint.res_class) XFree(hint.res_class);
+    return str;
+}
+
+std::experimental::optional<string> window_property_to_string(Display* dpy, Window window, Atom atom) {
+    string result;
     char** list = nullptr;
     int n = 0;
     XTextProperty prop;
 
     if (0 == XGetTextProperty(dpy, window, &prop, atom)) {
-        return nullptr;
+        return std::experimental::optional<string>();
     }
     // convert text property to a gstring
     if (prop.encoding == XA_STRING
         || prop.encoding == XInternAtom(dpy, "UTF8_STRING", False)) {
-        result = g_string_new((char*)prop.value);
+        result = reinterpret_cast<char *>(prop.value);
     } else {
         if (XmbTextPropertyToTextList(dpy, &prop, &list, &n) >= Success
             && n > 0 && *list)
         {
-            result = g_string_new(*list);
+            result = *list;
             XFreeStringList(list);
         }
     }
@@ -69,23 +79,12 @@ GString* window_property_to_g_string(Display* dpy, Window window, Atom atom) {
     return result;
 }
 
-GString* window_class_to_g_string(Display* dpy, Window window) {
+string window_instance_to_string(Display* dpy, Window window) {
     XClassHint hint;
     if (0 == XGetClassHint(dpy, window, &hint)) {
-        return g_string_new("");
+        return "";
     }
-    GString* str = g_string_new(hint.res_class ? hint.res_class : "");
-    if (hint.res_name) XFree(hint.res_name);
-    if (hint.res_class) XFree(hint.res_class);
-    return str;
-}
-
-GString* window_instance_to_g_string(Display* dpy, Window window) {
-    XClassHint hint;
-    if (0 == XGetClassHint(dpy, window, &hint)) {
-        return g_string_new("");
-    }
-    GString* str = g_string_new(hint.res_name ? hint.res_name : "");
+    string str = hint.res_name ? hint.res_name : "";
     if (hint.res_name) XFree(hint.res_name);
     if (hint.res_class) XFree(hint.res_class);
     return str;
@@ -93,11 +92,8 @@ GString* window_instance_to_g_string(Display* dpy, Window window) {
 
 
 bool is_herbstluft_window(Display* dpy, Window window) {
-    GString* str = window_class_to_g_string(dpy, window);
-    bool result;
-    result = !strcmp(str->str, HERBST_FRAME_CLASS);
-    g_string_free(str, true);
-    return result;
+    auto str = window_class_to_string(dpy, window);
+    return str == HERBST_FRAME_CLASS;
 }
 
 bool is_window_mapable(Display* dpy, Window window) {
@@ -137,7 +133,7 @@ char** argv_duplicate(int argc, char** argv) {
     char** new_argv = new char*[argc];
     int i;
     for (i = 0; i < argc; i++) {
-        new_argv[i] = g_strdup(argv[i]);
+        new_argv[i] = strdup(argv[i]);
     }
     return new_argv;
 }
@@ -157,7 +153,7 @@ bool intervals_intersect(int a_left, int a_right, int b_left, int b_right) {
     return (b_left < a_right) && (a_left < b_right);
 }
 
-size_t utf8_string_length(const std::string& str) {
+size_t utf8_string_length(const string& str) {
    // utf-strlen from stackoverflow:
    // http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c
    size_t i = 0, j = 0;
@@ -168,7 +164,7 @@ size_t utf8_string_length(const std::string& str) {
    return j;
 }
 
-std::string utf8_string_at(const std::string& str, size_t n) {
+string utf8_string_at(const string& str, size_t n) {
     // utf-strlen from stackoverflow:
     // http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c
     //
@@ -179,10 +175,10 @@ std::string utf8_string_at(const std::string& str, size_t n) {
     // }
     // return j;
     //for (char ch : str) {
-    //    std::cout << "\'"<< ch << "\' -> " << ((ch&0xc0) == 0x80) << std::endl;
+    //    std::cout << "\'"<< ch << "\' -> " << ((ch&0xc0) == 0x80) << endl;
     //}
     size_t i = 0, byte_offset = 0;
-    std::string result;
+    string result;
     // find the beginning of the n'th character
     // find the n'th character ch, with (ch & 0xc0) == 0x80
     while (i < n) {
@@ -213,7 +209,7 @@ const char* strlasttoken(const char* str, const char* delim) {
     return str;
 }
 
-bool string_to_bool(const std::string& str, bool oldvalue) {
+bool string_to_bool(const string& str, bool oldvalue) {
     return string_to_bool_error(str.c_str(), oldvalue, nullptr);
 }
 
@@ -258,22 +254,6 @@ int window_pid(Display* dpy, Window window) {
         return value;
     } else {
         return -1;
-    }
-}
-
-void g_queue_remove_element(GQueue* queue, GList* elem) {
-    if (queue->length <= 0) {
-        return;
-    }
-    bool was_tail = (queue->tail == elem);
-    GList* before_elem = elem->prev;
-
-    queue->head = g_list_delete_link(queue->head, elem);
-    queue->length--;
-
-    // reset pointers
-    if (was_tail) {
-        queue->tail = before_elem;
     }
 }
 
@@ -389,7 +369,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     // use intermediates for casting (to avoid narrowing)
     short fw_ibw = full_width - ibw, fh_ibw = full_height - ibw;
     unsigned short uibw = ibw, h_ibw = height + ibw, w_ibw = width + ibw;
-    std::vector<XRectangle> rectangles{
+    vector<XRectangle> rectangles{
         { (short)width, 0, uibw, h_ibw },
         { fw_ibw, 0, uibw, h_ibw },
         { 0, (short)height, w_ibw, uibw },
@@ -413,55 +393,10 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
     XFreePixmap(dpy, pix);
 }
 
-static void subtree_print_to(HSTreeInterface* intface, const char* indent,
-                          char* rootprefix, Output output) {
-    std::string tree_style = g_settings->tree_style();
-    HSTree root = intface->data;
-    size_t child_count = intface->child_count(root);
-    if (child_count == 0) {
-        output << rootprefix;
-        output << utf8_string_at(tree_style, 6);
-        output << utf8_string_at(tree_style, 5);
-        output << ' ';
-        // append caption
-        intface->append_caption(root, output);
-        output << "\n";
-    } else {
-        output << rootprefix;
-        output << utf8_string_at(tree_style, 6);
-        output << utf8_string_at(tree_style, 7);
-        // append caption
-        output << ' ';
-        intface->append_caption(root, output);
-        output << '\n';
-        // append children
-        GString* child_indent = g_string_new("");
-        GString* child_prefix = g_string_new("");
-        for (size_t i = 0; i < child_count; i++) {
-            bool last = (i == child_count - 1);
-            g_string_printf(child_indent, "%s ", indent);
-            g_string_append(child_indent,
-                utf8_string_at(tree_style, last ? 2 : 1).c_str());
-            g_string_printf(child_prefix, "%s ", indent);
-            g_string_append(child_prefix,
-                utf8_string_at(tree_style, last ? 4 : 3).c_str());
-            HSTreeInterface child = intface->nth_child(root, i);
-            subtree_print_to(&child, child_indent->str,
-                             child_prefix->str, output);
-            if (child.destructor) {
-                child.destructor(child.data);
-            }
-        }
-        g_string_free(child_indent, true);
-        g_string_free(child_prefix, true);
-
-    }
-}
-
-static void subtree_print_to(Ptr(TreeInterface) intface, const string& indent,
+static void subtree_print_to(shared_ptr<TreeInterface> intface, const string& indent,
                           const string& rootprefix, Output output) {
     size_t child_count = intface->childCount();
-    std::string tree_style = g_settings->tree_style();
+    string tree_style = g_settings->tree_style();
     if (child_count == 0) {
         output << rootprefix;
         output << utf8_string_at(tree_style, 6);
@@ -487,24 +422,17 @@ static void subtree_print_to(Ptr(TreeInterface) intface, const string& indent,
             child_indent += utf8_string_at(tree_style, last ? 2 : 1);
             child_prefix = indent + " ";
             child_prefix += utf8_string_at(tree_style, last ? 4 : 3);
-            Ptr(TreeInterface) child = intface->nthChild(i);
+            shared_ptr<TreeInterface> child = intface->nthChild(i);
             subtree_print_to(child, child_indent,
                              child_prefix, output);
         }
     }
 }
 
-void tree_print_to(Ptr(TreeInterface) intface, Output output) {
+void tree_print_to(shared_ptr<TreeInterface> intface, Output output) {
     string rootIndicator;
     rootIndicator += utf8_string_at(g_settings->tree_style(), 0);
     subtree_print_to(intface, " ", rootIndicator, output);
-}
-
-void tree_print_to(HSTreeInterface* intface, Output output) {
-    GString* root_indicator = g_string_new("");
-    g_string_append(root_indicator, utf8_string_at(g_settings->tree_style(), 0).c_str());
-    subtree_print_to(intface, " ", root_indicator->str, output);
-    g_string_free(root_indicator, true);
 }
 
 char* posix_sh_escape(const char* source) {
