@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "optional.h"
-#include "types.h"
 
 // various snap-flags
 enum SnapFlags {
@@ -36,12 +35,11 @@ public:
 
 int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b);
 
-int mouse_bind_command(int argc, char** argv, Output output);
 int mouse_unbind_all();
 std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button);
 
 unsigned int string2button(const char* name);
-MouseFunction string2mousefunction(char* name);
+MouseFunction string2mousefunction(const char* name);
 
 void grab_client_buttons(Client* client, bool focused);
 
@@ -66,8 +64,6 @@ void mouse_call_command(Client* client, const std::vector<std::string> &cmd);
 void mouse_function_move(XMotionEvent* me);
 void mouse_function_resize(XMotionEvent* me);
 void mouse_function_zoom(XMotionEvent* me);
-
-void complete_against_mouse_buttons(const char* needle, char* prefix, Output output);
 
 #endif
 

@@ -1,10 +1,10 @@
 #ifndef ROOT_H
 #define ROOT_H
 
+#include <memory>
+
 #include "child.h"
 #include "object.h"
-
-#include <memory>
 
 // new object tree root.
 

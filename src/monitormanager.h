@@ -1,13 +1,13 @@
 #ifndef __HERBSTLUFT_MONITOR_MANAGER_H_
 #define __HERBSTLUFT_MONITOR_MANAGER_H_
 
-#include <string>
 #include <functional>
+#include <string>
 
 #include "byname.h"
-#include "link.h"
 #include "childbyindex.h"
 #include "floating.h" // for find_rectangle_in_direction(), maybe move?
+#include "link.h"
 #include "monitor.h"
 
 extern MonitorManager* g_monitors;

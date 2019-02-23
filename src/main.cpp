@@ -24,11 +24,10 @@
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "ipc-server.h"
-#include "key.h"
 #include "keymanager.h"
 #include "layout.h"
 #include "monitormanager.h"
-#include "mouse.h"
+#include "mousemanager.h"
 #include "rectangle.h"
 #include "root.h"
 #include "rootcommands.h"
@@ -108,6 +107,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     ClientManager* clients = root->clients();
     KeyManager *keys = root->keys();
     MonitorManager* monitors = root->monitors();
+    MouseManager* mouse = root->mouse();
     RuleManager* rules = root->rules();
     Settings* settings = root->settings();
     TagManager* tags = root->tags();
@@ -133,7 +133,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                   &KeyManager::addKeybindCompletion}},
         {"keyunbind",      {keys, &KeyManager::removeKeybindCommand,
                                   &KeyManager::removeKeybindCompletion}},
-        {"mousebind",      mouse_bind_command},
+        {"mousebind",      {mouse, &MouseManager::addMouseBindCommand,
+                                   &MouseManager::addMouseBindCompletion}},
         {"mouseunbind",    { mouse_unbind_all }},
         {"spawn",          spawn},
         {"wmexec",         wmexec},

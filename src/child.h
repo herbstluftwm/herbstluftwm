@@ -1,8 +1,9 @@
 #ifndef __HLWM_CHILD_H_
 #define __HLWM_CHILD_H_
 
-#include "object.h"
 #include <memory>
+
+#include "object.h"
 
 /*! implement a static child object in the object tree. Static means that
  * init() is called on start up and reset() is called on shutdown.
