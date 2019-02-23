@@ -220,9 +220,7 @@ extern int* g_window_gap;
 // functions
 void layout_init();
 void layout_destroy();
-// destroys a frame and all its childs
-// then all Windows in it are collected and returned
-// YOU have to g_free the resulting window-buf
+
 int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
 
