@@ -32,7 +32,7 @@ fix_include --dry_run --sort_only --reorder "$srcdir"/src/*.h
 ###
 # Actually run include-what-you-use
 ###
-export CXX=clang++ CC=clang LDXX=clang++ LD=clang
+export CXX=clang++-7 CC=clang-7 LDXX=clang++-7 LD=clang-7
 cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON "$srcdir"
 iwyu_tool -p . -j "$(nproc)" > iwyu.log
 
