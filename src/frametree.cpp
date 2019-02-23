@@ -7,6 +7,8 @@
 #include "tag.h"
 #include "utils.h"
 
+#include <algorithm>
+
 using std::function;
 using std::make_shared;
 using std::shared_ptr;
@@ -273,3 +275,45 @@ void FrameTree::prettyPrint(shared_ptr<HSFrame> frame, Output output) {
     tree_print_to(treeInterface(frame, focus), output);
 }
 
+std::shared_ptr<HSFrameLeaf> FrameTree::findFrameWithClient(Client* client) {
+    shared_ptr<HSFrameLeaf> frame = {};
+    root_->fmap(
+        [](HSFrameSplit*) {},
+        [&](HSFrameLeaf* l) {
+            auto& cs = l->clients;
+            if (std::find(cs.begin(), cs.end(), client) != cs.end()) {
+                frame = l->thisLeaf();
+            }
+        });
+    return frame;
+}
+
+bool FrameTree::focusClient(Client* client) {
+    auto frameLeaf = findFrameWithClient(client);
+    if (!frameLeaf) {
+        return false;
+    }
+    // 1. focus client within its frame
+    auto& cs = frameLeaf->clients;
+    int index = std::find(cs.begin(), cs.end(), client) - cs.begin();
+    frameLeaf->selection = index;
+    // 2. make the frame focused
+    shared_ptr<HSFrame> frame = frameLeaf;
+    while (frame) {
+        auto parent = frame->getParent();
+        if (!parent) {
+            break;
+        }
+        if (parent->firstChild() == frame) {
+            parent->selection_ = 0;
+        } else {
+            parent->selection_ = 1;
+        }
+        frame = parent;
+    }
+    return true;
+}
+
+int FrameTree::cycle_all(Input input, Output output) {
+    return 0;
+}

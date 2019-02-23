@@ -27,6 +27,10 @@ public:
     std::shared_ptr<HSFrame> lookup(const std::string& path);
     static std::shared_ptr<HSFrameLeaf> focusedFrame(std::shared_ptr<HSFrame> node);
     std::shared_ptr<HSFrameLeaf> focusedFrame();
+    //! try to focus a client, and return if this was successful
+    bool focusClient(Client* client);
+    //! return a frame in the tree that holds the client
+    std::shared_ptr<HSFrameLeaf> findFrameWithClient(Client* client);
 
     // Commands
     int cycle_selection(Input input, Output output);
@@ -35,6 +39,7 @@ public:
     int close_and_remove();
     int close_or_remove();
     int rotate();
+    int cycle_all(Input input, Output output);
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:

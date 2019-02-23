@@ -61,7 +61,6 @@ public:
 
     virtual bool isFocused();
     virtual TilingResult computeLayout(Rectangle rect) = 0;
-    virtual bool focusClient(Client* client) = 0;
     virtual Client* focusedClient() = 0;
 
     // do recursive for each element of the (binary) frame tree
@@ -70,6 +69,10 @@ public:
     // if order >= 2 -> action(left); action(right); action(node);
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) = 0;
+    void fmap(std::function<void(HSFrameSplit*)> onSplit,
+              std::function<void(HSFrameLeaf*)> onLeaf) {
+        fmap(onSplit, onLeaf, 0);
+    }
     void foreachClient(ClientAction action);
 
     std::shared_ptr<HSFrameSplit> getParent() { return parent_.lock(); };
@@ -123,7 +126,6 @@ public:
     void moveClient(int new_index);
 
     TilingResult computeLayout(Rectangle rect) override;
-    bool focusClient(Client* client) override;
 
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
@@ -180,7 +182,6 @@ public:
     bool removeClient(Client* client) override;
 
     TilingResult computeLayout(Rectangle rect) override;
-    bool focusClient(Client* client) override;
 
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) override;

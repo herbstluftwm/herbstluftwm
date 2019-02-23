@@ -1027,31 +1027,6 @@ Client* HSFrameLeaf::focusedClient() {
     return nullptr;
 }
 
-// try to focus window in frame
-// it does not require anything from the frame. it may be infocused or even
-// hidden.
-// returns true if win was found and focused, else returns false
-bool HSFrameSplit::focusClient(Client* client) {
-    if (a_->focusClient(client)) {
-        selection_ = 0;
-        return true;
-    } else if (b_->focusClient(client)) {
-        selection_ = 1;
-        return true;
-    }
-    return false;
-}
-
-bool HSFrameLeaf::focusClient(Client* client) {
-    for (unsigned i = 0; i < clients.size(); i++) {
-        if (clients[i] == client) {
-            selection = i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // focus a window
 // switch_tag tells, whether to switch tag to focus to window
 // switch_monitor tells, whether to switch monitor to focus to window
@@ -1090,7 +1065,7 @@ bool focus_client(Client* client, bool switch_tag, bool switch_monitor) {
     }
     // now the right tag is visible
     // now focus it
-    bool found = tag->frame->root_->focusClient(client);
+    bool found = tag->frame->focusClient(client);
     cur_mon->applyLayout();
     g_monitors->unlock();
     return found;

@@ -216,7 +216,7 @@ void TagManager::moveClient(Client* client, HSTag* target) {
     // insert window into target
     target->frame->focusedFrame()->insertClient(client);
     // enfoce it to be focused on the target tag
-    target->frame->root_->focusClient(client);
+    target->frame->focusClient(client);
     client->tag()->stack->removeSlice(client->slice);
     client->setTag(target);
     client->tag()->stack->insertSlice(client->slice);
