@@ -8,10 +8,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
+#include <X11/X.h>
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include "../src/ipc-protocol.h"
 #include "ipc-client.h"

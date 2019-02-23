@@ -1,7 +1,7 @@
 #ifndef __HERBSTLUFT_MONITOR_H_
 #define __HERBSTLUFT_MONITOR_H_
 
-#include <X11/Xlib.h>
+#include <X11/X.h>
 
 #include "attribute_.h"
 #include "object.h"
