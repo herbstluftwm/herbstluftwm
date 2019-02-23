@@ -88,7 +88,7 @@ jobs:
           dist: xenial
           services: docker
           before_install:
-              - docker pull ubuntu:disco-20181220
+              # Installing IWYU in a container to get the most recent version:
               - docker build -t iwyu - <Dockerfile.iwyu
           script:
               - docker run -v $PWD:/hlwm:ro iwyu bash -c 'cd /hlwm && ./iwyu.sh'
