@@ -12,6 +12,5 @@ MouseManager::MouseManager() {
 }
 
 MouseManager::~MouseManager() {
-    mouse_unbind_all();
     XFreeCursor(g_display, cursor);
 }
