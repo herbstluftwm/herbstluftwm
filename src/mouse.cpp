@@ -190,7 +190,7 @@ int mouse_bind_command(int argc, char** argv, Output output) {
     for (int i = 3; i < argc; i++) {
         mb.cmd.push_back(argv[i]);
     }
-    Root::get()->mouse->binds.push_back(mb);
+    Root::get()->mouse->binds.push_front(mb);
     Client* client = get_current_client();
     if (client) {
         grab_client_buttons(client, true);

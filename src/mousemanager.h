@@ -1,7 +1,7 @@
 #pragma once
 
 #include <X11/Xlib.h>
-#include <vector>
+#include <list>
 
 #include "mouse.h"
 #include "object.h"
@@ -12,7 +12,7 @@ public:
     ~MouseManager();
 
     //! Currently defined mouse bindings (TODO: make this private as soon as possible)
-    std::vector<MouseBinding> binds;
+    std::list<MouseBinding> binds;
 
 private:
     Cursor cursor;
