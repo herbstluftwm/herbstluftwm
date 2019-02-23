@@ -49,7 +49,7 @@ jobs:
             - herbstclient quit
             - wait
 
-        - name: "Ubuntu 16.04, clang-7, Debug build, run iwyu"
+        - name: "Ubuntu 16.04, clang-7, Debug build"
           dist: xenial
           before_install:
               - export CC=clang-7 CXX=clang++-7
@@ -58,13 +58,10 @@ jobs:
                   sources:
                       - llvm-toolchain-xenial-7
                   packages:
-                      - iwyu
                       - clang-7
           script:
-              # - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE='iwyu;-Xiwyu;--transitive_includes_only' .
               - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug .
               - ninja -v -k 10
-              - ./iwyu.sh
 
         - name: "Ubuntu 14.04, gcc-4.8"
           # Note: Travis provides a newer GCC on trusty (5.4), but gcc-4.8 is
