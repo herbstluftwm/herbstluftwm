@@ -4,8 +4,8 @@
 #include <X11/Xlib.h>
 #include <unordered_map>
 
-#include "link.h"
 #include "client.h"
+#include "link.h"
 #include "object.h"
 #include "signal.h"
 
