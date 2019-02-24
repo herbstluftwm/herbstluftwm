@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+using std::endl;
 using std::function;
 using std::make_shared;
 using std::shared_ptr;
@@ -298,7 +299,11 @@ bool FrameTree::focusClient(Client* client) {
     int index = std::find(cs.begin(), cs.end(), client) - cs.begin();
     frameLeaf->selection = index;
     // 2. make the frame focused
-    shared_ptr<HSFrame> frame = frameLeaf;
+    focusFrame(frameLeaf);
+    return true;
+}
+
+void FrameTree::focusFrame(std::shared_ptr<HSFrame> frame) {
     while (frame) {
         auto parent = frame->getParent();
         if (!parent) {
@@ -311,9 +316,79 @@ bool FrameTree::focusClient(Client* client) {
         }
         frame = parent;
     }
-    return true;
 }
 
 int FrameTree::cycle_all(Input input, Output output) {
+    bool skip_invisible = false;
+    int delta = 1;
+    string s = "";
+    input >> s;
+    if (s == "--skip-invisible") {
+        skip_invisible = true;
+        // and load the next (optional) argument to s
+        s = "0";
+        input >> s;
+    }
+    try {
+        delta = std::stoi(s);
+    } catch (std::invalid_argument const& e) {
+        output << "invalid argument: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    } catch (std::out_of_range const& e) {
+        output << "out of range: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (delta < -1 || delta > 1) {
+        output << "argument out of range." << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (delta == 0) {
+        return 0; // nothing to do
+    }
+    shared_ptr<HSFrameLeaf> focus = focusedFrame();
+    bool frameChanges = (focus->layout == LAYOUT_MAX && skip_invisible)
+        || (delta == 1 && focus->getSelection() + 1 == focus->clientCount())
+        || (delta == -1 && focus->getSelection() == 0)
+        || (focus->clientCount() == 0);
+    if (!frameChanges) {
+        // if the focused frame does not change, it's simple
+        auto count = focus->clientCount();
+        if (count != 0) {
+            focus->setSelection(MOD(focus->getSelection() + delta, count));
+        }
+        return 0;
+    }
+    // otherwise we need to find the next frame in direction 'delta'
+    // First, enumerate all frames in traversal order
+    // and find the focused frame in there
+    std::vector<shared_ptr<HSFrameLeaf>> frames;
+    int index = 0;
+    root_->fmap(
+        [](HSFrameSplit*) {},
+        [&](HSFrameLeaf* l) {
+            if (l == focus.get()) {
+                // the index of the next item we push back
+                index = frames.size();
+            }
+            frames.push_back(l->thisLeaf());
+        });
+    index += delta;
+    index = MOD(index, frames.size());
+    focus = frames[index];
+    focusFrame(focus);
+    // fix the selection within the freshly focused frame.
+    if (focus->layout == LAYOUT_MAX && skip_invisible) {
+        // nothing to do
+    } else if (delta == 1) {
+        // focus the first client
+        focus->setSelection(0);
+    } else { // delta == -1
+        // focus the last client
+        if (focus->clientCount() > 0) {
+            focus->setSelection(focus->clientCount() - 1);
+        }
+    }
+    // finally, redraw the layout
+    get_current_monitor()->applyLayout();
     return 0;
 }

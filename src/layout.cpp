@@ -471,68 +471,6 @@ void HSFrameLeaf::setSelection(int index) {
     get_current_monitor()->applyLayout();
 }
 
-int cycle_all_command(int argc, char** argv) {
-    return 0;
-}
-    /** FRAMETODO
-    int delta = 1;
-    bool skip_invisible = false;
-    if (argc >= 2) {
-        if (!strcmp(argv[1], "--skip-invisible")) {
-            skip_invisible = true;
-            (void) SHIFT(argc, argv);
-        }
-    }
-    if (argc >= 2) {
-        delta = atoi(argv[1]);
-    }
-    delta = CLAMP(delta, -1, 1); // only delta -1, 0, 1 is allowed
-    if (delta == 0) {
-        // nothing to do
-        return 0;
-    }
-    // find current selection
-    (void)skip_invisible;
-    auto frame = HSFrame::getGloballyFocusedFrame();
-    ///int index = frame->content.clients.selection;
-    bool change_frame = false;
-    int direction;
-    int new_window_index; // tells where to start in a new frame
-    if (delta > 0 && (index + 1) >= frame->content.clients.count) {
-        // change selection from 0 to 1
-        direction = 1;
-        change_frame = true;
-        new_window_index = 0; // focus first window in in a frame
-    }
-    if (delta < 0 && index == 0) {
-        // change selection from 1 to 0
-        direction = 0;
-        change_frame = true;
-        new_window_index = -1; // focus last window in in a frame
-    }
-    if (skip_invisible && frame->content.clients.layout == LAYOUT_MAX) {
-        direction = (delta > 0) ? 1 : 0;
-        change_frame = true;
-    }
-    if (change_frame) {
-        cycle_frame(direction, new_window_index, skip_invisible);
-    } else {
-        // only change the selection within one frame
-        index += delta;
-        // ensure it is a valid index
-        index %= frame->content.clients.count;
-        index += frame->content.clients.count;
-        index %= frame->content.clients.count;
-        frame->content.clients.selection = index;
-    }
-    HSClient* c = get_current_monitor()->tag->frame->focusedClient();
-    if (c) {
-        c->raise();
-    }
-    get_current_monitor()->applyLayout();
-    return 0;
-    **/
-
 int HSFrame::splitsToRoot(int align) {
     if (!parent_.lock()) return 0;
     return parent_.lock()->splitsToRoot(align);

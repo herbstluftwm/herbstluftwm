@@ -142,7 +142,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"bring",          frame_current_bring},
         {"focus_nth",      { tags->frameCommand(&FrameTree::focus_nth) }},
         {"cycle",          { tags->frameCommand(&FrameTree::cycle_selection) }},
-        {"cycle_all",      cycle_all_command},
+        {"cycle_all",      { tags->frameCommand(&FrameTree::cycle_all) }},
         {"cycle_layout",   frame_current_cycle_client_layout},
         {"cycle_frame",    cycle_frame_command},
         {"close",          { close_command }},

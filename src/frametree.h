@@ -29,6 +29,8 @@ public:
     std::shared_ptr<HSFrameLeaf> focusedFrame();
     //! try to focus a client, and return if this was successful
     bool focusClient(Client* client);
+    //! focus a frame within its tree
+    static void focusFrame(std::shared_ptr<HSFrame> frame);
     //! return a frame in the tree that holds the client
     std::shared_ptr<HSFrameLeaf> findFrameWithClient(Client* client);
 
