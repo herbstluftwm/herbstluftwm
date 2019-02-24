@@ -1,0 +1,11 @@
+FROM ubuntu:disco-20190204
+RUN apt-get update && apt-get -y install \
+    clang-7 \
+    cmake \
+    git \
+    iwyu \
+    libglib2.0-dev \
+    libx11-dev \
+    libxext-dev \
+    libxinerama-dev \
+    pkg-config \
