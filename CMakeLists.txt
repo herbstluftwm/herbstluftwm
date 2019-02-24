@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 3.1...3.13)
 
 file(STRINGS VERSION VERSION) # read hlwm version from file 'VERSION'
 project(Herbstluftwm
-    VERSION ${VERSION}
-    DESCRIPTION "A manual tiling window manager for X11")
+    VERSION ${VERSION})
 
 # use our cmake dir for include(…) statements
 list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake")
