@@ -1,7 +1,7 @@
 #ifndef CLIENTMANAGER_H
 #define CLIENTMANAGER_H
 
-#include <X11/Xlib.h>
+#include <X11/X.h>
 #include <unordered_map>
 
 #include "client.h"

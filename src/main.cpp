@@ -3,11 +3,9 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <X11/X.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
-#include <X11/cursorfont.h>
 #include <cassert>
 #include <csignal>
 #include <cstdio>

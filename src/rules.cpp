@@ -1,5 +1,7 @@
 #include "rules.h"
 
+#include <X11/X.h>
+#include <X11/Xlib.h>
 #include <algorithm>
 #include <cstdio>
 
