@@ -1,6 +1,8 @@
 #ifndef __HLWM_FRAME_DECORATION_H_
 #define __HLWM_FRAME_DECORATION_H_
 
+#include <X11/X.h>
+
 #include "x11-types.h"
 
 class HSTag;

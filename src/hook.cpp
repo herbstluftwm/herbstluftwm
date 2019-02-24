@@ -1,12 +1,12 @@
 #include "hook.h"
 
-#include <stdarg.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
+#include <X11/X.h>
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <cassert>
 #include <cstdio>
+#include <stdarg.h>
 
 #include "glib-backports.h"
 #include "globals.h"

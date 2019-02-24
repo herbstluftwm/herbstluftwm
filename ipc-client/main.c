@@ -3,6 +3,7 @@
  * This software is licensed under the "Simplified BSD License".
  * See LICENSE for details */
 
+#include <X11/Xlib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

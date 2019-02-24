@@ -1,6 +1,7 @@
 #ifndef __HERBSTLUFT_EWMH_H_
 #define __HERBSTLUFT_EWMH_H_
 
+#include <X11/X.h>
 #include <X11/Xlib.h>
 #include <array>
 

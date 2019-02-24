@@ -1,10 +1,7 @@
 #ifndef __DECORATION_H_
 #define __DECORATION_H_
 
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
-#include <X11/Xutil.h>
+#include <X11/X.h>
 #include <map>
 
 #include "attribute_.h"

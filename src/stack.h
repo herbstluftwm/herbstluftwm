@@ -1,7 +1,7 @@
 #ifndef __HERBST_STACK_H_
 #define __HERBST_STACK_H_
 
-#include <X11/Xlib.h>
+#include <X11/X.h>
 #include <array>
 
 #include "glib-backports.h"

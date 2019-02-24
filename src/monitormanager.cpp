@@ -1,5 +1,6 @@
 #include "monitormanager.h"
 
+#include <X11/Xlib.h>
 #include <cassert>
 #include <memory>
 

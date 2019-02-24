@@ -1,7 +1,7 @@
 #ifndef __HERBSTLUFT_IPC_SERVER_H_
 #define __HERBSTLUFT_IPC_SERVER_H_
 
-#include <X11/Xlib.h>
+#include <X11/X.h>
 
 void ipc_add_connection(Window win);
 // returns true if property was received successfully
