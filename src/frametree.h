@@ -45,6 +45,8 @@ public:
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:
+    //! cycle the frames within the current tree
+    void cycle_frame(int delta);
     static std::shared_ptr<TreeInterface> treeInterface(
         std::shared_ptr<HSFrame> frame,
         std::shared_ptr<HSFrameLeaf> focus);

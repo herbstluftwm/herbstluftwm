@@ -357,9 +357,30 @@ int FrameTree::cycle_all(Input input, Output output) {
         if (count != 0) {
             focus->setSelection(MOD(focus->getSelection() + delta, count));
         }
-        return 0;
+    } else {
+        // otherwise we need to find the next frame in direction 'delta'
+        cycle_frame(delta);
+        focus = focusedFrame();
+        // fix the selection within the freshly focused frame.
+        if (focus->layout == LAYOUT_MAX && skip_invisible) {
+            // nothing to do
+        } else if (delta == 1) {
+            // focus the first client
+            focus->setSelection(0);
+        } else { // delta == -1
+            // focus the last client
+            if (focus->clientCount() > 0) {
+                focus->setSelection(focus->clientCount() - 1);
+            }
+        }
     }
-    // otherwise we need to find the next frame in direction 'delta'
+    // finally, redraw the layout
+    get_current_monitor()->applyLayout();
+    return 0;
+}
+
+void FrameTree::cycle_frame(int delta) {
+    shared_ptr<HSFrameLeaf> focus = focusedFrame();
     // First, enumerate all frames in traversal order
     // and find the focused frame in there
     vector<shared_ptr<HSFrameLeaf>> frames;
@@ -375,21 +396,6 @@ int FrameTree::cycle_all(Input input, Output output) {
         });
     index += delta;
     index = MOD(index, frames.size());
-    focus = frames[index];
-    focusFrame(focus);
-    // fix the selection within the freshly focused frame.
-    if (focus->layout == LAYOUT_MAX && skip_invisible) {
-        // nothing to do
-    } else if (delta == 1) {
-        // focus the first client
-        focus->setSelection(0);
-    } else { // delta == -1
-        // focus the last client
-        if (focus->clientCount() > 0) {
-            focus->setSelection(focus->clientCount() - 1);
-        }
-    }
-    // finally, redraw the layout
-    get_current_monitor()->applyLayout();
-    return 0;
+    focusFrame(frames[index]);
 }
+
