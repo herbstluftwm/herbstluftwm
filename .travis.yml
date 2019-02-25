@@ -1,5 +1,7 @@
 language: minimal
 
+cache: ccache
+
 jobs:
     include:
         - name: "Ubuntu 19.04, gcc-8, Debug build, run checks and tests"
@@ -9,7 +11,7 @@ jobs:
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
           script:
-              - docker run -u $UID --privileged -t --rm --volume=$PWD:/hlwm:rw disco /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --run-tests
+              - docker run -u $UID --privileged -t --rm --volume=$PWD:/hlwm:rw --volume=$HOME/.ccache:/.ccache:rw disco /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --run-tests --ccache
 
         - name: "Ubuntu 19.04, clang-7, Debug build"
           dist: xenial
