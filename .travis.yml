@@ -1,10 +1,3 @@
-language: python
-
-install:
-    - sudo apt-get -y -q update
-    - sudo apt-get -y -q build-dep herbstluftwm
-    - sudo apt-get -y -q install cmake ninja-build dzen2 xdotool
-
 jobs:
     include:
         - name: "Ubuntu 16.04, gcc-8, Debug build, run tests"
