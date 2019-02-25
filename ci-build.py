@@ -21,6 +21,10 @@ if args.check_using_std:
 build_dir = '/hlwm/build'
 os.makedirs(build_dir, exist_ok=True)
 
+if args.ccache:
+    sp.check_call(['ccache', '-s'])
+    sp.check_call(['ccache', '-z'])
+
 cmake_env = os.environ.copy()
 cmake_env.update({
     'CC': args.cc,
@@ -37,6 +41,9 @@ cmake_args = [
 sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=cmake_env)
 
 sp.check_call(shlex.split('ninja -v -k 10'), cwd=build_dir, env=cmake_env)
+
+if args.ccache:
+    sp.check_call(['ccache', '-s'])
 
 if args.run_tests:
     tox_env = os.environ.copy()
