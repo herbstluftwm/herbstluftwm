@@ -2,7 +2,7 @@ language: minimal
 
 jobs:
     include:
-        - name: "Ubuntu 16.04, gcc-8, Debug build, run tests"
+        - name: "Ubuntu 19.04, gcc-8, Debug build, run checks and tests"
           dist: xenial
           services: docker
           before_install:
