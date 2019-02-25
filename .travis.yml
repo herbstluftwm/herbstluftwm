@@ -30,4 +30,4 @@ jobs:
               - docker pull dnnr/hlwm-ci:trusty
               - docker build -t trusty --cache-from dnnr/hlwm-ci:trusty - <Dockerfile.ci-trusty
           script:
-              - docker run -u $UID -t --rm --volume=$PWD:/hlwm:rw trusty /hlwm/ci-build.py --cxx=g++-4.8 --cc=gcc-4.8 --build-type=Release
+              - docker run -u $UID -t --rm --volume=$PWD:/hlwm:rw trusty bash -c 'mkdir /hlwm/build && cd /hlwm/build && cmake -GNinja .. && ninja -v -k10'
