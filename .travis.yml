@@ -8,9 +8,11 @@ jobs:
           dist: xenial
           services: docker
           script:
+              - ccache -s
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
               - docker run -u $UID --privileged -t --rm --volume=$PWD:/hlwm:rw --volume=$HOME/.ccache:/.ccache:rw disco /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --run-tests --ccache
+              - ccache -s
 
     exclude:
         - name: "Ubuntu 19.04, clang-7, Debug build"
