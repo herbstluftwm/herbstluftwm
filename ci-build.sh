@@ -14,7 +14,7 @@ export CC=gcc-8 CXX=g++-8
 linkerfix="-fuse-ld=gold"
 export LDFLAGS="$linkerfix" LDXXFLAGS="$linkerfix"
 
-cmake -GNinja -DCMAKE_BUILD_TYPE=Debug ..
+cmake -GNinja -DWITH_DOCUMENTATION=NO -DCMAKE_BUILD_TYPE=Debug ..
 ninja -v -k 10
 
 tox -e py37 -- -n auto -v
