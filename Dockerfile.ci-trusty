@@ -1,0 +1,29 @@
+FROM ubuntu:trusty-20190122
+
+# Build deps
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    ccache \
+    cmake3 \
+    gcc-4.8 \
+    g++-4.8 \
+    git \
+    iwyu \
+    libglib2.0-dev \
+    libx11-dev \
+    libxext-dev \
+    libxinerama-dev \
+    libxml2-utils \
+    ninja-build \
+    pkg-config \
+    xterm \
+    xvfb
+
+# Doc deps (disabled for now because they're huge)
+#RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
+#    asciidoc \
+#    docbook-xml \
+#    docbook-xsl \
+#    xsltproc
+
+# Clean up:
+RUN rm -rf /var/lib/apt/lists/*
