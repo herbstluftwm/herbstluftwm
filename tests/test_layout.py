@@ -183,7 +183,7 @@ def test_cycle_all_skip_invisible(hlwm, running_clients, delta):
     # create two frames both in max mode, with 3 and 2 clients
     hlwm.call('set_layout max')
     hlwm.call('split explode')
-    layout = hlwm.call('dump').stderr
+    layout = hlwm.call('dump').stdout
 
     visited_winids = []
     for i in range(0, 2):
@@ -191,7 +191,7 @@ def test_cycle_all_skip_invisible(hlwm, running_clients, delta):
         hlwm.call(['cycle_all', '--skip-invisible', delta])
 
     # we are in the same situation as before
-    assert layout == hlwm.call('dump').stderr
+    assert layout == hlwm.call('dump').stdout
     assert visited_winids[0] == hlwm.get_attr('clients.focus.winid')
     # but we visited two different windows
     assert visited_winids[0] != visited_winids[1]
