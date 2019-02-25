@@ -42,6 +42,7 @@ public:
     int close_or_remove();
     int rotate();
     int cycle_all(Input input, Output output);
+    int cycle_frame_cmd(Input input, Output output);
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:

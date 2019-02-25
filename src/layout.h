@@ -230,7 +230,6 @@ int find_layout_by_name(char* name);
 int find_align_by_name(char* name);
 
 int frame_current_bring(int argc, char** argv, Output output);
-int cycle_frame_command(int argc, char** argv);
 
 // get neighbour in a specific direction 'l' 'r' 'u' 'd' (left, right,...)
 // returns the neighbour or NULL if there is no one

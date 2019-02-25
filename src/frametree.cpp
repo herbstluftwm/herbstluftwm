@@ -399,3 +399,21 @@ void FrameTree::cycle_frame(int delta) {
     focusFrame(frames[index]);
 }
 
+int FrameTree::cycle_frame_cmd(Input input, Output output) {
+    string s = "1";
+    int delta = 1;
+    input >> s; // try to read the optional argument
+    try {
+        delta = std::stoi(s);
+    } catch (std::invalid_argument const& e) {
+        output << "invalid argument: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    } catch (std::out_of_range const& e) {
+        output << "out of range: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    cycle_frame(delta);
+    get_current_monitor()->applyLayout();
+    return 0;
+}
+

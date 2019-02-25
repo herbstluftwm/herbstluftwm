@@ -1011,9 +1011,3 @@ void frame_focus_recursive(shared_ptr<HSFrame> frame) {
     }
 }
 
-int cycle_frame_command(int argc, char** argv) {
-    // FRAMETODO
-    return 0;
-}
-
-

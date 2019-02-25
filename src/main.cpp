@@ -144,7 +144,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"cycle",          { tags->frameCommand(&FrameTree::cycle_selection) }},
         {"cycle_all",      { tags->frameCommand(&FrameTree::cycle_all) }},
         {"cycle_layout",   frame_current_cycle_client_layout},
-        {"cycle_frame",    cycle_frame_command},
+        {"cycle_frame",    { tags->frameCommand(&FrameTree::cycle_frame_cmd) }},
         {"close",          { close_command }},
         {"close_or_remove",{ tags->frameCommand(&FrameTree::close_or_remove) }},
         {"close_and_remove",{ tags->frameCommand(&FrameTree::close_and_remove) }},
