@@ -7,27 +7,24 @@ jobs:
         - name: "Ubuntu 19.04, gcc-8, Debug build, run checks and tests"
           dist: xenial
           services: docker
-          before_install:
+          script:
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
-          script:
               - docker run -u $UID --privileged -t --rm --volume=$PWD:/hlwm:rw --volume=$HOME/.ccache:/.ccache:rw disco /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --run-tests --ccache
 
     exclude:
         - name: "Ubuntu 19.04, clang-7, Debug build"
           dist: xenial
           services: docker
-          before_install:
+          script:
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
-          script:
               - docker run -u $UID -t --rm --volume=$PWD:/hlwm:rw disco /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug
 
         - name: "Ubuntu 14.04, gcc-4.8, Release build"
           dist: xenial
           services: docker
-          before_install:
+          script:
               - docker pull dnnr/hlwm-ci:trusty
               - docker build -t trusty --cache-from dnnr/hlwm-ci:trusty - <Dockerfile.ci-trusty
-          script:
               - docker run -u $UID -t --rm --volume=$PWD:/hlwm:rw trusty bash -c 'mkdir /hlwm/build && cd /hlwm/build && cmake -GNinja .. && ninja -v -k10'
