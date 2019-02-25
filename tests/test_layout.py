@@ -176,3 +176,24 @@ def test_cycle_all_traverses_all(hlwm, running_clients, num_splits, delta):
     assert all_winids == visited_winids
 
 
+@pytest.mark.parametrize("running_clients_num", [4])
+@pytest.mark.parametrize("delta", [1, -1])
+def test_cycle_all_skip_invisible(hlwm, running_clients, delta):
+    # TODO: create better test case when we have the 'load' command again
+    # create two frames both in max mode, with 3 and 2 clients
+    hlwm.call('set_layout max')
+    hlwm.call('split explode')
+    layout = hlwm.call('dump').stderr
+
+    visited_winids = []
+    for i in range(0, 2):
+        visited_winids.append(hlwm.get_attr('clients.focus.winid'))
+        hlwm.call(['cycle_all', '--skip-invisible', delta])
+
+    # we are in the same situation as before
+    assert layout == hlwm.call('dump').stderr
+    assert visited_winids[0] == hlwm.get_attr('clients.focus.winid')
+    # but we visited two different windows
+    assert visited_winids[0] != visited_winids[1]
+
+
