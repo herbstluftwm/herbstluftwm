@@ -149,3 +149,30 @@ def test_jumpto_within_tag(hlwm, running_clients, client2focus, num_splits):
 
     assert hlwm.get_attr('clients.focus.winid') == c
 
+
+@pytest.mark.parametrize("running_clients_num", [2, 5])
+@pytest.mark.parametrize("num_splits", [0, 1, 2, 3])
+@pytest.mark.parametrize("delta", [1, -1])
+def test_cycle_all_traverses_all(hlwm, running_clients, num_splits, delta):
+    for i in range(0, num_splits):
+        hlwm.call('split explode')
+
+    visited_winids = []
+    for _ in range(0, len(running_clients) + num_splits):
+        # if a client is focused, then read its window-id
+        w = hlwm.call('try and , silent get_attr clients.focus.winid \
+                               , get_attr clients.focus.winid').stdout
+        hlwm.call(['cycle_all', delta])# go the next window
+        if w == '':
+            continue # ignore empty frames
+        if w in visited_winids:
+            break # stop if we were at window seen before
+        visited_winids.append(w)
+
+    # winids should hold all windows in the correct order
+    all_winids = [m.group(0) for m in re.finditer(r'0x[^ )]*', hlwm.call('dump').stdout)]
+    if delta == -1:
+        all_winids = [all_winids[0]] + list(reversed(all_winids[1:]))
+    assert all_winids == visited_winids
+
+
