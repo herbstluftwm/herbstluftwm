@@ -39,7 +39,6 @@ sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=cmake_env)
 sp.check_call(shlex.split('ninja -v -k 10'), cwd=build_dir, env=cmake_env)
 
 if args.run_tests:
-    #  sp.check_call(shlex.split(f'sh -c env'), cwd=build_dir)
     tox_env = os.environ.copy()
     tox_env.update({
         'PWD': build_dir,
