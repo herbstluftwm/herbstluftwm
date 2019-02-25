@@ -13,20 +13,20 @@ jobs:
           script:
               - docker run -u $UID --privileged -t --rm --volume=$PWD:/hlwm:rw --volume=$HOME/.ccache:/.ccache:rw disco /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --run-tests --ccache
 
-        # - name: "Ubuntu 19.04, clang-7, Debug build"
-          # dist: xenial
-          # services: docker
-          # before_install:
-              # - docker pull dnnr/hlwm-ci:disco
-              # - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
-          # script:
-              # - docker run -u $UID -t --rm --volume=$PWD:/hlwm:rw disco /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug
+        - name: "Ubuntu 19.04, clang-7, Debug build"
+          dist: xenial
+          services: docker
+          before_install:
+              - docker pull dnnr/hlwm-ci:disco
+              - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
+          script:
+              - docker run -u $UID -t --rm --volume=$PWD:/hlwm:rw disco /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug
 
-        # - name: "Ubuntu 14.04, gcc-4.8, Release build"
-          # dist: xenial
-          # services: docker
-          # before_install:
-              # - docker pull dnnr/hlwm-ci:trusty
-              # - docker build -t trusty --cache-from dnnr/hlwm-ci:trusty - <Dockerfile.ci-trusty
-          # script:
-              # - docker run -u $UID -t --rm --volume=$PWD:/hlwm:rw trusty /hlwm/ci-build.py --cxx=g++-4.8 --cc=gcc-4.8 --build-type=Release
+        - name: "Ubuntu 14.04, gcc-4.8, Release build"
+          dist: xenial
+          services: docker
+          before_install:
+              - docker pull dnnr/hlwm-ci:trusty
+              - docker build -t trusty --cache-from dnnr/hlwm-ci:trusty - <Dockerfile.ci-trusty
+          script:
+              - docker run -u $UID -t --rm --volume=$PWD:/hlwm:rw trusty /hlwm/ci-build.py --cxx=g++-4.8 --cc=gcc-4.8 --build-type=Release
