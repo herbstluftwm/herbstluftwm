@@ -7,4 +7,4 @@ jobs:
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t tmp --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
           script:
-              - docker run --rm -v $PWD:/hlwm:rw tmp bash -c 'cd /hlwm && ./ci-check-using-std.sh && mkdir build && cd build && export CC=gcc-8 CXX=g++-8 && linkerfix="-fuse-ld=gold" && export LDFLAGS="$linkerfix" LDXXFLAGS="$linkerfix" && cmake -GNinja -DCMAKE_BUILD_TYPE=Debug .. && ninja -v -k 10 && tox -- -n auto -v'
+              - docker run --rm -v $PWD:/hlwm:rw tmp bash -c 'cd /hlwm && ./ci-check-using-std.sh && mkdir build && cd build && export CC=gcc-8 CXX=g++-8 && linkerfix="-fuse-ld=gold" && export LDFLAGS="$linkerfix" LDXXFLAGS="$linkerfix" && cmake -GNinja -DCMAKE_BUILD_TYPE=Debug .. && ninja -v -k 10 && tox -e py37 -- -n auto -v'
