@@ -1,6 +1,7 @@
 #ifndef __HLWM_XCONNECTION_H_
 #define __HLWM_XCONNECTION_H_
 
+#include <X11/X.h>
 #include <X11/Xlib.h>
 #include <string>
 

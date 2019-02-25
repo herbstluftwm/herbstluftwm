@@ -80,3 +80,12 @@ jobs:
             - herbstclient version
             - herbstclient quit
             - wait $hlwmpid
+
+        - name: "include-what-you-use"
+          dist: xenial
+          services: docker
+          before_install:
+              # Installing IWYU in a container to get the most recent version:
+              - docker build -t iwyu - <Dockerfile.iwyu
+          script:
+              - docker run --rm -v $PWD:/hlwm:ro iwyu bash -c 'cd /hlwm && ./iwyu.sh'

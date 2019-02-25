@@ -1,8 +1,7 @@
 #ifndef __HERBST_X11_UTILS_H_
 #define __HERBST_X11_UTILS_H_
 
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
+#include <X11/X.h>
 
 #include "x11-types.h"
 

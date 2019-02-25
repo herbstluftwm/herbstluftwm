@@ -1,5 +1,6 @@
 #include "monitor.h"
 
+#include <X11/Xlib.h>
 #include <cassert>
 #include <cstring>
 #include <sstream>
