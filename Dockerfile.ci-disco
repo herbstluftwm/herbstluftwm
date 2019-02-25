@@ -1,0 +1,32 @@
+FROM ubuntu:disco-20190204
+
+# Build deps
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    ccache \
+    clang-7 \
+    cmake \
+    gcc-8 \
+    git \
+    iwyu \
+    libglib2.0-dev \
+    libx11-dev \
+    libxext-dev \
+    libxinerama-dev \
+    libxml2-utils \
+    python3.7 \
+    ninja-build \
+    pkg-config \
+    tox \
+    xdotool \
+    xterm \
+    xvfb
+
+# Doc deps (disabled for now because they're huge)
+#RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
+#    asciidoc \
+#    docbook-xml \
+#    docbook-xsl \
+#    xsltproc
+
+# Clean up:
+RUN rm -rf /var/lib/apt/lists/*
