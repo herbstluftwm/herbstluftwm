@@ -197,3 +197,22 @@ def test_cycle_all_skip_invisible(hlwm, running_clients, delta):
     assert visited_winids[0] != visited_winids[1]
 
 
+@pytest.mark.parametrize("running_clients_num", [2, 5])
+@pytest.mark.parametrize("num_splits", [0, 1, 2, 3])
+@pytest.mark.parametrize("delta", [1, -1])
+def test_cycle_frame_traverses_all(hlwm, running_clients, num_splits, delta):
+    for i in range(0, num_splits):
+        hlwm.call('split explode')
+
+    # cycle through all of our (num_splits+1)-many frames
+    layouts = []
+    for i in range(0, num_splits + 1):
+        layouts.append(hlwm.call('dump').stdout)
+        hlwm.call(['cycle_frame', delta])
+
+    # then we're back on the original layout
+    assert layouts[0] == hlwm.call('dump').stdout
+    # and all intermediate layouts are different
+    for i1 in range(0, len(layouts)):
+        for i2 in range(0, i1):
+            assert layouts[i1] != layouts[i2]
