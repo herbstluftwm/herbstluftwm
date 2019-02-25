@@ -14,6 +14,7 @@ using std::function;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::vector;
 
 FrameTree::FrameTree(HSTag* tag, Settings* settings)
     : tag_(tag)
@@ -276,7 +277,7 @@ void FrameTree::prettyPrint(shared_ptr<HSFrame> frame, Output output) {
     tree_print_to(treeInterface(frame, focus), output);
 }
 
-std::shared_ptr<HSFrameLeaf> FrameTree::findFrameWithClient(Client* client) {
+shared_ptr<HSFrameLeaf> FrameTree::findFrameWithClient(Client* client) {
     shared_ptr<HSFrameLeaf> frame = {};
     root_->fmap(
         [](HSFrameSplit*) {},
@@ -303,7 +304,7 @@ bool FrameTree::focusClient(Client* client) {
     return true;
 }
 
-void FrameTree::focusFrame(std::shared_ptr<HSFrame> frame) {
+void FrameTree::focusFrame(shared_ptr<HSFrame> frame) {
     while (frame) {
         auto parent = frame->getParent();
         if (!parent) {
@@ -361,7 +362,7 @@ int FrameTree::cycle_all(Input input, Output output) {
     // otherwise we need to find the next frame in direction 'delta'
     // First, enumerate all frames in traversal order
     // and find the focused frame in there
-    std::vector<shared_ptr<HSFrameLeaf>> frames;
+    vector<shared_ptr<HSFrameLeaf>> frames;
     int index = 0;
     root_->fmap(
         [](HSFrameSplit*) {},
