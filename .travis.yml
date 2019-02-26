@@ -10,6 +10,7 @@ before_install:
 jobs:
     include:
         - name: "Build with most recent GCC & Clang, run checks and tests"
+          env: TRAVIS_CACHE_ID=disco
           cache:
               directories:
                   - $HOME/.ccache-clang-7
@@ -36,6 +37,7 @@ jobs:
 
 
         - name: "Build with ancient GCC on Ubuntu 14.04"
+          env: TRAVIS_CACHE_ID=trusty
           cache:
               directories:
                   - $HOME/.ccache-gcc-4.8
