@@ -8,7 +8,8 @@ jobs:
           dist: xenial
           services: docker
           script:
-              - cat /etc/ccache.conf
+              - cat $HOME/.ccache/ccache.conf
+              - ccache --print-config
               - ccache -s
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
