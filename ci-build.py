@@ -41,7 +41,7 @@ cmake_args = [
 
 sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=cmake_env)
 
-sp.check_call(shlex.split('time ninja -v -k 10'), cwd=build_dir, env=cmake_env)
+sp.check_call('time ninja -v -k 10', shell=True cwd=build_dir, env=cmake_env)
 
 if args.ccache:
     sp.check_call(['ccache', '-s'])
