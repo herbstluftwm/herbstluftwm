@@ -2,7 +2,7 @@ language: minimal
 
 cache:
     directories:
-        - $HOME/.ccache
+        - $HOME/ccaches
 
 jobs:
     include:
@@ -17,12 +17,11 @@ jobs:
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
               - docker run -u $UID --privileged -t --rm
                 --volume=$PWD:/hlwm:rw
-                --volume=$HOME/.ccache:/.ccache:rw
+                --volume=$HOME/ccaches/gcc-8:/.ccache:rw
                 disco
                 /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache
               - ccache -s
 
-    exclude:
         - name: "Ubuntu 19.04, clang-7, Debug build"
           dist: xenial
           services: docker
@@ -31,9 +30,11 @@ jobs:
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
               - docker run -u $UID -t --rm
                 --volume=$PWD:/hlwm:rw
+                --volume=$HOME/ccaches/clang-7:/.ccache:rw
                 disco
                 /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug
 
+    exclude:
         - name: "Ubuntu 14.04, gcc-4.8, Release build"
           dist: xenial
           services: docker
