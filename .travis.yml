@@ -3,6 +3,7 @@ language: minimal
 cache:
     directories:
         - $HOME/.ccache-clang-7
+        - $HOME/.ccache-gcc-4.8
         - $HOME/.ccache-gcc-8
 
 jobs:
@@ -33,11 +34,17 @@ jobs:
                 disco
                 /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --ccache
 
-    exclude:
         - name: "Ubuntu 14.04, gcc-4.8, Release build"
           dist: xenial
           services: docker
           script:
+              # Prepare Docker image
               - docker pull dnnr/hlwm-ci:trusty
               - docker build -t trusty --cache-from dnnr/hlwm-ci:trusty - <Dockerfile.ci-trusty
-              - docker run -u $UID -t --rm --volume=$PWD:/hlwm:rw trusty bash -c 'mkdir /hlwm/build && cd /hlwm/build && cmake -GNinja .. && ninja -v -k10'
+
+              # Build with gcc-4.8 (plain bash one-liner)
+              - docker run -u $UID -t --rm
+                --volume=$PWD:/hlwm:rw
+                --volume=$HOME/.ccache-gcc-4.8:$HOME/.ccache:rw
+                trusty
+                bash -c 'cd /tmp; cmake -GNinja /hlwm && ninja -v -k10'
