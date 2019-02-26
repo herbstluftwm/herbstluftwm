@@ -38,8 +38,7 @@ cmake_args = [
     f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}',
     ]
 
-#  sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=cmake_env)
-sp.check_call(['bash', '-c', ' '.join(['time', 'cmake', *cmake_args, '..'])], cwd=build_dir, env=cmake_env)
+sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=cmake_env)
 
 sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=cmake_env)
 
