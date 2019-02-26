@@ -7,6 +7,7 @@ cache:
         - $HOME/.ccache-clang-7
         - $HOME/.ccache-gcc-4.8
         - $HOME/.ccache-gcc-8
+        - /hlwm/.tox
 
 before_install:
     # Delete .git/ to maximize ccache effectiveness (no version string mismatches)
