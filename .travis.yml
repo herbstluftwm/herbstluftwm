@@ -19,7 +19,7 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.ccache:/.ccache:rw
                 disco
-                /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache
+                /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache
               - ccache -s
 
     exclude:
