@@ -23,8 +23,8 @@ temp_dir = tempfile.TemporaryDirectory(dir='/hlwm', prefix='build.')
 build_dir = temp_dir.name
 
 if args.ccache:
-    # Ensure reasonable limits and wipe stats:
-    sp.check_call('ccache --max-size=500M -z', shell=True)
+    # Wipe stats and ensure reasonable limits:
+    sp.check_call('ccache -z --max-size=500M', shell=True)
 
 cmake_env = os.environ.copy()
 cmake_env.update({
