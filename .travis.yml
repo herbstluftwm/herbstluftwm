@@ -9,7 +9,7 @@ before_install:
 
 jobs:
     include:
-        - name: "Ubuntu 19.04, gcc-8/clang-7, Debug build, run checks and tests"
+        - name: "Build with most recent GCC & Clang, run checks and tests"
           cache:
               directories:
                   - $HOME/.ccache-clang-7
@@ -35,7 +35,7 @@ jobs:
                 '
 
 
-        - name: "Ubuntu 14.04, gcc-4.8, Release build"
+        - name: "Build with ancient GCC on Ubuntu 14.04"
           cache:
               directories:
                   - $HOME/.ccache-gcc-4.8
