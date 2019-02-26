@@ -19,6 +19,13 @@ jobs:
               # Delete .git/ to maximize ccache effectiveness (no version string mismatches)
               - rm -rf .git
 
+              # Build with clang-7
+              - docker run -u $UID -t --rm
+                --volume=$PWD:/hlwm:rw
+                --volume=$HOME/.ccache-clang-7:/.ccache:rw
+                disco
+                /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --ccache
+
               # Build and test with gcc-8
               - docker run -u $UID --privileged -t --rm
                 --volume=/etc/passwd:/etc/passwd:ro
@@ -26,13 +33,6 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 disco
                 /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache --run-tests
-
-              # Build with clang-7
-              - docker run -u $UID -t --rm
-                --volume=$PWD:/hlwm:rw
-                --volume=$HOME/.ccache-clang-7:/.ccache:rw
-                disco
-                /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --ccache
 
         - name: "Ubuntu 14.04, gcc-4.8, Release build"
           dist: xenial
