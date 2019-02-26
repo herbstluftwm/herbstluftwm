@@ -49,4 +49,4 @@ jobs:
                 --env CC=gcc-4.8
                 --env CXX=g++-4.8
                 trusty
-                bash -c 'cd /tmp; cmake -GNinja -WITH_DOCUMENTATION=NO /hlwm && ninja -v -k10'
+                bash -c 'cd /tmp; cmake -GNinja -WITH_DOCUMENTATION=NO /hlwm && time ninja -v -k10'
