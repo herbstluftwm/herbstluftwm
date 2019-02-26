@@ -23,7 +23,6 @@ temp_dir = tempfile.TemporaryDirectory(dir='/hlwm', prefix='build.')
 build_dir = temp_dir.name
 
 if args.ccache:
-    sp.check_call(['ccache', '-s'])
     sp.check_call(['ccache', '-z'])
 
 cmake_env = os.environ.copy()
