@@ -2,7 +2,8 @@ language: minimal
 
 cache:
     directories:
-        - $HOME/ccaches
+        - $HOME/.ccache-clang-7
+        - $HOME/.ccache-gcc-7
 
 jobs:
     include:
@@ -17,7 +18,7 @@ jobs:
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
               - docker run -u $UID --privileged -t --rm
                 --volume=$PWD:/hlwm:rw
-                --volume=$HOME/ccaches/gcc-8:/.ccache:rw
+                --volume=$HOME/.ccache-gcc-8:/.ccache:rw
                 disco
                 /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache
               - ccache -s
@@ -30,7 +31,7 @@ jobs:
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
               - docker run -u $UID -t --rm
                 --volume=$PWD:/hlwm:rw
-                --volume=$HOME/ccaches/clang-7:/.ccache:rw
+                --volume=$HOME/.ccache-clang-7:/.ccache:rw
                 disco
                 /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug
 
