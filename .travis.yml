@@ -20,7 +20,6 @@ jobs:
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
 
-
               # Build with clang-7
               - docker run -u $UID -t --rm
                 --volume=$PWD:/hlwm:rw
