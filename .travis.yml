@@ -11,9 +11,11 @@ jobs:
           dist: xenial
           services: docker
           script:
+              # Prepare Docker image
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
 
+              # Build and test with gcc-8
               - docker run -u $UID --privileged -t --rm
                 --volume=/etc/passwd:/etc/passwd:ro
                 --volume=$HOME/.ccache-gcc-8:$HOME/.ccache:rw
@@ -21,6 +23,7 @@ jobs:
                 disco
                 /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache --run-tests
 
+              # Build with clang-7
               - docker run -u $UID -t --rm
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.ccache-clang-7:/.ccache:rw
