@@ -3,7 +3,7 @@ language: minimal
 cache:
     directories:
         - $HOME/.ccache-clang-7
-        - $HOME/.ccache-gcc-7
+        - $HOME/.ccache-gcc-8
 
 jobs:
     include:
