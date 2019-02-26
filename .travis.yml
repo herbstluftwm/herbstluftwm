@@ -65,4 +65,4 @@ jobs:
                 --env CC=gcc-4.8
                 --env CXX=g++-4.8
                 trusty
-                bash -c 'cd /tmp; cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES /hlwm && time ninja -v -k10'
+                bash -c 'cd /tmp; ccache -z; cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES /hlwm && time ninja -v -k10; ccache -s'
