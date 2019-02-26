@@ -84,7 +84,7 @@ def test_trigger_selfremoving_binding(hlwm, keyboard):
 @pytest.mark.parametrize('maskmethod', ('rule', 'set_attr'))  # how keymask gets set
 @pytest.mark.parametrize('whenbind', ('existing', 'added_later'))  # when keybinding is set up
 @pytest.mark.parametrize('refocus', (True, False))  # whether to defocus+refocus before keypress
-@pytest.mark.skip(reason='Inexplicably fails in Docker (but not on CircleCI)')
+#  @pytest.mark.skip(reason='Inexplicably fails in Docker (but not on CircleCI)')
 def test_keymask(hlwm, keyboard, maskmethod, whenbind, refocus):
     if whenbind == 'existing':
         hlwm.call('keybind x add tag2')

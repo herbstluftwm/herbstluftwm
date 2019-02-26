@@ -50,4 +50,4 @@ if args.run_tests:
     tox_env.update({
         'PWD': build_dir,
         })
-    sp.check_call(shlex.split(f'tox -e py37 -- -n 1 -v -x'), cwd=build_dir, env=tox_env)
+    sp.check_call(shlex.split(f'tox -e py37 -- -n 1 -v -x -k keymask'), cwd=build_dir, env=tox_env)

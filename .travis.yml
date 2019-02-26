@@ -17,10 +17,11 @@ jobs:
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
               - docker run -u $UID --privileged -t --rm
+                --volume=/etc/passwd:/etc/passwd:ro
+                --volume=$HOME/.ccache-gcc-8:$HOME/.ccache:rw
                 --volume=$PWD:/hlwm:rw
-                --volume=$HOME/.ccache-gcc-8:/.ccache:rw
                 disco
-                /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache
+                /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache --run-tests
               - ccache -s
 
         - name: "Ubuntu 19.04, clang-7, Debug build"
