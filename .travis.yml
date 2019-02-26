@@ -21,19 +21,33 @@ jobs:
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
 
               # Build with clang-7
-              - docker run -u $UID -t --rm
-                --volume=$PWD:/hlwm:rw
-                --volume=$HOME/.ccache-clang-7:/.ccache:rw
-                disco
-                /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --ccache
+              # - docker run -u $UID -t --rm
+                # --volume=$PWD:/hlwm:rw
+                # --volume=$HOME/.ccache-clang-7:/.ccache:rw
+                # disco
+                # /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --ccache
 
-              # Build with gcc-8 and run tests
+              # Build with gcc-8 and run tests & checks
+              # - docker run -u $UID --privileged -t --rm
+                # --volume=/etc/passwd:/etc/passwd:ro
+                # --volume=$HOME/.ccache-gcc-8:$HOME/.ccache:rw
+                # --volume=$PWD:/hlwm:rw
+                # disco
+                # /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache --run-tests
+
+              # Both in one container:
               - docker run -u $UID --privileged -t --rm
                 --volume=/etc/passwd:/etc/passwd:ro
-                --volume=$HOME/.ccache-gcc-8:$HOME/.ccache:rw
+                --volume=$HOME/.ccache-gcc-8:$HOME/.ccache-gcc-8:rw
+                --volume=$HOME/.ccache-clang-7:$HOME/.ccache-clang-7:rw
                 --volume=$PWD:/hlwm:rw
                 disco
-                /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache --run-tests
+                sh -c '
+                CCACHE_DIR=$HOME/.ccache-clang-7 /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --ccache
+                &&
+                CCACHE_DIR=$HOME/.ccache-gcc-8 /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache --run-tests
+                '
+
 
         - name: "Ubuntu 14.04, gcc-4.8, Release build"
           script:
