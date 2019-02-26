@@ -29,9 +29,9 @@ jobs:
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco
                 sh -c '
-                CCACHE_DIR=$HOME/.ccache-clang-7 /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --ccache
+                CCACHE_DIR=$HOME/.ccache-clang-7 /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache
                 &&
-                CCACHE_DIR=$HOME/.ccache-gcc-8 /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Release --ccache --run-tests
+                CCACHE_DIR=$HOME/.ccache-gcc-8 /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache --run-tests
                 '
 
 
