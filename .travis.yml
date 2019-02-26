@@ -14,7 +14,7 @@ jobs:
               directories:
                   - $HOME/.ccache-clang-7
                   - $HOME/.ccache-gcc-8
-                  - /hlwm/.tox
+                  - $HOME/.tox-cache
           script:
               # Prepare Docker image with bleeding edge Ubuntu 19.04 (disco)
               - docker pull dnnr/hlwm-ci:disco
@@ -41,6 +41,7 @@ jobs:
                 --volume=$HOME/.ccache-gcc-8:$HOME/.ccache-gcc-8:rw
                 --volume=$HOME/.ccache-clang-7:$HOME/.ccache-clang-7:rw
                 --volume=$PWD:/hlwm:rw
+                --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco
                 sh -c '
                 CCACHE_DIR=$HOME/.ccache-clang-7 /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --ccache
