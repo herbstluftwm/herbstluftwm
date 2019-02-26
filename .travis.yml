@@ -47,4 +47,4 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.ccache-gcc-4.8:$HOME/.ccache:rw
                 trusty
-                bash -c 'cd /tmp; cmake -GNinja /hlwm && ninja -v -k10'
+                bash -c 'cd /tmp; cmake -GNinja -WITH_DOCUMENTATION=NO /hlwm && ninja -v -k10'
