@@ -13,10 +13,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     libxext-dev \
     libxinerama-dev \
     libxml2-utils \
+    python3.7 \
     ninja-build \
     pkg-config \
-    python3.7 \
-    time \
     tox \
     xdotool \
     xterm \
