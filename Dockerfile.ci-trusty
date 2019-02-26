@@ -7,7 +7,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     gcc-4.8 \
     g++-4.8 \
     git \
-    iwyu \
     libglib2.0-dev \
     libx11-dev \
     libxext-dev \
