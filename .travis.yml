@@ -11,7 +11,6 @@ jobs:
           dist: xenial
           services: docker
           script:
-              - cat $HOME/.ccache/ccache.conf
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
 
