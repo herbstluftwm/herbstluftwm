@@ -16,7 +16,7 @@ jobs:
               - docker run -u $UID --privileged -t --rm
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.ccache:/.ccache:rw
-                --volume=/etc/ccache.conf:/etc/ccache.conf:ro
+                --volume=/usr/bin/ccache:/usr/bin/ccache:ro
                 disco
                 /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache
               - ccache -s
