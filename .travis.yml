@@ -15,6 +15,9 @@ jobs:
               - docker pull dnnr/hlwm-ci:disco
               - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
 
+              # Delete .git/ to maximize ccache effectiveness (no version string mismatches)
+              - rm -rf .git
+
               # Build and test with gcc-8
               - docker run -u $UID --privileged -t --rm
                 --volume=/etc/passwd:/etc/passwd:ro
