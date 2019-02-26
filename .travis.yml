@@ -46,5 +46,7 @@ jobs:
               - docker run -u $UID -t --rm
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.ccache-gcc-4.8:$HOME/.ccache:rw
+                --env CC=gcc-4.8
+                --env CXX=g++-4.8
                 trusty
                 bash -c 'cd /tmp; cmake -GNinja -WITH_DOCUMENTATION=NO /hlwm && ninja -v -k10'
