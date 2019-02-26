@@ -13,8 +13,8 @@ jobs:
           cache:
               directories:
                   - $HOME/.ccache-clang-7
-                  - $HOME/.ccache-gcc-4.8
                   - $HOME/.ccache-gcc-8
+                  - /hlwm/.tox
           script:
               # Prepare Docker image with bleeding edge Ubuntu 19.04 (disco)
               - docker pull dnnr/hlwm-ci:disco
@@ -52,7 +52,7 @@ jobs:
         - name: "Ubuntu 14.04, gcc-4.8, Release build"
           cache:
               directories:
-                  - /hlwm/.tox
+                  - $HOME/.ccache-gcc-4.8
           script:
               # Prepare Docker image with Ubuntu 14.04 (trusty)
               - docker pull dnnr/hlwm-ci:trusty
