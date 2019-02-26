@@ -28,7 +28,7 @@ jobs:
                 disco
                 /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --ccache
 
-              # Build and test with gcc-8
+              # Build with gcc-8 and run tests
               - docker run -u $UID --privileged -t --rm
                 --volume=/etc/passwd:/etc/passwd:ro
                 --volume=$HOME/.ccache-gcc-8:$HOME/.ccache:rw
