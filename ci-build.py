@@ -4,6 +4,7 @@ import argparse
 import os
 import shlex
 import subprocess as sp
+import tempfile
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'), required=True)
@@ -18,8 +19,8 @@ args = parser.parse_args()
 if args.check_using_std:
     sp.check_call(['./ci-check-using-std.sh'], cwd='/hlwm')
 
-build_dir = '/hlwm/build'
-os.makedirs(build_dir, exist_ok=True)
+temp_dir = tempfile.TemporaryDirectory(dir='/hlwm', prefix='build.')
+build_dir = temp_dir.name
 
 if args.ccache:
     sp.check_call(['ccache', '-s'])
