@@ -33,7 +33,7 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.ccache-clang-7:/.ccache:rw
                 disco
-                /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --cache
+                /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Release --ccache
 
     exclude:
         - name: "Ubuntu 14.04, gcc-4.8, Release build"
