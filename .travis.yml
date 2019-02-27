@@ -17,8 +17,8 @@ jobs:
                   - $HOME/.tox-cache
           script:
               # Prepare Docker image with bleeding edge Ubuntu 19.04 (disco)
-              - docker pull dnnr/hlwm-ci:disco
-              - docker build -t disco --cache-from dnnr/hlwm-ci:disco - <Dockerfile.ci-disco
+              - docker pull hlwm/ci:disco
+              - docker build -t disco --cache-from hlwm/ci:disco - <Dockerfile.ci-disco
 
               # Run builds and tests in Docker container
               - docker run -u $UID --privileged -t --rm
@@ -41,8 +41,8 @@ jobs:
                   - $HOME/.ccache-gcc-4.8
           script:
               # Prepare Docker image with Ubuntu 14.04 (trusty)
-              - docker pull dnnr/hlwm-ci:trusty
-              - docker build -t trusty --cache-from dnnr/hlwm-ci:trusty - <Dockerfile.ci-trusty
+              - docker pull hlwm/ci:trusty
+              - docker build -t trusty --cache-from hlwm/ci:trusty - <Dockerfile.ci-trusty
 
               # Build with gcc-4.8 (plain bash one-liner because Python is too old)
               - docker run -u $UID -t --rm
