@@ -25,8 +25,8 @@ if args.ccache:
     # Wipe stats and ensure reasonable limits:
     sp.check_call('ccache -z --max-size=500M', shell=True)
 
-cmake_env = os.environ.copy()
-cmake_env.update({
+build_env = os.environ.copy()
+build_env.update({
     'CC': args.cc,
     'CXX': args.cxx,
     })
@@ -38,9 +38,9 @@ cmake_args = [
     f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}',
     ]
 
-sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=cmake_env)
+sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=build_env)
 
-sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=cmake_env)
+sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
 
 if args.ccache:
     sp.check_call(['ccache', '-s'])
