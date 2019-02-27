@@ -4,6 +4,7 @@ import argparse
 import os
 import subprocess as sp
 import tempfile
+from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'), required=True)
@@ -22,8 +23,22 @@ temp_dir = tempfile.TemporaryDirectory(dir='/hlwm', prefix='build.')
 build_dir = temp_dir.name
 
 if args.ccache:
-    # Wipe stats and ensure reasonable limits:
-    sp.check_call('ccache -z --max-size=500M', shell=True)
+    # Delete config to prevent carrying over state unintentionally
+    conf = Path(os.environ['CCACHE_DIR']) / 'ccache.conf'
+    if conf.exists():
+        conf.unlink()
+
+    # Ignore the working directory on cache lookups
+    sp.check_call('ccache -o hash_dir=false', shell=True)
+
+    # Set a reasonable size limit
+    sp.check_call('ccache --max-size=500M', shell=True)
+
+    # Wipe stats before build
+    sp.check_call('ccache -z', shell=True)
+
+    # Print config for confirmation:
+    sp.check_call('ccache -p', shell=True)
 
 build_env = os.environ.copy()
 build_env.update({
