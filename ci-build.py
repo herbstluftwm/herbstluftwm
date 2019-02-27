@@ -28,7 +28,7 @@ if args.ccache:
         os.environ['CCACHE_DIR'] = args.ccache
 
     # Delete config to prevent carrying over state unintentionally
-    conf = Path(os.environ['CCACHE_DIR']) / 'ccache.conf'
+    conf = Path(os.environ.get('CCACHE_DIR') or (Path.home() / '.ccache')) / 'ccache.conf'
     if conf.exists():
         conf.unlink()
 
