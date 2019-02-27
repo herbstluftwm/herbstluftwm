@@ -10,9 +10,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'), required=True)
 parser.add_argument('--run-tests', action='store_true')
 parser.add_argument('--build-docs', action='store_true')
-parser.add_argument('--check-using-std', action='store_true')
 parser.add_argument('--cxx', type=str, required=True)
 parser.add_argument('--cc', type=str, required=True)
+parser.add_argument('--check-using-std', action='store_true')
+parser.add_argument('--iwyu', action='store_true')
 parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
 args = parser.parse_args()
@@ -52,6 +53,7 @@ build_env.update({
 
 cmake_args = [
     '-GNinja',
+    '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
     f'-DCMAKE_BUILD_TYPE={args.build_type}',
     f'-DWITH_DOCUMENTATION={"YES" if args.build_docs else "NO"}',
     f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}',
@@ -63,6 +65,13 @@ sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_en
 
 if args.ccache:
     sp.check_call(['ccache', '-s'])
+
+if args.iwyu:
+    # Check lexicographical order of #include directives (cheap pre-check)
+    sp.check_call('fix_include --dry_run --sort_only --reorder /hlwm/src/*.h', shell=True)
+
+    # Run include-what-you-use (just printing the result for now)
+    sp.check_call('iwyu_tool -p . -j "$(nproc)"', shell=True, cwd=build_dir)
 
 if args.run_tests:
     tox_env = os.environ.copy()
