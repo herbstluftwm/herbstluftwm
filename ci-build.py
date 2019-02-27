@@ -11,9 +11,10 @@ parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'), requ
 parser.add_argument('--run-tests', action='store_true')
 parser.add_argument('--build-docs', action='store_true')
 parser.add_argument('--check-using-std', action='store_true')
-parser.add_argument('--ccache', action='store_true')
 parser.add_argument('--cxx', type=str, required=True)
 parser.add_argument('--cc', type=str, required=True)
+parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
+                    const=os.environ.get('CCACHE_DIR') or '')
 args = parser.parse_args()
 
 if args.check_using_std:
@@ -23,6 +24,9 @@ temp_dir = tempfile.TemporaryDirectory(dir='/hlwm', prefix='build.')
 build_dir = temp_dir.name
 
 if args.ccache:
+    if args.ccache != '':
+        os.environ['CCACHE_DIR'] = args.ccache
+
     # Delete config to prevent carrying over state unintentionally
     conf = Path(os.environ['CCACHE_DIR']) / 'ccache.conf'
     if conf.exists():
