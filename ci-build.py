@@ -18,12 +18,11 @@ parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
 args = parser.parse_args()
 
-repo_root = Path(__file__).resolve().parent
-temp_dir = tempfile.TemporaryDirectory(dir=repo_root, prefix='build.')
-build_dir = Path(temp_dir.name)
-
 if args.check_using_std:
-    sp.check_call(['./ci-check-using-std.sh'], cwd=repo_root)
+    sp.check_call(['./ci-check-using-std.sh'], cwd='/hlwm')
+
+temp_dir = tempfile.TemporaryDirectory(dir='/hlwm', prefix='build.')
+build_dir = temp_dir.name
 
 if args.ccache:
     if args.ccache is not True:
@@ -69,7 +68,7 @@ if args.ccache:
 
 if args.iwyu:
     # Check lexicographical order of #include directives (cheap pre-check)
-    sp.check_call(f'fix_include --dry_run --sort_only --reorder {repo_root}/src/*.h', shell=True)
+    sp.check_call('fix_include --dry_run --sort_only --reorder /hlwm/src/*.h', shell=True)
 
     # Run include-what-you-use (just printing the result for now)
     sp.check_call('iwyu_tool -p . -j "$(nproc)"', shell=True, cwd=build_dir)
@@ -84,4 +83,4 @@ if args.run_tests:
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
     sp.check_call('lcov --remove coverage.info "/usr/*" --output-file coverage.info', shell=True, cwd=build_dir)
     sp.check_call('lcov --list coverage.info', shell=True, cwd=build_dir)
-    (build_dir / 'coverage.info').rename(repo_root / 'coverage.info')
+    (build_dir / 'coverage.info').rename('/hlwm/coverage.info')
