@@ -28,9 +28,9 @@ jobs:
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco
                 sh -c '
-                /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7
+                /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --iwyu
                 &&
-                /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --run-tests --iwyu
+                /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --run-tests
                 '
 
 
