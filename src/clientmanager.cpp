@@ -164,7 +164,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
         // TODO: make this faster!
         // WARNING: this solution needs O(C + exp(D)) time where W is the count
         // of clients on this tag and D is the depth of the binary layout tree
-        client->tag()->frame->root_->focusClient(client);
+        client->tag()->frame->focusClient(client);
     }
 
     ewmh_window_update_tag(client->window_, client->tag());

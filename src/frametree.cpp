@@ -7,10 +7,14 @@
 #include "tag.h"
 #include "utils.h"
 
+#include <algorithm>
+
+using std::endl;
 using std::function;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::vector;
 
 FrameTree::FrameTree(HSTag* tag, Settings* settings)
     : tag_(tag)
@@ -109,7 +113,7 @@ shared_ptr<HSFrameLeaf> FrameTree::focusedFrame(shared_ptr<HSFrame> node) {
 }
 
 
-int FrameTree::cycle_selection(Input input, Output output) {
+int FrameTree::cycleSelectionCommand(Input input, Output output) {
     int delta = 1;
     string deltaStr;
     if (input >> deltaStr) {
@@ -125,7 +129,7 @@ int FrameTree::cycle_selection(Input input, Output output) {
 }
 
 //! focus the nth window within the focused frame
-int FrameTree::focus_nth(Input input, Output output) {
+int FrameTree::focusNthCommand(Input input, Output output) {
     string index;
     if (!(input >> index)) {
         return HERBST_NEED_MORE_ARGS;
@@ -135,7 +139,7 @@ int FrameTree::focus_nth(Input input, Output output) {
 }
 
 //! command that removes the focused frame
-int FrameTree::removeFrame() {
+int FrameTree::removeFrameCommand() {
     auto frame = focusedFrame();
     if (!frame->getParent()) {
         // do nothing if is toplevel frame
@@ -160,18 +164,18 @@ int FrameTree::removeFrame() {
 }
 
 //! close the focused client or remove if the frame is empty
-int FrameTree::close_or_remove() {
+int FrameTree::closeOrRemoveCommand() {
     Client* client = focusedFrame()->focusedClient();
     if (client) {
         window_close(client->x11Window());
         return 0;
     } else {
-        return removeFrame();
+        return removeFrameCommand();
     }
 }
 
 //! same as close or remove but directly remove frame after last client
-int FrameTree::close_and_remove() {
+int FrameTree::closeAndRemoveCommand() {
     auto cur_frame = focusedFrame();
     Client* client = cur_frame->focusedClient();
     if (client) {
@@ -180,13 +184,13 @@ int FrameTree::close_and_remove() {
         // so the window is still in the frame at this point
     }
     if (cur_frame->clientCount() <= 1) {
-        return removeFrame();
+        return removeFrameCommand();
     }
     return 0;
 }
 
 
-int FrameTree::rotate() {
+int FrameTree::rotateCommand() {
     void (*onSplit)(HSFrameSplit*) =
         [] (HSFrameSplit* s) {
             switch (s->align_) {
@@ -271,5 +275,145 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
 void FrameTree::prettyPrint(shared_ptr<HSFrame> frame, Output output) {
     auto focus = get_current_monitor()->tag->frame->focusedFrame();
     tree_print_to(treeInterface(frame, focus), output);
+}
+
+shared_ptr<HSFrameLeaf> FrameTree::findFrameWithClient(Client* client) {
+    shared_ptr<HSFrameLeaf> frame = {};
+    root_->fmap(
+        [](HSFrameSplit*) {},
+        [&](HSFrameLeaf* l) {
+            auto& cs = l->clients;
+            if (std::find(cs.begin(), cs.end(), client) != cs.end()) {
+                frame = l->thisLeaf();
+            }
+        });
+    return frame;
+}
+
+bool FrameTree::focusClient(Client* client) {
+    auto frameLeaf = findFrameWithClient(client);
+    if (!frameLeaf) {
+        return false;
+    }
+    // 1. focus client within its frame
+    auto& cs = frameLeaf->clients;
+    int index = std::find(cs.begin(), cs.end(), client) - cs.begin();
+    frameLeaf->selection = index;
+    // 2. make the frame focused
+    focusFrame(frameLeaf);
+    return true;
+}
+
+void FrameTree::focusFrame(shared_ptr<HSFrame> frame) {
+    while (frame) {
+        auto parent = frame->getParent();
+        if (!parent) {
+            break;
+        }
+        if (parent->firstChild() == frame) {
+            parent->selection_ = 0;
+        } else {
+            parent->selection_ = 1;
+        }
+        frame = parent;
+    }
+}
+
+int FrameTree::cycleAllCommand(Input input, Output output) {
+    bool skip_invisible = false;
+    int delta = 1;
+    string s = "";
+    input >> s;
+    if (s == "--skip-invisible") {
+        skip_invisible = true;
+        // and load the next (optional) argument to s
+        s = "0";
+        input >> s;
+    }
+    try {
+        delta = std::stoi(s);
+    } catch (std::invalid_argument const& e) {
+        output << "invalid argument: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    } catch (std::out_of_range const& e) {
+        output << "out of range: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (delta < -1 || delta > 1) {
+        output << "argument out of range." << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (delta == 0) {
+        return 0; // nothing to do
+    }
+    shared_ptr<HSFrameLeaf> focus = focusedFrame();
+    bool frameChanges = (focus->layout == LAYOUT_MAX && skip_invisible)
+        || (delta == 1 && focus->getSelection() + 1 == focus->clientCount())
+        || (delta == -1 && focus->getSelection() == 0)
+        || (focus->clientCount() == 0);
+    if (!frameChanges) {
+        // if the focused frame does not change, it's simple
+        auto count = focus->clientCount();
+        if (count != 0) {
+            focus->setSelection(MOD(focus->getSelection() + delta, count));
+        }
+    } else {
+        // otherwise we need to find the next frame in direction 'delta'
+        cycle_frame(delta);
+        focus = focusedFrame();
+        // fix the selection within the freshly focused frame.
+        if (focus->layout == LAYOUT_MAX && skip_invisible) {
+            // nothing to do
+        } else if (delta == 1) {
+            // focus the first client
+            focus->setSelection(0);
+        } else { // delta == -1
+            // focus the last client
+            if (focus->clientCount() > 0) {
+                focus->setSelection(focus->clientCount() - 1);
+            }
+        }
+    }
+    // finally, redraw the layout
+    get_current_monitor()->applyLayout();
+    return 0;
+}
+
+void FrameTree::cycle_frame(int delta) {
+    shared_ptr<HSFrameLeaf> focus = focusedFrame();
+    // First, enumerate all frames in traversal order
+    // and find the focused frame in there
+    vector<shared_ptr<HSFrameLeaf>> frames;
+    int index = 0;
+    root_->fmap(
+        [](HSFrameSplit*) {},
+        [&](HSFrameLeaf* l) {
+            if (l == focus.get()) {
+                // the index of the next item we push back
+                index = frames.size();
+            }
+            frames.push_back(l->thisLeaf());
+        });
+    index += delta;
+    index = MOD(index, frames.size());
+    focusFrame(frames[index]);
+}
+
+int FrameTree::cycleFrameCommand(Input input, Output output) {
+    string s = "1";
+    int delta = 1;
+    input >> s; // try to read the optional argument
+    try {
+        delta = std::stoi(s);
+    } catch (std::invalid_argument const& e) {
+        output << "invalid argument: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    } catch (std::out_of_range const& e) {
+        output << "out of range: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    cycle_frame(delta);
+    get_current_monitor()->applyLayout();
+    return 0;
 }
 

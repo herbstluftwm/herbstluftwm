@@ -61,7 +61,6 @@ public:
 
     virtual bool isFocused();
     virtual TilingResult computeLayout(Rectangle rect) = 0;
-    virtual bool focusClient(Client* client) = 0;
     virtual Client* focusedClient() = 0;
 
     // do recursive for each element of the (binary) frame tree
@@ -70,6 +69,10 @@ public:
     // if order >= 2 -> action(left); action(right); action(node);
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) = 0;
+    void fmap(std::function<void(HSFrameSplit*)> onSplit,
+              std::function<void(HSFrameLeaf*)> onLeaf) {
+        fmap(onSplit, onLeaf, 0);
+    }
     void foreachClient(ClientAction action);
 
     std::shared_ptr<HSFrameSplit> getParent() { return parent_.lock(); };
@@ -123,7 +126,6 @@ public:
     void moveClient(int new_index);
 
     TilingResult computeLayout(Rectangle rect) override;
-    bool focusClient(Client* client) override;
 
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
@@ -180,7 +182,6 @@ public:
     bool removeClient(Client* client) override;
 
     TilingResult computeLayout(Rectangle rect) override;
-    bool focusClient(Client* client) override;
 
     virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
                       std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
@@ -219,22 +220,16 @@ extern int* g_window_gap;
 // functions
 void layout_init();
 void layout_destroy();
-// destroys a frame and all its childs
-// then all Windows in it are collected and returned
-// YOU have to g_free the resulting window-buf
+
 int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
 
 void reset_frame_colors();
 
-void print_frame_tree(std::shared_ptr<HSFrame> frame, Output output);
 int find_layout_by_name(char* name);
 int find_align_by_name(char* name);
 
 int frame_current_bring(int argc, char** argv, Output output);
-int cycle_all_command(int argc, char** argv);
-int cycle_frame_command(int argc, char** argv);
-void cycle_frame(int direction, int new_window_index, bool skip_invisible);
 
 // get neighbour in a specific direction 'l' 'r' 'u' 'd' (left, right,...)
 // returns the neighbour or NULL if there is no one

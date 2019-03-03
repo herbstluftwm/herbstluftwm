@@ -153,65 +153,6 @@ shared_ptr<HSFrame> HSFrame::root() {
     else return shared_from_this();
 }
 
-// /* FRAMETODO: Implement all this stuff... */
-//static void frame_append_caption(HSTree tree, Output output) {
-//    HSFrame* frame = (HSFrame*) tree;
-//    if (frame->type == TYPE_CLIENTS) {
-//        // list of clients
-//        output << g_layout_names[frame->content.clients.layout] << ":";
-//        HSClient** buf = frame->content.clients.buf;
-//        size_t i, count = frame->content.clients.count;
-//        for (i = 0; i < count; i++) {
-//            output << " 0x%lx" << std::hex << buf[i]->x11Window() << std::dec;
-//        }
-//        if (g_cur_frame == frame) {
-//            output << " [FOCUS]";
-//        }
-//    } else {
-//        // type == TYPE_FRAMES
-//        output
-//            << g_layout_names[frame->content.layout.align]
-//            << " "
-//            << frame->content.layout.fraction * 100 / FRACTION_UNIT
-//            << "% selection="
-//            << frame->content.layout.selection;
-//    }
-//}
-//
-//static size_t frame_child_count(HSTree tree) {
-//    HSFrame* frame = (HSFrame*) tree;
-//    return (frame->type == TYPE_CLIENTS) ? 0 : 2;
-//}
-//
-//static HSTreeInterface frame_nth_child(HSTree tree, size_t idx) {
-//    HSFrame* frame = (HSFrame*) tree;
-//    assert(frame->type != TYPE_CLIENTS);
-//    HSTreeInterface intf = {
-//        /* .nth_child  = */ frame_nth_child,
-//        /* .child_count    = */ frame_child_count,
-//        /* .append_caption = */ frame_append_caption,
-//        /* .data       = */ (idx == 0)
-//                        ? frame->content.layout.a
-//                        : frame->content.layout.b,
-//        /* .destructor = */ nullptr,
-//    };
-//    return intf;
-//}
-//
-void print_frame_tree(shared_ptr<HSFrame> frame, Output output) {
-    output << "TODO: implement print_frame_tree()\n";
-}
-//    HSTreeInterface frameintf = {
-//        /* .nth_child      = */ frame_nth_child,
-//        /* .child_count    = */ frame_child_count,
-//        /* .append_caption = */ frame_append_caption,
-//        /* .data           = */ (HSTree) frame,
-//        /* .destructor     = */ nullptr,
-//    };
-//    tree_print_to(&frameintf, output);
-//}
-
-
 bool HSFrame::isFocused() {
     auto p = parent_.lock();
     if (!p) {
@@ -529,68 +470,6 @@ void HSFrameLeaf::setSelection(int index) {
     clients[selection]->window_focus();
     get_current_monitor()->applyLayout();
 }
-
-int cycle_all_command(int argc, char** argv) {
-    return 0;
-}
-    /** FRAMETODO
-    int delta = 1;
-    bool skip_invisible = false;
-    if (argc >= 2) {
-        if (!strcmp(argv[1], "--skip-invisible")) {
-            skip_invisible = true;
-            (void) SHIFT(argc, argv);
-        }
-    }
-    if (argc >= 2) {
-        delta = atoi(argv[1]);
-    }
-    delta = CLAMP(delta, -1, 1); // only delta -1, 0, 1 is allowed
-    if (delta == 0) {
-        // nothing to do
-        return 0;
-    }
-    // find current selection
-    (void)skip_invisible;
-    auto frame = HSFrame::getGloballyFocusedFrame();
-    ///int index = frame->content.clients.selection;
-    bool change_frame = false;
-    int direction;
-    int new_window_index; // tells where to start in a new frame
-    if (delta > 0 && (index + 1) >= frame->content.clients.count) {
-        // change selection from 0 to 1
-        direction = 1;
-        change_frame = true;
-        new_window_index = 0; // focus first window in in a frame
-    }
-    if (delta < 0 && index == 0) {
-        // change selection from 1 to 0
-        direction = 0;
-        change_frame = true;
-        new_window_index = -1; // focus last window in in a frame
-    }
-    if (skip_invisible && frame->content.clients.layout == LAYOUT_MAX) {
-        direction = (delta > 0) ? 1 : 0;
-        change_frame = true;
-    }
-    if (change_frame) {
-        cycle_frame(direction, new_window_index, skip_invisible);
-    } else {
-        // only change the selection within one frame
-        index += delta;
-        // ensure it is a valid index
-        index %= frame->content.clients.count;
-        index += frame->content.clients.count;
-        index %= frame->content.clients.count;
-        frame->content.clients.selection = index;
-    }
-    HSClient* c = get_current_monitor()->tag->frame->focusedClient();
-    if (c) {
-        c->raise();
-    }
-    get_current_monitor()->applyLayout();
-    return 0;
-    **/
 
 int HSFrame::splitsToRoot(int align) {
     if (!parent_.lock()) return 0;
@@ -1027,31 +906,6 @@ Client* HSFrameLeaf::focusedClient() {
     return nullptr;
 }
 
-// try to focus window in frame
-// it does not require anything from the frame. it may be infocused or even
-// hidden.
-// returns true if win was found and focused, else returns false
-bool HSFrameSplit::focusClient(Client* client) {
-    if (a_->focusClient(client)) {
-        selection_ = 0;
-        return true;
-    } else if (b_->focusClient(client)) {
-        selection_ = 1;
-        return true;
-    }
-    return false;
-}
-
-bool HSFrameLeaf::focusClient(Client* client) {
-    for (unsigned i = 0; i < clients.size(); i++) {
-        if (clients[i] == client) {
-            selection = i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // focus a window
 // switch_tag tells, whether to switch tag to focus to window
 // switch_monitor tells, whether to switch monitor to focus to window
@@ -1090,7 +944,7 @@ bool focus_client(Client* client, bool switch_tag, bool switch_monitor) {
     }
     // now the right tag is visible
     // now focus it
-    bool found = tag->frame->root_->focusClient(client);
+    bool found = tag->frame->focusClient(client);
     cur_mon->applyLayout();
     g_monitors->unlock();
     return found;
@@ -1156,10 +1010,4 @@ void frame_focus_recursive(shared_ptr<HSFrame> frame) {
         Client::window_unfocus_last();
     }
 }
-
-int cycle_frame_command(int argc, char** argv) {
-    // FRAMETODO
-    return 0;
-}
-
 
