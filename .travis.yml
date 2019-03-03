@@ -1,91 +1,67 @@
-language: python
+language: minimal
+dist: xenial
+services: docker
 
-install:
-    - sudo apt-get -y -q update
-    - sudo apt-get -y -q build-dep herbstluftwm
-    - sudo apt-get -y -q install cmake ninja-build dzen2 xdotool
+before_install:
+    # Delete .git/ to maximize ccache effectiveness (no version string mismatches)
+    - rm -rf .git
 
 jobs:
     include:
-        - name: "Ubuntu 16.04, gcc-8, Debug build, run tests"
-          dist: xenial
-          python: "3.6"
-          before_install:
-              - ./ci-check-using-std.sh
-              - export CC=gcc-8 CXX=g++-8
-              - linkerfix="-fuse-ld=gold" # needed to avoid linker error
-              - export LDFLAGS="$linkerfix" LDXXFLAGS="$linkerfix"
-          addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - g++-8
-                      - xterm
-                      - tox
+        - name: "Build with most recent GCC & Clang, run checks and tests"
+          env: TRAVIS_CACHE_ID=disco
+          cache:
+              directories:
+                  - $HOME/.ccaches-disco
+                  - $HOME/.tox-cache
           script:
-              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug . # run tests with sanitizer
-              - ninja -v -k 10
-              - tox -- -n auto -v
+              # Fetch our current Ubuntu 19.04 CI image from Docker Hub
+              # (automatically built by Docker):
+              - docker pull hlwm/ci:disco
 
-        - name: "Ubuntu 16.04, gcc-7"
-          dist: xenial
-          before_install:
-              - export CC=gcc-7 CXX=g++-7
-          addons:
-              apt:
-                  sources:
-                      - ubuntu-toolchain-r-test
-                  packages:
-                      - g++-7
-          services:
-            - xvfb
-          script:
-            - cmake -G'Ninja' -DCMAKE_INSTALL_PREFIX=/usr .
-            - sudo ninja -v -k 10 install
-            - herbstluftwm &
-            - sleep 1
-            - herbstclient version
-            - herbstclient quit
-            - wait
+              # Build ad-hoc image, using hub image as cache
+              # (=> does not actually build from scratch if the Dockerfile is
+              # the same):
+              - docker build -t disco --cache-from hlwm/ci:disco - <Dockerfile.ci-disco
 
-        - name: "Ubuntu 16.04, clang-7, Debug build"
-          dist: xenial
-          before_install:
-              - export CC=clang-7 CXX=clang++-7
-          addons:
-              apt:
-                  sources:
-                      - llvm-toolchain-xenial-7
-                  packages:
-                      - clang-7
-          script:
-              - cmake -G'Ninja' -DCMAKE_BUILD_TYPE=Debug .
-              - ninja -v -k 10
+              # Run builds and tests using temporary Docker image
+              - docker run -u $UID --privileged -t --rm
+                --volume=/etc/passwd:/etc/passwd:ro
+                --volume=$HOME/.ccaches-disco:/.ccaches:rw
+                --volume=$PWD:/hlwm:rw
+                --volume=$HOME/.tox-cache:/hlwm/.tox:rw
+                disco sh -c '
+                    /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --iwyu &&
+                    /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --run-tests
+                '
 
-        - name: "Ubuntu 14.04, gcc-4.8"
-          # Note: Travis provides a newer GCC on trusty (5.4), but gcc-4.8 is
-          # the version provided by Ubuntu, so we use that one.
-          dist: trusty
-          before_install:
-            - export CC=gcc-4.8 CXX=g++-4.8
+        - name: "Build with ancient GCC on Ubuntu 14.04"
+          env: TRAVIS_CACHE_ID=trusty
+          cache:
+              directories:
+                  - $HOME/.ccache-gcc-4.8
           script:
-            - export DISPLAY=:99.0
-            - sh -e /etc/init.d/xvfb start
-            - cmake -G'Ninja' -DCMAKE_INSTALL_PREFIX=/usr .
-            - sudo ninja -v -k 10 install
-            - herbstluftwm &
-            - hlwmpid=$!
-            - sleep 1
-            - herbstclient version
-            - herbstclient quit
-            - wait $hlwmpid
+              # Fetch our current Ubuntu 14.04 CI image from Docker Hub
+              # (automatically built by Docker):
+              - docker pull hlwm/ci:trusty
 
-        - name: "include-what-you-use"
-          dist: xenial
-          services: docker
-          before_install:
-              # Installing IWYU in a container to get the most recent version:
-              - docker build -t iwyu - <Dockerfile.iwyu
-          script:
-              - docker run --rm -v $PWD:/hlwm:ro iwyu bash -c 'cd /hlwm && ./iwyu.sh'
+              # Build ad-hoc image, using hub image as cache
+              # (=> does not actually build from scratch if the Dockerfile is
+              # the same):
+              - docker build -t trusty --cache-from hlwm/ci:trusty -
+                <Dockerfile.ci-trusty
+
+              # Build with gcc-4.8 using ad-hoc image (plain bash one-liner
+              # because Python is too old):
+              - docker run -u $UID -t --rm
+                --volume=$PWD:/hlwm:rw
+                --volume=$HOME/.ccache-gcc-4.8:/.ccache:rw
+                --env CC=gcc-4.8
+                --env CXX=g++-4.8
+                trusty bash -c '
+                    cd /tmp &&
+                    ccache -z --max-size=500M &&
+                    cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES /hlwm &&
+                    time ninja -v -k10 &&
+                    ccache -s
+                    '
