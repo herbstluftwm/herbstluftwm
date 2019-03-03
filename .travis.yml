@@ -2,7 +2,6 @@ language: minimal
 dist: xenial
 services: docker
 
-
 before_install:
     # Delete .git/ to maximize ccache effectiveness (no version string mismatches)
     - rm -rf .git
@@ -36,7 +35,6 @@ jobs:
                     /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --iwyu &&
                     /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --run-tests
                 '
-
 
         - name: "Build with ancient GCC on Ubuntu 14.04"
           env: TRAVIS_CACHE_ID=trusty
