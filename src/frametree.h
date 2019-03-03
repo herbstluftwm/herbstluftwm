@@ -35,14 +35,14 @@ public:
     std::shared_ptr<HSFrameLeaf> findFrameWithClient(Client* client);
 
     // Commands
-    int cycle_selection(Input input, Output output);
-    int focus_nth(Input input, Output output);
-    int removeFrame();
-    int close_and_remove();
-    int close_or_remove();
-    int rotate();
-    int cycle_all(Input input, Output output);
-    int cycle_frame_cmd(Input input, Output output);
+    int cycleSelectionCommand(Input input, Output output);
+    int focusNthCommand(Input input, Output output);
+    int removeFrameCommand();
+    int closeAndRemoveCommand();
+    int closeOrRemoveCommand();
+    int rotateCommand();
+    int cycleAllCommand(Input input, Output output);
+    int cycleFrameCommand(Input input, Output output);
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:

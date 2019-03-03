@@ -113,7 +113,7 @@ shared_ptr<HSFrameLeaf> FrameTree::focusedFrame(shared_ptr<HSFrame> node) {
 }
 
 
-int FrameTree::cycle_selection(Input input, Output output) {
+int FrameTree::cycleSelectionCommand(Input input, Output output) {
     int delta = 1;
     string deltaStr;
     if (input >> deltaStr) {
@@ -129,7 +129,7 @@ int FrameTree::cycle_selection(Input input, Output output) {
 }
 
 //! focus the nth window within the focused frame
-int FrameTree::focus_nth(Input input, Output output) {
+int FrameTree::focusNthCommand(Input input, Output output) {
     string index;
     if (!(input >> index)) {
         return HERBST_NEED_MORE_ARGS;
@@ -139,7 +139,7 @@ int FrameTree::focus_nth(Input input, Output output) {
 }
 
 //! command that removes the focused frame
-int FrameTree::removeFrame() {
+int FrameTree::removeFrameCommand() {
     auto frame = focusedFrame();
     if (!frame->getParent()) {
         // do nothing if is toplevel frame
@@ -164,18 +164,18 @@ int FrameTree::removeFrame() {
 }
 
 //! close the focused client or remove if the frame is empty
-int FrameTree::close_or_remove() {
+int FrameTree::closeOrRemoveCommand() {
     Client* client = focusedFrame()->focusedClient();
     if (client) {
         window_close(client->x11Window());
         return 0;
     } else {
-        return removeFrame();
+        return removeFrameCommand();
     }
 }
 
 //! same as close or remove but directly remove frame after last client
-int FrameTree::close_and_remove() {
+int FrameTree::closeAndRemoveCommand() {
     auto cur_frame = focusedFrame();
     Client* client = cur_frame->focusedClient();
     if (client) {
@@ -184,13 +184,13 @@ int FrameTree::close_and_remove() {
         // so the window is still in the frame at this point
     }
     if (cur_frame->clientCount() <= 1) {
-        return removeFrame();
+        return removeFrameCommand();
     }
     return 0;
 }
 
 
-int FrameTree::rotate() {
+int FrameTree::rotateCommand() {
     void (*onSplit)(HSFrameSplit*) =
         [] (HSFrameSplit* s) {
             switch (s->align_) {
@@ -319,7 +319,7 @@ void FrameTree::focusFrame(shared_ptr<HSFrame> frame) {
     }
 }
 
-int FrameTree::cycle_all(Input input, Output output) {
+int FrameTree::cycleAllCommand(Input input, Output output) {
     bool skip_invisible = false;
     int delta = 1;
     string s = "";
@@ -399,7 +399,7 @@ void FrameTree::cycle_frame(int delta) {
     focusFrame(frames[index]);
 }
 
-int FrameTree::cycle_frame_cmd(Input input, Output output) {
+int FrameTree::cycleFrameCommand(Input input, Output output) {
     string s = "1";
     int delta = 1;
     input >> s; // try to read the optional argument
