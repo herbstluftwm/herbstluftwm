@@ -30,8 +30,7 @@ jobs:
                 --volume=$HOME/.ccaches-disco:/.ccaches:rw
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
-                disco
-                sh -c '
+                disco sh -c '
                     /hlwm/ci-build.py --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --iwyu &&
                     /hlwm/ci-build.py --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --run-tests
                 '
@@ -59,8 +58,7 @@ jobs:
                 --volume=$HOME/.ccache-gcc-4.8:/.ccache:rw
                 --env CC=gcc-4.8
                 --env CXX=g++-4.8
-                trusty
-                bash -c '
+                trusty bash -c '
                     cd /tmp &&
                     ccache -z --max-size=500M &&
                     cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES /hlwm &&
