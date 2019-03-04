@@ -56,7 +56,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         char oper;
         string lhs, rhs;
         try {
-            std::tie(lhs, oper, rhs) = tokenize_arg(arg);
+            std::tie(lhs, oper, rhs) = tokenizeArg(arg);
         } catch (std::invalid_argument &error) {
             output << "rule: " << error.what() << endl;
             return HERBST_INVALID_ARGUMENT;
@@ -173,7 +173,7 @@ size_t RuleManager::removeRules(string label) {
     return countAfter - countBefore;
 }
 
-std::tuple<string, char, string> RuleManager::tokenize_arg(string arg) {
+std::tuple<string, char, string> RuleManager::tokenizeArg(string arg) {
     if (arg.substr(0, 2) == "--") {
         arg.erase(0, 2);
     }
