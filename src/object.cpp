@@ -7,13 +7,15 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <type_traits>
 
 #include "arglist.h"
-#include "utils.h"
+#include "attribute.h"
 #include "cassert"
+#include "entity.h"
 #include "globals.h"
 #include "hook.h"
-#include "attribute.h"
+#include "utils.h"
 
 using std::endl;
 using std::make_shared;

@@ -1,8 +1,10 @@
 #ifndef HERBSTLUFT_ARGLIST_H
 #define HERBSTLUFT_ARGLIST_H
 
+#include <algorithm>
+#include <initializer_list>
+#include <iterator>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
