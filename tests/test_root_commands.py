@@ -159,8 +159,8 @@ def test_new_attr_without_removal(hlwm, attrtype, name, object_path):
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
 def test_new_attr_existing_builtin_attribute(hlwm, attrtype):
     hlwm.get_attr('monitors.count')
-    hlwm.call_xfail(['new_attr', attrtype, 'monitors.count']) \
-        .match('attribute name must start with "my_"')
+    call = hlwm.call_xfail(['new_attr', attrtype, 'monitors.count'])
+    assert call.says('attribute name must start with "my_"')
 
 
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
@@ -169,15 +169,16 @@ def test_new_attr_existing_user_attribute(hlwm, attrtype):
     hlwm.call(['new_attr', attrtype, path])
     hlwm.get_attr(path)
 
-    hlwm.call_xfail(['new_attr', attrtype, path]) \
-        .match('already has an attribute')
+    call = hlwm.call_xfail(['new_attr', attrtype, path])
+
+    assert call.says('already has an attribute')
 
 
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
 @pytest.mark.parametrize('path', ['foo', 'monitors.bar'])
 def test_new_attr_missing_prefix(hlwm, attrtype, path):
-    hlwm.call_xfail(['new_attr', attrtype, path]) \
-        .match('must start with "my_"')
+    call = hlwm.call_xfail(['new_attr', attrtype, path])
+    assert call.says('must start with "my_"')
 
 
 @pytest.mark.parametrize('attrtypevalues', ATTRIBUTE_TYPE_EXAMPLE_VALUES.items())
@@ -200,16 +201,19 @@ def test_new_attr_has_right_type(hlwm, attrtype):
     assert m.group(1)[0] == attrtype[0]
 
 
-def test_remove_attr_invalid_path(hlwm):
-    hlwm.call_xfail('remove_attr invalid') \
-        .match('has no attribute')
-    hlwm.call_xfail('remove_attr foo.bar.invalid') \
-        .match('has no child')
+def test_remove_attr_invalid_attribute(hlwm):
+    call = hlwm.call_xfail('remove_attr tags.invalid')
+    assert call.says('Object "tags" has no attribute "invalid".')
+
+
+def test_remove_attr_invalid_child(hlwm):
+    call = hlwm.call_xfail('remove_attr clients.foo.bar')
+    assert call.says('Object "clients." has no child named "foo"')
 
 
 def test_remove_attr_non_user_path(hlwm):
-    hlwm.call_xfail('remove_attr monitors.count') \
-        .match('is not a user defined attribute')
+    call = hlwm.call_xfail('remove_attr monitors.count')
+    assert call.says('is not a user defined attribute')
 
 
 def test_remove_attr_user_attribute(hlwm):
@@ -218,8 +222,6 @@ def test_remove_attr_user_attribute(hlwm):
 
     hlwm.call(['remove_attr', path])
 
-    hlwm.call_xfail(['get_attr', path]).match('has no attribute')  # attribute does not exist
+    get_call = hlwm.call_xfail(['get_attr', path])
+    assert get_call.says('The root object has no attribute')  # attribute does not exist
     hlwm.call(['new_attr', 'string', path])  # and is free again
-
-
-

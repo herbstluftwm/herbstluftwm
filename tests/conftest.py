@@ -99,10 +99,10 @@ class HlwmBridge:
         assert proc.returncode != 0
         assert proc.stderr != ""
 
-        def f(self2, reg):
-            assert re.search(reg, self2.stderr)
+        def says(self2, reg):
+            return re.search(reg, self2.stderr) is not None
+        proc.says = types.MethodType(says, proc)
 
-        proc.match = types.MethodType(f, proc)
         return proc
 
     def call_xfail_no_output(self, cmd):
