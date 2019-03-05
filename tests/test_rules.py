@@ -87,7 +87,7 @@ def test_cannot_use_tilde_operator_for_rule_label(hlwm):
 
 def test_add_rule_with_unknown_condition(hlwm):
     call = hlwm.call_xfail('rule foo=bar quit')
-    call.match('rule: Unknown argument "foo=bar"')
+    call.expect_stderr('rule: Unknown argument "foo=bar"')
 
 
 @pytest.mark.parametrize('method', ['-F', '--all'])
