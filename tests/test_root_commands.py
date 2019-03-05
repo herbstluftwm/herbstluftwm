@@ -200,11 +200,14 @@ def test_new_attr_has_right_type(hlwm, attrtype):
     assert m.group(1)[0] == attrtype[0]
 
 
-def test_remove_attr_invalid_path(hlwm):
-    hlwm.call_xfail('remove_attr invalid') \
-        .expect_stderr('has no attribute')
-    hlwm.call_xfail('remove_attr foo.bar.invalid') \
-        .expect_stderr('has no child')
+def test_remove_attr_invalid_attribute(hlwm):
+    hlwm.call_xfail('remove_attr tags.invalid') \
+        .expect_stderr('Object "tags" has no attribute "invalid".')
+
+
+def test_remove_attr_invalid_child(hlwm):
+    hlwm.call_xfail('remove_attr clients.foo.bar') \
+        .expect_stderr('Object "clients." has no child named "foo"')
 
 
 def test_remove_attr_non_user_path(hlwm):
