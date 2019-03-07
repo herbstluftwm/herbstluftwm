@@ -3,7 +3,7 @@
 import argparse
 import os
 import subprocess as sp
-import tempfile
+import sys
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
@@ -68,8 +68,14 @@ if args.iwyu:
     # Check lexicographical order of #include directives (cheap pre-check)
     sp.check_call('fix_include --dry_run --sort_only --reorder /hlwm/*/*.{h,cpp,c}', shell=True, executable='bash')
 
-    # Run include-what-you-use (just printing the result for now)
-    sp.check_call(f'iwyu_tool -p . -j "$(nproc)" -- --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
+    # Run include-what-you-use
+    iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
+
+    # If there are any complaints, print output and exit with error
+    if b' should ' in iwyu_out:
+        sys.stdout.buffer.write(iwyu_out)
+        sys.exit(1)
+
 
 if args.run_tests:
     tox_env = os.environ.copy()
