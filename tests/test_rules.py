@@ -92,6 +92,11 @@ def test_cannot_use_tilde_operator_for_rule_label(hlwm):
     assert call.stderr == 'rule: Unknown rule label operation "~"\n'
 
 
+def test_add_rule_with_unknown_condition(hlwm):
+    call = hlwm.call_xfail('rule foo=bar quit')
+    call.match('rule: Unknown argument "foo=bar"')
+
+
 @pytest.mark.parametrize('method', ['-F', '--all'])
 def test_remove_all_rules(hlwm, method):
     hlwm.call('rule class=Foo tag=bar')
