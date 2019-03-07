@@ -1,6 +1,7 @@
 pull_request_rules:
     - name: automatic merge on CI success and review
       conditions:
+          - base=winterbreeze
           - status-success=continuous-integration/travis-ci/pr
           - status-success=WIP
           - "#approved-reviews-by>=1"
