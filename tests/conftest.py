@@ -102,7 +102,7 @@ class HlwmBridge:
         def f(self2, reg):
             assert re.search(reg, self2.stderr)
 
-        proc.match = types.MethodType(f, proc)
+        proc.expect_stderr = types.MethodType(f, proc)
         return proc
 
     def call_xfail_no_output(self, cmd):

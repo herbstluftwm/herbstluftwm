@@ -160,7 +160,7 @@ def test_new_attr_without_removal(hlwm, attrtype, name, object_path):
 def test_new_attr_existing_builtin_attribute(hlwm, attrtype):
     hlwm.get_attr('monitors.count')
     hlwm.call_xfail(['new_attr', attrtype, 'monitors.count']) \
-        .match('attribute name must start with "my_"')
+        .expect_stderr('attribute name must start with "my_"')
 
 
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
@@ -170,14 +170,14 @@ def test_new_attr_existing_user_attribute(hlwm, attrtype):
     hlwm.get_attr(path)
 
     hlwm.call_xfail(['new_attr', attrtype, path]) \
-        .match('already has an attribute')
+        .expect_stderr('already has an attribute')
 
 
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)
 @pytest.mark.parametrize('path', ['foo', 'monitors.bar'])
 def test_new_attr_missing_prefix(hlwm, attrtype, path):
     hlwm.call_xfail(['new_attr', attrtype, path]) \
-        .match('must start with "my_"')
+        .expect_stderr('must start with "my_"')
 
 
 @pytest.mark.parametrize('attrtypevalues', ATTRIBUTE_TYPE_EXAMPLE_VALUES.items())
@@ -202,14 +202,14 @@ def test_new_attr_has_right_type(hlwm, attrtype):
 
 def test_remove_attr_invalid_path(hlwm):
     hlwm.call_xfail('remove_attr invalid') \
-        .match('has no attribute')
+        .expect_stderr('has no attribute')
     hlwm.call_xfail('remove_attr foo.bar.invalid') \
-        .match('has no child')
+        .expect_stderr('has no child')
 
 
 def test_remove_attr_non_user_path(hlwm):
     hlwm.call_xfail('remove_attr monitors.count') \
-        .match('is not a user defined attribute')
+        .expect_stderr('is not a user defined attribute')
 
 
 def test_remove_attr_user_attribute(hlwm):
@@ -218,7 +218,7 @@ def test_remove_attr_user_attribute(hlwm):
 
     hlwm.call(['remove_attr', path])
 
-    hlwm.call_xfail(['get_attr', path]).match('has no attribute')  # attribute does not exist
+    hlwm.call_xfail(['get_attr', path]).expect_stderr('has no attribute')  # attribute does not exist
     hlwm.call(['new_attr', 'string', path])  # and is free again
 
 
