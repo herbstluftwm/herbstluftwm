@@ -313,7 +313,7 @@ int CommandTable::callCommand(Input args, Output out) const {
     const auto cmd = map.find(args.command());
 
     if (cmd == map.end()) {
-        out << "error: Command \"" << args.command() << "\" not found\n";
+        out << "error: Command \"" << args.command() << "\" not found" << endl;;
         return HERBST_COMMAND_NOT_FOUND;
     }
 
