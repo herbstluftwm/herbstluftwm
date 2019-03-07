@@ -5,6 +5,7 @@ pull_request_rules:
           - status-success=continuous-integration/travis-ci/pr
           - status-success=WIP
           - "#approved-reviews-by>=1"
+          - label≠wip
       actions:
           merge:
               method: squash
