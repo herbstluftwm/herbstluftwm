@@ -8,6 +8,7 @@
 
 using std::string;
 using std::to_string;
+using std::endl;
 
 /*!
  * Implements the "rule" IPC command
@@ -54,7 +55,12 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         // Tokenize arg, expect something like foo=bar or foo~bar:
         char oper;
         string lhs, rhs;
-        std::tie(lhs, oper, rhs) = tokenizeArg(arg);
+        try {
+            std::tie(lhs, oper, rhs) = tokenizeArg(arg);
+        } catch (std::invalid_argument &error) {
+            output << "rule: " << error.what() << endl;
+            return HERBST_INVALID_ARGUMENT;
+        }
 
         // Check if lhs is a condition name
         if (Condition::matchers.count(lhs)) {
