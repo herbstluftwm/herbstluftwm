@@ -1,0 +1,5 @@
+# Custom mapping file for include-what-you-use
+[
+    { include: ["<bits/getopt_core.h>", "private", "<getopt.h>", "public"]}
+
+]
