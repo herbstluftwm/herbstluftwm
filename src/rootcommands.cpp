@@ -255,8 +255,7 @@ int RootCommands::remove_attr_cmd(Input input, Output output)
     Attribute* a = root->deepAttribute(path, output);
     if (!a) return HERBST_INVALID_ARGUMENT;
     if (a->name().substr(0,strlen(USER_ATTRIBUTE_PREFIX)) != USER_ATTRIBUTE_PREFIX) {
-        output << input.command() << ": \"" << path
-               << "\" is not a user defined attribute. can not remove it." << endl;
+        output << input.command() << ": Cannot remove built-in attribute \"" << path << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     a->detachFromOwner();

@@ -4,10 +4,10 @@
 
 #include "client.h"
 #include "clientmanager.h"
+#include "frametree.h"
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
-#include "frametree.h"
 #include "layout.h"
 #include "monitor.h"
 #include "root.h"
