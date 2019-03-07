@@ -54,7 +54,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         // Tokenize arg, expect something like foo=bar or foo~bar:
         char oper;
         string lhs, rhs;
-        std::tie(lhs, oper, rhs) = tokenize_arg(arg);
+        std::tie(lhs, oper, rhs) = tokenizeArg(arg);
 
         // Check if lhs is a condition name
         if (Condition::matchers.count(lhs)) {
@@ -167,7 +167,7 @@ size_t RuleManager::removeRules(string label) {
     return countAfter - countBefore;
 }
 
-std::tuple<string, char, string> RuleManager::tokenize_arg(string arg) {
+std::tuple<string, char, string> RuleManager::tokenizeArg(string arg) {
     if (arg.substr(0, 2) == "--") {
         arg.erase(0, 2);
     }

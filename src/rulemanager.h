@@ -17,7 +17,7 @@ public:
 
 private:
     size_t removeRules(std::string label);
-    std::tuple<std::string, char, std::string> tokenize_arg(std::string arg);
+    std::tuple<std::string, char, std::string> tokenizeArg(std::string arg);
 
     //! Ever-incrementing index for labeling new rules
     unsigned long long rule_label_index_ = 0;
