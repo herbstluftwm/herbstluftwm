@@ -69,7 +69,7 @@ if args.iwyu:
     sp.check_call('fix_include --dry_run --sort_only --reorder /hlwm/src/*.h', shell=True)
 
     # Run include-what-you-use (just printing the result for now)
-    sp.check_call('iwyu_tool -p . -j "$(nproc)"', shell=True, cwd=build_dir)
+    sp.check_call(f'iwyu_tool -p . -j "$(nproc)" -- --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
 
 if args.run_tests:
     tox_env = os.environ.copy()
@@ -77,3 +77,8 @@ if args.run_tests:
         'PWD': build_dir,
         })
     sp.check_call(f'tox -e py37 -- -n auto -v -x', shell=True, cwd=build_dir, env=tox_env)
+
+    sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
+    sp.check_call('lcov --remove coverage.info "/usr/*" --output-file coverage.info', shell=True, cwd=build_dir)
+    sp.check_call('lcov --list coverage.info', shell=True, cwd=build_dir)
+    (build_dir / 'coverage.info').rename('/hlwm/coverage.info')

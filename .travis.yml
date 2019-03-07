@@ -34,6 +34,7 @@ jobs:
                     /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --iwyu &&
                     /hlwm/ci-build.py --build-dir=/hlwm/build-gcc-8 --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --run-tests
                 '
+              - bash <(curl -s https://codecov.io/bash) -f coverage.info
 
         - name: "Build with ancient GCC on Ubuntu 14.04"
           env: TRAVIS_CACHE_ID=trusty
