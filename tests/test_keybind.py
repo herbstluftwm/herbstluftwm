@@ -21,7 +21,7 @@ def test_list_keybinds(hlwm, sep):
     ])
 def test_keybind_invalid_key_combo(hlwm, combo, message):
     call = hlwm.call_xfail(['keybind', combo, 'quit'])
-    call.match(message)
+    call.expect_stderr(message)
 
 
 def test_replace_keybind(hlwm):
