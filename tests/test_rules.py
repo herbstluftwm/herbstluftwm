@@ -43,6 +43,13 @@ def test_add_simple_rule(hlwm):
     assert rules.stdout == 'label=0\tclass=Foo\ttag=bar\t\n'
 
 
+def test_add_simple_rule_with_dashes(hlwm):
+    hlwm.call('rule --class=Foo --tag=bar')
+
+    rules = hlwm.call('list_rules')
+    assert rules.stdout == 'label=0\tclass=Foo\ttag=bar\t\n'
+
+
 def test_add_many_labeled_rules(hlwm):
     # Add set of rules with every consequence and every valid combination of
     # property and match operator appearing at least once:
@@ -83,6 +90,11 @@ def test_cannot_use_tilde_operator_for_rule_label(hlwm):
     call = hlwm.call_xfail('rule label~bla class=Foo tag=bar')
 
     assert call.stderr == 'rule: Unknown rule label operation "~"\n'
+
+
+def test_add_rule_with_unknown_condition(hlwm):
+    call = hlwm.call_xfail('rule foo=bar quit')
+    call.match('rule: Unknown argument "foo=bar"')
 
 
 @pytest.mark.parametrize('method', ['-F', '--all'])
