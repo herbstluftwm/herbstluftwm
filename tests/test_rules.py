@@ -43,6 +43,13 @@ def test_add_simple_rule(hlwm):
     assert rules.stdout == 'label=0\tclass=Foo\ttag=bar\t\n'
 
 
+def test_add_simple_rule_with_dashes(hlwm):
+    hlwm.call('rule --class=Foo --tag=bar')
+
+    rules = hlwm.call('list_rules')
+    assert rules.stdout == 'label=0\tclass=Foo\ttag=bar\t\n'
+
+
 def test_add_many_labeled_rules(hlwm):
     # Add set of rules with every consequence and every valid combination of
     # property and match operator appearing at least once:

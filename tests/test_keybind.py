@@ -14,16 +14,14 @@ def test_list_keybinds(hlwm, sep):
     assert keybinds.stdout == 'x\tquit\nMod1+Shift+a\tresize\tleft\t+5\n'
 
 
-def test_keybind_unknown_modifier(hlwm):
-    call = hlwm.call_xfail('keybind Moep1-x quit')
-
-    assert call.stderr == 'keybind: Unknown modifier "Moep1"\n'
-
-
-def test_keybind_unknown_keysym(hlwm):
-    call = hlwm.call_xfail('keybind Mod1-_ quit')
-
-    assert call.stderr == 'keybind: Unknown KeySym "_"\n'
+@pytest.mark.parametrize('combo,message', [
+    ('Moep1-x', 'keybind: Unknown modifier "Moep1"'),
+    ('Mod1-_', 'keybind: Unknown KeySym "_"'),
+    ('', 'keybind: Empty keysym'),
+    ])
+def test_keybind_invalid_key_combo(hlwm, combo, message):
+    call = hlwm.call_xfail(['keybind', combo, 'quit'])
+    call.expect_stderr(message)
 
 
 def test_replace_keybind(hlwm):
