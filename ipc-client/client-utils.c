@@ -1,12 +1,11 @@
 #include "client-utils.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // inspired by dwm's gettextprop()
 char* read_window_property(Display* dpy, Window window, Atom atom) {

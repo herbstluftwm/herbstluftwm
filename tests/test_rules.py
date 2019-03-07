@@ -80,6 +80,12 @@ def test_add_many_labeled_rules(hlwm):
     assert list_rules.stdout == expected_stdout
 
 
+def test_add_rule_with_misformatted_argument(hlwm):
+    call = hlwm.call_xfail('rule notevenanoperator')
+
+    call.expect_stderr('rule: No operator in given arg: notevenanoperator')
+
+
 def test_cannot_add_rule_with_empty_label(hlwm):
     call = hlwm.call_xfail('rule label= class=Foo tag=bar')
 

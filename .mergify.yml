@@ -3,7 +3,6 @@ pull_request_rules:
       conditions:
           - base=winterbreeze
           - status-success=continuous-integration/travis-ci/pr
-          - status-success=WIP
           - "#approved-reviews-by>=1"
           - label≠wip
       actions:

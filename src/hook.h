@@ -1,9 +1,9 @@
 #ifndef __HERBSTLUFT_HOOK_H_
 #define __HERBSTLUFT_HOOK_H_
 
-#include <memory>
-#include <vector>
+#include <string>
 
+class HSTag;
 class Object;
 
 // a Hook monitors a given object, i.e. gets callbacks
@@ -19,9 +19,6 @@ public:
     // this is called after an attribute value has changed
     virtual void attributeChanged(Object* sender, std::string attribute_name) {}
 };
-
-
-class HSTag;
 
 void hook_init();
 void hook_destroy();

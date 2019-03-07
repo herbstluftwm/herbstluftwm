@@ -1,5 +1,7 @@
 #include "arglist.h"
 
+#include <sstream>
+
 #include "utils.h"
 
 using std::make_shared;
