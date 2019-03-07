@@ -2,6 +2,7 @@
 #define __HLWM_BY_NAME_H_
 
 #include <map>
+#include <string>
 
 #include "hook.h"
 #include "object.h"

@@ -1,7 +1,9 @@
 #ifndef CHILDBYINDEX_H
 #define CHILDBYINDEX_H
 
+#include <cstddef>
 #include <string>
+#include <vector>
 
 #include "attribute_.h"
 #include "object.h"

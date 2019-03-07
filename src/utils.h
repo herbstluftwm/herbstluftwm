@@ -3,9 +3,11 @@
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <time.h>
 #include <array>
 #include <cstddef>
 #include <ostream>
+#include <sstream>
 #include <string>
 
 #include "optional.h"
