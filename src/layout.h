@@ -5,11 +5,13 @@
 #include <cstdlib>
 #include <functional>
 #include <memory>
+#include <vector>
 
-#include "glib-backports.h"
 #include "tilingresult.h"
 #include "types.h"
 #include "x11-types.h"
+
+class FrameDecoration;
 
 #define LAYOUT_DUMP_BRACKETS "()" /* must consist of exactly two chars */
 #define LAYOUT_DUMP_WHITESPACES " \t\n" /* must be at least one char */

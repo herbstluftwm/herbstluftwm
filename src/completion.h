@@ -1,8 +1,14 @@
 #ifndef HLWM_COMPLETION
 #define HLWM_COMPLETION
 
+#include <cstddef>
+#include <initializer_list>
+#include <string>
+
 #include "arglist.h"
 #include "types.h"
+
+class Completion;
 
 namespace Commands {
 void complete(Completion& completion);

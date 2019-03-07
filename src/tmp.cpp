@@ -1,5 +1,7 @@
 #include "tmp.h"
 
+#include <string>
+
 #include "attribute.h"
 #include "command.h"
 #include "ipc-protocol.h"

@@ -2,16 +2,26 @@
 
 #include <algorithm>
 #include <cstring>
+#include <exception>
 #include <functional>
+#include <initializer_list>
 #include <iostream>
 #include <map>
 #include <memory>
+#include <stdexcept>
+#include <typeinfo>
+#include <utility>
 
+#include "arglist.h"
 #include "attribute_.h"
 #include "command.h"
 #include "completion.h"
+#include "entity.h"
 #include "ipc-protocol.h"
+#include "object.h"
 #include "root.h"
+#include "signal.h"
+#include "x11-types.h"
 
 using std::endl;
 using std::function;

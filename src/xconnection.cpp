@@ -2,6 +2,8 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 
 #include "globals.h"

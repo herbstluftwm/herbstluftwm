@@ -1,6 +1,10 @@
 #include "rulemanager.h"
 
-#include <cstring>
+#include <map>
+#include <ostream>
+#include <stdexcept>
+#include <utility>
+#include <vector>
 
 #include "completion.h"
 #include "ipc-protocol.h"

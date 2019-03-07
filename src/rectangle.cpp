@@ -1,5 +1,10 @@
 #include "rectangle.h"
 
+#include <algorithm>
+#include <ostream>
+#include <vector>
+
+#include "glib-backports.h"
 #include "ipc-protocol.h"
 #include "utils.h"
 
@@ -24,9 +29,6 @@ static Rectangle intersection_area(const Rectangle &a, const Rectangle &b) {
 
     return {tr.x, tr.y, br.x - tr.x, br.y - tr.y};
 }
-
-/* TODO: rewrite with std container instead of RectList */
-#include <glib.h>
 
 typedef struct RectList {
     Rectangle rect;

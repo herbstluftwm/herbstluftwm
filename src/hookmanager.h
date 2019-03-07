@@ -1,8 +1,12 @@
 #ifndef HOOKMANAGER_H
 #define HOOKMANAGER_H
 
+#include <string>
+
+#include "arglist.h"
 #include "attribute.h"
 #include "object.h"
+#include "types.h"
 
 class HookManager : public Object
 {

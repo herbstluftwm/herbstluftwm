@@ -1,9 +1,15 @@
 #include "floating.h"
 
 #include <algorithm>
+#include <climits>
 #include <cstdlib>
+#include <memory>
+#include <utility>
+#include <vector>
 
+#include "attribute_.h"
 #include "client.h"
+#include "decoration.h"
 #include "frametree.h"
 #include "layout.h"
 #include "monitor.h"

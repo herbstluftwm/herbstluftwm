@@ -1,11 +1,18 @@
 #include "mouse.h"
 
 #include <X11/X.h>
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <list>
+#include <memory>
+#include <sstream>
 
+#include "attribute_.h"
+#include "child.h"
 #include "client.h"
 #include "command.h"
+#include "decoration.h"
 #include "frametree.h"
 #include "globals.h"
 #include "keymanager.h"
@@ -15,7 +22,9 @@
 #include "root.h"
 #include "settings.h"
 #include "tag.h"
+#include "types.h"
 #include "utils.h"
+#include "x11-types.h"
 #include "x11-utils.h"
 
 using std::string;

@@ -2,6 +2,8 @@
 #define __HERBSTLUFT_COMMAND_H_
 
 #include <functional>
+#include <initializer_list>
+#include <memory>
 #include <string>
 #include <unordered_map>
 

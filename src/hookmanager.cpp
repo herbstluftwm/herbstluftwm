@@ -1,5 +1,9 @@
 #include "hookmanager.h"
 
+#include <algorithm>
+#include <map>
+#include <ostream>
+
 #include "utils.h"
 
 using std::endl;

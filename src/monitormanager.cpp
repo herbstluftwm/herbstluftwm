@@ -1,20 +1,31 @@
 #include "monitormanager.h"
 
 #include <X11/Xlib.h>
+#include <algorithm>
 #include <cassert>
+#include <cctype>
+#include <cstdlib>
 #include <memory>
+#include <ostream>
+#include <stdexcept>
+#include <utility>
 
+#include "attribute_.h"
 #include "ewmh.h"
+#include "floating.h"
 #include "frametree.h"
 #include "globals.h"
+#include "hook.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
 #include "settings.h"
+#include "signal.h"
 #include "stack.h"
 #include "tag.h"
 #include "tagmanager.h"
 #include "utils.h"
+#include "x11-types.h"
 
 using std::function;
 using std::make_pair;
@@ -81,7 +92,7 @@ int MonitorManager::string_to_monitor_index(string str) {
     if (str[0] == '\0') {
         return cur_monitor;
     } else if (str[0] == '-' || str[0] == '+') {
-        if (isdigit(str[1])) {
+        if (std::isdigit(str[1])) {
             // relative monitor index
             int idx = cur_monitor + atoi(str.c_str());
             idx %= size();
@@ -98,7 +109,7 @@ int MonitorManager::string_to_monitor_index(string str) {
         } else {
             return -1;
         }
-    } else if (isdigit(str[0])) {
+    } else if (std::isdigit(str[0])) {
         // absolute monitor index
         int idx = atoi(str.c_str());
         if (idx < 0 || idx >= (int)size()) {
@@ -275,7 +286,7 @@ int MonitorManager::addMonitor(Input input, Output output)
 }
 
 string MonitorManager::isValidMonitorName(string name) {
-    if (isdigit(name[0])) {
+    if (std::isdigit(name[0])) {
         return "Invalid name \"" + name + "\": The monitor name may not start with a number\n";
     }
     if (name.empty()) {

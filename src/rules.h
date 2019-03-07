@@ -1,12 +1,15 @@
 #ifndef __HS_RULES_H_
 #define __HS_RULES_H_
 
+#include <time.h>
 #include <functional>
+#include <map>
 #include <regex>
+#include <string>
+#include <vector>
 
 #include "optional.h"
 #include "types.h"
-#include "utils.h"
 
 class Client;
 

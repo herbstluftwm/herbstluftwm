@@ -2,23 +2,22 @@
 #define ROOT_H
 
 #include <memory>
+#include <vector>
 
 #include "child.h"
+#include "clientmanager.h"
+#include "decoration.h"
+#include "hookmanager.h"
+#include "keymanager.h"
+#include "monitormanager.h"
+#include "mousemanager.h"
 #include "object.h"
+#include "rulemanager.h"
+#include "settings.h"
+#include "tagmanager.h"
+#include "tmp.h"
 
-// new object tree root.
-
-class ClientManager;
-class HookManager;
-class KeyManager;
-class MonitorManager;
-class MouseManager;
 class RootCommands;
-class RuleManager;
-class Settings;
-class TagManager;
-class Theme;
-class Tmp;
 
 class Globals {
 public:

@@ -1,6 +1,11 @@
 #include "frametree.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cstdlib>
+#include <ostream>
+#include <stdexcept>
+#include <vector>
 
 #include "client.h"
 #include "ipc-protocol.h"

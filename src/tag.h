@@ -2,10 +2,16 @@
 #define __HERBSTLUFT_TAG_H_
 
 #include <memory>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 #include "attribute_.h"
-#include "glib-backports.h"
 #include "object.h"
+#include "signal.h"
+#include "types.h"
+
+class HSTag;
 
 #define TAG_SET_FLAG(tag, flag) \
     ((tag)->flags |= (flag))

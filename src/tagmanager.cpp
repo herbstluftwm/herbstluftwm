@@ -1,15 +1,22 @@
 #include "tagmanager.h"
 
+#include <cstddef>
 #include <memory>
+#include <ostream>
+#include <stdexcept>
 
+#include "attribute_.h"
 #include "client.h"
 #include "ewmh.h"
 #include "frametree.h"
 #include "globals.h"
+#include "hook.h"
 #include "ipc-protocol.h"
 #include "layout.h"
+#include "link.h"
 #include "monitor.h"
 #include "monitormanager.h"
+#include "signal.h"
 #include "stack.h"
 #include "utils.h"
 

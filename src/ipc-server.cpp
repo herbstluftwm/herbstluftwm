@@ -6,9 +6,9 @@
 #include <cstdio>
 #include <cstring>
 #include <sstream>
+#include <string>
 
 #include "command.h"
-#include "glib-backports.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "utils.h"

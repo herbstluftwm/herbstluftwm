@@ -1,10 +1,18 @@
 #include "clientmanager.h"
 
 #include <X11/Xlib.h>
+#include <memory>
+#include <ostream>
 #include <string>
+#include <utility>
+#include <vector>
 
+#include "attribute.h"
+#include "attribute_.h"
+#include "child.h"
 #include "client.h"
 #include "completion.h"
+#include "decoration.h"
 #include "ewmh.h"
 #include "frametree.h"
 #include "globals.h"
@@ -12,11 +20,14 @@
 #include "layout.h"
 #include "monitor.h"
 #include "mouse.h"
+#include "optional.h"
 #include "root.h"
 #include "rulemanager.h"
+#include "rules.h"
 #include "stack.h"
 #include "tag.h"
 #include "utils.h"
+#include "x11-types.h"
 
 using std::endl;
 using std::string;

@@ -1,7 +1,9 @@
 #include "completion.h"
 
 #include <algorithm>
-#include <string>
+#include <ostream>
+#include <stdexcept>
+#include <utility>
 #include <vector>
 
 using std::string;

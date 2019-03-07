@@ -1,22 +1,27 @@
 #include "layout.h"
 
-#include <glib.h>
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
+#include <map>
 #include <memory>
 #include <sstream>
+#include <string>
+#include <utility>
 
+#include "attribute_.h"
 #include "client.h"
 #include "floating.h"
+#include "framedecoration.h"
 #include "frametree.h" // TODO: remove this dependency!
-#include "glib-backports.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "settings.h"
+#include "tag.h"
 #include "tagmanager.h"
 #include "utils.h"
 

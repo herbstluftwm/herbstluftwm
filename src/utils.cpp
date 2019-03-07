@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "attribute_.h"
 #include "globals.h"
 #include "settings.h"
 

@@ -2,9 +2,9 @@
 #define __HERBST_X11_TYPES_H_
 
 #include <X11/Xlib.h>
-#include <iostream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "types.h"

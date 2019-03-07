@@ -3,9 +3,13 @@
 
 #include <X11/X.h>
 #include <map>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 #include "attribute_.h"
 #include "object.h"
+#include "signal.h"
 #include "x11-types.h"
 
 class Client;

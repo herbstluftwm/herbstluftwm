@@ -4,10 +4,14 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
-#include <iomanip>
+#include <memory>
+#include <ostream>
+#include <string>
 
+#include "attribute_.h"
 #include "client.h"
 #include "ewmh.h"
+#include "glib-backports.h"
 #include "globals.h"
 #include "monitor.h"
 #include "tag.h"

@@ -1,8 +1,13 @@
 #ifndef HERBSTLUFT_TYPES_H
 #define HERBSTLUFT_TYPES_H
 
+#include <iosfwd>
 #include <map>
+#include <memory>
 #include <set>
+#include <stdexcept>
+#include <string>
+#include <utility>
 
 #include "arglist.h"
 

@@ -3,10 +3,15 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <limits>
+#include <memory>
+#include <string>
+#include <vector>
 
+#include "attribute_.h"
 #include "client.h"
 #include "glib-backports.h"
 #include "globals.h"
@@ -15,10 +20,12 @@
 #include "mouse.h"
 #include "settings.h"
 #include "stack.h"
+#include "tag.h"
 #include "tagmanager.h"
 #include "utils.h"
 
 using std::vector;
+using std::uint32_t;
 
 Atom g_netatom[NetCOUNT];
 

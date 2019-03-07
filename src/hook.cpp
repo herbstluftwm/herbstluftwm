@@ -8,6 +8,7 @@
 #include <cassert>
 #include <cstdio>
 
+#include "attribute_.h"
 #include "glib-backports.h"
 #include "globals.h"
 #include "ipc-protocol.h"

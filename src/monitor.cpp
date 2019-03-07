@@ -1,23 +1,33 @@
 #include "monitor.h"
 
 #include <X11/Xlib.h>
+#include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
+#include <initializer_list>
+#include <list>
+#include <memory>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+#include "child.h"
 #include "client.h"
 #include "clientmanager.h"
 #include "ewmh.h"
+#include "framedecoration.h"
 #include "frametree.h"
+#include "glib-backports.h"
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "layout.h"
+#include "link.h"
 #include "monitormanager.h"
 #include "rectangle.h"
 #include "root.h"
@@ -25,6 +35,7 @@
 #include "stack.h"
 #include "tag.h"
 #include "tagmanager.h"
+#include "tilingresult.h"
 #include "utils.h"
 
 using std::string;

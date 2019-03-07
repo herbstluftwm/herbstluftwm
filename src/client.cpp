@@ -2,11 +2,15 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <initializer_list>
+#include <memory>
 #include <sstream>
 
+#include "child.h"
 #include "clientmanager.h"
 #include "decoration.h"
 #include "ewmh.h"
@@ -15,13 +19,17 @@
 #include "ipc-protocol.h"
 #include "keymanager.h"
 #include "layout.h"
+#include "link.h"
 #include "monitor.h"
 #include "mouse.h"
+#include "optional.h"
 #include "root.h"
 #include "settings.h"
 #include "stack.h"
 #include "tag.h"
 #include "utils.h"
+
+class Attribute;
 
 using std::string;
 

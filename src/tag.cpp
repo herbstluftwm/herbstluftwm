@@ -1,7 +1,12 @@
 #include "tag.h"
 
 #include <cstring>
+#include <functional>
+#include <ostream>
+#include <unordered_map>
+#include <utility>
 
+#include "child.h"
 #include "client.h"
 #include "clientmanager.h"
 #include "frametree.h"

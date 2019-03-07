@@ -6,12 +6,13 @@
 
 #include <functional>
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "attribute.h"
 #include "types.h"
 
 class Root;
-class Attribute;
 class Completion;
 
 class RootCommands {

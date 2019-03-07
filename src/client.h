@@ -3,13 +3,18 @@
 
 #include <X11/X.h>
 #include <X11/Xlib.h>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 #include "attribute_.h"
 #include "decoration.h"
 #include "object.h"
-#include "stack.h"
+#include "signal.h"
+#include "types.h"
 #include "x11-types.h"
 
+class Slice;
 class HSTag;
 class Monitor;
 class Settings;

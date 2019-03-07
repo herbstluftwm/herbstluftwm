@@ -5,6 +5,7 @@
 
 #include "mouse.h"
 #include "object.h"
+#include "types.h"
 
 class Completion;
 

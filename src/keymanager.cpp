@@ -7,12 +7,16 @@
 #include <utility>
 
 #include "arglist.h"
+#include "attribute_.h"
+#include "child.h"
+#include "client.h"
 #include "clientmanager.h"
 #include "command.h"
 #include "completion.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "keycombo.h"
+#include "link.h"
 #include "root.h"
 #include "utils.h"
 

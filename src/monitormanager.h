@@ -3,17 +3,22 @@
 
 #include <functional>
 #include <string>
+#include <vector>
 
 #include "byname.h"
 #include "childbyindex.h"
-#include "floating.h" // for find_rectangle_in_direction(), maybe move?
 #include "link.h"
 #include "monitor.h"
+#include "types.h"
+
+class HSTag;
+class MonitorManager;
+class Settings;
+class Stack;
+class TagManager;
+struct Rectangle;
 
 extern MonitorManager* g_monitors;
-
-class TagManager;
-class HSTag;
 
 typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
 

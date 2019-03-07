@@ -1,11 +1,15 @@
 #ifndef __HERBSTLUFT_SETTINGS_H_
 #define __HERBSTLUFT_SETTINGS_H_
 
+#include <functional>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "attribute_.h"
 #include "globals.h"
 #include "object.h"
+#include "signal.h"
 #include "types.h"
 #include "x11-types.h"
 

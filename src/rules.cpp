@@ -3,8 +3,12 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <algorithm>
+#include <array>
 #include <cstdio>
+#include <exception>
+#include <ostream>
 
+#include "attribute_.h"
 #include "client.h"
 #include "ewmh.h"
 #include "globals.h"

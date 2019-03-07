@@ -1,12 +1,19 @@
 #include "settings.h"
 
+#include <initializer_list>
+#include <map>
 #include <sstream>
+#include <utility>
 
+#include "attribute.h"
+#include "child.h"
 #include "client.h"
 #include "completion.h"
+#include "entity.h"
 #include "ewmh.h"
 #include "ipc-protocol.h"
 #include "layout.h"
+#include "monitor.h"
 #include "monitormanager.h"
 #include "root.h"
 #include "tag.h"

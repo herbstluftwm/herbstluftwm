@@ -1,10 +1,11 @@
 #include "root.h"
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "clientmanager.h"
 #include "decoration.h"
-#include "globals.h"
 #include "hookmanager.h"
 #include "keymanager.h"
 #include "monitormanager.h"
@@ -12,6 +13,7 @@
 #include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
+#include "signal.h"
 #include "tagmanager.h"
 #include "tmp.h"
 #include "utils.h"

@@ -3,8 +3,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <map>
 #include <sstream>
+#include <stdexcept>
+#include <utility>
+#include <vector>
 
+#include "arglist.h"
+#include "attribute_.h"
+#include "child.h"
 #include "client.h"
 #include "clientmanager.h"
 #include "completion.h"
