@@ -77,7 +77,7 @@ void ewmh_init() {
     /* init ewmh net atoms */
     for (int i = 0; i < NetCOUNT; i++) {
         if (!g_netatom_names[i]) {
-            g_warning("no name specified in g_netatom_names "
+            HSWarning("no name specified in g_netatom_names "
                       "for atom number %d\n", i);
             continue;
         }
@@ -228,7 +228,7 @@ void ewmh_remove_client(Window win) {
     int index = array_find(g_windows, g_window_count,
                            sizeof(Window), &win);
     if (index < 0) {
-        g_warning("could not find window %lx in g_windows\n", win);
+        HSWarning("could not find window %lx in g_windows\n", win);
     } else {
         g_memmove(g_windows + index, g_windows + index + 1,
                   sizeof(Window) *(g_window_count - index - 1));
@@ -262,7 +262,7 @@ void ewmh_update_current_desktop() {
     HSTag* tag = get_current_monitor()->tag;
     int index = global_tags->index_of(tag);
     if (index < 0) {
-        g_warning("tag %s not found in internal list\n", tag->name->c_str());
+        HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
     }
     XChangeProperty(g_display, g_root, g_netatom[NetCurrentDesktop],
@@ -272,7 +272,7 @@ void ewmh_update_current_desktop() {
 void ewmh_window_update_tag(Window win, HSTag* tag) {
     int index = global_tags->index_of(tag);
     if (index < 0) {
-        g_warning("tag %s not found in internal list\n", tag->name->c_str());
+        HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
     }
     XChangeProperty(g_display, win, g_netatom[NetWmDesktop],
