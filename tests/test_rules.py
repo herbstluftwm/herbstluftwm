@@ -83,7 +83,7 @@ def test_add_many_labeled_rules(hlwm):
 def test_add_rule_with_misformatted_argument(hlwm):
     call = hlwm.call_xfail('rule notevenanoperator')
 
-    call.match('rule: No operator in given arg: notevenanoperator')
+    call.expect_stderr('rule: No operator in given arg: notevenanoperator')
 
 
 def test_cannot_add_rule_with_empty_label(hlwm):
