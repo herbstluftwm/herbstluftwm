@@ -21,17 +21,17 @@ def test_mouseunbind_all(hlwm, method, mouse):
 
 def test_mousebind_empty_command(hlwm):
     call = hlwm.call_xfail('mousebind Button3 call')
-    call.match('mousebind: not enough arguments')
+    call.expect_stderr('mousebind: not enough arguments')
 
 
 def test_mousebind_unknown_button(hlwm):
     call = hlwm.call_xfail('mousebind Button42 call quit')
-    call.match('mousebind: Unknown mouse button "Button42"')
+    call.expect_stderr('mousebind: Unknown mouse button "Button42"')
 
 
 def test_mousebind_unknown_action(hlwm):
     call = hlwm.call_xfail('mousebind Button1 get schwifty')
-    call.match('mousebind: Unknown mouse action "get"')
+    call.expect_stderr('mousebind: Unknown mouse action "get"')
 
 
 @pytest.mark.parametrize('button', MOUSE_BUTTONS_THAT_WORK)
