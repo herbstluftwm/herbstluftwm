@@ -5,11 +5,11 @@
 #include <algorithm>
 #include <cstdio>
 
-#include "globals.h"
-#include "utils.h"
-#include "ewmh.h"
 #include "client.h"
+#include "ewmh.h"
+#include "globals.h"
 #include "hook.h"
+#include "utils.h"
 
 using std::string;
 

@@ -4,18 +4,18 @@
  * See LICENSE for details */
 
 #include <X11/Xlib.h>
+#include <assert.h>
+#include <getopt.h>
+#include <regex.h>
+#include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <getopt.h>
-#include <signal.h>
-#include <regex.h>
-#include <assert.h>
 #include <string.h>
 
 #include "../src/ipc-protocol.h"
-#include "ipc-client.h"
 #include "client-utils.h"
+#include "ipc-client.h"
 
 static void print_help(char* command, FILE* file);
 static void init_hook_regex(int argc, char* argv[]);

@@ -1,11 +1,11 @@
+#include <X11/X.h>
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
 #include <errno.h>
 #include <getopt.h>
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <X11/X.h>
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
 #include <cassert>
 #include <csignal>
 #include <cstdio>

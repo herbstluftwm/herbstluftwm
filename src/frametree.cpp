@@ -1,13 +1,13 @@
 #include "frametree.h"
 
+#include <algorithm>
+
 #include "client.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
 #include "tag.h"
 #include "utils.h"
-
-#include <algorithm>
 
 using std::endl;
 using std::function;
