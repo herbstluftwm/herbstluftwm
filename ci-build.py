@@ -66,7 +66,7 @@ if args.ccache:
 
 if args.iwyu:
     # Check lexicographical order of #include directives (cheap pre-check)
-    sp.check_call('fix_include --dry_run --sort_only --reorder /hlwm/src/*.{h,cpp}', shell=True, executable='bash')
+    sp.check_call('fix_include --dry_run --sort_only --reorder /hlwm/*/*.{h,cpp,c}', shell=True, executable='bash')
 
     # Run include-what-you-use (just printing the result for now)
     sp.check_call(f'iwyu_tool -p . -j "$(nproc)" -- --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
