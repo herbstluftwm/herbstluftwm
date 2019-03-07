@@ -212,7 +212,7 @@ def test_remove_attr_invalid_child(hlwm):
 
 def test_remove_attr_non_user_path(hlwm):
     hlwm.call_xfail('remove_attr monitors.count') \
-        .expect_stderr('is not a user defined attribute')
+        .expect_stderr('Cannot remove built-in attribute "monitors.count"')
 
 
 def test_remove_attr_user_attribute(hlwm):
