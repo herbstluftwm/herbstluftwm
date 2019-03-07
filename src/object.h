@@ -2,8 +2,11 @@
 #define __HS_OBJECT_H_
 
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
 
+#include "arglist.h"
 #include "types.h"
 
 #define OBJECT_PATH_SEPARATOR '.'
