@@ -4,6 +4,7 @@
 
 #include "client.h"
 #include "framedata.h"
+#include "frameparser.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
@@ -448,15 +449,6 @@ int FrameTree::loadCommand(Input input, Output output) {
         m->applyLayout();
     } else {
         tag->frame->root_->setVisibleRecursive(false);
-    }
-    if (!rest) {
-        output << input.command() << ": Error while parsing!\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (rest[0] != '\0') { // if string was not parsed completely
-        output << input.command() << ": Layout description was too long\n";
-        output << input.command() << ": \"" << rest << "\" has not been parsed\n";
-        return HERBST_INVALID_ARGUMENT;
     }
     return 0;
 }
