@@ -58,7 +58,6 @@ HSFrame::~HSFrame() = default;
 
 HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
     : HSFrame(tag, settings, parent)
-    , selection(0)
 {
     layout = settings->default_frame_layout();
 

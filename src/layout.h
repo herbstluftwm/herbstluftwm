@@ -115,7 +115,7 @@ protected:
     std::weak_ptr<HSFrameSplit> parent_;
 };
 
-class HSFrameLeaf : public HSFrame {
+class HSFrameLeaf : public HSFrame, public FrameDataLeaf {
 public:
     HSFrameLeaf(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent);
     ~HSFrameLeaf() override;
@@ -164,10 +164,6 @@ private:
     TilingResult layoutGrid(Rectangle rect);
 
     // members
-    std::vector<Client*> clients;
-    int     selection;
-    int     layout;
-
     FrameDecoration* decoration;
     Rectangle  last_rect; // last rectangle when being drawn
                           // this is only used for 'split explode'
