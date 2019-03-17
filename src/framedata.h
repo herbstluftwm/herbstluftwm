@@ -16,7 +16,7 @@
 class Client;
 
 class FrameDataLeaf {
-public:
+protected:
     std::vector<Client*> clients;
     int     selection = 0;
     int     layout = 0;
@@ -24,7 +24,7 @@ public:
 
 template<typename BaseClass>
 class FrameDataSplit {
-public:
+protected:
     int align_ = 0;         // ALIGN_VERTICAL or ALIGN_HORIZONTAL
     std::shared_ptr<BaseClass> a_; // first child
     std::shared_ptr<BaseClass> b_; // second child
