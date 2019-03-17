@@ -418,17 +418,3 @@ int FrameTree::cycleFrameCommand(Input input, Output output) {
     return 0;
 }
 
-class RawFrameNode {
-public:
-};
-
-class RawFrameLeaf : public RawFrameNode,
-                     public FrameDataLeaf {
-public:
-};
-
-class RawFrameSplit : public RawFrameNode,
-                      public FrameDataSplit<RawFrameNode> {
-public:
-};
-
