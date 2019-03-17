@@ -10,8 +10,8 @@
  * not set up class inheritance!
  */
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 class Client;
 

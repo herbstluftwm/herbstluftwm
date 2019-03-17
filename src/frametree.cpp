@@ -436,7 +436,7 @@ int FrameTree::loadCommand(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     assert(tag != nullptr);
-    const char* rest = "To be implemented...";
+    FrameParser parsingResult(layoutString);
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     Monitor* m = find_monitor_with_tag(tag);
