@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 
+#include "framedata.h"
 #include "glib-backports.h"
 #include "tilingresult.h"
 #include "types.h"
@@ -172,7 +173,7 @@ private:
                           // this is only used for 'split explode'
 };
 
-class HSFrameSplit : public HSFrame {
+class HSFrameSplit : public HSFrame, public FrameDataSplit<HSFrame> {
 public:
     HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction_, int align_,
                  std::shared_ptr<HSFrame> a_, std::shared_ptr<HSFrame> b_);
@@ -203,14 +204,6 @@ public:
     void setSelection(int s) { selection_ = s; }
 private:
     friend class FrameTree;
-    int align_;         // ALIGN_VERTICAL or ALIGN_HORIZONTAL
-    std::shared_ptr<HSFrame> a_; // first child
-    std::shared_ptr<HSFrame> b_; // second child
-
-    int selection_;
-    int fraction_; // size of first child relative to whole size
-                  // FRACTION_UNIT means full size
-                  // FRACTION_UNIT/2 means 50%
 };
 
 // globals

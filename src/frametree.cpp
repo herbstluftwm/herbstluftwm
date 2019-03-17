@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "client.h"
+#include "framedata.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
@@ -416,4 +417,18 @@ int FrameTree::cycleFrameCommand(Input input, Output output) {
     get_current_monitor()->applyLayout();
     return 0;
 }
+
+class RawFrameNode {
+public:
+};
+
+class RawFrameLeaf : public RawFrameNode,
+                     public FrameDataLeaf {
+public:
+};
+
+class RawFrameSplit : public RawFrameNode,
+                      public FrameDataSplit<RawFrameNode> {
+public:
+};
 
