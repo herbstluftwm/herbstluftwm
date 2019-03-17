@@ -43,6 +43,7 @@ public:
     int rotateCommand();
     int cycleAllCommand(Input input, Output output);
     int cycleFrameCommand(Input input, Output output);
+    int loadCommand(Input input, Output output);
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:

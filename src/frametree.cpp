@@ -418,3 +418,46 @@ int FrameTree::cycleFrameCommand(Input input, Output output) {
     return 0;
 }
 
+int FrameTree::loadCommand(Input input, Output output) {
+    // usage: load TAG LAYOUT
+    HSTag* tag = nullptr;
+    string layoutString, tagName;
+    if (input.size() >= 2) {
+        input >> tagName >> layoutString;
+        tag = find_tag(tagName.c_str());
+        if (!tag) {
+            output << input.command() << ": Tag \"" << tagName << "\" not found\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+    } else if (input.size() == 1) {
+        input >> layoutString;
+        tag = get_current_monitor()->tag;
+    } else {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    assert(tag != nullptr);
+    const char* rest = "To be implemented...";
+    tag_set_flags_dirty(); // we probably changed some window positions
+    // arrange monitor
+    Monitor* m = find_monitor_with_tag(tag);
+    if (m) {
+        tag->frame->root_->setVisibleRecursive(true);
+        if (get_current_monitor() == m) {
+            frame_focus_recursive(tag->frame->root_);
+        }
+        m->applyLayout();
+    } else {
+        tag->frame->root_->setVisibleRecursive(false);
+    }
+    if (!rest) {
+        output << input.command() << ": Error while parsing!\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (rest[0] != '\0') { // if string was not parsed completely
+        output << input.command() << ": Layout description was too long\n";
+        output << input.command() << ": \"" << rest << "\" has not been parsed\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    return 0;
+}
+
