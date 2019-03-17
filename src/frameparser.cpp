@@ -23,7 +23,6 @@ FrameParser::Tokens FrameParser::tokenize(string buf) {
     Tokens tokens;
     int pos = 0;
     while (pos < buf.size()) {
-        char c = buf[pos];
         string whitespace = "\n\r ";
         string parentheses = "()";
         if (contained_in(buf[pos], whitespace)) {
