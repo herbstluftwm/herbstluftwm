@@ -41,8 +41,21 @@ public:
 class FrameParser {
 public:
     FrameParser(std::string buf);
-    std::shared_ptr<RawFrameNode> result();
-private:
-    int position_ = 0; //! the current parsing position
+    //! the parsing result
     std::shared_ptr<RawFrameNode> root_;
+    //! a possible error message and the position where it occured
+    std::pair<int,std::string> error_;
+
+    //! a list of tokens and their positions
+    using Tokens = std::vector<std::pair<size_t,std::string>>;
+private:
+    void parse(std::string buf);
+    //! Split a string into tokens. The tokens are defined in the sense that it
+    //is always allowed to insert spaces between tokens. Hence in (a (b c)) the
+    //two closing brackets are separate tokens because (a (b c) ) is
+    //equivalent; however the Leaf-args string "vertical:0" is a single token
+    //because "vertical: 0" is not of valid syntax.
+    Tokens tokenize(std::string buf);
+    //! tells whether the given char is contained in the string
+    static bool contained_in(char c, std::string s);
 };
