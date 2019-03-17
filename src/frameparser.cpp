@@ -1,5 +1,6 @@
 #include "frameparser.h"
 
-FrameParser::FrameParser(std::string buf) {
+using std::string;
+FrameParser::FrameParser(string buf) {
 }
 
