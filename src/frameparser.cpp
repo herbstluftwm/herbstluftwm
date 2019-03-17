@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <sstream>
 
+using std::make_pair;
+using std::make_shared;
 using std::shared_ptr;
 using std::string;
 using std::vector;
@@ -10,12 +12,25 @@ using std::vector;
 FrameParser::FrameParser(string buf) {
 }
 
+class ParsingException : public std::exception {
+public:
+    ParsingException(int pos, string message)
+        : pos_(pos), message_(message) {
+    }
+    int pos_;
+    string message_;
+};
+
 void FrameParser::parse(string buf) {
     Tokens tokens = tokenize(buf);
-    root_ = buildTree();
+    try {
+        root_ = buildTree();
+    } catch (ParsingException& e) {
+        error_ = make_pair(e.pos_, e.message_);
+    }
 }
 
-bool FrameParser::contained_in(char c, std::string s) {
+bool FrameParser::contained_in(char c, string s) {
     return s.find(c) != string::npos;
 }
 
@@ -30,7 +45,7 @@ FrameParser::Tokens FrameParser::tokenize(string buf) {
             pos++;
         } else if (contained_in(buf[pos], parentheses)) {
             // parentheses are always single character tokens
-            tokens.push_back(std::make_pair(pos, buf.substr(pos, 1)));
+            tokens.push_back(make_pair(pos, buf.substr(pos, 1)));
         }
         else {
             // everything else is a token until the next whitespace character
@@ -42,7 +57,7 @@ FrameParser::Tokens FrameParser::tokenize(string buf) {
                 // scan until whitespace or next token
                 pos++;
             }
-            tokens.push_back(std::make_pair(beg, buf.substr(beg, pos - beg)));
+            tokens.push_back(make_pair(beg, buf.substr(beg, pos - beg)));
         }
     }
     return tokens;
@@ -57,13 +72,13 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
     shared_ptr<RawFrameNode> nodeUntyped = nullptr;
     if (isSplit) {
         // Construct a RawFrameSplit
-        auto node = std::make_shared<RawFrameSplit>();
+        auto node = make_shared<RawFrameSplit>();
         nextToken++; // TODO: parse the member data
         auto a = buildTree();
         auto b = buildTree();
         nodeUntyped = node;
     } else {
-        auto node = std::make_shared<RawFrameLeaf>();
+        auto node = make_shared<RawFrameLeaf>();
         // Construct a RawFrameLeaf
         nextToken++; // TODO: parse the member data
         while (nextToken->second != ")") {
@@ -77,10 +92,16 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
     return nodeUntyped;
 }
 
-void FrameParser::expectTokens(std::vector<std::string> tokens) {
-    if (std::find(tokens.begin(), tokens.end(), nextToken->second) == tokens.end()) {
+void FrameParser::expectTokens(vector<string> tokens) {
+    if (nextToken == endToken ||
+        std::find(tokens.begin(), tokens.end(), nextToken->second) == tokens.end()) {
         std::stringstream message;
-        message << "Invalid token \"" << nextToken->second << "\". Expected ";
+        if (nextToken == endToken) {
+            message << "Unexpected end of input.";
+        } else {
+            message << "Invalid token \"" << nextToken->second << "\".";
+        }
+        message << " Expected ";
         if (tokens.size() == 1) {
             message << "\"" << tokens[0] << "\"";
         } else {
@@ -90,6 +111,6 @@ void FrameParser::expectTokens(std::vector<std::string> tokens) {
             }
         }
         message << ".";
-        // TODO: throw exception
+        throw ParsingException(nextToken->first, message.str());
     }
 }
