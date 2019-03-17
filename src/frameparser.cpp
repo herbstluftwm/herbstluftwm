@@ -1,5 +1,9 @@
 #include "frameparser.h"
 
+#include <algorithm>
+#include <sstream>
+
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -8,10 +12,7 @@ FrameParser::FrameParser(string buf) {
 
 void FrameParser::parse(string buf) {
     Tokens tokens = tokenize(buf);
-    for (auto& token : tokens) {
-        int pos = token.first;
-        const string& s = token.second;
-    }
+    root_ = buildTree();
 }
 
 bool FrameParser::contained_in(char c, std::string s) {
@@ -48,3 +49,48 @@ FrameParser::Tokens FrameParser::tokenize(string buf) {
     return tokens;
 }
 
+shared_ptr<RawFrameNode> FrameParser::buildTree() {
+    expectTokens({ "(" });
+    nextToken++;
+    expectTokens({ "split", "clients" });
+    bool isSplit = nextToken->second == "split";
+    nextToken++;
+    shared_ptr<RawFrameNode> nodeUntyped = nullptr;
+    if (isSplit) {
+        // Construct a RawFrameSplit
+        auto node = std::make_shared<RawFrameSplit>();
+        nextToken++; // TODO: parse the member data
+        auto a = buildTree();
+        auto b = buildTree();
+        nodeUntyped = node;
+    } else {
+        auto node = std::make_shared<RawFrameLeaf>();
+        // Construct a RawFrameLeaf
+        nextToken++; // TODO: parse the member data
+        while (nextToken->second != ")") {
+            string winid_str = nextToken->second;
+            nextToken++;
+        }
+        nodeUntyped = node;
+    }
+    expectTokens({ ")" });
+    nextToken++;
+    return nodeUntyped;
+}
+
+void FrameParser::expectTokens(std::vector<std::string> tokens) {
+    if (std::find(tokens.begin(), tokens.end(), nextToken->second) == tokens.end()) {
+        std::stringstream message;
+        message << "Invalid token \"" << nextToken->second << "\". Expected ";
+        if (tokens.size() == 1) {
+            message << "\"" << tokens[0] << "\"";
+        } else {
+            message << "one of:";
+            for (auto& t : tokens) {
+                message << " \"" << t << "\"";
+            }
+        }
+        message << ".";
+        // TODO: throw exception
+    }
+}

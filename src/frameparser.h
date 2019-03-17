@@ -56,6 +56,14 @@ private:
     //equivalent; however the Leaf-args string "vertical:0" is a single token
     //because "vertical: 0" is not of valid syntax.
     Tokens tokenize(std::string buf);
+
+    //! the next token to process by buildTree()
+    Tokens::const_iterator nextToken;
+    Tokens::const_iterator endToken;
+    //! build a RawFrameNode-Tree from the token list
+    std::shared_ptr<RawFrameNode> buildTree();
+    void expectTokens(std::vector<std::string> token);
+
     //! tells whether the given char is contained in the string
     static bool contained_in(char c, std::string s);
 };
