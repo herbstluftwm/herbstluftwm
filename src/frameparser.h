@@ -27,11 +27,13 @@ protected:
 class RawFrameLeaf : public RawFrameNode,
                      public FrameDataLeaf {
 public:
+    friend class FrameParser;
 };
 
 class RawFrameSplit : public RawFrameNode,
                       public FrameDataSplit<RawFrameNode> {
 public:
+    friend class FrameParser;
 };
 
 /*! the FrameParser is actually only a interface to access the parsing result

@@ -1,5 +1,7 @@
 #include "frameparser.h"
 
+#include "arglist.h"
+
 #include <algorithm>
 #include <sstream>
 
@@ -17,7 +19,7 @@ public:
     ParsingException(int pos, string message)
         : pos_(pos), message_(message) {
     }
-    int pos_;
+    int pos_; //! the position or -1 for "end of string"
     string message_;
 };
 
@@ -26,7 +28,8 @@ void FrameParser::parse(string buf) {
     try {
         root_ = buildTree();
     } catch (ParsingException& e) {
-        error_ = make_pair(e.pos_, e.message_);
+        int pos = (e.pos_ < 0) ? buf.size() : e.pos_;
+        error_ = make_pair(pos, e.message_);
     }
 }
 
@@ -70,17 +73,23 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
     bool isSplit = nextToken->second == "split";
     nextToken++;
     shared_ptr<RawFrameNode> nodeUntyped = nullptr;
+    // in both cases, the next token is a list of ':'-separated arguments
+    if (nextToken == endToken) {
+        throw ParsingException(-1, "Expected argument list");
+    }
+    auto args = ArgList::split(nextToken->second, ':');
+    nextToken++;
     if (isSplit) {
         // Construct a RawFrameSplit
         auto node = make_shared<RawFrameSplit>();
-        nextToken++; // TODO: parse the member data
         auto a = buildTree();
         auto b = buildTree();
+        node->a_ = a;
+        node->b_ = b;
         nodeUntyped = node;
     } else {
         auto node = make_shared<RawFrameLeaf>();
         // Construct a RawFrameLeaf
-        nextToken++; // TODO: parse the member data
         while (nextToken->second != ")") {
             string winid_str = nextToken->second;
             nextToken++;
@@ -111,6 +120,7 @@ void FrameParser::expectTokens(vector<string> tokens) {
             }
         }
         message << ".";
-        throw ParsingException(nextToken->first, message.str());
+        int pos = (nextToken == endToken) ? -1 : nextToken->first;
+        throw ParsingException(pos, message.str());
     }
 }
