@@ -42,14 +42,15 @@ public:
  */
 class FrameParser {
 public:
+    //! a list of tokens and their positions
+    using Token = std::pair<size_t,std::string>;
+    using Tokens = std::vector<Token>;
+
     FrameParser(std::string buf);
     //! the parsing result
     std::shared_ptr<RawFrameNode> root_;
-    //! a possible error message and the position where it occured
-    std::pair<int,std::string> error_;
-
-    //! a list of tokens and their positions
-    using Tokens = std::vector<std::pair<size_t,std::string>>;
+    //! a possible error message and error token
+    std::shared_ptr<std::pair<Token,std::string>> error_;
 private:
     void parse(std::string buf);
     //! Split a string into tokens. The tokens are defined in the sense that it
@@ -65,6 +66,8 @@ private:
     //! build a RawFrameNode-Tree from the token list
     std::shared_ptr<RawFrameNode> buildTree();
     void expectTokens(std::vector<std::string> token);
+
+    Token eofToken;
 
     //! tells whether the given char is contained in the string
     static bool contained_in(char c, std::string s);

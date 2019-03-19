@@ -4,32 +4,43 @@
 
 #include <algorithm>
 #include <sstream>
+#include <iostream>
 
 using std::make_pair;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
 using std::vector;
-
-FrameParser::FrameParser(string buf) {
-}
+using std::endl;
 
 class ParsingException : public std::exception {
 public:
-    ParsingException(int pos, string message)
-        : pos_(pos), message_(message) {
+    ParsingException(FrameParser::Token tok, string message)
+        : token_(tok), message_(message) {
     }
-    int pos_; //! the position or -1 for "end of string"
+    FrameParser::Token token_;
     string message_;
 };
+
+
+FrameParser::FrameParser(string buf) {
+    eofToken = make_pair(buf.size(), "");
+    parse(buf);
+}
 
 void FrameParser::parse(string buf) {
     Tokens tokens = tokenize(buf);
     try {
+        nextToken = tokens.begin();
+        endToken = tokens.end();
         root_ = buildTree();
+        if (nextToken != endToken) {
+            throw ParsingException(*nextToken,
+                                   "Layout description too long");
+        }
     } catch (ParsingException& e) {
-        int pos = (e.pos_ < 0) ? buf.size() : e.pos_;
-        error_ = make_pair(pos, e.message_);
+        error_ = make_shared<std::pair<Token,string>>(
+            make_pair(e.token_, e.message_));
     }
 }
 
@@ -49,6 +60,7 @@ FrameParser::Tokens FrameParser::tokenize(string buf) {
         } else if (contained_in(buf[pos], parentheses)) {
             // parentheses are always single character tokens
             tokens.push_back(make_pair(pos, buf.substr(pos, 1)));
+            pos++;
         }
         else {
             // everything else is a token until the next whitespace character
@@ -75,7 +87,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
     shared_ptr<RawFrameNode> nodeUntyped = nullptr;
     // in both cases, the next token is a list of ':'-separated arguments
     if (nextToken == endToken) {
-        throw ParsingException(-1, "Expected argument list");
+        throw ParsingException(eofToken, "Expected argument list");
     }
     auto args = ArgList::split(nextToken->second, ':');
     nextToken++;
@@ -123,8 +135,7 @@ void FrameParser::expectTokens(vector<string> tokens) {
                 message << " \"" << t << "\"";
             }
         }
-        message << ".";
-        int pos = (nextToken == endToken) ? -1 : nextToken->first;
-        throw ParsingException(pos, message.str());
+        auto tok = (nextToken == endToken) ? eofToken : *nextToken;
+        throw ParsingException(tok, message.str());
     }
 }

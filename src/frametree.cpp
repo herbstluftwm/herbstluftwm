@@ -1,6 +1,7 @@
 #include "frametree.h"
 
 #include <algorithm>
+#include <regex>
 
 #include "client.h"
 #include "framedata.h"
@@ -438,6 +439,23 @@ int FrameTree::loadCommand(Input input, Output output) {
     }
     assert(tag != nullptr);
     FrameParser parsingResult(layoutString);
+    if (parsingResult.error_) {
+        output << input.command() << ": Syntax error at "
+               << parsingResult.error_->first.first << ": "
+               << parsingResult.error_->second << ":"
+               << endl;
+        std::regex whitespace ("[ \n\t]");
+        // print the layout again
+        output << "\"" << std::regex_replace(layoutString, whitespace, " ")
+               << "\"" << endl;
+        // and underline the token
+        int token_len = std::max(1ul, parsingResult.error_->first.second.size());
+        output << " " // for the \" above
+               << string(parsingResult.error_->first.first, ' ')
+               << string(token_len, '~')
+               << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     Monitor* m = find_monitor_with_tag(tag);
