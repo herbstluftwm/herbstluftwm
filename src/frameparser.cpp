@@ -82,15 +82,19 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
     if (isSplit) {
         // Construct a RawFrameSplit
         auto node = make_shared<RawFrameSplit>();
-        auto a = buildTree();
-        auto b = buildTree();
-        node->a_ = a;
-        node->b_ = b;
+        expectTokens({ "(", ")" });
+        if (nextToken->second == "(") {
+            node->a_ = buildTree();
+        }
+        expectTokens({ "(", ")" });
+        if (nextToken->second == "(") {
+            node->b_ = buildTree();
+        }
         nodeUntyped = node;
     } else {
         auto node = make_shared<RawFrameLeaf>();
         // Construct a RawFrameLeaf
-        while (nextToken->second != ")") {
+        while (nextToken != endToken && nextToken->second != ")") {
             string winid_str = nextToken->second;
             nextToken++;
         }
