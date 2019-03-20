@@ -446,7 +446,7 @@ int FrameTree::loadCommand(Input input, Output output) {
                << endl;
         std::regex whitespace ("[ \n\t]");
         // print the layout again
-        output << "\"" << std::regex_replace(layoutString, whitespace, " ")
+        output << "\"" << std::regex_replace(layoutString, whitespace, string(" "))
                << "\"" << endl;
         // and underline the token
         int token_len = std::max(1ul, parsingResult.error_->first.second.size());
