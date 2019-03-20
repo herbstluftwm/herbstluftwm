@@ -6,12 +6,13 @@
 
 #include "arglist.h"
 
+using std::endl;
 using std::make_pair;
 using std::make_shared;
+using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::vector;
-using std::endl;
 
 class ParsingException : public std::exception {
 public:
@@ -39,7 +40,7 @@ void FrameParser::parse(string buf) {
                                    "Layout description too long");
         }
     } catch (ParsingException& e) {
-        error_ = make_shared<std::pair<Token,string>>(
+        error_ = make_shared<pair<Token,string>>(
             make_pair(e.token_, e.message_));
     }
 }
