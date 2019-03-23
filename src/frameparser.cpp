@@ -90,11 +90,20 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
     if (nextToken == endToken) {
         throw ParsingException(eofToken, "Expected argument list");
     }
-    auto args = ArgList::split(nextToken->second, ':');
-    nextToken++;
+    ArgList args (nextToken->second, ':');
     if (isSplit) {
         // Construct a RawFrameSplit
         auto node = make_shared<RawFrameSplit>();
+        string alignName, fractionStr, selectionStr;
+        args >> alignName >> fractionStr >> selectionStr;
+        if (!args || !args.empty()) {
+            std::stringstream message;
+            args.reset();
+            message << "Expected 3 arguments but got " << args.size();
+            throw ParsingException(*nextToken, message.str());
+        }
+        nextToken++;
+
         expectTokens({ "(", ")" });
         if (nextToken->second == "(") {
             node->a_ = buildTree();
@@ -106,6 +115,15 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
         nodeUntyped = node;
     } else {
         auto node = make_shared<RawFrameLeaf>();
+        string layoutName, selectionStr;
+        args >> layoutName >> selectionStr;
+        if (!args || !args.empty()) {
+            std::stringstream message;
+            args.reset();
+            message << "Expected 2 arguments but got " << args.size();
+            throw ParsingException(*nextToken, message.str());
+        }
+        nextToken++;
         // Construct a RawFrameLeaf
         while (nextToken != endToken && nextToken->second != ")") {
             string winid_str = nextToken->second;
