@@ -125,7 +125,7 @@ HSFrameLeaf::~HSFrameLeaf() {
     delete decoration;
 }
 
-int find_layout_by_name(char* name) {
+int find_layout_by_name(const char* name) {
     for (size_t i = 0; i < LENGTH(g_layout_names); i++) {
         if (!g_layout_names[i]) {
             break;
@@ -137,7 +137,7 @@ int find_layout_by_name(char* name) {
     return -1;
 }
 
-int find_align_by_name(char* name) {
+int find_align_by_name(const char* name) {
     for (size_t i = 0; i < LENGTH(g_align_names); i++) {
         if (!strcmp(name, g_align_names[i])) {
             return (int)i;

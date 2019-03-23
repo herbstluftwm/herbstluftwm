@@ -5,6 +5,8 @@
 #include <sstream>
 
 #include "arglist.h"
+#include "globals.h"
+#include "layout.h" // TODO: drop this one!
 
 using std::endl;
 using std::make_pair;
@@ -101,6 +103,31 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             args.reset();
             message << "Expected 3 arguments but got " << args.size();
             throw ParsingException(*nextToken, message.str());
+        }
+        node->align_ = find_align_by_name(alignName.c_str());
+        if (node->align_ < 0) {
+            throw ParsingException(*nextToken,
+                                   "Invalid align name: " + alignName);
+        }
+        try {
+            double fraction = std::stod(fractionStr);
+            if (fraction < FRAME_MIN_FRACTION
+                || fraction > 1 - FRAME_MIN_FRACTION)
+            {
+                std::stringstream message;
+                message << "Fraction must be between "
+                        <<  FRAME_MIN_FRACTION << " and "
+                        << (1 - FRAME_MIN_FRACTION)
+                        << " but actually is " << fraction;
+                throw std::invalid_argument(message.str());
+            }
+            node->fraction_ = fraction * FRACTION_UNIT;
+            node->selection_ = std::stoi(selectionStr);
+            if (node->selection_ != 0 && node->selection_ != 1) {
+                throw std::invalid_argument("selection must be 0 or 1");
+            }
+        } catch (std::exception e) {
+            throw ParsingException(*nextToken, e.what());
         }
         nextToken++;
 

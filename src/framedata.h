@@ -13,6 +13,8 @@
 #include <memory>
 #include <vector>
 
+#define FRACTION_UNIT 10000
+
 class Client;
 
 class FrameDataLeaf {

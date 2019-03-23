@@ -45,8 +45,6 @@ enum {
 class Client;
 typedef std::function<void(Client*)> ClientAction;
 
-#define FRACTION_UNIT 10000
-
 class HSTag;
 class HSFrameLeaf;
 class HSFrameSplit;
@@ -215,8 +213,8 @@ int frame_change_fraction_command(int argc, char** argv, Output output);
 
 void reset_frame_colors();
 
-int find_layout_by_name(char* name);
-int find_align_by_name(char* name);
+int find_layout_by_name(const char* name);
+int find_align_by_name(const char* name);
 
 int frame_current_bring(int argc, char** argv, Output output);
 
