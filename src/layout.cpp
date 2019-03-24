@@ -545,8 +545,10 @@ int frame_split_command(Input input, Output output) {
     int lh = cur_frame->lastRect().height;
     int lw = cur_frame->lastRect().width;
     SplitAlign align_auto = (lw > lh) ? SplitAlign::horizontal : SplitAlign::vertical;
+    SplitAlign align_explode = SplitAlign::vertical;
+    bool exploding = false;
     struct {
-        const char* name;
+        string name;
         SplitAlign align;
         bool frameToFirst;  // if former frame moves to first child
         int selection;      // which child to select after the split
@@ -557,7 +559,7 @@ int frame_split_command(Input input, Output output) {
         { "right",      SplitAlign::horizontal,   true,   0   },
         { "horizontal", SplitAlign::horizontal,   true,   0   },
         { "left",       SplitAlign::horizontal,   false,  1   },
-        { "explode",    SplitAlign::explode,      true,   0   },
+        { "explode",    align_explode,            true,   0   },
         { "auto",       align_auto,               true,   0   },
     };
     bool found = false;
@@ -567,6 +569,9 @@ int frame_split_command(Input input, Output output) {
             frameToFirst    = m.frameToFirst;
             selection       = m.selection;
             found = true;
+            if (m.name == "explode") {
+                exploding = true;
+            }
             break;
         }
     }
@@ -575,7 +580,6 @@ int frame_split_command(Input input, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     auto frame = HSFrame::getGloballyFocusedFrame();
-    bool exploding = align == SplitAlign::explode;
     int layout = frame->getLayout();
     auto windowcount = frame->clientCount();
     if (exploding) {

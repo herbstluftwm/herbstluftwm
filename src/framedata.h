@@ -22,8 +22,6 @@ class Client;
 enum class SplitAlign {
     vertical = 0,
     horizontal,
-    // temporary values in split_command
-    explode,
 };
 
 enum {
