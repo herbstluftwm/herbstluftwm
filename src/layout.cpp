@@ -60,7 +60,7 @@ HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> 
     : HSFrame(tag, settings, parent)
 {
     auto l = settings->default_frame_layout();
-    if (l < 0 || l >= LayoutAlgorithmCount()) {
+    if (l >= LayoutAlgorithmCount()) {
         l = 0;
     }
     layout = (LayoutAlgorithm) l;
