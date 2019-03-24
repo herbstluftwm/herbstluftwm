@@ -22,6 +22,8 @@ import re
     ('(split  horizonta:0.5:0 )', 8),
     ('(clients max )', 9),
     ('(clients max:0:0 )', 9),
+    ('(clients ma:0 )', 9),
+    ('(clients max:-1 )', 9),
     ('(split horizontal:0.5:0 x)', 24),
     ('(split horizontal:0.5:0 (split horizontal:0.5:1', 47),
     ('(split horizontal:0.5:0 (split horizontal:0.5:1 ', 48),
@@ -41,6 +43,7 @@ def test_syntax_errors_position(hlwm, invalid_layout, error_pos):
     " (  clients   vertical:0  )",
     "(split horizontal:0.3:0)",
     "(split vertical:0.3:0 (clients horizontal:0))",
+    "(split vertical:0.3:0 (split vertical:0.4:1))",
 ])
 def test_valid_layout_syntax(hlwm, layout):
     hlwm.call(['load', layout])

@@ -150,6 +150,19 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             message << "Expected 2 arguments but got " << args.size();
             throw ParsingException(*nextToken, message.str());
         }
+        node->layout = find_layout_by_name(layoutName.c_str());
+        if (node->layout < 0) {
+            throw ParsingException(*nextToken,
+                                   "Invalid layout name: " + layoutName);
+        }
+        try {
+            node->selection = std::stoi(selectionStr);
+            if (node->selection < 0) {
+                throw std::invalid_argument("selection must not be negative.");
+            }
+        } catch (std::exception e) {
+            throw ParsingException(*nextToken, e.what());
+        }
         nextToken++;
         // Construct a RawFrameLeaf
         while (nextToken != endToken && nextToken->second != ")") {
