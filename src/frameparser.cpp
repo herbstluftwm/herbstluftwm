@@ -41,7 +41,7 @@ void FrameParser::parse(string buf) {
             throw ParsingException(*nextToken,
                                    "Layout description too long");
         }
-    } catch (ParsingException& e) {
+    } catch (const ParsingException& e) {
         error_ = make_shared<pair<Token,string>>(
             make_pair(e.token_, e.message_));
     }
@@ -126,7 +126,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             if (node->selection_ != 0 && node->selection_ != 1) {
                 throw std::invalid_argument("selection must be 0 or 1");
             }
-        } catch (std::exception e) {
+        } catch (const std::exception& e) {
             throw ParsingException(*nextToken, e.what());
         }
         nextToken++;
@@ -160,7 +160,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             if (node->selection < 0) {
                 throw std::invalid_argument("selection must not be negative.");
             }
-        } catch (std::exception e) {
+        } catch (const std::exception& e) {
             throw ParsingException(*nextToken, e.what());
         }
         nextToken++;
