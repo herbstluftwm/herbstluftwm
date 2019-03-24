@@ -124,8 +124,8 @@ public:
     Client* focusedClient() override;
 
     bool split(SplitAlign alignment, int fraction, size_t childrenLeaving = 0);
-    int getLayout() { return layout; }
-    void setLayout(int l) { layout = l; }
+    LayoutAlgorithm getLayout() { return layout; }
+    void setLayout(LayoutAlgorithm l) { layout = l; }
     int getSelection() { return selection; }
     size_t clientCount() { return clients.size(); }
     std::shared_ptr<HSFrame> neighbour(Direction direction);

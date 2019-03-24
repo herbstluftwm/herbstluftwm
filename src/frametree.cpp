@@ -40,7 +40,7 @@ void FrameTree::dump(shared_ptr<HSFrame> frame, Output output)
         output << LAYOUT_DUMP_BRACKETS[0]
                << "clients"
                << LAYOUT_DUMP_WHITESPACES[0]
-               << g_layout_names[l->layout] << ":"
+               << g_layout_names[(int)l->layout] << ":"
                << l->selection;
         for (auto client : l->clients) {
             output << LAYOUT_DUMP_WHITESPACES[0]
@@ -231,7 +231,7 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         }
         size_t childCount() override { return 0; };
         void appendCaption(Output output) override {
-            output << g_layout_names[l_->layout] << ":";
+            output << g_layout_names[(int)l_->layout] << ":";
             for (auto client : l_->clients) {
                 output << " 0x"
                        << std::hex << client->x11Window() << std::dec;
@@ -350,7 +350,7 @@ int FrameTree::cycleAllCommand(Input input, Output output) {
         return 0; // nothing to do
     }
     shared_ptr<HSFrameLeaf> focus = focusedFrame();
-    bool frameChanges = (focus->layout == LAYOUT_MAX && skip_invisible)
+    bool frameChanges = (focus->layout == LayoutAlgorithm::max && skip_invisible)
         || (delta == 1 && focus->getSelection() + 1 == focus->clientCount())
         || (delta == -1 && focus->getSelection() == 0)
         || (focus->clientCount() == 0);
@@ -365,7 +365,7 @@ int FrameTree::cycleAllCommand(Input input, Output output) {
         cycle_frame(delta);
         focus = focusedFrame();
         // fix the selection within the freshly focused frame.
-        if (focus->layout == LAYOUT_MAX && skip_invisible) {
+        if (focus->layout == LayoutAlgorithm::max && skip_invisible) {
             // nothing to do
         } else if (delta == 1) {
             // focus the first client

@@ -24,19 +24,20 @@ enum class SplitAlign {
     horizontal,
 };
 
-enum {
-    LAYOUT_VERTICAL = 0,
-    LAYOUT_HORIZONTAL,
-    LAYOUT_MAX,
-    LAYOUT_GRID,
-    LAYOUT_COUNT,
+enum class LayoutAlgorithm {
+    vertical = 0,
+    horizontal,
+    max,
+    grid,
 };
+
+size_t LayoutAlgorithmCount();
 
 class FrameDataLeaf {
 protected:
     std::vector<Client*> clients;
-    int     selection = 0;
-    int     layout = 0;
+    int selection = 0;
+    LayoutAlgorithm layout = LayoutAlgorithm::vertical;
 };
 
 template<typename BaseClass>
