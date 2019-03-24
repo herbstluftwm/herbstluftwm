@@ -55,7 +55,7 @@ void FrameTree::dump(shared_ptr<HSFrame> frame, Output output)
             << LAYOUT_DUMP_BRACKETS[0]
             << "split"
             << LAYOUT_DUMP_WHITESPACES[0]
-            << g_align_names[s->align_]
+            << g_align_names[(int)s->align_]
             << LAYOUT_DUMP_SEPARATOR
             << ((double)s->fraction_) / (double)FRACTION_UNIT
             << LAYOUT_DUMP_SEPARATOR
@@ -197,11 +197,11 @@ int FrameTree::rotateCommand() {
     void (*onSplit)(HSFrameSplit*) =
         [] (HSFrameSplit* s) {
             switch (s->align_) {
-                case ALIGN_VERTICAL:
-                    s->align_ = ALIGN_HORIZONTAL;
+                case SplitAlign::vertical:
+                    s->align_ = SplitAlign::horizontal;
                     break;
-                case ALIGN_HORIZONTAL:
-                    s->align_ = ALIGN_VERTICAL;
+                case SplitAlign::horizontal:
+                    s->align_ = SplitAlign::vertical;
                     s->selection_ = s->selection_ ? 0 : 1;
                     swap(s->a_, s->b_);
                     s->fraction_ = FRACTION_UNIT - s->fraction_;
@@ -255,7 +255,7 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         }
         size_t childCount() override { return 2; };
         void appendCaption(Output output) override {
-            output << g_align_names[s_->align_]
+            output << g_align_names[(int)s_->align_]
                    << " " << (s_->fraction_ * 100 / FRACTION_UNIT) << "%"
                    << " selection=" << s_->selection_;
         }

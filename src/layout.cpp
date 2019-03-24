@@ -64,7 +64,7 @@ HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> 
     decoration = new FrameDecoration(tag, settings);
 }
 
-HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent, int fraction, int align,
+HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent, int fraction, SplitAlign align,
                  shared_ptr<HSFrame> a, shared_ptr<HSFrame> b)
              : HSFrame(tag, settings, parent) {
     this->align_ = align;
@@ -392,11 +392,11 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
 TilingResult HSFrameSplit::computeLayout(Rectangle rect) {
     auto first = rect;
     auto second = rect;
-    if (align_ == ALIGN_VERTICAL) {
+    if (align_ == SplitAlign::vertical) {
         first.height = (rect.height * fraction_) / FRACTION_UNIT;
         second.y += first.height;
         second.height -= first.height;
-    } else { // (align == ALIGN_HORIZONTAL)
+    } else { // (align == SplitAlign::horizontal)
         first.width = (rect.width * fraction_) / FRACTION_UNIT;
         second.x += first.width;
         second.width -= first.width;
@@ -470,11 +470,11 @@ void HSFrameLeaf::setSelection(int index) {
     get_current_monitor()->applyLayout();
 }
 
-int HSFrame::splitsToRoot(int align) {
+int HSFrame::splitsToRoot(SplitAlign align) {
     if (!parent_.lock()) return 0;
     return parent_.lock()->splitsToRoot(align);
 }
-int HSFrameSplit::splitsToRoot(int align) {
+int HSFrameSplit::splitsToRoot(SplitAlign align) {
     if (!parent_.lock()) return 0;
     int delta = 0;
     if (this->align_ == align) delta = 1;
@@ -496,7 +496,7 @@ void HSFrameLeaf::addClients(const vector<Client*>& vec) {
     for (auto c : vec) clients.push_back(c);
 }
 
-bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
+bool HSFrameLeaf::split(SplitAlign alignment, int fraction, size_t childrenLeaving) {
     if (splitsToRoot(alignment) > HERBST_MAX_TREE_HEIGHT) {
         return false;
     }
@@ -534,7 +534,7 @@ int frame_split_command(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     bool userDefinedFraction = input >> strFraction;
-    int align = -1;
+    SplitAlign align = SplitAlign::vertical;
     bool frameToFirst = true;
     double fractionFloat = userDefinedFraction ? atof(strFraction.c_str()) : 0.5;
     fractionFloat = CLAMP(fractionFloat, 0.0 + FRAME_MIN_FRACTION,
@@ -544,36 +544,38 @@ int frame_split_command(Input input, Output output) {
     auto cur_frame = HSFrame::getGloballyFocusedFrame();
     int lh = cur_frame->lastRect().height;
     int lw = cur_frame->lastRect().width;
-    int align_auto = (lw > lh) ? ALIGN_HORIZONTAL : ALIGN_VERTICAL;
+    SplitAlign align_auto = (lw > lh) ? SplitAlign::horizontal : SplitAlign::vertical;
     struct {
         const char* name;
-        int align;
+        SplitAlign align;
         bool frameToFirst;  // if former frame moves to first child
         int selection;      // which child to select after the split
     } splitModes[] = {
-        { "top",        ALIGN_VERTICAL,     false,  1   },
-        { "bottom",     ALIGN_VERTICAL,     true,   0   },
-        { "vertical",   ALIGN_VERTICAL,     true,   0   },
-        { "right",      ALIGN_HORIZONTAL,   true,   0   },
-        { "horizontal", ALIGN_HORIZONTAL,   true,   0   },
-        { "left",       ALIGN_HORIZONTAL,   false,  1   },
-        { "explode",    ALIGN_EXPLODE,      true,   0   },
-        { "auto",       align_auto,         true,   0   },
+        { "top",        SplitAlign::vertical,     false,  1   },
+        { "bottom",     SplitAlign::vertical,     true,   0   },
+        { "vertical",   SplitAlign::vertical,     true,   0   },
+        { "right",      SplitAlign::horizontal,   true,   0   },
+        { "horizontal", SplitAlign::horizontal,   true,   0   },
+        { "left",       SplitAlign::horizontal,   false,  1   },
+        { "explode",    SplitAlign::explode,      true,   0   },
+        { "auto",       align_auto,               true,   0   },
     };
+    bool found = false;
     for (auto &m : splitModes) {
         if (m.name[0] == splitType[0]) {
             align           = m.align;
             frameToFirst    = m.frameToFirst;
             selection       = m.selection;
+            found = true;
             break;
         }
     }
-    if (align < 0) {
+    if (!found) {
         output << input.command() << ": Invalid alignment \"" << splitType << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     auto frame = HSFrame::getGloballyFocusedFrame();
-    bool exploding = align == ALIGN_EXPLODE;
+    bool exploding = align == SplitAlign::explode;
     int layout = frame->getLayout();
     auto windowcount = frame->clientCount();
     if (exploding) {
@@ -582,11 +584,11 @@ int frame_split_command(Input input, Output output) {
         } else if (layout == LAYOUT_MAX) {
             align = align_auto;
         } else if (layout == LAYOUT_GRID && windowcount == 2) {
-            align = ALIGN_HORIZONTAL;
+            align = SplitAlign::horizontal;
         } else if (layout == LAYOUT_HORIZONTAL) {
-            align = ALIGN_HORIZONTAL;
+            align = SplitAlign::horizontal;
         } else {
-            align = ALIGN_VERTICAL;
+            align = SplitAlign::vertical;
         }
         size_t count1 = frame->clientCount();
         size_t nc1 = (count1 + 1) / 2;      // new count for the first frame
@@ -677,28 +679,28 @@ shared_ptr<HSFrame> HSFrameLeaf::neighbour(Direction direction) {
         // selection in the desired direction
         switch(direction) {
             case Direction::Right:
-                if (frame->getAlign() == ALIGN_HORIZONTAL
+                if (frame->getAlign() == SplitAlign::horizontal
                     && frame->firstChild() == child) {
                     found = true;
                     other = frame->secondChild();
                 }
                 break;
             case Direction::Left:
-                if (frame->getAlign() == ALIGN_HORIZONTAL
+                if (frame->getAlign() == SplitAlign::horizontal
                     && frame->secondChild() == child) {
                     found = true;
                     other = frame->firstChild();
                 }
                 break;
             case Direction::Down:
-                if (frame->getAlign() == ALIGN_VERTICAL
+                if (frame->getAlign() == SplitAlign::vertical
                     && frame->firstChild() == child) {
                     found = true;
                     other = frame->secondChild();
                 }
                 break;
             case Direction::Up:
-                if (frame->getAlign() == ALIGN_VERTICAL
+                if (frame->getAlign() == SplitAlign::vertical
                     && frame->secondChild() == child) {
                     found = true;
                     other = frame->firstChild();

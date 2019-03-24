@@ -13,9 +13,26 @@
 #include <memory>
 #include <vector>
 
+#include "types.h"
+
 #define FRACTION_UNIT 10000
 
 class Client;
+
+enum class SplitAlign {
+    vertical = 0,
+    horizontal,
+    // temporary values in split_command
+    explode,
+};
+
+enum {
+    LAYOUT_VERTICAL = 0,
+    LAYOUT_HORIZONTAL,
+    LAYOUT_MAX,
+    LAYOUT_GRID,
+    LAYOUT_COUNT,
+};
 
 class FrameDataLeaf {
 protected:
@@ -27,7 +44,7 @@ protected:
 template<typename BaseClass>
 class FrameDataSplit {
 protected:
-    int align_ = 0;         // ALIGN_VERTICAL or ALIGN_HORIZONTAL
+    SplitAlign align_ = SplitAlign::vertical;         // SplitAlign::vertical or SplitAlign::horizontal
     std::shared_ptr<BaseClass> a_; // first child
     std::shared_ptr<BaseClass> b_; // second child
 

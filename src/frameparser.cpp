@@ -104,8 +104,8 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             message << "Expected 3 arguments but got " << args.size();
             throw ParsingException(*nextToken, message.str());
         }
-        node->align_ = find_align_by_name(alignName.c_str());
-        if (node->align_ < 0) {
+        node->align_ = (SplitAlign)find_align_by_name(alignName.c_str());
+        if ((int)node->align_ < 0) {
             throw ParsingException(*nextToken,
                                    "Invalid align name: " + alignName);
         }
