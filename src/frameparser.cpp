@@ -146,13 +146,8 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             message << "Expected 2 arguments but got " << args.size();
             throw ParsingException(*nextToken, message.str());
         }
-        int layout = find_layout_by_name(layoutName.c_str());
-        if (layout < 0) {
-            throw ParsingException(*nextToken,
-                                   "Invalid layout name: " + layoutName);
-        }
-        node->layout = (LayoutAlgorithm) layout;
         try {
+            node->layout = Converter<LayoutAlgorithm>::parse(layoutName, nullptr);
             node->selection = std::stoi(selectionStr);
             if (node->selection < 0) {
                 throw std::invalid_argument("selection must not be negative.");

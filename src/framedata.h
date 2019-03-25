@@ -33,6 +33,8 @@ enum class LayoutAlgorithm {
     grid,
 };
 
+ConverterInstance(LayoutAlgorithm);
+
 size_t LayoutAlgorithmCount();
 
 class FrameDataLeaf {

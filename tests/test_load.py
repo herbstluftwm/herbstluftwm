@@ -40,6 +40,9 @@ def test_syntax_errors_position(hlwm, invalid_layout, error_pos):
 
 @pytest.mark.parametrize("layout", [
     "(clients max:0)",
+    "(clients grid:0)",
+    "(clients horizontal:0)",
+    "(clients vertical:0)",
     " (  clients   vertical:0  )",
     "(split horizontal:0.3:0)",
     "(split vertical:0.3:0 (clients horizontal:0))",

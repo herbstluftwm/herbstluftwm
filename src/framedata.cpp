@@ -13,6 +13,25 @@ size_t LayoutAlgorithmCount() {
     return i;
 }
 
+template<> LayoutAlgorithm Converter<LayoutAlgorithm>::parse(const std::string& source, LayoutAlgorithm const* relativeTo) {
+    for (size_t i = 0; g_layout_names[i] != nullptr; i++) {
+        if (source == g_layout_names[i]) {
+            return (LayoutAlgorithm) i;
+        }
+    }
+    throw std::invalid_argument("Invalid split align name: \"" + source + "\"");
+}
+
+template<> string Converter<LayoutAlgorithm>::str(LayoutAlgorithm payload) {
+    return string(g_layout_names[(int)payload]);
+}
+
+template<> void Converter<LayoutAlgorithm>::complete(Completion& complete, LayoutAlgorithm const* relativeTo) {
+    for (size_t i = 0; g_layout_names[i] != nullptr; i++) {
+        complete.full(g_layout_names[i]);
+    }
+}
+
 template<> SplitAlign Converter<SplitAlign>::parse(const std::string& source, SplitAlign const* relativeTo) {
     for (size_t i = 0; g_align_names[i] != nullptr; i++) {
         if (source == g_align_names[i]) {
