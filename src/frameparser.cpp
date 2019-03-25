@@ -6,7 +6,6 @@
 
 #include "arglist.h"
 #include "globals.h"
-#include "layout.h" // TODO: drop this one!
 
 using std::endl;
 using std::make_pair;
