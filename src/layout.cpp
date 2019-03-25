@@ -32,6 +32,7 @@ using std::weak_ptr;
 const char* g_align_names[] = {
     "vertical",
     "horizontal",
+    nullptr,
 };
 
 const char* g_layout_names[] = {

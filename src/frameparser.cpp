@@ -104,12 +104,8 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             message << "Expected 3 arguments but got " << args.size();
             throw ParsingException(*nextToken, message.str());
         }
-        node->align_ = (SplitAlign)find_align_by_name(alignName.c_str());
-        if ((int)node->align_ < 0) {
-            throw ParsingException(*nextToken,
-                                   "Invalid align name: " + alignName);
-        }
         try {
+            node->align_ = Converter<SplitAlign>::parse(alignName, nullptr);
             double fraction = std::stod(fractionStr);
             if (fraction < FRAME_MIN_FRACTION
                 || fraction > 1 - FRAME_MIN_FRACTION)

@@ -24,6 +24,8 @@ enum class SplitAlign {
     horizontal,
 };
 
+ConverterInstance(SplitAlign);
+
 enum class LayoutAlgorithm {
     vertical = 0,
     horizontal,
