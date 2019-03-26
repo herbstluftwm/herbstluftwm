@@ -479,3 +479,17 @@ int FrameTree::loadCommand(Input input, Output output) {
     return 0;
 }
 
+//! target must not be null, source may be null
+void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
+                               shared_ptr<RawFrameNode> source)
+{
+    if (!source) {
+        // nothing to do
+        return;
+    }
+    shared_ptr<HSFrameSplit> targetSplit = target->isSplit();
+    shared_ptr<HSFrameLeaf> targetLeaf = target->isLeaf();
+    shared_ptr<RawFrameSplit> sourceSplit = source->isSplit();
+    shared_ptr<RawFrameLeaf> sourceLeaf = source->isLeaf();
+}
+

@@ -20,21 +20,29 @@
  *
  */
 
-class RawFrameNode {
+class RawFrameLeaf;
+class RawFrameSplit;
+
+class RawFrameNode : public std::enable_shared_from_this<RawFrameNode> {
 protected:
     RawFrameNode() {};
+public:
+    virtual std::shared_ptr<RawFrameLeaf> isLeaf() { return {}; };
+    virtual std::shared_ptr<RawFrameSplit> isSplit() { return {}; };
 };
 
 class RawFrameLeaf : public RawFrameNode,
                      public FrameDataLeaf {
 public:
     friend class FrameParser;
+    std::shared_ptr<RawFrameLeaf> isLeaf() override;
 };
 
 class RawFrameSplit : public RawFrameNode,
                       public FrameDataSplit<RawFrameNode> {
 public:
     friend class FrameParser;
+    std::shared_ptr<RawFrameSplit> isSplit() override;
 };
 
 /*! the FrameParser is actually only a interface to access the parsing result

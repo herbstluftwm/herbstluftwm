@@ -9,6 +9,7 @@
 #include "globals.h"
 #include "root.h"
 
+using std::dynamic_pointer_cast;
 using std::endl;
 using std::make_pair;
 using std::make_shared;
@@ -16,6 +17,15 @@ using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::vector;
+
+shared_ptr<RawFrameLeaf> RawFrameLeaf::isLeaf() {
+    return dynamic_pointer_cast<RawFrameLeaf>(shared_from_this());
+}
+
+shared_ptr<RawFrameSplit> RawFrameSplit::isSplit() {
+    return dynamic_pointer_cast<RawFrameSplit>(shared_from_this());
+}
+
 
 class ParsingException : public std::exception {
 public:
