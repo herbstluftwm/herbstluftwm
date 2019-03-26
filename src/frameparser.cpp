@@ -1,7 +1,5 @@
 #include "frameparser.h"
 
-#include <X11/X.h>
-
 #include <algorithm>
 #include <iostream>
 #include <sstream>
