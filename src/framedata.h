@@ -24,7 +24,7 @@ enum class SplitAlign {
     horizontal,
 };
 
-ConverterInstance(SplitAlign);
+ConverterInstance(SplitAlign)
 
 enum class LayoutAlgorithm {
     vertical = 0,
@@ -33,7 +33,7 @@ enum class LayoutAlgorithm {
     grid,
 };
 
-ConverterInstance(LayoutAlgorithm);
+ConverterInstance(LayoutAlgorithm)
 
 size_t LayoutAlgorithmCount();
 
