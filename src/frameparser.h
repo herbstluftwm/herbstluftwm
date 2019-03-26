@@ -26,6 +26,7 @@ class RawFrameSplit;
 class RawFrameNode : public std::enable_shared_from_this<RawFrameNode> {
 protected:
     RawFrameNode() {};
+    virtual ~RawFrameNode() {};
 public:
     virtual std::shared_ptr<RawFrameLeaf> isLeaf() { return {}; };
     virtual std::shared_ptr<RawFrameSplit> isSplit() { return {}; };
