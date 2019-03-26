@@ -1,11 +1,15 @@
 #include "frameparser.h"
 
+#include <X11/X.h>
+
 #include <algorithm>
 #include <iostream>
 #include <sstream>
 
 #include "arglist.h"
+#include "clientmanager.h"
 #include "globals.h"
+#include "root.h"
 
 using std::endl;
 using std::make_pair;
@@ -157,7 +161,24 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
         nextToken++;
         // Construct a RawFrameLeaf
         while (nextToken != endToken && nextToken->second != ")") {
-            string winid_str = nextToken->second;
+            Window winid;
+            try {
+                // if the window id is syntactically wrong, then throw an error
+                size_t bytesRead = nextToken->second.size();
+                winid = std::stoul(nextToken->second, &bytesRead, 0);
+                if (bytesRead != nextToken->second.size()) {
+                    throw std::invalid_argument("not a valid window id");
+                }
+            } catch (const std::exception& e) {
+                throw ParsingException(*nextToken, "not a valid window id");
+            }
+            // if the window id is unknown, then just print a warning
+            Client* client = Root::get()->clients()->client(winid);
+            if (client) {
+                node->clients.push_back(client);
+            } else {
+                unknownWindowIDs_.push_back(make_pair(*nextToken, winid));
+            }
             nextToken++;
         }
         nodeUntyped = node;

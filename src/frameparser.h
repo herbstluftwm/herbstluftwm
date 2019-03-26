@@ -1,5 +1,7 @@
 #pragma once
 
+#include <X11/X.h>
+
 #include <memory>
 #include <string>
 
@@ -51,6 +53,7 @@ public:
     std::shared_ptr<RawFrameNode> root_;
     //! a possible error message and error token
     std::shared_ptr<std::pair<Token,std::string>> error_;
+    std::vector<std::pair<Token,Window>> unknownWindowIDs_;
 private:
     void parse(std::string buf);
     //! Split a string into tokens. The tokens are defined in the sense that it

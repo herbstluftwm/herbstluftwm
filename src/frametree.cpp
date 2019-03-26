@@ -456,6 +456,14 @@ int FrameTree::loadCommand(Input input, Output output) {
                << endl;
         return HERBST_INVALID_ARGUMENT;
     }
+    if (!parsingResult.unknownWindowIDs_.empty()) {
+        output << "Warning: Unknown window IDs";
+        for (const auto& e : parsingResult.unknownWindowIDs_) {
+            output << " 0x" << std::hex << e.second << std::dec
+                   << "(\'" << e.first.second << "\')";
+        }
+        output << endl;
+    }
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     Monitor* m = find_monitor_with_tag(tag);
