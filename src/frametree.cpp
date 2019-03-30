@@ -519,7 +519,18 @@ void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
         targetLeaf->setSelection(sourceLeaf->selection);
         targetLeaf->layout = sourceLeaf->layout;
     } else {
-        assert(sourceSplit);
+        // assert that target is a HSFrameSplit
+        if (targetLeaf) {
+            targetLeaf->split(sourceSplit->align_, sourceSplit->fraction_, 0);
+            targetSplit = targetLeaf->getParent();
+            target = targetSplit;
+            targetLeaf = {}; // we don't need this anymore
+        }
+        assert(target == targetSplit);
+        targetSplit->align_ = sourceSplit->align_;
+        targetSplit->fraction_ = sourceSplit->fraction_;
+        applyFrameTree(targetSplit->a_, sourceSplit->a_);
+        applyFrameTree(targetSplit->b_, sourceSplit->b_);
     }
 }
 
