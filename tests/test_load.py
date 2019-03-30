@@ -54,6 +54,10 @@ def test_syntax_errors_position(hlwm, invalid_layout, error_pos):
     "(split vertical:0.3:0 (clients horizontal:0))",
     "(split vertical:0.3:0 (split vertical:0.4:1))",
 ])
-def test_valid_layout_syntax(hlwm, layout):
+@pytest.mark.parametrize('num_splits_before', [0, 1, 2])
+def test_valid_layout_syntax(hlwm, layout, num_splits_before):
+    for i in range(0, num_splits_before):
+        hlwm.call('split explode')
+
     hlwm.call(['load', layout])
 
