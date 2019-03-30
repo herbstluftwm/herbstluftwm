@@ -464,6 +464,8 @@ int FrameTree::loadCommand(Input input, Output output) {
         }
         output << endl;
     }
+    // apply the new frame tree
+    applyFrameTree(root_, parsingResult.root_);
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     Monitor* m = find_monitor_with_tag(tag);
