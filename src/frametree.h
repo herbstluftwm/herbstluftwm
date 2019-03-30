@@ -53,6 +53,8 @@ private:
     //! try to resemble a given raw frame tree given by the FrameParser
     void applyFrameTree(std::shared_ptr<HSFrame> target,
                         std::shared_ptr<RawFrameNode> source);
+    //! replace a node in the frame tree, either modifying old's parent or the root_
+    void replaceNode(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> replacement);
     static std::shared_ptr<TreeInterface> treeInterface(
         std::shared_ptr<HSFrame> frame,
         std::shared_ptr<HSFrameLeaf> focus);

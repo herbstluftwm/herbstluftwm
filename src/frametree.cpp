@@ -491,5 +491,46 @@ void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
     shared_ptr<HSFrameLeaf> targetLeaf = target->isLeaf();
     shared_ptr<RawFrameSplit> sourceSplit = source->isSplit();
     shared_ptr<RawFrameLeaf> sourceLeaf = source->isLeaf();
+    if (sourceLeaf) {
+        // detach the clients from their current frame
+        // this might even involve the above targetLeaf / targetSplit
+        // so we need to do this before everything else
+        for (const auto& client : sourceLeaf->clients) {
+            client->tag_->frame->root_->removeClient(client);
+        }
+        vector<Client*> clients = sourceLeaf->clients;
+        // collect all the remaining clients in the target
+        target->foreachClient(
+            [&clients](Client* c) {
+                clients.push_back(c);
+            }
+        );
+        // assert that "target" is a HSFrameLeaf
+        if (targetSplit) {
+            // if its a split, then replace the split
+            targetLeaf = make_shared<HSFrameLeaf>(
+                                tag_, settings_, target->getParent());
+            replaceNode(target, targetLeaf);
+            target = targetLeaf;
+            targetSplit = {};
+        }
+        // make the targetLeaf look like the sourceLeaf
+        targetLeaf->clients = clients;
+        targetLeaf->setSelection(sourceLeaf->selection);
+        targetLeaf->layout = sourceLeaf->layout;
+    } else {
+        assert(sourceSplit);
+    }
+}
+
+void FrameTree::replaceNode(std::shared_ptr<HSFrame> old,
+                            std::shared_ptr<HSFrame> replacement) {
+    auto parent = old->getParent();
+    if (!parent) {
+        assert(old == root_);
+        root_ = replacement;
+    } else {
+        parent->replaceChild(old, replacement);
+    }
 }
 

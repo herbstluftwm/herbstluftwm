@@ -36,6 +36,7 @@ class RawFrameLeaf : public RawFrameNode,
                      public FrameDataLeaf {
 public:
     friend class FrameParser;
+    friend class FrameTree;
     std::shared_ptr<RawFrameLeaf> isLeaf() override;
 };
 
@@ -43,6 +44,7 @@ class RawFrameSplit : public RawFrameNode,
                       public FrameDataSplit<RawFrameNode> {
 public:
     friend class FrameParser;
+    friend class FrameTree;
     std::shared_ptr<RawFrameSplit> isSplit() override;
 };
 
