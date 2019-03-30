@@ -534,8 +534,8 @@ void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
     }
 }
 
-void FrameTree::replaceNode(std::shared_ptr<HSFrame> old,
-                            std::shared_ptr<HSFrame> replacement) {
+void FrameTree::replaceNode(shared_ptr<HSFrame> old,
+                            shared_ptr<HSFrame> replacement) {
     auto parent = old->getParent();
     if (!parent) {
         assert(old == root_);
