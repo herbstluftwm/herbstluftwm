@@ -61,3 +61,15 @@ def test_valid_layout_syntax(hlwm, layout, num_splits_before):
 
     hlwm.call(['load', layout])
 
+
+@pytest.mark.parametrize("running_clients_num,focus",
+    [(n, f) for n in [1, 3] for f in range(0, n)])
+def test_focus_client_via_load(hlwm, running_clients, running_clients_num, focus):
+    layout = '(clients horizontal:{} {})'.format(
+                            focus, ' '.join(running_clients))
+
+    hlwm.call(['load', layout])
+
+    assert hlwm.call('dump').stdout == layout
+    assert hlwm.get_attr('clients.focus.winid') == running_clients[focus]
+

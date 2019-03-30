@@ -475,6 +475,7 @@ int FrameTree::loadCommand(Input input, Output output) {
             frame_focus_recursive(tag->frame->root_);
         }
         m->applyLayout();
+        monitor_update_focus_objects();
     } else {
         tag->frame->root_->setVisibleRecursive(false);
     }
@@ -498,7 +499,8 @@ void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
         // this might even involve the above targetLeaf / targetSplit
         // so we need to do this before everything else
         for (const auto& client : sourceLeaf->clients) {
-            client->tag_->frame->root_->removeClient(client);
+            client->tag()->frame->root_->removeClient(client);
+            client->setTag(tag_);
         }
         vector<Client*> clients = sourceLeaf->clients;
         // collect all the remaining clients in the target
