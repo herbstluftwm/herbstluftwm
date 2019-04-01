@@ -83,8 +83,9 @@ def test_full_layouts(hlwm, layout):
         # replace the next W by the window ID
         layout = layout.replace('W', winid, 1)
 
-    hlwm.call(['load', layout])
+    p = hlwm.call(['load', layout])
 
+    assert p.stdout == ''
     assert layout == hlwm.call('dump').stdout
 
 @pytest.mark.parametrize("layout", [
@@ -93,7 +94,9 @@ def test_full_layouts(hlwm, layout):
     "(clients vertical:0 1713)",
 ])
 def test_only_warn_invalid_winids(hlwm, layout):
-    hlwm.call(['load', layout])
+    p = hlwm.call(['load', layout])
+
+    assert p.stdout.startswith("Warning: Unknown window IDs")
 
 
 @pytest.mark.parametrize("running_clients_num,focus",
