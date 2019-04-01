@@ -73,3 +73,24 @@ def test_focus_client_via_load(hlwm, running_clients, running_clients_num, focus
     assert hlwm.call('dump').stdout == layout
     assert hlwm.get_attr('clients.focus.winid') == running_clients[focus]
 
+
+@pytest.mark.parametrize("running_clients_num,num_bring",
+    [(n, f) for n in [1, 3] for f in range(0, n + 1)])
+def test_load_brings_windows(hlwm, running_clients, running_clients_num, num_bring):
+    hlwm.call('add other')
+    layout = '(clients horizontal:0{}{})'.format(
+        (' ' if num_bring > 0 else ''),
+        ' '.join(running_clients[0:num_bring]))
+    assert int(hlwm.get_attr('tags.0.client_count')) \
+        == len(running_clients)
+    assert int(hlwm.get_attr('tags.1.client_count')) == 0
+
+    hlwm.call(['load', 'other', layout])
+
+    assert int(hlwm.get_attr('tags.0.client_count')) == \
+        len(running_clients) - num_bring
+    assert int(hlwm.get_attr('tags.1.client_count')) == num_bring
+    assert hlwm.call('dump other').stdout == layout
+
+
+

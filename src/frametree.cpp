@@ -465,7 +465,7 @@ int FrameTree::loadCommand(Input input, Output output) {
         output << endl;
     }
     // apply the new frame tree
-    applyFrameTree(root_, parsingResult.root_);
+    tag->frame->applyFrameTree(tag->frame->root_, parsingResult.root_);
     tag_set_flags_dirty(); // we probably changed some window positions
     // arrange monitor
     Monitor* m = find_monitor_with_tag(tag);
@@ -500,7 +500,11 @@ void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
         // so we need to do this before everything else
         for (const auto& client : sourceLeaf->clients) {
             client->tag()->frame->root_->removeClient(client);
-            client->setTag(tag_);
+            if (client->tag() != tag_) {
+                client->tag()->stack->removeSlice(client->slice);
+                client->setTag(tag_);
+                client->tag()->stack->insertSlice(client->slice);
+            }
         }
         vector<Client*> clients = sourceLeaf->clients;
         // collect all the remaining clients in the target
