@@ -537,6 +537,7 @@ void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
         assert(target == targetSplit);
         targetSplit->align_ = sourceSplit->align_;
         targetSplit->fraction_ = sourceSplit->fraction_;
+        targetSplit->selection_ = sourceSplit->selection_;
         applyFrameTree(targetSplit->a_, sourceSplit->a_);
         applyFrameTree(targetSplit->b_, sourceSplit->b_);
     }

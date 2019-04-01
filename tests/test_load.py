@@ -43,8 +43,7 @@ def test_syntax_errors_position(hlwm, invalid_layout, error_pos):
     assert int(m.group(1)) == error_pos
 
 
-example_layouts = [
-    # with window ID placeholders 'W'
+example_partial_layouts = [
     "(clients max:0)",
     "(clients grid:0)",
     " (  clients   vertical:0  )",
@@ -54,21 +53,21 @@ example_layouts = [
 ]
 
 
-def normalize_layout(layout):
-    # remove consecutive whitspace
-    layout = re.sub(' [ ]*', layout, ' ')
-    # remove whitespace before and after parenthesis
-    layout = re.sub(r'[ ]*([\(\)])[ ]*', layout, r'\1')
-    return layout
+def is_subseq(x, y):
+    # from https://stackoverflow.com/a/24017747/4400896
+    it = iter(y)
+    return all(c in it for c in x)
 
 
-@pytest.mark.parametrize("layout", example_layouts)
+@pytest.mark.parametrize("layout", example_partial_layouts)
 @pytest.mark.parametrize('num_splits_before', [0, 1, 2])
-def test_valid_layout_syntax(hlwm, layout, num_splits_before):
+def test_valid_layout_syntax_partial_layouts(hlwm, layout, num_splits_before):
     for i in range(0, num_splits_before):
         hlwm.call('split explode')
 
     hlwm.call(['load', layout])
+
+    assert is_subseq(layout.replace(' ', ''), hlwm.call('dump').stdout)
 
 
 @pytest.mark.parametrize("layout", [
