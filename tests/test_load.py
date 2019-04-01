@@ -43,22 +43,40 @@ def test_syntax_errors_position(hlwm, invalid_layout, error_pos):
     assert int(m.group(1)) == error_pos
 
 
-@pytest.mark.parametrize("layout", [
+example_layouts = [
+    # with window ID placeholders 'W'
     "(clients max:0)",
     "(clients grid:0)",
-    "(clients horizontal:0 0234)",
-    "(clients vertical:0 0x2343)",
-    "(clients vertical:0 1713)",
     " (  clients   vertical:0  )",
     "(split horizontal:0.3:0)",
     "(split vertical:0.3:0 (clients horizontal:0))",
     "(split vertical:0.3:0 (split vertical:0.4:1))",
-])
+]
+
+
+def normalize_layout(layout):
+    # remove consecutive whitspace
+    layout = re.sub(' [ ]*', layout, ' ')
+    # remove whitespace before and after parenthesis
+    layout = re.sub(r'[ ]*([\(\)])[ ]*', layout, r'\1')
+    return layout
+
+
+@pytest.mark.parametrize("layout", example_layouts)
 @pytest.mark.parametrize('num_splits_before', [0, 1, 2])
 def test_valid_layout_syntax(hlwm, layout, num_splits_before):
     for i in range(0, num_splits_before):
         hlwm.call('split explode')
 
+    hlwm.call(['load', layout])
+
+
+@pytest.mark.parametrize("layout", [
+    "(clients horizontal:0 0234)",
+    "(clients vertical:0 0x2343)",
+    "(clients vertical:0 1713)",
+])
+def test_only_warn_invalid_winids(hlwm, layout):
     hlwm.call(['load', layout])
 
 
