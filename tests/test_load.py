@@ -69,6 +69,23 @@ def test_valid_layout_syntax_partial_layouts(hlwm, layout, num_splits_before):
 
     assert is_subseq(layout.replace(' ', ''), hlwm.call('dump').stdout)
 
+example_full_layouts = [
+    # with window ID placeholders 'W'
+    "(clients max:0 W)",
+    "(clients max:1 W W)",
+    "(split horizontal:0.9:0 (split vertical:0.5:1 (clients max:0) (clients grid:0)) (clients horizontal:0))",
+    "(split vertical:0.4:1 (clients max:2 W W W) (clients grid:0 W))",
+]
+@pytest.mark.parametrize("layout", example_full_layouts)
+def test_full_layouts(hlwm, layout):
+    clients = [hlwm.create_client() for k in range(0, layout.count('W'))]
+    for winid,_ in clients:
+        # replace the next W by the window ID
+        layout = layout.replace('W', winid, 1)
+
+    hlwm.call(['load', layout])
+
+    assert layout == hlwm.call('dump').stdout
 
 @pytest.mark.parametrize("layout", [
     "(clients horizontal:0 0234)",
