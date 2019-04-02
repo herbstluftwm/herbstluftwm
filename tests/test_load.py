@@ -43,23 +43,20 @@ def test_syntax_errors_position(hlwm, invalid_layout, error_pos):
     assert int(m.group(1)) == error_pos
 
 
-example_partial_layouts = [
-    "(clients max:0)",
-    "(clients grid:0)",
-    " (  clients   vertical:0  )",
-    "(split horizontal:0.3:0)",
-    "(split vertical:0.3:0 (clients horizontal:0))",
-    "(split vertical:0.3:0 (split vertical:0.4:1))",
-]
-
-
 def is_subseq(x, y):
     # from https://stackoverflow.com/a/24017747/4400896
     it = iter(y)
     return all(c in it for c in x)
 
 
-@pytest.mark.parametrize("layout", example_partial_layouts)
+@pytest.mark.parametrize("layout", [
+    "(clients max:0)",
+    "(clients grid:0)",
+    " (  clients   vertical:0  )",
+    "(split horizontal:0.3:0)",
+    "(split vertical:0.3:0 (clients horizontal:0))",
+    "(split vertical:0.3:0 (split vertical:0.4:1))",
+])
 @pytest.mark.parametrize('num_splits_before', [0, 1, 2])
 def test_valid_layout_syntax_partial_layouts(hlwm, layout, num_splits_before):
     for i in range(0, num_splits_before):
@@ -69,14 +66,13 @@ def test_valid_layout_syntax_partial_layouts(hlwm, layout, num_splits_before):
 
     assert is_subseq(layout.replace(' ', ''), hlwm.call('dump').stdout)
 
-example_full_layouts = [
+@pytest.mark.parametrize("layout", [
     # with window ID placeholders 'W'
     "(clients max:0 W)",
     "(clients max:1 W W)",
     "(split horizontal:0.9:0 (split vertical:0.5:1 (clients max:0) (clients grid:0)) (clients horizontal:0))",
     "(split vertical:0.4:1 (clients max:2 W W W) (clients grid:0 W))",
-]
-@pytest.mark.parametrize("layout", example_full_layouts)
+])
 def test_full_layouts(hlwm, layout):
     clients = [hlwm.create_client() for k in range(0, layout.count('W'))]
     for winid,_ in clients:
