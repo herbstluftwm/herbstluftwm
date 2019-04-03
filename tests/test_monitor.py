@@ -101,6 +101,7 @@ def test_new_clients_appear_in_focused_monitor(hlwm):
     assert hlwm.get_attr('tags.by-name.default.client_count') == '0'
     # TODO: Assert that client's winid is in tag2 (not yet possible)
 
+
 def test_detect_monitors_does_not_crash(hlwm):
     # I don't know how to test detect_monitors properly, so just check that
     # it does not crash at least
