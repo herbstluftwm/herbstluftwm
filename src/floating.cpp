@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <climits>
 
 #include "client.h"
 #include "frametree.h"

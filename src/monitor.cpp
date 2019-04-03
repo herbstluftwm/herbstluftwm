@@ -3,6 +3,7 @@
 #include <X11/Xlib.h>
 #include <cassert>
 #include <cstring>
+#include <glib.h>
 #include <sstream>
 #include <vector>
 
