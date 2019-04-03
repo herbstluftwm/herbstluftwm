@@ -246,16 +246,16 @@ void ewmh_update_desktops() {
 }
 
 void ewmh_update_desktop_names() {
-    char**  names = g_new(char*, tag_get_count());
-    for (int i = 0; i < tag_get_count(); i++) {
-        names[i] = (char*)get_tag_by_index(i)->name->c_str();
+    // we know that the tags don't change during the following lines
+    vector<const char*> names;
+    for (auto tag : *global_tags) {
+        names.push_back(tag->name->c_str());
     }
     XTextProperty text_prop;
-    Xutf8TextListToTextProperty(g_display, names, tag_get_count(),
+    Xutf8TextListToTextProperty(g_display, (char**)names.data(), names.size(),
                                 XUTF8StringStyle, &text_prop);
     XSetTextProperty(g_display, g_root, &text_prop, g_netatom[NetDesktopNames]);
     XFree(text_prop.value);
-    g_free(names);
 }
 
 void ewmh_update_current_desktop() {
