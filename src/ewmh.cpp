@@ -3,12 +3,12 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <limits>
 
 #include "client.h"
-#include "glib-backports.h"
 #include "globals.h"
 #include "layout.h"
 #include "monitor.h"
@@ -23,8 +23,7 @@ using std::vector;
 Atom g_netatom[NetCOUNT];
 
 // module internal globals:
-static Window*     g_windows; // array with Window-IDs
-static size_t      g_window_count;
+static vector<Window> g_windows; // array with Window-IDs in initial mapping order
 static Window      g_wm_window;
 
 static int WM_STATE;
@@ -89,8 +88,6 @@ void ewmh_init() {
         PropModeReplace, (unsigned char *) g_netatom, NetCOUNT);
 
     /* init some globals */
-    g_windows = nullptr;
-    g_window_count = 0;
     if (!ewmh_read_client_list(&g_original_clients, &g_original_clients_count))
     {
         g_original_clients = nullptr;
@@ -125,7 +122,6 @@ void ewmh_update_all() {
 }
 
 void ewmh_destroy() {
-    g_free(g_windows);
     if (g_original_clients) {
         XFree(g_original_clients);
     }
@@ -149,7 +145,7 @@ void ewmh_update_wmname() {
 void ewmh_update_client_list() {
     XChangeProperty(g_display, g_root, g_netatom[NetClientList],
         XA_WINDOW, 32, PropModeReplace,
-        (unsigned char *) g_windows, g_window_count);
+        (unsigned char *) g_windows.data(), g_windows.size());
 }
 
 static bool ewmh_read_client_list(Window** buf, unsigned long *count) {
@@ -217,24 +213,13 @@ void ewmh_update_client_list_stacking() {
 }
 
 void ewmh_add_client(Window win) {
-    g_windows = g_renew(Window, g_windows, g_window_count + 1);
-    g_windows[g_window_count] = win;
-    g_window_count++;
+    g_windows.push_back(win);
     ewmh_update_client_list();
     ewmh_update_client_list_stacking();
 }
 
 void ewmh_remove_client(Window win) {
-    int index = array_find(g_windows, g_window_count,
-                           sizeof(Window), &win);
-    if (index < 0) {
-        HSWarning("could not find window %lx in g_windows\n", win);
-    } else {
-        g_memmove(g_windows + index, g_windows + index + 1,
-                  sizeof(Window) *(g_window_count - index - 1));
-        g_windows = g_renew(Window, g_windows, g_window_count - 1);
-        g_window_count--;
-    }
+    g_windows.erase(std::remove(g_windows.begin(), g_windows.end(), win), g_windows.end());
     ewmh_update_client_list();
     ewmh_update_client_list_stacking();
 }
