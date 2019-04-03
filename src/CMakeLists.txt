@@ -12,7 +12,6 @@ target_sources(herbstluftwm PRIVATE
     child.h
     completion.h
     entity.cpp entity.h
-    glib-backports.h
     globals.h
     hook.cpp hook.h
     object.cpp object.h
