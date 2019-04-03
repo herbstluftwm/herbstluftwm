@@ -8,7 +8,6 @@
 #include <iomanip>
 #include <iostream>
 
-#include "glib-backports.h"
 #include "globals.h"
 
 using std::string;

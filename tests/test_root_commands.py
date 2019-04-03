@@ -113,7 +113,7 @@ def test_sprintf_double_percentage_escapes(hlwm):
     assert call.stdout == '%\n'
 
 
-def test_disjoint_rects(hlwm):
+def test_disjoin_rects(hlwm):
     # test the example from the manpage
     expected = '\n'.join((
         '300x150+300+250',
