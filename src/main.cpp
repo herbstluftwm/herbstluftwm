@@ -75,7 +75,7 @@ int raise_command(int argc, char** argv, Output output);
 int spawn(int argc, char** argv);
 int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
-int custom_hook_emit(int argc, const char** argv);
+int custom_hook_emit(Input input);
 int jumpto_command(int argc, char** argv, Output output);
 int getenv_command(int argc, char** argv, Output output);
 int setenv_command(int argc, char** argv, Output output);
@@ -136,7 +136,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"mouseunbind",    { mouse_unbind_all }},
         {"spawn",          spawn},
         {"wmexec",         wmexec},
-        {"emit_hook",      custom_hook_emit},
+        {"emit_hook",      { custom_hook_emit }},
         {"bring",          frame_current_bring},
         {"focus_nth",      { tags->frameCommand(&FrameTree::focusNthCommand) }},
         {"cycle",          { tags->frameCommand(&FrameTree::cycleSelectionCommand) }},
@@ -387,8 +387,8 @@ int print_tag_status_command(int argc, char** argv, Output output) {
     return 0;
 }
 
-int custom_hook_emit(int argc, const char** argv) {
-    hook_emit(argc - 1, argv + 1);
+int custom_hook_emit(Input input) {
+    hook_emit(input.toVector());
     return 0;
 }
 

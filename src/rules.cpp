@@ -328,8 +328,7 @@ void Consequence::applyHook(const Client* client, ClientChanges* changes) const 
     std::stringstream winidSs;
     winidSs << "0x" << std::hex << client->window_;
     auto winidStr = winidSs.str();
-    const char* hook_str[] = { "rule", value.c_str(), winidStr.c_str() };
-    hook_emit(LENGTH(hook_str), hook_str);
+    hook_emit({ "rule", value, winidStr });
 }
 
 void Consequence::applyKeyMask(const Client* client, ClientChanges* changes) const {
