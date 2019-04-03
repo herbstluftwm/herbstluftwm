@@ -15,11 +15,11 @@ set_target_properties(herbstclient PROPERTIES
     C_STANDARD_REQUIRED ON
     COMPILE_DEFINITIONS _XOPEN_SOURCE=600)
 
-# dependencies X11 & GLIB2
+# dependencies X11
 target_include_directories(herbstclient SYSTEM PUBLIC
-    ${X11_X11_INCLUDE_PATH} ${GLIB2_INCLUDE_DIRS})
+    ${X11_X11_INCLUDE_PATH})
 target_link_libraries(herbstclient PUBLIC
-    ${X11_X11_LIB} ${GLIB2_LIBRARIES})
+    ${X11_X11_LIB})
 
 # communicate version string
 export_version(main.c)

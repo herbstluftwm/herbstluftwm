@@ -45,9 +45,6 @@ done
 
 # boot up herbstluftwm
 # --------------------
-# don't let glib cause valgrind errors
-export G_SLICE=always-malloc
-export G_DEBUG=gc-friendly
 DISPLAY=":$xephyr_displaynr" \
     valgrind -- \
         ./herbstluftwm --verbose -c "$project_dir"/share/autostart \
