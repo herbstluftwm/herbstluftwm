@@ -84,8 +84,6 @@ void all_monitors_replace_previous_tag(HSTag* old, HSTag* newmon);
 
 void drop_enternotify_events();
 
-void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
-                                 int* remain_len);
 Stack* get_monitor_stack();
 
 void monitor_update_focus_objects();
