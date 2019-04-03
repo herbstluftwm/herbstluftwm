@@ -120,7 +120,7 @@ class HlwmBridge:
         self.next_client_id += 1
         wmclass = 'client_{}'.format(self.next_client_id)
         title = ['-title', str(title)] if title else []
-        command = ['xterm'] + title + ['-class', wmclass, '-e', term_command]
+        command = ['xterm'] + title + ['-class', wmclass, '-e', 'bash', '-c', term_command]
 
         # enforce a hook when the window appears
         self.call(['rule', 'once', 'class='+wmclass, 'hook=here_is_'+wmclass])
