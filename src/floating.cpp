@@ -1,8 +1,8 @@
 #include "floating.h"
 
 #include <algorithm>
-#include <cstdlib>
 #include <climits>
+#include <cstdlib>
 
 #include "client.h"
 #include "frametree.h"
