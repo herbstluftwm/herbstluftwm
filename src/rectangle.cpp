@@ -43,7 +43,7 @@ static RectangleVec disjoin_from_subset(Rectangle large, Rectangle center)
     // +-----------------------+
     // coordinates of the bottom right corner of large
     int br_x = large.x + large.width, br_y = large.y + large.height;
-    Rectangle (*r)(int,int,int,int) = Rectangle::fromCorners;
+    auto r = Rectangle::fromCorners;
     Rectangle top   = r(large.x, large.y, large.x + large.width, center.y);
     Rectangle left  = r(large.x, center.y, center.x, center.y + center.height);
     Rectangle right = r(center.x + center.width, center.y, br_x, center.y + center.height);
