@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
-#include <glib.h>
 #include <iomanip>
 
 #include "client.h"
