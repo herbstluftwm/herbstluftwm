@@ -12,6 +12,7 @@
 #include "globals.h"
 #include "layout.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "mouse.h"
 #include "settings.h"
 #include "stack.h"
@@ -19,6 +20,7 @@
 #include "utils.h"
 
 using std::vector;
+using std::make_shared;
 
 Atom g_netatom[NetCOUNT];
 
@@ -168,48 +170,26 @@ void ewmh_get_original_client_list(Window** buf, unsigned long *count) {
     *count = g_original_clients_count;
 }
 
-struct ewmhstack {
-    Window* buf;
-    int     count;
-    int     i;  // index of the next free element in buf
-};
-
-static void ewmh_add_tag_stack(HSTag* tag, void* data) {
-    struct ewmhstack* stack = (struct ewmhstack*)data;
-    if (find_monitor_with_tag(tag)) {
-        // do not add tags because they are already added
-        return;
-    }
-    int remain;
-    tag->stack->toWindowBuf(stack->buf + stack->i,
-                        stack->count - stack->i, true, &remain);
-    if (remain >= 0) {
-        stack->i = stack->count - remain;
-    } else {
-        HSDebug("Warning: not enough space in the ewmh stack\n");
-        stack->i = stack->count;
-    }
-}
-
 void ewmh_update_client_list_stacking() {
-    // First: get the windows in the current stack
-    struct ewmhstack stack;
-    stack.count = g_window_count;
-    stack.buf = g_new(Window, stack.count);
-    int remain;
-    monitor_stack_to_window_buf(stack.buf, stack.count, true, &remain);
-    stack.i = stack.count - remain;
+    // First: get the windows currently visible
+    auto buf = make_shared<vector<Window>>();
+    g_monitors->monitor_stack->toWindowBuf(buf, true);
 
-    // Then add all the others at the end
-    tag_foreach(ewmh_add_tag_stack, &stack);
+    // Then add all the invisible windows at the end
+    for (auto tag : *global_tags) {
+        if (find_monitor_with_tag(tag)) {
+        // do not add tags because they are already added
+            continue;
+        }
+        tag->stack->toWindowBuf(buf, true);
+    }
 
     // reverse stacking order, because ewmh requires bottom to top order
-    array_reverse(stack.buf, stack.count, sizeof(stack.buf[0]));
+    std::reverse(buf->begin(), buf->end());
 
     XChangeProperty(g_display, g_root, g_netatom[NetClientListStacking],
         XA_WINDOW, 32, PropModeReplace,
-        (unsigned char *) stack.buf, stack.i);
-    g_free(stack.buf);
+        (unsigned char *) buf->data(), buf->size());
 }
 
 void ewmh_add_client(Window win) {
