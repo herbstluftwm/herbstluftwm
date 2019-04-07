@@ -8,7 +8,6 @@ import shlex
 import subprocess
 import sys
 import textwrap
-import time
 import types
 
 import pytest
@@ -16,20 +15,21 @@ import pytest
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
 
+
 class HlwmBridge:
 
     HC_PATH = os.path.join(BINDIR, 'herbstclient')
 
     def __init__(self, display, hlwm_process):
         self.client_procs = []
-        self.next_client_id = 0;
+        self.next_client_id = 0
         self.env = {
             'DISPLAY': display,
         }
         self.hlwm_process = hlwm_process
         self.hc_idle = subprocess.Popen(
                     [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
-                    bufsize=1, # line buffered
+                    bufsize=1,  # line buffered
                     universal_newlines=True,
                     env=self.env,
                     stdout=subprocess.PIPE)
@@ -222,7 +222,7 @@ class HlwmBridge:
 @pytest.fixture
 def hlwm(hlwm_process):
     display = os.environ['DISPLAY']
-    #display = ':13'
+    # display = ':13'
     hlwm_bridge = HlwmBridge(display, hlwm_process)
     yield hlwm_bridge
 
@@ -243,9 +243,9 @@ class HlwmProcess:
         autostart.chmod(0o755)
         bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen([bin_path, '--verbose'], env=env,
-                bufsize=0,  # essential for reading output with selectors!
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                                     bufsize=0,  # essential for reading output with selectors!
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE)
 
         sel = selectors.DefaultSelector()
         sel.register(self.proc.stdout, selectors.EVENT_READ, data=sys.stdout)
@@ -343,7 +343,7 @@ class HlwmProcess:
                             + " but hlwm still running") from None
         else:
             raise Exception("{} made herbstluftwm quit with exit code {}"
-                .format(str(reason), self.proc.returncode)) from None
+                            .format(str(reason), self.proc.returncode)) from None
 
     def shutdown(self):
         self.proc.terminate()
@@ -369,7 +369,7 @@ def hlwm_process(tmpdir):
         'DISPLAY': os.environ['DISPLAY'],
         'XDG_CONFIG_HOME': str(tmpdir),
     }
-    #env['DISPLAY'] = ':13'
+    # env['DISPLAY'] = ':13'
     hlwm_proc = HlwmProcess(tmpdir, env)
 
     yield hlwm_proc
