@@ -28,11 +28,11 @@ class HlwmBridge:
         }
         self.hlwm_process = hlwm_process
         self.hc_idle = subprocess.Popen(
-                    [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
-                    bufsize=1,  # line buffered
-                    universal_newlines=True,
-                    env=self.env,
-                    stdout=subprocess.PIPE)
+            [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
+            bufsize=1,  # line buffered
+            universal_newlines=True,
+            env=self.env,
+            stdout=subprocess.PIPE)
         # a dictionary mapping wmclasses to window ids as reported
         # by self.hc_idle
         self.wmclass2winid = {}
@@ -123,7 +123,7 @@ class HlwmBridge:
         command = ['xterm'] + title + ['-class', wmclass, '-e', 'bash', '-c', term_command]
 
         # enforce a hook when the window appears
-        self.call(['rule', 'once', 'class='+wmclass, 'hook=here_is_'+wmclass])
+        self.call(['rule', 'once', 'class=' + wmclass, 'hook=here_is_' + wmclass])
 
         proc = subprocess.Popen(command, env=self.env)
         # once the window appears, the hook is fired:
@@ -246,8 +246,7 @@ class HlwmProcess:
             [bin_path, '--verbose'], env=env,
             bufsize=0,  # essential for reading output with selectors!
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-            )
+            stderr=subprocess.PIPE)
 
         sel = selectors.DefaultSelector()
         sel.register(self.proc.stdout, selectors.EVENT_READ, data=sys.stdout)

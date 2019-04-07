@@ -3,7 +3,7 @@ import pytest
 
 can_toggle = [
     'update_dragged_clients',
-    ]
+]
 
 cannot_toggle = [
     'window_border_width',

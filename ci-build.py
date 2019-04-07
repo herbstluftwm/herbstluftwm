@@ -45,16 +45,14 @@ if args.ccache:
 build_env = os.environ.copy()
 build_env.update({
     'CC': args.cc,
-    'CXX': args.cxx,
-    })
+    'CXX': args.cxx})
 
 cmake_args = [
     '-GNinja',
     '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
     f'-DCMAKE_BUILD_TYPE={args.build_type}',
     f'-DWITH_DOCUMENTATION={"YES" if args.build_docs else "NO"}',
-    f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}',
-    ]
+    f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}']
 
 sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=build_env)
 
@@ -72,9 +70,7 @@ if args.iwyu:
 
 if args.run_tests:
     tox_env = os.environ.copy()
-    tox_env.update({
-        'PWD': build_dir,
-        })
+    tox_env.update({'PWD': build_dir})
     sp.check_call(f'tox -e py37 -- -n auto -v -x', shell=True, cwd=build_dir, env=tox_env)
 
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
