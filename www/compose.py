@@ -2,6 +2,7 @@
 
 import sys
 import datetime
+from __builtin__ import basestring
 from collections import OrderedDict
 
 tabs = OrderedDict([
