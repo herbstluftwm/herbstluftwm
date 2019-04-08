@@ -9,7 +9,8 @@ cannot_toggle = [
     'window_border_width',
     'frame_border_active_color',
     'default_frame_layout',
-    'wmname']
+    'wmname'
+]
 
 
 @pytest.mark.parametrize('name', can_toggle)

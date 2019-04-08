@@ -6,11 +6,13 @@ string_props = [
     'class',
     'title',
     'windowtype',
-    'windowrole']
+    'windowrole',
+]
 
 numeric_props = [
     'pid',
-    'maxage']
+    'maxage',
+]
 
 consequences = [
     'tag',
@@ -24,7 +26,8 @@ consequences = [
     'ewmhnotify',
     'fullscreen',
     'hook',
-    'keymask']
+    'keymask',
+]
 
 
 def test_list_rules_empty_by_default(hlwm):
@@ -61,7 +64,7 @@ def test_add_many_labeled_rules(hlwm):
     conds_sets = [
         ' '.join(['{}={}'.format(prop, idx) for idx, prop in enumerate(numeric_props, start=9001)]),
         ' '.join(['{}=x{}y'.format(prop, idx) for idx, prop in enumerate(string_props, start=9101)]),
-        ' '.join(['{}~z{}z'.format(prop, idx) for idx, prop in enumerate(string_props, start=9201)])
+        ' '.join(['{}~z{}z'.format(prop, idx) for idx, prop in enumerate(string_props, start=9201)]),
     ]
 
     # Assemble final list of rules:
@@ -179,7 +182,8 @@ def test_complete_rule(hlwm):
         [i + ' ' for i in '! not prepend once printlabel'.split(' ')]
         + [i + '=' for i in string_props + numeric_props]
         + [i + '~' for i in string_props + numeric_props]
-        + [i + '=' for i in consequences + ['label']])
+        + [i + '=' for i in consequences + ['label']]
+    )
 
 
 @pytest.mark.parametrize('monitor_spec', ['monitor2', '1'])

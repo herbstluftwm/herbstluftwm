@@ -32,7 +32,8 @@ class HlwmBridge:
             bufsize=1,  # line buffered
             universal_newlines=True,
             env=self.env,
-            stdout=subprocess.PIPE)
+            stdout=subprocess.PIPE
+        )
         # a dictionary mapping wmclasses to window ids as reported
         # by self.hc_idle
         self.wmclass2winid = {}
@@ -246,7 +247,8 @@ class HlwmProcess:
             [bin_path, '--verbose'], env=env,
             bufsize=0,  # essential for reading output with selectors!
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
+            stderr=subprocess.PIPE
+        )
 
         sel = selectors.DefaultSelector()
         sel.register(self.proc.stdout, selectors.EVENT_READ, data=sys.stdout)
