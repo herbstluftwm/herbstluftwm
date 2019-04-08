@@ -290,7 +290,9 @@ public:
         return make_shared<DirectoryTreeInterface>(buf[idx].first, buf[idx].second);
     };
     void appendCaption(Output output) override {
-        output << lbl;
+        if (lbl != "") {
+            output << " " << lbl;
+        }
     };
 private:
     string lbl;
