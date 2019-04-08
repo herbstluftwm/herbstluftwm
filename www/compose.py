@@ -64,7 +64,7 @@ print("""\
        </div>
      </div>
     </div>
-   </div>""").format(title=windowtitle)
+   </div>""".format(title=windowtitle))
 
 # ====~===~=========~==
 # Navigation bar
@@ -81,10 +81,10 @@ for title, subpages in tabs.iteritems():
         trg = subpages
     else:
         trg = subpages.keys()[0] + ".html"
-    print('<li class="{cls}"><a href="{target}">{title}</a></li>').format(
+    print('<li class="{cls}"><a href="{target}">{title}</a></li>'.format(
         cls=classstring,
         target=trg,
-        title=title)
+        title=title))
 
 
 print("""\
@@ -102,8 +102,8 @@ if len(subpages) > 1:
         else:
             cls = "subpage"
         print('<span class="{cls}">'.format(cls=cls))
-        print('<a href="{url}">{title}</a></span>').format(
-            url=basename + ".html", title=title)
+        print('<a href="{url}">{title}</a></span>'.format(
+            url=basename + ".html", title=title))
     print("</div>")
 
 print("""\
@@ -123,7 +123,7 @@ print("""\
     <div class="footer">
       Generated on {date}
     </div>
-""").format(date=datetime.datetime.now().strftime('%Y-%m-%d at %H:%M:%S %Z'))
+""".format(date=datetime.datetime.now().strftime('%Y-%m-%d at %H:%M:%S %Z')))
 
 # ====~===~=========~==
 # Footer
