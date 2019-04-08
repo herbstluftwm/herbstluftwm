@@ -398,16 +398,12 @@ static void subtree_print_to(shared_ptr<TreeInterface> intface, const string& in
         output << rootprefix;
         output << utf8_string_at(tree_style, 6);
         output << utf8_string_at(tree_style, 5);
-        output << ' ';
-        // append caption
         intface->appendCaption(output);
         output << "\n";
     } else {
         output << rootprefix;
         output << utf8_string_at(tree_style, 6);
         output << utf8_string_at(tree_style, 7);
-        // append caption
-        output << ' ';
         intface->appendCaption(output);
         output << '\n';
         // append children
