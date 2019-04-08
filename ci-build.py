@@ -72,7 +72,7 @@ if args.iwyu:
 
 if args.run_tests:
     tox_env = os.environ.copy()
-    tox_env.update({'PWD': build_dir})
+    tox_env['PWD'] = build_dir
     sp.check_call(f'tox -e py37 -- -n auto -v -x', shell=True, cwd=build_dir, env=tox_env)
 
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
