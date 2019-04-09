@@ -7,12 +7,12 @@ string_props = [
     'title',
     'windowtype',
     'windowrole',
-    ]
+]
 
 numeric_props = [
     'pid',
     'maxage',
-    ]
+]
 
 consequences = [
     'tag',
@@ -27,7 +27,7 @@ consequences = [
     'fullscreen',
     'hook',
     'keymask',
-    ]
+]
 
 
 def test_list_rules_empty_by_default(hlwm):
@@ -65,7 +65,7 @@ def test_add_many_labeled_rules(hlwm):
         ' '.join(['{}={}'.format(prop, idx) for idx, prop in enumerate(numeric_props, start=9001)]),
         ' '.join(['{}=x{}y'.format(prop, idx) for idx, prop in enumerate(string_props, start=9101)]),
         ' '.join(['{}~z{}z'.format(prop, idx) for idx, prop in enumerate(string_props, start=9201)]),
-        ]
+    ]
 
     # Assemble final list of rules:
     rules = []
@@ -183,7 +183,7 @@ def test_complete_rule(hlwm):
         + [i + '=' for i in string_props + numeric_props]
         + [i + '~' for i in string_props + numeric_props]
         + [i + '=' for i in consequences + ['label']]
-        )
+    )
 
 
 @pytest.mark.parametrize('monitor_spec', ['monitor2', '1'])
