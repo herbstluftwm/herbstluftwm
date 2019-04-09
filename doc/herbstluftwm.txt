@@ -1035,7 +1035,7 @@ tree_style (String)::
     contain at least 8 characters. e.g. ++X|:#+*-.++ produces a tree like:
 +
 ----
-X-.root
+X-.
   #-. child 0
   | #-* child 01
   | +-* child 02

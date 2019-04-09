@@ -60,22 +60,22 @@ def test_stack_tree(hlwm):
     stack = hlwm.call('stack')
 
     expected_stack = '''\
-  - 
+  -
     - Monitor 1 ("monitor2") with tag "tag2"
       - Focus-Layer
-        - Client <windowid> "sleep infinity"
+        - Client <windowid> "bash"
       - Fullscreen-Layer
       - Normal Layer
-        - Client <windowid> "sleep infinity"
+        - Client <windowid> "bash"
       - Frame Layer
         - Window <windowid>
         - Window <windowid>
     - Monitor 0 with tag "default"
       - Focus-Layer
-        - Client <windowid> "sleep infinity"
+        - Client <windowid> "bash"
       - Fullscreen-Layer
       - Normal Layer
-        - Client <windowid> "sleep infinity"
+        - Client <windowid> "bash"
       - Frame Layer
         - Window <windowid>
 '''
