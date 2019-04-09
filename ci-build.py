@@ -12,19 +12,21 @@ parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'), requ
 parser.add_argument('--compile', action='store_true')
 parser.add_argument('--run-tests', action='store_true')
 parser.add_argument('--build-docs', action='store_true')
-parser.add_argument('--cxx', type=str, required=True)
-parser.add_argument('--cc', type=str, required=True)
+parser.add_argument('--cxx', type=str)
+parser.add_argument('--cc', type=str)
 parser.add_argument('--check-using-std', action='store_true')
 parser.add_argument('--iwyu', action='store_true')
 parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
 args = parser.parse_args()
 
-if not args.compile:
-    for arg in ('ccache', 'cxx', 'cc'):
-        if not hasattr(args, arg):
-            print(f'Passing --{arg} but not --compile does not make any sense', file=sys.stderr)
-            sys.exit(1)
+for arg in ('cxx', 'cc'):
+    if args.compile and not hasattr(args, arg):
+        print(f'Passing --compile requires --{arg} as well', file=sys.stderr)
+        sys.exit(1)
+    if not args.compile and hasattr(args, arg):
+        print(f'Passing --{arg} but not --compile does not make any sense', file=sys.stderr)
+        sys.exit(1)
 
 build_dir = Path(args.build_dir)
 build_dir.mkdir(exist_ok=True)
