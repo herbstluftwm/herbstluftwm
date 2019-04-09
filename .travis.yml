@@ -32,7 +32,7 @@ jobs:
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco sh -c '
                     /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --compile &&
-                    /hlwm/ci-build.py --build-dir=/hlwm/build-gcc-8 --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --compile --run-tests
+                    /hlwm/ci-build.py --build-dir=/hlwm/build-gcc-8 --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --compile --run-tests
                 '
               - bash <(curl -s https://codecov.io/bash) -f coverage.info
 
@@ -57,7 +57,7 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco sh -c '
-                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --iwyu --flake8
+                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --check-using-std --iwyu --flake8
                 '
 
         - name: "Build with ancient GCC on Ubuntu 14.04"
