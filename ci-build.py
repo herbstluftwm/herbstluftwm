@@ -3,11 +3,13 @@
 import argparse
 import os
 import subprocess as sp
+import sys
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--build-dir', type=str, required=True)
 parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'), required=True)
+parser.add_argument('--compile', action='store_true')
 parser.add_argument('--run-tests', action='store_true')
 parser.add_argument('--build-docs', action='store_true')
 parser.add_argument('--cxx', type=str, required=True)
@@ -17,6 +19,12 @@ parser.add_argument('--iwyu', action='store_true')
 parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
 args = parser.parse_args()
+
+if not args.compile:
+    for arg in ('ccache', 'cxx', 'cc'):
+        if not hasattr(args, arg):
+            print(f'Passing --{arg} but not --compile does not make any sense', file=sys.stderr)
+            sys.exit(1)
 
 build_dir = Path(args.build_dir)
 build_dir.mkdir(exist_ok=True)
@@ -58,7 +66,8 @@ cmake_args = [
 
 sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=build_env)
 
-sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
+if args.compile:
+    sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
 
 if args.ccache:
     sp.check_call(['ccache', '-s'])
