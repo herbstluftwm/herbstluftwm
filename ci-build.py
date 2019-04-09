@@ -20,14 +20,6 @@ parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
 args = parser.parse_args()
 
-for arg in ('cxx', 'cc'):
-    if args.compile and not getattr(args, arg):
-        print(f'Passing --compile requires --{arg} as well', file=sys.stderr)
-        sys.exit(1)
-    if not args.compile and getattr(args, arg):
-        print(f'Passing --{arg} but not --compile does not make any sense', file=sys.stderr)
-        sys.exit(1)
-
 build_dir = Path(args.build_dir)
 build_dir.mkdir(exist_ok=True)
 
