@@ -18,7 +18,7 @@ def test_list_keybinds(hlwm, sep):
     ('Moep1-x', 'keybind: Unknown modifier "Moep1"'),
     ('Mod1-_', 'keybind: Unknown KeySym "_"'),
     ('', 'keybind: Empty keysym'),
-    ])
+])
 def test_keybind_invalid_key_combo(hlwm, combo, message):
     call = hlwm.call_xfail(['keybind', combo, 'quit'])
     call.expect_stderr(message)
@@ -153,7 +153,7 @@ def test_complete_keybind_offers_additional_mods_without_duplication(hlwm):
         'Mod2+Mod4+',
         'Mod2+Mod5+',
         'Mod2+Mode_switch ',
-        }
+    }
 
 
 def test_complete_keybind_validates_all_tokens(hlwm):

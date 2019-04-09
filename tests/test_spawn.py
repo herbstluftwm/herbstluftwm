@@ -1,6 +1,3 @@
-import pytest
-
-
 def test_spawn(hlwm, hlwm_process):
     hlwm.call(['spawn', 'sh', '-c', 'echo >&2 spawnyboi'])
 
