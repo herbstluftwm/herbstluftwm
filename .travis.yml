@@ -31,7 +31,7 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco sh -c '
-                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --copmile &&
+                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --compile &&
                     /hlwm/ci-build.py --build-dir=/hlwm/build-gcc-8 --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --compile --run-tests
                 '
               - bash <(curl -s https://codecov.io/bash) -f coverage.info
