@@ -1,13 +1,16 @@
 #pragma once
 
 /**
- * The frame data header holds the classes that describe the members used for
- * the actual logic of the frame tree tiling. So e.g. the 'selection' is a
- * member of both of the following classes, whereas HSFrameLeaf::last_rect is
- * not.
+ * The frame data classes hold the members variables that describe the
+ * frame tree from a user perspective and as it is described in the 'TILING
+ * ALGORITHM' section in the man page. For example, we have
+ * FrameDataLeaf::selection and FrameDataSplit<T>::selection_. On the other hand,
+ * HSFrameLeaf::last_rect is more an implementation detail, and thus is a member
+ * variable of HSFrameLeaf and _not_ a member variable of FrameDataLeaf.
  *
- * Also note that the following classes only hold the plain members and does
- * not set up class inheritance!
+ * Also note that FrameDataLeaf and FrameDataSplit do not have a common base
+ * class (in contrast to HSFrameLeaf and HSFrameSplit which both inherit from
+ * HSFrame).
  */
 
 #include <memory>
