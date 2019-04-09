@@ -57,7 +57,7 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco sh -c '
-                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --iwyu
+                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --iwyu --flake8
                 '
 
         - name: "Build with ancient GCC on Ubuntu 14.04"
