@@ -41,6 +41,7 @@ jobs:
           cache:
               directories:
                   - $HOME/.tox-cache
+          script:
               # Fetch our current Ubuntu 19.04 CI image from Docker Hub
               # (automatically built by Docker):
               - docker pull hlwm/ci:disco
@@ -53,7 +54,6 @@ jobs:
               # Perform actual tasks within temporary Docker image
               - docker run -u $UID --privileged -t --rm
                 --volume=/etc/passwd:/etc/passwd:ro
-                --volume=$HOME/.ccaches-disco:/.ccaches:rw
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco sh -c '
