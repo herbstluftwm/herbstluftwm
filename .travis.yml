@@ -8,7 +8,7 @@ before_install:
 
 jobs:
     include:
-        - name: "Build with most recent GCC & Clang, run checks and tests"
+        - name: "Build with most recent GCC & Clang, run tests"
           env: TRAVIS_CACHE_ID=disco
           cache:
               directories:
@@ -24,17 +24,41 @@ jobs:
               # the same):
               - docker build -t disco --cache-from hlwm/ci:disco - <Dockerfile.ci-disco
 
-              # Run builds and tests using temporary Docker image
+              # Perform actual tasks within temporary Docker image
               - docker run -u $UID --privileged -t --rm
                 --volume=/etc/passwd:/etc/passwd:ro
                 --volume=$HOME/.ccaches-disco:/.ccaches:rw
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco sh -c '
-                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --iwyu --flake8 &&
-                    /hlwm/ci-build.py --build-dir=/hlwm/build-gcc-8 --check-using-std --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --run-tests
+                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --compile &&
+                    /hlwm/ci-build.py --build-dir=/hlwm/build-gcc-8 --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --compile --run-tests
                 '
               - bash <(curl -s https://codecov.io/bash) -f coverage.info
+
+        - name: "Run linters and static analyzers"
+          env: TRAVIS_CACHE_ID=disco-linter
+          cache:
+              directories:
+                  - $HOME/.tox-cache
+          script:
+              # Fetch our current Ubuntu 19.04 CI image from Docker Hub
+              # (automatically built by Docker):
+              - docker pull hlwm/ci:disco
+
+              # Build ad-hoc image, using hub image as cache
+              # (=> does not actually build from scratch if the Dockerfile is
+              # the same):
+              - docker build -t disco --cache-from hlwm/ci:disco - <Dockerfile.ci-disco
+
+              # Perform actual tasks within temporary Docker image
+              - docker run -u $UID --privileged -t --rm
+                --volume=/etc/passwd:/etc/passwd:ro
+                --volume=$PWD:/hlwm:rw
+                --volume=$HOME/.tox-cache:/hlwm/.tox:rw
+                disco sh -c '
+                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --check-using-std --iwyu --flake8
+                '
 
         - name: "Build with ancient GCC on Ubuntu 14.04"
           env: TRAVIS_CACHE_ID=trusty
