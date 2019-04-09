@@ -62,7 +62,7 @@ public:
     bool isLayerEmpty(HSLayer layer);
     void clearLayer(HSLayer layer);
 
-    void toWindowBuf(std::shared_ptr<std::vector<Window>> buf, bool real_clients);
+    std::vector<Window> toWindowBuf(bool real_clients);
     void restack();
     Window lowestWindow();
 

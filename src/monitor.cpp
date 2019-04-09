@@ -769,18 +769,18 @@ void monitor_restack(Monitor* monitor) {
 }
 
 void Monitor::restack() {
-    auto buf = make_shared<vector<Window>>();
-    buf->push_back(stacking_window);
-    tag->stack->toWindowBuf(buf, false);
+    vector<Window> buf = {};
+    buf.push_back(stacking_window);
+    vector_append(buf, tag->stack->toWindowBuf(false));
     /* remove a focused fullscreen client */
     Client* client = tag->frame->root_->focusedClient();
     if (client && client->fullscreen_) {
         Window win = client->decorationWindow();
         XRaiseWindow(g_display, win);
         // remove the window from the buf
-        buf->erase(std::remove(buf->begin(), buf->end(), win), buf->end());
+        buf.erase(std::remove(buf.begin(), buf.end(), win), buf.end());
     }
-    XRestackWindows(g_display, buf->data(), buf->size());
+    XRestackWindows(g_display, buf.data(), buf.size());
 }
 
 int shift_to_monitor(int argc, char** argv, Output output) {

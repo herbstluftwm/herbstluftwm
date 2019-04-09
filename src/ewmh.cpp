@@ -172,8 +172,7 @@ void ewmh_get_original_client_list(Window** buf, unsigned long *count) {
 
 void ewmh_update_client_list_stacking() {
     // First: get the windows currently visible
-    auto buf = make_shared<vector<Window>>();
-    g_monitors->monitor_stack->toWindowBuf(buf, true);
+    auto buf = g_monitors->monitor_stack->toWindowBuf(true);
 
     // Then add all the invisible windows at the end
     for (auto tag : *global_tags) {
@@ -181,15 +180,15 @@ void ewmh_update_client_list_stacking() {
         // do not add tags because they are already added
             continue;
         }
-        tag->stack->toWindowBuf(buf, true);
+        vector_append(buf, tag->stack->toWindowBuf(true));
     }
 
     // reverse stacking order, because ewmh requires bottom to top order
-    std::reverse(buf->begin(), buf->end());
+    std::reverse(buf.begin(), buf.end());
 
     XChangeProperty(g_display, g_root, g_netatom[NetClientListStacking],
         XA_WINDOW, 32, PropModeReplace,
-        (unsigned char *) buf->data(), buf->size());
+        (unsigned char *) buf.data(), buf.size());
 }
 
 void ewmh_add_client(Window win) {

@@ -162,63 +162,57 @@ int print_stack_command(int argc, char** argv, Output output) {
     return 0;
 }
 
-/* stack to window buf */
-struct s2wb {
-    shared_ptr<vector<Window>> buf;
-    bool    real_clients; /* whether to include windows that aren't clients */
-    HSLayer layer;  /* the layer the slice should be added to */
-};
-
-static void slice_to_window_buf(Slice* s, struct s2wb* data) {
+static vector<Window> slice_to_window_buf(Slice* s, bool real_clients, HSLayer layer) {
     HSTag* tag;
-    if (slice_highest_layer(s) != data->layer) {
+    if (slice_highest_layer(s) != layer) {
         /** slice only is added to its highest layer.
          * just skip it if the slice is not shown on this data->layer */
-        return;
+        return {};
     }
     switch (s->type) {
         case SLICE_CLIENT:
-            if (data->real_clients) {
-                data->buf->push_back(s->data.client->x11Window());
+            if (real_clients) {
+                return { s->data.client->x11Window() };
             } else {
-                data->buf->push_back(s->data.client->decorationWindow());
+                return { s->data.client->decorationWindow() };
             }
             break;
         case SLICE_WINDOW:
-            if (!data->real_clients) {
-                data->buf->push_back(s->data.window);
+            if (!real_clients) {
+                return { s->data.window };
             }
             break;
         case SLICE_MONITOR:
             tag = s->data.monitor->tag;
-            if (!data->real_clients) {
-                data->buf->push_back(s->data.monitor->stacking_window);
+            vector<Window> result;
+            if (!real_clients) {
+                result.push_back(s->data.monitor->stacking_window);
             }
-            tag->stack->toWindowBuf(data->buf, data->real_clients);
+            vector_append(result, tag->stack->toWindowBuf(real_clients));
+            return result;
             break;
     }
+    return {};
 }
 
-void Stack::toWindowBuf(shared_ptr<vector<Window>> buf, bool real_clients) {
-    struct s2wb data = {};
-    data.buf = buf;
-    data.real_clients = real_clients;
-
+vector<Window> Stack::toWindowBuf(bool real_clients) {
+    vector<Window> result;
     for (int i = 0; i < LAYER_COUNT; i++) {
-        data.layer = (HSLayer)i;
         for (auto slice : top[i]) {
-            slice_to_window_buf(slice, &data);
+            vector_append(
+                result,
+                slice_to_window_buf(slice, real_clients, (HSLayer)i));
         }
     }
+    return result;
 }
 
 void Stack::restack() {
     if (!dirty) {
         return;
     }
-    auto buf = make_shared<vector<Window>>();
-    toWindowBuf(buf, false);
-    XRestackWindows(g_display, buf->data(), buf->size());
+    auto buf = toWindowBuf(false);
+    XRestackWindows(g_display, buf.data(), buf.size());
     dirty = false;
     ewmh_update_client_list_stacking();
 }
