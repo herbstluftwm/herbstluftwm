@@ -3,7 +3,6 @@
 import argparse
 import os
 import subprocess as sp
-import sys
 from pathlib import Path
 
 
