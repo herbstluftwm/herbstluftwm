@@ -21,10 +21,10 @@ parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
 args = parser.parse_args()
 
 for arg in ('cxx', 'cc'):
-    if args.compile and not hasattr(args, arg):
+    if args.compile and not getattr(args, arg):
         print(f'Passing --compile requires --{arg} as well', file=sys.stderr)
         sys.exit(1)
-    if not args.compile and hasattr(args, arg):
+    if not args.compile and getattr(args, arg):
         print(f'Passing --{arg} but not --compile does not make any sense', file=sys.stderr)
         sys.exit(1)
 
