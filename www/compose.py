@@ -1,8 +1,7 @@
-#! /usr/bin/env python2
+#!/usr/bin/env python3
 
 import sys
 import datetime
-from __builtin__ import basestring
 from collections import OrderedDict
 
 tabs = OrderedDict([
@@ -32,9 +31,9 @@ name = filename.replace('-content.html', '')
 toc = filename.replace('-content.html', '-toc.html')
 
 windowtitle = "herbstluftwm"
-for title, subpages in tabs.iteritems():
-    if not isinstance(subpages, basestring):
-        for fn, subtitle in subpages.iteritems():
+for title, subpages in tabs.items():
+    if not isinstance(subpages, str):
+        for fn, subtitle in subpages.items():
             page2tab[fn] = title
             if not ("" == subtitle) and (name == fn):
                 windowtitle = subtitle + " - herbstluftwm"
@@ -73,14 +72,14 @@ print("""\
 print("""\
     <ul id="navigationbar">""")
 
-for title, subpages in tabs.iteritems():
+for title, subpages in tabs.items():
     classstring = "notab"
     if title == curtab:
         classstring = "curtab"
-    if isinstance(subpages, basestring):
+    if isinstance(subpages, str):
         trg = subpages
     else:
-        trg = subpages.keys()[0] + ".html"
+        trg = list(subpages.keys())[0] + ".html"
     print('<li class="{cls}"><a href="{target}">{title}</a></li>'.format(
         cls=classstring,
         target=trg,
@@ -96,7 +95,7 @@ subpages = tabs[page2tab[name]]
 
 if len(subpages) > 1:
     print('<div class="subpagebar">')
-    for basename, title in subpages.iteritems():
+    for basename, title in subpages.items():
         if basename == name:
             cls = "subpagecur subpage"
         else:
@@ -108,13 +107,13 @@ if len(subpages) > 1:
 
 print("""\
     <div id="content">\
-    """)
+""")
 
 # possibly table of contents:
 try:
     print(open(toc).read())
 except IOError:
-    #  no toc file
+    # no toc file
     print("<!-- no toc file present -->")
 print(open(filename).read())
 

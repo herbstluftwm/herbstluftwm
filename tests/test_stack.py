@@ -62,7 +62,7 @@ def test_stack_tree(hlwm):
     stack = hlwm.call('stack')
 
     expected_stack = '''\
-  - 
+  -
     - Monitor 1 ("monitor2") with tag "tag2"
       - Focus-Layer
         - Client <windowid> "bash"
@@ -80,5 +80,5 @@ def test_stack_tree(hlwm):
         - Client <windowid> "bash"
       - Frame Layer
         - Window <windowid>
-'''  # noqa: W291 ignore trailing whitespace in this string
+'''
     assert strip_winids(stack.stdout) == expected_stack
