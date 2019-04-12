@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import re
 import subprocess as sp
 import sys
 import tempfile
@@ -86,7 +87,8 @@ if args.iwyu:
     iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
 
     # If there are any complaints, print output and exit with error
-    if b' should ' in iwyu_out:
+    #  if b'(?<!root.cpp) should ' in iwyu_out:
+    if re.search(r'(?<!root.cpp) should ', iwyu_out.decode('ascii')):
         sys.stdout.buffer.write(iwyu_out)
         sys.exit(1)
 
