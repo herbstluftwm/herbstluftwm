@@ -87,10 +87,16 @@ if args.iwyu:
     iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --transitive_includes_only --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
 
     # If there are any complaints, print output and exit with error
-    # (except if it is root.eh, which emits a lot of false positives)
-    if re.search(r'(?<!root.h) should ', iwyu_out.decode('ascii')):
+    ignored_files = {
+        'root.h',  # too many false-positives
+        }
+    complaints = set(re.findall(r'(\S+) should ', iwyu_out.decode('ascii')))
+    if complaints - ignored_files:
         sys.stdout.buffer.write(iwyu_out)
         sys.exit(1)
+    elif complaints:
+        print(f'Ignoring IWYU complaints in {complaints}')
+
 
 
 if args.flake8:
