@@ -84,7 +84,7 @@ if args.iwyu:
     sp.check_call('fix_include --dry_run --sort_only --reorder /hlwm/*/*.{h,cpp,c}', shell=True, executable='bash')
 
     # Run include-what-you-use
-    iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
+    iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --transitive_includes_only --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
 
     # If there are any complaints, print output and exit with error
     #  if b'(?<!root.cpp) should ' in iwyu_out:
