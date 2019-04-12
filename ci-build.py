@@ -87,8 +87,8 @@ if args.iwyu:
     iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --transitive_includes_only --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
 
     # If there are any complaints, print output and exit with error
-    #  if b'(?<!root.cpp) should ' in iwyu_out:
-    if re.search(r'(?<!root.cpp) should ', iwyu_out.decode('ascii')):
+    # (except if it is root.eh, which emits a lot of false positives)
+    if re.search(r'(?<!root.h) should ', iwyu_out.decode('ascii')):
         sys.stdout.buffer.write(iwyu_out)
         sys.exit(1)
 
