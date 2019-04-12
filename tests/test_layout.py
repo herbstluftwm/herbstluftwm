@@ -1,6 +1,7 @@
 import pytest
 import re
 
+
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
 def test_single_frame_layout(hlwm, running_clients, running_clients_num):
     assert hlwm.get_attr('tags.0.curframe_windex') == '0'
@@ -34,7 +35,7 @@ def test_remove(hlwm, running_clients, running_clients_num):
     assert int(hlwm.get_attr('tags.0.client_count')) == running_clients_num
     assert hlwm.get_attr('tags.0.frame_count') == '1'
     # TODO: reasonably handle focus, e.g. to have
-    #assert hlwm.get_attr('tags.0.curframe_windex') == '2'
+    # assert hlwm.get_attr('tags.0.curframe_windex') == '2'
 
 
 @pytest.mark.parametrize("running_clients_num", [3, 4])
@@ -80,12 +81,14 @@ def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_del
     expected_index = (windex + cycle_delta + wcount) % wcount if wcount > 0 else 0
     assert expected_index == new_windex
 
-@pytest.mark.parametrize("running_clients_num", [0,1,5])
-@pytest.mark.parametrize("index", [0,1,3,5])
+
+@pytest.mark.parametrize("running_clients_num", [0, 1, 5])
+@pytest.mark.parametrize("index", [0, 1, 3, 5])
 def test_focus_nth(hlwm, running_clients, running_clients_num, index):
     hlwm.call('focus_nth {}'.format(index))
     windex = int(hlwm.get_attr('tags.0.curframe_windex'))
     assert windex == max(0, min(index, running_clients_num - 1))
+
 
 @pytest.mark.parametrize("running_clients_num", [5])
 def test_rotate(hlwm, running_clients, running_clients_num):
@@ -94,7 +97,7 @@ def test_rotate(hlwm, running_clients, running_clients_num):
         hlwm.call('split explode')
     # rotate 4 times and remember the layout before
     layouts = []
-    for i in range(0,4):
+    for i in range(0, 4):
         layouts.append(hlwm.call('dump').stdout)
         hlwm.call('rotate')
     # then the final layout matches the first
@@ -103,6 +106,7 @@ def test_rotate(hlwm, running_clients, running_clients_num):
     for i1, l1 in enumerate(layouts):
         for i2, l2 in enumerate(layouts[0:i1]):
             assert l1 != l2
+
 
 @pytest.mark.parametrize("running_clients_num", [5])
 @pytest.mark.parametrize("num_splits", [0, 1, 2, 3])
@@ -136,7 +140,7 @@ def test_layout_command(hlwm, running_clients, running_clients_num, num_splits):
 
 
 @pytest.mark.parametrize("running_clients_num,client2focus",
-            [(cnt, idx) for cnt in [3, 5] for idx in range(0, cnt)])
+                         [(cnt, idx) for cnt in [3, 5] for idx in range(0, cnt)])
 @pytest.mark.parametrize("num_splits", [0, 1, 2, 3])
 def test_jumpto_within_tag(hlwm, running_clients, client2focus, num_splits):
     for i in range(0, num_splits):
@@ -162,11 +166,11 @@ def test_cycle_all_traverses_all(hlwm, running_clients, num_splits, delta):
         # if a client is focused, then read its window-id
         w = hlwm.call('try and , silent get_attr clients.focus.winid \
                                , get_attr clients.focus.winid').stdout
-        hlwm.call(['cycle_all', delta])# go the next window
+        hlwm.call(['cycle_all', delta])  # go the next window
         if w == '':
-            continue # ignore empty frames
+            continue  # ignore empty frames
         if w in visited_winids:
-            break # stop if we were at window seen before
+            break  # stop if we were at window seen before
         visited_winids.append(w)
 
     # winids should hold all windows in the correct order
