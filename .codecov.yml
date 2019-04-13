@@ -1,0 +1,6 @@
+coverage:
+    precision: 1
+
+comment:
+    layout: "diff"
+    require_changes: yes
