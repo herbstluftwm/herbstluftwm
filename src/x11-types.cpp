@@ -6,7 +6,6 @@
 #include <cassert>
 #include <iomanip>
 
-#include "glib-backports.h"
 #include "globals.h"
 
 using std::string;
