@@ -12,7 +12,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <sstream>
 
 #include "client.h"
 #include "clientmanager.h"

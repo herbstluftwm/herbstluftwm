@@ -81,7 +81,7 @@ if args.iwyu:
     sp.check_call('fix_include --dry_run --sort_only --reorder /hlwm/*/*.{h,cpp,c}', shell=True, executable='bash')
 
     # Run include-what-you-use (just printing the result for now)
-    sp.check_call(f'iwyu_tool -p . -j "$(nproc)" -- --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
+    sp.check_call(f'iwyu_tool -p . -j "$(nproc)" -- --verbose=3 --transitive_includes_only --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
 
 if args.flake8:
     tox('-e flake8', build_dir)
