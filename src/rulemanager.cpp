@@ -1,6 +1,6 @@
 #include "rulemanager.h"
 
-#include <cstring>
+#include <string>
 
 #include "completion.h"
 #include "ipc-protocol.h"
