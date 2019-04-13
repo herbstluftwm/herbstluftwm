@@ -376,16 +376,15 @@ def kill_all_existing_windows(show_warnings=True):
         m = re.match(r'Window (0x[0-9a-fA-F]*):', l)
         if m:
             clients.append(m.group(1))
-    if len(clients) > 0:
+    if clients and show_warnings:
+        warnings.warn(UserWarning("There are still some clients "
+                                  "from previous tests."))
+    for c in clients:
         if show_warnings:
-            warnings.warn(UserWarning("There are still some clients "
-                                      "from previous tests."))
-        for c in clients:
-            if show_warnings:
-                warnings.warn(UserWarning("Killing " + c))
-            # send close and kill ungently
-            subprocess.run(['xdotool', 'windowclose', c])
-            subprocess.run(['xdotool', 'windowkill', c])
+            warnings.warn(UserWarning("Killing " + c))
+        # send close and kill ungently
+        subprocess.run(['xdotool', 'windowclose', c])
+        subprocess.run(['xdotool', 'windowkill', c])
 
 
 @pytest.fixture(autouse=True)
