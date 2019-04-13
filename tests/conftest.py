@@ -379,7 +379,6 @@ class HlwmProcess:
                 raise Exception("herbstluftwm did not quit on sigterm"
                                 + " and had to be killed") from None
 
-
 @pytest.fixture(autouse=True)
 def hlwm_process(tmpdir):
     env = {
@@ -402,6 +401,33 @@ def running_clients(hlwm, running_clients_num):
     """
     return hlwm.create_clients(running_clients_num)
 
+@pytest.fixture()
+def x11():
+    from Xlib import X, display, Xutil
+    class X11:
+        def __init__(self):
+            self.display = display.Display()
+            self.screen = self.display.screen()
+            self.root = self.screen.root
+
+        def window(self, winid_string):
+            """return python-xlib window wrapper for a string window id"""
+            winid_int = int(winid_string, 0)
+            return self.display.create_resource_object('window', winid_int)
+
+        def make_window_urgent(self, winid_string):
+            """make window urgent, given a winid (as a string)"""
+            w = self.window(winid_string)
+            w.set_wm_hints( flags = Xutil.UrgencyHint )
+            self.display.sync()
+
+        def is_window_urgent(self, winid_string):
+            """check urgency of a given window id (as a string)"""
+            w = self.window(winid_string)
+            hints = w.get_wm_hints()
+            return bool(hints.flags & Xutil.UrgencyHint)
+
+    return X11()
 
 @pytest.fixture()
 def keyboard():
