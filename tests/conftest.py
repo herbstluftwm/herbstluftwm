@@ -434,6 +434,7 @@ def x11():
                 w.set_wm_hints( flags = Xutil.UrgencyHint )
 
             w.map()
+            self.display.sync()
             return w
 
         def shutdown(self):

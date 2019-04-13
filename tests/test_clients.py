@@ -66,11 +66,12 @@ def test_urgent_after_start(hlwm, x11):
 
 
 @pytest.mark.parametrize("explicit_winid", [True, False])
-def test_urgent_jumpto(hlwm, explicit_winid):
+def test_urgent_jumpto(hlwm, x11, explicit_winid):
     winid_old_focus, _ = hlwm.create_client()
-    command = r"echo -e '\a' ; sleep infinity"
-    winid, _ = hlwm.create_client(term_command=command)
+    window = x11.create_client(urgent=True)
+    winid = x11.winid_str(window)
     assert hlwm.get_attr('clients.focus.winid') != winid
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == hlwm.bool(True)
 
     hlwm.call(['jumpto', winid if explicit_winid else 'urgent'])
 
