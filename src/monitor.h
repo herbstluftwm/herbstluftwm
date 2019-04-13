@@ -5,12 +5,12 @@
 
 #include "attribute_.h"
 #include "object.h"
-#include "stack.h"
 #include "x11-types.h"
 
 class HSTag;
-class Settings;
 class MonitorManager;
+class Settings;
+class Slice;
 class Stack;
 
 class Monitor : public Object {
