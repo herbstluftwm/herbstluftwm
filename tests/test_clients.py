@@ -57,6 +57,25 @@ def test_urgent_on_start(hlwm, urgent):
         == hlwm.bool(urgent)
 
 
+def test_urgent_after_start(hlwm):
+    command = [
+        r"herbstclient -w client_please_become_urgent",
+        r"echo -e '\a'",
+        r"herbstclient emit_hook client_is_now_urgent",
+        r"sleep infinity",
+    ]
+    command = ';'.join(command)
+    winid_focus, _ = hlwm.create_client()
+    winid, _ = hlwm.create_client(term_command=command)
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == 'false'
+
+    # make the client urgent:
+    with hlwm.wait_for_hook('client_is_now_urgent'):
+        hlwm.call('emit_hook client_please_become_urgent')
+
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == 'true'
+
+
 @pytest.mark.parametrize("explicit_winid", [True, False])
 def test_urgent_jumpto(hlwm, explicit_winid):
     winid_old_focus, _ = hlwm.create_client()
