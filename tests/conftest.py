@@ -368,8 +368,9 @@ class HlwmProcess:
 
 
 def kill_all_existing_windows(show_warnings=True):
-    xlsclients = subprocess.run(['xlsclients', '-l'], stdout=subprocess.PIPE)
-    assert xlsclients.returncode == 0
+    xlsclients = subprocess.run(['xlsclients', '-l'],
+                                stdout=subprocess.PIPE,
+                                check=True)
     clients = []
     for l in xlsclients.stdout.decode().splitlines():
         m = re.match(r'Window (0x[0-9a-fA-F]*):', l)
@@ -385,6 +386,7 @@ def kill_all_existing_windows(show_warnings=True):
             # send close and kill ungently
             subprocess.run(['xdotool', 'windowclose', c])
             subprocess.run(['xdotool', 'windowkill', c])
+
 
 @pytest.fixture(autouse=True)
 def hlwm_process(tmpdir):
