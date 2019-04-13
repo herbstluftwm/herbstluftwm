@@ -11,6 +11,7 @@ import textwrap
 import types
 
 import pytest
+import warnings
 
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
@@ -37,6 +38,16 @@ class HlwmBridge:
         # a dictionary mapping wmclasses to window ids as reported
         # by self.hc_idle
         self.wmclass2winid = {}
+
+        clients = [c for c in self.list_children('clients') if c[0:2] == '0x']
+        if len(clients) > 0:
+            warnings.warn(UserWarning("There are still some clients "
+                                      "from previous tests."))
+            for c in clients:
+                warnings.warn(UserWarning("Killing " + c))
+                # send close and kill ungently
+                subprocess.run(['xdotool', 'windowclose', c])
+                subprocess.run(['xdotool', 'windowkill', c])
 
     def _parse_command(self, cmd):
         """
