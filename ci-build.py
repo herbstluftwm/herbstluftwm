@@ -86,18 +86,13 @@ if args.iwyu:
     # Run include-what-you-use
     iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --transitive_includes_only --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
 
-    # If there are any complaints, print output and exit with error
-    ignored_files = {
-        'root.h',  # too many false-positives
-        }
-    complaints = set(re.findall(r'(\S+) should ', iwyu_out.decode('ascii')))
-    if complaints - ignored_files:
+    # Check IWYU output, but ignore any suggestions to add things (those tend
+    # to be overzealous):
+    complaints = set(re.findall(r'(\S+) should remove these lines:\n[^\n]', iwyu_out.decode('ascii')))
+    if complaints:
         sys.stdout.buffer.write(iwyu_out)
+        print('IWYU made suggestions to remove things in (see log above): {}'.format(', '.join(complaints)))
         sys.exit(1)
-    elif complaints:
-        print(f'Ignoring IWYU complaints in {complaints}')
-
-
 
 if args.flake8:
     tox('-e flake8', build_dir)
