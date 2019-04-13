@@ -35,3 +35,36 @@ def test_close_without_clients(hlwm):
 def test_close(hlwm, running_clients_num):
     hlwm.create_clients(running_clients_num)
     hlwm.call('close')
+
+
+@pytest.mark.parametrize("urgent", [True, False])
+def test_urgent_on_start(hlwm, urgent):
+    command = []
+    if urgent:
+        # prepent urgent command
+        command.append(r"echo -e '\a'")
+    command += [
+        "sleep infinity",
+    ]
+    # first create a dummy window, such that the second
+    # window is not focused and thus keeps the urgent flag
+    winid_focus, _ = hlwm.create_client()
+    command = '; '.join(command)
+    winid, _ = hlwm.create_client(term_command=command)
+    # This is racy, however the 'echo' should be evaluated
+    # even before the terminal shows up
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) \
+        == hlwm.bool(urgent)
+
+
+@pytest.mark.parametrize("explicit_winid", [True, False])
+def test_urgent_jumpto(hlwm, explicit_winid):
+    winid_old_focus, _ = hlwm.create_client()
+    command = r"echo -e '\a' ; sleep infinity"
+    winid, _ = hlwm.create_client(term_command=command)
+    assert hlwm.get_attr('clients.focus.winid') != winid
+
+    hlwm.call(['jumpto', winid if explicit_winid else 'urgent'])
+
+    assert hlwm.get_attr('clients.focus.winid') == winid
+    assert hlwm.get_attr('clients.focus.urgent') == 'false'

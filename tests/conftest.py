@@ -219,6 +219,10 @@ class HlwmBridge:
         self.hc_idle.terminate()
         self.hc_idle.wait(2)
 
+    def bool(self, python_bool_var):
+        """convert a boolean variable into hlwm's string representation"""
+        return "true" if python_bool_var else "false"
+
 
 @pytest.fixture
 def hlwm(hlwm_process):
