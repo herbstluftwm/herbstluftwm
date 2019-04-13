@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "attribute_.h"
-#include "glib-backports.h"
 #include "object.h"
 
 #define TAG_SET_FLAG(tag, flag) \

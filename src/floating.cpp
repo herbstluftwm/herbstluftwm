@@ -1,6 +1,7 @@
 #include "floating.h"
 
 #include <algorithm>
+#include <climits>
 #include <cstdlib>
 
 #include "client.h"
