@@ -159,6 +159,11 @@ std::string join_strings(const InContainer& in, const std::string& delim) {
     return out.str();
 }
 
+template<typename T>
+void vector_append(std::vector<T>& target, const std::vector<T>& source) {
+    target.insert(std::end(target), std::begin(source), std::end(source));
+}
+
 
 #endif
 
