@@ -38,6 +38,7 @@ def test_close(hlwm, running_clients_num):
     hlwm.call('close')
 
 
+@pytest.mark.filterwarnings("ignore:tostring")
 @pytest.mark.parametrize("urgent", [True, False])
 def test_urgent_on_start(hlwm, x11, urgent):
     command = []
