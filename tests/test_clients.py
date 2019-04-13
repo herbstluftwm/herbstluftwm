@@ -1,5 +1,4 @@
 import pytest
-import time
 
 
 def test_first_client_gets_focus(hlwm):
