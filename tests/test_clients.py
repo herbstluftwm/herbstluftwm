@@ -1,6 +1,16 @@
 import pytest
 
 
+def test_client_lives_longer_than_hlwm(hlwm):
+    # This might seem like a nonsensical test, but it confirms the proper
+    # free()ing of memory related to tracked clients. In all other tests,
+    # clients are killed before hlwm is terminated. We start more than one
+    # client because that appears to be needed so that LeakSanitizer reliably
+    # detects the leak (if there is one).
+    winid, _ = hlwm.create_client(keep_running=True)
+    winid, _ = hlwm.create_client(keep_running=True)
+
+
 def test_first_client_gets_focus(hlwm):
     hlwm.call_xfail('get_attr clients.focus.winid')
     winid, _ = hlwm.create_client()
@@ -35,3 +45,42 @@ def test_close_without_clients(hlwm):
 def test_close(hlwm, running_clients_num):
     hlwm.create_clients(running_clients_num)
     hlwm.call('close')
+
+
+@pytest.mark.filterwarnings("ignore:tostring")
+@pytest.mark.parametrize("urgent", [True, False])
+def test_urgent_on_start(hlwm, x11, urgent):
+    # first create a dummy window, such that the second
+    # window is not focused and thus keeps the urgent flag
+    hlwm.create_client()  # dummy client that gets the focus
+    window, winid = x11.create_client(urgent=urgent)
+    assert x11.is_window_urgent(window) == urgent
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) \
+        == hlwm.bool(urgent)
+
+
+@pytest.mark.filterwarnings("ignore:tostring")
+def test_urgent_after_start(hlwm, x11):
+    hlwm.create_client()  # dummy client that gets the focus
+    winid, _ = hlwm.create_client()
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == 'false'
+    assert not x11.is_window_urgent(x11.window(winid))
+
+    # make the client urgent:
+    x11.make_window_urgent(x11.window(winid))
+
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == 'true'
+    assert x11.is_window_urgent(x11.window(winid))
+
+
+@pytest.mark.parametrize("explicit_winid", [True, False])
+def test_urgent_jumpto_resets_urgent_flag(hlwm, x11, explicit_winid):
+    hlwm.create_client()  # dummy client that gets the focus
+    window, winid = x11.create_client(urgent=True)
+    assert hlwm.get_attr('clients.focus.winid') != winid
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == hlwm.bool(True)
+
+    hlwm.call(['jumpto', winid if explicit_winid else 'urgent'])
+
+    assert hlwm.get_attr('clients.focus.winid') == winid
+    assert hlwm.get_attr('clients.focus.urgent') == 'false'

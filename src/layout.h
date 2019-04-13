@@ -6,7 +6,6 @@
 #include <functional>
 #include <memory>
 
-#include "glib-backports.h"
 #include "tilingresult.h"
 #include "types.h"
 #include "x11-types.h"

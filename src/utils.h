@@ -6,7 +6,6 @@
 #include <time.h>
 #include <array>
 #include <cstddef>
-#include <ostream>
 #include <sstream>
 #include <string>
 
@@ -157,6 +156,11 @@ std::string join_strings(const InContainer& in, const std::string& delim) {
     for (auto iter = first + 1; iter != last; iter++)
         out << delim << *iter;
     return out.str();
+}
+
+template<typename T>
+void vector_append(std::vector<T>& target, const std::vector<T>& source) {
+    target.insert(std::end(target), std::begin(source), std::end(source));
 }
 
 

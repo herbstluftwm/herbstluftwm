@@ -11,6 +11,7 @@ import textwrap
 import types
 
 import pytest
+import warnings
 
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
@@ -114,7 +115,7 @@ class HlwmBridge:
     def get_attr(self, attribute_path, check=True):
         return self.call(['get_attr', attribute_path]).stdout
 
-    def create_client(self, term_command='sleep infinity', title=None):
+    def create_client(self, term_command='sleep infinity', title=None, keep_running=False):
         """
         Launch a client that will be terminated on shutdown.
         """
@@ -130,7 +131,10 @@ class HlwmBridge:
         # once the window appears, the hook is fired:
         winid = self.wait_for_window_of(wmclass)
 
-        self.client_procs.append(proc)
+        if not keep_running:
+            # Add to list of processes to be killed on shutdown:
+            self.client_procs.append(proc)
+
         return winid, proc
 
     def complete(self, cmd, partial=False, position=None):
@@ -218,6 +222,10 @@ class HlwmBridge:
 
         self.hc_idle.terminate()
         self.hc_idle.wait(2)
+
+    def bool(self, python_bool_var):
+        """convert a boolean variable into hlwm's string representation"""
+        return "true" if python_bool_var else "false"
 
 
 @pytest.fixture
@@ -366,18 +374,42 @@ class HlwmProcess:
                                 + " and had to be killed") from None
 
 
+def kill_all_existing_windows(show_warnings=True):
+    xlsclients = subprocess.run(['xlsclients', '-l'],
+                                stdout=subprocess.PIPE,
+                                check=True)
+    clients = []
+    for l in xlsclients.stdout.decode().splitlines():
+        m = re.match(r'Window (0x[0-9a-fA-F]*):', l)
+        if m:
+            clients.append(m.group(1))
+    if clients and show_warnings:
+        warnings.warn(UserWarning("There are still some clients "
+                                  "from previous tests."))
+    for c in clients:
+        if show_warnings:
+            warnings.warn(UserWarning("Killing " + c))
+        # send close and kill ungently
+        subprocess.run(['xdotool', 'windowclose', c])
+        subprocess.run(['xdotool', 'windowkill', c])
+
+
 @pytest.fixture(autouse=True)
 def hlwm_process(tmpdir):
     env = {
         'DISPLAY': os.environ['DISPLAY'],
         'XDG_CONFIG_HOME': str(tmpdir),
     }
+    assert env['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
+
     # env['DISPLAY'] = ':13'
     hlwm_proc = HlwmProcess(tmpdir, env)
+    kill_all_existing_windows(show_warnings=True)
 
     yield hlwm_proc
 
     hlwm_proc.shutdown()
+    kill_all_existing_windows(show_warnings=False)
 
 
 @pytest.fixture(params=[0])
@@ -387,6 +419,62 @@ def running_clients(hlwm, running_clients_num):
     "running_clients_num" test parameter.
     """
     return hlwm.create_clients(running_clients_num)
+
+
+@pytest.fixture()
+def x11():
+    from Xlib import X, display, Xutil
+
+    class X11:
+        def __init__(self):
+            self.display = display.Display()
+            self.screen = self.display.screen()
+            self.root = self.screen.root
+
+        def window(self, winid_string):
+            """return python-xlib window wrapper for a string window id"""
+            winid_int = int(winid_string, 0)
+            return self.display.create_resource_object('window', winid_int)
+
+        def winid_str(self, window_handle):
+            return hex(window_handle.id)
+
+        def make_window_urgent(self, window):
+            """make window urgent"""
+            window.set_wm_hints(flags=Xutil.UrgencyHint)
+            self.display.sync()
+
+        def is_window_urgent(self, window):
+            """check urgency of a given window handle"""
+            hints = window.get_wm_hints()
+            if hints is None:
+                return False
+            return bool(hints.flags & Xutil.UrgencyHint)
+
+        def create_client(self, urgent=False):
+            w = self.root.create_window(
+                50, 50, 300, 200, 2,
+                self.screen.root_depth,
+                X.InputOutput,
+                X.CopyFromParent,
+                background_pixel=self.screen.white_pixel,
+            )
+
+            w.set_wm_name('Some Window')
+            if urgent:
+                w.set_wm_hints(flags=Xutil.UrgencyHint)
+
+            w.map()
+            self.display.sync()
+            return w, self.winid_str(w)
+
+        def shutdown(self):
+            """close the X-connectoin"""
+            self.display.close()
+
+    x_connection = X11()
+    yield x_connection
+    x_connection.shutdown()
 
 
 @pytest.fixture()

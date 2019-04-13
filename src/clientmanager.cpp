@@ -36,6 +36,7 @@ ClientManager::~ClientManager()
         XReparentWindow(g_display, window, g_root, r.x, r.y);
         ewmh_update_frame_extents(window, 0,0,0,0);
         window_set_visible(window, true);
+        delete c.second;
     }
 }
 
