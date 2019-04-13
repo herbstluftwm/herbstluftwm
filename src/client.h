@@ -7,9 +7,9 @@
 #include "attribute_.h"
 #include "decoration.h"
 #include "object.h"
-#include "stack.h"
 #include "x11-types.h"
 
+class Slice;
 class HSTag;
 class Monitor;
 class Settings;
