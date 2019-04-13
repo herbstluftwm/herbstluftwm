@@ -41,22 +41,12 @@ def test_close(hlwm, running_clients_num):
 @pytest.mark.filterwarnings("ignore:tostring")
 @pytest.mark.parametrize("urgent", [True, False])
 def test_urgent_on_start(hlwm, x11, urgent):
-    command = []
-    if urgent:
-        # prepent urgent command
-        command.append(r"echo -e '\a'")
-    command += [
-        "sleep infinity",
-    ]
     # first create a dummy window, such that the second
     # window is not focused and thus keeps the urgent flag
     winid_focus, _ = hlwm.create_client()
-    command = '; '.join(command)
-    winid, _ = hlwm.create_client(term_command=command)
-    # This is racy, however the 'echo' should be evaluated
-    # even before the terminal shows up
-    time.sleep(0.2)
-    assert x11.is_window_urgent(winid) == urgent
+    window = x11.create_client(urgent=urgent)
+    winid = x11.winid_str(window)
+    assert x11.is_window_urgent(window) == urgent
     assert hlwm.get_attr('clients.{}.urgent'.format(winid)) \
         == hlwm.bool(urgent)
 
@@ -66,13 +56,13 @@ def test_urgent_after_start(hlwm, x11):
     winid_focus, _ = hlwm.create_client()
     winid, _ = hlwm.create_client()
     assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == 'false'
-    assert x11.is_window_urgent(winid) == False
+    assert x11.is_window_urgent(x11.window(winid)) == False
 
     # make the client urgent:
-    x11.make_window_urgent(winid)
+    x11.make_window_urgent(x11.window(winid))
 
     assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == 'true'
-    assert x11.is_window_urgent(winid) == True
+    assert x11.is_window_urgent(x11.window(winid)) == True
 
 
 @pytest.mark.parametrize("explicit_winid", [True, False])

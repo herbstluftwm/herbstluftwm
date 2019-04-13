@@ -405,19 +405,48 @@ def x11():
             winid_int = int(winid_string, 0)
             return self.display.create_resource_object('window', winid_int)
 
-        def make_window_urgent(self, winid_string):
-            """make window urgent, given a winid (as a string)"""
-            w = self.window(winid_string)
-            w.set_wm_hints( flags = Xutil.UrgencyHint )
+        def winid_str(self, window_handle):
+            return hex(window_handle.id)
+
+        def make_window_urgent(self, window):
+            """make window urgent"""
+            window.set_wm_hints( flags = Xutil.UrgencyHint )
             self.display.sync()
 
-        def is_window_urgent(self, winid_string):
-            """check urgency of a given window id (as a string)"""
-            w = self.window(winid_string)
-            hints = w.get_wm_hints()
+        def is_window_urgent(self, window):
+            """check urgency of a given window handle"""
+            hints = window.get_wm_hints()
+            if hints is None:
+                return False
             return bool(hints.flags & Xutil.UrgencyHint)
 
-    return X11()
+        def create_client(self, urgent=False):
+            w = self.root.create_window(
+                50, 50, 300, 200, 2,
+                self.screen.root_depth,
+                X.InputOutput,
+                X.CopyFromParent,
+                background_pixel = self.screen.white_pixel,
+            )
+
+            w.set_wm_name( 'Some Window' )
+            if urgent:
+                w.set_wm_hints( flags = Xutil.UrgencyHint )
+
+            w.map()
+            return w
+
+        def shutdown(self):
+            try:
+                pass
+                #while True:
+                #    e = self.display.next_event()
+            except Xlib.error.ConnectionClosedError:
+                pass
+
+    x_connection = X11()
+    yield x_connection
+    x_connection.shutdown()
 
 @pytest.fixture()
 def keyboard():
