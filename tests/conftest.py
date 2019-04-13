@@ -467,3 +467,4 @@ def mouse(hlwm_process):
                 subprocess.check_call(['xdotool', 'click', button])
 
     return Mouse()
+
