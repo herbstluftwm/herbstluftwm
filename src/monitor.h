@@ -5,12 +5,12 @@
 
 #include "attribute_.h"
 #include "object.h"
-#include "stack.h"
 #include "x11-types.h"
 
 class HSTag;
-class Settings;
 class MonitorManager;
+class Settings;
+class Slice;
 class Stack;
 
 class Monitor : public Object {
@@ -84,8 +84,6 @@ void all_monitors_replace_previous_tag(HSTag* old, HSTag* newmon);
 
 void drop_enternotify_events();
 
-void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
-                                 int* remain_len);
 Stack* get_monitor_stack();
 
 void monitor_update_focus_objects();

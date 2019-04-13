@@ -11,6 +11,7 @@ import textwrap
 import types
 
 import pytest
+import warnings
 
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
@@ -369,6 +370,26 @@ class HlwmProcess:
                                 + " and had to be killed") from None
 
 
+def kill_all_existing_windows(show_warnings=True):
+    xlsclients = subprocess.run(['xlsclients', '-l'],
+                                stdout=subprocess.PIPE,
+                                check=True)
+    clients = []
+    for l in xlsclients.stdout.decode().splitlines():
+        m = re.match(r'Window (0x[0-9a-fA-F]*):', l)
+        if m:
+            clients.append(m.group(1))
+    if clients and show_warnings:
+        warnings.warn(UserWarning("There are still some clients "
+                                  "from previous tests."))
+    for c in clients:
+        if show_warnings:
+            warnings.warn(UserWarning("Killing " + c))
+        # send close and kill ungently
+        subprocess.run(['xdotool', 'windowclose', c])
+        subprocess.run(['xdotool', 'windowkill', c])
+
+
 @pytest.fixture(autouse=True)
 def hlwm_process(tmpdir):
     env = {
@@ -376,11 +397,13 @@ def hlwm_process(tmpdir):
         'XDG_CONFIG_HOME': str(tmpdir),
     }
     # env['DISPLAY'] = ':13'
+    kill_all_existing_windows(show_warnings=True)
     hlwm_proc = HlwmProcess(tmpdir, env)
 
     yield hlwm_proc
 
     hlwm_proc.shutdown()
+    kill_all_existing_windows(show_warnings=False)
 
 
 @pytest.fixture(params=[0])
