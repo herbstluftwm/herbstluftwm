@@ -399,8 +399,8 @@ def hlwm_process(tmpdir):
     assert env['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
 
     # env['DISPLAY'] = ':13'
-    kill_all_existing_windows(show_warnings=True)
     hlwm_proc = HlwmProcess(tmpdir, env)
+    kill_all_existing_windows(show_warnings=True)
 
     yield hlwm_proc
 
