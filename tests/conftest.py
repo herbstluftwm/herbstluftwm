@@ -437,17 +437,7 @@ def x11():
             self.display.sync()
             return w, self.winid_str(w)
 
-        def shutdown(self):
-            try:
-                pass
-                #while True:
-                #    e = self.display.next_event()
-            except Xlib.error.ConnectionClosedError:
-                pass
-
-    x_connection = X11()
-    yield x_connection
-    x_connection.shutdown()
+    yield X11()
 
 @pytest.fixture()
 def keyboard():
