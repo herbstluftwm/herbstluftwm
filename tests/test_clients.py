@@ -44,8 +44,7 @@ def test_urgent_on_start(hlwm, x11, urgent):
     # first create a dummy window, such that the second
     # window is not focused and thus keeps the urgent flag
     winid_focus, _ = hlwm.create_client()
-    window = x11.create_client(urgent=urgent)
-    winid = x11.winid_str(window)
+    window, winid = x11.create_client(urgent=urgent)
     assert x11.is_window_urgent(window) == urgent
     assert hlwm.get_attr('clients.{}.urgent'.format(winid)) \
         == hlwm.bool(urgent)
@@ -68,8 +67,7 @@ def test_urgent_after_start(hlwm, x11):
 @pytest.mark.parametrize("explicit_winid", [True, False])
 def test_urgent_jumpto(hlwm, x11, explicit_winid):
     winid_old_focus, _ = hlwm.create_client()
-    window = x11.create_client(urgent=True)
-    winid = x11.winid_str(window)
+    window, winid = x11.create_client(urgent=True)
     assert hlwm.get_attr('clients.focus.winid') != winid
     assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == hlwm.bool(True)
 

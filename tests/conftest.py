@@ -435,7 +435,7 @@ def x11():
 
             w.map()
             self.display.sync()
-            return w
+            return w, self.winid_str(w)
 
         def shutdown(self):
             try:
