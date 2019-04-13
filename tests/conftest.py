@@ -440,7 +440,13 @@ def x11():
             self.display.sync()
             return w, self.winid_str(w)
 
-    yield X11()
+        def shutdown(self):
+            """close the X-connectoin"""
+            self.display.close()
+
+    x_connection = X11()
+    yield x_connection
+    x_connection.shutdown()
 
 
 @pytest.fixture()
