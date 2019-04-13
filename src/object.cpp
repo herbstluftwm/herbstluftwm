@@ -1,19 +1,13 @@
 #include "object.h"
 
 #include <algorithm>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <iostream>
 #include <memory>
-#include <sstream>
 #include <type_traits>
 
 #include "arglist.h"
 #include "attribute.h"
-#include "cassert"
 #include "entity.h"
-#include "globals.h"
 #include "hook.h"
 #include "utils.h"
 
