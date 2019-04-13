@@ -392,9 +392,11 @@ def running_clients(hlwm, running_clients_num):
     """
     return hlwm.create_clients(running_clients_num)
 
+
 @pytest.fixture()
 def x11():
     from Xlib import X, display, Xutil
+
     class X11:
         def __init__(self):
             self.display = display.Display()
@@ -411,7 +413,7 @@ def x11():
 
         def make_window_urgent(self, window):
             """make window urgent"""
-            window.set_wm_hints( flags = Xutil.UrgencyHint )
+            window.set_wm_hints(flags=Xutil.UrgencyHint)
             self.display.sync()
 
         def is_window_urgent(self, window):
@@ -427,18 +429,19 @@ def x11():
                 self.screen.root_depth,
                 X.InputOutput,
                 X.CopyFromParent,
-                background_pixel = self.screen.white_pixel,
+                background_pixel=self.screen.white_pixel,
             )
 
-            w.set_wm_name( 'Some Window' )
+            w.set_wm_name('Some Window')
             if urgent:
-                w.set_wm_hints( flags = Xutil.UrgencyHint )
+                w.set_wm_hints(flags=Xutil.UrgencyHint)
 
             w.map()
             self.display.sync()
             return w, self.winid_str(w)
 
     yield X11()
+
 
 @pytest.fixture()
 def keyboard():

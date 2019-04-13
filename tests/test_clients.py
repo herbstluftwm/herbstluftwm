@@ -54,13 +54,13 @@ def test_urgent_after_start(hlwm, x11):
     winid_focus, _ = hlwm.create_client()
     winid, _ = hlwm.create_client()
     assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == 'false'
-    assert x11.is_window_urgent(x11.window(winid)) == False
+    assert not x11.is_window_urgent(x11.window(winid))
 
     # make the client urgent:
     x11.make_window_urgent(x11.window(winid))
 
     assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == 'true'
-    assert x11.is_window_urgent(x11.window(winid)) == True
+    assert x11.is_window_urgent(x11.window(winid))
 
 
 @pytest.mark.parametrize("explicit_winid", [True, False])
