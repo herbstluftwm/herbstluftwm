@@ -66,16 +66,18 @@ def test_valid_layout_syntax_partial_layouts(hlwm, layout, num_splits_before):
 
     assert is_subseq(layout.replace(' ', ''), hlwm.call('dump').stdout)
 
-@pytest.mark.parametrize("layout", [
-    # with window ID placeholders 'W'
-    "(clients max:0 W)",
-    "(clients max:1 W W)",
-    "(split horizontal:0.9:0 (split vertical:0.5:1 (clients max:0) (clients grid:0)) (clients horizontal:0))",
-    "(split vertical:0.4:1 (clients max:2 W W W) (clients grid:0 W))",
-])
+
+@pytest.mark.parametrize(
+    "layout", [
+        # with window ID placeholders 'W'
+        "(clients max:0 W)",
+        "(clients max:1 W W)",
+        "(split horizontal:0.9:0 (split vertical:0.5:1 (clients max:0) (clients grid:0)) (clients horizontal:0))",
+        "(split vertical:0.4:1 (clients max:2 W W W) (clients grid:0 W))",
+    ])
 def test_full_layouts(hlwm, layout):
     clients = [hlwm.create_client() for k in range(0, layout.count('W'))]
-    for winid,_ in clients:
+    for winid, _ in clients:
         # replace the next W by the window ID
         layout = layout.replace('W', winid, 1)
 
@@ -83,6 +85,7 @@ def test_full_layouts(hlwm, layout):
 
     assert p.stdout == ''
     assert layout == hlwm.call('dump').stdout
+
 
 @pytest.mark.parametrize("layout", [
     "(clients horizontal:0 0234)",
@@ -95,7 +98,8 @@ def test_only_warn_invalid_winids(hlwm, layout):
     assert p.stdout.startswith("Warning: Unknown window IDs")
 
 
-@pytest.mark.parametrize("running_clients_num,focus",
+@pytest.mark.parametrize(
+    "running_clients_num,focus",
     [(n, f) for n in [1, 3] for f in range(0, n)])
 def test_focus_client_via_load(hlwm, running_clients, running_clients_num, focus):
     layout = '(clients horizontal:{} {})'.format(
@@ -107,7 +111,8 @@ def test_focus_client_via_load(hlwm, running_clients, running_clients_num, focus
     assert hlwm.get_attr('clients.focus.winid') == running_clients[focus]
 
 
-@pytest.mark.parametrize("running_clients_num,num_bring",
+@pytest.mark.parametrize(
+    "running_clients_num,num_bring",
     [(n, f) for n in [1, 3] for f in range(0, n + 1)])
 def test_load_brings_windows(hlwm, running_clients, running_clients_num, num_bring):
     hlwm.call('add other')
@@ -124,6 +129,3 @@ def test_load_brings_windows(hlwm, running_clients, running_clients_num, num_bri
         len(running_clients) - num_bring
     assert int(hlwm.get_attr('tags.1.client_count')) == num_bring
     assert hlwm.call('dump other').stdout == layout
-
-
-
