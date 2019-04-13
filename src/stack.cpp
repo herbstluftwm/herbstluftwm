@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
-#include <iomanip>
 
 #include "client.h"
 #include "ewmh.h"
