@@ -1,4 +1,5 @@
 import pytest
+import time
 
 
 def test_first_client_gets_focus(hlwm):
@@ -53,6 +54,7 @@ def test_urgent_on_start(hlwm, urgent):
     winid, _ = hlwm.create_client(term_command=command)
     # This is racy, however the 'echo' should be evaluated
     # even before the terminal shows up
+    time.sleep(0.2)
     assert hlwm.get_attr('clients.{}.urgent'.format(winid)) \
         == hlwm.bool(urgent)
 
