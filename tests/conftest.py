@@ -114,7 +114,7 @@ class HlwmBridge:
     def get_attr(self, attribute_path, check=True):
         return self.call(['get_attr', attribute_path]).stdout
 
-    def create_client(self, term_command='sleep infinity', title=None):
+    def create_client(self, term_command='sleep infinity', title=None, keep_running=False):
         """
         Launch a client that will be terminated on shutdown.
         """
@@ -130,7 +130,10 @@ class HlwmBridge:
         # once the window appears, the hook is fired:
         winid = self.wait_for_window_of(wmclass)
 
-        self.client_procs.append(proc)
+        if not keep_running:
+            # Add to list of processes to be killed on shutdown:
+            self.client_procs.append(proc)
+
         return winid, proc
 
     def complete(self, cmd, partial=False, position=None):
