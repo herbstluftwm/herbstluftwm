@@ -74,7 +74,7 @@ def test_urgent_after_start(hlwm, x11):
 
 
 @pytest.mark.parametrize("explicit_winid", [True, False])
-def test_urgent_jumpto(hlwm, x11, explicit_winid):
+def test_urgent_jumpto_resets_urgent_flag(hlwm, x11, explicit_winid):
     hlwm.create_client()  # dummy client that gets the focus
     window, winid = x11.create_client(urgent=True)
     assert hlwm.get_attr('clients.focus.winid') != winid
