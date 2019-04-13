@@ -223,6 +223,10 @@ class HlwmBridge:
         self.hc_idle.terminate()
         self.hc_idle.wait(2)
 
+    def bool(self, python_bool_var):
+        """convert a boolean variable into hlwm's string representation"""
+        return "true" if python_bool_var else "false"
+
 
 @pytest.fixture
 def hlwm(hlwm_process):
@@ -415,6 +419,62 @@ def running_clients(hlwm, running_clients_num):
     "running_clients_num" test parameter.
     """
     return hlwm.create_clients(running_clients_num)
+
+
+@pytest.fixture()
+def x11():
+    from Xlib import X, display, Xutil
+
+    class X11:
+        def __init__(self):
+            self.display = display.Display()
+            self.screen = self.display.screen()
+            self.root = self.screen.root
+
+        def window(self, winid_string):
+            """return python-xlib window wrapper for a string window id"""
+            winid_int = int(winid_string, 0)
+            return self.display.create_resource_object('window', winid_int)
+
+        def winid_str(self, window_handle):
+            return hex(window_handle.id)
+
+        def make_window_urgent(self, window):
+            """make window urgent"""
+            window.set_wm_hints(flags=Xutil.UrgencyHint)
+            self.display.sync()
+
+        def is_window_urgent(self, window):
+            """check urgency of a given window handle"""
+            hints = window.get_wm_hints()
+            if hints is None:
+                return False
+            return bool(hints.flags & Xutil.UrgencyHint)
+
+        def create_client(self, urgent=False):
+            w = self.root.create_window(
+                50, 50, 300, 200, 2,
+                self.screen.root_depth,
+                X.InputOutput,
+                X.CopyFromParent,
+                background_pixel=self.screen.white_pixel,
+            )
+
+            w.set_wm_name('Some Window')
+            if urgent:
+                w.set_wm_hints(flags=Xutil.UrgencyHint)
+
+            w.map()
+            self.display.sync()
+            return w, self.winid_str(w)
+
+        def shutdown(self):
+            """close the X-connectoin"""
+            self.display.close()
+
+    x_connection = X11()
+    yield x_connection
+    x_connection.shutdown()
 
 
 @pytest.fixture()
