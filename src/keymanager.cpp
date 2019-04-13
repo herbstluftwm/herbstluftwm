@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "arglist.h"
+#include "client.h"
 #include "clientmanager.h"
 #include "command.h"
 #include "completion.h"
