@@ -369,6 +369,7 @@ class HlwmProcess:
                 raise Exception("herbstluftwm did not quit on sigterm"
                                 + " and had to be killed") from None
 
+
 @pytest.fixture(autouse=True)
 def hlwm_process(tmpdir):
     env = {
@@ -467,4 +468,3 @@ def mouse(hlwm_process):
                 subprocess.check_call(['xdotool', 'click', button])
 
     return Mouse()
-
