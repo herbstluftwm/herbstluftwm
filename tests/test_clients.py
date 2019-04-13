@@ -1,6 +1,16 @@
 import pytest
 
 
+def test_client_lives_longer_than_hlwm(hlwm):
+    # This might seem like a nonsensical test, but it confirms the proper
+    # free()ing of memory related to tracked clients. In all other tests,
+    # clients are killed before hlwm is terminated. We start more than one
+    # client because that appears to be needed so that LeakSanitizer reliably
+    # detects the leak (if there is one).
+    winid, _ = hlwm.create_client(keep_running=True)
+    winid, _ = hlwm.create_client(keep_running=True)
+
+
 def test_first_client_gets_focus(hlwm):
     hlwm.call_xfail('get_attr clients.focus.winid')
     winid, _ = hlwm.create_client()
