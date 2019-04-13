@@ -3,15 +3,16 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <limits>
 
 #include "client.h"
-#include "glib-backports.h"
 #include "globals.h"
 #include "layout.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "mouse.h"
 #include "settings.h"
 #include "stack.h"
@@ -19,12 +20,12 @@
 #include "utils.h"
 
 using std::vector;
+using std::make_shared;
 
 Atom g_netatom[NetCOUNT];
 
 // module internal globals:
-static Window*     g_windows; // array with Window-IDs
-static size_t      g_window_count;
+static vector<Window> g_windows; // array with Window-IDs in initial mapping order
 static Window      g_wm_window;
 
 static int WM_STATE;
@@ -89,8 +90,6 @@ void ewmh_init() {
         PropModeReplace, (unsigned char *) g_netatom, NetCOUNT);
 
     /* init some globals */
-    g_windows = nullptr;
-    g_window_count = 0;
     if (!ewmh_read_client_list(&g_original_clients, &g_original_clients_count))
     {
         g_original_clients = nullptr;
@@ -125,7 +124,6 @@ void ewmh_update_all() {
 }
 
 void ewmh_destroy() {
-    g_free(g_windows);
     if (g_original_clients) {
         XFree(g_original_clients);
     }
@@ -149,7 +147,7 @@ void ewmh_update_wmname() {
 void ewmh_update_client_list() {
     XChangeProperty(g_display, g_root, g_netatom[NetClientList],
         XA_WINDOW, 32, PropModeReplace,
-        (unsigned char *) g_windows, g_window_count);
+        (unsigned char *) g_windows.data(), g_windows.size());
 }
 
 static bool ewmh_read_client_list(Window** buf, unsigned long *count) {
@@ -172,69 +170,35 @@ void ewmh_get_original_client_list(Window** buf, unsigned long *count) {
     *count = g_original_clients_count;
 }
 
-struct ewmhstack {
-    Window* buf;
-    int     count;
-    int     i;  // index of the next free element in buf
-};
-
-static void ewmh_add_tag_stack(HSTag* tag, void* data) {
-    struct ewmhstack* stack = (struct ewmhstack*)data;
-    if (find_monitor_with_tag(tag)) {
-        // do not add tags because they are already added
-        return;
-    }
-    int remain;
-    tag->stack->toWindowBuf(stack->buf + stack->i,
-                        stack->count - stack->i, true, &remain);
-    if (remain >= 0) {
-        stack->i = stack->count - remain;
-    } else {
-        HSDebug("Warning: not enough space in the ewmh stack\n");
-        stack->i = stack->count;
-    }
-}
-
 void ewmh_update_client_list_stacking() {
-    // First: get the windows in the current stack
-    struct ewmhstack stack;
-    stack.count = g_window_count;
-    stack.buf = g_new(Window, stack.count);
-    int remain;
-    monitor_stack_to_window_buf(stack.buf, stack.count, true, &remain);
-    stack.i = stack.count - remain;
+    // First: get the windows currently visible
+    auto buf = g_monitors->monitor_stack->toWindowBuf(true);
 
-    // Then add all the others at the end
-    tag_foreach(ewmh_add_tag_stack, &stack);
+    // Then add all the invisible windows at the end
+    for (auto tag : *global_tags) {
+        if (find_monitor_with_tag(tag)) {
+        // do not add tags because they are already added
+            continue;
+        }
+        vector_append(buf, tag->stack->toWindowBuf(true));
+    }
 
     // reverse stacking order, because ewmh requires bottom to top order
-    array_reverse(stack.buf, stack.count, sizeof(stack.buf[0]));
+    std::reverse(buf.begin(), buf.end());
 
     XChangeProperty(g_display, g_root, g_netatom[NetClientListStacking],
         XA_WINDOW, 32, PropModeReplace,
-        (unsigned char *) stack.buf, stack.i);
-    g_free(stack.buf);
+        (unsigned char *) buf.data(), buf.size());
 }
 
 void ewmh_add_client(Window win) {
-    g_windows = g_renew(Window, g_windows, g_window_count + 1);
-    g_windows[g_window_count] = win;
-    g_window_count++;
+    g_windows.push_back(win);
     ewmh_update_client_list();
     ewmh_update_client_list_stacking();
 }
 
 void ewmh_remove_client(Window win) {
-    int index = array_find(g_windows, g_window_count,
-                           sizeof(Window), &win);
-    if (index < 0) {
-        HSWarning("could not find window %lx in g_windows\n", win);
-    } else {
-        g_memmove(g_windows + index, g_windows + index + 1,
-                  sizeof(Window) *(g_window_count - index - 1));
-        g_windows = g_renew(Window, g_windows, g_window_count - 1);
-        g_window_count--;
-    }
+    g_windows.erase(std::remove(g_windows.begin(), g_windows.end(), win), g_windows.end());
     ewmh_update_client_list();
     ewmh_update_client_list_stacking();
 }
@@ -246,16 +210,16 @@ void ewmh_update_desktops() {
 }
 
 void ewmh_update_desktop_names() {
-    char**  names = g_new(char*, tag_get_count());
-    for (int i = 0; i < tag_get_count(); i++) {
-        names[i] = (char*)get_tag_by_index(i)->name->c_str();
+    // we know that the tags don't change during the following lines
+    vector<const char*> names;
+    for (auto tag : *global_tags) {
+        names.push_back(tag->name->c_str());
     }
     XTextProperty text_prop;
-    Xutf8TextListToTextProperty(g_display, names, tag_get_count(),
+    Xutf8TextListToTextProperty(g_display, (char**)names.data(), names.size(),
                                 XUTF8StringStyle, &text_prop);
     XSetTextProperty(g_display, g_root, &text_prop, g_netatom[NetDesktopNames]);
     XFree(text_prop.value);
-    g_free(names);
 }
 
 void ewmh_update_current_desktop() {
