@@ -211,16 +211,6 @@ class HlwmBridge:
                 'waiting for hook triggered by client \"{}\"'.format(wmclass))
         return line[-1]
 
-    @contextmanager
-    def wait_for_hook(self, *hook_regex_list):
-        """context manager for herbstclient -w HOOK_REGEX_LIST"""
-        hc_wait = subprocess.Popen([self.HC_PATH, '-w'] + list(hook_regex_list))
-        # TODO: fix the race condition that the freshly forked hc_wait connects
-        # to hlwm too late
-        yield
-        hc_wait.wait(2)
-        assert hc_wait.returncode == 0
-
     def shutdown(self):
         for client_proc in self.client_procs:
             client_proc.terminate()
