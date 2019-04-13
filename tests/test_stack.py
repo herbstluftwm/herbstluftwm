@@ -1,6 +1,7 @@
 import re
 import pytest
 
+
 def strip_winids(string):
     """
     Replaces all substrings that look like window IDs with a fixed string.
@@ -15,6 +16,7 @@ def helper_get_stack_as_list(hlwm):
 # in tiling mode, the focus layer is used. (similar to floating mode with
 # raise_on_focus_temporarily = true). So we test the stacking in floating
 # mode.
+
 
 @pytest.mark.parametrize('count', [2, 5])
 def test_clients_stacked_in_reverse_order_of_creation(hlwm, count):
@@ -60,7 +62,7 @@ def test_stack_tree(hlwm):
     stack = hlwm.call('stack')
 
     expected_stack = '''\
-  - 
+  -
     - Monitor 1 ("monitor2") with tag "tag2"
       - Focus-Layer
         - Client <windowid> "bash"

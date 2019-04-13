@@ -22,10 +22,12 @@ def test_attr_cmd(hlwm):
     assert hlwm.call('attr tags.count').stdout == hlwm.get_attr('tags.count')
     hlwm.call_xfail('attr tags.co')
 
+
 @pytest.mark.parametrize('object_path', ['', 'clients', 'theme', 'monitors'])
 def test_object_completion(hlwm, object_path):
     assert hlwm.list_children(object_path) \
         == hlwm.list_children_via_attr(object_path)
+
 
 def test_object_tree(hlwm):
     t1 = hlwm.call('object_tree').stdout.splitlines()
@@ -121,7 +123,7 @@ def test_disjoin_rects(hlwm):
         '300x150+0+250',
         '300x150+600+250',
         '600x250+300+400',
-        '')) # trailing newline
+        ''))  # trailing newline
     response = hlwm.call('disjoin_rects 600x400+0+0 600x400+300+250').stdout
     assert response == expected
 
@@ -224,11 +226,10 @@ def test_remove_attr_user_attribute(hlwm):
     hlwm.call_xfail(['get_attr', path]).expect_stderr('has no attribute')  # attribute does not exist
     hlwm.call(['new_attr', 'string', path])  # and is free again
 
+
 def test_getenv_completion(hlwm):
     prefix = 'some_uniq_prefix_'
     name = prefix + 'envname'
     hlwm.call(['setenv', name, 'myvalue'])
 
     assert [name] == hlwm.complete('getenv ' + prefix, position=1)
-
-

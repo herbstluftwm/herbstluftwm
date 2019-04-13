@@ -1,6 +1,7 @@
 #include "monitor.h"
 
 #include <X11/Xlib.h>
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <sstream>
@@ -27,7 +28,9 @@
 #include "tagmanager.h"
 #include "utils.h"
 
+using std::make_shared;
 using std::string;
+using std::vector;
 
 extern MonitorManager* g_monitors;
 
@@ -734,11 +737,6 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
     return ret;
 }
 
-void monitor_stack_to_window_buf(Window* buf, int len, bool real_clients,
-                                 int* remain_len) {
-    g_monitors->monitor_stack->toWindowBuf(buf, len, real_clients, remain_len);
-}
-
 Stack* get_monitor_stack() {
     return g_monitors->monitor_stack;
 }
@@ -765,22 +763,18 @@ void monitor_restack(Monitor* monitor) {
 }
 
 void Monitor::restack() {
-    int count = 1 + tag->stack->windowCount(false);
-    Window* buf = g_new(Window, count);
-    buf[0] = stacking_window;
-    tag->stack->toWindowBuf(buf + 1, count - 1, false, nullptr);
+    vector<Window> buf = {};
+    buf.push_back(stacking_window);
+    vector_append(buf, tag->stack->toWindowBuf(false));
     /* remove a focused fullscreen client */
     Client* client = tag->frame->root_->focusedClient();
     if (client && client->fullscreen_) {
         Window win = client->decorationWindow();
         XRaiseWindow(g_display, win);
-        int idx = array_find(buf, count, sizeof(*buf), &win);
-        assert(idx >= 0);
-        count--;
-        memmove(buf + idx, buf + idx + 1, sizeof(*buf) * (count - idx));
+        // remove the window from the buf
+        buf.erase(std::remove(buf.begin(), buf.end(), win), buf.end());
     }
-    XRestackWindows(g_display, buf, count);
-    g_free(buf);
+    XRestackWindows(g_display, buf.data(), buf.size());
 }
 
 int shift_to_monitor(int argc, char** argv, Output output) {

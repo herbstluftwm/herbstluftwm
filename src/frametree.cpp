@@ -228,7 +228,7 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         }
         size_t childCount() override { return 0; };
         void appendCaption(Output output) override {
-            output << g_layout_names[l_->layout] << ":";
+            output << " " << g_layout_names[l_->layout] << ":";
             for (auto client : l_->clients) {
                 output << " 0x"
                        << std::hex << client->x11Window() << std::dec;
@@ -252,7 +252,7 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         }
         size_t childCount() override { return 2; };
         void appendCaption(Output output) override {
-            output << g_align_names[s_->align_]
+            output << " " << g_align_names[s_->align_]
                    << " " << (s_->fraction_ * 100 / FRACTION_UNIT) << "%"
                    << " selection=" << s_->selection_;
         }

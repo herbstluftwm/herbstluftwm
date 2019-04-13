@@ -3,6 +3,8 @@
 
 #include <X11/X.h>
 #include <array>
+#include <memory>
+#include <vector>
 
 #include "types.h"
 
@@ -59,9 +61,7 @@ public:
     bool isLayerEmpty(HSLayer layer);
     void clearLayer(HSLayer layer);
 
-    // returns the number of windows in this stack
-    int windowCount(bool real_clients);
-    void toWindowBuf(Window* buf, int len, bool real_clients, int* remain_len);
+    std::vector<Window> toWindowBuf(bool real_clients);
     void restack();
     Window lowestWindow();
 
