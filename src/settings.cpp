@@ -114,9 +114,9 @@ Settings::Settings()
     wmname.changed().connect(&ewmh_update_wmname);
 
     default_frame_layout.setValidator([] (int layout) {
-        if (layout >= LayoutAlgorithmCount()) {
+        if (layout >= layoutAlgorithmCount()) {
             return "layout number must be at most "
-                + to_string(LayoutAlgorithmCount() - 1);
+                + to_string(layoutAlgorithmCount() - 1);
         }
         return string();
     });

@@ -38,7 +38,7 @@ enum class LayoutAlgorithm {
 
 ConverterInstance(LayoutAlgorithm)
 
-size_t LayoutAlgorithmCount();
+size_t layoutAlgorithmCount();
 
 class FrameDataLeaf {
 protected:

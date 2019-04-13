@@ -5,7 +5,7 @@
 
 using std::string;
 
-size_t LayoutAlgorithmCount() {
+size_t layoutAlgorithmCount() {
     size_t i = 0;
     while (g_layout_names[i] != nullptr) {
         i++;

@@ -61,7 +61,7 @@ HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> 
     : HSFrame(tag, settings, parent)
 {
     auto l = settings->default_frame_layout();
-    if (l >= LayoutAlgorithmCount()) {
+    if (l >= layoutAlgorithmCount()) {
         l = 0;
     }
     layout = (LayoutAlgorithm) l;
@@ -208,9 +208,9 @@ int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
     } else {
         /* cycle through the default list of layouts */
         layout_index = (int)cur_frame->getLayout() + delta;
-        layout_index %= LayoutAlgorithmCount();
-        layout_index += LayoutAlgorithmCount();
-        layout_index %= LayoutAlgorithmCount();
+        layout_index %= layoutAlgorithmCount();
+        layout_index += layoutAlgorithmCount();
+        layout_index %= layoutAlgorithmCount();
     }
     cur_frame->setLayout((LayoutAlgorithm)layout_index);
     get_current_monitor()->applyLayout();
