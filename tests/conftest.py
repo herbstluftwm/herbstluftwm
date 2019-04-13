@@ -39,16 +39,6 @@ class HlwmBridge:
         # by self.hc_idle
         self.wmclass2winid = {}
 
-        clients = [c for c in self.list_children('clients') if c[0:2] == '0x']
-        if len(clients) > 0:
-            warnings.warn(UserWarning("There are still some clients "
-                                      "from previous tests."))
-            for c in clients:
-                warnings.warn(UserWarning("Killing " + c))
-                # send close and kill ungently
-                subprocess.run(['xdotool', 'windowclose', c])
-                subprocess.run(['xdotool', 'windowkill', c])
-
     def _parse_command(self, cmd):
         """
         Parse a command (a string using shell quotes or
@@ -377,6 +367,25 @@ class HlwmProcess:
                                 + " and had to be killed") from None
 
 
+def kill_all_existing_windows(show_warnings=True):
+    xlsclients = subprocess.run(['xlsclients', '-l'], stdout=subprocess.PIPE)
+    assert xlsclients.returncode == 0
+    clients = []
+    for l in xlsclients.stdout.decode().splitlines():
+        m = re.match(r'Window (0x[0-9a-fA-F]*):', l)
+        if m:
+            clients.append(m.group(1))
+    if len(clients) > 0:
+        if show_warnings:
+            warnings.warn(UserWarning("There are still some clients "
+                                      "from previous tests."))
+        for c in clients:
+            if show_warnings:
+                warnings.warn(UserWarning("Killing " + c))
+            # send close and kill ungently
+            subprocess.run(['xdotool', 'windowclose', c])
+            subprocess.run(['xdotool', 'windowkill', c])
+
 @pytest.fixture(autouse=True)
 def hlwm_process(tmpdir):
     env = {
@@ -384,11 +393,13 @@ def hlwm_process(tmpdir):
         'XDG_CONFIG_HOME': str(tmpdir),
     }
     # env['DISPLAY'] = ':13'
+    kill_all_existing_windows(show_warnings=True)
     hlwm_proc = HlwmProcess(tmpdir, env)
 
     yield hlwm_proc
 
     hlwm_proc.shutdown()
+    kill_all_existing_windows(show_warnings=False)
 
 
 @pytest.fixture(params=[0])
