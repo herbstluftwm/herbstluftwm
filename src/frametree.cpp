@@ -9,6 +9,7 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
+#include "stack.h"
 #include "tag.h"
 #include "utils.h"
 
