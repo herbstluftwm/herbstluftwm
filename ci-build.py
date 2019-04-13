@@ -3,18 +3,29 @@
 import argparse
 import os
 import subprocess as sp
-import tempfile
 from pathlib import Path
+
+
+def tox(tox_args, build_dir):
+    """
+    Prepare environment for tox and execute it with the given arguments
+    """
+    tox_env = os.environ.copy()
+    tox_env['PWD'] = build_dir
+    sp.check_call(f'tox {tox_args}', shell=True, cwd=build_dir, env=tox_env)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--build-dir', type=str, required=True)
 parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'), required=True)
+parser.add_argument('--compile', action='store_true')
 parser.add_argument('--run-tests', action='store_true')
 parser.add_argument('--build-docs', action='store_true')
-parser.add_argument('--cxx', type=str, required=True)
-parser.add_argument('--cc', type=str, required=True)
+parser.add_argument('--cxx', type=str)
+parser.add_argument('--cc', type=str)
 parser.add_argument('--check-using-std', action='store_true')
 parser.add_argument('--iwyu', action='store_true')
+parser.add_argument('--flake8', action='store_true')
 parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
 args = parser.parse_args()
@@ -47,7 +58,7 @@ build_env = os.environ.copy()
 build_env.update({
     'CC': args.cc,
     'CXX': args.cxx,
-    })
+})
 
 cmake_args = [
     '-GNinja',
@@ -55,11 +66,12 @@ cmake_args = [
     f'-DCMAKE_BUILD_TYPE={args.build_type}',
     f'-DWITH_DOCUMENTATION={"YES" if args.build_docs else "NO"}',
     f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}',
-    ]
+]
 
 sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=build_env)
 
-sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
+if args.compile:
+    sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
 
 if args.ccache:
     sp.check_call(['ccache', '-s'])
@@ -71,12 +83,11 @@ if args.iwyu:
     # Run include-what-you-use (just printing the result for now)
     sp.check_call(f'iwyu_tool -p . -j "$(nproc)" -- --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
 
+if args.flake8:
+    tox('-e flake8', build_dir)
+
 if args.run_tests:
-    tox_env = os.environ.copy()
-    tox_env.update({
-        'PWD': build_dir,
-        })
-    sp.check_call(f'tox -e py37 -- -n auto -v -x', shell=True, cwd=build_dir, env=tox_env)
+    tox('-e py37 -- -n auto -v -x', build_dir)
 
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
     sp.check_call('lcov --remove coverage.info "/usr/*" --output-file coverage.info', shell=True, cwd=build_dir)

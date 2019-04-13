@@ -128,7 +128,9 @@ public:
     };
 
     void appendCaption(Output output) override {
-        output << label_;
+        if (label_ != "") {
+            output << " " << label_;
+        }
     };
 
 private:

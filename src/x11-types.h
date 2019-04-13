@@ -64,6 +64,8 @@ struct Point2D {
 struct Rectangle {
     static Rectangle fromStr(const std::string &source);
 
+    static Rectangle fromCorners(int x1, int y1, int x2, int y2);
+
     Point2D tl() const { return {x, y}; }
     Point2D br() const { return {x + width, y + height}; }
 

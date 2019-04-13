@@ -6,7 +6,6 @@
 
 #include "optional.h"
 #include "types.h"
-#include "utils.h"
 
 class Client;
 
