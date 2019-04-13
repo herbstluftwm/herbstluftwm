@@ -4,7 +4,6 @@
 
 #include "clientmanager.h"
 #include "decoration.h"
-#include "globals.h"
 #include "hookmanager.h"
 #include "keymanager.h"
 #include "monitormanager.h"
