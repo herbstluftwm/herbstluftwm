@@ -3,7 +3,6 @@
     { include: ['<bits/exception.h>', 'private', '<exception>', 'public']},
     { include: ['<bits/getopt_core.h>', 'private', '<getopt.h>', 'public']},
     { include: ['<ext/alloc_traits.h>', 'private', '<vector>', 'public']}, # see https://github.com/include-what-you-use/include-what-you-use/issues/648
-    { include: ['<glib.h>', 'private', '"glib-backports.h"', 'public']},
 
     { symbol: ['CLOCK_REALTIME', 'private', '<time.h>', 'public']},
     { symbol: ['time_t', 'private', '<time.h>', 'public']},
