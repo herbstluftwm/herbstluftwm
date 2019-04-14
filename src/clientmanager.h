@@ -4,15 +4,15 @@
 #include <X11/X.h>
 #include <unordered_map>
 
-#include "client.h"
 #include "link.h"
 #include "object.h"
 #include "signal.h"
 
-class Theme;
 class Client;
-class Settings;
 class Completion;
+class HSTag;
+class Settings;
+class Theme;
 
 // Note: this is basically a singleton
 

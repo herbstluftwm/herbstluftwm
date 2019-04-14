@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "framedata.h"
-#include "glib-backports.h"
 #include "tilingresult.h"
 #include "types.h"
 #include "x11-types.h"

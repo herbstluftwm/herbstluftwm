@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "ewmh.h"
+#include "floating.h"
 #include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"

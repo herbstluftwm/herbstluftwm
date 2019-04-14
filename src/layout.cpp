@@ -1,6 +1,5 @@
 #include "layout.h"
 
-#include <glib.h>
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -11,7 +10,6 @@
 #include "client.h"
 #include "floating.h"
 #include "frametree.h" // TODO: remove this dependency!
-#include "glib-backports.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "monitor.h"

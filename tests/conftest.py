@@ -8,13 +8,14 @@ import shlex
 import subprocess
 import sys
 import textwrap
-import time
 import types
 
 import pytest
+import warnings
 
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
+
 
 class HlwmBridge:
 
@@ -22,17 +23,18 @@ class HlwmBridge:
 
     def __init__(self, display, hlwm_process):
         self.client_procs = []
-        self.next_client_id = 0;
+        self.next_client_id = 0
         self.env = {
             'DISPLAY': display,
         }
         self.hlwm_process = hlwm_process
         self.hc_idle = subprocess.Popen(
-                    [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
-                    bufsize=1, # line buffered
-                    universal_newlines=True,
-                    env=self.env,
-                    stdout=subprocess.PIPE)
+            [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
+            bufsize=1,  # line buffered
+            universal_newlines=True,
+            env=self.env,
+            stdout=subprocess.PIPE
+        )
         # a dictionary mapping wmclasses to window ids as reported
         # by self.hc_idle
         self.wmclass2winid = {}
@@ -113,7 +115,7 @@ class HlwmBridge:
     def get_attr(self, attribute_path, check=True):
         return self.call(['get_attr', attribute_path]).stdout
 
-    def create_client(self, term_command='sleep infinity', title=None):
+    def create_client(self, term_command='sleep infinity', title=None, keep_running=False):
         """
         Launch a client that will be terminated on shutdown.
         """
@@ -123,13 +125,16 @@ class HlwmBridge:
         command = ['xterm'] + title + ['-class', wmclass, '-e', 'bash', '-c', term_command]
 
         # enforce a hook when the window appears
-        self.call(['rule', 'once', 'class='+wmclass, 'hook=here_is_'+wmclass])
+        self.call(['rule', 'once', 'class=' + wmclass, 'hook=here_is_' + wmclass])
 
         proc = subprocess.Popen(command, env=self.env)
         # once the window appears, the hook is fired:
         winid = self.wait_for_window_of(wmclass)
 
-        self.client_procs.append(proc)
+        if not keep_running:
+            # Add to list of processes to be killed on shutdown:
+            self.client_procs.append(proc)
+
         return winid, proc
 
     def complete(self, cmd, partial=False, position=None):
@@ -222,7 +227,7 @@ class HlwmBridge:
 @pytest.fixture
 def hlwm(hlwm_process):
     display = os.environ['DISPLAY']
-    #display = ':13'
+    # display = ':13'
     hlwm_bridge = HlwmBridge(display, hlwm_process)
     yield hlwm_bridge
 
@@ -242,10 +247,12 @@ class HlwmProcess:
         """.lstrip('\n')))
         autostart.chmod(0o755)
         bin_path = os.path.join(BINDIR, 'herbstluftwm')
-        self.proc = subprocess.Popen([bin_path, '--verbose'], env=env,
-                bufsize=0,  # essential for reading output with selectors!
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+        self.proc = subprocess.Popen(
+            [bin_path, '--verbose'], env=env,
+            bufsize=0,  # essential for reading output with selectors!
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
 
         sel = selectors.DefaultSelector()
         sel.register(self.proc.stdout, selectors.EVENT_READ, data=sys.stdout)
@@ -343,7 +350,7 @@ class HlwmProcess:
                             + " but hlwm still running") from None
         else:
             raise Exception("{} made herbstluftwm quit with exit code {}"
-                .format(str(reason), self.proc.returncode)) from None
+                            .format(str(reason), self.proc.returncode)) from None
 
     def shutdown(self):
         self.proc.terminate()
@@ -363,18 +370,40 @@ class HlwmProcess:
                                 + " and had to be killed") from None
 
 
+def kill_all_existing_windows(show_warnings=True):
+    xlsclients = subprocess.run(['xlsclients', '-l'],
+                                stdout=subprocess.PIPE,
+                                check=True)
+    clients = []
+    for l in xlsclients.stdout.decode().splitlines():
+        m = re.match(r'Window (0x[0-9a-fA-F]*):', l)
+        if m:
+            clients.append(m.group(1))
+    if clients and show_warnings:
+        warnings.warn(UserWarning("There are still some clients "
+                                  "from previous tests."))
+    for c in clients:
+        if show_warnings:
+            warnings.warn(UserWarning("Killing " + c))
+        # send close and kill ungently
+        subprocess.run(['xdotool', 'windowclose', c])
+        subprocess.run(['xdotool', 'windowkill', c])
+
+
 @pytest.fixture(autouse=True)
 def hlwm_process(tmpdir):
     env = {
         'DISPLAY': os.environ['DISPLAY'],
         'XDG_CONFIG_HOME': str(tmpdir),
     }
-    #env['DISPLAY'] = ':13'
+    # env['DISPLAY'] = ':13'
+    kill_all_existing_windows(show_warnings=True)
     hlwm_proc = HlwmProcess(tmpdir, env)
 
     yield hlwm_proc
 
     hlwm_proc.shutdown()
+    kill_all_existing_windows(show_warnings=False)
 
 
 @pytest.fixture(params=[0])

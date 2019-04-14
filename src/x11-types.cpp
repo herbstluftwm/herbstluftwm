@@ -4,11 +4,8 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <cassert>
-#include <cstdio>
 #include <iomanip>
-#include <iostream>
 
-#include "glib-backports.h"
 #include "globals.h"
 
 using std::string;

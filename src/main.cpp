@@ -1,16 +1,17 @@
 #include <X11/X.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
-#include <errno.h>
 #include <getopt.h>
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <cassert>
+#include <cerrno>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <sstream>
 
 #include "client.h"

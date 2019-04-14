@@ -6,7 +6,6 @@
 
 #include "byname.h"
 #include "childbyindex.h"
-#include "floating.h" // for find_rectangle_in_direction(), maybe move?
 #include "link.h"
 #include "monitor.h"
 

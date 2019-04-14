@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdio>
-#include <iomanip>
 
 #include "client.h"
 #include "ewmh.h"
@@ -164,115 +163,59 @@ int print_stack_command(int argc, char** argv, Output output) {
     return 0;
 }
 
-int Stack::windowCount(bool real_clients) {
-    int counter = 0;
-    toWindowBuf(nullptr, 0, real_clients, &counter);
-    return -counter;
-}
-
-/* stack to window buf */
-struct s2wb {
-    int     len;
-    Window* buf;
-    int     missing; /* number of slices that could not find space in buf */
-    bool    real_clients; /* whether to include windows that aren't clients */
-    HSLayer layer;  /* the layer the slice should be added to */
-};
-
-static void slice_to_window_buf(Slice* s, struct s2wb* data) {
+static vector<Window> slice_to_window_buf(Slice* s, bool real_clients, HSLayer layer) {
     HSTag* tag;
-    if (slice_highest_layer(s) != data->layer) {
+    if (slice_highest_layer(s) != layer) {
         /** slice only is added to its highest layer.
          * just skip it if the slice is not shown on this data->layer */
-        return;
+        return {};
     }
     switch (s->type) {
         case SLICE_CLIENT:
-            if (data->len) {
-                if (data->real_clients) {
-                    data->buf[0] = s->data.client->x11Window();
-                } else {
-                    data->buf[0] = s->data.client->decorationWindow();
-                }
-                data->buf++;
-                data->len--;
+            if (real_clients) {
+                return { s->data.client->x11Window() };
             } else {
-                data->missing++;
+                return { s->data.client->decorationWindow() };
             }
             break;
         case SLICE_WINDOW:
-            if (!data->real_clients) {
-                if (data->len) {
-                    data->buf[0] = s->data.window;
-                    data->buf++;
-                    data->len--;
-                } else {
-                    data->missing++;
-                }
+            if (!real_clients) {
+                return { s->data.window };
             }
             break;
         case SLICE_MONITOR:
             tag = s->data.monitor->tag;
-            if (!data->real_clients) {
-                if (data->len) {
-                    data->buf[0] = s->data.monitor->stacking_window;
-                    data->buf++;
-                    data->len--;
-                } else {
-                    data->missing++;
-                }
+            vector<Window> result;
+            if (!real_clients) {
+                result.push_back(s->data.monitor->stacking_window);
             }
-            int remain_len = 0; /* remaining length */
-            tag->stack->toWindowBuf(data->buf, data->len,
-                                      data->real_clients, &remain_len);
-            int len_used = data->len - remain_len;
-            if (remain_len >= 0) {
-                data->buf += len_used;
-                data->len = remain_len;
-            } else {
-                data->len = 0;
-                data->missing += -remain_len;
-            }
+            vector_append(result, tag->stack->toWindowBuf(real_clients));
+            return result;
             break;
     }
+    return {};
 }
 
-void Stack::toWindowBuf(Window* buf, int len,
-                         bool real_clients, int* remain_len) {
-    struct s2wb data = {};
-    data.len = len;
-    data.buf = buf;
-    data.missing = 0;
-    data.real_clients = real_clients;
-
+vector<Window> Stack::toWindowBuf(bool real_clients) {
+    vector<Window> result;
     for (int i = 0; i < LAYER_COUNT; i++) {
-        data.layer = (HSLayer)i;
         for (auto slice : top[i]) {
-            slice_to_window_buf(slice, &data);
+            vector_append(
+                result,
+                slice_to_window_buf(slice, real_clients, (HSLayer)i));
         }
     }
-    if (!remain_len) {
-        // nothing to do
-        return;
-    }
-    if (data.missing == 0) {
-        *remain_len = data.len;
-    } else {
-        *remain_len = -data.missing;
-    }
+    return result;
 }
 
 void Stack::restack() {
     if (!dirty) {
         return;
     }
-    int count = windowCount(false);
-    Window* buf = g_new0(Window, count);
-    toWindowBuf(buf, count, false, nullptr);
-    XRestackWindows(g_display, buf, count);
+    auto buf = toWindowBuf(false);
+    XRestackWindows(g_display, buf.data(), buf.size());
     dirty = false;
     ewmh_update_client_list_stacking();
-    g_free(buf);
 }
 
 void Stack::raiseSlice(Slice* slice) {
