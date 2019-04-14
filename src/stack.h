@@ -6,7 +6,6 @@
 #include <memory>
 #include <vector>
 
-#include "glib-backports.h"
 #include "types.h"
 
 enum HSLayer {

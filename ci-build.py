@@ -98,7 +98,7 @@ if args.flake8:
     tox('-e flake8', build_dir)
 
 if args.run_tests:
-    tox('-e py37 -- -n auto -v -x', build_dir)
+    tox('-e py37 -- -n auto --cache-clear -v -x', build_dir)
 
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
     sp.check_call('lcov --remove coverage.info "/usr/*" --output-file coverage.info', shell=True, cwd=build_dir)
