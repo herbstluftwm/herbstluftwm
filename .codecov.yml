@@ -1,6 +1,12 @@
 coverage:
     precision: 1
 
+    # Status reporting is disabled until we have fixed the flaky coverage
+    # (seems to be related to our completion tests):
+    status:
+        project: off
+        patch: off
+
 comment:
     layout: "diff"
     require_changes: yes
