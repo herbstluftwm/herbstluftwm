@@ -5,7 +5,6 @@ import os
 import re
 import subprocess as sp
 import sys
-import tempfile
 from pathlib import Path
 
 
