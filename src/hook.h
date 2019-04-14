@@ -2,6 +2,7 @@
 #define __HERBSTLUFT_HOOK_H_
 
 #include <string>
+#include <vector>
 
 class HSTag;
 class Object;
@@ -23,7 +24,7 @@ public:
 void hook_init();
 void hook_destroy();
 
-void hook_emit(int argc, const char** argv);
+void hook_emit(std::vector<std::string> args);
 void emit_tag_changed(HSTag* tag, int monitor);
 void hook_emit_list(const char* name, ...);
 

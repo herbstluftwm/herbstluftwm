@@ -10,7 +10,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     git \
     iwyu \
     lcov \
-    libglib2.0-dev \
     libx11-dev \
     libxext-dev \
     libxinerama-dev \

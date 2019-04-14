@@ -8,12 +8,13 @@
 #include <cassert>
 #include <cstdio>
 
-#include "glib-backports.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "tag.h"
 #include "utils.h"
 
+using std::string;
+using std::vector;
 
 static Window g_event_window;
 
@@ -38,17 +39,22 @@ void hook_destroy() {
     XDestroyWindow(g_display, g_event_window);
 }
 
-void hook_emit(int argc, const char** argv) {
+void hook_emit(vector<string> args) {
     static int last_property_number = 0;
-    if (argc <= 0) {
+    if (args.size() <= 0) {
         // nothing to do
         return;
+    }
+    vector<const char*> args_c_str;
+    args_c_str.reserve(args.size());
+    for (const auto& s : args) {
+        args_c_str.push_back(s.c_str());
     }
     XTextProperty text_prop;
     static char atom_name[STRING_BUF_SIZE];
     snprintf(atom_name, STRING_BUF_SIZE, HERBST_HOOK_PROPERTY_FORMAT, last_property_number);
     Atom atom = ATOM(atom_name);
-    Xutf8TextListToTextProperty(g_display, (char**)argv, argc, XUTF8StringStyle, &text_prop);
+    Xutf8TextListToTextProperty(g_display, (char**) args_c_str.data(), args.size(), XUTF8StringStyle, &text_prop);
     XSetTextProperty(g_display, g_event_window, &text_prop, atom);
     XFree(text_prop.value);
     // set counter for next property
@@ -60,35 +66,22 @@ void emit_tag_changed(HSTag* tag, int monitor) {
     assert(tag != nullptr);
     static char monitor_name[STRING_BUF_SIZE];
     snprintf(monitor_name, STRING_BUF_SIZE, "%d", monitor);
-    const char* argv[3];
-    argv[0] = "tag_changed";
-    argv[1] = tag->name->c_str();
-    argv[2] = monitor_name;
-    hook_emit(LENGTH(argv), argv);
+    hook_emit({"tag_changed", tag->name->c_str(), monitor_name});
 }
 
 void hook_emit_list(const char* name, ...) {
     assert(name != nullptr);
-    int count = 1;
+    vector<string> args;
     va_list ap;
-    // first count number of arguments
     va_start(ap, name);
-    while (va_arg(ap, char*)) {
-        count++;
+    while (true) {
+        const char* next = va_arg(ap, const char*);
+        if (!next) {
+            break;
+        }
+        args.push_back(next);
     }
     va_end(ap);
-    // then fill arguments into argv array
-    const char** argv = g_new(const char*, count);
-    int i = 0;
-    argv[i++] = name;
-    va_start(ap, name);
-    while (i < count) {
-        argv[i] = va_arg(ap, char*);
-        i++;
-    }
-    va_end(ap);
-    hook_emit(count, argv);
-    // cleanup
-    g_free(argv);
+    hook_emit(args);
 }
 

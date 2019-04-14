@@ -632,41 +632,35 @@ Monitor* monitor_with_coordinate(int x, int y) {
 // monitor detection using xinerama (if available)
 #ifdef XINERAMA
 // inspired by dwm's isuniquegeom()
-static bool geom_unique(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info) {
-    while (n--)
-        if (unique[n].x_org == info->x_org && unique[n].y_org == info->y_org
-        &&  unique[n].width == info->width && unique[n].height == info->height)
+static bool geom_unique(const RectangleVec& unique, XineramaScreenInfo *info) {
+    for (const auto& u : unique) {
+        if (u.x == info->x_org && u.y == info->y_org
+        &&  u.width == info->width && u.height == info->height)
             return false;
+    }
     return true;
 }
 
 // inspired by dwm's updategeom()
 bool detect_monitors_xinerama(RectangleVec &ret) {
-    int i, j, n;
     if (!XineramaIsActive(g_display)) {
         return false;
     }
+    int n;
     XineramaScreenInfo *info = XineramaQueryScreens(g_display, &n);
-    XineramaScreenInfo *unique = g_new(XineramaScreenInfo, n);
-    /* only consider unique geometries as separate screens */
-    for (i = 0, j = 0; i < n; i++) {
-        if (geom_unique(unique, j, &info[i]))
-        {
-            memcpy(&unique[j++], &info[i], sizeof(XineramaScreenInfo));
+    RectangleVec monitor_rects;
+    for (int i = 0; i < n; i++) {
+        if (geom_unique(monitor_rects, &info[i])) {
+            Rectangle r;
+            r.x = info[i].x_org;
+            r.y = info[i].y_org;
+            r.width = info[i].width;
+            r.height = info[i].height;
+            monitor_rects.push_back(r);
         }
     }
     XFree(info);
-    n = j;
-
-    RectangleVec monitor_rects(n);
-    for (i = 0; i < n; i++) {
-        monitor_rects[i].x = unique[i].x_org;
-        monitor_rects[i].y = unique[i].y_org;
-        monitor_rects[i].width = unique[i].width;
-        monitor_rects[i].height = unique[i].height;
-    }
     ret.swap(monitor_rects);
-    g_free(unique);
     return true;
 }
 #else  /* XINERAMA */

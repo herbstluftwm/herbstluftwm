@@ -115,7 +115,7 @@ def test_sprintf_double_percentage_escapes(hlwm):
     assert call.stdout == '%\n'
 
 
-def test_disjoint_rects(hlwm):
+def test_disjoin_rects(hlwm):
     # test the example from the manpage
     expected = '\n'.join((
         '300x150+300+250',
@@ -225,3 +225,11 @@ def test_remove_attr_user_attribute(hlwm):
 
     hlwm.call_xfail(['get_attr', path]).expect_stderr('has no attribute')  # attribute does not exist
     hlwm.call(['new_attr', 'string', path])  # and is free again
+
+
+def test_getenv_completion(hlwm):
+    prefix = 'some_uniq_prefix_'
+    name = prefix + 'envname'
+    hlwm.call(['setenv', name, 'myvalue'])
+
+    assert [name] == hlwm.complete('getenv ' + prefix, position=1)

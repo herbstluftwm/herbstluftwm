@@ -27,7 +27,7 @@ This tutorial covers these topics:
 Basic installation
 ------------------
 This describes two alternate installation methods. In any case, you also have to
-install the dependencies. Beside the standard libraries (GLib, XLib) which are
+install the dependencies. Beside the standard libraries (XLib) which are
 found on nearly any system, you should install dzen2 (as current as possible)
 which is needed by the default +panel.sh+.
 
