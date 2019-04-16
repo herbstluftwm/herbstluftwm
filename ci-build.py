@@ -84,7 +84,7 @@ if args.iwyu:
     print(re.sub(
         r">>> Fixing #includes in '[^']*'[\n\r]*No changes in file [^\n\r]*[\n\r]*",
         '',
-        fix_include.stdout))
+        fix_include.stdout.decode()))
 
     # Run include-what-you-use
     iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --transitive_includes_only --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
