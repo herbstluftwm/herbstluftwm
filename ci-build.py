@@ -80,7 +80,11 @@ if args.ccache:
 
 if args.iwyu:
     # Check lexicographical order of #include directives (cheap pre-check)
-    sp.check_call('fix_include --dry_run --sort_only --reorder /hlwm/*/*.{h,cpp,c}', shell=True, executable='bash')
+    fix_include = sp.run('fix_include --dry_run --sort_only --reorder /hlwm/*/*.{h,cpp,c}', shell=True, executable='bash', stdout=sp.PIPE, check=True)
+    print(re.sub(
+        r">>> Fixing #includes in '[^']*'[\n\r]*No changes in file [^\n\r]*[\n\r]*",
+        '',
+        fix_include.stdout))
 
     # Run include-what-you-use
     iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --transitive_includes_only --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
