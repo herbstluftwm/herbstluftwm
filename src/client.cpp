@@ -22,6 +22,7 @@
 #include "stack.h"
 #include "tag.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::string;
 
@@ -70,13 +71,8 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 }
 
 void Client::init_from_X() {
-    unsigned int border, depth;
-    Window root_win;
-    int x, y;
-    unsigned int w, h;
-    XGetGeometry(g_display, window_, &root_win, &x, &y, &w, &h, &border, &depth);
     // treat wanted coordinates as floating coords
-    float_size_ = { x, y, (int)w, (int)h };
+    float_size_ = Root::get()->X.windowSize(window_);
     last_size_ = float_size_;
 
     pid_ = window_pid(g_display, window_);

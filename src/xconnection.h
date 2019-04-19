@@ -5,6 +5,8 @@
 #include <X11/Xlib.h>
 #include <string>
 
+#include "x11-types.h"
+
 class XConnection {
 private:
     XConnection(Display* disp);
@@ -17,6 +19,7 @@ public:
     Window screenWidth() { return m_screen_width; }
     Window screenHeight() { return m_screen_height; }
     bool checkotherwm(); // return whether another WM is running
+    Rectangle windowSize(Window window);
 private:
     Display* m_display;
     int      m_screen;

@@ -87,3 +87,12 @@ bool XConnection::checkotherwm() {
     }
 }
 
+
+Rectangle XConnection::windowSize(Window window) {
+    unsigned int border, depth;
+    int x, y;
+    unsigned int w, h;
+    XGetGeometry(m_display, window, &m_root, &x, &y, &w, &h, &border, &depth);
+    // treat wanted coordinates as floating coords
+    return { x, y, (int)w, (int)h };
+}
