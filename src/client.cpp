@@ -42,6 +42,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , urgent_(this, "urgent", false)
     , fullscreen_(this,  "fullscreen", false)
     , title_(this,  "title", "")
+    , tag_str_(this,  "tag", &Client::tagName)
     , window_id_str(this,  "winid", "")
     , keyMask_(this,  "keymask", "")
     , pseudotile_(this,  "pseudotile", false)
@@ -698,3 +699,9 @@ void Client::clear_properties() {
     XDeleteProperty(g_display, window_, g_wmatom[WMState]);
 }
 
+//! name of the tag on which the client is
+std::string Client::tagName() {
+    // be save during initialization phase and don't assume
+    // that tag is set.
+    return tag_ ? tag_->name() : "";
+}

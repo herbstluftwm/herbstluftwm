@@ -44,6 +44,7 @@ public:
     Attribute_<bool> urgent_;
     Attribute_<bool> fullscreen_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
+    DynAttribute_<std::string> tag_str_;
     Attribute_<std::string> window_id_str;
 
     Attribute_<std::string> keyMask_; // keymask applied to mask out keybindins
@@ -111,6 +112,7 @@ private:
     ClientManager& manager;
     Theme& theme;
     Settings& settings;
+    std::string tagName();
     const DecTriple& getDecTriple();
 };
 
