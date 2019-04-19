@@ -57,6 +57,9 @@ struct Converter {
      * 'Source' may be given relative to 'relativeTo', e.g. "toggle" for booleans.
      */
     static T parse(const std::string& source, T const* relativeTo);
+    static T parseDefault(const std::string& source, const T& relativeTo) {
+        return parse(source, &relativeTo);
+    }
 
     /** Return a user-friendly string representation */
     static std::string str(T payload) { return std::to_string(payload); }

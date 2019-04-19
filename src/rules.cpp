@@ -9,6 +9,7 @@
 #include "ewmh.h"
 #include "globals.h"
 #include "hook.h"
+#include "types.h"
 #include "utils.h"
 
 using std::string;
@@ -293,11 +294,11 @@ void Consequence::applyTag(const Client* client, ClientChanges* changes) const {
 }
 
 void Consequence::applyFocus(const Client* client, ClientChanges* changes) const {
-    changes->focus = string_to_bool(value, changes->focus);
+    changes->focus = Converter<bool>::parseDefault(value, changes->focus);
 }
 
 void Consequence::applyManage(const Client* client, ClientChanges* changes) const {
-    changes->manage = string_to_bool(value, changes->manage);
+    changes->manage = Converter<bool>::parseDefault(value, changes->manage);
 }
 
 void Consequence::applyIndex(const Client* client, ClientChanges* changes) const {
@@ -305,23 +306,23 @@ void Consequence::applyIndex(const Client* client, ClientChanges* changes) const
 }
 
 void Consequence::applyPseudotile(const Client* client, ClientChanges* changes) const {
-    changes->pseudotile = string_to_bool(value, client->pseudotile_);
+    changes->pseudotile = Converter<bool>::parseDefault(value, client->pseudotile_);
 }
 
 void Consequence::applyFullscreen(const Client* client, ClientChanges* changes) const {
-    changes->fullscreen = string_to_bool(value, changes->fullscreen);
+    changes->fullscreen = Converter<bool>::parseDefault(value, changes->fullscreen);
 }
 
 void Consequence::applySwitchtag(const Client* client, ClientChanges* changes) const {
-    changes->switchtag = string_to_bool(value, changes->switchtag);
+    changes->switchtag = Converter<bool>::parseDefault(value, changes->switchtag);
 }
 
 void Consequence::applyEwmhrequests(const Client* client, ClientChanges* changes) const {
-    changes->ewmhRequests = string_to_bool(value, client->ewmhrequests_);
+    changes->ewmhRequests = Converter<bool>::parseDefault(value, client->ewmhrequests_);
 }
 
 void Consequence::applyEwmhnotify(const Client* client, ClientChanges* changes) const {
-    changes->ewmhNotify = string_to_bool(value, client->ewmhnotify_);
+    changes->ewmhNotify = Converter<bool>::parseDefault(value, client->ewmhnotify_);
 }
 
 void Consequence::applyHook(const Client* client, ClientChanges* changes) const {
