@@ -84,3 +84,15 @@ def test_urgent_jumpto_resets_urgent_flag(hlwm, x11, explicit_winid):
 
     assert hlwm.get_attr('clients.focus.winid') == winid
     assert hlwm.get_attr('clients.focus.urgent') == 'false'
+
+
+@pytest.mark.parametrize("state", [True, False])
+@pytest.mark.parametrize("ewmhnotify", [True, False])
+def test_ewmhnotify(hlwm, x11, state, ewmhnotify):
+    window, winid = x11.create_client()
+    hlwm.call(['set_attr', 'clients.{}.ewmhnotify'.format(winid), hlwm.bool(state)])
+
+    hlwm.call(['fullscreen', hlwm.bool(state)])
+
+    print(x11.ewmh.getWmState(window))
+    assert 1 == 0
