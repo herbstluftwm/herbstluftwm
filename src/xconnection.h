@@ -4,7 +4,6 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <string>
-#include <tuple>
 
 #include "optional.h"
 #include "x11-types.h"
