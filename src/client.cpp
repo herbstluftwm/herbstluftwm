@@ -700,7 +700,7 @@ void Client::clear_properties() {
 }
 
 //! name of the tag on which the client is
-std::string Client::tagName() {
+string Client::tagName() {
     // be save during initialization phase and don't assume
     // that tag is set.
     return tag_ ? tag_->name() : "";
