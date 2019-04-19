@@ -9,7 +9,6 @@
 #include <sstream>
 #include <string>
 
-#include "optional.h"
 #include "types.h"
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
