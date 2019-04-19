@@ -67,26 +67,6 @@ bool is_window_mapped(Display* dpy, Window window) {
     return (wa.map_state == IsViewable);
 }
 
-bool window_has_property(Display*, Window window, char* prop_name) {
-    // find the properties this window has
-    int num_properties_ret;
-    Atom* properties= XListProperties(g_display, window, &num_properties_ret);
-
-    bool atom_found = false;
-    char* name;
-    for(int i = 0; i < num_properties_ret; i++) {
-        name = XGetAtomName(g_display, properties[i]);
-        if(!strcmp(prop_name, name)) {
-            atom_found = true;
-            break;
-        }
-        XFree(name);
-    }
-    XFree(properties);
-
-    return atom_found;
-}
-
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv) {
     if (argc <= 0) return nullptr;

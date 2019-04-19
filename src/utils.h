@@ -52,8 +52,6 @@ bool is_herbstluft_window(Display* dpy, Window window);
 bool is_window_mapable(Display* dpy, Window window);
 bool is_window_mapped(Display* dpy, Window window);
 
-bool window_has_property(Display* dpy, Window window, char* prop_name);
-
 bool string_to_bool_error(const char* string, bool oldvalue, bool* error);
 bool string_to_bool(const char* string, bool oldvalue);
 bool string_to_bool(const std::string& string, bool oldvalue);
