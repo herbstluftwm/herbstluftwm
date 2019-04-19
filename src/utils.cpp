@@ -235,25 +235,6 @@ bool string_to_bool_error(const char* str, bool oldvalue, bool* error) {
     return val;
 }
 
-int window_pid(Display* dpy, Window window) {
-    Atom type;
-    int format;
-    unsigned long items, remain;
-    int* buf;
-    int status = XGetWindowProperty(dpy, window,
-        ATOM("_NET_WM_PID"), 0, 1, False,
-        XA_CARDINAL, &type, &format,
-        &items, &remain, (unsigned char**)&buf);
-    if (items == 1 && format == 32 && remain == 0
-        && type == XA_CARDINAL && status == Success) {
-        int value = *buf;
-        XFree(buf);
-        return value;
-    } else {
-        return -1;
-    }
-}
-
 int array_find(const void* buf, size_t elems, size_t size, const void* needle) {
     for (size_t i = 0; i < elems; i++) {
         if (0 == memcmp((const char*)buf + (size * i), needle, size)) {

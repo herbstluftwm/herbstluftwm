@@ -19,7 +19,11 @@ public:
     Window screenWidth() { return m_screen_width; }
     Window screenHeight() { return m_screen_height; }
     bool checkotherwm(); // return whether another WM is running
+
+    // utility functions
     Rectangle windowSize(Window window);
+    int windowPid(Window window);
+    Atom atom(const char* atom_name);
 private:
     Display* m_display;
     int      m_screen;

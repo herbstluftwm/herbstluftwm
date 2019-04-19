@@ -75,7 +75,7 @@ void Client::init_from_X() {
     float_size_ = Root::get()->X.windowSize(window_);
     last_size_ = float_size_;
 
-    pid_ = window_pid(g_display, window_);
+    pid_ = Root::get()->X.windowPid(window_);
 
     update_title();
     update_wm_hints();

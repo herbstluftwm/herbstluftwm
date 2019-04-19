@@ -1,5 +1,6 @@
 #include "xconnection.h"
 
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <iostream>
@@ -87,7 +88,6 @@ bool XConnection::checkotherwm() {
     }
 }
 
-
 Rectangle XConnection::windowSize(Window window) {
     unsigned int border, depth;
     int x, y;
@@ -96,3 +96,28 @@ Rectangle XConnection::windowSize(Window window) {
     // treat wanted coordinates as floating coords
     return { x, y, (int)w, (int)h };
 }
+
+Atom XConnection::atom(const char* atom_name) {
+    return XInternAtom(m_display, atom_name, False);
+}
+
+//! The pid of a window or -1 if the pid is not set
+int XConnection::windowPid(Window window) {
+    Atom type;
+    int format;
+    unsigned long items, remain;
+    int* buf;
+    int status = XGetWindowProperty(m_display, window,
+        atom("_NET_WM_PID"), 0, 1, False,
+        XA_CARDINAL, &type, &format,
+        &items, &remain, (unsigned char**)&buf);
+    if (items == 1 && format == 32 && remain == 0
+        && type == XA_CARDINAL && status == Success) {
+        int value = *buf;
+        XFree(buf);
+        return value;
+    } else {
+        return -1;
+    }
+}
+
