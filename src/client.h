@@ -48,10 +48,10 @@ public:
 
     Attribute_<std::string> keyMask_; // keymask applied to mask out keybindins
     Attribute_<bool> pseudotile_; // only move client but don't resize (if possible)
-    bool        ewmhrequests_ = true; // accept ewmh-requests for this client
-    bool        ewmhnotify_ = true; // send ewmh-notifications for this client
-    bool        sizehints_floating_ = true;  // respect size hints regarding this client in floating mode
-    bool        sizehints_tiling_ = false;  // respect size hints regarding this client in tiling mode
+    Attribute_<bool> ewmhrequests_; // accept ewmh-requests for this client
+    Attribute_<bool> ewmhnotify_; // send ewmh-notifications for this client
+    Attribute_<bool> sizehints_floating_;  // respect size hints regarding this client in floating mode
+    Attribute_<bool> sizehints_tiling_;  // respect size hints regarding this client in tiling mode
 
 public:
     void init_from_X();
