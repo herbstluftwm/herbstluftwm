@@ -35,10 +35,6 @@ int MOD(int x, int n);
 
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
-std::string window_class_to_string(Display* dpy, Window window);
-std::experimental::optional<std::string> window_property_to_string(Display* dpy, Window window, Atom atom);
-std::string window_instance_to_string(Display* dpy, Window window);
-
 class TreeInterface {
 public:
     TreeInterface() = default;

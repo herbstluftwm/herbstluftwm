@@ -3,11 +3,13 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
+#include <X11/Xutil.h>
 #include <iostream>
 
 #include "globals.h"
 
 using std::endl;
+using std::pair;
 using std::string;
 
 XConnection::XConnection(Display* disp)
@@ -120,4 +122,45 @@ int XConnection::windowPid(Window window) {
         return -1;
     }
 }
+
+//! wrapper around XGetClassHint returning the window's instance and class name
+pair<string, string> XConnection::getClassHint(Window window) {
+    XClassHint hint;
+    if (0 == XGetClassHint(m_display, window, &hint)) {
+        return {"", ""};
+    }
+    pair<string,string> result = {
+        hint.res_name ? hint.res_name : "",
+        hint.res_class ? hint.res_class : ""
+    };
+    if (hint.res_name) XFree(hint.res_name);
+    if (hint.res_class) XFree(hint.res_class);
+    return result;
+}
+
+std::experimental::optional<string> XConnection::getWindowProperty(Window window, Atom atom) {
+    string result;
+    char** list = nullptr;
+    int n = 0;
+    XTextProperty prop;
+
+    if (0 == XGetTextProperty(m_display, window, &prop, atom)) {
+        return std::experimental::optional<string>();
+    }
+    // convert text property to a gstring
+    if (prop.encoding == XA_STRING
+        || prop.encoding == XInternAtom(m_display, "UTF8_STRING", False)) {
+        result = reinterpret_cast<char *>(prop.value);
+    } else {
+        if (XmbTextPropertyToTextList(m_display, &prop, &list, &n) >= Success
+            && n > 0 && *list)
+        {
+            result = *list;
+            XFreeStringList(list);
+        }
+    }
+    XFree(prop.value);
+    return result;
+}
+
 

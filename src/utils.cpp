@@ -51,43 +51,6 @@ string window_class_to_string(Display* dpy, Window window) {
     return str;
 }
 
-std::experimental::optional<string> window_property_to_string(Display* dpy, Window window, Atom atom) {
-    string result;
-    char** list = nullptr;
-    int n = 0;
-    XTextProperty prop;
-
-    if (0 == XGetTextProperty(dpy, window, &prop, atom)) {
-        return std::experimental::optional<string>();
-    }
-    // convert text property to a gstring
-    if (prop.encoding == XA_STRING
-        || prop.encoding == XInternAtom(dpy, "UTF8_STRING", False)) {
-        result = reinterpret_cast<char *>(prop.value);
-    } else {
-        if (XmbTextPropertyToTextList(dpy, &prop, &list, &n) >= Success
-            && n > 0 && *list)
-        {
-            result = *list;
-            XFreeStringList(list);
-        }
-    }
-    XFree(prop.value);
-    return result;
-}
-
-string window_instance_to_string(Display* dpy, Window window) {
-    XClassHint hint;
-    if (0 == XGetClassHint(dpy, window, &hint)) {
-        return "";
-    }
-    string str = hint.res_name ? hint.res_name : "";
-    if (hint.res_name) XFree(hint.res_name);
-    if (hint.res_class) XFree(hint.res_class);
-    return str;
-}
-
-
 bool is_herbstluft_window(Display* dpy, Window window) {
     auto str = window_class_to_string(dpy, window);
     return str == HERBST_FRAME_CLASS;

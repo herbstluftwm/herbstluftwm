@@ -1,10 +1,12 @@
 #ifndef __HLWM_XCONNECTION_H_
 #define __HLWM_XCONNECTION_H_
 
+#include <tuple>
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <string>
 
+#include "optional.h"
 #include "x11-types.h"
 
 class XConnection {
@@ -24,6 +26,10 @@ public:
     Rectangle windowSize(Window window);
     int windowPid(Window window);
     Atom atom(const char* atom_name);
+    std::pair<std::string, std::string> getClassHint(Window win);
+    std::string getInstance(Window win) { return getClassHint(win).first; };
+    std::string getClass(Window win) { return getClassHint(win).second; };
+    std::experimental::optional<std::string> getWindowProperty(Window window, Atom atom);
 private:
     Display* m_display;
     int      m_screen;

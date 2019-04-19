@@ -544,7 +544,7 @@ void Client::update_wm_hints() {
 
 void Client::update_title() {
     std::experimental::optional<string> newName =
-        window_property_to_string(g_display, this->window_, g_netatom[NetWmName]);
+        Root::get()->X.getWindowProperty(this->window_, g_netatom[NetWmName]);
 
     if (!newName.has_value()) {
         char* ch_new_name = nullptr;

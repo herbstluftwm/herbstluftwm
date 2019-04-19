@@ -9,7 +9,9 @@
 #include "ewmh.h"
 #include "globals.h"
 #include "hook.h"
+#include "root.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::string;
 
@@ -193,13 +195,11 @@ bool Condition::matches(const string& str) const {
 }
 
 bool Condition::matchesClass(const Client* client) const {
-    auto window_class = window_class_to_string(g_display, client->window_);
-    return matches(window_class);
+    return matches(Root::get()->X.getClass(client->window_));
 }
 
 bool Condition::matchesInstance(const Client* client) const {
-    auto inst = window_instance_to_string(g_display, client->window_);
-    return matches(inst);
+    return matches(Root::get()->X.getInstance(client->window_));
 }
 
 bool Condition::matchesTitle(const Client* client) const {
@@ -277,7 +277,7 @@ bool Condition::matchesWindowtype(const Client* client) const {
 }
 
 bool Condition::matchesWindowrole(const Client* client) const {
-    auto role = window_property_to_string(g_display, client->window_,
+    auto role = Root::get()->X.getWindowProperty(client->window_,
         ATOM("WM_WINDOW_ROLE"));
 
     if (!role.has_value()) {
