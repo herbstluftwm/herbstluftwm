@@ -303,3 +303,11 @@ def test_condition_class(hlwm):
 
     # TODO: Use more direct assertion (not yet possible)
     assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+
+
+def test_consequence_invalid_argument(hlwm):
+    # TODO: make this command fail at some point:
+    hlwm.call('rule focus=not-a-boolean')
+
+    # this must not crash:
+    hlwm.create_client()
