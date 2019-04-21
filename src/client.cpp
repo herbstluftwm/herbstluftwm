@@ -37,24 +37,22 @@ static Client* lastfocus = nullptr;
 
 
 Client::Client(Window window, bool visible_already, ClientManager& cm)
-    : window_(window),
-      dec(this, *cm.settings),
-      visible_(visible_already),
-      manager(cm),
-      theme(*cm.theme),
-      settings(*cm.settings)
+    : window_(window)
+    , dec(this, *cm.settings)
+    , visible_(visible_already)
+    , urgent_(this, "urgent", false)
+    , fullscreen_(this,  "fullscreen", false)
+    , title_(this,  "title", "")
+    , window_id_str(this,  "winid", "")
+    , keyMask_(this,  "keymask", "")
+    , pseudotile_(this,  "pseudotile", false)
+    , manager(cm)
+    , theme(*cm.theme)
+    , settings(*cm.settings)
 {
     std::stringstream tmp;
     tmp << "0x" << std::hex << window;
     window_id_str = tmp.str();
-    wireAttributes({
-        &title_,
-        &fullscreen_,
-        &urgent_,
-        &window_id_str,
-        &keyMask_,
-        &pseudotile_,
-    });
     keyMask_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_}) {
         i->setWriteable();
