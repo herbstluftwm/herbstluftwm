@@ -1,6 +1,5 @@
 #include "utils.h"
 
-#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <cstdlib>
@@ -51,43 +50,6 @@ string window_class_to_string(Display* dpy, Window window) {
     return str;
 }
 
-std::experimental::optional<string> window_property_to_string(Display* dpy, Window window, Atom atom) {
-    string result;
-    char** list = nullptr;
-    int n = 0;
-    XTextProperty prop;
-
-    if (0 == XGetTextProperty(dpy, window, &prop, atom)) {
-        return std::experimental::optional<string>();
-    }
-    // convert text property to a gstring
-    if (prop.encoding == XA_STRING
-        || prop.encoding == XInternAtom(dpy, "UTF8_STRING", False)) {
-        result = reinterpret_cast<char *>(prop.value);
-    } else {
-        if (XmbTextPropertyToTextList(dpy, &prop, &list, &n) >= Success
-            && n > 0 && *list)
-        {
-            result = *list;
-            XFreeStringList(list);
-        }
-    }
-    XFree(prop.value);
-    return result;
-}
-
-string window_instance_to_string(Display* dpy, Window window) {
-    XClassHint hint;
-    if (0 == XGetClassHint(dpy, window, &hint)) {
-        return "";
-    }
-    string str = hint.res_name ? hint.res_name : "";
-    if (hint.res_name) XFree(hint.res_name);
-    if (hint.res_class) XFree(hint.res_class);
-    return str;
-}
-
-
 bool is_herbstluft_window(Display* dpy, Window window) {
     auto str = window_class_to_string(dpy, window);
     return str == HERBST_FRAME_CLASS;
@@ -102,26 +64,6 @@ bool is_window_mapped(Display* dpy, Window window) {
     XWindowAttributes wa;
     XGetWindowAttributes(dpy, window,  &wa);
     return (wa.map_state == IsViewable);
-}
-
-bool window_has_property(Display*, Window window, char* prop_name) {
-    // find the properties this window has
-    int num_properties_ret;
-    Atom* properties= XListProperties(g_display, window, &num_properties_ret);
-
-    bool atom_found = false;
-    char* name;
-    for(int i = 0; i < num_properties_ret; i++) {
-        name = XGetAtomName(g_display, properties[i]);
-        if(!strcmp(prop_name, name)) {
-            atom_found = true;
-            break;
-        }
-        XFree(name);
-    }
-    XFree(properties);
-
-    return atom_found;
 }
 
 // duplicates an argument-vector
@@ -204,25 +146,6 @@ const char* strlasttoken(const char* str, const char* delim) {
         str = next;
     }
     return str;
-}
-
-int window_pid(Display* dpy, Window window) {
-    Atom type;
-    int format;
-    unsigned long items, remain;
-    int* buf;
-    int status = XGetWindowProperty(dpy, window,
-        ATOM("_NET_WM_PID"), 0, 1, False,
-        XA_CARDINAL, &type, &format,
-        &items, &remain, (unsigned char**)&buf);
-    if (items == 1 && format == 32 && remain == 0
-        && type == XA_CARDINAL && status == Success) {
-        int value = *buf;
-        XFree(buf);
-        return value;
-    } else {
-        return -1;
-    }
 }
 
 int array_find(const void* buf, size_t elems, size_t size, const void* needle) {
