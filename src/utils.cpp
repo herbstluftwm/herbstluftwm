@@ -148,35 +148,6 @@ const char* strlasttoken(const char* str, const char* delim) {
     return str;
 }
 
-bool string_to_bool(const string& str, bool oldvalue) {
-    return string_to_bool_error(str.c_str(), oldvalue, nullptr);
-}
-
-bool string_to_bool(const char* str, bool oldvalue) {
-    return string_to_bool_error(str, oldvalue, nullptr);
-}
-
-bool string_to_bool_error(const char* str, bool oldvalue, bool* error) {
-    bool val = oldvalue;
-    if (error) {
-        *error = false;
-    }
-    if (!strcmp(str, "on")) {
-        val = true;
-    } else if (!strcmp(str, "off")) {
-        val = false;
-    } else if (!strcmp(str, "true")) {
-        val = true;
-    } else if (!strcmp(str, "false")) {
-        val = false;
-    } else if (!strcmp(str, "toggle")) {
-        val = ! oldvalue;
-    } else if (error) {
-        *error = true;
-    }
-    return val;
-}
-
 int array_find(const void* buf, size_t elems, size_t size, const void* needle) {
     for (size_t i = 0; i < elems; i++) {
         if (0 == memcmp((const char*)buf + (size * i), needle, size)) {

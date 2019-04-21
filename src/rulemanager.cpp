@@ -3,6 +3,7 @@
 #include <string>
 
 #include "completion.h"
+#include "globals.h"
 #include "ipc-protocol.h"
 #include "utils.h"
 
@@ -247,7 +248,14 @@ ClientChanges RuleManager::evaluateRules(Client* client) {
         if (rule_match) {
             // apply all consequences
             for (auto& cons : rule->consequences) {
-                Consequence::appliers.at(cons.name)(&cons, client, &changes);
+                try {
+                    Consequence::appliers.at(cons.name)(&cons, client, &changes);
+                } catch (std::exception& e) {
+                    HSWarning("Invalid argument \"%s\" for rule consequence \"%s\": %s\n",
+                              cons.value.c_str(),
+                              cons.name.c_str(),
+                              e.what());
+                }
             }
         }
 

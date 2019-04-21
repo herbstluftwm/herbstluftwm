@@ -14,7 +14,7 @@
 #include "settings.h"
 #include "stack.h"
 #include "tagmanager.h"
-#include "utils.h"
+#include "types.h"
 
 using std::make_shared;
 using std::shared_ptr;
@@ -115,8 +115,7 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
         // just print status
         output << (tag->floating ? "on" : "off");
     } else {
-        // after deleting this, delete include utils.h line
-        bool new_value = string_to_bool(action, tag->floating);
+        bool new_value = Converter<bool>::parse(action, tag->floating);
 
         // assign new value and rearrange if needed
         tag->floating = new_value;
