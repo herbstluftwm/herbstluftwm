@@ -79,6 +79,10 @@ public:
 
 class Consequence {
 public:
+    /*! An Applier modifies the given ClientChanges object, and possibly throws an
+     * exception (std::invalid_argument, std::out_of_range) if the value in the
+     * Consequence object is invalid.
+     */
     using Applier = std::function<void(const Consequence*, const Client*, ClientChanges*)>;
     static const std::map<std::string, Applier> appliers;
 
