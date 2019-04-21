@@ -322,7 +322,7 @@ void ewmh_handle_client_message(Root* root, XEvent* event) {
                 void    (*callback)(Client*, bool);
             } client_atoms[] = {
                 { NetWmStateFullscreen,
-                    client->fullscreen_,     [](Client* c, bool state){ c->set_fullscreen(state); } },
+                    client->fullscreen_,     [](Client* c, bool state){ c->fullscreen_ = state; } },
                 { NetWmStateDemandsAttention,
                     client->urgent_,         [](Client* c, bool state){ c->set_urgent(state); } },
             };
