@@ -44,7 +44,7 @@ int RootCommands::set_attr_cmd(Input in, Output output) {
         return 0;
     } else {
         output << in.command() << ": \""
-            << in.front() << "\" is not a valid value for "
+            << new_value << "\" is not a valid value for "
             << a->name() << ": "
             << error_message << endl;
         return HERBST_INVALID_ARGUMENT;
