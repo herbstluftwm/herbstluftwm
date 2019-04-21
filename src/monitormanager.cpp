@@ -24,7 +24,7 @@ using std::string;
 MonitorManager* g_monitors;
 
 MonitorManager::MonitorManager()
-    : ChildByIndex<Monitor>()
+    : IndexingObject<Monitor>()
     , focus(*this, "focus")
     , by_name_(*this)
 {
@@ -43,7 +43,7 @@ void MonitorManager::injectDependencies(Settings* s, TagManager* t) {
 }
 
 void MonitorManager::clearChildren() {
-    ChildByIndex<Monitor>::clearChildren();
+    IndexingObject<Monitor>::clearChildren();
     focus = {};
     tags_ = {};
 }

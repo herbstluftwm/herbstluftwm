@@ -8,12 +8,12 @@ target_sources(herbstluftwm PRIVATE
     arglist.cpp arglist.h
     attribute.cpp attribute.h attribute_.h
     byname.cpp byname.h
-    childbyindex.h
     child.h
     completion.h
     entity.cpp entity.h
     globals.h
     hook.cpp hook.h
+    indexingobject.h
     object.cpp object.h
     optional.h
     root.cpp root.h
