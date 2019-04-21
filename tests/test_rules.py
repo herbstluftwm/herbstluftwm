@@ -313,9 +313,9 @@ def test_consequence_invalid_argument(hlwm):
     hlwm.create_client()
 
 
-@pytest.mark.parametrize('name',
-    ['pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen']
-)
+@pytest.mark.parametrize(
+    'name',
+    ['pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen'])
 @pytest.mark.parametrize('value', [True, False])
 def test_bool_consequence_with_corresponding_attribute(hlwm, name, value):
     hlwm.call(['rule', name + '=' + hlwm.bool(value)])
