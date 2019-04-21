@@ -294,11 +294,11 @@ void Consequence::applyTag(const Client* client, ClientChanges* changes) const {
 }
 
 void Consequence::applyFocus(const Client* client, ClientChanges* changes) const {
-    changes->focus = Converter<bool>::parseDefault(value, changes->focus);
+    changes->focus = Converter<bool>::parse(value, changes->focus);
 }
 
 void Consequence::applyManage(const Client* client, ClientChanges* changes) const {
-    changes->manage = Converter<bool>::parseDefault(value, changes->manage);
+    changes->manage = Converter<bool>::parse(value, changes->manage);
 }
 
 void Consequence::applyIndex(const Client* client, ClientChanges* changes) const {
@@ -306,23 +306,23 @@ void Consequence::applyIndex(const Client* client, ClientChanges* changes) const
 }
 
 void Consequence::applyPseudotile(const Client* client, ClientChanges* changes) const {
-    changes->pseudotile = Converter<bool>::parseDefault(value, client->pseudotile_);
+    changes->pseudotile = Converter<bool>::parse(value, client->pseudotile_);
 }
 
 void Consequence::applyFullscreen(const Client* client, ClientChanges* changes) const {
-    changes->fullscreen = Converter<bool>::parseDefault(value, changes->fullscreen);
+    changes->fullscreen = Converter<bool>::parse(value, changes->fullscreen);
 }
 
 void Consequence::applySwitchtag(const Client* client, ClientChanges* changes) const {
-    changes->switchtag = Converter<bool>::parseDefault(value, changes->switchtag);
+    changes->switchtag = Converter<bool>::parse(value, changes->switchtag);
 }
 
 void Consequence::applyEwmhrequests(const Client* client, ClientChanges* changes) const {
-    changes->ewmhRequests = Converter<bool>::parseDefault(value, client->ewmhrequests_);
+    changes->ewmhRequests = Converter<bool>::parse(value, client->ewmhrequests_);
 }
 
 void Consequence::applyEwmhnotify(const Client* client, ClientChanges* changes) const {
-    changes->ewmhNotify = Converter<bool>::parseDefault(value, client->ewmhnotify_);
+    changes->ewmhNotify = Converter<bool>::parse(value, client->ewmhnotify_);
 }
 
 void Consequence::applyHook(const Client* client, ClientChanges* changes) const {

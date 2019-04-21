@@ -298,7 +298,7 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
     vector<T> vals;
     for (auto &x : {a, b}) {
         try {
-            vals.push_back(Converter<T>::parse(x, nullptr));
+            vals.push_back(Converter<T>::parse(x));
         } catch(std::exception& e) {
             o << "can not parse \"" << x << "\" to "
               << typeid(T).name() << ": " << e.what() << endl;

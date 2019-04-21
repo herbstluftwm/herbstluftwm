@@ -115,8 +115,7 @@ int tag_set_floating_command(int argc, char** argv, Output output) {
         // just print status
         output << (tag->floating ? "on" : "off");
     } else {
-        // after deleting this, delete include utils.h line
-        bool new_value = Converter<bool>::parseDefault(action, tag->floating);
+        bool new_value = Converter<bool>::parse(action, tag->floating);
 
         // assign new value and rearrange if needed
         tag->floating = new_value;
