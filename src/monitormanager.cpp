@@ -91,7 +91,7 @@ int MonitorManager::string_to_monitor_index(string str) {
             return idx;
         } else if (str[0] == '-') {
             try {
-                auto dir = Converter<Direction>::parse(str.substr(1), {});
+                auto dir = Converter<Direction>::parse(str.substr(1));
                 return indexInDirection(focus(), dir);
             } catch (...) {
                 return -1;
