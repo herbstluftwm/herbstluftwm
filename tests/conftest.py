@@ -110,6 +110,7 @@ class HlwmBridge:
     def call_xfail_no_output(self, cmd):
         proc = self.unchecked_call(cmd)
         assert proc.returncode != 0
+        assert proc.stderr == ""
         return proc
 
     def get_attr(self, attribute_path, check=True):
