@@ -105,7 +105,7 @@ public:
     void clear_properties();
     bool ignore_unmapnotify();
 
-    void updateEWMHState();
+    void updateEwmhState();
 private:
     std::string triggerRelayoutMonitor();
     friend Decoration;

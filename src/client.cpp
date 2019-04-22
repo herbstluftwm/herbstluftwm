@@ -68,7 +68,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 Root::get()->keys()->ensureKeyMask();
             }
             });
-    fullscreen_.changed().connect(this, &Client::updateEWMHState);
+    fullscreen_.changed().connect(this, &Client::updateEwmhState);
 
     init_from_X();
 }
@@ -605,7 +605,7 @@ void Client::set_fullscreen(bool state) {
     hook_emit_list("fullscreen", state ? "on" : "off", buf, nullptr);
 }
 
-void Client::updateEWMHState() {
+void Client::updateEwmhState() {
     if (ewmhnotify_) {
         ewmhfullscreen_ = fullscreen_();
     }
