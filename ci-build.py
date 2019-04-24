@@ -2,7 +2,9 @@
 
 import argparse
 import os
+import re
 import subprocess as sp
+import sys
 from pathlib import Path
 
 
@@ -78,16 +80,31 @@ if args.ccache:
 
 if args.iwyu:
     # Check lexicographical order of #include directives (cheap pre-check)
-    sp.check_call('fix_include --dry_run --sort_only --reorder /hlwm/*/*.{h,cpp,c}', shell=True, executable='bash')
+    fix_include = sp.run('fix_include --dry_run --sort_only --reorder /hlwm/*/*.{h,cpp,c}', shell=True, executable='bash', stdout=sp.PIPE)
+    print(re.sub(
+        r">>> Fixing #includes in '[^']*'[\n\r]*No changes in file [^\n\r]*[\n\r]*",
+        '',
+        fix_include.stdout.decode()))
+    if fix_include.returncode != 0:
+        print('IWYU/fix_include made suggestions, please fix them')
+        sys.exit(1)
 
-    # Run include-what-you-use (just printing the result for now)
-    sp.check_call(f'iwyu_tool -p . -j "$(nproc)" -- --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
+    # Run include-what-you-use
+    iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --transitive_includes_only --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
+
+    # Check IWYU output, but ignore any suggestions to add things (those tend
+    # to be overzealous):
+    complaints = set(re.findall(r'(\S+) should remove these lines:\n[^\n]', iwyu_out.decode('ascii')))
+    if complaints:
+        sys.stdout.buffer.write(iwyu_out)
+        print('IWYU made suggestions to remove things in (see log above): {}'.format(', '.join(complaints)))
+        sys.exit(1)
 
 if args.flake8:
     tox('-e flake8', build_dir)
 
 if args.run_tests:
-    tox('-e py37 -- -n auto -v -x', build_dir)
+    tox('-e py37 -- -n auto --cache-clear -v -x', build_dir)
 
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
     sp.check_call('lcov --remove coverage.info "/usr/*" --output-file coverage.info', shell=True, cwd=build_dir)

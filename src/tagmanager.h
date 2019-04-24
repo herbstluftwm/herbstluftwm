@@ -2,7 +2,7 @@
 #define __HLWM_TAGMANAGER_H_
 
 #include "byname.h"
-#include "childbyindex.h"
+#include "indexingobject.h"
 #include "tag.h"
 
 class Settings;
@@ -11,7 +11,7 @@ class Client;
 class FrameTree;
 
 typedef std::function<int(FrameTree&,Input,Output)> FrameCommand;
-class TagManager : public ChildByIndex<HSTag> {
+class TagManager : public IndexingObject<HSTag> {
 public:
     TagManager();
     void injectDependencies(MonitorManager* m, Settings *s);

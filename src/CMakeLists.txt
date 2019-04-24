@@ -8,13 +8,12 @@ target_sources(herbstluftwm PRIVATE
     arglist.cpp arglist.h
     attribute.cpp attribute.h attribute_.h
     byname.cpp byname.h
-    childbyindex.h
     child.h
     completion.h
     entity.cpp entity.h
-    glib-backports.h
     globals.h
     hook.cpp hook.h
+    indexingobject.h
     object.cpp object.h
     optional.h
     root.cpp root.h
@@ -79,11 +78,11 @@ if (WITH_XINERAMA)
     target_link_libraries(herbstluftwm PRIVATE ${X11_Xinerama_LIB})
 endif()
 
-## dependencies X11 & GLIB2 (link to Xext for XShape())
+## dependencies X11 (link to Xext for XShape())
 target_include_directories(herbstluftwm SYSTEM PUBLIC
-    ${X11_X11_INCLUDE_PATH} ${X11_Xinerama_INCLUDE_PATH} ${GLIB2_INCLUDE_DIRS})
+    ${X11_X11_INCLUDE_PATH} ${X11_Xinerama_INCLUDE_PATH})
 target_link_libraries(herbstluftwm PUBLIC
-    ${X11_X11_LIB} ${X11_Xext_LIB} ${GLIB2_LIBRARIES})
+    ${X11_X11_LIB} ${X11_Xext_LIB})
 
 ## export variables to the code
 # version string

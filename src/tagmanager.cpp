@@ -20,7 +20,7 @@ using std::vector;
 TagManager* global_tags;
 
 TagManager::TagManager()
-    : ChildByIndex()
+    : IndexingObject()
     , by_name_(*this)
 {
 }

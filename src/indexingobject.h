@@ -1,5 +1,5 @@
-#ifndef CHILDBYINDEX_H
-#define CHILDBYINDEX_H
+#ifndef INDEXINGOBJECT_H
+#define INDEXINGOBJECT_H
 
 #include <cstddef>
 #include <string>
@@ -12,9 +12,9 @@
  * index
  */
 template<typename T>
-class ChildByIndex : public Object {
+class IndexingObject : public Object {
 public:
-    ChildByIndex()
+    IndexingObject()
     : count("count", [this]() { return this->size(); })
     { wireAttributes({ &count }); }
     void addIndexed(T* newChild) {
@@ -25,7 +25,7 @@ public:
         addChild(newChild, index);
         newChild->setIndexAttribute(index_int);
     }
-    ~ChildByIndex() override {
+    ~IndexingObject() override {
         clearChildren();
     }
 

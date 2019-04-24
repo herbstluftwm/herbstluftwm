@@ -8,7 +8,6 @@
 #include "client.h"
 #include "clientmanager.h"
 #include "completion.h"
-#include "glib-backports.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
@@ -689,18 +688,13 @@ int complete_command(int argc, char** argv, Output output) {
 
 void complete_against_env(int argc, char** argv, int position,
                           Output output) {
-    GString* curname = g_string_sized_new(30);
     const char* needle = (position < argc) ? argv[position] : "";
     for (char** env = environ; *env; ++env) {
-        g_string_assign(curname, *env);
-        char* name_end = strchr(*env, '=');
-        if (!name_end) {
-            continue;
+        vector<string> chunks = ArgList::split(*env, '=');
+        if (chunks.size() != 0) {
+            try_complete(needle, chunks[0].c_str(), output);
         }
-        g_string_truncate(curname, name_end - *env);
-        try_complete(needle, curname->str, output);
     }
-    g_string_free(curname, true);
 }
 
 void complete_against_commands_1(int argc, char** argv, int position,

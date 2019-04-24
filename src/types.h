@@ -53,10 +53,20 @@ protected:
 template<typename T>
 struct Converter {
     /** Parse a text into the right type
-     * Throws std::invalid_argument or std::out_of_range
-     * 'Source' may be given relative to 'relativeTo', e.g. "toggle" for booleans.
+     * @throws std::invalid_argument or std::out_of_range
+     * @param source verbal description of a value
      */
-    static T parse(const std::string& source, T const* relativeTo);
+    static T parse(const std::string& source);
+    /** Parse a text into the right type
+     * @brief overload that accepts a reference value to relate input string to
+     * @param source may be given relative to 'relativeTo', e.g. "toggle" for booleans.
+     * @param relativeTo previous/existing value
+     * @throws std::invalid_argument or std::out_of_range
+     */
+    static T parse(const std::string& source, const T& relativeTo) {
+        // note: specializations _do_ use relativeTo where appropriate
+        return parse(source);
+    };
 
     /** Return a user-friendly string representation */
     static std::string str(T payload) { return std::to_string(payload); }
@@ -74,11 +84,11 @@ struct Converter {
 
 // Integers
 template<>
-inline int Converter<int>::parse(const std::string &payload, int const*) {
+inline int Converter<int>::parse(const std::string &payload) {
     return std::stoi(payload);
 }
 template<>
-inline unsigned long Converter<unsigned long>::parse(const std::string &payload, unsigned long const*) {
+inline unsigned long Converter<unsigned long>::parse(const std::string &payload) {
     return std::stoul(payload);
 }
 
@@ -88,19 +98,24 @@ inline std::string Converter<bool>::str(bool payload) {
     return { payload ? "true" : "false" };
 }
 template<>
-inline bool Converter<bool>::parse(const std::string &payload, bool const* previous) {
+inline bool Converter<bool>::parse(const std::string &payload) {
     std::set<std::string> t = {"true", "on", "1"};
     std::set<std::string> f = {"false", "off", "0"};
     if (f.find(payload) != f.end())
         return false;
-    else if (t.find(payload) != t.end())
+    if (t.find(payload) != t.end())
         return true;
-    else if (payload == "toggle" && previous)
-        return !*previous;
-    else throw std::invalid_argument(
-            previous
-            ? "only on/off/true/false/toggle are valid booleans"
-            : "only on/off/true/false are valid booleans");
+    throw std::invalid_argument("only on/off/true/false are valid booleans");
+}
+template<>
+inline bool Converter<bool>::parse(const std::string &payload, const bool& previous) {
+    if (payload == "toggle")
+        return !previous;
+    try {
+        return parse(payload);
+    } catch (std::invalid_argument&) {
+        throw std::invalid_argument("only on/off/true/false/toggle are valid booleans");
+    }
 }
 
 template<> void Converter<bool>::complete(Completion& complete, bool const* relativeTo);
@@ -109,14 +124,14 @@ template<> void Converter<bool>::complete(Completion& complete, bool const* rela
 template<>
 inline std::string Converter<std::string>::str(std::string payload) { return payload; }
 template<>
-inline std::string Converter<std::string>::parse(const std::string &payload, std::string const*) {
+inline std::string Converter<std::string>::parse(const std::string &payload) {
     return payload;
 }
 
 // Directions (used in frames, floating)
 enum class Direction { Right, Left, Up, Down };
 template<>
-inline Direction Converter<Direction>::parse(const std::string &payload, Direction const*) {
+inline Direction Converter<Direction>::parse(const std::string &payload) {
     std::map<char, Direction> mapping = {
         {'u', Direction::Up},   {'r', Direction::Right},
         {'d', Direction::Down}, {'l', Direction::Left},

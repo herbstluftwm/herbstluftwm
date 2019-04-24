@@ -34,7 +34,7 @@ jobs:
                     /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --compile &&
                     /hlwm/ci-build.py --build-dir=/hlwm/build-gcc-8 --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --compile --run-tests
                 '
-              - bash <(curl -s https://codecov.io/bash) -f coverage.info
+              - bash <(curl -s https://codecov.io/bash) -y .codecov.yml -f coverage.info
 
         - name: "Run linters and static analyzers"
           env: TRAVIS_CACHE_ID=disco-linter

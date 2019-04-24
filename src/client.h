@@ -22,27 +22,14 @@ public:
 
     Window      window_;
     Decoration  dec;
-    Rectangle   float_size_ = {0, 0, 100, 100};     // floating size without the window border
-    Attribute_<bool> urgent_ = {"urgent", false};
-    Attribute_<bool> fullscreen_ = {"fullscreen", false};
-    Attribute_<std::string> title_ = {"title", {}};  // or also called window title; this is never NULL
-    Slice* slice = {};
     Rectangle   last_size_;      // last size excluding the window border
-    Attribute_<std::string> window_id_str = {"winid", {}};
-
+    Rectangle   float_size_ = {0, 0, 100, 100};     // floating size without the window border
     HSTag*      tag_ = {};
-    Attribute_<
-    std::string> keyMask_ = {"keymask", {}}; // keymask applied to mask out keybindins
+    Slice* slice = {};
     bool        ewmhfullscreen_ = false; // ewmh fullscreen state
-    Attribute_<bool> pseudotile_ = {"pseudotile", false}; // only move client but don't resize (if possible)
     bool        neverfocus_ = false; // do not give the focus via XSetInputFocus
-    bool        ewmhrequests_ = true; // accept ewmh-requests for this client
-    bool        ewmhnotify_ = true; // send ewmh-notifications for this client
-    bool        sizehints_floating_ = true;  // respect size hints regarding this client in floating mode
-    bool        sizehints_tiling_ = false;  // respect size hints regarding this client in tiling mode
     bool        visible_;
     bool        dragged_ = false;  // if this client is dragged currently
-    int         pid_;
     int         ignore_unmaps_ = 0;  // Ignore one unmap for each reparenting
                                 // action, because reparenting creates an unmap
                                 // notify event
@@ -51,6 +38,22 @@ public:
     int basew_, baseh_, incw_, inch_, maxw_, maxh_, minw_, minh_;
     // for other modules
     Signal_<HSTag*> needsRelayout;
+
+    // attributes:
+    Attribute_<bool> urgent_;
+    Attribute_<bool> fullscreen_;
+    Attribute_<std::string> title_;  // or also called window title; this is never NULL
+    Attribute_<std::string> window_id_str;
+
+    Attribute_<std::string> keyMask_; // keymask applied to mask out keybindins
+    Attribute_<int>  pid_;
+    Attribute_<bool> pseudotile_; // only move client but don't resize (if possible)
+    bool        ewmhrequests_ = true; // accept ewmh-requests for this client
+    bool        ewmhnotify_ = true; // send ewmh-notifications for this client
+    bool        sizehints_floating_ = true;  // respect size hints regarding this client in floating mode
+    bool        sizehints_tiling_ = false;  // respect size hints regarding this client in tiling mode
+
+public:
     void init_from_X();
 
     void make_full_client();

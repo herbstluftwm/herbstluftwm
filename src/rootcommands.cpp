@@ -44,7 +44,7 @@ int RootCommands::set_attr_cmd(Input in, Output output) {
         return 0;
     } else {
         output << in.command() << ": \""
-            << in.front() << "\" is not a valid value for "
+            << new_value << "\" is not a valid value for "
             << a->name() << ": "
             << error_message << endl;
         return HERBST_INVALID_ARGUMENT;
@@ -298,7 +298,7 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
     vector<T> vals;
     for (auto &x : {a, b}) {
         try {
-            vals.push_back(Converter<T>::parse(x, nullptr));
+            vals.push_back(Converter<T>::parse(x));
         } catch(std::exception& e) {
             o << "can not parse \"" << x << "\" to "
               << typeid(T).name() << ": " << e.what() << endl;

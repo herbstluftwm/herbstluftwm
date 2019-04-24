@@ -3,10 +3,9 @@
 
 #include <X11/X.h>
 #include <array>
-#include <memory>
+#include <set>
 #include <vector>
 
-#include "glib-backports.h"
 #include "types.h"
 
 enum HSLayer {

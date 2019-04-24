@@ -45,3 +45,53 @@ def test_close_without_clients(hlwm):
 def test_close(hlwm, running_clients_num):
     hlwm.create_clients(running_clients_num)
     hlwm.call('close')
+
+
+@pytest.mark.filterwarnings("ignore:tostring")
+@pytest.mark.parametrize("urgent", [True, False])
+def test_urgent_on_start(hlwm, x11, urgent):
+    # first create a dummy window, such that the second
+    # window is not focused and thus keeps the urgent flag
+    hlwm.create_client()  # dummy client that gets the focus
+    window, winid = x11.create_client(urgent=urgent)
+    assert x11.is_window_urgent(window) == urgent
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) \
+        == hlwm.bool(urgent)
+
+
+@pytest.mark.filterwarnings("ignore:tostring")
+def test_urgent_after_start(hlwm, x11):
+    hlwm.create_client()  # dummy client that gets the focus
+    winid, _ = hlwm.create_client()
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == 'false'
+    assert not x11.is_window_urgent(x11.window(winid))
+
+    # make the client urgent:
+    x11.make_window_urgent(x11.window(winid))
+
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == 'true'
+    assert x11.is_window_urgent(x11.window(winid))
+
+
+@pytest.mark.parametrize("explicit_winid", [True, False])
+def test_urgent_jumpto_resets_urgent_flag(hlwm, x11, explicit_winid):
+    hlwm.create_client()  # dummy client that gets the focus
+    window, winid = x11.create_client(urgent=True)
+    assert hlwm.get_attr('clients.focus.winid') != winid
+    assert hlwm.get_attr('clients.{}.urgent'.format(winid)) == hlwm.bool(True)
+
+    hlwm.call(['jumpto', winid if explicit_winid else 'urgent'])
+
+    assert hlwm.get_attr('clients.focus.winid') == winid
+    assert hlwm.get_attr('clients.focus.urgent') == 'false'
+
+
+def test_client_with_pid(hlwm):
+    winid, proc = hlwm.create_client()
+    assert int(hlwm.get_attr('clients.focus.pid')) == proc.pid
+
+
+def test_client_without_pid(hlwm, x11):
+    _, winid = x11.create_client()
+    # x11.create_client() does not set the _NET_WM_PID property
+    assert int(hlwm.get_attr('clients.focus.pid')) == -1

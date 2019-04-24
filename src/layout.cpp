@@ -638,7 +638,7 @@ int frame_change_fraction_command(int argc, char** argv, Output output) {
     }
     Direction direction;
     try {
-        direction = Converter<Direction>::parse(argv[1], nullptr);
+        direction = Converter<Direction>::parse(argv[1]);
     } catch (const std::exception& e) {
         output << argv[0] << ": " << e.what() << "\n";
         return HERBST_INVALID_ARGUMENT;
@@ -793,7 +793,7 @@ int frame_focus_command(int argc, char** argv, Output output) {
     }
     Direction direction;
     try {
-        direction = Converter<Direction>::parse(dirstr, nullptr);
+        direction = Converter<Direction>::parse(dirstr);
     } catch (const std::exception& e) {
         output << argv[0] << ": " << e.what() << "\n";
         return HERBST_INVALID_ARGUMENT;
@@ -857,7 +857,7 @@ int frame_move_window_command(int argc, char** argv, Output output) {
     }
     Direction direction;
     try {
-        direction = Converter<Direction>::parse(dirstr, nullptr);
+        direction = Converter<Direction>::parse(dirstr);
     } catch (const std::exception& e) {
         output << argv[0] << ": " << e.what() << "\n";
         return HERBST_INVALID_ARGUMENT;

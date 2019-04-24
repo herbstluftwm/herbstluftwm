@@ -22,6 +22,7 @@
 #include "stack.h"
 #include "tag.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::string;
 
@@ -36,24 +37,23 @@ static Client* lastfocus = nullptr;
 
 
 Client::Client(Window window, bool visible_already, ClientManager& cm)
-    : window_(window),
-      dec(this, *cm.settings),
-      visible_(visible_already),
-      manager(cm),
-      theme(*cm.theme),
-      settings(*cm.settings)
+    : window_(window)
+    , dec(this, *cm.settings)
+    , visible_(visible_already)
+    , urgent_(this, "urgent", false)
+    , fullscreen_(this,  "fullscreen", false)
+    , title_(this,  "title", "")
+    , window_id_str(this,  "winid", "")
+    , keyMask_(this,  "keymask", "")
+    , pid_(this,  "pid", -1)
+    , pseudotile_(this,  "pseudotile", false)
+    , manager(cm)
+    , theme(*cm.theme)
+    , settings(*cm.settings)
 {
     std::stringstream tmp;
     tmp << "0x" << std::hex << window;
     window_id_str = tmp.str();
-    wireAttributes({
-        &title_,
-        &fullscreen_,
-        &urgent_,
-        &window_id_str,
-        &keyMask_,
-        &pseudotile_,
-    });
     keyMask_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_}) {
         i->setWriteable();
@@ -70,16 +70,11 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 }
 
 void Client::init_from_X() {
-    unsigned int border, depth;
-    Window root_win;
-    int x, y;
-    unsigned int w, h;
-    XGetGeometry(g_display, window_, &root_win, &x, &y, &w, &h, &border, &depth);
     // treat wanted coordinates as floating coords
-    float_size_ = { x, y, (int)w, (int)h };
+    float_size_ = Root::get()->X.windowSize(window_);
     last_size_ = float_size_;
 
-    pid_ = window_pid(g_display, window_);
+    pid_ = Root::get()->X.windowPid(window_);
 
     update_title();
     update_wm_hints();
@@ -548,7 +543,7 @@ void Client::update_wm_hints() {
 
 void Client::update_title() {
     std::experimental::optional<string> newName =
-        window_property_to_string(g_display, this->window_, g_netatom[NetWmName]);
+        Root::get()->X.getWindowProperty(this->window_, g_netatom[NetWmName]);
 
     if (!newName.has_value()) {
         char* ch_new_name = nullptr;
