@@ -19,7 +19,7 @@ using std::shared_ptr;
 
 shared_ptr<Root> Root::root_;
 
-Root::Root(Globals g)
+Root::Root(Globals g, XConnection& xconnection)
     : clients(*this, "clients")
     , hooks(*this, "hooks")
     , keys(*this, "keys")
@@ -32,6 +32,7 @@ Root::Root(Globals g)
     , tmp(*this, TMP_OBJECT_PATH)
     , globals(g)
     , root_commands(make_unique<RootCommands>(this))
+    , X(xconnection)
 {
     // initialize root children (alphabetically)
     clients.init();

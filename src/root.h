@@ -19,6 +19,7 @@ class Settings;
 class TagManager;
 class Theme;
 class Tmp;
+class XConnection;
 
 class Globals {
 public:
@@ -34,7 +35,7 @@ public:
     static void setRoot(const std::shared_ptr<Root>& r) { root_ = r; }
 
     // constructor creates top-level objects
-    Root(Globals g);
+    Root(Globals g, XConnection& xconnection);
     ~Root() override;
 
     // (in alphabetical order)
@@ -51,6 +52,7 @@ public:
 
     Globals globals;
     std::unique_ptr<RootCommands> root_commands;
+    XConnection& X;
 
 private:
     static std::shared_ptr<Root> root_; // Using "pimpl" to avoid include

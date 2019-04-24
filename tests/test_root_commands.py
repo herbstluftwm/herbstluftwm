@@ -70,7 +70,7 @@ def test_attr_only_second_argument_if_writable(hlwm):
 
 
 def test_set_attr_can_not_set_writable(hlwm):
-    assert hlwm.call_xfail_no_output('set_attr tags.count 5') \
+    assert hlwm.call_xfail('set_attr tags.count 5') \
         .returncode == 3
 
 
