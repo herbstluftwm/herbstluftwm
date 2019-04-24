@@ -55,7 +55,11 @@ protected:
     std::shared_ptr<BaseClass> b_; // second child
 
     int selection_ = 0;
-    int fraction_ = 0; // size of first child relative to whole size
-                  // FRACTION_UNIT means full size
-                  // FRACTION_UNIT/2 means 50%
+
+    /*!
+     * Size of first child relative to whole size.
+     * For example, a value of FRACTION_UNIT means full size
+     * and FRACTION_UNIT/2 means 50%.
+     */
+    int fraction_ = 0;
 };
