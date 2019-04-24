@@ -116,7 +116,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             throw ParsingException(*nextToken, message.str());
         }
         try {
-            node->align_ = Converter<SplitAlign>::parse(alignName, nullptr);
+            node->align_ = Converter<SplitAlign>::parse(alignName);
             double fraction = std::stod(fractionStr);
             if (fraction < FRAME_MIN_FRACTION
                 || fraction > 1 - FRAME_MIN_FRACTION)
@@ -158,7 +158,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             throw ParsingException(*nextToken, message.str());
         }
         try {
-            node->layout = Converter<LayoutAlgorithm>::parse(layoutName, nullptr);
+            node->layout = Converter<LayoutAlgorithm>::parse(layoutName);
             node->selection = std::stoi(selectionStr);
             if (node->selection < 0) {
                 throw std::invalid_argument("selection must not be negative.");

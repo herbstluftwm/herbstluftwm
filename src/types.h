@@ -78,7 +78,7 @@ struct Converter {
 };
 
 #define ConverterInstance(T) \
-    template<> T Converter<T>::parse(const std::string& source, T const* relativeTo); \
+    template<> T Converter<T>::parse(const std::string& source); \
     template<> std::string Converter<T>::str(T payload); \
     template<> void Converter<T>::complete(Completion& complete, T const* relativeTo);
 
