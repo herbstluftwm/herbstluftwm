@@ -207,14 +207,14 @@ bool Condition::matchesTitle(const Client* client) const {
 }
 
 bool Condition::matchesPid(const Client* client) const {
-    if (client->pid_ < 0) {
+    if (client->pid_() < 0) {
         return false;
     }
     if (value_type == CONDITION_VALUE_TYPE_INTEGER) {
         return value_integer == client->pid_;
     } else {
         char buf[1000]; // 1kb ought to be enough for every int
-        sprintf(buf, "%d", client->pid_);
+        sprintf(buf, "%d", client->pid_());
         return matches(buf);
     }
 }
