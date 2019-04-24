@@ -5,7 +5,7 @@
 #include <string>
 
 #include "byname.h"
-#include "childbyindex.h"
+#include "indexingobject.h"
 #include "link.h"
 #include "monitor.h"
 
@@ -16,7 +16,7 @@ class HSTag;
 
 typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
 
-class MonitorManager : public ChildByIndex<Monitor> {
+class MonitorManager : public IndexingObject<Monitor> {
 public:
     MonitorManager();
     ~MonitorManager();

@@ -96,3 +96,14 @@ def test_client_tag_attribute(hlwm):
     hlwm.call(['move', othertag])
 
     assert hlwm.get_attr(clients_win_tag) == othertag
+
+
+def test_client_with_pid(hlwm):
+    winid, proc = hlwm.create_client()
+    assert int(hlwm.get_attr('clients.focus.pid')) == proc.pid
+
+
+def test_client_without_pid(hlwm, x11):
+    _, winid = x11.create_client()
+    # x11.create_client() does not set the _NET_WM_PID property
+    assert int(hlwm.get_attr('clients.focus.pid')) == -1

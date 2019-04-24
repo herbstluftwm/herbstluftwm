@@ -108,8 +108,12 @@ class HlwmBridge:
         return proc
 
     def call_xfail_no_output(self, cmd):
+        """ Call the command, expect it to terminate with a non-zero exit code
+        and emit no output on either stdout or stderr. """
         proc = self.unchecked_call(cmd)
         assert proc.returncode != 0
+        assert proc.stdout == ""
+        assert proc.stderr == ""
         return proc
 
     def get_attr(self, attribute_path, check=True):

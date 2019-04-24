@@ -50,10 +50,10 @@ template<>
 inline std::string Converter<Color>::str(Color payload) { return payload.str(); }
 
 template<>
-inline Color Converter<Color>::parse(const std::string &payload, Color const*) {
-    // TODO: relative modifiers, ie brightness+10/red-20 would be cool
+inline Color Converter<Color>::parse(const std::string &payload) {
     return Color::fromStr(payload);
 }
+// TODO: a parse() with relative modifiers, ie brightness+10/red-20 would be cool
 
 struct Point2D {
     int x;
@@ -88,10 +88,10 @@ inline std::string Converter<Rectangle>::str(Rectangle payload) {
 }
 
 template<>
-inline Rectangle Converter<Rectangle>::parse(const std::string &payload, Rectangle const*) {
-    // TODO: relative modifiers, ie a syntax for shifts, might be cool
+inline Rectangle Converter<Rectangle>::parse(const std::string &payload) {
     return Rectangle::fromStr(payload);
 }
+// TODO: a parse() with relative modifiers, ie a syntax for shifts, might be cool
 
 using RectangleVec = std::vector<Rectangle>;
 using RectangleIdxVec = std::vector<std::pair<int, Rectangle>>;

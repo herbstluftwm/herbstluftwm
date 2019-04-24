@@ -9,7 +9,9 @@
 #include "ewmh.h"
 #include "globals.h"
 #include "hook.h"
+#include "root.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::string;
 
@@ -193,13 +195,11 @@ bool Condition::matches(const string& str) const {
 }
 
 bool Condition::matchesClass(const Client* client) const {
-    auto window_class = window_class_to_string(g_display, client->window_);
-    return matches(window_class);
+    return matches(Root::get()->X.getClass(client->window_));
 }
 
 bool Condition::matchesInstance(const Client* client) const {
-    auto inst = window_instance_to_string(g_display, client->window_);
-    return matches(inst);
+    return matches(Root::get()->X.getInstance(client->window_));
 }
 
 bool Condition::matchesTitle(const Client* client) const {
@@ -207,14 +207,14 @@ bool Condition::matchesTitle(const Client* client) const {
 }
 
 bool Condition::matchesPid(const Client* client) const {
-    if (client->pid_ < 0) {
+    if (client->pid_() < 0) {
         return false;
     }
     if (value_type == CONDITION_VALUE_TYPE_INTEGER) {
         return value_integer == client->pid_;
     } else {
         char buf[1000]; // 1kb ought to be enough for every int
-        sprintf(buf, "%d", client->pid_);
+        sprintf(buf, "%d", client->pid_());
         return matches(buf);
     }
 }
@@ -277,7 +277,7 @@ bool Condition::matchesWindowtype(const Client* client) const {
 }
 
 bool Condition::matchesWindowrole(const Client* client) const {
-    auto role = window_property_to_string(g_display, client->window_,
+    auto role = Root::get()->X.getWindowProperty(client->window_,
         ATOM("WM_WINDOW_ROLE"));
 
     if (!role.has_value()) {
@@ -293,11 +293,11 @@ void Consequence::applyTag(const Client* client, ClientChanges* changes) const {
 }
 
 void Consequence::applyFocus(const Client* client, ClientChanges* changes) const {
-    changes->focus = string_to_bool(value, changes->focus);
+    changes->focus = Converter<bool>::parse(value, changes->focus);
 }
 
 void Consequence::applyManage(const Client* client, ClientChanges* changes) const {
-    changes->manage = string_to_bool(value, changes->manage);
+    changes->manage = Converter<bool>::parse(value, changes->manage);
 }
 
 void Consequence::applyIndex(const Client* client, ClientChanges* changes) const {
@@ -305,23 +305,23 @@ void Consequence::applyIndex(const Client* client, ClientChanges* changes) const
 }
 
 void Consequence::applyPseudotile(const Client* client, ClientChanges* changes) const {
-    changes->pseudotile = string_to_bool(value, client->pseudotile_);
+    changes->pseudotile = Converter<bool>::parse(value, client->pseudotile_);
 }
 
 void Consequence::applyFullscreen(const Client* client, ClientChanges* changes) const {
-    changes->fullscreen = string_to_bool(value, changes->fullscreen);
+    changes->fullscreen = Converter<bool>::parse(value, changes->fullscreen);
 }
 
 void Consequence::applySwitchtag(const Client* client, ClientChanges* changes) const {
-    changes->switchtag = string_to_bool(value, changes->switchtag);
+    changes->switchtag = Converter<bool>::parse(value, changes->switchtag);
 }
 
 void Consequence::applyEwmhrequests(const Client* client, ClientChanges* changes) const {
-    changes->ewmhRequests = string_to_bool(value, client->ewmhrequests_);
+    changes->ewmhRequests = Converter<bool>::parse(value, client->ewmhrequests_);
 }
 
 void Consequence::applyEwmhnotify(const Client* client, ClientChanges* changes) const {
-    changes->ewmhNotify = string_to_bool(value, client->ewmhnotify_);
+    changes->ewmhNotify = Converter<bool>::parse(value, client->ewmhnotify_);
 }
 
 void Consequence::applyHook(const Client* client, ClientChanges* changes) const {
