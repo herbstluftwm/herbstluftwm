@@ -30,7 +30,6 @@ public:
     bool        neverfocus_ = false; // do not give the focus via XSetInputFocus
     bool        visible_;
     bool        dragged_ = false;  // if this client is dragged currently
-    int         pid_;
     int         ignore_unmaps_ = 0;  // Ignore one unmap for each reparenting
                                 // action, because reparenting creates an unmap
                                 // notify event
@@ -47,6 +46,7 @@ public:
     Attribute_<std::string> window_id_str;
 
     Attribute_<std::string> keyMask_; // keymask applied to mask out keybindins
+    Attribute_<int>  pid_;
     Attribute_<bool> pseudotile_; // only move client but don't resize (if possible)
     bool        ewmhrequests_ = true; // accept ewmh-requests for this client
     bool        ewmhnotify_ = true; // send ewmh-notifications for this client
