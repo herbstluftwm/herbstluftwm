@@ -93,4 +93,5 @@ def test_client_with_pid(hlwm):
 
 def test_client_without_pid(hlwm, x11):
     _, winid = x11.create_client()
+    # x11.create_client() does not set the _NET_WM_PID property
     assert int(hlwm.get_attr('clients.focus.pid')) == -1
