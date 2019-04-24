@@ -50,7 +50,7 @@ protected:
 template<typename BaseClass>
 class FrameDataSplit {
 protected:
-    SplitAlign align_ = SplitAlign::vertical;         // SplitAlign::vertical or SplitAlign::horizontal
+    SplitAlign align_ = SplitAlign::vertical;
     std::shared_ptr<BaseClass> a_; // first child
     std::shared_ptr<BaseClass> b_; // second child
 
