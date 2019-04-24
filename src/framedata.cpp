@@ -23,7 +23,7 @@ template<> LayoutAlgorithm Converter<LayoutAlgorithm>::parse(const string& sourc
 }
 
 template<> string Converter<LayoutAlgorithm>::str(LayoutAlgorithm payload) {
-    return string(g_layout_names[(int)payload]);
+    return g_layout_names[(int) payload];
 }
 
 template<> void Converter<LayoutAlgorithm>::complete(Completion& complete, LayoutAlgorithm const* relativeTo) {
@@ -42,7 +42,7 @@ template<> SplitAlign Converter<SplitAlign>::parse(const string& source, SplitAl
 }
 
 template<> string Converter<SplitAlign>::str(SplitAlign payload) {
-    return string(g_align_names[(int)payload]);
+    return g_align_names[(int) payload];
 }
 
 template<> void Converter<SplitAlign>::complete(Completion& complete, SplitAlign const* relativeTo) {
