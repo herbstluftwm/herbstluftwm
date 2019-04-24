@@ -921,7 +921,7 @@ int main(int argc, char* argv[]) {
     g_root = X->root();
     XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
 
-    auto root = make_shared<Root>(g);
+    auto root = make_shared<Root>(g, *X);
     Root::setRoot(root);
     //test_object_system();
 

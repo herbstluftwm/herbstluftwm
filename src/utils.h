@@ -9,7 +9,6 @@
 #include <sstream>
 #include <string>
 
-#include "optional.h"
 #include "types.h"
 
 #define LENGTH(X) (sizeof(X)/sizeof(*X))
@@ -35,11 +34,6 @@ int MOD(int x, int n);
 
 #define ATOM(A) XInternAtom(g_display, (A), False)
 
-std::string window_class_to_string(Display* dpy, Window window);
-std::experimental::optional<std::string> window_property_to_string(Display* dpy, Window window, Atom atom);
-std::string window_instance_to_string(Display* dpy, Window window);
-int window_pid(Display* dpy, Window window);
-
 class TreeInterface {
 public:
     TreeInterface() = default;
@@ -56,12 +50,6 @@ bool is_herbstluft_window(Display* dpy, Window window);
 
 bool is_window_mapable(Display* dpy, Window window);
 bool is_window_mapped(Display* dpy, Window window);
-
-bool window_has_property(Display* dpy, Window window, char* prop_name);
-
-bool string_to_bool_error(const char* string, bool oldvalue, bool* error);
-bool string_to_bool(const char* string, bool oldvalue);
-bool string_to_bool(const std::string& string, bool oldvalue);
 
 const char* strlasttoken(const char* str, const char* delim);
 
