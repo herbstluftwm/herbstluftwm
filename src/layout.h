@@ -15,11 +15,9 @@
 #define LAYOUT_DUMP_SEPARATOR_STR ":" /* must be a string with one char */
 #define LAYOUT_DUMP_SEPARATOR LAYOUT_DUMP_SEPARATOR_STR[0]
 
-enum {
-    ALIGN_VERTICAL = 0,
-    ALIGN_HORIZONTAL,
-    // temporary values in split_command
-    ALIGN_EXPLODE,
+enum class SplitAlign {
+    vertical = 0,
+    horizontal,
 };
 
 enum {
@@ -77,7 +75,7 @@ public:
     std::shared_ptr<HSFrameSplit> getParent() { return parent_.lock(); };
     std::shared_ptr<HSFrame> root();
     // count the number of splits to the root with alignment "align"
-    virtual int splitsToRoot(int align);
+    virtual int splitsToRoot(SplitAlign align);
 
     HSTag* getTag() { return tag_; };
 
@@ -138,7 +136,7 @@ public:
 
     Client* focusedClient() override;
 
-    bool split(int alignment, int fraction, size_t childrenLeaving = 0);
+    bool split(SplitAlign alignment, int fraction, size_t childrenLeaving = 0);
     int getLayout() { return layout; }
     void setLayout(int l) { layout = l; }
     int getSelection() { return selection; }
@@ -173,7 +171,7 @@ private:
 
 class HSFrameSplit : public HSFrame {
 public:
-    HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction_, int align_,
+    HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction_, SplitAlign align_,
                  std::shared_ptr<HSFrame> a_, std::shared_ptr<HSFrame> b_);
     ~HSFrameSplit() override;
     // inherited:
@@ -188,7 +186,7 @@ public:
     Client* focusedClient() override;
 
     // own members
-    int splitsToRoot(int align_) override;
+    int splitsToRoot(SplitAlign align_) override;
     void replaceChild(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> newchild);
     std::shared_ptr<HSFrame> firstChild() { return a_; }
     std::shared_ptr<HSFrame> secondChild() { return b_; }
@@ -197,12 +195,12 @@ public:
     void adjustFraction(int delta);
     std::shared_ptr<HSFrameSplit> thisSplit();
     std::shared_ptr<HSFrameSplit> isSplit() override { return thisSplit(); }
-    int getAlign() { return align_; }
+    SplitAlign getAlign() { return align_; }
     void swapSelection() { selection_ = 1 - selection_; }
     void setSelection(int s) { selection_ = s; }
 private:
     friend class FrameTree;
-    int align_;         // ALIGN_VERTICAL or ALIGN_HORIZONTAL
+    SplitAlign align_;
     std::shared_ptr<HSFrame> a_; // first child
     std::shared_ptr<HSFrame> b_; // second child
 
