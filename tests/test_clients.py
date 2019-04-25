@@ -86,12 +86,11 @@ def test_urgent_jumpto_resets_urgent_flag(hlwm, x11, explicit_winid):
     assert hlwm.get_attr('clients.focus.urgent') == 'false'
 
 
-def test_client_with_pid(hlwm):
-    winid, proc = hlwm.create_client()
-    assert int(hlwm.get_attr('clients.focus.pid')) == proc.pid
+def test_client_with_pid(hlwm, x11):
+    _, winid = x11.create_client(pid=2342)
+    assert int(hlwm.get_attr('clients.focus.pid')) == 2342
 
 
 def test_client_without_pid(hlwm, x11):
-    _, winid = x11.create_client()
-    # x11.create_client() does not set the _NET_WM_PID property
+    _, winid = x11.create_client(pid=None)
     assert int(hlwm.get_attr('clients.focus.pid')) == -1
