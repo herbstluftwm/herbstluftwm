@@ -92,13 +92,13 @@ class HlwmBridge:
         return proc
 
     def call_xfail(self, cmd):
-        """call the command and expect it to have non-zero exit code
-        and some output on stderr. The returned finished process handle is
-        extended by a match() method that runs a regex against the process
-        stderr
-        """
+        """ Call the command, expect it to terminate with a non-zero exit code,
+        emit no output on stdout but some output on stderr. The returned
+        process handle offers a match() method that checks the stderr against a
+        given regex. """
         proc = self.unchecked_call(cmd)
         assert proc.returncode != 0
+        assert proc.stdout == ""
         assert proc.stderr != ""
 
         def f(self2, reg):
@@ -108,8 +108,11 @@ class HlwmBridge:
         return proc
 
     def call_xfail_no_output(self, cmd):
+        """ Call the command, expect it to terminate with a non-zero exit code
+        and emit no output on either stdout or stderr. """
         proc = self.unchecked_call(cmd)
         assert proc.returncode != 0
+        assert proc.stdout == ""
         assert proc.stderr == ""
         return proc
 
