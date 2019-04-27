@@ -32,11 +32,12 @@ parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
 args = parser.parse_args()
 
+repo = Path(__file__).resolve().parent
 build_dir = Path(args.build_dir)
 build_dir.mkdir(exist_ok=True)
 
 if args.check_using_std:
-    sp.check_call(['./ci-check-using-std.sh'], cwd='/hlwm')
+    sp.check_call(['./ci-check-using-std.sh'], cwd=repo)
 
 if args.ccache:
     if args.ccache is not True:
@@ -70,7 +71,7 @@ cmake_args = [
     f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}',
 ]
 
-sp.check_call(['cmake', *cmake_args, '..'], cwd=build_dir, env=build_env)
+sp.check_call(['cmake', *cmake_args, repo], cwd=build_dir, env=build_env)
 
 if args.compile:
     sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
@@ -80,7 +81,7 @@ if args.ccache:
 
 if args.iwyu:
     # Check lexicographical order of #include directives (cheap pre-check)
-    fix_include = sp.run('fix_include --dry_run --sort_only --reorder /hlwm/*/*.{h,cpp,c}', shell=True, executable='bash', stdout=sp.PIPE)
+    fix_include = sp.run('fix_include --dry_run --sort_only --reorder */*.{h,cpp,c}', cwd=repo, shell=True, executable='bash', stdout=sp.PIPE)
     print(re.sub(
         r">>> Fixing #includes in '[^']*'[\n\r]*No changes in file [^\n\r]*[\n\r]*",
         '',
@@ -90,7 +91,7 @@ if args.iwyu:
         sys.exit(1)
 
     # Run include-what-you-use
-    iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --transitive_includes_only --mapping_file=/hlwm/.hlwm.imp', shell=True, cwd=build_dir)
+    iwyu_out = sp.check_output(f'iwyu_tool -p . -j "$(nproc)" -- --transitive_includes_only --mapping_file={repo}/.hlwm.imp', shell=True, cwd=build_dir)
 
     # Check IWYU output, but ignore any suggestions to add things (those tend
     # to be overzealous):
@@ -109,4 +110,4 @@ if args.run_tests:
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
     sp.check_call('lcov --remove coverage.info "/usr/*" --output-file coverage.info', shell=True, cwd=build_dir)
     sp.check_call('lcov --list coverage.info', shell=True, cwd=build_dir)
-    (build_dir / 'coverage.info').rename('/hlwm/coverage.info')
+    (build_dir / 'coverage.info').rename(repo / 'coverage.info')
