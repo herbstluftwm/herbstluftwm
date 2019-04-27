@@ -106,3 +106,19 @@ def test_detect_monitors_does_not_crash(hlwm):
     # I don't know how to test detect_monitors properly, so just check that
     # it does not crash at least
     hlwm.call('detect_monitors')
+
+
+def test_rename_monitor(hlwm):
+    hlwm.call('rename_monitor 0 foo')
+
+    assert hlwm.get_attr('monitors.focus.name') == 'foo'
+    assert hlwm.list_children('monitors.by-name') == ['foo']
+
+
+def test_rename_monitor_no_name(hlwm):
+    hlwm.call('rename_monitor 0 foo')
+
+    hlwm.call('rename_monitor foo ""')
+
+    assert hlwm.get_attr('monitors.focus.name') == ''
+    assert hlwm.list_children('monitors.by-name') == []
