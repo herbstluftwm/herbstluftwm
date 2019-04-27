@@ -792,7 +792,7 @@ void enternotify(Root* root, XEvent* event) {
         shared_ptr<HSFrameLeaf> target;
         if (c && c->tag()->floating == false
               && (target = c->tag()->frame->root_->frameWithClient(c))
-              && target->getLayout() == LAYOUT_MAX
+              && target->getLayout() == LayoutAlgorithm::max
               && target->focusedClient() != c) {
             // don't allow focus_follows_mouse if another window would be
             // hidden during that focus change (which only occurs in max layout)
