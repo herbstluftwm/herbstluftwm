@@ -27,14 +27,6 @@ using std::swap;
 using std::vector;
 using std::weak_ptr;
 
-size_t layoutAlgorithmCount() {
-    size_t i = 0;
-    while (g_layout_names[i] != nullptr) {
-        i++;
-    }
-    return i;
-}
-
 const char* g_align_names[] = {
     "vertical",
     "horizontal",
