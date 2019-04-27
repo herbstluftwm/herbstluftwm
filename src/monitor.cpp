@@ -224,7 +224,7 @@ int set_monitor_rects(const RectangleVec &templates) {
     }
     // add additional monitors
     for (; i < templates.size(); i++) {
-        tag = find_unused_tag();
+        tag = global_tags->unusedTag();
         if (!tag) {
             return HERBST_TAG_IN_USE;
         }
