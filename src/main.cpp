@@ -184,7 +184,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"raise_monitor",  monitor_raise_command},
         {"remove_monitor", BIND_OBJECT(monitors, removeMonitor)},
         {"move_monitor",   monitors->byFirstArg(&Monitor::move_cmd) } ,
-        {"rename_monitor", rename_monitor_command},
+        {"rename_monitor", monitors->byFirstArg(&Monitor::renameCommand) },
         {"monitor_rect",   monitor_rect_command},
         {"pad",            monitor_set_pad_command},
         {"raise",          raise_command},
