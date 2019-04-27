@@ -247,7 +247,7 @@ int MonitorManager::addMonitor(Input input, Output output)
             return HERBST_TAG_IN_USE;
         }
     } else { // if no tag is supplied
-        tag = find_unused_tag();
+        tag = tags_->unusedTag();
         if (!tag) {
             output << input.command() << ": There are not enough free tags\n";
             return HERBST_TAG_IN_USE;
