@@ -20,13 +20,14 @@ enum class SplitAlign {
     horizontal,
 };
 
-enum {
-    LAYOUT_VERTICAL = 0,
-    LAYOUT_HORIZONTAL,
-    LAYOUT_MAX,
-    LAYOUT_GRID,
-    LAYOUT_COUNT,
+enum class LayoutAlgorithm {
+    vertical = 0,
+    horizontal,
+    max,
+    grid,
 };
+
+size_t layoutAlgorithmCount();
 
 extern const char* g_align_names[];
 extern const char* g_layout_names[];
@@ -137,8 +138,8 @@ public:
     Client* focusedClient() override;
 
     bool split(SplitAlign alignment, int fraction, size_t childrenLeaving = 0);
-    int getLayout() { return layout; }
-    void setLayout(int l) { layout = l; }
+    LayoutAlgorithm getLayout() { return layout; }
+    void setLayout(LayoutAlgorithm l) { layout = l; }
     int getSelection() { return selection; }
     size_t clientCount() { return clients.size(); }
     std::shared_ptr<HSFrame> neighbour(Direction direction);
@@ -162,7 +163,7 @@ private:
     // members
     std::vector<Client*> clients;
     int     selection;
-    int     layout;
+    LayoutAlgorithm layout;
 
     FrameDecoration* decoration;
     Rectangle  last_rect; // last rectangle when being drawn
