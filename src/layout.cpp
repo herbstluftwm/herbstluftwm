@@ -27,6 +27,14 @@ using std::swap;
 using std::vector;
 using std::weak_ptr;
 
+size_t layoutAlgorithmCount() {
+    size_t i = 0;
+    while (g_layout_names[i] != nullptr) {
+        i++;
+    }
+    return i;
+}
+
 const char* g_align_names[] = {
     "vertical",
     "horizontal",
@@ -58,12 +66,12 @@ HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> 
     : HSFrame(tag, settings, parent)
     , selection(0)
 {
-    layout = settings->default_frame_layout();
+    layout = (LayoutAlgorithm) settings->default_frame_layout();
 
     decoration = new FrameDecoration(tag, settings);
 }
 
-HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent, int fraction, int align,
+HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent, int fraction, SplitAlign align,
                  shared_ptr<HSFrame> a, shared_ptr<HSFrame> b)
              : HSFrame(tag, settings, parent) {
     this->align_ = align;
@@ -185,7 +193,7 @@ int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
     int layout_index;
     if (argc > 0) {
         /* cycle through a given list of layouts */
-        const char* curname = g_layout_names[cur_frame->getLayout()];
+        const char* curname = g_layout_names[(int)cur_frame->getLayout()];
         char** pcurrent = (char**)table_find(argv, sizeof(*argv), argc, 0,
                                      memberequals_string, curname);
         // signed for delta calculations
@@ -201,12 +209,12 @@ int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
         }
     } else {
         /* cycle through the default list of layouts */
-        layout_index = cur_frame->getLayout() + delta;
-        layout_index %= LAYOUT_COUNT;
-        layout_index += LAYOUT_COUNT;
-        layout_index %= LAYOUT_COUNT;
+        layout_index = (int)cur_frame->getLayout() + delta;
+        layout_index %= layoutAlgorithmCount();
+        layout_index += layoutAlgorithmCount();
+        layout_index %= layoutAlgorithmCount();
     }
-    cur_frame->setLayout(layout_index);
+    cur_frame->setLayout((LayoutAlgorithm)layout_index);
     get_current_monitor()->applyLayout();
     return 0;
 }
@@ -223,7 +231,7 @@ int frame_current_set_client_layout(int argc, char** argv, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     auto cur_frame = HSFrame::getGloballyFocusedFrame();
-    cur_frame->setLayout(layout);
+    cur_frame->setLayout((LayoutAlgorithm)layout);
     get_current_monitor()->applyLayout();
     return 0;
 }
@@ -374,14 +382,19 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
         rect.height -= frame_padding * 2;
     }
     TilingResult layoutResult;
-    if (layout == LAYOUT_MAX) {
-        layoutResult = layoutMax(rect);
-    } else if (layout == LAYOUT_GRID) {
-        layoutResult = layoutGrid(rect);
-    } else if (layout == LAYOUT_VERTICAL) {
-        layoutResult = layoutVertical(rect);
-    } else {
-        layoutResult = layoutHorizontal(rect);
+    switch (layout) {
+        case LayoutAlgorithm::max:
+            layoutResult = layoutMax(rect);
+            break;
+        case LayoutAlgorithm::grid:
+            layoutResult = layoutGrid(rect);
+            break;
+        case LayoutAlgorithm::vertical:
+            layoutResult = layoutVertical(rect);
+            break;
+        case LayoutAlgorithm::horizontal:
+            layoutResult = layoutHorizontal(rect);
+            break;
     }
     res.mergeFrom(layoutResult);
     res.focus = clients[selection];
@@ -391,11 +404,11 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
 TilingResult HSFrameSplit::computeLayout(Rectangle rect) {
     auto first = rect;
     auto second = rect;
-    if (align_ == ALIGN_VERTICAL) {
+    if (align_ == SplitAlign::vertical) {
         first.height = (rect.height * fraction_) / FRACTION_UNIT;
         second.y += first.height;
         second.height -= first.height;
-    } else { // (align == ALIGN_HORIZONTAL)
+    } else { // (align == SplitAlign::horizontal)
         first.width = (rect.width * fraction_) / FRACTION_UNIT;
         second.x += first.width;
         second.width -= first.width;
@@ -469,11 +482,11 @@ void HSFrameLeaf::setSelection(int index) {
     get_current_monitor()->applyLayout();
 }
 
-int HSFrame::splitsToRoot(int align) {
+int HSFrame::splitsToRoot(SplitAlign align) {
     if (!parent_.lock()) return 0;
     return parent_.lock()->splitsToRoot(align);
 }
-int HSFrameSplit::splitsToRoot(int align) {
+int HSFrameSplit::splitsToRoot(SplitAlign align) {
     if (!parent_.lock()) return 0;
     int delta = 0;
     if (this->align_ == align) delta = 1;
@@ -495,7 +508,7 @@ void HSFrameLeaf::addClients(const vector<Client*>& vec) {
     for (auto c : vec) clients.push_back(c);
 }
 
-bool HSFrameLeaf::split(int alignment, int fraction, size_t childrenLeaving) {
+bool HSFrameLeaf::split(SplitAlign alignment, int fraction, size_t childrenLeaving) {
     if (splitsToRoot(alignment) > HERBST_MAX_TREE_HEIGHT) {
         return false;
     }
@@ -533,7 +546,7 @@ int frame_split_command(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     bool userDefinedFraction = input >> strFraction;
-    int align = -1;
+    SplitAlign align = SplitAlign::vertical;
     bool frameToFirst = true;
     double fractionFloat = userDefinedFraction ? atof(strFraction.c_str()) : 0.5;
     fractionFloat = CLAMP(fractionFloat, 0.0 + FRAME_MIN_FRACTION,
@@ -543,53 +556,60 @@ int frame_split_command(Input input, Output output) {
     auto cur_frame = HSFrame::getGloballyFocusedFrame();
     int lh = cur_frame->lastRect().height;
     int lw = cur_frame->lastRect().width;
-    int align_auto = (lw > lh) ? ALIGN_HORIZONTAL : ALIGN_VERTICAL;
+    SplitAlign align_auto = (lw > lh) ? SplitAlign::horizontal : SplitAlign::vertical;
+    SplitAlign align_explode = SplitAlign::vertical;
+    bool exploding = false;
     struct {
         const char* name;
-        int align;
+        SplitAlign align;
         bool frameToFirst;  // if former frame moves to first child
         int selection;      // which child to select after the split
     } splitModes[] = {
-        { "top",        ALIGN_VERTICAL,     false,  1   },
-        { "bottom",     ALIGN_VERTICAL,     true,   0   },
-        { "vertical",   ALIGN_VERTICAL,     true,   0   },
-        { "right",      ALIGN_HORIZONTAL,   true,   0   },
-        { "horizontal", ALIGN_HORIZONTAL,   true,   0   },
-        { "left",       ALIGN_HORIZONTAL,   false,  1   },
-        { "explode",    ALIGN_EXPLODE,      true,   0   },
-        { "auto",       align_auto,         true,   0   },
+        { "top",        SplitAlign::vertical,     false,  1   },
+        { "bottom",     SplitAlign::vertical,     true,   0   },
+        { "vertical",   SplitAlign::vertical,     true,   0   },
+        { "right",      SplitAlign::horizontal,   true,   0   },
+        { "horizontal", SplitAlign::horizontal,   true,   0   },
+        { "left",       SplitAlign::horizontal,   false,  1   },
+        { "explode",    align_explode,            true,   0   },
+        { "auto",       align_auto,               true,   0   },
     };
+    bool found = false;
     for (auto &m : splitModes) {
         if (m.name[0] == splitType[0]) {
             align           = m.align;
             frameToFirst    = m.frameToFirst;
             selection       = m.selection;
+            found = true;
+            if (string(m.name) == "explode") {
+                exploding = true;
+            }
             break;
         }
     }
-    if (align < 0) {
+    if (!found) {
         output << input.command() << ": Invalid alignment \"" << splitType << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
     auto frame = HSFrame::getGloballyFocusedFrame();
-    bool exploding = align == ALIGN_EXPLODE;
-    int layout = frame->getLayout();
+    auto layout = frame->getLayout();
     auto windowcount = frame->clientCount();
     if (exploding) {
         if (windowcount <= 1) {
             align = align_auto;
-        } else if (layout == LAYOUT_MAX) {
+        } else if (layout == LayoutAlgorithm::max) {
             align = align_auto;
-        } else if (layout == LAYOUT_GRID && windowcount == 2) {
-            align = ALIGN_HORIZONTAL;
-        } else if (layout == LAYOUT_HORIZONTAL) {
-            align = ALIGN_HORIZONTAL;
+        } else if (layout == LayoutAlgorithm::grid && windowcount == 2) {
+            align = SplitAlign::horizontal;
+        } else if (layout == LayoutAlgorithm::horizontal) {
+            align = SplitAlign::horizontal;
         } else {
-            align = ALIGN_VERTICAL;
+            align = SplitAlign::vertical;
         }
         size_t count1 = frame->clientCount();
         size_t nc1 = (count1 + 1) / 2;      // new count for the first frame
-        if ((layout == LAYOUT_HORIZONTAL || layout == LAYOUT_VERTICAL)
+        if ((layout == LayoutAlgorithm::horizontal
+            || layout == LayoutAlgorithm::vertical)
             && !userDefinedFraction && count1 > 1) {
             fraction = (nc1 * FRACTION_UNIT) / count1;
         }
@@ -676,28 +696,28 @@ shared_ptr<HSFrame> HSFrameLeaf::neighbour(Direction direction) {
         // selection in the desired direction
         switch(direction) {
             case Direction::Right:
-                if (frame->getAlign() == ALIGN_HORIZONTAL
+                if (frame->getAlign() == SplitAlign::horizontal
                     && frame->firstChild() == child) {
                     found = true;
                     other = frame->secondChild();
                 }
                 break;
             case Direction::Left:
-                if (frame->getAlign() == ALIGN_HORIZONTAL
+                if (frame->getAlign() == SplitAlign::horizontal
                     && frame->secondChild() == child) {
                     found = true;
                     other = frame->firstChild();
                 }
                 break;
             case Direction::Down:
-                if (frame->getAlign() == ALIGN_VERTICAL
+                if (frame->getAlign() == SplitAlign::vertical
                     && frame->firstChild() == child) {
                     found = true;
                     other = frame->secondChild();
                 }
                 break;
             case Direction::Up:
-                if (frame->getAlign() == ALIGN_VERTICAL
+                if (frame->getAlign() == SplitAlign::vertical
                     && frame->secondChild() == child) {
                     found = true;
                     other = frame->firstChild();
@@ -724,17 +744,17 @@ int frame_inner_neighbour_index(shared_ptr<HSFrameLeaf> frame, Direction directi
     int count = frame->clientCount();
     int rows, cols;
     switch (frame->getLayout()) {
-        case LAYOUT_VERTICAL:
+        case LayoutAlgorithm::vertical:
             if (direction == Direction::Down) index = selection + 1;
             if (direction == Direction::Up) index = selection - 1;
             break;
-        case LAYOUT_HORIZONTAL:
+        case LayoutAlgorithm::horizontal:
             if (direction == Direction::Right) index = selection + 1;
             if (direction == Direction::Left) index = selection - 1;
             break;
-        case LAYOUT_MAX:
+        case LayoutAlgorithm::max:
             break;
-        case LAYOUT_GRID: {
+        case LayoutAlgorithm::grid: {
             frame_layout_grid_get_size(count, &rows, &cols);
             if (cols == 0) break;
             int r = selection / cols;
@@ -754,8 +774,6 @@ int frame_inner_neighbour_index(shared_ptr<HSFrameLeaf> frame, Direction directi
             }
             break;
         }
-        default:
-            break;
     }
     // check that index is valid
     if (index < 0 || index >= count) {
@@ -996,7 +1014,7 @@ int frame_move_window_edge(int argc, char** argv, Output output) {
 bool smart_window_surroundings_active(HSFrameLeaf* frame) {
     return g_settings->smart_window_surroundings()
             && (frame->clientCount() == 1
-                || frame->getLayout() == LAYOUT_MAX);
+                || frame->getLayout() == LayoutAlgorithm::max);
 }
 
 void frame_focus_recursive(shared_ptr<HSFrame> frame) {
