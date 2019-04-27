@@ -82,7 +82,7 @@ struct {
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
     { "cycle_all",      3,  no_completion },
-    { "cycle_layout",   LAYOUT_COUNT+2, no_completion },
+    { "cycle_layout",   4+2, no_completion }, // 4 is the count of layout algorithms
     { "set_layout",     2,  no_completion },
     { "split",          3,  no_completion },
     { "focus",          3,  no_completion },
