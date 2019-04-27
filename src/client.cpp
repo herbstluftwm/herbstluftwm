@@ -205,7 +205,7 @@ void Client::window_focus() {
     lastfocus = this;
     /* do some specials for the max layout */
     bool is_max_layout = HSFrame::getGloballyFocusedFrame()->focusedClient() == this
-                         && HSFrame::getGloballyFocusedFrame()->getLayout() == LAYOUT_MAX
+                         && HSFrame::getGloballyFocusedFrame()->getLayout() == LayoutAlgorithm::max
                          && get_current_monitor()->tag->floating == false;
     if (settings.raise_on_focus() || is_max_layout) {
         this->raise();
