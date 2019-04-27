@@ -86,6 +86,17 @@ def test_urgent_jumpto_resets_urgent_flag(hlwm, x11, explicit_winid):
     assert hlwm.get_attr('clients.focus.urgent') == 'false'
 
 
+def test_client_tag_attribute(hlwm):
+    winid, _ = hlwm.create_client()
+    hlwm.call('add othertag')
+    clients_win_tag = 'clients.{}.tag'.format(winid)
+    assert hlwm.get_attr(clients_win_tag) == hlwm.get_attr('tags.0.name')
+
+    hlwm.call('move othertag')
+
+    assert hlwm.get_attr(clients_win_tag) == 'othertag'
+
+
 def test_client_with_pid(hlwm, x11):
     _, winid = x11.create_client(pid=2342)
     assert int(hlwm.get_attr('clients.focus.pid')) == 2342
