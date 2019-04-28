@@ -24,7 +24,7 @@ def test_add_monitor(hlwm):
 def test_add_monitor_with_no_name(hlwm):
     hlwm.call('add tag2')
 
-    call = hlwm.call('add_monitor 800x600+40+40 tag2')
+    hlwm.call('add_monitor 800x600+40+40 tag2')
 
     assert hlwm.get_attr('monitors.count') == '2'
     assert hlwm.get_attr('monitors.1.name') == ''
