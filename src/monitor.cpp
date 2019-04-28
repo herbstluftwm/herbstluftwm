@@ -224,7 +224,7 @@ int set_monitor_rects(const RectangleVec &templates) {
     }
     // add additional monitors
     for (; i < templates.size(); i++) {
-        tag = find_unused_tag();
+        tag = global_tags->unusedTag();
         if (!tag) {
             return HERBST_TAG_IN_USE;
         }
@@ -278,19 +278,14 @@ int Monitor::move_cmd(Input input, Output output) {
     return 0;
 }
 
-int rename_monitor_command(int argc, char** argv, Output output) {
-    if (argc < 3) {
+int Monitor::renameCommand(Input input, Output output) {
+    string new_name;
+    if (!(input >> new_name)) {
         return HERBST_NEED_MORE_ARGS;
     }
-    Monitor* mon = g_monitors->byString(argv[1]);
-    if (!mon) {
-        output << argv[0] <<
-            ": Monitor \"" << argv[1] << "\" not found!\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    string error = mon->name.change(argv[2]);
+    string error = name.change(new_name);
     if (!error.empty()) {
-        output << argv[0] << ": " << error << "\n";
+        output << input.command() << ": " << error << "\n";
         return HERBST_INVALID_ARGUMENT;
     } else {
         return 0;
