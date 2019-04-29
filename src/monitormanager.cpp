@@ -247,7 +247,7 @@ int MonitorManager::addMonitor(Input input, Output output)
             return HERBST_TAG_IN_USE;
         }
     } else { // if no tag is supplied
-        tag = find_unused_tag();
+        tag = tags_->unusedTag();
         if (!tag) {
             output << input.command() << ": There are not enough free tags\n";
             return HERBST_TAG_IN_USE;
@@ -256,9 +256,14 @@ int MonitorManager::addMonitor(Input input, Output output)
     // TODO: error message on invalid rectString
     auto rect = Rectangle::fromStr(rectString);
     if (input >> monitorName) {
-        auto error = isValidMonitorName(monitorName);
+        string error;
+        if (monitorName.empty()) {
+            error = "An empty monitor name is not permitted";
+        } else {
+            error = isValidMonitorName(monitorName);
+        }
         if (error != "") {
-            output << input.command() << ": " << error;
+            output << input.command() << ": " << error << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -277,13 +282,10 @@ int MonitorManager::addMonitor(Input input, Output output)
 
 string MonitorManager::isValidMonitorName(string name) {
     if (isdigit(name[0])) {
-        return "Invalid name \"" + name + "\": The monitor name may not start with a number\n";
-    }
-    if (name.empty()) {
-        return "An empty monitor name is not permitted\n";
+        return "Invalid name \"" + name + "\": The monitor name may not start with a number";
     }
     if (find_monitor_by_name(name.c_str())) {
-        return "A monitor with the name \"" + name + "\" already exists\n";
+        return "A monitor with the name \"" + name + "\" already exists";
     }
     return "";
 }

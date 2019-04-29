@@ -88,15 +88,6 @@ HSTag* get_tag_by_index(int index) {
     return &* global_tags->byIdx(index);
 }
 
-HSTag* find_unused_tag() {
-    for (auto t : *global_tags) {
-        if (!find_monitor_with_tag(&* t)) {
-            return &* t;
-        }
-    }
-    return nullptr;
-}
-
 int tag_set_floating_command(int argc, char** argv, Output output) {
     // usage: floating [[tag] on|off|toggle]
     HSTag* tag = get_current_monitor()->tag;
