@@ -100,3 +100,24 @@ def test_fullscreen_ewmhnotify(hlwm, x11, ewmhstate, hlwmstate):
 
     expected = ('_NET_WM_STATE_FULLSCREEN' in x11.ewmh.getWmState(window, str=True))
     assert expected == ewmhstate
+
+
+def test_client_tag_attribute(hlwm):
+    winid, _ = hlwm.create_client()
+    hlwm.call('add othertag')
+    clients_win_tag = 'clients.{}.tag'.format(winid)
+    assert hlwm.get_attr(clients_win_tag) == hlwm.get_attr('tags.0.name')
+
+    hlwm.call('move othertag')
+
+    assert hlwm.get_attr(clients_win_tag) == 'othertag'
+
+
+def test_client_with_pid(hlwm, x11):
+    _, winid = x11.create_client(pid=2342)
+    assert int(hlwm.get_attr('clients.focus.pid')) == 2342
+
+
+def test_client_without_pid(hlwm, x11):
+    _, winid = x11.create_client(pid=None)
+    assert int(hlwm.get_attr('clients.focus.pid')) == -1

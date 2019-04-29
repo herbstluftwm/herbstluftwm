@@ -93,13 +93,13 @@ class HlwmBridge:
         return proc
 
     def call_xfail(self, cmd):
-        """call the command and expect it to have non-zero exit code
-        and some output on stderr. The returned finished process handle is
-        extended by a match() method that runs a regex against the process
-        stderr
-        """
+        """ Call the command, expect it to terminate with a non-zero exit code,
+        emit no output on stdout but some output on stderr. The returned
+        process handle offers a match() method that checks the stderr against a
+        given regex. """
         proc = self.unchecked_call(cmd)
         assert proc.returncode != 0
+        assert proc.stdout == ""
         assert proc.stderr != ""
 
         def f(self2, reg):
@@ -109,8 +109,11 @@ class HlwmBridge:
         return proc
 
     def call_xfail_no_output(self, cmd):
+        """ Call the command, expect it to terminate with a non-zero exit code
+        and emit no output on either stdout or stderr. """
         proc = self.unchecked_call(cmd)
         assert proc.returncode != 0
+        assert proc.stdout == ""
         assert proc.stderr == ""
         return proc
 
@@ -425,7 +428,7 @@ def running_clients(hlwm, running_clients_num):
 
 @pytest.fixture()
 def x11():
-    from Xlib import X, display, Xutil
+    from Xlib import X, display, Xutil, Xatom
 
     class X11:
         def __init__(self):
@@ -454,7 +457,7 @@ def x11():
                 return False
             return bool(hints.flags & Xutil.UrgencyHint)
 
-        def create_client(self, urgent=False):
+        def create_client(self, urgent=False, pid=None):
             w = self.root.create_window(
                 50, 50, 300, 200, 2,
                 self.screen.root_depth,
@@ -466,6 +469,12 @@ def x11():
             w.set_wm_name('Some Window')
             if urgent:
                 w.set_wm_hints(flags=Xutil.UrgencyHint)
+
+            if pid is not None:
+                w.change_property(self.display.intern_atom('_NET_WM_PID'),
+                                  Xatom.CARDINAL,
+                                  32,
+                                  [pid])
 
             w.map()
             self.display.sync()

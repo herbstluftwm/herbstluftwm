@@ -43,8 +43,10 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , urgent_(this, "urgent", false)
     , fullscreen_(this,  "fullscreen", false)
     , title_(this,  "title", "")
+    , tag_str_(this,  "tag", &Client::tagName)
     , window_id_str(this,  "winid", "")
     , keyMask_(this,  "keymask", "")
+    , pid_(this,  "pid", -1)
     , pseudotile_(this,  "pseudotile", false)
     , ewmhrequests_(this, "ewmhrequests", true)
     , ewmhnotify_(this, "ewmhnotify", true)
@@ -210,7 +212,7 @@ void Client::window_focus() {
     lastfocus = this;
     /* do some specials for the max layout */
     bool is_max_layout = HSFrame::getGloballyFocusedFrame()->focusedClient() == this
-                         && HSFrame::getGloballyFocusedFrame()->getLayout() == LAYOUT_MAX
+                         && HSFrame::getGloballyFocusedFrame()->getLayout() == LayoutAlgorithm::max
                          && get_current_monitor()->tag->floating == false;
     if (settings.raise_on_focus() || is_max_layout) {
         this->raise();
@@ -711,3 +713,9 @@ void Client::clear_properties() {
     XDeleteProperty(g_display, window_, g_wmatom[WMState]);
 }
 
+//! name of the tag on which the client is
+string Client::tagName() {
+    // be safe during initialization phase and don't assume
+    // that tag is set.
+    return tag_ ? tag_->name() : "";
+}
