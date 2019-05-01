@@ -60,10 +60,11 @@ RENAMING_COMMANDS = [
 
 
 @pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
-def test_rename_tag(hlwm, rename_command):
+def test_rename_tag(hlwm, hc_idle, rename_command):
     hlwm.call(rename_command + ['foobar'])
 
     assert hlwm.get_attr('tags.0.name') == 'foobar'
+    assert hc_idle.hooks() == [['tag_renamed', 'foobar']]
 
 
 @pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
