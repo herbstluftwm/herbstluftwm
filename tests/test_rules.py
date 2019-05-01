@@ -193,12 +193,9 @@ def test_monitor_consequence(hlwm, monitor_spec):
     assert hlwm.get_attr('monitors.focus.name') == ''
 
     hlwm.call('rule monitor=' + monitor_spec)
-    hlwm.create_client()
+    winid, _ = hlwm.create_client()
 
-    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
-    assert hlwm.get_attr('tags.by-name.default.client_count') == '0'
-    # TODO: Instead of checking client counts, assert that the right winid is
-    # in the tag (not yet possible).
+    assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
 @pytest.mark.parametrize('value', ['true', 'false'])
@@ -245,20 +242,18 @@ def test_condition_string_match(hlwm):
     hlwm.call('add tag2')
 
     hlwm.call('rule title=foo tag=tag2')
-    hlwm.create_client(title='foo')
+    winid, _ = hlwm.create_client(title='foo')
 
-    # TODO: Use more direct assertion (not yet possible)
-    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+    assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
 def test_condition_regexp_match(hlwm):
     hlwm.call('add tag2')
 
     hlwm.call('rule title~ba+r tag=tag2')
-    hlwm.create_client(title='baaaaar')
+    winid, _ = hlwm.create_client(title='baaaaar')
 
-    # TODO: Use more direct assertion (not yet possible)
-    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+    assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
 def test_condition_maxage(hlwm):
@@ -267,20 +262,18 @@ def test_condition_maxage(hlwm):
     hlwm.call('rule maxage=1 tag=tag2')
     import time
     time.sleep(2)
-    hlwm.create_client()
+    winid, _ = hlwm.create_client()
 
-    # TODO: Use more direct assertion (not yet possible)
-    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '0'
+    assert hlwm.get_attr('clients', winid, 'tag') == 'default'
 
 
 def test_condition_numeric_equal(hlwm):
     hlwm.call('add tag2')
 
     hlwm.call('rule not pid=1 tag=tag2')
-    hlwm.create_client()
+    winid, _ = hlwm.create_client()
 
-    # TODO: Use more direct assertion (not yet possible)
-    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+    assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
 def test_condition_instance(hlwm):
@@ -288,10 +281,9 @@ def test_condition_instance(hlwm):
 
     # Note: We're relying on the knowledge that xterm is used as test client:
     hlwm.call('rule instance=xterm tag=tag2')
-    hlwm.create_client()
+    winid, _ = hlwm.create_client()
 
-    # TODO: Use more direct assertion (not yet possible)
-    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+    assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
 def test_condition_class(hlwm):
@@ -299,10 +291,9 @@ def test_condition_class(hlwm):
 
     # Note: We're relying on knowledge about the test client class here:
     hlwm.call('rule class~client_.* tag=tag2')
-    hlwm.create_client()
+    winid, _ = hlwm.create_client()
 
-    # TODO: Use more direct assertion (not yet possible)
-    assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
+    assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
 def test_consequence_invalid_argument(hlwm):
