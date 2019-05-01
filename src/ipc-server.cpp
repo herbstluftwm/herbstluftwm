@@ -10,8 +10,33 @@
 #include "ipc-protocol.h"
 #include "xconnection.h"
 
+using std::string;
+using std::vector;
+
 IpcServer::IpcServer(XConnection& xconnection)
-    : X(xconnection) {
+    : X(xconnection)
+    , next_hook_number_(0)
+{
+    // main task of the construtor is to setup the hook window
+    hook_event_window_ = XCreateSimpleWindow(X.display(), X.root(),
+                                             42, 42, 42, 42, 0, 0, 0);
+    // set wm_class for window
+    XClassHint *hint = XAllocClassHint();
+    hint->res_name = (char*)HERBST_HOOK_CLASS;
+    hint->res_class = (char*)HERBST_HOOK_CLASS;
+    XSetClassHint(X.display(), hook_event_window_, hint);
+    XFree(hint);
+    // ignore all events for this window
+    XSelectInput(X.display(), hook_event_window_, 0l);
+    // set its window id in root window
+    XChangeProperty(X.display(), X.root(), X.atom(HERBST_HOOK_WIN_ID_ATOM),
+        XA_ATOM, 32, PropModeReplace, (unsigned char*)&hook_event_window_, 1);
+}
+
+IpcServer::~IpcServer() {
+    // remove property from root window
+    XDeleteProperty(X.display(), X.root(), X.atom(HERBST_HOOK_WIN_ID_ATOM));
+    XDestroyWindow(X.display(), hook_event_window_);
 }
 
 void IpcServer::addConnection(Window window) {
@@ -57,3 +82,24 @@ bool IpcServer::isConnectable(Window window) {
     return X.getClass(window) == HERBST_IPC_CLASS;
 }
 
+void IpcServer::emitHook(vector<string> args) {
+    if (args.size() <= 0) {
+        // nothing to do
+        return;
+    }
+    vector<const char*> args_c_str;
+    args_c_str.reserve(args.size());
+    for (const auto& s : args) {
+        args_c_str.push_back(s.c_str());
+    }
+    XTextProperty text_prop;
+    static char atom_name[1000];
+    snprintf(atom_name, 1000, HERBST_HOOK_PROPERTY_FORMAT, next_hook_number_);
+    Atom atom = X.atom(atom_name);
+    Xutf8TextListToTextProperty(X.display(), (char**) args_c_str.data(), args.size(), XUTF8StringStyle, &text_prop);
+    XSetTextProperty(X.display(), hook_event_window_, &text_prop, atom);
+    XFree(text_prop.value);
+    // set counter for next property
+    next_hook_number_ += 1;
+    next_hook_number_ %= HERBST_HOOK_PROPERTY_COUNT;
+}
