@@ -9,6 +9,7 @@
 #include "object.h"
 #include "x11-types.h"
 
+class Ewmh;
 class Slice;
 class HSTag;
 class Monitor;
@@ -111,6 +112,7 @@ private:
     ClientManager& manager;
     Theme& theme;
     Settings& settings;
+    Ewmh& ewmh;
     std::string tagName();
     const DecTriple& getDecTriple();
 };

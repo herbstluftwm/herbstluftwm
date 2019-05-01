@@ -111,7 +111,7 @@ Settings::Settings()
         i->changed().connect(&all_monitors_apply_layout);
     }
     raise_on_focus_temporarily.changed().connect(&tag_update_each_focus_layer);
-    wmname.changed().connect(&ewmh_update_wmname);
+    wmname.changed().connect([]() { Ewmh::get().ewmh_update_wmname(); });
 
     default_frame_layout.setValidator([] (int layout) {
         if (layout >= layoutAlgorithmCount()) {

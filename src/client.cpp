@@ -51,6 +51,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , manager(cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
+    , ewmh(*cm.ewmh)
 {
     std::stringstream tmp;
     tmp << "0x" << std::hex << window;
@@ -166,7 +167,7 @@ void Client::window_unfocus_last() {
     if (lastfocus) {
         /* only emit the hook if the focus *really* changes */
         hook_emit_list("focus_changed", "0x0", "", nullptr);
-        ewmh_update_active_window(None);
+        Ewmh::get().ewmh_update_active_window(None);
         tag_update_each_focus_layer();
 
         // Enable all keys in the root window
@@ -191,7 +192,7 @@ void Client::window_focus() {
         if (lastfocus) {
             lastfocus->window_unfocus();
         }
-        ewmh_update_active_window(this->window_);
+        ewmh.ewmh_update_active_window(this->window_);
         tag_update_each_focus_layer();
         const char* title = this->title_().c_str();
         char winid_str[STRING_BUF_SIZE];
@@ -461,7 +462,7 @@ void Client::set_visible(bool visible) {
            the client gets its MapNotify, i.e. to make sure the client is
            _visible_ when it gets MapNotify. */
         XGrabServer(g_display);
-        window_update_wm_state(this->window_, WmStateNormalState);
+        ewmh.window_update_wm_state(this->window_, WmStateNormalState);
         XMapWindow(g_display, this->window_);
         XMapWindow(g_display, this->dec.decorationWindow());
         XUngrabServer(g_display);
@@ -470,7 +471,7 @@ void Client::set_visible(bool visible) {
            events, and because the ICCCM tells us to! */
         XUnmapWindow(g_display, this->dec.decorationWindow());
         XUnmapWindow(g_display, this->window_);
-        window_update_wm_state(this->window_, WmStateWithdrawnState);
+        ewmh.window_update_wm_state(this->window_, WmStateWithdrawnState);
         this->ignore_unmaps_++;
     }
     this->visible_ = visible;
@@ -589,7 +590,7 @@ void Client::set_fullscreen(bool state) {
 
     char buf[STRING_BUF_SIZE];
     snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
-    ewmh_update_window_state(this);
+    ewmh.ewmh_update_window_state(this);
     hook_emit_list("fullscreen", state ? "on" : "off", buf, nullptr);
 }
 
@@ -692,7 +693,7 @@ void Client::clear_properties() {
     // delete ewmh-properties and ICCCM-Properties such that the client knows
     // that he has been unmanaged and now the client is allowed to be mapped
     // again (e.g. if it is some dialog)
-    ewmh_clear_client_properties(window_);
+    ewmh.ewmh_clear_client_properties(window_);
     XDeleteProperty(g_display, window_, g_wmatom[WMState]);
 }
 

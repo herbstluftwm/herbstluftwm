@@ -215,7 +215,7 @@ void Stack::restack() {
     auto buf = toWindowBuf(false);
     XRestackWindows(g_display, buf.data(), buf.size());
     dirty = false;
-    ewmh_update_client_list_stacking();
+    Ewmh::get().ewmh_update_client_list_stacking();
 }
 
 void Stack::raiseSlice(Slice* slice) {

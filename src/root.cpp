@@ -51,7 +51,7 @@ Root::Root(Globals g, XConnection& xconnection)
     // inject dependencies where needed
     settings->injectDependencies(this);
     tags->injectDependencies(monitors(), settings());
-    clients->injectDependencies(settings(), theme());
+    clients->injectDependencies(settings(), theme(), ewmh.get());
     monitors->injectDependencies(settings(), tags());
 
     // set temporary globals

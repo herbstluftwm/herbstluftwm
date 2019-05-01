@@ -10,6 +10,7 @@
 
 class Client;
 class Completion;
+class Ewmh;
 class HSTag;
 class Settings;
 class Theme;
@@ -21,7 +22,7 @@ class ClientManager : public Object
 public:
     ClientManager();
     ~ClientManager() override;
-    void injectDependencies(Settings* s, Theme* t);
+    void injectDependencies(Settings* s, Theme* t, Ewmh* e);
 
     Client* client(Window window);
     Client* client(const std::string &identifier);
@@ -50,6 +51,7 @@ protected:
     int clientSetAttribute(std::string attribute, Input input, Output output);
     Theme* theme;
     Settings* settings;
+    Ewmh* ewmh;
     std::unordered_map<Window, Client*> clients_;
     friend class Client;
 };
