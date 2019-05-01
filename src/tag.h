@@ -43,7 +43,6 @@ private:
 
 // for tags
 HSTag* find_tag(const char* name);
-HSTag* find_unused_tag();
 HSTag* find_tag_with_toplevel_frame(class HSFrame* frame);
 HSTag* get_tag_by_index(int index);
 int    tag_get_count();

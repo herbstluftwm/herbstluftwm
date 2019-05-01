@@ -298,4 +298,11 @@ function<int()> TagManager::frameCommand(function<int(FrameTree&)> cmd) {
     };
 }
 
-
+HSTag* TagManager::unusedTag() {
+    for (auto t : *this) {
+        if (!find_monitor_with_tag(&* t)) {
+            return t;
+        }
+    }
+    return nullptr;
+}

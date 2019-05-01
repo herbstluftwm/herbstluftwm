@@ -46,6 +46,7 @@ public:
     int unlock_tag_cmd(Input argv, Output output);
     int list_padding(Input input, Output output);
     int move_cmd(Input input, Output output);
+    int renameCommand(Input input, Output output);
     bool setTag(HSTag* new_tag);
     void applyLayout();
     void restack();
@@ -70,7 +71,6 @@ int remove_monitor_command(int argc, char** argv, Output output);
 int remove_monitor(int index);
 int set_monitor_rects_command(int argc, char** argv, Output output);
 int set_monitor_rects(const RectangleVec &templates);
-int rename_monitor_command(int argc, char** argv, Output output);
 int monitor_rect_command(int argc, char** argv, Output output);
 Monitor* get_current_monitor();
 int monitor_set_tag(Monitor* monitor, HSTag* tag);
