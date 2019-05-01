@@ -1,9 +1,9 @@
 #ifndef __HERBSTLUFT_IPC_SERVER_H_
 #define __HERBSTLUFT_IPC_SERVER_H_
 
+#include <X11/X.h>
 #include <string>
 #include <vector>
-#include <X11/X.h>
 
 class XConnection;
 
