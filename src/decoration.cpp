@@ -303,7 +303,7 @@ void Decoration::updateFrameExtends() {
     int top  = last_inner_rect.y - last_outer_rect.y;
     int right = last_outer_rect.width - last_inner_rect.width - left;
     int bottom = last_outer_rect.height - last_inner_rect.height - top;
-    client_->ewmh.ewmh_update_frame_extents(client_->window_, left,right, top,bottom);
+    client_->ewmh.updateFrameExtents(client_->window_, left,right, top,bottom);
 }
 
 void Decoration::change_scheme(const DecorationScheme& scheme) {

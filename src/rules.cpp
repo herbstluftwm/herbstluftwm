@@ -171,7 +171,7 @@ void Rule::print(Output output) {
 
 // rules applying //
 ClientChanges::ClientChanges(Client *client)
-    : fullscreen(Root::get()->ewmh->ewmh_is_fullscreen_set(client->window_))
+    : fullscreen(Root::get()->ewmh->isFullscreenSet(client->window_))
 {}
 
 /// CONDITIONS ///

@@ -109,7 +109,7 @@ Ewmh::Ewmh(XConnection& xconnection)
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
     XChangeProperty(g_display, g_wm_window, g_netatom[NetSupportingWmCheck],
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
-    ewmh_update_wmname();
+    updateWmName();
 
     /* init atoms that never change */
     vector<long> buf{ 0, 0 };
@@ -117,13 +117,13 @@ Ewmh::Ewmh(XConnection& xconnection)
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&buf.front(), buf.size());
 }
 
-void Ewmh::ewmh_update_all() {
+void Ewmh::updateAll() {
     /* init many properties */
-    ewmh_update_client_list();
-    ewmh_update_client_list_stacking();
-    ewmh_update_desktops();
-    ewmh_update_current_desktop();
-    ewmh_update_desktop_names();
+    updateClientList();
+    updateClientListStacking();
+    updateDesktops();
+    updateCurrentDesktop();
+    updateDesktopNames();
 }
 
 Ewmh::~Ewmh() {
@@ -134,7 +134,7 @@ Ewmh::~Ewmh() {
     XDestroyWindow(g_display, g_wm_window);
 }
 
-void Ewmh::ewmh_set_wmname(const char* name) {
+void Ewmh::setWmName(const char* name) {
     XChangeProperty(g_display, g_wm_window, g_netatom[NetWmName],
         ATOM("UTF8_STRING"), 8, PropModeReplace,
         (unsigned char*)name, strlen(name));
@@ -143,11 +143,11 @@ void Ewmh::ewmh_set_wmname(const char* name) {
         (unsigned char*)name, strlen(name));
 }
 
-void Ewmh::ewmh_update_wmname() {
-    ewmh_set_wmname(g_settings->wmname().c_str());
+void Ewmh::updateWmName() {
+    setWmName(g_settings->wmname().c_str());
 }
 
-void Ewmh::ewmh_update_client_list() {
+void Ewmh::updateClientList() {
     XChangeProperty(g_display, g_root, g_netatom[NetClientList],
         XA_WINDOW, 32, PropModeReplace,
         (unsigned char *) g_windows.data(), g_windows.size());
@@ -168,12 +168,12 @@ static bool ewmh_read_client_list(Window** buf, unsigned long *count) {
     return true;
 }
 
-void Ewmh::ewmh_get_original_client_list(Window** buf, unsigned long *count) {
+void Ewmh::getOriginalClientList(Window** buf, unsigned long *count) {
     *buf = g_original_clients;
     *count = g_original_clients_count;
 }
 
-void Ewmh::ewmh_update_client_list_stacking() {
+void Ewmh::updateClientListStacking() {
     // First: get the windows currently visible
     auto buf = g_monitors->monitor_stack->toWindowBuf(true);
 
@@ -194,25 +194,25 @@ void Ewmh::ewmh_update_client_list_stacking() {
         (unsigned char *) buf.data(), buf.size());
 }
 
-void Ewmh::ewmh_add_client(Window win) {
+void Ewmh::addClient(Window win) {
     g_windows.push_back(win);
-    ewmh_update_client_list();
-    ewmh_update_client_list_stacking();
+    updateClientList();
+    updateClientListStacking();
 }
 
-void Ewmh::ewmh_remove_client(Window win) {
+void Ewmh::removeClient(Window win) {
     g_windows.erase(std::remove(g_windows.begin(), g_windows.end(), win), g_windows.end());
-    ewmh_update_client_list();
-    ewmh_update_client_list_stacking();
+    updateClientList();
+    updateClientListStacking();
 }
 
-void Ewmh::ewmh_update_desktops() {
+void Ewmh::updateDesktops() {
     int cnt = tag_get_count();
     XChangeProperty(g_display, g_root, g_netatom[NetNumberOfDesktops],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&cnt, 1);
 }
 
-void Ewmh::ewmh_update_desktop_names() {
+void Ewmh::updateDesktopNames() {
     // we know that the tags don't change during the following lines
     vector<const char*> names;
     for (auto tag : *global_tags) {
@@ -225,7 +225,7 @@ void Ewmh::ewmh_update_desktop_names() {
     XFree(text_prop.value);
 }
 
-void Ewmh::ewmh_update_current_desktop() {
+void Ewmh::updateCurrentDesktop() {
     HSTag* tag = get_current_monitor()->tag;
     int index = global_tags->index_of(tag);
     if (index < 0) {
@@ -236,7 +236,7 @@ void Ewmh::ewmh_update_current_desktop() {
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(index), 1);
 }
 
-void Ewmh::ewmh_window_update_tag(Window win, HSTag* tag) {
+void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
     int index = global_tags->index_of(tag);
     if (index < 0) {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
@@ -246,7 +246,7 @@ void Ewmh::ewmh_window_update_tag(Window win, HSTag* tag) {
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(index), 1);
 }
 
-void Ewmh::ewmh_update_active_window(Window win) {
+void Ewmh::updateActiveWindow(Window win) {
     XChangeProperty(g_display, g_root, g_netatom[NetActiveWindow],
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(win), 1);
 }
@@ -261,7 +261,7 @@ static bool focus_stealing_allowed(long source) {
     }
 }
 
-void Ewmh::ewmh_handle_client_message(XEvent* event) {
+void Ewmh::handleClientMessage(XEvent* event) {
     HSDebug("Received event: ClientMessage\n");
     XClientMessageEvent* me = &(event->xclient);
     int index;
@@ -389,7 +389,7 @@ void Ewmh::ewmh_handle_client_message(XEvent* event) {
     }
 }
 
-void Ewmh::ewmh_update_window_state(Client* client) {
+void Ewmh::updateWindowState(Client* client) {
     /* mapping between EWMH atoms and client struct members */
     struct {
         int     atom_index;
@@ -414,11 +414,11 @@ void Ewmh::ewmh_update_window_state(Client* client) {
         32, PropModeReplace, (unsigned char *) window_state, count_enabled);
 }
 
-void Ewmh::ewmh_clear_client_properties(Window win) {
+void Ewmh::clearClientProperties(Window win) {
     XDeleteProperty(g_display, win, g_netatom[NetWmState]);
 }
 
-bool Ewmh::ewmh_is_window_state_set(Window win, Atom hint) {
+bool Ewmh::isWindowStateSet(Window win, Atom hint) {
     Atom* states;
     Atom actual_type;
     int format;
@@ -444,24 +444,24 @@ bool Ewmh::ewmh_is_window_state_set(Window win, Atom hint) {
     return hint_set;
 }
 
-bool Ewmh::ewmh_is_fullscreen_set(Window win) {
-    return ewmh_is_window_state_set(win, g_netatom[NetWmStateFullscreen]);
+bool Ewmh::isFullscreenSet(Window win) {
+    return isWindowStateSet(win, g_netatom[NetWmStateFullscreen]);
 }
 
-void Ewmh::ewmh_set_window_opacity(Window win, double opacity) {
+void Ewmh::setWindowOpacity(Window win, double opacity) {
     uint32_t int_opacity = std::numeric_limits<uint32_t>::max()
                             * CLAMP(opacity, 0, 1);
 
     XChangeProperty(g_display, win, g_netatom[NetWmWindowOpacity], XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&int_opacity, 1);
 }
-void Ewmh::ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom) {
+void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bottom) {
     vector<long> extents = { left, right, top, bottom };
     XChangeProperty(g_display, win, g_netatom[NetFrameExtents], XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&extents.front(), extents.size());
 }
 
-void Ewmh::window_update_wm_state(Window win, WmState state) {
+void Ewmh::windowUpdateWmState(Window win, WmState state) {
     uint32_t int_state = state;
     XChangeProperty(g_display, win,  WM_STATE, XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&int_state, 1);

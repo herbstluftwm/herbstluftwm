@@ -88,34 +88,34 @@ public:
     Ewmh(XConnection& xconnection);
     ~Ewmh();
 
-    void ewmh_update_all();
+    void updateAll();
 
-    void ewmh_add_client(Window win);
-    void ewmh_remove_client(Window win);
-    void ewmh_set_wmname(const char* name);
-    void ewmh_update_wmname();
+    void addClient(Window win);
+    void removeClient(Window win);
+    void setWmName(const char* name);
+    void updateWmName();
 
-    void ewmh_update_client_list();
-    void ewmh_get_original_client_list(Window** buf, unsigned long *count);
-    void ewmh_update_client_list_stacking();
-    void ewmh_update_desktops();
-    void ewmh_update_desktop_names();
-    void ewmh_update_active_window(Window win);
-    void ewmh_update_current_desktop();
-    void ewmh_update_window_state(Client* client);
-    void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom);
-    bool ewmh_is_window_state_set(Window win, Atom hint);
-    bool ewmh_is_fullscreen_set(Window win);
-    void ewmh_clear_client_properties(Window win);
+    void updateClientList();
+    void getOriginalClientList(Window** buf, unsigned long *count);
+    void updateClientListStacking();
+    void updateDesktops();
+    void updateDesktopNames();
+    void updateActiveWindow(Window win);
+    void updateCurrentDesktop();
+    void updateWindowState(Client* client);
+    void updateFrameExtents(Window win, int left, int right, int top, int bottom);
+    bool isWindowStateSet(Window win, Atom hint);
+    bool isFullscreenSet(Window win);
+    void clearClientProperties(Window win);
 
     // set the desktop property of a window
-    void ewmh_window_update_tag(Window win, HSTag* tag);
+    void windowUpdateTag(Window win, HSTag* tag);
 
-    void ewmh_handle_client_message(XEvent* event);
+    void handleClientMessage(XEvent* event);
 
-    void ewmh_set_window_opacity(Window win, double opacity);
+    void setWindowOpacity(Window win, double opacity);
 
-    void window_update_wm_state(Window win, WmState state);
+    void windowUpdateWmState(Window win, WmState state);
 
     static Ewmh& get(); // temporary singleton getter
 

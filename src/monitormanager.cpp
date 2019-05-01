@@ -220,7 +220,7 @@ void MonitorManager::removeMonitor(Monitor* monitor)
         get_current_monitor()->applyLayout();
         monitor_update_focus_objects();
         // also announce the new selection
-        Ewmh::get().ewmh_update_current_desktop();
+        Ewmh::get().updateCurrentDesktop();
         emit_tag_changed(get_current_monitor()->tag, cur_monitor);
     }
     monitor_update_focus_objects();

@@ -406,7 +406,7 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
             // discard enternotify-events
             drop_enternotify_events();
             monitor_update_focus_objects();
-            Ewmh::get().ewmh_update_current_desktop();
+            Ewmh::get().updateCurrentDesktop();
             emit_tag_changed(other->tag, other->index());
             emit_tag_changed(tag, g_monitors->cur_monitor);
         } else {
@@ -440,7 +440,7 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     // discard enternotify-events
     drop_enternotify_events();
     monitor_update_focus_objects();
-    Ewmh::get().ewmh_update_current_desktop();
+    Ewmh::get().updateCurrentDesktop();
     emit_tag_changed(tag, g_monitors->cur_monitor);
     return 0;
 }
@@ -595,7 +595,7 @@ void monitor_focus_by_index(unsigned new_selection) {
     // update objects
     monitor_update_focus_objects();
     // emit hooks
-    Ewmh::get().ewmh_update_current_desktop();
+    Ewmh::get().updateCurrentDesktop();
     emit_tag_changed(monitor->tag, new_selection);
 }
 

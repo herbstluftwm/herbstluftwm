@@ -565,7 +565,7 @@ void event_on_configure(Root*, XEvent event) {
 }
 
 void clientmessage(Root* root, XEvent* event) {
-    root->ewmh->ewmh_handle_client_message(event);
+    root->ewmh->handleClientMessage(event);
 }
 
 // scan for windows and add them to the list of managed clients
@@ -577,7 +577,7 @@ void scan(Root* root) {
     XWindowAttributes wa;
     auto clientmanager = root->clients();
 
-    root->ewmh->ewmh_get_original_client_list(&cl, &cl_count);
+    root->ewmh->getOriginalClientList(&cl, &cl_count);
     if (XQueryTree(g_display, g_root, &d1, &d2, &wins, &num)) {
         for (unsigned i = 0; i < num; i++) {
             if(!XGetWindowAttributes(g_display, wins[i], &wa)
@@ -946,7 +946,7 @@ int main(int argc, char* argv[]) {
     scan(&* root);
     tag_force_update_flags();
     all_monitors_apply_layout();
-    root->ewmh->ewmh_update_all();
+    root->ewmh->updateAll();
     execute_autostart_file();
 
     // main loop
