@@ -120,6 +120,7 @@ public:
     static Ewmh& get(); // temporary singleton getter
 
 private:
+    bool readClientList(Window** buf, unsigned long *count);
     XConnection& X;
 };
 

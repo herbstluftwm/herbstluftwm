@@ -33,7 +33,6 @@ static int WM_STATE;
 
 static Window*  g_original_clients = nullptr;
 static unsigned long g_original_clients_count = 0;
-static bool ewmh_read_client_list(Window** buf, unsigned long *count);
 
 /* list of names of all _NET-atoms */
 const std::array<const char*,NetCOUNT>g_netatom_names =
@@ -93,7 +92,7 @@ Ewmh::Ewmh(XConnection& xconnection)
         PropModeReplace, (unsigned char *) g_netatom, NetCOUNT);
 
     /* init some globals */
-    if (!ewmh_read_client_list(&g_original_clients, &g_original_clients_count))
+    if (!readClientList(&g_original_clients, &g_original_clients_count))
     {
         g_original_clients = nullptr;
         g_original_clients_count = 0;
@@ -153,7 +152,7 @@ void Ewmh::updateClientList() {
         (unsigned char *) g_windows.data(), g_windows.size());
 }
 
-static bool ewmh_read_client_list(Window** buf, unsigned long *count) {
+bool Ewmh::readClientList(Window** buf, unsigned long *count) {
     Atom actual_type;
     int format;
     unsigned long bytes_left;
