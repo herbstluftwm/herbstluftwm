@@ -60,6 +60,7 @@ HSTag* TagManager::add_tag(const string& name) {
     }
     HSTag* tag = new HSTag(name, this, settings_);
     addIndexed(tag);
+    tag->name.changed().connect([this,tag]() { this->onTagRename(tag); });
 
     ewmh_update_desktops();
     ewmh_update_desktop_names();
@@ -149,23 +150,22 @@ int TagManager::tag_rename_command(Input input, Output output) {
     if (!(input >> old_name >> new_name)) {
         return HERBST_NEED_MORE_ARGS;
     }
-    if (new_name.empty()) {
-        output << input.command() << ": An empty tag name is not permitted\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
     HSTag* tag = find(old_name);
     if (!tag) {
         output << input.command() << ": Tag \"" << old_name << "\" not found\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    if (find(new_name)) {
-        output << "Error: Tag \"" << new_name << "\" already exists\n";
-        return HERBST_TAG_IN_USE;
+    auto error = tag->name.change(new_name);
+    if (!error.empty()) {
+        output << input.command() << ": " << error << "\n";
+        return HERBST_INVALID_ARGUMENT;
     }
-    tag->name = new_name;
-    ewmh_update_desktop_names();
-    hook_emit_list("tag_renamed", new_name.c_str(), nullptr);
     return 0;
+}
+
+void TagManager::onTagRename(HSTag* tag) {
+    ewmh_update_desktop_names();
+    hook_emit({"tag_renamed", tag->name()});
 }
 
 HSTag* TagManager::ensure_tags_are_available() {

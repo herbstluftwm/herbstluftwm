@@ -32,6 +32,7 @@ public:
     std::function<int()> frameCommand(std::function<int(FrameTree&)> cmd);
     std::string isValidTagName(std::string name);
 private:
+    void onTagRename(HSTag* tag);
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
     Settings* settings_;
