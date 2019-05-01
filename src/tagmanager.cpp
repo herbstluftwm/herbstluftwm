@@ -39,13 +39,26 @@ HSTag* TagManager::find(const string& name) {
     return {};
 }
 
+//! if the name is a valid tag name, return "", otherwise return an error message
+string TagManager::isValidTagName(string name) {
+    if (name.empty()) {
+        return "An empty tag name is not permitted";
+    }
+    if (find(name)) {
+        return "A tag with the name \"" + name + "\" already exists";
+    }
+    if (find_monitor_by_name(name.c_str())) {
+    }
+    return "";
+}
+
 HSTag* TagManager::add_tag(const string& name) {
     HSTag* find_result = find(name);
     if (find_result) {
         // nothing to do
         return find_result;
     }
-    HSTag* tag = new HSTag(name, settings_);
+    HSTag* tag = new HSTag(name, this, settings_);
     addIndexed(tag);
 
     ewmh_update_desktops();
