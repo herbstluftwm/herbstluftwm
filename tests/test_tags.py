@@ -46,7 +46,6 @@ def test_use_previous(hlwm):
     assert hlwm.get_attr('tags.focus.index') == '1'
 
 
-
 @pytest.mark.parametrize("running_clients_num", [0, 1, 5])
 def test_new_clients_increase_client_count(hlwm, running_clients, running_clients_num):
     assert hlwm.get_attr('tags.0.client_count') == str(running_clients_num)
