@@ -7,6 +7,8 @@ def test_default_tag_exists_and_has_name(hlwm):
 
 
 def test_add_tag(hlwm):
+    focus_before = hlwm.get_attr('tags.focus.name')
+
     hlwm.call('add foobar')
 
     assert hlwm.get_attr('tags.count') == '2'
@@ -17,6 +19,32 @@ def test_add_tag(hlwm):
     assert hlwm.get_attr('tags.1.frame_count') == '1'
     assert hlwm.get_attr('tags.1.index') == '1'
     assert hlwm.get_attr('tags.1.name') == 'foobar'
+    assert hlwm.get_attr('tags.focus.name') == focus_before
+
+
+def test_use_tag(hlwm):
+    assert hlwm.get_attr('tags.focus.index') == '0'
+    hlwm.call('add foobar')
+
+    hlwm.call('use foobar')
+
+    assert hlwm.get_attr('tags.focus.index') == '1'
+    assert hlwm.get_attr('tags.focus.name') == 'foobar'
+
+
+def test_use_previous(hlwm):
+    hlwm.call('add foobar')
+    hlwm.call('use foobar')
+    assert hlwm.get_attr('tags.focus.index') == '1'
+
+    hlwm.call('use_previous')
+
+    assert hlwm.get_attr('tags.focus.index') == '0'
+
+    hlwm.call('use_previous')
+
+    assert hlwm.get_attr('tags.focus.index') == '1'
+
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 5])

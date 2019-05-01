@@ -22,6 +22,7 @@ TagManager* global_tags;
 TagManager::TagManager()
     : IndexingObject()
     , by_name_(*this)
+    , focus_(*this, "focus")
 {
 }
 
@@ -292,4 +293,8 @@ HSTag* TagManager::unusedTag() {
         }
     }
     return nullptr;
+}
+
+void TagManager::updateFocusObject(Monitor* focusedMonitor) {
+    focus_ = focusedMonitor->tag;
 }

@@ -51,7 +51,6 @@ int tag_set_floating_command(int argc, char** argv, Output output);
 void tag_update_focus_layer(HSTag* tag);
 void tag_foreach(void (*action)(HSTag*,void*), void* data);
 void tag_update_each_focus_layer();
-void tag_update_focus_objects();
 void tag_force_update_flags();
 void tag_update_flags();
 void tag_set_flags_dirty();
