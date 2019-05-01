@@ -17,6 +17,7 @@
 #include "stack.h"
 #include "tagmanager.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::vector;
 using std::make_shared;
@@ -73,7 +74,9 @@ const std::array<const char*,NetCOUNT>g_netatom_names =
     { NetWmWindowTypeNormal          , "_NET_WM_WINDOW_TYPE_NORMAL"        },
 }).a;
 
-void ewmh_init() {
+Ewmh::Ewmh(XConnection& xconnection)
+    : X(xconnection)
+{
     /* init ewmh net atoms */
     for (int i = 0; i < NetCOUNT; i++) {
         if (!g_netatom_names[i]) {
@@ -122,7 +125,7 @@ void ewmh_update_all() {
     ewmh_update_desktop_names();
 }
 
-void ewmh_destroy() {
+Ewmh::~Ewmh() {
     if (g_original_clients) {
         XFree(g_original_clients);
     }

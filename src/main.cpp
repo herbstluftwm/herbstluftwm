@@ -722,7 +722,6 @@ static struct {
     void (*destroy)();
 } g_modules[] = {
     { clientlist_init,  clientlist_destroy  },
-    { ewmh_init,        ewmh_destroy        },
     { hook_init,        hook_destroy        },
 };
 

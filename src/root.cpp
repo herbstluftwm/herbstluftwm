@@ -4,6 +4,7 @@
 
 #include "clientmanager.h"
 #include "decoration.h"
+#include "ewmh.h"
 #include "hookmanager.h"
 #include "keymanager.h"
 #include "monitormanager.h"
@@ -33,6 +34,7 @@ Root::Root(Globals g, XConnection& xconnection)
     , globals(g)
     , root_commands(make_unique<RootCommands>(this))
     , X(xconnection)
+    , ewmh(make_unique<Ewmh>(xconnection))
 {
     // initialize root children (alphabetically)
     clients.init();

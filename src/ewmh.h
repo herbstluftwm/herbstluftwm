@@ -71,13 +71,20 @@ enum {
 
 class HSTag;
 class Client;
+class XConnection;
 
 extern Atom g_netatom[NetCOUNT];
 
 extern const std::array<const char*,NetCOUNT> g_netatom_names;
 
-void ewmh_init();
-void ewmh_destroy();
+class Ewmh {
+public:
+    Ewmh(XConnection& xconnection);
+    ~Ewmh();
+private:
+    XConnection& X;
+};
+
 void ewmh_update_all();
 
 void ewmh_add_client(Window win);
