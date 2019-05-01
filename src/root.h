@@ -10,6 +10,7 @@
 
 class ClientManager;
 class HookManager;
+class IpcServer;
 class KeyManager;
 class MonitorManager;
 class MouseManager;
@@ -35,7 +36,7 @@ public:
     static void setRoot(const std::shared_ptr<Root>& r) { root_ = r; }
 
     // constructor creates top-level objects
-    Root(Globals g, XConnection& xconnection);
+    Root(Globals g, XConnection& xconnection, IpcServer& ipcServer);
     ~Root() override;
 
     // (in alphabetical order)
@@ -53,6 +54,7 @@ public:
     Globals globals;
     std::unique_ptr<RootCommands> root_commands;
     XConnection& X;
+    IpcServer& ipcServer_;
 
 private:
     static std::shared_ptr<Root> root_; // Using "pimpl" to avoid include
