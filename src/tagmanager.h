@@ -25,6 +25,7 @@ public:
     HSTag* find(const std::string& name);
     HSTag* ensure_tags_are_available();
     HSTag* byIndexStr(const std::string& index_str, bool skip_visible_tags);
+    HSTag* unusedTag();
     void moveClient(Client* client, HSTag* target);
     void moveFocusedClient(HSTag* target);
     std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
