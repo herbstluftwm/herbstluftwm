@@ -38,9 +38,7 @@ import re
 ])
 def test_syntax_errors_position(hlwm, invalid_layout, error_pos):
     c = hlwm.call_xfail(['load', invalid_layout])
-    m = re.match(r'^load: Syntax error at ([0-9]*): ', c.stderr)
-    assert m is not None
-    assert int(m.group(1)) == error_pos
+    c.expect_stderr(r'^load: Syntax error at {}: '.format(error_pos))
 
 
 def is_subseq(x, y):
