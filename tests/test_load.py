@@ -42,6 +42,7 @@ def test_syntax_errors_position(hlwm, invalid_layout, error_pos):
 
 
 def is_subseq(x, y):
+    """Checks if x is a subsequence (not substring) of y."""
     # from https://stackoverflow.com/a/24017747/4400896
     it = iter(y)
     return all(c in it for c in x)
