@@ -54,6 +54,8 @@ public:
     Globals globals;
     std::unique_ptr<RootCommands> root_commands; // Using "pimpl" to avoid include
     XConnection& X;
+    //! Temporary member. In the long run, ewmh should get its information
+    // automatically from the signals emitted by ClientManager, etc
     std::unique_ptr<Ewmh> ewmh; // Using "pimpl" to avoid include
 
 private:

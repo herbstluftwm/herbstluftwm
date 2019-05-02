@@ -49,6 +49,7 @@ Root::Root(Globals g, XConnection& xconnection)
     mouse.init(); // needs MonitorManager (implicitly)
 
     // inject dependencies where needed
+    ewmh->injectDependencies(this);
     settings->injectDependencies(this);
     tags->injectDependencies(monitors(), settings());
     clients->injectDependencies(settings(), theme(), ewmh.get());

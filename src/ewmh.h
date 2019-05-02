@@ -77,6 +77,7 @@ typedef enum {
 
 class HSTag;
 class Client;
+class Root;
 class XConnection;
 
 extern Atom g_netatom[NetCOUNT];
@@ -88,6 +89,7 @@ public:
     Ewmh(XConnection& xconnection);
     ~Ewmh();
 
+    void injectDependencies(Root* root);
     void updateAll();
 
     void addClient(Window win);
@@ -121,6 +123,7 @@ public:
 
 private:
     bool readClientList(Window** buf, unsigned long *count);
+    Root* root_ = nullptr;
     XConnection& X;
 };
 

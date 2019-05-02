@@ -107,7 +107,6 @@ Ewmh::Ewmh(XConnection& xconnection)
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
     XChangeProperty(X.display(), g_wm_window, g_netatom[NetSupportingWmCheck],
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
-    updateWmName();
 
     /* init atoms that never change */
     vector<long> buf{ 0, 0 };
@@ -115,8 +114,13 @@ Ewmh::Ewmh(XConnection& xconnection)
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&buf.front(), buf.size());
 }
 
+void Ewmh::injectDependencies(Root* root) {
+    root_ = root;
+}
+
 void Ewmh::updateAll() {
     /* init many properties */
+    updateWmName();
     updateClientList();
     updateClientListStacking();
     updateDesktops();
