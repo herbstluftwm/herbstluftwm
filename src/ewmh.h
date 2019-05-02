@@ -122,6 +122,7 @@ public:
     static Ewmh& get(); // temporary singleton getter
 
 private:
+    bool focusStealingAllowed(long source);
     bool readClientList(Window** buf, unsigned long *count);
     Root* root_ = nullptr;
     XConnection& X;

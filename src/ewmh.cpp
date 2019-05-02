@@ -146,7 +146,7 @@ void Ewmh::setWmName(const char* name) {
 }
 
 void Ewmh::updateWmName() {
-    setWmName(g_settings->wmname().c_str());
+    setWmName(root_->settings->wmname().c_str());
 }
 
 void Ewmh::updateClientList() {
@@ -253,8 +253,8 @@ void Ewmh::updateActiveWindow(Window win) {
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(win), 1);
 }
 
-static bool focus_stealing_allowed(long source) {
-    if (g_settings->focus_stealing_prevention()) {
+bool Ewmh::focusStealingAllowed(long source) {
+    if (root_->settings->focus_stealing_prevention()) {
         /* only allow it to pagers/taskbars */
         return (source == 2);
     } else {
@@ -282,7 +282,7 @@ void Ewmh::handleClientMessage(XEvent* event) {
         case NetActiveWindow: {
             // only steal focus it allowed to the current source
             // (i.e.  me->data.l[0] in this case as specified by EWMH)
-            if (focus_stealing_allowed(me->data.l[0])) {
+            if (focusStealingAllowed(me->data.l[0])) {
                 auto client = get_client_from_window(me->window);
                 if (client) {
                     focus_client(client, true, true);
@@ -305,7 +305,7 @@ void Ewmh::handleClientMessage(XEvent* event) {
 
         case NetWmDesktop: {
             desktop_index = me->data.l[0];
-            if (!focus_stealing_allowed(me->data.l[1])) {
+            if (!focusStealingAllowed(me->data.l[1])) {
                 break;
             }
             HSTag* target = get_tag_by_index(desktop_index);
