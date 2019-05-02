@@ -48,6 +48,10 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , keyMask_(this,  "keymask", "")
     , pid_(this,  "pid", -1)
     , pseudotile_(this,  "pseudotile", false)
+    , ewmhrequests_(this, "ewmhrequests", true)
+    , ewmhnotify_(this, "ewmhnotify", true)
+    , sizehints_floating_(this, "sizehints", true)
+    , sizehints_tiling_(this, "sizehints", false)
     , manager(cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
@@ -56,6 +60,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     tmp << "0x" << std::hex << window;
     window_id_str = tmp.str();
     keyMask_.setWriteable();
+    ewmhnotify_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_}) {
         i->setWriteable();
         i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
@@ -66,6 +71,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 Root::get()->keys()->ensureKeyMask();
             }
             });
+    fullscreen_.changed().connect(this, &Client::updateEwmhState);
 
     init_from_X();
 }
@@ -572,6 +578,10 @@ Client* get_current_client() {
 }
 
 void Client::set_fullscreen(bool state) {
+    // TODO: move all these things to appropriate places:
+    //  - Slice management should not be done by the client
+    //  - fullscreen-hook should be done by the ClientManager
+    //  - Monitr::applyLayout should be called via hooks
     if (fullscreen_() == state) return;
     fullscreen_ = state;
     if (this->ewmhnotify_) {
@@ -591,6 +601,13 @@ void Client::set_fullscreen(bool state) {
     snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
     ewmh_update_window_state(this);
     hook_emit_list("fullscreen", state ? "on" : "off", buf, nullptr);
+}
+
+void Client::updateEwmhState() {
+    if (ewmhnotify_) {
+        ewmhfullscreen_ = fullscreen_();
+    }
+    ewmh_update_window_state(this);
 }
 
 void Client::set_pseudotile(bool state) {
