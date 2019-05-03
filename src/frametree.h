@@ -11,6 +11,7 @@ class Client;
 class HSFrame;
 class HSFrameLeaf;
 class HSTag;
+class RawFrameNode;
 class Settings;
 class TreeInterface;
 
@@ -43,11 +44,17 @@ public:
     int rotateCommand();
     int cycleAllCommand(Input input, Output output);
     int cycleFrameCommand(Input input, Output output);
+    int loadCommand(Input input, Output output);
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:
     //! cycle the frames within the current tree
     void cycle_frame(int delta);
+    //! try to resemble a given raw frame tree given by the FrameParser
+    void applyFrameTree(std::shared_ptr<HSFrame> target,
+                        std::shared_ptr<RawFrameNode> source);
+    //! replace a node in the frame tree, either modifying old's parent or the root_
+    void replaceNode(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> replacement);
     static std::shared_ptr<TreeInterface> treeInterface(
         std::shared_ptr<HSFrame> frame,
         std::shared_ptr<HSFrameLeaf> focus);

@@ -34,15 +34,16 @@ ClientManager::~ClientManager()
         auto window = c.second->x11Window();
         XMoveResizeWindow(g_display, window, r.x, r.y, r.width, r.height);
         XReparentWindow(g_display, window, g_root, r.x, r.y);
-        ewmh_update_frame_extents(window, 0,0,0,0);
+        ewmh->updateFrameExtents(window, 0,0,0,0);
         window_set_visible(window, true);
         delete c.second;
     }
 }
 
-void ClientManager::injectDependencies(Settings* s, Theme* t) {
+void ClientManager::injectDependencies(Settings* s, Theme* t, Ewmh* e) {
     settings = s;
     theme = t;
+    ewmh = e;
 }
 
 Client* ClientManager::client(Window window)
@@ -168,13 +169,13 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
         client->tag()->frame->focusClient(client);
     }
 
-    ewmh_window_update_tag(client->window_, client->tag());
+    ewmh->windowUpdateTag(client->window_, client->tag());
     tag_set_flags_dirty();
-    client->set_fullscreen(changes.fullscreen);
-    ewmh_update_window_state(client);
+    client->fullscreen_ = changes.fullscreen;
+    ewmh->updateWindowState(client);
     // add client after setting the correct tag for the new client
     // this ensures a panel can read the tag property correctly at this point
-    ewmh_add_client(client->window_);
+    ewmh->addClient(client->window_);
 
     client->make_full_client();
 
@@ -233,7 +234,7 @@ void ClientManager::force_unmanage(Client* client) {
     // and arrange monitor after the client has been removed from the stack
     tag_update_focus_layer(tag);
     needsRelayout.emit(tag);
-    ewmh_remove_client(client->window_);
+    ewmh->removeClient(client->window_);
     tag_set_flags_dirty();
     // delete client
     this->remove(client->window_);

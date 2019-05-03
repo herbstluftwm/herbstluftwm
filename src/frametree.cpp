@@ -1,11 +1,15 @@
 #include "frametree.h"
 
 #include <algorithm>
+#include <regex>
 
 #include "client.h"
+#include "framedata.h"
+#include "frameparser.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
+#include "stack.h"
 #include "tag.h"
 #include "utils.h"
 
@@ -415,5 +419,139 @@ int FrameTree::cycleFrameCommand(Input input, Output output) {
     cycle_frame(delta);
     get_current_monitor()->applyLayout();
     return 0;
+}
+
+int FrameTree::loadCommand(Input input, Output output) {
+    // usage: load TAG LAYOUT
+    HSTag* tag = nullptr;
+    string layoutString, tagName;
+    if (input.size() >= 2) {
+        input >> tagName >> layoutString;
+        tag = find_tag(tagName.c_str());
+        if (!tag) {
+            output << input.command() << ": Tag \"" << tagName << "\" not found\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+    } else if (input.size() == 1) {
+        input >> layoutString;
+        tag = get_current_monitor()->tag;
+    } else {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    assert(tag != nullptr);
+    FrameParser parsingResult(layoutString);
+    if (parsingResult.error_) {
+        output << input.command() << ": Syntax error at "
+               << parsingResult.error_->first.first << ": "
+               << parsingResult.error_->second << ":"
+               << endl;
+        std::regex whitespace ("[ \n\t]");
+        // print the layout again
+        output << "\"" << std::regex_replace(layoutString, whitespace, string(" "))
+               << "\"" << endl;
+        // and underline the token
+        int token_len = std::max(1ul, parsingResult.error_->first.second.size());
+        output << " " // for the \" above
+               << string(parsingResult.error_->first.first, ' ')
+               << string(token_len, '~')
+               << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (!parsingResult.unknownWindowIDs_.empty()) {
+        output << "Warning: Unknown window IDs";
+        for (const auto& e : parsingResult.unknownWindowIDs_) {
+            output << " 0x" << std::hex << e.second << std::dec
+                   << "(\'" << e.first.second << "\')";
+        }
+        output << endl;
+    }
+    // apply the new frame tree
+    tag->frame->applyFrameTree(tag->frame->root_, parsingResult.root_);
+    tag_set_flags_dirty(); // we probably changed some window positions
+    // arrange monitor
+    Monitor* m = find_monitor_with_tag(tag);
+    if (m) {
+        tag->frame->root_->setVisibleRecursive(true);
+        if (get_current_monitor() == m) {
+            frame_focus_recursive(tag->frame->root_);
+        }
+        m->applyLayout();
+        monitor_update_focus_objects();
+    } else {
+        tag->frame->root_->setVisibleRecursive(false);
+    }
+    return 0;
+}
+
+//! target must not be null, source may be null
+void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
+                               shared_ptr<RawFrameNode> source)
+{
+    if (!source) {
+        // nothing to do
+        return;
+    }
+    shared_ptr<HSFrameSplit> targetSplit = target->isSplit();
+    shared_ptr<HSFrameLeaf> targetLeaf = target->isLeaf();
+    shared_ptr<RawFrameSplit> sourceSplit = source->isSplit();
+    shared_ptr<RawFrameLeaf> sourceLeaf = source->isLeaf();
+    if (sourceLeaf) {
+        // detach the clients from their current frame
+        // this might even involve the above targetLeaf / targetSplit
+        // so we need to do this before everything else
+        for (const auto& client : sourceLeaf->clients) {
+            client->tag()->frame->root_->removeClient(client);
+            if (client->tag() != tag_) {
+                client->tag()->stack->removeSlice(client->slice);
+                client->setTag(tag_);
+                client->tag()->stack->insertSlice(client->slice);
+            }
+        }
+        vector<Client*> clients = sourceLeaf->clients;
+        // collect all the remaining clients in the target
+        target->foreachClient(
+            [&clients](Client* c) {
+                clients.push_back(c);
+            }
+        );
+        // assert that "target" is a HSFrameLeaf
+        if (targetSplit) {
+            // if its a split, then replace the split
+            targetLeaf = make_shared<HSFrameLeaf>(
+                                tag_, settings_, target->getParent());
+            replaceNode(target, targetLeaf);
+            target = targetLeaf;
+            targetSplit = {};
+        }
+        // make the targetLeaf look like the sourceLeaf
+        targetLeaf->clients = clients;
+        targetLeaf->setSelection(sourceLeaf->selection);
+        targetLeaf->layout = sourceLeaf->layout;
+    } else {
+        // assert that target is a HSFrameSplit
+        if (targetLeaf) {
+            targetLeaf->split(sourceSplit->align_, sourceSplit->fraction_, 0);
+            targetSplit = targetLeaf->getParent();
+            target = targetSplit;
+            targetLeaf = {}; // we don't need this anymore
+        }
+        assert(target == targetSplit);
+        targetSplit->align_ = sourceSplit->align_;
+        targetSplit->fraction_ = sourceSplit->fraction_;
+        targetSplit->selection_ = sourceSplit->selection_;
+        applyFrameTree(targetSplit->a_, sourceSplit->a_);
+        applyFrameTree(targetSplit->b_, sourceSplit->b_);
+    }
+}
+
+void FrameTree::replaceNode(shared_ptr<HSFrame> old,
+                            shared_ptr<HSFrame> replacement) {
+    auto parent = old->getParent();
+    if (!parent) {
+        assert(old == root_);
+        root_ = replacement;
+    } else {
+        parent->replaceChild(old, replacement);
+    }
 }
 
