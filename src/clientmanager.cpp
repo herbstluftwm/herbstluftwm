@@ -171,7 +171,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
 
     ewmh->windowUpdateTag(client->window_, client->tag());
     tag_set_flags_dirty();
-    client->set_fullscreen(changes.fullscreen);
+    client->fullscreen_ = changes.fullscreen;
     ewmh->updateWindowState(client);
     // add client after setting the correct tag for the new client
     // this ensures a panel can read the tag property correctly at this point
