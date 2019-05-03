@@ -29,7 +29,7 @@ def test_move_focused_client_to_new_tag(hlwm):
     assert hlwm.get_attr('tags.0.client_count') == '0'
     assert hlwm.get_attr('tags.1.client_count') == '0'
 
-    hlwm.create_client()
+    winid, _ = hlwm.create_client()
     assert hlwm.get_attr('tags.0.client_count') == '1'
     assert hlwm.get_attr('tags.1.client_count') == '0'
 
@@ -39,7 +39,7 @@ def test_move_focused_client_to_new_tag(hlwm):
     assert hlwm.get_attr('tags.0.curframe_wcount') == '0'
     assert hlwm.get_attr('tags.1.client_count') == '1'
     assert hlwm.get_attr('tags.1.curframe_wcount') == '1'
-    # TODO: Assert that winid is now in foobar
+    assert hlwm.get_attr('clients', winid, 'tag') == 'foobar'
 
 
 def test_merge_tag_into_another_tag(hlwm):
