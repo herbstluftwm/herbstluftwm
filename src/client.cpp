@@ -608,7 +608,7 @@ void Client::updateEwmhState() {
     if (ewmhnotify_) {
         ewmhfullscreen_ = fullscreen_();
     }
-    ewmh_update_window_state(this);
+    ewmh.updateWindowState(this);
 }
 
 void Client::set_pseudotile(bool state) {
