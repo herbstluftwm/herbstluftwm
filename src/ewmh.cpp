@@ -74,7 +74,7 @@ const std::array<const char*,NetCOUNT>g_netatom_names =
 }).a;
 
 Ewmh::Ewmh(XConnection& xconnection)
-    : X(xconnection)
+    : X_(xconnection)
 {
     /* init ewmh net atoms */
     for (int i = 0; i < NetCOUNT; i++) {
@@ -83,11 +83,11 @@ Ewmh::Ewmh(XConnection& xconnection)
                       "for atom number %d\n", i);
             continue;
         }
-        g_netatom[i] = XInternAtom(X.display(), g_netatom_names[i], False);
+        g_netatom[i] = XInternAtom(X_.display(), g_netatom_names[i], False);
     }
 
     /* tell which ewmh atoms are supported */
-    XChangeProperty(X.display(), X.root(), g_netatom[NetSupported], XA_ATOM, 32,
+    XChangeProperty(X_.display(), X_.root(), g_netatom[NetSupported], XA_ATOM, 32,
         PropModeReplace, (unsigned char *) g_netatom, NetCOUNT);
 
     /* init some globals */
@@ -98,19 +98,19 @@ Ewmh::Ewmh(XConnection& xconnection)
     }
 
     /* init other atoms */
-    WM_STATE = XInternAtom(X.display(), "WM_STATE", False);
+    WM_STATE = XInternAtom(X_.display(), "WM_STATE", False);
 
     /* init for the supporting wm check */
-    g_wm_window = XCreateSimpleWindow(X.display(), X.root(),
+    g_wm_window = XCreateSimpleWindow(X_.display(), X_.root(),
                                       42, 42, 42, 42, 0, 0, 0);
-    XChangeProperty(X.display(), X.root(), g_netatom[NetSupportingWmCheck],
+    XChangeProperty(X_.display(), X_.root(), g_netatom[NetSupportingWmCheck],
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
-    XChangeProperty(X.display(), g_wm_window, g_netatom[NetSupportingWmCheck],
+    XChangeProperty(X_.display(), g_wm_window, g_netatom[NetSupportingWmCheck],
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
 
     /* init atoms that never change */
     vector<long> buf{ 0, 0 };
-    XChangeProperty(X.display(), X.root(), g_netatom[NetDesktopViewport],
+    XChangeProperty(X_.display(), X_.root(), g_netatom[NetDesktopViewport],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&buf.front(), buf.size());
 }
 
@@ -132,15 +132,15 @@ Ewmh::~Ewmh() {
     if (g_original_clients) {
         XFree(g_original_clients);
     }
-    XDeleteProperty(X.display(), X.root(), g_netatom[NetSupportingWmCheck]);
-    XDestroyWindow(X.display(), g_wm_window);
+    XDeleteProperty(X_.display(), X_.root(), g_netatom[NetSupportingWmCheck]);
+    XDestroyWindow(X_.display(), g_wm_window);
 }
 
 void Ewmh::setWmName(const char* name) {
-    XChangeProperty(X.display(), g_wm_window, g_netatom[NetWmName],
+    XChangeProperty(X_.display(), g_wm_window, g_netatom[NetWmName],
         ATOM("UTF8_STRING"), 8, PropModeReplace,
         (unsigned char*)name, strlen(name));
-    XChangeProperty(X.display(), X.root(), g_netatom[NetWmName],
+    XChangeProperty(X_.display(), X_.root(), g_netatom[NetWmName],
         ATOM("UTF8_STRING"), 8, PropModeReplace,
         (unsigned char*)name, strlen(name));
 }
@@ -150,7 +150,7 @@ void Ewmh::updateWmName() {
 }
 
 void Ewmh::updateClientList() {
-    XChangeProperty(X.display(), X.root(), g_netatom[NetClientList],
+    XChangeProperty(X_.display(), X_.root(), g_netatom[NetClientList],
         XA_WINDOW, 32, PropModeReplace,
         (unsigned char *) g_windows.data(), g_windows.size());
 }
@@ -159,7 +159,7 @@ bool Ewmh::readClientList(Window** buf, unsigned long *count) {
     Atom actual_type;
     int format;
     unsigned long bytes_left;
-    if (Success != XGetWindowProperty(X.display(), X.root(),
+    if (Success != XGetWindowProperty(X_.display(), X_.root(),
             g_netatom[NetClientList], 0, ~0L, False, XA_WINDOW, &actual_type,
             &format, count, &bytes_left, (unsigned char**)buf)) {
         return false;
@@ -191,7 +191,7 @@ void Ewmh::updateClientListStacking() {
     // reverse stacking order, because ewmh requires bottom to top order
     std::reverse(buf.begin(), buf.end());
 
-    XChangeProperty(X.display(), X.root(), g_netatom[NetClientListStacking],
+    XChangeProperty(X_.display(), X_.root(), g_netatom[NetClientListStacking],
         XA_WINDOW, 32, PropModeReplace,
         (unsigned char *) buf.data(), buf.size());
 }
@@ -210,7 +210,7 @@ void Ewmh::removeClient(Window win) {
 
 void Ewmh::updateDesktops() {
     int cnt = tag_get_count();
-    XChangeProperty(X.display(), X.root(), g_netatom[NetNumberOfDesktops],
+    XChangeProperty(X_.display(), X_.root(), g_netatom[NetNumberOfDesktops],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&cnt, 1);
 }
 
@@ -221,9 +221,9 @@ void Ewmh::updateDesktopNames() {
         names.push_back(tag->name->c_str());
     }
     XTextProperty text_prop;
-    Xutf8TextListToTextProperty(X.display(), (char**)names.data(), names.size(),
+    Xutf8TextListToTextProperty(X_.display(), (char**)names.data(), names.size(),
                                 XUTF8StringStyle, &text_prop);
-    XSetTextProperty(X.display(), X.root(), &text_prop, g_netatom[NetDesktopNames]);
+    XSetTextProperty(X_.display(), X_.root(), &text_prop, g_netatom[NetDesktopNames]);
     XFree(text_prop.value);
 }
 
@@ -234,7 +234,7 @@ void Ewmh::updateCurrentDesktop() {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
     }
-    XChangeProperty(X.display(), X.root(), g_netatom[NetCurrentDesktop],
+    XChangeProperty(X_.display(), X_.root(), g_netatom[NetCurrentDesktop],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(index), 1);
 }
 
@@ -244,12 +244,12 @@ void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
     }
-    XChangeProperty(X.display(), win, g_netatom[NetWmDesktop],
+    XChangeProperty(X_.display(), win, g_netatom[NetWmDesktop],
         XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(index), 1);
 }
 
 void Ewmh::updateActiveWindow(Window win) {
-    XChangeProperty(X.display(), X.root(), g_netatom[NetActiveWindow],
+    XChangeProperty(X_.display(), X_.root(), g_netatom[NetActiveWindow],
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(win), 1);
 }
 
@@ -412,12 +412,12 @@ void Ewmh::updateWindowState(Client* client) {
     }
 
     /* write it to the window */
-    XChangeProperty(X.display(), client->window_, g_netatom[NetWmState], XA_ATOM,
+    XChangeProperty(X_.display(), client->window_, g_netatom[NetWmState], XA_ATOM,
         32, PropModeReplace, (unsigned char *) window_state, count_enabled);
 }
 
 void Ewmh::clearClientProperties(Window win) {
-    XDeleteProperty(X.display(), win, g_netatom[NetWmState]);
+    XDeleteProperty(X_.display(), win, g_netatom[NetWmState]);
 }
 
 bool Ewmh::isWindowStateSet(Window win, Atom hint) {
@@ -425,7 +425,7 @@ bool Ewmh::isWindowStateSet(Window win, Atom hint) {
     Atom actual_type;
     int format;
     unsigned long actual_count, bytes_left;
-    if (Success != XGetWindowProperty(X.display(), win, g_netatom[NetWmState], 0,
+    if (Success != XGetWindowProperty(X_.display(), win, g_netatom[NetWmState], 0,
             ~0L, False, XA_ATOM, &actual_type, &format, &actual_count,
             &bytes_left, (unsigned char**)&states)) {
         // NetWmState just is not set properly
@@ -454,18 +454,18 @@ void Ewmh::setWindowOpacity(Window win, double opacity) {
     uint32_t int_opacity = std::numeric_limits<uint32_t>::max()
                             * CLAMP(opacity, 0, 1);
 
-    XChangeProperty(X.display(), win, g_netatom[NetWmWindowOpacity], XA_CARDINAL,
+    XChangeProperty(X_.display(), win, g_netatom[NetWmWindowOpacity], XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&int_opacity, 1);
 }
 void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bottom) {
     vector<long> extents = { left, right, top, bottom };
-    XChangeProperty(X.display(), win, g_netatom[NetFrameExtents], XA_CARDINAL,
+    XChangeProperty(X_.display(), win, g_netatom[NetFrameExtents], XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&extents.front(), extents.size());
 }
 
 void Ewmh::windowUpdateWmState(Window win, WmState state) {
     uint32_t int_state = state;
-    XChangeProperty(X.display(), win,  WM_STATE, XA_CARDINAL,
+    XChangeProperty(X_.display(), win,  WM_STATE, XA_CARDINAL,
                     32, PropModeReplace, (unsigned char*)&int_state, 1);
 }
 
