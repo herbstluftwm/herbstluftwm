@@ -27,17 +27,10 @@ using std::swap;
 using std::vector;
 using std::weak_ptr;
 
-size_t layoutAlgorithmCount() {
-    size_t i = 0;
-    while (g_layout_names[i] != nullptr) {
-        i++;
-    }
-    return i;
-}
-
 const char* g_align_names[] = {
     "vertical",
     "horizontal",
+    nullptr,
 };
 
 const char* g_layout_names[] = {
@@ -64,9 +57,12 @@ HSFrame::~HSFrame() = default;
 
 HSFrameLeaf::HSFrameLeaf(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit> parent)
     : HSFrame(tag, settings, parent)
-    , selection(0)
 {
-    layout = (LayoutAlgorithm) settings->default_frame_layout();
+    auto l = settings->default_frame_layout();
+    if (l >= layoutAlgorithmCount()) {
+        l = 0;
+    }
+    layout = (LayoutAlgorithm) l;
 
     decoration = new FrameDecoration(tag, settings);
 }
@@ -132,7 +128,7 @@ HSFrameLeaf::~HSFrameLeaf() {
     delete decoration;
 }
 
-int find_layout_by_name(char* name) {
+int find_layout_by_name(const char* name) {
     for (size_t i = 0; i < LENGTH(g_layout_names); i++) {
         if (!g_layout_names[i]) {
             break;
@@ -144,7 +140,7 @@ int find_layout_by_name(char* name) {
     return -1;
 }
 
-int find_align_by_name(char* name) {
+int find_align_by_name(const char* name) {
     for (size_t i = 0; i < LENGTH(g_align_names); i++) {
         if (!strcmp(name, g_align_names[i])) {
             return (int)i;
@@ -560,7 +556,7 @@ int frame_split_command(Input input, Output output) {
     SplitAlign align_explode = SplitAlign::vertical;
     bool exploding = false;
     struct {
-        const char* name;
+        string name;
         SplitAlign align;
         bool frameToFirst;  // if former frame moves to first child
         int selection;      // which child to select after the split
@@ -581,7 +577,7 @@ int frame_split_command(Input input, Output output) {
             frameToFirst    = m.frameToFirst;
             selection       = m.selection;
             found = true;
-            if (string(m.name) == "explode") {
+            if (m.name == "explode") {
                 exploding = true;
             }
             break;
