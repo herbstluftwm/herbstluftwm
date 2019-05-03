@@ -48,6 +48,7 @@ public:
     //! A read-only attribute of owner of type T
     Attribute_(Object* owner, const std::string &name, const T &payload)
         : Attribute(name, false)
+        , validator_({})
         , payload_ (payload)
     {
         // the following will call Attribute::setOwner()

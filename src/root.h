@@ -9,6 +9,7 @@
 // new object tree root.
 
 class ClientManager;
+class Ewmh;
 class HookManager;
 class IpcServer;
 class KeyManager;
@@ -52,12 +53,15 @@ public:
     Child_<Tmp> tmp;
 
     Globals globals;
-    std::unique_ptr<RootCommands> root_commands;
+    std::unique_ptr<RootCommands> root_commands; // Using "pimpl" to avoid include
     XConnection& X;
     IpcServer& ipcServer_;
+    //! Temporary member. In the long run, ewmh should get its information
+    // automatically from the signals emitted by ClientManager, etc
+    std::unique_ptr<Ewmh> ewmh; // Using "pimpl" to avoid include
 
 private:
-    static std::shared_ptr<Root> root_; // Using "pimpl" to avoid include
+    static std::shared_ptr<Root> root_;
 };
 
 

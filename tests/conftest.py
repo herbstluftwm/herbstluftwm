@@ -1,5 +1,6 @@
 from datetime import datetime
 from contextlib import contextmanager
+import ewmh
 import os
 import os.path
 import re
@@ -434,6 +435,7 @@ def x11():
             self.display = display.Display()
             self.screen = self.display.screen()
             self.root = self.screen.root
+            self.ewmh = ewmh.EWMH(self.display, self.root)
 
         def window(self, winid_string):
             """return python-xlib window wrapper for a string window id"""
