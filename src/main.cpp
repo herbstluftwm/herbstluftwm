@@ -68,7 +68,6 @@ int false_command();
 int try_command(int argc, char* argv[], Output output);
 int silent_command(int argc, char* argv[]);
 int print_layout_command(int argc, char** argv, Output output);
-int load_command(int argc, char** argv, Output output);
 int print_tag_status_command(int argc, char** argv, Output output);
 void execute_autostart_file();
 int raise_command(int argc, char** argv, Output output);
@@ -196,7 +195,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"layout",         print_layout_command},
         {"stack",          print_stack_command},
         {"dump",           print_layout_command},
-        {"load",           load_command},
+        {"load",           { tags->frameCommand(&FrameTree::loadCommand) }},
         {"complete",       complete_command},
         {"complete_shell", complete_command},
         {"lock",           { [monitors] { monitors->lock(); return 0; } }},
@@ -296,51 +295,6 @@ int print_layout_command(int argc, char** argv, Output output) {
         FrameTree::dump(frame, output);
     } else {
         FrameTree::prettyPrint(frame, output);
-    }
-    return 0;
-}
-
-int load_command(int argc, char** argv, Output output) {
-    // usage: load TAG LAYOUT
-    HSTag* tag = nullptr;
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    char* layout_string = argv[1];
-    if (argc >= 3) {
-        tag = find_tag(argv[1]);
-        layout_string = argv[2];
-        if (!tag) {
-            output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    } else { // use current tag
-        Monitor* m = get_current_monitor();
-        tag = m->tag;
-    }
-    (void) layout_string;
-    assert(tag != nullptr);
-    const char* rest = "To be implemented...";
-    tag_set_flags_dirty(); // we probably changed some window positions
-    // arrange monitor
-    Monitor* m = find_monitor_with_tag(tag);
-    if (m) {
-        tag->frame->root_->setVisibleRecursive(true);
-        if (get_current_monitor() == m) {
-            frame_focus_recursive(tag->frame->root_);
-        }
-        m->applyLayout();
-    } else {
-        tag->frame->root_->setVisibleRecursive(false);
-    }
-    if (!rest) {
-        output << argv[0] << ": Error while parsing!\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (rest[0] != '\0') { // if string was not parsed completely
-        output << argv[0] << ": Layout description was too long\n";
-        output << argv[0] << ": \"" << rest << "\" has not been parsed\n";
-        return HERBST_INVALID_ARGUMENT;
     }
     return 0;
 }
