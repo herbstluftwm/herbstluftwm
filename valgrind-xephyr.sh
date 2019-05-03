@@ -26,13 +26,13 @@ is used. Other debug environments are:
 EOF
 }
 AUTOSTART=""
+debugger() {
+    valgrind "$@"
+}
 
 for arg in "$@" ; do
     case "$arg" in
         --valgrind|'')
-            debugger() {
-                valgrind "$@"
-            }
             ;;
         --gdb)
             debugger() {
