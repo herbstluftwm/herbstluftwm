@@ -1,5 +1,4 @@
 import pytest
-import re
 
 
 @pytest.mark.parametrize("invalid_layout,error_pos", [
