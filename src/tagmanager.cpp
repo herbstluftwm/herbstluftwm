@@ -47,8 +47,6 @@ string TagManager::isValidTagName(string name) {
     if (find(name)) {
         return "A tag with the name \"" + name + "\" already exists";
     }
-    if (find_monitor_by_name(name.c_str())) {
-    }
     return "";
 }
 
