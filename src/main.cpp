@@ -564,7 +564,7 @@ void event_on_configure(Root*, XEvent event) {
     }
 }
 
-void clientmessage(Root* root, XEvent* event) {
+static void clientmessage(Root* root, XEvent* event) {
     root->ewmh->handleClientMessage(event);
 }
 
