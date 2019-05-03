@@ -32,7 +32,7 @@ debugger() {
 
 for arg in "$@" ; do
     case "$arg" in
-        --valgrind|'')
+        --valgrind)
             ;;
         --gdb)
             debugger() {
