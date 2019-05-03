@@ -91,7 +91,7 @@ def test_full_layouts(hlwm, layout):
     "(clients vertical:0 0x2343)",
     "(clients vertical:0 1713)",
 ])
-def test_only_warn_invalid_winids(hlwm, layout):
+def test_load_invalid_winids(hlwm, layout):
     p = hlwm.call(['load', layout])
 
     assert p.stdout.startswith("Warning: Unknown window IDs")
