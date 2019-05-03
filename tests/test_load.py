@@ -61,8 +61,11 @@ def test_valid_layout_syntax_partial_layouts(hlwm, layout, num_splits_before):
     for i in range(0, num_splits_before):
         hlwm.call('split explode')
 
+    # load the layout that defines the layout tree only partially
     hlwm.call(['load', layout])
 
+    # The new layout is the old layout with some '(clients …)' (and theoretically
+    # even '(split…)') subtrees inserted.
     assert is_subseq(layout.replace(' ', ''), hlwm.call('dump').stdout)
 
 
