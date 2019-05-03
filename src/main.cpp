@@ -518,6 +518,10 @@ void event_on_configure(Root*, XEvent event) {
     }
 }
 
+static void clientmessage(Root* root, XEvent* event) {
+    root->ewmh->handleClientMessage(event);
+}
+
 // scan for windows and add them to the list of managed clients
 // from dwm.c
 void scan(Root* root) {
@@ -527,7 +531,7 @@ void scan(Root* root) {
     XWindowAttributes wa;
     auto clientmanager = root->clients();
 
-    ewmh_get_original_client_list(&cl, &cl_count);
+    root->ewmh->getOriginalClientList(&cl, &cl_count);
     if (XQueryTree(g_display, g_root, &d1, &d2, &wins, &num)) {
         for (unsigned i = 0; i < num; i++) {
             if(!XGetWindowAttributes(g_display, wins[i], &wa)
@@ -654,7 +658,7 @@ static HandlerTable g_default_handler;
 static void init_handler_table() {
     g_default_handler[ ButtonPress       ] = buttonpress;
     g_default_handler[ ButtonRelease     ] = buttonrelease;
-    g_default_handler[ ClientMessage     ] = ewmh_handle_client_message;
+    g_default_handler[ ClientMessage     ] = clientmessage;
     g_default_handler[ ConfigureNotify   ] = configurenotify;
     g_default_handler[ ConfigureRequest  ] = configurerequest;
     g_default_handler[ CreateNotify      ] = createnotify;
@@ -676,7 +680,6 @@ static struct {
     void (*destroy)();
 } g_modules[] = {
     { clientlist_init,  clientlist_destroy  },
-    { ewmh_init,        ewmh_destroy        },
     { hook_init,        hook_destroy        },
 };
 
@@ -897,7 +900,7 @@ int main(int argc, char* argv[]) {
     scan(&* root);
     tag_force_update_flags();
     all_monitors_apply_layout();
-    ewmh_update_all();
+    root->ewmh->updateAll();
     execute_autostart_file();
 
     // main loop
