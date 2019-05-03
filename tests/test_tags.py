@@ -51,3 +51,30 @@ def test_merge_tag_into_another_tag(hlwm):
 
     assert hlwm.get_attr('tags.count') == '1'
     assert hlwm.get_attr('tags.0.name') == 'foobar'
+
+
+RENAMING_COMMANDS = [
+    # commands for renaming the default tag
+    ['set_attr', 'tags.by-name.default.name'],
+    ['rename', 'default']]
+
+
+@pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
+def test_rename_tag(hlwm, rename_command):
+    hlwm.call(rename_command + ['foobar'])
+
+    assert hlwm.get_attr('tags.0.name') == 'foobar'
+
+
+@pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
+def test_rename_tag_empty(hlwm, rename_command):
+    hlwm.call_xfail(rename_command + [""]) \
+        .expect_stderr('An empty tag name is not permitted')
+
+
+@pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
+def test_rename_tag_existing_tag(hlwm, rename_command):
+    hlwm.call('add foobar')
+
+    hlwm.call_xfail(rename_command + ["foobar"]) \
+        .expect_stderr('"foobar" already exists')
