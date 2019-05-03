@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 
+#include "framedata.h"
 #include "tilingresult.h"
 #include "types.h"
 #include "x11-types.h"
@@ -14,20 +15,6 @@
 #define LAYOUT_DUMP_WHITESPACES " \t\n" /* must be at least one char */
 #define LAYOUT_DUMP_SEPARATOR_STR ":" /* must be a string with one char */
 #define LAYOUT_DUMP_SEPARATOR LAYOUT_DUMP_SEPARATOR_STR[0]
-
-enum class SplitAlign {
-    vertical = 0,
-    horizontal,
-};
-
-enum class LayoutAlgorithm {
-    vertical = 0,
-    horizontal,
-    max,
-    grid,
-};
-
-size_t layoutAlgorithmCount();
 
 extern const char* g_align_names[];
 extern const char* g_layout_names[];
@@ -41,8 +28,6 @@ enum {
 // returns Success or failure.
 class Client;
 typedef std::function<void(Client*)> ClientAction;
-
-#define FRACTION_UNIT 10000
 
 class HSTag;
 class HSFrameLeaf;
@@ -112,7 +97,7 @@ protected:
     std::weak_ptr<HSFrameSplit> parent_;
 };
 
-class HSFrameLeaf : public HSFrame {
+class HSFrameLeaf : public HSFrame, public FrameDataLeaf {
 public:
     HSFrameLeaf(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent);
     ~HSFrameLeaf() override;
@@ -161,16 +146,12 @@ private:
     TilingResult layoutGrid(Rectangle rect);
 
     // members
-    std::vector<Client*> clients;
-    int     selection;
-    LayoutAlgorithm layout;
-
     FrameDecoration* decoration;
     Rectangle  last_rect; // last rectangle when being drawn
                           // this is only used for 'split explode'
 };
 
-class HSFrameSplit : public HSFrame {
+class HSFrameSplit : public HSFrame, public FrameDataSplit<HSFrame> {
 public:
     HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction_, SplitAlign align_,
                  std::shared_ptr<HSFrame> a_, std::shared_ptr<HSFrame> b_);
@@ -201,14 +182,6 @@ public:
     void setSelection(int s) { selection_ = s; }
 private:
     friend class FrameTree;
-    SplitAlign align_;
-    std::shared_ptr<HSFrame> a_; // first child
-    std::shared_ptr<HSFrame> b_; // second child
-
-    int selection_;
-    int fraction_; // size of first child relative to whole size
-                  // FRACTION_UNIT means full size
-                  // FRACTION_UNIT/2 means 50%
 };
 
 // globals
@@ -224,8 +197,8 @@ int frame_change_fraction_command(int argc, char** argv, Output output);
 
 void reset_frame_colors();
 
-int find_layout_by_name(char* name);
-int find_align_by_name(char* name);
+int find_layout_by_name(const char* name);
+int find_align_by_name(const char* name);
 
 int frame_current_bring(int argc, char** argv, Output output);
 
