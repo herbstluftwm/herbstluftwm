@@ -62,8 +62,8 @@ HSTag* TagManager::add_tag(const string& name) {
     addIndexed(tag);
     tag->name.changed().connect([this,tag]() { this->onTagRename(tag); });
 
-    ewmh_update_desktops();
-    ewmh_update_desktop_names();
+    Ewmh::get().updateDesktops();
+    Ewmh::get().updateDesktopNames();
     tag_set_flags_dirty();
     return tag;
 }
@@ -120,7 +120,7 @@ int TagManager::removeTag(Input input, Output output) {
         client->tag()->stack->removeSlice(client->slice);
         client->setTag(targetTag);
         client->tag()->stack->insertSlice(client->slice);
-        ewmh_window_update_tag(client->window_, client->tag());
+        Ewmh::get().windowUpdateTag(client->window_, client->tag());
         targetTag->frame->focusedFrame()->insertClient(client);
     }
 
@@ -136,9 +136,9 @@ int TagManager::removeTag(Input input, Output output) {
     // Remove tag
     string removedName = tagToRemove->name;
     removeIndexed(index_of(tagToRemove));
-    ewmh_update_current_desktop();
-    ewmh_update_desktops();
-    ewmh_update_desktop_names();
+    Ewmh::get().updateCurrentDesktop();
+    Ewmh::get().updateDesktops();
+    Ewmh::get().updateDesktopNames();
     tag_set_flags_dirty();
     hook_emit_list("tag_removed", removedName.c_str(), targetTag->name->c_str(), nullptr);
 
@@ -164,7 +164,7 @@ int TagManager::tag_rename_command(Input input, Output output) {
 }
 
 void TagManager::onTagRename(HSTag* tag) {
-    ewmh_update_desktop_names();
+    Ewmh::get().updateDesktopNames();
     hook_emit({"tag_renamed", tag->name()});
 }
 
@@ -233,7 +233,7 @@ void TagManager::moveClient(Client* client, HSTag* target) {
     client->tag()->stack->removeSlice(client->slice);
     client->setTag(target);
     client->tag()->stack->insertSlice(client->slice);
-    ewmh_window_update_tag(client->window_, client->tag());
+    Ewmh::get().windowUpdateTag(client->window_, client->tag());
 
     // refresh things, hide things, layout it, and then show it if needed
     if (monitor_source && !monitor_target) {
