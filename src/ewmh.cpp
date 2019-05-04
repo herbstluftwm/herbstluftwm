@@ -188,7 +188,7 @@ void Ewmh::updateClientListStacking() {
         // do not add tags because they are already added
             continue;
         }
-        tag->stack->toWindowBuf(true, addToStack);
+        tag->stack->extractWindows(true, addToStack);
     }
 
     // reverse stacking order, because ewmh requires bottom to top order
