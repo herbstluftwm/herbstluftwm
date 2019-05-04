@@ -14,13 +14,14 @@ enum {
     TAG_FLAG_USED   = 0x02, // the opposite of empty
 };
 
-class Stack;
 class FrameTree;
 class Settings;
+class Stack;
+class TagManager;
 
 class HSTag : public Object {
 public:
-    HSTag(std::string name, Settings* settings);
+    HSTag(std::string name, TagManager* tags, Settings* settings);
     ~HSTag() override;
     std::shared_ptr<FrameTree>        frame;  // the master frame
     Attribute_<unsigned long> index;
@@ -38,8 +39,6 @@ private:
     int computeClientCount();
     //! get the number of clients on this tag
     int computeFrameCount();
-    //! check whether a name is valid and return error message otherwise
-    std::string validateNewName(std::string newName);
 };
 
 // for tags

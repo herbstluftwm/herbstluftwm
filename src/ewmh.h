@@ -13,8 +13,6 @@
 #define _NET_WM_STATE_ADD           1    /* add/set property */
 #define _NET_WM_STATE_TOGGLE        2    /* toggle property  */
 
-class Root;
-
 enum {
     NetSupported = 0,
     NetClientList,
@@ -69,42 +67,6 @@ enum {
 #define _NET_WM_MOVERESIZE_MOVE_KEYBOARD    10   /* move via keyboard */
 #define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
-class HSTag;
-class Client;
-
-extern Atom g_netatom[NetCOUNT];
-
-extern const std::array<const char*,NetCOUNT> g_netatom_names;
-
-void ewmh_init();
-void ewmh_destroy();
-void ewmh_update_all();
-
-void ewmh_add_client(Window win);
-void ewmh_remove_client(Window win);
-void ewmh_set_wmname(const char* name);
-void ewmh_update_wmname();
-
-void ewmh_update_client_list();
-void ewmh_get_original_client_list(Window** buf, unsigned long *count);
-void ewmh_update_client_list_stacking();
-void ewmh_update_desktops();
-void ewmh_update_desktop_names();
-void ewmh_update_active_window(Window win);
-void ewmh_update_current_desktop();
-void ewmh_update_window_state(Client* client);
-void ewmh_update_frame_extents(Window win, int left, int right, int top, int bottom);
-bool ewmh_is_window_state_set(Window win, Atom hint);
-bool ewmh_is_fullscreen_set(Window win);
-void ewmh_clear_client_properties(Window win);
-
-// set the desktop property of a window
-void ewmh_window_update_tag(Window win, HSTag* tag);
-
-void ewmh_handle_client_message(Root* root, XEvent* event);
-
-void ewmh_set_window_opacity(Window win, double opacity);
-
 typedef enum {
     // see icccm:
     // http://www.x.org/releases/X11R7.7/doc/xorg-docs/icccm/icccm.html#WM_STATE_Property
@@ -113,7 +75,58 @@ typedef enum {
     WmStateIconicState    = 3,
 } WmState;
 
-void window_update_wm_state(Window win, WmState state);
+class HSTag;
+class Client;
+class Root;
+class XConnection;
+
+extern Atom g_netatom[NetCOUNT];
+
+extern const std::array<const char*,NetCOUNT> g_netatom_names;
+
+class Ewmh {
+public:
+    Ewmh(XConnection& xconnection);
+    ~Ewmh();
+
+    void injectDependencies(Root* root);
+    void updateAll();
+
+    void addClient(Window win);
+    void removeClient(Window win);
+    void setWmName(const char* name);
+    void updateWmName();
+
+    void updateClientList();
+    void getOriginalClientList(Window** buf, unsigned long *count);
+    void updateClientListStacking();
+    void updateDesktops();
+    void updateDesktopNames();
+    void updateActiveWindow(Window win);
+    void updateCurrentDesktop();
+    void updateWindowState(Client* client);
+    void updateFrameExtents(Window win, int left, int right, int top, int bottom);
+    bool isWindowStateSet(Window win, Atom hint);
+    bool isFullscreenSet(Window win);
+    void clearClientProperties(Window win);
+
+    // set the desktop property of a window
+    void windowUpdateTag(Window win, HSTag* tag);
+
+    void handleClientMessage(XEvent* event);
+
+    void setWindowOpacity(Window win, double opacity);
+
+    void windowUpdateWmState(Window win, WmState state);
+
+    static Ewmh& get(); // temporary singleton getter
+
+private:
+    bool focusStealingAllowed(long source);
+    bool readClientList(Window** buf, unsigned long *count);
+    Root* root_ = nullptr;
+    XConnection& X_;
+};
 
 #endif
 

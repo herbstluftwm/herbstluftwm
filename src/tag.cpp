@@ -22,10 +22,11 @@ using std::string;
 
 static bool    g_tag_flags_dirty = true;
 
-HSTag::HSTag(string name_, Settings* settings)
+HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     : index(this, "index", 0)
     , floating(this, "floating", false, [](bool){return "";})
-    , name(this, "name", name_, &HSTag::validateNewName)
+    , name(this, "name", name_,
+        [tags](string newName) { return tags->isValidTagName(newName); })
     , frame_count(this, "frame_count", &HSTag::computeFrameCount)
     , client_count(this, "client_count", &HSTag::computeClientCount)
     , curframe_windex(this, "curframe_windex",
@@ -43,16 +44,6 @@ HSTag::~HSTag() {
 
 void HSTag::setIndexAttribute(unsigned long new_index) {
     index = new_index;
-}
-
-
-string HSTag::validateNewName(string newName) {
-    for (auto t : *global_tags) {
-        if (t != this && t->name == newName) {
-            return string("Tag \"") + newName + "\" already exists ";
-        }
-    }
-    return string();
 }
 
 int HSTag::computeFrameCount() {
