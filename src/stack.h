@@ -62,7 +62,7 @@ public:
     bool isLayerEmpty(HSLayer layer);
     void clearLayer(HSLayer layer);
 
-    void toWindowBuf(bool real_clients, std::function<void(Window)> addToStack);
+    void extractWindows(bool real_clients, std::function<void(Window)> addToStack);
     void restack();
     Window lowestWindow();
 

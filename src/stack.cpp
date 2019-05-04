@@ -166,8 +166,8 @@ int print_stack_command(int argc, char** argv, Output output) {
 
 //! helper function for Stack::toWindowBuf() for a given Slice and layer. The
 //other parameters are as for Stack::toWindowBuf()
-static void slice_to_window_buf(Slice* s, bool real_clients, HSLayer layer,
-                                function<void(Window)> addToStack) {
+static void extractWindowsFromSlice(Slice* s, bool real_clients, HSLayer layer,
+                                function<void(Window)> yield) {
     HSTag* tag;
     if (slice_highest_layer(s) != layer) {
         /** slice only is added to its highest layer.
@@ -177,33 +177,33 @@ static void slice_to_window_buf(Slice* s, bool real_clients, HSLayer layer,
     switch (s->type) {
         case SLICE_CLIENT:
             if (real_clients) {
-                addToStack(s->data.client->x11Window());
+                yield(s->data.client->x11Window());
             } else {
-                addToStack(s->data.client->decorationWindow());
+                yield(s->data.client->decorationWindow());
             }
             break;
         case SLICE_WINDOW:
             if (!real_clients) {
-                addToStack(s->data.window);
+                yield(s->data.window);
             }
             break;
         case SLICE_MONITOR:
             tag = s->data.monitor->tag;
             if (!real_clients) {
-                addToStack(s->data.monitor->stacking_window);
+                yield(s->data.monitor->stacking_window);
             }
-            tag->stack->toWindowBuf(real_clients, addToStack);
+            tag->stack->extractWindows(real_clients, yield);
             break;
     }
 }
 
-//! return the stack of windows by successive calls to the given addToStack
+//! return the stack of windows by successive calls to the given yield
 //function. The stack is returned from top to bottom, i.e. the topmost element
 //is the first element added to the stack.
-void Stack::toWindowBuf(bool real_clients, function<void(Window)> addToStack) {
+void Stack::extractWindows(bool real_clients, function<void(Window)> yield) {
     for (int i = 0; i < LAYER_COUNT; i++) {
         for (auto slice : top[i]) {
-            slice_to_window_buf(slice, real_clients, (HSLayer)i, addToStack);
+            extractWindowsFromSlice(slice, real_clients, (HSLayer)i, yield);
         }
     }
 }
@@ -214,7 +214,7 @@ void Stack::restack() {
     }
     vector<Window> buf;
     auto addToStack = [&buf](Window w) { buf.push_back(w); };
-    toWindowBuf(false, addToStack);
+    extractWindows(false, addToStack);
     XRestackWindows(g_display, buf.data(), buf.size());
     dirty = false;
     Ewmh::get().updateClientListStacking();

@@ -180,7 +180,7 @@ void Ewmh::updateClientListStacking() {
     // First: get the windows currently visible
     vector<Window> buf;
     auto addToStack = [&buf](Window w) { buf.push_back(w); };
-    g_monitors->monitor_stack->toWindowBuf(true, addToStack);
+    g_monitors->monitor_stack->extractWindows(true, addToStack);
 
     // Then add all the invisible windows at the end
     for (auto tag : *global_tags) {

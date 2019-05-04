@@ -777,7 +777,7 @@ void Monitor::restack() {
             buf.push_back(w);
         }
     };
-    tag->stack->toWindowBuf(false, addToStack);
+    tag->stack->extractWindows(false, addToStack);
     XRestackWindows(g_display, buf.data(), buf.size());
 }
 
