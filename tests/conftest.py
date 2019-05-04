@@ -1,5 +1,6 @@
 from datetime import datetime
 from contextlib import contextmanager
+import ewmh
 import os
 import os.path
 import re
@@ -116,7 +117,15 @@ class HlwmBridge:
         assert proc.stderr == ""
         return proc
 
-    def get_attr(self, attribute_path, check=True):
+    def get_attr(self, *attribute_path, check=True):
+        """get an attribute where the given attribute_path arguments
+        are joined with '.', so the following are equivalent:
+
+            get_attr('clients', 'focus', 'title')
+            get_attr('clients.focus', 'title')
+            get_attr('clients.focus.title')
+        """
+        attribute_path = '.'.join([str(x) for x in attribute_path])
         return self.call(['get_attr', attribute_path]).stdout
 
     def create_client(self, term_command='sleep infinity', title=None, keep_running=False):
@@ -434,6 +443,7 @@ def x11():
             self.display = display.Display()
             self.screen = self.display.screen()
             self.root = self.screen.root
+            self.ewmh = ewmh.EWMH(self.display, self.root)
 
         def window(self, winid_string):
             """return python-xlib window wrapper for a string window id"""
