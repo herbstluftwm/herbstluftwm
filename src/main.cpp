@@ -5,6 +5,7 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <vector>
 #include <cassert>
 #include <cerrno>
 #include <csignal>
@@ -43,6 +44,7 @@ using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
+using std::vector;
 
 // globals:
 int g_verbose = 0;
@@ -890,6 +892,17 @@ int main(int argc, char* argv[]) {
 
     init_handler_table();
     Commands::initialize(commands(root));
+    // now that we have initialized
+    ipcServer->setCallHandler([](const vector<string>& call) {
+        // the call consists of the command and its arguments
+        std::ostringstream output;
+        auto input =
+            (call.size() == 0)
+            ? Input("", call)
+            : Input(call[0], vector<string>(call.begin() + 1, call.end()));
+        int status = Commands::call(input, output);
+        return make_pair(status, output.str());
+    });
 
 
     // initialize subsystems

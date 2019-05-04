@@ -6,10 +6,10 @@
 #include <cstdio>
 #include <sstream>
 
-#include "command.h"
 #include "ipc-protocol.h"
 #include "xconnection.h"
 
+using std::make_pair;
 using std::string;
 using std::vector;
 
@@ -17,6 +17,9 @@ IpcServer::IpcServer(XConnection& xconnection)
     : X(xconnection)
     , nextHookNumber_(0)
 {
+    callHandler_ = ([](const vector<string>&) {
+        return make_pair(HERBST_UNKNOWN_ERROR, "");
+    });
     // main task of the construtor is to setup the hook window
     hookEventWindow_ = XCreateSimpleWindow(X.display(), X.root(),
                                              42, 42, 42, 42, 0, 0, 0);
@@ -61,14 +64,19 @@ bool IpcServer::handleConnection(Window win) {
         XFree(text_prop.value);
         return false;
     }
-    std::ostringstream output;
-    int status = call_command(count, list_return, output);
+    vector<string> arguments;
+    for (int i = 0; i < count; i++) {
+        arguments.push_back(list_return[i]);
+    }
+    auto result = callHandler_(arguments);
     // send output back
+    int status = result.first;
+    const string& output = result.second;
     // Mark this command as executed
     XDeleteProperty(X.display(), win, X.atom(HERBST_IPC_ARGS_ATOM));
     XChangeProperty(X.display(), win, X.atom(HERBST_IPC_OUTPUT_ATOM),
         X.atom("UTF8_STRING"), 8, PropModeReplace,
-        (unsigned char*)output.str().c_str(), 1 + output.str().size());
+        (unsigned char*)output.c_str(), 1 + output.size());
     // and also set the exit status
     XChangeProperty(X.display(), win, X.atom(HERBST_IPC_STATUS_ATOM),
         XA_ATOM, 32, PropModeReplace, (unsigned char*)&(status), 1);
@@ -102,4 +110,8 @@ void IpcServer::emitHook(vector<string> args) {
     // set counter for next property
     nextHookNumber_ += 1;
     nextHookNumber_ %= HERBST_HOOK_PROPERTY_COUNT;
+}
+
+void IpcServer::setCallHandler(CallHandler callback) {
+    callHandler_ = callback;
 }
