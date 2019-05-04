@@ -94,7 +94,6 @@ public:
 
     void addClient(Window win);
     void removeClient(Window win);
-    void setWmName(const char* name);
     void updateWmName();
 
     void updateClientList();

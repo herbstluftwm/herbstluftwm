@@ -21,6 +21,7 @@
 
 using std::function;
 using std::make_shared;
+using std::string;
 using std::vector;
 
 Atom g_netatom[NetCOUNT];
@@ -137,17 +138,10 @@ Ewmh::~Ewmh() {
     XDestroyWindow(X_.display(), g_wm_window);
 }
 
-void Ewmh::setWmName(const char* name) {
-    XChangeProperty(X_.display(), g_wm_window, g_netatom[NetWmName],
-        ATOM("UTF8_STRING"), 8, PropModeReplace,
-        (unsigned char*)name, strlen(name));
-    XChangeProperty(X_.display(), X_.root(), g_netatom[NetWmName],
-        ATOM("UTF8_STRING"), 8, PropModeReplace,
-        (unsigned char*)name, strlen(name));
-}
-
 void Ewmh::updateWmName() {
-    setWmName(root_->settings->wmname().c_str());
+    string name = root_->settings->wmname();
+    X_.setPropertyString(g_wm_window, g_netatom[NetWmName], name);
+    X_.setPropertyString(X_.root(), g_netatom[NetWmName], name);
 }
 
 void Ewmh::updateClientList() {
@@ -218,16 +212,11 @@ void Ewmh::updateDesktops() {
 }
 
 void Ewmh::updateDesktopNames() {
-    // we know that the tags don't change during the following lines
-    vector<const char*> names;
+    vector<string> names;
     for (auto tag : *global_tags) {
-        names.push_back(tag->name->c_str());
+        names.push_back(tag->name);
     }
-    XTextProperty text_prop;
-    Xutf8TextListToTextProperty(X_.display(), (char**)names.data(), names.size(),
-                                XUTF8StringStyle, &text_prop);
-    XSetTextProperty(X_.display(), X_.root(), &text_prop, g_netatom[NetDesktopNames]);
-    XFree(text_prop.value);
+    X_.setPropertyString(X_.root(), g_netatom[NetDesktopNames], names);
 }
 
 void Ewmh::updateCurrentDesktop() {

@@ -29,12 +29,15 @@ public:
     std::string getInstance(Window win) { return getClassHint(win).first; };
     std::string getClass(Window win) { return getClassHint(win).second; };
     std::experimental::optional<std::string> getWindowProperty(Window window, Atom atom);
+    void setPropertyString(Window w, Atom property, std::string value);
+    void setPropertyString(Window w, Atom property, const std::vector<std::string>& value);
 private:
     Display* m_display;
     int      m_screen;
     Window   m_root;
     int      m_screen_width;
     int      m_screen_height;
+    Atom     utf8StringAtom_;
 };
 
 #endif
