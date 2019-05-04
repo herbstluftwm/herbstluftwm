@@ -26,7 +26,6 @@ void hook_destroy();
 
 void hook_emit(std::vector<std::string> args);
 void emit_tag_changed(HSTag* tag, int monitor);
-void hook_emit_list(const char* name, ...);
 
 #endif
 
