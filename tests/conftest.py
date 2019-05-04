@@ -117,7 +117,15 @@ class HlwmBridge:
         assert proc.stderr == ""
         return proc
 
-    def get_attr(self, attribute_path, check=True):
+    def get_attr(self, *attribute_path, check=True):
+        """get an attribute where the given attribute_path arguments
+        are joined with '.', so the following are equivalent:
+
+            get_attr('clients', 'focus', 'title')
+            get_attr('clients.focus', 'title')
+            get_attr('clients.focus.title')
+        """
+        attribute_path = '.'.join([str(x) for x in attribute_path])
         return self.call(['get_attr', attribute_path]).stdout
 
     def create_client(self, term_command='sleep infinity', title=None, keep_running=False):
@@ -377,6 +385,45 @@ class HlwmProcess:
                 self.proc.wait(2)
                 raise Exception("herbstluftwm did not quit on sigterm"
                                 + " and had to be killed") from None
+
+
+class HcIdle:
+    def __init__(self, hlwm):
+        self.hlwm = hlwm
+        self.proc = subprocess.Popen([hlwm.HC_PATH, '--idle'],
+                                     stdout=subprocess.PIPE,
+                                     bufsize=0)
+
+    def hooks(self):
+        """return all hooks since the last call of this function"""
+        # collect all hooks so far, so collect all up to the following hook:
+        self.hlwm.call(['emit_hook', 'hc_idle_logging_marker'])
+        hooks = []
+        while True:
+            line = self.proc.stdout.readline().decode().rstrip('\n').split('\t')
+            print("hook logger: received line: '{}'".format(line))
+            if line[0] == 'hc_idle_logging_marker':
+                break
+            else:
+                hooks.append(line)
+        return hooks
+
+    def shutdown(self):
+        self.proc.terminate()
+        try:
+            self.proc.wait(2)
+        except subprocess.TimeoutExpired:
+            self.proc.kill()
+            self.proc.wait(2)
+
+
+@pytest.fixture
+def hc_idle(hlwm):
+    hc = HcIdle(hlwm)
+
+    yield hc
+
+    hc.shutdown()
 
 
 def kill_all_existing_windows(show_warnings=True):

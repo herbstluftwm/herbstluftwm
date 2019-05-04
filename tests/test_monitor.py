@@ -99,16 +99,28 @@ def test_move_monitor(hlwm):
     assert hlwm.call('monitor_rect \"\"').stdout == ' '.join(map(str, r))
 
 
+def test_focus_monitor(hlwm):
+    hlwm.call('add tag2')
+    hlwm.call('add_monitor 800x600+40+40')
+    assert hlwm.get_attr('monitors.focus.index') == '0'
+    assert hlwm.get_attr('tags.focus.index') == '0'
+
+    hlwm.call('focus_monitor 1')
+
+    assert hlwm.get_attr('monitors.focus.index') == '1'
+    assert hlwm.get_attr('tags.focus.index') == '1'
+
+
 def test_new_clients_appear_in_focused_monitor(hlwm):
     hlwm.call('add tag2')
     hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
     hlwm.call('focus_monitor monitor2')
 
-    hlwm.create_client()
+    winid, _ = hlwm.create_client()
 
     assert hlwm.get_attr('tags.by-name.tag2.client_count') == '1'
     assert hlwm.get_attr('tags.by-name.default.client_count') == '0'
-    # TODO: Assert that client's winid is in tag2 (not yet possible)
+    assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
 def test_detect_monitors_does_not_crash(hlwm):

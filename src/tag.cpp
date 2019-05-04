@@ -179,6 +179,3 @@ void tag_update_each_focus_layer() {
     tag_foreach(tag_update_focus_layer_helper, nullptr);
 }
 
-void tag_update_focus_objects() {
-}
-

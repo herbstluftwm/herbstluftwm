@@ -20,7 +20,7 @@ using std::shared_ptr;
 
 shared_ptr<Root> Root::root_;
 
-Root::Root(Globals g, XConnection& xconnection)
+Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     : clients(*this, "clients")
     , hooks(*this, "hooks")
     , keys(*this, "keys")
@@ -34,6 +34,7 @@ Root::Root(Globals g, XConnection& xconnection)
     , globals(g)
     , root_commands(make_unique<RootCommands>(this))
     , X(xconnection)
+    , ipcServer_(ipcServer)
     , ewmh(make_unique<Ewmh>(xconnection))
 {
     // initialize root children (alphabetically)
