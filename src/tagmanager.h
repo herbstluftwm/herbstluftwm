@@ -3,12 +3,14 @@
 
 #include "byname.h"
 #include "indexingobject.h"
+#include "link.h"
 #include "tag.h"
 
-class Settings;
-class MonitorManager;
 class Client;
 class FrameTree;
+class Monitor;
+class MonitorManager;
+class Settings;
 
 typedef std::function<int(FrameTree&,Input,Output)> FrameCommand;
 class TagManager : public IndexingObject<HSTag> {
@@ -30,12 +32,14 @@ public:
     void moveFocusedClient(HSTag* target);
     std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
     std::function<int()> frameCommand(std::function<int(FrameTree&)> cmd);
+    void updateFocusObject(Monitor* focusedMonitor);
     std::string isValidTagName(std::string name);
 private:
     void onTagRename(HSTag* tag);
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
     Settings* settings_;
+    Link_<HSTag> focus_;
 };
 
 extern TagManager* global_tags; // temporary, set in Root constr.

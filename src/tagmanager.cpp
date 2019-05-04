@@ -22,6 +22,7 @@ TagManager* global_tags;
 TagManager::TagManager()
     : IndexingObject()
     , by_name_(*this)
+    , focus_(*this, "focus")
 {
 }
 
@@ -46,8 +47,6 @@ string TagManager::isValidTagName(string name) {
     }
     if (find(name)) {
         return "A tag with the name \"" + name + "\" already exists";
-    }
-    if (find_monitor_by_name(name.c_str())) {
     }
     return "";
 }
@@ -77,7 +76,7 @@ int TagManager::tag_add_command(Input input, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTag* tag = add_tag(input.front());
-    hook_emit_list("tag_added", tag->name->c_str(), nullptr);
+    hook_emit({"tag_added", tag->name});
     return 0;
 }
 
@@ -140,7 +139,7 @@ int TagManager::removeTag(Input input, Output output) {
     Ewmh::get().updateDesktops();
     Ewmh::get().updateDesktopNames();
     tag_set_flags_dirty();
-    hook_emit_list("tag_removed", removedName.c_str(), targetTag->name->c_str(), nullptr);
+    hook_emit({"tag_removed", removedName, targetTag->name()});
 
     return HERBST_EXIT_SUCCESS;
 }
@@ -305,4 +304,8 @@ HSTag* TagManager::unusedTag() {
         }
     }
     return nullptr;
+}
+
+void TagManager::updateFocusObject(Monitor* focusedMonitor) {
+    focus_ = focusedMonitor->tag;
 }

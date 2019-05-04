@@ -709,10 +709,10 @@ void buttonrelease(Root*, XEvent*) {
     mouse_stop_drag();
 }
 
-void createnotify(Root*, XEvent* event) {
+void createnotify(Root* root, XEvent* event) {
     // printf("name is: CreateNotify\n");
-    if (is_ipc_connectable(event->xcreatewindow.window)) {
-        ipc_add_connection(event->xcreatewindow.window);
+    if (root->ipcServer_.isConnectable(event->xcreatewindow.window)) {
+        root->ipcServer_.addConnection(event->xcreatewindow.window);
     }
 }
 
@@ -826,13 +826,13 @@ void maprequest(Root* root, XEvent* event) {
     // that are managed already
 }
 
-void propertynotify(Root*, XEvent* event) {
+void propertynotify(Root* root, XEvent* event) {
     // printf("name is: PropertyNotify\n");
     XPropertyEvent *ev = &event->xproperty;
     Client* client;
     if (ev->state == PropertyNewValue) {
-        if (is_ipc_connectable(event->xproperty.window)) {
-            ipc_handle_connection(event->xproperty.window);
+        if (root->ipcServer_.isConnectable(event->xproperty.window)) {
+            root->ipcServer_.handleConnection(event->xproperty.window);
         } else if((client = get_client_from_window(ev->window))) {
             if (ev->atom == XA_WM_HINTS) {
                 client->update_wm_hints();
@@ -882,7 +882,10 @@ int main(int argc, char* argv[]) {
     g_root = X->root();
     XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
 
-    auto root = make_shared<Root>(g, *X);
+    // setup ipc server
+    IpcServer* ipcServer = new IpcServer(*X);
+
+    auto root = make_shared<Root>(g, *X, *ipcServer);
     Root::setRoot(root);
     //test_object_system();
 
@@ -935,6 +938,7 @@ int main(int argc, char* argv[]) {
     root.reset();
     Root::setRoot(root);
     // and then close the x connection
+    delete ipcServer;
     delete X;
     // check if we shall restart an other window manager
     if (g_exec_before_quit) {
