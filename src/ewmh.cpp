@@ -210,8 +210,8 @@ void Ewmh::removeClient(Window win) {
 }
 
 void Ewmh::updateDesktops() {
-    int cnt = tag_get_count();
-    X_.setPropertyCardinal(X_.root(), g_netatom[NetNumberOfDesktops], { cnt });
+    X_.setPropertyCardinal(X_.root(), g_netatom[NetNumberOfDesktops],
+                           { (long) root_->tags->size() });
 }
 
 void Ewmh::updateDesktopNames() {
@@ -456,8 +456,8 @@ void Ewmh::setWindowOpacity(Window win, double opacity) {
 }
 
 void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bottom) {
-    vector<long> extents = { left, right, top, bottom };
-    X_.setPropertyCardinal(win, g_netatom[NetFrameExtents], extents);
+    X_.setPropertyCardinal(win, g_netatom[NetFrameExtents],
+                           { left, right, top, bottom });
 }
 
 void Ewmh::windowUpdateWmState(Window win, WmState state) {
