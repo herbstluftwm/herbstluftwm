@@ -11,6 +11,7 @@
 class ClientManager;
 class Ewmh;
 class HookManager;
+class IpcServer;
 class KeyManager;
 class MonitorManager;
 class MouseManager;
@@ -36,7 +37,7 @@ public:
     static void setRoot(const std::shared_ptr<Root>& r) { root_ = r; }
 
     // constructor creates top-level objects
-    Root(Globals g, XConnection& xconnection);
+    Root(Globals g, XConnection& xconnection, IpcServer& ipcServer);
     ~Root() override;
 
     // (in alphabetical order)
@@ -54,6 +55,7 @@ public:
     Globals globals;
     std::unique_ptr<RootCommands> root_commands; // Using "pimpl" to avoid include
     XConnection& X;
+    IpcServer& ipcServer_;
     //! Temporary member. In the long run, ewmh should get its information
     // automatically from the signals emitted by ClientManager, etc
     std::unique_ptr<Ewmh> ewmh; // Using "pimpl" to avoid include

@@ -3,10 +3,22 @@
 
 #include <X11/X.h>
 
-void ipc_add_connection(Window win);
-// returns true if property was received successfully
-bool ipc_handle_connection(Window window);
-bool is_ipc_connectable(Window window);
+class XConnection;
+
+class IpcServer {
+public:
+    IpcServer(XConnection& xconnection);
+
+    //! check wether window is a ipc client window
+    bool isConnectable(Window window);
+    //! listen for ipc requests on the given window
+    void addConnection(Window win);
+    //! try to run an ipc request in the given window, return if there was one
+    bool handleConnection(Window window);
+
+private:
+    XConnection& X;
+};
 
 #endif
 
