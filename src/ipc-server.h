@@ -4,8 +4,8 @@
 #include <X11/X.h>
 #include <functional>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 class XConnection;
 

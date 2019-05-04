@@ -5,7 +5,6 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <vector>
 #include <cassert>
 #include <cerrno>
 #include <csignal>
@@ -13,6 +12,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <vector>
 
 #include "client.h"
 #include "clientmanager.h"
