@@ -135,7 +135,7 @@ void tag_update_flags() {
 
 void tag_set_flags_dirty() {
     g_tag_flags_dirty = true;
-    hook_emit_list("tag_flags", nullptr);
+    hook_emit({"tag_flags"});
 }
 
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
@@ -177,8 +177,5 @@ static void tag_update_focus_layer_helper(HSTag* tag, void* data) {
 }
 void tag_update_each_focus_layer() {
     tag_foreach(tag_update_focus_layer_helper, nullptr);
-}
-
-void tag_update_focus_objects() {
 }
 
