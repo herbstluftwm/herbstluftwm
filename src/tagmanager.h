@@ -32,6 +32,7 @@ public:
     void moveFocusedClient(HSTag* target);
     std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
     std::function<int()> frameCommand(std::function<int(FrameTree&)> cmd);
+    void updateFocusObject(Monitor* focusedMonitor);
     std::string isValidTagName(std::string name);
 private:
     ByName by_name_;
