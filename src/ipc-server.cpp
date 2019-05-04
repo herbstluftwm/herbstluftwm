@@ -15,28 +15,28 @@ using std::vector;
 
 IpcServer::IpcServer(XConnection& xconnection)
     : X(xconnection)
-    , next_hook_number_(0)
+    , nextHookNumber_(0)
 {
     // main task of the construtor is to setup the hook window
-    hook_event_window_ = XCreateSimpleWindow(X.display(), X.root(),
+    hookEventWindow_ = XCreateSimpleWindow(X.display(), X.root(),
                                              42, 42, 42, 42, 0, 0, 0);
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
     hint->res_name = (char*)HERBST_HOOK_CLASS;
     hint->res_class = (char*)HERBST_HOOK_CLASS;
-    XSetClassHint(X.display(), hook_event_window_, hint);
+    XSetClassHint(X.display(), hookEventWindow_, hint);
     XFree(hint);
     // ignore all events for this window
-    XSelectInput(X.display(), hook_event_window_, 0l);
+    XSelectInput(X.display(), hookEventWindow_, 0l);
     // set its window id in root window
     XChangeProperty(X.display(), X.root(), X.atom(HERBST_HOOK_WIN_ID_ATOM),
-        XA_ATOM, 32, PropModeReplace, (unsigned char*)&hook_event_window_, 1);
+        XA_ATOM, 32, PropModeReplace, (unsigned char*)&hookEventWindow_, 1);
 }
 
 IpcServer::~IpcServer() {
     // remove property from root window
     XDeleteProperty(X.display(), X.root(), X.atom(HERBST_HOOK_WIN_ID_ATOM));
-    XDestroyWindow(X.display(), hook_event_window_);
+    XDestroyWindow(X.display(), hookEventWindow_);
 }
 
 void IpcServer::addConnection(Window window) {
@@ -94,12 +94,12 @@ void IpcServer::emitHook(vector<string> args) {
     }
     XTextProperty text_prop;
     static char atom_name[1000];
-    snprintf(atom_name, 1000, HERBST_HOOK_PROPERTY_FORMAT, next_hook_number_);
+    snprintf(atom_name, 1000, HERBST_HOOK_PROPERTY_FORMAT, nextHookNumber_);
     Atom atom = X.atom(atom_name);
     Xutf8TextListToTextProperty(X.display(), (char**) args_c_str.data(), args.size(), XUTF8StringStyle, &text_prop);
-    XSetTextProperty(X.display(), hook_event_window_, &text_prop, atom);
+    XSetTextProperty(X.display(), hookEventWindow_, &text_prop, atom);
     XFree(text_prop.value);
     // set counter for next property
-    next_hook_number_ += 1;
-    next_hook_number_ %= HERBST_HOOK_PROPERTY_COUNT;
+    nextHookNumber_ += 1;
+    nextHookNumber_ %= HERBST_HOOK_PROPERTY_COUNT;
 }

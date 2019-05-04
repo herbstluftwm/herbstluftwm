@@ -24,8 +24,8 @@ public:
 private:
     XConnection& X;
 
-    Window hook_event_window_; //! window on which the hooks are announced
-    int next_hook_number_; //! index for the next hook
+    Window hookEventWindow_; //! window on which the hooks are announced
+    int nextHookNumber_; //! index for the next hook
 };
 
 #endif
