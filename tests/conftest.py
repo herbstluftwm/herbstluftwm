@@ -4,6 +4,7 @@ import ewmh
 import os
 import os.path
 import re
+import select
 import selectors
 import shlex
 import subprocess
@@ -393,6 +394,21 @@ class HcIdle:
         self.proc = subprocess.Popen([hlwm.HC_PATH, '--idle'],
                                      stdout=subprocess.PIPE,
                                      bufsize=0)
+        # we don't know how fast self.proc connects to hlwm.
+        # So we keep sending messages via hlwm util we receive some
+        number_sent = 0
+        while [] == select.select([self.proc.stdout], [], [], 0.1)[0]:
+            # while there hasn't been a message received, send something
+            number_sent += 1
+            self.hlwm.call(['emit_hook', 'hc_idle_bootup', number_sent])
+        # now that we know that self.proc is connected, we need to consume
+        # its output up to the last message we have sent
+        assert number_sent > 0
+        number_received = 0
+        while number_received < number_sent:
+            line = self.proc.stdout.readline().decode().rstrip('\n').split('\t')
+            assert line[0] == 'hc_idle_bootup'
+            number_received = int(line[1])
 
     def hooks(self):
         """return all hooks since the last call of this function"""
