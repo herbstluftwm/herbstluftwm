@@ -172,7 +172,7 @@ void Client::window_unfocus_last() {
     XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
     if (lastfocus) {
         /* only emit the hook if the focus *really* changes */
-        hook_emit_list("focus_changed", "0x0", "", nullptr);
+        hook_emit({"focus_changed", "0x0", ""});
         Ewmh::get().updateActiveWindow(None);
         tag_update_each_focus_layer();
 
@@ -203,7 +203,7 @@ void Client::window_focus() {
         const char* title = this->title_().c_str();
         char winid_str[STRING_BUF_SIZE];
         snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)this->window_);
-        hook_emit_list("focus_changed", winid_str, title, nullptr);
+        hook_emit({"focus_changed", winid_str, title});
     }
 
     // change window-colors
@@ -495,7 +495,7 @@ void Client::set_urgent(bool state) {
 void Client::set_urgent_force(bool state) {
     char winid_str[STRING_BUF_SIZE];
     snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window_);
-    hook_emit_list("urgent", state ? "on" : "off", winid_str, nullptr);
+    hook_emit({"urgent", state ? "on" : "off", winid_str});
 
     this->urgent_ = state;
 
@@ -537,7 +537,7 @@ void Client::update_wm_hints() {
             char winid_str[STRING_BUF_SIZE];
             snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window_);
             this->setup_border(focused_client == this);
-            hook_emit_list("urgent", this->urgent_() ? "on":"off", winid_str, nullptr);
+            hook_emit({"urgent", this->urgent_() ? "on":"off", winid_str});
             tag_set_flags_dirty();
         }
     }
@@ -570,7 +570,7 @@ void Client::update_title() {
     if (changed && get_current_client() == this) {
         char buf[STRING_BUF_SIZE];
         snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
-        hook_emit_list("window_title_changed", buf, this->title_().c_str(), nullptr);
+        hook_emit({"window_title_changed", buf, this->title_()});
     }
 }
 
@@ -601,7 +601,7 @@ void Client::set_fullscreen(bool state) {
     char buf[STRING_BUF_SIZE];
     snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
     ewmh.updateWindowState(this);
-    hook_emit_list("fullscreen", state ? "on" : "off", buf, nullptr);
+    hook_emit({"fullscreen", state ? "on" : "off", buf});
 }
 
 void Client::updateEwmhState() {
