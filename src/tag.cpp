@@ -135,7 +135,7 @@ void tag_update_flags() {
 
 void tag_set_flags_dirty() {
     g_tag_flags_dirty = true;
-    hook_emit_list("tag_flags", nullptr);
+    hook_emit({"tag_flags"});
 }
 
 HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {

@@ -74,7 +74,7 @@ int TagManager::tag_add_command(Input input, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTag* tag = add_tag(input.front());
-    hook_emit_list("tag_added", tag->name->c_str(), nullptr);
+    hook_emit({"tag_added", tag->name});
     return 0;
 }
 
@@ -137,7 +137,7 @@ int TagManager::removeTag(Input input, Output output) {
     Ewmh::get().updateDesktops();
     Ewmh::get().updateDesktopNames();
     tag_set_flags_dirty();
-    hook_emit_list("tag_removed", removedName.c_str(), targetTag->name->c_str(), nullptr);
+    hook_emit({"tag_removed", removedName, targetTag->name()});
 
     return HERBST_EXIT_SUCCESS;
 }
@@ -162,7 +162,7 @@ int TagManager::tag_rename_command(Input input, Output output) {
     }
     tag->name = new_name;
     Ewmh::get().updateDesktopNames();
-    hook_emit_list("tag_renamed", new_name.c_str(), nullptr);
+    hook_emit({"tag_renamed", new_name});
     return 0;
 }
 
