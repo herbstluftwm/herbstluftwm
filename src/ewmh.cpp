@@ -179,8 +179,8 @@ void Ewmh::getOriginalClientList(Window** buf, unsigned long *count) {
 void Ewmh::updateClientListStacking() {
     // First: get the windows currently visible
     vector<Window> buf;
-    auto addToStack = [&buf](Window w) { buf.push_back(w); };
-    g_monitors->monitor_stack->extractWindows(true, addToStack);
+    auto addToVector = [&buf](Window w) { buf.push_back(w); };
+    g_monitors->monitor_stack->extractWindows(true, addToVector);
 
     // Then add all the invisible windows at the end
     for (auto tag : *global_tags) {
@@ -188,7 +188,7 @@ void Ewmh::updateClientListStacking() {
         // do not add tags because they are already added
             continue;
         }
-        tag->stack->extractWindows(true, addToStack);
+        tag->stack->extractWindows(true, addToVector);
     }
 
     // reverse stacking order, because ewmh requires bottom to top order

@@ -772,12 +772,12 @@ void Monitor::restack() {
     }
     // collect all other windows in a vector and pass it to XRestackWindows
     vector<Window> buf = { stacking_window };
-    auto addToStack = [&buf, fullscreenFocus](Window w) {
+    auto addToVector = [&buf, fullscreenFocus](Window w) {
         if (w != fullscreenFocus) {
             buf.push_back(w);
         }
     };
-    tag->stack->extractWindows(false, addToStack);
+    tag->stack->extractWindows(false, addToVector);
     XRestackWindows(g_display, buf.data(), buf.size());
 }
 

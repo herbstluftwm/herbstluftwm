@@ -213,8 +213,7 @@ void Stack::restack() {
         return;
     }
     vector<Window> buf;
-    auto addToStack = [&buf](Window w) { buf.push_back(w); };
-    extractWindows(false, addToStack);
+    extractWindows(false, [&buf](Window w) { buf.push_back(w); });
     XRestackWindows(g_display, buf.data(), buf.size());
     dirty = false;
     Ewmh::get().updateClientListStacking();
