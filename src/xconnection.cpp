@@ -166,7 +166,7 @@ std::experimental::optional<string> XConnection::getWindowProperty(Window window
 
 
 //! implement XChangeProperty for type=XA_WINDOW
-void XConnection::setPropertyWindow(Window w, Atom property, vector<Window> value) {
+void XConnection::setPropertyWindow(Window w, Atom property, const vector<Window>& value) {
     // according to the XChangeProperty-specification:
     // if format = 32, then the data must be a long array.
     XChangeProperty(m_display, w, property,
