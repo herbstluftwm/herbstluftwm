@@ -3,6 +3,7 @@
 
 #include <X11/X.h>
 #include <array>
+#include <functional>
 #include <set>
 #include <vector>
 
@@ -61,7 +62,7 @@ public:
     bool isLayerEmpty(HSLayer layer);
     void clearLayer(HSLayer layer);
 
-    std::vector<Window> toWindowBuf(bool real_clients);
+    void extractWindows(bool real_clients, std::function<void(Window)> addToStack);
     void restack();
     Window lowestWindow();
 

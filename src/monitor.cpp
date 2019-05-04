@@ -758,17 +758,26 @@ void monitor_restack(Monitor* monitor) {
 }
 
 void Monitor::restack() {
-    vector<Window> buf = {};
-    buf.push_back(stacking_window);
-    vector_append(buf, tag->stack->toWindowBuf(false));
-    /* remove a focused fullscreen client */
+    Window fullscreenFocus = 0;
+    /* don't add a focused fullscreen client to the stack because
+     * we want a focused fullscreen window to be above the panels which are
+     * usually unmanaged. All the windows passed to the XRestackWindows
+     * will end up below all unmanaged windows, so don't add a focused
+     * fullscreen window to it. Instead raise the fullscreen window
+     * manually such that it is above the panel */
     Client* client = tag->frame->root_->focusedClient();
     if (client && client->fullscreen_) {
-        Window win = client->decorationWindow();
-        XRaiseWindow(g_display, win);
-        // remove the window from the buf
-        buf.erase(std::remove(buf.begin(), buf.end(), win), buf.end());
+        fullscreenFocus = client->decorationWindow();
+        XRaiseWindow(g_display, fullscreenFocus);
     }
+    // collect all other windows in a vector and pass it to XRestackWindows
+    vector<Window> buf = { stacking_window };
+    auto addToVector = [&buf, fullscreenFocus](Window w) {
+        if (w != fullscreenFocus) {
+            buf.push_back(w);
+        }
+    };
+    tag->stack->extractWindows(false, addToVector);
     XRestackWindows(g_display, buf.data(), buf.size());
 }
 
