@@ -104,10 +104,8 @@ Ewmh::Ewmh(XConnection& xconnection)
     /* init for the supporting wm check */
     g_wm_window = XCreateSimpleWindow(X_.display(), X_.root(),
                                       42, 42, 42, 42, 0, 0, 0);
-    XChangeProperty(X_.display(), X_.root(), g_netatom[NetSupportingWmCheck],
-        XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
-    XChangeProperty(X_.display(), g_wm_window, g_netatom[NetSupportingWmCheck],
-        XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
+    X_.setPropertyWindow(X_.root(), g_netatom[NetSupportingWmCheck], { g_wm_window });
+    X_.setPropertyWindow(g_wm_window, g_netatom[NetSupportingWmCheck], { g_wm_window });
 
     /* init atoms that never change */
     vector<long> buf{ 0, 0 };
@@ -151,9 +149,7 @@ void Ewmh::updateWmName() {
 }
 
 void Ewmh::updateClientList() {
-    XChangeProperty(X_.display(), X_.root(), g_netatom[NetClientList],
-        XA_WINDOW, 32, PropModeReplace,
-        (unsigned char *) g_windows.data(), g_windows.size());
+    X_.setPropertyWindow(X_.root(), g_netatom[NetClientList], g_windows);
 }
 
 bool Ewmh::readClientList(Window** buf, unsigned long *count) {
@@ -194,9 +190,7 @@ void Ewmh::updateClientListStacking() {
     // reverse stacking order, because ewmh requires bottom to top order
     std::reverse(buf.begin(), buf.end());
 
-    XChangeProperty(X_.display(), X_.root(), g_netatom[NetClientListStacking],
-        XA_WINDOW, 32, PropModeReplace,
-        (unsigned char *) buf.data(), buf.size());
+    X_.setPropertyWindow(X_.root(), g_netatom[NetClientListStacking], buf);
 }
 
 void Ewmh::addClient(Window win) {
@@ -252,8 +246,7 @@ void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
 }
 
 void Ewmh::updateActiveWindow(Window win) {
-    XChangeProperty(X_.display(), X_.root(), g_netatom[NetActiveWindow],
-        XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(win), 1);
+    X_.setPropertyWindow(X_.root(), g_netatom[NetActiveWindow], { win });
 }
 
 bool Ewmh::focusStealingAllowed(long source) {
