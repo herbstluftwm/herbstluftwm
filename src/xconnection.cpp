@@ -11,6 +11,7 @@
 using std::endl;
 using std::pair;
 using std::string;
+using std::vector;
 
 XConnection::XConnection(Display* disp)
     : m_display(disp) {
@@ -165,7 +166,7 @@ std::experimental::optional<string> XConnection::getWindowProperty(Window window
 
 
 //! implement XChangeProperty for type=XA_WINDOW
-void XConnection::setPropertyWindow(Window w, Atom property, std::vector<Window> value) {
+void XConnection::setPropertyWindow(Window w, Atom property, vector<Window> value) {
     // according to the XChangeProperty-specification:
     // if format = 32, then the data must be a long array.
     XChangeProperty(m_display, w, property,
