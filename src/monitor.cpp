@@ -601,7 +601,7 @@ void monitor_focus_by_index(unsigned new_selection) {
 
 void monitor_update_focus_objects() {
     g_monitors->focus = g_monitors->byIdx(g_monitors->cur_monitor);
-    tag_update_focus_objects();
+    global_tags->updateFocusObject(g_monitors->focus());
 }
 
 int Monitor::relativeX(int x_root) {
