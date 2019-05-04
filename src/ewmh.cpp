@@ -19,8 +19,9 @@
 #include "utils.h"
 #include "xconnection.h"
 
-using std::vector;
+using std::function;
 using std::make_shared;
+using std::vector;
 
 Atom g_netatom[NetCOUNT];
 
@@ -177,7 +178,9 @@ void Ewmh::getOriginalClientList(Window** buf, unsigned long *count) {
 
 void Ewmh::updateClientListStacking() {
     // First: get the windows currently visible
-    auto buf = g_monitors->monitor_stack->toWindowBuf(true);
+    vector<Window> buf;
+    auto addToStack = [&buf](Window w) { buf.push_back(w); };
+    g_monitors->monitor_stack->toWindowBuf(true, addToStack);
 
     // Then add all the invisible windows at the end
     for (auto tag : *global_tags) {
@@ -185,7 +188,7 @@ void Ewmh::updateClientListStacking() {
         // do not add tags because they are already added
             continue;
         }
-        vector_append(buf, tag->stack->toWindowBuf(true));
+        tag->stack->toWindowBuf(true, addToStack);
     }
 
     // reverse stacking order, because ewmh requires bottom to top order
