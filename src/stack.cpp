@@ -164,7 +164,7 @@ int print_stack_command(int argc, char** argv, Output output) {
     return 0;
 }
 
-//! helpfer function for Stack::toWindowBuf() for a given Slice and layer. The
+//! helper function for Stack::toWindowBuf() for a given Slice and layer. The
 //other parameters are as for Stack::toWindowBuf()
 static void slice_to_window_buf(Slice* s, bool real_clients, HSLayer layer,
                                 function<void(Window)> addToStack) {
