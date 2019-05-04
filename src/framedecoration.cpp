@@ -91,9 +91,9 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
     }
     window_transparent = settings->frame_bg_transparent();
     if (isFocused) {
-        ewmh_set_window_opacity(window, settings->frame_active_opacity()/100.0);
+        Ewmh::get().setWindowOpacity(window, settings->frame_active_opacity()/100.0);
     } else {
-        ewmh_set_window_opacity(window, settings->frame_normal_opacity()/100.0);
+        Ewmh::get().setWindowOpacity(window, settings->frame_normal_opacity()/100.0);
     }
 
     XClearWindow(g_display, window);

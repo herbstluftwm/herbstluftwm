@@ -10,6 +10,55 @@ die() {
 
 set -e
 
+cmdname="$0"
+usage() {
+cat <<EOF
+Usage: $cmdname FLAGS
+
+Start a Xephyr and run herbstluftwm in it. Per default, valgrind
+is used. Other debug environments are:
+
+    --valgrind          Run in valgrind (default)
+    --gdb               Run in gdb
+    --none              Run directly
+    --autostart=FILE    Use the autostart FILE
+    -h --help           Print this help
+EOF
+}
+AUTOSTART=""
+debugger() {
+    valgrind "$@"
+}
+
+for arg in "$@" ; do
+    case "$arg" in
+        --valgrind)
+            ;;
+        --gdb)
+            debugger() {
+                gdb -ex run --args "$@"
+            }
+            ;;
+        --none)
+            debugger() {
+                "$@"
+            }
+            ;;
+        --autostart=*)
+            AUTOSTART=${arg#--autostart=}
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument $arg"
+            usage >&2
+            exit 1
+            ;;
+    esac
+done
+
 # find free display number
 # ------------------------
 xephyr_displaynr= # only the display number without the colon
@@ -28,8 +77,12 @@ fi
 # -------------------
 export PATH="$(pwd):$PATH"
 make herbstluftwm herbstclient
-project_dir=$(dirname "$0")
-project_dir=${project_dir%/*}
+if [[ -z "$AUTOSTART" ]] ; then
+    # if AUTOSTART hasn't specified yet
+    project_dir=$(dirname "$0")
+    project_dir=${project_dir%/*}
+    AUTOSTART="$project_dir"/share/autostart
+fi
 
 # boot up Xephyr
 # --------------
@@ -46,9 +99,8 @@ done
 # boot up herbstluftwm
 # --------------------
 DISPLAY=":$xephyr_displaynr" \
-    valgrind -- \
-        ./herbstluftwm --verbose -c "$project_dir"/share/autostart \
-    || echo "Warning: valgrind had non-zero exit code"
+    debugger ./herbstluftwm --verbose -c "$AUTOSTART" \
+    || echo "Warning: debugger had non-zero exit code"
 
 # clean up xephyr
 kill "$xephyr_pid"
