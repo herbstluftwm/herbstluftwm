@@ -18,7 +18,6 @@ public:
     void addConnection(Window win);
     //! try to run an ipc request in the given window, return if there was one
     bool handleConnection(Window window);
-
     //! send a hook to all listening clients
     void emitHook(std::vector<std::string> args);
 
