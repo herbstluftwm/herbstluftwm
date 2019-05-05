@@ -10,8 +10,6 @@
 class HSTag;
 class MonitorManager;
 class Settings;
-class Slice;
-class Stack;
 
 class Monitor : public Object {
 public:
@@ -23,7 +21,6 @@ public:
 
     HSTag*      tag;    // currently viewed tag
     HSTag*      tag_previous;    // previously viewed tag
-    Slice* slice;  // slice in the monitor stack
     Attribute_<std::string>   name;
     Attribute_<unsigned long> index;
     DynAttribute_<std::string>   tag_string;
@@ -83,8 +80,6 @@ void ensure_monitors_are_available();
 void all_monitors_replace_previous_tag(HSTag* old, HSTag* newmon);
 
 void drop_enternotify_events();
-
-Stack* get_monitor_stack();
 
 void monitor_update_focus_objects();
 

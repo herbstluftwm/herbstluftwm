@@ -20,6 +20,7 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitormanager.h"
+#include "plainstack.h"
 #include "rectangle.h"
 #include "root.h"
 #include "settings.h"
@@ -57,16 +58,12 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
         i->changed().connect(this, &Monitor::applyLayout);
     }
 
-    slice = Slice::makeMonitorSlice(this);
     stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
 
-    g_monitors->monitor_stack->insertSlice(slice);
 }
 
 Monitor::~Monitor() {
-    g_monitors->monitor_stack->removeSlice(slice);
-    delete slice;
     XDestroyWindow(g_display, stacking_window);
 }
 
@@ -732,10 +729,6 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
     return ret;
 }
 
-Stack* get_monitor_stack() {
-    return g_monitors->monitor_stack;
-}
-
 int monitor_raise_command(int argc, char** argv, Output output) {
     char* cmd_name = argv[0];
     (void)SHIFT(argc, argv);
@@ -749,12 +742,9 @@ int monitor_raise_command(int argc, char** argv, Output output) {
     } else {
         monitor = get_current_monitor();
     }
-    g_monitors->monitor_stack->raiseSlice(monitor->slice);
+    g_monitors->monitorStack_.raise(monitor);
+    g_monitors->restack();
     return 0;
-}
-
-void monitor_restack(Monitor* monitor) {
-    monitor->restack();
 }
 
 void Monitor::restack() {
