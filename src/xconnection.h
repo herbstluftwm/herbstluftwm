@@ -30,6 +30,7 @@ public:
     std::string getClass(Window win) { return getClassHint(win).second; };
     std::experimental::optional<std::string> getWindowProperty(Window window, Atom atom);
     void setPropertyWindow(Window w, Atom property, const std::vector<Window>& value);
+    void setPropertyCardinal(Window w, Atom property, const std::vector<long>& value);
 private:
     Display* m_display;
     int      m_screen;

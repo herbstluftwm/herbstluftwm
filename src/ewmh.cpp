@@ -108,9 +108,7 @@ Ewmh::Ewmh(XConnection& xconnection)
     X_.setPropertyWindow(g_wm_window, g_netatom[NetSupportingWmCheck], { g_wm_window });
 
     /* init atoms that never change */
-    vector<long> buf{ 0, 0 };
-    XChangeProperty(X_.display(), X_.root(), g_netatom[NetDesktopViewport],
-        XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&buf.front(), buf.size());
+    X_.setPropertyCardinal(X_.root(), g_netatom[NetDesktopViewport], {0, 0});
 }
 
 void Ewmh::injectDependencies(Root* root) {
@@ -206,9 +204,8 @@ void Ewmh::removeClient(Window win) {
 }
 
 void Ewmh::updateDesktops() {
-    int cnt = tag_get_count();
-    XChangeProperty(X_.display(), X_.root(), g_netatom[NetNumberOfDesktops],
-        XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&cnt, 1);
+    X_.setPropertyCardinal(X_.root(), g_netatom[NetNumberOfDesktops],
+                           { (long) root_->tags->size() });
 }
 
 void Ewmh::updateDesktopNames() {
@@ -231,8 +228,7 @@ void Ewmh::updateCurrentDesktop() {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
     }
-    XChangeProperty(X_.display(), X_.root(), g_netatom[NetCurrentDesktop],
-        XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(index), 1);
+    X_.setPropertyCardinal(X_.root(), g_netatom[NetCurrentDesktop], { index });
 }
 
 void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
@@ -241,8 +237,7 @@ void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
     }
-    XChangeProperty(X_.display(), win, g_netatom[NetWmDesktop],
-        XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&(index), 1);
+    X_.setPropertyCardinal(win, g_netatom[NetWmDesktop], { index });
 }
 
 void Ewmh::updateActiveWindow(Window win) {
@@ -450,19 +445,16 @@ void Ewmh::setWindowOpacity(Window win, double opacity) {
     uint32_t int_opacity = std::numeric_limits<uint32_t>::max()
                             * CLAMP(opacity, 0, 1);
 
-    XChangeProperty(X_.display(), win, g_netatom[NetWmWindowOpacity], XA_CARDINAL,
-                    32, PropModeReplace, (unsigned char*)&int_opacity, 1);
+    X_.setPropertyCardinal(win, g_netatom[NetWmWindowOpacity], { int_opacity });
 }
+
 void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bottom) {
-    vector<long> extents = { left, right, top, bottom };
-    XChangeProperty(X_.display(), win, g_netatom[NetFrameExtents], XA_CARDINAL,
-                    32, PropModeReplace, (unsigned char*)&extents.front(), extents.size());
+    X_.setPropertyCardinal(win, g_netatom[NetFrameExtents],
+                           { left, right, top, bottom });
 }
 
 void Ewmh::windowUpdateWmState(Window win, WmState state) {
-    uint32_t int_state = state;
-    XChangeProperty(X_.display(), win,  WM_STATE, XA_CARDINAL,
-                    32, PropModeReplace, (unsigned char*)&int_state, 1);
+    X_.setPropertyCardinal(win, WM_STATE, { state });
 }
 
 Ewmh& Ewmh::get() {
