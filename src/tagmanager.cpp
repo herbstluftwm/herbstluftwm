@@ -163,7 +163,7 @@ int TagManager::tag_rename_command(Input input, Output output) {
 }
 
 void TagManager::onTagRename(HSTag* tag) {
-    ewmh_update_desktop_names();
+    Ewmh::get().updateDesktopNames();
     hook_emit({"tag_renamed", tag->name()});
 }
 
