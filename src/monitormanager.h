@@ -53,7 +53,7 @@ public:
     void restack();
 
     int cur_monitor;
-    std::unique_ptr<PlainStack<Monitor*>> monitorStack_;
+    std::unique_ptr<PlainStack<Monitor*>> monitorStack_; // TODO: make this private
 
 private:
     ByName by_name_;

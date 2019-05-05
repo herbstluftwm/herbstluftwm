@@ -327,7 +327,7 @@ string MonitorManager::lock_number_changed() {
 
 //! return the stack of windows by successive calls to the given yield
 //function. The stack is returned from top to bottom, i.e. the topmost element
-//is the first element added to the stack.
+//is the first element yielded
 void MonitorManager::extractWindowStack(bool real_clients, function<void(Window)> yield)
 {
     for (Monitor* monitor : *monitorStack_) {
