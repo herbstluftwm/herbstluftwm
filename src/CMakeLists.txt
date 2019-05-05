@@ -55,6 +55,7 @@ target_sources(herbstluftwm PRIVATE
     rules.cpp rules.h
     settings.cpp settings.h
     stack.cpp stack.h
+    plainstack.h
     tag.cpp tag.h
     tagmanager.cpp tagmanager.h
     tilingresult.cpp tilingresult.h
