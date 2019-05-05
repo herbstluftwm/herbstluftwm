@@ -232,6 +232,18 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     return unique_ptr<CommandTable>(new CommandTable(init));
 }
 
+//! wrapper around Commands::call()
+static std::pair<int,std::string> callCommand(const vector<string>& call) {
+    // the call consists of the command and its arguments
+    std::ostringstream output;
+    auto input =
+        (call.size() == 0)
+        ? Input("", call)
+        : Input(call[0], vector<string>(call.begin() + 1, call.end()));
+    int status = Commands::call(input, output);
+    return make_pair(status, output.str());
+}
+
 // core functions
 int quit() {
     g_aboutToQuit = true;
@@ -714,6 +726,7 @@ void createnotify(Root* root, XEvent* event) {
     // printf("name is: CreateNotify\n");
     if (root->ipcServer_.isConnectable(event->xcreatewindow.window)) {
         root->ipcServer_.addConnection(event->xcreatewindow.window);
+        root->ipcServer_.handleConnection(event->xcreatewindow.window, callCommand);
     }
 }
 
@@ -833,7 +846,7 @@ void propertynotify(Root* root, XEvent* event) {
     Client* client;
     if (ev->state == PropertyNewValue) {
         if (root->ipcServer_.isConnectable(event->xproperty.window)) {
-            root->ipcServer_.handleConnection(event->xproperty.window);
+            root->ipcServer_.handleConnection(event->xproperty.window, callCommand);
         } else if((client = get_client_from_window(ev->window))) {
             if (ev->atom == XA_WM_HINTS) {
                 client->update_wm_hints();
@@ -892,18 +905,6 @@ int main(int argc, char* argv[]) {
 
     init_handler_table();
     Commands::initialize(commands(root));
-    // now that we have initialized
-    ipcServer->setCallHandler([](const vector<string>& call) {
-        // the call consists of the command and its arguments
-        std::ostringstream output;
-        auto input =
-            (call.size() == 0)
-            ? Input("", call)
-            : Input(call[0], vector<string>(call.begin() + 1, call.end()));
-        int status = Commands::call(input, output);
-        return make_pair(status, output.str());
-    });
-
 
     // initialize subsystems
     for (unsigned i = 0; i < LENGTH(g_modules); i++) {

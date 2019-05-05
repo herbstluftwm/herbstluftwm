@@ -16,9 +16,6 @@ IpcServer::IpcServer(XConnection& xconnection)
     : X(xconnection)
     , nextHookNumber_(0)
 {
-    callHandler_ = ([](const vector<string>&) {
-        return make_pair(HERBST_UNKNOWN_ERROR, "");
-    });
     // main task of the construtor is to setup the hook window
     hookEventWindow_ = XCreateSimpleWindow(X.display(), X.root(),
                                              42, 42, 42, 42, 0, 0, 0);
@@ -43,11 +40,9 @@ IpcServer::~IpcServer() {
 
 void IpcServer::addConnection(Window window) {
     XSelectInput(X.display(), window, PropertyChangeMask);
-    // check, if property already exists
-    handleConnection(window);
 }
 
-bool IpcServer::handleConnection(Window win) {
+bool IpcServer::handleConnection(Window win, CallHandler callback) {
     XTextProperty text_prop;
     if (!XGetTextProperty(X.display(), win, &text_prop, X.atom(HERBST_IPC_ARGS_ATOM))) {
         // if the args atom is not present any more then it already has been
@@ -67,7 +62,7 @@ bool IpcServer::handleConnection(Window win) {
     for (int i = 0; i < count; i++) {
         arguments.push_back(list_return[i]);
     }
-    auto result = callHandler_(arguments);
+    auto result = callback(arguments);
     // send output back
     int status = result.first;
     const string& output = result.second;
@@ -109,8 +104,4 @@ void IpcServer::emitHook(vector<string> args) {
     // set counter for next property
     nextHookNumber_ += 1;
     nextHookNumber_ %= HERBST_HOOK_PROPERTY_COUNT;
-}
-
-void IpcServer::setCallHandler(CallHandler callback) {
-    callHandler_ = callback;
 }
