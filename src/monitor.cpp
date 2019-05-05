@@ -20,6 +20,7 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitormanager.h"
+#include "plainstack.h"
 #include "rectangle.h"
 #include "root.h"
 #include "settings.h"

@@ -10,6 +10,7 @@
 #include "globals.h"
 #include "monitor.h"
 #include "monitormanager.h"
+#include "plainstack.h"
 #include "tag.h"
 #include "utils.h"
 

@@ -11,6 +11,7 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
+#include "plainstack.h"
 #include "settings.h"
 #include "stack.h"
 #include "tag.h"
