@@ -11,6 +11,7 @@
 using std::endl;
 using std::pair;
 using std::string;
+using std::vector;
 
 XConnection::XConnection(Display* disp)
     : m_display(disp) {
@@ -164,3 +165,11 @@ std::experimental::optional<string> XConnection::getWindowProperty(Window window
 }
 
 
+//! implement XChangeProperty for type=XA_CARDINAL
+void XConnection::setPropertyCardinal(Window w, Atom property, const vector<long>& value) {
+    // according to the XChangeProperty-specification:
+    // if format = 32, then the data must be a long array.
+    XChangeProperty(m_display, w, property,
+        XA_CARDINAL, 32, PropModeReplace,
+        (unsigned char*)(value.data()), value.size());
+}
