@@ -417,7 +417,6 @@ class HcIdle:
         hooks = []
         while True:
             line = self.proc.stdout.readline().decode().rstrip('\n').split('\t')
-            print("hook logger: received line: '{}'".format(line))
             if line[0] == 'hc_idle_logging_marker':
                 break
             else:
