@@ -13,6 +13,7 @@ extern MonitorManager* g_monitors;
 
 class TagManager;
 class HSTag;
+template<typename T> class PlainStack;
 
 typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
 
@@ -48,8 +49,11 @@ public:
     void unlock();
     std::string lock_number_changed();
 
+    void extractWindowStack(bool real_clients, std::function<void(Window)> addToStack);
+    void restack();
+
     int cur_monitor;
-    Stack* monitor_stack;
+    std::unique_ptr<PlainStack<Monitor*>> monitorStack_;
 
 private:
     ByName by_name_;

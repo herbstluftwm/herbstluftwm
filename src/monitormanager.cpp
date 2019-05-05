@@ -20,6 +20,7 @@
 using std::function;
 using std::make_pair;
 using std::string;
+using std::vector;
 
 MonitorManager* g_monitors;
 
@@ -27,14 +28,13 @@ MonitorManager::MonitorManager()
     : IndexingObject<Monitor>()
     , focus(*this, "focus")
     , by_name_(*this)
+    , monitorStack_(make_unique<PlainStack<Monitor*>>())
 {
     cur_monitor = 0;
-    monitor_stack = new Stack();
 }
 
 MonitorManager::~MonitorManager() {
     clearChildren();
-    delete monitor_stack;
 }
 
 void MonitorManager::injectDependencies(Settings* s, TagManager* t) {
@@ -212,6 +212,7 @@ void MonitorManager::removeMonitor(Monitor* monitor)
     assert(monitor->tag->frame->root_ != nullptr);
     monitor->tag->frame->root_->setVisibleRecursive(false);
 
+    monitorStack_->remove(monitor);
     g_monitors->removeIndexed(monitorIdx);
 
     if (cur_monitor >= g_monitors->size()) {
@@ -293,6 +294,7 @@ string MonitorManager::isValidMonitorName(string name) {
 Monitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
     Monitor* m = new Monitor(settings_, this, rect, tag);
     addIndexed(m);
+    monitorStack_->insert(m);
     return m;
 }
 
@@ -320,5 +322,26 @@ string MonitorManager::lock_number_changed() {
         }
     }
     return {};
+}
+
+//! return the stack of windows by successive calls to the given yield
+//function. The stack is returned from top to bottom, i.e. the topmost element
+//is the first element added to the stack.
+void MonitorManager::extractWindowStack(bool real_clients, function<void(Window)> yield)
+{
+    for (Monitor* monitor : *monitorStack_) {
+        if (!real_clients) {
+            yield(monitor->stacking_window);
+        }
+        monitor->tag->stack->extractWindows(real_clients, yield);
+    }
+}
+
+//! restack the entire stack including all monitors
+void MonitorManager::restack() {
+    vector<Window> buf;
+    extractWindowStack(false, [&buf](Window w) { buf.push_back(w); });
+    XRestackWindows(g_display, buf.data(), buf.size());
+    Ewmh::get().updateClientListStacking();
 }
 

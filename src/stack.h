@@ -10,7 +10,7 @@
 #include "types.h"
 
 enum HSLayer {
-    /* layers on each monitor, from top to bottom */
+    /* layers on each tag, from top to bottom */
     LAYER_FOCUS,
     LAYER_FULLSCREEN,
     LAYER_NORMAL,
@@ -23,11 +23,36 @@ extern const std::array<const char*, LAYER_COUNT> g_layer_names;
 typedef enum SliceType {
     SLICE_CLIENT,
     SLICE_WINDOW,
-    SLICE_MONITOR,
 } SliceType;
 
 class Client;
-class Monitor;
+
+template<typename T>
+class PlainStack {
+public:
+    //! insert at the top
+    void insert(const T& element) {
+        data_.insert(data_.begin(), element);
+    }
+    void remove(const T& element) {
+        data_.erase(std::remove(data_.begin(), data_.end(), element));
+    }
+    void raise(const T& element) {
+        auto it = std::find(data_.begin(), data_.end(), element);
+        assert(it != data_.end());
+        // rotate the range [begin, it+1) in such a way
+        // that it becomes the new first element
+        std::rotate(data_.begin(), it, it + 1);
+    }
+    typename std::vector<T>::const_iterator begin() const {
+        return data_.cbegin();
+    }
+    typename std::vector<T>::const_iterator end() const {
+        return data_.cend();
+    }
+private:
+    std::vector<T> data_;
+};
 
 class Slice {
 public:
@@ -37,14 +62,12 @@ public:
     static Slice* makeWindowSlice(Window window);
     static Slice* makeFrameSlice(Window window);
     static Slice* makeClientSlice(Client* client);
-    static Slice* makeMonitorSlice(Monitor* monitor);
 
     SliceType type;
     std::set<HSLayer> layers; //!< layers this slice is contained in
     union {
         Client*    client;
         Window              window;
-        Monitor*          monitor;
     } data;
 };
 

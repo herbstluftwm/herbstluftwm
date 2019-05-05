@@ -9,6 +9,7 @@
 #include "ewmh.h"
 #include "globals.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "tag.h"
 #include "utils.h"
 
@@ -20,7 +21,7 @@ using std::vector;
 
 const std::array<const char*, LAYER_COUNT>g_layer_names =
     ArrayInitializer<const char*, LAYER_COUNT>({
-     { LAYER_FOCUS	 , "Focus-Layer"      },
+     { LAYER_FOCUS,        "Focus-Layer"      },
      { LAYER_FULLSCREEN  , "Fullscreen-Layer" },
      { LAYER_NORMAL      , "Normal Layer"     },
      { LAYER_FRAMES      , "Frame Layer"      },
@@ -59,13 +60,6 @@ Slice* Slice::makeClientSlice(Client* client) {
     auto s = new Slice();
     s->type = SLICE_CLIENT;
     s->data.client = client;
-    return s;
-}
-
-Slice* Slice::makeMonitorSlice(Monitor* monitor) {
-    auto s = new Slice();
-    s->type = SLICE_MONITOR;
-    s->data.monitor = monitor;
     return s;
 }
 
@@ -139,10 +133,8 @@ private:
 };
 
 int print_stack_command(int argc, char** argv, Output output) {
-    auto monitorStack = get_monitor_stack();
     vector<shared_ptr<StringTree>> monitors;
-    for (auto& monitorSlice : monitorStack->top[LAYER_NORMAL]) {
-        auto monitor = monitorSlice->data.monitor;
+    for (Monitor* monitor : *(g_monitors->monitorStack_)) {
         vector<shared_ptr<StringTree>> layers;
         for (size_t layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++) {
             auto layer = monitor->tag->stack->top[layerIdx];
@@ -186,13 +178,6 @@ static void extractWindowsFromSlice(Slice* s, bool real_clients, HSLayer layer,
             if (!real_clients) {
                 yield(s->data.window);
             }
-            break;
-        case SLICE_MONITOR:
-            tag = s->data.monitor->tag;
-            if (!real_clients) {
-                yield(s->data.monitor->stacking_window);
-            }
-            tag->stack->extractWindows(real_clients, yield);
             break;
     }
 }
@@ -276,9 +261,6 @@ Window Stack::lowestWindow() {
                     break;
                 case SLICE_WINDOW:
                     w = slice->data.window;
-                    break;
-                case SLICE_MONITOR:
-                    w = slice->data.monitor->tag->stack->lowestWindow();
                     break;
             }
             if (w) {
