@@ -19,6 +19,7 @@ XConnection::XConnection(Display* disp)
     m_screen_width = DisplayWidth(m_display, m_screen);
     m_screen_height = DisplayHeight(m_display, m_screen);
     m_root = RootWindow(m_display, m_screen);
+    utf8StringAtom_ = XInternAtom(m_display, "UTF8_STRING", False);
 }
 XConnection::~XConnection() {
     HSDebug("Closing display\n");
@@ -164,6 +165,30 @@ std::experimental::optional<string> XConnection::getWindowProperty(Window window
     return result;
 }
 
+//! implement XChangeProperty for type=ATOM('UTF8_STRING')
+void XConnection::setPropertyString(Window w, Atom property, string value) {
+    // according to the XChangeProperty-specification:
+    // if format = 8, then the data must be a char array.
+    XChangeProperty(m_display, w, property,
+        utf8StringAtom_, 8, PropModeReplace,
+        (unsigned char*)value.c_str(), value.size());
+}
+
+//! implement XSetTextProperty for an array of utf8-strings
+void XConnection::setPropertyString(Window w, Atom property, const vector<string>& value)
+{
+    vector<const char*> value_c_str;
+    value_c_str.reserve(value.size());
+    for (const auto& s : value) {
+        value_c_str.push_back(s.c_str());
+    }
+    XTextProperty text_prop;
+    Xutf8TextListToTextProperty(
+        m_display, (char**) value_c_str.data(), value_c_str.size(),
+        XUTF8StringStyle, &text_prop);
+    XSetTextProperty(m_display, w, &text_prop, property);
+    XFree(text_prop.value);
+}
 
 //! implement XChangeProperty for type=XA_WINDOW
 void XConnection::setPropertyWindow(Window w, Atom property, const vector<Window>& value) {
