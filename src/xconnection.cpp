@@ -165,7 +165,6 @@ std::experimental::optional<string> XConnection::getWindowProperty(Window window
     return result;
 }
 
-
 //! implement XChangeProperty for type=ATOM('UTF8_STRING')
 void XConnection::setPropertyString(Window w, Atom property, string value) {
     // according to the XChangeProperty-specification:
@@ -189,4 +188,22 @@ void XConnection::setPropertyString(Window w, Atom property, const vector<string
         XUTF8StringStyle, &text_prop);
     XSetTextProperty(m_display, w, &text_prop, property);
     XFree(text_prop.value);
+}
+
+//! implement XChangeProperty for type=XA_WINDOW
+void XConnection::setPropertyWindow(Window w, Atom property, const vector<Window>& value) {
+    // according to the XChangeProperty-specification:
+    // if format = 32, then the data must be a long array.
+    XChangeProperty(m_display, w, property,
+        XA_WINDOW, 32, PropModeReplace,
+        (unsigned char*)(value.data()), value.size());
+}
+
+//! implement XChangeProperty for type=XA_CARDINAL
+void XConnection::setPropertyCardinal(Window w, Atom property, const vector<long>& value) {
+    // according to the XChangeProperty-specification:
+    // if format = 32, then the data must be a long array.
+    XChangeProperty(m_display, w, property,
+        XA_CARDINAL, 32, PropModeReplace,
+        (unsigned char*)(value.data()), value.size());
 }

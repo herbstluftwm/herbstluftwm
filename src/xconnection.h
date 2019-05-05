@@ -31,6 +31,8 @@ public:
     std::experimental::optional<std::string> getWindowProperty(Window window, Atom atom);
     void setPropertyString(Window w, Atom property, std::string value);
     void setPropertyString(Window w, Atom property, const std::vector<std::string>& value);
+    void setPropertyWindow(Window w, Atom property, const std::vector<Window>& value);
+    void setPropertyCardinal(Window w, Atom property, const std::vector<long>& value);
 private:
     Display* m_display;
     int      m_screen;
