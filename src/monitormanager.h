@@ -49,6 +49,7 @@ public:
     void unlock();
     std::string lock_number_changed();
 
+    int printStack(Output output);
     void extractWindowStack(bool real_clients, std::function<void(Window)> addToStack);
     void restack();
 

@@ -19,6 +19,8 @@
 
 using std::function;
 using std::make_pair;
+using std::make_shared;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -342,5 +344,55 @@ void MonitorManager::restack() {
     extractWindowStack(false, [&buf](Window w) { buf.push_back(w); });
     XRestackWindows(g_display, buf.data(), buf.size());
     Ewmh::get().updateClientListStacking();
+}
+
+class StringTree : public TreeInterface {
+public:
+    StringTree(string label, vector<shared_ptr<StringTree>> children = {})
+        : children_(children)
+        , label_(label)
+    {};
+
+    size_t childCount() override {
+        return children_.size();
+    };
+
+    shared_ptr<TreeInterface> nthChild(size_t idx) override {
+        return children_.at(idx);
+    };
+
+    void appendCaption(Output output) override {
+        if (label_ != "") {
+            output << " " << label_;
+        }
+    };
+
+private:
+    vector<shared_ptr<StringTree>> children_;
+    string label_;
+};
+
+int MonitorManager::printStack(Output output) {
+    vector<shared_ptr<StringTree>> monitors;
+    for (Monitor* monitor : monitorStack_) {
+        vector<shared_ptr<StringTree>> layers;
+        for (size_t layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++) {
+            auto layer = monitor->tag->stack->top[layerIdx];
+
+            vector<shared_ptr<StringTree>> slices;
+            for (auto& slice : layer) {
+                slices.push_back(make_shared<StringTree>(slice->getLabel()));
+            }
+
+            auto layerLabel = g_layer_names[layerIdx];
+            layers.push_back(make_shared<StringTree>(layerLabel, slices));
+        }
+
+        monitors.push_back(make_shared<StringTree>(monitor->getDescription(), layers));
+    }
+
+    auto stackRoot = make_shared<StringTree>("", monitors);
+    tree_print_to(stackRoot, output);
+    return 0;
 }
 

@@ -8,15 +8,9 @@
 #include "client.h"
 #include "ewmh.h"
 #include "globals.h"
-#include "monitor.h"
-#include "monitormanager.h"
-#include "plainstack.h"
-#include "tag.h"
 #include "utils.h"
 
 using std::function;
-using std::make_shared;
-using std::shared_ptr;
 using std::string;
 using std::vector;
 
@@ -91,70 +85,20 @@ void Stack::removeSlice(Slice* elem) {
     dirty = true;
 }
 
-static string getSliceLabel(const Slice* slice) {
+string Slice::getLabel() {
     std::stringstream label;
-    switch (slice->type) {
+    switch (type) {
         case SLICE_WINDOW:
-            label << "Window 0x" << std::hex << slice->data.window << std::dec;
+            label << "Window 0x" << std::hex << data.window << std::dec;
             break;
         case SLICE_CLIENT:
             label << "Client 0x"
-                  << std::hex << slice->data.client->x11Window() << std::dec
-                  << " \"" << slice->data.client->title_() << "\"";
+                  << std::hex << data.client->x11Window() << std::dec
+                  << " \"" << data.client->title_() << "\"";
             break;
         default: ;
     }
     return label.str();
-}
-
-class StringTree : public TreeInterface {
-public:
-    StringTree(string label, vector<shared_ptr<StringTree>> children = {})
-        : children_(children)
-        , label_(label)
-    {};
-
-    size_t childCount() override {
-        return children_.size();
-    };
-
-    shared_ptr<TreeInterface> nthChild(size_t idx) override {
-        return children_.at(idx);
-    };
-
-    void appendCaption(Output output) override {
-        if (label_ != "") {
-            output << " " << label_;
-        }
-    };
-
-private:
-    vector<shared_ptr<StringTree>> children_;
-    string label_;
-};
-
-int print_stack_command(int argc, char** argv, Output output) {
-    vector<shared_ptr<StringTree>> monitors;
-    for (Monitor* monitor : g_monitors->monitorStack_) {
-        vector<shared_ptr<StringTree>> layers;
-        for (size_t layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++) {
-            auto layer = monitor->tag->stack->top[layerIdx];
-
-            vector<shared_ptr<StringTree>> slices;
-            for (auto& slice : layer) {
-                slices.push_back(make_shared<StringTree>(getSliceLabel(slice)));
-            }
-
-            auto layerLabel = g_layer_names[layerIdx];
-            layers.push_back(make_shared<StringTree>(layerLabel, slices));
-        }
-
-        monitors.push_back(make_shared<StringTree>(monitor->getDescription(), layers));
-    }
-
-    auto stackRoot = make_shared<StringTree>("", monitors);
-    tree_print_to(stackRoot, output);
-    return 0;
 }
 
 //! helper function for Stack::toWindowBuf() for a given Slice and layer. The
