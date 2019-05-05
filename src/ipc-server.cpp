@@ -4,12 +4,11 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <cstdio>
-#include <sstream>
 
-#include "command.h"
 #include "ipc-protocol.h"
 #include "xconnection.h"
 
+using std::make_pair;
 using std::string;
 using std::vector;
 
@@ -41,11 +40,9 @@ IpcServer::~IpcServer() {
 
 void IpcServer::addConnection(Window window) {
     XSelectInput(X.display(), window, PropertyChangeMask);
-    // check, if property already exists
-    handleConnection(window);
 }
 
-bool IpcServer::handleConnection(Window win) {
+bool IpcServer::handleConnection(Window win, CallHandler callback) {
     XTextProperty text_prop;
     if (!XGetTextProperty(X.display(), win, &text_prop, X.atom(HERBST_IPC_ARGS_ATOM))) {
         // if the args atom is not present any more then it already has been
@@ -61,12 +58,17 @@ bool IpcServer::handleConnection(Window win) {
         XFree(text_prop.value);
         return false;
     }
-    std::ostringstream output;
-    int status = call_command(count, list_return, output);
+    vector<string> arguments;
+    for (int i = 0; i < count; i++) {
+        arguments.push_back(list_return[i]);
+    }
+    auto result = callback(arguments);
     // send output back
+    int status = result.first;
+    const string& output = result.second;
     // Mark this command as executed
     XDeleteProperty(X.display(), win, X.atom(HERBST_IPC_ARGS_ATOM));
-    X.setPropertyString(win, X.atom(HERBST_IPC_OUTPUT_ATOM), output.str());
+    X.setPropertyString(win, X.atom(HERBST_IPC_OUTPUT_ATOM), output);
     // and also set the exit status
     XChangeProperty(X.display(), win, X.atom(HERBST_IPC_STATUS_ATOM),
         XA_ATOM, 32, PropModeReplace, (unsigned char*)&(status), 1);
