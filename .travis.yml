@@ -6,6 +6,11 @@ before_install:
     # Delete .git/ to maximize ccache effectiveness (no version string mismatches)
     - rm -rf .git
 
+branches:
+    only:
+        - master
+        - winterbreeze
+
 jobs:
     include:
         - name: "Build with most recent GCC & Clang, run tests"
