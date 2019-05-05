@@ -4,7 +4,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <cstdio>
-#include <sstream>
 
 #include "ipc-protocol.h"
 #include "xconnection.h"
