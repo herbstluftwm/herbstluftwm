@@ -68,9 +68,7 @@ bool IpcServer::handleConnection(Window win, CallHandler callback) {
     const string& output = result.second;
     // Mark this command as executed
     XDeleteProperty(X.display(), win, X.atom(HERBST_IPC_ARGS_ATOM));
-    XChangeProperty(X.display(), win, X.atom(HERBST_IPC_OUTPUT_ATOM),
-        X.atom("UTF8_STRING"), 8, PropModeReplace,
-        (unsigned char*)output.c_str(), 1 + output.size());
+    X.setPropertyString(win, X.atom(HERBST_IPC_OUTPUT_ATOM), output.str());
     // and also set the exit status
     XChangeProperty(X.display(), win, X.atom(HERBST_IPC_STATUS_ATOM),
         XA_ATOM, 32, PropModeReplace, (unsigned char*)&(status), 1);
@@ -89,18 +87,9 @@ void IpcServer::emitHook(vector<string> args) {
         // nothing to do
         return;
     }
-    vector<const char*> args_c_str;
-    args_c_str.reserve(args.size());
-    for (const auto& s : args) {
-        args_c_str.push_back(s.c_str());
-    }
-    XTextProperty text_prop;
     static char atom_name[1000];
     snprintf(atom_name, 1000, HERBST_HOOK_PROPERTY_FORMAT, nextHookNumber_);
-    Atom atom = X.atom(atom_name);
-    Xutf8TextListToTextProperty(X.display(), (char**) args_c_str.data(), args.size(), XUTF8StringStyle, &text_prop);
-    XSetTextProperty(X.display(), hookEventWindow_, &text_prop, atom);
-    XFree(text_prop.value);
+    X.setPropertyString(hookEventWindow_, X.atom(atom_name), args);
     // set counter for next property
     nextHookNumber_ += 1;
     nextHookNumber_ %= HERBST_HOOK_PROPERTY_COUNT;
