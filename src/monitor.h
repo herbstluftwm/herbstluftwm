@@ -10,7 +10,6 @@
 class HSTag;
 class MonitorManager;
 class Settings;
-class Stack;
 
 class Monitor : public Object {
 public:

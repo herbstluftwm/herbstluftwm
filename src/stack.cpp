@@ -161,7 +161,6 @@ int print_stack_command(int argc, char** argv, Output output) {
 //other parameters are as for Stack::toWindowBuf()
 static void extractWindowsFromSlice(Slice* s, bool real_clients, HSLayer layer,
                                 function<void(Window)> yield) {
-    HSTag* tag;
     if (slice_highest_layer(s) != layer) {
         /** slice only is added to its highest layer.
          * just skip it if the slice is not shown on this data->layer */

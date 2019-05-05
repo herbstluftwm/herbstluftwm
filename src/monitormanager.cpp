@@ -28,8 +28,8 @@ MonitorManager* g_monitors;
 MonitorManager::MonitorManager()
     : IndexingObject<Monitor>()
     , focus(*this, "focus")
-    , by_name_(*this)
     , monitorStack_(make_unique<PlainStack<Monitor*>>())
+    , by_name_(*this)
 {
     cur_monitor = 0;
 }
