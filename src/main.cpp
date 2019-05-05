@@ -233,7 +233,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
 }
 
 //! wrapper around Commands::call()
-static std::pair<int,std::string> callCommand(const vector<string>& call) {
+static pair<int,string> callCommand(const vector<string>& call) {
     // the call consists of the command and its arguments
     std::ostringstream output;
     auto input =

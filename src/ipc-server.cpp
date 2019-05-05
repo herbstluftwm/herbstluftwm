@@ -68,7 +68,7 @@ bool IpcServer::handleConnection(Window win, CallHandler callback) {
     const string& output = result.second;
     // Mark this command as executed
     XDeleteProperty(X.display(), win, X.atom(HERBST_IPC_ARGS_ATOM));
-    X.setPropertyString(win, X.atom(HERBST_IPC_OUTPUT_ATOM), output.str());
+    X.setPropertyString(win, X.atom(HERBST_IPC_OUTPUT_ATOM), output);
     // and also set the exit status
     XChangeProperty(X.display(), win, X.atom(HERBST_IPC_STATUS_ATOM),
         XA_ATOM, 32, PropModeReplace, (unsigned char*)&(status), 1);
