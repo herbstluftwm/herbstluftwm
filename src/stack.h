@@ -10,7 +10,7 @@
 #include "types.h"
 
 enum HSLayer {
-    /* layers on each monitor, from top to bottom */
+    /* layers on each tag, from top to bottom */
     LAYER_FOCUS,
     LAYER_FULLSCREEN,
     LAYER_NORMAL,
@@ -23,11 +23,9 @@ extern const std::array<const char*, LAYER_COUNT> g_layer_names;
 typedef enum SliceType {
     SLICE_CLIENT,
     SLICE_WINDOW,
-    SLICE_MONITOR,
 } SliceType;
 
 class Client;
-class Monitor;
 
 class Slice {
 public:
@@ -37,14 +35,12 @@ public:
     static Slice* makeWindowSlice(Window window);
     static Slice* makeFrameSlice(Window window);
     static Slice* makeClientSlice(Client* client);
-    static Slice* makeMonitorSlice(Monitor* monitor);
 
     SliceType type;
     std::set<HSLayer> layers; //!< layers this slice is contained in
     union {
         Client*    client;
         Window              window;
-        Monitor*          monitor;
     } data;
 };
 

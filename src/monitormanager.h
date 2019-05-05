@@ -8,6 +8,7 @@
 #include "indexingobject.h"
 #include "link.h"
 #include "monitor.h"
+#include "plainstack.h"
 
 extern MonitorManager* g_monitors;
 
@@ -48,8 +49,11 @@ public:
     void unlock();
     std::string lock_number_changed();
 
+    void extractWindowStack(bool real_clients, std::function<void(Window)> addToStack);
+    void restack();
+
     int cur_monitor;
-    Stack* monitor_stack;
+    PlainStack<Monitor*> monitorStack_; // TODO: make this private
 
 private:
     ByName by_name_;
