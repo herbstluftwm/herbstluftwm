@@ -20,3 +20,8 @@ script:
     - herbstluftwm &
     - sleep 1
     - herbstclient version
+
+branches:
+  only:
+  - master
+  - winterbreeze
