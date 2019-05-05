@@ -35,6 +35,7 @@ public:
     void updateFocusObject(Monitor* focusedMonitor);
     std::string isValidTagName(std::string name);
 private:
+    void onTagRename(HSTag* tag);
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
     Settings* settings_;
