@@ -11,7 +11,6 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
-#include "plainstack.h"
 #include "settings.h"
 #include "stack.h"
 #include "tag.h"
@@ -28,7 +27,6 @@ MonitorManager* g_monitors;
 MonitorManager::MonitorManager()
     : IndexingObject<Monitor>()
     , focus(*this, "focus")
-    , monitorStack_(make_unique<PlainStack<Monitor*>>())
     , by_name_(*this)
 {
     cur_monitor = 0;
@@ -213,7 +211,7 @@ void MonitorManager::removeMonitor(Monitor* monitor)
     assert(monitor->tag->frame->root_ != nullptr);
     monitor->tag->frame->root_->setVisibleRecursive(false);
 
-    monitorStack_->remove(monitor);
+    monitorStack_.remove(monitor);
     g_monitors->removeIndexed(monitorIdx);
 
     if (cur_monitor >= g_monitors->size()) {
@@ -295,7 +293,7 @@ string MonitorManager::isValidMonitorName(string name) {
 Monitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
     Monitor* m = new Monitor(settings_, this, rect, tag);
     addIndexed(m);
-    monitorStack_->insert(m);
+    monitorStack_.insert(m);
     return m;
 }
 
@@ -330,7 +328,7 @@ string MonitorManager::lock_number_changed() {
 //is the first element yielded
 void MonitorManager::extractWindowStack(bool real_clients, function<void(Window)> yield)
 {
-    for (Monitor* monitor : *monitorStack_) {
+    for (Monitor* monitor : monitorStack_) {
         if (!real_clients) {
             yield(monitor->stacking_window);
         }

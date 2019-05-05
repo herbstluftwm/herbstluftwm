@@ -742,7 +742,7 @@ int monitor_raise_command(int argc, char** argv, Output output) {
     } else {
         monitor = get_current_monitor();
     }
-    g_monitors->monitorStack_->raise(monitor);
+    g_monitors->monitorStack_.raise(monitor);
     g_monitors->restack();
     return 0;
 }

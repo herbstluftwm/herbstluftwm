@@ -8,12 +8,12 @@
 #include "indexingobject.h"
 #include "link.h"
 #include "monitor.h"
+#include "plainstack.h"
 
 extern MonitorManager* g_monitors;
 
 class TagManager;
 class HSTag;
-template<typename T> class PlainStack;
 
 typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
 
@@ -53,7 +53,7 @@ public:
     void restack();
 
     int cur_monitor;
-    std::unique_ptr<PlainStack<Monitor*>> monitorStack_; // TODO: make this private
+    PlainStack<Monitor*> monitorStack_; // TODO: make this private
 
 private:
     ByName by_name_;

@@ -135,7 +135,7 @@ private:
 
 int print_stack_command(int argc, char** argv, Output output) {
     vector<shared_ptr<StringTree>> monitors;
-    for (Monitor* monitor : *(g_monitors->monitorStack_)) {
+    for (Monitor* monitor : g_monitors->monitorStack_) {
         vector<shared_ptr<StringTree>> layers;
         for (size_t layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++) {
             auto layer = monitor->tag->stack->top[layerIdx];
