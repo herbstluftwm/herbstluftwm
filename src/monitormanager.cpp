@@ -372,7 +372,7 @@ private:
     string label_;
 };
 
-int MonitorManager::printStack(Output output) {
+int MonitorManager::printStackCommand(Output output) {
     vector<shared_ptr<StringTree>> monitors;
     for (Monitor* monitor : monitorStack_) {
         vector<shared_ptr<StringTree>> layers;
