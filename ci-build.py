@@ -105,9 +105,15 @@ if args.flake8:
     tox('-e flake8', build_dir)
 
 if args.run_tests:
-    tox('-e py37 -- -n auto --cache-clear -v -x', build_dir)
+    # First, run only the tests that are NOT marked to be excluded from code
+    # coverage collection.
+    tox('-e py37 -- -n auto --cache-clear -v -x -m "not exclude_from_coverage"', build_dir)
 
+    # Create the code coverage report:
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
     sp.check_call('lcov --remove coverage.info "/usr/*" --output-file coverage.info', shell=True, cwd=build_dir)
     sp.check_call('lcov --list coverage.info', shell=True, cwd=build_dir)
     (build_dir / 'coverage.info').rename(repo / 'coverage.info')
+
+    # Run the tests that have been skipped before (without clearing the pytest cache this time):
+    tox('-e py37 -- -n auto -v -x -m exclude_from_coverage', build_dir)
