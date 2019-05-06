@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cstring>
 #include <limits>
-#include <cstdio>
 
 #include "client.h"
 #include "layout.h"
@@ -448,7 +447,6 @@ void Ewmh::windowUpdateWmState(Window win, WmState state) {
 }
 
 bool Ewmh::isOwnWindow(Window win) {
-    fprintf(stderr, "Own window %lx vs other %lx\n", win, g_wm_window);
     return g_wm_window == win;
 }
 
