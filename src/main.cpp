@@ -639,7 +639,7 @@ void scan(void) {
             // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
             // the previous window manager
             // TODO: what would dwm do?
-            if (ewmh_is_own_window) {
+            if (ewmh_is_own_window(wins[i])) {
                 continue;
             }
             if (is_window_mapped(g_display, wins[i])
