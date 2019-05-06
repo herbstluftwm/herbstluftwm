@@ -32,7 +32,6 @@
 #include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
-#include "stack.h"
 #include "tagmanager.h"
 #include "tmp.h"
 #include "utils.h"
