@@ -32,7 +32,6 @@
 #include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
-#include "stack.h"
 #include "tagmanager.h"
 #include "tmp.h"
 #include "utils.h"
@@ -195,7 +194,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                    &RuleManager::unruleCompletion}},
         {"list_rules",     {[rules] (Output o) { return rules->listRulesCommand(o); }}},
         {"layout",         print_layout_command},
-        {"stack",          print_stack_command},
+        {"stack",          { monitors, &MonitorManager::stackCommand }},
         {"dump",           print_layout_command},
         {"load",           { tags->frameCommand(&FrameTree::loadCommand) }},
         {"complete",       complete_command},

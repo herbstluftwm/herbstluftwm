@@ -7,8 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "types.h"
-
 enum HSLayer {
     /* layers on each tag, from top to bottom */
     LAYER_FOCUS,
@@ -35,6 +33,8 @@ public:
     static Slice* makeWindowSlice(Window window);
     static Slice* makeFrameSlice(Window window);
     static Slice* makeClientSlice(Client* client);
+
+    std::string getLabel();
 
     SliceType type;
     std::set<HSLayer> layers; //!< layers this slice is contained in
@@ -69,8 +69,6 @@ private:
 };
 
 HSLayer slice_highest_layer(Slice* slice);
-
-int print_stack_command(int argc, char** argv, Output output);
 
 #endif
 

@@ -70,6 +70,16 @@ public:
                                 std::placeholders::_1))
     {
     }
+    /** Binding to a command in a given object, but with no input
+     * parameters and thus without completion.
+     */
+    template <typename ClassName>
+    CommandBinding(ClassName* object,
+                   int(ClassName::*member_cmd)(Output))
+        : CommandBinding(std::bind(member_cmd, object,
+                            std::placeholders::_1))
+    {
+    }
 
     // FIXME: Remove after C++ transition
     // The following constructors are only there to ease the transition from

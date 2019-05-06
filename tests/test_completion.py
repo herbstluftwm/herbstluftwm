@@ -17,6 +17,7 @@ commands_without_input = shlex.split(
     reload
     remove
     rotate
+    stack
     true
     unlock
     use_previous
