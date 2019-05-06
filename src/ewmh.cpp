@@ -111,11 +111,12 @@ void ewmh_init() {
 
     /* init for the supporting wm check */
     g_wm_window = XCreateSimpleWindow(g_display, g_root,
-                                      42, 42, 42, 42, 0, 0, 0);
+                                      -100, -100, 1, 1, 0, 0, 0);
     XChangeProperty(g_display, g_root, g_netatom[NetSupportingWmCheck],
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
     XChangeProperty(g_display, g_wm_window, g_netatom[NetSupportingWmCheck],
         XA_WINDOW, 32, PropModeReplace, (unsigned char*)&(g_wm_window), 1);
+    XMapWindow(g_display, g_wm_window);
     ewmh_update_wmname();
 
     /* init atoms that never change */
@@ -561,5 +562,15 @@ void window_update_wm_state(Window win, WmState state) {
     unsigned long wmstate[] = { state, None };
     XChangeProperty(g_display, win,  WM_STATE, WM_STATE,
                     32, PropModeReplace, (unsigned char*)wmstate, LENGTH(wmstate));
+}
+
+// assert that the given window was created by this module and is not a client
+bool ewmh_is_own_window(Window win) {
+    return g_wm_window == win;
+}
+
+// clear input focus by focusing a dummy window
+void ewmh_clear_input_focus() {
+    XSetInputFocus(g_display, g_wm_window, RevertToPointerRoot, CurrentTime);
 }
 

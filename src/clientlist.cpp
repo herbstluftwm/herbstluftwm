@@ -462,8 +462,7 @@ void client_window_unfocus_last() {
         client_window_unfocus(lastfocus);
     }
     hsobject_unlink_by_name(g_client_object, "focus");
-    // give focus to root window
-    XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
+    ewmh_clear_input_focus();
     if (lastfocus) {
         /* only emit the hook if the focus *really* changes */
         hook_emit_list("focus_changed", "0x0", "", NULL);

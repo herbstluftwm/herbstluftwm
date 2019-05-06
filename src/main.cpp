@@ -639,6 +639,9 @@ void scan(void) {
             // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
             // the previous window manager
             // TODO: what would dwm do?
+            if (ewmh_is_own_window) {
+                continue;
+            }
             if (is_window_mapped(g_display, wins[i])
                 || 0 <= array_find(cl, cl_count, sizeof(Window), wins+i)) {
                 manage_client(wins[i]);
@@ -932,7 +935,9 @@ void mapnotify(XEvent* event) {
 void maprequest(XEvent* event) {
     HSDebug("name is: MapRequest\n");
     XMapRequestEvent* mapreq = &event->xmaprequest;
-    if (is_herbstluft_window(g_display, mapreq->window)) {
+    if (ewmh_is_own_window(mapreq->window)
+        || is_herbstluft_window(g_display, mapreq->window))
+    {
         // just map the window if it wants that
         XWindowAttributes wa;
         if (!XGetWindowAttributes(g_display, mapreq->window, &wa)) {
