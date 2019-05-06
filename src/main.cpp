@@ -194,7 +194,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                    &RuleManager::unruleCompletion}},
         {"list_rules",     {[rules] (Output o) { return rules->listRulesCommand(o); }}},
         {"layout",         print_layout_command},
-        {"stack",          { monitors, &MonitorManager::printStackCommand }},
+        {"stack",          { monitors, &MonitorManager::stackCommand }},
         {"dump",           print_layout_command},
         {"load",           { tags->frameCommand(&FrameTree::loadCommand) }},
         {"complete",       complete_command},
