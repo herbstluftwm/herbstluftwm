@@ -806,7 +806,6 @@ int frame_focus_command(int argc, char** argv, Output output) {
     } else if (!external_only &&
         (index = frame_inner_neighbour_index(frame, direction)) != -1) {
         frame->setSelection(index);
-        frame_focus_recursive(frame);
         get_current_monitor()->applyLayout();
     } else {
         shared_ptr<HSFrame> neighbour = frame->neighbour(direction);
@@ -815,7 +814,6 @@ int frame_focus_command(int argc, char** argv, Output output) {
             // alter focus (from 0 to 1, from 1 to 0)
             parent->swapSelection();
             // change focus if possible
-            frame_focus_recursive(parent);
             get_current_monitor()->applyLayout();
         } else {
             neighbour_found = false;
@@ -873,7 +871,6 @@ int frame_move_window_command(int argc, char** argv, Output output) {
     if (!external_only &&
         (index = frame_inner_neighbour_index(frame, direction)) != -1) {
         frame->moveClient(index);
-        frame_focus_recursive(frame);
         get_current_monitor()->applyLayout();
     } else {
         shared_ptr<HSFrame> neighbour = frame->neighbour(direction);
@@ -888,7 +885,6 @@ int frame_move_window_command(int argc, char** argv, Output output) {
             shared_ptr<HSFrameSplit> parent = neighbour->getParent();
             assert(parent);
             parent->swapSelection();
-            frame_focus_recursive(parent);
 
             // layout was changed, so update it
             get_current_monitor()->applyLayout();
@@ -1011,15 +1007,5 @@ bool smart_window_surroundings_active(HSFrameLeaf* frame) {
     return g_settings->smart_window_surroundings()
             && (frame->clientCount() == 1
                 || frame->getLayout() == LayoutAlgorithm::max);
-}
-
-void frame_focus_recursive(shared_ptr<HSFrame> frame) {
-    shared_ptr<HSFrameLeaf> leaf = FrameTree::focusedFrame(frame);
-    Client* client = leaf->focusedClient();
-    if (client) {
-        client->window_focus();
-    } else {
-        Client::window_unfocus_last();
-    }
 }
 

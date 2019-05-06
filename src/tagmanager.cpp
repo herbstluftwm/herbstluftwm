@@ -245,12 +245,6 @@ void TagManager::moveClient(Client* client, HSTag* target) {
     if (!monitor_source && monitor_target) {
         client->set_visible(true);
     }
-    if (monitor_target == get_current_monitor()) {
-        frame_focus_recursive(monitor_target->tag->frame->root_);
-    }
-    else if (monitor_source == get_current_monitor()) {
-        frame_focus_recursive(monitor_source->tag->frame->root_);
-    }
     tag_set_flags_dirty();
 }
 

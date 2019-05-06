@@ -162,7 +162,6 @@ int FrameTree::removeFrameCommand() {
         // if parent was root frame
         root_ = newparent;
     }
-    frame_focus_recursive(parent);
     get_current_monitor()->applyLayout();
     return 0;
 }
@@ -472,9 +471,6 @@ int FrameTree::loadCommand(Input input, Output output) {
     Monitor* m = find_monitor_with_tag(tag);
     if (m) {
         tag->frame->root_->setVisibleRecursive(true);
-        if (get_current_monitor() == m) {
-            frame_focus_recursive(tag->frame->root_);
-        }
         m->applyLayout();
         monitor_update_focus_objects();
     } else {

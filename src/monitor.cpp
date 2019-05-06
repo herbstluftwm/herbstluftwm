@@ -145,9 +145,6 @@ void Monitor::applyLayout() {
     }
     restack();
     bool isFocused = get_current_monitor() == this;
-    if (isFocused) {
-        frame_focus_recursive(tag->frame->root_);
-    }
     TilingResult res = tag->frame->root_->computeLayout(cur_rect);
     if (tag->floating) {
         for (auto& p : res.data) {
@@ -180,8 +177,10 @@ void Monitor::applyLayout() {
     if (isFocused) {
         if (res.focus) {
             Root::get()->clients()->focus = res.focus;
+            res.focus->window_focus();
         } else {
             Root::get()->clients()->focus = {};
+            Client::window_unfocus_last();
         }
     }
 
@@ -393,8 +392,6 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
             // swap tags
             other->tag = monitor->tag;
             monitor->tag = tag;
-            // reset focus
-            frame_focus_recursive(tag->frame->root_);
             /* TODO: find the best order of restacking and layouting */
             other->restack();
             monitor->restack();
@@ -419,7 +416,6 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     // 1. show new tag
     monitor->tag = tag;
     // first reset focus and arrange windows
-    frame_focus_recursive(tag->frame->root_);
     monitor->restack();
     monitor->lock_frames = true;
     monitor->applyLayout();
@@ -432,8 +428,6 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     // 2. hide old tag
     old_tag->frame->root_->setVisibleRecursive(false);
     // focus window just has been shown
-    // focus again to give input focus
-    frame_focus_recursive(tag->frame->root_);
     // discard enternotify-events
     drop_enternotify_events();
     monitor_update_focus_objects();
@@ -546,7 +540,6 @@ void monitor_focus_by_index(unsigned new_selection) {
     assert(monitor->tag);
     assert(monitor->tag->frame->root_);
     g_monitors->cur_monitor = new_selection;
-    frame_focus_recursive(monitor->tag->frame->root_);
     // repaint g_monitors
     old->applyLayout();
     monitor->applyLayout();
