@@ -112,7 +112,6 @@ struct {
     { "remove_monitor", 2,  no_completion },
     { "move_monitor",   7,  no_completion },
     { "raise_monitor",  2,  no_completion },
-    { "stack",          2,  no_completion },
     { "monitor_rect",   3,  no_completion },
     { "pad",            6,  no_completion },
     { "list_padding",   2,  no_completion },
