@@ -519,6 +519,14 @@ def x11():
                 return False
             return bool(hints.flags & Xutil.UrgencyHint)
 
+        def get_property(self, property_name, window=None):
+            """get a property by its string name from the root window, or any other window"""
+            if window is None:
+                window = self.root
+            prop = self.display.intern_atom(property_name)
+            resp = window.get_full_property(prop, X.AnyPropertyType)
+            return resp.value
+
         def create_client(self, urgent=False, pid=None):
             w = self.root.create_window(
                 50, 50, 300, 200, 2,
