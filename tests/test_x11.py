@@ -1,5 +1,4 @@
 import pytest
-from Xlib import X
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
