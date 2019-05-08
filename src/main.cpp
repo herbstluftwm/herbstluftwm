@@ -803,14 +803,15 @@ void motionnotify(Root*, XEvent* event) {
     handle_motion_event(event);
 }
 
-void mapnotify(Root*, XEvent* event) {
+void mapnotify(Root* root, XEvent* event) {
     //HSDebug("name is: MapNotify\n");
-    Client* c;
-    if ((c = get_client_from_window(event->xmap.window))) {
+    Client* c = get_client_from_window(event->xmap.window);
+    if (c != nullptr) {
         // reset focus. so a new window gets the focus if it shall have the
         // input focus
-        // TODO: reset input focus
-        //frame_focus_recursive(get_current_monitor()->tag->frame->getFocusedFrame());
+        if (c == root->clients->focus()) {
+            XSetInputFocus(g_display, c->window_, RevertToPointerRoot, CurrentTime);
+        }
         // also update the window title - just to be sure
         c->update_title();
     }
