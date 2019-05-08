@@ -138,6 +138,9 @@ def test_generate_completable_commands(hlwm, request):
         request.config.cache.set('all_completable_commands', cmds)
 
 
+@pytest.mark.exclude_from_coverage(
+    reason='This test does not verify functionality but only whether the \
+    commands can be called at all.')
 @pytest.mark.parametrize('run_destructives', [False, True])
 def test_completable_commands(hlwm, request, run_destructives):
     # wait for test_generate_completable_commands to finish
