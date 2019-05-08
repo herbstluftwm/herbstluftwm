@@ -242,7 +242,7 @@ class HlwmBridge:
         return "true" if python_bool_var else "false"
 
 
-@pytest.fixture
+@pytest.fixture()
 def hlwm(hlwm_process):
     display = os.environ['DISPLAY']
     # display = ':13'
@@ -432,7 +432,7 @@ class HcIdle:
             self.proc.wait(2)
 
 
-@pytest.fixture
+@pytest.fixture()
 def hc_idle(hlwm):
     hc = HcIdle(hlwm)
 
@@ -461,7 +461,19 @@ def kill_all_existing_windows(show_warnings=True):
         subprocess.run(['xdotool', 'windowkill', c])
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
+def hlwm_spawner(tmpdir):
+    """yield a function to spawn hlwm"""
+    def spawn():
+        env = {
+            'DISPLAY': os.environ['DISPLAY'],
+            'XDG_CONFIG_HOME': str(tmpdir),
+        }
+        return HlwmProcess(tmpdir, env)
+    return spawn
+
+
+@pytest.fixture()
 def hlwm_process(tmpdir):
     env = {
         'DISPLAY': os.environ['DISPLAY'],
@@ -518,6 +530,14 @@ def x11():
             if hints is None:
                 return False
             return bool(hints.flags & Xutil.UrgencyHint)
+
+        def get_property(self, property_name, window=None):
+            """get a property by its string name from the root window, or any other window"""
+            if window is None:
+                window = self.root
+            prop = self.display.intern_atom(property_name)
+            resp = window.get_full_property(prop, X.AnyPropertyType)
+            return resp.value if resp is not None else None
 
         def create_client(self, urgent=False, pid=None):
             w = self.root.create_window(
