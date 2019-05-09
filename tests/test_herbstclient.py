@@ -17,7 +17,7 @@ def test_herbstclient_recognizes_hlwm_not_running(hlwm_spawner, x11, hlwm_mode, 
         # ping that herbstclient still works here
         hc = subprocess.run([HC_PATH, 'echo', 'ping'],
                             stdout=subprocess.PIPE,
-                            text=True,
+                            universal_newlines=True,
                             check=True)
         assert hc.stdout == 'ping\n'
         if hlwm_mode == 'sigterm':
