@@ -474,15 +474,9 @@ def hlwm_spawner(tmpdir):
 
 
 @pytest.fixture()
-def hlwm_process(tmpdir):
-    env = {
-        'DISPLAY': os.environ['DISPLAY'],
-        'XDG_CONFIG_HOME': str(tmpdir),
-    }
-    assert env['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
-
-    # env['DISPLAY'] = ':13'
-    hlwm_proc = HlwmProcess(tmpdir, env)
+def hlwm_process(hlwm_spawner):
+    assert os.environ['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
+    hlwm_proc = hlwm_spawner()
     kill_all_existing_windows(show_warnings=True)
 
     yield hlwm_proc
