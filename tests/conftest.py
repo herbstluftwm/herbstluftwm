@@ -464,6 +464,8 @@ def kill_all_existing_windows(show_warnings=True):
 @pytest.fixture()
 def hlwm_spawner(tmpdir):
     """yield a function to spawn hlwm"""
+    assert os.environ['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
+
     def spawn():
         env = {
             'DISPLAY': os.environ['DISPLAY'],
@@ -475,7 +477,7 @@ def hlwm_spawner(tmpdir):
 
 @pytest.fixture()
 def hlwm_process(hlwm_spawner):
-    assert os.environ['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
+    """Set up hlwm and also check that it shuts down gently afterwards"""
     hlwm_proc = hlwm_spawner()
     kill_all_existing_windows(show_warnings=True)
 
