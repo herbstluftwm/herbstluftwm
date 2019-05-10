@@ -1,5 +1,7 @@
 from datetime import datetime
 from contextlib import contextmanager
+from Xlib import X, Xutil, Xatom
+import Xlib
 import ewmh
 import os
 import os.path
@@ -488,13 +490,25 @@ def running_clients(hlwm, running_clients_num):
     return hlwm.create_clients(running_clients_num)
 
 
-@pytest.fixture()
-def x11():
-    from Xlib import X, display, Xutil, Xatom
+@pytest.fixture(scope="session")
+def x11_connection():
+    """ Long-lived fixture that maintains an open connection to the X11 display
+    for the entire duration of all tests. This avoids issues caused by Xvfb and
+    Xephyr resetting all properties whenever the last connection is closed. It
+    is probably a bit more efficient, too. """
+    display = Xlib.display.Display()
+    yield display
+    display.close()
 
+
+@pytest.fixture()
+def x11(x11_connection):
+    """ Short-lived fixture for interacting with the X11 display and creating
+    clients that are automatically destroyed at the end of each test. """
     class X11:
-        def __init__(self):
-            self.display = display.Display()
+        def __init__(self, x11_connection):
+            self.display = x11_connection
+            self.windows = set()
             self.screen = self.display.screen()
             self.root = self.screen.root
             self.ewmh = ewmh.EWMH(self.display, self.root)
@@ -528,6 +542,9 @@ def x11():
                 background_pixel=self.screen.white_pixel,
             )
 
+            # Keep track of window for later removal:
+            self.windows.add(w)
+
             w.set_wm_name('Some Window')
             if urgent:
                 w.set_wm_hints(flags=Xutil.UrgencyHint)
@@ -543,12 +560,15 @@ def x11():
             return w, self.winid_str(w)
 
         def shutdown(self):
-            """close the X-connectoin"""
-            self.display.close()
+            # Destroy all created windows:
+            for window in self.windows:
+                window.unmap()
+                window.destroy()
+            self.display.sync()
 
-    x_connection = X11()
-    yield x_connection
-    x_connection.shutdown()
+    x11_ = X11(x11_connection)
+    yield x11_
+    x11_.shutdown()
 
 
 @pytest.fixture()
