@@ -496,16 +496,9 @@ def x11_connection():
     for the entire duration of all tests. This avoids issues caused by Xvfb and
     Xephyr resetting all properties whenever the last connection is closed. It
     is probably a bit more efficient, too. """
-    class X11Connection:
-        def __init__(self):
-            self.display = Xlib.display.Display()
-
-        def shutdown(self):
-            self.display.close()
-
-    x11_connection_ = X11Connection()
+    x11_connection_ = Xlib.display.Display()
     yield x11_connection_
-    x11_connection_.shutdown()
+    x11_connection_.close()
 
 
 @pytest.fixture()
