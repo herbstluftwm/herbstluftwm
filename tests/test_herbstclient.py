@@ -37,7 +37,7 @@ def test_herbstclient_recognizes_hlwm_not_running(hlwm_spawner, x11, hlwm_mode, 
 
     # run herbstclient while no hlwm is running
     hc_command = [HC_PATH, hc_parameter]
-    result = subprocess.run(hc_command, stderr=subprocess.PIPE, text=True)
+    result = subprocess.run(hc_command, stderr=subprocess.PIPE, universal_newlines=True)
 
     assert result.returncode != 0
     assert re.search(r'Error: herbstluftwm is not running', result.stderr)
