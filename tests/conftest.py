@@ -507,7 +507,7 @@ def x11(x11_connection):
     clients that are automatically destroyed at the end of each test. """
     class X11:
         def __init__(self, x11_connection):
-            self.display = x11_connection.display
+            self.display = x11_connection
             self.windows = set()
             self.screen = self.display.screen()
             self.root = self.screen.root
