@@ -24,7 +24,7 @@ const std::array<const char*, LAYER_COUNT>g_layer_names =
 
 Stack::~Stack() {
     for (int i = 0; i < LAYER_COUNT; i++) {
-        if (!top[i].empty()) {
+        if (!top_[i].empty()) {
             HSDebug("Warning: %s of stack %p was not empty on destroy\n",
                     g_layer_names[i], (void*)this);
         }
@@ -71,15 +71,14 @@ HSLayer slice_highest_layer(Slice* slice) {
 
 void Stack::insertSlice(Slice* elem) {
     for (auto layer : elem->layers) {
-        top[layer].insert(top[layer].begin(), elem);
+        top_[layer].insert(elem);
     }
     dirty = true;
 }
 
 void Stack::removeSlice(Slice* elem) {
     for (auto layer : elem->layers) {
-        auto &v = top[layer];
-        v.erase(std::remove(v.begin(), v.end(), elem));
+        top_[layer].remove(elem);
     }
     dirty = true;
 }
@@ -130,7 +129,7 @@ static void extractWindowsFromSlice(Slice* s, bool real_clients, HSLayer layer,
 //is the first element added to the stack.
 void Stack::extractWindows(bool real_clients, function<void(Window)> yield) {
     for (int i = 0; i < LAYER_COUNT; i++) {
-        for (auto slice : top[i]) {
+        for (auto slice : top_[i]) {
             extractWindowsFromSlice(slice, real_clients, (HSLayer)i, yield);
         }
     }
@@ -149,12 +148,7 @@ void Stack::restack() {
 
 void Stack::raiseSlice(Slice* slice) {
     for (auto layer : slice->layers) {
-        auto &v = top[layer];
-        auto it = std::find(v.begin(), v.end(), slice);
-        assert(it != v.end());
-        // rotate the range [begin, it+1) in such a way
-        // that it becomes the new first element
-        std::rotate(v.begin(), it, it + 1);
+        top_[layer].raise(slice);
     }
     dirty = true;
     // TODO: maybe only update the specific range and not the entire stack
@@ -173,14 +167,13 @@ void Stack::sliceAddLayer(Slice* slice, HSLayer layer) {
     }
 
     slice->layers.insert(layer);
-    top[layer].insert(top[layer].begin(), slice);
+    top_[layer].insert(slice);
     dirty = true;
 }
 
 void Stack::sliceRemoveLayer(Slice* slice, HSLayer layer) {
     /* remove slice from layer in the stack */
-    auto &v = top[layer];
-    v.erase(std::remove(v.begin(), v.end(), slice));
+    top_[layer].remove(slice);
     dirty = true;
 
     if (slice->layers.count(layer) == 0) {
@@ -194,7 +187,7 @@ void Stack::sliceRemoveLayer(Slice* slice, HSLayer layer) {
 
 Window Stack::lowestWindow() {
     for (int i = LAYER_COUNT - 1; i >= 0; i--) {
-        auto &v = top[i];
+        auto &v = top_[i];
         for (auto it = v.rbegin(); it != v.rend(); it++) {
             auto slice = *it;
             Window w = 0;
@@ -216,12 +209,12 @@ Window Stack::lowestWindow() {
 }
 
 bool Stack::isLayerEmpty(HSLayer layer) {
-    return top[layer].empty();
+    return top_[layer].empty();
 }
 
 void Stack::clearLayer(HSLayer layer) {
     while (!isLayerEmpty(layer)) {
-        sliceRemoveLayer(top[layer].front(), layer);
+        sliceRemoveLayer(*top_[layer].begin(), layer);
         dirty = true;
     }
 }
