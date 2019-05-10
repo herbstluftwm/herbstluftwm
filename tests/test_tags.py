@@ -77,6 +77,7 @@ def test_merge_tag_into_another_tag(hlwm):
     hlwm.call('merge_tag default foobar')
 
     assert hlwm.get_attr('tags.count') == '1'
+    assert hlwm.get_attr('tags.0.index') == '0'
     assert hlwm.get_attr('tags.0.name') == 'foobar'
 
 
