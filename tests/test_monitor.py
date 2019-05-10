@@ -77,6 +77,7 @@ def test_remove_monitor(hlwm):
 
     hlwm.call('remove_monitor 0')
 
+    assert hlwm.get_attr('monitors.0.index') == '0'
     assert hlwm.get_attr('monitors.count') == '1'
     assert hlwm.get_attr('monitors.focus.name') == 'monitor2'
 
