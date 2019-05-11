@@ -144,3 +144,14 @@ def test_rename_monitor_no_name(hlwm):
 
     assert hlwm.get_attr('monitors.focus.name') == ''
     assert hlwm.list_children('monitors.by-name') == []
+
+
+def test_raise_monitor_completion(hlwm):
+    hlwm.call('add tag2')
+    hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
+
+    expected = ['']
+    expected += '-1 +0 +1 0 1 monitor2'.split(' ')
+    expected.sort()
+    assert hlwm.complete('raise_monitor') == expected
+

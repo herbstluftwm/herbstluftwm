@@ -9,9 +9,13 @@ def strip_winids(string):
     return re.sub(r'0x([0-9a-f]+)', '<windowid>', string)
 
 
-def helper_get_stack_as_list(hlwm):
-    # extract all window IDs out of the stack command
-    return re.findall(r'0x[0-9a-f]+', hlwm.call('stack').stdout)
+def helper_get_stack_as_list(hlwm, clients_only=True):
+    if clients_only:
+        matches = re.finditer('Client (0x[0-9a-f]+)', hlwm.call('stack').stdout)
+        return [m.group(1) for m in matches]
+    else:
+        # extract all window IDs out of the stack command
+        return re.findall(r'0x[0-9a-f]+', hlwm.call('stack').stdout)
 
 # in tiling mode, the focus layer is used. (similar to floating mode with
 # raise_on_focus_temporarily = true). So we test the stacking in floating
@@ -25,7 +29,7 @@ def test_clients_stacked_in_reverse_order_of_creation(hlwm, count):
     clients = hlwm.create_clients(count)
 
     clients.reverse()
-    assert helper_get_stack_as_list(hlwm)[:-1] == clients
+    assert helper_get_stack_as_list(hlwm) == clients
 
 
 def test_raise_client_already_on_top(hlwm):
@@ -34,7 +38,7 @@ def test_raise_client_already_on_top(hlwm):
 
     hlwm.call(['raise', c2])
 
-    assert helper_get_stack_as_list(hlwm)[:-1] == [c2, c1]
+    assert helper_get_stack_as_list(hlwm) == [c2, c1]
 
 
 def test_raise_bottom_client(hlwm):
@@ -43,7 +47,39 @@ def test_raise_bottom_client(hlwm):
 
     hlwm.call(['raise', c1])
 
-    assert helper_get_stack_as_list(hlwm)[:-1] == [c1, c2]
+    assert helper_get_stack_as_list(hlwm) == [c1, c2]
+
+
+def create_two_monitors_with_client_each(hlwm):
+    hlwm.call('add tag2')
+    hlwm.call('set_attr tags.0.floating on')
+    hlwm.call('set_attr tags.1.floating on')
+    hlwm.call('add_monitor 800x600+40+40 tag2')
+    c1, c2 = hlwm.create_clients(2)
+    hlwm.call(['load', 'tag2', '(clients max:0 {})'.format(c2)])
+    return [c1, c2]
+
+
+def test_new_monitor_is_on_top(hlwm):
+    [c1, c2] = create_two_monitors_with_client_each(hlwm)
+
+    assert helper_get_stack_as_list(hlwm) == [c2, c1]
+
+
+def test_raise_monitor_already_on_top(hlwm):
+    [c1, c2] = create_two_monitors_with_client_each(hlwm)
+
+    hlwm.call('raise_monitor 1')
+
+    assert helper_get_stack_as_list(hlwm) == [c2, c1]
+
+
+def test_raise_monitor_already_on_top(hlwm):
+    [c1, c2] = create_two_monitors_with_client_each(hlwm)
+
+    hlwm.call('raise_monitor 0')
+
+    assert helper_get_stack_as_list(hlwm) == [c1, c2]
 
 
 def test_stack_tree(hlwm):
