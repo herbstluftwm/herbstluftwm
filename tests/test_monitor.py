@@ -154,4 +154,3 @@ def test_raise_monitor_completion(hlwm):
     expected += '-1 +0 +1 0 1 monitor2'.split(' ')
     expected.sort()
     assert hlwm.complete('raise_monitor') == expected
-
