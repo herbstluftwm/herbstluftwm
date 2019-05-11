@@ -74,7 +74,7 @@ def test_raise_monitor_already_on_top(hlwm):
     assert helper_get_stack_as_list(hlwm) == [c2, c1]
 
 
-def test_raise_monitor_already_on_top(hlwm):
+def test_raise_monitor_2(hlwm):
     [c1, c2] = create_two_monitors_with_client_each(hlwm)
 
     hlwm.call('raise_monitor 0')
