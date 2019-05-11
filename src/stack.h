@@ -5,7 +5,6 @@
 #include <array>
 #include <functional>
 #include <set>
-#include <vector>
 
 #include "plainstack.h"
 
