@@ -2,7 +2,7 @@
 
 set(FLAGS
     # General debug flags:
-    -g -Og -fno-omit-frame-pointer --coverage
+    -g -O1 -fno-omit-frame-pointer --coverage
     -Werror
 
     # Sanitizers:
