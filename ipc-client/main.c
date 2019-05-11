@@ -102,11 +102,15 @@ int main_hook(int argc, char* argv[]) {
     Display* display = XOpenDisplay(NULL);
     if (!display) {
         if (!g_quiet) {
-            fprintf(stderr, "Cannot open display\n");
+            fprintf(stderr, "Error: Cannot open display\n");
         }
         return EXIT_FAILURE;
     }
     HCConnection* con = hc_connect_to_display(display);
+    if (!hc_check_running(con)) {
+        fprintf(stderr, "Error: herbstluftwm is not running\n");
+        return EXIT_FAILURE;
+    }
     signal(SIGTERM, quit_herbstclient);
     signal(SIGINT,  quit_herbstclient);
     signal(SIGQUIT, quit_herbstclient);
@@ -231,8 +235,18 @@ int main(int argc, char* argv[]) {
         command_status = main_hook(argc-arg_index, argv+arg_index);
     } else {
         char* output;
-        bool suc = hc_send_command_once(argc-arg_index, argv+arg_index,
-                                        &output, &command_status);
+        HCConnection* con = hc_connect();
+        if (!con) {
+            fprintf(stderr, "Error: Could not connect to display.\n");
+            return EXIT_FAILURE;
+        }
+        if (!hc_check_running(con)) {
+            fprintf(stderr, "Error: herbstluftwm is not running.\n");
+            return EXIT_FAILURE;
+        }
+        bool suc = hc_send_command(con, argc-arg_index, argv+arg_index,
+                                   &output, &command_status);
+        hc_disconnect(con);
         if (!suc) {
             fprintf(stderr, "Error: Could not send command.\n");
             return EXIT_FAILURE;
