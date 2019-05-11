@@ -29,6 +29,10 @@ public:
     std::string getInstance(Window win) { return getClassHint(win).first; };
     std::string getClass(Window win) { return getClassHint(win).second; };
     std::experimental::optional<std::string> getWindowProperty(Window window, Atom atom);
+    std::experimental::optional<std::vector<long>>
+        getWindowPropertyCardinal(Window window, Atom property);
+    std::experimental::optional<std::vector<Atom>>
+        getWindowPropertyAtom(Window window, Atom property);
     void setPropertyString(Window w, Atom property, std::string value);
     void setPropertyString(Window w, Atom property, const std::vector<std::string>& value);
     void setPropertyWindow(Window w, Atom property, const std::vector<Window>& value);

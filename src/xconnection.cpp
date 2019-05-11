@@ -4,11 +4,13 @@
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
+#include <climits>
 #include <iostream>
 
 #include "globals.h"
 
 using std::endl;
+using std::make_pair;
 using std::pair;
 using std::string;
 using std::vector;
@@ -107,21 +109,12 @@ Atom XConnection::atom(const char* atom_name) {
 
 //! The pid of a window or -1 if the pid is not set
 int XConnection::windowPid(Window window) {
-    Atom type;
-    int format;
-    unsigned long items, remain;
-    int* buf;
-    int status = XGetWindowProperty(m_display, window,
-        atom("_NET_WM_PID"), 0, 1, False,
-        XA_CARDINAL, &type, &format,
-        &items, &remain, (unsigned char**)&buf);
-    if (items == 1 && format == 32 && remain == 0
-        && type == XA_CARDINAL && status == Success) {
-        int value = *buf;
-        XFree(buf);
-        return value;
-    } else {
+    // TODO: move to Ewmh
+    auto res = getWindowPropertyCardinal(window, atom("_NET_WM_PID"));
+    if (!res.has_value() || res.value().size() == 0) {
         return -1;
+    } else {
+        return res.value()[0];
     }
 }
 
@@ -207,3 +200,58 @@ void XConnection::setPropertyCardinal(Window w, Atom property, const vector<long
         XA_CARDINAL, 32, PropModeReplace,
         (unsigned char*)(value.data()), value.size());
 }
+
+/** a sincere wrapper around XGetWindowProperty():
+ * get a window property of format 32. If the property does not exist
+ * or is not of format 32, the return type is None (and the vector is empty).
+ * otherwise the content of the property together with its type is returned.
+ */
+template<typename T> pair<Atom,vector<T>>
+    getWindowProperty32(Display* display, Window window, Atom property)
+{
+    Atom actual_type;
+    int format;
+    unsigned long bytes_left;
+    unsigned long* items_return;
+    unsigned long count;
+    int status = XGetWindowProperty(display, window,
+            property, 0, ULONG_MAX, False, AnyPropertyType,
+            &actual_type, &format, &count, &bytes_left,
+            (unsigned char**)&items_return);
+    if (Success != status || actual_type == None || format == 0) {
+        return make_pair(None, vector<T>());
+    }
+    if (format != 32) {
+        // if the property could be read, but is of the wrong format
+        XFree(items_return);
+        return make_pair(None, vector<T>());
+    }
+    vector<T> result;
+    result.reserve(count);
+    for (int i = 0; i < count; i++) {
+        result.push_back(items_return[i]);
+    }
+    XFree(items_return);
+    return make_pair(actual_type, result);
+}
+
+std::experimental::optional<vector<long>>
+    XConnection::getWindowPropertyCardinal(Window window, Atom property)
+{
+    auto res = getWindowProperty32<long>(m_display, window, property);
+    if (res.first != XA_CARDINAL) {
+        return {};
+    }
+    return res.second;
+}
+
+std::experimental::optional<std::vector<Atom>>
+    XConnection::getWindowPropertyAtom(Window window, Atom property)
+{
+    auto res = getWindowProperty32<Atom>(m_display, window, property);
+    if (res.first != XA_ATOM) {
+        return {};
+    }
+    return res.second;
+}
+
