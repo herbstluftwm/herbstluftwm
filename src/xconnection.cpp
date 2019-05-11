@@ -245,7 +245,7 @@ std::experimental::optional<vector<long>>
     return res.second;
 }
 
-std::experimental::optional<std::vector<Atom>>
+std::experimental::optional<vector<Atom>>
     XConnection::getWindowPropertyAtom(Window window, Atom property)
 {
     auto res = getWindowProperty32<Atom>(m_display, window, property);
