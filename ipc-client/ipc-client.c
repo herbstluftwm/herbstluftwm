@@ -91,8 +91,6 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
     if (!hc_create_client_window(con)) {
         return false;
     }
-    // check for running window manager instance
-    // TODO
     // set arguments
     XTextProperty text_prop;
     Xutf8TextListToTextProperty(con->display, argv, argc, XUTF8StringStyle, &text_prop);
@@ -155,9 +153,19 @@ bool hc_send_command_once(int argc, char* argv[],
     if (con == NULL) {
         return false;
     }
+    if (!hc_check_running(con)) {
+        return false;
+    }
     bool status = hc_send_command(con, argc, argv, ret_out, ret_status);
     hc_disconnect(con);
     return status;
+}
+
+static bool g_bad_window_occurred = false;
+
+static int log_bad_window_error(Display* display, XErrorEvent* ev) {
+    g_bad_window_occurred = true;
+    return -1;
 }
 
 static Window get_hook_window(Display* display) {
@@ -174,7 +182,27 @@ static Window get_hook_window(Display* display) {
     }
     Window win = *value;
     XFree(value);
+    // check that the window 'win' still exists
+    // set our custom error handler and back up old handler
+    int (*old_error_handler)(Display *, XErrorEvent *) =
+        XSetErrorHandler(log_bad_window_error);
+    XWindowAttributes attr;
+    // check whether the window still exists. If it does not exist,
+    // log_bad_window_error() is called.
+    g_bad_window_occurred = false;
+    XGetWindowAttributes(display, win, &attr);
+    XSync(display, False);
+    // restore old handler
+    XSetErrorHandler(old_error_handler);
+    // if the handler was called, then the window does not exist anymore
+    if (g_bad_window_occurred) {
+        return 0;
+    }
     return win;
+}
+
+bool hc_check_running(HCConnection* con) {
+    return get_hook_window(con->display) != 0;
 }
 
 bool hc_hook_window_connect(HCConnection* con) {

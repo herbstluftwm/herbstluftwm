@@ -244,7 +244,7 @@ class HlwmBridge:
         return "true" if python_bool_var else "false"
 
 
-@pytest.fixture
+@pytest.fixture()
 def hlwm(hlwm_process):
     display = os.environ['DISPLAY']
     # display = ':13'
@@ -434,7 +434,7 @@ class HcIdle:
             self.proc.wait(2)
 
 
-@pytest.fixture
+@pytest.fixture()
 def hc_idle(hlwm):
     hc = HcIdle(hlwm)
 
@@ -463,16 +463,24 @@ def kill_all_existing_windows(show_warnings=True):
         subprocess.run(['xdotool', 'windowkill', c])
 
 
-@pytest.fixture(autouse=True)
-def hlwm_process(tmpdir):
-    env = {
-        'DISPLAY': os.environ['DISPLAY'],
-        'XDG_CONFIG_HOME': str(tmpdir),
-    }
-    assert env['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
+@pytest.fixture()
+def hlwm_spawner(tmpdir):
+    """yield a function to spawn hlwm"""
+    assert os.environ['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
 
-    # env['DISPLAY'] = ':13'
-    hlwm_proc = HlwmProcess(tmpdir, env)
+    def spawn():
+        env = {
+            'DISPLAY': os.environ['DISPLAY'],
+            'XDG_CONFIG_HOME': str(tmpdir),
+        }
+        return HlwmProcess(tmpdir, env)
+    return spawn
+
+
+@pytest.fixture()
+def hlwm_process(hlwm_spawner):
+    """Set up hlwm and also check that it shuts down gently afterwards"""
+    hlwm_proc = hlwm_spawner()
     kill_all_existing_windows(show_warnings=True)
 
     yield hlwm_proc
@@ -532,6 +540,14 @@ def x11(x11_connection):
             if hints is None:
                 return False
             return bool(hints.flags & Xutil.UrgencyHint)
+
+        def get_property(self, property_name, window=None):
+            """get a property by its string name from the root window, or any other window"""
+            if window is None:
+                window = self.root
+            prop = self.display.intern_atom(property_name)
+            resp = window.get_full_property(prop, X.AnyPropertyType)
+            return resp.value if resp is not None else None
 
         def create_client(self, urgent=False, pid=None):
             w = self.root.create_window(
