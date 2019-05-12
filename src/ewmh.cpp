@@ -86,6 +86,10 @@ Ewmh::Ewmh(XConnection& xconnection)
         }
         g_netatom[i] = XInternAtom(X_.display(), g_netatom_names[i], False);
     }
+    wmatom_[WM::Protocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
+    wmatom_[WM::Delete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
+    wmatom_[WM::State] = XInternAtom(g_display, "WM_STATE", False);
+    wmatom_[WM::TakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
 
     /* tell which ewmh atoms are supported */
     XChangeProperty(X_.display(), X_.root(), g_netatom[NetSupported], XA_ATOM, 32,

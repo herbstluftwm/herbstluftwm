@@ -125,6 +125,9 @@ private:
     bool readClientList(Window** buf, unsigned long *count);
     Root* root_ = nullptr;
     XConnection& X_;
+
+    enum class WM { Protocols, Delete, State, TakeFocus, Last };
+    Atom wmatom_[(int)WM::Last];
 };
 
 #endif
