@@ -67,7 +67,7 @@ public:
     void extractWindows(bool real_clients, std::function<void(Window)> addToStack);
     void restack();
 
-    PlainStack<Slice*> slices_[LAYER_COUNT];
+    PlainStack<Slice*> layers_[LAYER_COUNT];
 
 private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
