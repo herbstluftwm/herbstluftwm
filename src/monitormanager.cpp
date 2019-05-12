@@ -377,7 +377,7 @@ int MonitorManager::stackCommand(Output output) {
     for (Monitor* monitor : monitorStack_) {
         vector<shared_ptr<StringTree>> layers;
         for (size_t layerIdx = 0; layerIdx < LAYER_COUNT; layerIdx++) {
-            auto layer = monitor->tag->stack->top_[layerIdx];
+            auto layer = monitor->tag->stack->slices_[layerIdx];
 
             vector<shared_ptr<StringTree>> slices;
             for (auto& slice : layer) {

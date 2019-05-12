@@ -63,7 +63,7 @@ public:
     void restack();
     Window lowestWindow();
 
-    PlainStack<Slice*> top_[LAYER_COUNT];
+    PlainStack<Slice*> slices_[LAYER_COUNT];
 
 private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
