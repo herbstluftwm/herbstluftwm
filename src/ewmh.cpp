@@ -400,29 +400,16 @@ void Ewmh::clearClientProperties(Window win) {
 }
 
 bool Ewmh::isWindowStateSet(Window win, Atom hint) {
-    Atom* states;
-    Atom actual_type;
-    int format;
-    unsigned long actual_count, bytes_left;
-    if (Success != XGetWindowProperty(X_.display(), win, g_netatom[NetWmState], 0,
-            ~0L, False, XA_ATOM, &actual_type, &format, &actual_count,
-            &bytes_left, (unsigned char**)&states)) {
-        // NetWmState just is not set properly
+    auto res = X_.getWindowPropertyAtom(win, g_netatom[NetWmState]);
+    if (!res.has_value()) {
         return false;
     }
-    if (actual_type != XA_ATOM || format != 32 || !states) {
-        // invalid format or no entries
-        return false;
-    }
-    bool hint_set = false;
-    for (int i = 0; i < actual_count; i++) {
-        if (states[i] == hint) {
-            hint_set = true;
-            break;
+    for (auto& h : res.value()) {
+        if (hint == h) {
+            return true;
         }
     }
-    XFree(states);
-    return hint_set;
+    return false;
 }
 
 bool Ewmh::isFullscreenSet(Window win) {
