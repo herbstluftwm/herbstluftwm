@@ -19,17 +19,17 @@ enum HSLayer {
 
 extern const std::array<const char*, LAYER_COUNT> g_layer_names;
 
-typedef enum SliceType {
-    SLICE_CLIENT,
-    SLICE_WINDOW,
-} SliceType;
-
 class Client;
 
 class Slice {
 public:
     Slice();
     ~Slice() = default;
+
+    enum class Type {
+        ClientSlice,
+        WindowSlice,
+    };
 
     static Slice* makeWindowSlice(Window window);
     static Slice* makeFrameSlice(Window window);
@@ -43,7 +43,7 @@ public:
 private:
     HSLayer highestLayer() const;
 
-    SliceType type;
+    Type type;
     union {
         Client*    client;
         Window              window;
