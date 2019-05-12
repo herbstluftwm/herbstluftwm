@@ -5,7 +5,8 @@
 #include <array>
 #include <functional>
 #include <set>
-#include <vector>
+
+#include "plainstack.h"
 
 enum HSLayer {
     /* layers on each tag, from top to bottom */
@@ -62,7 +63,7 @@ public:
     void restack();
     Window lowestWindow();
 
-    std::vector<Slice*> top[LAYER_COUNT];
+    PlainStack<Slice*> layers_[LAYER_COUNT];
 
 private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
