@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <vector>
 
@@ -25,6 +26,15 @@ public:
     }
     typename std::vector<T>::const_iterator end() const {
         return data_.cend();
+    }
+    typename std::vector<T>::const_reverse_iterator rbegin() const {
+        return data_.rbegin();
+    }
+    typename std::vector<T>::const_reverse_iterator rend() const {
+        return data_.rend();
+    }
+    bool empty() const {
+        return data_.empty();
     }
 private:
     std::vector<T> data_;
