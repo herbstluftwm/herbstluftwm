@@ -1,5 +1,7 @@
 from datetime import datetime
 from contextlib import contextmanager
+from Xlib import X, Xutil, Xatom
+import Xlib
 import ewmh
 import os
 import os.path
@@ -242,7 +244,7 @@ class HlwmBridge:
         return "true" if python_bool_var else "false"
 
 
-@pytest.fixture
+@pytest.fixture()
 def hlwm(hlwm_process):
     display = os.environ['DISPLAY']
     # display = ':13'
@@ -432,7 +434,7 @@ class HcIdle:
             self.proc.wait(2)
 
 
-@pytest.fixture
+@pytest.fixture()
 def hc_idle(hlwm):
     hc = HcIdle(hlwm)
 
@@ -461,16 +463,24 @@ def kill_all_existing_windows(show_warnings=True):
         subprocess.run(['xdotool', 'windowkill', c])
 
 
-@pytest.fixture(autouse=True)
-def hlwm_process(tmpdir):
-    env = {
-        'DISPLAY': os.environ['DISPLAY'],
-        'XDG_CONFIG_HOME': str(tmpdir),
-    }
-    assert env['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
+@pytest.fixture()
+def hlwm_spawner(tmpdir):
+    """yield a function to spawn hlwm"""
+    assert os.environ['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
 
-    # env['DISPLAY'] = ':13'
-    hlwm_proc = HlwmProcess(tmpdir, env)
+    def spawn():
+        env = {
+            'DISPLAY': os.environ['DISPLAY'],
+            'XDG_CONFIG_HOME': str(tmpdir),
+        }
+        return HlwmProcess(tmpdir, env)
+    return spawn
+
+
+@pytest.fixture()
+def hlwm_process(hlwm_spawner):
+    """Set up hlwm and also check that it shuts down gently afterwards"""
+    hlwm_proc = hlwm_spawner()
     kill_all_existing_windows(show_warnings=True)
 
     yield hlwm_proc
@@ -488,13 +498,25 @@ def running_clients(hlwm, running_clients_num):
     return hlwm.create_clients(running_clients_num)
 
 
-@pytest.fixture()
-def x11():
-    from Xlib import X, display, Xutil, Xatom
+@pytest.fixture(scope="session")
+def x11_connection():
+    """ Long-lived fixture that maintains an open connection to the X11 display
+    for the entire duration of all tests. This avoids issues caused by Xvfb and
+    Xephyr resetting all properties whenever the last connection is closed. It
+    is probably a bit more efficient, too. """
+    display = Xlib.display.Display()
+    yield display
+    display.close()
 
+
+@pytest.fixture()
+def x11(x11_connection):
+    """ Short-lived fixture for interacting with the X11 display and creating
+    clients that are automatically destroyed at the end of each test. """
     class X11:
-        def __init__(self):
-            self.display = display.Display()
+        def __init__(self, x11_connection):
+            self.display = x11_connection
+            self.windows = set()
             self.screen = self.display.screen()
             self.root = self.screen.root
             self.ewmh = ewmh.EWMH(self.display, self.root)
@@ -525,7 +547,7 @@ def x11():
                 window = self.root
             prop = self.display.intern_atom(property_name)
             resp = window.get_full_property(prop, X.AnyPropertyType)
-            return resp.value
+            return resp.value if resp is not None else None
 
         def create_client(self, urgent=False, pid=None):
             w = self.root.create_window(
@@ -535,6 +557,9 @@ def x11():
                 X.CopyFromParent,
                 background_pixel=self.screen.white_pixel,
             )
+
+            # Keep track of window for later removal:
+            self.windows.add(w)
 
             w.set_wm_name('Some Window')
             if urgent:
@@ -551,12 +576,15 @@ def x11():
             return w, self.winid_str(w)
 
         def shutdown(self):
-            """close the X-connectoin"""
-            self.display.close()
+            # Destroy all created windows:
+            for window in self.windows:
+                window.unmap()
+                window.destroy()
+            self.display.sync()
 
-    x_connection = X11()
-    yield x_connection
-    x_connection.shutdown()
+    x11_ = X11(x11_connection)
+    yield x11_
+    x11_.shutdown()
 
 
 @pytest.fixture()

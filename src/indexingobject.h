@@ -18,12 +18,12 @@ public:
     : count("count", [this]() { return this->size(); })
     { wireAttributes({ &count }); }
     void addIndexed(T* newChild) {
-        unsigned long index_int = data.size();
-        std::string index = std::to_string(index_int);
+        // the current array size is the index for the new child
+        unsigned long index = data.size();
         data.push_back(newChild);
         // add a child object
-        addChild(newChild, index);
-        newChild->setIndexAttribute(index_int);
+        addChild(newChild, std::to_string(index));
+        newChild->setIndexAttribute(index);
     }
     ~IndexingObject() override {
         clearChildren();
@@ -45,6 +45,7 @@ public:
             std::string old_idx_str = std::to_string(new_idx + 1);
             removeChild(old_idx_str);
             addChild(data[new_idx], std::to_string(new_idx));
+            data[new_idx]->setIndexAttribute(new_idx);
         }
 
         delete child;
