@@ -404,7 +404,7 @@ void Ewmh::clearClientProperties(Window win) {
     // that he has been unmanaged and now the client is allowed to be mapped
     // again (e.g. if it is some dialog)
     XDeleteProperty(X_.display(), win, g_netatom[NetWmState]);
-    XDeleteProperty(X_.display(), win_, wmatom(WM::State));
+    XDeleteProperty(X_.display(), win, wmatom(WM::State));
 }
 
 bool Ewmh::isWindowStateSet(Window win, Atom hint) {

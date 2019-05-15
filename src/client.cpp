@@ -105,9 +105,6 @@ void Client::make_full_client() {
     XSelectInput(g_display, window_, CLIENT_EVENT_MASK);
 }
 
-void clientlist_init() {
-}
-
 bool Client::ignore_unmapnotify() {
     if (ignore_unmaps_ > 0) {
         ignore_unmaps_--;
@@ -119,9 +116,6 @@ bool Client::ignore_unmapnotify() {
 
 void reset_client_colors() {
     all_monitors_apply_layout();
-}
-
-void clientlist_destroy() {
 }
 
 Client* get_client_from_window(Window window) {

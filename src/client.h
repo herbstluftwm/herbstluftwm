@@ -119,12 +119,7 @@ private:
 
 
 
-void clientlist_init();
-void clientlist_destroy();
-
-
 void reset_client_colors();
-void reset_client_settings();
 
 Client* get_client_from_window(Window window);
 Client* get_current_client();

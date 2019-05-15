@@ -688,13 +688,6 @@ static void init_handler_table() {
     g_default_handler[ UnmapNotify       ] = unmapnotify;
 }
 
-static struct {
-    void (*init)();
-    void (*destroy)();
-} g_modules[] = {
-    { clientlist_init,  clientlist_destroy  },
-};
-
 /* ----------------------------- */
 /* event handler implementations */
 /* ----------------------------- */
@@ -906,11 +899,6 @@ int main(int argc, char* argv[]) {
     init_handler_table();
     Commands::initialize(commands(root));
 
-    // initialize subsystems
-    for (unsigned i = 0; i < LENGTH(g_modules); i++) {
-        g_modules[i].init();
-    }
-
     // setup
     root->monitors()->ensure_monitors_are_available();
     scan(&* root);
@@ -943,10 +931,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // destroy all subsystems
-    for (int i = LENGTH(g_modules); i --> 0;) {
-        g_modules[i].destroy();
-    }
     // enforce to clear the root
     root.reset();
     Root::setRoot(root);
