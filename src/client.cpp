@@ -28,11 +28,6 @@ using std::string;
 
 static int g_monitor_float_treshold = 24;
 
-// atoms from dwm.c
-// default atoms
-enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
-static Atom g_wmatom[WMLast];
-
 static Client* lastfocus = nullptr;
 
 
@@ -111,12 +106,6 @@ void Client::make_full_client() {
 }
 
 void clientlist_init() {
-    // init regex simple..
-    g_wmatom[WMProtocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
-    g_wmatom[WMDelete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
-    g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
-    g_wmatom[WMTakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
-    // init actual client list
 }
 
 bool Client::ignore_unmapnotify() {
@@ -676,11 +665,7 @@ void Client::fuzzy_fix_initial_position() {
 }
 
 void Client::clear_properties() {
-    // delete ewmh-properties and ICCCM-Properties such that the client knows
-    // that he has been unmanaged and now the client is allowed to be mapped
-    // again (e.g. if it is some dialog)
     ewmh.clearClientProperties(window_);
-    XDeleteProperty(g_display, window_, g_wmatom[WMState]);
 }
 
 //! name of the tag on which the client is
