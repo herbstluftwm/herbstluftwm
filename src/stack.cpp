@@ -55,15 +55,11 @@ Slice* Slice::makeClientSlice(Client* client) {
     return s;
 }
 
-void slice_destroy(Slice* slice) {
-    delete slice;
-}
-
-HSLayer slice_highest_layer(Slice* slice) {
-    if (slice->layers.empty()) {
+HSLayer Slice::highestLayer() const {
+    if (layers.empty()) {
         return LAYER_COUNT;
     } else {
-        return *(slice->layers.begin());
+        return *(layers.begin());
     }
 }
 
@@ -99,24 +95,24 @@ string Slice::getLabel() {
 
 //! helper function for Stack::toWindowBuf() for a given Slice and layer. The
 //other parameters are as for Stack::toWindowBuf()
-static void extractWindowsFromSlice(Slice* s, bool real_clients, HSLayer layer,
+void Slice::extractWindowsFromSlice(bool real_clients, HSLayer layer,
                                 function<void(Window)> yield) {
-    if (slice_highest_layer(s) != layer) {
+    if (highestLayer() != layer) {
         /** slice only is added to its highest layer.
          * just skip it if the slice is not shown on this data->layer */
         return;
     }
-    switch (s->type) {
+    switch (type) {
         case SLICE_CLIENT:
             if (real_clients) {
-                yield(s->data.client->x11Window());
+                yield(data.client->x11Window());
             } else {
-                yield(s->data.client->decorationWindow());
+                yield(data.client->decorationWindow());
             }
             break;
         case SLICE_WINDOW:
             if (!real_clients) {
-                yield(s->data.window);
+                yield(data.window);
             }
             break;
     }
@@ -128,7 +124,7 @@ static void extractWindowsFromSlice(Slice* s, bool real_clients, HSLayer layer,
 void Stack::extractWindows(bool real_clients, function<void(Window)> yield) {
     for (int i = 0; i < LAYER_COUNT; i++) {
         for (auto slice : layers_[i]) {
-            extractWindowsFromSlice(slice, real_clients, (HSLayer)i, yield);
+            slice->extractWindowsFromSlice(real_clients, (HSLayer)i, yield);
         }
     }
 }
@@ -181,29 +177,6 @@ void Stack::sliceRemoveLayer(Slice* slice, HSLayer layer) {
     }
 
     slice->layers.erase(layer);
-}
-
-Window Stack::lowestWindow() {
-    for (int i = LAYER_COUNT - 1; i >= 0; i--) {
-        auto &v = layers_[i];
-        for (auto it = v.rbegin(); it != v.rend(); it++) {
-            auto slice = *it;
-            Window w = 0;
-            switch (slice->type) {
-                case SLICE_CLIENT:
-                    w = slice->data.client->decorationWindow();
-                    break;
-                case SLICE_WINDOW:
-                    w = slice->data.window;
-                    break;
-            }
-            if (w) {
-                return w;
-            }
-        }
-    }
-    // if no window was found
-    return 0;
 }
 
 bool Stack::isLayerEmpty(HSLayer layer) {
