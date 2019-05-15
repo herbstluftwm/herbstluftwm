@@ -187,7 +187,7 @@ void Client::window_focus() {
     if (!this->neverfocus_) {
         XSetInputFocus(g_display, this->window_, RevertToPointerRoot, CurrentTime);
     }
-    else this->sendevent(g_wmatom[WMTakeFocus]);
+    else ewmh.sendEvent(window_, Ewmh::WM::TakeFocus, True);
 
     if (this != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
@@ -424,7 +424,7 @@ int close_command(Input input, Output) {
     input >> winid; // try to read, use "" otherwise
     auto window = get_window(winid);
     if (window != 0)
-        window_close(window);
+        Ewmh::get().windowClose(window);
     else return HERBST_INVALID_ARGUMENT;
     return 0;
 }
@@ -435,15 +435,8 @@ bool Client::is_client_floated() {
     else return tag()->floating;
 }
 
-void window_close(Window window) {
-    XEvent ev;
-    ev.type = ClientMessage;
-    ev.xclient.window = window;
-    ev.xclient.message_type = g_wmatom[WMProtocols];
-    ev.xclient.format = 32;
-    ev.xclient.data.l[0] = g_wmatom[WMDelete];
-    ev.xclient.data.l[1] = CurrentTime;
-    XSendEvent(g_display, window, False, NoEventMask, &ev);
+void Client::requestClose() { //! ask the client to close
+    ewmh.windowClose(window_);
 }
 
 void window_set_visible(Window win, bool visible) {
@@ -655,30 +648,6 @@ Window get_window(const string& str) {
     } catch (...) {
         return 0;
     }
-}
-
-// mainly from dwm.c
-bool Client::sendevent(Atom proto) {
-    int n;
-    Atom *protocols;
-    bool exists = false;
-    XEvent ev;
-
-    if (XGetWMProtocols(g_display, this->window_, &protocols, &n)) {
-        while (!exists && n--)
-            exists = protocols[n] == proto;
-        XFree(protocols);
-    }
-    if (exists) {
-        ev.type = ClientMessage;
-        ev.xclient.window = this->window_;
-        ev.xclient.message_type = g_wmatom[WMProtocols];
-        ev.xclient.format = 32;
-        ev.xclient.data.l[0] = proto;
-        ev.xclient.data.l[1] = CurrentTime;
-        XSendEvent(g_display, this->window_, False, NoEventMask, &ev);
-    }
-    return exists;
 }
 
 void Client::set_dragged(bool drag_state) {
