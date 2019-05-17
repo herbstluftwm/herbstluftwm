@@ -1,5 +1,5 @@
 import pytest
-import re
+
 
 def test_default_monitor(hlwm):
     assert hlwm.get_attr('monitors.count') == '1'
@@ -154,11 +154,11 @@ def test_rename_monitor_no_name(hlwm):
 def test_set_monitors_create_monitors(hlwm, tag_count, monitor_count):
     for i in range(1, tag_count):
         hlwm.call('add tag{}'.format(i))
-    rects = ['100x200+{}+0'.format(100 * i) for i in range(0, monitor_count) ]
+    rects = ['100x200+{}+0'.format(100 * i) for i in range(0, monitor_count)]
 
     if tag_count < monitor_count:
         hlwm.call_xfail(['set_monitors'] + rects) \
-         .expect_stderr('There are not enough free tags')
+            .expect_stderr('There are not enough free tags')
     else:
         hlwm.call(['set_monitors'] + rects)
 
@@ -171,7 +171,7 @@ def test_set_monitors_create_monitors(hlwm, tag_count, monitor_count):
 def test_set_monitors_removes_monitors(hlwm, monitor_count_before):
     for i in range(1, monitor_count_before):
         hlwm.call('add tag{}'.format(i))
-        hlwm.call('add_monitor 100x200+{}+0'.format(100*i))
+        hlwm.call('add_monitor 100x200+{}+0'.format(100 * i))
     # focus the last monitor
     hlwm.call('focus_monitor {}'.format(monitor_count_before - 1))
 
@@ -180,4 +180,3 @@ def test_set_monitors_removes_monitors(hlwm, monitor_count_before):
     assert hlwm.get_attr('monitors.count') == '1'
     monitors = hlwm.call('list_monitors').stdout
     assert monitors == '0: 100x200+100+0 with tag "default" [FOCUS]\n'
-
