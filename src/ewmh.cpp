@@ -152,7 +152,7 @@ bool Ewmh::readClientList(Window** buf, unsigned long *count) {
 }
 
 //! The client list before hlwm has been started
-std::vector<Window> Ewmh::originalClientList() const {
+vector<Window> Ewmh::originalClientList() const {
     return original_client_list_;
 }
 
