@@ -45,6 +45,7 @@ target_sources(herbstluftwm PRIVATE
     keymanager.cpp keymanager.h
     layout.cpp layout.h
     monitor.cpp monitor.h
+    monitordetection.cpp monitordetection.h
     monitormanager.cpp monitormanager.h
     mouse.cpp mouse.h
     mousemanager.cpp mousemanager.h
