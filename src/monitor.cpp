@@ -187,53 +187,6 @@ void Monitor::applyLayout() {
     drop_enternotify_events();
 }
 
-int set_monitor_rects_command(int argc, char** argv, Output output) {
-    (void)SHIFT(argc, argv);
-    if (argc < 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    RectangleVec templates;
-    for (int i = 0; i < argc; i++) {
-        templates.push_back(Rectangle::fromStr(argv[i]));
-    }
-    int status = set_monitor_rects(templates);
-
-    if (status == HERBST_TAG_IN_USE) {
-        output << argv[0] << ": There are not enough free tags\n";
-    } else if (status == HERBST_INVALID_ARGUMENT) {
-        output << argv[0] << ": Need at least one rectangle\n";
-    }
-    return status;
-}
-
-int set_monitor_rects(const RectangleVec &templates) {
-    if (templates.empty()) {
-        return HERBST_INVALID_ARGUMENT;
-    }
-    HSTag* tag = nullptr;
-    unsigned i;
-    for (i = 0; i < std::min(templates.size(), g_monitors->size()); i++) {
-        auto m = g_monitors->byIdx(i);
-        m->rect = templates[i];
-    }
-    // add additional monitors
-    for (; i < templates.size(); i++) {
-        tag = global_tags->unusedTag();
-        if (!tag) {
-            return HERBST_TAG_IN_USE;
-        }
-        g_monitors->addMonitor(templates[i], tag);
-        tag->frame->root_->setVisibleRecursive(true);
-    }
-    // remove monitors if there are too much
-    while (i < g_monitors->size()) {
-        g_monitors->removeMonitor(g_monitors->byIdx(i));
-    }
-    monitor_update_focus_objects();
-    all_monitors_apply_layout();
-    return 0;
-}
-
 Monitor* find_monitor_by_name(const char* name) {
     for (auto m : *g_monitors) {
         if (m->name == name)
@@ -644,7 +597,7 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
             monitor_rects = disjoin_rects(monitor_rects);
         }
         // apply it
-        ret = set_monitor_rects(monitor_rects);
+        ret = g_monitors->setMonitors(monitor_rects);
         if (ret == HERBST_TAG_IN_USE) {
             output << argv[0] << ": There are not enough free tags\n";
         }

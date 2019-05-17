@@ -53,6 +53,10 @@ public:
     void extractWindowStack(bool real_clients, std::function<void(Window)> addToStack);
     void restack();
 
+    int setMonitors(const RectangleVec& templates);
+    int setMonitorsCommand(Input input, Output output);
+    void setMonitorsCompletion(Completion& complete);
+
     int cur_monitor;
     PlainStack<Monitor*> monitorStack_; // TODO: make this private
 
