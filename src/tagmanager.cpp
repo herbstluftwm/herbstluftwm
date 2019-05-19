@@ -176,7 +176,7 @@ HSTag* TagManager::ensure_tags_are_available() {
 }
 
 HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
-    int index
+    int index;
     try {
         index = stoi(index_str);
     } catch (...) {
