@@ -1,7 +1,6 @@
 #include "framedata.h"
 
 #include "completion.h"
-#include "layout.h"
 
 using std::string;
 
