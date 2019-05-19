@@ -54,5 +54,3 @@ def test_reset_theme_tiling(hlwm):
     # check that attributes in 'unaffected' do not get reset
     for a in unaffected:
         assert hlwm.get_attr(a) != unaffected_values[a]
-
-
