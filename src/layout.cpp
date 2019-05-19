@@ -177,44 +177,6 @@ shared_ptr<HSFrameLeaf> HSFrame::getGloballyFocusedFrame() {
     return get_current_monitor()->tag->frame->focusedFrame();
 }
 
-int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
-    char* cmd_name = argv[0]; // save this before shifting
-    int delta = 1;
-    if (argc >= 2) {
-        delta = atoi(argv[1]);
-    }
-    auto cur_frame = HSFrame::getGloballyFocusedFrame();
-    (void)SHIFT(argc, argv);
-    (void)SHIFT(argc, argv);
-    int layout_index;
-    if (argc > 0) {
-        /* cycle through a given list of layouts */
-        const char* curname = g_layout_names[(int)cur_frame->getLayout()];
-        char** pcurrent = (char**)table_find(argv, sizeof(*argv), argc, 0,
-                                     memberequals_string, curname);
-        // signed for delta calculations
-        int idx = pcurrent ? (INDEX_OF(argv, pcurrent) + delta) : 0;
-        idx %= argc;
-        idx += argc;
-        idx %= argc;
-        layout_index = find_layout_by_name(argv[idx]);
-        if (layout_index < 0) {
-            output << cmd_name << ": Invalid layout name \""
-                   << argv[idx] << "\"\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    } else {
-        /* cycle through the default list of layouts */
-        layout_index = (int)cur_frame->getLayout() + delta;
-        layout_index %= layoutAlgorithmCount();
-        layout_index += layoutAlgorithmCount();
-        layout_index %= layoutAlgorithmCount();
-    }
-    cur_frame->setLayout((LayoutAlgorithm)layout_index);
-    get_current_monitor()->applyLayout();
-    return 0;
-}
-
 int frame_current_set_client_layout(int argc, char** argv, Output output) {
     int layout = 0;
     if (argc <= 1) {

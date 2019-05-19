@@ -37,6 +37,7 @@ enum class LayoutAlgorithm {
 };
 
 ConverterInstance(LayoutAlgorithm)
+template<> void Converter<LayoutAlgorithm>::complete(Completion& complete, LayoutAlgorithm const* relativeTo);
 
 size_t layoutAlgorithmCount();
 

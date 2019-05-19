@@ -4,6 +4,7 @@
 #include <regex>
 
 #include "client.h"
+#include "completion.h"
 #include "framedata.h"
 #include "frameparser.h"
 #include "ipc-protocol.h"
@@ -548,6 +549,56 @@ void FrameTree::replaceNode(shared_ptr<HSFrame> old,
         root_ = replacement;
     } else {
         parent->replaceChild(old, replacement);
+    }
+}
+
+int FrameTree::cycleLayoutCommand(Input input, Output output) {
+    int delta = 1;
+    auto cur_frame = focusedFrame();
+    string deltaStr;
+    if (input >> deltaStr) {
+        try {
+            delta = Converter<int>::parse(deltaStr);
+        } catch (const std::exception& e) {
+            output << input.command() << ": " << e.what();
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
+    int layout_index;
+    if (!input.empty()) {
+        /* cycle through a given list of layouts */
+        string curname = Converter<LayoutAlgorithm>::str(cur_frame->getLayout());
+        size_t count = input.end() - input.begin();
+        auto curposition = std::find(input.begin(), input.end(), curname);
+        size_t idx = (curposition - input.begin()) + delta;
+        idx += count;
+        idx %= count;
+        try {
+            layout_index = (int)Converter<LayoutAlgorithm>::parse(*(input.begin() + idx));
+        } catch (const std::exception& e) {
+            output << input.command() << ": " << e.what();
+            return HERBST_INVALID_ARGUMENT;
+        }
+    } else {
+        /* cycle through the default list of layouts */
+        layout_index = (int)cur_frame->getLayout() + delta;
+        layout_index %= layoutAlgorithmCount();
+        layout_index += layoutAlgorithmCount();
+        layout_index %= layoutAlgorithmCount();
+    }
+    cur_frame->setLayout((LayoutAlgorithm)layout_index);
+    get_current_monitor()->applyLayout();
+    return 0;
+}
+
+void FrameTree::cycleLayoutCompletion(Completion& complete) {
+    if (complete == 0) {
+        complete.full({ "-1", "+1" });
+    } else if (complete <= layoutAlgorithmCount()) {
+        // it does not make sense to mention layout names multiple times
+        Converter<LayoutAlgorithm>::complete(complete, nullptr);
+    } else {
+        complete.none();
     }
 }
 

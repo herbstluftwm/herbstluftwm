@@ -208,8 +208,6 @@ HSFrame* frame_neighbour(HSFrame* frame, char direction);
 int frame_inner_neighbour_index(std::shared_ptr<HSFrameLeaf> frame, Direction direction);
 int frame_focus_command(int argc, char** argv, Output output);
 
-// follow selection to leaf and focus this frame
-int frame_current_cycle_client_layout(int argc, char** argv, Output output);
 int frame_current_set_client_layout(int argc, char** argv, Output output);
 int frame_split_count_to_root(HSFrame* frame, int align);
 

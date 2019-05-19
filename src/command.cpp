@@ -82,7 +82,6 @@ struct {
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
     { "cycle_all",      3,  no_completion },
-    { "cycle_layout",   4+2, no_completion }, // 4 is the count of layout algorithms
     { "set_layout",     2,  no_completion },
     { "split",          3,  no_completion },
     { "focus",          3,  no_completion },
@@ -197,8 +196,6 @@ struct {
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },
     { "set_layout",     EQ, 1,  nullptr, g_layout_names },
-    { "cycle_layout",   EQ, 1,  nullptr, completion_pm_one },
-    { "cycle_layout",   GE, 2,  nullptr, g_layout_names },
     { "use",            EQ, 1,  complete_against_tags, 0 },
     { "use_index",      EQ, 1,  nullptr, completion_pm_one },
     { "use_index",      EQ, 2,  nullptr, completion_use_index_args },
