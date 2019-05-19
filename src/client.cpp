@@ -2,7 +2,6 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
