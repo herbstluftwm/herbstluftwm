@@ -16,9 +16,6 @@
 #define LAYOUT_DUMP_SEPARATOR_STR ":" /* must be a string with one char */
 #define LAYOUT_DUMP_SEPARATOR LAYOUT_DUMP_SEPARATOR_STR[0]
 
-extern const char* g_align_names[];
-extern const char* g_layout_names[];
-
 enum {
     TYPE_CLIENTS = 0,
     TYPE_FRAMES,
@@ -198,7 +195,6 @@ int frame_change_fraction_command(int argc, char** argv, Output output);
 void reset_frame_colors();
 
 int find_layout_by_name(const char* name);
-int find_align_by_name(const char* name);
 
 int frame_current_bring(int argc, char** argv, Output output);
 

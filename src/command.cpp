@@ -57,6 +57,15 @@ static bool no_completion(int, char**, int) {
     return false;
 }
 
+static const char* g_layout_names[] = {
+    // TODO: remove this after migrating set_layout and cycle_layout
+    "vertical",
+    "horizontal",
+    "max",
+    "grid",
+    nullptr,
+};
+
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
