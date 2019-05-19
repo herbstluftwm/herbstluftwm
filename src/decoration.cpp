@@ -4,8 +4,8 @@
 #include <X11/Xutil.h>
 
 #include "client.h"
-#include "ewmh.h"
 #include "entity.h"
+#include "ewmh.h"
 #include "globals.h"
 #include "settings.h"
 
