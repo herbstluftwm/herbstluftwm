@@ -7,6 +7,7 @@
 #include "clientmanager.h"
 #include "globals.h"
 #include "root.h"
+#include "x11-types.h"
 
 using std::dynamic_pointer_cast;
 using std::endl;
@@ -171,11 +172,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             Window winid;
             try {
                 // if the window id is syntactically wrong, then throw an error
-                size_t bytesRead = nextToken->second.size();
-                winid = std::stoul(nextToken->second, &bytesRead, 0);
-                if (bytesRead != nextToken->second.size()) {
-                    throw std::invalid_argument("not a valid window id");
-                }
+                winid = Converter<WindowID>::parse(nextToken->second);
             } catch (const std::exception& e) {
                 throw ParsingException(*nextToken, "not a valid window id");
             }

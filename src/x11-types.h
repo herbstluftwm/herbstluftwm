@@ -96,5 +96,41 @@ inline Rectangle Converter<Rectangle>::parse(const std::string &payload) {
 using RectangleVec = std::vector<Rectangle>;
 using RectangleIdxVec = std::vector<std::pair<int, Rectangle>>;
 
+//! utility functions for the Window type
+class WindowID {
+public:
+    WindowID(Window w) : value_(w) { }
+    inline Window operator()() const { return value_; }
+    inline std::string str() const {
+        std::stringstream ss;
+        ss << "0x" << std::hex << value_;
+        return ss.str();
+    }
+    operator Window() const { return value_; }
+private:
+    Window value_;
+};
+
+/** since WindowID is a new type, we can define a Converter instance for it.
+ * (Window clashes with unsigned long)
+ */
+template<>
+inline std::string Converter<WindowID>::str(WindowID payload) {
+    return payload.str();
+}
+
+template<>
+inline WindowID Converter<WindowID>::parse(const std::string &payload) {
+    size_t bytes_read = 0;
+    unsigned long winid = std::stoul(payload, &bytes_read, 0);
+    if (bytes_read != payload.size()) {
+        std::stringstream message;
+        message << "invalid characters at position " << bytes_read
+            << " of \"" << payload << "\"";
+        throw std::invalid_argument(message.str());
+    }
+    return winid;
+}
+
 #endif
 

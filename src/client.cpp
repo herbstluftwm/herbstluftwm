@@ -58,8 +58,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , ewmh(*cm.ewmh)
 {
     std::stringstream tmp;
-    tmp << "0x" << std::hex << window;
-    window_id_str = tmp.str();
+    window_id_str = WindowID(window).str();
     keyMask_.setWriteable();
     ewmhnotify_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_}) {
@@ -200,10 +199,7 @@ void Client::window_focus() {
         }
         ewmh.updateActiveWindow(this->window_);
         tag_update_each_focus_layer();
-        const char* title = this->title_().c_str();
-        char winid_str[STRING_BUF_SIZE];
-        snprintf(winid_str, STRING_BUF_SIZE, "0x%x", (unsigned int)this->window_);
-        hook_emit({"focus_changed", winid_str, title});
+        hook_emit({"focus_changed", WindowID(window_).str(), title_()});
     }
 
     // change window-colors
@@ -493,9 +489,7 @@ void Client::set_urgent(bool state) {
 }
 
 void Client::set_urgent_force(bool state) {
-    char winid_str[STRING_BUF_SIZE];
-    snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window_);
-    hook_emit({"urgent", state ? "on" : "off", winid_str});
+    hook_emit({"urgent", state ? "on" : "off", WindowID(window_).str() });
 
     this->urgent_ = state;
 
@@ -534,10 +528,8 @@ void Client::update_wm_hints() {
         bool newval = (wmh->flags & XUrgencyHint) ? true : false;
         if (newval != this->urgent_()) {
             this->urgent_ = newval;
-            char winid_str[STRING_BUF_SIZE];
-            snprintf(winid_str, STRING_BUF_SIZE, "0x%lx", this->window_);
             this->setup_border(focused_client == this);
-            hook_emit({"urgent", this->urgent_() ? "on":"off", winid_str});
+            hook_emit({"urgent", urgent_() ? "on":"off", WindowID(window_).str()});
             tag_set_flags_dirty();
         }
     }
@@ -568,9 +560,7 @@ void Client::update_title() {
     bool changed = this->title_() != newName;
     title_ = newName.value();
     if (changed && get_current_client() == this) {
-        char buf[STRING_BUF_SIZE];
-        snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
-        hook_emit({"window_title_changed", buf, this->title_()});
+        hook_emit({"window_title_changed", WindowID(window_).str(), title_()});
     }
 }
 
@@ -598,10 +588,8 @@ void Client::set_fullscreen(bool state) {
     auto m = find_monitor_with_tag(this->tag());
     if (m) m->applyLayout();
 
-    char buf[STRING_BUF_SIZE];
-    snprintf(buf, STRING_BUF_SIZE, "0x%lx", this->window_);
     ewmh.updateWindowState(this);
-    hook_emit({"fullscreen", state ? "on" : "off", buf});
+    hook_emit({"fullscreen", state ? "on" : "off", WindowID(window_).str()});
 }
 
 void Client::updateEwmhState() {
@@ -651,7 +639,7 @@ Window get_window(const string& str) {
 
     // unmanaged window? try to convert from base 16 or base 10 at the same time
     try {
-        return std::stoul(str);
+        return Converter<WindowID>::parse(str);
     } catch (...) {
         return 0;
     }
