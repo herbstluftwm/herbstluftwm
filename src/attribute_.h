@@ -50,6 +50,7 @@ public:
         : Attribute(name, false)
         , validator_({})
         , payload_ (payload)
+        , defaultValue_ (payload)
     {
         // the following will call Attribute::setOwner()
         // maybe this should be changed at some point,
@@ -64,6 +65,7 @@ public:
         : Attribute(name, true)
         , validator_(std::bind(validator, owner, std::placeholders::_1))
         , payload_ (payload)
+        , defaultValue_ (payload)
     {
         // the following will call Attribute::setOwner()
         // maybe this should be changed at some point,
@@ -76,6 +78,7 @@ public:
         : Attribute(name, true)
         , validator_(validator)
         , payload_ (payload)
+        , defaultValue_ (payload)
     {
         // the following will call Attribute::setOwner()
         // maybe this should be changed at some point,
@@ -88,6 +91,7 @@ public:
     Attribute_(const std::string &name, const T &payload)
         : Attribute(name, false)
         , payload_ (payload)
+        , defaultValue_ (payload)
     {
     }
 
@@ -111,6 +115,11 @@ public:
     }
 
     Signal_<T>& changed() override { return changed_; }
+
+    bool resetValue() override {
+        operator=(defaultValue_);
+        return true;
+    }
 
     // accessors only to be used by owner!
     operator T() { return payload_; }
@@ -172,6 +181,7 @@ protected:
     Validator validator_;
     Signal_<T> changed_;
     T payload_;
+    T defaultValue_;
 };
 
 /** Type mappings **/
