@@ -262,13 +262,13 @@ int Monitor::move_cmd(Input input, Output output) {
     // else: just move it:
     this->rect = new_rect;
     input.shift();
-    if (!input.empty()) pad_up       = stoi(input.front());
+    if (!input.empty()) pad_up.change(input.front());
     input.shift();
-    if (!input.empty()) pad_right    = stoi(input.front());
+    if (!input.empty()) pad_right.change(input.front());
     input.shift();
-    if (!input.empty()) pad_down     = stoi(input.front());
+    if (!input.empty()) pad_down.change(input.front());
     input.shift();
-    if (!input.empty()) pad_left     = stoi(input.front());
+    if (!input.empty()) pad_left.change(input.front());
     applyLayout();
     return 0;
 }

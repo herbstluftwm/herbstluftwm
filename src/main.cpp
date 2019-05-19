@@ -421,8 +421,9 @@ int raise_command(int argc, char** argv, Output) {
         client->raise();
     } else {
         auto window = get_window((argc > 1) ? argv[1] : "");
-        if (window)
-            XRaiseWindow(g_display, std::stoul(argv[1], nullptr, 0));
+        if (window) {
+            XRaiseWindow(g_display, window);
+        }
         else return HERBST_INVALID_ARGUMENT;
     }
     return 0;

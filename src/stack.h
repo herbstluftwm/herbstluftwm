@@ -36,9 +36,14 @@ public:
     static Slice* makeClientSlice(Client* client);
 
     std::string getLabel();
+    void extractWindowsFromSlice(bool real_clients, HSLayer layer,
+                                 std::function<void(Window)> yield);
+
+    std::set<HSLayer> layers; //!< layers this slice is contained in
+private:
+    HSLayer highestLayer() const;
 
     SliceType type;
-    std::set<HSLayer> layers; //!< layers this slice is contained in
     union {
         Client*    client;
         Window              window;
@@ -61,15 +66,12 @@ public:
 
     void extractWindows(bool real_clients, std::function<void(Window)> addToStack);
     void restack();
-    Window lowestWindow();
 
     PlainStack<Slice*> layers_[LAYER_COUNT];
 
 private:
     bool    dirty;  /* stacking order changed but it wasn't restacked yet */
 };
-
-HSLayer slice_highest_layer(Slice* slice);
 
 #endif
 

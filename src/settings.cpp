@@ -145,7 +145,11 @@ function<int()> Settings::getIntAttr(string name) {
     return [this, name]() {
         Attribute* a = this->root_->deepAttribute(name);
         if (a) {
-            return std::stoi(a->str());
+            try {
+                return std::stoi(a->str());
+            } catch (...) {
+                return 0;
+            }
         } else {
             HSDebug("Internal Error: No such attribute %s\n", name.c_str());
             return 0;
