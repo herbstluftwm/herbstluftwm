@@ -20,7 +20,6 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitormanager.h"
-#include "plainstack.h"
 #include "rectangle.h"
 #include "root.h"
 #include "settings.h"
@@ -263,13 +262,13 @@ int Monitor::move_cmd(Input input, Output output) {
     // else: just move it:
     this->rect = new_rect;
     input.shift();
-    if (!input.empty()) pad_up       = stoi(input.front());
+    if (!input.empty()) pad_up.change(input.front());
     input.shift();
-    if (!input.empty()) pad_right    = stoi(input.front());
+    if (!input.empty()) pad_right.change(input.front());
     input.shift();
-    if (!input.empty()) pad_down     = stoi(input.front());
+    if (!input.empty()) pad_down.change(input.front());
     input.shift();
-    if (!input.empty()) pad_left     = stoi(input.front());
+    if (!input.empty()) pad_left.change(input.front());
     applyLayout();
     return 0;
 }
@@ -720,24 +719,6 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
         }
     }
     return ret;
-}
-
-int monitor_raise_command(int argc, char** argv, Output output) {
-    char* cmd_name = argv[0];
-    (void)SHIFT(argc, argv);
-    Monitor* monitor;
-    if (argc >= 1) {
-        monitor = string_to_monitor(argv[0]);
-        if (!monitor) {
-            output << cmd_name << ": Monitor \"" << argv[0] << "\" not found!\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    } else {
-        monitor = get_current_monitor();
-    }
-    g_monitors->monitorStack_.raise(monitor);
-    g_monitors->restack();
-    return 0;
 }
 
 void Monitor::restack() {

@@ -181,7 +181,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"rotate",         { tags->frameCommand(&FrameTree::rotateCommand) }},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
         {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
-        {"raise_monitor",  monitor_raise_command},
+        {"raise_monitor",  { monitors, &MonitorManager::raiseMonitorCommand,
+                                       &MonitorManager::raiseMonitorCompletion }},
         {"remove_monitor", BIND_OBJECT(monitors, removeMonitor)},
         {"move_monitor",   monitors->byFirstArg(&Monitor::move_cmd) } ,
         {"rename_monitor", monitors->byFirstArg(&Monitor::renameCommand) },
@@ -420,8 +421,9 @@ int raise_command(int argc, char** argv, Output) {
         client->raise();
     } else {
         auto window = get_window((argc > 1) ? argv[1] : "");
-        if (window)
-            XRaiseWindow(g_display, std::stoul(argv[1], nullptr, 0));
+        if (window) {
+            XRaiseWindow(g_display, window);
+        }
         else return HERBST_INVALID_ARGUMENT;
     }
     return 0;
