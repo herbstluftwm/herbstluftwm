@@ -109,6 +109,9 @@ public:
     bool isFullscreenSet(Window win);
     void clearClientProperties(Window win);
 
+    bool isOwnWindow(Window win);
+    void clearInputFocus();
+
     // set the desktop property of a window
     void windowUpdateTag(Window win, HSTag* tag);
 
