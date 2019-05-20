@@ -255,3 +255,31 @@ std::experimental::optional<vector<Atom>>
     return res.second;
 }
 
+
+std::experimental::optional<vector<Window>>
+    XConnection::getWindowPropertyWindow(Window window, Atom property)
+{
+    auto res = getWindowProperty32<Window>(m_display, window, property);
+    if (res.first != XA_WINDOW) {
+        return {};
+    }
+    return res.second;
+}
+
+//! query all children of the given window via XQueryTree()
+vector<Window> XConnection::queryTree(Window window) {
+    Window root, parent, *children = nullptr;
+    unsigned int count = 0;
+    Status status = XQueryTree(m_display, window,
+                               &root, &parent, &children, &count);
+    if (status == 0) {
+        return {};
+    }
+    vector<Window> result;
+    result.reserve(count);
+    for (unsigned int i = 0; i < count; i++) {
+        result.push_back(children[i]);
+    }
+    XFree(children);
+    return result;
+}

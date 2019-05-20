@@ -27,10 +27,6 @@ using std::swap;
 using std::vector;
 using std::weak_ptr;
 
-void reset_frame_colors() {
-    all_monitors_apply_layout();
-}
-
 /* create a new frame
  * you can either specify a frame or a tag as its parent
  */

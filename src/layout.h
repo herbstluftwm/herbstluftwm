@@ -11,16 +11,6 @@
 #include "types.h"
 #include "x11-types.h"
 
-#define LAYOUT_DUMP_BRACKETS "()" /* must consist of exactly two chars */
-#define LAYOUT_DUMP_WHITESPACES " \t\n" /* must be at least one char */
-#define LAYOUT_DUMP_SEPARATOR_STR ":" /* must be a string with one char */
-#define LAYOUT_DUMP_SEPARATOR LAYOUT_DUMP_SEPARATOR_STR[0]
-
-enum {
-    TYPE_CLIENTS = 0,
-    TYPE_FRAMES,
-};
-
 // execute an action on an client
 // returns Success or failure.
 class Client;
@@ -181,18 +171,9 @@ private:
     friend class FrameTree;
 };
 
-// globals
-extern int* g_frame_gap;
-extern int* g_window_gap;
-
 // functions
-void layout_init();
-void layout_destroy();
-
 int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
-
-void reset_frame_colors();
 
 int find_layout_by_name(const char* name);
 

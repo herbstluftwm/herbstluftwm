@@ -71,6 +71,9 @@ public:
     std::string cycleValue(std::vector<std::string>::const_iterator begin,
                            std::vector<std::string>::const_iterator end);
 
+    //! if the attribute has a default value, reset it, otherwise return false
+    virtual bool resetValue() { return false; }
+
     void detachFromOwner();
 
 protected:
