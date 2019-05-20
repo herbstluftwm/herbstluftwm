@@ -86,6 +86,10 @@ Ewmh::Ewmh(XConnection& xconnection)
         }
         g_netatom[i] = XInternAtom(X_.display(), g_netatom_names[i], False);
     }
+    wmatom_[(int)WM::Protocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
+    wmatom_[(int)WM::Delete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
+    wmatom_[(int)WM::State] = XInternAtom(g_display, "WM_STATE", False);
+    wmatom_[(int)WM::TakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
 
     /* tell which ewmh atoms are supported */
     XChangeProperty(X_.display(), X_.root(), g_netatom[NetSupported], XA_ATOM, 32,
@@ -397,7 +401,11 @@ void Ewmh::updateWindowState(Client* client) {
 }
 
 void Ewmh::clearClientProperties(Window win) {
+    // delete ewmh-properties and ICCCM-Properties such that the client knows
+    // that he has been unmanaged and now the client is allowed to be mapped
+    // again (e.g. if it is some dialog)
     XDeleteProperty(X_.display(), win, g_netatom[NetWmState]);
+    XDeleteProperty(X_.display(), win, wmatom(WM::State));
 }
 
 bool Ewmh::isWindowStateSet(Window win, Atom hint) {
@@ -443,4 +451,46 @@ void Ewmh::clearInputFocus() {
 
 Ewmh& Ewmh::get() {
     return *(Root::get()->ewmh);
+}
+
+/** send the given proto atom to the given window via XSendEvent(). If
+ * checkProtocols = true, this is done only if proto is present in the window's
+ * WM protocols. The return value tells whether the event was actually sent.
+ */
+bool Ewmh::sendEvent(Window window, Ewmh::WM proto, bool checkProtocols) {
+    bool exists = false;
+    Atom protoAtom = wmatom(proto);
+    if (!checkProtocols) {
+        exists = true;
+    } else {
+        int n;
+        Atom *protocols;
+
+        if (XGetWMProtocols(X_.display(), window, &protocols, &n)) {
+            while (!exists && n--) {
+                exists = protocols[n] == protoAtom;
+            }
+            XFree(protocols);
+        }
+    }
+    if (exists) {
+        XEvent ev;
+        ev.type = ClientMessage;
+        ev.xclient.window = window;
+        ev.xclient.message_type = wmatom(WM::Protocols);
+        ev.xclient.format = 32;
+        ev.xclient.data.l[0] = protoAtom;
+        ev.xclient.data.l[1] = CurrentTime;
+        XSendEvent(X_.display(), window, False, NoEventMask, &ev);
+    }
+    return exists;
+}
+
+void Ewmh::windowClose(Window window) {
+    sendEvent(window, WM::Delete, false);
+}
+
+//! convenience wrapper around wmatom_
+Atom Ewmh::wmatom(WM proto) {
+    return wmatom_[(int)proto];
 }

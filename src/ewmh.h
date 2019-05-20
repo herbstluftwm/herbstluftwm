@@ -89,6 +89,8 @@ public:
     Ewmh(XConnection& xconnection);
     ~Ewmh();
 
+    enum class WM { Protocols, Delete, State, TakeFocus, Last };
+
     void injectDependencies(Root* root);
     void updateAll();
 
@@ -123,11 +125,17 @@ public:
 
     static Ewmh& get(); // temporary singleton getter
 
+    bool sendEvent(Window window, WM proto, bool checkProtocols);
+    void windowClose(Window window);
+
 private:
     bool focusStealingAllowed(long source);
     bool readClientList(Window** buf, unsigned long *count);
     Root* root_ = nullptr;
     XConnection& X_;
+
+    Atom wmatom(WM proto);
+    Atom wmatom_[(int)WM::Last];
 };
 
 #endif
