@@ -11,9 +11,6 @@
 #include "types.h"
 #include "x11-types.h"
 
-extern const char* g_align_names[];
-extern const char* g_layout_names[];
-
 // execute an action on an client
 // returns Success or failure.
 class Client;
@@ -179,7 +176,6 @@ int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
 
 int find_layout_by_name(const char* name);
-int find_align_by_name(const char* name);
 
 int frame_current_bring(int argc, char** argv, Output output);
 

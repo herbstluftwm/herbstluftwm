@@ -9,7 +9,6 @@
 #include "clientmanager.h"
 #include "completion.h"
 #include "ipc-protocol.h"
-#include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "object.h"
@@ -56,6 +55,15 @@ static const char* completion_split_ratios[]= {
 static bool no_completion(int, char**, int) {
     return false;
 }
+
+static const char* g_layout_names[] = {
+    // TODO: remove this after migrating set_layout and cycle_layout
+    "vertical",
+    "horizontal",
+    "max",
+    "grid",
+    nullptr,
+};
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);

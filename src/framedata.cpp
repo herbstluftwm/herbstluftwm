@@ -1,9 +1,22 @@
 #include "framedata.h"
 
 #include "completion.h"
-#include "layout.h"
 
 using std::string;
+
+static const char* g_align_names[] = {
+    "vertical",
+    "horizontal",
+    nullptr,
+};
+
+static const char* g_layout_names[] = {
+    "vertical",
+    "horizontal",
+    "max",
+    "grid",
+    nullptr,
+};
 
 size_t layoutAlgorithmCount() {
     size_t i = 0;
@@ -19,7 +32,7 @@ template<> LayoutAlgorithm Converter<LayoutAlgorithm>::parse(const string& sourc
             return (LayoutAlgorithm) i;
         }
     }
-    throw std::invalid_argument("Invalid split align name: \"" + source + "\"");
+    throw std::invalid_argument("Invalid layout name: \"" + source + "\"");
 }
 
 template<> string Converter<LayoutAlgorithm>::str(LayoutAlgorithm payload) {

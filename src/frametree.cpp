@@ -39,7 +39,7 @@ void FrameTree::dump(shared_ptr<HSFrame> frame, Output output)
     auto l = frame->isLeaf();
     if (l) {
         output << "(clients "
-               << g_layout_names[(int)l->layout] << ":"
+               << Converter<LayoutAlgorithm>::str(l->layout) << ":"
                << l->selection;
         for (auto client : l->clients) {
             output << " 0x"
@@ -51,7 +51,7 @@ void FrameTree::dump(shared_ptr<HSFrame> frame, Output output)
     if (s) {
         output
             << "(split "
-            << g_align_names[(int)s->align_]
+            << Converter<SplitAlign>::str(s->align_)
             << ":"
             << ((double)s->fraction_) / (double)FRACTION_UNIT
             << ":"
@@ -226,7 +226,7 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         }
         size_t childCount() override { return 0; };
         void appendCaption(Output output) override {
-            output << " " << g_layout_names[(int)l_->layout] << ":";
+            output << " " << Converter<LayoutAlgorithm>::str(l_->layout) << ":";
             for (auto client : l_->clients) {
                 output << " 0x"
                        << std::hex << client->x11Window() << std::dec;
@@ -250,7 +250,7 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         }
         size_t childCount() override { return 2; };
         void appendCaption(Output output) override {
-            output << " " << g_align_names[(int)s_->align_]
+            output << " " << Converter<SplitAlign>::str(s_->align_)
                    << " " << (s_->fraction_ * 100 / FRACTION_UNIT) << "%"
                    << " selection=" << s_->selection_;
         }

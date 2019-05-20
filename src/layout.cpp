@@ -27,20 +27,6 @@ using std::swap;
 using std::vector;
 using std::weak_ptr;
 
-const char* g_align_names[] = {
-    "vertical",
-    "horizontal",
-    nullptr,
-};
-
-const char* g_layout_names[] = {
-    "vertical",
-    "horizontal",
-    "max",
-    "grid",
-    nullptr,
-};
-
 /* create a new frame
  * you can either specify a frame or a tag as its parent
  */
@@ -124,27 +110,6 @@ HSFrameLeaf::~HSFrameLeaf() {
     delete decoration;
 }
 
-int find_layout_by_name(const char* name) {
-    for (size_t i = 0; i < LENGTH(g_layout_names); i++) {
-        if (!g_layout_names[i]) {
-            break;
-        }
-        if (!strcmp(name, g_layout_names[i])) {
-            return (int)i;
-        }
-    }
-    return -1;
-}
-
-int find_align_by_name(const char* name) {
-    for (size_t i = 0; i < LENGTH(g_align_names); i++) {
-        if (!strcmp(name, g_align_names[i])) {
-            return (int)i;
-        }
-    }
-    return -1;
-}
-
 shared_ptr<HSFrame> HSFrame::root() {
     auto parent_shared = parent_.lock();
     if (parent_shared) return parent_shared->root();
@@ -185,18 +150,18 @@ int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
     int layout_index;
     if (argc > 0) {
         /* cycle through a given list of layouts */
-        const char* curname = g_layout_names[(int)cur_frame->getLayout()];
+        string curname = Converter<LayoutAlgorithm>::str(cur_frame->getLayout());
         char** pcurrent = (char**)table_find(argv, sizeof(*argv), argc, 0,
-                                     memberequals_string, curname);
+                                     memberequals_string, curname.c_str());
         // signed for delta calculations
         int idx = pcurrent ? (INDEX_OF(argv, pcurrent) + delta) : 0;
         idx %= argc;
         idx += argc;
         idx %= argc;
-        layout_index = find_layout_by_name(argv[idx]);
-        if (layout_index < 0) {
-            output << cmd_name << ": Invalid layout name \""
-                   << argv[idx] << "\"\n";
+        try {
+            layout_index = (int)Converter<LayoutAlgorithm>::parse(argv[idx]);
+        } catch (const std::exception& e) {
+            output << cmd_name << ": " << e.what();
             return HERBST_INVALID_ARGUMENT;
         }
     } else {
@@ -212,18 +177,18 @@ int frame_current_cycle_client_layout(int argc, char** argv, Output output) {
 }
 
 int frame_current_set_client_layout(int argc, char** argv, Output output) {
-    int layout = 0;
     if (argc <= 1) {
         return HERBST_NEED_MORE_ARGS;
     }
-    layout = find_layout_by_name(argv[1]);
-    if (layout < 0) {
-        output << argv[0]
-               << ": Invalid layout name \"" << argv[1] << "\"\n";
+    LayoutAlgorithm layout;
+    try {
+        layout = Converter<LayoutAlgorithm>::parse(argv[1]);
+    } catch (const std::exception& e) {
+        output << argv[0] << ": " << e.what();
         return HERBST_INVALID_ARGUMENT;
     }
     auto cur_frame = HSFrame::getGloballyFocusedFrame();
-    cur_frame->setLayout((LayoutAlgorithm)layout);
+    cur_frame->setLayout(layout);
     get_current_monitor()->applyLayout();
     return 0;
 }
