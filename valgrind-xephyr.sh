@@ -76,7 +76,7 @@ fi
 # set up herbstluftwm
 # -------------------
 export PATH="$(pwd):$PATH"
-make herbstluftwm herbstclient
+#make herbstluftwm herbstclient
 if [[ -z "$AUTOSTART" ]] ; then
     # if AUTOSTART hasn't specified yet
     project_dir=$(dirname "$0")
@@ -99,7 +99,7 @@ done
 # boot up herbstluftwm
 # --------------------
 DISPLAY=":$xephyr_displaynr" \
-    debugger ./herbstluftwm --verbose -c "$AUTOSTART" \
+    debugger /usr/bin/herbstluftwm --verbose -c "$AUTOSTART" \
     || echo "Warning: debugger had non-zero exit code"
 
 # clean up xephyr

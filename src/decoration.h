@@ -16,6 +16,7 @@ class DecorationScheme : public Object {
 public:
     DecorationScheme();
     ~DecorationScheme() override = default;
+    DynAttribute_<std::string> reset;
     Attribute_<unsigned long>     border_width = {"border_width", 1};
     Attribute_<Color>   border_color = {"color", {"black"}};
     Attribute_<bool>    tight_decoration = {"tight_decoration", false}; // if set, there is no space between the
@@ -37,6 +38,9 @@ public:
     // is changed here, then the attribute with the same name is changed
     // accordingly in each of the elements of 'decs'.
     void makeProxyFor(std::vector<DecorationScheme*> decs);
+private:
+    std::string resetSetterHelper(std::string dummy);
+    std::string resetGetterHelper();
 };
 
 class Decoration {

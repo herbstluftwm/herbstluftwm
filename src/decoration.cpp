@@ -33,6 +33,8 @@ Theme::Theme() {
 }
 
 DecorationScheme::DecorationScheme()
+    : reset(this, "reset", &DecorationScheme::resetGetterHelper,
+                           &DecorationScheme::resetSetterHelper)
 {
     vector<Attribute*> attrs = {
         &border_width,
@@ -67,10 +69,26 @@ DecTriple::DecTriple()
     });
 }
 
+//! reset all attributes to a default value
+string DecorationScheme::resetSetterHelper(string)
+{
+    for (auto it : attributes()) {
+        it.second->resetValue();
+    }
+    return {};
+}
+
+string DecorationScheme::resetGetterHelper() {
+    return "Writing this resets all attributes to a default value";
+}
+
 void DecorationScheme::makeProxyFor(vector<DecorationScheme*> decs) {
     for (auto it : attributes()) {
         string attrib_name = it.first;
         auto source_attribute = it.second;
+        if (source_attribute == &reset) {
+            continue;
+        }
         // if an attribute of this DecorationScheme is changed, then
         auto handler = [decs, attrib_name, source_attribute] () {
             // for each decoration to forward the value to
@@ -83,7 +101,7 @@ void DecorationScheme::makeProxyFor(vector<DecorationScheme*> decs) {
                 }
             }
         };
-        it.second->changed().connect(handler);
+        source_attribute->changed().connect(handler);
     }
 }
 
