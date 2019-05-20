@@ -90,6 +90,8 @@ public:
     Ewmh(XConnection& xconnection);
     ~Ewmh();
 
+    enum class WM { Protocols, Delete, State, TakeFocus, Last };
+
     void injectDependencies(Root* root);
     void updateAll();
 
@@ -110,6 +112,9 @@ public:
     bool isFullscreenSet(Window win);
     void clearClientProperties(Window win);
 
+    bool isOwnWindow(Window win);
+    void clearInputFocus();
+
     // set the desktop property of a window
     void windowUpdateTag(Window win, HSTag* tag);
 
@@ -121,12 +126,17 @@ public:
 
     static Ewmh& get(); // temporary singleton getter
 
+    bool sendEvent(Window window, WM proto, bool checkProtocols);
+    void windowClose(Window window);
+
 private:
     bool focusStealingAllowed(long source);
     bool readClientList(Window** buf, unsigned long *count);
     Root* root_ = nullptr;
     XConnection& X_;
     std::vector<Window> original_client_list_; //! client list before hlwm start
+    Atom wmatom(WM proto);
+    Atom wmatom_[(int)WM::Last];
 };
 
 #endif

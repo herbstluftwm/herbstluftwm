@@ -181,7 +181,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"rotate",         { tags->frameCommand(&FrameTree::rotateCommand) }},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
         {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
-        {"raise_monitor",  monitor_raise_command},
+        {"raise_monitor",  { monitors, &MonitorManager::raiseMonitorCommand,
+                                       &MonitorManager::raiseMonitorCompletion }},
         {"remove_monitor", BIND_OBJECT(monitors, removeMonitor)},
         {"move_monitor",   monitors->byFirstArg(&Monitor::move_cmd) } ,
         {"rename_monitor", monitors->byFirstArg(&Monitor::renameCommand) },
@@ -420,8 +421,9 @@ int raise_command(int argc, char** argv, Output) {
         client->raise();
     } else {
         auto window = get_window((argc > 1) ? argv[1] : "");
-        if (window)
-            XRaiseWindow(g_display, std::stoul(argv[1], nullptr, 0));
+        if (window) {
+            XRaiseWindow(g_display, window);
+        }
         else return HERBST_INVALID_ARGUMENT;
     }
     return 0;
@@ -559,6 +561,9 @@ void scan(Root* root) {
         // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
         // the previous window manager
         // TODO: what would dwm do?
+        if (root->ewmh->isOwnWindow(wins[i])) {
+            continue;
+        }
         if (wa.map_state == IsViewable
             || isInOriginalClients(win)) {
             clientmanager->manage_client(win, true);
@@ -689,13 +694,6 @@ static void init_handler_table() {
     g_default_handler[ UnmapNotify       ] = unmapnotify;
 }
 
-static struct {
-    void (*init)();
-    void (*destroy)();
-} g_modules[] = {
-    { clientlist_init,  clientlist_destroy  },
-};
-
 /* ----------------------------- */
 /* event handler implementations */
 /* ----------------------------- */
@@ -821,7 +819,9 @@ void mapnotify(Root* root, XEvent* event) {
 void maprequest(Root* root, XEvent* event) {
     HSDebug("name is: MapRequest\n");
     XMapRequestEvent* mapreq = &event->xmaprequest;
-    if (is_herbstluft_window(g_display, mapreq->window)) {
+    if (root->ewmh->isOwnWindow(mapreq->window)
+        || is_herbstluft_window(g_display, mapreq->window))
+    {
         // just map the window if it wants that
         XWindowAttributes wa;
         if (!XGetWindowAttributes(g_display, mapreq->window, &wa)) {
@@ -907,11 +907,6 @@ int main(int argc, char* argv[]) {
     init_handler_table();
     Commands::initialize(commands(root));
 
-    // initialize subsystems
-    for (unsigned i = 0; i < LENGTH(g_modules); i++) {
-        g_modules[i].init();
-    }
-
     // setup
     root->monitors()->ensure_monitors_are_available();
     scan(&* root);
@@ -944,10 +939,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // destroy all subsystems
-    for (int i = LENGTH(g_modules); i --> 0;) {
-        g_modules[i].destroy();
-    }
     // enforce to clear the root
     root.reset();
     Root::setRoot(root);

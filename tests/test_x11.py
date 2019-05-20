@@ -16,7 +16,10 @@ def test_window_focus(hlwm, x11, hc_idle, running_clients_num):
 
     assert x11.ewmh.getActiveWindow() == last_client
     if last_client is None:
-        assert x11.display.get_input_focus().focus == x11.root
+        # if no window is focused, some dummy window is focused. in the case of hlwm
+        # we focus the window that is also used for the EWMH _NET_SUPPORTING_WM_CHECK.
+        # (this is also what openbox is doing)
+        assert x11.display.get_input_focus().focus.id == x11.get_property('_NET_SUPPORTING_WM_CHECK')[0]
         assert 'focus' not in hlwm.list_children('clients')
     else:
         hlwm.call('attr clients')
