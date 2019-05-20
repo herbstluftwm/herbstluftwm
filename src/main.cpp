@@ -561,7 +561,7 @@ void scan(Root* root) {
         // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
         // the previous window manager
         // TODO: what would dwm do?
-        if (root->ewmh->isOwnWindow(wins[i])) {
+        if (root->ewmh->isOwnWindow(win)) {
             continue;
         }
         if (wa.map_state == IsViewable
