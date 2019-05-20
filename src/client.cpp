@@ -169,7 +169,7 @@ void Client::window_unfocus_last() {
         lastfocus->window_unfocus();
     }
     // give focus to root window
-    XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
+    Ewmh::get().clearInputFocus();
     if (lastfocus) {
         /* only emit the hook if the focus *really* changes */
         hook_emit({"focus_changed", "0x0", ""});

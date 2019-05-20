@@ -103,9 +103,10 @@ Ewmh::Ewmh(XConnection& xconnection)
 
     /* init for the supporting wm check */
     g_wm_window = XCreateSimpleWindow(X_.display(), X_.root(),
-                                      42, 42, 42, 42, 0, 0, 0);
+                                      -100, -100, 1, 1, 0, 0, CWOverrideRedirect | CWEventMask);
     X_.setPropertyWindow(X_.root(), g_netatom[NetSupportingWmCheck], { g_wm_window });
     X_.setPropertyWindow(g_wm_window, g_netatom[NetSupportingWmCheck], { g_wm_window });
+    XMapWindow(X_.display(), g_wm_window);
 
     /* init atoms that never change */
     X_.setPropertyCardinal(X_.root(), g_netatom[NetDesktopViewport], {0, 0});
@@ -430,6 +431,14 @@ void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bott
 
 void Ewmh::windowUpdateWmState(Window win, WmState state) {
     X_.setPropertyCardinal(win, WM_STATE, { state });
+}
+
+bool Ewmh::isOwnWindow(Window win) {
+    return g_wm_window == win;
+}
+
+void Ewmh::clearInputFocus() {
+    XSetInputFocus(X_.display(), g_wm_window, RevertToPointerRoot, CurrentTime);
 }
 
 Ewmh& Ewmh::get() {
