@@ -31,9 +31,6 @@ static Window      g_wm_window;
 
 static int WM_STATE;
 
-static Window*  g_original_clients = nullptr;
-static unsigned long g_original_clients_count = 0;
-
 /* list of names of all _NET-atoms */
 const std::array<const char*,NetCOUNT>g_netatom_names =
   ArrayInitializer<const char*,NetCOUNT>({
@@ -96,11 +93,10 @@ Ewmh::Ewmh(XConnection& xconnection)
         PropModeReplace, (unsigned char *) g_netatom, NetCOUNT);
 
     /* init some globals */
-    if (!readClientList(&g_original_clients, &g_original_clients_count))
-    {
-        g_original_clients = nullptr;
-        g_original_clients_count = 0;
-    }
+    auto maybe_clients =
+        X_.getWindowPropertyWindow(X_.root(), g_netatom[NetClientList]);
+    original_client_list_ =
+        maybe_clients.has_value() ? maybe_clients.value() : vector<Window>();
 
     /* init other atoms */
     WM_STATE = XInternAtom(X_.display(), "WM_STATE", False);
@@ -131,9 +127,6 @@ void Ewmh::updateAll() {
 }
 
 Ewmh::~Ewmh() {
-    if (g_original_clients) {
-        XFree(g_original_clients);
-    }
     XDeleteProperty(X_.display(), X_.root(), g_netatom[NetSupportingWmCheck]);
     XDestroyWindow(X_.display(), g_wm_window);
 }
@@ -163,9 +156,9 @@ bool Ewmh::readClientList(Window** buf, unsigned long *count) {
     return true;
 }
 
-void Ewmh::getOriginalClientList(Window** buf, unsigned long *count) {
-    *buf = g_original_clients;
-    *count = g_original_clients_count;
+//! The client list before hlwm has been started
+vector<Window> Ewmh::originalClientList() const {
+    return original_client_list_;
 }
 
 void Ewmh::updateClientListStacking() {

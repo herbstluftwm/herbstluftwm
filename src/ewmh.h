@@ -4,6 +4,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <array>
+#include <vector>
 
 #define ENUM_WITH_ALIAS(Identifier, Alias) \
     Identifier, Alias = Identifier
@@ -99,7 +100,7 @@ public:
     void updateWmName();
 
     void updateClientList();
-    void getOriginalClientList(Window** buf, unsigned long *count);
+    std::vector<Window> originalClientList() const;
     void updateClientListStacking();
     void updateDesktops();
     void updateDesktopNames();
@@ -133,7 +134,7 @@ private:
     bool readClientList(Window** buf, unsigned long *count);
     Root* root_ = nullptr;
     XConnection& X_;
-
+    std::vector<Window> original_client_list_; //! client list before hlwm start
     Atom wmatom(WM proto);
     Atom wmatom_[(int)WM::Last];
 };
