@@ -65,8 +65,6 @@ Monitor* find_monitor_by_name(const char* name);
 Monitor* string_to_monitor(const char* string);
 int remove_monitor_command(int argc, char** argv, Output output);
 int remove_monitor(int index);
-int set_monitor_rects_command(int argc, char** argv, Output output);
-int set_monitor_rects(const RectangleVec &templates);
 int monitor_rect_command(int argc, char** argv, Output output);
 Monitor* get_current_monitor();
 int monitor_set_tag(Monitor* monitor, HSTag* tag);

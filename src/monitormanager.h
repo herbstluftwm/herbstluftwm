@@ -57,6 +57,10 @@ public:
     int raiseMonitorCommand(Input input, Output output);
     void raiseMonitorCompletion(Completion& complete);
 
+    int setMonitors(const RectangleVec& templates);
+    int setMonitorsCommand(Input input, Output output);
+    void setMonitorsCompletion(Completion& complete);
+
     int cur_monitor;
 
 private:
