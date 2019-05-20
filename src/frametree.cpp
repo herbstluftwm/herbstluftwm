@@ -38,34 +38,29 @@ void FrameTree::dump(shared_ptr<HSFrame> frame, Output output)
 {
     auto l = frame->isLeaf();
     if (l) {
-        output << LAYOUT_DUMP_BRACKETS[0]
-               << "clients"
-               << LAYOUT_DUMP_WHITESPACES[0]
+        output << "(clients "
                << g_layout_names[(int)l->layout] << ":"
                << l->selection;
         for (auto client : l->clients) {
-            output << LAYOUT_DUMP_WHITESPACES[0]
-                   << "0x"
+            output << " 0x"
                    << std::hex << client->x11Window() << std::dec;
         }
-        output << LAYOUT_DUMP_BRACKETS[1];
+        output << ")";
     }
     auto s = frame->isSplit();
     if (s) {
         output
-            << LAYOUT_DUMP_BRACKETS[0]
-            << "split"
-            << LAYOUT_DUMP_WHITESPACES[0]
+            << "(split "
             << g_align_names[(int)s->align_]
-            << LAYOUT_DUMP_SEPARATOR
+            << ":"
             << ((double)s->fraction_) / (double)FRACTION_UNIT
-            << LAYOUT_DUMP_SEPARATOR
+            << ":"
             << s->selection_
-            << LAYOUT_DUMP_WHITESPACES[0];
+            << " ";
         FrameTree::dump(s->a_, output);
-        output << LAYOUT_DUMP_WHITESPACES[0];
+        output << " ";
         FrameTree::dump(s->b_, output);
-        output << LAYOUT_DUMP_BRACKETS[1];
+        output << ")";
     }
 }
 
