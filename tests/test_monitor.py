@@ -180,3 +180,13 @@ def test_set_monitors_removes_monitors(hlwm, monitor_count_before):
     assert hlwm.get_attr('monitors.count') == '1'
     monitors = hlwm.call('list_monitors').stdout
     assert monitors == '0: 100x200+100+0 with tag "default" [FOCUS]\n'
+
+
+def test_raise_monitor_completion(hlwm):
+    hlwm.call('add tag2')
+    hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
+
+    expected = ['']
+    expected += '-1 +0 +1 0 1 monitor2'.split(' ')
+    expected.sort()
+    assert hlwm.complete('raise_monitor') == expected

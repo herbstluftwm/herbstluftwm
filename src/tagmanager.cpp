@@ -176,7 +176,12 @@ HSTag* TagManager::ensure_tags_are_available() {
 }
 
 HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
-    int index = stoi(index_str);
+    int index;
+    try {
+        index = stoi(index_str);
+    } catch (...) {
+        return nullptr;
+    }
     // index must be treated relative, if it's first char is + or -
     bool is_relative = index_str[0] == '+' || index_str[0] == '-';
     Monitor* monitor = get_current_monitor();

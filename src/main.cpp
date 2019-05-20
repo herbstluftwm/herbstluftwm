@@ -182,7 +182,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"rotate",         { tags->frameCommand(&FrameTree::rotateCommand) }},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
         {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
-        {"raise_monitor",  monitor_raise_command},
+        {"raise_monitor",  { monitors, &MonitorManager::raiseMonitorCommand,
+                                       &MonitorManager::raiseMonitorCompletion }},
         {"remove_monitor", BIND_OBJECT(monitors, removeMonitor)},
         {"move_monitor",   monitors->byFirstArg(&Monitor::move_cmd) } ,
         {"rename_monitor", monitors->byFirstArg(&Monitor::renameCommand) },
@@ -421,8 +422,9 @@ int raise_command(int argc, char** argv, Output) {
         client->raise();
     } else {
         auto window = get_window((argc > 1) ? argv[1] : "");
-        if (window)
-            XRaiseWindow(g_display, std::stoul(argv[1], nullptr, 0));
+        if (window) {
+            XRaiseWindow(g_display, window);
+        }
         else return HERBST_INVALID_ARGUMENT;
     }
     return 0;
@@ -539,43 +541,47 @@ static void clientmessage(Root* root, XEvent* event) {
 // scan for windows and add them to the list of managed clients
 // from dwm.c
 void scan(Root* root) {
-    unsigned int num;
-    Window d1, d2, *cl, *wins = nullptr;
-    unsigned long cl_count;
     XWindowAttributes wa;
+    Window transientFor;
+    auto& X = root->X;
     auto clientmanager = root->clients();
-
-    root->ewmh->getOriginalClientList(&cl, &cl_count);
-    if (XQueryTree(g_display, g_root, &d1, &d2, &wins, &num)) {
-        for (unsigned i = 0; i < num; i++) {
-            if(!XGetWindowAttributes(g_display, wins[i], &wa)
-            || wa.override_redirect || XGetTransientForHint(g_display, wins[i], &d1))
-                continue;
-            // only manage mapped windows.. no strange wins like:
-            //      luakit/dbus/(ncurses-)vim
-            // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
-            // the previous window manager
-            // TODO: what would dwm do?
-            if (is_window_mapped(g_display, wins[i])
-                || 0 <= array_find(cl, cl_count, sizeof(Window), wins+i)) {
-                clientmanager->manage_client(wins[i], true);
-                XMapWindow(g_display, wins[i]);
-            }
-        }
-        if(wins)
-            XFree(wins);
-    }
-    // ensure every original client is managed again
-    for (unsigned i = 0; i < cl_count; i++) {
-        if (get_client_from_window(cl[i])) continue;
-        if (!XGetWindowAttributes(g_display, cl[i], &wa)
+    auto originalClients = root->ewmh->originalClientList();
+    auto isInOriginalClients = [&originalClients] (Window win) {
+        return originalClients.end()
+            != std::find(originalClients.begin(), originalClients.end(), win);
+    };
+    for (auto win : X.queryTree(X.root())) {
+        if (!XGetWindowAttributes(X.display(), win, &wa)
             || wa.override_redirect
-            || XGetTransientForHint(g_display, cl[i], &d1))
+            || XGetTransientForHint(X.display(), win, &transientFor))
         {
             continue;
         }
-        XReparentWindow(g_display, cl[i], g_root, 0,0);
-        clientmanager->manage_client(cl[i], true);
+        // only manage mapped windows.. no strange wins like:
+        //      luakit/dbus/(ncurses-)vim
+        // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
+        // the previous window manager
+        // TODO: what would dwm do?
+        if (root->ewmh->isOwnWindow(win)) {
+            continue;
+        }
+        if (wa.map_state == IsViewable
+            || isInOriginalClients(win)) {
+            clientmanager->manage_client(win, true);
+            XMapWindow(X.display(), win);
+        }
+    }
+    // ensure every original client is managed again
+    for (auto win : originalClients) {
+        if (clientmanager->client(win)) continue;
+        if (!XGetWindowAttributes(X.display(), win, &wa)
+            || wa.override_redirect
+            || XGetTransientForHint(X.display(), win, &transientFor))
+        {
+            continue;
+        }
+        XReparentWindow(X.display(), win, X.root(), 0,0);
+        clientmanager->manage_client(win, true);
     }
 }
 
@@ -688,13 +694,6 @@ static void init_handler_table() {
     g_default_handler[ PropertyNotify    ] = propertynotify;
     g_default_handler[ UnmapNotify       ] = unmapnotify;
 }
-
-static struct {
-    void (*init)();
-    void (*destroy)();
-} g_modules[] = {
-    { clientlist_init,  clientlist_destroy  },
-};
 
 /* ----------------------------- */
 /* event handler implementations */
@@ -821,7 +820,9 @@ void mapnotify(Root* root, XEvent* event) {
 void maprequest(Root* root, XEvent* event) {
     HSDebug("name is: MapRequest\n");
     XMapRequestEvent* mapreq = &event->xmaprequest;
-    if (is_herbstluft_window(g_display, mapreq->window)) {
+    if (root->ewmh->isOwnWindow(mapreq->window)
+        || is_herbstluft_window(g_display, mapreq->window))
+    {
         // just map the window if it wants that
         XWindowAttributes wa;
         if (!XGetWindowAttributes(g_display, mapreq->window, &wa)) {
@@ -907,11 +908,6 @@ int main(int argc, char* argv[]) {
     init_handler_table();
     Commands::initialize(commands(root));
 
-    // initialize subsystems
-    for (unsigned i = 0; i < LENGTH(g_modules); i++) {
-        g_modules[i].init();
-    }
-
     // setup
     root->monitors()->ensure_monitors_are_available();
     scan(&* root);
@@ -944,10 +940,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // destroy all subsystems
-    for (int i = LENGTH(g_modules); i --> 0;) {
-        g_modules[i].destroy();
-    }
     // enforce to clear the root
     root.reset();
     Root::setRoot(root);

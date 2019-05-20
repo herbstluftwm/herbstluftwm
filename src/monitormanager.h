@@ -12,6 +12,7 @@
 
 extern MonitorManager* g_monitors;
 
+class Completion;
 class TagManager;
 class HSTag;
 
@@ -31,6 +32,7 @@ public:
     int list_monitors(Output output);
     int list_padding(Input input, Output output);
     int string_to_monitor_index(std::string string);
+    void completeMonitorName(Completion& complete);
     Monitor* addMonitor(Rectangle rect, HSTag* tag);
     int addMonitor(Input input, Output output);
     // return a command that interprets the first argument
@@ -52,15 +54,18 @@ public:
     int stackCommand(Output output);
     void extractWindowStack(bool real_clients, std::function<void(Window)> addToStack);
     void restack();
+    int raiseMonitorCommand(Input input, Output output);
+    void raiseMonitorCompletion(Completion& complete);
 
     int setMonitors(const RectangleVec& templates);
     int setMonitorsCommand(Input input, Output output);
     void setMonitorsCompletion(Completion& complete);
 
     int cur_monitor;
-    PlainStack<Monitor*> monitorStack_; // TODO: make this private
 
 private:
+    PlainStack<Monitor*> monitorStack_;
+
     ByName by_name_;
     TagManager* tags_;
     Settings* settings_;

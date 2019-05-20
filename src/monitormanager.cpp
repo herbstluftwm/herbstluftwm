@@ -4,6 +4,7 @@
 #include <cassert>
 #include <memory>
 
+#include "completion.h"
 #include "ewmh.h"
 #include "floating.h"
 #include "frametree.h"
@@ -23,6 +24,7 @@ using std::make_pair;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::to_string;
 using std::vector;
 
 MonitorManager* g_monitors;
@@ -116,6 +118,22 @@ int MonitorManager::string_to_monitor_index(string str) {
           }
         }
         return -1;
+    }
+}
+
+void MonitorManager::completeMonitorName(Completion& complete) {
+    complete.full(""); // the focused monitor
+    // complete against relative indices
+    complete.full("-1");
+    complete.full("+0");
+    complete.full("+1");
+    for (auto m : *this) {
+        // complete against the absolute index
+        complete.full(to_string(m->index()));
+        // complete against the name
+        if (m->name != "") {
+            complete.full(m->name);
+        }
     }
 }
 
@@ -458,5 +476,26 @@ int MonitorManager::setMonitorsCommand(Input input, Output output) {
 void MonitorManager::setMonitorsCompletion(Completion&) {
     // every parameter can be a rectangle specification.
     // we don't have completion for rectangles
+}
+
+int MonitorManager::raiseMonitorCommand(Input input, Output output) {
+    string monitorName = "";
+    input >> monitorName;
+    Monitor* monitor = string_to_monitor(monitorName.c_str());
+    if (!monitor) {
+        output << input.command() << ": Monitor \"" << monitorName << "\" not found!\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    monitorStack_.raise(monitor);
+    restack();
+    return 0;
+}
+
+void MonitorManager::raiseMonitorCompletion(Completion& complete) {
+    if (complete == 0) {
+        completeMonitorName(complete);
+    } else {
+        complete.none();
+    }
 }
 
