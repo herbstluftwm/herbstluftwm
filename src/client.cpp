@@ -27,11 +27,6 @@ using std::string;
 
 static int g_monitor_float_treshold = 24;
 
-// atoms from dwm.c
-// default atoms
-enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast };
-static Atom g_wmatom[WMLast];
-
 static Client* lastfocus = nullptr;
 
 
@@ -108,15 +103,6 @@ void Client::make_full_client() {
     XSelectInput(g_display, window_, CLIENT_EVENT_MASK);
 }
 
-void clientlist_init() {
-    // init regex simple..
-    g_wmatom[WMProtocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
-    g_wmatom[WMDelete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
-    g_wmatom[WMState] = XInternAtom(g_display, "WM_STATE", False);
-    g_wmatom[WMTakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
-    // init actual client list
-}
-
 bool Client::ignore_unmapnotify() {
     if (ignore_unmaps_ > 0) {
         ignore_unmaps_--;
@@ -128,9 +114,6 @@ bool Client::ignore_unmapnotify() {
 
 void reset_client_colors() {
     all_monitors_apply_layout();
-}
-
-void clientlist_destroy() {
 }
 
 Client* get_client_from_window(Window window) {
@@ -167,7 +150,7 @@ void Client::window_unfocus_last() {
         lastfocus->window_unfocus();
     }
     // give focus to root window
-    XSetInputFocus(g_display, g_root, RevertToPointerRoot, CurrentTime);
+    Ewmh::get().clearInputFocus();
     if (lastfocus) {
         /* only emit the hook if the focus *really* changes */
         hook_emit({"focus_changed", "0x0", ""});
@@ -185,7 +168,7 @@ void Client::window_focus() {
     if (!this->neverfocus_) {
         XSetInputFocus(g_display, this->window_, RevertToPointerRoot, CurrentTime);
     }
-    else this->sendevent(g_wmatom[WMTakeFocus]);
+    else ewmh.sendEvent(window_, Ewmh::WM::TakeFocus, True);
 
     if (this != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
@@ -419,7 +402,7 @@ int close_command(Input input, Output) {
     input >> winid; // try to read, use "" otherwise
     auto window = get_window(winid);
     if (window != 0)
-        window_close(window);
+        Ewmh::get().windowClose(window);
     else return HERBST_INVALID_ARGUMENT;
     return 0;
 }
@@ -430,15 +413,8 @@ bool Client::is_client_floated() {
     else return tag()->floating;
 }
 
-void window_close(Window window) {
-    XEvent ev;
-    ev.type = ClientMessage;
-    ev.xclient.window = window;
-    ev.xclient.message_type = g_wmatom[WMProtocols];
-    ev.xclient.format = 32;
-    ev.xclient.data.l[0] = g_wmatom[WMDelete];
-    ev.xclient.data.l[1] = CurrentTime;
-    XSendEvent(g_display, window, False, NoEventMask, &ev);
+void Client::requestClose() { //! ask the client to close
+    ewmh.windowClose(window_);
 }
 
 void window_set_visible(Window win, bool visible) {
@@ -644,30 +620,6 @@ Window get_window(const string& str) {
     }
 }
 
-// mainly from dwm.c
-bool Client::sendevent(Atom proto) {
-    int n;
-    Atom *protocols;
-    bool exists = false;
-    XEvent ev;
-
-    if (XGetWMProtocols(g_display, this->window_, &protocols, &n)) {
-        while (!exists && n--)
-            exists = protocols[n] == proto;
-        XFree(protocols);
-    }
-    if (exists) {
-        ev.type = ClientMessage;
-        ev.xclient.window = this->window_;
-        ev.xclient.message_type = g_wmatom[WMProtocols];
-        ev.xclient.format = 32;
-        ev.xclient.data.l[0] = proto;
-        ev.xclient.data.l[1] = CurrentTime;
-        XSendEvent(g_display, this->window_, False, NoEventMask, &ev);
-    }
-    return exists;
-}
-
 void Client::set_dragged(bool drag_state) {
     if (drag_state == dragged_) return;
     dragged_ = drag_state;
@@ -694,11 +646,7 @@ void Client::fuzzy_fix_initial_position() {
 }
 
 void Client::clear_properties() {
-    // delete ewmh-properties and ICCCM-Properties such that the client knows
-    // that he has been unmanaged and now the client is allowed to be mapped
-    // again (e.g. if it is some dialog)
     ewmh.clearClientProperties(window_);
-    XDeleteProperty(g_display, window_, g_wmatom[WMState]);
 }
 
 //! name of the tag on which the client is

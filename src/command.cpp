@@ -9,7 +9,6 @@
 #include "clientmanager.h"
 #include "completion.h"
 #include "ipc-protocol.h"
-#include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "object.h"
@@ -56,6 +55,15 @@ static const char* completion_split_ratios[]= {
 static bool no_completion(int, char**, int) {
     return false;
 }
+
+static const char* g_layout_names[] = {
+    // TODO: remove this after migrating set_layout and cycle_layout
+    "vertical",
+    "horizontal",
+    "max",
+    "grid",
+    nullptr,
+};
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
@@ -111,7 +119,6 @@ struct {
     { "rename_monitor", 3,  no_completion },
     { "remove_monitor", 2,  no_completion },
     { "move_monitor",   7,  no_completion },
-    { "raise_monitor",  2,  no_completion },
     { "monitor_rect",   3,  no_completion },
     { "pad",            6,  no_completion },
     { "list_padding",   2,  no_completion },
@@ -209,7 +216,6 @@ struct {
     { "rename_monitor", EQ, 1,  complete_against_monitors, 0 },
     { "remove_monitor", EQ, 1,  complete_against_monitors, 0 },
     { "move_monitor",   EQ, 1,  complete_against_monitors, 0 },
-    { "raise_monitor",  EQ, 1,  complete_against_monitors, 0 },
     { "name_monitor",   EQ, 1,  complete_against_monitors, 0 },
     { "monitor_rect",   EQ, 1,  complete_against_monitors, 0 },
     { "pad",            EQ, 1,  complete_against_monitors, 0 },

@@ -4,6 +4,7 @@
 #include <cassert>
 #include <memory>
 
+#include "completion.h"
 #include "ewmh.h"
 #include "floating.h"
 #include "frametree.h"
@@ -17,11 +18,13 @@
 #include "tagmanager.h"
 #include "utils.h"
 
+using std::endl;
 using std::function;
 using std::make_pair;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::to_string;
 using std::vector;
 
 MonitorManager* g_monitors;
@@ -115,6 +118,22 @@ int MonitorManager::string_to_monitor_index(string str) {
           }
         }
         return -1;
+    }
+}
+
+void MonitorManager::completeMonitorName(Completion& complete) {
+    complete.full(""); // the focused monitor
+    // complete against relative indices
+    complete.full("-1");
+    complete.full("+0");
+    complete.full("+1");
+    for (auto m : *this) {
+        // complete against the absolute index
+        complete.full(to_string(m->index()));
+        // complete against the name
+        if (m->name != "") {
+            complete.full(m->name);
+        }
     }
 }
 
@@ -394,5 +413,89 @@ int MonitorManager::stackCommand(Output output) {
     auto stackRoot = make_shared<StringTree>("", monitors);
     tree_print_to(stackRoot, output);
     return 0;
+}
+
+/** Add, Move, Remove monitors such that the monitor list matches the given
+ * vector of Rectangles
+ */
+int MonitorManager::setMonitors(const RectangleVec& templates) {
+    if (templates.empty()) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+    HSTag* tag = nullptr;
+    unsigned i;
+    for (i = 0; i < std::min(templates.size(), size()); i++) {
+        auto m = byIdx(i);
+        m->rect = templates[i];
+    }
+    // add additional monitors
+    for (; i < templates.size(); i++) {
+        tag = tags_->unusedTag();
+        if (!tag) {
+            return HERBST_TAG_IN_USE;
+        }
+        addMonitor(templates[i], tag);
+        tag->frame->root_->setVisibleRecursive(true);
+    }
+    // remove monitors if there are too much
+    while (i < size()) {
+        removeMonitor(byIdx(i));
+    }
+    monitor_update_focus_objects();
+    all_monitors_apply_layout();
+    return 0;
+}
+
+int MonitorManager::setMonitorsCommand(Input input, Output output) {
+    RectangleVec templates;
+    string rectangleString;
+    while (input >> rectangleString) {
+        Rectangle rect = Rectangle::fromStr(rectangleString);
+        if (rect.width == 0 || rect.height == 0)
+        {
+            output << input.command()
+                   << ": Rectangle invalid or too small: "
+                   << rectangleString << endl;
+            return HERBST_INVALID_ARGUMENT;
+        }
+        templates.push_back(rect);
+    }
+    if (templates.empty()) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    int status = setMonitors(templates);
+
+    if (status == HERBST_TAG_IN_USE) {
+        output << input.command() << ": There are not enough free tags\n";
+    } else if (status == HERBST_INVALID_ARGUMENT) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    return status;
+}
+
+void MonitorManager::setMonitorsCompletion(Completion&) {
+    // every parameter can be a rectangle specification.
+    // we don't have completion for rectangles
+}
+
+int MonitorManager::raiseMonitorCommand(Input input, Output output) {
+    string monitorName = "";
+    input >> monitorName;
+    Monitor* monitor = string_to_monitor(monitorName.c_str());
+    if (!monitor) {
+        output << input.command() << ": Monitor \"" << monitorName << "\" not found!\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    monitorStack_.raise(monitor);
+    restack();
+    return 0;
+}
+
+void MonitorManager::raiseMonitorCompletion(Completion& complete) {
+    if (complete == 0) {
+        completeMonitorName(complete);
+    } else {
+        complete.none();
+    }
 }
 

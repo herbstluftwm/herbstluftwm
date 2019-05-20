@@ -95,13 +95,12 @@ public:
     bool applysizehints_xy(int *x, int *y, int *w, int *h);
     void updatesizehints();
 
-    bool sendevent(Atom proto);
-
     void set_visible(bool visible_);
 
     void set_fullscreen(bool state);
     void set_pseudotile(bool state);
     void set_urgent_force(bool state);
+    void requestClose(); //! ask the client to close
 
     void clear_properties();
     bool ignore_unmapnotify();
@@ -120,12 +119,7 @@ private:
 
 
 
-void clientlist_init();
-void clientlist_destroy();
-
-
 void reset_client_colors();
-void reset_client_settings();
 
 Client* get_client_from_window(Window window);
 Client* get_current_client();
@@ -133,7 +127,6 @@ Client* get_client(const char* str);
 Window get_window(const std::string& str);
 
 int close_command(Input input, Output output);
-void window_close(Window window);
 
 // sets a client property, depending on argv[0]
 int client_set_property_command(int argc, char** argv);
