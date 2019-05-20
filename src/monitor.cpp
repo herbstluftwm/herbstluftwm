@@ -7,10 +7,6 @@
 #include <sstream>
 #include <vector>
 
-#ifdef XINERAMA
-#include <X11/extensions/Xinerama.h>
-#endif /* XINERAMA */
-
 #include "client.h"
 #include "clientmanager.h"
 #include "ewmh.h"
@@ -19,6 +15,7 @@
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "layout.h"
+#include "monitordetection.h"
 #include "monitormanager.h"
 #include "rectangle.h"
 #include "root.h"
@@ -27,6 +24,7 @@
 #include "tag.h"
 #include "tagmanager.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::make_shared;
 using std::string;
@@ -613,80 +611,12 @@ Monitor* monitor_with_coordinate(int x, int y) {
     return nullptr;
 }
 
-// monitor detection using xinerama (if available)
-#ifdef XINERAMA
-// inspired by dwm's isuniquegeom()
-static bool geom_unique(const RectangleVec& unique, XineramaScreenInfo *info) {
-    for (const auto& u : unique) {
-        if (u.x == info->x_org && u.y == info->y_org
-        &&  u.width == info->width && u.height == info->height)
-            return false;
-    }
-    return true;
-}
-
-// inspired by dwm's updategeom()
-bool detect_monitors_xinerama(RectangleVec &ret) {
-    if (!XineramaIsActive(g_display)) {
-        return false;
-    }
-    int n;
-    XineramaScreenInfo *info = XineramaQueryScreens(g_display, &n);
-    RectangleVec monitor_rects;
-    for (int i = 0; i < n; i++) {
-        if (geom_unique(monitor_rects, &info[i])) {
-            Rectangle r;
-            r.x = info[i].x_org;
-            r.y = info[i].y_org;
-            r.width = info[i].width;
-            r.height = info[i].height;
-            monitor_rects.push_back(r);
-        }
-    }
-    XFree(info);
-    ret.swap(monitor_rects);
-    return true;
-}
-#else  /* XINERAMA */
-
-bool detect_monitors_xinerama(RectangleVec &dest) {
-    return false;
-}
-
-#endif /* XINERAMA */
-
-// monitor detection that always works: one monitor across the entire screen
-bool detect_monitors_simple(RectangleVec &dest) {
-    XWindowAttributes attributes;
-    XGetWindowAttributes(g_display, g_root, &attributes);
-    dest = {{ 0, 0, attributes.width, attributes.height }};
-    return true;
-}
-
-bool detect_monitors_debug_example(RectangleVec &dest) {
-    dest = {{ 0, 0,
-              g_screen_width * 2 / 3, g_screen_height * 2 / 3 },
-            { g_screen_width / 3, g_screen_height / 3,
-              g_screen_width * 2 / 3, g_screen_height * 2 / 3}};
-    return true;
-}
-
-
 int detect_monitors_command(int argc, const char **argv, Output output) {
-    MonitorDetection detect[] = {
-        detect_monitors_xinerama,
-        detect_monitors_simple,
-        detect_monitors_debug_example, // move up for debugging
-    };
-    RectangleVec monitor_rects;
-    // search for a working monitor detection
-    // at least the simple detection must work
-    for (int i = 0; i < LENGTH(detect); i++) {
-        if (detect[i](monitor_rects)) {
-            break;
-        }
+    auto root = Root::get();
+    RectangleVec monitor_rects = detectMonitorsXinerama(root->X);
+    if (monitor_rects.empty()) {
+        monitor_rects = { root->X.windowSize(root->X.root()) };
     }
-    assert(!monitor_rects.empty());
     bool list_only = false;
     bool disjoin = true;
     //bool drop_small = true;

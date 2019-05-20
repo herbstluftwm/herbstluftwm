@@ -82,9 +82,6 @@ void drop_enternotify_events();
 
 void monitor_update_focus_objects();
 
-typedef bool (*MonitorDetection)(RectangleVec &);
-bool detect_monitors_xinerama(RectangleVec &dest);
-bool detect_monitors_simple(RectangleVec &dest);
 int detect_monitors_command(int argc, const char **argv, Output output);
 
 int shift_to_monitor(int argc, char** argv, Output output);
