@@ -325,10 +325,7 @@ void Consequence::applyEwmhnotify(const Client* client, ClientChanges* changes) 
 }
 
 void Consequence::applyHook(const Client* client, ClientChanges* changes) const {
-    std::stringstream winidSs;
-    winidSs << "0x" << std::hex << client->window_;
-    auto winidStr = winidSs.str();
-    hook_emit({ "rule", value, winidStr });
+    hook_emit({ "rule", value, WindowID(client->window_).str() });
 }
 
 void Consequence::applyKeyMask(const Client* client, ClientChanges* changes) const {

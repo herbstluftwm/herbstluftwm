@@ -42,8 +42,7 @@ void FrameTree::dump(shared_ptr<HSFrame> frame, Output output)
                << Converter<LayoutAlgorithm>::str(l->layout) << ":"
                << l->selection;
         for (auto client : l->clients) {
-            output << " 0x"
-                   << std::hex << client->x11Window() << std::dec;
+            output << " " << WindowID(client->x11Window()).str();
         }
         output << ")";
     }
@@ -228,8 +227,7 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         void appendCaption(Output output) override {
             output << " " << Converter<LayoutAlgorithm>::str(l_->layout) << ":";
             for (auto client : l_->clients) {
-                output << " 0x"
-                       << std::hex << client->x11Window() << std::dec;
+                output << " " << WindowID(client->x11Window()).str();
             }
             if (l_ == focus_) {
                 output << " [FOCUS]";
@@ -454,7 +452,7 @@ int FrameTree::loadCommand(Input input, Output output) {
     if (!parsingResult.unknownWindowIDs_.empty()) {
         output << "Warning: Unknown window IDs";
         for (const auto& e : parsingResult.unknownWindowIDs_) {
-            output << " 0x" << std::hex << e.second << std::dec
+            output << " " << WindowID(e.second).str()
                    << "(\'" << e.first.second << "\')";
         }
         output << endl;

@@ -81,11 +81,10 @@ string Slice::getLabel() {
     std::stringstream label;
     switch (type) {
         case Type::WindowSlice:
-            label << "Window 0x" << std::hex << data.window << std::dec;
+            label << "Window " << WindowID(data.window).str();
             break;
         case Type::ClientSlice:
-            label << "Client 0x"
-                  << std::hex << data.client->x11Window() << std::dec
+            label << "Client " << WindowID(data.client->x11Window()).str()
                   << " \"" << data.client->title_() << "\"";
             break;
         default: ;
