@@ -48,9 +48,6 @@ void tree_print_to(std::shared_ptr<TreeInterface> intface, Output output);
 
 bool is_herbstluft_window(Display* dpy, Window window);
 
-bool is_window_mapable(Display* dpy, Window window);
-bool is_window_mapped(Display* dpy, Window window);
-
 const char* strlasttoken(const char* str, const char* delim);
 
 time_t get_monotonic_timestamp();

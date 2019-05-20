@@ -63,7 +63,6 @@ int monitor_cycle_command(int argc, char** argv);
 int monitor_focus_command(int argc, char** argv, Output output);
 Monitor* find_monitor_by_name(const char* name);
 Monitor* string_to_monitor(const char* string);
-int monitor_raise_command(int argc, char** argv, Output output);
 int remove_monitor_command(int argc, char** argv, Output output);
 int remove_monitor(int index);
 int set_monitor_rects_command(int argc, char** argv, Output output);
