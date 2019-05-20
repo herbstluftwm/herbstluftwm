@@ -165,7 +165,7 @@ int FrameTree::removeFrameCommand() {
 int FrameTree::closeOrRemoveCommand() {
     Client* client = focusedFrame()->focusedClient();
     if (client) {
-        window_close(client->x11Window());
+        client->requestClose();
         return 0;
     } else {
         return removeFrameCommand();
@@ -178,7 +178,7 @@ int FrameTree::closeAndRemoveCommand() {
     Client* client = cur_frame->focusedClient();
     if (client) {
         // note that this just sends the closing signal
-        window_close(client->x11Window());
+        client->requestClose();
         // so the window is still in the frame at this point
     }
     if (cur_frame->clientCount() <= 1) {

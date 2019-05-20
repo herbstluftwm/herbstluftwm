@@ -7,10 +7,6 @@
 #include <sstream>
 #include <vector>
 
-#ifdef XINERAMA
-#include <X11/extensions/Xinerama.h>
-#endif /* XINERAMA */
-
 #include "client.h"
 #include "clientmanager.h"
 #include "ewmh.h"
@@ -19,8 +15,8 @@
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "layout.h"
+#include "monitordetection.h"
 #include "monitormanager.h"
-#include "plainstack.h"
 #include "rectangle.h"
 #include "root.h"
 #include "settings.h"
@@ -28,6 +24,7 @@
 #include "tag.h"
 #include "tagmanager.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::make_shared;
 using std::string;
@@ -189,53 +186,6 @@ void Monitor::applyLayout() {
     drop_enternotify_events();
 }
 
-int set_monitor_rects_command(int argc, char** argv, Output output) {
-    (void)SHIFT(argc, argv);
-    if (argc < 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    RectangleVec templates;
-    for (int i = 0; i < argc; i++) {
-        templates.push_back(Rectangle::fromStr(argv[i]));
-    }
-    int status = set_monitor_rects(templates);
-
-    if (status == HERBST_TAG_IN_USE) {
-        output << argv[0] << ": There are not enough free tags\n";
-    } else if (status == HERBST_INVALID_ARGUMENT) {
-        output << argv[0] << ": Need at least one rectangle\n";
-    }
-    return status;
-}
-
-int set_monitor_rects(const RectangleVec &templates) {
-    if (templates.empty()) {
-        return HERBST_INVALID_ARGUMENT;
-    }
-    HSTag* tag = nullptr;
-    unsigned i;
-    for (i = 0; i < std::min(templates.size(), g_monitors->size()); i++) {
-        auto m = g_monitors->byIdx(i);
-        m->rect = templates[i];
-    }
-    // add additional monitors
-    for (; i < templates.size(); i++) {
-        tag = global_tags->unusedTag();
-        if (!tag) {
-            return HERBST_TAG_IN_USE;
-        }
-        g_monitors->addMonitor(templates[i], tag);
-        tag->frame->root_->setVisibleRecursive(true);
-    }
-    // remove monitors if there are too much
-    while (i < g_monitors->size()) {
-        g_monitors->removeMonitor(g_monitors->byIdx(i));
-    }
-    monitor_update_focus_objects();
-    all_monitors_apply_layout();
-    return 0;
-}
-
 Monitor* find_monitor_by_name(const char* name) {
     for (auto m : *g_monitors) {
         if (m->name == name)
@@ -263,13 +213,13 @@ int Monitor::move_cmd(Input input, Output output) {
     // else: just move it:
     this->rect = new_rect;
     input.shift();
-    if (!input.empty()) pad_up       = stoi(input.front());
+    if (!input.empty()) pad_up.change(input.front());
     input.shift();
-    if (!input.empty()) pad_right    = stoi(input.front());
+    if (!input.empty()) pad_right.change(input.front());
     input.shift();
-    if (!input.empty()) pad_down     = stoi(input.front());
+    if (!input.empty()) pad_down.change(input.front());
     input.shift();
-    if (!input.empty()) pad_left     = stoi(input.front());
+    if (!input.empty()) pad_left.change(input.front());
     applyLayout();
     return 0;
 }
@@ -614,80 +564,12 @@ Monitor* monitor_with_coordinate(int x, int y) {
     return nullptr;
 }
 
-// monitor detection using xinerama (if available)
-#ifdef XINERAMA
-// inspired by dwm's isuniquegeom()
-static bool geom_unique(const RectangleVec& unique, XineramaScreenInfo *info) {
-    for (const auto& u : unique) {
-        if (u.x == info->x_org && u.y == info->y_org
-        &&  u.width == info->width && u.height == info->height)
-            return false;
-    }
-    return true;
-}
-
-// inspired by dwm's updategeom()
-bool detect_monitors_xinerama(RectangleVec &ret) {
-    if (!XineramaIsActive(g_display)) {
-        return false;
-    }
-    int n;
-    XineramaScreenInfo *info = XineramaQueryScreens(g_display, &n);
-    RectangleVec monitor_rects;
-    for (int i = 0; i < n; i++) {
-        if (geom_unique(monitor_rects, &info[i])) {
-            Rectangle r;
-            r.x = info[i].x_org;
-            r.y = info[i].y_org;
-            r.width = info[i].width;
-            r.height = info[i].height;
-            monitor_rects.push_back(r);
-        }
-    }
-    XFree(info);
-    ret.swap(monitor_rects);
-    return true;
-}
-#else  /* XINERAMA */
-
-bool detect_monitors_xinerama(RectangleVec &dest) {
-    return false;
-}
-
-#endif /* XINERAMA */
-
-// monitor detection that always works: one monitor across the entire screen
-bool detect_monitors_simple(RectangleVec &dest) {
-    XWindowAttributes attributes;
-    XGetWindowAttributes(g_display, g_root, &attributes);
-    dest = {{ 0, 0, attributes.width, attributes.height }};
-    return true;
-}
-
-bool detect_monitors_debug_example(RectangleVec &dest) {
-    dest = {{ 0, 0,
-              g_screen_width * 2 / 3, g_screen_height * 2 / 3 },
-            { g_screen_width / 3, g_screen_height / 3,
-              g_screen_width * 2 / 3, g_screen_height * 2 / 3}};
-    return true;
-}
-
-
 int detect_monitors_command(int argc, const char **argv, Output output) {
-    MonitorDetection detect[] = {
-        detect_monitors_xinerama,
-        detect_monitors_simple,
-        detect_monitors_debug_example, // move up for debugging
-    };
-    RectangleVec monitor_rects;
-    // search for a working monitor detection
-    // at least the simple detection must work
-    for (int i = 0; i < LENGTH(detect); i++) {
-        if (detect[i](monitor_rects)) {
-            break;
-        }
+    auto root = Root::get();
+    RectangleVec monitor_rects = detectMonitorsXinerama(root->X);
+    if (monitor_rects.empty()) {
+        monitor_rects = { root->X.windowSize(root->X.root()) };
     }
-    assert(!monitor_rects.empty());
     bool list_only = false;
     bool disjoin = true;
     //bool drop_small = true;
@@ -714,30 +596,12 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
             monitor_rects = disjoin_rects(monitor_rects);
         }
         // apply it
-        ret = set_monitor_rects(monitor_rects);
+        ret = g_monitors->setMonitors(monitor_rects);
         if (ret == HERBST_TAG_IN_USE) {
             output << argv[0] << ": There are not enough free tags\n";
         }
     }
     return ret;
-}
-
-int monitor_raise_command(int argc, char** argv, Output output) {
-    char* cmd_name = argv[0];
-    (void)SHIFT(argc, argv);
-    Monitor* monitor;
-    if (argc >= 1) {
-        monitor = string_to_monitor(argv[0]);
-        if (!monitor) {
-            output << cmd_name << ": Monitor \"" << argv[0] << "\" not found!\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    } else {
-        monitor = get_current_monitor();
-    }
-    g_monitors->monitorStack_.raise(monitor);
-    g_monitors->restack();
-    return 0;
 }
 
 void Monitor::restack() {
