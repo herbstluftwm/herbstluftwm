@@ -297,7 +297,7 @@ function<int()> TagManager::frameCommand(function<int(FrameTree&)> cmd) {
     };
 }
 
-std::function<void(Completion&)> TagManager::frameCompletion(FrameCompleter completer) {
+function<void(Completion&)> TagManager::frameCompletion(FrameCompleter completer) {
     return [completer](Completion& complete) {
         // TODO: use this->focus->frame as soon as we have it.
         shared_ptr<FrameTree> ft = get_current_monitor()->tag->frame;
