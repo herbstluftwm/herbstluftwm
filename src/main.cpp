@@ -181,7 +181,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"rotate",         { tags->frameCommand(&FrameTree::rotateCommand) }},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
         {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
-        {"raise_monitor",  monitor_raise_command},
+        {"raise_monitor",  { monitors, &MonitorManager::raiseMonitorCommand,
+                                       &MonitorManager::raiseMonitorCompletion }},
         {"remove_monitor", BIND_OBJECT(monitors, removeMonitor)},
         {"move_monitor",   monitors->byFirstArg(&Monitor::move_cmd) } ,
         {"rename_monitor", monitors->byFirstArg(&Monitor::renameCommand) },
@@ -420,8 +421,9 @@ int raise_command(int argc, char** argv, Output) {
         client->raise();
     } else {
         auto window = get_window((argc > 1) ? argv[1] : "");
-        if (window)
-            XRaiseWindow(g_display, std::stoul(argv[1], nullptr, 0));
+        if (window) {
+            XRaiseWindow(g_display, window);
+        }
         else return HERBST_INVALID_ARGUMENT;
     }
     return 0;
@@ -555,6 +557,9 @@ void scan(Root* root) {
             // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
             // the previous window manager
             // TODO: what would dwm do?
+            if (root->ewmh->isOwnWindow(wins[i])) {
+                continue;
+            }
             if (is_window_mapped(g_display, wins[i])
                 || 0 <= array_find(cl, cl_count, sizeof(Window), wins+i)) {
                 clientmanager->manage_client(wins[i], true);
@@ -813,7 +818,9 @@ void mapnotify(Root* root, XEvent* event) {
 void maprequest(Root* root, XEvent* event) {
     HSDebug("name is: MapRequest\n");
     XMapRequestEvent* mapreq = &event->xmaprequest;
-    if (is_herbstluft_window(g_display, mapreq->window)) {
+    if (root->ewmh->isOwnWindow(mapreq->window)
+        || is_herbstluft_window(g_display, mapreq->window))
+    {
         // just map the window if it wants that
         XWindowAttributes wa;
         if (!XGetWindowAttributes(g_display, mapreq->window, &wa)) {
