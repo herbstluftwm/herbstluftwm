@@ -13,6 +13,7 @@ class MonitorManager;
 class Settings;
 
 typedef std::function<int(FrameTree&,Input,Output)> FrameCommand;
+typedef void (FrameTree::*FrameCompleter)(Completion&);
 class TagManager : public IndexingObject<HSTag> {
 public:
     TagManager();
@@ -31,6 +32,7 @@ public:
     void moveClient(Client* client, HSTag* target);
     void moveFocusedClient(HSTag* target);
     std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
+    std::function<void(Completion&)> frameCompletion(FrameCompleter completer);
     std::function<int()> frameCommand(std::function<int(FrameTree&)> cmd);
     void updateFocusObject(Monitor* focusedMonitor);
     std::string isValidTagName(std::string name);

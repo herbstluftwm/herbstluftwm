@@ -8,6 +8,7 @@
 #include "types.h"
 
 class Client;
+class Completion;
 class HSFrame;
 class HSFrameLeaf;
 class HSTag;
@@ -45,6 +46,8 @@ public:
     int cycleAllCommand(Input input, Output output);
     int cycleFrameCommand(Input input, Output output);
     int loadCommand(Input input, Output output);
+    int cycleLayoutCommand(Input input, Output output);
+    void cycleLayoutCompletion(Completion& complete);
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:
