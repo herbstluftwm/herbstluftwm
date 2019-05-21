@@ -39,34 +39,28 @@ void FrameTree::dump(shared_ptr<HSFrame> frame, Output output)
 {
     auto l = frame->isLeaf();
     if (l) {
-        output << LAYOUT_DUMP_BRACKETS[0]
-               << "clients"
-               << LAYOUT_DUMP_WHITESPACES[0]
-               << g_layout_names[(int)l->layout] << ":"
+        output << "(clients "
+               << Converter<LayoutAlgorithm>::str(l->layout) << ":"
                << l->selection;
         for (auto client : l->clients) {
-            output << LAYOUT_DUMP_WHITESPACES[0]
-                   << "0x"
-                   << std::hex << client->x11Window() << std::dec;
+            output << " " << WindowID(client->x11Window()).str();
         }
-        output << LAYOUT_DUMP_BRACKETS[1];
+        output << ")";
     }
     auto s = frame->isSplit();
     if (s) {
         output
-            << LAYOUT_DUMP_BRACKETS[0]
-            << "split"
-            << LAYOUT_DUMP_WHITESPACES[0]
-            << g_align_names[(int)s->align_]
-            << LAYOUT_DUMP_SEPARATOR
+            << "(split "
+            << Converter<SplitAlign>::str(s->align_)
+            << ":"
             << ((double)s->fraction_) / (double)FRACTION_UNIT
-            << LAYOUT_DUMP_SEPARATOR
+            << ":"
             << s->selection_
-            << LAYOUT_DUMP_WHITESPACES[0];
+            << " ";
         FrameTree::dump(s->a_, output);
-        output << LAYOUT_DUMP_WHITESPACES[0];
+        output << " ";
         FrameTree::dump(s->b_, output);
-        output << LAYOUT_DUMP_BRACKETS[1];
+        output << ")";
     }
 }
 
@@ -171,7 +165,7 @@ int FrameTree::removeFrameCommand() {
 int FrameTree::closeOrRemoveCommand() {
     Client* client = focusedFrame()->focusedClient();
     if (client) {
-        window_close(client->x11Window());
+        client->requestClose();
         return 0;
     } else {
         return removeFrameCommand();
@@ -184,7 +178,7 @@ int FrameTree::closeAndRemoveCommand() {
     Client* client = cur_frame->focusedClient();
     if (client) {
         // note that this just sends the closing signal
-        window_close(client->x11Window());
+        client->requestClose();
         // so the window is still in the frame at this point
     }
     if (cur_frame->clientCount() <= 1) {
@@ -232,10 +226,9 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         }
         size_t childCount() override { return 0; };
         void appendCaption(Output output) override {
-            output << " " << g_layout_names[(int)l_->layout] << ":";
+            output << " " << Converter<LayoutAlgorithm>::str(l_->layout) << ":";
             for (auto client : l_->clients) {
-                output << " 0x"
-                       << std::hex << client->x11Window() << std::dec;
+                output << " " << WindowID(client->x11Window()).str();
             }
             if (l_ == focus_) {
                 output << " [FOCUS]";
@@ -256,7 +249,7 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         }
         size_t childCount() override { return 2; };
         void appendCaption(Output output) override {
-            output << " " << g_align_names[(int)s_->align_]
+            output << " " << Converter<SplitAlign>::str(s_->align_)
                    << " " << (s_->fraction_ * 100 / FRACTION_UNIT) << "%"
                    << " selection=" << s_->selection_;
         }
@@ -460,7 +453,7 @@ int FrameTree::loadCommand(Input input, Output output) {
     if (!parsingResult.unknownWindowIDs_.empty()) {
         output << "Warning: Unknown window IDs";
         for (const auto& e : parsingResult.unknownWindowIDs_) {
-            output << " 0x" << std::hex << e.second << std::dec
+            output << " " << WindowID(e.second).str()
                    << "(\'" << e.first.second << "\')";
         }
         output << endl;

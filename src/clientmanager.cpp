@@ -76,9 +76,8 @@ Client* ClientManager::client(const string &identifier)
         }
         return {}; // no urgent client found
     }
-    // try to convert from base 16 or base 10 at the same time
     try {
-        Window win = std::stoul(identifier, nullptr, 0);
+        Window win = Converter<WindowID>::parse(identifier);
         return client(win);
     } catch (...) {
         return nullptr;

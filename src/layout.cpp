@@ -27,24 +27,6 @@ using std::swap;
 using std::vector;
 using std::weak_ptr;
 
-const char* g_align_names[] = {
-    "vertical",
-    "horizontal",
-    nullptr,
-};
-
-const char* g_layout_names[] = {
-    "vertical",
-    "horizontal",
-    "max",
-    "grid",
-    nullptr,
-};
-
-void reset_frame_colors() {
-    all_monitors_apply_layout();
-}
-
 /* create a new frame
  * you can either specify a frame or a tag as its parent
  */
@@ -128,27 +110,6 @@ HSFrameLeaf::~HSFrameLeaf() {
     delete decoration;
 }
 
-int find_layout_by_name(const char* name) {
-    for (size_t i = 0; i < LENGTH(g_layout_names); i++) {
-        if (!g_layout_names[i]) {
-            break;
-        }
-        if (!strcmp(name, g_layout_names[i])) {
-            return (int)i;
-        }
-    }
-    return -1;
-}
-
-int find_align_by_name(const char* name) {
-    for (size_t i = 0; i < LENGTH(g_align_names); i++) {
-        if (!strcmp(name, g_align_names[i])) {
-            return (int)i;
-        }
-    }
-    return -1;
-}
-
 shared_ptr<HSFrame> HSFrame::root() {
     auto parent_shared = parent_.lock();
     if (parent_shared) return parent_shared->root();
@@ -178,18 +139,18 @@ shared_ptr<HSFrameLeaf> HSFrame::getGloballyFocusedFrame() {
 }
 
 int frame_current_set_client_layout(int argc, char** argv, Output output) {
-    int layout = 0;
     if (argc <= 1) {
         return HERBST_NEED_MORE_ARGS;
     }
-    layout = find_layout_by_name(argv[1]);
-    if (layout < 0) {
-        output << argv[0]
-               << ": Invalid layout name \"" << argv[1] << "\"\n";
+    LayoutAlgorithm layout;
+    try {
+        layout = Converter<LayoutAlgorithm>::parse(argv[1]);
+    } catch (const std::exception& e) {
+        output << argv[0] << ": " << e.what();
         return HERBST_INVALID_ARGUMENT;
     }
     auto cur_frame = HSFrame::getGloballyFocusedFrame();
-    cur_frame->setLayout((LayoutAlgorithm)layout);
+    cur_frame->setLayout(layout);
     get_current_monitor()->applyLayout();
     return 0;
 }

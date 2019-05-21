@@ -35,7 +35,7 @@ Slice::Slice() {
 
 Slice* Slice::makeWindowSlice(Window window) {
     auto s = new Slice();
-    s->type = SLICE_WINDOW;
+    s->type = Type::WindowSlice;
     s->data.window = window;
     return s;
 }
@@ -50,7 +50,7 @@ Slice* Slice::makeFrameSlice(Window window) {
 
 Slice* Slice::makeClientSlice(Client* client) {
     auto s = new Slice();
-    s->type = SLICE_CLIENT;
+    s->type = Type::ClientSlice;
     s->data.client = client;
     return s;
 }
@@ -80,12 +80,11 @@ void Stack::removeSlice(Slice* elem) {
 string Slice::getLabel() {
     std::stringstream label;
     switch (type) {
-        case SLICE_WINDOW:
-            label << "Window 0x" << std::hex << data.window << std::dec;
+        case Type::WindowSlice:
+            label << "Window " << WindowID(data.window).str();
             break;
-        case SLICE_CLIENT:
-            label << "Client 0x"
-                  << std::hex << data.client->x11Window() << std::dec
+        case Type::ClientSlice:
+            label << "Client " << WindowID(data.client->x11Window()).str()
                   << " \"" << data.client->title_() << "\"";
             break;
         default: ;
@@ -103,14 +102,14 @@ void Slice::extractWindowsFromSlice(bool real_clients, HSLayer layer,
         return;
     }
     switch (type) {
-        case SLICE_CLIENT:
+        case Type::ClientSlice:
             if (real_clients) {
                 yield(data.client->x11Window());
             } else {
                 yield(data.client->decorationWindow());
             }
             break;
-        case SLICE_WINDOW:
+        case Type::WindowSlice:
             if (!real_clients) {
                 yield(data.window);
             }
