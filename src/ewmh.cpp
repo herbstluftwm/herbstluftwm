@@ -10,7 +10,7 @@
 #include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "mouse.h"
+#include "mousemanager.h"
 #include "root.h"
 #include "settings.h"
 #include "stack.h"

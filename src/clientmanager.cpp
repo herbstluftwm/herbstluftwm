@@ -11,7 +11,7 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
-#include "mouse.h"
+#include "mousemanager.h"
 #include "root.h"
 #include "rulemanager.h"
 #include "stack.h"
