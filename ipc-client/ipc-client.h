@@ -17,7 +17,7 @@ HCConnection* hc_connect_to_display(Display* display);
 void hc_disconnect(HCConnection* con);
 /* ensure there is a client window for sending commands */
 bool hc_create_client_window(HCConnection* con);
-
+bool hc_check_running(HCConnection* con);
 bool hc_send_command(HCConnection* con, int argc, char* argv[],
                      GString** ret_out, int* ret_status);
 bool hc_send_command_once(int argc, char* argv[],
