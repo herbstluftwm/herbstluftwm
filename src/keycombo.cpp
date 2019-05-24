@@ -213,11 +213,11 @@ vector<string> ModifierCombo::getNamesForModifierMask(unsigned int mask) {
 }
 
 void KeyCombo::complete(Completion& complete) {
-    ModifiersWithString::complete(complete, [] (Completion& complete, string prefix) {
+    ModifiersWithString::complete(complete, [] (Completion& compWrapped, string prefix) {
         // Offer full completions for a final keysym:
         auto keySyms = XKeyGrabber::getPossibleKeySyms();
         for (auto keySym : keySyms) {
-            complete.full(prefix + keySym);
+            compWrapped.full(prefix + keySym);
         }
     });
 }
