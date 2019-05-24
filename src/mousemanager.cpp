@@ -2,6 +2,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
+#include <cstring>
 #include <initializer_list>
 #include <ostream>
 #include <set>

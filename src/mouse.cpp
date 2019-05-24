@@ -2,12 +2,9 @@
 
 #include <X11/X.h>
 #include <cstdlib>
-#include <cstring>
 
 #include "client.h"
-#include "command.h"
 #include "frametree.h"
-#include "globals.h"
 #include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
