@@ -33,7 +33,7 @@ ModifiersWithString::ModifiersWithString()
     this->modifiers_ = 0;
 }
 
-ModifiersWithString::ModifiersWithString(unsigned int modifiers, std::string suffix)
+ModifiersWithString::ModifiersWithString(unsigned int modifiers, string suffix)
     : suffix_(suffix)
 {
     this->modifiers_ = modifiers;
@@ -44,8 +44,12 @@ void ModifiersWithString::complete(Completion& complete, SuffixCompleter suffixC
     string needle = complete.needle();
     ModifiersWithString mws;
     try {
-        mws = Converter<ModifiersWithString>::parse(needle);
-    } catch (...) {}
+        if (needle != "") {
+            mws = Converter<ModifiersWithString>::parse(needle);
+        }
+    } catch (...) {
+        return;
+    }
     string prefix = needle.substr(0, needle.size() - mws.suffix_.size());
     char sep =
         prefix.size() > 0
@@ -61,7 +65,7 @@ void ModifiersWithString::complete(Completion& complete, SuffixCompleter suffixC
     suffixCompleter(complete, prefix);
 }
 
-template<> ModifiersWithString Converter<ModifiersWithString>::parse(const std::string& source)
+template<> ModifiersWithString Converter<ModifiersWithString>::parse(const string& source)
 {
     auto tokens = ModifierCombo::tokensFromString(source);
 
@@ -74,7 +78,7 @@ template<> ModifiersWithString Converter<ModifiersWithString>::parse(const std::
     return { modmask, tokens.back() };
 }
 
-template<> std::string Converter<ModifiersWithString>::str(ModifiersWithString payload)
+template<> string Converter<ModifiersWithString>::str(ModifiersWithString payload)
 {
     std::stringstream str;
     for (auto& modName : ModifierCombo::getNamesForModifierMask(payload.modifiers_)) {
