@@ -1,16 +1,20 @@
 #include "keycombo.h"
 
 #include <X11/Xlib.h>
+#include <regex>
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
 
+#include "completion.h"
 #include "globals.h"
+#include "xkeygrabber.h"
 
+using std::function;
 using std::string;
 using std::vector;
 
-const vector<KeyCombo::ModifierNameAndMask> KeyCombo::modifierMasks = {
+const vector<KeyCombo::ModifierNameAndMask> ModifierCombo::modifierMasks = {
     { "Mod1",       Mod1Mask },
     { "Mod2",       Mod2Mask },
     { "Mod3",       Mod3Mask },
@@ -23,26 +27,79 @@ const vector<KeyCombo::ModifierNameAndMask> KeyCombo::modifierMasks = {
     { "Ctrl",       ControlMask },
 };
 
+ModifiersWithString::ModifiersWithString()
+    : suffix_("")
+{
+    this->modifiers = 0;
+}
+
+ModifiersWithString::ModifiersWithString(unsigned int modifiers, std::string suffix)
+    : suffix_(suffix)
+{
+    this->modifiers = modifiers;
+}
+
+void ModifiersWithString::complete(Completion& complete, SuffixCompleter suffixCompleter)
+{
+    string needle = complete.needle();
+    ModifiersWithString mws;
+    try {
+        mws = Converter<ModifiersWithString>::parse(needle);
+    } catch (...) {}
+    string prefix = needle.substr(0, needle.size() - mws.suffix_.size());
+    char sep =
+        prefix.size() > 0
+        ? prefix[prefix.size() - 1]
+        : ModifierCombo::separators[0];
+    for (auto& modifier : KeyCombo::modifierMasks) {
+        if (modifier.mask & mws.modifiers) {
+            // the modifier is already present in the combination
+            continue;
+        }
+        complete.partial(prefix + modifier.name + sep);
+    }
+    suffixCompleter(complete, prefix);
+}
+
+template<> ModifiersWithString Converter<ModifiersWithString>::parse(const std::string& source)
+{
+    auto tokens = ModifierCombo::tokensFromString(source);
+
+    if (tokens.empty()) {
+        throw std::invalid_argument("Must not be empty");
+    }
+
+    auto modifierSlice = vector<string>({tokens.begin(), tokens.end() - 1});
+    auto modmask = ModifierCombo::modifierMaskFromTokens(modifierSlice);
+    return { modmask, tokens.back() };
+}
+
+template<> std::string Converter<ModifiersWithString>::str(ModifiersWithString payload)
+{
+    std::stringstream str;
+    for (auto& modName : ModifierCombo::getNamesForModifierMask(payload.modifiers)) {
+        str << modName << ModifierCombo::separators[0];
+    }
+    str << payload.suffix_;
+    return str.str();
+}
+
+template<> void Converter<ModifiersWithString>::complete(Completion& complete, ModifiersWithString const*)
+{
+    ModifiersWithString::complete(complete, [] (Completion&, string) {});
+}
+
 /*!
  * Provides a canonical string representation of the key combo
  */
 string KeyCombo::str() const {
-    std::stringstream str;
-
-    /* add modifiers */
-    for (auto& modName : getNamesForModifierMask(modifiers)) {
-        str << modName << separators[0];
-    }
-
-    /* add keysym */
+    /* convert keysym */
     const char* name = XKeysymToString(keysym);
     if (!name) {
         HSWarning("XKeysymToString failed! using \'?\' instead\n");
         name = "?";
     }
-    str << name;
-
-    return str.str();
+    return Converter<ModifiersWithString>::str({ modifiers, name });
 }
 
 /*!
@@ -58,7 +115,7 @@ bool KeyCombo::matches(const std::regex& regex) const {
  *
  * \throws meaningful exceptions on parsing errors
  */
-unsigned int KeyCombo::modifierMaskFromTokens(const vector<string>& tokens) {
+unsigned int ModifierCombo::modifierMaskFromTokens(const vector<string>& tokens) {
     unsigned int modifiers = 0;
     for (auto& modName : tokens) {
         modifiers |= getMaskForModifierName(modName);
@@ -90,18 +147,10 @@ KeySym KeyCombo::keySymFromString(const string& str) {
  * \throws meaningful exceptions on parsing errors
  */
 KeyCombo KeyCombo::fromString(const string& str) {
+    auto mws = Converter<ModifiersWithString>::parse(str);
     KeyCombo combo;
-    auto tokens = tokensFromString(str);
-
-    if (tokens.empty()) {
-        throw std::runtime_error("Empty keysym");
-    }
-
-    auto modifierSlice = vector<string>({tokens.begin(), tokens.end() - 1});
-    auto keySymString = tokens.back();
-
-    combo.modifiers = modifierMaskFromTokens(modifierSlice);
-    combo.keysym = keySymFromString(keySymString);
+    combo.modifiers = mws.modifiers;
+    combo.keysym = keySymFromString(mws.suffix_);
     return combo;
 }
 
@@ -112,7 +161,7 @@ bool KeyCombo::operator==(const KeyCombo& other) const {
 }
 
 //! Splits a given key combo string into a list of tokens
-vector<string> KeyCombo::tokensFromString(string keySpec)
+vector<string> ModifierCombo::tokensFromString(string keySpec)
 {
     // Normalize spec to use the default separator:
     char baseSep = separators[0];
@@ -135,7 +184,7 @@ vector<string> KeyCombo::tokensFromString(string keySpec)
  *
  * \throws std::runtime_error if modifier name is unknown
  */
-unsigned int KeyCombo::getMaskForModifierName(string name) {
+unsigned int ModifierCombo::getMaskForModifierName(string name) {
     // Simple, linear search for matching list entry:
     for (auto& entry : modifierMasks) {
         if (entry.name == name) {
@@ -149,7 +198,7 @@ unsigned int KeyCombo::getMaskForModifierName(string name) {
 /*!
  * Provides the names of modifiers that are set in a given mask.
  */
-vector<string> KeyCombo::getNamesForModifierMask(unsigned int mask) {
+vector<string> ModifierCombo::getNamesForModifierMask(unsigned int mask) {
     vector<string> names;
     for (auto& entry : modifierMasks) {
         if (entry.mask & mask) {
@@ -161,4 +210,14 @@ vector<string> KeyCombo::getNamesForModifierMask(unsigned int mask) {
     }
 
     return names;
+}
+
+void KeyCombo::complete(Completion& complete) {
+    ModifiersWithString::complete(complete, [] (Completion& complete, string prefix) {
+        // Offer full completions for a final keysym:
+        auto keySyms = XKeyGrabber::getPossibleKeySyms();
+        for (auto keySym : keySyms) {
+            complete.full(prefix + keySym);
+        }
+    });
 }
