@@ -21,9 +21,9 @@ enum SnapFlags {
 // forward declarations
 class Client;
 class Monitor;
+class MouseManager;
 
-typedef void (*MouseDragFunction)(XMotionEvent*);
-typedef void (*MouseFunction)(Client* client, const std::vector<std::string> &cmd);
+typedef void (MouseManager::*MouseFunction)(Client* client, const std::vector<std::string> &cmd);
 
 class MouseBinding {
 public:

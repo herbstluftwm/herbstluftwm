@@ -73,7 +73,7 @@ int MouseManager::addMouseBindCommand(Input input, Output output) {
     // Use remaining input as the associated command
     vector<string> cmd = {input.begin(), input.end()};
 
-    if (action == mouse_call_command && cmd.empty()) {
+    if (action == &MouseManager::mouse_call_command && cmd.empty()) {
         return HERBST_NEED_MORE_ARGS;
     }
 
@@ -162,15 +162,7 @@ static Client*        winDragClient_ = nullptr;
 static Monitor*       dragMonitor_ = nullptr;
 static MouseDragFunction dragFunction_ = nullptr;
 
-#define CLEANMASK(mask)         ((mask) & ~(numlockMask|LockMask))
-#define REMOVEBUTTONMASK(mask) ((mask) & \
-    ~( Button1Mask \
-     | Button2Mask \
-     | Button3Mask \
-     | Button4Mask \
-     | Button5Mask ))
-
-void mouse_handle_event(XEvent* ev) {
+void MouseManager::mouse_handle_event(XEvent* ev) {
     XButtonEvent* be = &(ev->xbutton);
     auto b = mouse_binding_find(be->state, be->button);
 
@@ -183,25 +175,21 @@ void mouse_handle_event(XEvent* ev) {
         // there is no valid bind for this type of mouse event
         return;
     }
-    b->action(client, b->cmd);
+    (this ->* (b->action))(client, b->cmd); }
+
+void MouseManager::mouse_initiate_move(Client* client, const vector<string> &cmd) {
+    mouse_initiate_drag(client, &MouseManager::mouse_function_move);
 }
 
-void mouse_initiate_move(Client* client, const vector<string> &cmd) {
-    (void) cmd;
-    mouse_initiate_drag(client, mouse_function_move);
+void MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
+    mouse_initiate_drag(client, &MouseManager::mouse_function_zoom);
 }
 
-void mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
-    (void) cmd;
-    mouse_initiate_drag(client, mouse_function_zoom);
+void MouseManager::mouse_initiate_resize(Client* client, const vector<string> &cmd) {
+    mouse_initiate_drag(client, &MouseManager::mouse_function_resize);
 }
 
-void mouse_initiate_resize(Client* client, const vector<string> &cmd) {
-    (void) cmd;
-    mouse_initiate_drag(client, mouse_function_resize);
-}
-
-void mouse_call_command(Client* client, const vector<string> &cmd) {
+void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd) {
     // TODO: add completion
     client->set_dragged(true);
 
@@ -214,7 +202,7 @@ void mouse_call_command(Client* client, const vector<string> &cmd) {
 }
 
 
-void mouse_initiate_drag(Client* client, MouseDragFunction function) {
+void MouseManager::mouse_initiate_drag(Client* client, MouseDragFunction function) {
     dragFunction_ = function;
     winDragClient_ = client;
     dragMonitor_ = find_monitor_with_tag(client->tag());
@@ -232,7 +220,7 @@ void mouse_initiate_drag(Client* client, MouseDragFunction function) {
             GrabModeAsync, None, None, CurrentTime);
 }
 
-void mouse_stop_drag() {
+void MouseManager::mouse_stop_drag() {
     if (winDragClient_) {
         winDragClient_->set_dragged(false);
         // resend last size
@@ -248,7 +236,7 @@ void mouse_stop_drag() {
     while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
 }
 
-void handle_motion_event(XEvent* ev) {
+void MouseManager::handle_motion_event(XEvent* ev) {
     if (!dragMonitor_) { return; }
     if (!winDragClient_) return;
     if (!dragFunction_) return;
@@ -256,14 +244,14 @@ void handle_motion_event(XEvent* ev) {
     // get newest motion notification
     while (XCheckMaskEvent(g_display, ButtonMotionMask, ev));
     // call function that handles it
-    dragFunction_(&(ev->xmotion));
+    (this ->* dragFunction_)(&(ev->xmotion));
 }
 
-bool mouse_is_dragging() {
+bool MouseManager::mouse_is_dragging() {
     return dragFunction_ != nullptr;
 }
 
-int mouse_unbind_all() {
+int MouseManager::mouse_unbind_all(Output) {
     Root::get()->mouse->binds.clear();
     Client* client = get_current_client();
     if (client) {
@@ -272,16 +260,15 @@ int mouse_unbind_all() {
     return 0;
 }
 
-
-MouseFunction string2mousefunction(const char* name) {
+MouseFunction MouseManager::string2mousefunction(const char* name) {
     static struct {
         const char* name;
         MouseFunction function;
     } table[] = {
-        { "move",       mouse_initiate_move },
-        { "zoom",       mouse_initiate_zoom },
-        { "resize",     mouse_initiate_resize },
-        { "call",       mouse_call_command },
+        { "move",       &MouseManager::mouse_initiate_move },
+        { "zoom",       &MouseManager::mouse_initiate_zoom },
+        { "resize",     &MouseManager::mouse_initiate_resize },
+        { "call",       &MouseManager::mouse_call_command },
     };
     int i;
     for (i = 0; i < LENGTH(table); i++) {
@@ -307,7 +294,7 @@ static struct {
     { "B4",       Button4 },
     { "B5",       Button5 },
 };
-unsigned int string2button(const char* name) {
+unsigned int MouseManager::string2button(const char* name) {
     for (int i = 0; i < LENGTH(string2button_table); i++) {
         if (!strcmp(string2button_table[i].name, name)) {
             return string2button_table[i].button;
@@ -317,7 +304,7 @@ unsigned int string2button(const char* name) {
 }
 
 
-std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button) {
+std::experimental::optional<MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {
     MouseBinding mb = {};
     mb.modifiers = modifiers;
     mb.button = button;
@@ -334,7 +321,7 @@ std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifi
     }
 }
 
-static void grab_client_button(MouseBinding* bind, Client* client) {
+static void grab_binding(MouseBinding* bind, Client* client) {
     unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
     unsigned int modifiers[] = { 0, LockMask, numlockMask, numlockMask | LockMask };
     for(int j = 0; j < LENGTH(modifiers); j++) {
@@ -345,11 +332,11 @@ static void grab_client_button(MouseBinding* bind, Client* client) {
     }
 }
 
-void grab_client_buttons(Client* client, bool focused) {
+void MouseManager::grab_client_buttons(Client* client, bool focused) {
     XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
     if (focused) {
         for (auto& bind : Root::get()->mouse->binds) {
-            grab_client_button(&bind, client);
+            grab_binding(&bind, client);
         }
     }
     unsigned int btns[] = { Button1, Button2, Button3 };
@@ -360,7 +347,7 @@ void grab_client_buttons(Client* client, bool focused) {
     }
 }
 
-void mouse_function_move(XMotionEvent* me) {
+void MouseManager::mouse_function_move(XMotionEvent* me) {
     int x_diff = me->x_root - buttonDragStart_.x;
     int y_diff = me->y_root - buttonDragStart_.y;
     winDragClient_->float_size_ = winDragStart_;
@@ -375,7 +362,7 @@ void mouse_function_move(XMotionEvent* me) {
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
 }
 
-void mouse_function_resize(XMotionEvent* me) {
+void MouseManager::mouse_function_resize(XMotionEvent* me) {
     int x_diff = me->x_root - buttonDragStart_.x;
     int y_diff = me->y_root - buttonDragStart_.y;
     winDragClient_->float_size_ = winDragStart_;
@@ -435,7 +422,7 @@ void mouse_function_resize(XMotionEvent* me) {
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
 }
 
-void mouse_function_zoom(XMotionEvent* me) {
+void MouseManager::mouse_function_zoom(XMotionEvent* me) {
     // stretch, where center stays at the same position
     int x_diff = me->x_root - buttonDragStart_.x;
     int y_diff = me->y_root - buttonDragStart_.y;

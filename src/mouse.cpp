@@ -8,12 +8,21 @@
 #include "command.h"
 #include "frametree.h"
 #include "globals.h"
+#include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
 #include "root.h"
 #include "settings.h"
 #include "tag.h"
 #include "utils.h"
+
+#define CLEANMASK(mask)         ((mask) & ~(numlockMask|LockMask))
+#define REMOVEBUTTONMASK(mask) ((mask) & \
+    ~( Button1Mask \
+     | Button2Mask \
+     | Button3Mask \
+     | Button4Mask \
+     | Button5Mask ))
 
 using std::string;
 using std::vector;

@@ -142,7 +142,7 @@ bool Client::needs_minimal_dec() {
 }
 
 void Client::window_unfocus() {
-    grab_client_buttons(this, false);
+    Root::get()->mouse->grab_client_buttons(this, false);
 }
 
 void Client::window_unfocus_last() {
@@ -197,7 +197,7 @@ void Client::window_focus() {
         this->raise();
     }
     tag_update_focus_layer(get_current_monitor()->tag);
-    grab_client_buttons(this, true);
+    Root::get()->mouse->grab_client_buttons(this, true);
 
     // XXX: At this point, ClientManager does not yet know about the focus
     // change. So as a workaround, we pass ourselves directly to KeyManager:
