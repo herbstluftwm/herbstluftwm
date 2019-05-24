@@ -252,7 +252,7 @@ bool MouseManager::mouse_is_dragging() {
 }
 
 int MouseManager::mouse_unbind_all(Output) {
-    Root::get()->mouse->binds.clear();
+    binds.clear();
     Client* client = get_current_client();
     if (client) {
         grab_client_buttons(client, true);
@@ -309,7 +309,6 @@ std::experimental::optional<MouseBinding> MouseManager::mouse_binding_find(unsig
     mb.modifiers = modifiers;
     mb.button = button;
 
-    auto binds = Root::get()->mouse->binds;
     auto found = std::find_if(binds.begin(), binds.end(),
             [=](const MouseBinding &other) {
                 return mouse_binding_equals(&other, &mb) == 0;
@@ -335,7 +334,7 @@ static void grab_binding(MouseBinding* bind, Client* client) {
 void MouseManager::grab_client_buttons(Client* client, bool focused) {
     XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
     if (focused) {
-        for (auto& bind : Root::get()->mouse->binds) {
+        for (auto& bind : binds) {
             grab_binding(&bind, client);
         }
     }
