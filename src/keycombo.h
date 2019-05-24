@@ -15,7 +15,7 @@
 
 class ModifierCombo {
 public:
-    unsigned int modifiers;
+    unsigned int modifiers_;
 
     static constexpr auto separators = "+-";
 

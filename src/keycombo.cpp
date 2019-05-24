@@ -30,13 +30,13 @@ const vector<KeyCombo::ModifierNameAndMask> ModifierCombo::modifierMasks = {
 ModifiersWithString::ModifiersWithString()
     : suffix_("")
 {
-    this->modifiers = 0;
+    this->modifiers_ = 0;
 }
 
 ModifiersWithString::ModifiersWithString(unsigned int modifiers, std::string suffix)
     : suffix_(suffix)
 {
-    this->modifiers = modifiers;
+    this->modifiers_ = modifiers;
 }
 
 void ModifiersWithString::complete(Completion& complete, SuffixCompleter suffixCompleter)
@@ -52,7 +52,7 @@ void ModifiersWithString::complete(Completion& complete, SuffixCompleter suffixC
         ? prefix[prefix.size() - 1]
         : ModifierCombo::separators[0];
     for (auto& modifier : KeyCombo::modifierMasks) {
-        if (modifier.mask & mws.modifiers) {
+        if (modifier.mask & mws.modifiers_) {
             // the modifier is already present in the combination
             continue;
         }
@@ -77,7 +77,7 @@ template<> ModifiersWithString Converter<ModifiersWithString>::parse(const std::
 template<> std::string Converter<ModifiersWithString>::str(ModifiersWithString payload)
 {
     std::stringstream str;
-    for (auto& modName : ModifierCombo::getNamesForModifierMask(payload.modifiers)) {
+    for (auto& modName : ModifierCombo::getNamesForModifierMask(payload.modifiers_)) {
         str << modName << ModifierCombo::separators[0];
     }
     str << payload.suffix_;
@@ -99,7 +99,7 @@ string KeyCombo::str() const {
         HSWarning("XKeysymToString failed! using \'?\' instead\n");
         name = "?";
     }
-    return Converter<ModifiersWithString>::str({ modifiers, name });
+    return Converter<ModifiersWithString>::str({ modifiers_, name });
 }
 
 /*!
@@ -149,13 +149,13 @@ KeySym KeyCombo::keySymFromString(const string& str) {
 KeyCombo KeyCombo::fromString(const string& str) {
     auto mws = Converter<ModifiersWithString>::parse(str);
     KeyCombo combo;
-    combo.modifiers = mws.modifiers;
+    combo.modifiers_ = mws.modifiers_;
     combo.keysym = keySymFromString(mws.suffix_);
     return combo;
 }
 
 bool KeyCombo::operator==(const KeyCombo& other) const {
-    bool sameMods = modifiers == other.modifiers;
+    bool sameMods = modifiers_ == other.modifiers_;
     bool sameKeySym = keysym == other.keysym;
     return sameMods && sameKeySym;
 }
