@@ -158,6 +158,7 @@ bool hc_send_command_once(int argc, char* argv[],
         return false;
     }
     if (!hc_check_running(con)) {
+        fprintf(stderr, "Error: herbstluftwm is not running");
         return false;
     }
     bool status = hc_send_command(con, argc, argv, ret_out, ret_status);
@@ -215,6 +216,7 @@ bool hc_hook_window_connect(HCConnection* con) {
     }
     con->hook_window = get_hook_window(con->display);
     if (!con->hook_window) {
+        fprintf(stderr, "Error: herbstluftwm is not running");
         return false;
     }
     long mask = StructureNotifyMask|PropertyChangeMask;
