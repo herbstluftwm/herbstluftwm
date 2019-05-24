@@ -25,6 +25,17 @@ struct SnapData {
     int             dx, dy; // the vector from client to other to make them snap
 };
 
+int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b) {
+    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
+    if((REMOVEBUTTONMASK(CLEANMASK(a->modifiers))
+        == REMOVEBUTTONMASK(CLEANMASK(b->modifiers)))
+        && (a->button == b->button)) {
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
 bool is_point_between(int point, int left, int right) {
     return (point < right && point >= left);
 }

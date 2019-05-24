@@ -272,16 +272,6 @@ int mouse_unbind_all() {
     return 0;
 }
 
-int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b) {
-    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
-    if((REMOVEBUTTONMASK(CLEANMASK(a->modifiers))
-        == REMOVEBUTTONMASK(CLEANMASK(b->modifiers)))
-        && (a->button == b->button)) {
-        return 0;
-    } else {
-        return -1;
-    }
-}
 
 MouseFunction string2mousefunction(const char* name) {
     static struct {
