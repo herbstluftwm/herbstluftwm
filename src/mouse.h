@@ -18,9 +18,9 @@ enum SnapFlags {
 // forward declarations
 class Client;
 class Monitor;
-class MouseManager;
+class MouseManager; // IWYU pragma: keep
 
-typedef void (MouseManager::*MouseFunction)(Client* client, const std::vector<std::string> &cmd);
+using MouseFunction = void (MouseManager::*)(Client* client, const std::vector<std::string> &cmd);
 
 class MouseBinding {
 public:
