@@ -486,9 +486,9 @@ int unsetenv_command(int argc, char** argv, Output output) {
 
 // handle x-events:
 
-void event_on_configure(Root*, XEvent event) {
+void event_on_configure(Root* root, XEvent event) {
     XConfigureRequestEvent* cre = &event.xconfigurerequest;
-    Client* client = get_client_from_window(cre->window);
+    Client* client = root->clients->client(cre->window);
     if (client) {
         bool changes = false;
         auto newRect = client->float_size_;
@@ -707,7 +707,7 @@ void buttonpress(Root* root, XEvent* event) {
     if (mm->mouse_binding_find(be->state, be->button)) {
         mm->mouse_handle_event(event);
     } else {
-        Client* client = get_client_from_window(be->window);
+        Client* client = root->clients->client(be->window);
         if (client) {
             focus_client(client, false, true);
             if (root->settings->raise_on_click()) {
@@ -760,7 +760,7 @@ void enternotify(Root* root, XEvent* event) {
     if (!root->mouse->mouse_is_dragging()
         && root->settings()->focus_follows_mouse()
         && ce->focus == false) {
-        Client* c = get_client_from_window(ce->window);
+        Client* c = root->clients->client(ce->window);
         shared_ptr<HSFrameLeaf> target;
         if (c && c->tag()->floating == false
               && (target = c->tag()->frame->root_->frameWithClient(c))
@@ -807,7 +807,7 @@ void motionnotify(Root* root, XEvent* event) {
 
 void mapnotify(Root* root, XEvent* event) {
     //HSDebug("name is: MapNotify\n");
-    Client* c = get_client_from_window(event->xmap.window);
+    Client* c = root->clients()->client(event->xmap.window);
     if (c != nullptr) {
         // reset focus. so a new window gets the focus if it shall have the
         // input focus
@@ -822,6 +822,7 @@ void mapnotify(Root* root, XEvent* event) {
 void maprequest(Root* root, XEvent* event) {
     HSDebug("name is: MapRequest\n");
     XMapRequestEvent* mapreq = &event->xmaprequest;
+    Client* c = root->clients()->client(event->xmap.window);
     if (root->ewmh->isOwnWindow(mapreq->window)
         || is_herbstluft_window(g_display, mapreq->window))
     {
@@ -831,7 +832,7 @@ void maprequest(Root* root, XEvent* event) {
             return;
         }
         XMapWindow(g_display, mapreq->window);
-    } else if (!get_client_from_window(mapreq->window)) {
+    } else if (c == nullptr) {
         // client should be managed (is not ignored)
         // but is not managed yet
         auto clientmanager = root->clients();
@@ -847,11 +848,11 @@ void maprequest(Root* root, XEvent* event) {
 void propertynotify(Root* root, XEvent* event) {
     // printf("name is: PropertyNotify\n");
     XPropertyEvent *ev = &event->xproperty;
-    Client* client;
+    Client* client = root->clients->client(ev->window);
     if (ev->state == PropertyNewValue) {
         if (root->ipcServer_.isConnectable(event->xproperty.window)) {
             root->ipcServer_.handleConnection(event->xproperty.window, callCommand);
-        } else if((client = get_client_from_window(ev->window))) {
+        } else if (client != nullptr) {
             if (ev->atom == XA_WM_HINTS) {
                 client->update_wm_hints();
             } else if (ev->atom == XA_WM_NORMAL_HINTS) {
