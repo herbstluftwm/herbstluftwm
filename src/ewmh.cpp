@@ -11,7 +11,7 @@
 #include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "mouse.h"
+#include "mousemanager.h"
 #include "root.h"
 #include "settings.h"
 #include "stack.h"
@@ -352,12 +352,14 @@ void Ewmh::handleClientMessage(XEvent* event) {
             int direction = me->data.l[2];
             if (direction == _NET_WM_MOVERESIZE_MOVE
                 || direction == _NET_WM_MOVERESIZE_MOVE_KEYBOARD) {
-                mouse_initiate_move(client, {});
+                root_->mouse->mouse_initiate_move(client, {});
             } else if (direction == _NET_WM_MOVERESIZE_CANCEL) {
-                if (mouse_is_dragging()) mouse_stop_drag();
+                if (root_->mouse->mouse_is_dragging()) {
+                    root_->mouse->mouse_stop_drag();
+                }
             } else {
                 // anything else is a resize
-                mouse_initiate_resize(client, {});
+                root_->mouse->mouse_initiate_resize(client, {});
             }
             break;
         }

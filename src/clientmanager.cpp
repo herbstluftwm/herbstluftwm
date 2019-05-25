@@ -11,7 +11,7 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
-#include "mouse.h"
+#include "mousemanager.h"
 #include "root.h"
 #include "rulemanager.h"
 #include "stack.h"
@@ -200,7 +200,8 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
     }
     client->send_configure();
 
-    grab_client_buttons(client, false);
+    // TODO: make this better
+    Root::get()->mouse->grab_client_buttons(client, false);
 
     return client;
 }
@@ -217,7 +218,7 @@ void ClientManager::unmap_notify(Window win) {
 
 void ClientManager::force_unmanage(Client* client) {
     if (client->dragged_) {
-        mouse_stop_drag();
+        Root::get()->mouse->mouse_stop_drag();
     }
     if (client->tag() && client->slice) {
         client->tag()->stack->removeSlice(client->slice);
