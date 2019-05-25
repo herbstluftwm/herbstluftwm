@@ -6,6 +6,13 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+MonitorDetection::MonitorDetection(std::string name)
+    : name_(name)
+    , checkDisplay_(nullptr)
+    , detect_(nullptr)
+{
+}
+
 #ifdef XINERAMA
 // inspired by dwm's isuniquegeom()
 static bool geom_unique(const RectangleVec& unique, XineramaScreenInfo *info) {
@@ -15,6 +22,11 @@ static bool geom_unique(const RectangleVec& unique, XineramaScreenInfo *info) {
             return false;
     }
     return true;
+}
+
+
+static bool checkDisplayXinerama(XConnection& X) {
+    return XineramaIsActive(X.display());
 }
 
 // inspired by dwm's updategeom()
@@ -38,11 +50,14 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
     XFree(info);
     return monitor_rects;
 }
-#else  /* XINERAMA */
-
-RectangleVec detectMonitorsXinerama(XConnection& X) {
-    return {};
-}
 
 #endif /* XINERAMA */
 
+MonitorDetection MonitorDetection::xinerama() {
+    MonitorDetection md("xinerama");
+    #ifdef XINERAMA
+    md.checkDisplay_ = checkDisplayXinerama;
+    md.detect_ = detectMonitorsXinerama;
+    #endif
+    return md;
+}

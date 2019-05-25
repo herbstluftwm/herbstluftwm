@@ -566,7 +566,11 @@ Monitor* monitor_with_coordinate(int x, int y) {
 
 int detect_monitors_command(int argc, const char **argv, Output output) {
     auto root = Root::get();
-    RectangleVec monitor_rects = detectMonitorsXinerama(root->X);
+    auto xinerama = MonitorDetection::xinerama();
+    RectangleVec monitor_rects = {};
+    if (xinerama.detect_) {
+        monitor_rects = xinerama.detect_(root->X);
+    }
     if (monitor_rects.empty()) {
         monitor_rects = { root->X.windowSize(root->X.root()) };
     }
