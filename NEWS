@@ -6,6 +6,8 @@ Current git version
 
    * When herbstluftwm is not running and herbstclient is called, the
      absent herbstluftwm is detected instead of hanging forever.
+   * Close window on _NET_CLOSE_WINDOW. This makes closing windows via ewmh
+     panels work.
    * Fix return code of remove_attr
    * Fix error when unmanaging clients
    * Some typo fixes in the documentation
