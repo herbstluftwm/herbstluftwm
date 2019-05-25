@@ -1,6 +1,13 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Current git version
+-------------------
+
+   * Fix return code of remove_attr
+   * Fix error when unmanaging clients
+   * Some typo fixes in the documentation
+
 Release 0.7.1 on 2018-08-09
 ---------------------------
 
