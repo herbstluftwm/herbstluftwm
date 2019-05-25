@@ -134,7 +134,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                   &KeyManager::removeKeybindCompletion}},
         {"mousebind",      {mouse, &MouseManager::addMouseBindCommand,
                                    &MouseManager::addMouseBindCompletion}},
-        {"mouseunbind",    { mouse_unbind_all }},
+        {"mouseunbind",    {mouse, &MouseManager::mouse_unbind_all }},
         {"spawn",          spawn},
         {"wmexec",         wmexec},
         {"emit_hook",      { custom_hook_emit }},
@@ -702,9 +702,10 @@ static void init_handler_table() {
 
 void buttonpress(Root* root, XEvent* event) {
     XButtonEvent* be = &(event->xbutton);
+    MouseManager* mm = root->mouse();
     HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
-    if (mouse_binding_find(be->state, be->button)) {
-        mouse_handle_event(event);
+    if (mm->mouse_binding_find(be->state, be->button)) {
+        mm->mouse_handle_event(event);
     } else {
         Client* client = root->clients->client(be->window);
         if (client) {
@@ -717,9 +718,9 @@ void buttonpress(Root* root, XEvent* event) {
     XAllowEvents(g_display, ReplayPointer, be->time);
 }
 
-void buttonrelease(Root*, XEvent*) {
+void buttonrelease(Root* root, XEvent*) {
     HSDebug("name is: ButtonRelease\n");
-    mouse_stop_drag();
+    root->mouse->mouse_stop_drag();
 }
 
 void createnotify(Root* root, XEvent* event) {
@@ -756,7 +757,7 @@ void destroynotify(Root* root, XEvent* event) {
 void enternotify(Root* root, XEvent* event) {
     XCrossingEvent *ce = &event->xcrossing;
     //HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
-    if (!mouse_is_dragging()
+    if (!root->mouse->mouse_is_dragging()
         && root->settings()->focus_follows_mouse()
         && ce->focus == false) {
         Client* c = root->clients->client(ce->window);
@@ -800,8 +801,8 @@ void mappingnotify(Root* root, XEvent* event) {
     }
 }
 
-void motionnotify(Root*, XEvent* event) {
-    handle_motion_event(event);
+void motionnotify(Root* root, XEvent* event) {
+    root->mouse->handle_motion_event(event);
 }
 
 void mapnotify(Root* root, XEvent* event) {
