@@ -72,11 +72,11 @@ set_target_properties(herbstluftwm PROPERTIES
 
 ## options
 include(CMakeDependentOption)
-cmake_dependent_option(WITH_XINERAMA "Use multi-monitor support" ON
+cmake_dependent_option(WITH_XINERAMA "Use multi-monitor support via xinerama" ON
     "X11_Xinerama_FOUND" OFF)
 
 if (WITH_XINERAMA)
-    set_property(SOURCE monitor.cpp PROPERTY COMPILE_DEFINITIONS XINERAMA)
+    set_property(SOURCE monitordetection.cpp PROPERTY COMPILE_DEFINITIONS XINERAMA)
     target_link_libraries(herbstluftwm PRIVATE ${X11_Xinerama_LIB})
 endif()
 

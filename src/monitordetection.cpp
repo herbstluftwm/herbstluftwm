@@ -1,5 +1,7 @@
 #include "monitordetection.h"
 
+#include "xconnection.h"
+
 #ifdef XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
