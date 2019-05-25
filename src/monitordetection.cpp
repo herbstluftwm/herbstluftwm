@@ -6,6 +6,8 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+using std::string;
+
 MonitorDetection::MonitorDetection(string name)
     : name_(name)
     , checkDisplay_(nullptr)
