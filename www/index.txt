@@ -7,7 +7,7 @@ Its main features can be described with:
   * the layout is based on splitting frames into subframes which can be split
     again or can be filled with windows (similar to
     link:http://i3wm.org/[i3]/
-    link:http://aerosuidae.net/musca.html[musca])
+    or musca)
 
   * tags (or workspaces or virtual desktops or ...) can be added/removed at
     runtime. Each tag contains an own layout
@@ -17,8 +17,7 @@ Its main features can be described with:
 
   * it is configured at runtime via ipc calls from herbstclient. So the
     configuration file is just a script which is run on startup. (similar to
-    link:http://wmii.suckless.org/[wmii]/
-    link:http://aerosuidae.net/musca.html[musca])
+    link:http://wmii.suckless.org/[wmii] or musca)
 
 How to get it?
 --------------
