@@ -1,9 +1,9 @@
 #include "keycombo.h"
 
 #include <X11/Xlib.h>
-#include <regex>
 #include <algorithm>
 #include <iostream>
+#include <regex>
 #include <stdexcept>
 
 #include "completion.h"
