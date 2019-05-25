@@ -25,6 +25,7 @@
 #include "ipc-server.h"
 #include "keymanager.h"
 #include "layout.h"
+#include "monitordetection.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
 #include "rectangle.h"
@@ -256,6 +257,8 @@ int version(Output output) {
     output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << endl;
     output << "Copyright (c) 2011-2014 Thorsten Wißmann" << endl;
     output << "Released under the Simplified BSD License" << endl;
+    bool xinerama = MonitorDetection::xinerama().detect_ != nullptr;
+    output << "Xinerama support: " << (xinerama ? "on" : "off") << endl;
     return 0;
 }
 
