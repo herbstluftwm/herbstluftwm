@@ -41,10 +41,10 @@ void XKeyGrabber::updateNumlockMask() {
 KeyCombo XKeyGrabber::xEventToKeyCombo(XEvent *ev) const {
     KeyCombo combo;
     combo.keysym = XkbKeycodeToKeysym(g_display, ev->xkey.keycode, 0, 0);
-    combo.modifiers = ev->xkey.state;
+    combo.modifiers_ = ev->xkey.state;
 
     // Normalize
-    combo.modifiers &= ~(numlockMask_ | LockMask);
+    combo.modifiers_ &= ~(numlockMask_ | LockMask);
 
     return combo;
 }
@@ -78,10 +78,10 @@ void XKeyGrabber::changeGrabbedState(const KeyCombo& keyCombo, bool grabbed) {
     // Grab/ungrab key for each modifier that is ignored (capslock, numlock)
     for (auto& ignModifier : ignModifiers) {
         if (grabbed) {
-            XGrabKey(g_display, keycode, ignModifier | keyCombo.modifiers, g_root,
+            XGrabKey(g_display, keycode, ignModifier | keyCombo.modifiers_, g_root,
                     True, GrabModeAsync, GrabModeAsync);
         } else {
-            XUngrabKey(g_display, keycode, ignModifier | keyCombo.modifiers, g_root);
+            XUngrabKey(g_display, keycode, ignModifier | keyCombo.modifiers_, g_root);
         }
     }
 }
