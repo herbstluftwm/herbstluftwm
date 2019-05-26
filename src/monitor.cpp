@@ -26,6 +26,7 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::endl;
 using std::make_shared;
 using std::string;
 using std::vector;
@@ -566,20 +567,30 @@ Monitor* monitor_with_coordinate(int x, int y) {
 
 int detect_monitors_command(int argc, const char **argv, Output output) {
     auto root = Root::get();
-    auto xinerama = MonitorDetection::xinerama();
     RectangleVec monitor_rects = {};
-    if (xinerama.detect_) {
-        monitor_rects = xinerama.detect_(root->X);
+    for (const auto& detector : MonitorDetection::detectors()) {
+        if (detector.detect_) {
+            auto rects = detector.detect_(root->X);
+            // remove duplicates
+            std::sort(rects.begin(), rects.end());
+            rects.erase(std::unique(rects.begin(), rects.end()), rects.end());
+            // check if this has more outputs than we know already
+            if (rects.size() > monitor_rects.size()) {
+                monitor_rects = rects;
+            }
+        }
     }
     if (monitor_rects.empty()) {
         monitor_rects = { root->X.windowSize(root->X.root()) };
     }
+    bool list_all = false;
     bool list_only = false;
     bool disjoin = true;
     //bool drop_small = true;
     FOR (i,1,argc) {
         if      (!strcmp(argv[i], "-l"))            list_only = true;
         else if (!strcmp(argv[i], "--list"))        list_only = true;
+        else if (!strcmp(argv[i], "--list-all"))    list_all = true;
         else if (!strcmp(argv[i], "--no-disjoin"))  disjoin = false;
         // TOOD:
         // else if (!strcmp(argv[i], "--keep-small"))  drop_small = false;
@@ -590,7 +601,19 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
     }
 
     int ret = 0;
-    if (list_only) {
+    if (list_all) {
+        for (const auto& detector : MonitorDetection::detectors()) {
+            output << detector.name_ << ":";
+            if (detector.detect_) {
+                for (auto m : detector.detect_(root->X)) {
+                    output << " " << m;
+                }
+            } else {
+                output << " disabled";
+            }
+            output << endl;
+        }
+    } else if (list_only) {
         for (auto m : monitor_rects) {
             output << m << "\n";
         }

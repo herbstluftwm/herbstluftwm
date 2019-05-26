@@ -257,8 +257,9 @@ int version(Output output) {
     output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << endl;
     output << "Copyright (c) 2011-2014 Thorsten Wißmann" << endl;
     output << "Released under the Simplified BSD License" << endl;
-    bool xinerama = MonitorDetection::xinerama().detect_ != nullptr;
-    output << "Xinerama support: " << (xinerama ? "on" : "off") << endl;
+    for (const auto& d : MonitorDetection::detectors()) {
+        output << d.name_ << " support: " << (d.detect_ ? "on" : "off") << endl;
+    }
     return 0;
 }
 

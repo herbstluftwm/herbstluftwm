@@ -7,29 +7,15 @@
 #endif /* XINERAMA */
 
 using std::string;
+using std::vector;
 
 MonitorDetection::MonitorDetection(string name)
     : name_(name)
-    , checkDisplay_(nullptr)
     , detect_(nullptr)
 {
 }
 
 #ifdef XINERAMA
-// inspired by dwm's isuniquegeom()
-static bool geom_unique(const RectangleVec& unique, XineramaScreenInfo *info) {
-    for (const auto& u : unique) {
-        if (u.x == info->x_org && u.y == info->y_org
-        &&  u.width == info->width && u.height == info->height)
-            return false;
-    }
-    return true;
-}
-
-
-static bool checkDisplayXinerama(XConnection& X) {
-    return XineramaIsActive(X.display());
-}
 
 // inspired by dwm's updategeom()
 RectangleVec detectMonitorsXinerama(XConnection& X) {
@@ -40,14 +26,12 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
     XineramaScreenInfo *info = XineramaQueryScreens(X.display(), &n);
     RectangleVec monitor_rects;
     for (int i = 0; i < n; i++) {
-        if (geom_unique(monitor_rects, &info[i])) {
-            Rectangle r;
-            r.x = info[i].x_org;
-            r.y = info[i].y_org;
-            r.width = info[i].width;
-            r.height = info[i].height;
-            monitor_rects.push_back(r);
-        }
+        Rectangle r;
+        r.x = info[i].x_org;
+        r.y = info[i].y_org;
+        r.width = info[i].width;
+        r.height = info[i].height;
+        monitor_rects.push_back(r);
     }
     XFree(info);
     return monitor_rects;
@@ -55,11 +39,11 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
 
 #endif /* XINERAMA */
 
-MonitorDetection MonitorDetection::xinerama() {
-    MonitorDetection md("xinerama");
+vector<MonitorDetection> MonitorDetection::detectors() {
+    MonitorDetection xinerama("xinerama");
     #ifdef XINERAMA
-    md.checkDisplay_ = checkDisplayXinerama;
-    md.detect_ = detectMonitorsXinerama;
+    xinerama.detect_ = detectMonitorsXinerama;
     #endif
-    return md;
+    return { xinerama };
 }
+

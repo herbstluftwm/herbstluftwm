@@ -603,8 +603,8 @@ set_monitors 'RECTS' ...::
         * New monitors are created if there are more 'RECTS' then monitors
         * Existing monitors are deleted if there are more monitors then 'RECTS'
 
-detect_monitors '-l'|'--list'|'--no-disjoin'::
-    Sets the list of monitors to the available Xinerama monitors. If the
+detect_monitors '-l'|'--list'|'--list-all'|'--no-disjoin'::
+    Sets the list of monitors to the physically available monitors. If the
     Xinerama extension is missing, it will fall back to one monitor across the
     entire screen. If the detected monitors overlap, the will be split into more
     monitors that are disjoint but cover the same area using +disjoin_rects+.
@@ -612,6 +612,9 @@ detect_monitors '-l'|'--list'|'--no-disjoin'::
     If '-l' or '--list' is passed, the list of rectangles of detected pyhsical
     monitors is printed. So +hc detect_monitors+ is equivalent to the bash
     command +hc set_monitors $(hc disjoin_rects $(hc detect_monitors -l))+.
+    +
+    If '--list-all' is passed, then it is printed which multimonitor detection
+    (xinerama, xrandr) has which set of physical monitors.
 
 add_monitor 'RECT' ['TAG' ['NAME']]::
     Adds a monitor on the specified rectangle 'RECT' and displays 'TAG' on it.
