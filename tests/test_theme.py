@@ -54,3 +54,17 @@ def test_reset_theme_tiling(hlwm):
     # check that attributes in 'unaffected' do not get reset
     for a in unaffected:
         assert hlwm.get_attr(a) != unaffected_values[a]
+
+
+def test_attr_propagate_same_value_twice(hlwm):
+    # propagate some value
+    hlwm.call('set_attr theme.tiling.border_width 4')
+    # change the value in the propagation target
+    hlwm.call('set_attr theme.tiling.active.border_width 2')
+    assert hlwm.get_attr('theme.tiling.active.border_width') == '2'
+
+    # now propagate the same value again
+    hlwm.call('set_attr theme.tiling.border_width 4')
+
+    # now the propagation target must be updated again
+    assert hlwm.get_attr('theme.tiling.active.border_width') == '4'
