@@ -6,6 +6,10 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 
+#ifdef XRANDR
+#include <X11/extensions/Xrandr.h>
+#endif /* XRANDR */
+
 using std::string;
 using std::vector;
 
@@ -39,11 +43,35 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
 
 #endif /* XINERAMA */
 
+#ifdef XRANDR
+
+RectangleVec detectMonitorsXrandr(XConnection& X) {
+    int outputs = 0;
+    XRRMonitorInfo* monitorInfo = XRRGetMonitors(X.display(), X.root(), true, &outputs);
+    if (outputs == 0) {
+        return {};
+    }
+    RectangleVec result;
+    for (int i = 0; i < outputs; i++) {
+        XRRMonitorInfo& cur = monitorInfo[i];
+        result.push_back({ cur.x, cur.y, cur.width, cur.height });
+    }
+    XRRFreeMonitors(monitorInfo);
+    return result;
+}
+
+
+#endif /* XRANDR */
+
 vector<MonitorDetection> MonitorDetection::detectors() {
     MonitorDetection xinerama("xinerama");
     #ifdef XINERAMA
     xinerama.detect_ = detectMonitorsXinerama;
     #endif
-    return { xinerama };
+    MonitorDetection xrandr("xrandr");
+    #ifdef XRANDR
+    xrandr.detect_ = detectMonitorsXrandr;
+    #endif
+    return { xinerama, xrandr };
 }
 
