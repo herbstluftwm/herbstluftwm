@@ -73,6 +73,9 @@ struct Rectangle {
     //! Grow/shrink in each of the four given directions
     Rectangle adjusted(int left, int top, int right, int bottom) const;
 
+    bool operator<(const Rectangle& other) const;
+    bool operator==(const Rectangle& other) const;
+
     int x;
     int y;
     int width;

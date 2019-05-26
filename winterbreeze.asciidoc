@@ -24,3 +24,5 @@ the following, all user-visible changes are listed:
 
   - The 'keybind' command now accepts all valid key symbols, even if they are
     not present on the current keyboard layout at the time of setup.
+
+  - 'detect_monitors' has an additional '--list-all' parameter

@@ -97,6 +97,23 @@ Rectangle Rectangle::adjusted(int left, int top, int right, int bottom) const
     return {x - left, y - top, width + left + right, height + top + bottom};
 }
 
+//! lexicographic order (wrt x,y,width,height)
+bool Rectangle::operator<(const Rectangle& other) const
+{
+    if (x != other.x) return x < other.x;
+    if (y != other.y) return y < other.y;
+    if (width != other.width) return width < other.width;
+    if (height != other.height) return height < other.height;
+    return false;
+}
+
+bool Rectangle::operator==(const Rectangle& other) const
+{
+    return x == other.x
+        && y == other.y
+        && width == other.width
+        && height == other.height;
+}
 
 std::ostream& operator<< (std::ostream& stream, const Rectangle& rect) {
     stream
