@@ -38,7 +38,7 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
 
 #endif /* XINERAMA */
 
-std::vector<MonitorDetection> MonitorDetection::detectors() {
+vector<MonitorDetection> MonitorDetection::detectors() {
     MonitorDetection xinerama("xinerama");
     #ifdef XINERAMA
     xinerama.detect_ = detectMonitorsXinerama;
