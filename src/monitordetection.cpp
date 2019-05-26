@@ -7,6 +7,7 @@
 #endif /* XINERAMA */
 
 using std::string;
+using std::vector;
 
 MonitorDetection::MonitorDetection(string name)
     : name_(name)
