@@ -5,15 +5,18 @@
 #include <X11/Xlib.h>
 
 #include "attribute_.h"
-#include "decoration.h"
 #include "object.h"
+#include "types.h"
 #include "x11-types.h"
 
+class Decoration;
+class DecTriple;
 class Ewmh;
 class Slice;
 class HSTag;
 class Monitor;
 class Settings;
+class Theme;
 class ClientManager;
 
 class Client : public Object {
@@ -22,7 +25,7 @@ public:
     ~Client() override;
 
     Window      window_;
-    Decoration  dec;
+    std::unique_ptr<Decoration> dec; // pimpl
     Rectangle   last_size_;      // last size excluding the window border
     Rectangle   float_size_ = {0, 0, 100, 100};     // floating size without the window border
     HSTag*      tag_ = {};
@@ -65,7 +68,7 @@ public:
     void setTag(HSTag* tag) { tag_ = tag; }
 
     Window x11Window() { return window_; }
-    Window decorationWindow() { return dec.decorationWindow(); }
+    Window decorationWindow();
     friend void mouse_function_resize(XMotionEvent* me);
 
     // other member functions
