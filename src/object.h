@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include "arglist.h"
 #include "types.h"
 
 #define OBJECT_PATH_SEPARATOR '.'
