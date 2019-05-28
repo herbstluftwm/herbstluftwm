@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "clientmanager.h"
-#include "decoration.h"
 #include "ewmh.h"
 #include "hookmanager.h"
 #include "keymanager.h"
