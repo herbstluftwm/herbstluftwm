@@ -6,7 +6,6 @@
 #include <utility>
 #include <vector>
 
-#include "arglist.h"
 #include "types.h"
 
 #define OBJECT_PATH_SEPARATOR '.'
@@ -34,13 +33,6 @@ public:
     // object tree ls command
     virtual void ls(Output out);
     virtual void ls(Path path, Output out); // traversial version
-
-    virtual std::string read(const std::string &attr) const;
-    virtual bool writeable(const std::string &attr) const;
-    virtual void write(const std::string &attr, const std::string &value);
-    virtual bool hookable(const std::string &attr) const;
-
-    virtual void trigger(const std::string &action, ArgList args);
 
     static std::pair<ArgList,std::string> splitPath(const std::string &path);
 

@@ -34,19 +34,3 @@ void HookManager::remove(const string &path)
 {
     removeChild(path);
 }
-
-void HookManager::trigger(const string &action, ArgList args)
-{
-    if (action == add_.name()) {
-        for (auto a : args)
-            add(a);
-        return;
-    }
-    if (action == remove_.name()) {
-        for (auto a : args)
-            remove(a);
-        return;
-    }
-    Object::trigger(action, args);
-}
-
