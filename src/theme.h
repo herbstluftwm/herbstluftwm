@@ -6,24 +6,87 @@
 #include "attribute_.h"
 #include "object.h"
 
+/** The proxy interface
+ */
+
+class ProxyAddTargetInterface {
+public:
+    /* Propagate all attribute writes to an attribute of the same name of the
+     * given object
+     */
+    virtual void addProxyTarget(Object* object) = 0;
+    /** the following is just a hack such that we need to write the list of
+     * attributes only once in the constructor of DecorationScheme
+     */
+    virtual Attribute* toAttribute() = 0;
+};
+
+/** An attribute that is at the same time a proxy
+ * to attributes with the same name in other objects.
+ */
+template<typename T>
+class AttributeProxy_ : public Attribute_<T>, public ProxyAddTargetInterface {
+public:
+    AttributeProxy_(const std::string &name, const T &payload)
+        : Attribute_<T>(name, payload)
+    {
+    }
+
+    std::string change(const std::string &payload_str) override {
+        std::string msg = Attribute_<T>::change(payload_str);
+        if (msg.empty()) {
+            // propagate the new attribute value
+            // ignoring their error message since we assume that
+            // they have the same type / validation as this attribute
+            for (auto target : targetObjects_) {
+                Attribute* a = target->attribute(this->name());
+                if (a != nullptr) {
+                    a->change(payload_str);
+                }
+            }
+        }
+        return msg;
+    }
+    void addProxyTarget(Object* object) override {
+        targetObjects_.push_back(object);
+    }
+    bool resetValue() override {
+        bool res = Attribute_<T>::resetValue();
+        if (res) {
+            for (auto target : targetObjects_) {
+                Attribute* a = target->attribute(this->name());
+                if (a != nullptr) {
+                    a->resetValue();
+                }
+            }
+        }
+        return res;
+    }
+    Attribute* toAttribute() override {
+        return this;
+    }
+private:
+    std::vector<Object*> targetObjects_;
+};
+
 class DecorationScheme : public Object {
 public:
     DecorationScheme();
     ~DecorationScheme() override = default;
     DynAttribute_<std::string> reset;
-    Attribute_<unsigned long>     border_width = {"border_width", 1};
-    Attribute_<Color>   border_color = {"color", {"black"}};
-    Attribute_<bool>    tight_decoration = {"tight_decoration", false}; // if set, there is no space between the
+    AttributeProxy_<unsigned long>     border_width = {"border_width", 1};
+    AttributeProxy_<Color>   border_color = {"color", {"black"}};
+    AttributeProxy_<bool>    tight_decoration = {"tight_decoration", false}; // if set, there is no space between the
                               // decoration and the window content
-    Attribute_<Color>   inner_color = {"inner_color", {"black"}};
-    Attribute_<unsigned long>     inner_width = {"inner_width", 0};
-    Attribute_<Color>   outer_color = {"outer_color", {"black"}};
-    Attribute_<unsigned long>     outer_width = {"outer_width", 0};
-    Attribute_<unsigned long>     padding_top = {"padding_top", 0};    // additional window border
-    Attribute_<unsigned long>     padding_right = {"padding_right", 0};  // additional window border
-    Attribute_<unsigned long>     padding_bottom = {"padding_bottom", 0}; // additional window border
-    Attribute_<unsigned long>     padding_left = {"padding_left", 0};   // additional window border
-    Attribute_<Color>   background_color = {"background_color", {"black"}}; // color behind client contents
+    AttributeProxy_<Color>   inner_color = {"inner_color", {"black"}};
+    AttributeProxy_<unsigned long>     inner_width = {"inner_width", 0};
+    AttributeProxy_<Color>   outer_color = {"outer_color", {"black"}};
+    AttributeProxy_<unsigned long>     outer_width = {"outer_width", 0};
+    AttributeProxy_<unsigned long>     padding_top = {"padding_top", 0};    // additional window border
+    AttributeProxy_<unsigned long>     padding_right = {"padding_right", 0};  // additional window border
+    AttributeProxy_<unsigned long>     padding_bottom = {"padding_bottom", 0}; // additional window border
+    AttributeProxy_<unsigned long>     padding_left = {"padding_left", 0};   // additional window border
+    AttributeProxy_<Color>   background_color = {"background_color", {"black"}}; // color behind client contents
 
     Rectangle inner_rect_to_outline(Rectangle rect) const;
     Rectangle outline_to_inner_rect(Rectangle rect) const;
@@ -35,6 +98,7 @@ public:
 private:
     std::string resetSetterHelper(std::string dummy);
     std::string resetGetterHelper();
+    std::vector<ProxyAddTargetInterface*> proxyAttributes_;
 };
 
 class DecTriple : public DecorationScheme {

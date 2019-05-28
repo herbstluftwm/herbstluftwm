@@ -25,8 +25,7 @@ Theme::Theme() {
 DecorationScheme::DecorationScheme()
     : reset(this, "reset", &DecorationScheme::resetGetterHelper,
                            &DecorationScheme::resetSetterHelper)
-{
-    vector<Attribute*> attrs = {
+    , proxyAttributes_ ({
         &border_width,
         &border_color,
         &tight_decoration,
@@ -39,10 +38,11 @@ DecorationScheme::DecorationScheme()
         &padding_bottom,
         &padding_left,
         &background_color,
-    };
-    wireAttributes(attrs);
-    for (auto i : attrs) {
-        i->setWriteable();
+    })
+{
+    for (auto i : proxyAttributes_) {
+        addAttribute(i->toAttribute());
+        i->toAttribute()->setWriteable();
         // TODO: signal decoration change (leading to relayout)
     }
 }
@@ -73,25 +73,10 @@ string DecorationScheme::resetGetterHelper() {
 }
 
 void DecorationScheme::makeProxyFor(vector<DecorationScheme*> decs) {
-    for (auto it : attributes()) {
-        string attrib_name = it.first;
-        auto source_attribute = it.second;
-        if (source_attribute == &reset) {
-            continue;
+    for (auto it : proxyAttributes_) {
+        for (auto target : decs) {
+            it->addProxyTarget(target);
         }
-        // if an attribute of this DecorationScheme is changed, then
-        auto handler = [decs, attrib_name, source_attribute] () {
-            // for each decoration to forward the value to
-            for (auto dec_it : decs) {
-                auto target_attribute = dec_it->attribute(attrib_name);
-                // consider only those having an attribute of the same name
-                if (target_attribute) {
-                    // note: clumsy, but we have no explicit 'get()'/'set()'
-                    target_attribute->change(source_attribute->str());
-                }
-            }
-        };
-        source_attribute->changed().connect(handler);
     }
 }
 
