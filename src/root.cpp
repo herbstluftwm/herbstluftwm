@@ -13,6 +13,7 @@
 #include "rulemanager.h"
 #include "settings.h"
 #include "tagmanager.h"
+#include "theme.h"
 #include "tmp.h"
 #include "utils.h"
 
