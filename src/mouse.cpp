@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include "client.h"
+#include "decoration.h"
 #include "frametree.h"
 #include "keymanager.h"
 #include "layout.h"
@@ -62,7 +63,7 @@ static void client_snap_helper(Client* candidate, struct SnapData* d) {
         return;
     }
     auto subject  = d->rect;
-    auto other    = candidate->dec.last_outer();
+    auto other    = candidate->dec->last_outer();
     // increase other by snap gap
     other.x -= g_settings->snap_gap();
     other.y -= g_settings->snap_gap();
