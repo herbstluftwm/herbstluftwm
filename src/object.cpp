@@ -18,45 +18,6 @@ using std::shared_ptr;
 using std::string;
 using std::vector;
 
-string Object::read(const string &attr) const {
-    auto it = attribs_.find(attr);
-    if (it != attribs_.end())
-        return it->second->str();
-    return {}; // TODO: throw
-}
-
-bool Object::writeable(const string &attr) const {
-    auto it = attribs_.find(attr);
-    if (it != attribs_.end()) {
-        return it->second->writeable();
-    }
-    return false; // TODO: throw
-}
-
-void Object::write(const string &attr, const string &value) {
-    auto it = attribs_.find(attr);
-    if (it != attribs_.end()) {
-        if (it->second->writeable())
-            it->second->change(value);
-        // TODO: else throw
-    } else {
-        // TODO: throw
-    }
-}
-
-bool Object::hookable(const string &attr) const {
-    auto it = attribs_.find(attr);
-    if (it != attribs_.end()) {
-        return it->second->hookable();
-    }
-    return false; // TODO: else throw
-}
-
-void Object::trigger(const string &action, ArgList args) {
-    // do nothing, there is no default behavior for actions.
-    // TODO: throw; if we got here, there was an error, e.g. typo on user's side
-}
-
 pair<ArgList,string> Object::splitPath(const string &path) {
     vector<string> splitpath = ArgList(path, OBJECT_PATH_SEPARATOR).toVector();
     if (splitpath.empty()) {
