@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 #include "client.h"
+#include "decoration.h"
 #include "frametree.h"
 #include "layout.h"
 #include "monitor.h"
@@ -199,7 +200,7 @@ bool floating_focus_direction(Direction dir) {
     Client* curfocus = get_current_client();
     tag->frame->foreachClient([&](Client* c) {
         clients.push_back(c);
-        rects.push_back(make_pair(idx,c->dec.last_outer()));
+        rects.push_back(make_pair(idx,c->dec->last_outer()));
         if (c == curfocus) curfocusidx = idx;
         idx++;
     });
@@ -225,7 +226,7 @@ bool floating_shift_direction(Direction dir) {
     Client* curfocus = get_current_client();
     tag->frame->foreachClient([&](Client* c) {
         clients.push_back(c);
-        rects.push_back(make_pair(idx,c->dec.last_outer()));
+        rects.push_back(make_pair(idx,c->dec->last_outer()));
         if (c == curfocus) curfocusidx = idx;
         idx++;
     });
@@ -254,7 +255,7 @@ bool floating_shift_direction(Direction dir) {
     }
     // don't apply snapgap to focused client, so there will be exactly
     // snap_gap pixels between the focused client and the found edge
-    auto focusrect = curfocus->dec.last_outer();
+    auto focusrect = curfocus->dec->last_outer();
     idx = find_edge_in_direction(rects, curfocusidx, dir);
     if (idx < 0) return false;
     // shift client

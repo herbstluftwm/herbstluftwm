@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "stack.h"
 #include "tag.h"
+#include "theme.h"
 #include "utils.h"
 #include "xconnection.h"
 
@@ -32,7 +33,7 @@ static Client* lastfocus = nullptr;
 
 Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
-    , dec(this, *cm.settings)
+    , dec(make_unique<Decoration>(this, *cm.settings))
     , visible_(visible_already)
     , urgent_(this, "urgent", false)
     , fullscreen_(this,  "fullscreen", false)
@@ -88,7 +89,7 @@ void Client::make_full_client() {
     // specify that the client window survives if hlwm dies, i.e. it will be
     // reparented back to root
     XChangeSaveSet(g_display, window_, SetModeInsert);
-    XReparentWindow(g_display, window_, dec.decorationWindow(), 40, 40);
+    XReparentWindow(g_display, window_, dec->decorationWindow(), 40, 40);
     // if this client is visible, then reparenting will make it invisible
     // and will create a unmap notify event
     if (visible_ == true) {
@@ -96,7 +97,7 @@ void Client::make_full_client() {
         visible_ = false;
     }
     // get events from window
-    XSelectInput(g_display, dec.decorationWindow(), (EnterWindowMask | LeaveWindowMask |
+    XSelectInput(g_display, dec->decorationWindow(), (EnterWindowMask | LeaveWindowMask |
                             ButtonPressMask | ButtonReleaseMask |
                             ExposureMask |
                             SubstructureRedirectMask | FocusChangeMask));
@@ -216,11 +217,11 @@ const DecTriple& Client::getDecTriple() {
 }
 
 void Client::setup_border(bool focused) {
-    dec.change_scheme(getDecTriple()(focused, urgent_()));
+    dec->change_scheme(getDecTriple()(focused, urgent_()));
 }
 
 void Client::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
-    dec.resize_outline(monitor_rect, theme[Theme::Type::Fullscreen](isFocused,urgent_()));
+    dec->resize_outline(monitor_rect, theme[Theme::Type::Fullscreen](isFocused,urgent_()));
 }
 
 void Client::raise() {
@@ -244,7 +245,7 @@ void Client::resize_tiling(Rectangle rect, bool isFocused) {
         rect.width = std::min(outline.width, rect.width);
         rect.height = std::min(outline.height, rect.height);
     }
-    dec.resize_outline(rect, scheme);
+    dec->resize_outline(rect, scheme);
 }
 
 // from dwm.c
@@ -357,7 +358,7 @@ void Client::updatesizehints() {
 
 
 void Client::send_configure() {
-    auto last_inner_rect = dec.last_inner();
+    auto last_inner_rect = dec->last_inner();
     XConfigureEvent ce;
     ce.type = ConfigureNotify;
     ce.display = g_display;
@@ -390,11 +391,11 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
         CLAMP(rect.y,
               m->rect.y + m->pad_up() - rect.height + space,
               m->rect.y + m->rect.height - m->pad_up() - m->pad_down() - space);
-    dec.resize_inner(rect, theme[Theme::Type::Floating](isFocused,urgent_()));
+    dec->resize_inner(rect, theme[Theme::Type::Floating](isFocused,urgent_()));
 }
 
 Rectangle Client::outer_floating_rect() {
-    return dec.inner_to_outer(float_size_);
+    return dec->inner_to_outer(float_size_);
 }
 
 int close_command(Input input, Output) {
@@ -441,12 +442,12 @@ void Client::set_visible(bool visible) {
         XGrabServer(g_display);
         ewmh.windowUpdateWmState(this->window_, WmStateNormalState);
         XMapWindow(g_display, this->window_);
-        XMapWindow(g_display, this->dec.decorationWindow());
+        XMapWindow(g_display, this->dec->decorationWindow());
         XUngrabServer(g_display);
     } else {
         /* we unmap the client itself so that we can get MapRequest
            events, and because the ICCCM tells us to! */
-        XUnmapWindow(g_display, this->dec.decorationWindow());
+        XUnmapWindow(g_display, this->dec->decorationWindow());
         XUnmapWindow(g_display, this->window_);
         ewmh.windowUpdateWmState(this->window_, WmStateWithdrawnState);
         this->ignore_unmaps_++;
@@ -655,3 +656,8 @@ string Client::tagName() {
     // that tag is set.
     return tag_ ? tag_->name() : "";
 }
+
+Window Client::decorationWindow() {
+    return dec->decorationWindow();
+}
+
