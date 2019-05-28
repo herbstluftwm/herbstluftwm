@@ -1,8 +1,8 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
-Current git version
--------------------
+Release 0.7.2 on 2019-05-28
+---------------------------
 
    * When herbstluftwm is not running and herbstclient is called, the
      absent herbstluftwm is detected instead of hanging forever.
