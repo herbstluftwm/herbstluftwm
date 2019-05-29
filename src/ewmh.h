@@ -18,6 +18,7 @@ enum {
     NetSupported = 0,
     NetClientList,
     NetClientListStacking,
+    NetCloseWindow,
     NetNumberOfDesktops,
     NetCurrentDesktop,
     NetDesktopNames,

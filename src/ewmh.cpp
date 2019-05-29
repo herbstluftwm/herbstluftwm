@@ -38,6 +38,7 @@ const std::array<const char*,NetCOUNT>g_netatom_names =
     { NetSupported                   , "_NET_SUPPORTED"                    },
     { NetClientList                  , "_NET_CLIENT_LIST"                  },
     { NetClientListStacking          , "_NET_CLIENT_LIST_STACKING"         },
+    { NetCloseWindow                 , "_NET_CLOSE_WINDOW"                 },
     { NetNumberOfDesktops            , "_NET_NUMBER_OF_DESKTOPS"           },
     { NetCurrentDesktop              , "_NET_CURRENT_DESKTOP"              },
     { NetDesktopNames                , "_NET_DESKTOP_NAMES"                },
@@ -361,6 +362,11 @@ void Ewmh::handleClientMessage(XEvent* event) {
                 // anything else is a resize
                 root_->mouse->mouse_initiate_resize(client, {});
             }
+            break;
+        }
+
+        case NetCloseWindow: {
+            windowClose(me->window);
             break;
         }
 
