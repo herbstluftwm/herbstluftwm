@@ -25,8 +25,9 @@ Optional run-time dependencies:
 
 ==== Help/Support/Bugs ====
 A list of known bugs is listed in BUGS. If you found other bugs or want to
-request features then contact the mailing list. (The subscription process is
-explained in the HACKING file).
+request features then open an issue on github.com/herbstluftwm/herbstluftwm or
+contact the mailing list. (The subscription process is explained in the HACKING
+file).
 
 Mailing list: hlwm@lists.herbstluftwm.org
 
@@ -53,7 +54,7 @@ typically build regularly, and install with DESTDIR=./path/to/fakeroot.
 
     make
     sudo make DESTDIR=./pkg/ install
- 
+
 To use the software locally, create your own autostart file:
 
     mkdir -p ~/.config/herbstluftwm/
@@ -62,7 +63,7 @@ To use the software locally, create your own autostart file:
 ==== First steps without installing ====
 1. create and switch to a build directory:
 
-    mkdir build; cd build
+    mkdir build && cd build
 
 2. compile:
 
