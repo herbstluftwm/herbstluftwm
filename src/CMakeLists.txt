@@ -75,23 +75,17 @@ set_target_properties(herbstluftwm PROPERTIES
 include(CMakeDependentOption)
 cmake_dependent_option(WITH_XINERAMA "Use multi-monitor support via xinerama" ON
     "X11_Xinerama_FOUND" OFF)
-cmake_dependent_option(WITH_XRANDR "Use multi-monitor support via xrandr" ON
-    "X11_Xrandr_FOUND" OFF)
 
 if (WITH_XINERAMA)
     set_property(SOURCE monitordetection.cpp APPEND PROPERTY COMPILE_DEFINITIONS XINERAMA)
     target_link_libraries(herbstluftwm PRIVATE ${X11_Xinerama_LIB})
-endif()
-if (WITH_XRANDR)
-    set_property(SOURCE monitordetection.cpp APPEND PROPERTY COMPILE_DEFINITIONS XRANDR)
-    target_link_libraries(herbstluftwm PRIVATE ${X11_Xrandr_LIB})
 endif()
 
 ## dependencies X11 (link to Xext for XShape())
 target_include_directories(herbstluftwm SYSTEM PUBLIC
     ${X11_X11_INCLUDE_PATH} ${X11_Xinerama_INCLUDE_PATH} ${X11_Xrandr_INCLUDE_PATH})
 target_link_libraries(herbstluftwm PUBLIC
-    ${X11_X11_LIB} ${X11_Xext_LIB})
+    ${X11_X11_LIB} ${X11_Xext_LIB} ${X11_Xrandr_LIB})
 
 ## export variables to the code
 # version string
