@@ -17,10 +17,8 @@ IFS=. read -ra versionargs <<< "$version"
 
 
 echo "==> Release commit"
-echo ":: Patching version.mk"
-sed -i -e "s/^VERSION_MAJOR.*$/VERSION_MAJOR = ${versionargs[0]}/" \
-       -e "s/^VERSION_MINOR.*$/VERSION_MINOR = ${versionargs[1]}/" \
-       -e "s/^VERSION_PATCH.*$/VERSION_PATCH = ${versionargs[2]}/" version.mk
+echo ":: Patching VERSION"
+echo "$version" > VERSION
 
 echo ":: Patching NEWS"
 date=$(date +%Y-%m-%d)
@@ -32,7 +30,7 @@ sed -i -e "/$headerexp/,+1s/^[-]*$/$newunderline/" \
        -e "s/$headerexp/$newheader/" NEWS
 
 echo ":: Commiting changes"
-git add NEWS version.mk
+git add NEWS VERSION
 git commit -m "Release $version"
 echo ":: Tagging commit"
 git tag -s "v$version" -m "Release $version"
