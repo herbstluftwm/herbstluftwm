@@ -32,12 +32,12 @@ parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
 args = parser.parse_args()
 
-repo = Path(__file__).resolve().parent
+repo = sp.run('git rev-parse --show-toplevel', shell=True, stdout=sp.PIPE).stdout.decode().rstrip('\n')
 build_dir = Path(args.build_dir)
 build_dir.mkdir(exist_ok=True)
 
 if args.check_using_std:
-    sp.check_call(['./ci-check-using-std.sh'], cwd=repo)
+    sp.check_call(['./ci/check-using-std.sh'], cwd=repo)
 
 if args.ccache:
     if args.ccache is not True:

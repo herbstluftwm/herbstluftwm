@@ -27,7 +27,7 @@ jobs:
               # Build ad-hoc image, using hub image as cache
               # (=> does not actually build from scratch if the Dockerfile is
               # the same):
-              - docker build -t disco --cache-from hlwm/ci:disco - <Dockerfile.ci-disco
+              - docker build -t disco --cache-from hlwm/ci:disco - <ci/Dockerfile.ci-disco
 
               # Perform actual tasks within temporary Docker image
               - docker run -u $UID --privileged -t --rm
@@ -36,8 +36,8 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco sh -c '
-                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --compile &&
-                    /hlwm/ci-build.py --build-dir=/hlwm/build-gcc-8 --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --compile --run-tests
+                    /hlwm/ci/build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --compile &&
+                    /hlwm/ci/build.py --build-dir=/hlwm/build-gcc-8 --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --compile --run-tests
                 '
               - bash <(curl -s https://codecov.io/bash) -y .codecov.yml -f coverage.info
 
@@ -54,7 +54,7 @@ jobs:
               # Build ad-hoc image, using hub image as cache
               # (=> does not actually build from scratch if the Dockerfile is
               # the same):
-              - docker build -t disco --cache-from hlwm/ci:disco - <Dockerfile.ci-disco
+              - docker build -t disco --cache-from hlwm/ci:disco - <ci/Dockerfile.ci-disco
 
               # Perform actual tasks within temporary Docker image
               - docker run -u $UID --privileged -t --rm
@@ -62,7 +62,7 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 disco sh -c '
-                    /hlwm/ci-build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --check-using-std --iwyu --flake8
+                    /hlwm/ci/build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --check-using-std --iwyu --flake8
                 '
 
         - name: "Build with ancient GCC on Ubuntu 14.04"
@@ -79,7 +79,7 @@ jobs:
               # (=> does not actually build from scratch if the Dockerfile is
               # the same):
               - docker build -t trusty --cache-from hlwm/ci:trusty -
-                <Dockerfile.ci-trusty
+                <ci/Dockerfile.ci-trusty
 
               # Build with gcc-4.8 using ad-hoc image (plain bash one-liner
               # because Python is too old):

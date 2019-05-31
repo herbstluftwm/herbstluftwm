@@ -11,7 +11,7 @@
 set -o pipefail
 set -o nounset
 
-reporoot=$(realpath "$(dirname "$0")")
+reporoot=$(git rev-parse --show-toplevel)
 
 # Assemble list of std symbols to pull in:
 # (exclude some that are not enforced yet)
