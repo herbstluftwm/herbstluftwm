@@ -14,8 +14,10 @@ following platforms:
   * FreeBSD
   * Ubuntu Linux
   * link:https://apps.fedoraproject.org/packages/herbstluftwm[Fedora]
+  * link:https://software.opensuse.org/package/herbstluftwm[openSUSE]
   * link:http://www.openbsd.org/cgi-bin/cvsweb/ports/x11/herbstluftwm/[OpenBSD]
   * link:http://alpinelinux.org/apk/main/x86_64/herbstluftwm[Alpine Linux]
+  * link:https://git.exherbo.org/summer/packages/x11-wm/herbstluftwm/index.html[Exherbo]
 
 It's confirmed to run on:
 
@@ -40,14 +42,17 @@ the most current released tarball:
 | 0.6.0   | 2014-03-19 | c62caa0c67a25...               | link:tarballs/herbstluftwm-0.6.0.tar.gz[tar.gz] |
 | 0.6.1   | 2014-03-25 | c385fe9e68876...               | link:tarballs/herbstluftwm-0.6.1.tar.gz[tar.gz] |
 | 0.6.2   | 2014-03-27 | 8bfbbdb16cf88...               | link:tarballs/herbstluftwm-0.6.2.tar.gz[tar.gz] |
+| 0.7.0   | 2016-02-04 | 2a4f05d113fd8...               | link:tarballs/herbstluftwm-0.7.0.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.7.0.tar.gz.sig[sig]
+| 0.7.1   | 2018-08-09 | 7f091559503d1...               | link:tarballs/herbstluftwm-0.7.1.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.7.1.tar.gz.sig[sig]
+| 0.7.2   | 2019-05-28 | eccbb5d0b1836...               | link:tarballs/herbstluftwm-0.7.2.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.7.2.tar.gz.sig[sig]
 // do not remove this: next version line will be added here
 |====================================================================================================================
 
-The current development version is available in the
-link:http://git.informatik.uni-erlangen.de/?p=re06huxa/herbstluftwm[GitWeb]
+The current development version is available on
+link:http://github.com/herbstluftwm/herbstluftwm[Github]
 or can be cloned with:
 
 ----
-git clone git://git.informatik.uni-erlangen.de/re06huxa/herbstluftwm
+git clone https://github.com/herbstluftwm/herbstluftwm
 ----
 

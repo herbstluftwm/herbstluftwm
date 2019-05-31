@@ -29,7 +29,8 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
     *-l*, *--locked*::
         Initially set the monitors_locked setting to 1
     *--verbose*::
-        print verbose information to stderr
+        print verbose information to stderr. This can be switched at run-time by
+        the 'verbose' setting.
 
 This manual documents the scripting and configuration interface. For a more
 verbose introduction see
@@ -319,7 +320,7 @@ cycle_all [*--skip-invisible*] ['DIRECTION']::
     means forward, 'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no
     effect. 'DIRECTION' defaults to 1. If there are multiple windows within on
     frame, then it acts similar to the 'cycle' command. (The 'cycle_all' command
-    focuses the next/previous leave in the 'layout' tree.). If
+    focuses the next/previous leaf in the 'layout' tree.). If
     *--skip-invisible* is given, then this only cycles through all visible
     windows and skips invisible windows in the max layout. The focused window
     is raised.
@@ -333,8 +334,10 @@ cycle_layout ['DELTA' ['LAYOUTS' ...]]::
     Cycles the layout algorithm in the current frame by 'DELTA'. 'DELTA'
     defaults to 1. You can find a <<LIST_LAYOUT_ALGORITHMS,list of layout
     algorithms>> above. If a list of 'LAYOUTS' is given, cycle_layout will cycle
-    through those instead of the default layout algorithm list. Each layout name
-    should occur at most once. Example:
+    through those instead of the default layout algorithm list. This is done by
+    finding the first occurrence of the current layout in 'LAYOUTS' and picking
+    the next layout according to 'DELTA'. If the current layout doesn't occur in
+    'LAYOUTS', the first entry is picked. Example:
 
       * cycle_layout -1
       * cycle_layout 1 vertical grid
@@ -482,6 +485,7 @@ shift ['-i'|'-e'] 'DIRECTION'::
 
 shift_to_monitor 'MONITOR'::
     Moves the focused window to the tag on the specified 'MONITOR'.
+    See the <<MONITORS,MONITORS section>>, how to address a monitor.
 
 remove::
     Removes focused frame and merges its windows to its neighbour frame.
@@ -516,7 +520,8 @@ cycle_monitor ['DELTA']::
     Cycles monitor focused by 'DELTA'. 'DELTA' defaults to 1.
 
 focus_monitor 'MONITOR'::
-    Puts focus to the specified monitor.
+    Puts focus to the specified monitor. See the <<MONITORS,MONITORS section>>,
+    how to address a monitor.
 
 add 'TAG'::
     Creates a new empty tag named 'TAG'.
@@ -822,13 +827,13 @@ sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
 
 mktemp [*bool*|*int*|*string*|*uint*] 'IDENTIFIER' 'COMMAND' ['ARGS' ...]::
     Creates a temporary attribute with the given type and replaces all
-    occurrences of 'IDENTIFIER' in 'COMMAND' and 'ARGS' by by the path of the
+    occurrences of 'IDENTIFIER' in 'COMMAND' and 'ARGS' by the path of the
     temporary attribute. The replaced command with its arguments is executed
     then. The exit status of 'COMMAND' is returned.
 
 compare 'ATTRIBUTE' 'OPERATOR' 'VALUE'::
-    Compares the value of 'ATTRIBUTE' with 'VALUE' using the comparation method
-    'OPERATOR'. If the comparation succeeds, it returns 0, else 1. The operators
+    Compares the value of 'ATTRIBUTE' with 'VALUE' using the comparison method
+    'OPERATOR'. If the comparison succeeds, it returns 0, else 1. The operators
     are:
         - *=*: __ATTRIBUTE__'s value equals 'VALUE'
         - *!=*: __ATTRIBUTE__'s value does not equal 'VALUE'
@@ -1067,6 +1072,10 @@ update_dragged_clients (Int)::
     If set, a client's window content is resized immediately during resizing
     it with the mouse. If unset, the client's content is resized after the mouse
     button are released.
+
+verbose (Int)::
+    If set, verbose output is logged to herbstluftwm's stderr. The default value
+    is controlled by the *--verbose* command line flag.
 
 [[RULES]]
 RULES
@@ -1478,7 +1487,7 @@ respective attribute of the +tiling+ and the +floating+ object.
    ** +urgent+ propagates the attribute values to +tiling.urgent+ and
       +floating.urgent+
 
-
+[[AUTOSTART]]
 AUTOSTART FILE
 --------------
 
@@ -1528,7 +1537,7 @@ urgent [on|off] 'WINID'::
     The urgent state of client with given 'WINID' has been changed to [on|off].
 
 rule 'NAME' 'WINID'::
-    A window with the id 'WINID' appeared which triggerd a rule with the
+    A window with the id 'WINID' appeared which triggered a rule with the
     consequence hook='NAME'.
 
 There are also other useful hooks, which never will be emitted by herbstluftwm
@@ -1560,10 +1569,28 @@ the visible tags put above each other. The stacking order of these monitors is
 independent from their indices and can be modified using the *raise_monitor*
 command. The current stack is illustrated by the *stack* command.
 
+[[EWMH]]
+EWMH
+----
+As far as possible, herbstluftwm tries to be EWMH compliant. That includes:
+
+  - Information about tag names and client lists is provided.
+  - Desktop windows from desktop environments are not managed and kept below the
+    other windows.
+  - Client requests like getting focused are only processed if the setting
+    'focus_stealing_prevention' is disabled.
+
 ENVIRONMENT VARIABLES
 ---------------------
 DISPLAY::
     Specifies the 'DISPLAY' to use.
+
+
+FILES
+-----
+The following files are used by herbstluftwm:
+
+  - 'autostart', see section <<AUTOSTART,*AUTOSTART FILE*>>.
 
 EXIT STATUS
 -----------
@@ -1587,7 +1614,7 @@ RESOURCES
 ---------
 Homepage: <http://herbstluftwm.org>
 
-Gitweb: <http://git.cs.fau.de/?p=re06huxa/herbstluftwm>
+Github page: <http://github.com/herbstluftwm/herbstluftwm>
 
 Patch submission and bug reporting:
 

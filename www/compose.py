@@ -24,7 +24,9 @@ tabs = OrderedDict([
     ("Wiki", "http://wiki.herbstluftwm.org"),
 ])
 
-page2tab = {}
+page2tab = {
+    'imprint': "Imprint and Privacy Policy",
+}
 
 filename = sys.argv[1]
 name = filename.replace('-content.html', '')
@@ -91,7 +93,7 @@ print("""\
     <div class="tabbarseparator"></div>
 """)
 
-subpages = tabs[page2tab[name]]
+subpages = tabs.get(page2tab[name], OrderedDict([]))
 
 if len(subpages) > 1:
     print('<div class="subpagebar">')
@@ -121,6 +123,7 @@ print(open(filename).read())
 print("""\
     <div class="footer">
       Generated on {date}
+     - <a href=\"imprint.html\">Imprint and Privacy Policy</a>
     </div>
 """.format(date=datetime.datetime.now().strftime('%Y-%m-%d at %H:%M:%S %Z')))
 
