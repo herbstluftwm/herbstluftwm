@@ -1,13 +1,10 @@
 #include "rules.h"
 
-#include <X11/X.h>
-#include <X11/Xlib.h>
 #include <algorithm>
 #include <cstdio>
 
 #include "client.h"
 #include "ewmh.h"
-#include "globals.h"
 #include "hook.h"
 #include "root.h"
 #include "utils.h"
@@ -233,8 +230,8 @@ bool Condition::matchesWindowtype(const Client* client) const {
 }
 
 bool Condition::matchesWindowrole(const Client* client) const {
-    auto role = Root::get()->X.getWindowProperty(client->window_,
-        ATOM("WM_WINDOW_ROLE"));
+    auto& X = Root::get()->X;
+    auto role = X.getWindowProperty(client->window_, X.atom("WM_WINDOW_ROLE"));
 
     if (!role.has_value()) {
         return false;
