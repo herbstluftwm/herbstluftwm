@@ -133,6 +133,22 @@ pair<string, string> XConnection::getClassHint(Window window) {
     return result;
 }
 
+//! from https://stackoverflow.com/a/39884120/4400896
+static std::string iso_8859_1_to_utf8(const char* source) {
+    string strOut;
+    for (int i = 0; source[i] != '\0'; i++) {
+        uint8_t ch = source[i];
+        if (ch < 0x80) {
+            strOut.push_back(ch);
+        }
+        else {
+            strOut.push_back(0xc0 | ch >> 6);
+            strOut.push_back(0x80 | (ch & 0x3f));
+        }
+    }
+    return strOut;
+}
+
 std::experimental::optional<string> XConnection::getWindowProperty(Window window, Atom atom) {
     string result;
     char** list = nullptr;
@@ -143,8 +159,10 @@ std::experimental::optional<string> XConnection::getWindowProperty(Window window
         return std::experimental::optional<string>();
     }
     // convert text property to a gstring
-    if (prop.encoding == XA_STRING
-        || prop.encoding == XInternAtom(m_display, "UTF8_STRING", False)) {
+    if (prop.encoding == XA_STRING) {
+        // a XA_STRING is always encoded in ISO 8859-1
+        result = iso_8859_1_to_utf8(reinterpret_cast<char *>(prop.value));
+    } else if (prop.encoding == utf8StringAtom_) {
         result = reinterpret_cast<char *>(prop.value);
     } else {
         if (XmbTextPropertyToTextList(m_display, &prop, &list, &n) >= Success

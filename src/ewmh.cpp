@@ -85,6 +85,7 @@ Ewmh::Ewmh(XConnection& xconnection)
         }
         g_netatom[i] = XInternAtom(X_.display(), g_netatom_names[i], False);
     }
+    wmatom_[(int)WM::Name] = XInternAtom(g_display, "WM_NAME", False);
     wmatom_[(int)WM::Protocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
     wmatom_[(int)WM::Delete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
     wmatom_[(int)WM::State] = XInternAtom(g_display, "WM_STATE", False);
@@ -499,3 +500,16 @@ void Ewmh::windowClose(Window window) {
 Atom Ewmh::wmatom(WM proto) {
     return wmatom_[(int)proto];
 }
+
+string Ewmh::getWindowTitle(Window win) {
+    auto newName = X_.getWindowProperty(win, g_netatom[NetWmName]);
+    if (newName.has_value()) {
+        return newName.value();
+    }
+    newName = X_.getWindowProperty(win, wmatom(WM::Name));
+    if (newName.has_value()) {
+        return newName.value();
+    }
+    return "";
+}
+
