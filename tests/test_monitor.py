@@ -219,8 +219,3 @@ def test_use_previous_on_stolen_monitor(hlwm):
     hlwm.call('use_previous')
 
     assert hlwm.get_attr('tags.focus.name') == 'tag3'
-
-
-
-
-
