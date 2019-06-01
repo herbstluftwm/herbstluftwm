@@ -440,7 +440,10 @@ void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bott
 }
 
 void Ewmh::windowUpdateWmState(Window win, WmState state) {
-    X_.setPropertyCardinal(win, WM_STATE, { state });
+    /* set full WM_STATE according to
+     * http://www.x.org/releases/X11R7.7/doc/xorg-docs/icccm/icccm.html#WM_STATE_Property
+     */
+    X_.setPropertyCardinal(win, WM_STATE, { state, None });
 }
 
 bool Ewmh::isOwnWindow(Window win) {
