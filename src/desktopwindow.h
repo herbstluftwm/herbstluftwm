@@ -6,9 +6,7 @@
 #ifndef __HERBSTLUFT_DESKTOPWINDOW_H_
 #define __HERBSTLUFT_DESKTOPWINDOW_H_
 
-#include <X11/Xatom.h>
-#include <X11/Xlib.h>
-#include <X11/Xproto.h>
+#include <X11/X.h>
 #include <memory>
 #include <vector>
 
@@ -28,8 +26,8 @@ public:
 private:
 
     // members:
-    Window win;
-    bool m_below;
+    Window win_;
+    bool below_;
     static std::vector<std::shared_ptr<DesktopWindow>> windows;
 
 };

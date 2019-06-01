@@ -114,6 +114,8 @@ public:
     void clearClientProperties(Window win);
     std::string getWindowTitle(Window win);
 
+    int getWindowType(Window win);
+
     bool isOwnWindow(Window win);
     void clearInputFocus();
 

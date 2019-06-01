@@ -15,6 +15,7 @@ target_sources(herbstluftwm PRIVATE
     completion.h
     completion.h completion.cpp
     decoration.cpp decoration.h
+    desktopwindow.h desktopwindow.cpp
     entity.cpp entity.h
     ewmh.cpp ewmh.h
     floating.cpp floating.h

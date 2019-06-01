@@ -1,13 +1,10 @@
 #include "rules.h"
 
-#include <X11/X.h>
-#include <X11/Xlib.h>
 #include <algorithm>
 #include <cstdio>
 
 #include "client.h"
 #include "ewmh.h"
-#include "globals.h"
 #include "hook.h"
 #include "root.h"
 #include "utils.h"
@@ -225,60 +222,16 @@ bool Condition::matchesMaxage(const Client* client) const {
 }
 
 bool Condition::matchesWindowtype(const Client* client) const {
-    // that only works for atom-type utf8-string, _NET_WM_WINDOW_TYPE is int
-    //  GString* wintype=
-    //      window_property_to_g_string(g_display, client->window, wintype_atom);
-    // =>
-    // kinda duplicate from src/utils.c:window_properties_to_g_string()
-    // using different xatom type, and only calling XGetWindowProperty
-    // once, because we are sure we only need four bytes
-    long bufsize = 10;
-    char *buf;
-    Atom type_ret, wintype;
-    int format;
-    unsigned long items, bytes_left;
-    long offset = 0;
-
-    int status = XGetWindowProperty(
-            g_display,
-            client->window_,
-            g_netatom[NetWmWindowType],
-            offset,
-            bufsize,
-            False,
-            ATOM("ATOM"),
-            &type_ret,
-            &format,
-            &items,
-            &bytes_left,
-            (unsigned char**)&buf
-            );
-    // we only need precisely four bytes (one Atom)
-    // if there are bytes left, something went wrong
-    if(status != Success || bytes_left > 0 || items < 1 || buf == nullptr) {
+    int wintype = Ewmh::get().getWindowType(client->x11Window());
+    if (wintype < 0) {
         return false;
-    } else {
-        wintype= *(Atom *)buf;
-        XFree(buf);
     }
-
-    for (int i = NetWmWindowTypeFIRST; i <= NetWmWindowTypeLAST; i++) {
-        // try to find the window type
-        if (wintype == g_netatom[i]) {
-            // if found, then treat the window type as a string value,
-            // which is registered in g_netatom_names[]
-            return matches(g_netatom_names[i]);
-        }
-    }
-
-    // if no valid window type has been found,
-    // it can not match
-    return false;
+    return matches(g_netatom_names[wintype]);
 }
 
 bool Condition::matchesWindowrole(const Client* client) const {
-    auto role = Root::get()->X.getWindowProperty(client->window_,
-        ATOM("WM_WINDOW_ROLE"));
+    auto& X = Root::get()->X;
+    auto role = X.getWindowProperty(client->window_, X.atom("WM_WINDOW_ROLE"));
 
     if (!role.has_value()) {
         return false;
