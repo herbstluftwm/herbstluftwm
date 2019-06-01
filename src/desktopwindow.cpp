@@ -10,17 +10,18 @@ using std::vector;
 
 vector<shared_ptr<DesktopWindow>> DesktopWindow::windows;
 
-DesktopWindow::DesktopWindow(Window win, bool ifBelow) {
-    m_below = ifBelow;
-    this->win = win;
+DesktopWindow::DesktopWindow(Window win, bool ifBelow)
+    : win_(win)
+    , below_(ifBelow)
+{
 }
 
 Window DesktopWindow::window() const {
-    return win;
+    return win_;
 }
 
 bool DesktopWindow::below() const {
-    return m_below;
+    return below_;
 }
 
 void DesktopWindow::registerDesktop(Window win) {
@@ -30,7 +31,7 @@ void DesktopWindow::registerDesktop(Window win) {
 
 void DesktopWindow::lowerDesktopWindows() {
     for (auto dw : windows) {
-        XLowerWindow(g_display, dw->win);
+        XLowerWindow(g_display, dw->win_);
     }
 }
 

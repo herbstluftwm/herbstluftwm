@@ -499,3 +499,18 @@ void Ewmh::windowClose(Window window) {
 Atom Ewmh::wmatom(WM proto) {
     return wmatom_[(int)proto];
 }
+
+int Ewmh::getWindowType(Window win) {
+    auto atoms = X_.getWindowPropertyAtom(win, g_netatom[NetWmWindowType]);
+    if (!atoms.has_value() || atoms.value().size() != 1) {
+        return -1;
+    }
+    Atom windowtype = atoms.value()[0];
+    for (int i = NetWmWindowTypeFIRST; i <= NetWmWindowTypeLAST; i++) {
+        // try to find the window type
+        if (windowtype == g_netatom[i]) {
+            return i;
+        }
+    }
+    return -1;
+}

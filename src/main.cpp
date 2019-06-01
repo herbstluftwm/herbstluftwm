@@ -17,6 +17,7 @@
 #include "client.h"
 #include "clientmanager.h"
 #include "command.h"
+#include "desktopwindow.h"
 #include "ewmh.h"
 #include "frametree.h"
 #include "globals.h"
@@ -755,7 +756,11 @@ void destroynotify(Root* root, XEvent* event) {
     //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
     auto cm = root->clients();
     auto client = cm->client(event->xunmap.window);
-    if (client) cm->force_unmanage(client);
+    if (client) {
+        cm->force_unmanage(client);
+    } else {
+        DesktopWindow::unregisterDesktop(event->xunmap.window);
+    }
 }
 
 void enternotify(Root* root, XEvent* event) {
@@ -826,23 +831,31 @@ void mapnotify(Root* root, XEvent* event) {
 void maprequest(Root* root, XEvent* event) {
     HSDebug("name is: MapRequest\n");
     XMapRequestEvent* mapreq = &event->xmaprequest;
-    Client* c = root->clients()->client(event->xmap.window);
-    if (root->ewmh->isOwnWindow(mapreq->window)
-        || is_herbstluft_window(g_display, mapreq->window))
+    Window window = mapreq->window;
+    Client* c = root->clients()->client(window);
+    if (root->ewmh->isOwnWindow(window)
+        || is_herbstluft_window(g_display, window))
     {
         // just map the window if it wants that
         XWindowAttributes wa;
-        if (!XGetWindowAttributes(g_display, mapreq->window, &wa)) {
+        if (!XGetWindowAttributes(g_display, window, &wa)) {
             return;
         }
-        XMapWindow(g_display, mapreq->window);
+        XMapWindow(g_display, window);
     } else if (c == nullptr) {
-        // client should be managed (is not ignored)
-        // but is not managed yet
-        auto clientmanager = root->clients();
-        auto client = clientmanager->manage_client(mapreq->window, false);
-        if (client && find_monitor_with_tag(client->tag())) {
-            XMapWindow(g_display, mapreq->window);
+        if (root->ewmh->getWindowType(window) == NetWmWindowTypeDesktop)
+        {
+            DesktopWindow::registerDesktop(window);
+            DesktopWindow::lowerDesktopWindows();
+            XMapWindow(g_display, window);
+        } else {
+            // client should be managed (is not ignored)
+            // but is not managed yet
+            auto clientmanager = root->clients();
+            auto client = clientmanager->manage_client(window, false);
+            if (client && find_monitor_with_tag(client->tag())) {
+                XMapWindow(g_display, window);
+            }
         }
     }
     // else: ignore all other maprequests from windows

@@ -113,6 +113,8 @@ public:
     bool isFullscreenSet(Window win);
     void clearClientProperties(Window win);
 
+    int getWindowType(Window win);
+
     bool isOwnWindow(Window win);
     void clearInputFocus();
 
