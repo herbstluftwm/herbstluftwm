@@ -91,7 +91,7 @@ public:
     Ewmh(XConnection& xconnection);
     ~Ewmh();
 
-    enum class WM { Protocols, Delete, State, TakeFocus, Last };
+    enum class WM { Name, Protocols, Delete, State, TakeFocus, Last };
 
     void injectDependencies(Root* root);
     void updateAll();
@@ -112,6 +112,7 @@ public:
     bool isWindowStateSet(Window win, Atom hint);
     bool isFullscreenSet(Window win);
     void clearClientProperties(Window win);
+    std::string getWindowTitle(Window win);
 
     int getWindowType(Window win);
 

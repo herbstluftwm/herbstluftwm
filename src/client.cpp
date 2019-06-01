@@ -518,23 +518,9 @@ void Client::update_wm_hints() {
 }
 
 void Client::update_title() {
-    std::experimental::optional<string> newName =
-        Root::get()->X.getWindowProperty(this->window_, g_netatom[NetWmName]);
-
-    if (!newName.has_value()) {
-        char* ch_new_name = nullptr;
-        /* if EWMH name isn't set, then fall back to WM_NAME */
-        if (0 != XFetchName(g_display, this->window_, &ch_new_name)) {
-            newName = string(ch_new_name);
-            XFree(ch_new_name);
-        } else {
-            newName = string("");
-            HSDebug("no title for window %lx found, using \"\"\n",
-                    this->window_);
-        }
-    }
-    bool changed = this->title_() != newName;
-    title_ = newName.value();
+    string newName = ewmh.getWindowTitle(window_);
+    bool changed = title_() != newName;
+    title_ = newName;
     if (changed && get_current_client() == this) {
         hook_emit({"window_title_changed", WindowID(window_).str(), title_()});
     }
