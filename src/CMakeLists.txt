@@ -9,59 +9,55 @@ target_sources(herbstluftwm PRIVATE
     attribute.cpp attribute.h attribute_.h
     byname.cpp byname.h
     child.h
-    completion.h
-    entity.cpp entity.h
-    globals.h
-    hook.cpp hook.h
-    indexingobject.h
-    object.cpp object.h
-    optional.h
-    root.cpp root.h
-    signal.h
-    link.h
-    types.cpp types.h
-    theme.cpp theme.h
-    utils.cpp utils.h
-    x11-types.cpp x11-types.h
-    x11-utils.cpp x11-utils.h
-    )
-
-# additional sources – individual parts/modules
-target_sources(herbstluftwm PRIVATE
     client.cpp client.h
     clientmanager.cpp clientmanager.h
     command.cpp command.h
+    completion.h
     completion.h completion.cpp
     decoration.cpp decoration.h
+    entity.cpp entity.h
     ewmh.cpp ewmh.h
     floating.cpp floating.h
-    framedecoration.cpp framedecoration.h
-    frametree.h frametree.cpp
     framedata.h framedata.cpp
+    framedecoration.cpp framedecoration.h
     frameparser.h frameparser.cpp
+    frametree.h frametree.cpp
+    globals.h
+    hook.cpp hook.h
     hookmanager.cpp hookmanager.h
+    indexingobject.h
     ipc-protocol.h
     ipc-server.cpp ipc-server.h
     keycombo.cpp keycombo.h
     keymanager.cpp keymanager.h
     layout.cpp layout.h
+    link.h
     monitor.cpp monitor.h
     monitordetection.cpp monitordetection.h
     monitormanager.cpp monitormanager.h
     mouse.cpp mouse.h
     mousemanager.cpp mousemanager.h
     namedhook.cpp namedhook.h
+    object.cpp object.h
+    optional.h
+    plainstack.h
     rectangle.cpp rectangle.h
     rootcommands.cpp rootcommands.h
+    root.cpp root.h
     rulemanager.cpp rulemanager.h
     rules.cpp rules.h
     settings.cpp settings.h
+    signal.h
     stack.cpp stack.h
-    plainstack.h
     tag.cpp tag.h
     tagmanager.cpp tagmanager.h
+    theme.cpp theme.h
     tilingresult.cpp tilingresult.h
     tmp.cpp tmp.h
+    types.cpp types.h
+    utils.cpp utils.h
+    x11-types.cpp x11-types.h
+    x11-utils.cpp x11-utils.h
     xconnection.cpp xconnection.h
     xkeygrabber.cpp xkeygrabber.h
     )
