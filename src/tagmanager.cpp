@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "client.h"
+#include "clientmanager.h"
 #include "ewmh.h"
 #include "frametree.h"
 #include "globals.h"
@@ -27,7 +28,8 @@ TagManager::TagManager()
 {
 }
 
-void TagManager::injectDependencies(MonitorManager* m, Settings *s) {
+void TagManager::injectDependencies(MonitorManager* m, ClientManager* c, Settings *s) {
+    clients_ = c;
     monitors_ = m;
     settings_ = s;
 }
@@ -120,7 +122,6 @@ int TagManager::removeTag(Input input, Output output) {
         client->tag()->stack->removeSlice(client->slice);
         client->setTag(targetTag);
         client->tag()->stack->insertSlice(client->slice);
-        Ewmh::get().windowUpdateTag(client->window_, client->tag());
         targetTag->frame->focusedFrame()->insertClient(client);
     }
 
@@ -139,6 +140,9 @@ int TagManager::removeTag(Input input, Output output) {
     Ewmh::get().updateCurrentDesktop();
     Ewmh::get().updateDesktops();
     Ewmh::get().updateDesktopNames();
+    for (auto client : clients_->clients()) {
+        Ewmh::get().windowUpdateTag(client.first, client.second->tag());
+    }
     tag_set_flags_dirty();
     hook_emit({"tag_removed", removedName, targetTag->name()});
 
