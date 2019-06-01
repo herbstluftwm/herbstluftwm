@@ -67,7 +67,7 @@ public:
     HSTag* tag() { return tag_; }
     void setTag(HSTag* tag) { tag_ = tag; }
 
-    Window x11Window() { return window_; }
+    Window x11Window() const { return window_; }
     Window decorationWindow();
     friend void mouse_function_resize(XMotionEvent* me);
 

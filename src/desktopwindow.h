@@ -28,8 +28,8 @@ public:
 private:
 
     // members:
-    Window win;
-    bool m_below;
+    Window win_;
+    bool below_;
     static std::vector<std::shared_ptr<DesktopWindow>> windows;
 
 };
