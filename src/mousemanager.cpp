@@ -163,15 +163,14 @@ static Client*        winDragClient_ = nullptr;
 static Monitor*       dragMonitor_ = nullptr;
 static MouseDragFunction dragFunction_ = nullptr;
 
-void MouseManager::mouse_handle_event(XEvent* ev) {
-    XButtonEvent* be = &(ev->xbutton);
-    auto b = mouse_binding_find(be->state, be->button);
+void MouseManager::mouse_handle_event(unsigned int modifiers, unsigned int button, Window window) {
+    auto b = mouse_binding_find(modifiers, button);
 
     if (!b.has_value()) {
         // No binding find for this event
     }
 
-    Client* client = get_client_from_window(ev->xbutton.window);
+    Client* client = get_client_from_window(window);
     if (!client) {
         // there is no valid bind for this type of mouse event
         return;
@@ -237,15 +236,12 @@ void MouseManager::mouse_stop_drag() {
     while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
 }
 
-void MouseManager::handle_motion_event(XEvent* ev) {
+void MouseManager::handle_motion_event(Point2D newCursorPos) {
     if (!dragMonitor_) { return; }
     if (!winDragClient_) return;
     if (!dragFunction_) return;
-    if (ev->type != MotionNotify) return;
-    // get newest motion notification
-    while (XCheckMaskEvent(g_display, ButtonMotionMask, ev));
     // call function that handles it
-    (this ->* dragFunction_)(&(ev->xmotion));
+    (this ->* dragFunction_)(newCursorPos);
 }
 
 bool MouseManager::mouse_is_dragging() {
@@ -347,9 +343,9 @@ void MouseManager::grab_client_buttons(Client* client, bool focused) {
     }
 }
 
-void MouseManager::mouse_function_move(XMotionEvent* me) {
-    int x_diff = me->x_root - buttonDragStart_.x;
-    int y_diff = me->y_root - buttonDragStart_.y;
+void MouseManager::mouse_function_move(Point2D newCursorPos) {
+    int x_diff = newCursorPos.x - buttonDragStart_.x;
+    int y_diff = newCursorPos.y - buttonDragStart_.y;
     winDragClient_->float_size_ = winDragStart_;
     winDragClient_->float_size_.x += x_diff;
     winDragClient_->float_size_.y += y_diff;
@@ -362,9 +358,9 @@ void MouseManager::mouse_function_move(XMotionEvent* me) {
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
 }
 
-void MouseManager::mouse_function_resize(XMotionEvent* me) {
-    int x_diff = me->x_root - buttonDragStart_.x;
-    int y_diff = me->y_root - buttonDragStart_.y;
+void MouseManager::mouse_function_resize(Point2D newCursorPos) {
+    int x_diff = newCursorPos.x - buttonDragStart_.x;
+    int y_diff = newCursorPos.y - buttonDragStart_.y;
     winDragClient_->float_size_ = winDragStart_;
     // relative x/y coords in drag window
     Monitor* m = dragMonitor_;
@@ -422,10 +418,10 @@ void MouseManager::mouse_function_resize(XMotionEvent* me) {
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
 }
 
-void MouseManager::mouse_function_zoom(XMotionEvent* me) {
+void MouseManager::mouse_function_zoom(Point2D newCursorPos) {
     // stretch, where center stays at the same position
-    int x_diff = me->x_root - buttonDragStart_.x;
-    int y_diff = me->y_root - buttonDragStart_.y;
+    int x_diff = newCursorPos.x - buttonDragStart_.x;
+    int y_diff = newCursorPos.y - buttonDragStart_.y;
     // relative x/y coords in drag window
     Monitor* m = dragMonitor_;
     int rel_x = m->relativeX(buttonDragStart_.x) - winDragStart_.x;
