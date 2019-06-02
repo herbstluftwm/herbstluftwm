@@ -340,6 +340,8 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
                 monitor_focus_by_index(other->index());
                 return 0;
             }
+            monitor->tag_previous = monitor->tag;
+            other->tag_previous = other->tag;
             // swap tags
             other->tag = monitor->tag;
             monitor->tag = tag;
