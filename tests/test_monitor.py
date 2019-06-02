@@ -190,3 +190,32 @@ def test_raise_monitor_completion(hlwm):
     expected += '-1 +0 +1 0 1 monitor2'.split(' ')
     expected.sort()
     assert hlwm.complete('raise_monitor') == expected
+
+
+def test_use_previous_on_tag_stealing_monitor(hlwm):
+    hlwm.call('add tag2')
+    hlwm.call('add tag3')
+    hlwm.call('add_monitor 800x600+40+40 tag3 monitor2')
+
+    hlwm.call('use tag2')
+    hlwm.call('use tag3')  # steal it from monitor2
+    hlwm.call('use_previous')
+
+    assert hlwm.get_attr('tags.focus.name') == 'tag2'
+
+
+def test_use_previous_on_stolen_monitor(hlwm):
+    hlwm.call('add tag2')
+    hlwm.call('add tag3')
+    hlwm.call('add tag4')
+    hlwm.call('add_monitor 800x600+40+40 tag4 monitor2')
+    hlwm.call('focus_monitor monitor2')
+    hlwm.call('use tag3')
+    hlwm.call('focus_monitor 0')
+
+    hlwm.call('use tag2')
+    hlwm.call('use tag3')  # steal it from monitor2
+    hlwm.call('focus_monitor monitor2')
+    hlwm.call('use_previous')
+
+    assert hlwm.get_attr('tags.focus.name') == 'tag3'
