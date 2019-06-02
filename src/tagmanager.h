@@ -7,7 +7,6 @@
 #include "tag.h"
 
 class Client;
-class ClientManager;
 class FrameTree;
 class Monitor;
 class MonitorManager;
@@ -18,7 +17,7 @@ typedef void (FrameTree::*FrameCompleter)(Completion&);
 class TagManager : public IndexingObject<HSTag> {
 public:
     TagManager();
-    void injectDependencies(MonitorManager* m, ClientManager* c, Settings *s);
+    void injectDependencies(MonitorManager* m, Settings *s);
 
     int removeTag(Input input, Output output);
     int tag_add_command(Input input, Output output);
@@ -40,7 +39,6 @@ public:
 private:
     void onTagRename(HSTag* tag);
     ByName by_name_;
-    ClientManager* clients_;
     MonitorManager* monitors_ = {}; // circular dependency
     Settings* settings_;
     Link_<HSTag> focus_;

@@ -3,9 +3,9 @@
 #include <cstring>
 
 #include "client.h"
-#include "clientmanager.h"
 #include "frametree.h"
 #include "globals.h"
+#include "hlwmcommon.h"
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "layout.h"
@@ -118,7 +118,7 @@ void tag_force_update_flags() {
         t->flags = 0;
     }
     // update flags
-    for (auto c : Root::get()->clients()->clients()) {
+    for (auto c : Root::common().clients()) {
         auto client = c.second;
         TAG_SET_FLAG(client->tag(), TAG_FLAG_USED);
         if (client->urgent_) {
