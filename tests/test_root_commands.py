@@ -238,3 +238,8 @@ def test_getenv_completion(hlwm):
     hlwm.call(['setenv', name, 'myvalue'])
 
     assert [name] == hlwm.complete('getenv ' + prefix, position=1)
+
+
+def test_compare_invalid_operator(hlwm):
+    hlwm.call_xfail('compare monitors.count -= 1') \
+        .expect_stderr('unknown operator')
