@@ -1,8 +1,6 @@
 #include <X11/X.h>
-#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <getopt.h>
-#include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <cassert>
@@ -17,7 +15,6 @@
 #include "client.h"
 #include "clientmanager.h"
 #include "command.h"
-#include "desktopwindow.h"
 #include "ewmh.h"
 #include "frametree.h"
 #include "globals.h"
