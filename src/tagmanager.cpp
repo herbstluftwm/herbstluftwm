@@ -3,14 +3,15 @@
 #include <memory>
 
 #include "client.h"
-#include "clientmanager.h"
 #include "ewmh.h"
 #include "frametree.h"
 #include "globals.h"
+#include "hlwmcommon.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
+#include "root.h"
 #include "stack.h"
 #include "utils.h"
 
@@ -28,8 +29,7 @@ TagManager::TagManager()
 {
 }
 
-void TagManager::injectDependencies(MonitorManager* m, ClientManager* c, Settings *s) {
-    clients_ = c;
+void TagManager::injectDependencies(MonitorManager* m, Settings *s) {
     monitors_ = m;
     settings_ = s;
 }
@@ -140,7 +140,7 @@ int TagManager::removeTag(Input input, Output output) {
     Ewmh::get().updateCurrentDesktop();
     Ewmh::get().updateDesktops();
     Ewmh::get().updateDesktopNames();
-    for (auto client : clients_->clients()) {
+    for (auto client : Root::common().clients()) {
         Ewmh::get().windowUpdateTag(client.first, client.second->tag());
     }
     tag_set_flags_dirty();

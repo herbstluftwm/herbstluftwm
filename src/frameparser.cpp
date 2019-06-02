@@ -4,8 +4,8 @@
 #include <sstream>
 
 #include "arglist.h"
-#include "clientmanager.h"
 #include "globals.h"
+#include "hlwmcommon.h"
 #include "root.h"
 #include "x11-types.h"
 
@@ -177,7 +177,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
                 throw ParsingException(*nextToken, "not a valid window id");
             }
             // if the window id is unknown, then just print a warning
-            Client* client = Root::get()->clients()->client(winid);
+            Client* client = Root::common().client(winid);
             if (client) {
                 node->clients.push_back(client);
             } else {

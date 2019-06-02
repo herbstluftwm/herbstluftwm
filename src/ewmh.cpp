@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "client.h"
-#include "clientmanager.h"
+#include "hlwmcommon.h"
 #include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
@@ -264,7 +264,7 @@ void Ewmh::handleClientMessage(XEvent* event) {
             // only steal focus it allowed to the current source
             // (i.e.  me->data.l[0] in this case as specified by EWMH)
             if (focusStealingAllowed(me->data.l[0])) {
-                auto client = root_->clients->client(me->window);
+                auto client = Root::common().client(me->window);
                 if (client) {
                     focus_client(client, true, true);
                 }
@@ -290,7 +290,7 @@ void Ewmh::handleClientMessage(XEvent* event) {
                 break;
             }
             HSTag* target = get_tag_by_index(desktop_index);
-            auto client = root_->clients->client(me->window);
+            auto client = Root::common().client(me->window);
             if (client && target) {
                 tags_->moveClient(client, target);
             }
@@ -298,7 +298,7 @@ void Ewmh::handleClientMessage(XEvent* event) {
         }
 
         case NetWmState: {
-            auto client = root_->clients->client(me->window);
+            auto client = Root::common().client(me->window);
             /* ignore requests for unmanaged windows */
             if (!client || !client->ewmhrequests_) break;
 
@@ -348,7 +348,7 @@ void Ewmh::handleClientMessage(XEvent* event) {
         }
 
         case NetWmMoveresize: {
-            auto client = root_->clients->client(me->window);
+            auto client = Root::common().client(me->window);
             if (!client) {
                 break;
             }

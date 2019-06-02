@@ -10,6 +10,7 @@
 
 class ClientManager;
 class Ewmh;
+class HlwmCommon;
 class HookManager;
 class IpcServer;
 class KeyManager;
@@ -35,6 +36,7 @@ public:
     //static void destroy();
     static std::shared_ptr<Root> get() { return root_; }
     static void setRoot(const std::shared_ptr<Root>& r) { root_ = r; }
+    static HlwmCommon common();
 
     // constructor creates top-level objects
     Root(Globals g, XConnection& xconnection, IpcServer& ipcServer);
