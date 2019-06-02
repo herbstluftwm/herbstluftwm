@@ -80,6 +80,7 @@ typedef enum {
 class HSTag;
 class Client;
 class Root;
+class TagManager;
 class XConnection;
 
 extern Atom g_netatom[NetCOUNT];
@@ -137,6 +138,7 @@ private:
     bool focusStealingAllowed(long source);
     bool readClientList(Window** buf, unsigned long *count);
     Root* root_ = nullptr;
+    TagManager* tags_ = nullptr;
     XConnection& X_;
     std::vector<Window> original_client_list_; //! client list before hlwm start
     Atom wmatom(WM proto);

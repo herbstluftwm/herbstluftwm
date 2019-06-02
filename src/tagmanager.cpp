@@ -197,20 +197,20 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
         // ensure index is valid
         index = MOD(index, size());
         if (skip_visible_tags) {
-            HSTag* tag = global_tags->byIdx(index);
+            HSTag* tag = byIdx(index);
             for (size_t i = 0; find_monitor_with_tag(tag); i++) {
-                if (i >= global_tags->size()) {
+                if (i >= size()) {
                     // if we tried each tag then there is no invisible tag
                     return nullptr;
                 }
                 index += delta;
-                index = MOD(index, global_tags->size());
-                tag = global_tags->byIdx(index);
+                index = MOD(index, size());
+                tag = byIdx(index);
             }
         }
     } else {
         // if it is absolute, then check index
-        if (index < 0 || (size_t)index >= global_tags->size()) {
+        if (index < 0 || (size_t)index >= size()) {
             HSDebug("invalid tag index %d\n", index);
             return nullptr;
         }
@@ -279,7 +279,7 @@ int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
     argv.shift();
     bool skip_visible = (!argv.empty() && argv.front() == "--skip-visible");
 
-    HSTag* tag = global_tags->byIndexStr(tagIndex, skip_visible);
+    HSTag* tag = byIndexStr(tagIndex, skip_visible);
     if (!tag) {
         output << argv.command() << ": Invalid index \"" << tagIndex << "\"\n";
         return HERBST_INVALID_ARGUMENT;
@@ -289,22 +289,19 @@ int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
 }
 
 function<int(Input, Output)> TagManager::frameCommand(FrameCommand cmd) {
-    return [cmd](Input input, Output output) -> int {
-        // TODO: use this->focus->frame as soon as we have it.
-        return cmd(*(get_current_monitor()->tag->frame), input, output);
+    return [cmd,this](Input input, Output output) -> int {
+        return cmd(*(this->focus_()->frame), input, output);
     };
 }
 function<int()> TagManager::frameCommand(function<int(FrameTree&)> cmd) {
-    return [cmd]() -> int {
-        // TODO: use this->focus->frame as soon as we have it.
-        return cmd(*(get_current_monitor()->tag->frame));
+    return [cmd,this]() -> int {
+        return cmd(*(this->focus_()->frame));
     };
 }
 
 function<void(Completion&)> TagManager::frameCompletion(FrameCompleter completer) {
-    return [completer](Completion& complete) {
-        // TODO: use this->focus->frame as soon as we have it.
-        shared_ptr<FrameTree> ft = get_current_monitor()->tag->frame;
+    return [completer,this](Completion& complete) {
+        shared_ptr<FrameTree> ft = focus_()->frame;
         (ft.get() ->* completer)(complete);
     };
 }

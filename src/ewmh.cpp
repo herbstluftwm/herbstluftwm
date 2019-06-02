@@ -117,6 +117,7 @@ Ewmh::Ewmh(XConnection& xconnection)
 
 void Ewmh::injectDependencies(Root* root) {
     root_ = root;
+    tags_ = root->tags();
 }
 
 void Ewmh::updateAll() {
@@ -171,7 +172,7 @@ void Ewmh::updateClientListStacking() {
     g_monitors->extractWindowStack(true, addToVector);
 
     // Then add all the invisible windows at the end
-    for (auto tag : *global_tags) {
+    for (auto tag : *tags_) {
         if (find_monitor_with_tag(tag)) {
         // do not add tags because they are already added
             continue;
@@ -204,7 +205,7 @@ void Ewmh::updateDesktops() {
 
 void Ewmh::updateDesktopNames() {
     vector<string> names;
-    for (auto tag : *global_tags) {
+    for (auto tag : *tags_) {
         names.push_back(tag->name);
     }
     X_.setPropertyString(X_.root(), g_netatom[NetDesktopNames], names);
@@ -212,7 +213,7 @@ void Ewmh::updateDesktopNames() {
 
 void Ewmh::updateCurrentDesktop() {
     HSTag* tag = get_current_monitor()->tag;
-    int index = global_tags->index_of(tag);
+    int index = tags_->index_of(tag);
     if (index < 0) {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
@@ -221,7 +222,7 @@ void Ewmh::updateCurrentDesktop() {
 }
 
 void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
-    int index = global_tags->index_of(tag);
+    int index = tags_->index_of(tag);
     if (index < 0) {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
@@ -291,7 +292,7 @@ void Ewmh::handleClientMessage(XEvent* event) {
             HSTag* target = get_tag_by_index(desktop_index);
             auto client = root_->clients->client(me->window);
             if (client && target) {
-                global_tags->moveClient(client, target);
+                tags_->moveClient(client, target);
             }
             break;
         }
