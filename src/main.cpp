@@ -710,7 +710,7 @@ void buttonpress(Root* root, XEvent* event) {
     MouseManager* mm = root->mouse();
     HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
     if (mm->mouse_binding_find(be->state, be->button)) {
-        mm->mouse_handle_event(event);
+        mm->mouse_handle_event(be->state, be->button, be->window);
     } else {
         Client* client = root->clients->client(be->window);
         if (client) {
@@ -811,7 +811,11 @@ void mappingnotify(Root* root, XEvent* event) {
 }
 
 void motionnotify(Root* root, XEvent* event) {
-    root->mouse->handle_motion_event(event);
+    if (event->type != MotionNotify) return;
+    // get newest motion notification
+    while (XCheckMaskEvent(g_display, ButtonMotionMask, event));
+    Point2D newCursorPos = { event->xmotion.x_root,  event->xmotion.y_root };
+    root->mouse->handle_motion_event(newCursorPos);
 }
 
 void mapnotify(Root* root, XEvent* event) {
