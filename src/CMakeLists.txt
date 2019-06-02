@@ -24,6 +24,7 @@ target_sources(herbstluftwm PRIVATE
     frameparser.h frameparser.cpp
     frametree.h frametree.cpp
     globals.h
+    hlwmcommon.cpp hlwmcommon.h
     hook.cpp hook.h
     hookmanager.cpp hookmanager.h
     indexingobject.h

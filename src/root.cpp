@@ -4,6 +4,7 @@
 
 #include "clientmanager.h"
 #include "ewmh.h"
+#include "hlwmcommon.h"
 #include "hookmanager.h"
 #include "keymanager.h"
 #include "monitormanager.h"
@@ -52,7 +53,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     // inject dependencies where needed
     ewmh->injectDependencies(this);
     settings->injectDependencies(this);
-    tags->injectDependencies(monitors(), clients(), settings());
+    tags->injectDependencies(monitors(), settings());
     clients->injectDependencies(settings(), theme(), ewmh.get());
     monitors->injectDependencies(settings(), tags());
 
@@ -85,5 +86,9 @@ Root::~Root()
     tmp.reset();
 
     children_.clear(); // avoid possible circular shared_ptr dependency
+}
+
+HlwmCommon Root::common() {
+    return HlwmCommon(Root::get().get());
 }
 
