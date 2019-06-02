@@ -62,6 +62,7 @@ target_sources(herbstluftwm PRIVATE
     x11-utils.cpp x11-utils.h
     xconnection.cpp xconnection.h
     xkeygrabber.cpp xkeygrabber.h
+    xmainloop.cpp xmainloop.h
     )
 
 # we require C++11
