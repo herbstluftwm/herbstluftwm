@@ -353,6 +353,7 @@ int RootCommands::compare_cmd(Input input, Output output)
             output << " " << i.first;
         }
         output << endl;
+        return HERBST_INVALID_ARGUMENT;
     }
     if (op_it->second.first && !it->second.first) {
         output << "operator \"" << oper << "\" "
