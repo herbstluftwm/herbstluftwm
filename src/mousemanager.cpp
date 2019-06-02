@@ -156,13 +156,6 @@ void MouseManager::addMouseBindCompletion(Completion &complete) {
     }
 }
 
-
-static Point2D          buttonDragStart_;
-static Rectangle        winDragStart_;
-static Client*        winDragClient_ = nullptr;
-static Monitor*       dragMonitor_ = nullptr;
-static MouseDragFunction dragFunction_ = nullptr;
-
 void MouseManager::mouse_handle_event(unsigned int modifiers, unsigned int button, Window window) {
     auto b = mouse_binding_find(modifiers, button);
 
