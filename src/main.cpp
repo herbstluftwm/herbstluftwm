@@ -1,17 +1,17 @@
 #include <X11/X.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <getopt.h>
+#include <sys/select.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <cassert>
 #include <cerrno>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <getopt.h>
 #include <iostream>
-#include <sys/select.h>
-#include <sys/wait.h>
-#include <unistd.h>
 #include <vector>
 
 #include "client.h"
@@ -30,8 +30,8 @@
 #include "monitormanager.h"
 #include "mousemanager.h"
 #include "rectangle.h"
-#include "rootcommands.h"
 #include "root.h"
+#include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
 #include "tagmanager.h"
