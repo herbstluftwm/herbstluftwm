@@ -50,4 +50,9 @@ public:
 
 private:
     Cursor cursor;
+    Point2D          buttonDragStart_;
+    Rectangle        winDragStart_;
+    Client*        winDragClient_ = nullptr;
+    Monitor*       dragMonitor_ = nullptr;
+    MouseDragFunction dragFunction_ = nullptr;
 };
