@@ -6,8 +6,8 @@
 #include <sstream>
 
 #include "client.h"
-#include "clientmanager.h"
 #include "completion.h"
+#include "hlwmcommon.h"
 #include "ipc-protocol.h"
 #include "monitor.h"
 #include "monitormanager.h"
@@ -627,7 +627,7 @@ void complete_against_winids(int argc, char** argv, int pos, Output output) {
     } else {
         needle = argv[pos];
     }
-    for (auto c : Root::get()->clients()->clients()) {
+    for (auto c : Root::common().clients()) {
         char buf[100];
         snprintf(buf, LENGTH(buf), "0x%lx", c.second->window_);
         try_complete(needle, buf, output);

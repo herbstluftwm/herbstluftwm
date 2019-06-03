@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "client.h"
-#include "clientmanager.h"
+#include "hlwmcommon.h"
 #include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
@@ -85,6 +85,7 @@ Ewmh::Ewmh(XConnection& xconnection)
         }
         g_netatom[i] = XInternAtom(X_.display(), g_netatom_names[i], False);
     }
+    wmatom_[(int)WM::Name] = XInternAtom(g_display, "WM_NAME", False);
     wmatom_[(int)WM::Protocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
     wmatom_[(int)WM::Delete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
     wmatom_[(int)WM::State] = XInternAtom(g_display, "WM_STATE", False);
@@ -116,6 +117,7 @@ Ewmh::Ewmh(XConnection& xconnection)
 
 void Ewmh::injectDependencies(Root* root) {
     root_ = root;
+    tags_ = root->tags();
 }
 
 void Ewmh::updateAll() {
@@ -170,7 +172,7 @@ void Ewmh::updateClientListStacking() {
     g_monitors->extractWindowStack(true, addToVector);
 
     // Then add all the invisible windows at the end
-    for (auto tag : *global_tags) {
+    for (auto tag : *tags_) {
         if (find_monitor_with_tag(tag)) {
         // do not add tags because they are already added
             continue;
@@ -203,7 +205,7 @@ void Ewmh::updateDesktops() {
 
 void Ewmh::updateDesktopNames() {
     vector<string> names;
-    for (auto tag : *global_tags) {
+    for (auto tag : *tags_) {
         names.push_back(tag->name);
     }
     X_.setPropertyString(X_.root(), g_netatom[NetDesktopNames], names);
@@ -211,7 +213,7 @@ void Ewmh::updateDesktopNames() {
 
 void Ewmh::updateCurrentDesktop() {
     HSTag* tag = get_current_monitor()->tag;
-    int index = global_tags->index_of(tag);
+    int index = tags_->index_of(tag);
     if (index < 0) {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
@@ -220,7 +222,7 @@ void Ewmh::updateCurrentDesktop() {
 }
 
 void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
-    int index = global_tags->index_of(tag);
+    int index = tags_->index_of(tag);
     if (index < 0) {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
@@ -262,7 +264,7 @@ void Ewmh::handleClientMessage(XEvent* event) {
             // only steal focus it allowed to the current source
             // (i.e.  me->data.l[0] in this case as specified by EWMH)
             if (focusStealingAllowed(me->data.l[0])) {
-                auto client = root_->clients->client(me->window);
+                auto client = Root::common().client(me->window);
                 if (client) {
                     focus_client(client, true, true);
                 }
@@ -288,15 +290,15 @@ void Ewmh::handleClientMessage(XEvent* event) {
                 break;
             }
             HSTag* target = get_tag_by_index(desktop_index);
-            auto client = root_->clients->client(me->window);
+            auto client = Root::common().client(me->window);
             if (client && target) {
-                global_tags->moveClient(client, target);
+                tags_->moveClient(client, target);
             }
             break;
         }
 
         case NetWmState: {
-            auto client = root_->clients->client(me->window);
+            auto client = Root::common().client(me->window);
             /* ignore requests for unmanaged windows */
             if (!client || !client->ewmhrequests_) break;
 
@@ -346,7 +348,7 @@ void Ewmh::handleClientMessage(XEvent* event) {
         }
 
         case NetWmMoveresize: {
-            auto client = root_->clients->client(me->window);
+            auto client = Root::common().client(me->window);
             if (!client) {
                 break;
             }
@@ -440,7 +442,10 @@ void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bott
 }
 
 void Ewmh::windowUpdateWmState(Window win, WmState state) {
-    X_.setPropertyCardinal(win, WM_STATE, { state });
+    /* set full WM_STATE according to
+     * http://www.x.org/releases/X11R7.7/doc/xorg-docs/icccm/icccm.html#WM_STATE_Property
+     */
+    X_.setPropertyCardinal(win, WM_STATE, { state, None });
 }
 
 bool Ewmh::isOwnWindow(Window win) {
@@ -495,4 +500,31 @@ void Ewmh::windowClose(Window window) {
 //! convenience wrapper around wmatom_
 Atom Ewmh::wmatom(WM proto) {
     return wmatom_[(int)proto];
+}
+
+string Ewmh::getWindowTitle(Window win) {
+    auto newName = X_.getWindowProperty(win, g_netatom[NetWmName]);
+    if (newName.has_value()) {
+        return newName.value();
+    }
+    newName = X_.getWindowProperty(win, wmatom(WM::Name));
+    if (newName.has_value()) {
+        return newName.value();
+    }
+    return "";
+}
+
+int Ewmh::getWindowType(Window win) {
+    auto atoms = X_.getWindowPropertyAtom(win, g_netatom[NetWmWindowType]);
+    if (!atoms.has_value() || atoms.value().size() != 1) {
+        return -1;
+    }
+    Atom windowtype = atoms.value()[0];
+    for (int i = NetWmWindowTypeFIRST; i <= NetWmWindowTypeLAST; i++) {
+        // try to find the window type
+        if (windowtype == g_netatom[i]) {
+            return i;
+        }
+    }
+    return -1;
 }

@@ -4,6 +4,7 @@
 
 #include "clientmanager.h"
 #include "ewmh.h"
+#include "hlwmcommon.h"
 #include "hookmanager.h"
 #include "keymanager.h"
 #include "monitormanager.h"
@@ -85,5 +86,9 @@ Root::~Root()
     tmp.reset();
 
     children_.clear(); // avoid possible circular shared_ptr dependency
+}
+
+HlwmCommon Root::common() {
+    return HlwmCommon(Root::get().get());
 }
 
