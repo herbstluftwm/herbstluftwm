@@ -123,7 +123,7 @@ public:
     // set the desktop property of a window
     void windowUpdateTag(Window win, HSTag* tag);
 
-    void handleClientMessage(XEvent* event);
+    void handleClientMessage(XClientMessageEvent* me);
 
     void setWindowOpacity(Window win, double opacity);
 
