@@ -117,7 +117,7 @@ void KeyManager::removeKeybindCompletion(Completion &complete) {
     }
 }
 
-void KeyManager::handleKeyPress(XEvent* ev) const {
+void KeyManager::handleKeyPress(XKeyEvent* ev) const {
     KeyCombo pressed = xKeyGrabber_.xEventToKeyCombo(ev);
 
     auto found = std::find_if(binds.begin(), binds.end(),

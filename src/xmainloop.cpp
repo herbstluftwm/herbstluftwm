@@ -10,7 +10,6 @@
 #include "desktopwindow.h"
 #include "ewmh.h"
 #include "frametree.h"
-#include "globals.h"
 #include "hlwmcommon.h"
 #include "ipc-server.h"
 #include "keymanager.h"
@@ -25,29 +24,42 @@
 
 using std::shared_ptr;
 
+/** A custom event handler casting function.
+ *
+ * It ensures that the pointer that is casted to the EventHandler
+ * type is indeed a member function that accepts one pointer.
+ *
+ * Note that this is as (much or less) hacky as a member access to the XEvent
+ * union type itself.
+ */
+template<typename T>
+inline XMainLoop::EventHandler EH(void (XMainLoop::*handler)(T*)) {
+    return (XMainLoop::EventHandler) handler;
+}
+
 XMainLoop::XMainLoop(XConnection& X, Root* root)
     : X_(X)
     , root_(root)
     , aboutToQuit_(false)
     , handlerTable_()
 {
-    handlerTable_[ ButtonPress       ] = &XMainLoop::buttonpress;
-    handlerTable_[ ButtonRelease     ] = &XMainLoop::buttonrelease;
-    handlerTable_[ ClientMessage     ] = &XMainLoop::clientmessage;
-    handlerTable_[ ConfigureNotify   ] = &XMainLoop::configurenotify;
-    handlerTable_[ ConfigureRequest  ] = &XMainLoop::configurerequest;
-    handlerTable_[ CreateNotify      ] = &XMainLoop::createnotify;
-    handlerTable_[ DestroyNotify     ] = &XMainLoop::destroynotify;
-    handlerTable_[ EnterNotify       ] = &XMainLoop::enternotify;
-    handlerTable_[ Expose            ] = &XMainLoop::expose;
-    handlerTable_[ FocusIn           ] = &XMainLoop::focusin;
-    handlerTable_[ KeyPress          ] = &XMainLoop::keypress;
-    handlerTable_[ MapNotify         ] = &XMainLoop::mapnotify;
-    handlerTable_[ MapRequest        ] = &XMainLoop::maprequest;
-    handlerTable_[ MappingNotify     ] = &XMainLoop::mappingnotify;
-    handlerTable_[ MotionNotify      ] = &XMainLoop::motionnotify;
-    handlerTable_[ PropertyNotify    ] = &XMainLoop::propertynotify;
-    handlerTable_[ UnmapNotify       ] = &XMainLoop::unmapnotify;
+    handlerTable_[ ButtonPress       ] = EH(&XMainLoop::buttonpress);
+    handlerTable_[ ButtonRelease     ] = EH(&XMainLoop::buttonrelease);
+    handlerTable_[ ClientMessage     ] = EH(&XMainLoop::clientmessage);
+    handlerTable_[ ConfigureNotify   ] = EH(&XMainLoop::configurenotify);
+    handlerTable_[ ConfigureRequest  ] = EH(&XMainLoop::configurerequest);
+    handlerTable_[ CreateNotify      ] = EH(&XMainLoop::createnotify);
+    handlerTable_[ DestroyNotify     ] = EH(&XMainLoop::destroynotify);
+    handlerTable_[ EnterNotify       ] = EH(&XMainLoop::enternotify);
+    handlerTable_[ Expose            ] = EH(&XMainLoop::expose);
+    handlerTable_[ FocusIn           ] = EH(&XMainLoop::focusin);
+    handlerTable_[ KeyPress          ] = EH(&XMainLoop::keypress);
+    handlerTable_[ MapNotify         ] = EH(&XMainLoop::mapnotify);
+    handlerTable_[ MapRequest        ] = EH(&XMainLoop::maprequest);
+    handlerTable_[ MappingNotify     ] = EH(&XMainLoop::mappingnotify);
+    handlerTable_[ MotionNotify      ] = EH(&XMainLoop::motionnotify);
+    handlerTable_[ PropertyNotify    ] = EH(&XMainLoop::propertynotify);
+    handlerTable_[ UnmapNotify       ] = EH(&XMainLoop::unmapnotify);
 }
 
 void XMainLoop::run() {
@@ -83,8 +95,7 @@ void XMainLoop::quit() {
 /* event handler implementations */
 /* ----------------------------- */
 
-void XMainLoop::buttonpress(XEvent* event) {
-    XButtonEvent* be = &(event->xbutton);
+void XMainLoop::buttonpress(XButtonEvent* be) {
     MouseManager* mm = root_->mouse();
     HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
     if (mm->mouse_binding_find(be->state, be->button)) {
@@ -98,26 +109,25 @@ void XMainLoop::buttonpress(XEvent* event) {
             }
         }
     }
-    XAllowEvents(g_display, ReplayPointer, be->time);
+    XAllowEvents(X_.display(), ReplayPointer, be->time);
 }
 
-void XMainLoop::buttonrelease(XEvent*) {
+void XMainLoop::buttonrelease(XButtonEvent*) {
     HSDebug("name is: ButtonRelease\n");
     root_->mouse->mouse_stop_drag();
 }
 
-void XMainLoop::createnotify(XEvent* event) {
+void XMainLoop::createnotify(XCreateWindowEvent* event) {
     // printf("name is: CreateNotify\n");
-    if (root_->ipcServer_.isConnectable(event->xcreatewindow.window)) {
-        root_->ipcServer_.addConnection(event->xcreatewindow.window);
-        root_->ipcServer_.handleConnection(event->xcreatewindow.window,
-                                          HlwmCommon::callCommand);
+    if (root_->ipcServer_.isConnectable(event->window)) {
+        root_->ipcServer_.addConnection(event->window);
+        root_->ipcServer_.handleConnection(event->window,
+                                           HlwmCommon::callCommand);
     }
 }
 
-void XMainLoop::configurerequest(XEvent* event) {
+void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
     HSDebug("name is: ConfigureRequest\n");
-    XConfigureRequestEvent* cre = &(event->xconfigurerequest);
     Client* client = root_->clients->client(cre->window);
     if (client) {
         bool changes = false;
@@ -161,16 +171,16 @@ void XMainLoop::configurerequest(XEvent* event) {
         wc.border_width = cre->border_width;
         wc.sibling = cre->above;
         wc.stack_mode = cre->detail;
-        XConfigureWindow(g_display, cre->window, cre->value_mask, &wc);
+        XConfigureWindow(X_.display(), cre->window, cre->value_mask, &wc);
     }
 }
 
-void XMainLoop::clientmessage(XEvent* event) {
-    root_->ewmh->handleClientMessage(&(event->xclient));
+void XMainLoop::clientmessage(XClientMessageEvent* event) {
+    root_->ewmh->handleClientMessage(event);
 }
 
-void XMainLoop::configurenotify(XEvent* event) {
-    if (event->xconfigure.window == g_root &&
+void XMainLoop::configurenotify(XConfigureEvent* event) {
+    if (event->window == g_root &&
         root_->settings->auto_detect_monitors()) {
         const char* args[] = { "detect_monitors" };
         std::ostringstream void_output;
@@ -179,20 +189,19 @@ void XMainLoop::configurenotify(XEvent* event) {
     // HSDebug("name is: ConfigureNotify\n");
 }
 
-void XMainLoop::destroynotify(XEvent* event) {
+void XMainLoop::destroynotify(XUnmapEvent* event) {
     // try to unmanage it
     //HSDebug("name is: DestroyNotify for %lx\n", event->xdestroywindow.window);
     auto cm = root_->clients();
-    auto client = cm->client(event->xunmap.window);
+    auto client = cm->client(event->window);
     if (client) {
         cm->force_unmanage(client);
     } else {
-        DesktopWindow::unregisterDesktop(event->xunmap.window);
+        DesktopWindow::unregisterDesktop(event->window);
     }
 }
 
-void XMainLoop::enternotify(XEvent* event) {
-    XCrossingEvent *ce = &event->xcrossing;
+void XMainLoop::enternotify(XCrossingEvent* ce) {
     //HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
     if (!root_->mouse->mouse_is_dragging()
         && root_->settings()->focus_follows_mouse()
@@ -221,72 +230,67 @@ void XMainLoop::focusin(XEvent* event) {
     //HSDebug("name is: FocusIn\n");
 }
 
-void XMainLoop::keypress(XEvent* event) {
+void XMainLoop::keypress(XKeyEvent* event) {
     //HSDebug("name is: KeyPress\n");
     root_->keys()->handleKeyPress(event);
 }
 
-void XMainLoop::mappingnotify(XEvent* event) {
-    {
-        // regrab when keyboard map changes
-        XMappingEvent *ev = &event->xmapping;
-        XRefreshKeyboardMapping(ev);
-        if(ev->request == MappingKeyboard) {
-            root_->keys()->regrabAll();
-            //TODO: mouse_regrab_all();
-        }
+void XMainLoop::mappingnotify(XMappingEvent* ev) {
+    // regrab when keyboard map changes
+    XRefreshKeyboardMapping(ev);
+    if(ev->request == MappingKeyboard) {
+        root_->keys()->regrabAll();
+        //TODO: mouse_regrab_all();
     }
 }
 
-void XMainLoop::motionnotify(XEvent* event) {
-    if (event->type != MotionNotify) return;
+void XMainLoop::motionnotify(XMotionEvent* event) {
     // get newest motion notification
-    while (XCheckMaskEvent(g_display, ButtonMotionMask, event));
-    Point2D newCursorPos = { event->xmotion.x_root,  event->xmotion.y_root };
+    while (XCheckMaskEvent(X_.display(), ButtonMotionMask, (XEvent*)event));
+    Point2D newCursorPos = { event->x_root,  event->y_root };
     root_->mouse->handle_motion_event(newCursorPos);
 }
 
-void XMainLoop::mapnotify(XEvent* event) {
+void XMainLoop::mapnotify(XMapEvent* event) {
     //HSDebug("name is: MapNotify\n");
-    Client* c = root_->clients()->client(event->xmap.window);
+    Client* c = root_->clients()->client(event->window);
     if (c != nullptr) {
         // reset focus. so a new window gets the focus if it shall have the
         // input focus
         if (c == root_->clients->focus()) {
-            XSetInputFocus(g_display, c->window_, RevertToPointerRoot, CurrentTime);
+            XSetInputFocus(X_.display(), c->window_, RevertToPointerRoot, CurrentTime);
         }
         // also update the window title - just to be sure
         c->update_title();
     }
 }
 
-void XMainLoop::maprequest(XEvent* event) {
+void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
     HSDebug("name is: MapRequest\n");
-    XMapRequestEvent* mapreq = &event->xmaprequest;
     Window window = mapreq->window;
     Client* c = root_->clients()->client(window);
     if (root_->ewmh->isOwnWindow(window)
-        || is_herbstluft_window(g_display, window))
+        || is_herbstluft_window(X_.display(), window))
     {
         // just map the window if it wants that
         XWindowAttributes wa;
-        if (!XGetWindowAttributes(g_display, window, &wa)) {
+        if (!XGetWindowAttributes(X_.display(), window, &wa)) {
             return;
         }
-        XMapWindow(g_display, window);
+        XMapWindow(X_.display(), window);
     } else if (c == nullptr) {
         if (root_->ewmh->getWindowType(window) == NetWmWindowTypeDesktop)
         {
             DesktopWindow::registerDesktop(window);
             DesktopWindow::lowerDesktopWindows();
-            XMapWindow(g_display, window);
+            XMapWindow(X_.display(), window);
         } else {
             // client should be managed (is not ignored)
             // but is not managed yet
             auto clientmanager = root_->clients();
             auto client = clientmanager->manage_client(window, false);
             if (client && find_monitor_with_tag(client->tag())) {
-                XMapWindow(g_display, window);
+                XMapWindow(X_.display(), window);
             }
         }
     }
@@ -294,14 +298,13 @@ void XMainLoop::maprequest(XEvent* event) {
     // that are managed already
 }
 
-void XMainLoop::propertynotify(XEvent* event) {
+void XMainLoop::propertynotify(XPropertyEvent* ev) {
     // printf("name is: PropertyNotify\n");
-    XPropertyEvent *ev = &event->xproperty;
     Client* client = root_->clients->client(ev->window);
     if (ev->state == PropertyNewValue) {
-        if (root_->ipcServer_.isConnectable(event->xproperty.window)) {
-            root_->ipcServer_.handleConnection(event->xproperty.window,
-                                              HlwmCommon::callCommand);
+        if (root_->ipcServer_.isConnectable(ev->window)) {
+            root_->ipcServer_.handleConnection(ev->window,
+                                               HlwmCommon::callCommand);
         } else if (client != nullptr) {
             if (ev->atom == XA_WM_HINTS) {
                 client->update_wm_hints();
@@ -317,8 +320,8 @@ void XMainLoop::propertynotify(XEvent* event) {
     }
 }
 
-void XMainLoop::unmapnotify(XEvent* event) {
-    HSDebug("name is: UnmapNotify for %lx\n", event->xunmap.window);
-    root_->clients()->unmap_notify(event->xunmap.window);
+void XMainLoop::unmapnotify(XUnmapEvent* event) {
+    HSDebug("name is: UnmapNotify for %lx\n", event->window);
+    root_->clients()->unmap_notify(event->window);
 }
 
