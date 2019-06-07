@@ -12,29 +12,29 @@ public:
     void run();
     //! quit the main loop as soon as possible
     void quit();
-private:
     using EventHandler = void (XMainLoop::*)(XEvent*);
+private:
     // members
     XConnection& X_;
     Root* root_;
     bool aboutToQuit_;
     EventHandler handlerTable_[LASTEvent];
     // event handlers
-    void buttonpress(XEvent* event);
-    void buttonrelease(XEvent* event);
-    void clientmessage(XEvent* event);
-    void createnotify(XEvent* event);
-    void configurerequest(XEvent* event);
-    void configurenotify(XEvent* event);
-    void destroynotify(XEvent* event);
-    void enternotify(XEvent* event);
+    void buttonpress(XButtonEvent* event);
+    void buttonrelease(XButtonEvent* event);
+    void clientmessage(XClientMessageEvent* event);
+    void createnotify(XCreateWindowEvent* event);
+    void configurerequest(XConfigureRequestEvent* cre);
+    void configurenotify(XConfigureEvent* event);
+    void destroynotify(XUnmapEvent* event);
+    void enternotify(XCrossingEvent* event);
     void expose(XEvent* event);
     void focusin(XEvent* event);
-    void keypress(XEvent* event);
-    void mappingnotify(XEvent* event);
-    void motionnotify(XEvent* event);
-    void mapnotify(XEvent* event);
-    void maprequest(XEvent* event);
-    void propertynotify(XEvent* event);
-    void unmapnotify(XEvent* event);
+    void keypress(XKeyEvent* event);
+    void mappingnotify(XMappingEvent* event);
+    void motionnotify(XMotionEvent* event);
+    void mapnotify(XMapEvent* event);
+    void maprequest(XMapRequestEvent* event);
+    void propertynotify(XPropertyEvent* event);
+    void unmapnotify(XUnmapEvent* event);
 };
