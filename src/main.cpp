@@ -616,7 +616,7 @@ int main(int argc, char* argv[]) {
     // set some globals
     g_screen = X->screen();
     g_root = X->root();
-    XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
+    XSelectInput(X->display(), X->root(), SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
 
     // setup ipc server
     IpcServer* ipcServer = new IpcServer(*X);

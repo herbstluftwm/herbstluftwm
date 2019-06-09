@@ -11,10 +11,6 @@
 #define WINDOW_MIN_HEIGHT 32
 #define WINDOW_MIN_WIDTH 32
 
-#define ROOT_EVENT_MASK (SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask)
-//#define CLIENT_EVENT_MASK (PropertyChangeMask | FocusChangeMask | StructureNotifyMask)
-#define CLIENT_EVENT_MASK (StructureNotifyMask|FocusChangeMask|EnterWindowMask|PropertyChangeMask)
-
 // minimum relative fraction of split frames
 #define FRAME_MIN_FRACTION 0.1
 

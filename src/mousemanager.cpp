@@ -80,8 +80,8 @@ int MouseManager::addMouseBindCommand(Input input, Output output) {
 
     // Actually create the mouse binding
     MouseBinding mb;
-    mb.button = button;
-    mb.modifiers = modifiers;
+    mb.mousecombo.button_ = button;
+    mb.mousecombo.modifiers_ = modifiers;
     mb.action = action;
     mb.cmd = cmd;
     binds.push_front(mb);
@@ -295,13 +295,20 @@ unsigned int MouseManager::string2button(const char* name) {
 
 
 std::experimental::optional<MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {
-    MouseBinding mb = {};
-    mb.modifiers = modifiers;
-    mb.button = button;
+    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
+    MouseCombo mb = {};
+    mb.modifiers_ = modifiers
+        & ~(numlockMask|LockMask) // remove numlock and capslock mask
+        & ~( Button1Mask // remove all mouse button masks
+           | Button2Mask
+           | Button3Mask
+           | Button4Mask
+           | Button5Mask );
+    mb.button_ = button;
 
     auto found = std::find_if(binds.begin(), binds.end(),
             [=](const MouseBinding &other) {
-                return mouse_binding_equals(&other, &mb) == 0;
+                return other.mousecombo == mb;
             });
     if (found != binds.end()) {
         return *found;
@@ -314,8 +321,8 @@ static void grab_binding(MouseBinding* bind, Client* client) {
     unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
     unsigned int modifiers[] = { 0, LockMask, numlockMask, numlockMask | LockMask };
     for(int j = 0; j < LENGTH(modifiers); j++) {
-        XGrabButton(g_display, bind->button,
-                    bind->modifiers | modifiers[j],
+        XGrabButton(g_display, bind->mousecombo.button_,
+                    bind->mousecombo.modifiers_ | modifiers[j],
                     client->x11Window(), False, ButtonPressMask | ButtonReleaseMask,
                     GrabModeAsync, GrabModeSync, None, None);
     }

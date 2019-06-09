@@ -1,26 +1,15 @@
 #include "mouse.h"
 
-#include <X11/X.h>
 #include <cstdlib>
 
 #include "client.h"
 #include "decoration.h"
 #include "frametree.h"
-#include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
-#include "root.h"
 #include "settings.h"
 #include "tag.h"
 #include "utils.h"
-
-#define CLEANMASK(mask)         ((mask) & ~(numlockMask|LockMask))
-#define REMOVEBUTTONMASK(mask) ((mask) & \
-    ~( Button1Mask \
-     | Button2Mask \
-     | Button3Mask \
-     | Button4Mask \
-     | Button5Mask ))
 
 using std::string;
 using std::vector;
@@ -31,17 +20,6 @@ struct SnapData {
     enum SnapFlags  flags;
     int             dx, dy; // the vector from client to other to make them snap
 };
-
-int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b) {
-    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
-    if((REMOVEBUTTONMASK(CLEANMASK(a->modifiers))
-        == REMOVEBUTTONMASK(CLEANMASK(b->modifiers)))
-        && (a->button == b->button)) {
-        return 0;
-    } else {
-        return -1;
-    }
-}
 
 bool is_point_between(int point, int left, int right) {
     return (point < right && point >= left);
