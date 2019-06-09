@@ -65,7 +65,7 @@ public:
     }
 
     T* byIdx(size_t idx) {
-        return data[idx];
+        return idx < data.size() ? data[idx] : nullptr;
     }
 
     size_t size() {

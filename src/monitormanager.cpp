@@ -184,13 +184,21 @@ function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
     };
 }
 
-void MonitorManager::relayoutTag(HSTag *tag)
-{
+
+Monitor* MonitorManager::byTag(HSTag* tag) {
     for (Monitor* m : *this) {
         if (m->tag == tag) {
-            m->applyLayout();
-            break;
+            return m;
         }
+    }
+    return nullptr;
+}
+
+void MonitorManager::relayoutTag(HSTag* tag)
+{
+    Monitor* m = byTag(tag);
+    if (m) {
+        m->applyLayout();
     }
 }
 
