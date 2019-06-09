@@ -36,7 +36,7 @@ ClientManager::~ClientManager()
         XMoveResizeWindow(g_display, window, r.x, r.y, r.width, r.height);
         XReparentWindow(g_display, window, g_root, r.x, r.y);
         ewmh->updateFrameExtents(window, 0,0,0,0);
-        window_set_visible(window, true);
+        XMapWindow(g_display, window);
         delete c.second;
     }
 }

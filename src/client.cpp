@@ -101,7 +101,9 @@ void Client::make_full_client() {
                             ButtonPressMask | ButtonReleaseMask |
                             ExposureMask |
                             SubstructureRedirectMask | FocusChangeMask));
-    XSelectInput(g_display, window_, CLIENT_EVENT_MASK);
+    XSelectInput(g_display, window_,
+                            StructureNotifyMask|FocusChangeMask
+                            |EnterWindowMask|PropertyChangeMask);
 }
 
 bool Client::ignore_unmapnotify() {
@@ -416,21 +418,6 @@ bool Client::is_client_floated() {
 
 void Client::requestClose() { //! ask the client to close
     ewmh.windowClose(window_);
-}
-
-void window_set_visible(Window win, bool visible) {
-    static int (*action[])(Display*,Window) = {
-        XUnmapWindow,
-        XMapWindow,
-    };
-    unsigned long event_mask = CLIENT_EVENT_MASK;
-    XGrabServer(g_display);
-    XSelectInput(g_display, win, event_mask & ~StructureNotifyMask);
-    XSelectInput(g_display, g_root, ROOT_EVENT_MASK & ~SubstructureNotifyMask);
-    action[visible](g_display, win);
-    XSelectInput(g_display, win, event_mask);
-    XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
-    XUngrabServer(g_display);
 }
 
 void Client::set_visible(bool visible) {
