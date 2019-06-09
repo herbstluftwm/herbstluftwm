@@ -130,12 +130,16 @@ def test_invalid_keymask_has_no_effect(hlwm, keyboard, maskmethod):
     assert hlwm.get_attr('tags.0.client_count') == '0'
 
 
-def test_complete_keybind_offers_all_mods_and_syms(hlwm):
-    complete = hlwm.complete('keybind', partial=True, position=1)
+@pytest.mark.parametrize('prefix', ['', 'Mod1+'])
+def test_complete_keybind_offers_all_mods_and_syms(hlwm, prefix):
+    complete = hlwm.complete(['keybind', prefix], partial=True, position=1)
 
     assert len(complete) > 200  # plausibility check
+    all_mods = ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super']
+    if prefix == 'Mod1+':
+        all_mods = [m for m in all_mods if m not in ['Mod1', 'Alt']]
     assert sorted([c[:-1] for c in complete if c.endswith('+')]) == \
-        ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super']
+        sorted([prefix + m for m in all_mods])
 
 
 def test_complete_keybind_after_combo_offers_all_commands(hlwm):
