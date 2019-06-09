@@ -620,7 +620,7 @@ int main(int argc, char* argv[]) {
     g_screen_width = X->screenWidth();
     g_screen_height = X->screenHeight();
     g_root = X->root();
-    XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
+    XSelectInput(X->display(), X->root(), SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
 
     // setup ipc server
     IpcServer* ipcServer = new IpcServer(*X);
