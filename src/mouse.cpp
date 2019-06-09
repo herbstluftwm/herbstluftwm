@@ -1,6 +1,5 @@
 #include "mouse.h"
 
-#include <X11/X.h>
 #include <cstdlib>
 #include <sstream>
 
@@ -8,10 +7,8 @@
 #include "completion.h"
 #include "decoration.h"
 #include "frametree.h"
-#include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
-#include "root.h"
 #include "settings.h"
 #include "tag.h"
 #include "utils.h"
