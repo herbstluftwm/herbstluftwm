@@ -3,10 +3,7 @@
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <cstring>
-#include <initializer_list>
 #include <ostream>
-#include <set>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -15,7 +12,6 @@
 #include "completion.h"
 #include "globals.h"
 #include "ipc-protocol.h"
-#include "keycombo.h"
 #include "keymanager.h"
 #include "monitor.h"
 #include "mouse.h"
@@ -45,24 +41,13 @@ int MouseManager::addMouseBindCommand(Input input, Output output) {
 
     auto mouseComboStr = input.front();
 
-    auto tokens = KeyCombo::tokensFromString(mouseComboStr);
-    unsigned int modifiers = 0;
+    MouseCombo mouseCombo;
     try {
-        auto modifierSlice = vector<string>({tokens.begin(), tokens.end() - 1});
-        modifiers = KeyCombo::modifierMaskFromTokens(modifierSlice);
-    } catch (std::runtime_error &error) {
+        mouseCombo = Converter<MouseCombo>::parse(mouseComboStr);
+    } catch (std::exception &error) {
         output << input.command() << ": " << error.what() << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-
-    // Last token is the mouse button
-    auto buttonStr = tokens.back();
-    unsigned int button = string2button(buttonStr.c_str());
-    if (button == 0) {
-        output << input.command() << ": Unknown mouse button \"" << buttonStr << "\"" << endl;
-        return HERBST_INVALID_ARGUMENT;
-    }
-
     input.shift();
     auto action = string2mousefunction(input.front().c_str());
     if (!action) {
@@ -80,8 +65,7 @@ int MouseManager::addMouseBindCommand(Input input, Output output) {
 
     // Actually create the mouse binding
     MouseBinding mb;
-    mb.mousecombo.button_ = button;
-    mb.mousecombo.modifiers_ = modifiers;
+    mb.mousecombo = mouseCombo;
     mb.action = action;
     mb.cmd = cmd;
     binds.push_front(mb);
@@ -95,58 +79,7 @@ int MouseManager::addMouseBindCommand(Input input, Output output) {
 
 void MouseManager::addMouseBindCompletion(Completion &complete) {
     if (complete == 0) {
-        auto needle = complete.needle();
-
-        // Use the first separator char that appears in the needle as default:
-        const string seps = KeyCombo::separators;
-        string sep = {seps.front()};
-        for (auto& needleChar : needle) {
-            if (seps.find(needleChar) != string::npos) {
-                sep = needleChar;
-                break;
-            }
-        }
-
-        // Normalize needle by chopping off tokens until they all are valid
-        // modifiers:
-        auto tokens = KeyCombo::tokensFromString(needle);
-        while (tokens.size() > 0) {
-            try {
-                KeyCombo::modifierMaskFromTokens(tokens);
-                break;
-            } catch (std::runtime_error &error) {
-                tokens.pop_back();
-            }
-        }
-
-        auto normNeedle = join_strings(tokens, sep);
-        normNeedle += tokens.empty() ? "" : sep;
-        auto modifiersInNeedle = std::set<string>(tokens.begin(), tokens.end());
-
-        // Offer partial completions for an additional modifier (excluding the
-        // ones already mentioned in the needle):
-        for (auto& modifier : KeyCombo::modifierMasks) {
-            if (modifiersInNeedle.count(modifier.name) == 0) {
-                complete.partial(normNeedle + modifier.name + sep);
-            }
-        }
-
-        // Offer full completions for a mouse button:
-        auto buttons = {
-            "Button1",
-            "Button2",
-            "Button3",
-            "Button4",
-            "Button5",
-            "B1",
-            "B2",
-            "B3",
-            "B4",
-            "B5",
-        };
-        for (auto button : buttons) {
-            complete.full(normNeedle + button);
-        }
+        Converter<MouseCombo>::complete(complete, nullptr);
     } else if (complete == 1) {
         complete.full({"move", "resize", "zoom", "call"});
     } else if (complete[1] == "call") {
@@ -268,31 +201,6 @@ MouseFunction MouseManager::string2mousefunction(const char* name) {
     }
     return nullptr;
 }
-
-static struct {
-    const char* name;
-    unsigned int button;
-} string2button_table[] = {
-    { "Button1",       Button1 },
-    { "Button2",       Button2 },
-    { "Button3",       Button3 },
-    { "Button4",       Button4 },
-    { "Button5",       Button5 },
-    { "B1",       Button1 },
-    { "B2",       Button2 },
-    { "B3",       Button3 },
-    { "B4",       Button4 },
-    { "B5",       Button5 },
-};
-unsigned int MouseManager::string2button(const char* name) {
-    for (int i = 0; i < LENGTH(string2button_table); i++) {
-        if (!strcmp(string2button_table[i].name, name)) {
-            return string2button_table[i].button;
-        }
-    }
-    return 0;
-}
-
 
 std::experimental::optional<MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {
     unsigned int numlockMask = Root::get()->keys()->getNumlockMask();

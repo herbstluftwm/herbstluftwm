@@ -28,7 +28,6 @@ public:
     int mouse_unbind_all(Output o);
     std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button);
 
-    unsigned int string2button(const char* name);
     MouseFunction string2mousefunction(const char* name);
 
     void grab_client_buttons(Client* client, bool focused);
