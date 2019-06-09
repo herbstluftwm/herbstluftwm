@@ -172,15 +172,7 @@ vector<string> ModifierCombo::tokensFromString(string keySpec)
     for (auto &sep : string(separators)) {
         std::replace(keySpec.begin(), keySpec.end(), sep, baseSep);
     }
-
-    // Split spec into tokens:
-    vector<string> tokens;
-    string token;
-    std::istringstream tokenStream(keySpec);
-    while (std::getline(tokenStream, token, baseSep)) {
-        tokens.push_back(token);
-    }
-    return tokens;
+    return ArgList::split(keySpec, baseSep);
 }
 
 /*!
