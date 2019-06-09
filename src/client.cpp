@@ -594,11 +594,6 @@ Window get_window(const string& str) {
     }
 }
 
-void Client::set_dragged(bool drag_state) {
-    if (drag_state == dragged_) return;
-    dragged_ = drag_state;
-}
-
 void Client::fuzzy_fix_initial_position() {
     // find out the top-left-most position of the decoration,
     // considering the current settings of possible floating decorations

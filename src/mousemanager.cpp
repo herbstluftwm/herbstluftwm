@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "client.h"
+#include "clientmanager.h"
 #include "command.h"
 #include "completion.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "keymanager.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "mouse.h"
 #include "root.h"
 #include "tag.h"
@@ -24,7 +26,9 @@ using std::vector;
 using std::string;
 using std::endl;
 
-MouseManager::MouseManager() {
+MouseManager::MouseManager()
+    : mode_(Mode::NoDrag)
+{
     /* set cursor theme */
     cursor = XCreateFontCursor(g_display, XC_left_ptr);
     XDefineCursor(g_display, g_root, cursor);
@@ -32,6 +36,12 @@ MouseManager::MouseManager() {
 
 MouseManager::~MouseManager() {
     XFreeCursor(g_display, cursor);
+}
+
+void MouseManager::injectDependencies(ClientManager* clients, MonitorManager* monitors)
+{
+    clients_ = clients;
+    monitors_ = monitors;
 }
 
 int MouseManager::addMouseBindCommand(Input input, Output output) {
@@ -117,28 +127,30 @@ void MouseManager::mouse_initiate_resize(Client* client, const vector<string> &c
 
 void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd) {
     // TODO: add completion
-    client->set_dragged(true);
+    clients_->setDragged(client);
 
     // Execute the bound command
     std::ostringstream discardedOutput;
     Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
     Commands::call(input, discardedOutput);
 
-    client->set_dragged(false);
+    clients_->setDragged(nullptr);
 }
 
 
 void MouseManager::mouse_initiate_drag(Client* client, MouseDragFunction function) {
     dragFunction_ = function;
     winDragClient_ = client;
-    dragMonitor_ = find_monitor_with_tag(client->tag());
+    dragMonitor_ = monitors_->byTag(client->tag());
     if (!dragMonitor_ || client->tag()->floating == false) {
         // only can drag wins in  floating mode
         winDragClient_ = nullptr;
         dragFunction_ = nullptr;
         return;
     }
-    winDragClient_->set_dragged( true);
+    mode_ = Mode::DraggingClient;
+    dragMonitorIndex_ = dragMonitor_->index();
+    clients_->setDragged(winDragClient_);
     winDragStart_ = winDragClient_->float_size_;
     buttonDragStart_ = get_cursor_position();
     XGrabPointer(g_display, client->x11Window(), True,
@@ -146,12 +158,23 @@ void MouseManager::mouse_initiate_drag(Client* client, MouseDragFunction functio
             GrabModeAsync, None, None, CurrentTime);
 }
 
+bool MouseManager::draggingIsStillSafe() {
+    if (monitors_->byIdx(dragMonitorIndex_) != dragMonitor_) {
+        dragMonitor_ = nullptr;
+    }
+    return dragMonitor_
+        && winDragClient_;
+}
+
 void MouseManager::mouse_stop_drag() {
     if (winDragClient_) {
-        winDragClient_->set_dragged(false);
+        clients_->setDragged(nullptr);
         // resend last size
-        dragMonitor_->applyLayout();
+        if (dragMonitor_) {
+            dragMonitor_->applyLayout();
+        }
     }
+    mode_ = Mode::NoDrag;
     winDragClient_ = nullptr;
     dragFunction_ = nullptr;
     XUngrabPointer(g_display, CurrentTime);
@@ -163,15 +186,20 @@ void MouseManager::mouse_stop_drag() {
 }
 
 void MouseManager::handle_motion_event(Point2D newCursorPos) {
-    if (!dragMonitor_) { return; }
-    if (!winDragClient_) return;
+    if (!draggingIsStillSafe()) {
+        mouse_stop_drag();
+        return;
+    }
+    if (mode_ == Mode::NoDrag) {
+        return;
+    }
     if (!dragFunction_) return;
     // call function that handles it
     (this ->* dragFunction_)(newCursorPos);
 }
 
 bool MouseManager::mouse_is_dragging() {
-    return dragFunction_ != nullptr;
+    return mode_ != Mode::NoDrag;
 }
 
 int MouseManager::mouse_unbind_all(Output) {
