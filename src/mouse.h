@@ -27,12 +27,17 @@ using MouseFunction = void (MouseManager::*)(Client* client, const std::vector<s
 class MouseCombo : public ModifierCombo {
 public:
     MouseCombo() = default;
+    MouseCombo(unsigned int modifiers, unsigned int button);
+
     unsigned int button_;
     bool operator==(const MouseCombo& other) const {
         return ModifierCombo::operator==(other)
             && button_ == other.button_;
     }
+    static std::vector<std::pair<std::string, unsigned int>> name2button;
 };
+
+ConverterInstance(MouseCombo)
 
 class MouseBinding {
 public:
