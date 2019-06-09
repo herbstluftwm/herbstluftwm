@@ -3,7 +3,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include "client.h"
 #include "ewmh.h"
 #include "globals.h"
 #include "settings.h"
