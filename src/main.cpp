@@ -50,8 +50,6 @@ int g_verbose = 0;
 Display*    g_display;
 int         g_screen;
 Window      g_root;
-int         g_screen_width;
-int         g_screen_height;
 
 // module internals:
 static char*    g_autostart_path = nullptr; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
@@ -617,10 +615,8 @@ int main(int argc, char* argv[]) {
     sigaction_signal(SIGTERM, handle_signal);
     // set some globals
     g_screen = X->screen();
-    g_screen_width = X->screenWidth();
-    g_screen_height = X->screenHeight();
     g_root = X->root();
-    XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
+    XSelectInput(X->display(), X->root(), SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
 
     // setup ipc server
     IpcServer* ipcServer = new IpcServer(*X);
