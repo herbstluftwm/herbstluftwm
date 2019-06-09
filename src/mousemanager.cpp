@@ -3,10 +3,7 @@
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <cstring>
-#include <initializer_list>
 #include <ostream>
-#include <set>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -15,7 +12,6 @@
 #include "completion.h"
 #include "globals.h"
 #include "ipc-protocol.h"
-#include "keycombo.h"
 #include "keymanager.h"
 #include "monitor.h"
 #include "mouse.h"
