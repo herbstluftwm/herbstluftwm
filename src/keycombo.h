@@ -9,6 +9,8 @@
 
 /*!
  * Represents the press of a combination of modifiers keys.
+ * The modifiers_ mask is expected to be normalized, i.e. modifiers_ must
+ * contain neither the caps lock mask nor the numlock mask.
  *
  * Handles the parsing and creation of string representations of itself.
  */
@@ -16,6 +18,9 @@
 class ModifierCombo {
 public:
     unsigned int modifiers_;
+    bool operator==(const ModifierCombo& other) const {
+        return modifiers_ == other.modifiers_;
+    }
 
     static constexpr auto separators = "+-";
 
