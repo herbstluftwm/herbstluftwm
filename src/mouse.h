@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "keycombo.h"
+
 // various snap-flags
 enum SnapFlags {
     // which edges are considered to snap
@@ -22,16 +24,22 @@ class MouseManager; // IWYU pragma: keep
 
 using MouseFunction = void (MouseManager::*)(Client* client, const std::vector<std::string> &cmd);
 
+class MouseCombo : public ModifierCombo {
+public:
+    MouseCombo() = default;
+    unsigned int button_;
+    bool operator==(const MouseCombo& other) const {
+        return ModifierCombo::operator==(other)
+            && button_ == other.button_;
+    }
+};
+
 class MouseBinding {
 public:
-    unsigned int modifiers;
-    unsigned int button;
+    MouseCombo mousecombo;
     MouseFunction action;
     std::vector<std::string> cmd;
 };
-
-int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b);
-
 
 // get the vector to snap a client to it's neighbour
 void client_snap_vector(Client* client, Monitor* monitor,
