@@ -76,6 +76,8 @@ def test_complete_mousebind_offers_all_mods_and_buttons(hlwm, prefix):
 
     buttons = sum(([f'Button{i}', f'B{i}'] for i in MOUSE_BUTTONS_THAT_EXIST), [])
     mods = ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super']
+    if prefix == 'Mod1+':
+        mods = [m for m in mods if m not in ['Mod1', 'Alt']]
     assert sorted(c[:-1] for c in complete) == sorted(prefix + i for i in mods + buttons)
 
 
