@@ -10,6 +10,7 @@
 #include "attribute_.h"
 #include "command.h"
 #include "completion.h"
+#include "hlwmcommon.h"
 #include "ipc-protocol.h"
 #include "root.h"
 
@@ -427,3 +428,18 @@ void RootCommands::attr_complete(Completion& complete)
     }
 }
 
+int RootCommands::tryCommand(Input input, Output output) {
+    auto res = Root::common().callCommand(input.toVector());
+    output << res.second; // pass through output
+    return 0; // ignore exit code
+}
+
+int RootCommands::silentCommand(Input input, Output output) {
+    auto res = Root::common().callCommand(input.toVector());
+    // drop output but pass exit code
+    return res.first;
+}
+
+void RootCommands::completeCommandShifted1(Completion& complete) {
+    complete.completeCommands(0);
+}

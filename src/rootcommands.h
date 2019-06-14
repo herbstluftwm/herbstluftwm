@@ -46,6 +46,10 @@ public:
     void completeObjectPath(Completion& complete, bool attributes = false,
                             std::function<bool(Attribute*)> attributeFilter = {});
     void completeAttributePath(Completion& complete);
+
+    int tryCommand(Input input, Output output);
+    int silentCommand(Input input, Output output);
+    void completeCommandShifted1(Completion& complete);
 private:
     Root* root;
     std::vector<std::unique_ptr<Attribute>> userAttributes_;

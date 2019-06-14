@@ -243,3 +243,17 @@ def test_getenv_completion(hlwm):
 def test_compare_invalid_operator(hlwm):
     hlwm.call_xfail('compare monitors.count -= 1') \
         .expect_stderr('unknown operator')
+
+
+def test_try_command(hlwm):
+    proc = hlwm.unchecked_call('try chain , echo foo , false')
+
+    assert proc.returncode == 0
+    assert proc.stdout == 'foo\n'
+
+
+def test_silent_command(hlwm):
+    proc = hlwm.unchecked_call('silent chain , echo foo , false')
+
+    assert proc.returncode == 1
+    assert proc.stdout == ''
