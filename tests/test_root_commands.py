@@ -243,3 +243,13 @@ def test_getenv_completion(hlwm):
 def test_compare_invalid_operator(hlwm):
     hlwm.call_xfail('compare monitors.count -= 1') \
         .expect_stderr('unknown operator')
+
+
+@pytest.mark.parametrize('args', [[], ['abc'], ['foo', 'bar']])
+def test_echo_command(hlwm, args):
+    assert hlwm.call(['echo'] + args).stdout == ' '.join(args) + '\n'
+
+
+def test_echo_completion(hlwm):
+    # check that the exit code is right
+    assert hlwm.complete('echo foo') == []

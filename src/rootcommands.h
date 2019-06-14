@@ -46,6 +46,9 @@ public:
     void completeObjectPath(Completion& complete, bool attributes = false,
                             std::function<bool(Attribute*)> attributeFilter = {});
     void completeAttributePath(Completion& complete);
+
+    int echoCommand(Input input, Output output);
+    void echoCompletion(Completion& ) {}; // no completion
 private:
     Root* root;
     std::vector<std::unique_ptr<Attribute>> userAttributes_;

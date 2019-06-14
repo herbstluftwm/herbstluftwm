@@ -427,3 +427,15 @@ void RootCommands::attr_complete(Completion& complete)
     }
 }
 
+int RootCommands::echoCommand(Input input, Output output)
+{
+    string token;
+    bool first = true;
+    while (input >> token) {
+        output << (first ? "" : " ") << token;
+        first = false;
+    }
+    output << endl;
+    return 0;
+}
+

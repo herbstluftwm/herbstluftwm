@@ -59,9 +59,6 @@ static XMainLoop* g_main_loop = nullptr;
 
 int quit();
 int version(Output output);
-int echo(int argc, char* argv[], Output output);
-int true_command();
-int false_command();
 int try_command(int argc, char* argv[], Output output);
 int silent_command(int argc, char* argv[]);
 int print_layout_command(int argc, char** argv, Output output);
@@ -92,7 +89,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     std::initializer_list<pair<const string,CommandBinding>> init =
     {
         {"quit",           { quit } },
-        {"echo",           echo},
+        {"echo",           {root_commands, &RootCommands::echoCommand,
+                                           &RootCommands::echoCompletion }},
         {"true",           {[] { return 0; }}},
         {"false",          {[] { return 1; }}},
         {"try",            try_command},
@@ -227,18 +225,6 @@ int version(Output output) {
     for (const auto& d : MonitorDetection::detectors()) {
         output << d.name_ << " support: " << (d.detect_ ? "on" : "off") << endl;
     }
-    return 0;
-}
-
-int echo(int argc, char* argv[], Output output) {
-    if (SHIFT(argc, argv)) {
-        // if there still is an argument
-        output << argv[0];
-        while (SHIFT(argc, argv)) {
-            output << " " << argv[0];
-        }
-    }
-    output << '\n';
     return 0;
 }
 
