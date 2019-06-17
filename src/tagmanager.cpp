@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "client.h"
+#include "completion.h"
 #include "ewmh.h"
 #include "frametree.h"
 #include "globals.h"
@@ -41,6 +42,12 @@ HSTag* TagManager::find(const string& name) {
         }
     }
     return {};
+}
+
+void TagManager::completeTag(Completion& complete) {
+    for (auto t : *this) {
+        complete.full(t->name);
+    }
 }
 
 //! if the name is a valid tag name, return "", otherwise return an error message

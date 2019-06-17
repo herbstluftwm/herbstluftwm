@@ -3,7 +3,6 @@
 #include <getopt.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <cassert>
 #include <cerrno>
 #include <csignal>
 #include <cstdio>
@@ -59,7 +58,6 @@ static XMainLoop* g_main_loop = nullptr;
 
 int quit();
 int version(Output output);
-int print_layout_command(int argc, char** argv, Output output);
 int print_tag_status_command(int argc, char** argv, Output output);
 void execute_autostart_file();
 int raise_command(int argc, char** argv, Output output);
@@ -172,9 +170,11 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"unrule",         {rules, &RuleManager::unruleCommand,
                                    &RuleManager::unruleCompletion}},
         {"list_rules",     {[rules] (Output o) { return rules->listRulesCommand(o); }}},
-        {"layout",         print_layout_command},
+        {"layout",         { tags->frameCommand(&FrameTree::dumpLayoutCommand),
+                             tags->frameCompletion(&FrameTree::dumpLayoutCompletion) }},
         {"stack",          { monitors, &MonitorManager::stackCommand }},
-        {"dump",           print_layout_command},
+        {"dump",           { tags->frameCommand(&FrameTree::dumpLayoutCommand),
+                             tags->frameCompletion(&FrameTree::dumpLayoutCompletion) }},
         {"load",           { tags->frameCommand(&FrameTree::loadCommand) }},
         {"complete",       complete_command},
         {"complete_shell", complete_command},
@@ -224,33 +224,6 @@ int version(Output output) {
     output << "Released under the Simplified BSD License" << endl;
     for (const auto& d : MonitorDetection::detectors()) {
         output << d.name_ << " support: " << (d.detect_ ? "on" : "off") << endl;
-    }
-    return 0;
-}
-
-// prints or dumps the layout of an given tag
-// first argument tells whether to print or to dump
-int print_layout_command(int argc, char** argv, Output output) {
-    HSTag* tag = nullptr;
-    // an empty argv[1] means current focused tag
-    if (argc >= 2 && argv[1][0] != '\0') {
-        tag = find_tag(argv[1]);
-        if (!tag) {
-            output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    } else { // use current tag
-        Monitor* m = get_current_monitor();
-        tag = m->tag;
-    }
-    assert(tag);
-
-    shared_ptr<HSFrame> frame = tag->frame->lookup(argc >= 3 ? argv[2] : "");
-    assert(frame);
-    if (argc > 0 && !strcmp(argv[0], "dump")) {
-        FrameTree::dump(frame, output);
-    } else {
-        FrameTree::prettyPrint(frame, output);
     }
     return 0;
 }
