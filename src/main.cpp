@@ -397,53 +397,6 @@ int unsetenv_command(int argc, char** argv, Output output) {
     return 0;
 }
 
-// scan for windows and add them to the list of managed clients
-// from dwm.c
-void scan(Root* root) {
-    XWindowAttributes wa;
-    Window transientFor;
-    auto& X = root->X;
-    auto clientmanager = root->clients();
-    auto originalClients = root->ewmh->originalClientList();
-    auto isInOriginalClients = [&originalClients] (Window win) {
-        return originalClients.end()
-            != std::find(originalClients.begin(), originalClients.end(), win);
-    };
-    for (auto win : X.queryTree(X.root())) {
-        if (!XGetWindowAttributes(X.display(), win, &wa)
-            || wa.override_redirect
-            || XGetTransientForHint(X.display(), win, &transientFor))
-        {
-            continue;
-        }
-        // only manage mapped windows.. no strange wins like:
-        //      luakit/dbus/(ncurses-)vim
-        // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
-        // the previous window manager
-        // TODO: what would dwm do?
-        if (root->ewmh->isOwnWindow(win)) {
-            continue;
-        }
-        if (wa.map_state == IsViewable
-            || isInOriginalClients(win)) {
-            clientmanager->manage_client(win, true);
-            XMapWindow(X.display(), win);
-        }
-    }
-    // ensure every original client is managed again
-    for (auto win : originalClients) {
-        if (clientmanager->client(win)) continue;
-        if (!XGetWindowAttributes(X.display(), win, &wa)
-            || wa.override_redirect
-            || XGetTransientForHint(X.display(), win, &transientFor))
-        {
-            continue;
-        }
-        XReparentWindow(X.display(), win, X.root(), 0,0);
-        clientmanager->manage_client(win, true);
-    }
-}
-
 void execute_autostart_file() {
     string path;
     if (g_autostart_path) {
@@ -569,17 +522,18 @@ int main(int argc, char* argv[]) {
 
     Commands::initialize(commands(root));
 
+    XMainLoop mainloop(*X, root.get());
+    g_main_loop = &mainloop;
+
     // setup
     root->monitors()->ensure_monitors_are_available();
-    scan(root.get());
+    mainloop.scanExistingClients();
     tag_force_update_flags();
     all_monitors_apply_layout();
     root->ewmh->updateAll();
     execute_autostart_file();
 
     // main loop
-    XMainLoop mainloop(*X, root.get());
-    g_main_loop = &mainloop;
     mainloop.run();
 
     // enforce to clear the root

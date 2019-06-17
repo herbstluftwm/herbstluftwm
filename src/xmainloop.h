@@ -9,6 +9,7 @@ class XConnection;
 class XMainLoop {
 public:
     XMainLoop(XConnection& X, Root* root);
+    void scanExistingClients();
     void run();
     //! quit the main loop as soon as possible
     void quit();
