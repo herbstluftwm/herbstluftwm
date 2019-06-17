@@ -66,9 +66,6 @@ int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(Input input);
 int jumpto_command(int argc, char** argv, Output output);
-int getenv_command(int argc, char** argv, Output output);
-int setenv_command(int argc, char** argv, Output output);
-int unsetenv_command(int argc, char** argv, Output output);
 
 unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     RootCommands* root_commands = root->root_commands.get();
@@ -364,40 +361,6 @@ int jumpto_command(int argc, char** argv, Output output) {
         }
         return HERBST_INVALID_ARGUMENT;
     }
-}
-
-int getenv_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    char* envvar = getenv(argv[1]);
-    if (!envvar) {
-        return HERBST_ENV_UNSET;
-    }
-    output << envvar << "\n";
-    return 0;
-}
-
-int setenv_command(int argc, char** argv, Output output) {
-    if (argc < 3) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    if (setenv(argv[1], argv[2], 1) != 0) {
-        output << argv[0] << ": Could not set environment variable: " << strerror(errno) << "\n";
-        return HERBST_UNKNOWN_ERROR;
-    }
-    return 0;
-}
-
-int unsetenv_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    if (unsetenv(argv[1]) != 0) {
-        output << argv[0] << ": Could not unset environment variable: " << strerror(errno) << "\n";
-        return HERBST_UNKNOWN_ERROR;
-    }
-    return 0;
 }
 
 void execute_autostart_file() {
