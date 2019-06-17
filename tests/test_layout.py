@@ -68,6 +68,31 @@ def test_dump(hlwm, running_clients, path, running_clients_num, num_splits):
         assert layout_part == layout
 
 
+def test_dump_frame_index(hlwm):
+    layout = {}
+    layout['00'] = "(clients vertical:0)"
+    layout['01'] = "(clients grid:0)"
+    layout['0'] = '(split vertical:0.7:0 {} {})'.format(
+        layout['00'], layout['01'])
+    layout['1'] = '(clients horizontal:0)'
+    layout[''] = '(split horizontal:0.65:0 {} {})'.format(
+        layout['0'], layout['1'])
+    hlwm.call(['load', layout['']])
+
+    tag = hlwm.get_attr('tags.focus.name')
+    for index in ["", "0", "1", "00", "01"]:
+        assert hlwm.call(['dump', tag, index]).stdout == layout[index]
+
+
+@pytest.mark.parametrize("command", ['dump', 'layout'])
+def test_dump_layout_other_tag(hlwm, command):
+    hlwm.call('add other')
+    hlwm.call('split explode')
+
+    assert hlwm.call([command]).stdout \
+        != hlwm.call([command, 'other']).stdout
+
+
 @pytest.mark.parametrize("running_clients_num", [0, 5])
 @pytest.mark.parametrize("num_splits", [0, 2])
 @pytest.mark.parametrize("cycle_delta", [-2, -1, 0, 1, 2])

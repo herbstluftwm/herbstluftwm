@@ -10,16 +10,20 @@
 
 #include "types.h"
 
-class Root;
+class Object;
 class Attribute;
 class Completion;
 
+/** this class collects high-level commands that don't need any internal
+ * structures but just the object tree as the user sees it. Hence, this does
+ * not inherit from Object and is not exposed to the user as an object.
+*/
 class RootCommands {
 public:
-    // this class collects high-level commands that don't need any internal
-    // structures but just the object tree as the user sees it.
-    // Hence, this does not inherit from Object and is not exposed to the user as an object.
-    RootCommands(Root* root);
+    /** This object has no dependencies to other hlwm modules, and so the
+     * 'root' pointer held by this class is just an Object-pointer.
+     */
+    RootCommands(Object* root);
 
     Attribute* getAttribute(std::string path, Output output);
 
@@ -60,7 +64,7 @@ public:
     int unsetenvCommand(Input input, Output output);
     void completeEnvName(Completion& complete);
 private:
-    Root* root;
+    Object* root;
     std::vector<std::unique_ptr<Attribute>> userAttributes_;
 };
 

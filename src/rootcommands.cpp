@@ -11,9 +11,7 @@
 #include "attribute_.h"
 #include "command.h"
 #include "completion.h"
-#include "hlwmcommon.h"
 #include "ipc-protocol.h"
-#include "root.h"
 
 using std::endl;
 using std::function;
@@ -24,7 +22,7 @@ using std::vector;
 
 extern char** environ;
 
-RootCommands::RootCommands(Root* root_) : root(root_) {
+RootCommands::RootCommands(Object* root_) : root(root_) {
 }
 
 int RootCommands::get_attr_cmd(Input in, Output output) {
@@ -432,15 +430,14 @@ void RootCommands::attr_complete(Completion& complete)
 }
 
 int RootCommands::tryCommand(Input input, Output output) {
-    auto res = Root::common().callCommand(input.toVector());
-    output << res.second; // pass through output
+    Commands::call(input.fromHere(), output); // pass output
     return 0; // ignore exit code
 }
 
 int RootCommands::silentCommand(Input input, Output output) {
-    auto res = Root::common().callCommand(input.toVector());
+    std::stringstream dummyOutput;
     // drop output but pass exit code
-    return res.first;
+    return Commands::call(input.fromHere(), dummyOutput);
 }
 
 void RootCommands::completeCommandShifted1(Completion& complete) {
