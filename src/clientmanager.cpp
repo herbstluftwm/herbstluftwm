@@ -24,6 +24,7 @@ using std::string;
 
 ClientManager::ClientManager()
     : focus(*this, "focus")
+    , dragged(*this, "dragged")
 {
 }
 
@@ -90,6 +91,16 @@ void ClientManager::add(Client* client)
     clients_[client->window_] = client;
     client->needsRelayout.connect(needsRelayout);
     addChild(client, client->window_id_str);
+}
+
+void ClientManager::setDragged(Client* client) {
+    if (dragged()) {
+        dragged()->dragged_ = false;
+    }
+    dragged = client;
+    if (dragged()) {
+        dragged()->dragged_ = true;
+    }
 }
 
 void ClientManager::remove(Window window)
@@ -218,7 +229,8 @@ void ClientManager::unmap_notify(Window win) {
 }
 
 void ClientManager::force_unmanage(Client* client) {
-    if (client->dragged_) {
+    if (dragged() == client) {
+        dragged = nullptr;
         Root::get()->mouse->mouse_stop_drag();
     }
     if (client->tag() && client->slice) {

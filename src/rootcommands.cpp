@@ -443,3 +443,16 @@ int RootCommands::silentCommand(Input input, Output output) {
 void RootCommands::completeCommandShifted1(Completion& complete) {
     complete.completeCommands(0);
 }
+
+int RootCommands::echoCommand(Input input, Output output)
+{
+    string token;
+    bool first = true;
+    while (input >> token) {
+        output << (first ? "" : " ") << token;
+        first = false;
+    }
+    output << endl;
+    return 0;
+}
+

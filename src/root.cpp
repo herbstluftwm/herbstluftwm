@@ -43,12 +43,12 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     hooks.init();
     keys.init();
     monitors.init();
+    mouse.init();
     rules.init();
     settings.init();
     tags.init();
     theme.init();
     tmp.init();
-    mouse.init(); // needs MonitorManager (implicitly)
 
     // inject dependencies where needed
     ewmh->injectDependencies(this);
@@ -56,6 +56,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     tags->injectDependencies(monitors(), settings());
     clients->injectDependencies(settings(), theme(), ewmh.get());
     monitors->injectDependencies(settings(), tags());
+    mouse->injectDependencies(clients(), monitors());
 
     // set temporary globals
     ::global_tags = tags();

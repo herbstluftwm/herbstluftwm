@@ -257,3 +257,13 @@ def test_silent_command(hlwm):
 
     assert proc.returncode == 1
     assert proc.stdout == ''
+
+
+@pytest.mark.parametrize('args', [[], ['abc'], ['foo', 'bar']])
+def test_echo_command(hlwm, args):
+    assert hlwm.call(['echo'] + args).stdout == ' '.join(args) + '\n'
+
+
+def test_echo_completion(hlwm):
+    # check that the exit code is right
+    assert hlwm.complete('echo foo') == []

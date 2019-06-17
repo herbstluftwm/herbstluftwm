@@ -36,8 +36,11 @@ public:
     void force_unmanage(Window win);
     void force_unmanage(Client* client);
 
+    void setDragged(Client* client);
+
     Signal_<HSTag*> needsRelayout;
     Link_<Client> focus;
+    Link_<Client> dragged;
 
     int pseudotile_cmd(Input input, Output output);
     int fullscreen_cmd(Input input, Output output);
