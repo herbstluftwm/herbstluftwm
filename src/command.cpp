@@ -84,8 +84,6 @@ struct {
     bool    (*function)(int argc, char** argv, int pos);
 } g_parameter_expected[] = {
     { "!",              2,  parameter_expected_offset_1 },
-    { "try",            2,  parameter_expected_offset_1 },
-    { "silent",         2,  parameter_expected_offset_1 },
     { "focus_nth",      2,  no_completion },
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
@@ -188,8 +186,6 @@ struct {
     { "move_index",     EQ, 2,  nullptr, completion_use_index_args },
     { "or",             GE, 1,  complete_chain, 0 },
     { "!",              GE, 1,  complete_against_commands_1, 0 },
-    { "try",            GE, 1,  complete_against_commands_1, 0 },
-    { "silent",         GE, 1,  complete_against_commands_1, 0 },
     { "rename",         EQ, 1,  complete_against_tags, 0 },
     { "raise",          EQ, 1,  nullptr, completion_special_winids },
     { "raise",          EQ, 1,  complete_against_winids, 0 },
