@@ -19,7 +19,7 @@ class TreeInterface;
 /*! A class representing an entire tree of frames that provides
  * the tiling commands and other common actions on the frame tree
  */
-class FrameTree {
+class FrameTree : public std::enable_shared_from_this<FrameTree> {
 public:
     FrameTree(HSTag* tag, Settings* settings);
     void foreachClient(std::function<void(Client*)> action);
@@ -46,6 +46,8 @@ public:
     int cycleAllCommand(Input input, Output output);
     int cycleFrameCommand(Input input, Output output);
     int loadCommand(Input input, Output output);
+    int dumpLayoutCommand(Input input, Output output);
+    void dumpLayoutCompletion(Completion& complete);
     int cycleLayoutCommand(Input input, Output output);
     void cycleLayoutCompletion(Completion& complete);
 public: // soon to be come private:
