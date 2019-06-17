@@ -245,6 +245,20 @@ def test_compare_invalid_operator(hlwm):
         .expect_stderr('unknown operator')
 
 
+def test_try_command(hlwm):
+    proc = hlwm.unchecked_call('try chain , echo foo , false')
+
+    assert proc.returncode == 0
+    assert proc.stdout == 'foo\n'
+
+
+def test_silent_command(hlwm):
+    proc = hlwm.unchecked_call('silent chain , echo foo , false')
+
+    assert proc.returncode == 1
+    assert proc.stdout == ''
+
+
 @pytest.mark.parametrize('args', [[], ['abc'], ['foo', 'bar']])
 def test_echo_command(hlwm, args):
     assert hlwm.call(['echo'] + args).stdout == ' '.join(args) + '\n'
