@@ -3,7 +3,6 @@
 #include <getopt.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <cassert>
 #include <cerrno>
 #include <csignal>
 #include <cstdio>
