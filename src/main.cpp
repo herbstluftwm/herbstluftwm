@@ -59,8 +59,6 @@ static XMainLoop* g_main_loop = nullptr;
 
 int quit();
 int version(Output output);
-int try_command(int argc, char* argv[], Output output);
-int silent_command(int argc, char* argv[]);
 int print_tag_status_command(int argc, char** argv, Output output);
 void execute_autostart_file();
 int raise_command(int argc, char** argv, Output output);
@@ -92,8 +90,10 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                            &RootCommands::echoCompletion }},
         {"true",           {[] { return 0; }}},
         {"false",          {[] { return 1; }}},
-        {"try",            try_command},
-        {"silent",         silent_command},
+        {"try",            {root_commands, &RootCommands::tryCommand,
+                                           &RootCommands::completeCommandShifted1}},
+        {"silent",         {root_commands, &RootCommands::silentCommand,
+                                           &RootCommands::completeCommandShifted1}},
         {"reload",         {[] { execute_autostart_file(); return 0; }}},
         {"version",        { version }},
         {"list_commands",  { list_commands }},
@@ -227,23 +227,6 @@ int version(Output output) {
         output << d.name_ << " support: " << (d.detect_ ? "on" : "off") << endl;
     }
     return 0;
-}
-
-int try_command(int argc, char* argv[], Output output) {
-    if (argc <= 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    (void)SHIFT(argc, argv);
-    call_command(argc, argv, output);
-    return 0;
-}
-
-int silent_command(int argc, char* argv[]) {
-    if (argc <= 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    (void)SHIFT(argc, argv);
-    return call_command_no_output(argc, argv);
 }
 
 int print_tag_status_command(int argc, char** argv, Output output) {
