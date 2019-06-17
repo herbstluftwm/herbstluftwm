@@ -10,7 +10,6 @@
 #include "attribute_.h"
 #include "command.h"
 #include "completion.h"
-#include "hlwmcommon.h"
 #include "ipc-protocol.h"
 
 using std::endl;
