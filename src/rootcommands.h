@@ -52,6 +52,13 @@ public:
     void completeCommandShifted1(Completion& complete);
     int echoCommand(Input input, Output output);
     void echoCompletion(Completion& ) {}; // no completion
+
+    int setenvCommand(Input input, Output output);
+    void setenvCompletion(Completion& complete);
+    int getenvCommand(Input input, Output output);
+    void getenvUnsetenvCompletion(Completion& complete); //! completion for unsetenv and getenv
+    int unsetenvCommand(Input input, Output output);
+    void completeEnvName(Completion& complete);
 private:
     Root* root;
     std::vector<std::unique_ptr<Attribute>> userAttributes_;

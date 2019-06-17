@@ -130,9 +130,6 @@ struct {
     { "new_attr",       3,  no_completion },
     { "mktemp",         3,  parameter_expected_offset_3 },
     { "substitute",     3,  parameter_expected_offset_3 },
-    { "getenv",         2,  no_completion },
-    { "setenv",         3,  no_completion },
-    { "unsetenv",       2,  no_completion },
 };
 
 enum IndexCompare {
@@ -214,9 +211,6 @@ struct {
     { "pad",            EQ, 1,  complete_against_monitors, 0 },
     { "list_padding",   EQ, 1,  complete_against_monitors, 0 },
     { "tag_status",     EQ, 1,  complete_against_monitors, 0 },
-    { "setenv",         EQ, 1,  complete_against_env, 0 },
-    { "getenv",         EQ, 1,  complete_against_env, 0 },
-    { "unsetenv",       EQ, 1,  complete_against_env, 0 },
     { "compare",        EQ, 1,  complete_against_objects, 0 },
     { "compare",        EQ, 1,  complete_against_attributes, 0 },
     { "compare",        EQ, 2,  complete_against_comparators, 0 },
@@ -682,17 +676,6 @@ int complete_command(int argc, char** argv, Output output) {
         }
     }
     return complete_against_commands(argc, argv, position, output);
-}
-
-void complete_against_env(int argc, char** argv, int position,
-                          Output output) {
-    const char* needle = (position < argc) ? argv[position] : "";
-    for (char** env = environ; *env; ++env) {
-        vector<string> chunks = ArgList::split(*env, '=');
-        if (chunks.size() != 0) {
-            try_complete(needle, chunks[0].c_str(), output);
-        }
-    }
 }
 
 void complete_against_commands_1(int argc, char** argv, int position,
