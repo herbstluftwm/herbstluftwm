@@ -62,6 +62,53 @@ XMainLoop::XMainLoop(XConnection& X, Root* root)
     handlerTable_[ UnmapNotify       ] = EH(&XMainLoop::unmapnotify);
 }
 
+//! scan for windows and add them to the list of managed clients
+// from dwm.c
+void XMainLoop::scanExistingClients() {
+    XWindowAttributes wa;
+    Window transientFor;
+    auto clientmanager = root_->clients();
+    auto originalClients = root_->ewmh->originalClientList();
+    auto isInOriginalClients = [&originalClients] (Window win) {
+        return originalClients.end()
+            != std::find(originalClients.begin(), originalClients.end(), win);
+    };
+    for (auto win : X_.queryTree(X_.root())) {
+        if (!XGetWindowAttributes(X_.display(), win, &wa)
+            || wa.override_redirect
+            || XGetTransientForHint(X_.display(), win, &transientFor))
+        {
+            continue;
+        }
+        // only manage mapped windows.. no strange wins like:
+        //      luakit/dbus/(ncurses-)vim
+        // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
+        // the previous window manager
+        // TODO: what would dwm do?
+        if (root_->ewmh->isOwnWindow(win)) {
+            continue;
+        }
+        if (wa.map_state == IsViewable
+            || isInOriginalClients(win)) {
+            clientmanager->manage_client(win, true);
+            XMapWindow(X_.display(), win);
+        }
+    }
+    // ensure every original client is managed again
+    for (auto win : originalClients) {
+        if (clientmanager->client(win)) continue;
+        if (!XGetWindowAttributes(X_.display(), win, &wa)
+            || wa.override_redirect
+            || XGetTransientForHint(X_.display(), win, &transientFor))
+        {
+            continue;
+        }
+        XReparentWindow(X_.display(), win, X_.root(), 0,0);
+        clientmanager->manage_client(win, true);
+    }
+}
+
+
 void XMainLoop::run() {
     XEvent event;
     int x11_fd;
