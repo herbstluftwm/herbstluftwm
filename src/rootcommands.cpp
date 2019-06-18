@@ -1,6 +1,7 @@
 #include "rootcommands.h"
 
 #include <algorithm>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
