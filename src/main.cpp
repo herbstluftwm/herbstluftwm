@@ -3,11 +3,9 @@
 #include <getopt.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <cerrno>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
 #include <iostream>
 #include <vector>
 
@@ -66,9 +64,6 @@ int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(Input input);
 int jumpto_command(int argc, char** argv, Output output);
-int getenv_command(int argc, char** argv, Output output);
-int setenv_command(int argc, char** argv, Output output);
-int unsetenv_command(int argc, char** argv, Output output);
 
 unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     RootCommands* root_commands = root->root_commands.get();
@@ -196,9 +191,12 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"remove_attr",    { root_commands, &RootCommands::remove_attr_cmd,
                                             &RootCommands::remove_attr_complete }},
         {"compare",        BIND_OBJECT(root_commands, compare_cmd) },
-        {"getenv",         getenv_command},
-        {"setenv",         setenv_command},
-        {"unsetenv",       unsetenv_command},
+        {"getenv",         { root_commands, &RootCommands::getenvCommand,
+                                            &RootCommands::getenvUnsetenvCompletion}},
+        {"setenv",         { root_commands, &RootCommands::setenvCommand,
+                                            &RootCommands::setenvCompletion}},
+        {"unsetenv",       { root_commands, &RootCommands::unsetenvCommand,
+                                            &RootCommands::getenvUnsetenvCompletion}},
         {"get_attr",       { root_commands, &RootCommands::get_attr_cmd,
                                             &RootCommands::get_attr_complete }},
         {"set_attr",       { root_commands, &RootCommands::set_attr_cmd,
@@ -361,40 +359,6 @@ int jumpto_command(int argc, char** argv, Output output) {
         }
         return HERBST_INVALID_ARGUMENT;
     }
-}
-
-int getenv_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    char* envvar = getenv(argv[1]);
-    if (!envvar) {
-        return HERBST_ENV_UNSET;
-    }
-    output << envvar << "\n";
-    return 0;
-}
-
-int setenv_command(int argc, char** argv, Output output) {
-    if (argc < 3) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    if (setenv(argv[1], argv[2], 1) != 0) {
-        output << argv[0] << ": Could not set environment variable: " << strerror(errno) << "\n";
-        return HERBST_UNKNOWN_ERROR;
-    }
-    return 0;
-}
-
-int unsetenv_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    if (unsetenv(argv[1]) != 0) {
-        output << argv[0] << ": Could not unset environment variable: " << strerror(errno) << "\n";
-        return HERBST_UNKNOWN_ERROR;
-    }
-    return 0;
 }
 
 void execute_autostart_file() {

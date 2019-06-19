@@ -1,6 +1,8 @@
 #include "rootcommands.h"
 
 #include <algorithm>
+#include <cerrno>
+#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <iostream>
@@ -18,6 +20,8 @@ using std::pair;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+
+extern char** environ;
 
 RootCommands::RootCommands(Object* root_) : root(root_) {
 }
@@ -451,5 +455,75 @@ int RootCommands::echoCommand(Input input, Output output)
     }
     output << endl;
     return 0;
+}
+
+
+int RootCommands::setenvCommand(Input input, Output output) {
+    string name, value;
+    if (!(input >> name >> value)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    if (setenv(name.c_str(), value.c_str(), 1) != 0) {
+        output << input.command()
+               << ": Could not set environment variable: "
+               << strerror(errno) << endl;
+        return HERBST_UNKNOWN_ERROR;
+    }
+    return 0;
+}
+
+void RootCommands::setenvCompletion(Completion& complete) {
+    if (complete == 0) {
+        return completeEnvName(complete);
+    } else if (complete == 1) {
+        // no completion for the value
+    } else {
+        complete.none();
+    }
+}
+
+int RootCommands::getenvCommand(Input input, Output output) {
+    string name;
+    if (!(input >> name)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    char* envvar = getenv(name.c_str());
+    if (!envvar) {
+        return HERBST_ENV_UNSET;
+    }
+    output << envvar << endl;
+    return 0;
+}
+
+//! completion for unsetenv and getenv
+void RootCommands::getenvUnsetenvCompletion(Completion& complete) {
+    if (complete == 0) {
+        return completeEnvName(complete);
+    } else {
+        complete.none();
+    }
+}
+
+int RootCommands::unsetenvCommand(Input input, Output output) {
+    string name;
+    if (!(input >> name)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    if (unsetenv(name.c_str()) != 0) {
+        output << input.command()
+               << ": Could not unset environment variable: "
+               << strerror(errno) << endl;
+        return HERBST_UNKNOWN_ERROR;
+    }
+    return 0;
+}
+
+void RootCommands::completeEnvName(Completion& complete) {
+    for (char** env = environ; *env; ++env) {
+        vector<string> chunks = ArgList::split(*env, '=');
+        if (chunks.size() >= 1) {
+            complete.full(chunks[0]);
+        }
+    }
 }
 

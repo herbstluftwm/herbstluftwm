@@ -267,3 +267,40 @@ def test_echo_command(hlwm, args):
 def test_echo_completion(hlwm):
     # check that the exit code is right
     assert hlwm.complete('echo foo') == []
+
+
+@pytest.mark.parametrize('value', ['', 'bar'])
+def test_setenv_command(hlwm, value):
+    hlwm.call(['setenv', 'FOO', value])
+
+    assert hlwm.call('getenv FOO').stdout == value + '\n'
+
+
+def test_setenv_and_spawn(hlwm, hlwm_process):
+    hlwm.call(['setenv', 'FOO', 'bar'])
+
+    hlwm_process.read_and_echo_output()
+    hlwm.unchecked_call(['spawn', 'sh', '-c', 'echo FOO is $FOO .'],
+                        read_hlwm_output=False)
+    hlwm_process.read_and_echo_output(until_stdout='FOO is bar .')
+
+
+def test_setenv_completion_existing_var(hlwm):
+    hlwm.call('setenv FOO bar')
+
+    assert 'FOO' in hlwm.complete('setenv')
+
+
+def test_setenv_completion_unset_var(hlwm):
+    hlwm.call('unsetenv FOO')
+
+    assert 'FOO' not in hlwm.complete('setenv')
+
+
+def test_unsetenv_command(hlwm):
+    hlwm.call('setenv FOO bar')
+    hlwm.call('unsetenv FOO')
+
+    proc = hlwm.unchecked_call('getenv foo')
+
+    assert proc.returncode == 8

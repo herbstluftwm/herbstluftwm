@@ -177,7 +177,6 @@ void complete_against_arg_2(int argc, char** argv, int position, Output output);
 void complete_against_mouse_combinations(int argc, char** argv, int position,
                                       Output output);
 
-void complete_against_env(int argc, char** argv, int position, Output output);
 void complete_chain(int argc, char** argv, int position, Output output);
 
 int command_chain(char* separator, bool (*condition)(int laststatus),
