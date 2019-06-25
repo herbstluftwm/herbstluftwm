@@ -25,6 +25,7 @@ public:
     Rectangle windowSize(Window window);
     int windowPid(Window window);
     Atom atom(const char* atom_name);
+    std::string atomName(Atom atomIdentifier);
     std::pair<std::string, std::string> getClassHint(Window win);
     std::string getInstance(Window win) { return getClassHint(win).first; };
     std::string getClass(Window win) { return getClassHint(win).second; };
