@@ -245,7 +245,9 @@ bool Ewmh::focusStealingAllowed(long source) {
 }
 
 void Ewmh::handleClientMessage(XClientMessageEvent* me) {
-    HSDebug("Received event: ClientMessage\n");
+    HSDebug("Received event: ClientMessage: \"%s\" for %lx\n",
+            X_.atomName(me->message_type).c_str(),
+            me->window);
     int index;
     for (index = 0; index < NetCOUNT; index++) {
         if (me->message_type == g_netatom[index]) {

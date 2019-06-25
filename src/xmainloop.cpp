@@ -174,7 +174,7 @@ void XMainLoop::createnotify(XCreateWindowEvent* event) {
 }
 
 void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
-    HSDebug("name is: ConfigureRequest\n");
+    HSDebug("name is: ConfigureRequest for 0x%lx\n", cre->window);
     Client* client = root_->clients->client(cre->window);
     if (client) {
         bool changes = false;
@@ -313,7 +313,7 @@ void XMainLoop::mapnotify(XMapEvent* event) {
 }
 
 void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
-    HSDebug("name is: MapRequest\n");
+    HSDebug("name is: MapRequest for 0x%lx\n", mapreq->window);
     Window window = mapreq->window;
     Client* c = root_->clients()->client(window);
     if (root_->ewmh->isOwnWindow(window)
