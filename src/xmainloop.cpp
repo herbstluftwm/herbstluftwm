@@ -370,5 +370,17 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
 void XMainLoop::unmapnotify(XUnmapEvent* event) {
     HSDebug("name is: UnmapNotify for %lx\n", event->window);
     root_->clients()->unmap_notify(event->window);
+    if (event->send_event) {
+        // if the event was synthetic, then we need to understand it as a kind request
+        // by the window to be unmanaged. I don't understand fully how this is implied
+        // by the ICCCM documentation:
+        // https://tronche.com/gui/x/icccm/sec-4.html#s-4.1.4
+        //
+        // Anyway, we need to do the following because when running
+        // "telegram-desktop -startintray", a window flashes and only
+        // sends a synthetic UnmapNotify. So we unmanage the window here
+        // to forcefully make the window dissappear.
+        XUnmapWindow(X_.display(), event->window);
+    }
 }
 
