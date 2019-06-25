@@ -107,6 +107,14 @@ Atom XConnection::atom(const char* atom_name) {
     return XInternAtom(m_display, atom_name, False);
 }
 
+
+string XConnection::atomName(Atom atomIdentifier) {
+    char* name = XGetAtomName(m_display, atomIdentifier);
+    string res = name;
+    XFree(name);
+    return res;
+}
+
 //! The pid of a window or -1 if the pid is not set
 int XConnection::windowPid(Window window) {
     // TODO: move to Ewmh
