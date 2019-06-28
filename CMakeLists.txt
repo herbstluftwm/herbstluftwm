@@ -298,10 +298,11 @@ if(WITH_DOCUMENTATION)
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/doc/"
             # asciidoc doesn't support destination directory for manpages
             COMMAND ${CMAKE_COMMAND} -E copy ${src_orig} ${src}
+            STRING(TIMESTAMP BUILD_DATE "%Y-%m-%d" UTC)
             COMMAND ${ASCIIDOC_A2X}
                     -f manpage
                     -a \"herbstluftwmversion=herbstluftwm ${VERSION}\"
-                    -a \"date=`date +%Y-%m-%d`\"
+                    -a \"date=${BUILD_DATE}\"
                     ${src}
             DEPENDS ${src_orig}
         )

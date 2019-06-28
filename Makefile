@@ -93,7 +93,7 @@ tar: doc
 
 doc/%.1 doc/%.7: doc/%.txt version.mk
 	$(call colorecho,DOC,$@)
-	$(VERBOSE) $(A2X) -f manpage -a "herbstluftwmversion=herbstluftwm $(VERSION)" -a "date=`date +%Y-%m-%d`" $<
+	$(VERBOSE) $(A2X) -f manpage -a "herbstluftwmversion=herbstluftwm $(VERSION)" -a "date=`date -u -r NEWS %Y-%m-%d`" $<
 
 doc/%.html: doc/%.txt version.mk
 	$(call colorecho,DOC,$@)
