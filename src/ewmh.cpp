@@ -517,7 +517,7 @@ string Ewmh::getWindowTitle(Window win) {
 
 int Ewmh::getWindowType(Window win) {
     auto atoms = X_.getWindowPropertyAtom(win, g_netatom[NetWmWindowType]);
-    if (!atoms.has_value() || atoms.value().size() != 1) {
+    if (!atoms.has_value() || atoms.value().size() < 1) {
         return -1;
     }
     Atom windowtype = atoms.value()[0];
