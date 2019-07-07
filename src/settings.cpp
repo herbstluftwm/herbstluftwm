@@ -107,10 +107,10 @@ Settings::Settings()
     for (auto i : {&always_show_frame,
          &gapless_grid,
          &smart_frame_surroundings,
-         &smart_window_surroundings}) {
+         &smart_window_surroundings,
+         &raise_on_focus_temporarily}) {
         i->changed().connect(&all_monitors_apply_layout);
     }
-    raise_on_focus_temporarily.changed().connect(&tag_update_each_focus_layer);
     wmname.changed().connect([]() { Ewmh::get().updateWmName(); });
 
     default_frame_layout.setValidator([] (int layout) {

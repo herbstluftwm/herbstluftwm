@@ -249,7 +249,6 @@ void ClientManager::force_unmanage(Client* client) {
 
 
     // and arrange monitor after the client has been removed from the stack
-    tag_update_focus_layer(tag);
     needsRelayout.emit(tag);
     ewmh->removeClient(client->window_);
     tag_set_flags_dirty();

@@ -141,9 +141,33 @@ void Monitor::applyLayout() {
         cur_rect.height -= settings->frame_gap();
         cur_rect.width -= settings->frame_gap();
     }
-    restack();
     bool isFocused = get_current_monitor() == this;
     TilingResult res = tag->frame->root_->computeLayout(cur_rect);
+    // 1. Update stack (TODO: why stack first?)
+    for (auto& p : res.data) {
+        Client* c = p.first;
+        if (c->fullscreen_()) {
+            tag->stack->sliceAddLayer(c->slice, LAYER_FULLSCREEN);
+        } else {
+            tag->stack->sliceRemoveLayer(c->slice, LAYER_FULLSCREEN);
+        }
+        if (p.second.needsRaise) {
+            c->raise();
+        }
+    }
+    tag->stack->clearLayer(LAYER_FOCUS);
+    if (isFocused && res.focus) {
+        // activate the focus layer if requested by the setting
+        // or if there is a fullscreen client potentially covering
+        // the focused client
+        if (g_settings->raise_on_focus_temporarily()
+            || tag->stack->isLayerEmpty(LAYER_FULLSCREEN) == false)
+        {
+            tag->stack->sliceAddLayer(res.focus->slice, LAYER_FOCUS);
+        }
+    }
+    restack();
+    // 2. Update window geometries
     if (tag->floating) {
         for (auto& p : res.data) {
             p.second.floated = true;
@@ -157,9 +181,6 @@ void Monitor::applyLayout() {
             c->resize_floating(this, res.focus == c && isFocused);
         } else {
             c->resize_tiling(p.second.geometry, res.focus == c && isFocused);
-        }
-        if (p.second.needsRaise) {
-            c->raise();
         }
     }
     if (tag->floating) {

@@ -6,7 +6,7 @@ set(FLAGS
     -Werror
 
     # Sanitizers:
-    -fsanitize=address,leak,undefined
+    #-fsanitize=address,leak,undefined
 
     # All kinds of pedantic warnings:
     -pedantic -Wall -Wextra
