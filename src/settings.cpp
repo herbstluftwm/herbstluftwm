@@ -9,7 +9,6 @@
 #include "ipc-protocol.h"
 #include "monitormanager.h"
 #include "root.h"
-#include "tag.h"
 #include "utils.h"
 
 using std::endl;

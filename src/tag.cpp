@@ -11,7 +11,6 @@
 #include "layout.h"
 #include "monitor.h"
 #include "root.h"
-#include "settings.h"
 #include "stack.h"
 #include "tagmanager.h"
 #include "types.h"
