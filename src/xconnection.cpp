@@ -71,7 +71,7 @@ int xerror(Display *dpy, XErrorEvent *ee) {
     fprintf(stderr, "herbstluftwm: fatal error: request code=%d, error code=%d\n",
             ee->request_code, ee->error_code);
     if (ee->error_code == BadDrawable) {
-        HSDebug("Warning: ignoring X_BadDrawable");
+        HSDebug("Warning: ignoring X_BadDrawable\n");
         return 0;
     }
     return g_xerrorxlib(dpy, ee); /* may call exit */
