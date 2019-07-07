@@ -170,8 +170,6 @@ void Stack::sliceRemoveLayer(Slice* slice, HSLayer layer) {
     dirty = true;
 
     if (slice->layers.count(layer) == 0) {
-        HSDebug("remove layer: slice %p not in %s\n", (void*)slice,
-                g_layer_names[layer]);
         return;
     }
 

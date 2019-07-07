@@ -158,7 +158,6 @@ void Client::window_unfocus_last() {
         /* only emit the hook if the focus *really* changes */
         hook_emit({"focus_changed", "0x0", ""});
         Ewmh::get().updateActiveWindow(None);
-        tag_update_each_focus_layer();
 
         // Enable all keys in the root window
         Root::get()->keys()->clearActiveKeyMask();
@@ -183,7 +182,6 @@ void Client::window_focus() {
             lastfocus->window_unfocus();
         }
         ewmh.updateActiveWindow(this->window_);
-        tag_update_each_focus_layer();
         hook_emit({"focus_changed", WindowID(window_).str(), title_()});
     }
 
@@ -192,14 +190,6 @@ void Client::window_focus() {
     //client_setup_border(client, true);
 
     lastfocus = this;
-    /* do some specials for the max layout */
-    bool is_max_layout = HSFrame::getGloballyFocusedFrame()->focusedClient() == this
-                         && HSFrame::getGloballyFocusedFrame()->getLayout() == LayoutAlgorithm::max
-                         && get_current_monitor()->tag->floating == false;
-    if (settings.raise_on_focus() || is_max_layout) {
-        this->raise();
-    }
-    tag_update_focus_layer(get_current_monitor()->tag);
     Root::get()->mouse->grab_client_buttons(this, true);
 
     // XXX: At this point, ClientManager does not yet know about the focus
@@ -527,13 +517,6 @@ void Client::set_fullscreen(bool state) {
     if (this->ewmhnotify_) {
         this->ewmhfullscreen_ = state;
     }
-    auto stack = this->tag()->stack;
-    if (state) {
-        stack->sliceAddLayer(this->slice, LAYER_FULLSCREEN);
-    } else {
-        stack->sliceRemoveLayer( this->slice, LAYER_FULLSCREEN);
-    }
-    tag_update_focus_layer(this->tag());
     auto m = find_monitor_with_tag(this->tag());
     if (m) m->applyLayout();
 

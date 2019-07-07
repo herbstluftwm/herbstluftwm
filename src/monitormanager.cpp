@@ -434,6 +434,7 @@ int MonitorManager::setMonitors(const RectangleVec& templates) {
     unsigned i;
     for (i = 0; i < std::min(templates.size(), size()); i++) {
         auto m = byIdx(i);
+        if (!m) continue;
         m->rect = templates[i];
     }
     // add additional monitors
