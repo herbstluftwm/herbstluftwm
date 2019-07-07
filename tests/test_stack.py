@@ -17,14 +17,11 @@ def helper_get_stack_as_list(hlwm, clients_only=True):
         # extract all window IDs out of the stack command
         return re.findall(r'0x[0-9a-f]+', hlwm.call('stack').stdout)
 
-# in tiling mode, the focus layer is used. (similar to floating mode with
-# raise_on_focus_temporarily = true). So we test the stacking in floating
-# mode.
 
-
+@pytest.mark.parametrize('floatingmode', ['on', 'off'])
 @pytest.mark.parametrize('count', [2, 5])
-def test_clients_stacked_in_reverse_order_of_creation(hlwm, count):
-    hlwm.call('floating on')
+def test_clients_stacked_in_reverse_order_of_creation(hlwm, floatingmode, count):
+    hlwm.call(['floating', floatingmode])
 
     clients = hlwm.create_clients(count)
 
@@ -32,8 +29,9 @@ def test_clients_stacked_in_reverse_order_of_creation(hlwm, count):
     assert helper_get_stack_as_list(hlwm) == clients
 
 
-def test_raise_client_already_on_top(hlwm):
-    hlwm.call('floating on')
+@pytest.mark.parametrize('floatingmode', ['on', 'off'])
+def test_raise_client_already_on_top(hlwm, floatingmode):
+    hlwm.call(['floating', floatingmode])
     c1, c2 = hlwm.create_clients(2)
 
     hlwm.call(['raise', c2])
@@ -101,7 +99,6 @@ def test_stack_tree(hlwm):
   -
     - Monitor 1 ("monitor2") with tag "tag2"
       - Focus-Layer
-        - Client <windowid> "bash"
       - Fullscreen-Layer
       - Normal Layer
         - Client <windowid> "bash"
@@ -110,7 +107,6 @@ def test_stack_tree(hlwm):
         - Window <windowid>
     - Monitor 0 with tag "default"
       - Focus-Layer
-        - Client <windowid> "bash"
       - Fullscreen-Layer
       - Normal Layer
         - Client <windowid> "bash"
