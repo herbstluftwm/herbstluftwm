@@ -125,6 +125,13 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
 
     // apply rules
     ClientChanges changes = Root::get()->rules()->evaluateRules(client);
+    if (!changes.manage) {
+        // map it... just to be sure
+        XMapWindow(g_display, win);
+        delete client;
+        return {};
+    }
+
     if (!changes.tag_name.empty()) {
         client->setTag(find_tag(changes.tag_name.c_str()));
     }
@@ -155,12 +162,6 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
 
     // Reuse the keymask string
     client->keyMask_ = changes.keyMask;
-
-    if (!changes.manage) {
-        // map it... just to be sure
-        XMapWindow(g_display, win);
-        return {}; // client gets destroyed
-    }
 
     // actually manage it
     client->dec->createWindow();
