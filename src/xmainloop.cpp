@@ -382,5 +382,9 @@ void XMainLoop::unmapnotify(XUnmapEvent* event) {
         // to forcefully make the window dissappear.
         XUnmapWindow(X_.display(), event->window);
     }
+    // drop all enternotify events
+    XSync(X_.display(), False);
+    XEvent ev;
+    while (XCheckMaskEvent(X_.display(), EnterWindowMask, &ev));
 }
 
