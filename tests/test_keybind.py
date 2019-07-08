@@ -88,7 +88,7 @@ def test_keymask(hlwm, keyboard, maskmethod, whenbind, refocus):
     if maskmethod == 'rule':
         hlwm.call('rule once keymask=^x$')
 
-    _, client_proc = hlwm.create_client(term_command='read -n 1')
+    winid, client_proc = hlwm.create_client(term_command='read -n 1')
 
     if maskmethod == 'set_attr':
         hlwm.call('set_attr clients.focus.keymask ^x$')
@@ -99,6 +99,7 @@ def test_keymask(hlwm, keyboard, maskmethod, whenbind, refocus):
         hlwm.create_client()
         hlwm.call('cycle +1')
         hlwm.call('cycle -1')
+    assert hlwm.get_attr('clients.focus.winid') == winid
 
     keyboard.press('x')
 
@@ -124,6 +125,8 @@ def test_invalid_keymask_has_no_effect(hlwm, keyboard, maskmethod):
         # Note: In future work, we could make this fail right away. But
         # currently, that is not the case.
         hlwm.call('set_attr clients.focus.keymask [b-a]')
+
+    hlwm.call('true')
 
     keyboard.press('x')
 
