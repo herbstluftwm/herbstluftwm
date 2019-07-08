@@ -18,6 +18,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     pkg-config \
     python3.7 \
     tox \
+    valgrind \
     xdotool \
     xterm \
     xvfb \
