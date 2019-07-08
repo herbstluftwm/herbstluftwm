@@ -269,7 +269,7 @@ class HlwmProcess:
         autostart.chmod(0o755)
         bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen(
-            [bin_path, '--verbose'], env=env,
+            ['valgrind', '--tool=memcheck', '--error-exitcode=3', bin_path, '--verbose'], env=env,
             bufsize=0,  # essential for reading output with selectors!
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
