@@ -61,7 +61,6 @@ build_env = os.environ.copy()
 build_env.update({
     'CC': args.cc,
     'CXX': args.cxx,
-    'CXXFLAGS': '-fsanitize=address,leak,undefined',
 })
 
 cmake_args = [
