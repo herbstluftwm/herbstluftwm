@@ -11,7 +11,6 @@
 #include "layout.h"
 #include "monitor.h"
 #include "root.h"
-#include "settings.h"
 #include "stack.h"
 #include "tagmanager.h"
 #include "types.h"
@@ -145,37 +144,5 @@ HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
         }
     }
     return nullptr;
-}
-
-void tag_update_focus_layer(HSTag* tag) {
-    Client* focus = tag->frame->root_->focusedClient();
-    tag->stack->clearLayer(LAYER_FOCUS);
-    if (focus) {
-        // enforce raise_on_focus_temporarily if there is at least one
-        // fullscreen window or if the tag is in tiling mode
-        if (!tag->stack->isLayerEmpty(LAYER_FULLSCREEN)
-            || g_settings->raise_on_focus_temporarily()
-            || focus->tag()->floating == false) {
-            tag->stack->sliceAddLayer(focus->slice, LAYER_FOCUS);
-        }
-    }
-    Monitor* monitor = find_monitor_with_tag(tag);
-    if (monitor) {
-        monitor->restack();
-    }
-}
-
-void tag_foreach(void (*action)(HSTag*,void*), void* data) {
-    for (auto tag : *global_tags) {
-        action(&* tag, data);
-    }
-}
-
-static void tag_update_focus_layer_helper(HSTag* tag, void* data) {
-    (void) data;
-    tag_update_focus_layer(tag);
-}
-void tag_update_each_focus_layer() {
-    tag_foreach(tag_update_focus_layer_helper, nullptr);
 }
 

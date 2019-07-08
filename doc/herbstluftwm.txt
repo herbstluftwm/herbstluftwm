@@ -1138,7 +1138,8 @@ Valid 'properties' are:
     you can build rules that only live for a certain time.)
 
 +windowtype+::
-    matches the _NET_WM_WINDOW_TYPE property of a window.
+    matches the _NET_WM_WINDOW_TYPE property of a window. If _NET_WM_WINDOW_TYPE
+    has multiple entries, then only the first entry is used here.
 
 +windowrole+::
     matches the WM_WINDOW_ROLE property of a window if it is set by the window.

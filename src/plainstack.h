@@ -12,7 +12,7 @@ public:
         data_.insert(data_.begin(), element);
     }
     void remove(const T& element) {
-        data_.erase(std::remove(data_.begin(), data_.end(), element));
+        data_.erase(std::remove(data_.begin(), data_.end(), element), data_.end());
     }
     void raise(const T& element) {
         auto it = std::find(data_.begin(), data_.end(), element);
