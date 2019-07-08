@@ -315,7 +315,7 @@ def test_bool_consequence_with_corresponding_attribute(hlwm, name, value):
     assert hlwm.get_attr('clients.{}.{}'.format(winid, name)) == hlwm.bool(value)
 
 
-@pytest.mark.parametrize('manage', ['on','off'])
+@pytest.mark.parametrize('manage', ['on', 'off'])
 def test_unmanage(hlwm, x11, manage):
     hlwm.call(['rule', 'once', 'manage=' + manage])
 
