@@ -56,6 +56,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     window_id_str = WindowID(window).str();
     keyMask_.setWriteable();
     ewmhnotify_.setWriteable();
+    ewmhrequests_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_}) {
         i->setWriteable();
         i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
