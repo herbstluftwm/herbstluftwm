@@ -244,9 +244,10 @@ bool Ewmh::focusStealingAllowed(long source) {
     }
 }
 
-void Ewmh::handleClientMessage(XEvent* event) {
-    HSDebug("Received event: ClientMessage\n");
-    XClientMessageEvent* me = &(event->xclient);
+void Ewmh::handleClientMessage(XClientMessageEvent* me) {
+    HSDebug("Received event: ClientMessage: \"%s\" for %lx\n",
+            X_.atomName(me->message_type).c_str(),
+            me->window);
     int index;
     for (index = 0; index < NetCOUNT; index++) {
         if (me->message_type == g_netatom[index]) {
@@ -514,9 +515,14 @@ string Ewmh::getWindowTitle(Window win) {
     return "";
 }
 
+/** Return the window type of the given window. If there are mutliple entries, then
+ * only the first window type entry is returned. The return value is an enum value between
+ * NetWmWindowTypeFIRST and NetWmWindowTypeLAST (inclusive). Any other window
+ * type is not recognized and leads to -1 being returned.
+ */
 int Ewmh::getWindowType(Window win) {
     auto atoms = X_.getWindowPropertyAtom(win, g_netatom[NetWmWindowType]);
-    if (!atoms.has_value() || atoms.value().size() != 1) {
+    if (!atoms.has_value() || atoms.value().size() < 1) {
         return -1;
     }
     Atom windowtype = atoms.value()[0];

@@ -55,7 +55,7 @@ class HlwmBridge:
             args = shlex.split(cmd)
         return args
 
-    def unchecked_call(self, cmd, log_output=True):
+    def unchecked_call(self, cmd, log_output=True, read_hlwm_output=True):
         """call the command but do not check exit code or stderr"""
         args = self._parse_command(cmd)
 
@@ -83,7 +83,8 @@ class HlwmBridge:
 
         # Take this opportunity read and echo any hlwm output captured in the
         # meantime:
-        self.hlwm_process.read_and_echo_output()
+        if read_hlwm_output:
+            self.hlwm_process.read_and_echo_output()
 
         return proc
 

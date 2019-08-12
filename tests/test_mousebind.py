@@ -70,12 +70,15 @@ def test_overlapping_bindings_most_recent_one_counts(hlwm, mouse):
     assert hlwm.get_attr('my_press') == 'secondbind'
 
 
-def test_complete_mousebind_offers_all_mods_and_buttons(hlwm):
-    complete = hlwm.complete('mousebind', partial=True, position=1)
+@pytest.mark.parametrize('prefix', ['', 'Mod1+'])
+def test_complete_mousebind_offers_all_mods_and_buttons(hlwm, prefix):
+    complete = hlwm.complete(['mousebind', prefix], partial=True, position=1)
 
     buttons = sum(([f'Button{i}', f'B{i}'] for i in MOUSE_BUTTONS_THAT_EXIST), [])
     mods = ['Alt', 'Control', 'Ctrl', 'Mod1', 'Mod2', 'Mod3', 'Mod4', 'Mod5', 'Shift', 'Super']
-    assert sorted(c[:-1] for c in complete) == sorted(mods + buttons)
+    if prefix == 'Mod1+':
+        mods = [m for m in mods if m not in ['Mod1', 'Alt']]
+    assert sorted(c[:-1] for c in complete) == sorted(prefix + i for i in mods + buttons)
 
 
 def test_complete_mousebind_after_button_offers_action(hlwm):

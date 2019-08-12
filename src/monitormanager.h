@@ -29,6 +29,7 @@ public:
     void clearChildren();
     void ensure_monitors_are_available();
     Monitor* byString(std::string str);
+    Monitor* byTag(HSTag* tag);
     int list_monitors(Output output);
     int list_padding(Input input, Output output);
     int string_to_monitor_index(std::string string);

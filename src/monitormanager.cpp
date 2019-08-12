@@ -184,13 +184,21 @@ function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
     };
 }
 
-void MonitorManager::relayoutTag(HSTag *tag)
-{
+
+Monitor* MonitorManager::byTag(HSTag* tag) {
     for (Monitor* m : *this) {
         if (m->tag == tag) {
-            m->applyLayout();
-            break;
+            return m;
         }
+    }
+    return nullptr;
+}
+
+void MonitorManager::relayoutTag(HSTag* tag)
+{
+    Monitor* m = byTag(tag);
+    if (m) {
+        m->applyLayout();
     }
 }
 
@@ -426,6 +434,7 @@ int MonitorManager::setMonitors(const RectangleVec& templates) {
     unsigned i;
     for (i = 0; i < std::min(templates.size(), size()); i++) {
         auto m = byIdx(i);
+        if (!m) continue;
         m->rect = templates[i];
     }
     // add additional monitors

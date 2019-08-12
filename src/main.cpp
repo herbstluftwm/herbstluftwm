@@ -3,12 +3,9 @@
 #include <getopt.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <cassert>
-#include <cerrno>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
 #include <iostream>
 #include <vector>
 
@@ -50,8 +47,6 @@ int g_verbose = 0;
 Display*    g_display;
 int         g_screen;
 Window      g_root;
-int         g_screen_width;
-int         g_screen_height;
 
 // module internals:
 static char*    g_autostart_path = nullptr; // if not set, then find it in $HOME or $XDG_CONFIG_HOME
@@ -61,12 +56,6 @@ static XMainLoop* g_main_loop = nullptr;
 
 int quit();
 int version(Output output);
-int echo(int argc, char* argv[], Output output);
-int true_command();
-int false_command();
-int try_command(int argc, char* argv[], Output output);
-int silent_command(int argc, char* argv[]);
-int print_layout_command(int argc, char** argv, Output output);
 int print_tag_status_command(int argc, char** argv, Output output);
 void execute_autostart_file();
 int raise_command(int argc, char** argv, Output output);
@@ -75,9 +64,6 @@ int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(Input input);
 int jumpto_command(int argc, char** argv, Output output);
-int getenv_command(int argc, char** argv, Output output);
-int setenv_command(int argc, char** argv, Output output);
-int unsetenv_command(int argc, char** argv, Output output);
 
 unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     RootCommands* root_commands = root->root_commands.get();
@@ -94,11 +80,14 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     std::initializer_list<pair<const string,CommandBinding>> init =
     {
         {"quit",           { quit } },
-        {"echo",           echo},
+        {"echo",           {root_commands, &RootCommands::echoCommand,
+                                           &RootCommands::echoCompletion }},
         {"true",           {[] { return 0; }}},
         {"false",          {[] { return 1; }}},
-        {"try",            try_command},
-        {"silent",         silent_command},
+        {"try",            {root_commands, &RootCommands::tryCommand,
+                                           &RootCommands::completeCommandShifted1}},
+        {"silent",         {root_commands, &RootCommands::silentCommand,
+                                           &RootCommands::completeCommandShifted1}},
         {"reload",         {[] { execute_autostart_file(); return 0; }}},
         {"version",        { version }},
         {"list_commands",  { list_commands }},
@@ -176,9 +165,11 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"unrule",         {rules, &RuleManager::unruleCommand,
                                    &RuleManager::unruleCompletion}},
         {"list_rules",     {[rules] (Output o) { return rules->listRulesCommand(o); }}},
-        {"layout",         print_layout_command},
+        {"layout",         { tags->frameCommand(&FrameTree::dumpLayoutCommand),
+                             tags->frameCompletion(&FrameTree::dumpLayoutCompletion) }},
         {"stack",          { monitors, &MonitorManager::stackCommand }},
-        {"dump",           print_layout_command},
+        {"dump",           { tags->frameCommand(&FrameTree::dumpLayoutCommand),
+                             tags->frameCompletion(&FrameTree::dumpLayoutCompletion) }},
         {"load",           { tags->frameCommand(&FrameTree::loadCommand) }},
         {"complete",       complete_command},
         {"complete_shell", complete_command},
@@ -200,9 +191,12 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"remove_attr",    { root_commands, &RootCommands::remove_attr_cmd,
                                             &RootCommands::remove_attr_complete }},
         {"compare",        BIND_OBJECT(root_commands, compare_cmd) },
-        {"getenv",         getenv_command},
-        {"setenv",         setenv_command},
-        {"unsetenv",       unsetenv_command},
+        {"getenv",         { root_commands, &RootCommands::getenvCommand,
+                                            &RootCommands::getenvUnsetenvCompletion}},
+        {"setenv",         { root_commands, &RootCommands::setenvCommand,
+                                            &RootCommands::setenvCompletion}},
+        {"unsetenv",       { root_commands, &RootCommands::unsetenvCommand,
+                                            &RootCommands::getenvUnsetenvCompletion}},
         {"get_attr",       { root_commands, &RootCommands::get_attr_cmd,
                                             &RootCommands::get_attr_complete }},
         {"set_attr",       { root_commands, &RootCommands::set_attr_cmd,
@@ -228,62 +222,6 @@ int version(Output output) {
     output << "Released under the Simplified BSD License" << endl;
     for (const auto& d : MonitorDetection::detectors()) {
         output << d.name_ << " support: " << (d.detect_ ? "on" : "off") << endl;
-    }
-    return 0;
-}
-
-int echo(int argc, char* argv[], Output output) {
-    if (SHIFT(argc, argv)) {
-        // if there still is an argument
-        output << argv[0];
-        while (SHIFT(argc, argv)) {
-            output << " " << argv[0];
-        }
-    }
-    output << '\n';
-    return 0;
-}
-
-int try_command(int argc, char* argv[], Output output) {
-    if (argc <= 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    (void)SHIFT(argc, argv);
-    call_command(argc, argv, output);
-    return 0;
-}
-
-int silent_command(int argc, char* argv[]) {
-    if (argc <= 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    (void)SHIFT(argc, argv);
-    return call_command_no_output(argc, argv);
-}
-
-// prints or dumps the layout of an given tag
-// first argument tells whether to print or to dump
-int print_layout_command(int argc, char** argv, Output output) {
-    HSTag* tag = nullptr;
-    // an empty argv[1] means current focused tag
-    if (argc >= 2 && argv[1][0] != '\0') {
-        tag = find_tag(argv[1]);
-        if (!tag) {
-            output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    } else { // use current tag
-        Monitor* m = get_current_monitor();
-        tag = m->tag;
-    }
-    assert(tag);
-
-    shared_ptr<HSFrame> frame = tag->frame->lookup(argc >= 3 ? argv[2] : "");
-    assert(frame);
-    if (argc > 0 && !strcmp(argv[0], "dump")) {
-        FrameTree::dump(frame, output);
-    } else {
-        FrameTree::prettyPrint(frame, output);
     }
     return 0;
 }
@@ -423,87 +361,6 @@ int jumpto_command(int argc, char** argv, Output output) {
     }
 }
 
-int getenv_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    char* envvar = getenv(argv[1]);
-    if (!envvar) {
-        return HERBST_ENV_UNSET;
-    }
-    output << envvar << "\n";
-    return 0;
-}
-
-int setenv_command(int argc, char** argv, Output output) {
-    if (argc < 3) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    if (setenv(argv[1], argv[2], 1) != 0) {
-        output << argv[0] << ": Could not set environment variable: " << strerror(errno) << "\n";
-        return HERBST_UNKNOWN_ERROR;
-    }
-    return 0;
-}
-
-int unsetenv_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    if (unsetenv(argv[1]) != 0) {
-        output << argv[0] << ": Could not unset environment variable: " << strerror(errno) << "\n";
-        return HERBST_UNKNOWN_ERROR;
-    }
-    return 0;
-}
-
-// scan for windows and add them to the list of managed clients
-// from dwm.c
-void scan(Root* root) {
-    XWindowAttributes wa;
-    Window transientFor;
-    auto& X = root->X;
-    auto clientmanager = root->clients();
-    auto originalClients = root->ewmh->originalClientList();
-    auto isInOriginalClients = [&originalClients] (Window win) {
-        return originalClients.end()
-            != std::find(originalClients.begin(), originalClients.end(), win);
-    };
-    for (auto win : X.queryTree(X.root())) {
-        if (!XGetWindowAttributes(X.display(), win, &wa)
-            || wa.override_redirect
-            || XGetTransientForHint(X.display(), win, &transientFor))
-        {
-            continue;
-        }
-        // only manage mapped windows.. no strange wins like:
-        //      luakit/dbus/(ncurses-)vim
-        // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
-        // the previous window manager
-        // TODO: what would dwm do?
-        if (root->ewmh->isOwnWindow(win)) {
-            continue;
-        }
-        if (wa.map_state == IsViewable
-            || isInOriginalClients(win)) {
-            clientmanager->manage_client(win, true);
-            XMapWindow(X.display(), win);
-        }
-    }
-    // ensure every original client is managed again
-    for (auto win : originalClients) {
-        if (clientmanager->client(win)) continue;
-        if (!XGetWindowAttributes(X.display(), win, &wa)
-            || wa.override_redirect
-            || XGetTransientForHint(X.display(), win, &transientFor))
-        {
-            continue;
-        }
-        XReparentWindow(X.display(), win, X.root(), 0,0);
-        clientmanager->manage_client(win, true);
-    }
-}
-
 void execute_autostart_file() {
     string path;
     if (g_autostart_path) {
@@ -617,10 +474,8 @@ int main(int argc, char* argv[]) {
     sigaction_signal(SIGTERM, handle_signal);
     // set some globals
     g_screen = X->screen();
-    g_screen_width = X->screenWidth();
-    g_screen_height = X->screenHeight();
     g_root = X->root();
-    XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
+    XSelectInput(X->display(), X->root(), SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
 
     // setup ipc server
     IpcServer* ipcServer = new IpcServer(*X);
@@ -631,17 +486,18 @@ int main(int argc, char* argv[]) {
 
     Commands::initialize(commands(root));
 
+    XMainLoop mainloop(*X, root.get());
+    g_main_loop = &mainloop;
+
     // setup
     root->monitors()->ensure_monitors_are_available();
-    scan(root.get());
+    mainloop.scanExistingClients();
     tag_force_update_flags();
     all_monitors_apply_layout();
     root->ewmh->updateAll();
     execute_autostart_file();
 
     // main loop
-    XMainLoop mainloop(*X, root.get());
-    g_main_loop = &mainloop;
     mainloop.run();
 
     // enforce to clear the root

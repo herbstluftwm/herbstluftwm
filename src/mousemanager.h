@@ -8,14 +8,22 @@
 #include "optional.h"
 #include "x11-types.h"
 
+class ClientManager;
 class Completion;
+class MonitorManager;
 
 typedef void (MouseManager::*MouseDragFunction)(Point2D);
 
 class MouseManager : public Object {
 public:
+    enum class Mode {
+        NoDrag,
+        DraggingClient,
+    };
     MouseManager();
     ~MouseManager();
+
+    void injectDependencies(ClientManager* clients, MonitorManager* monitors);
 
     int addMouseBindCommand(Input input, Output output);
 
@@ -28,7 +36,6 @@ public:
     int mouse_unbind_all(Output o);
     std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button);
 
-    unsigned int string2button(const char* name);
     MouseFunction string2mousefunction(const char* name);
 
     void grab_client_buttons(Client* client, bool focused);
@@ -49,10 +56,16 @@ public:
     void mouse_function_zoom(Point2D newCursorPos);
 
 private:
+    //! check whether we can continue dragging
+    bool draggingIsStillSafe();
+    Mode mode_;
     Cursor cursor;
+    ClientManager*  clients_;
+    MonitorManager*  monitors_;
     Point2D          buttonDragStart_;
     Rectangle        winDragStart_;
     Client*        winDragClient_ = nullptr;
     Monitor*       dragMonitor_ = nullptr;
+    unsigned int dragMonitorIndex_ = 0;
     MouseDragFunction dragFunction_ = nullptr;
 };

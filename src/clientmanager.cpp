@@ -24,6 +24,7 @@ using std::string;
 
 ClientManager::ClientManager()
     : focus(*this, "focus")
+    , dragged(*this, "dragged")
 {
 }
 
@@ -36,7 +37,7 @@ ClientManager::~ClientManager()
         XMoveResizeWindow(g_display, window, r.x, r.y, r.width, r.height);
         XReparentWindow(g_display, window, g_root, r.x, r.y);
         ewmh->updateFrameExtents(window, 0,0,0,0);
-        window_set_visible(window, true);
+        XMapWindow(g_display, window);
         delete c.second;
     }
 }
@@ -92,6 +93,16 @@ void ClientManager::add(Client* client)
     addChild(client, client->window_id_str);
 }
 
+void ClientManager::setDragged(Client* client) {
+    if (dragged()) {
+        dragged()->dragged_ = false;
+    }
+    dragged = client;
+    if (dragged()) {
+        dragged()->dragged_ = true;
+    }
+}
+
 void ClientManager::remove(Window window)
 {
     removeChild(*clients_[window]->window_id_str);
@@ -114,6 +125,13 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
 
     // apply rules
     ClientChanges changes = Root::get()->rules()->evaluateRules(client);
+    if (!changes.manage) {
+        // map it... just to be sure
+        XMapWindow(g_display, win);
+        delete client;
+        return {};
+    }
+
     if (!changes.tag_name.empty()) {
         client->setTag(find_tag(changes.tag_name.c_str()));
     }
@@ -144,12 +162,6 @@ Client* ClientManager::manage_client(Window win, bool visible_already) {
 
     // Reuse the keymask string
     client->keyMask_ = changes.keyMask;
-
-    if (!changes.manage) {
-        // map it... just to be sure
-        XMapWindow(g_display, win);
-        return {}; // client gets destroyed
-    }
 
     // actually manage it
     client->dec->createWindow();
@@ -218,7 +230,8 @@ void ClientManager::unmap_notify(Window win) {
 }
 
 void ClientManager::force_unmanage(Client* client) {
-    if (client->dragged_) {
+    if (dragged() == client) {
+        dragged = nullptr;
         Root::get()->mouse->mouse_stop_drag();
     }
     if (client->tag() && client->slice) {
@@ -237,7 +250,6 @@ void ClientManager::force_unmanage(Client* client) {
 
 
     // and arrange monitor after the client has been removed from the stack
-    tag_update_focus_layer(tag);
     needsRelayout.emit(tag);
     ewmh->removeClient(client->window_);
     tag_set_flags_dirty();

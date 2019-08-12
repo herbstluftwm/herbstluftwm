@@ -12,6 +12,7 @@
 #include "monitor.h"
 #include "stack.h"
 #include "tag.h"
+#include "tagmanager.h"
 #include "utils.h"
 
 using std::endl;
@@ -590,6 +591,48 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
     } else if (complete <= layoutAlgorithmCount()) {
         // it does not make sense to mention layout names multiple times
         Converter<LayoutAlgorithm>::complete(complete, nullptr);
+    } else {
+        complete.none();
+    }
+}
+
+//! Implementation of the commands "dump" and "layout"
+int FrameTree::dumpLayoutCommand(Input input, Output output) {
+    shared_ptr<HSFrame> frame = root_;
+    string tagName;
+    if (input >> tagName) {
+        shared_ptr<FrameTree> tree = shared_from_this();
+        // an empty tagName means 'current tag'
+        // (this is a special case that is not handled by find_tag()
+        // so we handle it explicitly here)
+        if (tagName != "") {
+            HSTag* tag = find_tag(tagName.c_str());
+            if (!tag) {
+                output << input.command() << ": Tag \"" << tagName << "\" not found\n";
+                return HERBST_INVALID_ARGUMENT;
+            }
+            tree = tag->frame;
+        }
+        string frameIndex;
+        if (input >> frameIndex) {
+            frame = tree->lookup(frameIndex);
+        } else {
+            frame = tree->root_;
+        }
+    }
+    if (input.command() == "dump") {
+        FrameTree::dump(frame, output);
+    } else { // input.command() == "layout"
+        FrameTree::prettyPrint(frame, output);
+    }
+    return 0;
+}
+
+void FrameTree::dumpLayoutCompletion(Completion& complete) {
+    if (complete == 0) {
+        global_tags->completeTag(complete);
+    } else if (complete == 1) {
+        // no completion for frame index
     } else {
         complete.none();
     }

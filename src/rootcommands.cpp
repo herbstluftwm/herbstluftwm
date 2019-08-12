@@ -1,6 +1,8 @@
 #include "rootcommands.h"
 
 #include <algorithm>
+#include <cerrno>
+#include <cstdlib>
 #include <cstring>
 #include <functional>
 #include <iostream>
@@ -11,7 +13,6 @@
 #include "command.h"
 #include "completion.h"
 #include "ipc-protocol.h"
-#include "root.h"
 
 using std::endl;
 using std::function;
@@ -20,7 +21,9 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-RootCommands::RootCommands(Root* root_) : root(root_) {
+extern char** environ;
+
+RootCommands::RootCommands(Object* root_) : root(root_) {
 }
 
 int RootCommands::get_attr_cmd(Input in, Output output) {
@@ -424,6 +427,103 @@ void RootCommands::attr_complete(Completion& complete)
         else complete.none();
     } else {
         complete.none();
+    }
+}
+
+int RootCommands::tryCommand(Input input, Output output) {
+    Commands::call(input.fromHere(), output); // pass output
+    return 0; // ignore exit code
+}
+
+int RootCommands::silentCommand(Input input, Output output) {
+    std::stringstream dummyOutput;
+    // drop output but pass exit code
+    return Commands::call(input.fromHere(), dummyOutput);
+}
+
+void RootCommands::completeCommandShifted1(Completion& complete) {
+    complete.completeCommands(0);
+}
+
+int RootCommands::echoCommand(Input input, Output output)
+{
+    string token;
+    bool first = true;
+    while (input >> token) {
+        output << (first ? "" : " ") << token;
+        first = false;
+    }
+    output << endl;
+    return 0;
+}
+
+
+int RootCommands::setenvCommand(Input input, Output output) {
+    string name, value;
+    if (!(input >> name >> value)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    if (setenv(name.c_str(), value.c_str(), 1) != 0) {
+        output << input.command()
+               << ": Could not set environment variable: "
+               << strerror(errno) << endl;
+        return HERBST_UNKNOWN_ERROR;
+    }
+    return 0;
+}
+
+void RootCommands::setenvCompletion(Completion& complete) {
+    if (complete == 0) {
+        return completeEnvName(complete);
+    } else if (complete == 1) {
+        // no completion for the value
+    } else {
+        complete.none();
+    }
+}
+
+int RootCommands::getenvCommand(Input input, Output output) {
+    string name;
+    if (!(input >> name)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    char* envvar = getenv(name.c_str());
+    if (!envvar) {
+        return HERBST_ENV_UNSET;
+    }
+    output << envvar << endl;
+    return 0;
+}
+
+//! completion for unsetenv and getenv
+void RootCommands::getenvUnsetenvCompletion(Completion& complete) {
+    if (complete == 0) {
+        return completeEnvName(complete);
+    } else {
+        complete.none();
+    }
+}
+
+int RootCommands::unsetenvCommand(Input input, Output output) {
+    string name;
+    if (!(input >> name)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    if (unsetenv(name.c_str()) != 0) {
+        output << input.command()
+               << ": Could not unset environment variable: "
+               << strerror(errno) << endl;
+        return HERBST_UNKNOWN_ERROR;
+    }
+    return 0;
+}
+
+void RootCommands::completeEnvName(Completion& complete) {
+    for (char** env = environ; *env; ++env) {
+        vector<string> chunks = ArgList::split(*env, '=');
+        if (chunks.size() >= 1) {
+            complete.full(chunks[0]);
+        }
     }
 }
 

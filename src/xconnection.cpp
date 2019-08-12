@@ -71,7 +71,7 @@ int xerror(Display *dpy, XErrorEvent *ee) {
     fprintf(stderr, "herbstluftwm: fatal error: request code=%d, error code=%d\n",
             ee->request_code, ee->error_code);
     if (ee->error_code == BadDrawable) {
-        HSDebug("Warning: ignoring X_BadDrawable");
+        HSDebug("Warning: ignoring X_BadDrawable\n");
         return 0;
     }
     return g_xerrorxlib(dpy, ee); /* may call exit */
@@ -105,6 +105,14 @@ Rectangle XConnection::windowSize(Window window) {
 
 Atom XConnection::atom(const char* atom_name) {
     return XInternAtom(m_display, atom_name, False);
+}
+
+
+string XConnection::atomName(Atom atomIdentifier) {
+    char* name = XGetAtomName(m_display, atomIdentifier);
+    string res = name;
+    XFree(name);
+    return res;
 }
 
 //! The pid of a window or -1 if the pid is not set

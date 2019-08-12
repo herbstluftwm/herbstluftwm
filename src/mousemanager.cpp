@@ -3,21 +3,19 @@
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <cstring>
-#include <initializer_list>
 #include <ostream>
-#include <set>
-#include <stdexcept>
 #include <string>
 #include <vector>
 
 #include "client.h"
+#include "clientmanager.h"
 #include "command.h"
 #include "completion.h"
 #include "globals.h"
 #include "ipc-protocol.h"
-#include "keycombo.h"
 #include "keymanager.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "mouse.h"
 #include "root.h"
 #include "tag.h"
@@ -28,7 +26,9 @@ using std::vector;
 using std::string;
 using std::endl;
 
-MouseManager::MouseManager() {
+MouseManager::MouseManager()
+    : mode_(Mode::NoDrag)
+{
     /* set cursor theme */
     cursor = XCreateFontCursor(g_display, XC_left_ptr);
     XDefineCursor(g_display, g_root, cursor);
@@ -38,6 +38,12 @@ MouseManager::~MouseManager() {
     XFreeCursor(g_display, cursor);
 }
 
+void MouseManager::injectDependencies(ClientManager* clients, MonitorManager* monitors)
+{
+    clients_ = clients;
+    monitors_ = monitors;
+}
+
 int MouseManager::addMouseBindCommand(Input input, Output output) {
     if (input.size() < 2) {
         return HERBST_NEED_MORE_ARGS;
@@ -45,24 +51,13 @@ int MouseManager::addMouseBindCommand(Input input, Output output) {
 
     auto mouseComboStr = input.front();
 
-    auto tokens = KeyCombo::tokensFromString(mouseComboStr);
-    unsigned int modifiers = 0;
+    MouseCombo mouseCombo;
     try {
-        auto modifierSlice = vector<string>({tokens.begin(), tokens.end() - 1});
-        modifiers = KeyCombo::modifierMaskFromTokens(modifierSlice);
-    } catch (std::runtime_error &error) {
+        mouseCombo = Converter<MouseCombo>::parse(mouseComboStr);
+    } catch (std::exception &error) {
         output << input.command() << ": " << error.what() << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-
-    // Last token is the mouse button
-    auto buttonStr = tokens.back();
-    unsigned int button = string2button(buttonStr.c_str());
-    if (button == 0) {
-        output << input.command() << ": Unknown mouse button \"" << buttonStr << "\"" << endl;
-        return HERBST_INVALID_ARGUMENT;
-    }
-
     input.shift();
     auto action = string2mousefunction(input.front().c_str());
     if (!action) {
@@ -80,8 +75,7 @@ int MouseManager::addMouseBindCommand(Input input, Output output) {
 
     // Actually create the mouse binding
     MouseBinding mb;
-    mb.button = button;
-    mb.modifiers = modifiers;
+    mb.mousecombo = mouseCombo;
     mb.action = action;
     mb.cmd = cmd;
     binds.push_front(mb);
@@ -95,58 +89,7 @@ int MouseManager::addMouseBindCommand(Input input, Output output) {
 
 void MouseManager::addMouseBindCompletion(Completion &complete) {
     if (complete == 0) {
-        auto needle = complete.needle();
-
-        // Use the first separator char that appears in the needle as default:
-        const string seps = KeyCombo::separators;
-        string sep = {seps.front()};
-        for (auto& needleChar : needle) {
-            if (seps.find(needleChar) != string::npos) {
-                sep = needleChar;
-                break;
-            }
-        }
-
-        // Normalize needle by chopping off tokens until they all are valid
-        // modifiers:
-        auto tokens = KeyCombo::tokensFromString(needle);
-        while (tokens.size() > 0) {
-            try {
-                KeyCombo::modifierMaskFromTokens(tokens);
-                break;
-            } catch (std::runtime_error &error) {
-                tokens.pop_back();
-            }
-        }
-
-        auto normNeedle = join_strings(tokens, sep);
-        normNeedle += tokens.empty() ? "" : sep;
-        auto modifiersInNeedle = std::set<string>(tokens.begin(), tokens.end());
-
-        // Offer partial completions for an additional modifier (excluding the
-        // ones already mentioned in the needle):
-        for (auto& modifier : KeyCombo::modifierMasks) {
-            if (modifiersInNeedle.count(modifier.name) == 0) {
-                complete.partial(normNeedle + modifier.name + sep);
-            }
-        }
-
-        // Offer full completions for a mouse button:
-        auto buttons = {
-            "Button1",
-            "Button2",
-            "Button3",
-            "Button4",
-            "Button5",
-            "B1",
-            "B2",
-            "B3",
-            "B4",
-            "B5",
-        };
-        for (auto button : buttons) {
-            complete.full(normNeedle + button);
-        }
+        Converter<MouseCombo>::complete(complete, nullptr);
     } else if (complete == 1) {
         complete.full({"move", "resize", "zoom", "call"});
     } else if (complete[1] == "call") {
@@ -184,28 +127,30 @@ void MouseManager::mouse_initiate_resize(Client* client, const vector<string> &c
 
 void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd) {
     // TODO: add completion
-    client->set_dragged(true);
+    clients_->setDragged(client);
 
     // Execute the bound command
     std::ostringstream discardedOutput;
     Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
     Commands::call(input, discardedOutput);
 
-    client->set_dragged(false);
+    clients_->setDragged(nullptr);
 }
 
 
 void MouseManager::mouse_initiate_drag(Client* client, MouseDragFunction function) {
     dragFunction_ = function;
     winDragClient_ = client;
-    dragMonitor_ = find_monitor_with_tag(client->tag());
+    dragMonitor_ = monitors_->byTag(client->tag());
     if (!dragMonitor_ || client->tag()->floating == false) {
         // only can drag wins in  floating mode
         winDragClient_ = nullptr;
         dragFunction_ = nullptr;
         return;
     }
-    winDragClient_->set_dragged( true);
+    mode_ = Mode::DraggingClient;
+    dragMonitorIndex_ = dragMonitor_->index();
+    clients_->setDragged(winDragClient_);
     winDragStart_ = winDragClient_->float_size_;
     buttonDragStart_ = get_cursor_position();
     XGrabPointer(g_display, client->x11Window(), True,
@@ -213,12 +158,23 @@ void MouseManager::mouse_initiate_drag(Client* client, MouseDragFunction functio
             GrabModeAsync, None, None, CurrentTime);
 }
 
+bool MouseManager::draggingIsStillSafe() {
+    if (monitors_->byIdx(dragMonitorIndex_) != dragMonitor_) {
+        dragMonitor_ = nullptr;
+    }
+    return dragMonitor_
+        && winDragClient_;
+}
+
 void MouseManager::mouse_stop_drag() {
     if (winDragClient_) {
-        winDragClient_->set_dragged(false);
+        clients_->setDragged(nullptr);
         // resend last size
-        dragMonitor_->applyLayout();
+        if (dragMonitor_) {
+            dragMonitor_->applyLayout();
+        }
     }
+    mode_ = Mode::NoDrag;
     winDragClient_ = nullptr;
     dragFunction_ = nullptr;
     XUngrabPointer(g_display, CurrentTime);
@@ -230,15 +186,20 @@ void MouseManager::mouse_stop_drag() {
 }
 
 void MouseManager::handle_motion_event(Point2D newCursorPos) {
-    if (!dragMonitor_) { return; }
-    if (!winDragClient_) return;
+    if (!draggingIsStillSafe()) {
+        mouse_stop_drag();
+        return;
+    }
+    if (mode_ == Mode::NoDrag) {
+        return;
+    }
     if (!dragFunction_) return;
     // call function that handles it
     (this ->* dragFunction_)(newCursorPos);
 }
 
 bool MouseManager::mouse_is_dragging() {
-    return dragFunction_ != nullptr;
+    return mode_ != Mode::NoDrag;
 }
 
 int MouseManager::mouse_unbind_all(Output) {
@@ -269,39 +230,21 @@ MouseFunction MouseManager::string2mousefunction(const char* name) {
     return nullptr;
 }
 
-static struct {
-    const char* name;
-    unsigned int button;
-} string2button_table[] = {
-    { "Button1",       Button1 },
-    { "Button2",       Button2 },
-    { "Button3",       Button3 },
-    { "Button4",       Button4 },
-    { "Button5",       Button5 },
-    { "B1",       Button1 },
-    { "B2",       Button2 },
-    { "B3",       Button3 },
-    { "B4",       Button4 },
-    { "B5",       Button5 },
-};
-unsigned int MouseManager::string2button(const char* name) {
-    for (int i = 0; i < LENGTH(string2button_table); i++) {
-        if (!strcmp(string2button_table[i].name, name)) {
-            return string2button_table[i].button;
-        }
-    }
-    return 0;
-}
-
-
 std::experimental::optional<MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {
-    MouseBinding mb = {};
-    mb.modifiers = modifiers;
-    mb.button = button;
+    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
+    MouseCombo mb = {};
+    mb.modifiers_ = modifiers
+        & ~(numlockMask|LockMask) // remove numlock and capslock mask
+        & ~( Button1Mask // remove all mouse button masks
+           | Button2Mask
+           | Button3Mask
+           | Button4Mask
+           | Button5Mask );
+    mb.button_ = button;
 
     auto found = std::find_if(binds.begin(), binds.end(),
             [=](const MouseBinding &other) {
-                return mouse_binding_equals(&other, &mb) == 0;
+                return other.mousecombo == mb;
             });
     if (found != binds.end()) {
         return *found;
@@ -314,8 +257,8 @@ static void grab_binding(MouseBinding* bind, Client* client) {
     unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
     unsigned int modifiers[] = { 0, LockMask, numlockMask, numlockMask | LockMask };
     for(int j = 0; j < LENGTH(modifiers); j++) {
-        XGrabButton(g_display, bind->button,
-                    bind->modifiers | modifiers[j],
+        XGrabButton(g_display, bind->mousecombo.button_,
+                    bind->mousecombo.modifiers_ | modifiers[j],
                     client->x11Window(), False, ButtonPressMask | ButtonReleaseMask,
                     GrabModeAsync, GrabModeSync, None, None);
     }

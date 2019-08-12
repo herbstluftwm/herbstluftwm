@@ -3,7 +3,6 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
-#include "client.h"
 #include "ewmh.h"
 #include "globals.h"
 #include "settings.h"
@@ -106,14 +105,18 @@ void FrameDecoration::updateVisibility(const FrameDecorationData& data, bool isF
               || isFocused;
     if (show != visible) {
         visible = show;
-        window_set_visible(window, visible);
+        if (visible) {
+            XMapWindow(g_display, window);
+        } else {
+            XUnmapWindow(g_display, window);
+        }
     }
 }
 
 void FrameDecoration::hide() {
     if (visible) {
         visible = false;
-        window_set_visible(window, visible);
+        XUnmapWindow(g_display, window);
     }
 }
 

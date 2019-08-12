@@ -38,10 +38,10 @@ void XKeyGrabber::updateNumlockMask() {
  * Normalization means stripping any ignored modifiers from the modifier mask
  * (including the runtime-defined Numlock mask).
  */
-KeyCombo XKeyGrabber::xEventToKeyCombo(XEvent *ev) const {
+KeyCombo XKeyGrabber::xEventToKeyCombo(XKeyEvent* ev) const {
     KeyCombo combo;
-    combo.keysym = XkbKeycodeToKeysym(g_display, ev->xkey.keycode, 0, 0);
-    combo.modifiers_ = ev->xkey.state;
+    combo.keysym = XkbKeycodeToKeysym(g_display, ev->keycode, 0, 0);
+    combo.modifiers_ = ev->state;
 
     // Normalize
     combo.modifiers_ &= ~(numlockMask_ | LockMask);

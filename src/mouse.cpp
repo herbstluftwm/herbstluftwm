@@ -1,29 +1,79 @@
 #include "mouse.h"
 
-#include <X11/X.h>
 #include <cstdlib>
+#include <sstream>
 
 #include "client.h"
+#include "completion.h"
 #include "decoration.h"
 #include "frametree.h"
-#include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
-#include "root.h"
 #include "settings.h"
 #include "tag.h"
 #include "utils.h"
 
-#define CLEANMASK(mask)         ((mask) & ~(numlockMask|LockMask))
-#define REMOVEBUTTONMASK(mask) ((mask) & \
-    ~( Button1Mask \
-     | Button2Mask \
-     | Button3Mask \
-     | Button4Mask \
-     | Button5Mask ))
-
+using std::pair;
 using std::string;
 using std::vector;
+
+MouseCombo::MouseCombo(unsigned int modifiers, unsigned int button)
+    : button_(button)
+{
+    modifiers_ = modifiers;
+}
+
+std::vector<std::pair<std::string, unsigned int>> MouseCombo::name2button =
+{
+    { "Button1",  Button1 },
+    { "Button2",  Button2 },
+    { "Button3",  Button3 },
+    { "Button4",  Button4 },
+    { "Button5",  Button5 },
+    { "B1",       Button1 },
+    { "B2",       Button2 },
+    { "B3",       Button3 },
+    { "B4",       Button4 },
+    { "B5",       Button5 },
+};
+
+template<>
+MouseCombo Converter<MouseCombo>::parse(const std::string& source)
+{
+    auto mws = Converter<ModifiersWithString>::parse(source);
+    for (const auto& p : MouseCombo::name2button) {
+        if (mws.suffix_ == p.first) {
+            return MouseCombo(mws.modifiers_, p.second);
+        }
+    }
+    std::stringstream msg;
+    msg << "Unknown mouse button \"" << mws.suffix_ << "\"";
+    throw std::invalid_argument(msg.str());
+}
+
+template<>
+std::string Converter<MouseCombo>::str(MouseCombo payload)
+{
+    ModifiersWithString mws(payload.modifiers_, "?");
+    for (const auto& p : MouseCombo::name2button) {
+        if (payload.button_ == p.second) {
+            mws.suffix_ = p.first;
+            break;
+        }
+    }
+    return Converter<ModifiersWithString>::str(mws);
+}
+
+template<>
+void Converter<MouseCombo>::complete(Completion& outerComplete, MouseCombo const* relativeTo)
+{
+    auto buttonCompleter = [](Completion& complete, string prefix) {
+        for (const auto& p : MouseCombo::name2button) {
+            complete.full(prefix + p.first);
+        }
+    };
+    ModifiersWithString::complete(outerComplete, buttonCompleter);
+}
 
 struct SnapData {
     Client*       client;
@@ -31,17 +81,6 @@ struct SnapData {
     enum SnapFlags  flags;
     int             dx, dy; // the vector from client to other to make them snap
 };
-
-int mouse_binding_equals(const MouseBinding* a, const MouseBinding* b) {
-    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
-    if((REMOVEBUTTONMASK(CLEANMASK(a->modifiers))
-        == REMOVEBUTTONMASK(CLEANMASK(b->modifiers)))
-        && (a->button == b->button)) {
-        return 0;
-    } else {
-        return -1;
-    }
-}
 
 bool is_point_between(int point, int left, int right) {
     return (point < right && point >= left);

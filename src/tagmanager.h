@@ -26,6 +26,7 @@ public:
     int tag_move_window_by_index_command(Input input, Output output);
     HSTag* add_tag(const std::string& name);
     HSTag* find(const std::string& name);
+    void completeTag(Completion& complete);
     HSTag* ensure_tags_are_available();
     HSTag* byIndexStr(const std::string& index_str, bool skip_visible_tags);
     HSTag* unusedTag();

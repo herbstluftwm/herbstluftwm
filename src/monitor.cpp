@@ -141,9 +141,44 @@ void Monitor::applyLayout() {
         cur_rect.height -= settings->frame_gap();
         cur_rect.width -= settings->frame_gap();
     }
-    restack();
     bool isFocused = get_current_monitor() == this;
     TilingResult res = tag->frame->root_->computeLayout(cur_rect);
+    // 1. Update stack (TODO: why stack first?)
+    for (auto& p : res.data) {
+        Client* c = p.first;
+        if (c->fullscreen_()) {
+            tag->stack->sliceAddLayer(c->slice, LAYER_FULLSCREEN);
+        } else {
+            tag->stack->sliceRemoveLayer(c->slice, LAYER_FULLSCREEN);
+        }
+        if (p.second.needsRaise) {
+            c->raise();
+        }
+    }
+    HSDebug("setting up focus layer\n");
+    tag->stack->clearLayer(LAYER_FOCUS);
+    if (isFocused && res.focus) {
+        HSDebug("we have the focus\n");
+        // activate the focus layer if requested by the setting
+        // or if there is a fullscreen client potentially covering
+        // the focused client.
+        // Also activate raise on focus in tiling mode to make the decoration
+        // of the focused window look better. If we don't raise it
+        // (temporarily), then the shadow of another window can
+        // cover the decoration of the focused client. To avoid that
+        // the decoration of the focused window is covered by the shadow
+        // of an unfocused window,
+        // we raise the focused window. Without shadows, this has no effect.
+        if (g_settings->raise_on_focus_temporarily()
+            || tag->stack->isLayerEmpty(LAYER_FULLSCREEN) == false
+            || tag->floating() == false)
+        {
+            HSDebug("filling focus layer\n");
+            tag->stack->sliceAddLayer(res.focus->slice, LAYER_FOCUS);
+        }
+    }
+    restack();
+    // 2. Update window geometries
     if (tag->floating) {
         for (auto& p : res.data) {
             p.second.floated = true;
@@ -157,9 +192,6 @@ void Monitor::applyLayout() {
             c->resize_floating(this, res.focus == c && isFocused);
         } else {
             c->resize_tiling(p.second.geometry, res.focus == c && isFocused);
-        }
-        if (p.second.needsRaise) {
-            c->raise();
         }
     }
     if (tag->floating) {

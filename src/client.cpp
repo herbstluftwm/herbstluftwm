@@ -56,6 +56,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     window_id_str = WindowID(window).str();
     keyMask_.setWriteable();
     ewmhnotify_.setWriteable();
+    ewmhrequests_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_}) {
         i->setWriteable();
         i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
@@ -101,7 +102,9 @@ void Client::make_full_client() {
                             ButtonPressMask | ButtonReleaseMask |
                             ExposureMask |
                             SubstructureRedirectMask | FocusChangeMask));
-    XSelectInput(g_display, window_, CLIENT_EVENT_MASK);
+    XSelectInput(g_display, window_,
+                            StructureNotifyMask|FocusChangeMask
+                            |EnterWindowMask|PropertyChangeMask);
 }
 
 bool Client::ignore_unmapnotify() {
@@ -156,7 +159,6 @@ void Client::window_unfocus_last() {
         /* only emit the hook if the focus *really* changes */
         hook_emit({"focus_changed", "0x0", ""});
         Ewmh::get().updateActiveWindow(None);
-        tag_update_each_focus_layer();
 
         // Enable all keys in the root window
         Root::get()->keys()->clearActiveKeyMask();
@@ -181,7 +183,6 @@ void Client::window_focus() {
             lastfocus->window_unfocus();
         }
         ewmh.updateActiveWindow(this->window_);
-        tag_update_each_focus_layer();
         hook_emit({"focus_changed", WindowID(window_).str(), title_()});
     }
 
@@ -190,14 +191,6 @@ void Client::window_focus() {
     //client_setup_border(client, true);
 
     lastfocus = this;
-    /* do some specials for the max layout */
-    bool is_max_layout = HSFrame::getGloballyFocusedFrame()->focusedClient() == this
-                         && HSFrame::getGloballyFocusedFrame()->getLayout() == LayoutAlgorithm::max
-                         && get_current_monitor()->tag->floating == false;
-    if (settings.raise_on_focus() || is_max_layout) {
-        this->raise();
-    }
-    tag_update_focus_layer(get_current_monitor()->tag);
     Root::get()->mouse->grab_client_buttons(this, true);
 
     // XXX: At this point, ClientManager does not yet know about the focus
@@ -418,21 +411,6 @@ void Client::requestClose() { //! ask the client to close
     ewmh.windowClose(window_);
 }
 
-void window_set_visible(Window win, bool visible) {
-    static int (*action[])(Display*,Window) = {
-        XUnmapWindow,
-        XMapWindow,
-    };
-    unsigned long event_mask = CLIENT_EVENT_MASK;
-    XGrabServer(g_display);
-    XSelectInput(g_display, win, event_mask & ~StructureNotifyMask);
-    XSelectInput(g_display, g_root, ROOT_EVENT_MASK & ~SubstructureNotifyMask);
-    action[visible](g_display, win);
-    XSelectInput(g_display, win, event_mask);
-    XSelectInput(g_display, g_root, ROOT_EVENT_MASK);
-    XUngrabServer(g_display);
-}
-
 void Client::set_visible(bool visible) {
     if (visible == this->visible_) return;
     if (visible) {
@@ -540,13 +518,6 @@ void Client::set_fullscreen(bool state) {
     if (this->ewmhnotify_) {
         this->ewmhfullscreen_ = state;
     }
-    auto stack = this->tag()->stack;
-    if (state) {
-        stack->sliceAddLayer(this->slice, LAYER_FULLSCREEN);
-    } else {
-        stack->sliceRemoveLayer( this->slice, LAYER_FULLSCREEN);
-    }
-    tag_update_focus_layer(this->tag());
     auto m = find_monitor_with_tag(this->tag());
     if (m) m->applyLayout();
 
@@ -605,11 +576,6 @@ Window get_window(const string& str) {
     } catch (...) {
         return 0;
     }
-}
-
-void Client::set_dragged(bool drag_state) {
-    if (drag_state == dragged_) return;
-    dragged_ = drag_state;
 }
 
 void Client::fuzzy_fix_initial_position() {
