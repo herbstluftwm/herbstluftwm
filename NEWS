@@ -23,7 +23,7 @@ Current git version
     not present on the current keyboard layout at the time of setup.
   * 'detect_monitors' has an additional '--list-all' parameter
   * do not change the focus (for focus_follows_mouse=1) when an unmanaged
-    dialog (e.g. a rofi menu or a notification) closes.xrandr
+    dialog (e.g. a rofi menu or a notification) closes.
   * monitor detection via xrandr
 
 Release 0.7.2 on 2019-05-28
