@@ -15,6 +15,8 @@ Build dependencies:
 Runtime dependencies:
     - bash (if you use the default autostart file)
     - libx11
+    - xrandr
+    - optionally: xinerama
 
 Optional run-time dependencies:
     - xsetroot (to set wallpaper color in default autostart)
