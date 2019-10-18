@@ -1114,7 +1114,7 @@ Each 'CONDITION' consists of a 'property' name, an operator and a 'value'. Valid
 operators are:
 
     * +~+ matches if client's 'property' is matched by the regex 'value'.
-    * +=+ matches if client's 'properly' string is equal to 'value'.
+    * +=+ matches if client's 'property' string is equal to 'value'.
 
 Valid 'properties' are:
 
