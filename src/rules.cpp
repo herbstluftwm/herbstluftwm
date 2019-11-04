@@ -354,19 +354,19 @@ static void rule_print_append_output(HSRule* rule, GString* output) {
         if (rule->conditions[i]->negated) { // Include flag if negated
             g_string_append_printf(output, "not\t");
         }
-        g_string_append_printf(output, "%s=",
+        g_string_append_printf(output, "%s",
             g_condition_types[rule->conditions[i]->condition_type].name);
         switch (rule->conditions[i]->value_type) {
             case CONDITION_VALUE_TYPE_STRING:
-                g_string_append_printf(output, "%s\t",
+                g_string_append_printf(output, "=%s\t",
                     rule->conditions[i]->value.str);
                 break;
             case CONDITION_VALUE_TYPE_REGEX:
-                g_string_append_printf(output, "%s\t",
+                g_string_append_printf(output, "~%s\t",
                     rule->conditions[i]->value.reg.str);
                 break;
             default: /* CONDITION_VALUE_TYPE_INTEGER: */
-                g_string_append_printf(output, "%i\t",
+                g_string_append_printf(output, "=%i\t",
                     rule->conditions[i]->value.integer);
                 break;
         }
