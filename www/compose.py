@@ -21,7 +21,7 @@ tabs = OrderedDict([
     ("Download", OrderedDict([
         ("download", "Download"),
     ])),
-    ("Wiki", "http://wiki.herbstluftwm.org"),
+    # ("Wiki", "http://wiki.herbstluftwm.org"),
 ])
 
 page2tab = {
