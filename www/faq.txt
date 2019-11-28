@@ -449,4 +449,18 @@ if hc silent new_attr bool my_not_first_autostart ; then
 fi
 ----
 
+[[winterbreeze]]
+Q: What is "winterbreeze"
+-------------------------
+The "winterbreeze" branch is a rewrite of the herbstluftwm codebase to $$C++$$. The
+main purpose is to fix design mistakes in the old code. We use $$C++$$ features to
+make the code more stable (and type-safe). While rewriting, we also wrote a
+test-suite in python. There are only a few new features and bug fixes, but there
+are no new major features yet! By restructuring the codebase, it is hopefully
+easy and safe to implement the most-asked features soon after the "winterbreeze"
+code is merged into master. Right now (November 2019), the "winterbreeze" branch
+is already ahead of master (in the git language), so it should not take too long
+until the merge.
+
+
 
