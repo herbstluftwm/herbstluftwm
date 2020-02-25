@@ -123,6 +123,7 @@ public:
     friend class HSFrame;
     void setVisible(bool visible);
     Rectangle lastRect() { return last_rect; }
+    int getInnerNeighbourIndex(Direction direction);
 private:
     friend class FrameTree;
     // layout algorithms
@@ -182,7 +183,6 @@ int frame_current_bring(int argc, char** argv, Output output);
 // get neighbour in a specific direction 'l' 'r' 'u' 'd' (left, right,...)
 // returns the neighbour or NULL if there is no one
 HSFrame* frame_neighbour(HSFrame* frame, char direction);
-int frame_inner_neighbour_index(std::shared_ptr<HSFrameLeaf> frame, Direction direction);
 int frame_focus_command(int argc, char** argv, Output output);
 
 int frame_current_set_client_layout(int argc, char** argv, Output output);
