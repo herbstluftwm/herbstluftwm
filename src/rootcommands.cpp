@@ -482,6 +482,32 @@ void RootCommands::setenvCompletion(Completion& complete) {
     }
 }
 
+//! a wraper around setenv with the usual 'export' syntax in posix
+int RootCommands::exportEnvCommand(Input input, Output output)
+{
+    string arg;
+    if (!(input >> arg )) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    auto pos = arg.find("=");
+    if (pos >= arg.size()) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    // if "=" has been found in the arg, split it there
+    auto newInput = Input(input.command(), {arg.substr(0, pos), arg.substr(pos + 1)});
+    return setenvCommand(newInput, output);
+}
+
+void RootCommands::exportEnvCompletion(Completion &complete)
+{
+    for (char** env = environ; *env; ++env) {
+        vector<string> chunks = ArgList::split(*env, '=');
+        if (chunks.size() >= 1) {
+            complete.partial(chunks[0] + "=");
+        }
+    }
+}
+
 int RootCommands::getenvCommand(Input input, Output output) {
     string name;
     if (!(input >> name)) {

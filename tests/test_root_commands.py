@@ -240,6 +240,14 @@ def test_getenv_completion(hlwm):
     assert [name] == hlwm.complete('getenv ' + prefix, position=1)
 
 
+def test_export_completion(hlwm):
+    prefix = 'some_uniq_prefix_'
+    name = prefix + 'envname'
+    hlwm.call(['setenv', name, 'myvalue'])
+
+    assert [name + '='] == hlwm.complete('export ' + prefix, position=1, partial=True)
+
+
 def test_compare_invalid_operator(hlwm):
     hlwm.call_xfail('compare monitors.count -= 1') \
         .expect_stderr('unknown operator')
@@ -272,6 +280,13 @@ def test_echo_completion(hlwm):
 @pytest.mark.parametrize('value', ['', 'bar'])
 def test_setenv_command(hlwm, value):
     hlwm.call(['setenv', 'FOO', value])
+
+    assert hlwm.call('getenv FOO').stdout == value + '\n'
+
+
+@pytest.mark.parametrize('value', ['', 'bar'])
+def test_export_command(hlwm, value):
+    hlwm.call(['export', 'FOO=' + value])
 
     assert hlwm.call('getenv FOO').stdout == value + '\n'
 

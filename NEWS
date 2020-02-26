@@ -26,6 +26,7 @@ Current git version
     dialog (e.g. a rofi menu or a notification) closes.
   * monitor detection via xrandr
   * list_rules now prints regex-based rule conditions with '~' instead of '='
+  * new command: export (convenience wrapper around setenv)
 
 Release 0.7.2 on 2019-05-28
 ---------------------------
