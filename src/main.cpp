@@ -195,6 +195,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                             &RootCommands::getenvUnsetenvCompletion}},
         {"setenv",         { root_commands, &RootCommands::setenvCommand,
                                             &RootCommands::setenvCompletion}},
+        {"export",         { root_commands, &RootCommands::exportEnvCommand,
+                                            &RootCommands::exportEnvCompletion}},
         {"unsetenv",       { root_commands, &RootCommands::unsetenvCommand,
                                             &RootCommands::getenvUnsetenvCompletion}},
         {"get_attr",       { root_commands, &RootCommands::get_attr_cmd,

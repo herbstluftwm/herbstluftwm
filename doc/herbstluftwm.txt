@@ -860,9 +860,16 @@ getenv 'NAME'::
 
 setenv 'NAME' 'VALUE'::
     Set the value of the environment variable 'NAME' to 'VALUE'.
+    See also the <<EXPORTENV, export command>>.
 
 unsetenv 'NAME'::
     Unsets the environment variable 'NAME'.
+
+[[EXPORTENV]]export 'NAME'='VALUE'::
+    Set the value of the environment variable 'NAME' to 'VALUE', just like the
+    +export+ in unix shells. If you forgot to run +export FOO=BAR+ before
+    starting herbstluftwm, you can run +herbstclient export FOO=BAR+ from within
+    your herbstluftwm session.
 
 [[SETTINGS]]
 SETTINGS
