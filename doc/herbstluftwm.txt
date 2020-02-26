@@ -858,18 +858,20 @@ It returns success if there are more clients on the focused tag than frames.
 getenv 'NAME'::
     Gets the value of the environment variable 'NAME'.
 
-setenv 'NAME' 'VALUE'::
+[[SETENV]]setenv 'NAME' 'VALUE'::
     Set the value of the environment variable 'NAME' to 'VALUE'.
-    See also the <<EXPORTENV, export command>>.
+    See the <<EXPORTENV, export command>> for a convenience wrapper.
 
 unsetenv 'NAME'::
     Unsets the environment variable 'NAME'.
 
 [[EXPORTENV]]export 'NAME'='VALUE'::
-    Set the value of the environment variable 'NAME' to 'VALUE', just like the
-    +export+ in unix shells. If you forgot to run +export FOO=BAR+ before
-    starting herbstluftwm, you can run +herbstclient export FOO=BAR+ from within
-    your herbstluftwm session.
+    Set the value of the environment variable 'NAME' to 'VALUE'. The syntax is
+    the same as for +export+ in unix shells (notice that there is a +=+).
+    Intuitively, if you forgot to run +export FOO=BAR+ before starting
+    herbstluftwm, you can run +herbstclient export FOO=BAR+ from within your
+    herbstluftwm session for the same effect. The +export+ command is the same
+    as the <<SETENV, setenv command>> with different syntax.
 
 [[SETTINGS]]
 SETTINGS
