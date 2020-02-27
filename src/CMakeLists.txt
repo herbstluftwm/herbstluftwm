@@ -39,6 +39,7 @@ target_sources(herbstluftwm PRIVATE
     monitormanager.cpp monitormanager.h
     mouse.cpp mouse.h
     mousemanager.cpp mousemanager.h
+    mousedraghandler.cpp mousedraghandler.h
     namedhook.cpp namedhook.h
     object.cpp object.h
     optional.h
