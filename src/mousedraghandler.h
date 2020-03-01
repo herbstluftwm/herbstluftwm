@@ -1,5 +1,7 @@
 #pragma once
 
+#include <exception>
+
 #include "x11-types.h"
 
 class Client;
@@ -32,7 +34,6 @@ public:
 private:
     void assertDraggingStillSafe();
 
-    ClientManager*  clients_;
     MonitorManager*  monitors_;
     Point2D          buttonDragStart_;
     Rectangle        winDragStart_;

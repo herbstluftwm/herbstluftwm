@@ -7,7 +7,6 @@
 #include "mouse.h"
 #include "object.h"
 #include "optional.h"
-#include "x11-types.h"
 
 class ClientManager;
 class Completion;

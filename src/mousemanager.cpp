@@ -14,14 +14,10 @@
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "keymanager.h"
-#include "monitor.h"
-#include "monitormanager.h"
 #include "mouse.h"
 #include "mousedraghandler.h"
 #include "root.h"
-#include "tag.h"
 #include "utils.h"
-#include "x11-utils.h"
 
 using std::shared_ptr;
 using std::vector;
