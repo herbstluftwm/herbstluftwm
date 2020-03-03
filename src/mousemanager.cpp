@@ -138,7 +138,7 @@ void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd)
 void MouseManager::mouse_initiate_drag(Client *client, void (MouseDragHandler::*function)(Point2D))
 {
     try {
-        dragHandler_ = std::make_shared<MouseDragHandler>(clients_, monitors_, client, function);
+        dragHandler_ = std::make_shared<MouseDragHandler>(monitors_, client, function);
         // only grab pointer if dragHandler_ could be started
         clients_->setDragged(client);
         XGrabPointer(g_display, client->x11Window(), True,

@@ -5,7 +5,7 @@
 #include "tag.h"
 #include "x11-utils.h"
 
-MouseDragHandler::MouseDragHandler(ClientManager*, MonitorManager*  monitors, Client* dragClient, MouseDragFunction function)
+MouseDragHandler::MouseDragHandler(MonitorManager* monitors, Client* dragClient, MouseDragFunction function)
   : monitors_(monitors)
   , winDragClient_(dragClient)
   , dragFunction_(function)

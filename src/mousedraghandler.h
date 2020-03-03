@@ -23,7 +23,7 @@ public:
         virtual ~DragNotPossible() throw () {}
     };
     //! possibly throws a DragNotPossible exception
-    MouseDragHandler(ClientManager*  clients_, MonitorManager*  monitors_, Client* dragClient, MouseDragFunction function);
+    MouseDragHandler(MonitorManager* monitors_, Client* dragClient, MouseDragFunction function);
     void finalize();
     void handle_motion_event(Point2D newCursorPos);
 
