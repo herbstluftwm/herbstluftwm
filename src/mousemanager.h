@@ -41,14 +41,14 @@ public:
     bool mouse_is_dragging();
     void handle_motion_event(Point2D newCursorPos);
 
-    void mouse_initiate_drag(Client* client, void (MouseDragHandler::*function)(Point2D));
     void mouse_initiate_move(Client* client, const std::vector<std::string> &cmd);
     void mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd);
     void mouse_initiate_resize(Client* client, const std::vector<std::string> &cmd);
     void mouse_call_command(Client* client, const std::vector<std::string> &cmd);
 
 private:
-    //! check whether we can continue dragging
+    void mouse_initiate_drag(Client* client, void (MouseDragHandler::*function)(Point2D));
+
     std::shared_ptr<MouseDragHandler> dragHandler_;
     Cursor cursor;
     ClientManager*  clients_;
