@@ -8,7 +8,6 @@
 #include "object.h"
 #include "optional.h"
 
-class ClientManager;
 class Completion;
 class MonitorManager;
 class MouseDragHandler;
