@@ -103,7 +103,7 @@ if args.iwyu:
     if complaints:
         print('IWYU made suggestions to remove things in the following files:')
         for filepath, changes, _ in complaints:
-            print("===== {} should remove: =====\n{}\n".format(filepath, changes)
+            print("===== {} should remove: =====\n{}\n".format(filepath, changes))
         print("")
         print("After removing the above lines it might be necessary to add")
         print("additional forward declarations to make it build again.")
