@@ -102,14 +102,13 @@ if args.iwyu:
     iwyu_out_str = iwyu_out.decode('ascii').replace('\r', '')
     reg = r'(\S+) should remove these lines:\n(([^\n]+\n)+)'
     complaints = set(re.findall(reg, iwyu_out_str))
-    #print(set(re.findall(r'(\S+) should remove these lines:\n[^\n]', iwyu_out_str)))
     if complaints:
         print('IWYU made suggestions to remove things in the following files:')
         for filepath, changes, _ in complaints:
-            print("===== {} should remove: =====\n{}\n".format(filepath, changes))
-        print("")
+            print("===== {} should remove: =====\n{}\n".format(filepath, changes.rstrip()))
         print("After removing the above lines it might be necessary to add")
         print("additional forward declarations to make it build again.")
+        print("")
         sys.exit(1)
 
 if args.flake8:
