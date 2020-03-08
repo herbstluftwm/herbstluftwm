@@ -3,7 +3,6 @@
 #include <X11/X.h>
 #include <list>
 
-#include "decoration.h"
 #include "mouse.h"
 #include "object.h"
 #include "optional.h"

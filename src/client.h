@@ -5,13 +5,13 @@
 #include <X11/Xlib.h>
 
 #include "attribute_.h"
-#include "decoration.h"
-#include "ewmh.h"
 #include "object.h"
 #include "types.h"
 #include "x11-types.h"
 
+class Decoration;
 class DecTriple;
+class Ewmh;
 class Slice;
 class HSTag;
 class Monitor;

@@ -7,7 +7,6 @@
 #include "tag.h"
 
 class Client;
-class Decoration;
 class FrameTree;
 class Monitor;
 class MonitorManager;
