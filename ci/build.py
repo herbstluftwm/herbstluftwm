@@ -99,7 +99,9 @@ if args.iwyu:
     # to be overzealous):
     # the following regex checks that the : is followed by a
     # non-empty sequence of non-empty lines
-    complaints = set(re.findall(r'(\S+) should remove these lines:\n(([^\n]+\n)+)', iwyu_out.decode('ascii')))
+    iwyu_out_str = iwyu_out.decode('ascii').replace('\r', '')
+    reg = r'(\S+) should remove these lines:\n(([^\n]+\n)+)'
+    complaints = set(re.findall(reg, iwyu_out_str))
     if complaints:
         print('IWYU made suggestions to remove things in the following files:')
         for filepath, changes, _ in complaints:
