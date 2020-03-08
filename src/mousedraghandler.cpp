@@ -35,7 +35,7 @@ void MouseDragHandler::assertDraggingStillSafe() {
     }
 }
 
-/** finalize the what was started by the drag, do more than what is
+/** finalize what was started by the drag, do more than what is
  * usually done in the destructor.
  * This relayouts the monitor on which the drag happend
  */
