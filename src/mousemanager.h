@@ -9,6 +9,7 @@
 #include "optional.h"
 
 class Completion;
+class ClientManager;
 class MonitorManager;
 class MouseDragHandler;
 struct Point2D;

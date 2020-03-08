@@ -5,7 +5,6 @@
 #include "x11-types.h"
 
 class Client;
-class ClientManager;
 class Monitor;
 class MonitorManager;
 class MouseDragHandler;
