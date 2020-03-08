@@ -8,10 +8,10 @@
 #include "object.h"
 #include "types.h"
 #include "x11-types.h"
+#include "decoration.h"
+#include "ewmh.h"
 
-class Decoration;
 class DecTriple;
-class Ewmh;
 class Slice;
 class HSTag;
 class Monitor;

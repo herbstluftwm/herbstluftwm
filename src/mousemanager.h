@@ -7,6 +7,7 @@
 #include "object.h"
 #include "optional.h"
 #include "x11-types.h"
+#include "decoration.h"
 
 class ClientManager;
 class Completion;
