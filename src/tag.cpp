@@ -1,19 +1,13 @@
 #include "tag.h"
 
-#include <cstring>
-
 #include "client.h"
 #include "frametree.h"
-#include "globals.h"
 #include "hlwmcommon.h"
 #include "hook.h"
-#include "ipc-protocol.h"
 #include "layout.h"
-#include "monitor.h"
 #include "root.h"
 #include "stack.h"
 #include "tagmanager.h"
-#include "types.h"
 
 using std::make_shared;
 using std::shared_ptr;

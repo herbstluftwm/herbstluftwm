@@ -36,7 +36,6 @@ static bool g_shell_quoting = false;
 
 static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
 static const char* completion_focus_args[]    = { "-i", "-e", nullptr };
-static const char* completion_flag_args[]     = { "on", "off", "true", "false", "toggle", nullptr };
 static const char* completion_userattribute_types[] = { "int", "uint", "string", "bool", "color", nullptr };
 static const char* completion_special_winids[]= { "urgent", "", nullptr };
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
