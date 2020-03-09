@@ -372,6 +372,12 @@ void TagManager::floatingComplete(Completion &complete)
        completeTag(complete);
    }
    if (complete == 0 || complete == 1) {
+       if (complete == 1 && !find(complete[0])) {
+           // if the first parameter is not a tag, then
+           // there can't be a second parameter
+           complete.none();
+           return;
+       }
        complete.full("status");
        // here, we pass a bool-pointer to the completion to get 'toggle' as one of the completion options
        // This is much simpler than passing the actual floating state of the tag
