@@ -78,38 +78,6 @@ HSTag* get_tag_by_index(int index) {
     return &* global_tags->byIdx(index);
 }
 
-int tag_set_floating_command(int argc, char** argv, Output output) {
-    // usage: floating [[tag] on|off|toggle]
-    HSTag* tag = get_current_monitor()->tag;
-    const char* action = (argc > 1) ? argv[1] : "toggle";
-    if (argc >= 3) {
-        // if a tag is specified
-        tag = find_tag(argv[1]);
-        action = argv[2];
-        if (!tag) {
-            output << argv[0] << ": Tag \"" << argv[1] << "\" not found\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    }
-
-    if (!strcmp(action, "status")) {
-        // just print status
-        output << (tag->floating ? "on" : "off");
-    } else {
-        bool new_value = Converter<bool>::parse(action, tag->floating);
-
-        // assign new value and rearrange if needed
-        tag->floating = new_value;
-
-        Monitor* m = find_monitor_with_tag(tag);
-        HSDebug("setting tag:%s->floating to %s\n", tag->name->c_str(), tag->floating ? "on" : "off");
-        if (m) {
-            m->applyLayout();
-        }
-    }
-    return 0;
-}
-
 void tag_force_update_flags() {
     g_tag_flags_dirty = false;
     // unset all tags

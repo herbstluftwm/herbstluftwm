@@ -107,3 +107,9 @@ def test_rename_tag_existing_tag(hlwm, rename_command):
 
     hlwm.call_xfail(rename_command + ["foobar"]) \
         .expect_stderr('"foobar" already exists')
+
+
+def test_floating_invalid_parameter(hlwm):
+    # passing a non-boolean must be handled
+    hlwm.call_xfail('floating invalidvalue') \
+        .expect_stderr('invalid argument')

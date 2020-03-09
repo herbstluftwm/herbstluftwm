@@ -70,6 +70,7 @@ HSTag* TagManager::add_tag(const string& name) {
     HSTag* tag = new HSTag(name, this, settings_);
     addIndexed(tag);
     tag->name.changed().connect([this,tag]() { this->onTagRename(tag); });
+    tag->floating.changed().connect([this,tag]() { this->onFloatingChange(tag); });
 
     Ewmh::get().updateDesktops();
     Ewmh::get().updateDesktopNames();
@@ -177,6 +178,15 @@ int TagManager::tag_rename_command(Input input, Output output) {
 void TagManager::onTagRename(HSTag* tag) {
     Ewmh::get().updateDesktopNames();
     hook_emit({"tag_renamed", tag->name()});
+}
+
+//! called when the floating state for tag changed.
+void TagManager::onFloatingChange(HSTag* tag)
+{
+    Monitor* m = monitors_->byTag(tag);
+    if (m) {
+        m->applyLayout();
+    }
 }
 
 HSTag* TagManager::ensure_tags_are_available() {
@@ -324,4 +334,50 @@ HSTag* TagManager::unusedTag() {
 
 void TagManager::updateFocusObject(Monitor* focusedMonitor) {
     focus_ = focusedMonitor->tag;
+}
+
+int TagManager::floatingCmd(Input input, Output output) {
+    // usage: floating [[tag] on|off|toggle|status]
+    string newValue, tagName;
+    if (input.size() >= 2) {
+        input >> tagName >> newValue;
+    } else if (input.size() == 1) {
+        input >> newValue;
+    } else {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    HSTag* tag = monitors_->focus()->tag;
+    if (tagName != "") {
+        tag = find(tagName);
+        if (!tag) {
+            output << input.command() << ": Tag \"" << tagName << "\" not found\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
+    if (newValue == "status") {
+        output << (tag->floating ? "on" : "off");
+    } else {
+        string msg = tag->floating.change(newValue);
+        if (msg != "") {
+            output << msg << "\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
+    return 0;
+}
+
+void TagManager::floatingComplete(Completion &complete)
+{
+   if (complete == 0) {
+       completeTag(complete);
+   }
+   if (complete == 0 || complete == 1) {
+       complete.full("status");
+       // here, we pass a bool-pointer to the completion to get 'toggle' as one of the completion options
+       // This is much simpler than passing the actual floating state of the tag
+       bool b = true;
+       Converter<bool>::complete(complete, &b);
+   } else {
+       complete.none();
+   }
 }
