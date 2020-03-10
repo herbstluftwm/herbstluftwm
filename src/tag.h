@@ -46,7 +46,6 @@ HSTag* find_tag(const char* name);
 HSTag* find_tag_with_toplevel_frame(class HSFrame* frame);
 HSTag* get_tag_by_index(int index);
 int    tag_get_count();
-int tag_set_floating_command(int argc, char** argv, Output output);
 void tag_force_update_flags();
 void tag_update_flags();
 void tag_set_flags_dirty();
