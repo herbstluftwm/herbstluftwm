@@ -24,6 +24,8 @@ public:
     int tag_rename_command(Input input, Output output);
     int tag_move_window_command(Input input, Output output);
     int tag_move_window_by_index_command(Input input, Output output);
+    int floatingCmd(Input input, Output output);
+    void floatingComplete(Completion& complete);
     HSTag* add_tag(const std::string& name);
     HSTag* find(const std::string& name);
     void completeTag(Completion& complete);
@@ -39,6 +41,7 @@ public:
     std::string isValidTagName(std::string name);
 private:
     void onTagRename(HSTag* tag);
+    void onFloatingChange(HSTag* tag);
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
     Settings* settings_;

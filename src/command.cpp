@@ -36,9 +36,7 @@ static bool g_shell_quoting = false;
 
 static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
 static const char* completion_focus_args[]    = { "-i", "-e", nullptr };
-static const char* completion_flag_args[]     = { "on", "off", "true", "false", "toggle", nullptr };
 static const char* completion_userattribute_types[] = { "int", "uint", "string", "bool", "color", nullptr };
-static const char* completion_status[]        = { "status", nullptr };
 static const char* completion_special_winids[]= { "urgent", "", nullptr };
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
 static const char* completion_cycle_all_args[]= { "--skip-invisible", nullptr };
@@ -121,8 +119,6 @@ struct {
     { "load",           3,  no_completion },
     { "load",           2,  first_parameter_is_tag },
     { "tag_status",     2,  no_completion },
-    { "floating",       3,  no_completion },
-    { "floating",       2,  first_parameter_is_tag },
     { "object_tree",    2,  no_completion },
     { "new_attr",       3,  no_completion },
     { "mktemp",         3,  parameter_expected_offset_3 },
@@ -164,11 +160,6 @@ struct {
     { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
     { "dump",           EQ, 1,  complete_against_tags, 0 },
     { "detect_monitors", GE, 1,  nullptr, completion_detect_monitors_args },
-    { "floating",       EQ, 1,  complete_against_tags, 0 },
-    { "floating",       EQ, 1,  nullptr, completion_flag_args },
-    { "floating",       EQ, 1,  nullptr, completion_status },
-    { "floating",       EQ, 2,  nullptr, completion_flag_args },
-    { "floating",       EQ, 2,  nullptr, completion_status },
     { "focus",          EQ, 1,  nullptr, completion_directions },
     { "focus",          EQ, 1,  nullptr, completion_focus_args },
     { "focus",          EQ, 2,  nullptr, completion_directions },
