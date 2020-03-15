@@ -371,7 +371,7 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
     if (!m) return;
     auto rect = this->float_size_;
     rect.x += m->rect.x;
-    rect.x += m->rect.y;
+    rect.y += m->rect.y;
     rect.x += m->pad_left();
     rect.y += m->pad_up();
     // ensure position is on monitor
