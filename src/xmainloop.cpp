@@ -15,6 +15,7 @@
 #include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "mousemanager.h"
 #include "root.h"
 #include "settings.h"
@@ -191,8 +192,29 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
             if (width_requested && newRect.width  != cre->width) changes = true;
             if (height_requested && newRect.height != cre->height) changes = true;
             if (x_requested || y_requested) changes = true;
-            if (x_requested) newRect.x = cre->x;
-            if (y_requested) newRect.y = cre->y;
+            if (x_requested || y_requested) {
+                // if only one of the two dimensions is requested, then just
+                // set the other to some reasonable value.
+                if (!x_requested) cre->x = client->last_size_.x;
+                if (!y_requested) cre->y = client->last_size_.y;
+                // interpret the x and y coordinate relative to the monitor they are currently on
+                Monitor* m = root_->monitors->byTag(client->tag());
+                if (!m) {
+                    // if the client is not visible at the moment, take the monitor that is
+                    // most appropriate according to the requested cooridnates:
+                    m = root_->monitors->byCoordinate({cre->x, cre->y});
+                }
+                if (!m) {
+                    // if we have not found a suitable monitor, take the current
+                    m = root_->monitors->focus();
+                }
+                // the requested coordinates are relative to the root window.
+                // convert them to coordinates relative to the monitor.
+                cre->x -= m->rect.x + *m->pad_left;
+                cre->y -= m->rect.y + *m->pad_up;
+                newRect.x = cre->x;
+                newRect.y = cre->y;
+            }
             if (width_requested) newRect.width = cre->width;
             if (height_requested) newRect.height = cre->height;
         }
