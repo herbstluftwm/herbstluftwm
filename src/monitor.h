@@ -56,7 +56,6 @@ private:
 };
 
 // adds a new monitor to the monitors list and returns a pointer to it
-Monitor* monitor_with_coordinate(int x, int y);
 Monitor* find_monitor_with_tag(HSTag* tag);
 void monitor_focus_by_index(unsigned new_selection);
 int monitor_cycle_command(int argc, char** argv);

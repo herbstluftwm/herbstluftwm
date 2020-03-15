@@ -587,18 +587,6 @@ int Monitor::relativeY(int y_root) {
     return y_root - rect.y - pad_up;
 }
 
-Monitor* monitor_with_coordinate(int x, int y) {
-    for (auto m : *g_monitors) {
-        if (m->rect.x + m->pad_left <= x
-            && m->rect.x + m->rect.width - m->pad_right > x
-            && m->rect.y + m->pad_up <= y
-            && m->rect.y + m->rect.height - m->pad_down > y) {
-            return &* m;
-        }
-    }
-    return nullptr;
-}
-
 int detect_monitors_command(int argc, const char **argv, Output output) {
     auto root = Root::get();
     RectangleVec monitor_rects = {};

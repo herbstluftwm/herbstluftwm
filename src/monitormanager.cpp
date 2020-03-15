@@ -194,6 +194,24 @@ Monitor* MonitorManager::byTag(HSTag* tag) {
     return nullptr;
 }
 
+/**
+ * @brief Find the monitor having the given coordinate
+ * @param coordinate on a monitor
+ * @return The monitor with the coordinate or nullptr if the coordinate is outside of any monitor
+ */
+Monitor *MonitorManager::byCoordinate(Point2D p)
+{
+    for (Monitor* m : *this) {
+        if (m->rect.x + m->pad_left <= p.x
+            && m->rect.x + m->rect.width - m->pad_right > p.x
+            && m->rect.y + m->pad_up <= p.y
+            && m->rect.y + m->rect.height - m->pad_down > p.y) {
+            return &* m;
+        }
+    }
+    return nullptr;
+}
+
 void MonitorManager::relayoutTag(HSTag* tag)
 {
     Monitor* m = byTag(tag);
