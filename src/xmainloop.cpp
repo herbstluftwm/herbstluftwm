@@ -187,8 +187,6 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
             bool height_requested = 0 != (cre->value_mask & CWHeight);
             bool x_requested = 0 != (cre->value_mask & CWX);
             bool y_requested = 0 != (cre->value_mask & CWY);
-            cre->width += 2*cre->border_width;
-            cre->height += 2*cre->border_width;
             if (width_requested && newRect.width  != cre->width) changes = true;
             if (height_requested && newRect.height != cre->height) changes = true;
             if (x_requested || y_requested) changes = true;
