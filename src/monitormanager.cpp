@@ -505,6 +505,35 @@ void MonitorManager::setMonitorsCompletion(Completion&) {
     // we don't have completion for rectangles
 }
 
+/**
+ * @brief Transform a rectangle on the screen into a rectangle relative to one of the monitor.
+ * Currently, we pick the monitor that has the biggest intersection with the given rectangle.
+ *
+ * @param globalGeometry A rectangle whose coordinates are interpreted relative to (0,0) on the screen
+ * @return The given rectangle with coordinates relative to a monitor
+ */
+Rectangle MonitorManager::interpretGlobalGeometry(Rectangle globalGeometry)
+{
+    int bestArea = 0;
+    Monitor* best = nullptr;
+    for (Monitor* m : *this) {
+        auto intersection = m->rect.intersectionWith(globalGeometry);
+        if (!intersection) {
+            continue;
+        }
+        auto area = intersection.width * intersection.height;
+        if (area > bestArea) {
+            bestArea = area;
+            best = m;
+        }
+    }
+    if (best) {
+        globalGeometry.x -= best->rect.x + *best->pad_left;
+        globalGeometry.y -= best->rect.y + *best->pad_up;
+    }
+    return globalGeometry;
+}
+
 int MonitorManager::raiseMonitorCommand(Input input, Output output) {
     string monitorName = "";
     input >> monitorName;

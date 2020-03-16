@@ -550,9 +550,14 @@ def x11(x11_connection):
             resp = window.get_full_property(prop, X.AnyPropertyType)
             return resp.value if resp is not None else None
 
-        def create_client(self, urgent=False, pid=None):
+        def create_client(self, urgent=False, pid=None,
+                          geometry=(50, 50, 300, 200)):
             w = self.root.create_window(
-                50, 50, 300, 200, 2,
+                geometry[0],
+                geometry[1],
+                geometry[2],
+                geometry[3],
+                2,
                 self.screen.root_depth,
                 X.InputOutput,
                 X.CopyFromParent,
@@ -575,6 +580,25 @@ def x11(x11_connection):
             w.map()
             self.display.sync()
             return w, self.winid_str(w)
+
+        def get_absolute_top_left(self, window):
+            """return the absolute (x,y) coordinate of the given window,
+            i.e. relative to the root window"""
+            x = 0
+            y = 0
+            while True:
+                # the following coordinates are only relative
+                # to the parent of window
+                geom = window.get_geometry()
+                x += geom.x
+                y += geom.y
+                # check if the window's parent is already the root window
+                tree = window.query_tree()
+                if tree.root == tree.parent:
+                    break
+                # if it's not, continue at its parent
+                window = tree.parent
+            return (x, y)
 
         def shutdown(self):
             # Destroy all created windows:

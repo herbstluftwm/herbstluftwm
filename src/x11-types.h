@@ -76,6 +76,10 @@ struct Rectangle {
     bool operator<(const Rectangle& other) const;
     bool operator==(const Rectangle& other) const;
 
+    operator bool() const;
+
+    Rectangle intersectionWith(const Rectangle& other) const;
+
     int x;
     int y;
     int width;

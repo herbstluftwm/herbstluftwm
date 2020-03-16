@@ -15,6 +15,7 @@
 #include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "mousemanager.h"
 #include "root.h"
 #include "settings.h"
@@ -74,7 +75,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 
 void Client::init_from_X() {
     // treat wanted coordinates as floating coords
-    float_size_ = Root::get()->X.windowSize(window_);
+    auto root = Root::get();
+    auto globalGeometry = root->X.windowSize(window_);
+    float_size_ = root->monitors->interpretGlobalGeometry(globalGeometry);
     last_size_ = float_size_;
 
     pid_ = Root::get()->X.windowPid(window_);
