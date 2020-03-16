@@ -219,3 +219,27 @@ def test_use_previous_on_stolen_monitor(hlwm):
     hlwm.call('use_previous')
 
     assert hlwm.get_attr('tags.focus.name') == 'tag3'
+
+
+@pytest.mark.parametrize("two_monitors", [True, False])
+def test_initial_client_position(hlwm, x11, two_monitors):
+    # create two monitors side by side (with a little y-offset)
+    if two_monitors:
+        hlwm.call('add other')
+        hlwm.call('set_monitors 173x174+4+5 199x198+200+100')
+        hlwm.call('focus_monitor 1')
+    hlwm.call('set_attr theme.border_width 0')  # disable border
+    # add pad to the focused monitor and set its tag to floating
+    hlwm.call('pad +0 12 13 14 15')
+    hlwm.call('floating on')
+
+    # create a new window in the area of the second monitor.
+    g = (250, 160, 81, 82)  # x, y, width, height
+    w, winid = x11.create_client(geometry=g)
+    assert int(hlwm.get_attr('tags.focus.client_count')) == 1
+
+    # check that the new client has the desired geometry
+    win_geo = w.get_geometry()
+    assert (win_geo.width, win_geo.height) == (g[2], g[3])
+    x, y = x11.get_absolute_top_left(w)
+    assert (x, y) == (g[0], g[1])

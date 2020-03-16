@@ -15,6 +15,7 @@
 #include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "mousemanager.h"
 #include "root.h"
 #include "settings.h"
@@ -45,8 +46,8 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , pseudotile_(this,  "pseudotile", false)
     , ewmhrequests_(this, "ewmhrequests", true)
     , ewmhnotify_(this, "ewmhnotify", true)
-    , sizehints_floating_(this, "sizehints", true)
-    , sizehints_tiling_(this, "sizehints", false)
+    , sizehints_floating_(this, "sizehints_floating", true)
+    , sizehints_tiling_(this, "sizehints_tiling", false)
     , manager(cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
@@ -74,7 +75,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 
 void Client::init_from_X() {
     // treat wanted coordinates as floating coords
-    float_size_ = Root::get()->X.windowSize(window_);
+    auto root = Root::get();
+    auto globalGeometry = root->X.windowSize(window_);
+    float_size_ = root->monitors->interpretGlobalGeometry(globalGeometry);
     last_size_ = float_size_;
 
     pid_ = Root::get()->X.windowPid(window_);
@@ -371,7 +374,7 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
     if (!m) return;
     auto rect = this->float_size_;
     rect.x += m->rect.x;
-    rect.x += m->rect.y;
+    rect.y += m->rect.y;
     rect.x += m->pad_left();
     rect.y += m->pad_up();
     // ensure position is on monitor
