@@ -27,3 +27,22 @@ def test_window_focus(hlwm, x11, hc_idle, running_clients_num):
         print(x11.display.get_input_focus().focus)
         assert x11.display.get_input_focus().focus == last_client
         assert x11.winid_str(last_client) == hlwm.get_attr('clients.focus.winid')
+
+
+def test_client_moveresizes_itself(hlwm, x11):
+    # create a floating window
+    hlwm.call('move_monitor 0 500x600+12+13 14 15 16 17')
+    hlwm.call('floating on')
+    hlwm.call('set_attr theme.border_width 0')
+    w, _ = x11.create_client(geometry=(25, 26, 27, 28))
+
+    # resize the window to some other geometry
+    w.configure(x=60, y=70, width=300, height=200)
+    x11.display.sync()
+
+    hlwm.call('true')  # sync with hlwm
+    # check that w now has the desired geometry
+    win_geo = w.get_geometry()
+    assert (win_geo.width, win_geo.height) == (300, 200)
+    x, y = x11.get_absolute_top_left(w)
+    assert (x, y) == (60, 70)
