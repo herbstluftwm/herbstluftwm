@@ -5,7 +5,9 @@
 #include "tag.h"
 #include "x11-utils.h"
 
-MouseDragHandler::MouseDragHandler(MonitorManager* monitors, Client* dragClient, MouseDragFunction function)
+using std::make_shared;
+
+MouseDragHandlerFloating::MouseDragHandlerFloating(MonitorManager* monitors, Client* dragClient, MouseDragFunction function)
   : monitors_(monitors)
   , winDragClient_(dragClient)
   , dragFunction_(function)
@@ -19,13 +21,20 @@ MouseDragHandler::MouseDragHandler(MonitorManager* monitors, Client* dragClient,
     assertDraggingStillSafe();
 }
 
-void MouseDragHandler::handle_motion_event(Point2D newCursorPos)
+void MouseDragHandlerFloating::handle_motion_event(Point2D newCursorPos)
 {
     assertDraggingStillSafe();
     (this ->* dragFunction_)(newCursorPos);
 }
 
-void MouseDragHandler::assertDraggingStillSafe() {
+MouseDragHandler::Constructor MouseDragHandlerFloating::construct(MouseDragFunction dragFunction)
+{
+    return [dragFunction](MonitorManager* monitors, Client* client) -> std::shared_ptr<MouseDragHandler> {
+        return make_shared<MouseDragHandlerFloating>(monitors, client, dragFunction);
+    };
+}
+
+void MouseDragHandlerFloating::assertDraggingStillSafe() {
     if (monitors_->byIdx(dragMonitorIndex_) != dragMonitor_
             || !dragMonitor_
             || !winDragClient_
@@ -39,12 +48,12 @@ void MouseDragHandler::assertDraggingStillSafe() {
  * usually done in the destructor.
  * This relayouts the monitor on which the drag happend
  */
-void MouseDragHandler::finalize() {
+void MouseDragHandlerFloating::finalize() {
     assertDraggingStillSafe();
     dragMonitor_->applyLayout();
 }
 
-void MouseDragHandler::mouse_function_move(Point2D newCursorPos) {
+void MouseDragHandlerFloating::mouse_function_move(Point2D newCursorPos) {
     int x_diff = newCursorPos.x - buttonDragStart_.x;
     int y_diff = newCursorPos.y - buttonDragStart_.y;
     winDragClient_->float_size_ = winDragStart_;
@@ -59,7 +68,7 @@ void MouseDragHandler::mouse_function_move(Point2D newCursorPos) {
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
 }
 
-void MouseDragHandler::mouse_function_resize(Point2D newCursorPos) {
+void MouseDragHandlerFloating::mouse_function_resize(Point2D newCursorPos) {
     int x_diff = newCursorPos.x - buttonDragStart_.x;
     int y_diff = newCursorPos.y - buttonDragStart_.y;
     winDragClient_->float_size_ = winDragStart_;
@@ -119,7 +128,7 @@ void MouseDragHandler::mouse_function_resize(Point2D newCursorPos) {
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
 }
 
-void MouseDragHandler::mouse_function_zoom(Point2D newCursorPos) {
+void MouseDragHandlerFloating::mouse_function_zoom(Point2D newCursorPos) {
     // stretch, where center stays at the same position
     int x_diff = newCursorPos.x - buttonDragStart_.x;
     int y_diff = newCursorPos.y - buttonDragStart_.y;

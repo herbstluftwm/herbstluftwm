@@ -112,15 +112,24 @@ void MouseManager::mouse_handle_event(unsigned int modifiers, unsigned int butto
     (this ->* (b->action))(client, b->cmd); }
 
 void MouseManager::mouse_initiate_move(Client* client, const vector<string> &cmd) {
-    mouse_initiate_drag(client, &MouseDragHandler::mouse_function_move);
+    mouse_initiate_drag(
+                client,
+                MouseDragHandlerFloating::construct(
+                    &MouseDragHandlerFloating::mouse_function_move));
 }
 
 void MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
-    mouse_initiate_drag(client, &MouseDragHandler::mouse_function_zoom);
+    mouse_initiate_drag(
+                client,
+                MouseDragHandlerFloating::construct(
+                    &MouseDragHandlerFloating::mouse_function_zoom));
 }
 
 void MouseManager::mouse_initiate_resize(Client* client, const vector<string> &cmd) {
-    mouse_initiate_drag(client, &MouseDragHandler::mouse_function_resize);
+    mouse_initiate_drag(
+                client,
+                MouseDragHandlerFloating::construct(
+                    &MouseDragHandlerFloating::mouse_function_resize));
 }
 
 void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd) {
@@ -135,10 +144,10 @@ void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd)
     clients_->setDragged(nullptr);
 }
 
-void MouseManager::mouse_initiate_drag(Client *client, void (MouseDragHandler::*function)(Point2D))
+void MouseManager::mouse_initiate_drag(Client *client, const MouseDragHandler::Constructor& createHandler)
 {
     try {
-        dragHandler_ = std::make_shared<MouseDragHandler>(monitors_, client, function);
+        dragHandler_ = createHandler(monitors_, client);
         // only grab pointer if dragHandler_ could be started
         clients_->setDragged(client);
         XGrabPointer(g_display, client->x11Window(), True,
