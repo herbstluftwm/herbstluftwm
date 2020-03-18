@@ -551,7 +551,9 @@ def x11(x11_connection):
             return resp.value if resp is not None else None
 
         def create_client(self, urgent=False, pid=None,
-                          geometry=(50, 50, 300, 200)):
+                          geometry=(50, 50, 300, 200),
+                          force_unmanage=False,
+                          ):
             w = self.root.create_window(
                 geometry[0],
                 geometry[1],
@@ -562,6 +564,7 @@ def x11(x11_connection):
                 X.InputOutput,
                 X.CopyFromParent,
                 background_pixel=self.screen.white_pixel,
+                override_redirect=force_unmanage,
             )
 
             # Keep track of window for later removal:

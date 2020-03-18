@@ -323,3 +323,15 @@ def test_unmanage(hlwm, x11, manage):
 
     expected_children = [] if manage == 'off' else [winid, 'focus']
     assert hlwm.list_children('clients') == expected_children
+
+
+@pytest.mark.parametrize('force_unmanage', [False, True])
+def test_rule_hook_unmanaged(hlwm, x11, hc_idle, force_unmanage):
+    # here, we test that a new window fires a rule with a hook, regardless
+    # of whether the window is managable or not (e.g. menus). The crucial case
+    # is of course for force_unmanage=True.
+    hlwm.call('rule hook=somewindow')
+
+    _, winid = x11.create_client(force_unmanage=force_unmanage)
+
+    assert ['rule', 'somewindow', str(winid)] in hc_idle.hooks()

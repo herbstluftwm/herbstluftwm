@@ -91,7 +91,7 @@ void XMainLoop::scanExistingClients() {
         }
         if (wa.map_state == IsViewable
             || isInOriginalClients(win)) {
-            clientmanager->manage_client(win, true);
+            clientmanager->manage_client(win, true, false);
             XMapWindow(X_.display(), win);
         }
     }
@@ -105,7 +105,7 @@ void XMainLoop::scanExistingClients() {
             continue;
         }
         XReparentWindow(X_.display(), win, X_.root(), 0,0);
-        clientmanager->manage_client(win, true);
+        clientmanager->manage_client(win, true, false);
     }
 }
 
@@ -329,6 +329,10 @@ void XMainLoop::mapnotify(XMapEvent* event) {
         }
         // also update the window title - just to be sure
         c->update_title();
+    } else {
+        // the window is not managed.
+        HSDebug("MapNotify: briefly managing %lx to apply rules\n", event->window);
+        root_->clients()->manage_client(event->window, true, true);
     }
 }
 
@@ -355,7 +359,7 @@ void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
             // client should be managed (is not ignored)
             // but is not managed yet
             auto clientmanager = root_->clients();
-            auto client = clientmanager->manage_client(window, false);
+            auto client = clientmanager->manage_client(window, false, false);
             if (client && find_monitor_with_tag(client->tag())) {
                 XMapWindow(X_.display(), window);
             }
