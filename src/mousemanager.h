@@ -47,7 +47,9 @@ public:
     void mouse_call_command(Client* client, const std::vector<std::string> &cmd);
 
 private:
-    void mouse_initiate_drag(Client* client, void (MouseDragHandler::*function)(Point2D));
+    //! manually (forward-)declare MouseDragHandler::Constructor as MDC here:
+    typedef std::function<std::shared_ptr<MouseDragHandler>(MonitorManager*, Client*)> MDC;
+    void mouse_initiate_drag(Client* client, const MDC& createHandler);
 
     std::shared_ptr<MouseDragHandler> dragHandler_;
     Cursor cursor;
