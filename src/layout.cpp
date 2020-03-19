@@ -321,6 +321,7 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
 }
 
 TilingResult HSFrameSplit::computeLayout(Rectangle rect) {
+    last_rect = rect;
     auto first = rect;
     auto second = rect;
     if (align_ == SplitAlign::vertical) {
@@ -602,10 +603,28 @@ int frame_change_fraction_command(int argc, char** argv, Output output) {
 
 void HSFrameSplit::adjustFraction(int delta) {
     fraction_ += delta;
-    fraction_ = CLAMP(fraction_, (int)(FRAME_MIN_FRACTION * FRACTION_UNIT),
-                               (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
+    fraction_ = clampFraction(fraction_);
 }
 
+void HSFrameSplit::setFraction(int fraction)
+{
+    fraction_ = clampFraction(fraction);
+}
+
+int HSFrameSplit::clampFraction(int fraction)
+{
+    return CLAMP(fraction,
+                 (int)(FRAME_MIN_FRACTION * FRACTION_UNIT),
+                 (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
+}
+
+/**
+ * @brief find a neighbour frame in the specified direction. The neighbour frame
+ * can be a HSFrameLeaf or a HSFrameSplit. Its parent frame is the HSFrameSplit
+ * that manages the border between the 'this' frame and the returned neighbour
+ * @param direction
+ * @return returns the neighbour, if there is any.
+ */
 shared_ptr<HSFrame> HSFrameLeaf::neighbour(Direction direction) {
     bool found = false;
     shared_ptr<HSFrame> other;

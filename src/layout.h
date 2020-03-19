@@ -73,6 +73,8 @@ public:
         return onLeaf(l);
     }
 
+    Rectangle lastRect() { return last_rect; }
+
     friend class HSFrameSplit;
     friend class FrameTree;
 public: // soon will be protected:
@@ -82,6 +84,8 @@ protected:
     HSTag* tag_;
     Settings* settings_;
     std::weak_ptr<HSFrameSplit> parent_;
+    Rectangle  last_rect; // last rectangle when being drawn
+                          // this is only used for 'split explode'
 };
 
 class HSFrameLeaf : public HSFrame, public FrameDataLeaf {
@@ -122,7 +126,6 @@ public:
 
     friend class HSFrame;
     void setVisible(bool visible);
-    Rectangle lastRect() { return last_rect; }
     int getInnerNeighbourIndex(Direction direction);
 private:
     friend class FrameTree;
@@ -135,8 +138,6 @@ private:
 
     // members
     FrameDecoration* decoration;
-    Rectangle  last_rect; // last rectangle when being drawn
-                          // this is only used for 'split explode'
 };
 
 class HSFrameSplit : public HSFrame, public FrameDataSplit<HSFrame> {
@@ -163,6 +164,9 @@ public:
     std::shared_ptr<HSFrame> selectedChild() { return selection_ ? b_ : a_; }
     void swapChildren();
     void adjustFraction(int delta);
+    void setFraction(int fraction);
+    int getFraction() const { return fraction_; }
+    static int clampFraction(int fraction);
     std::shared_ptr<HSFrameSplit> thisSplit();
     std::shared_ptr<HSFrameSplit> isSplit() override { return thisSplit(); }
     SplitAlign getAlign() { return align_; }
@@ -180,9 +184,6 @@ int find_layout_by_name(const char* name);
 
 int frame_current_bring(int argc, char** argv, Output output);
 
-// get neighbour in a specific direction 'l' 'r' 'u' 'd' (left, right,...)
-// returns the neighbour or NULL if there is no one
-HSFrame* frame_neighbour(HSFrame* frame, char direction);
 int frame_focus_command(int argc, char** argv, Output output);
 
 int frame_current_set_client_layout(int argc, char** argv, Output output);

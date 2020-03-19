@@ -301,6 +301,11 @@ shared_ptr<HSFrameLeaf> FrameTree::findFrameWithClient(Client* client) {
     return frame;
 }
 
+bool FrameTree::contains(std::shared_ptr<HSFrame> frame) const
+{
+    return frame->root() == this->root_;
+}
+
 bool FrameTree::focusClient(Client* client) {
     auto frameLeaf = findFrameWithClient(client);
     if (!frameLeaf) {
