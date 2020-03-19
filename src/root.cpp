@@ -64,6 +64,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
 
     // connect slots
     clients->needsRelayout.connect(monitors(), &MonitorManager::relayoutTag);
+    theme->theme_changed_.connect(monitors(), &MonitorManager::relayoutAll);
 }
 
 Root::~Root()

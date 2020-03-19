@@ -13,6 +13,7 @@ Theme::Theme() {
     };
     for (int i = 0; i < (int)Type::Count; i++) {
         addStaticChild(&dec[i], type_names[i]);
+        dec[i].triple_changed_.connect([this](){ this->theme_changed_.emit(); });
     }
 
     // forward attribute changes: only to tiling and floating
@@ -43,7 +44,7 @@ DecorationScheme::DecorationScheme()
     for (auto i : proxyAttributes_) {
         addAttribute(i->toAttribute());
         i->toAttribute()->setWriteable();
-        // TODO: signal decoration change (leading to relayout)
+        i->toAttribute()->changed().connect([this]() { this->scheme_changed_.emit(); });
     }
 }
 
@@ -52,11 +53,15 @@ DecTriple::DecTriple()
     addStaticChild(&normal, "normal");
     addStaticChild(&active, "active");
     addStaticChild(&urgent, "urgent");
-    makeProxyFor({
+    vector<DecorationScheme*> children = {
         &normal,
         &active,
         &urgent,
-    });
+    };
+    makeProxyFor(children);
+    for (auto it : children) {
+        it->scheme_changed_.connect([this]() { this->triple_changed_.emit(); });
+    }
 }
 
 //! reset all attributes to a default value
