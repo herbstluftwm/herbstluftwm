@@ -38,7 +38,10 @@ Settings::Settings()
                                  getColorAttr("theme.tiling.urgent.color"),
                                  setColorAttr("theme.urgent.color"))
 {
+    verbose = g_verbose > 0;
+    verbose.changed().connect([](bool newVal) { g_verbose = newVal; });
     wireAttributes({
+        &verbose,
         &frame_gap,
         &frame_padding,
         &window_gap,
