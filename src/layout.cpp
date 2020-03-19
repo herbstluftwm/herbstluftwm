@@ -91,7 +91,7 @@ bool HSFrameLeaf::removeClient(Client* client) {
         // else shift it by 1
         selection -= (selection < idx) ? 0 : 1;
         // ensure valid index
-        selection = std::max(std::min(selection, (int)clients.size()), 0);
+        selection = std::max(std::min(selection, ((int)clients.size()) - 1), 0);
         return true;
     } else {
         return false;
