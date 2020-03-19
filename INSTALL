@@ -62,6 +62,12 @@ To use the software locally, create your own autostart file:
     mkdir -p ~/.config/herbstluftwm/
     cp /etc/xdg/herbstluftwm/autostart ~/.config/herbstluftwm/autostart
 
+==== Trying herbstluftwm ====
+If you want to give herbstluftwm a quick try, then you can use the
+valgrind-xephyr.sh from your existing X session:
+
+    mkdir -p build && cd build && cmake .. && make && ../valgrind-xephyr.sh
+
 ==== First steps without installing ====
 1. create and switch to a build directory:
 
