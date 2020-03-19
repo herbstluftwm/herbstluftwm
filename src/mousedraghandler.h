@@ -7,11 +7,12 @@
 #include "x11-types.h"
 
 class Client;
+class HSFrameLeaf;
+class HSFrameSplit;
+class HSTag;
 class Monitor;
 class MonitorManager;
 class MouseDragHandlerFloating;
-
-typedef void (MouseDragHandlerFloating::*MouseDragFunction)(Point2D);
 
 /**
  * @brief The abstract class MouseDragHandler encapsulates what drag handling
@@ -47,11 +48,13 @@ protected:
  */
 class MouseDragHandlerFloating : public MouseDragHandler {
 public:
-    MouseDragHandlerFloating(MonitorManager* monitors_, Client* dragClient, MouseDragFunction function);
+    typedef void (MouseDragHandlerFloating::*DragFunction)(Point2D);
+
+    MouseDragHandlerFloating(MonitorManager* monitors_, Client* dragClient, DragFunction function);
     virtual ~MouseDragHandlerFloating() {};
     virtual void finalize();
     virtual void handle_motion_event(Point2D newCursorPos);
-    static Constructor construct(MouseDragFunction dragFunction);
+    static Constructor construct(DragFunction dragFunction);
     /* some mouse drag functions */
     void mouse_function_move(Point2D newCursorPos);
     void mouse_function_resize(Point2D newCursorPos);
@@ -65,6 +68,31 @@ private:
     Client*        winDragClient_ = nullptr;
     Monitor*       dragMonitor_ = nullptr;
     unsigned long dragMonitorIndex_ = 0;
-    MouseDragFunction dragFunction_ = nullptr;
+    DragFunction dragFunction_ = nullptr;
+};
+
+
+/**
+ * @brief The MouseResizeFrame class manages resizing
+ * a frame in tiling mode.
+ */
+class MouseResizeFrame : public MouseDragHandler {
+public:
+    MouseResizeFrame(MonitorManager* monitors, std::shared_ptr<HSFrameLeaf> frame);
+    virtual ~MouseResizeFrame() {};
+    virtual void finalize();
+    virtual void handle_motion_event(Point2D newCursorPos);
+    static Constructor construct(std::shared_ptr<HSFrameLeaf> frame);
+private:
+    void assertDraggingStillSafe();
+
+    MonitorManager*  monitors_;
+    Point2D          buttonDragStart_;
+    std::weak_ptr<HSFrameSplit> dragFrame_; //! the frame whose split is adjusted
+    int              dragStartFraction_; //! initial fraction
+    int              dragDistanceUnit_; //! 100% split ratio in pixels
+    HSTag*           dragTag_; //! the tag containing the dragFrame
+    Monitor*         dragMonitor_ = nullptr; //! the monitor with the dragFrame
+    unsigned long    dragMonitorIndex_ = 0;
 };
 

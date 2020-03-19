@@ -1,13 +1,18 @@
 #include "client.h"
+#include "framedata.h"
+#include "layout.h"
 #include "monitormanager.h"
 #include "mouse.h"
 #include "mousedraghandler.h"
 #include "tag.h"
 #include "x11-utils.h"
 
-using std::make_shared;
+#include <cmath>
 
-MouseDragHandlerFloating::MouseDragHandlerFloating(MonitorManager* monitors, Client* dragClient, MouseDragFunction function)
+using std::make_shared;
+using std::shared_ptr;
+
+MouseDragHandlerFloating::MouseDragHandlerFloating(MonitorManager* monitors, Client* dragClient, DragFunction function)
   : monitors_(monitors)
   , winDragClient_(dragClient)
   , dragFunction_(function)
@@ -27,7 +32,7 @@ void MouseDragHandlerFloating::handle_motion_event(Point2D newCursorPos)
     (this ->* dragFunction_)(newCursorPos);
 }
 
-MouseDragHandler::Constructor MouseDragHandlerFloating::construct(MouseDragFunction dragFunction)
+MouseDragHandler::Constructor MouseDragHandlerFloating::construct(DragFunction dragFunction)
 {
     return [dragFunction](MonitorManager* monitors, Client* client) -> std::shared_ptr<MouseDragHandler> {
         return make_shared<MouseDragHandlerFloating>(monitors, client, dragFunction);
@@ -179,4 +184,116 @@ void MouseDragHandlerFloating::mouse_function_zoom(Point2D newCursorPos) {
     client->float_size_.x = cent_x - new_width / 2;
     client->float_size_.y = cent_y - new_height / 2;
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
+}
+
+MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<HSFrameLeaf> frame)
+    : monitors_(monitors)
+{
+    dragMonitor_ = monitors_->byFrame(frame);
+    dragMonitorIndex_ = dragMonitor_->index();
+    dragTag_ = dragMonitor_->tag;
+    if (!dragMonitor_) {
+        throw DragNotPossible();
+    }
+    buttonDragStart_ = get_cursor_position();
+    Rectangle frameRect = frame->lastRect();
+    /* check whether the cursor is the following area:
+     *
+     * frameRect.tl() -> * -- +
+     *                   |\   .
+     *                   |A\  .
+     *                   |AA\ .
+     *                   |AAA\.
+     *                   +----* <- frameRect.br()
+     *
+     */
+    bool inBottomLeftTriangle =
+        (buttonDragStart_ - frameRect.tl())
+            .biggerSlopeThan(frameRect.br() - frameRect.tl());
+    /* check whether the cursor is the following area:
+     *
+     *                   +----* <- frameRect.tr()
+     *                   |AAA/.
+     *                   |AA/ .
+     *                   |A/  .
+     *                   |/   .
+     * frameRect.bl() -> * -- +
+     *
+     */
+    bool inTopLeftTriangle =
+        (frameRect.tr() - frameRect.bl())
+            .biggerSlopeThan(buttonDragStart_ - frameRect.bl());
+    /* with the combination of the above booleans we know in which of the
+     * following four areas the cursor is:
+     *
+     *    +----*
+     *    |\  /|
+     *    | \/ |
+     *    | /\ |
+     *    |/  \|
+     *    * -- +
+     */
+    Direction dir;
+    if (inBottomLeftTriangle && inTopLeftTriangle) {
+        dir = Direction::Left;
+    } else if (inBottomLeftTriangle) {
+        dir = Direction::Down;
+    } else if (inTopLeftTriangle) {
+        dir = Direction::Up;
+    } else {
+        dir = Direction::Right;
+    }
+    shared_ptr<HSFrame> neighbour = frame->neighbour(dir);
+    if (!neighbour || !neighbour->getParent()) {
+        throw DragNotPossible();
+    }
+    dragFrame_ = neighbour->getParent();
+    auto df = dragFrame_.lock();
+    dragDistanceUnit_ =
+            (df->getAlign() == SplitAlign::vertical)
+            ? df->lastRect().height
+            : df->lastRect().width;
+    dragStartFraction_ = df->getFraction();
+}
+
+void MouseResizeFrame::finalize()
+{
+    assertDraggingStillSafe();
+    dragMonitor_->applyLayout();
+}
+
+void MouseResizeFrame::handle_motion_event(Point2D newCursorPos)
+{
+    assertDraggingStillSafe();
+    auto df = dragFrame_.lock();
+    auto deltaVec = newCursorPos - buttonDragStart_;
+    double delta;
+    if (df->getAlign() == SplitAlign::vertical) {
+        delta = deltaVec.y;
+    } else {
+        delta = deltaVec.x;
+    }
+    // translate delta from 'pixels' to 'FRACTION_UNIT'
+    delta = (delta * FRACTION_UNIT) / dragDistanceUnit_;
+    df->setFraction(dragStartFraction_ + (int)delta);
+    dragMonitor_->applyLayout();
+}
+
+MouseDragHandler::Constructor MouseResizeFrame::construct(std::shared_ptr<HSFrameLeaf> frame)
+{
+    return [frame](MonitorManager* monitors, Client*) {
+        return make_shared<MouseResizeFrame>(monitors, frame);
+    };
+}
+
+void MouseResizeFrame::assertDraggingStillSafe()
+{
+    bool allFine =
+            dragMonitorIndex_ < monitors_->size()
+            && monitors_->byIdx(dragMonitorIndex_) == dragMonitor_
+            && dragTag_ == dragMonitor_->tag
+            && !dragFrame_.expired();
+    if (!allFine) {
+        throw DragNotPossible();
+    }
 }

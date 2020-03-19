@@ -36,6 +36,10 @@ public:
     //! return a frame in the tree that holds the client
     std::shared_ptr<HSFrameLeaf> findFrameWithClient(Client* client);
 
+    //! check whether the present FrameTree contains a given HSFrame
+    //! (it requires that there are no cycles in the 'tree' containing the HSFrame
+    bool contains(std::shared_ptr<HSFrame> frame) const;
+
     // Commands
     int cycleSelectionCommand(Input input, Output output);
     int focusNthCommand(Input input, Output output);
