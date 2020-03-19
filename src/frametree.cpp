@@ -145,18 +145,31 @@ int FrameTree::removeFrameCommand() {
         // do nothing if is toplevel frame
         return 0;
     }
+    auto clientFocusIndex = frame->getSelection();
     auto parent = frame->getParent();
     auto pp = parent->getParent();
     auto newparent = (frame == parent->firstChild())
                      ? parent->secondChild()
                      : parent->firstChild();
-    focusedFrame(newparent)->addClients(frame->removeAllClients());
+    bool insertAtFront = (frame == parent->firstChild());
+    auto removedFrameClients = frame->removeAllClients();
+    auto targetFrame = focusedFrame(newparent);
+    int oldClientCount = (int)targetFrame->clientCount();
+    targetFrame->addClients(removedFrameClients, insertAtFront);
     // now, frame is empty
     if (pp) {
         pp->replaceChild(parent, newparent);
     } else {
         // if parent was root frame
         root_ = newparent;
+    }
+    // focus the same client again
+    if (removedFrameClients.size() > 0) {
+        if (insertAtFront) {
+            targetFrame->setSelection(clientFocusIndex);
+        } else {
+            targetFrame->setSelection(clientFocusIndex + oldClientCount);
+        }
     }
     get_current_monitor()->applyLayout();
     return 0;
