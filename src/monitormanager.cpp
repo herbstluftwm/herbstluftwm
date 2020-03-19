@@ -230,6 +230,13 @@ void MonitorManager::relayoutTag(HSTag* tag)
     }
 }
 
+void MonitorManager::relayoutAll()
+{
+    for (Monitor* m : *this) {
+        m->applyLayout();
+    }
+}
+
 int MonitorManager::removeMonitor(Input input, Output output)
 {
     string monitorIdxString;

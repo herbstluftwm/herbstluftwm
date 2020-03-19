@@ -88,6 +88,8 @@ public:
     AttributeProxy_<unsigned long>     padding_left = {"padding_left", 0};   // additional window border
     AttributeProxy_<Color>   background_color = {"background_color", {"black"}}; // color behind client contents
 
+    Signal scheme_changed_; //! whenever one of the attributes changes.
+
     Rectangle inner_rect_to_outline(Rectangle rect) const;
     Rectangle outline_to_inner_rect(Rectangle rect) const;
 
@@ -107,6 +109,9 @@ public:
     DecorationScheme  normal;
     DecorationScheme  active;
     DecorationScheme  urgent;
+    //! whenever one of the normal, active, urgend changed
+    //! (but not when the proxy attributes are changed)
+    Signal triple_changed_;
     // pick the right scheme, depending on whether a window is active/urgent
     const DecorationScheme& operator()(bool if_active, bool if_urgent) const {
         if (if_active) return this->active;
@@ -128,6 +133,8 @@ public:
         return dec[(int)t];
     };
     Theme();
+
+    Signal theme_changed_; //! one of the attributes in one of the triples changed
 
     // a sub-decoration for each type
     DecTriple dec[(int)Type::Count];

@@ -44,6 +44,7 @@ public:
     std::function<int(Input, Output)> byFirstArg(MonitorCommand cmd);
     // relayout the monitor showing this tag, if there is any
     void relayoutTag(HSTag* tag);
+    void relayoutAll();
     int removeMonitor(Input input, Output output);
     void removeMonitor(Monitor* monitor);
     // if the name is valid monitor name, return "", otherwise return an error message
