@@ -4,6 +4,8 @@ herbstluftwm NEWS -- History of user-visible changes
 Current git version
 -------------------
 
+  * The build system is now cmake. See the INSTALL file if you need to
+    compile herbstluftwm yourself.
   * Formerly, double dots in object paths were allowed (similar to double
     slashes in file paths in unix). Right now, they are only allowed at the end
     (which is necessary for the tab-completion of attr):
@@ -29,6 +31,7 @@ Current git version
   * new command: export (convenience wrapper around setenv)
   * the 'remove' command now tries to preserve the focus and the client
     arrangement. Intutively speaking, 'remove' is undoing a frame split.
+  * new attributes on every monitor for pad_up pad_down pad_left pad_right
 
 Release 0.7.2 on 2019-05-28
 ---------------------------
