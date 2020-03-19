@@ -1,5 +1,6 @@
 install(FILES herbstclient-completion DESTINATION ${BASHCOMPLETIONDIR})
 install(FILES _herbstclient           DESTINATION ${ZSHCOMPLETIONDIR})
+install(FILES herbstclient.fish       DESTINATION ${FISHCOMPLETIONDIR})
 install(FILES herbstluftwm.desktop    DESTINATION ${XSESSIONSDIR})
 
 install(PROGRAMS
