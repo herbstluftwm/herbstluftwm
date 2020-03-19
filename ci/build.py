@@ -61,8 +61,8 @@ build_env = os.environ.copy()
 build_env.update({
     'CC': args.cc,
     'CXX': args.cxx,
-    'CFLAGS': '--coverage -Werror',
-    'CXXFLAGS': '--coverage -Werror',
+    'CFLAGS': '--coverage -Werror -Wno-error=null-dereference',
+    'CXXFLAGS': '--coverage -Werror -Wno-error=null-dereference',
 })
 
 cmake_args = [
