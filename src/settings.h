@@ -28,6 +28,7 @@ public:
     void cycle_value_complete(Completion& complete);
 
     // all the settings:
+    Attribute_<bool>          verbose = {"verbose", false};
     Attribute_<int>           frame_gap = {"frame_gap", 5};
     Attribute_<int>           frame_padding = {"frame_padding", 0};
     Attribute_<int>           window_gap = {"window_gap", 0};
