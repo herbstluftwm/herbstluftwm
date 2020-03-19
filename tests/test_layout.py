@@ -34,8 +34,30 @@ def test_remove(hlwm, running_clients, running_clients_num):
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == running_clients_num
     assert int(hlwm.get_attr('tags.0.client_count')) == running_clients_num
     assert hlwm.get_attr('tags.0.frame_count') == '1'
-    # TODO: reasonably handle focus, e.g. to have
-    # assert hlwm.get_attr('tags.0.curframe_windex') == '2'
+
+
+@pytest.mark.parametrize("running_clients_num", [4])
+@pytest.mark.parametrize("focus_idx", [0, 1, 2, 3])
+def test_remove_client_focus(hlwm, running_clients, running_clients_num, focus_idx):
+    layout = """
+        (split horizontal:0.5:{x}
+          (clients vertical:{y} {} {})
+          (clients vertical:{z} {} {}))
+    """.format(*running_clients,
+               x=(focus_idx // 2),
+               y=(focus_idx % 2),
+               z=(focus_idx % 2)).strip()
+    hlwm.call(['load', layout])
+    focus = hlwm.get_attr('clients.focus.winid')
+    assert running_clients[focus_idx] == focus
+
+    hlwm.call('remove')
+
+    # then the focus is preserved
+    assert focus == hlwm.get_attr('clients.focus.winid')
+    # and the clients appear in the original order
+    assert ' '.join(running_clients) in hlwm.call('dump').stdout
+    assert hlwm.get_attr('tags.0.frame_count') == '1'
 
 
 @pytest.mark.parametrize("running_clients_num", [3, 4])

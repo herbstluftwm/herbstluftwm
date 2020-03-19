@@ -104,7 +104,7 @@ public:
     // own members
     void setSelection(int idx);
     void select(Client* client);
-    void addClients(const std::vector<Client*>& vec);
+    void addClients(const std::vector<Client*>& vec, bool atFront = false);
 
 
     Client* focusedClient() override;

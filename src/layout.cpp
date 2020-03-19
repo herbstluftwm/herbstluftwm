@@ -423,8 +423,9 @@ void HSFrameSplit::replaceChild(shared_ptr<HSFrame> old, shared_ptr<HSFrame> new
     }
 }
 
-void HSFrameLeaf::addClients(const vector<Client*>& vec) {
-    for (auto c : vec) clients.push_back(c);
+void HSFrameLeaf::addClients(const vector<Client*>& vec, bool atFront) {
+    auto targetPosition = atFront ? clients.begin() : clients.end();
+    clients.insert(targetPosition, vec.begin(), vec.end());
 }
 
 bool HSFrameLeaf::split(SplitAlign alignment, int fraction, size_t childrenLeaving) {

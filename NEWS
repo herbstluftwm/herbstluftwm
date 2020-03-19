@@ -27,6 +27,8 @@ Current git version
   * monitor detection via xrandr
   * list_rules now prints regex-based rule conditions with '~' instead of '='
   * new command: export (convenience wrapper around setenv)
+  * the 'remove' command now tries to preserve the focus and the client
+    arrangement. Intutively speaking, 'remove' is undoing a frame split.
 
 Release 0.7.2 on 2019-05-28
 ---------------------------
