@@ -3,6 +3,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <algorithm>
 #include <cassert>
 #include <iomanip>
 
@@ -113,6 +114,28 @@ bool Rectangle::operator==(const Rectangle& other) const
         && y == other.y
         && width == other.width
         && height == other.height;
+}
+
+/**
+ * @brief Check whether a rectangle has non-negative width and height
+ */
+Rectangle::operator bool() const
+{
+    return (width >= 0) && (height >= 0);
+}
+
+/**
+ * @brief Return the intersection with another rectangel
+ * @param the other rectangle
+ * @return the intersection
+ */
+Rectangle Rectangle::intersectionWith(const Rectangle &other) const
+{
+    return Rectangle::fromCorners(
+                std::max(x, other.x),
+                std::max(y, other.y),
+                std::min(br().x, other.br().x),
+                std::min(br().y, other.br().y));
 }
 
 std::ostream& operator<< (std::ostream& stream, const Rectangle& rect) {

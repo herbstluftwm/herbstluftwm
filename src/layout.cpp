@@ -321,6 +321,7 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
 }
 
 TilingResult HSFrameSplit::computeLayout(Rectangle rect) {
+    last_rect = rect;
     auto first = rect;
     auto second = rect;
     if (align_ == SplitAlign::vertical) {
@@ -423,8 +424,9 @@ void HSFrameSplit::replaceChild(shared_ptr<HSFrame> old, shared_ptr<HSFrame> new
     }
 }
 
-void HSFrameLeaf::addClients(const vector<Client*>& vec) {
-    for (auto c : vec) clients.push_back(c);
+void HSFrameLeaf::addClients(const vector<Client*>& vec, bool atFront) {
+    auto targetPosition = atFront ? clients.begin() : clients.end();
+    clients.insert(targetPosition, vec.begin(), vec.end());
 }
 
 bool HSFrameLeaf::split(SplitAlign alignment, int fraction, size_t childrenLeaving) {
@@ -601,10 +603,28 @@ int frame_change_fraction_command(int argc, char** argv, Output output) {
 
 void HSFrameSplit::adjustFraction(int delta) {
     fraction_ += delta;
-    fraction_ = CLAMP(fraction_, (int)(FRAME_MIN_FRACTION * FRACTION_UNIT),
-                               (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
+    fraction_ = clampFraction(fraction_);
 }
 
+void HSFrameSplit::setFraction(int fraction)
+{
+    fraction_ = clampFraction(fraction);
+}
+
+int HSFrameSplit::clampFraction(int fraction)
+{
+    return CLAMP(fraction,
+                 (int)(FRAME_MIN_FRACTION * FRACTION_UNIT),
+                 (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
+}
+
+/**
+ * @brief find a neighbour frame in the specified direction. The neighbour frame
+ * can be a HSFrameLeaf or a HSFrameSplit. Its parent frame is the HSFrameSplit
+ * that manages the border between the 'this' frame and the returned neighbour
+ * @param direction
+ * @return returns the neighbour, if there is any.
+ */
 shared_ptr<HSFrame> HSFrameLeaf::neighbour(Direction direction) {
     bool found = false;
     shared_ptr<HSFrame> other;
@@ -655,14 +675,13 @@ shared_ptr<HSFrame> HSFrameLeaf::neighbour(Direction direction) {
     return other;
 }
 
-// finds a neighbour within frame in the specified direction
-// returns its index or -1 if there is none
-int frame_inner_neighbour_index(shared_ptr<HSFrameLeaf> frame, Direction direction) {
+//! finds the neighbour of the selected client in the specified direction
+// within the frame
+//! returns its index or -1 if there is none
+int HSFrameLeaf::getInnerNeighbourIndex(Direction direction) {
     int index = -1;
-    int selection = frame->getSelection();
-    int count = frame->clientCount();
-    int rows, cols;
-    switch (frame->getLayout()) {
+    int count = clientCount();
+    switch (getLayout()) {
         case LayoutAlgorithm::vertical:
             if (direction == Direction::Down) index = selection + 1;
             if (direction == Direction::Up) index = selection - 1;
@@ -674,6 +693,7 @@ int frame_inner_neighbour_index(shared_ptr<HSFrameLeaf> frame, Direction directi
         case LayoutAlgorithm::max:
             break;
         case LayoutAlgorithm::grid: {
+            int rows, cols;
             frame_layout_grid_get_size(count, &rows, &cols);
             if (cols == 0) break;
             int r = selection / cols;
@@ -727,7 +747,7 @@ int frame_focus_command(int argc, char** argv, Output output) {
     if (frame->getTag()->floating) {
         neighbour_found = floating_focus_direction(direction);
     } else if (!external_only &&
-        (index = frame_inner_neighbour_index(frame, direction)) != -1) {
+        (index = frame->getInnerNeighbourIndex(direction)) != -1) {
         frame->setSelection(index);
         get_current_monitor()->applyLayout();
     } else {
@@ -792,7 +812,7 @@ int frame_move_window_command(int argc, char** argv, Output output) {
     }
     int index;
     if (!external_only &&
-        (index = frame_inner_neighbour_index(frame, direction)) != -1) {
+        (index = frame->getInnerNeighbourIndex(direction)) != -1) {
         frame->moveClient(index);
         get_current_monitor()->applyLayout();
     } else {

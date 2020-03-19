@@ -194,6 +194,34 @@ Monitor* MonitorManager::byTag(HSTag* tag) {
     return nullptr;
 }
 
+/**
+ * @brief Find the monitor having the given coordinate
+ * @param coordinate on a monitor
+ * @return The monitor with the coordinate or nullptr if the coordinate is outside of any monitor
+ */
+Monitor* MonitorManager::byCoordinate(Point2D p)
+{
+    for (Monitor* m : *this) {
+        if (m->rect.x + m->pad_left <= p.x
+            && m->rect.x + m->rect.width - m->pad_right > p.x
+            && m->rect.y + m->pad_up <= p.y
+            && m->rect.y + m->rect.height - m->pad_down > p.y) {
+            return &* m;
+        }
+    }
+    return nullptr;
+}
+
+Monitor* MonitorManager::byFrame(shared_ptr<HSFrame> frame)
+{
+    for (Monitor* m : *this) {
+        if (m->tag->frame->contains(frame)) {
+            return m;
+        }
+    }
+    return nullptr;
+}
+
 void MonitorManager::relayoutTag(HSTag* tag)
 {
     Monitor* m = byTag(tag);
@@ -485,6 +513,35 @@ int MonitorManager::setMonitorsCommand(Input input, Output output) {
 void MonitorManager::setMonitorsCompletion(Completion&) {
     // every parameter can be a rectangle specification.
     // we don't have completion for rectangles
+}
+
+/**
+ * @brief Transform a rectangle on the screen into a rectangle relative to one of the monitor.
+ * Currently, we pick the monitor that has the biggest intersection with the given rectangle.
+ *
+ * @param globalGeometry A rectangle whose coordinates are interpreted relative to (0,0) on the screen
+ * @return The given rectangle with coordinates relative to a monitor
+ */
+Rectangle MonitorManager::interpretGlobalGeometry(Rectangle globalGeometry)
+{
+    int bestArea = 0;
+    Monitor* best = nullptr;
+    for (Monitor* m : *this) {
+        auto intersection = m->rect.intersectionWith(globalGeometry);
+        if (!intersection) {
+            continue;
+        }
+        auto area = intersection.width * intersection.height;
+        if (area > bestArea) {
+            bestArea = area;
+            best = m;
+        }
+    }
+    if (best) {
+        globalGeometry.x -= best->rect.x + *best->pad_left;
+        globalGeometry.y -= best->rect.y + *best->pad_up;
+    }
+    return globalGeometry;
 }
 
 int MonitorManager::raiseMonitorCommand(Input input, Output output) {

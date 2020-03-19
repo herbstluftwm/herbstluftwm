@@ -61,8 +61,8 @@ build_env = os.environ.copy()
 build_env.update({
     'CC': args.cc,
     'CXX': args.cxx,
-    'CFLAGS': '--coverage -Werror',
-    'CXXFLAGS': '--coverage -Werror',
+    'CFLAGS': '--coverage -Werror -Wno-error=null-dereference',
+    'CXXFLAGS': '--coverage -Werror -Wno-error=null-dereference',
 })
 
 cmake_args = [
@@ -97,10 +97,18 @@ if args.iwyu:
 
     # Check IWYU output, but ignore any suggestions to add things (those tend
     # to be overzealous):
-    complaints = set(re.findall(r'(\S+) should remove these lines:\n[^\n]', iwyu_out.decode('ascii')))
+    # the following regex checks that the : is followed by a
+    # non-empty sequence of non-empty lines
+    iwyu_out_str = iwyu_out.decode('ascii').replace('\r', '')
+    reg = r'(\S+) should remove these lines:\n(([^\n]+\n)+)'
+    complaints = set(re.findall(reg, iwyu_out_str))
     if complaints:
-        sys.stdout.buffer.write(iwyu_out)
-        print('IWYU made suggestions to remove things in (see log above): {}'.format(', '.join(complaints)))
+        print('IWYU made suggestions to remove things in the following files:')
+        for filepath, changes, _ in complaints:
+            print("===== {} should remove: =====\n{}\n".format(filepath, changes.rstrip()))
+        print("After removing the above lines it might be necessary to add")
+        print("additional forward declarations to make it build again.")
+        print("")
         sys.exit(1)
 
 if args.flake8:

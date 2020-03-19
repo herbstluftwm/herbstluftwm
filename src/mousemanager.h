@@ -2,24 +2,20 @@
 
 #include <X11/X.h>
 #include <list>
+#include <memory>
 
 #include "mouse.h"
 #include "object.h"
 #include "optional.h"
-#include "x11-types.h"
 
-class ClientManager;
 class Completion;
+class ClientManager;
 class MonitorManager;
-
-typedef void (MouseManager::*MouseDragFunction)(Point2D);
+class MouseDragHandler;
+struct Point2D;
 
 class MouseManager : public Object {
 public:
-    enum class Mode {
-        NoDrag,
-        DraggingClient,
-    };
     MouseManager();
     ~MouseManager();
 
@@ -41,7 +37,6 @@ public:
     void grab_client_buttons(Client* client, bool focused);
 
     void mouse_handle_event(unsigned int modifiers, unsigned int button, Window window);
-    void mouse_initiate_drag(Client* client, MouseDragFunction function);
     void mouse_stop_drag();
     bool mouse_is_dragging();
     void handle_motion_event(Point2D newCursorPos);
@@ -50,22 +45,14 @@ public:
     void mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd);
     void mouse_initiate_resize(Client* client, const std::vector<std::string> &cmd);
     void mouse_call_command(Client* client, const std::vector<std::string> &cmd);
-    /* some mouse drag functions */
-    void mouse_function_move(Point2D newCursorPos);
-    void mouse_function_resize(Point2D newCursorPos);
-    void mouse_function_zoom(Point2D newCursorPos);
 
 private:
-    //! check whether we can continue dragging
-    bool draggingIsStillSafe();
-    Mode mode_;
+    //! manually (forward-)declare MouseDragHandler::Constructor as MDC here:
+    typedef std::function<std::shared_ptr<MouseDragHandler>(MonitorManager*, Client*)> MDC;
+    void mouse_initiate_drag(Client* client, const MDC& createHandler);
+
+    std::shared_ptr<MouseDragHandler> dragHandler_;
     Cursor cursor;
     ClientManager*  clients_;
     MonitorManager*  monitors_;
-    Point2D          buttonDragStart_;
-    Rectangle        winDragStart_;
-    Client*        winDragClient_ = nullptr;
-    Monitor*       dragMonitor_ = nullptr;
-    unsigned int dragMonitorIndex_ = 0;
-    MouseDragFunction dragFunction_ = nullptr;
 };

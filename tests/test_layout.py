@@ -34,8 +34,56 @@ def test_remove(hlwm, running_clients, running_clients_num):
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == running_clients_num
     assert int(hlwm.get_attr('tags.0.client_count')) == running_clients_num
     assert hlwm.get_attr('tags.0.frame_count') == '1'
-    # TODO: reasonably handle focus, e.g. to have
-    # assert hlwm.get_attr('tags.0.curframe_windex') == '2'
+
+
+@pytest.mark.parametrize("running_clients_num", [4])
+@pytest.mark.parametrize("focus_idx", [0, 1, 2, 3])
+def test_remove_client_focus(hlwm, running_clients, running_clients_num, focus_idx):
+    layout = """
+        (split horizontal:0.5:{x}
+          (clients vertical:{y} {} {})
+          (clients vertical:{z} {} {}))
+    """.format(*running_clients,
+               x=(focus_idx // 2),
+               y=(focus_idx % 2),
+               z=(focus_idx % 2)).strip()
+    hlwm.call(['load', layout])
+    focus = hlwm.get_attr('clients.focus.winid')
+    assert running_clients[focus_idx] == focus
+
+    hlwm.call('remove')
+
+    # then the focus is preserved
+    assert focus == hlwm.get_attr('clients.focus.winid')
+    # and the clients appear in the original order
+    assert ' '.join(running_clients) in hlwm.call('dump').stdout
+    assert hlwm.get_attr('tags.0.frame_count') == '1'
+
+
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_remove_nested_split(hlwm, running_clients, running_clients_num):
+    # a layout with three frames side by side
+    # where the right frame is focused.
+    # in the frame containing the left and the middle frame,
+    # the selection is 0, so new clients there would be inserted
+    # into the left frame. However, when removing the right frame, its
+    # clients should go to the (formerly) middle frame
+    layout = """
+        (split horizontal:0.5:1
+          (split horizontal:0.5:0
+              (clients vertical:0 {})
+              (clients vertical:0 {}))
+          (clients vertical:0 {}))
+    """.format(*running_clients).strip()
+    hlwm.call(['load', layout])
+    assert running_clients[2] == hlwm.get_attr('clients.focus.winid')
+
+    hlwm.call('remove')  # remove the right-most frame
+
+    # the clients of the formerly right frame go to the formerly
+    # middle frame
+    assert running_clients == re.findall(r'0x[0-9a-f]+', hlwm.call('dump').stdout)
+    assert hlwm.get_attr('tags.0.frame_count') == '2'
 
 
 @pytest.mark.parametrize("running_clients_num", [3, 4])

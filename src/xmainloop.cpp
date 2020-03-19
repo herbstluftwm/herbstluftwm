@@ -15,6 +15,7 @@
 #include "keymanager.h"
 #include "layout.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "mousemanager.h"
 #include "root.h"
 #include "settings.h"
@@ -90,7 +91,7 @@ void XMainLoop::scanExistingClients() {
         }
         if (wa.map_state == IsViewable
             || isInOriginalClients(win)) {
-            clientmanager->manage_client(win, true);
+            clientmanager->manage_client(win, true, false);
             XMapWindow(X_.display(), win);
         }
     }
@@ -104,7 +105,7 @@ void XMainLoop::scanExistingClients() {
             continue;
         }
         XReparentWindow(X_.display(), win, X_.root(), 0,0);
-        clientmanager->manage_client(win, true);
+        clientmanager->manage_client(win, true, false);
     }
 }
 
@@ -186,13 +187,32 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
             bool height_requested = 0 != (cre->value_mask & CWHeight);
             bool x_requested = 0 != (cre->value_mask & CWX);
             bool y_requested = 0 != (cre->value_mask & CWY);
-            cre->width += 2*cre->border_width;
-            cre->height += 2*cre->border_width;
             if (width_requested && newRect.width  != cre->width) changes = true;
             if (height_requested && newRect.height != cre->height) changes = true;
             if (x_requested || y_requested) changes = true;
-            if (x_requested) newRect.x = cre->x;
-            if (y_requested) newRect.y = cre->y;
+            if (x_requested || y_requested) {
+                // if only one of the two dimensions is requested, then just
+                // set the other to some reasonable value.
+                if (!x_requested) cre->x = client->last_size_.x;
+                if (!y_requested) cre->y = client->last_size_.y;
+                // interpret the x and y coordinate relative to the monitor they are currently on
+                Monitor* m = root_->monitors->byTag(client->tag());
+                if (!m) {
+                    // if the client is not visible at the moment, take the monitor that is
+                    // most appropriate according to the requested cooridnates:
+                    m = root_->monitors->byCoordinate({cre->x, cre->y});
+                }
+                if (!m) {
+                    // if we have not found a suitable monitor, take the current
+                    m = root_->monitors->focus();
+                }
+                // the requested coordinates are relative to the root window.
+                // convert them to coordinates relative to the monitor.
+                cre->x -= m->rect.x + *m->pad_left;
+                cre->y -= m->rect.y + *m->pad_up;
+                newRect.x = cre->x;
+                newRect.y = cre->y;
+            }
             if (width_requested) newRect.width = cre->width;
             if (height_requested) newRect.height = cre->height;
         }
@@ -309,6 +329,10 @@ void XMainLoop::mapnotify(XMapEvent* event) {
         }
         // also update the window title - just to be sure
         c->update_title();
+    } else {
+        // the window is not managed.
+        HSDebug("MapNotify: briefly managing %lx to apply rules\n", event->window);
+        root_->clients()->manage_client(event->window, true, true);
     }
 }
 
@@ -335,7 +359,7 @@ void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
             // client should be managed (is not ignored)
             // but is not managed yet
             auto clientmanager = root_->clients();
-            auto client = clientmanager->manage_client(window, false);
+            auto client = clientmanager->manage_client(window, false, false);
             if (client && find_monitor_with_tag(client->tag())) {
                 XMapWindow(X_.display(), window);
             }

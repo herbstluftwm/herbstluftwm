@@ -59,6 +59,8 @@ public:
 
     int setenvCommand(Input input, Output output);
     void setenvCompletion(Completion& complete);
+    int exportEnvCommand(Input input, Output output);
+    void exportEnvCompletion(Completion& complete);
     int getenvCommand(Input input, Output output);
     void getenvUnsetenvCompletion(Completion& complete); //! completion for unsetenv and getenv
     int unsetenvCommand(Input input, Output output);

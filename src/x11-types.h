@@ -58,6 +58,14 @@ inline Color Converter<Color>::parse(const std::string &payload) {
 struct Point2D {
     int x;
     int y;
+    Point2D operator+(const Point2D& other) const { return { x + other.x, y + other.y }; }
+    Point2D operator-(const Point2D& other) const { return { x - other.x, y - other.y }; }
+    Point2D operator*(double scalar) const { return { (int) (x * scalar), (int) (y * scalar) }; }
+    Point2D operator/(double scalar) const { return { (int) (x / scalar), (int) (y / scalar) }; }
+    //! essentially return y/x > other.y/other.x
+    bool biggerSlopeThan(const Point2D& other) const {
+       return y * other.x > other.y * x;
+    }
 };
 
 struct Rectangle {
@@ -67,6 +75,8 @@ struct Rectangle {
 
     Point2D tl() const { return {x, y}; }
     Point2D br() const { return {x + width, y + height}; }
+    Point2D bl() const { return {x, y + height}; }
+    Point2D tr() const { return {x + width, y}; }
 
     //! Grow/shrink by dx left and right, by dy top and bottom, respectively
     Rectangle adjusted(int dx, int dy) const;
@@ -75,6 +85,10 @@ struct Rectangle {
 
     bool operator<(const Rectangle& other) const;
     bool operator==(const Rectangle& other) const;
+
+    operator bool() const;
+
+    Rectangle intersectionWith(const Rectangle& other) const;
 
     int x;
     int y;
