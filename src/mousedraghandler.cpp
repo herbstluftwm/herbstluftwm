@@ -1,7 +1,5 @@
 #include "mousedraghandler.h"
 
-#include <cmath>
-
 #include "client.h"
 #include "framedata.h"
 #include "layout.h"

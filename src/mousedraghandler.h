@@ -12,7 +12,6 @@ class HSFrameSplit;
 class HSTag;
 class Monitor;
 class MonitorManager;
-class MouseDragHandlerFloating;
 
 /**
  * @brief The abstract class MouseDragHandler encapsulates what drag handling
