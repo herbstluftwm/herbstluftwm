@@ -1,13 +1,14 @@
+#include "mousedraghandler.h"
+
+#include <cmath>
+
 #include "client.h"
 #include "framedata.h"
 #include "layout.h"
 #include "monitormanager.h"
 #include "mouse.h"
-#include "mousedraghandler.h"
 #include "tag.h"
 #include "x11-utils.h"
-
-#include <cmath>
 
 using std::make_shared;
 using std::shared_ptr;
