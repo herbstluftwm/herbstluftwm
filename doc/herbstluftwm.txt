@@ -488,7 +488,7 @@ shift_to_monitor 'MONITOR'::
     See the <<MONITORS,MONITORS section>>, how to address a monitor.
 
 remove::
-    Removes focused frame and merges its windows to its neighbour frame.
+    Removes focused frame and merges its windows to its closest neighbour frame.
 
 rotate::
     Rotates the layout on the focused tag counterclockwise by 90 degrees. This

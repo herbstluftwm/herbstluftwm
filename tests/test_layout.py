@@ -60,6 +60,32 @@ def test_remove_client_focus(hlwm, running_clients, running_clients_num, focus_i
     assert hlwm.get_attr('tags.0.frame_count') == '1'
 
 
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_remove_nested_split(hlwm, running_clients, running_clients_num):
+    # a layout with three frames side by side
+    # where the right frame is focused.
+    # in the frame containing the left and the middle frame,
+    # the selection is 0, so new clients there would be inserted
+    # into the left frame. However, when removing the right frame, its
+    # clients should go to the (formerly) middle frame
+    layout = """
+        (split horizontal:0.5:1
+          (split horizontal:0.5:0
+              (clients vertical:0 {})
+              (clients vertical:0 {}))
+          (clients vertical:0 {}))
+    """.format(*running_clients).strip()
+    hlwm.call(['load', layout])
+    assert running_clients[2] == hlwm.get_attr('clients.focus.winid')
+
+    hlwm.call('remove')  # remove the right-most frame
+
+    # the clients of the formerly right frame go to the formerly
+    # middle frame
+    assert running_clients == re.findall(r'0x[0-9a-f]+', hlwm.call('dump').stdout)
+    assert hlwm.get_attr('tags.0.frame_count') == '2'
+
+
 @pytest.mark.parametrize("running_clients_num", [3, 4])
 def test_focus_wrap(hlwm, running_clients, running_clients_num):
     assert running_clients_num >= 2, "explode behaves as auto for one client"
