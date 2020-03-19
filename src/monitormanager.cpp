@@ -199,7 +199,7 @@ Monitor* MonitorManager::byTag(HSTag* tag) {
  * @param coordinate on a monitor
  * @return The monitor with the coordinate or nullptr if the coordinate is outside of any monitor
  */
-Monitor *MonitorManager::byCoordinate(Point2D p)
+Monitor* MonitorManager::byCoordinate(Point2D p)
 {
     for (Monitor* m : *this) {
         if (m->rect.x + m->pad_left <= p.x
@@ -207,6 +207,16 @@ Monitor *MonitorManager::byCoordinate(Point2D p)
             && m->rect.y + m->pad_up <= p.y
             && m->rect.y + m->rect.height - m->pad_down > p.y) {
             return &* m;
+        }
+    }
+    return nullptr;
+}
+
+Monitor* MonitorManager::byFrame(shared_ptr<HSFrame> frame)
+{
+    for (Monitor* m : *this) {
+        if (m->tag->frame->contains(frame)) {
+            return m;
         }
     }
     return nullptr;

@@ -11,12 +11,14 @@
 #include "clientmanager.h"
 #include "command.h"
 #include "completion.h"
+#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "keymanager.h"
 #include "mouse.h"
 #include "mousedraghandler.h"
 #include "root.h"
+#include "tag.h"
 #include "utils.h"
 
 using std::shared_ptr;
@@ -119,17 +121,27 @@ void MouseManager::mouse_initiate_move(Client* client, const vector<string> &cmd
 }
 
 void MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
-    mouse_initiate_drag(
-                client,
-                MouseDragHandlerFloating::construct(
-                    &MouseDragHandlerFloating::mouse_function_zoom));
+    MouseDragHandler::Constructor constructor;
+    if (client->tag()->floating()) {
+        constructor = MouseDragHandlerFloating::construct(
+                         &MouseDragHandlerFloating::mouse_function_zoom);
+    } else {
+        auto frame = client->tag()->frame->findFrameWithClient(client);
+        constructor = MouseResizeFrame::construct(frame);
+    }
+    mouse_initiate_drag(client, constructor);
 }
 
 void MouseManager::mouse_initiate_resize(Client* client, const vector<string> &cmd) {
-    mouse_initiate_drag(
-                client,
-                MouseDragHandlerFloating::construct(
-                    &MouseDragHandlerFloating::mouse_function_resize));
+    MouseDragHandler::Constructor constructor;
+    if (client->tag()->floating()) {
+        constructor = MouseDragHandlerFloating::construct(
+                         &MouseDragHandlerFloating::mouse_function_resize);
+    } else {
+        auto frame = client->tag()->frame->findFrameWithClient(client);
+        constructor = MouseResizeFrame::construct(frame);
+    }
+    mouse_initiate_drag(client, constructor);
 }
 
 void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd) {
