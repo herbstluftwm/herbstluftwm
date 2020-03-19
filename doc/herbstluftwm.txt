@@ -1082,7 +1082,7 @@ update_dragged_clients (Int)::
     it with the mouse. If unset, the client's content is resized after the mouse
     button are released.
 
-verbose (Int)::
+verbose (Bool)::
     If set, verbose output is logged to herbstluftwm's stderr. The default value
     is controlled by the *--verbose* command line flag.
 
