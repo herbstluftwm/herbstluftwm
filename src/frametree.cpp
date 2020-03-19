@@ -148,14 +148,33 @@ int FrameTree::removeFrameCommand() {
     auto clientFocusIndex = frame->getSelection();
     auto parent = frame->getParent();
     auto pp = parent->getParent();
-    auto newparent = (frame == parent->firstChild())
-                     ? parent->secondChild()
-                     : parent->firstChild();
     bool insertAtFront = (frame == parent->firstChild());
+    auto newparent =
+            insertAtFront ? parent->secondChild() : parent->firstChild();
     auto removedFrameClients = frame->removeAllClients();
-    auto targetFrame = focusedFrame(newparent);
-    int oldClientCount = (int)targetFrame->clientCount();
-    targetFrame->addClients(removedFrameClients, insertAtFront);
+    // determine the 'targetFrameLeaf' where the clients of 'frame' will go to.
+    // this target frame shall be the frame leaf that is closest
+    // to the 'frame' that is removed (such that the clients visually travel as
+    // little distance as possible).
+    auto targetFrameAbstract = newparent;
+    while (targetFrameAbstract->isSplit()) {
+        auto s = targetFrameAbstract->isSplit();
+        if (s->getAlign() == parent->getAlign()) {
+            // for splits with the same alignment, go as near
+            // as possible towards 'frame', and also adjust the focus
+            // into that direction
+            s->setSelection(insertAtFront ? 0 : 1);
+        } else {
+            // for splits with the other alignment, we can
+            // follow the focus, since this is most likely the frame
+            // used last
+        }
+        targetFrameAbstract = s->selectedChild();
+    }
+    // if targetFrameAbstract is not a split, it must be a leaf:
+    auto targetFrameLeaf = targetFrameAbstract->isLeaf();
+    int oldClientCount = (int)targetFrameLeaf->clientCount();
+    targetFrameLeaf->addClients(removedFrameClients, insertAtFront);
     // now, frame is empty
     if (pp) {
         pp->replaceChild(parent, newparent);
@@ -166,9 +185,9 @@ int FrameTree::removeFrameCommand() {
     // focus the same client again
     if (removedFrameClients.size() > 0) {
         if (insertAtFront) {
-            targetFrame->setSelection(clientFocusIndex);
+            targetFrameLeaf->setSelection(clientFocusIndex);
         } else {
-            targetFrame->setSelection(clientFocusIndex + oldClientCount);
+            targetFrameLeaf->setSelection(clientFocusIndex + oldClientCount);
         }
     }
     get_current_monitor()->applyLayout();
