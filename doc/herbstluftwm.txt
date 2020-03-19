@@ -940,21 +940,21 @@ frame_border_inner_width (Integer)::
     frame_border_width, since it does not add to the frame border width but is a
     part of it.
 
-focus_crosses_monitor_boundaries (Integer)::
+focus_crosses_monitor_boundaries (Boolean)::
     If set, the +focus+ command crosses monitor boundaries. If there is no
     client in the direction given to +focus+, then the monitor in the specified
     direction is focused.
 
-raise_on_focus (Integer)::
+raise_on_focus (Boolean)::
     If set, a window is raised if it is focused. The value of this setting is
     only used in floating mode.
 
-raise_on_focus_temporarily (Integer)::
+raise_on_focus_temporarily (Boolean)::
     If set, a window is raised temporarily if it is focused on its tag.
     Temporarily in this case means that the window will return to its previous
     stacking position if another window is focused.
 
-raise_on_click (Integer)::
+raise_on_click (Boolean)::
     If set, a window is raised if it is clicked. The value of this setting is
     only noticed in floating mode.
 
@@ -978,7 +978,7 @@ window_border_urgent_color (String/Color)::
 window_border_inner_color (String/Color)::
     Color of the inner border of a window.
 
-always_show_frame (Integer)::
+always_show_frame (Boolean)::
     If set, all frames are displayed. If unset, only frames with focus or with
     windows in it are displayed.
 
@@ -995,29 +995,29 @@ default_frame_layout (Integer)::
     or on a new tag). For a list of valid indices and their meanings, check the
     <<LIST_LAYOUT_ALGORITHMS,list of layout algorithms above>>.
 
-default_direction_external_only (Integer)::
+default_direction_external_only (Boolean)::
     This setting controls the behaviour of focus and shift if no '-e' or '-i'
     argument is given. if set, then focus and shift changes the focused frame
     even if there are other clients in this frame in the specified 'DIRECTION'.
     Else, a client within current frame is selected if it is in the specified
     'DIRECTION'.
 
-gapless_grid (Integer)::
+gapless_grid (Boolean)::
     This setting affects the size of the last client in a frame that is arranged
     by grid layout. If set, then the last client always fills the gap within
     this frame. If unset, then the last client has the same size as all other
     clients in this frame.
 
-smart_frame_surroundings (Integer)::
+smart_frame_surroundings (Boolean)::
     If set, frame borders and gaps will be removed when there's no ambiguity
     regarding the focused frame.
 
-smart_window_surroundings (Integer)::
+smart_window_surroundings (Boolean)::
     If set, window borders and gaps will be removed and minimal when there's no
     ambiguity regarding the focused window. This minimal window decoration can
     be configured by the +theme.minimal+ object.
 
-focus_follows_mouse (Integer)::
+focus_follows_mouse (Boolean)::
     If set and a window is focused by mouse cursor, this window is focused (this
     feature is also known as sloppy focus). If unset, you need to click to
     change the window focus by mouse. +
@@ -1026,7 +1026,7 @@ focus_follows_mouse (Integer)::
     pseudotiled windows in the max layout) then an extra click is required to
     change the focus.
 
-focus_stealing_prevention (Integer)::
+focus_stealing_prevention (Boolean)::
     If set, only pagers and taskbars are allowed to change the focus. If unset,
     all applications can request a focus change.
 
@@ -1037,13 +1037,13 @@ monitors_locked (Integer)::
     meantime. You should not change this setting manually due to concurrency
     issues; use the commands *lock* and *unlock* instead.
 
-swap_monitors_to_get_tag (Integer)::
+swap_monitors_to_get_tag (Boolean)::
     If set: If you want to view a tag, that already is viewed on another
     monitor, then the monitor contents will be swapped and you see the wanted
     tag on the focused monitor. If not set, the other monitor is focused if it
     shows the desired tag.
 
-auto_detect_monitors (Integer)::
+auto_detect_monitors (Boolean)::
     If set, detect_monitors is automatically executed every time a monitor is
     connected, disconnected or resized.
 
@@ -1071,18 +1071,18 @@ wmname (String)::
 
         * cycle_value wmname herbstluftwm LG3D
 
-pseudotile_center_threshold (Int)::
+pseudotile_center_threshold (Integer)::
     If greater than 0, it specifies the least distance between a centered
     pseudotile window and the border of the frame or tile it is assigned to. If
     this distance is lower than 'pseudotile_center_threshold', it is aligned to
     the top left of the client's tile.
 
-update_dragged_clients (Int)::
+update_dragged_clients (Integer)::
     If set, a client's window content is resized immediately during resizing
     it with the mouse. If unset, the client's content is resized after the mouse
     button are released.
 
-verbose (Bool)::
+verbose (Boolean)::
     If set, verbose output is logged to herbstluftwm's stderr. The default value
     is controlled by the *--verbose* command line flag.
 
