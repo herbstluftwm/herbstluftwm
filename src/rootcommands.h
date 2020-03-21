@@ -46,6 +46,7 @@ public:
     int remove_attr_cmd(Input input, Output output);
     void remove_attr_complete(Completion& complete);
     int compare_cmd(Input input, Output output);
+    void compare_complete(Completion& complete);
     static Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Output output);
     void completeObjectPath(Completion& complete, bool attributes = false,
                             std::function<bool(Attribute*)> attributeFilter = {});
