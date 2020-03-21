@@ -31,7 +31,6 @@ static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
 static void complete_against_commands_1(int argc, char** argv, int position, Output output);
 static void complete_against_commands_3(int argc, char** argv, int position, Output output);
-static void complete_against_arg_1(int argc, char** argv, int position, Output output);
 static void complete_against_arg_2(int argc, char** argv, int position, Output output);
 
 static void complete_chain(int argc, char** argv, int position, Output output);
@@ -641,15 +640,6 @@ void complete_against_commands_1(int argc, char** argv, int position,
 void complete_against_commands_3(int argc, char** argv, int position,
                                       Output output) {
     complete_against_commands(argc - 3, argv + 3, position - 3, output);
-}
-
-void complete_against_arg_1(int argc, char** argv, int position,
-                            Output output)
-{
-    if (argc > 2 && position > 2) {
-        const char* needle = (position < argc) ? argv[position] : "";
-        try_complete(needle, argv[1], output);
-    }
 }
 
 void complete_against_arg_2(int argc, char** argv, int position,
