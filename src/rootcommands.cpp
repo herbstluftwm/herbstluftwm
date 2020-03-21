@@ -148,6 +148,19 @@ int RootCommands::substitute_cmd(Input input, Output output)
     return Commands::call(carryover, output);
 }
 
+void RootCommands::substitute_complete(Completion& complete)
+{
+    if (complete == 0) {
+        // no completion for the identifier
+    } else if (complete == 1) {
+        completeAttributePath(complete);
+    } else {
+        // later, complete the identifier
+        complete.full(complete[0]);
+        complete.completeCommands(2);
+    }
+}
+
 int RootCommands::sprintf_cmd(Input input, Output output)
 {
     string ident, format;

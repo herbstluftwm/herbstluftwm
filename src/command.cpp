@@ -31,7 +31,6 @@ static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
 static void complete_against_commands_1(int argc, char** argv, int position, Output output);
 static void complete_against_commands_3(int argc, char** argv, int position, Output output);
-static void complete_against_arg_1(int argc, char** argv, int position, Output output);
 static void complete_against_arg_2(int argc, char** argv, int position, Output output);
 
 static void complete_chain(int argc, char** argv, int position, Output output);
@@ -153,7 +152,6 @@ struct {
     { "object_tree",    2,  no_completion },
     { "new_attr",       3,  no_completion },
     { "mktemp",         3,  parameter_expected_offset_3 },
-    { "substitute",     3,  parameter_expected_offset_3 },
 };
 
 enum IndexCompare {
@@ -236,10 +234,6 @@ struct {
     { "mktemp",         EQ, 1,  nullptr, completion_userattribute_types },
     { "mktemp",         GE, 3,  complete_against_commands_3, 0 },
     { "mktemp",         GE, 4,  complete_against_arg_2, 0 },
-    { "substitute",     EQ, 2,  complete_against_objects, 0 },
-    { "substitute",     EQ, 2,  complete_against_attributes, 0 },
-    { "substitute",     GE, 3,  complete_against_commands_3, 0 },
-    { "substitute",     GE, 3,  complete_against_arg_1, 0 },
     { "sprintf",        GE, 3,  complete_sprintf, 0 },
 };
 
@@ -646,15 +640,6 @@ void complete_against_commands_1(int argc, char** argv, int position,
 void complete_against_commands_3(int argc, char** argv, int position,
                                       Output output) {
     complete_against_commands(argc - 3, argv + 3, position - 3, output);
-}
-
-void complete_against_arg_1(int argc, char** argv, int position,
-                            Output output)
-{
-    if (argc > 2 && position > 2) {
-        const char* needle = (position < argc) ? argv[position] : "";
-        try_complete(needle, argv[1], output);
-    }
 }
 
 void complete_against_arg_2(int argc, char** argv, int position,
