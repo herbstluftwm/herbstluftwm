@@ -217,6 +217,14 @@ def test_new_attr_has_right_type(hlwm, attrtype):
     assert m.group(1)[0] == attrtype[0]
 
 
+def test_new_attr_complete(hlwm):
+    assert 'bool' in hlwm.complete('new_attr')
+    assert 'my_' in hlwm.complete('new_attr int', partial=True)
+    assert 'tags.my_' in hlwm.complete('new_attr int tags.', partial=True, position=2)
+    assert 'tags.my_' in hlwm.complete('new_attr int tags.m', partial=True, position=2)
+    assert 'settings.my_' in hlwm.complete('new_attr int settings.m', partial=True, position=2)
+
+
 def test_remove_attr_invalid_attribute(hlwm):
     hlwm.call_xfail('remove_attr tags.invalid') \
         .expect_stderr('Object "tags" has no attribute "invalid".')

@@ -45,6 +45,7 @@ public:
     int sprintf_cmd(Input input, Output output);
     void sprintf_complete(Completion& complete);
     int new_attr_cmd(Input input, Output output);
+    void new_attr_complete(Completion& complete);
     int remove_attr_cmd(Input input, Output output);
     void remove_attr_complete(Completion& complete);
     int compare_cmd(Input input, Output output);
