@@ -12,6 +12,7 @@ import shlex
 import subprocess
 import sys
 import textwrap
+import time
 import types
 
 import pytest
@@ -505,7 +506,22 @@ def x11_connection():
     for the entire duration of all tests. This avoids issues caused by Xvfb and
     Xephyr resetting all properties whenever the last connection is closed. It
     is probably a bit more efficient, too. """
-    display = Xlib.display.Display()
+    display = None
+    attempts_left = 10
+    while display is None and attempts_left > 0:
+        try:
+            display = Xlib.display.Display()
+            # the above call may result in an exception:
+            # ConnectionResetError: [Errno 104] Connection reset by peer
+            # However, the handling of this error in the above function results in a
+            # type error, see
+            # https://github.com/python-xlib/python-xlib/pull/160
+        except TypeError as msg:
+            # hence, just print the type error
+            print("!!! TypeError: %s" % msg, file=sys.stderr)
+            # wait for a moment, and then try again..
+            time.sleep(2)
+            attempts_left -= 1
     yield display
     display.close()
 
