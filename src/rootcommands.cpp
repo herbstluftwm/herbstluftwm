@@ -8,7 +8,6 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <sstream>
 
 #include "attribute_.h"
 #include "command.h"

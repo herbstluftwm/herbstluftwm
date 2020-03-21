@@ -19,8 +19,6 @@ static void try_complete(const char* needle, std::string to_check, Output output
 static void try_complete(const char* needle, const char* to_check, Output output);
 static void try_complete_prefix_partial(const char* needle, const char* to_check,
                                  const char* prefix, Output output);
-static void try_complete_prefix(const char* needle, const char* to_check,
-                         const char* prefix, Output output);
 
 static void complete_against_tags(int argc, char** argv, int pos, Output output);
 static void complete_against_monitors(int argc, char** argv, int pos, Output output);
@@ -442,12 +440,6 @@ void try_complete(const char* needle, string to_check, Output output) {
 void try_complete(const char* needle, const char* to_check, Output output) {
     const char* suffix = g_shell_quoting ? " \n" : "\n";
     try_complete_suffix(needle, to_check, suffix, nullptr, output);
-}
-
-void try_complete_prefix(const char* needle, const char* to_check,
-                         const char* prefix, Output output) {
-    const char* suffix = g_shell_quoting ? " \n" : "\n";
-    try_complete_suffix(needle, to_check, suffix, prefix, output);
 }
 
 void try_complete_prefix_partial(const char* needle, const char* to_check,
