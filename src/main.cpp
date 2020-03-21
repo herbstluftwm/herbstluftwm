@@ -209,7 +209,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                             &RootCommands::set_attr_complete }},
         {"attr",           { root_commands, &RootCommands::attr_cmd,
                                             &RootCommands::attr_complete }},
-        {"mktemp",         BIND_OBJECT(tmp, mktemp) },
+        {"mktemp",         { tmp, &Tmp::mktemp,
+                                  &Tmp::mktempComplete }},
     };
     return unique_ptr<CommandTable>(new CommandTable(init));
 }
