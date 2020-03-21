@@ -284,8 +284,15 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
     if (clients.size() == 0) {
         return res;
     }
+    // whether we should omit the gap around windows:
+    bool smart_window_surroundings_active =
+            // only omit the border
+            // if 1. the settings is activated
+            settings_->smart_window_surroundings()
+            // and 2. only one window is shown
+            && (clientCount() == 1 || layout == LayoutAlgorithm::max);
 
-    if (!smart_window_surroundings_active(this)) {
+    if (!smart_window_surroundings_active) {
         // apply window gap
         auto window_gap = settings_->window_gap();
         rect.x += window_gap;
@@ -944,11 +951,5 @@ int frame_move_window_edge(int argc, char** argv, Output output) {
     g_settings->focus_crosses_monitor_boundaries = oldval;
     g_monitors->unlock();
     return 0;
-}
-
-bool smart_window_surroundings_active(HSFrameLeaf* frame) {
-    return g_settings->smart_window_surroundings()
-            && (frame->clientCount() == 1
-                || frame->getLayout() == LayoutAlgorithm::max);
 }
 
