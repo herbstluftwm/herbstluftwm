@@ -3,42 +3,40 @@ HACKING
 
 If you want to contribute to herbstluftwm, this file is for you!
 
-Testing herbstluftwm
---------------------
-You can test herbstluftwm under any window manager. Install Xephyr and valgrind,
-and make sure you have herbstluftwm compiled. Then run the script:
-
-    ./valgrind-xephyr.sh
-
-It creates a Xephyr window in which herbstluftwm runs using the default
-autostart. Any crashes or memory leaks are reported in detail by valgrind. Quit
-herbstluftwm (Alt-Shift-q or run herbstclient quit) to end testing.
-
 Contributing
 ------------
 Beside writing code you can help herbstluftwm by testing, reporting bugs,
 writing/fixing documentation (e.g. by fixing spelling mistakes) or packaging it
 for distributions.
 
-Build system: CMake
--------------------
-You can use CMake with the following commands
-(assuming you're in the herbstluftwm repository root):
+Testing herbstluftwm
+--------------------
+You can test herbstluftwm under any window manager. Install Xephyr and valgrind,
+and make sure you have herbstluftwm compiled. Then run the following:
 
-    mkdir build
-    cd build
-    cmake ..
+    # create a build directory
+    mkdir debug && cd debug
+    # in the build directory, compile it:
+    cmake -DCMAKE_BUILD_TYPE=Debug ..
     make
-    make install
+    # run herbstluftwm within a xeyphyr session:
+    ../valgrind-xephyr.sh
 
-The choice of 'build' here is arbitrary,
-you can put your build directory(s) wherever you like.
+It creates a Xephyr window in which herbstluftwm runs using the default
+autostart. Any crashes or memory leaks are reported in detail by valgrind. Quit
+herbstluftwm (Alt-Shift-q or run herbstclient quit) to end testing.
 
 Running tests
 -------------
 
 Tests are run using pytest[1] and tox[2]. With tox and Xvfb[3] installed, you
-can simply run `tox` to run the testsuite.
+can run the following from the build directory:
+
+    tox -c ..  -- -v --maxfail=1
+
+If you run arch linux, it may be necessary to add -e py38 to the tox parameters
+(that is, before the --). The argument after the -- are pytest parameters (add
+-h to see a help).
 
 [1] http://pytest.org/
 [2] https://tox.readthedocs.io/
@@ -46,25 +44,13 @@ can simply run `tox` to run the testsuite.
 
 Sending patches
 ---------------
-You can use git to make commits and create patches from them via the command
-git format-patch. Always specify your full name and a valid e-mail address in
-the author field. The commit description must consist two parts, separated by
-an empty line:
+You can hand in pull requests on github[1], but also send patches directly
+(obtained by git format-patch). You can send those patches to the mailing
+list[2] or via the irc[3].
 
-  - A mandatory short description in imperative form, e.g.: "Do things in this
-    or that way". The description must not exceed 50 characters.
-  - An optional longer description consisting of full sentences. This is only
-    needed if the commit introduces non-trivial changes.
-
-When introducing new features, always
-
-  - add documentation for it in doc/herbstluftwm.txt (or doc/herbstclient.txt).
-  - document the change (e.g. "new command ...") in the NEWS file.
-
-You can send those patches to the mailing list[1] or via the irc[2].
-
-[1] hlwm@lists.herbstluftwm.org +
-[2] #herbstluftwm on irc.freenode.net
+[1] https://github.com/herbstluftwm/herbstluftwm
+[2] hlwm@lists.herbstluftwm.org +
+[3] #herbstluftwm on irc.freenode.net
 
 Mailing list
 ------------
@@ -84,44 +70,15 @@ or by using the web interface at:
 
 Coding style
 ------------
-The coding style is similar to the Linux-kernel style with some changes:
+The coding style is mainly Qt's C++ coding style.
 
   - Use 4 spaces instead of tabs.
   - Do not add any trailing spaces at the end of a line.
   - Data type names are CamelCase
-  - Globals must be prefixed with g_
-  - If a function returns success or failure, then encode it in a bool (from
-    stdbool.h). Use main()-like exit codes (0 = success, non zero =
-    failure) only for commands.
+  - If a function returns success or failure, then encode it in a bool. Use
+    main()-like exit codes (0 = success, non zero = failure) only for commands.
   - Order includes according to the Google C++ Style Guide:
     https://google.github.io/styleguide/cppguide.html#Names_and_Order_of_Includes
     (Note that for the purposes of this rule, all <…> headers are system headers)
-
-Internal structure
-------------------
-The main modules (i.e. source file + header file) communicate like this if a
-key is pressed or if a command is called via herbstclient:
-
-                 X11
-                  |
-                  V
-              +--------+  key  +-----+ call  +---------+
-              |  main  |------>| key |------>| command |
-              +--------+ event +-----+       +---------+
-                  \                    output /  ^
-           IPC-Call\      +------------+<----'  / Execute
-            -Window `---->| ipc-server |-------'  IPC-Call
-              -Event      +------------+
-                                 |
-                                 V
-                                X11
-
-herbstclient is rather simple:
-
-                 Command-Line-   +------+
-                   Arguments --->| main |----.
-                                 |      |   X11
-                    stdout  <----|      |<---'
-                                 +------+
 
 // vim: nowrap ft=asciidoc tw=80
