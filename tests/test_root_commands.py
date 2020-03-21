@@ -122,11 +122,11 @@ def test_sprintf_double_percentage_escapes(hlwm):
 
 def test_sprintf_completion_1_placeholder(hlwm):
     assert hlwm.complete('sprintf T %s', partial=True) \
-        == hlwm.complete('get_attr', partial=True)
+        == sorted(['T '] + hlwm.complete('get_attr', partial=True))
 
 
 def test_sprintf_completion_0_placeholders(hlwm):
-    assert hlwm.complete('sprintf T %%', partial=True) \
+    assert hlwm.complete('sprintf T %%') \
         == sorted(['T'] + hlwm.call('list_commands').stdout.splitlines())
 
 
