@@ -10,7 +10,6 @@
 #include "ipc-protocol.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "object.h"
 #include "root.h"
 #include "tag.h"
 #include "utils.h"
