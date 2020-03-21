@@ -43,6 +43,7 @@ public:
     int substitute_cmd(Input input, Output output);
     void substitute_complete(Completion& complete);
     int sprintf_cmd(Input input, Output output);
+    void sprintf_complete(Completion& complete);
     int new_attr_cmd(Input input, Output output);
     int remove_attr_cmd(Input input, Output output);
     void remove_attr_complete(Completion& complete);
@@ -70,6 +71,14 @@ public:
 private:
     Object* root;
     std::vector<std::unique_ptr<Attribute>> userAttributes_;
+
+    class FormatStringBlob {
+    public:
+        bool literal_; //! whether the data_ field is understood literall
+        std::string data_; //! text blob or placeholder
+    };
+    typedef std::vector<FormatStringBlob> FormatString;
+    FormatString parseFormatString(const std::string& format);
 };
 
 

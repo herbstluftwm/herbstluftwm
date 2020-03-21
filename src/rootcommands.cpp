@@ -18,6 +18,7 @@ using std::endl;
 using std::function;
 using std::pair;
 using std::string;
+using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 
@@ -161,54 +162,100 @@ void RootCommands::substitute_complete(Completion& complete)
     }
 }
 
-int RootCommands::sprintf_cmd(Input input, Output output)
+//! parse a format string or throw an exception
+RootCommands::FormatString RootCommands::parseFormatString(const std::string &format)
 {
-    string ident, format;
-    if (!(input >> ident >> format)) return HERBST_NEED_MORE_ARGS;
-    string blobs;
+    FormatString blobs;
     size_t lastpos = 0; // the position where the last plaintext blob started
     for (size_t i = 0; i < format.size(); i++) {
         if (format[i] == '%') {
             if (i + 1 >= format.size()) {
-                output
-                        << input.command() << ": dangling % at the end of format \""
-                        << format << "\"" << endl;
-                return HERBST_INVALID_ARGUMENT;
+                throw std::invalid_argument(
+                    "dangling % at the end of format \"" + format + "\"");
             } else {
                 if (i > lastpos) {
-                    blobs += format.substr(lastpos, i - lastpos);
+                    // add literal text blob
+                    blobs.push_back({ true, format.substr(lastpos, i - lastpos)});
                 }
                 char format_type = format[i+1];
                 lastpos = i + 2;
                 i++; // also consume the format_type
                 if (format_type == '%') {
-                    blobs += "%";
+                    blobs.push_back({true, "%"});
                 } else if (format_type == 's') {
-                    string path;
-                    if (!(input >> path)) {
-                        return HERBST_NEED_MORE_ARGS;
-                    }
-                    Attribute* a = getAttribute(path, output);
-                    if (!a) return HERBST_INVALID_ARGUMENT;
-                    blobs += a->str();
+                    blobs.push_back({false, "s"});
                 } else {
-                    output
-                        << input.command() << ": invalid format type %"
+                    stringstream msg;
+                    msg << "invalid format type %"
                         << format_type << " at position "
                         << i << " in format string \""
-                        << format << "\"" << endl;
-                    return HERBST_INVALID_ARGUMENT;
+                        << format << "\"";
+                    throw std::invalid_argument(msg.str());
                 }
             }
         }
     }
     if (lastpos < format.size()) {
-        blobs += format.substr(lastpos, format.size()-lastpos);
+        blobs.push_back({true, format.substr(lastpos, format.size()-lastpos)});
     }
+    return blobs;
+}
 
+int RootCommands::sprintf_cmd(Input input, Output output)
+{
+    string ident, formatStringSrc;
+    if (!(input >> ident >> formatStringSrc)) return HERBST_NEED_MORE_ARGS;
+    FormatString format;
+    try {
+        format = parseFormatString(formatStringSrc);
+    }  catch (const std::invalid_argument& e) {
+        output << input.command() << ": " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    // evaluate placeholders in the format string
+    string replacedString = "";
+    for (const auto& blob : format) {
+        if (blob.literal_) {
+            replacedString += blob.data_;
+        } else {
+            // we reached %s
+            string path;
+            if (!(input >> path)) {
+                return HERBST_NEED_MORE_ARGS;
+            }
+            Attribute* a = getAttribute(path, output);
+            if (!a) return HERBST_INVALID_ARGUMENT;
+            replacedString += a->str();
+        }
+    }
     auto carryover = input.fromHere();
-    carryover.replace(ident, blobs);
+    carryover.replace(ident, replacedString);
     return Commands::call(carryover, output);
+}
+
+void RootCommands::sprintf_complete(Completion& complete)
+{
+    if (complete == 0) {
+        // no completion for arg name
+    } else if (complete == 1) {
+        // no completion for format string
+    } else {
+        complete.full(complete[0]); // complete string replacement
+        int placeholderCount = 0;
+        try {
+            FormatString fs = parseFormatString(complete[1]);
+            for (const auto& b : fs) {
+                if (b.literal_ == false) placeholderCount++;
+            }
+        }  catch (const std::invalid_argument&) {
+            complete.invalidArguments();
+        }
+        if (complete < 2 + placeholderCount) {
+            completeAttributePath(complete);
+        } else {
+            complete.completeCommands(2 + placeholderCount);
+        }
+    }
 }
 
 
