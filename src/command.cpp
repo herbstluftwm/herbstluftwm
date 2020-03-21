@@ -153,7 +153,6 @@ struct {
     { "object_tree",    2,  no_completion },
     { "new_attr",       3,  no_completion },
     { "mktemp",         3,  parameter_expected_offset_3 },
-    { "substitute",     3,  parameter_expected_offset_3 },
 };
 
 enum IndexCompare {
@@ -236,10 +235,6 @@ struct {
     { "mktemp",         EQ, 1,  nullptr, completion_userattribute_types },
     { "mktemp",         GE, 3,  complete_against_commands_3, 0 },
     { "mktemp",         GE, 4,  complete_against_arg_2, 0 },
-    { "substitute",     EQ, 2,  complete_against_objects, 0 },
-    { "substitute",     EQ, 2,  complete_against_attributes, 0 },
-    { "substitute",     GE, 3,  complete_against_commands_3, 0 },
-    { "substitute",     GE, 3,  complete_against_arg_1, 0 },
     { "sprintf",        GE, 3,  complete_sprintf, 0 },
 };
 

@@ -41,6 +41,7 @@ public:
     void print_object_tree_complete(Completion& complete);
 
     int substitute_cmd(Input input, Output output);
+    void substitute_complete(Completion& complete);
     int sprintf_cmd(Input input, Output output);
     int new_attr_cmd(Input input, Output output);
     int remove_attr_cmd(Input input, Output output);

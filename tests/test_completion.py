@@ -207,3 +207,9 @@ def test_remove_attr(hlwm):
         hlwm.call(c)
     # then expect that the attribute is gone
     hlwm.call_xfail('get_attr ' + attr_path)
+
+
+def test_substitute(hlwm):
+    cmdlist = hlwm.call('list_commands').stdout.splitlines()
+    assert hlwm.complete(['substitute', 'ARG', 'tags.count']) \
+        == sorted(['ARG'] + cmdlist)
