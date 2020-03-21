@@ -180,8 +180,6 @@ private:
 int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
 
-int find_layout_by_name(const char* name);
-
 int frame_current_bring(int argc, char** argv, Output output);
 
 int frame_focus_command(int argc, char** argv, Output output);
@@ -195,8 +193,6 @@ int frame_move_window_command(int argc, char** argv, Output output);
 
 int frame_focus_edge(int argc, char** argv, Output output);
 int frame_move_window_edge(int argc, char** argv, Output output);
-
-bool smart_window_surroundings_active(HSFrameLeaf* frame);
 
 #endif
 
