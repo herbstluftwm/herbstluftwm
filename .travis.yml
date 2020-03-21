@@ -9,7 +9,6 @@ before_install:
 branches:
     only:
         - master
-        - winterbreeze
 
 jobs:
     include:
