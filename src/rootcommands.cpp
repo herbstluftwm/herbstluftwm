@@ -318,6 +318,24 @@ int RootCommands::new_attr_cmd(Input input, Output output)
     return 0;
 }
 
+void RootCommands::new_attr_complete(Completion& complete)
+{
+    if (complete == 0) {
+        completeAttributeType(complete);
+    } else if (complete == 1) {
+        completeObjectPath(complete, false);
+        auto obj_path = Object::splitPath(complete[1]).first;
+        if (obj_path.empty()) {
+            complete.partial(USER_ATTRIBUTE_PREFIX);
+        } else {
+            char s[] = {OBJECT_PATH_SEPARATOR, '\0'};
+            complete.partial(obj_path.join(OBJECT_PATH_SEPARATOR) + s + USER_ATTRIBUTE_PREFIX);
+        }
+    } else {
+        complete.none();
+    }
+}
+
 int RootCommands::remove_attr_cmd(Input input, Output output)
 {
     string path;

@@ -10,19 +10,15 @@
 #include "ipc-protocol.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "object.h"
 #include "root.h"
 #include "tag.h"
 #include "utils.h"
 
 static void try_complete(const char* needle, std::string to_check, Output output);
 static void try_complete(const char* needle, const char* to_check, Output output);
-static void try_complete_prefix_partial(const char* needle, const char* to_check,
-                                 const char* prefix, Output output);
 
 static void complete_against_tags(int argc, char** argv, int pos, Output output);
 static void complete_against_monitors(int argc, char** argv, int pos, Output output);
-static void complete_against_objects(int argc, char** argv, int pos, Output output);
 static void complete_against_winids(int argc, char** argv, int pos, Output output);
 static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
@@ -32,9 +28,6 @@ static void complete_chain(int argc, char** argv, int position, Output output);
 
 static int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, Output output);
-
-static void complete_against_user_attr_prefix(int argc, char** argv, int position,
-                                       Output output);
 
 
 
@@ -59,7 +52,6 @@ static bool g_shell_quoting = false;
 
 static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
 static const char* completion_focus_args[]    = { "-i", "-e", nullptr };
-static const char* completion_userattribute_types[] = { "int", "uint", "string", "bool", "color", nullptr };
 static const char* completion_special_winids[]= { "urgent", "", nullptr };
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
 static const char* completion_cycle_all_args[]= { "--skip-invisible", nullptr };
@@ -142,7 +134,6 @@ struct {
     { "load",           2,  first_parameter_is_tag },
     { "tag_status",     2,  no_completion },
     { "object_tree",    2,  no_completion },
-    { "new_attr",       3,  no_completion },
 };
 
 enum IndexCompare {
@@ -219,9 +210,6 @@ struct {
     { "pad",            EQ, 1,  complete_against_monitors, 0 },
     { "list_padding",   EQ, 1,  complete_against_monitors, 0 },
     { "tag_status",     EQ, 1,  complete_against_monitors, 0 },
-    { "new_attr",       EQ, 1,  nullptr, completion_userattribute_types },
-    { "new_attr",       EQ, 2,  complete_against_objects, 0 },
-    { "new_attr",       EQ, 2,  complete_against_user_attr_prefix, 0 },
 };
 
 // Implementation of CommandBinding
@@ -435,11 +423,6 @@ void try_complete(const char* needle, const char* to_check, Output output) {
     try_complete_suffix(needle, to_check, suffix, nullptr, output);
 }
 
-void try_complete_prefix_partial(const char* needle, const char* to_check,
-                                 const char* prefix, Output output) {
-    try_complete_suffix(needle, to_check, "\n", prefix, output);
-}
-
 static void complete_against_list(const char* needle, const char** list, Output output) {
     while (*list) {
         const char* name = *list;
@@ -480,43 +463,6 @@ void complete_against_monitors(int argc, char** argv, int pos, Output output) {
             try_complete(needle, m->name->c_str(), output);
         }
     }
-}
-
-void complete_against_objects(int argc, char** argv, int pos, Output output) {
-    // Remove command name
-    (void)SHIFT(argc,argv);
-    pos--;
-
-    pair<ArgList,string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
-    auto needle = p.second;
-    Object* o = Root::get()->child(p.first);
-    if (!o) {
-        return;
-    }
-    auto prefix = p.first.join();
-    if (!prefix.empty()) prefix += ".";
-    for (auto a : o->children()) {
-        try_complete_prefix_partial(needle.c_str(), (a.first + ".").c_str(), prefix.c_str(), output);
-    }
-    return;
-}
-
-void complete_against_user_attr_prefix(int argc, char** argv, int position,
-                                      Output output) {
-    // TODO
-    /*
-    const char* path = (position < argc) ? argv[position] : "";
-    const char* unparsable;
-
-    GString* prefix = g_string_new(path);
-
-    if (prefix->len > 0
-        && prefix->str[prefix->len - 1] != OBJECT_PATH_SEPARATOR) {
-        g_string_append_c(prefix, OBJECT_PATH_SEPARATOR);
-    }
-    try_complete_prefix_partial(unparsable, USER_ATTRIBUTE_PREFIX,
-                                prefix->str, output);
-    */
 }
 
 void complete_against_winids(int argc, char** argv, int pos, Output output) {
