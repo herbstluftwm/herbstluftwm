@@ -199,10 +199,6 @@ struct {
     { "pad",            EQ, 1,  complete_against_monitors, 0 },
     { "list_padding",   EQ, 1,  complete_against_monitors, 0 },
     { "tag_status",     EQ, 1,  complete_against_monitors, 0 },
-    { "compare",        EQ, 1,  complete_against_objects, 0 },
-    { "compare",        EQ, 1,  complete_against_attributes, 0 },
-    { "compare",        EQ, 2,  complete_against_comparators, 0 },
-    { "compare",        EQ, 3,  complete_against_attribute_values, 0 },
     { "new_attr",       EQ, 1,  nullptr, completion_userattribute_types },
     { "new_attr",       EQ, 2,  complete_against_objects, 0 },
     { "new_attr",       EQ, 2,  complete_against_user_attr_prefix, 0 },
@@ -553,48 +549,6 @@ void complete_against_user_attr_prefix(int argc, char** argv, int position,
     }
     try_complete_prefix_partial(unparsable, USER_ATTRIBUTE_PREFIX,
                                 prefix->str, output);
-    */
-}
-
-void complete_against_attribute_values(int argc, char** argv, int pos, Output output) {
-    // TODO
-    /*
-    const char* needle = (pos < argc) ? argv[pos] : "";
-    const char* path =  (1 < argc) ? argv[1] : "";
-    std::ostringstream path_error;
-    HSAttribute* attr = hsattribute_parse_path_verbose(path, path_error);
-    if (attr) {
-        switch (attr->type) {
-            case HSATTR_TYPE_BOOL:
-                complete_against_list(needle, completion_flag_args, output);
-            default:
-                // no suitable completion
-                break;
-        }
-    }
-    */
-}
-
-void complete_against_comparators(int argc, char** argv, int pos, Output output) {
-    // TODO
-    /*
-    const char* needle = (pos < argc) ? argv[pos] : "";
-    const char* path =  (1 < argc) ? argv[1] : "";
-    std::ostringstream void_output;
-    HSAttribute* attr = hsattribute_parse_path_verbose(path, void_output);
-    const char* equals[] = { "=", "!=", nullptr };
-    const char* order[] = { "le", "lt", "ge", "gt", nullptr };
-    if (attr) {
-        switch (attr->type) {
-            case HSATTR_TYPE_INT:
-            case HSATTR_TYPE_UINT:
-            case HSATTR_TYPE_CUSTOM_INT:
-                complete_against_list(needle, order, output);
-            default:
-                complete_against_list(needle, equals, output);
-                break;
-        }
-    }
     */
 }
 

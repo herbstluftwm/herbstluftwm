@@ -311,6 +311,16 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
     return do_comparison<T>(vals[0], vals[1]);
 }
 
+static std::map<string, pair<bool, vector<int> > > operators {
+    // map operator names to "for numeric types only" and possible return codes
+    { "=",  { false, { 0 }, }, },
+    { "!=", { false, { -1, 1 } }, },
+    { "ge", { true, { 1, 0 } }, },
+    { "gt", { true, { 1    } }, },
+    { "le", { true, { -1, 0 } }, },
+    { "lt", { true, { -1    } }, },
+};
+
 int RootCommands::compare_cmd(Input input, Output output)
 {
     string path, oper, value;
@@ -324,15 +334,6 @@ int RootCommands::compare_cmd(Input input, Output output)
     //    1 if the first value is greater
     //    0 if the the values match
     //    HERBST_INVALID_ARGUMENT if there was a parsing error
-    std::map<string, pair<bool, vector<int> > > operators {
-        // map operator names to "for numeric types only" and possible return codes
-        { "=",  { false, { 0 }, }, },
-        { "!=", { false, { -1, 1 } }, },
-        { "ge", { true, { 1, 0 } }, },
-        { "gt", { true, { 1    } }, },
-        { "le", { true, { -1, 0 } }, },
-        { "lt", { true, { -1    } }, },
-    };
     std::map<Type, pair<bool, function<int(string,string,Output)>>> type2compare {
         // map a type name to "is it numeric" and a comperator function
         { Type::ATTRIBUTE_INT,      { true,  parse_and_compare<int> }, },
@@ -373,6 +374,21 @@ int RootCommands::compare_cmd(Input input, Output output)
                            comparison_result);
     return (found == possible_values.end()) ? 1 : 0;
 }
+
+void RootCommands::compare_complete(Completion &complete) {
+    if (complete == 0) {
+        completeAttributePath(complete);
+    } else if (complete == 1) {
+        for (auto op : operators) {
+            complete.full(op.first);
+        }
+    } else if (complete == 2) {
+        // no completion suggestions for the 'value' field
+    } else {
+        complete.none();
+    }
+}
+
 
 void RootCommands::completeObjectPath(Completion& complete, bool attributes,
                                       function<bool(Attribute*)> attributeFilter)
