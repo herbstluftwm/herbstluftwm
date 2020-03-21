@@ -2,6 +2,7 @@
 
 #include "attribute.h"
 #include "command.h"
+#include "completion.h"
 #include "ipc-protocol.h"
 #include "rootcommands.h"
 
@@ -35,3 +36,14 @@ int Tmp::mktemp(Input input, Output output) {
     return retval;
 }
 
+void Tmp::mktempComplete(Completion& complete)
+{
+    if (complete == 0) {
+        RootCommands::completeAttributeType(complete);
+    } else if (complete == 1) {
+        // no completion for the identifier
+    } else {
+        complete.full(complete[1]);
+        complete.completeCommands(2);
+    }
+}

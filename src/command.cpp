@@ -30,8 +30,6 @@ static void complete_against_winids(int argc, char** argv, int pos, Output outpu
 static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
 static void complete_against_commands_1(int argc, char** argv, int position, Output output);
-static void complete_against_commands_3(int argc, char** argv, int position, Output output);
-static void complete_against_arg_2(int argc, char** argv, int position, Output output);
 
 static void complete_chain(int argc, char** argv, int position, Output output);
 
@@ -94,7 +92,6 @@ static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
 static bool parameter_expected_offset_1(int argc, char** argv, int pos);
-static bool parameter_expected_offset_3(int argc, char** argv, int pos);
 
 /* find out, if a command still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
@@ -151,7 +148,6 @@ struct {
     { "tag_status",     2,  no_completion },
     { "object_tree",    2,  no_completion },
     { "new_attr",       3,  no_completion },
-    { "mktemp",         3,  parameter_expected_offset_3 },
 };
 
 enum IndexCompare {
@@ -231,9 +227,6 @@ struct {
     { "new_attr",       EQ, 1,  nullptr, completion_userattribute_types },
     { "new_attr",       EQ, 2,  complete_against_objects, 0 },
     { "new_attr",       EQ, 2,  complete_against_user_attr_prefix, 0 },
-    { "mktemp",         EQ, 1,  nullptr, completion_userattribute_types },
-    { "mktemp",         GE, 3,  complete_against_commands_3, 0 },
-    { "mktemp",         GE, 4,  complete_against_arg_2, 0 },
     { "sprintf",        GE, 3,  complete_sprintf, 0 },
 };
 
@@ -637,21 +630,6 @@ void complete_against_commands_1(int argc, char** argv, int position,
     complete_against_commands(argc - 1, argv + 1, position - 1, output);
 }
 
-void complete_against_commands_3(int argc, char** argv, int position,
-                                      Output output) {
-    complete_against_commands(argc - 3, argv + 3, position - 3, output);
-}
-
-void complete_against_arg_2(int argc, char** argv, int position,
-                            Output output)
-{
-    if (argc > 3 && position > 3) {
-        const char* needle = (position < argc) ? argv[position] : "";
-        try_complete(needle, argv[2], output);
-    }
-}
-
-
 int complete_against_commands(int argc, char** argv, int position,
                               Output output) {
     // complete command
@@ -829,11 +807,6 @@ static bool parameter_expected_offset(int argc, char** argv, int pos, int offset
 static bool parameter_expected_offset_1(int argc, char** argv, int pos) {
     return parameter_expected_offset(argc,argv, pos, 1);
 }
-
-static bool parameter_expected_offset_3(int argc, char** argv, int pos) {
-    return parameter_expected_offset(argc,argv, pos, 3);
-}
-
 
 int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, Output output) {

@@ -211,15 +211,15 @@ int RootCommands::sprintf_cmd(Input input, Output output)
     return Commands::call(carryover, output);
 }
 
-
-Attribute* RootCommands::newAttributeWithType(string typestr, string attr_name, Output output) {
-    std::map<string, function<Attribute*(string)>> name2constructor {
+static std::map<string, function<Attribute*(string)>> name2constructor {
     { "bool",  [](string n) { return new Attribute_<bool>(n, false); }},
     { "color", [](string n) { return new Attribute_<Color>(n, {"black"}); }},
     { "int",   [](string n) { return new Attribute_<int>(n, 0); }},
     { "string",[](string n) { return new Attribute_<string>(n, ""); }},
     { "uint",  [](string n) { return new Attribute_<unsigned long>(n, 0); }},
-    };
+};
+
+Attribute* RootCommands::newAttributeWithType(string typestr, string attr_name, Output output) {
     auto it = name2constructor.find(typestr);
     if (it == name2constructor.end()) {
         output << "error: unknown type \"" << typestr << "\"";
@@ -229,6 +229,15 @@ Attribute* RootCommands::newAttributeWithType(string typestr, string attr_name, 
     attr->setWriteable(true);
     return attr;
 }
+
+void RootCommands::completeAttributeType(Completion& complete)
+{
+    for (const auto& t : name2constructor) {
+        complete.full(t.first);
+    }
+}
+
+
 
 int RootCommands::new_attr_cmd(Input input, Output output)
 {

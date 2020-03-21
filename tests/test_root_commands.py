@@ -319,3 +319,27 @@ def test_unsetenv_command(hlwm):
     proc = hlwm.unchecked_call('getenv foo')
 
     assert proc.returncode == 8
+
+
+def test_mktemp_distinct(hlwm):
+    lines = hlwm.call('mktemp int X mktemp int Y \
+        chain , echo X , echo Y').stdout.splitlines()
+
+    assert lines[0][0:4] == 'tmp.'
+    assert lines[1][0:4] == 'tmp.'
+    assert lines[0] != lines[1]
+
+
+def test_mktemp_right_type(hlwm):
+    hlwm.call('mktemp int X set_attr X 23')
+    hlwm.call_xfail('mktemp int X set_attr X sdflkj') \
+        .expect_stderr('not a valid value')
+
+
+def test_mktemp_complete(hlwm):
+    assert 'int' in hlwm.complete('mktemp')
+    assert 'X' in hlwm.complete('mktemp string X echo')
+    completions = hlwm.complete('mktemp string X mktemp string Y echo')
+    assert 'X' in completions and 'Y' in completions
+    compl2 = hlwm.complete('mktemp string X')
+    assert 'X' in compl2 and 'echo' in compl2
