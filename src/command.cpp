@@ -15,6 +15,42 @@
 #include "tag.h"
 #include "utils.h"
 
+static void try_complete(const char* needle, std::string to_check, Output output);
+static void try_complete(const char* needle, const char* to_check, Output output);
+static void try_complete_partial(const char* needle, const char* to_check, Output output);
+static void try_complete_prefix_partial(const char* needle, const char* to_check,
+                                 const char* prefix, Output output);
+static void try_complete_prefix_partial(const std::string& needle, const std::string& to_check,
+                                 const std::string& prefix, Output output);
+static void try_complete_prefix(const char* needle, const char* to_check,
+                         const char* prefix, Output output);
+
+static void complete_against_list(char* needle, char** list, Output output);
+static void complete_against_tags(int argc, char** argv, int pos, Output output);
+static void complete_against_monitors(int argc, char** argv, int pos, Output output);
+static void complete_against_objects(int argc, char** argv, int pos, Output output);
+static void complete_against_attributes(int argc, char** argv, int pos, Output output);
+static void complete_against_user_attributes(int argc, char** argv, int pos, Output output);
+static void complete_against_winids(int argc, char** argv, int pos, Output output);
+static void complete_merge_tag(int argc, char** argv, int pos, Output output);
+static int complete_against_commands(int argc, char** argv, int position, Output output);
+static void complete_against_commands_1(int argc, char** argv, int position, Output output);
+static void complete_against_commands_3(int argc, char** argv, int position, Output output);
+static void complete_against_arg_1(int argc, char** argv, int position, Output output);
+static void complete_against_arg_2(int argc, char** argv, int position, Output output);
+
+static void complete_chain(int argc, char** argv, int position, Output output);
+
+static int command_chain(char* separator, bool (*condition)(int laststatus),
+                  int argc, char** argv, Output output);
+
+static void complete_sprintf(int argc, char** argv, int position, Output output);
+
+static void complete_against_user_attr_prefix(int argc, char** argv, int position,
+                                       Output output);
+
+
+
 // Quarantined inclusion to avoid polluting the global namespace:
 namespace search_h {
     #include <search.h>
