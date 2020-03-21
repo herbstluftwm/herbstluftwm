@@ -129,6 +129,7 @@ def test_sprintf_completion_0_placeholders(hlwm):
     assert hlwm.complete('sprintf T %%', partial=True) \
         == sorted(['T'] + hlwm.call('list_commands').stdout.splitlines())
 
+
 def test_disjoin_rects(hlwm):
     # test the example from the manpage
     expected = '\n'.join((
