@@ -15,6 +15,37 @@
 #include "tag.h"
 #include "utils.h"
 
+static void try_complete(const char* needle, std::string to_check, Output output);
+static void try_complete(const char* needle, const char* to_check, Output output);
+static void try_complete_prefix_partial(const char* needle, const char* to_check,
+                                 const char* prefix, Output output);
+static void try_complete_prefix(const char* needle, const char* to_check,
+                         const char* prefix, Output output);
+
+static void complete_against_tags(int argc, char** argv, int pos, Output output);
+static void complete_against_monitors(int argc, char** argv, int pos, Output output);
+static void complete_against_objects(int argc, char** argv, int pos, Output output);
+static void complete_against_attributes(int argc, char** argv, int pos, Output output);
+static void complete_against_winids(int argc, char** argv, int pos, Output output);
+static void complete_merge_tag(int argc, char** argv, int pos, Output output);
+static int complete_against_commands(int argc, char** argv, int position, Output output);
+static void complete_against_commands_1(int argc, char** argv, int position, Output output);
+static void complete_against_commands_3(int argc, char** argv, int position, Output output);
+static void complete_against_arg_1(int argc, char** argv, int position, Output output);
+static void complete_against_arg_2(int argc, char** argv, int position, Output output);
+
+static void complete_chain(int argc, char** argv, int position, Output output);
+
+static int command_chain(char* separator, bool (*condition)(int laststatus),
+                  int argc, char** argv, Output output);
+
+static void complete_sprintf(int argc, char** argv, int position, Output output);
+
+static void complete_against_user_attr_prefix(int argc, char** argv, int position,
+                                       Output output);
+
+
+
 // Quarantined inclusion to avoid polluting the global namespace:
 namespace search_h {
     #include <search.h>
@@ -429,20 +460,12 @@ void try_complete_prefix(const char* needle, const char* to_check,
     try_complete_suffix(needle, to_check, suffix, prefix, output);
 }
 
-void try_complete_partial(const char* needle, const char* to_check, Output output) {
-    try_complete_suffix(needle, to_check, "\n", nullptr, output);
-}
-
 void try_complete_prefix_partial(const char* needle, const char* to_check,
                                  const char* prefix, Output output) {
     try_complete_suffix(needle, to_check, "\n", prefix, output);
 }
-void try_complete_prefix_partial(const string& needle, const string& to_check,
-                                 const string& prefix, Output output) {
-    try_complete_suffix(needle.c_str(), to_check.c_str(), "\n", prefix.c_str(), output);
-}
 
-void complete_against_list(const char* needle, const char** list, Output output) {
+static void complete_against_list(const char* needle, const char** list, Output output) {
     while (*list) {
         const char* name = *list;
         try_complete(needle, name, output);
@@ -528,11 +551,6 @@ void complete_against_attributes_helper(int argc, char** argv, int pos,
 void complete_against_attributes(int argc, char** argv, int pos, Output output) {
     complete_against_attributes_helper(argc, argv, pos, output, false);
 }
-
-void complete_against_user_attributes(int argc, char** argv, int pos, Output output) {
-    complete_against_attributes_helper(argc, argv, pos, output, true);
-}
-
 
 void complete_against_user_attr_prefix(int argc, char** argv, int position,
                                       Output output) {
