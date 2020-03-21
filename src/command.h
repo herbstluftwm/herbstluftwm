@@ -81,6 +81,16 @@ public:
     {
     }
 
+    /** Same as before, but with a const member function
+     */
+    template <typename ClassName>
+    CommandBinding(ClassName* object,
+                   int(ClassName::*member_cmd)(Output) const)
+        : CommandBinding(std::bind(member_cmd, object,
+                            std::placeholders::_1))
+    {
+    }
+
     // FIXME: Remove after C++ transition
     // The following constructors are only there to ease the transition from
     // C functions to C++
