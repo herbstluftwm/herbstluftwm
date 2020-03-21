@@ -25,7 +25,6 @@ static void try_complete_prefix(const char* needle, const char* to_check,
 static void complete_against_tags(int argc, char** argv, int pos, Output output);
 static void complete_against_monitors(int argc, char** argv, int pos, Output output);
 static void complete_against_objects(int argc, char** argv, int pos, Output output);
-static void complete_against_attributes(int argc, char** argv, int pos, Output output);
 static void complete_against_winids(int argc, char** argv, int pos, Output output);
 static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
@@ -37,8 +36,6 @@ static void complete_chain(int argc, char** argv, int position, Output output);
 
 static int command_chain(char* separator, bool (*condition)(int laststatus),
                   int argc, char** argv, Output output);
-
-static void complete_sprintf(int argc, char** argv, int position, Output output);
 
 static void complete_against_user_attr_prefix(int argc, char** argv, int position,
                                        Output output);
@@ -234,7 +231,6 @@ struct {
     { "mktemp",         EQ, 1,  nullptr, completion_userattribute_types },
     { "mktemp",         GE, 3,  complete_against_commands_3, 0 },
     { "mktemp",         GE, 4,  complete_against_arg_2, 0 },
-    { "sprintf",        GE, 3,  complete_sprintf, 0 },
 };
 
 // Implementation of CommandBinding
@@ -520,32 +516,6 @@ void complete_against_objects(int argc, char** argv, int pos, Output output) {
     return;
 }
 
-
-void complete_against_attributes_helper(int argc, char** argv, int pos,
-                                        Output output, bool user_only) {
-    // Remove command name
-    (void)SHIFT(argc,argv);
-    pos--;
-
-    pair<ArgList,string> p = Object::splitPath((pos < argc) ? argv[pos] : "");
-    auto needle = p.second;
-    Object* o = Root::get()->child(p.first);
-    if (!o) {
-        return;
-    }
-    auto prefix = p.first.join();
-    if (!prefix.empty()) prefix += ".";
-    for (auto a : o->attributes()) {
-        try_complete_prefix(needle.c_str(), a.first.c_str(), prefix.c_str(), output);
-    }
-    return;
-}
-
-
-void complete_against_attributes(int argc, char** argv, int pos, Output output) {
-    complete_against_attributes_helper(argc, argv, pos, output, false);
-}
-
 void complete_against_user_attr_prefix(int argc, char** argv, int position,
                                       Output output) {
     // TODO
@@ -770,31 +740,6 @@ void complete_chain(int argc, char** argv, int position, Output output) {
      * {separator, firstcommand, ...}
      */
     complete_chain_helper(argc, argv, position, output);
-}
-
-void complete_sprintf(int argc, char** argv, int position, Output output) {
-    const char* needle = (position < argc) ? argv[position] : "";
-    int paramcount = 0;
-    char* format = argv[2];
-    for (int i = 0; format[i]; i++) {
-        if (format[i] == '%') {
-            i++; // look at the char after '%'
-            if (format[i] != '%' && format[i] != '\0') {
-                paramcount++;
-            }
-        }
-    }
-    char* identifier = argv[1];
-    if (position < 3 + paramcount) {
-        // complete attributes
-        complete_against_objects(argc, argv, position, output);
-        complete_against_attributes(argc, argv, position, output);
-    } else {
-        try_complete(needle, identifier, output);
-        int delta = 3 + paramcount;
-        complete_against_commands(argc - delta, argv + delta,
-                                  position - delta, output);
-    }
 }
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos) {
