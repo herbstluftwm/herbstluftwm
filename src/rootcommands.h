@@ -74,9 +74,7 @@ public:
     int chainCommand(Input input, Output output);
     void chainCompletion(Completion& complete);
 
-    typedef ArgList::Container::const_iterator CmdPos;
-    typedef std::pair<CmdPos,CmdPos> CmdRange; // a range [first,last) within a vector
-    std::vector<CmdRange> splitCommandList(ArgList::Container input);
+    std::vector<std::vector<std::string>> splitCommandList(ArgList::Container input);
 private:
     Object* root;
     std::vector<std::unique_ptr<Attribute>> userAttributes_;

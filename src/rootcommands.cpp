@@ -658,7 +658,7 @@ void RootCommands::completeEnvName(Completion& complete) {
 
 int RootCommands::chainCommand(Input input, Output output)
 {
-    vector<CmdRange> commands = splitCommandList(input.toVector());
+    vector<vector<string>> commands = splitCommandList(input.toVector());
     int returnCode = 0;
     // the condition that has to be fulfilled if we want to continue
     // execuding commands. the default (for 'chain') is to always continue
@@ -673,11 +673,11 @@ int RootCommands::chainCommand(Input input, Output output)
         conditionContinue = [](int code) { return code >= 1; };
     }
     for (auto& cmd : commands) {
-        if (cmd.first == cmd.second) {
+        if (cmd.empty()) {
             // if command range is empty, do nothing
             continue;
         }
-        Input cmdinput = Input(*(cmd.first), cmd.first + 1, cmd.second);
+        Input cmdinput = Input(cmd[0], cmd.begin() + 1, cmd.end());
         returnCode = Commands::call(cmdinput, output);
         if (!conditionContinue(returnCode)) {
             break;
@@ -705,25 +705,22 @@ void RootCommands::chainCompletion(Completion& complete)
 }
 
 
-vector<RootCommands::CmdRange> RootCommands::splitCommandList(ArgList::Container input) {
-    vector<CmdRange> res;
-    auto it = input.begin();
-    auto end = input.end();
-    if (it == end) {
+vector<vector<string>> RootCommands::splitCommandList(ArgList::Container input) {
+    vector<vector<string>> res;
+    if (input.size() == 0) {
         return res;
     }
-    string separator = *it;
-    it++;
-    CmdPos current = it;
-    while (it != end) {
-        auto& token = *it;
-        if (token == separator) {
-            res.push_back(make_pair(current, it));
-            current = it + 1;
+    vector<string> current;
+    string separator = input[0];
+    for (size_t i = 1; i < input.size(); i++) {
+        if (input[i] == separator) {
+            res.push_back(current);
+            current = {};
+        } else {
+            current.push_back(input[i]);
         }
-        it++;
     }
-    res.push_back(make_pair(current, end));
+    res.push_back(current);
     return res;
 }
 
