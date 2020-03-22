@@ -22,7 +22,6 @@ static void complete_against_monitors(int argc, char** argv, int pos, Output out
 static void complete_against_winids(int argc, char** argv, int pos, Output output);
 static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
-static void complete_against_commands_1(int argc, char** argv, int position, Output output);
 
 // Quarantined inclusion to avoid polluting the global namespace:
 namespace search_h {
@@ -71,7 +70,6 @@ static const char* g_layout_names[] = {
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
 static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
-static bool parameter_expected_offset_1(int argc, char** argv, int pos);
 
 /* find out, if a command still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
@@ -85,7 +83,6 @@ struct {
                         /* if current pos >= min_index */
     bool    (*function)(int argc, char** argv, int pos);
 } g_parameter_expected[] = {
-    { "!",              2,  parameter_expected_offset_1 },
     { "focus_nth",      2,  no_completion },
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
@@ -171,7 +168,6 @@ struct {
     { "merge_tag",      EQ, 2,  complete_merge_tag, 0 },
     { "move",           EQ, 1,  complete_against_tags, 0 },
     { "move_index",     EQ, 2,  nullptr, completion_use_index_args },
-    { "!",              GE, 1,  complete_against_commands_1, 0 },
     { "rename",         EQ, 1,  complete_against_tags, 0 },
     { "raise",          EQ, 1,  nullptr, completion_special_winids },
     { "raise",          EQ, 1,  complete_against_winids, 0 },
@@ -523,11 +519,6 @@ int complete_command(int argc, char** argv, Output output) {
     return complete_against_commands(argc, argv, position, output);
 }
 
-void complete_against_commands_1(int argc, char** argv, int position,
-                                      Output output) {
-    complete_against_commands(argc - 1, argv + 1, position - 1, output);
-}
-
 int complete_against_commands(int argc, char** argv, int position,
                               Output output) {
     // complete command
@@ -621,17 +612,3 @@ static bool parameter_expected_offset(int argc, char** argv, int pos, int offset
     }
     return parameter_expected(argc - offset, argv + offset, pos - offset);
 }
-
-static bool parameter_expected_offset_1(int argc, char** argv, int pos) {
-    return parameter_expected_offset(argc,argv, pos, 1);
-}
-
-int negate_command(int argc, char** argv, Output output) {
-    if (argc <= 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    (void)SHIFT(argc, argv);
-    int status = call_command(argc, argv, output);
-    return (!status);
-}
-
