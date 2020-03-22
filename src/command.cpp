@@ -6,7 +6,6 @@
 
 #include "client.h"
 #include "completion.h"
-#include "globals.h"
 #include "hlwmcommon.h"
 #include "ipc-protocol.h"
 #include "monitor.h"
