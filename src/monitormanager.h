@@ -9,6 +9,7 @@
 #include "link.h"
 #include "monitor.h"
 #include "plainstack.h"
+#include "command.h"
 
 extern MonitorManager* g_monitors;
 
@@ -18,6 +19,7 @@ class HSTag;
 class HSFrame;
 
 typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
+typedef std::function<void(Monitor&,Completion&)> MonitorCompletion;
 
 class MonitorManager : public IndexingObject<Monitor> {
 public:
@@ -42,6 +44,7 @@ public:
     // return a command that interprets the first argument
     // as a monitor description and then calls the given command on this monitor
     std::function<int(Input, Output)> byFirstArg(MonitorCommand cmd);
+    CommandBinding byFirstArg(MonitorCommand cmd, MonitorCompletion completer);
     // relayout the monitor showing this tag, if there is any
     void relayoutTag(HSTag* tag);
     void relayoutAll();

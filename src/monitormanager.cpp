@@ -184,6 +184,23 @@ function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
     };
 }
 
+CommandBinding MonitorManager::byFirstArg(MonitorCommand moncmd, MonitorCompletion moncomplete)
+{
+    auto cmdBound = byFirstArg(moncmd);
+    auto completeBound = [this,moncomplete](Completion& complete) {
+        if (complete == 0) {
+            this->completeMonitorName(complete);
+        } else {
+            Monitor* monitor = byString(complete[0]);
+            if (!monitor) {
+                monitor = focus();
+            }
+            moncomplete(*monitor, complete);
+        }
+    };
+    return {cmdBound, completeBound};
+}
+
 
 Monitor* MonitorManager::byTag(HSTag* tag) {
     for (Monitor* m : *this) {
