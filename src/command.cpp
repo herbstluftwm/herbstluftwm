@@ -276,16 +276,6 @@ int CommandTable::callCommand(Input args, Output out) const {
         return HERBST_NEED_MORE_ARGS;
     }
 
-    if (g_verbose) {
-        string buf = args.command();
-        for (const auto& a : args.toVector()) {
-            buf += " \'";
-            buf += a;
-            buf += "\'";
-        }
-        HSDebug("executing the command: %s\n", buf.c_str());
-    }
-
     const auto cmd = map.find(args.command());
 
     if (cmd == map.end()) {
