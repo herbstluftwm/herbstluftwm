@@ -544,6 +544,11 @@ int RootCommands::silentCommand(Input input, Output output) {
     return Commands::call(input.fromHere(), dummyOutput);
 }
 
+int RootCommands::negateCommand(Input input, Output output)
+{
+    return ! Commands::call(input.fromHere(), output);
+}
+
 void RootCommands::completeCommandShifted1(Completion& complete) {
     complete.completeCommands(0);
 }
