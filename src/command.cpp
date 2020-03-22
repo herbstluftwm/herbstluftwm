@@ -24,13 +24,6 @@ static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
 static void complete_against_commands_1(int argc, char** argv, int position, Output output);
 
-static void complete_chain(int argc, char** argv, int position, Output output);
-
-static int command_chain(char* separator, bool (*condition)(int laststatus),
-                  int argc, char** argv, Output output);
-
-
-
 // Quarantined inclusion to avoid polluting the global namespace:
 namespace search_h {
     #include <search.h>
@@ -159,12 +152,10 @@ struct {
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
     { "add_monitor",    EQ, 2,  complete_against_tags, 0 },
-    { "and",            GE, 1,  complete_chain, 0 },
     { "bring",          EQ, 1,  nullptr, completion_special_winids },
     { "bring",          EQ, 1,  complete_against_winids, 0 },
     { "close",          EQ, 1,  complete_against_winids, 0 },
     { "cycle",          EQ, 1,  nullptr, completion_pm_one },
-    { "chain",          GE, 1,  complete_chain, 0 },
     { "cycle_all",      EQ, 1,  nullptr, completion_cycle_all_args },
     { "cycle_all",      EQ, 1,  nullptr, completion_pm_one },
     { "cycle_all",      EQ, 2,  nullptr, completion_pm_one },
@@ -180,7 +171,6 @@ struct {
     { "merge_tag",      EQ, 2,  complete_merge_tag, 0 },
     { "move",           EQ, 1,  complete_against_tags, 0 },
     { "move_index",     EQ, 2,  nullptr, completion_use_index_args },
-    { "or",             GE, 1,  complete_chain, 0 },
     { "!",              GE, 1,  complete_against_commands_1, 0 },
     { "rename",         EQ, 1,  complete_against_tags, 0 },
     { "raise",          EQ, 1,  nullptr, completion_special_winids },
@@ -288,7 +278,7 @@ int CommandTable::callCommand(Input args, Output out) const {
     const auto cmd = map.find(args.command());
 
     if (cmd == map.end()) {
-        out << "error: Command \"" << args.command() << "\" not found" << endl;;
+        out << "error: Command \"" << args.command() << "\" not found" << endl;
         return HERBST_COMMAND_NOT_FOUND;
     }
 
@@ -603,61 +593,6 @@ int complete_against_commands(int argc, char** argv, int position,
     return 0;
 }
 
-static int strpcmp(const void* key, const void* val) {
-    return strcmp((const char*) key, *(const char**)val);
-}
-
-static void complete_chain_helper(int argc, char** argv, int position,
-                                  Output output) {
-    /* argv entries:
-     * argv[0]      == the command separator
-     * argv[1]      == an arbitrary command name
-     * argv[2..]    == its arguments or a separator
-     */
-    if (position <= 0 || argc <= 1) {
-        return;
-    }
-    char* separator = argv[0];
-    (void)SHIFT(argc, argv);
-    position--;
-
-    /* find the next separator */
-    size_t uargc = argc;
-    char** next_sep = (char**)lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
-    int next_sep_idx = next_sep - argv;
-
-    if (!next_sep || next_sep_idx >= position) {
-        /* try to complete at the desired position */
-        const char* needle = (position < argc) ? argv[position] : "";
-        complete_against_commands(argc, argv, position, output);
-        /* at least the command name is required
-         * so don't complete at position 0 */
-        if (position != 0) {
-            try_complete(needle, separator, output);
-        }
-    } else {
-        /* remove arguments so that the next separator becomes argv[0] */
-        position -= next_sep_idx;
-        argc     -= next_sep_idx;
-        argv     += next_sep_idx;
-        complete_chain_helper(argc, argv, position, output);
-    }
-}
-
-void complete_chain(int argc, char** argv, int position, Output output) {
-    if (position <= 1) {
-        return;
-    }
-    /* remove the chain command name "chain" from the argv */
-    (void)SHIFT(argc, argv);
-    position--;
-
-    /* do the actual work in the helper that always expects
-     * {separator, firstcommand, ...}
-     */
-    complete_chain_helper(argc, argv, position, output);
-}
-
 static bool first_parameter_is_tag(int argc, char** argv, int pos) {
     // only complete if first parameter is a valid tag
     if (argc >= 2 && find_tag(argv[1]) && pos == 2) {
@@ -689,54 +624,6 @@ static bool parameter_expected_offset(int argc, char** argv, int pos, int offset
 
 static bool parameter_expected_offset_1(int argc, char** argv, int pos) {
     return parameter_expected_offset(argc,argv, pos, 1);
-}
-
-int command_chain(char* separator, bool (*condition)(int laststatus),
-                  int argc, char** argv, Output output) {
-    size_t uargc = argc;
-    char** next_sep = (char**)lfind(separator, argv, &uargc, sizeof(*argv), strpcmp);
-    int command_argc = next_sep ? (int)(next_sep - argv) : argc;
-    int status = call_command(command_argc, argv, output);
-    if (condition && false == condition(status)) {
-        return status;
-    }
-    argc -= command_argc + 1;
-    argv += command_argc + 1;
-    if (argc <= 0) {
-        return status;
-    }
-    return command_chain(separator, condition, argc, argv, output);
-}
-
-static bool int_is_zero(int x) {
-    return x == 0;
-}
-
-static bool int_is_not_zero(int x) {
-    return x != 0;
-}
-
-typedef struct {
-    const char* cmd;
-    bool (*condition)(int);
-} Cmd2Condition;
-
-static Cmd2Condition g_cmd2condition[] = {
-    { "and",    int_is_zero         },
-    { "or",     int_is_not_zero     },
-};
-
-int command_chain_command(int argc, char** argv, Output output) {
-    Cmd2Condition* cmd;
-    cmd = STATIC_TABLE_FIND_STR(Cmd2Condition, g_cmd2condition, cmd, argv[0]);
-    (void)SHIFT(argc, argv);
-    if (argc <= 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    char* separator = argv[0];
-    (void)SHIFT(argc, argv);
-    bool (*condition)(int) = cmd ? cmd->condition : nullptr;
-    return command_chain(separator, condition, argc, argv, output);
 }
 
 int negate_command(int argc, char** argv, Output output) {

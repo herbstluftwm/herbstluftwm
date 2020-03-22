@@ -31,6 +31,9 @@ public:
     Input(const std::string command, const Container &c = {})
         : ArgList(c), command_(std::make_shared<std::string>(command)) {}
 
+    Input(const std::string command, Container::const_iterator from, Container::const_iterator to)
+        : ArgList(from, to), command_(std::make_shared<std::string>(command)) {}
+
     const std::string& command() const { return *command_; }
 
     Input &operator>>(std::string &val) override;
