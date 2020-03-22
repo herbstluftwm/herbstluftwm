@@ -69,7 +69,6 @@ static const char* g_layout_names[] = {
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
-static bool parameter_expected_offset(int argc, char** argv, int pos, int offset);
 
 /* find out, if a command still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
@@ -600,15 +599,4 @@ static bool first_parameter_is_flag(int argc, char** argv, int pos) {
     } else {
         return false;
     }
-}
-
-static bool parameter_expected_offset(int argc, char** argv, int pos, int offset) {
-    if (argc < offset || pos < offset) {
-        return true;
-    }
-    if (pos == offset) {
-        // at least a command name always is expected
-        return true;
-    }
-    return parameter_expected(argc - offset, argv + offset, pos - offset);
 }
