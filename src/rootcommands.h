@@ -58,6 +58,7 @@ public:
 
     int tryCommand(Input input, Output output);
     int silentCommand(Input input, Output output);
+    int negateCommand(Input input, Output output);
     void completeCommandShifted1(Completion& complete);
     int echoCommand(Input input, Output output);
     void echoCompletion(Completion& ) {}; // no completion

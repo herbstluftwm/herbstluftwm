@@ -361,3 +361,20 @@ def test_mktemp_complete(hlwm):
     assert 'X' in completions and 'Y' in completions
     compl2 = hlwm.complete('mktemp string X')
     assert 'X' in compl2 and 'echo' in compl2
+
+
+def test_negate_command(hlwm):
+    assert hlwm.call('! false').stdout == ''
+    assert hlwm.call('! ! echo f').stdout == 'f\n'
+    hlwm.call_xfail('! echo test') \
+        .expect_stderr('test')
+
+
+def test_negate_complete_cmd(hlwm):
+    assert hlwm.complete('!') \
+        == sorted(hlwm.call('list_commands').stdout.splitlines())
+
+
+def test_negate_complete_arg(hlwm):
+    assert 'left' in hlwm.complete('! focus')
+    assert [] == hlwm.complete('! true')
