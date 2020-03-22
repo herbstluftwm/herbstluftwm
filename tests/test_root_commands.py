@@ -317,10 +317,15 @@ def test_chain_nested(hlwm):
         == 'a\nb Y echo c\n'
 
 
-def test_chain_and(hlwm):
+def test_chain_and_1(hlwm):
     proc = hlwm.unchecked_call('and , echo foo , false , echo bar')
     assert proc.returncode == 1
     assert proc.stderr == 'foo\n'
+
+def test_chain_and_2(hlwm):
+    proc = hlwm.unchecked_call('and , echo foo , true , echo bar , false , echo baz')
+    assert proc.returncode == 1
+    assert proc.stderr == 'foo\nbar\n'
 
 
 def test_chain_or(hlwm):
