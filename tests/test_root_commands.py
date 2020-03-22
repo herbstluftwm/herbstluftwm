@@ -285,6 +285,82 @@ def test_silent_command(hlwm):
     assert proc.stdout == ''
 
 
+def test_chain_command(hlwm):
+    assert hlwm.call('chain , echo foo').stdout == 'foo\n'
+    assert hlwm.call('chain , false , echo f').stdout == 'f\n'
+    assert hlwm.call('chain : echo g : echo f').stdout == 'g\nf\n'
+
+
+def test_chain_command_empty(hlwm):
+    assert hlwm.call('chain / / echo g / echo f').stdout == 'g\nf\n'
+    assert hlwm.call('chain / echo g / echo f / ').stdout == 'g\nf\n'
+    assert hlwm.call('chain / / echo g / / echo f / ').stdout == 'g\nf\n'
+    assert hlwm.call('chain /').stdout == ''
+    assert hlwm.call('chain / /').stdout == ''
+    assert hlwm.call('chain / / /').stdout == ''
+
+
+def test_chain_return_code(hlwm):
+    p1 = hlwm.unchecked_call('get_attr')
+    p2 = hlwm.unchecked_call('chain X echo line X get_attr')
+
+    assert p1.returncode > 1
+    assert p1.returncode == p2.returncode
+    assert p2.stderr[0:5] == 'line\n'
+
+
+def test_chain_nested(hlwm):
+    assert hlwm.call('chain X chain Y echo a Y echo b X echo c').stdout \
+        == 'a\nb\nc\n'
+    # the inner 'chain Y' must not see the other Y
+    assert hlwm.call('chain X chain Y echo a X echo b Y echo c').stdout \
+        == 'a\nb Y echo c\n'
+
+
+def test_chain_and_1(hlwm):
+    proc = hlwm.unchecked_call('and , echo foo , false , echo bar')
+    assert proc.returncode == 1
+    assert proc.stderr == 'foo\n'
+
+
+def test_chain_and_2(hlwm):
+    proc = hlwm.unchecked_call('and , echo foo , true , echo bar , false , echo baz')
+    assert proc.returncode == 1
+    assert proc.stderr == 'foo\nbar\n'
+
+
+def test_chain_or(hlwm):
+    proc = hlwm.unchecked_call(
+        'or , chain : echo a : false , \
+            , chain : echo b : false , \
+            , chain : echo c : true  , \
+            , chain : echo d : false , \
+        ')
+    assert proc.returncode == 0
+    assert proc.stdout == 'a\nb\nc\n'
+    assert proc.stderr == ''
+
+
+def test_chain_complete_cmd(hlwm):
+    assert hlwm.complete('chain X true X false X') == \
+        sorted(hlwm.call('list_commands').stdout.splitlines())
+
+
+def test_chain_complete_sep_only(hlwm):
+    assert hlwm.complete('chain X true') == ['X']
+
+
+def test_chain_complete_sep_and_args(hlwm):
+    res = hlwm.complete('chain X focus')
+    assert 'X' in res
+    assert 'left' in res
+
+
+def test_chain_complete_cmd_arg(hlwm):
+    assert hlwm.complete('chain X chain Y true Y false X false X !') == \
+        sorted(['X'] + hlwm.call('list_commands').stdout.splitlines())
+
+
 @pytest.mark.parametrize('args', [[], ['abc'], ['foo', 'bar']])
 def test_echo_command(hlwm, args):
     assert hlwm.call(['echo'] + args).stdout == ' '.join(args) + '\n'

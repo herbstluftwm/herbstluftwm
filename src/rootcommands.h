@@ -70,6 +70,11 @@ public:
     void getenvUnsetenvCompletion(Completion& complete); //! completion for unsetenv and getenv
     int unsetenvCommand(Input input, Output output);
     void completeEnvName(Completion& complete);
+
+    int chainCommand(Input input, Output output);
+    void chainCompletion(Completion& complete);
+
+    std::vector<std::vector<std::string>> splitCommandList(ArgList::Container input);
 private:
     Object* root;
     std::vector<std::unique_ptr<Attribute>> userAttributes_;

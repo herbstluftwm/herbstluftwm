@@ -656,3 +656,71 @@ void RootCommands::completeEnvName(Completion& complete) {
     }
 }
 
+int RootCommands::chainCommand(Input input, Output output)
+{
+    vector<vector<string>> commands = splitCommandList(input.toVector());
+    int returnCode = 0;
+    // the condition that has to be fulfilled if we want to continue
+    // execuding commands. the default (for 'chain') is to always continue
+    function<bool(int)> conditionContinue = [](int) { return true; };
+    if (input.command() == "and") {
+        // continue executing commands while they are successful
+        conditionContinue = [](int code) { return code == 0; };
+    }
+    if (input.command() == "or") {
+        returnCode = 1;
+        // continue executing commands while they are failing
+        conditionContinue = [](int code) { return code >= 1; };
+    }
+    for (auto& cmd : commands) {
+        if (cmd.empty()) {
+            // if command range is empty, do nothing
+            continue;
+        }
+        Input cmdinput = Input(cmd[0], cmd.begin() + 1, cmd.end());
+        returnCode = Commands::call(cmdinput, output);
+        if (!conditionContinue(returnCode)) {
+            break;
+        }
+    }
+    return returnCode;
+}
+
+void RootCommands::chainCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        // no completion for the separator
+    } else {
+        size_t lastsep = 0;
+        for (size_t i = 1; i < complete.needleIndex(); i++) {
+            if (complete[i] == complete[0]) {
+                lastsep = i;
+            }
+        }
+        if (complete > lastsep + 1) {
+            complete.full(complete[0]);
+        }
+        complete.completeCommands(lastsep + 1);
+    }
+}
+
+
+vector<vector<string>> RootCommands::splitCommandList(ArgList::Container input) {
+    vector<vector<string>> res;
+    if (input.size() == 0) {
+        return res;
+    }
+    vector<string> current;
+    string separator = input[0];
+    for (size_t i = 1; i < input.size(); i++) {
+        if (input[i] == separator) {
+            res.push_back(current);
+            current = {};
+        } else {
+            current.push_back(input[i]);
+        }
+    }
+    res.push_back(current);
+    return res;
+}
+

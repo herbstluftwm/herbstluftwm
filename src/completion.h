@@ -54,11 +54,14 @@ public:
     bool operator==(size_t index) const { return index_ == index; }
     bool operator<=(size_t index) const { return index_ <= index; }
     bool operator<(size_t index) const { return index_ < index; }
+    bool operator>=(size_t index) const { return index_ >= index; }
+    bool operator>(size_t index) const { return index_ > index; }
 
     std::string operator[](size_t index) const;
 
     static bool prefixOf(const std::string& shorter, const std::string& longer);
     const std::string& needle() const;
+    size_t needleIndex() const { return index_; };
 
     /** Grants access to private members as long as Commands::complete is still
      * wrapper around complete_against_commands.
