@@ -322,6 +322,7 @@ def test_chain_and_1(hlwm):
     assert proc.returncode == 1
     assert proc.stderr == 'foo\n'
 
+
 def test_chain_and_2(hlwm):
     proc = hlwm.unchecked_call('and , echo foo , true , echo bar , false , echo baz')
     assert proc.returncode == 1
