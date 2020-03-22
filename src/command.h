@@ -153,8 +153,6 @@ int call_command_no_output(int argc, char** argv)
 int list_commands(Output output);
 int complete_command(int argc, char** argv, Output output);
 
-int command_chain_command(int argc, char** argv, Output output);
-
 int negate_command(int argc, char** argv, Output output);
 #endif
 

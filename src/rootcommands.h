@@ -70,6 +70,13 @@ public:
     void getenvUnsetenvCompletion(Completion& complete); //! completion for unsetenv and getenv
     int unsetenvCommand(Input input, Output output);
     void completeEnvName(Completion& complete);
+
+    int chainCommand(Input input, Output output);
+    void chainCompletion(Completion& complete);
+
+    typedef ArgList::Container::const_iterator CmdPos;
+    typedef std::pair<CmdPos,CmdPos> CmdRange; // a range [first,last) within a vector
+    std::vector<CmdRange> splitCommandList(ArgList::Container input);
 private:
     Object* root;
     std::vector<std::unique_ptr<Attribute>> userAttributes_;
