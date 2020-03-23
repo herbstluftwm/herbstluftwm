@@ -365,6 +365,10 @@ string MonitorManager::isValidMonitorName(string name) {
     if (isdigit(name[0])) {
         return "Invalid name \"" + name + "\": The monitor name may not start with a number";
     }
+    if (name.empty()) {
+        // clearing a name is always OK.
+        return "";
+    }
     if (find_monitor_by_name(name.c_str())) {
         return "A monitor with the name \"" + name + "\" already exists";
     }
