@@ -81,7 +81,9 @@ struct Converter {
      * "toggle" in booleans will be proposed only if relativeTo is present
      */
     static void complete(Completion& complete, T const* relativeTo) {
-        completeFull(complete, str(*relativeTo));
+        if (relativeTo) {
+            completeFull(complete, str(*relativeTo));
+        }
     }
 };
 
