@@ -1,8 +1,8 @@
 herbstluftwm
 ============
 
-image:https://travis-ci.org/herbstluftwm/herbstluftwm.svg?branch=winterbreeze[link=
-https://travis-ci.org/herbstluftwm/herbstluftwm?branch=winterbreeze]
+image:https://travis-ci.org/herbstluftwm/herbstluftwm.svg?branch=master[link=
+https://travis-ci.org/herbstluftwm/herbstluftwm?branch=master]
 
 herbstluftwm is a manual tiling window manager for X. It licensed under the
 "Simplified BSD License" (see `LICENSE`).
@@ -20,8 +20,8 @@ herbstluftwm is a manual tiling window manager for X. It licensed under the
   configuration file is just a script which is run on startup. (similar to
   wmii/musca)
 
-For more, see the herbstluftwm homepage http://herbstluftwm.org -- in
-particular the [herbstluftwm tutorial](http://herbstluftwm.org/tutorial.html)
+For more, see the http://herbstluftwm.org[herbstluftwm homepage] -- in
+particular the http://herbstluftwm.org/tutorial.html[herbstluftwm tutorial]
 for the first steps (also available as `man herbstluftwm-tutorial` after
 installing herbstluftwm on your system).
 
