@@ -43,7 +43,6 @@ public:
     int addMonitor(Input input, Output output);
     // return a command that interprets the first argument
     // as a monitor description and then calls the given command on this monitor
-    std::function<int(Input, Output)> byFirstArg(MonitorCommand cmd);
     CommandBinding byFirstArg(MonitorCommand cmd, MonitorCompletion completer);
     // relayout the monitor showing this tag, if there is any
     void relayoutTag(HSTag* tag);
@@ -74,6 +73,8 @@ public:
     int cur_monitor;
 
 private:
+    std::function<int(Input, Output)> byFirstArg(MonitorCommand cmd);
+
     PlainStack<Monitor*> monitorStack_;
 
     ByName by_name_;
