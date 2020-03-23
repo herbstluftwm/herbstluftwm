@@ -100,6 +100,11 @@ int Monitor::unlock_tag_cmd(Input, Output) {
     return 0;
 }
 
+void Monitor::noComplete(Completion &complete)
+{
+    complete.none();
+}
+
 int Monitor::list_padding(Input, Output output) {
     output     << pad_up()
         << " " << pad_right()
@@ -284,6 +289,16 @@ int Monitor::renameCommand(Input input, Output output) {
     } else {
         return 0;
     }
+}
+
+void Monitor::renameComplete(Completion& complete)
+{
+   if (complete == 1) {
+       // no completion, because the completion of the
+       // converter only suggests the current name anyway.
+   } else if (complete >= 2) {
+       complete.none();
+   }
 }
 
 int monitor_rect_command(int argc, char** argv, Output output) {
