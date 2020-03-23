@@ -4,6 +4,7 @@
 #include <cassert>
 #include <memory>
 
+#include "command.h"
 #include "completion.h"
 #include "ewmh.h"
 #include "floating.h"

@@ -7,6 +7,7 @@
 #include "tag.h"
 
 class Client;
+class CommandBinding;
 class FrameTree;
 class Monitor;
 class MonitorManager;
@@ -35,11 +36,12 @@ public:
     void moveClient(Client* client, HSTag* target);
     void moveFocusedClient(HSTag* target);
     std::function<int(Input, Output)> frameCommand(FrameCommand cmd);
-    std::function<void(Completion&)> frameCompletion(FrameCompleter completer);
+    CommandBinding frameCommand(FrameCommand cmd, FrameCompleter completer);
     std::function<int()> frameCommand(std::function<int(FrameTree&)> cmd);
     void updateFocusObject(Monitor* focusedMonitor);
     std::string isValidTagName(std::string name);
 private:
+    std::function<void(Completion&)> frameCompletion(FrameCompleter completer);
     void onTagRename(HSTag* tag);
     void onFloatingChange(HSTag* tag);
     ByName by_name_;
