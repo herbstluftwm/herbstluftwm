@@ -54,6 +54,7 @@ public:
     void dumpLayoutCompletion(Completion& complete);
     int cycleLayoutCommand(Input input, Output output);
     void cycleLayoutCompletion(Completion& complete);
+    int splitCommand(Input input, Output output);
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:

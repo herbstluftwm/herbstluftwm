@@ -293,3 +293,13 @@ def test_cycle_frame_traverses_all(hlwm, running_clients, num_splits, delta):
     for i1 in range(0, len(layouts)):
         for i2 in range(0, i1):
             assert layouts[i1] != layouts[i2]
+
+
+@pytest.mark.parametrize("running_clients_num", [0, 2])
+@pytest.mark.parametrize("align", ["horizontal", "vertical"])
+@pytest.mark.parametrize("fraction", ["0.1", "0.5", "0.7"])
+def test_split_simple(hlwm, running_clients, align, fraction):
+    hlwm.call(['split', align, fraction])
+    assert hlwm.call('dump').stdout == \
+        '(split {}:{}:0 (clients vertical:0{}) (clients vertical:0))' \
+        .format(align, fraction, ''.join([' ' + c for c in running_clients]))

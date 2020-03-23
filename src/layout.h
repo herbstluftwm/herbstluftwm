@@ -177,7 +177,6 @@ private:
 };
 
 // functions
-int frame_split_command(Input input, Output output);
 int frame_change_fraction_command(int argc, char** argv, Output output);
 
 int frame_current_bring(int argc, char** argv, Output output);

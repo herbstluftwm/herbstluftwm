@@ -633,6 +633,97 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
     }
 }
 
+//! modes for the 'split' command
+class SplitMode {
+public:
+    string name;
+    SplitAlign align;
+    bool frameToFirst;  // if former frame moves to first child
+    int selection;      // which child to select after the split
+    static vector<SplitMode> modes(SplitAlign align_explode = SplitAlign::horizontal, SplitAlign align_auto = SplitAlign::horizontal);
+};
+
+vector<SplitMode> SplitMode::modes(SplitAlign align_explode, SplitAlign align_auto)
+{
+    return {
+        { "top",        SplitAlign::vertical,     false,  1   },
+        { "bottom",     SplitAlign::vertical,     true,   0   },
+        { "vertical",   SplitAlign::vertical,     true,   0   },
+        { "right",      SplitAlign::horizontal,   true,   0   },
+        { "horizontal", SplitAlign::horizontal,   true,   0   },
+        { "left",       SplitAlign::horizontal,   false,  1   },
+        { "explode",    align_explode,            true,   0   },
+        { "auto",       align_auto,               true,   0   },
+    };
+}
+
+int FrameTree::splitCommand(Input input, Output output)
+{
+    // usage: split t|b|l|r|h|v FRACTION
+    string splitType, strFraction;
+    if (!(input >> splitType )) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    bool userDefinedFraction = input >> strFraction;
+    double fractionFloat = userDefinedFraction ? atof(strFraction.c_str()) : 0.5;
+    int fraction = HSFrameSplit::clampFraction(FRACTION_UNIT * fractionFloat);
+    auto frame = focusedFrame();
+    int lh = frame->lastRect().height;
+    int lw = frame->lastRect().width;
+    SplitAlign align_auto = (lw > lh) ? SplitAlign::horizontal : SplitAlign::vertical;
+    SplitAlign align_explode = SplitAlign::vertical;
+    auto availableModes = SplitMode::modes(align_explode, align_auto);
+    SplitMode m;
+    for (auto &it : availableModes) {
+        if (it.name[0] == splitType[0]) {
+            m = it;
+        }
+    }
+    bool exploding = m.name == "explode";
+    if (m.name.empty()) {
+        output << input.command() << ": Invalid alignment \"" << splitType << "\"\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    auto layout = frame->getLayout();
+    auto windowcount = frame->clientCount();
+    if (exploding) {
+        if (windowcount <= 1) {
+            m.align = align_auto;
+        } else if (layout == LayoutAlgorithm::max) {
+            m.align = align_auto;
+        } else if (layout == LayoutAlgorithm::grid && windowcount == 2) {
+            m.align = SplitAlign::horizontal;
+        } else if (layout == LayoutAlgorithm::horizontal) {
+            m.align = SplitAlign::horizontal;
+        } else {
+            m.align = SplitAlign::vertical;
+        }
+        size_t count1 = frame->clientCount();
+        size_t nc1 = (count1 + 1) / 2;      // new count for the first frame
+        if ((layout == LayoutAlgorithm::horizontal
+            || layout == LayoutAlgorithm::vertical)
+            && !userDefinedFraction && count1 > 1) {
+            fraction = (nc1 * FRACTION_UNIT) / count1;
+        }
+    }
+    // move second half of the window buf to second frame
+    size_t childrenLeaving = 0;
+    if (exploding) {
+        childrenLeaving = frame->clientCount() / 2;
+    }
+    if (!frame->split(m.align, fraction, childrenLeaving)) {
+        return 0;
+    }
+    if (!m.frameToFirst) {
+        frame->getParent()->swapChildren();
+    }
+    frame->getParent()->setSelection(m.selection);
+    // redraw monitor
+    get_current_monitor()->applyLayout();
+    return 0;
+}
+
+
 //! Implementation of the commands "dump" and "layout"
 int FrameTree::dumpLayoutCommand(Input input, Output output) {
     shared_ptr<HSFrame> frame = root_;
