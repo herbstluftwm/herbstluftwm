@@ -52,6 +52,9 @@ protected:
     std::shared_ptr<std::string> command_;
 };
 
+// only a trick such that we don't need to include completion.h here
+void completeFull(Completion& complete, std::string string);
+
 /* Primitive types that can be converted from/to user input/output */
 template<typename T>
 struct Converter {
@@ -77,7 +80,11 @@ struct Converter {
     /** Give possible completion values. The completion can be relative to 'relativeTo', e.g.
      * "toggle" in booleans will be proposed only if relativeTo is present
      */
-    static void complete(Completion& complete, T const* relativeTo) { }
+    static void complete(Completion& complete, T const* relativeTo) {
+        if (relativeTo) {
+            completeFull(complete, str(*relativeTo));
+        }
+    }
 };
 
 #define ConverterInstance(T) \

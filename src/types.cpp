@@ -34,3 +34,8 @@ template<> void Converter<bool>::complete(Completion& complete, bool const* rela
     complete.full({ "on", "off", "true", "false" });
     if (relativeTo) complete.full("toggle");
 }
+
+void completeFull(Completion &complete, std::string s)
+{
+    complete.full(s);
+}

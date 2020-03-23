@@ -9,6 +9,7 @@
 
 #include "client.h"
 #include "clientmanager.h"
+#include "completion.h"
 #include "ewmh.h"
 #include "frametree.h"
 #include "globals.h"
@@ -255,6 +256,20 @@ int Monitor::move_cmd(Input input, Output output) {
     if (!input.empty()) pad_left.change(input.front());
     applyLayout();
     return 0;
+}
+
+void Monitor::move_complete(Completion& complete) {
+    if (complete == 1) {
+        complete.full(Converter<Rectangle>::str(rect));
+    } else if (complete >= 2 && complete <= 5) {
+        vector<Attribute_<int>*> pads =
+            { &pad_up, &pad_right, &pad_down, &pad_left };
+        complete.full("0");
+        size_t idx = complete.needleIndex();
+        pads[idx - 2]->complete(complete);
+    } else {
+        complete.none();
+    }
 }
 
 int Monitor::renameCommand(Input input, Output output) {
