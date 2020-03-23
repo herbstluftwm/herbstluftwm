@@ -1,4 +1,5 @@
 import pytest
+import re
 import shlex
 from time import sleep
 
@@ -162,6 +163,7 @@ def test_completable_commands(hlwm, request, run_destructives):
         'shift': {6},
         'focus': {6},
     }
+    allowed_stderr = re.compile('A (monitor|tag) with the name.*already exists')
     # a set of commands that make other commands break
     # hence we need to run them separately
     destructive_commands = {
@@ -182,8 +184,10 @@ def test_completable_commands(hlwm, request, run_destructives):
         for k, v in allowed_returncodes.items():
             if k in command:
                 returncodes |= v
-        assert hlwm.unchecked_call(command, log_output=False).returncode \
-            in returncodes, "Running " + ' '.join(command)
+        result = hlwm.unchecked_call(command, log_output=False)
+        assert result.returncode in returncodes \
+            or allowed_stderr.search(result.stderr), \
+            "Running " + ' '.join(command)
 
 
 @pytest.mark.parametrize('name', commands_without_input)
