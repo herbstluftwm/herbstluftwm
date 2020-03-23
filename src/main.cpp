@@ -117,7 +117,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"close",          { close_command }},
         {"close_or_remove",{ tags->frameCommand(&FrameTree::closeOrRemoveCommand) }},
         {"close_and_remove",{ tags->frameCommand(&FrameTree::closeAndRemoveCommand) }},
-        {"split",          frame_split_command},
+        {"split",          { tags->frameCommand(&FrameTree::splitCommand) }},
         {"resize",         frame_change_fraction_command},
         {"focus_edge",     frame_focus_edge},
         {"focus",          frame_focus_command},
