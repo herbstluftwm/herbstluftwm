@@ -5,7 +5,6 @@
 #include <string>
 
 #include "byname.h"
-#include "command.h"
 #include "indexingobject.h"
 #include "link.h"
 #include "monitor.h"
@@ -13,6 +12,7 @@
 
 extern MonitorManager* g_monitors;
 
+class CommandBinding;
 class Completion;
 class TagManager;
 class HSTag;

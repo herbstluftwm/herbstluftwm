@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "client.h"
+#include "command.h"
 #include "completion.h"
 #include "ewmh.h"
 #include "frametree.h"
@@ -309,6 +310,11 @@ function<int(Input, Output)> TagManager::frameCommand(FrameCommand cmd) {
     return [cmd,this](Input input, Output output) -> int {
         return cmd(*(this->focus_()->frame), input, output);
     };
+}
+
+CommandBinding TagManager::frameCommand(FrameCommand cmd, FrameCompleter completer)
+{
+    return { frameCommand(cmd), frameCompletion(completer) };
 }
 function<int()> TagManager::frameCommand(function<int(FrameTree&)> cmd) {
     return [cmd,this]() -> int {
