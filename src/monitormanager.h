@@ -5,11 +5,11 @@
 #include <string>
 
 #include "byname.h"
+#include "command.h"
 #include "indexingobject.h"
 #include "link.h"
 #include "monitor.h"
 #include "plainstack.h"
-#include "command.h"
 
 extern MonitorManager* g_monitors;
 
