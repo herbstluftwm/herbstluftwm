@@ -14,6 +14,7 @@ extern MonitorManager* g_monitors;
 
 class CommandBinding;
 class Completion;
+class PanelManager;
 class TagManager;
 class HSTag;
 class HSFrame;
@@ -25,7 +26,7 @@ class MonitorManager : public IndexingObject<Monitor> {
 public:
     MonitorManager();
     ~MonitorManager();
-    void injectDependencies(Settings* s, TagManager* t);
+    void injectDependencies(Settings* s, TagManager* t, PanelManager* panels);
 
     Link_<Monitor> focus;
 
@@ -51,6 +52,8 @@ public:
     void removeMonitor(Monitor* monitor);
     // if the name is valid monitor name, return "", otherwise return an error message
     std::string isValidMonitorName(std::string name);
+
+    void autoUpdatePads();
 
     int indexInDirection(Monitor* m, Direction dir);
 
@@ -78,6 +81,7 @@ private:
     PlainStack<Monitor*> monitorStack_;
 
     ByName by_name_;
+    PanelManager* panels_;
     TagManager* tags_;
     Settings* settings_;
 };

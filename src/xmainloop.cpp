@@ -17,6 +17,7 @@
 #include "monitor.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
+#include "panelmanager.h"
 #include "root.h"
 #include "settings.h"
 #include "tag.h"
@@ -89,7 +90,19 @@ void XMainLoop::scanExistingClients() {
         if (root_->ewmh->isOwnWindow(win)) {
             continue;
         }
-        if (wa.map_state == IsViewable
+        if (root_->ewmh->getWindowType(win) == NetWmWindowTypeDesktop)
+        {
+            DesktopWindow::registerDesktop(win);
+            DesktopWindow::lowerDesktopWindows();
+            XMapWindow(X_.display(), win);
+        }
+        else if (root_->ewmh->getWindowType(win) == NetWmWindowTypeDock)
+        {
+            root_->panels->registerPanel(win);
+            XSelectInput(X_.display(), win, PropertyChangeMask);
+            XMapWindow(X_.display(), win);
+        }
+        else if (wa.map_state == IsViewable
             || isInOriginalClients(win)) {
             clientmanager->manage_client(win, true, false);
             XMapWindow(X_.display(), win);
@@ -247,11 +260,13 @@ void XMainLoop::clientmessage(XClientMessageEvent* event) {
 }
 
 void XMainLoop::configurenotify(XConfigureEvent* event) {
-    if (event->window == g_root &&
-        root_->settings->auto_detect_monitors()) {
-        const char* args[] = { "detect_monitors" };
-        std::ostringstream void_output;
-        detect_monitors_command(LENGTH(args), args, void_output);
+    if (event->window == g_root) {
+        root_->panels->rootWindowChanged(event->width, event->height);
+        if (root_->settings->auto_detect_monitors()) {
+            const char* args[] = { "detect_monitors" };
+            std::ostringstream void_output;
+            detect_monitors_command(LENGTH(args), args, void_output);
+        }
     }
     // HSDebug("name is: ConfigureNotify\n");
 }
@@ -265,6 +280,7 @@ void XMainLoop::destroynotify(XUnmapEvent* event) {
         cm->force_unmanage(client);
     } else {
         DesktopWindow::unregisterDesktop(event->window);
+        root_->panels->unregisterPanel(event->window);
     }
 }
 
@@ -355,6 +371,12 @@ void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
             DesktopWindow::registerDesktop(window);
             DesktopWindow::lowerDesktopWindows();
             XMapWindow(X_.display(), window);
+        }
+        else if (root_->ewmh->getWindowType(window) == NetWmWindowTypeDock)
+        {
+            root_->panels->registerPanel(window);
+            XSelectInput(X_.display(), window, PropertyChangeMask);
+            XMapWindow(X_.display(), window);
         } else {
             // client should be managed (is not ignored)
             // but is not managed yet
@@ -387,6 +409,8 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
                        ev->atom == g_netatom[NetWmName]) {
                 client->update_title();
             }
+        } else {
+            root_->panels->propertyChanged(ev->window, ev->atom);
         }
     }
 }

@@ -29,6 +29,9 @@ public:
     Attribute_<int>         pad_down;
     Attribute_<int>         pad_left;
     Attribute_<bool>        lock_tag;
+    // whether the above pads were determined automatically
+    // from autodetected panels
+    std::vector<bool>       pad_automatically_set;
     bool        dirty;
     bool        lock_frames;
     struct {
@@ -38,6 +41,7 @@ public:
     } mouse;
     Rectangle   rect;   // area for this monitor
     Window      stacking_window;   // window used for making stacking easy
+    Signal monitorMoved;
     void setIndexAttribute(unsigned long index) override;
     int lock_tag_cmd(Input argv, Output output);
     int unlock_tag_cmd(Input argv, Output output);

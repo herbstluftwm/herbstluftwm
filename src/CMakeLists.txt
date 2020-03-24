@@ -44,6 +44,7 @@ target_sources(herbstluftwm PRIVATE
     object.cpp object.h
     optional.h
     plainstack.h
+    panelmanager.h panelmanager.cpp
     rectangle.cpp rectangle.h
     rootcommands.cpp rootcommands.h
     root.cpp root.h
