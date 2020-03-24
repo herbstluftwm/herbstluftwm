@@ -210,7 +210,6 @@ void Object::removeChild(const string &child)
     children_.erase(child);
 }
 
-
 void Object::addHook(Hook* hook)
 {
     hooks_.push_back(hook);

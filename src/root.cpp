@@ -9,6 +9,7 @@
 #include "keymanager.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
+#include "panelmanager.h"
 #include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
@@ -36,6 +37,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     , root_commands(make_unique<RootCommands>(this))
     , X(xconnection)
     , ipcServer_(ipcServer)
+    , panels(make_unique<PanelManager>(xconnection))
     , ewmh(make_unique<Ewmh>(xconnection))
 {
     // initialize root children (alphabetically)
@@ -55,7 +57,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     settings->injectDependencies(this);
     tags->injectDependencies(monitors(), settings());
     clients->injectDependencies(settings(), theme(), ewmh.get());
-    monitors->injectDependencies(settings(), tags());
+    monitors->injectDependencies(settings(), tags(), panels.get());
     mouse->injectDependencies(clients(), monitors());
 
     // set temporary globals
@@ -65,6 +67,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     // connect slots
     clients->needsRelayout.connect(monitors(), &MonitorManager::relayoutTag);
     theme->theme_changed_.connect(monitors(), &MonitorManager::relayoutAll);
+    panels->panels_changed_.connect(monitors(), &MonitorManager::autoUpdatePads);
 }
 
 Root::~Root()

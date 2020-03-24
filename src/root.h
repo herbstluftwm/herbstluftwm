@@ -16,6 +16,7 @@ class IpcServer;
 class KeyManager;
 class MonitorManager;
 class MouseManager;
+class PanelManager;
 class RootCommands;
 class RuleManager;
 class Settings;
@@ -60,6 +61,7 @@ public:
     IpcServer& ipcServer_;
     //! Temporary member. In the long run, ewmh should get its information
     // automatically from the signals emitted by ClientManager, etc
+    std::unique_ptr<PanelManager> panels; // Using "pimpl" to avoid include
     std::unique_ptr<Ewmh> ewmh; // Using "pimpl" to avoid include
 
 private:

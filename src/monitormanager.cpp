@@ -13,6 +13,7 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
+#include "panelmanager.h"
 #include "settings.h"
 #include "stack.h"
 #include "tag.h"
@@ -23,6 +24,7 @@ using std::endl;
 using std::function;
 using std::make_pair;
 using std::make_shared;
+using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::to_string;
@@ -42,9 +44,10 @@ MonitorManager::~MonitorManager() {
     clearChildren();
 }
 
-void MonitorManager::injectDependencies(Settings* s, TagManager* t) {
+void MonitorManager::injectDependencies(Settings* s, TagManager* t, PanelManager* p) {
     settings_ = s;
     tags_ = t;
+    panels_ = p;
 }
 
 void MonitorManager::clearChildren() {
@@ -68,6 +71,7 @@ void MonitorManager::ensure_monitors_are_available() {
     m->tag->frame->root_->setVisibleRecursive(true);
     cur_monitor = 0;
 
+    autoUpdatePads();
     monitor_update_focus_objects();
 }
 
@@ -354,6 +358,7 @@ int MonitorManager::addMonitor(Input input, Output output)
         monitor->name = monitorName;
     }
 
+    autoUpdatePads();
     monitor->applyLayout();
     tag->frame->root_->setVisibleRecursive(true);
     emit_tag_changed(tag, g_monitors->size() - 1);
@@ -376,10 +381,46 @@ string MonitorManager::isValidMonitorName(string name) {
     return "";
 }
 
+//! automatically update the pad settings for all monitors
+void MonitorManager::autoUpdatePads()
+{
+    for (Monitor* m : *this) {
+        PanelManager::ReservedSpace rs = panels_->computeReservedSpace(m->rect);
+        // all the sides in the order as it matters for pad_automatically_set
+        vector<pair<Attribute_<int>&, int>> sides = {
+            { m->pad_up,    rs.top_     },
+            { m->pad_right, rs.right_   },
+            { m->pad_down,  rs.bottom_  },
+            { m->pad_left,  rs.left_    },
+        };
+        size_t idx = 0;
+        for (auto& it : sides ) {
+            if (it.first() != it.second) {
+                if (it.second != 0) {
+                    // if some panel was added or resized
+                    it.first.operator=(it.second);
+                    m->pad_automatically_set[idx] = true;
+                } else {
+                    // if there is no panel, then only clear the pad
+                    // if the pad was added by us before
+                    if (m->pad_automatically_set[idx]) {
+                        it.first.operator=(0);
+                        m->pad_automatically_set[idx] = false;
+                    }
+                }
+            }
+            idx++;
+        }
+    }
+}
+
 Monitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
     Monitor* m = new Monitor(settings_, this, rect, tag);
     addIndexed(m);
     monitorStack_.insert(m);
+    m->monitorMoved.connect([this]() {
+        this->autoUpdatePads();
+    });
     return m;
 }
 
@@ -508,6 +549,7 @@ int MonitorManager::setMonitors(const RectangleVec& templates) {
         removeMonitor(byIdx(i));
     }
     monitor_update_focus_objects();
+    autoUpdatePads();
     all_monitors_apply_layout();
     return 0;
 }

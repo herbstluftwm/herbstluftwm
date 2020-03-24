@@ -46,6 +46,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     , pad_down  (this, "pad_down", 0)
     , pad_left  (this, "pad_left", 0)
     , lock_tag  (this, "lock_tag", false)
+    , pad_automatically_set ({false, false, false, false})
     , dirty(true)
     , mouse { 0, 0 }
     , rect(rect_)
@@ -259,6 +260,7 @@ int Monitor::move_cmd(Input input, Output output) {
     if (!input.empty()) pad_down.change(input.front());
     input.shift();
     if (!input.empty()) pad_left.change(input.front());
+    monitorMoved.emit();
     applyLayout();
     return 0;
 }
