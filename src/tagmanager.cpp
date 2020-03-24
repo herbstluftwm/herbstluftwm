@@ -8,12 +8,10 @@
 #include "ewmh.h"
 #include "frametree.h"
 #include "globals.h"
-#include "hlwmcommon.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "root.h"
 #include "stack.h"
 #include "utils.h"
 
