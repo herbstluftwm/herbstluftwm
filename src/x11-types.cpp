@@ -121,7 +121,7 @@ bool Rectangle::operator==(const Rectangle& other) const
  */
 Rectangle::operator bool() const
 {
-    return (width >= 0) && (height >= 0);
+    return (width > 0) && (height > 0);
 }
 
 /**
