@@ -185,7 +185,6 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
         client->tag()->frame->focusClient(client);
     }
 
-    ewmh->windowUpdateTag(client->window_, client->tag());
     tag_set_flags_dirty();
     client->fullscreen_ = changes.fullscreen;
     ewmh->updateWindowState(client);

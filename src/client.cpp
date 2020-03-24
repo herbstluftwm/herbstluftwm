@@ -110,6 +110,11 @@ void Client::make_full_client() {
                             |EnterWindowMask|PropertyChangeMask);
 }
 
+void Client::setTag(HSTag *tag) {
+    tag_ = tag;
+    ewmh.windowUpdateTag(window_, tag);
+}
+
 bool Client::ignore_unmapnotify() {
     if (ignore_unmaps_ > 0) {
         ignore_unmaps_--;

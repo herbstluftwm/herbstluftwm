@@ -149,9 +149,6 @@ int TagManager::removeTag(Input input, Output output) {
     Ewmh::get().updateCurrentDesktop();
     Ewmh::get().updateDesktops();
     Ewmh::get().updateDesktopNames();
-    for (auto client : Root::common().clients()) {
-        Ewmh::get().windowUpdateTag(client.first, client.second->tag());
-    }
     tag_set_flags_dirty();
     hook_emit({"tag_removed", removedName, targetTag->name()});
 
@@ -260,7 +257,6 @@ void TagManager::moveClient(Client* client, HSTag* target) {
     client->tag()->stack->removeSlice(client->slice);
     client->setTag(target);
     client->tag()->stack->insertSlice(client->slice);
-    Ewmh::get().windowUpdateTag(client->window_, client->tag());
 
     // refresh things, hide things, layout it, and then show it if needed
     if (monitor_source && !monitor_target) {

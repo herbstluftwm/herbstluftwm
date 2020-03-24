@@ -65,7 +65,7 @@ public:
 
     // setter and getter for attributes
     HSTag* tag() { return tag_; }
-    void setTag(HSTag* tag) { tag_ = tag; }
+    void setTag(HSTag* tag);
 
     Window x11Window() const { return window_; }
     Window decorationWindow();
