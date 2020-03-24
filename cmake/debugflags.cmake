@@ -24,10 +24,14 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     list(APPEND FLAGS
         # Additional warnings that don't come with Wall/Wextra:
         -Wduplicated-cond -Wduplicated-branches -Wlogical-op
-
-        # This is since in GCC-8 and triggers on known issues:
-        -Wno-error=cast-function-type
         )
+
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
+        list(APPEND FLAGS
+            # This is in since GCC-8 and triggers on known issues:
+            -Wno-error=cast-function-type
+            )
+    endif()
 
     # Add GCC- *and* C++-specific flags
     set(CXX_FLAGS ${CXX_FLAGS}
