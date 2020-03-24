@@ -1,12 +1,10 @@
 #pragma once
 
 #include <X11/X.h>
-
 #include <unordered_map>
 
-#include "object.h"
-#include "attribute_.h"
 #include "signal.h"
+#include "x11-types.h"
 
 class Panel;
 class XConnection;
