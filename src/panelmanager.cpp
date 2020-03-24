@@ -1,8 +1,5 @@
 #include "panelmanager.h"
 
-#include <X11/Xlib.h>
-
-#include "globals.h"
 #include "x11-types.h"
 #include "xconnection.h"
 
