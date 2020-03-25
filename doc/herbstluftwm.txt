@@ -877,9 +877,9 @@ unsetenv 'NAME'::
 SETTINGS
 --------
 Settings configure the behaviour of herbstluftwm and can be controlled via the
-'set', 'get' and 'toggle' commands. There are two types of settings: Strings and
-integer values. An integer value is set, if its value is 1 or another value
-unequal to 0. An integer value is unset, if its value is 0.
+'set', 'get' and 'toggle' commands. The following list mentions all settings and
+their type. The settings can also be accessed via the <<OBJECTS, object tree>>
+(see the section <<OBJECTS, OBJECTS>>).
 
 frame_gap (Integer)::
     The gap between frames in the tiling mode.
