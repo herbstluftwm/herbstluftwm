@@ -495,17 +495,17 @@ rotate::
     only manipulates the alignment of frames, not the content of them.
 
 set 'NAME' 'VALUE'::
-    Sets the specified setting 'NAME' to 'VALUE'. All <<SETTINGS,*SETTINGS*>>
-    are listed in the <<SETTINGS, section below>>.
+    Sets the specified setting 'NAME' to 'VALUE'. Allowed values for boolean
+    settings are 'on' or 'true' for on, 'off' or 'false' for off, 'toggle' to
+    toggle its value. All <<SETTINGS,*SETTINGS*>> are listed in the
+    <<SETTINGS, section below>>.
 
 get 'NAME'::
     Prints the value of setting 'NAME'. All <<SETTINGS,*SETTINGS*>>
     are listed in the <<SETTINGS, section below>>.
 
 toggle 'NAME'::
-    Toggles the setting 'NAME' if it's an integer setting: If its value is
-    unequal to 0, it becomes 0; else its previous value (which was unequal to 0)
-    is restored.
+    Toggles the setting 'NAME' if it's a boolean setting.
 
 cycle_value 'NAME' 'VALUES' ...::
     Cycles value of the setting 'NAME' through 'VALUES': I.e. it searches the
