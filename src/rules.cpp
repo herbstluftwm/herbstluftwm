@@ -167,9 +167,9 @@ void Rule::print(Output output) {
 }
 
 // rules applying //
-ClientChanges::ClientChanges(Client *client)
-    : fullscreen(Root::get()->ewmh->isFullscreenSet(client->window_))
-{}
+ClientChanges::ClientChanges()
+{
+}
 
 /// CONDITIONS ///
 bool Condition::matches(const string& str) const {
@@ -262,7 +262,7 @@ void Consequence::applyPseudotile(const Client* client, ClientChanges* changes) 
 }
 
 void Consequence::applyFullscreen(const Client* client, ClientChanges* changes) const {
-    changes->fullscreen = Converter<bool>::parse(value, changes->fullscreen);
+    changes->fullscreen = Converter<bool>::parse(value);
 }
 
 void Consequence::applySwitchtag(const Client* client, ClientChanges* changes) const {

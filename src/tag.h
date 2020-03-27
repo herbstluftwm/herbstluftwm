@@ -14,6 +14,7 @@ enum {
     TAG_FLAG_USED   = 0x02, // the opposite of empty
 };
 
+class Client;
 class FrameTree;
 class Settings;
 class Stack;
@@ -34,6 +35,7 @@ public:
     int             flags;
     std::shared_ptr<Stack> stack;
     void setIndexAttribute(unsigned long new_index) override;
+    bool focusClient(Client* client);
 private:
     //! get the number of clients on this tag
     int computeClientCount();

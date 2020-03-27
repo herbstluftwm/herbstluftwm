@@ -57,7 +57,7 @@ private:
 
 class ClientChanges {
 public:
-    ClientChanges(Client *client);
+    ClientChanges();
 
     // For tag_name and monitor_name, an empty string means "no change",
     // because empty strings are not considered valid here. TODO: Use
@@ -69,8 +69,8 @@ public:
     bool            focus = false; // if client should get focus
     bool            switchtag = false; // if the tag may be switched for focusing it
     bool            manage = true; // whether we should manage it
-    bool            fullscreen;
-    std::string     keyMask; // Which keymask rule should be applied for this client
+    std::experimental::optional<bool> fullscreen;
+    std::experimental::optional<std::string> keyMask; // Which keymask rule should be applied for this client
 
     std::experimental::optional<bool> pseudotile;
     std::experimental::optional<bool> ewmhRequests;
