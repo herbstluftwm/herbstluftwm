@@ -23,6 +23,7 @@
 
 using std::endl;
 using std::string;
+using std::vector;
 
 ClientManager::ClientManager()
     : focus(*this, "focus")
@@ -248,15 +249,28 @@ int ClientManager::applyRulesCmd(Input input, Output output) {
     if (!(input >> winid)) {
         return HERBST_NEED_MORE_ARGS;
     }
-    Client* client = this->client(winid);
-    if (!client) {
-        output << "No such (managed) client: " << winid << "\n";
-        return HERBST_INVALID_ARGUMENT;
+    if (winid == "--all") {
+        MonitorManager* monitors = Root::get()->monitors();
+        monitors->lock(); // avoid unnecessary redraws
+        int status = 0;
+        for (const auto& it : clients_) {
+            status = std::max(status, applyRules(it.second, output, false));
+        }
+        monitors->unlock();
+        return status;
+    } else {
+        Client* client = this->client(winid);
+        if (!client) {
+            output << "No such (managed) client: " << winid << "\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+        return applyRules(client, output);
     }
-    return applyRules(client, output);
 }
 
-int ClientManager::applyRules(Client* client, Output output)
+//! apply all rules for the given client. if focus=on and changeFocus=true,
+//! then the client is focused
+int ClientManager::applyRules(Client* client, Output output, bool changeFocus)
 {
     ClientChanges changes;
     changes.focus = client == focus();
@@ -299,7 +313,7 @@ int ClientManager::applyRules(Client* client, Output output)
         }
         TagManager* tagman = Root::get()->tags();
         tagman->moveClient(client, tag, changes.tree_index, changes.focus);
-    } else if (changes.focus && (client != focus())) {
+    } else if (changes.focus && (client != focus()) && changeFocus) {
         // focus the client
         client->tag()->focusClient(client);
         Root::get()->monitors->relayoutTag(client->tag());
@@ -313,6 +327,7 @@ int ClientManager::applyRules(Client* client, Output output)
 void ClientManager::applyRulesCompletion(Completion& complete)
 {
     if (complete == 0) {
+        complete.full("-all");
         completeClients(complete);
     } else {
         complete.none();

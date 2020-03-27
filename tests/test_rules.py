@@ -417,3 +417,41 @@ def test_wm_class_too_late(hlwm, x11):
     x11.display.sync()
 
     assert hlwm.get_attr('clients.{}.tag'.format(winid)) == 'tag2'
+
+
+def test_apply_rules_all_no_focus(hlwm):
+    hlwm.call('add tag1')
+    hlwm.call('rule title=c1 tag=tag1')
+    client1, _ = hlwm.create_client(title='c1')
+    hlwm.call('add tag2')
+    hlwm.call('rule title=c2 tag=tag2')
+    client2, _ = hlwm.create_client(title='c2')
+    assert hlwm.get_attr('clients.{}.tag'.format(client1)) == 'tag1'
+    assert hlwm.get_attr('clients.{}.tag'.format(client2)) == 'tag2'
+    assert 'focus' not in hlwm.list_children('clients')
+
+    # change rules and apply them
+    hlwm.call('unrule -F')
+    hlwm.call('rule title=c1 tag=tag2')
+    hlwm.call('rule title=c2 tag=tag1')
+    hlwm.call('apply_rules --all')
+
+    assert hlwm.get_attr('clients.{}.tag'.format(client1)) == 'tag2'
+    assert hlwm.get_attr('clients.{}.tag'.format(client2)) == 'tag1'
+    assert 'focus' not in hlwm.list_children('clients')
+
+
+def test_apply_rules_all_focus_retained(hlwm):
+    hlwm.call('rule focus=on')
+    client1, _ = hlwm.create_client()
+    client2, _ = hlwm.create_client()
+    client3, _ = hlwm.create_client()
+    # check that the focus is retained, no matter in which
+    # order they appear in the hash_map:
+    for client in [client1, client2, client3]:
+        hlwm.call(['jumpto', client])
+        assert hlwm.get_attr('clients.focus.winid') == client
+
+        hlwm.call('apply_rules --all')
+
+        assert hlwm.get_attr('clients.focus.winid') == client
