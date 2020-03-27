@@ -212,9 +212,7 @@ void RuleManager::addRuleCompletion(Completion& complete) {
 
 
 //! Evaluate rules against a given client
-ClientChanges RuleManager::evaluateRules(Client* client) {
-    ClientChanges changes(client);
-
+ClientChanges RuleManager::evaluateRules(Client* client, ClientChanges changes) {
     auto ruleIter = rules_.begin();
     while (ruleIter != rules_.end()) {
         auto& rule = *ruleIter;

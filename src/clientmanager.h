@@ -9,6 +9,7 @@
 #include "signal.h"
 
 class Client;
+class ClientChanges;
 class Completion;
 class Ewmh;
 class HSTag;
@@ -26,6 +27,7 @@ public:
 
     Client* client(Window window);
     Client* client(const std::string &identifier);
+    void completeClients(Completion& complete);
     const std::unordered_map<Window, Client*>&
     clients() { return clients_; }
 
@@ -50,8 +52,13 @@ public:
     // adds a new client to list of managed client windows
     Client* manage_client(Window win, bool visible_already, bool force_unmanage);
 
+    int applyRulesCmd(Input input, Output output);
+    int applyRules(Client* client, Output output);
+    void applyRulesCompletion(Completion& complete);
+
 protected:
     int clientSetAttribute(std::string attribute, Input input, Output output);
+    void setSimpleClientAttributes(Client* client, const ClientChanges& changes);
     Theme* theme;
     Settings* settings;
     Ewmh* ewmh;

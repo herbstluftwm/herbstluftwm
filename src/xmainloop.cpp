@@ -3,6 +3,7 @@
 #include <X11/X.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <iostream>
 #include <memory>
 
 #include "client.h"
@@ -399,6 +400,11 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
             root_->ipcServer_.handleConnection(ev->window,
                                                HlwmCommon::callCommand);
         } else if (client != nullptr) {
+            //char* atomname = XGetAtomName(X_.display(), ev->atom);
+            //HSDebug("Property notify for client %s: atom %d \"%s\"\n",
+            //        client->window_id_str().c_str(),
+            //        ev->atom,
+            //        atomname);
             if (ev->atom == XA_WM_HINTS) {
                 client->update_wm_hints();
             } else if (ev->atom == XA_WM_NORMAL_HINTS) {
@@ -408,6 +414,13 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
             } else if (ev->atom == XA_WM_NAME ||
                        ev->atom == g_netatom[NetWmName]) {
                 client->update_title();
+            } else if (ev->atom == XA_WM_CLASS && client) {
+                // according to the ICCCM specification, the WM_CLASS property may only
+                // be changed in the withdrawn state:
+                // https://www.x.org/releases/X11R7.6/doc/xorg-docs/specs/ICCCM/icccm.html#wm_class_property
+                // If a client violates this, then the window rules like class=... etc are not applied.
+                // As a workaround, we do it now:
+                root_->clients()->applyRules(client, std::cerr);
             }
         } else {
             root_->panels->propertyChanged(ev->window, ev->atom);

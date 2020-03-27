@@ -6,6 +6,7 @@ Current git version
 
   * monitor detection via xrandr
   * detection of external panels
+  * new command: apply_rules
   * new command: export (convenience wrapper around setenv)
   * The build system is now cmake. See the INSTALL file if you need to
     compile herbstluftwm yourself.
@@ -19,6 +20,8 @@ Current git version
     as printf. Formerly it stayed '%%'.
   * The 'keybind' command now accepts all valid key symbols, even if they are
     not present on the current keyboard layout at the time of setup.
+  * the rules are also applied to those clients that change their WM_CLASS
+    after being shown already.
   * 'detect_monitors' has an additional '--list-all' parameter
   * do not change the focus (for focus_follows_mouse=1) when an unmanaged
     dialog (e.g. a rofi menu or a notification) closes.

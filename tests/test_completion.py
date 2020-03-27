@@ -163,7 +163,10 @@ def test_completable_commands(hlwm, request, run_destructives):
         'shift': {6},
         'focus': {6},
     }
-    allowed_stderr = re.compile('A (monitor|tag) with the name.*already exists')
+    allowed_stderr = re.compile('({})'.format('|'.join([
+        'A (monitor|tag) with the name.*already exists',
+        'No such.*client: urgent',  # for apply_rules
+    ])))
     # a set of commands that make other commands break
     # hence we need to run them separately
     destructive_commands = {
