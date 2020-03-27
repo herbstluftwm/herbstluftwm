@@ -327,7 +327,7 @@ int ClientManager::applyRules(Client* client, Output output, bool changeFocus)
 void ClientManager::applyRulesCompletion(Completion& complete)
 {
     if (complete == 0) {
-        complete.full("-all");
+        complete.full("--all");
         completeClients(complete);
     } else {
         complete.none();
