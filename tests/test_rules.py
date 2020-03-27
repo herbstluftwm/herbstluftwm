@@ -404,5 +404,3 @@ def test_bring(hlwm, from_other_mon):
 
     assert hlwm.get_attr('clients.{}.tag'.format(winid)) \
         == hlwm.get_attr('tags.focus.name')
-
-
