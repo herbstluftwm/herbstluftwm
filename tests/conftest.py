@@ -448,7 +448,16 @@ def hc_idle(hlwm):
 def kill_all_existing_windows(show_warnings=True):
     xlsclients = subprocess.run(['xlsclients', '-l'],
                                 stdout=subprocess.PIPE,
-                                check=True)
+                                stderr=subprocess.PIPE,
+                                check=False)
+    print(xlsclients.stderr.decode(), file=sys.stderr, end='')
+    if re.search('unable to open display', xlsclients.stderr.decode()):
+        # if the display is already closed since there are no clients left,
+        # then that's fine for us
+        return
+    else:
+        # otherwise, assert successfull termination
+        assert xlsclients.returncode == 0
     clients = []
     for l in xlsclients.stdout.decode().splitlines():
         m = re.match(r'Window (0x[0-9a-fA-F]*):', l)
