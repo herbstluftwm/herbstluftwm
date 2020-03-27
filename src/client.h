@@ -61,6 +61,7 @@ public:
     void init_from_X();
 
     void make_full_client();
+    void listen_for_events();
 
 
     // setter and getter for attributes

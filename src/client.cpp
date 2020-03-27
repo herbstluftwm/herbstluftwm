@@ -105,6 +105,9 @@ void Client::make_full_client() {
                             ButtonPressMask | ButtonReleaseMask |
                             ExposureMask |
                             SubstructureRedirectMask | FocusChangeMask));
+}
+
+void Client::listen_for_events() {
     XSelectInput(g_display, window_,
                             StructureNotifyMask|FocusChangeMask
                             |EnterWindowMask|PropertyChangeMask);
