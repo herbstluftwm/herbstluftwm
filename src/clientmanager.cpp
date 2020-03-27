@@ -295,10 +295,8 @@ int ClientManager::applyRulesCmd(Input input, Output output) {
         tagman->moveClient(client, tag, changes.tree_index, changes.focus);
     } else if (changes.focus && (client != focus())) {
         // focus the client
-        HSDebug("FOCUSSING CLIENT %s\n", client->window_id_str().c_str());
         client->tag()->focusClient(client);
         Root::get()->monitors->relayoutTag(client->tag());
-        HSDebug("FOCUS = %s\n", focus()->window_id_str().c_str());
     }
     if (monitor && switch_tag && tag) {
         monitor_set_tag(monitor, tag);
