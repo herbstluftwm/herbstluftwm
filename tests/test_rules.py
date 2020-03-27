@@ -304,13 +304,27 @@ def test_consequence_invalid_argument(hlwm):
     hlwm.create_client()
 
 
+def create_client(hlwm, client_before_rule, rule):
+    """create a client and the given rule. if client_before_rules, then
+    first create the client, and later apply the rule to it via the
+    apply_rule command"""
+    if client_before_rule:
+        winid, _ = hlwm.create_client()
+        hlwm.call(['rule'] + rule)
+        hlwm.call(['apply_rules', winid])
+    else:
+        hlwm.call(['rule'] + rule)
+        winid, _ = hlwm.create_client()
+    return winid
+
+
 @pytest.mark.parametrize(
     'name',
     ['pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen'])
 @pytest.mark.parametrize('value', [True, False])
-def test_bool_consequence_with_corresponding_attribute(hlwm, name, value):
-    hlwm.call(['rule', name + '=' + hlwm.bool(value)])
-    winid, _ = hlwm.create_client()
+@pytest.mark.parametrize('apply_rules', [True, False])
+def test_bool_consequence_with_corresponding_attribute(hlwm, name, value, apply_rules):
+    winid = create_client(hlwm, apply_rules, [name + '=' + hlwm.bool(value)])
 
     assert hlwm.get_attr('clients.{}.{}'.format(winid, name)) == hlwm.bool(value)
 
@@ -335,3 +349,60 @@ def test_rule_hook_unmanaged(hlwm, x11, hc_idle, force_unmanage):
     _, winid = x11.create_client(force_unmanage=force_unmanage)
 
     assert ['rule', 'somewindow', str(winid)] in hc_idle.hooks()
+
+
+def test_apply_rules_nothing_changes(hlwm, x11):
+    winid, _ = hlwm.create_client()
+
+    hlwm.call(['apply_rules', winid])
+
+
+@pytest.mark.parametrize('apply_rules', [True, False])
+def test_move_tag(hlwm, apply_rules):
+    hlwm.call('add tag2')
+    winid = create_client(hlwm, apply_rules, ['tag=tag2'])
+
+    assert hlwm.get_attr('clients.{}.tag'.format(winid)) == 'tag2'
+
+
+@pytest.mark.parametrize('tag_on_mon', ['tag2', 'tag3'])
+@pytest.mark.parametrize('apply_rules', [True, False])
+def test_move_tag_with_monitor(hlwm, apply_rules, tag_on_mon):
+    hlwm.call('add tag2')
+    hlwm.call('add tag3')
+    hlwm.call('add_monitor 600x600+600+0 {} mon2'.format(tag_on_mon))
+    winid = create_client(hlwm, apply_rules, ['tag=tag2'])
+
+    assert hlwm.get_attr('clients.{}.tag'.format(winid)) == 'tag2'
+
+
+@pytest.mark.parametrize('focus', [True, False])
+@pytest.mark.parametrize('apply_rules', [True, False])
+def test_focus(hlwm, focus, apply_rules):
+    other, _ = hlwm.create_client()
+    winid = create_client(hlwm, apply_rules, ['focus=' + hlwm.bool(focus)])
+
+    # check that the second client is focused iff (if and only if) the
+    # rule said so
+    assert (hlwm.get_attr('clients.focus.winid') == winid) == focus
+
+
+@pytest.mark.parametrize('from_other_mon', [True, False])
+def test_bring(hlwm, from_other_mon):
+    # place a client on another tag
+    hlwm.call('add tag2')
+    # thats possibly displayed on another monitor
+    if from_other_mon:
+        hlwm.call('add_monitor 600x600+600+0 tag2')
+    hlwm.call('rule once tag=tag2')
+    winid, _ = hlwm.create_client()
+    assert hlwm.get_attr('clients.{}.tag'.format(winid)) == 'tag2'
+
+    # apply rules that bring the client here
+    hlwm.call('sprintf T tag=%s tags.focus.name rule once T')
+    hlwm.call(['apply_rules', winid])
+
+    assert hlwm.get_attr('clients.{}.tag'.format(winid)) \
+        == hlwm.get_attr('tags.focus.name')
+
+

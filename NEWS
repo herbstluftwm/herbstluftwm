@@ -6,6 +6,7 @@ Current git version
 
   * monitor detection via xrandr
   * detection of external panels
+  * new command: apply_rules
   * new command: export (convenience wrapper around setenv)
   * The build system is now cmake. See the INSTALL file if you need to
     compile herbstluftwm yourself.

@@ -239,22 +239,27 @@ void TagManager::moveFocusedClient(HSTag* target) {
     moveClient(client, target);
 }
 
-void TagManager::moveClient(Client* client, HSTag* target) {
+void TagManager::moveClient(Client* client, HSTag* target, std::string frameIndex, bool focus) {
     HSTag* tag_source = client->tag();
     Monitor* monitor_source = find_monitor_with_tag(tag_source);
-    if (tag_source == target) {
+    if (tag_source == target && frameIndex == "") {
         // nothing to do
         return;
     }
     Monitor* monitor_target = find_monitor_with_tag(target);
     tag_source->frame->root_->removeClient(client);
     // insert window into target
-    target->frame->focusedFrame()->insertClient(client);
+    auto frame = FrameTree::focusedFrame(target->frame->lookup(frameIndex));
+    frame->insertClient(client);
     // enfoce it to be focused on the target tag
-    target->frame->focusClient(client);
-    client->tag()->stack->removeSlice(client->slice);
-    client->setTag(target);
-    client->tag()->stack->insertSlice(client->slice);
+    if (focus) {
+        target->frame->focusClient(client);
+    }
+    if (tag_source != target) {
+        client->tag()->stack->removeSlice(client->slice);
+        client->setTag(target);
+        client->tag()->stack->insertSlice(client->slice);
+    }
 
     // refresh things, hide things, layout it, and then show it if needed
     if (monitor_source && !monitor_target) {

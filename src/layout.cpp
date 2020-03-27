@@ -810,7 +810,7 @@ bool focus_client(Client* client, bool switch_tag, bool switch_monitor) {
     }
     // now the right tag is visible
     // now focus it
-    bool found = tag->frame->focusClient(client);
+    bool found = tag->focusClient(client);
     cur_mon->applyLayout();
     g_monitors->unlock();
     return found;

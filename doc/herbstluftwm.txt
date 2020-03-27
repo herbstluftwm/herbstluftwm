@@ -755,6 +755,9 @@ unrule 'LABEL'|*--all*|*-F*::
     Removes all rules named 'LABEL'. If --all or -F is passed, then all rules
     are removed.
 
+apply_rules 'WINID'::
+    Apply the rules to the specified window 'WINID'.
+
 fullscreen [*on*|*off*|*toggle*]::
     Sets or toggles the fullscreen state of the focused client. If no argument
     is given, fullscreen mode is toggled.
@@ -1091,9 +1094,9 @@ RULES
 -----
 
 Rules are used to change default properties for certain clients when they
-appear. Each rule matches against a certain subset of all clients and defines a
-set of properties for them (called __CONSEQUENCE__s). A rule can be defined
-with this command:
+appear and when the 'apply_rules' command is called. Each rule matches against a
+certain subset of all clients and defines a set of properties for them (called
+__CONSEQUENCE__s). A rule can be defined with this command:
 
 +rule+ [\[--]'FLAG'|\[--]'LABEL'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]
 
@@ -1200,8 +1203,7 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     *off* or *toggle*, it defaults to *on*.
 
 +fullscreen+::
-    sets the fullscreen flag of the client. 'VALUE' can be *on*, *off* or
-    *toggle*.
+    sets the fullscreen flag of the client. 'VALUE' can be *on* or *off*.
 
 +hook+::
     emits the custom hook +rule+ 'VALUE' 'WINID' when this rule is triggered by

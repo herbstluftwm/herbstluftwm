@@ -12,11 +12,13 @@
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
+#include "monitormanager.h"
 #include "mousemanager.h"
 #include "root.h"
 #include "rulemanager.h"
 #include "stack.h"
 #include "tag.h"
+#include "tagmanager.h"
 #include "utils.h"
 
 using std::endl;
@@ -86,6 +88,15 @@ Client* ClientManager::client(const string &identifier)
     }
 }
 
+//! the completion-counterpart of ClientManager::client()
+void ClientManager::completeClients(Completion& complete)
+{
+    complete.full("urgent");
+    for (const auto& it : clients_) {
+        complete.full(Converter<WindowID>::str(it.first));
+    }
+}
+
 void ClientManager::add(Client* client)
 {
     clients_[client->window_] = client;
@@ -148,20 +159,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
         }
     }
 
-    if (changes.pseudotile.has_value()) {
-        client->pseudotile_ = changes.pseudotile.value();
-    }
-
-    if (changes.ewmhNotify.has_value()) {
-        client->ewmhnotify_ = changes.ewmhNotify.value();
-    }
-
-    if (changes.ewmhRequests.has_value()) {
-        client->ewmhrequests_ = changes.ewmhRequests.value();
-    }
-
-    // Reuse the keymask string
-    client->keyMask_ = changes.keyMask;
+    setSimpleClientAttributes(client, changes);
 
     // actually manage it
     client->dec->createWindow();
@@ -186,7 +184,11 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     }
 
     tag_set_flags_dirty();
-    client->fullscreen_ = changes.fullscreen;
+    if (changes.fullscreen.has_value()) {
+        client->fullscreen_ = changes.fullscreen.value();
+    } else {
+        client->fullscreen_ = ewmh->isFullscreenSet(client->window_);
+    }
     ewmh->updateWindowState(client);
     // add client after setting the correct tag for the new client
     // this ensures a panel can read the tag property correctly at this point
@@ -216,6 +218,101 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     Root::get()->mouse->grab_client_buttons(client, false);
 
     return client;
+}
+
+/** apply simple attribute based client changes. We do not apply 'fullscreen' here because
+ * its value defaults to the client's ewmh property and is handled in applyRulesCmd() and manage_client() differently.
+ */
+void ClientManager::setSimpleClientAttributes(Client* client, const ClientChanges& changes)
+{
+    if (changes.pseudotile.has_value()) {
+        client->pseudotile_ = changes.pseudotile.value();
+    }
+
+    if (changes.ewmhNotify.has_value()) {
+        client->ewmhnotify_ = changes.ewmhNotify.value();
+    }
+
+    if (changes.ewmhRequests.has_value()) {
+        client->ewmhrequests_ = changes.ewmhRequests.value();
+    }
+
+    if (changes.keyMask.has_value()) {
+        client->keyMask_ = changes.keyMask.value();
+    }
+}
+
+int ClientManager::applyRulesCmd(Input input, Output output) {
+    string winid;
+    if (!(input >> winid)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    Client* client = this->client(winid);
+    if (!client) {
+        output << "No such (managed) client: " << winid << "\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    ClientChanges changes;
+    changes.focus = client == focus();
+    changes = Root::get()->rules()->evaluateRules(client, changes);
+    if (changes.manage == false) {
+        // only make unmanaging clients possible as soon as it is
+        // possible to make them managed again
+        output << "Unmanaging clients not yet possible.\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    // do the simple attributes first
+    setSimpleClientAttributes(client, changes);
+    if (changes.fullscreen.has_value()) {
+        client->fullscreen_ = changes.fullscreen.value();
+    }
+    HSTag* tag = nullptr;
+    Monitor* monitor = nullptr;
+    bool switch_tag = false;
+    // in the following, we do the same decisions in the same order as in manage_client();
+    // the only difference is, that we only set the above variables and execute the decisions
+    // later
+    if (!changes.tag_name.empty()) {
+        tag = find_tag(changes.tag_name.c_str());
+    }
+    if (!changes.monitor_name.empty()) {
+        monitor = string_to_monitor(changes.monitor_name.c_str());
+        if (monitor) {
+            // a valid tag was not already found, use the target monitor's tag
+            if (!tag) { tag = monitor->tag; }
+            // a tag was already found, display it on the target monitor, but
+            // only if switchtag is set
+            else if (changes.switchtag) {
+                switch_tag = true;
+            }
+        }
+    }
+    if (tag || changes.tree_index != "") {
+        if (!tag) {
+            tag = client->tag();
+        }
+        TagManager* tagman = Root::get()->tags();
+        tagman->moveClient(client, tag, changes.tree_index, changes.focus);
+    } else if (changes.focus && (client != focus())) {
+        // focus the client
+        HSDebug("FOCUSSING CLIENT %s\n", client->window_id_str().c_str());
+        client->tag()->focusClient(client);
+        Root::get()->monitors->relayoutTag(client->tag());
+        HSDebug("FOCUS = %s\n", focus()->window_id_str().c_str());
+    }
+    if (monitor && switch_tag && tag) {
+        monitor_set_tag(monitor, tag);
+    }
+    return 0;
+}
+
+void ClientManager::applyRulesCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        completeClients(complete);
+    } else {
+        complete.none();
+    }
 }
 
 void ClientManager::unmap_notify(Window win) {

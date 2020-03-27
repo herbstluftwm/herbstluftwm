@@ -39,6 +39,12 @@ void HSTag::setIndexAttribute(unsigned long new_index) {
     index = new_index;
 }
 
+//! give the focus within this tag to the specified client
+bool HSTag::focusClient(Client* client)
+{
+    return frame->focusClient(client);
+}
+
 int HSTag::computeFrameCount() {
     int count = 0;
     frame->root_->fmap([](HSFrameSplit*) {},
