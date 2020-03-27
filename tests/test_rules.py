@@ -404,3 +404,16 @@ def test_bring(hlwm, from_other_mon):
 
     assert hlwm.get_attr('clients.{}.tag'.format(winid)) \
         == hlwm.get_attr('tags.focus.name')
+
+
+def test_wm_class_too_late(hlwm, x11):
+    hlwm.call('add tag2')
+    hlwm.call('rule class=SomeTmpClassTooLate tag=tag2')
+    winref, winid = x11.create_client()
+    assert hlwm.get_attr('clients.{}.tag'.format(winid)) != 'tag2'
+
+    # change window class after the window has appeared already
+    winref.set_wm_class('someInstance', 'SomeTmpClassTooLate')
+    x11.display.sync()
+
+    assert hlwm.get_attr('clients.{}.tag'.format(winid)) == 'tag2'

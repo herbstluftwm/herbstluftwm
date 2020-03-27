@@ -132,6 +132,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
 
     // init client
     auto client = new Client(win, visible_already, *this);
+    client->listen_for_events();
     Monitor* m = get_current_monitor();
 
     // apply rules
@@ -252,6 +253,11 @@ int ClientManager::applyRulesCmd(Input input, Output output) {
         output << "No such (managed) client: " << winid << "\n";
         return HERBST_INVALID_ARGUMENT;
     }
+    return applyRules(client, output);
+}
+
+int ClientManager::applyRules(Client* client, Output output)
+{
     ClientChanges changes;
     changes.focus = client == focus();
     changes = Root::get()->rules()->evaluateRules(client, changes);
