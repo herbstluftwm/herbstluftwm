@@ -42,7 +42,7 @@ void MouseDragHandlerFloating::assertDraggingStillSafe() {
     if (monitors_->byIdx(dragMonitorIndex_) != dragMonitor_
             || !dragMonitor_
             || !winDragClient_
-            || winDragClient_->tag()->floating == false)
+            || winDragClient_->is_client_floated() == false)
     {
         throw DragNotPossible();
     }

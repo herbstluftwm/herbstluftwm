@@ -68,7 +68,7 @@ void MonitorManager::ensure_monitors_are_available() {
     HSTag* tag = tags_->ensure_tags_are_available();
     // add monitor with first tag
     Monitor* m = addMonitor(rect, tag);
-    m->tag->frame->root_->setVisibleRecursive(true);
+    m->tag->setVisible(true);
     cur_monitor = 0;
 
     autoUpdatePads();
@@ -295,7 +295,7 @@ void MonitorManager::removeMonitor(Monitor* monitor)
     // Hide all clients visible in monitor
     assert(monitor->tag != nullptr);
     assert(monitor->tag->frame->root_ != nullptr);
-    monitor->tag->frame->root_->setVisibleRecursive(false);
+    monitor->tag->setVisible(false);
 
     monitorStack_.remove(monitor);
     g_monitors->removeIndexed(monitorIdx);
@@ -360,7 +360,7 @@ int MonitorManager::addMonitor(Input input, Output output)
 
     autoUpdatePads();
     monitor->applyLayout();
-    tag->frame->root_->setVisibleRecursive(true);
+    tag->setVisible(true);
     emit_tag_changed(tag, g_monitors->size() - 1);
     drop_enternotify_events();
 
@@ -542,7 +542,7 @@ int MonitorManager::setMonitors(const RectangleVec& templates) {
             return HERBST_TAG_IN_USE;
         }
         addMonitor(templates[i], tag);
-        tag->frame->root_->setVisibleRecursive(true);
+        tag->setVisible(true);
     }
     // remove monitors if there are too much
     while (i < size()) {

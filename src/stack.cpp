@@ -13,10 +13,11 @@ using std::vector;
 
 const std::array<const char*, LAYER_COUNT>g_layer_names =
     ArrayInitializer<const char*, LAYER_COUNT>({
-     { LAYER_FOCUS,        "Focus-Layer"      },
-     { LAYER_FULLSCREEN  , "Fullscreen-Layer" },
-     { LAYER_NORMAL      , "Normal Layer"     },
-     { LAYER_FRAMES      , "Frame Layer"      },
+     { LAYER_FOCUS       , "Focus-Layer"                },
+     { LAYER_FULLSCREEN  , "Fullscreen-Layer"           },
+     { LAYER_FLOATING    , "Layer of floating windows"  },
+     { LAYER_NORMAL      , "Layer of tiling windows"    },
+     { LAYER_FRAMES      , "Frame Layer"                },
 }).a;
 
 

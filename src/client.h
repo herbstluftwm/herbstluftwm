@@ -45,6 +45,7 @@ public:
 
     // attributes:
     Attribute_<bool> urgent_;
+    Attribute_<bool> floating_;
     Attribute_<bool> fullscreen_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
     DynAttribute_<std::string> tag_str_;

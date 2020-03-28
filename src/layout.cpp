@@ -59,9 +59,13 @@ HSFrameSplit::HSFrameSplit(HSTag* tag, Settings* settings, weak_ptr<HSFrameSplit
     this->b_ = b;
 }
 
-void HSFrameLeaf::insertClient(Client* client) {
+void HSFrameLeaf::insertClient(Client* client, bool focus) {
     // insert it after the selection
-    clients.insert(clients.begin() + std::min((selection + 1), (int)clients.size()), client);
+    int index = std::min((selection + 1), (int)clients.size());
+    clients.insert(clients.begin() + index, client);
+    if (focus) {
+        selection = index;
+    }
     // FRAMETODO: if we we are focused, and were empty before, we have to focus
     // the client now
 }
@@ -389,13 +393,7 @@ int frame_current_bring(int argc, char** argv, Output output) {
         return HERBST_INVALID_ARGUMENT;
     }
     HSTag* tag = get_current_monitor()->tag;
-    global_tags->moveClient(client, tag);
-    auto frame = tag->frame->root_->frameWithClient(client);
-    if (!frame->isFocused()) {
-        frame->removeClient(client);
-        tag->frame->focusedFrame()->insertClient(client);
-    }
-    focus_client(client, false, false);
+    global_tags->moveClient(client, tag, {}, true);
     return 0;
 }
 
