@@ -2,7 +2,6 @@
 
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
-#include <cstring>
 #include <ostream>
 #include <string>
 #include <vector>
