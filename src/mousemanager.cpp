@@ -19,7 +19,6 @@
 #include "mousedraghandler.h"
 #include "root.h"
 #include "tag.h"
-#include "utils.h"
 
 using std::shared_ptr;
 using std::vector;
