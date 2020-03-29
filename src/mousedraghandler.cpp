@@ -5,7 +5,6 @@
 #include "layout.h"
 #include "monitormanager.h"
 #include "mouse.h"
-#include "tag.h"
 #include "x11-utils.h"
 
 using std::make_shared;
@@ -42,7 +41,7 @@ void MouseDragHandlerFloating::assertDraggingStillSafe() {
     if (monitors_->byIdx(dragMonitorIndex_) != dragMonitor_
             || !dragMonitor_
             || !winDragClient_
-            || winDragClient_->tag()->floating == false)
+            || winDragClient_->is_client_floated() == false)
     {
         throw DragNotPossible();
     }

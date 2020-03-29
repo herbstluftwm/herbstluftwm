@@ -94,7 +94,7 @@ public:
     ~HSFrameLeaf() override;
 
     // inherited:
-    void insertClient(Client* client);
+    void insertClient(Client* client, bool focus = false);
     std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
     bool removeClient(Client* client) override;
     void moveClient(int new_index);

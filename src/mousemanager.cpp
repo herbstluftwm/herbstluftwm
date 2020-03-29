@@ -122,7 +122,7 @@ void MouseManager::mouse_initiate_move(Client* client, const vector<string> &cmd
 
 void MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
     MouseDragHandler::Constructor constructor;
-    if (client->tag()->floating()) {
+    if (client->is_client_floated()) {
         constructor = MouseDragHandlerFloating::construct(
                          &MouseDragHandlerFloating::mouse_function_zoom);
     } else {
@@ -134,7 +134,7 @@ void MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd
 
 void MouseManager::mouse_initiate_resize(Client* client, const vector<string> &cmd) {
     MouseDragHandler::Constructor constructor;
-    if (client->tag()->floating()) {
+    if (client->is_client_floated()) {
         constructor = MouseDragHandlerFloating::construct(
                          &MouseDragHandlerFloating::mouse_function_resize);
     } else {
