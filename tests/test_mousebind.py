@@ -105,6 +105,7 @@ def test_drag_move(hlwm, x11, mouse):
     hlwm.call('set_attr tags.focus.floating on')
     client, winid = x11.create_client()
     x, y = x11.get_absolute_top_left(client)
+    mouse.move_into(winid)
 
     hlwm.call(['drag', winid, 'move'])
     mouse.move_relative(12, 15)
