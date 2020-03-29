@@ -19,7 +19,6 @@
 #include "mousedraghandler.h"
 #include "root.h"
 #include "tag.h"
-#include "utils.h"
 
 using std::shared_ptr;
 using std::vector;
@@ -299,27 +298,23 @@ std::experimental::optional<MouseBinding> MouseManager::mouse_binding_find(unsig
     }
 }
 
-static void grab_binding(MouseBinding* bind, Client* client) {
-    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
-    unsigned int modifiers[] = { 0, LockMask, numlockMask, numlockMask | LockMask };
-    for(int j = 0; j < LENGTH(modifiers); j++) {
-        XGrabButton(g_display, bind->mousecombo.button_,
-                    bind->mousecombo.modifiers_ | modifiers[j],
-                    client->x11Window(), False, ButtonPressMask | ButtonReleaseMask,
-                    GrabModeAsync, GrabModeSync, None, None);
-    }
-}
-
 void MouseManager::grab_client_buttons(Client* client, bool focused) {
     XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
+    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
+    vector<unsigned int> modifiers = { 0, LockMask, numlockMask, numlockMask | LockMask };
     if (focused) {
         for (auto& bind : binds) {
-            grab_binding(&bind, client);
+            for(auto m : modifiers) {
+                XGrabButton(g_display, bind.mousecombo.button_,
+                            bind.mousecombo.modifiers_ | m,
+                            client->x11Window(), False, ButtonPressMask | ButtonReleaseMask,
+                            GrabModeAsync, GrabModeSync, None, None);
+            }
         }
     }
-    unsigned int btns[] = { Button1, Button2, Button3 };
-    for (int i = 0; i < LENGTH(btns); i++) {
-        XGrabButton(g_display, btns[i], AnyModifier, client->x11Window(), False,
+    vector<unsigned int> btns = { Button1, Button2, Button3 };
+    for (auto b : btns) {
+        XGrabButton(g_display, b, AnyModifier, client->x11Window(), False,
                     ButtonPressMask|ButtonReleaseMask, GrabModeSync,
                     GrabModeSync, None, None);
     }
