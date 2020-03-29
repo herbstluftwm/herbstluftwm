@@ -2,7 +2,6 @@
 
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
-#include <cstring>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -15,11 +14,11 @@
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "keymanager.h"
+#include "monitormanager.h"
 #include "mouse.h"
 #include "mousedraghandler.h"
 #include "root.h"
 #include "tag.h"
-#include "utils.h"
 
 using std::shared_ptr;
 using std::vector;
@@ -32,6 +31,13 @@ MouseManager::MouseManager()
     /* set cursor theme */
     cursor = XCreateFontCursor(g_display, XC_left_ptr);
     XDefineCursor(g_display, g_root, cursor);
+
+    mouseFunctions_ = {
+        { "move",       &MouseManager::mouse_initiate_move },
+        { "zoom",       &MouseManager::mouse_initiate_zoom },
+        { "resize",     &MouseManager::mouse_initiate_resize },
+        { "call",       &MouseManager::mouse_call_command },
+    };
 }
 
 MouseManager::~MouseManager() {
@@ -91,7 +97,9 @@ void MouseManager::addMouseBindCompletion(Completion &complete) {
     if (complete == 0) {
         Converter<MouseCombo>::complete(complete, nullptr);
     } else if (complete == 1) {
-        complete.full({"move", "resize", "zoom", "call"});
+        for (auto& it : mouseFunctions_) {
+            complete.full(it.first);
+        }
     } else if (complete[1] == "call") {
         complete.completeCommands(2);
     } else {
@@ -114,6 +122,45 @@ bool MouseManager::mouse_handle_event(unsigned int modifiers, unsigned int butto
     }
     (this ->* (b->action))(client, b->cmd);
     return true;
+}
+
+int MouseManager::dragCommand(Input input, Output output)
+{
+    string winid, mouseAction;
+    if (!(input >> winid >> mouseAction)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    Client* client = Root::get()->clients->client(winid);
+    if (!client) {
+        output << "Could not find client \"" << winid << "\"\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    MouseFunction action = string2mousefunction(mouseAction.c_str());
+    if (!action) {
+        output << input.command() << ": Unknown mouse action \"" << mouseAction << "\"" << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (monitors_->byTag(client->tag()) == nullptr) {
+        output << input.command() << ": can not drag invisible client \"" << winid << "\"" << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    (this ->* action)(client, input.toVector());
+    return 0;
+}
+
+void MouseManager::dragCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        Root::get()->clients->completeClients(complete);
+    } else if (complete == 1) {
+        for (auto& it : mouseFunctions_) {
+            complete.full(it.first);
+        }
+    } else if (complete[1] == "call") {
+        complete.completeCommands(2);
+    } else {
+        complete.none();
+    }
 }
 
 void MouseManager::mouse_initiate_move(Client* client, const vector<string> &cmd) {
@@ -151,6 +198,9 @@ void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd)
     // TODO: add completion
     clients_->setDragged(client);
 
+    if (cmd.empty()) {
+        return;
+    }
     // Execute the bound command
     std::ostringstream discardedOutput;
     Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
@@ -218,23 +268,13 @@ int MouseManager::mouse_unbind_all(Output) {
     return 0;
 }
 
-MouseManager::MouseFunction MouseManager::string2mousefunction(const char* name) {
-    static struct {
-        const char* name;
-        MouseFunction function;
-    } table[] = {
-        { "move",       &MouseManager::mouse_initiate_move },
-        { "zoom",       &MouseManager::mouse_initiate_zoom },
-        { "resize",     &MouseManager::mouse_initiate_resize },
-        { "call",       &MouseManager::mouse_call_command },
-    };
-    int i;
-    for (i = 0; i < LENGTH(table); i++) {
-        if (!strcmp(table[i].name, name)) {
-            return table[i].function;
-        }
+MouseManager::MouseFunction MouseManager::string2mousefunction(const string& name) {
+    auto it = mouseFunctions_.find(name);
+    if (it != mouseFunctions_.end()) {
+        return it->second;
+    } else {
+        return nullptr;
     }
-    return nullptr;
 }
 
 std::experimental::optional<MouseManager::MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {

@@ -246,6 +246,11 @@ mousebind 'BUTTON' 'ACTION' ['COMMAND' ...]::
         * +mousebind Mod1-B5 call substitute WID clients.dragged.winid spawn
           transset-df --dec -i WID -m 0.2 0.05+
 
+drag 'WINID' 'ACTION'::
+    Starts dragging the specified client window 'WINID' with the specified
+    'ACTION' (see 'mousebind'). E.g. +drag '' resize+ starts resizing the
+    focused window.
+
 mouseunbind::
     Removes all mouse bindings.
 
