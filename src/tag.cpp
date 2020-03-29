@@ -1,5 +1,7 @@
 #include "tag.h"
 
+#include <type_traits>
+
 #include "client.h"
 #include "frametree.h"
 #include "hlwmcommon.h"
@@ -8,8 +10,6 @@
 #include "root.h"
 #include "stack.h"
 #include "tagmanager.h"
-
-#include <type_traits>
 
 using std::make_shared;
 using std::shared_ptr;
