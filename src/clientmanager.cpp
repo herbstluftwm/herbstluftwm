@@ -71,8 +71,7 @@ Client* ClientManager::client(Window window)
 Client* ClientManager::client(const string &identifier)
 {
     if (identifier.empty()) {
-        // TODO: the frame doesn't provide us with a shared pointer yet
-        // return get_current_client();
+        return focus();
     }
     if (identifier == "urgent") {
         for (auto c : clients_) {
