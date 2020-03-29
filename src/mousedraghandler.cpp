@@ -5,7 +5,6 @@
 #include "layout.h"
 #include "monitormanager.h"
 #include "mouse.h"
-#include "tag.h"
 #include "x11-utils.h"
 
 using std::make_shared;
