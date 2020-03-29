@@ -53,7 +53,7 @@ public:
     Client* manage_client(Window win, bool visible_already, bool force_unmanage);
 
     int applyRulesCmd(Input input, Output output);
-    int applyRules(Client* client, Output output);
+    int applyRules(Client* client, Output output, bool changeFocus = true);
     void applyRulesCompletion(Completion& complete);
 
 protected:
