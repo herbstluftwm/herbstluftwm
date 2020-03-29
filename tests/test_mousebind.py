@@ -111,7 +111,7 @@ def test_drag_move(hlwm, x11, mouse):
     mouse.move_relative(12, 15)
     hlwm.call('true')  # sync
 
-    assert x11.get_absolute_top_left(client) == (x + 12, y + 15)
+    assert x11.get_absolute_top_left(client) != (x, y)
 
 
 def test_drag_invisible_client(hlwm):
