@@ -39,7 +39,8 @@ MouseDragHandler::Constructor MouseDragHandlerFloating::construct(DragFunction d
 }
 
 void MouseDragHandlerFloating::assertDraggingStillSafe() {
-    if (monitors_->byIdx(dragMonitorIndex_) != dragMonitor_
+    if (!dragMonitor_
+            || monitors_->byIdx(dragMonitorIndex_) != dragMonitor_
             || !dragMonitor_
             || !winDragClient_
             || winDragClient_->tag()->floating == false)
@@ -288,7 +289,8 @@ MouseDragHandler::Constructor MouseResizeFrame::construct(std::shared_ptr<HSFram
 void MouseResizeFrame::assertDraggingStillSafe()
 {
     bool allFine =
-            dragMonitorIndex_ < monitors_->size()
+            dragMonitor_
+            && dragMonitorIndex_ < monitors_->size()
             && monitors_->byIdx(dragMonitorIndex_) == dragMonitor_
             && dragTag_ == dragMonitor_->tag
             && !dragFrame_.expired();

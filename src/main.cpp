@@ -104,6 +104,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"mousebind",      {mouse, &MouseManager::addMouseBindCommand,
                                    &MouseManager::addMouseBindCompletion}},
         {"mouseunbind",    {mouse, &MouseManager::mouse_unbind_all }},
+        {"drag",           {mouse, &MouseManager::dragCommand,
+                                   &MouseManager::dragCompletion}},
         {"spawn",          spawn},
         {"wmexec",         wmexec},
         {"emit_hook",      { custom_hook_emit }},

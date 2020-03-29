@@ -2,6 +2,7 @@
 
 #include <X11/X.h>
 #include <list>
+#include <map>
 #include <memory>
 
 #include "mouse.h"
@@ -32,7 +33,7 @@ public:
     int mouse_unbind_all(Output o);
     std::experimental::optional<MouseBinding> mouse_binding_find(unsigned int modifiers, unsigned int button);
 
-    MouseFunction string2mousefunction(const char* name);
+    MouseFunction string2mousefunction(const std::string& name);
 
     void grab_client_buttons(Client* client, bool focused);
 
@@ -40,6 +41,9 @@ public:
     void mouse_stop_drag();
     bool mouse_is_dragging();
     void handle_motion_event(Point2D newCursorPos);
+
+    int dragCommand(Input input, Output output);
+    void dragCompletion(Completion& complete);
 
     void mouse_initiate_move(Client* client, const std::vector<std::string> &cmd);
     void mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd);
@@ -51,6 +55,7 @@ private:
     typedef std::function<std::shared_ptr<MouseDragHandler>(MonitorManager*, Client*)> MDC;
     void mouse_initiate_drag(Client* client, const MDC& createHandler);
 
+    std::map<std::string, MouseFunction> mouseFunctions_;
     std::shared_ptr<MouseDragHandler> dragHandler_;
     Cursor cursor;
     ClientManager*  clients_;

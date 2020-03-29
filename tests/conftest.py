@@ -667,4 +667,7 @@ def mouse(hlwm_process):
             with hlwm_process.wait_stderr_match('ButtonPress'):
                 subprocess.check_call(['xdotool', 'click', button])
 
+        def move_relative(self, delta_x, delta_y):
+            subprocess.check_call(f'xdotool mousemove_relative {delta_x} {delta_y}', shell=True)
+
     return Mouse()

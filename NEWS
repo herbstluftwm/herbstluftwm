@@ -8,6 +8,7 @@ Current git version
   * detection of external panels
   * new command: apply_rules
   * new command: export (convenience wrapper around setenv)
+  * new command: drag (initiates moving/resizing a window by mouse)
   * The build system is now cmake. See the INSTALL file if you need to
     compile herbstluftwm yourself.
   * the 'remove' command now tries to preserve the focus and the client
