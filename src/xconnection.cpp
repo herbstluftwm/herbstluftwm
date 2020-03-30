@@ -70,7 +70,7 @@ int xerror(Display *dpy, XErrorEvent *ee) {
     }
     char errorCodeString[100] = "unknown";
     XGetErrorText(dpy, ee->error_code, errorCodeString, 100);
-    const char* requestCodeString = requestCodeToString(ee->request_code);
+    const char* requestCodeString = XConnection::requestCodeToString(ee->request_code);
     if (!requestCodeString) {
         requestCodeString = "unknown";
     }
