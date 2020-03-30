@@ -347,7 +347,7 @@ void XMainLoop::mapnotify(XMapEvent* event) {
         c->update_title();
     } else {
         // the window is not managed.
-        HSDebug("MapNotify: briefly managing %lx to apply rules\n", event->window);
+        HSDebug("MapNotify: briefly managing 0x%lx to apply rules\n", event->window);
         root_->clients()->manage_client(event->window, true, true);
     }
 }
