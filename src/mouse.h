@@ -20,9 +20,6 @@ enum SnapFlags {
 // forward declarations
 class Client;
 class Monitor;
-class MouseManager; // IWYU pragma: keep
-
-using MouseFunction = void (MouseManager::*)(Client* client, const std::vector<std::string> &cmd);
 
 class MouseCombo : public ModifierCombo {
 public:
@@ -38,13 +35,6 @@ public:
 };
 
 ConverterInstance(MouseCombo)
-
-class MouseBinding {
-public:
-    MouseCombo mousecombo;
-    MouseFunction action;
-    std::vector<std::string> cmd;
-};
 
 // get the vector to snap a client to it's neighbour
 void client_snap_vector(Client* client, Monitor* monitor,

@@ -107,19 +107,21 @@ void MouseManager::addMouseBindCompletion(Completion &complete) {
     }
 }
 
-void MouseManager::mouse_handle_event(unsigned int modifiers, unsigned int button, Window window) {
+bool MouseManager::mouse_handle_event(unsigned int modifiers, unsigned int button, Window window) {
     auto b = mouse_binding_find(modifiers, button);
 
     if (!b.has_value()) {
         // No binding find for this event
+        return false;
     }
 
     Client* client = get_client_from_window(window);
     if (!client) {
         // there is no valid bind for this type of mouse event
-        return;
+        return true;
     }
     (this ->* (b->action))(client, b->cmd);
+    return true;
 }
 
 int MouseManager::dragCommand(Input input, Output output)
@@ -266,7 +268,7 @@ int MouseManager::mouse_unbind_all(Output) {
     return 0;
 }
 
-MouseFunction MouseManager::string2mousefunction(const string& name) {
+MouseManager::MouseFunction MouseManager::string2mousefunction(const string& name) {
     auto it = mouseFunctions_.find(name);
     if (it != mouseFunctions_.end()) {
         return it->second;
@@ -275,7 +277,7 @@ MouseFunction MouseManager::string2mousefunction(const string& name) {
     }
 }
 
-std::experimental::optional<MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {
+std::experimental::optional<MouseManager::MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {
     unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
     MouseCombo mb = {};
     mb.modifiers_ = modifiers
