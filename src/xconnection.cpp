@@ -104,7 +104,7 @@ bool XConnection::checkotherwm() {
     if(g_other_wm_running) {
         return true;
     } else {
-        XSetErrorHandler(&XConnection::xerror);
+        XSetErrorHandler(xerror);
         XSync(m_display, False);
         return false;
     }
