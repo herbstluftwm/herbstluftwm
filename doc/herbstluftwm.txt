@@ -378,7 +378,7 @@ split 'ALIGN' ['FRACTION']::
     +
     It specifies which of the two halves will be empty
     after the split. The other half will be occupied by the currently focused
-    frame. After splitting, the originally focuse frame will stay focused.
+    frame. After splitting, the originally focused frame will stay focused.
     One special 'ALIGN' mode is 'explode', which splits the frame in such a way
     that the window sizes and positions are kept as much as possible. If no
     'FRACTION' is given to 'explode' mode an optimal fraction is picked
@@ -619,7 +619,7 @@ detect_monitors '-l'|'--list'|'--list-all'|'--no-disjoin'::
     entire screen. If the detected monitors overlap, the will be split into more
     monitors that are disjoint but cover the same area using +disjoin_rects+.
     +
-    If '-l' or '--list' is passed, the list of rectangles of detected pyhsical
+    If '-l' or '--list' is passed, the list of rectangles of detected physical
     monitors is printed. So +hc detect_monitors+ is equivalent to the bash
     command +hc set_monitors $(hc disjoin_rects $(hc detect_monitors -l))+.
     +
