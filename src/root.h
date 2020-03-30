@@ -29,6 +29,7 @@ class Globals {
 public:
     Globals() = default;
     int initial_monitors_locked = 0;
+    bool exitOnXlibError = false;
 };
 
 class Root : public Object {

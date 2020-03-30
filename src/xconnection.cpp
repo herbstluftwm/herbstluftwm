@@ -15,6 +15,13 @@ using std::pair;
 using std::string;
 using std::vector;
 
+bool XConnection::exitOnError_ = false;
+
+void XConnection::setExitOnError(bool exitOnError)
+{
+    exitOnError_ = exitOnError;
+}
+
 XConnection::XConnection(Display* disp)
     : m_display(disp) {
     m_screen = DefaultScreen(m_display);
@@ -43,7 +50,7 @@ static bool g_other_wm_running = false;
 // from dwm.c
 /* Startup Error handler to check if another window manager
  * is already running. */
-static int xerrorstart(Display *dpy, XErrorEvent *ee) {
+static int xerrorstart(Display*, XErrorEvent*) {
     g_other_wm_running = true;
     return -1;
 }
@@ -54,7 +61,7 @@ static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 /* There's no way to check accesses to destroyed windows, thus those cases are
  * ignored (especially on UnmapNotify's).  Other types of errors call Xlibs
  * default error handler, which may call exit.  */
-int xerror(Display *dpy, XErrorEvent *ee) {
+int XConnection::xerror(Display *dpy, XErrorEvent *ee) {
     if(ee->error_code == BadWindow
     || ee->error_code == BadGC
     || ee->error_code == BadPixmap
@@ -88,8 +95,8 @@ bool XConnection::checkotherwm() {
     if(g_other_wm_running) {
         return true;
     } else {
-        XSetErrorHandler(xerror);
-        XSync(g_display, False);
+        XSetErrorHandler(XConnection::xerror);
+        XSync(m_display, False);
         return false;
     }
 }
