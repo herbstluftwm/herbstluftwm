@@ -22,6 +22,7 @@ public:
     bool checkotherwm(); // return whether another WM is running
 
     // utility functions
+    static const char* requestCodeToString(int requestCode);
     Rectangle windowSize(Window window);
     int windowPid(Window window);
     Atom atom(const char* atom_name);
