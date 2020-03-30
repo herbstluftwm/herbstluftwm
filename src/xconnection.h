@@ -42,13 +42,16 @@ public:
     void setPropertyWindow(Window w, Atom property, const std::vector<Window>& value);
     void setPropertyCardinal(Window w, Atom property, const std::vector<long>& value);
     std::vector<Window> queryTree(Window window);
+    static void setExitOnError(bool exitOnError);
 private:
+    static int xerror(Display *dpy, XErrorEvent *ee);
     Display* m_display;
     int      m_screen;
     Window   m_root;
     int      m_screen_width;
     int      m_screen_height;
     Atom     utf8StringAtom_;
+    static bool     exitOnError_; //! exit on any xlib error
 };
 
 #endif

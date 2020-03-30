@@ -28,6 +28,9 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
         print version and exit
     *-l*, *--locked*::
         Initially set the monitors_locked setting to 1
+    *--exit-on-xerror*::
+        Make herbstluftwm exit whenever xlib reports an error. This may only
+        be activated for automated testing and never for actual sessions.
     *--verbose*::
         print verbose information to stderr. This can be switched at run-time by
         the 'verbose' setting.
