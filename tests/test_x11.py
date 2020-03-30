@@ -34,7 +34,8 @@ def test_client_moveresizes_itself(hlwm, x11):
     hlwm.call('move_monitor 0 500x600+12+13 14 15 16 17')
     hlwm.call('floating on')
     hlwm.call('set_attr theme.border_width 0')
-    w, _ = x11.create_client(geometry=(25, 26, 27, 28))
+    # FIXME: why doesn't this work with sync_hlwm=True?
+    w, _ = x11.create_client(geometry=(25, 26, 27, 28), sync_hlwm=False)
 
     # resize the window to some other geometry
     w.configure(x=60, y=70, width=300, height=200)
