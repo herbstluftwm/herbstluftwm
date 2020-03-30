@@ -359,10 +359,10 @@ done
 
 for i in ${!tag_keys[@]} ; do
     key="${tag_keys[$i]}"
-    # the keybinding is as follows: the or executes the commands separated by
+    # the keybinding works as follows: the or executes the commands separated by
     # CASE and stops executing them after the first of those succeeds.
     # the first command is: check that we are on monitor 3 and can switch to tag "${mon1_names[$i]}"
-    # if only one of these to steps fail, try the second one (and so one).
+    # if only one of these two steps fail, try the second one (and so one).
     # The setup for two monitors is as follows:
     hc keybind "$Mod-$key" \
         or CASE and . compare monitors.focus.index = 0 . use "${mon1_names[$i]}" \
