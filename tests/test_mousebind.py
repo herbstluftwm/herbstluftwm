@@ -101,7 +101,10 @@ def test_complete_mousebind_validates_all_button(hlwm):
     assert complete == []
 
 
-def test_drag_move(hlwm, x11, mouse):
+# we had a race condition here, so increase the likelyhood
+# that we really fixed it:
+@pytest.mark.parametrize('repeat', list(range(0, 100)))
+def test_drag_move(hlwm, x11, mouse, repeat):
     hlwm.call('set_attr tags.focus.floating on')
     client, winid = x11.create_client()
     x, y = x11.get_absolute_top_left(client)

@@ -30,15 +30,16 @@ XConnection::XConnection(Display* disp)
     m_root = RootWindow(m_display, m_screen);
     utf8StringAtom_ = XInternAtom(m_display, "UTF8_STRING", False);
 }
+
 XConnection::~XConnection() {
     HSDebug("Closing display\n");
     XCloseDisplay(m_display);
 }
 
 XConnection* XConnection::connect(string display_name) {
-    char* display_str = (display_name != "") ? (char*)display_name.c_str() : nullptr;
+    const char* display_str = (display_name != "") ? display_name.c_str() : nullptr;
     Display* d = XOpenDisplay(display_str);
-    if (d == NULL) {
+    if (d == nullptr) {
         std::cerr << "herbstluftwm: XOpenDisplay() failed" << endl;
         exit(EXIT_FAILURE);
     }
