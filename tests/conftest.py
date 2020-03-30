@@ -536,16 +536,17 @@ def x11_connection():
 
 
 @pytest.fixture()
-def x11(x11_connection):
+def x11(x11_connection, hlwm):
     """ Short-lived fixture for interacting with the X11 display and creating
     clients that are automatically destroyed at the end of each test. """
     class X11:
-        def __init__(self, x11_connection):
+        def __init__(self, x11_connection, hlwm):
             self.display = x11_connection
             self.windows = set()
             self.screen = self.display.screen()
             self.root = self.screen.root
             self.ewmh = ewmh.EWMH(self.display, self.root)
+            self.hlwm = hlwm
 
         def window(self, winid_string):
             """return python-xlib window wrapper for a string window id"""
@@ -607,6 +608,8 @@ def x11(x11_connection):
 
             w.map()
             self.display.sync()
+            # wait for hlwm to fully recognize it as a client
+            hlwm.call('true')
             return w, self.winid_str(w)
 
         def get_absolute_top_left(self, window):
@@ -635,7 +638,7 @@ def x11(x11_connection):
                 window.destroy()
             self.display.sync()
 
-    x11_ = X11(x11_connection)
+    x11_ = X11(x11_connection, hlwm)
     yield x11_
     x11_.shutdown()
 
