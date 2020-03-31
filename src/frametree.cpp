@@ -180,7 +180,7 @@ int FrameTree::removeFrameCommand() {
         pp->replaceChild(parent, newparent);
     } else {
         // if parent was root frame
-        root_ = newparent;
+        replaceNode(root_, newparent);
     }
     // focus the same client again
     if (removedFrameClients.size() > 0) {
@@ -577,6 +577,7 @@ void FrameTree::replaceNode(shared_ptr<HSFrame> old,
     auto parent = old->getParent();
     if (!parent) {
         assert(old == root_);
+        // replacement->parent needs to be nulled?
         root_ = replacement;
     } else {
         parent->replaceChild(old, replacement);
