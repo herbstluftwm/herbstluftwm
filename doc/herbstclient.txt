@@ -48,7 +48,7 @@ OPTIONS
     Same as *--idle* but exit after first *--count* hooks.
 
 *-c*, *--count* 'COUNT'::
-    Let *--wait* exit after 'COUNT' hooks were received and printed. The default of
+    Let *--wait* exit after 'COUNT' hooks were received and printed. The default
     'COUNT' is 1.
 
 *-q*, *--quiet*::

@@ -326,7 +326,7 @@ cycle ['DELTA']::
 cycle_all [*--skip-invisible*] ['DIRECTION']::
     Cycles through all windows and frames on the current tag. 'DIRECTION' = 1
     means forward, 'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no
-    effect. 'DIRECTION' defaults to 1. If there are multiple windows within on
+    effect. 'DIRECTION' defaults to 1. If there are multiple windows within one
     frame, then it acts similar to the 'cycle' command. (The 'cycle_all' command
     focuses the next/previous leaf in the 'layout' tree.). If
     *--skip-invisible* is given, then this only cycles through all visible
@@ -420,19 +420,19 @@ focus ['-i'|'-e'] 'DIRECTION'::
     be at frame C.
 +
 ----
- Tree:  V,0     Screen: ┌─────┐┌─────┐ (before)
+ Tree:  H,0     Screen: ┌─────┐┌─────┐ (before)
         ╱ ╲             │  B  ││  C  │
        ╱   ╲            └─────┘└─────┘
-     H,1   H,0          ┌─────┐┌─────┐
+     V,1   V,0          ┌─────┐┌─────┐
      ╱ ╲   ╱ ╲          │  A* ││  D  │
-    A*  B C   D         └─────┘└─────┘
+    B  A* C   D         └─────┘└─────┘
 
- Tree:  V,0     Screen: ┌─────┐┌─────┐ (after focus right)
+ Tree:  H,1     Screen: ┌─────┐┌─────┐ (after focus right)
         ╱ ╲             │  B  ││  C* │
        ╱   ╲            └─────┘└─────┘
-     H,1   H,0          ┌─────┐┌─────┐
+     V,1   V,0          ┌─────┐┌─────┐
      ╱ ╲   ╱ ╲          │  A  ││  D  │
-    A   B C*  D         └─────┘└─────┘
+    B   A C*  D         └─────┘└─────┘
 ----
  ::
     If the currently focused client is floated, then the next floating window in
@@ -613,8 +613,8 @@ set_monitors 'RECTS' ...::
     Sets the list of monitors *exactly* to the list of given rectangles:
 
         * The i'th existing monitor is moved to the i'th given 'RECT'
-        * New monitors are created if there are more 'RECTS' then monitors
-        * Existing monitors are deleted if there are more monitors then 'RECTS'
+        * New monitors are created if there are more 'RECTS' than monitors
+        * Existing monitors are deleted if there are more monitors than 'RECTS'
 
 detect_monitors '-l'|'--list'|'--list-all'|'--no-disjoin'::
     Sets the list of monitors to the physically available monitors. If the
@@ -729,8 +729,8 @@ complete_shell 'POSITION' ['COMMAND' 'ARGS ...']::
         * A space is appended to each full completion result.
         * Special characters will be escaped in the output.
 
-emit_hook 'ARGS ...'::
-    Emits a custom hook to all idling herbstclients.
+emit_hook 'NAME' 'ARGS ...'::
+    Emits a custom hook 'NAME' to all idling herbstclients.
 
 tag_status ['MONITOR']::
     Print a tab separated list of all tags for the specified 'MONITOR' index. If
@@ -750,10 +750,10 @@ WARNING: If you use a tab in one of the tag names, then tag_status is probably
 quite useless for you.
 
 floating [['TAG'] *on*|*off*|*toggle*|*status*]::
-    Changes the current tag to floating/tiling mode on specified 'TAG' or prints
-    it current status. If no 'TAG' is given, the current tag is used. If no
-    argument is given, floating mode is toggled. If *status* is given, then *on*
-    or *off* is printed, depending of the floating state of 'TAG'.
+    Changes specified 'TAG' to floating/tiling mode or prints its current
+    status. If no 'TAG' is given, the current tag is used. If no argument is
+    given, floating mode is toggled. If *status* is given, then *on* or *off* is
+    printed, depending of the floating state of 'TAG'.
 
 rule [\[--]'FLAG'|\[--]'LABEL'|\[--]'CONDITION'|\[--]'CONSEQUENCE' ...]::
     Defines a rule which will be applied to all new clients. Its behaviour is
@@ -905,7 +905,7 @@ window_gap (Integer)::
 
 snap_distance (Integer)::
     If a client is dragged in floating mode, then it snaps to neighbour clients
-    if the distance between them is smaller then snap_distance.
+    if the distance between them is smaller than snap_distance.
 
 snap_gap (Integer)::
     Specifies the remaining gap if a dragged client snaps to an edge in floating
@@ -936,7 +936,7 @@ frame_bg_normal_color (String/Color)::
 
 frame_bg_transparent (Integer)::
     If set, the background of frames are transparent. That means a rectangle is
-    cut out frome the inner such that only the frame border and a stripe of
+    cut out from the inner such that only the frame border and a stripe of
     width 'frame_transparent_width' can be seen. Use 'frame_active_opacity' and
     'frame_normal_opacity' for real transparency.
 
@@ -992,7 +992,7 @@ window_border_inner_color (String/Color)::
 
 always_show_frame (Boolean)::
     If set, all frames are displayed. If unset, only frames with focus or with
-    windows in it are displayed.
+    windows in them are displayed.
 
 frame_active_opacity (Integer)::
     Focused frame opacity in percent. Requires a running compositing manager to
@@ -1009,7 +1009,7 @@ default_frame_layout (Integer)::
 
 default_direction_external_only (Boolean)::
     This setting controls the behaviour of focus and shift if no '-e' or '-i'
-    argument is given. if set, then focus and shift changes the focused frame
+    argument is given. If set, then focus and shift changes the focused frame
     even if there are other clients in this frame in the specified 'DIRECTION'.
     Else, a client within current frame is selected if it is in the specified
     'DIRECTION'.
@@ -1066,11 +1066,11 @@ tree_style (String)::
 ----
 X-.
   #-. child 0
-  | #-* child 01
-  | +-* child 02
+  | #-* child 00
+  | +-* child 01
   +-. child 1
   : #-* child 10
-  : +-* child 01
+  : +-* child 11
 ----
 +
 Useful values for 'tree_style' are: +╾│ ├└╼─┐+ or +-| |'--.+ or +╾│ ├╰╼─╮+.
@@ -1092,7 +1092,7 @@ pseudotile_center_threshold (Integer)::
 update_dragged_clients (Integer)::
     If set, a client's window content is resized immediately during resizing
     it with the mouse. If unset, the client's content is resized after the mouse
-    button are released.
+    button is released.
 
 verbose (Boolean)::
     If set, verbose output is logged to herbstluftwm's stderr. The default value
@@ -1103,7 +1103,7 @@ RULES
 -----
 
 Rules are used to change default properties for certain clients when they
-appear and when the 'apply_rules' command is called. Each rule matches against a
+appear or when the 'apply_rules' command is called. Each rule matches against a
 certain subset of all clients and defines a set of properties for them (called
 __CONSEQUENCE__s). A rule can be defined with this command:
 
@@ -1177,7 +1177,7 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     specified, but switchtag was not, ignore this consequence.
 
 +focus+::
-    decides whether the client gets the input focus on his tag.  The default is
+    decides whether the client gets the input focus in its tag. The default is
     *off*. 'VALUE' can be *on*, *off* or *toggle*.
 
 +switchtag+::
@@ -1262,7 +1262,7 @@ follows:
     window.
   - +urgent+ references some window that is urgent.
   - +0x+'HEXID' -- where 'HEXID' is some hexadecimal number -- references the
-    window with hexadecimal X11 window id is 'HEXID'.
+    window with hexadecimal X11 window id 'HEXID'.
   - 'DECID' -- where 'DECID' is some decimal number -- references the window
     with the decimal X11 window id 'DECID'.
 
