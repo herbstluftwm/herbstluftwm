@@ -71,8 +71,7 @@ Client* ClientManager::client(Window window)
 Client* ClientManager::client(const string &identifier)
 {
     if (identifier.empty()) {
-        // TODO: the frame doesn't provide us with a shared pointer yet
-        // return get_current_client();
+        return focus();
     }
     if (identifier == "urgent") {
         for (auto c : clients_) {
@@ -102,6 +101,9 @@ void ClientManager::add(Client* client)
 {
     clients_[client->window_] = client;
     client->needsRelayout.connect(needsRelayout);
+    client->floating_.changed().connect([this,client]() {
+        this->floatingStateChanged.emit(client);
+    });
     addChild(client, client->window_id_str);
 }
 
@@ -353,7 +355,7 @@ void ClientManager::force_unmanage(Client* client) {
         client->tag()->stack->removeSlice(client->slice);
     }
     // remove from tag
-    client->tag()->frame->root_->removeClient(client);
+    client->tag()->removeClient(client);
     // ignore events from it
     XSelectInput(g_display, client->window_, 0);
     //XUngrabButton(g_display, AnyButton, AnyModifier, win);

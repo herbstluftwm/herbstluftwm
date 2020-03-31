@@ -2,9 +2,11 @@
 #define __HERBSTLUFT_TAG_H_
 
 #include <memory>
+#include <vector>
 
 #include "attribute_.h"
 #include "object.h"
+#include "signal.h"
 
 #define TAG_SET_FLAG(tag, flag) \
     ((tag)->flags |= (flag))
@@ -27,16 +29,29 @@ public:
     std::shared_ptr<FrameTree>        frame;  // the master frame
     Attribute_<unsigned long> index;
     Attribute_<bool>         floating;
+    Attribute_<bool>         floating_focused; // if a floating client is focused
     Attribute_<std::string>  name;   // name of this tag
     DynAttribute_<int> frame_count;
     DynAttribute_<int> client_count;
     DynAttribute_<int> curframe_windex;
     DynAttribute_<int> curframe_wcount;
     int             flags;
+    std::vector<Client*> floating_clients_; //! the clients in floating mode
+    size_t               floating_clients_focus_; //! focus in the floating clients
     std::shared_ptr<Stack> stack;
     void setIndexAttribute(unsigned long new_index) override;
     bool focusClient(Client* client);
+    void applyFloatingState(Client* client);
+    void setVisible(bool visible);
+    bool removeClient(Client* client);
+    void foreachClient(std::function<void(Client*)> loopBody);
+    Client* focusedClient();
+
+    void insertClient(Client* client, std::string frameIndex = {}, bool focus = true);
+    Signal needsRelayout_;
 private:
+    void onGlobalFloatingChange(bool newState);
+    void fixFocusIndex();
     //! get the number of clients on this tag
     int computeClientCount();
     //! get the number of clients on this tag

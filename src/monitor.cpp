@@ -150,6 +150,9 @@ void Monitor::applyLayout() {
     }
     bool isFocused = get_current_monitor() == this;
     TilingResult res = tag->frame->root_->computeLayout(cur_rect);
+    if (tag->floating_focused) {
+        res.focus = tag->focusedClient();
+    }
     // 1. Update stack (TODO: why stack first?)
     for (auto& p : res.data) {
         Client* c = p.first;
@@ -162,10 +165,8 @@ void Monitor::applyLayout() {
             c->raise();
         }
     }
-    HSDebug("setting up focus layer\n");
     tag->stack->clearLayer(LAYER_FOCUS);
     if (isFocused && res.focus) {
-        HSDebug("we have the focus\n");
         // activate the focus layer if requested by the setting
         // or if there is a fullscreen client potentially covering
         // the focused client.
@@ -177,10 +178,8 @@ void Monitor::applyLayout() {
         // of an unfocused window,
         // we raise the focused window. Without shadows, this has no effect.
         if (g_settings->raise_on_focus_temporarily()
-            || tag->stack->isLayerEmpty(LAYER_FULLSCREEN) == false
-            || tag->floating() == false)
+            || tag->stack->isLayerEmpty(LAYER_FULLSCREEN) == false)
         {
-            HSDebug("filling focus layer\n");
             tag->stack->sliceAddLayer(res.focus->slice, LAYER_FOCUS);
         }
     }
@@ -200,6 +199,9 @@ void Monitor::applyLayout() {
         } else {
             c->resize_tiling(p.second.geometry, res.focus == c && isFocused);
         }
+    }
+    for (auto& c : tag->floating_clients_) {
+        c->resize_floating(this, res.focus == c && isFocused);
     }
     if (tag->floating) {
         for (auto& p : res.frames) {
@@ -438,12 +440,12 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     monitor->applyLayout();
     monitor->lock_frames = false;
     // then show them (should reduce flicker)
-    tag->frame->root_->setVisibleRecursive(true);
+    tag->setVisible(true);
     if (!monitor->tag->floating) {
         // monitor->tag->frame->root_->updateVisibility();
     }
     // 2. hide old tag
-    old_tag->frame->root_->setVisibleRecursive(false);
+    old_tag->setVisible(false);
     // focus window just has been shown
     // discard enternotify-events
     drop_enternotify_events();

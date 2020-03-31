@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "client.h"
 #include "clientmanager.h"
 #include "ewmh.h"
 #include "hlwmcommon.h"
@@ -13,6 +14,7 @@
 #include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
+#include "tag.h"
 #include "tagmanager.h"
 #include "theme.h"
 #include "tmp.h"
@@ -66,6 +68,10 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
 
     // connect slots
     clients->needsRelayout.connect(monitors(), &MonitorManager::relayoutTag);
+    tags->needsRelayout_.connect(monitors(), &MonitorManager::relayoutTag);
+    clients->floatingStateChanged.connect([](Client* c) {
+        c->tag()->applyFloatingState(c);
+    });
     theme->theme_changed_.connect(monitors(), &MonitorManager::relayoutAll);
     panels->panels_changed_.connect(monitors(), &MonitorManager::autoUpdatePads);
 }

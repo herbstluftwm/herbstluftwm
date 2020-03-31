@@ -37,6 +37,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , dec(make_unique<Decoration>(this, *cm.settings))
     , visible_(visible_already)
     , urgent_(this, "urgent", false)
+    , floating_(this,  "floating", false)
     , fullscreen_(this,  "fullscreen", false)
     , title_(this,  "title", "")
     , tag_str_(this,  "tag", &Client::tagName)
@@ -55,6 +56,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 {
     std::stringstream tmp;
     window_id_str = WindowID(window).str();
+    floating_.setWriteable();
     keyMask_.setWriteable();
     ewmhnotify_.setWriteable();
     ewmhrequests_.setWriteable();
@@ -414,6 +416,7 @@ int close_command(Input input, Output) {
 }
 
 bool Client::is_client_floated() {
+    if (floating_()) return true;
     auto t = tag();
     if (!t) return false;
     else return tag()->floating;
@@ -517,7 +520,7 @@ void Client::update_title() {
 }
 
 Client* get_current_client() {
-    return HSFrame::getGloballyFocusedFrame()->focusedClient();
+    return Root::get()->monitors->focus()->tag->focusedClient();
 }
 
 void Client::set_fullscreen(bool state) {

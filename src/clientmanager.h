@@ -41,6 +41,7 @@ public:
     void setDragged(Client* client);
 
     Signal_<HSTag*> needsRelayout;
+    Signal_<Client*> floatingStateChanged;
     Link_<Client> focus;
     Link_<Client> dragged;
 

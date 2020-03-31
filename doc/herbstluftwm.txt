@@ -28,6 +28,9 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
         print version and exit
     *-l*, *--locked*::
         Initially set the monitors_locked setting to 1
+    *--exit-on-xerror*::
+        Make herbstluftwm exit whenever xlib reports an error. This may only
+        be activated for automated testing and never for actual sessions.
     *--verbose*::
         print verbose information to stderr. This can be switched at run-time by
         the 'verbose' setting.
@@ -246,6 +249,11 @@ mousebind 'BUTTON' 'ACTION' ['COMMAND' ...]::
         * +mousebind Mod1-B5 call substitute WID clients.dragged.winid spawn
           transset-df --dec -i WID -m 0.2 0.05+
 
+drag 'WINID' 'ACTION'::
+    Starts dragging the specified client window 'WINID' with the specified
+    'ACTION' (see 'mousebind'). E.g. +drag '' resize+ starts resizing the
+    focused window.
+
 mouseunbind::
     Removes all mouse bindings.
 
@@ -373,7 +381,7 @@ split 'ALIGN' ['FRACTION']::
     +
     It specifies which of the two halves will be empty
     after the split. The other half will be occupied by the currently focused
-    frame. After splitting, the originally focuse frame will stay focused.
+    frame. After splitting, the originally focused frame will stay focused.
     One special 'ALIGN' mode is 'explode', which splits the frame in such a way
     that the window sizes and positions are kept as much as possible. If no
     'FRACTION' is given to 'explode' mode an optimal fraction is picked
@@ -614,7 +622,7 @@ detect_monitors '-l'|'--list'|'--list-all'|'--no-disjoin'::
     entire screen. If the detected monitors overlap, the will be split into more
     monitors that are disjoint but cover the same area using +disjoin_rects+.
     +
-    If '-l' or '--list' is passed, the list of rectangles of detected pyhsical
+    If '-l' or '--list' is passed, the list of rectangles of detected physical
     monitors is printed. So +hc detect_monitors+ is equivalent to the bash
     command +hc set_monitors $(hc disjoin_rects $(hc detect_monitors -l))+.
     +

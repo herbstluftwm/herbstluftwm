@@ -25,8 +25,11 @@ BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
 class HlwmBridge:
 
     HC_PATH = os.path.join(BINDIR, 'herbstclient')
+    # if there is some HlwmBridge, then it is registered here:
+    INSTANCE = None
 
     def __init__(self, display, hlwm_process):
+        HlwmBridge.INSTANCE = self
         self.client_procs = []
         self.next_client_id = 0
         self.env = {
@@ -546,6 +549,7 @@ def x11(x11_connection):
             self.screen = self.display.screen()
             self.root = self.screen.root
             self.ewmh = ewmh.EWMH(self.display, self.root)
+            self.hlwm = hlwm
 
         def window(self, winid_string):
             """return python-xlib window wrapper for a string window id"""
@@ -578,6 +582,7 @@ def x11(x11_connection):
         def create_client(self, urgent=False, pid=None,
                           geometry=(50, 50, 300, 200),
                           force_unmanage=False,
+                          sync_hlwm=True,
                           ):
             w = self.root.create_window(
                 geometry[0],
@@ -607,7 +612,16 @@ def x11(x11_connection):
 
             w.map()
             self.display.sync()
+            if sync_hlwm:
+                # wait for hlwm to fully recognize it as a client
+                self.sync_with_hlwm()
             return w, self.winid_str(w)
+
+        def sync_with_hlwm(self):
+            # wait for hlwm to flush all events:
+            hlwm_bridge = HlwmBridge.INSTANCE
+            assert hlwm_bridge is not None, "hlwm must be running"
+            hlwm_bridge.call('true')
 
         def get_absolute_top_left(self, window):
             """return the absolute (x,y) coordinate of the given window,
@@ -618,6 +632,8 @@ def x11(x11_connection):
                 # the following coordinates are only relative
                 # to the parent of window
                 geom = window.get_geometry()
+                print('Geometry of {} is: x={} y={} w={} h={}'.format(
+                      self.winid_str(window), geom.x, geom.y, geom.width, geom.height))
                 x += geom.x
                 y += geom.y
                 # check if the window's parent is already the root window
@@ -666,5 +682,8 @@ def mouse(hlwm_process):
                 self.move_into(into_win_id)
             with hlwm_process.wait_stderr_match('ButtonPress'):
                 subprocess.check_call(['xdotool', 'click', button])
+
+        def move_relative(self, delta_x, delta_y):
+            subprocess.check_call(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)
 
     return Mouse()

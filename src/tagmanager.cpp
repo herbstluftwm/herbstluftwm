@@ -6,10 +6,8 @@
 #include "command.h"
 #include "completion.h"
 #include "ewmh.h"
-#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
-#include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "stack.h"
@@ -69,7 +67,7 @@ HSTag* TagManager::add_tag(const string& name) {
     HSTag* tag = new HSTag(name, this, settings_);
     addIndexed(tag);
     tag->name.changed().connect([this,tag]() { this->onTagRename(tag); });
-    tag->floating.changed().connect([this,tag]() { this->onFloatingChange(tag); });
+    tag->needsRelayout_.connect([this,tag]() { this->needsRelayout_.emit(tag); });
 
     Ewmh::get().updateDesktops();
     Ewmh::get().updateDesktopNames();
@@ -120,7 +118,7 @@ int TagManager::removeTag(Input input, Output output) {
 
     // Collect all clients in tag
     vector<Client*> clients;
-    tagToRemove->frame->root_->foreachClient([&clients](Client* client) {
+    tagToRemove->foreachClient([&clients](Client* client) {
         clients.push_back(client);
     });
 
@@ -129,7 +127,7 @@ int TagManager::removeTag(Input input, Output output) {
         client->tag()->stack->removeSlice(client->slice);
         client->setTag(targetTag);
         client->tag()->stack->insertSlice(client->slice);
-        targetTag->frame->focusedFrame()->insertClient(client);
+        targetTag->insertClient(client, {}, false);
     }
 
     // Make transferred clients visible if target tag is visible
@@ -174,15 +172,6 @@ int TagManager::tag_rename_command(Input input, Output output) {
 void TagManager::onTagRename(HSTag* tag) {
     Ewmh::get().updateDesktopNames();
     hook_emit({"tag_renamed", tag->name()});
-}
-
-//! called when the floating state for tag changed.
-void TagManager::onFloatingChange(HSTag* tag)
-{
-    Monitor* m = monitors_->byTag(tag);
-    if (m) {
-        m->applyLayout();
-    }
 }
 
 HSTag* TagManager::ensure_tags_are_available() {
@@ -232,7 +221,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
 }
 
 void TagManager::moveFocusedClient(HSTag* target) {
-    Client* client = monitors_->focus()->tag->frame->root_->focusedClient();
+    Client* client = monitors_->focus()->tag->focusedClient();
     if (!client) {
         return;
     }
@@ -247,14 +236,9 @@ void TagManager::moveClient(Client* client, HSTag* target, std::string frameInde
         return;
     }
     Monitor* monitor_target = find_monitor_with_tag(target);
-    tag_source->frame->root_->removeClient(client);
+    tag_source->removeClient(client);
     // insert window into target
-    auto frame = FrameTree::focusedFrame(target->frame->lookup(frameIndex));
-    frame->insertClient(client);
-    // enfoce it to be focused on the target tag
-    if (focus) {
-        target->frame->focusClient(client);
-    }
+    target->insertClient(client, frameIndex, focus);
     if (tag_source != target) {
         client->tag()->stack->removeSlice(client->slice);
         client->setTag(target);

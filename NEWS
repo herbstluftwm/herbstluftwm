@@ -8,6 +8,7 @@ Current git version
   * detection of external panels
   * new command: apply_rules
   * new command: export (convenience wrapper around setenv)
+  * new command: drag (initiates moving/resizing a window by mouse)
   * The build system is now cmake. See the INSTALL file if you need to
     compile herbstluftwm yourself.
   * the 'remove' command now tries to preserve the focus and the client
@@ -27,6 +28,7 @@ Current git version
     dialog (e.g. a rofi menu or a notification) closes.
   * list_rules now prints regex-based rule conditions with '~' instead of '='
   * new attributes on every monitor for pad_up pad_down pad_left pad_right
+  * new flag --exit-on-xerror (to be used in automated testing only)
   * Formerly, double dots in object paths were allowed (similar to double
     slashes in file paths in unix). Right now, they are only allowed at the end
     (which is necessary for the tab-completion of attr):

@@ -104,6 +104,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"mousebind",      {mouse, &MouseManager::addMouseBindCommand,
                                    &MouseManager::addMouseBindCompletion}},
         {"mouseunbind",    {mouse, &MouseManager::mouse_unbind_all }},
+        {"drag",           {mouse, &MouseManager::dragCommand,
+                                   &MouseManager::dragCompletion}},
         {"spawn",          spawn},
         {"wmexec",         wmexec},
         {"emit_hook",      { custom_hook_emit }},
@@ -410,11 +412,13 @@ void execute_autostart_file() {
 }
 
 static void parse_arguments(int argc, char** argv, Globals& g) {
+    int exit_on_xerror = g.exitOnXlibError;
     static struct option long_options[] = {
-        {"autostart",   1, nullptr, 'c'},
-        {"version",     0, nullptr, 'v'},
-        {"locked",      0, nullptr, 'l'},
-        {"verbose",     0, &g_verbose, 1},
+        {"autostart",       1, nullptr, 'c'},
+        {"version",         0, nullptr, 'v'},
+        {"locked",          0, nullptr, 'l'},
+        {"exit-on-xerror",  0, &exit_on_xerror, 1},
+        {"verbose",         0, &g_verbose, 1},
         {}
     };
     // parse options
@@ -439,6 +443,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                 exit(EXIT_FAILURE);
         }
     }
+    g.exitOnXlibError = exit_on_xerror != 0;
 }
 
 static void remove_zombies(int) {
@@ -468,6 +473,7 @@ static void sigaction_signal(int signum, void (*handler)(int)) {
 int main(int argc, char* argv[]) {
     Globals g;
     parse_arguments(argc, argv, g);
+    XConnection::setExitOnError(g.exitOnXlibError);
     XConnection* X = XConnection::connect();
     g_display = X->display();
     if (!g_display) {

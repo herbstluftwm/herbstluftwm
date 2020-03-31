@@ -21,7 +21,7 @@ Mod=Mod1    # Use alt as the main modifier
 hc keybind $Mod-Shift-q quit
 hc keybind $Mod-Shift-r reload
 hc keybind $Mod-Shift-c close
-hc keybind $Mod-Return spawn ${TERMINAL:-xterm} # use your $TERMINAL with xterm as fallback
+hc keybind $Mod-Return spawn "${TERMINAL:-xterm}" # use your $TERMINAL with xterm as fallback
 
 # basic movement
 # focusing clients
@@ -67,7 +67,7 @@ tag_names=( {1..9} )
 tag_keys=( {1..9} 0 )
 
 hc rename default "${tag_names[0]}" || true
-for i in ${!tag_names[@]} ; do
+for i in "${!tag_names[@]}" ; do
     hc add "${tag_names[$i]}"
     key="${tag_keys[$i]}"
     if ! [ -z "$key" ] ; then
@@ -84,6 +84,7 @@ hc keybind $Mod-comma  use_index -1 --skip-visible
 hc keybind $Mod-r remove
 hc keybind $Mod-s floating toggle
 hc keybind $Mod-f fullscreen toggle
+hc keybind $Mod-Shift-f set_attr clients.focus.floating toggle
 hc keybind $Mod-p pseudotile toggle
 # The following cycles through the available layouts within a frame, but skips
 # layouts, if the layout change wouldn't affect the actual window positions.
@@ -164,5 +165,5 @@ panel=~/.config/herbstluftwm/panel.sh
 [ -x "$panel" ] || panel=/etc/xdg/herbstluftwm/panel.sh
 for monitor in $(hc list_monitors | cut -d: -f1) ; do
     # start it on each monitor
-    "$panel" $monitor &
+    "$panel" "$monitor" &
 done

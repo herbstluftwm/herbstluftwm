@@ -2,7 +2,6 @@
 
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
-#include <cstring>
 #include <ostream>
 #include <string>
 #include <vector>
@@ -15,11 +14,11 @@
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "keymanager.h"
+#include "monitormanager.h"
 #include "mouse.h"
 #include "mousedraghandler.h"
 #include "root.h"
 #include "tag.h"
-#include "utils.h"
 
 using std::shared_ptr;
 using std::vector;
@@ -32,6 +31,13 @@ MouseManager::MouseManager()
     /* set cursor theme */
     cursor = XCreateFontCursor(g_display, XC_left_ptr);
     XDefineCursor(g_display, g_root, cursor);
+
+    mouseFunctions_ = {
+        { "move",       &MouseManager::mouse_initiate_move },
+        { "zoom",       &MouseManager::mouse_initiate_zoom },
+        { "resize",     &MouseManager::mouse_initiate_resize },
+        { "call",       &MouseManager::mouse_call_command },
+    };
 }
 
 MouseManager::~MouseManager() {
@@ -91,7 +97,9 @@ void MouseManager::addMouseBindCompletion(Completion &complete) {
     if (complete == 0) {
         Converter<MouseCombo>::complete(complete, nullptr);
     } else if (complete == 1) {
-        complete.full({"move", "resize", "zoom", "call"});
+        for (auto& it : mouseFunctions_) {
+            complete.full(it.first);
+        }
     } else if (complete[1] == "call") {
         complete.completeCommands(2);
     } else {
@@ -99,19 +107,61 @@ void MouseManager::addMouseBindCompletion(Completion &complete) {
     }
 }
 
-void MouseManager::mouse_handle_event(unsigned int modifiers, unsigned int button, Window window) {
+bool MouseManager::mouse_handle_event(unsigned int modifiers, unsigned int button, Window window) {
     auto b = mouse_binding_find(modifiers, button);
 
     if (!b.has_value()) {
         // No binding find for this event
+        return false;
     }
 
     Client* client = get_client_from_window(window);
     if (!client) {
         // there is no valid bind for this type of mouse event
-        return;
+        return true;
     }
-    (this ->* (b->action))(client, b->cmd); }
+    (this ->* (b->action))(client, b->cmd);
+    return true;
+}
+
+int MouseManager::dragCommand(Input input, Output output)
+{
+    string winid, mouseAction;
+    if (!(input >> winid >> mouseAction)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    Client* client = Root::get()->clients->client(winid);
+    if (!client) {
+        output << "Could not find client \"" << winid << "\"\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    MouseFunction action = string2mousefunction(mouseAction.c_str());
+    if (!action) {
+        output << input.command() << ": Unknown mouse action \"" << mouseAction << "\"" << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (monitors_->byTag(client->tag()) == nullptr) {
+        output << input.command() << ": can not drag invisible client \"" << winid << "\"" << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    (this ->* action)(client, input.toVector());
+    return 0;
+}
+
+void MouseManager::dragCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        Root::get()->clients->completeClients(complete);
+    } else if (complete == 1) {
+        for (auto& it : mouseFunctions_) {
+            complete.full(it.first);
+        }
+    } else if (complete[1] == "call") {
+        complete.completeCommands(2);
+    } else {
+        complete.none();
+    }
+}
 
 void MouseManager::mouse_initiate_move(Client* client, const vector<string> &cmd) {
     mouse_initiate_drag(
@@ -122,7 +172,7 @@ void MouseManager::mouse_initiate_move(Client* client, const vector<string> &cmd
 
 void MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
     MouseDragHandler::Constructor constructor;
-    if (client->tag()->floating()) {
+    if (client->is_client_floated()) {
         constructor = MouseDragHandlerFloating::construct(
                          &MouseDragHandlerFloating::mouse_function_zoom);
     } else {
@@ -134,7 +184,7 @@ void MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd
 
 void MouseManager::mouse_initiate_resize(Client* client, const vector<string> &cmd) {
     MouseDragHandler::Constructor constructor;
-    if (client->tag()->floating()) {
+    if (client->is_client_floated()) {
         constructor = MouseDragHandlerFloating::construct(
                          &MouseDragHandlerFloating::mouse_function_resize);
     } else {
@@ -148,6 +198,9 @@ void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd)
     // TODO: add completion
     clients_->setDragged(client);
 
+    if (cmd.empty()) {
+        return;
+    }
     // Execute the bound command
     std::ostringstream discardedOutput;
     Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
@@ -215,26 +268,16 @@ int MouseManager::mouse_unbind_all(Output) {
     return 0;
 }
 
-MouseFunction MouseManager::string2mousefunction(const char* name) {
-    static struct {
-        const char* name;
-        MouseFunction function;
-    } table[] = {
-        { "move",       &MouseManager::mouse_initiate_move },
-        { "zoom",       &MouseManager::mouse_initiate_zoom },
-        { "resize",     &MouseManager::mouse_initiate_resize },
-        { "call",       &MouseManager::mouse_call_command },
-    };
-    int i;
-    for (i = 0; i < LENGTH(table); i++) {
-        if (!strcmp(table[i].name, name)) {
-            return table[i].function;
-        }
+MouseManager::MouseFunction MouseManager::string2mousefunction(const string& name) {
+    auto it = mouseFunctions_.find(name);
+    if (it != mouseFunctions_.end()) {
+        return it->second;
+    } else {
+        return nullptr;
     }
-    return nullptr;
 }
 
-std::experimental::optional<MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {
+std::experimental::optional<MouseManager::MouseBinding> MouseManager::mouse_binding_find(unsigned int modifiers, unsigned int button) {
     unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
     MouseCombo mb = {};
     mb.modifiers_ = modifiers
@@ -257,27 +300,23 @@ std::experimental::optional<MouseBinding> MouseManager::mouse_binding_find(unsig
     }
 }
 
-static void grab_binding(MouseBinding* bind, Client* client) {
-    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
-    unsigned int modifiers[] = { 0, LockMask, numlockMask, numlockMask | LockMask };
-    for(int j = 0; j < LENGTH(modifiers); j++) {
-        XGrabButton(g_display, bind->mousecombo.button_,
-                    bind->mousecombo.modifiers_ | modifiers[j],
-                    client->x11Window(), False, ButtonPressMask | ButtonReleaseMask,
-                    GrabModeAsync, GrabModeSync, None, None);
-    }
-}
-
 void MouseManager::grab_client_buttons(Client* client, bool focused) {
     XUngrabButton(g_display, AnyButton, AnyModifier, client->x11Window());
+    unsigned int numlockMask = Root::get()->keys()->getNumlockMask();
+    vector<unsigned int> modifiers = { 0, LockMask, numlockMask, numlockMask | LockMask };
     if (focused) {
         for (auto& bind : binds) {
-            grab_binding(&bind, client);
+            for(auto m : modifiers) {
+                XGrabButton(g_display, bind.mousecombo.button_,
+                            bind.mousecombo.modifiers_ | m,
+                            client->x11Window(), False, ButtonPressMask | ButtonReleaseMask,
+                            GrabModeAsync, GrabModeSync, None, None);
+            }
         }
     }
-    unsigned int btns[] = { Button1, Button2, Button3 };
-    for (int i = 0; i < LENGTH(btns); i++) {
-        XGrabButton(g_display, btns[i], AnyModifier, client->x11Window(), False,
+    vector<unsigned int> btns = { Button1, Button2, Button3 };
+    for (auto b : btns) {
+        XGrabButton(g_display, b, AnyModifier, client->x11Window(), False,
                     ButtonPressMask|ButtonReleaseMask, GrabModeSync,
                     GrabModeSync, None, None);
     }

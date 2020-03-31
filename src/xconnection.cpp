@@ -15,6 +15,13 @@ using std::pair;
 using std::string;
 using std::vector;
 
+bool XConnection::exitOnError_ = false;
+
+void XConnection::setExitOnError(bool exitOnError)
+{
+    exitOnError_ = exitOnError;
+}
+
 XConnection::XConnection(Display* disp)
     : m_display(disp) {
     m_screen = DefaultScreen(m_display);
@@ -23,15 +30,16 @@ XConnection::XConnection(Display* disp)
     m_root = RootWindow(m_display, m_screen);
     utf8StringAtom_ = XInternAtom(m_display, "UTF8_STRING", False);
 }
+
 XConnection::~XConnection() {
     HSDebug("Closing display\n");
     XCloseDisplay(m_display);
 }
 
 XConnection* XConnection::connect(string display_name) {
-    char* display_str = (display_name != "") ? (char*)display_name.c_str() : nullptr;
+    const char* display_str = (display_name != "") ? display_name.c_str() : nullptr;
     Display* d = XOpenDisplay(display_str);
-    if (d == NULL) {
+    if (d == nullptr) {
         std::cerr << "herbstluftwm: XOpenDisplay() failed" << endl;
         exit(EXIT_FAILURE);
     }
@@ -43,7 +51,7 @@ static bool g_other_wm_running = false;
 // from dwm.c
 /* Startup Error handler to check if another window manager
  * is already running. */
-static int xerrorstart(Display *dpy, XErrorEvent *ee) {
+static int xerrorstart(Display*, XErrorEvent*) {
     g_other_wm_running = true;
     return -1;
 }
@@ -54,7 +62,7 @@ static int (*g_xerrorxlib)(Display *, XErrorEvent *);
 /* There's no way to check accesses to destroyed windows, thus those cases are
  * ignored (especially on UnmapNotify's).  Other types of errors call Xlibs
  * default error handler, which may call exit.  */
-int xerror(Display *dpy, XErrorEvent *ee) {
+int XConnection::xerror(Display *dpy, XErrorEvent *ee) {
     if(ee->error_code == BadWindow
     || ee->error_code == BadGC
     || ee->error_code == BadPixmap
@@ -68,8 +76,24 @@ int xerror(Display *dpy, XErrorEvent *ee) {
     || (ee->request_code == X_CopyArea && ee->error_code == BadDrawable)) {
         return 0;
     }
-    fprintf(stderr, "herbstluftwm: fatal error: request code=%d, error code=%d\n",
-            ee->request_code, ee->error_code);
+    char errorCodeString[100] = "unknown";
+    XGetErrorText(dpy, ee->error_code, errorCodeString, 100);
+    const char* requestCodeString = XConnection::requestCodeToString(ee->request_code);
+    if (!requestCodeString) {
+        requestCodeString = "unknown";
+    }
+    fprintf(stderr, "herbstluftwm: fatal error\n"
+                    "   resource id: 0x%lx\n"
+                    "   request code: %d \"%s\" (minor code: %d)\n"
+                    "   error code: %d \"%s\"\n"
+                    "   serial number: %ld\n",
+            ee->resourceid,
+            ee->request_code,
+            requestCodeString,
+            ee->minor_code,
+            ee->error_code,
+            errorCodeString,
+            ee->serial);
     if (ee->error_code == BadDrawable) {
         HSDebug("Warning: ignoring X_BadDrawable\n");
         return 0;
@@ -88,8 +112,8 @@ bool XConnection::checkotherwm() {
     if(g_other_wm_running) {
         return true;
     } else {
-        XSetErrorHandler(xerror);
-        XSync(g_display, False);
+        XSetErrorHandler(XConnection::xerror);
+        XSync(m_display, False);
         return false;
     }
 }
@@ -308,4 +332,138 @@ vector<Window> XConnection::queryTree(Window window) {
     }
     XFree(children);
     return result;
+}
+
+#define RequestCodeAndString(C)  { C, #C }
+const char* XConnection::requestCodeToString(int requestCode)
+{
+    // all request codes from X11/Xproto.h
+    vector<pair<int, const char*>> requestCodeTable = {
+        RequestCodeAndString(X_CreateWindow                 ),
+        RequestCodeAndString(X_ChangeWindowAttributes       ),
+        RequestCodeAndString(X_GetWindowAttributes          ),
+        RequestCodeAndString(X_DestroyWindow                ),
+        RequestCodeAndString(X_DestroySubwindows            ),
+        RequestCodeAndString(X_ChangeSaveSet                ),
+        RequestCodeAndString(X_ReparentWindow               ),
+        RequestCodeAndString(X_MapWindow                    ),
+        RequestCodeAndString(X_MapSubwindows                ),
+        RequestCodeAndString(X_UnmapWindow                  ),
+        RequestCodeAndString(X_UnmapSubwindows              ),
+        RequestCodeAndString(X_ConfigureWindow              ),
+        RequestCodeAndString(X_CirculateWindow              ),
+        RequestCodeAndString(X_GetGeometry                  ),
+        RequestCodeAndString(X_QueryTree                    ),
+        RequestCodeAndString(X_InternAtom                   ),
+        RequestCodeAndString(X_GetAtomName                  ),
+        RequestCodeAndString(X_ChangeProperty               ),
+        RequestCodeAndString(X_DeleteProperty               ),
+        RequestCodeAndString(X_GetProperty                  ),
+        RequestCodeAndString(X_ListProperties               ),
+        RequestCodeAndString(X_SetSelectionOwner            ),
+        RequestCodeAndString(X_GetSelectionOwner            ),
+        RequestCodeAndString(X_ConvertSelection             ),
+        RequestCodeAndString(X_SendEvent                    ),
+        RequestCodeAndString(X_GrabPointer                  ),
+        RequestCodeAndString(X_UngrabPointer                ),
+        RequestCodeAndString(X_GrabButton                   ),
+        RequestCodeAndString(X_UngrabButton                 ),
+        RequestCodeAndString(X_ChangeActivePointerGrab      ),
+        RequestCodeAndString(X_GrabKeyboard                 ),
+        RequestCodeAndString(X_UngrabKeyboard               ),
+        RequestCodeAndString(X_GrabKey                      ),
+        RequestCodeAndString(X_UngrabKey                    ),
+        RequestCodeAndString(X_AllowEvents                  ),
+        RequestCodeAndString(X_GrabServer                   ),
+        RequestCodeAndString(X_UngrabServer                 ),
+        RequestCodeAndString(X_QueryPointer                 ),
+        RequestCodeAndString(X_GetMotionEvents              ),
+        RequestCodeAndString(X_TranslateCoords              ),
+        RequestCodeAndString(X_WarpPointer                  ),
+        RequestCodeAndString(X_SetInputFocus                ),
+        RequestCodeAndString(X_GetInputFocus                ),
+        RequestCodeAndString(X_QueryKeymap                  ),
+        RequestCodeAndString(X_OpenFont                     ),
+        RequestCodeAndString(X_CloseFont                    ),
+        RequestCodeAndString(X_QueryFont                    ),
+        RequestCodeAndString(X_QueryTextExtents             ),
+        RequestCodeAndString(X_ListFonts                    ),
+        RequestCodeAndString(X_ListFontsWithInfo            ),
+        RequestCodeAndString(X_SetFontPath                  ),
+        RequestCodeAndString(X_GetFontPath                  ),
+        RequestCodeAndString(X_CreatePixmap                 ),
+        RequestCodeAndString(X_FreePixmap                   ),
+        RequestCodeAndString(X_CreateGC                     ),
+        RequestCodeAndString(X_ChangeGC                     ),
+        RequestCodeAndString(X_CopyGC                       ),
+        RequestCodeAndString(X_SetDashes                    ),
+        RequestCodeAndString(X_SetClipRectangles            ),
+        RequestCodeAndString(X_FreeGC                       ),
+        RequestCodeAndString(X_ClearArea                    ),
+        RequestCodeAndString(X_CopyArea                     ),
+        RequestCodeAndString(X_CopyPlane                    ),
+        RequestCodeAndString(X_PolyPoint                    ),
+        RequestCodeAndString(X_PolyLine                     ),
+        RequestCodeAndString(X_PolySegment                  ),
+        RequestCodeAndString(X_PolyRectangle                ),
+        RequestCodeAndString(X_PolyArc                      ),
+        RequestCodeAndString(X_FillPoly                     ),
+        RequestCodeAndString(X_PolyFillRectangle            ),
+        RequestCodeAndString(X_PolyFillArc                  ),
+        RequestCodeAndString(X_PutImage                     ),
+        RequestCodeAndString(X_GetImage                     ),
+        RequestCodeAndString(X_PolyText8                    ),
+        RequestCodeAndString(X_PolyText16                   ),
+        RequestCodeAndString(X_ImageText8                   ),
+        RequestCodeAndString(X_ImageText16                  ),
+        RequestCodeAndString(X_CreateColormap               ),
+        RequestCodeAndString(X_FreeColormap                 ),
+        RequestCodeAndString(X_CopyColormapAndFree          ),
+        RequestCodeAndString(X_InstallColormap              ),
+        RequestCodeAndString(X_UninstallColormap            ),
+        RequestCodeAndString(X_ListInstalledColormaps       ),
+        RequestCodeAndString(X_AllocColor                   ),
+        RequestCodeAndString(X_AllocNamedColor              ),
+        RequestCodeAndString(X_AllocColorCells              ),
+        RequestCodeAndString(X_AllocColorPlanes             ),
+        RequestCodeAndString(X_FreeColors                   ),
+        RequestCodeAndString(X_StoreColors                  ),
+        RequestCodeAndString(X_StoreNamedColor              ),
+        RequestCodeAndString(X_QueryColors                  ),
+        RequestCodeAndString(X_LookupColor                  ),
+        RequestCodeAndString(X_CreateCursor                 ),
+        RequestCodeAndString(X_CreateGlyphCursor            ),
+        RequestCodeAndString(X_FreeCursor                   ),
+        RequestCodeAndString(X_RecolorCursor                ),
+        RequestCodeAndString(X_QueryBestSize                ),
+        RequestCodeAndString(X_QueryExtension               ),
+        RequestCodeAndString(X_ListExtensions               ),
+        RequestCodeAndString(X_ChangeKeyboardMapping        ),
+        RequestCodeAndString(X_GetKeyboardMapping           ),
+        RequestCodeAndString(X_ChangeKeyboardControl        ),
+        RequestCodeAndString(X_GetKeyboardControl           ),
+        RequestCodeAndString(X_Bell                         ),
+        RequestCodeAndString(X_ChangePointerControl         ),
+        RequestCodeAndString(X_GetPointerControl            ),
+        RequestCodeAndString(X_SetScreenSaver               ),
+        RequestCodeAndString(X_GetScreenSaver               ),
+        RequestCodeAndString(X_ChangeHosts                  ),
+        RequestCodeAndString(X_ListHosts                    ),
+        RequestCodeAndString(X_SetAccessControl             ),
+        RequestCodeAndString(X_SetCloseDownMode             ),
+        RequestCodeAndString(X_KillClient                   ),
+        RequestCodeAndString(X_RotateProperties             ),
+        RequestCodeAndString(X_ForceScreenSaver             ),
+        RequestCodeAndString(X_SetPointerMapping            ),
+        RequestCodeAndString(X_GetPointerMapping            ),
+        RequestCodeAndString(X_SetModifierMapping           ),
+        RequestCodeAndString(X_GetModifierMapping           ),
+        RequestCodeAndString(X_NoOperation                  ),
+    };
+    for (auto& e : requestCodeTable) {
+        if (e.first == requestCode) {
+            return e.second;
+        }
+    }
+    return nullptr;
 }

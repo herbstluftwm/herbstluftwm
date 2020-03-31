@@ -160,9 +160,8 @@ void XMainLoop::quit() {
 void XMainLoop::buttonpress(XButtonEvent* be) {
     MouseManager* mm = root_->mouse();
     HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
-    if (mm->mouse_binding_find(be->state, be->button)) {
-        mm->mouse_handle_event(be->state, be->button, be->window);
-    } else {
+    if (!mm->mouse_handle_event(be->state, be->button, be->window)) {
+        // if the event was not handled by the mouse manager, pass it to the client:
         Client* client = root_->clients->client(be->window);
         if (client) {
             focus_client(client, false, true);
@@ -348,7 +347,7 @@ void XMainLoop::mapnotify(XMapEvent* event) {
         c->update_title();
     } else {
         // the window is not managed.
-        HSDebug("MapNotify: briefly managing %lx to apply rules\n", event->window);
+        HSDebug("MapNotify: briefly managing 0x%lx to apply rules\n", event->window);
         root_->clients()->manage_client(event->window, true, true);
     }
 }

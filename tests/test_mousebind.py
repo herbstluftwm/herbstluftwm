@@ -99,3 +99,35 @@ def test_complete_mousebind_validates_all_button(hlwm):
     complete = hlwm.complete('mousebind Moo+Mo', partial=True, position=1)
 
     assert complete == []
+
+
+# we had a race condition here, so increase the likelyhood
+# that we really fixed it:
+@pytest.mark.parametrize('repeat', list(range(0, 100)))
+def test_drag_move(hlwm, x11, mouse, repeat):
+    hlwm.call('set_attr tags.focus.floating on')
+    client, winid = x11.create_client()
+    x, y = x11.get_absolute_top_left(client)
+    mouse.move_into(winid)
+
+    hlwm.call(['drag', winid, 'move'])
+    mouse.move_relative(12, 15)
+    hlwm.call('true')  # sync
+
+    assert x11.get_absolute_top_left(client) == (x + 12, y + 15)
+
+
+def test_drag_invisible_client(hlwm):
+    # check that we can't resize clients that are on a tag
+    # that is not shown
+    hlwm.call('add t')
+    hlwm.call('set_attr tags.by-name.t.floating on')
+
+    # invisible win
+    kid, _ = hlwm.create_client()
+    # got a tag of his own
+    hlwm.call('move t')
+    # where he'll never be known
+    hlwm.call_xfail(['drag', kid, 'resize']) \
+        .expect_stderr('can not drag invisible client')
+    # inward he's grown :-)

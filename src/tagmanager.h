@@ -4,6 +4,7 @@
 #include "byname.h"
 #include "indexingobject.h"
 #include "link.h"
+#include "signal.h"
 #include "tag.h"
 
 class Client;
@@ -40,10 +41,10 @@ public:
     std::function<int()> frameCommand(std::function<int(FrameTree&)> cmd);
     void updateFocusObject(Monitor* focusedMonitor);
     std::string isValidTagName(std::string name);
+    Signal_<HSTag*> needsRelayout_;
 private:
     std::function<void(Completion&)> frameCompletion(FrameCompleter completer);
     void onTagRename(HSTag* tag);
-    void onFloatingChange(HSTag* tag);
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
     Settings* settings_;
