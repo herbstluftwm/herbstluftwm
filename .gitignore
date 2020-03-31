@@ -15,3 +15,7 @@ CMakeLists.txt.user
 
 # ignore doxygen generated html
 doxygen-html/
+
+# ignore various other IDE config dirs
+.vscode/
+.idea/
