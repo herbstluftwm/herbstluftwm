@@ -182,8 +182,6 @@ int frame_change_fraction_command(int argc, char** argv, Output output);
 
 int frame_current_bring(int argc, char** argv, Output output);
 
-int frame_focus_command(int argc, char** argv, Output output);
-
 int frame_current_set_client_layout(int argc, char** argv, Output output);
 int frame_split_count_to_root(HSFrame* frame, int align);
 
@@ -191,7 +189,7 @@ bool focus_client(Client* client, bool switch_tag, bool switch_monitor);
 // moves a window to an other frame
 int frame_move_window_command(int argc, char** argv, Output output);
 
-int frame_focus_edge(int argc, char** argv, Output output);
+int frame_focus_edge(Input input, Output output);
 int frame_move_window_edge(int argc, char** argv, Output output);
 
 #endif
