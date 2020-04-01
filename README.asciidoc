@@ -27,4 +27,8 @@ installing herbstluftwm on your system).
 
 You are welcome to join the IRC channel `#herbstluftwm` on `irc.freenode.net`.
 
+Installation
+------------
+If you want to build herbstluftwm from source, see the link:INSTALL[INSTALL] file.
+
 // vim: ft=asciidoc tw=80
