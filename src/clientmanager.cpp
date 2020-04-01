@@ -148,7 +148,10 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     }
 
     if (!changes.tag_name.empty()) {
-        client->setTag(find_tag(changes.tag_name.c_str()));
+        HSTag* tag = find_tag(changes.tag_name.c_str());
+        if (tag) {
+            client->setTag(tag);
+        }
     }
     if (!changes.monitor_name.empty()) {
         Monitor *monitor = string_to_monitor(changes.monitor_name.c_str());
