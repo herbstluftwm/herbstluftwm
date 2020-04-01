@@ -13,7 +13,6 @@
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "keymanager.h"
-#include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
@@ -462,7 +461,7 @@ void Client::set_urgent_force(bool state) {
 
     this->urgent_ = state;
 
-    setup_border(this == HSFrame::getGloballyFocusedFrame()->focusedClient());
+    setup_border(this == manager.focus());
 
     XWMHints *wmh;
     if(!(wmh = XGetWMHints(g_display, this->window_)))
@@ -487,7 +486,7 @@ void Client::update_wm_hints() {
         return;
     }
 
-    Client* focused_client = HSFrame::getGloballyFocusedFrame()->focusedClient();
+    Client* focused_client = manager.focus();
     if ((focused_client == this)
         && wmh->flags & XUrgencyHint) {
         // remove urgency hint if window is focused

@@ -1,5 +1,6 @@
 import pytest
 import re
+import subprocess
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
@@ -303,3 +304,21 @@ def test_split_simple(hlwm, running_clients, align, fraction):
     assert hlwm.call('dump').stdout == \
         '(split {}:{}:0 (clients vertical:0{}) (clients vertical:0))' \
         .format(align, fraction, ''.join([' ' + c for c in running_clients]))
+
+
+@pytest.mark.parametrize("align", ["horizontal", "vertical"])
+def test_split_and_remove_with_smart_frame_surroundings(hlwm, x11, align):
+    # Split frame, then merge it again to one root frame
+    # Root frame should have no frame gaps in the end
+    hlwm.call('set smart_frame_surroundings on')
+    hlwm.call(['split', align])
+    hlwm.call('remove')
+
+    # Search for all frames, there should only be one
+    frame_win_id = subprocess.run(['xdotool', 'search', '--class', '_HERBST_FRAME'],
+                                  stdout=subprocess.PIPE,
+                                  universal_newlines=True,
+                                  check=True)
+    frame_x11 = x11.window(frame_win_id.stdout)
+    frame_geom = frame_x11.get_geometry()
+    assert (frame_geom.width, frame_geom.height) == (800, 600)

@@ -674,16 +674,23 @@ def keyboard():
 @pytest.fixture()
 def mouse(hlwm_process):
     class Mouse:
-        def move_into(self, win_id):
-            subprocess.check_call(f'xdotool mousemove --sync --window {win_id} 1 1', shell=True)
+        def move_into(self, win_id, x=1, y=1):
+            self.call_cmd(f'xdotool mousemove --sync --window {win_id} {x} {y}', shell=True)
 
-        def click(self, button, into_win_id=None):
+        def click(self, button, into_win_id=None, wait=True):
             if into_win_id:
                 self.move_into(into_win_id)
-            with hlwm_process.wait_stderr_match('ButtonPress'):
+            if wait:
+                with hlwm_process.wait_stderr_match('ButtonPress'):
+                    subprocess.check_call(['xdotool', 'click', button])
+            else:
                 subprocess.check_call(['xdotool', 'click', button])
 
         def move_relative(self, delta_x, delta_y):
-            subprocess.check_call(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)
+            self.call_cmd(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)
+
+        def call_cmd(self, cmd, shell=False):
+            print('calling: {}'.format(cmd), file=sys.stderr)
+            subprocess.check_call(cmd, shell=shell)
 
     return Mouse()

@@ -1,4 +1,6 @@
 import pytest
+import re
+import math
 
 # Note: For unknown reasons, mouse buttons 4 and 5 (scroll wheel) do not work
 # in Xvfb when running tests on Travis. Therefore, we maintain two lists of
@@ -117,6 +119,23 @@ def test_drag_move(hlwm, x11, mouse, repeat):
     assert x11.get_absolute_top_left(client) == (x + 12, y + 15)
 
 
+def test_drag_no_frame_splits(hlwm):
+    winid, _ = hlwm.create_client()
+
+    hlwm.call_xfail(['drag', winid, 'resize']) \
+        .expect_stderr('No neighbour frame')
+
+
+def test_mouse_drag_no_frame_splits(hlwm, hlwm_process, mouse):
+    hlwm.call('mousebind B1 resize')
+    winid, _ = hlwm.create_client()
+
+    with hlwm_process.wait_stderr_match('No neighbour frame'):
+        # we do not wait because it clashes with the running
+        # wait_stderr_match() context here
+        mouse.click('1', winid, wait=False)
+
+
 def test_drag_invisible_client(hlwm):
     # check that we can't resize clients that are on a tag
     # that is not shown
@@ -131,3 +150,23 @@ def test_drag_invisible_client(hlwm):
     hlwm.call_xfail(['drag', kid, 'resize']) \
         .expect_stderr('can not drag invisible client')
     # inward he's grown :-)
+
+
+def test_drag_resize_tiled_client(hlwm, mouse):
+    winid, _ = hlwm.create_client()
+    layout = '(split horizontal:{}:1 (clients max:0) (clients max:0 {}))'
+    hlwm.call(['load', layout.format('0.5', winid)])
+    mouse.move_into(winid, x=10, y=30)
+
+    hlwm.call(['drag', winid, 'resize'])
+    assert hlwm.get_attr('clients.dragged.winid') == winid
+    mouse.move_relative(200, 300)
+
+    monitor_width = int(hlwm.call('monitor_rect').stdout.split(' ')[2])
+    layout_str = hlwm.call('dump').stdout
+    layout_ma = re.match(layout.replace('(', r'\(')
+                               .replace(')', r'\)')
+                               .format('([^:]*)', '.*'), layout_str)
+    expected = 0.5 + 200 / monitor_width
+    actual = float(layout_ma.group(1))
+    assert math.isclose(actual, expected, abs_tol=0.01)
