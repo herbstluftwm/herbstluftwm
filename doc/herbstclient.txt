@@ -48,7 +48,7 @@ OPTIONS
     Same as *--idle* but exit after first *--count* hooks.
 
 *-c*, *--count* 'COUNT'::
-    Let *--wait* exit after 'COUNT' hooks were received and printed. The default of
+    Let *--wait* exit after 'COUNT' hooks were received and printed. The default
     'COUNT' is 1.
 
 *-q*, *--quiet*::
@@ -81,8 +81,6 @@ other::
 
 BUGS
 ----
-It waits endlessly for a response from *herbstluftwm* (there is no timeout yet).
-
 See the *herbstluftwm* distribution BUGS file.
 
 COMMUNITY
