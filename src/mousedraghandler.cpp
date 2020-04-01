@@ -189,11 +189,11 @@ MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<HSFrameL
     : monitors_(monitors)
 {
     dragMonitor_ = monitors_->byFrame(frame);
-    dragMonitorIndex_ = dragMonitor_->index();
-    dragTag_ = dragMonitor_->tag;
     if (!dragMonitor_) {
         throw DragNotPossible();
     }
+    dragMonitorIndex_ = dragMonitor_->index();
+    dragTag_ = dragMonitor_->tag;
     buttonDragStart_ = get_cursor_position();
     Rectangle frameRect = frame->lastRect();
     /* check whether the cursor is the following area:
