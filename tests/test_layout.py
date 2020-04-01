@@ -322,3 +322,30 @@ def test_split_and_remove_with_smart_frame_surroundings(hlwm, x11, align):
     frame_x11 = x11.window(frame_win_id.stdout)
     frame_geom = frame_x11.get_geometry()
     assert (frame_geom.width, frame_geom.height) == (800, 600)
+
+
+@pytest.mark.parametrize("client_focused", list(range(0, 4)))
+@pytest.mark.parametrize("direction", ['u', 'd', 'l', 'r'])
+def test_focus_directional_2x2grid(hlwm, client_focused, direction):
+    clients = hlwm.create_clients(4)
+    layout = '(split horizontal:0.5:0 (clients vertical:0 W W) (clients vertical:1 W W))'
+    client2direction = [
+        {'u': None, 'd': 1, 'l': None, 'r': 3},
+        {'u': 0, 'd': None, 'l': None, 'r': 3},
+        {'u': None, 'd': 3, 'l': 0, 'r': None},
+        {'u': 2, 'd': None, 'l': 0, 'r': None},
+    ]
+    for winid in clients:
+        # replace the next W by the window ID
+        layout = layout.replace('W', winid, 1)
+    hlwm.call(['load', layout])
+    hlwm.call(['jumpto', clients[client_focused]])
+    # get expected neighbour:
+    neighbour = client2direction[client_focused][direction]
+
+    if neighbour is not None:
+        hlwm.call(['focus', direction])
+        assert hlwm.get_attr('clients.focus.winid') == clients[neighbour]
+    else:
+        hlwm.call_xfail(['focus', direction]) \
+            .expect_stderr('No neighbour')

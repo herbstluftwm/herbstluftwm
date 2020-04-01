@@ -3,11 +3,16 @@
 #include <type_traits>
 
 #include "client.h"
+#include "completion.h"
+#include "floating.h"
 #include "frametree.h"
 #include "hlwmcommon.h"
 #include "hook.h"
+#include "ipc-protocol.h"
 #include "layout.h"
+#include "monitormanager.h"
 #include "root.h"
+#include "settings.h"
 #include "stack.h"
 #include "tagmanager.h"
 
@@ -29,6 +34,7 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
         [this] () { return frame->focusedFrame()->getSelection(); } )
     , curframe_wcount(this, "curframe_wcount",
         [this] () { return frame->focusedFrame()->clientCount(); } )
+    , settings_(settings)
 {
     stack = make_shared<Stack>();
     frame = make_shared<FrameTree>(this, settings);
@@ -163,6 +169,69 @@ void HSTag::insertClient(Client* client, std::string frameIndex, bool focus)
             floating_focused = false;
         }
         target->insertClient(client, focus);
+    }
+}
+
+//! directional focus command
+int HSTag::focusInDirCommand(Input input, Output output)
+{
+    bool external_only = settings_->default_direction_external_only();
+    if (input.size() >= 2) {
+        string internextern;
+        input >> internextern;
+        if (internextern == "-i") {
+            external_only = false;
+        }
+        if (internextern == "-e") {
+            external_only = true;
+        }
+    }
+    string dirstr;
+    if (!(input >> dirstr)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    Direction direction;
+    try {
+        direction = Converter<Direction>::parse(dirstr);
+    } catch (const std::exception& e) {
+        output << input.command() << ": " << e.what() << "\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    auto focusedFrame = frame->focusedFrame();
+    bool neighbour_found = true;
+    if (floating || floating_focused) {
+        neighbour_found = floating_focus_direction(direction);
+    } else {
+        neighbour_found = frame->focusInDirection(direction, external_only);
+        if (neighbour_found) {
+            needsRelayout_.emit();
+        }
+    }
+    if (!neighbour_found && settings_->focus_crosses_monitor_boundaries()) {
+        // find monitor in the specified direction
+        int idx = g_monitors->indexInDirection(get_current_monitor(), direction);
+        if (idx >= 0) {
+            monitor_focus_by_index(idx);
+        }
+    }
+    if (!neighbour_found) {
+        output << input.command() << ": No neighbour found\n";
+        return HERBST_FORBIDDEN;
+    }
+    return 0;
+}
+
+void HSTag::focusInDirCompletion(Completion &complete)
+{
+    if (complete == 0) {
+        complete.full({"-i", "-e"});
+        Converter<Direction>::complete(complete, nullptr);
+    } else if (complete == 1
+               && (complete[0] == "-i" || complete[0] == "-e"))
+    {
+        Converter<Direction>::complete(complete, nullptr);
+    } else {
+        complete.none();
     }
 }
 

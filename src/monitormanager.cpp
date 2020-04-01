@@ -205,6 +205,17 @@ CommandBinding MonitorManager::byFirstArg(MonitorCommand moncmd, MonitorCompleti
     return {cmdBound, completeBound};
 }
 
+CommandBinding MonitorManager::tagCommand(TagCommand cmd, TagCompletion completer)
+{
+    auto cmdBound = [this,cmd](Input input, Output output) {
+        return cmd(*(this->focus()->tag), input, output);
+    };
+    auto completeBound =  [this,completer](Completion& complete) {
+        completer(*(this->focus()->tag), complete);
+    };
+    return {cmdBound, completeBound};
+}
+
 
 Monitor* MonitorManager::byTag(HSTag* tag) {
     for (Monitor* m : *this) {
