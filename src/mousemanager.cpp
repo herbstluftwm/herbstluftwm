@@ -120,7 +120,8 @@ bool MouseManager::mouse_handle_event(unsigned int modifiers, unsigned int butto
         // there is no valid bind for this type of mouse event
         return true;
     }
-    (this ->* (b->action))(client, b->cmd);
+    string errorMsg = (this ->* (b->action))(client, b->cmd);
+    HSDebug("can not start drag: %s\n", errorMsg.c_str());
     return true;
 }
 
@@ -144,7 +145,11 @@ int MouseManager::dragCommand(Input input, Output output)
         output << input.command() << ": can not drag invisible client \"" << winid << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-    (this ->* action)(client, input.toVector());
+    string errorMsg = (this ->* action)(client, input.toVector());
+    if (!errorMsg.empty()) {
+        output << input.command() << ": can not drag: " << errorMsg << "\n";
+        return HERBST_UNKNOWN_ERROR;
+    }
     return 0;
 }
 
@@ -163,14 +168,14 @@ void MouseManager::dragCompletion(Completion& complete)
     }
 }
 
-void MouseManager::mouse_initiate_move(Client* client, const vector<string> &cmd) {
-    mouse_initiate_drag(
+string MouseManager::mouse_initiate_move(Client* client, const vector<string> &cmd) {
+    return mouse_initiate_drag(
                 client,
                 MouseDragHandlerFloating::construct(
                     &MouseDragHandlerFloating::mouse_function_move));
 }
 
-void MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
+string MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd) {
     MouseDragHandler::Constructor constructor;
     if (client->is_client_floated()) {
         constructor = MouseDragHandlerFloating::construct(
@@ -179,10 +184,10 @@ void MouseManager::mouse_initiate_zoom(Client* client, const vector<string> &cmd
         auto frame = client->tag()->frame->findFrameWithClient(client);
         constructor = MouseResizeFrame::construct(frame);
     }
-    mouse_initiate_drag(client, constructor);
+    return mouse_initiate_drag(client, constructor);
 }
 
-void MouseManager::mouse_initiate_resize(Client* client, const vector<string> &cmd) {
+string MouseManager::mouse_initiate_resize(Client* client, const vector<string> &cmd) {
     MouseDragHandler::Constructor constructor;
     if (client->is_client_floated()) {
         constructor = MouseDragHandlerFloating::construct(
@@ -191,15 +196,15 @@ void MouseManager::mouse_initiate_resize(Client* client, const vector<string> &c
         auto frame = client->tag()->frame->findFrameWithClient(client);
         constructor = MouseResizeFrame::construct(frame);
     }
-    mouse_initiate_drag(client, constructor);
+    return mouse_initiate_drag(client, constructor);
 }
 
-void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd) {
+string MouseManager::mouse_call_command(Client* client, const vector<string> &cmd) {
     // TODO: add completion
     clients_->setDragged(client);
 
     if (cmd.empty()) {
-        return;
+        return {};
     }
     // Execute the bound command
     std::ostringstream discardedOutput;
@@ -207,9 +212,10 @@ void MouseManager::mouse_call_command(Client* client, const vector<string> &cmd)
     Commands::call(input, discardedOutput);
 
     clients_->setDragged(nullptr);
+    return {};
 }
 
-void MouseManager::mouse_initiate_drag(Client *client, const MouseDragHandler::Constructor& createHandler)
+string MouseManager::mouse_initiate_drag(Client *client, const MouseDragHandler::Constructor& createHandler)
 {
     try {
         dragHandler_ = createHandler(monitors_, client);
@@ -218,11 +224,14 @@ void MouseManager::mouse_initiate_drag(Client *client, const MouseDragHandler::C
         XGrabPointer(g_display, client->x11Window(), True,
             PointerMotionMask|ButtonReleaseMask, GrabModeAsync,
                 GrabModeAsync, None, None, CurrentTime);
-    }  catch (const MouseDragHandler::DragNotPossible&) {
+    }  catch (const MouseDragHandler::DragNotPossible& e) {
         // clear all fields, just to be sure
         dragHandler_ = {};
         clients_->setDragged(nullptr);
+        HSDebug("Dragging failed: %s\n", e.what());
+        return e.what();
     }
+    return "";
 }
 
 void MouseManager::mouse_stop_drag() {
