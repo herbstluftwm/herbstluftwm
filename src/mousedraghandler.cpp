@@ -44,7 +44,7 @@ void MouseDragHandlerFloating::assertDraggingStillSafe() {
             || !winDragClient_
             || winDragClient_->is_client_floated() == false)
     {
-        throw DragNotPossible();
+        throw DragNotPossible("Monitor or floating client disappeared");
     }
 }
 
@@ -189,11 +189,11 @@ MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<HSFrameL
     : monitors_(monitors)
 {
     dragMonitor_ = monitors_->byFrame(frame);
-    if (!dragMonitor_) {
-        throw DragNotPossible();
-    }
     dragMonitorIndex_ = dragMonitor_->index();
     dragTag_ = dragMonitor_->tag;
+    if (!dragMonitor_) {
+        throw DragNotPossible("Frame not on any monitor");
+    }
     buttonDragStart_ = get_cursor_position();
     Rectangle frameRect = frame->lastRect();
     /* check whether the cursor is the following area:
@@ -244,7 +244,7 @@ MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<HSFrameL
     }
     shared_ptr<HSFrame> neighbour = frame->neighbour(dir);
     if (!neighbour || !neighbour->getParent()) {
-        throw DragNotPossible();
+        throw DragNotPossible("No neighbour frame in the direction of the cursor");
     }
     dragFrame_ = neighbour->getParent();
     auto df = dragFrame_.lock();
@@ -294,6 +294,6 @@ void MouseResizeFrame::assertDraggingStillSafe()
             && dragTag_ == dragMonitor_->tag
             && !dragFrame_.expired();
     if (!allFine) {
-        throw DragNotPossible();
+        throw DragNotPossible("Monitor, tag or frame disappeared");
     }
 }

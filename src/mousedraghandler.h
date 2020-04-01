@@ -26,8 +26,11 @@ public:
         /** the exception expresses that dragging the client is not possible or
          * not possible anymore. Ususally this happens, when some of the objects
          * involved (monitor, client, tag, frame) change or get destroyed. */
-        DragNotPossible() {}
+        DragNotPossible(std::string what) : what_(what) {}
         virtual ~DragNotPossible() throw () {}
+        virtual const char* what()  const noexcept { return what_.c_str(); }
+    private:
+        std::string what_;
     };
     //! possibly throws a DragNotPossible exception
     virtual ~MouseDragHandler() {};

@@ -677,11 +677,14 @@ def mouse(hlwm_process):
         def move_into(self, win_id, x=1, y=1):
             self.call_cmd(f'xdotool mousemove --sync --window {win_id} {x} {y}', shell=True)
 
-        def click(self, button, into_win_id=None):
+        def click(self, button, into_win_id=None, wait=True):
             if into_win_id:
                 self.move_into(into_win_id)
-            with hlwm_process.wait_stderr_match('ButtonPress'):
-                self.call_cmd(['xdotool', 'click', button])
+            if wait:
+                with hlwm_process.wait_stderr_match('ButtonPress'):
+                    subprocess.check_call(['xdotool', 'click', button])
+            else:
+                subprocess.check_call(['xdotool', 'click', button])
 
         def move_relative(self, delta_x, delta_y):
             self.call_cmd(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)

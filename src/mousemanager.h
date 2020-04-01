@@ -38,13 +38,15 @@ public:
     int dragCommand(Input input, Output output);
     void dragCompletion(Completion& complete);
 
-    void mouse_initiate_move(Client* client, const std::vector<std::string> &cmd);
-    void mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd);
-    void mouse_initiate_resize(Client* client, const std::vector<std::string> &cmd);
-    void mouse_call_command(Client* client, const std::vector<std::string> &cmd);
+    std::string mouse_initiate_move(Client* client, const std::vector<std::string> &cmd);
+    std::string mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd);
+    std::string mouse_initiate_resize(Client* client, const std::vector<std::string> &cmd);
+    std::string mouse_call_command(Client* client, const std::vector<std::string> &cmd);
 
 private:
-    using MouseFunction = void (MouseManager::*)(Client* client, const std::vector<std::string> &cmd);
+    //! start dragging for the specified client (possibly up to some arguments), and return a error message
+    //! if not possible
+    using MouseFunction = std::string (MouseManager::*)(Client* client, const std::vector<std::string> &cmd);
 
     class MouseBinding {
     public:
@@ -62,7 +64,8 @@ private:
 
     //! manually (forward-)declare MouseDragHandler::Constructor as MDC here:
     typedef std::function<std::shared_ptr<MouseDragHandler>(MonitorManager*, Client*)> MDC;
-    void mouse_initiate_drag(Client* client, const MDC& createHandler);
+    //! start a the drag, and if it does not work out, return an error message
+    std::string mouse_initiate_drag(Client* client, const MDC& createHandler);
 
     std::map<std::string, MouseFunction> mouseFunctions_;
     std::shared_ptr<MouseDragHandler> dragHandler_;
