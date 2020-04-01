@@ -170,7 +170,7 @@ void client_snap_vector(Client* client, Monitor* monitor,
     }
 
     // snap to other clients
-    tag->frame->root_->foreachClient([&d] (Client* c) { client_snap_helper(c, &d); });
+    tag->foreachClient([&d] (Client* c) { client_snap_helper(c, &d); });
 
     // write back results
     if (abs(d.dx) < abs(distance)) {

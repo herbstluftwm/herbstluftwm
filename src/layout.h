@@ -43,7 +43,6 @@ public:
               std::function<void(HSFrameLeaf*)> onLeaf) {
         fmap(onSplit, onLeaf, 0);
     }
-    void foreachClient(ClientAction action);
 
     std::shared_ptr<HSFrameSplit> getParent() { return parent_.lock(); };
     std::shared_ptr<HSFrame> root();
@@ -77,10 +76,12 @@ public:
 
     friend class HSFrameSplit;
     friend class FrameTree;
+    friend class HSTag; // for HSTag::foreachClient()
 public: // soon will be protected:
     virtual std::shared_ptr<HSFrameSplit> isSplit() { return std::shared_ptr<HSFrameSplit>(); };
     virtual std::shared_ptr<HSFrameLeaf> isLeaf() { return std::shared_ptr<HSFrameLeaf>(); };
 protected:
+    void foreachClient(ClientAction action);
     HSTag* tag_;
     Settings* settings_;
     std::weak_ptr<HSFrameSplit> parent_;

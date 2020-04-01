@@ -198,7 +198,7 @@ bool floating_focus_direction(Direction dir) {
     int idx = 0;
     int curfocusidx = -1;
     Client* curfocus = get_current_client();
-    tag->frame->foreachClient([&](Client* c) {
+    tag->foreachClient([&](Client* c) {
         clients.push_back(c);
         rects.push_back(make_pair(idx,c->dec->last_outer()));
         if (c == curfocus) curfocusidx = idx;
@@ -224,7 +224,7 @@ bool floating_shift_direction(Direction dir) {
     int idx = 0;
     int curfocusidx = -1;
     Client* curfocus = get_current_client();
-    tag->frame->foreachClient([&](Client* c) {
+    tag->foreachClient([&](Client* c) {
         clients.push_back(c);
         rects.push_back(make_pair(idx,c->dec->last_outer()));
         if (c == curfocus) curfocusidx = idx;
