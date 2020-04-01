@@ -574,7 +574,7 @@ void FrameTree::replaceNode(shared_ptr<HSFrame> old,
         assert(old == root_);
         root_ = replacement;
         // root frame should never have a parent:
-        assert(!root_->getParent());
+        root_->parent_ = {};
     } else {
         parent->replaceChild(old, replacement);
     }
