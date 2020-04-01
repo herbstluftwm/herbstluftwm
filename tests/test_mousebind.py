@@ -1,4 +1,6 @@
 import pytest
+import re
+import math
 
 # Note: For unknown reasons, mouse buttons 4 and 5 (scroll wheel) do not work
 # in Xvfb when running tests on Travis. Therefore, we maintain two lists of
@@ -131,3 +133,23 @@ def test_drag_invisible_client(hlwm):
     hlwm.call_xfail(['drag', kid, 'resize']) \
         .expect_stderr('can not drag invisible client')
     # inward he's grown :-)
+
+
+def test_drag_resize_tiled_client(hlwm, mouse):
+    winid, _ = hlwm.create_client()
+    layout = '(split horizontal:{}:1 (clients max:0) (clients max:0 {}))'
+    hlwm.call(['load', layout.format('0.5', winid)])
+    mouse.move_into(winid, x=10, y=30)
+
+    hlwm.call(['drag', winid, 'resize'])
+    assert hlwm.get_attr('clients.dragged.winid') == winid
+    mouse.move_relative(200, 300)
+
+    monitor_width = int(hlwm.call('monitor_rect').stdout.split(' ')[2])
+    layout_str = hlwm.call('dump').stdout
+    layout_ma = re.match(layout.replace('(', r'\(')
+                               .replace(')', r'\)')
+                               .format('([^:]*)', '.*'), layout_str)
+    expected = 0.5 + 200 / monitor_width
+    actual = float(layout_ma.group(1))
+    assert math.isclose(actual, expected, abs_tol=0.01)
