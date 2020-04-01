@@ -455,3 +455,9 @@ def test_apply_rules_all_focus_retained(hlwm):
         hlwm.call('apply_rules --all')
 
         assert hlwm.get_attr('clients.focus.winid') == client
+
+
+def test_rule_tag_nonexisting(hlwm):
+    hlwm.call('rule tag=tagdoesnotexist')
+    # must not crash:
+    hlwm.create_client()
