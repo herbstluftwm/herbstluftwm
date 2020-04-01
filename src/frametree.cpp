@@ -147,7 +147,6 @@ int FrameTree::removeFrameCommand() {
     }
     auto clientFocusIndex = frame->getSelection();
     auto parent = frame->getParent();
-    auto pp = parent->getParent();
     bool insertAtFront = (frame == parent->firstChild());
     auto newparent =
             insertAtFront ? parent->secondChild() : parent->firstChild();
@@ -176,12 +175,8 @@ int FrameTree::removeFrameCommand() {
     int oldClientCount = (int)targetFrameLeaf->clientCount();
     targetFrameLeaf->addClients(removedFrameClients, insertAtFront);
     // now, frame is empty
-    if (pp) {
-        pp->replaceChild(parent, newparent);
-    } else {
-        // if parent was root frame
-        replaceNode(root_, newparent);
-    }
+    replaceNode(parent, newparent);
+
     // focus the same client again
     if (removedFrameClients.size() > 0) {
         if (insertAtFront) {
@@ -577,8 +572,9 @@ void FrameTree::replaceNode(shared_ptr<HSFrame> old,
     auto parent = old->getParent();
     if (!parent) {
         assert(old == root_);
-        // replacement->parent needs to be nulled?
         root_ = replacement;
+        // root frame should never have a parent:
+        assert(!root_->getParent());
     } else {
         parent->replaceChild(old, replacement);
     }

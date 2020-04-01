@@ -303,3 +303,10 @@ def test_split_simple(hlwm, running_clients, align, fraction):
     assert hlwm.call('dump').stdout == \
         '(split {}:{}:0 (clients vertical:0{}) (clients vertical:0))' \
         .format(align, fraction, ''.join([' ' + c for c in running_clients]))
+
+
+def test_split_and_remove(hlwm):
+    # Split an empty frame in two, then merge it again to one root frame
+    hlwm.call('split right 0.5')
+    hlwm.call('remove')
+    # Should not assert()...
