@@ -349,6 +349,30 @@ void FrameTree::focusFrame(shared_ptr<HSFrame> frame) {
     }
 }
 
+//! focus a client/frame in the given direction. if externalOnly=true,
+//! focus the frame in the specified direction; otherwise, focus the frame or client
+//! in the specified direction. Return whether the focus changed
+bool FrameTree::focusInDirection(Direction direction, bool external_only)
+{
+    auto curframe = focusedFrame();
+    if (!external_only) {
+        int index = curframe->getInnerNeighbourIndex(direction);
+        if (index >= 0) {
+            curframe->setSelection(index);
+            return true;
+        }
+    }
+    // if this didn't succeed, find a frame:
+    shared_ptr<HSFrame> neighbour = curframe->neighbour(direction);
+    if (neighbour) { // if neighbour was found
+        shared_ptr<HSFrameSplit> parent = neighbour->getParent();
+        // alter focus (from 0 to 1, from 1 to 0)
+        parent->swapSelection();
+        return true;
+    }
+    return false;
+}
+
 int FrameTree::cycleAllCommand(Input input, Output output) {
     bool skip_invisible = false;
     int delta = 1;

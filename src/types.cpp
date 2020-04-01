@@ -39,3 +39,9 @@ void completeFull(Completion &complete, std::string s)
 {
     complete.full(s);
 }
+
+template<>
+void Converter<Direction>::complete(Completion& complete, const Direction* relativeTo)
+{
+    complete.full({"up", "down", "left", "right"});
+}
