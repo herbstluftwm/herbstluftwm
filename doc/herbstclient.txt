@@ -81,8 +81,6 @@ other::
 
 BUGS
 ----
-It waits endlessly for a response from *herbstluftwm* (there is no timeout yet).
-
 See the *herbstluftwm* distribution BUGS file.
 
 COMMUNITY

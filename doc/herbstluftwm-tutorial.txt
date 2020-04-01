@@ -292,7 +292,7 @@ perform several steps:
 $ herbstclient set_monitors 1440x900+0+0 1024x768+1440+0
 ----
 +
-Alternatively, if +xinerama+ works for your setup, simply run:
+Alternatively, if +xinerama+ or +xrandr+ works for your setup, simply run:
 +
 ----
 $ herbstclient detect_monitors

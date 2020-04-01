@@ -617,8 +617,8 @@ set_monitors 'RECTS' ...::
         * Existing monitors are deleted if there are more monitors than 'RECTS'
 
 detect_monitors '-l'|'--list'|'--list-all'|'--no-disjoin'::
-    Sets the list of monitors to the physically available monitors. If the
-    Xinerama extension is missing, it will fall back to one monitor across the
+    Sets the list of monitors to the physically available monitors. If both
+    Xinerama and xrandr are missing, it will fall back to one monitor across the
     entire screen. If the detected monitors overlap, the will be split into more
     monitors that are disjoint but cover the same area using +disjoin_rects+.
     +
@@ -714,7 +714,7 @@ from your shell or from a script, quote it properly!
 complete 'POSITION' ['COMMAND' 'ARGS ...']::
     Prints the result of tab completion for the partial 'COMMAND' with optional
     'ARGS'. You usually do not need this, because there is already tab
-    completion for bash. Example:
+    completion for bash, zsh and fish. Example:
 
         * complete 0 m +
           prints all commands beginning with m
@@ -1221,7 +1221,7 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     consequence.
 
 +keymask+::
-    sets the keymask for a client
+    sets the keymask for a client (see <<KEYMASK, explanation in OBJECTS>>).
 
 A rule's behaviour can be configured by some special 'FLAGS':
 
@@ -1406,13 +1406,13 @@ listed as follows:
 |===========================
 |s - winid                | its window id
 |s - title                | its window title
-|s - keymask              | A regular expression that is matched against the
-                            string representation of all key bindings (see
-                            list_keybinds). While this client is focused, only
-                            bindings that match the expression will be active.
-                            Any other bindings will be disabled. The default
-                            keymask is an empty string (""), which does not
-                            disable any keybinding.
+|s - keymask              | [[KEYMASK]]A regular expression that is matched
+                            against the string representation of all key
+                            bindings (see list_keybinds). While this client is
+                            focused, only bindings that match the expression
+                            will be active. Any other bindings will be disabled.
+                            The default keymask is an empty string (""), which
+                            does not disable any keybinding.
 |s - tag                  | the tag it's currently on
 |i - pid                  | the process id of it (-1 if unset)
 |s - class                | the class of it (second entry in WM_CLASS)
