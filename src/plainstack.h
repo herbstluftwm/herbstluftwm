@@ -8,8 +8,12 @@ template<typename T>
 class PlainStack {
 public:
     //! insert at the top
-    void insert(const T& element) {
-        data_.insert(data_.begin(), element);
+    void insert(const T& element, bool insertOnTop = true) {
+        if (insertOnTop) {
+            data_.insert(data_.begin(), element);
+        } else {
+            data_.push_back(element);
+        }
     }
     void remove(const T& element) {
         data_.erase(std::remove(data_.begin(), data_.end(), element), data_.end());
