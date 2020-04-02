@@ -60,7 +60,7 @@ public:
     void removeSlice(Slice* elem);
     void raiseSlice(Slice* slice);
     void markDirty();
-    void sliceAddLayer(Slice* slice, HSLayer layer);
+    void sliceAddLayer(Slice* slice, HSLayer layer, bool insertOnTop = true);
     void sliceRemoveLayer(Slice* slice, HSLayer layer);
     bool isLayerEmpty(HSLayer layer);
     void clearLayer(HSLayer layer);
