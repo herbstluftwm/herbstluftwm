@@ -153,6 +153,11 @@ void Monitor::applyLayout() {
     if (tag->floating_focused) {
         res.focus = tag->focusedClient();
     }
+    if (tag->floating) {
+        for (auto& p : res.data) {
+            p.second.floated = true;
+        }
+    }
     // 1. Update stack (TODO: why stack first?)
     for (auto& p : res.data) {
         Client* c = p.first;
@@ -185,11 +190,6 @@ void Monitor::applyLayout() {
     }
     restack();
     // 2. Update window geometries
-    if (tag->floating) {
-        for (auto& p : res.data) {
-            p.second.floated = true;
-        }
-    }
     for (auto& p : res.data) {
         Client* c = p.first;
         if (c->fullscreen_()) {
