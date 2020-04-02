@@ -178,7 +178,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     }
     // insert window to the stack
     client->slice = Slice::makeClientSlice(client);
-    client->tag()->stack->insertSlice(client->slice);
+    client->tag()->insertClientSlice(client);
     // insert window to the tag
     FrameTree::focusedFrame(client->tag()->frame->lookup(changes.tree_index))
                  ->insertClient(client);

@@ -53,6 +53,10 @@ Slice* Slice::makeClientSlice(Client* client) {
     auto s = new Slice();
     s->type = Type::ClientSlice;
     s->data.client = client;
+    if (client->floating_()) {
+        s->layers.clear();
+        s->layers.insert(LAYER_FLOATING);
+    }
     return s;
 }
 

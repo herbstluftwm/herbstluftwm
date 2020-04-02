@@ -51,6 +51,11 @@ public:
     void insertClient(Client* client, std::string frameIndex = {}, bool focus = true);
     Signal needsRelayout_;
 
+    //! add the client's slice to this tag's stack
+    void insertClientSlice(Client* client);
+    //! remove the client's slice from this tag's stack
+    void removeClientSlice(Client* client);
+
     int focusInDirCommand(Input input, Output output);
     void focusInDirCompletion(Completion& complete);
 private:
