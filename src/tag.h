@@ -17,6 +17,7 @@ enum {
 };
 
 class Client;
+class Completion;
 class FrameTree;
 class Settings;
 class Stack;
@@ -49,6 +50,9 @@ public:
 
     void insertClient(Client* client, std::string frameIndex = {}, bool focus = true);
     Signal needsRelayout_;
+
+    int focusInDirCommand(Input input, Output output);
+    void focusInDirCompletion(Completion& complete);
 private:
     void onGlobalFloatingChange(bool newState);
     void fixFocusIndex();
@@ -56,6 +60,7 @@ private:
     int computeClientCount();
     //! get the number of clients on this tag
     int computeFrameCount();
+    Settings* settings_;
 };
 
 // for tags

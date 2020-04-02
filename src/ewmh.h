@@ -134,6 +134,8 @@ public:
     bool sendEvent(Window window, WM proto, bool checkProtocols);
     void windowClose(Window window);
 
+    XConnection& X() { return X_; }
+
 private:
     bool focusStealingAllowed(long source);
     bool readClientList(Window** buf, unsigned long *count);

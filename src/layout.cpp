@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include "client.h"
+#include "command.h"
 #include "floating.h"
 #include "frametree.h" // TODO: remove this dependency!
 #include "globals.h"
@@ -634,63 +635,6 @@ int HSFrameLeaf::getInnerNeighbourIndex(Direction direction) {
     return index;
 }
 
-int frame_focus_command(int argc, char** argv, Output output) {
-    // usage: focus [-e|-i] left|right|up|down
-    if (argc < 2) return HERBST_NEED_MORE_ARGS;
-    int external_only = g_settings->default_direction_external_only();
-    string dirstr = argv[1];
-    if (argc > 2 && !strcmp(argv[1], "-i")) {
-        external_only = false;
-        dirstr = argv[2];
-    }
-    if (argc > 2 && !strcmp(argv[1], "-e")) {
-        external_only = true;
-        dirstr = argv[2];
-    }
-    Direction direction;
-    try {
-        direction = Converter<Direction>::parse(dirstr);
-    } catch (const std::exception& e) {
-        output << argv[0] << ": " << e.what() << "\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    shared_ptr<HSFrameLeaf> frame = HSFrame::getGloballyFocusedFrame();
-    int index;
-    bool neighbour_found = true;
-    if (frame->getTag()->floating) {
-        neighbour_found = floating_focus_direction(direction);
-    } else if (!external_only &&
-        (index = frame->getInnerNeighbourIndex(direction)) != -1) {
-        frame->setSelection(index);
-        get_current_monitor()->applyLayout();
-    } else {
-        shared_ptr<HSFrame> neighbour = frame->neighbour(direction);
-        if (neighbour) { // if neighbour was found
-            shared_ptr<HSFrameSplit> parent = neighbour->getParent();
-            // alter focus (from 0 to 1, from 1 to 0)
-            parent->swapSelection();
-            // change focus if possible
-            get_current_monitor()->applyLayout();
-        } else {
-            neighbour_found = false;
-        }
-    }
-    if (!neighbour_found && !g_settings->focus_crosses_monitor_boundaries()) {
-        output << argv[0] << ": No neighbour found\n";
-        return HERBST_FORBIDDEN;
-    }
-    if (!neighbour_found && g_settings->focus_crosses_monitor_boundaries()) {
-        // find monitor in the specified direction
-        int idx = g_monitors->indexInDirection(get_current_monitor(), direction);
-        if (idx < 0) {
-            output << argv[0] << ": No neighbour found\n";
-            return HERBST_FORBIDDEN;
-        }
-        monitor_focus_by_index(idx);
-    }
-    return 0;
-}
-
 void HSFrameLeaf::moveClient(int new_index) {
     swap(clients[new_index], clients[selection]);
     selection = new_index;
@@ -835,12 +779,13 @@ vector<Client*> HSFrameLeaf::removeAllClients() {
     return result;
 }
 
-int frame_focus_edge(int argc, char** argv, Output output) {
+int frame_focus_edge(Input input, Output output) {
     // Puts the focus to the edge in the specified direction
     g_monitors->lock();
     int oldval = g_settings->focus_crosses_monitor_boundaries();
     g_settings->focus_crosses_monitor_boundaries = false;
-    while (0 == frame_focus_command(argc,argv,output))
+    Input inp = {"focus", input.toVector()};
+    while (0 == Commands::call(inp, output))
         ;
     g_settings->focus_crosses_monitor_boundaries = oldval;
     g_monitors->unlock();

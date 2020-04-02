@@ -583,6 +583,7 @@ def x11(x11_connection):
                           geometry=(50, 50, 300, 200),
                           force_unmanage=False,
                           sync_hlwm=True,
+                          wm_class=None,
                           ):
             w = self.root.create_window(
                 geometry[0],
@@ -596,6 +597,8 @@ def x11(x11_connection):
                 background_pixel=self.screen.white_pixel,
                 override_redirect=force_unmanage,
             )
+            if wm_class is not None:
+                w.set_wm_class(wm_class[0], wm_class[1])
 
             # Keep track of window for later removal:
             self.windows.add(w)

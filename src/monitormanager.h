@@ -21,6 +21,8 @@ class HSFrame;
 
 typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
 typedef std::function<void(Monitor&,Completion&)> MonitorCompletion;
+typedef std::function<int(HSTag&,Input,Output)> TagCommand;
+typedef std::function<void(HSTag&,Completion&)> TagCompletion;
 
 class MonitorManager : public IndexingObject<Monitor> {
 public:
@@ -45,6 +47,8 @@ public:
     // return a command that interprets the first argument
     // as a monitor description and then calls the given command on this monitor
     CommandBinding byFirstArg(MonitorCommand cmd, MonitorCompletion completer);
+    //! run the command on the currently focused tag
+    CommandBinding tagCommand(TagCommand cmd, TagCompletion completer);
     // relayout the monitor showing this tag, if there is any
     void relayoutTag(HSTag* tag);
     void relayoutAll();

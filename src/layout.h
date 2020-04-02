@@ -43,7 +43,6 @@ public:
               std::function<void(HSFrameLeaf*)> onLeaf) {
         fmap(onSplit, onLeaf, 0);
     }
-    void foreachClient(ClientAction action);
 
     std::shared_ptr<HSFrameSplit> getParent() { return parent_.lock(); };
     std::shared_ptr<HSFrame> root();
@@ -77,10 +76,12 @@ public:
 
     friend class HSFrameSplit;
     friend class FrameTree;
+    friend class HSTag; // for HSTag::foreachClient()
 public: // soon will be protected:
     virtual std::shared_ptr<HSFrameSplit> isSplit() { return std::shared_ptr<HSFrameSplit>(); };
     virtual std::shared_ptr<HSFrameLeaf> isLeaf() { return std::shared_ptr<HSFrameLeaf>(); };
 protected:
+    void foreachClient(ClientAction action);
     HSTag* tag_;
     Settings* settings_;
     std::weak_ptr<HSFrameSplit> parent_;
@@ -181,8 +182,6 @@ int frame_change_fraction_command(int argc, char** argv, Output output);
 
 int frame_current_bring(int argc, char** argv, Output output);
 
-int frame_focus_command(int argc, char** argv, Output output);
-
 int frame_current_set_client_layout(int argc, char** argv, Output output);
 int frame_split_count_to_root(HSFrame* frame, int align);
 
@@ -190,7 +189,7 @@ bool focus_client(Client* client, bool switch_tag, bool switch_monitor);
 // moves a window to an other frame
 int frame_move_window_command(int argc, char** argv, Output output);
 
-int frame_focus_edge(int argc, char** argv, Output output);
+int frame_focus_edge(Input input, Output output);
 int frame_move_window_edge(int argc, char** argv, Output output);
 
 #endif

@@ -57,6 +57,8 @@ public:
     Attribute_<bool> ewmhnotify_; // send ewmh-notifications for this client
     Attribute_<bool> sizehints_floating_;  // respect size hints regarding this client in floating mode
     Attribute_<bool> sizehints_tiling_;  // respect size hints regarding this client in tiling mode
+    DynAttribute_<std::string> window_class_;
+    DynAttribute_<std::string> window_instance_;
 
 public:
     void init_from_X();
@@ -110,6 +112,8 @@ public:
 
     void updateEwmhState();
 private:
+    std::string getWindowClass();
+    std::string getWindowInstance();
     std::string triggerRelayoutMonitor();
     friend Decoration;
     ClientManager& manager;
