@@ -258,7 +258,9 @@ void HSTag::onGlobalFloatingChange(bool newState)
     // move tiling client slices between layers
     frame->foreachClient([this,newState](Client* client) {
         if (newState) {
-            stack->sliceAddLayer(client->slice, LAYER_FLOATING);
+            // we add the tiled clients from the bottom such that they do not
+            // cover single-floated clients
+            stack->sliceAddLayer(client->slice, LAYER_FLOATING, false);
         } else {
             stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
         }
