@@ -6,7 +6,6 @@
 
 #include "client.h"
 #include "decoration.h"
-#include "frametree.h"
 #include "layout.h"
 #include "monitor.h"
 #include "settings.h"
