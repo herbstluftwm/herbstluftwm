@@ -125,3 +125,15 @@ def test_client_with_pid(hlwm, x11):
 def test_client_without_pid(hlwm, x11):
     _, winid = x11.create_client(pid=None)
     assert int(hlwm.get_attr('clients.focus.pid')) == -1
+
+
+def test_client_wm_class(hlwm, x11):
+    _, winid = x11.create_client(wm_class=('myinst', 'myclass'))
+    assert hlwm.get_attr('clients.{}.instance'.format(winid)) == 'myinst'
+    assert hlwm.get_attr('clients.{}.class'.format(winid)) == 'myclass'
+
+
+def test_client_wm_class_none(hlwm, x11):
+    _, winid = x11.create_client(wm_class=None)
+    assert hlwm.get_attr('clients.{}.instance'.format(winid)) == ''
+    assert hlwm.get_attr('clients.{}.class'.format(winid)) == ''

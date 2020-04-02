@@ -48,6 +48,8 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , ewmhnotify_(this, "ewmhnotify", true)
     , sizehints_floating_(this, "sizehints_floating", true)
     , sizehints_tiling_(this, "sizehints_tiling", false)
+    , window_class_(this, "class", &Client::getWindowClass)
+    , window_instance_(this, "instance", &Client::getWindowInstance)
     , manager(cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
@@ -544,6 +546,16 @@ void Client::updateEwmhState() {
         ewmhfullscreen_ = fullscreen_();
     }
     ewmh.updateWindowState(this);
+}
+
+std::string Client::getWindowClass()
+{
+    return ewmh.X().getClass(window_);
+}
+
+std::string Client::getWindowInstance()
+{
+    return ewmh.X().getInstance(window_);
 }
 
 void Client::set_pseudotile(bool state) {
