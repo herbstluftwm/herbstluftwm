@@ -10,7 +10,6 @@
 #include "ipc-protocol.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "stack.h"
 #include "utils.h"
 
 using std::function;
@@ -124,9 +123,9 @@ int TagManager::removeTag(Input input, Output output) {
 
     // Move clients to target tag
     for (auto client : clients) {
-        client->tag()->stack->removeSlice(client->slice);
+        client->tag()->removeClientSlice(client);
         client->setTag(targetTag);
-        client->tag()->stack->insertSlice(client->slice);
+        client->tag()->insertClientSlice(client);
         targetTag->insertClient(client, {}, false);
     }
 
@@ -240,9 +239,9 @@ void TagManager::moveClient(Client* client, HSTag* target, std::string frameInde
     // insert window into target
     target->insertClient(client, frameIndex, focus);
     if (tag_source != target) {
-        client->tag()->stack->removeSlice(client->slice);
+        client->tag()->removeClientSlice(client);
         client->setTag(target);
-        client->tag()->stack->insertSlice(client->slice);
+        client->tag()->insertClientSlice(client);
     }
 
     // refresh things, hide things, layout it, and then show it if needed

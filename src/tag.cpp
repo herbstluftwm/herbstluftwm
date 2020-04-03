@@ -172,6 +172,24 @@ void HSTag::insertClient(Client* client, std::string frameIndex, bool focus)
     }
 }
 
+void HSTag::insertClientSlice(Client* client)
+{
+    stack->insertSlice(client->slice);
+    if (floating()) {
+        stack->sliceAddLayer(client->slice, LAYER_FLOATING);
+    } else if (!client->floating_()) {
+        stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
+    }
+}
+
+void HSTag::removeClientSlice(Client* client)
+{
+    if (floating() && !client->floating_()) {
+        stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
+    }
+    stack->removeSlice(client->slice);
+}
+
 //! directional focus command
 int HSTag::focusInDirCommand(Input input, Output output)
 {
