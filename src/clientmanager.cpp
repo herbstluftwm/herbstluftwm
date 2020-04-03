@@ -1,6 +1,7 @@
 #include "clientmanager.h"
 
 #include <X11/Xlib.h>
+#include <algorithm>
 #include <string>
 
 #include "client.h"
@@ -137,7 +138,8 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     Monitor* m = get_current_monitor();
 
     // apply rules
-    ClientChanges changes = Root::get()->rules()->evaluateRules(client);
+    ClientChanges changes = applyDefaultRules(client->window_);
+    changes = Root::get()->rules()->evaluateRules(client, changes);
     if (!changes.manage || force_unmanage) {
         // map it... just to be sure
         XMapWindow(g_display, win);
@@ -216,6 +218,41 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     Root::get()->mouse->grab_client_buttons(client, false);
 
     return client;
+}
+
+//! apply some built in rules that reflect the EWMH specification
+//! and regarding sensible single-window floating settings
+ClientChanges ClientManager::applyDefaultRules(Window win)
+{
+    ClientChanges changes;
+    const int windowType = ewmh->getWindowType(win);
+    vector<int> unmanaged= {
+        NetWmWindowTypeDesktop,
+        NetWmWindowTypeDock,
+    };
+    if (std::find(unmanaged.begin(), unmanaged.end(), windowType)
+            != unmanaged.end())
+    {
+        changes.manage = False;
+    }
+    vector<int> floated = {
+        NetWmWindowTypeToolbar,
+        NetWmWindowTypeMenu,
+        NetWmWindowTypeUtility,
+        NetWmWindowTypeSplash,
+        NetWmWindowTypeDialog,
+        NetWmWindowTypeDropdownMenu,
+        NetWmWindowTypePopupMenu,
+        NetWmWindowTypeTooltip,
+        NetWmWindowTypeNotification,
+        NetWmWindowTypeCombo,
+        NetWmWindowTypeDnd,
+    };
+    if (std::find(floated.begin(), floated.end(), windowType) != floated.end())
+    {
+        changes.floating = True;
+    }
+    return changes;
 }
 
 /** apply simple attribute based client changes. We do not apply 'fullscreen' here because

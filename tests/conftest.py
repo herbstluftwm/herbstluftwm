@@ -584,6 +584,7 @@ def x11(x11_connection):
                           force_unmanage=False,
                           sync_hlwm=True,
                           wm_class=None,
+                          window_type=None,
                           ):
             w = self.root.create_window(
                 geometry[0],
@@ -606,6 +607,12 @@ def x11(x11_connection):
             w.set_wm_name('Some Window')
             if urgent:
                 w.set_wm_hints(flags=Xutil.UrgencyHint)
+
+            if window_type is not None:
+                w.change_property(self.display.intern_atom('_NET_WM_WINDOW_TYPE'),
+                                  Xatom.ATOM,
+                                  32,
+                                  [self.display.intern_atom(window_type)])
 
             if pid is not None:
                 w.change_property(self.display.intern_atom('_NET_WM_PID'),
