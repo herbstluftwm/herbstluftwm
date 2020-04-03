@@ -95,6 +95,31 @@ def test_raise_monitor_2(hlwm):
     assert helper_get_stack_as_list(hlwm, strip_focus_layer=True) == [c1, c2]
 
 
+@pytest.mark.parametrize("here_float", [True, False])
+@pytest.mark.parametrize("there_float", [True, False])
+@pytest.mark.parametrize("client_float", [True, False])
+@pytest.mark.parametrize("method", ['move', 'bring'])
+def test_moving_with_floating(hlwm, here_float, there_float, client_float, method):
+    hlwm.call('add there')
+    winid, _ = hlwm.create_client()
+    hlwm.call(['set_attr', 'tags.focus.floating', hlwm.bool(here_float)])
+    hlwm.call(['set_attr', 'tags.by-name.there.floating', hlwm.bool(there_float)])
+    hlwm.call(['set_attr', 'clients.focus.floating', hlwm.bool(client_float)])
+
+    if method == 'move':
+        hlwm.call('move there')
+    else:  # method == 'bring':
+        hlwm.call('use there')
+        hlwm.call(['bring', winid])
+        hlwm.call('use_previous')
+
+    assert hlwm.get_attr('clients.{}.tag'.format(winid)) == 'there'
+    assert winid not in helper_get_stack_as_list(hlwm)
+    hlwm.call('use there')
+    assert hlwm.get_attr('clients.focus.winid') == winid
+    assert winid in helper_get_stack_as_list(hlwm)
+
+
 def test_stack_tree(hlwm):
     # Simplified tree style:
     hlwm.call('set tree_style "     - -"')
