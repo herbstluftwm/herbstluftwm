@@ -469,3 +469,27 @@ def test_no_rules_for_own_windows(hlwm):
     hlwm.call('use_index 0')
 
     assert len(hlwm.call('list_rules').stdout.splitlines()) == 2
+
+
+@pytest.mark.parametrize('window_type', [
+    '_NET_WM_WINDOW_TYPE_DESKTOP',
+    '_NET_WM_WINDOW_TYPE_DOCK',
+])
+def test_desktop_window_not_managed(hlwm, hc_idle, x11, window_type):
+    hlwm.call('rule hook=mywindow')
+    _, winid = x11.create_client(sync_hlwm=False,
+                                 window_type=window_type)
+    assert ['rule', 'mywindow', winid] in hc_idle.hooks()
+    assert hlwm.list_children('clients') == []
+
+
+@pytest.mark.parametrize('window_type', [
+    '_NET_WM_WINDOW_TYPE_DIALOG',
+    '_NET_WM_WINDOW_TYPE_SPLASH',
+])
+def test_dialog_window_floated(hlwm, hc_idle, x11, window_type):
+    hlwm.call('rule hook=mywindow')
+    _, winid = x11.create_client(sync_hlwm=False,
+                                 window_type=window_type)
+    assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(True)
+    assert ['rule', 'mywindow', winid] in hc_idle.hooks()

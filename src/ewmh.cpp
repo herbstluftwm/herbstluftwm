@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "client.h"
+#include "ewmh.h"
 #include "hlwmcommon.h"
 #include "layout.h"
 #include "monitor.h"
