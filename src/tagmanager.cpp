@@ -10,7 +10,6 @@
 #include "ipc-protocol.h"
 #include "monitor.h"
 #include "monitormanager.h"
-#include "stack.h"
 #include "utils.h"
 
 using std::function;
