@@ -7,10 +7,8 @@
 #include "completion.h"
 #include "decoration.h"
 #include "ewmh.h"
-#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
-#include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
@@ -166,6 +164,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
         }
     }
 
+    // important that this happens befor the insertion to a tag
     setSimpleClientAttributes(client, changes);
 
     // actually manage it
@@ -180,15 +179,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     client->slice = Slice::makeClientSlice(client);
     client->tag()->insertClientSlice(client);
     // insert window to the tag
-    FrameTree::focusedFrame(client->tag()->frame->lookup(changes.tree_index))
-                 ->insertClient(client);
-    if (changes.focus) {
-        // give focus to window if wanted
-        // TODO: make this faster!
-        // WARNING: this solution needs O(C + exp(D)) time where W is the count
-        // of clients on this tag and D is the depth of the binary layout tree
-        client->tag()->frame->focusClient(client);
-    }
+    client->tag()->insertClient(client, changes.tree_index, changes.focus);
 
     tag_set_flags_dirty();
     if (changes.fullscreen.has_value()) {
@@ -232,6 +223,9 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
  */
 void ClientManager::setSimpleClientAttributes(Client* client, const ClientChanges& changes)
 {
+    if (changes.floating.has_value()) {
+        client->floating_ = changes.floating.value();
+    }
     if (changes.pseudotile.has_value()) {
         client->pseudotile_ = changes.pseudotile.value();
     }
