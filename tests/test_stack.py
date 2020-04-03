@@ -21,10 +21,16 @@ def helper_get_stack_as_list(hlwm, clients_only=True, strip_focus_layer=False):
                               flags=re.MULTILINE)
     if clients_only:
         matches = re.finditer('Client (0x[0-9a-f]+)', stack_stdout)
-        return [m.group(1) for m in matches]
+        winids = [m.group(1) for m in matches]
     else:
         # extract all window IDs out of the stack command
-        return re.findall(r'0x[0-9a-f]+', stack_stdout)
+        winids = re.findall(r'0x[0-9a-f]+', stack_stdout)
+    # remove duplicates
+    winids_new = []
+    for w in winids:
+        if w not in winids_new:
+            winids_new.append(w)
+    return winids_new
 
 
 @pytest.mark.parametrize('floatingmode', ['on', 'off'])
