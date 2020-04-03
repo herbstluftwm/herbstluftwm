@@ -30,6 +30,7 @@ const std::map<string, Consequence::Applier> Consequence::appliers = {
     { "focus",          &Consequence::applyFocus           },
     { "switchtag",      &Consequence::applySwitchtag       },
     { "manage",         &Consequence::applyManage          },
+    { "floating",       &Consequence::applyFloating        },
     { "pseudotile",     &Consequence::applyPseudotile      },
     { "fullscreen",     &Consequence::applyFullscreen      },
     { "ewmhrequests",   &Consequence::applyEwmhrequests    },
@@ -251,6 +252,11 @@ void Consequence::applyFocus(const Client* client, ClientChanges* changes) const
 
 void Consequence::applyManage(const Client* client, ClientChanges* changes) const {
     changes->manage = Converter<bool>::parse(value, changes->manage);
+}
+
+void Consequence::applyFloating(const Client *client, ClientChanges *changes) const
+{
+    changes->floating = Converter<bool>::parse(value, client->floating_);
 }
 
 void Consequence::applyIndex(const Client* client, ClientChanges* changes) const {

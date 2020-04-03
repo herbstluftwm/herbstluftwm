@@ -72,6 +72,7 @@ public:
     std::experimental::optional<bool> fullscreen;
     std::experimental::optional<std::string> keyMask; // Which keymask rule should be applied for this client
 
+    std::experimental::optional<bool> floating;
     std::experimental::optional<bool> pseudotile;
     std::experimental::optional<bool> ewmhRequests;
     std::experimental::optional<bool> ewmhNotify;
@@ -96,6 +97,7 @@ private:
     void applyFocus(const Client* client, ClientChanges* changes) const;
     void applySwitchtag(const Client* client, ClientChanges* changes) const;
     void applyManage(const Client* client, ClientChanges* changes) const;
+    void applyFloating(const Client* client, ClientChanges* changes) const;
     void applyPseudotile(const Client* client, ClientChanges* changes) const;
     void applyFullscreen(const Client* client, ClientChanges* changes) const;
     void applyEwmhrequests(const Client* client, ClientChanges* changes) const;
