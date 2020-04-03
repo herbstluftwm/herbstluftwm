@@ -462,8 +462,8 @@ def test_no_rules_for_own_windows(hlwm):
     hlwm.call('rule once focus=on')
     assert len(hlwm.call('list_rules').stdout.splitlines()) == 2
 
-    # this must not fire the rules, even though frame decorations
-    # appear and disappear
+    # this must not fire the rules, even though the decoration
+    # windows appear and disappear
     hlwm.call('use othertag')
     hlwm.call('split v')
     hlwm.call('use_index 0')
