@@ -21,6 +21,7 @@ consequences = [
     'switchtag',
     'manage',
     'index',
+    'floating',
     'pseudotile',
     'ewmhrequests',
     'ewmhnotify',
@@ -198,15 +199,6 @@ def test_monitor_consequence(hlwm, monitor_spec):
     assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
-@pytest.mark.parametrize('value', ['true', 'false'])
-def test_pseudotile_consequence(hlwm, value):
-    hlwm.call('rule pseudotile=' + value)
-
-    hlwm.create_client()
-
-    assert hlwm.get_attr('clients.focus.pseudotile') == value
-
-
 def test_invalid_regex_in_condition(hlwm):
     call = hlwm.call_xfail('rule class~[b-a]')
 
@@ -320,7 +312,7 @@ def create_client(hlwm, client_before_rule, rule):
 
 @pytest.mark.parametrize(
     'name',
-    ['pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen'])
+    ['floating', 'pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen'])
 @pytest.mark.parametrize('value', [True, False])
 @pytest.mark.parametrize('apply_rules', [True, False])
 def test_bool_consequence_with_corresponding_attribute(hlwm, name, value, apply_rules):
