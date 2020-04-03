@@ -453,3 +453,19 @@ def test_rule_tag_nonexisting(hlwm):
     hlwm.call('rule tag=tagdoesnotexist')
     # must not crash:
     hlwm.create_client()
+
+
+def test_no_rules_for_own_windows(hlwm):
+    hlwm.call('add othertag')
+    hlwm.create_client()
+    hlwm.call('rule once pseudotile=on')
+    hlwm.call('rule once focus=on')
+    assert len(hlwm.call('list_rules').stdout.splitlines()) == 2
+
+    # this must not fire the rules, even though the decoration
+    # windows appear and disappear
+    hlwm.call('use othertag')
+    hlwm.call('split v')
+    hlwm.call('use_index 0')
+
+    assert len(hlwm.call('list_rules').stdout.splitlines()) == 2

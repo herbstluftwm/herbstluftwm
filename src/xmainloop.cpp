@@ -345,7 +345,8 @@ void XMainLoop::mapnotify(XMapEvent* event) {
         }
         // also update the window title - just to be sure
         c->update_title();
-    } else {
+    } else if (!root_->ewmh->isOwnWindow(event->window)
+               && !is_herbstluft_window(X_.display(), event->window)) {
         // the window is not managed.
         HSDebug("MapNotify: briefly managing 0x%lx to apply rules\n", event->window);
         root_->clients()->manage_client(event->window, true, true);
