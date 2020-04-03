@@ -1,7 +1,7 @@
 #include "clientmanager.h"
 
-#include <algorithm>
 #include <X11/Xlib.h>
+#include <algorithm>
 #include <string>
 
 #include "client.h"
