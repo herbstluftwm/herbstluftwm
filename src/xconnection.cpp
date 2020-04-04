@@ -316,6 +316,28 @@ std::experimental::optional<vector<Window>>
     return res.second;
 }
 
+std::experimental::optional<vector<string>>
+    XConnection::getWindowPropertyTextList(Window window, Atom property)
+{
+    XTextProperty text_prop;
+    if (!XGetTextProperty(m_display, window, &text_prop, property)) {
+        return {};
+    }
+    char** list_return;
+    int count;
+    if (Success != Xutf8TextPropertyToTextList(m_display, &text_prop, &list_return, &count)) {
+        XFree(text_prop.value);
+        return {};
+    }
+    vector<string> arguments;
+    for (int i = 0; i < count; i++) {
+        arguments.push_back(list_return[i]);
+    }
+    XFreeStringList(list_return);
+    XFree(text_prop.value);
+    return { arguments };
+}
+
 //! query all children of the given window via XQueryTree()
 vector<Window> XConnection::queryTree(Window window) {
     Window root, parent, *children = nullptr;
