@@ -2,7 +2,7 @@
 
 # aligns the output of dump command as a nice tree
 # usage:
-# herbstclient dump | ./dumpbeatify.sh
+# herbstclient dump | ./dumpbeautify.sh
 
 awkcode='
 BEGIN {
