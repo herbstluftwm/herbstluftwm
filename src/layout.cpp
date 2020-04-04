@@ -717,8 +717,9 @@ Client* HSFrameLeaf::focusedClient() {
 // focus a window
 // switch_tag tells, whether to switch tag to focus to window
 // switch_monitor tells, whether to switch monitor to focus to window
+// raise tells whether to also raise the client
 // returns if window was focused or not
-bool focus_client(Client* client, bool switch_tag, bool switch_monitor) {
+bool focus_client(Client* client, bool switch_tag, bool switch_monitor, bool raise) {
     if (!client) {
         // client is not managed
         return false;
@@ -753,6 +754,9 @@ bool focus_client(Client* client, bool switch_tag, bool switch_monitor) {
     // now the right tag is visible
     // now focus it
     bool found = tag->focusClient(client);
+    if (found && raise) {
+        client->raise();
+    }
     cur_mon->applyLayout();
     g_monitors->unlock();
     return found;

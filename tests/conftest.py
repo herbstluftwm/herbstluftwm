@@ -136,14 +136,19 @@ class HlwmBridge:
         attribute_path = '.'.join([str(x) for x in attribute_path])
         return self.call(['get_attr', attribute_path]).stdout
 
-    def create_client(self, term_command='sleep infinity', title=None, keep_running=False):
+    def create_client(self, term_command='sleep infinity', position=None, title=None, keep_running=False):
         """
         Launch a client that will be terminated on shutdown.
         """
         self.next_client_id += 1
         wmclass = 'client_{}'.format(self.next_client_id)
         title = ['-title', str(title)] if title else []
-        command = ['xterm'] + title + ['-class', wmclass, '-e', 'bash', '-c', term_command]
+        geometry = ['-geometry', '50x20+0+0']
+        if position is not None:
+            x, y = position
+            geometry[1] = '50x2%+d%+d' % (x, y)
+        command = ['xterm'] + title + geometry
+        command += ['-class', wmclass, '-e', 'bash', '-c', term_command]
 
         # enforce a hook when the window appears
         self.call(['rule', 'once', 'class=' + wmclass, 'hook=here_is_' + wmclass])
