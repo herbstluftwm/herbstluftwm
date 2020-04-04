@@ -54,6 +54,9 @@ HCConnection* hc_connect_to_display(Display* display) {
 }
 
 void hc_disconnect(HCConnection* con) {
+    if (!con) {
+        return;
+    }
     if (con->client_window) {
         XDestroyWindow(con->display, con->client_window);
     }
