@@ -21,7 +21,7 @@ mode=${1:-max} # just some valid layout algorithm name
 #        fix that in the hlwm core and remove the "try" afterwards
 layout=$(herbstclient dump)
 cmd=(
-# remmember which client is focused
+# remember which client is focused
 substitute FOCUS clients.focus.winid chain
 . lock
 . or : and # if there is more than one frame, then don't restore, but maximize again!
