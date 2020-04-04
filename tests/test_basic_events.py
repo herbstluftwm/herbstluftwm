@@ -2,9 +2,13 @@ import pytest
 import test_stack
 
 
+@pytest.mark.parametrize("single_floating", [True, False])
 @pytest.mark.parametrize("raise_on_click", [True, False])
-def test_focus_on_click(hlwm, mouse, raise_on_click):
-    hlwm.call('set_attr tags.focus.floating on')
+def test_focus_on_click(hlwm, mouse, raise_on_click, single_floating):
+    if single_floating:
+        hlwm.call('rule floating=on')
+    else:
+        hlwm.call('set_attr tags.focus.floating on')
     hlwm.call(['set', 'raise_on_click', hlwm.bool(raise_on_click)])
     c1, _ = hlwm.create_client(position=(0, 0))
     c2, _ = hlwm.create_client(position=(300, 0))
@@ -24,8 +28,13 @@ def test_focus_on_click(hlwm, mouse, raise_on_click):
         assert stack == [c2, c1]
 
 
+@pytest.mark.parametrize("single_floating", [True, False])
 @pytest.mark.parametrize("focus_follows_mouse", [True, False])
-def test_focus_follows_mouse(hlwm, mouse, focus_follows_mouse):
+def test_focus_follows_mouse(hlwm, mouse, focus_follows_mouse, single_floating):
+    if single_floating:
+        hlwm.call('rule floating=on')
+    else:
+        hlwm.call('set_attr tags.focus.floating on')
     hlwm.call('set_attr tags.focus.floating on')
     hlwm.call(['set', 'focus_follows_mouse', hlwm.bool(focus_follows_mouse)])
     c1, _ = hlwm.create_client(position=(0, 0))
