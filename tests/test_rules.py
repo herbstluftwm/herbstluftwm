@@ -21,6 +21,7 @@ consequences = [
     'switchtag',
     'manage',
     'index',
+    'floating',
     'pseudotile',
     'ewmhrequests',
     'ewmhnotify',
@@ -198,15 +199,6 @@ def test_monitor_consequence(hlwm, monitor_spec):
     assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
-@pytest.mark.parametrize('value', ['true', 'false'])
-def test_pseudotile_consequence(hlwm, value):
-    hlwm.call('rule pseudotile=' + value)
-
-    hlwm.create_client()
-
-    assert hlwm.get_attr('clients.focus.pseudotile') == value
-
-
 def test_invalid_regex_in_condition(hlwm):
     call = hlwm.call_xfail('rule class~[b-a]')
 
@@ -320,7 +312,7 @@ def create_client(hlwm, client_before_rule, rule):
 
 @pytest.mark.parametrize(
     'name',
-    ['pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen'])
+    ['floating', 'pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen'])
 @pytest.mark.parametrize('value', [True, False])
 @pytest.mark.parametrize('apply_rules', [True, False])
 def test_bool_consequence_with_corresponding_attribute(hlwm, name, value, apply_rules):
@@ -461,3 +453,43 @@ def test_rule_tag_nonexisting(hlwm):
     hlwm.call('rule tag=tagdoesnotexist')
     # must not crash:
     hlwm.create_client()
+
+
+def test_no_rules_for_own_windows(hlwm):
+    hlwm.call('add othertag')
+    hlwm.create_client()
+    hlwm.call('rule once pseudotile=on')
+    hlwm.call('rule once focus=on')
+    assert len(hlwm.call('list_rules').stdout.splitlines()) == 2
+
+    # this must not fire the rules, even though the decoration
+    # windows appear and disappear
+    hlwm.call('use othertag')
+    hlwm.call('split v')
+    hlwm.call('use_index 0')
+
+    assert len(hlwm.call('list_rules').stdout.splitlines()) == 2
+
+
+@pytest.mark.parametrize('window_type', [
+    '_NET_WM_WINDOW_TYPE_DESKTOP',
+    '_NET_WM_WINDOW_TYPE_DOCK',
+])
+def test_desktop_window_not_managed(hlwm, hc_idle, x11, window_type):
+    hlwm.call('rule hook=mywindow')
+    _, winid = x11.create_client(sync_hlwm=False,
+                                 window_type=window_type)
+    assert ['rule', 'mywindow', winid] in hc_idle.hooks()
+    assert hlwm.list_children('clients') == []
+
+
+@pytest.mark.parametrize('window_type', [
+    '_NET_WM_WINDOW_TYPE_DIALOG',
+    '_NET_WM_WINDOW_TYPE_SPLASH',
+])
+def test_dialog_window_floated(hlwm, hc_idle, x11, window_type):
+    hlwm.call('rule hook=mywindow')
+    _, winid = x11.create_client(sync_hlwm=False,
+                                 window_type=window_type)
+    assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(True)
+    assert ['rule', 'mywindow', winid] in hc_idle.hooks()

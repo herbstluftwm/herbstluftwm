@@ -153,6 +153,11 @@ void Monitor::applyLayout() {
     if (tag->floating_focused) {
         res.focus = tag->focusedClient();
     }
+    if (tag->floating) {
+        for (auto& p : res.data) {
+            p.second.floated = true;
+        }
+    }
     // 1. Update stack (TODO: why stack first?)
     for (auto& p : res.data) {
         Client* c = p.first;
@@ -161,7 +166,7 @@ void Monitor::applyLayout() {
         } else {
             tag->stack->sliceRemoveLayer(c->slice, LAYER_FULLSCREEN);
         }
-        if (p.second.needsRaise) {
+        if (!p.second.floated && p.second.needsRaise) {
             c->raise();
         }
     }
@@ -185,11 +190,6 @@ void Monitor::applyLayout() {
     }
     restack();
     // 2. Update window geometries
-    if (tag->floating) {
-        for (auto& p : res.data) {
-            p.second.floated = true;
-        }
-    }
     for (auto& p : res.data) {
         Client* c = p.first;
         if (c->fullscreen_()) {
@@ -201,7 +201,11 @@ void Monitor::applyLayout() {
         }
     }
     for (auto& c : tag->floating_clients_) {
-        c->resize_floating(this, res.focus == c && isFocused);
+        if (c->fullscreen_()) {
+            c->resize_fullscreen(rect, res.focus == c && isFocused);
+        } else {
+            c->resize_floating(this, res.focus == c && isFocused);
+        }
     }
     if (tag->floating) {
         for (auto& p : res.frames) {
@@ -695,7 +699,7 @@ void Monitor::restack() {
      * will end up below all unmanaged windows, so don't add a focused
      * fullscreen window to it. Instead raise the fullscreen window
      * manually such that it is above the panel */
-    Client* client = tag->frame->root_->focusedClient();
+    Client* client = tag->focusedClient();
     if (client && client->fullscreen_) {
         fullscreenFocus = client->decorationWindow();
         XRaiseWindow(g_display, fullscreenFocus);

@@ -1195,6 +1195,10 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     moves the window to a specified index in the tree. 'VALUE' is a
     <<FRAME_INDEX,*frame index*>>.
 
++floating+::
+    sets the floating state of the client. 'VALUE' can be *on*, *off* or
+    *toggle*.
+
 +pseudotile+::
     sets the pseudotile state of the client. 'VALUE' can be *on*, *off* or
     *toggle*.

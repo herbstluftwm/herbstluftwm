@@ -1,16 +1,15 @@
 #include "clientmanager.h"
 
 #include <X11/Xlib.h>
+#include <algorithm>
 #include <string>
 
 #include "client.h"
 #include "completion.h"
 #include "decoration.h"
 #include "ewmh.h"
-#include "frametree.h"
 #include "globals.h"
 #include "ipc-protocol.h"
-#include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
@@ -139,7 +138,8 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     Monitor* m = get_current_monitor();
 
     // apply rules
-    ClientChanges changes = Root::get()->rules()->evaluateRules(client);
+    ClientChanges changes = applyDefaultRules(client->window_);
+    changes = Root::get()->rules()->evaluateRules(client, changes);
     if (!changes.manage || force_unmanage) {
         // map it... just to be sure
         XMapWindow(g_display, win);
@@ -166,6 +166,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
         }
     }
 
+    // important that this happens befor the insertion to a tag
     setSimpleClientAttributes(client, changes);
 
     // actually manage it
@@ -178,17 +179,9 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     }
     // insert window to the stack
     client->slice = Slice::makeClientSlice(client);
-    client->tag()->stack->insertSlice(client->slice);
+    client->tag()->insertClientSlice(client);
     // insert window to the tag
-    FrameTree::focusedFrame(client->tag()->frame->lookup(changes.tree_index))
-                 ->insertClient(client);
-    if (changes.focus) {
-        // give focus to window if wanted
-        // TODO: make this faster!
-        // WARNING: this solution needs O(C + exp(D)) time where W is the count
-        // of clients on this tag and D is the depth of the binary layout tree
-        client->tag()->frame->focusClient(client);
-    }
+    client->tag()->insertClient(client, changes.tree_index, changes.focus);
 
     tag_set_flags_dirty();
     if (changes.fullscreen.has_value()) {
@@ -227,11 +220,49 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     return client;
 }
 
+//! apply some built in rules that reflect the EWMH specification
+//! and regarding sensible single-window floating settings
+ClientChanges ClientManager::applyDefaultRules(Window win)
+{
+    ClientChanges changes;
+    const int windowType = ewmh->getWindowType(win);
+    vector<int> unmanaged= {
+        NetWmWindowTypeDesktop,
+        NetWmWindowTypeDock,
+    };
+    if (std::find(unmanaged.begin(), unmanaged.end(), windowType)
+            != unmanaged.end())
+    {
+        changes.manage = False;
+    }
+    vector<int> floated = {
+        NetWmWindowTypeToolbar,
+        NetWmWindowTypeMenu,
+        NetWmWindowTypeUtility,
+        NetWmWindowTypeSplash,
+        NetWmWindowTypeDialog,
+        NetWmWindowTypeDropdownMenu,
+        NetWmWindowTypePopupMenu,
+        NetWmWindowTypeTooltip,
+        NetWmWindowTypeNotification,
+        NetWmWindowTypeCombo,
+        NetWmWindowTypeDnd,
+    };
+    if (std::find(floated.begin(), floated.end(), windowType) != floated.end())
+    {
+        changes.floating = True;
+    }
+    return changes;
+}
+
 /** apply simple attribute based client changes. We do not apply 'fullscreen' here because
  * its value defaults to the client's ewmh property and is handled in applyRulesCmd() and manage_client() differently.
  */
 void ClientManager::setSimpleClientAttributes(Client* client, const ClientChanges& changes)
 {
+    if (changes.floating.has_value()) {
+        client->floating_ = changes.floating.value();
+    }
     if (changes.pseudotile.has_value()) {
         client->pseudotile_ = changes.pseudotile.value();
     }

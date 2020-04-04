@@ -172,6 +172,24 @@ void HSTag::insertClient(Client* client, std::string frameIndex, bool focus)
     }
 }
 
+void HSTag::insertClientSlice(Client* client)
+{
+    stack->insertSlice(client->slice);
+    if (floating()) {
+        stack->sliceAddLayer(client->slice, LAYER_FLOATING);
+    } else if (!client->floating_()) {
+        stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
+    }
+}
+
+void HSTag::removeClientSlice(Client* client)
+{
+    if (floating() && !client->floating_()) {
+        stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
+    }
+    stack->removeSlice(client->slice);
+}
+
 //! directional focus command
 int HSTag::focusInDirCommand(Input input, Output output)
 {
@@ -240,7 +258,9 @@ void HSTag::onGlobalFloatingChange(bool newState)
     // move tiling client slices between layers
     frame->foreachClient([this,newState](Client* client) {
         if (newState) {
-            stack->sliceAddLayer(client->slice, LAYER_FLOATING);
+            // we add the tiled clients from the bottom such that they do not
+            // cover single-floated clients
+            stack->sliceAddLayer(client->slice, LAYER_FLOATING, false);
         } else {
             stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
         }

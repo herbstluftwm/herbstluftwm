@@ -52,6 +52,7 @@ public:
 
     // adds a new client to list of managed client windows
     Client* manage_client(Window win, bool visible_already, bool force_unmanage);
+    ClientChanges applyDefaultRules(Window win);
 
     int applyRulesCmd(Input input, Output output);
     int applyRules(Client* client, Output output, bool changeFocus = true);

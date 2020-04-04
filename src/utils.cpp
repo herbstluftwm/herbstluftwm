@@ -52,7 +52,7 @@ string window_class_to_string(Display* dpy, Window window) {
 
 bool is_herbstluft_window(Display* dpy, Window window) {
     auto str = window_class_to_string(dpy, window);
-    return str == HERBST_FRAME_CLASS;
+    return str == HERBST_FRAME_CLASS || str == HERBST_DECORATION_CLASS;
 }
 
 // duplicates an argument-vector
