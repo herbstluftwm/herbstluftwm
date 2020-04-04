@@ -362,7 +362,7 @@ int jumpto_command(int argc, char** argv, Output output) {
     }
     auto client = get_client(argv[1]);
     if (client) {
-        focus_client(client, true, true);
+        focus_client(client, true, true, true);
         return 0;
     } else {
         output << argv[0] << ": Could not find client";

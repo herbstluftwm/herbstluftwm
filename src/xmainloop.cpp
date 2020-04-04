@@ -164,10 +164,8 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
         // if the event was not handled by the mouse manager, pass it to the client:
         Client* client = root_->clients->client(be->window);
         if (client) {
-            focus_client(client, false, true);
-            if (root_->settings->raise_on_click()) {
-                    client->raise();
-            }
+            bool raise = root_->settings->raise_on_click();
+            focus_client(client, false, true, raise);
         }
     }
     XAllowEvents(X_.display(), ReplayPointer, be->time);
@@ -298,7 +296,7 @@ void XMainLoop::enternotify(XCrossingEvent* ce) {
             // don't allow focus_follows_mouse if another window would be
             // hidden during that focus change (which only occurs in max layout)
         } else if (c) {
-            focus_client(c, false, true);
+            focus_client(c, false, true, false);
         }
     }
 }

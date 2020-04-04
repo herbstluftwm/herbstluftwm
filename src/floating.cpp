@@ -210,8 +210,7 @@ bool floating_focus_direction(Direction dir) {
     if (idx < 0) {
         return false;
     }
-    clients[idx]->raise();
-    focus_client(clients[idx], false, false);
+    focus_client(clients[idx], false, false, true);
     return true;
 }
 

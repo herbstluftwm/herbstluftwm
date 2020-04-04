@@ -270,7 +270,7 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
             if (focusStealingAllowed(me->data.l[0])) {
                 auto client = Root::common().client(me->window);
                 if (client) {
-                    focus_client(client, true, true);
+                    focus_client(client, true, true, true);
                 }
             }
             break;
