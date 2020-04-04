@@ -1,6 +1,7 @@
 import pytest
 import test_stack
 
+
 @pytest.mark.parametrize("raise_on_click", [True, False])
 def test_focus_on_click(hlwm, mouse, raise_on_click):
     hlwm.call('set_attr tags.focus.floating on')
