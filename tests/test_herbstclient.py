@@ -6,6 +6,16 @@ import pytest
 HC_PATH = os.path.join(os.path.abspath(os.environ['PWD']), 'herbstclient')
 
 
+@pytest.mark.parametrize('argument', ['version', '--idle'])
+def test_herbstclient_no_display(argument):
+    result = subprocess.run([HC_PATH, argument],
+                            stderr=subprocess.PIPE,
+                            env={'DISPLAY': 'somethingwrong'},
+                            universal_newlines=True)
+    assert re.search(r'Cannot open display', result.stderr)
+    assert result.returncode == 1
+
+
 @pytest.mark.parametrize('hlwm_mode', ['never started', 'sigterm', 'sigkill'])
 @pytest.mark.parametrize('hc_parameter', ['true', '--wait'])
 def test_herbstclient_recognizes_hlwm_not_running(hlwm_spawner, x11, hlwm_mode, hc_parameter):
