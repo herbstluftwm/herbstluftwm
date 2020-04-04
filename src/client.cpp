@@ -280,9 +280,9 @@ bool Client::applysizehints(int *w, int *h) {
         /* adjust for aspect limits */
         if(this->mina_ > 0 && this->maxa_ > 0) {
             if(this->maxa_ < (float)*w / *h)
-                *w = *h * int(this->maxa_ + 0.5f);
+                *w = int(*h * this->maxa_ + 0.5f);
             else if(this->mina_ < (float)*h / *w)
-                *h = *w * int(this->mina_ + 0.5f);
+                *h = int(*w * this->mina_ + 0.5f);
         }
         if(baseismin) { /* increment calculation requires this */
             *w -= this->basew_;
