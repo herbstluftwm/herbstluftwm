@@ -45,7 +45,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     // Make sure there is no existing binding with same keysym/modifiers
     removeKeyBinding(newBinding->keyCombo);
 
-    if (!activeKeyMask_.matches(newBinding->keyCombo)) {
+    if (activeKeyMask_.allowsBinding(newBinding->keyCombo)) {
         // Grab for events on this keycode
         xKeyGrabber_.grabKeyCombo(newBinding->keyCombo);
         newBinding->grabbed = true;
@@ -158,7 +158,7 @@ void KeyManager::ensureKeyMask(const Client* client) {
         client = Root::get()->clients()->focus();
     }
 
-    string targetMaskStr = (client != nullptr) ? client->keyMask_() : "";
+    string targetMaskStr = (client != nullptr) ? client->keysInactive_() : "";
 
     if (activeKeyMask_.str() == targetMaskStr) {
         // nothing to do
@@ -166,37 +166,37 @@ void KeyManager::ensureKeyMask(const Client* client) {
     }
 
     try {
-        auto newMask = KeyMask::fromString(targetMaskStr);
+        auto newMask = KeyMask::fromString(targetMaskStr, true);
         setActiveKeyMask(newMask);
     } catch (std::regex_error& err) {
         HSWarning("Failed to parse keymask \"%s\"is invalid (falling back to empty mask): %s\n",
                 targetMaskStr.c_str(), err.what());
 
         // Fall back to empty mask:
-        setActiveKeyMask({});
+        clearActiveKeyMask();
     }
 }
 
 //! Apply new keymask by grabbing/ungrabbing current bindings accordingly
-void KeyManager::setActiveKeyMask(const KeyMask& newMask) {
+void KeyManager::setActiveKeyMask(const KeyMask& keysInactive) {
     for (auto& binding : binds) {
         auto name = binding->keyCombo.str();
-        bool isMasked = newMask.matches(binding->keyCombo);
+        bool isAllowed = keysInactive.allowsBinding(binding->keyCombo);
 
-        if (!isMasked && !binding->grabbed) {
+        if (isAllowed && !binding->grabbed) {
             xKeyGrabber_.grabKeyCombo(binding->keyCombo);
             binding->grabbed = true;
-        } else if (isMasked && binding->grabbed) {
+        } else if (!isAllowed && binding->grabbed) {
             xKeyGrabber_.ungrabKeyCombo(binding->keyCombo);
             binding->grabbed = false;
         }
     }
-    activeKeyMask_ = newMask;
+    activeKeyMask_ = keysInactive;
 }
 
 //! Set the active keymask to an empty exception
 void KeyManager::clearActiveKeyMask() {
-    auto newMask = KeyMask::fromString("");
+    auto newMask = KeyMask::fromString("", false);
     setActiveKeyMask(newMask);
 }
 
@@ -229,7 +229,18 @@ bool KeyManager::removeKeyBinding(const KeyCombo& comboToRemove) {
  * Returns true if the string representation of the KeyCombo matches
  * the given keymask
  */
-bool KeyManager::KeyMask::matches(const KeyCombo &combo) const
+bool KeyManager::KeyMask::allowsBinding(const KeyCombo &combo) const
 {
-    return std::regex_match(combo.str(), regex_);
+    if (str_ == "") {
+        return true;
+    } else {
+        bool match = std::regex_match(combo.str(), regex_);
+        if (negated_) {
+            // only allow keybindings that don't match
+            return !match;
+        } else {
+            // only allow keybindings that match
+            return match;
+        }
+    }
 }

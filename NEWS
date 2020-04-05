@@ -10,6 +10,7 @@ Current git version
   * detection of external panels
   * new command: apply_rules
   * new command: export (convenience wrapper around setenv)
+  * new client attribute: key_inactive (negation of keymask)
   * new command: drag (initiates moving/resizing a window by mouse)
   * if tags have been configured through EWMH before herbstluftwm starts (from
     a previous running window manager), then herbstluftwm re-uses these tags
