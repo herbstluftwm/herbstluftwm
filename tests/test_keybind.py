@@ -79,19 +79,19 @@ def test_trigger_selfremoving_binding(hlwm, keyboard):
     assert hlwm.call('list_keybinds').stdout == ''
 
 
-@pytest.mark.parametrize('maskmethod', ('rule', 'set_attr'))  # how keymask gets set
+@pytest.mark.parametrize('maskmethod', ('rule', 'set_attr'))  # how keys_inactive gets set
 @pytest.mark.parametrize('whenbind', ('existing', 'added_later'))  # when keybinding is set up
 @pytest.mark.parametrize('refocus', (True, False))  # whether to defocus+refocus before keypress
-def test_keymask(hlwm, keyboard, maskmethod, whenbind, refocus):
+def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
     if whenbind == 'existing':
         hlwm.call('keybind x add tag2')
     if maskmethod == 'rule':
-        hlwm.call('rule once keymask=^x$')
+        hlwm.call('rule once keys_inactive=^x$')
 
     _, client_proc = hlwm.create_client(term_command='read -n 1')
 
     if maskmethod == 'set_attr':
-        hlwm.call('set_attr clients.focus.keymask ^x$')
+        hlwm.call('set_attr clients.focus.keys_inactive ^x$')
     if whenbind == 'added_later':
         hlwm.call('keybind x add tag2')
 
@@ -115,15 +115,15 @@ def test_keymask(hlwm, keyboard, maskmethod, whenbind, refocus):
 
 
 @pytest.mark.parametrize('maskmethod', ('rule', 'set_attr'))
-def test_invalid_keymask_has_no_effect(hlwm, keyboard, maskmethod):
+def test_invalid_keys_inactive(hlwm, keyboard, maskmethod):
     hlwm.call('keybind x close')
     if maskmethod == 'rule':
-        hlwm.call('rule once keymask=[b-a]')
+        hlwm.call('rule once keys_inactive=[b-a]')
     hlwm.create_client()
     if maskmethod == 'set_attr':
         # Note: In future work, we could make this fail right away. But
         # currently, that is not the case.
-        hlwm.call('set_attr clients.focus.keymask [b-a]')
+        hlwm.call('set_attr clients.focus.keys_inactive [b-a]')
 
     keyboard.press('x')
 
@@ -168,11 +168,11 @@ def test_complete_keybind_validates_all_tokens(hlwm):
     assert complete == []
 
 
-def test_keymask_focus_switch(hlwm, keyboard):
+def test_keys_inactive(hlwm, keyboard):
     c1, _ = hlwm.create_client()
     c2, _ = hlwm.create_client()
     hlwm.call('keybind x set_attr clients.focus.pseudotile on')
-    hlwm.call(f'set_attr clients.{c1}.keymask x')
+    hlwm.call(f'set_attr clients.{c1}.keys_inactive x')
     hlwm.call(f'jumpto {c1}')
 
     hlwm.call(f'jumpto {c2}')

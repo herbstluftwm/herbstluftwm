@@ -71,6 +71,7 @@ public:
     bool            manage = true; // whether we should manage it
     std::experimental::optional<bool> fullscreen;
     std::experimental::optional<std::string> keyMask; // Which keymask rule should be applied for this client
+    std::experimental::optional<std::string> keysInactive; // Which keymask rule should be applied for this client
 
     std::experimental::optional<bool> floating;
     std::experimental::optional<bool> pseudotile;
@@ -104,6 +105,7 @@ private:
     void applyEwmhnotify(const Client* client, ClientChanges* changes) const;
     void applyHook(const Client* client, ClientChanges* changes) const;
     void applyKeyMask(const Client* client, ClientChanges* changes) const;
+    void applyKeysInactive(const Client* client, ClientChanges* changes) const;
     void applyMonitor(const Client* client, ClientChanges* changes) const;
 };
 

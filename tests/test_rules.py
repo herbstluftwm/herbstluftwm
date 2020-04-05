@@ -28,6 +28,7 @@ consequences = [
     'fullscreen',
     'hook',
     'keymask',
+    'keys_inactive',
 ]
 
 
@@ -319,6 +320,17 @@ def test_bool_consequence_with_corresponding_attribute(hlwm, name, value, apply_
     winid = create_client(hlwm, apply_rules, [name + '=' + hlwm.bool(value)])
 
     assert hlwm.get_attr('clients.{}.{}'.format(winid, name)) == hlwm.bool(value)
+
+
+@pytest.mark.parametrize(
+    'name',
+    ['keymask', 'keys_inactive'])
+@pytest.mark.parametrize('apply_rules', [True, False])
+def test_regex_consequence_with_corresponding_attribute(hlwm, name, apply_rules):
+    value = 'someregex'
+    winid = create_client(hlwm, apply_rules, [name + '=' + value])
+
+    assert hlwm.get_attr('clients.{}.{}'.format(winid, name)) == value
 
 
 @pytest.mark.parametrize('manage', ['on', 'off'])
