@@ -31,6 +31,9 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
     *--exit-on-xerror*::
         Make herbstluftwm exit whenever xlib reports an error. This may only
         be activated for automated testing and never for actual sessions.
+    *--no-tag-import*::
+        Do not preserve the tags (virtual desktops) from a previous running
+        window manager.
     *--verbose*::
         print verbose information to stderr. This can be switched at run-time by
         the 'verbose' setting.

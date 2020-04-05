@@ -268,7 +268,7 @@ def hlwm(hlwm_process):
 
 
 class HlwmProcess:
-    def __init__(self, tmpdir, env):
+    def __init__(self, tmpdir, env, args):
         autostart = tmpdir / 'herbstluftwm' / 'autostart'
         autostart.ensure()
         autostart.write(textwrap.dedent("""
@@ -278,7 +278,7 @@ class HlwmProcess:
         autostart.chmod(0o755)
         bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen(
-            [bin_path, '--verbose'], env=env,
+            [bin_path, '--verbose'] + args, env=env,
             bufsize=0,  # essential for reading output with selectors!
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
@@ -487,19 +487,19 @@ def hlwm_spawner(tmpdir):
     """yield a function to spawn hlwm"""
     assert os.environ['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
 
-    def spawn():
+    def spawn(args=[]):
         env = {
             'DISPLAY': os.environ['DISPLAY'],
             'XDG_CONFIG_HOME': str(tmpdir),
         }
-        return HlwmProcess(tmpdir, env)
+        return HlwmProcess(tmpdir, env, args)
     return spawn
 
 
 @pytest.fixture()
 def hlwm_process(hlwm_spawner):
     """Set up hlwm and also check that it shuts down gently afterwards"""
-    hlwm_proc = hlwm_spawner()
+    hlwm_proc = hlwm_spawner(['--no-tag-import'])
     kill_all_existing_windows(show_warnings=True)
 
     yield hlwm_proc
@@ -575,6 +575,30 @@ def x11(x11_connection):
             if hints is None:
                 return False
             return bool(hints.flags & Xutil.UrgencyHint)
+
+        def set_property_textlist(self, property_name, value, utf8=True, window=None):
+            """set a ascii textlist property by its string name on the root window, or any other window"""
+            if window is None:
+                window = self.root
+            prop = self.display.intern_atom(property_name)
+            bvalue = bytearray()
+            isfirst = True
+            for entry in value:
+                if isfirst:
+                    isfirst = False
+                else:
+                    bvalue.append(0)
+                bvalue += entry.encode()
+            proptype = Xatom.STRING
+            if utf8:
+                proptype = self.display.get_atom('UTF8_STRING')
+            window.change_property(prop, proptype, 8, bytes(bvalue))
+
+        def set_property_cardinal(self, property_name, value, window=None):
+            if window is None:
+                window = self.root
+            prop = self.display.intern_atom(property_name)
+            window.change_property(prop, Xatom.CARDINAL, 32, value)
 
         def get_property(self, property_name, window=None):
             """get a property by its string name from the root window, or any other window"""

@@ -63,6 +63,10 @@ HSTag* TagManager::add_tag(const string& name) {
         // nothing to do
         return find_result;
     }
+    if (name.empty()) {
+        // empty name is not allowed
+        return nullptr;
+    }
     HSTag* tag = new HSTag(name, this, settings_);
     addIndexed(tag);
     tag->name.changed().connect([this,tag]() { this->onTagRename(tag); });
