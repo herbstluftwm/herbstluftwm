@@ -43,4 +43,3 @@ def test_directional_focus(hlwm, clientFocused):
                 == clients[expected_target]
         else:
             hlwm.call_xfail(cmd).expect_stderr('No neighbour found')
-
