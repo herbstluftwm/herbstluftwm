@@ -198,7 +198,6 @@ int main(int argc, char* argv[]) {
                 break;
             case 'c':
                 g_hook_count = atoi(optarg);
-                printf("setting to  %s\n", optarg);
                 break;
             case 'w':
                 g_wait_for_hook = 1;
@@ -241,8 +240,7 @@ int main(int argc, char* argv[]) {
         char* output;
         HCConnection* con = hc_connect();
         if (!con) {
-            fprintf(stderr, "Error: Could not connect to display.\n");
-            hc_disconnect(con);
+            fprintf(stderr, "Error: Cannot open display.\n");
             return EXIT_FAILURE;
         }
         if (!hc_check_running(con)) {

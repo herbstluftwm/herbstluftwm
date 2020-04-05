@@ -51,7 +51,8 @@ public:
     void fullscreen_complete(Completion& complete);
 
     // adds a new client to list of managed client windows
-    Client* manage_client(Window win, bool visible_already, bool force_unmanage);
+    Client* manage_client(Window win, bool visible_already, bool force_unmanage,
+                          std::function<void(ClientChanges&)> additionalRules = {});
     ClientChanges applyDefaultRules(Window win);
 
     int applyRulesCmd(Input input, Output output);

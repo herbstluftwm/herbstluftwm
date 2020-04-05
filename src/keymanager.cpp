@@ -45,7 +45,7 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     // Make sure there is no existing binding with same keysym/modifiers
     removeKeyBinding(newBinding->keyCombo);
 
-    if (!newBinding->keyCombo.matches(activeKeyMask_.regex)) {
+    if (!activeKeyMask_.matches(newBinding->keyCombo)) {
         // Grab for events on this keycode
         xKeyGrabber_.grabKeyCombo(newBinding->keyCombo);
         newBinding->grabbed = true;
@@ -160,7 +160,7 @@ void KeyManager::ensureKeyMask(const Client* client) {
 
     string targetMaskStr = (client != nullptr) ? client->keyMask_() : "";
 
-    if (activeKeyMask_.str == targetMaskStr) {
+    if (activeKeyMask_.str() == targetMaskStr) {
         // nothing to do
         return;
     }
@@ -181,7 +181,7 @@ void KeyManager::ensureKeyMask(const Client* client) {
 void KeyManager::setActiveKeyMask(const KeyMask& newMask) {
     for (auto& binding : binds) {
         auto name = binding->keyCombo.str();
-        bool isMasked = binding->keyCombo.matches(newMask.regex);
+        bool isMasked = newMask.matches(binding->keyCombo);
 
         if (!isMasked && !binding->grabbed) {
             xKeyGrabber_.grabKeyCombo(binding->keyCombo);
@@ -222,4 +222,14 @@ bool KeyManager::removeKeyBinding(const KeyCombo& comboToRemove) {
     // Remove binding
     binds.erase(removeIter);
     return True;
+}
+
+
+/*!
+ * Returns true if the string representation of the KeyCombo matches
+ * the given keymask
+ */
+bool KeyManager::KeyMask::matches(const KeyCombo &combo) const
+{
+    return std::regex_match(combo.str(), regex_);
 }

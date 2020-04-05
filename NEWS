@@ -4,11 +4,16 @@ herbstluftwm NEWS -- History of user-visible changes
 Current git version
 -------------------
 
+  * single window floating (every client has an attribute 'floating' which can
+    be set at run time and via the rule consequence 'floating=on')
   * monitor detection via xrandr
   * detection of external panels
   * new command: apply_rules
   * new command: export (convenience wrapper around setenv)
   * new command: drag (initiates moving/resizing a window by mouse)
+  * if tags have been configured through EWMH before herbstluftwm starts (from
+    a previous running window manager), then herbstluftwm re-uses these tags
+    (start with --no-tag-import to disable this)
   * The build system is now cmake. See the INSTALL file if you need to
     compile herbstluftwm yourself.
   * the 'remove' command now tries to preserve the focus and the client

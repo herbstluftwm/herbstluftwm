@@ -136,14 +136,19 @@ class HlwmBridge:
         attribute_path = '.'.join([str(x) for x in attribute_path])
         return self.call(['get_attr', attribute_path]).stdout
 
-    def create_client(self, term_command='sleep infinity', title=None, keep_running=False):
+    def create_client(self, term_command='sleep infinity', position=None, title=None, keep_running=False):
         """
         Launch a client that will be terminated on shutdown.
         """
         self.next_client_id += 1
         wmclass = 'client_{}'.format(self.next_client_id)
         title = ['-title', str(title)] if title else []
-        command = ['xterm'] + title + ['-class', wmclass, '-e', 'bash', '-c', term_command]
+        geometry = ['-geometry', '50x20+0+0']
+        if position is not None:
+            x, y = position
+            geometry[1] = '50x2%+d%+d' % (x, y)
+        command = ['xterm'] + title + geometry
+        command += ['-class', wmclass, '-e', 'bash', '-c', term_command]
 
         # enforce a hook when the window appears
         self.call(['rule', 'once', 'class=' + wmclass, 'hook=here_is_' + wmclass])
@@ -263,7 +268,7 @@ def hlwm(hlwm_process):
 
 
 class HlwmProcess:
-    def __init__(self, tmpdir, env):
+    def __init__(self, tmpdir, env, args):
         autostart = tmpdir / 'herbstluftwm' / 'autostart'
         autostart.ensure()
         autostart.write(textwrap.dedent("""
@@ -271,9 +276,9 @@ class HlwmProcess:
             echo "hlwm started"
         """.lstrip('\n')))
         autostart.chmod(0o755)
-        bin_path = os.path.join(BINDIR, 'herbstluftwm')
+        self.bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen(
-            [bin_path, '--verbose'], env=env,
+            [self.bin_path, '--verbose'] + args, env=env,
             bufsize=0,  # essential for reading output with selectors!
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
@@ -482,19 +487,19 @@ def hlwm_spawner(tmpdir):
     """yield a function to spawn hlwm"""
     assert os.environ['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
 
-    def spawn():
+    def spawn(args=[]):
         env = {
             'DISPLAY': os.environ['DISPLAY'],
             'XDG_CONFIG_HOME': str(tmpdir),
         }
-        return HlwmProcess(tmpdir, env)
+        return HlwmProcess(tmpdir, env, args)
     return spawn
 
 
 @pytest.fixture()
 def hlwm_process(hlwm_spawner):
     """Set up hlwm and also check that it shuts down gently afterwards"""
-    hlwm_proc = hlwm_spawner()
+    hlwm_proc = hlwm_spawner(['--no-tag-import'])
     kill_all_existing_windows(show_warnings=True)
 
     yield hlwm_proc
@@ -570,6 +575,30 @@ def x11(x11_connection):
             if hints is None:
                 return False
             return bool(hints.flags & Xutil.UrgencyHint)
+
+        def set_property_textlist(self, property_name, value, utf8=True, window=None):
+            """set a ascii textlist property by its string name on the root window, or any other window"""
+            if window is None:
+                window = self.root
+            prop = self.display.intern_atom(property_name)
+            bvalue = bytearray()
+            isfirst = True
+            for entry in value:
+                if isfirst:
+                    isfirst = False
+                else:
+                    bvalue.append(0)
+                bvalue += entry.encode()
+            proptype = Xatom.STRING
+            if utf8:
+                proptype = self.display.get_atom('UTF8_STRING')
+            window.change_property(prop, proptype, 8, bytes(bvalue))
+
+        def set_property_cardinal(self, property_name, value, window=None):
+            if window is None:
+                window = self.root
+            prop = self.display.intern_atom(property_name)
+            window.change_property(prop, Xatom.CARDINAL, 32, value)
 
         def get_property(self, property_name, window=None):
             """get a property by its string name from the root window, or any other window"""

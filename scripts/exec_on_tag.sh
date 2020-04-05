@@ -9,7 +9,7 @@ shift
 if [ -z "$1" ] ;then
     echo "usage: $0 TAG COMMAND [ARGS ...]" >&2
     echo "executes a COMMAND on a specific TAG" >&2
-    echo "if TAG doesnot exist, it will be created" >&2
+    echo "if TAG does not exist, it will be created" >&2
     echo "if TAG is empty, current tag will be used" >&2
 
 fi

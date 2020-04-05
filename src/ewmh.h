@@ -92,6 +92,16 @@ public:
     Ewmh(XConnection& xconnection);
     ~Ewmh();
 
+    //! initial EWMH state
+    class InitialState {
+    public:
+        size_t numberOfDesktops = 0;
+        std::vector<std::string> desktopNames;
+        //! client list before hlwm start
+        std::vector<Window> original_client_list_;
+        void print(FILE* file);
+    };
+
     enum class WM { Name, Protocols, Delete, State, TakeFocus, Last };
 
     void injectDependencies(Root* root);
@@ -102,7 +112,8 @@ public:
     void updateWmName();
 
     void updateClientList();
-    std::vector<Window> originalClientList() const;
+    const InitialState &initialState();
+    long windowGetInitialDesktop(Window win);
     void updateClientListStacking();
     void updateDesktops();
     void updateDesktopNames();
@@ -142,7 +153,8 @@ private:
     Root* root_ = nullptr;
     TagManager* tags_ = nullptr;
     XConnection& X_;
-    std::vector<Window> original_client_list_; //! client list before hlwm start
+    InitialState initialState_;
+    void readInitialEwmhState();
     Atom wmatom(WM proto);
     Atom wmatom_[(int)WM::Last];
 };

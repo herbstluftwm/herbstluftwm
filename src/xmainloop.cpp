@@ -20,11 +20,14 @@
 #include "mousemanager.h"
 #include "panelmanager.h"
 #include "root.h"
+#include "rules.h"
 #include "settings.h"
 #include "tag.h"
+#include "tagmanager.h"
 #include "utils.h"
 #include "xconnection.h"
 
+using std::function;
 using std::shared_ptr;
 
 /** A custom event handler casting function.
@@ -69,17 +72,31 @@ XMainLoop::XMainLoop(XConnection& X, Root* root)
 // from dwm.c
 void XMainLoop::scanExistingClients() {
     XWindowAttributes wa;
-    Window transientFor;
     auto clientmanager = root_->clients();
-    auto originalClients = root_->ewmh->originalClientList();
+    auto& initialEwmhState = root_->ewmh->initialState();
+    auto& originalClients = initialEwmhState.original_client_list_;
     auto isInOriginalClients = [&originalClients] (Window win) {
         return originalClients.end()
             != std::find(originalClients.begin(), originalClients.end(), win);
     };
+    auto findTagForWindow = [this](Window win) -> function<void(ClientChanges&)> {
+            if (!root_->globals.importTagsFromEwmh) {
+                // do nothing, if import is disabled
+                return [] (ClientChanges&) {};
+            }
+            return [this,win] (ClientChanges& changes) {
+                long idx = this->root_->ewmh->windowGetInitialDesktop(win);
+                if (idx < 0) {
+                    return;
+                }
+                HSTag* tag = root_->tags->byIdx((size_t)idx);
+                if (tag) {
+                    changes.tag_name = tag->name();
+                }
+            };
+    };
     for (auto win : X_.queryTree(X_.root())) {
-        if (!XGetWindowAttributes(X_.display(), win, &wa)
-            || wa.override_redirect
-            || XGetTransientForHint(X_.display(), win, &transientFor))
+        if (!XGetWindowAttributes(X_.display(), win, &wa) || wa.override_redirect)
         {
             continue;
         }
@@ -105,21 +122,22 @@ void XMainLoop::scanExistingClients() {
         }
         else if (wa.map_state == IsViewable
             || isInOriginalClients(win)) {
-            clientmanager->manage_client(win, true, false);
-            XMapWindow(X_.display(), win);
+            Client* c = clientmanager->manage_client(win, true, false, findTagForWindow(win));
+            if (root_->monitors->byTag(c->tag())) {
+                XMapWindow(X_.display(), win);
+            }
         }
     }
     // ensure every original client is managed again
     for (auto win : originalClients) {
         if (clientmanager->client(win)) continue;
         if (!XGetWindowAttributes(X_.display(), win, &wa)
-            || wa.override_redirect
-            || XGetTransientForHint(X_.display(), win, &transientFor))
+            || wa.override_redirect)
         {
             continue;
         }
         XReparentWindow(X_.display(), win, X_.root(), 0,0);
-        clientmanager->manage_client(win, true, false);
+        clientmanager->manage_client(win, true, false, findTagForWindow(win));
     }
 }
 
@@ -164,10 +182,8 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
         // if the event was not handled by the mouse manager, pass it to the client:
         Client* client = root_->clients->client(be->window);
         if (client) {
-            focus_client(client, false, true);
-            if (root_->settings->raise_on_click()) {
-                    client->raise();
-            }
+            bool raise = root_->settings->raise_on_click();
+            focus_client(client, false, true, raise);
         }
     }
     XAllowEvents(X_.display(), ReplayPointer, be->time);
@@ -298,7 +314,7 @@ void XMainLoop::enternotify(XCrossingEvent* ce) {
             // don't allow focus_follows_mouse if another window would be
             // hidden during that focus change (which only occurs in max layout)
         } else if (c) {
-            focus_client(c, false, true);
+            focus_client(c, false, true, false);
         }
     }
 }

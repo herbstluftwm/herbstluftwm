@@ -166,3 +166,16 @@ def test_complete_keybind_validates_all_tokens(hlwm):
     complete = hlwm.complete('keybind Moo+Mo', partial=True, position=1)
 
     assert complete == []
+
+
+def test_keymask_focus_switch(hlwm, keyboard):
+    c1, _ = hlwm.create_client()
+    c2, _ = hlwm.create_client()
+    hlwm.call('keybind x set_attr clients.focus.pseudotile on')
+    hlwm.call(f'set_attr clients.{c1}.keymask x')
+    hlwm.call(f'jumpto {c1}')
+
+    hlwm.call(f'jumpto {c2}')
+    keyboard.press('x')
+
+    assert hlwm.get_attr('clients.focus.pseudotile') == 'true'

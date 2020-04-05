@@ -362,7 +362,7 @@ int jumpto_command(int argc, char** argv, Output output) {
     }
     auto client = get_client(argv[1]);
     if (client) {
-        focus_client(client, true, true);
+        focus_client(client, true, true, true);
         return 0;
     } else {
         output << argv[0] << ": Could not find client";
@@ -414,11 +414,13 @@ void execute_autostart_file() {
 
 static void parse_arguments(int argc, char** argv, Globals& g) {
     int exit_on_xerror = g.exitOnXlibError;
+    int no_tag_import = 0;
     static struct option long_options[] = {
         {"autostart",       1, nullptr, 'c'},
         {"version",         0, nullptr, 'v'},
         {"locked",          0, nullptr, 'l'},
         {"exit-on-xerror",  0, &exit_on_xerror, 1},
+        {"no-tag-import",   0, &no_tag_import, 1},
         {"verbose",         0, &g_verbose, 1},
         {}
     };
@@ -445,6 +447,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
         }
     }
     g.exitOnXlibError = exit_on_xerror != 0;
+    g.importTagsFromEwmh = (no_tag_import == 0);
 }
 
 static void remove_zombies(int) {
@@ -479,10 +482,12 @@ int main(int argc, char* argv[]) {
     g_display = X->display();
     if (!g_display) {
         std::cerr << "herbstluftwm: cannot open display" << endl;
+        delete X;
         exit(EXIT_FAILURE);
     }
     if (X->checkotherwm()) {
         std::cerr << "herbstluftwm: another window manager is already running" << endl;
+        delete X;
         exit(EXIT_FAILURE);
     }
     // remove zombies on SIGCHLD
@@ -508,6 +513,12 @@ int main(int argc, char* argv[]) {
     g_main_loop = &mainloop;
 
     // setup
+    if (g.importTagsFromEwmh) {
+        const auto& initialState = root->ewmh->initialState();
+        for (auto n : initialState.desktopNames) {
+            root->tags->add_tag(n.c_str());
+        }
+    }
     root->monitors()->ensure_monitors_are_available();
     mainloop.scanExistingClients();
     tag_force_update_flags();

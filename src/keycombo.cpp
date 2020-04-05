@@ -2,8 +2,7 @@
 
 #include <X11/Xlib.h>
 #include <algorithm>
-#include <iostream>
-#include <regex>
+#include <sstream> // IWYU pragma: keep
 #include <stdexcept>
 
 #include "completion.h"
@@ -104,14 +103,6 @@ string KeyCombo::str() const {
         name = "?";
     }
     return Converter<ModifiersWithString>::str({ modifiers_, name });
-}
-
-/*!
- * Returns true if the string representation of this KeyCombo matches the given
- * regex
- */
-bool KeyCombo::matches(const std::regex& regex) const {
-    return std::regex_match(str(), regex);
 }
 
 /*!
