@@ -80,3 +80,17 @@ def test_client_initially_on_desktop(hlwm_spawner, x11, desktops, client2desktop
                 == desktop_names[0]
 
     hlwm_proc.shutdown()
+
+
+def test_manage_transient_for_windows_on_startup(hlwm_spawner, x11):
+    master_win, master_id = x11.create_client(sync_hlwm=False)
+    dialog_win, dialog_id = x11.create_client(sync_hlwm=False)
+    dialog_win.set_wm_transient_for(master_win)
+    x11.display.sync()
+
+    hlwm_proc = hlwm_spawner()
+    hlwm = conftest.HlwmBridge(os.environ['DISPLAY'], hlwm_proc)
+
+    assert hlwm.list_children('clients') \
+        == sorted([master_id, dialog_id, 'focus'])
+    hlwm_proc.shutdown()

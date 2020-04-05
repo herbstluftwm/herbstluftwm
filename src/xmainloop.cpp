@@ -72,7 +72,6 @@ XMainLoop::XMainLoop(XConnection& X, Root* root)
 // from dwm.c
 void XMainLoop::scanExistingClients() {
     XWindowAttributes wa;
-    Window transientFor;
     auto clientmanager = root_->clients();
     auto& initialEwmhState = root_->ewmh->initialState();
     auto& originalClients = initialEwmhState.original_client_list_;
@@ -97,9 +96,7 @@ void XMainLoop::scanExistingClients() {
             };
     };
     for (auto win : X_.queryTree(X_.root())) {
-        if (!XGetWindowAttributes(X_.display(), win, &wa)
-            || wa.override_redirect
-            || XGetTransientForHint(X_.display(), win, &transientFor))
+        if (!XGetWindowAttributes(X_.display(), win, &wa) || wa.override_redirect)
         {
             continue;
         }
@@ -135,8 +132,7 @@ void XMainLoop::scanExistingClients() {
     for (auto win : originalClients) {
         if (clientmanager->client(win)) continue;
         if (!XGetWindowAttributes(X_.display(), win, &wa)
-            || wa.override_redirect
-            || XGetTransientForHint(X_.display(), win, &transientFor))
+            || wa.override_redirect)
         {
             continue;
         }
