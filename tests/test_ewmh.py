@@ -50,6 +50,25 @@ def test_read_desktop_names(hlwm_spawner, x11, utf8names, desktop_names):
     hlwm_proc.shutdown()
 
 
+def test_tags_restored_after_wmexec(hlwm, hlwm_process):
+    tags = ['a', 'long', 'list', 'of', 'tag', 'names']
+    expected_tags = ['default'] + tags
+
+    for tag in tags:
+        hlwm.call(['add', tag])
+
+    # We need at least one client, otherwise xvfb messes with the test
+    hlwm.create_client()
+
+    # Restart hlwm:
+    hlwm.call(['wmexec', hlwm_process.bin_path, '--verbose'])
+    hlwm_process.read_and_echo_output(until_stdout='hlwm started')
+
+    assert hlwm.list_children('tags.by-name') == sorted(expected_tags)
+    for idx, name in enumerate(expected_tags):
+        assert hlwm.get_attr(f'tags.{idx}.name') == name
+
+
 @pytest.mark.parametrize('desktops,client2desktop', [
     (2, [0, 1]),
     (2, [None, 1]),  # client without index set
