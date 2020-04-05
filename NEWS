@@ -4,6 +4,8 @@ herbstluftwm NEWS -- History of user-visible changes
 Current git version
 -------------------
 
+  * single window floating (every client has an attribute 'floating' which can
+    be set at run time and via the rule consequence 'floating=on')
   * monitor detection via xrandr
   * detection of external panels
   * new command: apply_rules

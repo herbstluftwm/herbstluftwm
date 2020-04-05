@@ -1425,6 +1425,7 @@ listed as follows:
 |s - class                | the class of it (second entry in WM_CLASS)
 |s - instance             | the instance of it (first entry in WM_CLASS)
 |b w fullscreen           |
+|b w floating             | whether this client is in floating mode
 |b w pseudotile           |
 |b w ewmhrequests         | if ewmh requests are permitted for this client
 |b w ewmhnotify           | if the client is told about its state via ewmh
