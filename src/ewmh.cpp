@@ -3,7 +3,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <algorithm>
-#include <cstring>
+#include <cstdio>
 #include <limits>
 
 #include "client.h"
@@ -95,11 +95,7 @@ Ewmh::Ewmh(XConnection& xconnection)
     XChangeProperty(X_.display(), X_.root(), g_netatom[NetSupported], XA_ATOM, 32,
         PropModeReplace, (unsigned char *) g_netatom, NetCOUNT);
 
-    /* init some globals */
-    auto maybe_clients =
-        X_.getWindowPropertyWindow(X_.root(), g_netatom[NetClientList]);
-    original_client_list_ =
-        maybe_clients.has_value() ? maybe_clients.value() : vector<Window>();
+    readInitialEwmhState();
 
     /* init other atoms */
     WM_STATE = XInternAtom(X_.display(), "WM_STATE", False);
@@ -114,6 +110,57 @@ Ewmh::Ewmh(XConnection& xconnection)
     /* init atoms that never change */
     X_.setPropertyCardinal(X_.root(), g_netatom[NetDesktopViewport], {0, 0});
 }
+
+//! read the current ewmh properties from the root window
+void Ewmh::readInitialEwmhState()
+{
+    // list of desktops
+    auto number = X_.getWindowPropertyCardinal(X_.root(), g_netatom[NetNumberOfDesktops]);
+    if (number.has_value() && number.value().size() >= 1) {
+        auto val = number.value()[0];
+        initialState_.numberOfDesktops = (val >= 0) ? ((size_t)(val)) : 0;
+    }
+    auto maybe_names = X_.getWindowPropertyTextList(X_.root(), g_netatom[NetDesktopNames]);
+    if (maybe_names.has_value()) {
+        initialState_.desktopNames = maybe_names.value();
+    }
+    // list of managed clients
+    auto maybe_clients =
+        X_.getWindowPropertyWindow(X_.root(), g_netatom[NetClientList]);
+    initialState_.original_client_list_ =
+        maybe_clients.has_value() ? maybe_clients.value() : vector<Window>();
+    for (auto win : initialState_.original_client_list_) {
+        auto maybe_idx = X_.getWindowPropertyCardinal(win, g_netatom[NetWmDesktop]);
+        if (maybe_idx.has_value() && maybe_idx.value().size() >= 1) {
+            initialState_.client2desktop[win] = maybe_idx.value()[0];
+        }
+    }
+    // initialState_.print(stderr);
+}
+
+void Ewmh::InitialState::print(FILE *file)
+{
+    fprintf(file, "EWMH: %lu desktops:", numberOfDesktops);
+    for (const auto& n : desktopNames) {
+        fprintf(file, " \'%s\'", n.c_str());
+    }
+    fprintf(file, "\n");
+    fprintf(file, "%lu managed clients:\n", original_client_list_.size());
+    for (auto win : original_client_list_) {
+        long desktop = -1;
+        auto it = client2desktop.find(win);
+        if (it != client2desktop.end()) {
+            desktop = it->second;
+        }
+        fprintf(file, "  - window 0x%lx", win);
+        if (desktop >= 0) {
+            fprintf(file, " (on desktop %ld)\n", desktop);
+        } else {
+            fprintf(file, "\n");
+        }
+    }
+}
+
 
 void Ewmh::injectDependencies(Root* root) {
     root_ = root;
@@ -162,7 +209,7 @@ bool Ewmh::readClientList(Window** buf, unsigned long *count) {
 
 //! The client list before hlwm has been started
 vector<Window> Ewmh::originalClientList() const {
-    return original_client_list_;
+    return initialState_.original_client_list_;
 }
 
 void Ewmh::updateClientListStacking() {

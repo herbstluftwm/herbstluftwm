@@ -37,6 +37,8 @@ public:
         getWindowPropertyAtom(Window window, Atom property);
     std::experimental::optional<std::vector<Window>>
         getWindowPropertyWindow(Window window, Atom property);
+    std::experimental::optional<std::vector<std::string>>
+        getWindowPropertyTextList(Window window, Atom property);
     void setPropertyString(Window w, Atom property, std::string value);
     void setPropertyString(Window w, Atom property, const std::vector<std::string>& value);
     void setPropertyWindow(Window w, Atom property, const std::vector<Window>& value);
