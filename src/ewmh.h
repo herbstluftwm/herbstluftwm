@@ -4,8 +4,8 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <array>
-#include <vector>
 #include <map>
+#include <vector>
 
 #define ENUM_WITH_ALIAS(Identifier, Alias) \
     Identifier, Alias = Identifier
