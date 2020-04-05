@@ -2,7 +2,6 @@
 
 #include <X11/Xlib.h>
 #include <algorithm>
-#include <iostream>
 #include <sstream> // IWYU pragma: keep
 #include <stdexcept>
 
