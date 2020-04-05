@@ -168,7 +168,7 @@ def test_complete_keybind_validates_all_tokens(hlwm):
     assert complete == []
 
 
-def test_keys_inactive(hlwm, keyboard):
+def test_keys_inactive_on_other_client(hlwm, keyboard):
     c1, _ = hlwm.create_client()
     c2, _ = hlwm.create_client()
     hlwm.call('keybind x set_attr clients.focus.pseudotile on')
