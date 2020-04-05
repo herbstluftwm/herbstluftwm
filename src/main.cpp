@@ -414,11 +414,13 @@ void execute_autostart_file() {
 
 static void parse_arguments(int argc, char** argv, Globals& g) {
     int exit_on_xerror = g.exitOnXlibError;
+    int no_tag_import = 0;
     static struct option long_options[] = {
         {"autostart",       1, nullptr, 'c'},
         {"version",         0, nullptr, 'v'},
         {"locked",          0, nullptr, 'l'},
         {"exit-on-xerror",  0, &exit_on_xerror, 1},
+        {"no-tag-import",   0, &no_tag_import, 1},
         {"verbose",         0, &g_verbose, 1},
         {}
     };
@@ -445,6 +447,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
         }
     }
     g.exitOnXlibError = exit_on_xerror != 0;
+    g.importTagsFromEwmh = (no_tag_import == 0);
 }
 
 static void remove_zombies(int) {
@@ -508,9 +511,11 @@ int main(int argc, char* argv[]) {
     g_main_loop = &mainloop;
 
     // setup
-    const auto& initialState = root->ewmh->initialState();
-    for (auto n : initialState.desktopNames) {
-        root->tags->add_tag(n.c_str());
+    if (g.importTagsFromEwmh) {
+        const auto& initialState = root->ewmh->initialState();
+        for (auto n : initialState.desktopNames) {
+            root->tags->add_tag(n.c_str());
+        }
     }
     root->monitors()->ensure_monitors_are_available();
     mainloop.scanExistingClients();

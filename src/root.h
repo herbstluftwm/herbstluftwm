@@ -30,6 +30,7 @@ public:
     Globals() = default;
     int initial_monitors_locked = 0;
     bool exitOnXlibError = false;
+    bool importTagsFromEwmh = true;
 };
 
 class Root : public Object {

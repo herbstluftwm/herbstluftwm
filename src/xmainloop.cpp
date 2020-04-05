@@ -27,6 +27,7 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::function;
 using std::shared_ptr;
 
 /** A custom event handler casting function.
@@ -79,17 +80,21 @@ void XMainLoop::scanExistingClients() {
         return originalClients.end()
             != std::find(originalClients.begin(), originalClients.end(), win);
     };
-    auto findTagForWindow = [this](Window win) {
-        return [this,win] (ClientChanges& changes) {
-            long idx = this->root_->ewmh->windowGetInitialDesktop(win);
-            if (idx < 0) {
-                return;
+    auto findTagForWindow = [this](Window win) -> function<void(ClientChanges&)> {
+            if (!root_->globals.importTagsFromEwmh) {
+                // do nothing, if import is disabled
+                return [] (ClientChanges&) {};
             }
-            HSTag* tag = root_->tags->byIdx((size_t)idx);
-            if (tag) {
-                changes.tag_name = tag->name();
-            }
-        };
+            return [this,win] (ClientChanges& changes) {
+                long idx = this->root_->ewmh->windowGetInitialDesktop(win);
+                if (idx < 0) {
+                    return;
+                }
+                HSTag* tag = root_->tags->byIdx((size_t)idx);
+                if (tag) {
+                    changes.tag_name = tag->name();
+                }
+            };
     };
     for (auto win : X_.queryTree(X_.root())) {
         if (!XGetWindowAttributes(X_.display(), win, &wa)
