@@ -482,10 +482,12 @@ int main(int argc, char* argv[]) {
     g_display = X->display();
     if (!g_display) {
         std::cerr << "herbstluftwm: cannot open display" << endl;
+        delete X;
         exit(EXIT_FAILURE);
     }
     if (X->checkotherwm()) {
         std::cerr << "herbstluftwm: another window manager is already running" << endl;
+        delete X;
         exit(EXIT_FAILURE);
     }
     // remove zombies on SIGCHLD
