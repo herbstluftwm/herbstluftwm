@@ -3,7 +3,6 @@
 #include <X11/Xlib.h>
 #include <algorithm>
 #include <iostream>
-#include <regex>
 #include <stdexcept>
 
 #include "completion.h"
