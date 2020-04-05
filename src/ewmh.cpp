@@ -129,13 +129,16 @@ void Ewmh::readInitialEwmhState()
         X_.getWindowPropertyWindow(X_.root(), g_netatom[NetClientList]);
     initialState_.original_client_list_ =
         maybe_clients.has_value() ? maybe_clients.value() : vector<Window>();
-    for (auto win : initialState_.original_client_list_) {
-        auto maybe_idx = X_.getWindowPropertyCardinal(win, g_netatom[NetWmDesktop]);
-        if (maybe_idx.has_value() && maybe_idx.value().size() >= 1) {
-            initialState_.client2desktop[win] = maybe_idx.value()[0];
-        }
-    }
     // initialState_.print(stderr);
+}
+
+long Ewmh::windowGetInitialDesktop(Window win)
+{
+    auto maybe_idx = X_.getWindowPropertyCardinal(win, g_netatom[NetWmDesktop]);
+    if (maybe_idx.has_value() && maybe_idx.value().size() >= 1) {
+        return maybe_idx.value()[0];
+    }
+    return -1;
 }
 
 void Ewmh::InitialState::print(FILE *file)
@@ -145,20 +148,11 @@ void Ewmh::InitialState::print(FILE *file)
         fprintf(file, " \'%s\'", n.c_str());
     }
     fprintf(file, "\n");
-    fprintf(file, "%lu managed clients:\n", original_client_list_.size());
+    fprintf(file, "%lu managed clients: ", original_client_list_.size());
     for (auto win : original_client_list_) {
-        long desktop = -1;
-        auto it = client2desktop.find(win);
-        if (it != client2desktop.end()) {
-            desktop = it->second;
-        }
-        fprintf(file, "  - window 0x%lx", win);
-        if (desktop >= 0) {
-            fprintf(file, " (on desktop %ld)\n", desktop);
-        } else {
-            fprintf(file, "\n");
-        }
+        fprintf(file, "  window 0x%lx", win);
     }
+    fprintf(file, "\n");
 }
 
 
@@ -192,6 +186,11 @@ void Ewmh::updateClientList() {
     X_.setPropertyWindow(X_.root(), g_netatom[NetClientList], g_windows);
 }
 
+const Ewmh::InitialState &Ewmh::initialState()
+{
+    return initialState_;
+}
+
 bool Ewmh::readClientList(Window** buf, unsigned long *count) {
     Atom actual_type;
     int format;
@@ -205,11 +204,6 @@ bool Ewmh::readClientList(Window** buf, unsigned long *count) {
         return false;
     }
     return true;
-}
-
-//! The client list before hlwm has been started
-vector<Window> Ewmh::originalClientList() const {
-    return initialState_.original_client_list_;
 }
 
 void Ewmh::updateClientListStacking() {

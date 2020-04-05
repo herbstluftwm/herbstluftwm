@@ -576,6 +576,30 @@ def x11(x11_connection):
                 return False
             return bool(hints.flags & Xutil.UrgencyHint)
 
+        def set_property_textlist(self, property_name, value, utf8=True, window=None):
+            """set a ascii textlist property by its string name on the root window, or any other window"""
+            if window is None:
+                window = self.root
+            prop = self.display.intern_atom(property_name)
+            bvalue = bytearray()
+            isfirst = True
+            for entry in value:
+                if isfirst:
+                    isfirst = False
+                else:
+                    bvalue.append(0)
+                bvalue += entry.encode()
+            proptype = Xatom.STRING
+            if utf8:
+                proptype = self.display.get_atom('UTF8_STRING')
+            window.change_property(prop, proptype, 8, bytes(bvalue))
+
+        def set_property_cardinal(self, property_name, value, window=None):
+            if window is None:
+                window = self.root
+            prop = self.display.intern_atom(property_name)
+            window.change_property(prop, Xatom.CARDINAL, 32, value)
+
         def get_property(self, property_name, window=None):
             """get a property by its string name from the root window, or any other window"""
             if window is None:

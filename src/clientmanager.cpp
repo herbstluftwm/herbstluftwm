@@ -21,6 +21,7 @@
 #include "utils.h"
 
 using std::endl;
+using std::function;
 using std::string;
 using std::vector;
 
@@ -122,7 +123,8 @@ void ClientManager::remove(Window window)
     clients_.erase(window);
 }
 
-Client* ClientManager::manage_client(Window win, bool visible_already, bool force_unmanage) {
+Client* ClientManager::manage_client(Window win, bool visible_already, bool force_unmanage,
+                                     function<void(ClientChanges&)> additionalRules) {
     if (is_herbstluft_window(g_display, win)) {
         // ignore our own window
         return nullptr;
@@ -139,6 +141,9 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
 
     // apply rules
     ClientChanges changes = applyDefaultRules(client->window_);
+    if (additionalRules) {
+        additionalRules(changes);
+    }
     changes = Root::get()->rules()->evaluateRules(client, changes);
     if (!changes.manage || force_unmanage) {
         // map it... just to be sure

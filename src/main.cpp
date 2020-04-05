@@ -508,6 +508,10 @@ int main(int argc, char* argv[]) {
     g_main_loop = &mainloop;
 
     // setup
+    const auto& initialState = root->ewmh->initialState();
+    for (auto n : initialState.desktopNames) {
+        root->tags->add_tag(n.c_str());
+    }
     root->monitors()->ensure_monitors_are_available();
     mainloop.scanExistingClients();
     tag_force_update_flags();

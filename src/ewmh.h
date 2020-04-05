@@ -4,7 +4,6 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <array>
-#include <map>
 #include <vector>
 
 #define ENUM_WITH_ALIAS(Identifier, Alias) \
@@ -100,8 +99,6 @@ public:
         std::vector<std::string> desktopNames;
         //! client list before hlwm start
         std::vector<Window> original_client_list_;
-        //! mapping clients to their desktop
-        std::map<Window, long> client2desktop;
         void print(FILE* file);
     };
 
@@ -115,7 +112,8 @@ public:
     void updateWmName();
 
     void updateClientList();
-    std::vector<Window> originalClientList() const;
+    const InitialState &initialState();
+    long windowGetInitialDesktop(Window win);
     void updateClientListStacking();
     void updateDesktops();
     void updateDesktopNames();
