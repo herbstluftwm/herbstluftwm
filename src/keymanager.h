@@ -37,17 +37,21 @@ private:
             KeyMask ret;
             if (str != "") {
                 // Simply pass on any exceptions thrown here:
-                ret.regex = std::regex(str, std::regex::extended);
+                ret.str_ = str;
+                ret.regex_ = std::regex(str, std::regex::extended);
             }
             return ret;
         }
 
-        bool operator==(const KeyMask& other) const {
-            return other.str == str;
-        }
+        bool matches(const KeyCombo& combo) const;
+        std::string str() const { return str_; }
 
-        std::string str;
-        std::regex regex;
+        bool operator==(const KeyMask& other) const {
+            return other.str_ == str_;
+        }
+    private:
+        std::string str_;
+        std::regex regex_;
     };
 
     /*!
