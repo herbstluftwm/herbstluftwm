@@ -1,7 +1,7 @@
 #pragma once
 
 #include <X11/X.h>
-#include <regex>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -67,7 +67,6 @@ public:
     KeyCombo() = default;
 
     std::string str() const;
-    bool matches(const std::regex& regex) const;
     bool operator==(const KeyCombo& other) const;
     static KeySym keySymFromString(const std::string& str);
     static KeyCombo fromString(const std::string& str);

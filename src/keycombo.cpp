@@ -107,14 +107,6 @@ string KeyCombo::str() const {
 }
 
 /*!
- * Returns true if the string representation of this KeyCombo matches the given
- * regex
- */
-bool KeyCombo::matches(const std::regex& regex) const {
-    return std::regex_match(str(), regex);
-}
-
-/*!
  * Determines a modifier mask value from a list of key combo tokens
  *
  * \throws meaningful exceptions on parsing errors
