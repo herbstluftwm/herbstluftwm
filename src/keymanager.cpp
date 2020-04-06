@@ -10,7 +10,6 @@
 #include "clientmanager.h"
 #include "command.h"
 #include "completion.h"
-#include "globals.h"
 #include "ipc-protocol.h"
 #include "keycombo.h"
 #include "root.h"

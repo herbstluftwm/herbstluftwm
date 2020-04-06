@@ -1,9 +1,7 @@
 #pragma once
 
 #include <X11/Xlib.h>
-#include <map>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
