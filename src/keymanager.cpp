@@ -139,8 +139,10 @@ void KeyManager::regrabAll() {
     xKeyGrabber_.ungrabAll();
 
     for (auto& binding : binds) {
-        xKeyGrabber_.grabKeyCombo(binding->keyCombo);
-        binding->grabbed = true;
+        // grab precisely those again, that have been grabbed before
+        if (binding->grabbed) {
+            xKeyGrabber_.grabKeyCombo(binding->keyCombo);
+        }
     }
 }
 

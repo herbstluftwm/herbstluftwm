@@ -144,6 +144,21 @@ def test_complete_keybind_after_combo_offers_all_commands(hlwm):
     assert complete == hlwm.complete('', position=0)
 
 
+def test_keys_inactive_regrab_all(hlwm, keyboard):
+    hlwm.create_client()
+    hlwm.call('new_attr string clients.focus.my_x_pressed')
+    hlwm.call('keybind x set_attr clients.focus.my_x_pressed pressed')
+    hlwm.call('keybind y true')
+    # this disables the x binding
+    hlwm.call('set_attr clients.focus.keys_inactive x')
+
+    hlwm.call('keyunbind y')
+    keyboard.press('x')
+
+    # check that x is really disabled:
+    assert hlwm.get_attr('clients.focus.my_x_pressed') == ''
+
+
 def test_complete_keybind_offers_additional_mods_without_duplication(hlwm):
     complete = hlwm.complete('keybind Mod2+Mo', partial=True, position=1)
 

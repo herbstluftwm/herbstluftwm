@@ -60,7 +60,7 @@ private:
     public:
         KeyCombo keyCombo;
         std::vector<std::string> cmd;
-        bool grabbed;
+        bool grabbed = false;
     };
 
 public:
