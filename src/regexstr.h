@@ -1,9 +1,10 @@
 #ifndef REGEXSTR_H
 #define REGEXSTR_H
 
+#include <regex>
+
 #include "attribute_.h"
 #include "types.h"
-#include <regex>
 
 /** wrapper class for extended regexes that remembers
  * its source string
