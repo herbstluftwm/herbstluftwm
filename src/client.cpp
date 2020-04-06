@@ -42,6 +42,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , tag_str_(this,  "tag", &Client::tagName)
     , window_id_str(this,  "winid", "")
     , keyMask_(this,  "keymask", "")
+    , keysInactive_(this,  "keys_inactive", "")
     , pid_(this,  "pid", -1)
     , pseudotile_(this,  "pseudotile", false)
     , ewmhrequests_(this, "ewmhrequests", true)
@@ -59,6 +60,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     window_id_str = WindowID(window).str();
     floating_.setWriteable();
     keyMask_.setWriteable();
+    keysInactive_.setWriteable();
     ewmhnotify_.setWriteable();
     ewmhrequests_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_}) {
@@ -66,7 +68,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
     }
 
-    keyMask_.changed().connect([this] {
+    keysInactive_.changed().connect([this] {
             if (Root::get()->clients()->focus() == this) {
                 Root::get()->keys()->ensureKeyMask();
             }

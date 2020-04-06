@@ -283,6 +283,9 @@ void ClientManager::setSimpleClientAttributes(Client* client, const ClientChange
     if (changes.keyMask.has_value()) {
         client->keyMask_ = changes.keyMask.value();
     }
+    if (changes.keysInactive.has_value()) {
+        client->keysInactive_ = changes.keysInactive.value();
+    }
 }
 
 int ClientManager::applyRulesCmd(Input input, Output output) {

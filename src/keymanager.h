@@ -31,27 +31,37 @@ private:
         /*!
          * Creates a Keymask object from the given regex string
          *
+         * if negated=false, then this keymask only allows those keybindings
+         * that match the given regex.
+         *
+         * if negated=true, then this keymask only allows those keybindings
+         * that do not match the given regex.
+         *
+         * if the regex is "", then every keybinding is allowed (regardless of 'negated')
          * /throws exceptions thrown by std::regex
          */
-        static KeyMask fromString(const std::string& str = "") {
+        static KeyMask fromString(const std::string& str, bool negated) {
             KeyMask ret;
+            ret.negated_ = negated;
+            ret.str_ = str;
             if (str != "") {
                 // Simply pass on any exceptions thrown here:
-                ret.str_ = str;
                 ret.regex_ = std::regex(str, std::regex::extended);
             }
             return ret;
         }
 
-        bool matches(const KeyCombo& combo) const;
+        bool allowsBinding(const KeyCombo& combo) const;
         std::string str() const { return str_; }
 
         bool operator==(const KeyMask& other) const {
-            return other.str_ == str_;
+            return  (other.str_.empty() && str_.empty())
+                 || (other.str_ == str_ && other.negated_ == negated_);
         }
     private:
         std::string str_;
-        std::regex regex_;
+        std::regex  regex_;
+        bool        negated_ = true;
     };
 
     /*!
@@ -80,7 +90,7 @@ public:
 
     void regrabAll();
     void ensureKeyMask(const Client* client = nullptr);
-    void setActiveKeyMask(const KeyMask& newMask);
+    void setActiveKeyMask(const KeyMask& keysInactive);
     void clearActiveKeyMask();
 
     // TODO: This is not supposed to exist. It only does as a workaround,

@@ -37,6 +37,7 @@ const std::map<string, Consequence::Applier> Consequence::appliers = {
     { "ewmhnotify",     &Consequence::applyEwmhnotify      },
     { "hook",           &Consequence::applyHook            },
     { "keymask",        &Consequence::applyKeyMask         },
+    { "keys_inactive",  &Consequence::applyKeysInactive    },
     { "monitor",        &Consequence::applyMonitor         },
 };
 
@@ -289,6 +290,11 @@ void Consequence::applyHook(const Client* client, ClientChanges* changes) const 
 
 void Consequence::applyKeyMask(const Client* client, ClientChanges* changes) const {
     changes->keyMask = value;
+}
+
+void Consequence::applyKeysInactive(const Client *client, ClientChanges *changes) const
+{
+    changes->keysInactive = value;
 }
 
 void Consequence::applyMonitor(const Client* client, ClientChanges* changes) const {
