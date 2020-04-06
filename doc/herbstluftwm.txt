@@ -1350,9 +1350,11 @@ the child objects and then all attributes, telling for each attribute:
 
   - its type
 
-    * +s+ for string
-    * +i+ for integer
     * +b+ for boolean
+    * +c+ for color
+    * +i+ for integer
+    * +r+ for regex
+    * +s+ for string
     * +u+ for unsigned integer
 
   - if it is writeable by the user: +w+ if yes, +-+ else.
@@ -1416,7 +1418,7 @@ listed as follows:
 |===========================
 |s - winid                | its window id
 |s - title                | its window title
-|s - keymask              | [[KEYMASK]]A regular expression that is matched
+|r - keymask              | [[KEYMASK]]A regular expression that is matched
                             against the string representation of all key
                             bindings (as they are printed by list_keybinds).
                             While this client is focused, only bindings that

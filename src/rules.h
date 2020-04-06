@@ -5,6 +5,7 @@
 #include <regex>
 
 #include "optional.h"
+#include "regexstr.h"
 #include "types.h"
 
 class Client;
@@ -70,7 +71,7 @@ public:
     bool            switchtag = false; // if the tag may be switched for focusing it
     bool            manage = true; // whether we should manage it
     std::experimental::optional<bool> fullscreen;
-    std::experimental::optional<std::string> keyMask; // Which keymask rule should be applied for this client
+    std::experimental::optional<RegexStr> keyMask; // Which keymask rule should be applied for this client
     std::experimental::optional<std::string> keysInactive; // Which keymask rule should be applied for this client
 
     std::experimental::optional<bool> floating;

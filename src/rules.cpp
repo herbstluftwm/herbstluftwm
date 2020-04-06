@@ -289,7 +289,7 @@ void Consequence::applyHook(const Client* client, ClientChanges* changes) const 
 }
 
 void Consequence::applyKeyMask(const Client* client, ClientChanges* changes) const {
-    changes->keyMask = value;
+    changes->keyMask = Converter<RegexStr>::parse(value);
 }
 
 void Consequence::applyKeysInactive(const Client *client, ClientChanges *changes) const
