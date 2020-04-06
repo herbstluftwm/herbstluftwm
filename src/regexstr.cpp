@@ -24,6 +24,11 @@ bool RegexStr::operator==(const RegexStr& other) const
     return source_ == other.source_;
 }
 
+bool RegexStr::matches(const std::string& str) const
+{
+    return std::regex_match(str, regex_);
+}
+
 template<> RegexStr Converter<RegexStr>::parse(const std::string& source) {
     return RegexStr::fromStr(source);
 }

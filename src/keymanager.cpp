@@ -157,24 +157,18 @@ void KeyManager::ensureKeyMask(const Client* client) {
     if (client == nullptr) {
         client = Root::get()->clients()->focus();
     }
-
-    string targetMaskStr = (client != nullptr) ? client->keysInactive_() : "";
-
-    if (activeKeyMask_.str() == targetMaskStr) {
-        // nothing to do
+    // if there is still no client, then nothing is focused
+    if (client == nullptr) {
+        clearActiveKeyMask();
         return;
     }
 
-    try {
-        auto newMask = KeyMask::fromString(targetMaskStr, true);
-        setActiveKeyMask(newMask);
-    } catch (std::regex_error& err) {
-        HSWarning("Failed to parse keymask \"%s\"is invalid (falling back to empty mask): %s\n",
-                targetMaskStr.c_str(), err.what());
-
-        // Fall back to empty mask:
-        clearActiveKeyMask();
+    KeyMask newMask(client->keysInactive_(), true);
+    if (activeKeyMask_ == newMask) {
+        // nothing to do
+        return;
     }
+    setActiveKeyMask(newMask);
 }
 
 //! Apply new keymask by grabbing/ungrabbing current bindings accordingly
@@ -196,8 +190,7 @@ void KeyManager::setActiveKeyMask(const KeyMask& keysInactive) {
 
 //! Set the active keymask to an empty exception
 void KeyManager::clearActiveKeyMask() {
-    auto newMask = KeyMask::fromString("", false);
-    setActiveKeyMask(newMask);
+    setActiveKeyMask({});
 }
 
 /*!
@@ -229,12 +222,24 @@ bool KeyManager::removeKeyBinding(const KeyCombo& comboToRemove) {
  * Returns true if the string representation of the KeyCombo matches
  * the given keymask
  */
+KeyManager::KeyMask::KeyMask(const RegexStr &regex, bool negated)
+    : regex_(regex)
+    , negated_(negated)
+{
+}
+
+KeyManager::KeyMask::KeyMask()
+    : regex_(RegexStr::fromStr(""))
+    , negated_(false)
+{
+}
+
 bool KeyManager::KeyMask::allowsBinding(const KeyCombo &combo) const
 {
-    if (str_ == "") {
+    if (regex_.empty()) {
         return true;
     } else {
-        bool match = std::regex_match(combo.str(), regex_);
+        bool match = regex_.matches(combo.str());
         if (negated_) {
             // only allow keybindings that don't match
             return !match;
