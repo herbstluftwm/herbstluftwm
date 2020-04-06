@@ -78,7 +78,7 @@ public:
 
     void regrabAll();
     void ensureKeyMask(const Client* client = nullptr);
-    void setActiveKeyMask(const KeyMask& keysInactive);
+    void setActiveKeyMask(const KeyMask& keyMask, const KeyMask& keysInactive);
     void clearActiveKeyMask();
 
     // TODO: This is not supposed to exist. It only does as a workaround,
@@ -95,6 +95,7 @@ private:
 
     XKeyGrabber xKeyGrabber_;
 
-    // The last known keymask (for comparison on change)
-    KeyMask activeKeyMask_;
+    // The last applies KeyMask & KeysInactive(for comparison on change)
+    KeyMask currentKeyMask_;
+    KeyMask currentKeysInactive_;
 };

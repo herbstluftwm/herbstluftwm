@@ -44,7 +44,9 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     // Make sure there is no existing binding with same keysym/modifiers
     removeKeyBinding(newBinding->keyCombo);
 
-    if (activeKeyMask_.allowsBinding(newBinding->keyCombo)) {
+    if (currentKeyMask_.allowsBinding(newBinding->keyCombo)
+        && currentKeysInactive_.allowsBinding(newBinding->keyCombo))
+    {
         // Grab for events on this keycode
         xKeyGrabber_.grabKeyCombo(newBinding->keyCombo);
         newBinding->grabbed = true;
@@ -164,20 +166,28 @@ void KeyManager::ensureKeyMask(const Client* client) {
         return;
     }
 
-    KeyMask newMask(client->keysInactive_(), true);
-    if (activeKeyMask_ == newMask) {
+    // keyMask => keybinding is allowed if it matches
+    //            the reg. expression => no negation
+    KeyMask newKeyMask(client->keyMask_(), false);
+    // keysInactive => keybinding is disallowed if it
+    //                 *does not* match the reg. expression => negation!
+    KeyMask newKeysInactive(client->keysInactive_(), true);
+
+    if (currentKeyMask_ == newKeyMask
+        && currentKeysInactive_ == newKeysInactive)
+    {
         // nothing to do
         return;
     }
-    setActiveKeyMask(newMask);
+    setActiveKeyMask(newKeyMask, newKeysInactive);
 }
 
 //! Apply new keymask by grabbing/ungrabbing current bindings accordingly
-void KeyManager::setActiveKeyMask(const KeyMask& keysInactive) {
+void KeyManager::setActiveKeyMask(const KeyMask& keyMask, const KeyMask& keysInactive) {
     for (auto& binding : binds) {
         auto name = binding->keyCombo.str();
-        bool isAllowed = keysInactive.allowsBinding(binding->keyCombo);
-
+        bool isAllowed = keysInactive.allowsBinding(binding->keyCombo)
+                         && keyMask.allowsBinding(binding->keyCombo);
         if (isAllowed && !binding->grabbed) {
             xKeyGrabber_.grabKeyCombo(binding->keyCombo);
             binding->grabbed = true;
@@ -186,12 +196,13 @@ void KeyManager::setActiveKeyMask(const KeyMask& keysInactive) {
             binding->grabbed = false;
         }
     }
-    activeKeyMask_ = keysInactive;
+    currentKeyMask_ = keyMask;
+    currentKeysInactive_ = keysInactive;
 }
 
-//! Set the active keymask to an empty exception
+//! Set the current key filters to an empty exception
 void KeyManager::clearActiveKeyMask() {
-    setActiveKeyMask({});
+    setActiveKeyMask({}, {});
 }
 
 /*!

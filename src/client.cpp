@@ -68,6 +68,11 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
     }
 
+    keyMask_.changed().connect([this] {
+            if (Root::get()->clients()->focus() == this) {
+                Root::get()->keys()->ensureKeyMask();
+            }
+            });
     keysInactive_.changed().connect([this] {
             if (Root::get()->clients()->focus() == this) {
                 Root::get()->keys()->ensureKeyMask();
