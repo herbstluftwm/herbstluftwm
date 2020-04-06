@@ -185,7 +185,7 @@ def test_keymask_type(hlwm):
     hlwm.create_client()
     hlwm.call(['set_attr',
                'clients.focus.keymask',
-               'Foo\(bar(a paren[thesis]*)* group'])
+               r'Foo\(bar(a paren[thesis]*)* group'])
 
 
 def test_keymask_syntax_error(hlwm):
