@@ -179,3 +179,26 @@ def test_keys_inactive_on_other_client(hlwm, keyboard):
     keyboard.press('x')
 
     assert hlwm.get_attr('clients.focus.pseudotile') == 'true'
+
+
+def test_keymask_type(hlwm):
+    hlwm.create_client()
+    hlwm.call(['set_attr',
+               'clients.focus.keymask',
+               r'Foo\(bar(a paren[thesis]*)* group'])
+
+
+def test_keymask_syntax_error(hlwm):
+    hlwm.create_client()
+    hlwm.call_xfail(['set_attr', 'clients.focus.keymask', '(unmatch']) \
+        .expect_stderr('not a valid value')
+    hlwm.call_xfail(['set_attr', 'clients.focus.keymask', '[unmatch']) \
+        .expect_stderr('not a valid value')
+
+
+def test_keymask_complete(hlwm):
+    hlwm.create_client()
+    cmd = ['set_attr', 'clients.focus.keymask']
+    reg = 'Foo(a [th]*)*'
+    hlwm.call(cmd + [reg])
+    assert hlwm.complete(cmd) == [reg]

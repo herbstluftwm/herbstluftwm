@@ -46,6 +46,7 @@ target_sources(herbstluftwm PRIVATE
     plainstack.h
     panelmanager.h panelmanager.cpp
     rectangle.cpp rectangle.h
+    regexstr.cpp regexstr.h
     rootcommands.cpp rootcommands.h
     root.cpp root.h
     rulemanager.cpp rulemanager.h
