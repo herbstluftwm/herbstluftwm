@@ -294,7 +294,7 @@ void Consequence::applyKeyMask(const Client* client, ClientChanges* changes) con
 
 void Consequence::applyKeysInactive(const Client *client, ClientChanges *changes) const
 {
-    changes->keysInactive = value;
+    changes->keysInactive = Converter<RegexStr>::parse(value);
 }
 
 void Consequence::applyMonitor(const Client* client, ClientChanges* changes) const {

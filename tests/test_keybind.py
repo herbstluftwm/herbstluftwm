@@ -114,16 +114,12 @@ def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
     hlwm.call_xfail('attr tags.1')
 
 
-@pytest.mark.parametrize('maskmethod', ('rule', 'set_attr'))
-def test_invalid_keys_inactive(hlwm, keyboard, maskmethod):
+def test_invalid_keys_inactive_via_rule(hlwm, keyboard):
     hlwm.call('keybind x close')
-    if maskmethod == 'rule':
-        hlwm.call('rule once keys_inactive=[b-a]')
+    # Note: In future work, we could make this fail right away. But
+    # currently, that is not the case.
+    hlwm.call('rule once keys_inactive=[b-a]')
     hlwm.create_client()
-    if maskmethod == 'set_attr':
-        # Note: In future work, we could make this fail right away. But
-        # currently, that is not the case.
-        hlwm.call('set_attr clients.focus.keys_inactive [b-a]')
 
     keyboard.press('x')
 
@@ -188,11 +184,14 @@ def test_keymask_type(hlwm):
                r'Foo\(bar(a paren[thesis]*)* group'])
 
 
-def test_keymask_syntax_error(hlwm):
+@pytest.mark.parametrize('attribute', ['keymask', 'keys_inactive'])
+def test_regex_syntax_error(hlwm, attribute):
     hlwm.create_client()
-    hlwm.call_xfail(['set_attr', 'clients.focus.keymask', '(unmatch']) \
+    hlwm.call_xfail(['set_attr', 'clients.focus.' + attribute, '(unmatch']) \
         .expect_stderr('not a valid value')
-    hlwm.call_xfail(['set_attr', 'clients.focus.keymask', '[unmatch']) \
+    hlwm.call_xfail(['set_attr', 'clients.focus.' + attribute, '[unmatch']) \
+        .expect_stderr('not a valid value')
+    hlwm.call_xfail(['set_attr', 'clients.focus.' + attribute, '[b-a]']) \
         .expect_stderr('not a valid value')
 
 

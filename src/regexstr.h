@@ -15,9 +15,14 @@ public:
     RegexStr();
     //! may throw std::invalid_argument exception
     static RegexStr fromStr(const std::string& source);
-    std::string str() { return source_; }
+    std::string str() const { return source_; }
+    /** returns when the source is the empty string, respectivelly is 'unset'
+     * (has nothing to do with the language of the regex being empty)
+     */
+    bool empty() const { return source_.empty(); }
     bool operator==(const RegexStr& other) const;
     bool operator!=(const RegexStr& o) const { return ! operator==(o); }
+    bool matches(const std::string& str) const;
 private:
     std::string source_;
     std::regex regex_;

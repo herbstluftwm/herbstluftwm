@@ -72,7 +72,7 @@ public:
     bool            manage = true; // whether we should manage it
     std::experimental::optional<bool> fullscreen;
     std::experimental::optional<RegexStr> keyMask; // Which keymask rule should be applied for this client
-    std::experimental::optional<std::string> keysInactive; // Which keymask rule should be applied for this client
+    std::experimental::optional<RegexStr> keysInactive; // Which keymask rule should be applied for this client
 
     std::experimental::optional<bool> floating;
     std::experimental::optional<bool> pseudotile;
