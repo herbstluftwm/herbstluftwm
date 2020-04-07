@@ -18,7 +18,7 @@ def test_herbstluftwm_already_running(hlwm):
 def test_herbstluftwm_default_autostart(hlwm):
     expected_tags = [str(tag) for tag in range(1, 10)]
     # FIXME: Is there a more robust way to find the default autostart path?
-    default_autostart = os.path.join(os.path.abspath(BINDIR), '..', 'share/autostart')
+    default_autostart = os.path.join(os.path.abspath(BINDIR), 'share/autostart')
     subprocess.run(['bash', '-e', default_autostart], check=True)
 
     assert hlwm.list_children('tags.by-name') == sorted(expected_tags)

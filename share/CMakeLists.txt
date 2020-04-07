@@ -1,3 +1,10 @@
+add_custom_target("copy_autostart" ALL)
+add_custom_command(
+    TARGET copy_autostart POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    ${CMAKE_CURRENT_SOURCE_DIR}/autostart
+    ${CMAKE_CURRENT_BINARY_DIR}/autostart)
+
 install(FILES herbstclient-completion DESTINATION ${BASHCOMPLETIONDIR})
 install(FILES _herbstclient           DESTINATION ${ZSHCOMPLETIONDIR})
 install(FILES herbstclient.fish       DESTINATION ${FISHCOMPLETIONDIR})
