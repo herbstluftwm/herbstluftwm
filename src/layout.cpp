@@ -297,15 +297,19 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
             // and 2. only one window is shown
             && (clientCount() == 1 || layout == LayoutAlgorithm::max);
 
+    auto window_gap = settings_->window_gap();
     if (!smart_window_surroundings_active) {
-        // apply window gap
-        auto window_gap = settings_->window_gap();
+        // dedunct 'window_gap' many pixels from the left
+        // and from the top border. Later, we will deduct
+        // 'window_gap' many pixels from the bottom and the
+        // right from every window
         rect.x += window_gap;
         rect.y += window_gap;
         rect.width -= window_gap;
         rect.height -= window_gap;
 
-        // apply frame padding
+        // apply frame padding: deduct 'frame_padding' pixels
+        // from all four sides:
         auto frame_padding = settings_->frame_padding();
         rect.x += frame_padding;
         rect.y += frame_padding;
@@ -326,6 +330,14 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
         case LayoutAlgorithm::horizontal:
             layoutResult = layoutHorizontal(rect);
             break;
+    }
+    if (!smart_window_surroundings_active) {
+        // apply window gap: deduct 'window_gap' many pixels from
+        // bottom and right of every window:
+        for (auto& it : layoutResult.data) {
+            it.second.geometry.width -= window_gap;
+            it.second.geometry.height -= window_gap;
+        }
     }
     res.mergeFrom(layoutResult);
     res.focus = clients[selection];

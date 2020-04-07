@@ -244,12 +244,6 @@ void Client::raise() {
 }
 
 void Client::resize_tiling(Rectangle rect, bool isFocused) {
-    // apply border width
-    if (!this->pseudotile_ /* && !smart_window_surroundings_active(frame) */) {
-        // apply window gap
-        rect.width -= settings.window_gap();
-        rect.height -= settings.window_gap();
-    }
     auto& scheme = theme[Theme::Type::Tiling](isFocused, urgent_());
     if (this->pseudotile_) {
         auto inner = this->float_size_;
