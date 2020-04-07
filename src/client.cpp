@@ -17,7 +17,6 @@
 #include "monitormanager.h"
 #include "mousemanager.h"
 #include "root.h"
-#include "settings.h"
 #include "stack.h"
 #include "tag.h"
 #include "theme.h"
