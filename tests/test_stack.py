@@ -33,10 +33,9 @@ def helper_get_stack_as_list(hlwm, clients_only=True, strip_focus_layer=False):
     return winids_new
 
 
-@pytest.mark.parametrize('floatingmode', ['on', 'off'])
 @pytest.mark.parametrize('count', [2, 5])
-def test_clients_stacked_in_reverse_order_of_creation(hlwm, floatingmode, count):
-    hlwm.call(['floating', floatingmode])
+def test_clients_stacked_in_reverse_order_of_creation(hlwm, count):
+    hlwm.call('floating on')
 
     clients = hlwm.create_clients(count)
 
