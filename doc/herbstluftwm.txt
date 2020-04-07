@@ -1426,7 +1426,7 @@ listed as follows:
                             bindings will be disabled. The default keymask is an
                             empty string (""), which does not disable any
                             keybinding.
-|s - keys_inactive        | A regular expression that describes which
+|r - keys_inactive        | A regular expression that describes which
                             keybindings are inactive while the client is
                             focused. If a key combination is pressed and its
                             string representation (as given by list_keybinds)
