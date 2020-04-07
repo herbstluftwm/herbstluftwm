@@ -166,8 +166,21 @@ void Monitor::applyLayout() {
         } else {
             tag->stack->sliceRemoveLayer(c->slice, LAYER_FULLSCREEN);
         }
-        if (!p.second.floated && p.second.needsRaise) {
-            c->raise();
+        // special raise rules for tiled clients:
+        if (!p.second.floated) {
+            // this client is the globally focused client if this monitor
+            // is focused and if this client is the focus on this monitor:
+            bool globallyFocusedClient = isFocused && res.focus == c;
+            // if this client is globally focused, then it has a different border color
+            // and so we raise it to make the look of overlapping shadows more pleasent if
+            // a compositor is running.
+            //
+            // Thus, raise this client if it needs to be raised according
+            // to the TilingResult (if it is the selected window in a max-frame) or
+            // if this client is focused:
+            if (p.second.needsRaise || globallyFocusedClient) {
+                c->raise();
+            }
         }
     }
     tag->stack->clearLayer(LAYER_FOCUS);
