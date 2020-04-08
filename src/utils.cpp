@@ -66,16 +66,6 @@ char** argv_duplicate(int argc, char** argv) {
     return new_argv;
 }
 
-// frees all entries in argument-vector and then the vector itself
-void argv_free(int argc, char** argv) {
-    if (argc <= 0) return;
-    int i;
-    for (i = 0; i < argc; i++) {
-        free(argv[i]);
-    }
-    delete[] argv;
-}
-
 // tells if the intervals [a_left, a_right) [b_left, b_right) intersect
 bool intervals_intersect(int a_left, int a_right, int b_left, int b_right) {
     return (b_left < a_right) && (a_left < b_right);
@@ -126,82 +116,6 @@ string utf8_string_at(const string& str, size_t n) {
         result += str[byte_offset];
     }
     return result;
-}
-
-const char* strlasttoken(const char* str, const char* delim) {
-    const char* next = str;
-    while ((next = strpbrk(str, delim))) {
-        next++;;
-        str = next;
-    }
-    return str;
-}
-
-int array_find(const void* buf, size_t elems, size_t size, const void* needle) {
-    for (size_t i = 0; i < elems; i++) {
-        if (0 == memcmp((const char*)buf + (size * i), needle, size)) {
-            return (int)i;
-        }
-    }
-    return -1;
-}
-
-void array_reverse(void* void_buf, size_t elems, size_t size) {
-    char* buf = (char*)void_buf;
-    char* tmp = new char[size];
-    for (int i = 0, j = elems - 1; i < j; i++, j--) {
-        memcpy(tmp, buf + size * i, size);
-        memcpy(buf + size * i, buf + size * j, size);
-        memcpy(buf + size * j, tmp, size);
-    }
-    delete[] tmp;
-}
-
-
-/**
- * \brief   tells if the string needle is identical to the string *pmember
- */
-bool memberequals_string(void* pmember, const void* needle) {
-    return !strcmp(*(char**)pmember, (const char*)needle);
-}
-
-/**
- * \brief   tells if the ints pointed by pmember and needle are identical
- */
-bool memberequals_int(void* pmember, const void* needle) {
-    return (*(int*)pmember) == (*(const int*)needle);
-}
-
-/**
- * \brief   finds an element in a table (i.e. array of structs)
- *
- *          it consecutively searches from the beginning of the table for a
- *          table element whose member is equal to needle. It passes a pointer
- *          to the member and needle to the equals-function consecutively until
- *          equals returns something != 0.
- *
- * \param   start           address of the first element in the table
- * \param   elem_size       offset between two elements
- * \param   count           count of elements in that table
- * \param   member_offset   offset of the member that is used to compare
- * \param   equals          function that tells if the two values are equal
- * \param   needle          second parameter to equals
- * \return                  the found element or NULL
- */
-void* table_find(void* start, size_t elem_size, size_t count,
-                 size_t member_offset, MemberEquals equals, const void* needle)
-{
-    char* cstart = (char*) start;
-    while (count > 0) {
-        /* check the element */
-        if (equals(cstart + member_offset, needle)) {
-            return cstart;
-        }
-        /* go to the next element */
-        cstart += elem_size;
-        count--;
-    }
-    return nullptr;
 }
 
 /**
