@@ -454,7 +454,7 @@ void FrameTree::cycle_frame(std::function<size_t(size_t,size_t)> indexAndLenToIn
 
 void FrameTree::cycle_frame(int delta) {
     cycle_frame([delta](size_t index, size_t len) {
-        return MOD((size_t)(index + delta), len);
+        return MOD(index + delta, len);
     });
 }
 
