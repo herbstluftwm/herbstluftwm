@@ -1,6 +1,7 @@
 import pytest
 import re
 import subprocess
+import math
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
@@ -381,3 +382,62 @@ def test_smart_window_surroundings(hlwm, x11):
     # we have three times the window gap in height: below, above, and between
     # the client windows
     assert geo1.height + geo2.height + 3 * window_gap == mon_height
+
+
+@pytest.mark.parametrize('running_clients_num,start_idx_range', [
+    # number of clients and indices where we should start
+    (6, range(0, 6)),
+    (7, [3, 4, 5, 6]),  # only check last two rows
+    (8, [3, 4, 5, 6]),  # only check last two rows
+    (9, [6, 7, 8]),   # only last row
+])
+@pytest.mark.parametrize('gapless_grid', [True, False])
+def test_grid_neighbours_3_columns(hlwm, running_clients, running_clients_num,
+                                   start_idx_range, gapless_grid):
+    hlwm.call(['set', 'gapless_grid', hlwm.bool(gapless_grid)])
+    direction2coordinates = {
+        # row, column
+        'up': (-1, 0),
+        'down': (1, 0),
+        'left': (0, -1),
+        'right': (0, 1),
+    }
+    for start_idx in start_idx_range:
+        layout = '(clients grid:{} {})'
+        layout = layout.format(start_idx, ' '.join(running_clients))
+
+        column_count = 3
+        row_count = math.ceil(running_clients_num / column_count)
+        column = start_idx % 3
+        row = start_idx // 3
+
+        for direction, (dy, dx) in direction2coordinates.items():
+            hlwm.call(['load', layout])  # reset focus
+            y = row + dy
+            x = column + dx
+            expected_idx = y * column_count + x
+            if x < 0 or x >= column_count:
+                expected_idx = None
+            if y < 0 or y >= row_count:
+                expected_idx = None
+            if expected_idx is not None and expected_idx >= column_count * row_count:
+                expected_idx = None
+            if expected_idx is not None and expected_idx >= running_clients_num:
+                if gapless_grid:
+                    # last window fills remaining row
+                    expected_idx = running_clients_num - 1
+                    if expected_idx == start_idx:
+                        # we only go there if this client
+                        # is not the one where we started
+                        expected_idx = None
+                else:
+                    expected_idx = None
+
+            print(f"expected_idx = {expected_idx}")
+            if expected_idx is None:
+                hlwm.call_xfail(['focus', direction]) \
+                    .expect_stderr('No neighbour found')
+            else:
+                hlwm.call(['focus', direction])
+                assert hlwm.get_attr('clients.focus.winid') \
+                    == running_clients[expected_idx]
