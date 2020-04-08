@@ -614,6 +614,7 @@ def x11(x11_connection):
                           sync_hlwm=True,
                           wm_class=None,
                           window_type=None,
+                          transient_for=None,
                           ):
             w = self.root.create_window(
                 geometry[0],
@@ -629,6 +630,9 @@ def x11(x11_connection):
             )
             if wm_class is not None:
                 w.set_wm_class(wm_class[0], wm_class[1])
+
+            if transient_for is not None:
+                w.set_wm_transient_for(transient_for)
 
             # Keep track of window for later removal:
             self.windows.add(w)
