@@ -76,7 +76,9 @@ void Object::ls(Output out)
         out << " " << (it.second->writeable() ? "w" : "-");
         out << " " << (it.second->hookable() ? "h" : "-");
         out << " " << it.first;
-        if (it.second->type() == Type::ATTRIBUTE_STRING) {
+        if (it.second->type() == Type::ATTRIBUTE_STRING
+            || it.second->type() == Type::ATTRIBUTE_REGEX )
+        {
             out << " = \"" << it.second->str() << "\"" << endl;
         } else {
             out << " = " << it.second->str() << endl;

@@ -45,3 +45,14 @@ void Converter<Direction>::complete(Completion& complete, const Direction* relat
 {
     complete.full({"up", "down", "left", "right"});
 }
+
+template<>
+unsigned long Converter<unsigned long>::parse(const std::string& payload)
+{
+    long value = std::stol(payload);
+    if (value < 0) {
+        throw std::invalid_argument("negative number is out of range");
+    } else {
+        return (unsigned long)(value);
+    }
+}

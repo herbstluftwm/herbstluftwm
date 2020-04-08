@@ -6,6 +6,7 @@
 
 #include "attribute_.h"
 #include "object.h"
+#include "regexstr.h"
 #include "types.h"
 #include "x11-types.h"
 
@@ -50,8 +51,8 @@ public:
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
     DynAttribute_<std::string> tag_str_;
     Attribute_<std::string> window_id_str;
-    Attribute_<std::string> keyMask_; // regex for key bindings that are active on this window
-    Attribute_<std::string> keysInactive_; // regex for key bindings that are inactive on this window
+    Attribute_<RegexStr> keyMask_; // regex for key bindings that are active on this window
+    Attribute_<RegexStr> keysInactive_; // regex for key bindings that are inactive on this window
     Attribute_<int>  pid_;
     Attribute_<bool> pseudotile_; // only move client but don't resize (if possible)
     Attribute_<bool> ewmhrequests_; // accept ewmh-requests for this client

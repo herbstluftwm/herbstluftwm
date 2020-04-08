@@ -19,6 +19,7 @@
 #include "tag.h"
 #include "tagmanager.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::endl;
 using std::function;
@@ -256,6 +257,9 @@ ClientChanges ClientManager::applyDefaultRules(Window win)
     if (std::find(floated.begin(), floated.end(), windowType) != floated.end())
     {
         changes.floating = True;
+    }
+    if (ewmh->X().getTransientForHint(win).has_value()) {
+        changes.floating = true;
     }
     return changes;
 }

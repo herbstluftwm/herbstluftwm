@@ -248,7 +248,16 @@ void XConnection::setPropertyCardinal(Window w, Atom property, const vector<long
     // if format = 32, then the data must be a long array.
     XChangeProperty(m_display, w, property,
         XA_CARDINAL, 32, PropModeReplace,
-        (unsigned char*)(value.data()), value.size());
+                    (unsigned char*)(value.data()), value.size());
+}
+
+std::experimental::optional<Window> XConnection::getTransientForHint(Window win)
+{
+    Window master;
+    if (XGetTransientForHint(m_display, win, &master) != 0) {
+        return master;
+    }
+    return {};
 }
 
 /** a sincere wrapper around XGetWindowProperty():

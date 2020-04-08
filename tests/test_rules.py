@@ -505,3 +505,15 @@ def test_dialog_window_floated(hlwm, hc_idle, x11, window_type):
                                  window_type=window_type)
     assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(True)
     assert ['rule', 'mywindow', winid] in hc_idle.hooks()
+
+
+@pytest.mark.parametrize('transient_for', [True, False])
+def test_float_transient_for(hlwm, x11, transient_for):
+    mainwin, mainwinid = x11.create_client()
+    trans_for_win = None
+    if transient_for:
+        trans_for_win = mainwin
+    _, winid = x11.create_client(transient_for=trans_for_win)
+
+    assert hlwm.get_attr(f'clients.{mainwinid}.floating') == 'false'
+    assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(transient_for)

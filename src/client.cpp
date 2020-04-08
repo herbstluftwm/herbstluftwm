@@ -17,7 +17,6 @@
 #include "monitormanager.h"
 #include "mousemanager.h"
 #include "root.h"
-#include "settings.h"
 #include "stack.h"
 #include "tag.h"
 #include "theme.h"
@@ -41,8 +40,8 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , title_(this,  "title", "")
     , tag_str_(this,  "tag", &Client::tagName)
     , window_id_str(this,  "winid", "")
-    , keyMask_(this,  "keymask", "")
-    , keysInactive_(this,  "keys_inactive", "")
+    , keyMask_(this,  "keymask", RegexStr::fromStr(""))
+    , keysInactive_(this,  "keys_inactive", RegexStr::fromStr(""))
     , pid_(this,  "pid", -1)
     , pseudotile_(this,  "pseudotile", false)
     , ewmhrequests_(this, "ewmhrequests", true)
@@ -68,6 +67,11 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
     }
 
+    keyMask_.changed().connect([this] {
+            if (Root::get()->clients()->focus() == this) {
+                Root::get()->keys()->ensureKeyMask();
+            }
+            });
     keysInactive_.changed().connect([this] {
             if (Root::get()->clients()->focus() == this) {
                 Root::get()->keys()->ensureKeyMask();
@@ -239,12 +243,6 @@ void Client::raise() {
 }
 
 void Client::resize_tiling(Rectangle rect, bool isFocused) {
-    // apply border width
-    if (!this->pseudotile_ /* && !smart_window_surroundings_active(frame) */) {
-        // apply window gap
-        rect.width -= settings.window_gap();
-        rect.height -= settings.window_gap();
-    }
     auto& scheme = theme[Theme::Type::Tiling](isFocused, urgent_());
     if (this->pseudotile_) {
         auto inner = this->float_size_;

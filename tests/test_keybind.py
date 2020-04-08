@@ -114,16 +114,12 @@ def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
     hlwm.call_xfail('attr tags.1')
 
 
-@pytest.mark.parametrize('maskmethod', ('rule', 'set_attr'))
-def test_invalid_keys_inactive(hlwm, keyboard, maskmethod):
+def test_invalid_keys_inactive_via_rule(hlwm, keyboard):
     hlwm.call('keybind x close')
-    if maskmethod == 'rule':
-        hlwm.call('rule once keys_inactive=[b-a]')
+    # Note: In future work, we could make this fail right away. But
+    # currently, that is not the case.
+    hlwm.call('rule once keys_inactive=[b-a]')
     hlwm.create_client()
-    if maskmethod == 'set_attr':
-        # Note: In future work, we could make this fail right away. But
-        # currently, that is not the case.
-        hlwm.call('set_attr clients.focus.keys_inactive [b-a]')
 
     keyboard.press('x')
 
@@ -148,6 +144,21 @@ def test_complete_keybind_after_combo_offers_all_commands(hlwm):
     assert complete == hlwm.complete('', position=0)
 
 
+def test_keys_inactive_regrab_all(hlwm, keyboard):
+    hlwm.create_client()
+    hlwm.call('new_attr string my_x_pressed')
+    hlwm.call('keybind x set_attr my_x_pressed pressed')
+    hlwm.call('keybind y true')
+    # this disables the x binding
+    hlwm.call('set_attr clients.focus.keys_inactive x')
+
+    hlwm.call('keyunbind y')
+    keyboard.press('x')
+
+    # check that x is really disabled:
+    assert hlwm.get_attr('my_x_pressed') == ''
+
+
 def test_complete_keybind_offers_additional_mods_without_duplication(hlwm):
     complete = hlwm.complete('keybind Mod2+Mo', partial=True, position=1)
 
@@ -168,6 +179,61 @@ def test_complete_keybind_validates_all_tokens(hlwm):
     assert complete == []
 
 
+@pytest.mark.parametrize('via_rule', [False, True])
+@pytest.mark.parametrize('client_first', [True, False])
+def test_keymask_for_existing_binds(hlwm, keyboard, client_first, via_rule):
+    hlwm.call('keybind x set_attr my_x_pressed pressed')
+    hlwm.call('keybind y set_attr my_y_pressed pressed')
+    if via_rule:
+        hlwm.call('rule keymask=x')
+    if client_first:
+        hlwm.create_client()
+    if not client_first:
+        hlwm.create_client()
+    if not via_rule:
+        hlwm.call('set_attr clients.focus.keymask x')
+    assert hlwm.get_attr('clients.focus.keymask') == 'x'
+    hlwm.call('new_attr string my_x_pressed')
+    hlwm.call('new_attr string my_y_pressed')
+
+    # y does not match the mask, thus is not allowed
+    keyboard.press('x')
+    keyboard.press('y')
+
+    assert hlwm.get_attr('my_x_pressed') == 'pressed'
+    assert hlwm.get_attr('my_y_pressed') == ''
+
+
+def test_keymask_applied_to_new_binds(hlwm, keyboard):
+    winid, _ = hlwm.create_client()
+    hlwm.create_client()  # another client
+    assert hlwm.get_attr('clients.focus.winid') == winid
+    hlwm.call('new_attr string my_x_pressed')
+    hlwm.call('new_attr string my_y_pressed')
+    hlwm.call('set_attr clients.focus.keymask y')
+
+    hlwm.call('keybind x set_attr my_x_pressed pressed')
+    hlwm.call('keybind y set_attr my_y_pressed pressed')
+
+    keyboard.press('x')
+    keyboard.press('y')
+
+    assert hlwm.get_attr('my_x_pressed') == ''
+    assert hlwm.get_attr('my_y_pressed') == 'pressed'
+
+
+def test_keymask_prefix(hlwm, keyboard):
+    hlwm.call('keybind space set_attr clients.focus.my_space_pressed pressed')
+    hlwm.create_client()
+    hlwm.call(f'set_attr clients.focus.keymask s')
+    hlwm.call('new_attr string clients.focus.my_space_pressed')
+
+    # according to the keymask, s is allowed, space is not
+    keyboard.press('space')
+
+    assert hlwm.get_attr('clients.focus.my_space_pressed') == ''
+
+
 def test_keys_inactive_on_other_client(hlwm, keyboard):
     c1, _ = hlwm.create_client()
     c2, _ = hlwm.create_client()
@@ -179,3 +245,67 @@ def test_keys_inactive_on_other_client(hlwm, keyboard):
     keyboard.press('x')
 
     assert hlwm.get_attr('clients.focus.pseudotile') == 'true'
+
+
+def test_keymask_type(hlwm):
+    hlwm.create_client()
+    hlwm.call(['set_attr',
+               'clients.focus.keymask',
+               r'Foo\(bar(a paren[thesis]*)* group'])
+    hlwm.call(['set_attr',
+               'clients.focus.keys_inactive',
+               r'Foo\(bar(a paren[thesis]*)* group'])
+
+
+@pytest.mark.parametrize('attribute', ['keymask', 'keys_inactive'])
+def test_regex_syntax_error(hlwm, attribute):
+    hlwm.create_client()
+    hlwm.call_xfail(['set_attr', 'clients.focus.' + attribute, '(unmatch']) \
+        .expect_stderr('not a valid value')
+    hlwm.call_xfail(['set_attr', 'clients.focus.' + attribute, '[unmatch']) \
+        .expect_stderr('not a valid value')
+    hlwm.call_xfail(['set_attr', 'clients.focus.' + attribute, '[b-a]']) \
+        .expect_stderr('not a valid value')
+
+
+def test_keymask_complete(hlwm):
+    hlwm.create_client()
+    cmd = ['set_attr', 'clients.focus.keymask']
+    reg = 'Foo(a [th]*)*'
+    hlwm.call(cmd + [reg])
+    assert hlwm.complete(cmd) == [reg]
+
+
+def test_keys_inactive_not_if_no_focus(hlwm, keyboard):
+    hlwm.create_client()
+    hlwm.call('set_attr clients.focus.keys_inactive x')
+    hlwm.call('new_attr string my_x_pressed')
+    hlwm.call('keybind x set_attr my_x_pressed pressed')
+    hlwm.call('split h 0.5')
+    hlwm.call('focus right')
+    assert 'focus' not in hlwm.list_children('clients')
+
+    keyboard.press('x')
+
+    assert hlwm.get_attr('my_x_pressed') == 'pressed'
+
+
+def test_keymask_and_keys_inactive(hlwm, keyboard):
+    hlwm.create_client()
+    hlwm.call(['set_attr', 'clients.focus.keymask', '[a-e]'])
+    hlwm.call(['set_attr', 'clients.focus.keys_inactive', '[c-x]'])
+    for k in ['a', 'c', 'f', 'z']:
+        hlwm.call(f'new_attr string my_{k}_pressed')
+        hlwm.call(f'keybind {k} set_attr my_{k}_pressed pressed')
+
+    for k in ['a', 'c', 'f', 'z']:
+        keyboard.press(k)
+
+    # a is allowed by keymask and not disabled by keys_inactive
+    assert hlwm.get_attr('my_a_pressed') == 'pressed'
+    # c is allowed by keymask and but disabled by keys_inactive
+    assert hlwm.get_attr('my_c_pressed') == ''
+    # f is disallowed by keymask and disabled by keys_inactive
+    assert hlwm.get_attr('my_f_pressed') == ''
+    # z is disallowed by keymask but not disabled by keys_inactive
+    assert hlwm.get_attr('my_z_pressed') == ''

@@ -1,15 +1,13 @@
 #pragma once
 
 #include <X11/Xlib.h>
-#include <map>
 #include <memory>
-#include <regex>
-#include <sstream>
 #include <string>
 #include <vector>
 
 #include "keycombo.h"
 #include "object.h"
+#include "regexstr.h"
 #include "types.h"
 #include "xkeygrabber.h"
 
@@ -29,7 +27,7 @@ private:
     class KeyMask {
     public:
         /*!
-         * Creates a Keymask object from the given regex string
+         * Keymask object essentially is a regex
          *
          * if negated=false, then this keymask only allows those keybindings
          * that match the given regex.
@@ -38,29 +36,19 @@ private:
          * that do not match the given regex.
          *
          * if the regex is "", then every keybinding is allowed (regardless of 'negated')
-         * /throws exceptions thrown by std::regex
          */
-        static KeyMask fromString(const std::string& str, bool negated) {
-            KeyMask ret;
-            ret.negated_ = negated;
-            ret.str_ = str;
-            if (str != "") {
-                // Simply pass on any exceptions thrown here:
-                ret.regex_ = std::regex(str, std::regex::extended);
-            }
-            return ret;
-        }
+        KeyMask(const RegexStr& regex, bool negated);
+        KeyMask();
 
         bool allowsBinding(const KeyCombo& combo) const;
-        std::string str() const { return str_; }
+        std::string str() const { return regex_.str(); }
 
         bool operator==(const KeyMask& other) const {
-            return  (other.str_.empty() && str_.empty())
-                 || (other.str_ == str_ && other.negated_ == negated_);
+            return  (other.regex_.empty() && regex_.empty())
+                 || (other.regex_ == regex_ && other.negated_ == negated_);
         }
     private:
-        std::string str_;
-        std::regex  regex_;
+        RegexStr    regex_;
         bool        negated_ = true;
     };
 
@@ -72,7 +60,7 @@ private:
     public:
         KeyCombo keyCombo;
         std::vector<std::string> cmd;
-        bool grabbed;
+        bool grabbed = false;
     };
 
 public:
@@ -90,7 +78,7 @@ public:
 
     void regrabAll();
     void ensureKeyMask(const Client* client = nullptr);
-    void setActiveKeyMask(const KeyMask& keysInactive);
+    void setActiveKeyMask(const KeyMask& keyMask, const KeyMask& keysInactive);
     void clearActiveKeyMask();
 
     // TODO: This is not supposed to exist. It only does as a workaround,
@@ -107,6 +95,7 @@ private:
 
     XKeyGrabber xKeyGrabber_;
 
-    // The last known keymask (for comparison on change)
-    KeyMask activeKeyMask_;
+    // The last applies KeyMask & KeysInactive(for comparison on change)
+    KeyMask currentKeyMask_;
+    KeyMask currentKeysInactive_;
 };
