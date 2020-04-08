@@ -48,21 +48,13 @@ void tree_print_to(std::shared_ptr<TreeInterface> intface, Output output);
 
 bool is_herbstluft_window(Display* dpy, Window window);
 
-const char* strlasttoken(const char* str, const char* delim);
-
 time_t get_monotonic_timestamp();
 
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv);
-// frees all entries in argument-vector and then the vector itself
-void argv_free(int argc, char** argv);
 
 // tells if the intervals [a_left, a_right) [b_left, b_right) intersect
 bool intervals_intersect(int a_left, int a_right, int b_left, int b_right);
-
-// find an element in an array buf with elems elements of size size.
-int array_find(const void* buf, size_t elems, size_t size, const void* needle);
-void array_reverse(void* void_buf, size_t elems, size_t size);
 
 template<class T, int S> struct ArrayInitializer {
     ArrayInitializer(std::initializer_list<std::pair<int,T> > il) {
@@ -75,13 +67,6 @@ template<class T, int S> struct ArrayInitializer {
 };
 
 // utils for tables
-typedef bool (*MemberEquals)(void* pmember, const void* needle);
-bool memberequals_string(void* pmember, const void* needle);
-bool memberequals_int(void* pmember, const void* needle);
-
-void* table_find(void* start, size_t elem_size, size_t count,
-                 size_t member_offset, MemberEquals equals, const void* needle);
-
 void set_window_double_border(Display *dpy, Window win, int ibw,
                               unsigned long inner_color, unsigned long outer_color);
 
