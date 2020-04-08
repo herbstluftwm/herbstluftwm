@@ -221,3 +221,12 @@ def test_substitute(hlwm):
     cmdlist = hlwm.call('list_commands').stdout.splitlines()
     assert hlwm.complete(['substitute', 'ARG', 'tags.count']) \
         == sorted(['ARG'] + cmdlist)
+
+
+def test_posix_escape(hlwm):
+    tags = [r'tag"with\special', 'a&b', '$dollar', '(paren)']
+    for t in tags:
+        hlwm.call(['add', t])
+    results = hlwm.complete(['use'], evaluate_escapes=True)
+    print(results)
+    assert sorted(['default'] + tags) == sorted(results)
