@@ -454,3 +454,16 @@ def test_negate_complete_cmd(hlwm):
 def test_negate_complete_arg(hlwm):
     assert 'left' in hlwm.complete('! focus')
     assert [] == hlwm.complete('! true')
+
+
+def test_integer_out_of_range(hlwm):
+    type2outOfRange = {
+        'uint': ['-18446744073709551616', '-1', '18446744073709551616'],
+        'int': ['-18446744073709551616', '18446744073709551616'],
+    }
+    for typeName, values in type2outOfRange.items():
+        attribute = 'my_' + typeName + '_attr'
+        hlwm.call(f'new_attr {typeName} {attribute}')
+        for v in values:
+            hlwm.call_xfail(['set_attr', attribute, v]) \
+                .expect_stderr('out of range')
