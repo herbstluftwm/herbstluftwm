@@ -441,3 +441,56 @@ def test_grid_neighbours_3_columns(hlwm, running_clients, running_clients_num,
                 hlwm.call(['focus', direction])
                 assert hlwm.get_attr('clients.focus.winid') \
                     == running_clients[expected_idx]
+
+
+@pytest.mark.parametrize('splittype,dir_work,dir_dummy', [
+    ('horizontal', ('left', 'right'), ('up', 'down')),
+    ('vertical', ('up', 'down'), ('left', 'right'))
+])
+def test_resize_flat_split(hlwm, splittype, dir_work, dir_dummy):
+    # layout with a placeholder for the fraction
+    layout_prefix = '(split ' + splittype + ':'
+    layout_suffix = ':0 (clients grid:0) (clients grid:0))'
+    layout_format = layout_prefix + '{}' + layout_suffix
+
+    for i, signum in [(0, -1), (1, 1)]:
+        hlwm.call(['load', layout_format.format('0.4')])
+        hlwm.call(['resize', dir_work[i], '+0.1'])
+        # extract the fraction:
+        new_layout = hlwm.call('dump').stdout
+        assert new_layout[0:len(layout_prefix)] == layout_prefix
+        assert new_layout[-len(layout_suffix):] == layout_suffix
+        new_fraction_str = new_layout[len(layout_prefix):-len(layout_suffix)]
+        expected_fraction = float(0.4 + signum * 0.1)
+        assert math.isclose(float(new_fraction_str), expected_fraction, abs_tol=0.001)
+
+    for d in dir_dummy:
+        hlwm.call(['load', layout_format.format('0.4')])
+        hlwm.call_xfail(['resize', d, '+0.1']) \
+            .expect_stderr('No neighbour found')
+
+
+def test_resize_nested_split(hlwm):
+    # a layout for a 2x2 grid of frames, where the
+    # top left frame is focused
+    layout = ' '.join([
+        '(split horizontal:0.2:0',
+        '(split vertical:0.3:0',
+        '(clients grid:0) (clients grid:0))',
+        '(split vertical:0.4:0',
+        '(clients grid:0) (clients grid:0)))',
+    ])
+
+    # resize the root split
+    for d, signum in [('left', -1), ('right', 1)]:
+        hlwm.call(['load', layout])  # reset layout
+        hlwm.call(['resize', d, '+0.05'])
+        fraction = float(hlwm.call('dump').stdout.split(':')[1])
+        assert math.isclose(fraction, 0.2 + signum * 0.05, abs_tol=0.001)
+
+    # resize the nested split
+    for d, signum in [('up', -1), ('down', 1)]:
+        hlwm.call(['load', layout])  # reset layout
+        hlwm.call(['resize', d, '+0.05'])
+        fraction = float(hlwm.call('dump').stdout.split(':')[3])
+        assert math.isclose(fraction, 0.3 + signum * 0.05, abs_tol=0.001)
