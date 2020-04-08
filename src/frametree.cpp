@@ -433,12 +433,12 @@ int FrameTree::cycleAllCommand(Input input, Output output) {
     return 0;
 }
 
-void FrameTree::cycle_frame(int delta) {
+void FrameTree::cycle_frame(std::function<size_t(size_t,size_t)> indexAndLenToIndex) {
     shared_ptr<HSFrameLeaf> focus = focusedFrame();
     // First, enumerate all frames in traversal order
     // and find the focused frame in there
     vector<shared_ptr<HSFrameLeaf>> frames;
-    int index = 0;
+    size_t index = 0;
     root_->fmap(
         [](HSFrameSplit*) {},
         [&](HSFrameLeaf* l) {
@@ -448,9 +448,14 @@ void FrameTree::cycle_frame(int delta) {
             }
             frames.push_back(l->thisLeaf());
         });
-    index += delta;
-    index = MOD(index, frames.size());
+    index = indexAndLenToIndex(index, frames.size());
     focusFrame(frames[index]);
+}
+
+void FrameTree::cycle_frame(int delta) {
+    cycle_frame([delta](size_t index, size_t len) {
+        return MOD((size_t)(index + delta), len);
+    });
 }
 
 int FrameTree::cycleFrameCommand(Input input, Output output) {
