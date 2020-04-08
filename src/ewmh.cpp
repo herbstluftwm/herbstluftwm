@@ -191,21 +191,6 @@ const Ewmh::InitialState &Ewmh::initialState()
     return initialState_;
 }
 
-bool Ewmh::readClientList(Window** buf, unsigned long *count) {
-    Atom actual_type;
-    int format;
-    unsigned long bytes_left;
-    if (Success != XGetWindowProperty(X_.display(), X_.root(),
-            g_netatom[NetClientList], 0, ~0L, False, XA_WINDOW, &actual_type,
-            &format, count, &bytes_left, (unsigned char**)buf)) {
-        return false;
-    }
-    if (bytes_left || actual_type != XA_WINDOW || format != 32) {
-        return false;
-    }
-    return true;
-}
-
 void Ewmh::updateClientListStacking() {
     // First: get the windows currently visible
     vector<Window> buf;
