@@ -349,3 +349,35 @@ def test_focus_directional_2x2grid(hlwm, client_focused, direction):
     else:
         hlwm.call_xfail(['focus', direction]) \
             .expect_stderr('No neighbour')
+
+
+def test_smart_window_surroundings(hlwm, x11):
+    hlwm.call('set_layout vertical')
+    hlwm.call('set frame_gap 0')
+    hlwm.call('set window_border_width 0')
+    hlwm.call('set frame_border_width 0')
+    hlwm.call('set frame_padding 0')
+    hlwm.call('set smart_window_surroundings on')
+    window_gap = 10
+    hlwm.call(f'set window_gap {window_gap}')
+    mon_rect_str = hlwm.call('monitor_rect').stdout
+    mon_width, mon_height = [int(v) for v in mon_rect_str.split(' ')[2:4]]
+    # works only if mon_height is even...
+
+    # no window_gap with only one client and smart_window_surroundings
+    win1, _ = x11.create_client()
+    geo1 = win1.get_geometry()
+    assert (geo1.x, geo1.y) == (0, 0)
+    assert (geo1.width, geo1.height) == (mon_width, mon_height)
+
+    # but window_gap with the second one
+    win2, _ = x11.create_client()
+    geo1 = win1.get_geometry()
+    geo2 = win2.get_geometry()
+    # in vertical layout they have the same size
+    assert (geo1.width, geo1.height) == (geo2.width, geo2.height)
+    # we have twice the window gap (left and right)
+    assert geo1.width == mon_width - 2 * window_gap
+    # we have three times the window gap in height: below, above, and between
+    # the client windows
+    assert geo1.height + geo2.height + 3 * window_gap == mon_height
