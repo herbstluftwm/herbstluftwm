@@ -98,7 +98,11 @@ int XConnection::xerror(Display *dpy, XErrorEvent *ee) {
         HSDebug("Warning: ignoring X_BadDrawable\n");
         return 0;
     }
-    return g_xerrorxlib(dpy, ee); /* may call exit */
+    if (exitOnError_) {
+        return g_xerrorxlib(dpy, ee); // may call exit()
+    }
+    // otherwise, just ignore this error and try to proceed.
+    return 0;
 }
 
 
