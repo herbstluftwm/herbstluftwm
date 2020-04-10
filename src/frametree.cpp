@@ -505,7 +505,7 @@ int FrameTree::loadCommand(Input input, Output output) {
         output << "\"" << std::regex_replace(layoutString, whitespace, string(" "))
                << "\"" << endl;
         // and underline the token
-        int token_len = std::max(1ul, parsingResult.error_->first.second.size());
+        int token_len = std::max((size_t)1, parsingResult.error_->first.second.size());
         output << " " // for the \" above
                << string(parsingResult.error_->first.first, ' ')
                << string(token_len, '~')
