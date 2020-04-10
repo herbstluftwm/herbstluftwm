@@ -616,7 +616,7 @@ def x11(x11_connection):
             return resp.value if resp is not None else None
 
         def create_client(self, urgent=False, pid=None,
-                          geometry=(50, 50, 300, 200),
+                          geometry=(50, 50, 300, 200),  # x, y, width, height
                           force_unmanage=False,
                           sync_hlwm=True,
                           wm_class=None,
