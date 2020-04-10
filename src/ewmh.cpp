@@ -460,9 +460,7 @@ bool Ewmh::isFullscreenSet(Window win) {
 }
 
 void Ewmh::setWindowOpacity(Window win, double opacity) {
-    long long_opacity = std::numeric_limits<long>::max()
-                            * CLAMP(opacity, 0, 1);
-
+    long long_opacity = 0xffffffff * CLAMP(opacity, 0, 1);
     X_.setPropertyCardinal(win, g_netatom[NetWmWindowOpacity], { long_opacity });
 }
 
