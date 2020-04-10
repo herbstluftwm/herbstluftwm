@@ -460,6 +460,9 @@ bool Ewmh::isFullscreenSet(Window win) {
 }
 
 void Ewmh::setWindowOpacity(Window win, double opacity) {
+    /* Based on the EWMH proposal
+     * https://mail.gnome.org/archives/wm-spec-list/2003-December/msg00035.html
+     */
     long long_opacity = 0xffffffff * CLAMP(opacity, 0, 1);
     X_.setPropertyCardinal(win, g_netatom[NetWmWindowOpacity], { long_opacity });
 }
