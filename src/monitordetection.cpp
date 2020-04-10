@@ -1,5 +1,6 @@
 #include "monitordetection.h"
 
+#include "globals.h"
 #include "xconnection.h"
 
 #ifdef XINERAMA
@@ -8,6 +9,7 @@
 
 #include <X11/extensions/Xrandr.h>
 
+using std::make_pair;
 using std::string;
 using std::vector;
 
@@ -24,8 +26,11 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
     if (!XineramaIsActive(X.display())) {
         return {};
     }
-    int n;
-    XineramaScreenInfo *info = XineramaQueryScreens(X.display(), &n);
+    int n = 0;
+    XineramaScreenInfo* info = XineramaQueryScreens(X.display(), &n);
+    if (n == 0 || !info) {
+        return {};
+    }
     RectangleVec monitor_rects;
     for (int i = 0; i < n; i++) {
         Rectangle r;
@@ -42,9 +47,24 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
 #endif /* XINERAMA */
 
 RectangleVec detectMonitorsXrandr(XConnection& X) {
+    // see /usr/share/doc/xorgproto/randrproto.txt for documentation
     int outputs = 0;
+    int event_base = 0;
+    int error_base = 0;
+    if (!XRRQueryExtension(X.display(), &event_base, &error_base)) {
+        HSDebug("no xrandr available\n");
+        return {};
+    }
+
+    int major_version = 0, minor_version = 0;
+    XRRQueryVersion(X.display(), &major_version, &minor_version);
+    if (make_pair(major_version, minor_version) < make_pair(1, 5)) {
+        HSDebug("RRGetMonitors only available since RandR 1.5");
+        return {};
+    }
+    // RRGetMonitors was added with randr 1.5
     XRRMonitorInfo* monitorInfo = XRRGetMonitors(X.display(), X.root(), true, &outputs);
-    if (outputs == 0) {
+    if (outputs <= 0 || !monitorInfo) {
         return {};
     }
     RectangleVec result;
