@@ -565,7 +565,7 @@ int monitor_cycle_command(int argc, char** argv) {
 
 void monitor_focus_by_index(unsigned new_selection) {
     // clamp to last
-    new_selection = std::min((unsigned)g_monitors->size() - 1, new_selection);
+    new_selection = std::min(g_monitors->size() - 1, (size_t)new_selection);
     Monitor* old = get_current_monitor();
     Monitor* monitor = g_monitors->byIdx(new_selection);
     if (old == monitor) {
