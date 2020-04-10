@@ -45,6 +45,45 @@ def test_directional_focus(hlwm, clientFocused):
             hlwm.call_xfail(cmd).expect_stderr('No neighbour found')
 
 
+@pytest.mark.parametrize('start_y_rel,hits_obstacle', [
+    (0, False),  # passes the other window above
+    (0.2, False),  # passes it above
+    (0.45, True),
+    (0.55, True),
+    (0.78, False),  # passes it below (hope that snap_gap isn't too big)
+])
+def test_directional_shift_right(hlwm, x11, start_y_rel, hits_obstacle):
+    hlwm.call('attr tags.focus.floating on')
+    hlwm.call('attr theme.border_width 0')
+    snap_gap = 8
+    hlwm.call(f'attr settings.snap_gap {snap_gap}')
+    monrect = hlwm.call('monitor_rect').stdout.split(' ')
+    width = int(monrect[2])
+    height = int(monrect[3])
+
+    start_y = int(height * start_y_rel)
+    winwidth = int(width / 5)
+    winheight = int(height / 5)
+    handle, winid = x11.create_client(geometry=(0, start_y, winwidth, winheight))
+    # create the obstacle
+    obs_x = width // 2
+    obs_y = height // 2
+    x11.create_client(geometry=(obs_x, obs_y, width // 4, height // 4))
+    hlwm.call(['jumpto', winid])
+
+    if hits_obstacle:
+        hlwm.call('shift right')
+        x, y = x11.get_absolute_top_left(handle)
+        assert y == start_y
+        assert x + winwidth + snap_gap == obs_x
+
+    # hits monitor edge
+    hlwm.call('shift right')
+    x, y = x11.get_absolute_top_left(handle)
+    assert y == start_y
+    assert x + winwidth + snap_gap == width
+
+
 def test_floating_command_no_tag(hlwm):
     assert hlwm.get_attr('tags.0.floating') == hlwm.bool(False)
 
