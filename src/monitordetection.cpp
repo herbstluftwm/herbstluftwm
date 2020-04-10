@@ -1,5 +1,6 @@
 #include "monitordetection.h"
 
+#include "globals.h"
 #include "xconnection.h"
 
 #ifdef XINERAMA
@@ -46,8 +47,14 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
 
 RectangleVec detectMonitorsXrandr(XConnection& X) {
     int outputs = 0;
+    int event_base = 0;
+    int error_base = 0;
+    if (!XRRQueryExtension(X.display(), &event_base, &error_base)) {
+        HSDebug("no xrandr available\n");
+        return {};
+    }
     XRRMonitorInfo* monitorInfo = XRRGetMonitors(X.display(), X.root(), true, &outputs);
-    if (outputs == 0 || !monitorInfo) {
+    if (outputs <= 0 || !monitorInfo) {
         return {};
     }
     RectangleVec result;
