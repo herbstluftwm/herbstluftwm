@@ -143,7 +143,7 @@ long Ewmh::windowGetInitialDesktop(Window win)
 
 void Ewmh::InitialState::print(FILE *file)
 {
-    fprintf(file, "EWMH: %lu desktops:", numberOfDesktops);
+    fprintf(file, "EWMH: %zu desktops:", numberOfDesktops);
     for (const auto& n : desktopNames) {
         fprintf(file, " \'%s\'", n.c_str());
     }
