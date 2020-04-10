@@ -4,7 +4,6 @@
 #include <X11/Xlib.h>
 #include <algorithm>
 #include <cstdio>
-#include <limits>
 
 #include "client.h"
 #include "hlwmcommon.h"
