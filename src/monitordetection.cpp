@@ -24,8 +24,11 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
     if (!XineramaIsActive(X.display())) {
         return {};
     }
-    int n;
-    XineramaScreenInfo *info = XineramaQueryScreens(X.display(), &n);
+    int n = 0;
+    XineramaScreenInfo* info = XineramaQueryScreens(X.display(), &n);
+    if (n == 0 || !info) {
+        return {};
+    }
     RectangleVec monitor_rects;
     for (int i = 0; i < n; i++) {
         Rectangle r;
@@ -44,7 +47,7 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
 RectangleVec detectMonitorsXrandr(XConnection& X) {
     int outputs = 0;
     XRRMonitorInfo* monitorInfo = XRRGetMonitors(X.display(), X.root(), true, &outputs);
-    if (outputs == 0) {
+    if (outputs == 0 || !monitorInfo) {
         return {};
     }
     RectangleVec result;
