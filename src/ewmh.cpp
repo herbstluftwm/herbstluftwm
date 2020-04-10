@@ -148,7 +148,7 @@ void Ewmh::InitialState::print(FILE *file)
         fprintf(file, " \'%s\'", n.c_str());
     }
     fprintf(file, "\n");
-    fprintf(file, "%lu managed clients: ", original_client_list_.size());
+    fprintf(file, "%zu managed clients: ", original_client_list_.size());
     for (auto win : original_client_list_) {
         fprintf(file, "  window 0x%lx", win);
     }
