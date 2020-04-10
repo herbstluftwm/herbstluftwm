@@ -149,7 +149,6 @@ public:
 
 private:
     bool focusStealingAllowed(long source);
-    bool readClientList(Window** buf, unsigned long *count);
     Root* root_ = nullptr;
     TagManager* tags_ = nullptr;
     XConnection& X_;

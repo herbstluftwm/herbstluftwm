@@ -163,7 +163,7 @@ class HlwmBridge:
 
         return winid, proc
 
-    def complete(self, cmd, partial=False, position=None):
+    def complete(self, cmd, partial=False, position=None, evaluate_escapes=False):
         """
         Return a sorted list of all completions for the next argument for the
         given command, if position=None. If position is given, then the
@@ -171,6 +171,10 @@ class HlwmBridge:
 
         Set 'partial' if some of the completions for the given command are
         partial. If not in 'partial' mode, trailing spaces are stripped.
+
+        Set 'evaluate_escapes' if the escape sequences of completion items
+        should be evaluated. If this is set, one can not distinguish between
+        partial and full completion results anymore.
         """
         args = self._parse_command(cmd)
         if position is None:
@@ -187,6 +191,9 @@ class HlwmBridge:
                                     ) from None
                 else:
                     items.append(i[0:-1])
+        # evaluate escape sequences:
+        if evaluate_escapes:
+            items = [shlex.split(s)[0] for s in items]
         return sorted(items)
 
     def list_children_via_attr(self, object_path):

@@ -1,8 +1,8 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
-Current git version
--------------------
+Release 0.8.0 on 2020-04-09
+---------------------------
 
   * single window floating (every client has an attribute 'floating' which can
     be set at run time and via the rule consequence 'floating=on')

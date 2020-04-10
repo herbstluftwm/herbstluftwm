@@ -60,6 +60,7 @@ public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:
     //! cycle the frames within the current tree
+    void cycle_frame(std::function<size_t(size_t,size_t)> indexAndLenToIndex);
     void cycle_frame(int delta);
     //! try to resemble a given raw frame tree given by the FrameParser
     void applyFrameTree(std::shared_ptr<HSFrame> target,
