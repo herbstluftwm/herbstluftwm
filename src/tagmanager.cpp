@@ -336,7 +336,10 @@ int TagManager::floatingCmd(Input input, Output output) {
     } else if (input.size() == 1) {
         input >> newValue;
     } else {
-        return HERBST_NEED_MORE_ARGS;
+        tagName = "";
+    }
+    if (newValue.empty()) {
+        newValue = "toggle";
     }
     HSTag* tag = monitors_->focus()->tag;
     if (tagName != "") {

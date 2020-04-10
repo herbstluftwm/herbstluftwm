@@ -43,3 +43,15 @@ def test_directional_focus(hlwm, clientFocused):
                 == clients[expected_target]
         else:
             hlwm.call_xfail(cmd).expect_stderr('No neighbour found')
+
+
+def test_floating_command_no_tag(hlwm):
+    assert hlwm.get_attr('tags.0.floating') == hlwm.bool(False)
+
+    # toggles the floating state of current tag
+    hlwm.call('floating')
+    assert hlwm.get_attr('tags.0.floating') == hlwm.bool(True)
+
+    # toggles the floating state again
+    hlwm.call('floating')
+    assert hlwm.get_attr('tags.0.floating') == hlwm.bool(False)
