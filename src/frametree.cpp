@@ -412,8 +412,8 @@ int FrameTree::cycleAllCommand(Input input, Output output) {
     return 0;
 }
 
-//! go to the specified frame. Return true on succes, return false if
-//! the end is reached (this command never wraps). Skipts covered windows
+//! go to the specified frame. Return true on success, return false if
+//! the end is reached (this command never wraps). Skips covered windows
 //! if skipInvisible is set.
 bool FrameTree::cycleAll(FrameTree::CycleDelta cdelta, bool skip_invisible)
 {
