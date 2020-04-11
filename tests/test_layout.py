@@ -494,3 +494,56 @@ def test_resize_nested_split(hlwm):
         hlwm.call(['resize', d, '+0.05'])
         fraction = float(hlwm.call('dump').stdout.split(':')[3])
         assert math.isclose(fraction, 0.3 + signum * 0.05, abs_tol=0.001)
+
+
+@pytest.mark.parametrize('layout', [
+    # layouts where existing windows are marked by W and the new window
+    # is marked by N
+    '(clients max:0 T)',
+    '(clients max:0 W T)',
+    # the selected frame isn't the first empty frame in order but
+    # is perfectly fine, because it's empty:
+    '(split vertical:0.5:1 (clients max:0) (clients max:0 T))',
+    '(split vertical:0.5:0 (clients max:0 T) (clients max:0 W))',
+    '(split horizontal:0.5:0 (split vertical:0.5:0 \
+        (clients max:0 W) (clients max:0 T)) (clients grid:0))',
+    '(split horizontal:0.5:0 (split vertical:0.5:0 \
+        (clients max:0 T) (clients max:0)) (clients grid:0))',
+    '(split horizontal:0.5:0 (split vertical:0.5:0 \
+        (clients max:0 W) (clients max:0 T)) (clients grid:0))',
+    '(split horizontal:0.5:0 (split vertical:0.5:0 \
+        (clients max:0 W) (clients max:0 W)) (clients grid:0 T))',
+    # here, no frames are empty, so the focused frame is taken
+    '(split horizontal:0.5:0 (split vertical:0.5:1 \
+        (clients max:0 W) (clients max:0 W T)) (clients grid:0 W))',
+])
+def test_index_empty_frame_global(hlwm, layout):
+    layout = re.sub(r' [ ]*', ' ', layout)
+    for c in layout:
+        if c != 'W':
+            continue
+        winid, _ = hlwm.create_client()
+        layout = layout.replace('W', winid, 1)
+    hlwm.call(['load', layout.replace('T', '')])
+    hlwm.call('rule focus=off')
+    hlwm.call('rule index=e')
+
+    # create a new client, and expect it to go to the empty frame
+    winid, _ = hlwm.create_client()
+
+    assert layout.replace('T', winid) == hlwm.call('dump').stdout
+
+
+def test_index_empty_frame_subtree(hlwm):
+    layout = '(split horizontal:0.5:0 (clients max:0) \
+        (split horizontal:0.5:0 (clients max:0 T) (clients max:0)))'
+    layout = re.sub(r' [ ]*', ' ', layout)
+    hlwm.call(['load', layout.replace('T', '')])
+    hlwm.call('rule focus=off')
+    hlwm.call('rule index=1e')
+
+    # create a new client, and expect it to go to the empty frame
+    # in the right subtree
+    winid, _ = hlwm.create_client()
+
+    assert layout.replace('T', winid) == hlwm.call('dump').stdout

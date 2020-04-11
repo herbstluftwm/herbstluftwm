@@ -26,6 +26,8 @@ public:
 
     static void dump(std::shared_ptr<HSFrame> frame, Output output);
     static void prettyPrint(std::shared_ptr<HSFrame> frame, Output output);
+    static std::shared_ptr<HSFrameLeaf> findEmptyFrame(std::shared_ptr<HSFrame> subtree);
+    static std::shared_ptr<HSFrameLeaf> findEmptyFrameNearFocus(std::shared_ptr<HSFrame> subtree);
     std::shared_ptr<HSFrame> lookup(const std::string& path);
     static std::shared_ptr<HSFrameLeaf> focusedFrame(std::shared_ptr<HSFrame> node);
     std::shared_ptr<HSFrameLeaf> focusedFrame();

@@ -75,6 +75,14 @@ shared_ptr<HSFrame> FrameTree::lookup(const string& path) {
         return focusedFrame();
     }
     for (char c : path) {
+        if (c == 'e') {
+            shared_ptr<HSFrameLeaf> emptyFrame = findEmptyFrameNearFocus(node);
+            if (emptyFrame) {
+                // go to the empty node if we had found some
+                node = emptyFrame;
+            }
+            continue;
+        }
         node = node->switchcase<shared_ptr<HSFrame>>(
             [](shared_ptr<HSFrameLeaf> l) {
                 // nothing to do on a leaf
@@ -300,6 +308,45 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
 void FrameTree::prettyPrint(shared_ptr<HSFrame> frame, Output output) {
     auto focus = get_current_monitor()->tag->frame->focusedFrame();
     tree_print_to(treeInterface(frame, focus), output);
+}
+
+//! check whether there is an empty frame in the given subtree
+std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrame(std::shared_ptr<HSFrame> subtree)
+{
+    shared_ptr<HSFrameLeaf> emptyNode = {};
+    subtree->fmap([](HSFrameSplit*){}, [&emptyNode](HSFrameLeaf* leaf) {
+        if (!emptyNode && leaf->clientCount() == 0) {
+            emptyNode = leaf->thisLeaf();
+        }
+    });
+    return emptyNode;
+}
+
+//! check whether there is an empty frame in the given subtree,
+//! and if there are some, try to find one that is as close as possible to the
+//! focused frame leaf. returns {} if there is no empty frame in the subtree
+std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocus(std::shared_ptr<HSFrame> subtree)
+{
+    // the following algorithm is quadratic in the number of vertices in the
+    // frame, because we look for empty frames in the same subtree over and
+    // over again. However, this is much easier to implement then checking
+    // only those frames for emptyness that have not been checked before.
+
+    // start at the focused leaf
+    shared_ptr<HSFrame> current = focusedFrame(subtree);
+    // and then go upward in the tree
+    while (current) {
+        auto emptyNode = findEmptyFrame(current);
+        if (emptyNode) {
+            return emptyNode;
+        }
+        if (current == subtree) {
+            // if we reached the root of the subtree, stop searching
+            return {};
+        }
+        current = current->getParent();
+    }
+    return {};
 }
 
 shared_ptr<HSFrameLeaf> FrameTree::findFrameWithClient(Client* client) {
