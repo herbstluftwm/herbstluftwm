@@ -4,7 +4,6 @@
 #include <X11/Xlib.h>
 #include <algorithm>
 #include <cstdio>
-#include <limits>
 
 #include "client.h"
 #include "hlwmcommon.h"
@@ -460,10 +459,11 @@ bool Ewmh::isFullscreenSet(Window win) {
 }
 
 void Ewmh::setWindowOpacity(Window win, double opacity) {
-    uint32_t int_opacity = std::numeric_limits<uint32_t>::max()
-                            * CLAMP(opacity, 0, 1);
-
-    X_.setPropertyCardinal(win, g_netatom[NetWmWindowOpacity], { int_opacity });
+    /* Based on the EWMH proposal
+     * https://mail.gnome.org/archives/wm-spec-list/2003-December/msg00035.html
+     */
+    long long_opacity = 0xffffffff * CLAMP(opacity, 0, 1);
+    X_.setPropertyCardinal(win, g_netatom[NetWmWindowOpacity], { long_opacity });
 }
 
 void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bottom) {
