@@ -36,7 +36,7 @@ set(ZSHCOMPLETIONDIR ${DATADIR}/zsh/site-functions
     CACHE PATH "Install path for zsh completions file")
 set(FISHCOMPLETIONDIR ${DATADIR}/fish/vendor_completions.d
     CACHE PATH "Install path for fish completions file")
-set(BASHCOMPLETIONDIR ${CMAKE_INSTALL_SYSCONF_PREFIX}/bash_completion.d
+set(BASHCOMPLETIONDIR ${DATADIR}/bash-completion/completions
     CACHE PATH "Install path for bash completions file")
 
 ## do the actual work
