@@ -400,20 +400,73 @@ int FrameTree::cycleAllCommand(Input input, Output output) {
     if (delta == 0) {
         return 0; // nothing to do
     }
+    CycleDelta cdelta = (delta == 1) ? CycleDelta::Next : CycleDelta::Previous;
+    bool succeeded = cycleAll(cdelta, skip_invisible);
+    if (!succeeded) {
+        // we need to wrap. when cycling forward, we wrap to the beginning
+        CycleDelta rewind = (delta == 1) ? CycleDelta::Begin : CycleDelta::End;
+        cycleAll(rewind, skip_invisible);
+    }
+    // finally, redraw the layout
+    get_current_monitor()->applyLayout();
+    return 0;
+}
+
+//! go to the specified frame. Return true on success, return false if
+//! the end is reached (this command never wraps). Skips covered windows
+//! if skipInvisible is set.
+bool FrameTree::cycleAll(FrameTree::CycleDelta cdelta, bool skip_invisible)
+{
     shared_ptr<HSFrameLeaf> focus = focusedFrame();
+    if (cdelta == CycleDelta::Begin || cdelta == CycleDelta::End) {
+        // go to first resp. last frame
+        cycle_frame([cdelta] (size_t idx, size_t len) {
+            if (cdelta == CycleDelta::Begin) {
+                return size_t(0);
+            } else { // cdelta == CycleDelta::End
+                return len - 1;
+            }
+        });
+        // go to first resp. last window in it
+        auto frame = focusedFrame();
+        if (!(frame->layout == LayoutAlgorithm::max && skip_invisible)) {
+            auto count = frame->clientCount();
+            if (cdelta == CycleDelta::Begin) {
+                frame->setSelection(0);
+            } else if (count > 0) { // cdelta == CycleDelta::End
+                frame->setSelection(int(count - 1));
+            }
+        }
+        return true;
+    }
+    int delta = (cdelta == CycleDelta::Next) ? 1 : -1;
     bool frameChanges = (focus->layout == LayoutAlgorithm::max && skip_invisible)
+        || (focus->clientCount() == 0)
         || (delta == 1 && focus->getSelection() + 1 == focus->clientCount())
-        || (delta == -1 && focus->getSelection() == 0)
-        || (focus->clientCount() == 0);
+        || (delta == -1 && focus->getSelection() == 0);
     if (!frameChanges) {
         // if the focused frame does not change, it's simple
         auto count = focus->clientCount();
         if (count != 0) {
             focus->setSelection(MOD(focus->getSelection() + delta, count));
         }
-    } else {
+    } else { // if the frame changes:
         // otherwise we need to find the next frame in direction 'delta'
-        cycle_frame(delta);
+        bool wouldWrap = false;
+        cycle_frame([delta, &wouldWrap](size_t idx, size_t len) {
+            wouldWrap = (idx == 0 && delta == -1)
+                    || (idx + 1 >= len && delta == 1);
+            if (wouldWrap) {
+                return idx; // do nothing
+            } else {
+                return idx + delta;
+            }
+        });
+        if (wouldWrap) {
+            // do not wrap, do not go there
+            return false;
+        }
+        // if it does not wrap
         focus = focusedFrame();
         // fix the selection within the freshly focused frame.
         if (focus->layout == LayoutAlgorithm::max && skip_invisible) {
@@ -428,9 +481,7 @@ int FrameTree::cycleAllCommand(Input input, Output output) {
             }
         }
     }
-    // finally, redraw the layout
-    get_current_monitor()->applyLayout();
-    return 0;
+    return true;
 }
 
 void FrameTree::cycle_frame(std::function<size_t(size_t,size_t)> indexAndLenToIndex) {
