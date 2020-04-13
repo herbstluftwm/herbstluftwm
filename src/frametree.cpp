@@ -404,8 +404,9 @@ bool FrameTree::resizeFrame(double delta_double, Direction direction)
     // if direction is left or up we have to flip delta
     // because e.g. resize up by 0.1 actually means:
     // reduce fraction by 0.1, i.e. delta = -0.1
-    if (direction == Direction::Left || direction == Direction::Up)
+    if (direction == Direction::Left || direction == Direction::Up) {
         delta *= -1;
+    }
 
     shared_ptr<HSFrame> neighbour = focusedFrame()->neighbour(direction);
     if (!neighbour) {
