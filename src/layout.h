@@ -107,7 +107,7 @@ public:
 
 
     // own members
-    void setSelection(int idx);
+    void setSelection(int index);
     void select(Client* client);
     void addClients(const std::vector<Client*>& vec, bool atFront = false);
 

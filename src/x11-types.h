@@ -98,7 +98,7 @@ struct Rectangle {
     int width;
     int height;
 };
-std::ostream& operator<< (std::ostream& stream, const Rectangle& matrix);
+std::ostream& operator<< (std::ostream& stream, const Rectangle& rect);
 
 template<>
 inline std::string Converter<Rectangle>::str(Rectangle payload) {

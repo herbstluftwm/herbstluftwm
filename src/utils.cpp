@@ -90,7 +90,7 @@ size_t utf8_string_length(const string& str) {
    return j;
 }
 
-string utf8_string_at(const string& str, size_t n) {
+string utf8_string_at(const string& str, size_t offset) {
     // utf-strlen from stackoverflow:
     // http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c
     //
@@ -107,7 +107,7 @@ string utf8_string_at(const string& str, size_t n) {
     string result;
     // find the beginning of the n'th character
     // find the n'th character ch, with (ch & 0xc0) == 0x80
-    while (i < n) {
+    while (i < offset) {
         // we are at some byte with (ch & 0xc0) != 0x80
         byte_offset++;
         while ((str[byte_offset] & 0xc0) == 0x80) {

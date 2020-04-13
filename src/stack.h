@@ -65,7 +65,7 @@ public:
     bool isLayerEmpty(HSLayer layer);
     void clearLayer(HSLayer layer);
 
-    void extractWindows(bool real_clients, std::function<void(Window)> addToStack);
+    void extractWindows(bool real_clients, std::function<void(Window)> yield);
     void restack();
 
     PlainStack<Slice*> layers_[LAYER_COUNT];
