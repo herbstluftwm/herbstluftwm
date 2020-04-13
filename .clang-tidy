@@ -1,8 +1,8 @@
 ---
 
-# For now, we just use the default checks, with some of them disabled because
-# of pre-existing issues in the code base. In the future, this should be turned
-# into a blacklist, like so:
+# For now, we just use the default checks with some additions and exceptions
+# based on what actually passes. In the future, this should be turned into a
+# blacklist, like so:
 #
 #   ###
 #   # First enable all, then disable the ones we do not want:
@@ -16,7 +16,7 @@
 #   # Checks: '*,-abseil-*,-android-*,-objc-*,-fuchsia-*,-mpi-*,-performance-*,-llvm-include-order'
 #   ###
 #
-Checks: '-clang-analyzer-unix.API,-clang-analyzer-unix.Malloc,-clang-analyzer-optin.portability.UnixAPI,-clang-analyzer-core.StackAddressEscape,-clang-analyzer-core.CallAndMessage'
+Checks: '-clang-analyzer-unix.API,-clang-analyzer-unix.Malloc,-clang-analyzer-optin.portability.UnixAPI,-clang-analyzer-core.StackAddressEscape,-clang-analyzer-core.CallAndMessage,readability-braces-around-statements,google-readability-braces-around-statements,hicpp-braces-around-statements'
 
 # Uncomment this to make clang-tidy fail on any findings:
 WarningsAsErrors: '*'
