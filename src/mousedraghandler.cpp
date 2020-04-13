@@ -94,17 +94,27 @@ void MouseDragHandlerFloating::mouse_function_resize(Point2D newCursorPos) {
     int new_width  = winDragClient_->float_size_.width + x_diff;
     int new_height = winDragClient_->float_size_.height + y_diff;
     Client* client = winDragClient_;
-    if (left)   winDragClient_->float_size_.x -= x_diff;
-    if (top)    winDragClient_->float_size_.y -= y_diff;
+    if (left) {
+        winDragClient_->float_size_.x -= x_diff;
+    }
+    if (top) {
+        winDragClient_->float_size_.y -= y_diff;
+    }
     winDragClient_->float_size_.width  = new_width;
     winDragClient_->float_size_.height = new_height;
     // snap it to other windows
     int dx, dy;
     int snap_flags = 0;
-    if (left)   snap_flags |= SNAP_EDGE_LEFT;
-    else        snap_flags |= SNAP_EDGE_RIGHT;
-    if (top)    snap_flags |= SNAP_EDGE_TOP;
-    else        snap_flags |= SNAP_EDGE_BOTTOM;
+    if (left) {
+        snap_flags |= SNAP_EDGE_LEFT;
+    } else {
+        snap_flags |= SNAP_EDGE_RIGHT;
+    }
+    if (top) {
+        snap_flags |= SNAP_EDGE_TOP;
+    } else {
+        snap_flags |= SNAP_EDGE_BOTTOM;
+    }
     client_snap_vector(winDragClient_, dragMonitor_,
                        (SnapFlags)snap_flags, &dx, &dy);
     if (left) {
