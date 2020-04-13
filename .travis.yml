@@ -61,7 +61,7 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 eoan sh -c '
-                    /hlwm/ci/build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --check-using-std --iwyu --flake8
+                    /hlwm/ci/build.py --build-dir=/hlwm/build-clang-9 --cxx=clang++-7 --cc=clang-9 --build-type=Debug --check-using-std --iwyu --flake8
                 '
 
         - name: "Build with ancient GCC on Ubuntu 14.04"
