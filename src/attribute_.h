@@ -148,6 +148,7 @@ public:
                 auto error_message = (validator_)(new_payload);
                 if (!error_message.empty()) {
                     return error_message;
+                }
             }
 
             // set and trigger stuff
