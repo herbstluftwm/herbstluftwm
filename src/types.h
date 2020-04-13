@@ -62,7 +62,7 @@ struct Converter {
      * @throws std::invalid_argument or std::out_of_range
      * @param source verbal description of a value
      */
-    static T parse(const std::string& source);
+    static T parse(const std::string& payload);
     /** Parse a text into the right type
      * @brief overload that accepts a reference value to relate input string to
      * @param source may be given relative to 'relativeTo', e.g. "toggle" for booleans.
