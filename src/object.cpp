@@ -159,7 +159,7 @@ Object* Object::child(const string &name) {
     if (it != children_.end()) {
         return it->second;
     } else {
-        return {}
+        return {};
     };
 }
 

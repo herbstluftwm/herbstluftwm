@@ -14,10 +14,8 @@ Input Input::fromHere()
 {
     string cmd;
     if (!(*this >> cmd)) {
-        return {
-            {}, {}
-        }
-    };
+        return {{}, {}};
+    }
 
     return Input(cmd, toVector());
 }
@@ -33,6 +31,7 @@ void Input::replace(const string &from, const string &to)
             *command_ = to;
         }
     }
+}
 
 template<> void Converter<bool>::complete(Completion& complete, bool const* relativeTo)
 {
