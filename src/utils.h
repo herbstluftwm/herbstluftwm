@@ -87,7 +87,7 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
 // returns the unichar in GSTR at position GSTR
 
 size_t      utf8_string_length(const std::string& str);
-std::string utf8_string_at(const std::string& str, size_t n);
+std::string utf8_string_at(const std::string& str, size_t offset);
 
 #define RECTANGLE_EQUALS(a, b) (\
         (a).x == (b).x &&   \
