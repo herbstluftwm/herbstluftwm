@@ -10,7 +10,6 @@
 #include "x11-types.h"
 
 using std::dynamic_pointer_cast;
-using std::endl;
 using std::make_pair;
 using std::make_shared;
 using std::pair;

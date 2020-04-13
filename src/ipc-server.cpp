@@ -8,7 +8,6 @@
 #include "ipc-protocol.h"
 #include "xconnection.h"
 
-using std::make_pair;
 using std::string;
 using std::vector;
 
