@@ -66,6 +66,7 @@ struct Point2D {
     bool biggerSlopeThan(const Point2D& other) const {
        return y * other.x > other.y * x;
     }
+    int manhattanLength() const;
 };
 
 struct Rectangle {
@@ -89,6 +90,7 @@ struct Rectangle {
     operator bool() const;
 
     Rectangle intersectionWith(const Rectangle& other) const;
+    int manhattanDistanceTo(Rectangle& other) const;
 
     int x;
     int y;

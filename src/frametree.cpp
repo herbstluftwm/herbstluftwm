@@ -1,6 +1,7 @@
 #include "frametree.h"
 
 #include <algorithm>
+#include <limits>
 #include <regex>
 
 #include "client.h"
@@ -310,16 +311,44 @@ void FrameTree::prettyPrint(shared_ptr<HSFrame> frame, Output output) {
     tree_print_to(treeInterface(frame, focus), output);
 }
 
-//! check whether there is an empty frame in the given subtree
-std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrame(std::shared_ptr<HSFrame> subtree)
+std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(std::shared_ptr<HSFrame> subtree)
 {
-    shared_ptr<HSFrameLeaf> emptyNode = {};
-    subtree->fmap([](HSFrameSplit*){}, [&emptyNode](HSFrameLeaf* leaf) {
-        if (!emptyNode && leaf->clientCount() == 0) {
-            emptyNode = leaf->thisLeaf();
+    // render frame geometries.
+    TilingResult tileres = subtree->computeLayout({0, 0, 800, 800});
+    function<Rectangle(shared_ptr<HSFrameLeaf>)> frame2geometry =
+            [tileres] (shared_ptr<HSFrameLeaf> frame) -> Rectangle {
+        for (auto& framedata : tileres.frames) {
+            if (framedata.first == frame->decoration) {
+                return framedata.second.geometry;
+            }
+        }
+        // if not found, return an invalid rectangle;
+        return { 0, 0, -1, -1};
+    };
+    std::vector<shared_ptr<HSFrameLeaf>> emptyLeafs;
+    subtree->fmap([](HSFrameSplit*){}, [&emptyLeafs](HSFrameLeaf* leaf) {
+        if (leaf->clientCount() == 0) {
+            emptyLeafs.push_back(leaf->thisLeaf());
         }
     });
-    return emptyNode;
+    Rectangle geoFocused = frame2geometry(focusedFrame(subtree));
+    if (!geoFocused) { // this should never happen actually
+        return {};
+    }
+    int bestDistance = std::numeric_limits<int>::max();
+    shared_ptr<HSFrameLeaf> closestFrame = {};
+    for (auto l : emptyLeafs) {
+        Rectangle r = frame2geometry(l);
+        if (!r) {
+            continue;
+        }
+        int dist = geoFocused.manhattanDistanceTo(r);
+        if (dist < bestDistance) {
+            closestFrame = l;
+            bestDistance = dist;
+        }
+    }
+    return closestFrame;
 }
 
 //! check whether there is an empty frame in the given subtree,
@@ -336,7 +365,7 @@ std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocus(std::shared_ptr<
     shared_ptr<HSFrame> current = focusedFrame(subtree);
     // and then go upward in the tree
     while (current) {
-        auto emptyNode = findEmptyFrame(current);
+        auto emptyNode = findEmptyFrameNearFocusGeometrically(current);
         if (emptyNode) {
             return emptyNode;
         }

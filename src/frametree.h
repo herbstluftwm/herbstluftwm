@@ -26,7 +26,6 @@ public:
 
     static void dump(std::shared_ptr<HSFrame> frame, Output output);
     static void prettyPrint(std::shared_ptr<HSFrame> frame, Output output);
-    static std::shared_ptr<HSFrameLeaf> findEmptyFrame(std::shared_ptr<HSFrame> subtree);
     static std::shared_ptr<HSFrameLeaf> findEmptyFrameNearFocus(std::shared_ptr<HSFrame> subtree);
     std::shared_ptr<HSFrame> lookup(const std::string& path);
     static std::shared_ptr<HSFrameLeaf> focusedFrame(std::shared_ptr<HSFrame> node);
@@ -61,6 +60,7 @@ public:
 public: // soon to be come private:
     std::shared_ptr<HSFrame> root_;
 private:
+    static std::shared_ptr<HSFrameLeaf> findEmptyFrameNearFocusGeometrically(std::shared_ptr<HSFrame> subtree);
     //! cycle the frames within the current tree
     void cycle_frame(std::function<size_t(size_t,size_t)> indexAndLenToIndex);
     void cycle_frame(int delta);

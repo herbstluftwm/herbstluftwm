@@ -497,10 +497,11 @@ def test_resize_nested_split(hlwm):
 
 
 @pytest.mark.parametrize('layout', [
-    # layouts where existing windows are marked by W and the new window
-    # is marked by N
+    # layouts where existing windows are marked by W and the target
+    # frame for the new window is marked by T
     '(clients max:0 T)',
     '(clients max:0 W T)',
+    '(split vertical:0.5:1 (clients max:0 W) (clients max:0 W T))',
     # the selected frame isn't the first empty frame in order but
     # is perfectly fine, because it's empty:
     '(split vertical:0.5:1 (clients max:0) (clients max:0 T))',
@@ -516,6 +517,28 @@ def test_resize_nested_split(hlwm):
     # here, no frames are empty, so the focused frame is taken
     '(split horizontal:0.5:0 (split vertical:0.5:1 \
         (clients max:0 W) (clients max:0 W T)) (clients grid:0 W))',
+    # let geometry come into play:
+    # +-----+-----+
+    # |+-+-+|     |  here, the new window should go to (T)
+    # || |T||  W  |  even though it's neighbour frame comes first
+    # |+-+-+|     |  when traversing the tree
+    # +-----+-----+
+    '(split horizontal:0.5:1 \
+        (split horizontal:0.5:0 (clients max:0) (clients max:0 T)) \
+        (clients max:0 W))',
+    #
+    # +---+---+
+    # |Foc|W| |   <- the new window should go to T, even though
+    # | W +-+-+      the top right frame comes first when traversing
+    # |   | T |      the layout tree.
+    # +---+---+
+    #
+    '(split horizontal:0.5:0 \
+        (clients vertical:0 W) \
+        (split vertical:0.5:1 \
+            (split horizontal:0.5:1 (clients vertical:0 W) \
+                                    (clients vertical:0)) \
+            (clients vertical:0 T)))',
 ])
 def test_index_empty_frame_global(hlwm, layout):
     layout = re.sub(r' [ ]*', ' ', layout)
