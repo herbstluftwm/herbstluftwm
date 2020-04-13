@@ -79,7 +79,9 @@ int MonitorManager::indexInDirection(Monitor* m, Direction dir) {
     int relidx = -1;
     FOR (i,0,size()) {
         rects.push_back(make_pair(i, byIdx(i)->rect));
-        if (byIdx(i) == m) relidx = i;
+        if (byIdx(i) == m) {
+            relidx = i;
+        }
     }
     HSAssert(relidx >= 0);
     int result = find_rectangle_in_direction(rects, relidx, dir);
@@ -542,7 +544,9 @@ int MonitorManager::setMonitors(const RectangleVec& templates) {
     unsigned i;
     for (i = 0; i < std::min(templates.size(), size()); i++) {
         auto m = byIdx(i);
-        if (!m) continue;
+        if (!m) {
+            continue;
+        }
         m->rect = templates[i];
     }
     // add additional monitors

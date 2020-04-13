@@ -12,8 +12,9 @@ HookManager::HookManager()
 
 void HookManager::ls(Path path, Output out)
 {
-    if (path.empty())
+    if (path.empty()) {
         return Object::ls(out);
+    }
 
     auto child = join_strings(path, ".");
     if (children_.find(child) != children_.end()) {

@@ -164,8 +164,12 @@ pair<string, string> XConnection::getClassHint(Window window) {
         hint.res_name ? hint.res_name : "",
         hint.res_class ? hint.res_class : ""
     };
-    if (hint.res_name) XFree(hint.res_name);
-    if (hint.res_class) XFree(hint.res_class);
+    if (hint.res_name) {
+        XFree(hint.res_name);
+    }
+    if (hint.res_class) {
+        XFree(hint.res_class);
+    }
     return result;
 }
 

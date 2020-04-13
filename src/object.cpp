@@ -43,8 +43,12 @@ void Object::addAttribute(Attribute* attr) {
 
 void Object::removeAttribute(Attribute* attr) {
     auto it = attribs_.find(attr->name());
-    if (it == attribs_.end()) return;
-    if (it->second != attr) return;
+    if (it == attribs_.end()) {
+        return;
+    }
+    if (it->second != attr) {
+        return;
+    }
     attribs_.erase(it);
 }
 
@@ -92,8 +96,9 @@ void Object::ls(Output out)
     }
 }
 void Object::ls(Path path, Output out) {
-    if (path.empty())
+    if (path.empty()) {
         return ls(out);
+    }
 
     auto child = path.front();
     if (children_.find(child) != children_.end()) {
@@ -119,10 +124,12 @@ void Object::print(const string &prefix)
             std::cout << prefix << "\t" << it.first
                       << " (" << it.second->typestr() << ")";
             std::cout << "\t[" << it.second->str() << "]";
-            if (it.second->writeable())
+            if (it.second->writeable()) {
                 std::cout << "\tw";
-            if (!it.second->hookable())
+            }
+            if (!it.second->hookable()) {
                 std::cout << "\t!h";
+            }
             std::cout << endl;
         }
     }
@@ -149,10 +156,11 @@ Attribute* Object::attribute(const string &name) {
 
 Object* Object::child(const string &name) {
     auto it = children_.find(name);
-    if (it != children_.end())
+    if (it != children_.end()) {
         return it->second;
-    else
-        return {};
+    } else {
+        return {}
+    };
 }
 
 

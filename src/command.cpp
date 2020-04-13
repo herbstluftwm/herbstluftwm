@@ -307,8 +307,9 @@ void Commands::complete(Completion& completion) {
 // Old C-ish interface to commands:
 
 int call_command(int argc, char** argv, Output output) {
-    if (argc < 1)
+    if (argc < 1) {
         return HERBST_COMMAND_NOT_FOUND;
+    }
 
     string cmd(argv[0]);
     vector<string> args;
