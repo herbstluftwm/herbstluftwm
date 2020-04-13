@@ -19,7 +19,6 @@
 using std::endl;
 using std::function;
 using std::make_shared;
-using std::regex;
 using std::shared_ptr;
 using std::string;
 using std::vector;
@@ -628,9 +627,9 @@ int FrameTree::loadCommand(Input input, Output output) {
                << parsingResult.error_->first.first << ": "
                << parsingResult.error_->second << ":"
                << endl;
-        regex whitespace ("[ \n\t]");
+        std::regex whitespace ("[ \n\t]");
         // print the layout again
-        output << "\"" << regex_replace(layoutString, whitespace, string(" "))
+        output << "\"" << std::regex_replace(layoutString, whitespace, string(" "))
                << "\"" << endl;
         // and underline the token
         int token_len = std::max((size_t)1, parsingResult.error_->first.second.size());
