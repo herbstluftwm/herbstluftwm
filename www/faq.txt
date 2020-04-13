@@ -194,7 +194,7 @@ There is also a tab-completion for the herbstclient parameters. After
 installing herbstluftwm, add this to your .bashrc:
 
 ----
-source /etc/bash_completion.d/herbstclient-completion
+source /usr/share/bash-completion/completions/herbstclient-completion
 ----
 
 (The tab-completion in zsh works out of the box with most zsh-configurations).
