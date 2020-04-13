@@ -1,6 +1,7 @@
 #include "frametree.h"
 
 #include <algorithm>
+#include <limits>
 #include <regex>
 
 #include "client.h"
@@ -75,6 +76,14 @@ shared_ptr<HSFrame> FrameTree::lookup(const string& path) {
         return focusedFrame();
     }
     for (char c : path) {
+        if (c == 'e') {
+            shared_ptr<HSFrameLeaf> emptyFrame = findEmptyFrameNearFocus(node);
+            if (emptyFrame) {
+                // go to the empty node if we had found some
+                node = emptyFrame;
+            }
+            continue;
+        }
         node = node->switchcase<shared_ptr<HSFrame>>(
             [](shared_ptr<HSFrameLeaf> l) {
                 // nothing to do on a leaf
@@ -300,6 +309,73 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
 void FrameTree::prettyPrint(shared_ptr<HSFrame> frame, Output output) {
     auto focus = get_current_monitor()->tag->frame->focusedFrame();
     tree_print_to(treeInterface(frame, focus), output);
+}
+
+std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(std::shared_ptr<HSFrame> subtree)
+{
+    // render frame geometries.
+    TilingResult tileres = subtree->computeLayout({0, 0, 800, 800});
+    function<Rectangle(shared_ptr<HSFrameLeaf>)> frame2geometry =
+            [tileres] (shared_ptr<HSFrameLeaf> frame) -> Rectangle {
+        for (auto& framedata : tileres.frames) {
+            if (framedata.first == frame->decoration) {
+                return framedata.second.geometry;
+            }
+        }
+        // if not found, return an invalid rectangle;
+        return { 0, 0, -1, -1};
+    };
+    std::vector<shared_ptr<HSFrameLeaf>> emptyLeafs;
+    subtree->fmap([](HSFrameSplit*){}, [&emptyLeafs](HSFrameLeaf* leaf) {
+        if (leaf->clientCount() == 0) {
+            emptyLeafs.push_back(leaf->thisLeaf());
+        }
+    });
+    Rectangle geoFocused = frame2geometry(focusedFrame(subtree));
+    if (!geoFocused) { // this should never happen actually
+        return {};
+    }
+    int bestDistance = std::numeric_limits<int>::max();
+    shared_ptr<HSFrameLeaf> closestFrame = {};
+    for (auto l : emptyLeafs) {
+        Rectangle r = frame2geometry(l);
+        if (!r) {
+            continue;
+        }
+        int dist = geoFocused.manhattanDistanceTo(r);
+        if (dist < bestDistance) {
+            closestFrame = l;
+            bestDistance = dist;
+        }
+    }
+    return closestFrame;
+}
+
+//! check whether there is an empty frame in the given subtree,
+//! and if there are some, try to find one that is as close as possible to the
+//! focused frame leaf. returns {} if there is no empty frame in the subtree
+std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocus(std::shared_ptr<HSFrame> subtree)
+{
+    // the following algorithm is quadratic in the number of vertices in the
+    // frame, because we look for empty frames in the same subtree over and
+    // over again. However, this is much easier to implement then checking
+    // only those frames for emptyness that have not been checked before.
+
+    // start at the focused leaf
+    shared_ptr<HSFrame> current = focusedFrame(subtree);
+    // and then go upward in the tree
+    while (current) {
+        auto emptyNode = findEmptyFrameNearFocusGeometrically(current);
+        if (emptyNode) {
+            return emptyNode;
+        }
+        if (current == subtree) {
+            // if we reached the root of the subtree, stop searching
+            return {};
+        }
+        current = current->getParent();
+    }
+    return {};
 }
 
 shared_ptr<HSFrameLeaf> FrameTree::findFrameWithClient(Client* client) {

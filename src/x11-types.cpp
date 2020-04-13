@@ -6,10 +6,13 @@
 #include <algorithm>
 #include <cassert>
 #include <iomanip>
+#include <limits>
 
 #include "globals.h"
+#include "utils.h"
 
 using std::string;
+using std::vector;
 
 Color Color::black() {
     // currently, the constructor without arguments constructs black
@@ -138,6 +141,40 @@ Rectangle Rectangle::intersectionWith(const Rectangle &other) const
                 std::min(br().y, other.br().y));
 }
 
+//! the minimum distance between any two points from the one and the other
+//! rectangle
+int Rectangle::manhattanDistanceTo(Rectangle &other) const
+{
+    if (intersectionWith(other)) {
+        return 0; // distance 0 if there is an intersection
+    }
+    // if they don't intersect but are below each other
+    if (intervals_intersect(x, x + width, other.x, other.x + other.width)) {
+        return std::min(
+                    // this is below the other:
+                    std::abs(y - (other.y + other.height)),
+                    // this is above the other:
+                    std::abs(other.y - (y + height)));
+    }
+    // if they don't intersect but are next to each other
+    if (intervals_intersect(y, y + height, other.y, other.y + other.height)) {
+        return std::min(
+                    // this is right of the other
+                    std::abs(x - (other.x + other.width)),
+                    // this is left of the other
+                    std::abs(other.x - (x + width)));
+    }
+    vector<Point2D> thisCorners = { tl(), tr(), bl(), br() };
+    vector<Point2D> otherCorners = { other.tl(), other.tr(), other.bl(), other.br() };
+    int minDist = std::numeric_limits<int>::max();
+    for (const auto& p1 : thisCorners) {
+        for (const auto& p2 : otherCorners) {
+            minDist = std::min(minDist, (p1 - p2).manhattanLength());
+        }
+    }
+    return minDist;
+}
+
 std::ostream& operator<< (std::ostream& stream, const Rectangle& rect) {
     stream
         << rect.width << "x" << rect.height
@@ -147,3 +184,8 @@ std::ostream& operator<< (std::ostream& stream, const Rectangle& rect) {
     return stream;
 }
 
+
+int Point2D::manhattanLength() const
+{
+    return std::abs(x) + std::abs(y);
+}

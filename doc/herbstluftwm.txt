@@ -115,9 +115,12 @@ The characters are interpreted as follows:
     * +1+: select the second subtree
     * +.+: select the subtree having the focus
     * +/+: select the subtree not having the focus
+    * +e+: finds a suitable empty frame: if the focused frame is not empty, this
+      selects the closest frame that is empty (in any subtree)
 
 Thus an empty string refers to the root frame, and "00" refers to the first
-subtree of the first subtree of the root frame.
+subtree of the first subtree of the root frame. Similarly "1e" refers to the
+first empty frame in the second subtree.
 
 As a special case, the string "@" always refers to the currently focused
 frame.
