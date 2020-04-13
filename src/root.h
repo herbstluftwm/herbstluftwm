@@ -4,25 +4,23 @@
 #include <memory>
 
 #include "child.h"
+#include "clientmanager.h"
+#include "hookmanager.h"
+#include "keymanager.h"
+#include "monitormanager.h"
+#include "mousemanager.h"
 #include "object.h"
+#include "rulemanager.h"
+#include "settings.h"
+#include "tagmanager.h"
+#include "theme.h"
+#include "tmp.h"
 
-// new object tree root.
-
-class ClientManager;
 class Ewmh;
 class HlwmCommon;
-class HookManager;
 class IpcServer;
-class KeyManager;
-class MonitorManager;
-class MouseManager;
 class PanelManager;
 class RootCommands;
-class RuleManager;
-class Settings;
-class TagManager;
-class Theme;
-class Tmp;
 class XConnection;
 
 class Globals {

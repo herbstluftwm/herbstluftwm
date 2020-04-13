@@ -8,10 +8,10 @@
 #include <memory>
 #include <vector>
 
+#include "attribute.h"
 #include "types.h"
 
 class Object;
-class Attribute;
 class Completion;
 
 /** this class collects high-level commands that don't need any internal
