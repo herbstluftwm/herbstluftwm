@@ -39,7 +39,7 @@ public:
      *       lambda) that validates a new value of the attribute and returns an
      *       error message if the new value is not acceptable for this
      *       attribute (E.g. because a name is already taken or does not
-     *       resepct a certain format).
+     *       respect a certain format).
      *     * The fourth argument of a DynAttribute_ is a member of owner (or
      *       lambda) that internally processes the new value (e.g. parsing) and
      *       returns an error message if the new value is not acceptable.
@@ -148,7 +148,7 @@ public:
             // validate, if needed
             if (validator_) {
                 auto error_message = (validator_)(new_payload);
-                if (error_message != "") {
+                if (!error_message.empty()) {
                     return error_message;
                 }
             }
