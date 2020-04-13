@@ -58,6 +58,10 @@ public:
 
     int focusInDirCommand(Input input, Output output);
     void focusInDirCompletion(Completion& complete);
+
+    int resizeCommand(Input input, Output output);
+    void resizeCompletion(Completion& complete);
+
 private:
     void onGlobalFloatingChange(bool newState);
     void fixFocusIndex();
