@@ -73,8 +73,11 @@ void HSFrameLeaf::insertClient(Client* client, bool focus) {
 
 shared_ptr<HSFrameLeaf> HSFrameSplit::frameWithClient(Client* client) {
     auto found = a_->frameWithClient(client);
-    if (found) return found;
-    else return b_->frameWithClient(client);
+    if (found) {
+        return found;
+    } else {
+        return b_->frameWithClient(client);
+    }
 }
 
 shared_ptr<HSFrameLeaf> HSFrameLeaf::frameWithClient(Client* client) {
@@ -117,8 +120,11 @@ HSFrameLeaf::~HSFrameLeaf() {
 
 shared_ptr<HSFrame> HSFrame::root() {
     auto parent_shared = parent_.lock();
-    if (parent_shared) return parent_shared->root();
-    else return shared_from_this();
+    if (parent_shared) {
+        return parent_shared->root();
+    } else {
+        return shared_from_this();
+    }
 }
 
 bool HSFrame::isFocused() {
@@ -234,7 +240,9 @@ void frame_layout_grid_get_size(size_t count, int* res_rows, int* res_cols) {
 
 TilingResult HSFrameLeaf::layoutGrid(Rectangle rect) {
     TilingResult res;
-    if (clients.size() == 0) return res;
+    if (clients.empty()) {
+        return res;
+    }
 
     int rows, cols;
     frame_layout_grid_get_size(clients.size(), &rows, &cols);
@@ -293,11 +301,11 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
     FrameDecorationData frame_data;
     frame_data.geometry = rect;
     frame_data.visible = true;
-    frame_data.hasClients = clients.size() > 0;
+    frame_data.hasClients = !clients.empty();
     frame_data.hasParent = (bool)parent_.lock();
     res.focused_frame = decoration;
     res.add(decoration, frame_data);
-    if (clients.size() == 0) {
+    if (clients.empty()) {
         return res;
     }
     // whether we should omit the gap around windows:
@@ -379,11 +387,17 @@ TilingResult HSFrameSplit::computeLayout(Rectangle rect) {
 }
 
 void HSFrameSplit::fmap(function<void(HSFrameSplit*)> onSplit, function<void(HSFrameLeaf*)> onLeaf, int order) {
-    if (order <= 0) onSplit(this);
+    if (order <= 0) {
+        onSplit(this);
+    }
     a_->fmap(onSplit, onLeaf, order);
-    if (order == 1) onSplit(this);
+    if (order == 1) {
+        onSplit(this);
+    }
     b_->fmap(onSplit, onLeaf, order);
-    if (order >= 1) onSplit(this);
+    if (order >= 1) {
+        onSplit(this);
+    }
 }
 
 void HSFrameLeaf::fmap(function<void(HSFrameSplit*)> onSplit, function<void(HSFrameLeaf*)> onLeaf, int order) {
@@ -422,7 +436,9 @@ int frame_current_bring(int argc, char** argv, Output output) {
 }
 
 void HSFrameLeaf::setSelection(int index) {
-    if (clients.size() == 0) return;
+    if (clients.empty()) {
+        return;
+    }
     if (index < 0 || index >= clients.size()) {
         index = clients.size() - 1;
     }
@@ -432,13 +448,19 @@ void HSFrameLeaf::setSelection(int index) {
 }
 
 int HSFrame::splitsToRoot(SplitAlign align) {
-    if (!parent_.lock()) return 0;
+    if (!parent_.lock()) {
+        return 0;
+    }
     return parent_.lock()->splitsToRoot(align);
 }
 int HSFrameSplit::splitsToRoot(SplitAlign align) {
-    if (!parent_.lock()) return 0;
+    if (!parent_.lock()) {
+        return 0;
+    }
     int delta = 0;
-    if (this->align_ == align) delta = 1;
+    if (this->align_ == align) {
+        delta = 1;
+    }
     return delta + parent_.lock()->splitsToRoot(align);
 }
 
@@ -491,51 +513,6 @@ bool HSFrameLeaf::split(SplitAlign alignment, int fraction, size_t childrenLeavi
 
 void HSFrameSplit::swapChildren() {
     swap(a_,b_);
-}
-
-int frame_change_fraction_command(int argc, char** argv, Output output) {
-    // usage: fraction DIRECTION DELTA
-    if (argc < 3) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    Direction direction;
-    try {
-        direction = Converter<Direction>::parse(argv[1]);
-    } catch (const std::exception& e) {
-        output << argv[0] << ": " << e.what() << "\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    double delta_double = atof(argv[2]);
-    delta_double = CLAMP(delta_double, -1.0, 1.0);
-    int delta = FRACTION_UNIT * delta_double;
-    // if direction is left or up we have to flip delta
-    // because e.g. resize up by 0.1 actually means:
-    // reduce fraction by 0.1, i.e. delta = -0.1
-    if (direction == Direction::Left || direction == Direction::Up)
-        delta *= -1;
-
-    shared_ptr<HSFrame> neighbour = HSFrame::getGloballyFocusedFrame()->neighbour(direction);
-    if (!neighbour) {
-        // then try opposite direction
-        std::map<Direction, Direction> flip = {
-            {Direction::Left, Direction::Right},
-            {Direction::Right, Direction::Left},
-            {Direction::Down, Direction::Up},
-            {Direction::Up, Direction::Down},
-        };
-        direction = flip[direction];
-        neighbour = HSFrame::getGloballyFocusedFrame()->neighbour(direction);
-        if (!neighbour) {
-            output << argv[0] << ": No neighbour found\n";
-            return HERBST_FORBIDDEN;
-        }
-    }
-    auto parent = neighbour->getParent();
-    assert(parent); // if has neighbour, it also must have a parent
-    parent->adjustFraction(delta);
-    // arrange monitor
-    get_current_monitor()->applyLayout();
-    return 0;
 }
 
 void HSFrameSplit::adjustFraction(int delta) {
@@ -620,19 +597,29 @@ int HSFrameLeaf::getInnerNeighbourIndex(Direction direction) {
     int count = clientCount();
     switch (getLayout()) {
         case LayoutAlgorithm::vertical:
-            if (direction == Direction::Down) index = selection + 1;
-            if (direction == Direction::Up) index = selection - 1;
+            if (direction == Direction::Down) {
+                index = selection + 1;
+            }
+            if (direction == Direction::Up) {
+                index = selection - 1;
+            }
             break;
         case LayoutAlgorithm::horizontal:
-            if (direction == Direction::Right) index = selection + 1;
-            if (direction == Direction::Left) index = selection - 1;
+            if (direction == Direction::Right) {
+                index = selection + 1;
+            }
+            if (direction == Direction::Left) {
+                index = selection - 1;
+            }
             break;
         case LayoutAlgorithm::max:
             break;
         case LayoutAlgorithm::grid: {
             int rows, cols;
             frame_layout_grid_get_size(count, &rows, &cols);
-            if (cols == 0) break;
+            if (cols == 0) {
+                break;
+            }
             int r = selection / cols;
             int c = selection % cols;
             switch (direction) {
@@ -645,8 +632,16 @@ int HSFrameLeaf::getInnerNeighbourIndex(Direction direction) {
                     }
                     break;
                 case Direction::Up: index = selection - cols; break;
-                case Direction::Right: if (c < cols-1) index = selection + 1; break;
-                case Direction::Left:  if (c > 0)      index = selection - 1; break;
+                case Direction::Right:
+                    if (c < cols - 1) {
+                        index = selection + 1;
+                    }
+                    break;
+                case Direction::Left:
+                    if (c > 0) {
+                        index = selection - 1;
+                    }
+                    break;
             }
             break;
         }
@@ -665,7 +660,9 @@ void HSFrameLeaf::moveClient(int new_index) {
 
 int frame_move_window_command(int argc, char** argv, Output output) {
     // usage: move left|right|up|down
-    if (argc < 2) return HERBST_NEED_MORE_ARGS;
+    if (argc < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
     string dirstr = argv[1];
     int external_only = g_settings->default_direction_external_only();
     if (argc > 2 && !strcmp(argv[1], "-i")) {
@@ -731,7 +728,7 @@ Client* HSFrameSplit::focusedClient() {
 }
 
 Client* HSFrameLeaf::focusedClient() {
-    if (clients.size() > 0) {
+    if (!clients.empty()) {
         return clients[selection];
     }
     return nullptr;
@@ -793,7 +790,9 @@ void HSFrame::setVisibleRecursive(bool visible) {
             if (!visible) {
                 frame->decoration->hide();
             }
-            for (auto c : frame->clients) c->set_visible(visible);
+            for (auto c : frame->clients) {
+                c->set_visible(visible);
+            }
         };
     // first hide children => order = 2
     fmap(onSplit, onLeaf, 2);
@@ -812,8 +811,9 @@ int frame_focus_edge(Input input, Output output) {
     int oldval = g_settings->focus_crosses_monitor_boundaries();
     g_settings->focus_crosses_monitor_boundaries = false;
     Input inp = {"focus", input.toVector()};
-    while (0 == Commands::call(inp, output))
+    while (0 == Commands::call(inp, output)) {
         ;
+    }
     g_settings->focus_crosses_monitor_boundaries = oldval;
     g_monitors->unlock();
     return 0;
@@ -824,8 +824,9 @@ int frame_move_window_edge(int argc, char** argv, Output output) {
     g_monitors->lock();
     int oldval = g_settings->focus_crosses_monitor_boundaries();
     g_settings->focus_crosses_monitor_boundaries = false;
-    while (0 == frame_move_window_command(argc,argv,output))
+    while (0 == frame_move_window_command(argc, argv, output)) {
         ;
+    }
     g_settings->focus_crosses_monitor_boundaries = oldval;
     g_monitors->unlock();
     return 0;

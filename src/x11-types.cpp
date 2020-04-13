@@ -59,9 +59,10 @@ Color Color::fromStr(const string& payload) {
     XColor screen_color, ret_color;
     auto success = XAllocNamedColor(g_display, cmap,
                                     payload.c_str(), &screen_color, &ret_color);
-    if (!success)
+    if (!success) {
         throw std::invalid_argument(
                 string("cannot allocate color \'") + payload + "\'");
+    }
 
     return Color(ret_color);
 }
@@ -105,10 +106,18 @@ Rectangle Rectangle::adjusted(int left, int top, int right, int bottom) const
 //! lexicographic order (wrt x,y,width,height)
 bool Rectangle::operator<(const Rectangle& other) const
 {
-    if (x != other.x) return x < other.x;
-    if (y != other.y) return y < other.y;
-    if (width != other.width) return width < other.width;
-    if (height != other.height) return height < other.height;
+    if (x != other.x) {
+        return x < other.x;
+    }
+    if (y != other.y) {
+        return y < other.y;
+    }
+    if (width != other.width) {
+        return width < other.width;
+    }
+    if (height != other.height) {
+        return height < other.height;
+    }
     return false;
 }
 

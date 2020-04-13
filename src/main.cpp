@@ -40,7 +40,6 @@ using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
-using std::vector;
 
 // globals:
 int g_verbose = 0;
@@ -119,7 +118,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"close_or_remove",{ tags->frameCommand(&FrameTree::closeOrRemoveCommand) }},
         {"close_and_remove",{ tags->frameCommand(&FrameTree::closeAndRemoveCommand) }},
         {"split",          { tags->frameCommand(&FrameTree::splitCommand) }},
-        {"resize",         frame_change_fraction_command},
+        {"resize",         monitors->tagCommand(&HSTag::resizeCommand,
+                                                &HSTag::resizeCompletion)},
         {"focus_edge",     frame_focus_edge},
         {"focus",          monitors->tagCommand(&HSTag::focusInDirCommand,
                                                 &HSTag::focusInDirCompletion)},
@@ -350,8 +350,9 @@ int raise_command(int argc, char** argv, Output) {
         auto window = get_window((argc > 1) ? argv[1] : "");
         if (window) {
             XRaiseWindow(g_display, window);
+        } else {
+            return HERBST_INVALID_ARGUMENT;
         }
-        else return HERBST_INVALID_ARGUMENT;
     }
     return 0;
 }
@@ -428,7 +429,9 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
     while (true) {
         int option_index = 0;
         int c = getopt_long(argc, argv, "+c:vl", long_options, &option_index);
-        if (c == -1) break;
+        if (c == -1) {
+            break;
+        }
         switch (c) {
             case 0:
                 /* ignore recognized long option */
@@ -452,7 +455,9 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
 
 static void remove_zombies(int) {
     int bgstatus;
-    while (waitpid(-1, &bgstatus, WNOHANG) > 0);
+    while (waitpid(-1, &bgstatus, WNOHANG) > 0) {
+        ;
+    }
 }
 
 static void handle_signal(int signal) {

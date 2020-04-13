@@ -37,7 +37,7 @@ XConnection::~XConnection() {
 }
 
 XConnection* XConnection::connect(string display_name) {
-    const char* display_str = (display_name != "") ? display_name.c_str() : nullptr;
+    const char* display_str = (!display_name.empty()) ? display_name.c_str() : nullptr;
     Display* d = XOpenDisplay(display_str);
     if (d == nullptr) {
         std::cerr << "herbstluftwm: XOpenDisplay() failed" << endl;
@@ -147,7 +147,7 @@ string XConnection::atomName(Atom atomIdentifier) {
 int XConnection::windowPid(Window window) {
     // TODO: move to Ewmh
     auto res = getWindowPropertyCardinal(window, atom("_NET_WM_PID"));
-    if (!res.has_value() || res.value().size() == 0) {
+    if (!res.has_value() || res.value().empty()) {
         return -1;
     } else {
         return res.value()[0];
@@ -164,8 +164,12 @@ pair<string, string> XConnection::getClassHint(Window window) {
         hint.res_name ? hint.res_name : "",
         hint.res_class ? hint.res_class : ""
     };
-    if (hint.res_name) XFree(hint.res_name);
-    if (hint.res_class) XFree(hint.res_class);
+    if (hint.res_name) {
+        XFree(hint.res_name);
+    }
+    if (hint.res_class) {
+        XFree(hint.res_class);
+    }
     return result;
 }
 

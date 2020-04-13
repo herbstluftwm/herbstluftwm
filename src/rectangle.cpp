@@ -6,7 +6,6 @@
 #include "utils.h"
 
 using std::endl;
-using std::vector;
 
 static bool rects_intersect(const Rectangle &a, const Rectangle &b) {
     bool is = true;

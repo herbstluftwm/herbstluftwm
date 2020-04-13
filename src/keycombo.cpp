@@ -9,7 +9,6 @@
 #include "globals.h"
 #include "xkeygrabber.h"
 
-using std::function;
 using std::string;
 using std::stringstream;
 using std::vector;
@@ -44,7 +43,7 @@ void ModifiersWithString::complete(Completion& complete, SuffixCompleter suffixC
     string needle = complete.needle();
     ModifiersWithString mws;
     try {
-        if (needle != "") {
+        if (!needle.empty()) {
             mws = Converter<ModifiersWithString>::parse(needle);
         }
     } catch (...) {
@@ -52,7 +51,7 @@ void ModifiersWithString::complete(Completion& complete, SuffixCompleter suffixC
     }
     string prefix = needle.substr(0, needle.size() - mws.suffix_.size());
     char sep =
-        prefix.size() > 0
+        !prefix.empty()
         ? prefix[prefix.size() - 1]
         : ModifierCombo::separators[0];
     for (auto& modifier : KeyCombo::modifierMasks) {

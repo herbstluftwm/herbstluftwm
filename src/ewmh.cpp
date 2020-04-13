@@ -18,8 +18,6 @@
 #include "utils.h"
 #include "xconnection.h"
 
-using std::function;
-using std::make_shared;
 using std::string;
 using std::vector;
 
@@ -115,7 +113,7 @@ void Ewmh::readInitialEwmhState()
 {
     // list of desktops
     auto number = X_.getWindowPropertyCardinal(X_.root(), g_netatom[NetNumberOfDesktops]);
-    if (number.has_value() && number.value().size() >= 1) {
+    if (number.has_value() && !number.value().empty()) {
         auto val = number.value()[0];
         initialState_.numberOfDesktops = (val >= 0) ? ((size_t)(val)) : 0;
     }
@@ -134,7 +132,7 @@ void Ewmh::readInitialEwmhState()
 long Ewmh::windowGetInitialDesktop(Window win)
 {
     auto maybe_idx = X_.getWindowPropertyCardinal(win, g_netatom[NetWmDesktop]);
-    if (maybe_idx.has_value() && maybe_idx.value().size() >= 1) {
+    if (maybe_idx.has_value() && !maybe_idx.value().empty()) {
         return maybe_idx.value()[0];
     }
     return -1;
@@ -329,7 +327,9 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
         case NetWmState: {
             auto client = Root::common().client(me->window);
             /* ignore requests for unmanaged windows */
-            if (!client || !client->ewmhrequests_) break;
+            if (!client || !client->ewmhrequests_) {
+                break;
+            }
 
             /* mapping between EWMH atoms and client struct members */
             struct {
@@ -551,7 +551,7 @@ string Ewmh::getWindowTitle(Window win) {
  */
 int Ewmh::getWindowType(Window win) {
     auto atoms = X_.getWindowPropertyAtom(win, g_netatom[NetWmWindowType]);
-    if (!atoms.has_value() || atoms.value().size() < 1) {
+    if (!atoms.has_value() || atoms.value().empty()) {
         return -1;
     }
     Atom windowtype = atoms.value()[0];

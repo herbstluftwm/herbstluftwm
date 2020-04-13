@@ -24,8 +24,9 @@ static Visual* check_32bit_client(Client* c)
     HSWeakAssert(ret != BadDrawable);
     HSWeakAssert(ret != BadWindow);
 
-    if (wattrib.depth == 32)
+    if (wattrib.depth == 32) {
         return wattrib.visual;
+    }
     return nullptr;
 }
 
