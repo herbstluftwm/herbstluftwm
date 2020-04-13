@@ -253,6 +253,39 @@ void HSTag::focusInDirCompletion(Completion &complete)
     }
 }
 
+int HSTag::resizeCommand(Input input, Output output)
+{
+    string dir_str, delta_str;
+    if (!(input >> dir_str >> delta_str)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    Direction direction;
+    try {
+        direction = Converter<Direction>::parse(dir_str);
+    } catch (const std::exception& e) {
+        output << input.command() << ": " << e.what() << "\n";
+        return HERBST_INVALID_ARGUMENT;
+    }
+    double delta_double = atof(delta_str.c_str());
+    if (!frame->resizeFrame(delta_double, direction)) {
+        output << input.command() << ": No neighbour found\n";
+        return HERBST_FORBIDDEN;
+    }
+    needsRelayout_.emit();
+    return 0;
+}
+
+void HSTag::resizeCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        Converter<Direction>::complete(complete, nullptr);
+    } else if (complete == 1) {
+        complete.full({"-0.02", "0.02"});
+    } else {
+        complete.none();
+    }
+}
+
 void HSTag::onGlobalFloatingChange(bool newState)
 {
     // move tiling client slices between layers

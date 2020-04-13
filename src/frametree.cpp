@@ -396,6 +396,38 @@ bool FrameTree::contains(shared_ptr<HSFrame> frame) const
     return frame->root() == this->root_;
 }
 
+//! resize the borders of the focused client in the specific direction by 'delta'
+//! returns whether the focused frame has a border in the specified direction.
+bool FrameTree::resizeFrame(double delta_double, Direction direction)
+{
+    int delta = int(FRACTION_UNIT * delta_double);
+    // if direction is left or up we have to flip delta
+    // because e.g. resize up by 0.1 actually means:
+    // reduce fraction by 0.1, i.e. delta = -0.1
+    if (direction == Direction::Left || direction == Direction::Up)
+        delta *= -1;
+
+    shared_ptr<HSFrame> neighbour = focusedFrame()->neighbour(direction);
+    if (!neighbour) {
+        // then try opposite direction
+        std::map<Direction, Direction> flip = {
+            {Direction::Left, Direction::Right},
+            {Direction::Right, Direction::Left},
+            {Direction::Down, Direction::Up},
+            {Direction::Up, Direction::Down},
+        };
+        direction = flip[direction];
+        neighbour = focusedFrame()->neighbour(direction);
+        if (!neighbour) {
+            return false;
+        }
+    }
+    auto parent = neighbour->getParent();
+    assert(parent); // if has neighbour, it also must have a parent
+    parent->adjustFraction(delta);
+    return true;
+}
+
 bool FrameTree::focusClient(Client* client) {
     auto frameLeaf = findFrameWithClient(client);
     if (!frameLeaf) {

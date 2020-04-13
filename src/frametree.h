@@ -49,6 +49,8 @@ public:
         End,
     };
 
+    bool resizeFrame(double delta, Direction dir);
+
     // Commands
     int cycleSelectionCommand(Input input, Output output);
     int focusNthCommand(Input input, Output output);
