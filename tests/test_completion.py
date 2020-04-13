@@ -167,6 +167,7 @@ def test_completable_commands(hlwm, request, run_destructives):
         'A (monitor|tag) with the name.*already exists',
         'No such.*client: urgent',  # for apply_rules
         'Could not find client "(urgent|)"',  # for drag
+        'No neighbour found',  # for resize and similar commands
     ])))
     # a set of commands that make other commands break
     # hence we need to run them separately
