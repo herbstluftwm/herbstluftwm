@@ -269,7 +269,7 @@ int HSTag::resizeCommand(Input input, Output output)
     }
     double delta_double = atof(delta_str.c_str());
     if (!frame->resizeFrame(delta_double, direction)) {
-        output << input.command() << ": no neighbour found\n";
+        output << input.command() << ": No neighbour found\n";
         return HERBST_FORBIDDEN;
     }
     needsRelayout_.emit();
