@@ -4,6 +4,7 @@ FROM ubuntu:disco-20190204
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ccache \
     clang-7 \
+    clang-tidy-8 \
     cmake \
     curl \
     g++-8 \
@@ -17,6 +18,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     libxrandr-dev \
     ninja-build \
     pkg-config \
+    python3-yaml \
     python3.7 \
     tox \
     x11-xserver-utils \
