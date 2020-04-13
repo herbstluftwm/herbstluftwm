@@ -188,7 +188,7 @@ TilingResult HSFrameLeaf::layoutLinear(Rectangle rect, bool vertical) {
         // add the space, if count does not divide frameheight without remainder
         cur.height += (i == count-1) ? last_step_y : 0;
         cur.width += (i == count-1) ? last_step_x : 0;
-        res[client] = TilingStep(cur);
+        res.add(client, TilingStep(cur));
         cur.y += step_y;
         cur.x += step_x;
         i++;
@@ -203,7 +203,7 @@ TilingResult HSFrameLeaf::layoutMax(Rectangle rect) {
         if (client == clients[selection]) {
             step.needsRaise = true;
         }
-        res[client] = step;
+        res.add(client, step);
     }
     return res;
 }
@@ -252,7 +252,7 @@ TilingResult HSFrameLeaf::layoutGrid(Rectangle rect) {
             }
 
             // apply size
-            res[clients[i]] = TilingStep(cur);
+            res.add(clients[i], TilingStep(cur));
             cur.x += width;
             i++;
         }
