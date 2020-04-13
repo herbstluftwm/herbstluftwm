@@ -1,4 +1,4 @@
-FROM ubuntu:disco-20190204
+FROM ubuntu:eoan-20200313
 
 # Build deps
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
