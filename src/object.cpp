@@ -59,13 +59,13 @@ void Object::wireActions(vector<Action*> actions)
 void Object::ls(Output out)
 {
     out << children_.size() << (children_.size() == 1 ? " child" : " children")
-        << (children_.size() > 0 ? ":" : ".") << endl;
+        << (!children_.empty() ? ":" : ".") << endl;
     for (auto it : children_) {
         out << "  " << it.first << "." << endl;
     }
 
     out << attribs_.size() << (attribs_.size() == 1 ? " attribute" : " attributes")
-        << (attribs_.size() > 0 ? ":" : ".") << endl;
+        << (!attribs_.empty() ? ":" : ".") << endl;
 
     out << " .---- type\n"
         << " | .-- writeable\n"
@@ -86,7 +86,7 @@ void Object::ls(Output out)
     }
 
     out << actions_.size() << (actions_.size() == 1 ? " action" : " actions")
-        << (actions_.size() > 0 ? ":" : ".") << endl;
+        << (!actions_.empty() ? ":" : ".") << endl;
     for (auto it : actions_) {
         out << "  " << it.first << endl;
     }
@@ -246,7 +246,7 @@ public:
         return make_shared<DirectoryTreeInterface>(buf[idx].first, buf[idx].second);
     };
     void appendCaption(Output output) override {
-        if (lbl != "") {
+        if (!lbl.empty()) {
             output << " " << lbl;
         }
     };

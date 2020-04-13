@@ -29,7 +29,7 @@ pair<int,string> HlwmCommon::callCommand(const vector<string>& call) {
     // the call consists of the command and its arguments
     std::ostringstream output;
     auto input =
-        (call.size() == 0)
+        (call.empty())
         ? Input("", call)
         : Input(call[0], vector<string>(call.begin() + 1, call.end()));
     int status = Commands::call(input, output);
