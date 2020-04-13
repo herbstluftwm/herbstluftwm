@@ -234,7 +234,7 @@ void TagManager::moveFocusedClient(HSTag* target) {
 void TagManager::moveClient(Client* client, HSTag* target, string frameIndex, bool focus) {
     HSTag* tag_source = client->tag();
     Monitor* monitor_source = find_monitor_with_tag(tag_source);
-    if (tag_source == target && frameIndex == "") {
+    if (tag_source == target && frameIndex.empty()) {
         // nothing to do
         return;
     }
@@ -254,8 +254,12 @@ void TagManager::moveClient(Client* client, HSTag* target, string frameIndex, bo
         // so hide it
         client->set_visible(false);
     }
-    if (monitor_source) monitor_source->applyLayout();
-    if (monitor_target) monitor_target->applyLayout();
+    if (monitor_source) {
+        monitor_source->applyLayout();
+    }
+    if (monitor_target) {
+        monitor_target->applyLayout();
+    }
     if (!monitor_source && monitor_target) {
         client->set_visible(true);
     }
@@ -342,7 +346,7 @@ int TagManager::floatingCmd(Input input, Output output) {
         newValue = "toggle";
     }
     HSTag* tag = monitors_->focus()->tag;
-    if (tagName != "") {
+    if (!tagName.empty()) {
         tag = find(tagName);
         if (!tag) {
             output << input.command() << ": Tag \"" << tagName << "\" not found\n";
@@ -353,7 +357,7 @@ int TagManager::floatingCmd(Input input, Output output) {
         output << (tag->floating ? "on" : "off");
     } else {
         string msg = tag->floating.change(newValue);
-        if (msg != "") {
+        if (!msg.empty()) {
             output << msg << "\n";
             return HERBST_INVALID_ARGUMENT;
         }

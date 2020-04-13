@@ -202,8 +202,9 @@ function<string(Color)> Settings::setColorAttr(string name) {
 
 int Settings::set_cmd(Input input, Output output) {
     string set_name, value;
-    if (!(input >> set_name >> value))
+    if (!(input >> set_name >> value)) {
         return HERBST_NEED_MORE_ARGS;
+    }
 
     auto attr = attribute(set_name);
     if (!attr) {
@@ -212,7 +213,7 @@ int Settings::set_cmd(Input input, Output output) {
         return HERBST_SETTING_NOT_FOUND;
     }
     auto msg = attr->change(value);
-    if (msg != "") {
+    if (!msg.empty()) {
         output << input.command()
                << ": Invalid value \"" << value
                << "\" for setting \"" << set_name << "\": "
@@ -229,7 +230,9 @@ void Settings::set_complete(Completion& complete) {
         }
     } else if (complete == 1) {
         Attribute* a = attribute(complete[0]);
-        if (a) a->complete(complete);
+        if (a) {
+            a->complete(complete);
+        }
     } else {
         complete.none();
     }
@@ -285,7 +288,7 @@ int Settings::cycle_value_cmd(Input argv, Output output) {
         return HERBST_SETTING_NOT_FOUND;
     }
     auto msg = attr->cycleValue(argv.begin(), argv.end());
-    if (msg != "") {
+    if (!msg.empty()) {
         output << argv.command()
                << ": Invalid value for setting \""
                << set_name << "\": "
@@ -302,7 +305,9 @@ void Settings::cycle_value_complete(Completion& complete) {
         }
     } else {
         Attribute* a = attribute(complete[0]);
-        if (a) a->complete(complete);
+        if (a) {
+            a->complete(complete);
+        }
     }
 }
 
@@ -327,7 +332,9 @@ void Settings::get_complete(Completion& complete) {
         }
     } else if (complete == 1) {
         Attribute* a = attribute(complete[0]);
-        if (a) a->complete(complete);
+        if (a) {
+            a->complete(complete);
+        }
     } else {
         complete.none();
     }

@@ -45,8 +45,12 @@ string window_class_to_string(Display* dpy, Window window) {
         return "";
     }
     string str = hint.res_class ? hint.res_class : "";
-    if (hint.res_name) XFree(hint.res_name);
-    if (hint.res_class) XFree(hint.res_class);
+    if (hint.res_name) {
+        XFree(hint.res_name);
+    }
+    if (hint.res_class) {
+        XFree(hint.res_class);
+    }
     return str;
 }
 
@@ -57,7 +61,9 @@ bool is_herbstluft_window(Display* dpy, Window window) {
 
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv) {
-    if (argc <= 0) return nullptr;
+    if (argc <= 0) {
+        return nullptr;
+    }
     char** new_argv = new char*[argc];
     int i;
     for (i = 0; i < argc; i++) {
@@ -76,7 +82,9 @@ size_t utf8_string_length(const string& str) {
    // http://stackoverflow.com/questions/5117393/utf-8-strings-length-in-linux-c
    size_t i = 0, j = 0;
    while (str[i]) {
-     if ((str[i] & 0xc0) != 0x80) j++;
+       if ((str[i] & 0xc0) != 0x80) {
+           j++;
+       }
      i++;
    }
    return j;
@@ -127,13 +135,15 @@ void set_window_double_border(Display *dpy, Window win, int ibw,
 {
     XWindowAttributes wa;
 
-    if (!XGetWindowAttributes(dpy, win, &wa))
+    if (!XGetWindowAttributes(dpy, win, &wa)) {
         return;
+    }
 
     int bw = wa.border_width;
 
-    if (bw < 2 || ibw >= bw || ibw < 1)
+    if (bw < 2 || ibw >= bw || ibw < 1) {
         return;
+    }
 
     int width = wa.width;
     int height = wa.height;
@@ -245,7 +255,9 @@ char* posix_sh_escape(const char* source) {
         count++;
     }
     // if there is nothing to escape
-    if (count == 0) return nullptr;
+    if (count == 0) {
+        return nullptr;
+    }
     // TODO migrate to new
     char* target = (char*)malloc(sizeof(char) * (count + source_len + 1));
 

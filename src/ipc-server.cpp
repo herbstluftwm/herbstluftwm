@@ -8,7 +8,6 @@
 #include "ipc-protocol.h"
 #include "xconnection.h"
 
-using std::make_pair;
 using std::string;
 using std::vector;
 
@@ -83,7 +82,7 @@ bool IpcServer::isConnectable(Window window) {
 }
 
 void IpcServer::emitHook(vector<string> args) {
-    if (args.size() <= 0) {
+    if (args.empty()) {
         // nothing to do
         return;
     }

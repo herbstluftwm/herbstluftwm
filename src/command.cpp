@@ -16,7 +16,6 @@
 
 using std::endl;
 using std::function;
-using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::to_string;
@@ -31,12 +30,6 @@ static void complete_against_monitors(int argc, char** argv, int pos, Output out
 static void complete_against_winids(int argc, char** argv, int pos, Output output);
 static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
-
-// Quarantined inclusion to avoid polluting the global namespace:
-namespace search_h {
-    #include <search.h>
-} // namespace search_h
-using search_h::lfind;
 
 // if the current completion needs shell quoting and other shell specific
 // behaviour
@@ -91,7 +84,6 @@ struct {
     { "raise",          2,  no_completion },
     { "jumpto",         2,  no_completion },
     { "bring",          2,  no_completion },
-    { "resize",         3,  no_completion },
     { "focus_edge",     2,  no_completion },
     { "shift_edge",     2,  no_completion },
     { "shift",          3,  no_completion },
@@ -162,7 +154,6 @@ struct {
     { "raise",          EQ, 1,  complete_against_winids, 0 },
     { "jumpto",         EQ, 1,  nullptr, completion_special_winids },
     { "jumpto",         EQ, 1,  complete_against_winids, 0 },
-    { "resize",         EQ, 1,  nullptr, completion_directions },
     { "shift_edge",     EQ, 1,  nullptr, completion_directions },
     { "shift",          EQ, 1,  nullptr, completion_directions },
     { "shift",          EQ, 1,  nullptr, completion_focus_args },
@@ -316,8 +307,9 @@ void Commands::complete(Completion& completion) {
 // Old C-ish interface to commands:
 
 int call_command(int argc, char** argv, Output output) {
-    if (argc < 1)
+    if (argc < 1) {
         return HERBST_COMMAND_NOT_FOUND;
+    }
 
     string cmd(argv[0]);
     vector<string> args;

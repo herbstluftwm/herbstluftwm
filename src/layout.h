@@ -178,8 +178,6 @@ private:
 };
 
 // functions
-int frame_change_fraction_command(int argc, char** argv, Output output);
-
 int frame_current_bring(int argc, char** argv, Output output);
 
 int frame_current_set_client_layout(int argc, char** argv, Output output);
