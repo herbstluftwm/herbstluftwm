@@ -11,6 +11,7 @@
 
 using std::function;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 const vector<KeyCombo::ModifierNameAndMask> ModifierCombo::modifierMasks = {
@@ -79,7 +80,7 @@ template<> ModifiersWithString Converter<ModifiersWithString>::parse(const strin
 
 template<> string Converter<ModifiersWithString>::str(ModifiersWithString payload)
 {
-    std::stringstream str;
+    stringstream str;
     for (auto& modName : ModifierCombo::getNamesForModifierMask(payload.modifiers_)) {
         str << modName << ModifierCombo::separators[0];
     }

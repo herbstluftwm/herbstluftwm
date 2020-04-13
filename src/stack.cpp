@@ -9,6 +9,7 @@
 
 using std::function;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 const std::array<const char*, LAYER_COUNT>g_layer_names =
@@ -83,7 +84,7 @@ void Stack::removeSlice(Slice* elem) {
 }
 
 string Slice::getLabel() {
-    std::stringstream label;
+    stringstream label;
     switch (type) {
         case Type::WindowSlice:
             label << "Window " << WindowID(data.window).str();

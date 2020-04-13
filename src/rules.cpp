@@ -10,6 +10,8 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::regex;
+using std::regex_error;
 using std::string;
 
 /// GLOBALS ///
@@ -69,8 +71,8 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
         case '~': {
             cond.value_type = CONDITION_VALUE_TYPE_REGEX;
             try {
-                cond.value_reg_exp = std::regex(value, std::regex::extended);
-            } catch(std::regex_error& err) {
+                cond.value_reg_exp = regex(value, regex::extended);
+            } catch(regex_error& err) {
                 output << "rule: Can not parse value \"" << value
                         << "\" from condition \"" << name
                         << "\": \"" << err.what() << "\"\n";
@@ -180,7 +182,7 @@ bool Condition::matches(const string& str) const {
             return value_str == str;
             break;
         case CONDITION_VALUE_TYPE_REGEX:
-            return std::regex_match(str, value_reg_exp);
+            return regex_match(str, value_reg_exp);
             break;
         case CONDITION_VALUE_TYPE_INTEGER:
             try {

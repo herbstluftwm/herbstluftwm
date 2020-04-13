@@ -12,6 +12,7 @@
 #include "utils.h"
 
 using std::string;
+using std::stringstream;
 using std::vector;
 
 Color Color::black() {
@@ -41,7 +42,7 @@ Color::Color(string name) {
 
 string Color::str() const {
     unsigned long divisor =  (65536 + 1) / (0xFF + 1);
-    std::stringstream ss;
+    stringstream ss;
     ss << "#"
        << std::hex << std::setfill('0') << std::setw(2) << (red_ / divisor)
        << std::hex << std::setfill('0') << std::setw(2) << (green_ / divisor)

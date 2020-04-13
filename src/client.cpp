@@ -24,6 +24,7 @@
 #include "xconnection.h"
 
 using std::string;
+using std::stringstream;
 
 static int g_monitor_float_treshold = 24;
 
@@ -55,7 +56,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , settings(*cm.settings)
     , ewmh(*cm.ewmh)
 {
-    std::stringstream tmp;
+    stringstream tmp;
     window_id_str = WindowID(window).str();
     floating_.setWriteable();
     keyMask_.setWriteable();
@@ -548,12 +549,12 @@ void Client::updateEwmhState() {
     ewmh.updateWindowState(this);
 }
 
-std::string Client::getWindowClass()
+string Client::getWindowClass()
 {
     return ewmh.X().getClass(window_);
 }
 
-std::string Client::getWindowInstance()
+string Client::getWindowInstance()
 {
     return ewmh.X().getInstance(window_);
 }
