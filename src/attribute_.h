@@ -139,20 +139,24 @@ public:
     }
 
     std::string change(const std::string &payload_str) override {
-        if (!writeable()) return "attribute is read-only";
+        if (!writeable()) {
+            return "attribute is read-only";
+        }
         try {
             T new_payload = Converter<T>::parse(payload_str, payload_); // throws
 
             // validate, if needed
             if (validator_) {
                 auto error_message = (validator_)(new_payload);
-                if (error_message != "")
+                if (error_message != "") {
                     return error_message;
+                }
             }
 
             // set and trigger stuff
-            if (new_payload != payload_)
+            if (new_payload != payload_) {
                 this->operator=(new_payload);
+            }
         } catch (std::invalid_argument const& e) {
             return std::string("invalid argument: ") + e.what();
         } catch (std::out_of_range const& e) {
@@ -275,7 +279,9 @@ public:
     }
 
     std::string change(const std::string &payload_str) override {
-        if (!writeable()) return "attribute is read-only";
+        if (!writeable()) {
+            return "attribute is read-only";
+        }
         try {
             // TODO: we _could_ use getter() here to allow relative changes.
             T new_payload = Converter<T>::parse(payload_str); // throws

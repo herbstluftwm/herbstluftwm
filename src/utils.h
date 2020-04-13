@@ -123,8 +123,9 @@ std::string join_strings(const InContainer& in, const std::string& delim) {
 
     std::stringstream out;
     out << *first;
-    for (auto iter = first + 1; iter != last; iter++)
+    for (auto iter = first + 1; iter != last; iter++) {
         out << delim << *iter;
+    }
     return out.str();
 }
 

@@ -350,7 +350,11 @@ struct optional_base
     explicit optional_base(in_place_t, ::std::initializer_list<U> il, Args&&... args)
         : init_(true), storage_(il, ::std::forward<Args>(args)...) {}
 
-    ~optional_base() { if (init_) storage_.value_.T::~T(); }
+    ~optional_base() {
+        if (init_) {
+            storage_.value_.T::~T();
+        }
+    }
 };
 
 
@@ -411,7 +415,9 @@ class optional : private OptionalBase<T>
 # endif
 
   void clear() noexcept {
-    if (initialized()) dataptr()->T::~T();
+      if (initialized()) {
+          dataptr()->T::~T();
+      }
     OptionalBase<T>::init_ = false;
   }
   
@@ -489,18 +495,26 @@ public:
   
   optional& operator=(const optional& rhs)
   {
-    if      (initialized() == true  && rhs.initialized() == false) clear();
-    else if (initialized() == false && rhs.initialized() == true)  initialize(*rhs);
-    else if (initialized() == true  && rhs.initialized() == true)  contained_val() = *rhs;
+      if (initialized() == true && rhs.initialized() == false) {
+          clear();
+      } else if (initialized() == false && rhs.initialized() == true) {
+          initialize(*rhs);
+      } else if (initialized() == true && rhs.initialized() == true) {
+          contained_val() = *rhs;
+      }
     return *this;
   }
   
   optional& operator=(optional&& rhs)
   noexcept(::std::is_nothrow_move_assignable<T>::value && ::std::is_nothrow_move_constructible<T>::value)
   {
-    if      (initialized() == true  && rhs.initialized() == false) clear();
-    else if (initialized() == false && rhs.initialized() == true)  initialize(::std::move(*rhs));
-    else if (initialized() == true  && rhs.initialized() == true)  contained_val() = ::std::move(*rhs);
+      if (initialized() == true && rhs.initialized() == false) {
+          clear();
+      } else if (initialized() == false && rhs.initialized() == true) {
+          initialize(::std::move(*rhs));
+      } else if (initialized() == true && rhs.initialized() == true) {
+          contained_val() = ::std::move(*rhs);
+      }
     return *this;
   }
 
