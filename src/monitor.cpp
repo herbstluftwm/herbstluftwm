@@ -159,6 +159,21 @@ void Monitor::applyLayout() {
             p.second.floated = true;
         }
     }
+    // preprocessing
+    for (auto& p : res.data) {
+        if (p.first->fullscreen_() || p.second.floated) {
+            // do not hide fullscreen windows
+            p.second.visible = true;
+        }
+        if (settings->hide_covered_windows) {
+            // apply hiding of windows: move them to out of the screen:
+            if (!p.second.visible) {
+                Rectangle& geo = p.second.geometry;
+                geo.x = -100 - geo.width;
+                geo.y = -100 - geo.height;
+            }
+        }
+    }
     // 1. Update stack (TODO: why stack first?)
     for (auto& p : res.data) {
         Client* c = p.first;

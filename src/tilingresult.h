@@ -16,6 +16,8 @@ public:
     Rectangle geometry;
     bool floated = false;
     bool needsRaise = false;
+    bool visible = true; //! whether this window is entirely covered
+                         //! by another window (e.g. in max layout)
 };
 
 // a tiling result contains the movement commands etc. for all clients
