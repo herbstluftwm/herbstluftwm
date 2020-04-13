@@ -98,7 +98,7 @@ inline int Converter<int>::parse(const std::string &payload) {
     return std::stoi(payload);
 }
 template<>
-unsigned long Converter<unsigned long>::parse(const std::string &payload);
+unsigned long Converter<unsigned long>::parse(const std::string &source);
 
 // Booleans
 template<>
