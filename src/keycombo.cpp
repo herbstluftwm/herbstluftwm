@@ -9,7 +9,6 @@
 #include "globals.h"
 #include "xkeygrabber.h"
 
-using std::function;
 using std::string;
 using std::stringstream;
 using std::vector;

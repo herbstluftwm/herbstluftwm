@@ -18,7 +18,6 @@
 
 using std::function;
 using std::make_shared;
-using std::shared_ptr;
 using std::string;
 
 static bool    g_tag_flags_dirty = true;

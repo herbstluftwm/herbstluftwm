@@ -40,7 +40,6 @@ using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
-using std::vector;
 
 // globals:
 int g_verbose = 0;

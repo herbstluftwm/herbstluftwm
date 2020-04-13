@@ -18,8 +18,6 @@
 #include "utils.h"
 #include "xconnection.h"
 
-using std::function;
-using std::make_shared;
 using std::string;
 using std::vector;
 
