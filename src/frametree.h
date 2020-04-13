@@ -42,6 +42,13 @@ public:
     //! (it requires that there are no cycles in the 'tree' containing the HSFrame
     bool contains(std::shared_ptr<HSFrame> frame) const;
 
+    enum class CycleDelta {
+        Previous,
+        Next,
+        Begin,
+        End,
+    };
+
     // Commands
     int cycleSelectionCommand(Input input, Output output);
     int focusNthCommand(Input input, Output output);
@@ -50,6 +57,7 @@ public:
     int closeOrRemoveCommand();
     int rotateCommand();
     int cycleAllCommand(Input input, Output output);
+    bool cycleAll(CycleDelta cdelta, bool skip_invisible);
     int cycleFrameCommand(Input input, Output output);
     int loadCommand(Input input, Output output);
     int dumpLayoutCommand(Input input, Output output);
