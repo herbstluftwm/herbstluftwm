@@ -515,52 +515,6 @@ void HSFrameSplit::swapChildren() {
     swap(a_,b_);
 }
 
-int frame_change_fraction_command(int argc, char** argv, Output output) {
-    // usage: fraction DIRECTION DELTA
-    if (argc < 3) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    Direction direction;
-    try {
-        direction = Converter<Direction>::parse(argv[1]);
-    } catch (const std::exception& e) {
-        output << argv[0] << ": " << e.what() << "\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    double delta_double = atof(argv[2]);
-    delta_double = CLAMP(delta_double, -1.0, 1.0);
-    int delta = FRACTION_UNIT * delta_double;
-    // if direction is left or up we have to flip delta
-    // because e.g. resize up by 0.1 actually means:
-    // reduce fraction by 0.1, i.e. delta = -0.1
-    if (direction == Direction::Left || direction == Direction::Up) {
-        delta *= -1;
-    }
-
-    shared_ptr<HSFrame> neighbour = HSFrame::getGloballyFocusedFrame()->neighbour(direction);
-    if (!neighbour) {
-        // then try opposite direction
-        std::map<Direction, Direction> flip = {
-            {Direction::Left, Direction::Right},
-            {Direction::Right, Direction::Left},
-            {Direction::Down, Direction::Up},
-            {Direction::Up, Direction::Down},
-        };
-        direction = flip[direction];
-        neighbour = HSFrame::getGloballyFocusedFrame()->neighbour(direction);
-        if (!neighbour) {
-            output << argv[0] << ": No neighbour found\n";
-            return HERBST_FORBIDDEN;
-        }
-    }
-    auto parent = neighbour->getParent();
-    assert(parent); // if has neighbour, it also must have a parent
-    parent->adjustFraction(delta);
-    // arrange monitor
-    get_current_monitor()->applyLayout();
-    return 0;
-}
-
 void HSFrameSplit::adjustFraction(int delta) {
     fraction_ += delta;
     fraction_ = clampFraction(fraction_);
