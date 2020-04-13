@@ -13,6 +13,7 @@
 
 using std::pair;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 MouseCombo::MouseCombo(unsigned int modifiers, unsigned int button)
@@ -21,7 +22,7 @@ MouseCombo::MouseCombo(unsigned int modifiers, unsigned int button)
     modifiers_ = modifiers;
 }
 
-std::vector<std::pair<std::string, unsigned int>> MouseCombo::name2button =
+vector<pair<string, unsigned int>> MouseCombo::name2button =
 {
     { "Button1",  Button1 },
     { "Button2",  Button2 },
@@ -36,7 +37,7 @@ std::vector<std::pair<std::string, unsigned int>> MouseCombo::name2button =
 };
 
 template<>
-MouseCombo Converter<MouseCombo>::parse(const std::string& source)
+MouseCombo Converter<MouseCombo>::parse(const string& source)
 {
     auto mws = Converter<ModifiersWithString>::parse(source);
     for (const auto& p : MouseCombo::name2button) {
@@ -44,13 +45,13 @@ MouseCombo Converter<MouseCombo>::parse(const std::string& source)
             return MouseCombo(mws.modifiers_, p.second);
         }
     }
-    std::stringstream msg;
+    stringstream msg;
     msg << "Unknown mouse button \"" << mws.suffix_ << "\"";
     throw std::invalid_argument(msg.str());
 }
 
 template<>
-std::string Converter<MouseCombo>::str(MouseCombo payload)
+string Converter<MouseCombo>::str(MouseCombo payload)
 {
     ModifiersWithString mws(payload.modifiers_, "?");
     for (const auto& p : MouseCombo::name2button) {

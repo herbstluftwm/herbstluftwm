@@ -14,7 +14,16 @@
 #include "tag.h"
 #include "utils.h"
 
-static void try_complete(const char* needle, std::string to_check, Output output);
+using std::endl;
+using std::function;
+using std::pair;
+using std::shared_ptr;
+using std::string;
+using std::to_string;
+using std::unique_ptr;
+using std::vector;
+
+static void try_complete(const char* needle, string to_check, Output output);
 static void try_complete(const char* needle, const char* to_check, Output output);
 
 static void complete_against_tags(int argc, char** argv, int pos, Output output);
@@ -28,15 +37,6 @@ namespace search_h {
     #include <search.h>
 } // namespace search_h
 using search_h::lfind;
-
-using std::endl;
-using std::function;
-using std::pair;
-using std::shared_ptr;
-using std::string;
-using std::to_string;
-using std::unique_ptr;
-using std::vector;
 
 // if the current completion needs shell quoting and other shell specific
 // behaviour

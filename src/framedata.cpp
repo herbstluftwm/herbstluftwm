@@ -1,8 +1,11 @@
 #include "framedata.h"
 
+#include <regex>
+
 #include "completion.h"
 
 using std::string;
+using std::regex;
 
 static const char* g_align_names[] = {
     "vertical",

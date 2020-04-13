@@ -30,6 +30,7 @@
 using std::endl;
 using std::make_shared;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 extern MonitorManager* g_monitors;
@@ -768,7 +769,7 @@ Rectangle Monitor::getFloatingArea() {
 
 //! Returns a textual description of the monitor
 string Monitor::getDescription() {
-    std::stringstream label;
+    stringstream label;
     label << "Monitor " << index();
     if (!name().empty()) {
         label << " (\"" << name() << "\")";

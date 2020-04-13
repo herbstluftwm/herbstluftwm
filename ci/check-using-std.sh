@@ -12,7 +12,7 @@ set -o pipefail
 set -o nounset
 
 reporoot=$(realpath "$(dirname "$0")")
-reporoot=${reporoot%*/} # parent of this files directory
+reporoot=${reporoot%/*} # parent of this files directory
 
 # Assemble list of std symbols to pull in:
 # (exclude some that are not enforced yet)

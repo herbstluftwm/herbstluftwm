@@ -32,7 +32,7 @@ void MouseDragHandlerFloating::handle_motion_event(Point2D newCursorPos)
 
 MouseDragHandler::Constructor MouseDragHandlerFloating::construct(DragFunction dragFunction)
 {
-    return [dragFunction](MonitorManager* monitors, Client* client) -> std::shared_ptr<MouseDragHandler> {
+    return [dragFunction](MonitorManager* monitors, Client* client) -> shared_ptr<MouseDragHandler> {
         return make_shared<MouseDragHandlerFloating>(monitors, client, dragFunction);
     };
 }
@@ -278,7 +278,7 @@ void MouseResizeFrame::handle_motion_event(Point2D newCursorPos)
     dragMonitor_->applyLayout();
 }
 
-MouseDragHandler::Constructor MouseResizeFrame::construct(std::shared_ptr<HSFrameLeaf> frame)
+MouseDragHandler::Constructor MouseResizeFrame::construct(shared_ptr<HSFrameLeaf> frame)
 {
     return [frame](MonitorManager* monitors, Client*) {
         return make_shared<MouseResizeFrame>(monitors, frame);

@@ -231,7 +231,7 @@ void TagManager::moveFocusedClient(HSTag* target) {
     moveClient(client, target);
 }
 
-void TagManager::moveClient(Client* client, HSTag* target, std::string frameIndex, bool focus) {
+void TagManager::moveClient(Client* client, HSTag* target, string frameIndex, bool focus) {
     HSTag* tag_source = client->tag();
     Monitor* monitor_source = find_monitor_with_tag(tag_source);
     if (tag_source == target && frameIndex == "") {

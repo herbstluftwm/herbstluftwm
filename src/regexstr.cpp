@@ -7,12 +7,12 @@ RegexStr::RegexStr()
 {
 }
 
-RegexStr RegexStr::fromStr(const std::string &source)
+RegexStr RegexStr::fromStr(const string &source)
 {
     RegexStr r;
     r.source_ = source;
     try {
-        r.regex_ = std::regex(source, std::regex::extended);
+        r.regex_ = regex(source, regex::extended);
     }  catch (const std::exception& e) {
         throw std::invalid_argument(e.what());
     }
@@ -24,14 +24,14 @@ bool RegexStr::operator==(const RegexStr& other) const
     return source_ == other.source_;
 }
 
-bool RegexStr::matches(const std::string& str) const
+bool RegexStr::matches(const string& str) const
 {
-    return std::regex_match(str, regex_);
+    return regex_match(str, regex_);
 }
 
-template<> RegexStr Converter<RegexStr>::parse(const std::string& source) {
+template<> RegexStr Converter<RegexStr>::parse(const string& source) {
     return RegexStr::fromStr(source);
 }
-template<> std::string Converter<RegexStr>::str(RegexStr payload) {
+template<> string Converter<RegexStr>::str(RegexStr payload) {
     return payload.str();
 }
