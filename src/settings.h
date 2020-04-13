@@ -57,6 +57,7 @@ public:
     Attribute_<bool>          raise_on_focus_temporarily = {"raise_on_focus_temporarily", false};
     Attribute_<bool>          raise_on_click = {"raise_on_click", true};
     Attribute_<bool>          gapless_grid = {"gapless_grid", true};
+    Attribute_<bool>          hide_covered_windows = {"hide_covered_windows", false};
     Attribute_<bool>          smart_frame_surroundings = {"smart_frame_surroundings", false};
     Attribute_<bool>          smart_window_surroundings = {"smart_window_surroundings", false};
     Attribute_<int>           monitors_locked = {"monitors_locked", 0};

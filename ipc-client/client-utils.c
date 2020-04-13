@@ -35,7 +35,9 @@ char* read_window_property(Display* dpy, Window window, Atom atom) {
 
 // duplicates an argument-vector
 char** argv_duplicate(int argc, char** argv) {
-    if (argc <= 0) return NULL;
+    if (argc <= 0) {
+        return NULL;
+    }
     char** new_argv = malloc(sizeof(char*) * argc);
     if (!new_argv) {
         fprintf(stderr, "cannot malloc - there is no memory available\n");
@@ -50,7 +52,9 @@ char** argv_duplicate(int argc, char** argv) {
 
 // frees all entries in argument-vector and then the vector itself
 void argv_free(int argc, char** argv) {
-    if (argc <= 0) return;
+    if (argc <= 0) {
+        return;
+    }
     int i;
     for (i = 0; i < argc; i++) {
         free(argv[i]);

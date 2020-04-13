@@ -10,12 +10,12 @@
 #include "x11-types.h"
 
 using std::dynamic_pointer_cast;
-using std::endl;
 using std::make_pair;
 using std::make_shared;
 using std::pair;
 using std::shared_ptr;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 shared_ptr<RawFrameLeaf> RawFrameLeaf::isLeaf() {
@@ -110,7 +110,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
         string alignName, fractionStr, selectionStr;
         args >> alignName >> fractionStr >> selectionStr;
         if (!args || !args.empty()) {
-            std::stringstream message;
+            stringstream message;
             args.reset();
             message << "Expected 3 arguments but got " << args.size();
             throw ParsingException(*nextToken, message.str());
@@ -121,7 +121,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             if (fraction < FRAME_MIN_FRACTION
                 || fraction > 1 - FRAME_MIN_FRACTION)
             {
-                std::stringstream message;
+                stringstream message;
                 message << "Fraction must be between "
                         <<  FRAME_MIN_FRACTION << " and "
                         << (1 - FRAME_MIN_FRACTION)
@@ -152,7 +152,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
         string layoutName, selectionStr;
         args >> layoutName >> selectionStr;
         if (!args || !args.empty()) {
-            std::stringstream message;
+            stringstream message;
             args.reset();
             message << "Expected 2 arguments but got " << args.size();
             throw ParsingException(*nextToken, message.str());
@@ -195,7 +195,7 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
 void FrameParser::expectTokens(vector<string> tokens) {
     if (nextToken == endToken ||
         std::find(tokens.begin(), tokens.end(), nextToken->second) == tokens.end()) {
-        std::stringstream message;
+        stringstream message;
         if (nextToken == endToken) {
             message << "Unexpected end of input.";
         } else {

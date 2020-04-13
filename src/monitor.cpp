@@ -28,8 +28,8 @@
 #include "xconnection.h"
 
 using std::endl;
-using std::make_shared;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 extern MonitorManager* g_monitors;
@@ -76,7 +76,9 @@ string Monitor::setTagString(string new_tag_string) {
     if (!new_tag) {
         return "no tag named \"" + new_tag_string + "\" exists.";
     }
-    if (new_tag == tag) return ""; // nothing to do
+    if (new_tag == tag) {
+        return ""; // nothing to do
+    }
     bool success = this->setTag(new_tag);
     if (!success) {
         return "tag \"" + new_tag_string + "\" is already on another monitor";
@@ -156,6 +158,21 @@ void Monitor::applyLayout() {
     if (tag->floating) {
         for (auto& p : res.data) {
             p.second.floated = true;
+        }
+    }
+    // preprocessing
+    for (auto& p : res.data) {
+        if (p.first->fullscreen_() || p.second.floated) {
+            // do not hide fullscreen windows
+            p.second.visible = true;
+        }
+        if (settings->hide_covered_windows) {
+            // apply hiding of windows: move them to out of the screen:
+            if (!p.second.visible) {
+                Rectangle& geo = p.second.geometry;
+                geo.x = -100 - geo.width;
+                geo.y = -100 - geo.height;
+            }
         }
     }
     // 1. Update stack (TODO: why stack first?)
@@ -247,8 +264,9 @@ void Monitor::applyLayout() {
 
 Monitor* find_monitor_by_name(const char* name) {
     for (auto m : *g_monitors) {
-        if (m->name == name)
+        if (m->name == name) {
             return m;
+        }
     }
     return nullptr;
 }
@@ -272,13 +290,21 @@ int Monitor::move_cmd(Input input, Output output) {
     // else: just move it:
     this->rect = new_rect;
     input.shift();
-    if (!input.empty()) pad_up.change(input.front());
+    if (!input.empty()) {
+        pad_up.change(input.front());
+    }
     input.shift();
-    if (!input.empty()) pad_right.change(input.front());
+    if (!input.empty()) {
+        pad_right.change(input.front());
+    }
     input.shift();
-    if (!input.empty()) pad_down.change(input.front());
+    if (!input.empty()) {
+        pad_down.change(input.front());
+    }
     input.shift();
-    if (!input.empty()) pad_left.change(input.front());
+    if (!input.empty()) {
+        pad_left.change(input.front());
+    }
     monitorMoved.emit();
     applyLayout();
     return 0;
@@ -375,18 +401,27 @@ int monitor_set_pad_command(int argc, char** argv, Output output) {
             ": Monitor \"" << argv[1] << "\" not found!\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    if (argc > 2 && argv[2][0] != '\0') monitor->pad_up       = atoi(argv[2]);
-    if (argc > 3 && argv[3][0] != '\0') monitor->pad_right    = atoi(argv[3]);
-    if (argc > 4 && argv[4][0] != '\0') monitor->pad_down     = atoi(argv[4]);
-    if (argc > 5 && argv[5][0] != '\0') monitor->pad_left     = atoi(argv[5]);
+    if (argc > 2 && argv[2][0] != '\0') {
+        monitor->pad_up = atoi(argv[2]);
+    }
+    if (argc > 3 && argv[3][0] != '\0') {
+        monitor->pad_right = atoi(argv[3]);
+    }
+    if (argc > 4 && argv[4][0] != '\0') {
+        monitor->pad_down = atoi(argv[4]);
+    }
+    if (argc > 5 && argv[5][0] != '\0') {
+        monitor->pad_left = atoi(argv[5]);
+    }
     monitor->applyLayout();
     return 0;
 }
 
 Monitor* find_monitor_with_tag(HSTag* tag) {
     for (auto m : *g_monitors) {
-        if (m->tag == tag)
+        if (m->tag == tag) {
             return m;
+        }
     }
     return nullptr;
 }
@@ -396,7 +431,9 @@ Monitor* get_current_monitor() {
 }
 
 void all_monitors_apply_layout() {
-    for (auto m : *g_monitors) m->applyLayout();
+    for (auto m : *g_monitors) {
+        m->applyLayout();
+    }
 }
 
 int monitor_set_tag(Monitor* monitor, HSTag* tag) {
@@ -661,13 +698,17 @@ int detect_monitors_command(int argc, const char **argv, Output output) {
     bool disjoin = true;
     //bool drop_small = true;
     FOR (i,1,argc) {
-        if      (!strcmp(argv[i], "-l"))            list_only = true;
-        else if (!strcmp(argv[i], "--list"))        list_only = true;
-        else if (!strcmp(argv[i], "--list-all"))    list_all = true;
-        else if (!strcmp(argv[i], "--no-disjoin"))  disjoin = false;
-        // TOOD:
-        // else if (!strcmp(argv[i], "--keep-small"))  drop_small = false;
-        else {
+        if (!strcmp(argv[i], "-l")) {
+            list_only = true;
+        } else if (!strcmp(argv[i], "--list")) {
+            list_only = true;
+        } else if (!strcmp(argv[i], "--list-all")) {
+            list_all = true;
+        } else if (!strcmp(argv[i], "--no-disjoin")) {
+            disjoin = false;
+            // TOOD:
+            // else if (!strcmp(argv[i], "--keep-small"))  drop_small = false;
+        } else {
             output << "detect_monitors: unknown flag \"" << argv[i] << "\"\n";
             return HERBST_INVALID_ARGUMENT;
         }
@@ -753,7 +794,9 @@ void all_monitors_replace_previous_tag(HSTag *old, HSTag *newmon) {
 void drop_enternotify_events() {
     XEvent ev;
     XSync(g_display, False);
-    while(XCheckMaskEvent(g_display, EnterWindowMask, &ev));
+    while (XCheckMaskEvent(g_display, EnterWindowMask, &ev)) {
+        ;
+    }
 }
 
 Rectangle Monitor::getFloatingArea() {
@@ -768,7 +811,7 @@ Rectangle Monitor::getFloatingArea() {
 
 //! Returns a textual description of the monitor
 string Monitor::getDescription() {
-    std::stringstream label;
+    stringstream label;
     label << "Monitor " << index();
     if (!name().empty()) {
         label << " (\"" << name() << "\")";

@@ -130,7 +130,9 @@ void XMainLoop::scanExistingClients() {
     }
     // ensure every original client is managed again
     for (auto win : originalClients) {
-        if (clientmanager->client(win)) continue;
+        if (clientmanager->client(win)) {
+            continue;
+        }
         if (!XGetWindowAttributes(X_.display(), win, &wa)
             || wa.override_redirect)
         {
@@ -216,14 +218,24 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
             bool height_requested = 0 != (cre->value_mask & CWHeight);
             bool x_requested = 0 != (cre->value_mask & CWX);
             bool y_requested = 0 != (cre->value_mask & CWY);
-            if (width_requested && newRect.width  != cre->width) changes = true;
-            if (height_requested && newRect.height != cre->height) changes = true;
-            if (x_requested || y_requested) changes = true;
+            if (width_requested && newRect.width != cre->width) {
+                changes = true;
+            }
+            if (height_requested && newRect.height != cre->height) {
+                changes = true;
+            }
+            if (x_requested || y_requested) {
+                changes = true;
+            }
             if (x_requested || y_requested) {
                 // if only one of the two dimensions is requested, then just
                 // set the other to some reasonable value.
-                if (!x_requested) cre->x = client->last_size_.x;
-                if (!y_requested) cre->y = client->last_size_.y;
+                if (!x_requested) {
+                    cre->x = client->last_size_.x;
+                }
+                if (!y_requested) {
+                    cre->y = client->last_size_.y;
+                }
                 // interpret the x and y coordinate relative to the monitor they are currently on
                 Monitor* m = root_->monitors->byTag(client->tag());
                 if (!m) {
@@ -242,8 +254,12 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
                 newRect.x = cre->x;
                 newRect.y = cre->y;
             }
-            if (width_requested) newRect.width = cre->width;
-            if (height_requested) newRect.height = cre->height;
+            if (width_requested) {
+                newRect.width = cre->width;
+            }
+            if (height_requested) {
+                newRect.height = cre->height;
+            }
         }
         if (changes && client->is_client_floated()) {
             client->float_size_ = newRect;
@@ -251,7 +267,9 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
         } else if (changes && client->pseudotile_) {
             client->float_size_ = newRect;
             Monitor* m = find_monitor_with_tag(client->tag());
-            if (m) m->applyLayout();
+            if (m) {
+                m->applyLayout();
+            }
         } else {
         // FIXME: why send event and not XConfigureWindow or XMoveResizeWindow??
             client->send_configure();
@@ -345,7 +363,9 @@ void XMainLoop::mappingnotify(XMappingEvent* ev) {
 
 void XMainLoop::motionnotify(XMotionEvent* event) {
     // get newest motion notification
-    while (XCheckMaskEvent(X_.display(), ButtonMotionMask, (XEvent*)event));
+    while (XCheckMaskEvent(X_.display(), ButtonMotionMask, (XEvent *)event)) {
+        ;
+    }
     Point2D newCursorPos = { event->x_root,  event->y_root };
     root_->mouse->handle_motion_event(newCursorPos);
 }
@@ -426,7 +446,9 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
             } else if (ev->atom == XA_WM_NORMAL_HINTS) {
                 client->updatesizehints();
                 Monitor* m = find_monitor_with_tag(client->tag());
-                if (m) m->applyLayout();
+                if (m) {
+                    m->applyLayout();
+                }
             } else if (ev->atom == XA_WM_NAME ||
                        ev->atom == g_netatom[NetWmName]) {
                 client->update_title();
@@ -462,6 +484,8 @@ void XMainLoop::unmapnotify(XUnmapEvent* event) {
     // drop all enternotify events
     XSync(X_.display(), False);
     XEvent ev;
-    while (XCheckMaskEvent(X_.display(), EnterWindowMask, &ev));
+    while (XCheckMaskEvent(X_.display(), EnterWindowMask, &ev)) {
+        ;
+    }
 }
 

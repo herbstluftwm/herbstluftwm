@@ -1,6 +1,14 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Current git version
+-------------------
+
+  * the frame index 'e' refers to the first empty frame (e.g. 'rule index=e' places
+    new windows in empty frames, if possible)
+  * new setting 'hide_covered_windows' to improve the appearance when used with
+    a compositor.
+
 Release 0.8.0 on 2020-04-09
 ---------------------------
 

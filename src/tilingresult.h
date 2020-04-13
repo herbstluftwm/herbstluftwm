@@ -16,13 +16,15 @@ public:
     Rectangle geometry;
     bool floated = false;
     bool needsRaise = false;
+    bool visible = true; //! whether this window is entirely covered
+                         //! by another window (e.g. in max layout)
 };
 
 // a tiling result contains the movement commands etc. for all clients
 class TilingResult {
 public:
     TilingResult() = default;
-    TilingStep& operator[](Client* client);
+    void add(Client* client, const TilingStep& client_data);
     void add(FrameDecoration* dec, const FrameDecorationData& frame_data);
 
     Client* focus = {}; // the focused client

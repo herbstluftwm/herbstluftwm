@@ -115,9 +115,12 @@ The characters are interpreted as follows:
     * +1+: select the second subtree
     * +.+: select the subtree having the focus
     * +/+: select the subtree not having the focus
+    * +e+: finds a suitable empty frame: if the focused frame is not empty, this
+      selects the closest frame that is empty (in any subtree)
 
 Thus an empty string refers to the root frame, and "00" refers to the first
-subtree of the first subtree of the root frame.
+subtree of the first subtree of the root frame. Similarly "1e" refers to the
+first empty frame in the second subtree.
 
 As a special case, the string "@" always refers to the currently focused
 frame.
@@ -1022,6 +1025,13 @@ gapless_grid (Boolean)::
     by grid layout. If set, then the last client always fills the gap within
     this frame. If unset, then the last client has the same size as all other
     clients in this frame.
+
+hide_covered_windows (Boolean)::
+    If activated, windows are explicitly hidden when they are covered by another
+    window in a frame with max layout. This only has a visible effect if a
+    compositor is used. If activated, shadows do not stack up and transparent
+    windows show the wallpaper behind them instead of the other clients in the
+    max layout.
 
 smart_frame_surroundings (Boolean)::
     If set, frame borders and gaps will be removed when there's no ambiguity

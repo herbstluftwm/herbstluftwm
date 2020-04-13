@@ -9,8 +9,8 @@
 #include "globals.h"
 #include "xkeygrabber.h"
 
-using std::function;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 const vector<KeyCombo::ModifierNameAndMask> ModifierCombo::modifierMasks = {
@@ -43,7 +43,7 @@ void ModifiersWithString::complete(Completion& complete, SuffixCompleter suffixC
     string needle = complete.needle();
     ModifiersWithString mws;
     try {
-        if (needle != "") {
+        if (!needle.empty()) {
             mws = Converter<ModifiersWithString>::parse(needle);
         }
     } catch (...) {
@@ -51,7 +51,7 @@ void ModifiersWithString::complete(Completion& complete, SuffixCompleter suffixC
     }
     string prefix = needle.substr(0, needle.size() - mws.suffix_.size());
     char sep =
-        prefix.size() > 0
+        !prefix.empty()
         ? prefix[prefix.size() - 1]
         : ModifierCombo::separators[0];
     for (auto& modifier : KeyCombo::modifierMasks) {
@@ -79,7 +79,7 @@ template<> ModifiersWithString Converter<ModifiersWithString>::parse(const strin
 
 template<> string Converter<ModifiersWithString>::str(ModifiersWithString payload)
 {
-    std::stringstream str;
+    stringstream str;
     for (auto& modName : ModifierCombo::getNamesForModifierMask(payload.modifiers_)) {
         str << modName << ModifierCombo::separators[0];
     }

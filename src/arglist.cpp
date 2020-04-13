@@ -6,6 +6,7 @@
 
 using std::make_shared;
 using std::string;
+using std::stringstream;
 
 ArgList::ArgList(const std::initializer_list<string> &l)
     : container_(make_shared<Container>(l))
@@ -30,11 +31,12 @@ ArgList::ArgList(Container::const_iterator from, Container::const_iterator to)
 
 ArgList::Container ArgList::split(const string &s, char delim) {
     Container ret;
-    std::stringstream tmp(s);
+    stringstream tmp(s);
     string item;
     // read "lines" seperated by delim
-    while (std::getline(tmp, item, delim))
+    while (std::getline(tmp, item, delim)) {
         ret.push_back(item);
+    }
     // with this, there is no distinction whether there was a delim
     // in the end or not; so fix this manually:
     if (!s.empty() && s.back() == delim) {

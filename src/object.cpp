@@ -43,8 +43,12 @@ void Object::addAttribute(Attribute* attr) {
 
 void Object::removeAttribute(Attribute* attr) {
     auto it = attribs_.find(attr->name());
-    if (it == attribs_.end()) return;
-    if (it->second != attr) return;
+    if (it == attribs_.end()) {
+        return;
+    }
+    if (it->second != attr) {
+        return;
+    }
     attribs_.erase(it);
 }
 
@@ -59,13 +63,13 @@ void Object::wireActions(vector<Action*> actions)
 void Object::ls(Output out)
 {
     out << children_.size() << (children_.size() == 1 ? " child" : " children")
-        << (children_.size() > 0 ? ":" : ".") << endl;
+        << (!children_.empty() ? ":" : ".") << endl;
     for (auto it : children_) {
         out << "  " << it.first << "." << endl;
     }
 
     out << attribs_.size() << (attribs_.size() == 1 ? " attribute" : " attributes")
-        << (attribs_.size() > 0 ? ":" : ".") << endl;
+        << (!attribs_.empty() ? ":" : ".") << endl;
 
     out << " .---- type\n"
         << " | .-- writeable\n"
@@ -86,14 +90,15 @@ void Object::ls(Output out)
     }
 
     out << actions_.size() << (actions_.size() == 1 ? " action" : " actions")
-        << (actions_.size() > 0 ? ":" : ".") << endl;
+        << (!actions_.empty() ? ":" : ".") << endl;
     for (auto it : actions_) {
         out << "  " << it.first << endl;
     }
 }
 void Object::ls(Path path, Output out) {
-    if (path.empty())
+    if (path.empty()) {
         return ls(out);
+    }
 
     auto child = path.front();
     if (children_.find(child) != children_.end()) {
@@ -119,10 +124,12 @@ void Object::print(const string &prefix)
             std::cout << prefix << "\t" << it.first
                       << " (" << it.second->typestr() << ")";
             std::cout << "\t[" << it.second->str() << "]";
-            if (it.second->writeable())
+            if (it.second->writeable()) {
                 std::cout << "\tw";
-            if (!it.second->hookable())
+            }
+            if (!it.second->hookable()) {
                 std::cout << "\t!h";
+            }
             std::cout << endl;
         }
     }
@@ -149,10 +156,11 @@ Attribute* Object::attribute(const string &name) {
 
 Object* Object::child(const string &name) {
     auto it = children_.find(name);
-    if (it != children_.end())
+    if (it != children_.end()) {
         return it->second;
-    else
+    } else {
         return {};
+    };
 }
 
 
@@ -246,7 +254,7 @@ public:
         return make_shared<DirectoryTreeInterface>(buf[idx].first, buf[idx].second);
     };
     void appendCaption(Output output) override {
-        if (lbl != "") {
+        if (!lbl.empty()) {
             output << " " << lbl;
         }
     };

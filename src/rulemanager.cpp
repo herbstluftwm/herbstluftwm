@@ -124,8 +124,9 @@ int RuleManager::addRuleCommand(Input input, Output output) {
  */
 int RuleManager::unruleCommand(Input input, Output output) {
     string arg;
-    if (!(input >> arg))
+    if (!(input >> arg)) {
         return HERBST_NEED_MORE_ARGS;
+    }
 
     if (arg == "--all" || arg == "-F") {
         rules_.clear();

@@ -60,7 +60,8 @@ static void rectlist_rotate(RectangleIdxVec& rects, int& idx, Direction dir) {
     }
 }
 
-// returns the found index in the original buffer
+//! fuzzily find a rectangle in the specified direction
+//! returns the found index in the original buffer
 int find_rectangle_in_direction(RectangleIdxVec& rects, int idx, Direction dir) {
     rectlist_rotate(rects, idx, dir);
     return find_rectangle_right_of(rects, idx);
@@ -85,8 +86,12 @@ static bool rectangle_is_right_of(Rectangle RC, Rectangle R2) {
     // get vector from center of RC to center of R2
     rcx -= cx;
     rcy -= cy;
-    if (rcx < 0) return false;
-    if (abs(rcy) > rcx) return false;
+    if (rcx < 0) {
+        return false;
+    }
+    if (abs(rcy) > rcx) {
+        return false;
+    }
     if (rcx == 0 && rcy == 0) {
         // if centers match, then disallow R2 to have a larger width
         return true;
@@ -101,16 +106,22 @@ int find_rectangle_right_of(RectangleIdxVec rects, int idx) {
     int write_i = 0; // next rectangle to write
     // filter out rectangles not right of RC
     FOR (i,0,rects.size()) {
-        if (idx == i) continue;
+        if (idx == i) {
+            continue;
+        }
         auto R2 = rects[i].second;
         int rcx = R2.x + R2.width / 2;
         int rcy = R2.y + R2.height / 2;
-        if (!rectangle_is_right_of(RC, R2)) continue;
+        if (!rectangle_is_right_of(RC, R2)) {
+            continue;
+        }
         // if two rectangles have exactly the same geometry, then sort by index
         // compare centers and not topleft corner because rectangle_is_right_of
         // does it the same way
         if (rcx == cx && rcy == cy) {
-            if (i < idx) continue;
+            if (i < idx) {
+                continue;
+            }
         }
         if (i == write_i) { write_i++; }
         else {
@@ -118,7 +129,9 @@ int find_rectangle_right_of(RectangleIdxVec rects, int idx) {
         }
     }
     // find the rectangle with the smallest distance to RC
-    if (write_i == 0) return -1;
+    if (write_i == 0) {
+        return -1;
+    }
     int idxbest = -1;
     int ibest = -1;
     int distbest = INT_MAX;
@@ -146,7 +159,9 @@ int find_edge_in_direction(RectangleIdxVec& rects, int idx, Direction dir)
 {
     rectlist_rotate(rects, idx, dir);
     int found = find_edge_right_of(rects, idx);
-    if (found < 0) return found;
+    if (found < 0) {
+        return found;
+    }
     // rotate back, by requesting the inverse rotation
     //switch (dir) {
     //    case DirLeft: break; // DirLeft is inverse to itself
@@ -173,8 +188,12 @@ int find_edge_right_of(RectangleIdxVec rects, int idx) {
     int leftmost = -1;
     int dist = INT_MAX;
     FOR (i,0,rects.size()) {
-        if (i == idx) continue;
-        if (rects[i].second.x <= xbound) continue;
+        if (i == idx) {
+            continue;
+        }
+        if (rects[i].second.x <= xbound) {
+            continue;
+        }
         int low = rects[i].second.y;
         int high = low + rects[i].second.height;
         if (!intervals_intersect(ylow, yhigh, low, high)) {
@@ -200,7 +219,9 @@ bool floating_focus_direction(Direction dir) {
     tag->foreachClient([&](Client* c) {
         clients.push_back(c);
         rects.push_back(make_pair(idx,c->dec->last_outer()));
-        if (c == curfocus) curfocusidx = idx;
+        if (c == curfocus) {
+            curfocusidx = idx;
+        }
         idx++;
     });
     if (curfocusidx < 0 || idx <= 0) {
@@ -214,34 +235,35 @@ bool floating_focus_direction(Direction dir) {
     return true;
 }
 
-bool floating_shift_direction(Direction dir) {
-    if (g_settings->monitors_locked()) { return false; }
-    HSTag* tag = get_current_monitor()->tag;
+//! when moving the given client on tag in the specified direction
+//! report the vector to travel until the collision happens
+Point2D find_rectangle_collision_on_tag(HSTag* tag, Client* curfocus, Direction dir) {
     vector<Client*> clients;
     RectangleIdxVec rects;
     int idx = 0;
     int curfocusidx = -1;
-    Client* curfocus = get_current_client();
     tag->foreachClient([&](Client* c) {
         clients.push_back(c);
         rects.push_back(make_pair(idx,c->dec->last_outer()));
-        if (c == curfocus) curfocusidx = idx;
+        if (c == curfocus) {
+            curfocusidx = idx;
+        }
         idx++;
     });
     if (curfocusidx < 0 || idx <= 0) {
-        return false;
+        return {0, 0};
     }
     // add artifical rects for screen edges
     {
         auto mr = get_current_monitor()->getFloatingArea();
-        Rectangle tmp[4] = {
+        vector<Rectangle> tmp = {
             { mr.x, mr.y,               mr.width, 0 }, // top
             { mr.x, mr.y,               0, mr.height }, // left
             { mr.x + mr.width, mr.y,    0, mr.height }, // right
             { mr.x, mr.y + mr.height,   mr.y + mr.width, 0 }, // bottom
         };
-        FOR (i,0,4) {
-            rects.push_back(make_pair(-1, tmp[i]));
+        for (const auto& r : tmp) {
+            rects.push_back(make_pair(-1, r));
         }
     }
     for (auto& r : rects) {
@@ -255,7 +277,9 @@ bool floating_shift_direction(Direction dir) {
     // snap_gap pixels between the focused client and the found edge
     auto focusrect = curfocus->dec->last_outer();
     idx = find_edge_in_direction(rects, curfocusidx, dir);
-    if (idx < 0) return false;
+    if (idx < 0) {
+        return {0, 0};
+    }
     // shift client
     int dx = 0, dy = 0;
     auto r = rects[idx].second;
@@ -268,9 +292,22 @@ bool floating_shift_direction(Direction dir) {
         case Direction::Down:  dy = r.y  -  (focusrect.y + focusrect.height); break;
         case Direction::Up:    dy = r.y + r.height  -  focusrect.y; break;
     }
-    //printf("dx=%d, dy=%d\n", dx, dy);
-    curfocus->float_size_.x += dx;
-    curfocus->float_size_.y += dy;
+    return {dx, dy};
+}
+
+bool floating_shift_direction(Direction dir) {
+    if (g_settings->monitors_locked()) { return false; }
+    HSTag* tag = get_current_monitor()->tag;
+    Client* curfocus = tag->focusedClient();
+    if (!curfocus || !curfocus->is_client_floated()) {
+        return false;
+    }
+    Point2D delta = find_rectangle_collision_on_tag(tag, curfocus, dir);
+    if (delta == Point2D{0, 0}) {
+        return false;
+    }
+    curfocus->float_size_.x += delta.x;
+    curfocus->float_size_.y += delta.y;
     get_current_monitor()->applyLayout();
     return true;
 }

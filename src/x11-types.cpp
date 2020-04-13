@@ -6,10 +6,14 @@
 #include <algorithm>
 #include <cassert>
 #include <iomanip>
+#include <limits>
 
 #include "globals.h"
+#include "utils.h"
 
 using std::string;
+using std::stringstream;
+using std::vector;
 
 Color Color::black() {
     // currently, the constructor without arguments constructs black
@@ -38,7 +42,7 @@ Color::Color(string name) {
 
 string Color::str() const {
     unsigned long divisor =  (65536 + 1) / (0xFF + 1);
-    std::stringstream ss;
+    stringstream ss;
     ss << "#"
        << std::hex << std::setfill('0') << std::setw(2) << (red_ / divisor)
        << std::hex << std::setfill('0') << std::setw(2) << (green_ / divisor)
@@ -55,9 +59,10 @@ Color Color::fromStr(const string& payload) {
     XColor screen_color, ret_color;
     auto success = XAllocNamedColor(g_display, cmap,
                                     payload.c_str(), &screen_color, &ret_color);
-    if (!success)
+    if (!success) {
         throw std::invalid_argument(
                 string("cannot allocate color \'") + payload + "\'");
+    }
 
     return Color(ret_color);
 }
@@ -101,10 +106,18 @@ Rectangle Rectangle::adjusted(int left, int top, int right, int bottom) const
 //! lexicographic order (wrt x,y,width,height)
 bool Rectangle::operator<(const Rectangle& other) const
 {
-    if (x != other.x) return x < other.x;
-    if (y != other.y) return y < other.y;
-    if (width != other.width) return width < other.width;
-    if (height != other.height) return height < other.height;
+    if (x != other.x) {
+        return x < other.x;
+    }
+    if (y != other.y) {
+        return y < other.y;
+    }
+    if (width != other.width) {
+        return width < other.width;
+    }
+    if (height != other.height) {
+        return height < other.height;
+    }
     return false;
 }
 
@@ -138,6 +151,40 @@ Rectangle Rectangle::intersectionWith(const Rectangle &other) const
                 std::min(br().y, other.br().y));
 }
 
+//! the minimum distance between any two points from the one and the other
+//! rectangle
+int Rectangle::manhattanDistanceTo(Rectangle &other) const
+{
+    if (intersectionWith(other)) {
+        return 0; // distance 0 if there is an intersection
+    }
+    // if they don't intersect but are below each other
+    if (intervals_intersect(x, x + width, other.x, other.x + other.width)) {
+        return std::min(
+                    // this is below the other:
+                    std::abs(y - (other.y + other.height)),
+                    // this is above the other:
+                    std::abs(other.y - (y + height)));
+    }
+    // if they don't intersect but are next to each other
+    if (intervals_intersect(y, y + height, other.y, other.y + other.height)) {
+        return std::min(
+                    // this is right of the other
+                    std::abs(x - (other.x + other.width)),
+                    // this is left of the other
+                    std::abs(other.x - (x + width)));
+    }
+    vector<Point2D> thisCorners = { tl(), tr(), bl(), br() };
+    vector<Point2D> otherCorners = { other.tl(), other.tr(), other.bl(), other.br() };
+    int minDist = std::numeric_limits<int>::max();
+    for (const auto& p1 : thisCorners) {
+        for (const auto& p2 : otherCorners) {
+            minDist = std::min(minDist, (p1 - p2).manhattanLength());
+        }
+    }
+    return minDist;
+}
+
 std::ostream& operator<< (std::ostream& stream, const Rectangle& rect) {
     stream
         << rect.width << "x" << rect.height
@@ -147,3 +194,8 @@ std::ostream& operator<< (std::ostream& stream, const Rectangle& rect) {
     return stream;
 }
 
+
+int Point2D::manhattanLength() const
+{
+    return std::abs(x) + std::abs(y);
+}

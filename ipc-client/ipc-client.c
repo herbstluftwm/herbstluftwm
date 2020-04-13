@@ -157,6 +157,7 @@ bool hc_send_command_once(int argc, char* argv[],
         return false;
     }
     if (!hc_check_running(con)) {
+        hc_disconnect(con);
         return false;
     }
     bool status = hc_send_command(con, argc, argv, ret_out, ret_status);

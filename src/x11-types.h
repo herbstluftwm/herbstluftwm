@@ -62,10 +62,12 @@ struct Point2D {
     Point2D operator-(const Point2D& other) const { return { x - other.x, y - other.y }; }
     Point2D operator*(double scalar) const { return { (int) (x * scalar), (int) (y * scalar) }; }
     Point2D operator/(double scalar) const { return { (int) (x / scalar), (int) (y / scalar) }; }
+    bool operator==(const Point2D& other) const { return x == other.x && y == other.y; }
     //! essentially return y/x > other.y/other.x
     bool biggerSlopeThan(const Point2D& other) const {
        return y * other.x > other.y * x;
     }
+    int manhattanLength() const;
 };
 
 struct Rectangle {
@@ -89,6 +91,7 @@ struct Rectangle {
     operator bool() const;
 
     Rectangle intersectionWith(const Rectangle& other) const;
+    int manhattanDistanceTo(Rectangle& other) const;
 
     int x;
     int y;

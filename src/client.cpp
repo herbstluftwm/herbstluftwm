@@ -24,6 +24,7 @@
 #include "xconnection.h"
 
 using std::string;
+using std::stringstream;
 
 static int g_monitor_float_treshold = 24;
 
@@ -55,7 +56,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , settings(*cm.settings)
     , ewmh(*cm.ewmh)
 {
-    std::stringstream tmp;
+    stringstream tmp;
     window_id_str = WindowID(window).str();
     floating_.setWriteable();
     keyMask_.setWriteable();
@@ -160,8 +161,12 @@ bool Client::needs_minimal_dec() {
     //    frame = this->tag()->frame->frameWithClient(this);
     //    HSAssert(frame != nullptr);
     //}
-    if (this->pseudotile_()) return false;
-    if (this->is_client_floated()) return false;
+    if (this->pseudotile_()) {
+        return false;
+    }
+    if (this->is_client_floated()) {
+        return false;
+    }
     //if (smart_window_surroundings_active(frame)) return true;
     return false;
 }
@@ -191,8 +196,9 @@ void Client::window_focus() {
     // set keyboard focus
     if (!this->neverfocus_) {
         XSetInputFocus(g_display, this->window_, RevertToPointerRoot, CurrentTime);
+    } else {
+        ewmh.sendEvent(window_, Ewmh::WM::TakeFocus, True);
     }
-    else ewmh.sendEvent(window_, Ewmh::WM::TakeFocus, True);
 
     if (this != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
@@ -223,10 +229,15 @@ void Client::window_focus() {
 
 const DecTriple& Client::getDecTriple() {
     auto triple_idx = Theme::Type::Tiling;
-    if (fullscreen_()) triple_idx = Theme::Type::Fullscreen;
-    else if (is_client_floated()) triple_idx = Theme::Type::Floating;
-    else if (needs_minimal_dec()) triple_idx = Theme::Type::Minimal;
-    else triple_idx = Theme::Type::Tiling;
+    if (fullscreen_()) {
+        triple_idx = Theme::Type::Fullscreen;
+    } else if (is_client_floated()) {
+        triple_idx = Theme::Type::Floating;
+    } else if (needs_minimal_dec()) {
+        triple_idx = Theme::Type::Minimal;
+    } else {
+        triple_idx = Theme::Type::Tiling;
+    }
     return theme[triple_idx];
 }
 
@@ -263,10 +274,12 @@ bool Client::applysizehints(int *w, int *h) {
     /* set minimum possible */
     *w = std::max(1, *w);
     *h = std::max(1, *h);
-    if(*h < WINDOW_MIN_HEIGHT)
+    if (*h < WINDOW_MIN_HEIGHT) {
         *h = WINDOW_MIN_HEIGHT;
-    if(*w < WINDOW_MIN_WIDTH)
+    }
+    if (*w < WINDOW_MIN_WIDTH) {
         *w = WINDOW_MIN_WIDTH;
+    }
     bool sizehints = (this->is_client_floated() || this->pseudotile_)
                         ? this->sizehints_floating_
                         : this->sizehints_tiling_;
@@ -279,29 +292,34 @@ bool Client::applysizehints(int *w, int *h) {
         }
         /* adjust for aspect limits */
         if(this->mina_ > 0 && this->maxa_ > 0) {
-            if(this->maxa_ < (float)*w / *h)
+            if (this->maxa_ < (float)*w / *h) {
                 *w = int(*h * this->maxa_ + 0.5f);
-            else if(this->mina_ < (float)*h / *w)
+            } else if (this->mina_ < (float)*h / *w) {
                 *h = int(*w * this->mina_ + 0.5f);
+            }
         }
         if(baseismin) { /* increment calculation requires this */
             *w -= this->basew_;
             *h -= this->baseh_;
         }
         /* adjust for increment value */
-        if(this->incw_)
+        if (this->incw_) {
             *w -= *w % this->incw_;
-        if(this->inch_)
+        }
+        if (this->inch_) {
             *h -= *h % this->inch_;
+        }
         /* restore base dimensions */
         *w += this->basew_;
         *h += this->baseh_;
         *w = std::max(*w, this->minw_);
         *h = std::max(*h, this->minh_);
-        if(this->maxw_)
+        if (this->maxw_) {
             *w = std::min(*w, this->maxw_);
-        if(this->maxh_)
+        }
+        if (this->maxh_) {
             *h = std::min(*h, this->maxh_);
+        }
     }
     return *w != this->last_size_.width || *h != this->last_size_.height;
 }
@@ -317,9 +335,10 @@ void Client::updatesizehints() {
     long msize;
     XSizeHints size;
 
-    if(!XGetWMNormalHints(g_display, this->window_, &size, &msize))
+    if (!XGetWMNormalHints(g_display, this->window_, &size, &msize)) {
         /* size is uninitialized, ensure that size.flags aren't used */
         size.flags = PSize;
+    }
     if(size.flags & PBaseSize) {
         this->basew_ = size.base_width;
         this->baseh_ = size.base_height;
@@ -333,9 +352,9 @@ void Client::updatesizehints() {
     if(size.flags & PResizeInc) {
         this->incw_ = size.width_inc;
         this->inch_ = size.height_inc;
-    }
-    else
+    } else {
         this->incw_ = this->inch_ = 0;
+    }
     if(size.flags & PMaxSize) {
         this->maxw_ = size.max_width;
         this->maxh_ = size.max_height;
@@ -383,7 +402,9 @@ void Client::send_configure() {
 }
 
 void Client::resize_floating(Monitor* m, bool isFocused) {
-    if (!m) return;
+    if (!m) {
+        return;
+    }
     auto rect = this->float_size_;
     rect.x += m->rect.x;
     rect.y += m->rect.y;
@@ -410,17 +431,24 @@ int close_command(Input input, Output) {
     string winid = "";
     input >> winid; // try to read, use "" otherwise
     auto window = get_window(winid);
-    if (window != 0)
+    if (window != 0) {
         Ewmh::get().windowClose(window);
-    else return HERBST_INVALID_ARGUMENT;
+    } else {
+        return HERBST_INVALID_ARGUMENT;
+    }
     return 0;
 }
 
 bool Client::is_client_floated() {
-    if (floating_()) return true;
+    if (floating_()) {
+        return true;
+    }
     auto t = tag();
-    if (!t) return false;
-    else return tag()->floating;
+    if (!t) {
+        return false;
+    } else {
+        return tag()->floating;
+    }
 }
 
 void Client::requestClose() { //! ask the client to close
@@ -428,7 +456,9 @@ void Client::requestClose() { //! ask the client to close
 }
 
 void Client::set_visible(bool visible) {
-    if (visible == this->visible_) return;
+    if (visible == this->visible_) {
+        return;
+    }
     if (visible) {
         /* Grab the server to make sure that the frame window is mapped before
            the client gets its MapNotify, i.e. to make sure the client is
@@ -466,8 +496,9 @@ void Client::set_urgent_force(bool state) {
     setup_border(this == manager.focus());
 
     XWMHints *wmh;
-    if(!(wmh = XGetWMHints(g_display, this->window_)))
+    if (!(wmh = XGetWMHints(g_display, this->window_))) {
         return;
+    }
 
     if (state) {
         wmh->flags |= XUrgencyHint;
@@ -529,13 +560,17 @@ void Client::set_fullscreen(bool state) {
     //  - Slice management should not be done by the client
     //  - fullscreen-hook should be done by the ClientManager
     //  - Monitr::applyLayout should be called via hooks
-    if (fullscreen_() == state) return;
+    if (fullscreen_() == state) {
+        return;
+    }
     fullscreen_ = state;
     if (this->ewmhnotify_) {
         this->ewmhfullscreen_ = state;
     }
     auto m = find_monitor_with_tag(this->tag());
-    if (m) m->applyLayout();
+    if (m) {
+        m->applyLayout();
+    }
 
     ewmh.updateWindowState(this);
     hook_emit({"fullscreen", state ? "on" : "off", WindowID(window_).str()});
@@ -548,12 +583,12 @@ void Client::updateEwmhState() {
     ewmh.updateWindowState(this);
 }
 
-std::string Client::getWindowClass()
+string Client::getWindowClass()
 {
     return ewmh.X().getClass(window_);
 }
 
-std::string Client::getWindowInstance()
+string Client::getWindowInstance()
 {
     return ewmh.X().getInstance(window_);
 }
@@ -561,7 +596,9 @@ std::string Client::getWindowInstance()
 void Client::set_pseudotile(bool state) {
     this->pseudotile_ = state;
     auto m = find_monitor_with_tag(this->tag());
-    if (m) m->applyLayout();
+    if (m) {
+        m->applyLayout();
+    }
 }
 
 /**
@@ -593,8 +630,9 @@ Client* get_client(const char* str) {
 Window get_window(const string& str) {
     // managed window?
     auto client = get_client(str.c_str());
-    if (client)
+    if (client) {
         return client->window_;
+    }
 
     // unmanaged window? try to convert from base 16 or base 10 at the same time
     try {
