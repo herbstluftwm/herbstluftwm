@@ -3,11 +3,11 @@ FROM ubuntu:eoan-20200313
 # Build deps
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ccache \
-    clang-7 \
+    clang-9 \
     clang-tidy-8 \
     cmake \
     curl \
-    g++-8 \
+    g++-9 \
     git \
     iwyu \
     lcov \
