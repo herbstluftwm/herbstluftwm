@@ -114,9 +114,13 @@ public:
     Signal triple_changed_;
     // pick the right scheme, depending on whether a window is active/urgent
     const DecorationScheme& operator()(bool if_active, bool if_urgent) const {
-        if (if_active) return this->active;
-        else if (if_urgent) return this->urgent;
-        else return normal;
+        if (if_active) {
+            return this->active;
+        } else if (if_urgent) {
+            return this->urgent;
+        } else {
+            return normal;
+        }
     }
 };
 
