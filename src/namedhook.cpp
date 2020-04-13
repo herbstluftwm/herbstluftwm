@@ -1,6 +1,5 @@
 #include "namedhook.h"
 
-#include <memory>
 #include <string>
 
 using std::string;

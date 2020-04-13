@@ -31,11 +31,6 @@ static void complete_against_winids(int argc, char** argv, int pos, Output outpu
 static void complete_merge_tag(int argc, char** argv, int pos, Output output);
 static int complete_against_commands(int argc, char** argv, int position, Output output);
 
-// Quarantined inclusion to avoid polluting the global namespace:
-namespace search_h {
-    #include <search.h>
-} // namespace search_h
-
 // if the current completion needs shell quoting and other shell specific
 // behaviour
 static bool g_shell_quoting = false;
