@@ -3,8 +3,6 @@
 #include <memory>
 #include <string>
 
-using std::dynamic_pointer_cast;
-using std::shared_ptr;
 using std::string;
 
 #ifdef ENABLE_NAMED_HOOK

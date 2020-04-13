@@ -28,7 +28,6 @@
 #include "xconnection.h"
 
 using std::endl;
-using std::make_shared;
 using std::string;
 using std::stringstream;
 using std::vector;

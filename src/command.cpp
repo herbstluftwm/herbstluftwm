@@ -16,7 +16,6 @@
 
 using std::endl;
 using std::function;
-using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::to_string;
@@ -36,7 +35,6 @@ static int complete_against_commands(int argc, char** argv, int position, Output
 namespace search_h {
     #include <search.h>
 } // namespace search_h
-using search_h::lfind;
 
 // if the current completion needs shell quoting and other shell specific
 // behaviour
