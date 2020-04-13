@@ -35,7 +35,7 @@ template<> void Converter<bool>::complete(Completion& complete, bool const* rela
     if (relativeTo) complete.full("toggle");
 }
 
-void completeFull(Completion &complete, std::string s)
+void completeFull(Completion &complete, string s)
 {
     complete.full(s);
 }
@@ -47,7 +47,7 @@ void Converter<Direction>::complete(Completion& complete, const Direction* relat
 }
 
 template<>
-unsigned long Converter<unsigned long>::parse(const std::string& payload)
+unsigned long Converter<unsigned long>::parse(const string& payload)
 {
     long value = std::stol(payload);
     if (value < 0) {

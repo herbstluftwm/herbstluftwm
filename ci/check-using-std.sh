@@ -11,8 +11,8 @@
 set -o pipefail
 set -o nounset
 
-reporoot=$(realpath "$(dirname "$0")")
-reporoot=${reporoot%*/} # parent of this files directory
+scriptdir=$(realpath "$(dirname "$0")")
+reporoot=$(realpath "$scriptdir"/../)
 
 # Assemble list of std symbols to pull in:
 # (exclude some that are not enforced yet)

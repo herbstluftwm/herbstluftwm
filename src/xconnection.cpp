@@ -170,7 +170,7 @@ pair<string, string> XConnection::getClassHint(Window window) {
 }
 
 //! from https://stackoverflow.com/a/39884120/4400896
-static std::string iso_8859_1_to_utf8(const char* source) {
+static string iso_8859_1_to_utf8(const char* source) {
     string strOut;
     for (int i = 0; source[i] != '\0'; i++) {
         uint8_t ch = source[i];

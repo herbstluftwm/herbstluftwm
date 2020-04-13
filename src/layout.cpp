@@ -198,8 +198,19 @@ TilingResult HSFrameLeaf::layoutLinear(Rectangle rect, bool vertical) {
 
 TilingResult HSFrameLeaf::layoutMax(Rectangle rect) {
     TilingResult res;
-    for (auto client : clients) {
+    // go through all clients from top to bottom and remember
+    // whether they are still visible. The stacking order is such that
+    // the windows at the end of 'clients' are on top of the windows
+    // at the beginning of 'clients'. So start at the selection and go
+    // downwards in the stack, i.e. backwards in the 'clients' array
+    bool stillVisible = true;
+    for (size_t idx = 0; idx < clients.size(); idx++) {
+        Client* client = clients[(selection + clients.size() - idx) % clients.size()];
         TilingStep step(rect);
+        step.visible = stillVisible;
+        // the next is only visible, if the current client is visible
+        // and if the current client is pseudotiled
+        stillVisible = stillVisible && client->pseudotile_();
         if (client == clients[selection]) {
             step.needsRaise = true;
         }

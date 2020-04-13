@@ -311,7 +311,7 @@ void FrameTree::prettyPrint(shared_ptr<HSFrame> frame, Output output) {
     tree_print_to(treeInterface(frame, focus), output);
 }
 
-std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(std::shared_ptr<HSFrame> subtree)
+shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_ptr<HSFrame> subtree)
 {
     // render frame geometries.
     TilingResult tileres = subtree->computeLayout({0, 0, 800, 800});
@@ -325,7 +325,7 @@ std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(std
         // if not found, return an invalid rectangle;
         return { 0, 0, -1, -1};
     };
-    std::vector<shared_ptr<HSFrameLeaf>> emptyLeafs;
+    vector<shared_ptr<HSFrameLeaf>> emptyLeafs;
     subtree->fmap([](HSFrameSplit*){}, [&emptyLeafs](HSFrameLeaf* leaf) {
         if (leaf->clientCount() == 0) {
             emptyLeafs.push_back(leaf->thisLeaf());
@@ -354,7 +354,7 @@ std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(std
 //! check whether there is an empty frame in the given subtree,
 //! and if there are some, try to find one that is as close as possible to the
 //! focused frame leaf. returns {} if there is no empty frame in the subtree
-std::shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocus(std::shared_ptr<HSFrame> subtree)
+shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocus(shared_ptr<HSFrame> subtree)
 {
     // the following algorithm is quadratic in the number of vertices in the
     // frame, because we look for empty frames in the same subtree over and
@@ -391,7 +391,7 @@ shared_ptr<HSFrameLeaf> FrameTree::findFrameWithClient(Client* client) {
     return frame;
 }
 
-bool FrameTree::contains(std::shared_ptr<HSFrame> frame) const
+bool FrameTree::contains(shared_ptr<HSFrame> frame) const
 {
     return frame->root() == this->root_;
 }
@@ -560,7 +560,7 @@ bool FrameTree::cycleAll(FrameTree::CycleDelta cdelta, bool skip_invisible)
     return true;
 }
 
-void FrameTree::cycle_frame(std::function<size_t(size_t,size_t)> indexAndLenToIndex) {
+void FrameTree::cycle_frame(function<size_t(size_t,size_t)> indexAndLenToIndex) {
     shared_ptr<HSFrameLeaf> focus = focusedFrame();
     // First, enumerate all frames in traversal order
     // and find the focused frame in there

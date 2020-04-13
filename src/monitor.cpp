@@ -30,6 +30,7 @@
 using std::endl;
 using std::make_shared;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 extern MonitorManager* g_monitors;
@@ -156,6 +157,21 @@ void Monitor::applyLayout() {
     if (tag->floating) {
         for (auto& p : res.data) {
             p.second.floated = true;
+        }
+    }
+    // preprocessing
+    for (auto& p : res.data) {
+        if (p.first->fullscreen_() || p.second.floated) {
+            // do not hide fullscreen windows
+            p.second.visible = true;
+        }
+        if (settings->hide_covered_windows) {
+            // apply hiding of windows: move them to out of the screen:
+            if (!p.second.visible) {
+                Rectangle& geo = p.second.geometry;
+                geo.x = -100 - geo.width;
+                geo.y = -100 - geo.height;
+            }
         }
     }
     // 1. Update stack (TODO: why stack first?)
@@ -768,7 +784,7 @@ Rectangle Monitor::getFloatingArea() {
 
 //! Returns a textual description of the monitor
 string Monitor::getDescription() {
-    std::stringstream label;
+    stringstream label;
     label << "Monitor " << index();
     if (!name().empty()) {
         label << " (\"" << name() << "\")";

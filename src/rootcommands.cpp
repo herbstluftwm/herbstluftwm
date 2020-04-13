@@ -163,7 +163,7 @@ void RootCommands::substitute_complete(Completion& complete)
 }
 
 //! parse a format string or throw an exception
-RootCommands::FormatString RootCommands::parseFormatString(const std::string &format)
+RootCommands::FormatString RootCommands::parseFormatString(const string &format)
 {
     FormatString blobs;
     size_t lastpos = 0; // the position where the last plaintext blob started
@@ -539,7 +539,7 @@ int RootCommands::tryCommand(Input input, Output output) {
 }
 
 int RootCommands::silentCommand(Input input, Output output) {
-    std::stringstream dummyOutput;
+    stringstream dummyOutput;
     // drop output but pass exit code
     return Commands::call(input.fromHere(), dummyOutput);
 }

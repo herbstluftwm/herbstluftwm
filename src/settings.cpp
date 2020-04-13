@@ -70,6 +70,7 @@ Settings::Settings()
         &raise_on_focus_temporarily,
         &raise_on_click,
         &gapless_grid,
+        &hide_covered_windows,
         &smart_frame_surroundings,
         &smart_window_surroundings,
         &monitors_locked,
@@ -89,6 +90,7 @@ Settings::Settings()
     for (auto i : {&frame_gap, &frame_padding, &window_gap}) {
         i->changed().connect([] { all_monitors_apply_layout(); });
     }
+    hide_covered_windows.changed().connect([] { all_monitors_apply_layout(); });
     for (auto i : {
          &frame_border_active_color,
          &frame_border_normal_color,

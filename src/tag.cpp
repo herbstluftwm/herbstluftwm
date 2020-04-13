@@ -16,6 +16,7 @@
 #include "stack.h"
 #include "tagmanager.h"
 
+using std::function;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
@@ -130,7 +131,7 @@ bool HSTag::removeClient(Client* client) {
     return true;
 }
 
-void HSTag::foreachClient(std::function<void (Client *)> loopBody)
+void HSTag::foreachClient(function<void (Client *)> loopBody)
 {
 
     frame->root_->foreachClient(loopBody);
@@ -153,7 +154,7 @@ Client *HSTag::focusedClient()
     }
 }
 
-void HSTag::insertClient(Client* client, std::string frameIndex, bool focus)
+void HSTag::insertClient(Client* client, string frameIndex, bool focus)
 {
     if (client->floating_()) {
         floating_clients_.push_back(client);
