@@ -482,7 +482,7 @@ void RootCommands::completeObjectPath(Completion& complete, bool attributes,
 {
     ArgList objectPathArgs = std::get<0>(Object::splitPath(complete.needle()));
     string objectPath = objectPathArgs.join(OBJECT_PATH_SEPARATOR);
-    if (objectPath != "") objectPath += OBJECT_PATH_SEPARATOR;
+    if (!objectPath.empty()) objectPath += OBJECT_PATH_SEPARATOR;
     Object* object = root->child(objectPathArgs);
     if (!object) return;
     if (attributes) {
@@ -610,7 +610,7 @@ void RootCommands::exportEnvCompletion(Completion &complete)
 {
     for (char** env = environ; *env; ++env) {
         vector<string> chunks = ArgList::split(*env, '=');
-        if (chunks.size() >= 1) {
+        if (!chunks.empty()) {
             complete.partial(chunks[0] + "=");
         }
     }
@@ -655,7 +655,7 @@ int RootCommands::unsetenvCommand(Input input, Output output) {
 void RootCommands::completeEnvName(Completion& complete) {
     for (char** env = environ; *env; ++env) {
         vector<string> chunks = ArgList::split(*env, '=');
-        if (chunks.size() >= 1) {
+        if (!chunks.empty()) {
             complete.full(chunks[0]);
         }
     }
@@ -712,7 +712,7 @@ void RootCommands::chainCompletion(Completion& complete)
 
 vector<vector<string>> RootCommands::splitCommandList(ArgList::Container input) {
     vector<vector<string>> res;
-    if (input.size() == 0) {
+    if (input.empty()) {
         return res;
     }
     vector<string> current;

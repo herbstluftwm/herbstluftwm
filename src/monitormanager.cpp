@@ -358,7 +358,7 @@ int MonitorManager::addMonitor(Input input, Output output)
         } else {
             error = isValidMonitorName(monitorName);
         }
-        if (error != "") {
+        if (!error.empty()) {
             output << input.command() << ": " << error << "\n";
             return HERBST_INVALID_ARGUMENT;
         }
@@ -497,7 +497,7 @@ public:
     };
 
     void appendCaption(Output output) override {
-        if (label_ != "") {
+        if (!label_.empty()) {
             output << " " << label_;
         }
     };

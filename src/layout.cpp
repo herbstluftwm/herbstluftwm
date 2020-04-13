@@ -234,7 +234,7 @@ void frame_layout_grid_get_size(size_t count, int* res_rows, int* res_cols) {
 
 TilingResult HSFrameLeaf::layoutGrid(Rectangle rect) {
     TilingResult res;
-    if (clients.size() == 0) return res;
+    if (clients.empty()) return res;
 
     int rows, cols;
     frame_layout_grid_get_size(clients.size(), &rows, &cols);
@@ -293,11 +293,11 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
     FrameDecorationData frame_data;
     frame_data.geometry = rect;
     frame_data.visible = true;
-    frame_data.hasClients = clients.size() > 0;
+    frame_data.hasClients = !clients.empty();
     frame_data.hasParent = (bool)parent_.lock();
     res.focused_frame = decoration;
     res.add(decoration, frame_data);
-    if (clients.size() == 0) {
+    if (clients.empty()) {
         return res;
     }
     // whether we should omit the gap around windows:
@@ -422,7 +422,7 @@ int frame_current_bring(int argc, char** argv, Output output) {
 }
 
 void HSFrameLeaf::setSelection(int index) {
-    if (clients.size() == 0) return;
+    if (clients.empty()) return;
     if (index < 0 || index >= clients.size()) {
         index = clients.size() - 1;
     }
@@ -686,7 +686,7 @@ Client* HSFrameSplit::focusedClient() {
 }
 
 Client* HSFrameLeaf::focusedClient() {
-    if (clients.size() > 0) {
+    if (!clients.empty()) {
         return clients[selection];
     }
     return nullptr;

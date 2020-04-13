@@ -355,7 +355,7 @@ int ClientManager::applyRules(Client* client, Output output, bool changeFocus)
             }
         }
     }
-    if (tag || changes.tree_index != "") {
+    if (tag || !changes.tree_index.empty()) {
         if (!tag) {
             tag = client->tag();
         }
@@ -431,7 +431,7 @@ int ClientManager::clientSetAttribute(string attribute,
         Attribute* a = c->attribute(attribute);
         if (!a) return HERBST_UNKNOWN_ERROR;
         string error_message = a->change(value);
-        if (error_message != "") {
+        if (!error_message.empty()) {
             output << input.command() << ": illegal argument \""
                    << value << "\": "
                    << error_message << endl;

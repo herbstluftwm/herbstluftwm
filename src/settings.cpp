@@ -212,7 +212,7 @@ int Settings::set_cmd(Input input, Output output) {
         return HERBST_SETTING_NOT_FOUND;
     }
     auto msg = attr->change(value);
-    if (msg != "") {
+    if (!msg.empty()) {
         output << input.command()
                << ": Invalid value \"" << value
                << "\" for setting \"" << set_name << "\": "
@@ -285,7 +285,7 @@ int Settings::cycle_value_cmd(Input argv, Output output) {
         return HERBST_SETTING_NOT_FOUND;
     }
     auto msg = attr->cycleValue(argv.begin(), argv.end());
-    if (msg != "") {
+    if (!msg.empty()) {
         output << argv.command()
                << ": Invalid value for setting \""
                << set_name << "\": "

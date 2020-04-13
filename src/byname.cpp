@@ -30,7 +30,7 @@ void ByName::childAdded(Object* sender_parent, string child_name)
     if (name_attrib) {
         last_name[child] = name_attrib->str();
         child->addHook(this);
-        if (name_attrib->str() != "") {
+        if (!name_attrib->str().empty()) {
             // we only list it, if the name is non-empty
             addChild(child, name_attrib->str());
         }
@@ -68,11 +68,11 @@ void ByName::attributeChanged(Object* child, string attribute_name)
         return;
     }
     auto new_name = name_attrib->str();
-    if (it->second != "") {
+    if (!it->second.empty()) {
         removeChild(it->second);
     }
     last_name[child] = new_name;
-    if (new_name != "") {
+    if (!new_name.empty()) {
         addChild(child, new_name);
     }
 }
