@@ -29,20 +29,28 @@ RootCommands::RootCommands(Object* root_) : root(root_) {
 
 int RootCommands::get_attr_cmd(Input in, Output output) {
     string attrName;
-    if (!(in >> attrName)) return HERBST_NEED_MORE_ARGS;
+    if (!(in >> attrName)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
 
     Attribute* a = getAttribute(attrName, output);
-    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (!a) {
+        return HERBST_INVALID_ARGUMENT;
+    }
     output << a->str();
     return 0;
 }
 
 int RootCommands::set_attr_cmd(Input in, Output output) {
     string path, new_value;
-    if (!(in >> path >> new_value)) return HERBST_NEED_MORE_ARGS;
+    if (!(in >> path >> new_value)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
 
     Attribute* a = getAttribute(path, output);
-    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (!a) {
+        return HERBST_INVALID_ARGUMENT;
+    }
     string error_message = a->change(new_value);
     if (error_message.empty()) {
         return 0;
@@ -62,7 +70,9 @@ int RootCommands::attr_cmd(Input in, Output output) {
     Object* o = root;
     auto p = Path::split(path);
     if (!p.empty()) {
-        while (p.back().empty()) p.pop_back();
+        while (p.back().empty()) {
+            p.pop_back();
+        }
         o = o->child(p);
     }
     if (o && new_value.empty()) {
@@ -71,7 +81,9 @@ int RootCommands::attr_cmd(Input in, Output output) {
     }
 
     Attribute* a = getAttribute(path, output);
-    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (!a) {
+        return HERBST_INVALID_ARGUMENT;
+    }
     if (new_value.empty()) {
         // no more arguments -> return the value
         output << a->str();
@@ -130,8 +142,11 @@ int RootCommands::print_object_tree_command(Input in, Output output) {
 }
 
 void RootCommands::print_object_tree_complete(Completion& complete) {
-    if (complete == 0) completeObjectPath(complete);
-    else complete.none();
+    if (complete == 0) {
+        completeObjectPath(complete);
+    } else {
+        complete.none();
+    }
 }
 
 
@@ -142,7 +157,9 @@ int RootCommands::substitute_cmd(Input input, Output output)
         return HERBST_NEED_MORE_ARGS;
     }
     Attribute* a = getAttribute(path, output);
-    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (!a) {
+        return HERBST_INVALID_ARGUMENT;
+    }
 
     auto carryover = input.fromHere();
     carryover.replace(ident, a->str());
@@ -204,7 +221,9 @@ RootCommands::FormatString RootCommands::parseFormatString(const string &format)
 int RootCommands::sprintf_cmd(Input input, Output output)
 {
     string ident, formatStringSrc;
-    if (!(input >> ident >> formatStringSrc)) return HERBST_NEED_MORE_ARGS;
+    if (!(input >> ident >> formatStringSrc)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
     FormatString format;
     try {
         format = parseFormatString(formatStringSrc);
@@ -224,7 +243,9 @@ int RootCommands::sprintf_cmd(Input input, Output output)
                 return HERBST_NEED_MORE_ARGS;
             }
             Attribute* a = getAttribute(path, output);
-            if (!a) return HERBST_INVALID_ARGUMENT;
+            if (!a) {
+                return HERBST_INVALID_ARGUMENT;
+            }
             replacedString += a->str();
         }
     }
@@ -245,7 +266,9 @@ void RootCommands::sprintf_complete(Completion& complete)
         try {
             FormatString fs = parseFormatString(complete[1]);
             for (const auto& b : fs) {
-                if (b.literal_ == false) placeholderCount++;
+                if (b.literal_ == false) {
+                    placeholderCount++;
+                }
             }
         }  catch (const std::invalid_argument&) {
             complete.invalidArguments();
@@ -295,7 +318,9 @@ int RootCommands::new_attr_cmd(Input input, Output output)
     auto obj_path_and_attr = Object::splitPath(path);
     string attr_name = obj_path_and_attr.second;
     Object* obj = root->child(obj_path_and_attr.first, output);
-    if (!obj) return HERBST_INVALID_ARGUMENT;
+    if (!obj) {
+        return HERBST_INVALID_ARGUMENT;
+    }
     if (attr_name.substr(0,strlen(USER_ATTRIBUTE_PREFIX)) != USER_ATTRIBUTE_PREFIX) {
         output
             << input.command() << ": attribute name must start with \""
@@ -312,7 +337,9 @@ int RootCommands::new_attr_cmd(Input input, Output output)
     }
     // create the new attribute and add it
     Attribute* a = newAttributeWithType(type, attr_name, output);
-    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (!a) {
+        return HERBST_INVALID_ARGUMENT;
+    }
     obj->addAttribute(a);
     userAttributes_.push_back(unique_ptr<Attribute>(a));
     return 0;
@@ -343,7 +370,9 @@ int RootCommands::remove_attr_cmd(Input input, Output output)
         return HERBST_NEED_MORE_ARGS;
     }
     Attribute* a = root->deepAttribute(path, output);
-    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (!a) {
+        return HERBST_INVALID_ARGUMENT;
+    }
     if (a->name().substr(0,strlen(USER_ATTRIBUTE_PREFIX)) != USER_ATTRIBUTE_PREFIX) {
         output << input.command() << ": Cannot remove built-in attribute \"" << path << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
@@ -374,14 +403,22 @@ template <typename T> int do_comparison(const T& a, const T& b) {
 }
 
 template <> int do_comparison<int>(const int& a, const int& b) {
-    if (a < b) return -1;
-    else if (a > b) return 1;
-    else return 0;
+    if (a < b) {
+        return -1;
+    } else if (a > b) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 template <> int do_comparison<unsigned long>(const unsigned long& a, const unsigned long& b) {
-    if (a < b) return -1;
-    else if (a > b) return 1;
-    else return 0;
+    if (a < b) {
+        return -1;
+    } else if (a > b) {
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 template <typename T> int parse_and_compare(string a, string b, Output o) {
@@ -415,7 +452,9 @@ int RootCommands::compare_cmd(Input input, Output output)
         return HERBST_NEED_MORE_ARGS;
     }
     Attribute* a = root->deepAttribute(path, output);
-    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (!a) {
+        return HERBST_INVALID_ARGUMENT;
+    }
     // the following compare functions returns
     //   -1 if the first value is smaller
     //    1 if the first value is greater
@@ -440,7 +479,9 @@ int RootCommands::compare_cmd(Input input, Output output)
             << "\". Possible values are:";
         for (auto i : operators) {
             // only list operators suitable for the attribute type
-            if (!it->second.first && i.second.first) continue;
+            if (!it->second.first && i.second.first) {
+                continue;
+            }
             output << " " << i.first;
         }
         output << endl;
@@ -454,7 +495,9 @@ int RootCommands::compare_cmd(Input input, Output output)
         return HERBST_INVALID_ARGUMENT;
     }
     int comparison_result = it->second.second(a->str(), value, output);
-    if (comparison_result > 1) return comparison_result;
+    if (comparison_result > 1) {
+        return comparison_result;
+    }
     vector<int>& possible_values = op_it->second.second;
     auto found = std::find(possible_values.begin(),
                            possible_values.end(),
@@ -482,9 +525,13 @@ void RootCommands::completeObjectPath(Completion& complete, bool attributes,
 {
     ArgList objectPathArgs = std::get<0>(Object::splitPath(complete.needle()));
     string objectPath = objectPathArgs.join(OBJECT_PATH_SEPARATOR);
-    if (!objectPath.empty()) objectPath += OBJECT_PATH_SEPARATOR;
+    if (!objectPath.empty()) {
+        objectPath += OBJECT_PATH_SEPARATOR;
+    }
     Object* object = root->child(objectPathArgs);
-    if (!object) return;
+    if (!object) {
+        return;
+    }
     if (attributes) {
         for (auto& it : object->attributes()) {
             if (attributeFilter && !attributeFilter(it.second)) {
@@ -503,8 +550,11 @@ void RootCommands::completeAttributePath(Completion& complete) {
 }
 
 void RootCommands::get_attr_complete(Completion& complete) {
-    if (complete == 0) completeAttributePath(complete);
-    else complete.none();
+    if (complete == 0) {
+        completeAttributePath(complete);
+    } else {
+        complete.none();
+    }
 }
 
 void RootCommands::set_attr_complete(Completion& complete) {
@@ -513,7 +563,9 @@ void RootCommands::set_attr_complete(Completion& complete) {
             [](Attribute* a) { return a->writeable(); } );
     } else if (complete == 1) {
         Attribute* a = root->deepAttribute(complete[0]);
-        if (a) a->complete(complete);
+        if (a) {
+            a->complete(complete);
+        }
     } else {
         complete.none();
     }
@@ -525,9 +577,14 @@ void RootCommands::attr_complete(Completion& complete)
         completeAttributePath(complete);
     } else if (complete == 1) {
         Attribute* a = root->deepAttribute(complete[0]);
-        if (!a) return;
-        if (a->writeable()) a->complete(complete);
-        else complete.none();
+        if (!a) {
+            return;
+        }
+        if (a->writeable()) {
+            a->complete(complete);
+        } else {
+            complete.none();
+        }
     } else {
         complete.none();
     }

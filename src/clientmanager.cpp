@@ -55,8 +55,9 @@ void ClientManager::injectDependencies(Settings* s, Theme* t, Ewmh* e) {
 Client* ClientManager::client(Window window)
 {
     auto entry = clients_.find(window);
-    if (entry != clients_.end())
+    if (entry != clients_.end()) {
         return entry->second;
+    }
     return {};
 }
 
@@ -76,8 +77,9 @@ Client* ClientManager::client(const string &identifier)
     }
     if (identifier == "urgent") {
         for (auto c : clients_) {
-            if (c.second->urgent_)
+            if (c.second->urgent_) {
                 return c.second;
+            }
         }
         return {}; // no urgent client found
     }
@@ -429,7 +431,9 @@ int ClientManager::clientSetAttribute(string attribute,
     Client* c = get_current_client();
     if (c) {
         Attribute* a = c->attribute(attribute);
-        if (!a) return HERBST_UNKNOWN_ERROR;
+        if (!a) {
+            return HERBST_UNKNOWN_ERROR;
+        }
         string error_message = a->change(value);
         if (!error_message.empty()) {
             output << input.command() << ": illegal argument \""

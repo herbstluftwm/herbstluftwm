@@ -34,8 +34,9 @@ ArgList::Container ArgList::split(const string &s, char delim) {
     stringstream tmp(s);
     string item;
     // read "lines" seperated by delim
-    while (std::getline(tmp, item, delim))
+    while (std::getline(tmp, item, delim)) {
         ret.push_back(item);
+    }
     // with this, there is no distinction whether there was a delim
     // in the end or not; so fix this manually:
     if (!s.empty() && s.back() == delim) {

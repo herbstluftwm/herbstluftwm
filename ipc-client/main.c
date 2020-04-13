@@ -190,7 +190,9 @@ int main(int argc, char* argv[]) {
     while (1) {
         int option_index = 0;
         int c = getopt_long(argc, argv, "+n0lwc:iqhv", long_options, &option_index);
-        if (c == -1) break;
+        if (c == -1) {
+            break;
+        }
         switch (c) {
             case 'i':
                 g_hook_count = 0;

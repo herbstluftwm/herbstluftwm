@@ -327,7 +327,9 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
         case NetWmState: {
             auto client = Root::common().client(me->window);
             /* ignore requests for unmanaged windows */
-            if (!client || !client->ewmhrequests_) break;
+            if (!client || !client->ewmhrequests_) {
+                break;
+            }
 
             /* mapping between EWMH atoms and client struct members */
             struct {

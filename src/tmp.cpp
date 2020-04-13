@@ -22,7 +22,9 @@ int Tmp::mktemp(Input input, Output output) {
         "tmp_" + to_string(number_active)
         + "_" +  to_string(number_total);
     Attribute* a = RootCommands::newAttributeWithType(type, attr_name, output);
-    if (!a) return HERBST_INVALID_ARGUMENT;
+    if (!a) {
+        return HERBST_INVALID_ARGUMENT;
+    }
     addAttribute(a);
     string path = string(TMP_OBJECT_PATH) + "." + attr_name;
 
