@@ -22,7 +22,7 @@ class ClientManager;
 
 class Client : public Object {
 public:
-    Client(Window w, bool already_visible, ClientManager& cm);
+    Client(Window w, bool visible_already, ClientManager& cm);
     ~Client() override;
 
     Window      window_;
