@@ -5,8 +5,8 @@
 #include <X11/Xutil.h>
 #include <algorithm>
 #include <cassert>
-#include <limits>
 #include <iomanip>
+#include <limits>
 
 #include "globals.h"
 #include "utils.h"
