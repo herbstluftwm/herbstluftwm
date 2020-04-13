@@ -64,7 +64,7 @@ jobs:
                     /hlwm/ci/build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --check-using-std --iwyu --clang-tidy --flake8
                 '
 
-        - name: "Build with ancient GCC on Ubuntu 14.04"
+        - name: "Build for 32bit with ancient GCC on Ubuntu 14.04"
           env: TRAVIS_CACHE_ID=trusty
           cache:
               directories:
@@ -87,6 +87,8 @@ jobs:
                 --volume=$HOME/.ccache-gcc-4.8:/.ccache:rw
                 --env CC=gcc-4.8
                 --env CXX=g++-4.8
+                --env CXXFLAGS=-m32
+                --env CFLAGS=-m32
                 trusty bash -c '
                     cd /tmp &&
                     ccache -z --max-size=500M &&
