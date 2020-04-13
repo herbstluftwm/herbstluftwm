@@ -82,7 +82,7 @@ bool IpcServer::isConnectable(Window window) {
 }
 
 void IpcServer::emitHook(vector<string> args) {
-    if (args.size() <= 0) {
+    if (args.empty()) {
         // nothing to do
         return;
     }

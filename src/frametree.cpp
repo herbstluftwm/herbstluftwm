@@ -187,7 +187,7 @@ int FrameTree::removeFrameCommand() {
     replaceNode(parent, newparent);
 
     // focus the same client again
-    if (removedFrameClients.size() > 0) {
+    if (!removedFrameClients.empty()) {
         if (insertAtFront) {
             targetFrameLeaf->setSelection(clientFocusIndex);
         } else {
@@ -886,7 +886,7 @@ int FrameTree::dumpLayoutCommand(Input input, Output output) {
         // an empty tagName means 'current tag'
         // (this is a special case that is not handled by find_tag()
         // so we handle it explicitly here)
-        if (tagName != "") {
+        if (!tagName.empty()) {
             HSTag* tag = find_tag(tagName.c_str());
             if (!tag) {
                 output << input.command() << ": Tag \"" << tagName << "\" not found\n";
