@@ -1026,6 +1026,13 @@ gapless_grid (Boolean)::
     this frame. If unset, then the last client has the same size as all other
     clients in this frame.
 
+hide_covered_windows (Boolean)::
+    If activated, windows are explicitly hidden when they are covered by another
+    window in a frame with max layout. This only has a visible effect if a
+    compositor is used. If activated, shadows do not stack up and transparent
+    windows show the wallpaper behind them instead of the other clients in the
+    max layout.
+
 smart_frame_surroundings (Boolean)::
     If set, frame borders and gaps will be removed when there's no ambiguity
     regarding the focused frame.
