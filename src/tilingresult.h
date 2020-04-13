@@ -24,7 +24,7 @@ public:
 class TilingResult {
 public:
     TilingResult() = default;
-    TilingStep& operator[](Client* client);
+    void add(Client* client, const TilingStep& client_data);
     void add(FrameDecoration* dec, const FrameDecorationData& frame_data);
 
     Client* focus = {}; // the focused client
