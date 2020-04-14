@@ -4,6 +4,9 @@
 #include "types.h"
 #include "x11-types.h"
 
+class Client;
+class HSTag;
+
 void floating_init();
 void floating_destroy();
 
@@ -17,6 +20,7 @@ int find_edge_right_of(RectangleIdxVec rects, int idx);
 // actual implementations
 bool floating_focus_direction(Direction dir);
 bool floating_shift_direction(Direction dir);
+bool floating_resize_direction(HSTag* tag, Client* client, Direction dir);
 
 
 #endif

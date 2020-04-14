@@ -312,3 +312,90 @@ bool floating_shift_direction(Direction dir) {
     return true;
 }
 
+
+static bool resize_by_delta(Client* client, Direction dir, int delta) {
+    int new_width = client->float_size_.width;
+    int new_height = client->float_size_.height;
+    if (dir == Direction::Right || dir == Direction::Left) {
+        new_width += delta;
+    }
+    if (dir == Direction::Up || dir == Direction::Down) {
+        new_height += delta;
+    }
+    client->applysizehints(&new_width, &new_height);
+    if (new_width == client->float_size_.width
+            && new_height == client->float_size_.height)
+    {
+        return false;
+    }
+    // growing to the left or down
+    if (dir == Direction::Right || dir == Direction::Down) {
+        client->float_size_.width = new_width;
+        client->float_size_.height = new_height;
+    } else if (dir == Direction::Left || dir == Direction::Up) {
+        client->float_size_.x -= new_width - client->float_size_.width;
+        client->float_size_.y -= new_height - client->float_size_.height;
+        client->float_size_.width = new_width;
+        client->float_size_.height = new_height;
+    }
+    return true;
+}
+
+static bool grow_into_direction(HSTag* tag, Client* client, Direction dir) {
+    Point2D delta = find_rectangle_collision_on_tag(tag, client, dir);
+    if (delta == Point2D{0, 0}) {
+        return false;
+    }
+    if (!resize_by_delta(client, dir, std::abs(delta.x) + std::abs(delta.y))) {
+        // TODO: if the delta was too small and made 0 by applysizehints()
+        // then we need to do something smarter in the future
+        return false;
+    }
+    return true;
+}
+
+static bool shrink_into_direction(Client* client, Direction dir) {
+    int delta_width = client->float_size_.width / -2;
+    int delta_height = client->float_size_.height / -2;
+    switch (dir) {
+        case Direction::Right:
+            // don't let windows shrink arbitrarily. 100 px is hopefully ok
+            // this here is bigger than WINDOW_MIN_WIDTH/_HEIGHT on purpose
+            if (client->float_size_.width < 100) {
+                return false;
+            }
+            return resize_by_delta(client, Direction::Left, delta_width);
+        case Direction::Left:
+            if (client->float_size_.width < 100) {
+                return false;
+            }
+            return resize_by_delta(client, Direction::Right, delta_width);
+        case Direction::Down:
+            if (client->float_size_.height < 100) {
+                return false;
+            }
+            return resize_by_delta(client, Direction::Up, delta_height);
+        case Direction::Up:
+            if (client->float_size_.height < 100) {
+                return false;
+            }
+            return resize_by_delta(client, Direction::Down, delta_height);
+    }
+    return false;
+}
+
+bool floating_resize_direction(HSTag* tag, Client* client, Direction dir)
+{
+    if (g_settings->monitors_locked()) {
+        return false;
+    }
+    if (!client || !client->is_client_floated()) {
+        return false;
+    }
+    // 1. Try to grow into a specific direction
+    if (grow_into_direction(tag, client, dir)) {
+        return true;
+    }
+    // 2. try to shrink into a specific direction
+    return shrink_into_direction(client, dir);
+}
