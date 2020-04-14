@@ -416,7 +416,7 @@ void execute_autostart_file() {
 static void parse_arguments(int argc, char** argv, Globals& g) {
     int exit_on_xerror = g.exitOnXlibError;
     int no_tag_import = 0;
-    static struct option long_options[] = {
+    struct option long_options[] = {
         {"autostart",       1, nullptr, 'c'},
         {"version",         0, nullptr, 'v'},
         {"locked",          0, nullptr, 'l'},
