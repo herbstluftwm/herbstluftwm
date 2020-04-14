@@ -4,7 +4,7 @@ FROM ubuntu:eoan-20200313
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ccache \
     clang-9 \
-    clang-tidy-8 \
+    clang-tidy-9 \
     cmake \
     curl \
     g++-9 \
