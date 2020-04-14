@@ -267,9 +267,17 @@ int HSTag::resizeCommand(Input input, Output output)
         return HERBST_INVALID_ARGUMENT;
     }
     double delta_double = atof(delta_str.c_str());
-    if (!frame->resizeFrame(delta_double, direction)) {
-        output << input.command() << ": No neighbour found\n";
-        return HERBST_FORBIDDEN;
+    Client* client = focusedClient();
+    if (client && client->is_client_floated()) {
+        if (!floating_resize_direction(this, client, direction)) {
+            // no error message because this shouldn't happen anyway
+            return HERBST_FORBIDDEN;
+        }
+    } else {
+        if (!frame->resizeFrame(delta_double, direction)) {
+            output << input.command() << ": No neighbour found\n";
+            return HERBST_FORBIDDEN;
+        }
     }
     needsRelayout_.emit();
     return 0;
