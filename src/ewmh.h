@@ -69,13 +69,13 @@ enum {
 #define _NET_WM_MOVERESIZE_MOVE_KEYBOARD    10   /* move via keyboard */
 #define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
-typedef enum {
+enum class WmState {
     // see icccm:
     // http://www.x.org/releases/X11R7.7/doc/xorg-docs/icccm/icccm.html#WM_STATE_Property
-    WmStateWithdrawnState = 0,
-    WmStateNormalState    = 1,
-    WmStateIconicState    = 3,
-} WmState;
+    WSWithdrawnState = 0,
+    WSNormalState    = 1,
+    WSIconicState    = 3,
+};
 
 class HSTag;
 class Client;

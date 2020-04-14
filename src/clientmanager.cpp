@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <string>
 
+#include "attribute.h"
 #include "client.h"
 #include "completion.h"
 #include "decoration.h"
