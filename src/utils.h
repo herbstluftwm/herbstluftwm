@@ -11,7 +11,7 @@
 
 #include "types.h"
 
-#define LENGTH(X) (sizeof(X)/sizeof(*X))
+#define LENGTH(X) (sizeof(X)/sizeof(*(X)))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
 
 // CLAMP taken from GLib:
