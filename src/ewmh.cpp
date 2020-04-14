@@ -27,7 +27,7 @@ Atom g_netatom[NetCOUNT];
 static vector<Window> g_windows; // array with Window-IDs in initial mapping order
 static Window      g_wm_window;
 
-static int WM_STATE;
+static Atom WM_STATE;
 
 /* list of names of all _NET-atoms */
 const std::array<const char*,NetCOUNT>g_netatom_names =
@@ -475,7 +475,10 @@ void Ewmh::windowUpdateWmState(Window win, WmState state) {
     /* set full WM_STATE according to
      * http://www.x.org/releases/X11R7.7/doc/xorg-docs/icccm/icccm.html#WM_STATE_Property
      */
-    X_.setPropertyCardinal(win, WM_STATE, { state, None });
+    X_.setPropertyCardinal(win, WM_STATE, {
+        static_cast<long>(state), // WM_STATE.state
+        None // WM_STATE.icon
+    });
 }
 
 bool Ewmh::isOwnWindow(Window win) {
