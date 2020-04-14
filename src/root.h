@@ -8,21 +8,21 @@
 
 // new object tree root.
 
-class ClientManager;
+class ClientManager; // IWYU pragma: keep
 class Ewmh;
 class HlwmCommon;
-class HookManager;
+class HookManager; // IWYU pragma: keep
 class IpcServer;
-class KeyManager;
-class MonitorManager;
-class MouseManager;
+class KeyManager; // IWYU pragma: keep
+class MonitorManager; // IWYU pragma: keep
+class MouseManager; // IWYU pragma: keep
 class PanelManager;
 class RootCommands;
-class RuleManager;
-class Settings;
-class TagManager;
-class Theme;
-class Tmp;
+class RuleManager; // IWYU pragma: keep
+class Settings; // IWYU pragma: keep
+class TagManager; // IWYU pragma: keep
+class Theme; // IWYU pragma: keep
+class Tmp; // IWYU pragma: keep
 class XConnection;
 
 class Globals {
