@@ -5,7 +5,9 @@ add_custom_command(
     ${CMAKE_CURRENT_SOURCE_DIR}/autostart
     ${CMAKE_CURRENT_BINARY_DIR}/autostart)
 
-install(FILES herbstclient-completion DESTINATION ${BASHCOMPLETIONDIR})
+install(FILES herbstclient-completion.bash
+    RENAME herbstclient
+    DESTINATION ${BASHCOMPLETIONDIR})
 install(FILES _herbstclient           DESTINATION ${ZSHCOMPLETIONDIR})
 install(FILES herbstclient.fish       DESTINATION ${FISHCOMPLETIONDIR})
 install(FILES herbstluftwm.desktop    DESTINATION ${XSESSIONSDIR})
