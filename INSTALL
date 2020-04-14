@@ -84,8 +84,9 @@ valgrind-xephyr.sh from your existing X session:
     mkdir -p ~/.config/herbstluftwm
     cp share/autostart ~/.config/herbstluftwm/
 
-5. add the share/herbstclient-completion to your
-   /usr/share/bash-completion/completions folder or source it in your bashrc
+5. copy share/herbstclient-completion.bash to your
+   /usr/share/bash-completion/completions folder (and rename it to herbstclient)
+   or source it in your bashrc
 6. run it in a session that has no windowmanager yet
 
 ==== Starting Herbstluftwm ====

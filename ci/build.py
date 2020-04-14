@@ -113,7 +113,7 @@ if args.iwyu:
         sys.exit(1)
 
 if args.clang_tidy:
-    sp.check_call(f'python3 /usr/lib/llvm-8/share/clang/run-clang-tidy.py -extra-arg=-Wno-unknown-warning-option -header-filter=^{repo}/.* {repo}',
+    sp.check_call(f'python3 /usr/lib/llvm-9/share/clang/run-clang-tidy.py -extra-arg=-Wno-unknown-warning-option -header-filter=^{repo}/.* {repo}',
                   shell=True,
                   cwd=build_dir)
 

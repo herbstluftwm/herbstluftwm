@@ -546,6 +546,12 @@ def x11_connection():
             # wait for a moment, and then try again..
             time.sleep(2)
             attempts_left -= 1
+        except Xlib.error.ConnectionClosedError as msg:
+            print("!!! Xlib.error.ConnectionClosedError: %s" % msg, file=sys.stderr)
+            # maybe the display was still shutting down
+            # wait for a moment, and then try again..
+            time.sleep(2)
+            attempts_left -= 1
     yield display
     display.close()
 
