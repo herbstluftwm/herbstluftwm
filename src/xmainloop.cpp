@@ -450,7 +450,7 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
                     m->applyLayout();
                 }
             } else if (ev->atom == XA_WM_NAME ||
-                       ev->atom == g_netatom[NetWmName]) {
+                       ev->atom == root_->ewmh->netatom(NetWmName)) {
                 client->update_title();
             } else if (ev->atom == XA_WM_CLASS && client) {
                 // according to the ICCCM specification, the WM_CLASS property may only
