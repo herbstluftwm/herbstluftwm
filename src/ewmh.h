@@ -6,9 +6,6 @@
 #include <array>
 #include <vector>
 
-#define ENUM_WITH_ALIAS(Identifier, Alias) \
-    Identifier, Alias = Identifier
-
 /* actions on NetWmState */
 #define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
 #define _NET_WM_STATE_ADD           1    /* add/set property */
@@ -37,7 +34,8 @@ enum {
     NetWmStateFullscreen,
     NetWmStateDemandsAttention,
     /* window types */
-    ENUM_WITH_ALIAS(NetWmWindowTypeDesktop, NetWmWindowTypeFIRST),
+    NetWmWindowTypeDesktop,
+    NetWmWindowTypeFIRST = NetWmWindowTypeDesktop,
     NetWmWindowTypeDock,
     NetWmWindowTypeToolbar,
     NetWmWindowTypeMenu,
@@ -50,7 +48,8 @@ enum {
     NetWmWindowTypeNotification,
     NetWmWindowTypeCombo,
     NetWmWindowTypeDnd,
-    ENUM_WITH_ALIAS(NetWmWindowTypeNormal, NetWmWindowTypeLAST),
+    NetWmWindowTypeNormal,
+    NetWmWindowTypeLAST = NetWmWindowTypeNormal,
     /* the count of hints */
     NetCOUNT
 };
