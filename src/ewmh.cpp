@@ -21,16 +21,8 @@
 using std::string;
 using std::vector;
 
-Atom g_netatom[NetCOUNT];
-
-// module internal globals:
-static vector<Window> g_windows; // array with Window-IDs in initial mapping order
-static Window      g_wm_window;
-
-static int WM_STATE;
-
 /* list of names of all _NET-atoms */
-const std::array<const char*,NetCOUNT>g_netatom_names =
+const std::array<const char*,NetCOUNT> Ewmh::g_netatom_names =
   ArrayInitializer<const char*,NetCOUNT>({
     { NetSupported                   , "_NET_SUPPORTED"                    },
     { NetClientList                  , "_NET_CLIENT_LIST"                  },
@@ -525,6 +517,16 @@ bool Ewmh::sendEvent(Window window, Ewmh::WM proto, bool checkProtocols) {
 
 void Ewmh::windowClose(Window window) {
     sendEvent(window, WM::Delete, false);
+}
+
+Atom Ewmh::netatom(int netatomEnum)
+{
+    return g_netatom[netatomEnum];
+}
+
+const char* Ewmh::netatomName(int netatomEnum)
+{
+    return g_netatom_names[static_cast<unsigned long>(netatomEnum)];
 }
 
 //! convenience wrapper around wmatom_

@@ -83,10 +83,6 @@ class Root;
 class TagManager;
 class XConnection;
 
-extern Atom g_netatom[NetCOUNT];
-
-extern const std::array<const char*,NetCOUNT> g_netatom_names;
-
 class Ewmh {
 public:
     Ewmh(XConnection& xconnection);
@@ -146,6 +142,8 @@ public:
     void windowClose(Window window);
 
     XConnection& X() { return X_; }
+    Atom netatom(int netatomEnum);
+    const char* netatomName(int netatomEnum);
 
 private:
     bool focusStealingAllowed(long source);
@@ -156,6 +154,14 @@ private:
     void readInitialEwmhState();
     Atom wmatom(WM proto);
     Atom wmatom_[(int)WM::Last];
+
+    std::vector<Window> g_windows; // array with Window-IDs in initial mapping order
+    Window      g_wm_window;
+
+    int WM_STATE;
+
+    Atom g_netatom[NetCOUNT];
+    static const std::array<const char*,NetCOUNT> g_netatom_names;
 };
 
 #endif
