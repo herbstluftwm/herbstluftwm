@@ -16,10 +16,10 @@ public:
     void createWindow();
     virtual ~Decoration();
     // resize such that the decorated outline of the window fits into rect
-    void resize_outline(Rectangle rect, const DecorationScheme& scheme);
+    void resize_outline(Rectangle outline, const DecorationScheme& scheme);
 
     // resize such that the window content fits into rect
-    void resize_inner(Rectangle rect, const DecorationScheme& scheme);
+    void resize_inner(Rectangle inner, const DecorationScheme& scheme);
     void change_scheme(const DecorationScheme& scheme);
 
     static Client* toClient(Window decoration_window);

@@ -464,7 +464,7 @@ void Client::set_visible(bool visible) {
            the client gets its MapNotify, i.e. to make sure the client is
            _visible_ when it gets MapNotify. */
         XGrabServer(g_display);
-        ewmh.windowUpdateWmState(this->window_, WmStateNormalState);
+        ewmh.windowUpdateWmState(this->window_, WmState::WSNormalState);
         XMapWindow(g_display, this->window_);
         XMapWindow(g_display, this->dec->decorationWindow());
         XUngrabServer(g_display);
@@ -473,7 +473,7 @@ void Client::set_visible(bool visible) {
            events, and because the ICCCM tells us to! */
         XUnmapWindow(g_display, this->dec->decorationWindow());
         XUnmapWindow(g_display, this->window_);
-        ewmh.windowUpdateWmState(this->window_, WmStateWithdrawnState);
+        ewmh.windowUpdateWmState(this->window_, WmState::WSWithdrawnState);
         this->ignore_unmaps_++;
     }
     this->visible_ = visible;

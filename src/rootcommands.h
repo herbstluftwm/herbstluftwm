@@ -8,10 +8,10 @@
 #include <memory>
 #include <vector>
 
+#include "attribute.h"
 #include "types.h"
 
 class Object;
-class Attribute;
 class Completion;
 
 /** this class collects high-level commands that don't need any internal
@@ -31,13 +31,13 @@ public:
     // find an attribute deep in the object tree.
     // on failure, the error message is printed to output and NULL
     // is returned
-    int get_attr_cmd(Input args, Output output);
+    int get_attr_cmd(Input in, Output output);
     void get_attr_complete(Completion& complete);
-    int set_attr_cmd(Input args, Output output);
+    int set_attr_cmd(Input in, Output output);
     void set_attr_complete(Completion& complete);
-    int attr_cmd(Input args, Output output);
+    int attr_cmd(Input in, Output output);
     void attr_complete(Completion& complete);
-    int print_object_tree_command(Input args, Output output);
+    int print_object_tree_command(Input in, Output output);
     void print_object_tree_complete(Completion& complete);
 
     int substitute_cmd(Input input, Output output);

@@ -13,55 +13,55 @@ branches:
 jobs:
     include:
         - name: "Build with most recent GCC & Clang, run tests"
-          env: TRAVIS_CACHE_ID=disco
+          env: TRAVIS_CACHE_ID=eoan
           cache:
               directories:
-                  - $HOME/.ccaches-disco
+                  - $HOME/.ccaches-eoan
                   - $HOME/.tox-cache
           script:
-              # Fetch our current Ubuntu 19.04 CI image from Docker Hub
+              # Fetch our current Ubuntu 19.10 CI image from Docker Hub
               # (automatically built by Docker):
-              - docker pull hlwm/ci:disco
+              - docker pull hlwm/ci:eoan
 
               # Build ad-hoc image, using hub image as cache
               # (=> does not actually build from scratch if the Dockerfile is
               # the same):
-              - docker build -t disco --cache-from hlwm/ci:disco - <ci/Dockerfile.ci-disco
+              - docker build -t eoan --cache-from hlwm/ci:eoan - <ci/Dockerfile.ci-eoan
 
               # Perform actual tasks within temporary Docker image
               - docker run -u $UID --privileged -t --rm
                 --volume=/etc/passwd:/etc/passwd:ro
-                --volume=$HOME/.ccaches-disco:/.ccaches:rw
+                --volume=$HOME/.ccaches-eoan:/.ccaches:rw
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
-                disco sh -c '
-                    /hlwm/ci/build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --ccache=/.ccaches/clang-7 --compile &&
-                    /hlwm/ci/build.py --build-dir=/hlwm/build-gcc-8 --cxx=g++-8 --cc=gcc-8 --build-type=Debug --ccache=/.ccaches/gcc-8 --compile --run-tests
+                eoan sh -c '
+                    /hlwm/ci/build.py --build-dir=/hlwm/build-clang-9 --cxx=clang++-9 --cc=clang-9 --build-type=Debug --ccache=/.ccaches/clang-9 --compile &&
+                    /hlwm/ci/build.py --build-dir=/hlwm/build-gcc-9 --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=/.ccaches/gcc-9 --compile --run-tests
                 '
               - bash <(curl -s https://codecov.io/bash) -y .codecov.yml -f coverage.info
 
         - name: "Run linters and static analyzers"
-          env: TRAVIS_CACHE_ID=disco-linter
+          env: TRAVIS_CACHE_ID=eoan-linter
           cache:
               directories:
                   - $HOME/.tox-cache
           script:
-              # Fetch our current Ubuntu 19.04 CI image from Docker Hub
+              # Fetch our current Ubuntu 19.10 CI image from Docker Hub
               # (automatically built by Docker):
-              - docker pull hlwm/ci:disco
+              - docker pull hlwm/ci:eoan
 
               # Build ad-hoc image, using hub image as cache
               # (=> does not actually build from scratch if the Dockerfile is
               # the same):
-              - docker build -t disco --cache-from hlwm/ci:disco - <ci/Dockerfile.ci-disco
+              - docker build -t eoan --cache-from hlwm/ci:eoan - <ci/Dockerfile.ci-eoan
 
               # Perform actual tasks within temporary Docker image
               - docker run -u $UID --privileged -t --rm
                 --volume=/etc/passwd:/etc/passwd:ro
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
-                disco sh -c '
-                    /hlwm/ci/build.py --build-dir=/hlwm/build-clang-7 --cxx=clang++-7 --cc=clang-7 --build-type=Debug --check-using-std --iwyu --flake8
+                eoan sh -c '
+                    /hlwm/ci/build.py --build-dir=/hlwm/build-clang-9 --cxx=clang++-9 --cc=clang-9 --build-type=Debug --check-using-std --iwyu --clang-tidy --flake8
                 '
 
         - name: "Build for 32bit with ancient GCC on Ubuntu 14.04"
