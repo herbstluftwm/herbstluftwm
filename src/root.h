@@ -4,23 +4,25 @@
 #include <memory>
 
 #include "child.h"
-#include "clientmanager.h"
-#include "hookmanager.h"
-#include "keymanager.h"
-#include "monitormanager.h"
-#include "mousemanager.h"
 #include "object.h"
-#include "rulemanager.h"
-#include "settings.h"
-#include "tagmanager.h"
-#include "theme.h"
-#include "tmp.h"
 
+// new object tree root.
+
+class ClientManager; // IWYU pragma: keep
 class Ewmh;
 class HlwmCommon;
+class HookManager; // IWYU pragma: keep
 class IpcServer;
+class KeyManager; // IWYU pragma: keep
+class MonitorManager; // IWYU pragma: keep
+class MouseManager; // IWYU pragma: keep
 class PanelManager;
 class RootCommands;
+class RuleManager; // IWYU pragma: keep
+class Settings; // IWYU pragma: keep
+class TagManager; // IWYU pragma: keep
+class Theme; // IWYU pragma: keep
+class Tmp; // IWYU pragma: keep
 class XConnection;
 
 class Globals {
