@@ -36,7 +36,7 @@ public:
     void ensure_monitors_are_available();
     Monitor* byString(std::string str);
     Monitor* byTag(HSTag* tag);
-    Monitor* byCoordinate(Point2D coordinate);
+    Monitor* byCoordinate(Point2D p);
     Monitor* byFrame(std::shared_ptr<HSFrame> frame);
     int list_monitors(Output output);
     int list_padding(Input input, Output output);
@@ -46,7 +46,7 @@ public:
     int addMonitor(Input input, Output output);
     // return a command that interprets the first argument
     // as a monitor description and then calls the given command on this monitor
-    CommandBinding byFirstArg(MonitorCommand cmd, MonitorCompletion completer);
+    CommandBinding byFirstArg(MonitorCommand cmd, MonitorCompletion moncomplete);
     //! run the command on the currently focused tag
     CommandBinding tagCommand(TagCommand cmd, TagCompletion completer);
     // relayout the monitor showing this tag, if there is any
@@ -66,7 +66,7 @@ public:
     std::string lock_number_changed();
 
     int stackCommand(Output output);
-    void extractWindowStack(bool real_clients, std::function<void(Window)> addToStack);
+    void extractWindowStack(bool real_clients, std::function<void(Window)> yield);
     void restack();
     int raiseMonitorCommand(Input input, Output output);
     void raiseMonitorCompletion(Completion& complete);

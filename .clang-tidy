@@ -1,6 +1,22 @@
 ---
-# First enable all, then disable the unsuitable ones:
-Checks: '*,-android-*,-objc-*,-fuchsia-*,-mpi-*,-performance-*,-llvm-include-order'
+
+# For now, we just use the default checks with some additions and exceptions
+# based on what actually passes. In the future, this should be turned into a
+# blacklist, like so:
+#
+#   ###
+#   # First enable all, then disable the ones we do not want:
+#   #  * -abseil-*: not applicable
+#   #  * -android-*: not applicable
+#   #  * -objc-*: not applicable
+#   #  * -fuchsia-*: not applicable
+#   #  * -mpi-*: not applicable
+#   #  * -performance-*: not relevant
+#   #  * -llvm-include-order': not our style
+#   # Checks: '*,-abseil-*,-android-*,-objc-*,-fuchsia-*,-mpi-*,-performance-*,-llvm-include-order'
+#   ###
+#
+Checks: '-clang-analyzer-unix.API,-clang-analyzer-unix.Malloc,-clang-analyzer-optin.portability.UnixAPI,-clang-analyzer-core.StackAddressEscape,-clang-analyzer-core.CallAndMessage,readability-braces-around-statements,google-readability-braces-around-statements,hicpp-braces-around-statements,readability-container-size-empty,readability-inconsistent-declaration-parameter-name'
 
 # Uncomment this to make clang-tidy fail on any findings:
-# WarningsAsErrors: '*'
+WarningsAsErrors: '*'

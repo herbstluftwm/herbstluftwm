@@ -18,7 +18,7 @@ public:
     Settings();
     void injectDependencies(Root* root);
     // commands:
-    int set_cmd(Input argv, Output output);
+    int set_cmd(Input input, Output output);
     void set_complete(Completion& complete);
     int get_cmd(Input argv, Output output);
     void get_complete(Completion& complete);
