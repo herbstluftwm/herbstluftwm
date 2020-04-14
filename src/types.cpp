@@ -53,9 +53,9 @@ void Converter<Direction>::complete(Completion& complete, const Direction* relat
 }
 
 template<>
-unsigned long Converter<unsigned long>::parse(const string& payload)
+unsigned long Converter<unsigned long>::parse(const string& source)
 {
-    long value = std::stol(payload);
+    long value = std::stol(source);
     if (value < 0) {
         throw std::invalid_argument("negative number is out of range");
     } else {

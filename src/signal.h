@@ -28,7 +28,9 @@ public:
     // emit the signal
     // instantly calls all receiving slots
     virtual void emit() const {
-        for (const auto& s : slots_0arg_) s();
+        for (const auto& s : slots_0arg_) {
+            s();
+        }
     }
 
 protected:
@@ -54,7 +56,9 @@ public:
     }
     void emit(const T& data) const {
         Signal::emit();
-        for (const auto& s : slots_1arg_) s(data);
+        for (const auto& s : slots_1arg_) {
+            s(data);
+        }
     }
 private:
     std::vector<std::function<void(T)>> slots_1arg_;

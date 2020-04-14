@@ -61,10 +61,10 @@ jobs:
                 --volume=$PWD:/hlwm:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 eoan sh -c '
-                    /hlwm/ci/build.py --build-dir=/hlwm/build-clang-9 --cxx=clang++-9 --cc=clang-9 --build-type=Debug --check-using-std --iwyu --flake8
+                    /hlwm/ci/build.py --build-dir=/hlwm/build-clang-9 --cxx=clang++-9 --cc=clang-9 --build-type=Debug --check-using-std --iwyu --clang-tidy --flake8
                 '
 
-        - name: "Build with ancient GCC on Ubuntu 14.04"
+        - name: "Build for 32bit with ancient GCC on Ubuntu 14.04"
           env: TRAVIS_CACHE_ID=trusty
           cache:
               directories:
@@ -87,6 +87,8 @@ jobs:
                 --volume=$HOME/.ccache-gcc-4.8:/.ccache:rw
                 --env CC=gcc-4.8
                 --env CXX=g++-4.8
+                --env CXXFLAGS=-m32
+                --env CFLAGS=-m32
                 trusty bash -c '
                     cd /tmp &&
                     ccache -z --max-size=500M &&

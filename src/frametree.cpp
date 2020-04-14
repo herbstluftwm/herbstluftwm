@@ -404,8 +404,9 @@ bool FrameTree::resizeFrame(double delta_double, Direction direction)
     // if direction is left or up we have to flip delta
     // because e.g. resize up by 0.1 actually means:
     // reduce fraction by 0.1, i.e. delta = -0.1
-    if (direction == Direction::Left || direction == Direction::Up)
+    if (direction == Direction::Left || direction == Direction::Up) {
         delta *= -1;
+    }
 
     shared_ptr<HSFrame> neighbour = focusedFrame()->neighbour(direction);
     if (!neighbour) {
@@ -460,10 +461,10 @@ void FrameTree::focusFrame(shared_ptr<HSFrame> frame) {
 //! focus a client/frame in the given direction. if externalOnly=true,
 //! focus the frame in the specified direction; otherwise, focus the frame or client
 //! in the specified direction. Return whether the focus changed
-bool FrameTree::focusInDirection(Direction direction, bool external_only)
+bool FrameTree::focusInDirection(Direction direction, bool externalOnly)
 {
     auto curframe = focusedFrame();
-    if (!external_only) {
+    if (!externalOnly) {
         int index = curframe->getInnerNeighbourIndex(direction);
         if (index >= 0) {
             curframe->setSelection(index);

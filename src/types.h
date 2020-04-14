@@ -98,7 +98,7 @@ inline int Converter<int>::parse(const std::string &payload) {
     return std::stoi(payload);
 }
 template<>
-unsigned long Converter<unsigned long>::parse(const std::string &payload);
+unsigned long Converter<unsigned long>::parse(const std::string &source);
 
 // Booleans
 template<>
@@ -109,16 +109,19 @@ template<>
 inline bool Converter<bool>::parse(const std::string &payload) {
     std::set<std::string> t = {"true", "on", "1"};
     std::set<std::string> f = {"false", "off", "0"};
-    if (f.find(payload) != f.end())
+    if (f.find(payload) != f.end()) {
         return false;
-    if (t.find(payload) != t.end())
+    }
+    if (t.find(payload) != t.end()) {
         return true;
+    }
     throw std::invalid_argument("only on/off/true/false are valid booleans");
 }
 template<>
 inline bool Converter<bool>::parse(const std::string &payload, const bool& previous) {
-    if (payload == "toggle")
+    if (payload == "toggle") {
         return !previous;
+    }
     try {
         return parse(payload);
     } catch (std::invalid_argument&) {
@@ -145,8 +148,9 @@ inline Direction Converter<Direction>::parse(const std::string &payload) {
         {'d', Direction::Down}, {'l', Direction::Left},
     };
     auto it = mapping.find(payload.at(0));
-    if (it == mapping.end())
+    if (it == mapping.end()) {
         throw std::invalid_argument("Invalid direction \"" + payload + "\"");
+    }
     return it->second;
 }
 

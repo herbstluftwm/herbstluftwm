@@ -21,21 +21,21 @@ private:
     bool aboutToQuit_;
     EventHandler handlerTable_[LASTEvent];
     // event handlers
-    void buttonpress(XButtonEvent* event);
+    void buttonpress(XButtonEvent* be);
     void buttonrelease(XButtonEvent* event);
     void clientmessage(XClientMessageEvent* event);
     void createnotify(XCreateWindowEvent* event);
     void configurerequest(XConfigureRequestEvent* cre);
     void configurenotify(XConfigureEvent* event);
     void destroynotify(XUnmapEvent* event);
-    void enternotify(XCrossingEvent* event);
+    void enternotify(XCrossingEvent* ce);
     void expose(XEvent* event);
     void focusin(XEvent* event);
     void keypress(XKeyEvent* event);
     void mappingnotify(XMappingEvent* event);
     void motionnotify(XMotionEvent* event);
     void mapnotify(XMapEvent* event);
-    void maprequest(XMapRequestEvent* event);
+    void maprequest(XMapRequestEvent* mapreq);
     void propertynotify(XPropertyEvent* event);
     void unmapnotify(XUnmapEvent* event);
 };

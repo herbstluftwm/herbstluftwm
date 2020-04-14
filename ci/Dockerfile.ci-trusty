@@ -1,18 +1,21 @@
 FROM ubuntu:trusty-20190122
 
+# Add i386 so that we can build with -m32 to catch more portability errors:
+RUN dpkg --add-architecture i386
+
 # Build deps
 # TODO: Leave out git (huge and not really needed)
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ccache \
     cmake3 \
-    gcc-4.8 \
-    g++-4.8 \
+    g++-4.8-multilib \
+    gcc-4.8-multilib \
     git \
-    libx11-dev \
-    libxext-dev \
-    libxinerama-dev \
+    libx11-dev:i386 \
+    libxext-dev:i386 \
+    libxinerama-dev:i386 \
     libxml2-utils \
-    libxrandr-dev \
+    libxrandr-dev:i386 \
     ninja-build \
     pkg-config \
     xterm \
