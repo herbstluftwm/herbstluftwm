@@ -236,17 +236,23 @@ bool floating_focus_direction(Direction dir) {
 }
 
 //! when moving the given client on tag in the specified direction
-//! report the vector to travel until the collision happens
-Point2D find_rectangle_collision_on_tag(HSTag* tag, Client* curfocus, Direction dir) {
+//! report the vector to travel until the collision happens. If curfocusrect
+//! is provided, use this as the geometry of 'curfocus'
+Point2D find_rectangle_collision_on_tag(HSTag* tag, Client* curfocus, Direction dir, Rectangle curfocusrect = {0,0,-1,-1}) {
     vector<Client*> clients;
+    auto focusrect = curfocusrect
+                ? curfocusrect
+                : curfocus->dec->last_outer();
     RectangleIdxVec rects;
     int idx = 0;
     int curfocusidx = -1;
     tag->foreachClient([&](Client* c) {
         clients.push_back(c);
-        rects.push_back(make_pair(idx,c->dec->last_outer()));
         if (c == curfocus) {
+            rects.push_back(make_pair(idx,focusrect));
             curfocusidx = idx;
+        } else {
+            rects.push_back(make_pair(idx,c->dec->last_outer()));
         }
         idx++;
     });
@@ -267,15 +273,17 @@ Point2D find_rectangle_collision_on_tag(HSTag* tag, Client* curfocus, Direction 
         }
     }
     for (auto& r : rects) {
+        // don't apply snapgap to focused client, so there will be exactly
+        // snap_gap pixels between the focused client and the found edge
+        if (r.first == curfocusidx) {
+            continue;
+        }
         // expand anything by the snap gap
         r.second.x -= g_settings->snap_gap();
         r.second.y -= g_settings->snap_gap();
         r.second.width += 2 * g_settings->snap_gap();
         r.second.height += 2 * g_settings->snap_gap();
     }
-    // don't apply snapgap to focused client, so there will be exactly
-    // snap_gap pixels between the focused client and the found edge
-    auto focusrect = curfocus->dec->last_outer();
     idx = find_edge_in_direction(rects, curfocusidx, dir);
     if (idx < 0) {
         return {0, 0};
@@ -347,9 +355,22 @@ static bool grow_into_direction(HSTag* tag, Client* client, Direction dir) {
         return false;
     }
     if (!resize_by_delta(client, dir, std::abs(delta.x) + std::abs(delta.y))) {
-        // TODO: if the delta was too small and made 0 by applysizehints()
-        // then we need to do something smarter in the future
-        return false;
+        // if the delta was too small and made 0 by applysizehints()
+        // then we cheat a bit:
+        // 1. we apply the delta
+        Rectangle outer_geo = client->dec->last_outer();
+        outer_geo.width += std::abs(delta.x);
+        outer_geo.height += std::abs(delta.y);
+        if (dir == Direction::Left || dir == Direction::Up) {
+            outer_geo.x -= std::abs(delta.x);
+            outer_geo.y -= std::abs(delta.y);
+        }
+        // 2. and search for an edge again
+        Point2D new_delta = find_rectangle_collision_on_tag(tag, client, dir, outer_geo);
+        delta.x += std::abs(new_delta.x);
+        delta.y += std::abs(new_delta.y);
+        // 3. and try again:
+        return resize_by_delta(client, dir, std::abs(delta.x) + std::abs(delta.y));
     }
     return true;
 }
