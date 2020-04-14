@@ -92,8 +92,8 @@ the according (internal) command directly is called.
 Q: How can I let single clients float?
 --------------------------------------
 Assign a shortcut for +herbstclient attr clients.focus.floating toggle+. Also,
-herbstluftwm floats some clients like dialogs by default (you can disable this
-with a rule).
+since version 0.8 herbstluftwm floats some clients like dialogs by default
+(you can disable this with a rule).
 
 Q: I use GIMP very often, how can I use it without floating?
 ----------------------------------------------------------------
