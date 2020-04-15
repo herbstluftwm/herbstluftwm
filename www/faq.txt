@@ -203,6 +203,15 @@ You also can add an alias for herbstclient:
 alias hc='herbstclient'
 ----
 
+If you use bash, then also add this to make the tab-completion work for the
++hc+ alias:
+----
+complete -F _herbstclient_complete -o nospace hc
+----
+(For zsh and fish, the tab-completion is inherited by aliases and no further
+configuration is needed)
+
+
 Q: My rules seem to be messed up
 --------------------------------
 Clear them with +hc unrule -F+ and start over. It is recommended to do this
