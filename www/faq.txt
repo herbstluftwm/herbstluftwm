@@ -96,7 +96,7 @@ Also, herbstluftwm floats some clients like dialogs by default (you can disable
 this with a rule). Single floating clients are supported since version 0.8.
 
 Q: I use GIMP very often, how can I use it without floating?
-----------------------------------------------------------------
+------------------------------------------------------------
 Load a predefined layout to a gimp tag. Move the GIMP-Tool windows to the
 left and right border and put the rest in the center. Add this to your
 autostart:
