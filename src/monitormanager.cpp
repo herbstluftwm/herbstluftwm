@@ -74,17 +74,15 @@ void MonitorManager::ensure_monitors_are_available() {
     monitor_update_focus_objects();
 }
 
-int MonitorManager::indexInDirection(Monitor* m, Direction dir) {
+int MonitorManager::indexInDirection(Monitor* relativeTo, Direction dir) {
     RectangleIdxVec rects;
-    int relidx = -1;
-    FOR (i,0,size()) {
-        rects.push_back(make_pair(i, byIdx(i)->rect));
-        if (byIdx(i) == m) {
-            relidx = i;
-        }
+    if (!relativeTo) {
+        return -1;
     }
-    HSAssert(relidx >= 0);
-    int result = find_rectangle_in_direction(rects, relidx, dir);
+    for (Monitor* mon : *this) {
+        rects.push_back(make_pair(mon->index(), mon->rect));
+    }
+    int result = find_rectangle_in_direction(rects, int(relativeTo->index), dir);
     return result;
 }
 

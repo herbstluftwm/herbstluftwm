@@ -105,7 +105,7 @@ int find_rectangle_right_of(RectangleIdxVec rects, int idx) {
     int cy = RC.y + RC.height / 2;
     int write_i = 0; // next rectangle to write
     // filter out rectangles not right of RC
-    FOR (i,0,rects.size()) {
+    for (int i = 0; i < rects.size(); i++) {
         if (idx == i) {
             continue;
         }
@@ -135,7 +135,7 @@ int find_rectangle_right_of(RectangleIdxVec rects, int idx) {
     int idxbest = -1;
     int ibest = -1;
     int distbest = INT_MAX;
-    FOR (i,0,write_i) {
+    for (int i = 0; i < write_i; i++) {
         auto R2 = rects[i].second;
         int rcx = R2.x + R2.width / 2;
         int rcy = R2.y + R2.height / 2;
@@ -187,20 +187,22 @@ int find_edge_right_of(RectangleIdxVec rects, int idx) {
     //      +---------+ - - - - - - - - - - -
     int leftmost = -1;
     int dist = INT_MAX;
-    FOR (i,0,rects.size()) {
+    int i = -1;
+    for (const auto& r : rects) {
+        i++; // count indices manually
         if (i == idx) {
             continue;
         }
-        if (rects[i].second.x <= xbound) {
+        if (r.second.x <= xbound) {
             continue;
         }
-        int low = rects[i].second.y;
-        int high = low + rects[i].second.height;
+        int low = r.second.y;
+        int high = low + r.second.height;
         if (!intervals_intersect(ylow, yhigh, low, high)) {
             continue;
         }
-        if (rects[i].second.x - xbound < dist) {
-            dist = rects[i].second.x - xbound;
+        if (r.second.x - xbound < dist) {
+            dist = r.second.x - xbound;
             leftmost = i;
         }
     }
