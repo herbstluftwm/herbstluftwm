@@ -91,13 +91,11 @@ the according (internal) command directly is called.
 
 Q: How can I let single clients float?
 --------------------------------------
-Not at all. You don't need it. You have the power of manual tiling, so
-there is no need to place clients manually by dragging. Even better:
-You don't even need to place them manually. Use a rule to place special
-dialogs automatically when they appear. See the GIMP-Example for a good
-example.
+You can assign a shortcut for +herbstclient attr clients.focus.floating toggle+.
+Also, herbstluftwm floats some clients like dialogs by default (you can disable
+this with a rule). Single floating clients are supported since version 0.8.
 
-Q: But I use GIMP very often, how can I use it without floating?
+Q: I use GIMP very often, how can I use it without floating?
 ----------------------------------------------------------------
 Load a predefined layout to a gimp tag. Move the GIMP-Tool windows to the
 left and right border and put the rest in the center. Add this to your
@@ -194,7 +192,7 @@ There is also a tab-completion for the herbstclient parameters. After
 installing herbstluftwm, add this to your .bashrc:
 
 ----
-source /usr/share/bash-completion/completions/herbstclient-completion
+source /usr/share/bash-completion/completions/herbstclient
 ----
 
 (The tab-completion in zsh works out of the box with most zsh-configurations).
@@ -204,6 +202,15 @@ You also can add an alias for herbstclient:
 ----
 alias hc='herbstclient'
 ----
+
+If you use bash, then also add this to make the tab-completion work for the
++hc+ alias:
+----
+complete -F _herbstclient_complete -o nospace hc
+----
+(For zsh and fish, the tab-completion is inherited by aliases and no further
+configuration is needed)
+
 
 Q: My rules seem to be messed up
 --------------------------------
@@ -216,7 +223,7 @@ Q: I don't like that my mplayervideo/inputdialogs get resized to full framesize
 Add this to your autostartfile:
 
 ----
-hc rule instance=<instance> pseudotile=on
+hc rule instance=<instancename> pseudotile=on
 ----
 
 You can request the instancename with xprop by clicking on the related window.
@@ -448,19 +455,6 @@ if hc silent new_attr bool my_not_first_autostart ; then
     pidgin &
 fi
 ----
-
-[[winterbreeze]]
-Q: What is "winterbreeze"
--------------------------
-The "winterbreeze" branch is a rewrite of the herbstluftwm codebase to $$C++$$. The
-main purpose is to fix design mistakes in the old code. We use $$C++$$ features to
-make the code more stable (and type-safe). While rewriting, we also wrote a
-test-suite in python. There are only a few new features and bug fixes, but there
-are no new major features yet! By restructuring the codebase, it is hopefully
-easy and safe to implement the most-asked features soon after the "winterbreeze"
-code is merged into master. Right now (November 2019), the "winterbreeze" branch
-is already ahead of master (in the git language), so it should not take too long
-until the merge.
 
 
 

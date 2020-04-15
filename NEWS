@@ -8,6 +8,8 @@ Current git version
     new windows in empty frames, if possible)
   * new setting 'hide_covered_windows' to improve the appearance when used with
     a compositor.
+  * resize floating windows with the same command ('resize') as in tiling mode
+    and thus the same keybindings as in tiling mode.
 
 Release 0.8.0 on 2020-04-09
 ---------------------------
