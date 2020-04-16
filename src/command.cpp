@@ -274,7 +274,7 @@ int Commands::call(Input args, Output out) {
     return command_table->callCommand(args, out);
 }
 
-bool Commands::commandExists(const std::string& commandName)
+bool Commands::commandExists(const string& commandName)
 {
     if (!command_table) {
         return false;
