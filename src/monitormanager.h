@@ -75,6 +75,9 @@ public:
     int setMonitorsCommand(Input input, Output output);
     void setMonitorsCompletion(Completion& complete);
 
+    int detectMonitorsCommand(Input input, Output output);
+    void detectMonitorsCompletion(Completion& complete);
+
     Rectangle interpretGlobalGeometry(Rectangle globalGeometry);
 
     int cur_monitor;
