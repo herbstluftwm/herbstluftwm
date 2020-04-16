@@ -41,8 +41,6 @@ static const char* completion_special_winids[]= { "urgent", "", nullptr };
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
 static const char* completion_cycle_all_args[]= { "--skip-invisible", nullptr };
 static const char* completion_pm_one[]= { "+1", "-1", nullptr };
-static const char* completion_detect_monitors_args[] =
-    { "-l", "--list", "--list-all", "--no-disjoin", /* TODO: "--keep-small", */ nullptr };
 static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
 static const char* completion_split_ratios[]= {
     "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", nullptr };
@@ -142,7 +140,6 @@ struct {
     { "cycle_all",      EQ, 2,  nullptr, completion_pm_one },
     { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
     { "dump",           EQ, 1,  complete_against_tags, 0 },
-    { "detect_monitors", GE, 1,  nullptr, completion_detect_monitors_args },
     { "layout",         EQ, 1,  complete_against_tags, 0 },
     { "load",           EQ, 1,  complete_against_tags, 0 },
     { "merge_tag",      EQ, 1,  complete_against_tags, 0 },
@@ -272,6 +269,14 @@ int Commands::call(Input args, Output out) {
         return HERBST_COMMAND_NOT_FOUND;
     }
     return command_table->callCommand(args, out);
+}
+
+bool Commands::commandExists(const string& commandName)
+{
+    if (!command_table) {
+        return false;
+    }
+    return command_table->find(commandName) != command_table->end();
 }
 
 shared_ptr<const CommandTable> Commands::get() {

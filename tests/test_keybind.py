@@ -309,3 +309,8 @@ def test_keymask_and_keys_inactive(hlwm, keyboard):
     assert hlwm.get_attr('my_f_pressed') == ''
     # z is disallowed by keymask but not disabled by keys_inactive
     assert hlwm.get_attr('my_z_pressed') == ''
+
+
+def test_keybind_unknown_binding(hlwm):
+    hlwm.call_xfail('keybind x xterm') \
+        .expect_stderr('command.*not exist')
