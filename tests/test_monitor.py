@@ -258,3 +258,32 @@ def test_initial_client_position(hlwm, x11, two_monitors):
     assert (win_geo.width, win_geo.height) == (g[2], g[3])
     x, y = x11.get_absolute_top_left(w)
     assert (x, y) == (g[0], g[1])
+
+
+def test_shift_to_monitor(hlwm):
+    hlwm.call('add tag2')
+    hlwm.call('set_monitors 80x80+0+0 80x80+80+0')
+    winid, _ = hlwm.create_client()
+    oldtag = hlwm.get_attr('monitors.0.tag')
+    assert hlwm.get_attr(f'clients.{winid}.tag') == oldtag
+
+    hlwm.call('shift_to_monitor 1')
+
+    newtag = hlwm.get_attr('monitors.1.tag')
+    assert oldtag != newtag
+    assert hlwm.get_attr(f'clients.{winid}.tag') == newtag
+
+
+def test_shift_to_monitor_invalid_mon(hlwm):
+    winid, _ = hlwm.create_client()
+    hlwm.call_xfail('shift_to_monitor 34') \
+        .expect_stderr('Invalid monitor')
+
+
+def test_shift_to_monitor_no_client(hlwm):
+    hlwm.call('add tag2')
+    hlwm.call('set_monitors 80x80+0+0 80x80+80+0')
+
+    # there is no error message at the moment, so we only
+    # check that it does not crash
+    hlwm.call('shift_to_monitor 1')
