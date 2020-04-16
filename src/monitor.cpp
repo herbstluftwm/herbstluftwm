@@ -16,16 +16,13 @@
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "layout.h"
-#include "monitordetection.h"
 #include "monitormanager.h"
-#include "rectangle.h"
 #include "root.h"
 #include "settings.h"
 #include "stack.h"
 #include "tag.h"
 #include "tagmanager.h"
 #include "utils.h"
-#include "xconnection.h"
 
 using std::endl;
 using std::string;
@@ -673,76 +670,6 @@ int Monitor::relativeX(int x_root) {
 
 int Monitor::relativeY(int y_root) {
     return y_root - rect.y - pad_up;
-}
-
-int detect_monitors_command(int argc, const char **argv, Output output) {
-    auto root = Root::get();
-    RectangleVec monitor_rects = {};
-    for (const auto& detector : MonitorDetection::detectors()) {
-        if (detector.detect_) {
-            auto rects = detector.detect_(root->X);
-            // remove duplicates
-            std::sort(rects.begin(), rects.end());
-            rects.erase(std::unique(rects.begin(), rects.end()), rects.end());
-            // check if this has more outputs than we know already
-            if (rects.size() > monitor_rects.size()) {
-                monitor_rects = rects;
-            }
-        }
-    }
-    if (monitor_rects.empty()) {
-        monitor_rects = { root->X.windowSize(root->X.root()) };
-    }
-    bool list_all = false;
-    bool list_only = false;
-    bool disjoin = true;
-    //bool drop_small = true;
-    FOR (i,1,argc) {
-        if (!strcmp(argv[i], "-l")) {
-            list_only = true;
-        } else if (!strcmp(argv[i], "--list")) {
-            list_only = true;
-        } else if (!strcmp(argv[i], "--list-all")) {
-            list_all = true;
-        } else if (!strcmp(argv[i], "--no-disjoin")) {
-            disjoin = false;
-            // TOOD:
-            // else if (!strcmp(argv[i], "--keep-small"))  drop_small = false;
-        } else {
-            output << "detect_monitors: unknown flag \"" << argv[i] << "\"\n";
-            return HERBST_INVALID_ARGUMENT;
-        }
-    }
-
-    int ret = 0;
-    if (list_all) {
-        for (const auto& detector : MonitorDetection::detectors()) {
-            output << detector.name_ << ":";
-            if (detector.detect_) {
-                for (auto m : detector.detect_(root->X)) {
-                    output << " " << m;
-                }
-            } else {
-                output << " disabled";
-            }
-            output << endl;
-        }
-    } else if (list_only) {
-        for (auto m : monitor_rects) {
-            output << m << "\n";
-        }
-    } else {
-        // possibly disjoin them
-        if (disjoin) {
-            monitor_rects = disjoin_rects(monitor_rects);
-        }
-        // apply it
-        ret = g_monitors->setMonitors(monitor_rects);
-        if (ret == HERBST_TAG_IN_USE) {
-            output << argv[0] << ": There are not enough free tags\n";
-        }
-    }
-    return ret;
 }
 
 void Monitor::restack() {

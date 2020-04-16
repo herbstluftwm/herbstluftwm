@@ -12,12 +12,16 @@
 #include "globals.h"
 #include "ipc-protocol.h"
 #include "monitor.h"
+#include "monitordetection.h"
 #include "panelmanager.h"
+#include "rectangle.h"
+#include "root.h"
 #include "settings.h"
 #include "stack.h"
 #include "tag.h"
 #include "tagmanager.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::endl;
 using std::function;
@@ -596,6 +600,81 @@ int MonitorManager::setMonitorsCommand(Input input, Output output) {
 void MonitorManager::setMonitorsCompletion(Completion&) {
     // every parameter can be a rectangle specification.
     // we don't have completion for rectangles
+}
+
+void MonitorManager::detectMonitorsCompletion(Completion& complete)
+{
+    complete.full({"-l", "--list", "--list-all", "--no-disjoin"});
+}
+
+int MonitorManager::detectMonitorsCommand(Input input, Output output)
+{
+    bool list_all = false;
+    bool list_only = false;
+    bool disjoin = true;
+    string arg;
+    while (input >> arg) {
+        if (arg == "-l" || arg == "--list") {
+            list_only = true;
+        } else if (arg == "--list-all") {
+            list_all = true;
+        } else if (arg == "--no-disjoin") {
+            disjoin = false;
+        } else {
+            output << input.command() << ": unknown flag \"" << arg << "\"\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
+
+    auto root = Root::get();
+    if (list_all) {
+        for (const auto& detector : MonitorDetection::detectors()) {
+            output << detector.name_ << ":";
+            if (detector.detect_) {
+                for (auto m : detector.detect_(root->X)) {
+                    output << " " << m;
+                }
+            } else {
+                output << " disabled";
+            }
+            output << endl;
+        }
+        return 0;
+    }
+
+    RectangleVec monitor_rects = {};
+    for (const auto& detector : MonitorDetection::detectors()) {
+        if (detector.detect_) {
+            auto rects = detector.detect_(root->X);
+            // remove duplicates
+            std::sort(rects.begin(), rects.end());
+            rects.erase(std::unique(rects.begin(), rects.end()), rects.end());
+            // check if this has more outputs than we know already
+            if (rects.size() > monitor_rects.size()) {
+                monitor_rects = rects;
+            }
+        }
+    }
+    if (monitor_rects.empty()) {
+        monitor_rects = { root->X.windowSize(root->X.root()) };
+    }
+    if (list_only) {
+        for (auto m : monitor_rects) {
+            output << m << "\n";
+        }
+    } else {
+        // possibly disjoin them
+        if (disjoin) {
+            monitor_rects = disjoin_rects(monitor_rects);
+        }
+        // apply it
+        int ret = g_monitors->setMonitors(monitor_rects);
+        if (ret == HERBST_TAG_IN_USE) {
+            output << input.command() << ": There are not enough free tags\n";
+        }
+        return ret;
+    }
+    return 0;
 }
 
 /**
