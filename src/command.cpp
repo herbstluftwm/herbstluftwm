@@ -274,6 +274,14 @@ int Commands::call(Input args, Output out) {
     return command_table->callCommand(args, out);
 }
 
+bool Commands::commandExists(const std::string& commandName)
+{
+    if (!command_table) {
+        return false;
+    }
+    return command_table->find(commandName) != command_table->end();
+}
+
 shared_ptr<const CommandTable> Commands::get() {
     if (!command_table) {
         throw std::logic_error("CommandTable not initialized, but get() called.");
