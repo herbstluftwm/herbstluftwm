@@ -87,11 +87,10 @@ public:
     Rectangle outer_floating_rect();
 
     void setup_border(bool focused);
-    void resize_tiling(Rectangle rect, bool isFocused);
+    void resize_tiling(Rectangle rect, bool isFocused, bool minimialDecoration);
     void resize_floating(Monitor* m, bool isFocused);
     void resize_fullscreen(Rectangle m, bool isFocused);
     bool is_client_floated();
-    bool needs_minimal_dec();
     void set_urgent(bool state);
     void update_wm_hints();
     void update_title();

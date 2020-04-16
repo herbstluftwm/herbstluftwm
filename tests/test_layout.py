@@ -352,10 +352,12 @@ def test_focus_directional_2x2grid(hlwm, client_focused, direction):
             .expect_stderr('No neighbour')
 
 
-def test_smart_window_surroundings(hlwm, x11):
+@pytest.mark.parametrize("border_width", [0, 7])
+def test_smart_window_surroundings(hlwm, x11, border_width):
     hlwm.call('set_layout vertical')
     hlwm.call('set frame_gap 0')
-    hlwm.call('set window_border_width 0')
+    hlwm.call('attr theme.minimal.border_width 0')  # only until #806 is merged
+    hlwm.call(f'set window_border_width {border_width}')
     hlwm.call('set frame_border_width 0')
     hlwm.call('set frame_padding 0')
     hlwm.call('set smart_window_surroundings on')
@@ -377,11 +379,13 @@ def test_smart_window_surroundings(hlwm, x11):
     geo2 = win2.get_geometry()
     # in vertical layout they have the same size
     assert (geo1.width, geo1.height) == (geo2.width, geo2.height)
-    # we have twice the window gap (left and right)
-    assert geo1.width == mon_width - 2 * window_gap
-    # we have three times the window gap in height: below, above, and between
-    # the client windows
-    assert geo1.height + geo2.height + 3 * window_gap == mon_height
+    # we have twice the window gap (left and right) and twice the border_width
+    assert geo1.width == mon_width - 2 * window_gap - 2 * border_width
+    # we have three times the window gap in height (below, above, and between
+    # the client windows) and four times the border width (below and above
+    # every client)
+    assert geo1.height + geo2.height + 3 * window_gap + 4 * border_width \
+        == mon_height
 
 
 @pytest.mark.parametrize('running_clients_num,start_idx_range', [

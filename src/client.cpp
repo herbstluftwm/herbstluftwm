@@ -156,21 +156,6 @@ Client::~Client() {
     }
 }
 
-bool Client::needs_minimal_dec() {
-    //if (!frame) {
-    //    frame = this->tag()->frame->frameWithClient(this);
-    //    HSAssert(frame != nullptr);
-    //}
-    if (this->pseudotile_()) {
-        return false;
-    }
-    if (this->is_client_floated()) {
-        return false;
-    }
-    //if (smart_window_surroundings_active(frame)) return true;
-    return false;
-}
-
 void Client::window_unfocus() {
     Root::get()->mouse->grab_client_buttons(this, false);
 }
@@ -233,8 +218,6 @@ const DecTriple& Client::getDecTriple() {
         triple_idx = Theme::Type::Fullscreen;
     } else if (is_client_floated()) {
         triple_idx = Theme::Type::Floating;
-    } else if (needs_minimal_dec()) {
-        triple_idx = Theme::Type::Minimal;
     } else {
         triple_idx = Theme::Type::Tiling;
     }
@@ -253,8 +236,17 @@ void Client::raise() {
     this->tag()->stack->raiseSlice(this->slice);
 }
 
-void Client::resize_tiling(Rectangle rect, bool isFocused) {
-    auto& scheme = theme[Theme::Type::Tiling](isFocused, urgent_());
+/**
+ * @brief Client::resize_tiling
+ * @param the outer geometry of the client
+ * @param whether this client has the focus
+ * @param whether the client should use the 'minimal decoration' scheme
+ */
+void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoration) {
+    // only apply minimal decoration if the window is not pseudotiled
+    auto themetype = (minimalDecoration && !pseudotile_())
+            ? Theme::Type::Minimal : Theme::Type::Tiling;
+    auto& scheme = theme[themetype](isFocused, urgent_());
     if (this->pseudotile_) {
         auto inner = this->float_size_;
         applysizehints(&inner.width, &inner.height);

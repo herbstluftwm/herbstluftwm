@@ -350,7 +350,11 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
             layoutResult = layoutHorizontal(rect);
             break;
     }
-    if (!smart_window_surroundings_active) {
+    if (smart_window_surroundings_active) {
+        for (auto& it : layoutResult.data) {
+            it.second.minimalDecoration = true;
+        }
+    } else { // if (!smart_window_surroundings_active)
         // apply window gap: deduct 'window_gap' many pixels from
         // bottom and right of every window:
         for (auto& it : layoutResult.data) {
