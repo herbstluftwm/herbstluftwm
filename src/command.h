@@ -136,6 +136,7 @@ namespace Commands {
     void initialize(std::unique_ptr<const CommandTable> commands);
     /* Call the command args[0] */
     int call(Input args, Output out);
+    bool commandExists(const std::string& commandName);
     void complete(Completion& completion);
     std::shared_ptr<const CommandTable> get();
 }

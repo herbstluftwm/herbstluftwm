@@ -10,6 +10,7 @@ Current git version
     a compositor.
   * resize floating windows with the same command ('resize') as in tiling mode
     and thus the same keybindings as in tiling mode.
+  * keybind now checks that the bound command exists.
 
 Release 0.8.0 on 2020-04-09
 ---------------------------
