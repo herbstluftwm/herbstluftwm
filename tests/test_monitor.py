@@ -134,11 +134,12 @@ def test_detect_monitors_does_not_crash(hlwm, arg):
     hlwm.call(['detect_monitors', arg])
 
 
-def test_detect_monitors_root_window(hlwm):
+def test_detect_monitors_affects_list_monitors(hlwm):
     list_monitors_before = hlwm.call('list_monitors').stdout
     hlwm.call('add othertag')
     hlwm.call('set_monitors 80x80+5+5 80x80+85+5')
     assert hlwm.get_attr('monitors.count') == '2'
+    assert list_monitors_before != hlwm.call('list_monitors').stdout
 
     # check that detect monitors restores the one monitor
     hlwm.call('detect_monitors')
