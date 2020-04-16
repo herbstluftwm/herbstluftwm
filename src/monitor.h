@@ -86,8 +86,6 @@ void drop_enternotify_events();
 
 void monitor_update_focus_objects();
 
-int detect_monitors_command(int argc, const char **argv, Output output);
-
 int shift_to_monitor(int argc, char** argv, Output output);
 
 #endif

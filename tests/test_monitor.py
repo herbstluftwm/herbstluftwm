@@ -127,10 +127,24 @@ def test_new_clients_appear_in_focused_monitor(hlwm):
     assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
 
 
-def test_detect_monitors_does_not_crash(hlwm):
+@pytest.mark.parametrize("arg", ['-l', '--list-all', '--no-disjoin'])
+def test_detect_monitors_does_not_crash(hlwm, arg):
     # I don't know how to test detect_monitors properly, so just check that
     # it does not crash at least
+    hlwm.call(['detect_monitors', arg])
+
+
+def test_detect_monitors_root_window(hlwm):
+    list_monitors_before = hlwm.call('list_monitors').stdout
+    hlwm.call('add othertag')
+    hlwm.call('set_monitors 80x80+5+5 80x80+85+5')
+    assert hlwm.get_attr('monitors.count') == '2'
+
+    # check that detect monitors restores the one monitor
     hlwm.call('detect_monitors')
+
+    assert hlwm.get_attr('monitors.count') == '1'
+    assert list_monitors_before == hlwm.call('list_monitors').stdout
 
 
 def test_rename_monitor(hlwm):

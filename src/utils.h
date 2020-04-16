@@ -25,7 +25,6 @@ int MOD(int x, int n);
 #define DBGDO(X) { if(1) std::cerr << "DBGDO: " << (#X) << " = " << (X) << std::endl; }
 
 // control structures
-#define FOR(i,a,b) for (int i = (a); i < (b); i++)
 #define SWAP(TYPE,a,b) do { \
             TYPE TMPNAME = (a); \
             (a) = (b); \
