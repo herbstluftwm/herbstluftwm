@@ -36,7 +36,7 @@ void Input::replace(const string &from, const string &to)
 template<> void Converter<bool>::complete(Completion& complete, bool const* relativeTo)
 {
     complete.full({ "on", "off", "true", "false" });
-    if (relativeTo) {
+    if (relativeTo != nullptr) {
         complete.full("toggle");
     }
 }
