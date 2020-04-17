@@ -18,6 +18,7 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::pair;
 using std::string;
 using std::vector;
 
@@ -74,11 +75,18 @@ Ewmh::Ewmh(XConnection& xconnection)
         }
         g_netatom[i] = XInternAtom(X_.display(), g_netatom_names[i], False);
     }
-    wmatom_[(int)WM::Name] = XInternAtom(g_display, "WM_NAME", False);
-    wmatom_[(int)WM::Protocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
-    wmatom_[(int)WM::Delete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
-    wmatom_[(int)WM::State] = XInternAtom(g_display, "WM_STATE", False);
-    wmatom_[(int)WM::TakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
+
+    vector<pair<WM,const char*>> wm2name = {
+        { WM::Name,         "WM_NAME" },
+        { WM::Protocols,    "WM_PROTOCOLS" },
+        { WM::Delete,       "WM_DELETE_WINDOW" },
+        { WM::State,        "WM_STATE" },
+        { WM::TakeFocus,    "WM_TAKE_FOCUS" },
+    };
+    for (const auto& init : wm2name) {
+        auto atom = XInternAtom(X_.display(), init.second, False);
+        wmatom_[static_cast<size_t>(init.first)] = atom;
+    }
 
     /* tell which ewmh atoms are supported */
     XChangeProperty(X_.display(), X_.root(), g_netatom[NetSupported], XA_ATOM, 32,
