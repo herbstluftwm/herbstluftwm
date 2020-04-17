@@ -154,13 +154,13 @@ private:
     Atom wmatom(WM proto);
     Atom wmatom_[(int)WM::Last];
 
-    std::vector<Window> g_windows; // array with Window-IDs in initial mapping order
-    Window      g_wm_window;
+    //! array with Window-IDs in initial mapping order for _NET_CLIENT_LIST
+    std::vector<Window> netClientList_;
+    //! window that shows that the WM is still alive
+    Window      windowManagerWindow_;
 
-    int WM_STATE;
-
-    Atom g_netatom[NetCOUNT];
-    static const std::array<const char*,NetCOUNT> g_netatom_names;
+    Atom netatom_[NetCOUNT];
+    static const std::array<const char*,NetCOUNT> netatomNames_;
 };
 
 #endif
