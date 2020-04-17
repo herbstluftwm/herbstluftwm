@@ -352,11 +352,13 @@ def test_focus_directional_2x2grid(hlwm, client_focused, direction):
             .expect_stderr('No neighbour')
 
 
-@pytest.mark.parametrize("border_width", [0, 7])
-def test_smart_window_surroundings(hlwm, x11, border_width):
+@pytest.mark.parametrize("border_width", [0, 2])
+@pytest.mark.parametrize("minimal_border_width", [0, 7])
+def test_smart_window_surroundings(hlwm, x11, border_width, minimal_border_width):
     hlwm.call('set_layout vertical')
     hlwm.call('set frame_gap 0')
-    hlwm.call('attr theme.minimal.border_width 0')  # only until #806 is merged
+    mbw = minimal_border_width
+    hlwm.call(f'attr theme.minimal.border_width {mbw}')
     hlwm.call(f'set window_border_width {border_width}')
     hlwm.call('set frame_border_width 0')
     hlwm.call('set frame_padding 0')
@@ -367,11 +369,13 @@ def test_smart_window_surroundings(hlwm, x11, border_width):
     mon_width, mon_height = [int(v) for v in mon_rect_str.split(' ')[2:4]]
     # works only if mon_height is even...
 
-    # no window_gap with only one client and smart_window_surroundings
+    # with only one client and smart_window_surroundings, no window gap is
+    # applied and the minimal decoration scheme is used
     win1, _ = x11.create_client()
     geo1 = win1.get_geometry()
-    assert (geo1.x, geo1.y) == (0, 0)
-    assert (geo1.width, geo1.height) == (mon_width, mon_height)
+    assert (geo1.x, geo1.y) == (mbw, mbw)
+    assert (geo1.width + 2 * mbw, geo1.height + 2 * mbw) \
+        == (mon_width, mon_height)
 
     # but window_gap with the second one
     win2, _ = x11.create_client()
