@@ -18,11 +18,12 @@
 #include "utils.h"
 #include "xconnection.h"
 
+using std::pair;
 using std::string;
 using std::vector;
 
 /* list of names of all _NET-atoms */
-const std::array<const char*,NetCOUNT> Ewmh::g_netatom_names =
+const std::array<const char*,NetCOUNT> Ewmh::netatomNames_ =
   ArrayInitializer<const char*,NetCOUNT>({
     { NetSupported                   , "_NET_SUPPORTED"                    },
     { NetClientList                  , "_NET_CLIENT_LIST"                  },
@@ -67,55 +68,59 @@ Ewmh::Ewmh(XConnection& xconnection)
 {
     /* init ewmh net atoms */
     for (int i = 0; i < NetCOUNT; i++) {
-        if (!g_netatom_names[i]) {
+        if (!netatomNames_[i]) {
             HSWarning("no name specified in g_netatom_names "
                       "for atom number %d\n", i);
             continue;
         }
-        g_netatom[i] = XInternAtom(X_.display(), g_netatom_names[i], False);
+        netatom_[i] = XInternAtom(X_.display(), netatomNames_[i], False);
     }
-    wmatom_[(int)WM::Name] = XInternAtom(g_display, "WM_NAME", False);
-    wmatom_[(int)WM::Protocols] = XInternAtom(g_display, "WM_PROTOCOLS", False);
-    wmatom_[(int)WM::Delete] = XInternAtom(g_display, "WM_DELETE_WINDOW", False);
-    wmatom_[(int)WM::State] = XInternAtom(g_display, "WM_STATE", False);
-    wmatom_[(int)WM::TakeFocus] = XInternAtom(g_display, "WM_TAKE_FOCUS", False);
+
+    vector<pair<WM,const char*>> wm2name = {
+        { WM::Name,         "WM_NAME" },
+        { WM::Protocols,    "WM_PROTOCOLS" },
+        { WM::Delete,       "WM_DELETE_WINDOW" },
+        { WM::State,        "WM_STATE" },
+        { WM::TakeFocus,    "WM_TAKE_FOCUS" },
+    };
+    for (const auto& init : wm2name) {
+        auto atom = XInternAtom(X_.display(), init.second, False);
+        wmatom_[static_cast<size_t>(init.first)] = atom;
+    }
 
     /* tell which ewmh atoms are supported */
-    XChangeProperty(X_.display(), X_.root(), g_netatom[NetSupported], XA_ATOM, 32,
-        PropModeReplace, (unsigned char *) g_netatom, NetCOUNT);
+    XChangeProperty(X_.display(), X_.root(), netatom_[NetSupported], XA_ATOM, 32,
+        PropModeReplace, (unsigned char *) netatom_, NetCOUNT);
 
     readInitialEwmhState();
 
-    /* init other atoms */
-    WM_STATE = XInternAtom(X_.display(), "WM_STATE", False);
-
     /* init for the supporting wm check */
-    g_wm_window = XCreateSimpleWindow(X_.display(), X_.root(),
+    windowManagerWindow_ = XCreateSimpleWindow(X_.display(), X_.root(),
                                       -100, -100, 1, 1, 0, 0, CWOverrideRedirect | CWEventMask);
-    X_.setPropertyWindow(X_.root(), g_netatom[NetSupportingWmCheck], { g_wm_window });
-    X_.setPropertyWindow(g_wm_window, g_netatom[NetSupportingWmCheck], { g_wm_window });
-    XMapWindow(X_.display(), g_wm_window);
+    X_.setPropertyWindow(X_.root(), netatom_[NetSupportingWmCheck], { windowManagerWindow_ });
+    X_.setPropertyWindow(windowManagerWindow_, netatom_[NetSupportingWmCheck], { windowManagerWindow_ });
+    XMapWindow(X_.display(), windowManagerWindow_);
 
     /* init atoms that never change */
-    X_.setPropertyCardinal(X_.root(), g_netatom[NetDesktopViewport], {0, 0});
+    X_.setPropertyCardinal(X_.root(), netatom_[NetDesktopViewport], {0, 0});
 }
 
 //! read the current ewmh properties from the root window
 void Ewmh::readInitialEwmhState()
 {
     // list of desktops
-    auto number = X_.getWindowPropertyCardinal(X_.root(), g_netatom[NetNumberOfDesktops]);
+    auto number = X_.getWindowPropertyCardinal(X_.root(), netatom_[NetNumberOfDesktops]);
     if (number.has_value() && !number.value().empty()) {
         auto val = number.value()[0];
         initialState_.numberOfDesktops = (val >= 0) ? ((size_t)(val)) : 0;
     }
-    auto maybe_names = X_.getWindowPropertyTextList(X_.root(), g_netatom[NetDesktopNames]);
+    auto maybe_names = X_.getWindowPropertyTextList(X_.root(), netatom_[NetDesktopNames]);
     if (maybe_names.has_value()) {
         initialState_.desktopNames = maybe_names.value();
     }
     // list of managed clients
     auto maybe_clients =
-        X_.getWindowPropertyWindow(X_.root(), g_netatom[NetClientList]);
+        X_.getWindowPropertyWindow(X_.root(), netatom_[NetClientList]);
     initialState_.original_client_list_ =
         maybe_clients.has_value() ? maybe_clients.value() : vector<Window>();
     // initialState_.print(stderr);
@@ -123,7 +128,7 @@ void Ewmh::readInitialEwmhState()
 
 long Ewmh::windowGetInitialDesktop(Window win)
 {
-    auto maybe_idx = X_.getWindowPropertyCardinal(win, g_netatom[NetWmDesktop]);
+    auto maybe_idx = X_.getWindowPropertyCardinal(win, netatom_[NetWmDesktop]);
     if (maybe_idx.has_value() && !maybe_idx.value().empty()) {
         return maybe_idx.value()[0];
     }
@@ -161,18 +166,18 @@ void Ewmh::updateAll() {
 }
 
 Ewmh::~Ewmh() {
-    XDeleteProperty(X_.display(), X_.root(), g_netatom[NetSupportingWmCheck]);
-    XDestroyWindow(X_.display(), g_wm_window);
+    XDeleteProperty(X_.display(), X_.root(), netatom_[NetSupportingWmCheck]);
+    XDestroyWindow(X_.display(), windowManagerWindow_);
 }
 
 void Ewmh::updateWmName() {
     string name = root_->settings->wmname();
-    X_.setPropertyString(g_wm_window, g_netatom[NetWmName], name);
-    X_.setPropertyString(X_.root(), g_netatom[NetWmName], name);
+    X_.setPropertyString(windowManagerWindow_, netatom_[NetWmName], name);
+    X_.setPropertyString(X_.root(), netatom_[NetWmName], name);
 }
 
 void Ewmh::updateClientList() {
-    X_.setPropertyWindow(X_.root(), g_netatom[NetClientList], g_windows);
+    X_.setPropertyWindow(X_.root(), netatom_[NetClientList], netClientList_);
 }
 
 const Ewmh::InitialState &Ewmh::initialState()
@@ -198,23 +203,23 @@ void Ewmh::updateClientListStacking() {
     // reverse stacking order, because ewmh requires bottom to top order
     std::reverse(buf.begin(), buf.end());
 
-    X_.setPropertyWindow(X_.root(), g_netatom[NetClientListStacking], buf);
+    X_.setPropertyWindow(X_.root(), netatom_[NetClientListStacking], buf);
 }
 
 void Ewmh::addClient(Window win) {
-    g_windows.push_back(win);
+    netClientList_.push_back(win);
     updateClientList();
     updateClientListStacking();
 }
 
 void Ewmh::removeClient(Window win) {
-    g_windows.erase(std::remove(g_windows.begin(), g_windows.end(), win), g_windows.end());
+    netClientList_.erase(std::remove(netClientList_.begin(), netClientList_.end(), win), netClientList_.end());
     updateClientList();
     updateClientListStacking();
 }
 
 void Ewmh::updateDesktops() {
-    X_.setPropertyCardinal(X_.root(), g_netatom[NetNumberOfDesktops],
+    X_.setPropertyCardinal(X_.root(), netatom_[NetNumberOfDesktops],
                            { (long) root_->tags->size() });
 }
 
@@ -223,7 +228,7 @@ void Ewmh::updateDesktopNames() {
     for (auto tag : *tags_) {
         names.push_back(tag->name);
     }
-    X_.setPropertyString(X_.root(), g_netatom[NetDesktopNames], names);
+    X_.setPropertyString(X_.root(), netatom_[NetDesktopNames], names);
 }
 
 void Ewmh::updateCurrentDesktop() {
@@ -233,7 +238,7 @@ void Ewmh::updateCurrentDesktop() {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
     }
-    X_.setPropertyCardinal(X_.root(), g_netatom[NetCurrentDesktop], { index });
+    X_.setPropertyCardinal(X_.root(), netatom_[NetCurrentDesktop], { index });
 }
 
 void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
@@ -245,11 +250,11 @@ void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
         HSWarning("tag %s not found in internal list\n", tag->name->c_str());
         return;
     }
-    X_.setPropertyCardinal(win, g_netatom[NetWmDesktop], { index });
+    X_.setPropertyCardinal(win, netatom_[NetWmDesktop], { index });
 }
 
 void Ewmh::updateActiveWindow(Window win) {
-    X_.setPropertyWindow(X_.root(), g_netatom[NetActiveWindow], { win });
+    X_.setPropertyWindow(X_.root(), netatom_[NetActiveWindow], { win });
 }
 
 bool Ewmh::focusStealingAllowed(long source) {
@@ -268,7 +273,7 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
             me->window);
     int index;
     for (index = 0; index < NetCOUNT; index++) {
-        if (me->message_type == g_netatom[index]) {
+        if (me->message_type == netatom_[index]) {
             break;
         }
     }
@@ -344,7 +349,7 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
                 /* check if we support the property data[prop] */
                 int i;
                 for (i = 0; i < LENGTH(client_atoms); i++) {
-                    if (g_netatom[client_atoms[i].atom_index]
+                    if (netatom_[client_atoms[i].atom_index]
                         == me->data.l[prop]) {
                         break;
                     }
@@ -395,7 +400,7 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
 
         default:
             HSDebug("no handler for the client message \"%s\"\n",
-                    g_netatom_names[index]);
+                    netatomNames_[index]);
             break;
     }
 }
@@ -415,13 +420,13 @@ void Ewmh::updateWindowState(Client* client) {
     size_t count_enabled = 0;
     for (int i = 0; i < LENGTH(client_atoms); i++) {
         if (client_atoms[i].enabled) {
-            window_state[count_enabled] = g_netatom[client_atoms[i].atom_index];
+            window_state[count_enabled] = netatom_[client_atoms[i].atom_index];
             count_enabled++;
         }
     }
 
     /* write it to the window */
-    XChangeProperty(X_.display(), client->window_, g_netatom[NetWmState], XA_ATOM,
+    XChangeProperty(X_.display(), client->window_, netatom_[NetWmState], XA_ATOM,
         32, PropModeReplace, (unsigned char *) window_state, count_enabled);
 }
 
@@ -429,12 +434,12 @@ void Ewmh::clearClientProperties(Window win) {
     // delete ewmh-properties and ICCCM-Properties such that the client knows
     // that he has been unmanaged and now the client is allowed to be mapped
     // again (e.g. if it is some dialog)
-    XDeleteProperty(X_.display(), win, g_netatom[NetWmState]);
+    XDeleteProperty(X_.display(), win, netatom_[NetWmState]);
     XDeleteProperty(X_.display(), win, wmatom(WM::State));
 }
 
 bool Ewmh::isWindowStateSet(Window win, Atom hint) {
-    auto res = X_.getWindowPropertyAtom(win, g_netatom[NetWmState]);
+    auto res = X_.getWindowPropertyAtom(win, netatom_[NetWmState]);
     if (!res.has_value()) {
         return false;
     }
@@ -447,7 +452,7 @@ bool Ewmh::isWindowStateSet(Window win, Atom hint) {
 }
 
 bool Ewmh::isFullscreenSet(Window win) {
-    return isWindowStateSet(win, g_netatom[NetWmStateFullscreen]);
+    return isWindowStateSet(win, netatom_[NetWmStateFullscreen]);
 }
 
 void Ewmh::setWindowOpacity(Window win, double opacity) {
@@ -455,11 +460,11 @@ void Ewmh::setWindowOpacity(Window win, double opacity) {
      * https://mail.gnome.org/archives/wm-spec-list/2003-December/msg00035.html
      */
     long long_opacity = 0xffffffff * CLAMP(opacity, 0, 1);
-    X_.setPropertyCardinal(win, g_netatom[NetWmWindowOpacity], { long_opacity });
+    X_.setPropertyCardinal(win, netatom_[NetWmWindowOpacity], { long_opacity });
 }
 
 void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bottom) {
-    X_.setPropertyCardinal(win, g_netatom[NetFrameExtents],
+    X_.setPropertyCardinal(win, netatom_[NetFrameExtents],
                            { left, right, top, bottom });
 }
 
@@ -467,18 +472,18 @@ void Ewmh::windowUpdateWmState(Window win, WmState state) {
     /* set full WM_STATE according to
      * http://www.x.org/releases/X11R7.7/doc/xorg-docs/icccm/icccm.html#WM_STATE_Property
      */
-    X_.setPropertyCardinal(win, WM_STATE, {
+    X_.setPropertyCardinal(win, wmatom(WM::State), {
         static_cast<long>(state), // WM_STATE.state
         None // WM_STATE.icon
     });
 }
 
 bool Ewmh::isOwnWindow(Window win) {
-    return g_wm_window == win;
+    return windowManagerWindow_ == win;
 }
 
 void Ewmh::clearInputFocus() {
-    XSetInputFocus(X_.display(), g_wm_window, RevertToPointerRoot, CurrentTime);
+    XSetInputFocus(X_.display(), windowManagerWindow_, RevertToPointerRoot, CurrentTime);
 }
 
 Ewmh& Ewmh::get() {
@@ -524,12 +529,12 @@ void Ewmh::windowClose(Window window) {
 
 Atom Ewmh::netatom(int netatomEnum)
 {
-    return g_netatom[netatomEnum];
+    return netatom_[netatomEnum];
 }
 
 const char* Ewmh::netatomName(int netatomEnum)
 {
-    return g_netatom_names[static_cast<unsigned long>(netatomEnum)];
+    return netatomNames_[static_cast<unsigned long>(netatomEnum)];
 }
 
 //! convenience wrapper around wmatom_
@@ -538,7 +543,7 @@ Atom Ewmh::wmatom(WM proto) {
 }
 
 string Ewmh::getWindowTitle(Window win) {
-    auto newName = X_.getWindowProperty(win, g_netatom[NetWmName]);
+    auto newName = X_.getWindowProperty(win, netatom_[NetWmName]);
     if (newName.has_value()) {
         return newName.value();
     }
@@ -555,14 +560,14 @@ string Ewmh::getWindowTitle(Window win) {
  * type is not recognized and leads to -1 being returned.
  */
 int Ewmh::getWindowType(Window win) {
-    auto atoms = X_.getWindowPropertyAtom(win, g_netatom[NetWmWindowType]);
+    auto atoms = X_.getWindowPropertyAtom(win, netatom_[NetWmWindowType]);
     if (!atoms.has_value() || atoms.value().empty()) {
         return -1;
     }
     Atom windowtype = atoms.value()[0];
     for (int i = NetWmWindowTypeFIRST; i <= NetWmWindowTypeLAST; i++) {
         // try to find the window type
-        if (windowtype == g_netatom[i]) {
+        if (windowtype == netatom_[i]) {
             return i;
         }
     }

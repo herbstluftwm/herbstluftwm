@@ -155,6 +155,8 @@ void Monitor::applyLayout() {
     if (tag->floating) {
         for (auto& p : res.data) {
             p.second.floated = true;
+            // deactivate smart_window_surroundings in floating mode
+            p.second.minimalDecoration = false;
         }
     }
     // preprocessing
@@ -219,12 +221,14 @@ void Monitor::applyLayout() {
     // 2. Update window geometries
     for (auto& p : res.data) {
         Client* c = p.first;
+        bool clientFocused = isFocused && res.focus == c;
         if (c->fullscreen_()) {
-            c->resize_fullscreen(rect, res.focus == c && isFocused);
+            c->resize_fullscreen(rect, clientFocused);
         } else if (p.second.floated) {
-            c->resize_floating(this, res.focus == c && isFocused);
+            c->resize_floating(this, clientFocused);
         } else {
-            c->resize_tiling(p.second.geometry, res.focus == c && isFocused);
+            bool minDec = p.second.minimalDecoration;
+            c->resize_tiling(p.second.geometry, clientFocused, minDec);
         }
     }
     for (auto& c : tag->floating_clients_) {

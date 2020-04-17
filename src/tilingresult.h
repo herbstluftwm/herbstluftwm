@@ -18,6 +18,8 @@ public:
     bool needsRaise = false;
     bool visible = true; //! whether this window is entirely covered
                          //! by another window (e.g. in max layout)
+    bool minimalDecoration = false; //! minimal window decration, e.g. when
+                                    //! smart_window_surroundings is active
 };
 
 // a tiling result contains the movement commands etc. for all clients
