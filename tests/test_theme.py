@@ -1,3 +1,5 @@
+import pytest
+
 
 def read_values(hlwm, attributes):
     """return a dict with the given attributes"""
@@ -68,3 +70,12 @@ def test_attr_propagate_same_value_twice(hlwm):
 
     # now the propagation target must be updated again
     assert hlwm.get_attr('theme.tiling.active.border_width') == '4'
+
+
+@pytest.mark.parametrize("reset", [True, False])
+def test_minimal_theme(hlwm, reset):
+    if reset:
+        hlwm.call('set_attr theme.minimal.active.border_width 4')
+        hlwm.call('set_attr theme.minimal.reset 1')
+    for scheme in ['active', 'normal', 'urgent']:
+        assert hlwm.get_attr(f'theme.minimal.{scheme}.border_width') == '0'
