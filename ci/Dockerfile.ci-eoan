@@ -25,6 +25,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     xdotool \
     xterm \
     xvfb \
+    xserver-xephyr \
     && rm -rf /var/lib/apt/lists/*
 
 # Doc deps would be:

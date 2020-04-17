@@ -494,9 +494,11 @@ def hlwm_spawner(tmpdir):
     """yield a function to spawn hlwm"""
     assert os.environ['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
 
-    def spawn(args=[]):
+    def spawn(args=[], display=None):
+        if display is None:
+            display = os.environ['DISPLAY']
         env = {
-            'DISPLAY': os.environ['DISPLAY'],
+            'DISPLAY': display,
             'XDG_CONFIG_HOME': str(tmpdir),
         }
         return HlwmProcess(tmpdir, env, args)
@@ -710,6 +712,69 @@ def x11(x11_connection):
     x11_ = X11(x11_connection)
     yield x11_
     x11_.shutdown()
+
+
+class MultiscreenDisplay:
+    """context manager for creating a server display with multiple
+    screens. We support two xserver programs: Xephyr and Xvfb:
+
+      - Xephyr places screens side by side. Since Xephyr opens
+        one window per screen itself, this has to run inside an existing Xvfb.
+      - Xvfb makes all screens have the coordinate (0, 0)
+    """
+    def __init__(self, server='Xephyr', screens=[(800, 600)], extra_args=[]):
+        """ Creates a new x server (where 'server' is 'Xephyr' or 'Xvfb')
+        that has all the specified screens.
+        """
+        # we build up the full command tu run step by step:
+        self.full_cmd = [server, '-nolisten', 'tcp']
+
+        # pass the -screen parameters
+        # ---------------------------
+        self.screen_rects = []
+        current_x_offset = 0
+        for idx, (width, height) in enumerate(screens):
+            self.screen_rects.append([current_x_offset, 0, width, height])
+            geo = '{}x{}x8'.format(width, height)
+            if server == 'Xvfb':
+                self.full_cmd += ['-screen', str(idx), geo]
+            else:
+                self.full_cmd += ['-screen', geo]
+                # xephyr places them side by side:
+                current_x_offset += width
+        self.full_cmd += extra_args
+
+        # let the xserver find a display and write its name to a pipe
+        # -----------------------------------------------------------
+        pipe_read, pipe_write = os.pipe()
+        self.full_cmd += ['-displayfd', str(pipe_write)]
+
+        print("Running: {}".format(' '.join(self.full_cmd)))
+        self.proc = subprocess.Popen(self.full_cmd, pass_fds=[pipe_write])
+
+        # read the display number from the pipe
+        # -------------------------------------
+        display_bytes = bytes()
+        while True:
+            display_bytes += os.read(pipe_read, 10)
+            if len(display_bytes) < 10:
+                break
+        os.close(pipe_read)
+        self.display = ':' + display_bytes.decode().rstrip()
+        print(server + " is using the display \"{}\"".format(self.display))
+
+    def screens(self):
+        """return a list of screen geometries, where a geometry
+        is a list [x, y, width, height]
+        """
+        return self.screen_rects
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type_param, value, traceback):
+        self.proc.terminate()
+        self.proc.wait(5)
 
 
 @pytest.fixture()
