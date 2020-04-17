@@ -759,7 +759,7 @@ class MultiscreenDisplay:
             display_bytes += os.read(pipe_read, 10)
             if len(display_bytes) < 10:
                 break
-        os.close(pipe_read)
+        # os.close(pipe_read)
         self.display = ':' + display_bytes.decode().rstrip()
         print(server + " is using the display \"{}\"".format(self.display))
 
