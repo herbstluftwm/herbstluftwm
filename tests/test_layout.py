@@ -276,6 +276,29 @@ def test_cycle_all_skip_invisible(hlwm, running_clients, delta):
     assert visited_winids[0] != visited_winids[1]
 
 
+@pytest.mark.parametrize("delta", [1, -1])
+def test_cycle_all_wraps(hlwm, delta):
+    c1, _ = hlwm.create_client()
+    c2, _ = hlwm.create_client()
+
+    focus = hlwm.get_attr('clients.focus.winid')
+
+    hlwm.call(['cycle_all', delta])
+    assert focus != hlwm.get_attr('clients.focus.winid')
+    hlwm.call(['cycle_all', delta])
+
+    assert focus == hlwm.get_attr('clients.focus.winid')
+
+
+@pytest.mark.parametrize("delta", [1, -1])
+def test_cycle_all_empty_frame(hlwm, delta):
+    layout = hlwm.call('dump').stdout
+
+    hlwm.call(['cycle_all', delta])
+
+    assert layout == hlwm.call('dump').stdout
+
+
 @pytest.mark.parametrize("running_clients_num", [2, 5])
 @pytest.mark.parametrize("num_splits", [0, 1, 2, 3])
 @pytest.mark.parametrize("delta", [1, -1])
