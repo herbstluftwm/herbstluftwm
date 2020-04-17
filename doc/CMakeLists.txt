@@ -12,6 +12,7 @@ function(gen_manpage sourcefile man_nr)
         # asciidoc doesn't support destination directory for manpages
         COMMAND ${CMAKE_COMMAND} -E copy ${src_orig} ${src}
         COMMAND ${ASCIIDOC_A2X}
+                --no-xmllint
                 -f manpage
                 -a \"herbstluftwmversion=herbstluftwm ${VERSION}\"
                 -a \"date=`date +%Y-%m-%d`\"
