@@ -482,45 +482,6 @@ bool FrameTree::focusInDirection(Direction direction, bool externalOnly)
     return false;
 }
 
-int FrameTree::cycleAllCommand(Input input, Output output) {
-    bool skip_invisible = false;
-    int delta = 1;
-    string s = "";
-    input >> s;
-    if (s == "--skip-invisible") {
-        skip_invisible = true;
-        // and load the next (optional) argument to s
-        s = "0";
-        input >> s;
-    }
-    try {
-        delta = std::stoi(s);
-    } catch (std::invalid_argument const& e) {
-        output << "invalid argument: " << e.what() << endl;
-        return HERBST_INVALID_ARGUMENT;
-    } catch (std::out_of_range const& e) {
-        output << "out of range: " << e.what() << endl;
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (delta < -1 || delta > 1) {
-        output << "argument out of range." << endl;
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (delta == 0) {
-        return 0; // nothing to do
-    }
-    CycleDelta cdelta = (delta == 1) ? CycleDelta::Next : CycleDelta::Previous;
-    bool succeeded = cycleAll(cdelta, skip_invisible);
-    if (!succeeded) {
-        // we need to wrap. when cycling forward, we wrap to the beginning
-        CycleDelta rewind = (delta == 1) ? CycleDelta::Begin : CycleDelta::End;
-        cycleAll(rewind, skip_invisible);
-    }
-    // finally, redraw the layout
-    get_current_monitor()->applyLayout();
-    return 0;
-}
-
 //! go to the specified frame. Return true on success, return false if
 //! the end is reached (this command never wraps). Skips covered windows
 //! if skipInvisible is set.

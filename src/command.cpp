@@ -39,7 +39,6 @@ static const char* completion_directions[]    = { "left", "right", "down", "up",
 static const char* completion_focus_args[]    = { "-i", "-e", nullptr };
 static const char* completion_special_winids[]= { "urgent", "", nullptr };
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
-static const char* completion_cycle_all_args[]= { "--skip-invisible", nullptr };
 static const char* completion_pm_one[]= { "+1", "-1", nullptr };
 static const char* completion_split_modes[]= { "horizontal", "vertical", "left", "right", "top", "bottom", "explode", "auto", nullptr };
 static const char* completion_split_ratios[]= {
@@ -76,7 +75,6 @@ struct {
     { "focus_nth",      2,  no_completion },
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
-    { "cycle_all",      3,  no_completion },
     { "set_layout",     2,  no_completion },
     { "split",          3,  no_completion },
     { "raise",          2,  no_completion },
@@ -135,9 +133,6 @@ struct {
     { "bring",          EQ, 1,  complete_against_winids, 0 },
     { "close",          EQ, 1,  complete_against_winids, 0 },
     { "cycle",          EQ, 1,  nullptr, completion_pm_one },
-    { "cycle_all",      EQ, 1,  nullptr, completion_cycle_all_args },
-    { "cycle_all",      EQ, 1,  nullptr, completion_pm_one },
-    { "cycle_all",      EQ, 2,  nullptr, completion_pm_one },
     { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
     { "dump",           EQ, 1,  complete_against_tags, 0 },
     { "layout",         EQ, 1,  complete_against_tags, 0 },
