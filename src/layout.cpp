@@ -354,7 +354,7 @@ TilingResult HSFrameLeaf::computeLayout(Rectangle rect) {
         for (auto& it : layoutResult.data) {
             it.second.minimalDecoration = true;
         }
-    } else { // if (!smart_window_surroundings_active)
+    } else {
         // apply window gap: deduct 'window_gap' many pixels from
         // bottom and right of every window:
         for (auto& it : layoutResult.data) {
