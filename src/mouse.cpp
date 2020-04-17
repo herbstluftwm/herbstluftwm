@@ -134,7 +134,7 @@ static void client_snap_helper(Client* candidate, struct SnapData* d) {
 void client_snap_vector(Client* client, Monitor* monitor,
                         enum SnapFlags flags,
                         int* return_dx, int* return_dy) {
-    struct SnapData d;
+    struct SnapData d = {};
     HSTag* tag = monitor->tag;
     int distance = std::max(0, g_settings->snap_distance());
     // init delta

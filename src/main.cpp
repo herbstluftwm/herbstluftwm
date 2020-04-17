@@ -471,7 +471,7 @@ static void handle_signal(int signal) {
 }
 
 static void sigaction_signal(int signum, void (*handler)(int)) {
-    struct sigaction act;
+    struct sigaction act = {};
     act.sa_handler = handler;
     sigemptyset(&act.sa_mask);
     act.sa_flags = SA_NOCLDSTOP | SA_RESTART;

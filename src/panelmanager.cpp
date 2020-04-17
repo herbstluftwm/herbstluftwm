@@ -12,7 +12,7 @@ public:
     Panel(Window winid, PanelManager& pm) : winid_(winid), pm_(pm) {}
     Window winid_;
     PanelManager& pm_;
-    Rectangle size_;
+    Rectangle size_{};
     vector<long> wmStrut_ = {0, 0, 0, 0};
     int operator[](PanelManager::WmStrut idx) const {
         size_t i = static_cast<size_t>(idx);

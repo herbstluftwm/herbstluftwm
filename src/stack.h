@@ -44,11 +44,11 @@ public:
 private:
     HSLayer highestLayer() const;
 
-    Type type;
+    Type type = {};
     union {
         Client*    client;
         Window              window;
-    } data;
+    } data = {};
 };
 
 class Stack {
@@ -71,7 +71,8 @@ public:
     PlainStack<Slice*> layers_[LAYER_COUNT];
 
 private:
-    bool    dirty;  /* stacking order changed but it wasn't restacked yet */
+    //! Whether the stacking order has changed but wasn't restacked yet
+    bool dirty = false;
 };
 
 #endif

@@ -66,7 +66,7 @@ void window_make_intransparent(Window win, int width, int height) {
 
 
 Point2D get_cursor_position() {
-    Point2D point;
+    Point2D point{};
     Window win, child;
     int wx, wy;
     unsigned int mask;

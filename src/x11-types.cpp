@@ -85,7 +85,7 @@ Rectangle Rectangle::fromStr(const string &source) {
 }
 
 Rectangle Rectangle::fromCorners(int x1, int y1, int x2, int y2) {
-    Rectangle r;
+    Rectangle r = {};
     r.x = x1;
     r.y = y1;
     r.width  = x2 - x1;

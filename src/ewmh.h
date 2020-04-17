@@ -152,7 +152,7 @@ private:
     InitialState initialState_;
     void readInitialEwmhState();
     Atom wmatom(WM proto);
-    Atom wmatom_[(int)WM::Last];
+    Atom wmatom_[(int)WM::Last] = {};
 
     //! array with Window-IDs in initial mapping order for _NET_CLIENT_LIST
     std::vector<Window> netClientList_;

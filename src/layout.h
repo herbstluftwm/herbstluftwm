@@ -85,8 +85,9 @@ protected:
     HSTag* tag_;
     Settings* settings_;
     std::weak_ptr<HSFrameSplit> parent_;
-    Rectangle  last_rect; // last rectangle when being drawn
-                          // this is only used for 'split explode'
+
+    //! Last rectangle when being drawn (this is only used for 'split explode')
+    Rectangle  last_rect = {};
 };
 
 class HSFrameLeaf : public HSFrame, public FrameDataLeaf {
