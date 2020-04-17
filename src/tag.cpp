@@ -16,6 +16,7 @@
 #include "stack.h"
 #include "tagmanager.h"
 
+using std::endl;
 using std::function;
 using std::make_shared;
 using std::string;
@@ -248,6 +249,61 @@ void HSTag::focusInDirCompletion(Completion &complete)
                && (complete[0] == "-i" || complete[0] == "-e"))
     {
         Converter<Direction>::complete(complete, nullptr);
+    } else {
+        complete.none();
+    }
+}
+
+int HSTag::cycleAllCommand(Input input, Output output)
+{
+    bool skip_invisible = false;
+    int delta = 1;
+    string s = "";
+    input >> s;
+    if (s == "--skip-invisible") {
+        skip_invisible = true;
+        // and load the next (optional) argument to s
+        s = "0";
+        input >> s;
+    }
+    try {
+        delta = std::stoi(s);
+    } catch (std::invalid_argument const& e) {
+        output << "invalid argument: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    } catch (std::out_of_range const& e) {
+        output << "out of range: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (delta < -1 || delta > 1) {
+        output << "argument out of range." << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    if (delta == 0) {
+        return 0; // nothing to do
+    }
+    FrameTree::CycleDelta cdelta = (delta == 1)
+            ? FrameTree::CycleDelta::Next
+            : FrameTree::CycleDelta::Previous;
+    bool succeeded = frame->cycleAll(cdelta, skip_invisible);
+    if (!succeeded) {
+        // we need to wrap. when cycling forward, we wrap to the beginning
+        FrameTree::CycleDelta rewind = (delta == 1)
+                    ? FrameTree::CycleDelta::Begin
+                    : FrameTree::CycleDelta::End;
+        frame->cycleAll(rewind, skip_invisible);
+    }
+    // finally, redraw the layout
+    needsRelayout_.emit();
+    return 0;
+}
+
+void HSTag::cycleAllCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        complete.full({"+1", "-1", "--skip-invisible" });
+    } else if (complete == 1 && complete[0] == "--skip-invisible") {
+        complete.full({"+1", "-1"});
     } else {
         complete.none();
     }

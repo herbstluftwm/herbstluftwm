@@ -59,6 +59,9 @@ public:
     int focusInDirCommand(Input input, Output output);
     void focusInDirCompletion(Completion& complete);
 
+    int cycleAllCommand(Input input, Output output);
+    void cycleAllCompletion(Completion& complete);
+
     int resizeCommand(Input input, Output output);
     void resizeCompletion(Completion& complete);
 
