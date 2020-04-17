@@ -224,11 +224,12 @@ bool Condition::matchesMaxage(const Client* client) const {
 }
 
 bool Condition::matchesWindowtype(const Client* client) const {
-    int wintype = Ewmh::get().getWindowType(client->x11Window());
+    auto& ewmh = Ewmh::get();
+    int wintype = ewmh.getWindowType(client->x11Window());
     if (wintype < 0) {
         return false;
     }
-    return matches(g_netatom_names[wintype]);
+    return matches(ewmh.netatomName(wintype));
 }
 
 bool Condition::matchesWindowrole(const Client* client) const {

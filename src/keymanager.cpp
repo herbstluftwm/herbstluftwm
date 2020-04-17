@@ -41,6 +41,14 @@ int KeyManager::addKeybindCommand(Input input, Output output) {
     // Store remaining input as the associated command
     newBinding->cmd = {input.begin(), input.end()};
 
+    // newBinding->cmd is not empty because the size before the input.shift() was >= 2
+    if (!Commands::commandExists(newBinding->cmd[0])) {
+        output << input.command() << ": the command \""
+               << newBinding->cmd[0] << "\" does not exist."
+               << " Did you forget \"spawn\"?\n";
+        return HERBST_COMMAND_NOT_FOUND;
+    }
+
     // Make sure there is no existing binding with same keysym/modifiers
     removeKeyBinding(newBinding->keyCombo);
 

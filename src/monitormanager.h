@@ -59,7 +59,7 @@ public:
 
     void autoUpdatePads();
 
-    int indexInDirection(Monitor* m, Direction dir);
+    int indexInDirection(Monitor* relativeTo, Direction dir);
 
     void lock();
     void unlock();
@@ -74,6 +74,9 @@ public:
     int setMonitors(const RectangleVec& templates);
     int setMonitorsCommand(Input input, Output output);
     void setMonitorsCompletion(Completion& complete);
+
+    int detectMonitorsCommand(Input input, Output output);
+    void detectMonitorsCompletion(Completion& complete);
 
     Rectangle interpretGlobalGeometry(Rectangle globalGeometry);
 

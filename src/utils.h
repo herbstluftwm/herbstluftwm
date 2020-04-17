@@ -11,7 +11,7 @@
 
 #include "types.h"
 
-#define LENGTH(X) (sizeof(X)/sizeof(*X))
+#define LENGTH(X) (sizeof(X)/sizeof(*(X)))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
 
 // CLAMP taken from GLib:
@@ -25,7 +25,6 @@ int MOD(int x, int n);
 #define DBGDO(X) { if(1) std::cerr << "DBGDO: " << (#X) << " = " << (X) << std::endl; }
 
 // control structures
-#define FOR(i,a,b) for (int i = (a); i < (b); i++)
 #define SWAP(TYPE,a,b) do { \
             TYPE TMPNAME = (a); \
             (a) = (b); \
@@ -69,20 +68,6 @@ template<class T, int S> struct ArrayInitializer {
 // utils for tables
 void set_window_double_border(Display *dpy, Window win, int ibw,
                               unsigned long inner_color, unsigned long outer_color);
-
-#define STATIC_TABLE_FIND(TYPE, TABLE, MEMBER, EQUALS, NEEDLE)  \
-    ((TYPE*) table_find((TABLE),                                \
-                        sizeof(TABLE[0]),                       \
-                        LENGTH((TABLE)),                        \
-                        offsetof(TYPE, MEMBER),                 \
-                        EQUALS,                                 \
-                        (NEEDLE)))
-
-#define STATIC_TABLE_FIND_STR(TYPE, TABLE, MEMBER, NEEDLE)  \
-    STATIC_TABLE_FIND(TYPE, TABLE, MEMBER, memberequals_string, NEEDLE)
-
-#define INDEX_OF(ARRAY, PELEM) \
-    (((char*)(PELEM) - (char*)(ARRAY)) / (sizeof (*ARRAY)))
 
 // returns the unichar in GSTR at position GSTR
 

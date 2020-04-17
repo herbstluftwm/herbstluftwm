@@ -11,7 +11,7 @@
 // calls the member function of the given object
 #define BIND_OBJECT(OBJECT, MEMBER) \
     (CommandBinding([OBJECT](Input in, Output out) { \
-        return OBJECT->MEMBER(in, out); \
+        return (OBJECT)->MEMBER(in, out); \
     }))
 
 #define BIND_PARAMETER(PARAM, FUNCTION) \
@@ -136,6 +136,7 @@ namespace Commands {
     void initialize(std::unique_ptr<const CommandTable> commands);
     /* Call the command args[0] */
     int call(Input args, Output out);
+    bool commandExists(const std::string& commandName);
     void complete(Completion& completion);
     std::shared_ptr<const CommandTable> get();
 }

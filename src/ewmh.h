@@ -6,9 +6,6 @@
 #include <array>
 #include <vector>
 
-#define ENUM_WITH_ALIAS(Identifier, Alias) \
-    Identifier, Alias = Identifier
-
 /* actions on NetWmState */
 #define _NET_WM_STATE_REMOVE        0    /* remove/unset property */
 #define _NET_WM_STATE_ADD           1    /* add/set property */
@@ -37,7 +34,8 @@ enum {
     NetWmStateFullscreen,
     NetWmStateDemandsAttention,
     /* window types */
-    ENUM_WITH_ALIAS(NetWmWindowTypeDesktop, NetWmWindowTypeFIRST),
+    NetWmWindowTypeDesktop,
+    NetWmWindowTypeFIRST = NetWmWindowTypeDesktop,
     NetWmWindowTypeDock,
     NetWmWindowTypeToolbar,
     NetWmWindowTypeMenu,
@@ -50,7 +48,8 @@ enum {
     NetWmWindowTypeNotification,
     NetWmWindowTypeCombo,
     NetWmWindowTypeDnd,
-    ENUM_WITH_ALIAS(NetWmWindowTypeNormal, NetWmWindowTypeLAST),
+    NetWmWindowTypeNormal,
+    NetWmWindowTypeLAST = NetWmWindowTypeNormal,
     /* the count of hints */
     NetCOUNT
 };
@@ -82,10 +81,6 @@ class Client;
 class Root;
 class TagManager;
 class XConnection;
-
-extern Atom g_netatom[NetCOUNT];
-
-extern const std::array<const char*,NetCOUNT> g_netatom_names;
 
 class Ewmh {
 public:
@@ -146,6 +141,8 @@ public:
     void windowClose(Window window);
 
     XConnection& X() { return X_; }
+    Atom netatom(int netatomEnum);
+    const char* netatomName(int netatomEnum);
 
 private:
     bool focusStealingAllowed(long source);
@@ -156,6 +153,14 @@ private:
     void readInitialEwmhState();
     Atom wmatom(WM proto);
     Atom wmatom_[(int)WM::Last];
+
+    //! array with Window-IDs in initial mapping order for _NET_CLIENT_LIST
+    std::vector<Window> netClientList_;
+    //! window that shows that the WM is still alive
+    Window      windowManagerWindow_;
+
+    Atom netatom_[NetCOUNT];
+    static const std::array<const char*,NetCOUNT> netatomNames_;
 };
 
 #endif

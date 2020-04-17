@@ -297,9 +297,9 @@ void XMainLoop::configurenotify(XConfigureEvent* event) {
     if (event->window == g_root) {
         root_->panels->rootWindowChanged(event->width, event->height);
         if (root_->settings->auto_detect_monitors()) {
-            const char* args[] = { "detect_monitors" };
+            Input input = Input("detect_monitors");
             std::ostringstream void_output;
-            detect_monitors_command(LENGTH(args), args, void_output);
+            root_->monitors->detectMonitorsCommand(input, void_output);
         }
     }
     // HSDebug("name is: ConfigureNotify\n");
@@ -450,7 +450,7 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
                     m->applyLayout();
                 }
             } else if (ev->atom == XA_WM_NAME ||
-                       ev->atom == g_netatom[NetWmName]) {
+                       ev->atom == root_->ewmh->netatom(NetWmName)) {
                 client->update_title();
             } else if (ev->atom == XA_WM_CLASS && client) {
                 // according to the ICCCM specification, the WM_CLASS property may only

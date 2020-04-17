@@ -352,10 +352,14 @@ def test_focus_directional_2x2grid(hlwm, client_focused, direction):
             .expect_stderr('No neighbour')
 
 
-def test_smart_window_surroundings(hlwm, x11):
+@pytest.mark.parametrize("border_width", [0, 2])
+@pytest.mark.parametrize("minimal_border_width", [0, 7])
+def test_smart_window_surroundings(hlwm, x11, border_width, minimal_border_width):
     hlwm.call('set_layout vertical')
     hlwm.call('set frame_gap 0')
-    hlwm.call('set window_border_width 0')
+    mbw = minimal_border_width
+    hlwm.call(f'attr theme.minimal.border_width {mbw}')
+    hlwm.call(f'set window_border_width {border_width}')
     hlwm.call('set frame_border_width 0')
     hlwm.call('set frame_padding 0')
     hlwm.call('set smart_window_surroundings on')
@@ -365,11 +369,13 @@ def test_smart_window_surroundings(hlwm, x11):
     mon_width, mon_height = [int(v) for v in mon_rect_str.split(' ')[2:4]]
     # works only if mon_height is even...
 
-    # no window_gap with only one client and smart_window_surroundings
+    # with only one client and smart_window_surroundings, no window gap is
+    # applied and the minimal decoration scheme is used
     win1, _ = x11.create_client()
     geo1 = win1.get_geometry()
-    assert (geo1.x, geo1.y) == (0, 0)
-    assert (geo1.width, geo1.height) == (mon_width, mon_height)
+    assert (geo1.x, geo1.y) == (mbw, mbw)
+    assert (geo1.width + 2 * mbw, geo1.height + 2 * mbw) \
+        == (mon_width, mon_height)
 
     # but window_gap with the second one
     win2, _ = x11.create_client()
@@ -377,11 +383,13 @@ def test_smart_window_surroundings(hlwm, x11):
     geo2 = win2.get_geometry()
     # in vertical layout they have the same size
     assert (geo1.width, geo1.height) == (geo2.width, geo2.height)
-    # we have twice the window gap (left and right)
-    assert geo1.width == mon_width - 2 * window_gap
-    # we have three times the window gap in height: below, above, and between
-    # the client windows
-    assert geo1.height + geo2.height + 3 * window_gap == mon_height
+    # we have twice the window gap (left and right) and twice the border_width
+    assert geo1.width == mon_width - 2 * window_gap - 2 * border_width
+    # we have three times the window gap in height (below, above, and between
+    # the client windows) and four times the border width (below and above
+    # every client)
+    assert geo1.height + geo2.height + 3 * window_gap + 4 * border_width \
+        == mon_height
 
 
 @pytest.mark.parametrize('running_clients_num,start_idx_range', [
