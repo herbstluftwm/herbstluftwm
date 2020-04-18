@@ -63,7 +63,7 @@ build_env.update({
     'CC': args.cc,
     'CXX': args.cxx,
     'CFLAGS': '--coverage -Werror -Wno-error=null-dereference',
-    'CXXFLAGS': '--coverage -Werror -Wno-error=null-dereference',
+    'CXXFLAGS': '--coverage -Werror -Wno-error=null-dereference -fsanitize=address,leak,undefined',
 })
 
 cmake_args = [
