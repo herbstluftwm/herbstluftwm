@@ -755,11 +755,13 @@ class MultiscreenDisplay:
         # read the display number from the pipe
         # -------------------------------------
         display_bytes = bytes()
+        # read bytes until the newline
         while True:
-            display_bytes += os.read(pipe_read, 10)
-            if len(display_bytes) < 10:
+            chunk = os.read(pipe_read, 1)
+            display_bytes += chunk
+            if len(chunk) < 1 or chunk == b'\n':
                 break
-        # os.close(pipe_read)
+        os.close(pipe_read)
         self.display = ':' + display_bytes.decode().rstrip()
         print(server + " is using the display \"{}\"".format(self.display))
 
