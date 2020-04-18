@@ -71,6 +71,12 @@ struct Point2D {
 };
 
 struct Rectangle {
+    //! Construct a default rectangle (0/0/0/0)
+    Rectangle() : x(0), y(0), width(0), height(0) {}
+
+    Rectangle(int x_, int y_, int width_, int height_)
+        : x(x_), y(y_), width(width_), height(height_) {}
+
     static Rectangle fromStr(const std::string &source);
 
     static Rectangle fromCorners(int x1, int y1, int x2, int y2);

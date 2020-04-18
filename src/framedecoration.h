@@ -15,7 +15,7 @@ public:
     bool visible = false;
     bool hasClients = false; // whether this frame holds clients at the moment
     bool hasParent = false;
-    Rectangle geometry = {};
+    Rectangle geometry;
 };
 
 class FrameDecoration {

@@ -75,10 +75,10 @@ void Converter<MouseCombo>::complete(Completion& outerComplete, MouseCombo const
 }
 
 struct SnapData {
-    Client*       client;
+    Client*       client = nullptr;
     Rectangle      rect;
-    enum SnapFlags  flags;
-    int             dx, dy; // the vector from client to other to make them snap
+    enum SnapFlags  flags = {};
+    int             dx = 0, dy = 0; // the vector from client to other to make them snap
 };
 
 bool is_point_between(int point, int left, int right) {
