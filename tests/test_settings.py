@@ -68,3 +68,13 @@ def test_cycle_value_loop(hlwm):
     for expected in expected_values:
         hlwm.call(['cycle_value', name] + values)
         assert hlwm.get_attr('settings.' + name) == expected
+
+
+def test_default_frame_layout_value_too_high(hlwm):
+    hlwm.call_xfail('set default_frame_layout 99') \
+        .expect_stderr('set: Invalid value "99" for setting "default_frame_layout": layout number must be at most 3')
+
+
+def test_default_frame_layout_value_negative(hlwm):
+    hlwm.call_xfail('set default_frame_layout -23') \
+        .expect_stderr('set: Invalid value "-23" for setting "default_frame_layout": invalid argument: negative number is out of range')
