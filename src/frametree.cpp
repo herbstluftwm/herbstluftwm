@@ -514,7 +514,7 @@ bool FrameTree::cycleAll(FrameTree::CycleDelta cdelta, bool skip_invisible)
     int delta = (cdelta == CycleDelta::Next) ? 1 : -1;
     bool frameChanges = (focus->layout == LayoutAlgorithm::max && skip_invisible)
         || (focus->clientCount() == 0)
-        || (delta == 1 && focus->getSelection() + 1 == focus->clientCount())
+        || (delta == 1 && focus->getSelection() + 1 == static_cast<int>(focus->clientCount()))
         || (delta == -1 && focus->getSelection() == 0);
     if (!frameChanges) {
         // if the focused frame does not change, it's simple

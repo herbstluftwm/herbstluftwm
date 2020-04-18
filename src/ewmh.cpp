@@ -347,10 +347,10 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
                     continue;
                 }
                 /* check if we support the property data[prop] */
-                int i;
+                size_t i;
                 for (i = 0; i < LENGTH(client_atoms); i++) {
                     if (netatom_[client_atoms[i].atom_index]
-                        == me->data.l[prop]) {
+                        == static_cast<unsigned int>(me->data.l[prop])) {
                         break;
                     }
                 }
@@ -364,7 +364,7 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
                     { _NET_WM_STATE_TOGGLE  , !client_atoms[i].enabled },
                 }).a;
                 int action = me->data.l[0];
-                if (action >= new_value.size()) {
+                if (action >= static_cast<int>(new_value.size())) {
                     HSDebug("_NET_WM_STATE: invalid action %d\n", action);
                 }
                 /* change the value */
@@ -418,7 +418,7 @@ void Ewmh::updateWindowState(Client* client) {
     /* find out which flags are set */
     Atom window_state[LENGTH(client_atoms)];
     size_t count_enabled = 0;
-    for (int i = 0; i < LENGTH(client_atoms); i++) {
+    for (size_t i = 0; i < LENGTH(client_atoms); i++) {
         if (client_atoms[i].enabled) {
             window_state[count_enabled] = netatom_[client_atoms[i].atom_index];
             count_enabled++;

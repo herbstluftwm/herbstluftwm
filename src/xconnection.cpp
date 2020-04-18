@@ -295,7 +295,7 @@ template<typename T> pair<Atom,vector<T>>
     }
     vector<T> result;
     result.reserve(count);
-    for (int i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         result.push_back(items_return[i]);
     }
     XFree(items_return);

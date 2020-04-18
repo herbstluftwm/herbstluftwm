@@ -14,9 +14,6 @@ set(FLAGS
 
     # Disable unused parameter warnings (most cases are on purpose):
     -Wno-unused-parameter
-
-    # Disable warnings that trigger due to known unresolved issues:
-    -Wno-sign-compare
     )
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
