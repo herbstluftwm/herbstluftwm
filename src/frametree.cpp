@@ -832,16 +832,17 @@ int FrameTree::splitCommand(Input input, Output output)
     SplitAlign align_auto = (lw > lh) ? SplitAlign::horizontal : SplitAlign::vertical;
     SplitAlign align_explode = SplitAlign::vertical;
     auto availableModes = SplitMode::modes(align_explode, align_auto);
-    SplitMode m = *std::find_if(
+    auto mode = std::find_if(
             availableModes.begin(), availableModes.end(),
             [=](const SplitMode &x){ return x.name[0] == splitType[0]; });
-    bool exploding = m.name == "explode";
-    if (m.name.empty()) {
+    if (mode == availableModes.end()) {
         output << input.command() << ": Invalid alignment \"" << splitType << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
+    SplitMode m = *mode;
     auto layout = frame->getLayout();
     auto windowcount = frame->clientCount();
+    bool exploding = m.name == "explode";
     if (exploding) {
         if (windowcount <= 1) {
             m.align = align_auto;
