@@ -353,7 +353,7 @@ def test_split_simple(hlwm, running_clients, align, fraction):
 
 def test_split_invalid_alignment(hlwm):
     hlwm.call_xfail('split foo') \
-            .expect_stderr('split: Invalid alignment "foo"')
+        .expect_stderr('split: Invalid alignment "foo"')
 
 
 @pytest.mark.parametrize("align", ["horizontal", "vertical"])
