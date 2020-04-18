@@ -1,5 +1,5 @@
 language: minimal
-dist: xenial
+dist: bionic
 services: docker
 
 before_install:
