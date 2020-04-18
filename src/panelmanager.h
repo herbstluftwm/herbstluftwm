@@ -47,5 +47,5 @@ private:
     Atom atomWmStrut_;
     Atom atomWmStrutPartial_;
     XConnection& xcon_;
-    Rectangle rootWindowGeometry_ = {};
+    Rectangle rootWindowGeometry_;
 };

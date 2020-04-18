@@ -65,7 +65,7 @@ private:
 
     MonitorManager*  monitors_;
     Point2D          buttonDragStart_ = {};
-    Rectangle        winDragStart_ = {};
+    Rectangle        winDragStart_;
     Client*        winDragClient_ = nullptr;
     Monitor*       dragMonitor_ = nullptr;
     unsigned long dragMonitorIndex_ = 0;

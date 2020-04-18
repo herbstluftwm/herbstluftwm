@@ -33,7 +33,7 @@ RectangleVec detectMonitorsXinerama(XConnection& X) {
     }
     RectangleVec monitor_rects;
     for (int i = 0; i < n; i++) {
-        Rectangle r = {};
+        Rectangle r;
         r.x = info[i].x_org;
         r.y = info[i].y_org;
         r.width = info[i].width;
