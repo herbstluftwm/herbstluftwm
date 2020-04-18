@@ -276,21 +276,21 @@ def test_cycle_all_skip_invisible(hlwm, running_clients, delta):
     assert visited_winids[0] != visited_winids[1]
 
 
-@pytest.mark.parametrize("one_client_floating", [True, False])
+@pytest.mark.parametrize("num_tiling", [1, 2])
+@pytest.mark.parametrize("num_floating", [0, 2])
 @pytest.mark.parametrize("delta", [1, -1])
-def test_cycle_all_wraps(hlwm, delta, one_client_floating):
-    c1, _ = hlwm.create_client()
-    c2, _ = hlwm.create_client()
-    if one_client_floating:
-        hlwm.call(f'set_attr clients.{c2}.floating true')
+def test_cycle_all_traverses_tiling_and_floating(hlwm, delta, num_tiling, num_floating):
+    tiled = hlwm.create_clients(num_tiling)
+    floated = hlwm.create_clients(num_floating)
+    for c in floated:
+        hlwm.call(f'set_attr clients.{c}.floating true')
+    expected_clients = tiled + floated + [tiled[0]]
+    if delta == -1:
+        expected_clients = reversed(expected_clients)
 
-    focus = hlwm.get_attr('clients.focus.winid')
-
-    hlwm.call(['cycle_all', delta])
-    assert focus != hlwm.get_attr('clients.focus.winid')
-    hlwm.call(['cycle_all', delta])
-
-    assert focus == hlwm.get_attr('clients.focus.winid')
+    for focus in expected_clients:
+        assert focus == hlwm.get_attr('clients.focus.winid')
+        hlwm.call(['cycle_all', delta])
 
 
 @pytest.mark.parametrize("delta", [1, -1])
