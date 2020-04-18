@@ -276,6 +276,50 @@ def test_cycle_all_skip_invisible(hlwm, running_clients, delta):
     assert visited_winids[0] != visited_winids[1]
 
 
+@pytest.mark.parametrize("num_tiling", [1, 2])
+@pytest.mark.parametrize("num_floating", [0, 2])
+@pytest.mark.parametrize("delta", [1, -1])
+def test_cycle_all_traverses_tiling_and_floating(hlwm, delta, num_tiling, num_floating):
+    tiled = hlwm.create_clients(num_tiling)
+    floated = hlwm.create_clients(num_floating)
+    for c in floated:
+        hlwm.call(f'set_attr clients.{c}.floating true')
+    expected_clients = tiled + floated + [tiled[0]]
+    if delta == -1:
+        expected_clients = reversed(expected_clients)
+
+    for focus in expected_clients:
+        assert focus == hlwm.get_attr('clients.focus.winid')
+        hlwm.call(['cycle_all', delta])
+
+
+@pytest.mark.parametrize("delta", [1, -1])
+def test_cycle_all_empty_frame(hlwm, delta):
+    layout = hlwm.call('dump').stdout
+
+    hlwm.call(['cycle_all', delta])
+
+    assert layout == hlwm.call('dump').stdout
+
+
+@pytest.mark.parametrize("floating_clients", [1, 2])
+@pytest.mark.parametrize("delta", [1, -1])
+def test_cycle_all_with_floating_clients(hlwm, delta, floating_clients):
+    hlwm.call('rule floating=on')
+    clients = hlwm.create_clients(floating_clients)
+    # None = No client is selected in the tiling layer
+    traversal = [None] + clients + [None]
+    if delta == -1:
+        traversal = reversed(traversal)
+
+    for expected_focus in traversal:
+        if expected_focus is None:
+            assert 'focus' not in hlwm.list_children('clients')
+        else:
+            assert expected_focus == hlwm.get_attr('clients.focus.winid')
+        hlwm.call(['cycle_all', delta])
+
+
 @pytest.mark.parametrize("running_clients_num", [2, 5])
 @pytest.mark.parametrize("num_splits", [0, 1, 2, 3])
 @pytest.mark.parametrize("delta", [1, -1])

@@ -74,7 +74,7 @@ public:
     DecorationScheme();
     ~DecorationScheme() override = default;
     DynAttribute_<std::string> reset;
-    AttributeProxy_<unsigned long>     border_width = {"border_width", 1};
+    AttributeProxy_<unsigned long>     border_width = {"border_width", 0};
     AttributeProxy_<Color>   border_color = {"color", {"black"}};
     AttributeProxy_<bool>    tight_decoration = {"tight_decoration", false}; // if set, there is no space between the
                               // decoration and the window content
