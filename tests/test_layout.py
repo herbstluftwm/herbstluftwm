@@ -118,6 +118,11 @@ def test_dump(hlwm, running_clients, path, running_clients_num, num_splits):
         assert layout_part == layout
 
 
+def test_dump_invalid_tag_name(hlwm):
+    hlwm.call_xfail('dump foo') \
+        .expect_stderr('dump: Tag "foo" not found')
+
+
 def test_dump_frame_index(hlwm):
     layout = {}
     layout['00'] = "(clients vertical:0)"
