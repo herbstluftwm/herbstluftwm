@@ -137,3 +137,27 @@ def test_client_wm_class_none(hlwm, x11):
     _, winid = x11.create_client(wm_class=None)
     assert hlwm.get_attr('clients.{}.instance'.format(winid)) == ''
     assert hlwm.get_attr('clients.{}.class'.format(winid)) == ''
+
+
+def test_bring_from_different_tag(hlwm, x11):
+    _, bonnie = x11.create_client()
+    hlwm.call('true')
+    hlwm.call('add anothertag')
+    hlwm.call('use anothertag')
+    assert hlwm.get_attr(f'clients.{bonnie}.tag') == 'default'
+
+    hlwm.call(['bring', bonnie])
+
+    assert hlwm.get_attr(f'clients.{bonnie}.tag') == 'anothertag'
+
+
+def test_bring_from_same_tag_different_frame(hlwm, x11):
+    hlwm.call('split horizontal')
+    hlwm.call('focus right')
+    _, winid = x11.create_client()
+    hlwm.call('true')
+    hlwm.call('focus left')
+    assert int(hlwm.get_attr('tags.0.curframe_wcount')) == 0
+
+    hlwm.call(['bring', winid])
+    assert int(hlwm.get_attr('tags.0.curframe_wcount')) == 1
