@@ -39,7 +39,7 @@ void XKeyGrabber::updateNumlockMask() {
  * (including the runtime-defined Numlock mask).
  */
 KeyCombo XKeyGrabber::xEventToKeyCombo(XKeyEvent* ev) const {
-    KeyCombo combo;
+    KeyCombo combo = {};
     combo.keysym = XkbKeycodeToKeysym(g_display, ev->keycode, 0, 0);
     combo.modifiers_ = ev->state;
 

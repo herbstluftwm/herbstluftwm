@@ -143,7 +143,7 @@ KeySym KeyCombo::keySymFromString(const string& str) {
  */
 KeyCombo KeyCombo::fromString(const string& str) {
     auto mws = Converter<ModifiersWithString>::parse(str);
-    KeyCombo combo;
+    KeyCombo combo = {};
     combo.modifiers_ = mws.modifiers_;
     combo.keysym = keySymFromString(mws.suffix_);
     return combo;
