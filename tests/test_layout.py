@@ -356,6 +356,11 @@ def test_split_simple(hlwm, running_clients, align, fraction):
         .format(align, fraction, ''.join([' ' + c for c in running_clients]))
 
 
+def test_split_invalid_alignment(hlwm):
+    hlwm.call_xfail('split foo') \
+        .expect_stderr('split: Invalid alignment "foo"')
+
+
 @pytest.mark.parametrize("align", ["horizontal", "vertical"])
 def test_split_and_remove_with_smart_frame_surroundings(hlwm, x11, align):
     # Split frame, then merge it again to one root frame
