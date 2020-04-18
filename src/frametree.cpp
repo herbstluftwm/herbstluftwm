@@ -796,7 +796,7 @@ public:
     //! If former frame moves to first child
     bool frameToFirst;
 
-    // Which child to select after the split
+    //! Which child to select after the split
     int selection;
 
     static vector<SplitMode> modes(SplitAlign align_explode = SplitAlign::horizontal, SplitAlign align_auto = SplitAlign::horizontal);
