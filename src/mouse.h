@@ -26,7 +26,7 @@ public:
     MouseCombo() = default;
     MouseCombo(unsigned int modifiers, unsigned int button);
 
-    unsigned int button_;
+    unsigned int button_ = 0;
     bool operator==(const MouseCombo& other) const {
         return ModifierCombo::operator==(other)
             && button_ == other.button_;

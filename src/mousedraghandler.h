@@ -64,7 +64,7 @@ private:
     void assertDraggingStillSafe();
 
     MonitorManager*  monitors_;
-    Point2D          buttonDragStart_;
+    Point2D          buttonDragStart_ = {};
     Rectangle        winDragStart_;
     Client*        winDragClient_ = nullptr;
     Monitor*       dragMonitor_ = nullptr;
@@ -88,7 +88,7 @@ private:
     void assertDraggingStillSafe();
 
     MonitorManager*  monitors_;
-    Point2D          buttonDragStart_;
+    Point2D          buttonDragStart_ = {};
     std::weak_ptr<HSFrameSplit> dragFrame_; //! the frame whose split is adjusted
     int              dragStartFraction_; //! initial fraction
     int              dragDistanceUnit_; //! 100% split ratio in pixels

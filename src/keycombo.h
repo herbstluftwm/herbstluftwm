@@ -17,7 +17,7 @@
 
 class ModifierCombo {
 public:
-    unsigned int modifiers_;
+    unsigned int modifiers_ = 0;
     bool operator==(const ModifierCombo& other) const {
         return modifiers_ == other.modifiers_;
     }
@@ -73,5 +73,5 @@ public:
     static std::vector<std::string> getPossibleKeySyms();
     static void complete(Completion& complete);
 
-    KeySym keysym;
+    KeySym keysym = {};
 };
