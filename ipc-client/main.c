@@ -38,7 +38,7 @@ static void quit_herbstclient(int signal) {
 }
 
 void init_hook_regex(int argc, char* argv[]) {
-    if (argc == 0) {
+    if (argc <= 0) {
         return;
     }
     g_hook_regex = (regex_t*)malloc(sizeof(regex_t)*argc);
