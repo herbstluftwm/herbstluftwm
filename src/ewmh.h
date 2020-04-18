@@ -159,7 +159,7 @@ private:
     //! window that shows that the WM is still alive
     Window      windowManagerWindow_;
 
-    Atom netatom_[NetCOUNT];
+    Atom netatom_[NetCOUNT] = {};
     static const std::array<const char*,NetCOUNT> netatomNames_;
 };
 
