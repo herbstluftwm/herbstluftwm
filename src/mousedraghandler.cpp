@@ -275,6 +275,12 @@ void MouseResizeFrame::handle_motion_event(Point2D newCursorPos)
 {
     assertDraggingStillSafe();
     auto df = dragFrame_.lock();
+
+    if (df == nullptr) {
+        // This check suppresses a false-positive for -Wnull-dereference
+        return;
+    }
+
     auto deltaVec = newCursorPos - buttonDragStart_;
     double delta;
     if (df->getAlign() == SplitAlign::vertical) {
