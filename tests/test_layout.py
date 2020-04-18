@@ -276,10 +276,13 @@ def test_cycle_all_skip_invisible(hlwm, running_clients, delta):
     assert visited_winids[0] != visited_winids[1]
 
 
+@pytest.mark.parametrize("one_client_floating", [True, False])
 @pytest.mark.parametrize("delta", [1, -1])
-def test_cycle_all_wraps(hlwm, delta):
+def test_cycle_all_wraps(hlwm, delta, one_client_floating):
     c1, _ = hlwm.create_client()
     c2, _ = hlwm.create_client()
+    if one_client_floating:
+        hlwm.call(f'set_attr clients.{c2}.floating true')
 
     focus = hlwm.get_attr('clients.focus.winid')
 
