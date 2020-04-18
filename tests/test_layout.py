@@ -120,7 +120,7 @@ def test_dump(hlwm, running_clients, path, running_clients_num, num_splits):
 
 def test_dump_invalid_tag_name(hlwm):
     hlwm.call_xfail('dump foo') \
-            .expect_stderr('dump: Tag "foo" not found')
+        .expect_stderr('dump: Tag "foo" not found')
 
 
 def test_dump_frame_index(hlwm):
