@@ -253,11 +253,18 @@ MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<HSFrameL
         dir = Direction::Right;
     }
     shared_ptr<HSFrame> neighbour = frame->neighbour(dir);
-    if (!neighbour || !neighbour->getParent()) {
+    if (!neighbour) {
         throw DragNotPossible("No neighbour frame in the direction of the cursor");
     }
+
     dragFrame_ = neighbour->getParent();
     auto df = dragFrame_.lock();
+
+    if (df == nullptr) {
+        // We need to check this explicitly because of -Wnull-dereference
+        throw DragNotPossible("No neighbour frame in the direction of the cursor");
+    }
+
     dragDistanceUnit_ =
             (df->getAlign() == SplitAlign::vertical)
             ? df->lastRect().height
