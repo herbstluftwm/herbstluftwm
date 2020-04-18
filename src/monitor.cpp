@@ -45,6 +45,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     , lock_tag  (this, "lock_tag", false)
     , pad_automatically_set ({false, false, false, false})
     , dirty(true)
+    , lock_frames(false)
     , mouse { 0, 0 }
     , rect(rect_)
     , settings(settings_)

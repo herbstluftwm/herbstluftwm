@@ -783,6 +783,13 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
 //! modes for the 'split' command
 class SplitMode {
 public:
+    SplitMode(string name_, SplitAlign align_, bool frameToFirst_, int selection_)
+        : name(name_)
+          , align(align_)
+          , frameToFirst(frameToFirst_)
+          , selection(selection_)
+    {}
+
     string name;
     SplitAlign align;
 
@@ -825,12 +832,9 @@ int FrameTree::splitCommand(Input input, Output output)
     SplitAlign align_auto = (lw > lh) ? SplitAlign::horizontal : SplitAlign::vertical;
     SplitAlign align_explode = SplitAlign::vertical;
     auto availableModes = SplitMode::modes(align_explode, align_auto);
-    SplitMode m;
-    for (auto &it : availableModes) {
-        if (it.name[0] == splitType[0]) {
-            m = it;
-        }
-    }
+    SplitMode m = *std::find_if(
+            availableModes.begin(), availableModes.end(),
+            [=](const SplitMode &x){ return x.name[0] == splitType[0]; });
     bool exploding = m.name == "explode";
     if (m.name.empty()) {
         output << input.command() << ": Invalid alignment \"" << splitType << "\"\n";
