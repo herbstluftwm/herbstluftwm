@@ -284,16 +284,47 @@ int HSTag::cycleAllCommand(Input input, Output output)
     if (delta == 0) {
         return 0; // nothing to do
     }
-    FrameTree::CycleDelta cdelta = (delta == 1)
-            ? FrameTree::CycleDelta::Next
-            : FrameTree::CycleDelta::Previous;
-    bool succeeded = frame->cycleAll(cdelta, skip_invisible);
-    if (!succeeded) {
-        // we need to wrap. when cycling forward, we wrap to the beginning
-        FrameTree::CycleDelta rewind = (delta == 1)
-                    ? FrameTree::CycleDelta::Begin
-                    : FrameTree::CycleDelta::End;
-        frame->cycleAll(rewind, skip_invisible);
+    if (floating_focused()) {
+        int newIndex = static_cast<int>(floating_clients_focus_) + delta;
+        if (newIndex < 0) {
+            floating_focused = false;
+            frame->cycleAll(FrameTree::CycleDelta::End, skip_invisible);
+        } else if (static_cast<size_t>(newIndex) >= floating_clients_.size()) {
+            floating_focused = false;
+            frame->cycleAll(FrameTree::CycleDelta::Begin, skip_invisible);
+        } else {
+            floating_clients_focus_ = static_cast<size_t>(newIndex);
+            floating_clients_[floating_clients_focus_]->raise();
+        }
+    } else {
+        FrameTree::CycleDelta cdelta = (delta == 1)
+                ? FrameTree::CycleDelta::Next
+                : FrameTree::CycleDelta::Previous;
+        bool focusChanged = frame->cycleAll(cdelta, skip_invisible);
+        if (!focusChanged) {
+            // if frame->cycleAll() reached the end of the tiling layer
+            if (floating_clients_.empty()) {
+                // we need to wrap. when cycling forward, we wrap to the beginning
+                FrameTree::CycleDelta rewind = (delta == 1)
+                            ? FrameTree::CycleDelta::Begin
+                            : FrameTree::CycleDelta::End;
+                frame->cycleAll(rewind, skip_invisible);
+            } else {
+                // if there are floating clients, switch to the floating layer
+                floating_focused = true;
+                if (delta == 1) {
+                    // wrap (forward) to first client
+                    floating_clients_focus_ = 0;
+                } else {
+                    // wrap (backward) to last client
+                    floating_clients_focus_ = floating_clients_.size() - 1;
+                }
+            }
+        }
+    }
+    Client* newFocus = focusedClient();
+    if (newFocus && newFocus->is_client_floated()) {
+        newFocus->raise();
     }
     // finally, redraw the layout
     needsRelayout_.emit();
