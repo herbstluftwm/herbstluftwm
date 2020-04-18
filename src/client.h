@@ -39,8 +39,17 @@ public:
                                 // action, because reparenting creates an unmap
                                 // notify event
     // for size hints
-    float mina_, maxa_;
-    int basew_, baseh_, incw_, inch_, maxw_, maxh_, minw_, minh_;
+    float mina_ = 0;
+    float maxa_ = 0;
+    int basew_ = 0;
+    int baseh_ = 0;
+    int incw_ = 0;
+    int inch_ = 0;
+    int maxw_ = 0;
+    int maxh_ = 0;
+    int minw_ = 0;
+    int minh_ = 0;
+
     // for other modules
     Signal_<HSTag*> needsRelayout;
 

@@ -20,7 +20,7 @@ using std::string;
 using std::vector;
 
 time_t get_monotonic_timestamp() {
-    struct timespec ts;
+    struct timespec ts{};
 #if defined(__MACH__) && ! defined(CLOCK_REALTIME) // OS X does not have clock_gettime, use clock_get_time
     clock_serv_t cclock;
     mach_timespec_t mts;

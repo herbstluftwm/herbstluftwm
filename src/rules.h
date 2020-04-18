@@ -27,11 +27,11 @@ public:
     static const std::map<std::string, Matcher> matchers;
 
     std::string name;
-    int value_type;
-    bool negated;
+    int value_type = 0;
+    bool negated = false;
 
     std::string value_str;
-    int value_integer;
+    int value_integer = 0;
     std::regex value_reg_exp;
     std::string value_reg_str;
 
@@ -42,7 +42,7 @@ public:
      * class hierarchy of specialized conditions/matchers, or extending all
      * matcher signatures.)
      */
-    time_t conditionCreationTime;
+    time_t conditionCreationTime = 0;
 
 private:
     bool matchesClass(const Client* client) const;
@@ -90,7 +90,7 @@ public:
     static const std::map<std::string, Applier> appliers;
 
     std::string name;
-    int value_type;
+    int value_type = 0;
     std::string value;
 
 private:
