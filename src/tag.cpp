@@ -298,8 +298,9 @@ int HSTag::cycleAllCommand(Input input, Output output)
         FrameTree::CycleDelta cdelta = (delta == 1)
                 ? FrameTree::CycleDelta::Next
                 : FrameTree::CycleDelta::Previous;
-        bool succeeded = frame->cycleAll(cdelta, skip_invisible);
-        if (!succeeded) {
+        bool focusChanged = frame->cycleAll(cdelta, skip_invisible);
+        if (!focusChanged) {
+            // if frame->cycleAll() reached the end of the tiling layer
             if (floating_clients_.empty()) {
                 // we need to wrap. when cycling forward, we wrap to the beginning
                 FrameTree::CycleDelta rewind = (delta == 1)
@@ -310,10 +311,10 @@ int HSTag::cycleAllCommand(Input input, Output output)
                 // if there are floating clients, switch to the floating layer
                 floating_focused = true;
                 if (delta == 1) {
-                    // wrap to last client
+                    // wrap (forward) to first client
                     floating_clients_focus_ = 0;
                 } else {
-                    // wrap to last client
+                    // wrap (backward) to last client
                     floating_clients_focus_ = floating_clients_.size() - 1;
                 }
             }
