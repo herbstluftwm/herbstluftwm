@@ -171,7 +171,7 @@ public:
     std::shared_ptr<FrameSplit> thisSplit();
     std::shared_ptr<FrameSplit> isSplit() override { return thisSplit(); }
     SplitAlign getAlign() { return align_; }
-    void swapSelection() { selection_ = 1 - selection_; }
+    void swapSelection() { selection_ = selection_ == 0 ? 1 : 0; }
     void setSelection(int s) { selection_ = s; }
 private:
     friend class FrameTree;

@@ -52,7 +52,7 @@ public:
     }
 
     int index_of(T* child) {
-        for (int i = 0; i < data.size(); i++) {
+        for (size_t i = 0; i < data.size(); i++) {
             if (&* data[i] == child) {
                 return i;
             }

@@ -105,7 +105,7 @@ int find_rectangle_right_of(RectangleIdxVec rects, int idx) {
     int cy = RC.y + RC.height / 2;
     int write_i = 0; // next rectangle to write
     // filter out rectangles not right of RC
-    for (int i = 0; i < rects.size(); i++) {
+    for (int i = 0; i < static_cast<int>(rects.size()); i++) {
         if (idx == i) {
             continue;
         }

@@ -16,13 +16,12 @@ XKeyGrabber::XKeyGrabber() {
 
 //! Obtains the current numlock mask value
 void XKeyGrabber::updateNumlockMask() {
-    unsigned int i, j;
     XModifierKeymap *modmap;
 
     numlockMask_ = 0;
     modmap = XGetModifierMapping(g_display);
-    for (i = 0; i < 8; i++) {
-        for (j = 0; j < modmap->max_keypermod; j++) {
+    for (size_t i = 0; i < 8; i++) {
+        for (int j = 0; j < modmap->max_keypermod; j++) {
             if (modmap->modifiermap[i * modmap->max_keypermod + j]
                     == XKeysymToKeycode(g_display, XK_Num_Lock)) {
                 numlockMask_ = (1 << i);

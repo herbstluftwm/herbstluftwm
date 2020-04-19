@@ -449,7 +449,7 @@ void FrameLeaf::setSelection(int index) {
     if (clients.empty()) {
         return;
     }
-    if (index < 0 || index >= clients.size()) {
+    if (index < 0 || index >= static_cast<int>(clients.size())) {
         index = clients.size() - 1;
     }
     selection = index;

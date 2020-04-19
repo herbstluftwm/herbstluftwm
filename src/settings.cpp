@@ -118,7 +118,7 @@ Settings::Settings()
     }
     wmname.changed().connect([]() { Ewmh::get().updateWmName(); });
 
-    default_frame_layout.setValidator([] (int layout) {
+    default_frame_layout.setValidator([] (size_t layout) {
         if (layout >= layoutAlgorithmCount()) {
             return "layout number must be at most "
                 + to_string(layoutAlgorithmCount() - 1);

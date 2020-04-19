@@ -64,7 +64,7 @@ bool FrameParser::contained_in(char c, string s) {
 
 FrameParser::Tokens FrameParser::tokenize(string buf) {
     Tokens tokens;
-    int pos = 0;
+    size_t pos = 0;
     while (pos < buf.size()) {
         string whitespace = "\n\r ";
         string parentheses = "()";
@@ -78,7 +78,7 @@ FrameParser::Tokens FrameParser::tokenize(string buf) {
         }
         else {
             // everything else is a token until the next whitespace character
-            int beg = pos;
+            size_t beg = pos;
             while (pos < buf.size()
                    && !contained_in(buf[pos], whitespace)
                    && !contained_in(buf[pos], parentheses))
