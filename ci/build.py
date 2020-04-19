@@ -63,7 +63,7 @@ build_env.update({
     'CC': args.cc,
     'CXX': args.cxx,
     'CFLAGS': '--coverage -Werror',
-    'CXXFLAGS': '--coverage -Werror',
+    'CXXFLAGS': '--coverage -Werror  -fsanitize=address,leak,undefined',
 })
 
 cmake_args = [
