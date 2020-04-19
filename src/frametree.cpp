@@ -27,7 +27,7 @@ FrameTree::FrameTree(HSTag* tag, Settings* settings)
     : tag_(tag)
     , settings_(settings)
 {
-    root_ = make_shared<HSFrameLeaf>(tag, settings, shared_ptr<HSFrameSplit>());
+    root_ = make_shared<FrameLeaf>(tag, settings, shared_ptr<FrameSplit>());
     (void) tag_;
     (void) settings_;
 }
@@ -37,7 +37,7 @@ void FrameTree::foreachClient(function<void(Client*)> action)
     root_->foreachClient(action);
 }
 
-void FrameTree::dump(shared_ptr<HSFrame> frame, Output output)
+void FrameTree::dump(shared_ptr<Frame> frame, Output output)
 {
     auto l = frame->isLeaf();
     if (l) {
@@ -69,27 +69,27 @@ void FrameTree::dump(shared_ptr<HSFrame> frame, Output output)
 
 /*! look up a specific frame in the frame tree
  */
-shared_ptr<HSFrame> FrameTree::lookup(const string& path) {
-    shared_ptr<HSFrame> node = root_;
+shared_ptr<Frame> FrameTree::lookup(const string& path) {
+    shared_ptr<Frame> node = root_;
     // the string "@" is a special case
     if (path == "@") {
         return focusedFrame();
     }
     for (char c : path) {
         if (c == 'e') {
-            shared_ptr<HSFrameLeaf> emptyFrame = findEmptyFrameNearFocus(node);
+            shared_ptr<FrameLeaf> emptyFrame = findEmptyFrameNearFocus(node);
             if (emptyFrame) {
                 // go to the empty node if we had found some
                 node = emptyFrame;
             }
             continue;
         }
-        node = node->switchcase<shared_ptr<HSFrame>>(
-            [](shared_ptr<HSFrameLeaf> l) {
+        node = node->switchcase<shared_ptr<Frame>>(
+            [](shared_ptr<FrameLeaf> l) {
                 // nothing to do on a leaf
                 return l;
             },
-            [c](shared_ptr<HSFrameSplit> l) {
+            [c](shared_ptr<FrameSplit> l) {
                 switch (c) {
                     case '0': return l->a_;
                     case '1': return l->b_;
@@ -105,13 +105,13 @@ shared_ptr<HSFrame> FrameTree::lookup(const string& path) {
 
 /*! get the frame leaf that is focused within this frame tree.
  */
-shared_ptr<HSFrameLeaf> FrameTree::focusedFrame() {
+shared_ptr<FrameLeaf> FrameTree::focusedFrame() {
     return focusedFrame(root_);
 }
 
 /*! get the focused frame within the subtree of the given node
  */
-shared_ptr<HSFrameLeaf> FrameTree::focusedFrame(shared_ptr<HSFrame> node) {
+shared_ptr<FrameLeaf> FrameTree::focusedFrame(shared_ptr<Frame> node) {
     while (node->isLeaf() == nullptr) {
         // node must be a frame split
         auto s = node->isSplit();
@@ -226,8 +226,8 @@ int FrameTree::closeAndRemoveCommand() {
 
 
 int FrameTree::rotateCommand() {
-    void (*onSplit)(HSFrameSplit*) =
-        [] (HSFrameSplit* s) {
+    void (*onSplit)(FrameSplit*) =
+        [] (FrameSplit* s) {
             switch (s->align_) {
                 case SplitAlign::vertical:
                     s->align_ = SplitAlign::horizontal;
@@ -240,8 +240,8 @@ int FrameTree::rotateCommand() {
                     break;
             }
         };
-    void (*onLeaf)(HSFrameLeaf*) =
-        [] (HSFrameLeaf*) {
+    void (*onLeaf)(FrameLeaf*) =
+        [] (FrameLeaf*) {
         };
     // first hide children => order = 2
     root_->fmap(onSplit, onLeaf, -1);
@@ -250,12 +250,12 @@ int FrameTree::rotateCommand() {
 }
 
 shared_ptr<TreeInterface> FrameTree::treeInterface(
-        shared_ptr<HSFrame> frame,
-        shared_ptr<HSFrameLeaf> focus)
+        shared_ptr<Frame> frame,
+        shared_ptr<FrameLeaf> focus)
 {
     class LeafTI : public TreeInterface {
     public:
-        LeafTI(shared_ptr<HSFrameLeaf> l, shared_ptr<HSFrameLeaf> focus)
+        LeafTI(shared_ptr<FrameLeaf> l, shared_ptr<FrameLeaf> focus)
             : l_(l), focus_(focus)
         {}
         shared_ptr<TreeInterface> nthChild(size_t idx) override {
@@ -272,12 +272,12 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
             }
         }
     private:
-        shared_ptr<HSFrameLeaf> l_;
-        shared_ptr<HSFrameLeaf> focus_;
+        shared_ptr<FrameLeaf> l_;
+        shared_ptr<FrameLeaf> focus_;
     };
     class SplitTI : public TreeInterface {
     public:
-        SplitTI(shared_ptr<HSFrameSplit> s, shared_ptr<HSFrameLeaf> focus)
+        SplitTI(shared_ptr<FrameSplit> s, shared_ptr<FrameLeaf> focus)
             : s_(s), focus_(focus) {}
         shared_ptr<TreeInterface> nthChild(size_t idx) override {
             return treeInterface(((idx == 0) ? s_->firstChild()
@@ -291,32 +291,32 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
                    << " selection=" << s_->selection_;
         }
     private:
-        shared_ptr<HSFrameSplit> s_;
-        shared_ptr<HSFrameLeaf> focus_;
+        shared_ptr<FrameSplit> s_;
+        shared_ptr<FrameLeaf> focus_;
     };
     return frame->switchcase<shared_ptr<TreeInterface>>(
-        [focus] (shared_ptr<HSFrameLeaf> l) {
+        [focus] (shared_ptr<FrameLeaf> l) {
             return std::static_pointer_cast<TreeInterface>(
                     make_shared<LeafTI>(l, focus));
         },
-        [focus] (shared_ptr<HSFrameSplit> s) {
+        [focus] (shared_ptr<FrameSplit> s) {
             return std::static_pointer_cast<TreeInterface>(
                     make_shared<SplitTI>(s, focus));
         }
     );
 }
 
-void FrameTree::prettyPrint(shared_ptr<HSFrame> frame, Output output) {
+void FrameTree::prettyPrint(shared_ptr<Frame> frame, Output output) {
     auto focus = get_current_monitor()->tag->frame->focusedFrame();
     tree_print_to(treeInterface(frame, focus), output);
 }
 
-shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_ptr<HSFrame> subtree)
+shared_ptr<FrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_ptr<Frame> subtree)
 {
     // render frame geometries.
     TilingResult tileres = subtree->computeLayout({0, 0, 800, 800});
-    function<Rectangle(shared_ptr<HSFrameLeaf>)> frame2geometry =
-            [tileres] (shared_ptr<HSFrameLeaf> frame) -> Rectangle {
+    function<Rectangle(shared_ptr<FrameLeaf>)> frame2geometry =
+            [tileres] (shared_ptr<FrameLeaf> frame) -> Rectangle {
         for (auto& framedata : tileres.frames) {
             if (framedata.first == frame->decoration) {
                 return framedata.second.geometry;
@@ -325,8 +325,8 @@ shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_p
         // if not found, return an invalid rectangle;
         return { 0, 0, -1, -1};
     };
-    vector<shared_ptr<HSFrameLeaf>> emptyLeafs;
-    subtree->fmap([](HSFrameSplit*){}, [&emptyLeafs](HSFrameLeaf* leaf) {
+    vector<shared_ptr<FrameLeaf>> emptyLeafs;
+    subtree->fmap([](FrameSplit*){}, [&emptyLeafs](FrameLeaf* leaf) {
         if (leaf->clientCount() == 0) {
             emptyLeafs.push_back(leaf->thisLeaf());
         }
@@ -336,7 +336,7 @@ shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_p
         return {};
     }
     int bestDistance = std::numeric_limits<int>::max();
-    shared_ptr<HSFrameLeaf> closestFrame = {};
+    shared_ptr<FrameLeaf> closestFrame = {};
     for (auto l : emptyLeafs) {
         Rectangle r = frame2geometry(l);
         if (!r) {
@@ -354,7 +354,7 @@ shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_p
 //! check whether there is an empty frame in the given subtree,
 //! and if there are some, try to find one that is as close as possible to the
 //! focused frame leaf. returns {} if there is no empty frame in the subtree
-shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocus(shared_ptr<HSFrame> subtree)
+shared_ptr<FrameLeaf> FrameTree::findEmptyFrameNearFocus(shared_ptr<Frame> subtree)
 {
     // the following algorithm is quadratic in the number of vertices in the
     // frame, because we look for empty frames in the same subtree over and
@@ -362,7 +362,7 @@ shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocus(shared_ptr<HSFrame> s
     // only those frames for emptyness that have not been checked before.
 
     // start at the focused leaf
-    shared_ptr<HSFrame> current = focusedFrame(subtree);
+    shared_ptr<Frame> current = focusedFrame(subtree);
     // and then go upward in the tree
     while (current) {
         auto emptyNode = findEmptyFrameNearFocusGeometrically(current);
@@ -378,11 +378,11 @@ shared_ptr<HSFrameLeaf> FrameTree::findEmptyFrameNearFocus(shared_ptr<HSFrame> s
     return {};
 }
 
-shared_ptr<HSFrameLeaf> FrameTree::findFrameWithClient(Client* client) {
-    shared_ptr<HSFrameLeaf> frame = {};
+shared_ptr<FrameLeaf> FrameTree::findFrameWithClient(Client* client) {
+    shared_ptr<FrameLeaf> frame = {};
     root_->fmap(
-        [](HSFrameSplit*) {},
-        [&](HSFrameLeaf* l) {
+        [](FrameSplit*) {},
+        [&](FrameLeaf* l) {
             auto& cs = l->clients;
             if (std::find(cs.begin(), cs.end(), client) != cs.end()) {
                 frame = l->thisLeaf();
@@ -391,7 +391,7 @@ shared_ptr<HSFrameLeaf> FrameTree::findFrameWithClient(Client* client) {
     return frame;
 }
 
-bool FrameTree::contains(shared_ptr<HSFrame> frame) const
+bool FrameTree::contains(shared_ptr<Frame> frame) const
 {
     return frame->root() == this->root_;
 }
@@ -408,7 +408,7 @@ bool FrameTree::resizeFrame(double delta_double, Direction direction)
         delta *= -1;
     }
 
-    shared_ptr<HSFrame> neighbour = focusedFrame()->neighbour(direction);
+    shared_ptr<Frame> neighbour = focusedFrame()->neighbour(direction);
     if (!neighbour) {
         // then try opposite direction
         std::map<Direction, Direction> flip = {
@@ -443,7 +443,7 @@ bool FrameTree::focusClient(Client* client) {
     return true;
 }
 
-void FrameTree::focusFrame(shared_ptr<HSFrame> frame) {
+void FrameTree::focusFrame(shared_ptr<Frame> frame) {
     while (frame) {
         auto parent = frame->getParent();
         if (!parent) {
@@ -472,9 +472,9 @@ bool FrameTree::focusInDirection(Direction direction, bool externalOnly)
         }
     }
     // if this didn't succeed, find a frame:
-    shared_ptr<HSFrame> neighbour = curframe->neighbour(direction);
+    shared_ptr<Frame> neighbour = curframe->neighbour(direction);
     if (neighbour) { // if neighbour was found
-        shared_ptr<HSFrameSplit> parent = neighbour->getParent();
+        shared_ptr<FrameSplit> parent = neighbour->getParent();
         if (parent) {
             // alter focus (from 0 to 1, from 1 to 0)
             parent->swapSelection();
@@ -489,7 +489,7 @@ bool FrameTree::focusInDirection(Direction direction, bool externalOnly)
 //! if skipInvisible is set.
 bool FrameTree::cycleAll(FrameTree::CycleDelta cdelta, bool skip_invisible)
 {
-    shared_ptr<HSFrameLeaf> focus = focusedFrame();
+    shared_ptr<FrameLeaf> focus = focusedFrame();
     if (cdelta == CycleDelta::Begin || cdelta == CycleDelta::End) {
         // go to first resp. last frame
         cycle_frame([cdelta] (size_t idx, size_t len) {
@@ -514,7 +514,7 @@ bool FrameTree::cycleAll(FrameTree::CycleDelta cdelta, bool skip_invisible)
     int delta = (cdelta == CycleDelta::Next) ? 1 : -1;
     bool frameChanges = (focus->layout == LayoutAlgorithm::max && skip_invisible)
         || (focus->clientCount() == 0)
-        || (delta == 1 && focus->getSelection() + 1 == focus->clientCount())
+        || (delta == 1 && focus->getSelection() + 1 == static_cast<int>(focus->clientCount()))
         || (delta == -1 && focus->getSelection() == 0);
     if (!frameChanges) {
         // if the focused frame does not change, it's simple
@@ -557,14 +557,14 @@ bool FrameTree::cycleAll(FrameTree::CycleDelta cdelta, bool skip_invisible)
 }
 
 void FrameTree::cycle_frame(function<size_t(size_t,size_t)> indexAndLenToIndex) {
-    shared_ptr<HSFrameLeaf> focus = focusedFrame();
+    shared_ptr<FrameLeaf> focus = focusedFrame();
     // First, enumerate all frames in traversal order
     // and find the focused frame in there
-    vector<shared_ptr<HSFrameLeaf>> frames;
+    vector<shared_ptr<FrameLeaf>> frames;
     size_t index = 0;
     root_->fmap(
-        [](HSFrameSplit*) {},
-        [&](HSFrameLeaf* l) {
+        [](FrameSplit*) {},
+        [&](FrameLeaf* l) {
             if (l == focus.get()) {
                 // the index of the next item we push back
                 index = frames.size();
@@ -659,15 +659,15 @@ int FrameTree::loadCommand(Input input, Output output) {
 }
 
 //! target must not be null, source may be null
-void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
+void FrameTree::applyFrameTree(shared_ptr<Frame> target,
                                shared_ptr<RawFrameNode> source)
 {
     if (!source) {
         // nothing to do
         return;
     }
-    shared_ptr<HSFrameSplit> targetSplit = target->isSplit();
-    shared_ptr<HSFrameLeaf> targetLeaf = target->isLeaf();
+    shared_ptr<FrameSplit> targetSplit = target->isSplit();
+    shared_ptr<FrameLeaf> targetLeaf = target->isLeaf();
     shared_ptr<RawFrameSplit> sourceSplit = source->isSplit();
     shared_ptr<RawFrameLeaf> sourceLeaf = source->isLeaf();
     if (sourceLeaf) {
@@ -689,10 +689,10 @@ void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
                 clients.push_back(c);
             }
         );
-        // assert that "target" is a HSFrameLeaf
+        // assert that "target" is a FrameLeaf
         if (targetSplit) {
             // if its a split, then replace the split
-            targetLeaf = make_shared<HSFrameLeaf>(
+            targetLeaf = make_shared<FrameLeaf>(
                                 tag_, settings_, target->getParent());
             replaceNode(target, targetLeaf);
             target = targetLeaf;
@@ -703,7 +703,7 @@ void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
         targetLeaf->setSelection(sourceLeaf->selection);
         targetLeaf->layout = sourceLeaf->layout;
     } else {
-        // assert that target is a HSFrameSplit
+        // assert that target is a FrameSplit
         if (targetLeaf) {
             targetLeaf->split(sourceSplit->align_, sourceSplit->fraction_, 0);
             targetSplit = targetLeaf->getParent();
@@ -719,8 +719,8 @@ void FrameTree::applyFrameTree(shared_ptr<HSFrame> target,
     }
 }
 
-void FrameTree::replaceNode(shared_ptr<HSFrame> old,
-                            shared_ptr<HSFrame> replacement) {
+void FrameTree::replaceNode(shared_ptr<Frame> old,
+                            shared_ptr<Frame> replacement) {
     auto parent = old->getParent();
     if (!parent) {
         assert(old == root_);
@@ -827,7 +827,7 @@ int FrameTree::splitCommand(Input input, Output output)
     }
     bool userDefinedFraction = input >> strFraction;
     double fractionFloat = userDefinedFraction ? atof(strFraction.c_str()) : 0.5;
-    int fraction = HSFrameSplit::clampFraction(FRACTION_UNIT * fractionFloat);
+    int fraction = FrameSplit::clampFraction(FRACTION_UNIT * fractionFloat);
     auto frame = focusedFrame();
     int lh = frame->lastRect().height;
     int lw = frame->lastRect().width;
@@ -885,7 +885,7 @@ int FrameTree::splitCommand(Input input, Output output)
 
 //! Implementation of the commands "dump" and "layout"
 int FrameTree::dumpLayoutCommand(Input input, Output output) {
-    shared_ptr<HSFrame> frame = root_;
+    shared_ptr<Frame> frame = root_;
     string tagName;
     if (input >> tagName) {
         shared_ptr<FrameTree> tree = shared_from_this();

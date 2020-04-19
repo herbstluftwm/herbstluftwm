@@ -75,6 +75,7 @@ Settings::Settings()
         &smart_window_surroundings,
         &monitors_locked,
         &auto_detect_monitors,
+        &auto_detect_panels,
         &pseudotile_center_threshold,
         &update_dragged_clients,
         &tree_style,
@@ -117,7 +118,7 @@ Settings::Settings()
     }
     wmname.changed().connect([]() { Ewmh::get().updateWmName(); });
 
-    default_frame_layout.setValidator([] (int layout) {
+    default_frame_layout.setValidator([] (size_t layout) {
         if (layout >= layoutAlgorithmCount()) {
             return "layout number must be at most "
                 + to_string(layoutAlgorithmCount() - 1);

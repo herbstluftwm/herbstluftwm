@@ -163,7 +163,7 @@ int MonitorManager::list_monitors(Output output) {
                << (monitor->tag ? monitor->tag->name->c_str() : "???")
                << "\""
                << monitor_name
-               << (((unsigned int) cur_monitor == i) ? " [FOCUS]" : "")
+               << ((cur_monitor == i) ? " [FOCUS]" : "")
                << (monitor->lock_tag ? " [LOCKED]" : "")
                << "\n";
         i++;
@@ -173,7 +173,7 @@ int MonitorManager::list_monitors(Output output) {
 
 Monitor* MonitorManager::byString(string str) {
     int idx = string_to_monitor_index(str);
-    return ((idx >= 0) && idx < size()) ? byIdx(idx) : nullptr;
+    return ((idx >= 0) && idx < static_cast<int>(size())) ? byIdx(idx) : nullptr;
 }
 
 function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
@@ -251,7 +251,7 @@ Monitor* MonitorManager::byCoordinate(Point2D p)
     return nullptr;
 }
 
-Monitor* MonitorManager::byFrame(shared_ptr<HSFrame> frame)
+Monitor* MonitorManager::byFrame(shared_ptr<Frame> frame)
 {
     for (Monitor* m : *this) {
         if (m->tag->frame->contains(frame)) {
@@ -317,7 +317,7 @@ void MonitorManager::removeMonitor(Monitor* monitor)
     monitorStack_.remove(monitor);
     g_monitors->removeIndexed(monitorIdx);
 
-    if (cur_monitor >= g_monitors->size()) {
+    if (cur_monitor >= static_cast<int>(g_monitors->size())) {
         cur_monitor--;
         // if selection has changed, then relayout focused monitor
         get_current_monitor()->applyLayout();

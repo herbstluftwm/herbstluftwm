@@ -195,7 +195,7 @@ void MouseDragHandlerFloating::mouse_function_zoom(Point2D newCursorPos) {
     winDragClient_->resize_floating(dragMonitor_, get_current_client() == winDragClient_);
 }
 
-MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<HSFrameLeaf> frame)
+MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<FrameLeaf> frame)
     : monitors_(monitors)
 {
     dragMonitor_ = monitors_->byFrame(frame);
@@ -252,7 +252,7 @@ MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<HSFrameL
     } else {
         dir = Direction::Right;
     }
-    shared_ptr<HSFrame> neighbour = frame->neighbour(dir);
+    shared_ptr<Frame> neighbour = frame->neighbour(dir);
     if (!neighbour) {
         throw DragNotPossible("No neighbour frame in the direction of the cursor");
     }
@@ -302,7 +302,7 @@ void MouseResizeFrame::handle_motion_event(Point2D newCursorPos)
     dragMonitor_->applyLayout();
 }
 
-MouseDragHandler::Constructor MouseResizeFrame::construct(shared_ptr<HSFrameLeaf> frame)
+MouseDragHandler::Constructor MouseResizeFrame::construct(shared_ptr<FrameLeaf> frame)
 {
     return [frame](MonitorManager* monitors, Client*) {
         return make_shared<MouseResizeFrame>(monitors, frame);
