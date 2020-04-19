@@ -62,6 +62,7 @@ public:
     Attribute_<bool>          smart_window_surroundings = {"smart_window_surroundings", false};
     Attribute_<int>           monitors_locked = {"monitors_locked", 0};
     Attribute_<bool>          auto_detect_monitors = {"auto_detect_monitors", false};
+    Attribute_<bool>          auto_detect_panels = {"auto_detect_panels", true};
     Attribute_<int>           pseudotile_center_threshold = {"pseudotile_center_threshold", 10};
     Attribute_<bool>          update_dragged_clients = {"update_dragged_clients", false};
     Attribute_<string>        tree_style = {"tree_style", "*| +`--."};
