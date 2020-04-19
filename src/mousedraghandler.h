@@ -6,8 +6,8 @@
 #include "x11-types.h"
 
 class Client;
-class HSFrameLeaf;
-class HSFrameSplit;
+class FrameLeaf;
+class FrameSplit;
 class HSTag;
 class Monitor;
 class MonitorManager;
@@ -79,17 +79,17 @@ private:
  */
 class MouseResizeFrame : public MouseDragHandler {
 public:
-    MouseResizeFrame(MonitorManager* monitors, std::shared_ptr<HSFrameLeaf> frame);
+    MouseResizeFrame(MonitorManager* monitors, std::shared_ptr<FrameLeaf> frame);
     virtual ~MouseResizeFrame() {};
     virtual void finalize();
     virtual void handle_motion_event(Point2D newCursorPos);
-    static Constructor construct(std::shared_ptr<HSFrameLeaf> frame);
+    static Constructor construct(std::shared_ptr<FrameLeaf> frame);
 private:
     void assertDraggingStillSafe();
 
     MonitorManager*  monitors_;
     Point2D          buttonDragStart_ = {};
-    std::weak_ptr<HSFrameSplit> dragFrame_; //! the frame whose split is adjusted
+    std::weak_ptr<FrameSplit> dragFrame_; //! the frame whose split is adjusted
     int              dragStartFraction_; //! initial fraction
     int              dragDistanceUnit_; //! 100% split ratio in pixels
     HSTag*           dragTag_; //! the tag containing the dragFrame

@@ -9,8 +9,8 @@
 
 class Client;
 class Completion;
-class HSFrame;
-class HSFrameLeaf;
+class Frame;
+class FrameLeaf;
 class HSTag;
 class RawFrameNode;
 class Settings;
@@ -24,23 +24,23 @@ public:
     FrameTree(HSTag* tag, Settings* settings);
     void foreachClient(std::function<void(Client*)> action);
 
-    static void dump(std::shared_ptr<HSFrame> frame, Output output);
-    static void prettyPrint(std::shared_ptr<HSFrame> frame, Output output);
-    static std::shared_ptr<HSFrameLeaf> findEmptyFrameNearFocus(std::shared_ptr<HSFrame> subtree);
-    std::shared_ptr<HSFrame> lookup(const std::string& path);
-    static std::shared_ptr<HSFrameLeaf> focusedFrame(std::shared_ptr<HSFrame> node);
-    std::shared_ptr<HSFrameLeaf> focusedFrame();
+    static void dump(std::shared_ptr<Frame> frame, Output output);
+    static void prettyPrint(std::shared_ptr<Frame> frame, Output output);
+    static std::shared_ptr<FrameLeaf> findEmptyFrameNearFocus(std::shared_ptr<Frame> subtree);
+    std::shared_ptr<Frame> lookup(const std::string& path);
+    static std::shared_ptr<FrameLeaf> focusedFrame(std::shared_ptr<Frame> node);
+    std::shared_ptr<FrameLeaf> focusedFrame();
     //! try to focus a client, and return if this was successful
     bool focusClient(Client* client);
     //! focus a frame within its tree
-    static void focusFrame(std::shared_ptr<HSFrame> frame);
+    static void focusFrame(std::shared_ptr<Frame> frame);
     bool focusInDirection(Direction dir, bool externalOnly);
     //! return a frame in the tree that holds the client
-    std::shared_ptr<HSFrameLeaf> findFrameWithClient(Client* client);
+    std::shared_ptr<FrameLeaf> findFrameWithClient(Client* client);
 
-    //! check whether the present FrameTree contains a given HSFrame
-    //! (it requires that there are no cycles in the 'tree' containing the HSFrame
-    bool contains(std::shared_ptr<HSFrame> frame) const;
+    //! check whether the present FrameTree contains a given Frame
+    //! (it requires that there are no cycles in the 'tree' containing the Frame
+    bool contains(std::shared_ptr<Frame> frame) const;
 
     enum class CycleDelta {
         Previous,
@@ -68,20 +68,20 @@ public:
     void cycleLayoutCompletion(Completion& complete);
     int splitCommand(Input input, Output output);
 public: // soon to be come private:
-    std::shared_ptr<HSFrame> root_;
+    std::shared_ptr<Frame> root_;
 private:
-    static std::shared_ptr<HSFrameLeaf> findEmptyFrameNearFocusGeometrically(std::shared_ptr<HSFrame> subtree);
+    static std::shared_ptr<FrameLeaf> findEmptyFrameNearFocusGeometrically(std::shared_ptr<Frame> subtree);
     //! cycle the frames within the current tree
     void cycle_frame(std::function<size_t(size_t,size_t)> indexAndLenToIndex);
     void cycle_frame(int delta);
     //! try to resemble a given raw frame tree given by the FrameParser
-    void applyFrameTree(std::shared_ptr<HSFrame> target,
+    void applyFrameTree(std::shared_ptr<Frame> target,
                         std::shared_ptr<RawFrameNode> source);
     //! replace a node in the frame tree, either modifying old's parent or the root_
-    void replaceNode(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> replacement);
+    void replaceNode(std::shared_ptr<Frame> old, std::shared_ptr<Frame> replacement);
     static std::shared_ptr<TreeInterface> treeInterface(
-        std::shared_ptr<HSFrame> frame,
-        std::shared_ptr<HSFrameLeaf> focus);
+        std::shared_ptr<Frame> frame,
+        std::shared_ptr<FrameLeaf> focus);
     HSTag* tag_;
     Settings* settings_;
 };

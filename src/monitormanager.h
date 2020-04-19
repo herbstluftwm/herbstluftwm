@@ -17,7 +17,7 @@ class Completion;
 class PanelManager;
 class TagManager;
 class HSTag;
-class HSFrame;
+class Frame;
 
 typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
 typedef std::function<void(Monitor&,Completion&)> MonitorCompletion;
@@ -37,7 +37,7 @@ public:
     Monitor* byString(std::string str);
     Monitor* byTag(HSTag* tag);
     Monitor* byCoordinate(Point2D p);
-    Monitor* byFrame(std::shared_ptr<HSFrame> frame);
+    Monitor* byFrame(std::shared_ptr<Frame> frame);
     int list_monitors(Output output);
     int list_padding(Input input, Output output);
     int string_to_monitor_index(std::string string);
