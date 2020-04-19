@@ -475,8 +475,10 @@ bool FrameTree::focusInDirection(Direction direction, bool externalOnly)
     shared_ptr<HSFrame> neighbour = curframe->neighbour(direction);
     if (neighbour) { // if neighbour was found
         shared_ptr<HSFrameSplit> parent = neighbour->getParent();
-        // alter focus (from 0 to 1, from 1 to 0)
-        parent->swapSelection();
+        if (parent) {
+            // alter focus (from 0 to 1, from 1 to 0)
+            parent->swapSelection();
+        }
         return true;
     }
     return false;

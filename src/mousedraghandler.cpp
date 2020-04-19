@@ -253,11 +253,19 @@ MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<HSFrameL
         dir = Direction::Right;
     }
     shared_ptr<HSFrame> neighbour = frame->neighbour(dir);
-    if (!neighbour || !neighbour->getParent()) {
+    if (!neighbour) {
         throw DragNotPossible("No neighbour frame in the direction of the cursor");
     }
+
     dragFrame_ = neighbour->getParent();
     auto df = dragFrame_.lock();
+
+    if (df == nullptr) {
+        // We need this check because otherwise, -Wnull-dereference complains
+        // that a nullptr might be dereferenced:
+        throw DragNotPossible("Neighbouring frame has no parent. This should never happen, please report a bug to the developers.");
+    }
+
     dragDistanceUnit_ =
             (df->getAlign() == SplitAlign::vertical)
             ? df->lastRect().height
@@ -275,6 +283,12 @@ void MouseResizeFrame::handle_motion_event(Point2D newCursorPos)
 {
     assertDraggingStillSafe();
     auto df = dragFrame_.lock();
+
+    if (df == nullptr) {
+        // This check suppresses a false-positive for -Wnull-dereference
+        return;
+    }
+
     auto deltaVec = newCursorPos - buttonDragStart_;
     double delta;
     if (df->getAlign() == SplitAlign::vertical) {
