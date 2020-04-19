@@ -1074,6 +1074,11 @@ auto_detect_monitors (Boolean)::
     If set, detect_monitors is automatically executed every time a monitor is
     connected, disconnected or resized.
 
+auto_detect_monitors (Boolean)::
+    If set, EWMH panels are automatically detected and reserve space at the side
+    of the monitors they are on (via pad attributes of each monitor). This
+    setting is activated per default.
+
 tree_style (String)::
     It contains the chars that are used to print a nice ascii tree. It must
     contain at least 8 characters. e.g. ++X|:#+*-.++ produces a tree like:
