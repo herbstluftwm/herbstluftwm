@@ -17,16 +17,16 @@ class Client;
 typedef std::function<void(Client*)> ClientAction;
 
 class HSTag;
-class HSFrameLeaf;
-class HSFrameSplit;
+class FrameLeaf;
+class FrameSplit;
 class Settings;
 
-class HSFrame : public std::enable_shared_from_this<HSFrame> {
+class Frame : public std::enable_shared_from_this<Frame> {
 protected:
-    HSFrame(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent);
-    virtual ~HSFrame();
+    Frame(HSTag* tag, Settings* settings, std::weak_ptr<FrameSplit> parent);
+    virtual ~Frame();
 public:
-    virtual std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) = 0;
+    virtual std::shared_ptr<FrameLeaf> frameWithClient(Client* client) = 0;
     virtual bool removeClient(Client* client) = 0;
 
     virtual bool isFocused();
@@ -37,15 +37,15 @@ public:
     // if order <= 0 -> action(node); action(left); action(right);
     // if order == 1 -> action(left); action(node); action(right);
     // if order >= 2 -> action(left); action(right); action(node);
-    virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
-                      std::function<void(HSFrameLeaf*)> onLeaf, int order) = 0;
-    void fmap(std::function<void(HSFrameSplit*)> onSplit,
-              std::function<void(HSFrameLeaf*)> onLeaf) {
+    virtual void fmap(std::function<void(FrameSplit*)> onSplit,
+                      std::function<void(FrameLeaf*)> onLeaf, int order) = 0;
+    void fmap(std::function<void(FrameSplit*)> onSplit,
+              std::function<void(FrameLeaf*)> onLeaf) {
         fmap(onSplit, onLeaf, 0);
     }
 
-    std::shared_ptr<HSFrameSplit> getParent() { return parent_.lock(); };
-    std::shared_ptr<HSFrame> root();
+    std::shared_ptr<FrameSplit> getParent() { return parent_.lock(); };
+    std::shared_ptr<Frame> root();
     // count the number of splits to the root with alignment "align"
     virtual int splitsToRoot(SplitAlign align);
 
@@ -53,15 +53,15 @@ public:
 
     void setVisibleRecursive(bool visible);
 
-    static std::shared_ptr<HSFrameLeaf> getGloballyFocusedFrame();
+    static std::shared_ptr<FrameLeaf> getGloballyFocusedFrame();
 
     /*! a case distinction on the type of tree node. If `this` is a
-     * HSFrameSplit, then onSplit is called, and otherwise onLeaf is called.
+     * FrameSplit, then onSplit is called, and otherwise onLeaf is called.
      * The return value is passed through.
      */
     template <typename ReturnType>
-    ReturnType switchcase(std::function<ReturnType(std::shared_ptr<HSFrameLeaf>)> onLeaf,
-                          std::function<ReturnType(std::shared_ptr<HSFrameSplit>)> onSplit) {
+    ReturnType switchcase(std::function<ReturnType(std::shared_ptr<FrameLeaf>)> onLeaf,
+                          std::function<ReturnType(std::shared_ptr<FrameSplit>)> onSplit) {
         auto s = isSplit();
         if (s) {
             return onSplit(s);
@@ -74,36 +74,36 @@ public:
 
     Rectangle lastRect() { return last_rect; }
 
-    friend class HSFrameSplit;
+    friend class FrameSplit;
     friend class FrameTree;
     friend class HSTag; // for HSTag::foreachClient()
 public: // soon will be protected:
-    virtual std::shared_ptr<HSFrameSplit> isSplit() { return std::shared_ptr<HSFrameSplit>(); };
-    virtual std::shared_ptr<HSFrameLeaf> isLeaf() { return std::shared_ptr<HSFrameLeaf>(); };
+    virtual std::shared_ptr<FrameSplit> isSplit() { return std::shared_ptr<FrameSplit>(); };
+    virtual std::shared_ptr<FrameLeaf> isLeaf() { return std::shared_ptr<FrameLeaf>(); };
 protected:
     void foreachClient(ClientAction action);
     HSTag* tag_;
     Settings* settings_;
-    std::weak_ptr<HSFrameSplit> parent_;
+    std::weak_ptr<FrameSplit> parent_;
     Rectangle  last_rect; // last rectangle when being drawn
                           // this is only used for 'split explode'
 };
 
-class HSFrameLeaf : public HSFrame, public FrameDataLeaf {
+class FrameLeaf : public Frame, public FrameDataLeaf {
 public:
-    HSFrameLeaf(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent);
-    ~HSFrameLeaf() override;
+    FrameLeaf(HSTag* tag, Settings* settings, std::weak_ptr<FrameSplit> parent);
+    ~FrameLeaf() override;
 
     // inherited:
     void insertClient(Client* client, bool focus = false);
-    std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
+    std::shared_ptr<FrameLeaf> frameWithClient(Client* client) override;
     bool removeClient(Client* client) override;
     void moveClient(int new_index);
 
     TilingResult computeLayout(Rectangle rect) override;
 
-    virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
-                      std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
+    virtual void fmap(std::function<void(FrameSplit*)> onSplit,
+                      std::function<void(FrameLeaf*)> onLeaf, int order) override;
 
 
     // own members
@@ -119,13 +119,13 @@ public:
     void setLayout(LayoutAlgorithm l) { layout = l; }
     int getSelection() { return selection; }
     size_t clientCount() { return clients.size(); }
-    std::shared_ptr<HSFrame> neighbour(Direction direction);
+    std::shared_ptr<Frame> neighbour(Direction direction);
     std::vector<Client*> removeAllClients();
 
-    std::shared_ptr<HSFrameLeaf> thisLeaf();
-    std::shared_ptr<HSFrameLeaf> isLeaf() override { return thisLeaf(); }
+    std::shared_ptr<FrameLeaf> thisLeaf();
+    std::shared_ptr<FrameLeaf> isLeaf() override { return thisLeaf(); }
 
-    friend class HSFrame;
+    friend class Frame;
     void setVisible(bool visible);
     int getInnerNeighbourIndex(Direction direction);
 private:
@@ -141,35 +141,35 @@ private:
     FrameDecoration* decoration;
 };
 
-class HSFrameSplit : public HSFrame, public FrameDataSplit<HSFrame> {
+class FrameSplit : public Frame, public FrameDataSplit<Frame> {
 public:
-    HSFrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<HSFrameSplit> parent, int fraction_, SplitAlign align_,
-                 std::shared_ptr<HSFrame> a_, std::shared_ptr<HSFrame> b_);
-    ~HSFrameSplit() override;
+    FrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<FrameSplit> parent, int fraction_, SplitAlign align_,
+                 std::shared_ptr<Frame> a_, std::shared_ptr<Frame> b_);
+    ~FrameSplit() override;
     // inherited:
-    std::shared_ptr<HSFrameLeaf> frameWithClient(Client* client) override;
+    std::shared_ptr<FrameLeaf> frameWithClient(Client* client) override;
     bool removeClient(Client* client) override;
 
     TilingResult computeLayout(Rectangle rect) override;
 
-    virtual void fmap(std::function<void(HSFrameSplit*)> onSplit,
-                      std::function<void(HSFrameLeaf*)> onLeaf, int order) override;
+    virtual void fmap(std::function<void(FrameSplit*)> onSplit,
+                      std::function<void(FrameLeaf*)> onLeaf, int order) override;
 
     Client* focusedClient() override;
 
     // own members
     int splitsToRoot(SplitAlign align_) override;
-    void replaceChild(std::shared_ptr<HSFrame> old, std::shared_ptr<HSFrame> newchild);
-    std::shared_ptr<HSFrame> firstChild() { return a_; }
-    std::shared_ptr<HSFrame> secondChild() { return b_; }
-    std::shared_ptr<HSFrame> selectedChild() { return selection_ ? b_ : a_; }
+    void replaceChild(std::shared_ptr<Frame> old, std::shared_ptr<Frame> newchild);
+    std::shared_ptr<Frame> firstChild() { return a_; }
+    std::shared_ptr<Frame> secondChild() { return b_; }
+    std::shared_ptr<Frame> selectedChild() { return selection_ ? b_ : a_; }
     void swapChildren();
     void adjustFraction(int delta);
     void setFraction(int fraction);
     int getFraction() const { return fraction_; }
     static int clampFraction(int fraction);
-    std::shared_ptr<HSFrameSplit> thisSplit();
-    std::shared_ptr<HSFrameSplit> isSplit() override { return thisSplit(); }
+    std::shared_ptr<FrameSplit> thisSplit();
+    std::shared_ptr<FrameSplit> isSplit() override { return thisSplit(); }
     SplitAlign getAlign() { return align_; }
     void swapSelection() { selection_ = 1 - selection_; }
     void setSelection(int s) { selection_ = s; }
@@ -181,7 +181,7 @@ private:
 int frame_current_bring(int argc, char** argv, Output output);
 
 int frame_current_set_client_layout(int argc, char** argv, Output output);
-int frame_split_count_to_root(HSFrame* frame, int align);
+int frame_split_count_to_root(Frame* frame, int align);
 
 bool focus_client(Client* client, bool switch_tag, bool switch_monitor, bool raise);
 // moves a window to an other frame
