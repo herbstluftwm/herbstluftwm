@@ -24,7 +24,7 @@ using std::vector;
 
 extern char** environ;
 
-RootCommands::RootCommands(Object* root_) : root(root_) {
+RootCommands::RootCommands(Object& root_) : root(root_) {
 }
 
 int RootCommands::get_attr_cmd(Input in, Output output) {
@@ -67,7 +67,7 @@ int RootCommands::attr_cmd(Input in, Output output) {
     string path = "", new_value = "";
     in >> path >> new_value;
     std::ostringstream dummy_output;
-    Object* o = root;
+    Object* o = &root;
     auto p = Path::split(path);
     if (!p.empty()) {
         while (p.back().empty()) {
@@ -105,11 +105,7 @@ int RootCommands::attr_cmd(Input in, Output output) {
 
 Attribute* RootCommands::getAttribute(string path, Output output) {
     auto attr_path = Object::splitPath(path);
-    if (!root) {
-        output << "Root is null, this should never happen, please file a bug report.";
-        return nullptr;
-    }
-    auto child = root->child(attr_path.first);
+    auto child = root.child(attr_path.first);
     if (!child) {
         output << "No such object " << attr_path.first.join('.') << endl;
         return nullptr;
@@ -136,7 +132,7 @@ int RootCommands::print_object_tree_command(Input in, Output output) {
     while (!path.empty() && path.back().empty()) {
         path.pop_back();
     }
-    auto child = root->child(path);
+    auto child = root.child(path);
     if (!child) {
         output << "No such object " << Path(path).join('.') << endl;
         return HERBST_INVALID_ARGUMENT;
@@ -321,7 +317,7 @@ int RootCommands::new_attr_cmd(Input input, Output output)
     }
     auto obj_path_and_attr = Object::splitPath(path);
     string attr_name = obj_path_and_attr.second;
-    Object* obj = root->child(obj_path_and_attr.first, output);
+    Object* obj = root.child(obj_path_and_attr.first, output);
     if (!obj) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -373,7 +369,7 @@ int RootCommands::remove_attr_cmd(Input input, Output output)
     if (!(input >> path )) {
         return HERBST_NEED_MORE_ARGS;
     }
-    Attribute* a = root->deepAttribute(path, output);
+    Attribute* a = root.deepAttribute(path, output);
     if (!a) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -455,7 +451,7 @@ int RootCommands::compare_cmd(Input input, Output output)
     if (!(input >> path >> oper >> value)) {
         return HERBST_NEED_MORE_ARGS;
     }
-    Attribute* a = root->deepAttribute(path, output);
+    Attribute* a = root.deepAttribute(path, output);
     if (!a) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -532,7 +528,7 @@ void RootCommands::completeObjectPath(Completion& complete, bool attributes,
     if (!objectPath.empty()) {
         objectPath += OBJECT_PATH_SEPARATOR;
     }
-    Object* object = root->child(objectPathArgs);
+    Object* object = root.child(objectPathArgs);
     if (!object) {
         return;
     }
@@ -566,7 +562,7 @@ void RootCommands::set_attr_complete(Completion& complete) {
         completeObjectPath(complete, true,
             [](Attribute* a) { return a->writeable(); } );
     } else if (complete == 1) {
-        Attribute* a = root->deepAttribute(complete[0]);
+        Attribute* a = root.deepAttribute(complete[0]);
         if (a) {
             a->complete(complete);
         }
@@ -580,7 +576,7 @@ void RootCommands::attr_complete(Completion& complete)
     if (complete == 0) {
         completeAttributePath(complete);
     } else if (complete == 1) {
-        Attribute* a = root->deepAttribute(complete[0]);
+        Attribute* a = root.deepAttribute(complete[0]);
         if (!a) {
             return;
         }

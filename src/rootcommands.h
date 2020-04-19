@@ -23,7 +23,7 @@ public:
     /** This object has no dependencies to other hlwm modules, and so the
      * 'root' pointer held by this class is just an Object-pointer.
      */
-    RootCommands(Object* root);
+    RootCommands(Object& root);
 
     Attribute* getAttribute(std::string path, Output output);
 
@@ -77,7 +77,7 @@ public:
 
     std::vector<std::vector<std::string>> splitCommandList(ArgList::Container input);
 private:
-    Object* root;
+    Object& root;
     std::vector<std::unique_ptr<Attribute>> userAttributes_;
 
     class FormatStringBlob {
