@@ -1,5 +1,6 @@
 #include "panelmanager.h"
 
+#include "settings.h"
 #include "x11-types.h"
 #include "xconnection.h"
 
@@ -81,6 +82,11 @@ void PanelManager::propertyChanged(Window win, Atom property)
     }
 }
 
+void PanelManager::injectDependencies(Settings* settings)
+{
+    settings_ = settings;
+}
+
 //! read the reserved space from the panel window and return if there are changes
 bool PanelManager::updateReservedSpace(Panel* p)
 {
@@ -103,6 +109,9 @@ bool PanelManager::updateReservedSpace(Panel* p)
 PanelManager::ReservedSpace PanelManager::computeReservedSpace(Rectangle mon)
 {
     ReservedSpace rsTotal;
+    if (!settings_->auto_detect_panels()) {
+        return rsTotal;
+    }
     for (auto it : panels_) {
         Panel& p = *(it.second);
         ReservedSpace rs;

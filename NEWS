@@ -12,6 +12,7 @@ Current git version
     and thus the same keybindings as in tiling mode.
   * keybind now checks that the bound command exists.
   * cycle_all (Alt-Tab) now also traverses floating clients
+  * new setting 'auto_detect_panels' controlling the panel detection algorithm.
 
 Release 0.8.0 on 2020-04-09
 ---------------------------

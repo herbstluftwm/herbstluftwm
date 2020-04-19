@@ -324,7 +324,7 @@ void XMainLoop::enternotify(XCrossingEvent* ce) {
         && root_->settings()->focus_follows_mouse()
         && ce->focus == false) {
         Client* c = root_->clients->client(ce->window);
-        shared_ptr<HSFrameLeaf> target;
+        shared_ptr<FrameLeaf> target;
         if (c && c->tag()->floating == false
               && (target = c->tag()->frame->root_->frameWithClient(c))
               && target->getLayout() == LayoutAlgorithm::max

@@ -251,7 +251,7 @@ Monitor* MonitorManager::byCoordinate(Point2D p)
     return nullptr;
 }
 
-Monitor* MonitorManager::byFrame(shared_ptr<HSFrame> frame)
+Monitor* MonitorManager::byFrame(shared_ptr<Frame> frame)
 {
     for (Monitor* m : *this) {
         if (m->tag->frame->contains(frame)) {

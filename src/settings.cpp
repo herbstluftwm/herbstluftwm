@@ -75,6 +75,7 @@ Settings::Settings()
         &smart_window_surroundings,
         &monitors_locked,
         &auto_detect_monitors,
+        &auto_detect_panels,
         &pseudotile_center_threshold,
         &update_dragged_clients,
         &tree_style,

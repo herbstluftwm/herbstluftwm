@@ -413,16 +413,16 @@ void HSTag::fixFocusIndex()
 
 int HSTag::computeFrameCount() {
     int count = 0;
-    frame->root_->fmap([](HSFrameSplit*) {},
-                [&count](HSFrameLeaf*) { count++; },
+    frame->root_->fmap([](FrameSplit*) {},
+                [&count](FrameLeaf*) { count++; },
                 0);
     return count;
 }
 
 int HSTag::computeClientCount() {
-    int count = 0;
-    frame->root_->fmap([](HSFrameSplit*) {},
-                [&count](HSFrameLeaf* l) { count += l->clientCount(); },
+    int count = static_cast<int>(floating_clients_.size());
+    frame->root_->fmap([](FrameSplit*) {},
+                [&count](FrameLeaf* l) { count += l->clientCount(); },
                 0);
     return count;
 }
@@ -471,7 +471,7 @@ void tag_set_flags_dirty() {
     hook_emit({"tag_flags"});
 }
 
-HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
+HSTag* find_tag_with_toplevel_frame(Frame* frame) {
     for (auto t : *global_tags) {
         if (&* t->frame->root_ == frame) {
             return &* t;

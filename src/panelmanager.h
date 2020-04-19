@@ -7,6 +7,7 @@
 #include "x11-types.h"
 
 class Panel;
+class Settings;
 class XConnection;
 
 class PanelManager {
@@ -36,6 +37,7 @@ public:
     void registerPanel(Window win);
     void unregisterPanel(Window win);
     void propertyChanged(Window win, Atom property);
+    void injectDependencies(Settings* settings);
     ReservedSpace computeReservedSpace(Rectangle monitorDimension);
     Signal panels_changed_;
     void rootWindowChanged(int width, int height);
@@ -48,4 +50,5 @@ private:
     Atom atomWmStrutPartial_;
     XConnection& xcon_;
     Rectangle rootWindowGeometry_;
+    Settings* settings_ = nullptr;
 };
