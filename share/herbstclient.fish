@@ -19,14 +19,27 @@ function _get_herbstluftwm_completion
     if not test -n $first; return; end # no command found, we are done
     set tokens $tokens[$first..-1]
 
-    set -l position (count $tokens)
-
-    # If there are tokens and cursor sits on a (possibly unfinished) word
-    # decrease position due to 0-based in hlwm and 1-based in fish
-    if test $position -gt 0 -a -n (commandline -ct)
-        set position (math "$position - 1")
+    # TODO: we should derive the real position but it is tricky
+    set position (count $tokens)
+    # cursor sits on a (possibly unfinished) word
+    if test -n (commandline -ct) -a $position -gt 0
+        set posadjusted (math "$position - 1") # 0-based position in hlwm
+        set completions (herbstclient -q complete_shell $posadjusted $tokens)
+        # check for partial completion, we assume it only occurs exclusively
+        if test (count $completions) -eq 1; and string match -qr -- '[^\s]$' $completions[1]
+            # eagerly retrieve next available full completions
+            set tokens[$position] $completions[1]
+            set -a completions (herbstclient -q complete_shell $posadjusted $tokens)
+        end
+    else
+        # use unaltered position which is the last token + 1 (for hlwm)
+        set completions (herbstclient -q complete_shell $position $tokens)
     end
-    herbstclient -q complete $position $tokens
+
+    for result in $completions # return as a newline-delimited list
+        # output w/o trailing spaces fish doesn't understand
+        string trim -r -- $result
+    end
 end
 
 function _complete_herbstclient
