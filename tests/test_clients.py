@@ -149,6 +149,7 @@ def test_bring_from_different_tag(hlwm, x11):
     hlwm.call(['bring', bonnie])
 
     assert hlwm.get_attr(f'clients.{bonnie}.tag') == 'anothertag'
+    assert hlwm.get_attr('clients.focus.winid') == bonnie
 
 
 def test_bring_from_same_tag_different_frame(hlwm, x11):
@@ -161,3 +162,4 @@ def test_bring_from_same_tag_different_frame(hlwm, x11):
 
     hlwm.call(['bring', winid])
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == 1
+    assert hlwm.get_attr('clients.focus.winid') == winid

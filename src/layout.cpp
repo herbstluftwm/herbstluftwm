@@ -441,6 +441,7 @@ int frame_current_bring(int argc, char** argv, Output output) {
         frame->removeClient(client);
         tag->frame->focusedFrame()->insertClient(client, true);
     }
+    focus_client(client, false, false, true);
     return 0;
 }
 
