@@ -105,6 +105,10 @@ int RootCommands::attr_cmd(Input in, Output output) {
 
 Attribute* RootCommands::getAttribute(string path, Output output) {
     auto attr_path = Object::splitPath(path);
+    if (!root) {
+        output << "Root is null, this should never happen, please file a bug report.";
+        return nullptr;
+    }
     auto child = root->child(attr_path.first);
     if (!child) {
         output << "No such object " << attr_path.first.join('.') << endl;
