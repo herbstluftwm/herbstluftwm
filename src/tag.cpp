@@ -420,7 +420,7 @@ int HSTag::computeFrameCount() {
 }
 
 int HSTag::computeClientCount() {
-    int count = 0;
+    int count = static_cast<int>(floating_clients_.size());
     frame->root_->fmap([](HSFrameSplit*) {},
                 [&count](HSFrameLeaf* l) { count += l->clientCount(); },
                 0);
