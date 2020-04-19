@@ -261,8 +261,9 @@ MouseResizeFrame::MouseResizeFrame(MonitorManager *monitors, shared_ptr<HSFrameL
     auto df = dragFrame_.lock();
 
     if (df == nullptr) {
-        // We need to check this explicitly because of -Wnull-dereference
-        throw DragNotPossible("No neighbour frame in the direction of the cursor");
+        // We this check because otherwise, -Wnull-dereference complains that a
+        // nullptr might be dereferenced:
+        throw DragNotPossible("Neighbouring frame has no parent. This should never happen, please report a bug to the developers.");
     }
 
     dragDistanceUnit_ =
