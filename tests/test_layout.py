@@ -118,6 +118,11 @@ def test_dump(hlwm, running_clients, path, running_clients_num, num_splits):
         assert layout_part == layout
 
 
+def test_dump_invalid_tag_name(hlwm):
+    hlwm.call_xfail('dump foo') \
+        .expect_stderr('dump: Tag "foo" not found')
+
+
 def test_dump_frame_index(hlwm):
     layout = {}
     layout['00'] = "(clients vertical:0)"
@@ -349,6 +354,11 @@ def test_split_simple(hlwm, running_clients, align, fraction):
     assert hlwm.call('dump').stdout == \
         '(split {}:{}:0 (clients vertical:0{}) (clients vertical:0))' \
         .format(align, fraction, ''.join([' ' + c for c in running_clients]))
+
+
+def test_split_invalid_alignment(hlwm):
+    hlwm.call_xfail('split foo') \
+        .expect_stderr('split: Invalid alignment "foo"')
 
 
 @pytest.mark.parametrize("align", ["horizontal", "vertical"])

@@ -51,7 +51,7 @@ private:
     class MouseBinding {
     public:
         MouseCombo mousecombo;
-        MouseFunction action;
+        MouseFunction action = {};
         std::vector<std::string> cmd;
     };
 

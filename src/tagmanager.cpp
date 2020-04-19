@@ -22,6 +22,7 @@ TagManager* global_tags;
 TagManager::TagManager()
     : IndexingObject()
     , by_name_(*this)
+    , settings_(nullptr)
     , focus_(*this, "focus")
 {
 }

@@ -152,14 +152,14 @@ private:
     InitialState initialState_;
     void readInitialEwmhState();
     Atom wmatom(WM proto);
-    Atom wmatom_[(int)WM::Last];
+    Atom wmatom_[(int)WM::Last] = {};
 
     //! array with Window-IDs in initial mapping order for _NET_CLIENT_LIST
     std::vector<Window> netClientList_;
     //! window that shows that the WM is still alive
     Window      windowManagerWindow_;
 
-    Atom netatom_[NetCOUNT];
+    Atom netatom_[NetCOUNT] = {};
     static const std::array<const char*,NetCOUNT> netatomNames_;
 };
 

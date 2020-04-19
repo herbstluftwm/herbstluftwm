@@ -16,7 +16,7 @@
 #   # Checks: '*,-abseil-*,-android-*,-objc-*,-fuchsia-*,-mpi-*,-performance-*,-llvm-include-order'
 #   ###
 #
-Checks: '-clang-analyzer-core.CallAndMessage,readability-braces-around-statements,google-readability-braces-around-statements,hicpp-braces-around-statements,readability-container-size-empty,readability-inconsistent-declaration-parameter-name,bugprone-macro-parentheses,bugprone-bool-pointer-implicit-conversion,bugprone-suspicious-string-compare'
+Checks: '-clang-analyzer-core.CallAndMessage,readability-braces-around-statements,google-readability-braces-around-statements,hicpp-braces-around-statements,readability-container-size-empty,readability-inconsistent-declaration-parameter-name,bugprone-macro-parentheses,bugprone-bool-pointer-implicit-conversion,bugprone-suspicious-string-compare,cppcoreguidelines-pro-type-member-init'
 
 # Uncomment this to make clang-tidy fail on any findings:
 WarningsAsErrors: '*'

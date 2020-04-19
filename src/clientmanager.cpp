@@ -30,6 +30,9 @@ using std::vector;
 ClientManager::ClientManager()
     : focus(*this, "focus")
     , dragged(*this, "dragged")
+    , theme(nullptr)
+    , settings(nullptr)
+    , ewmh(nullptr)
 {
 }
 
