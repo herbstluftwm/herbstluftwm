@@ -94,3 +94,16 @@ def test_floating_command_no_tag(hlwm):
     # toggles the floating state again
     hlwm.call('floating')
     assert hlwm.get_attr('tags.0.floating') == hlwm.bool(False)
+
+
+def test_bring_floating_from_different_tag(hlwm, x11):
+    win, winid = x11.create_client()
+    hlwm.call('true')
+    hlwm.call(f'set_attr clients.{winid}.floating true')
+    hlwm.call('add anothertag')
+    hlwm.call('use anothertag')
+    assert hlwm.get_attr(f'clients.{winid}.tag') == 'default'
+    hlwm.call(['bring', winid])
+
+    assert hlwm.get_attr(f'clients.{winid}.tag') == 'anothertag'
+    assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(True)
