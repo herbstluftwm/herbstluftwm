@@ -39,6 +39,9 @@ MonitorManager::MonitorManager()
     : IndexingObject<Monitor>()
     , focus(*this, "focus")
     , by_name_(*this)
+    , panels_(nullptr)
+    , tags_(nullptr)
+    , settings_(nullptr)
 {
     cur_monitor = 0;
 }

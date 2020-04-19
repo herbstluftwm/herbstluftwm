@@ -89,7 +89,7 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
         binds.clear();
         xKeyGrabber_.ungrabAll();
     } else {
-        KeyCombo comboToRemove;
+        KeyCombo comboToRemove = {};
         try {
             comboToRemove = KeyCombo::fromString(arg);
         } catch (std::runtime_error &error) {

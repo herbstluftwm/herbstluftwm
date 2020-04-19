@@ -436,6 +436,12 @@ int frame_current_bring(int argc, char** argv, Output output) {
     }
     HSTag* tag = get_current_monitor()->tag;
     global_tags->moveClient(client, tag, {}, true);
+    auto frame = tag->frame->root_->frameWithClient(client);
+    if (!client->is_client_floated() && !frame->isFocused()) {
+        frame->removeClient(client);
+        tag->frame->focusedFrame()->insertClient(client, true);
+    }
+    focus_client(client, false, false, true);
     return 0;
 }
 
