@@ -113,3 +113,15 @@ def test_floating_invalid_parameter(hlwm):
     # passing a non-boolean must be handled
     hlwm.call_xfail('floating invalidvalue') \
         .expect_stderr('invalid argument')
+
+
+@pytest.mark.parametrize("tiled_num", [3])
+@pytest.mark.parametrize("floated_num", [2])
+def test_client_count_attribute(hlwm, tiled_num, floated_num):
+    hlwm.create_clients(tiled_num)
+    floated = hlwm.create_clients(floated_num)
+    for winid in floated:
+        hlwm.call(f'attr clients.{winid}.floating true')
+
+    assert int(hlwm.get_attr('tags.focus.client_count')) \
+        == tiled_num + floated_num
