@@ -20,8 +20,8 @@ class Completion;
 */
 class RootCommands {
 public:
-    /** This object has no dependencies to other hlwm modules, and so the
-     * 'root' pointer held by this class is just an Object-pointer.
+    /** This class shall have minimal dependencies to other hlwm modules, therefore the
+     * 'root' reference held by this class has the Object type instead of Root.
      */
     RootCommands(Object& root);
 
