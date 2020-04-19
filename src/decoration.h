@@ -41,15 +41,15 @@ private:
     Rectangle   last_outer_rect = {0, 0, 0, 0}; // only valid if width >= 0
     Rectangle   last_actual_rect = {0, 0, 0, 0}; // last actual client rect, relative to decoration
     /* X specific things */
-    Colormap                colormap = 0;
-    unsigned int            depth = 0;
+    Colormap                colormap;
+    unsigned int            depth;
     Pixmap                  pixmap = 0;
     int                     pixmap_height = 0;
     int                     pixmap_width = 0;
     // fill the area behind client with another window that does nothing,
     // especially not repainting or background filling to avoid flicker on
     // unmap
-    Window                  bgwin = 0;
+    Window                  bgwin;
 private:
     Client* client_; // the client to decorate
     Settings& settings_;
