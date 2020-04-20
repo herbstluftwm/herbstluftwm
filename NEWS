@@ -13,6 +13,9 @@ Current git version
   * keybind now checks that the bound command exists.
   * cycle_all (Alt-Tab) now also traverses floating clients
   * new setting 'auto_detect_panels' controlling the panel detection algorithm.
+  * Bug fixes:
+    - Handle the regular expression "" correctly, since the grammar of extended
+      regular expressions does not allow "".
 
 Release 0.8.0 on 2020-04-09
 ---------------------------
