@@ -9,7 +9,8 @@ Current git version
   * new setting 'hide_covered_windows' to improve the appearance when used with
     a compositor.
   * resize floating windows with the same command ('resize') as in tiling mode
-    and thus the same keybindings as in tiling mode.
+    and thus the same keybindings as in tiling mode. Therefore, the
+    'fractiondelta' parameter to the 'resize' command is now optional.
   * keybind now checks that the bound command exists.
   * cycle_all (Alt-Tab) now also traverses floating clients
   * new setting 'auto_detect_panels' controlling the panel detection algorithm.

@@ -344,8 +344,8 @@ void HSTag::cycleAllCompletion(Completion& complete)
 
 int HSTag::resizeCommand(Input input, Output output)
 {
-    string dir_str, delta_str;
-    if (!(input >> dir_str >> delta_str)) {
+    string dir_str;
+    if (!(input >> dir_str)) {
         return HERBST_NEED_MORE_ARGS;
     }
     Direction direction;
@@ -355,7 +355,6 @@ int HSTag::resizeCommand(Input input, Output output)
         output << input.command() << ": " << e.what() << "\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    double delta_double = atof(delta_str.c_str());
     Client* client = focusedClient();
     if (client && client->is_client_floated()) {
         if (!floating_resize_direction(this, client, direction)) {
@@ -363,6 +362,11 @@ int HSTag::resizeCommand(Input input, Output output)
             return HERBST_FORBIDDEN;
         }
     } else {
+        double delta_double = 0.02;
+        string delta_str;
+        if (input >> delta_str) {
+            delta_double = atof(delta_str.c_str());
+        }
         if (!frame->resizeFrame(delta_double, direction)) {
             output << input.command() << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
