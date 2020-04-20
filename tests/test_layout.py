@@ -532,6 +532,26 @@ def test_resize_flat_split(hlwm, splittype, dir_work, dir_dummy):
             .expect_stderr('No neighbour found')
 
 
+@pytest.mark.parametrize('direction', ['left', 'right'])
+def test_resize_default_delta(hlwm, direction):
+    layout = '(split horizontal:0.4:1'
+    layout += ' (clients vertical:0)'
+    layout += ' (clients vertical:0)'
+    layout += ')'
+    hlwm.call(['load', layout])
+    assert hlwm.call('dump').stdout == layout
+
+    # resize
+    hlwm.call(['resize', direction])
+    assert hlwm.call('dump').stdout != layout
+
+    # we expect the fraction to have changed by 0.02.
+    # to verify this, we adjust the fraction by -0.02
+    # and check that we're back at the original layout
+    hlwm.call(['resize', direction, '-0.02'])
+    assert hlwm.call('dump').stdout == layout
+
+
 def test_resize_nested_split(hlwm):
     # a layout for a 2x2 grid of frames, where the
     # top left frame is focused

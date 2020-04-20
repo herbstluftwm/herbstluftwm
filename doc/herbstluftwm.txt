@@ -477,13 +477,13 @@ bring 'WINID'::
     <<WINDOW_IDS, section on WINDOW IDS>> on how to reference a certain window.
 
 
-resize 'DIRECTION' 'FRACTIONDELTA'::
-    Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA'.
-    'DIRECTION' behaves as specified at the 'focus' command. If a floating
-    window is focused, it is resized and grows into the specified 'DIRECTION'.
-    In the parameter 'FRACTIONDELTA', you should not omit the sign '-' or '+',
-    because in future versions, the behaviour may change if the sign is omitted.
-    Example:
+resize 'DIRECTION' ['FRACTIONDELTA']::
+    Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA' (which
+    defaults to 0.02 if none is supplied). 'DIRECTION' behaves as specified at
+    the 'focus' command. If a floating window is focused, it is resized and
+    grows into the specified 'DIRECTION'. In the parameter 'FRACTIONDELTA', you
+    should not omit the sign '-' or '+', because in future versions, the
+    behaviour may change if the sign is omitted. Example:
 
         * resize right +0.05
         * resize down -0.1
