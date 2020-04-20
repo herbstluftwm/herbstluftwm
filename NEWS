@@ -13,6 +13,12 @@ Current git version
   * keybind now checks that the bound command exists.
   * cycle_all (Alt-Tab) now also traverses floating clients
   * new setting 'auto_detect_panels' controlling the panel detection algorithm.
+  * improved herbstclient tab completion for the fish shell
+  * Bug fixes:
+    - Handle the regular expression "" correctly, since the grammar of extended
+      regular expressions does not allow "".
+    - Error handling for the lack of xrandr
+    - Fixes to make it compile on other systems and architecture
 
 Release 0.8.0 on 2020-04-09
 ---------------------------
@@ -399,3 +405,4 @@ planned features). Currently implemented features are:
       (there is also an example panel.sh)
     * give information about urgent state of clients
 
+// vim: ft=asciidoc

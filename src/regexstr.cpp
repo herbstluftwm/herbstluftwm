@@ -6,14 +6,20 @@ RegexStr::RegexStr()
 {
 }
 
-RegexStr RegexStr::fromStr(const string &source)
+RegexStr RegexStr::fromStr(const string& source)
 {
     RegexStr r;
     r.source_ = source;
-    try {
-        r.regex_ = std::regex(source, std::regex::extended);
-    }  catch (const std::exception& e) {
-        throw std::invalid_argument(e.what());
+    // An empty regex is not allowed in the POSIX grammar
+    // as one can infer from the grammar at
+    // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_05_03
+    // => So we must not compile "" to a regex
+    if (!source.empty()) {
+        try {
+            r.regex_ = std::regex(source, std::regex::extended);
+        }  catch (const std::exception& e) {
+            throw std::invalid_argument(e.what());
+        }
     }
     return r;
 }
@@ -25,7 +31,11 @@ bool RegexStr::operator==(const RegexStr& other) const
 
 bool RegexStr::matches(const string& str) const
 {
-    return std::regex_match(str, regex_);
+    if (source_.empty()) {
+        return false;
+    } else {
+        return std::regex_match(str, regex_);
+    }
 }
 
 template<> RegexStr Converter<RegexStr>::parse(const string& source) {
