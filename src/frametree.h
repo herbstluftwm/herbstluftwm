@@ -58,7 +58,6 @@ public:
     int closeAndRemoveCommand();
     int closeOrRemoveCommand();
     int rotateCommand();
-    int cycleAllCommand(Input input, Output output);
     bool cycleAll(CycleDelta cdelta, bool skip_invisible);
     int cycleFrameCommand(Input input, Output output);
     int loadCommand(Input input, Output output);
