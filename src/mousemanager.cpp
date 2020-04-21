@@ -122,7 +122,9 @@ bool MouseManager::mouse_handle_event(unsigned int modifiers, unsigned int butto
         return true;
     }
     string errorMsg = (this ->* (b->action))(client, b->cmd);
-    HSDebug("can not start drag: %s\n", errorMsg.c_str());
+    if (!errorMsg.empty()) {
+        HSDebug("cannot start drag: %s\n", errorMsg.c_str());
+    }
     return true;
 }
 
