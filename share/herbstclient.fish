@@ -14,7 +14,7 @@ function _first_hlwm_command
 end
 
 function _get_herbstluftwm_completion
-    set tokens (commandline -o)
+    set tokens (commandline -op)
     set first (_first_hlwm_command $tokens)
     if not test -n $first; return; end # no command found, we are done
     set tokens $tokens[$first..-1]
@@ -45,7 +45,7 @@ end
 function _complete_herbstclient
     # do not complete herbstclient options after commands
     # TODO: this could check if cursor sits in front of said command
-    complete -fc herbstclient -n 'not _first_hlwm_command (commandline -o)' $argv
+    complete -fc herbstclient -n 'not _first_hlwm_command (commandline -op)' $argv
 end
 
 # add completions for herbstclient options
