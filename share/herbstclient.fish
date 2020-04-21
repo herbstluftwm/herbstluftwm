@@ -10,13 +10,13 @@ function _first_hlwm_command
             return 0
         end
     end
+    math (count $argv) + 1
     return 1
 end
 
 function _get_herbstluftwm_completion
     set tokens (commandline -op)
     set first (_first_hlwm_command $tokens)
-    if not test -n $first; return; end # no command found, we are done
     set tokens $tokens[$first..-1]
 
     # TODO: we should derive the real position but it is tricky
