@@ -163,3 +163,19 @@ def test_bring_from_same_tag_different_frame(hlwm, x11):
     hlwm.call(['bring', winid])
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == 1
     assert hlwm.get_attr('clients.focus.winid') == winid
+
+
+@pytest.mark.parametrize("command", ['fullscreen', 'pseudotile'])
+def test_fullscreen_pseudotile_command(hlwm, command):
+    # create three clients to check that the command
+    # adjusts the property of the correct client
+    hlwm.create_clients(3)
+    for set_value in ['true', 'false', 'toggle', '']:
+        old_value = hlwm.get_attr(f'clients.focus.{command}')
+        # let shlex parse it such that for '', no argument is passed
+        hlwm.call(f'{command} {set_value}')
+        new_value = hlwm.get_attr(f'clients.focus.{command}')
+        if set_value in ['', 'toggle']:
+            assert old_value != new_value
+        else:
+            assert new_value == set_value
