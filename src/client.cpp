@@ -547,27 +547,6 @@ Client* get_current_client() {
     return Root::get()->monitors->focus()->tag->focusedClient();
 }
 
-void Client::set_fullscreen(bool state) {
-    // TODO: move all these things to appropriate places:
-    //  - Slice management should not be done by the client
-    //  - fullscreen-hook should be done by the ClientManager
-    //  - Monitr::applyLayout should be called via hooks
-    if (fullscreen_() == state) {
-        return;
-    }
-    fullscreen_ = state;
-    if (this->ewmhnotify_) {
-        this->ewmhfullscreen_ = state;
-    }
-    auto m = find_monitor_with_tag(this->tag());
-    if (m) {
-        m->applyLayout();
-    }
-
-    ewmh.updateWindowState(this);
-    hook_emit({"fullscreen", state ? "on" : "off", WindowID(window_).str()});
-}
-
 void Client::updateEwmhState() {
     if (ewmhnotify_) {
         ewmhfullscreen_ = fullscreen_();
@@ -583,14 +562,6 @@ string Client::getWindowClass()
 string Client::getWindowInstance()
 {
     return ewmh.X().getInstance(window_);
-}
-
-void Client::set_pseudotile(bool state) {
-    this->pseudotile_ = state;
-    auto m = find_monitor_with_tag(this->tag());
-    if (m) {
-        m->applyLayout();
-    }
 }
 
 /**

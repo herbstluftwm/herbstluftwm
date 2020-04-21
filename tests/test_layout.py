@@ -346,6 +346,13 @@ def test_cycle_frame_traverses_all(hlwm, running_clients, num_splits, delta):
             assert layouts[i1] != layouts[i2]
 
 
+def test_cycle_frame_invalid_delta(hlwm):
+    hlwm.call_xfail(['cycle_frame', 'df8']) \
+        .expect_stderr('invalid argument')
+    hlwm.call_xfail(['cycle_frame', '-230984209340']) \
+        .expect_stderr('out of range')
+
+
 @pytest.mark.parametrize("running_clients_num", [0, 2])
 @pytest.mark.parametrize("align", ["horizontal", "vertical"])
 @pytest.mark.parametrize("fraction", ["0.1", "0.5", "0.7"])
@@ -530,6 +537,26 @@ def test_resize_flat_split(hlwm, splittype, dir_work, dir_dummy):
         hlwm.call(['load', layout_format.format('0.4')])
         hlwm.call_xfail(['resize', d, '+0.1']) \
             .expect_stderr('No neighbour found')
+
+
+@pytest.mark.parametrize('direction', ['left', 'right'])
+def test_resize_default_delta(hlwm, direction):
+    layout = '(split horizontal:0.4:1'
+    layout += ' (clients vertical:0)'
+    layout += ' (clients vertical:0)'
+    layout += ')'
+    hlwm.call(['load', layout])
+    assert hlwm.call('dump').stdout == layout
+
+    # resize
+    hlwm.call(['resize', direction])
+    assert hlwm.call('dump').stdout != layout
+
+    # we expect the fraction to have changed by 0.02.
+    # to verify this, we adjust the fraction by -0.02
+    # and check that we're back at the original layout
+    hlwm.call(['resize', direction, '-0.02'])
+    assert hlwm.call('dump').stdout == layout
 
 
 def test_resize_nested_split(hlwm):
