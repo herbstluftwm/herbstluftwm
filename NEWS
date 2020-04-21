@@ -1,8 +1,8 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
-Current git version
--------------------
+Release 0.8.1 on 2020-04-21
+---------------------------
 
   * the frame index 'e' refers to the first empty frame (e.g. 'rule index=e' places
     new windows in empty frames, if possible)
