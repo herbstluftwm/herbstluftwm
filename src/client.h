@@ -112,8 +112,6 @@ public:
 
     void set_visible(bool visible_);
 
-    void set_fullscreen(bool state);
-    void set_pseudotile(bool state);
     void set_urgent_force(bool state);
     void requestClose(); //! ask the client to close
 
