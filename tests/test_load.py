@@ -130,3 +130,8 @@ def test_load_brings_windows(hlwm, running_clients, running_clients_num, num_bri
         len(running_clients) - num_bring
     assert int(hlwm.get_attr('tags.1.client_count')) == num_bring
     assert hlwm.call('dump other').stdout == layout
+
+
+def test_load_invalid_tag(hlwm):
+    hlwm.call_xfail(['load', 'invalidtagname', '(clients vertical:0)']) \
+        .expect_stderr(r'Tag.*not found')
