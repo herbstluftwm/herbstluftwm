@@ -20,10 +20,10 @@ class Completion;
 */
 class RootCommands {
 public:
-    /** This object has no dependencies to other hlwm modules, and so the
-     * 'root' pointer held by this class is just an Object-pointer.
+    /** This class shall have minimal dependencies to other hlwm modules, therefore the
+     * 'root' reference held by this class has the Object type instead of Root.
      */
-    RootCommands(Object* root);
+    RootCommands(Object& root);
 
     Attribute* getAttribute(std::string path, Output output);
 
@@ -77,7 +77,7 @@ public:
 
     std::vector<std::vector<std::string>> splitCommandList(ArgList::Container input);
 private:
-    Object* root;
+    Object& root;
     std::vector<std::unique_ptr<Attribute>> userAttributes_;
 
     class FormatStringBlob {
