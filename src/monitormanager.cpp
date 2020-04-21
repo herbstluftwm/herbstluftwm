@@ -187,7 +187,7 @@ function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
             monitor = byString(monitor_name);
             if (!monitor) {
                 output << input.command() <<
-                    ": Monitor \"" << input.front() << "\" not found!\n";
+                    ": Monitor \"" << monitor_name << "\" not found!\n";
                 return HERBST_INVALID_ARGUMENT;
             }
         }

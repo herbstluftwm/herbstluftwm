@@ -1,6 +1,14 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Current git version
+-------------------
+
+  * Bug fixes:
+    - Fix a crash in the error handler when a invalid monitor name is
+      passed. (Affects list_padding move_monitor rename_monitor lock_tag
+      unlock_tag)
+
 Release 0.8.1 on 2020-04-21
 ---------------------------
 
