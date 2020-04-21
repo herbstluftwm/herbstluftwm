@@ -346,6 +346,13 @@ def test_cycle_frame_traverses_all(hlwm, running_clients, num_splits, delta):
             assert layouts[i1] != layouts[i2]
 
 
+def test_cycle_frame_invalid_delta(hlwm):
+    hlwm.call_xfail(['cycle_frame', 'df8']) \
+        .expect_stderr('invalid argument')
+    hlwm.call_xfail(['cycle_frame', '-230984209340']) \
+        .expect_stderr('out of range')
+
+
 @pytest.mark.parametrize("running_clients_num", [0, 2])
 @pytest.mark.parametrize("align", ["horizontal", "vertical"])
 @pytest.mark.parametrize("fraction", ["0.1", "0.5", "0.7"])
