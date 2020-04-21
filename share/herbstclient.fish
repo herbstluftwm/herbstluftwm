@@ -49,8 +49,7 @@ end
 
 function _complete_herbstclient
     # do not complete herbstclient options after commands
-    # TODO: this could check if cursor sits in front of said command
-    complete -fc herbstclient -n 'not _first_hlwm_command (commandline -op)' $argv
+    complete -fc herbstclient -n 'not _first_hlwm_command (commandline -op --cut-at-cursor)' $argv
 end
 
 # add completions for herbstclient options
