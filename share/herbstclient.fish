@@ -2,9 +2,13 @@
 
 function _first_hlwm_command
     # Find first hlwm command in given tokens (e.g. commandline -o)
-    # Print token position if found; exit status 0 if found, else 1
+    # Print token position if found, else print no. tokens + 1
+    # Exit status 0 if found, 1 if not found, 2 if not allowed due to options
 
     for i in (seq 2 (count $argv)) # start after 'herbstclient'
+        if string match -qr -- '^(-v|-h|--help|-w|--wait|-i|--idle)$' $argv[$i]
+            return 2 # these options do not take commands
+        end
         if not string match -q -- "-*" $argv[$i]
             echo $i
             return 0
@@ -17,6 +21,7 @@ end
 function _get_herbstluftwm_completion
     set tokens (commandline -op)
     set first (_first_hlwm_command $tokens)
+    if test $status -eq 2; return; end # no hlwm completion desired
     set tokens $tokens[$first..-1]
 
     # TODO: we should derive the real position but it is tricky
