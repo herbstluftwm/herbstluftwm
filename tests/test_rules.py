@@ -517,3 +517,27 @@ def test_float_transient_for(hlwm, x11, transient_for):
 
     assert hlwm.get_attr(f'clients.{mainwinid}.floating') == 'false'
     assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(transient_for)
+
+
+def test_apply_rules_invalid_window(hlwm):
+    hlwm.call_xfail(['apply_rules', 'invalidWindowId']) \
+        .expect_stderr(r'No such.*client')
+
+
+def test_apply_rules_on_unmanaged_window(hlwm, hc_idle, x11):
+    hlwm.call('rule manage=off hook=processed')
+    _, winid = x11.create_client()
+    # assert that hlwm correctly processed the window
+    assert ['rule', 'processed', winid] in hc_idle.hooks()
+    assert winid not in hlwm.list_children('clients')
+
+    hlwm.call_xfail(['apply_rules', winid]) \
+        .expect_stderr(r'No such.*client')
+
+
+def test_apply_rules_unmanage(hlwm):
+    winid, _ = hlwm.create_client()
+    hlwm.call('rule manage=off')
+
+    hlwm.call_xfail(['apply_rules', winid]) \
+        .expect_stderr(r'not yet possible')
