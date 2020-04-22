@@ -4,6 +4,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <array>
+#include <string>
 #include <vector>
 
 /* actions on NetWmState */
