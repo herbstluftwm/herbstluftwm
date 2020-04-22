@@ -65,6 +65,8 @@ public:
     int resizeCommand(Input input, Output output);
     void resizeCompletion(Completion& complete);
 
+    int closeAndRemoveCommand();
+    int closeOrRemoveCommand();
 private:
     void onGlobalFloatingChange(bool newState);
     void fixFocusIndex();

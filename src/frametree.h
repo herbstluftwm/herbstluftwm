@@ -55,8 +55,6 @@ public:
     int cycleSelectionCommand(Input input, Output output);
     int focusNthCommand(Input input, Output output);
     int removeFrameCommand();
-    int closeAndRemoveCommand();
-    int closeOrRemoveCommand();
     int rotateCommand();
     bool cycleAll(CycleDelta cdelta, bool skip_invisible);
     int cycleFrameCommand(Input input, Output output);
