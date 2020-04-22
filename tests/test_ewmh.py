@@ -1,6 +1,7 @@
 import conftest
 import os
 import pytest
+from Xlib import X
 
 
 def test_net_wm_desktop_after_load(hlwm, x11):
@@ -113,3 +114,11 @@ def test_manage_transient_for_windows_on_startup(hlwm_spawner, x11):
     assert hlwm.list_children('clients') \
         == sorted([master_id, dialog_id, 'focus'])
     hlwm_proc.shutdown()
+
+
+def test_wm_state_type(hlwm, x11):
+    win, _ = x11.create_client(sync_hlwm=True)
+    wm_state = x11.display.intern_atom('WM_STATE')
+    prop = win.get_full_property(wm_state, X.AnyPropertyType)
+    assert prop.property_type == wm_state
+    assert len(prop.value) == 2

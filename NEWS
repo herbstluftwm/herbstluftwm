@@ -8,6 +8,7 @@ Current git version
     - Fix a crash in the error handler when a invalid monitor name is
       passed. (Affects list_padding move_monitor rename_monitor lock_tag
       unlock_tag)
+    - Fix the type of WM_STATE
 
 Release 0.8.1 on 2020-04-21
 ---------------------------

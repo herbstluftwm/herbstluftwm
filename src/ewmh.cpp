@@ -471,11 +471,13 @@ void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bott
 void Ewmh::windowUpdateWmState(Window win, WmState state) {
     /* set full WM_STATE according to
      * http://www.x.org/releases/X11R7.7/doc/xorg-docs/icccm/icccm.html#WM_STATE_Property
+     *
+     * It's crucial that the property has the type WM_STATE!
      */
-    X_.setPropertyCardinal(win, wmatom(WM::State), {
-        static_cast<long>(state), // WM_STATE.state
-        None // WM_STATE.icon
-    });
+    long wmstate[] = { static_cast<long>(state), None };
+    XChangeProperty(X_.display(), win,  wmatom(WM::State), wmatom(WM::State),
+                    32, PropModeReplace,
+                    reinterpret_cast<unsigned char*>(wmstate), LENGTH(wmstate));
 }
 
 bool Ewmh::isOwnWindow(Window win) {
