@@ -125,3 +125,82 @@ def test_client_count_attribute(hlwm, tiled_num, floated_num):
 
     assert int(hlwm.get_attr('tags.focus.client_count')) \
         == tiled_num + floated_num
+
+
+@pytest.mark.parametrize("command", [
+    "close_or_remove",
+    "close_and_remove",
+])
+def test_close_and_or_remove_floating(hlwm, command):
+    # set up some empty frames and a floating client
+    hlwm.call('split explode')
+    winid, proc = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.floating true')
+    hlwm.call(f'jumpto {winid}')
+    assert hlwm.get_attr('clients.focus.winid') == winid
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
+
+    # run close_or_remove / close_and_remove
+    hlwm.call(command)
+
+    # in any case no frame may have been removed
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
+    # and the client is closed:
+    proc.wait(10)
+
+
+def test_close_and_remove_with_one_client(hlwm):
+    hlwm.call('split explode')
+    winid, proc = hlwm.create_client()
+    assert hlwm.get_attr('clients.focus.winid') == winid
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
+
+    hlwm.call('close_and_remove')
+
+    # this closes the client and removes the frame
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 1
+    proc.wait(10)
+
+
+def test_close_and_remove_with_two_clients(hlwm):
+    hlwm.call('split explode')
+    winid, proc = hlwm.create_client()
+    other_winid, _ = hlwm.create_client()
+    assert hlwm.get_attr('clients.focus.winid') == winid
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
+
+    hlwm.call('close_and_remove')
+
+    # this closes the client, but does not remove the frame
+    # since there is a client left
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
+    proc.wait(10)
+
+
+def test_close_and_remove_without_clients(hlwm):
+    hlwm.call('split explode')
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
+
+    hlwm.call('close_and_remove')
+
+    # this acts like remove:
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 1
+
+
+def test_close_or_remove_client(hlwm):
+    # This is like close_and_remove, but requires hitting
+    # 'close_or_remove' twice.
+    hlwm.call('split explode')
+    winid, proc = hlwm.create_client()
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
+
+    # On the first invocation:
+    hlwm.call('close_or_remove')
+    # only close the client
+    proc.wait(10)
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 2
+
+    # On the second invocation:
+    hlwm.call('close_or_remove')
+    # remove the frame
+    assert int(hlwm.get_attr('tags.focus.frame_count')) == 1

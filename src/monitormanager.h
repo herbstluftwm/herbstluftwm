@@ -49,6 +49,7 @@ public:
     CommandBinding byFirstArg(MonitorCommand cmd, MonitorCompletion moncomplete);
     //! run the command on the currently focused tag
     CommandBinding tagCommand(TagCommand cmd, TagCompletion completer);
+    CommandBinding tagCommand(std::function<int(HSTag&)> cmd);
     // relayout the monitor showing this tag, if there is any
     void relayoutTag(HSTag* tag);
     void relayoutAll();

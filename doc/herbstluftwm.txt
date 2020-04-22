@@ -368,11 +368,11 @@ close 'WINID'::
 
 close_or_remove::
     Closes the focused window or removes the current frame if no window is
-    focused.
+    focused. In floating mode, this acts as the close command.
 
 close_and_remove::
     Closes the focused window and removes the current frame if no other window
-    is present in that frame.
+    is present in that frame. In floating mode, this acts as the close command.
 
 split 'ALIGN' ['FRACTION']::
     Splits the focused frame into two subframes with a specified 'FRACTION'
