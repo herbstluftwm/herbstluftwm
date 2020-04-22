@@ -1,8 +1,9 @@
 #ifndef HERBSTLUFT_SIGNAL_H
 #define HERBSTLUFT_SIGNAL_H
 
-#include<functional>
-#include<vector>
+#include <functional>
+#include <stdexcept>
+#include <vector>
 
 class Signal {
 public:
