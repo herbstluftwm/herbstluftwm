@@ -123,6 +123,7 @@ private:
     std::string getWindowClass();
     std::string getWindowInstance();
     std::string triggerRelayoutMonitor();
+    void requestRedraw();
     friend Decoration;
     ClientManager& manager;
     Theme& theme;
