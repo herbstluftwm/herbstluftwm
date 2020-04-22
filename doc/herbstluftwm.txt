@@ -1505,6 +1505,9 @@ listed as follows:
  i w outer_width          , width of an additional border close to the edge
  c w outer_color          , its color
  c w background_color     , color behind window contents visible on resize
+ b w tight_decoration     , specifies whether the size hints also affect the
+                            window decoration or only the window contents of
+                            tiled clients (requires enabled sizehints_tiling)
  s w reset                , Writing this resets all attributes to a default value
 |===========================
 +
