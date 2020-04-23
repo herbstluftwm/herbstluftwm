@@ -1,10 +1,10 @@
-FROM ubuntu:eoan-20200313
+FROM ubuntu:focal-20200423
 
 # Build deps
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ccache \
-    clang-9 \
-    clang-tidy-9 \
+    clang-10 \
+    clang-tidy-10 \
     cmake \
     curl \
     g++-9 \
