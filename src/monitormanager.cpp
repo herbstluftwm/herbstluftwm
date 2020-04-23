@@ -223,6 +223,13 @@ CommandBinding MonitorManager::tagCommand(TagCommand cmd, TagCompletion complete
     return {cmdBound, completeBound};
 }
 
+CommandBinding MonitorManager::tagCommand(function<int (HSTag&)> cmd)
+{
+    return CommandBinding([this,cmd]() {
+        return cmd(*(this->focus()->tag));
+    });
+}
+
 
 Monitor* MonitorManager::byTag(HSTag* tag) {
     for (Monitor* m : *this) {

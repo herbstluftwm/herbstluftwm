@@ -198,33 +198,6 @@ int FrameTree::removeFrameCommand() {
     return 0;
 }
 
-//! close the focused client or remove if the frame is empty
-int FrameTree::closeOrRemoveCommand() {
-    Client* client = focusedFrame()->focusedClient();
-    if (client) {
-        client->requestClose();
-        return 0;
-    } else {
-        return removeFrameCommand();
-    }
-}
-
-//! same as close or remove but directly remove frame after last client
-int FrameTree::closeAndRemoveCommand() {
-    auto cur_frame = focusedFrame();
-    Client* client = cur_frame->focusedClient();
-    if (client) {
-        // note that this just sends the closing signal
-        client->requestClose();
-        // so the window is still in the frame at this point
-    }
-    if (cur_frame->clientCount() <= 1) {
-        return removeFrameCommand();
-    }
-    return 0;
-}
-
-
 int FrameTree::rotateCommand() {
     void (*onSplit)(FrameSplit*) =
         [] (FrameSplit* s) {

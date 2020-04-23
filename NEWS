@@ -4,6 +4,8 @@ herbstluftwm NEWS -- History of user-visible changes
 Current git version
 -------------------
 
+  * The commands 'close_and_remove' / 'close_or_remove' act like 'close' for
+    floating clients
   * Bug fixes:
     - Fix a crash in the error handler when a invalid monitor name is
       passed. (Affects list_padding move_monitor rename_monitor lock_tag
