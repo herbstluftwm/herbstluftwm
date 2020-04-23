@@ -9,7 +9,7 @@ Current git version
       passed. (Affects list_padding move_monitor rename_monitor lock_tag
       unlock_tag)
     - Fix the type of WM_STATE
-    - The cient attributes sizehints_tiling and sizehints_floating are now
+    - The client attributes sizehints_tiling and sizehints_floating are now
       writable
 
 Release 0.8.1 on 2020-04-21
