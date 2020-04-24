@@ -347,10 +347,10 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
                     continue;
                 }
                 /* check if we support the property data[prop] */
-                int i;
+                size_t i;
                 for (i = 0; i < LENGTH(client_atoms); i++) {
                     if (netatom_[client_atoms[i].atom_index]
-                        == me->data.l[prop]) {
+                        == static_cast<unsigned int>(me->data.l[prop])) {
                         break;
                     }
                 }
@@ -364,7 +364,7 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
                     { _NET_WM_STATE_TOGGLE  , !client_atoms[i].enabled },
                 }).a;
                 int action = me->data.l[0];
-                if (action >= new_value.size()) {
+                if (action >= static_cast<int>(new_value.size())) {
                     HSDebug("_NET_WM_STATE: invalid action %d\n", action);
                 }
                 /* change the value */
@@ -418,7 +418,7 @@ void Ewmh::updateWindowState(Client* client) {
     /* find out which flags are set */
     Atom window_state[LENGTH(client_atoms)];
     size_t count_enabled = 0;
-    for (int i = 0; i < LENGTH(client_atoms); i++) {
+    for (size_t i = 0; i < LENGTH(client_atoms); i++) {
         if (client_atoms[i].enabled) {
             window_state[count_enabled] = netatom_[client_atoms[i].atom_index];
             count_enabled++;
@@ -471,11 +471,13 @@ void Ewmh::updateFrameExtents(Window win, int left, int right, int top, int bott
 void Ewmh::windowUpdateWmState(Window win, WmState state) {
     /* set full WM_STATE according to
      * http://www.x.org/releases/X11R7.7/doc/xorg-docs/icccm/icccm.html#WM_STATE_Property
+     *
+     * It's crucial that the property has the type WM_STATE!
      */
-    X_.setPropertyCardinal(win, wmatom(WM::State), {
-        static_cast<long>(state), // WM_STATE.state
-        None // WM_STATE.icon
-    });
+    long wmstate[] = { static_cast<long>(state), None };
+    XChangeProperty(X_.display(), win,  wmatom(WM::State), wmatom(WM::State),
+                    32, PropModeReplace,
+                    reinterpret_cast<unsigned char*>(wmstate), LENGTH(wmstate));
 }
 
 bool Ewmh::isOwnWindow(Window win) {

@@ -464,7 +464,7 @@ static bool parameter_expected(int argc, char** argv, int pos) {
         /* no parameter if there is no command */
         return false;
     }
-    for (int i = 0; i < LENGTH(g_parameter_expected)
+    for (size_t i = 0; i < LENGTH(g_parameter_expected)
                     && g_parameter_expected[i].command; i++) {
         if (pos < g_parameter_expected[i].min_index) {
             continue;
@@ -531,7 +531,7 @@ int complete_against_commands(int argc, char** argv, int position,
     if (argc >= 1) {
         const char* cmd_str = (argc >= 1) ? argv[0] : "";
         // complete parameters for commands
-        for (int i = 0; i < LENGTH(g_completions); i++) {
+        for (size_t i = 0; i < LENGTH(g_completions); i++) {
             bool matches = false;
             switch (g_completions[i].relation) {
                 case LE: matches = position <= g_completions[i].index; break;

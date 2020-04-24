@@ -287,3 +287,13 @@ def test_shift_to_monitor_no_client(hlwm):
     # there is no error message at the moment, so we only
     # check that it does not crash
     hlwm.call('shift_to_monitor 1')
+
+
+def test_invalid_monitor_name(hlwm):
+    cmds = [
+        'list_padding', 'move_monitor',
+        'rename_monitor', 'lock_tag', 'unlock_tag'
+    ]
+    for command in cmds:
+        hlwm.call_xfail([command, 'thismonitordoesnotexist']) \
+            .expect_stderr('Monitor "thismonitordoesnotexist" not found')

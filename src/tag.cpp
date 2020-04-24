@@ -344,8 +344,8 @@ void HSTag::cycleAllCompletion(Completion& complete)
 
 int HSTag::resizeCommand(Input input, Output output)
 {
-    string dir_str, delta_str;
-    if (!(input >> dir_str >> delta_str)) {
+    string dir_str;
+    if (!(input >> dir_str)) {
         return HERBST_NEED_MORE_ARGS;
     }
     Direction direction;
@@ -355,7 +355,6 @@ int HSTag::resizeCommand(Input input, Output output)
         output << input.command() << ": " << e.what() << "\n";
         return HERBST_INVALID_ARGUMENT;
     }
-    double delta_double = atof(delta_str.c_str());
     Client* client = focusedClient();
     if (client && client->is_client_floated()) {
         if (!floating_resize_direction(this, client, direction)) {
@@ -363,6 +362,11 @@ int HSTag::resizeCommand(Input input, Output output)
             return HERBST_FORBIDDEN;
         }
     } else {
+        double delta_double = 0.02;
+        string delta_str;
+        if (input >> delta_str) {
+            delta_double = atof(delta_str.c_str());
+        }
         if (!frame->resizeFrame(delta_double, direction)) {
             output << input.command() << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
@@ -413,16 +417,16 @@ void HSTag::fixFocusIndex()
 
 int HSTag::computeFrameCount() {
     int count = 0;
-    frame->root_->fmap([](HSFrameSplit*) {},
-                [&count](HSFrameLeaf*) { count++; },
+    frame->root_->fmap([](FrameSplit*) {},
+                [&count](FrameLeaf*) { count++; },
                 0);
     return count;
 }
 
 int HSTag::computeClientCount() {
-    int count = 0;
-    frame->root_->fmap([](HSFrameSplit*) {},
-                [&count](HSFrameLeaf* l) { count += l->clientCount(); },
+    int count = static_cast<int>(floating_clients_.size());
+    frame->root_->fmap([](FrameSplit*) {},
+                [&count](FrameLeaf* l) { count += l->clientCount(); },
                 0);
     return count;
 }
@@ -471,12 +475,44 @@ void tag_set_flags_dirty() {
     hook_emit({"tag_flags"});
 }
 
-HSTag* find_tag_with_toplevel_frame(HSFrame* frame) {
+HSTag* find_tag_with_toplevel_frame(Frame* frame) {
     for (auto t : *global_tags) {
         if (&* t->frame->root_ == frame) {
             return &* t;
         }
     }
     return nullptr;
+}
+
+//! close the focused client or remove if the frame is empty
+int HSTag::closeOrRemoveCommand() {
+    Client* client = focusedClient();
+    if (client) {
+        client->requestClose();
+        return 0;
+    } else if (!floating_focused) {
+        // since the tiling layer is focused
+        // and no client is focused, we know that the
+        // focused frame is empty.
+        return frame->removeFrameCommand();
+    }
+    return 0;
+}
+
+//! same as close or remove but directly remove frame after last client
+int HSTag::closeAndRemoveCommand() {
+    Client* client = focusedClient();
+    if (client) {
+        // note that this just sends the closing signal
+        client->requestClose();
+        // so the client still exists in the following
+    }
+    // remove a frame if a frame is focused, that is if
+    // the tag is in tiling mode and the tiling layer is focused
+    bool frameFocused = !floating() && !floating_focused;
+    if (frameFocused && frame->focusedFrame()->clientCount() <= 1) {
+        return frame->removeFrameCommand();
+    }
+    return 0;
 }
 

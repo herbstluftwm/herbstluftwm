@@ -36,7 +36,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     , theme(*this, "theme")
     , tmp(*this, TMP_OBJECT_PATH)
     , globals(g)
-    , root_commands(make_unique<RootCommands>(this))
+    , root_commands(make_unique<RootCommands>(*this))
     , X(xconnection)
     , ipcServer_(ipcServer)
     , panels(make_unique<PanelManager>(xconnection))
@@ -61,6 +61,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     clients->injectDependencies(settings(), theme(), ewmh.get());
     monitors->injectDependencies(settings(), tags(), panels.get());
     mouse->injectDependencies(clients(), monitors());
+    panels->injectDependencies(settings());
 
     // set temporary globals
     ::global_tags = tags();

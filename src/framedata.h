@@ -5,12 +5,12 @@
  * frame tree from a user perspective and as it is described in the 'TILING
  * ALGORITHM' section in the man page. For example, we have
  * FrameDataLeaf::selection and FrameDataSplit<T>::selection_. On the other hand,
- * HSFrameLeaf::last_rect is more an implementation detail, and thus is a member
- * variable of HSFrameLeaf and _not_ a member variable of FrameDataLeaf.
+ * FrameLeaf::last_rect is more an implementation detail, and thus is a member
+ * variable of FrameLeaf and _not_ a member variable of FrameDataLeaf.
  *
  * Also note that FrameDataLeaf and FrameDataSplit do not have a common base
- * class (in contrast to HSFrameLeaf and HSFrameSplit which both inherit from
- * HSFrame).
+ * class (in contrast to FrameLeaf and FrameSplit which both inherit from
+ * Frame).
  */
 
 #include <memory>

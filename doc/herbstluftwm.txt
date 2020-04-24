@@ -368,11 +368,11 @@ close 'WINID'::
 
 close_or_remove::
     Closes the focused window or removes the current frame if no window is
-    focused.
+    focused. In floating mode, this acts as the close command.
 
 close_and_remove::
     Closes the focused window and removes the current frame if no other window
-    is present in that frame.
+    is present in that frame. In floating mode, this acts as the close command.
 
 split 'ALIGN' ['FRACTION']::
     Splits the focused frame into two subframes with a specified 'FRACTION'
@@ -477,13 +477,13 @@ bring 'WINID'::
     <<WINDOW_IDS, section on WINDOW IDS>> on how to reference a certain window.
 
 
-resize 'DIRECTION' 'FRACTIONDELTA'::
-    Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA'.
-    'DIRECTION' behaves as specified at the 'focus' command. If a floating
-    window is focused, it is resized and grows into the specified 'DIRECTION'.
-    In the parameter 'FRACTIONDELTA', you should not omit the sign '-' or '+',
-    because in future versions, the behaviour may change if the sign is omitted.
-    Example:
+resize 'DIRECTION' ['FRACTIONDELTA']::
+    Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA' (which
+    defaults to 0.02 if none is supplied). 'DIRECTION' behaves as specified at
+    the 'focus' command. If a floating window is focused, it is resized and
+    grows into the specified 'DIRECTION'. In the parameter 'FRACTIONDELTA', you
+    should not omit the sign '-' or '+', because in future versions, the
+    behaviour may change if the sign is omitted. Example:
 
         * resize right +0.05
         * resize down -0.1
@@ -1074,6 +1074,11 @@ auto_detect_monitors (Boolean)::
     If set, detect_monitors is automatically executed every time a monitor is
     connected, disconnected or resized.
 
+auto_detect_panels (Boolean)::
+    If set, EWMH panels are automatically detected and reserve space at the side
+    of the monitors they are on (via pad attributes of each monitor). This
+    setting is activated per default.
+
 tree_style (String)::
     It contains the chars that are used to print a nice ascii tree. It must
     contain at least 8 characters. e.g. ++X|:#+*-.++ produces a tree like:
@@ -1500,6 +1505,9 @@ listed as follows:
  i w outer_width          , width of an additional border close to the edge
  c w outer_color          , its color
  c w background_color     , color behind window contents visible on resize
+ b w tight_decoration     , specifies whether the size hints also affect the
+                            window decoration or only the window contents of
+                            tiled clients (requires enabled sizehints_tiling)
  s w reset                , Writing this resets all attributes to a default value
 |===========================
 +

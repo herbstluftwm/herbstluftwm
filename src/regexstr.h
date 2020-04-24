@@ -13,13 +13,19 @@ class RegexStr
 {
 public:
     RegexStr();
-    //! may throw std::invalid_argument exception
+    /** Construct a regex. The case where source is "" means
+     * that the regex is inactive, see isUnset().
+     *
+     * may throw std::invalid_argument exception
+     */
     static RegexStr fromStr(const std::string& source);
     std::string str() const { return source_; }
-    /** returns when the source is the empty string, respectivelly is 'unset'
-     * (has nothing to do with the language of the regex being empty)
+    /** returns when the source string is empty, respectivelly the regex is 'unset'
      */
     bool empty() const { return source_.empty(); }
+    /** returns whether two regexes have the same source. In particular,
+     * two RegexStr objects are equal if they are both unset.
+     */
     bool operator==(const RegexStr& other) const;
     bool operator!=(const RegexStr& o) const { return ! operator==(o); }
     bool matches(const std::string& str) const;

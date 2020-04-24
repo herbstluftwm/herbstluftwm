@@ -257,6 +257,8 @@ KeyManager::KeyMask::KeyMask()
 bool KeyManager::KeyMask::allowsBinding(const KeyCombo &combo) const
 {
     if (regex_.empty()) {
+        // an unset keymask allows every binding, regardless of
+        // the 'negated_' flag
         return true;
     } else {
         bool match = regex_.matches(combo.str());
