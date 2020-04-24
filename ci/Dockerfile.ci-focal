@@ -18,7 +18,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ninja-build \
     pkg-config \
     python3-yaml \
-    python3.7 \
+    python3.8 \
     tox \
     x11-xserver-utils \
     xdotool \
