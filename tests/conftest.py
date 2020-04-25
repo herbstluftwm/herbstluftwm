@@ -707,9 +707,9 @@ def x11(x11_connection):
             frame decoration windows"""
             cmd = ['xdotool', 'search', '--class', '_HERBST_FRAME']
             frame_wins = subprocess.run(cmd,
-                                  stdout=subprocess.PIPE,
-                                  universal_newlines=True,
-                                  check=True)
+                                        stdout=subprocess.PIPE,
+                                        universal_newlines=True,
+                                        check=True)
             res = []
             for winid_decimal_str in frame_wins.stdout.splitlines():
                 res.append(self.window(winid_decimal_str))
