@@ -8,6 +8,8 @@ Current git version
 -------------------
 
   * Client minimization (controlled by the attribute 'minimized' of every client)
+  * Client window titles (controlled by the theme attributes 'title_height',
+    'title_color', 'title_font')
   * The 'index' attribute of tags is now writable. This allows adjusting the
     order of existing tags.
   * New child object 'focused_client' for each tag object.

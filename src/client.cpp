@@ -131,6 +131,8 @@ void Client::make_full_client() {
     XSelectInput(g_display, window_,
                             StructureNotifyMask|FocusChangeMask
                             |EnterWindowMask|PropertyChangeMask);
+    // redraw decoration on title change
+    title_.changed().connect(dec.get(), &Decoration::redraw);
 }
 
 void Client::listen_for_events() {

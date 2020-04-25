@@ -5,6 +5,8 @@
 
 #include "client.h"
 #include "ewmh.h"
+#include "font.h"
+#include "fontdata.h"
 #include "globals.h"
 #include "settings.h"
 #include "theme.h"
@@ -125,12 +127,14 @@ Client* Decoration::toClient(Window decoration_window)
 
 Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect) const {
     return rect.adjusted(-*border_width, -*border_width)
-            .adjusted(-*padding_left, -*padding_top, -*padding_right, -*padding_bottom);
+            .adjusted(-*padding_left, -*padding_top - *title_height,
+                      -*padding_right, -*padding_bottom);
 }
 
 Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect) const {
     return rect.adjusted(*border_width, *border_width)
-            .adjusted(*padding_left, *padding_top, *padding_right, *padding_bottom);
+            .adjusted(*padding_left, *padding_top + *title_height,
+                      *padding_right, *padding_bottom);
 }
 
 void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
@@ -283,6 +287,13 @@ void Decoration::change_scheme(const DecorationScheme& scheme) {
     }
 }
 
+void Decoration::redraw()
+{
+    if (last_scheme) {
+        change_scheme(*last_scheme);
+    }
+}
+
 unsigned int Decoration::get_client_color(Color color) {
     XColor xcol = color.toXColor();
     if (colormap) {
@@ -368,6 +379,14 @@ void Decoration::redrawPixmap() {
                        dec->last_actual_rect.y + dec->last_actual_rect.height,
                        inner.width,
                        inner.height - dec->last_actual_rect.height);
+    }
+    if (s.title_height() > 0 && s.title_font->data().xFontStruct_) {
+        XSetForeground(g_display, gc, get_client_color(s.title_color));
+        XFontStruct* font = s.title_font->data().xFontStruct_;
+        int font_x_offset = s.padding_left() + s.border_width;
+        XSetFont(g_display, gc, font->fid);
+        XDrawString(g_display, pix, gc, font_x_offset, s.title_height(),
+                    client_->title_().c_str(), client_->title_().size());
     }
     // clean up
     XFreeGC(g_display, gc);
