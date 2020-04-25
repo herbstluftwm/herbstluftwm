@@ -702,6 +702,19 @@ def x11(x11_connection):
                 window = tree.parent
             return (x, y)
 
+        def get_hlwm_frames(self):
+            """get list of window handles of herbstluftwm
+            frame decoration windows"""
+            cmd = ['xdotool', 'search', '--class', '_HERBST_FRAME']
+            frame_wins = subprocess.run(cmd,
+                                  stdout=subprocess.PIPE,
+                                  universal_newlines=True,
+                                  check=True)
+            res = []
+            for winid_decimal_str in frame_wins.stdout.splitlines():
+                res.append(self.window(winid_decimal_str))
+            return res
+
         def shutdown(self):
             # Destroy all created windows:
             for window in self.windows:
