@@ -19,6 +19,7 @@
 using std::endl;
 using std::function;
 using std::make_shared;
+using std::shared_ptr;
 using std::string;
 
 static bool    g_tag_flags_dirty = true;
@@ -140,6 +141,13 @@ void HSTag::foreachClient(function<void (Client *)> loopBody)
     for (Client* c: floating_clients_) {
         loopBody(c);
     }
+}
+
+void HSTag::focusFrame(shared_ptr<FrameLeaf> frameToFocus)
+{
+    floating_focused = false;
+    FrameTree::focusFrame(frameToFocus);
+    needsRelayout_.emit();
 }
 
 Client *HSTag::focusedClient()

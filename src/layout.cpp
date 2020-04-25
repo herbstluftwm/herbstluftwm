@@ -47,7 +47,7 @@ FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent
     }
     layout = (LayoutAlgorithm) l;
 
-    decoration = new FrameDecoration(tag, settings);
+    decoration = new FrameDecoration(*this, tag, settings);
 }
 
 FrameSplit::FrameSplit(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent, int fraction, SplitAlign align,

@@ -5,14 +5,20 @@
 
 #include "ewmh.h"
 #include "globals.h"
+#include "layout.h"
 #include "settings.h"
 #include "stack.h"
 #include "tag.h"
 #include "utils.h"
 #include "x11-utils.h"
 
-FrameDecoration::FrameDecoration(HSTag* tag_, Settings* settings_)
-    : visible(false)
+using std::shared_ptr;
+
+std::map<Window, FrameDecoration*> FrameDecoration::s_windowToFrameDecoration;
+
+FrameDecoration::FrameDecoration(FrameLeaf& frame, HSTag* tag_, Settings* settings_)
+    : frame_(frame)
+    , visible(false)
     , window_transparent(false)
     , tag(tag_)
     , settings(settings_)
@@ -25,7 +31,8 @@ FrameDecoration::FrameDecoration(HSTag* tag_, Settings* settings_)
     at.bit_gravity       = StaticGravity;
     at.event_mask        = SubstructureRedirectMask|SubstructureNotifyMask
          |ExposureMask|VisibilityChangeMask
-         |EnterWindowMask|LeaveWindowMask|FocusChangeMask;
+         |EnterWindowMask|LeaveWindowMask|FocusChangeMask
+         |ButtonPress;
 
     window = XCreateWindow(g_display, g_root,
                         42, 42, 42, 42, settings->frame_border_width(),
@@ -42,12 +49,20 @@ FrameDecoration::FrameDecoration(HSTag* tag_, Settings* settings_)
 
     XFree(hint);
 
+    // insert into static map
+    s_windowToFrameDecoration[window] = this;
+
     // insert it to the stack
     slice = Slice::makeFrameSlice(window);
     tag->stack->insertSlice(slice);
 }
 
 FrameDecoration::~FrameDecoration() {
+    // remove from map
+    auto it = s_windowToFrameDecoration.find(window);
+    HSWeakAssert(it != s_windowToFrameDecoration.end());
+    s_windowToFrameDecoration.erase(it);
+
     XDestroyWindow(g_display, window);
     tag->stack->removeSlice(slice);
     delete slice;
@@ -117,6 +132,26 @@ void FrameDecoration::hide() {
     if (visible) {
         visible = false;
         XUnmapWindow(g_display, window);
+    }
+}
+
+shared_ptr<FrameLeaf> FrameDecoration::frame()
+{
+    return frame_.thisLeaf();
+}
+
+/**
+ * @brief Find a FrameDecoration to which a given X window belongs
+ * @param the window id
+ * @return
+ */
+FrameDecoration* FrameDecoration::withWindow(Window winid)
+{
+    auto it = s_windowToFrameDecoration.find(winid);
+    if (it != s_windowToFrameDecoration.end()) {
+        return it->second;
+    } else {
+        return nullptr;
     }
 }
 

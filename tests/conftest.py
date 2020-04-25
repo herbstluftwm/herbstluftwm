@@ -809,6 +809,11 @@ def mouse(hlwm_process):
             else:
                 subprocess.check_call(['xdotool', 'click', button])
 
+        def move_to(self, abs_x, abs_y):
+            abs_x = str(int(abs_x))
+            abs_y = str(int(abs_y))
+            self.call_cmd(f'xdotool mousemove --sync {abs_x} {abs_y}', shell=True)
+
         def move_relative(self, delta_x, delta_y):
             self.call_cmd(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)
 
