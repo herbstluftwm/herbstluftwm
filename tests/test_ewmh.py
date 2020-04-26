@@ -116,6 +116,27 @@ def test_manage_transient_for_windows_on_startup(hlwm_spawner, x11):
     hlwm_proc.shutdown()
 
 
+@pytest.mark.parametrize('swap_monitors_to_get_tag', [True, False])
+@pytest.mark.parametrize('on_another_monitor', [True, False])
+@pytest.mark.parametrize('tag_idx', [0, 1])
+def test_ewmh_set_current_desktop(hlwm, x11, swap_monitors_to_get_tag, on_another_monitor, tag_idx):
+    hlwm.call(['set', 'swap_monitors_to_get_tag', hlwm.bool(swap_monitors_to_get_tag)])
+    hlwm.call('add otherTag')
+    hlwm.call('add anotherTag')
+
+    if on_another_monitor:
+        hlwm.call('add_monitor 800x600+800+0 otherTag')
+
+    x11.ewmh.setCurrentDesktop(tag_idx)
+    x11.display.sync()
+
+    assert int(hlwm.get_attr('tags.focus.index')) == tag_idx
+    if swap_monitors_to_get_tag or not on_another_monitor or tag_idx == 0:
+        assert int(hlwm.get_attr('monitors.focus.index')) == 0
+    else:
+        assert int(hlwm.get_attr('monitors.focus.index')) == 1
+
+
 def test_wm_state_type(hlwm, x11):
     win, _ = x11.create_client(sync_hlwm=True)
     wm_state = x11.display.intern_atom('WM_STATE')
