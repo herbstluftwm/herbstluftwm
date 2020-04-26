@@ -27,7 +27,6 @@ parser.add_argument('--cxx', type=str)
 parser.add_argument('--cc', type=str)
 parser.add_argument('--check-using-std', action='store_true')
 parser.add_argument('--iwyu', action='store_true')
-parser.add_argument('--clang-tidy', action='store_true')
 parser.add_argument('--flake8', action='store_true')
 parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
@@ -64,6 +63,15 @@ build_env.update({
     'CXX': args.cxx,
     'CFLAGS': '--coverage -Werror',
     'CXXFLAGS': '--coverage -Werror',
+
+    # Hash-verifying the compiler is required when building with
+    # clang-and-tidy.sh (because the script's mtime is not stable) and for
+    # other cases, the overhead is minimal):
+    'CCACHE_COMPILERCHECK': 'content',
+
+    # In case clang-and-tidy.sh is used for building, it will need this to call
+    # clang-tidy:
+    'CLANG_TIDY_BUILD_DIR': str(build_dir),
 })
 
 cmake_args = [
@@ -111,11 +119,6 @@ if args.iwyu:
         print("additional forward declarations to make it build again.")
         print("")
         sys.exit(1)
-
-if args.clang_tidy:
-    sp.check_call(f'python3 /usr/lib/llvm-10/share/clang/run-clang-tidy.py -extra-arg=-Wno-unknown-warning-option -header-filter=^{repo}/.* {repo}',
-                  shell=True,
-                  cwd=build_dir)
 
 if args.flake8:
     tox('-e flake8', build_dir)
