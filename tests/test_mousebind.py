@@ -170,3 +170,24 @@ def test_drag_resize_tiled_client(hlwm, mouse):
     expected = 0.5 + 200 / monitor_width
     actual = float(layout_ma.group(1))
     assert math.isclose(actual, expected, abs_tol=0.01)
+
+
+def test_drag_resize_floating_client(hlwm, x11, mouse):
+    client, winid = x11.create_client()
+    hlwm.call(f'set_attr clients.{winid}.floating true')
+    geom_before = client.get_geometry()
+    x_before, y_before = x11.get_absolute_top_left(client)
+    assert (geom_before.width, geom_before.height) == (300, 200)
+    # Add some offset, if we just move the cursor to the frame border,
+    # resize does nothing:
+    mouse.move_into(winid, x=10, y=30)
+
+    hlwm.call(['drag', winid, 'resize'])
+    mouse.move_relative(100, 100)
+    hlwm.call('true')  # sync
+
+    geom_after = client.get_geometry()
+    x_after, y_after = x11.get_absolute_top_left(client)
+    assert (x_after, y_after) == (x_before + 100, y_before + 100)
+    # FIXME: Why does this not work?
+    assert (geom_before.width, geom_before.height) != (geom_after.width, geom_after.height)
