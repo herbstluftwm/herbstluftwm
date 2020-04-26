@@ -122,3 +122,15 @@ def test_wm_state_type(hlwm, x11):
     prop = win.get_full_property(wm_state, X.AnyPropertyType)
     assert prop.property_type == wm_state
     assert len(prop.value) == 2
+
+
+def test_ewmh_move_client_to_tag(hlwm, x11):
+    hlwm.call('set focus_stealing_prevention off')
+    hlwm.call('add otherTag')
+    handle, winid = x11.create_client()
+    assert hlwm.get_attr(f'clients.{winid}.tag') == 'default'
+
+    x11.ewmh.setWmDesktop(handle, 1)
+    x11.display.sync()
+
+    assert hlwm.get_attr(f'clients.{winid}.tag') == 'otherTag'
