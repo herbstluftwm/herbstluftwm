@@ -183,11 +183,13 @@ def test_drag_resize_floating_client(hlwm, x11, mouse):
     mouse.move_into(winid, x=10, y=30)
 
     hlwm.call(['drag', winid, 'resize'])
+    assert hlwm.get_attr('clients.dragged.winid') == winid
     mouse.move_relative(100, 100)
+    # Stop dragging:
+    mouse.click('1')
     hlwm.call('true')  # sync
 
     geom_after = client.get_geometry()
     x_after, y_after = x11.get_absolute_top_left(client)
     assert (x_after, y_after) == (x_before + 100, y_before + 100)
-    # FIXME: Why does this not work?
-    assert (geom_before.width, geom_before.height) != (geom_after.width, geom_after.height)
+    assert (geom_after.width, geom_after.height) == (geom_before.width - 100, geom_before.height - 100)
