@@ -1,6 +1,5 @@
 import pytest
 import re
-import subprocess
 import math
 
 
@@ -377,11 +376,7 @@ def test_split_and_remove_with_smart_frame_surroundings(hlwm, x11, align):
     hlwm.call('remove')
 
     # Search for all frames, there should only be one
-    frame_win_id = subprocess.run(['xdotool', 'search', '--class', '_HERBST_FRAME'],
-                                  stdout=subprocess.PIPE,
-                                  universal_newlines=True,
-                                  check=True)
-    frame_x11 = x11.window(frame_win_id.stdout)
+    frame_x11 = x11.get_hlwm_frames()[0]
     frame_geom = frame_x11.get_geometry()
     assert (frame_geom.width, frame_geom.height) == (800, 600)
 

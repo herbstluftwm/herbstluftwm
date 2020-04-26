@@ -10,6 +10,7 @@
 
 class ClientManager; // IWYU pragma: keep
 class Ewmh;
+class FrameLeaf;
 class HlwmCommon;
 class HookManager; // IWYU pragma: keep
 class IpcServer;
@@ -65,6 +66,9 @@ public:
     // automatically from the signals emitted by ClientManager, etc
     std::unique_ptr<PanelManager> panels; // Using "pimpl" to avoid include
     std::unique_ptr<Ewmh> ewmh; // Using "pimpl" to avoid include
+
+    // global actions
+    void focusFrame(std::shared_ptr<FrameLeaf> frameToFocus);
 
 private:
     static std::shared_ptr<Root> root_;
