@@ -473,8 +473,10 @@ jumpto 'WINID'::
     WINDOW IDS>> on how to reference a certain window.
 
 bring 'WINID'::
-    Moves the specified window to the current frame and focuses it. See the
-    <<WINDOW_IDS, section on WINDOW IDS>> on how to reference a certain window.
+    Moves the specified window to the current frame and focuses it. Floating
+    windows are brought to the current tag, but keep their floating state.
+    See the <<WINDOW_IDS, section on WINDOW IDS>> on how to reference a
+    certain window.
 
 
 resize 'DIRECTION' ['FRACTIONDELTA']::
