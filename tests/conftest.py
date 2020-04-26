@@ -704,6 +704,13 @@ def x11(x11_connection):
             assert hlwm_bridge is not None, "hlwm must be running"
             hlwm_bridge.call('true')
 
+        def get_decoration_window(self, window):
+            tree = window.query_tree()
+            if tree.root == tree.parent:
+                return None
+            else:
+                return tree.parent
+
         def get_absolute_top_left(self, window):
             """return the absolute (x,y) coordinate of the given window,
             i.e. relative to the root window"""
@@ -852,6 +859,12 @@ def mouse(hlwm_process):
 
         def move_relative(self, delta_x, delta_y):
             self.call_cmd(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)
+
+        def mouse_press(self, button):
+            self.call_cmd(f'xdotool mousedown {button}', shell=True)
+
+        def mouse_release(self, button):
+            self.call_cmd(f'xdotool mouseup {button}', shell=True)
 
         def call_cmd(self, cmd, shell=False):
             print('calling: {}'.format(cmd), file=sys.stderr)

@@ -79,3 +79,31 @@ def test_focus_frame_by_mouse(hlwm, mouse, click, focus_follows_mouse):
     expected_focus = 1 if focus_follows_mouse or click else 0
     assert layout_template.format(expected_focus) \
         == hlwm.call('dump').stdout
+
+
+@pytest.mark.parametrize("click,focus_follows_mouse", [
+    (False, False),
+    (True, False),
+    (True, True)
+    #  FIXME: here, hlwm doesn't get an EnterNotify event in xvfb
+    # but it works in Xephyr.
+    # (False, True)
+])
+def test_focus_client_by_decoration(hlwm, mouse, x11, click, focus_follows_mouse):
+    hlwm.call('attr theme.border_width 50')
+    hlwm.call('attr theme.active.color red')
+    hlwm.call('attr theme.normal.color blue')
+    hlwm.call('set_layout vertical')
+    hlwm.call(['set', 'focus_follows_mouse', hlwm.bool(focus_follows_mouse)])
+    winids = hlwm.create_clients(2)
+    hlwm.call(['jumpto', winids[0]])
+    assert hlwm.get_attr('clients.focus.winid') == winids[0]
+
+    # move mouse to the decoration:
+    decwin = x11.get_decoration_window(x11.window(winids[1]))
+    # here, xdotool hangs on the second invokation of this testcase
+    mouse.move_into(x11.winid_str(decwin), 10, 10)
+    if click:
+        mouse.click('1')
+    expected_focus = 1 if focus_follows_mouse or click else 0
+    assert hlwm.get_attr('clients.focus.winid') == winids[expected_focus]
