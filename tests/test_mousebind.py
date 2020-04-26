@@ -172,24 +172,34 @@ def test_drag_resize_tiled_client(hlwm, mouse):
     assert math.isclose(actual, expected, abs_tol=0.01)
 
 
-def test_drag_resize_floating_client(hlwm, x11, mouse):
-    client, winid = x11.create_client()
+@pytest.mark.parametrize('live_update', [True, False])
+def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
+    hlwm.call(['set', 'update_dragged_clients', hlwm.bool(live_update)])
+
+    client, winid = x11.create_client(geometry=(50, 50, 300, 200))
     hlwm.call(f'set_attr clients.{winid}.floating true')
     geom_before = client.get_geometry()
     x_before, y_before = x11.get_absolute_top_left(client)
     assert (geom_before.width, geom_before.height) == (300, 200)
-    # Add some offset, if we just move the cursor to the frame border,
-    # resize does nothing:
-    mouse.move_into(winid, x=10, y=30)
+    # move cursor to the top left corner, so we change the
+    # window position and the size (and the bottom right corner is fixed)
+    mouse.move_into(winid, x=0, y=0)
 
     hlwm.call(['drag', winid, 'resize'])
     assert hlwm.get_attr('clients.dragged.winid') == winid
-    mouse.move_relative(100, 100)
-    # Stop dragging:
-    mouse.click('1')
-    hlwm.call('true')  # sync
+    mouse.move_relative(100, 120)
+    final_size = (geom_before.width - 100, geom_before.height - 120)
 
+    # check geometry during drag
     geom_after = client.get_geometry()
     x_after, y_after = x11.get_absolute_top_left(client)
-    assert (x_after, y_after) == (x_before + 100, y_before + 100)
-    assert (geom_after.width, geom_after.height) == (geom_before.width - 100, geom_before.height - 100)
+    assert (x_after, y_after) == (x_before + 100, y_before + 120)
+    expected_size = (geom_before.width, geom_before.height)
+    if live_update:
+        expected_size = final_size
+    assert (geom_after.width, geom_after.height) == expected_size
+
+    # stop drag and check final size
+    mouse.click('1', wait=True)
+    geom_after = client.get_geometry()
+    assert (geom_after.width, geom_after.height) == final_size
