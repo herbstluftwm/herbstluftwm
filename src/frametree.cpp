@@ -756,6 +756,35 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
     }
 }
 
+int FrameTree::setLayoutCommand(Input input, Output output) {
+    if (input.empty()) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+
+    auto layoutStr = input.front();
+    LayoutAlgorithm layout;
+    try {
+        layout = Converter<LayoutAlgorithm>::parse(layoutStr);
+    } catch (const std::exception& e) {
+        output << "set_layout: " << e.what();
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    auto curFrame = focusedFrame();
+    curFrame->setLayout(layout);
+    get_current_monitor()->applyLayout();
+
+    return HERBST_EXIT_SUCCESS;
+}
+
+void FrameTree::setLayoutCompletion(Completion& complete) {
+    if (complete == 0) {
+        Converter<LayoutAlgorithm>::complete(complete, nullptr);
+    } else {
+        complete.none();
+    }
+}
+
 //! modes for the 'split' command
 class SplitMode {
 public:
