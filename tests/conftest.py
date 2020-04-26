@@ -681,6 +681,13 @@ def x11(x11_connection):
             assert hlwm_bridge is not None, "hlwm must be running"
             hlwm_bridge.call('true')
 
+        def get_decoration_window(self, window):
+            tree = window.query_tree()
+            if tree.root == tree.parent:
+                return None
+            else:
+                return tree.parent
+
         def get_absolute_top_left(self, window):
             """return the absolute (x,y) coordinate of the given window,
             i.e. relative to the root window"""
