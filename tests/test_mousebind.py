@@ -161,6 +161,7 @@ def test_drag_resize_tiled_client(hlwm, mouse):
     hlwm.call(['drag', winid, 'resize'])
     assert hlwm.get_attr('clients.dragged.winid') == winid
     mouse.move_relative(200, 300)
+    hlwm.call('true')  # sync
 
     monitor_width = int(hlwm.call('monitor_rect').stdout.split(' ')[2])
     layout_str = hlwm.call('dump').stdout
@@ -188,6 +189,7 @@ def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
     hlwm.call(['drag', winid, 'resize'])
     assert hlwm.get_attr('clients.dragged.winid') == winid
     mouse.move_relative(100, 120)
+    hlwm.call('true')  # sync
     final_size = (geom_before.width - 100, geom_before.height - 120)
 
     # check geometry during drag
@@ -217,6 +219,7 @@ def test_move_client_via_decoration(hlwm, x11, mouse):
     assert hlwm.get_attr('clients.dragged.winid') == winid
 
     mouse.move_relative(130, 110)
+    hlwm.call('true')  # sync
     expected_position = (x_before + 130, y_before + 110)
 
     mouse.mouse_release('1')
@@ -242,6 +245,7 @@ def test_resize_client_via_decoration(hlwm, x11, mouse):
     assert hlwm.get_attr('clients.dragged.winid') == winid
 
     mouse.move_relative(80, 70)
+    hlwm.call('true')  # sync
     expected_position = (x_before + 80, y_before + 70)
     expected_size = (size_before.width - 80, size_before.height - 70)
 
