@@ -124,6 +124,9 @@ if args.flake8:
     tox('-e flake8', build_dir)
 
 if args.run_tests:
+    # Suppress warnings about known memory leaks:
+    os.environ['LSAN_OPTIONS'] = f"suppressions={repo}/ci/lsan-suppressions.txt"
+
     # First, run only the tests that are NOT marked to be excluded from code
     # coverage collection.
     tox('-e py38 -- -n auto --cache-clear -v -x -m "not exclude_from_coverage"', build_dir)
