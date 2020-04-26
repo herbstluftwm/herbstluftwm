@@ -113,15 +113,22 @@ def test_bring_floating_from_different_tag(hlwm, x11):
 def test_resize_floating_client(hlwm, x11, direction):
     hlwm.call('attr settings.snap_gap 0')
     client, winid = x11.create_client()
+    mon_width, mon_height = [int(v) for v in
+                             hlwm.call('monitor_rect').stdout.split(' ')[2:]]
     hlwm.call(f'set_attr clients.{winid}.floating true')
+    x_before, y_before = x11.get_absolute_top_left(client)
     geom_before = client.get_geometry()
     assert (geom_before.width, geom_before.height) == (300, 200)
 
-    hlwm.call(['resize', direction, '+0.5'])
+    hlwm.call(['resize', direction])
 
-    width_offset = 150 if direction == 'right' else 0
-    height_offset = 100 if direction == 'down' else 0
-    expected_geom = (geom_before.width + width_offset, geom_before.height + height_offset)
-
+    # the position has not changed
+    assert (x_before, y_before) == x11.get_absolute_top_left(client)
+    # but the size grew up to the monitor edge
     geom_after = client.get_geometry()
-    assert (geom_after.width, geom_after.height) == expected_geom
+    if direction == 'right':
+        assert x_before + geom_after.width == mon_width
+        assert geom_after.height == geom_before.height
+    if direction == 'down':
+        assert y_before + geom_after.height == mon_height
+        assert geom_after.width == geom_before.width
