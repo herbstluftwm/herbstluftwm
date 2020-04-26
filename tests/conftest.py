@@ -319,7 +319,9 @@ class HlwmProcess:
         fileobjs = set(k.fileobj for k in self.output_selector.get_map().values())
 
         stderr = ''
+        stderr_bytes = bytes()
         stdout = ''
+        stdout_bytes = bytes()
 
         def match_found():
             if until_stdout and (until_stdout in stdout):
@@ -338,20 +340,29 @@ class HlwmProcess:
             selected = self.output_selector.select(timeout=select_timeout)
             for key, events in selected:
                 # Read only single byte, otherwise we might block:
-                ch = key.fileobj.read(1).decode('ascii')
+                ch = key.fileobj.read(1)
 
-                if ch == '':
+                if ch == b'':
                     eof_fileobjs.add(key.fileobj)
-
-                # Pass it through to the real stdout/stderr:
-                key.data.write(ch)
-                key.data.flush()
 
                 # Store in temporary buffer for string matching:
                 if key.fileobj == self.proc.stderr:
-                    stderr += ch
+                    stderr_bytes += ch
+                    if ch == b'\n':
+                        stderr += stderr_bytes.decode()
+                        # Pass it through to the real stderr:
+                        key.data.write(stderr_bytes.decode())
+                        key.data.flush()
+                        stderr_bytes = b''
+
                 if key.fileobj == self.proc.stdout:
-                    stdout += ch
+                    stdout_bytes += ch
+                    if ch == b'\n':
+                        stdout += stdout_bytes.decode()
+                        # Pass it through to the real stdout:
+                        key.data.write(stdout_bytes.decode())
+                        key.data.flush()
+                        stdout_bytes = b''
 
             if until_eof:
                 # We are going to the very end, so carry on until all file
