@@ -21,6 +21,16 @@ import warnings
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
 
+# List of environment variables copied during hlwm process creation:
+# * LSAN_OPTIONS: needed to suppress warnings about known memory leaks
+COPY_ENV_WHITELIST = ['LSAN_OPTIONS']
+
+
+def extend_env_with_whitelist(environment):
+    """Copy some whitelisted environment variables (if set) into an existing environment"""
+    environment.update({e: os.environ[e] for e in os.environ if e in COPY_ENV_WHITELIST})
+    return environment
+
 
 class HlwmBridge:
 
@@ -35,6 +45,7 @@ class HlwmBridge:
         self.env = {
             'DISPLAY': display,
         }
+        self.env = extend_env_with_whitelist(self.env)
         self.hlwm_process = hlwm_process
         self.hc_idle = subprocess.Popen(
             [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
@@ -501,6 +512,7 @@ def hlwm_spawner(tmpdir):
             'DISPLAY': display,
             'XDG_CONFIG_HOME': str(tmpdir),
         }
+        env = extend_env_with_whitelist(env)
         return HlwmProcess(tmpdir, env, args)
     return spawn
 
