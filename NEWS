@@ -4,6 +4,8 @@ herbstluftwm NEWS -- History of user-visible changes
 Current git version
 -------------------
 
+  * Selection of empty frames by the mouse (by click or by hover if
+    focus_follows_mouse is enabled)
   * The commands 'close_and_remove' / 'close_or_remove' act like 'close' for
     floating clients
   * Bug fixes:

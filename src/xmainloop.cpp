@@ -10,6 +10,7 @@
 #include "clientmanager.h"
 #include "desktopwindow.h"
 #include "ewmh.h"
+#include "framedecoration.h"
 #include "frametree.h"
 #include "hlwmcommon.h"
 #include "ipc-server.h"
@@ -179,13 +180,20 @@ void XMainLoop::quit() {
 
 void XMainLoop::buttonpress(XButtonEvent* be) {
     MouseManager* mm = root_->mouse();
-    HSDebug("name is: ButtonPress on sub %lx, win %lx\n", be->subwindow, be->window);
+    HSDebug("name is: ButtonPress on sub 0x%lx, win 0x%lx\n", be->subwindow, be->window);
     if (!mm->mouse_handle_event(be->state, be->button, be->window)) {
         // if the event was not handled by the mouse manager, pass it to the client:
         Client* client = root_->clients->client(be->window);
         if (client) {
             bool raise = root_->settings->raise_on_click();
             focus_client(client, false, true, raise);
+        }
+    }
+    FrameDecoration* frameDec = FrameDecoration::withWindow(be->window);
+    if (frameDec) {
+        auto frame = frameDec->frame();
+        if (frame)  {
+            root_->focusFrame(frame);
         }
     }
     XAllowEvents(X_.display(), ReplayPointer, be->time);
@@ -319,7 +327,7 @@ void XMainLoop::destroynotify(XUnmapEvent* event) {
 }
 
 void XMainLoop::enternotify(XCrossingEvent* ce) {
-    //HSDebug("name is: EnterNotify, focus = %d\n", event->xcrossing.focus);
+    HSDebug("name is: EnterNotify, focus = %d\n", ce->focus);
     if (!root_->mouse->mouse_is_dragging()
         && root_->settings()->focus_follows_mouse()
         && ce->focus == false) {
@@ -333,6 +341,17 @@ void XMainLoop::enternotify(XCrossingEvent* ce) {
             // hidden during that focus change (which only occurs in max layout)
         } else if (c) {
             focus_client(c, false, true, false);
+        }
+        if (!c) {
+            // if it's not a client window, it's maybe a frame
+            FrameDecoration* frameDec = FrameDecoration::withWindow(ce->window);
+            if (frameDec) {
+                auto frame = frameDec->frame();
+                HSWeakAssert(frame);
+                if (frame) {
+                    root_->focusFrame(frame);
+                }
+            }
         }
     }
 }

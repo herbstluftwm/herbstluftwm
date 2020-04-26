@@ -8,6 +8,7 @@
 #include "hlwmcommon.h"
 #include "hookmanager.h"
 #include "keymanager.h"
+#include "layout.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
 #include "panelmanager.h"
@@ -98,6 +99,18 @@ Root::~Root()
     tmp.reset();
 
     children_.clear(); // avoid possible circular shared_ptr dependency
+}
+
+void Root::focusFrame(shared_ptr<FrameLeaf> frameToFocus)
+{
+    Monitor* monitor = monitors->byFrame(frameToFocus);
+    if (!monitor) {
+        return;
+    }
+    monitors->lock();
+    monitor->tag->focusFrame(frameToFocus);
+    monitor_focus_by_index(static_cast<unsigned int>(monitor->index()));
+    monitors->unlock();
 }
 
 HlwmCommon Root::common() {
