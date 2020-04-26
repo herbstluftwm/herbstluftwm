@@ -14,6 +14,11 @@ set(FLAGS
 
     # Disable unused parameter warnings (most cases are on purpose):
     -Wno-unused-parameter
+
+    # TODO: Fix complaints, then enable -Wconversion (gcc and clang might behave
+    # differently)
+
+    # TODO: Fix complaints, then enable -Wold-style-cast
     )
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -21,6 +26,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     list(APPEND FLAGS
         # Additional warnings that don't come with Wall/Wextra:
         -Wduplicated-cond -Wduplicated-branches -Wlogical-op
+
+        # TODO: Consider adding -fanalyzer here (new in GCC-10)
         )
 
     # Add GCC- *and* C++-specific flags
