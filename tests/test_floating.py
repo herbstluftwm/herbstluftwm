@@ -111,6 +111,7 @@ def test_bring_floating_from_different_tag(hlwm, x11):
 
 @pytest.mark.parametrize('direction', ['down', 'right', ])
 def test_resize_floating_client(hlwm, x11, direction):
+    hlwm.call('attr settings.snap_gap 0')
     client, winid = x11.create_client()
     hlwm.call(f'set_attr clients.{winid}.floating true')
     geom_before = client.get_geometry()
@@ -118,8 +119,8 @@ def test_resize_floating_client(hlwm, x11, direction):
 
     hlwm.call(['resize', direction, '+0.5'])
 
-    height_offset = 300 if direction == 'down' else 0
-    width_offset = 450 if direction == 'right' else 0
+    width_offset = 150 if direction == 'right' else 0
+    height_offset = 100 if direction == 'down' else 0
     expected_geom = (geom_before.width + width_offset, geom_before.height + height_offset)
 
     geom_after = client.get_geometry()
