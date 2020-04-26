@@ -1,6 +1,7 @@
 #include "frametree.h"
 
 #include <algorithm>
+#include <cassert>
 #include <limits>
 #include <regex>
 
@@ -846,10 +847,14 @@ int FrameTree::splitCommand(Input input, Output output)
     if (!frame->split(m.align, fraction, childrenLeaving)) {
         return 0;
     }
+
+    auto frameParent = frame->getParent();
+    assert(frameParent != nullptr);
     if (!m.frameToFirst) {
-        frame->getParent()->swapChildren();
+        frameParent->swapChildren();
     }
-    frame->getParent()->setSelection(m.selection);
+    frameParent->setSelection(m.selection);
+
     // redraw monitor
     get_current_monitor()->applyLayout();
     return 0;
