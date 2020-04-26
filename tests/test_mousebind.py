@@ -220,6 +220,8 @@ def test_move_client_via_decoration(hlwm, x11, mouse):
     expected_position = (x_before + 130, y_before + 110)
 
     mouse.mouse_release('1')
+    hlwm.call('true')  # sync
+
     # the size didn't change
     size_after = client.get_geometry()
     assert (size_before.width, size_before.height) \
@@ -244,6 +246,7 @@ def test_resize_client_via_decoration(hlwm, x11, mouse):
     expected_size = (size_before.width - 80, size_before.height - 70)
 
     mouse.mouse_release('1')
+    hlwm.call('true')  # sync
 
     # the size changed
     size_after = client.get_geometry()
