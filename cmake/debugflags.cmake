@@ -41,7 +41,12 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # Add clang-specific flags
     list(APPEND FLAGS
         # Additional warnings that don't come with Wall/Wextra:
+        -Wmost
         -Wshadow-all
+        -Wunreachable-code
+        -Wunreachable-code-return
+        -Wunreachable-code-loop-increment
+        -Wunneeded-member-function
         )
 endif()
 
