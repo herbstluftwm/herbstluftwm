@@ -142,6 +142,37 @@ Rectangle Decoration::inner_to_outer(Rectangle rect) {
     return last_scheme->inner_rect_to_outline(rect);
 }
 
+/**
+ * @brief Tell whether clicking on the decoration at the specified location
+ * should result in resizing or moving the client
+ * @param the location of the cursor, relative on this window
+ * @return true if this should init resizing the client
+ * false if this should init moving the client
+ */
+bool Decoration::positionTriggersResize(Point2D p)
+{
+    if (!last_scheme) {
+        // this should never happen, so we just randomly pick:
+        // always resize if there is no decoration scheme
+        return true;
+    }
+    const
+    auto border_width = static_cast<int>(last_scheme->border_width());
+    vector<Point2D> corners = {
+        {0,0},
+        {last_outer_rect.width - 1, last_outer_rect.height - 1},
+    };
+    for (const auto& c : corners) {
+        if (std::abs(p.x - c.x) < border_width) {
+            return true;
+        }
+        if (std::abs(p.y - c.y) < border_width) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Decoration::resize_outline(Rectangle outline, const DecorationScheme& scheme)
 {
     auto inner = scheme.outline_to_inner_rect(outline);
