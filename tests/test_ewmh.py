@@ -145,6 +145,38 @@ def test_wm_state_type(hlwm, x11):
     assert len(prop.value) == 2
 
 
+def test_ewmh_focus_client(hlwm, x11):
+    hlwm.call('set focus_stealing_prevention off')
+    # add another client that has the focus
+    _, winid_focus = x11.create_client()
+    winHandleToBeFocused, winid = x11.create_client()
+    assert hlwm.get_attr('clients.focus.winid') == winid_focus
+
+    x11.ewmh.setActiveWindow(winHandleToBeFocused)
+    x11.display.flush()
+
+    assert hlwm.get_attr('clients.focus.winid') == winid
+
+
+@pytest.mark.parametrize('on_another_monitor', [True, False])
+def test_ewmh_focus_client_on_other_tag(hlwm, x11, on_another_monitor):
+    hlwm.call('set focus_stealing_prevention off')
+    hlwm.call('add tag2')
+    if on_another_monitor:  # if the tag shall be on another monitor
+        hlwm.call('add_monitor 800x600+600+0')
+    hlwm.call('rule tag=tag2 focus=off')
+    # add another client that has the focus on the other tag
+    x11.create_client()
+    handle, winid = x11.create_client()
+    assert 'focus' not in hlwm.list_children('clients')
+
+    x11.ewmh.setActiveWindow(handle)
+    x11.display.flush()
+
+    assert hlwm.get_attr('tags.focus.name') == 'tag2'
+    assert hlwm.get_attr('clients.focus.winid') == winid
+
+
 def test_ewmh_move_client_to_tag(hlwm, x11):
     hlwm.call('set focus_stealing_prevention off')
     hlwm.call('add otherTag')
