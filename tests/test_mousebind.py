@@ -205,7 +205,10 @@ def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
     assert (geom_after.width, geom_after.height) == final_size
 
 
-def test_move_client_via_decoration(hlwm, x11, mouse):
+# we had a race condition here, so increase the likelyhood
+# that we really fixed it:
+@pytest.mark.parametrize('repeat', list(range(0, 100)))
+def test_move_client_via_decoration(hlwm, x11, mouse, repeat):
     hlwm.call('attr theme.padding_top 20')
     client, winid = x11.create_client(geometry=(50, 50, 300, 200))
     hlwm.call(f'set_attr clients.{winid}.floating true')
@@ -220,6 +223,7 @@ def test_move_client_via_decoration(hlwm, x11, mouse):
     expected_position = (x_before + 130, y_before + 110)
 
     mouse.mouse_release('1')
+    x11.display.sync()
     # the size didn't change
     size_after = client.get_geometry()
     assert (size_before.width, size_before.height) \
@@ -228,7 +232,10 @@ def test_move_client_via_decoration(hlwm, x11, mouse):
     assert expected_position == x11.get_absolute_top_left(client)
 
 
-def test_resize_client_via_decoration(hlwm, x11, mouse):
+# we had a race condition here, so increase the likelyhood
+# that we really fixed it:
+@pytest.mark.parametrize('repeat', list(range(0, 100)))
+def test_resize_client_via_decoration(hlwm, x11, mouse, repeat):
     hlwm.call('attr theme.border_width 20')
     client, winid = x11.create_client(geometry=(50, 50, 300, 200))
     hlwm.call(f'set_attr clients.{winid}.floating true')
@@ -246,6 +253,7 @@ def test_resize_client_via_decoration(hlwm, x11, mouse):
     mouse.mouse_release('1')
 
     # the size changed
+    x11.display.sync()
     size_after = client.get_geometry()
     assert expected_size == (size_after.width, size_after.height)
     # and also the location
