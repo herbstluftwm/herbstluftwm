@@ -224,6 +224,7 @@ def test_move_client_via_decoration(hlwm, x11, mouse, repeat):
 
     mouse.mouse_release('1')
     x11.display.sync()
+    assert 'dragged' not in hlwm.list_children('clients')
     # the size didn't change
     size_after = client.get_geometry()
     assert (size_before.width, size_before.height) \
@@ -254,6 +255,7 @@ def test_resize_client_via_decoration(hlwm, x11, mouse, repeat):
 
     # the size changed
     x11.display.sync()
+    assert 'dragged' not in hlwm.list_children('clients')
     size_after = client.get_geometry()
     assert expected_size == (size_after.width, size_after.height)
     # and also the location
