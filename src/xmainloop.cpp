@@ -8,6 +8,7 @@
 
 #include "client.h"
 #include "clientmanager.h"
+#include "decoration.h"
 #include "desktopwindow.h"
 #include "ewmh.h"
 #include "framedecoration.h"
@@ -184,9 +185,19 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
     if (!mm->mouse_handle_event(be->state, be->button, be->window)) {
         // if the event was not handled by the mouse manager, pass it to the client:
         Client* client = root_->clients->client(be->window);
+        if (!client) {
+            client = Decoration::toClient(be->window);
+        }
         if (client) {
             bool raise = root_->settings->raise_on_click();
             focus_client(client, false, true, raise);
+            if (be->window == client->decorationWindow()) {
+                if (client->dec->positionTriggersResize({be->x, be->y})) {
+                    mm->mouse_initiate_resize(client, {});
+                } else {
+                    mm->mouse_initiate_move(client, {});
+                }
+            }
         }
     }
     FrameDecoration* frameDec = FrameDecoration::withWindow(be->window);
@@ -332,6 +343,9 @@ void XMainLoop::enternotify(XCrossingEvent* ce) {
         && root_->settings()->focus_follows_mouse()
         && ce->focus == false) {
         Client* c = root_->clients->client(ce->window);
+        if (!c) {
+            c = Decoration::toClient(ce->window);
+        }
         shared_ptr<FrameLeaf> target;
         if (c && c->tag()->floating == false
               && (target = c->tag()->frame->root_->frameWithClient(c))
