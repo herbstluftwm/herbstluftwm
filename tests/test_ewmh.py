@@ -126,12 +126,12 @@ def test_wm_state_type(hlwm, x11):
 
 def test_ewmh_focus_client(hlwm, x11):
     hlwm.call('set focus_stealing_prevention off')
-    # add another client that has the focus on the other tag
+    # add another client that has the focus
     _, winid_focus = x11.create_client()
-    handle, winid = x11.create_client()
+    winHandleToBeFocused, winid = x11.create_client()
     assert hlwm.get_attr('clients.focus.winid') == winid_focus
 
-    x11.ewmh.setActiveWindow(handle)
+    x11.ewmh.setActiveWindow(winHandleToBeFocused)
     x11.display.flush()
 
     assert hlwm.get_attr('clients.focus.winid') == winid
