@@ -64,6 +64,8 @@ public:
     int cycleLayoutCommand(Input input, Output output);
     void cycleLayoutCompletion(Completion& complete);
     int splitCommand(Input input, Output output);
+    int setLayoutCommand(Input input, Output output);
+    void setLayoutCompletion(Completion& complete);
 public: // soon to be come private:
     std::shared_ptr<Frame> root_;
 private:

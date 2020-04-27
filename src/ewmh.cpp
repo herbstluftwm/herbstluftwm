@@ -6,6 +6,7 @@
 #include <cstdio>
 
 #include "client.h"
+#include "globals.h"
 #include "hlwmcommon.h"
 #include "layout.h"
 #include "monitor.h"
@@ -123,7 +124,9 @@ void Ewmh::readInitialEwmhState()
         X_.getWindowPropertyWindow(X_.root(), netatom_[NetClientList]);
     initialState_.original_client_list_ =
         maybe_clients.has_value() ? maybe_clients.value() : vector<Window>();
-    // initialState_.print(stderr);
+    if (g_verbose) {
+        initialState_.print(stderr);
+    }
 }
 
 long Ewmh::windowGetInitialDesktop(Window win)

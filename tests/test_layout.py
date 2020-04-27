@@ -654,3 +654,8 @@ def test_index_empty_frame_subtree(hlwm):
     winid, _ = hlwm.create_client()
 
     assert layout.replace('T', winid) == hlwm.call('dump').stdout
+
+
+def test_set_layout_invalid_layout_name(hlwm):
+    hlwm.call_xfail('set_layout foobar') \
+        .expect_stderr('set_layout: Invalid layout name: "foobar"')
