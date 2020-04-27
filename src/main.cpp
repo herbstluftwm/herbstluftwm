@@ -181,7 +181,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"unlock",         { [monitors] { monitors->unlock(); return 0; } }},
         {"lock_tag",       monitors->byFirstArg(&Monitor::lock_tag_cmd, &Monitor::noComplete) },
         {"unlock_tag",     monitors->byFirstArg(&Monitor::unlock_tag_cmd, &Monitor::noComplete) },
-        {"set_layout",     frame_current_set_client_layout},
+        {"set_layout",     { tags->frameCommand(&FrameTree::setLayoutCommand, &FrameTree::setLayoutCompletion) }},
         {"detect_monitors",{ monitors, &MonitorManager::detectMonitorsCommand,
                                        &MonitorManager::detectMonitorsCompletion }},
         {"!",              { root_commands, &RootCommands::negateCommand,
