@@ -659,3 +659,29 @@ def test_index_empty_frame_subtree(hlwm):
 def test_set_layout_invalid_layout_name(hlwm):
     hlwm.call_xfail('set_layout foobar') \
         .expect_stderr('set_layout: Invalid layout name: "foobar"')
+
+
+def test_focus_edge(hlwm):
+    hlwm.call('set focus_crosses_monitor_boundaries on')
+    hlwm.call('add otherTag')
+    hlwm.call('add_monitor 800x600+800+0')
+    hlwm.call('split right')
+    hlwm.call('split right')
+
+    # we're on the leftmost frame
+    layout_before = hlwm.call('dump').stdout
+    hlwm.call('focus_edge left')
+    assert layout_before == hlwm.call('dump').stdout
+    assert hlwm.get_attr('monitors.focus.index') == '0'
+
+    # focus_edge goes to the rightmost frame
+    hlwm.call('focus_edge right')
+    # we're still on the first monitor
+    assert hlwm.get_attr('monitors.focus.index') == '0'
+    # but right-most frame means, if we go right once more, we're on
+    # the other monitor:
+    hlwm.call('list_monitors')
+    hlwm.call('dump')
+    hlwm.call('focus right')
+    assert hlwm.get_attr('monitors.focus.index') == '1'
+    assert hlwm.get_attr('settings.focus_crosses_monitor_boundaries') == 'true'
