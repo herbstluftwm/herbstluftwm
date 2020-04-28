@@ -137,6 +137,13 @@ def test_ewmh_set_current_desktop(hlwm, x11, swap_monitors_to_get_tag, on_anothe
         assert int(hlwm.get_attr('monitors.focus.index')) == 1
 
 
+def test_ewmh_set_current_desktop_invalid_idx(hlwm, hlwm_process, x11):
+    with hlwm_process.wait_stderr_match('_NET_CURRENT_DESKTOP: invalid index'):
+        x11.ewmh.setCurrentDesktop(4)
+        x11.display.sync()
+    assert int(hlwm.get_attr('tags.focus.index')) == 0
+
+
 def test_wm_state_type(hlwm, x11):
     win, _ = x11.create_client(sync_hlwm=True)
     wm_state = x11.display.intern_atom('WM_STATE')
