@@ -81,10 +81,10 @@ def test_client_initially_on_desktop(hlwm_spawner, x11, desktops, client2desktop
     x11.set_property_textlist('_NET_DESKTOP_NAMES', desktop_names)
     clients = []
     for desktop_idx in client2desktop:
-        handle, winid = x11.create_client(sync_hlwm=False)
+        winHandle, winid = x11.create_client(sync_hlwm=False)
         clients.append(winid)
         if desktop_idx is not None:
-            x11.set_property_cardinal('_NET_WM_DESKTOP', [desktop_idx], window=handle)
+            x11.set_property_cardinal('_NET_WM_DESKTOP', [desktop_idx], window=winHandle)
     x11.display.sync()
 
     hlwm_proc = hlwm_spawner()
@@ -180,10 +180,10 @@ def test_ewmh_focus_client_on_other_tag(hlwm, x11, on_another_monitor):
 def test_ewmh_move_client_to_tag(hlwm, x11):
     hlwm.call('set focus_stealing_prevention off')
     hlwm.call('add otherTag')
-    handle, winid = x11.create_client()
+    winHandleToMove, winid = x11.create_client()
     assert hlwm.get_attr(f'clients.{winid}.tag') == 'default'
 
-    x11.ewmh.setWmDesktop(handle, 1)
+    x11.ewmh.setWmDesktop(winHandleToMove, 1)
     x11.display.sync()
 
     assert hlwm.get_attr(f'clients.{winid}.tag') == 'otherTag'
