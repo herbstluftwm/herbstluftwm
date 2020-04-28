@@ -473,17 +473,19 @@ jumpto 'WINID'::
     WINDOW IDS>> on how to reference a certain window.
 
 bring 'WINID'::
-    Moves the specified window to the current frame and focuses it. See the
-    <<WINDOW_IDS, section on WINDOW IDS>> on how to reference a certain window.
+    Moves the specified window to the current frame and focuses it. Floating
+    windows are brought to the current tag, but keep their floating state.
+    See the <<WINDOW_IDS, section on WINDOW IDS>> on how to reference a
+    certain window.
 
 
 resize 'DIRECTION' ['FRACTIONDELTA']::
-    Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA' (which
-    defaults to 0.02 if none is supplied). 'DIRECTION' behaves as specified at
-    the 'focus' command. If a floating window is focused, it is resized and
-    grows into the specified 'DIRECTION'. In the parameter 'FRACTIONDELTA', you
-    should not omit the sign '-' or '+', because in future versions, the
-    behaviour may change if the sign is omitted. Example:
+    Changes the size of the focused frame in the specified 'DIRECTION' by
+    'FRACTIONDELTA' (which defaults to 0.02 if none is supplied). 'DIRECTION'
+    behaves as specified at the 'focus' command. If a floating window is
+    focused, it grows towards next edge, i.e. either the edge of the next
+    window or the monitor edge in the specified 'DIRECTION' ('FRACTIONDELTA'
+    is ignored in that case). Example:
 
         * resize right +0.05
         * resize down -0.1
@@ -1492,24 +1494,24 @@ listed as follows:
   * +theme+ has attributes to configure the window decorations. +theme+ and many
     of its child objects have the following attributes
 +
-[format="csv",cols="m,"]
-|===========================
- i w border_width         , the base width of the border
- i w padding_top          , additional border width on the top
- i w padding_right        , on the right
- i w padding_bottom       , on the bottom
- i w padding_left         , and on the left of the border
- c w color                , the basic background color of the border
- i w inner_width          , width of the border around the clients content
- c w inner_color          , its color
- i w outer_width          , width of an additional border close to the edge
- c w outer_color          , its color
- c w background_color     , color behind window contents visible on resize
- b w tight_decoration     , specifies whether the size hints also affect the
+[cols="m,"]
+|=================================================================================
+|i w border_width         | the base width of the border
+|i w padding_top          | additional border width on the top
+|i w padding_right        | on the right
+|i w padding_bottom       | on the bottom
+|i w padding_left         | and on the left of the border
+|c w color                | the basic background color of the border
+|i w inner_width          | width of the border around the clients content
+|c w inner_color          | its color
+|i w outer_width          | width of an additional border close to the edge
+|c w outer_color          | its color
+|c w background_color     | color behind window contents visible on resize
+|b w tight_decoration     | specifies whether the size hints also affect the
                             window decoration or only the window contents of
                             tiled clients (requires enabled sizehints_tiling)
- s w reset                , Writing this resets all attributes to a default value
-|===========================
+|s w reset                | Writing this resets all attributes to a default value
+|=================================================================================
 +
 ----
 inner_color/inner_width

@@ -860,11 +860,21 @@ def mouse(hlwm_process):
         def move_relative(self, delta_x, delta_y):
             self.call_cmd(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)
 
-        def mouse_press(self, button):
-            self.call_cmd(f'xdotool mousedown {button}', shell=True)
+        def mouse_press(self, button, wait=True):
+            cmd = ['xdotool', 'mousedown', button]
+            if wait:
+                with hlwm_process.wait_stderr_match('ButtonPress'):
+                    subprocess.check_call(cmd)
+            else:
+                subprocess.check_call(cmd)
 
-        def mouse_release(self, button):
-            self.call_cmd(f'xdotool mouseup {button}', shell=True)
+        def mouse_release(self, button, wait=True):
+            cmd = ['xdotool', 'mouseup', button]
+            if wait:
+                with hlwm_process.wait_stderr_match('ButtonRelease'):
+                    subprocess.check_call(cmd)
+            else:
+                subprocess.check_call(cmd)
 
         def call_cmd(self, cmd, shell=False):
             print('calling: {}'.format(cmd), file=sys.stderr)
