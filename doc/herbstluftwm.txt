@@ -480,12 +480,12 @@ bring 'WINID'::
 
 
 resize 'DIRECTION' ['FRACTIONDELTA']::
-    Changes the next fraction in specified 'DIRECTION' by 'FRACTIONDELTA' (which
-    defaults to 0.02 if none is supplied). 'DIRECTION' behaves as specified at
-    the 'focus' command. If a floating window is focused, it is resized and
-    grows into the specified 'DIRECTION'. In the parameter 'FRACTIONDELTA', you
-    should not omit the sign '-' or '+', because in future versions, the
-    behaviour may change if the sign is omitted. Example:
+    Changes the size of the focused frame in the specified 'DIRECTION' by
+    'FRACTIONDELTA' (which defaults to 0.02 if none is supplied). 'DIRECTION'
+    behaves as specified at the 'focus' command. If a floating window is
+    focused, it grows towards next edge, i.e. either the edge of the next
+    window or the monitor edge in the specified 'DIRECTION' ('FRACTIONDELTA'
+    is ignored in that case). Example:
 
         * resize right +0.05
         * resize down -0.1
