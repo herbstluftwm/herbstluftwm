@@ -697,8 +697,6 @@ def test_focus_edge(hlwm):
     assert hlwm.get_attr('monitors.focus.index') == '0'
     # but right-most frame means, if we go right once more, we're on
     # the other monitor:
-    hlwm.call('list_monitors')
-    hlwm.call('dump')
     hlwm.call('focus right')
     assert hlwm.get_attr('monitors.focus.index') == '1'
     assert hlwm.get_attr('settings.focus_crosses_monitor_boundaries') == 'true'
