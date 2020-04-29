@@ -241,6 +241,7 @@ int HSTag::focusInDirCommand(Input input, Output output)
         int idx = g_monitors->indexInDirection(get_current_monitor(), direction);
         if (idx >= 0) {
             monitor_focus_by_index(idx);
+            return 0;
         }
     }
     if (!neighbour_found) {
