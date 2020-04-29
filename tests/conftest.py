@@ -838,7 +838,7 @@ def keyboard():
 
 
 @pytest.fixture()
-def mouse(hlwm_process):
+def mouse(hlwm_process, hlwm):
     class Mouse:
         def move_into(self, win_id, x=1, y=1):
             self.call_cmd(f'xdotool mousemove --sync --window {win_id} {x} {y}', shell=True)
@@ -849,22 +849,38 @@ def mouse(hlwm_process):
             if wait:
                 with hlwm_process.wait_stderr_match('ButtonPress'):
                     subprocess.check_call(['xdotool', 'click', button])
+                # reaching this line only means that hlwm started processing
+                # the ButtonPress. So we need to wait until the event is fully processed:
+                hlwm.call('true')
             else:
                 subprocess.check_call(['xdotool', 'click', button])
 
-        def move_to(self, abs_x, abs_y):
+        def move_to(self, abs_x, abs_y, wait=True):
             abs_x = str(int(abs_x))
             abs_y = str(int(abs_y))
             self.call_cmd(f'xdotool mousemove --sync {abs_x} {abs_y}', shell=True)
+            if wait:
+                # wait until all the mouse move events that are now in the queue
+                # are fully processed:
+                hlwm.call('true')
 
-        def move_relative(self, delta_x, delta_y):
+        def move_relative(self, delta_x, delta_y, wait=True):
             self.call_cmd(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)
+            if wait:
+                # wait until all the mouse move events that were put in the
+                # queue by the above xdotool invokation are fully processed.
+                # (other than for the button events, the motion notify events
+                # are not printed to stderr, because this would lead to
+                # to much debug output on motions of the physical mouse)
+                hlwm.call('true')
 
         def mouse_press(self, button, wait=True):
             cmd = ['xdotool', 'mousedown', button]
             if wait:
                 with hlwm_process.wait_stderr_match('ButtonPress'):
                     subprocess.check_call(cmd)
+                # wait for the ButtonPress to be fully processed:
+                hlwm.call('true')
             else:
                 subprocess.check_call(cmd)
 
@@ -873,6 +889,8 @@ def mouse(hlwm_process):
             if wait:
                 with hlwm_process.wait_stderr_match('ButtonRelease'):
                     subprocess.check_call(cmd)
+                # wait for the ButtonRelease to be processed
+                hlwm.call('true')
             else:
                 subprocess.check_call(cmd)
 

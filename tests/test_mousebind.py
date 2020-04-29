@@ -191,6 +191,7 @@ def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
     final_size = (geom_before.width - 100, geom_before.height - 120)
 
     # check geometry during drag
+    x11.display.sync()
     geom_after = client.get_geometry()
     x_after, y_after = x11.get_absolute_top_left(client)
     assert (x_after, y_after) == (x_before + 100, y_before + 120)
