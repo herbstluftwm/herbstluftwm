@@ -656,6 +656,23 @@ def test_index_empty_frame_subtree(hlwm):
     assert layout.replace('T', winid) == hlwm.call('dump').stdout
 
 
+@pytest.mark.parametrize("setting", [True, False])
+@pytest.mark.parametrize("other_mon_exists", [True, False])
+def test_focus_other_monitor(hlwm, other_mon_exists, setting):
+    hlwm.call(['set', 'focus_crosses_monitor_boundaries', hlwm.bool(setting)])
+    hlwm.call('add othertag')
+    if other_mon_exists:
+        hlwm.call('add_monitor 800x600+800+0')
+    assert hlwm.get_attr('monitors.focus.index') == '0'
+
+    if setting and other_mon_exists:
+        hlwm.call('focus right')
+        assert hlwm.get_attr('monitors.focus.index') == '1'
+    else:
+        hlwm.call_xfail('focus right') \
+            .expect_stderr('No neighbour found')
+
+
 def test_set_layout_invalid_layout_name(hlwm):
     hlwm.call_xfail('set_layout foobar') \
         .expect_stderr('set_layout: Invalid layout name: "foobar"')
