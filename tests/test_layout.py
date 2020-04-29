@@ -507,6 +507,25 @@ def test_grid_neighbours_3_columns(hlwm, running_clients, running_clients_num,
                     == running_clients[expected_idx]
 
 
+@pytest.mark.parametrize("direction", ['left', 'right'])
+def test_inner_neighbour_horizontal_layout(hlwm, direction):
+    hlwm.create_clients(4)
+    hlwm.call('set_layout horizontal')
+    if direction == 'right':
+        hlwm.call(f'focus_nth 0')
+        expected_indices = [1, 2, 3]
+    else:
+        hlwm.call(f'focus_nth 3')
+        expected_indices = [2, 1, 0]
+
+    for i in expected_indices:
+        hlwm.call(['focus', direction])
+        assert int(hlwm.get_attr('tags.focus.curframe_windex')) == i
+
+    hlwm.call_xfail(['focus', direction]) \
+        .expect_stderr('No neighbour found')
+
+
 @pytest.mark.parametrize('splittype,dir_work,dir_dummy', [
     ('horizontal', ('left', 'right'), ('up', 'down')),
     ('vertical', ('up', 'down'), ('left', 'right'))
