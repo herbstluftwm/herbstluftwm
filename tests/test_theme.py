@@ -79,3 +79,12 @@ def test_minimal_theme(hlwm, reset):
         hlwm.call('set_attr theme.minimal.reset 1')
     for scheme in ['active', 'normal', 'urgent']:
         assert hlwm.get_attr(f'theme.minimal.{scheme}.border_width') == '0'
+
+
+@pytest.mark.parametrize("tight_dec", [True, False])
+def test_tight_decoration(hlwm, tight_dec):
+    hlwm.call('set_attr theme.tight_decoration {}'.format(hlwm.bool(tight_dec)))
+    # it's not easy to test the tight decration, so we only
+    # check that it does not crash
+    hlwm.create_client()
+    hlwm.call('split explode')

@@ -55,8 +55,6 @@ public:
     int cycleSelectionCommand(Input input, Output output);
     int focusNthCommand(Input input, Output output);
     int removeFrameCommand();
-    int closeAndRemoveCommand();
-    int closeOrRemoveCommand();
     int rotateCommand();
     bool cycleAll(CycleDelta cdelta, bool skip_invisible);
     int cycleFrameCommand(Input input, Output output);
@@ -66,6 +64,8 @@ public:
     int cycleLayoutCommand(Input input, Output output);
     void cycleLayoutCompletion(Completion& complete);
     int splitCommand(Input input, Output output);
+    int setLayoutCommand(Input input, Output output);
+    void setLayoutCompletion(Completion& complete);
 public: // soon to be come private:
     std::shared_ptr<Frame> root_;
 private:

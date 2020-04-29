@@ -27,7 +27,6 @@ parser.add_argument('--cxx', type=str)
 parser.add_argument('--cc', type=str)
 parser.add_argument('--check-using-std', action='store_true')
 parser.add_argument('--iwyu', action='store_true')
-parser.add_argument('--clang-tidy', action='store_true')
 parser.add_argument('--flake8', action='store_true')
 parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
@@ -62,8 +61,17 @@ build_env = os.environ.copy()
 build_env.update({
     'CC': args.cc,
     'CXX': args.cxx,
-    'CFLAGS': '--coverage -Werror',
-    'CXXFLAGS': '--coverage -Werror',
+    'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
+    'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
+
+    # Hash-verifying the compiler is required when building with
+    # clang-and-tidy.sh (because the script's mtime is not stable) and for
+    # other cases, the overhead is minimal):
+    'CCACHE_COMPILERCHECK': 'content',
+
+    # In case clang-and-tidy.sh is used for building, it will need this to call
+    # clang-tidy:
+    'CLANG_TIDY_BUILD_DIR': str(build_dir),
 })
 
 cmake_args = [
@@ -112,18 +120,16 @@ if args.iwyu:
         print("")
         sys.exit(1)
 
-if args.clang_tidy:
-    sp.check_call(f'python3 /usr/lib/llvm-9/share/clang/run-clang-tidy.py -extra-arg=-Wno-unknown-warning-option -header-filter=^{repo}/.* {repo}',
-                  shell=True,
-                  cwd=build_dir)
-
 if args.flake8:
     tox('-e flake8', build_dir)
 
 if args.run_tests:
+    # Suppress warnings about known memory leaks:
+    os.environ['LSAN_OPTIONS'] = f"suppressions={repo}/ci/lsan-suppressions.txt"
+
     # First, run only the tests that are NOT marked to be excluded from code
     # coverage collection.
-    tox('-e py37 -- -n auto --cache-clear -v -x -m "not exclude_from_coverage"', build_dir)
+    tox('-e py38 -- -n auto --cache-clear -v -x -m "not exclude_from_coverage"', build_dir)
 
     # Create the code coverage report:
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
@@ -132,4 +138,4 @@ if args.run_tests:
     (build_dir / 'coverage.info').rename(repo / 'coverage.info')
 
     # Run the tests that have been skipped before (without clearing the pytest cache this time):
-    tox('-e py37 -- -n auto -v -x -m exclude_from_coverage', build_dir)
+    tox('-e py38 -- -n auto -v -x -m exclude_from_coverage', build_dir)

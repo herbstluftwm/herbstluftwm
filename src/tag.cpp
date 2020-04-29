@@ -19,6 +19,7 @@
 using std::endl;
 using std::function;
 using std::make_shared;
+using std::shared_ptr;
 using std::string;
 
 static bool    g_tag_flags_dirty = true;
@@ -142,6 +143,13 @@ void HSTag::foreachClient(function<void (Client *)> loopBody)
     }
 }
 
+void HSTag::focusFrame(shared_ptr<FrameLeaf> frameToFocus)
+{
+    floating_focused = false;
+    FrameTree::focusFrame(frameToFocus);
+    needsRelayout_.emit();
+}
+
 Client *HSTag::focusedClient()
 {
     if (floating_focused()) {
@@ -233,6 +241,7 @@ int HSTag::focusInDirCommand(Input input, Output output)
         int idx = g_monitors->indexInDirection(get_current_monitor(), direction);
         if (idx >= 0) {
             monitor_focus_by_index(idx);
+            return 0;
         }
     }
     if (!neighbour_found) {
@@ -482,5 +491,37 @@ HSTag* find_tag_with_toplevel_frame(Frame* frame) {
         }
     }
     return nullptr;
+}
+
+//! close the focused client or remove if the frame is empty
+int HSTag::closeOrRemoveCommand() {
+    Client* client = focusedClient();
+    if (client) {
+        client->requestClose();
+        return 0;
+    } else if (!floating_focused) {
+        // since the tiling layer is focused
+        // and no client is focused, we know that the
+        // focused frame is empty.
+        return frame->removeFrameCommand();
+    }
+    return 0;
+}
+
+//! same as close or remove but directly remove frame after last client
+int HSTag::closeAndRemoveCommand() {
+    Client* client = focusedClient();
+    if (client) {
+        // note that this just sends the closing signal
+        client->requestClose();
+        // so the client still exists in the following
+    }
+    // remove a frame if a frame is focused, that is if
+    // the tag is in tiling mode and the tiling layer is focused
+    bool frameFocused = !floating() && !floating_focused;
+    if (frameFocused && frame->focusedFrame()->clientCount() <= 1) {
+        return frame->removeFrameCommand();
+    }
+    return 0;
 }
 

@@ -63,9 +63,11 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     keysInactive_.setWriteable();
     ewmhnotify_.setWriteable();
     ewmhrequests_.setWriteable();
-    for (auto i : {&fullscreen_, &pseudotile_}) {
+    sizehints_floating_.setWriteable();
+    sizehints_tiling_.setWriteable();
+    for (auto i : {&fullscreen_, &pseudotile_, &sizehints_floating_, &sizehints_tiling_}) {
         i->setWriteable();
-        i->changed().connect([this](bool){ needsRelayout.emit(this->tag()); });
+        i->changed().connect(this, &Client::requestRedraw);
     }
 
     keyMask_.changed().connect([this] {
@@ -562,6 +564,13 @@ string Client::getWindowClass()
 string Client::getWindowInstance()
 {
     return ewmh.X().getInstance(window_);
+}
+
+void Client::requestRedraw()
+{
+    if (tag_) {
+        needsRelayout.emit(tag_);
+    }
 }
 
 /**

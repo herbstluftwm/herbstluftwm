@@ -21,6 +21,16 @@ import warnings
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
 
+# List of environment variables copied during hlwm process creation:
+# * LSAN_OPTIONS: needed to suppress warnings about known memory leaks
+COPY_ENV_WHITELIST = ['LSAN_OPTIONS']
+
+
+def extend_env_with_whitelist(environment):
+    """Copy some whitelisted environment variables (if set) into an existing environment"""
+    environment.update({e: os.environ[e] for e in os.environ if e in COPY_ENV_WHITELIST})
+    return environment
+
 
 class HlwmBridge:
 
@@ -35,6 +45,7 @@ class HlwmBridge:
         self.env = {
             'DISPLAY': display,
         }
+        self.env = extend_env_with_whitelist(self.env)
         self.hlwm_process = hlwm_process
         self.hc_idle = subprocess.Popen(
             [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
@@ -308,7 +319,9 @@ class HlwmProcess:
         fileobjs = set(k.fileobj for k in self.output_selector.get_map().values())
 
         stderr = ''
+        stderr_bytes = bytes()
         stdout = ''
+        stdout_bytes = bytes()
 
         def match_found():
             if until_stdout and (until_stdout in stdout):
@@ -327,20 +340,29 @@ class HlwmProcess:
             selected = self.output_selector.select(timeout=select_timeout)
             for key, events in selected:
                 # Read only single byte, otherwise we might block:
-                ch = key.fileobj.read(1).decode('ascii')
+                ch = key.fileobj.read(1)
 
-                if ch == '':
+                if ch == b'':
                     eof_fileobjs.add(key.fileobj)
-
-                # Pass it through to the real stdout/stderr:
-                key.data.write(ch)
-                key.data.flush()
 
                 # Store in temporary buffer for string matching:
                 if key.fileobj == self.proc.stderr:
-                    stderr += ch
+                    stderr_bytes += ch
+                    if ch == b'\n':
+                        stderr += stderr_bytes.decode()
+                        # Pass it through to the real stderr:
+                        key.data.write(stderr_bytes.decode())
+                        key.data.flush()
+                        stderr_bytes = b''
+
                 if key.fileobj == self.proc.stdout:
-                    stdout += ch
+                    stdout_bytes += ch
+                    if ch == b'\n':
+                        stdout += stdout_bytes.decode()
+                        # Pass it through to the real stdout:
+                        key.data.write(stdout_bytes.decode())
+                        key.data.flush()
+                        stdout_bytes = b''
 
             if until_eof:
                 # We are going to the very end, so carry on until all file
@@ -501,6 +523,7 @@ def hlwm_spawner(tmpdir):
             'DISPLAY': display,
             'XDG_CONFIG_HOME': str(tmpdir),
         }
+        env = extend_env_with_whitelist(env)
         return HlwmProcess(tmpdir, env, args)
     return spawn
 
@@ -681,6 +704,13 @@ def x11(x11_connection):
             assert hlwm_bridge is not None, "hlwm must be running"
             hlwm_bridge.call('true')
 
+        def get_decoration_window(self, window):
+            tree = window.query_tree()
+            if tree.root == tree.parent:
+                return None
+            else:
+                return tree.parent
+
         def get_absolute_top_left(self, window):
             """return the absolute (x,y) coordinate of the given window,
             i.e. relative to the root window"""
@@ -701,6 +731,19 @@ def x11(x11_connection):
                 # if it's not, continue at its parent
                 window = tree.parent
             return (x, y)
+
+        def get_hlwm_frames(self):
+            """get list of window handles of herbstluftwm
+            frame decoration windows"""
+            cmd = ['xdotool', 'search', '--class', '_HERBST_FRAME']
+            frame_wins = subprocess.run(cmd,
+                                        stdout=subprocess.PIPE,
+                                        universal_newlines=True,
+                                        check=True)
+            res = []
+            for winid_decimal_str in frame_wins.stdout.splitlines():
+                res.append(self.window(winid_decimal_str))
+            return res
 
         def shutdown(self):
             # Destroy all created windows:
@@ -809,8 +852,29 @@ def mouse(hlwm_process):
             else:
                 subprocess.check_call(['xdotool', 'click', button])
 
+        def move_to(self, abs_x, abs_y):
+            abs_x = str(int(abs_x))
+            abs_y = str(int(abs_y))
+            self.call_cmd(f'xdotool mousemove --sync {abs_x} {abs_y}', shell=True)
+
         def move_relative(self, delta_x, delta_y):
             self.call_cmd(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)
+
+        def mouse_press(self, button, wait=True):
+            cmd = ['xdotool', 'mousedown', button]
+            if wait:
+                with hlwm_process.wait_stderr_match('ButtonPress'):
+                    subprocess.check_call(cmd)
+            else:
+                subprocess.check_call(cmd)
+
+        def mouse_release(self, button, wait=True):
+            cmd = ['xdotool', 'mouseup', button]
+            if wait:
+                with hlwm_process.wait_stderr_match('ButtonRelease'):
+                    subprocess.check_call(cmd)
+            else:
+                subprocess.check_call(cmd)
 
         def call_cmd(self, cmd, shell=False):
             print('calling: {}'.format(cmd), file=sys.stderr)

@@ -4,11 +4,19 @@ herbstluftwm NEWS -- History of user-visible changes
 Current git version
 -------------------
 
+  * Selection of empty frames by the mouse (by click or by hover if
+    focus_follows_mouse is enabled)
+  * The commands 'close_and_remove' / 'close_or_remove' act like 'close' for
+    floating clients
+  * The decoration window allows focusing, moving, and resizing the client
+    via the mouse (as known from standard floating window managers)
   * Bug fixes:
     - Fix a crash in the error handler when a invalid monitor name is
       passed. (Affects list_padding move_monitor rename_monitor lock_tag
       unlock_tag)
     - Fix the type of WM_STATE
+    - The client attributes sizehints_tiling and sizehints_floating are now
+      writable
 
 Release 0.8.1 on 2020-04-21
 ---------------------------

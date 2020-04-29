@@ -47,7 +47,7 @@ FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent
     }
     layout = (LayoutAlgorithm) l;
 
-    decoration = new FrameDecoration(tag, settings);
+    decoration = new FrameDecoration(*this, tag, settings);
 }
 
 FrameSplit::FrameSplit(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent, int fraction, SplitAlign align,
@@ -147,23 +147,6 @@ shared_ptr<FrameSplit> FrameSplit::thisSplit() {
 
 shared_ptr<FrameLeaf> Frame::getGloballyFocusedFrame() {
     return get_current_monitor()->tag->frame->focusedFrame();
-}
-
-int frame_current_set_client_layout(int argc, char** argv, Output output) {
-    if (argc <= 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    LayoutAlgorithm layout;
-    try {
-        layout = Converter<LayoutAlgorithm>::parse(argv[1]);
-    } catch (const std::exception& e) {
-        output << argv[0] << ": " << e.what();
-        return HERBST_INVALID_ARGUMENT;
-    }
-    auto cur_frame = Frame::getGloballyFocusedFrame();
-    cur_frame->setLayout(layout);
-    get_current_monitor()->applyLayout();
-    return 0;
 }
 
 TilingResult FrameLeaf::layoutLinear(Rectangle rect, bool vertical) {

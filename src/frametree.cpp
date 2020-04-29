@@ -1,6 +1,7 @@
 #include "frametree.h"
 
 #include <algorithm>
+#include <cassert>
 #include <limits>
 #include <regex>
 
@@ -197,33 +198,6 @@ int FrameTree::removeFrameCommand() {
     get_current_monitor()->applyLayout();
     return 0;
 }
-
-//! close the focused client or remove if the frame is empty
-int FrameTree::closeOrRemoveCommand() {
-    Client* client = focusedFrame()->focusedClient();
-    if (client) {
-        client->requestClose();
-        return 0;
-    } else {
-        return removeFrameCommand();
-    }
-}
-
-//! same as close or remove but directly remove frame after last client
-int FrameTree::closeAndRemoveCommand() {
-    auto cur_frame = focusedFrame();
-    Client* client = cur_frame->focusedClient();
-    if (client) {
-        // note that this just sends the closing signal
-        client->requestClose();
-        // so the window is still in the frame at this point
-    }
-    if (cur_frame->clientCount() <= 1) {
-        return removeFrameCommand();
-    }
-    return 0;
-}
-
 
 int FrameTree::rotateCommand() {
     void (*onSplit)(FrameSplit*) =
@@ -782,6 +756,35 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
     }
 }
 
+int FrameTree::setLayoutCommand(Input input, Output output) {
+    if (input.empty()) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+
+    auto layoutStr = input.front();
+    LayoutAlgorithm layout;
+    try {
+        layout = Converter<LayoutAlgorithm>::parse(layoutStr);
+    } catch (const std::exception& e) {
+        output << "set_layout: " << e.what();
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    auto curFrame = focusedFrame();
+    curFrame->setLayout(layout);
+    get_current_monitor()->applyLayout();
+
+    return HERBST_EXIT_SUCCESS;
+}
+
+void FrameTree::setLayoutCompletion(Completion& complete) {
+    if (complete == 0) {
+        Converter<LayoutAlgorithm>::complete(complete, nullptr);
+    } else {
+        complete.none();
+    }
+}
+
 //! modes for the 'split' command
 class SplitMode {
 public:
@@ -873,10 +876,14 @@ int FrameTree::splitCommand(Input input, Output output)
     if (!frame->split(m.align, fraction, childrenLeaving)) {
         return 0;
     }
+
+    auto frameParent = frame->getParent();
+    assert(frameParent != nullptr);
     if (!m.frameToFirst) {
-        frame->getParent()->swapChildren();
+        frameParent->swapChildren();
     }
-    frame->getParent()->setSelection(m.selection);
+    frameParent->setSelection(m.selection);
+
     // redraw monitor
     get_current_monitor()->applyLayout();
     return 0;

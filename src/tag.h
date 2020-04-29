@@ -18,6 +18,7 @@ enum {
 
 class Client;
 class Completion;
+class FrameLeaf;
 class FrameTree;
 class Settings;
 class Stack;
@@ -46,6 +47,7 @@ public:
     void setVisible(bool visible);
     bool removeClient(Client* client);
     void foreachClient(std::function<void(Client*)> loopBody);
+    void focusFrame(std::shared_ptr<FrameLeaf> frameToFocus);
     Client* focusedClient();
 
     void insertClient(Client* client, std::string frameIndex = {}, bool focus = true);
@@ -65,6 +67,8 @@ public:
     int resizeCommand(Input input, Output output);
     void resizeCompletion(Completion& complete);
 
+    int closeAndRemoveCommand();
+    int closeOrRemoveCommand();
 private:
     void onGlobalFloatingChange(bool newState);
     void fixFocusIndex();

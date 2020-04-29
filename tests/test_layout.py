@@ -1,6 +1,5 @@
 import pytest
 import re
-import subprocess
 import math
 
 
@@ -377,11 +376,7 @@ def test_split_and_remove_with_smart_frame_surroundings(hlwm, x11, align):
     hlwm.call('remove')
 
     # Search for all frames, there should only be one
-    frame_win_id = subprocess.run(['xdotool', 'search', '--class', '_HERBST_FRAME'],
-                                  stdout=subprocess.PIPE,
-                                  universal_newlines=True,
-                                  check=True)
-    frame_x11 = x11.window(frame_win_id.stdout)
+    frame_x11 = x11.get_hlwm_frames()[0]
     frame_geom = frame_x11.get_geometry()
     assert (frame_geom.width, frame_geom.height) == (800, 600)
 
@@ -510,6 +505,25 @@ def test_grid_neighbours_3_columns(hlwm, running_clients, running_clients_num,
                 hlwm.call(['focus', direction])
                 assert hlwm.get_attr('clients.focus.winid') \
                     == running_clients[expected_idx]
+
+
+@pytest.mark.parametrize("direction", ['left', 'right'])
+def test_inner_neighbour_horizontal_layout(hlwm, direction):
+    hlwm.create_clients(4)
+    hlwm.call('set_layout horizontal')
+    if direction == 'right':
+        hlwm.call(f'focus_nth 0')
+        expected_indices = [1, 2, 3]
+    else:
+        hlwm.call(f'focus_nth 3')
+        expected_indices = [2, 1, 0]
+
+    for i in expected_indices:
+        hlwm.call(['focus', direction])
+        assert int(hlwm.get_attr('tags.focus.curframe_windex')) == i
+
+    hlwm.call_xfail(['focus', direction]) \
+        .expect_stderr('No neighbour found')
 
 
 @pytest.mark.parametrize('splittype,dir_work,dir_dummy', [
@@ -659,3 +673,49 @@ def test_index_empty_frame_subtree(hlwm):
     winid, _ = hlwm.create_client()
 
     assert layout.replace('T', winid) == hlwm.call('dump').stdout
+
+
+@pytest.mark.parametrize("setting", [True, False])
+@pytest.mark.parametrize("other_mon_exists", [True, False])
+def test_focus_other_monitor(hlwm, other_mon_exists, setting):
+    hlwm.call(['set', 'focus_crosses_monitor_boundaries', hlwm.bool(setting)])
+    hlwm.call('add othertag')
+    if other_mon_exists:
+        hlwm.call('add_monitor 800x600+800+0')
+    assert hlwm.get_attr('monitors.focus.index') == '0'
+
+    if setting and other_mon_exists:
+        hlwm.call('focus right')
+        assert hlwm.get_attr('monitors.focus.index') == '1'
+    else:
+        hlwm.call_xfail('focus right') \
+            .expect_stderr('No neighbour found')
+
+
+def test_set_layout_invalid_layout_name(hlwm):
+    hlwm.call_xfail('set_layout foobar') \
+        .expect_stderr('set_layout: Invalid layout name: "foobar"')
+
+
+def test_focus_edge(hlwm):
+    hlwm.call('set focus_crosses_monitor_boundaries on')
+    hlwm.call('add otherTag')
+    hlwm.call('add_monitor 800x600+800+0')
+    hlwm.call('split right')
+    hlwm.call('split right')
+
+    # we're on the leftmost frame
+    layout_before = hlwm.call('dump').stdout
+    hlwm.call('focus_edge left')
+    assert layout_before == hlwm.call('dump').stdout
+    assert hlwm.get_attr('monitors.focus.index') == '0'
+
+    # focus_edge goes to the rightmost frame
+    hlwm.call('focus_edge right')
+    # we're still on the first monitor
+    assert hlwm.get_attr('monitors.focus.index') == '0'
+    # but right-most frame means, if we go right once more, we're on
+    # the other monitor:
+    hlwm.call('focus right')
+    assert hlwm.get_attr('monitors.focus.index') == '1'
+    assert hlwm.get_attr('settings.focus_crosses_monitor_boundaries') == 'true'

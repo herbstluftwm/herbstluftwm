@@ -152,6 +152,11 @@ def test_bring_from_different_tag(hlwm, x11):
     assert hlwm.get_attr('clients.focus.winid') == bonnie
 
 
+def test_bring_invalid_client(hlwm):
+    hlwm.call_xfail('bring foobar') \
+        .expect_stderr('Could not find client')
+
+
 def test_bring_from_same_tag_different_frame(hlwm, x11):
     hlwm.call('split horizontal')
     hlwm.call('focus right')
@@ -179,3 +184,17 @@ def test_fullscreen_pseudotile_command(hlwm, command):
             assert old_value != new_value
         else:
             assert new_value == set_value
+
+
+@pytest.mark.parametrize("attribute", [
+    'ewmhnotify',
+    'ewmhrequests',
+    'fullscreen',
+    'pseudotile',
+    'sizehints_floating',
+    'sizehints_tiling',
+])
+def test_bool_attributes_writable(hlwm, attribute):
+    hlwm.create_clients(1)
+    for value in ['true', 'false', 'toggle']:
+        hlwm.call(f'set_attr clients.focus.{attribute} {value}')
