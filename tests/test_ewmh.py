@@ -194,3 +194,23 @@ def test_ewmh_move_client_to_tag(hlwm, x11):
     x11.display.sync()
 
     assert hlwm.get_attr(f'clients.{winid}.tag') == 'otherTag'
+
+
+def test_ewmh_make_client_urgent(hlwm, hc_idle, x11):
+    hlwm.call('set focus_stealing_prevention off')
+    hlwm.call('add otherTag')
+    hlwm.call('rule tag=otherTag')
+    # create a new client that is not focused
+    winHandle, winid = x11.create_client()
+    assert hlwm.get_attr(f'clients.{winid}.urgent') == 'false'
+    assert 'focus' not in hlwm.list_children(f'clients')
+    # assert that this window really does not have wm hints set:
+    assert winHandle.get_wm_hints() is None
+    hc_idle.hooks()  # reset hooks
+
+    demandsAttent = '_NET_WM_STATE_DEMANDS_ATTENTION'
+    x11.ewmh.setWmState(winHandle, 1, demandsAttent)
+    x11.display.flush()
+
+    assert hlwm.get_attr(f'clients.{winid}.urgent') == 'true'
+    assert ['tag_flags'] in hc_idle.hooks()
