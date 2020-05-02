@@ -56,7 +56,6 @@ def test_autostart_path(tmpdir, method):
         echo "hlwm autostart test"
     """.lstrip('\n')))
     autostart.chmod(0o755)
-    print("written: " + str(autostart))
     env = conftest.extend_env_with_whitelist(env)
     hlwm_proc = HlwmProcess('hlwm autostart test', env, args)
 
