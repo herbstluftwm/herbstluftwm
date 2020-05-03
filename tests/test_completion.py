@@ -245,7 +245,7 @@ def test_junk_args_dont_crash(hlwm, args_before, junk_arg):
             continue
         full_cmd = [cmd_name]
         for _ in range(0, args_before):
-            # find some arg apropriate for the current command
+            # find some arg appropriate for the current command
             completions = hlwm.unchecked_call(
                 ['complete', str(len(full_cmd))] + full_cmd).stdout.splitlines()
             completions.append('')
