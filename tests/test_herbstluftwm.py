@@ -67,3 +67,13 @@ def test_autostart_path(tmpdir, method):
     # TODO: verify the path as soon as we have an autostart object
 
     hlwm_proc.shutdown()
+
+
+def test_no_autostart():
+    # no HOME, no XDG_CONFIG_HOME
+    env = {
+        'DISPLAY': os.environ['DISPLAY'],
+    }
+    hlwm_proc = HlwmProcess('', env, [])
+    hlwm_proc.read_and_echo_output(until_stderr='Will not run autostart file.')
+    hlwm_proc.shutdown()
