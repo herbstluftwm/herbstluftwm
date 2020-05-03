@@ -231,3 +231,24 @@ def test_posix_escape(hlwm):
     results = hlwm.complete(['use'], evaluate_escapes=True)
     print(results)
     assert sorted(['default'] + tags) == sorted(results)
+
+
+@pytest.mark.exclude_from_coverage(
+    reason='This test does not verify functionality but only whether \
+    passing junk to args does not crash herbstluftwm.')
+@pytest.mark.parametrize("args_before", [0, 1, 2])
+@pytest.mark.parametrize("junk_arg", ['junk', '234', ' '])
+def test_junk_args_dont_crash(hlwm, args_before, junk_arg):
+    commands = hlwm.call('list_commands').stdout.splitlines()
+    for cmd_name in commands:
+        if cmd_name in ['wmexec', 'quit']:
+            continue
+        full_cmd = [cmd_name]
+        for _ in range(0, args_before):
+            # find some arg appropriate for the current command
+            completions = hlwm.unchecked_call(
+                ['complete', str(len(full_cmd))] + full_cmd).stdout.splitlines()
+            completions.append('')
+            full_cmd.append(completions[0])
+        full_cmd.append(junk_arg)
+        hlwm.unchecked_call(full_cmd)
