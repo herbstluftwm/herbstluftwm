@@ -286,14 +286,13 @@ def hlwm(hlwm_process):
 
 
 class HlwmProcess:
-    def __init__(self, tmpdir, env, args):
-        autostart = tmpdir / 'herbstluftwm' / 'autostart'
-        autostart.ensure()
-        autostart.write(textwrap.dedent("""
-            #!/usr/bin/env bash
-            echo "hlwm started"
-        """.lstrip('\n')))
-        autostart.chmod(0o755)
+    def __init__(self, autostart_stdout_message, env, args):
+        """create a new hlwm process and wait for booting up.
+        - autostart_stdout_message is the message printed to stdout
+          that indicates that the autostart has been executed entirely
+        - env is the environment dictionary
+        - args is a list of additional command line arguments
+        """
         self.bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen(
             [self.bin_path, '--verbose'] + args, env=env,
@@ -308,7 +307,7 @@ class HlwmProcess:
         self.output_selector = sel
 
         # Wait for marker output from wrapper script:
-        self.read_and_echo_output(until_stdout='hlwm started')
+        self.read_and_echo_output(until_stdout=autostart_stdout_message)
 
     def read_and_echo_output(self, until_stdout=None, until_stderr=None, until_eof=False):
         expect_sth = ((until_stdout or until_stderr) is not None)
@@ -534,7 +533,14 @@ def hlwm_spawner(tmpdir):
             'XDG_CONFIG_HOME': str(tmpdir),
         }
         env = extend_env_with_whitelist(env)
-        return HlwmProcess(tmpdir, env, args)
+        autostart = tmpdir / 'herbstluftwm' / 'autostart'
+        autostart.ensure()
+        autostart.write(textwrap.dedent("""
+            #!/usr/bin/env bash
+            echo "hlwm started"
+        """.lstrip('\n')))
+        autostart.chmod(0o755)
+        return HlwmProcess('hlwm started', env, args)
     return spawn
 
 
