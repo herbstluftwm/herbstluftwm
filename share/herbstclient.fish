@@ -2,21 +2,26 @@
 
 function _first_hlwm_command
     # Find first hlwm command in given tokens (e.g. commandline -o)
-    # Print token position if found; exit status 0 if found, else 1
+    # Print token position if found, else print no. tokens + 1
+    # Exit status 0 if found, 1 if not found, 2 if not allowed due to options
 
     for i in (seq 2 (count $argv)) # start after 'herbstclient'
+        if string match -qr -- '^(-v|-h|--help|-w|--wait|-i|--idle)$' $argv[$i]
+            return 2 # these options do not take commands
+        end
         if not string match -q -- "-*" $argv[$i]
             echo $i
             return 0
         end
     end
+    math (count $argv) + 1
     return 1
 end
 
 function _get_herbstluftwm_completion
-    set tokens (commandline -o)
+    set tokens (commandline -op)
     set first (_first_hlwm_command $tokens)
-    if not test -n $first; return; end # no command found, we are done
+    if test $status -eq 2; return; end # no hlwm completion desired
     set tokens $tokens[$first..-1]
 
     # TODO: we should derive the real position but it is tricky
@@ -44,8 +49,7 @@ end
 
 function _complete_herbstclient
     # do not complete herbstclient options after commands
-    # TODO: this could check if cursor sits in front of said command
-    complete -fc herbstclient -n 'not _first_hlwm_command (commandline -o)' $argv
+    complete -fc herbstclient -n 'not _first_hlwm_command (commandline -op --cut-at-cursor)' $argv
 end
 
 # add completions for herbstclient options
