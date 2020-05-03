@@ -489,11 +489,13 @@ void Client::set_urgent_force(bool state) {
 
     setup_border(this == manager.focus());
 
-    XWMHints *wmh;
+    XWMHints* wmh;
     if (!(wmh = XGetWMHints(g_display, this->window_))) {
-        return;
+        // just allocate new wm hints for the case the window
+        // did not have wm hints set before.
+        // here, we ignore what happens on insufficient memory
+        wmh = XAllocWMHints();
     }
-
     if (state) {
         wmh->flags |= XUrgencyHint;
     } else {

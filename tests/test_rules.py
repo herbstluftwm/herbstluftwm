@@ -541,3 +541,39 @@ def test_apply_rules_unmanage(hlwm):
 
     hlwm.call_xfail(['apply_rules', winid]) \
         .expect_stderr(r'not yet possible')
+
+
+@pytest.mark.parametrize('focus', [True, False])
+def test_switchtag(hlwm, focus):
+    hlwm.call('add tag2')
+    hlwm.call(['rule', 'title=switchme', 'tag=tag2', 'switchtag=true', 'focus=' + hlwm.bool(focus)])
+
+    assert hlwm.get_attr('tags.focus.name') == 'default'
+    winid, _ = hlwm.create_client(title='switchme')
+
+    assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
+
+    if focus:
+        assert hlwm.get_attr('tags.focus.name') == 'tag2'
+    else:
+        assert hlwm.get_attr('tags.focus.name') == 'default'
+
+
+@pytest.mark.parametrize('swap_monitors_to_get_tag', [True, False])
+def test_switchtag_monitor(hlwm, swap_monitors_to_get_tag):
+    hlwm.call('add tag2')
+    hlwm.call('add_monitor 800x600+800+0 tag2')
+    hlwm.call(['set', 'swap_monitors_to_get_tag', hlwm.bool(swap_monitors_to_get_tag)])
+    hlwm.call(['rule', 'title=switchme', 'tag=tag2', 'switchtag=true', 'focus=true'])
+
+    assert hlwm.get_attr('tags.focus.name') == 'default'
+    assert int(hlwm.get_attr('monitors.focus.index')) == 0
+    winid, _ = hlwm.create_client(title='switchme')
+
+    assert hlwm.get_attr('clients', winid, 'tag') == 'tag2'
+    assert hlwm.get_attr('tags.focus.name') == 'tag2'
+
+    if swap_monitors_to_get_tag:
+        assert int(hlwm.get_attr('monitors.focus.index')) == 0
+    else:
+        assert int(hlwm.get_attr('monitors.focus.index')) == 1
