@@ -85,11 +85,13 @@ def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv):
         hlwm.call('emit_hook nonmatch nonarg')
         hlwm.call('emit_hook matcher somearg')
 
-    proc.wait(5)
-    assert proc.returncode == 0
+    # first read output entirely to avoid blocking on the side
+    # of herbstclient
     assert proc.stderr.read() == ''
     assert proc.stdout.read().splitlines() == \
         num_hooks_recv * ['matcher\tsomearg']
+    proc.wait(20)
+    assert proc.returncode == 0
 
 
 def test_lastarg_only(hlwm):
@@ -111,6 +113,8 @@ def test_lastarg_only(hlwm):
         hlwm.call(['emit_hook'] + h)
         expected_lines.append(h[-1])
 
-    proc.wait(8)
-    assert proc.returncode == 0
+    # first read output entirely to avoid blocking on the side
+    # of herbstclient
     assert proc.stdout.read().splitlines() == expected_lines
+    proc.wait(20)
+    assert proc.returncode == 0
