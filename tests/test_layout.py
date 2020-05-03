@@ -1,6 +1,7 @@
 import pytest
 import re
 import math
+import textwrap
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
@@ -719,3 +720,18 @@ def test_focus_edge(hlwm):
     hlwm.call('focus right')
     assert hlwm.get_attr('monitors.focus.index') == '1'
     assert hlwm.get_attr('settings.focus_crosses_monitor_boundaries') == 'true'
+
+
+def test_tree_style_utf8(hlwm):
+    # the following also tests utf8_string_at()
+    hlwm.call(['set', 'tree_style', '╾│…├╰╼─╮'])
+    hlwm.call('split top')
+    hlwm.call('split vertical')
+
+    assert hlwm.call('layout').stdout == textwrap.dedent("""\
+    ╾─╮ vertical 50% selection=1
+      ├─╼ vertical:
+      ╰─╮ vertical 50% selection=0
+      … ├─╼ vertical: [FOCUS]
+      … ╰─╼ vertical:
+    """)
