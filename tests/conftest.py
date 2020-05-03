@@ -390,7 +390,7 @@ class HlwmProcess:
     def wait_stdout_match(self, match):
         """
         Context manager for wrapping commands that are expected to result in
-        certain output on hlwm's stderr (e.g., input events).
+        certain output on hlwm's stdout (e.g., input events).
         """
         self.read_and_echo_output()
         yield
