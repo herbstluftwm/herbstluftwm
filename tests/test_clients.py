@@ -33,6 +33,13 @@ def test_alter_fullscreen(hlwm):
     assert hlwm.get_attr('clients.focus.fullscreen') == 'false'
 
 
+@pytest.mark.parametrize("command", ["fullscreen", "pseudotile"])
+def test_fullscreen_pseudotile_invalid_arg(hlwm, command):
+    hlwm.create_client()
+    hlwm.call_xfail([command, 'novalue']) \
+        .expect_stderr('illegal argument "novalue"')
+
+
 def test_fullscreen_completion(hlwm):
     assert hlwm.complete("fullscreen") == 'false off on toggle true'.split(' ')
 
