@@ -387,6 +387,16 @@ class HlwmProcess:
             assert False, f'Expected string not encountered within {duration:.1f} seconds'
 
     @contextmanager
+    def wait_stdout_match(self, match):
+        """
+        Context manager for wrapping commands that are expected to result in
+        certain output on hlwm's stdout (e.g., input events).
+        """
+        self.read_and_echo_output()
+        yield
+        self.read_and_echo_output(until_stdout=match)
+
+    @contextmanager
     def wait_stderr_match(self, match):
         """
         Context manager for wrapping commands that are expected to result in
