@@ -311,7 +311,7 @@ class HlwmProcess:
 
     def read_and_echo_output(self, until_stdout=None, until_stderr=None, until_eof=False):
         expect_sth = ((until_stdout or until_stderr) is not None)
-        max_wait = 5
+        max_wait = 15
 
         # Track which file objects have EOFed:
         eof_fileobjs = set()
