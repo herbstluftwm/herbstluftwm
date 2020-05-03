@@ -204,7 +204,11 @@ class HlwmBridge:
                     items.append(i[0:-1])
         # evaluate escape sequences:
         if evaluate_escapes:
-            items = [shlex.split(s)[0] for s in items]
+            old_items = items
+            items = []
+            for s in old_items:
+                unescaped = shlex.split(s)
+                items.append(unescaped[0] if len(unescaped) else '')
         return sorted(items)
 
     def list_children_via_attr(self, object_path):
