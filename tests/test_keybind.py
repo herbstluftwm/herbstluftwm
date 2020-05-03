@@ -314,3 +314,9 @@ def test_keymask_and_keys_inactive(hlwm, keyboard):
 def test_keybind_unknown_binding(hlwm):
     hlwm.call_xfail('keybind x xterm') \
         .expect_stderr('command.*not exist')
+
+
+@pytest.mark.parametrize('command', ['keybind', 'keyunbind'])
+def test_empty_keysym(hlwm, command):
+    hlwm.call_xfail([command, '', 'true']) \
+        .expect_stderr('Must not be empty')
