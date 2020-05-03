@@ -10,6 +10,11 @@ import conftest
 HLWM_PATH = os.path.join(BINDIR, 'herbstluftwm')
 
 
+def test_reload(hlwm_process, hlwm):
+    with hlwm_process.wait_stdout_match('hlwm started'):
+        hlwm.call('reload')
+
+
 def test_herbstluftwm_already_running(hlwm):
     result = subprocess.run([HLWM_PATH],
                             stderr=subprocess.PIPE,
