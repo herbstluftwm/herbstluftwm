@@ -10,6 +10,7 @@ Current git version
     floating clients
   * The decoration window allows focusing, moving, and resizing the client
     via the mouse (as known from standard floating window managers)
+  * Improved herbstclient tab completion for the fish shell
   * Bug fixes:
     - Fix a crash in the error handler when a invalid monitor name is
       passed. (Affects list_padding move_monitor rename_monitor lock_tag
@@ -17,6 +18,8 @@ Current git version
     - Fix the type of WM_STATE
     - The client attributes sizehints_tiling and sizehints_floating are now
       writable
+    - Fix EWMH urgency change for clients without WM hints set
+    - Fix the exit code of the 'focus' command
 
 Release 0.8.1 on 2020-04-21
 ---------------------------
