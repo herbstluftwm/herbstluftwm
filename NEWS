@@ -1,8 +1,8 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
-Current git version
--------------------
+Release 0.8.2 on 2020-05-04
+---------------------------
 
   * Selection of empty frames by the mouse (by click or by hover if
     focus_follows_mouse is enabled)
