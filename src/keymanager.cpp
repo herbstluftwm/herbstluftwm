@@ -92,7 +92,7 @@ int KeyManager::removeKeybindCommand(Input input, Output output) {
         KeyCombo comboToRemove = {};
         try {
             comboToRemove = KeyCombo::fromString(arg);
-        } catch (std::runtime_error &error) {
+        } catch (std::exception &error) {
             output << input.command() << ": " << arg << ": " << error.what() << "\n";
             return HERBST_INVALID_ARGUMENT;
         }

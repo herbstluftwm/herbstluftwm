@@ -21,6 +21,16 @@ import warnings
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
 
+# List of environment variables copied during hlwm process creation:
+# * LSAN_OPTIONS: needed to suppress warnings about known memory leaks
+COPY_ENV_WHITELIST = ['LSAN_OPTIONS']
+
+
+def extend_env_with_whitelist(environment):
+    """Copy some whitelisted environment variables (if set) into an existing environment"""
+    environment.update({e: os.environ[e] for e in os.environ if e in COPY_ENV_WHITELIST})
+    return environment
+
 
 class HlwmBridge:
 
@@ -35,6 +45,7 @@ class HlwmBridge:
         self.env = {
             'DISPLAY': display,
         }
+        self.env = extend_env_with_whitelist(self.env)
         self.hlwm_process = hlwm_process
         self.hc_idle = subprocess.Popen(
             [self.HC_PATH, '--idle', 'rule', 'here_is_.*'],
@@ -193,7 +204,11 @@ class HlwmBridge:
                     items.append(i[0:-1])
         # evaluate escape sequences:
         if evaluate_escapes:
-            items = [shlex.split(s)[0] for s in items]
+            old_items = items
+            items = []
+            for s in old_items:
+                unescaped = shlex.split(s)
+                items.append(unescaped[0] if len(unescaped) else '')
         return sorted(items)
 
     def list_children_via_attr(self, object_path):
@@ -275,14 +290,13 @@ def hlwm(hlwm_process):
 
 
 class HlwmProcess:
-    def __init__(self, tmpdir, env, args):
-        autostart = tmpdir / 'herbstluftwm' / 'autostart'
-        autostart.ensure()
-        autostart.write(textwrap.dedent("""
-            #!/usr/bin/env bash
-            echo "hlwm started"
-        """.lstrip('\n')))
-        autostart.chmod(0o755)
+    def __init__(self, autostart_stdout_message, env, args):
+        """create a new hlwm process and wait for booting up.
+        - autostart_stdout_message is the message printed to stdout
+          that indicates that the autostart has been executed entirely
+        - env is the environment dictionary
+        - args is a list of additional command line arguments
+        """
         self.bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen(
             [self.bin_path, '--verbose'] + args, env=env,
@@ -297,18 +311,20 @@ class HlwmProcess:
         self.output_selector = sel
 
         # Wait for marker output from wrapper script:
-        self.read_and_echo_output(until_stdout='hlwm started')
+        self.read_and_echo_output(until_stdout=autostart_stdout_message)
 
     def read_and_echo_output(self, until_stdout=None, until_stderr=None, until_eof=False):
         expect_sth = ((until_stdout or until_stderr) is not None)
-        max_wait = 5
+        max_wait = 15
 
         # Track which file objects have EOFed:
         eof_fileobjs = set()
         fileobjs = set(k.fileobj for k in self.output_selector.get_map().values())
 
         stderr = ''
+        stderr_bytes = bytes()
         stdout = ''
+        stdout_bytes = bytes()
 
         def match_found():
             if until_stdout and (until_stdout in stdout):
@@ -327,20 +343,29 @@ class HlwmProcess:
             selected = self.output_selector.select(timeout=select_timeout)
             for key, events in selected:
                 # Read only single byte, otherwise we might block:
-                ch = key.fileobj.read(1).decode('ascii')
+                ch = key.fileobj.read(1)
 
-                if ch == '':
+                if ch == b'':
                     eof_fileobjs.add(key.fileobj)
-
-                # Pass it through to the real stdout/stderr:
-                key.data.write(ch)
-                key.data.flush()
 
                 # Store in temporary buffer for string matching:
                 if key.fileobj == self.proc.stderr:
-                    stderr += ch
+                    stderr_bytes += ch
+                    if ch == b'\n':
+                        stderr += stderr_bytes.decode()
+                        # Pass it through to the real stderr:
+                        key.data.write(stderr_bytes.decode())
+                        key.data.flush()
+                        stderr_bytes = b''
+
                 if key.fileobj == self.proc.stdout:
-                    stdout += ch
+                    stdout_bytes += ch
+                    if ch == b'\n':
+                        stdout += stdout_bytes.decode()
+                        # Pass it through to the real stdout:
+                        key.data.write(stdout_bytes.decode())
+                        key.data.flush()
+                        stdout_bytes = b''
 
             if until_eof:
                 # We are going to the very end, so carry on until all file
@@ -363,6 +388,16 @@ class HlwmProcess:
         duration = (datetime.now() - started).total_seconds()
         if expect_sth and not match_found():
             assert False, f'Expected string not encountered within {duration:.1f} seconds'
+
+    @contextmanager
+    def wait_stdout_match(self, match):
+        """
+        Context manager for wrapping commands that are expected to result in
+        certain output on hlwm's stdout (e.g., input events).
+        """
+        self.read_and_echo_output()
+        yield
+        self.read_and_echo_output(until_stdout=match)
 
     @contextmanager
     def wait_stderr_match(self, match):
@@ -501,7 +536,15 @@ def hlwm_spawner(tmpdir):
             'DISPLAY': display,
             'XDG_CONFIG_HOME': str(tmpdir),
         }
-        return HlwmProcess(tmpdir, env, args)
+        env = extend_env_with_whitelist(env)
+        autostart = tmpdir / 'herbstluftwm' / 'autostart'
+        autostart.ensure()
+        autostart.write(textwrap.dedent("""
+            #!/usr/bin/env bash
+            echo "hlwm started"
+        """.lstrip('\n')))
+        autostart.chmod(0o755)
+        return HlwmProcess('hlwm started', env, args)
     return spawn
 
 
@@ -681,6 +724,13 @@ def x11(x11_connection):
             assert hlwm_bridge is not None, "hlwm must be running"
             hlwm_bridge.call('true')
 
+        def get_decoration_window(self, window):
+            tree = window.query_tree()
+            if tree.root == tree.parent:
+                return None
+            else:
+                return tree.parent
+
         def get_absolute_top_left(self, window):
             """return the absolute (x,y) coordinate of the given window,
             i.e. relative to the root window"""
@@ -808,7 +858,7 @@ def keyboard():
 
 
 @pytest.fixture()
-def mouse(hlwm_process):
+def mouse(hlwm_process, hlwm):
     class Mouse:
         def move_into(self, win_id, x=1, y=1):
             self.call_cmd(f'xdotool mousemove --sync --window {win_id} {x} {y}', shell=True)
@@ -819,16 +869,50 @@ def mouse(hlwm_process):
             if wait:
                 with hlwm_process.wait_stderr_match('ButtonPress'):
                     subprocess.check_call(['xdotool', 'click', button])
+                # reaching this line only means that hlwm started processing
+                # the ButtonPress. So we need to wait until the event is fully processed:
+                hlwm.call('true')
             else:
                 subprocess.check_call(['xdotool', 'click', button])
 
-        def move_to(self, abs_x, abs_y):
+        def move_to(self, abs_x, abs_y, wait=True):
             abs_x = str(int(abs_x))
             abs_y = str(int(abs_y))
             self.call_cmd(f'xdotool mousemove --sync {abs_x} {abs_y}', shell=True)
+            if wait:
+                # wait until all the mouse move events that are now in the queue
+                # are fully processed:
+                hlwm.call('true')
 
-        def move_relative(self, delta_x, delta_y):
+        def move_relative(self, delta_x, delta_y, wait=True):
             self.call_cmd(f'xdotool mousemove_relative --sync {delta_x} {delta_y}', shell=True)
+            if wait:
+                # wait until all the mouse move events that were put in the
+                # queue by the above xdotool invokation are fully processed.
+                # (other than for the button events, the motion notify events
+                # are not printed to stderr, because this would lead to
+                # to much debug output on motions of the physical mouse)
+                hlwm.call('true')
+
+        def mouse_press(self, button, wait=True):
+            cmd = ['xdotool', 'mousedown', button]
+            if wait:
+                with hlwm_process.wait_stderr_match('ButtonPress'):
+                    subprocess.check_call(cmd)
+                # wait for the ButtonPress to be fully processed:
+                hlwm.call('true')
+            else:
+                subprocess.check_call(cmd)
+
+        def mouse_release(self, button, wait=True):
+            cmd = ['xdotool', 'mouseup', button]
+            if wait:
+                with hlwm_process.wait_stderr_match('ButtonRelease'):
+                    subprocess.check_call(cmd)
+                # wait for the ButtonRelease to be processed
+                hlwm.call('true')
+            else:
+                subprocess.check_call(cmd)
 
         def call_cmd(self, cmd, shell=False):
             print('calling: {}'.format(cmd), file=sys.stderr)

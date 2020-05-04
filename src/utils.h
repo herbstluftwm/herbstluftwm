@@ -22,7 +22,6 @@ int MOD(int x, int n);
 
 #define container_of(ptr, type, member) \
     ((type *)( (char *)(ptr)- offsetof(type,member) ))
-#define DBGDO(X) { if(1) std::cerr << "DBGDO: " << (#X) << " = " << (X) << std::endl; }
 
 // control structures
 #define SWAP(TYPE,a,b) do { \
@@ -30,8 +29,6 @@ int MOD(int x, int n);
             (a) = (b); \
             (b) = TMPNAME; \
         } while(0);
-
-#define ATOM(A) XInternAtom(g_display, (A), False)
 
 class TreeInterface {
 public:

@@ -180,7 +180,6 @@ private:
 // functions
 int frame_current_bring(int argc, char** argv, Output output);
 
-int frame_current_set_client_layout(int argc, char** argv, Output output);
 int frame_split_count_to_root(Frame* frame, int align);
 
 bool focus_client(Client* client, bool switch_tag, bool switch_monitor, bool raise);

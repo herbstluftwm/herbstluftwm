@@ -29,6 +29,8 @@ public:
     Rectangle last_outer() const { return last_outer_rect; }
     Rectangle inner_to_outer(Rectangle rect);
 
+    bool positionTriggersResize(Point2D p);
+
 private:
     void redrawPixmap();
     void updateFrameExtends();

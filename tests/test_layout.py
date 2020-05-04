@@ -1,6 +1,7 @@
 import pytest
 import re
 import math
+import textwrap
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
@@ -507,6 +508,25 @@ def test_grid_neighbours_3_columns(hlwm, running_clients, running_clients_num,
                     == running_clients[expected_idx]
 
 
+@pytest.mark.parametrize("direction", ['left', 'right'])
+def test_inner_neighbour_horizontal_layout(hlwm, direction):
+    hlwm.create_clients(4)
+    hlwm.call('set_layout horizontal')
+    if direction == 'right':
+        hlwm.call(f'focus_nth 0')
+        expected_indices = [1, 2, 3]
+    else:
+        hlwm.call(f'focus_nth 3')
+        expected_indices = [2, 1, 0]
+
+    for i in expected_indices:
+        hlwm.call(['focus', direction])
+        assert int(hlwm.get_attr('tags.focus.curframe_windex')) == i
+
+    hlwm.call_xfail(['focus', direction]) \
+        .expect_stderr('No neighbour found')
+
+
 @pytest.mark.parametrize('splittype,dir_work,dir_dummy', [
     ('horizontal', ('left', 'right'), ('up', 'down')),
     ('vertical', ('up', 'down'), ('left', 'right'))
@@ -654,3 +674,64 @@ def test_index_empty_frame_subtree(hlwm):
     winid, _ = hlwm.create_client()
 
     assert layout.replace('T', winid) == hlwm.call('dump').stdout
+
+
+@pytest.mark.parametrize("setting", [True, False])
+@pytest.mark.parametrize("other_mon_exists", [True, False])
+def test_focus_other_monitor(hlwm, other_mon_exists, setting):
+    hlwm.call(['set', 'focus_crosses_monitor_boundaries', hlwm.bool(setting)])
+    hlwm.call('add othertag')
+    if other_mon_exists:
+        hlwm.call('add_monitor 800x600+800+0')
+    assert hlwm.get_attr('monitors.focus.index') == '0'
+
+    if setting and other_mon_exists:
+        hlwm.call('focus right')
+        assert hlwm.get_attr('monitors.focus.index') == '1'
+    else:
+        hlwm.call_xfail('focus right') \
+            .expect_stderr('No neighbour found')
+
+
+def test_set_layout_invalid_layout_name(hlwm):
+    hlwm.call_xfail('set_layout foobar') \
+        .expect_stderr('set_layout: Invalid layout name: "foobar"')
+
+
+def test_focus_edge(hlwm):
+    hlwm.call('set focus_crosses_monitor_boundaries on')
+    hlwm.call('add otherTag')
+    hlwm.call('add_monitor 800x600+800+0')
+    hlwm.call('split right')
+    hlwm.call('split right')
+
+    # we're on the leftmost frame
+    layout_before = hlwm.call('dump').stdout
+    hlwm.call('focus_edge left')
+    assert layout_before == hlwm.call('dump').stdout
+    assert hlwm.get_attr('monitors.focus.index') == '0'
+
+    # focus_edge goes to the rightmost frame
+    hlwm.call('focus_edge right')
+    # we're still on the first monitor
+    assert hlwm.get_attr('monitors.focus.index') == '0'
+    # but right-most frame means, if we go right once more, we're on
+    # the other monitor:
+    hlwm.call('focus right')
+    assert hlwm.get_attr('monitors.focus.index') == '1'
+    assert hlwm.get_attr('settings.focus_crosses_monitor_boundaries') == 'true'
+
+
+def test_tree_style_utf8(hlwm):
+    # the following also tests utf8_string_at()
+    hlwm.call(['set', 'tree_style', '╾│…├╰╼─╮'])
+    hlwm.call('split top')
+    hlwm.call('split vertical')
+
+    assert hlwm.call('layout').stdout == textwrap.dedent("""\
+    ╾─╮ vertical 50% selection=1
+      ├─╼ vertical:
+      ╰─╮ vertical 50% selection=0
+      … ├─╼ vertical: [FOCUS]
+      … ╰─╼ vertical:
+    """)

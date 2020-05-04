@@ -33,6 +33,13 @@ def test_alter_fullscreen(hlwm):
     assert hlwm.get_attr('clients.focus.fullscreen') == 'false'
 
 
+@pytest.mark.parametrize("command", ["fullscreen", "pseudotile"])
+def test_fullscreen_pseudotile_invalid_arg(hlwm, command):
+    hlwm.create_client()
+    hlwm.call_xfail([command, 'novalue']) \
+        .expect_stderr('illegal argument "novalue"')
+
+
 def test_fullscreen_completion(hlwm):
     assert hlwm.complete("fullscreen") == 'false off on toggle true'.split(' ')
 
@@ -150,6 +157,11 @@ def test_bring_from_different_tag(hlwm, x11):
 
     assert hlwm.get_attr(f'clients.{bonnie}.tag') == 'anothertag'
     assert hlwm.get_attr('clients.focus.winid') == bonnie
+
+
+def test_bring_invalid_client(hlwm):
+    hlwm.call_xfail('bring foobar') \
+        .expect_stderr('Could not find client')
 
 
 def test_bring_from_same_tag_different_frame(hlwm, x11):

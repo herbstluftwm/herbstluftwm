@@ -81,10 +81,10 @@ def test_client_initially_on_desktop(hlwm_spawner, x11, desktops, client2desktop
     x11.set_property_textlist('_NET_DESKTOP_NAMES', desktop_names)
     clients = []
     for desktop_idx in client2desktop:
-        handle, winid = x11.create_client(sync_hlwm=False)
+        winHandle, winid = x11.create_client(sync_hlwm=False)
         clients.append(winid)
         if desktop_idx is not None:
-            x11.set_property_cardinal('_NET_WM_DESKTOP', [desktop_idx], window=handle)
+            x11.set_property_cardinal('_NET_WM_DESKTOP', [desktop_idx], window=winHandle)
     x11.display.sync()
 
     hlwm_proc = hlwm_spawner()
@@ -116,9 +116,101 @@ def test_manage_transient_for_windows_on_startup(hlwm_spawner, x11):
     hlwm_proc.shutdown()
 
 
+@pytest.mark.parametrize('swap_monitors_to_get_tag', [True, False])
+@pytest.mark.parametrize('on_another_monitor', [True, False])
+@pytest.mark.parametrize('tag_idx', [0, 1])
+def test_ewmh_set_current_desktop(hlwm, x11, swap_monitors_to_get_tag, on_another_monitor, tag_idx):
+    hlwm.call(['set', 'swap_monitors_to_get_tag', hlwm.bool(swap_monitors_to_get_tag)])
+    hlwm.call('add otherTag')
+    hlwm.call('add anotherTag')
+
+    if on_another_monitor:
+        hlwm.call('add_monitor 800x600+800+0 otherTag')
+
+    x11.ewmh.setCurrentDesktop(tag_idx)
+    x11.display.sync()
+
+    assert int(hlwm.get_attr('tags.focus.index')) == tag_idx
+    if swap_monitors_to_get_tag or not on_another_monitor or tag_idx == 0:
+        assert int(hlwm.get_attr('monitors.focus.index')) == 0
+    else:
+        assert int(hlwm.get_attr('monitors.focus.index')) == 1
+
+
+def test_ewmh_set_current_desktop_invalid_idx(hlwm, hlwm_process, x11):
+    with hlwm_process.wait_stderr_match('_NET_CURRENT_DESKTOP: invalid index'):
+        x11.ewmh.setCurrentDesktop(4)
+        x11.display.sync()
+    assert int(hlwm.get_attr('tags.focus.index')) == 0
+
+
 def test_wm_state_type(hlwm, x11):
     win, _ = x11.create_client(sync_hlwm=True)
     wm_state = x11.display.intern_atom('WM_STATE')
     prop = win.get_full_property(wm_state, X.AnyPropertyType)
     assert prop.property_type == wm_state
     assert len(prop.value) == 2
+
+
+def test_ewmh_focus_client(hlwm, x11):
+    hlwm.call('set focus_stealing_prevention off')
+    # add another client that has the focus
+    _, winid_focus = x11.create_client()
+    winHandleToBeFocused, winid = x11.create_client()
+    assert hlwm.get_attr('clients.focus.winid') == winid_focus
+
+    x11.ewmh.setActiveWindow(winHandleToBeFocused)
+    x11.display.flush()
+
+    assert hlwm.get_attr('clients.focus.winid') == winid
+
+
+@pytest.mark.parametrize('on_another_monitor', [True, False])
+def test_ewmh_focus_client_on_other_tag(hlwm, x11, on_another_monitor):
+    hlwm.call('set focus_stealing_prevention off')
+    hlwm.call('add tag2')
+    if on_another_monitor:  # if the tag shall be on another monitor
+        hlwm.call('add_monitor 800x600+600+0')
+    hlwm.call('rule tag=tag2 focus=off')
+    # add another client that has the focus on the other tag
+    x11.create_client()
+    handle, winid = x11.create_client()
+    assert 'focus' not in hlwm.list_children('clients')
+
+    x11.ewmh.setActiveWindow(handle)
+    x11.display.flush()
+
+    assert hlwm.get_attr('tags.focus.name') == 'tag2'
+    assert hlwm.get_attr('clients.focus.winid') == winid
+
+
+def test_ewmh_move_client_to_tag(hlwm, x11):
+    hlwm.call('set focus_stealing_prevention off')
+    hlwm.call('add otherTag')
+    winHandleToMove, winid = x11.create_client()
+    assert hlwm.get_attr(f'clients.{winid}.tag') == 'default'
+
+    x11.ewmh.setWmDesktop(winHandleToMove, 1)
+    x11.display.sync()
+
+    assert hlwm.get_attr(f'clients.{winid}.tag') == 'otherTag'
+
+
+def test_ewmh_make_client_urgent(hlwm, hc_idle, x11):
+    hlwm.call('set focus_stealing_prevention off')
+    hlwm.call('add otherTag')
+    hlwm.call('rule tag=otherTag')
+    # create a new client that is not focused
+    winHandle, winid = x11.create_client()
+    assert hlwm.get_attr(f'clients.{winid}.urgent') == 'false'
+    assert 'focus' not in hlwm.list_children(f'clients')
+    # assert that this window really does not have wm hints set:
+    assert winHandle.get_wm_hints() is None
+    hc_idle.hooks()  # reset hooks
+
+    demandsAttent = '_NET_WM_STATE_DEMANDS_ATTENTION'
+    x11.ewmh.setWmState(winHandle, 1, demandsAttent)
+    x11.display.flush()
+
+    assert hlwm.get_attr(f'clients.{winid}.urgent') == 'true'
+    assert ['tag_flags'] in hc_idle.hooks()

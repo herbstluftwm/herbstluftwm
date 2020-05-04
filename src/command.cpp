@@ -48,15 +48,6 @@ static bool no_completion(int, char**, int) {
     return false;
 }
 
-static const char* g_layout_names[] = {
-    // TODO: remove this after migrating set_layout and cycle_layout
-    "vertical",
-    "horizontal",
-    "max",
-    "grid",
-    nullptr,
-};
-
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
 static bool first_parameter_is_flag(int argc, char** argv, int pos);
 
@@ -75,7 +66,6 @@ struct {
     { "focus_nth",      2,  no_completion },
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
-    { "set_layout",     2,  no_completion },
     { "split",          3,  no_completion },
     { "raise",          2,  no_completion },
     { "jumpto",         2,  no_completion },
@@ -152,7 +142,6 @@ struct {
     { "shift",          EQ, 2,  nullptr, completion_directions },
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },
-    { "set_layout",     EQ, 1,  nullptr, g_layout_names },
     { "use",            EQ, 1,  complete_against_tags, 0 },
     { "use_index",      EQ, 1,  nullptr, completion_pm_one },
     { "use_index",      EQ, 2,  nullptr, completion_use_index_args },
