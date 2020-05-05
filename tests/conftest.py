@@ -385,6 +385,15 @@ class HlwmProcess:
             if not expect_sth or match_found():
                 break
 
+        # decode remaining bytes for the final match_found() check
+        if stderr_bytes != b'':
+            stderr += stderr_bytes.decode()
+            sys.stderr.write(stderr_bytes.decode())
+            sys.stderr.flush()
+        if stdout_bytes != b'':
+            stdout += stdout_bytes.decode()
+            sys.stdout.write(stdout_bytes.decode())
+            sys.stdout.flush()
         duration = (datetime.now() - started).total_seconds()
         if expect_sth and not match_found():
             assert False, f'Expected string not encountered within {duration:.1f} seconds'
@@ -394,6 +403,9 @@ class HlwmProcess:
         """
         Context manager for wrapping commands that are expected to result in
         certain output on hlwm's stdout (e.g., input events).
+
+        Warning: do not run call(...) within such a context, but only
+        unchecked_call(..., read_hlwm_output=False) instead
         """
         self.read_and_echo_output()
         yield
@@ -404,6 +416,9 @@ class HlwmProcess:
         """
         Context manager for wrapping commands that are expected to result in
         certain output on hlwm's stderr (e.g., input events).
+
+        Warning: do not run call(...) within such a context, but only
+        unchecked_call(..., read_hlwm_output=False) instead
         """
         self.read_and_echo_output()
         yield
