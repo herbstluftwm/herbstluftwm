@@ -386,7 +386,7 @@ int MonitorManager::addMonitor(Input input, Output output)
     monitor->applyLayout();
     tag->setVisible(true);
     emit_tag_changed(tag, g_monitors->size() - 1);
-    drop_enternotify_events();
+    dropEnterNotifyEvents.emit();
 
     return HERBST_EXIT_SUCCESS;
 }

@@ -1,6 +1,12 @@
 herbstluftwm NEWS -- History of user-visible changes
 ----------------------------------------------------
 
+Current git version
+-------------------
+
+  * Bug fixes:
+    - Fix race condition in focus_follows_mouse handling
+
 Release 0.8.2 on 2020-05-04
 ---------------------------
 
