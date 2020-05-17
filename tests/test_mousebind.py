@@ -206,6 +206,27 @@ def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
     assert (geom_after.width, geom_after.height) == final_size
 
 
+def test_drag_zoom_floating_client(hlwm, x11, mouse):
+    client, winid = x11.create_client(geometry=(50, 50, 300, 200))
+    hlwm.call(f'set_attr clients.{winid}.floating true')
+    geom_before = client.get_geometry()
+    x_before, y_before = x11.get_absolute_top_left(client)
+    assert (geom_before.width, geom_before.height) == (300, 200)
+    # move cursor to the top left corner, so we change the
+    # window position and the size (and the bottom right corner is fixed)
+    mouse.move_into(winid, x=0, y=0)
+
+    hlwm.call(['drag', winid, 'zoom'])
+    assert hlwm.get_attr('clients.dragged.winid') == winid
+    mouse.move_relative(100, -30)
+    final_size = (geom_before.width - (100 * 2), geom_before.height + (30 * 2))
+
+    # stop drag and check final size
+    mouse.click('1', wait=True)
+    geom_after = client.get_geometry()
+    assert (geom_after.width, geom_after.height) == final_size
+
+
 # we had a race condition here, so increase the likelyhood
 # that we really fixed it:
 @pytest.mark.parametrize('repeat', list(range(0, 100)))
