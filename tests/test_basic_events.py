@@ -107,3 +107,42 @@ def test_focus_client_by_decoration(hlwm, mouse, x11, click, focus_follows_mouse
         mouse.click('1')
     expected_focus = 1 if focus_follows_mouse or click else 0
     assert hlwm.get_attr('clients.focus.winid') == winids[expected_focus]
+
+
+def test_drop_enter_notify_events(hlwm, mouse):
+    """test that tiling/resizing the clients does not trigger
+    mouse enter notifications
+    """
+    hlwm.call('set focus_follows_mouse on')
+    # place two clients in frames side by side
+    winid = hlwm.create_clients(2)
+    layout = '(split horizontal:0.5:0 (clients max:0 {}) (clients max:0 {}))'
+    layout = layout.format(winid[0], winid[1])
+    hlwm.call(['load', layout])
+
+    # place the mouse on the right window, but place it
+    # close to the edge, round by the corner
+    mouse.move_into(winid[1], 10, 10)
+    assert hlwm.get_attr('clients.focus.winid') == winid[1]
+
+    # Sudden 'resize' call shouldn't take away the focus
+    hlwm.call('resize right 0.4')
+    assert hlwm.get_attr('clients.focus.winid') == winid[1]
+
+
+@pytest.mark.parametrize("client_count", [7, 8, 9, 10])
+def test_enternotify_do_not_drop_events(hlwm, mouse, client_count):
+    """test that when triggering multiple enter notify events
+    that the last enter notify event survives
+    """
+    hlwm.call('set focus_follows_mouse on')
+    winid = hlwm.create_clients(client_count)
+
+    # place many enter notify events in the event queue
+    for i in range(0, client_count):
+        # here, it's important that move_into does not sync with hlwm
+        # such that the event queue in hlwm builds up
+        mouse.move_into(winid[i], 10, 10)
+
+    # finally, all enter notify events must survive
+    assert hlwm.get_attr('clients.focus.winid') == winid[client_count - 1]
