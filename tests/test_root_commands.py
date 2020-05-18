@@ -467,3 +467,21 @@ def test_integer_out_of_range(hlwm):
         for v in values:
             hlwm.call_xfail(['set_attr', attribute, v]) \
                 .expect_stderr('out of range')
+
+
+def test_tag_status_invalid_monitor(hlwm):
+    hlwm.call_xfail('tag_status foobar') \
+        .expect_stderr('Monitor "foobar" not found!')
+
+
+def test_tag_status(hlwm, x11):
+    hlwm.call('add foobar')
+    hlwm.call('add baz')
+    hlwm.call('add qux')
+    hlwm.create_client()
+    hlwm.call('move baz')
+    winid, _ = hlwm.create_client()
+    hlwm.call('move qux')
+    x11.make_window_urgent(x11.window(winid))
+
+    assert hlwm.call('tag_status').stdout == "\t#default\t.foobar\t:baz\t!qux\t"
