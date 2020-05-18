@@ -116,3 +116,5 @@ add mod4 = Meta_L
 clear mod1
 add mod1 = Alt_L
 --- snap ---
+
+// vim: nowrap ft=asciidoc tw=80
