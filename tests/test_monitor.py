@@ -297,3 +297,25 @@ def test_invalid_monitor_name(hlwm):
     for command in cmds:
         hlwm.call_xfail([command, 'thismonitordoesnotexist']) \
             .expect_stderr('Monitor "thismonitordoesnotexist" not found')
+
+
+def test_list_padding(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('add_monitor 800x600+600+0')
+    pad0 = '5 20 3 30'
+    pad1 = '1 2 4 8'
+    hlwm.call('pad 0 ' + pad0)
+    hlwm.call('pad 1 ' + pad1)
+
+    # this is a very primitive command, so we directly test multiple things at once
+    assert hlwm.call('list_padding 0').stdout == pad0 + '\n'
+    assert hlwm.call('list_padding 1').stdout == pad1 + '\n'
+
+    assert hlwm.call('list_padding').stdout == pad0 + '\n'
+    hlwm.call('focus_monitor 1')
+    assert hlwm.call('list_padding').stdout == pad1 + '\n'
+
+
+def test_list_padding_invalid_monitor(hlwm):
+    hlwm.call_xfail('list_padding 23') \
+        .expect_stderr('Monitor.*not found')
