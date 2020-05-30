@@ -300,6 +300,7 @@ def test_invalid_monitor_name(hlwm):
 
 
 def test_list_padding(hlwm):
+    hlwm.call('add othertag')
     hlwm.call('add_monitor 800x600+600+0')
     pad0 = '5 20 3 30'
     pad1 = '1 2 4 8'
