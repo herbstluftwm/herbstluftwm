@@ -38,7 +38,11 @@ If you run arch linux, it may be necessary to add -e py38 to the tox parameters
 (that is, before the --). If you have an old version of tox installed, it may be
 necessary to pass ../tox.ini instead of .. to the -c parameter.
 
-The argument after the -- are pytest parameters (add -h to see a help).
+The argument after the -- are pytest parameters (add -h to see a help). If you
+do not want to use tox and instead run pytest directly, then call the following
+command in the build directory:
+
+    python3 -m pytest ../tests
 
 [1] http://pytest.org/
 [2] https://tox.readthedocs.io/
