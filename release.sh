@@ -34,7 +34,7 @@ git tag -s "v$version" -m "Release $version"
 
 echo "==> Tarball"
 echo ":: Tarball creation"
-make tar
+make BUILDDIR=.build-doc-"$version" tar
 tarball="herbstluftwm-$version.tar.gz"
 md5sum=$(md5sum "$tarball" | head -c 13 )
 echo ":: Patching www/download.txt"
