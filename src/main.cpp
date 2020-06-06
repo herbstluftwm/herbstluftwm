@@ -368,12 +368,7 @@ int jumpto_command(int argc, char** argv, Output output) {
         focus_client(client, true, true, true);
         return 0;
     } else {
-        output << argv[0] << ": Could not find client";
-        if (argc > 1) {
-            output << " \"" << argv[1] << "\".\n";
-        } else {
-            output << ".\n";
-        }
+        output << argv[0] << ": Could not find client \"" << argv[1] << "\".\n";
         return HERBST_INVALID_ARGUMENT;
     }
 }

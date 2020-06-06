@@ -485,3 +485,8 @@ def test_tag_status(hlwm, x11):
     x11.make_window_urgent(x11.window(winid))
 
     assert hlwm.call('tag_status').stdout == "\t#default\t.foobar\t:baz\t!qux\t"
+
+
+def test_jumpto_invalid_client(hlwm):
+    hlwm.call_xfail('jumpto foobar') \
+        .expect_stderr('Could not find client "foobar".')
