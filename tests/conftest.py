@@ -858,16 +858,25 @@ class MultiscreenDisplay:
 
 
 @pytest.fixture()
-def keyboard():
+def keyboard(hlwm):
     class KeyBoard:
-        def press(self, key_spec):
+        def press(self, key_spec, wait=True):
             subprocess.check_call(['xdotool', 'key', key_spec])
+            if wait:
+                # wait until the keyboard event is processed:
+                hlwm.call('true')
 
-        def down(self, key_spec):
+        def down(self, key_spec, wait=True):
             subprocess.check_call(['xdotool', 'keydown', key_spec])
+            if wait:
+                # wait until the keyboard event is processed:
+                hlwm.call('true')
 
-        def up(self, key_spec):
+        def up(self, key_spec, wait=True):
             subprocess.check_call(['xdotool', 'keyup', key_spec])
+            if wait:
+                # wait until the keyboard event is processed:
+                hlwm.call('true')
 
     return KeyBoard()
 
