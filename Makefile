@@ -17,7 +17,7 @@ $(BUILDDIR):
 	cd $@ && cmake ..
 
 clean:
-	rm -r build/
+	rm -r $(BUILDDIR)/
 
 doc: $(BUILDDIR)
 	cd $(BUILDDIR)/doc && $(MAKE)
@@ -25,6 +25,6 @@ doc: $(BUILDDIR)
 tar: doc
 	git archive --prefix=herbstluftwm-$(VERSION)/ -o $(TARFILE) HEAD
 	tar --transform="flags=r;s,$(BUILDDIR),herbstluftwm-$(VERSION),"  --owner=0 --group=0 \
-		-uvf $(TARFILE) build/doc/*.html build/doc/*.[1-9]
+		-uvf $(TARFILE) $(BUILDDIR)/doc/*.html $(BUILDDIR)/doc/*.[1-9]
 	gzip $(TARFILE)
 	gpg --detach-sign $(TARFILE).gz
