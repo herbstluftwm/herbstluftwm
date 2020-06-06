@@ -292,28 +292,6 @@ void Commands::complete(Completion& completion) {
     }
 }
 
-
-// Old C-ish interface to commands:
-
-int call_command(int argc, char** argv, Output output) {
-    if (argc < 1) {
-        return HERBST_COMMAND_NOT_FOUND;
-    }
-
-    string cmd(argv[0]);
-    vector<string> args;
-    for (int i = 1; i < argc; i++) {
-        args.push_back(argv[i]);
-    }
-
-    return Commands::call(Input(cmd, args), output);
-}
-
-int call_command_no_output(int argc, char** argv) {
-    std::ostringstream output;
-    return call_command(argc, argv, output);
-}
-
 int list_commands(Output output)
 {
     for (auto cmd : *Commands::get()) {
