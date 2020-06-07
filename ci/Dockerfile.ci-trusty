@@ -4,7 +4,6 @@ FROM ubuntu:trusty-20190122
 RUN dpkg --add-architecture i386
 
 # Build deps
-# TODO: Leave out git (huge and not really needed)
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     ccache \
     cmake3 \
