@@ -78,3 +78,23 @@ def test_default_frame_layout_value_too_high(hlwm):
 def test_default_frame_layout_value_negative(hlwm):
     hlwm.call_xfail('set default_frame_layout -23') \
         .expect_stderr('set: Invalid value "-23" for setting "default_frame_layout": invalid argument: negative number is out of range')
+
+
+def test_set_invalid_setting(hlwm):
+    hlwm.call_xfail('set foobar baz') \
+        .expect_stderr('Setting "foobar" not found\n')
+
+
+def test_get_invalid_setting(hlwm):
+    hlwm.call_xfail('get foobar') \
+        .expect_stderr('Setting "foobar" not found\n')
+
+
+def test_toggle_invalid_setting(hlwm):
+    hlwm.call_xfail('toggle foobar') \
+        .expect_stderr('Setting "foobar" not found\n')
+
+
+def test_cycle_value_invalid_setting(hlwm):
+    hlwm.call_xfail('cycle_value foobar baz') \
+        .expect_stderr('Setting "foobar" not found\n')
