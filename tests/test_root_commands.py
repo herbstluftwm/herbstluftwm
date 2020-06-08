@@ -490,3 +490,13 @@ def test_tag_status(hlwm, x11):
 def test_jumpto_invalid_client(hlwm):
     hlwm.call_xfail('jumpto foobar') \
         .expect_stderr('Could not find client "foobar".')
+
+
+def test_raise_winid_missing(hlwm):
+    hlwm.call_xfail('raise') \
+        .expect_stderr('raise: not enough arguments\n')
+
+
+def test_raise_invalid_winid(hlwm):
+    hlwm.call_xfail('raise foobar') \
+        .expect_stderr('Could not find client "foobar".')
