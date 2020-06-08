@@ -5,7 +5,7 @@ import subprocess
 @pytest.mark.parametrize('sep', ['-', '+'])
 def test_list_keybinds(hlwm, sep):
     # single key, 1-word command:
-    hlwm.call(f'keybind x quit')
+    hlwm.call('keybind x quit')
     # 2 modifiers, 3-word command:
     hlwm.call(f'keybind Mod1{sep}Shift{sep}a resize left +5')
 
@@ -25,9 +25,9 @@ def test_keybind_invalid_key_combo(hlwm, combo, message):
 
 
 def test_replace_keybind(hlwm):
-    hlwm.call(f'keybind Mod1+x quit')
+    hlwm.call('keybind Mod1+x quit')
 
-    hlwm.call(f'keybind Mod1+x cycle')
+    hlwm.call('keybind Mod1+x cycle')
 
     assert hlwm.call('list_keybinds').stdout == 'Mod1+x\tcycle\n'
 
@@ -229,7 +229,7 @@ def test_keymask_applied_to_new_binds(hlwm, keyboard):
 def test_keymask_prefix(hlwm, keyboard):
     hlwm.call('keybind space set_attr clients.focus.my_space_pressed pressed')
     hlwm.create_client()
-    hlwm.call(f'set_attr clients.focus.keymask s')
+    hlwm.call('set_attr clients.focus.keymask s')
     hlwm.call('new_attr string clients.focus.my_space_pressed')
 
     # according to the keymask, s is allowed, space is not

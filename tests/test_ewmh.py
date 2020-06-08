@@ -203,7 +203,7 @@ def test_ewmh_make_client_urgent(hlwm, hc_idle, x11):
     # create a new client that is not focused
     winHandle, winid = x11.create_client()
     assert hlwm.get_attr(f'clients.{winid}.urgent') == 'false'
-    assert 'focus' not in hlwm.list_children(f'clients')
+    assert 'focus' not in hlwm.list_children('clients')
     # assert that this window really does not have wm hints set:
     assert winHandle.get_wm_hints() is None
     hc_idle.hooks()  # reset hooks

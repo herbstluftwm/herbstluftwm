@@ -63,8 +63,8 @@ def test_trigger_mouse_binding_with_modifier(hlwm, keyboard, mouse, button):
 
 def test_overlapping_bindings_most_recent_one_counts(hlwm, mouse):
     hlwm.call('new_attr string my_press')
-    hlwm.call(f'mousebind Button2 call set_attr my_press firstbind')
-    hlwm.call(f'mousebind Button2 call set_attr my_press secondbind')
+    hlwm.call('mousebind Button2 call set_attr my_press firstbind')
+    hlwm.call('mousebind Button2 call set_attr my_press secondbind')
 
     client_id, _ = hlwm.create_client()
     mouse.click('2', client_id)
