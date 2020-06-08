@@ -102,7 +102,9 @@ def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
 
     keyboard.press('x')
 
-    # Expect client to have quit because of received keypress:
+    # we expect that the keybind command is not executed:
+    assert hlwm.list_children('tags.by-name.') == ['default']
+    # instead, the client must quit because of received keypress:
     try:
         print(f"waiting for client proc {client_proc.pid}")
         client_proc.wait(5)
@@ -115,7 +117,7 @@ def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
 
 
 def test_invalid_keys_inactive_via_rule(hlwm, keyboard):
-    hlwm.call('keybind x close')
+    hlwm.call('keybind x add anothertag')
     # Note: In future work, we could make this fail right away. But
     # currently, that is not the case.
     hlwm.call('rule once keys_inactive=[b-a]')
@@ -123,7 +125,9 @@ def test_invalid_keys_inactive_via_rule(hlwm, keyboard):
 
     keyboard.press('x')
 
-    assert hlwm.get_attr('tags.0.client_count') == '0'
+    # since there is no valid keys_inactive, the command must have been
+    # executed:
+    assert 'anothertag' in hlwm.list_children('tags.by-name.')
 
 
 @pytest.mark.parametrize('prefix', ['', 'Mod1+'])
