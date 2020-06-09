@@ -159,7 +159,7 @@ def test_attribute_completion(hlwm):
     assert complete('monitors.fooo.bar') == []
     assert len(complete('monitors.focus.')) >= 8
     assert complete('t') == ['tags.', 'theme.', 'tmp.']
-    assert complete('') == [l + '.' for l in hlwm.list_children_via_attr('')]
+    assert complete('') == [child + '.' for child in hlwm.list_children_via_attr('')]
 
 
 @pytest.mark.parametrize('attrtype', ATTRIBUTE_TYPES)

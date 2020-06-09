@@ -524,8 +524,8 @@ def kill_all_existing_windows(show_warnings=True):
         # otherwise, assert successfull termination
         assert xlsclients.returncode == 0
     clients = []
-    for l in xlsclients.stdout.decode().splitlines():
-        m = re.match(r'Window (0x[0-9a-fA-F]*):', l)
+    for line in xlsclients.stdout.decode().splitlines():
+        m = re.match(r'Window (0x[0-9a-fA-F]*):', line)
         if m:
             clients.append(m.group(1))
     if clients and show_warnings:
