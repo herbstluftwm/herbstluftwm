@@ -540,9 +540,9 @@ def kill_all_existing_windows(show_warnings=True):
 
 
 @pytest.fixture()
-def hlwm_spawner(tmpdir):
+def hlwm_spawner(tmpdir, xvfb):
     """yield a function to spawn hlwm"""
-    assert os.environ['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
+    assert xvfb is not None, 'Refusing to run tests in a non-Xvfb environment (possibly your actual X server?)'
 
     def spawn(args=[], display=None):
         if display is None:
