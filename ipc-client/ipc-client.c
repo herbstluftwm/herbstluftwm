@@ -128,13 +128,14 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
             output_received = true;
         }
         else if (!status_received && pe->atom == con->atom_status) {
-            int *value;
+            long* value;
             Atom type;
             int format;
             unsigned long items, bytes;
             if (Success != XGetWindowProperty(con->display, con->client_window,
                     XInternAtom(con->display, HERBST_IPC_STATUS_ATOM, False), 0, 1, False,
-                    XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value)) {
+                    XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value)
+                || format != 32) {
                     // if could not get window property
                 fprintf(stderr, "could not get WindowProperty \"%s\"\n",
                                 HERBST_IPC_STATUS_ATOM);
@@ -173,7 +174,7 @@ static int log_bad_window_error(Display* display, XErrorEvent* ev) {
 }
 
 static Window get_hook_window(Display* display) {
-    int *value; // list of ints
+    long* value;
     Atom type;
     int format;
     unsigned long items, bytes;
@@ -181,7 +182,7 @@ static Window get_hook_window(Display* display) {
         XInternAtom(display, HERBST_HOOK_WIN_ID_ATOM, False), 0, 1, False,
         XA_ATOM, &type, &format, &items, &bytes, (unsigned char**)&value);
     // only accept exactly one Window id
-    if (status != Success || items != 1) {
+    if (status != Success || items != 1 || format != 32) {
         return 0;
     }
     Window win = *value;
