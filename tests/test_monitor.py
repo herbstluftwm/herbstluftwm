@@ -329,7 +329,7 @@ def test_cycle_monitor(hlwm, mon_num, focus_idx, delta, command):
     """the present test also tests the MOD() function in utility.h"""
     for i in range(1, mon_num):
         hlwm.call('add tag' + str(i))
-        hlwm.call('add_monitor 800x600+' + str(i*10))
+        hlwm.call('add_monitor 800x600+' + str(i * 10))
     hlwm.call(['focus_monitor', str(focus_idx)])
     assert hlwm.get_attr('monitors.focus.index') == str(focus_idx)
     assert hlwm.get_attr('monitors.count') == str(mon_num)
