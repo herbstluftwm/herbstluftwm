@@ -224,4 +224,11 @@ def test_ewmh_make_client_urgent_no_focus_stealing(hlwm, hc_idle, x11):
     # create a new client that is not focused
     winHandle, winid = x11.create_client()
 
+    x11.ewmh.setActiveWindow(winHandle)
+    x11.display.flush()
+
     assert hlwm.get_attr(f'clients.{winid}.urgent') == 'true'
+    demandsAttent = '_NET_WM_STATE_DEMANDS_ATTENTION'
+    assert demandsAttent in x11.ewmh.getWmState(winHandle, str=True)
+    assert 'focus' not in hlwm.list_children('clients')
+    assert 'default' == hlwm.get_attr('tags.focus.name')

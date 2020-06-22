@@ -504,6 +504,7 @@ void Client::set_urgent_force(bool state) {
 
     XSetWMHints(g_display, this->window_, wmh);
     XFree(wmh);
+    ewmh.updateWindowState(this);
     // report changes to tags
     tag_set_flags_dirty();
 }
