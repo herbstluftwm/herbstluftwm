@@ -36,6 +36,12 @@ time_t get_monotonic_timestamp() {
 }
 
 int MOD(int x, int n) {
+    // for the tests of this, see tests of cycle_monitor in test_monitor.py
+    if (n > 0) {
+        while (x < 0) {
+            x += n;
+        }
+    }
     return (((x % n) + n) % n);
 }
 

@@ -591,12 +591,8 @@ int monitor_cycle_command(int argc, char** argv) {
         delta = atoi(argv[1]);
     }
     int new_selection = g_monitors->cur_monitor + delta; // signed for delta calculations
-    // fix range of index
-    new_selection %= count;
-    new_selection += count;
-    new_selection %= count;
     // really change selection
-    monitor_focus_by_index((unsigned)new_selection);
+    monitor_focus_by_index((unsigned)MOD(new_selection, count));
     return 0;
 }
 
