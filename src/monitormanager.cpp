@@ -100,10 +100,7 @@ int MonitorManager::string_to_monitor_index(string str) {
         if (isdigit(str[1])) {
             // relative monitor index
             int idx = cur_monitor + atoi(str.c_str());
-            idx %= size();
-            idx += size();
-            idx %= size();
-            return idx;
+            return MOD(idx, size());
         } else if (str[0] == '-') {
             try {
                 auto dir = Converter<Direction>::parse(str.substr(1));

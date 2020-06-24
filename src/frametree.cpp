@@ -724,9 +724,7 @@ int FrameTree::cycleLayoutCommand(Input input, Output output) {
         string curname = Converter<LayoutAlgorithm>::str(cur_frame->getLayout());
         size_t count = input.end() - input.begin();
         auto curposition = std::find(input.begin(), input.end(), curname);
-        size_t idx = (curposition - input.begin()) + delta;
-        idx += count;
-        idx %= count;
+        size_t idx = MOD((curposition - input.begin()) + delta, count);
         try {
             layout_index = (int)Converter<LayoutAlgorithm>::parse(*(input.begin() + idx));
         } catch (const std::exception& e) {
@@ -735,10 +733,7 @@ int FrameTree::cycleLayoutCommand(Input input, Output output) {
         }
     } else {
         /* cycle through the default list of layouts */
-        layout_index = (int)cur_frame->getLayout() + delta;
-        layout_index %= layoutAlgorithmCount();
-        layout_index += layoutAlgorithmCount();
-        layout_index %= layoutAlgorithmCount();
+        layout_index = MOD((int)cur_frame->getLayout() + delta, layoutAlgorithmCount());
     }
     cur_frame->setLayout((LayoutAlgorithm)layout_index);
     get_current_monitor()->applyLayout();
