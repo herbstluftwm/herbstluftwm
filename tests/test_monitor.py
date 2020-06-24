@@ -326,7 +326,7 @@ def test_list_padding_invalid_monitor(hlwm):
 @pytest.mark.parametrize("delta", ['-1', '+1'])
 @pytest.mark.parametrize("command", ['cycle_monitor', 'focus_monitor'])
 def test_cycle_monitor(hlwm, mon_num, focus_idx, delta, command):
-    """the present test also tests the MOD() function in utility.h"""
+    """the present test also tests the MOD() function in utility.cpp"""
     for i in range(1, mon_num):
         hlwm.call('add tag' + str(i))
         hlwm.call('add_monitor 800x600+' + str(i * 10))
