@@ -49,7 +49,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     , mouse { 0, 0 }
     , rect(rect_)
     , settings(settings_)
-    //, monman(monman_)
+    , monman(monman_)
 {
     for (auto i : {&pad_up, &pad_left, &pad_right, &pad_down}) {
         i->setWriteable();
@@ -261,7 +261,7 @@ void Monitor::applyLayout() {
 
     // remove all enternotify-events from the event queue that were
     // generated while arranging the clients on this monitor
-    drop_enternotify_events();
+    monman->dropEnterNotifyEvents.emit();
 }
 
 Monitor* find_monitor_by_name(const char* name) {
@@ -472,8 +472,6 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
             monitor->restack();
             other->applyLayout();
             monitor->applyLayout();
-            // discard enternotify-events
-            drop_enternotify_events();
             monitor_update_focus_objects();
             Ewmh::get().updateCurrentDesktop();
             emit_tag_changed(other->tag, other->index());
@@ -504,7 +502,7 @@ int monitor_set_tag(Monitor* monitor, HSTag* tag) {
     old_tag->setVisible(false);
     // focus window just has been shown
     // discard enternotify-events
-    drop_enternotify_events();
+    g_monitors->dropEnterNotifyEvents.emit();
     monitor_update_focus_objects();
     Ewmh::get().updateCurrentDesktop();
     emit_tag_changed(tag, g_monitors->cur_monitor);
@@ -593,12 +591,8 @@ int monitor_cycle_command(int argc, char** argv) {
         delta = atoi(argv[1]);
     }
     int new_selection = g_monitors->cur_monitor + delta; // signed for delta calculations
-    // fix range of index
-    new_selection %= count;
-    new_selection += count;
-    new_selection %= count;
     // really change selection
-    monitor_focus_by_index((unsigned)new_selection);
+    monitor_focus_by_index((unsigned)MOD(new_selection, count));
     return 0;
 }
 
@@ -655,7 +649,7 @@ void monitor_focus_by_index(unsigned new_selection) {
         // discard all mouse events caused by this pointer movage from the
         // event queue, so the focus really stays in the last focused window on
         // this monitor and doesn't jump to the window hovered by the mouse
-        drop_enternotify_events();
+        g_monitors->dropEnterNotifyEvents.emit();
     }
     // update objects
     monitor_update_focus_objects();
@@ -720,14 +714,6 @@ void all_monitors_replace_previous_tag(HSTag *old, HSTag *newmon) {
         if (m->tag_previous == old) {
             m->tag_previous = newmon;
         }
-    }
-}
-
-void drop_enternotify_events() {
-    XEvent ev;
-    XSync(g_display, False);
-    while (XCheckMaskEvent(g_display, EnterWindowMask, &ev)) {
-        ;
     }
 }
 

@@ -13,9 +13,6 @@ if git status --porcelain | grep '^ M' ; then
     exit 1
 fi
 
-IFS=. read -ra versionargs <<< "$version"
-
-
 echo "==> Release commit"
 echo ":: Patching VERSION"
 echo "$version" > VERSION
@@ -29,7 +26,7 @@ headerexp="^Current git version$"
 sed -i -e "/$headerexp/,+1s/^[-]*$/$newunderline/" \
        -e "s/$headerexp/$newheader/" NEWS
 
-echo ":: Commiting changes"
+echo ":: Committing changes"
 git add NEWS VERSION
 git commit -m "Release $version"
 echo ":: Tagging commit"
@@ -37,7 +34,7 @@ git tag -s "v$version" -m "Release $version"
 
 echo "==> Tarball"
 echo ":: Tarball creation"
-make tar
+make BUILDDIR=.build-doc-"$version" tar
 tarball="herbstluftwm-$version.tar.gz"
 md5sum=$(md5sum "$tarball" | head -c 13 )
 echo ":: Patching www/download.txt"
@@ -45,7 +42,7 @@ line=$(printf "| %-7s | $date | $md5sum...%15s| link:tarballs/%s[tar.gz] |link:t
                 $version                  ' '                 "$tarball" "$tarball")
 linerexp="// do not remove this: next version line will be added here"
 sed -i "s#^$linerexp\$#$line\n$linerexp#" www/download.txt
-echo ":: Commiting changes"
+echo ":: Committing changes"
 git add www/download.txt
 git commit -m "www: Add $version tarball"
 

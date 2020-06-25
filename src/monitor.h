@@ -59,7 +59,7 @@ private:
     std::string getTagString();
     std::string setTagString(std::string new_tag);
     Settings* settings;
-    //MonitorManager* monman;
+    MonitorManager* monman;
 };
 
 // adds a new monitor to the monitors list and returns a pointer to it
@@ -81,8 +81,6 @@ int monitor_set_previous_tag_command(Output output);
 void all_monitors_apply_layout();
 void ensure_monitors_are_available();
 void all_monitors_replace_previous_tag(HSTag* old, HSTag* newmon);
-
-void drop_enternotify_events();
 
 void monitor_update_focus_objects();
 

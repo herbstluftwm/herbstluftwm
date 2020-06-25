@@ -3,6 +3,8 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
+#include "x11-types.h"
+
 class Root;
 class XConnection;
 
@@ -14,6 +16,8 @@ public:
     //! quit the main loop as soon as possible
     void quit();
     using EventHandler = void (XMainLoop::*)(XEvent*);
+
+    void dropEnterNotifyEvents();
 private:
     // members
     XConnection& X_;
@@ -38,4 +42,6 @@ private:
     void maprequest(XMapRequestEvent* mapreq);
     void propertynotify(XPropertyEvent* event);
     void unmapnotify(XUnmapEvent* event);
+
+    bool duringEnterNotify_ = false; //! whether we are in enternotify()
 };

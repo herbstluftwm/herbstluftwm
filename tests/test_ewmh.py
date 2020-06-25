@@ -203,7 +203,7 @@ def test_ewmh_make_client_urgent(hlwm, hc_idle, x11):
     # create a new client that is not focused
     winHandle, winid = x11.create_client()
     assert hlwm.get_attr(f'clients.{winid}.urgent') == 'false'
-    assert 'focus' not in hlwm.list_children(f'clients')
+    assert 'focus' not in hlwm.list_children('clients')
     # assert that this window really does not have wm hints set:
     assert winHandle.get_wm_hints() is None
     hc_idle.hooks()  # reset hooks
@@ -214,3 +214,21 @@ def test_ewmh_make_client_urgent(hlwm, hc_idle, x11):
 
     assert hlwm.get_attr(f'clients.{winid}.urgent') == 'true'
     assert ['tag_flags'] in hc_idle.hooks()
+
+
+def test_ewmh_make_client_urgent_no_focus_stealing(hlwm, hc_idle, x11):
+    hlwm.call('set focus_stealing_prevention on')
+    hlwm.call('add otherTag')
+    hlwm.call('rule tag=otherTag')
+
+    # create a new client that is not focused
+    winHandle, winid = x11.create_client()
+
+    x11.ewmh.setActiveWindow(winHandle)
+    x11.display.flush()
+
+    assert hlwm.get_attr(f'clients.{winid}.urgent') == 'true'
+    demandsAttent = '_NET_WM_STATE_DEMANDS_ATTENTION'
+    assert demandsAttent in x11.ewmh.getWmState(winHandle, str=True)
+    assert 'focus' not in hlwm.list_children('clients')
+    assert 'default' == hlwm.get_attr('tags.focus.name')

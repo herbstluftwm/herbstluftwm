@@ -47,6 +47,8 @@ the most current released tarball:
 | 0.7.2   | 2019-05-28 | eccbb5d0b1836...               | link:tarballs/herbstluftwm-0.7.2.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.7.2.tar.gz.sig[sig]
 | 0.8.0   | 2020-04-09 | 73323c507b05a...               | link:tarballs/herbstluftwm-0.8.0.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.8.0.tar.gz.sig[sig]
 | 0.8.1   | 2020-04-21 | 00e08ecc1225e...               | link:tarballs/herbstluftwm-0.8.1.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.8.1.tar.gz.sig[sig]
+| 0.8.2   | 2020-05-04 | 52a9faf22c131...               | link:tarballs/herbstluftwm-0.8.2.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.8.2.tar.gz.sig[sig]
+| 0.8.3   | 2020-06-06 | d372114c411f5...               | link:tarballs/herbstluftwm-0.8.3.tar.gz[tar.gz] |link:tarballs/herbstluftwm-0.8.3.tar.gz.sig[sig]
 // do not remove this: next version line will be added here
 |====================================================================================================================
 

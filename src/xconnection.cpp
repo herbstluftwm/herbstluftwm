@@ -279,7 +279,7 @@ template<typename T> pair<Atom,vector<T>>
     Atom actual_type;
     int format;
     unsigned long bytes_left;
-    unsigned long* items_return;
+    long* items_return;
     unsigned long count;
     int status = XGetWindowProperty(display, window,
             property, 0, ULONG_MAX, False, AnyPropertyType,

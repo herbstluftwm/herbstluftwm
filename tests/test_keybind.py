@@ -5,7 +5,7 @@ import subprocess
 @pytest.mark.parametrize('sep', ['-', '+'])
 def test_list_keybinds(hlwm, sep):
     # single key, 1-word command:
-    hlwm.call(f'keybind x quit')
+    hlwm.call('keybind x quit')
     # 2 modifiers, 3-word command:
     hlwm.call(f'keybind Mod1{sep}Shift{sep}a resize left +5')
 
@@ -25,9 +25,9 @@ def test_keybind_invalid_key_combo(hlwm, combo, message):
 
 
 def test_replace_keybind(hlwm):
-    hlwm.call(f'keybind Mod1+x quit')
+    hlwm.call('keybind Mod1+x quit')
 
-    hlwm.call(f'keybind Mod1+x cycle')
+    hlwm.call('keybind Mod1+x cycle')
 
     assert hlwm.call('list_keybinds').stdout == 'Mod1+x\tcycle\n'
 
@@ -102,7 +102,9 @@ def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
 
     keyboard.press('x')
 
-    # Expect client to have quit because of received keypress:
+    # we expect that the keybind command is not executed:
+    assert hlwm.list_children('tags.by-name.') == ['default']
+    # instead, the client must quit because of received keypress:
     try:
         print(f"waiting for client proc {client_proc.pid}")
         client_proc.wait(5)
@@ -115,7 +117,7 @@ def test_keys_inactive(hlwm, keyboard, maskmethod, whenbind, refocus):
 
 
 def test_invalid_keys_inactive_via_rule(hlwm, keyboard):
-    hlwm.call('keybind x close')
+    hlwm.call('keybind x add anothertag')
     # Note: In future work, we could make this fail right away. But
     # currently, that is not the case.
     hlwm.call('rule once keys_inactive=[b-a]')
@@ -123,7 +125,9 @@ def test_invalid_keys_inactive_via_rule(hlwm, keyboard):
 
     keyboard.press('x')
 
-    assert hlwm.get_attr('tags.0.client_count') == '0'
+    # since there is no valid keys_inactive, the command must have been
+    # executed:
+    assert 'anothertag' in hlwm.list_children('tags.by-name.')
 
 
 @pytest.mark.parametrize('prefix', ['', 'Mod1+'])
@@ -225,7 +229,7 @@ def test_keymask_applied_to_new_binds(hlwm, keyboard):
 def test_keymask_prefix(hlwm, keyboard):
     hlwm.call('keybind space set_attr clients.focus.my_space_pressed pressed')
     hlwm.create_client()
-    hlwm.call(f'set_attr clients.focus.keymask s')
+    hlwm.call('set_attr clients.focus.keymask s')
     hlwm.call('new_attr string clients.focus.my_space_pressed')
 
     # according to the keymask, s is allowed, space is not

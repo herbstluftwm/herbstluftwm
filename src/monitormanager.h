@@ -9,6 +9,7 @@
 #include "link.h"
 #include "monitor.h"
 #include "plainstack.h"
+#include "signal.h"
 
 extern MonitorManager* g_monitors;
 
@@ -82,6 +83,13 @@ public:
     Rectangle interpretGlobalGeometry(Rectangle globalGeometry);
 
     int cur_monitor;
+
+    /**
+     * @brief this signal is emitted whenever the mouse cursor have
+     * entered another window although the user has not moved the cursor
+     * manually. In this case the respective events have to be ignored.
+     */
+    Signal dropEnterNotifyEvents;
 
 private:
     std::function<int(Input, Output)> byFirstArg(MonitorCommand cmd);

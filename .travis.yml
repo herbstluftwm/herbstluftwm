@@ -37,13 +37,13 @@ jobs:
                 focal sh -c '
                     /hlwm/ci/build.py --build-dir=/hlwm/build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=/.ccache --compile --run-tests
                 '
-              - bash <(curl -s https://codecov.io/bash) -y .codecov.yml -f coverage.info
+              - bash <(curl -s https://codecov.io/bash) -f coverage.info
 
         - name: "Build with Clang, run linters and static analyzers"
           env: TRAVIS_CACHE_ID=focal-linter
           cache:
               directories:
-                  - $HOME/.ccache-eoan-clang
+                  - $HOME/.ccache-focal-clang
                   - $HOME/.tox-cache
           script:
               # Fetch our current Ubuntu 20.04 CI image from Docker Hub
@@ -59,7 +59,7 @@ jobs:
               - docker run -u $UID --privileged -t --rm
                 --volume=/etc/passwd:/etc/passwd:ro
                 --volume=$PWD:/hlwm:rw
-                --volume=$HOME/.ccache-eoan-clang:/.ccache:rw
+                --volume=$HOME/.ccache-focal-clang:/.ccache:rw
                 --volume=$HOME/.tox-cache:/hlwm/.tox:rw
                 focal sh -c '
                     /hlwm/ci/build.py --build-dir=/hlwm/build --cxx=/hlwm/ci/clang++-and-tidy.sh --cc=/hlwm/ci/clang-and-tidy.sh --build-type=Debug --ccache=/.ccache --compile --check-using-std --iwyu --flake8

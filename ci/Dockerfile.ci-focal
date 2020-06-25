@@ -6,18 +6,15 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     clang-10 \
     clang-tidy-10 \
     cmake \
-    curl \
     g++-9 \
     iwyu \
     lcov \
     libx11-dev \
     libxext-dev \
     libxinerama-dev \
-    libxml2-utils \
     libxrandr-dev \
     ninja-build \
     pkg-config \
-    python3-yaml \
     python3.8 \
     tox \
     x11-xserver-utils \

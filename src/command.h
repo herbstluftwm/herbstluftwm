@@ -141,15 +141,6 @@ namespace Commands {
     std::shared_ptr<const CommandTable> get();
 }
 
-// Mark the following two functions as obsolete to make it easier to detect and
-// fix call-sites gradually.
-
-int call_command(int argc, char** argv, Output output)
-   /* __attribute__((deprecated("Old C interface, use CommandTable"))) */;
-
-int call_command_no_output(int argc, char** argv)
-   /* __attribute__((deprecated("Old C interface, use CommandTable"))) */;
-
 // commands
 int list_commands(Output output);
 int complete_command(int argc, char** argv, Output output);

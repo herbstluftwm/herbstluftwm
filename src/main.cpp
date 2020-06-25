@@ -344,15 +344,19 @@ int wmexec(int argc, char** argv) {
     return EXIT_SUCCESS;
 }
 
-int raise_command(int argc, char** argv, Output) {
-    auto client = get_client((argc > 1) ? argv[1] : "");
+int raise_command(int argc, char** argv, Output output) {
+    if (argc < 2) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    auto client = get_client(argv[1]);
     if (client) {
         client->raise();
     } else {
-        auto window = get_window((argc > 1) ? argv[1] : "");
+        auto window = get_window(argv[1]);
         if (window) {
             XRaiseWindow(g_display, window);
         } else {
+            output << argv[0] << ": Could not find client \"" << argv[1] << "\".\n";
             return HERBST_INVALID_ARGUMENT;
         }
     }
@@ -368,12 +372,7 @@ int jumpto_command(int argc, char** argv, Output output) {
         focus_client(client, true, true, true);
         return 0;
     } else {
-        output << argv[0] << ": Could not find client";
-        if (argc > 1) {
-            output << " \"" << argv[1] << "\".\n";
-        } else {
-            output << ".\n";
-        }
+        output << argv[0] << ": Could not find client \"" << argv[1] << "\".\n";
         return HERBST_INVALID_ARGUMENT;
     }
 }

@@ -385,6 +385,15 @@ class HlwmProcess:
             if not expect_sth or match_found():
                 break
 
+        # decode remaining bytes for the final match_found() check
+        if stderr_bytes != b'':
+            stderr += stderr_bytes.decode()
+            sys.stderr.write(stderr_bytes.decode())
+            sys.stderr.flush()
+        if stdout_bytes != b'':
+            stdout += stdout_bytes.decode()
+            sys.stdout.write(stdout_bytes.decode())
+            sys.stdout.flush()
         duration = (datetime.now() - started).total_seconds()
         if expect_sth and not match_found():
             assert False, f'Expected string not encountered within {duration:.1f} seconds'
@@ -394,6 +403,9 @@ class HlwmProcess:
         """
         Context manager for wrapping commands that are expected to result in
         certain output on hlwm's stdout (e.g., input events).
+
+        Warning: do not run call(...) within such a context, but only
+        unchecked_call(..., read_hlwm_output=False) instead
         """
         self.read_and_echo_output()
         yield
@@ -404,6 +416,9 @@ class HlwmProcess:
         """
         Context manager for wrapping commands that are expected to result in
         certain output on hlwm's stderr (e.g., input events).
+
+        Warning: do not run call(...) within such a context, but only
+        unchecked_call(..., read_hlwm_output=False) instead
         """
         self.read_and_echo_output()
         yield
@@ -509,8 +524,8 @@ def kill_all_existing_windows(show_warnings=True):
         # otherwise, assert successfull termination
         assert xlsclients.returncode == 0
     clients = []
-    for l in xlsclients.stdout.decode().splitlines():
-        m = re.match(r'Window (0x[0-9a-fA-F]*):', l)
+    for line in xlsclients.stdout.decode().splitlines():
+        m = re.match(r'Window (0x[0-9a-fA-F]*):', line)
         if m:
             clients.append(m.group(1))
     if clients and show_warnings:
@@ -525,9 +540,9 @@ def kill_all_existing_windows(show_warnings=True):
 
 
 @pytest.fixture()
-def hlwm_spawner(tmpdir):
+def hlwm_spawner(tmpdir, xvfb):
     """yield a function to spawn hlwm"""
-    assert os.environ['DISPLAY'] != ':0', 'Refusing to run tests on display that might be your actual X server (not Xvfb)'
+    assert xvfb is not None, 'Refusing to run tests in a non-Xvfb environment (possibly your actual X server?)'
 
     def spawn(args=[], display=None):
         if display is None:

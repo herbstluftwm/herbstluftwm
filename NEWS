@@ -4,12 +4,26 @@ herbstluftwm NEWS -- History of user-visible changes
 Current git version
 -------------------
 
+  * When an application fails to focus itself (because
+    focus_stealing_prevention is actve), then the window is marked as urgent.
+  * Fix handling of delta -1 in 'focus_monitor' and 'cycle_monitor'
+
+Release 0.8.3 on 2020-06-06
+---------------------------
+
+  * Bug fixes:
+    - Fix race condition in focus_follows_mouse handling
+
+Release 0.8.2 on 2020-05-04
+---------------------------
+
   * Selection of empty frames by the mouse (by click or by hover if
     focus_follows_mouse is enabled)
   * The commands 'close_and_remove' / 'close_or_remove' act like 'close' for
     floating clients
   * The decoration window allows focusing, moving, and resizing the client
     via the mouse (as known from standard floating window managers)
+  * Improved herbstclient tab completion for the fish shell
   * Bug fixes:
     - Fix a crash in the error handler when a invalid monitor name is
       passed. (Affects list_padding move_monitor rename_monitor lock_tag
@@ -17,6 +31,8 @@ Current git version
     - Fix the type of WM_STATE
     - The client attributes sizehints_tiling and sizehints_floating are now
       writable
+    - Fix EWMH urgency change for clients without WM hints set
+    - Fix the exit code of the 'focus' command
 
 Release 0.8.1 on 2020-04-21
 ---------------------------

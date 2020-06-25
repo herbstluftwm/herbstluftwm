@@ -12,7 +12,12 @@ HLWM_PATH = os.path.join(BINDIR, 'herbstluftwm')
 
 def test_reload(hlwm_process, hlwm):
     with hlwm_process.wait_stdout_match('hlwm started'):
-        hlwm.call('reload')
+        # run the command, but read not hlwm's output in unchecked_call()
+        # but instead, let the current context manager read it!
+        proc = hlwm.unchecked_call('reload', read_hlwm_output=False)
+        assert not proc.stderr
+        assert not proc.stdout
+        assert proc.returncode == 0
 
 
 def test_herbstluftwm_already_running(hlwm):

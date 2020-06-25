@@ -297,3 +297,44 @@ def test_invalid_monitor_name(hlwm):
     for command in cmds:
         hlwm.call_xfail([command, 'thismonitordoesnotexist']) \
             .expect_stderr('Monitor "thismonitordoesnotexist" not found')
+
+
+def test_list_padding(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('add_monitor 800x600+600+0')
+    pad0 = '5 20 3 30'
+    pad1 = '1 2 4 8'
+    hlwm.call('pad 0 ' + pad0)
+    hlwm.call('pad 1 ' + pad1)
+
+    # this is a very primitive command, so we directly test multiple things at once
+    assert hlwm.call('list_padding 0').stdout == pad0 + '\n'
+    assert hlwm.call('list_padding 1').stdout == pad1 + '\n'
+
+    assert hlwm.call('list_padding').stdout == pad0 + '\n'
+    hlwm.call('focus_monitor 1')
+    assert hlwm.call('list_padding').stdout == pad1 + '\n'
+
+
+def test_list_padding_invalid_monitor(hlwm):
+    hlwm.call_xfail('list_padding 23') \
+        .expect_stderr('Monitor.*not found')
+
+
+@pytest.mark.parametrize("mon_num,focus_idx", [
+    (num, focus) for num in [1, 2, 3, 4, 5] for focus in [0, num - 1]])
+@pytest.mark.parametrize("delta", ['-1', '+1'])
+@pytest.mark.parametrize("command", ['cycle_monitor', 'focus_monitor'])
+def test_cycle_monitor(hlwm, mon_num, focus_idx, delta, command):
+    """the present test also tests the MOD() function in utility.cpp"""
+    for i in range(1, mon_num):
+        hlwm.call('add tag' + str(i))
+        hlwm.call('add_monitor 800x600+' + str(i * 10))
+    hlwm.call(['focus_monitor', str(focus_idx)])
+    assert hlwm.get_attr('monitors.focus.index') == str(focus_idx)
+    assert hlwm.get_attr('monitors.count') == str(mon_num)
+
+    hlwm.call([command, delta])
+
+    new_index = (focus_idx + int(delta) + mon_num) % mon_num
+    assert hlwm.get_attr('monitors.focus.index') == str(new_index)

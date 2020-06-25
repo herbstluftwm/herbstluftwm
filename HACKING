@@ -29,14 +29,28 @@ herbstluftwm (Alt-Shift-q or run herbstclient quit) to end testing.
 Running tests
 -------------
 
-Tests are run using pytest[1] and tox[2]. With tox and Xvfb[3] installed, you
-can run the following from the build directory:
+Tests are run using pytest[1] and tox[2]. In addition to tox,
+you'll have to install additional dependencies, in order to successfully
+run the complete test suite:
+
+  - xvfb[3]
+  - xdotool
+  - xsetroot
+  - xterm
+
+With everything installed, you can run the following from the build directory:
 
     tox -c ..  -- -v --maxfail=1
 
-If you run arch linux, it may be necessary to add -e py38 to the tox parameters
-(that is, before the --). The argument after the -- are pytest parameters (add
--h to see a help).
+If you run Arch Linux, it may be necessary to add -e py38 to the tox parameters
+(that is, before the --). If you have an old version of tox installed, it may be
+necessary to pass ../tox.ini instead of .. to the -c parameter.
+
+The argument after the -- are pytest parameters (add -h to see a help). If you
+do not want to use tox and instead run pytest directly, then call the following
+command in the build directory:
+
+    python3 -m pytest ../tests
 
 [1] http://pytest.org/
 [2] https://tox.readthedocs.io/

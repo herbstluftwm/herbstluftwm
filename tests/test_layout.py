@@ -202,12 +202,12 @@ def test_layout_command(hlwm, running_clients, running_clients_num, num_splits):
     assert '[FOCUS]' in layout_str
     layout_str = layout_str.replace(' [FOCUS]', '')
 
-    lines = [l.strip() for l in layout_str.splitlines()]
+    lines = [line.strip() for line in layout_str.splitlines()]
     # count the client frames
-    assert len([l for l in lines if l[0] == 'C']) \
+    assert len([line for line in lines if line[0] == 'C']) \
         == int(hlwm.get_attr('tags.0.frame_count'))
     # count the split frames
-    assert len([l for l in lines if l[0] == 'S']) == num_splits
+    assert len([line for line in lines if line[0] == 'S']) == num_splits
     # transform dump-output to something similar
     dumped = hlwm.call('dump').stdout \
         .replace('(', '\n').replace(')', '').strip() \
@@ -215,7 +215,7 @@ def test_layout_command(hlwm, running_clients, running_clients_num, num_splits):
     # remove all information except for align/layout names
     dumped = re.sub(r':[^ ]*', '', dumped)
     dumped = re.sub(r'[ ]*\n', '\n', dumped)
-    lines = [re.sub(r' [0-9]+% selection=[01]', '', l) for l in lines]
+    lines = [re.sub(r' [0-9]+% selection=[01]', '', line) for line in lines]
     assert dumped == '\n'.join(lines).replace(':', '')
 
 
@@ -513,10 +513,10 @@ def test_inner_neighbour_horizontal_layout(hlwm, direction):
     hlwm.create_clients(4)
     hlwm.call('set_layout horizontal')
     if direction == 'right':
-        hlwm.call(f'focus_nth 0')
+        hlwm.call('focus_nth 0')
         expected_indices = [1, 2, 3]
     else:
-        hlwm.call(f'focus_nth 3')
+        hlwm.call('focus_nth 3')
         expected_indices = [2, 1, 0]
 
     for i in expected_indices:

@@ -68,6 +68,9 @@ XMainLoop::XMainLoop(XConnection& X, Root* root)
     handlerTable_[ MotionNotify      ] = EH(&XMainLoop::motionnotify);
     handlerTable_[ PropertyNotify    ] = EH(&XMainLoop::propertynotify);
     handlerTable_[ UnmapNotify       ] = EH(&XMainLoop::unmapnotify);
+
+    root_->monitors->dropEnterNotifyEvents
+            .connect(this, &XMainLoop::dropEnterNotifyEvents);
 }
 
 //! scan for windows and add them to the list of managed clients
@@ -173,6 +176,21 @@ void XMainLoop::run() {
 
 void XMainLoop::quit() {
     aboutToQuit_ = true;
+}
+
+void XMainLoop::dropEnterNotifyEvents()
+{
+    if (duringEnterNotify_) {
+        // during a enternotify(), no artificial enter notify events
+        // can be created. Moreover, on quick mouse movements, an enter notify
+        // might be followed by further enter notify events, which
+        // must not be dropped.
+        return;
+    }
+    XEvent ev;
+    XSync(X_.display(), False);
+    while (XCheckMaskEvent(X_.display(), EnterWindowMask, &ev)) {
+    }
 }
 
 /* ----------------------------- */
@@ -338,7 +356,16 @@ void XMainLoop::destroynotify(XUnmapEvent* event) {
 }
 
 void XMainLoop::enternotify(XCrossingEvent* ce) {
-    HSDebug("name is: EnterNotify, focus = %d\n", ce->focus);
+    HSDebug("EnterNotify, focus = %d, window = 0x%lx\n", ce->focus, ce->window);
+    if (ce->mode != NotifyNormal || ce->detail == NotifyInferior) {
+        // ignore an event if it is caused by (un-)grabbing the mouse or
+        // if the pointer moves from a window to its decoration.
+        // for 'ce->detail' see:
+        // https://tronche.com/gui/x/xlib/events/window-entry-exit/normal.html
+        return;
+    }
+    // Warning: we have to set this to false again!
+    duringEnterNotify_ = true;
     if (!root_->mouse->mouse_is_dragging()
         && root_->settings()->focus_follows_mouse()
         && ce->focus == false) {
@@ -368,6 +395,7 @@ void XMainLoop::enternotify(XCrossingEvent* ce) {
             }
         }
     }
+    duringEnterNotify_ = false;
 }
 
 void XMainLoop::expose(XEvent* event) {

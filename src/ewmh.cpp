@@ -288,12 +288,18 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
     int desktop_index;
     switch (index) {
         case NetActiveWindow: {
-            // only steal focus it allowed to the current source
-            // (i.e.  me->data.l[0] in this case as specified by EWMH)
+            // only steal focus if allowed to the current source
+            // (i.e. me->data.l[0] in this case as specified by EWMH)
             if (focusStealingAllowed(me->data.l[0])) {
                 auto client = Root::common().client(me->window);
                 if (client) {
                     focus_client(client, true, true, true);
+                }
+            } else {
+                // Focus stealing is not allowed, at least mark the client urgent
+                auto client = Root::common().client(me->window);
+                if (client) {
+                    client->set_urgent(true);
                 }
             }
             break;
@@ -559,7 +565,7 @@ string Ewmh::getWindowTitle(Window win) {
     return "";
 }
 
-/** Return the window type of the given window. If there are mutliple entries, then
+/** Return the window type of the given window. If there are multiple entries, then
  * only the first window type entry is returned. The return value is an enum value between
  * NetWmWindowTypeFIRST and NetWmWindowTypeLAST (inclusive). Any other window
  * type is not recognized and leads to -1 being returned.
