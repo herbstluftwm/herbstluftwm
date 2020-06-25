@@ -479,6 +479,11 @@ void Client::set_urgent(bool state) {
         // nothing to do
         return;
     }
+    if (this == manager.focus() && state == true) {
+        // ignore it if the focused client wants to be urgent
+        // because it will be removed by window_focus() anyway
+        return;
+    }
     set_urgent_force(state);
 }
 
