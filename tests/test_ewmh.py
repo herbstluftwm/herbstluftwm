@@ -216,6 +216,27 @@ def test_ewmh_make_client_urgent(hlwm, hc_idle, x11):
     assert ['tag_flags'] in hc_idle.hooks()
 
 
+@pytest.mark.parametrize('focused', [True, False])
+def test_ewmh_focused_client_never_urgent(hlwm, hc_idle, x11, focused):
+    hlwm.call('set focus_stealing_prevention off')
+    if not focused:
+        # if the client shall not be focused, simply place it on
+        # another tag
+        hlwm.call('add otherTag')
+        hlwm.call('rule tag=otherTag')
+    winHandle, winid = x11.create_client()
+    assert hlwm.get_attr(f'clients.{winid}.urgent') == 'false'
+    hc_idle.hooks()  # reset hooks
+
+    # mark the client urgent
+    demandsAttent = '_NET_WM_STATE_DEMANDS_ATTENTION'
+    x11.ewmh.setWmState(winHandle, 1, demandsAttent)
+    x11.display.flush()
+
+    assert hlwm.get_attr(f'clients.{winid}.urgent') == hlwm.bool(not focused)
+    assert (['urgent', 'on', winid] in hc_idle.hooks()) == (not focused)
+
+
 def test_ewmh_make_client_urgent_no_focus_stealing(hlwm, hc_idle, x11):
     hlwm.call('set focus_stealing_prevention on')
     hlwm.call('add otherTag')
