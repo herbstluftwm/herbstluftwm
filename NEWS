@@ -7,6 +7,8 @@ Current git version
   * When an application fails to focus itself (because
     focus_stealing_prevention is actve), then the window is marked as urgent.
   * Fix handling of delta -1 in 'focus_monitor' and 'cycle_monitor'
+  * Fixed precision decimals in the layout tree (more reliable in- and output
+    of fractions in frame splits)
 
 Release 0.8.3 on 2020-06-06
 ---------------------------

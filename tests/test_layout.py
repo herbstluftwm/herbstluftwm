@@ -2,6 +2,7 @@ import pytest
 import re
 import math
 import textwrap
+from decimal import Decimal
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
@@ -545,8 +546,8 @@ def test_resize_flat_split(hlwm, splittype, dir_work, dir_dummy):
         assert new_layout[0:len(layout_prefix)] == layout_prefix
         assert new_layout[-len(layout_suffix):] == layout_suffix
         new_fraction_str = new_layout[len(layout_prefix):-len(layout_suffix)]
-        expected_fraction = float(0.4 + signum * 0.1)
-        assert math.isclose(float(new_fraction_str), expected_fraction, abs_tol=0.001)
+        expected_fraction = Decimal('0.4') + Decimal(signum) * Decimal('0.1')
+        assert new_fraction_str == str(expected_fraction)
 
     for d in dir_dummy:
         hlwm.call(['load', layout_format.format('0.4')])
@@ -589,15 +590,17 @@ def test_resize_nested_split(hlwm):
     for d, signum in [('left', -1), ('right', 1)]:
         hlwm.call(['load', layout])  # reset layout
         hlwm.call(['resize', d, '+0.05'])
-        fraction = float(hlwm.call('dump').stdout.split(':')[1])
-        assert math.isclose(fraction, 0.2 + signum * 0.05, abs_tol=0.001)
+        fraction = hlwm.call('dump').stdout.split(':')[1]
+        expected = Decimal('0.2') + signum * Decimal('0.05')
+        assert fraction == str(expected)
 
     # resize the nested split
     for d, signum in [('up', -1), ('down', 1)]:
         hlwm.call(['load', layout])  # reset layout
         hlwm.call(['resize', d, '+0.05'])
-        fraction = float(hlwm.call('dump').stdout.split(':')[3])
-        assert math.isclose(fraction, 0.3 + signum * 0.05, abs_tol=0.001)
+        fraction = hlwm.call('dump').stdout.split(':')[3]
+        expected = Decimal('0.3') + signum * Decimal('0.05')
+        assert fraction == str(expected)
 
 
 @pytest.mark.parametrize('layout', [

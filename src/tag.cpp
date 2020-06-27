@@ -371,12 +371,10 @@ int HSTag::resizeCommand(Input input, Output output)
             return HERBST_FORBIDDEN;
         }
     } else {
-        double delta_double = 0.02;
-        string delta_str;
-        if (input >> delta_str) {
-            delta_double = atof(delta_str.c_str());
-        }
-        if (!frame->resizeFrame(delta_double, direction)) {
+        string delta_str = "0.02";
+        input >> delta_str; // try reading
+        FixPrecDec delta = Converter<FixPrecDec>::parse(delta_str);
+        if (!frame->resizeFrame(delta, direction)) {
             output << input.command() << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
         }

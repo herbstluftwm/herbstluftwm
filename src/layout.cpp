@@ -50,8 +50,9 @@ FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent
     decoration = new FrameDecoration(*this, tag, settings);
 }
 
-FrameSplit::FrameSplit(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent, int fraction, SplitAlign align,
-                 shared_ptr<Frame> a, shared_ptr<Frame> b)
+FrameSplit::FrameSplit(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent,
+                       FixPrecDec fraction, SplitAlign align, shared_ptr<Frame> a,
+                       shared_ptr<Frame> b)
              : Frame(tag, settings, parent) {
     this->align_ = align;
     selection_ = 0;
@@ -355,11 +356,11 @@ TilingResult FrameSplit::computeLayout(Rectangle rect) {
     auto first = rect;
     auto second = rect;
     if (align_ == SplitAlign::vertical) {
-        first.height = (rect.height * fraction_) / FRACTION_UNIT;
+        first.height = (rect.height * fraction_.value_) / fraction_.unit_;
         second.y += first.height;
         second.height -= first.height;
     } else { // (align == SplitAlign::horizontal)
-        first.width = (rect.width * fraction_) / FRACTION_UNIT;
+        first.width = (rect.width * fraction_.value_) / fraction_.unit_;
         second.x += first.width;
         second.width -= first.width;
     }
@@ -473,7 +474,7 @@ void FrameLeaf::addClients(const vector<Client*>& vec, bool atFront) {
     clients.insert(targetPosition, vec.begin(), vec.end());
 }
 
-bool FrameLeaf::split(SplitAlign alignment, int fraction, size_t childrenLeaving) {
+bool FrameLeaf::split(SplitAlign alignment, FixPrecDec fraction, size_t childrenLeaving) {
     if (splitsToRoot(alignment) > HERBST_MAX_TREE_HEIGHT) {
         return false;
     }
@@ -481,9 +482,7 @@ bool FrameLeaf::split(SplitAlign alignment, int fraction, size_t childrenLeaving
     vector<Client*> leaves(clients.begin() + childrenStaying, clients.end());
     clients.erase(clients.begin() + childrenStaying, clients.end());
     // ensure fraction is allowed
-    fraction = CLAMP(fraction,
-                     FRACTION_UNIT * (0.0 + FRAME_MIN_FRACTION),
-                     FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
+    fraction = FrameSplit::clampFraction(fraction);
     auto first = shared_from_this();
     auto second = make_shared<FrameLeaf>(tag_, settings_, weak_ptr<FrameSplit>());
     second->layout = layout;
@@ -508,21 +507,23 @@ void FrameSplit::swapChildren() {
     swap(a_,b_);
 }
 
-void FrameSplit::adjustFraction(int delta) {
-    fraction_ += delta;
+void FrameSplit::adjustFraction(FixPrecDec delta) {
+    fraction_ = fraction_ + delta;
     fraction_ = clampFraction(fraction_);
 }
 
-void FrameSplit::setFraction(int fraction)
+void FrameSplit::setFraction(FixPrecDec fraction)
 {
     fraction_ = clampFraction(fraction);
 }
 
-int FrameSplit::clampFraction(int fraction)
+FixPrecDec FrameSplit::clampFraction(FixPrecDec fraction)
 {
-    return CLAMP(fraction,
-                 (int)(FRAME_MIN_FRACTION * FRACTION_UNIT),
-                 (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
+    fraction.value_
+            = CLAMP(fraction.value_,
+                    fraction.unit_ * (0.0 + FRAME_MIN_FRACTION),
+                    fraction.unit_ * (1.0 - FRAME_MIN_FRACTION));
+    return fraction;
 }
 
 /**

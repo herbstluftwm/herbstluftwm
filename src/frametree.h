@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "fixprecdec.h"
 #include "types.h"
 
 class Client;
@@ -49,7 +50,7 @@ public:
         End,
     };
 
-    bool resizeFrame(double delta, Direction dir);
+    bool resizeFrame(FixPrecDec delta, Direction dir);
 
     // Commands
     int cycleSelectionCommand(Input input, Output output);
