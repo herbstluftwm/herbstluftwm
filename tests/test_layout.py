@@ -349,7 +349,7 @@ def test_cycle_frame_traverses_all(hlwm, running_clients, num_splits, delta):
 
 def test_cycle_frame_invalid_delta(hlwm):
     hlwm.call_xfail(['cycle_frame', 'df8']) \
-        .expect_stderr('invalid argument')
+        .expect_stderr('invalid argument: stoi')
     hlwm.call_xfail(['cycle_frame', '-230984209340']) \
         .expect_stderr('out of range')
 
@@ -742,11 +742,14 @@ def test_tree_style_utf8(hlwm):
 
 def test_split_invalid_argument(hlwm):
     wrongDecimal = [
-        '0.0f', '.3', '.', 'b',
+        ('0.0f', "After '.' only digits"),
+        ('.3',   "There must be at least one digit"),
+        ('.',    "There must be at least one digit"),
+        ('b',    "stoi"),
     ]
-    for d in wrongDecimal:
+    for d, msg in wrongDecimal:
         hlwm.call_xfail(['split', 'top', d]) \
-            .expect_stderr('invalid argument')
+            .expect_stderr('invalid argument: ' + msg)
 
 
 def test_split_clamp_argument_smaller(hlwm):
