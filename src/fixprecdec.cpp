@@ -52,7 +52,7 @@ string Converter<FixPrecDec>::str(FixPrecDec payload)
     return payload.str();
 }
 
-std::string FixPrecDec::str() const
+string FixPrecDec::str() const
 {
     int v = value_;
     stringstream fmt;
