@@ -4,8 +4,8 @@
 #include <sstream>
 
 #include "arglist.h"
-#include "globals.h"
 #include "fixprecdec.h"
+#include "globals.h"
 #include "hlwmcommon.h"
 #include "root.h"
 #include "x11-types.h"

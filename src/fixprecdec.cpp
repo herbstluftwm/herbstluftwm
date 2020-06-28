@@ -2,8 +2,8 @@
 
 #include <cctype>
 #include <exception>
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
 using std::string;
