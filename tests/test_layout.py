@@ -747,11 +747,11 @@ def test_split_invalid_argument(hlwm):
         ('0.+8', "After '.' only digits"),
         ('0.-8', "After '.' only digits"),
         ('0..0', "A decimal must have at most one '.'"),
-        ('.3',   "There must be at least one digit"),
-        ('.',    "There must be at least one digit"),
-        ('b',    "stoi"),
-        ('-.3',  "stoi"),
-        ('+.8',  "stoi"),
+        ('.3', "There must be at least one digit"),
+        ('.', "There must be at least one digit"),
+        ('b', "stoi"),
+        ('-.3', "stoi"),
+        ('+.8', "stoi"),
     ]
     for d, msg in wrongDecimal:
         hlwm.call_xfail(['split', 'top', d]) \
