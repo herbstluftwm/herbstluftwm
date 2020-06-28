@@ -19,8 +19,8 @@ FixPrecDec Converter<FixPrecDec>::parse(const string& source)
     if (parts.size() > 2) {
         throw std::invalid_argument("A decimal must have at most one \'.\'");
     }
-    if (parts[0].size() == 0) {
-        throw std::invalid_argument("There must be at least oen digit before \'.\'");
+    if (parts[0].empty()) {
+        throw std::invalid_argument("There must be at least one digit before \'.\'");
     }
     // check the signum from the string, because the signum may get lost if
     // parts[0] is "-0"
