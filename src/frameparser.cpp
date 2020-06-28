@@ -120,12 +120,12 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
             node->align_ = Converter<SplitAlign>::parse(alignName);
             FixPrecDec fraction = Converter<FixPrecDec>::parse(fractionStr);
             if (fraction < FRAME_MIN_FRACTION
-                || fraction > (1 - FRAME_MIN_FRACTION))
+                || fraction > (FixPrecDec::fromInteger(1) - FRAME_MIN_FRACTION))
             {
                 stringstream message;
                 message << "Fraction must be between "
-                        <<  FRAME_MIN_FRACTION << " and "
-                        << (1 - FRAME_MIN_FRACTION)
+                        <<  FRAME_MIN_FRACTION.str() << " and "
+                        << (FixPrecDec::fromInteger(1) - FRAME_MIN_FRACTION).str()
                         << " but actually is " << Converter<FixPrecDec>::str(fraction);
                 throw std::invalid_argument(message.str());
             }

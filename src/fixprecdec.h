@@ -12,8 +12,20 @@ class FixPrecDec
 public:
     int value_;
     static const int unit_; //! the number one encoded as a FixPrecDec
+
+    std::string str() const;
+
     bool operator<(double other);
     bool operator>(double other);
+
+    bool operator<(FixPrecDec other) {
+        return value_ < other.value_;
+    }
+
+    bool operator>(FixPrecDec other) {
+        return value_ > other.value_;
+    }
+
     static FixPrecDec fromInteger(int integer) {
         return integer * unit_;
     }
@@ -28,6 +40,7 @@ public:
         return value_ / divisor;
     }
     static FixPrecDec raw(int value) { return value; }
+    static FixPrecDec approxFrac(int nominator, int denominator);
 private:
     FixPrecDec(int value) : value_(value) {}
 };

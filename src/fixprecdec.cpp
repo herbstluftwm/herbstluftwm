@@ -49,18 +49,23 @@ FixPrecDec Converter<FixPrecDec>::parse(const string& source)
 template<>
 string Converter<FixPrecDec>::str(FixPrecDec payload)
 {
-    int v = payload.value_;
+    return payload.str();
+}
+
+std::string FixPrecDec::str() const
+{
+    int v = value_;
     stringstream fmt;
     if (v < 0) {
         fmt << "-";
         v *= -1;
     }
     // from now on, we can act as if the value is positive (this makes modulo easier)
-    fmt << (v / payload.unit_);
-    v %= payload.unit_;
+    fmt << (v / unit_);
+    v %= unit_;
     if (v != 0) {
         fmt << ".";
-        int remaining_unit = payload.unit_;
+        int remaining_unit = unit_;
         while (v != 0) {
             remaining_unit /= 10;
             fmt << (v / remaining_unit);
@@ -78,4 +83,15 @@ bool FixPrecDec::operator<(double other)
 bool FixPrecDec::operator>(double other)
 {
     return value_ > other * unit_;
+}
+
+/**
+ * @brief Construct a FixPrecDec that roughly is the given fraction
+ * @param nominator
+ * @param denominator
+ * @return
+ */
+FixPrecDec FixPrecDec::approxFrac(int nominator, int denominator)
+{
+    return unit_ * nominator / denominator;
 }

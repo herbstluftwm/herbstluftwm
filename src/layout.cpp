@@ -519,10 +519,14 @@ void FrameSplit::setFraction(FixPrecDec fraction)
 
 FixPrecDec FrameSplit::clampFraction(FixPrecDec fraction)
 {
-    fraction.value_
-            = CLAMP(fraction.value_,
-                    fraction.unit_ * (0.0 + FRAME_MIN_FRACTION),
-                    fraction.unit_ * (1.0 - FRAME_MIN_FRACTION));
+    auto minFrac = FRAME_MIN_FRACTION;
+    auto maxFrac = FixPrecDec::fromInteger(1) - minFrac;
+    if (fraction < minFrac) {
+        return minFrac;
+    }
+    if (fraction > maxFrac) {
+        return maxFrac;
+    }
     return fraction;
 }
 
