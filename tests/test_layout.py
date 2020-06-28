@@ -738,3 +738,69 @@ def test_tree_style_utf8(hlwm):
       … ├─╼ vertical: [FOCUS]
       … ╰─╼ vertical:
     """)
+
+
+def test_split_invalid_argument(hlwm):
+    wrongDecimal = [
+        '0.0f', '.3', '.', 'b',
+    ]
+    for d in wrongDecimal:
+        hlwm.call_xfail(['split', 'top', d]) \
+            .expect_stderr('invalid argument')
+
+
+def test_split_clamp_argument_smaller(hlwm):
+    for d in ['-1.2', '-12', '0.05', '-0.05']:
+        hlwm.call(['load', '(clients vertical:0)'])
+        hlwm.call(['split', 'left', d])
+        assert hlwm.call('dump').stdout == \
+            '(split horizontal:0.1:1 (clients vertical:0) (clients vertical:0))'
+
+
+def test_split_clamp_argument_bigger(hlwm):
+    for d in ['1.2', '12', '0.95', '1']:
+        hlwm.call(['load', '(clients vertical:0)'])
+        hlwm.call(['split', 'left', d])
+        assert hlwm.call('dump').stdout == \
+            '(split horizontal:0.9:1 (clients vertical:0) (clients vertical:0))'
+
+
+def test_resize_invalid_argument(hlwm):
+    hlwm.call_xfail('resize left foo') \
+        .expect_stderr('resize: ')
+
+
+def test_resize_delta(hlwm):
+    values = [
+        # before, direction, delta, after
+        ('0.2', 'left', '0.15', '0.1'),  # clamp to lower bound
+        ('0.2', 'right', '0.15', '0.35'),
+        ('0.7', 'right', '0.19', '0.89'),
+        ('0.8', 'right', '0.19', '0.9'),  # clamp to upper bound
+        ('0.8', 'left', '0.1989', '0.6011'),
+        ('0.1', 'right', '0.2', '0.3'),
+    ]
+    for before, direction, delta, after in values:
+        layout = '(split horizontal:{}:1'  # placeholder
+        layout += ' (clients vertical:0) (clients vertical:0))'
+        hlwm.call(['load', layout.format(before)])
+        hlwm.call(['resize', direction, delta])
+        assert hlwm.call('dump').stdout == layout.format(after)
+
+
+def test_resize_cumulative(hlwm):
+    layout = '(split horizontal:{}:1'  # placeholder
+    layout += ' (clients vertical:0) (clients vertical:0))'
+    hlwm.call(['load', layout.format(0.1)])
+    for i in range(0, 35):
+        hlwm.call(['resize', 'right', '0.02'])
+    # 0.1 + 35 * 0.02 = 0.8
+    assert hlwm.call('dump').stdout == layout.format('0.8')
+
+
+def test_resize_clamp_argument_bigger(hlwm):
+    layout = '(split horizontal:{}:1'  # placeholder
+    layout += ' (clients vertical:0) (clients vertical:0))'
+    hlwm.call(['load', layout.format('0.2')])
+    hlwm.call('resize left 0.15')
+    assert hlwm.call('dump').stdout == layout.format('0.1')

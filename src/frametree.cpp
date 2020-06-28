@@ -825,7 +825,13 @@ int FrameTree::splitCommand(Input input, Output output)
         return HERBST_NEED_MORE_ARGS;
     }
     bool userDefinedFraction = input >> strFraction;
-    FixPrecDec fraction = Converter<FixPrecDec>::parse(strFraction);
+    FixPrecDec fraction = FixPrecDec::fromInteger(0);
+    try {
+        fraction = Converter<FixPrecDec>::parse(strFraction);
+    }  catch (const std::exception& e) {
+        output << "invalid argument: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
     fraction = FrameSplit::clampFraction(fraction);
     auto frame = focusedFrame();
     int lh = frame->lastRect().height;

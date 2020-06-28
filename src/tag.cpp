@@ -357,9 +357,13 @@ int HSTag::resizeCommand(Input input, Output output)
     if (!(input >> dir_str)) {
         return HERBST_NEED_MORE_ARGS;
     }
+    string delta_str = "0.02";
+    input >> delta_str; // try reading
     Direction direction;
+    FixPrecDec delta = FixPrecDec::fromInteger(0);
     try {
         direction = Converter<Direction>::parse(dir_str);
+        delta = Converter<FixPrecDec>::parse(delta_str);
     } catch (const std::exception& e) {
         output << input.command() << ": " << e.what() << "\n";
         return HERBST_INVALID_ARGUMENT;
@@ -371,9 +375,6 @@ int HSTag::resizeCommand(Input input, Output output)
             return HERBST_FORBIDDEN;
         }
     } else {
-        string delta_str = "0.02";
-        input >> delta_str; // try reading
-        FixPrecDec delta = Converter<FixPrecDec>::parse(delta_str);
         if (!frame->resizeFrame(delta, direction)) {
             output << input.command() << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
