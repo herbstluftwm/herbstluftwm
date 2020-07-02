@@ -2,6 +2,7 @@ import pytest
 import re
 import math
 import textwrap
+from decimal import Decimal
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
@@ -348,7 +349,7 @@ def test_cycle_frame_traverses_all(hlwm, running_clients, num_splits, delta):
 
 def test_cycle_frame_invalid_delta(hlwm):
     hlwm.call_xfail(['cycle_frame', 'df8']) \
-        .expect_stderr('invalid argument')
+        .expect_stderr('invalid argument: stoi')
     hlwm.call_xfail(['cycle_frame', '-230984209340']) \
         .expect_stderr('out of range')
 
@@ -545,8 +546,8 @@ def test_resize_flat_split(hlwm, splittype, dir_work, dir_dummy):
         assert new_layout[0:len(layout_prefix)] == layout_prefix
         assert new_layout[-len(layout_suffix):] == layout_suffix
         new_fraction_str = new_layout[len(layout_prefix):-len(layout_suffix)]
-        expected_fraction = float(0.4 + signum * 0.1)
-        assert math.isclose(float(new_fraction_str), expected_fraction, abs_tol=0.001)
+        expected_fraction = Decimal('0.4') + Decimal(signum) * Decimal('0.1')
+        assert new_fraction_str == str(expected_fraction)
 
     for d in dir_dummy:
         hlwm.call(['load', layout_format.format('0.4')])
@@ -589,15 +590,17 @@ def test_resize_nested_split(hlwm):
     for d, signum in [('left', -1), ('right', 1)]:
         hlwm.call(['load', layout])  # reset layout
         hlwm.call(['resize', d, '+0.05'])
-        fraction = float(hlwm.call('dump').stdout.split(':')[1])
-        assert math.isclose(fraction, 0.2 + signum * 0.05, abs_tol=0.001)
+        fraction = hlwm.call('dump').stdout.split(':')[1]
+        expected = Decimal('0.2') + signum * Decimal('0.05')
+        assert fraction == str(expected)
 
     # resize the nested split
     for d, signum in [('up', -1), ('down', 1)]:
         hlwm.call(['load', layout])  # reset layout
         hlwm.call(['resize', d, '+0.05'])
-        fraction = float(hlwm.call('dump').stdout.split(':')[3])
-        assert math.isclose(fraction, 0.3 + signum * 0.05, abs_tol=0.001)
+        fraction = hlwm.call('dump').stdout.split(':')[3]
+        expected = Decimal('0.3') + signum * Decimal('0.05')
+        assert fraction == str(expected)
 
 
 @pytest.mark.parametrize('layout', [
@@ -735,3 +738,78 @@ def test_tree_style_utf8(hlwm):
       … ├─╼ vertical: [FOCUS]
       … ╰─╼ vertical:
     """)
+
+
+def test_split_invalid_argument(hlwm):
+    # this also tests all exceptions in Converter<FixPrecDec>::parse()
+    wrongDecimal = [
+        ('0.0f', "After '.' only digits"),
+        ('0.+8', "After '.' only digits"),
+        ('0.-8', "After '.' only digits"),
+        ('0..0', "A decimal must have at most one '.'"),
+        ('.3', "There must be at least one digit"),
+        ('.', "There must be at least one digit"),
+        ('b', "stoi"),
+        ('-.3', "stoi"),
+        ('+.8', "stoi"),
+    ]
+    for d, msg in wrongDecimal:
+        hlwm.call_xfail(['split', 'top', d]) \
+            .expect_stderr('invalid argument: ' + msg)
+
+
+def test_split_clamp_argument_smaller(hlwm):
+    for d in ['-1.2', '-12', '0.05', '-0.05']:
+        hlwm.call(['load', '(clients vertical:0)'])
+        hlwm.call(['split', 'left', d])
+        assert hlwm.call('dump').stdout == \
+            '(split horizontal:0.1:1 (clients vertical:0) (clients vertical:0))'
+
+
+def test_split_clamp_argument_bigger(hlwm):
+    for d in ['1.2', '12', '0.95', '1']:
+        hlwm.call(['load', '(clients vertical:0)'])
+        hlwm.call(['split', 'left', d])
+        assert hlwm.call('dump').stdout == \
+            '(split horizontal:0.9:1 (clients vertical:0) (clients vertical:0))'
+
+
+def test_resize_invalid_argument(hlwm):
+    hlwm.call_xfail('resize left foo') \
+        .expect_stderr('resize: ')
+
+
+def test_resize_delta(hlwm):
+    values = [
+        # before, direction, delta, after
+        ('0.2', 'left', '0.15', '0.1'),  # clamp to lower bound
+        ('0.2', 'right', '0.15', '0.35'),
+        ('0.7', 'right', '0.19', '0.89'),
+        ('0.8', 'right', '0.19', '0.9'),  # clamp to upper bound
+        ('0.8', 'left', '0.1989', '0.6011'),
+        ('0.1', 'right', '0.2', '0.3'),
+    ]
+    for before, direction, delta, after in values:
+        layout = '(split horizontal:{}:1'  # placeholder
+        layout += ' (clients vertical:0) (clients vertical:0))'
+        hlwm.call(['load', layout.format(before)])
+        hlwm.call(['resize', direction, delta])
+        assert hlwm.call('dump').stdout == layout.format(after)
+
+
+def test_resize_cumulative(hlwm):
+    layout = '(split horizontal:{}:1'  # placeholder
+    layout += ' (clients vertical:0) (clients vertical:0))'
+    hlwm.call(['load', layout.format(0.1)])
+    for i in range(0, 35):
+        hlwm.call(['resize', 'right', '0.02'])
+    # 0.1 + 35 * 0.02 = 0.8
+    assert hlwm.call('dump').stdout == layout.format('0.8')
+
+
+def test_resize_clamp_argument_bigger(hlwm):
+    layout = '(split horizontal:{}:1'  # placeholder
+    layout += ' (clients vertical:0) (clients vertical:0))'
+    hlwm.call(['load', layout.format('0.2')])
+    hlwm.call('resize left 0.15')
+    assert hlwm.call('dump').stdout == layout.format('0.1')

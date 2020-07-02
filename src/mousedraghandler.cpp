@@ -290,15 +290,15 @@ void MouseResizeFrame::handle_motion_event(Point2D newCursorPos)
     }
 
     auto deltaVec = newCursorPos - buttonDragStart_;
-    double delta;
+    int delta;
     if (df->getAlign() == SplitAlign::vertical) {
         delta = deltaVec.y;
     } else {
         delta = deltaVec.x;
     }
     // translate delta from 'pixels' to 'FRACTION_UNIT'
-    delta = (delta * FRACTION_UNIT) / dragDistanceUnit_;
-    df->setFraction(dragStartFraction_ + (int)delta);
+    delta = (delta * dragStartFraction_.unit_) / dragDistanceUnit_;
+    df->setFraction(dragStartFraction_ + FixPrecDec::raw(delta));
     dragMonitor_->applyLayout();
 }
 

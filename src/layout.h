@@ -114,7 +114,7 @@ public:
 
     Client* focusedClient() override;
 
-    bool split(SplitAlign alignment, int fraction, size_t childrenLeaving = 0);
+    bool split(SplitAlign alignment, FixPrecDec fraction, size_t childrenLeaving = 0);
     LayoutAlgorithm getLayout() { return layout; }
     void setLayout(LayoutAlgorithm l) { layout = l; }
     int getSelection() { return selection; }
@@ -143,7 +143,7 @@ private:
 
 class FrameSplit : public Frame, public FrameDataSplit<Frame> {
 public:
-    FrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<FrameSplit> parent, int fraction_, SplitAlign align_,
+    FrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<FrameSplit> parent, FixPrecDec fraction_, SplitAlign align_,
                  std::shared_ptr<Frame> a_, std::shared_ptr<Frame> b_);
     ~FrameSplit() override;
     // inherited:
@@ -164,10 +164,10 @@ public:
     std::shared_ptr<Frame> secondChild() { return b_; }
     std::shared_ptr<Frame> selectedChild() { return selection_ ? b_ : a_; }
     void swapChildren();
-    void adjustFraction(int delta);
-    void setFraction(int fraction);
-    int getFraction() const { return fraction_; }
-    static int clampFraction(int fraction);
+    void adjustFraction(FixPrecDec delta);
+    void setFraction(FixPrecDec fraction);
+    FixPrecDec getFraction() const { return fraction_; }
+    static FixPrecDec clampFraction(FixPrecDec fraction);
     std::shared_ptr<FrameSplit> thisSplit();
     std::shared_ptr<FrameSplit> isSplit() override { return thisSplit(); }
     SplitAlign getAlign() { return align_; }

@@ -12,7 +12,7 @@
 #define WINDOW_MIN_WIDTH 32
 
 // minimum relative fraction of split frames
-#define FRAME_MIN_FRACTION 0.1
+#define FRAME_MIN_FRACTION FixPrecDec::approxFrac(1, 10) // 0.1
 
 #define HERBST_MAX_TREE_HEIGHT 3
 

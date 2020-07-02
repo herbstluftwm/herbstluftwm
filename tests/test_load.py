@@ -135,3 +135,34 @@ def test_load_brings_windows(hlwm, running_clients, running_clients_num, num_bri
 def test_load_invalid_tag(hlwm):
     hlwm.call_xfail(['load', 'invalidtagname', '(clients vertical:0)']) \
         .expect_stderr(r'Tag.*not found')
+
+
+def test_fraction_precision(hlwm):
+    values = [
+        '0.4', '0.305', '0.8987',
+        '0.5', '0.4001'
+    ]
+    layout_format = '(split horizontal:{}:0 (clients max:0) (clients max:0))'
+    for v in values:
+        layout = layout_format.format(v)
+        hlwm.call(['load', layout])
+        assert hlwm.call('dump').stdout == layout
+
+
+def test_fraction_precision_outside_range(hlwm):
+    # here, we test the decimal i/o for values that are outside
+    # of the allowed frame-split-ratio. This test only makes sense
+    # because we know that in FrameParser::buildTree(), the already
+    # parsed decimal is used for the error message
+    values = [
+        '0.098',
+        '-0.098',
+        '-0.5',
+        '12.43',
+        '-110.01',
+    ]
+    layout_format = '(split horizontal:{}:0 (clients max:0) (clients max:0))'
+    for v in values:
+        layout = layout_format.format(v)
+        hlwm.call_xfail(['load', layout]) \
+            .expect_stderr('but actually is ' + v)

@@ -7,6 +7,7 @@
 
 #include "client.h"
 #include "completion.h"
+#include "fixprecdec.h"
 #include "framedata.h"
 #include "frameparser.h"
 #include "ipc-protocol.h"
@@ -56,7 +57,7 @@ void FrameTree::dump(shared_ptr<Frame> frame, Output output)
             << "(split "
             << Converter<SplitAlign>::str(s->align_)
             << ":"
-            << ((double)s->fraction_) / (double)FRACTION_UNIT
+            << Converter<FixPrecDec>::str(s->fraction_)
             << ":"
             << s->selection_
             << " ";
@@ -210,7 +211,7 @@ int FrameTree::rotateCommand() {
                     s->align_ = SplitAlign::vertical;
                     s->selection_ = s->selection_ ? 0 : 1;
                     swap(s->a_, s->b_);
-                    s->fraction_ = FRACTION_UNIT - s->fraction_;
+                    s->fraction_ = FixPrecDec::fromInteger(1) - s->fraction_;
                     break;
             }
         };
@@ -261,7 +262,8 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         size_t childCount() override { return 2; };
         void appendCaption(Output output) override {
             output << " " << Converter<SplitAlign>::str(s_->align_)
-                   << " " << (s_->fraction_ * 100 / FRACTION_UNIT) << "%"
+                   << " " << (s_->fraction_.value_ * 100 / s_->fraction_.unit_)
+                   << "%"
                    << " selection=" << s_->selection_;
         }
     private:
@@ -372,14 +374,13 @@ bool FrameTree::contains(shared_ptr<Frame> frame) const
 
 //! resize the borders of the focused client in the specific direction by 'delta'
 //! returns whether the focused frame has a border in the specified direction.
-bool FrameTree::resizeFrame(double delta_double, Direction direction)
+bool FrameTree::resizeFrame(FixPrecDec delta, Direction direction)
 {
-    int delta = int(FRACTION_UNIT * delta_double);
     // if direction is left or up we have to flip delta
     // because e.g. resize up by 0.1 actually means:
     // reduce fraction by 0.1, i.e. delta = -0.1
     if (direction == Direction::Left || direction == Direction::Up) {
-        delta *= -1;
+        delta.value_ = delta.value_ * -1;
     }
 
     shared_ptr<Frame> neighbour = focusedFrame()->neighbour(direction);
@@ -819,13 +820,19 @@ vector<SplitMode> SplitMode::modes(SplitAlign align_explode, SplitAlign align_au
 int FrameTree::splitCommand(Input input, Output output)
 {
     // usage: split t|b|l|r|h|v FRACTION
-    string splitType, strFraction;
+    string splitType, strFraction = "0.5";
     if (!(input >> splitType )) {
         return HERBST_NEED_MORE_ARGS;
     }
     bool userDefinedFraction = input >> strFraction;
-    double fractionFloat = userDefinedFraction ? atof(strFraction.c_str()) : 0.5;
-    int fraction = FrameSplit::clampFraction(FRACTION_UNIT * fractionFloat);
+    FixPrecDec fraction = FixPrecDec::fromInteger(0);
+    try {
+        fraction = Converter<FixPrecDec>::parse(strFraction);
+    }  catch (const std::exception& e) {
+        output << "invalid argument: " << e.what() << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    fraction = FrameSplit::clampFraction(fraction);
     auto frame = focusedFrame();
     int lh = frame->lastRect().height;
     int lw = frame->lastRect().width;
@@ -860,7 +867,7 @@ int FrameTree::splitCommand(Input input, Output output)
         if ((layout == LayoutAlgorithm::horizontal
             || layout == LayoutAlgorithm::vertical)
             && !userDefinedFraction && count1 > 1) {
-            fraction = (nc1 * FRACTION_UNIT) / count1;
+            fraction.value_ = (nc1 * fraction.unit_) / count1;
         }
     }
     // move second half of the window buf to second frame
