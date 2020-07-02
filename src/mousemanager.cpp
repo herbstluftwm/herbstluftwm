@@ -12,6 +12,7 @@
 #include "completion.h"
 #include "frametree.h"
 #include "globals.h"
+#include "inputconvert.h"
 #include "ipc-protocol.h"
 #include "keymanager.h"
 #include "monitormanager.h"
@@ -52,27 +53,18 @@ void MouseManager::injectDependencies(ClientManager* clients, MonitorManager* mo
 }
 
 int MouseManager::addMouseBindCommand(Input input, Output output) {
-    if (input.size() < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-
-    auto mouseComboStr = input.front();
-
+    InputConvert inpconv(input, output);
     MouseCombo mouseCombo;
-    try {
-        mouseCombo = Converter<MouseCombo>::parse(mouseComboStr);
-    } catch (std::exception &error) {
-        output << input.command() << ": " << error.what() << endl;
-        return HERBST_INVALID_ARGUMENT;
+    string mouseFunctionName;
+    if (!(inpconv >> mouseCombo >> mouseFunctionName)) {
+        return inpconv;
     }
-    input.shift();
-    auto action = string2mousefunction(input.front().c_str());
+    auto action = string2mousefunction(mouseFunctionName);
     if (!action) {
-        output << input.command() << ": Unknown mouse action \"" << input.front() << "\"" << endl;
+        output << input.command() << ": Unknown mouse action \"" << mouseFunctionName << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
 
-    input.shift();
     // Use remaining input as the associated command
     vector<string> cmd = {input.begin(), input.end()};
 

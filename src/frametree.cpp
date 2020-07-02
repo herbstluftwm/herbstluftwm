@@ -10,6 +10,7 @@
 #include "fixprecdec.h"
 #include "framedata.h"
 #include "frameparser.h"
+#include "inputconvert.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitor.h"
@@ -753,17 +754,10 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
 }
 
 int FrameTree::setLayoutCommand(Input input, Output output) {
-    if (input.empty()) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-
-    auto layoutStr = input.front();
+    InputConvert inpconv(input, output);
     LayoutAlgorithm layout;
-    try {
-        layout = Converter<LayoutAlgorithm>::parse(layoutStr);
-    } catch (const std::exception& e) {
-        output << "set_layout: " << e.what();
-        return HERBST_INVALID_ARGUMENT;
+    if (!(inpconv >> layout)) {
+        return inpconv;
     }
 
     auto curFrame = focusedFrame();
@@ -820,17 +814,17 @@ vector<SplitMode> SplitMode::modes(SplitAlign align_explode, SplitAlign align_au
 int FrameTree::splitCommand(Input input, Output output)
 {
     // usage: split t|b|l|r|h|v FRACTION
-    string splitType, strFraction = "0.5";
-    if (!(input >> splitType )) {
-        return HERBST_NEED_MORE_ARGS;
+    InputConvert inpconv(input, output);
+    string splitType;
+    bool userDefinedFraction = false;
+    FixPrecDec fraction = FixPrecDec::approxFrac(1, 2);
+    inpconv >> splitType;
+    if (!input.empty()) {
+        userDefinedFraction = true;
     }
-    bool userDefinedFraction = input >> strFraction;
-    FixPrecDec fraction = FixPrecDec::fromInteger(0);
-    try {
-        fraction = Converter<FixPrecDec>::parse(strFraction);
-    }  catch (const std::exception& e) {
-        output << "invalid argument: " << e.what() << endl;
-        return HERBST_INVALID_ARGUMENT;
+    inpconv >> InputConvert::Optional() >> fraction;
+    if (!inpconv) {
+        return inpconv;
     }
     fraction = FrameSplit::clampFraction(fraction);
     auto frame = focusedFrame();

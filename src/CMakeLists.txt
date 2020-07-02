@@ -29,6 +29,7 @@ target_sources(herbstluftwm PRIVATE
     hook.cpp hook.h
     hookmanager.cpp hookmanager.h
     indexingobject.h
+    inputconvert.cpp inputconvert.h
     ipc-protocol.h
     ipc-server.cpp ipc-server.h
     keycombo.cpp keycombo.h

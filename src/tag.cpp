@@ -8,6 +8,7 @@
 #include "frametree.h"
 #include "hlwmcommon.h"
 #include "hook.h"
+#include "inputconvert.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitormanager.h"
@@ -215,17 +216,12 @@ int HSTag::focusInDirCommand(Input input, Output output)
             external_only = true;
         }
     }
-    string dirstr;
-    if (!(input >> dirstr)) {
-        return HERBST_NEED_MORE_ARGS;
-    }
+    InputConvert inpconv(input, output);
     Direction direction;
-    try {
-        direction = Converter<Direction>::parse(dirstr);
-    } catch (const std::exception& e) {
-        output << input.command() << ": " << e.what() << "\n";
-        return HERBST_INVALID_ARGUMENT;
+    if (!(inpconv >> direction)) {
+        return inpconv;
     }
+
     auto focusedFrame = frame->focusedFrame();
     bool neighbour_found = true;
     if (floating || floating_focused) {
@@ -353,20 +349,11 @@ void HSTag::cycleAllCompletion(Completion& complete)
 
 int HSTag::resizeCommand(Input input, Output output)
 {
-    string dir_str;
-    if (!(input >> dir_str)) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    string delta_str = "0.02";
-    input >> delta_str; // try reading
+    InputConvert inpconv(input, output);
     Direction direction;
-    FixPrecDec delta = FixPrecDec::fromInteger(0);
-    try {
-        direction = Converter<Direction>::parse(dir_str);
-        delta = Converter<FixPrecDec>::parse(delta_str);
-    } catch (const std::exception& e) {
-        output << input.command() << ": " << e.what() << "\n";
-        return HERBST_INVALID_ARGUMENT;
+    FixPrecDec delta = FixPrecDec::approxFrac(1, 50); // 0.02
+    if (!(inpconv >> direction >> InputConvert::Optional() >> delta)) {
+        return inpconv;
     }
     Client* client = focusedClient();
     if (client && client->is_client_floated()) {

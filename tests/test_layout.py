@@ -755,7 +755,7 @@ def test_split_invalid_argument(hlwm):
     ]
     for d, msg in wrongDecimal:
         hlwm.call_xfail(['split', 'top', d]) \
-            .expect_stderr('invalid argument: ' + msg)
+            .expect_stderr('Cannot parse argument \".*\": {}'.format(msg))
 
 
 def test_split_clamp_argument_smaller(hlwm):
