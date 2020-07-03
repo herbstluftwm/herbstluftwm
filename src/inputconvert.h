@@ -1,9 +1,10 @@
 #ifndef INPUTCONVERT_H
 #define INPUTCONVERT_H
 
-#include "types.h"
-#include "ipc-protocol.h"
 #include <iostream> // for the instance of operator<<(ostream, string)
+
+#include "ipc-protocol.h"
+#include "types.h"
 
 /**
  * @brief The InputConvert class is a convenience wrapper around Input::operator>> and
