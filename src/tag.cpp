@@ -217,7 +217,7 @@ int HSTag::focusInDirCommand(Input input, Output output)
         }
     }
     InputConvert inpconv(input, output);
-    Direction direction;
+    Direction direction = Direction::Left; // some default to satisfy the linter
     if (!(inpconv >> direction)) {
         return inpconv;
     }
@@ -350,7 +350,7 @@ void HSTag::cycleAllCompletion(Completion& complete)
 int HSTag::resizeCommand(Input input, Output output)
 {
     InputConvert inpconv(input, output);
-    Direction direction;
+    Direction direction = Direction::Left;
     FixPrecDec delta = FixPrecDec::approxFrac(1, 50); // 0.02
     if (!(inpconv >> direction >> InputConvert::Optional() >> delta)) {
         return inpconv;
