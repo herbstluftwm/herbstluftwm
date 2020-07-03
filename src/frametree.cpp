@@ -755,7 +755,7 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
 
 int FrameTree::setLayoutCommand(Input input, Output output) {
     InputConvert inpconv(input, output);
-    LayoutAlgorithm layout;
+    LayoutAlgorithm layout = LayoutAlgorithm::vertical;
     if (!(inpconv >> layout)) {
         return inpconv;
     }
