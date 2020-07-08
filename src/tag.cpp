@@ -2,13 +2,13 @@
 
 #include <type_traits>
 
+#include "argparse.h"
 #include "client.h"
 #include "completion.h"
 #include "floating.h"
 #include "frametree.h"
 #include "hlwmcommon.h"
 #include "hook.h"
-#include "inputconvert.h"
 #include "ipc-protocol.h"
 #include "layout.h"
 #include "monitormanager.h"

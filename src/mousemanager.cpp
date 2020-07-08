@@ -6,13 +6,13 @@
 #include <string>
 #include <vector>
 
+#include "argparse.h"
 #include "client.h"
 #include "clientmanager.h"
 #include "command.h"
 #include "completion.h"
 #include "frametree.h"
 #include "globals.h"
-#include "inputconvert.h"
 #include "ipc-protocol.h"
 #include "keymanager.h"
 #include "monitormanager.h"
