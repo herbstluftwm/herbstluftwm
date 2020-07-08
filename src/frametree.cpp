@@ -754,7 +754,7 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
 }
 
 int FrameTree::setLayoutCommand(Input input, Output output) {
-    InputConvert inpconv(input, output);
+    ArgParse inpconv(input, output);
     LayoutAlgorithm layout = LayoutAlgorithm::vertical;
     if (!(inpconv >> layout)) {
         return inpconv;
@@ -814,7 +814,7 @@ vector<SplitMode> SplitMode::modes(SplitAlign align_explode, SplitAlign align_au
 int FrameTree::splitCommand(Input input, Output output)
 {
     // usage: split t|b|l|r|h|v FRACTION
-    InputConvert inpconv(input, output);
+    ArgParse inpconv(input, output);
     string splitType;
     bool userDefinedFraction = false;
     FixPrecDec fraction = FixPrecDec::approxFrac(1, 2);
@@ -822,7 +822,7 @@ int FrameTree::splitCommand(Input input, Output output)
     if (!input.empty()) {
         userDefinedFraction = true;
     }
-    inpconv >> InputConvert::Optional() >> fraction;
+    inpconv >> ArgParse::Optional() >> fraction;
     if (!inpconv) {
         return inpconv;
     }

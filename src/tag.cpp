@@ -216,7 +216,7 @@ int HSTag::focusInDirCommand(Input input, Output output)
             external_only = true;
         }
     }
-    InputConvert inpconv(input, output);
+    ArgParse inpconv(input, output);
     Direction direction = Direction::Left; // some default to satisfy the linter
     if (!(inpconv >> direction)) {
         return inpconv;
@@ -349,10 +349,10 @@ void HSTag::cycleAllCompletion(Completion& complete)
 
 int HSTag::resizeCommand(Input input, Output output)
 {
-    InputConvert inpconv(input, output);
+    ArgParse inpconv(input, output);
     Direction direction = Direction::Left;
     FixPrecDec delta = FixPrecDec::approxFrac(1, 50); // 0.02
-    if (!(inpconv >> direction >> InputConvert::Optional() >> delta)) {
+    if (!(inpconv >> direction >> ArgParse::Optional() >> delta)) {
         return inpconv;
     }
     Client* client = focusedClient();

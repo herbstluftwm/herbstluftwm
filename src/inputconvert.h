@@ -11,10 +11,10 @@
  * Converter<X>::parse(). If an argument can not be parsed, a meaningful error message
  * is printed to the output stream.
  */
-class InputConvert
+class ArgParse
 {
 public:
-    InputConvert(Input& input, Output& output);
+    ArgParse(Input& input, Output& output);
 
     class Optional {
     public:
@@ -27,7 +27,7 @@ public:
      * an error if Optional() has been passed to the stream before.
      */
     template<typename X>
-    InputConvert& operator>>(X& value) {
+    ArgParse& operator>>(X& value) {
         if (errorCode_ != 0) {
             // if some error occured, don't try to parse further
             // values
@@ -55,7 +55,7 @@ public:
         return *this;
     }
 
-    InputConvert& operator>>(Optional value) {
+    ArgParse& operator>>(Optional value) {
         onlyOptionalArgumentsRemain_ = true;
         return *this;
     }
