@@ -111,7 +111,7 @@ def test_drag_move(hlwm, x11, mouse, repeat):
     client, winid = x11.create_client()
     x, y = x11.get_absolute_top_left(client)
     # Just positioning the mouse pointer, no need to wait for hlwm
-    mouse.move_into(winid, wait=False)
+    mouse.move_into(winid, wait=True)
 
     hlwm.call(['drag', winid, 'move'])
     mouse.move_relative(12, 15)

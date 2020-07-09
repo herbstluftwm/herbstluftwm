@@ -875,6 +875,9 @@ def keyboard():
 @pytest.fixture()
 def mouse(hlwm_process, hlwm):
     class Mouse:
+        def __init__(self):
+            self.move_to(0, 0, wait=True)
+
         def move_into(self, win_id, x=1, y=1, wait=True):
             if wait:
                 with hlwm_process.wait_stderr_match('EnterNotify'):
