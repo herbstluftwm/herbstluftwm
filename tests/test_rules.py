@@ -11,6 +11,7 @@ string_props = [
 
 numeric_props = [
     'pid',
+    'pgid',
     'maxage',
 ]
 
