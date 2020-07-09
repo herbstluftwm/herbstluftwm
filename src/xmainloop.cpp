@@ -356,7 +356,7 @@ void XMainLoop::destroynotify(XUnmapEvent* event) {
 }
 
 void XMainLoop::enternotify(XCrossingEvent* ce) {
-    HSDebug("EnterNotify, focus = %d, window = 0x%lx\n", ce->focus, ce->window);
+    HSDebug("name is: EnterNotify, focus = %d, window = 0x%lx\n", ce->focus, ce->window);
     if (ce->mode != NotifyNormal || ce->detail == NotifyInferior) {
         // ignore an event if it is caused by (un-)grabbing the mouse or
         // if the pointer moves from a window to its decoration.

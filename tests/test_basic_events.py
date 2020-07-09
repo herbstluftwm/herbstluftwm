@@ -102,7 +102,7 @@ def test_focus_client_by_decoration(hlwm, mouse, x11, click, focus_follows_mouse
     # move mouse to the decoration:
     decwin = x11.get_decoration_window(x11.window(winids[1]))
     # here, xdotool hangs on the second invokation of this testcase
-    mouse.move_into(x11.winid_str(decwin), 10, 10)
+    mouse.move_into(x11.winid_str(decwin), 10, 10, wait=False)
     if click:
         mouse.click('1')
     expected_focus = 1 if focus_follows_mouse or click else 0
@@ -142,7 +142,7 @@ def test_enternotify_do_not_drop_events(hlwm, mouse, client_count):
     for i in range(0, client_count):
         # here, it's important that move_into does not sync with hlwm
         # such that the event queue in hlwm builds up
-        mouse.move_into(winid[i], 10, 10)
+        mouse.move_into(winid[i], 10, 10, wait=False)
 
     # finally, all enter notify events must survive
     assert hlwm.get_attr('clients.focus.winid') == winid[client_count - 1]
