@@ -63,6 +63,7 @@ public:
     Attribute_<RegexStr> keyMask_; // regex for key bindings that are active on this window
     Attribute_<RegexStr> keysInactive_; // regex for key bindings that are inactive on this window
     Attribute_<int>  pid_;
+    Attribute_<int>  pgid_;
     Attribute_<bool> pseudotile_; // only move client but don't resize (if possible)
     Attribute_<bool> ewmhrequests_; // accept ewmh-requests for this client
     Attribute_<bool> ewmhnotify_; // send ewmh-notifications for this client
