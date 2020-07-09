@@ -1175,7 +1175,7 @@ Valid 'properties' are:
     This only matches if the client sets _NET_WM_PID to the pid itself).
 
 +pgid+::
-    this client's process group id. Since the pgid of a window is  is derived from
+    this client's process group id. Since the pgid of a window is derived from
     its +pid+ the same restrictions apply as above.
 
 +maxage+::
