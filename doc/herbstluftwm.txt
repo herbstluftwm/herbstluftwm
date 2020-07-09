@@ -1174,6 +1174,10 @@ Valid 'properties' are:
     the client's process id (Warning: the pid is not available for every client.
     This only matches if the client sets _NET_WM_PID to the pid itself).
 
++pgid+::
+    this client's process group id. Since the pgid of a window is  is derived from
+    its +pid+ the same restrictions apply as above.
+
 +maxage+::
     matches if the age of the rule measured in seconds does not exceed 'value'.
     This condition only can be used with the +=+ operator. If maxage already is
