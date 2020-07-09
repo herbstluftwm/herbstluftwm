@@ -6,6 +6,7 @@
 #include <X11/Xutil.h>
 #include <climits>
 #include <iostream>
+#include <unistd.h>
 
 #include "globals.h"
 
@@ -152,6 +153,15 @@ int XConnection::windowPid(Window window) {
     } else {
         return res.value()[0];
     }
+}
+
+//! The pgid of a window or -1 if the pid is not set
+int XConnection::windowPgid(Window window) {
+    auto pid = windowPid(window);
+    if (pid == -1) {
+        return -1;
+    }
+    return getpgid(pid);
 }
 
 //! wrapper around XGetClassHint returning the window's instance and class name
