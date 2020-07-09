@@ -754,10 +754,11 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
 }
 
 int FrameTree::setLayoutCommand(Input input, Output output) {
-    ArgParse inpconv(input, output);
     LayoutAlgorithm layout = LayoutAlgorithm::vertical;
-    if (!(inpconv >> layout)) {
-        return inpconv;
+    ArgParse ap;
+    ap.mandatory(layout);
+    if (ap.parseOrExit(input, output)) {
+        return ap.exitCode();
     }
 
     auto curFrame = focusedFrame();
@@ -814,17 +815,13 @@ vector<SplitMode> SplitMode::modes(SplitAlign align_explode, SplitAlign align_au
 int FrameTree::splitCommand(Input input, Output output)
 {
     // usage: split t|b|l|r|h|v FRACTION
-    ArgParse inpconv(input, output);
     string splitType;
     bool userDefinedFraction = false;
     FixPrecDec fraction = FixPrecDec::approxFrac(1, 2);
-    inpconv >> splitType;
-    if (!input.empty()) {
-        userDefinedFraction = true;
-    }
-    inpconv >> ArgParse::Optional() >> fraction;
-    if (!inpconv) {
-        return inpconv;
+    ArgParse ap;
+    ap.mandatory(splitType).optional(fraction, &userDefinedFraction);
+    if (ap.parseOrExit(input, output)) {
+        return ap.exitCode();
     }
     fraction = FrameSplit::clampFraction(fraction);
     auto frame = focusedFrame();

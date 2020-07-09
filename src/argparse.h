@@ -1,7 +1,7 @@
 #ifndef INPUTCONVERT_H
 #define INPUTCONVERT_H
 
-#include <iostream> // for the instance of operator<<(ostream, string)
+#include <functional>
 
 #include "ipc-protocol.h"
 #include "types.h"
@@ -14,64 +14,65 @@
 class ArgParse
 {
 public:
-    ArgParse(Input& input, Output& output);
+    ArgParse() {
+    }
 
-    class Optional {
+    bool parseOrExit(Input& input, Output& output);
+
+    class Argument {
     public:
+        /** try to parse the argument from the given string or
+         * throw an exception
+         */
+        std::function<void(std::string)> tryParse_;
+        //! whether the present argument is only optional
+        bool optional_;
     };
 
     /**
-     * parse the next argument into the given value. If there is a parser error
-     * then this sets the exit code and prints an error message to 'output'.
-     * If there is no argument left in the input, then this is not treated as
-     * an error if Optional() has been passed to the stream before.
+     * Defines a mandatory argument of type X
      */
     template<typename X>
-    ArgParse& operator>>(X& value) {
-        if (errorCode_ != 0) {
-            // if some error occured, don't try to parse further
-            // values
-            return *this;
-        }
-        std::string valueString;
-        if (!(input_ >> valueString)) {
-            // if there is no more command line argument,
-            // we treat this as an error.
-            // However, if the Optional-mark was passed
-            // earlier, we don't count it as an error
-            if (!onlyOptionalArgumentsRemain_) {
-                errorCode_ = HERBST_NEED_MORE_ARGS;
-            }
-            return *this;
-        }
-        try {
-            value = Converter<X>::parse(valueString);
-        }  catch (std::exception& e) {
-            output_ << input_.command() << ": Cannot parse argument \""
-                    << valueString << "\": " << e.what() << "\n";
-            errorCode_ = HERBST_INVALID_ARGUMENT;
-            return *this;
-        }
+    ArgParse& mandatory(X& value) {
+        Argument arg {
+            [&value] (std::string source) {
+                value = Converter<X>::parse(source);
+            },
+            false};
+        arguments_.push_back(arg);
         return *this;
     }
 
-    ArgParse& operator>>(Optional value) {
-        onlyOptionalArgumentsRemain_ = true;
+    /**
+     * Defines an optional argument of type X.
+     * If there are more arguments in the input than there are
+     * mandatory arguments, then the optional arguments are filled with
+     * input (earlier optional arguments are preferred).
+     * The target of the whetherArgumentSupplied pointer is set to 'true'
+     * if the present optional argument was supplied in the input.
+     */
+    template<typename X>
+    ArgParse& optional(X& value, bool* whetherArgumentSupplied = nullptr) {
+        if (whetherArgumentSupplied) {
+            *whetherArgumentSupplied = false;
+        }
+        Argument arg {
+            [&value, whetherArgumentSupplied] (std::string source) {
+                value = Converter<X>::parse(source);
+                if (whetherArgumentSupplied) {
+                    *whetherArgumentSupplied = true;
+                }
+            },
+            true};
+        arguments_.push_back(arg);
         return *this;
     }
 
+    int exitCode() const { return errorCode_; }
 
-    operator bool() const {
-        return errorCode_ == 0;
-    }
-    operator int() const {
-        return errorCode_;
-    }
 private:
-    bool onlyOptionalArgumentsRemain_ = false;
+    std::vector<Argument> arguments_;
     int errorCode_ = 0;
-    Input& input_;
-    Output& output_;
 };
 
 #endif // INPUTCONVERT_H

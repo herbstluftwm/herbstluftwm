@@ -53,11 +53,12 @@ void MouseManager::injectDependencies(ClientManager* clients, MonitorManager* mo
 }
 
 int MouseManager::addMouseBindCommand(Input input, Output output) {
-    ArgParse inpconv(input, output);
+    ArgParse ap;
     MouseCombo mouseCombo;
     string mouseFunctionName;
-    if (!(inpconv >> mouseCombo >> mouseFunctionName)) {
-        return inpconv;
+    ap.mandatory(mouseCombo).mandatory(mouseFunctionName);
+    if (ap.parseOrExit(input, output)) {
+        return ap.exitCode();
     }
     auto action = string2mousefunction(mouseFunctionName);
     if (!action) {

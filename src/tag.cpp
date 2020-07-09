@@ -216,10 +216,11 @@ int HSTag::focusInDirCommand(Input input, Output output)
             external_only = true;
         }
     }
-    ArgParse inpconv(input, output);
     Direction direction = Direction::Left; // some default to satisfy the linter
-    if (!(inpconv >> direction)) {
-        return inpconv;
+    ArgParse ap;
+    ap.mandatory(direction);
+    if (ap.parseOrExit(input, output)) {
+        return ap.exitCode();
     }
 
     auto focusedFrame = frame->focusedFrame();
@@ -349,11 +350,11 @@ void HSTag::cycleAllCompletion(Completion& complete)
 
 int HSTag::resizeCommand(Input input, Output output)
 {
-    ArgParse inpconv(input, output);
     Direction direction = Direction::Left;
     FixPrecDec delta = FixPrecDec::approxFrac(1, 50); // 0.02
-    if (!(inpconv >> direction >> ArgParse::Optional() >> delta)) {
-        return inpconv;
+    auto ap = ArgParse().mandatory(direction).optional(delta);
+    if (ap.parseOrExit(input, output)) {
+        return ap.exitCode();
     }
     Client* client = focusedClient();
     if (client && client->is_client_floated()) {
