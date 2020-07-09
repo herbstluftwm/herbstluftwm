@@ -875,12 +875,20 @@ def keyboard():
 @pytest.fixture()
 def mouse(hlwm_process, hlwm):
     class Mouse:
-        def move_into(self, win_id, x=1, y=1):
-            self.call_cmd(f'xdotool mousemove --sync --window {win_id} {x} {y}', shell=True)
+        def move_into(self, win_id, x=1, y=1, wait=True):
+            if wait:
+                with hlwm_process.wait_stderr_match('EnterNotify'):
+                    self.call_cmd(f'xdotool mousemove --sync --window {win_id} {x} {y}', shell=True)
+                # reaching this line only means that hlwm started processing
+                # the EnterNotify. So we need to wait until the event is fully processed:
+                hlwm.call('true')
+            else:
+                self.call_cmd(f'xdotool mousemove --sync --window {win_id} {x} {y}', shell=True)
 
         def click(self, button, into_win_id=None, wait=True):
             if into_win_id:
-                self.move_into(into_win_id)
+                # no need to wait for herbstluftwm to process, we're just positioning the mouse to click
+                self.move_into(into_win_id, wait=False)
             if wait:
                 with hlwm_process.wait_stderr_match('ButtonPress'):
                     subprocess.check_call(['xdotool', 'click', button])
