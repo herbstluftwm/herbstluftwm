@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+using std::string;
+
 /**
  * @brief try to parse the arguments
  * @param input
@@ -46,7 +48,7 @@ bool ArgParse::parseOrExit(Input& input, Output& output)
                 continue;
             }
         }
-        std::string valueString;
+        string valueString;
         if (!(input >> valueString)) {
             // this should not happen
             errorCode_ = HERBST_NEED_MORE_ARGS;
