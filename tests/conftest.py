@@ -881,7 +881,8 @@ def mouse(hlwm_process, hlwm):
         def move_into(self, win_id, x=1, y=1, wait=True):
             if wait:
                 with hlwm_process.wait_stderr_match('EnterNotify'):
-                    self.call_cmd(f'xdotool mousemove --sync --window {win_id} {x} {y}', shell=True)
+                    # no --sync here, because we're waiting for the EnterNotify anyways
+                    self.call_cmd(f'xdotool mousemove --window {win_id} {x} {y}', shell=True)
                 # reaching this line only means that hlwm started processing
                 # the EnterNotify. So we need to wait until the event is fully processed:
                 hlwm.call('true')

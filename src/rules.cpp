@@ -19,6 +19,7 @@ const std::map<string, Condition::Matcher> Condition::matchers = {
     { "instance",       &Condition::matchesInstance          },
     { "title",          &Condition::matchesTitle             },
     { "pid",            &Condition::matchesPid               },
+    { "pgid",           &Condition::matchesPgid              },
     { "maxage",         &Condition::matchesMaxage            },
     { "windowtype",     &Condition::matchesWindowtype        },
     { "windowrole",     &Condition::matchesWindowrole        },
@@ -214,6 +215,19 @@ bool Condition::matchesPid(const Client* client) const {
     } else {
         char buf[1000]; // 1kb ought to be enough for every int
         sprintf(buf, "%d", client->pid_());
+        return matches(buf);
+    }
+}
+
+bool Condition::matchesPgid(const Client* client) const {
+    if (client->pgid_() < 0) {
+        return false;
+    }
+    if (value_type == CONDITION_VALUE_TYPE_INTEGER) {
+        return value_integer == client->pgid_;
+    } else {
+        char buf[1000]; // 1kb ought to be enough for every int
+        sprintf(buf, "%d", client->pgid_());
         return matches(buf);
     }
 }
