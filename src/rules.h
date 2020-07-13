@@ -49,6 +49,7 @@ private:
     bool matchesInstance(const Client* client) const;
     bool matchesTitle(const Client* client) const;
     bool matchesPid(const Client* client) const;
+    bool matchesPgid(const Client* client) const;
     bool matchesMaxage(const Client* client) const;
     bool matchesWindowtype(const Client* client) const;
     bool matchesWindowrole(const Client* client) const;
