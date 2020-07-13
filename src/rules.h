@@ -70,7 +70,7 @@ enum class ClientPlacement {
 
 template<> std::string Converter<ClientPlacement>::str(ClientPlacement cp);
 template<> ClientPlacement Converter<ClientPlacement>::parse(const std::string& payload);
-template<> void Converter<ClientPlacement>::complete(Completion& complete, ClientPlacement const* relativeTo);
+template<> void Converter<ClientPlacement>::complete(Completion& complete, ClientPlacement const*);
 
 
 
