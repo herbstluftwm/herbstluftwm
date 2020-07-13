@@ -57,6 +57,23 @@ private:
     bool matches(const std::string& string) const;
 };
 
+/**
+ * @brief The ClientPlacement enum configures
+ * how a client is placed initially, that is, how the
+ * coordinates in the floating rectangle of the client
+ * are modified.
+ */
+enum class ClientPlacement {
+    Center, //! place on the center of a monitor
+    Unchanged, //! don't change the position
+};
+
+template<> std::string Converter<ClientPlacement>::str(ClientPlacement cp);
+template<> ClientPlacement Converter<ClientPlacement>::parse(const std::string& payload);
+template<> void Converter<ClientPlacement>::complete(Completion& complete, ClientPlacement const* relativeTo);
+
+
+
 class ClientChanges {
 public:
     ClientChanges();
@@ -71,6 +88,7 @@ public:
     bool            focus = false; // if client should get focus
     bool            switchtag = false; // if the tag may be switched for focusing it
     bool            manage = true; // whether we should manage it
+    ClientPlacement placement = ClientPlacement::Unchanged;
     std::experimental::optional<bool> fullscreen;
     std::experimental::optional<RegexStr> keyMask; // Which keymask rule should be applied for this client
     std::experimental::optional<RegexStr> keysInactive; // Which keymask rule should be applied for this client
@@ -109,6 +127,7 @@ private:
     void applyKeyMask(const Client* client, ClientChanges* changes) const;
     void applyKeysInactive(const Client* client, ClientChanges* changes) const;
     void applyMonitor(const Client* client, ClientChanges* changes) const;
+    void applyPlacement(const Client* client, ClientChanges* changes) const;
 };
 
 class Rule {

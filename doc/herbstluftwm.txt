@@ -1256,6 +1256,12 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 +keys_inactive+::
     sets a regex that determines which key bindings are inactive for a client (see <<KEYMASK, explanation in OBJECTS>>).
 
++placement+::
+    changes the position of a floating window. The 'VALUE' can be one of the
+    following:
+    * +none+ does not change the placement at all
+    * +center+ centers the window on the monitor
+
 A rule's behaviour can be configured by some special 'FLAGS':
 
     * +not+: negates the next 'CONDITION'.

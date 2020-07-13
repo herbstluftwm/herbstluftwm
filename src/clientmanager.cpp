@@ -214,6 +214,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
             && changes.focus && changes.switchtag) {
             monitor_set_tag(get_current_monitor(), client->tag());
         }
+        monitor->evaluateClientPlacement(client, changes.placement);
         // TODO: monitor_apply_layout() maybe is called twice here if it
         // already is called by monitor_set_tag()
         monitor->applyLayout();
@@ -221,7 +222,12 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     } else {
         if (changes.focus && changes.switchtag) {
             monitor_set_tag(get_current_monitor(), client->tag());
+            monitor->evaluateClientPlacement(client, changes.placement);
             client->set_visible(true);
+        } else {
+            // if the client is not directly displayed on any monitor,
+            // take the current monitor
+            get_current_monitor()->evaluateClientPlacement(client, changes.placement);
         }
     }
     client->send_configure();
