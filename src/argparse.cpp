@@ -49,11 +49,8 @@ bool ArgParse::parseOrExit(Input& input, Output& output)
             }
         }
         string valueString;
-        if (!(input >> valueString)) {
-            // this should not happen
-            errorCode_ = HERBST_NEED_MORE_ARGS;
-            return true;
-        }
+        // the following can't fail because we checked input.size() before
+        input >> valueString;
         try {
             arg.tryParse_(valueString);
         }  catch (std::exception& e) {
