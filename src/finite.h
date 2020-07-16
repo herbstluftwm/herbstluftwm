@@ -23,7 +23,7 @@ public:
         }
         return "Internal error: Unknown value (this must not happen!)";
     }
-    static T parse(const std::string &payload) {
+    static T parse(const std::string& payload) {
         for (const auto& p : values) {
             if (payload == p.second) {
                 return p.first;
