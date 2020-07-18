@@ -63,11 +63,13 @@ add_check readability-braces-around-statements
 add_check google-readability-braces-around-statements
 add_check hicpp-braces-around-statements
 add_check readability-container-size-empty
-add_check readability-inconsistent-declaration-parameter-name
 add_check bugprone-macro-parentheses
 add_check bugprone-bool-pointer-implicit-conversion
 add_check bugprone-suspicious-string-compare
 add_check cppcoreguidelines-pro-type-member-init
+# Sadly, this check gets easily confused by templates and reports false
+# positives. Check with newer clang-tidy versions in the future:
+#add_check readability-inconsistent-declaration-parameter-name
 
 clang_tidy_args="-header-filter=.* -extra-arg=-Wno-unknown-warning-option -p=${CLANG_TIDY_BUILD_DIR} -config={} -warnings-as-errors=* -checks=$checks"
 
