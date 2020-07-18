@@ -427,10 +427,12 @@ class HlwmProcess:
         """if some kind of client request observes a timeout, investigate the
         herbstluftwm server process. 'reason' is best phrased using present
         participle"""
+        self.read_and_echo_output()
         try:
             self.proc.wait(0)
         except subprocess.TimeoutExpired:
             pass
+        self.read_and_echo_output()
         if self.proc.returncode is None:
             raise Exception(str(reason) + " took too long"
                             + " but hlwm still running") from None
