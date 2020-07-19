@@ -222,7 +222,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     } else {
         if (changes.focus && changes.switchtag) {
             monitor_set_tag(get_current_monitor(), client->tag());
-            monitor->evaluateClientPlacement(client, changes.placement);
+            get_current_monitor()->evaluateClientPlacement(client, changes.placement);
             client->set_visible(true);
         } else {
             // if the client is not directly displayed on any monitor,
