@@ -88,7 +88,7 @@ public:
     bool            focus = false; // if client should get focus
     bool            switchtag = false; // if the tag may be switched for focusing it
     bool            manage = true; // whether we should manage it
-    ClientPlacement placement = ClientPlacement::Unchanged;
+    ClientPlacement floatplacement = ClientPlacement::Unchanged;
     std::experimental::optional<bool> fullscreen;
     std::experimental::optional<RegexStr> keyMask; // Which keymask rule should be applied for this client
     std::experimental::optional<RegexStr> keysInactive; // Which keymask rule should be applied for this client
@@ -127,7 +127,7 @@ private:
     void applyKeyMask(const Client* client, ClientChanges* changes) const;
     void applyKeysInactive(const Client* client, ClientChanges* changes) const;
     void applyMonitor(const Client* client, ClientChanges* changes) const;
-    void applyPlacement(const Client* client, ClientChanges* changes) const;
+    void applyFloatplacement(const Client* client, ClientChanges* changes) const;
 };
 
 class Rule {

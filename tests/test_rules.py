@@ -30,7 +30,7 @@ consequences = [
     'hook',
     'keymask',
     'keys_inactive',
-    'placement',
+    'floatplacement',
 ]
 
 
