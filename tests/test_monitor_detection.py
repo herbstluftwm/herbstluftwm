@@ -8,7 +8,7 @@ from conftest import MultiscreenDisplay
     [(500, 450), (200, 600), (200, 600)],
 ])
 @pytest.mark.parametrize('server_type', ['Xvfb', 'Xephyr'])
-def test_detect_monitors_xinerama(hlwm_spawner, server_type, screens, xvfb):
+def test_detect_monitors_xinerama(hlwm_spawner, server_type, screens):
     args = ['+extension', 'XINERAMA']
     args += ['-extension', 'RANDR']
     with MultiscreenDisplay(screens=screens, extra_args=args) as xserver:

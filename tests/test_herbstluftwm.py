@@ -41,10 +41,10 @@ def test_herbstluftwm_default_autostart(hlwm):
 
 
 @pytest.mark.parametrize("method", ['home', 'xdg', 'shortopt', 'longopt'])
-def test_autostart_path(tmpdir, method, xvfb):
+def test_autostart_path(tmpdir, method):
     # herbstluftwm environment:
     env = {
-        'DISPLAY': xvfb.display,
+        'DISPLAY': os.environ['DISPLAY'],
     }
     args = []  # extra command line args
     if method == 'home':
@@ -74,10 +74,10 @@ def test_autostart_path(tmpdir, method, xvfb):
     hlwm_proc.shutdown()
 
 
-def test_no_autostart(xvfb):
+def test_no_autostart():
     # no HOME, no XDG_CONFIG_HOME
     env = {
-        'DISPLAY': xvfb.display,
+        'DISPLAY': os.environ['DISPLAY'],
     }
     hlwm_proc = HlwmProcess('', env, [])
     hlwm_proc.read_and_echo_output(until_stderr='Will not run autostart file.')
