@@ -41,7 +41,7 @@ const std::map<string, Consequence::Applier> Consequence::appliers = {
     { "keymask",        &Consequence::applyKeyMask         },
     { "keys_inactive",  &Consequence::applyKeysInactive    },
     { "monitor",        &Consequence::applyMonitor         },
-    { "floatplacement", &Consequence::applyFloatplacement       },
+    { "floatplacement", &Consequence::applyFloatplacement  },
 };
 
 bool Rule::addCondition(string name, char op, const char* value, bool negated, Output output) {

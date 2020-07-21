@@ -64,7 +64,7 @@ private:
  * are modified.
  */
 enum class ClientPlacement {
-    Center, //! place on the center of a monitor
+    Center, //! place in the center of a monitor
     Unchanged, //! don't change the position
 };
 

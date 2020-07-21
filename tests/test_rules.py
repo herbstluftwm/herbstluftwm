@@ -589,7 +589,7 @@ def test_floatplacement_none_or_center(hlwm, floatplacement, x11):
     hlwm.call('rule floatplacement={}'.format(floatplacement))
     winhandle, _ = x11.create_client(geometry=(30, 40, 600, 400))
 
-    geom = x11.get_absolute_geoemtry(winhandle)
+    geom = x11.get_absolute_geometry(winhandle)
     # in any case, the size is not affected
     assert (geom.width, geom.height) == (600, 400)
 
@@ -612,7 +612,7 @@ def test_floatplacement_uses_other_visible_monitor(hlwm, x11):
     assert hlwm.call('monitor_rect').stdout == '0 0 300 350'
     # .. the window is centered on monitor 1:
     winhandle, _ = x11.create_client(geometry=(30, 40, 200, 250))
-    geom = x11.get_absolute_geoemtry(winhandle)
+    geom = x11.get_absolute_geometry(winhandle)
     assert (geom.x + geom.width / 2, geom.y + geom.height / 2) \
         == (300 + 500 / 2, 550 / 2)
 
@@ -626,7 +626,7 @@ def test_floatplacement_for_invisible_tag(hlwm, x11):
     # the window is not yet rendered because the tag is invisible
     # but as soon as we show it, the window is placed correctly
     hlwm.call('use othertag')
-    geom = x11.get_absolute_geoemtry(winhandle)
+    geom = x11.get_absolute_geometry(winhandle)
     assert (geom.x + geom.width / 2, geom.y + geom.height / 2) \
         == (500 / 2, 550 / 2)
 

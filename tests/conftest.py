@@ -769,7 +769,7 @@ def x11(x11_connection):
                 window = tree.parent
             return (x, y)
 
-        def get_absolute_geoemtry(self, window):
+        def get_absolute_geometry(self, window):
             """return the geometry of the window, where the top left
             coordinate comes from get_absolute_top_left()
             """
