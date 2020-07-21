@@ -577,12 +577,10 @@ def xvfb():
 def hlwm_process(hlwm_spawner, xvfb):
     """Set up hlwm and also check that it shuts down gently afterwards"""
     hlwm_proc = hlwm_spawner(['--no-tag-import'], display=xvfb.display)
-    # kill_all_existing_windows(show_warnings=True)
 
     yield hlwm_proc
 
     hlwm_proc.shutdown()
-    # kill_all_existing_windows(show_warnings=False)
 
 
 @pytest.fixture(params=[0])
