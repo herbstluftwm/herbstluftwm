@@ -1,5 +1,5 @@
-#ifndef INPUTCONVERT_H
-#define INPUTCONVERT_H
+#ifndef HLWM_ARGPARSE_H
+#define HLWM_ARGPARSE_H
 
 #include <functional>
 
@@ -75,4 +75,4 @@ private:
     int errorCode_ = 0;
 };
 
-#endif // INPUTCONVERT_H
+#endif // HLWM_ARGPARSE_H
