@@ -845,6 +845,7 @@ class MultiscreenDisplay:
             if len(chunk) < 1 or chunk == b'\n':
                 break
         os.close(pipe_read)
+        os.close(pipe_write)
         self.display = ':' + display_bytes.decode().rstrip()
         print(server + " is using the display \"{}\"".format(self.display))
 
