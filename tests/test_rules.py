@@ -629,3 +629,13 @@ def test_floatplacement_for_invisible_tag(hlwm, x11):
     geom = x11.get_absolute_geoemtry(winhandle)
     assert (geom.x + geom.width / 2, geom.y + geom.height / 2) \
         == (500 / 2, 550 / 2)
+
+
+def test_floatplacement_parser(hlwm, hlwm_process, x11):
+    hlwm.call('rule floatplacement=notInTheList')
+    with hlwm_process.wait_stderr_match('Expecting one of: center, none'):
+        # here, it's important that we use a non-syncing way of creating
+        # a client, because the syncing would interfere with the
+        # above wait_stderr_match(). This is why we can't use
+        # hlwm.create_client() here
+        x11.create_client(sync_hlwm=False)
