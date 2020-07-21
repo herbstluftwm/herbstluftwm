@@ -17,7 +17,7 @@ public:
     ArgParse() {
     }
 
-    bool parseOrExit(Input& input, Output& output);
+    bool parsingFails(Input& input, Output& output);
 
     class Argument {
     public:

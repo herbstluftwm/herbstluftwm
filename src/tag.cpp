@@ -219,7 +219,7 @@ int HSTag::focusInDirCommand(Input input, Output output)
     Direction direction = Direction::Left; // some default to satisfy the linter
     ArgParse ap;
     ap.mandatory(direction);
-    if (ap.parseOrExit(input, output)) {
+    if (ap.parsingFails(input, output)) {
         return ap.exitCode();
     }
 
@@ -353,7 +353,7 @@ int HSTag::resizeCommand(Input input, Output output)
     Direction direction = Direction::Left;
     FixPrecDec delta = FixPrecDec::approxFrac(1, 50); // 0.02
     auto ap = ArgParse().mandatory(direction).optional(delta);
-    if (ap.parseOrExit(input, output)) {
+    if (ap.parsingFails(input, output)) {
         return ap.exitCode();
     }
     Client* client = focusedClient();

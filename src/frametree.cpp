@@ -757,7 +757,7 @@ int FrameTree::setLayoutCommand(Input input, Output output) {
     LayoutAlgorithm layout = LayoutAlgorithm::vertical;
     ArgParse ap;
     ap.mandatory(layout);
-    if (ap.parseOrExit(input, output)) {
+    if (ap.parsingFails(input, output)) {
         return ap.exitCode();
     }
 
@@ -820,7 +820,7 @@ int FrameTree::splitCommand(Input input, Output output)
     FixPrecDec fraction = FixPrecDec::approxFrac(1, 2);
     ArgParse ap;
     ap.mandatory(splitType).optional(fraction, &userDefinedFraction);
-    if (ap.parseOrExit(input, output)) {
+    if (ap.parsingFails(input, output)) {
         return ap.exitCode();
     }
     fraction = FrameSplit::clampFraction(fraction);

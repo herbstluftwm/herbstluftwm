@@ -57,7 +57,7 @@ int MouseManager::addMouseBindCommand(Input input, Output output) {
     MouseCombo mouseCombo;
     string mouseFunctionName;
     ap.mandatory(mouseCombo).mandatory(mouseFunctionName);
-    if (ap.parseOrExit(input, output)) {
+    if (ap.parsingFails(input, output)) {
         return ap.exitCode();
     }
     auto action = string2mousefunction(mouseFunctionName);

@@ -10,7 +10,7 @@ using std::string;
  * @param output
  * @return return whether there has been an error (true = error, false = no error)
  */
-bool ArgParse::parseOrExit(Input& input, Output& output)
+bool ArgParse::parsingFails(Input& input, Output& output)
 {
     size_t mandatoryArguments = 0;
     size_t optionalArguments = 0;
