@@ -769,6 +769,16 @@ def x11(x11_connection):
                 window = tree.parent
             return (x, y)
 
+        def get_absolute_geoemtry(self, window):
+            """return the geometry of the window, where the top left
+            coordinate comes from get_absolute_top_left()
+            """
+            x, y = self.get_absolute_top_left(window)
+            geom = window.get_geometry()
+            geom.x = x
+            geom.y = y
+            return geom
+
         def get_hlwm_frames(self):
             """get list of window handles of herbstluftwm
             frame decoration windows"""
