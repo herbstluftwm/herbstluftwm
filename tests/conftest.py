@@ -509,35 +509,6 @@ def hc_idle(hlwm):
     hc.shutdown()
 
 
-def kill_all_existing_windows(show_warnings=True):
-    xlsclients = subprocess.run(['xlsclients', '-l'],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                check=False)
-    print(xlsclients.stderr.decode(), file=sys.stderr, end='')
-    if re.search('unable to open display', xlsclients.stderr.decode()):
-        # if the display is already closed since there are no clients left,
-        # then that's fine for us
-        return
-    else:
-        # otherwise, assert successfull termination
-        assert xlsclients.returncode == 0
-    clients = []
-    for line in xlsclients.stdout.decode().splitlines():
-        m = re.match(r'Window (0x[0-9a-fA-F]*):', line)
-        if m:
-            clients.append(m.group(1))
-    if clients and show_warnings:
-        warnings.warn(UserWarning("There are still some clients "
-                                  "from previous tests."))
-    for c in clients:
-        if show_warnings:
-            warnings.warn(UserWarning("Killing " + c))
-        # send close and kill ungently
-        subprocess.run(['xdotool', 'windowclose', c])
-        subprocess.run(['xdotool', 'windowkill', c])
-
-
 @pytest.fixture()
 def hlwm_spawner(tmpdir):
     """yield a function to spawn hlwm"""
