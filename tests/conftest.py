@@ -16,6 +16,7 @@ import time
 import types
 
 import pytest
+import warnings
 
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
