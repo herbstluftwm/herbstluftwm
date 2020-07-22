@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "argparse.h"
 #include "client.h"
 #include "clientmanager.h"
 #include "command.h"
@@ -52,27 +53,19 @@ void MouseManager::injectDependencies(ClientManager* clients, MonitorManager* mo
 }
 
 int MouseManager::addMouseBindCommand(Input input, Output output) {
-    if (input.size() < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-
-    auto mouseComboStr = input.front();
-
+    ArgParse ap;
     MouseCombo mouseCombo;
-    try {
-        mouseCombo = Converter<MouseCombo>::parse(mouseComboStr);
-    } catch (std::exception &error) {
-        output << input.command() << ": " << error.what() << endl;
-        return HERBST_INVALID_ARGUMENT;
+    string mouseFunctionName;
+    ap.mandatory(mouseCombo).mandatory(mouseFunctionName);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
     }
-    input.shift();
-    auto action = string2mousefunction(input.front().c_str());
+    auto action = string2mousefunction(mouseFunctionName);
     if (!action) {
-        output << input.command() << ": Unknown mouse action \"" << input.front() << "\"" << endl;
+        output << input.command() << ": Unknown mouse action \"" << mouseFunctionName << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
 
-    input.shift();
     // Use remaining input as the associated command
     vector<string> cmd = {input.begin(), input.end()};
 

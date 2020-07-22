@@ -6,6 +6,7 @@ install(TARGETS herbstluftwm DESTINATION ${BINDIR})
 # additional sources – core/architectural stuff
 target_sources(herbstluftwm PRIVATE
     arglist.cpp arglist.h
+    argparse.cpp argparse.h
     attribute.cpp attribute.h attribute_.h
     byname.cpp byname.h
     child.h

@@ -698,7 +698,7 @@ def test_focus_other_monitor(hlwm, other_mon_exists, setting):
 
 def test_set_layout_invalid_layout_name(hlwm):
     hlwm.call_xfail('set_layout foobar') \
-        .expect_stderr('set_layout: Invalid layout name: "foobar"')
+        .expect_stderr('Invalid layout name: "foobar"')
 
 
 def test_focus_edge(hlwm):
@@ -755,7 +755,7 @@ def test_split_invalid_argument(hlwm):
     ]
     for d, msg in wrongDecimal:
         hlwm.call_xfail(['split', 'top', d]) \
-            .expect_stderr('invalid argument: ' + msg)
+            .expect_stderr('Cannot parse argument \".*\": {}'.format(msg))
 
 
 def test_split_clamp_argument_smaller(hlwm):
