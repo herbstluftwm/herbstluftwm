@@ -717,7 +717,7 @@ void all_monitors_replace_previous_tag(HSTag *old, HSTag *newmon) {
     }
 }
 
-Rectangle Monitor::getFloatingArea() {
+Rectangle Monitor::getFloatingArea() const {
     auto m = this;
     auto r = m->rect;
     r.x += m->pad_left;
@@ -736,4 +736,25 @@ string Monitor::getDescription() {
     }
     label << " with tag \"" << tag->name() << "\"";
     return label.str();
+}
+
+void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement) const
+{
+    switch (placement) {
+        case ClientPlacement::Center:
+            {
+                Point2D new_tl =
+                    // the center of the monitor
+                    getFloatingArea().dimensions() / 2
+                    // minus half the dimensions of the client
+                    - client->float_size_.dimensions() / 2;
+                client->float_size_.x = new_tl.x;
+                client->float_size_.y = new_tl.y;
+            }
+            break;
+
+        case ClientPlacement::Unchanged:
+            // do not do anything
+            break;
+    }
 }

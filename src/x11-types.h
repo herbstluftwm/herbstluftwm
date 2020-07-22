@@ -85,6 +85,7 @@ struct Rectangle {
     Point2D br() const { return {x + width, y + height}; }
     Point2D bl() const { return {x, y + height}; }
     Point2D tr() const { return {x + width, y}; }
+    Point2D dimensions() const { return { width, height}; }
 
     //! Grow/shrink by dx left and right, by dy top and bottom, respectively
     Rectangle adjusted(int dx, int dy) const;

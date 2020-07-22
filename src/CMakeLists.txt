@@ -19,6 +19,7 @@ target_sources(herbstluftwm PRIVATE
     desktopwindow.h desktopwindow.cpp
     entity.cpp entity.h
     ewmh.cpp ewmh.h
+    finite.h
     fixprecdec.cpp fixprecdec.h
     floating.cpp floating.h
     framedata.h framedata.cpp
