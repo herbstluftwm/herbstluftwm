@@ -28,12 +28,12 @@ def test_mousebind_empty_command(hlwm):
 
 def test_mousebind_unknown_button(hlwm):
     call = hlwm.call_xfail('mousebind Button42 call quit')
-    call.expect_stderr('mousebind: Unknown mouse button "Button42"')
+    call.expect_stderr('Unknown mouse button "Button42"')
 
 
 def test_mousebind_unknown_action(hlwm):
     call = hlwm.call_xfail('mousebind Button1 get schwifty')
-    call.expect_stderr('mousebind: Unknown mouse action "get"')
+    call.expect_stderr('Unknown mouse action "get"')
 
 
 @pytest.mark.parametrize('button', MOUSE_BUTTONS_THAT_WORK)

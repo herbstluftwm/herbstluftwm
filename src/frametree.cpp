@@ -5,6 +5,7 @@
 #include <limits>
 #include <regex>
 
+#include "argparse.h"
 #include "client.h"
 #include "completion.h"
 #include "fixprecdec.h"
@@ -753,17 +754,11 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
 }
 
 int FrameTree::setLayoutCommand(Input input, Output output) {
-    if (input.empty()) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-
-    auto layoutStr = input.front();
-    LayoutAlgorithm layout;
-    try {
-        layout = Converter<LayoutAlgorithm>::parse(layoutStr);
-    } catch (const std::exception& e) {
-        output << "set_layout: " << e.what();
-        return HERBST_INVALID_ARGUMENT;
+    LayoutAlgorithm layout = LayoutAlgorithm::vertical;
+    ArgParse ap;
+    ap.mandatory(layout);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
     }
 
     auto curFrame = focusedFrame();
@@ -820,17 +815,13 @@ vector<SplitMode> SplitMode::modes(SplitAlign align_explode, SplitAlign align_au
 int FrameTree::splitCommand(Input input, Output output)
 {
     // usage: split t|b|l|r|h|v FRACTION
-    string splitType, strFraction = "0.5";
-    if (!(input >> splitType )) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    bool userDefinedFraction = input >> strFraction;
-    FixPrecDec fraction = FixPrecDec::fromInteger(0);
-    try {
-        fraction = Converter<FixPrecDec>::parse(strFraction);
-    }  catch (const std::exception& e) {
-        output << "invalid argument: " << e.what() << endl;
-        return HERBST_INVALID_ARGUMENT;
+    string splitType;
+    bool userDefinedFraction = false;
+    FixPrecDec fraction = FixPrecDec::approxFrac(1, 2);
+    ArgParse ap;
+    ap.mandatory(splitType).optional(fraction, &userDefinedFraction);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
     }
     fraction = FrameSplit::clampFraction(fraction);
     auto frame = focusedFrame();

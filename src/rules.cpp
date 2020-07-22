@@ -5,6 +5,7 @@
 
 #include "client.h"
 #include "ewmh.h"
+#include "finite.h"
 #include "hook.h"
 #include "root.h"
 #include "utils.h"
@@ -40,6 +41,7 @@ const std::map<string, Consequence::Applier> Consequence::appliers = {
     { "keymask",        &Consequence::applyKeyMask         },
     { "keys_inactive",  &Consequence::applyKeysInactive    },
     { "monitor",        &Consequence::applyMonitor         },
+    { "floatplacement", &Consequence::applyFloatplacement  },
 };
 
 bool Rule::addCondition(string name, char op, const char* value, bool negated, Output output) {
@@ -315,3 +317,30 @@ void Consequence::applyKeysInactive(const Client *client, ClientChanges *changes
 void Consequence::applyMonitor(const Client* client, ClientChanges* changes) const {
     changes->monitor_name = value;
 }
+
+void Consequence::applyFloatplacement(const Client* client, ClientChanges* changes) const {
+    changes->floatplacement = Converter<ClientPlacement>::parse(value);
+}
+
+template<>
+Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values = {
+    { ClientPlacement::Center, "center" },
+    { ClientPlacement::Unchanged, "none" },
+};
+
+template<>
+string Converter<ClientPlacement>::str(ClientPlacement cp) {
+    return Finite<ClientPlacement>::str(cp);
+}
+
+template<>
+ClientPlacement Converter<ClientPlacement>::parse(const string& payload) {
+    return Finite<ClientPlacement>::parse(payload);
+}
+
+template<>
+void Converter<ClientPlacement>::complete(Completion& complete, ClientPlacement const* relativeTo) {
+    return Finite<ClientPlacement>::complete(complete, relativeTo);
+}
+
+

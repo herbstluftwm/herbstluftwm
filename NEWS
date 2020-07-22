@@ -9,6 +9,9 @@ Current git version
   * Fix handling of delta -1 in 'focus_monitor' and 'cycle_monitor'
   * Fixed precision decimals in the layout tree (more reliable in- and output
     of fractions in frame splits)
+  * New rule consequence 'floatplacement' that updates the placement of floating
+    clients ('floatplacement=center') or leaves the floating position as is
+    ('floatplacement=none')
   * New rule condition 'pgid'
 
 Release 0.8.3 on 2020-06-06

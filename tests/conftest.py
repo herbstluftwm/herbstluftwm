@@ -427,10 +427,12 @@ class HlwmProcess:
         """if some kind of client request observes a timeout, investigate the
         herbstluftwm server process. 'reason' is best phrased using present
         participle"""
+        self.read_and_echo_output()
         try:
             self.proc.wait(0)
         except subprocess.TimeoutExpired:
             pass
+        self.read_and_echo_output()
         if self.proc.returncode is None:
             raise Exception(str(reason) + " took too long"
                             + " but hlwm still running") from None
@@ -742,6 +744,16 @@ def x11(x11_connection):
                 # if it's not, continue at its parent
                 window = tree.parent
             return (x, y)
+
+        def get_absolute_geometry(self, window):
+            """return the geometry of the window, where the top left
+            coordinate comes from get_absolute_top_left()
+            """
+            x, y = self.get_absolute_top_left(window)
+            geom = window.get_geometry()
+            geom.x = x
+            geom.y = y
+            return geom
 
         def get_hlwm_frames(self):
             """get list of window handles of herbstluftwm

@@ -30,6 +30,7 @@ consequences = [
     'hook',
     'keymask',
     'keys_inactive',
+    'floatplacement',
 ]
 
 
@@ -578,3 +579,63 @@ def test_switchtag_monitor(hlwm, swap_monitors_to_get_tag):
         assert int(hlwm.get_attr('monitors.focus.index')) == 0
     else:
         assert int(hlwm.get_attr('monitors.focus.index')) == 1
+
+
+@pytest.mark.parametrize('floatplacement', ['none', 'center'])
+def test_floatplacement_none_or_center(hlwm, floatplacement, x11):
+    # create sizes involving only even numbers
+    hlwm.call('move_monitor 0 500x550+0+0')
+    hlwm.call('floating on')
+    hlwm.call('rule floatplacement={}'.format(floatplacement))
+    winhandle, _ = x11.create_client(geometry=(30, 40, 600, 400))
+
+    geom = x11.get_absolute_geometry(winhandle)
+    # in any case, the size is not affected
+    assert (geom.width, geom.height) == (600, 400)
+
+    if floatplacement == 'center':
+        window_center = (geom.x + 600 / 2, geom.y + 400 / 2)
+        monitor_center = (500 / 2, 550 / 2)
+        assert window_center == monitor_center
+    else:
+        assert (geom.x, geom.y) == (30, 40)
+
+
+def test_floatplacement_uses_other_visible_monitor(hlwm, x11):
+    hlwm.call('add othertag')
+    hlwm.call('set_monitors 300x350+0+0 500x550+300+0')
+    hlwm.call('focus_monitor 0')
+    # move to second monitor
+    hlwm.call('rule floatplacement=center tag=othertag')
+
+    # even though monitor 0 is focused ...
+    assert hlwm.call('monitor_rect').stdout == '0 0 300 350'
+    # .. the window is centered on monitor 1:
+    winhandle, _ = x11.create_client(geometry=(30, 40, 200, 250))
+    geom = x11.get_absolute_geometry(winhandle)
+    assert (geom.x + geom.width / 2, geom.y + geom.height / 2) \
+        == (300 + 500 / 2, 550 / 2)
+
+
+def test_floatplacement_for_invisible_tag(hlwm, x11):
+    hlwm.call('move_monitor 0 500x550+0+0')
+    hlwm.call('add othertag')
+    hlwm.call('rule floatplacement=center tag=othertag')
+
+    winhandle, _ = x11.create_client(geometry=(30, 40, 200, 250))
+    # the window is not yet rendered because the tag is invisible
+    # but as soon as we show it, the window is placed correctly
+    hlwm.call('use othertag')
+    geom = x11.get_absolute_geometry(winhandle)
+    assert (geom.x + geom.width / 2, geom.y + geom.height / 2) \
+        == (500 / 2, 550 / 2)
+
+
+def test_floatplacement_parser(hlwm, hlwm_process, x11):
+    hlwm.call('rule floatplacement=notInTheList')
+    with hlwm_process.wait_stderr_match('Expecting one of: center, none'):
+        # here, it's important that we use a non-syncing way of creating
+        # a client, because the syncing would interfere with the
+        # above wait_stderr_match(). This is why we can't use
+        # hlwm.create_client() here
+        x11.create_client(sync_hlwm=False)

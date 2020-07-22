@@ -982,23 +982,35 @@ raise_on_click (Boolean)::
 
 window_border_width (Integer)::
     Border width of a window.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.border_width+.
 
 window_border_inner_width (Integer)::
     The width of the inner border of a window. Must be less than
     window_border_width, since it does not add to the window border width but is
     a part of it.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.inner_width+.
 
 window_border_active_color (String/Color)::
     Border color of a focused window.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.active.color+.
 
 window_border_normal_color (String/Color)::
     Border color of an unfocused window.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.normal.color+.
 
 window_border_urgent_color (String/Color)::
     Border color of an unfocused but urgent window.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.urgent.color+.
 
 window_border_inner_color (String/Color)::
     Color of the inner border of a window.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.inner_color+.
 
 always_show_frame (Boolean)::
     If set, all frames are displayed. If unset, only frames with focus or with
@@ -1255,6 +1267,12 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 
 +keys_inactive+::
     sets a regex that determines which key bindings are inactive for a client (see <<KEYMASK, explanation in OBJECTS>>).
+
++floatplacement+::
+    changes the floating position of a window. The 'VALUE' can be one of the
+    following:
+    * +none+ does not change the placement at all
+    * +center+ centers the window on the monitor
 
 A rule's behaviour can be configured by some special 'FLAGS':
 
