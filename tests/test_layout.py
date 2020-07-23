@@ -813,3 +813,40 @@ def test_resize_clamp_argument_bigger(hlwm):
     hlwm.call(['load', layout.format('0.2')])
     hlwm.call('resize left 0.15')
     assert hlwm.call('dump').stdout == layout.format('0.1')
+
+
+def current_layout_name(hlwm):
+    proc = hlwm.call(['dump', '', '@'])
+    m = re.match(r'^\([^ ]* ([^:]*):.*\)$', proc.stdout)
+    return m.group(1)
+
+
+@pytest.mark.parametrize("delta", ['-1', '+1'])
+def test_cycle_layout_name_not_in_list(hlwm, delta):
+    hlwm.call('set_layout vertical')
+
+    # if the current name is not contained in the custom list
+    # of layouts, then the first entry in the custom list
+    # has to be picked
+    hlwm.call('cycle_layout {} max grid'.format(delta))
+
+    assert current_layout_name(hlwm) == 'max'
+
+
+@pytest.mark.parametrize("delta", ['-1', '+1'])
+def test_cycle_layout_name_in_the_list(hlwm, delta):
+    hlwm.call('set_layout vertical')
+    layouts = ['vertical', 'max', 'grid']
+    # here, we omit 'horizontal' to verify that we never reach
+    # the 'horizontal' layout
+    command = ['cycle_layout', delta] + layouts
+    # expected list of layouts after calling
+    # this command multiple times:
+    if delta == '+1':
+        expected_layouts = layouts[1:] + layouts
+    elif delta == '-1':
+        expected_layouts = reversed(layouts + layouts)
+
+    for expected in expected_layouts:
+        hlwm.call(command)
+        assert current_layout_name(hlwm) == expected
