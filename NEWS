@@ -13,6 +13,8 @@ Current git version
     clients ('floatplacement=center') or leaves the floating position as is
     ('floatplacement=none')
   * New rule condition 'pgid'
+  * Bug fixes:
+    - Fix wrong behaviour in 'cycle_layout'
 
 Release 0.8.3 on 2020-06-06
 ---------------------------
