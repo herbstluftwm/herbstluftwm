@@ -52,6 +52,9 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     floating_focused.changedByUser().connect([this] () {
         this->needsRelayout_.emit();
     });
+    floating_focused.setValidator([this](bool v) {
+        return this->floatingLayerCanBeFocused(v);
+    });
 }
 
 HSTag::~HSTag() {
@@ -512,6 +515,15 @@ int HSTag::closeOrRemoveCommand() {
         return frame->removeFrameCommand();
     }
     return 0;
+}
+
+std::string HSTag::floatingLayerCanBeFocused(bool floatingFocused)
+{
+    if (floatingFocused && floating_clients_.empty()) {
+        return "There are no floating windows; cannot focus floating layer.";
+    } else {
+        return "";
+    }
 }
 
 //! same as close or remove but directly remove frame after last client

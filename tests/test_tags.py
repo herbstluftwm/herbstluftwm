@@ -206,11 +206,15 @@ def test_close_or_remove_client(hlwm):
     assert int(hlwm.get_attr('tags.focus.frame_count')) == 1
 
 
-def test_floating_focused_change(hlwm):
+@pytest.mark.parametrize("floated_num", [1, 2])
+def test_floating_focused_activate(hlwm, floated_num):
     # create a floating client which is not focused
     # because the tiling layer is focused
     hlwm.call('rule floating=on focus=off')
     floating_winid, _ = hlwm.create_client()
+    if floated_num > 1:
+        # create another floating client that does not get the focus
+        hlwm.create_client()
     assert hlwm.get_attr('tags.focus.floating_focused') == hlwm.bool(False)
     assert 'focus' not in hlwm.list_children('clients')
 
@@ -220,6 +224,29 @@ def test_floating_focused_change(hlwm):
     # the floating client is focused
     assert hlwm.get_attr('tags.focus.floating_focused') == hlwm.bool(True)
     assert hlwm.get_attr('clients.focus.winid') == floating_winid
+
+
+def test_floating_focused_deactivate(hlwm):
+    # create one floating client, and focus it
+    hlwm.call('rule floating=on focus=on')
+    floating_winid, _ = hlwm.create_client()
+    assert hlwm.get_attr('tags.focus.floating_focused') == hlwm.bool(True)
+    assert hlwm.get_attr('clients.focus.winid') == floating_winid
+
+    # switch to tiling layer
+    hlwm.call('attr tags.focus.floating_focused off')
+
+    assert hlwm.get_attr('tags.focus.floating_focused') == hlwm.bool(False)
+    assert 'focus' not in hlwm.list_children('clients')
+
+
+def test_floating_focused_vacouus(hlwm):
+    assert hlwm.get_attr('tags.focus.floating_focused') == hlwm.bool(False)
+
+    # switching to floating layer should not be possible if
+    # there is no floating window
+    hlwm.call_xfail('attr tags.focus.floating_focused on') \
+        .expect_stderr("There are no floating windows")
 
 
 def test_urgent_count(hlwm, x11):
