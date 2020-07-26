@@ -828,7 +828,7 @@ def test_cycle_layout_name_not_in_list(hlwm, delta):
     # if the current name is not contained in the custom list
     # of layouts, then the first entry in the custom list
     # has to be picked
-    hlwm.call('cycle_layout {} max grid'.format(delta))
+    hlwm.call(f'cycle_layout {delta} max grid')
 
     assert current_layout_name(hlwm) == 'max'
 
@@ -837,16 +837,17 @@ def test_cycle_layout_name_not_in_list(hlwm, delta):
 def test_cycle_layout_name_in_the_list(hlwm, delta):
     hlwm.call('set_layout vertical')
     layouts = ['vertical', 'max', 'grid']
-    # here, we omit 'horizontal' to verify that we never reach
-    # the 'horizontal' layout
-    command = ['cycle_layout', delta] + layouts
+    # here, 'layouts' does not contain 'horizontal'. By this, we
+    # implicitly verify that we never reach the 'horizontal' layout
+    # since the 'expected_layouts' list also does not contain 'horizontal'
+    cycle_layout_cmd = ['cycle_layout', delta] + layouts
     # expected list of layouts after calling
-    # this command multiple times:
+    # 'cycle_layout_cmd' multiple times:
     if delta == '+1':
         expected_layouts = layouts[1:] + layouts
     elif delta == '-1':
         expected_layouts = reversed(layouts + layouts)
 
     for expected in expected_layouts:
-        hlwm.call(command)
+        hlwm.call(cycle_layout_cmd)
         assert current_layout_name(hlwm) == expected

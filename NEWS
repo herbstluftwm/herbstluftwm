@@ -14,7 +14,8 @@ Current git version
     ('floatplacement=none')
   * New rule condition 'pgid'
   * Bug fixes:
-    - Fix wrong behaviour in 'cycle_layout'
+    - Fix wrong behaviour in 'cycle_layout' in the case where the current layout
+      is not contained in the layout list passed to 'cycle_layout'.
 
 Release 0.8.3 on 2020-06-06
 ---------------------------
