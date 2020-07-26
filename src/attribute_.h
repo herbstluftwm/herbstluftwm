@@ -255,6 +255,22 @@ public:
         // e.g. when we got rid of Object::wireAttributes()
         owner->addAttribute(this);
     }
+
+    //! same as above, but only with a const getter member function
+    template <typename Owner>
+    DynAttribute_(Owner* owner, const std::string &name,
+                  T (Owner::*getter)() const
+                  )
+        : Attribute(name, false)
+        , getter_(std::bind(getter, owner))
+    {
+        hookable_ = false;
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
+        owner->addAttribute(this);
+    }
+
     template <typename Owner>
     DynAttribute_(Owner* owner, const std::string &name,
                   T (Owner::*getter)(),

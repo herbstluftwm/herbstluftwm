@@ -1,5 +1,5 @@
 import pytest
-
+from test_layout import verify_frame_objects_via_dump
 
 @pytest.mark.parametrize("invalid_layout,error_pos", [
     ('(', 1),
@@ -86,6 +86,7 @@ def test_full_layouts(hlwm, layout):
 
     assert p.stdout == ''
     assert layout == hlwm.call('dump').stdout
+    verify_frame_objects_via_dump(hlwm)
 
 
 @pytest.mark.parametrize("layout", [

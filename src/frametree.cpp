@@ -27,10 +27,12 @@ using std::string;
 using std::vector;
 
 FrameTree::FrameTree(HSTag* tag, Settings* settings)
-    : tag_(tag)
+    : rootLink_(*this, "root")
+    , tag_(tag)
     , settings_(settings)
 {
     root_ = make_shared<FrameLeaf>(tag, settings, shared_ptr<FrameSplit>());
+    rootLink_ = root_.get();
     (void) tag_;
     (void) settings_;
 }
@@ -701,6 +703,7 @@ void FrameTree::replaceNode(shared_ptr<Frame> old,
     if (!parent) {
         assert(old == root_);
         root_ = replacement;
+        rootLink_ = root_.get();
         // root frame should never have a parent:
         root_->parent_ = {};
     } else {
@@ -893,7 +896,7 @@ int FrameTree::dumpLayoutCommand(Input input, Output output) {
     shared_ptr<Frame> frame = root_;
     string tagName;
     if (input >> tagName) {
-        shared_ptr<FrameTree> tree = shared_from_this();
+        FrameTree* tree = this;
         // an empty tagName means 'current tag'
         // (this is a special case that is not handled by find_tag()
         // so we handle it explicitly here)
@@ -903,7 +906,7 @@ int FrameTree::dumpLayoutCommand(Input input, Output output) {
                 output << input.command() << ": Tag \"" << tagName << "\" not found\n";
                 return HERBST_INVALID_ARGUMENT;
             }
-            tree = tag->frame;
+            tree = tag->frame();
         }
         string frameIndex;
         if (input >> frameIndex) {

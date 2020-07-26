@@ -5,11 +5,62 @@ import textwrap
 from decimal import Decimal
 
 
+def verify_frame_objects_via_dump(hlwm, tag_object="tags.focus"):
+    """verify, that the frame objects for the given tag_object match
+    with the output of the 'dump' command this tag"""
+    def construct_layout_descr(hlwm, frame_object_path):
+        """construct the layout description from the object tree where
+        every window id is only present as a placeholder called 'WINID'
+        """
+        p = frame_object_path  # just to make the next definition lighter
+        # write the formatted string to an attribute whose path is 'DUMP'
+        cmd = [
+            'mktemp', 'string', 'DUMP', 'chain'
+        ]
+        # we run the sprintf commands for both the 'split' and the 'leaf'
+        # case and we will know that one of them will succeed, because every
+        # frame is one of them
+        split_sprintf = [
+            'sprintf', 'S', 'split %s:%s:%s', p + '.split_type',
+            p + '.fraction', p + '.selection',
+            'set_attr', 'DUMP', 'S'
+        ]
+        leaf_sprintf = [
+            'sprintf', 'L', 'clients %s:%s', p + '.algorithm', p + '.selection',
+            'set_attr', 'DUMP', 'L'
+        ]
+        # ... we simply run both
+        cmd += ['//', 'silent'] + split_sprintf
+        cmd += ['//', 'silent'] + leaf_sprintf
+        # ... and we know that one of them must have filled the attribute
+        # with path 'DUMP'. Fun fact: this has a slight flavor of the
+        # 'universal property of the coproduct'
+        cmd += ['//', 'get_attr', 'DUMP']
+        layout_desc = hlwm.call(cmd).stdout
+        if layout_desc[0] == 's':
+            child0 = construct_layout_descr(hlwm, frame_object_path + '.0')
+            child1 = construct_layout_descr(hlwm, frame_object_path + '.1')
+            return '({} {} {})'.format(layout_desc, child0, child1)
+        else:
+            assert layout_desc[0] == 'c'
+            hlwm.call(['attr', frame_object_path])
+            client_count_str = hlwm.get_attr(frame_object_path + '.client_count')
+            return '(' + layout_desc + int(client_count_str) * ' WINID' + ')'
+
+    layout_desc = construct_layout_descr(hlwm, tag_object + '.tiling.root')
+    tag_name = hlwm.get_attr(tag_object + ".name")
+    dump = hlwm.call(f'substitute NAME {tag_object}.name dump NAME').stdout
+    # replace window IDs by the placeholder
+    dump = re.sub('0x[0-9A-Za-z]*', 'WINID', dump)
+    assert dump == layout_desc
+
+
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
 def test_single_frame_layout(hlwm, running_clients, running_clients_num):
     assert hlwm.get_attr('tags.0.curframe_windex') == '0'
     assert int(hlwm.get_attr('tags.0.client_count')) == running_clients_num
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == running_clients_num
+    verify_frame_objects_via_dump(hlwm)
 
 
 def test_single_frame_layout_three(hlwm):
@@ -17,6 +68,7 @@ def test_single_frame_layout_three(hlwm):
     assert hlwm.get_attr('tags.0.curframe_windex') == '0'
     assert int(hlwm.get_attr('tags.0.client_count')) == 3
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == 3
+    verify_frame_objects_via_dump(hlwm)
 
 
 @pytest.mark.parametrize("running_clients_num", [2, 3])
@@ -28,6 +80,7 @@ def test_explode(hlwm, running_clients, running_clients_num):
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == number_upper
     assert int(hlwm.get_attr('tags.0.client_count')) == running_clients_num
     assert hlwm.get_attr('tags.0.frame_count') == '2'
+    verify_frame_objects_via_dump(hlwm)
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 4])
@@ -37,6 +90,7 @@ def test_remove(hlwm, running_clients, running_clients_num):
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == running_clients_num
     assert int(hlwm.get_attr('tags.0.client_count')) == running_clients_num
     assert hlwm.get_attr('tags.0.frame_count') == '1'
+    verify_frame_objects_via_dump(hlwm)
 
 
 @pytest.mark.parametrize("running_clients_num", [4])

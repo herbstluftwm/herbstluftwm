@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "attribute_.h"
+#include "child.h"
 #include "object.h"
 #include "signal.h"
 
@@ -28,7 +29,7 @@ class HSTag : public Object {
 public:
     HSTag(std::string name, TagManager* tags, Settings* settings);
     ~HSTag() override;
-    std::shared_ptr<FrameTree>        frame;  // the master frame
+    Child_<FrameTree>        frame;  // the frame tree
     Attribute_<unsigned long> index;
     Attribute_<bool>         floating;
     Attribute_<bool>         floating_focused; // if a floating client is focused
