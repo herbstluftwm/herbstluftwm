@@ -33,6 +33,7 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
         [tags](string newName) { return tags->isValidTagName(newName); })
     , frame_count(this, "frame_count", &HSTag::computeFrameCount)
     , client_count(this, "client_count", &HSTag::computeClientCount)
+    , urgent_count(this, "urgent_count", &HSTag::countUrgentClients)
     , curframe_windex(this, "curframe_windex",
         [this] () { return frame->focusedFrame()->getSelection(); } )
     , curframe_wcount(this, "curframe_wcount",
@@ -416,6 +417,17 @@ int HSTag::computeFrameCount() {
     frame->root_->fmap([](FrameSplit*) {},
                 [&count](FrameLeaf*) { count++; },
                 0);
+    return count;
+}
+
+int HSTag::countUrgentClients()
+{
+    int count = 0;
+    foreachClient([&](Client* client) {
+        if (client->urgent_()) {
+            count++;
+        }
+    });
     return count;
 }
 
