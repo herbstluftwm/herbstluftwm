@@ -726,7 +726,12 @@ int FrameTree::cycleLayoutCommand(Input input, Output output) {
         string curname = Converter<LayoutAlgorithm>::str(cur_frame->getLayout());
         size_t count = input.end() - input.begin();
         auto curposition = std::find(input.begin(), input.end(), curname);
-        size_t idx = MOD((curposition - input.begin()) + delta, count);
+        size_t idx = 0;  // take the first in the list per default
+        if (curposition != input.end()) {
+            // if the current layout name is in the list, take the next one
+            // (respective to the delta)
+            idx = MOD((curposition - input.begin()) + delta, count);
+        }
         try {
             layout_index = (int)Converter<LayoutAlgorithm>::parse(*(input.begin() + idx));
         } catch (const std::exception& e) {
