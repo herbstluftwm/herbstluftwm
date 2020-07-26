@@ -204,3 +204,12 @@ def test_close_or_remove_client(hlwm):
     hlwm.call('close_or_remove')
     # remove the frame
     assert int(hlwm.get_attr('tags.focus.frame_count')) == 1
+
+
+def test_urgent_count(hlwm, x11):
+    # create 5 urgent clients
+    for i in range(0, 5):
+        x11.create_client(urgent=True)
+
+    # since one of them gets focused, 4 urgent clients remain
+    assert int(hlwm.get_attr('tags.focus.urgent_count')) == 4
