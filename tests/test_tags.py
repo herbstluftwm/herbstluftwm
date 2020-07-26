@@ -220,3 +220,12 @@ def test_floating_focused_change(hlwm):
     # the floating client is focused
     assert hlwm.get_attr('tags.focus.floating_focused') == hlwm.bool(True)
     assert hlwm.get_attr('clients.focus.winid') == floating_winid
+
+
+def test_urgent_count(hlwm, x11):
+    # create 5 urgent clients
+    for i in range(0, 5):
+        x11.create_client(urgent=True)
+
+    # since one of them gets focused, 4 urgent clients remain
+    assert int(hlwm.get_attr('tags.focus.urgent_count')) == 4
