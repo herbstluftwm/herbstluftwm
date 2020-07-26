@@ -204,3 +204,19 @@ def test_close_or_remove_client(hlwm):
     hlwm.call('close_or_remove')
     # remove the frame
     assert int(hlwm.get_attr('tags.focus.frame_count')) == 1
+
+
+def test_floating_focused_change(hlwm):
+    # create a floating client which is not focused
+    # because the tiling layer is focused
+    hlwm.call('rule floating=on focus=off')
+    floating_winid, _ = hlwm.create_client()
+    assert hlwm.get_attr('tags.focus.floating_focused') == hlwm.bool(False)
+    assert 'focus' not in hlwm.list_children('clients')
+
+    # switch to floating layer
+    hlwm.call('attr tags.focus.floating_focused on')
+
+    # the floating client is focused
+    assert hlwm.get_attr('tags.focus.floating_focused') == hlwm.bool(True)
+    assert hlwm.get_attr('clients.focus.winid') == floating_winid

@@ -44,6 +44,13 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     stack = make_shared<Stack>();
     frame = make_shared<FrameTree>(this, settings);
     floating.changed().connect(this, &HSTag::onGlobalFloatingChange);
+    // FIXME: actually this connection of the signals like this
+    // must work:
+    //   floating_focused.changedByUser().connect(needsRelayout_);
+    // however, we need to call this:
+    floating_focused.changedByUser().connect([this] () {
+        this->needsRelayout_.emit();
+    });
 }
 
 HSTag::~HSTag() {
