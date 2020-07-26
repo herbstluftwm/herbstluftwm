@@ -1446,6 +1446,7 @@ listed as follows:
  i - index                , index of this tag
  i - frame_count          , number of frames
  i - client_count         , number of clients on this tag
+ i - urgent_count         , number of urgent clients on this tag
  i - curframe_windex      , index of the focused client in the select frame
  i - curframe_wcount      , number of clients in the selected frame
 |===========================

@@ -35,6 +35,7 @@ public:
     Attribute_<std::string>  name;   // name of this tag
     DynAttribute_<int> frame_count;
     DynAttribute_<int> client_count;
+    DynAttribute_<int> urgent_count; //! The number of urgent clients
     DynAttribute_<int> curframe_windex;
     DynAttribute_<int> curframe_wcount;
     int             flags;
@@ -76,6 +77,8 @@ private:
     int computeClientCount();
     //! get the number of clients on this tag
     int computeFrameCount();
+    //! get the number of urgent clients on this tag
+    int countUrgentClients();
     Settings* settings_;
 };
 
