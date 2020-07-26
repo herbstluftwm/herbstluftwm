@@ -18,7 +18,8 @@ def test_herbstclient_no_display(argument):
 
 @pytest.mark.parametrize('hlwm_mode', ['never started', 'sigterm', 'sigkill'])
 @pytest.mark.parametrize('hc_parameter', ['true', '--wait'])
-def test_herbstclient_recognizes_hlwm_not_running(hlwm_spawner, x11, hlwm_mode, hc_parameter):
+@pytest.mark.parametrize('hc_quiet', [True, False])
+def test_herbstclient_recognizes_hlwm_not_running(hlwm_spawner, x11, hlwm_mode, hc_parameter, hc_quiet):
     if hlwm_mode == 'never started':
         pass
     else:
@@ -46,11 +47,16 @@ def test_herbstclient_recognizes_hlwm_not_running(hlwm_spawner, x11, hlwm_mode, 
             assert False, 'assert that we have no typos above'
 
     # run herbstclient while no hlwm is running
+    if hc_quiet:
+        hc_parameter = f'--quiet {hc_parameter}'
     hc_command = [HC_PATH, hc_parameter]
     result = subprocess.run(hc_command, stderr=subprocess.PIPE, universal_newlines=True)
 
     assert result.returncode != 0
-    assert re.search(r'Error: herbstluftwm is not running', result.stderr)
+    if hc_quiet:
+        assert re.search(r'Error: herbstluftwm is not running', result.stderr) is None
+    else:
+        assert re.search(r'Error: herbstluftwm is not running', result.stderr)
 
 
 def test_herbstclient_invalid_regex():
