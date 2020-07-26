@@ -71,16 +71,23 @@ def test_herbstclient_help_on_stdout():
     assert re.search(r'--wait', result.stdout)
 
 
-@pytest.mark.parametrize('num_hooks_sent', [4])
+@pytest.mark.parametrize('repeat', range(0, 2))  # use more repetitions to test the race-condtion
+@pytest.mark.parametrize('num_hooks_sent', [6])  # see below comment on the race-condition
 @pytest.mark.parametrize('num_hooks_recv', range(1, 4 + 1))
-def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv):
+def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv, repeat):
     cmd = [HC_PATH, '--wait', '--count', str(num_hooks_recv), 'matcher']
     proc = subprocess.Popen(cmd,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             bufsize=1,  # line-buffered
                             universal_newlines=True)
-
+    # FIXME: there's a race condition here:
+    # we don't know how fast hc connects to hlwm, so the first hooks
+    # might be send too early and not be in the output of 'proc'. This is
+    # why we send much more then we want to receive (--count) and we perform
+    # two hc-calls and hope that this gives hc --wait enough time to boot up.
+    hlwm.call('true')
+    hlwm.call('true')
     for _ in range(0, num_hooks_sent):
         hlwm.call('emit_hook nonmatch nonarg')
         hlwm.call('emit_hook matcher somearg')
@@ -94,13 +101,21 @@ def test_herbstclient_wait(hlwm, num_hooks_sent, num_hooks_recv):
     assert proc.returncode == 0
 
 
-def test_lastarg_only(hlwm):
+@pytest.mark.parametrize('repeat', range(0, 3))  # use more repetitions to test the race-condtion
+def test_lastarg_only(hlwm, repeat):
     cmd = [HC_PATH, '--wait', '--count', '5', '--last-arg']
     proc = subprocess.Popen(cmd,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             bufsize=1,  # line-buffered
                             universal_newlines=True)
+    # FIXME: there's a race condition here:
+    # we don't know how fast hc connects to hlwm, so
+    # we send two dummy commands and hope that in the mean-time of two full
+    # herbstclient round-trips, 'proc' establishes a connection to hlwm's hook
+    # window. Then, we hope that the first 'emit_hook a' isn't too early yet.
+    hlwm.call('true')
+    hlwm.call('true')
     hooks = [
         ['a'],
         ['b', 'c'],
