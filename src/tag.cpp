@@ -517,7 +517,7 @@ int HSTag::closeOrRemoveCommand() {
     return 0;
 }
 
-std::string HSTag::floatingLayerCanBeFocused(bool floatingFocused)
+string HSTag::floatingLayerCanBeFocused(bool floatingFocused)
 {
     if (floatingFocused && floating_clients_.empty()) {
         return "There are no floating windows;"
