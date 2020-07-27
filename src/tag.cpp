@@ -45,6 +45,16 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     stack = make_shared<Stack>();
     frame = make_shared<FrameTree>(this, settings);
     floating.changed().connect(this, &HSTag::onGlobalFloatingChange);
+    // FIXME: actually this connection of the signals like this
+    // must work:
+    //   floating_focused.changedByUser().connect(needsRelayout_);
+    // however, we need to call this:
+    floating_focused.changedByUser().connect([this] () {
+        this->needsRelayout_.emit();
+    });
+    floating_focused.setValidator([this](bool v) {
+        return this->floatingLayerCanBeFocused(v);
+    });
 }
 
 HSTag::~HSTag() {
@@ -505,6 +515,16 @@ int HSTag::closeOrRemoveCommand() {
         return frame->removeFrameCommand();
     }
     return 0;
+}
+
+string HSTag::floatingLayerCanBeFocused(bool floatingFocused)
+{
+    if (floatingFocused && floating_clients_.empty()) {
+        return "There are no floating windows;"
+               " cannot focus empty floating layer.";
+    } else {
+        return "";
+    }
 }
 
 //! same as close or remove but directly remove frame after last client

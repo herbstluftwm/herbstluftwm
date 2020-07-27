@@ -114,7 +114,10 @@ public:
         Converter<T>::complete(complete, &payload_);
     }
 
+    //! a signal that is emitted whenever the value changes
     Signal_<T>& changed() override { return changed_; }
+    //! a signal that is emitted when the user changes this attribute
+    Signal_<T>& changedByUser() { return changedByUser_; }
 
     bool resetValue() override {
         operator=(defaultValue_);
@@ -156,6 +159,7 @@ public:
             // set and trigger stuff
             if (new_payload != payload_) {
                 this->operator=(new_payload);
+                changedByUser_.emit(payload_);
             }
         } catch (std::invalid_argument const& e) {
             return std::string("invalid argument: ") + e.what();
@@ -184,6 +188,7 @@ protected:
 
     Validator validator_;
     Signal_<T> changed_;
+    Signal_<T> changedByUser_;
     T payload_;
     T defaultValue_;
 };

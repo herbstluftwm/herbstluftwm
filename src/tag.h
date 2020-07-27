@@ -71,6 +71,7 @@ public:
     int closeAndRemoveCommand();
     int closeOrRemoveCommand();
 private:
+    std::string floatingLayerCanBeFocused(bool floatingFocused);
     void onGlobalFloatingChange(bool newState);
     void fixFocusIndex();
     //! get the number of clients on this tag
