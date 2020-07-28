@@ -7,6 +7,7 @@
 #include "attribute_.h"
 #include "object.h"
 #include "regexstr.h"
+#include "theme.h"
 #include "types.h"
 #include "x11-types.h"
 
@@ -17,7 +18,6 @@ class Slice;
 class HSTag;
 class Monitor;
 class Settings;
-class Theme;
 class ClientManager;
 
 class Client : public Object {
@@ -132,6 +132,7 @@ private:
     Ewmh& ewmh;
     std::string tagName();
     const DecTriple& getDecTriple();
+    Theme::Type mostRecentThemeType;
 };
 
 

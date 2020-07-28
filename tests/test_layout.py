@@ -519,6 +519,31 @@ def test_smart_window_surroundings(hlwm, x11, border_width, minimal_border_width
         == mon_height
 
 
+def test_smart_window_surroundings_urgent(hlwm, x11):
+    hlwm.call('set smart_window_surroundings on')
+    hlwm.call('set smart_frame_surroundings on')
+    hlwm.call('attr theme.border_width 42')
+    hlwm.call('attr theme.minimal.border_width 0')
+
+    win1, win1_id = x11.create_client()
+
+    # With only one client and smart_window_surroundings enabled,
+    # no gaps or surroundings are applied and
+    # the minimal decoration scheme is used
+    geo1 = win1.get_geometry()
+    assert (geo1.x, geo1.y) == (0, 0)
+
+    # Move it to another tag and make it urgent
+    hlwm.call('add otherTag')
+    hlwm.call('move otherTag')
+    x11.make_window_urgent(win1)
+    assert hlwm.get_attr(f'clients.{win1_id}.urgent') == 'true'
+
+    # The minimal theme should still apply!
+    geo1 = win1.get_geometry()
+    assert (geo1.x, geo1.y) == (0, 0)
+
+
 @pytest.mark.parametrize('running_clients_num,start_idx_range', [
     # number of clients and indices where we should start
     (6, range(0, 6)),
