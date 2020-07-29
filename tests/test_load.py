@@ -1,6 +1,7 @@
 import pytest
 from test_layout import verify_frame_objects_via_dump
 
+
 @pytest.mark.parametrize("invalid_layout,error_pos", [
     ('(', 1),
     ('()', 1),

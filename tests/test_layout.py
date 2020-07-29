@@ -48,7 +48,6 @@ def verify_frame_objects_via_dump(hlwm, tag_object="tags.focus"):
             return '(' + layout_desc + int(client_count_str) * ' WINID' + ')'
 
     layout_desc = construct_layout_descr(hlwm, tag_object + '.tiling.root')
-    tag_name = hlwm.get_attr(tag_object + ".name")
     dump = hlwm.call(f'substitute NAME {tag_object}.name dump NAME').stdout
     # replace window IDs by the placeholder
     dump = re.sub('0x[0-9A-Za-z]*', 'WINID', dump)
