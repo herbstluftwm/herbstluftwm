@@ -38,6 +38,8 @@ enum class LayoutAlgorithm {
 ConverterInstance(LayoutAlgorithm)
 template<> void Converter<LayoutAlgorithm>::complete(Completion& complete, LayoutAlgorithm const* relativeTo);
 
+LayoutAlgorithm splitAlignToLayoutAlgorithm(SplitAlign align);
+
 size_t layoutAlgorithmCount();
 
 class FrameDataLeaf {

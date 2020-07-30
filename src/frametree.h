@@ -69,16 +69,15 @@ public:
     void setLayoutCompletion(Completion& complete);
 public: // soon to be come private:
     std::shared_ptr<Frame> root_;
+    //! replace a node in the frame tree, either modifying old's parent or the root_
+    void replaceNode(std::shared_ptr<Frame> old, std::shared_ptr<Frame> replacement);
 private:
     static std::shared_ptr<FrameLeaf> findEmptyFrameNearFocusGeometrically(std::shared_ptr<Frame> subtree);
     //! cycle the frames within the current tree
     void cycle_frame(std::function<size_t(size_t,size_t)> indexAndLenToIndex);
     void cycle_frame(int delta);
-    //! try to resemble a given raw frame tree given by the FrameParser
     void applyFrameTree(std::shared_ptr<Frame> target,
                         std::shared_ptr<RawFrameNode> source);
-    //! replace a node in the frame tree, either modifying old's parent or the root_
-    void replaceNode(std::shared_ptr<Frame> old, std::shared_ptr<Frame> replacement);
     static std::shared_ptr<TreeInterface> treeInterface(
         std::shared_ptr<Frame> frame,
         std::shared_ptr<FrameLeaf> focus);
