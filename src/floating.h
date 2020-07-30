@@ -22,5 +22,6 @@ bool floating_focus_direction(Direction dir);
 bool floating_shift_direction(Direction dir);
 bool floating_resize_direction(HSTag* tag, Client* client, Direction dir);
 
+Point2D floatingSmartPlacement(HSTag* tag, Client* client, Point2D area, int gap);
 
 #endif

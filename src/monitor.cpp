@@ -11,6 +11,7 @@
 #include "clientmanager.h"
 #include "completion.h"
 #include "ewmh.h"
+#include "floating.h"
 #include "frametree.h"
 #include "globals.h"
 #include "hook.h"
@@ -748,6 +749,16 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
                     getFloatingArea().dimensions() / 2
                     // minus half the dimensions of the client
                     - client->float_size_.dimensions() / 2;
+                client->float_size_.x = new_tl.x;
+                client->float_size_.y = new_tl.y;
+            }
+            break;
+
+        case ClientPlacement::Smart:
+            {
+                Point2D area = getFloatingArea().dimensions();
+                Point2D new_tl = floatingSmartPlacement(tag, client,
+                                             area, settings->snap_gap);
                 client->float_size_.x = new_tl.x;
                 client->float_size_.y = new_tl.y;
             }

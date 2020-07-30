@@ -1273,6 +1273,9 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     following:
     * +none+ does not change the placement at all
     * +center+ centers the window on the monitor
+    * +smart+ tries to place it with as little overlap to other floating windows
+      as possible. If there are multiple options with the least overlap, then
+      the position with the least overlap to tiling windows is chosen.
 
 A rule's behaviour can be configured by some special 'FLAGS':
 

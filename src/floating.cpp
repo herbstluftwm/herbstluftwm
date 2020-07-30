@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <climits>
 #include <cstdlib>
+#include <unordered_set>
 
 #include "client.h"
 #include "decoration.h"
@@ -13,6 +14,7 @@
 #include "utils.h"
 
 using std::vector;
+using std::pair;
 using std::make_pair;
 
 // rectlist_rotate rotates the list of given rectangles, s.t. the direction dir
@@ -421,4 +423,127 @@ bool floating_resize_direction(HSTag* tag, Client* client, Direction dir)
     }
     // 2. try to shrink into a specific direction
     return shrink_into_direction(client, dir);
+}
+
+/**
+ * @brief Suggest a new position of the client on the given tag.
+ * The placement is chosen such that the overlap with other windows is
+ * as little as possible
+ * @param The tag to place the client on
+ * @param client to find a new position for
+ * @param the area in which the client can be placed
+ * @param a gap in pixels between the windows
+ * @param whether to consider only floating windows on 'tag' for the placement
+ * @return the suggested position
+ */
+Point2D floatingSmartPlacement(HSTag* tag, Client* client, Point2D area, int gap)
+{
+    bool tagFloating = tag->floating();
+    Rectangle clientOuter = client->outer_floating_rect();
+    Point2D clientsize = clientOuter.dimensions();
+    // let the client grow by 'gap' to the right and bottom
+    clientsize = clientsize + Point2D{ gap, gap };
+    // collect all other rectangles of client windows.
+    // and pair it with their floating property
+    vector<pair<Rectangle,bool>> rects;
+    tag->foreachClient([&](Client* c) {
+        if (c != client) {
+            bool floating = c->floating_() || tagFloating;
+            // for floating clients is safer to use the outer_floating_rect()
+            // because it is directly based on float_size_
+            auto outline = c->outer_floating_rect();
+            if (!floating) {
+                // However, for tiling clients, we use the last
+                // outer rectangle from the decoration
+                outline = c->dec->last_outer();
+            }
+            // also let each rectangle grow to the right and bottom
+            // by 'gap' pixels
+            outline = outline.adjusted(0, 0, gap, gap);
+            rects.push_back(make_pair(outline, floating));
+        }
+    });
+
+    // collect possible values for the x and y coordinates for the
+    // placement of 'client'
+    std::unordered_set<int> xValues;
+    std::unordered_set<int> yValues;
+    // use all corners of other windows
+    for (const auto& it : rects) {
+        xValues.insert(it.first.x);
+        xValues.insert(it.first.x + it.first.width);
+        yValues.insert(it.first.y);
+        yValues.insert(it.first.y + it.first.height);
+    }
+    // use screen corners
+    xValues.insert(gap); // top
+    yValues.insert(gap); // left
+    xValues.insert(area.x); // right
+    yValues.insert(area.y); // bottom
+
+    // interpret the x/y value picked as the coordinate
+    // of one of the four corners of the 'client'
+    std::vector<Point2D> windowCorners = {
+        { 0, 0}, // top left
+        { clientsize.x, 0 }, // top right
+        { 0, clientsize.y }, // bottom left
+        { clientsize.x, clientsize.y }, // bottom right
+    };
+    // the overlap with floating windows, with tiling windows,
+    // and the topleft position:
+    std::tuple<int, int, Point2D> best = {
+        std::numeric_limits<int>::max(),
+        std::numeric_limits<int>::max(),
+        { gap, gap }
+    };
+    // find the x/y coordinate with the least overlap
+    for (int x : xValues) {
+        for (int y : yValues) {
+            for (const auto& corner : windowCorners) {
+                Rectangle suggested = {
+                    x - corner.x, y - corner.y,
+                    clientsize.x, clientsize.y,
+                };
+                Point2D topleft = suggested.tl();
+                // skip coordinates where the window is not entirely
+                // within the screen area
+                if (topleft.x < 0 || topleft.y < 0) {
+                    continue;
+                }
+                Point2D bottomright = suggested.br();
+                if (bottomright.x > area.x || bottomright.y > area.y) {
+                    continue;
+                }
+                int overlapFloat = 0; // overlap with floating windows
+                int overlapTiling = 0; // overlap with tiling windows
+                for (const auto& otherWindow : rects) {
+                    // compute the intersection with the otherWindow
+                    auto inters = suggested.intersectionWith(otherWindow.first);
+                    if (!inters) {
+                        // no intersection
+                        continue;
+                    }
+                    int delta = abs(inters.width * inters.height);
+                    if (otherWindow.second) {
+                        // if the otherWindow is a floating window
+                        overlapFloat += delta;
+                        if (overlapFloat < 0) {
+                            overlapFloat =  std::numeric_limits<int>::max();
+                        }
+                    } else {
+                        // if the otherWindow is a tiling window
+                        overlapTiling += delta;
+                        if (overlapTiling < 0) {
+                            overlapTiling =  std::numeric_limits<int>::max();
+                        }
+                    }
+                }
+                auto t = std::make_tuple(overlapFloat, overlapTiling, topleft);
+                best = std::min(best, t);
+            }
+        }
+    }
+    // transform the topleft coordinate of the outer window
+    // to the topleft coordinate of the window content
+    return std::get<2>(best) + (client->float_size_.tl() - clientOuter.tl());
 }
