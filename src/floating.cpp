@@ -483,7 +483,7 @@ Point2D floatingSmartPlacement(HSTag* tag, Client* client, Point2D area, int gap
 
     // interpret the x/y value picked as the coordinate
     // of one of the four corners of the 'client'
-    std::vector<Point2D> windowCorners = {
+    vector<Point2D> windowCorners = {
         { 0, 0}, // top left
         { clientsize.x, 0 }, // top right
         { 0, clientsize.y }, // bottom left
