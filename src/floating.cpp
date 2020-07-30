@@ -491,10 +491,10 @@ Point2D floatingSmartPlacement(HSTag* tag, Client* client, Point2D area, int gap
     };
     // the overlap with floating windows, with tiling windows,
     // and the topleft position:
-    std::tuple<int, int, Point2D> best = {
+    std::tuple<int, int, Point2D> best {
         std::numeric_limits<int>::max(),
         std::numeric_limits<int>::max(),
-        { gap, gap }
+        Point2D { gap, gap }
     };
     // find the x/y coordinate with the least overlap
     for (int x : xValues) {
