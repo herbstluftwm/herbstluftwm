@@ -7,9 +7,6 @@
 class Client;
 class HSTag;
 
-void floating_init();
-void floating_destroy();
-
 // utilities
 int char_to_direction(char ch);
 int find_rectangle_in_direction(RectangleIdxVec& rects, int idx, Direction dir);
