@@ -217,6 +217,20 @@ def test_new_attr_has_right_type(hlwm, attrtype):
     assert m.group(1)[0] == attrtype[0]
 
 
+def test_new_attr_initial_value(hlwm):
+    hlwm.call('new_attr string clients.my_foo bar')
+
+    assert hlwm.get_attr('clients.my_foo') == 'bar'
+
+
+def test_new_attr_initial_value_invalid(hlwm):
+    hlwm.call_xfail('new_attr int clients.my_foo bar') \
+        .expect_stderr('"bar" is an invalid value for clients.my_foo')
+
+    # the client still exists and the default value remains
+    assert hlwm.get_attr('clients.my_foo') == '0'
+
+
 def test_new_attr_complete(hlwm):
     assert 'bool' in hlwm.complete('new_attr')
     assert 'my_' in hlwm.complete('new_attr int', partial=True)

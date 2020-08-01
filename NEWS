@@ -14,6 +14,7 @@ Current git version
     clients ('floatplacement=center') or leaves the floating position as is
     ('floatplacement=none')
   * New rule condition 'pgid'
+  * The 'new_attr' command now also accepts an initial value
   * Bug fixes:
     - Fix wrong behaviour in 'cycle_layout' in the case where the current layout
       is not contained in the layout list passed to 'cycle_layout'.
