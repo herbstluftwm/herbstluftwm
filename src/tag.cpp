@@ -26,7 +26,8 @@ using std::string;
 static bool    g_tag_flags_dirty = true;
 
 HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
-    : index(this, "index", 0)
+    : frame(*this, "tiling")
+    , index(this, "index", 0)
     , floating(this, "floating", false, [](bool){return "";})
     , floating_focused(this, "floating_focused", false, [](bool){return "";})
     , name(this, "name", name_,
@@ -43,7 +44,7 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     , settings_(settings)
 {
     stack = make_shared<Stack>();
-    frame = make_shared<FrameTree>(this, settings);
+    frame.init(this, settings);
     floating.changed().connect(this, &HSTag::onGlobalFloatingChange);
     // FIXME: actually this connection of the signals like this
     // must work:
@@ -58,7 +59,7 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
 }
 
 HSTag::~HSTag() {
-    frame = {};
+    frame.reset();
 }
 
 void HSTag::setIndexAttribute(unsigned long new_index) {

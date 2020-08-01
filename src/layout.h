@@ -6,7 +6,10 @@
 #include <functional>
 #include <memory>
 
+#include "attribute_.h"
 #include "framedata.h"
+#include "link.h"
+#include "object.h"
 #include "tilingresult.h"
 #include "types.h"
 #include "x11-types.h"
@@ -21,7 +24,7 @@ class FrameLeaf;
 class FrameSplit;
 class Settings;
 
-class Frame : public std::enable_shared_from_this<Frame> {
+class Frame : public std::enable_shared_from_this<Frame>, public Object {
 protected:
     Frame(HSTag* tag, Settings* settings, std::weak_ptr<FrameSplit> parent);
     virtual ~Frame();
@@ -128,6 +131,9 @@ public:
     friend class Frame;
     void setVisible(bool visible);
     int getInnerNeighbourIndex(Direction direction);
+    DynAttribute_<int> client_count_;
+    DynAttribute_<int> selectionAttr_;
+    DynAttribute_<LayoutAlgorithm> algorithmAttr_;
 private:
     friend class FrameTree;
     // layout algorithms
@@ -173,6 +179,11 @@ public:
     SplitAlign getAlign() { return align_; }
     void swapSelection() { selection_ = selection_ == 0 ? 1 : 0; }
     void setSelection(int s) { selection_ = s; }
+    DynAttribute_<SplitAlign> splitTypeAttr_;
+    DynAttribute_<FixPrecDec> fractionAttr_;
+    DynAttribute_<int> selectionAttr_;
+    Link_<Frame> aLink_;
+    Link_<Frame> bLink_;
 private:
     friend class FrameTree;
 };

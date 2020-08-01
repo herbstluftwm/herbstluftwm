@@ -807,10 +807,11 @@ set_attr 'ATTRIBUTE' 'NEWVALUE'::
     Assign 'NEWVALUE' to the specified 'ATTRIBUTE' as described in the
     <<OBJECTS,*OBJECTS section*>>.
 
-new_attr [*bool*|*color*|*int*|*string*|*uint*] 'PATH'::
+new_attr *bool*|*color*|*int*|*string*|*uint* 'PATH' ['VALUE']::
     Creates a new attribute with the name and in the object specified by 'PATH'.
     Its type is specified by the first argument. The attribute name has to begin
-    with +my_+.
+    with +my_+. If 'VALUE' is supplied, then it is written to the attribute (if
+    this fails the attribute still remains).
 
 remove_attr 'PATH'::
     Removes the user defined attribute 'PATH'.
