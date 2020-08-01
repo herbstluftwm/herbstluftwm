@@ -6,6 +6,8 @@
 #include <string>
 
 #include "fixprecdec.h"
+#include "link.h"
+#include "object.h"
 #include "types.h"
 
 class Client;
@@ -20,7 +22,7 @@ class TreeInterface;
 /*! A class representing an entire tree of frames that provides
  * the tiling commands and other common actions on the frame tree
  */
-class FrameTree : public std::enable_shared_from_this<FrameTree> {
+class FrameTree : public Object {
 public:
     FrameTree(HSTag* tag, Settings* settings);
     void foreachClient(std::function<void(Client*)> action);
@@ -69,6 +71,7 @@ public:
     void setLayoutCompletion(Completion& complete);
 public: // soon to be come private:
     std::shared_ptr<Frame> root_;
+    Link_<Frame> rootLink_;
     //! replace a node in the frame tree, either modifying old's parent or the root_
     void replaceNode(std::shared_ptr<Frame> old, std::shared_ptr<Frame> replacement);
 private:

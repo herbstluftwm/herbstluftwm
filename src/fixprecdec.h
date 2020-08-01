@@ -1,6 +1,7 @@
 #ifndef FIXPRECDEC_H
 #define FIXPRECDEC_H
 
+#include "attribute_.h"
 #include "types.h"
 
 /**
@@ -47,6 +48,9 @@ private:
 
 template<> FixPrecDec Converter<FixPrecDec>::parse(const std::string& source);
 template<> std::string Converter<FixPrecDec>::str(FixPrecDec payload);
+
+template<>
+inline Type Attribute_<FixPrecDec>::staticType() { return Type::ATTRIBUTE_DECIMAL; }
 
 
 #endif // FIXPRECDEC_H

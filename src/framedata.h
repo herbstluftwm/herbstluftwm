@@ -16,6 +16,7 @@
 #include <memory>
 #include <vector>
 
+#include "attribute_.h"
 #include "fixprecdec.h"
 #include "types.h"
 
@@ -28,6 +29,9 @@ enum class SplitAlign {
 
 ConverterInstance(SplitAlign)
 
+template<>
+inline Type Attribute_<SplitAlign>::staticType() { return Type::ATTRIBUTE_NAMES; }
+
 enum class LayoutAlgorithm {
     vertical = 0,
     horizontal,
@@ -37,6 +41,9 @@ enum class LayoutAlgorithm {
 
 ConverterInstance(LayoutAlgorithm)
 template<> void Converter<LayoutAlgorithm>::complete(Completion& complete, LayoutAlgorithm const* relativeTo);
+
+template<>
+inline Type Attribute_<LayoutAlgorithm>::staticType() { return Type::ATTRIBUTE_NAMES; }
 
 LayoutAlgorithm splitAlignToLayoutAlgorithm(SplitAlign align);
 

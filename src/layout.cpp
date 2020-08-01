@@ -40,6 +40,9 @@ Frame::~Frame() = default;
 
 FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent)
     : Frame(tag, settings, parent)
+    , client_count_(this, "client_count", [this]() {return clientCount(); })
+    , selectionAttr_(this, "selection", &FrameLeaf::getSelection)
+    , algorithmAttr_(this, "algorithm", &FrameLeaf::getLayout)
 {
     auto l = settings->default_frame_layout();
     if (l >= layoutAlgorithmCount()) {
@@ -53,12 +56,20 @@ FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent
 FrameSplit::FrameSplit(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent,
                        FixPrecDec fraction, SplitAlign align, shared_ptr<Frame> a,
                        shared_ptr<Frame> b)
-             : Frame(tag, settings, parent) {
+             : Frame(tag, settings, parent)
+             , splitTypeAttr_(this, "split_type", &FrameSplit::getAlign)
+             , fractionAttr_(this, "fraction", &FrameSplit::getFraction)
+             , selectionAttr_(this, "selection", [this]() { return selection_;})
+             , aLink_(*this, "0")
+             , bLink_(*this, "1")
+{
     this->align_ = align;
     selection_ = 0;
     this->fraction_ = fraction;
     this->a_ = a;
     this->b_ = b;
+    aLink_ = a.get();
+    bLink_ = b.get();
 }
 
 void FrameLeaf::insertClient(Client* client, bool focus) {
@@ -481,10 +492,12 @@ void FrameSplit::replaceChild(shared_ptr<Frame> old, shared_ptr<Frame> newchild)
     if (a_ == old) {
         a_ = newchild;
         newchild->parent_ = thisSplit();
+        aLink_ = a_.get();
     }
     if (b_ == old) {
         b_ = newchild;
         newchild->parent_ = thisSplit();
+        bLink_ = b_.get();
     }
 }
 
@@ -508,11 +521,7 @@ bool FrameLeaf::split(SplitAlign alignment, FixPrecDec fraction, size_t children
     auto new_this = make_shared<FrameSplit>(tag_, settings_, parent_, fraction, alignment, first, second);
     second->parent_ = new_this;
     second->addClients(leaves);
-    if (parent_.lock()) {
-        parent_.lock()->replaceChild(shared_from_this(), new_this);
-    } else {
-        tag_->frame->root_ = new_this;
-    }
+    tag_->frame->replaceNode(thisLeaf(), new_this);
     parent_ = new_this;
     if (selection >= childrenStaying) {
         second->setSelection(selection - childrenStaying);
@@ -524,6 +533,8 @@ bool FrameLeaf::split(SplitAlign alignment, FixPrecDec fraction, size_t children
 
 void FrameSplit::swapChildren() {
     swap(a_,b_);
+    aLink_ = a_.get();
+    bLink_ = b_.get();
 }
 
 void FrameSplit::adjustFraction(FixPrecDec delta) {
