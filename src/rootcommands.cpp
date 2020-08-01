@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 
+#include "argparse.h"
 #include "attribute_.h"
 #include "command.h"
 #include "completion.h"
@@ -311,8 +312,12 @@ void RootCommands::completeAttributeType(Completion& complete)
 
 int RootCommands::new_attr_cmd(Input input, Output output)
 {
-    string type, path;
-    if (!(input >> type >> path )) {
+    string type, path, initialValue;
+    bool initialValueSupplied = false;
+    ArgParse ap;
+    ap.mandatory(type).mandatory(path);
+    ap.optional(initialValue, &initialValueSupplied);
+    if (ap.parsingFails(input, output)) {
         return HERBST_NEED_MORE_ARGS;
     }
     auto obj_path_and_attr = Object::splitPath(path);
@@ -342,6 +347,16 @@ int RootCommands::new_attr_cmd(Input input, Output output)
     }
     obj->addAttribute(a);
     userAttributes_.push_back(unique_ptr<Attribute>(a));
+    // try to write the attribute
+    if (initialValueSupplied) {
+        string msg = a->change(initialValue);
+        if (!msg.empty()) {
+            output << input.command() << ": \""
+                   << initialValue << "\" is an invalid "
+                   << "value for " << path << ": " << msg << endl;
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
     return 0;
 }
 
@@ -358,6 +373,8 @@ void RootCommands::new_attr_complete(Completion& complete)
             char s[] = {OBJECT_PATH_SEPARATOR, '\0'};
             complete.partial(obj_path.join(OBJECT_PATH_SEPARATOR) + s + USER_ATTRIBUTE_PREFIX);
         }
+    } else if (complete == 2) {
+        // no completion for the initial value
     } else {
         complete.none();
     }
