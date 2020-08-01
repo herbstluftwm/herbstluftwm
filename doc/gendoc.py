@@ -20,6 +20,7 @@ def extract_file_tokens(filepath):
     # in the following, it's important to use
     # non-capturing groups (?: .... )
     token_types = [
+        '#[a-zA-Z][^\n]*\n',  # preprocessor
         '//[^\n]*\n',  # single-line comment
         '/\*(?:[^\*]*|\**[^/*])*\*/',  # multiline comment
         '[a-zA-Z_][a-zA-Z0-9_]*',  # identifiers
@@ -131,7 +132,7 @@ def build_token_tree_list(token_stream):
         if t in [')', '}', ']']:
             token_stream.undo_pop()
             break
-        elif t in ['(', '{', ']']:
+        elif t in ['(', '{', '[']:
             nested = list(build_token_tree_list(token_stream))
             closing = token_stream.pop()
             #assert closing in [')', '}', ']']
