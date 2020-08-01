@@ -173,7 +173,8 @@ def test_completable_commands(hlwm, request, run_destructives):
     # a set of commands that make other commands break
     # hence we need to run them separately
     destructive_commands = {
-        'unsetenv'
+        'unsetenv',
+        'split',  # the 'split' commands makes 'FrameLeaf' objects disappear
     }
     for command in commands:
         if 'quit' in command:
