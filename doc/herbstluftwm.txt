@@ -375,9 +375,9 @@ close_and_remove::
     is present in that frame. In floating mode, this acts as the close command.
 
 split 'ALIGN' ['FRACTION' ['FRAMEINDEX']::
-    Splits the focused frame (or the frame specified by 'FRAMEINDEX') into two
-    subframes with a specified 'FRACTION' between 0 and 1 which defaults to 0.5.
-    'ALIGN' is one of
+    Splits the focused frame (or the frame specified by 'FRAMEINDEX', see the
+    section <<FRAME_INDEX,*frame index*>>) into two subframes with a specified
+    'FRACTION' between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
     +
         * 'top'
         * 'bottom' (= 'vertical')
