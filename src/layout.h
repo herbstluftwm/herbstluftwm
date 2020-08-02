@@ -165,6 +165,7 @@ public:
 
     // own members
     int splitsToRoot(SplitAlign align_) override;
+    bool split(SplitAlign alignment, FixPrecDec fraction);
     void replaceChild(std::shared_ptr<Frame> old, std::shared_ptr<Frame> newchild);
     std::shared_ptr<Frame> firstChild() { return a_; }
     std::shared_ptr<Frame> secondChild() { return b_; }

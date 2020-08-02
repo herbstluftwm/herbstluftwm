@@ -518,7 +518,7 @@ def test_raise_invalid_winid(hlwm):
 
 def test_argparse_too_few_range(hlwm):
     hlwm.call_xfail('split') \
-        .expect_stderr('Expected between 1 and 2 arguments, but got only 0')
+        .expect_stderr('Expected between 1 and 3 arguments, but got only 0')
 
 
 def test_argparse_expected_1(hlwm):
