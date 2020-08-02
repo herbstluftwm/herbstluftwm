@@ -66,6 +66,7 @@ private:
 enum class ClientPlacement {
     Center, //! place in the center of a monitor
     Unchanged, //! don't change the position
+    Smart, //! as little overlaps as possible
 };
 
 template<> std::string Converter<ClientPlacement>::str(ClientPlacement cp);

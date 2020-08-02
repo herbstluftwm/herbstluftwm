@@ -732,7 +732,7 @@ def x11(x11_connection):
                 # the following coordinates are only relative
                 # to the parent of window
                 geom = window.get_geometry()
-                print('Geometry of {} is: x={} y={} w={} h={}'.format(
+                print('Relative geometry of {} is: x={} y={} w={} h={}'.format(
                       self.winid_str(window), geom.x, geom.y, geom.width, geom.height))
                 x += geom.x
                 y += geom.y

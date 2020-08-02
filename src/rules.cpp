@@ -326,6 +326,7 @@ template<>
 Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values = {
     { ClientPlacement::Center, "center" },
     { ClientPlacement::Unchanged, "none" },
+    { ClientPlacement::Smart, "smart" },
 };
 
 template<>
