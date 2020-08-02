@@ -822,17 +822,19 @@ vector<SplitMode> SplitMode::modes(SplitAlign align_explode, SplitAlign align_au
 
 int FrameTree::splitCommand(Input input, Output output)
 {
-    // usage: split t|b|l|r|h|v FRACTION
+    // usage: split t|b|l|r|h|v FRACTION [Frameindex]
     string splitType;
     bool userDefinedFraction = false;
     FixPrecDec fraction = FixPrecDec::approxFrac(1, 2);
+    string frameIndex = "@"; // split the focused frame per default
     ArgParse ap;
     ap.mandatory(splitType).optional(fraction, &userDefinedFraction);
+    ap.optional(frameIndex);
     if (ap.parsingFails(input, output)) {
         return ap.exitCode();
     }
     fraction = FrameSplit::clampFraction(fraction);
-    auto frame = focusedFrame();
+    shared_ptr<Frame> frame = lookup(frameIndex);
     int lh = frame->lastRect().height;
     int lw = frame->lastRect().width;
     SplitAlign align_auto = (lw > lh) ? SplitAlign::horizontal : SplitAlign::vertical;
@@ -846,8 +848,15 @@ int FrameTree::splitCommand(Input input, Output output)
         return HERBST_INVALID_ARGUMENT;
     }
     SplitMode m = *mode;
-    auto layout = frame->getLayout();
-    auto windowcount = frame->clientCount();
+    auto layout = frame->switchcase<LayoutAlgorithm>(&FrameLeaf::getLayout,
+        [] (shared_ptr<FrameSplit> f) {
+            return splitAlignToLayoutAlgorithm(f->getAlign());
+    });
+    // if 'frame' is a FrameSplit, we simply set the
+    // window count to 0, because we do not have a count of windows
+    // that stay in the 'old frame'.
+    auto windowcount = frame->switchcase<size_t>(&FrameLeaf::clientCount,
+        [](shared_ptr<FrameSplit>) { return 0; });
     bool exploding = m.name == "explode";
     if (exploding) {
         if (windowcount <= 1) {
@@ -861,7 +870,7 @@ int FrameTree::splitCommand(Input input, Output output)
         } else {
             m.align = SplitAlign::vertical;
         }
-        size_t count1 = frame->clientCount();
+        size_t count1 = windowcount;
         size_t nc1 = (count1 + 1) / 2;      // new count for the first frame
         if ((layout == LayoutAlgorithm::horizontal
             || layout == LayoutAlgorithm::vertical)
@@ -872,14 +881,24 @@ int FrameTree::splitCommand(Input input, Output output)
     // move second half of the window buf to second frame
     size_t childrenLeaving = 0;
     if (exploding) {
-        childrenLeaving = frame->clientCount() / 2;
+        childrenLeaving = windowcount / 2;
     }
-    if (!frame->split(m.align, fraction, childrenLeaving)) {
-        return 0;
+    auto frameIsLeaf = frame->isLeaf();
+    auto frameIsSplit = frame->isSplit();
+    shared_ptr<FrameSplit> frameParent = {}; // the new parent
+    if (frameIsLeaf) {
+        if (!frameIsLeaf->split(m.align, fraction, childrenLeaving)) {
+            return 0;
+        }
+        frameParent = frameIsLeaf->getParent();
+    }
+    if (frameIsSplit) {
+        if (!frameIsSplit->split(m.align, fraction)) {
+            return 0;
+        }
+        frameParent = frameIsSplit->getParent();
     }
 
-    auto frameParent = frame->getParent();
-    assert(frameParent != nullptr);
     if (!m.frameToFirst) {
         frameParent->swapChildren();
     }

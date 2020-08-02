@@ -469,6 +469,25 @@ int FrameSplit::splitsToRoot(SplitAlign align) {
     return delta + parent_.lock()->splitsToRoot(align);
 }
 
+bool FrameSplit::split(SplitAlign alignment, FixPrecDec fraction)
+{
+    bool tooManySplits = false;
+    fmap([] (FrameSplit*) {}, [&] (FrameLeaf* l) {
+        tooManySplits = tooManySplits
+                || l->splitsToRoot(alignment) > HERBST_MAX_TREE_HEIGHT;
+    }, 0);
+    if (tooManySplits) {
+        return false;
+    }
+    auto first = shared_from_this();
+    auto second = make_shared<FrameLeaf>(tag_, settings_, weak_ptr<FrameSplit>());
+    auto new_this = make_shared<FrameSplit>(tag_, settings_, parent_, fraction, alignment, first, second);
+    tag_->frame->replaceNode(shared_from_this(), new_this);
+    first->parent_ = new_this;
+    second->parent_ = new_this;
+    return true;
+}
+
 void FrameSplit::replaceChild(shared_ptr<Frame> old, shared_ptr<Frame> newchild) {
     if (a_ == old) {
         a_ = newchild;

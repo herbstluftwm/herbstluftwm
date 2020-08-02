@@ -374,9 +374,10 @@ close_and_remove::
     Closes the focused window and removes the current frame if no other window
     is present in that frame. In floating mode, this acts as the close command.
 
-split 'ALIGN' ['FRACTION']::
-    Splits the focused frame into two subframes with a specified 'FRACTION'
-    between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
+split 'ALIGN' ['FRACTION' ['FRAMEINDEX']::
+    Splits the focused frame (or the frame specified by 'FRAMEINDEX', see the
+    section <<FRAME_INDEX,*frame index*>>) into two subframes with a specified
+    'FRACTION' between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
     +
         * 'top'
         * 'bottom' (= 'vertical')
@@ -398,6 +399,7 @@ split 'ALIGN' ['FRACTION']::
         * split horiz 0.3
         * split vertical 0.5
         * split h
+        * split top 0.2 ''   (splits the root frame)
 
 focus ['-i'|'-e'] 'DIRECTION'::
     Moves the focus from current frame to the next frame or client in

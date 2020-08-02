@@ -904,3 +904,50 @@ def test_cycle_layout_name_in_the_list(hlwm, delta):
     for expected in expected_layouts:
         hlwm.call(cycle_layout_cmd)
         assert current_layout_name(hlwm) == expected
+
+
+@pytest.mark.parametrize("splitmode,context", [
+    ('top', '(split vertical:0.5:1 (clients vertical:0) {})'),
+    ('bottom', '(split vertical:0.5:0 {} (clients vertical:0))'),
+    ('left', '(split horizontal:0.5:1 (clients vertical:0) {})'),
+    ('right', '(split horizontal:0.5:0 {} (clients vertical:0))'),
+])
+@pytest.mark.parametrize("oldlayout", [
+    '(split horizontal:0.587:1 (clients vertical:0 W) (split vertical:0.4029:1 (clients max:0 W) (clients max:0)))',
+])
+def test_split_root_frame(hlwm, splitmode, context, oldlayout):
+    for ch in str(oldlayout):  # duplicate the string here
+        if ch != 'W':
+            continue
+        winid, _ = hlwm.create_client()
+        oldlayout = oldlayout.replace('W', winid, 1)
+
+    hlwm.call(['load', oldlayout])
+    assert hlwm.call('dump').stdout == oldlayout
+
+    # here, '' is the frame index of the root frame
+    hlwm.call(['split', splitmode, '0.5', ''])
+
+    hlwm.call('get default_frame_layout')
+    assert context.format(oldlayout) == hlwm.call(['dump']).stdout
+
+
+@pytest.mark.parametrize("splitmode,context", [
+    ('top', '(split vertical:0.5:1 (clients vertical:0) {})'),
+    ('bottom', '(split vertical:0.5:0 {} (clients vertical:0))'),
+    ('left', '(split horizontal:0.5:1 (clients vertical:0) {})'),
+    ('right', '(split horizontal:0.5:0 {} (clients vertical:0))'),
+])
+def test_split_something_in_between(hlwm, splitmode, context):
+    outer_layer = '(split vertical:0.3:1 (clients max:0) {})'
+    inner_layer = '(split horizontal:0.2:0 (clients max:0) (clients grid:0))'
+
+    initial_layout = outer_layer.format(inner_layer)
+    hlwm.call(['load', initial_layout])
+    assert hlwm.call('dump').stdout == initial_layout
+
+    # split the {} of outer_layer
+    hlwm.call(['split', splitmode, '0.5', '1'])
+
+    expected_layout = outer_layer.format(context.format(inner_layer))
+    assert hlwm.call('dump').stdout == expected_layout
