@@ -12,8 +12,9 @@ Current git version
   * New optional argument for the 'split' command for splitting non-leaf frames
   * New attribute 'urgent_count' for tags, counting the number of urgent clients on a tag
   * New rule consequence 'floatplacement' that updates the placement of floating
-    clients ('floatplacement=center') or leaves the floating position as is
-    ('floatplacement=none')
+    clients ('floatplacement=smart' for little overlap,
+    'floatplacement=center' for centering) or leaves the floating position as
+    is ('floatplacement=none')
   * New rule condition 'pgid'
   * The 'new_attr' command now also accepts an initial value
   * Bug fixes:
