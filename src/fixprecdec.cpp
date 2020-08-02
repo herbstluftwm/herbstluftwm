@@ -16,6 +16,9 @@ template<>
 FixPrecDec Converter<FixPrecDec>::parse(const string& source)
 {
     vector<string> parts = ArgList::split(source, '.');
+    if (parts.size() == 0) {
+        throw std::invalid_argument("Decimal is empty");
+    }
     if (parts.size() > 2) {
         throw std::invalid_argument("A decimal must have at most one \'.\'");
     }
