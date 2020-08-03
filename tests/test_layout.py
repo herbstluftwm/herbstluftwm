@@ -805,6 +805,7 @@ def test_split_invalid_argument(hlwm):
         ('b', "stoi"),
         ('-.3', "stoi"),
         ('+.8', "stoi"),
+        ('', "Decimal is empty"),
     ]
     for d, msg in wrongDecimal:
         hlwm.call_xfail(['split', 'top', d]) \
