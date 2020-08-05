@@ -20,7 +20,7 @@ def extract_file_tokens(filepath):
     # in the following, it's important to use
     # non-capturing groups (?: .... )
     token_types = [
-        '#[a-zA-Z](?:[^\n]|\\\n)*\n',  # preprocessor
+        '#[a-zA-Z ](?:[^\n]|\\\n)*\n',  # preprocessor
         '//[^\n]*\n',  # single-line comment
         '/\*(?:[^\*]*|\**[^/*])*\*/',  # multiline comment
         '[a-zA-Z_][a-zA-Z0-9_]*',  # identifiers
@@ -125,14 +125,14 @@ class TokenStream:
             fullmsg = fullmsg.format(error_message)
             raise Exception(fullmsg)
         tok = self.tokens[self.pos]
-        print("tok {}".format(tok), file=sys.stderr)
+        #print("tok {}".format(tok), file=sys.stderr)
         self.pos += 1
         # print("yielding token '{}'".format(t))
         return tok
 
     def undo_pop(self):
         """undo the last pop operation"""
-        print("tokundo", file=sys.stderr)
+        #print("tokundo", file=sys.stderr)
         self.pos -= 1
 
 
