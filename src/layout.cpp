@@ -32,7 +32,8 @@ using std::weak_ptr;
  * you can either specify a frame or a tag as its parent
  */
 Frame::Frame(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent)
-    : tag_(tag)
+    : frameIndexAttr_(this, "index", &Frame::frameIndex)
+    , tag_(tag)
     , settings_(settings)
     , parent_(parent)
 {}
@@ -159,6 +160,19 @@ shared_ptr<FrameSplit> FrameSplit::thisSplit() {
 
 shared_ptr<FrameLeaf> Frame::getGloballyFocusedFrame() {
     return get_current_monitor()->tag->frame->focusedFrame();
+}
+
+std::string Frame::frameIndex() const
+{
+    auto p = parent_.lock();
+    if (p) {
+        string parent_index = p->frameIndex();
+        bool first_child = p->firstChild() == shared_from_this();
+        return parent_index + (first_child ? "0" : "1");
+    } else {
+        // this is the root
+        return "";
+    }
 }
 
 TilingResult FrameLeaf::layoutLinear(Rectangle rect, bool vertical) {

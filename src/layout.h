@@ -80,6 +80,8 @@ public:
     friend class FrameSplit;
     friend class FrameTree;
     friend class HSTag; // for HSTag::foreachClient()
+    DynAttribute_<std::string> frameIndexAttr_;
+    std::string frameIndex() const;
 public: // soon will be protected:
     virtual std::shared_ptr<FrameSplit> isSplit() { return std::shared_ptr<FrameSplit>(); };
     virtual std::shared_ptr<FrameLeaf> isLeaf() { return std::shared_ptr<FrameLeaf>(); };
