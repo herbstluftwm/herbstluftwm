@@ -15,6 +15,7 @@ Current git version
   * New rule condition 'pgid'
   * The 'new_attr' command now also accepts an initial value
   * React to a change of the 'floating_focused' attribute of the tag object
+  * New frame index character 'p' for accessing the parent frame
   * Bug fixes:
     - Fix wrong behaviour in 'cycle_layout' in the case where the current layout
       is not contained in the layout list passed to 'cycle_layout'.

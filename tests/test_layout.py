@@ -181,15 +181,31 @@ def test_dump_frame_index(hlwm):
     layout = {}
     layout['00'] = "(clients vertical:0)"
     layout['01'] = "(clients grid:0)"
-    layout['0'] = '(split vertical:0.7:0 {} {})'.format(
+    layout['0'] = '(split vertical:0.7:1 {} {})'.format(
         layout['00'], layout['01'])
     layout['1'] = '(clients horizontal:0)'
     layout[''] = '(split horizontal:0.65:0 {} {})'.format(
         layout['0'], layout['1'])
     hlwm.call(['load', layout['']])
 
+    # also test more specific frame indices:
+    frame_index_aliases = [
+        ('@', '01'),
+        ('@p', '0'),
+        ('@p/', '00'),
+        ('@p/', '00'),
+        ('@pp', ''),
+        ('@ppp', ''),  # going up too much does not exceed the root
+        ('..', '01'),
+        ('...', '01'),
+        ('./', '00'),
+    ]
+    for complicated, normalized in frame_index_aliases:
+        layout[complicated] = layout[normalized]
+
+    # test all the frame tree portions in the dict 'layout':
     tag = hlwm.get_attr('tags.focus.name')
-    for index in ["", "0", "1", "00", "01"]:
+    for index in layout.keys():
         assert hlwm.call(['dump', tag, index]).stdout == layout[index]
 
 
