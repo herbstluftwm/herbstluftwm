@@ -20,7 +20,12 @@ def extract_file_tokens(filepath):
     # in the following, it's important to use
     # non-capturing groups (?: .... )
     token_types = [
-        '#[a-zA-Z ](?:[^\n]|\\\n)*\n',  # preprocessor
+        # the following is complicated because we allow to
+        # escape newlines for longer macro definitions, but
+        # the \ may also occur within the macro definition
+        # hence the following regex checks that there is no
+        # \ right before the last \n
+        "#(?:[^Z\n]|\\\\\n)*[^\\\\]\n",  # preprocessor
         '//[^\n]*\n',  # single-line comment
         '/\*(?:[^\*]*|\**[^/*])*\*/',  # multiline comment
         '[a-zA-Z_][a-zA-Z0-9_]*',  # identifiers
@@ -35,7 +40,7 @@ def extract_file_tokens(filepath):
     entire_regex = ['(?:{})'.format(t) for t in token_types]
     entire_regex = re.compile('(' + '|'.join(entire_regex) + ')')
     with open(filepath, 'r') as fh:
-        for t in entire_regex.split(fh.read()):
+        for t in entire_regex.split(fh.read().replace('\r', '') + '\n'):
             if t is not None and t.strip(' \t') != '':
                 yield t
 
@@ -94,6 +99,13 @@ class TokenTree:
         tt.enclosed_tokens = enclosed
         tt.closing_token = closing
         return tt
+
+
+    def __str__(self):
+        if self.literate is not None:
+            return self.literate
+        else:
+            return '{} ... {}'.format(self.opening_token, self.closing_token)
 
     def PrettyPrintList(tokentree_list, curindent=''):
         for t in tokentree_list:
@@ -179,6 +191,7 @@ def extract_doc_info(tokentreenodes, objInfo):
     stream = TokenStream(tokentreenodes)
     while not stream.empty():
         token = stream.pop()
+        #print("token = {}".format(token))
         if token.literate == 'class':
             classname = stream.pop("expecting class name after 'class'").literate
             nexttoken = stream.pop("expecting something after 'class {}'"
