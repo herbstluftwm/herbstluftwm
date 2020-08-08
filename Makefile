@@ -9,11 +9,12 @@ TARFILE = herbstluftwm-$(VERSION).tar
 BUILDDIR = build
 
 all: $(BUILDDIR)
-	cd $(BUILDDIR) && $(MAKE)
+	cd $(BUILDDIR) && $(MAKE) -j$(nproc)
 	@echo The compilation result can be found in $(BUILDDIR)/
 
 $(BUILDDIR):
 	mkdir -p $@
+	cp valgrind-xephyr.sh "$@"
 	cd $@ && cmake ..
 
 clean:

@@ -23,6 +23,8 @@ include(ccache)
 set(CMAKE_INSTALL_SYSCONF_PREFIX "/etc" CACHE PATH
     "Top-level install path for configuration files. May be given relative to CMAKE_INSTALL_PREFIX.")
 
+set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CONFIGDIR "${CMAKE_INSTALL_SYSCONF_PREFIX}/xdg/herbstluftwm")
 set(BINDIR bin)
 set(DATADIR share)
@@ -42,7 +44,6 @@ set(BASHCOMPLETIONDIR ${DATADIR}/bash-completion/completions
 ## do the actual work
 add_subdirectory(ipc-client)
 add_subdirectory(src)
-add_subdirectory(doc)
 add_subdirectory(share)
 
 ## install everything that was not installed from subdirectories

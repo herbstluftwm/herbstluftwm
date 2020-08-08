@@ -216,6 +216,10 @@ void XMainLoop::buttonpress(XButtonEvent* be) {
                     mm->mouse_initiate_move(client, {});
                 }
             }
+        } else {
+            // root windows handling
+            HSDebug("handle default RootWindow ButtonPress on win 0x%lx\n", be->window);
+            mm->mouse_call_command_root_window({"call", "spwan","xmenu.sh"});
         }
     }
     FrameDecoration* frameDec = FrameDecoration::withWindow(be->window);

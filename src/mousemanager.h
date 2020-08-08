@@ -42,6 +42,7 @@ public:
     std::string mouse_initiate_zoom(Client* client, const std::vector<std::string> &cmd);
     std::string mouse_initiate_resize(Client* client, const std::vector<std::string> &cmd);
     std::string mouse_call_command(Client* client, const std::vector<std::string> &cmd);
+    std::string mouse_call_command_root_window(const std::vector<std::string> &cmd);
 
 private:
     //! start dragging for the specified client (possibly up to some arguments), and return a error message

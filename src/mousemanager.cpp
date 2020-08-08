@@ -211,6 +211,14 @@ string MouseManager::mouse_call_command(Client* client, const vector<string> &cm
     return {};
 }
 
+string MouseManager::mouse_call_command_root_window(const vector<string> &cmd) {
+    // Execute the bound command
+    std::ostringstream discardedOutput;
+    Input input(cmd.front(), {cmd.begin() + 1, cmd.end()});
+    Commands::call(input, discardedOutput);
+    return {};
+}
+
 string MouseManager::mouse_initiate_drag(Client *client, const MouseDragHandler::Constructor& createHandler)
 {
     try {

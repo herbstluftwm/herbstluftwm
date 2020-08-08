@@ -39,6 +39,11 @@ for arg in "$@" ; do
                 gdb -ex run --args "$@"
             }
             ;;
+        --vim-debug)
+            debugger() {
+                echo "+TermdebugCommand $@" | xargs -I{} -0 vim '{}'
+            }
+            ;;
         --none)
             debugger() {
                 "$@"
@@ -98,8 +103,7 @@ done
 # boot up herbstluftwm
 # --------------------
 DISPLAY=":$xephyr_displaynr" \
-    debugger ./herbstluftwm --verbose -c "$AUTOSTART" \
-    || echo "Warning: debugger had non-zero exit code"
+    debugger ./herbstluftwm --verbose -c "$AUTOSTART" || die "Warning: debugger had non-zero exit code"
 
 # clean up xephyr
 kill "$xephyr_pid"
