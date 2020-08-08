@@ -162,7 +162,7 @@ shared_ptr<FrameLeaf> Frame::getGloballyFocusedFrame() {
     return get_current_monitor()->tag->frame->focusedFrame();
 }
 
-std::string Frame::frameIndex() const
+string Frame::frameIndex() const
 {
     auto p = parent_.lock();
     if (p) {
