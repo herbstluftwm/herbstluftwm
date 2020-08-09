@@ -147,6 +147,12 @@ class TokenStream:
         #print("tokundo", file=sys.stderr)
         self.pos -= 1
 
+    def try_match(self, *args):
+        """if the next tokens match the list in the *args
+        then pop them from the stream, else do nothing
+        """
+        pass
+
 
 def build_token_tree_list(token_stream):
     """return a list of TokenTree objects"""
@@ -181,28 +187,28 @@ class ObjectInformation:
 
     def print(self):
         for k, v in self.base_classes.items():
-            print("{} has the base classes: {}".format(k, ' '.join(v)))
+            print("{} has the base classes: \'{}\'".format(k, '\' \''.join(v)))
 
 
-def extract_doc_info(tokentreenodes, objInfo):
+def extract_doc_info(tokens, objInfo):
     """extract object information from a list of TokenTree objects
     and save the data in the ObjectInformation object passed"""
     pub_priv_prot = ['public', 'private', 'protected']
-    stream = TokenStream(tokentreenodes)
+    stream = TokenStream([t for t in tokens if t.strip() != ''])
     while not stream.empty():
         token = stream.pop()
         #print("token = {}".format(token))
-        if token.literate == 'class':
-            classname = stream.pop("expecting class name after 'class'").literate
+        if token == 'class':
+            classname = stream.pop("expecting class name after 'class'")
             nexttoken = stream.pop("expecting something after 'class {}'"
                                   .format(classname))
-            if nexttoken.literate == ':':
+            if nexttoken == ':':
                 nexttoken = stream.pop("expecting base classes")
-                while nexttoken.literate not in [None, ';']:
-                    if nexttoken.literate not in pub_priv_prot:
-                        objInfo.base_class(classname, nexttoken.literate)
+                while nexttoken not in [None, ';', '{']:
+                    if nexttoken not in pub_priv_prot:
+                        objInfo.base_class(classname, nexttoken)
                     nexttoken = stream.pop("expecting base classes")
-            if nexttoken.literate == ';':
+            if nexttoken == ';':
                 # only a forward declaration
                 continue
 
@@ -245,8 +251,8 @@ def main():
         for f in files():
             print("parsing file {}".format(f))
             toks = extract_file_tokens(f)
-            toktree = list(build_token_tree_list(TokenStream(list(toks))))
-            extract_doc_info(toktree, objInfo)
+            #toktree = list(build_token_tree_list(TokenStream(list(toks))))
+            extract_doc_info(list(toks), objInfo)
         objInfo.print()
 
 
