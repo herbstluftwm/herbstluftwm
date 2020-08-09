@@ -124,6 +124,7 @@ class TokenStream:
     def __init__(self, tokens):
         self.tokens = tokens
         self.pos = 0
+        self.re_type = type(re.compile('the type of regexes'))
 
     def empty(self):
         return self.pos >= len(self.tokens)
@@ -147,11 +148,36 @@ class TokenStream:
         #print("tokundo", file=sys.stderr)
         self.pos -= 1
 
+    class PatternArg:
+        """a PatternArg object passed to try_match()
+        allows the try_match function to return one or multiple tokens
+        """
+        def __init__(self):
+            self.value = None
+
+        def assign(self, value):
+            self.value = value
+
     def try_match(self, *args):
         """if the next tokens match the list in the *args
         then pop them from the stream, else do nothing
         """
-        pass
+        for delta, pattern in enumerate(args):
+            if self.pos + delta >= len(self.tokens):
+                return False
+            curtok = self.tokens[self.pos + delta]
+            if isinstance(pattern, self.re_type):
+                if not pattern.match(curtok):
+                    return False
+            elif isinstance(pattern, str):
+                if pattern != curtok:
+                    return False
+            elif isinstance(pattern, TokenStream.PatternArg):
+                pattern.assign(curtok)
+            else:
+                raise Exception("unknown pattern type {}".format(type(pattern)))
+        self.pos += len(args)
+        return True
 
 
 def build_token_tree_list(token_stream):
@@ -187,30 +213,61 @@ class ObjectInformation:
 
     def print(self):
         for k, v in self.base_classes.items():
-            print("{} has the base classes: \'{}\'".format(k, '\' \''.join(v)))
+            bases = [str(b) for b in v]
+            print("{} has the base classes: \'{}\'".format(k, '\' \''.join(bases)))
 
+class ClassName:
+    def __init__(self, name, namespace=[], template_args=[]):
+        self.namespace = namespace
+        self.name = name
+        self.template_args = template_args
+
+    def __str__(self):
+        s = ''
+        for n in self.namespace:
+            s += n + '::'
+        s += self.name
+        if len(self.template_args) > 0:
+            s += '<' + ','.join(self.template_args) + '>'
+        return s
+
+    @staticmethod
+    def stream_pop_class_name(stream):
+        namespace = []
+        name = stream.pop('expected class name')
+        tmpl_args = []
+        arg = TokenStream.PatternArg()
+        while stream.try_match(':', ':', arg):
+            namespace.append(name)
+            name = arg.value
+        #if name == 'enable_shared_from_this':
+        #    print("Next token is: {}".format(stream.tokens[stream.pos]))
+        if stream.try_match('<'):
+            tok = stream.pop('expected template argument')
+            #print("next token is: {}".format(tok))
+            tmpl_args.append(tok)
+            while stream.try_match(','):
+                tmpl_args.append(stream.pop('expected template argument'))
+            assert stream.try_match('>'), \
+                'expecting > after last template argument'
+        return ClassName(name, namespace=namespace, template_args=tmpl_args)
 
 def extract_doc_info(tokens, objInfo):
     """extract object information from a list of TokenTree objects
     and save the data in the ObjectInformation object passed"""
-    pub_priv_prot = ['public', 'private', 'protected']
+    # pub_priv_prot = ['public', 'private', 'protected']
+    pub_priv_prot_re = re.compile('public|private|protected')
     stream = TokenStream([t for t in tokens if t.strip() != ''])
+    arg1 = TokenStream.PatternArg()
     while not stream.empty():
-        token = stream.pop()
-        #print("token = {}".format(token))
-        if token == 'class':
-            classname = stream.pop("expecting class name after 'class'")
-            nexttoken = stream.pop("expecting something after 'class {}'"
-                                  .format(classname))
-            if nexttoken == ':':
-                nexttoken = stream.pop("expecting base classes")
-                while nexttoken not in [None, ';', '{']:
-                    if nexttoken not in pub_priv_prot:
-                        objInfo.base_class(classname, nexttoken)
-                    nexttoken = stream.pop("expecting base classes")
-            if nexttoken == ';':
-                # only a forward declaration
-                continue
+        if stream.try_match('class', arg1):
+            classname = arg1.value
+            while stream.try_match(re.compile('^,|:$'), pub_priv_prot_re):
+                baseclass = ClassName.stream_pop_class_name(stream)
+                objInfo.base_class(classname, baseclass)
+        else:
+            stream.pop()
+
 
 def main():
     parser = argparse.ArgumentParser(description='extract hlwm doc from the source code')
