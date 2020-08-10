@@ -968,3 +968,23 @@ def test_split_something_in_between(hlwm, splitmode, context):
 
     expected_layout = outer_layer.format(context.format(inner_layer))
     assert hlwm.call('dump').stdout == expected_layout
+
+
+def test_frame_index_attribute(hlwm):
+    # split the frames with the following indices
+    split_index = [
+        '', '0', '00', '1', '11', '111'
+    ]
+
+    def verify_frame_tree(object_path, index_prefix):
+        assert hlwm.get_attr(f'{object_path}.index') == index_prefix
+        if '0' in hlwm.list_children(object_path):
+            verify_frame_tree(f'{object_path}.0', f'{index_prefix}0')
+            verify_frame_tree(f'{object_path}.1', f'{index_prefix}1')
+
+    for index in split_index:
+        hlwm.call(['split', 'auto', '0.5', index])
+
+        # after each splitting operation, check that
+        # the frame's index attribute is correct:
+        verify_frame_tree('tags.focus.tiling.root', '')
