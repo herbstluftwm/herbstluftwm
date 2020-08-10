@@ -106,24 +106,27 @@ FRAME INDEX
 -----------
 The exact position of a frame in the layout tree may be described by its
 *index* which is just a string of characters. The lookup algorithm starts at
-the root frame and selects one of its two subtrees according to the each
-character in the index.
-
-The characters are interpreted as follows:
+the root frame and interprets the *index* string character by character as
+follows:
 
     * +0+: select the first subtree
     * +1+: select the second subtree
     * +.+: select the subtree having the focus
     * +/+: select the subtree not having the focus
+    * +@+: select the frame having the focus. In contrast to +.+, this passes
+      multiple layers all down to the focused leaf of the frame tree.
+    * +p+: select the parent tree
     * +e+: finds a suitable empty frame: if the focused frame is not empty, this
       selects the closest frame that is empty (in any subtree)
 
-Thus an empty string refers to the root frame, and "00" refers to the first
-subtree of the first subtree of the root frame. Similarly "1e" refers to the
-first empty frame in the second subtree.
+For example:
 
-As a special case, the string "@" always refers to the currently focused
-frame.
+    * An empty string refers to the root frame
+    * +00+ refers to the first subtree of the first subtree of the root frame.
+    * +1e+ refers to the first empty frame in the second subtree.
+    * +/@+ refers to the focused frame within the unfocused "half" of the frame
+      tree
+    * +@p/+ refers to the sibling of the focused frame
 
 TAGS
 ----
