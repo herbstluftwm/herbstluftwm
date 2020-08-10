@@ -76,16 +76,27 @@ void FrameTree::dump(shared_ptr<Frame> frame, Output output)
  */
 shared_ptr<Frame> FrameTree::lookup(const string& path) {
     shared_ptr<Frame> node = root_;
-    // the string "@" is a special case
-    if (path == "@") {
-        return focusedFrame();
-    }
     for (char c : path) {
         if (c == 'e') {
             shared_ptr<FrameLeaf> emptyFrame = findEmptyFrameNearFocus(node);
             if (emptyFrame) {
                 // go to the empty node if we had found some
                 node = emptyFrame;
+            }
+            continue;
+        }
+        if (c == '@') {
+            node = focusedFrame(node);
+            continue;
+        }
+        if (c == 'p') {
+            auto parent = node->parent_;
+            // only change the 'node' if 'parent' is set.
+            // if 'parent' is not set, then 'node' is already
+            // the root node; in this case we stay at the
+            // root.
+            if (parent.lock()) {
+                node = parent.lock();
             }
             continue;
         }
