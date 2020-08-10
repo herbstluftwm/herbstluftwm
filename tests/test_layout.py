@@ -970,5 +970,5 @@ def test_frame_index_attribute(hlwm):
         hlwm.call(['split', 'auto', '0.5', index])
 
         # after each splitting operation, check that
-        # the frame_index attribute is correct:
+        # the frame's index attribute is correct:
         verify_frame_tree('tags.focus.tiling.root', '')
