@@ -741,8 +741,12 @@ def test_floatplacement_smart_uses_all_corners(hlwm, x11):
 @pytest.mark.exclude_from_coverage(
     reason='This test does not verify functionality but only whether \
     creating lots of windows can be handled by the algorithm')
-def test_floatplacement_smart_create_many(hlwm, x11):
+@pytest.mark.parametrize('invisible_tag', [False, True])
+def test_floatplacement_smart_create_many(hlwm, x11, invisible_tag):
     hlwm.call('move_monitor "" 500x520')
+    if invisible_tag:
+        hlwm.call('add invisible_tag')
+        hlwm.call('rule tag=invisible_tag')
     hlwm.call('rule floatplacement=smart floating=on')
 
     # create many clients with different sizes
@@ -753,3 +757,15 @@ def test_floatplacement_smart_create_many(hlwm, x11):
 
     for i in range(0, 50):
         x11.create_client(geometry=index2geometry(i))
+
+
+def test_floatplacement_smart_invisible_windows(hlwm):
+    hlwm.call('add invisible')
+    hlwm.call('rule floatplacement=smart floating=on tag=invisible')
+
+    # create some floating clients on the invisible tag and check
+    # that it does not crash
+    hlwm.create_client()
+    hlwm.create_client()
+    hlwm.create_client()
+    hlwm.create_client()
