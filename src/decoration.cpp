@@ -139,6 +139,10 @@ void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
 }
 
 Rectangle Decoration::inner_to_outer(Rectangle rect) {
+    if (!last_scheme) {
+        // if the decoration was never drawn, we can't do anything reasonable
+        return rect;
+    }
     return last_scheme->inner_rect_to_outline(rect);
 }
 
@@ -294,6 +298,10 @@ unsigned int Decoration::get_client_color(Color color) {
 
 // draw a decoration to the client->dec.pixmap
 void Decoration::redrawPixmap() {
+    if (!last_scheme) {
+        // do nothing if we don't have a scheme.
+        return;
+    }
     const DecorationScheme& s = *last_scheme;
     auto dec = this;
     auto outer = last_outer_rect;
