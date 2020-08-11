@@ -234,17 +234,17 @@ class ClassName:
     @staticmethod
     def stream_pop_class_name(stream):
         namespace = []
+        if stream.try_match(':', ':'):
+            # absolute namespace, e.g. ::std::exception.
+            namespace.append('')
         name = stream.pop('expected class name')
         tmpl_args = []
         arg = TokenStream.PatternArg()
         while stream.try_match(':', ':', arg):
             namespace.append(name)
             name = arg.value
-        #if name == 'enable_shared_from_this':
-        #    print("Next token is: {}".format(stream.tokens[stream.pos]))
         if stream.try_match('<'):
             tok = stream.pop('expected template argument')
-            #print("next token is: {}".format(tok))
             tmpl_args.append(tok)
             while stream.try_match(','):
                 tmpl_args.append(stream.pop('expected template argument'))
