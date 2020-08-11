@@ -72,14 +72,12 @@ def pretty_print_token_list(tokens, indent='  '):
 
 
 class TokenTree:
-    """a TokenTree is one of the following:
-        - a literate token
-        - a token group that is enclosed by ( ), [ ], or { } tokens
+    """A list of TokenTrees is a list whose elements are either:
+        - plain strings (something like a 'class' token)
+        - a token group enclosed by ( ), [ ], or { } tokens
     """
     def __init__(self):
         """this should not be called directly"""
-        # literate token:
-        self.literate = None
         # token group
         self.opening_token = None
         self.enclosed_tokens = []  # list of TokenTree objects
@@ -88,9 +86,8 @@ class TokenTree:
 
     @staticmethod
     def LiterateToken(tok):
-        tt = TokenTree()
-        tt.literate = tok
-        return tt
+        """just return a plain string"""
+        return tok
 
     @staticmethod
     def TokenGroup(opening, enclosed, closing):
@@ -100,23 +97,27 @@ class TokenTree:
         tt.closing_token = closing
         return tt
 
+    @staticmethod
+    def IsTokenGroup(tokenStringOrGroup):
+        if isinstance(tokenStringOrGroup, TokenTree):
+            return True
+        else:
+            return False
 
     def __str__(self):
-        if self.literate is not None:
-            return self.literate
-        else:
-            return '{} ... {}'.format(self.opening_token, self.closing_token)
+        return '{} ... {}'.format(self.opening_token, self.closing_token)
 
+    @staticmethod
     def PrettyPrintList(tokentree_list, curindent=''):
         for t in tokentree_list:
-            if t.literate is not None:
-                if t.literate.strip() == '':
-                    continue
-                print(curindent + t.literate)
-            else:
+            if TokenTree.IsTokenGroup(t):
                 print(curindent + t.opening_token)
                 TokenTree.PrettyPrintList(t.enclosed_tokens, curindent=curindent + '  ')
                 print(curindent + t.closing_token)
+            else:
+                if t.strip() == '':
+                    continue
+                print(curindent + t)
 
 
 class TokenStream:
@@ -160,13 +161,18 @@ class TokenStream:
 
     def try_match(self, *args):
         """if the next tokens match the list in the *args
-        then pop them from the stream, else do nothing
+        then pop them from the stream, else do nothing.
+        if one of the next tokens is not a string, the matching
+        returns False.
         """
         for delta, pattern in enumerate(args):
             if self.pos + delta >= len(self.tokens):
                 return False
             curtok = self.tokens[self.pos + delta]
-            if isinstance(pattern, self.re_type):
+            if not isinstance(curtok, str):
+                # never match a token group
+                return False
+            elif isinstance(pattern, self.re_type):
                 if not pattern.match(curtok):
                     return False
             elif isinstance(pattern, str):
@@ -231,8 +237,21 @@ class ClassName:
             s += '<' + ','.join(self.template_args) + '>'
         return s
 
-    @staticmethod
-    def stream_pop_class_name(stream):
+
+class TokTreeInfoExtrator:
+    """given a token tree list as returned by
+    build_token_tree_list(), extract all the object
+    information and pass it over to the given
+    ObjectInformation object.
+
+    The actual extraction is done in the main()
+    function which has to be called separatedly
+    """
+
+    def __init__(self, objInfo):
+        self.objInfo = objInfo
+
+    def stream_pop_class_name(self, stream):
         namespace = []
         if stream.try_match(':', ':'):
             # absolute namespace, e.g. ::std::exception.
@@ -252,21 +271,26 @@ class ClassName:
                 'expecting > after last template argument'
         return ClassName(name, namespace=namespace, template_args=tmpl_args)
 
-def extract_doc_info(tokens, objInfo):
-    """extract object information from a list of TokenTree objects
-    and save the data in the ObjectInformation object passed"""
-    # pub_priv_prot = ['public', 'private', 'protected']
-    pub_priv_prot_re = re.compile('public|private|protected')
-    stream = TokenStream([t for t in tokens if t.strip() != ''])
-    arg1 = TokenStream.PatternArg()
-    while not stream.empty():
-        if stream.try_match('class', arg1):
-            classname = arg1.value
-            while stream.try_match(re.compile('^,|:$'), pub_priv_prot_re):
-                baseclass = ClassName.stream_pop_class_name(stream)
-                objInfo.base_class(classname, baseclass)
-        else:
-            stream.pop()
+    def inside_class(self, stream, classname):
+        """
+        go on parsing inside the body of a class
+        """
+
+    def main(self, toktreelist):
+        """extract object information from a list of TokenTree objects
+        and save the data in the ObjectInformation object passed"""
+        # pub_priv_prot = ['public', 'private', 'protected']
+        pub_priv_prot_re = re.compile('public|private|protected')
+        arg1 = TokenStream.PatternArg()
+        stream = TokenStream(toktreelist)
+        while not stream.empty():
+            if stream.try_match('class', arg1):
+                classname = arg1.value
+                while stream.try_match(re.compile('^,|:$'), pub_priv_prot_re):
+                    baseclass = self.stream_pop_class_name(stream)
+                    self.objInfo.base_class(classname, baseclass)
+            else:
+                stream.pop()
 
 
 def main():
@@ -307,9 +331,10 @@ def main():
         objInfo = ObjectInformation()
         for f in files():
             print("parsing file {}".format(f))
-            toks = extract_file_tokens(f)
-            #toktree = list(build_token_tree_list(TokenStream(list(toks))))
-            extract_doc_info(list(toks), objInfo)
+            toks = [t for t in extract_file_tokens(f) if t.strip() != '']
+            toktree = list(build_token_tree_list(TokenStream(toks)))
+            extractor = TokTreeInfoExtrator(objInfo)
+            extractor.main(list(toktree))
         objInfo.print()
 
 
