@@ -226,6 +226,13 @@ def test_prepend_flag(hlwm):
         'label=0\tclass=AddedFirst\t\n'
 
 
+def test_not_flag(hlwm):
+    hlwm.call('rule not class=someclass')
+    rules = hlwm.call('list_rules')
+
+    assert rules.stdout == 'label=0\tnot\tclass=someclass\t\n'
+
+
 @pytest.mark.parametrize('negation', ['not', '!'])
 def test_condition_must_come_after_negation(hlwm, negation):
     call = hlwm.call_xfail(['rule', negation])
