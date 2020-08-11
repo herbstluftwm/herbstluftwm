@@ -139,14 +139,14 @@ class TokenStream:
             fullmsg = fullmsg.format(error_message)
             raise Exception(fullmsg)
         tok = self.tokens[self.pos]
-        #print("tok {}".format(tok), file=sys.stderr)
+        # print("tok {}".format(tok), file=sys.stderr)
         self.pos += 1
         # print("yielding token '{}'".format(t))
         return tok
 
     def undo_pop(self):
         """undo the last pop operation"""
-        #print("tokundo", file=sys.stderr)
+        # print("tokundo", file=sys.stderr)
         self.pos -= 1
 
     class PatternArg:
@@ -168,6 +168,7 @@ class TokenStream:
         for delta, pattern in enumerate(args):
             if self.pos + delta >= len(self.tokens):
                 return False
+
             curtok = self.tokens[self.pos + delta]
             if not isinstance(curtok, str):
                 # never match a token group
@@ -184,6 +185,18 @@ class TokenStream:
                 raise Exception("unknown pattern type {}".format(type(pattern)))
         self.pos += len(args)
         return True
+
+    def discard_until(self, *args):
+        """
+        discard tokens until try_match(*args) succeeds (returning True)
+        or until the stream is empty (returning False)
+        """
+        while not self.empty():
+            if self.try_match(';'):
+                return True
+            # otherwise, discard the next token:
+            self.pop()
+        return False
 
 
 def build_token_tree_list(token_stream):
@@ -221,6 +234,7 @@ class ObjectInformation:
         for k, v in self.base_classes.items():
             bases = [str(b) for b in v]
             print("{} has the base classes: \'{}\'".format(k, '\' \''.join(bases)))
+
 
 class ClassName:
     def __init__(self, name, namespace=[], template_args=[]):
@@ -271,10 +285,20 @@ class TokTreeInfoExtrator:
                 'expecting > after last template argument'
         return ClassName(name, namespace=namespace, template_args=tmpl_args)
 
-    def inside_class(self, stream, classname):
+    def inside_class(self, toktreelist, classname):
         """
         go on parsing inside the body of a class
         """
+        pub_priv_prot_re = re.compile('public|private|protected')
+        stream = TokenStream(toktreelist)
+        while not stream.empty():
+            if stream.try_match(pub_priv_prot_re, ':'):
+                continue
+            elif stream.try_match('using'):
+                semicolon_found = stream.discard_until(';')
+                assert semicolon_found, "expected ; after 'using'"
+            else:
+                stream.pop()
 
     def main(self, toktreelist):
         """extract object information from a list of TokenTree objects
@@ -289,6 +313,13 @@ class TokTreeInfoExtrator:
                 while stream.try_match(re.compile('^,|:$'), pub_priv_prot_re):
                     baseclass = self.stream_pop_class_name(stream)
                     self.objInfo.base_class(classname, baseclass)
+                # scan everything til the final ';'
+                while not stream.empty():
+                    t = stream.pop()
+                    if TokenTree.IsTokenGroup(t):
+                        self.inside_class(t.enclosed_tokens, classname)
+                    elif t == ';':
+                        break
             else:
                 stream.pop()
 
