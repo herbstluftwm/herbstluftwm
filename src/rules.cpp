@@ -59,7 +59,7 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
             if (name == "maxage") {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
                 if (1 != sscanf(value, "%d", &cond.value_integer)) {
-                    output << "rule: Can not integer from \"" << value << "\"\n";
+                    output << "rule: Cannot parse integer from \"" << value << "\"\n";
                     return false;
                 }
             } else {
