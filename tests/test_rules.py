@@ -107,6 +107,16 @@ def test_add_rule_with_unknown_condition(hlwm):
     call.expect_stderr('rule: Unknown argument "foo=bar"')
 
 
+def test_add_rule_maxage_condition_operator(hlwm):
+    call = hlwm.call_xfail('rule maxage~12')
+    call.expect_stderr('rule: Condition maxage only supports the = operator')
+
+
+def test_add_rule_maxage_condition_integer(hlwm):
+    call = hlwm.call_xfail('rule maxage=foo')
+    call.expect_stderr('rule: Cannot parse integer from "foo"')
+
+
 @pytest.mark.parametrize('method', ['-F', '--all'])
 def test_remove_all_rules(hlwm, method):
     hlwm.call('rule class=Foo tag=bar')
