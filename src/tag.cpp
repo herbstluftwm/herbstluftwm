@@ -413,7 +413,7 @@ void HSTag::onGlobalFloatingChange(bool newState)
 void HSTag::fixFocusIndex()
 {
    static_assert(std::is_same<decltype(floating_clients_focus_), size_t>::value,
-                 "we assume that index can not be negative.");
+                 "we assume that index cannot be negative.");
    if (floating_clients_focus_ >= floating_clients_.size()) {
        if (floating_clients_.empty()) {
            floating_clients_focus_  = 0;

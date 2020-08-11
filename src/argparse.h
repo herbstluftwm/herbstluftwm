@@ -8,7 +8,7 @@
 
 /**
  * @brief The InputConvert class is a convenience wrapper around Input::operator>> and
- * Converter<X>::parse(). If an argument can not be parsed, a meaningful error message
+ * Converter<X>::parse(). If an argument cannot be parsed, a meaningful error message
  * is printed to the output stream.
  */
 class ArgParse
