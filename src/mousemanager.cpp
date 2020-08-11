@@ -138,12 +138,12 @@ int MouseManager::dragCommand(Input input, Output output)
         return HERBST_INVALID_ARGUMENT;
     }
     if (monitors_->byTag(client->tag()) == nullptr) {
-        output << input.command() << ": can not drag invisible client \"" << winid << "\"" << endl;
+        output << input.command() << ": cannot drag invisible client \"" << winid << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
     string errorMsg = (this ->* action)(client, input.toVector());
     if (!errorMsg.empty()) {
-        output << input.command() << ": can not drag: " << errorMsg << "\n";
+        output << input.command() << ": cannot drag: " << errorMsg << "\n";
         return HERBST_UNKNOWN_ERROR;
     }
     return 0;

@@ -405,7 +405,7 @@ void execute_autostart_file() {
         execl(path.c_str(), path.c_str(), nullptr);
 
         const char* global_autostart = HERBSTLUFT_GLOBAL_AUTOSTART;
-        HSDebug("Can not execute %s, falling back to %s\n", path.c_str(), global_autostart);
+        HSDebug("Cannot execute %s, falling back to %s\n", path.c_str(), global_autostart);
         execl(global_autostart, global_autostart, nullptr);
 
         fprintf(stderr, "herbstluftwm: execvp \"%s\"", global_autostart);

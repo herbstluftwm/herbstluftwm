@@ -205,7 +205,7 @@ def test_monitor_consequence(hlwm, monitor_spec):
 def test_invalid_regex_in_condition(hlwm):
     call = hlwm.call_xfail('rule class~[b-a]')
 
-    assert call.stderr == 'rule: Can not parse value "[b-a]" from condition "class": "Invalid range in bracket expression."\n'
+    assert call.stderr == 'rule: Cannot parse value "[b-a]" from condition "class": "Invalid range in bracket expression."\n'
 
 
 def test_printlabel_flag(hlwm):
