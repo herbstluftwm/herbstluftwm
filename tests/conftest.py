@@ -183,7 +183,7 @@ class HlwmBridge:
         partial. If not in 'partial' mode, trailing spaces are stripped.
 
         Set 'evaluate_escapes' if the escape sequences of completion items
-        should be evaluated. If this is set, one can not distinguish between
+        should be evaluated. If this is set, one cannot distinguish between
         partial and full completion results anymore.
         """
         args = self._parse_command(cmd)

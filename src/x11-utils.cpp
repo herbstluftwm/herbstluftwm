@@ -72,7 +72,7 @@ Point2D get_cursor_position() {
     unsigned int mask;
     if (True != XQueryPointer(g_display, g_root, &win, &child,
                               &point.x, &point.y, &wx,&wy, &mask)) {
-        HSWarning("Can not query cursor coordinates via XQueryPointer\n");
+        HSWarning("Cannot query cursor coordinates via XQueryPointer\n");
         point.x = 0;
         point.y = 0;
     }

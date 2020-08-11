@@ -74,7 +74,7 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
             try {
                 cond.value_reg_exp = std::regex(value, std::regex::extended);
             } catch(std::regex_error& err) {
-                output << "rule: Can not parse value \"" << value
+                output << "rule: Cannot parse value \"" << value
                         << "\" from condition \"" << name
                         << "\": \"" << err.what() << "\"\n";
                 return false;
