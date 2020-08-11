@@ -186,12 +186,18 @@ class TokenStream:
         self.pos += len(args)
         return True
 
+    def assert_match(self, *args):
+        m = self.try_match(*args)
+        if not m:
+            msg = ""
+
     def discard_until(self, *args):
         """
         discard tokens until try_match(*args) succeeds (returning True)
         or until the stream is empty (returning False)
         """
         while not self.empty():
+            # terminate if the args match to the upcoming tokens
             if self.try_match(';'):
                 return True
             # otherwise, discard the next token:
@@ -237,13 +243,16 @@ class ObjectInformation:
 
 
 class ClassName:
-    def __init__(self, name, namespace=[], template_args=[]):
+    def __init__(self, name, type_modifier=[], namespace=[], template_args=[]):
+        self.type_modifier = type_modifier  # something like 'unsigned'
         self.namespace = namespace
         self.name = name
         self.template_args = template_args
 
     def __str__(self):
         s = ''
+        for t in self.type_modifier:
+            s += t + ' '
         for n in self.namespace:
             s += n + '::'
         s += self.name
@@ -266,7 +275,10 @@ class TokTreeInfoExtrator:
         self.objInfo = objInfo
 
     def stream_pop_class_name(self, stream):
+        type_modifier = []
         namespace = []
+        if stream.try_match('unsigned'):
+            type_modifier.append('unsigned')
         if stream.try_match(':', ':'):
             # absolute namespace, e.g. ::std::exception.
             namespace.append('')
@@ -283,9 +295,10 @@ class TokTreeInfoExtrator:
                 tmpl_args.append(stream.pop('expected template argument'))
             assert stream.try_match('>'), \
                 'expecting > after last template argument'
-        return ClassName(name, namespace=namespace, template_args=tmpl_args)
+        return ClassName(name, type_modifier=type_modifier,
+                         namespace=namespace, template_args=tmpl_args)
 
-    def inside_class(self, toktreelist, classname):
+    def inside_class_definition(self, toktreelist, classname):
         """
         go on parsing inside the body of a class
         """
@@ -294,11 +307,28 @@ class TokTreeInfoExtrator:
         while not stream.empty():
             if stream.try_match(pub_priv_prot_re, ':'):
                 continue
+            # whenever we reach this point, this is a new
+            # member variable or member function definition
             elif stream.try_match('using'):
                 semicolon_found = stream.discard_until(';')
                 assert semicolon_found, "expected ; after 'using'"
+            elif stream.try_match('Attribute_', '<'):
+                attr_type = self.stream_pop_class_name(stream)
+                assert stream.try_match('>'), \
+                    "every 'Attribute_<' has to be closed by '>'"
+                attr_name = stream.pop("expect an attribute name");
+                after_attr_name = stream.pop()
+                if after_attr_name not in ['=', ';']:
+                    # this is not an attribute definition, but
+                    # maybe a function returning an attribute
+                    stream.discard_until(';')
+                    continue
+                if after_attr_name == '=':
+                    t = stream.pop()
+                    assert TokenTree.IsTokenGroup(t)
+                assert stream.pop() == ';'
             else:
-                stream.pop()
+                stream.discard_until(';')
 
     def main(self, toktreelist):
         """extract object information from a list of TokenTree objects
@@ -317,7 +347,7 @@ class TokTreeInfoExtrator:
                 while not stream.empty():
                     t = stream.pop()
                     if TokenTree.IsTokenGroup(t):
-                        self.inside_class(t.enclosed_tokens, classname)
+                        self.inside_class_definition(t.enclosed_tokens, classname)
                     elif t == ';':
                         break
             else:
