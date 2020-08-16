@@ -186,10 +186,32 @@ class TokenStream:
         self.pos += len(args)
         return True
 
-    def assert_match(self, *args):
+    def assert_match(self, *args, msg=''):
         m = self.try_match(*args)
         if not m:
-            msg = ""
+            text = "failed to match »"
+            text += ' '.join(args)
+            text += "« with the current stream:\n"
+            # show some context before
+            beginpos = max(0, self.pos - 5)
+            # show some context afterwards
+            endpos = min(len(self.tokens), self.pos + max(4, len(args) + 1))
+            # show some cursor in the next line
+            nextline = ''
+            for t in range(beginpos, endpos):
+                if t != beginpos:
+                    text += ' '
+                    nextline += ' '
+                text += str(self.tokens[t])
+                if t == self.pos:
+                    nextline += '^ here'
+                else:
+                    nextline += ' ' * len(self.tokens[t])
+            text += '\n' + nextline
+            if msg != '':
+                text += "\n'{}'".format(msg)
+            raise Exception(text)
+
 
     def discard_until(self, *args):
         """
@@ -293,8 +315,8 @@ class TokTreeInfoExtrator:
             tmpl_args.append(tok)
             while stream.try_match(','):
                 tmpl_args.append(stream.pop('expected template argument'))
-            assert stream.try_match('>'), \
-                'expecting > after last template argument'
+            stream.assert_match('>',
+                                msg='expecting > after last template argument')
         return ClassName(name, type_modifier=type_modifier,
                          namespace=namespace, template_args=tmpl_args)
 
@@ -317,16 +339,18 @@ class TokTreeInfoExtrator:
                 assert stream.try_match('>'), \
                     "every 'Attribute_<' has to be closed by '>'"
                 attr_name = stream.pop("expect an attribute name");
+                print("attribute " + attr_name)
                 after_attr_name = stream.pop()
-                if after_attr_name not in ['=', ';']:
-                    # this is not an attribute definition, but
-                    # maybe a function returning an attribute
-                    stream.discard_until(';')
-                    continue
-                if after_attr_name == '=':
+                if stream.try_match('='):
+                    # static initializiation:
                     t = stream.pop()
                     assert TokenTree.IsTokenGroup(t)
-                assert stream.pop() == ';'
+                if stream.try_match(';'):
+                    # end of attribute definition
+                    pass
+                else:
+                    # some other definition (e.g. a function)
+                    stream.discard_until(';')
             else:
                 stream.discard_until(';')
 
