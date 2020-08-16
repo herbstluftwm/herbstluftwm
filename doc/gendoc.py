@@ -275,6 +275,23 @@ class ObjectInformation:
             self.type = None
             self.user_name = None  # the name that is visible to the user
             self.default_value = None
+            self.attribute_class = None  # whether this is an Attribute_ or sth else
+            self.constructor_args = None  # the arguments to the constructor
+
+        def add_constructor_args(self, args):
+            args = [a for a in args if str(a) != ',']
+            self.constructor_args = args
+            if self.attribute_class is None:
+                return
+            # just a convenience alias:
+            if self.attribute_class == 'Attribute_':
+                #print("args = {}".format(','.join(args)))
+                if len(args) == 2:
+                    self.cpp_name = args[0]
+                    self.default_value = args[1]
+                elif len(args) >= 3:
+                    self.cpp_name = args[1]
+                    self.default_value = args[2]
 
     def __init__(self):
         self.base_classes = {}  # mapping class names to base clases
@@ -304,7 +321,17 @@ class ObjectInformation:
             if k in self.class2attrbute2info:
                 print("{} has the attributes:".format(k))
                 for _, attr in self.class2attrbute2info[k].items():
-                    print(f"  {attr.user_name}, type='{attr.type}', cpp-var='{attr.cpp_name}'")
+                    line = '  ' + str(attr.user_name)
+                    key2value = [
+                        ('cpp_name', attr.cpp_name),
+                        ('type', attr.type),
+                        ('default_value', attr.default_value),
+                        ('class', attr.attribute_class),
+                    ]
+                    for key_str, value in key2value:
+                        if value is not None:
+                            line += '  {}={}'.format(key_str, value)
+                    print(line)
 
 
 class TokTreeInfoExtrator:
@@ -365,10 +392,12 @@ class TokTreeInfoExtrator:
                 attr_name = stream.pop("expect an attribute name");
                 attr = self.objInfo.attribute_info(classname, attr_name)
                 attr.type = attr_type
+                attr.attribute_class = 'Attribute_'
                 if stream.try_match('='):
                     # static initializiation:
                     t = stream.pop()
                     assert TokenTree.IsTokenGroup(t)
+                    attr.add_constructor_args(t.enclosed_tokens)
                 if stream.try_match(';'):
                     # end of attribute definition
                     pass
