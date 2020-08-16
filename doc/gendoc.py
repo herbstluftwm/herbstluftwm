@@ -249,21 +249,6 @@ def build_token_tree_list(token_stream):
             yield TokenTree.LiterateToken(t)
 
 
-class ObjectInformation:
-    def __init__(self):
-        self.base_classes = {}  # mapping class names to base clases
-
-    def base_class(self, subclass, baseclass):
-        if subclass not in self.base_classes:
-            self.base_classes[subclass] = []
-        self.base_classes[subclass].append(baseclass)
-
-    def print(self):
-        for k, v in self.base_classes.items():
-            bases = [str(b) for b in v]
-            print("{} has the base classes: \'{}\'".format(k, '\' \''.join(bases)))
-
-
 class ClassName:
     def __init__(self, name, type_modifier=[], namespace=[], template_args=[]):
         self.type_modifier = type_modifier  # something like 'unsigned'
@@ -281,6 +266,45 @@ class ClassName:
         if len(self.template_args) > 0:
             s += '<' + ','.join(self.template_args) + '>'
         return s
+
+
+class ObjectInformation:
+    class AttributeInformation:
+        def __init__(self, cpp_name):
+            self.cpp_name = cpp_name
+            self.type = None
+            self.user_name = None  # the name that is visible to the user
+            self.default_value = None
+
+    def __init__(self):
+        self.base_classes = {}  # mapping class names to base clases
+        self.class2attrbute2info = {}  # two nested dicts to AttributeInformation
+
+    def base_class(self, subclass, baseclass):
+        if subclass not in self.base_classes:
+            self.base_classes[subclass] = []
+        self.base_classes[subclass].append(baseclass)
+
+    def attribute_info(self, classname: str, attr_cpp_name: str):
+        """return the AttributeInformation object for
+        a for a class and its attribute whose C++ variable name is
+        'attr_cpp_name'. Create the object if necessary
+        """
+        if classname not in self.class2attrbute2info:
+            self.class2attrbute2info[classname] = {}
+        if attr_cpp_name not in self.class2attrbute2info[classname]:
+            self.class2attrbute2info[classname][attr_cpp_name] = \
+                ObjectInformation.AttributeInformation(attr_cpp_name)
+        return self.class2attrbute2info[classname][attr_cpp_name]
+
+    def print(self):
+        for k, v in self.base_classes.items():
+            bases = [str(b) for b in v]
+            print("{} has the base classes: \'{}\'".format(k, '\' \''.join(bases)))
+            if k in self.class2attrbute2info:
+                print("{} has the attributes:".format(k))
+                for _, attr in self.class2attrbute2info[k].items():
+                    print(f"  {attr.user_name}, type='{attr.type}', cpp-var='{attr.cpp_name}'")
 
 
 class TokTreeInfoExtrator:
@@ -339,8 +363,8 @@ class TokTreeInfoExtrator:
                 assert stream.try_match('>'), \
                     "every 'Attribute_<' has to be closed by '>'"
                 attr_name = stream.pop("expect an attribute name");
-                print("attribute " + attr_name)
-                after_attr_name = stream.pop()
+                attr = self.objInfo.attribute_info(classname, attr_name)
+                attr.type = attr_type
                 if stream.try_match('='):
                     # static initializiation:
                     t = stream.pop()
