@@ -831,17 +831,26 @@ substitute 'IDENTIFIER' 'ATTRIBUTE' 'COMMAND' ['ARGS' ...]::
           +
           Prints the title of the currently focused window.
 
-sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
-    Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'ARGS'
-    by the string specified by 'FORMAT'. Each +%s+ in 'FORMAT' stands for the
-    value of the next attribute in 'ATTRIBUTES', similar to the *printf*(1)
-    command. The replaced command with its arguments then is executed.
+sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
+    Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'CMDARGS'
+    by the string specified by 'FORMAT'. The 'FORMAT' string may contain several
+    placeholders, similar to the *printf*(1) command:
+      - +%s+ inserts an attribute value whose path is given by the string value
+        of the next 'FORMATARG'
+      - +%c+ ("constant") inserts the next 'FORMATARG' without modification.
+      - +%%+ stands for a plain +%+
+
+ ::
+    The replaced command with its arguments then is executed.
     Examples:
 
         * +sprintf STR title=%s clients.focus.title echo STR+ +
           +
           Prints the title of the currently focused window prepended by
           +title=+.
+        * +sprintf X "%c %s tags" "there are" tags.count echo X+
+          +
+          Prints +there are N tags+ with +N+ replaced by the number of tags.
         * +sprintf X tag=%s tags.focus.name rule once X+ +
           +
           Moves the next client that appears to the tag that is currently
@@ -852,6 +861,12 @@ sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
         * +sprintf l somelongstring echo l l l+ +
           +
           Prints +somelongstring+ three times, separated by spaces.
+        * +substitute X tags.count sprintf Y "number=%c" X echo Y+ +
+          +
+          has the same output as +
+          +sprintf Y "number=%s" tags.count echo Y+ +
+          +
+          (Note how the +%c+ changes to +%s+)
 
 mktemp [*bool*|*int*|*string*|*uint*] 'IDENTIFIER' 'COMMAND' ['ARGS' ...]::
     Creates a temporary attribute with the given type and replaces all

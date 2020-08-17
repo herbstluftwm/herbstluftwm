@@ -13,6 +13,7 @@ Current git version
     'floatplacement=center' for centering) or leaves the floating position as
     is ('floatplacement=none')
   * New rule condition 'pgid'
+  * New format specifier '%c' in the 'sprintf' command (useful in combination with 'foreach')
   * The 'new_attr' command now also accepts an initial value
   * React to a change of the 'floating_focused' attribute of the tag object
   * New frame index character 'p' for accessing the parent frame
