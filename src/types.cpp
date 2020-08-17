@@ -13,11 +13,11 @@ Input &Input::operator>>(string &val)
 Input Input::fromHere()
 {
     string cmd;
-    if (!(*this >> cmd)) {
+    if (empty()) {
         return {{}, {}};
     }
 
-    return Input(cmd, toVector());
+    return Input(*(begin()), Container(begin() + 1, end()));
 }
 
 void Input::replace(const string &from, const string &to)

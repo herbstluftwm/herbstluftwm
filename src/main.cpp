@@ -196,6 +196,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                             &RootCommands::print_object_tree_complete} },
         {"substitute",     { root_commands, &RootCommands::substitute_cmd,
                                             &RootCommands::substitute_complete} },
+        {"foreach",        { root_commands, &RootCommands::foreachCmd,
+                                            &RootCommands::foreachComplete} },
         {"sprintf",        { root_commands, &RootCommands::sprintf_cmd,
                                             &RootCommands::sprintf_complete} },
         {"new_attr",       { root_commands, &RootCommands::new_attr_cmd,

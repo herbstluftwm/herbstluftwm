@@ -831,6 +831,29 @@ substitute 'IDENTIFIER' 'ATTRIBUTE' 'COMMAND' ['ARGS' ...]::
           +
           Prints the title of the currently focused window.
 
+
+foreach 'IDENTIFIER' 'OBJECT' 'COMMAND' ['ARGS' ...]::
+    For each child of the given 'OBJECT' the 'COMMAND' is called with its
+    'ARGS', where the 'IDENTIFIER' is replaced by the path of the child. The
+    exit code is the exit code of the command executed last. Examples:
+
+        * +foreach T tags.by-name. echo T+ +
+          +
+          Prints:
+
+             theme.tiling.active
+             theme.tiling.normal
+             theme.tiling.urgent
+
+        * Note that +foreach+ only iterates over children, but not over
+          attributes, so +foreach S settings echo S+ prints nothing, since the
+          settings object has only attributes but no child objects.
+
+        * +foreach C clients. echo C+ prints the object paths of all clients,
+          but the focused client twice, because it is mentioned in +clients.+
+          twice: by window id and as +clients.focus+.
+
+
 sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
     Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'ARGS'
     by the string specified by 'FORMAT'. Each +%s+ in 'FORMAT' stands for the

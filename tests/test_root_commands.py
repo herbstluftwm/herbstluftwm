@@ -529,3 +529,72 @@ def test_argparse_expected_1(hlwm):
 def test_argparse_expected_2_got_1(hlwm):
     hlwm.call_xfail('mousebind B1') \
         .expect_stderr('Expected 2 arguments, but got only 1')
+
+
+def test_foreach_clients(hlwm):
+    hlwm.create_client()
+    hlwm.create_client()
+    children = hlwm.list_children_via_attr('clients')
+    expected_out = ''.join([f'clients.{c}\n' for c in children])
+    assert expected_out == hlwm.call('foreach C clients echo C').stdout
+
+
+def test_foreach_tag_add(hlwm):
+    hlwm.call('add anothertag')
+
+    # adding another tag does not confuse the output:
+    expected = ['tags.by-name.' + n for n in hlwm.list_children_via_attr('tags.by-name')]
+    proc = hlwm.call('foreach T tags.by-name chain , add yetanothertag , echo T')
+    assert proc.stdout.splitlines() == expected
+
+
+def test_foreach_tag_merge(hlwm):
+    # removing a tag while iterating over the tags does not break anything
+    hlwm.call('add othertag')
+
+    # removing this tag in the first loop iteration does not prevent
+    # the second loop iteration for 'othertag'
+    expected = [
+        'tags.by-name.default',
+        'merge_tag: Tag "othertag" not found',
+        'tags.by-name.othertag'
+    ]
+    proc = hlwm.call('foreach T tags.by-name chain , merge_tag othertag , echo T')
+    assert proc.stdout.splitlines() == expected
+
+
+def test_foreach_exit_code_success(hlwm):
+    # create two clients for multiple loop iterations
+    hlwm.create_client()
+    hlwm.create_client()
+
+    # we do the following multiple times: create a new tag and assert
+    # that there are at least 3 tags. This fails in the first iteration but
+    # succeeds later:
+    cmd = 'foreach _ clients.'
+    cmd += ' chain , sprintf TAGNAME "tag%s" tags.count add TAGNAME'
+    cmd += '       , compare tags.count ge 3'
+    proc = hlwm.call(cmd)
+    assert proc.stdout == ''
+
+
+def test_foreach_exit_code_failure(hlwm):
+    # create two clients for multiple loop iterations
+    hlwm.create_client()
+    hlwm.create_client()
+
+    # create a new attribute: it succeeds in the iteration run
+    # but fails in later iterations
+    hlwm.call_xfail('foreach _ clients. new_attr int my_int') \
+        .expect_stderr('already has an attribute named "my_int"')
+
+
+def test_foreach_exit_code_no_iteration(hlwm):
+    # iterating over an object without content never calls the command
+    proc = hlwm.call('foreach S settings chain , echo output , quit , false')
+    assert proc.stdout == ''
+
+
+def test_foreach_invalid_object(hlwm):
+    hlwm.call_xfail('foreach C clients.foobar quit') \
+        .expect_stderr('"clients." has no child named "foobar"')
