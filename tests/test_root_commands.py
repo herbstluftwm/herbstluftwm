@@ -606,3 +606,11 @@ def test_foreach_object_completion(hlwm):
     assert 'tags.by-name.' in completions
     # attributes are not completed
     assert 'tags.count' not in completions
+
+
+def test_foreach_identfier_completion(hlwm):
+    # the identfier isn't completed in the object parameter
+    assert 'X ' not in hlwm.complete(['foreach', 'X', ], partial=True)
+    # but the identfier is completed in the command parameter
+    assert 'X ' in hlwm.complete(['foreach', 'X', 'tags.'], partial=True)
+    assert 'X ' in hlwm.complete(['foreach', 'X', 'tags.', 'echo'], partial=True)
