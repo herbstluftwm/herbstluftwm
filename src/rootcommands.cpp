@@ -239,7 +239,7 @@ int RootCommands::sprintf_cmd(Input input, Output output)
     for (const auto& blob : format) {
         if (blob.literal_) {
             replacedString += blob.data_;
-        } else if (blob.data_ == "c"){
+        } else if (blob.data_ == "c") {
             // a constant string argument
             string constString;
             if (!(input >> constString)) {
@@ -279,7 +279,7 @@ void RootCommands::sprintf_complete(Completion& complete)
             complete.invalidArguments();
             return;
         }
-        int	indexOfNextArgument = 2;
+        int indexOfNextArgument = 2;
         for (const auto& b : fs) {
             if (b.literal_ == true) {
                 continue;
