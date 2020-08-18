@@ -598,3 +598,11 @@ def test_foreach_exit_code_no_iteration(hlwm):
 def test_foreach_invalid_object(hlwm):
     hlwm.call_xfail('foreach C clients.foobar quit') \
         .expect_stderr('"clients." has no child named "foobar"')
+
+
+def test_foreach_object_completion(hlwm):
+    completions = hlwm.complete(['foreach', 'X', 'tags.'], position=2, partial=True)
+    # objects are completed
+    assert 'tags.by-name.' in completions
+    # attributes are not completed
+    assert 'tags.count' not in completions
