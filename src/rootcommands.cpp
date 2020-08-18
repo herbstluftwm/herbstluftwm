@@ -199,8 +199,8 @@ int RootCommands::foreachCmd(Input input, Output output)
 
     // collect the paths of all children of this object
     vector<string> childPaths;
-    // collect the children's name first to ensure that
-    // object->childrens() is not changed by the commands we are
+    // collect the children's names first to ensure that
+    // object->children() is not changed by the commands we are
     // calling.
     if (!pathString.empty()) {
         pathString += OBJECT_PATH_SEPARATOR;
