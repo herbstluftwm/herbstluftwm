@@ -877,9 +877,10 @@ foreach 'IDENTIFIER' 'OBJECT' 'COMMAND' ['ARGS' ...]::
           +
           Prints:
 
-             theme.tiling.active
-             theme.tiling.normal
-             theme.tiling.urgent
+             tags.by-name.1
+             tags.by-name.2
+             tags.by-name.3
+             [...]
 
         * Note that +foreach+ only iterates over children, but not over
           attributes, so +foreach S settings echo S+ prints nothing, since the
