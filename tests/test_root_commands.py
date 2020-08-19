@@ -96,6 +96,25 @@ def test_sprintf(hlwm):
     assert call.stdout == expected_output
 
 
+def test_sprintf_s_vs_c(hlwm):
+    p1 = hlwm.call('substitute X tags.count sprintf Y "number=%c" X echo Y')
+    p2 = hlwm.call('sprintf Y "number=%s" tags.count echo Y')
+    assert p1.stdout == p2.stdout
+
+
+def test_sprintf_c_placeholder(hlwm):
+    proc = hlwm.call('sprintf X "%c %s tags" "there are" tags.count echo X')
+    assert proc.stdout == "there are 1 tags\n"
+
+
+def test_sprintf_nested(hlwm):
+    cmd = 'substitute A tags.count'
+    cmd += ' sprintf B "%c%c" A A'
+    cmd += ' sprintf C "%c%c" B B'
+    cmd += ' sprintf D "%c%c" C C echo D'
+    assert hlwm.call(cmd).stdout == '11111111\n'
+
+
 def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
     call = hlwm.call_xfail('sprintf X %s/%s tags.count echo X')
 
@@ -122,7 +141,13 @@ def test_sprintf_double_percentage_escapes(hlwm):
 
 def test_sprintf_completion_1_placeholder(hlwm):
     assert hlwm.complete('sprintf T %s', partial=True) \
-        == sorted(['T '] + hlwm.complete('get_attr', partial=True))
+        == sorted(hlwm.complete('get_attr', partial=True))
+
+
+def test_sprintf_completion_s_after_c_placeholder(hlwm):
+    assert hlwm.complete('sprintf T %c%s', partial=True) == []
+    assert hlwm.complete('sprintf T %c%s myconst', partial=True) \
+        == sorted(hlwm.complete('get_attr', partial=True))
 
 
 def test_sprintf_completion_0_placeholders(hlwm):

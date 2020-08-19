@@ -252,6 +252,8 @@ RootCommands::FormatString RootCommands::parseFormatString(const string &format)
                     blobs.push_back({true, "%"});
                 } else if (format_type == 's') {
                     blobs.push_back({false, "s"});
+                } else if (format_type == 'c') {
+                    blobs.push_back({false, "c"});
                 } else {
                     stringstream msg;
                     msg << "invalid format type %"
@@ -287,6 +289,14 @@ int RootCommands::sprintf_cmd(Input input, Output output)
     for (const auto& blob : format) {
         if (blob.literal_) {
             replacedString += blob.data_;
+        } else if (blob.data_ == "c") {
+            // a constant string argument
+            string constString;
+            if (!(input >> constString)) {
+                return HERBST_NEED_MORE_ARGS;
+            }
+            // just copy the plain string to the output
+            replacedString += constString;
         } else {
             // we reached %s
             string path;
@@ -312,22 +322,30 @@ void RootCommands::sprintf_complete(Completion& complete)
     } else if (complete == 1) {
         // no completion for format string
     } else {
-        complete.full(complete[0]); // complete string replacement
-        int placeholderCount = 0;
+        FormatString fs;
         try {
-            FormatString fs = parseFormatString(complete[1]);
-            for (const auto& b : fs) {
-                if (b.literal_ == false) {
-                    placeholderCount++;
-                }
-            }
+            fs = parseFormatString(complete[1]);
         }  catch (const std::invalid_argument&) {
             complete.invalidArguments();
+            return;
         }
-        if (complete < 2 + placeholderCount) {
-            completeAttributePath(complete);
-        } else {
-            complete.completeCommands(2 + placeholderCount);
+        int indexOfNextArgument = 2;
+        for (const auto& b : fs) {
+            if (b.literal_ == true) {
+                continue;
+            }
+            if (complete == indexOfNextArgument) {
+                if (b.data_ == "s") {
+                    completeAttributePath(complete);
+                } else if (b.data_ == "c") {
+                    // no completion for constant strings
+                }
+            }
+            indexOfNextArgument++;
+        }
+        if (complete >= indexOfNextArgument) {
+            complete.full(complete[0]); // complete string replacement
+            complete.completeCommands(indexOfNextArgument);
         }
     }
 }
