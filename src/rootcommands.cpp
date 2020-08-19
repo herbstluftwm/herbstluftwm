@@ -180,6 +180,56 @@ void RootCommands::substitute_complete(Completion& complete)
     }
 }
 
+int RootCommands::foreachCmd(Input input, Output output)
+{
+    string ident, pathString;
+    if (!(input >> ident >> pathString)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    // remove trailing dots to avoid parsing issues:
+    while (!pathString.empty() && pathString.back() == OBJECT_PATH_SEPARATOR) {
+        // while the last character is a dot, erase it:
+        pathString.erase(pathString.size() - 1);
+    }
+    Path path { pathString, OBJECT_PATH_SEPARATOR };
+    Object* object = root.child(path, output);
+    if (!object) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    // collect the paths of all children of this object
+    vector<string> childPaths;
+    // collect the children's names first to ensure that
+    // object->children() is not changed by the commands we are
+    // calling.
+    if (!pathString.empty()) {
+        pathString += OBJECT_PATH_SEPARATOR;
+    }
+    for (const auto& entry : object->children()) {
+        childPaths.push_back(pathString + entry.first);
+    }
+    int  lastStatusCode = 0;
+    for (const auto& child : childPaths) {
+        Input carryover = input.fromHere();
+        carryover.replace(ident, child);
+        lastStatusCode = Commands::call(carryover, output);
+    }
+    return lastStatusCode;
+}
+
+void RootCommands::foreachComplete(Completion& complete)
+{
+    if (complete == 0) {
+        // no completion for the identifier
+    } else if (complete == 1) {
+        completeObjectPath(complete);
+    } else {
+        // later, complete the identifier
+        complete.full(complete[0]);
+        complete.completeCommands(2);
+    }
+}
+
 //! parse a format string or throw an exception
 RootCommands::FormatString RootCommands::parseFormatString(const string &format)
 {

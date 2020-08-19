@@ -42,6 +42,8 @@ public:
 
     int substitute_cmd(Input input, Output output);
     void substitute_complete(Completion& complete);
+    int foreachCmd(Input input, Output output);
+    void foreachComplete(Completion& complete);
     int sprintf_cmd(Input input, Output output);
     void sprintf_complete(Completion& complete);
     int new_attr_cmd(Input input, Output output);
