@@ -301,6 +301,7 @@ class ObjectInformation:
             self.constructor_args = None  # the arguments to the constructor
 
         def add_constructor_args(self, args):
+            # Here, we should probably cut the ',' separated list into pieces
             args = [a for a in args if str(a) != ',']
             self.constructor_args = args
             if self.attribute_class is None:
@@ -309,6 +310,12 @@ class ObjectInformation:
                 if len(args) == 2:
                     self.user_name = args[0]
                     self.default_value = args[1]
+                elif len(args) >= 3:
+                    self.user_name = args[1]
+                    self.default_value = args[2]
+            if self.attribute_class == 'DynAttribute_':
+                if len(args) == 3 and args[0] == 'this':
+                    self.user_name = args[1]
                 elif len(args) >= 3:
                     self.user_name = args[1]
                     self.default_value = args[2]
