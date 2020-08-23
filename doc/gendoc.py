@@ -98,9 +98,15 @@ class TokenTree:
         return tt
 
     @staticmethod
-    def IsTokenGroup(tokenStringOrGroup):
+    def IsTokenGroup(tokenStringOrGroup, opening_token=None):
+        """returns whether the given object is a token group.
+        if an 'opening_token' is given, it is additionally checked
+        whether the opening_token matches"""
         if isinstance(tokenStringOrGroup, TokenTree):
-            return True
+            if opening_token is not None:
+                return tokenStringOrGroup.opening_token == opening_token
+            else:
+                return True
         else:
             return False
 
@@ -155,16 +161,24 @@ class TokenStream:
 
         If a regex is given, then the assign only succeeds if the value
         is a string and matches the regex.
+
+        If a callback is given, then the assing only succeeds if the callback
+        maps the value to 'True'. The default callback verifies that the
+        token is a string
         """
-        def __init__(self, regex_object=None):
+        def __init__(self, re=None, callback=lambda x: isinstance(x, str)):
             self.value = None
-            self.regex = regex_object
+            self.regex = re
+            self.callback = callback
 
         def assign(self, value):
             if self.regex is not None:
                 if not isinstance(value, str):
                     return False
                 if not self.regex.match(value):
+                    return False
+            if self.callback is not None:
+                if self.callback(value) is not True:
                     return False
             self.value = value
             return True
@@ -291,9 +305,7 @@ class ObjectInformation:
             self.constructor_args = args
             if self.attribute_class is None:
                 return
-            # just a convenience alias:
             if self.attribute_class == 'Attribute_':
-                #print("args = {}".format(','.join(args)))
                 if len(args) == 2:
                     self.user_name = args[0]
                     self.default_value = args[1]
@@ -304,11 +316,26 @@ class ObjectInformation:
     def __init__(self):
         self.base_classes = {}  # mapping class names to base clases
         self.class2attrbute2info = {}  # two nested dicts to AttributeInformation
+        self.member2init = {}  # mapping (classname,member) to its initalizer list
 
     def base_class(self, subclass, baseclass):
         if subclass not in self.base_classes:
             self.base_classes[subclass] = []
         self.base_classes[subclass].append(baseclass)
+
+    def member_init(self, classname: str, member: str, init_list):
+        """the classname::member is initialized by the given 'init_list'"""
+        self.member2init[(classname, member)] = init_list
+
+    def process_member_init(self):
+        """try to pass colleced member initializations to attributes"""
+        for clsname, attrs in self.class2attrbute2info.items():
+            for _, attr in attrs.items():
+                if attr.constructor_args is not None:
+                    continue
+                init_list = self.member2init.get((clsname, attr.cpp_name), None)
+                if init_list is not None:
+                    attr.add_constructor_args(init_list)
 
     def attribute_info(self, classname: str, attr_cpp_name: str):
         """return the AttributeInformation object for
@@ -386,7 +413,7 @@ class TokTreeInfoExtrator:
         pub_priv_prot_re = re.compile('public|private|protected')
         stream = TokenStream(toktreelist)
         attr_cls_re = re.compile('^(Dyn|)Attribute(Proxy|)_$')
-        attribute_ = TokenStream.PatternArg(regex_object=attr_cls_re)
+        attribute_ = TokenStream.PatternArg(re=attr_cls_re)
         while not stream.empty():
             if stream.try_match(pub_priv_prot_re, ':'):
                 continue
@@ -423,7 +450,9 @@ class TokTreeInfoExtrator:
         # pub_priv_prot = ['public', 'private', 'protected']
         pub_priv_prot_re = re.compile('public|private|protected')
         arg1 = TokenStream.PatternArg()
+        arg2 = TokenStream.PatternArg()
         stream = TokenStream(toktreelist)
+        parameters = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='('))
         while not stream.empty():
             if stream.try_match('class', arg1):
                 classname = arg1.value
@@ -437,8 +466,20 @@ class TokTreeInfoExtrator:
                         self.inside_class_definition(t.enclosed_tokens, classname)
                     elif t == ';':
                         break
+            elif stream.try_match(arg1, ':', ':', arg2, parameters):
+                if arg1.value != arg2.value:
+                    continue
+                classname = arg1.value
+                # we found the constructor for 'classname'
+                colon_or_comma = TokenStream.PatternArg(re=re.compile('^(:|,)$'))
+                while stream.try_match(colon_or_comma, arg1, parameters):
+                    # we found a member initialization
+                    init_list = parameters.value.enclosed_tokens
+                    self.objInfo.member_init(classname, arg1.value, init_list)
             else:
                 stream.pop()
+        # pass the member initializations to the attributes:
+        self.objInfo.process_member_init()
 
 
 def main():
