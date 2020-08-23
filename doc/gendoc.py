@@ -295,10 +295,10 @@ class ObjectInformation:
             if self.attribute_class == 'Attribute_':
                 #print("args = {}".format(','.join(args)))
                 if len(args) == 2:
-                    self.cpp_name = args[0]
+                    self.user_name = args[0]
                     self.default_value = args[1]
                 elif len(args) >= 3:
-                    self.cpp_name = args[1]
+                    self.user_name = args[1]
                     self.default_value = args[2]
 
     def __init__(self):
