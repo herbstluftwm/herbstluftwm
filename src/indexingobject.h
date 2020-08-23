@@ -15,8 +15,8 @@ template<typename T>
 class IndexingObject : public Object {
 public:
     IndexingObject()
-    : count("count", [this]() { return this->size(); })
-    { wireAttributes({ &count }); }
+    : count(this, "count", &IndexingObject<T>::size)
+    { }
     void addIndexed(T* newChild) {
         // the current array size is the index for the new child
         unsigned long index = data.size();
