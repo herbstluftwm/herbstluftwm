@@ -151,13 +151,23 @@ class TokenStream:
 
     class PatternArg:
         """a PatternArg object passed to try_match()
-        allows the try_match function to return one or multiple tokens
+        allows the try_match function to return one or multiple tokens.
+
+        If a regex is given, then the assign only succeeds if the value
+        is a string and matches the regex.
         """
-        def __init__(self):
+        def __init__(self, regex_object=None):
             self.value = None
+            self.regex = regex_object
 
         def assign(self, value):
+            if self.regex is not None:
+                if not isinstance(value, str):
+                    return False
+                if not self.regex.match(value):
+                    return False
             self.value = value
+            return True
 
     def try_match(self, *args):
         """if the next tokens match the list in the *args
@@ -170,17 +180,15 @@ class TokenStream:
                 return False
 
             curtok = self.tokens[self.pos + delta]
-            if not isinstance(curtok, str):
-                # never match a token group
-                return False
-            elif isinstance(pattern, self.re_type):
-                if not pattern.match(curtok):
+            if isinstance(pattern, self.re_type):
+                if not isinstance(curtok, str) or not pattern.match(curtok):
                     return False
             elif isinstance(pattern, str):
                 if pattern != curtok:
                     return False
             elif isinstance(pattern, TokenStream.PatternArg):
-                pattern.assign(curtok)
+                if not pattern.assign(curtok):
+                    return False
             else:
                 raise Exception("unknown pattern type {}".format(type(pattern)))
         self.pos += len(args)
@@ -377,6 +385,8 @@ class TokTreeInfoExtrator:
         """
         pub_priv_prot_re = re.compile('public|private|protected')
         stream = TokenStream(toktreelist)
+        attr_cls_re = re.compile('^(Dyn|)Attribute(Proxy|)_$')
+        attribute_ = TokenStream.PatternArg(regex_object=attr_cls_re)
         while not stream.empty():
             if stream.try_match(pub_priv_prot_re, ':'):
                 continue
@@ -385,14 +395,14 @@ class TokTreeInfoExtrator:
             elif stream.try_match('using'):
                 semicolon_found = stream.discard_until(';')
                 assert semicolon_found, "expected ; after 'using'"
-            elif stream.try_match('Attribute_', '<'):
+            elif stream.try_match(attribute_, '<'):
                 attr_type = self.stream_pop_class_name(stream)
                 assert stream.try_match('>'), \
                     "every 'Attribute_<' has to be closed by '>'"
-                attr_name = stream.pop("expect an attribute name");
+                attr_name = stream.pop("expect an attribute name")
                 attr = self.objInfo.attribute_info(classname, attr_name)
                 attr.type = attr_type
-                attr.attribute_class = 'Attribute_'
+                attr.attribute_class = attribute_.value
                 if stream.try_match('='):
                     # static initializiation:
                     t = stream.pop()
