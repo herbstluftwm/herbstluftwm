@@ -4,6 +4,7 @@ import argparse
 import os
 import sys
 import re
+import ast
 
 
 def findfiles(sourcedir, regex_object):
@@ -111,7 +112,7 @@ class TokenTree:
             return False
 
     def __str__(self):
-        return '{} ... {}'.format(self.opening_token, self.closing_token)
+        return '{}...{}'.format(self.opening_token, self.closing_token)
 
     @staticmethod
     def PrettyPrintList(tokentree_list, curindent=''):
@@ -325,10 +326,10 @@ class ObjectInformation:
             if self.attribute_class == 'Attribute_':
                 if len(args) == 2:
                     self.user_name = args[0]
-                    self.default_value = args[1]
+                    self.set_default_value(args[1])
                 elif len(args) >= 3:
                     self.user_name = args[1]
-                    self.default_value = args[2]
+                    self.set_default_value(args[2])
             if self.attribute_class == 'DynAttribute_':
                 if len(args) == 2:
                     self.user_name = args[0]
@@ -338,7 +339,22 @@ class ObjectInformation:
                     self.user_name = args[0]
             if self.attribute_class == 'AttributeProxy_':
                 self.user_name = args[0]
-                self.default_value = args[1]
+                self.set_default_value(args[1])
+
+        def set_default_value(self, cpp_token):
+            if TokenTree.IsTokenGroup(cpp_token):
+                # drop surrounding '{' ... '}' if its an initalizer list
+                cpp_token = cpp_token.enclosed_tokens[0]
+            if cpp_token[0:4] == ['RegexStr', ':', ':', 'fromStr']:
+                # assume that the next token in the list 'cpp_token' is a
+                # token group
+                cpp_token = cpp_token[4].enclosed_tokens[0]
+            if cpp_token == 'WINDOW_MANAGER_NAME':
+                cpp_token = 'herbstluftwm'
+            if cpp_token[0:1] == '"':
+                # evaluate quotes
+                cpp_token = ast.literal_eval(cpp_token)
+            self.default_value = cpp_token
 
     def __init__(self):
         self.base_classes = {}  # mapping class names to base clases
@@ -392,6 +408,12 @@ class ObjectInformation:
                     ]
                     for key_str, value in key2value:
                         if value is not None:
+                            # properly quote string values
+                            if isinstance(value, str):
+                                # convert a list to a string, such that 'value' gets quoted
+                                # in the usual python syntax. and then we remove the first
+                                # and last characters which are the [ ] coming from the list:
+                                value = str([value])[1:-1]
                             line += '  {}={}'.format(key_str, value)
                     print(line)
 
