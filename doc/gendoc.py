@@ -356,9 +356,15 @@ class ObjectInformation:
                 cpp_token = ast.literal_eval(cpp_token)
             self.default_value = cpp_token
 
+    class ChildInformation:
+        def __init__(self, cpp_name):
+            self.cpp_name = cpp_name
+            self.child_class = None  # whether this is a Link_ or a Child_
+            self.type = None  # the template argument to Link_ or Child_
+
     def __init__(self):
         self.base_classes = {}  # mapping class names to base clases
-        self.class2attrbute2info = {}  # two nested dicts to AttributeInformation
+        self.member2info = {}  # mapping (classname,member) to ChildInformation or AttributeInformation
         self.member2init = {}  # mapping (classname,member) to its initalizer list
 
     def base_class(self, subclass, baseclass):
@@ -372,33 +378,34 @@ class ObjectInformation:
 
     def process_member_init(self):
         """try to pass colleced member initializations to attributes"""
-        for clsname, attrs in self.class2attrbute2info.items():
-            for _, attr in attrs.items():
-                if attr.constructor_args is not None:
-                    continue
-                init_list = self.member2init.get((clsname, attr.cpp_name), None)
-                if init_list is not None:
-                    attr.add_constructor_args(init_list)
+        for (clsname, attrs), attr in self.member2info.items():
+            if attr.constructor_args is not None:
+                continue
+            init_list = self.member2init.get((clsname, attr.cpp_name), None)
+            if init_list is not None:
+                attr.add_constructor_args(init_list)
 
     def attribute_info(self, classname: str, attr_cpp_name: str):
         """return the AttributeInformation object for
         a for a class and its attribute whose C++ variable name is
         'attr_cpp_name'. Create the object if necessary
         """
-        if classname not in self.class2attrbute2info:
-            self.class2attrbute2info[classname] = {}
-        if attr_cpp_name not in self.class2attrbute2info[classname]:
-            self.class2attrbute2info[classname][attr_cpp_name] = \
+        if (classname, attr_cpp_name) not in self.member2info:
+            self.member2info[(classname, attr_cpp_name)] = \
                 ObjectInformation.AttributeInformation(attr_cpp_name)
-        return self.class2attrbute2info[classname][attr_cpp_name]
+        return self.member2info[(classname, attr_cpp_name)]
 
     def print(self):
         for k, v in self.base_classes.items():
             bases = [str(b) for b in v]
             print("{} has the base classes: \'{}\'".format(k, '\' \''.join(bases)))
-            if k in self.class2attrbute2info:
+            attributes = []
+            for (cls, member), attr in self.member2info.items():
+                if cls == k:
+                    attributes.append(attr)
+            if len(attributes) > 0:
                 print("{} has the attributes:".format(k))
-                for _, attr in self.class2attrbute2info[k].items():
+                for attr in attributes:
                     line = '  ' + str(attr.user_name)
                     key2value = [
                         ('cpp_name', attr.cpp_name),
