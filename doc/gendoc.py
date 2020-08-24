@@ -5,6 +5,7 @@ import os
 import sys
 import re
 import ast
+import json
 
 
 def findfiles(sourcedir, regex_object):
@@ -398,6 +399,27 @@ class ObjectInformation:
                 ObjectInformation.AttributeInformation(attr_cpp_name)
         return self.member2info[(classname, attr_cpp_name)]
 
+    def superclasses_transitive(self):
+        """return a set of a dict mapping a class to the set
+        of it's transitive superclasses"""
+        def bounded_depth_first_search(clsname, target_dict):
+            """collect all super classes for 'clsname' and put it into
+            the target_dict"""
+            # check this first to avoid cycles
+            if clsname in target_dict:
+                # nothing to do
+                return
+            bases = [str(b) for b in self.base_classes.get(clsname, [])]
+            target_dict[clsname] = bases
+            for b in bases:
+                bounded_depth_first_search(b, target_dict)
+                target_dict[clsname] += target_dict[b]
+
+        cls2supers = {}
+        for cls in self.base_classes:
+            bounded_depth_first_search(cls, cls2supers)
+        return cls2supers
+
     def print(self):
         for k, v in self.base_classes.items():
             bases = [str(b) for b in v]
@@ -406,6 +428,7 @@ class ObjectInformation:
             for (cls, member), attr in self.member2info.items():
                 if cls == k:
                     attributes.append(attr)
+            attributes = sorted(attributes, key=lambda a: a.user_name)
             if len(attributes) > 0:
                 print("{} has the attributes:".format(k))
                 for attr in attributes:
@@ -426,6 +449,20 @@ class ObjectInformation:
                                 value = str([value])[1:-1]
                             line += '  {}={}'.format(key_str, value)
                     print(line)
+
+    def json_object(self):
+        # 1. collect all subclasses of 'Object'
+        superclasses = self.superclasses_transitive()
+        result = []
+        for clsname, supers in superclasses.items():
+            if 'Object' not in supers:
+                continue
+            attributes = []
+            result.append({
+                'classname': clsname,
+                #'attributes': attributes,
+            })
+        return result
 
 
 class TokTreeInfoExtrator:
@@ -556,6 +593,8 @@ def main():
                         help='print the token tree of a particular file and then exit')
     parser.add_argument('--objects', action='store_const', default=False, const=True,
                         help='extract object information')
+    parser.add_argument('--json', action='store_const', default=False, const=True,
+                        help='print object info as json')
     args = parser.parse_args()
 
     # only evaluated if needed:
@@ -578,7 +617,7 @@ def main():
         TokenTree.PrettyPrintList(tt_list)
         return 0
 
-    if args.objects is not None:
+    if args.objects or args.json:
         objInfo = ObjectInformation()
         for f in files():
             print("parsing file {}".format(f))
@@ -586,7 +625,10 @@ def main():
             toktree = list(build_token_tree_list(TokenStream(toks)))
             extractor = TokTreeInfoExtrator(objInfo)
             extractor.main(list(toktree))
-        objInfo.print()
+        if args.objects:
+            objInfo.print()
+        else:
+            print(json.dumps(objInfo.json_object(), indent=2))
 
 
 EXITCODE = main()
