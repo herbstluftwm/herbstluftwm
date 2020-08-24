@@ -244,7 +244,7 @@ class TokenStream:
         """
         while not self.empty():
             # terminate if the args match to the upcoming tokens
-            if self.try_match(';'):
+            if self.try_match(*args):
                 return True
             # otherwise, discard the next token:
             self.pop()
@@ -548,6 +548,9 @@ class TokTreeInfoExtrator:
         stream = TokenStream(toktreelist)
         attr_cls_re = re.compile('^(Dyn|)Attribute(Proxy|)_$')
         attribute_ = TokenStream.PatternArg(re=attr_cls_re)
+        def semicolon_or_block_callback(t):
+            return t == ';' or TokenTree.IsTokenGroup(t, opening_token='{')
+        semicolon_or_block = TokenStream.PatternArg(callback=semicolon_or_block_callback)
         while not stream.empty():
             if stream.try_match(pub_priv_prot_re, ':'):
                 continue
@@ -577,9 +580,9 @@ class TokTreeInfoExtrator:
                     pass
                 else:
                     # some other definition (e.g. a function)
-                    stream.discard_until(';')
+                    stream.discard_until(semicolon_or_block)
             else:
-                stream.discard_until(';')
+                stream.discard_until(semicolon_or_block)
 
     def main(self, toktreelist):
         """extract object information from a list of TokenTree objects
