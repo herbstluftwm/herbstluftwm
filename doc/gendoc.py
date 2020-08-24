@@ -291,6 +291,19 @@ class ClassName:
             s += '<' + ','.join(self.template_args) + '>'
         return s
 
+    def to_user_type_name(self):
+        if self.name == 'string':
+            return 'string'
+        if self.name == 'Color':
+            return 'color'
+        if self.type_modifier == ['unsigned'] and self.name == 'long':
+            return 'uint'
+        if self.name == 'RegexStr':
+            return 'regex'
+        return self.__str__()
+
+
+
 
 class ObjectInformation:
     class AttributeInformation:
@@ -326,21 +339,27 @@ class ObjectInformation:
                 return
             if self.attribute_class == 'Attribute_':
                 if len(args) == 2:
-                    self.user_name = args[0]
+                    self.set_user_name(args[0])
                     self.set_default_value(args[1])
                 elif len(args) >= 3:
-                    self.user_name = args[1]
+                    self.set_user_name(args[1])
                     self.set_default_value(args[2])
             if self.attribute_class == 'DynAttribute_':
                 if len(args) == 2:
-                    self.user_name = args[0]
+                    self.set_user_name(args[0])
                 elif len(args) >= 3 and args[0] == 'this':
-                    self.user_name = args[1]
+                    self.set_user_name(args[1])
                 elif len(args) >= 3 and args[0] != 'this':
-                    self.user_name = args[0]
+                    self.set_user_name(args[0])
             if self.attribute_class == 'AttributeProxy_':
-                self.user_name = args[0]
+                self.set_user_name(args[0])
                 self.set_default_value(args[1])
+
+        def set_user_name(self, cpp_token):
+            if cpp_token[0:1] == '"':
+                # evaluate quotes
+                cpp_token = ast.literal_eval(cpp_token)
+            self.user_name = cpp_token
 
         def set_default_value(self, cpp_token):
             if TokenTree.IsTokenGroup(cpp_token):
@@ -471,8 +490,9 @@ class ObjectInformation:
                 for member in cls2members.get(cls, []):
                     if isinstance(member, ObjectInformation.AttributeInformation):
                         attributes.append({
+                            'name': member.user_name,
                             'cpp_name': member.cpp_name,
-                            'type': str(member.type),
+                            'type': member.type.to_user_type_name(),
                             'default_value': member.default_value,
                             'class': member.attribute_class,
                         })
