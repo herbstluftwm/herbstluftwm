@@ -301,8 +301,24 @@ class ObjectInformation:
             self.constructor_args = None  # the arguments to the constructor
 
         def add_constructor_args(self, args):
-            # Here, we should probably cut the ',' separated list into pieces
-            args = [a for a in args if str(a) != ',']
+            # split 'args' by the ',' tokens
+            new_args = []
+            current_chunk = []
+            for a in args + [',']:  # simulate the end by an artifical ','
+                if str(a) == ',':
+                    if len(current_chunk) == 1:
+                        # if there was one token before the ',' (or end)
+                        # then only put this token into the 'new_args'
+                        new_args.append(current_chunk[0])
+                    else:
+                        # if there were multiple or no tokens, then
+                        # retain the list
+                        new_args.append(current_chunk)
+                    current_chunk = []
+                else:
+                    current_chunk.append(a)
+
+            args = new_args  # also update 'args' for shorter notation later
             self.constructor_args = args
             if self.attribute_class is None:
                 return
@@ -314,11 +330,15 @@ class ObjectInformation:
                     self.user_name = args[1]
                     self.default_value = args[2]
             if self.attribute_class == 'DynAttribute_':
-                if len(args) == 3 and args[0] == 'this':
+                if len(args) == 2:
+                    self.user_name = args[0]
+                elif len(args) >= 3 and args[0] == 'this':
                     self.user_name = args[1]
-                elif len(args) >= 3:
-                    self.user_name = args[1]
-                    self.default_value = args[2]
+                elif len(args) >= 3 and args[0] != 'this':
+                    self.user_name = args[0]
+            if self.attribute_class == 'AttributeProxy_':
+                self.user_name = args[0]
+                self.default_value = args[1]
 
     def __init__(self):
         self.base_classes = {}  # mapping class names to base clases
