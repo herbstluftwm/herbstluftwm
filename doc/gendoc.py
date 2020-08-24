@@ -500,7 +500,7 @@ class ObjectInformation:
                 'classname': clsname,
                 'attributes': attributes,
             })
-        return result
+        return {'objects': result}  # only generate object doc so far
 
 
 class TokTreeInfoExtrator:
@@ -658,7 +658,7 @@ def main():
     if args.objects or args.json:
         objInfo = ObjectInformation()
         for f in files():
-            print("parsing file {}".format(f))
+            print("parsing file {}".format(f), file=sys.stderr)
             toks = [t for t in extract_file_tokens(f) if t.strip() != '']
             toktree = list(build_token_tree_list(TokenStream(toks)))
             extractor = TokTreeInfoExtrator(objInfo)
