@@ -454,13 +454,31 @@ class ObjectInformation:
         # 1. collect all subclasses of 'Object'
         superclasses = self.superclasses_transitive()
         result = []
+
+        # 2. create a helper dict mapping classes to its members
+        cls2members = {}
+        for (cls, _), member in self.member2info.items():
+            if cls not in cls2members:
+                cls2members[cls] = []
+            cls2members[cls].append(member)
+
+        # 3. create the json-object with all object/attribute info
         for clsname, supers in superclasses.items():
             if 'Object' not in supers:
                 continue
             attributes = []
+            for cls in [clsname] + supers:
+                for member in cls2members.get(cls, []):
+                    if isinstance(member, ObjectInformation.AttributeInformation):
+                        attributes.append({
+                            'cpp_name': member.cpp_name,
+                            'type': str(member.type),
+                            'default_value': member.default_value,
+                            'class': member.attribute_class,
+                        })
             result.append({
                 'classname': clsname,
-                #'attributes': attributes,
+                'attributes': attributes,
             })
         return result
 
