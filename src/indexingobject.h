@@ -90,6 +90,10 @@ public:
     iterator_type begin() { return data.begin(); }
     iterator_type end() { return data.end(); }
 private:
+    unsigned long sizeUnsignedLong() {
+        return static_cast<unsigned long>(data.size());
+    }
+
     std::vector<T*> data;
 };
 
