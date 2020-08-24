@@ -345,6 +345,9 @@ class ObjectInformation:
             if TokenTree.IsTokenGroup(cpp_token):
                 # drop surrounding '{' ... '}' if its an initalizer list
                 cpp_token = cpp_token.enclosed_tokens[0]
+            if cpp_token[0:1] == ['-']:
+                # this is most probably a signed number
+                cpp_token = ''.join(cpp_token)
             if cpp_token[0:4] == ['RegexStr', ':', ':', 'fromStr']:
                 # assume that the next token in the list 'cpp_token' is a
                 # token group
@@ -472,6 +475,9 @@ class TokTreeInfoExtrator:
         attribute_ = TokenStream.PatternArg(re=attr_cls_re)
         while not stream.empty():
             if stream.try_match(pub_priv_prot_re, ':'):
+                continue
+            if stream.try_match(re.compile('^(//|/\*)')):
+                # skip comments
                 continue
             # whenever we reach this point, this is a new
             # member variable or member function definition
