@@ -74,9 +74,10 @@ def pretty_print_token_list(tokens, indent='  '):
 
 
 class TokenGroup:
-    """A list of TokenTrees is a list whose elements are either:
-        - plain strings (something like a 'class' token)
-        - a token group enclosed by ( ), [ ], or { } tokens
+    """
+    A TokenGroup represents a list of tokens that are enclosed by ( ), [ ], or { }.
+    A 'list of tokens' is actually a list whose elements are strings or
+    TokenGroup objects.
     """
     def __init__(self):
         """this should not be called directly"""
