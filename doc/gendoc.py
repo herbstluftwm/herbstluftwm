@@ -639,6 +639,7 @@ class TokTreeInfoExtrator:
         arg2 = TokenStream.PatternArg()
         stream = TokenStream(toktreelist)
         parameters = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='('))
+        codeblock = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='{'))
         while not stream.empty():
             if stream.try_match('class', arg1):
                 classname = arg1.value
@@ -652,16 +653,19 @@ class TokTreeInfoExtrator:
                         self.inside_class_definition(t.enclosed_tokens, classname)
                     elif t == ';':
                         break
-            elif stream.try_match(arg1, ':', ':', arg2, parameters):
+            elif stream.try_match(arg1, ':', ':', arg2, parameters, ':'):
                 if arg1.value != arg2.value:
                     continue
                 classname = arg1.value
                 # we found the constructor for 'classname'
                 colon_or_comma = TokenStream.PatternArg(re=re.compile('^(:|,)$'))
-                while stream.try_match(colon_or_comma, arg1, parameters):
-                    # we found a member initialization
-                    init_list = parameters.value.enclosed_tokens
-                    self.objInfo.member_init(classname, arg1.value, init_list)
+                while not stream.try_match(codeblock):
+                    if stream.try_match(arg1, parameters):
+                        # we found a member initialization
+                        init_list = parameters.value.enclosed_tokens
+                        self.objInfo.member_init(classname, arg1.value, init_list)
+                    else:
+                        stream.pop()
             else:
                 stream.pop()
         # pass the member initializations to the attributes:
