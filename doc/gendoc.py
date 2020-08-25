@@ -382,8 +382,13 @@ class ObjectInformation:
     class ChildInformation:
         def __init__(self, cpp_name):
             self.cpp_name = cpp_name
+            self.user_name = None  # what the user sees
             self.child_class = None  # whether this is a Link_ or a Child_
             self.type = None  # the template argument to Link_ or Child_
+            self.constructor_args = None
+
+        def add_constructor_args(self, args):
+            pass
 
     def __init__(self):
         self.base_classes = {}  # mapping class names to base clases
@@ -417,6 +422,16 @@ class ObjectInformation:
             self.member2info[(classname, attr_cpp_name)] = \
                 ObjectInformation.AttributeInformation(attr_cpp_name)
         return self.member2info[(classname, attr_cpp_name)]
+
+    def child_info(self, classname: str, cpp_name: str):
+        """return the ChildInformation object for
+        a for a class and its child whose C++ variable name is
+        'cpp_name'. Create the object if necessary
+        """
+        if (classname, cpp_name) not in self.member2info:
+            self.member2info[(classname, cpp_name)] = \
+                ObjectInformation.ChildInformation(cpp_name)
+        return self.member2info[(classname, cpp_name)]
 
     def superclasses_transitive(self):
         """return a set of a dict mapping a class to the set
@@ -486,6 +501,7 @@ class ObjectInformation:
             if 'Object' not in supers:
                 continue
             attributes = []
+            children = []
             for cls in [clsname] + supers:
                 for member in cls2members.get(cls, []):
                     if isinstance(member, ObjectInformation.AttributeInformation):
@@ -496,8 +512,16 @@ class ObjectInformation:
                             'default_value': member.default_value,
                             'class': member.attribute_class,
                         })
+                    if isinstance(member, ObjectInformation.ChildInformation):
+                        children.append({
+                            'name': member.user_name,
+                            'cpp_name': member.cpp_name,
+                            'type': member.type.to_user_type_name(),
+                            'class': member.child_class,
+                        })
             result.append({
                 'classname': clsname,
+                'children': children,
                 'attributes': attributes,
             })
         return {'objects': result}  # only generate object doc so far
@@ -548,6 +572,7 @@ class TokTreeInfoExtrator:
         stream = TokenStream(toktreelist)
         attr_cls_re = re.compile('^(Dyn|)Attribute(Proxy|)_$')
         attribute_ = TokenStream.PatternArg(re=attr_cls_re)
+        link_ = TokenStream.PatternArg(re=re.compile('^(Link_|Child_)$'))
         def semicolon_or_block_callback(t):
             return t == ';' or TokenTree.IsTokenGroup(t, opening_token='{')
         semicolon_or_block = TokenStream.PatternArg(callback=semicolon_or_block_callback)
@@ -581,6 +606,13 @@ class TokTreeInfoExtrator:
                 else:
                     # some other definition (e.g. a function)
                     stream.discard_until(semicolon_or_block)
+            elif stream.try_match(link_, '<'):
+                link_type = self.stream_pop_class_name(stream)
+                stream.assert_match('>', msg="every 'Link_<' has to be enclosed by '>'")
+                cpp_name = stream.pop("expect an attribute name")
+                link = self.objInfo.child_info(classname, cpp_name)
+                link.child_class = link_.value
+                link.type = link_type
             else:
                 stream.discard_until(semicolon_or_block)
 
