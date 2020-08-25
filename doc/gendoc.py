@@ -15,7 +15,7 @@ def findfiles(sourcedir, regex_object):
     for root, dirs, files in os.walk(sourcedir):
         for file in files:
             if regex_object.match(file):
-                 yield os.path.join(root, file)
+                yield os.path.join(root, file)
 
 
 def extract_file_tokens(filepath):
@@ -237,7 +237,6 @@ class TokenStream:
                 text += "\n'{}'".format(msg)
             raise Exception(text)
 
-
     def discard_until(self, *args):
         """
         discard tokens until try_match(*args) succeeds (returning True)
@@ -275,6 +274,8 @@ def build_token_tree_list(token_stream):
 
 
 class ClassName:
+    """a class name with additional information of the surrounding namespace
+    and template arguments"""
     def __init__(self, name, type_modifier=[], namespace=[], template_args=[]):
         self.type_modifier = type_modifier  # something like 'unsigned'
         self.namespace = namespace
@@ -306,9 +307,8 @@ class ClassName:
         return self.__str__()
 
 
-
-
 class ObjectInformation:
+    """This gathers all kinds of information about hlwm's object tree"""
     class AttributeInformation:
         def __init__(self, cpp_name):
             self.cpp_name = cpp_name

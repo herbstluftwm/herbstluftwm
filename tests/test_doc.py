@@ -18,6 +18,15 @@ def create_client(hlwm):
     return f'clients.{winid}'
 
 
+def create_clients_with_all_links(hlwm):
+    # enforce that 'clients.focus' exists
+    winid, _ = hlwm.create_client()
+    # enforce that 'clients.dragged' exists
+    hlwm.call('floating on')
+    hlwm.call('drag "" move')
+    return 'clients'
+
+
 def create_frame_split(hlwm):
     hlwm.call('split explode')
     return 'tags.0.tiling.root'
@@ -43,7 +52,7 @@ def types_and_shorthands():
 @pytest.mark.parametrize('clsname,object_path', [
     ('ByName', 'monitors.by-name'),
     ('Client', create_client),
-    ('ClientManager', 'clients'),
+    ('ClientManager', create_clients_with_all_links),
     ('DecTriple', 'theme.tiling'),
     ('DecorationScheme', 'theme.tiling.urgent'),
     ('FrameLeaf', 'tags.0.tiling.root'),
@@ -61,6 +70,7 @@ def test_attributes(hlwm, clsname, object_path, json_doc):
     # is not mentioned explicitly in the docs
     undocumented_paths = '|'.join([
         r'tags\.[0-9]+',
+        r'clients\.0x[0-9a-f]+',
         r'monitors\.[0-9]+',
         r'tags\.by-name\.default',
         # the theme children do not yet use the Child_<...> pattern
@@ -81,8 +91,8 @@ def test_attributes(hlwm, clsname, object_path, json_doc):
         # a string
         object_path = object_path(hlwm)
 
-    # 1. test that all documented attributes actually exist and that it has
-    # the right type
+    # 1. test that all documented attributes actually exist and that
+    # they have the right type
     attr_output = hlwm.call(['attr', object_path]).stdout.splitlines()
     attr_output = [line.split(' ') for line in attr_output if '=' in line]
     attrname2shorttype = dict([(line[4], line[1]) for line in attr_output])
@@ -92,12 +102,16 @@ def test_attributes(hlwm, clsname, object_path, json_doc):
         hlwm.get_attr('{}.{}'.format(object_path, attr['name']).lstrip('.'))
         assert fulltype2shorttype[attr['type']] == attrname2shorttype[attr['name']]
 
+    # 2. test that all documented children actually exist
+    object_path_dot = object_path + '.' if object_path != '' else ''
+    for child in object_doc['children']:
+        hlwm.call(['object_tree', object_path_dot + child['name']])
+
     # collect all attributes and children
     attributes = dict([(a['name'], a) for a in object_doc['attributes']])
     children = dict([(c['name'], c) for c in object_doc['children']])
 
-    # 2. test that all children/attributes are documented
-    object_path_dot = object_path + '.' if object_path != '' else ''
+    # 3. test that all children/attributes are documented
     entries = hlwm.complete(['get_attr', object_path_dot], position=1, partial=True)
     for full_entry_path in entries:
         if undocumented_path_re.match(full_entry_path):
