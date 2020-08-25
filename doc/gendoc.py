@@ -700,7 +700,8 @@ def main():
     args = parser.parse_args()
 
     # only evaluated if needed:
-    files = lambda: findfiles(args.sourcedir, re.compile(args.fileregex))
+    def files():
+        return findfiles(args.sourcedir, re.compile(args.fileregex))
 
     if args.tokenize_single_file is not None:
         tokens = extract_file_tokens(args.tokenize_single_file)
