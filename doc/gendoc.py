@@ -449,7 +449,7 @@ class ObjectInformation:
             if clsname in target_dict:
                 # nothing to do
                 return
-            bases = [str(b) for b in self.base_classes.get(clsname, [])]
+            bases = [b.name for b in self.base_classes.get(clsname, [])]
             target_dict[clsname] = bases
             for b in bases:
                 bounded_depth_first_search(b, target_dict)
@@ -582,6 +582,7 @@ class TokTreeInfoExtrator:
         def semicolon_or_block_callback(t):
             return t == ';' or TokenTree.IsTokenGroup(t, opening_token='{')
         semicolon_or_block = TokenStream.PatternArg(callback=semicolon_or_block_callback)
+        arg = TokenStream.PatternArg()
         while not stream.empty():
             if stream.try_match(pub_priv_prot_re, ':'):
                 continue
@@ -619,6 +620,13 @@ class TokTreeInfoExtrator:
                 link = self.objInfo.child_info(classname, cpp_name)
                 link.child_class = link_.value
                 link.type = link_type
+                stream.discard_until(semicolon_or_block)
+            elif stream.try_match('ByName', arg):
+                link = self.objInfo.child_info(classname, arg.value)
+                link.child_class = 'ByName'
+                link.user_name = 'by-name'
+                link.type = ClassName('ByName')
+                stream.discard_until(semicolon_or_block)
             else:
                 stream.discard_until(semicolon_or_block)
 
