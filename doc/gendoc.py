@@ -388,7 +388,13 @@ class ObjectInformation:
             self.constructor_args = None
 
         def add_constructor_args(self, args):
-            pass
+            if len(args) >= 4:
+                cpp_token = args[3]
+                if cpp_token == 'TMP_OBJECT_PATH':
+                    cpp_token = 'tmp'
+                if cpp_token[0:1] == '"':
+                    cpp_token = cpp_token[1:-1]
+                self.user_name = cpp_token
 
     def __init__(self):
         self.base_classes = {}  # mapping class names to base clases
