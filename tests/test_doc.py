@@ -32,8 +32,8 @@ def create_frame_split(hlwm):
     return 'tags.0.tiling.root'
 
 
-# map every c++ class to a function accepting an hlwm fixture and returning
-# the path to an example object of the C++ class
+# map every c++ class name to a function ("constructor") accepting an hlwm
+# fixture and returning the path to an example object of the C++ class
 classname2examplepath = [
     ('ByName', lambda _: 'monitors.by-name'),
     ('Client', create_client),
@@ -50,6 +50,14 @@ classname2examplepath = [
     ('TagManager', lambda _: 'tags'),
     ('Theme', lambda _: 'theme'),
 ]
+
+
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
+def test_documented_attributes_exist(hlwm, clsname, object_path, json_doc):
+    object_path = object_path(hlwm)
+    for _, attr in json_doc['objects'][clsname]['attributes'].items():
+        print("checking attribute {}::{}".format(clsname, attr['cpp_name']))
+        hlwm.get_attr('{}.{}'.format(object_path, attr['name']).lstrip('.'))
 
 
 def types_and_shorthands():
@@ -70,20 +78,26 @@ def types_and_shorthands():
 
 
 @pytest.mark.parametrize('clsname,object_path', classname2examplepath)
-def test_documented_attributes_exist(hlwm, clsname, object_path, json_doc):
+def test_documented_attribute_type(hlwm, clsname, object_path, json_doc):
     object_path = object_path(hlwm)
     attr_output = hlwm.call(['attr', object_path]).stdout.splitlines()
     attr_output = [line.split(' ') for line in attr_output if '=' in line]
-    attrname2shorttype = dict([(line[4], line[1]) for line in attr_output])
+    attrname2shorttype = {line[4]: line[1] for line in attr_output}
     fulltype2shorttype = types_and_shorthands()
     for _, attr in json_doc['objects'][clsname]['attributes'].items():
-        print("checking attribute {}::{}".format(clsname, attr['cpp_name']))
-        hlwm.get_attr('{}.{}'.format(object_path, attr['name']).lstrip('.'))
         assert fulltype2shorttype[attr['type']] == attrname2shorttype[attr['name']]
 
 
 @pytest.mark.parametrize('clsname,object_path', classname2examplepath)
-def test_attributes(hlwm, clsname, object_path, json_doc):
+def test_documented_children_exist(hlwm, clsname, object_path, json_doc):
+    object_path = object_path(hlwm)
+    object_path_dot = object_path + '.' if object_path != '' else ''
+    for _, child in json_doc['objects'][clsname]['children'].items():
+        hlwm.call(['object_tree', object_path_dot + child['name']])
+
+
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
+def test_attributes_and_children_are_documented(hlwm, clsname, object_path, json_doc):
     # if a path matches the following re, then it's OK if it
     # is not mentioned explicitly in the docs
     undocumented_paths = '|'.join([
@@ -91,40 +105,15 @@ def test_attributes(hlwm, clsname, object_path, json_doc):
         r'clients\.0x[0-9a-f]+',
         r'monitors\.[0-9]+',
         r'tags\.by-name\.default',
-        # the theme children do not yet use the Child_<...> pattern
+        # TODO: the theme children do not yet use the Child_<...> pattern
         r'theme\.(|.*\.)(active|normal|urgent)',
         r'theme\.(fullscreen|tiling|floating|minimal)',
     ])
     undocumented_path_re = re.compile(r'^({})[\. ]*$'.format(undocumented_paths))
 
-    object_doc = json_doc['objects'][clsname]
-
-    if not isinstance(object_path, str):
-        # if it's not a string directly, it's a function returning
-        # a string
-        object_path = object_path(hlwm)
-
-    # 1. test that all documented attributes actually exist and that
-    # they have the right type
-    attr_output = hlwm.call(['attr', object_path]).stdout.splitlines()
-    attr_output = [line.split(' ') for line in attr_output if '=' in line]
-    attrname2shorttype = dict([(line[4], line[1]) for line in attr_output])
-    fulltype2shorttype = types_and_shorthands()
-    for _, attr in object_doc['attributes'].items():
-        print("checking attribute {}::{}".format(clsname, attr['cpp_name']))
-        hlwm.get_attr('{}.{}'.format(object_path, attr['name']).lstrip('.'))
-        assert fulltype2shorttype[attr['type']] == attrname2shorttype[attr['name']]
-
-    # 2. test that all documented children actually exist
+    object_path = object_path(hlwm)
     object_path_dot = object_path + '.' if object_path != '' else ''
-    for _, child in object_doc['children'].items():
-        hlwm.call(['object_tree', object_path_dot + child['name']])
 
-    # collect all attributes and children
-    attributes = object_doc['attributes']
-    children = object_doc['children']
-
-    # 3. test that all children/attributes are documented
     entries = hlwm.complete(['get_attr', object_path_dot], position=1, partial=True)
     for full_entry_path in entries:
         if undocumented_path_re.match(full_entry_path):
@@ -132,6 +121,7 @@ def test_attributes(hlwm, clsname, object_path, json_doc):
         assert full_entry_path[0:len(object_path_dot)] == object_path_dot
         entry = full_entry_path[len(object_path_dot):]
         if entry[-1] == '.':
-            assert entry[0:-1] in children
+            assert entry[0:-1] in json_doc['objects'][clsname]['children']
         else:
-            assert entry[0:-1] in attributes
+            assert entry[-1] == ' ', "it's an attribute if it's no child"
+            assert entry[0:-1] in json_doc['objects'][clsname]['attributes']
