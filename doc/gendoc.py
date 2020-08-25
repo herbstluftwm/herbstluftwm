@@ -345,6 +345,8 @@ class ObjectInformation:
                     self.set_user_name(args[1])
                     self.set_default_value(args[2])
             if self.attribute_class == 'DynAttribute_':
+                #if self.cpp_name == 'count':
+                print("args : {}".format('|'.join([str(s) for s in args])))
                 if len(args) == 2:
                     self.set_user_name(args[0])
                 elif len(args) >= 3 and args[0] == 'this':
@@ -579,6 +581,7 @@ class TokTreeInfoExtrator:
         attr_cls_re = re.compile('^(Dyn|)Attribute(Proxy|)_$')
         attribute_ = TokenStream.PatternArg(re=attr_cls_re)
         link_ = TokenStream.PatternArg(re=re.compile('^(Link_|Child_)$'))
+        parameters = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='('))
         def semicolon_or_block_callback(t):
             return t == ';' or TokenTree.IsTokenGroup(t, opening_token='{')
         semicolon_or_block = TokenStream.PatternArg(callback=semicolon_or_block_callback)
@@ -627,8 +630,24 @@ class TokTreeInfoExtrator:
                 link.user_name = 'by-name'
                 link.type = ClassName('ByName')
                 stream.discard_until(semicolon_or_block)
+            elif stream.try_match(classname, parameters, ':'):
+                self.stream_consume_member_initializers(classname, stream)
             else:
                 stream.discard_until(semicolon_or_block)
+
+    def stream_consume_member_initializers(self, classname, stream):
+        """given that the opening : is already consumed, consume the member
+        initializations"""
+        arg1 = TokenStream.PatternArg()
+        codeblock = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='{'))
+        parameters = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='('))
+        while not stream.try_match(codeblock):
+            if stream.try_match(arg1, parameters):
+                # we found a member initialization
+                init_list = parameters.value.enclosed_tokens
+                self.objInfo.member_init(classname, arg1.value, init_list)
+            else:
+                stream.pop()
 
     def main(self, toktreelist):
         """extract object information from a list of TokenTree objects
@@ -639,7 +658,6 @@ class TokTreeInfoExtrator:
         arg2 = TokenStream.PatternArg()
         stream = TokenStream(toktreelist)
         parameters = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='('))
-        codeblock = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='{'))
         while not stream.empty():
             if stream.try_match('class', arg1):
                 classname = arg1.value
@@ -658,14 +676,7 @@ class TokTreeInfoExtrator:
                     continue
                 classname = arg1.value
                 # we found the constructor for 'classname'
-                colon_or_comma = TokenStream.PatternArg(re=re.compile('^(:|,)$'))
-                while not stream.try_match(codeblock):
-                    if stream.try_match(arg1, parameters):
-                        # we found a member initialization
-                        init_list = parameters.value.enclosed_tokens
-                        self.objInfo.member_init(classname, arg1.value, init_list)
-                    else:
-                        stream.pop()
+                self.stream_consume_member_initializers(classname, stream)
             else:
                 stream.pop()
         # pass the member initializations to the attributes:
