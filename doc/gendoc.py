@@ -720,7 +720,7 @@ def main():
     if args.objects or args.json:
         objInfo = ObjectInformation()
         for f in files():
-            print("parsing file {}".format(f), file=sys.stderr)
+            # print("parsing file {}".format(f), file=sys.stderr)
             toks = [t for t in extract_file_tokens(f) if t.strip() != '']
             toktree = list(build_token_tree_list(TokenStream(toks)))
             extractor = TokTreeInfoExtrator(objInfo)
