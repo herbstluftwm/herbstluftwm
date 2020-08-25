@@ -48,6 +48,8 @@ function(gen_html sourcefile)
     install(FILES ${dst} DESTINATION ${DOCDIR})
 endfunction()
 
+gen_json_doc(hlwm-doc)
+
 if (WITH_DOCUMENTATION)
     find_program(ASCIIDOC_A2X NAMES a2x DOC "Path to AsciiDoc a2x command")
     find_program(ASCIIDOC NAMES asciidoc DOC "Path to AsciiDoc command")
@@ -59,7 +61,6 @@ if (WITH_DOCUMENTATION)
     gen_html(herbstclient)
     gen_html(herbstluftwm)
     gen_html(herbstluftwm-tutorial)
-    gen_json_doc(hlwm-doc)
 endif()
 
 # vim: et:ts=4:sw=4
