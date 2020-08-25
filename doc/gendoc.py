@@ -73,7 +73,7 @@ def pretty_print_token_list(tokens, indent='  '):
     print()
 
 
-class TokenTree:
+class TokenGroup:
     """A list of TokenTrees is a list whose elements are either:
         - plain strings (something like a 'class' token)
         - a token group enclosed by ( ), [ ], or { } tokens
@@ -82,7 +82,7 @@ class TokenTree:
         """this should not be called directly"""
         # token group
         self.opening_token = None
-        self.enclosed_tokens = []  # list of TokenTree objects
+        self.enclosed_tokens = []  # list of strings or TokenGroup objects
         self.closing_token = None
         pass
 
@@ -93,7 +93,7 @@ class TokenTree:
 
     @staticmethod
     def TokenGroup(opening, enclosed, closing):
-        tt = TokenTree()
+        tt = TokenGroup()
         tt.opening_token = opening
         tt.enclosed_tokens = enclosed
         tt.closing_token = closing
@@ -104,7 +104,7 @@ class TokenTree:
         """returns whether the given object is a token group.
         if an 'opening_token' is given, it is additionally checked
         whether the opening_token matches"""
-        if isinstance(tokenStringOrGroup, TokenTree):
+        if isinstance(tokenStringOrGroup, TokenGroup):
             if opening_token is not None:
                 return tokenStringOrGroup.opening_token == opening_token
             else:
@@ -118,9 +118,9 @@ class TokenTree:
     @staticmethod
     def PrettyPrintList(tokentree_list, curindent=''):
         for t in tokentree_list:
-            if TokenTree.IsTokenGroup(t):
+            if TokenGroup.IsTokenGroup(t):
                 print(curindent + t.opening_token)
-                TokenTree.PrettyPrintList(t.enclosed_tokens, curindent=curindent + '  ')
+                TokenGroup.PrettyPrintList(t.enclosed_tokens, curindent=curindent + '  ')
                 print(curindent + t.closing_token)
             else:
                 if t.strip() == '':
@@ -252,7 +252,7 @@ class TokenStream:
 
 
 def build_token_tree_list(token_stream):
-    """return a list of TokenTree objects"""
+    """return a list of strings or TokenGroup objects"""
     matching = [
         ('(', ')'),
         ('{', '}'),
@@ -268,9 +268,9 @@ def build_token_tree_list(token_stream):
             closing = token_stream.pop()
             if (t, closing) not in matching:
                 raise Exception("'{}' is closed by '{}'".format(t, closing))
-            yield TokenTree.TokenGroup(t, nested, closing)
+            yield TokenGroup.TokenGroup(t, nested, closing)
         else:
-            yield TokenTree.LiterateToken(t)
+            yield TokenGroup.LiterateToken(t)
 
 
 class ClassName:
@@ -364,7 +364,7 @@ class ObjectInformation:
             self.user_name = cpp_token
 
         def set_default_value(self, cpp_token):
-            if TokenTree.IsTokenGroup(cpp_token):
+            if TokenGroup.IsTokenGroup(cpp_token):
                 # drop surrounding '{' ... '}' if its an initalizer list
                 cpp_token = cpp_token.enclosed_tokens[0]
             if cpp_token[0:1] == ['-']:
@@ -581,9 +581,9 @@ class TokTreeInfoExtrator:
         attr_cls_re = re.compile('^(Dyn|)Attribute(Proxy|)_$')
         attribute_ = TokenStream.PatternArg(re=attr_cls_re)
         link_ = TokenStream.PatternArg(re=re.compile('^(Link_|Child_)$'))
-        parameters = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='('))
+        parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
         def semicolon_or_block_callback(t):
-            return t == ';' or TokenTree.IsTokenGroup(t, opening_token='{')
+            return t == ';' or TokenGroup.IsTokenGroup(t, opening_token='{')
         semicolon_or_block = TokenStream.PatternArg(callback=semicolon_or_block_callback)
         arg = TokenStream.PatternArg()
         while not stream.empty():
@@ -608,7 +608,7 @@ class TokTreeInfoExtrator:
                 if stream.try_match('='):
                     # static initializiation:
                     t = stream.pop()
-                    assert TokenTree.IsTokenGroup(t)
+                    assert TokenGroup.IsTokenGroup(t)
                     attr.add_constructor_args(t.enclosed_tokens)
                 if stream.try_match(';'):
                     # end of attribute definition
@@ -639,8 +639,8 @@ class TokTreeInfoExtrator:
         """given that the opening : is already consumed, consume the member
         initializations"""
         arg1 = TokenStream.PatternArg()
-        codeblock = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='{'))
-        parameters = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='('))
+        codeblock = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='{'))
+        parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
         while not stream.try_match(codeblock):
             if stream.try_match(arg1, parameters):
                 # we found a member initialization
@@ -650,14 +650,14 @@ class TokTreeInfoExtrator:
                 stream.pop()
 
     def main(self, toktreelist):
-        """extract object information from a list of TokenTree objects
+        """extract object information from a list of strings/TokenGroup objects
         and save the data in the ObjectInformation object passed"""
         # pub_priv_prot = ['public', 'private', 'protected']
         pub_priv_prot_re = re.compile('public|private|protected')
         arg1 = TokenStream.PatternArg()
         arg2 = TokenStream.PatternArg()
         stream = TokenStream(toktreelist)
-        parameters = TokenStream.PatternArg(callback=lambda t: TokenTree.IsTokenGroup(t, opening_token='('))
+        parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
         while not stream.empty():
             if stream.try_match('class', arg1):
                 classname = arg1.value
@@ -667,7 +667,7 @@ class TokTreeInfoExtrator:
                 # scan everything til the final ';'
                 while not stream.empty():
                     t = stream.pop()
-                    if TokenTree.IsTokenGroup(t):
+                    if TokenGroup.IsTokenGroup(t):
                         self.inside_class_definition(t.enclosed_tokens, classname)
                     elif t == ';':
                         break
@@ -717,7 +717,7 @@ def main():
             print("Remaining tokens are:", file=sys.stderr)
             while not stream.empty():
                 print("token: {}".format(stream.pop()), file=sys.stderr)
-        TokenTree.PrettyPrintList(tt_list)
+        TokenGroup.PrettyPrintList(tt_list)
         return 0
 
     if args.objects or args.json:
