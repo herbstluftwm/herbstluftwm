@@ -27,7 +27,7 @@ def create_frame_split(hlwm):
     ('ByName', 'monitors.by-name'),
     ('Client', create_client),
     ('ClientManager', 'clients'),
-    # ('DecTriple', 'theme.tiling'),
+    ('DecTriple', 'theme.tiling'),
     ('DecorationScheme', 'theme.tiling.urgent'),
     ('FrameLeaf', 'tags.0.tiling.root'),
     ('FrameSplit', create_frame_split),
@@ -37,12 +37,20 @@ def create_frame_split(hlwm):
     ('Root', ''),
     ('Settings', 'settings'),
     ('TagManager', 'tags'),
-    # ('Theme', 'theme'),
+    ('Theme', 'theme'),
 ])
 def test_attributes(hlwm, clsname, object_path, json_doc):
     # if a path matches the following re, then it's OK if it
     # is not mentioned explicitly in the docs
-    undocumented_path_re = re.compile(r'^((tags|monitors)\.[0-9]+|tags\.by-name\..*)[\. ]*$')
+    undocumented_paths = '|'.join([
+        r'tags\.[0-9]+',
+        r'monitors\.[0-9]+',
+        r'tags\.by-name\.default',
+        # the theme children do not yet use the Child_<...> pattern
+        r'theme\.(|.*\.)(active|normal|urgent)',
+        r'theme\.(fullscreen|tiling|floating|minimal)',
+    ])
+    undocumented_path_re = re.compile(r'^({})[\. ]*$'.format(undocumented_paths))
 
     object_doc = None
     for obj in json_doc['objects']:
