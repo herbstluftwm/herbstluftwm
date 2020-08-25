@@ -345,8 +345,6 @@ class ObjectInformation:
                     self.set_user_name(args[1])
                     self.set_default_value(args[2])
             if self.attribute_class == 'DynAttribute_':
-                #if self.cpp_name == 'count':
-                print("args : {}".format('|'.join([str(s) for s in args])))
                 if len(args) == 2:
                     self.set_user_name(args[0])
                 elif len(args) >= 3 and args[0] == 'this':
