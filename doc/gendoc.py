@@ -300,6 +300,8 @@ class ClassName:
             return 'uint'
         if self.name == 'RegexStr':
             return 'regex'
+        if self.name == 'FixPrecDec':
+            return 'decimal'
         return self.__str__()
 
 

@@ -23,6 +23,23 @@ def create_frame_split(hlwm):
     return 'tags.0.tiling.root'
 
 
+def types_and_shorthands():
+    """a mapping from type names in the json doc to their
+    one letter short hands in the output of 'attr'
+    """
+    return {
+        'int': 'i',
+        'uint': 'u',
+        'bool': 'b',
+        'decimal': 'd',
+        'color': 'c',
+        'string': 's',
+        'regex': 'r',
+        'SplitAlign': 'n',
+        'LayoutAlgorithm': 'n',
+    }
+
+
 @pytest.mark.parametrize('clsname,object_path', [
     ('ByName', 'monitors.by-name'),
     ('Client', create_client),
@@ -64,10 +81,16 @@ def test_attributes(hlwm, clsname, object_path, json_doc):
         # a string
         object_path = object_path(hlwm)
 
-    # 1. test that all documented attributes actually exist
+    # 1. test that all documented attributes actually exist and that it has
+    # the right type
+    attr_output = hlwm.call(['attr', object_path]).stdout.splitlines()
+    attr_output = [l.split(' ') for l in attr_output if '=' in l]
+    attrname2shorttype = dict([(l[4], l[1]) for l in attr_output])
+    fulltype2shorttype = types_and_shorthands()
     for attr in object_doc['attributes']:
         print("checking attribute {}::{}".format(clsname, attr['cpp_name']))
         hlwm.get_attr('{}.{}'.format(object_path, attr['name']).lstrip('.'))
+        assert fulltype2shorttype[attr['type']] == attrname2shorttype[attr['name']]
 
     # collect all attributes and children
     attributes = dict([(a['name'], a) for a in object_doc['attributes']])
