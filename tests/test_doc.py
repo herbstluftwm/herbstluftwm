@@ -84,8 +84,8 @@ def test_attributes(hlwm, clsname, object_path, json_doc):
     # 1. test that all documented attributes actually exist and that it has
     # the right type
     attr_output = hlwm.call(['attr', object_path]).stdout.splitlines()
-    attr_output = [l.split(' ') for l in attr_output if '=' in l]
-    attrname2shorttype = dict([(l[4], l[1]) for l in attr_output])
+    attr_output = [line.split(' ') for line in attr_output if '=' in line]
+    attrname2shorttype = dict([(line[4], line[1]) for line in attr_output])
     fulltype2shorttype = types_and_shorthands()
     for attr in object_doc['attributes']:
         print("checking attribute {}::{}".format(clsname, attr['cpp_name']))
