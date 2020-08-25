@@ -32,6 +32,26 @@ def create_frame_split(hlwm):
     return 'tags.0.tiling.root'
 
 
+# map every c++ class to a function accepting an hlwm fixture and returning
+# the path to an example object of the C++ class
+classname2examplepath = [
+    ('ByName', lambda _: 'monitors.by-name'),
+    ('Client', create_client),
+    ('ClientManager', create_clients_with_all_links),
+    ('DecTriple', lambda _: 'theme.tiling'),
+    ('DecorationScheme', lambda _: 'theme.tiling.urgent'),
+    ('FrameLeaf', lambda _: 'tags.0.tiling.root'),
+    ('FrameSplit', create_frame_split),
+    ('HSTag', lambda _: 'tags.0'),
+    ('Monitor', lambda _: 'monitors.0'),
+    ('MonitorManager', lambda _: 'monitors'),
+    ('Root', lambda _: ''),
+    ('Settings', lambda _: 'settings'),
+    ('TagManager', lambda _: 'tags'),
+    ('Theme', lambda _: 'theme'),
+]
+
+
 def types_and_shorthands():
     """a mapping from type names in the json doc to their
     one letter short hands in the output of 'attr'
@@ -49,22 +69,20 @@ def types_and_shorthands():
     }
 
 
-@pytest.mark.parametrize('clsname,object_path', [
-    ('ByName', 'monitors.by-name'),
-    ('Client', create_client),
-    ('ClientManager', create_clients_with_all_links),
-    ('DecTriple', 'theme.tiling'),
-    ('DecorationScheme', 'theme.tiling.urgent'),
-    ('FrameLeaf', 'tags.0.tiling.root'),
-    ('FrameSplit', create_frame_split),
-    ('HSTag', 'tags.0'),
-    ('Monitor', 'monitors.0'),
-    ('MonitorManager', 'monitors'),
-    ('Root', ''),
-    ('Settings', 'settings'),
-    ('TagManager', 'tags'),
-    ('Theme', 'theme'),
-])
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
+def test_documented_attributes_exist(hlwm, clsname, object_path, json_doc):
+    object_path = object_path(hlwm)
+    attr_output = hlwm.call(['attr', object_path]).stdout.splitlines()
+    attr_output = [line.split(' ') for line in attr_output if '=' in line]
+    attrname2shorttype = dict([(line[4], line[1]) for line in attr_output])
+    fulltype2shorttype = types_and_shorthands()
+    for _, attr in json_doc['objects'][clsname]['attributes'].items():
+        print("checking attribute {}::{}".format(clsname, attr['cpp_name']))
+        hlwm.get_attr('{}.{}'.format(object_path, attr['name']).lstrip('.'))
+        assert fulltype2shorttype[attr['type']] == attrname2shorttype[attr['name']]
+
+
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
 def test_attributes(hlwm, clsname, object_path, json_doc):
     # if a path matches the following re, then it's OK if it
     # is not mentioned explicitly in the docs
@@ -79,12 +97,7 @@ def test_attributes(hlwm, clsname, object_path, json_doc):
     ])
     undocumented_path_re = re.compile(r'^({})[\. ]*$'.format(undocumented_paths))
 
-    object_doc = None
-    for obj in json_doc['objects']:
-        if obj['classname'] == clsname:
-            object_doc = obj
-            break
-    assert object_doc is not None
+    object_doc = json_doc['objects'][clsname]
 
     if not isinstance(object_path, str):
         # if it's not a string directly, it's a function returning
@@ -97,19 +110,19 @@ def test_attributes(hlwm, clsname, object_path, json_doc):
     attr_output = [line.split(' ') for line in attr_output if '=' in line]
     attrname2shorttype = dict([(line[4], line[1]) for line in attr_output])
     fulltype2shorttype = types_and_shorthands()
-    for attr in object_doc['attributes']:
+    for _, attr in object_doc['attributes'].items():
         print("checking attribute {}::{}".format(clsname, attr['cpp_name']))
         hlwm.get_attr('{}.{}'.format(object_path, attr['name']).lstrip('.'))
         assert fulltype2shorttype[attr['type']] == attrname2shorttype[attr['name']]
 
     # 2. test that all documented children actually exist
     object_path_dot = object_path + '.' if object_path != '' else ''
-    for child in object_doc['children']:
+    for _, child in object_doc['children'].items():
         hlwm.call(['object_tree', object_path_dot + child['name']])
 
     # collect all attributes and children
-    attributes = dict([(a['name'], a) for a in object_doc['attributes']])
-    children = dict([(c['name'], c) for c in object_doc['children']])
+    attributes = object_doc['attributes']
+    children = object_doc['children']
 
     # 3. test that all children/attributes are documented
     entries = hlwm.complete(['get_attr', object_path_dot], position=1, partial=True)

@@ -496,7 +496,7 @@ class ObjectInformation:
     def json_object(self):
         # 1. collect all subclasses of 'Object'
         superclasses = self.superclasses_transitive()
-        result = []
+        result = {}
 
         # 2. create a helper dict mapping classes to its members
         cls2members = {}
@@ -509,30 +509,35 @@ class ObjectInformation:
         for clsname, supers in superclasses.items():
             if 'Object' not in supers:
                 continue
-            attributes = []
-            children = []
+            attributes = {}
+            children = {}
             for cls in [clsname] + supers:
                 for member in cls2members.get(cls, []):
                     if isinstance(member, ObjectInformation.AttributeInformation):
-                        attributes.append({
+                        # assert uniqueness:
+                        assert member.user_name not in attributes
+                        attributes[member.user_name] = {
                             'name': member.user_name,
                             'cpp_name': member.cpp_name,
                             'type': member.type.to_user_type_name(),
                             'default_value': member.default_value,
                             'class': member.attribute_class,
-                        })
+                        }
                     if isinstance(member, ObjectInformation.ChildInformation):
-                        children.append({
+                        # assert uniqueness:
+                        assert member.user_name not in children
+                        children[member.user_name] = {
                             'name': member.user_name,
                             'cpp_name': member.cpp_name,
                             'type': member.type.to_user_type_name(),
                             'class': member.child_class,
-                        })
-            result.append({
+                        }
+            assert clsname not in result  # assert uniqueness
+            result[clsname] = {
                 'classname': clsname,
                 'children': children,
                 'attributes': attributes,
-            })
+            }
         return {'objects': result}  # only generate object doc so far
 
 
