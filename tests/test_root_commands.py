@@ -96,6 +96,25 @@ def test_sprintf(hlwm):
     assert call.stdout == expected_output
 
 
+def test_sprintf_s_vs_c(hlwm):
+    p1 = hlwm.call('substitute X tags.count sprintf Y "number=%c" X echo Y')
+    p2 = hlwm.call('sprintf Y "number=%s" tags.count echo Y')
+    assert p1.stdout == p2.stdout
+
+
+def test_sprintf_c_placeholder(hlwm):
+    proc = hlwm.call('sprintf X "%c %s tags" "there are" tags.count echo X')
+    assert proc.stdout == "there are 1 tags\n"
+
+
+def test_sprintf_nested(hlwm):
+    cmd = 'substitute A tags.count'
+    cmd += ' sprintf B "%c%c" A A'
+    cmd += ' sprintf C "%c%c" B B'
+    cmd += ' sprintf D "%c%c" C C echo D'
+    assert hlwm.call(cmd).stdout == '11111111\n'
+
+
 def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
     call = hlwm.call_xfail('sprintf X %s/%s tags.count echo X')
 
@@ -122,7 +141,13 @@ def test_sprintf_double_percentage_escapes(hlwm):
 
 def test_sprintf_completion_1_placeholder(hlwm):
     assert hlwm.complete('sprintf T %s', partial=True) \
-        == sorted(['T '] + hlwm.complete('get_attr', partial=True))
+        == sorted(hlwm.complete('get_attr', partial=True))
+
+
+def test_sprintf_completion_s_after_c_placeholder(hlwm):
+    assert hlwm.complete('sprintf T %c%s', partial=True) == []
+    assert hlwm.complete('sprintf T %c%s myconst', partial=True) \
+        == sorted(hlwm.complete('get_attr', partial=True))
 
 
 def test_sprintf_completion_0_placeholders(hlwm):
@@ -518,7 +543,7 @@ def test_raise_invalid_winid(hlwm):
 
 def test_argparse_too_few_range(hlwm):
     hlwm.call_xfail('split') \
-        .expect_stderr('Expected between 1 and 2 arguments, but got only 0')
+        .expect_stderr('Expected between 1 and 3 arguments, but got only 0')
 
 
 def test_argparse_expected_1(hlwm):
@@ -529,3 +554,88 @@ def test_argparse_expected_1(hlwm):
 def test_argparse_expected_2_got_1(hlwm):
     hlwm.call_xfail('mousebind B1') \
         .expect_stderr('Expected 2 arguments, but got only 1')
+
+
+def test_foreach_clients(hlwm):
+    hlwm.create_client()
+    hlwm.create_client()
+    children = hlwm.list_children_via_attr('clients')
+    expected_out = ''.join([f'clients.{c}\n' for c in children])
+    assert expected_out == hlwm.call('foreach C clients echo C').stdout
+
+
+def test_foreach_tag_add(hlwm):
+    hlwm.call('add anothertag')
+
+    # adding another tag does not confuse the output:
+    expected = ['tags.by-name.' + n for n in hlwm.list_children_via_attr('tags.by-name')]
+    proc = hlwm.call('foreach T tags.by-name chain , add yetanothertag , echo T')
+    assert proc.stdout.splitlines() == expected
+
+
+def test_foreach_tag_merge(hlwm):
+    # removing a tag while iterating over the tags does not break anything
+    hlwm.call('add othertag')
+
+    # removing this tag in the first loop iteration does not prevent
+    # the second loop iteration for 'othertag'
+    expected = [
+        'tags.by-name.default',
+        'merge_tag: Tag "othertag" not found',
+        'tags.by-name.othertag'
+    ]
+    proc = hlwm.call('foreach T tags.by-name chain , merge_tag othertag , echo T')
+    assert proc.stdout.splitlines() == expected
+
+
+def test_foreach_exit_code_success(hlwm):
+    # create two clients for multiple loop iterations
+    hlwm.create_client()
+    hlwm.create_client()
+
+    # we do the following multiple times: create a new tag and assert
+    # that there are at least 3 tags. This fails in the first iteration but
+    # succeeds later:
+    cmd = 'foreach _ clients.'
+    cmd += ' chain , sprintf TAGNAME "tag%s" tags.count add TAGNAME'
+    cmd += '       , compare tags.count ge 3'
+    proc = hlwm.call(cmd)
+    assert proc.stdout == ''
+
+
+def test_foreach_exit_code_failure(hlwm):
+    # create two clients for multiple loop iterations
+    hlwm.create_client()
+    hlwm.create_client()
+
+    # create a new attribute: it succeeds in the iteration run
+    # but fails in later iterations
+    hlwm.call_xfail('foreach _ clients. new_attr int my_int') \
+        .expect_stderr('already has an attribute named "my_int"')
+
+
+def test_foreach_exit_code_no_iteration(hlwm):
+    # iterating over an object without content never calls the command
+    proc = hlwm.call('foreach S settings chain , echo output , quit , false')
+    assert proc.stdout == ''
+
+
+def test_foreach_invalid_object(hlwm):
+    hlwm.call_xfail('foreach C clients.foobar quit') \
+        .expect_stderr('"clients." has no child named "foobar"')
+
+
+def test_foreach_object_completion(hlwm):
+    completions = hlwm.complete(['foreach', 'X', 'tags.'], position=2, partial=True)
+    # objects are completed
+    assert 'tags.by-name.' in completions
+    # attributes are not completed
+    assert 'tags.count' not in completions
+
+
+def test_foreach_identfier_completion(hlwm):
+    # the identfier isn't completed in the object parameter
+    assert 'X ' not in hlwm.complete(['foreach', 'X', ], partial=True)
+    # but the identfier is completed in the command parameter
+    assert 'X ' in hlwm.complete(['foreach', 'X', 'tags.'], partial=True)
+    assert 'X ' in hlwm.complete(['foreach', 'X', 'tags.', 'echo'], partial=True)

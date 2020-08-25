@@ -148,7 +148,7 @@ def test_drag_invisible_client(hlwm):
     hlwm.call('move t')
     # where he'll never be known
     hlwm.call_xfail(['drag', kid, 'resize']) \
-        .expect_stderr('can not drag invisible client')
+        .expect_stderr('cannot drag invisible client')
     # inward he's grown :-)
 
 

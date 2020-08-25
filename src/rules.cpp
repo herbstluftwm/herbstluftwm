@@ -59,7 +59,7 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
             if (name == "maxage") {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
                 if (1 != sscanf(value, "%d", &cond.value_integer)) {
-                    output << "rule: Can not integer from \"" << value << "\"\n";
+                    output << "rule: Cannot parse integer from \"" << value << "\"\n";
                     return false;
                 }
             } else {
@@ -74,7 +74,7 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
             try {
                 cond.value_reg_exp = std::regex(value, std::regex::extended);
             } catch(std::regex_error& err) {
-                output << "rule: Can not parse value \"" << value
+                output << "rule: Cannot parse value \"" << value
                         << "\" from condition \"" << name
                         << "\": \"" << err.what() << "\"\n";
                 return false;
@@ -326,6 +326,7 @@ template<>
 Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values = {
     { ClientPlacement::Center, "center" },
     { ClientPlacement::Unchanged, "none" },
+    { ClientPlacement::Smart, "smart" },
 };
 
 template<>

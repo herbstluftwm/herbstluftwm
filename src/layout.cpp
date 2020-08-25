@@ -32,7 +32,8 @@ using std::weak_ptr;
  * you can either specify a frame or a tag as its parent
  */
 Frame::Frame(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent)
-    : tag_(tag)
+    : frameIndexAttr_(this, "index", &Frame::frameIndex)
+    , tag_(tag)
     , settings_(settings)
     , parent_(parent)
 {}
@@ -159,6 +160,19 @@ shared_ptr<FrameSplit> FrameSplit::thisSplit() {
 
 shared_ptr<FrameLeaf> Frame::getGloballyFocusedFrame() {
     return get_current_monitor()->tag->frame->focusedFrame();
+}
+
+string Frame::frameIndex() const
+{
+    auto p = parent_.lock();
+    if (p) {
+        string parent_index = p->frameIndex();
+        bool first_child = p->firstChild() == shared_from_this();
+        return parent_index + (first_child ? "0" : "1");
+    } else {
+        // this is the root
+        return "";
+    }
 }
 
 TilingResult FrameLeaf::layoutLinear(Rectangle rect, bool vertical) {
@@ -467,6 +481,25 @@ int FrameSplit::splitsToRoot(SplitAlign align) {
         delta = 1;
     }
     return delta + parent_.lock()->splitsToRoot(align);
+}
+
+bool FrameSplit::split(SplitAlign alignment, FixPrecDec fraction)
+{
+    bool tooManySplits = false;
+    fmap([] (FrameSplit*) {}, [&] (FrameLeaf* l) {
+        tooManySplits = tooManySplits
+                || l->splitsToRoot(alignment) > HERBST_MAX_TREE_HEIGHT;
+    }, 0);
+    if (tooManySplits) {
+        return false;
+    }
+    auto first = shared_from_this();
+    auto second = make_shared<FrameLeaf>(tag_, settings_, weak_ptr<FrameSplit>());
+    auto new_this = make_shared<FrameSplit>(tag_, settings_, parent_, fraction, alignment, first, second);
+    tag_->frame->replaceNode(shared_from_this(), new_this);
+    first->parent_ = new_this;
+    second->parent_ = new_this;
+    return true;
 }
 
 void FrameSplit::replaceChild(shared_ptr<Frame> old, shared_ptr<Frame> newchild) {

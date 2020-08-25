@@ -45,6 +45,8 @@ template<> void Converter<LayoutAlgorithm>::complete(Completion& complete, Layou
 template<>
 inline Type Attribute_<LayoutAlgorithm>::staticType() { return Type::ATTRIBUTE_NAMES; }
 
+LayoutAlgorithm splitAlignToLayoutAlgorithm(SplitAlign align);
+
 size_t layoutAlgorithmCount();
 
 class FrameDataLeaf {

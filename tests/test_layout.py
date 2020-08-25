@@ -181,15 +181,31 @@ def test_dump_frame_index(hlwm):
     layout = {}
     layout['00'] = "(clients vertical:0)"
     layout['01'] = "(clients grid:0)"
-    layout['0'] = '(split vertical:0.7:0 {} {})'.format(
+    layout['0'] = '(split vertical:0.7:1 {} {})'.format(
         layout['00'], layout['01'])
     layout['1'] = '(clients horizontal:0)'
     layout[''] = '(split horizontal:0.65:0 {} {})'.format(
         layout['0'], layout['1'])
     hlwm.call(['load', layout['']])
 
+    # also test more specific frame indices:
+    frame_index_aliases = [
+        ('@', '01'),
+        ('@p', '0'),
+        ('@p/', '00'),
+        ('@p/', '00'),
+        ('@pp', ''),
+        ('@ppp', ''),  # going up too much does not exceed the root
+        ('..', '01'),
+        ('...', '01'),
+        ('./', '00'),
+    ]
+    for complicated, normalized in frame_index_aliases:
+        layout[complicated] = layout[normalized]
+
+    # test all the frame tree portions in the dict 'layout':
     tag = hlwm.get_attr('tags.focus.name')
-    for index in ["", "0", "1", "00", "01"]:
+    for index in layout.keys():
         assert hlwm.call(['dump', tag, index]).stdout == layout[index]
 
 
@@ -805,6 +821,7 @@ def test_split_invalid_argument(hlwm):
         ('b', "stoi"),
         ('-.3', "stoi"),
         ('+.8', "stoi"),
+        ('', "Decimal is empty"),
     ]
     for d, msg in wrongDecimal:
         hlwm.call_xfail(['split', 'top', d]) \
@@ -904,3 +921,70 @@ def test_cycle_layout_name_in_the_list(hlwm, delta):
     for expected in expected_layouts:
         hlwm.call(cycle_layout_cmd)
         assert current_layout_name(hlwm) == expected
+
+
+@pytest.mark.parametrize("splitmode,context", [
+    ('top', '(split vertical:0.5:1 (clients vertical:0) {})'),
+    ('bottom', '(split vertical:0.5:0 {} (clients vertical:0))'),
+    ('left', '(split horizontal:0.5:1 (clients vertical:0) {})'),
+    ('right', '(split horizontal:0.5:0 {} (clients vertical:0))'),
+])
+@pytest.mark.parametrize("oldlayout", [
+    '(split horizontal:0.587:1 (clients vertical:0 W) (split vertical:0.4029:1 (clients max:0 W) (clients max:0)))',
+])
+def test_split_root_frame(hlwm, splitmode, context, oldlayout):
+    for ch in str(oldlayout):  # duplicate the string here
+        if ch != 'W':
+            continue
+        winid, _ = hlwm.create_client()
+        oldlayout = oldlayout.replace('W', winid, 1)
+
+    hlwm.call(['load', oldlayout])
+    assert hlwm.call('dump').stdout == oldlayout
+
+    # here, '' is the frame index of the root frame
+    hlwm.call(['split', splitmode, '0.5', ''])
+
+    hlwm.call('get default_frame_layout')
+    assert context.format(oldlayout) == hlwm.call(['dump']).stdout
+
+
+@pytest.mark.parametrize("splitmode,context", [
+    ('top', '(split vertical:0.5:1 (clients vertical:0) {})'),
+    ('bottom', '(split vertical:0.5:0 {} (clients vertical:0))'),
+    ('left', '(split horizontal:0.5:1 (clients vertical:0) {})'),
+    ('right', '(split horizontal:0.5:0 {} (clients vertical:0))'),
+])
+def test_split_something_in_between(hlwm, splitmode, context):
+    outer_layer = '(split vertical:0.3:1 (clients max:0) {})'
+    inner_layer = '(split horizontal:0.2:0 (clients max:0) (clients grid:0))'
+
+    initial_layout = outer_layer.format(inner_layer)
+    hlwm.call(['load', initial_layout])
+    assert hlwm.call('dump').stdout == initial_layout
+
+    # split the {} of outer_layer
+    hlwm.call(['split', splitmode, '0.5', '1'])
+
+    expected_layout = outer_layer.format(context.format(inner_layer))
+    assert hlwm.call('dump').stdout == expected_layout
+
+
+def test_frame_index_attribute(hlwm):
+    # split the frames with the following indices
+    split_index = [
+        '', '0', '00', '1', '11', '111'
+    ]
+
+    def verify_frame_tree(object_path, index_prefix):
+        assert hlwm.get_attr(f'{object_path}.index') == index_prefix
+        if '0' in hlwm.list_children(object_path):
+            verify_frame_tree(f'{object_path}.0', f'{index_prefix}0')
+            verify_frame_tree(f'{object_path}.1', f'{index_prefix}1')
+
+    for index in split_index:
+        hlwm.call(['split', 'auto', '0.5', index])
+
+        # after each splitting operation, check that
+        # the frame's index attribute is correct:
+        verify_frame_tree('tags.focus.tiling.root', '')

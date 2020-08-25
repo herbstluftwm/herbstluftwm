@@ -180,6 +180,56 @@ void RootCommands::substitute_complete(Completion& complete)
     }
 }
 
+int RootCommands::foreachCmd(Input input, Output output)
+{
+    string ident, pathString;
+    if (!(input >> ident >> pathString)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    // remove trailing dots to avoid parsing issues:
+    while (!pathString.empty() && pathString.back() == OBJECT_PATH_SEPARATOR) {
+        // while the last character is a dot, erase it:
+        pathString.erase(pathString.size() - 1);
+    }
+    Path path { pathString, OBJECT_PATH_SEPARATOR };
+    Object* object = root.child(path, output);
+    if (!object) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    // collect the paths of all children of this object
+    vector<string> childPaths;
+    // collect the children's names first to ensure that
+    // object->children() is not changed by the commands we are
+    // calling.
+    if (!pathString.empty()) {
+        pathString += OBJECT_PATH_SEPARATOR;
+    }
+    for (const auto& entry : object->children()) {
+        childPaths.push_back(pathString + entry.first);
+    }
+    int  lastStatusCode = 0;
+    for (const auto& child : childPaths) {
+        Input carryover = input.fromHere();
+        carryover.replace(ident, child);
+        lastStatusCode = Commands::call(carryover, output);
+    }
+    return lastStatusCode;
+}
+
+void RootCommands::foreachComplete(Completion& complete)
+{
+    if (complete == 0) {
+        // no completion for the identifier
+    } else if (complete == 1) {
+        completeObjectPath(complete);
+    } else {
+        // later, complete the identifier
+        complete.full(complete[0]);
+        complete.completeCommands(2);
+    }
+}
+
 //! parse a format string or throw an exception
 RootCommands::FormatString RootCommands::parseFormatString(const string &format)
 {
@@ -202,6 +252,8 @@ RootCommands::FormatString RootCommands::parseFormatString(const string &format)
                     blobs.push_back({true, "%"});
                 } else if (format_type == 's') {
                     blobs.push_back({false, "s"});
+                } else if (format_type == 'c') {
+                    blobs.push_back({false, "c"});
                 } else {
                     stringstream msg;
                     msg << "invalid format type %"
@@ -237,6 +289,14 @@ int RootCommands::sprintf_cmd(Input input, Output output)
     for (const auto& blob : format) {
         if (blob.literal_) {
             replacedString += blob.data_;
+        } else if (blob.data_ == "c") {
+            // a constant string argument
+            string constString;
+            if (!(input >> constString)) {
+                return HERBST_NEED_MORE_ARGS;
+            }
+            // just copy the plain string to the output
+            replacedString += constString;
         } else {
             // we reached %s
             string path;
@@ -262,22 +322,30 @@ void RootCommands::sprintf_complete(Completion& complete)
     } else if (complete == 1) {
         // no completion for format string
     } else {
-        complete.full(complete[0]); // complete string replacement
-        int placeholderCount = 0;
+        FormatString fs;
         try {
-            FormatString fs = parseFormatString(complete[1]);
-            for (const auto& b : fs) {
-                if (b.literal_ == false) {
-                    placeholderCount++;
-                }
-            }
+            fs = parseFormatString(complete[1]);
         }  catch (const std::invalid_argument&) {
             complete.invalidArguments();
+            return;
         }
-        if (complete < 2 + placeholderCount) {
-            completeAttributePath(complete);
-        } else {
-            complete.completeCommands(2 + placeholderCount);
+        int indexOfNextArgument = 2;
+        for (const auto& b : fs) {
+            if (b.literal_ == true) {
+                continue;
+            }
+            if (complete == indexOfNextArgument) {
+                if (b.data_ == "s") {
+                    completeAttributePath(complete);
+                } else if (b.data_ == "c") {
+                    // no completion for constant strings
+                }
+            }
+            indexOfNextArgument++;
+        }
+        if (complete >= indexOfNextArgument) {
+            complete.full(complete[0]); // complete string replacement
+            complete.completeCommands(indexOfNextArgument);
         }
     }
 }
@@ -444,7 +512,7 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
         try {
             vals.push_back(Converter<T>::parse(x));
         } catch(std::exception& e) {
-            o << "can not parse \"" << x << "\" to "
+            o << "cannot parse \"" << x << "\" to "
               << typeid(T).name() << ": " << e.what() << endl;
             return (int) HERBST_INVALID_ARGUMENT;
         }

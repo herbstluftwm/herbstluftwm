@@ -183,7 +183,7 @@ class HlwmBridge:
         partial. If not in 'partial' mode, trailing spaces are stripped.
 
         Set 'evaluate_escapes' if the escape sequences of completion items
-        should be evaluated. If this is set, one can not distinguish between
+        should be evaluated. If this is set, one cannot distinguish between
         partial and full completion results anymore.
         """
         args = self._parse_command(cmd)
@@ -732,7 +732,7 @@ def x11(x11_connection):
                 # the following coordinates are only relative
                 # to the parent of window
                 geom = window.get_geometry()
-                print('Geometry of {} is: x={} y={} w={} h={}'.format(
+                print('Relative geometry of {} is: x={} y={} w={} h={}'.format(
                       self.winid_str(window), geom.x, geom.y, geom.width, geom.height))
                 x += geom.x
                 y += geom.y

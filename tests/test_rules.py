@@ -107,6 +107,16 @@ def test_add_rule_with_unknown_condition(hlwm):
     call.expect_stderr('rule: Unknown argument "foo=bar"')
 
 
+def test_add_rule_maxage_condition_operator(hlwm):
+    call = hlwm.call_xfail('rule maxage~12')
+    call.expect_stderr('rule: Condition maxage only supports the = operator')
+
+
+def test_add_rule_maxage_condition_integer(hlwm):
+    call = hlwm.call_xfail('rule maxage=foo')
+    call.expect_stderr('rule: Cannot parse integer from "foo"')
+
+
 @pytest.mark.parametrize('method', ['-F', '--all'])
 def test_remove_all_rules(hlwm, method):
     hlwm.call('rule class=Foo tag=bar')
@@ -205,7 +215,7 @@ def test_monitor_consequence(hlwm, monitor_spec):
 def test_invalid_regex_in_condition(hlwm):
     call = hlwm.call_xfail('rule class~[b-a]')
 
-    assert call.stderr == 'rule: Can not parse value "[b-a]" from condition "class": "Invalid range in bracket expression."\n'
+    assert call.stderr == 'rule: Cannot parse value "[b-a]" from condition "class": "Invalid range in bracket expression."\n'
 
 
 def test_printlabel_flag(hlwm):
@@ -224,6 +234,13 @@ def test_prepend_flag(hlwm):
     assert rules.stdout == \
         'label=1\tclass=AddedSecond\t\n' + \
         'label=0\tclass=AddedFirst\t\n'
+
+
+def test_not_flag(hlwm):
+    hlwm.call('rule not class=someclass')
+    rules = hlwm.call('list_rules')
+
+    assert rules.stdout == 'label=0\tnot\tclass=someclass\t\n'
 
 
 @pytest.mark.parametrize('negation', ['not', '!'])
@@ -639,3 +656,133 @@ def test_floatplacement_parser(hlwm, hlwm_process, x11):
         # above wait_stderr_match(). This is why we can't use
         # hlwm.create_client() here
         x11.create_client(sync_hlwm=False)
+
+
+def assert_that_rectangles_do_not_overlap(rectangles):
+    """given a list of rectangles and a description (any string)
+    verify that all the rectangles are disjoint. The rectangles
+    list consists of tuples, containing a rectangle and a description"""
+    def geometry_to_string(rectangle):
+        return '%dx%d%+d%+d' % (rectangle.width, rectangle.height,
+                                rectangle.x, rectangle.y)
+    for i, (rect1, description1) in enumerate(rectangles):
+        for (rect2, description2) in rectangles[0:i]:
+            # compute the intersection of rect1 and rect2.
+            # code identical to Rectangle::intersectionWith()
+            tl_x = max(rect1.x, rect2.x)
+            tl_y = max(rect1.y, rect2.y)
+            br_x = min(rect1.x + rect1.width, rect2.x + rect2.width)
+            br_y = min(rect1.y + rect1.height, rect2.y + rect2.height)
+            overlap = tl_x < br_x and tl_y < br_y
+            assert not overlap, \
+                '{} ({}) and {} ({}) overlap' \
+                .format(description1, geometry_to_string(rect1),
+                        description2, geometry_to_string(rect2))
+
+
+@pytest.mark.parametrize('num_tiling_clients', [0, 2])
+def test_floatplacement_smart_enough_space_for_all(hlwm, x11, num_tiling_clients):
+    hlwm.call('move_monitor "" 500x800')
+    hlwm.call('rule floatplacement=smart')
+
+    # create a side-by-side split where potential tiling
+    # clients are put into the left frame
+    hlwm.call('split horizontal')
+
+    clients = []
+    for i in range(0, 5):
+        if i >= num_tiling_clients:
+            hlwm.call('rule floating=on')
+        clients.append(x11.create_client(geometry=(30, 40, 200, 250)))
+
+    rectangles = [(x11.get_absolute_geometry(handle), winid)
+                  for handle, winid in clients]
+    assert_that_rectangles_do_not_overlap(rectangles)
+
+
+def test_floatplacement_smart_overlap_with_only_tiling(hlwm, x11):
+    hlwm.call('move_monitor "" 500x800')
+    hlwm.call('rule floatplacement=smart')
+
+    # a side-by-side split
+    hlwm.call('split horizontal')
+    # the left frame occupied:
+    x11.create_client(geometry=(30, 40, 800, 800))
+    hlwm.call('rule floating=on')  # all other clients will be floating
+    # the right frame is 400 px wide and we create two floating clients
+    # where each of them is 201 px wide (plus border width, etc)
+
+    clients = [
+        x11.create_client(geometry=(30, 40, 200, 750)),
+        x11.create_client(geometry=(30, 40, 200, 750)),
+    ]
+    # now the floating clients must be placed such that they do not overlap
+    rectangles = [(x11.get_absolute_geometry(handle), winid)
+                  for handle, winid in clients]
+    assert_that_rectangles_do_not_overlap(rectangles)
+
+
+def test_floatplacement_smart_uses_all_corners(hlwm, x11):
+    hlwm.call('move_monitor "" 500x520')
+    hlwm.call('rule floatplacement=smart floating=on')
+    snap_gap = 5
+    hlwm.call(f'set snap_gap {snap_gap}')
+    hlwm.call('set window_border_width 0')
+
+    # in this 500x500 area, place 4 clients 300x300 each
+    clients = [x11.create_client(geometry=(30, 40, 300, 302))
+               for _ in range(0, 4)]
+
+    # in order to use the space efficiently, they must be placed
+    # in the corners and overlap in the center.
+    corner2client = {}  # a dict, mapping corners to the client
+    for winhandle, winid in clients:
+        geo = x11.get_absolute_geometry(winhandle)
+        assert geo.width == 300
+        assert geo.height == 302
+        # check which of the screen edges is touched by the window
+        touches_left = geo.x == snap_gap
+        touches_right = geo.x + geo.width == 500 - snap_gap
+        touches_top = geo.y == snap_gap
+        touches_bottom = geo.y + geo.height == 520 - snap_gap
+        # the combination of the above flags yields the corner
+        corner = (touches_left, touches_right, touches_top, touches_bottom)
+        assert corner2client.get(corner, None) is None, \
+            f'Error: {winid} is not the only one in corner {corner}'
+        corner2client[corner] = winid
+
+    # there are 4 clients for 4 corners
+    assert len(corner2client) == 4
+
+
+@pytest.mark.exclude_from_coverage(
+    reason='This test does not verify functionality but only whether \
+    creating lots of windows can be handled by the algorithm')
+@pytest.mark.parametrize('invisible_tag', [False, True])
+def test_floatplacement_smart_create_many(hlwm, x11, invisible_tag):
+    hlwm.call('move_monitor "" 500x520')
+    if invisible_tag:
+        hlwm.call('add invisible_tag')
+        hlwm.call('rule tag=invisible_tag')
+    hlwm.call('rule floatplacement=smart floating=on')
+
+    # create many clients with different sizes
+    def index2geometry(i):
+        # vary between 2 different widths and 3 different
+        # heights to get a lot of combinations
+        return (30, 40, (i % 2) * 110, (i % 3) * 120)
+
+    for i in range(0, 50):
+        x11.create_client(geometry=index2geometry(i))
+
+
+def test_floatplacement_smart_invisible_windows(hlwm):
+    hlwm.call('add invisible')
+    hlwm.call('rule floatplacement=smart floating=on tag=invisible')
+
+    # create some floating clients on the invisible tag and check
+    # that it does not crash
+    hlwm.create_client()
+    hlwm.create_client()
+    hlwm.create_client()
+    hlwm.create_client()

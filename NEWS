@@ -6,19 +6,25 @@ Current git version
 
   * When an application fails to focus itself (because
     focus_stealing_prevention is active), then the window is marked as urgent.
-  * Fix handling of delta -1 in 'focus_monitor' and 'cycle_monitor'
-  * Fixed precision decimals in the layout tree (more reliable in- and output
-    of fractions in frame splits)
+  * New optional argument for the 'split' command for splitting non-leaf frames
+  * New command 'foreach' for iterating over objects
   * New attribute 'urgent_count' for tags, counting the number of urgent clients on a tag
   * New rule consequence 'floatplacement' that updates the placement of floating
-    clients ('floatplacement=center') or leaves the floating position as is
-    ('floatplacement=none')
+    clients ('floatplacement=smart' for little overlap,
+    'floatplacement=center' for centering) or leaves the floating position as
+    is ('floatplacement=none')
   * New rule condition 'pgid'
+  * New format specifier '%c' in the 'sprintf' command (useful in combination with 'foreach')
   * The 'new_attr' command now also accepts an initial value
+  * React to a change of the 'floating_focused' attribute of the tag object
+  * New frame index character 'p' for accessing the parent frame
   * Bug fixes:
     - Fix wrong behaviour in 'cycle_layout' in the case where the current layout
       is not contained in the layout list passed to 'cycle_layout'.
-    - React to a change of the 'floating_focused' attribute of the tag object
+    - Fix handling of delta -1 in 'focus_monitor' and 'cycle_monitor'
+    - Fixed precision decimals in the layout tree (more reliable in- and output
+      of fractions in frame splits)
+
 
 Release 0.8.3 on 2020-06-06
 ---------------------------

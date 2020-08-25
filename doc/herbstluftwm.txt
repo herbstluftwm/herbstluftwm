@@ -106,24 +106,27 @@ FRAME INDEX
 -----------
 The exact position of a frame in the layout tree may be described by its
 *index* which is just a string of characters. The lookup algorithm starts at
-the root frame and selects one of its two subtrees according to the each
-character in the index.
-
-The characters are interpreted as follows:
+the root frame and interprets the *index* string character by character as
+follows:
 
     * +0+: select the first subtree
     * +1+: select the second subtree
     * +.+: select the subtree having the focus
     * +/+: select the subtree not having the focus
+    * +@+: select the frame having the focus. In contrast to +.+, this passes
+      multiple layers all down to the focused leaf of the frame tree.
+    * +p+: select the parent tree
     * +e+: finds a suitable empty frame: if the focused frame is not empty, this
       selects the closest frame that is empty (in any subtree)
 
-Thus an empty string refers to the root frame, and "00" refers to the first
-subtree of the first subtree of the root frame. Similarly "1e" refers to the
-first empty frame in the second subtree.
+For example:
 
-As a special case, the string "@" always refers to the currently focused
-frame.
+    * An empty string refers to the root frame
+    * +00+ refers to the first subtree of the first subtree of the root frame.
+    * +1e+ refers to the first empty frame in the second subtree.
+    * +/@+ refers to the focused frame within the unfocused "half" of the frame
+      tree
+    * +@p/+ refers to the sibling of the focused frame
 
 TAGS
 ----
@@ -374,9 +377,10 @@ close_and_remove::
     Closes the focused window and removes the current frame if no other window
     is present in that frame. In floating mode, this acts as the close command.
 
-split 'ALIGN' ['FRACTION']::
-    Splits the focused frame into two subframes with a specified 'FRACTION'
-    between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
+split 'ALIGN' ['FRACTION' ['FRAMEINDEX']::
+    Splits the focused frame (or the frame specified by 'FRAMEINDEX', see the
+    section <<FRAME_INDEX,*frame index*>>) into two subframes with a specified
+    'FRACTION' between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
     +
         * 'top'
         * 'bottom' (= 'vertical')
@@ -398,6 +402,7 @@ split 'ALIGN' ['FRACTION']::
         * split horiz 0.3
         * split vertical 0.5
         * split h
+        * split top 0.2 ''   (splits the root frame)
 
 focus ['-i'|'-e'] 'DIRECTION'::
     Moves the focus from current frame to the next frame or client in
@@ -826,17 +831,26 @@ substitute 'IDENTIFIER' 'ATTRIBUTE' 'COMMAND' ['ARGS' ...]::
           +
           Prints the title of the currently focused window.
 
-sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
-    Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'ARGS'
-    by the string specified by 'FORMAT'. Each +%s+ in 'FORMAT' stands for the
-    value of the next attribute in 'ATTRIBUTES', similar to the *printf*(1)
-    command. The replaced command with its arguments then is executed.
+sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
+    Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'CMDARGS'
+    by the string specified by 'FORMAT'. The 'FORMAT' string may contain several
+    placeholders, similar to the *printf*(1) command:
+      - +%s+ inserts an attribute value whose path is given by the string value
+        of the next 'FORMATARG'
+      - +%c+ ("constant") inserts the next 'FORMATARG' without modification.
+      - +%%+ stands for a plain +%+
+
+ ::
+    The replaced command with its arguments then is executed.
     Examples:
 
         * +sprintf STR title=%s clients.focus.title echo STR+ +
           +
           Prints the title of the currently focused window prepended by
           +title=+.
+        * +sprintf X "%c %s tags" "there are" tags.count echo X+
+          +
+          Prints +there are N tags+ with +N+ replaced by the number of tags.
         * +sprintf X tag=%s tags.focus.name rule once X+ +
           +
           Moves the next client that appears to the tag that is currently
@@ -847,6 +861,34 @@ sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
         * +sprintf l somelongstring echo l l l+ +
           +
           Prints +somelongstring+ three times, separated by spaces.
+        * +substitute X tags.count sprintf Y "number=%c" X echo Y+ +
+          +
+          has the same output as +
+          +sprintf Y "number=%s" tags.count echo Y+ +
+          +
+          (Note how the +%c+ changes to +%s+)
+
+foreach 'IDENTIFIER' 'OBJECT' 'COMMAND' ['ARGS' ...]::
+    For each child of the given 'OBJECT' the 'COMMAND' is called with its
+    'ARGS', where the 'IDENTIFIER' is replaced by the path of the child. The
+    exit code is the exit code of the command executed last. Examples:
+
+        * +foreach T tags.by-name. echo T+ +
+          +
+          Prints:
+
+             tags.by-name.1
+             tags.by-name.2
+             tags.by-name.3
+             [...]
+
+        * Note that +foreach+ only iterates over children, but not over
+          attributes, so +foreach S settings echo S+ prints nothing, since the
+          settings object has only attributes but no child objects.
+
+        * +foreach C clients. echo C+ prints the object paths of all clients,
+          but the focused client twice, because it is mentioned in +clients.+
+          twice: by window id and as +clients.focus+.
 
 mktemp [*bool*|*int*|*string*|*uint*] 'IDENTIFIER' 'COMMAND' ['ARGS' ...]::
     Creates a temporary attribute with the given type and replaces all
@@ -1274,6 +1316,9 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
     following:
     * +none+ does not change the placement at all
     * +center+ centers the window on the monitor
+    * +smart+ tries to place it with as little overlap to other floating windows
+      as possible. If there are multiple options with the least overlap, then
+      the position with the least overlap to tiling windows is chosen.
 
 A rule's behaviour can be configured by some special 'FLAGS':
 

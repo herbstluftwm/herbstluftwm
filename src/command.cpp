@@ -66,7 +66,7 @@ struct {
     { "focus_nth",      2,  no_completion },
     { "close",          2,  no_completion },
     { "cycle",          2,  no_completion },
-    { "split",          3,  no_completion },
+    { "split",          4,  no_completion },
     { "raise",          2,  no_completion },
     { "jumpto",         2,  no_completion },
     { "bring",          2,  no_completion },
