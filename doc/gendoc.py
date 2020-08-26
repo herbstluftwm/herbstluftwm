@@ -29,9 +29,9 @@ def extract_file_tokens(filepath):
         # \ right before the last \n
         "#(?:[^Z\n]|\\\\\n)*[^\\\\]\n",  # preprocessor
         '//[^\n]*\n',  # single-line comment
-        '/\*(?:[^\*]*|\**[^/*])*\*/',  # multiline comment
+        r'/\*(?:[^\*]*|\**[^/*])*\*/',  # multiline comment
         '[a-zA-Z_][a-zA-Z0-9_]*',  # identifiers
-        '[0-9][0-9\.a-z]*', # numbers
+        r'[0-9][0-9\.a-z]*',  # numbers
         '\'(?:\\\'|[^\']*)\'',
         "\"(?:\\\"|[^\"]*)\"",
         "[-+<>/*]",  # operators
@@ -588,14 +588,16 @@ class TokTreeInfoExtrator:
         attribute_ = TokenStream.PatternArg(re=attr_cls_re)
         link_ = TokenStream.PatternArg(re=re.compile('^(Link_|Child_)$'))
         parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
+
         def semicolon_or_block_callback(t):
             return t == ';' or TokenGroup.IsTokenGroup(t, opening_token='{')
+
         semicolon_or_block = TokenStream.PatternArg(callback=semicolon_or_block_callback)
         arg = TokenStream.PatternArg()
         while not stream.empty():
             if stream.try_match(pub_priv_prot_re, ':'):
                 continue
-            if stream.try_match(re.compile('^(//|/\*)')):
+            if stream.try_match(re.compile(r'^(//|/\*)')):
                 # skip comments
                 continue
             # whenever we reach this point, this is a new
@@ -693,7 +695,7 @@ def main():
     parser = argparse.ArgumentParser(description='extract hlwm doc from the source code')
     parser.add_argument('--sourcedir', default='./src/',
                         help='directory containing the source files')
-    parser.add_argument('--fileregex', default='.*\.(h|cpp)$',
+    parser.add_argument('--fileregex', default=r'.*\.(h|cpp)$',
                         help='consider files whose name matches this regex')
     parser.add_argument('--tokenize-single-file',
                         help='tokenize a particular file and then exit')
