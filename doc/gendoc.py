@@ -41,7 +41,7 @@ def extract_file_tokens(filepath):
     ]
     entire_regex = ['(?:{})'.format(t) for t in token_types]
     entire_regex = re.compile('(' + '|'.join(entire_regex) + ')')
-    with open(filepath, 'r') as fh:
+    with open(filepath, 'r', encoding='utf8') as fh:
         for t in entire_regex.split(fh.read().replace('\r', '') + '\n'):
             if t is not None and t.strip(' \t') != '':
                 yield t
