@@ -451,7 +451,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                 break;
             case 'h':
                 std::cout << "This starts the herbstluftwm window manager. In order to" << endl;
-                std::cout << "interact with a running herbstluftwm instance use the" << endl;
+                std::cout << "interact with a running herbstluftwm instance, use the" << endl;
                 std::cout << "\'herbstclient\' command." << endl;
                 std::cout << endl;
                 std::cout << "The herbstluftwm command accepts the following options:" << endl;
