@@ -22,10 +22,12 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
 
 'OPTION' can be:
 
-    *-c*, *--autostart* 'PATH'::
-        use 'PATH' as autostart file instead of the one in '$XDG_CONFIG_HOME'
     *-v*, *--version*::
         print version and exit
+    *-h*, *--help*::
+        print a short help and exit
+    *-c*, *--autostart* 'PATH'::
+        use 'PATH' as autostart file instead of the one in '$XDG_CONFIG_HOME'
     *-l*, *--locked*::
         Initially set the monitors_locked setting to 1
     *--exit-on-xerror*::
