@@ -236,7 +236,7 @@ int quit() {
 
 int version(Output output) {
     output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << endl;
-    output << "Copyright (c) 2011-2014 Thorsten Wißmann" << endl;
+    output << "Copyright (c) 2011-2020 Thorsten Wißmann" << endl;
     output << "Released under the Simplified BSD License" << endl;
     for (const auto& d : MonitorDetection::detectors()) {
         output << d.name_ << " support: " << (d.detect_ ? "on" : "off") << endl;
