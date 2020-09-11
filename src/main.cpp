@@ -463,7 +463,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                         if (long_options[i].has_arg) {
                             std::cout << " ARG";
                         }
-                        std::cout << "  ";
+                        std::cout << ", ";
                     }
                     std::cout << "--" << long_options[i].name;
                     if (long_options[i].has_arg) {
