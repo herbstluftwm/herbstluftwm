@@ -549,14 +549,15 @@ int RootCommands::compare_cmd(Input input, Output output)
         // map a type name to "is it numeric" and a comperator function
         { Type::ATTRIBUTE_INT,      { true,  parse_and_compare<int> }, },
         { Type::ATTRIBUTE_ULONG,    { true,  parse_and_compare<int> }, },
-        { Type::ATTRIBUTE_STRING,   { false, parse_and_compare<string> }, },
         { Type::ATTRIBUTE_BOOL,     { false, parse_and_compare<bool> }, },
         { Type::ATTRIBUTE_COLOR,    { false, parse_and_compare<Color> }, },
     };
+    // the default comparison is simply string based:
+    pair<bool, function<int(string,string,Output)>> comparator =
+        { false, parse_and_compare<string> };
     auto it = type2compare.find(a->type());
-    if (it == type2compare.end()) {
-        output << "attribute " << path << " has unknown type" << endl;
-        return HERBST_INVALID_ARGUMENT;
+    if (it != type2compare.end()) {
+        comparator = it->second;
     }
     auto op_it = operators.find(oper);
     if (op_it == operators.end()) {
@@ -564,7 +565,7 @@ int RootCommands::compare_cmd(Input input, Output output)
             << "\". Possible values are:";
         for (auto i : operators) {
             // only list operators suitable for the attribute type
-            if (!it->second.first && i.second.first) {
+            if (!comparator.first && i.second.first) {
                 continue;
             }
             output << " " << i.first;
@@ -572,14 +573,14 @@ int RootCommands::compare_cmd(Input input, Output output)
         output << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-    if (op_it->second.first && !it->second.first) {
+    if (op_it->second.first && !comparator.first) {
         output << "operator \"" << oper << "\" "
             << "only allowed for numeric types, but the attribute "
             << path << " is of non-numeric type "
             << Entity::typestr(a->type()) << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-    int comparison_result = it->second.second(a->str(), value, output);
+    int comparison_result = comparator.second(a->str(), value, output);
     if (comparison_result > 1) {
         return comparison_result;
     }

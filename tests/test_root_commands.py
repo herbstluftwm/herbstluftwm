@@ -338,6 +338,18 @@ def test_compare_invalid_operator(hlwm):
         .expect_stderr('unknown operator')
 
 
+def test_compare_fallback_string_equal(hlwm):
+    hlwm.call('set_layout max')
+    proc = hlwm.call('compare tags.focus.tiling.root.algorithm = max')
+    assert proc.stdout == ''
+
+
+def test_compare_fallback_string_unequal(hlwm):
+    hlwm.call('set_layout max')
+    proc = hlwm.call('! compare tags.focus.tiling.root.algorithm != max')
+    assert proc.stdout == ''
+
+
 def test_try_command(hlwm):
     proc = hlwm.unchecked_call('try chain , echo foo , false')
 
