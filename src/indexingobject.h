@@ -15,8 +15,8 @@ template<typename T>
 class IndexingObject : public Object {
 public:
     IndexingObject()
-    : count("count", [this]() { return this->size(); })
-    { wireAttributes({ &count }); }
+    : count(this, "count", &IndexingObject<T>::sizeUnsignedLong)
+    { }
     void addIndexed(T* newChild) {
         // the current array size is the index for the new child
         unsigned long index = data.size();
@@ -90,6 +90,10 @@ public:
     iterator_type begin() { return data.begin(); }
     iterator_type end() { return data.end(); }
 private:
+    unsigned long sizeUnsignedLong() {
+        return static_cast<unsigned long>(data.size());
+    }
+
     std::vector<T*> data;
 };
 

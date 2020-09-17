@@ -210,12 +210,6 @@ class DynAttribute_ : public Attribute {
 public:
     // each time a dynamic attribute is read, the getter_ is called in order to
     // get the actual value
-    DynAttribute_(const std::string &name, std::function<T()> getter)
-        : Attribute(name, false)
-        , getter_(getter)
-    {
-        hookable_ = false;
-    }
     DynAttribute_(Object* owner, const std::string &name, std::function<T()> getter)
         : Attribute(name, false)
         , getter_(getter)
