@@ -22,10 +22,12 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
 
 'OPTION' can be:
 
-    *-c*, *--autostart* 'PATH'::
-        use 'PATH' as autostart file instead of the one in '$XDG_CONFIG_HOME'
     *-v*, *--version*::
         print version and exit
+    *-h*, *--help*::
+        print a short help and exit
+    *-c*, *--autostart* 'PATH'::
+        use 'PATH' as autostart file instead of the one in '$XDG_CONFIG_HOME'
     *-l*, *--locked*::
         Initially set the monitors_locked setting to 1
     *--exit-on-xerror*::
@@ -1754,7 +1756,7 @@ Patch submission and bug reporting:
 
 COPYING
 -------
-Copyright 2011-2014 Thorsten Wißmann. All rights reserved.
+Copyright 2011-2020 Thorsten Wißmann. All rights reserved.
 
 This software is licensed under the "Simplified BSD License". See LICENSE for
 details.
