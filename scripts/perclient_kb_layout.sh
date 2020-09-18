@@ -37,8 +37,8 @@ FOCUS_WINID=$(hc attr clients.focus.winid)
 hc --idle focus_changed | while read hook winid name
 do
     # Save current keyboard layout for window loosing focus
-    hc silent new_attr int clients.${FOCUS_WINID}.my_kb_layout || true;
-    hc silent attr clients.${FOCUS_WINID}.my_kb_layout $(xkblayout-state print "%c");
+    hc try silent new_attr int clients.${FOCUS_WINID}.my_kb_layout;
+    hc silent attr clients.${FOCUS_WINID}.my_kb_layout "$(xkblayout-state print '%c')";
 
     # Save the currently focused win id to be able referring it as the one loosing focus
     FOCUS_WINID=$winid
