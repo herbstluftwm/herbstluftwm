@@ -26,6 +26,8 @@ substitute FOCUS clients.focus.winid chain
 . lock
 . or : and # if there is more than one frame, then don't restore, but maximize again!
            , compare tags.focus.frame_count = 1
+           # if the frame layout was switched manually, don't restore either
+           , compare tags.focus.tiling.root.algorithm = "$mode"
            # if we have such a stored layout, then restore it, else maximize
            , silent substitute STR tags.focus.my_unmaximized_layout load STR
            # remove the stored layout
