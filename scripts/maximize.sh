@@ -30,7 +30,7 @@ substitute FOCUS clients.focus.winid chain
            , silent substitute STR tags.focus.my_unmaximized_layout load STR
            # remove the stored layout
            , remove_attr tags.focus.my_unmaximized_layout
-     : chain , new_attr string tags.focus.my_unmaximized_layout
+     : chain , silent new_attr string tags.focus.my_unmaximized_layout
              # save the current layout in the attribute
              , set_attr tags.focus.my_unmaximized_layout "$layout"
              # force all windows into a single frame in max layout
