@@ -37,7 +37,8 @@ def test_focus_follows_mouse(hlwm, mouse, focus_follows_mouse, single_floating):
         hlwm.call('set_attr tags.focus.floating on')
     hlwm.call('set_attr tags.focus.floating on')
     hlwm.call(['set', 'focus_follows_mouse', hlwm.bool(focus_follows_mouse)])
-    c1, _ = hlwm.create_client(position=(0, 0))
+    mouse.move_to(0, 0)  # make sure that the cursor is not within any of the new windows
+    c1, _ = hlwm.create_client(position=(10, 0))
     c2, _ = hlwm.create_client(position=(300, 0))
     hlwm.call(f'jumpto {c2}')  # also raises c2
     assert hlwm.get_attr('clients.focus.winid') == c2
@@ -81,14 +82,8 @@ def test_focus_frame_by_mouse(hlwm, mouse, click, focus_follows_mouse):
         == hlwm.call('dump').stdout
 
 
-@pytest.mark.parametrize("click,focus_follows_mouse", [
-    (False, False),
-    (True, False),
-    (True, True)
-    #  FIXME: here, hlwm doesn't get an EnterNotify event in xvfb
-    # but it works in Xephyr.
-    # (False, True)
-])
+@pytest.mark.parametrize("click", [True, False])
+@pytest.mark.parametrize("focus_follows_mouse", [True, False])
 def test_focus_client_by_decoration(hlwm, mouse, x11, click, focus_follows_mouse):
     hlwm.call('attr theme.border_width 50')
     hlwm.call('attr theme.active.color red')
@@ -142,7 +137,7 @@ def test_enternotify_do_not_drop_events(hlwm, mouse, client_count):
     for i in range(0, client_count):
         # here, it's important that move_into does not sync with hlwm
         # such that the event queue in hlwm builds up
-        mouse.move_into(winid[i], 10, 10)
+        mouse.move_into(winid[i], 10, 10, wait=False)
 
     # finally, all enter notify events must survive
     assert hlwm.get_attr('clients.focus.winid') == winid[client_count - 1]

@@ -5,6 +5,7 @@
 
 #include "client.h"
 #include "ewmh.h"
+#include "finite.h"
 #include "hook.h"
 #include "root.h"
 #include "utils.h"
@@ -19,6 +20,7 @@ const std::map<string, Condition::Matcher> Condition::matchers = {
     { "instance",       &Condition::matchesInstance          },
     { "title",          &Condition::matchesTitle             },
     { "pid",            &Condition::matchesPid               },
+    { "pgid",           &Condition::matchesPgid              },
     { "maxage",         &Condition::matchesMaxage            },
     { "windowtype",     &Condition::matchesWindowtype        },
     { "windowrole",     &Condition::matchesWindowrole        },
@@ -39,6 +41,7 @@ const std::map<string, Consequence::Applier> Consequence::appliers = {
     { "keymask",        &Consequence::applyKeyMask         },
     { "keys_inactive",  &Consequence::applyKeysInactive    },
     { "monitor",        &Consequence::applyMonitor         },
+    { "floatplacement", &Consequence::applyFloatplacement  },
 };
 
 bool Rule::addCondition(string name, char op, const char* value, bool negated, Output output) {
@@ -56,7 +59,7 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
             if (name == "maxage") {
                 cond.value_type = CONDITION_VALUE_TYPE_INTEGER;
                 if (1 != sscanf(value, "%d", &cond.value_integer)) {
-                    output << "rule: Can not integer from \"" << value << "\"\n";
+                    output << "rule: Cannot parse integer from \"" << value << "\"\n";
                     return false;
                 }
             } else {
@@ -71,7 +74,7 @@ bool Rule::addCondition(string name, char op, const char* value, bool negated, O
             try {
                 cond.value_reg_exp = std::regex(value, std::regex::extended);
             } catch(std::regex_error& err) {
-                output << "rule: Can not parse value \"" << value
+                output << "rule: Cannot parse value \"" << value
                         << "\" from condition \"" << name
                         << "\": \"" << err.what() << "\"\n";
                 return false;
@@ -218,6 +221,19 @@ bool Condition::matchesPid(const Client* client) const {
     }
 }
 
+bool Condition::matchesPgid(const Client* client) const {
+    if (client->pgid_() < 0) {
+        return false;
+    }
+    if (value_type == CONDITION_VALUE_TYPE_INTEGER) {
+        return value_integer == client->pgid_;
+    } else {
+        char buf[1000]; // 1kb ought to be enough for every int
+        sprintf(buf, "%d", client->pgid_());
+        return matches(buf);
+    }
+}
+
 bool Condition::matchesMaxage(const Client* client) const {
     time_t diff = get_monotonic_timestamp() - conditionCreationTime;
     return (value_integer >= diff);
@@ -301,3 +317,31 @@ void Consequence::applyKeysInactive(const Client *client, ClientChanges *changes
 void Consequence::applyMonitor(const Client* client, ClientChanges* changes) const {
     changes->monitor_name = value;
 }
+
+void Consequence::applyFloatplacement(const Client* client, ClientChanges* changes) const {
+    changes->floatplacement = Converter<ClientPlacement>::parse(value);
+}
+
+template<>
+Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values = {
+    { ClientPlacement::Center, "center" },
+    { ClientPlacement::Unchanged, "none" },
+    { ClientPlacement::Smart, "smart" },
+};
+
+template<>
+string Converter<ClientPlacement>::str(ClientPlacement cp) {
+    return Finite<ClientPlacement>::str(cp);
+}
+
+template<>
+ClientPlacement Converter<ClientPlacement>::parse(const string& payload) {
+    return Finite<ClientPlacement>::parse(payload);
+}
+
+template<>
+void Converter<ClientPlacement>::complete(Completion& complete, ClientPlacement const* relativeTo) {
+    return Finite<ClientPlacement>::complete(complete, relativeTo);
+}
+
+

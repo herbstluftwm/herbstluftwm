@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "arglist.h"
+#include "fixprecdec.h"
 #include "globals.h"
 #include "hlwmcommon.h"
 #include "root.h"
@@ -117,18 +118,18 @@ shared_ptr<RawFrameNode> FrameParser::buildTree() {
         }
         try {
             node->align_ = Converter<SplitAlign>::parse(alignName);
-            double fraction = std::stod(fractionStr);
+            FixPrecDec fraction = Converter<FixPrecDec>::parse(fractionStr);
             if (fraction < FRAME_MIN_FRACTION
-                || fraction > 1 - FRAME_MIN_FRACTION)
+                || fraction > (FixPrecDec::fromInteger(1) - FRAME_MIN_FRACTION))
             {
                 stringstream message;
                 message << "Fraction must be between "
-                        <<  FRAME_MIN_FRACTION << " and "
-                        << (1 - FRAME_MIN_FRACTION)
-                        << " but actually is " << fraction;
+                        <<  FRAME_MIN_FRACTION.str() << " and "
+                        << (FixPrecDec::fromInteger(1) - FRAME_MIN_FRACTION).str()
+                        << " but actually is " << Converter<FixPrecDec>::str(fraction);
                 throw std::invalid_argument(message.str());
             }
-            node->fraction_ = fraction * FRACTION_UNIT;
+            node->fraction_ = fraction;
             node->selection_ = std::stoi(selectionStr);
             if (node->selection_ != 0 && node->selection_ != 1) {
                 throw std::invalid_argument("selection must be 0 or 1");

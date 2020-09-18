@@ -32,7 +32,8 @@ using std::weak_ptr;
  * you can either specify a frame or a tag as its parent
  */
 Frame::Frame(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent)
-    : tag_(tag)
+    : frameIndexAttr_(this, "index", &Frame::frameIndex)
+    , tag_(tag)
     , settings_(settings)
     , parent_(parent)
 {}
@@ -40,6 +41,9 @@ Frame::~Frame() = default;
 
 FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent)
     : Frame(tag, settings, parent)
+    , client_count_(this, "client_count", [this]() {return clientCount(); })
+    , selectionAttr_(this, "selection", &FrameLeaf::getSelection)
+    , algorithmAttr_(this, "algorithm", &FrameLeaf::getLayout)
 {
     auto l = settings->default_frame_layout();
     if (l >= layoutAlgorithmCount()) {
@@ -50,14 +54,23 @@ FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent
     decoration = new FrameDecoration(*this, tag, settings);
 }
 
-FrameSplit::FrameSplit(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent, int fraction, SplitAlign align,
-                 shared_ptr<Frame> a, shared_ptr<Frame> b)
-             : Frame(tag, settings, parent) {
+FrameSplit::FrameSplit(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent,
+                       FixPrecDec fraction, SplitAlign align, shared_ptr<Frame> a,
+                       shared_ptr<Frame> b)
+             : Frame(tag, settings, parent)
+             , splitTypeAttr_(this, "split_type", &FrameSplit::getAlign)
+             , fractionAttr_(this, "fraction", &FrameSplit::getFraction)
+             , selectionAttr_(this, "selection", [this]() { return selection_;})
+             , aLink_(*this, "0")
+             , bLink_(*this, "1")
+{
     this->align_ = align;
     selection_ = 0;
     this->fraction_ = fraction;
     this->a_ = a;
     this->b_ = b;
+    aLink_ = a.get();
+    bLink_ = b.get();
 }
 
 void FrameLeaf::insertClient(Client* client, bool focus) {
@@ -147,6 +160,19 @@ shared_ptr<FrameSplit> FrameSplit::thisSplit() {
 
 shared_ptr<FrameLeaf> Frame::getGloballyFocusedFrame() {
     return get_current_monitor()->tag->frame->focusedFrame();
+}
+
+string Frame::frameIndex() const
+{
+    auto p = parent_.lock();
+    if (p) {
+        string parent_index = p->frameIndex();
+        bool first_child = p->firstChild() == shared_from_this();
+        return parent_index + (first_child ? "0" : "1");
+    } else {
+        // this is the root
+        return "";
+    }
 }
 
 TilingResult FrameLeaf::layoutLinear(Rectangle rect, bool vertical) {
@@ -355,11 +381,11 @@ TilingResult FrameSplit::computeLayout(Rectangle rect) {
     auto first = rect;
     auto second = rect;
     if (align_ == SplitAlign::vertical) {
-        first.height = (rect.height * fraction_) / FRACTION_UNIT;
+        first.height = (rect.height * fraction_.value_) / fraction_.unit_;
         second.y += first.height;
         second.height -= first.height;
     } else { // (align == SplitAlign::horizontal)
-        first.width = (rect.width * fraction_) / FRACTION_UNIT;
+        first.width = (rect.width * fraction_.value_) / fraction_.unit_;
         second.x += first.width;
         second.width -= first.width;
     }
@@ -457,14 +483,35 @@ int FrameSplit::splitsToRoot(SplitAlign align) {
     return delta + parent_.lock()->splitsToRoot(align);
 }
 
+bool FrameSplit::split(SplitAlign alignment, FixPrecDec fraction)
+{
+    bool tooManySplits = false;
+    fmap([] (FrameSplit*) {}, [&] (FrameLeaf* l) {
+        tooManySplits = tooManySplits
+                || l->splitsToRoot(alignment) > HERBST_MAX_TREE_HEIGHT;
+    }, 0);
+    if (tooManySplits) {
+        return false;
+    }
+    auto first = shared_from_this();
+    auto second = make_shared<FrameLeaf>(tag_, settings_, weak_ptr<FrameSplit>());
+    auto new_this = make_shared<FrameSplit>(tag_, settings_, parent_, fraction, alignment, first, second);
+    tag_->frame->replaceNode(shared_from_this(), new_this);
+    first->parent_ = new_this;
+    second->parent_ = new_this;
+    return true;
+}
+
 void FrameSplit::replaceChild(shared_ptr<Frame> old, shared_ptr<Frame> newchild) {
     if (a_ == old) {
         a_ = newchild;
         newchild->parent_ = thisSplit();
+        aLink_ = a_.get();
     }
     if (b_ == old) {
         b_ = newchild;
         newchild->parent_ = thisSplit();
+        bLink_ = b_.get();
     }
 }
 
@@ -473,7 +520,7 @@ void FrameLeaf::addClients(const vector<Client*>& vec, bool atFront) {
     clients.insert(targetPosition, vec.begin(), vec.end());
 }
 
-bool FrameLeaf::split(SplitAlign alignment, int fraction, size_t childrenLeaving) {
+bool FrameLeaf::split(SplitAlign alignment, FixPrecDec fraction, size_t childrenLeaving) {
     if (splitsToRoot(alignment) > HERBST_MAX_TREE_HEIGHT) {
         return false;
     }
@@ -481,20 +528,14 @@ bool FrameLeaf::split(SplitAlign alignment, int fraction, size_t childrenLeaving
     vector<Client*> leaves(clients.begin() + childrenStaying, clients.end());
     clients.erase(clients.begin() + childrenStaying, clients.end());
     // ensure fraction is allowed
-    fraction = CLAMP(fraction,
-                     FRACTION_UNIT * (0.0 + FRAME_MIN_FRACTION),
-                     FRACTION_UNIT * (1.0 - FRAME_MIN_FRACTION));
+    fraction = FrameSplit::clampFraction(fraction);
     auto first = shared_from_this();
     auto second = make_shared<FrameLeaf>(tag_, settings_, weak_ptr<FrameSplit>());
     second->layout = layout;
     auto new_this = make_shared<FrameSplit>(tag_, settings_, parent_, fraction, alignment, first, second);
     second->parent_ = new_this;
     second->addClients(leaves);
-    if (parent_.lock()) {
-        parent_.lock()->replaceChild(shared_from_this(), new_this);
-    } else {
-        tag_->frame->root_ = new_this;
-    }
+    tag_->frame->replaceNode(thisLeaf(), new_this);
     parent_ = new_this;
     if (selection >= childrenStaying) {
         second->setSelection(selection - childrenStaying);
@@ -506,23 +547,31 @@ bool FrameLeaf::split(SplitAlign alignment, int fraction, size_t childrenLeaving
 
 void FrameSplit::swapChildren() {
     swap(a_,b_);
+    aLink_ = a_.get();
+    bLink_ = b_.get();
 }
 
-void FrameSplit::adjustFraction(int delta) {
-    fraction_ += delta;
+void FrameSplit::adjustFraction(FixPrecDec delta) {
+    fraction_ = fraction_ + delta;
     fraction_ = clampFraction(fraction_);
 }
 
-void FrameSplit::setFraction(int fraction)
+void FrameSplit::setFraction(FixPrecDec fraction)
 {
     fraction_ = clampFraction(fraction);
 }
 
-int FrameSplit::clampFraction(int fraction)
+FixPrecDec FrameSplit::clampFraction(FixPrecDec fraction)
 {
-    return CLAMP(fraction,
-                 (int)(FRAME_MIN_FRACTION * FRACTION_UNIT),
-                 (int)((1.0 - FRAME_MIN_FRACTION) * FRACTION_UNIT));
+    auto minFrac = FRAME_MIN_FRACTION;
+    auto maxFrac = FixPrecDec::fromInteger(1) - minFrac;
+    if (fraction < minFrac) {
+        return minFrac;
+    }
+    if (fraction > maxFrac) {
+        return maxFrac;
+    }
+    return fraction;
 }
 
 /**

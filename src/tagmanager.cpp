@@ -299,7 +299,7 @@ int TagManager::tag_move_window_by_index_command(Input argv, Output output) {
 
 function<int(Input, Output)> TagManager::frameCommand(FrameCommand cmd) {
     return [cmd,this](Input input, Output output) -> int {
-        return cmd(*(this->focus_()->frame), input, output);
+        return cmd(*(this->focus_()->frame()), input, output);
     };
 }
 
@@ -309,14 +309,14 @@ CommandBinding TagManager::frameCommand(FrameCommand cmd, FrameCompleter complet
 }
 function<int()> TagManager::frameCommand(function<int(FrameTree&)> cmd) {
     return [cmd,this]() -> int {
-        return cmd(*(this->focus_()->frame));
+        return cmd(*(this->focus_()->frame()));
     };
 }
 
 function<void(Completion&)> TagManager::frameCompletion(FrameCompleter completer) {
     return [completer,this](Completion& complete) {
-        shared_ptr<FrameTree> ft = focus_()->frame;
-        (ft.get() ->* completer)(complete);
+        FrameTree* ft = focus_()->frame();
+        (ft ->* completer)(complete);
     };
 }
 

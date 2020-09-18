@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 
+#include "argparse.h"
 #include "attribute_.h"
 #include "command.h"
 #include "completion.h"
@@ -179,6 +180,56 @@ void RootCommands::substitute_complete(Completion& complete)
     }
 }
 
+int RootCommands::foreachCmd(Input input, Output output)
+{
+    string ident, pathString;
+    if (!(input >> ident >> pathString)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    // remove trailing dots to avoid parsing issues:
+    while (!pathString.empty() && pathString.back() == OBJECT_PATH_SEPARATOR) {
+        // while the last character is a dot, erase it:
+        pathString.erase(pathString.size() - 1);
+    }
+    Path path { pathString, OBJECT_PATH_SEPARATOR };
+    Object* object = root.child(path, output);
+    if (!object) {
+        return HERBST_INVALID_ARGUMENT;
+    }
+
+    // collect the paths of all children of this object
+    vector<string> childPaths;
+    // collect the children's names first to ensure that
+    // object->children() is not changed by the commands we are
+    // calling.
+    if (!pathString.empty()) {
+        pathString += OBJECT_PATH_SEPARATOR;
+    }
+    for (const auto& entry : object->children()) {
+        childPaths.push_back(pathString + entry.first);
+    }
+    int  lastStatusCode = 0;
+    for (const auto& child : childPaths) {
+        Input carryover = input.fromHere();
+        carryover.replace(ident, child);
+        lastStatusCode = Commands::call(carryover, output);
+    }
+    return lastStatusCode;
+}
+
+void RootCommands::foreachComplete(Completion& complete)
+{
+    if (complete == 0) {
+        // no completion for the identifier
+    } else if (complete == 1) {
+        completeObjectPath(complete);
+    } else {
+        // later, complete the identifier
+        complete.full(complete[0]);
+        complete.completeCommands(2);
+    }
+}
+
 //! parse a format string or throw an exception
 RootCommands::FormatString RootCommands::parseFormatString(const string &format)
 {
@@ -201,6 +252,8 @@ RootCommands::FormatString RootCommands::parseFormatString(const string &format)
                     blobs.push_back({true, "%"});
                 } else if (format_type == 's') {
                     blobs.push_back({false, "s"});
+                } else if (format_type == 'c') {
+                    blobs.push_back({false, "c"});
                 } else {
                     stringstream msg;
                     msg << "invalid format type %"
@@ -236,6 +289,14 @@ int RootCommands::sprintf_cmd(Input input, Output output)
     for (const auto& blob : format) {
         if (blob.literal_) {
             replacedString += blob.data_;
+        } else if (blob.data_ == "c") {
+            // a constant string argument
+            string constString;
+            if (!(input >> constString)) {
+                return HERBST_NEED_MORE_ARGS;
+            }
+            // just copy the plain string to the output
+            replacedString += constString;
         } else {
             // we reached %s
             string path;
@@ -261,22 +322,30 @@ void RootCommands::sprintf_complete(Completion& complete)
     } else if (complete == 1) {
         // no completion for format string
     } else {
-        complete.full(complete[0]); // complete string replacement
-        int placeholderCount = 0;
+        FormatString fs;
         try {
-            FormatString fs = parseFormatString(complete[1]);
-            for (const auto& b : fs) {
-                if (b.literal_ == false) {
-                    placeholderCount++;
-                }
-            }
+            fs = parseFormatString(complete[1]);
         }  catch (const std::invalid_argument&) {
             complete.invalidArguments();
+            return;
         }
-        if (complete < 2 + placeholderCount) {
-            completeAttributePath(complete);
-        } else {
-            complete.completeCommands(2 + placeholderCount);
+        int indexOfNextArgument = 2;
+        for (const auto& b : fs) {
+            if (b.literal_ == true) {
+                continue;
+            }
+            if (complete == indexOfNextArgument) {
+                if (b.data_ == "s") {
+                    completeAttributePath(complete);
+                } else if (b.data_ == "c") {
+                    // no completion for constant strings
+                }
+            }
+            indexOfNextArgument++;
+        }
+        if (complete >= indexOfNextArgument) {
+            complete.full(complete[0]); // complete string replacement
+            complete.completeCommands(indexOfNextArgument);
         }
     }
 }
@@ -311,8 +380,12 @@ void RootCommands::completeAttributeType(Completion& complete)
 
 int RootCommands::new_attr_cmd(Input input, Output output)
 {
-    string type, path;
-    if (!(input >> type >> path )) {
+    string type, path, initialValue;
+    bool initialValueSupplied = false;
+    ArgParse ap;
+    ap.mandatory(type).mandatory(path);
+    ap.optional(initialValue, &initialValueSupplied);
+    if (ap.parsingFails(input, output)) {
         return HERBST_NEED_MORE_ARGS;
     }
     auto obj_path_and_attr = Object::splitPath(path);
@@ -342,6 +415,16 @@ int RootCommands::new_attr_cmd(Input input, Output output)
     }
     obj->addAttribute(a);
     userAttributes_.push_back(unique_ptr<Attribute>(a));
+    // try to write the attribute
+    if (initialValueSupplied) {
+        string msg = a->change(initialValue);
+        if (!msg.empty()) {
+            output << input.command() << ": \""
+                   << initialValue << "\" is an invalid "
+                   << "value for " << path << ": " << msg << endl;
+            return HERBST_INVALID_ARGUMENT;
+        }
+    }
     return 0;
 }
 
@@ -358,6 +441,8 @@ void RootCommands::new_attr_complete(Completion& complete)
             char s[] = {OBJECT_PATH_SEPARATOR, '\0'};
             complete.partial(obj_path.join(OBJECT_PATH_SEPARATOR) + s + USER_ATTRIBUTE_PREFIX);
         }
+    } else if (complete == 2) {
+        // no completion for the initial value
     } else {
         complete.none();
     }
@@ -427,7 +512,7 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
         try {
             vals.push_back(Converter<T>::parse(x));
         } catch(std::exception& e) {
-            o << "can not parse \"" << x << "\" to "
+            o << "cannot parse \"" << x << "\" to "
               << typeid(T).name() << ": " << e.what() << endl;
             return (int) HERBST_INVALID_ARGUMENT;
         }
@@ -464,14 +549,15 @@ int RootCommands::compare_cmd(Input input, Output output)
         // map a type name to "is it numeric" and a comperator function
         { Type::ATTRIBUTE_INT,      { true,  parse_and_compare<int> }, },
         { Type::ATTRIBUTE_ULONG,    { true,  parse_and_compare<int> }, },
-        { Type::ATTRIBUTE_STRING,   { false, parse_and_compare<string> }, },
         { Type::ATTRIBUTE_BOOL,     { false, parse_and_compare<bool> }, },
         { Type::ATTRIBUTE_COLOR,    { false, parse_and_compare<Color> }, },
     };
+    // the default comparison is simply string based:
+    pair<bool, function<int(string,string,Output)>> comparator =
+        { false, parse_and_compare<string> };
     auto it = type2compare.find(a->type());
-    if (it == type2compare.end()) {
-        output << "attribute " << path << " has unknown type" << endl;
-        return HERBST_INVALID_ARGUMENT;
+    if (it != type2compare.end()) {
+        comparator = it->second;
     }
     auto op_it = operators.find(oper);
     if (op_it == operators.end()) {
@@ -479,7 +565,7 @@ int RootCommands::compare_cmd(Input input, Output output)
             << "\". Possible values are:";
         for (auto i : operators) {
             // only list operators suitable for the attribute type
-            if (!it->second.first && i.second.first) {
+            if (!comparator.first && i.second.first) {
                 continue;
             }
             output << " " << i.first;
@@ -487,14 +573,14 @@ int RootCommands::compare_cmd(Input input, Output output)
         output << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-    if (op_it->second.first && !it->second.first) {
+    if (op_it->second.first && !comparator.first) {
         output << "operator \"" << oper << "\" "
             << "only allowed for numeric types, but the attribute "
             << path << " is of non-numeric type "
             << Entity::typestr(a->type()) << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-    int comparison_result = it->second.second(a->str(), value, output);
+    int comparison_result = comparator.second(a->str(), value, output);
     if (comparison_result > 1) {
         return comparison_result;
     }

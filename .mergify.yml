@@ -9,3 +9,14 @@ pull_request_rules:
           merge:
               method: squash
               strict: smart
+              commit_message: title+body
+    - name: Implicitly allow t-wissmann to approve own pull requests
+      conditions:
+          - author=t-wissmann
+          - status-success=Travis CI - Pull Request
+          - label≠wip
+          - label=self-approved
+      actions:
+          review:
+              type: APPROVE
+              message: "Approved via the `self-approved` label"

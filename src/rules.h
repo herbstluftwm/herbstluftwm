@@ -49,12 +49,31 @@ private:
     bool matchesInstance(const Client* client) const;
     bool matchesTitle(const Client* client) const;
     bool matchesPid(const Client* client) const;
+    bool matchesPgid(const Client* client) const;
     bool matchesMaxage(const Client* client) const;
     bool matchesWindowtype(const Client* client) const;
     bool matchesWindowrole(const Client* client) const;
 
     bool matches(const std::string& string) const;
 };
+
+/**
+ * @brief The ClientPlacement enum configures
+ * how a client is placed initially, that is, how the
+ * coordinates in the floating rectangle of the client
+ * are modified.
+ */
+enum class ClientPlacement {
+    Center, //! place in the center of a monitor
+    Unchanged, //! don't change the position
+    Smart, //! as little overlaps as possible
+};
+
+template<> std::string Converter<ClientPlacement>::str(ClientPlacement cp);
+template<> ClientPlacement Converter<ClientPlacement>::parse(const std::string& payload);
+template<> void Converter<ClientPlacement>::complete(Completion& complete, ClientPlacement const*);
+
+
 
 class ClientChanges {
 public:
@@ -70,6 +89,7 @@ public:
     bool            focus = false; // if client should get focus
     bool            switchtag = false; // if the tag may be switched for focusing it
     bool            manage = true; // whether we should manage it
+    ClientPlacement floatplacement = ClientPlacement::Unchanged;
     std::experimental::optional<bool> fullscreen;
     std::experimental::optional<RegexStr> keyMask; // Which keymask rule should be applied for this client
     std::experimental::optional<RegexStr> keysInactive; // Which keymask rule should be applied for this client
@@ -108,6 +128,7 @@ private:
     void applyKeyMask(const Client* client, ClientChanges* changes) const;
     void applyKeysInactive(const Client* client, ClientChanges* changes) const;
     void applyMonitor(const Client* client, ClientChanges* changes) const;
+    void applyFloatplacement(const Client* client, ClientChanges* changes) const;
 };
 
 class Rule {

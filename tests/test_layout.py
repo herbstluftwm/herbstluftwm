@@ -2,6 +2,56 @@ import pytest
 import re
 import math
 import textwrap
+from decimal import Decimal
+
+
+def verify_frame_objects_via_dump(hlwm, tag_object="tags.focus"):
+    """verify, that the frame objects for the given tag_object match
+    with the output of the 'dump' command this tag"""
+    def construct_layout_descr(hlwm, frame_object_path):
+        """construct the layout description from the object tree where
+        every window id is only present as a placeholder called 'WINID'
+        """
+        p = frame_object_path  # just to make the next definition lighter
+        # write the formatted string to an attribute whose path is 'DUMP'
+        cmd = [
+            'mktemp', 'string', 'DUMP', 'chain'
+        ]
+        # we run the sprintf commands for both the 'split' and the 'leaf'
+        # case and we will know that one of them will succeed, because every
+        # frame is one of them
+        split_sprintf = [
+            'sprintf', 'S', 'split %s:%s:%s', p + '.split_type',
+            p + '.fraction', p + '.selection',
+            'set_attr', 'DUMP', 'S'
+        ]
+        leaf_sprintf = [
+            'sprintf', 'L', 'clients %s:%s', p + '.algorithm', p + '.selection',
+            'set_attr', 'DUMP', 'L'
+        ]
+        # ... we simply run both
+        cmd += ['//', 'silent'] + split_sprintf
+        cmd += ['//', 'silent'] + leaf_sprintf
+        # ... and we know that one of them must have filled the attribute
+        # with path 'DUMP'. Fun fact: this has a slight flavor of the
+        # 'universal property of the coproduct'
+        cmd += ['//', 'get_attr', 'DUMP']
+        layout_desc = hlwm.call(cmd).stdout
+        if layout_desc[0] == 's':
+            child0 = construct_layout_descr(hlwm, frame_object_path + '.0')
+            child1 = construct_layout_descr(hlwm, frame_object_path + '.1')
+            return '({} {} {})'.format(layout_desc, child0, child1)
+        else:
+            assert layout_desc[0] == 'c'
+            hlwm.call(['attr', frame_object_path])
+            client_count_str = hlwm.get_attr(frame_object_path + '.client_count')
+            return '(' + layout_desc + int(client_count_str) * ' WINID' + ')'
+
+    layout_desc = construct_layout_descr(hlwm, tag_object + '.tiling.root')
+    dump = hlwm.call(f'substitute NAME {tag_object}.name dump NAME').stdout
+    # replace window IDs by the placeholder
+    dump = re.sub('0x[0-9A-Za-z]*', 'WINID', dump)
+    assert dump == layout_desc
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 2])
@@ -9,6 +59,7 @@ def test_single_frame_layout(hlwm, running_clients, running_clients_num):
     assert hlwm.get_attr('tags.0.curframe_windex') == '0'
     assert int(hlwm.get_attr('tags.0.client_count')) == running_clients_num
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == running_clients_num
+    verify_frame_objects_via_dump(hlwm)
 
 
 def test_single_frame_layout_three(hlwm):
@@ -16,6 +67,7 @@ def test_single_frame_layout_three(hlwm):
     assert hlwm.get_attr('tags.0.curframe_windex') == '0'
     assert int(hlwm.get_attr('tags.0.client_count')) == 3
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == 3
+    verify_frame_objects_via_dump(hlwm)
 
 
 @pytest.mark.parametrize("running_clients_num", [2, 3])
@@ -27,6 +79,7 @@ def test_explode(hlwm, running_clients, running_clients_num):
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == number_upper
     assert int(hlwm.get_attr('tags.0.client_count')) == running_clients_num
     assert hlwm.get_attr('tags.0.frame_count') == '2'
+    verify_frame_objects_via_dump(hlwm)
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 4])
@@ -36,6 +89,7 @@ def test_remove(hlwm, running_clients, running_clients_num):
     assert int(hlwm.get_attr('tags.0.curframe_wcount')) == running_clients_num
     assert int(hlwm.get_attr('tags.0.client_count')) == running_clients_num
     assert hlwm.get_attr('tags.0.frame_count') == '1'
+    verify_frame_objects_via_dump(hlwm)
 
 
 @pytest.mark.parametrize("running_clients_num", [4])
@@ -127,15 +181,31 @@ def test_dump_frame_index(hlwm):
     layout = {}
     layout['00'] = "(clients vertical:0)"
     layout['01'] = "(clients grid:0)"
-    layout['0'] = '(split vertical:0.7:0 {} {})'.format(
+    layout['0'] = '(split vertical:0.7:1 {} {})'.format(
         layout['00'], layout['01'])
     layout['1'] = '(clients horizontal:0)'
     layout[''] = '(split horizontal:0.65:0 {} {})'.format(
         layout['0'], layout['1'])
     hlwm.call(['load', layout['']])
 
+    # also test more specific frame indices:
+    frame_index_aliases = [
+        ('@', '01'),
+        ('@p', '0'),
+        ('@p/', '00'),
+        ('@p/', '00'),
+        ('@pp', ''),
+        ('@ppp', ''),  # going up too much does not exceed the root
+        ('..', '01'),
+        ('...', '01'),
+        ('./', '00'),
+    ]
+    for complicated, normalized in frame_index_aliases:
+        layout[complicated] = layout[normalized]
+
+    # test all the frame tree portions in the dict 'layout':
     tag = hlwm.get_attr('tags.focus.name')
-    for index in ["", "0", "1", "00", "01"]:
+    for index in layout.keys():
         assert hlwm.call(['dump', tag, index]).stdout == layout[index]
 
 
@@ -348,7 +418,7 @@ def test_cycle_frame_traverses_all(hlwm, running_clients, num_splits, delta):
 
 def test_cycle_frame_invalid_delta(hlwm):
     hlwm.call_xfail(['cycle_frame', 'df8']) \
-        .expect_stderr('invalid argument')
+        .expect_stderr('invalid argument: stoi')
     hlwm.call_xfail(['cycle_frame', '-230984209340']) \
         .expect_stderr('out of range')
 
@@ -545,8 +615,8 @@ def test_resize_flat_split(hlwm, splittype, dir_work, dir_dummy):
         assert new_layout[0:len(layout_prefix)] == layout_prefix
         assert new_layout[-len(layout_suffix):] == layout_suffix
         new_fraction_str = new_layout[len(layout_prefix):-len(layout_suffix)]
-        expected_fraction = float(0.4 + signum * 0.1)
-        assert math.isclose(float(new_fraction_str), expected_fraction, abs_tol=0.001)
+        expected_fraction = Decimal('0.4') + Decimal(signum) * Decimal('0.1')
+        assert new_fraction_str == str(expected_fraction)
 
     for d in dir_dummy:
         hlwm.call(['load', layout_format.format('0.4')])
@@ -589,15 +659,17 @@ def test_resize_nested_split(hlwm):
     for d, signum in [('left', -1), ('right', 1)]:
         hlwm.call(['load', layout])  # reset layout
         hlwm.call(['resize', d, '+0.05'])
-        fraction = float(hlwm.call('dump').stdout.split(':')[1])
-        assert math.isclose(fraction, 0.2 + signum * 0.05, abs_tol=0.001)
+        fraction = hlwm.call('dump').stdout.split(':')[1]
+        expected = Decimal('0.2') + signum * Decimal('0.05')
+        assert fraction == str(expected)
 
     # resize the nested split
     for d, signum in [('up', -1), ('down', 1)]:
         hlwm.call(['load', layout])  # reset layout
         hlwm.call(['resize', d, '+0.05'])
-        fraction = float(hlwm.call('dump').stdout.split(':')[3])
-        assert math.isclose(fraction, 0.3 + signum * 0.05, abs_tol=0.001)
+        fraction = hlwm.call('dump').stdout.split(':')[3]
+        expected = Decimal('0.3') + signum * Decimal('0.05')
+        assert fraction == str(expected)
 
 
 @pytest.mark.parametrize('layout', [
@@ -695,7 +767,7 @@ def test_focus_other_monitor(hlwm, other_mon_exists, setting):
 
 def test_set_layout_invalid_layout_name(hlwm):
     hlwm.call_xfail('set_layout foobar') \
-        .expect_stderr('set_layout: Invalid layout name: "foobar"')
+        .expect_stderr('Invalid layout name: "foobar"')
 
 
 def test_focus_edge(hlwm):
@@ -735,3 +807,184 @@ def test_tree_style_utf8(hlwm):
       … ├─╼ vertical: [FOCUS]
       … ╰─╼ vertical:
     """)
+
+
+def test_split_invalid_argument(hlwm):
+    # this also tests all exceptions in Converter<FixPrecDec>::parse()
+    wrongDecimal = [
+        ('0.0f', "After '.' only digits"),
+        ('0.+8', "After '.' only digits"),
+        ('0.-8', "After '.' only digits"),
+        ('0..0', "A decimal must have at most one '.'"),
+        ('.3', "There must be at least one digit"),
+        ('.', "There must be at least one digit"),
+        ('b', "stoi"),
+        ('-.3', "stoi"),
+        ('+.8', "stoi"),
+        ('', "Decimal is empty"),
+    ]
+    for d, msg in wrongDecimal:
+        hlwm.call_xfail(['split', 'top', d]) \
+            .expect_stderr('Cannot parse argument \".*\": {}'.format(msg))
+
+
+def test_split_clamp_argument_smaller(hlwm):
+    for d in ['-1.2', '-12', '0.05', '-0.05']:
+        hlwm.call(['load', '(clients vertical:0)'])
+        hlwm.call(['split', 'left', d])
+        assert hlwm.call('dump').stdout == \
+            '(split horizontal:0.1:1 (clients vertical:0) (clients vertical:0))'
+
+
+def test_split_clamp_argument_bigger(hlwm):
+    for d in ['1.2', '12', '0.95', '1']:
+        hlwm.call(['load', '(clients vertical:0)'])
+        hlwm.call(['split', 'left', d])
+        assert hlwm.call('dump').stdout == \
+            '(split horizontal:0.9:1 (clients vertical:0) (clients vertical:0))'
+
+
+def test_resize_invalid_argument(hlwm):
+    hlwm.call_xfail('resize left foo') \
+        .expect_stderr('resize: ')
+
+
+def test_resize_delta(hlwm):
+    values = [
+        # before, direction, delta, after
+        ('0.2', 'left', '0.15', '0.1'),  # clamp to lower bound
+        ('0.2', 'right', '0.15', '0.35'),
+        ('0.7', 'right', '0.19', '0.89'),
+        ('0.8', 'right', '0.19', '0.9'),  # clamp to upper bound
+        ('0.8', 'left', '0.1989', '0.6011'),
+        ('0.1', 'right', '0.2', '0.3'),
+    ]
+    for before, direction, delta, after in values:
+        layout = '(split horizontal:{}:1'  # placeholder
+        layout += ' (clients vertical:0) (clients vertical:0))'
+        hlwm.call(['load', layout.format(before)])
+        hlwm.call(['resize', direction, delta])
+        assert hlwm.call('dump').stdout == layout.format(after)
+
+
+def test_resize_cumulative(hlwm):
+    layout = '(split horizontal:{}:1'  # placeholder
+    layout += ' (clients vertical:0) (clients vertical:0))'
+    hlwm.call(['load', layout.format(0.1)])
+    for i in range(0, 35):
+        hlwm.call(['resize', 'right', '0.02'])
+    # 0.1 + 35 * 0.02 = 0.8
+    assert hlwm.call('dump').stdout == layout.format('0.8')
+
+
+def test_resize_clamp_argument_bigger(hlwm):
+    layout = '(split horizontal:{}:1'  # placeholder
+    layout += ' (clients vertical:0) (clients vertical:0))'
+    hlwm.call(['load', layout.format('0.2')])
+    hlwm.call('resize left 0.15')
+    assert hlwm.call('dump').stdout == layout.format('0.1')
+
+
+def current_layout_name(hlwm):
+    proc = hlwm.call(['dump', '', '@'])
+    m = re.match(r'^\([^ ]* ([^:]*):.*\)$', proc.stdout)
+    return m.group(1)
+
+
+@pytest.mark.parametrize("delta", ['-1', '+1'])
+def test_cycle_layout_name_not_in_list(hlwm, delta):
+    hlwm.call('set_layout vertical')
+
+    # if the current name is not contained in the custom list
+    # of layouts, then the first entry in the custom list
+    # has to be picked
+    hlwm.call(f'cycle_layout {delta} max grid')
+
+    assert current_layout_name(hlwm) == 'max'
+
+
+@pytest.mark.parametrize("delta", ['-1', '+1'])
+def test_cycle_layout_name_in_the_list(hlwm, delta):
+    hlwm.call('set_layout vertical')
+    layouts = ['vertical', 'max', 'grid']
+    # here, 'layouts' does not contain 'horizontal'. By this, we
+    # implicitly verify that we never reach the 'horizontal' layout
+    # since the 'expected_layouts' list also does not contain 'horizontal'
+    cycle_layout_cmd = ['cycle_layout', delta] + layouts
+    # expected list of layouts after calling
+    # 'cycle_layout_cmd' multiple times:
+    if delta == '+1':
+        expected_layouts = layouts[1:] + layouts
+    elif delta == '-1':
+        expected_layouts = reversed(layouts + layouts)
+
+    for expected in expected_layouts:
+        hlwm.call(cycle_layout_cmd)
+        assert current_layout_name(hlwm) == expected
+
+
+@pytest.mark.parametrize("splitmode,context", [
+    ('top', '(split vertical:0.5:1 (clients vertical:0) {})'),
+    ('bottom', '(split vertical:0.5:0 {} (clients vertical:0))'),
+    ('left', '(split horizontal:0.5:1 (clients vertical:0) {})'),
+    ('right', '(split horizontal:0.5:0 {} (clients vertical:0))'),
+])
+@pytest.mark.parametrize("oldlayout", [
+    '(split horizontal:0.587:1 (clients vertical:0 W) (split vertical:0.4029:1 (clients max:0 W) (clients max:0)))',
+])
+def test_split_root_frame(hlwm, splitmode, context, oldlayout):
+    for ch in str(oldlayout):  # duplicate the string here
+        if ch != 'W':
+            continue
+        winid, _ = hlwm.create_client()
+        oldlayout = oldlayout.replace('W', winid, 1)
+
+    hlwm.call(['load', oldlayout])
+    assert hlwm.call('dump').stdout == oldlayout
+
+    # here, '' is the frame index of the root frame
+    hlwm.call(['split', splitmode, '0.5', ''])
+
+    hlwm.call('get default_frame_layout')
+    assert context.format(oldlayout) == hlwm.call(['dump']).stdout
+
+
+@pytest.mark.parametrize("splitmode,context", [
+    ('top', '(split vertical:0.5:1 (clients vertical:0) {})'),
+    ('bottom', '(split vertical:0.5:0 {} (clients vertical:0))'),
+    ('left', '(split horizontal:0.5:1 (clients vertical:0) {})'),
+    ('right', '(split horizontal:0.5:0 {} (clients vertical:0))'),
+])
+def test_split_something_in_between(hlwm, splitmode, context):
+    outer_layer = '(split vertical:0.3:1 (clients max:0) {})'
+    inner_layer = '(split horizontal:0.2:0 (clients max:0) (clients grid:0))'
+
+    initial_layout = outer_layer.format(inner_layer)
+    hlwm.call(['load', initial_layout])
+    assert hlwm.call('dump').stdout == initial_layout
+
+    # split the {} of outer_layer
+    hlwm.call(['split', splitmode, '0.5', '1'])
+
+    expected_layout = outer_layer.format(context.format(inner_layer))
+    assert hlwm.call('dump').stdout == expected_layout
+
+
+def test_frame_index_attribute(hlwm):
+    # split the frames with the following indices
+    split_index = [
+        '', '0', '00', '1', '11', '111'
+    ]
+
+    def verify_frame_tree(object_path, index_prefix):
+        assert hlwm.get_attr(f'{object_path}.index') == index_prefix
+        if '0' in hlwm.list_children(object_path):
+            verify_frame_tree(f'{object_path}.0', f'{index_prefix}0')
+            verify_frame_tree(f'{object_path}.1', f'{index_prefix}1')
+
+    for index in split_index:
+        hlwm.call(['split', 'auto', '0.5', index])
+
+        # after each splitting operation, check that
+        # the frame's index attribute is correct:
+        verify_frame_tree('tags.focus.tiling.root', '')

@@ -28,12 +28,12 @@ def test_mousebind_empty_command(hlwm):
 
 def test_mousebind_unknown_button(hlwm):
     call = hlwm.call_xfail('mousebind Button42 call quit')
-    call.expect_stderr('mousebind: Unknown mouse button "Button42"')
+    call.expect_stderr('Unknown mouse button "Button42"')
 
 
 def test_mousebind_unknown_action(hlwm):
     call = hlwm.call_xfail('mousebind Button1 get schwifty')
-    call.expect_stderr('mousebind: Unknown mouse action "get"')
+    call.expect_stderr('Unknown mouse action "get"')
 
 
 @pytest.mark.parametrize('button', MOUSE_BUTTONS_THAT_WORK)
@@ -110,7 +110,7 @@ def test_drag_move(hlwm, x11, mouse, repeat):
     hlwm.call('set_attr tags.focus.floating on')
     client, winid = x11.create_client()
     x, y = x11.get_absolute_top_left(client)
-    mouse.move_into(winid)
+    mouse.move_into(winid, wait=True)
 
     hlwm.call(['drag', winid, 'move'])
     mouse.move_relative(12, 15)
@@ -148,7 +148,7 @@ def test_drag_invisible_client(hlwm):
     hlwm.call('move t')
     # where he'll never be known
     hlwm.call_xfail(['drag', kid, 'resize']) \
-        .expect_stderr('can not drag invisible client')
+        .expect_stderr('cannot drag invisible client')
     # inward he's grown :-)
 
 
@@ -156,7 +156,8 @@ def test_drag_resize_tiled_client(hlwm, mouse):
     winid, _ = hlwm.create_client()
     layout = '(split horizontal:{}:1 (clients max:0) (clients max:0 {}))'
     hlwm.call(['load', layout.format('0.5', winid)])
-    mouse.move_into(winid, x=10, y=30)
+    # Just positioning the mouse pointer, no need to wait for hlwm
+    mouse.move_into(winid, x=10, y=30, wait=False)
 
     hlwm.call(['drag', winid, 'resize'])
     assert hlwm.get_attr('clients.dragged.winid') == winid
@@ -183,7 +184,8 @@ def test_drag_resize_floating_client(hlwm, x11, mouse, live_update):
     assert (geom_before.width, geom_before.height) == (300, 200)
     # move cursor to the top left corner, so we change the
     # window position and the size (and the bottom right corner is fixed)
-    mouse.move_into(winid, x=0, y=0)
+    # Just positioning the mouse pointer, no need to wait for hlwm
+    mouse.move_into(winid, x=0, y=0, wait=False)
 
     hlwm.call(['drag', winid, 'resize'])
     assert hlwm.get_attr('clients.dragged.winid') == winid
@@ -213,7 +215,8 @@ def test_drag_zoom_floating_client(hlwm, x11, mouse):
     assert (geom_before.width, geom_before.height) == (300, 200)
     x_before, y_before = x11.get_absolute_top_left(client)
     center_before = (x_before + geom_before.width / 2, y_before + geom_before.height / 2)
-    mouse.move_into(winid, x=0, y=0)
+    # Just positioning the mouse pointer, no need to wait for hlwm
+    mouse.move_into(winid, x=0, y=0, wait=False)
 
     hlwm.call(['drag', winid, 'zoom'])
     assert hlwm.get_attr('clients.dragged.winid') == winid

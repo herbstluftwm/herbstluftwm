@@ -114,7 +114,10 @@ public:
         Converter<T>::complete(complete, &payload_);
     }
 
+    //! a signal that is emitted whenever the value changes
     Signal_<T>& changed() override { return changed_; }
+    //! a signal that is emitted when the user changes this attribute
+    Signal_<T>& changedByUser() { return changedByUser_; }
 
     bool resetValue() override {
         operator=(defaultValue_);
@@ -156,6 +159,7 @@ public:
             // set and trigger stuff
             if (new_payload != payload_) {
                 this->operator=(new_payload);
+                changedByUser_.emit(payload_);
             }
         } catch (std::invalid_argument const& e) {
             return std::string("invalid argument: ") + e.what();
@@ -184,6 +188,7 @@ protected:
 
     Validator validator_;
     Signal_<T> changed_;
+    Signal_<T> changedByUser_;
     T payload_;
     T defaultValue_;
 };
@@ -205,12 +210,6 @@ class DynAttribute_ : public Attribute {
 public:
     // each time a dynamic attribute is read, the getter_ is called in order to
     // get the actual value
-    DynAttribute_(const std::string &name, std::function<T()> getter)
-        : Attribute(name, false)
-        , getter_(getter)
-    {
-        hookable_ = false;
-    }
     DynAttribute_(Object* owner, const std::string &name, std::function<T()> getter)
         : Attribute(name, false)
         , getter_(getter)
@@ -250,6 +249,22 @@ public:
         // e.g. when we got rid of Object::wireAttributes()
         owner->addAttribute(this);
     }
+
+    //! same as above, but only with a const getter member function
+    template <typename Owner>
+    DynAttribute_(Owner* owner, const std::string &name,
+                  T (Owner::*getter)() const
+                  )
+        : Attribute(name, false)
+        , getter_(std::bind(getter, owner))
+    {
+        hookable_ = false;
+        // the following will call Attribute::setOwner()
+        // maybe this should be changed at some point,
+        // e.g. when we got rid of Object::wireAttributes()
+        owner->addAttribute(this);
+    }
+
     template <typename Owner>
     DynAttribute_(Owner* owner, const std::string &name,
                   T (Owner::*getter)(),

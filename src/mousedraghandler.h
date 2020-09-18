@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 
+#include "fixprecdec.h"
 #include "x11-types.h"
 
 class Client;
@@ -90,7 +91,7 @@ private:
     MonitorManager*  monitors_;
     Point2D          buttonDragStart_ = {};
     std::weak_ptr<FrameSplit> dragFrame_; //! the frame whose split is adjusted
-    int              dragStartFraction_; //! initial fraction
+    FixPrecDec       dragStartFraction_ = FixPrecDec::fromInteger(0); //! initial fraction
     int              dragDistanceUnit_; //! 100% split ratio in pixels
     HSTag*           dragTag_; //! the tag containing the dragFrame
     Monitor*         dragMonitor_ = nullptr; //! the monitor with the dragFrame

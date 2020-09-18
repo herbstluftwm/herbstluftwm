@@ -44,6 +44,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , keyMask_(this,  "keymask", RegexStr::fromStr(""))
     , keysInactive_(this,  "keys_inactive", RegexStr::fromStr(""))
     , pid_(this,  "pid", -1)
+    , pgid_(this, "pgid", -1)
     , pseudotile_(this,  "pseudotile", false)
     , ewmhrequests_(this, "ewmhrequests", true)
     , ewmhnotify_(this, "ewmhnotify", true)
@@ -93,6 +94,7 @@ void Client::init_from_X() {
     last_size_ = float_size_;
 
     pid_ = Root::get()->X.windowPid(window_);
+    pgid_ = Root::get()->X.windowPgid(window_);
 
     update_title();
     update_wm_hints();
@@ -477,6 +479,11 @@ void Client::set_visible(bool visible) {
 void Client::set_urgent(bool state) {
     if (this->urgent_() == state) {
         // nothing to do
+        return;
+    }
+    if (this == manager.focus() && state == true) {
+        // ignore it if the focused client wants to be urgent
+        // because it will be removed by window_focus() anyway
         return;
     }
     set_urgent_force(state);

@@ -168,11 +168,13 @@ def test_completable_commands(hlwm, request, run_destructives):
         'No such.*client: urgent',  # for apply_rules
         'Could not find client "(urgent|)"',  # for drag
         'No neighbour found',  # for resize and similar commands
+        'There are no floating windows; cannot focus',  # for floating_focused
     ])))
     # a set of commands that make other commands break
     # hence we need to run them separately
     destructive_commands = {
-        'unsetenv'
+        'unsetenv',
+        'split',  # the 'split' commands makes 'FrameLeaf' objects disappear
     }
     for command in commands:
         if 'quit' in command:
@@ -218,9 +220,16 @@ def test_remove_attr(hlwm):
     hlwm.call_xfail('get_attr ' + attr_path)
 
 
-def test_substitute(hlwm):
+@pytest.mark.parametrize('command_prefix', [
+    ['substitute', 'ARG', 'tags.count'],
+    ['foreach', 'ARG', 'clients']
+])
+def test_metacommand(hlwm, command_prefix):
+    """test the completion of a command that accepts another
+    command as the parameter
+    """
     cmdlist = hlwm.call('list_commands').stdout.splitlines()
-    assert hlwm.complete(['substitute', 'ARG', 'tags.count']) \
+    assert hlwm.complete(command_prefix) \
         == sorted(['ARG'] + cmdlist)
 
 

@@ -96,6 +96,25 @@ def test_sprintf(hlwm):
     assert call.stdout == expected_output
 
 
+def test_sprintf_s_vs_c(hlwm):
+    p1 = hlwm.call('substitute X tags.count sprintf Y "number=%c" X echo Y')
+    p2 = hlwm.call('sprintf Y "number=%s" tags.count echo Y')
+    assert p1.stdout == p2.stdout
+
+
+def test_sprintf_c_placeholder(hlwm):
+    proc = hlwm.call('sprintf X "%c %s tags" "there are" tags.count echo X')
+    assert proc.stdout == "there are 1 tags\n"
+
+
+def test_sprintf_nested(hlwm):
+    cmd = 'substitute A tags.count'
+    cmd += ' sprintf B "%c%c" A A'
+    cmd += ' sprintf C "%c%c" B B'
+    cmd += ' sprintf D "%c%c" C C echo D'
+    assert hlwm.call(cmd).stdout == '11111111\n'
+
+
 def test_sprintf_too_few_attributes__command_treated_as_attribute(hlwm):
     call = hlwm.call_xfail('sprintf X %s/%s tags.count echo X')
 
@@ -122,7 +141,13 @@ def test_sprintf_double_percentage_escapes(hlwm):
 
 def test_sprintf_completion_1_placeholder(hlwm):
     assert hlwm.complete('sprintf T %s', partial=True) \
-        == sorted(['T '] + hlwm.complete('get_attr', partial=True))
+        == sorted(hlwm.complete('get_attr', partial=True))
+
+
+def test_sprintf_completion_s_after_c_placeholder(hlwm):
+    assert hlwm.complete('sprintf T %c%s', partial=True) == []
+    assert hlwm.complete('sprintf T %c%s myconst', partial=True) \
+        == sorted(hlwm.complete('get_attr', partial=True))
 
 
 def test_sprintf_completion_0_placeholders(hlwm):
@@ -217,6 +242,20 @@ def test_new_attr_has_right_type(hlwm, attrtype):
     assert m.group(1)[0] == attrtype[0]
 
 
+def test_new_attr_initial_value(hlwm):
+    hlwm.call('new_attr string clients.my_foo bar')
+
+    assert hlwm.get_attr('clients.my_foo') == 'bar'
+
+
+def test_new_attr_initial_value_invalid(hlwm):
+    hlwm.call_xfail('new_attr int clients.my_foo bar') \
+        .expect_stderr('"bar" is an invalid value for clients.my_foo')
+
+    # the client still exists and the default value remains
+    assert hlwm.get_attr('clients.my_foo') == '0'
+
+
 def test_new_attr_complete(hlwm):
     assert 'bool' in hlwm.complete('new_attr')
     assert 'my_' in hlwm.complete('new_attr int', partial=True)
@@ -266,9 +305,49 @@ def test_export_completion(hlwm):
     assert [name + '='] == hlwm.complete('export ' + prefix, position=1, partial=True)
 
 
+@pytest.mark.parametrize('attrpath,value,operator,othervalue,is_correct', [
+    # bool
+    ('settings.always_show_frame', 'on', '=', 'true', True),
+    ('settings.always_show_frame', 'on', '=', 'off', False),
+    # color
+    ('settings.frame_border_active_color', '#9fbc00', '=', '#9fbc00', True),
+    ('settings.frame_border_active_color', 'red', '=', '#ff0000', True),
+    # FIXME: make the following work:
+    # ('settings.frame_border_active_color', '#ff0000', '=', 'red', True),
+    # ('settings.frame_border_active_color', 'red', '=', 'red', True),
+    # uint
+    ('my_uint', '05', 'gt', '4', True),
+    ('my_uint', '8', 'lt', '8', False),
+    # int
+    ('my_int', '-3', 'lt', '-2', True),
+    ('settings.frame_border_width', '4', 'lt', '5', True),
+    ('settings.frame_border_width', '04', '=', '4', True),
+])
+def test_compare_example_values(hlwm, attrpath, value, operator, othervalue, is_correct):
+    hlwm.call('chain , new_attr uint my_uint , new_attr int my_int')
+    hlwm.call(['set_attr', attrpath, value])
+    cmd = ['compare', attrpath, operator, othervalue]
+    if not is_correct:
+        cmd = ['!'] + cmd
+    p = hlwm.call(cmd)
+    assert p.stdout == ''
+
+
 def test_compare_invalid_operator(hlwm):
     hlwm.call_xfail('compare monitors.count -= 1') \
         .expect_stderr('unknown operator')
+
+
+def test_compare_fallback_string_equal(hlwm):
+    hlwm.call('set_layout max')
+    proc = hlwm.call('compare tags.focus.tiling.root.algorithm = max')
+    assert proc.stdout == ''
+
+
+def test_compare_fallback_string_unequal(hlwm):
+    hlwm.call('set_layout max')
+    proc = hlwm.call('! compare tags.focus.tiling.root.algorithm != max')
+    assert proc.stdout == ''
 
 
 def test_try_command(hlwm):
@@ -500,3 +579,103 @@ def test_raise_winid_missing(hlwm):
 def test_raise_invalid_winid(hlwm):
     hlwm.call_xfail('raise foobar') \
         .expect_stderr('Could not find client "foobar".')
+
+
+def test_argparse_too_few_range(hlwm):
+    hlwm.call_xfail('split') \
+        .expect_stderr('Expected between 1 and 3 arguments, but got only 0')
+
+
+def test_argparse_expected_1(hlwm):
+    hlwm.call_xfail('set_layout') \
+        .expect_stderr('Expected one argument, but got only 0')
+
+
+def test_argparse_expected_2_got_1(hlwm):
+    hlwm.call_xfail('mousebind B1') \
+        .expect_stderr('Expected 2 arguments, but got only 1')
+
+
+def test_foreach_clients(hlwm):
+    hlwm.create_client()
+    hlwm.create_client()
+    children = hlwm.list_children_via_attr('clients')
+    expected_out = ''.join([f'clients.{c}\n' for c in children])
+    assert expected_out == hlwm.call('foreach C clients echo C').stdout
+
+
+def test_foreach_tag_add(hlwm):
+    hlwm.call('add anothertag')
+
+    # adding another tag does not confuse the output:
+    expected = ['tags.by-name.' + n for n in hlwm.list_children_via_attr('tags.by-name')]
+    proc = hlwm.call('foreach T tags.by-name chain , add yetanothertag , echo T')
+    assert proc.stdout.splitlines() == expected
+
+
+def test_foreach_tag_merge(hlwm):
+    # removing a tag while iterating over the tags does not break anything
+    hlwm.call('add othertag')
+
+    # removing this tag in the first loop iteration does not prevent
+    # the second loop iteration for 'othertag'
+    expected = [
+        'tags.by-name.default',
+        'merge_tag: Tag "othertag" not found',
+        'tags.by-name.othertag'
+    ]
+    proc = hlwm.call('foreach T tags.by-name chain , merge_tag othertag , echo T')
+    assert proc.stdout.splitlines() == expected
+
+
+def test_foreach_exit_code_success(hlwm):
+    # create two clients for multiple loop iterations
+    hlwm.create_client()
+    hlwm.create_client()
+
+    # we do the following multiple times: create a new tag and assert
+    # that there are at least 3 tags. This fails in the first iteration but
+    # succeeds later:
+    cmd = 'foreach _ clients.'
+    cmd += ' chain , sprintf TAGNAME "tag%s" tags.count add TAGNAME'
+    cmd += '       , compare tags.count ge 3'
+    proc = hlwm.call(cmd)
+    assert proc.stdout == ''
+
+
+def test_foreach_exit_code_failure(hlwm):
+    # create two clients for multiple loop iterations
+    hlwm.create_client()
+    hlwm.create_client()
+
+    # create a new attribute: it succeeds in the iteration run
+    # but fails in later iterations
+    hlwm.call_xfail('foreach _ clients. new_attr int my_int') \
+        .expect_stderr('already has an attribute named "my_int"')
+
+
+def test_foreach_exit_code_no_iteration(hlwm):
+    # iterating over an object without content never calls the command
+    proc = hlwm.call('foreach S settings chain , echo output , quit , false')
+    assert proc.stdout == ''
+
+
+def test_foreach_invalid_object(hlwm):
+    hlwm.call_xfail('foreach C clients.foobar quit') \
+        .expect_stderr('"clients." has no child named "foobar"')
+
+
+def test_foreach_object_completion(hlwm):
+    completions = hlwm.complete(['foreach', 'X', 'tags.'], position=2, partial=True)
+    # objects are completed
+    assert 'tags.by-name.' in completions
+    # attributes are not completed
+    assert 'tags.count' not in completions
+
+
+def test_foreach_identfier_completion(hlwm):
+    # the identfier isn't completed in the object parameter
+    assert 'X ' not in hlwm.complete(['foreach', 'X', ], partial=True)
+    # but the identfier is completed in the command parameter
+    assert 'X ' in hlwm.complete(['foreach', 'X', 'tags.'], partial=True)
+    assert 'X ' in hlwm.complete(['foreach', 'X', 'tags.', 'echo'], partial=True)

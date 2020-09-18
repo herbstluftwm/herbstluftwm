@@ -1,8 +1,3 @@
-/** Copyright 2011-2013 Thorsten Wißmann. All rights reserved.
- *
- * This software is licensed under the "Simplified BSD License".
- * See LICENSE for details */
-
 #include <X11/Xlib.h>
 #include <assert.h>
 #include <getopt.h>
@@ -112,7 +107,9 @@ int main_hook(int argc, char* argv[]) {
     }
     HCConnection* con = hc_connect_to_display(display);
     if (!hc_check_running(con)) {
-        fprintf(stderr, "Error: herbstluftwm is not running\n");
+        if (!g_quiet) {
+            fprintf(stderr, "Error: herbstluftwm is not running\n");
+        }
         hc_disconnect(con);
         XCloseDisplay(display);
         destroy_hook_regex();
@@ -245,11 +242,15 @@ int main(int argc, char* argv[]) {
         char* output;
         HCConnection* con = hc_connect();
         if (!con) {
-            fprintf(stderr, "Error: Cannot open display.\n");
+            if (!g_quiet) {
+                fprintf(stderr, "Error: Cannot open display.\n");
+            }
             return EXIT_FAILURE;
         }
         if (!hc_check_running(con)) {
-            fprintf(stderr, "Error: herbstluftwm is not running.\n");
+            if (!g_quiet) {
+                fprintf(stderr, "Error: herbstluftwm is not running.\n");
+            }
             hc_disconnect(con);
             return EXIT_FAILURE;
         }
@@ -257,7 +258,9 @@ int main(int argc, char* argv[]) {
                                    &output, &command_status);
         hc_disconnect(con);
         if (!suc) {
-            fprintf(stderr, "Error: Could not send command.\n");
+            if (!g_quiet) {
+                fprintf(stderr, "Error: Could not send command.\n");
+            }
             return EXIT_FAILURE;
         }
         FILE* file = stdout; // on success, output to stdout

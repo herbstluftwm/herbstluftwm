@@ -5,8 +5,10 @@
 #include <limits>
 #include <regex>
 
+#include "argparse.h"
 #include "client.h"
 #include "completion.h"
+#include "fixprecdec.h"
 #include "framedata.h"
 #include "frameparser.h"
 #include "ipc-protocol.h"
@@ -25,10 +27,12 @@ using std::string;
 using std::vector;
 
 FrameTree::FrameTree(HSTag* tag, Settings* settings)
-    : tag_(tag)
+    : rootLink_(*this, "root")
+    , tag_(tag)
     , settings_(settings)
 {
     root_ = make_shared<FrameLeaf>(tag, settings, shared_ptr<FrameSplit>());
+    rootLink_ = root_.get();
     (void) tag_;
     (void) settings_;
 }
@@ -56,7 +60,7 @@ void FrameTree::dump(shared_ptr<Frame> frame, Output output)
             << "(split "
             << Converter<SplitAlign>::str(s->align_)
             << ":"
-            << ((double)s->fraction_) / (double)FRACTION_UNIT
+            << Converter<FixPrecDec>::str(s->fraction_)
             << ":"
             << s->selection_
             << " ";
@@ -72,16 +76,27 @@ void FrameTree::dump(shared_ptr<Frame> frame, Output output)
  */
 shared_ptr<Frame> FrameTree::lookup(const string& path) {
     shared_ptr<Frame> node = root_;
-    // the string "@" is a special case
-    if (path == "@") {
-        return focusedFrame();
-    }
     for (char c : path) {
         if (c == 'e') {
             shared_ptr<FrameLeaf> emptyFrame = findEmptyFrameNearFocus(node);
             if (emptyFrame) {
                 // go to the empty node if we had found some
                 node = emptyFrame;
+            }
+            continue;
+        }
+        if (c == '@') {
+            node = focusedFrame(node);
+            continue;
+        }
+        if (c == 'p') {
+            auto parent = node->parent_;
+            // only change the 'node' if 'parent' is set.
+            // if 'parent' is not set, then 'node' is already
+            // the root node; in this case we stay at the
+            // root.
+            if (parent.lock()) {
+                node = parent.lock();
             }
             continue;
         }
@@ -210,7 +225,7 @@ int FrameTree::rotateCommand() {
                     s->align_ = SplitAlign::vertical;
                     s->selection_ = s->selection_ ? 0 : 1;
                     swap(s->a_, s->b_);
-                    s->fraction_ = FRACTION_UNIT - s->fraction_;
+                    s->fraction_ = FixPrecDec::fromInteger(1) - s->fraction_;
                     break;
             }
         };
@@ -261,7 +276,8 @@ shared_ptr<TreeInterface> FrameTree::treeInterface(
         size_t childCount() override { return 2; };
         void appendCaption(Output output) override {
             output << " " << Converter<SplitAlign>::str(s_->align_)
-                   << " " << (s_->fraction_ * 100 / FRACTION_UNIT) << "%"
+                   << " " << (s_->fraction_.value_ * 100 / s_->fraction_.unit_)
+                   << "%"
                    << " selection=" << s_->selection_;
         }
     private:
@@ -372,14 +388,13 @@ bool FrameTree::contains(shared_ptr<Frame> frame) const
 
 //! resize the borders of the focused client in the specific direction by 'delta'
 //! returns whether the focused frame has a border in the specified direction.
-bool FrameTree::resizeFrame(double delta_double, Direction direction)
+bool FrameTree::resizeFrame(FixPrecDec delta, Direction direction)
 {
-    int delta = int(FRACTION_UNIT * delta_double);
     // if direction is left or up we have to flip delta
     // because e.g. resize up by 0.1 actually means:
     // reduce fraction by 0.1, i.e. delta = -0.1
     if (direction == Direction::Left || direction == Direction::Up) {
-        delta *= -1;
+        delta.value_ = delta.value_ * -1;
     }
 
     shared_ptr<Frame> neighbour = focusedFrame()->neighbour(direction);
@@ -699,6 +714,7 @@ void FrameTree::replaceNode(shared_ptr<Frame> old,
     if (!parent) {
         assert(old == root_);
         root_ = replacement;
+        rootLink_ = root_.get();
         // root frame should never have a parent:
         root_->parent_ = {};
     } else {
@@ -724,7 +740,12 @@ int FrameTree::cycleLayoutCommand(Input input, Output output) {
         string curname = Converter<LayoutAlgorithm>::str(cur_frame->getLayout());
         size_t count = input.end() - input.begin();
         auto curposition = std::find(input.begin(), input.end(), curname);
-        size_t idx = MOD((curposition - input.begin()) + delta, count);
+        size_t idx = 0;  // take the first in the list per default
+        if (curposition != input.end()) {
+            // if the current layout name is in the list, take the next one
+            // (respective to the delta)
+            idx = MOD((curposition - input.begin()) + delta, count);
+        }
         try {
             layout_index = (int)Converter<LayoutAlgorithm>::parse(*(input.begin() + idx));
         } catch (const std::exception& e) {
@@ -752,17 +773,11 @@ void FrameTree::cycleLayoutCompletion(Completion& complete) {
 }
 
 int FrameTree::setLayoutCommand(Input input, Output output) {
-    if (input.empty()) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-
-    auto layoutStr = input.front();
-    LayoutAlgorithm layout;
-    try {
-        layout = Converter<LayoutAlgorithm>::parse(layoutStr);
-    } catch (const std::exception& e) {
-        output << "set_layout: " << e.what();
-        return HERBST_INVALID_ARGUMENT;
+    LayoutAlgorithm layout = LayoutAlgorithm::vertical;
+    ArgParse ap;
+    ap.mandatory(layout);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
     }
 
     auto curFrame = focusedFrame();
@@ -818,15 +833,19 @@ vector<SplitMode> SplitMode::modes(SplitAlign align_explode, SplitAlign align_au
 
 int FrameTree::splitCommand(Input input, Output output)
 {
-    // usage: split t|b|l|r|h|v FRACTION
-    string splitType, strFraction;
-    if (!(input >> splitType )) {
-        return HERBST_NEED_MORE_ARGS;
+    // usage: split t|b|l|r|h|v FRACTION [Frameindex]
+    string splitType;
+    bool userDefinedFraction = false;
+    FixPrecDec fraction = FixPrecDec::approxFrac(1, 2);
+    string frameIndex = "@"; // split the focused frame per default
+    ArgParse ap;
+    ap.mandatory(splitType).optional(fraction, &userDefinedFraction);
+    ap.optional(frameIndex);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
     }
-    bool userDefinedFraction = input >> strFraction;
-    double fractionFloat = userDefinedFraction ? atof(strFraction.c_str()) : 0.5;
-    int fraction = FrameSplit::clampFraction(FRACTION_UNIT * fractionFloat);
-    auto frame = focusedFrame();
+    fraction = FrameSplit::clampFraction(fraction);
+    shared_ptr<Frame> frame = lookup(frameIndex);
     int lh = frame->lastRect().height;
     int lw = frame->lastRect().width;
     SplitAlign align_auto = (lw > lh) ? SplitAlign::horizontal : SplitAlign::vertical;
@@ -840,8 +859,15 @@ int FrameTree::splitCommand(Input input, Output output)
         return HERBST_INVALID_ARGUMENT;
     }
     SplitMode m = *mode;
-    auto layout = frame->getLayout();
-    auto windowcount = frame->clientCount();
+    auto layout = frame->switchcase<LayoutAlgorithm>(&FrameLeaf::getLayout,
+        [] (shared_ptr<FrameSplit> f) {
+            return splitAlignToLayoutAlgorithm(f->getAlign());
+    });
+    // if 'frame' is a FrameSplit, we simply set the
+    // window count to 0, because we do not have a count of windows
+    // that stay in the 'old frame'.
+    auto windowcount = frame->switchcase<size_t>(&FrameLeaf::clientCount,
+        [](shared_ptr<FrameSplit>) { return 0; });
     bool exploding = m.name == "explode";
     if (exploding) {
         if (windowcount <= 1) {
@@ -855,25 +881,35 @@ int FrameTree::splitCommand(Input input, Output output)
         } else {
             m.align = SplitAlign::vertical;
         }
-        size_t count1 = frame->clientCount();
+        size_t count1 = windowcount;
         size_t nc1 = (count1 + 1) / 2;      // new count for the first frame
         if ((layout == LayoutAlgorithm::horizontal
             || layout == LayoutAlgorithm::vertical)
             && !userDefinedFraction && count1 > 1) {
-            fraction = (nc1 * FRACTION_UNIT) / count1;
+            fraction.value_ = (nc1 * fraction.unit_) / count1;
         }
     }
     // move second half of the window buf to second frame
     size_t childrenLeaving = 0;
     if (exploding) {
-        childrenLeaving = frame->clientCount() / 2;
+        childrenLeaving = windowcount / 2;
     }
-    if (!frame->split(m.align, fraction, childrenLeaving)) {
-        return 0;
+    auto frameIsLeaf = frame->isLeaf();
+    auto frameIsSplit = frame->isSplit();
+    shared_ptr<FrameSplit> frameParent = {}; // the new parent
+    if (frameIsLeaf) {
+        if (!frameIsLeaf->split(m.align, fraction, childrenLeaving)) {
+            return 0;
+        }
+        frameParent = frameIsLeaf->getParent();
+    }
+    if (frameIsSplit) {
+        if (!frameIsSplit->split(m.align, fraction)) {
+            return 0;
+        }
+        frameParent = frameIsSplit->getParent();
     }
 
-    auto frameParent = frame->getParent();
-    assert(frameParent != nullptr);
     if (!m.frameToFirst) {
         frameParent->swapChildren();
     }
@@ -890,7 +926,7 @@ int FrameTree::dumpLayoutCommand(Input input, Output output) {
     shared_ptr<Frame> frame = root_;
     string tagName;
     if (input >> tagName) {
-        shared_ptr<FrameTree> tree = shared_from_this();
+        FrameTree* tree = this;
         // an empty tagName means 'current tag'
         // (this is a special case that is not handled by find_tag()
         // so we handle it explicitly here)
@@ -900,7 +936,7 @@ int FrameTree::dumpLayoutCommand(Input input, Output output) {
                 output << input.command() << ": Tag \"" << tagName << "\" not found\n";
                 return HERBST_INVALID_ARGUMENT;
             }
-            tree = tag->frame;
+            tree = tag->frame();
         }
         string frameIndex;
         if (input >> frameIndex) {

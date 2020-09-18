@@ -25,6 +25,7 @@ public:
     static const char* requestCodeToString(int requestCode);
     Rectangle windowSize(Window window);
     int windowPid(Window window);
+    int windowPgid(Window window);
     Atom atom(const char* atom_name);
     std::string atomName(Atom atomIdentifier);
     std::pair<std::string, std::string> getClassHint(Window win);

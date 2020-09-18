@@ -16,9 +16,9 @@
 #include <memory>
 #include <vector>
 
+#include "attribute_.h"
+#include "fixprecdec.h"
 #include "types.h"
-
-#define FRACTION_UNIT 10000
 
 class Client;
 
@@ -29,6 +29,9 @@ enum class SplitAlign {
 
 ConverterInstance(SplitAlign)
 
+template<>
+inline Type Attribute_<SplitAlign>::staticType() { return Type::ATTRIBUTE_NAMES; }
+
 enum class LayoutAlgorithm {
     vertical = 0,
     horizontal,
@@ -38,6 +41,11 @@ enum class LayoutAlgorithm {
 
 ConverterInstance(LayoutAlgorithm)
 template<> void Converter<LayoutAlgorithm>::complete(Completion& complete, LayoutAlgorithm const* relativeTo);
+
+template<>
+inline Type Attribute_<LayoutAlgorithm>::staticType() { return Type::ATTRIBUTE_NAMES; }
+
+LayoutAlgorithm splitAlignToLayoutAlgorithm(SplitAlign align);
 
 size_t layoutAlgorithmCount();
 
@@ -59,8 +67,6 @@ protected:
 
     /*!
      * Size of first child relative to whole size.
-     * For example, a value of FRACTION_UNIT means full size
-     * and FRACTION_UNIT/2 means 50%.
      */
-    int fraction_ = 0;
+    FixPrecDec fraction_ = FixPrecDec::fromInteger(0);
 };

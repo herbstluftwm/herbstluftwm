@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "attribute_.h"
+#include "child.h"
 #include "object.h"
 #include "signal.h"
 
@@ -28,13 +29,14 @@ class HSTag : public Object {
 public:
     HSTag(std::string name, TagManager* tags, Settings* settings);
     ~HSTag() override;
-    std::shared_ptr<FrameTree>        frame;  // the master frame
+    Child_<FrameTree>        frame;  // the frame tree
     Attribute_<unsigned long> index;
     Attribute_<bool>         floating;
     Attribute_<bool>         floating_focused; // if a floating client is focused
     Attribute_<std::string>  name;   // name of this tag
     DynAttribute_<int> frame_count;
     DynAttribute_<int> client_count;
+    DynAttribute_<int> urgent_count; //! The number of urgent clients
     DynAttribute_<int> curframe_windex;
     DynAttribute_<int> curframe_wcount;
     int             flags;
@@ -70,12 +72,15 @@ public:
     int closeAndRemoveCommand();
     int closeOrRemoveCommand();
 private:
+    std::string floatingLayerCanBeFocused(bool floatingFocused);
     void onGlobalFloatingChange(bool newState);
     void fixFocusIndex();
     //! get the number of clients on this tag
     int computeClientCount();
     //! get the number of clients on this tag
     int computeFrameCount();
+    //! get the number of urgent clients on this tag
+    int countUrgentClients();
     Settings* settings_;
 };
 

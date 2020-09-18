@@ -16,7 +16,6 @@ import time
 import types
 
 import pytest
-import warnings
 
 
 BINDIR = os.path.join(os.path.abspath(os.environ['PWD']))
@@ -184,7 +183,7 @@ class HlwmBridge:
         partial. If not in 'partial' mode, trailing spaces are stripped.
 
         Set 'evaluate_escapes' if the escape sequences of completion items
-        should be evaluated. If this is set, one can not distinguish between
+        should be evaluated. If this is set, one cannot distinguish between
         partial and full completion results anymore.
         """
         args = self._parse_command(cmd)
@@ -277,10 +276,9 @@ class HlwmBridge:
 
 
 @pytest.fixture()
-def hlwm(hlwm_process):
-    display = os.environ['DISPLAY']
+def hlwm(hlwm_process, xvfb):
     # display = ':13'
-    hlwm_bridge = HlwmBridge(display, hlwm_process)
+    hlwm_bridge = HlwmBridge(xvfb.display, hlwm_process)
     yield hlwm_bridge
 
     # Make sure that hlwm survived:
@@ -299,7 +297,7 @@ class HlwmProcess:
         """
         self.bin_path = os.path.join(BINDIR, 'herbstluftwm')
         self.proc = subprocess.Popen(
-            [self.bin_path, '--verbose'] + args, env=env,
+            [self.bin_path, '--exit-on-xerror', '--verbose'] + args, env=env,
             bufsize=0,  # essential for reading output with selectors!
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
@@ -428,10 +426,12 @@ class HlwmProcess:
         """if some kind of client request observes a timeout, investigate the
         herbstluftwm server process. 'reason' is best phrased using present
         participle"""
+        self.read_and_echo_output()
         try:
             self.proc.wait(0)
         except subprocess.TimeoutExpired:
             pass
+        self.read_and_echo_output()
         if self.proc.returncode is None:
             raise Exception(str(reason) + " took too long"
                             + " but hlwm still running") from None
@@ -510,37 +510,8 @@ def hc_idle(hlwm):
     hc.shutdown()
 
 
-def kill_all_existing_windows(show_warnings=True):
-    xlsclients = subprocess.run(['xlsclients', '-l'],
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                                check=False)
-    print(xlsclients.stderr.decode(), file=sys.stderr, end='')
-    if re.search('unable to open display', xlsclients.stderr.decode()):
-        # if the display is already closed since there are no clients left,
-        # then that's fine for us
-        return
-    else:
-        # otherwise, assert successfull termination
-        assert xlsclients.returncode == 0
-    clients = []
-    for line in xlsclients.stdout.decode().splitlines():
-        m = re.match(r'Window (0x[0-9a-fA-F]*):', line)
-        if m:
-            clients.append(m.group(1))
-    if clients and show_warnings:
-        warnings.warn(UserWarning("There are still some clients "
-                                  "from previous tests."))
-    for c in clients:
-        if show_warnings:
-            warnings.warn(UserWarning("Killing " + c))
-        # send close and kill ungently
-        subprocess.run(['xdotool', 'windowclose', c])
-        subprocess.run(['xdotool', 'windowkill', c])
-
-
 @pytest.fixture()
-def hlwm_spawner(tmpdir, xvfb):
+def hlwm_spawner(tmpdir):
     """yield a function to spawn hlwm"""
     assert xvfb is not None, 'Refusing to run tests in a non-Xvfb environment (possibly your actual X server?)'
 
@@ -564,15 +535,24 @@ def hlwm_spawner(tmpdir, xvfb):
 
 
 @pytest.fixture()
-def hlwm_process(hlwm_spawner):
+def xvfb():
+    # start an Xvfb server (don't start Xephyr because
+    # Xephyr requires another runnig xserver already).
+    # also we add '-noreset' such that the server is not reset
+    # when the last client connection is closed.
+    with MultiscreenDisplay(server='Xvfb', extra_args=['-noreset']) as xserver:
+        os.environ['DISPLAY'] = xserver.display
+        yield xserver
+
+
+@pytest.fixture()
+def hlwm_process(hlwm_spawner, xvfb):
     """Set up hlwm and also check that it shuts down gently afterwards"""
-    hlwm_proc = hlwm_spawner(['--no-tag-import'])
-    kill_all_existing_windows(show_warnings=True)
+    hlwm_proc = hlwm_spawner(['--no-tag-import'], display=xvfb.display)
 
     yield hlwm_proc
 
     hlwm_proc.shutdown()
-    kill_all_existing_windows(show_warnings=False)
 
 
 @pytest.fixture(params=[0])
@@ -584,17 +564,14 @@ def running_clients(hlwm, running_clients_num):
     return hlwm.create_clients(running_clients_num)
 
 
-@pytest.fixture(scope="session")
-def x11_connection():
-    """ Long-lived fixture that maintains an open connection to the X11 display
-    for the entire duration of all tests. This avoids issues caused by Xvfb and
-    Xephyr resetting all properties whenever the last connection is closed. It
-    is probably a bit more efficient, too. """
+@pytest.fixture()
+def x11_connection(xvfb):
+    """Connect to the given xvfb display and return a Xlib.display handle"""
     display = None
     attempts_left = 10
     while display is None and attempts_left > 0:
         try:
-            display = Xlib.display.Display()
+            display = Xlib.display.Display(xvfb.display)
             # the above call may result in an exception:
             # ConnectionResetError: [Errno 104] Connection reset by peer
             # However, the handling of this error in the above function results in a
@@ -755,7 +732,7 @@ def x11(x11_connection):
                 # the following coordinates are only relative
                 # to the parent of window
                 geom = window.get_geometry()
-                print('Geometry of {} is: x={} y={} w={} h={}'.format(
+                print('Relative geometry of {} is: x={} y={} w={} h={}'.format(
                       self.winid_str(window), geom.x, geom.y, geom.width, geom.height))
                 x += geom.x
                 y += geom.y
@@ -766,6 +743,16 @@ def x11(x11_connection):
                 # if it's not, continue at its parent
                 window = tree.parent
             return (x, y)
+
+        def get_absolute_geometry(self, window):
+            """return the geometry of the window, where the top left
+            coordinate comes from get_absolute_top_left()
+            """
+            x, y = self.get_absolute_top_left(window)
+            geom = window.get_geometry()
+            geom.x = x
+            geom.y = y
+            return geom
 
         def get_hlwm_frames(self):
             """get list of window handles of herbstluftwm
@@ -840,6 +827,7 @@ class MultiscreenDisplay:
             if len(chunk) < 1 or chunk == b'\n':
                 break
         os.close(pipe_read)
+        os.close(pipe_write)
         self.display = ':' + display_bytes.decode().rstrip()
         print(server + " is using the display \"{}\"".format(self.display))
 
@@ -875,12 +863,24 @@ def keyboard():
 @pytest.fixture()
 def mouse(hlwm_process, hlwm):
     class Mouse:
-        def move_into(self, win_id, x=1, y=1):
-            self.call_cmd(f'xdotool mousemove --sync --window {win_id} {x} {y}', shell=True)
+        def __init__(self):
+            self.move_to(0, 0, wait=True)
+
+        def move_into(self, win_id, x=1, y=1, wait=True):
+            if wait:
+                with hlwm_process.wait_stderr_match('EnterNotify'):
+                    # no --sync here, because we're waiting for the EnterNotify anyways
+                    self.call_cmd(f'xdotool mousemove --window {win_id} {x} {y}', shell=True)
+                # reaching this line only means that hlwm started processing
+                # the EnterNotify. So we need to wait until the event is fully processed:
+                hlwm.call('true')
+            else:
+                self.call_cmd(f'xdotool mousemove --sync --window {win_id} {x} {y}', shell=True)
 
         def click(self, button, into_win_id=None, wait=True):
             if into_win_id:
-                self.move_into(into_win_id)
+                # no need to wait for herbstluftwm to process, we're just positioning the mouse to click
+                self.move_into(into_win_id, wait=False)
             if wait:
                 with hlwm_process.wait_stderr_match('ButtonPress'):
                     subprocess.check_call(['xdotool', 'click', button])

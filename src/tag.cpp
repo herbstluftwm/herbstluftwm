@@ -2,6 +2,7 @@
 
 #include <type_traits>
 
+#include "argparse.h"
 #include "client.h"
 #include "completion.h"
 #include "floating.h"
@@ -25,13 +26,15 @@ using std::string;
 static bool    g_tag_flags_dirty = true;
 
 HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
-    : index(this, "index", 0)
+    : frame(*this, "tiling")
+    , index(this, "index", 0)
     , floating(this, "floating", false, [](bool){return "";})
     , floating_focused(this, "floating_focused", false, [](bool){return "";})
     , name(this, "name", name_,
         [tags](string newName) { return tags->isValidTagName(newName); })
     , frame_count(this, "frame_count", &HSTag::computeFrameCount)
     , client_count(this, "client_count", &HSTag::computeClientCount)
+    , urgent_count(this, "urgent_count", &HSTag::countUrgentClients)
     , curframe_windex(this, "curframe_windex",
         [this] () { return frame->focusedFrame()->getSelection(); } )
     , curframe_wcount(this, "curframe_wcount",
@@ -41,12 +44,22 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     , settings_(settings)
 {
     stack = make_shared<Stack>();
-    frame = make_shared<FrameTree>(this, settings);
+    frame.init(this, settings);
     floating.changed().connect(this, &HSTag::onGlobalFloatingChange);
+    // FIXME: actually this connection of the signals like this
+    // must work:
+    //   floating_focused.changedByUser().connect(needsRelayout_);
+    // however, we need to call this:
+    floating_focused.changedByUser().connect([this] () {
+        this->needsRelayout_.emit();
+    });
+    floating_focused.setValidator([this](bool v) {
+        return this->floatingLayerCanBeFocused(v);
+    });
 }
 
 HSTag::~HSTag() {
-    frame = {};
+    frame.reset();
 }
 
 void HSTag::setIndexAttribute(unsigned long new_index) {
@@ -215,17 +228,13 @@ int HSTag::focusInDirCommand(Input input, Output output)
             external_only = true;
         }
     }
-    string dirstr;
-    if (!(input >> dirstr)) {
-        return HERBST_NEED_MORE_ARGS;
+    Direction direction = Direction::Left; // some default to satisfy the linter
+    ArgParse ap;
+    ap.mandatory(direction);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
     }
-    Direction direction;
-    try {
-        direction = Converter<Direction>::parse(dirstr);
-    } catch (const std::exception& e) {
-        output << input.command() << ": " << e.what() << "\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
+
     auto focusedFrame = frame->focusedFrame();
     bool neighbour_found = true;
     if (floating || floating_focused) {
@@ -353,16 +362,11 @@ void HSTag::cycleAllCompletion(Completion& complete)
 
 int HSTag::resizeCommand(Input input, Output output)
 {
-    string dir_str;
-    if (!(input >> dir_str)) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    Direction direction;
-    try {
-        direction = Converter<Direction>::parse(dir_str);
-    } catch (const std::exception& e) {
-        output << input.command() << ": " << e.what() << "\n";
-        return HERBST_INVALID_ARGUMENT;
+    Direction direction = Direction::Left;
+    FixPrecDec delta = FixPrecDec::approxFrac(1, 50); // 0.02
+    auto ap = ArgParse().mandatory(direction).optional(delta);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
     }
     Client* client = focusedClient();
     if (client && client->is_client_floated()) {
@@ -371,12 +375,7 @@ int HSTag::resizeCommand(Input input, Output output)
             return HERBST_FORBIDDEN;
         }
     } else {
-        double delta_double = 0.02;
-        string delta_str;
-        if (input >> delta_str) {
-            delta_double = atof(delta_str.c_str());
-        }
-        if (!frame->resizeFrame(delta_double, direction)) {
+        if (!frame->resizeFrame(delta, direction)) {
             output << input.command() << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
         }
@@ -414,7 +413,7 @@ void HSTag::onGlobalFloatingChange(bool newState)
 void HSTag::fixFocusIndex()
 {
    static_assert(std::is_same<decltype(floating_clients_focus_), size_t>::value,
-                 "we assume that index can not be negative.");
+                 "we assume that index cannot be negative.");
    if (floating_clients_focus_ >= floating_clients_.size()) {
        if (floating_clients_.empty()) {
            floating_clients_focus_  = 0;
@@ -429,6 +428,17 @@ int HSTag::computeFrameCount() {
     frame->root_->fmap([](FrameSplit*) {},
                 [&count](FrameLeaf*) { count++; },
                 0);
+    return count;
+}
+
+int HSTag::countUrgentClients()
+{
+    int count = 0;
+    foreachClient([&](Client* client) {
+        if (client->urgent_()) {
+            count++;
+        }
+    });
     return count;
 }
 
@@ -506,6 +516,16 @@ int HSTag::closeOrRemoveCommand() {
         return frame->removeFrameCommand();
     }
     return 0;
+}
+
+string HSTag::floatingLayerCanBeFocused(bool floatingFocused)
+{
+    if (floatingFocused && floating_clients_.empty()) {
+        return "There are no floating windows;"
+               " cannot focus empty floating layer.";
+    } else {
+        return "";
+    }
 }
 
 //! same as close or remove but directly remove frame after last client

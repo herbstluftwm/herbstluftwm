@@ -22,10 +22,12 @@ of available <<COMMANDS,*COMMANDS*>> is listed below.
 
 'OPTION' can be:
 
-    *-c*, *--autostart* 'PATH'::
-        use 'PATH' as autostart file instead of the one in '$XDG_CONFIG_HOME'
     *-v*, *--version*::
         print version and exit
+    *-h*, *--help*::
+        print a short help and exit
+    *-c*, *--autostart* 'PATH'::
+        use 'PATH' as autostart file instead of the one in '$XDG_CONFIG_HOME'
     *-l*, *--locked*::
         Initially set the monitors_locked setting to 1
     *--exit-on-xerror*::
@@ -106,24 +108,27 @@ FRAME INDEX
 -----------
 The exact position of a frame in the layout tree may be described by its
 *index* which is just a string of characters. The lookup algorithm starts at
-the root frame and selects one of its two subtrees according to the each
-character in the index.
-
-The characters are interpreted as follows:
+the root frame and interprets the *index* string character by character as
+follows:
 
     * +0+: select the first subtree
     * +1+: select the second subtree
     * +.+: select the subtree having the focus
     * +/+: select the subtree not having the focus
+    * +@+: select the frame having the focus. In contrast to +.+, this passes
+      multiple layers all down to the focused leaf of the frame tree.
+    * +p+: select the parent tree
     * +e+: finds a suitable empty frame: if the focused frame is not empty, this
       selects the closest frame that is empty (in any subtree)
 
-Thus an empty string refers to the root frame, and "00" refers to the first
-subtree of the first subtree of the root frame. Similarly "1e" refers to the
-first empty frame in the second subtree.
+For example:
 
-As a special case, the string "@" always refers to the currently focused
-frame.
+    * An empty string refers to the root frame
+    * +00+ refers to the first subtree of the first subtree of the root frame.
+    * +1e+ refers to the first empty frame in the second subtree.
+    * +/@+ refers to the focused frame within the unfocused "half" of the frame
+      tree
+    * +@p/+ refers to the sibling of the focused frame
 
 TAGS
 ----
@@ -374,9 +379,10 @@ close_and_remove::
     Closes the focused window and removes the current frame if no other window
     is present in that frame. In floating mode, this acts as the close command.
 
-split 'ALIGN' ['FRACTION']::
-    Splits the focused frame into two subframes with a specified 'FRACTION'
-    between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
+split 'ALIGN' ['FRACTION' ['FRAMEINDEX']::
+    Splits the focused frame (or the frame specified by 'FRAMEINDEX', see the
+    section <<FRAME_INDEX,*frame index*>>) into two subframes with a specified
+    'FRACTION' between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
     +
         * 'top'
         * 'bottom' (= 'vertical')
@@ -398,6 +404,7 @@ split 'ALIGN' ['FRACTION']::
         * split horiz 0.3
         * split vertical 0.5
         * split h
+        * split top 0.2 ''   (splits the root frame)
 
 focus ['-i'|'-e'] 'DIRECTION'::
     Moves the focus from current frame to the next frame or client in
@@ -807,10 +814,11 @@ set_attr 'ATTRIBUTE' 'NEWVALUE'::
     Assign 'NEWVALUE' to the specified 'ATTRIBUTE' as described in the
     <<OBJECTS,*OBJECTS section*>>.
 
-new_attr [*bool*|*color*|*int*|*string*|*uint*] 'PATH'::
+new_attr *bool*|*color*|*int*|*string*|*uint* 'PATH' ['VALUE']::
     Creates a new attribute with the name and in the object specified by 'PATH'.
     Its type is specified by the first argument. The attribute name has to begin
-    with +my_+.
+    with +my_+. If 'VALUE' is supplied, then it is written to the attribute (if
+    this fails the attribute still remains).
 
 remove_attr 'PATH'::
     Removes the user defined attribute 'PATH'.
@@ -825,17 +833,26 @@ substitute 'IDENTIFIER' 'ATTRIBUTE' 'COMMAND' ['ARGS' ...]::
           +
           Prints the title of the currently focused window.
 
-sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
-    Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'ARGS'
-    by the string specified by 'FORMAT'. Each +%s+ in 'FORMAT' stands for the
-    value of the next attribute in 'ATTRIBUTES', similar to the *printf*(1)
-    command. The replaced command with its arguments then is executed.
+sprintf 'IDENTIFIER' 'FORMAT' ['FORMATARG' ...] 'COMMAND' ['CMDARGS' ...]::
+    Replaces all exact occurrences of 'IDENTIFIER' in 'COMMAND' and its 'CMDARGS'
+    by the string specified by 'FORMAT'. The 'FORMAT' string may contain several
+    placeholders, similar to the *printf*(1) command:
+      - +%s+ inserts an attribute value whose path is given by the string value
+        of the next 'FORMATARG'
+      - +%c+ ("constant") inserts the next 'FORMATARG' without modification.
+      - +%%+ stands for a plain +%+
+
+ ::
+    The replaced command with its arguments then is executed.
     Examples:
 
         * +sprintf STR title=%s clients.focus.title echo STR+ +
           +
           Prints the title of the currently focused window prepended by
           +title=+.
+        * +sprintf X "%c %s tags" "there are" tags.count echo X+
+          +
+          Prints +there are N tags+ with +N+ replaced by the number of tags.
         * +sprintf X tag=%s tags.focus.name rule once X+ +
           +
           Moves the next client that appears to the tag that is currently
@@ -846,6 +863,34 @@ sprintf 'IDENTIFIER' 'FORMAT' ['ATTRIBUTES' ...] 'COMMAND' ['ARGS' ...]::
         * +sprintf l somelongstring echo l l l+ +
           +
           Prints +somelongstring+ three times, separated by spaces.
+        * +substitute X tags.count sprintf Y "number=%c" X echo Y+ +
+          +
+          has the same output as +
+          +sprintf Y "number=%s" tags.count echo Y+ +
+          +
+          (Note how the +%c+ changes to +%s+)
+
+foreach 'IDENTIFIER' 'OBJECT' 'COMMAND' ['ARGS' ...]::
+    For each child of the given 'OBJECT' the 'COMMAND' is called with its
+    'ARGS', where the 'IDENTIFIER' is replaced by the path of the child. The
+    exit code is the exit code of the command executed last. Examples:
+
+        * +foreach T tags.by-name. echo T+ +
+          +
+          Prints:
+
+             tags.by-name.1
+             tags.by-name.2
+             tags.by-name.3
+             [...]
+
+        * Note that +foreach+ only iterates over children, but not over
+          attributes, so +foreach S settings echo S+ prints nothing, since the
+          settings object has only attributes but no child objects.
+
+        * +foreach C clients. echo C+ prints the object paths of all clients,
+          but the focused client twice, because it is mentioned in +clients.+
+          twice: by window id and as +clients.focus+.
 
 mktemp [*bool*|*int*|*string*|*uint*] 'IDENTIFIER' 'COMMAND' ['ARGS' ...]::
     Creates a temporary attribute with the given type and replaces all
@@ -982,23 +1027,35 @@ raise_on_click (Boolean)::
 
 window_border_width (Integer)::
     Border width of a window.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.border_width+.
 
 window_border_inner_width (Integer)::
     The width of the inner border of a window. Must be less than
     window_border_width, since it does not add to the window border width but is
     a part of it.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.inner_width+.
 
 window_border_active_color (String/Color)::
     Border color of a focused window.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.active.color+.
 
 window_border_normal_color (String/Color)::
     Border color of an unfocused window.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.normal.color+.
 
 window_border_urgent_color (String/Color)::
     Border color of an unfocused but urgent window.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.urgent.color+.
 
 window_border_inner_color (String/Color)::
     Color of the inner border of a window.
+    *Warning:* This only exists for compatibility reasons; it is only an alias for
+    the attribute +theme.inner_color+.
 
 always_show_frame (Boolean)::
     If set, all frames are displayed. If unset, only frames with focus or with
@@ -1174,6 +1231,10 @@ Valid 'properties' are:
     the client's process id (Warning: the pid is not available for every client.
     This only matches if the client sets _NET_WM_PID to the pid itself).
 
++pgid+::
+    this client's process group id. Since the pgid of a window is derived from
+    its +pid+ the same restrictions apply as above.
+
 +maxage+::
     matches if the age of the rule measured in seconds does not exceed 'value'.
     This condition only can be used with the +=+ operator. If maxage already is
@@ -1251,6 +1312,15 @@ Each 'CONSEQUENCE' consists of a 'NAME'='VALUE' pair. Valid 'NAMES' are:
 
 +keys_inactive+::
     sets a regex that determines which key bindings are inactive for a client (see <<KEYMASK, explanation in OBJECTS>>).
+
++floatplacement+::
+    changes the floating position of a window. The 'VALUE' can be one of the
+    following:
+    * +none+ does not change the placement at all
+    * +center+ centers the window on the monitor
+    * +smart+ tries to place it with as little overlap to other floating windows
+      as possible. If there are multiple options with the least overlap, then
+      the position with the least overlap to tiling windows is chosen.
 
 A rule's behaviour can be configured by some special 'FLAGS':
 
@@ -1424,6 +1494,7 @@ listed as follows:
  i - index                , index of this tag
  i - frame_count          , number of frames
  i - client_count         , number of clients on this tag
+ i - urgent_count         , number of urgent clients on this tag
  i - curframe_windex      , index of the focused client in the select frame
  i - curframe_wcount      , number of clients in the selected frame
 |===========================
@@ -1685,7 +1756,7 @@ Patch submission and bug reporting:
 
 COPYING
 -------
-Copyright 2011-2014 Thorsten Wißmann. All rights reserved.
+Copyright 2011-2020 Thorsten Wißmann. All rights reserved.
 
 This software is licensed under the "Simplified BSD License". See LICENSE for
 details.

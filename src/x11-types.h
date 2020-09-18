@@ -62,6 +62,10 @@ struct Point2D {
     Point2D operator-(const Point2D& other) const { return { x - other.x, y - other.y }; }
     Point2D operator*(double scalar) const { return { (int) (x * scalar), (int) (y * scalar) }; }
     Point2D operator/(double scalar) const { return { (int) (x / scalar), (int) (y / scalar) }; }
+    //! compare w.r.t. lexicographic order
+    bool operator<(const Point2D& other) const {
+        return x < other.x || (x == other.x && y < other.y);
+    }
     bool operator==(const Point2D& other) const { return x == other.x && y == other.y; }
     //! essentially return y/x > other.y/other.x
     bool biggerSlopeThan(const Point2D& other) const {
@@ -85,6 +89,7 @@ struct Rectangle {
     Point2D br() const { return {x + width, y + height}; }
     Point2D bl() const { return {x, y + height}; }
     Point2D tr() const { return {x + width, y}; }
+    Point2D dimensions() const { return { width, height}; }
 
     //! Grow/shrink by dx left and right, by dy top and bottom, respectively
     Rectangle adjusted(int dx, int dy) const;

@@ -63,3 +63,15 @@ template<> void Converter<SplitAlign>::complete(Completion& complete, SplitAlign
         complete.full(g_align_names[i]);
     }
 }
+
+//! embed the SplitAlign type into the LayoutAlgorithm type
+LayoutAlgorithm splitAlignToLayoutAlgorithm(SplitAlign align)
+{
+    switch (align) {
+        case SplitAlign::vertical:
+            return LayoutAlgorithm::vertical;
+        case SplitAlign::horizontal:
+            return LayoutAlgorithm::horizontal;
+    }
+    return LayoutAlgorithm::vertical;
+}

@@ -6,7 +6,10 @@
 #include <functional>
 #include <memory>
 
+#include "attribute_.h"
 #include "framedata.h"
+#include "link.h"
+#include "object.h"
 #include "tilingresult.h"
 #include "types.h"
 #include "x11-types.h"
@@ -21,7 +24,7 @@ class FrameLeaf;
 class FrameSplit;
 class Settings;
 
-class Frame : public std::enable_shared_from_this<Frame> {
+class Frame : public std::enable_shared_from_this<Frame>, public Object {
 protected:
     Frame(HSTag* tag, Settings* settings, std::weak_ptr<FrameSplit> parent);
     virtual ~Frame();
@@ -77,6 +80,8 @@ public:
     friend class FrameSplit;
     friend class FrameTree;
     friend class HSTag; // for HSTag::foreachClient()
+    DynAttribute_<std::string> frameIndexAttr_;
+    std::string frameIndex() const;
 public: // soon will be protected:
     virtual std::shared_ptr<FrameSplit> isSplit() { return std::shared_ptr<FrameSplit>(); };
     virtual std::shared_ptr<FrameLeaf> isLeaf() { return std::shared_ptr<FrameLeaf>(); };
@@ -114,7 +119,7 @@ public:
 
     Client* focusedClient() override;
 
-    bool split(SplitAlign alignment, int fraction, size_t childrenLeaving = 0);
+    bool split(SplitAlign alignment, FixPrecDec fraction, size_t childrenLeaving = 0);
     LayoutAlgorithm getLayout() { return layout; }
     void setLayout(LayoutAlgorithm l) { layout = l; }
     int getSelection() { return selection; }
@@ -128,6 +133,9 @@ public:
     friend class Frame;
     void setVisible(bool visible);
     int getInnerNeighbourIndex(Direction direction);
+    DynAttribute_<int> client_count_;
+    DynAttribute_<int> selectionAttr_;
+    DynAttribute_<LayoutAlgorithm> algorithmAttr_;
 private:
     friend class FrameTree;
     // layout algorithms
@@ -143,7 +151,7 @@ private:
 
 class FrameSplit : public Frame, public FrameDataSplit<Frame> {
 public:
-    FrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<FrameSplit> parent, int fraction_, SplitAlign align_,
+    FrameSplit(HSTag* tag, Settings* settings, std::weak_ptr<FrameSplit> parent, FixPrecDec fraction_, SplitAlign align_,
                  std::shared_ptr<Frame> a_, std::shared_ptr<Frame> b_);
     ~FrameSplit() override;
     // inherited:
@@ -159,20 +167,26 @@ public:
 
     // own members
     int splitsToRoot(SplitAlign align_) override;
+    bool split(SplitAlign alignment, FixPrecDec fraction);
     void replaceChild(std::shared_ptr<Frame> old, std::shared_ptr<Frame> newchild);
     std::shared_ptr<Frame> firstChild() { return a_; }
     std::shared_ptr<Frame> secondChild() { return b_; }
     std::shared_ptr<Frame> selectedChild() { return selection_ ? b_ : a_; }
     void swapChildren();
-    void adjustFraction(int delta);
-    void setFraction(int fraction);
-    int getFraction() const { return fraction_; }
-    static int clampFraction(int fraction);
+    void adjustFraction(FixPrecDec delta);
+    void setFraction(FixPrecDec fraction);
+    FixPrecDec getFraction() const { return fraction_; }
+    static FixPrecDec clampFraction(FixPrecDec fraction);
     std::shared_ptr<FrameSplit> thisSplit();
     std::shared_ptr<FrameSplit> isSplit() override { return thisSplit(); }
     SplitAlign getAlign() { return align_; }
     void swapSelection() { selection_ = selection_ == 0 ? 1 : 0; }
     void setSelection(int s) { selection_ = s; }
+    DynAttribute_<SplitAlign> splitTypeAttr_;
+    DynAttribute_<FixPrecDec> fractionAttr_;
+    DynAttribute_<int> selectionAttr_;
+    Link_<Frame> aLink_;
+    Link_<Frame> bLink_;
 private:
     friend class FrameTree;
 };

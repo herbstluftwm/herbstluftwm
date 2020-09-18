@@ -196,6 +196,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                             &RootCommands::print_object_tree_complete} },
         {"substitute",     { root_commands, &RootCommands::substitute_cmd,
                                             &RootCommands::substitute_complete} },
+        {"foreach",        { root_commands, &RootCommands::foreachCmd,
+                                            &RootCommands::foreachComplete} },
         {"sprintf",        { root_commands, &RootCommands::sprintf_cmd,
                                             &RootCommands::sprintf_complete} },
         {"new_attr",       { root_commands, &RootCommands::new_attr_cmd,
@@ -234,7 +236,7 @@ int quit() {
 
 int version(Output output) {
     output << WINDOW_MANAGER_NAME << " " << HERBSTLUFT_VERSION << endl;
-    output << "Copyright (c) 2011-2014 Thorsten Wißmann" << endl;
+    output << "Copyright (c) 2011-2020 Thorsten Wißmann" << endl;
     output << "Released under the Simplified BSD License" << endl;
     for (const auto& d : MonitorDetection::detectors()) {
         output << d.name_ << " support: " << (d.detect_ ? "on" : "off") << endl;
@@ -405,7 +407,7 @@ void execute_autostart_file() {
         execl(path.c_str(), path.c_str(), nullptr);
 
         const char* global_autostart = HERBSTLUFT_GLOBAL_AUTOSTART;
-        HSDebug("Can not execute %s, falling back to %s\n", path.c_str(), global_autostart);
+        HSDebug("Cannot execute %s, falling back to %s\n", path.c_str(), global_autostart);
         execl(global_autostart, global_autostart, nullptr);
 
         fprintf(stderr, "herbstluftwm: execvp \"%s\"", global_autostart);
@@ -418,8 +420,9 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
     int exit_on_xerror = g.exitOnXlibError;
     int no_tag_import = 0;
     struct option long_options[] = {
-        {"autostart",       1, nullptr, 'c'},
         {"version",         0, nullptr, 'v'},
+        {"help",            0, nullptr, 'h'},
+        {"autostart",       1, nullptr, 'c'},
         {"locked",          0, nullptr, 'l'},
         {"exit-on-xerror",  0, &exit_on_xerror, 1},
         {"no-tag-import",   0, &no_tag_import, 1},
@@ -429,7 +432,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
     // parse options
     while (true) {
         int option_index = 0;
-        int c = getopt_long(argc, argv, "+c:vl", long_options, &option_index);
+        int c = getopt_long(argc, argv, "+c:vlh", long_options, &option_index);
         if (c == -1) {
             break;
         }
@@ -446,6 +449,31 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
             case 'l':
                 g.initial_monitors_locked = 1;
                 break;
+            case 'h':
+                std::cout << "This starts the herbstluftwm window manager. In order to" << endl;
+                std::cout << "interact with a running herbstluftwm instance, use the" << endl;
+                std::cout << "\'herbstclient\' command." << endl;
+                std::cout << endl;
+                std::cout << "The herbstluftwm command accepts the following options:" << endl;
+                std::cout << endl;
+                for (size_t i = 0; long_options[i].name; i++) {
+                    std::cout << "    ";
+                    if (long_options[i].val != 1) {
+                        std::cout << "-" << static_cast<char>(long_options[i].val);
+                        if (long_options[i].has_arg) {
+                            std::cout << " ARG";
+                        }
+                        std::cout << ", ";
+                    }
+                    std::cout << "--" << long_options[i].name;
+                    if (long_options[i].has_arg) {
+                        std::cout << " ARG";
+                    }
+                    std::cout << endl;
+                }
+                std::cout << endl;
+                std::cout << "See the herbstluftwm(1) man page for their meaning." << endl;
+                exit(EXIT_SUCCESS);
             default:
                 exit(EXIT_FAILURE);
         }

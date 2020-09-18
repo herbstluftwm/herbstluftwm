@@ -5,6 +5,7 @@
 
 #include "attribute_.h"
 #include "object.h"
+#include "rules.h"
 #include "x11-types.h"
 
 class HSTag;
@@ -15,7 +16,7 @@ class Monitor : public Object {
 public:
     Monitor(Settings* settings, MonitorManager* monman, Rectangle Rect, HSTag* tag);
     ~Monitor() override;
-    Rectangle getFloatingArea();
+    Rectangle getFloatingArea() const;
     int relativeX(int x_root);
     int relativeY(int y_root);
 
@@ -55,6 +56,7 @@ public:
     void applyLayout();
     void restack();
     std::string getDescription();
+    void evaluateClientPlacement(Client* client, ClientPlacement placement) const;
 private:
     std::string getTagString();
     std::string setTagString(std::string new_tag);
