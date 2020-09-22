@@ -305,9 +305,49 @@ def test_export_completion(hlwm):
     assert [name + '='] == hlwm.complete('export ' + prefix, position=1, partial=True)
 
 
+@pytest.mark.parametrize('attrpath,value,operator,othervalue,is_correct', [
+    # bool
+    ('settings.always_show_frame', 'on', '=', 'true', True),
+    ('settings.always_show_frame', 'on', '=', 'off', False),
+    # color
+    ('settings.frame_border_active_color', '#9fbc00', '=', '#9fbc00', True),
+    ('settings.frame_border_active_color', 'red', '=', '#ff0000', True),
+    # FIXME: make the following work:
+    # ('settings.frame_border_active_color', '#ff0000', '=', 'red', True),
+    # ('settings.frame_border_active_color', 'red', '=', 'red', True),
+    # uint
+    ('my_uint', '05', 'gt', '4', True),
+    ('my_uint', '8', 'lt', '8', False),
+    # int
+    ('my_int', '-3', 'lt', '-2', True),
+    ('settings.frame_border_width', '4', 'lt', '5', True),
+    ('settings.frame_border_width', '04', '=', '4', True),
+])
+def test_compare_example_values(hlwm, attrpath, value, operator, othervalue, is_correct):
+    hlwm.call('chain , new_attr uint my_uint , new_attr int my_int')
+    hlwm.call(['set_attr', attrpath, value])
+    cmd = ['compare', attrpath, operator, othervalue]
+    if not is_correct:
+        cmd = ['!'] + cmd
+    p = hlwm.call(cmd)
+    assert p.stdout == ''
+
+
 def test_compare_invalid_operator(hlwm):
     hlwm.call_xfail('compare monitors.count -= 1') \
         .expect_stderr('unknown operator')
+
+
+def test_compare_fallback_string_equal(hlwm):
+    hlwm.call('set_layout max')
+    proc = hlwm.call('compare tags.focus.tiling.root.algorithm = max')
+    assert proc.stdout == ''
+
+
+def test_compare_fallback_string_unequal(hlwm):
+    hlwm.call('set_layout max')
+    proc = hlwm.call('! compare tags.focus.tiling.root.algorithm != max')
+    assert proc.stdout == ''
 
 
 def test_try_command(hlwm):
