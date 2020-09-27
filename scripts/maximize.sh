@@ -17,8 +17,6 @@ set -e
 # similar to that of Mac OS X.
 mode=${1:-max} # just some valid layout algorithm name
 
-# FIXME: for some unknown reason, remove_attr always fails
-#        fix that in the hlwm core and remove the "try" afterwards
 layout=$(herbstclient dump)
 cmd=(
 # remember which client is focused
@@ -26,11 +24,13 @@ substitute FOCUS clients.focus.winid chain
 . lock
 . or : and # if there is more than one frame, then don't restore, but maximize again!
            , compare tags.focus.frame_count = 1
+           # if the frame layout was switched manually, don't restore either
+           , compare tags.focus.tiling.root.algorithm = "$mode"
            # if we have such a stored layout, then restore it, else maximize
            , silent substitute STR tags.focus.my_unmaximized_layout load STR
            # remove the stored layout
-           , try remove_attr tags.focus.my_unmaximized_layout
-     : chain , new_attr string tags.focus.my_unmaximized_layout
+           , remove_attr tags.focus.my_unmaximized_layout
+     : chain , silent new_attr string tags.focus.my_unmaximized_layout
              # save the current layout in the attribute
              , set_attr tags.focus.my_unmaximized_layout "$layout"
              # force all windows into a single frame in max layout
