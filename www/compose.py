@@ -55,7 +55,6 @@ print("""\
   <title>{title}</title>
  </head>
  <body>
-  <div id="frame">
    <div id="header">
     <div id="logoname">
      <img id="icon" src="herbstluftwm.svg"/>
@@ -66,14 +65,16 @@ print("""\
        </div>
      </div>
     </div>
-   </div>""".format(title=windowtitle))
+   </div>
+  """.format(title=windowtitle))
 
 # ====~===~=========~==
 # Navigation bar
 # ====~===~=========~==
 
 print("""\
-    <ul id="navigationbar">""")
+    <ul id="navigationbar">
+     <div class="pagewidth">""")
 
 for title, subpages in tabs.items():
     classstring = "notab"
@@ -90,6 +91,7 @@ for title, subpages in tabs.items():
 
 
 print("""\
+     </div>\
     </ul>\
     <div class="tabbarseparator"></div>
 """)
@@ -98,6 +100,7 @@ subpages = tabs.get(page2tab[name], OrderedDict([]))
 
 if len(subpages) > 1:
     print('<div class="subpagebar">')
+    print(' <div class="pagewidth">')
     for basename, title in subpages.items():
         if basename == name:
             cls = "subpagecur subpage"
@@ -106,9 +109,11 @@ if len(subpages) > 1:
         print('<span class="{cls}">'.format(cls=cls))
         print('<a href="{url}">{title}</a></span>'.format(
             url=basename + ".html", title=title))
+    print(" </div>")
     print("</div>")
 
 print("""\
+   <div class="pagewidth">\
     <div id="content">\
 """)
 
