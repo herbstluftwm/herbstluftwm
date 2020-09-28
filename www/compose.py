@@ -50,6 +50,7 @@ print("""\
 <html>
  <head>
   <link rel="stylesheet" href="main.css" type="text/css" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
   <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{title}</title>
