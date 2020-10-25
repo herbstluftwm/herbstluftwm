@@ -197,7 +197,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
     } catch (...) {
         return nullptr;
     }
-    // index must be treated relative, if it's first char is + or -
+    // index must be treated relative, if its first char is + or -
     bool is_relative = index_str[0] == '+' || index_str[0] == '-';
     Monitor* monitor = get_current_monitor();
     if (is_relative) {

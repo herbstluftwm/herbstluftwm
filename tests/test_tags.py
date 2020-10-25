@@ -263,7 +263,7 @@ def test_urgent_count(hlwm, x11):
     assert int(hlwm.get_attr('tags.focus.urgent_count')) == 4
 
 
-def test_rename_different_tags(hlwm, hc_idle):
+def test_rename_multiple_tags(hlwm, hc_idle):
     hlwm.call('add foo_old')
     hlwm.call('add bar_old')
     hc_idle.hooks()  # clear hooks

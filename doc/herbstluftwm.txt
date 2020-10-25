@@ -1667,7 +1667,7 @@ tag_added 'TAG'::
 tag_removed 'TAG'::
     The tag named 'TAG' was removed.
 
-tag_renamed 'OLD' 'NEW::
+tag_renamed 'OLD' 'NEW'::
     The tag name changed from 'OLD' to 'NEW'.
 
 urgent [on|off] 'WINID'::
