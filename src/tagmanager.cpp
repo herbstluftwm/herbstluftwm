@@ -70,7 +70,11 @@ HSTag* TagManager::add_tag(const string& name) {
     }
     HSTag* tag = new HSTag(name, this, settings_);
     addIndexed(tag);
-    tag->name.changed().connect([this,tag]() { this->onTagRename(tag); });
+    tag->name.changed().connect([this,tag,name]() {
+        static string old_tag = name;
+        this->onTagRename(old_tag, tag);
+        old_tag = tag->name();
+    });
     tag->needsRelayout_.connect([this,tag]() { this->needsRelayout_.emit(tag); });
 
     Ewmh::get().updateDesktops();
@@ -173,9 +177,9 @@ int TagManager::tag_rename_command(Input input, Output output) {
     return 0;
 }
 
-void TagManager::onTagRename(HSTag* tag) {
+void TagManager::onTagRename(const string& old_tag_name, HSTag* tag) {
     Ewmh::get().updateDesktopNames();
-    hook_emit({"tag_renamed", tag->name()});
+    hook_emit({"tag_renamed", old_tag_name, tag->name()});
 }
 
 HSTag* TagManager::ensure_tags_are_available() {

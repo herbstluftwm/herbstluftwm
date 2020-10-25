@@ -1667,6 +1667,9 @@ tag_added 'TAG'::
 tag_removed 'TAG'::
     The tag named 'TAG' was removed.
 
+tag_renamed 'OLD' 'NEW::
+    The tag name changed from 'OLD' to 'NEW'.
+
 urgent [on|off] 'WINID'::
     The urgent state of client with given 'WINID' has been changed to [on|off].
 

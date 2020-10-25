@@ -92,7 +92,14 @@ def test_rename_tag(hlwm, hc_idle, rename_command):
     hlwm.call(rename_command + ['foobar'])
 
     assert hlwm.get_attr('tags.0.name') == 'foobar'
-    assert hc_idle.hooks() == [['tag_renamed', 'foobar']]
+    assert hc_idle.hooks() == [['tag_renamed', 'default', 'foobar']]
+
+    rename_once_more = rename_command.copy()
+    rename_once_more[1] = rename_once_more[1].replace('default', 'foobar')
+    hlwm.call(rename_once_more + ['baz'])
+
+    assert hlwm.get_attr('tags.0.name') == 'baz'
+    assert hc_idle.hooks() == [['tag_renamed', 'foobar', 'baz']]
 
 
 @pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
