@@ -81,7 +81,10 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
                 Root::get()->keys()->ensureKeyMask();
             }
             });
-    fullscreen_.changed().connect(this, &Client::updateEwmhState);
+    fullscreen_.changed().connect([this] {
+        updateEwmhState();
+        hook_emit({"fullscreen", fullscreen_() ? "on" : "off", WindowID(window_).str()});
+    });
 
     init_from_X();
 }
