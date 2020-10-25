@@ -41,6 +41,7 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
         [this] () { return frame->focusedFrame()->clientCount(); } )
     , flags(0)
     , floating_clients_focus_(0)
+    , oldName_(name_)
     , settings_(settings)
 {
     stack = make_shared<Stack>();

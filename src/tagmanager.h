@@ -44,7 +44,7 @@ public:
     Signal_<HSTag*> needsRelayout_;
 private:
     std::function<void(Completion&)> frameCompletion(FrameCompleter completer);
-    void onTagRename(const std::string& old_tag_name, HSTag* tag);
+    void onTagRename(HSTag* tag);
     ByName by_name_;
     MonitorManager* monitors_ = {}; // circular dependency
     Settings* settings_;

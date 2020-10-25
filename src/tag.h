@@ -51,6 +51,7 @@ public:
     void foreachClient(std::function<void(Client*)> loopBody);
     void focusFrame(std::shared_ptr<FrameLeaf> frameToFocus);
     Client* focusedClient();
+    std::string oldName_;  // Previous name of the tag, in case it got renamed
 
     void insertClient(Client* client, std::string frameIndex = {}, bool focus = true);
     Signal needsRelayout_;
