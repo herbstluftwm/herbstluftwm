@@ -4,6 +4,13 @@ herbstluftwm migration guide
 This guide describes the list of incompatible changes between the different
 herbstluftwm releases and how to migrate scripts and configuration.
 
+Current git version
+-------------------
+
+The tag_renamed hook has changed. The hook now emits *two* parameters.
+The first parameter contains the old name of the tag
+and the second parameter is the new name of the tag.
+
 0.5.3 to 0.6.0
 --------------
 // Will be activated as soon as the patches are fixed and re-reverted
