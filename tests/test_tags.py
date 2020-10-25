@@ -83,20 +83,18 @@ def test_merge_tag_into_another_tag(hlwm):
 
 RENAMING_COMMANDS = [
     # commands for renaming the default tag
-    ['set_attr', 'tags.by-name.default.name'],
-    ['rename', 'default']]
+    lambda old, new: ['set_attr', 'tags.by-name.{}.name'.format(old), new],
+    lambda old, new: ['rename', old, new]]
 
 
 @pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
 def test_rename_tag(hlwm, hc_idle, rename_command):
-    hlwm.call(rename_command + ['foobar'])
+    hlwm.call(rename_command('default', 'foobar'))
 
     assert hlwm.get_attr('tags.0.name') == 'foobar'
     assert hc_idle.hooks() == [['tag_renamed', 'default', 'foobar']]
 
-    rename_once_more = rename_command.copy()
-    rename_once_more[1] = rename_once_more[1].replace('default', 'foobar')
-    hlwm.call(rename_once_more + ['baz'])
+    hlwm.call(rename_command('foobar', 'baz'))
 
     assert hlwm.get_attr('tags.0.name') == 'baz'
     assert hc_idle.hooks() == [['tag_renamed', 'foobar', 'baz']]
@@ -104,7 +102,7 @@ def test_rename_tag(hlwm, hc_idle, rename_command):
 
 @pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
 def test_rename_tag_empty(hlwm, rename_command):
-    hlwm.call_xfail(rename_command + [""]) \
+    hlwm.call_xfail(rename_command('default', '')) \
         .expect_stderr('An empty tag name is not permitted')
 
 
@@ -112,7 +110,7 @@ def test_rename_tag_empty(hlwm, rename_command):
 def test_rename_tag_existing_tag(hlwm, rename_command):
     hlwm.call('add foobar')
 
-    hlwm.call_xfail(rename_command + ["foobar"]) \
+    hlwm.call_xfail(rename_command('default', 'foobar')) \
         .expect_stderr('"foobar" already exists')
 
 
