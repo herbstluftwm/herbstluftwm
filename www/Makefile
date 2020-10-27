@@ -10,6 +10,7 @@ INSTALLFILES = $(TXT:.txt=.html) \
 	herbstluftwm.html \
 	herbstclient.html \
 	herbstluftwm.svg \
+	favicon.ico \
 	main.css
 
 all: $(INSTALLFILES)
@@ -38,6 +39,10 @@ faq-toc.html: faq-content.html ./gentoc.sh
 	./gentoc.sh $< > $@
 
 faq.html: faq-toc.html
+
+favicon.ico: ../share/herbstluftwm.svg
+	convert -density 256x256 -background transparent $< \
+        -define icon:auto-resize -colors 256 $@
 
 clean:
 	rm -f *.html *-content.html

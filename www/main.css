@@ -1,29 +1,29 @@
 body {
-    background-color: #FFD694;
-    padding: 10px;
+    padding: 0px;
     margin: 0px;
 }
 
-#frame {
+.pagewidth {
+    /* this class controls the maximum page width */
     margin-left: auto;
     margin-right: auto;
-    margin-top: 0.5em;
-    margin-bottom: 2em;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding: 0px;
     width: 90%; max-width: 70em;
+    border: none;
 }
 
 #header, #navigationbar {
-    background-color: #C3FFB2;
-}
-#frame {
-    border: 4px solid #176800;
+    background-color: #B8DEB1;
 }
 
 @media (max-width: 35em) {
-    #frame {
+    .pagewidth {
         border: none;
         width: 100%;
         margin: 0px;
+        padding: 0px;
     }
     body {
         padding: 0px;
@@ -32,7 +32,7 @@ body {
 }
 
 
-#frame , #navigationbar .curtab {
+body, #navigationbar .curtab {
     background-color: white;
 }
 
@@ -359,7 +359,7 @@ table thead th {
 .toc {
     list-style: outside none;
     border: 1px solid #5D9B4C;
-    background-color: #E9FEE3;
+    background-color: #EAF7E6;
     marker-offset: 0px;
     padding: 0.4em;
     margin: 1em;

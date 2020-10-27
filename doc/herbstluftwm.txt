@@ -1645,7 +1645,7 @@ receive or wait for them with link:herbstclient.html[*herbstclient*(1)]. Also cu
 emitted with the *emit_hook* command. The following hooks are emitted by
 herbstluftwm itself:
 
-fullscreen [on|off] 'WINID' 'STATE'::
+fullscreen [on|off] 'WINID'::
     The fullscreen state of window 'WINID' was changed to [on|off].
 
 tag_changed 'TAG' 'MONITOR'::
@@ -1666,6 +1666,9 @@ tag_added 'TAG'::
 
 tag_removed 'TAG'::
     The tag named 'TAG' was removed.
+
+tag_renamed 'OLD' 'NEW'::
+    The tag name changed from 'OLD' to 'NEW'.
 
 urgent [on|off] 'WINID'::
     The urgent state of client with given 'WINID' has been changed to [on|off].

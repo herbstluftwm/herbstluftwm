@@ -22,7 +22,7 @@ Its main features can be described with:
 How to get it?
 --------------
 Install it via the package manager, link:download.html[download tarballs], or
-clone the link:http://github.com/herbstluftwm/herbstluftwm[git repository]:
+clone the link:https://github.com/herbstluftwm/herbstluftwm[git repository]:
 
 ----
 git clone https://github.com/herbstluftwm/herbstluftwm
@@ -37,11 +37,16 @@ There are manpages for link:herbstluftwm.html[herbstluftwm] and
 link:herbstclient.html[herbstclient] in the +doc/+ directory. They also can be
 seen link:herbstluftwm.html[online].
 
-Support
--------
-You are welcome to join the IRC channel +#herbstluftwm+ on +irc.freenode.net+.
+Community & Support
+-------------------
+You are welcome to join the IRC channel +#herbstluftwm+ on +irc.freenode.net+
+for asking question or simply to hang out with fellow herbstluftwm users and developers.
+There is also a community on reddit
+link:https://www.reddit.com/r/herbstluftwm[r/herbstluftwm].
 
-For further bug reporting or patch submission contact the mailing list:
+Feel free to ask questions on the link:https://github.com/herbstluftwm/herbstluftwm/issues[github issue tracker].
+For bug reporting open an link:https://github.com/herbstluftwm/herbstluftwm/issues[issue on github] or
+contact the mailing list:
 ----
 hlwm@lists.herbstluftwm.org
 ----
