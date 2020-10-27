@@ -83,21 +83,26 @@ def test_merge_tag_into_another_tag(hlwm):
 
 RENAMING_COMMANDS = [
     # commands for renaming the default tag
-    ['set_attr', 'tags.by-name.default.name'],
-    ['rename', 'default']]
+    lambda old, new: ['set_attr', 'tags.by-name.{}.name'.format(old), new],
+    lambda old, new: ['rename', old, new]]
 
 
 @pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
 def test_rename_tag(hlwm, hc_idle, rename_command):
-    hlwm.call(rename_command + ['foobar'])
+    hlwm.call(rename_command('default', 'foobar'))
 
     assert hlwm.get_attr('tags.0.name') == 'foobar'
-    assert hc_idle.hooks() == [['tag_renamed', 'foobar']]
+    assert hc_idle.hooks() == [['tag_renamed', 'default', 'foobar']]
+
+    hlwm.call(rename_command('foobar', 'baz'))
+
+    assert hlwm.get_attr('tags.0.name') == 'baz'
+    assert hc_idle.hooks() == [['tag_renamed', 'foobar', 'baz']]
 
 
 @pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
 def test_rename_tag_empty(hlwm, rename_command):
-    hlwm.call_xfail(rename_command + [""]) \
+    hlwm.call_xfail(rename_command('default', '')) \
         .expect_stderr('An empty tag name is not permitted')
 
 
@@ -105,7 +110,7 @@ def test_rename_tag_empty(hlwm, rename_command):
 def test_rename_tag_existing_tag(hlwm, rename_command):
     hlwm.call('add foobar')
 
-    hlwm.call_xfail(rename_command + ["foobar"]) \
+    hlwm.call_xfail(rename_command('default', 'foobar')) \
         .expect_stderr('"foobar" already exists')
 
 
@@ -256,3 +261,17 @@ def test_urgent_count(hlwm, x11):
 
     # since one of them gets focused, 4 urgent clients remain
     assert int(hlwm.get_attr('tags.focus.urgent_count')) == 4
+
+
+def test_rename_multiple_tags(hlwm, hc_idle):
+    hlwm.call('add foo_old')
+    hlwm.call('add bar_old')
+    hc_idle.hooks()  # clear hooks
+
+    hlwm.call('rename foo_old foo_new')
+    hlwm.call('rename bar_old bar_new')
+
+    assert hc_idle.hooks() == [
+        ['tag_renamed', 'foo_old', 'foo_new'],
+        ['tag_renamed', 'bar_old', 'bar_new']
+    ]
