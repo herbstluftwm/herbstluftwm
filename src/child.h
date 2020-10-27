@@ -44,4 +44,29 @@ private:
     std::unique_ptr<T> pointer_ = nullptr;
 };
 
+/*! A member variable that is exported to the object tree.
+ * This is a more direct variation of the Child_<> template,
+ * in the sense that here is no pointer indirection in between.
+ * You can use a member variable of type ChildMember_<T> as you
+ * would use a member of type T.
+ */
+template<typename T>
+class ChildMember_ : public T {
+public:
+    // owner is the 'parent' object
+    // 'name' is the name of the child pointer
+    template<typename... Args>
+    ChildMember_(Object& owner_, const std::string& name_, Args&&... args)
+        : T(std::forward<Args>(args)...)
+        , owner(owner_)
+        , name(name_)
+    {
+        owner.addChild(static_cast<T*>(this), name_);
+    }
+
+private:
+    Object& owner;
+    std::string name;
+};
+
 #endif

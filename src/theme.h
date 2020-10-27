@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "attribute_.h"
+#include "child.h"
 #include "object.h"
 
 /** The proxy interface
@@ -106,9 +107,9 @@ private:
 class DecTriple : public DecorationScheme {
 public:
     DecTriple();
-    DecorationScheme  normal;
-    DecorationScheme  active;
-    DecorationScheme  urgent;
+    ChildMember_<DecorationScheme> normal;
+    ChildMember_<DecorationScheme> active;
+    ChildMember_<DecorationScheme> urgent;
     //! whenever one of the normal, active, urgend changed
     //! (but not when the proxy attributes are changed)
     Signal triple_changed_;
@@ -131,17 +132,23 @@ public:
         Tiling,
         Floating,
         Minimal,
-        Count,
+        Last = Minimal,
     };
     const DecTriple& operator[](Type t) const {
-        return dec[(int)t];
+        return *decTriples[static_cast<int>(t)];
     };
     Theme();
 
     Signal theme_changed_; //! one of the attributes in one of the triples changed
 
+    ChildMember_<DecTriple> fullscreen;
+    ChildMember_<DecTriple> tiling;
+    ChildMember_<DecTriple> floating;
+    ChildMember_<DecTriple> minimal;
+
+private:
     // a sub-decoration for each type
-    DecTriple dec[(int)Type::Count];
+    std::vector<DecTriple*> decTriples;
 };
 
 
