@@ -132,7 +132,6 @@ public:
         Tiling,
         Floating,
         Minimal,
-        Last = Minimal,
     };
     const DecTriple& operator[](Type t) const {
         return *decTriples[static_cast<int>(t)];
