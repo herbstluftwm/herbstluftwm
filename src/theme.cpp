@@ -8,7 +8,7 @@ Theme::Theme()
     , tiling(*this, "tiling")
     , floating(*this, "floating")
     , minimal(*this, "minimal")
-    // in the following array, the ordre must match the order in Theme::Type!
+    // in the following array, the order must match the order in Theme::Type!
     , decTriples{ &fullscreen, &tiling, &floating, &minimal }
 {
     // forward attribute changes: only to tiling and floating
