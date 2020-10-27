@@ -11,6 +11,10 @@ Theme::Theme()
     // in the following array, the order must match the order in Theme::Type!
     , decTriples{ &fullscreen, &tiling, &floating, &minimal }
 {
+    for (auto dec : decTriples) {
+        dec->triple_changed_.connect([this](){ this->theme_changed_.emit(); });
+    }
+
     // forward attribute changes: only to tiling and floating
     active.makeProxyFor({&tiling.active, &floating.active});
     normal.makeProxyFor({&tiling.normal, &floating.normal});
