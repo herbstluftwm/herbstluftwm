@@ -322,7 +322,7 @@ class ObjectInformation:
             # split 'args' by the ',' tokens
             new_args = []
             current_chunk = []
-            for a in args + [',']:  # simulate the end by an artifical ','
+            for a in args + [',']:  # simulate the end by an artificial ','
                 if str(a) == ',':
                     if len(current_chunk) == 1:
                         # if there was one token before the ',' (or end)
@@ -366,7 +366,7 @@ class ObjectInformation:
 
         def set_default_value(self, cpp_token):
             if TokenGroup.IsTokenGroup(cpp_token):
-                # drop surrounding '{' ... '}' if its an initalizer list
+                # drop surrounding '{' ... '}' if its an initializer list
                 cpp_token = cpp_token.enclosed_tokens[0]
             if cpp_token[0:1] == ['-']:
                 # this is most probably a signed number
@@ -400,9 +400,9 @@ class ObjectInformation:
                 self.user_name = cpp_token
 
     def __init__(self):
-        self.base_classes = {}  # mapping class names to base clases
+        self.base_classes = {}  # mapping class names to base classes
         self.member2info = {}  # mapping (classname,member) to ChildInformation or AttributeInformation
-        self.member2init = {}  # mapping (classname,member) to its initalizer list
+        self.member2init = {}  # mapping (classname,member) to its initializer list
 
     def base_class(self, subclass, baseclass):
         if subclass not in self.base_classes:
@@ -548,7 +548,7 @@ class TokTreeInfoExtrator:
     ObjectInformation object.
 
     The actual extraction is done in the main()
-    function which has to be called separatedly
+    function which has to be called separately
     """
 
     def __init__(self, objInfo):
@@ -614,7 +614,7 @@ class TokTreeInfoExtrator:
                 attr.type = attr_type
                 attr.attribute_class = attribute_.value
                 if stream.try_match('='):
-                    # static initializiation:
+                    # static initialization:
                     t = stream.pop()
                     assert TokenGroup.IsTokenGroup(t)
                     attr.add_constructor_args(t.enclosed_tokens)
