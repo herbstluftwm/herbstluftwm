@@ -56,6 +56,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
     , ewmh(*cm.ewmh)
+    , mostRecentThemeType(Theme::Type::Tiling)
 {
     stringstream tmp;
     window_id_str = WindowID(window).str();
