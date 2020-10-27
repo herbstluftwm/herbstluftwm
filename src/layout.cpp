@@ -327,7 +327,7 @@ TilingResult FrameLeaf::computeLayout(Rectangle rect) {
 
     auto window_gap = settings_->window_gap();
     if (!smart_window_surroundings_active) {
-        // dedunct 'window_gap' many pixels from the left
+        // deduct 'window_gap' many pixels from the left
         // and from the top border. Later, we will deduct
         // 'window_gap' many pixels from the bottom and the
         // right from every window

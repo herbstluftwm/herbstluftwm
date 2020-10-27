@@ -56,6 +56,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , theme(*cm.theme)
     , settings(*cm.settings)
     , ewmh(*cm.ewmh)
+    , mostRecentThemeType(Theme::Type::Tiling)
 {
     stringstream tmp;
     window_id_str = WindowID(window).str();
@@ -220,15 +221,7 @@ void Client::window_focus() {
 }
 
 const DecTriple& Client::getDecTriple() {
-    auto triple_idx = Theme::Type::Tiling;
-    if (fullscreen_()) {
-        triple_idx = Theme::Type::Fullscreen;
-    } else if (is_client_floated()) {
-        triple_idx = Theme::Type::Floating;
-    } else {
-        triple_idx = Theme::Type::Tiling;
-    }
-    return theme[triple_idx];
+    return theme[mostRecentThemeType];
 }
 
 void Client::setup_border(bool focused) {
@@ -237,6 +230,7 @@ void Client::setup_border(bool focused) {
 
 void Client::resize_fullscreen(Rectangle monitor_rect, bool isFocused) {
     dec->resize_outline(monitor_rect, theme[Theme::Type::Fullscreen](isFocused,urgent_()));
+    mostRecentThemeType = Theme::Type::Fullscreen;
 }
 
 void Client::raise() {
@@ -253,6 +247,7 @@ void Client::resize_tiling(Rectangle rect, bool isFocused, bool minimalDecoratio
     // only apply minimal decoration if the window is not pseudotiled
     auto themetype = (minimalDecoration && !pseudotile_())
             ? Theme::Type::Minimal : Theme::Type::Tiling;
+    mostRecentThemeType = themetype;
     auto& scheme = theme[themetype](isFocused, urgent_());
     if (this->pseudotile_) {
         auto inner = this->float_size_;
@@ -420,6 +415,7 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
               m->rect.y + m->pad_up() - rect.height + space,
               m->rect.y + m->rect.height - m->pad_up() - m->pad_down() - space);
     dec->resize_inner(rect, theme[Theme::Type::Floating](isFocused,urgent_()));
+    mostRecentThemeType = Theme::Type::Floating;
 }
 
 Rectangle Client::outer_floating_rect() {
@@ -633,6 +629,7 @@ void Client::fuzzy_fix_initial_position() {
     int extreme_x = float_size_.x;
     int extreme_y = float_size_.y;
     const auto& t = theme[Theme::Type::Floating];
+    mostRecentThemeType = Theme::Type::Floating;
     auto r = t.active.inner_rect_to_outline(float_size_);
     extreme_x = std::min(extreme_x, r.x);
     extreme_y = std::min(extreme_y, r.y);
