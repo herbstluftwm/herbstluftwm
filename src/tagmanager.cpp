@@ -70,7 +70,10 @@ HSTag* TagManager::add_tag(const string& name) {
     }
     HSTag* tag = new HSTag(name, this, settings_);
     addIndexed(tag);
-    tag->name.changed().connect([this,tag]() { this->onTagRename(tag); });
+    tag->name.changed().connect([this,tag]() {
+        this->onTagRename(tag);
+        tag->oldName_ = tag->name;
+    });
     tag->needsRelayout_.connect([this,tag]() { this->needsRelayout_.emit(tag); });
 
     Ewmh::get().updateDesktops();
@@ -175,7 +178,7 @@ int TagManager::tag_rename_command(Input input, Output output) {
 
 void TagManager::onTagRename(HSTag* tag) {
     Ewmh::get().updateDesktopNames();
-    hook_emit({"tag_renamed", tag->name()});
+    hook_emit({"tag_renamed", tag->oldName_, tag->name()});
 }
 
 HSTag* TagManager::ensure_tags_are_available() {
@@ -193,7 +196,7 @@ HSTag* TagManager::byIndexStr(const string& index_str, bool skip_visible_tags) {
     } catch (...) {
         return nullptr;
     }
-    // index must be treated relative, if it's first char is + or -
+    // index must be treated relative, if its first char is + or -
     bool is_relative = index_str[0] == '+' || index_str[0] == '-';
     Monitor* monitor = get_current_monitor();
     if (is_relative) {
