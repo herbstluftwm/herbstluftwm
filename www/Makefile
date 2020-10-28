@@ -1,7 +1,7 @@
 
 .PHONY: all clean install
 
-TARGET = herbstluftwm.org:www/
+TARGET = herbstluftwm.org:html/
 
 ASCIIDOC = asciidoc
 ASCIIDOCFLAGS = -s
@@ -11,11 +11,12 @@ INSTALLFILES = $(TXT:.txt=.html) \
 	herbstclient.html \
 	herbstluftwm.svg \
 	favicon.ico \
-	main.css
+	main.css \
+	$(LINKS)
 
 LINKS = NEWS MIGRATION
 
-all: $(INSTALLFILES) $(LINKS)
+all: $(INSTALLFILES)
 
 %-content.html: %.txt
 	$(call colorecho,DOC,$@)
@@ -54,4 +55,4 @@ clean:
 	rm -f *.html *-content.html $(LINKS)
 
 install: all
-	rsync -v $(INSTALLFILES) $(TARGET)
+	rsync -v -l $(INSTALLFILES) $(TARGET)
