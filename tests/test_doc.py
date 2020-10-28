@@ -105,9 +105,6 @@ def test_attributes_and_children_are_documented(hlwm, clsname, object_path, json
         r'clients\.0x[0-9a-f]+',
         r'monitors\.[0-9]+',
         r'tags\.by-name\.default',
-        # TODO: the theme children do not yet use the Child_<...> pattern
-        r'theme\.(|.*\.)(active|normal|urgent)',
-        r'theme\.(fullscreen|tiling|floating|minimal)',
     ])
     undocumented_path_re = re.compile(r'^({})[\. ]*$'.format(undocumented_paths))
 
