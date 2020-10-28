@@ -12,6 +12,7 @@ INSTALLFILES = $(TXT:.txt=.html) \
 	herbstluftwm.svg \
 	favicon.ico \
 	main.css \
+	.htaccess \
 	$(LINKS)
 
 LINKS = NEWS MIGRATION
