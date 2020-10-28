@@ -7,6 +7,8 @@ Current git version
   * When an application fails to focus itself (because
     focus_stealing_prevention is active), then the window is marked as urgent.
   * New optional argument for the 'split' command for splitting non-leaf frames
+  * Frame objects: the frame layout can be introspected via the 'tiling' object
+    present in each tag, e.g.: 'tags.focus.tiling'.
   * New command 'foreach' for iterating over objects
   * New attribute 'urgent_count' for tags, counting the number of urgent clients on a tag
   * New rule consequence 'floatplacement' that updates the placement of floating
@@ -24,6 +26,7 @@ Current git version
     - Fix handling of delta -1 in 'focus_monitor' and 'cycle_monitor'
     - Fixed precision decimals in the layout tree (more reliable in- and output
       of fractions in frame splits)
+    - Fixes in maximize.sh
 
 
 Release 0.8.3 on 2020-06-06
