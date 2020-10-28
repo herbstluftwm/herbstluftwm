@@ -4,3 +4,8 @@
 *.jpeg
 *.jpg
 herbstluftwm.svg
+favicon.ico
+
+# ignore symbolic links
+NEWS
+MIGRATION
