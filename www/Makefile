@@ -13,7 +13,9 @@ INSTALLFILES = $(TXT:.txt=.html) \
 	favicon.ico \
 	main.css
 
-all: $(INSTALLFILES)
+LINKS = NEWS MIGRATION
+
+all: $(INSTALLFILES) $(LINKS)
 
 %-content.html: %.txt
 	$(call colorecho,DOC,$@)
@@ -44,8 +46,12 @@ favicon.ico: ../share/herbstluftwm.svg
 	convert -density 256x256 -background transparent $< \
         -define icon:auto-resize -colors 256 $@
 
+# some symbolic links to make links in these asciidoc files work in www, too
+$(LINKS):
+	ln -sf $(shell echo $@ | tr A-Z a-z).html $@
+
 clean:
-	rm -f *.html *-content.html
+	rm -f *.html *-content.html $(LINKS)
 
 install: all
 	rsync -v $(INSTALLFILES) $(TARGET)
