@@ -586,7 +586,7 @@ class TokTreeInfoExtrator:
         stream = TokenStream(toktreelist)
         attr_cls_re = re.compile('^(Dyn|)Attribute(Proxy|)_$')
         attribute_ = TokenStream.PatternArg(re=attr_cls_re)
-        link_ = TokenStream.PatternArg(re=re.compile('^(Link_|Child_|ChildMember_)$'))
+        link_ = TokenStream.PatternArg(re=re.compile('^(Link_|Child_|DynChild_|ChildMember_)$'))
         parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
 
         def semicolon_or_block_callback(t):

@@ -1,6 +1,7 @@
 #ifndef __HS_OBJECT_H_
 #define __HS_OBJECT_H_
 
+#include <functional>
 #include <map>
 #include <string>
 #include <utility>
@@ -61,6 +62,11 @@ public:
     /* Called by the directory whenever children are added or removed */
     void notifyHooks(HookEvent event, const std::string &arg);
 
+    /** a child with the given name exists if the function
+     * returns a non-null pointer
+     */
+    void addDynamicChild(std::function<Object*()> child, const std::string &name);
+
     void addChild(Object* child, const std::string &name);
     void addStaticChild(Object* child, const std::string &name);
     void removeChild(const std::string &child);
@@ -68,7 +74,7 @@ public:
     void addHook(Hook* hook);
     void removeHook(Hook* hook);
 
-    const std::map<std::string, Object*>& children() { return children_; }
+    std::map<std::string, Object*> children();
 
     void printTree(Output output, std::string rootLabel);
 
@@ -80,6 +86,7 @@ protected:
     std::map<std::string, Attribute*> attribs_;
     std::map<std::string, Action*> actions_;
 
+    std::map<std::string, std::function<Object*()>> childrenDynamic_;
     std::map<std::string, Object*> children_;
     std::vector<Hook*> hooks_;
 
