@@ -28,11 +28,8 @@ public:
     Object() = default;
     virtual ~Object() = default;
 
-    virtual void print(const std::string &prefix = "\t| "); // a debug method
-
     // object tree ls command
     virtual void ls(Output out);
-    virtual void ls(Path path, Output out); // traversial version
 
     static std::pair<ArgList,std::string> splitPath(const std::string &path);
 
