@@ -4,8 +4,8 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
-Current git version
--------------------
+Release 0.9.0 on 2020-10-31
+---------------------------
 
   * When an application fails to focus itself (because
     focus_stealing_prevention is active), then the window is marked as urgent.
