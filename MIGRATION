@@ -6,8 +6,8 @@ herbstluftwm releases and how to migrate scripts and configuration.
 See the link:NEWS[] file for a list of all changes and new features.
 
 
-Current git version
--------------------
+0.8.3 to 0.9.0
+--------------
 
 The tag_renamed hook has changed. The hook now emits *two* parameters.
 The first parameter contains the old name of the tag
