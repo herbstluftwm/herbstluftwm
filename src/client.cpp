@@ -468,7 +468,7 @@ void Client::set_visible(bool visible) {
            events, and because the ICCCM tells us to! */
         XUnmapWindow(g_display, this->dec->decorationWindow());
         XUnmapWindow(g_display, this->window_);
-        ewmh.windowUpdateWmState(this->window_, WmState::WSWithdrawnState);
+        ewmh.windowUpdateWmState(this->window_, WmState::WSIconicState);
         this->ignore_unmaps_++;
     }
     this->visible_ = visible;

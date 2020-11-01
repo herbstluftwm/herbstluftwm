@@ -228,6 +228,8 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
             // if the client is not directly displayed on any monitor,
             // take the current monitor
             get_current_monitor()->evaluateClientPlacement(client, changes.floatplacement);
+            // mark the client as hidden
+            ewmh->windowUpdateWmState(client->window_, WmState::WSIconicState);
         }
     }
     client->send_configure();
