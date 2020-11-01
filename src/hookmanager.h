@@ -9,9 +9,6 @@ class HookManager : public Object
 public:
     HookManager();
 
-    // custom handling (hook names contain '.', they never have children)
-    void ls(Path path, Output out) override;
-
     void add(const std::string &path);
     void remove(const std::string &path);
 
