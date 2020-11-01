@@ -37,6 +37,7 @@ def create_tag_with_all_links(hlwm):
     hlwm.create_client()
     return 'tags.0'
 
+
 # map every c++ class name to a function ("constructor") accepting an hlwm
 # fixture and returning the path to an example object of the C++ class
 classname2examplepath = [
