@@ -37,7 +37,7 @@ jobs:
                 focal sh -c '
                     /hlwm/ci/build.py --build-dir=/hlwm/build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=/.ccache --compile --run-tests
                 '
-              - bash <(wget -O - https://codecov.io/bash) -f coverage.info || echo Warning codecov report failed
+              - "bash <(wget -O - https://codecov.io/bash) -f coverage.info || echo Warning: codecov report failed"
 
         - name: "Build with Clang, run linters and static analyzers"
           env: TRAVIS_CACHE_ID=focal-linter
