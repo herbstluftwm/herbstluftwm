@@ -7,6 +7,7 @@ import argparse
 import json
 import difflib
 
+
 class GitDir:
     def __init__(self, dirpath):
         self.dirpath = dirpath
@@ -34,19 +35,19 @@ def parse_pr_id(text):
     else:
         return text
 
+
 def get_json_doc(tmp_dir):
-    return subprocess.run(
-            ['doc/gendoc.py', '--json'],
-            stdout=subprocess.PIPE,
-            universal_newlines=True,
-            cwd=tmp_dir).stdout
+    return subprocess.run(['doc/gendoc.py', '--json'],
+                          stdout=subprocess.PIPE,
+                          universal_newlines=True,
+                          cwd=tmp_dir).stdout
 
 
 def run_pipe_stdout(cmd):
-    return subprocess.run(
-                cmd,
-                stdout=subprocess.PIPE,
-                universal_newlines=True).stdout
+    return subprocess.run(cmd,
+                          stdout=subprocess.PIPE,
+                          universal_newlines=True).stdout
+
 
 def rest_call(query, path, body=None):
     """query is GET/POST/PATCH"""
@@ -58,6 +59,7 @@ def rest_call(query, path, body=None):
     curl += ["https://api.github.com/repos/herbstluftwm/herbstluftwm/" + path]
     json_src = run_pipe_stdout(curl)
     return json.loads(json_src)
+
 
 def post_comment(pr_id, text):
     # list existing comments:
@@ -76,13 +78,14 @@ def post_comment(pr_id, text):
         print(f'Creating new comment in #{pr_id}', file=sys.stderr)
         rest_call('POST', f'issues/{pr_id}/comments', body=body)
 
+
 def main():
     parser = argparse.ArgumentParser(description='Show diffs in json doc between to refs')
     parser.add_argument('oldref', help='the old version, e.g. master')
     parser.add_argument('newref', help='the new version, e.g. a pull request number like #1021')
     parser.add_argument('--post-comment', default=None,
                         help='post diff as a comment in the specified ID of a github issue'
-                            + ' Requires that the environment variable GITHUB_TOKEN is set')
+                             + ' Requires that the environment variable GITHUB_TOKEN is set')
     args = parser.parse_args()
 
     git_root = run_pipe_stdout(['git', 'rev-parse', '--show-toplevel']).rstrip()
@@ -101,7 +104,6 @@ def main():
     oldref = parse_pr_id(args.oldref)
     newref = parse_pr_id(args.newref)
     print(f'Diffing »{oldref}« and »{newref}«', file=sys.stderr)
-    #git_tmp.run('diff', f'{oldref}..{newref}')
     print(f'Checking out {oldref}', file=sys.stderr)
     git_tmp.run('checkout', '-f', oldref)
     oldjson = get_json_doc(tmp_dir).splitlines(keepends=True)
@@ -110,17 +112,18 @@ def main():
     newjson = get_json_doc(tmp_dir).splitlines(keepends=True)
 
     diff = difflib.unified_diff(oldjson, newjson, fromfile=args.oldref, tofile=args.newref)
-    #sys.stdout.writelines(diff)
-    print("")
     if args.post_comment is not None:
         gendoc_url = '/herbstluftwm/herbstluftwm/blob/master/doc/gendoc.py'
         comment = [f'Diff of the output of [`doc/gendoc.py --json`]({gendoc_url}):']
         comment += ['```diff']
-        comment += [l.rstrip('\n') for l in diff]
+        comment += [line.rstrip('\n') for line in diff]
         comment += ['```']
         comment_txt = '\n'.join(comment)
-        #print(comment_txt)
+        # print(comment_txt)
         post_comment(args.post_comment.lstrip('#'), comment_txt)
+    else:
+        print("")
+        sys.stdout.writelines(diff)
 
 
 main()
