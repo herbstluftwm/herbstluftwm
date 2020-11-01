@@ -46,6 +46,7 @@ const std::array<const char*,NetCOUNT> Ewmh::netatomNames_ =
     { NetFrameExtents                , "_NET_FRAME_EXTENTS"                },
     /* window states */
     { NetWmStateFullscreen           , "_NET_WM_STATE_FULLSCREEN"          },
+    { NetWmStateHidden               , "_NET_WM_STATE_HIDDEN"              },
     { NetWmStateDemandsAttention     , "_NET_WM_STATE_DEMANDS_ATTENTION"   },
     /* window types */
     { NetWmWindowTypeDesktop         , "_NET_WM_WINDOW_TYPE_DESKTOP"       },

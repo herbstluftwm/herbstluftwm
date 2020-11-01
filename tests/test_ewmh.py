@@ -152,6 +152,28 @@ def test_wm_state_type(hlwm, x11):
     assert len(prop.value) == 2
 
 
+def test_wm_state_of_visible_client(hlwm, x11):
+    win, _ = x11.create_client(sync_hlwm=True)
+    wm_state = x11.display.intern_atom('WM_STATE')
+    prop = win.get_full_property(wm_state, X.AnyPropertyType)
+    assert prop.value[0] == 1  # NormalState
+
+
+@pytest.mark.parametrize('show_for_a_moment', [True, False])
+def test_wm_state_of_hidden_client(hlwm, x11, show_for_a_moment):
+    hlwm.call('chain , add foo , rule tag=foo')
+    win, _ = x11.create_client(sync_hlwm=True)
+    wm_state = x11.display.intern_atom('WM_STATE')
+
+    if show_for_a_moment:
+        hlwm.call('use foo')
+        hlwm.call('use_previous')
+
+    prop = win.get_full_property(wm_state, X.AnyPropertyType)
+    assert prop.value[0] == 3  # IconicState
+    # see https://tronche.com/gui/x/icccm/sec-4.html#s-4.1.3.1
+
+
 def test_ewmh_focus_client(hlwm, x11):
     hlwm.call('set focus_stealing_prevention off')
     # add another client that has the focus
