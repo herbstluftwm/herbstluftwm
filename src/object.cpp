@@ -12,6 +12,7 @@
 #include "utils.h"
 
 using std::endl;
+using std::function;
 using std::make_shared;
 using std::pair;
 using std::shared_ptr;
@@ -163,7 +164,7 @@ void Object::notifyHooks(HookEvent event, const string& arg)
     }
 }
 
-void Object::addDynamicChild(std::function<Object* ()> child, const std::string& name)
+void Object::addDynamicChild(function<Object* ()> child, const string& name)
 {
     childrenDynamic_[name] = child;
 }
@@ -200,7 +201,7 @@ void Object::removeHook(Hook* hook)
                     hook), hooks_.end());
 }
 
-std::map<std::string, Object*> Object::children() {
+std::map<string, Object*> Object::children() {
     // copy the map of 'static' children
     auto allChildren = children_;
     // and add the dynamic children
