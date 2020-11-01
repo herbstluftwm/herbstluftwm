@@ -5,6 +5,7 @@
 #include "argparse.h"
 #include "client.h"
 #include "completion.h"
+#include "ewmh.h"
 #include "floating.h"
 #include "frametree.h"
 #include "hlwmcommon.h"
@@ -27,7 +28,7 @@ static bool    g_tag_flags_dirty = true;
 
 HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     : frame(*this, "tiling")
-    , index(this, "index", 0)
+    , index(this, "index", 0, [](unsigned long){return "";})
     , floating(this, "floating", false, [](bool){return "";})
     , floating_focused(this, "floating_focused", false, [](bool){return "";})
     , name(this, "name", name_,
@@ -46,6 +47,9 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
 {
     stack = make_shared<Stack>();
     frame.init(this, settings);
+    index.changed().connect([this, tags](unsigned long newIdx) {
+        tags->indexChangeRequested(this, newIdx);
+    });
     floating.changed().connect(this, &HSTag::onGlobalFloatingChange);
     // FIXME: actually this connection of the signals like this
     // must work:
@@ -64,7 +68,12 @@ HSTag::~HSTag() {
 }
 
 void HSTag::setIndexAttribute(unsigned long new_index) {
-    index = new_index;
+    if (index != new_index) {
+        index = new_index;
+        foreachClient([this](Client* client) {
+            Ewmh::get().windowUpdateTag(client->window_, this);
+        });
+    }
 }
 
 //! give the focus within this tag to the specified client

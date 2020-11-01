@@ -25,6 +25,10 @@ TagManager::TagManager()
     , settings_(nullptr)
     , focus_(*this, "focus")
 {
+    indicesChanged.connect([](){
+        Ewmh::get().updateDesktopNames();
+        tag_set_flags_dirty();
+    });
 }
 
 void TagManager::injectDependencies(MonitorManager* m, Settings *s) {

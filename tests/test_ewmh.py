@@ -28,6 +28,44 @@ def test_net_wm_desktop_after_bring(hlwm, x11):
     assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 1
 
 
+def test_net_wm_desktop_after_tag_index_increment(hlwm, x11):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    hlwm.call('add tag3')
+    # put a new window on the tag with index 1
+    hlwm.call('rule tag=tag1')
+    win, winid = x11.create_client()
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 1
+
+    # move the tag3 to the begin of the list
+    hlwm.call('attr tags.by-name.tag3.index 0')
+    # so the index of the tag of the client increased by one
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 2
+
+
+@pytest.mark.parametrize('method', ['index_change', 'tag_removal'])
+def test_net_wm_desktop_after_tag_index_decrement(hlwm, method, x11):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    hlwm.call('add tag3')
+    # put a new window on the tag with index 3
+    hlwm.call('rule tag=tag3')
+    win, winid = x11.create_client()
+    assert hlwm.get_attr('tags.by-name.tag3.index') == '3'
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 3
+
+    if method == 'index_change':
+        # move the tag1 to the end of the list
+        hlwm.call('attr tags.by-name.tag1.index 3')
+    elif method == 'tag_removal':
+        # remove 'tag1' so all later tags experience a index shift
+        hlwm.call('merge_tag tag1 default')
+
+    # so the index of the tag of the client increased by one
+    assert hlwm.get_attr('tags.by-name.tag3.index') == '2'
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 2
+
+
 @pytest.mark.parametrize('utf8names,desktop_names', [
     (False, ['default']),
     (False, ['foo']),

@@ -81,6 +81,29 @@ def test_merge_tag_into_another_tag(hlwm):
     assert hlwm.get_attr('tags.0.name') == 'foobar'
 
 
+@pytest.mark.parametrize("tag_count, old_idx, new_idx",
+    [(count, old, new) for count in range(0, 6)
+                       for old in range(0, count)
+                       for new in range(0, count)])
+def test_index_change(hlwm, tag_count, old_idx, new_idx):
+    names = ["orig" + str(i) for i in range(0, tag_count)]
+    for n in names:
+        hlwm.call(['add', n])
+
+    # get rid of the 'default' tag
+    hlwm.call('use_index 1')
+    hlwm.call('merge_tag default')
+
+    hlwm.call(f'attr tags.{old_idx}.index {new_idx}')
+
+    assert hlwm.get_attr(f'tags.{new_idx}.name') == names[old_idx]
+    new_names = [n for n in names if n != names[old_idx]]
+    new_names.insert(new_idx, names[old_idx])
+    for i in range(0, tag_count):
+        assert hlwm.get_attr(f'tags.{i}.index') == str(i)
+        assert hlwm.get_attr(f'tags.{i}.name') == new_names[i]
+
+
 RENAMING_COMMANDS = [
     # commands for renaming the default tag
     lambda old, new: ['set_attr', 'tags.by-name.{}.name'.format(old), new],

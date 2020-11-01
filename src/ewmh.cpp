@@ -249,11 +249,7 @@ void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
     if (!tag) {
         return;
     }
-    int index = tags_->index_of(tag);
-    if (index < 0) {
-        HSWarning("tag %s not found in internal list\n", tag->name->c_str());
-        return;
-    }
+    int index = tag->index();
     X_.setPropertyCardinal(win, netatom_[NetWmDesktop], { index });
 }
 
