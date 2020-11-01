@@ -4,6 +4,14 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
+Current git version
+-------------------
+
+  * Bug fixes:
+    - When hiding windows, correctly set their WM_STATE to IconicState (we set
+      it to Withdrawn state before, which means "unmanaged" and thus is wrong).
+      This may require restarting pagers when upgrading hlwm live.
+
 Release 0.9.0 on 2020-10-31
 ---------------------------
 
