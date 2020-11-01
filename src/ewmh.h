@@ -32,6 +32,7 @@ enum {
     NetWmMoveresize,
     NetFrameExtents,
     /* window states */
+    NetWmStateHidden,
     NetWmStateFullscreen,
     NetWmStateDemandsAttention,
     /* window types */
