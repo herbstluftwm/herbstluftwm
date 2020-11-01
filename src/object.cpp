@@ -95,54 +95,6 @@ void Object::ls(Output out)
         out << "  " << it.first << endl;
     }
 }
-void Object::ls(Path path, Output out) {
-    if (path.empty()) {
-        return ls(out);
-    }
-
-    auto child = path.front();
-    if (children_.find(child) != children_.end()) {
-        path.shift();
-        children_[child]->ls(path, out);
-    } else {
-        out << "child " << child << " not found!" << endl; // TODO
-    }
-}
-
-void Object::print(const string &prefix)
-{
-    if (!children_.empty()) {
-        std::cout << prefix << "Children:" << endl;
-        for (auto it : children_) {
-            it.second->print(prefix + "\t| ");
-        }
-        std::cout << prefix << endl;
-    }
-    if (!attribs_.empty()) {
-        std::cout << prefix << "Attributes:" << endl;
-        for (auto it : attribs_) {
-            std::cout << prefix << "\t" << it.first
-                      << " (" << it.second->typestr() << ")";
-            std::cout << "\t[" << it.second->str() << "]";
-            if (it.second->writeable()) {
-                std::cout << "\tw";
-            }
-            if (!it.second->hookable()) {
-                std::cout << "\t!h";
-            }
-            std::cout << endl;
-        }
-    }
-    if (!actions_.empty()) {
-        std::cout << prefix << "Actions:" << endl;
-        std::cout << prefix;
-        for (auto it : actions_) {
-            std::cout << "\t" << it.first;
-        }
-        std::cout << endl;
-    }
-    std::cout << prefix << "Currently " << hooks_.size() << " hooks:" << endl;
-}
 
 Attribute* Object::attribute(const string &name) {
     auto it = attribs_.find(name);
