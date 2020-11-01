@@ -1,6 +1,7 @@
 #ifndef HLWM_LINK_H_
 #define HLWM_LINK_H_
 
+#include "entity.h"
 #include "object.h"
 
 /*! A pointer to another object in the object tree. if this is
@@ -8,7 +9,7 @@
  * automatically.
  */
 template<typename T>
-class Link_ {
+class Link_ : public HasDocumentation {
 public:
     // 'name' is the name of the child pointer
     Link_(Object& parent, std::string name)

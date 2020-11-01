@@ -50,6 +50,17 @@ static const std::map<Type, std::pair<std::string, char>> type_strings = {
 
 bool operator<(Type t1, Type t2);
 
+class HasDocumentation  {
+public:
+    void setDoc(const char text[]) { doc_ = text; }
+    std::string doc() const { return doc_; };
+private:
+    /** we avoid the duplication of the doc string
+     * with every instance of the owning class.
+     */
+    const char* doc_ = nullptr;
+};
+
 class Entity {
 public:
     Entity() = default;

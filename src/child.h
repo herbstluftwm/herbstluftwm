@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "entity.h"
 #include "object.h"
 
 /*! implement a static child object in the object tree. Static means that
@@ -12,7 +13,7 @@
  * accordingly.
  */
 template<typename T>
-class Child_ {
+class Child_ : public HasDocumentation {
 public:
     // owner is the 'parent' object
     // 'name' is the name of the child pointer
