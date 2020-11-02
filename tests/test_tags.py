@@ -105,6 +105,16 @@ def test_index_change(hlwm, tag_count, old_idx, new_idx):
         assert hlwm.get_attr(f'tags.{i}.name') == new_names[i]
 
 
+@pytest.mark.parametrize("tag_count", [1, 4])
+def test_index_to_big(hlwm, tag_count):
+    for i in range(1, tag_count):  # one tag already exists
+        hlwm.call(f'add tag{i}')
+
+    for new_idx in [tag_count, tag_count + 10]:
+        hlwm.call_xfail(f'attr tags.0.index {new_idx}') \
+            .expect_stderr(f'Index must be between 0 and {tag_count - 1}')
+
+
 RENAMING_COMMANDS = [
     # commands for renaming the default tag
     lambda old, new: ['set_attr', 'tags.by-name.{}.name'.format(old), new],
