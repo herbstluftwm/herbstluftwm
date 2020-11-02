@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "child.h"
 #include "fixprecdec.h"
 #include "link.h"
 #include "object.h"
@@ -72,10 +73,12 @@ public:
 public: // soon to be come private:
     std::shared_ptr<Frame> root_;
     Link_<Frame> rootLink_;
+    DynChild_<Frame> focused_frame_;
     //! replace a node in the frame tree, either modifying old's parent or the root_
     void replaceNode(std::shared_ptr<Frame> old, std::shared_ptr<Frame> replacement);
 private:
     static std::shared_ptr<FrameLeaf> findEmptyFrameNearFocusGeometrically(std::shared_ptr<Frame> subtree);
+    Frame* focusedFramePlainPtr();
     //! cycle the frames within the current tree
     void cycle_frame(std::function<size_t(size_t,size_t)> indexAndLenToIndex);
     void cycle_frame(int delta);
