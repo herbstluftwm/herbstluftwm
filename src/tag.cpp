@@ -1,10 +1,12 @@
 #include "tag.h"
 
+#include <sstream>
 #include <type_traits>
 
 #include "argparse.h"
 #include "client.h"
 #include "completion.h"
+#include "ewmh.h"
 #include "floating.h"
 #include "frametree.h"
 #include "hlwmcommon.h"
@@ -22,12 +24,13 @@ using std::function;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::stringstream;
 
 static bool    g_tag_flags_dirty = true;
 
 HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     : frame(*this, "tiling")
-    , index(this, "index", 0)
+    , index(this, "index", 0, &HSTag::isValidTagIndex)
     , floating(this, "floating", false, [](bool){return "";})
     , floating_focused(this, "floating_focused", false, [](bool){return "";})
     , name(this, "name", name_,
@@ -43,10 +46,17 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     , flags(0)
     , floating_clients_focus_(0)
     , oldName_(name_)
+    , tags_(tags)
     , settings_(settings)
 {
     stack = make_shared<Stack>();
     frame.init(this, settings);
+    index.changed().connect([this, tags](unsigned long newIdx) {
+        tags->indexChangeRequested(this, newIdx);
+        foreachClient([this](Client* client) {
+            Ewmh::get().windowUpdateTag(client->window_, this);
+        });
+    });
     floating.changed().connect(this, &HSTag::onGlobalFloatingChange);
     // FIXME: actually this connection of the signals like this
     // must work:
@@ -518,6 +528,16 @@ int HSTag::closeOrRemoveCommand() {
         return frame->removeFrameCommand();
     }
     return 0;
+}
+
+string HSTag::isValidTagIndex(unsigned long newIndex)
+{
+    if (newIndex < tags_->size()) {
+        return "";
+    }
+    stringstream ss;
+    ss << "Index must be between 0 and " << (tags_->size() - 1);
+    return ss.str();
 }
 
 string HSTag::floatingLayerCanBeFocused(bool floatingFocused)

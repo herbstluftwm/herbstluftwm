@@ -7,6 +7,8 @@ older versions.
 Current git version
 -------------------
 
+  * The 'index' attribute of tags is now writable. This allows adjusting the
+    order of existing tags.
   * New child object 'focused_client' for each tag object.
   * Bug fixes:
     - When hiding windows, correctly set their WM_STATE to IconicState (we set
