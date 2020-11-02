@@ -7,7 +7,7 @@ older versions.
 Current git version
 -------------------
 
-  * A child object 'focused_client' for each tag object.
+  * New child object 'focused_client' for each tag object.
   * Bug fixes:
     - When hiding windows, correctly set their WM_STATE to IconicState (we set
       it to Withdrawn state before, which means "unmanaged" and thus is wrong).
