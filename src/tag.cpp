@@ -1,5 +1,6 @@
 #include "tag.h"
 
+#include <sstream>
 #include <type_traits>
 
 #include "argparse.h"
@@ -23,6 +24,7 @@ using std::function;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::stringstream;
 
 static bool    g_tag_flags_dirty = true;
 
@@ -528,12 +530,12 @@ int HSTag::closeOrRemoveCommand() {
     return 0;
 }
 
-std::string HSTag::isValidTagIndex(unsigned long newIndex)
+string HSTag::isValidTagIndex(unsigned long newIndex)
 {
     if (newIndex < tags_->size()) {
         return "";
     }
-    std::stringstream ss;
+    stringstream ss;
     ss << "Index must be between 0 and " << (tags_->size() - 1);
     return ss.str();
 }
