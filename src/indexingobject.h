@@ -103,7 +103,6 @@ public:
         if (newIndex == oldIndex) {
             return;
         }
-        printf("fixing indices\n");
         // go from newIndex to oldIndex
         int delta = (newIndex < oldIndex) ? 1 : -1;
         T* lastValue = object;

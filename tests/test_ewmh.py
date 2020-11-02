@@ -37,7 +37,7 @@ def test_net_wm_desktop_after_tag_index_increment(hlwm, x11):
     win, winid = x11.create_client()
     assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 1
 
-    # move the tag3 to the begin of the list
+    # move the tag3 to the beginning of the list
     hlwm.call('attr tags.by-name.tag3.index 0')
     # so the index of the tag of the client increased by one
     assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 2
@@ -61,7 +61,7 @@ def test_net_wm_desktop_after_tag_index_decrement(hlwm, method, x11):
         # remove 'tag1' so all later tags experience a index shift
         hlwm.call('merge_tag tag1 default')
 
-    # so the index of the tag of the client increased by one
+    # so the index of the tag of the client decreased by one
     assert hlwm.get_attr('tags.by-name.tag3.index') == '2'
     assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 2
 
