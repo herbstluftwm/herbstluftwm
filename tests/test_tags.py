@@ -81,10 +81,11 @@ def test_merge_tag_into_another_tag(hlwm):
     assert hlwm.get_attr('tags.0.name') == 'foobar'
 
 
-@pytest.mark.parametrize("tag_count, old_idx, new_idx",
-    [(count, old, new) for count in range(0, 6)
-                       for old in range(0, count)
-                       for new in range(0, count)])
+@pytest.mark.parametrize("tag_count, old_idx, new_idx", [
+    (count, old, new)
+    for count in range(0, 6)
+    for old in range(0, count)
+    for new in range(0, count)])
 def test_index_change(hlwm, tag_count, old_idx, new_idx):
     names = ["orig" + str(i) for i in range(0, tag_count)]
     for n in names:
