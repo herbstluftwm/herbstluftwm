@@ -74,6 +74,7 @@ public:
     int closeAndRemoveCommand();
     int closeOrRemoveCommand();
 private:
+    std::string isValidTagIndex(unsigned long index);
     std::string floatingLayerCanBeFocused(bool floatingFocused);
     void onGlobalFloatingChange(bool newState);
     void fixFocusIndex();
@@ -83,6 +84,7 @@ private:
     int computeFrameCount();
     //! get the number of urgent clients on this tag
     int countUrgentClients();
+    TagManager* tags_;
     Settings* settings_;
 };
 

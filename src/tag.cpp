@@ -28,7 +28,7 @@ static bool    g_tag_flags_dirty = true;
 
 HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     : frame(*this, "tiling")
-    , index(this, "index", 0, [](unsigned long){return "";})
+    , index(this, "index", 0, &HSTag::isValidTagIndex)
     , floating(this, "floating", false, [](bool){return "";})
     , floating_focused(this, "floating_focused", false, [](bool){return "";})
     , name(this, "name", name_,
@@ -44,12 +44,16 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     , flags(0)
     , floating_clients_focus_(0)
     , oldName_(name_)
+    , tags_(tags)
     , settings_(settings)
 {
     stack = make_shared<Stack>();
     frame.init(this, settings);
     index.changed().connect([this, tags](unsigned long newIdx) {
         tags->indexChangeRequested(this, newIdx);
+        foreachClient([this](Client* client) {
+            Ewmh::get().windowUpdateTag(client->window_, this);
+        });
     });
     floating.changed().connect(this, &HSTag::onGlobalFloatingChange);
     // FIXME: actually this connection of the signals like this
@@ -69,12 +73,7 @@ HSTag::~HSTag() {
 }
 
 void HSTag::setIndexAttribute(unsigned long new_index) {
-    if (index != new_index) {
-        index = new_index;
-        foreachClient([this](Client* client) {
-            Ewmh::get().windowUpdateTag(client->window_, this);
-        });
-    }
+    index = new_index;
 }
 
 //! give the focus within this tag to the specified client
@@ -527,6 +526,16 @@ int HSTag::closeOrRemoveCommand() {
         return frame->removeFrameCommand();
     }
     return 0;
+}
+
+std::string HSTag::isValidTagIndex(unsigned long index)
+{
+    if (index < tags_->size()) {
+        return "";
+    }
+    std::stringstream ss;
+    ss << "Index must be between 0 and " << (tags_->size() - 1);
+    return ss.str();
 }
 
 string HSTag::floatingLayerCanBeFocused(bool floatingFocused)
