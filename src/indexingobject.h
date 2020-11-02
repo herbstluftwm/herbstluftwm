@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 #include "attribute_.h"
 #include "object.h"
