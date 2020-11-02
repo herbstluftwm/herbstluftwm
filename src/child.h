@@ -69,4 +69,16 @@ private:
     std::string name;
 };
 
+template<typename T>
+class DynChild_ {
+public:
+    // A dynamic child is a callback function that dynamically
+    // returns an object of a certain type.
+    template <typename Owner>
+    DynChild_(Owner& owner, const std::string &name, T* (Owner::*getter)())
+    {
+        owner.addDynamicChild( [&owner,getter] { return (owner.*getter)(); }, name);
+    }
+};
+
 #endif
