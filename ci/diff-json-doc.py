@@ -14,7 +14,7 @@ class GitDir:
 
     def run(self, *cmd):
         """
-        run a git commit in the git repository in the dir git_tmp.dir
+        run a git command in the git repository in the dir git_tmp.dir
         """
         tmp_dir = self.dirpath
         full_cmd = [
@@ -119,7 +119,6 @@ def main():
         comment += [line.rstrip('\n') for line in diff]
         comment += ['```']
         comment_txt = '\n'.join(comment)
-        # print(comment_txt)
         post_comment(args.post_comment.lstrip('#'), comment_txt)
     else:
         print("")
