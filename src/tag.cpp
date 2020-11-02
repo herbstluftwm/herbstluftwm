@@ -40,6 +40,7 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
         [this] () { return frame->focusedFrame()->getSelection(); } )
     , curframe_wcount(this, "curframe_wcount",
         [this] () { return frame->focusedFrame()->clientCount(); } )
+    , focused_client(*this, "focused_client", &HSTag::focusedClient)
     , flags(0)
     , floating_clients_focus_(0)
     , oldName_(name_)
