@@ -66,6 +66,41 @@ def test_net_wm_desktop_after_tag_index_decrement(hlwm, method, x11):
     assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 2
 
 
+@pytest.mark.parametrize('new_idx', [0, 1, 2])
+def test_net_wm_desktop_after_tag_index_direct_change(hlwm, x11, new_idx):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    hlwm.call('rule tag=tag2')
+    win, winid = x11.create_client()
+    assert hlwm.get_attr('tags.by-name.tag2.index') == '2'
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 2
+
+    hlwm.call(f'attr tags.by-name.tag2.index {new_idx}')
+
+    assert int(hlwm.get_attr('tags.by-name.tag2.index')) == new_idx
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == new_idx
+
+
+@pytest.mark.parametrize('focus_idx', range(0, 4))
+@pytest.mark.parametrize('old_idx', range(0, 4))
+@pytest.mark.parametrize('new_idx', range(0, 4))
+def test_net_current_desktop_after_tag_index_change(hlwm, x11, focus_idx, old_idx, new_idx):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    hlwm.call('add tag3')
+
+    hlwm.call(f'use_index {focus_idx}')
+    x11.display.sync()
+    assert int(hlwm.get_attr('tags.focus.index')) == x11.ewmh.getCurrentDesktop()
+    focus_name = hlwm.get_attr('tags.focus.name')
+
+    hlwm.call(f'attr tags.{old_idx}.index {new_idx}')
+
+    x11.display.sync()
+    assert int(hlwm.get_attr('tags.focus.index')) == x11.ewmh.getCurrentDesktop()
+    assert focus_name == hlwm.get_attr('tags.focus.name')
+
+
 @pytest.mark.parametrize('utf8names,desktop_names', [
     (False, ['default']),
     (False, ['foo']),

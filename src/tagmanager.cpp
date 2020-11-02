@@ -27,6 +27,7 @@ TagManager::TagManager()
 {
     indicesChanged.connect([](){
         Ewmh::get().updateDesktopNames();
+        Ewmh::get().updateCurrentDesktop();
         tag_set_flags_dirty();
     });
 }
