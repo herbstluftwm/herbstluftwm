@@ -74,7 +74,7 @@ public:
     int closeAndRemoveCommand();
     int closeOrRemoveCommand();
 private:
-    std::string isValidTagIndex(unsigned long index);
+    std::string isValidTagIndex(unsigned long newIndex);
     std::string floatingLayerCanBeFocused(bool floatingFocused);
     void onGlobalFloatingChange(bool newState);
     void fixFocusIndex();

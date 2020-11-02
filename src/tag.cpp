@@ -528,9 +528,9 @@ int HSTag::closeOrRemoveCommand() {
     return 0;
 }
 
-std::string HSTag::isValidTagIndex(unsigned long index)
+std::string HSTag::isValidTagIndex(unsigned long newIndex)
 {
-    if (index < tags_->size()) {
+    if (newIndex < tags_->size()) {
         return "";
     }
     std::stringstream ss;
