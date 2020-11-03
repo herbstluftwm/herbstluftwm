@@ -68,6 +68,15 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     floating_focused.setValidator([this](bool v) {
         return this->floatingLayerCanBeFocused(v);
     });
+
+    floating.setDoc("if the entire tag is set to floating mode");
+    floating_focused.setDoc("if the floating layer is focused"
+                            " (otherwise the tiling layer is)");
+    frame_count.setDoc("the number of frames on this tag");
+    client_count.setDoc("the number of clients on this tag");
+    urgent_count.setDoc("the number of urgent clients on this tag");
+    curframe_windex.setDoc("index of the focused client in the selected frame");
+    curframe_wcount.setDoc("number of clients in the selected frame");
 }
 
 HSTag::~HSTag() {

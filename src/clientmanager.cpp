@@ -34,6 +34,10 @@ ClientManager::ClientManager()
     , settings(nullptr)
     , ewmh(nullptr)
 {
+    focus.setDoc("the focused client (only exists if a client is focused)");
+    dragged.setDoc("the object of a client which is currently dragged"
+                   " by the mouse, if any. See the documentation of the"
+                   "  mousebind command for examples.");
 }
 
 ClientManager::~ClientManager()

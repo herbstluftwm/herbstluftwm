@@ -317,6 +317,7 @@ class ObjectInformation:
             self.default_value = None
             self.attribute_class = None  # whether this is an Attribute_ or sth else
             self.constructor_args = None  # the arguments to the constructor
+            self.doc = None  # a longer doc string
 
         def add_constructor_args(self, args):
             # split 'args' by the ',' tokens
@@ -389,6 +390,7 @@ class ObjectInformation:
             self.child_class = None  # whether this is a Link_ or a Child_
             self.type = None  # the template argument to Link_ or Child_
             self.constructor_args = None
+            self.doc = None  # a longer doc string
 
         def add_constructor_args(self, args):
             if len(args) >= 4:
@@ -403,6 +405,7 @@ class ObjectInformation:
         self.base_classes = {}  # mapping class names to base classes
         self.member2info = {}  # mapping (classname,member) to ChildInformation or AttributeInformation
         self.member2init = {}  # mapping (classname,member) to its initializer list
+        self.member2doc = {}  # mapping (classname,member) to its doc string
 
     def base_class(self, subclass, baseclass):
         if subclass not in self.base_classes:
@@ -414,13 +417,16 @@ class ObjectInformation:
         self.member2init[(classname, member)] = init_list
 
     def process_member_init(self):
-        """try to pass colleced member initializations to attributes"""
+        """try to pass collected member initializations and docs to members"""
         for (clsname, attrs), attr in self.member2info.items():
             if attr.constructor_args is not None:
                 continue
             init_list = self.member2init.get((clsname, attr.cpp_name), None)
             if init_list is not None:
                 attr.add_constructor_args(init_list)
+            doc = self.member2doc.get((clsname, attr.cpp_name), None)
+            if doc is not None:
+                attr.doc = doc
 
     def attribute_info(self, classname: str, attr_cpp_name: str):
         """return the AttributeInformation object for
@@ -441,6 +447,10 @@ class ObjectInformation:
             self.member2info[(classname, cpp_name)] = \
                 ObjectInformation.ChildInformation(cpp_name)
         return self.member2info[(classname, cpp_name)]
+
+    def member_doc(self, classname: str, cpp_name: str, doc: str):
+        """set the doc string of a member variable of a class"""
+        self.member2doc[(classname, cpp_name)] = doc
 
     def superclasses_transitive(self):
         """return a set of a dict mapping a class to the set
@@ -516,22 +526,28 @@ class ObjectInformation:
                     if isinstance(member, ObjectInformation.AttributeInformation):
                         # assert uniqueness:
                         assert member.user_name not in attributes
-                        attributes[member.user_name] = {
+                        obj = {
                             'name': member.user_name,
                             'cpp_name': member.cpp_name,
                             'type': member.type.to_user_type_name(),
                             'default_value': member.default_value,
                             'class': member.attribute_class,
                         }
+                        if member.doc is not None:
+                            obj['doc'] = member.doc
+                        attributes[member.user_name] = obj
                     if isinstance(member, ObjectInformation.ChildInformation):
                         # assert uniqueness:
                         assert member.user_name not in children
-                        children[member.user_name] = {
+                        obj = {
                             'name': member.user_name,
                             'cpp_name': member.cpp_name,
                             'type': member.type.to_user_type_name(),
                             'class': member.child_class,
                         }
+                        if member.doc is not None:
+                            obj['doc'] = member.doc
+                        children[member.user_name] = obj
             assert clsname not in result  # assert uniqueness
             result[clsname] = {
                 'classname': clsname,
@@ -654,6 +670,19 @@ class TokTreeInfoExtrator:
                 # we found a member initialization
                 init_list = parameters.value.enclosed_tokens
                 self.objInfo.member_init(classname, arg1.value, init_list)
+            else:
+                stream.pop()
+        # we're now on a codeblock
+        self.stream_consume_setDoc(classname, TokenStream(codeblock.value.enclosed_tokens))
+
+    def stream_consume_setDoc(self, classname, stream):
+        arg1 = TokenStream.PatternArg()
+        parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
+        while not stream.empty():
+            if stream.try_match(arg1, '.', 'setDoc', parameters, ';'):
+                doc_tokens = parameters.value.enclosed_tokens
+                doc_string = ast.literal_eval(' '.join(doc_tokens))
+                self.objInfo.member_doc(classname, arg1.value, doc_string)
             else:
                 stream.pop()
 
