@@ -36,7 +36,7 @@ FrameTree::FrameTree(HSTag* tag, Settings* settings)
     rootLink_ = root_.get();
     (void) tag_;
     (void) settings_;
-    // focused_frame_.setDoc("The focused frame (leaf) in this frame tree");
+    focused_frame_.setDoc("The focused frame (leaf) in this frame tree");
 }
 
 void FrameTree::foreachClient(function<void(Client*)> action)
