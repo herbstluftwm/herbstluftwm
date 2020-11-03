@@ -71,7 +71,7 @@ private:
 };
 
 template<typename T>
-class DynChild_ {
+class DynChild_ : public HasDocumentation {
 public:
     // A dynamic child is a callback function that dynamically
     // returns an object of a certain type.
