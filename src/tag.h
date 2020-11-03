@@ -39,6 +39,7 @@ public:
     DynAttribute_<int> urgent_count; //! The number of urgent clients
     DynAttribute_<int> curframe_windex;
     DynAttribute_<int> curframe_wcount;
+    DynChild_<Client> focused_client;
     int             flags;
     std::vector<Client*> floating_clients_; //! the clients in floating mode
     size_t               floating_clients_focus_; //! focus in the floating clients
@@ -73,6 +74,7 @@ public:
     int closeAndRemoveCommand();
     int closeOrRemoveCommand();
 private:
+    std::string isValidTagIndex(unsigned long newIndex);
     std::string floatingLayerCanBeFocused(bool floatingFocused);
     void onGlobalFloatingChange(bool newState);
     void fixFocusIndex();
@@ -82,6 +84,7 @@ private:
     int computeFrameCount();
     //! get the number of urgent clients on this tag
     int countUrgentClients();
+    TagManager* tags_;
     Settings* settings_;
 };
 

@@ -28,6 +28,7 @@ using std::vector;
 
 FrameTree::FrameTree(HSTag* tag, Settings* settings)
     : rootLink_(*this, "root")
+    , focused_frame_(*this, "focused_frame", &FrameTree::focusedFramePlainPtr)
     , tag_(tag)
     , settings_(settings)
 {
@@ -35,6 +36,7 @@ FrameTree::FrameTree(HSTag* tag, Settings* settings)
     rootLink_ = root_.get();
     (void) tag_;
     (void) settings_;
+    // focused_frame_.setDoc("The focused frame (leaf) in this frame tree");
 }
 
 void FrameTree::foreachClient(function<void(Client*)> action)
@@ -339,6 +341,16 @@ shared_ptr<FrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_ptr
         }
     }
     return closestFrame;
+}
+
+Frame* FrameTree::focusedFramePlainPtr()
+{
+    auto shared = focusedFrame();
+    if (shared) {
+        return shared.get();
+    } else {
+        return nullptr;
+    }
 }
 
 //! check whether there is an empty frame in the given subtree,

@@ -83,7 +83,47 @@ public:
         data.erase(data.begin(), data.end());
     }
 
+    void indexChangeRequested(T* object, size_t newIndex) {
+        if (newIndex < data.size() && data[newIndex] == object) {
+            // nothing to do
+            return;
+        }
+        if (data.empty()) {
+            return;
+        }
+        if (newIndex >= data.size()) {
+            newIndex = data.size() - 1;
+        }
+        int oldIndexSigned = index_of(object);
+        if (oldIndexSigned < 0) {
+            return;
+        }
+        size_t oldIndex = static_cast<size_t>(oldIndexSigned);
+        if (newIndex == oldIndex) {
+            return;
+        }
+        // go from newIndex to oldIndex
+        int delta = (newIndex < oldIndex) ? 1 : -1;
+        T* lastValue = object;
+        for (size_t i = newIndex; i != oldIndex; i+= delta) {
+            // swap data[i] with lastValue
+            T* tmp = data[i];
+            data[i] = lastValue;
+            lastValue = tmp;
+        }
+        data[oldIndex] = lastValue;
+        // for each of these, update the index
+        for (size_t i = newIndex; i != oldIndex; i+= delta) {
+            data[i]->setIndexAttribute(i);
+            addChild(data[i], std::to_string(i));
+        }
+        data[oldIndex]->setIndexAttribute(oldIndex);
+        addChild(data[oldIndex], std::to_string(oldIndex));
+        indicesChanged.emit();
+    }
+
     DynAttribute_<unsigned long> count;
+    Signal indicesChanged;
 
     // iterators
     typedef typename std::vector<T*>::iterator iterator_type;

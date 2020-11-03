@@ -12,6 +12,7 @@
 #include "utils.h"
 
 using std::endl;
+using std::function;
 using std::make_shared;
 using std::pair;
 using std::shared_ptr;
@@ -62,9 +63,10 @@ void Object::wireActions(vector<Action*> actions)
 
 void Object::ls(Output out)
 {
-    out << children_.size() << (children_.size() == 1 ? " child" : " children")
-        << (!children_.empty() ? ":" : ".") << endl;
-    for (auto it : children_) {
+    const auto& children = this->children();
+    out << children.size() << (children.size() == 1 ? " child" : " children")
+        << (!children.empty() ? ":" : ".") << endl;
+    for (auto it : children) {
         out << "  " << it.first << "." << endl;
     }
 
@@ -107,6 +109,10 @@ Attribute* Object::attribute(const string &name) {
 
 
 Object* Object::child(const string &name) {
+    auto it_dyn = childrenDynamic_.find(name);
+    if (it_dyn != childrenDynamic_.end()) {
+        return it_dyn->second();
+    }
     auto it = children_.find(name);
     if (it != children_.end()) {
         return it->second;
@@ -125,17 +131,15 @@ Object* Object::child(Path path, Output output) {
     Object* cur = this;
     string cur_path = "";
     while (!path.empty()) {
-        auto it = cur->children_.find(path.front());
-        if (it != cur->children_.end()) {
-            cur = it->second;
-            cur_path += path.front();
-            cur_path += ".";
-        } else {
+        cur = cur->child(path.front());
+        if (!cur) {
             output << "Object \"" << cur_path << "\""
                 << " has no child named \"" << path.front()
                 << "\"" << endl;
             return nullptr;
         }
+        cur_path += path.front();
+        cur_path += ".";
         path.shift();
     }
     return cur;
@@ -158,6 +162,11 @@ void Object::notifyHooks(HookEvent event, const string& arg)
             }
         } // TODO: else throw
     }
+}
+
+void Object::addDynamicChild(function<Object* ()> child, const string& name)
+{
+    childrenDynamic_[name] = child;
 }
 
 void Object::addChild(Object* child, const string &name)
@@ -190,6 +199,19 @@ void Object::removeHook(Hook* hook)
                     hooks_.begin(),
                     hooks_.end(),
                     hook), hooks_.end());
+}
+
+std::map<string, Object*> Object::children() {
+    // copy the map of 'static' children
+    auto allChildren = children_;
+    // and add the dynamic children
+    for (auto& it : childrenDynamic_) {
+        Object* obj = it.second();
+        if (obj) {
+            allChildren[it.first] = obj;
+        }
+    }
+    return allChildren;
 }
 
 class DirectoryTreeInterface : public TreeInterface {

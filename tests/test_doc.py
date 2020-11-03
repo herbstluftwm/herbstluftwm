@@ -32,6 +32,12 @@ def create_frame_split(hlwm):
     return 'tags.0.tiling.root'
 
 
+def create_tag_with_all_links(hlwm):
+    """create a tag with focused_client set"""
+    hlwm.create_client()
+    return 'tags.0'
+
+
 # map every c++ class name to a function ("constructor") accepting an hlwm
 # fixture and returning the path to an example object of the C++ class
 classname2examplepath = [
@@ -42,7 +48,7 @@ classname2examplepath = [
     ('DecorationScheme', lambda _: 'theme.tiling.urgent'),
     ('FrameLeaf', lambda _: 'tags.0.tiling.root'),
     ('FrameSplit', create_frame_split),
-    ('HSTag', lambda _: 'tags.0'),
+    ('HSTag', create_tag_with_all_links),
     ('Monitor', lambda _: 'monitors.0'),
     ('MonitorManager', lambda _: 'monitors'),
     ('Root', lambda _: ''),

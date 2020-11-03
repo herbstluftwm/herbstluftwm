@@ -1013,3 +1013,18 @@ def test_frame_index_attribute(hlwm):
         # after each splitting operation, check that
         # the frame's index attribute is correct:
         verify_frame_tree('tags.focus.tiling.root', '')
+
+
+def test_focused_frame_child(hlwm):
+    # do it as one test case to see that the
+    # child correctly adjusts at run-time
+    test_data = [
+        ('', '(clients max:0)'),
+        ('0', '(split vertical:0.5:0 (clients max:0) (clients max:0))'),
+        ('1', '(split vertical:0.5:1 (clients max:0) (clients max:0))'),
+        ('00', '(split vertical:0.5:0 (split vertical:0.5:0) (clients max:0))'),
+        ('01', '(split vertical:0.5:0 (split vertical:0.5:1) (clients max:0))'),
+    ]
+    for focused_index, layout in test_data:
+        hlwm.call(['load', layout])
+        assert hlwm.get_attr('tags.0.tiling.focused_frame.index') == focused_index
