@@ -682,7 +682,6 @@ class TokTreeInfoExtrator:
             if stream.try_match(arg1, '.', 'setDoc', parameters, ';'):
                 doc_tokens = parameters.value.enclosed_tokens
                 doc_string = ast.literal_eval(' '.join(doc_tokens))
-                # print(f"doc: {classname}::{arg1.value} => {doc_string}")
                 self.objInfo.member_doc(classname, arg1.value, doc_string)
             else:
                 stream.pop()
