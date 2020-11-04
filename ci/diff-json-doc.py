@@ -81,12 +81,29 @@ def post_comment(pr_id, text):
 
 def main():
     parser = argparse.ArgumentParser(description='Show diffs in json doc between to refs')
-    parser.add_argument('oldref', help='the old version, e.g. master')
+    parser.add_argument('oldref',
+                        help='the old version, e.g. github/master',
+                        default='github/master',
+                        nargs='?')
     parser.add_argument('newref', help='the new version, e.g. a pull request number like #1021')
     parser.add_argument('--post-comment', default=None,
                         help='post diff as a comment in the specified ID of a github issue'
                              + ' Requires that the environment variable GITHUB_TOKEN is set')
+    parser.add_argument('--post-comment-auto', action='store_const', default=False, const=True,
+                        help='Automatically derive the argument to --post-comment from newref')
     args = parser.parse_args()
+    comment_target = None
+    if args.post_comment_auto:
+        if args.newref[0:1] == '#':
+            print("Deriving --post-comment={}".format(args.newref[1:]), file=sys.stderr)
+            comment_target = args.newref[1:]
+        else:
+            msg_format = "Unable to derive github issue number from {}"
+            msg_format += " (expecting the prefix '#')"
+            print(msg_format.format(args.newref), file=sys.stderr)
+            sys.exit(1)
+    else:
+        comment_target = args.post_comment
 
     git_root = run_pipe_stdout(['git', 'rev-parse', '--show-toplevel']).rstrip()
     tmp_dir = os.path.join(git_root, '.hlwm-tmp-diff-json')
@@ -99,7 +116,8 @@ def main():
     git_tmp.run(
         'fetch',
         'https://github.com/herbstluftwm/herbstluftwm',
-        '+refs/pull/*:refs/remotes/github/pull/*')
+        '+refs/pull/*:refs/remotes/github/pull/*',
+        '+master:github/master')
 
     oldref = parse_pr_id(args.oldref)
     newref = parse_pr_id(args.newref)
@@ -112,14 +130,14 @@ def main():
     newjson = get_json_doc(tmp_dir).splitlines(keepends=True)
 
     diff = difflib.unified_diff(oldjson, newjson, fromfile=args.oldref, tofile=args.newref)
-    if args.post_comment is not None:
+    if comment_target is not None:
         gendoc_url = '/herbstluftwm/herbstluftwm/blob/master/doc/gendoc.py'
         comment = [f'Diff of the output of [`doc/gendoc.py --json`]({gendoc_url}):']
         comment += ['```diff']
         comment += [line.rstrip('\n') for line in diff]
         comment += ['```']
         comment_txt = '\n'.join(comment)
-        post_comment(args.post_comment.lstrip('#'), comment_txt)
+        post_comment(comment_target.lstrip('#'), comment_txt)
     else:
         print("")
         sys.stdout.writelines(diff)
