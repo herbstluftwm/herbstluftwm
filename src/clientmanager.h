@@ -35,13 +35,13 @@ public:
     void remove(Window window);
 
     void unmap_notify(Window win);
-    void force_unmanage(Window win);
     void force_unmanage(Client* client);
 
     void setDragged(Client* client);
 
     Signal_<HSTag*> needsRelayout;
-    Signal_<Client*> floatingStateChanged;
+    Signal_<Client*> clientStateChanged; //! floating or minimized changed
+    Signal_<Client*> newClient;
     Link_<Client> focus;
     Link_<Client> dragged;
 
@@ -62,6 +62,7 @@ public:
 protected:
     int clientSetAttribute(std::string attribute, Input input, Output output);
     void setSimpleClientAttributes(Client* client, const ClientChanges& changes);
+    Client* focusCopy = nullptr; //! a copy of 'focus' to update 'last_focus'
     Theme* theme;
     Settings* settings;
     Ewmh* ewmh;

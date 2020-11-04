@@ -71,8 +71,8 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     // connect slots
     clients->needsRelayout.connect(monitors(), &MonitorManager::relayoutTag);
     tags->needsRelayout_.connect(monitors(), &MonitorManager::relayoutTag);
-    clients->floatingStateChanged.connect([](Client* c) {
-        c->tag()->applyFloatingState(c);
+    clients->clientStateChanged.connect([](Client* c) {
+        c->tag()->applyClientState(c);
     });
     theme->theme_changed_.connect(monitors(), &MonitorManager::relayoutAll);
     panels->panels_changed_.connect(monitors(), &MonitorManager::autoUpdatePads);

@@ -38,6 +38,15 @@ ClientManager::ClientManager()
     dragged.setDoc("the object of a client which is currently dragged"
                    " by the mouse, if any. See the documentation of the"
                    "  mousebind command for examples.");
+    focus.changed().connect([this](Client* newFocus) {
+        if (focusCopy && focusCopy != newFocus && focusCopy->minimized_()) {
+            focusCopy->set_visible(false);
+        }
+        focusCopy = newFocus;
+        if (newFocus && newFocus->minimized_()) {
+            newFocus->set_visible(true);
+        }
+    });
 }
 
 ClientManager::~ClientManager()
@@ -113,7 +122,10 @@ void ClientManager::add(Client* client)
     clients_[client->window_] = client;
     client->needsRelayout.connect(needsRelayout);
     client->floating_.changed().connect([this,client]() {
-        this->floatingStateChanged.emit(client);
+        this->clientStateChanged.emit(client);
+    });
+    client->minimized_.changed().connect([this,client]() {
+        this->clientStateChanged.emit(client);
     });
     addChild(client, client->window_id_str);
 }
@@ -238,7 +250,9 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     }
     client->send_configure();
 
-    // TODO: make this better
+    newClient.emit(client);
+    // TODO: make this better; maybe connect to the newClient signal
+    // in the MouseManager
     Root::get()->mouse->grab_client_buttons(client, false);
 
     return client;
@@ -436,6 +450,15 @@ void ClientManager::force_unmanage(Client* client) {
     tag_set_flags_dirty();
     // delete client
     this->remove(client->window_);
+    if (client == focus()) {
+        // this should never happen because we forced a relayout
+        // of the client's tag, so 'focus' must have been updated
+        // in the meantime. Anyway, lets be safe:
+        focus = nullptr;
+    }
+    if (client == focusCopy) {
+        focusCopy = nullptr;
+    }
     delete client;
 }
 

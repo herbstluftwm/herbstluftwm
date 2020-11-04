@@ -47,9 +47,10 @@ public:
     std::shared_ptr<Stack> stack;
     void setIndexAttribute(unsigned long new_index) override;
     bool focusClient(Client* client);
-    void applyFloatingState(Client* client);
+    void applyClientState(Client* client);
     void setVisible(bool newVisible);
     bool removeClient(Client* client);
+    bool hasVisibleFloatingClients() const;
     void foreachClient(std::function<void(Client*)> loopBody);
     void focusFrame(std::shared_ptr<FrameLeaf> frameToFocus);
     Client* focusedClient();

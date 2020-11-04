@@ -38,6 +38,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , urgent_(this, "urgent", false)
     , floating_(this,  "floating", false)
     , fullscreen_(this,  "fullscreen", false)
+    , minimized_(this,  "minimized", false)
     , title_(this,  "title", "")
     , tag_str_(this,  "tag", &Client::tagName)
     , window_id_str(this,  "winid", "")
@@ -67,6 +68,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     ewmhrequests_.setWriteable();
     sizehints_floating_.setWriteable();
     sizehints_tiling_.setWriteable();
+    minimized_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_, &sizehints_floating_, &sizehints_tiling_}) {
         i->setWriteable();
         i->changed().connect(this, &Client::requestRedraw);

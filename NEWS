@@ -7,6 +7,7 @@ older versions.
 Current git version
 -------------------
 
+  * Client minimization (controlled by the attribute 'minimized' of every client)
   * The 'index' attribute of tags is now writable. This allows adjusting the
     order of existing tags.
   * New child object 'focused_client' for each tag object.

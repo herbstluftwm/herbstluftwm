@@ -107,41 +107,56 @@ bool HSTag::focusClient(Client* client)
     }
 }
 
-void HSTag::applyFloatingState(Client* client)
+/**
+ * @brief To be called whenever the floating or minimization
+ * state of a client changes.
+ * @param client
+ */
+void HSTag::applyClientState(Client* client)
 {
     if (!client) {
         return;
     }
     bool focused = client == focusedClient();
     if (focused) {
-        // make it that client stays focused
-        floating_focused = client->floating_();
+        if (!hasVisibleFloatingClients()) {
+            floating_focused = false;
+        } else {
+            // make it that client stays focused
+            floating_focused = client->floating_();
+        }
     }
-    if (client->floating_()) {
+    // only floated clients can be minimized
+    if (client->floating_() || client->minimized_()) {
         // client wants to be floated
-        if (!frame->root_->removeClient(client)) {
-            return;
+        if (frame->root_->removeClient(client)) {
+            floating_clients_.push_back(client);
+            if (focused && !client->minimized_()) {
+                floating_clients_focus_ = floating_clients_.size() - 1;
+            }
+            stack->sliceRemoveLayer(client->slice, LAYER_NORMAL);
+            stack->sliceAddLayer(client->slice, LAYER_FLOATING);
         }
-        floating_clients_.push_back(client);
-        if (focused) {
-            floating_clients_focus_ = floating_clients_.size() - 1;
-        }
-        stack->sliceRemoveLayer(client->slice, LAYER_NORMAL);
-        stack->sliceAddLayer(client->slice, LAYER_FLOATING);
     } else {
         // client wants to be tiled again
         auto it = std::find(floating_clients_.begin(), floating_clients_.end(), client);
-        if (it == floating_clients_.end()) {
-            return;
+        if (it != floating_clients_.end()) {
+            floating_clients_.erase(it);
+            frame->focusedFrame()->insertClient(client, true);
+            if (!floating()) {
+                stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
+            }
+            stack->sliceAddLayer(client->slice, LAYER_NORMAL);
         }
-        floating_clients_.erase(it);
-        frame->focusedFrame()->insertClient(client, true);
-        if (!floating()) {
-            stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
-        }
-        stack->sliceAddLayer(client->slice, LAYER_NORMAL);
     }
-    needsRelayout_.emit();
+    bool client_becomes_visible = !client->minimized_() && this->visible();
+    if (client_becomes_visible) {
+        needsRelayout_.emit();
+        client->set_visible(client_becomes_visible);
+    } else {
+        client->set_visible(client_becomes_visible);
+        needsRelayout_.emit();
+    }
 }
 
 void HSTag::setVisible(bool newVisible)
@@ -149,7 +164,11 @@ void HSTag::setVisible(bool newVisible)
     visible = newVisible;
     frame->root_->setVisibleRecursive(visible);
     for (Client* c : floating_clients_) {
-        c->set_visible(visible);
+        if (c->minimized_() && focusedClient() != c) {
+            c->set_visible(false);
+        } else {
+            c->set_visible(visible);
+        }
     }
 }
 
@@ -163,12 +182,27 @@ bool HSTag::removeClient(Client* client) {
     }
     floating_clients_.erase(it);
     fixFocusIndex();
-    if (floating_clients_.empty()) {
+    if (!hasVisibleFloatingClients()) {
         // if it was the last floating client
         // focus back the tiling
         floating_focused = false;
     }
     return true;
+}
+
+/**
+ * @brief returns whether there are floating clients that
+ * are visible. Equivalently, whether there are floating and non-minimized clients
+ * @return
+ */
+bool HSTag::hasVisibleFloatingClients() const
+{
+    for (Client* c : floating_clients_) {
+        if (!c->minimized_()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void HSTag::foreachClient(function<void (Client *)> loopBody)
@@ -554,8 +588,8 @@ string HSTag::isValidTagIndex(unsigned long newIndex)
 
 string HSTag::floatingLayerCanBeFocused(bool floatingFocused)
 {
-    if (floatingFocused && floating_clients_.empty()) {
-        return "There are no floating windows;"
+    if (floatingFocused && !hasVisibleFloatingClients()) {
+        return "There are no (non-minimized) floating windows;"
                " cannot focus empty floating layer.";
     } else {
         return "";
