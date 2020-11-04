@@ -13,7 +13,8 @@ def findfiles(sourcedir, regex_object):
     filename matches 'regex_object'
     """
     for root, dirs, files in os.walk(sourcedir):
-        for file in files:
+        dirs.sort()
+        for file in sorted(files):
             if regex_object.match(file):
                 yield os.path.join(root, file)
 
