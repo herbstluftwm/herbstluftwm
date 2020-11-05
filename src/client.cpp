@@ -34,7 +34,7 @@ static Client* lastfocus = nullptr;
 Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
     , dec(make_unique<Decoration>(this, *cm.settings))
-    , visible_(visible_already)
+    , visible_(this, "visible", visible_already)
     , urgent_(this, "urgent", false)
     , floating_(this,  "floating", false)
     , fullscreen_(this,  "fullscreen", false)
@@ -88,6 +88,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     });
 
     init_from_X();
+    visible_.setDoc("whether this client is rendered currently");
 }
 
 void Client::init_from_X() {
@@ -114,7 +115,7 @@ void Client::make_full_client() {
     XReparentWindow(g_display, window_, dec->decorationWindow(), 40, 40);
     // if this client is visible, then reparenting will make it invisible
     // and will create a unmap notify event
-    if (visible_ == true) {
+    if (visible_()) {
         ignore_unmaps_++;
         visible_ = false;
     }
@@ -451,7 +452,7 @@ void Client::requestClose() { //! ask the client to close
 }
 
 void Client::set_visible(bool visible) {
-    if (visible == this->visible_) {
+    if (visible == this->visible_()) {
         return;
     }
     if (visible) {

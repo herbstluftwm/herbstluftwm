@@ -31,6 +31,7 @@ static bool    g_tag_flags_dirty = true;
 HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     : frame(*this, "tiling")
     , index(this, "index", 0, &HSTag::isValidTagIndex)
+    , visible(this, "visible", false)
     , floating(this, "floating", false, [](bool){return "";})
     , floating_focused(this, "floating_focused", false, [](bool){return "";})
     , name(this, "name", name_,
@@ -69,6 +70,7 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
         return this->floatingLayerCanBeFocused(v);
     });
 
+    visible.setDoc("if this tag is shown on some monitor");
     floating.setDoc("if the entire tag is set to floating mode");
     floating_focused.setDoc("if the floating layer is focused"
                             " (otherwise the tiling layer is)");
@@ -142,8 +144,9 @@ void HSTag::applyFloatingState(Client* client)
     needsRelayout_.emit();
 }
 
-void HSTag::setVisible(bool visible)
+void HSTag::setVisible(bool newVisible)
 {
+    visible = newVisible;
     frame->root_->setVisibleRecursive(visible);
     for (Client* c : floating_clients_) {
         c->set_visible(visible);
