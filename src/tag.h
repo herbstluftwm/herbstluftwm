@@ -31,6 +31,7 @@ public:
     ~HSTag() override;
     Child_<FrameTree>        frame;  // the frame tree
     Attribute_<unsigned long> index;
+    Attribute_<bool>         visible;
     Attribute_<bool>         floating;
     Attribute_<bool>         floating_focused; // if a floating client is focused
     Attribute_<std::string>  name;   // name of this tag
@@ -47,7 +48,7 @@ public:
     void setIndexAttribute(unsigned long new_index) override;
     bool focusClient(Client* client);
     void applyFloatingState(Client* client);
-    void setVisible(bool visible);
+    void setVisible(bool newVisible);
     bool removeClient(Client* client);
     void foreachClient(std::function<void(Client*)> loopBody);
     void focusFrame(std::shared_ptr<FrameLeaf> frameToFocus);
