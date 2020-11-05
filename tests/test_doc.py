@@ -63,7 +63,15 @@ def test_documented_attributes_exist(hlwm, clsname, object_path, json_doc):
     object_path = object_path(hlwm)
     for _, attr in json_doc['objects'][clsname]['attributes'].items():
         print("checking attribute {}::{}".format(clsname, attr['cpp_name']))
-        hlwm.get_attr('{}.{}'.format(object_path, attr['name']).lstrip('.'))
+        full_attr_path = '{}.{}'.format(object_path, attr['name']).lstrip('.')
+        value = hlwm.get_attr(full_attr_path)
+        if value == 'default':
+            continue
+        if attr['writeable']:
+            hlwm.call(['set_attr', full_attr_path, value])
+        else:
+            hlwm.call_xfail(['set_attr', full_attr_path, value]) \
+                .expect_stderr('attribute is read-only')
 
 
 def types_and_shorthands():

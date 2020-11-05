@@ -65,10 +65,11 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     keysInactive_.setWriteable();
     ewmhnotify_.setWriteable();
     ewmhrequests_.setWriteable();
+    fullscreen_.setWriteable();
+    pseudotile_.setWriteable();
     sizehints_floating_.setWriteable();
     sizehints_tiling_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_, &sizehints_floating_, &sizehints_tiling_}) {
-        i->setWriteable();
         i->changed().connect(this, &Client::requestRedraw);
     }
 

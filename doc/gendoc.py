@@ -317,6 +317,7 @@ class ObjectInformation:
             self.default_value = None
             self.attribute_class = None  # whether this is an Attribute_ or sth else
             self.constructor_args = None  # the arguments to the constructor
+            self.writeable = None  # whether this attribute is user writeable
             self.doc = None  # a longer doc string
 
         def add_constructor_args(self, args):
@@ -348,16 +349,22 @@ class ObjectInformation:
                 elif len(args) >= 3:
                     self.set_user_name(args[1])
                     self.set_default_value(args[2])
-            if self.attribute_class == 'DynAttribute_':
-                if len(args) == 2:
-                    self.set_user_name(args[0])
-                elif len(args) >= 3 and args[0] == 'this':
+                if len(args) >= 4:
+                    self.writeable = True
+                elif self.writeable is None:
+                    # if we don't have further information, then it is not writable:
+                    self.writeable = False
+            if self.attribute_class == 'DynAttribute_' and len(args) >= 2:
+                if args[0] == 'this':
                     self.set_user_name(args[1])
-                elif len(args) >= 3 and args[0] != 'this':
+                    self.writeable = len(args) >= 4
+                else:  # args[0] != 'this':
                     self.set_user_name(args[0])
+                    self.writeable = len(args) >= 3
             if self.attribute_class == 'AttributeProxy_':
                 self.set_user_name(args[0])
                 self.set_default_value(args[1])
+                self.writeable = True
 
         def set_user_name(self, cpp_token):
             if cpp_token[0:1] == '"':
@@ -419,6 +426,9 @@ class ObjectInformation:
     def process_member_init(self):
         """try to pass collected member initializations and docs to members"""
         for (clsname, attrs), attr in self.member2info.items():
+            if clsname == 'Settings':
+                # all attributes of the 'Settings' object are writeable
+                attr.writeable = True
             if attr.constructor_args is not None:
                 continue
             init_list = self.member2init.get((clsname, attr.cpp_name), None)
@@ -539,6 +549,8 @@ class ObjectInformation:
                         }
                         if member.doc is not None:
                             obj['doc'] = member.doc
+                        if member.writeable is not None:
+                            obj['writeable'] = member.writeable
                         attributes[member.user_name] = obj
                     if isinstance(member, ObjectInformation.ChildInformation):
                         # assert uniqueness:
@@ -677,9 +689,10 @@ class TokTreeInfoExtrator:
             else:
                 stream.pop()
         # we're now on a codeblock
-        self.stream_consume_setDoc(classname, TokenStream(codeblock.value.enclosed_tokens))
+        self.stream_consume_class_codeblock(classname, TokenStream(codeblock.value.enclosed_tokens))
 
-    def stream_consume_setDoc(self, classname, stream):
+    def stream_consume_class_codeblock(self, classname, stream):
+        """consume a codeblock in a member function of a class"""
         arg1 = TokenStream.PatternArg()
         parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
         while not stream.empty():
@@ -687,6 +700,10 @@ class TokTreeInfoExtrator:
                 doc_tokens = parameters.value.enclosed_tokens
                 doc_string = ast.literal_eval(' '.join(doc_tokens))
                 self.objInfo.member_doc(classname, arg1.value, doc_string)
+            elif stream.try_match(arg1, '.', 'setWriteable', parameters, ';'):
+                attr = self.objInfo.attribute_info(classname, arg1.value)
+                attr.writeable = True
+                pass
             else:
                 stream.pop()
 
