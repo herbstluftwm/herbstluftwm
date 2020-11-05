@@ -503,6 +503,10 @@ class ObjectInformation:
                             line += '  {}={}'.format(key_str, value)
                     print(line)
 
+    @staticmethod
+    def sorted_dict(dict_to_sort):
+        return dict(sorted(dict_to_sort.items()))
+
     def json_object(self):
         # 1. collect all subclasses of 'Object'
         superclasses = self.superclasses_transitive()
@@ -551,10 +555,10 @@ class ObjectInformation:
             assert clsname not in result  # assert uniqueness
             result[clsname] = {
                 'classname': clsname,
-                'children': children,
-                'attributes': attributes,
+                'children': ObjectInformation.sorted_dict(children),
+                'attributes': ObjectInformation.sorted_dict(attributes),
             }
-        return {'objects': result}  # only generate object doc so far
+        return {'objects': ObjectInformation.sorted_dict(result)}  # only generate object doc so far
 
 
 class TokTreeInfoExtrator:
@@ -716,8 +720,6 @@ class TokTreeInfoExtrator:
                 self.stream_consume_member_initializers(classname, stream)
             else:
                 stream.pop()
-        # pass the member initializations to the attributes:
-        self.objInfo.process_member_init()
 
 
 def main():
@@ -765,6 +767,8 @@ def main():
             toktree = list(build_token_tree_list(TokenStream(toks)))
             extractor = TokTreeInfoExtrator(objInfo)
             extractor.main(list(toktree))
+        # pass the member initializations to the attributes:
+        objInfo.process_member_init()
         if args.objects:
             objInfo.print()
         else:
