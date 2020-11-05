@@ -12,8 +12,8 @@ def findfiles(sourcedir, regex_object):
     """find all files in the given 'sourcedir' whose
     filename matches 'regex_object'
     """
-    for root, dirs, files in os.walk(sourcedir):
-        for file in files:
+    for root, _, files in os.walk(sourcedir):
+        for file in sorted(files):
             if regex_object.match(file):
                 yield os.path.join(root, file)
 
