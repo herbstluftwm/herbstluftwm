@@ -61,7 +61,7 @@ public:
 protected:
     int clientSetAttribute(std::string attribute, Input input, Output output);
     void setSimpleClientAttributes(Client* client, const ClientChanges& changes);
-    Client* focusCopy = nullptr; //! a copy of 'focus' to update 'last_focus'
+    Client* focusCopy = nullptr; //! a copy of 'focus' to update visibility of minimized clients
     Theme* theme;
     Settings* settings;
     Ewmh* ewmh;
