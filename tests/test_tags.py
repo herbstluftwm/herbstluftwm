@@ -285,7 +285,7 @@ def test_floating_focused_vacouus(hlwm):
     # switching to floating layer should not be possible if
     # there is no floating window
     hlwm.call_xfail('attr tags.focus.floating_focused on') \
-        .expect_stderr("There are no \(non-minimized\) floating windows")
+        .expect_stderr(r'There are no \(non-minimized\) floating windows')
 
 
 def test_urgent_count(hlwm, x11):
