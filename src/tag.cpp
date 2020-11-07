@@ -378,7 +378,7 @@ int HSTag::cycleAllCommand(Input input, Output output)
         bool focusChanged = frame->cycleAll(cdelta, skip_invisible);
         if (!focusChanged) {
             // if frame->cycleAll() reached the end of the tiling layer
-            if (floating_clients_.empty()) {
+            if (!hasVisibleFloatingClients()) {
                 // we need to wrap. when cycling forward, we wrap to the beginning
                 FrameTree::CycleDelta rewind = (delta == 1)
                             ? FrameTree::CycleDelta::Begin

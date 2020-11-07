@@ -43,6 +43,8 @@ public:
     DynChild_<Client> focused_client;
     int             flags;
     std::vector<Client*> floating_clients_; //! the clients in floating mode
+    // the tag must assert that the floating layer is only
+    // focused if this tag hasVisibleFloatingClients()
     size_t               floating_clients_focus_; //! focus in the floating clients
     std::shared_ptr<Stack> stack;
     void setIndexAttribute(unsigned long new_index) override;

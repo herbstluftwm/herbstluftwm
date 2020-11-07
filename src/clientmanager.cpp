@@ -38,15 +38,6 @@ ClientManager::ClientManager()
     dragged.setDoc("the object of a client which is currently dragged"
                    " by the mouse, if any. See the documentation of the"
                    "  mousebind command for examples.");
-    focus.changed().connect([this](Client* newFocus) {
-        if (focusCopy && focusCopy != newFocus && focusCopy->minimized_()) {
-            focusCopy->set_visible(false);
-        }
-        focusCopy = newFocus;
-        if (newFocus && newFocus->minimized_()) {
-            newFocus->set_visible(true);
-        }
-    });
 }
 
 ClientManager::~ClientManager()
@@ -453,9 +444,6 @@ void ClientManager::force_unmanage(Client* client) {
         // of the client's tag, so 'focus' must have been updated
         // in the meantime. Anyway, lets be safe:
         focus = nullptr;
-    }
-    if (client == focusCopy) {
-        focusCopy = nullptr;
     }
     delete client;
 }
