@@ -250,9 +250,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     }
     client->send_configure();
 
-    newClient.emit(client);
-    // TODO: make this better; maybe connect to the newClient signal
-    // in the MouseManager
+    // TODO: make this better
     Root::get()->mouse->grab_client_buttons(client, false);
 
     return client;

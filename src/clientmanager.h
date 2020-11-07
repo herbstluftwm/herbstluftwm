@@ -41,7 +41,6 @@ public:
 
     Signal_<HSTag*> needsRelayout;
     Signal_<Client*> clientStateChanged; //! floating or minimized changed
-    Signal_<Client*> newClient;
     Link_<Client> focus;
     Link_<Client> dragged;
 
