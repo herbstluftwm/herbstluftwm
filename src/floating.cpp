@@ -221,7 +221,7 @@ bool floating_focus_direction(Direction dir) {
     int curfocusidx = -1;
     Client* curfocus = get_current_client();
     tag->foreachClient([&](Client* c) {
-        if (c->visible_()) {
+        if (!c->visible_()) {
             return;
         }
         clients.push_back(c);
@@ -254,7 +254,7 @@ Point2D find_rectangle_collision_on_tag(HSTag* tag, Client* curfocus, Direction 
     int idx = 0;
     int curfocusidx = -1;
     tag->foreachClient([&](Client* c) {
-        if (c->visible_()) {
+        if (!c->visible_()) {
             return;
         }
         clients.push_back(c);
