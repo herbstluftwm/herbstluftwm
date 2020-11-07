@@ -243,7 +243,7 @@ def test_minimization_focus_other_tag(hlwm, floating):
     hlwm.call('add othertag')
     hlwm.call('rule tag=othertag focus=on')
     winid, _ = hlwm.create_client()
-    hlwm.create_client() # another client taking the focus
+    hlwm.create_client()  # another client taking the focus
     hlwm.call(f'set_attr clients.{winid}.floating {floating}')
     assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
     hlwm.call(f'set_attr clients.{winid}.minimized on')
@@ -270,7 +270,7 @@ def test_minimization_focus_window(hlwm, floating):
     hlwm.call(f'jumpto {winid}')
 
     assert hlwm.get_attr(f'clients.{winid}.visible') == 'true'
-    assert hlwm.get_attr(f'clients.focus.winid') == winid
+    assert hlwm.get_attr('clients.focus.winid') == winid
 
 
 def test_minimize_only_floating_client(hlwm):
