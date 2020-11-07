@@ -348,3 +348,15 @@ def test_ewmh_make_client_urgent_no_focus_stealing(hlwm, hc_idle, x11):
     assert demandsAttent in x11.ewmh.getWmState(winHandle, str=True)
     assert 'focus' not in hlwm.list_children('clients')
     assert 'default' == hlwm.get_attr('tags.focus.name')
+
+
+# @pytest.mark.parametrize('floating', [True, False])
+# @pytest.mark.parametrize('minimized', [True, False])
+# def test_minimized_sets_net_wm_state_hidden(hlwm, x11, floating, minimized):
+#     winHandle, winid = x11.create_client()
+#     hlwm.call(f'set_attr clients.{winid}.minimized {hlwm.bool(minimized)}')
+#     hlwm.call(f'set_attr clients.{winid}.floating {hlwm.bool(floating)}')
+# 
+#     hidden = '_NET_WM_STATE_HIDDEN'
+#     x11.display.flush()
+#     assert (hidden in x11.ewmh.getWmState(winHandle, str=True)) == minimized

@@ -119,12 +119,8 @@ void HSTag::applyClientState(Client* client)
     }
     bool focused = client == focusedClient();
     if (focused) {
-        if (!hasVisibleFloatingClients()) {
-            floating_focused = false;
-        } else {
-            // make it that client stays focused
-            floating_focused = client->floating_();
-        }
+        // make it that client stays focused
+        floating_focused = client->floating_();
     }
     // only floated clients can be minimized
     if (client->floating_() || client->minimized_()) {
@@ -149,6 +145,9 @@ void HSTag::applyClientState(Client* client)
             stack->sliceAddLayer(client->slice, LAYER_NORMAL);
         }
     }
+    if (!hasVisibleFloatingClients()) {
+        floating_focused = false;
+    }
     bool client_becomes_visible = !client->minimized_() && this->visible();
     if (client_becomes_visible) {
         needsRelayout_.emit();
@@ -164,7 +163,7 @@ void HSTag::setVisible(bool newVisible)
     visible = newVisible;
     frame->root_->setVisibleRecursive(visible);
     for (Client* c : floating_clients_) {
-        if (c->minimized_() && focusedClient() != c) {
+        if (c->minimized_()) {
             c->set_visible(false);
         } else {
             c->set_visible(visible);
