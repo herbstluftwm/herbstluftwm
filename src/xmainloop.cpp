@@ -463,7 +463,14 @@ void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
             return;
         }
         XMapWindow(X_.display(), window);
-    } else if (c == nullptr) {
+    } else if (c != nullptr) {
+        // a maprequest of a managed window means that
+        // the window wants to be un-minimized according to
+        // the item "Iconic -> Normal" in
+        // ICCCM 4.1.4 https://tronche.com/gui/x/icccm/sec-4.html#s-4.1.3.1
+        c->minimized_ = false;
+    } else {
+        // c = nullptr, so the window is not yet managed.
         if (root_->ewmh->getWindowType(window) == NetWmWindowTypeDesktop)
         {
             DesktopWindow::registerDesktop(window);
@@ -485,8 +492,6 @@ void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
             }
         }
     }
-    // else: ignore all other maprequests from windows
-    // that are managed already
 }
 
 void XMainLoop::propertynotify(XPropertyEvent* ev) {

@@ -88,6 +88,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         updateEwmhState();
         hook_emit({"fullscreen", fullscreen_() ? "on" : "off", WindowID(window_).str()});
     });
+    minimized_.changed().connect(this, &Client::updateEwmhState);
 
     init_from_X();
     visible_.setDoc("whether this client is rendered currently");
