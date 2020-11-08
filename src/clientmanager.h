@@ -35,13 +35,12 @@ public:
     void remove(Window window);
 
     void unmap_notify(Window win);
-    void force_unmanage(Window win);
     void force_unmanage(Client* client);
 
     void setDragged(Client* client);
 
     Signal_<HSTag*> needsRelayout;
-    Signal_<Client*> floatingStateChanged;
+    Signal_<Client*> clientStateChanged; //! floating or minimized changed
     Link_<Client> focus;
     Link_<Client> dragged;
 

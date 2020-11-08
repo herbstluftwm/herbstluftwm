@@ -820,6 +820,10 @@ bool focus_client(Client* client, bool switch_tag, bool switch_monitor, bool rai
         client->raise();
     }
     cur_mon->applyLayout();
+    // the client will be visible already, but in most
+    // WMs the client will stay un-minimized even
+    // if the focus goes away, so mark it as un-minimized:
+    client->minimized_ = false;
     g_monitors->unlock();
     return found;
 }
