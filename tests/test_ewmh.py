@@ -364,10 +364,12 @@ def test_minimization_announced(hlwm, x11, minimized):
 def xiconifywindow(display, window, screen):
     """Implementation of XIconifyWindow()"""
     wm_change_state = display.get_atom('WM_CHANGE_STATE')
+    # IconicState of https://tronche.com/gui/x/icccm/sec-4.html#s-4.1.3.1
+    iconic_state = 3
     event = Xlib.protocol.event.ClientMessage(
         window=window,
         client_type=wm_change_state,
-        data=(32, [3, 0, 0, 0, 0]))
+        data=(32, [iconic_state, 0, 0, 0, 0]))
     mask = X.SubstructureRedirectMask | X.SubstructureNotifyMask
     screen.root.send_event(event, event_mask=mask)
     display.flush()
