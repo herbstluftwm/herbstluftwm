@@ -99,7 +99,7 @@ public:
         void print(FILE* file);
     };
 
-    enum class WM { Name, Protocols, Delete, State, TakeFocus, Last };
+    enum class WM { Name, Protocols, Delete, State, ChangeState, TakeFocus, Last };
 
     void injectDependencies(Root* root);
     void updateAll();

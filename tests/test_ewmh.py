@@ -2,6 +2,7 @@ import conftest
 import os
 import pytest
 from Xlib import X
+import Xlib
 
 
 def test_net_wm_desktop_after_load(hlwm, x11):
@@ -348,3 +349,46 @@ def test_ewmh_make_client_urgent_no_focus_stealing(hlwm, hc_idle, x11):
     assert demandsAttent in x11.ewmh.getWmState(winHandle, str=True)
     assert 'focus' not in hlwm.list_children('clients')
     assert 'default' == hlwm.get_attr('tags.focus.name')
+
+
+@pytest.mark.parametrize('minimized', [True, False])
+def test_minimization_announced(hlwm, x11, minimized):
+    winHandle, winid = x11.create_client()
+
+    hlwm.call(f'set_attr clients.{winid}.minimized {hlwm.bool(minimized)}')
+
+    hidden = '_NET_WM_STATE_HIDDEN'
+    assert (hidden in x11.ewmh.getWmState(winHandle, str=True)) == minimized
+
+
+def xiconifywindow(display, window, screen):
+    """Implementation of XIconifyWindow()"""
+    wm_change_state = display.get_atom('WM_CHANGE_STATE')
+    # IconicState of https://tronche.com/gui/x/icccm/sec-4.html#s-4.1.3.1
+    iconic_state = 3
+    event = Xlib.protocol.event.ClientMessage(
+        window=window,
+        client_type=wm_change_state,
+        data=(32, [iconic_state, 0, 0, 0, 0]))
+    mask = X.SubstructureRedirectMask | X.SubstructureNotifyMask
+    screen.root.send_event(event, event_mask=mask)
+    display.flush()
+
+
+def test_minimize_via_xlib(hlwm, x11):
+    winHandle, winid = x11.create_client()
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'false'
+
+    xiconifywindow(x11.display, winHandle, x11.screen)
+
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'true'
+
+
+def test_unminimize_via_xlib(hlwm, x11):
+    winHandle, winid = x11.create_client()
+    hlwm.call(f'set_attr clients.{winid}.minimized true')
+
+    winHandle.map()
+    x11.display.flush()
+
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'false'
