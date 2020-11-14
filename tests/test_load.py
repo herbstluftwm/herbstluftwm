@@ -184,11 +184,12 @@ def test_load_floating_client(hlwm):
     assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
 
 
-@pytest.mark.parametrize("othertag,minimized",
+@pytest.mark.parametrize("othertag,minimized", [
     # all combinations where at least one of the flags is True
     # such that it is not in the tiling layer of the first tag yet
     # and such that it is invisible initially
-    [(True, True), (True, False), (False, True)])
+    (True, True), (True, False), (False, True)
+])
 @pytest.mark.parametrize("floating", [True, False])
 def test_load_minimized_client(hlwm, othertag, minimized, floating):
     if othertag:
