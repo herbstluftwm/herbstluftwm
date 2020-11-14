@@ -168,3 +168,45 @@ def test_fraction_precision_outside_range(hlwm):
         layout = layout_format.format(v)
         hlwm.call_xfail(['load', layout]) \
             .expect_stderr('but actually is ' + v)
+
+
+def test_load_floating_client(hlwm):
+    winid, _ = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.floating true')
+    hlwm.call('set_layout max')
+    assert hlwm.call('dump').stdout.rstrip() == '(clients max:0)'
+
+    # soak the client into the frame tree
+    layout = f'(clients max:0 {winid})'
+    hlwm.call(['load', layout])
+
+    assert hlwm.call('dump').stdout.rstrip() == layout
+    assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
+
+
+@pytest.mark.parametrize("othertag,minimized",
+    # all combinations where at least one of the flags is True
+    # such that it is not in the tiling layer of the first tag yet
+    # and such that it is invisible initially
+    [(True, True), (True, False), (False, True)])
+@pytest.mark.parametrize("floating", [True, False])
+def test_load_minimized_client(hlwm, othertag, minimized, floating):
+    if othertag:
+        hlwm.call('add othertag')
+        hlwm.call('rule tag=othertag')
+    winid, _ = hlwm.create_client()
+    if minimized:
+        hlwm.call(f'set_attr clients.{winid}.minimized {hlwm.bool(minimized)}')
+    hlwm.call(f'set_attr clients.{winid}.floating {hlwm.bool(floating)}')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+
+    # ensure the client is not yet in the tiling layer
+    hlwm.call('set_layout max')
+    assert hlwm.call('dump').stdout.rstrip() == '(clients max:0)'
+
+    layout = f'(clients max:0 {winid})'
+    hlwm.call(['load', layout])
+    assert hlwm.call('dump').stdout.rstrip() == layout
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'true'
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'false'
+    assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
