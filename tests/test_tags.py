@@ -393,7 +393,7 @@ def test_minimized_window_stays_floating_on_tag_change(hlwm):
     assert hlwm.get_attr(f'clients.{winid}.tag') == this_tag
 
     # the minimized client is not in the tiling layer
-    assert hlwm.get_attr(f'tags.focus.tiling.root.client_count') == '0'
+    assert hlwm.get_attr('tags.focus.tiling.root.client_count') == '0'
     assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
     # but after un-minimizing it, it is
     hlwm.call(f'set_attr clients.{winid}.minimized false')
