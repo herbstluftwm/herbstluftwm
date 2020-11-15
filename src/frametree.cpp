@@ -677,7 +677,7 @@ void FrameTree::applyFrameTree(shared_ptr<Frame> target,
         // so we need to do this before everything else
         for (const auto& client : sourceLeaf->clients) {
             // first un-minimize and un-float the client
-            // such that we now that it is in the frame-tree
+            // such that we know that it is in the frame-tree
             client->floating_ = false;
             client->minimized_ = false;
             client->tag()->frame->root_->removeClient(client);

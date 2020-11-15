@@ -176,7 +176,7 @@ def test_load_floating_client(hlwm):
     hlwm.call('set_layout max')
     assert hlwm.call('dump').stdout.rstrip() == '(clients max:0)'
 
-    # soak the client into the frame tree
+    # suck the client into the frame tree
     layout = f'(clients max:0 {winid})'
     hlwm.call(['load', layout])
 
@@ -196,8 +196,7 @@ def test_load_minimized_client(hlwm, othertag, minimized, floating):
         hlwm.call('add othertag')
         hlwm.call('rule tag=othertag')
     winid, _ = hlwm.create_client()
-    if minimized:
-        hlwm.call(f'set_attr clients.{winid}.minimized {hlwm.bool(minimized)}')
+    hlwm.call(f'set_attr clients.{winid}.minimized {hlwm.bool(minimized)}')
     hlwm.call(f'set_attr clients.{winid}.floating {hlwm.bool(floating)}')
     assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
 
