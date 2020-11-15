@@ -395,6 +395,53 @@ def test_cycle_all_with_floating_clients(hlwm, delta, floating_clients):
         hlwm.call(['cycle_all', delta])
 
 
+@pytest.mark.parametrize("delta", [1, -1])
+@pytest.mark.parametrize("clients_minimized", [
+    # every entry here is a list that determines the number
+    # of floating clients and which of those are minimized.
+    [],  # no floating clients at all
+    [True],  # only one, but it's minimized
+    [False],  # also covered by test_cycle_all_with_floating_clients
+    [False, True, False],  # one minimized in the middle
+    [True, True],
+    [False, True, True, False],
+    [True, True, True],
+    [True, False, True, False, True],
+    [False, False, True],
+    [True, False, False],
+    # multiple skips before/after wrapping between floating and tiling layer:
+    [True, True, False, False],
+    [False, False, True, True],
+])
+def test_cycle_all_skips_minimized(hlwm, delta, clients_minimized):
+    # create one tiled client and a list of floating clients,
+    # some of which are minimized.
+    tiled_client, _ = hlwm.create_client()
+    hlwm.call('rule floating=on')
+    non_minimized_clients = []
+    for minimized in clients_minimized:
+        winid, _ = hlwm.create_client()
+        hlwm.call(f'set_attr clients.{winid}.minimized {hlwm.bool(minimized)}')
+        if not minimized:
+            non_minimized_clients.append(winid)
+    if delta == -1:
+        non_minimized_clients = list(reversed(non_minimized_clients))
+    expected_winids = non_minimized_clients + [tiled_client]
+
+    assert hlwm.get_attr('clients.focus.winid') == tiled_client
+    print("expecting the clients in the order {}".format(' '.join(expected_winids)))
+    for expected in expected_winids:
+        # run 'cycle_all' as often as specified by 'expected_winids'.
+        hlwm.call(['cycle_all', delta])
+
+        # since there is a tiled client, clients.focus must always exist.
+        # we check that the focused client must never
+        # be minimized and must always be visible
+        assert hlwm.get_attr('clients.focus.minimized') == 'false'
+        assert hlwm.get_attr('clients.focus.visible') == 'true'
+        assert hlwm.get_attr('clients.focus.winid') == expected
+
+
 @pytest.mark.parametrize("running_clients_num", [2, 5])
 @pytest.mark.parametrize("num_splits", [0, 1, 2, 3])
 @pytest.mark.parametrize("delta", [1, -1])

@@ -361,6 +361,13 @@ int HSTag::cycleAllCommand(Input input, Output output)
     }
     if (floating_focused()) {
         int newIndex = static_cast<int>(floating_clients_focus_) + delta;
+        // skip minimized clients
+        while (newIndex >= 0
+               && static_cast<size_t>(newIndex) < floating_clients_.size()
+               && floating_clients_[newIndex]->minimized_())
+        {
+            newIndex += delta;
+        }
         if (newIndex < 0) {
             floating_focused = false;
             frame->cycleAll(FrameTree::CycleDelta::End, skip_invisible);
@@ -369,7 +376,6 @@ int HSTag::cycleAllCommand(Input input, Output output)
             frame->cycleAll(FrameTree::CycleDelta::Begin, skip_invisible);
         } else {
             floating_clients_focus_ = static_cast<size_t>(newIndex);
-            floating_clients_[floating_clients_focus_]->raise();
         }
     } else {
         FrameTree::CycleDelta cdelta = (delta == 1)
@@ -387,13 +393,16 @@ int HSTag::cycleAllCommand(Input input, Output output)
             } else {
                 // if there are floating clients, switch to the floating layer
                 floating_focused = true;
-                if (delta == 1) {
-                    // wrap (forward) to first client
-                    floating_clients_focus_ = 0;
-                } else {
-                    // wrap (backward) to last client
-                    floating_clients_focus_ = floating_clients_.size() - 1;
+                // we know that there is at least one non-minimized client
+                // because hasVisibleFloatingClients() is true.
+                // so first wrap to first or last client:
+                size_t idx = (delta == 1) ? 0 : (floating_clients_.size() - 1);
+                // and then iterate delta until we find the first/last non-minimized
+                // floating client:
+                while (floating_clients_[idx]->minimized_()) {
+                    idx += delta;
                 }
+                floating_clients_focus_ = idx;
             }
         }
     }
