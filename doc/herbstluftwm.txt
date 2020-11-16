@@ -341,7 +341,7 @@ cycle_all [*--skip-invisible*] ['DIRECTION']::
     acts similar to the 'cycle' command. If *--skip-invisible* is given,
     then this only cycles through all visible windows and skips invisible
     windows in the max layout (the flag only affects invisible windows in the
-    max layout; minimized windows are always skipped). After after each focus
+    max layout; minimized windows are always skipped). After each focus
     change, the focused window is raised.
 
 cycle_frame ['DIRECTION']::
