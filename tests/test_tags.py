@@ -351,3 +351,51 @@ def test_focused_client_multiple_tags(hlwm):
         if len(clients) > 0:
             assert hlwm.get_attr(f'tags.by-name.{t}.focused_client.winid') \
                 == clients[0]
+
+
+def test_minimized_window_stays_invisible_on_tag_change(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('rule tag=othertag')
+    winid, _ = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.minimized true')
+    assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
+    assert hlwm.get_attr(f'clients.{winid}.tag') == 'othertag'
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+
+    this_tag = 'default'
+    # bring the window to this_tag without focusing it
+    hlwm.call(['unrule', '--all'])
+    hlwm.call(['rule', 'tag=' + this_tag])
+    hlwm.call(['apply_rules', winid])
+    assert hlwm.get_attr(f'clients.{winid}.tag') == this_tag
+
+    # after bringing the client to a visible tag, it must stay
+    # invisible
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'true'
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+    # and the minimized client is not in the tiling layer!
+    assert hlwm.get_attr('tags.focus.tiling.root.client_count') == '0'
+    assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
+
+
+def test_minimized_window_stays_minimized_on_tag_change(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('rule tag=othertag')
+    winid, _ = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.minimized true')
+    assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
+
+    this_tag = 'default'
+    # bring the window to this_tag without focusing it
+    hlwm.call(['unrule', '--all'])
+    hlwm.call(['rule', 'tag=' + this_tag])
+    hlwm.call(['apply_rules', winid])
+    assert hlwm.get_attr(f'clients.{winid}.tag') == this_tag
+
+    # the minimized client is not in the tiling layer
+    assert hlwm.get_attr('tags.focus.tiling.root.client_count') == '0'
+    assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'true'
+    # but after un-minimizing it, it is
+    hlwm.call(f'set_attr clients.{winid}.minimized false')
+    assert hlwm.get_attr('tags.focus.tiling.root.client_count') == '1'

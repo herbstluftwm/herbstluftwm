@@ -676,6 +676,10 @@ void FrameTree::applyFrameTree(shared_ptr<Frame> target,
         // this might even involve the above targetLeaf / targetSplit
         // so we need to do this before everything else
         for (const auto& client : sourceLeaf->clients) {
+            // first un-minimize and un-float the client
+            // such that we know that it is in the frame-tree
+            client->floating_ = false;
+            client->minimized_ = false;
             client->tag()->frame->root_->removeClient(client);
             if (client->tag() != tag_) {
                 client->tag()->stack->removeSlice(client->slice);

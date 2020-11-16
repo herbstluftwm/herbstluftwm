@@ -236,9 +236,9 @@ Client *HSTag::focusedClient()
 
 void HSTag::insertClient(Client* client, string frameIndex, bool focus)
 {
-    if (client->floating_()) {
+    if (client->floating_() || client->minimized_()) {
         floating_clients_.push_back(client);
-        if (focus) {
+        if (focus && !client->minimized_()) {
             floating_clients_focus_ = floating_clients_.size() - 1;
             floating_focused = true;
         }
@@ -258,7 +258,7 @@ void HSTag::insertClientSlice(Client* client)
     stack->insertSlice(client->slice);
     if (floating()) {
         stack->sliceAddLayer(client->slice, LAYER_FLOATING);
-    } else if (!client->floating_()) {
+    } else if (!client->floating_() && !client->minimized_()) {
         stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
     }
 }
