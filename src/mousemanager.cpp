@@ -137,7 +137,7 @@ int MouseManager::dragCommand(Input input, Output output)
         output << input.command() << ": Unknown mouse action \"" << mouseAction << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }
-    if (monitors_->byTag(client->tag()) == nullptr) {
+    if (monitors_->byTag(client->tag()) == nullptr || client->minimized_()) {
         output << input.command() << ": cannot drag invisible client \"" << winid << "\"" << endl;
         return HERBST_INVALID_ARGUMENT;
     }

@@ -152,6 +152,14 @@ def test_drag_invisible_client(hlwm):
     # inward he's grown :-)
 
 
+def test_drag_minimized_client(hlwm):
+    winid, _ = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.minimized on')
+
+    hlwm.call_xfail(['drag', winid, 'resize']) \
+        .expect_stderr('cannot drag invisible client')
+
+
 def test_drag_resize_tiled_client(hlwm, mouse):
     winid, _ = hlwm.create_client()
     layout = '(split horizontal:{}:1 (clients max:0) (clients max:0 {}))'
