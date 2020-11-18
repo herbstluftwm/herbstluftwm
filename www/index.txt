@@ -1,23 +1,30 @@
 What is it?
 -----------
 
-herbstluftwm is a manual tiling window manager for X11 using Xlib.
-Its main features can be described with:
+herbstluftwm is a manual tiling window manager for the X window system.
 
-  * the layout is based on splitting frames into subframes which can be split
-    again or can be filled with windows (similar to
-    link:http://i3wm.org/[i3]/
-    or musca)
+  * the entire configuration happens at runtime via the tool herbstclient. So
+    the configuration file is just a script which is run on startup. All
+    configuratin options, window rules, virtual desktops, keybindings,...  can
+    be updated live without the need to restart the window manager.
 
-  * tags (or workspaces or virtual desktops or ...) can be added/removed at
-    runtime. Each tag contains an own layout
+  * every virtual desktop (called 'tag') consists of a tiling and a floating
+    layer. Windows in the tiling layer fill up the screen space and the
+    floating windows can be placed freely above them.
 
-  * exactly one tag is viewed on each monitor. The tags are monitor independent
-    (similar to link:http://xmonad.org/[xmonad])
+  * both tiling and floating windows can be moved, resized, focused using
+    the keyboard only.
 
-  * it is configured at runtime via ipc calls from herbstclient. So the
-    configuration file is just a script which is run on startup. (similar to
-    link:http://wmii.suckless.org/[wmii] or musca)
+  * the tiling algorithm is based on splitting frames into subframes which can be split
+    again or can be filled with windows.
+
+  * the screen space can be freely divided into "monitors" which may or may not
+    match the actual (multi-)monitor hardware configuration. If you have a
+    monitor with a large resolution just divide it into two or more virtual
+    monitors such that you can view two virtual desktops at a time.
+
+  * all monitors share the same pool of tags. You can switch the contents of
+    two monitors with a single keystroke.
 
 How to get it?
 --------------
