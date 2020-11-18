@@ -5,7 +5,7 @@ herbstluftwm is a manual tiling window manager for the X window system.
 
   * the entire configuration happens at runtime via the tool herbstclient. So
     the configuration file is just a script which is run on startup. All
-    configuratin options, window rules, virtual desktops, keybindings,...  can
+    configuration options, window rules, virtual desktops, keybindings, ... can
     be updated live without the need to restart the window manager.
 
   * every virtual desktop (called 'tag') consists of a tiling and a floating
