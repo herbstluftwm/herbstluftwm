@@ -445,8 +445,14 @@ int frame_current_bring(int argc, char** argv, Output output) {
     }
     HSTag* tag = get_current_monitor()->tag;
     global_tags->moveClient(client, tag, {}, true);
+    // mark as un-minimized first, such that a minimized tiling client
+    // is added to the frame tree now.
+    client->minimized_ = false;
     auto frame = tag->frame->root_->frameWithClient(client);
-    if (!client->is_client_floated() && !frame->isFocused()) {
+    if (frame && !frame->isFocused()) {
+        // regardless of the client's floating or minimization state:
+        // if the client was in the frame tree, it is moved
+        // to the focused frame
         frame->removeClient(client);
         tag->frame->focusedFrame()->insertClient(client, true);
     }
