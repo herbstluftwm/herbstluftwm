@@ -109,6 +109,31 @@ def test_bring_floating_from_different_tag(hlwm, x11):
     assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(True)
 
 
+@pytest.mark.parametrize('othertag', [True, False])
+@pytest.mark.parametrize('floating', [True, False])
+def test_bring_minimized_window(hlwm, othertag, floating):
+    if othertag:
+        hlwm.call('add othertag')
+        hlwm.call('rule tag=othertag')
+    hlwm.call('chain , split explode , split explode , split explode')
+    winid, _ = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.minimized on')
+    hlwm.call(f'set_attr clients.{winid}.floating {hlwm.bool(floating)}')
+    # also focus another frame than one that carried the client
+    hlwm.call('cycle_frame')
+    # and remember which frame was focused before 'bring' is called
+    frame_focused = hlwm.get_attr('tags.focus.tiling.focused_frame.index')
+
+    hlwm.call(f'bring {winid}')
+
+    assert hlwm.get_attr('clients.focus.winid') == winid
+    assert hlwm.get_attr('clients.focus.minimized') == hlwm.bool(False)
+    assert hlwm.get_attr('clients.focus.visible') == hlwm.bool(True)
+    assert hlwm.get_attr('clients.focus.floating') == hlwm.bool(floating)
+    assert frame_focused == hlwm.get_attr('tags.focus.tiling.focused_frame.index'), \
+        "'bring' must not change the frame focus"
+
+
 @pytest.mark.parametrize('direction', ['down', 'right', ])
 def test_resize_floating_client(hlwm, x11, direction):
     hlwm.call('attr settings.snap_gap 0')
