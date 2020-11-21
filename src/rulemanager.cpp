@@ -1,5 +1,6 @@
 #include "rulemanager.h"
 
+#include <algorithm>
 #include <string>
 
 #include "completion.h"
@@ -10,6 +11,7 @@
 using std::string;
 using std::to_string;
 using std::endl;
+using std::unique_ptr;
 
 /*!
  * Implements the "rule" IPC command
@@ -214,59 +216,15 @@ void RuleManager::addRuleCompletion(Completion& complete) {
 
 //! Evaluate rules against a given client
 ClientChanges RuleManager::evaluateRules(Client* client, ClientChanges changes) {
-    auto ruleIter = rules_.begin();
-    while (ruleIter != rules_.end()) {
-        auto& rule = *ruleIter;
-        bool matches = true;    // if current condition matches
-        bool rule_match = true; // if entire rule matches
-        bool rule_expired = false;
-
-        // check all conditions
-        for (auto& cond : rule->conditions) {
-            if (!rule_match && cond.name != "maxage") {
-                // implement lazy AND &&
-                // ... except for maxage
-                continue;
-            }
-
-            matches = Condition::matchers.at(cond.name)(&cond, client);
-
-            if (!matches && !cond.negated
-                && cond.name == "maxage") {
-                // if if not negated maxage does not match anymore
-                // then it will never match again in the future
-                rule_expired = true;
-            }
-
-            if (cond.negated) {
-                matches = ! matches;
-            }
-            rule_match = rule_match && matches;
-        }
-
-        if (rule_match) {
-            // apply all consequences
-            for (auto& cons : rule->consequences) {
-                try {
-                    Consequence::appliers.at(cons.name)(&cons, client, &changes);
-                } catch (std::exception& e) {
-                    HSWarning("Invalid argument \"%s\" for rule consequence \"%s\": %s\n",
-                              cons.value.c_str(),
-                              cons.name.c_str(),
-                              e.what());
-                }
-            }
-        }
-
-        // remove it if not wanted or needed anymore
-        if ((rule_match && rule->once) || rule_expired) {
-            ruleIter = rules_.erase(ruleIter);
-        } else {
-            // try next
-            ruleIter++;
-        }
-    }
-
+    // go through all rules and remove those that expired.
+    // Here, we use erase + remove_if because it uses a Forward Iterator
+    // and so it is ensured that the rules are evaluated in the correct order.
+    auto forEachRule = [&](unique_ptr<Rule>& rule) {
+        rule->evaluate(client, changes);
+        return rule->expired();
+    };
+    rules_.erase(std::remove_if(rules_.begin(), rules_.end(), forEachRule),
+                 rules_.end());
     return changes;
 }
 
