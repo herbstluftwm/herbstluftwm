@@ -100,7 +100,7 @@ bool ArgParse::parsingFails(Input& input, Output& output)
  * tokens left in the input.
  * @param input
  * @param output
- * @return whether there has been a
+ * @return whether there is an unparsable flag or unexpected argument at the end
  */
 bool ArgParse::parsingAllFails(Input& input, Output& output)
 {
