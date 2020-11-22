@@ -480,6 +480,42 @@ def test_apply_rules_all_focus_retained(hlwm):
         assert hlwm.get_attr('clients.focus.winid') == client
 
 
+@pytest.mark.parametrize('floating', [True, False])
+@pytest.mark.parametrize('source_tag', range(0, 4))
+@pytest.mark.parametrize('target_tag', range(0, 4))
+def test_apply_rules_minimized_client(hlwm, floating, source_tag, target_tag):
+    # set up some tags for different cases of focus/visibility:
+    tags = [
+        'on_focused_mon',
+        'on_unfocused_mon',
+        'unused_tag',
+        'other_unused_tag',
+    ]
+    for t in tags:
+        hlwm.call(['add', t])
+    hlwm.call('use on_focused_mon')
+    hlwm.call('add_monitor 800x600+300+300 on_unfocused_mon')
+    # put a client on the source_tag
+    hlwm.call(f'rule tag={tags[source_tag]} floating={hlwm.bool(floating)}')
+    winid, _ = hlwm.create_client()
+    # and minimize it there, so it is invisible in any case
+    hlwm.call(f'set_attr clients.{winid}.minimized on')
+    assert hlwm.get_attr(f'clients.{winid}.tag') == tags[source_tag]
+    assert hlwm.get_attr(f'clients.{winid}.visible') == hlwm.bool(False)
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == hlwm.bool(True)
+    assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(floating)
+
+    # move the minimized client from source_tag to target_tag
+    hlwm.call(f'rule tag={tags[target_tag]}')
+    hlwm.call(f'apply_rules {winid}')
+
+    # check that the client is on the target_tag and still invisible
+    assert hlwm.get_attr(f'clients.{winid}.tag') == tags[target_tag]
+    assert hlwm.get_attr(f'clients.{winid}.visible') == hlwm.bool(False)
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == hlwm.bool(True)
+    assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(floating)
+
+
 def test_rule_tag_nonexisting(hlwm):
     hlwm.call('rule tag=tagdoesnotexist')
     # must not crash:
