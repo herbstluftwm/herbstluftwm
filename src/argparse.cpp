@@ -142,7 +142,7 @@ ArgParse& ArgParse::flags(std::initializer_list<Flag> flagTable)
  * @param argument token from a Input object
  * @return whether the token was a flag
  */
-bool ArgParse::tryParseFlag(std::string inputToken)
+bool ArgParse::tryParseFlag(string inputToken)
 {
     auto flag = flags_.find(inputToken);
     if (flag == flags_.end()) {
