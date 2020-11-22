@@ -240,6 +240,44 @@ int FrameTree::rotateCommand() {
     return 0;
 }
 
+template<>
+Finite<FrameTree::MirrorDirection>::ValueList Finite<FrameTree::MirrorDirection>::values = {
+    { FrameTree::MirrorDirection::Horizontal, "horizontal" },
+    { FrameTree::MirrorDirection::Vertical, "vertical" },
+    { FrameTree::MirrorDirection::Both, "both" },
+};
+
+int FrameTree::mirrorCommand(Input input, Output output)
+{
+    using MD = MirrorDirection;
+    MirrorDirection dir = MD::Horizontal;
+    ArgParse ap = ArgParse().optional(dir);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
+    }
+    auto onSplit = [dir] (FrameSplit* s) {
+            bool mirror =
+                dir == MD::Both
+                || (dir == MD::Horizontal && s->align_ == SplitAlign::horizontal)
+                || (dir == MD::Vertical && s->align_ == SplitAlign::vertical);
+            if (mirror) {
+                s->selection_ = s->selection_ ? 0 : 1;
+                swap(s->a_, s->b_);
+                s->fraction_ = FixPrecDec::fromInteger(1) - s->fraction_;
+            }
+        };
+    root_->fmap(onSplit, [] (FrameLeaf*) { }, -1);
+    get_current_monitor()->applyLayout();
+    return 0;
+}
+
+void FrameTree::mirrorCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        Converter<MirrorDirection>::complete(complete);
+    }
+}
+
 shared_ptr<TreeInterface> FrameTree::treeInterface(
         shared_ptr<Frame> frame,
         shared_ptr<FrameLeaf> focus)

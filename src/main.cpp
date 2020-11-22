@@ -154,6 +154,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"rename",         BIND_OBJECT(tags, tag_rename_command) },
         {"move",           BIND_OBJECT(tags, tag_move_window_command) },
         {"rotate",         { tags->frameCommand(&FrameTree::rotateCommand) }},
+        {"mirror",         { tags->frameCommand(&FrameTree::mirrorCommand, &FrameTree::mirrorCompletion) }},
         {"move_index",     BIND_OBJECT(tags, tag_move_window_by_index_command) },
         {"add_monitor",    BIND_OBJECT(monitors, addMonitor)},
         {"raise_monitor",  { monitors, &MonitorManager::raiseMonitorCommand,

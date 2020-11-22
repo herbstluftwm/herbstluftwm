@@ -56,7 +56,7 @@ protected:
 void completeFull(Completion& complete, std::string string);
 
 /* Primitive types that can be converted from/to user input/output */
-template<typename T>
+template<typename T, typename = void>
 struct Converter {
     /** Parse a text into the right type
      * @throws std::invalid_argument or std::out_of_range
