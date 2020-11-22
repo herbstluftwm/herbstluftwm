@@ -51,7 +51,7 @@ bool ArgParse::parsingFails(Input& input, Output& output)
         string valueString;
         input >> valueString;
         // try to parse this token as a flag
-        if (optionalArgumentsRemaining && tryParseFlag(valueString)) {
+        while (optionalArgumentsRemaining && tryParseFlag(valueString)) {
             optionalArgumentsRemaining--;
             // if this token was the last optional argument
             if (optionalArgumentsRemaining == 0 && arg.optional_) {
