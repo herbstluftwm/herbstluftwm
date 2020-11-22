@@ -13,16 +13,16 @@ using std::to_string;
 using std::endl;
 using std::unique_ptr;
 
-/*!
- * Implements the "rule" IPC command
+/**
+ * @brief RuleManager::parseRule
+ * @param input
+ * @param output
+ * @param the rule to modify
+ * @param whether the 'prepend' flag was given in input
+ * @return
  */
-int RuleManager::addRuleCommand(Input input, Output output) {
-    Rule rule;
-
-    // Assign default label (index will be incremented if adding the rule
-    // actually succeeds)
-    rule.label = to_string(rule_label_index_);
-
+int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend)
+{
     // Possible flags that apply to the rule as a whole:
     std::map<string, bool> ruleFlags = {
         {"once", false},
@@ -109,13 +109,28 @@ int RuleManager::addRuleCommand(Input input, Output output) {
     if (ruleFlags["printlabel"]) {
        output << rule.label << "\n";
     }
+    prepend = ruleFlags["prepend"];
+    return 0;
+}
+
+int RuleManager::addRuleCommand(Input input, Output output) {
+    Rule rule;
+    bool prepend = false;
+
+    // Assign default label (index will be incremented if adding the rule
+    // actually succeeds)
+    rule.label = to_string(rule_label_index_);
+    int status = parseRule(input, output, rule, prepend);
+    if (status != 0) {
+        return status;
+    }
 
     // At this point, adding the rule will be successful, so increment the
     // label index (as it says in the docs):
     rule_label_index_++;
 
     // Insert rule into list according to "prepend" flag
-    auto insertAt = ruleFlags["prepend"] ? rules_.begin() : rules_.end();
+    auto insertAt = prepend ? rules_.begin() : rules_.end();
     rules_.insert(insertAt, make_unique<Rule>(rule));
 
     return HERBST_EXIT_SUCCESS;

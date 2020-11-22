@@ -14,10 +14,11 @@ public:
     void unruleCompletion(Completion& complete);
     int listRulesCommand(Output output);
     ClientChanges evaluateRules(Client* client, ClientChanges changes = {});
+    static int parseRule(Input input, Output output, Rule& rule, bool& prepend);
 
 private:
     size_t removeRules(std::string label);
-    std::tuple<std::string, char, std::string> tokenizeArg(std::string arg);
+    static std::tuple<std::string, char, std::string> tokenizeArg(std::string arg);
 
     //! Ever-incrementing index for labeling new rules
     unsigned long long rule_label_index_ = 0;
