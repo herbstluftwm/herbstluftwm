@@ -6,7 +6,11 @@ using std::pair;
 using std::string;
 
 /**
- * @brief try to parse the arguments
+ * @brief try to parse the positional arguments and as many flags
+ * as possible. When the last positional argument has been read
+ * then flags are still read until the first unknown token.
+ * If unknown tokens at the end of input should be regarded as
+ * an error, use parsingAllFails()
  * @param input
  * @param output
  * @return return whether there has been an error (true = error, false = no error)
@@ -91,6 +95,13 @@ bool ArgParse::parsingFails(Input& input, Output& output)
     return false;
 }
 
+/**
+ * @brief run parsingFails() and assert that there are no unknown
+ * tokens left in the input.
+ * @param input
+ * @param output
+ * @return whether there has been a
+ */
 bool ArgParse::parsingAllFails(Input& input, Output& output)
 {
     return parsingFails(input, output) || unparsedTokens(input, output);
@@ -111,7 +122,7 @@ bool ArgParse::unparsedTokens(Input& input, Output& output)
 
 /**
  * @brief Accept boolean flags (e.g. --all --horizontal ...) at
- * any position
+ * any position between the (mandatory or optional) positional arguments
  * @param a list of flags
  * @return
  */

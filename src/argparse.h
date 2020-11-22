@@ -19,7 +19,6 @@ public:
 
     bool parsingFails(Input& input, Output& output);
     bool parsingAllFails(Input& input, Output& output);
-    bool unparsedTokens(Input& input, Output& output);
 
     class Argument {
     public:
@@ -96,16 +95,12 @@ public:
         return *this;
     }
 
-    /**
-     * @brief accept certain boolean flags at this position
-     * @param names and which boolean to modify
-     * @return
-     */
     ArgParse& flags(std::initializer_list<Flag> flagTable);
 
     int exitCode() const { return errorCode_; }
 
 private:
+    bool unparsedTokens(Input& input, Output& output);
     bool tryParseFlag(std::string inputToken);
     std::vector<Argument> arguments_;
     std::map<std::string, Flag> flags_;
