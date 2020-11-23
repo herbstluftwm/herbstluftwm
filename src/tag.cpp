@@ -275,20 +275,14 @@ void HSTag::removeClientSlice(Client* client)
 int HSTag::focusInDirCommand(Input input, Output output)
 {
     bool external_only = settings_->default_direction_external_only();
-    if (input.size() >= 2) {
-        string internextern;
-        input >> internextern;
-        if (internextern == "-i") {
-            external_only = false;
-        }
-        if (internextern == "-e") {
-            external_only = true;
-        }
-    }
     Direction direction = Direction::Left; // some default to satisfy the linter
     ArgParse ap;
+    ap.flags({
+        {"-i", [&external_only] () { external_only = false; }},
+        {"-e", [&external_only] () { external_only = true; }},
+    });
     ap.mandatory(direction);
-    if (ap.parsingFails(input, output)) {
+    if (ap.parsingAllFails(input, output)) {
         return ap.exitCode();
     }
 
