@@ -5,7 +5,6 @@
 
 #include "client.h"
 #include "ewmh.h"
-#include "finite.h"
 #include "globals.h"
 #include "hook.h"
 #include "root.h"
@@ -381,20 +380,3 @@ Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values = {
     { ClientPlacement::Unchanged, "none" },
     { ClientPlacement::Smart, "smart" },
 };
-
-template<>
-string Converter<ClientPlacement>::str(ClientPlacement cp) {
-    return Finite<ClientPlacement>::str(cp);
-}
-
-template<>
-ClientPlacement Converter<ClientPlacement>::parse(const string& payload) {
-    return Finite<ClientPlacement>::parse(payload);
-}
-
-template<>
-void Converter<ClientPlacement>::complete(Completion& complete, ClientPlacement const* relativeTo) {
-    return Finite<ClientPlacement>::complete(complete, relativeTo);
-}
-
-
