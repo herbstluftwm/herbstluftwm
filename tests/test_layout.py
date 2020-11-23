@@ -155,6 +155,63 @@ def test_focus_wrap(hlwm, running_clients, running_clients_num):
             hlwm.call('focus down')
 
 
+@pytest.mark.parametrize("mode", ['setting', 'flag', 'flag-double', 'flag-shadow'])
+@pytest.mark.parametrize("setting_value", [True, False])
+@pytest.mark.parametrize("external_only", [True, False])
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_focus_internal_external(hlwm, mode, setting_value, external_only, running_clients):
+    hlwm.call(f'set default_direction_external_only {hlwm.bool(setting_value)}')
+    layout = f"""
+    (split vertical:0.5:0
+        (clients vertical:0 {running_clients[0]} {running_clients[1]})
+        (clients vertical:0 {running_clients[2]}))
+    """.replace('\n', ' ').strip()
+    hlwm.call(['load', layout])
+    assert hlwm.get_attr('clients.focus.winid') == running_clients[0]
+
+    # we will now run 'focus' 'down' with -i or -e
+    cmd = ['focus']
+    if mode == 'setting':
+        hlwm.call(f'set default_direction_external_only {hlwm.bool(external_only)}')
+    else:
+        # mode is one of the flag*-modes
+        extonly2flag = {
+            True: '-e',
+            False: '-i',
+        }
+        if mode == 'flag-shadow':
+            # something like: focus -i -e down
+            # Here, an earlier and contradictory flag gets shadowed
+            cmd.append(extonly2flag[not external_only])
+        if mode == 'flag-double':
+            cmd.append(extonly2flag[external_only])
+        # the significant command line flag:
+        cmd.append(extonly2flag[external_only])
+    cmd += ['down']
+    hlwm.call(cmd)
+
+    if external_only:
+        expected_new_focus = running_clients[2]
+    else:
+        expected_new_focus = running_clients[1]
+    assert hlwm.get_attr('clients.focus.winid') == expected_new_focus
+
+
+def test_argparse_invalid_flag(hlwm):
+    # here, '-v' is not a valid flag, so it is assumed
+    # to be the first positional argument
+    hlwm.call_xfail('focus -v down') \
+        .expect_stderr('Cannot parse argument "-v"')
+    # in the following, the positional argument has been
+    # parsed already, so the error message is different:
+    hlwm.call_xfail('focus down -v') \
+        .expect_stderr('Unknown argument or flag "-v"')
+    hlwm.call_xfail('focus down -v -i') \
+        .expect_stderr('Unknown argument or flag "-v"')
+    hlwm.call_xfail('focus down -i -v') \
+        .expect_stderr('Unknown argument or flag "-v"')
+
+
 @pytest.mark.parametrize("path", '@ 0 1 00 11 . / /. ./'.split(' '))
 @pytest.mark.parametrize("running_clients_num", [3])
 @pytest.mark.parametrize("num_splits", [0, 1, 2])
