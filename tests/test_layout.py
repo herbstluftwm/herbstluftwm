@@ -155,7 +155,7 @@ def test_focus_wrap(hlwm, running_clients, running_clients_num):
             hlwm.call('focus down')
 
 
-@pytest.mark.parametrize("mode", ['setting', 'flag'])
+@pytest.mark.parametrize("mode", ['setting', 'flag', 'flag-double', 'flag-shadow'])
 @pytest.mark.parametrize("setting_value", [True, False])
 @pytest.mark.parametrize("external_only", [True, False])
 @pytest.mark.parametrize("running_clients_num", [3])
@@ -171,13 +171,22 @@ def test_focus_internal_external(hlwm, mode, setting_value, external_only, runni
 
     # we will now run 'focus' 'down' with -i or -e
     cmd = ['focus']
-    if mode == 'flag':
-        if external_only:
-            cmd += ['-e']
-        else:
-            cmd += ['-i']
-    else:
+    if mode == 'setting':
         hlwm.call(f'set default_direction_external_only {hlwm.bool(external_only)}')
+    else:
+        # mode is one of the flag*-modes
+        extonly2flag = {
+            True: '-e',
+            False: '-i',
+        }
+        if mode == 'flag-shadow':
+            # something like: focus -i -e down
+            # Here, an earlier and contradictory flag gets shadowed
+            cmd.append(extonly2flag[not external_only])
+        if mode == 'flag-double':
+            cmd.append(extonly2flag[external_only])
+        # the significant command line flag:
+        cmd.append(extonly2flag[external_only])
     cmd += ['down']
     hlwm.call(cmd)
 
