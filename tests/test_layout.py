@@ -1132,3 +1132,43 @@ def test_focused_frame_child(hlwm):
     for focused_index, layout in test_data:
         hlwm.call(['load', layout])
         assert hlwm.get_attr('tags.0.tiling.focused_frame.index') == focused_index
+
+
+@pytest.mark.parametrize("old,new", [
+    ('(split vertical:0.4:0 {a} {b})', '(split vertical:0.6:1 {b} {a})'),
+    ('(split horizontal:0.3:0 {a} {b})', '(split horizontal:0.7:1 {b} {a})'),
+    ('(split vertical:0.5:1 {a} {b})', '(split vertical:0.5:0 {b} {a})'),
+    ('(split horizontal:0.2:1 {a} {b})', '(split horizontal:0.8:0 {b} {a})'),
+])
+@pytest.mark.parametrize("mode", ['horizontal', 'vertical'])
+def test_mirror_horizontal_or_vertical_one_split(hlwm, old, new, mode):
+    frame_a = '(clients horizontal:0)'
+    frame_b = '(clients vertical:0)'
+    hlwm.call(['load', old.format(a=frame_a, b=frame_b)])
+
+    hlwm.call(f'mirror {mode}')
+
+    if old.find(mode) < 0:
+        expected = old.format(a=frame_a, b=frame_b)  # nothing changes
+    else:
+        expected = new.format(a=frame_a, b=frame_b)
+    assert hlwm.call('dump').stdout == expected
+
+
+@pytest.mark.parametrize("num_splits", [1, 2, 3, 4])
+def test_mirror_vs_rotate(hlwm, num_splits):
+    for _ in range(0, num_splits):
+        hlwm.call('split explode 0.4')
+
+    layout = hlwm.call('dump').stdout
+
+    # compute the effect of rotating by 180 degrees
+    hlwm.call('chain , rotate , rotate')
+    layout_after_rotate = hlwm.call('dump').stdout
+    # restore original layout
+    hlwm.call(['load', layout])
+
+    # rotating by 180 degrees is the same as
+    # flipping both horizontally and vertically
+    hlwm.call('mirror both')
+    assert layout_after_rotate == hlwm.call('dump').stdout

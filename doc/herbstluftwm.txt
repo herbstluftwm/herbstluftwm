@@ -519,6 +519,11 @@ rotate::
     Rotates the layout on the focused tag counterclockwise by 90 degrees. This
     only manipulates the alignment of frames, not the content of them.
 
+mirror ['vertical'|'horizontal'|'both']::
+    Mirrors the layout on the focused tag vertically, horizontally, or both; the
+    default is 'horizontal'. This command only manipulates the alignment of
+    frames, not the content of them.
+
 set 'NAME' 'VALUE'::
     Sets the specified setting 'NAME' to 'VALUE'. Allowed values for boolean
     settings are 'on' or 'true' for on, 'off' or 'false' for off, 'toggle' to
