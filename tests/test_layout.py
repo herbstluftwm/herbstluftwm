@@ -909,7 +909,7 @@ def test_focus_other_monitor(hlwm, other_mon_exists, setting):
 
 def test_set_layout_invalid_layout_name(hlwm):
     hlwm.call_xfail('set_layout foobar') \
-        .expect_stderr('Invalid layout name: "foobar"')
+        .expect_stderr('Cannot.* "foobar":.*one of: vertical, horizontal')
 
 
 def test_focus_edge(hlwm):

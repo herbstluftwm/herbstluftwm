@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "attribute_.h"
+#include "finite.h"
 #include "fixprecdec.h"
 #include "types.h"
 
@@ -27,7 +28,9 @@ enum class SplitAlign {
     horizontal,
 };
 
-ConverterInstance(SplitAlign)
+template <>
+struct is_finite<SplitAlign> : std::true_type {};
+template<> Finite<SplitAlign>::ValueList Finite<SplitAlign>::values;
 
 template<>
 inline Type Attribute_<SplitAlign>::staticType() { return Type::ATTRIBUTE_NAMES; }
@@ -39,8 +42,9 @@ enum class LayoutAlgorithm {
     grid,
 };
 
-ConverterInstance(LayoutAlgorithm)
-template<> void Converter<LayoutAlgorithm>::complete(Completion& complete, LayoutAlgorithm const* relativeTo);
+template <>
+struct is_finite<LayoutAlgorithm> : std::true_type {};
+template<> Finite<LayoutAlgorithm>::ValueList Finite<LayoutAlgorithm>::values;
 
 template<>
 inline Type Attribute_<LayoutAlgorithm>::staticType() { return Type::ATTRIBUTE_NAMES; }
