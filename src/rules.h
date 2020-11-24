@@ -4,6 +4,7 @@
 #include <functional>
 #include <regex>
 
+#include "finite.h"
 #include "optional.h"
 #include "regexstr.h"
 #include "types.h"
@@ -69,11 +70,9 @@ enum class ClientPlacement {
     Smart, //! as little overlaps as possible
 };
 
-template<> std::string Converter<ClientPlacement>::str(ClientPlacement cp);
-template<> ClientPlacement Converter<ClientPlacement>::parse(const std::string& payload);
-template<> void Converter<ClientPlacement>::complete(Completion& complete, ClientPlacement const*);
-
-
+template <>
+struct is_finite<ClientPlacement> : std::true_type {};
+template<> Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values;
 
 class ClientChanges {
 public:
