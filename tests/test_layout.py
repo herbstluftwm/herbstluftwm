@@ -387,6 +387,19 @@ def test_cycle_all_traverses_all(hlwm, running_clients, num_splits, delta):
     assert all_winids == visited_winids
 
 
+def test_cycle_all_errors(hlwm):
+    hlwm.call_xfail('cycle_all 1 2') \
+        .expect_stderr('Unknown argument or flag "2"')
+    hlwm.call_xfail('cycle_all -3') \
+        .expect_stderr('argument out of range')
+    hlwm.call_xfail('cycle_all 3') \
+        .expect_stderr('argument out of range')
+    hlwm.call_xfail('cycle_all -s 1') \
+        .expect_stderr('Cannot.*"-s"')
+    hlwm.call_xfail('cycle_all --skip-invisible -s 1') \
+        .expect_stderr('Cannot.*"-s"')
+
+
 @pytest.mark.parametrize("running_clients_num", [4])
 @pytest.mark.parametrize("delta", [1, -1])
 def test_cycle_all_skip_invisible(hlwm, running_clients, delta):

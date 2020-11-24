@@ -329,21 +329,9 @@ int HSTag::cycleAllCommand(Input input, Output output)
 {
     bool skip_invisible = false;
     int delta = 1;
-    string s = "";
-    input >> s;
-    if (s == "--skip-invisible") {
-        skip_invisible = true;
-        // and load the next (optional) argument to s
-        s = "0";
-        input >> s;
-    }
-    try {
-        delta = std::stoi(s);
-    } catch (std::invalid_argument const& e) {
-        output << "invalid argument: " << e.what() << endl;
-        return HERBST_INVALID_ARGUMENT;
-    } catch (std::out_of_range const& e) {
-        output << "out of range: " << e.what() << endl;
+    ArgParse ap;
+    ap.flags({{"--skip-invisible", &skip_invisible}}).optional(delta);
+    if (ap.parsingAllFails(input, output)) {
         return HERBST_INVALID_ARGUMENT;
     }
     if (delta < -1 || delta > 1) {
