@@ -13,6 +13,7 @@ Current git version
   * New child object 'focused_client' for each tag object.
   * New child object 'focused_frame' for the tiling object of each tag object.
   * New command 'mirror'
+  * New command 'apply_tmp_rule'
   * Bug fixes:
     - When hiding windows, correctly set their WM_STATE to IconicState (we set
       it to Withdrawn state before, which means "unmanaged" and thus is wrong).

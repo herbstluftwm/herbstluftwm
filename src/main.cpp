@@ -171,6 +171,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                    &RuleManager::unruleCompletion}},
         {"apply_rules",    {clients, &ClientManager::applyRulesCmd,
                                      &ClientManager::applyRulesCompletion}},
+        {"apply_tmp_rule", {clients, &ClientManager::applyTmpRuleCmd,
+                                     &ClientManager::applyTmpRuleCompletion}},
         {"list_rules",     {rules, &RuleManager::listRulesCommand }},
         {"layout",         tags->frameCommand(&FrameTree::dumpLayoutCommand, &FrameTree::dumpLayoutCompletion)},
         {"stack",          { monitors, &MonitorManager::stackCommand }},
