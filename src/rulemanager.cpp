@@ -61,7 +61,7 @@ int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend
         try {
             std::tie(lhs, oper, rhs) = tokenizeArg(arg);
         } catch (std::invalid_argument &error) {
-            output << "rule: " << error.what() << endl;
+            output << input.command() << ": " << error.what() << endl;
             return HERBST_INVALID_ARGUMENT;
         }
 
@@ -77,7 +77,7 @@ int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend
         // Check if lhs is a consequence name
         if (Consequence::appliers.count(lhs)) {
             if (oper == '~') {
-                output << "rule: Operator ~ not valid for consequence \"" << lhs << "\"\n";
+                output << input.command() << ": Operator ~ not valid for consequence \"" << lhs << "\"\n";
                 return HERBST_INVALID_ARGUMENT;
             }
 
@@ -98,7 +98,7 @@ int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend
             continue;
         }
 
-        output << "rule: Unknown argument \"" << arg << "\"\n";
+        output << input.command() << ": Unknown argument \"" << arg << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
 

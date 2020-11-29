@@ -56,7 +56,10 @@ public:
 
     int applyRulesCmd(Input input, Output output);
     int applyRules(Client* client, Output output, bool changeFocus = true);
+    int applyChanges(Client* client, ClientChanges changes, Output output);
     void applyRulesCompletion(Completion& complete);
+    int applyTmpRuleCmd(Input input, Output output);
+    void applyTmpRuleCompletion(Completion& complete);
 
 protected:
     int clientSetAttribute(std::string attribute, Input input, Output output);

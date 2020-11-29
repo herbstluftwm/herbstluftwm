@@ -789,6 +789,16 @@ apply_rules 'WINID'|*--all*::
     Apply the rules to the specified window 'WINID'. If *--all* is passed, then
     the rules are applied to all clients.
 
+apply_tmp_rule 'WINID'|*--all* ['RULEDESCRIPTION'...]::
+    Apply the rule 'RULEDESCRIPTION' to one particular client 'WINID' or all
+    clients (*--all*) without adding the rule to the rule list. The
+    'RULEDESCRIPTION' specifies a rule consisting of conditions and consequences
+    as one would pass it to the +rule+ command as described in the
+    <<RULES,*RULES section*>>. This allows testing rules before adding them.
+    Running +apply_tmp_rule+ only applies the particular rule given in the
+    arguments and ignores the existing rules.
+
+
 fullscreen [*on*|*off*|*toggle*]::
     Sets or toggles the fullscreen state of the focused client. If no argument
     is given, fullscreen mode is toggled.

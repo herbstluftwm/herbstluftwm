@@ -344,6 +344,14 @@ int ClientManager::applyRules(Client* client, Output output, bool changeFocus)
     ClientChanges changes;
     changes.focus = client == focus();
     changes = Root::get()->rules()->evaluateRules(client, changes);
+    if (!changeFocus) {
+        changes.focus = false;
+    }
+    return applyChanges(client, changes, output);
+}
+
+int ClientManager::applyChanges(Client* client, ClientChanges changes, Output output)
+{
     if (changes.manage == false) {
         // only make unmanaging clients possible as soon as it is
         // possible to make them managed again
@@ -382,7 +390,7 @@ int ClientManager::applyRules(Client* client, Output output, bool changeFocus)
         }
         TagManager* tagman = Root::get()->tags();
         tagman->moveClient(client, tag, changes.tree_index, changes.focus);
-    } else if (changes.focus && (client != focus()) && changeFocus) {
+    } else if (changes.focus && (client != focus())) {
         // focus the client
         client->tag()->focusClient(client);
         Root::get()->monitors->relayoutTag(client->tag());
@@ -400,6 +408,61 @@ void ClientManager::applyRulesCompletion(Completion& complete)
         completeClients(complete);
     } else {
         complete.none();
+    }
+}
+
+int ClientManager::applyTmpRuleCmd(Input input, Output output)
+{
+    string clientStr;
+    if (!(input >> clientStr)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    // 'applyTo' is a pointer to a map containing those to which the
+    // above rule shall be applied
+    std::unordered_map<Window, Client*> singletonMap;
+    std::unordered_map<Window, Client*>* applyTo = &singletonMap;
+    if (clientStr == "--all") {
+        // apply to all clients
+        applyTo = &clients_;
+    } else {
+        // use the 'singletonMap' if the rule shall be applied
+        // to only one client
+        Client* client = this->client(clientStr);
+        if (!client) {
+            output << "No such (managed) client: " << clientStr << "\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+        (*applyTo)[client->x11Window()] = client;
+    }
+    // parse the rule
+    bool prepend = false;
+    Rule rule;
+    int status = RuleManager::parseRule(input, output, rule, prepend);
+    if (status != 0) {
+        return status;
+    }
+    for (auto& it : *applyTo) {
+        Client* client = it.second;
+        ClientChanges changes;
+        changes.focus = client == focus();
+        rule.evaluate(client, changes);
+        if (applyTo->size() > 1) {
+            // if we apply the rule to more than one
+            // client, then we leave the focus where it was
+            changes.focus = false;
+        }
+        applyChanges(client, changes, output);
+    }
+    return 0;
+}
+
+void ClientManager::applyTmpRuleCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        complete.full("--all");
+        completeClients(complete);
+    } else {
+        Root::get()->rules->addRuleCompletion(complete);
     }
 }
 
