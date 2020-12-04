@@ -136,7 +136,9 @@ def test_tags_restored_after_wmexec(hlwm, hlwm_process):
     hlwm.create_client()
 
     # Restart hlwm:
-    hlwm.call(['wmexec', hlwm_process.bin_path, '--verbose'])
+    p = hlwm.unchecked_call(['wmexec', hlwm_process.bin_path, '--verbose'],
+                            read_hlwm_output=False)
+    assert p.returncode == 0
     hlwm_process.read_and_echo_output(until_stdout='hlwm started')
 
     assert hlwm.list_children('tags.by-name') == sorted(expected_tags)
