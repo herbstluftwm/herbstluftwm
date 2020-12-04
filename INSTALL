@@ -115,12 +115,12 @@ Edit .Xmodmap:
     --- snip ---
     ! Make the Alt/Option key be Alt_L instead of Mode_switch
     keycode 63 = Alt_L
-
+    
     ! Make Meta_L be a Mod4 and get rid of Mod2
     clear mod2
     clear mod4
     add mod4 = Meta_L
-
+    
     ! Make Alt_L be a Mod1
     clear mod1
     add mod1 = Alt_L
