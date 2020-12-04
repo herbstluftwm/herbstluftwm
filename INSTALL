@@ -47,13 +47,15 @@ The CMake build system is used. It is recommended to use an out-of-tree build
 directory. The compilation and installation is configured by the following CMake
 variables which you can set on the initial cmake call and alter with ccmake:
 
-CMAKE_INSTALL_PREFIX         = /usr/            # the prefix
-CMAKE_INSTALL_SYSCONF_PREFIX = $(DESTDIR)/etc/  # path to etc directory
+    CMAKE_INSTALL_PREFIX         = /usr/            # the prefix
+    CMAKE_INSTALL_SYSCONF_PREFIX = $(DESTDIR)/etc/  # path to etc directory
 
 Individual paths for special files can be set with the *DIR variables, typically
 relative to CMAKE_INSTALL_PREFIX. If you are building package, you would
 typically build regularly, and install with DESTDIR=./path/to/fakeroot.
 
+    mkdir build && cd build
+    cmake ..
     make
     sudo make DESTDIR=./pkg/ install
 
