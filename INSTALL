@@ -100,8 +100,8 @@ To start the window manager within a running X-session, execute:
 
     herbstluftwm --locked
 
-*_--locked_* causes herbstluftwm not to update the screen until you unlock it
-with: *_herbstclient unlock_* (This is done automatically by the default autostart)
+`--locked` causes herbstluftwm not to update the screen until you unlock it
+with: `herbstclient unlock` (This is done automatically by the default autostart)
 
 ==== Quirks ====
 Mac OSX:
