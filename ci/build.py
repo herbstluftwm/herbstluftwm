@@ -14,9 +14,7 @@ def tox(tox_args, build_dir):
     """
     tox_env = os.environ.copy()
     tox_env['PWD'] = build_dir
-    # here, we pass --recreate to tox to enforce that the package
-    # of the hlwm python bindings is updated in the virtual environment
-    sp.check_call(f'tox --recreate {tox_args}', shell=True, cwd=build_dir, env=tox_env)
+    sp.check_call(f'tox {tox_args}', shell=True, cwd=build_dir, env=tox_env)
 
 
 parser = argparse.ArgumentParser()
