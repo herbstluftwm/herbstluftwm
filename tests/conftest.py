@@ -14,6 +14,7 @@ import sys
 import textwrap
 import time
 import types
+import herbstluftwm
 
 import pytest
 
@@ -31,13 +32,14 @@ def extend_env_with_whitelist(environment):
     return environment
 
 
-class HlwmBridge:
+class HlwmBridge(herbstluftwm.Herbstluftwm):
 
     HC_PATH = os.path.join(BINDIR, 'herbstclient')
     # if there is some HlwmBridge, then it is registered here:
     INSTANCE = None
 
     def __init__(self, display, hlwm_process):
+        herbstluftwm.Herbstluftwm.__init__(self, herbstclient=self.HC_PATH)
         HlwmBridge.INSTANCE = self
         self.client_procs = []
         self.next_client_id = 0
@@ -57,30 +59,12 @@ class HlwmBridge:
         # by self.hc_idle
         self.wmclass2winid = {}
 
-    def _parse_command(self, cmd):
-        """
-        Parse a command (a string using shell quotes or
-        a string list) to a string list.
-        """
-        if isinstance(cmd, list):
-            args = [str(x) for x in cmd]
-            assert args
-        else:
-            args = shlex.split(cmd)
-        return args
-
     def unchecked_call(self, cmd, log_output=True, read_hlwm_output=True):
         """call the command but do not check exit code or stderr"""
         args = self._parse_command(cmd)
 
         try:
-            proc = subprocess.run([self.HC_PATH, '-n'] + args,
-                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                  env=self.env,
-                                  universal_newlines=True,
-                                  # Kill hc when it hangs due to crashed server:
-                                  timeout=2
-                                  )
+            proc = herbstluftwm.Herbstluftwm.unchecked_call(self, cmd)
         except subprocess.TimeoutExpired:
             self.hlwm_process.investigate_timeout('calling ' + str(args))
 
@@ -100,14 +84,6 @@ class HlwmBridge:
         if read_hlwm_output:
             self.hlwm_process.read_and_echo_output()
 
-        return proc
-
-    def call(self, cmd):
-        """call the command and expect it to have exit code zero
-        and no output on stderr"""
-        proc = self.unchecked_call(cmd)
-        assert proc.returncode == 0
-        assert not proc.stderr
         return proc
 
     def call_xfail(self, cmd):
