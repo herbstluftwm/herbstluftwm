@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import shlex
 import subprocess
+from typing import List
 """
 Python bindings for herbstluftwm. The central entity for communication
 with the herbstluftwm server is the Herbstluftwm class. See the example.py
@@ -82,7 +83,7 @@ class AttributeProxy:
       - access children
     """
     _herbstluftwm: Herbstluftwm  # the herbstclient wrapper
-    _path: list[str]  # the path of this attribute/object
+    _path: List[str]  # the path of this attribute/object
 
     def __init__(self, herbstluftwm: Herbstluftwm, attribute_path):
         self._herbstluftwm = herbstluftwm
@@ -93,7 +94,7 @@ class AttributeProxy:
         return f'<AttributeProxy {path}>'
 
     @staticmethod
-    def _compose_path(path: list[str]) -> str:
+    def _compose_path(path: List[str]) -> str:
         return '.'.join(map(str, path))
 
     def _get_value_from_hlwm(self):
@@ -143,7 +144,7 @@ class AttributeProxy:
         self.__setattr__(name, value)
 
 
-def chain(chain_cmd, commands: list[list[str]]) -> list[str]:
+def chain(chain_cmd, commands: List[List[str]]) -> List[str]:
     """return a composed command that executes
     the commands given in the list. chain_cmd is one of:
       - chain
