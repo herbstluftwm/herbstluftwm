@@ -61,8 +61,8 @@ build_env = os.environ.copy()
 build_env.update({
     'CC': args.cc,
     'CXX': args.cxx,
-    'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined -fstack-protector-strong',
-    'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined -fstack-protector-strong',
+    'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
+    'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
 
     # Hash-verifying the compiler is required when building with
     # clang-and-tidy.sh (because the script's mtime is not stable) and for

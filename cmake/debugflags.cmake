@@ -8,6 +8,9 @@ set(FLAGS
     # Sanitizers:
     #-fsanitize=address,leak,undefined
 
+    # Force more stack protection:
+    -fstack-protector-strong
+
     # All kinds of pedantic warnings:
     -pedantic -Wall -Wextra
     -Wnull-dereference -Wdouble-promotion -Wformat=2 -Wshadow
@@ -29,7 +32,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
         # TODO: Consider adding -fanalyzer here (new in GCC-10)
 
-        # More stack stuff:
+        # gcc-specific stack checks:
         -fstack-clash-protection
         )
 
