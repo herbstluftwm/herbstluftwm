@@ -82,6 +82,23 @@ def test_explode(hlwm, running_clients, running_clients_num):
     verify_frame_objects_via_dump(hlwm)
 
 
+def test_explode_second_client(hlwm):
+    winids = hlwm.create_clients(2)
+    hlwm.call(['load', f'(clients vertical:1 {winids[0]} {winids[1]})'])
+    hlwm.call('split explode')
+
+    assert hlwm.get_attr('tags.0.curframe_wcount') == '1'
+    assert hlwm.get_attr('tags.0.curframe_windex') == '0'
+    # FIXME: in v0.7.2, the focus stayed in the client it was before!
+    expected_layout = textwrap.dedent(f"""\
+    (split vertical:0.5:0
+    (clients vertical:0 {winids[0]})
+    (clients vertical:0 {winids[1]}))
+    """).replace('\n', ' ').strip()
+    assert hlwm.call('dump').stdout == expected_layout
+    verify_frame_objects_via_dump(hlwm)
+
+
 @pytest.mark.parametrize("running_clients_num", [0, 1, 4])
 def test_remove(hlwm, running_clients, running_clients_num):
     hlwm.call('split explode')
@@ -287,14 +304,29 @@ def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_del
     new_windex = int(hlwm.get_attr('tags.0.curframe_windex'))
     expected_index = (windex + cycle_delta + wcount) % wcount if wcount > 0 else 0
     assert expected_index == new_windex
+    # check that the right winid is focused
+    layout = hlwm.call(['dump', '', '@']).stdout
+    winids = re.findall('0x[a-fA-f0-9]*', layout)
+    if len(winids) > 0:
+        assert winids[new_windex] == hlwm.get_attr('clients.focus.winid')
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 5])
 @pytest.mark.parametrize("index", [0, 1, 3, 5])
 def test_focus_nth(hlwm, running_clients, running_clients_num, index):
+    # bring the clients in the right order
+    layout = '(clients vertical:0 '
+    layout += ' '.join(running_clients)
+    layout += ')'
+    hlwm.call(['load', layout])
+
+    # focus the n_th
     hlwm.call('focus_nth {}'.format(index))
+
     windex = int(hlwm.get_attr('tags.0.curframe_windex'))
     assert windex == max(0, min(index, running_clients_num - 1))
+    if running_clients_num > 0:
+        assert hlwm.get_attr('clients.focus.winid') == running_clients[windex]
 
 
 @pytest.mark.parametrize("running_clients_num", [5])

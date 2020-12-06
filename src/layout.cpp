@@ -468,8 +468,6 @@ void FrameLeaf::setSelection(int index) {
         index = clients.size() - 1;
     }
     selection = index;
-    clients[selection]->window_focus();
-    get_current_monitor()->applyLayout();
 }
 
 int Frame::splitsToRoot(SplitAlign align) {
