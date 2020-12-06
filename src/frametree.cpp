@@ -152,6 +152,7 @@ int FrameTree::cycleSelectionCommand(Input input, Output output) {
     if (count != 0) {
         frame->setSelection(MOD(frame->getSelection() + delta, count));
     }
+    get_current_monitor()->applyLayout();
     return 0;
 }
 
@@ -162,6 +163,7 @@ int FrameTree::focusNthCommand(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     focusedFrame()->setSelection(atoi(index.c_str()));
+    get_current_monitor()->applyLayout();
     return 0;
 }
 
