@@ -28,6 +28,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         -Wduplicated-cond -Wduplicated-branches -Wlogical-op
 
         # TODO: Consider adding -fanalyzer here (new in GCC-10)
+
+        # More stack stuff:
+        -fstack-clash-protection
         )
 
     # Add GCC- *and* C++-specific flags
