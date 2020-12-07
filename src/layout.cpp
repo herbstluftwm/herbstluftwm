@@ -528,6 +528,7 @@ bool FrameLeaf::split(SplitAlign alignment, FixPrecDec fraction, size_t children
     if (splitsToRoot(alignment) > HERBST_MAX_TREE_HEIGHT) {
         return false;
     }
+    childrenLeaving = std::min(clients.size(), childrenLeaving);
     int childrenStaying = std::max((size_t)0, clients.size() - childrenLeaving);
     vector<Client*> leaves(clients.begin() + childrenStaying, clients.end());
     clients.erase(clients.begin() + childrenStaying, clients.end());
@@ -542,6 +543,8 @@ bool FrameLeaf::split(SplitAlign alignment, FixPrecDec fraction, size_t children
     tag_->frame->replaceNode(thisLeaf(), new_this);
     parent_ = new_this;
     if (selection >= childrenStaying) {
+        // if the focused client is moved to the second frameleaf, focus that
+        new_this->setSelection(1);
         second->setSelection(selection - childrenStaying);
         selection = std::max(0, childrenStaying - 1);
     }

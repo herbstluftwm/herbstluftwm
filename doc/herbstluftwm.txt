@@ -395,9 +395,9 @@ split 'ALIGN' ['FRACTION' ['FRAMEINDEX']::
     after the split. The other half will be occupied by the currently focused
     frame. After splitting, the originally focused frame will stay focused.
     One special 'ALIGN' mode is 'explode', which splits the frame in such a way
-    that the window sizes and positions are kept as much as possible. If no
-    'FRACTION' is given to 'explode' mode an optimal fraction is picked
-    automatically. Example:
+    that the window focus, window sizes, and positions are kept as much as
+    possible. If no 'FRACTION' is given to 'explode' mode an optimal fraction is
+    picked automatically. Example:
 
         * split explode
         * split bottom 0.5

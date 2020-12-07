@@ -882,7 +882,7 @@ vector<SplitMode> SplitMode::modes(SplitAlign align_explode, SplitAlign align_au
         { "right",      SplitAlign::horizontal,   true,   0   },
         { "horizontal", SplitAlign::horizontal,   true,   0   },
         { "left",       SplitAlign::horizontal,   false,  1   },
-        { "explode",    align_explode,            true,   0   },
+        { "explode",    align_explode,            true,   -1  },
         { "auto",       align_auto,               true,   0   },
     };
 }
@@ -969,7 +969,9 @@ int FrameTree::splitCommand(Input input, Output output)
     if (!m.frameToFirst) {
         frameParent->swapChildren();
     }
-    frameParent->setSelection(m.selection);
+    if (m.selection >= 0) {
+        frameParent->setSelection(m.selection);
+    }
 
     // redraw monitor
     get_current_monitor()->applyLayout();
