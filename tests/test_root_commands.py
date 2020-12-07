@@ -679,3 +679,18 @@ def test_foreach_identfier_completion(hlwm):
     # but the identfier is completed in the command parameter
     assert 'X ' in hlwm.complete(['foreach', 'X', 'tags.'], partial=True)
     assert 'X ' in hlwm.complete(['foreach', 'X', 'tags.', 'echo'], partial=True)
+
+
+def test_write_read_only_attribute(hlwm):
+    hlwm.call_xfail('set_attr tags.focus.curframe_wcount 10') \
+        .expect_stderr('attribute is read-only')
+
+
+def test_dyn_attribute_invalid_argument(hlwm):
+    hlwm.call_xfail('set_attr settings.window_border_inner_width foo') \
+        .expect_stderr('invalid argument: stoi')
+
+
+def test_dyn_attribute_out_of_range(hlwm):
+    hlwm.call_xfail('set_attr settings.window_border_inner_width 10000000000000000') \
+        .expect_stderr('out of range: stoi')
