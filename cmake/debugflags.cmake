@@ -15,6 +15,14 @@ set(FLAGS
     # Disable unused parameter warnings (most cases are on purpose):
     -Wno-unused-parameter
 
+    # range checks for C++ datatypes:
+    -D_GLIBCXX_ASSERTIONS
+
+    # more stack protection:
+    -fstack-protector-strong
+    -fcf-protection
+    -fstack-clash-protection
+
     # TODO: Fix complaints, then enable -Wconversion (gcc and clang might behave
     # differently)
 
