@@ -1,51 +1,23 @@
 name: HLWM CI
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build-test-current:
     # Name the Job
     name: Build and test on current ubuntu
     # Set the type of machine to run on
-    runs-on: ubuntu-latest
+    container: hlwm/ci:focal
 
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          DEBIAN_FRONTEND=noninteractive sudo apt-get -y install \
-            ccache \
-            clang-10 \
-            clang-tidy-10 \
-            cmake \
-            g++-9 \
-            iwyu \
-            lcov \
-            libx11-dev \
-            libxext-dev \
-            libxinerama-dev \
-            libxrandr-dev \
-            ninja-build \
-            pkg-config \
-            python3.8 \
-            tox \
-            x11-xserver-utils \
-            xdotool \
-            xterm \
-            xvfb \
-            xserver-xephyr
-
-
-      # Runs the Super-Linter action
       - name: Build
         run: |
-          ci/build.py --build-dir=./build --build-type=Debug --ccache=.ccache --compile
+          /hlwm/ci/build.py --build-dir=/hlwm/build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=/.ccache --compile
 
-      # Runs the Super-Linter action
       - name: Test
         run: |
-          ci/build.py --build-dir=./build --build-type=Debug --run-tests
+          /hlwm/ci/build.py --build-dir=/hlwm/build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=/.ccache --run-tests
