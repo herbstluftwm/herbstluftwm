@@ -23,18 +23,18 @@ jobs:
           key: focal-ccache
 
       - uses: actions/cache@v1
-        name: Cache ~/.tox-cache
+        name: Cache .tox-cache
         with:
-          path: ~/.tox-cache
+          path: .tox-cache
           key: focal-tox
 
       - name: Build
         run: |
-          ci/build.py --build-dir=build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=.ccache --compile
+          ci/build.py --build-dir=build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
 
       - name: Test
         run: |
-          ci/build.py --build-dir=build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=.ccache --run-tests
+          ci/build.py --build-dir=build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --run-tests
 
 #      - name: Codecov report
 #        run: |
