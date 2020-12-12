@@ -17,8 +17,8 @@ jobs:
 
       - name: Build
         run: |
-          /hlwm/ci/build.py --build-dir=/hlwm/build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=/.ccache --compile
+          ci/build.py --build-dir=build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=.ccache --compile
 
       - name: Test
         run: |
-          /hlwm/ci/build.py --build-dir=/hlwm/build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=/.ccache --run-tests
+          ci/build.py --build-dir=build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=.ccache --run-tests
