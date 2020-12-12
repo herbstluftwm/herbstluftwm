@@ -16,7 +16,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get -y install \
+          sudo apt-get update
+          DEBIAN_FRONTEND=noninteractive sudo apt-get -y install \
             ccache \
             clang-10 \
             clang-tidy-10 \
