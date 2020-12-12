@@ -32,7 +32,10 @@ parser.add_argument('--ccache', nargs='?', metavar='ccache dir', type=str,
                     const=os.environ.get('CCACHE_DIR') or True)
 args = parser.parse_args()
 
-repo = Path(__file__).resolve().parent.parent
+repo = sp.run('git rev-parse --show-toplevel',
+              shell=True,
+              universal_newlines=True,
+              stdout=sp.PIPE).stdout.rstrip()
 build_dir = Path(args.build_dir)
 build_dir.mkdir(exist_ok=True)
 
