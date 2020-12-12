@@ -1,6 +1,7 @@
 name: HLWM CI
 
-on: [push, pull_request]
+# on: [push, pull_request]
+on: push
 
 jobs:
   build-test-current:
@@ -15,6 +16,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - uses: actions/cache@v1
+        name: Cache ~/.ccache
+        with:
+          path: ~/.ccache
+          key: focal-ccache
+
+      - uses: actions/cache@v1
+        name: Cache ~/.tox-cache
+        with:
+          path: ~/.tox-cache
+          key: focal-tox
+
       - name: Build
         run: |
           ci/build.py --build-dir=build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=.ccache --compile
@@ -22,3 +35,7 @@ jobs:
       - name: Test
         run: |
           ci/build.py --build-dir=build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=.ccache --run-tests
+
+      - name: Codecov report
+        run: |
+          bash <(wget -O - https://codecov.io/bash) -f coverage.info || echo Warning: codecov report failed
