@@ -14,6 +14,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y install \
+            ccache \
+            clang-10 \
+            clang-tidy-10 \
+            cmake \
+            g++-9 \
+            iwyu \
+            lcov \
+            libx11-dev \
+            libxext-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            ninja-build \
+            pkg-config \
+            python3.8 \
+            tox \
+            x11-xserver-utils \
+            xdotool \
+            xterm \
+            xvfb \
+            xserver-xephyr
+
+
       # Runs the Super-Linter action
       - name: Build
         run: |
