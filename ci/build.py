@@ -129,7 +129,7 @@ if args.run_tests:
 
     # First, run only the tests that are NOT marked to be excluded from code
     # coverage collection.
-    tox('-e py38 -- -n auto --cache-clear -v -x -k herbst', build_dir)
+    tox('-e py38 -- -n auto --cache-clear -v -x -m "not exclude_from_coverage"', build_dir)
 
     # Create the code coverage report:
     sp.check_call('lcov --capture --directory . --output-file coverage.info', shell=True, cwd=build_dir)
