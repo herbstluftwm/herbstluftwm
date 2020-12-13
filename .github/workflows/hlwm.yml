@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Test process subst
-        run: cat <(echo works) || echo Warning
+        run: 'cat <(echo works) || echo Warning'
 
       - uses: actions/cache@v1
         name: Cache ~/.ccache
