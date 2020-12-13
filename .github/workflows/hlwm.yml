@@ -37,6 +37,7 @@ jobs:
           ci/build.py --build-dir=build --run-tests
 
       - name: Codecov report
+        continue-on-error: true
         run: |
           wget -O codecov-io.bash https://codecov.io/bash
           bash codecov-io.bash -f coverage.info
@@ -61,21 +62,21 @@ jobs:
           path: .tox-cache
           key: focal-tox # same name as in build-test-current
 
-      - name: Build
-        run: |
-          ci/build.py --build-dir=build --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
-
       - name: Check usage of std-prefix
         run: |
           ci/build.py --build-dir=build --check-using-std
 
-      - name: Check includes using iwyu
-        run: |
-          ci/build.py --build-dir=build --iwyu
-
       - name: Check python using flake8
         run: |
           ci/build.py --build-dir=build --flake8
+
+      - name: Build
+        run: |
+          ci/build.py --build-dir=build --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
+
+      - name: Check includes using iwyu
+        run: |
+          ci/build.py --build-dir=build --iwyu
 
   build-old-32bit:
     name: Build for 32bit with ancient GCC on Ubuntu 14.04
