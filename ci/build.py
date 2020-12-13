@@ -19,7 +19,8 @@ def tox(tox_args, build_dir):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--build-dir', type=str, required=True)
-parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'), required=True)
+parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'))
+parser.add_argument('--cmake', action='store_true')
 parser.add_argument('--compile', action='store_true')
 parser.add_argument('--run-tests', action='store_true')
 parser.add_argument('--build-docs', action='store_true')
@@ -57,32 +58,33 @@ if args.ccache:
     # Print config for confirmation:
     sp.check_call('ccache -p', shell=True)
 
-build_env = os.environ.copy()
-build_env.update({
-    'CC': args.cc,
-    'CXX': args.cxx,
-    'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
-    'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
+if args.cmake:
+    build_env = os.environ.copy()
+    build_env.update({
+        'CC': args.cc,
+        'CXX': args.cxx,
+        'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
+        'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
 
-    # Hash-verifying the compiler is required when building with
-    # clang-and-tidy.sh (because the script's mtime is not stable) and for
-    # other cases, the overhead is minimal):
-    'CCACHE_COMPILERCHECK': 'content',
+        # Hash-verifying the compiler is required when building with
+        # clang-and-tidy.sh (because the script's mtime is not stable) and for
+        # other cases, the overhead is minimal):
+        'CCACHE_COMPILERCHECK': 'content',
 
-    # In case clang-and-tidy.sh is used for building, it will need this to call
-    # clang-tidy:
-    'CLANG_TIDY_BUILD_DIR': str(build_dir),
-})
+        # In case clang-and-tidy.sh is used for building, it will need this to call
+        # clang-tidy:
+        'CLANG_TIDY_BUILD_DIR': str(build_dir),
+    })
 
-cmake_args = [
-    '-GNinja',
-    '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
-    f'-DCMAKE_BUILD_TYPE={args.build_type}',
-    f'-DWITH_DOCUMENTATION={"YES" if args.build_docs else "NO"}',
-    f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}',
-]
+    cmake_args = [
+        '-GNinja',
+        '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON',
+        f'-DCMAKE_BUILD_TYPE={args.build_type}',
+        f'-DWITH_DOCUMENTATION={"YES" if args.build_docs else "NO"}',
+        f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}',
+    ]
 
-sp.check_call(['cmake', *cmake_args, repo], cwd=build_dir, env=build_env)
+    sp.check_call(['cmake', *cmake_args, repo], cwd=build_dir, env=build_env)
 
 if args.compile:
     sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
