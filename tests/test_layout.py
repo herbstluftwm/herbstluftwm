@@ -89,14 +89,24 @@ def test_explode_second_client(hlwm):
 
     assert hlwm.get_attr('tags.0.curframe_wcount') == '1'
     assert hlwm.get_attr('tags.0.curframe_windex') == '0'
-    # FIXME: in v0.7.2, the focus stayed in the client it was before!
     expected_layout = textwrap.dedent(f"""\
-    (split vertical:0.5:0
+    (split vertical:0.5:1
     (clients vertical:0 {winids[0]})
     (clients vertical:0 {winids[1]}))
     """).replace('\n', ' ').strip()
     assert hlwm.call('dump').stdout == expected_layout
     verify_frame_objects_via_dump(hlwm)
+
+
+@pytest.mark.parametrize("running_clients_num", [4])
+@pytest.mark.parametrize("focus_idx", range(0, 4))
+def test_explode_preserves_focus(hlwm, running_clients, running_clients_num, focus_idx):
+    hlwm.call(['focus_nth', focus_idx])
+    winid = hlwm.attr.clients.focus.winid()
+
+    for i in range(0, running_clients_num):
+        hlwm.call('split explode')
+        assert winid == hlwm.attr.clients.focus.winid()
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 4])
