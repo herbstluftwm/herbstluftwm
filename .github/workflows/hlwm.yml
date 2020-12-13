@@ -102,5 +102,5 @@ jobs:
           mkdir build
           cd build
           cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES ..
-          time ninja -v -k10
+          ninja -v -k10
           ccache -s
