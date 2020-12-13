@@ -1,11 +1,6 @@
 herbstluftwm
 ============
 
-image:https://travis-ci.org/herbstluftwm/herbstluftwm.svg?branch=master[link=
-https://travis-ci.org/herbstluftwm/herbstluftwm?branch=master]
-image:https://codecov.io/gh/herbstluftwm/herbstluftwm/branch/master/graph/badge.svg[link=
-https://codecov.io/gh/herbstluftwm/herbstluftwm]
-
 herbstluftwm is a manual tiling window manager for X. It licensed under the
 "Simplified BSD License" (see `LICENSE`).
 
