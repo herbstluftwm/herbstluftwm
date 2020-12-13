@@ -92,6 +92,11 @@ jobs:
           key: ccache-gcc-4.8 # different name than in build-test-current
 
       - name: Build
+        env:
+          CC: gcc-4.8
+          CXX: g++-4.8
+          CXXFLAGS: -m32
+          CFLAGS: -m32
         run: |
           ccache -z --max-size=500M
           mkdir build
