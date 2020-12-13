@@ -2,7 +2,9 @@ pull_request_rules:
     - name: automatic merge on CI success and review
       conditions:
           - base=master
-          - status-success=Travis CI - Pull Request
+          - status-success=Build and test on current ubuntu
+          - status-success=Build with Clang, run linters and static analyzers
+          - status-success=Build for 32bit with ancient GCC on Ubuntu 14.04
           - "#approved-reviews-by>=1"
           - label≠wip
       actions:
@@ -13,7 +15,9 @@ pull_request_rules:
     - name: Implicitly allow t-wissmann to approve own pull requests
       conditions:
           - author=t-wissmann
-          - status-success=Travis CI - Pull Request
+          - status-success=Build and test on current ubuntu
+          - status-success=Build with Clang, run linters and static analyzers
+          - status-success=Build for 32bit with ancient GCC on Ubuntu 14.04
           - label≠wip
           - label=self-approved
       actions:
