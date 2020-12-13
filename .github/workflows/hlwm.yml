@@ -16,9 +16,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Test process subst
-        run: 'cat <(echo works) || echo Warning'
-
       - uses: actions/cache@v1
         name: Cache ~/.ccache
         with:
@@ -39,6 +36,7 @@ jobs:
         run: |
           ci/build.py --build-dir=build --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --run-tests
 
-#      - name: Codecov report
-#        run: |
-#          bash <(wget -O - https://codecov.io/bash) -f coverage.info || echo Warning: codecov report failed
+      - name: Codecov report
+        run: |
+          wget -O codecov-io.bash https://codecov.io/bash
+          bash codecov-io.bash -f coverage.info
