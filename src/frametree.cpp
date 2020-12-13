@@ -28,6 +28,7 @@ using std::vector;
 
 FrameTree::FrameTree(HSTag* tag, Settings* settings)
     : rootLink_(*this, "root")
+    , focused_frame_(*this, "focused_frame", &FrameTree::focusedFramePlainPtr)
     , tag_(tag)
     , settings_(settings)
 {
@@ -35,6 +36,7 @@ FrameTree::FrameTree(HSTag* tag, Settings* settings)
     rootLink_ = root_.get();
     (void) tag_;
     (void) settings_;
+    focused_frame_.setDoc("The focused frame (leaf) in this frame tree");
 }
 
 void FrameTree::foreachClient(function<void(Client*)> action)
@@ -150,6 +152,7 @@ int FrameTree::cycleSelectionCommand(Input input, Output output) {
     if (count != 0) {
         frame->setSelection(MOD(frame->getSelection() + delta, count));
     }
+    get_current_monitor()->applyLayout();
     return 0;
 }
 
@@ -160,6 +163,7 @@ int FrameTree::focusNthCommand(Input input, Output output) {
         return HERBST_NEED_MORE_ARGS;
     }
     focusedFrame()->setSelection(atoi(index.c_str()));
+    get_current_monitor()->applyLayout();
     return 0;
 }
 
@@ -236,6 +240,44 @@ int FrameTree::rotateCommand() {
     root_->fmap(onSplit, onLeaf, -1);
     get_current_monitor()->applyLayout();
     return 0;
+}
+
+template<>
+Finite<FrameTree::MirrorDirection>::ValueList Finite<FrameTree::MirrorDirection>::values = {
+    { FrameTree::MirrorDirection::Horizontal, "horizontal" },
+    { FrameTree::MirrorDirection::Vertical, "vertical" },
+    { FrameTree::MirrorDirection::Both, "both" },
+};
+
+int FrameTree::mirrorCommand(Input input, Output output)
+{
+    using MD = MirrorDirection;
+    MirrorDirection dir = MD::Horizontal;
+    ArgParse ap = ArgParse().optional(dir);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
+    }
+    auto onSplit = [dir] (FrameSplit* s) {
+            bool mirror =
+                dir == MD::Both
+                || (dir == MD::Horizontal && s->align_ == SplitAlign::horizontal)
+                || (dir == MD::Vertical && s->align_ == SplitAlign::vertical);
+            if (mirror) {
+                s->selection_ = s->selection_ ? 0 : 1;
+                swap(s->a_, s->b_);
+                s->fraction_ = FixPrecDec::fromInteger(1) - s->fraction_;
+            }
+        };
+    root_->fmap(onSplit, [] (FrameLeaf*) { }, -1);
+    get_current_monitor()->applyLayout();
+    return 0;
+}
+
+void FrameTree::mirrorCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        Converter<MirrorDirection>::complete(complete);
+    }
 }
 
 shared_ptr<TreeInterface> FrameTree::treeInterface(
@@ -339,6 +381,16 @@ shared_ptr<FrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_ptr
         }
     }
     return closestFrame;
+}
+
+Frame* FrameTree::focusedFramePlainPtr()
+{
+    auto shared = focusedFrame();
+    if (shared) {
+        return shared.get();
+    } else {
+        return nullptr;
+    }
 }
 
 //! check whether there is an empty frame in the given subtree,
@@ -664,6 +716,10 @@ void FrameTree::applyFrameTree(shared_ptr<Frame> target,
         // this might even involve the above targetLeaf / targetSplit
         // so we need to do this before everything else
         for (const auto& client : sourceLeaf->clients) {
+            // first un-minimize and un-float the client
+            // such that we know that it is in the frame-tree
+            client->floating_ = false;
+            client->minimized_ = false;
             client->tag()->frame->root_->removeClient(client);
             if (client->tag() != tag_) {
                 client->tag()->stack->removeSlice(client->slice);

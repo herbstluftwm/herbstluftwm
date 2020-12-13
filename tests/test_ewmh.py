@@ -2,6 +2,7 @@ import conftest
 import os
 import pytest
 from Xlib import X
+import Xlib
 
 
 def test_net_wm_desktop_after_load(hlwm, x11):
@@ -26,6 +27,79 @@ def test_net_wm_desktop_after_bring(hlwm, x11):
     hlwm.call(['bring', winid])
 
     assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 1
+
+
+def test_net_wm_desktop_after_tag_index_increment(hlwm, x11):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    hlwm.call('add tag3')
+    # put a new window on the tag with index 1
+    hlwm.call('rule tag=tag1')
+    win, winid = x11.create_client()
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 1
+
+    # move the tag3 to the beginning of the list
+    hlwm.call('attr tags.by-name.tag3.index 0')
+    # so the index of the tag of the client increased by one
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 2
+
+
+@pytest.mark.parametrize('method', ['index_change', 'tag_removal'])
+def test_net_wm_desktop_after_tag_index_decrement(hlwm, method, x11):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    hlwm.call('add tag3')
+    # put a new window on the tag with index 3
+    hlwm.call('rule tag=tag3')
+    win, winid = x11.create_client()
+    assert hlwm.get_attr('tags.by-name.tag3.index') == '3'
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 3
+
+    if method == 'index_change':
+        # move the tag1 to the end of the list
+        hlwm.call('attr tags.by-name.tag1.index 3')
+    elif method == 'tag_removal':
+        # remove 'tag1' so all later tags experience a index shift
+        hlwm.call('merge_tag tag1 default')
+
+    # so the index of the tag of the client decreased by one
+    assert hlwm.get_attr('tags.by-name.tag3.index') == '2'
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 2
+
+
+@pytest.mark.parametrize('new_idx', [0, 1, 2])
+def test_net_wm_desktop_after_tag_index_direct_change(hlwm, x11, new_idx):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    hlwm.call('rule tag=tag2')
+    win, winid = x11.create_client()
+    assert hlwm.get_attr('tags.by-name.tag2.index') == '2'
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == 2
+
+    hlwm.call(f'attr tags.by-name.tag2.index {new_idx}')
+
+    assert int(hlwm.get_attr('tags.by-name.tag2.index')) == new_idx
+    assert x11.get_property('_NET_WM_DESKTOP', win)[0] == new_idx
+
+
+@pytest.mark.parametrize('focus_idx', range(0, 4))
+@pytest.mark.parametrize('old_idx', range(0, 4))
+@pytest.mark.parametrize('new_idx', range(0, 4))
+def test_net_current_desktop_after_tag_index_change(hlwm, x11, focus_idx, old_idx, new_idx):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    hlwm.call('add tag3')
+
+    hlwm.call(f'use_index {focus_idx}')
+    x11.display.sync()
+    assert int(hlwm.get_attr('tags.focus.index')) == x11.ewmh.getCurrentDesktop()
+    focus_name = hlwm.get_attr('tags.focus.name')
+
+    hlwm.call(f'attr tags.{old_idx}.index {new_idx}')
+
+    x11.display.sync()
+    assert int(hlwm.get_attr('tags.focus.index')) == x11.ewmh.getCurrentDesktop()
+    assert focus_name == hlwm.get_attr('tags.focus.name')
 
 
 @pytest.mark.parametrize('utf8names,desktop_names', [
@@ -62,7 +136,9 @@ def test_tags_restored_after_wmexec(hlwm, hlwm_process):
     hlwm.create_client()
 
     # Restart hlwm:
-    hlwm.call(['wmexec', hlwm_process.bin_path, '--verbose'])
+    p = hlwm.unchecked_call(['wmexec', hlwm_process.bin_path, '--verbose'],
+                            read_hlwm_output=False)
+    assert p.returncode == 0
     hlwm_process.read_and_echo_output(until_stdout='hlwm started')
 
     assert hlwm.list_children('tags.by-name') == sorted(expected_tags)
@@ -150,6 +226,28 @@ def test_wm_state_type(hlwm, x11):
     prop = win.get_full_property(wm_state, X.AnyPropertyType)
     assert prop.property_type == wm_state
     assert len(prop.value) == 2
+
+
+def test_wm_state_of_visible_client(hlwm, x11):
+    win, _ = x11.create_client(sync_hlwm=True)
+    wm_state = x11.display.intern_atom('WM_STATE')
+    prop = win.get_full_property(wm_state, X.AnyPropertyType)
+    assert prop.value[0] == 1  # NormalState
+
+
+@pytest.mark.parametrize('show_for_a_moment', [True, False])
+def test_wm_state_of_hidden_client(hlwm, x11, show_for_a_moment):
+    hlwm.call('chain , add foo , rule tag=foo')
+    win, _ = x11.create_client(sync_hlwm=True)
+    wm_state = x11.display.intern_atom('WM_STATE')
+
+    if show_for_a_moment:
+        hlwm.call('use foo')
+        hlwm.call('use_previous')
+
+    prop = win.get_full_property(wm_state, X.AnyPropertyType)
+    assert prop.value[0] == 3  # IconicState
+    # see https://tronche.com/gui/x/icccm/sec-4.html#s-4.1.3.1
 
 
 def test_ewmh_focus_client(hlwm, x11):
@@ -253,3 +351,46 @@ def test_ewmh_make_client_urgent_no_focus_stealing(hlwm, hc_idle, x11):
     assert demandsAttent in x11.ewmh.getWmState(winHandle, str=True)
     assert 'focus' not in hlwm.list_children('clients')
     assert 'default' == hlwm.get_attr('tags.focus.name')
+
+
+@pytest.mark.parametrize('minimized', [True, False])
+def test_minimization_announced(hlwm, x11, minimized):
+    winHandle, winid = x11.create_client()
+
+    hlwm.call(f'set_attr clients.{winid}.minimized {hlwm.bool(minimized)}')
+
+    hidden = '_NET_WM_STATE_HIDDEN'
+    assert (hidden in x11.ewmh.getWmState(winHandle, str=True)) == minimized
+
+
+def xiconifywindow(display, window, screen):
+    """Implementation of XIconifyWindow()"""
+    wm_change_state = display.get_atom('WM_CHANGE_STATE')
+    # IconicState of https://tronche.com/gui/x/icccm/sec-4.html#s-4.1.3.1
+    iconic_state = 3
+    event = Xlib.protocol.event.ClientMessage(
+        window=window,
+        client_type=wm_change_state,
+        data=(32, [iconic_state, 0, 0, 0, 0]))
+    mask = X.SubstructureRedirectMask | X.SubstructureNotifyMask
+    screen.root.send_event(event, event_mask=mask)
+    display.flush()
+
+
+def test_minimize_via_xlib(hlwm, x11):
+    winHandle, winid = x11.create_client()
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'false'
+
+    xiconifywindow(x11.display, winHandle, x11.screen)
+
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'true'
+
+
+def test_unminimize_via_xlib(hlwm, x11):
+    winHandle, winid = x11.create_client()
+    hlwm.call(f'set_attr clients.{winid}.minimized true')
+
+    winHandle.map()
+    x11.display.flush()
+
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'false'

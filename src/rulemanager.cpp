@@ -1,5 +1,6 @@
 #include "rulemanager.h"
 
+#include <algorithm>
 #include <string>
 
 #include "completion.h"
@@ -10,17 +11,18 @@
 using std::string;
 using std::to_string;
 using std::endl;
+using std::unique_ptr;
 
-/*!
- * Implements the "rule" IPC command
+/**
+ * @brief RuleManager::parseRule
+ * @param input
+ * @param output
+ * @param the rule to modify
+ * @param whether the 'prepend' flag was given in input
+ * @return
  */
-int RuleManager::addRuleCommand(Input input, Output output) {
-    Rule rule;
-
-    // Assign default label (index will be incremented if adding the rule
-    // actually succeeds)
-    rule.label = to_string(rule_label_index_);
-
+int RuleManager::parseRule(Input input, Output output, Rule& rule, bool& prepend)
+{
     // Possible flags that apply to the rule as a whole:
     std::map<string, bool> ruleFlags = {
         {"once", false},
@@ -59,7 +61,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         try {
             std::tie(lhs, oper, rhs) = tokenizeArg(arg);
         } catch (std::invalid_argument &error) {
-            output << "rule: " << error.what() << endl;
+            output << input.command() << ": " << error.what() << endl;
             return HERBST_INVALID_ARGUMENT;
         }
 
@@ -75,7 +77,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
         // Check if lhs is a consequence name
         if (Consequence::appliers.count(lhs)) {
             if (oper == '~') {
-                output << "rule: Operator ~ not valid for consequence \"" << lhs << "\"\n";
+                output << input.command() << ": Operator ~ not valid for consequence \"" << lhs << "\"\n";
                 return HERBST_INVALID_ARGUMENT;
             }
 
@@ -96,7 +98,7 @@ int RuleManager::addRuleCommand(Input input, Output output) {
             continue;
         }
 
-        output << "rule: Unknown argument \"" << arg << "\"\n";
+        output << input.command() << ": Unknown argument \"" << arg << "\"\n";
         return HERBST_INVALID_ARGUMENT;
     }
 
@@ -107,13 +109,28 @@ int RuleManager::addRuleCommand(Input input, Output output) {
     if (ruleFlags["printlabel"]) {
        output << rule.label << "\n";
     }
+    prepend = ruleFlags["prepend"];
+    return 0;
+}
+
+int RuleManager::addRuleCommand(Input input, Output output) {
+    Rule rule;
+    bool prepend = false;
+
+    // Assign default label (index will be incremented if adding the rule
+    // actually succeeds)
+    rule.label = to_string(rule_label_index_);
+    int status = parseRule(input, output, rule, prepend);
+    if (status != 0) {
+        return status;
+    }
 
     // At this point, adding the rule will be successful, so increment the
     // label index (as it says in the docs):
     rule_label_index_++;
 
     // Insert rule into list according to "prepend" flag
-    auto insertAt = ruleFlags["prepend"] ? rules_.begin() : rules_.end();
+    auto insertAt = prepend ? rules_.begin() : rules_.end();
     rules_.insert(insertAt, make_unique<Rule>(rule));
 
     return HERBST_EXIT_SUCCESS;
@@ -214,59 +231,15 @@ void RuleManager::addRuleCompletion(Completion& complete) {
 
 //! Evaluate rules against a given client
 ClientChanges RuleManager::evaluateRules(Client* client, ClientChanges changes) {
-    auto ruleIter = rules_.begin();
-    while (ruleIter != rules_.end()) {
-        auto& rule = *ruleIter;
-        bool matches = true;    // if current condition matches
-        bool rule_match = true; // if entire rule matches
-        bool rule_expired = false;
-
-        // check all conditions
-        for (auto& cond : rule->conditions) {
-            if (!rule_match && cond.name != "maxage") {
-                // implement lazy AND &&
-                // ... except for maxage
-                continue;
-            }
-
-            matches = Condition::matchers.at(cond.name)(&cond, client);
-
-            if (!matches && !cond.negated
-                && cond.name == "maxage") {
-                // if if not negated maxage does not match anymore
-                // then it will never match again in the future
-                rule_expired = true;
-            }
-
-            if (cond.negated) {
-                matches = ! matches;
-            }
-            rule_match = rule_match && matches;
-        }
-
-        if (rule_match) {
-            // apply all consequences
-            for (auto& cons : rule->consequences) {
-                try {
-                    Consequence::appliers.at(cons.name)(&cons, client, &changes);
-                } catch (std::exception& e) {
-                    HSWarning("Invalid argument \"%s\" for rule consequence \"%s\": %s\n",
-                              cons.value.c_str(),
-                              cons.name.c_str(),
-                              e.what());
-                }
-            }
-        }
-
-        // remove it if not wanted or needed anymore
-        if ((rule_match && rule->once) || rule_expired) {
-            ruleIter = rules_.erase(ruleIter);
-        } else {
-            // try next
-            ruleIter++;
-        }
-    }
-
+    // go through all rules and remove those that expired.
+    // Here, we use erase + remove_if because it uses a Forward Iterator
+    // and so it is ensured that the rules are evaluated in the correct order.
+    auto forEachRule = [&](unique_ptr<Rule>& rule) {
+        rule->evaluate(client, changes);
+        return rule->expired();
+    };
+    rules_.erase(std::remove_if(rules_.begin(), rules_.end(), forEachRule),
+                 rules_.end());
     return changes;
 }
 

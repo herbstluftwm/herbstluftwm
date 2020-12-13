@@ -1,10 +1,12 @@
 #include "tag.h"
 
+#include <sstream>
 #include <type_traits>
 
 #include "argparse.h"
 #include "client.h"
 #include "completion.h"
+#include "ewmh.h"
 #include "floating.h"
 #include "frametree.h"
 #include "hlwmcommon.h"
@@ -22,12 +24,14 @@ using std::function;
 using std::make_shared;
 using std::shared_ptr;
 using std::string;
+using std::stringstream;
 
 static bool    g_tag_flags_dirty = true;
 
 HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     : frame(*this, "tiling")
-    , index(this, "index", 0)
+    , index(this, "index", 0, &HSTag::isValidTagIndex)
+    , visible(this, "visible", false)
     , floating(this, "floating", false, [](bool){return "";})
     , floating_focused(this, "floating_focused", false, [](bool){return "";})
     , name(this, "name", name_,
@@ -39,13 +43,21 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
         [this] () { return frame->focusedFrame()->getSelection(); } )
     , curframe_wcount(this, "curframe_wcount",
         [this] () { return frame->focusedFrame()->clientCount(); } )
+    , focused_client(*this, "focused_client", &HSTag::focusedClient)
     , flags(0)
     , floating_clients_focus_(0)
     , oldName_(name_)
+    , tags_(tags)
     , settings_(settings)
 {
     stack = make_shared<Stack>();
     frame.init(this, settings);
+    index.changed().connect([this, tags](unsigned long newIdx) {
+        tags->indexChangeRequested(this, newIdx);
+        foreachClient([this](Client* client) {
+            Ewmh::get().windowUpdateTag(client->window_, this);
+        });
+    });
     floating.changed().connect(this, &HSTag::onGlobalFloatingChange);
     // FIXME: actually this connection of the signals like this
     // must work:
@@ -57,6 +69,16 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
     floating_focused.setValidator([this](bool v) {
         return this->floatingLayerCanBeFocused(v);
     });
+
+    visible.setDoc("if this tag is shown on some monitor");
+    floating.setDoc("if the entire tag is set to floating mode");
+    floating_focused.setDoc("if the floating layer is focused"
+                            " (otherwise the tiling layer is)");
+    frame_count.setDoc("the number of frames on this tag");
+    client_count.setDoc("the number of clients on this tag");
+    urgent_count.setDoc("the number of urgent clients on this tag");
+    curframe_windex.setDoc("index of the focused client in the selected frame");
+    curframe_wcount.setDoc("number of clients in the selected frame");
 }
 
 HSTag::~HSTag() {
@@ -85,7 +107,12 @@ bool HSTag::focusClient(Client* client)
     }
 }
 
-void HSTag::applyFloatingState(Client* client)
+/**
+ * @brief To be called whenever the floating or minimization
+ * state of a client changes.
+ * @param client
+ */
+void HSTag::applyClientState(Client* client)
 {
     if (!client) {
         return;
@@ -95,38 +122,52 @@ void HSTag::applyFloatingState(Client* client)
         // make it that client stays focused
         floating_focused = client->floating_();
     }
-    if (client->floating_()) {
+    // only floated clients can be minimized
+    if (client->floating_() || client->minimized_()) {
         // client wants to be floated
-        if (!frame->root_->removeClient(client)) {
-            return;
+        if (frame->root_->removeClient(client)) {
+            floating_clients_.push_back(client);
+            if (focused && !client->minimized_()) {
+                floating_clients_focus_ = floating_clients_.size() - 1;
+            }
+            stack->sliceRemoveLayer(client->slice, LAYER_NORMAL);
+            stack->sliceAddLayer(client->slice, LAYER_FLOATING);
         }
-        floating_clients_.push_back(client);
-        if (focused) {
-            floating_clients_focus_ = floating_clients_.size() - 1;
-        }
-        stack->sliceRemoveLayer(client->slice, LAYER_NORMAL);
-        stack->sliceAddLayer(client->slice, LAYER_FLOATING);
     } else {
         // client wants to be tiled again
         auto it = std::find(floating_clients_.begin(), floating_clients_.end(), client);
-        if (it == floating_clients_.end()) {
-            return;
+        if (it != floating_clients_.end()) {
+            floating_clients_.erase(it);
+            frame->focusedFrame()->insertClient(client, true);
+            if (!floating()) {
+                stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
+            }
+            stack->sliceAddLayer(client->slice, LAYER_NORMAL);
         }
-        floating_clients_.erase(it);
-        frame->focusedFrame()->insertClient(client, true);
-        if (!floating()) {
-            stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
-        }
-        stack->sliceAddLayer(client->slice, LAYER_NORMAL);
     }
-    needsRelayout_.emit();
+    if (!hasVisibleFloatingClients()) {
+        floating_focused = false;
+    }
+    bool client_becomes_visible = !client->minimized_() && this->visible();
+    if (client_becomes_visible) {
+        needsRelayout_.emit();
+        client->set_visible(client_becomes_visible);
+    } else {
+        client->set_visible(client_becomes_visible);
+        needsRelayout_.emit();
+    }
 }
 
-void HSTag::setVisible(bool visible)
+void HSTag::setVisible(bool newVisible)
 {
+    visible = newVisible;
     frame->root_->setVisibleRecursive(visible);
     for (Client* c : floating_clients_) {
-        c->set_visible(visible);
+        if (c->minimized_()) {
+            c->set_visible(false);
+        } else {
+            c->set_visible(visible);
+        }
     }
 }
 
@@ -140,12 +181,27 @@ bool HSTag::removeClient(Client* client) {
     }
     floating_clients_.erase(it);
     fixFocusIndex();
-    if (floating_clients_.empty()) {
+    if (!hasVisibleFloatingClients()) {
         // if it was the last floating client
         // focus back the tiling
         floating_focused = false;
     }
     return true;
+}
+
+/**
+ * @brief returns whether there are floating clients that
+ * are visible. Equivalently, whether there are floating and non-minimized clients
+ * @return
+ */
+bool HSTag::hasVisibleFloatingClients() const
+{
+    for (Client* c : floating_clients_) {
+        if (!c->minimized_()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void HSTag::foreachClient(function<void (Client *)> loopBody)
@@ -180,9 +236,9 @@ Client *HSTag::focusedClient()
 
 void HSTag::insertClient(Client* client, string frameIndex, bool focus)
 {
-    if (client->floating_()) {
+    if (client->floating_() || client->minimized_()) {
         floating_clients_.push_back(client);
-        if (focus) {
+        if (focus && !client->minimized_()) {
             floating_clients_focus_ = floating_clients_.size() - 1;
             floating_focused = true;
         }
@@ -202,7 +258,7 @@ void HSTag::insertClientSlice(Client* client)
     stack->insertSlice(client->slice);
     if (floating()) {
         stack->sliceAddLayer(client->slice, LAYER_FLOATING);
-    } else if (!client->floating_()) {
+    } else if (!client->floating_() && !client->minimized_()) {
         stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
     }
 }
@@ -219,20 +275,14 @@ void HSTag::removeClientSlice(Client* client)
 int HSTag::focusInDirCommand(Input input, Output output)
 {
     bool external_only = settings_->default_direction_external_only();
-    if (input.size() >= 2) {
-        string internextern;
-        input >> internextern;
-        if (internextern == "-i") {
-            external_only = false;
-        }
-        if (internextern == "-e") {
-            external_only = true;
-        }
-    }
     Direction direction = Direction::Left; // some default to satisfy the linter
     ArgParse ap;
+    ap.flags({
+        {"-i", [&external_only] () { external_only = false; }},
+        {"-e", [&external_only] () { external_only = true; }},
+    });
     ap.mandatory(direction);
-    if (ap.parsingFails(input, output)) {
+    if (ap.parsingAllFails(input, output)) {
         return ap.exitCode();
     }
 
@@ -279,21 +329,9 @@ int HSTag::cycleAllCommand(Input input, Output output)
 {
     bool skip_invisible = false;
     int delta = 1;
-    string s = "";
-    input >> s;
-    if (s == "--skip-invisible") {
-        skip_invisible = true;
-        // and load the next (optional) argument to s
-        s = "0";
-        input >> s;
-    }
-    try {
-        delta = std::stoi(s);
-    } catch (std::invalid_argument const& e) {
-        output << "invalid argument: " << e.what() << endl;
-        return HERBST_INVALID_ARGUMENT;
-    } catch (std::out_of_range const& e) {
-        output << "out of range: " << e.what() << endl;
+    ArgParse ap;
+    ap.flags({{"--skip-invisible", &skip_invisible}}).optional(delta);
+    if (ap.parsingAllFails(input, output)) {
         return HERBST_INVALID_ARGUMENT;
     }
     if (delta < -1 || delta > 1) {
@@ -305,6 +343,13 @@ int HSTag::cycleAllCommand(Input input, Output output)
     }
     if (floating_focused()) {
         int newIndex = static_cast<int>(floating_clients_focus_) + delta;
+        // skip minimized clients
+        while (newIndex >= 0
+               && static_cast<size_t>(newIndex) < floating_clients_.size()
+               && floating_clients_[newIndex]->minimized_())
+        {
+            newIndex += delta;
+        }
         if (newIndex < 0) {
             floating_focused = false;
             frame->cycleAll(FrameTree::CycleDelta::End, skip_invisible);
@@ -313,7 +358,6 @@ int HSTag::cycleAllCommand(Input input, Output output)
             frame->cycleAll(FrameTree::CycleDelta::Begin, skip_invisible);
         } else {
             floating_clients_focus_ = static_cast<size_t>(newIndex);
-            floating_clients_[floating_clients_focus_]->raise();
         }
     } else {
         FrameTree::CycleDelta cdelta = (delta == 1)
@@ -322,7 +366,7 @@ int HSTag::cycleAllCommand(Input input, Output output)
         bool focusChanged = frame->cycleAll(cdelta, skip_invisible);
         if (!focusChanged) {
             // if frame->cycleAll() reached the end of the tiling layer
-            if (floating_clients_.empty()) {
+            if (!hasVisibleFloatingClients()) {
                 // we need to wrap. when cycling forward, we wrap to the beginning
                 FrameTree::CycleDelta rewind = (delta == 1)
                             ? FrameTree::CycleDelta::Begin
@@ -331,13 +375,16 @@ int HSTag::cycleAllCommand(Input input, Output output)
             } else {
                 // if there are floating clients, switch to the floating layer
                 floating_focused = true;
-                if (delta == 1) {
-                    // wrap (forward) to first client
-                    floating_clients_focus_ = 0;
-                } else {
-                    // wrap (backward) to last client
-                    floating_clients_focus_ = floating_clients_.size() - 1;
+                // we know that there is at least one non-minimized client
+                // because hasVisibleFloatingClients() is true.
+                // so first wrap to first or last client:
+                size_t idx = (delta == 1) ? 0 : (floating_clients_.size() - 1);
+                // and then iterate delta until we find the first/last non-minimized
+                // floating client:
+                while (floating_clients_[idx]->minimized_()) {
+                    idx += delta;
                 }
+                floating_clients_focus_ = idx;
             }
         }
     }
@@ -519,10 +566,20 @@ int HSTag::closeOrRemoveCommand() {
     return 0;
 }
 
+string HSTag::isValidTagIndex(unsigned long newIndex)
+{
+    if (newIndex < tags_->size()) {
+        return "";
+    }
+    stringstream ss;
+    ss << "Index must be between 0 and " << (tags_->size() - 1);
+    return ss.str();
+}
+
 string HSTag::floatingLayerCanBeFocused(bool floatingFocused)
 {
-    if (floatingFocused && floating_clients_.empty()) {
-        return "There are no floating windows;"
+    if (floatingFocused && !hasVisibleFloatingClients()) {
+        return "There are no (non-minimized) floating windows;"
                " cannot focus empty floating layer.";
     } else {
         return "";

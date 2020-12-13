@@ -31,6 +31,7 @@ public:
     ~HSTag() override;
     Child_<FrameTree>        frame;  // the frame tree
     Attribute_<unsigned long> index;
+    Attribute_<bool>         visible;
     Attribute_<bool>         floating;
     Attribute_<bool>         floating_focused; // if a floating client is focused
     Attribute_<std::string>  name;   // name of this tag
@@ -39,15 +40,19 @@ public:
     DynAttribute_<int> urgent_count; //! The number of urgent clients
     DynAttribute_<int> curframe_windex;
     DynAttribute_<int> curframe_wcount;
+    DynChild_<Client> focused_client;
     int             flags;
     std::vector<Client*> floating_clients_; //! the clients in floating mode
+    // the tag must assert that the floating layer is only
+    // focused if this tag hasVisibleFloatingClients()
     size_t               floating_clients_focus_; //! focus in the floating clients
     std::shared_ptr<Stack> stack;
     void setIndexAttribute(unsigned long new_index) override;
     bool focusClient(Client* client);
-    void applyFloatingState(Client* client);
-    void setVisible(bool visible);
+    void applyClientState(Client* client);
+    void setVisible(bool newVisible);
     bool removeClient(Client* client);
+    bool hasVisibleFloatingClients() const;
     void foreachClient(std::function<void(Client*)> loopBody);
     void focusFrame(std::shared_ptr<FrameLeaf> frameToFocus);
     Client* focusedClient();
@@ -73,6 +78,7 @@ public:
     int closeAndRemoveCommand();
     int closeOrRemoveCommand();
 private:
+    std::string isValidTagIndex(unsigned long newIndex);
     std::string floatingLayerCanBeFocused(bool floatingFocused);
     void onGlobalFloatingChange(bool newState);
     void fixFocusIndex();
@@ -82,6 +88,7 @@ private:
     int computeFrameCount();
     //! get the number of urgent clients on this tag
     int countUrgentClients();
+    TagManager* tags_;
     Settings* settings_;
 };
 

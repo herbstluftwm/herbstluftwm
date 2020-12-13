@@ -335,7 +335,7 @@ def test_compare_example_values(hlwm, attrpath, value, operator, othervalue, is_
 
 def test_compare_invalid_operator(hlwm):
     hlwm.call_xfail('compare monitors.count -= 1') \
-        .expect_stderr('unknown operator')
+        .expect_stderr('Cannot.* "-=": Expecting one of: =, !=,')
 
 
 def test_compare_fallback_string_equal(hlwm):

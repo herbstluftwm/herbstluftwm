@@ -34,10 +34,11 @@ static Client* lastfocus = nullptr;
 Client::Client(Window window, bool visible_already, ClientManager& cm)
     : window_(window)
     , dec(make_unique<Decoration>(this, *cm.settings))
-    , visible_(visible_already)
+    , visible_(this, "visible", visible_already)
     , urgent_(this, "urgent", false)
     , floating_(this,  "floating", false)
     , fullscreen_(this,  "fullscreen", false)
+    , minimized_(this,  "minimized", false)
     , title_(this,  "title", "")
     , tag_str_(this,  "tag", &Client::tagName)
     , window_id_str(this,  "winid", "")
@@ -67,6 +68,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     ewmhrequests_.setWriteable();
     sizehints_floating_.setWriteable();
     sizehints_tiling_.setWriteable();
+    minimized_.setWriteable();
     for (auto i : {&fullscreen_, &pseudotile_, &sizehints_floating_, &sizehints_tiling_}) {
         i->setWriteable();
         i->changed().connect(this, &Client::requestRedraw);
@@ -86,8 +88,10 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
         updateEwmhState();
         hook_emit({"fullscreen", fullscreen_() ? "on" : "off", WindowID(window_).str()});
     });
+    minimized_.changed().connect(this, &Client::updateEwmhState);
 
     init_from_X();
+    visible_.setDoc("whether this client is rendered currently");
 }
 
 void Client::init_from_X() {
@@ -114,7 +118,7 @@ void Client::make_full_client() {
     XReparentWindow(g_display, window_, dec->decorationWindow(), 40, 40);
     // if this client is visible, then reparenting will make it invisible
     // and will create a unmap notify event
-    if (visible_ == true) {
+    if (visible_()) {
         ignore_unmaps_++;
         visible_ = false;
     }
@@ -451,7 +455,7 @@ void Client::requestClose() { //! ask the client to close
 }
 
 void Client::set_visible(bool visible) {
-    if (visible == this->visible_) {
+    if (visible == this->visible_()) {
         return;
     }
     if (visible) {
@@ -468,7 +472,7 @@ void Client::set_visible(bool visible) {
            events, and because the ICCCM tells us to! */
         XUnmapWindow(g_display, this->dec->decorationWindow());
         XUnmapWindow(g_display, this->window_);
-        ewmh.windowUpdateWmState(this->window_, WmState::WSWithdrawnState);
+        ewmh.windowUpdateWmState(this->window_, WmState::WSIconicState);
         this->ignore_unmaps_++;
     }
     this->visible_ = visible;

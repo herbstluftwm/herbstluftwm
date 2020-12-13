@@ -12,6 +12,7 @@
 #include "utils.h"
 
 using std::endl;
+using std::function;
 using std::make_shared;
 using std::pair;
 using std::shared_ptr;
@@ -62,9 +63,10 @@ void Object::wireActions(vector<Action*> actions)
 
 void Object::ls(Output out)
 {
-    out << children_.size() << (children_.size() == 1 ? " child" : " children")
-        << (!children_.empty() ? ":" : ".") << endl;
-    for (auto it : children_) {
+    const auto& children = this->children();
+    out << children.size() << (children.size() == 1 ? " child" : " children")
+        << (!children.empty() ? ":" : ".") << endl;
+    for (auto it : children) {
         out << "  " << it.first << "." << endl;
     }
 
@@ -95,54 +97,6 @@ void Object::ls(Output out)
         out << "  " << it.first << endl;
     }
 }
-void Object::ls(Path path, Output out) {
-    if (path.empty()) {
-        return ls(out);
-    }
-
-    auto child = path.front();
-    if (children_.find(child) != children_.end()) {
-        path.shift();
-        children_[child]->ls(path, out);
-    } else {
-        out << "child " << child << " not found!" << endl; // TODO
-    }
-}
-
-void Object::print(const string &prefix)
-{
-    if (!children_.empty()) {
-        std::cout << prefix << "Children:" << endl;
-        for (auto it : children_) {
-            it.second->print(prefix + "\t| ");
-        }
-        std::cout << prefix << endl;
-    }
-    if (!attribs_.empty()) {
-        std::cout << prefix << "Attributes:" << endl;
-        for (auto it : attribs_) {
-            std::cout << prefix << "\t" << it.first
-                      << " (" << it.second->typestr() << ")";
-            std::cout << "\t[" << it.second->str() << "]";
-            if (it.second->writeable()) {
-                std::cout << "\tw";
-            }
-            if (!it.second->hookable()) {
-                std::cout << "\t!h";
-            }
-            std::cout << endl;
-        }
-    }
-    if (!actions_.empty()) {
-        std::cout << prefix << "Actions:" << endl;
-        std::cout << prefix;
-        for (auto it : actions_) {
-            std::cout << "\t" << it.first;
-        }
-        std::cout << endl;
-    }
-    std::cout << prefix << "Currently " << hooks_.size() << " hooks:" << endl;
-}
 
 Attribute* Object::attribute(const string &name) {
     auto it = attribs_.find(name);
@@ -155,6 +109,10 @@ Attribute* Object::attribute(const string &name) {
 
 
 Object* Object::child(const string &name) {
+    auto it_dyn = childrenDynamic_.find(name);
+    if (it_dyn != childrenDynamic_.end()) {
+        return it_dyn->second();
+    }
     auto it = children_.find(name);
     if (it != children_.end()) {
         return it->second;
@@ -173,17 +131,15 @@ Object* Object::child(Path path, Output output) {
     Object* cur = this;
     string cur_path = "";
     while (!path.empty()) {
-        auto it = cur->children_.find(path.front());
-        if (it != cur->children_.end()) {
-            cur = it->second;
-            cur_path += path.front();
-            cur_path += ".";
-        } else {
+        cur = cur->child(path.front());
+        if (!cur) {
             output << "Object \"" << cur_path << "\""
                 << " has no child named \"" << path.front()
                 << "\"" << endl;
             return nullptr;
         }
+        cur_path += path.front();
+        cur_path += ".";
         path.shift();
     }
     return cur;
@@ -206,6 +162,11 @@ void Object::notifyHooks(HookEvent event, const string& arg)
             }
         } // TODO: else throw
     }
+}
+
+void Object::addDynamicChild(function<Object* ()> child, const string& name)
+{
+    childrenDynamic_[name] = child;
 }
 
 void Object::addChild(Object* child, const string &name)
@@ -238,6 +199,19 @@ void Object::removeHook(Hook* hook)
                     hooks_.begin(),
                     hooks_.end(),
                     hook), hooks_.end());
+}
+
+std::map<string, Object*> Object::children() {
+    // copy the map of 'static' children
+    auto allChildren = children_;
+    // and add the dynamic children
+    for (auto& it : childrenDynamic_) {
+        Object* obj = it.second();
+        if (obj) {
+            allChildren[it.first] = obj;
+        }
+    }
+    return allChildren;
 }
 
 class DirectoryTreeInterface : public TreeInterface {

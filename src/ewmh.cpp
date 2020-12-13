@@ -46,6 +46,7 @@ const std::array<const char*,NetCOUNT> Ewmh::netatomNames_ =
     { NetFrameExtents                , "_NET_FRAME_EXTENTS"                },
     /* window states */
     { NetWmStateFullscreen           , "_NET_WM_STATE_FULLSCREEN"          },
+    { NetWmStateHidden               , "_NET_WM_STATE_HIDDEN"              },
     { NetWmStateDemandsAttention     , "_NET_WM_STATE_DEMANDS_ATTENTION"   },
     /* window types */
     { NetWmWindowTypeDesktop         , "_NET_WM_WINDOW_TYPE_DESKTOP"       },
@@ -82,6 +83,7 @@ Ewmh::Ewmh(XConnection& xconnection)
         { WM::Protocols,    "WM_PROTOCOLS" },
         { WM::Delete,       "WM_DELETE_WINDOW" },
         { WM::State,        "WM_STATE" },
+        { WM::ChangeState,  "WM_CHANGE_STATE" },
         { WM::TakeFocus,    "WM_TAKE_FOCUS" },
     };
     for (const auto& init : wm2name) {
@@ -248,11 +250,7 @@ void Ewmh::windowUpdateTag(Window win, HSTag* tag) {
     if (!tag) {
         return;
     }
-    int index = tags_->index_of(tag);
-    if (index < 0) {
-        HSWarning("tag %s not found in internal list\n", tag->name->c_str());
-        return;
-    }
+    int index = tag->index();
     X_.setPropertyCardinal(win, netatom_[NetWmDesktop], { index });
 }
 
@@ -274,6 +272,15 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
     HSDebug("Received event: ClientMessage: \"%s\" for %lx\n",
             X_.atomName(me->message_type).c_str(),
             me->window);
+    if (me->message_type == wmatom(WM::ChangeState)) {
+        if (me->data.l[0] == static_cast<long>(WmState::WSIconicState)) {
+            Client* client = Root::common().client(me->window);
+            if (client) {
+                client->minimized_ = true;
+            }
+        }
+        return;
+    }
     int index;
     for (index = 0; index < NetCOUNT; index++) {
         if (me->message_type == netatom_[index]) {
@@ -422,6 +429,7 @@ void Ewmh::updateWindowState(Client* client) {
     } client_atoms[] = {
         { NetWmStateFullscreen,         client->ewmhfullscreen_  },
         { NetWmStateDemandsAttention,   client->urgent_          },
+        { NetWmStateHidden,             client->minimized_       },
     };
 
     /* find out which flags are set */

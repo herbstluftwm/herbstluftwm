@@ -13,6 +13,7 @@
 #include "attribute_.h"
 #include "command.h"
 #include "completion.h"
+#include "finite.h"
 #include "ipc-protocol.h"
 
 using std::endl;
@@ -520,21 +521,28 @@ template <typename T> int parse_and_compare(string a, string b, Output o) {
     return do_comparison<T>(vals[0], vals[1]);
 }
 
-static std::map<string, pair<bool, vector<int> > > operators {
+//! operators of the 'compare' command
+using CompareOperator = pair<bool, vector<int> >;
+
+template <>
+struct is_finite<CompareOperator> : std::true_type {};
+template<> Finite<CompareOperator>::ValueList Finite<CompareOperator>::values = {
     // map operator names to "for numeric types only" and possible return codes
-    { "=",  { false, { 0 }, }, },
-    { "!=", { false, { -1, 1 } }, },
-    { "ge", { true, { 1, 0 } }, },
-    { "gt", { true, { 1    } }, },
-    { "le", { true, { -1, 0 } }, },
-    { "lt", { true, { -1    } }, },
+    { { false, { 0 }, }, "=", },
+    { { false, { -1, 1 } }, "!=", },
+    { { true, { 1, 0 } }, "ge", },
+    { { true, { 1 } }, "gt", },
+    { { true, { -1, 0 } }, "le", },
+    { { true, { -1 } }, "lt", },
 };
 
 int RootCommands::compare_cmd(Input input, Output output)
 {
-    string path, oper, value;
-    if (!(input >> path >> oper >> value)) {
-        return HERBST_NEED_MORE_ARGS;
+    string path, value;
+    CompareOperator oper;
+    ArgParse ap = ArgParse().mandatory(path).mandatory(oper).mandatory(value);
+    if (ap.parsingFails(input, output)) {
+        return ap.exitCode();
     }
     Attribute* a = root.deepAttribute(path, output);
     if (!a) {
@@ -559,22 +567,8 @@ int RootCommands::compare_cmd(Input input, Output output)
     if (it != type2compare.end()) {
         comparator = it->second;
     }
-    auto op_it = operators.find(oper);
-    if (op_it == operators.end()) {
-        output << "unknown operator \"" << oper
-            << "\". Possible values are:";
-        for (auto i : operators) {
-            // only list operators suitable for the attribute type
-            if (!comparator.first && i.second.first) {
-                continue;
-            }
-            output << " " << i.first;
-        }
-        output << endl;
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (op_it->second.first && !comparator.first) {
-        output << "operator \"" << oper << "\" "
+    if (oper.first && !comparator.first) {
+        output << "operator \"" << Converter<CompareOperator>::str(oper) << "\" "
             << "only allowed for numeric types, but the attribute "
             << path << " is of non-numeric type "
             << Entity::typestr(a->type()) << endl;
@@ -584,7 +578,7 @@ int RootCommands::compare_cmd(Input input, Output output)
     if (comparison_result > 1) {
         return comparison_result;
     }
-    vector<int>& possible_values = op_it->second.second;
+    vector<int>& possible_values = oper.second;
     auto found = std::find(possible_values.begin(),
                            possible_values.end(),
                            comparison_result);
@@ -595,9 +589,7 @@ void RootCommands::compare_complete(Completion &complete) {
     if (complete == 0) {
         completeAttributePath(complete);
     } else if (complete == 1) {
-        for (auto op : operators) {
-            complete.full(op.first);
-        }
+        Converter<CompareOperator>::complete(complete);
     } else if (complete == 2) {
         // no completion suggestions for the 'value' field
     } else {

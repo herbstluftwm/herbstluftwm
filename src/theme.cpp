@@ -3,24 +3,22 @@
 using std::vector;
 using std::string;
 
-Theme::Theme() {
-    // add sub-decorations array as children
-    vector<string> type_names = {
-        "fullscreen",
-        "tiling",
-        "floating",
-        "minimal",
-    };
-    for (int i = 0; i < (int)Type::Count; i++) {
-        addStaticChild(&dec[i], type_names[i]);
-        dec[i].triple_changed_.connect([this](){ this->theme_changed_.emit(); });
+Theme::Theme()
+    : fullscreen(*this, "fullscreen")
+    , tiling(*this, "tiling")
+    , floating(*this, "floating")
+    , minimal(*this, "minimal")
+    // in the following array, the order must match the order in Theme::Type!
+    , decTriples{ &fullscreen, &tiling, &floating, &minimal }
+{
+    for (auto dec : decTriples) {
+        dec->triple_changed_.connect([this](){ this->theme_changed_.emit(); });
     }
 
     // forward attribute changes: only to tiling and floating
-    auto &t = dec[(int)Type::Tiling], &f = dec[(int)Type::Floating];
-    active.makeProxyFor({&t.active, &f.active});
-    normal.makeProxyFor({&t.normal, &f.normal});
-    urgent.makeProxyFor({&t.urgent, &f.urgent});
+    active.makeProxyFor({&tiling.active, &floating.active});
+    normal.makeProxyFor({&tiling.normal, &floating.normal});
+    urgent.makeProxyFor({&tiling.urgent, &floating.urgent});
 }
 
 DecorationScheme::DecorationScheme()
@@ -49,10 +47,10 @@ DecorationScheme::DecorationScheme()
 }
 
 DecTriple::DecTriple()
+   : normal(*this, "normal")
+   , active(*this, "active")
+   , urgent(*this, "urgent")
 {
-    addStaticChild(&normal, "normal");
-    addStaticChild(&active, "active");
-    addStaticChild(&urgent, "urgent");
     vector<DecorationScheme*> children = {
         &normal,
         &active,

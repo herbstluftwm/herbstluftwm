@@ -5,6 +5,8 @@
 #include <memory>
 #include <string>
 
+#include "child.h"
+#include "finite.h"
 #include "fixprecdec.h"
 #include "link.h"
 #include "object.h"
@@ -59,6 +61,14 @@ public:
     int focusNthCommand(Input input, Output output);
     int removeFrameCommand();
     int rotateCommand();
+    enum class MirrorDirection {
+        Horizontal,
+        Vertical,
+        Both,
+    };
+
+    int mirrorCommand(Input input, Output output);
+    void mirrorCompletion(Completion& complete);
     bool cycleAll(CycleDelta cdelta, bool skip_invisible);
     int cycleFrameCommand(Input input, Output output);
     int loadCommand(Input input, Output output);
@@ -72,10 +82,12 @@ public:
 public: // soon to be come private:
     std::shared_ptr<Frame> root_;
     Link_<Frame> rootLink_;
+    DynChild_<Frame> focused_frame_;
     //! replace a node in the frame tree, either modifying old's parent or the root_
     void replaceNode(std::shared_ptr<Frame> old, std::shared_ptr<Frame> replacement);
 private:
     static std::shared_ptr<FrameLeaf> findEmptyFrameNearFocusGeometrically(std::shared_ptr<Frame> subtree);
+    Frame* focusedFramePlainPtr();
     //! cycle the frames within the current tree
     void cycle_frame(std::function<size_t(size_t,size_t)> indexAndLenToIndex);
     void cycle_frame(int delta);
@@ -87,5 +99,9 @@ private:
     HSTag* tag_;
     Settings* settings_;
 };
+
+template <>
+struct is_finite<FrameTree::MirrorDirection> : std::true_type {};
+template<> Finite<FrameTree::MirrorDirection>::ValueList Finite<FrameTree::MirrorDirection>::values;
 
 #endif

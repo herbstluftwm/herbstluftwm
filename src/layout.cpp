@@ -445,8 +445,14 @@ int frame_current_bring(int argc, char** argv, Output output) {
     }
     HSTag* tag = get_current_monitor()->tag;
     global_tags->moveClient(client, tag, {}, true);
+    // mark as un-minimized first, such that a minimized tiling client
+    // is added to the frame tree now.
+    client->minimized_ = false;
     auto frame = tag->frame->root_->frameWithClient(client);
-    if (!client->is_client_floated() && !frame->isFocused()) {
+    if (frame && !frame->isFocused()) {
+        // regardless of the client's floating or minimization state:
+        // if the client was in the frame tree, it is moved
+        // to the focused frame
         frame->removeClient(client);
         tag->frame->focusedFrame()->insertClient(client, true);
     }
@@ -462,8 +468,6 @@ void FrameLeaf::setSelection(int index) {
         index = clients.size() - 1;
     }
     selection = index;
-    clients[selection]->window_focus();
-    get_current_monitor()->applyLayout();
 }
 
 int Frame::splitsToRoot(SplitAlign align) {
@@ -820,6 +824,10 @@ bool focus_client(Client* client, bool switch_tag, bool switch_monitor, bool rai
         client->raise();
     }
     cur_mon->applyLayout();
+    // the client will be visible already, but in most
+    // WMs the client will stay un-minimized even
+    // if the focus goes away, so mark it as un-minimized:
+    client->minimized_ = false;
     g_monitors->unlock();
     return found;
 }

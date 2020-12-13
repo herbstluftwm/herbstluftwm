@@ -4,6 +4,7 @@
 #include <functional>
 #include <regex>
 
+#include "finite.h"
 #include "optional.h"
 #include "regexstr.h"
 #include "types.h"
@@ -69,11 +70,9 @@ enum class ClientPlacement {
     Smart, //! as little overlaps as possible
 };
 
-template<> std::string Converter<ClientPlacement>::str(ClientPlacement cp);
-template<> ClientPlacement Converter<ClientPlacement>::parse(const std::string& payload);
-template<> void Converter<ClientPlacement>::complete(Completion& complete, ClientPlacement const*);
-
-
+template <>
+struct is_finite<ClientPlacement> : std::true_type {};
+template<> Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values;
 
 class ClientChanges {
 public:
@@ -134,6 +133,11 @@ private:
 class Rule {
 public:
     Rule();
+    //! whether this rule should not be used anymore
+    bool expired() {
+        return expired_;
+    };
+    bool evaluate(Client* client, ClientChanges& changes);
 
     std::string label;
     std::vector<Condition> conditions;
@@ -146,6 +150,8 @@ public:
     bool addConsequence(std::string name, char op, const char* value, Output output);
 
     void print(Output output);
+private:
+    bool expired_ = false;
 };
 
 #endif

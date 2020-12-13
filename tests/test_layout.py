@@ -82,6 +82,23 @@ def test_explode(hlwm, running_clients, running_clients_num):
     verify_frame_objects_via_dump(hlwm)
 
 
+def test_explode_second_client(hlwm):
+    winids = hlwm.create_clients(2)
+    hlwm.call(['load', f'(clients vertical:1 {winids[0]} {winids[1]})'])
+    hlwm.call('split explode')
+
+    assert hlwm.get_attr('tags.0.curframe_wcount') == '1'
+    assert hlwm.get_attr('tags.0.curframe_windex') == '0'
+    # FIXME: in v0.7.2, the focus stayed in the client it was before!
+    expected_layout = textwrap.dedent(f"""\
+    (split vertical:0.5:0
+    (clients vertical:0 {winids[0]})
+    (clients vertical:0 {winids[1]}))
+    """).replace('\n', ' ').strip()
+    assert hlwm.call('dump').stdout == expected_layout
+    verify_frame_objects_via_dump(hlwm)
+
+
 @pytest.mark.parametrize("running_clients_num", [0, 1, 4])
 def test_remove(hlwm, running_clients, running_clients_num):
     hlwm.call('split explode')
@@ -153,6 +170,63 @@ def test_focus_wrap(hlwm, running_clients, running_clients_num):
         assert int(hlwm.get_attr('tags.0.curframe_windex')) == expected_idx
         if i < running_clients_num - 1:
             hlwm.call('focus down')
+
+
+@pytest.mark.parametrize("mode", ['setting', 'flag', 'flag-double', 'flag-shadow'])
+@pytest.mark.parametrize("setting_value", [True, False])
+@pytest.mark.parametrize("external_only", [True, False])
+@pytest.mark.parametrize("running_clients_num", [3])
+def test_focus_internal_external(hlwm, mode, setting_value, external_only, running_clients):
+    hlwm.call(f'set default_direction_external_only {hlwm.bool(setting_value)}')
+    layout = f"""
+    (split vertical:0.5:0
+        (clients vertical:0 {running_clients[0]} {running_clients[1]})
+        (clients vertical:0 {running_clients[2]}))
+    """.replace('\n', ' ').strip()
+    hlwm.call(['load', layout])
+    assert hlwm.get_attr('clients.focus.winid') == running_clients[0]
+
+    # we will now run 'focus' 'down' with -i or -e
+    cmd = ['focus']
+    if mode == 'setting':
+        hlwm.call(f'set default_direction_external_only {hlwm.bool(external_only)}')
+    else:
+        # mode is one of the flag*-modes
+        extonly2flag = {
+            True: '-e',
+            False: '-i',
+        }
+        if mode == 'flag-shadow':
+            # something like: focus -i -e down
+            # Here, an earlier and contradictory flag gets shadowed
+            cmd.append(extonly2flag[not external_only])
+        if mode == 'flag-double':
+            cmd.append(extonly2flag[external_only])
+        # the significant command line flag:
+        cmd.append(extonly2flag[external_only])
+    cmd += ['down']
+    hlwm.call(cmd)
+
+    if external_only:
+        expected_new_focus = running_clients[2]
+    else:
+        expected_new_focus = running_clients[1]
+    assert hlwm.get_attr('clients.focus.winid') == expected_new_focus
+
+
+def test_argparse_invalid_flag(hlwm):
+    # here, '-v' is not a valid flag, so it is assumed
+    # to be the first positional argument
+    hlwm.call_xfail('focus -v down') \
+        .expect_stderr('Cannot parse argument "-v"')
+    # in the following, the positional argument has been
+    # parsed already, so the error message is different:
+    hlwm.call_xfail('focus down -v') \
+        .expect_stderr('Unknown argument or flag "-v"')
+    hlwm.call_xfail('focus down -v -i') \
+        .expect_stderr('Unknown argument or flag "-v"')
+    hlwm.call_xfail('focus down -i -v') \
+        .expect_stderr('Unknown argument or flag "-v"')
 
 
 @pytest.mark.parametrize("path", '@ 0 1 00 11 . / /. ./'.split(' '))
@@ -230,14 +304,29 @@ def test_cycle(hlwm, running_clients, running_clients_num, num_splits, cycle_del
     new_windex = int(hlwm.get_attr('tags.0.curframe_windex'))
     expected_index = (windex + cycle_delta + wcount) % wcount if wcount > 0 else 0
     assert expected_index == new_windex
+    # check that the right winid is focused
+    layout = hlwm.call(['dump', '', '@']).stdout
+    winids = re.findall('0x[a-fA-f0-9]*', layout)
+    if len(winids) > 0:
+        assert winids[new_windex] == hlwm.get_attr('clients.focus.winid')
 
 
 @pytest.mark.parametrize("running_clients_num", [0, 1, 5])
 @pytest.mark.parametrize("index", [0, 1, 3, 5])
 def test_focus_nth(hlwm, running_clients, running_clients_num, index):
+    # bring the clients in the right order
+    layout = '(clients vertical:0 '
+    layout += ' '.join(running_clients)
+    layout += ')'
+    hlwm.call(['load', layout])
+
+    # focus the n_th
     hlwm.call('focus_nth {}'.format(index))
+
     windex = int(hlwm.get_attr('tags.0.curframe_windex'))
     assert windex == max(0, min(index, running_clients_num - 1))
+    if running_clients_num > 0:
+        assert hlwm.get_attr('clients.focus.winid') == running_clients[windex]
 
 
 @pytest.mark.parametrize("running_clients_num", [5])
@@ -330,6 +419,19 @@ def test_cycle_all_traverses_all(hlwm, running_clients, num_splits, delta):
     assert all_winids == visited_winids
 
 
+def test_cycle_all_errors(hlwm):
+    hlwm.call_xfail('cycle_all 1 2') \
+        .expect_stderr('Unknown argument or flag "2"')
+    hlwm.call_xfail('cycle_all -3') \
+        .expect_stderr('argument out of range')
+    hlwm.call_xfail('cycle_all 3') \
+        .expect_stderr('argument out of range')
+    hlwm.call_xfail('cycle_all -s 1') \
+        .expect_stderr('Cannot.*"-s"')
+    hlwm.call_xfail('cycle_all --skip-invisible -s 1') \
+        .expect_stderr('Cannot.*"-s"')
+
+
 @pytest.mark.parametrize("running_clients_num", [4])
 @pytest.mark.parametrize("delta", [1, -1])
 def test_cycle_all_skip_invisible(hlwm, running_clients, delta):
@@ -393,6 +495,53 @@ def test_cycle_all_with_floating_clients(hlwm, delta, floating_clients):
         else:
             assert expected_focus == hlwm.get_attr('clients.focus.winid')
         hlwm.call(['cycle_all', delta])
+
+
+@pytest.mark.parametrize("delta", [1, -1])
+@pytest.mark.parametrize("clients_minimized", [
+    # every entry here is a list that determines the number
+    # of floating clients and which of those are minimized.
+    [],  # no floating clients at all
+    [True],  # only one, but it's minimized
+    [False],  # also covered by test_cycle_all_with_floating_clients
+    [False, True, False],  # one minimized in the middle
+    [True, True],
+    [False, True, True, False],
+    [True, True, True],
+    [True, False, True, False, True],
+    [False, False, True],
+    [True, False, False],
+    # multiple skips before/after wrapping between floating and tiling layer:
+    [True, True, False, False],
+    [False, False, True, True],
+])
+def test_cycle_all_skips_minimized(hlwm, delta, clients_minimized):
+    # create one tiled client and a list of floating clients,
+    # some of which are minimized.
+    tiled_client, _ = hlwm.create_client()
+    hlwm.call('rule floating=on')
+    non_minimized_clients = []
+    for minimized in clients_minimized:
+        winid, _ = hlwm.create_client()
+        hlwm.call(f'set_attr clients.{winid}.minimized {hlwm.bool(minimized)}')
+        if not minimized:
+            non_minimized_clients.append(winid)
+    if delta == -1:
+        non_minimized_clients = list(reversed(non_minimized_clients))
+    expected_winids = non_minimized_clients + [tiled_client]
+
+    assert hlwm.get_attr('clients.focus.winid') == tiled_client
+    print("expecting the clients in the order {}".format(' '.join(expected_winids)))
+    for expected in expected_winids:
+        # run 'cycle_all' as often as specified by 'expected_winids'.
+        hlwm.call(['cycle_all', delta])
+
+        # since there is a tiled client, clients.focus must always exist.
+        # we check that the focused client must never
+        # be minimized and must always be visible
+        assert hlwm.get_attr('clients.focus.minimized') == 'false'
+        assert hlwm.get_attr('clients.focus.visible') == 'true'
+        assert hlwm.get_attr('clients.focus.winid') == expected
 
 
 @pytest.mark.parametrize("running_clients_num", [2, 5])
@@ -792,7 +941,7 @@ def test_focus_other_monitor(hlwm, other_mon_exists, setting):
 
 def test_set_layout_invalid_layout_name(hlwm):
     hlwm.call_xfail('set_layout foobar') \
-        .expect_stderr('Invalid layout name: "foobar"')
+        .expect_stderr('Cannot.* "foobar":.*one of: vertical, horizontal')
 
 
 def test_focus_edge(hlwm):
@@ -1013,3 +1162,58 @@ def test_frame_index_attribute(hlwm):
         # after each splitting operation, check that
         # the frame's index attribute is correct:
         verify_frame_tree('tags.focus.tiling.root', '')
+
+
+def test_focused_frame_child(hlwm):
+    # do it as one test case to see that the
+    # child correctly adjusts at run-time
+    test_data = [
+        ('', '(clients max:0)'),
+        ('0', '(split vertical:0.5:0 (clients max:0) (clients max:0))'),
+        ('1', '(split vertical:0.5:1 (clients max:0) (clients max:0))'),
+        ('00', '(split vertical:0.5:0 (split vertical:0.5:0) (clients max:0))'),
+        ('01', '(split vertical:0.5:0 (split vertical:0.5:1) (clients max:0))'),
+    ]
+    for focused_index, layout in test_data:
+        hlwm.call(['load', layout])
+        assert hlwm.get_attr('tags.0.tiling.focused_frame.index') == focused_index
+
+
+@pytest.mark.parametrize("old,new", [
+    ('(split vertical:0.4:0 {a} {b})', '(split vertical:0.6:1 {b} {a})'),
+    ('(split horizontal:0.3:0 {a} {b})', '(split horizontal:0.7:1 {b} {a})'),
+    ('(split vertical:0.5:1 {a} {b})', '(split vertical:0.5:0 {b} {a})'),
+    ('(split horizontal:0.2:1 {a} {b})', '(split horizontal:0.8:0 {b} {a})'),
+])
+@pytest.mark.parametrize("mode", ['horizontal', 'vertical'])
+def test_mirror_horizontal_or_vertical_one_split(hlwm, old, new, mode):
+    frame_a = '(clients horizontal:0)'
+    frame_b = '(clients vertical:0)'
+    hlwm.call(['load', old.format(a=frame_a, b=frame_b)])
+
+    hlwm.call(f'mirror {mode}')
+
+    if old.find(mode) < 0:
+        expected = old.format(a=frame_a, b=frame_b)  # nothing changes
+    else:
+        expected = new.format(a=frame_a, b=frame_b)
+    assert hlwm.call('dump').stdout == expected
+
+
+@pytest.mark.parametrize("num_splits", [1, 2, 3, 4])
+def test_mirror_vs_rotate(hlwm, num_splits):
+    for _ in range(0, num_splits):
+        hlwm.call('split explode 0.4')
+
+    layout = hlwm.call('dump').stdout
+
+    # compute the effect of rotating by 180 degrees
+    hlwm.call('chain , rotate , rotate')
+    layout_after_rotate = hlwm.call('dump').stdout
+    # restore original layout
+    hlwm.call(['load', layout])
+
+    # rotating by 180 degrees is the same as
+    # flipping both horizontally and vertically
+    hlwm.call('mirror both')
+    assert layout_after_rotate == hlwm.call('dump').stdout

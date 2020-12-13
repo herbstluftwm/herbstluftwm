@@ -81,6 +81,40 @@ def test_merge_tag_into_another_tag(hlwm):
     assert hlwm.get_attr('tags.0.name') == 'foobar'
 
 
+@pytest.mark.parametrize("tag_count, old_idx, new_idx", [
+    (count, old, new)
+    for count in range(0, 6)
+    for old in range(0, count)
+    for new in range(0, count)])
+def test_index_change(hlwm, tag_count, old_idx, new_idx):
+    names = ["orig" + str(i) for i in range(0, tag_count)]
+    for n in names:
+        hlwm.call(['add', n])
+
+    # get rid of the 'default' tag
+    hlwm.call('use_index 1')
+    hlwm.call('merge_tag default')
+
+    hlwm.call(f'attr tags.{old_idx}.index {new_idx}')
+
+    assert hlwm.get_attr(f'tags.{new_idx}.name') == names[old_idx]
+    new_names = [n for n in names if n != names[old_idx]]
+    new_names.insert(new_idx, names[old_idx])
+    for i in range(0, tag_count):
+        assert hlwm.get_attr(f'tags.{i}.index') == str(i)
+        assert hlwm.get_attr(f'tags.{i}.name') == new_names[i]
+
+
+@pytest.mark.parametrize("tag_count", [1, 4])
+def test_index_to_big(hlwm, tag_count):
+    for i in range(1, tag_count):  # one tag already exists
+        hlwm.call(f'add tag{i}')
+
+    for new_idx in [tag_count, tag_count + 10]:
+        hlwm.call_xfail(f'attr tags.0.index {new_idx}') \
+            .expect_stderr(f'Index must be between 0 and {tag_count - 1}')
+
+
 RENAMING_COMMANDS = [
     # commands for renaming the default tag
     lambda old, new: ['set_attr', 'tags.by-name.{}.name'.format(old), new],
@@ -251,7 +285,7 @@ def test_floating_focused_vacouus(hlwm):
     # switching to floating layer should not be possible if
     # there is no floating window
     hlwm.call_xfail('attr tags.focus.floating_focused on') \
-        .expect_stderr("There are no floating windows")
+        .expect_stderr(r'There are no \(non-minimized\) floating windows')
 
 
 def test_urgent_count(hlwm, x11):
@@ -275,3 +309,93 @@ def test_rename_multiple_tags(hlwm, hc_idle):
         ['tag_renamed', 'foo_old', 'foo_new'],
         ['tag_renamed', 'bar_old', 'bar_new']
     ]
+
+
+# the test cases on focused_client are implicitly tests
+# for the DynChild_ related code.
+@pytest.mark.parametrize("client_exists", [True, False])
+def test_focused_client_existence(hlwm, client_exists):
+    # here, I want the same python code for the positive
+    # and negative test, because the negative test only checks
+    # whether no entry exists.
+    if client_exists:
+        winid, _ = hlwm.create_client()
+
+    def test_children(children):
+        assert ('focused_client' in children) == client_exists
+        assert 'tiling' in children
+
+    test_children(hlwm.list_children_via_attr('tags.0'))
+    test_children(hlwm.list_children('tags.0'))
+
+    if client_exists:
+        assert hlwm.get_attr('tags.0.focused_client.winid') == winid
+
+
+def test_focused_client_multiple_tags(hlwm):
+    tagname2clientcount = [
+        ('t1', 1),
+        ('t2', 0),
+        ('t3', 3),
+        ('t4', 1),
+    ]
+    tagname2clients = {}
+    for t, cnt in tagname2clientcount:
+        # replace dict entry by client list
+        hlwm.call(f'chain , add {t} , rule tag={t} focus=off')
+        tagname2clients[t] = [hlwm.create_client()[0] for _ in range(0, cnt)]
+
+    for t, clients in tagname2clients.items():
+        assert ('focused_client' in hlwm.list_children(f'tags.by-name.{t}')) \
+            == (len(clients) > 0)
+        if len(clients) > 0:
+            assert hlwm.get_attr(f'tags.by-name.{t}.focused_client.winid') \
+                == clients[0]
+
+
+def test_minimized_window_stays_invisible_on_tag_change(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('rule tag=othertag')
+    winid, _ = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.minimized true')
+    assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
+    assert hlwm.get_attr(f'clients.{winid}.tag') == 'othertag'
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+
+    this_tag = 'default'
+    # bring the window to this_tag without focusing it
+    hlwm.call(['unrule', '--all'])
+    hlwm.call(['rule', 'tag=' + this_tag])
+    hlwm.call(['apply_rules', winid])
+    assert hlwm.get_attr(f'clients.{winid}.tag') == this_tag
+
+    # after bringing the client to a visible tag, it must stay
+    # invisible
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'true'
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+    # and the minimized client is not in the tiling layer!
+    assert hlwm.get_attr('tags.focus.tiling.root.client_count') == '0'
+    assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
+
+
+def test_minimized_window_stays_minimized_on_tag_change(hlwm):
+    hlwm.call('add othertag')
+    hlwm.call('rule tag=othertag')
+    winid, _ = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.minimized true')
+    assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
+
+    this_tag = 'default'
+    # bring the window to this_tag without focusing it
+    hlwm.call(['unrule', '--all'])
+    hlwm.call(['rule', 'tag=' + this_tag])
+    hlwm.call(['apply_rules', winid])
+    assert hlwm.get_attr(f'clients.{winid}.tag') == this_tag
+
+    # the minimized client is not in the tiling layer
+    assert hlwm.get_attr('tags.focus.tiling.root.client_count') == '0'
+    assert hlwm.get_attr(f'clients.{winid}.floating') == 'false'
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == 'true'
+    # but after un-minimizing it, it is
+    hlwm.call(f'set_attr clients.{winid}.minimized false')
+    assert hlwm.get_attr('tags.focus.tiling.root.client_count') == '1'

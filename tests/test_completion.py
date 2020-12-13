@@ -168,7 +168,7 @@ def test_completable_commands(hlwm, request, run_destructives):
         'No such.*client: urgent',  # for apply_rules
         'Could not find client "(urgent|)"',  # for drag
         'No neighbour found',  # for resize and similar commands
-        'There are no floating windows; cannot focus',  # for floating_focused
+        r'There are no \(non-minimized\) floating windows; cannot focus',  # for floating_focused
     ])))
     # a set of commands that make other commands break
     # hence we need to run them separately

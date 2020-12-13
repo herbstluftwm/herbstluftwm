@@ -16,6 +16,7 @@ function(gen_manpage sourcefile man_nr)
     set(src_orig "${CMAKE_CURRENT_SOURCE_DIR}/${sourcefile}.txt")
     set(src "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.txt")
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.${man_nr}")
+    STRING(TIMESTAMP BUILD_DATE "%Y-%m-%d" UTC)
 
     add_custom_target("doc_man_${sourcefile}" ALL DEPENDS ${dst})
     add_custom_command(
@@ -27,7 +28,7 @@ function(gen_manpage sourcefile man_nr)
                 --no-xmllint
                 -f manpage
                 -a \"herbstluftwmversion=herbstluftwm ${VERSION}\"
-                -a \"date=`date +%Y-%m-%d`\"
+                -a \"date=${BUILD_DATE}\"
                 ${src}
         DEPENDS ${src_orig}
         )

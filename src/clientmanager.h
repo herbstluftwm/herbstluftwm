@@ -35,13 +35,12 @@ public:
     void remove(Window window);
 
     void unmap_notify(Window win);
-    void force_unmanage(Window win);
     void force_unmanage(Client* client);
 
     void setDragged(Client* client);
 
     Signal_<HSTag*> needsRelayout;
-    Signal_<Client*> floatingStateChanged;
+    Signal_<Client*> clientStateChanged; //! floating or minimized changed
     Link_<Client> focus;
     Link_<Client> dragged;
 
@@ -57,7 +56,10 @@ public:
 
     int applyRulesCmd(Input input, Output output);
     int applyRules(Client* client, Output output, bool changeFocus = true);
+    int applyChanges(Client* client, ClientChanges changes, Output output);
     void applyRulesCompletion(Completion& complete);
+    int applyTmpRuleCmd(Input input, Output output);
+    void applyTmpRuleCompletion(Completion& complete);
 
 protected:
     int clientSetAttribute(std::string attribute, Input input, Output output);

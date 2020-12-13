@@ -25,6 +25,11 @@ TagManager::TagManager()
     , settings_(nullptr)
     , focus_(*this, "focus")
 {
+    indicesChanged.connect([](){
+        Ewmh::get().updateDesktopNames();
+        Ewmh::get().updateCurrentDesktop();
+        tag_set_flags_dirty();
+    });
 }
 
 void TagManager::injectDependencies(MonitorManager* m, Settings *s) {
@@ -265,7 +270,7 @@ void TagManager::moveClient(Client* client, HSTag* target, string frameIndex, bo
         monitor_target->applyLayout();
     }
     if (!monitor_source && monitor_target) {
-        client->set_visible(true);
+        client->set_visible(!client->minimized_());
     }
     tag_set_flags_dirty();
 }

@@ -1,7 +1,7 @@
 
 .PHONY: all clean install
 
-TARGET = herbstluftwm.org:www/
+TARGET = herbstluftwm.org:html/
 
 ASCIIDOC = asciidoc
 ASCIIDOCFLAGS = -s
@@ -11,7 +11,11 @@ INSTALLFILES = $(TXT:.txt=.html) \
 	herbstclient.html \
 	herbstluftwm.svg \
 	favicon.ico \
-	main.css
+	main.css \
+	.htaccess \
+	$(LINKS)
+
+LINKS = NEWS MIGRATION
 
 all: $(INSTALLFILES)
 
@@ -44,8 +48,12 @@ favicon.ico: ../share/herbstluftwm.svg
 	convert -density 256x256 -background transparent $< \
         -define icon:auto-resize -colors 256 $@
 
+# some symbolic links to make links in these asciidoc files work in www, too
+$(LINKS):
+	ln -sf $(shell echo $@ | tr A-Z a-z).html $@
+
 clean:
-	rm -f *.html *-content.html
+	rm -f *.html *-content.html $(LINKS)
 
 install: all
-	rsync -v $(INSTALLFILES) $(TARGET)
+	rsync -v -l $(INSTALLFILES) $(TARGET)

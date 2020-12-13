@@ -5,7 +5,7 @@
 
 #include "client.h"
 #include "ewmh.h"
-#include "finite.h"
+#include "globals.h"
 #include "hook.h"
 #include "root.h"
 #include "utils.h"
@@ -139,6 +139,58 @@ bool Rule::setLabel(char op, string value, Output output) {
 
 Rule::Rule() {
     birth_time = get_monotonic_timestamp();
+}
+
+/**
+ * @brief apply the rule to a client and return whether the rule matched
+ * @param the client to apply the rules to
+ * @param the resulting changes
+ * @return whether the rule matched.
+ */
+bool Rule::evaluate(Client* client, ClientChanges& changes)
+{
+    bool rule_match = true; // if entire rule matches
+
+    // check all conditions
+    for (auto& cond : conditions) {
+        if (!rule_match && cond.name != "maxage") {
+            // implement lazy AND &&
+            // ... except for maxage
+            continue;
+        }
+
+        bool matches = Condition::matchers.at(cond.name)(&cond, client);
+
+        if (!matches && !cond.negated && cond.name == "maxage")
+        {
+            // if not negated maxage does not match anymore
+            // then it will never match again in the future
+            expired_ = true;
+        }
+
+        if (cond.negated) {
+            matches = ! matches;
+        }
+        rule_match = rule_match && matches;
+    }
+
+    if (rule_match) {
+        // apply all consequences
+        for (auto& cons : consequences) {
+            try {
+                Consequence::appliers.at(cons.name)(&cons, client, &changes);
+            } catch (std::exception& e) {
+                HSWarning("Invalid argument \"%s\" for rule consequence \"%s\": %s\n",
+                  cons.value.c_str(),
+                  cons.name.c_str(),
+                  e.what());
+            }
+        }
+    }
+    if (rule_match && once) {
+        expired_ = true;
+    }
+    return rule_match;
 }
 
 void Rule::print(Output output) {
@@ -328,20 +380,3 @@ Finite<ClientPlacement>::ValueList Finite<ClientPlacement>::values = {
     { ClientPlacement::Unchanged, "none" },
     { ClientPlacement::Smart, "smart" },
 };
-
-template<>
-string Converter<ClientPlacement>::str(ClientPlacement cp) {
-    return Finite<ClientPlacement>::str(cp);
-}
-
-template<>
-ClientPlacement Converter<ClientPlacement>::parse(const string& payload) {
-    return Finite<ClientPlacement>::parse(payload);
-}
-
-template<>
-void Converter<ClientPlacement>::complete(Completion& complete, ClientPlacement const* relativeTo) {
-    return Finite<ClientPlacement>::complete(complete, relativeTo);
-}
-
-

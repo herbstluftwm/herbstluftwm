@@ -40,7 +40,7 @@ class Completion;
  * Note that for similar reasons, dynamic attributes are not hookable.
  */
 
-class Attribute : public Entity {
+class Attribute : public Entity, public HasDocumentation {
 
 public:
     Attribute(const std::string &name,
