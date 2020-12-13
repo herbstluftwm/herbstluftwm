@@ -65,7 +65,7 @@ jobs:
         run: |
           ci/build.py --build-dir=build --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
 
-      - name: Check usage of std:: prefix
+      - name: Check usage of std-prefix
         run: |
           ci/build.py --build-dir=build --check-using-std
 
