@@ -1,7 +1,11 @@
 name: HLWM CI
 
 # on: [push, pull_request]
-on: push
+on:
+  push:
+    paths-ignore:
+    - '.mergify.yml'
+    - 'share/**'
 
 jobs:
   build-test-current:
