@@ -5,7 +5,7 @@ on:
     paths-ignore:
     - '.mergify.yml'
     - 'share/**'
-  pull_requests:
+  pull_request:
     paths-ignore:
     - '.mergify.yml'
     - 'share/**'
