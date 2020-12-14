@@ -113,7 +113,7 @@ jobs:
           CFLAGS: -m32
         run: |
           ccache -z --max-size=500M
-          ccache -p
+          # ccache too old for --show-config
           mkdir build
           cd build
           cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES ..
