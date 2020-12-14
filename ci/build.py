@@ -86,6 +86,7 @@ if args.cmake:
     sp.check_call(['cmake', *cmake_args, repo], cwd=build_dir, env=build_env)
 
 if args.compile:
+    sp.check_call(['bash', '-c', 'time ninja -t clean'], cwd=build_dir, env=build_env)
     sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
 
 if args.ccache:
