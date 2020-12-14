@@ -15,6 +15,9 @@ set(FLAGS
     # Disable unused parameter warnings (most cases are on purpose):
     -Wno-unused-parameter
 
+    # range checks for C++ datatypes:
+    -D_GLIBCXX_ASSERTIONS
+
     # TODO: Fix complaints, then enable -Wconversion (gcc and clang might behave
     # differently)
 
@@ -28,6 +31,13 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         -Wduplicated-cond -Wduplicated-branches -Wlogical-op
 
         # TODO: Consider adding -fanalyzer here (new in GCC-10)
+        
+        
+
+        # more stack protection:
+        -fstack-protector-strong
+        -fcf-protection
+        -fstack-clash-protection
         )
 
     # Add GCC- *and* C++-specific flags

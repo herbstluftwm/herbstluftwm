@@ -3,7 +3,7 @@ import re
 import math
 
 # Note: For unknown reasons, mouse buttons 4 and 5 (scroll wheel) do not work
-# in Xvfb when running tests on Travis. Therefore, we maintain two lists of
+# in Xvfb when running tests in the CI. Therefore, we maintain two lists of
 # buttons:
 MOUSE_BUTTONS_THAT_EXIST = [1, 2, 3, 4, 5]
 MOUSE_BUTTONS_THAT_WORK = [1, 2, 3]
