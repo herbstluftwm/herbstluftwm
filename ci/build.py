@@ -50,7 +50,10 @@ if args.ccache:
     if conf.exists():
         conf.unlink()
 
-    # Set a reasonable size limit, and compare compiler based on content, not mtime
+    # Set a reasonable size limit, and compare compiler based on content, not mtime.
+    # Hash-verifying the compiler is required when building with
+    # clang-and-tidy.sh (because the script's mtime is not stable) and for
+    # other cases, the overhead is minimal):
     sp.check_call('ccache --max-size=500M -o compiler_check=content', shell=True)
 
     # Wipe stats before build
@@ -66,11 +69,6 @@ if args.cmake:
         'CXX': args.cxx,
         'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
         'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
-
-        # Hash-verifying the compiler is required when building with
-        # clang-and-tidy.sh (because the script's mtime is not stable) and for
-        # other cases, the overhead is minimal):
-        'CCACHE_COMPILERCHECK': 'content',
 
         # In case clang-and-tidy.sh is used for building, it will need this to call
         # clang-tidy:
