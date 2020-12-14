@@ -18,7 +18,8 @@ def tox(tox_args, build_dir):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--build-dir', type=str, required=True)
+parser.add_argument('--build-dir', type=str,
+                    default=os.environ.get('HLWM_BUILDDIR', None))
 parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'))
 parser.add_argument('--cmake', action='store_true')
 parser.add_argument('--compile', action='store_true')
