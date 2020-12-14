@@ -379,14 +379,14 @@ close_and_remove::
     Closes the focused window and removes the current frame if no other window
     is present in that frame. In floating mode, this acts as the close command.
 
-split 'ALIGN' ['FRACTION' ['FRAMEINDEX']::
+split 'ALIGN' ['FRACTION' ['FRAMEINDEX']]::
     Splits the focused frame (or the frame specified by 'FRAMEINDEX', see the
     section <<FRAME_INDEX,*frame index*>>) into two subframes with a specified
     'FRACTION' between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
     +
         * 'top'
         * 'bottom' (= 'vertical')
-        * 'left',
+        * 'left'
         * 'right' (= 'horizontal')
         * 'explode'
         * 'auto' (split along longest side)
@@ -396,8 +396,8 @@ split 'ALIGN' ['FRACTION' ['FRAMEINDEX']::
     frame. After splitting, the originally focused frame will stay focused.
     One special 'ALIGN' mode is 'explode', which splits the frame in such a way
     that the window focus, window sizes, and positions are kept as much as
-    possible. If no 'FRACTION' is given to 'explode' mode an optimal fraction is
-    picked automatically. Example:
+    possible (so the default 'FRACTION' is not always 0.5, unlike for the other
+    'ALIGN' modes). Example:
 
         * split explode
         * split bottom 0.5
