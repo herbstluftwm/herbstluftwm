@@ -21,6 +21,7 @@ jobs:
     container: hlwm/ci:focal
     env:
       HLWM_BUILDDIR: build
+      CCACHE_LOGFILE: /github/home/ccache.log
 
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
@@ -43,13 +44,23 @@ jobs:
         run: |
           ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
 
+      - name: ccache log
+        run: |
+          cat "$CCACHE_LOGFILE"
+          echo > "$CCACHE_LOGFILE"
+
       - name: Build 2nd time
         run: |
           ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
 
-      - name: Test
+      - name: ccache log
         run: |
-          ci/build.py --run-tests
+          cat "$CCACHE_LOGFILE"
+          echo > "$CCACHE_LOGFILE"
+
+      # - name: Test
+      #   run: |
+      #     ci/build.py --run-tests
 
       - name: Codecov report
         continue-on-error: true
@@ -63,6 +74,7 @@ jobs:
     container: hlwm/ci:focal
     env:
       HLWM_BUILDDIR: build
+      CCACHE_LOGFILE: /github/home/ccache.log
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -91,9 +103,19 @@ jobs:
         run: |
           ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
 
+      - name: ccache log
+        run: |
+          cat "$CCACHE_LOGFILE"
+          echo > "$CCACHE_LOGFILE"
+
       - name: Build 2nd time
         run: |
           ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
+
+      - name: ccache log
+        run: |
+          cat "$CCACHE_LOGFILE"
+          echo > "$CCACHE_LOGFILE"
 
       - name: Check includes using iwyu
         run: |
