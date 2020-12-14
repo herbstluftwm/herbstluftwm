@@ -40,16 +40,17 @@ jobs:
           path: .tox-cache
           key: focal-tox
 
+      - name: inspect ccache 1
+        run: |
+          find ~/.ccache | grep 8/f/64
+
       - name: Build
         run: |
           ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
 
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v2
-        with:
-          name: ccache-log.txt
-          path: /github/home/ccache.log
-          retention-days: 5
+      - name: inspect ccache 2
+        run: |
+          find ~/.ccache | grep 8/f/64
 
       - name: ccache log
         run: |
@@ -59,6 +60,10 @@ jobs:
       - name: Build 2nd time
         run: |
           ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
+
+      - name: inspect ccache 3
+        run: |
+          find ~/.ccache | grep 8/f/64
 
       - name: ccache log
         run: |
