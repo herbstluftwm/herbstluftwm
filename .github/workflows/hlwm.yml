@@ -22,6 +22,7 @@ jobs:
     env:
       HLWM_BUILDDIR: build
       CCACHE_LOGFILE: /github/home/ccache.log
+      CCACHE_NOHASHDIR: 1
 
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
@@ -42,7 +43,7 @@ jobs:
 
       - name: inspect ccache 1
         run: |
-          find ~/.ccache | grep 8/f/64
+          find ~/.ccache | grep 8/f/64 || true
 
       - name: Build
         run: |
@@ -50,7 +51,7 @@ jobs:
 
       - name: inspect ccache 2
         run: |
-          find ~/.ccache | grep 8/f/64
+          find ~/.ccache | grep 8/f/64 || true
 
       - name: ccache log
         run: |
@@ -63,7 +64,7 @@ jobs:
 
       - name: inspect ccache 3
         run: |
-          find ~/.ccache | grep 8/f/64
+          find ~/.ccache | grep 8/f/64 || true
 
       - name: ccache log
         run: |
