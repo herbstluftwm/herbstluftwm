@@ -2,6 +2,8 @@ name: HLWM CI
 
 on:
   push:
+    branches:
+    - master
     paths-ignore:
     - '.mergify.yml'
     - 'share/**'
@@ -17,6 +19,8 @@ jobs:
     # Set the type of machine to run on
     runs-on: ubuntu-latest
     container: hlwm/ci:focal
+    env:
+      HLWM_BUILDDIR: build
 
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
@@ -37,11 +41,11 @@ jobs:
 
       - name: Build
         run: |
-          ci/build.py --build-dir=build --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
+          ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
 
       - name: Test
         run: |
-          ci/build.py --build-dir=build --run-tests
+          ci/build.py --run-tests
 
       - name: Codecov report
         continue-on-error: true
@@ -53,6 +57,8 @@ jobs:
     name: Build with Clang, run linters and static analyzers
     runs-on: ubuntu-latest
     container: hlwm/ci:focal
+    env:
+      HLWM_BUILDDIR: build
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -71,19 +77,19 @@ jobs:
 
       - name: Check usage of std-prefix
         run: |
-          ci/build.py --build-dir=build --check-using-std
+          ci/build.py --check-using-std
 
       - name: Check python using flake8
         run: |
-          ci/build.py --build-dir=build --flake8
+          ci/build.py --flake8
 
       - name: Build
         run: |
-          ci/build.py --build-dir=build --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
+          ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
 
       - name: Check includes using iwyu
         run: |
-          ci/build.py --build-dir=build --iwyu
+          ci/build.py --iwyu
 
   build-old-32bit:
     name: Build for 32bit with ancient GCC on Ubuntu 14.04
