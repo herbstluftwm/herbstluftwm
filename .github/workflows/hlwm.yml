@@ -44,6 +44,13 @@ jobs:
         run: |
           ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
 
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: ccache-log.txt
+          path: /github/home/ccache.log
+          retention-days: 5
+
       - name: ccache log
         run: |
           cat "$CCACHE_LOGFILE"
