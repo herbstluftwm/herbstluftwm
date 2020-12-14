@@ -49,8 +49,8 @@ if args.ccache:
     if conf.exists():
         conf.unlink()
 
-    # Set a reasonable size limit
-    sp.check_call('ccache --max-size=500M', shell=True)
+    # Set a reasonable size limit, and compare compiler based on content, not mtime
+    sp.check_call('ccache --max-size=500M -o compiler_check=content', shell=True)
 
     # Wipe stats before build
     sp.check_call('ccache -z', shell=True)
