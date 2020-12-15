@@ -55,6 +55,8 @@ if args.ccache:
     # Hash-verifying the compiler is required when building with
     # clang-and-tidy.sh (because the script's mtime is not stable) and for
     # other cases, the overhead is minimal)
+    #
+    # Also, we add some more sloppiness here to avoid unnecessary cache misses
     sp.check_call('ccache --max-size=800M -o compiler_check=content -o sloppiness=file_macro,locale,time_macros,include_file_mtime,include_file_ctime -o hash_dir=false', shell=True)
 
     # Wipe stats before build
