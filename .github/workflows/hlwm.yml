@@ -2,8 +2,8 @@ name: HLWM CI
 
 on:
   push:
-    branches:
-    - master
+    # branches:
+    # - master
     paths-ignore:
     - '.mergify.yml'
     - 'share/**'
@@ -41,7 +41,7 @@ jobs:
           path: .tox-cache
           key: focal-tox
 
-      - name: inspect ccache 1
+      - name: Inspect ccache after restore
         run: |
           find ~/.ccache | grep 8/2/aeeb3d || true
           find ~/.ccache | wc -l
@@ -50,7 +50,7 @@ jobs:
         run: |
           ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
 
-      - name: inspect ccache 2
+      - name: Inspect ccache after build
         run: |
           find ~/.ccache | grep 8/2/aeeb3d || true
           find ~/.ccache | wc -l
@@ -58,21 +58,6 @@ jobs:
       - name: ccache log
         run: |
           cat "$CCACHE_LOGFILE"
-          echo > "$CCACHE_LOGFILE"
-
-      - name: Build 2nd time
-        run: |
-          ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
-
-      - name: inspect ccache 3
-        run: |
-          find ~/.ccache | grep 8/2/aeeb3d || true
-          find ~/.ccache | wc -l
-
-      - name: ccache log
-        run: |
-          cat "$CCACHE_LOGFILE"
-          echo > "$CCACHE_LOGFILE"
 
       # - name: Test
       #   run: |
@@ -107,6 +92,11 @@ jobs:
           path: .tox-cache
           key: focal-tox # same name as in build-test-current
 
+      - name: Inspect ccache after restore
+        run: |
+          find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
+
       - name: Check usage of std-prefix
         run: |
           ci/build.py --check-using-std
@@ -115,16 +105,11 @@ jobs:
         run: |
           ci/build.py --flake8
 
-      - name: inspect ccache 1
-        run: |
-          find ~/.ccache | grep 8/f/64 || true
-          find ~/.ccache | wc -l
-
       - name: Build
         run: |
           ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
 
-      - name: inspect ccache 2
+      - name: Inspect after build
         run: |
           find ~/.ccache | grep 8/f/64 || true
           find ~/.ccache | wc -l
@@ -132,21 +117,6 @@ jobs:
       - name: ccache log
         run: |
           cat "$CCACHE_LOGFILE"
-          echo > "$CCACHE_LOGFILE"
-
-      - name: Build 2nd time
-        run: |
-          ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
-
-      - name: inspect ccache 3
-        run: |
-          find ~/.ccache | grep 8/f/64 || true
-          find ~/.ccache | wc -l
-
-      - name: ccache log
-        run: |
-          cat "$CCACHE_LOGFILE"
-          echo > "$CCACHE_LOGFILE"
 
       - name: Check includes using iwyu
         run: |
