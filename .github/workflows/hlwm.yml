@@ -33,7 +33,9 @@ jobs:
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
-          key: focal-ccache
+          key: focal-gcc-ccache-${{ github.run_number }}
+          restore-keys: |
+            focal-gcc-ccache-
 
       - uses: actions/cache@v1
         name: Cache .tox-cache
@@ -84,7 +86,9 @@ jobs:
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
-          key: focal-clang-ccache # different name than in build-test-current
+          key: focal-clang-ccache-${{ github.run_number }}
+          restore-keys: |
+            focal-clang-ccache-
 
       - uses: actions/cache@v1
         name: Cache .tox-cache
@@ -134,7 +138,9 @@ jobs:
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
-          key: ccache-gcc-4.8 # different name than in build-test-current
+          key: ccache-gcc-ancient-${{ github.run_number }}
+          restore-keys: |
+            ccache-gcc-ancient-
 
       - name: Build
         env:
