@@ -41,6 +41,11 @@ jobs:
           path: .tox-cache
           key: focal-tox
 
+      - name: inspect ccache 1
+        run: |
+          find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
+
       - name: Build
         run: |
           ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
@@ -48,6 +53,7 @@ jobs:
       - name: inspect ccache 2
         run: |
           find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
 
       - name: ccache log
         run: |
@@ -61,6 +67,7 @@ jobs:
       - name: inspect ccache 3
         run: |
           find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
 
       - name: ccache log
         run: |
@@ -111,6 +118,7 @@ jobs:
       - name: inspect ccache 1
         run: |
           find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
 
       - name: Build
         run: |
@@ -119,6 +127,7 @@ jobs:
       - name: inspect ccache 2
         run: |
           find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
 
       - name: ccache log
         run: |
@@ -132,6 +141,7 @@ jobs:
       - name: inspect ccache 3
         run: |
           find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
 
       - name: ccache log
         run: |
@@ -163,6 +173,7 @@ jobs:
           CXXFLAGS: -m32
           CFLAGS: -m32
         run: |
+          find ~/.ccache | wc -l
           ccache -z --max-size=500M
           # ccache too old for --show-config
           mkdir build
@@ -170,3 +181,4 @@ jobs:
           cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES ..
           ninja -v -k10
           ccache -s
+          find ~/.ccache | wc -l
