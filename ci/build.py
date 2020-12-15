@@ -22,6 +22,8 @@ parser.add_argument('--build-dir', type=str,
                     default=os.environ.get('HLWM_BUILDDIR', None))
 parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'))
 parser.add_argument('--cmake', action='store_true')
+parser.add_argument('--clean', action='store_true',
+                    help='run ninja -t clean first')
 parser.add_argument('--compile', action='store_true')
 parser.add_argument('--run-tests', action='store_true')
 parser.add_argument('--build-docs', action='store_true')
@@ -88,8 +90,10 @@ if args.cmake:
 
     sp.check_call(['cmake', *cmake_args, repo], cwd=build_dir, env=build_env)
 
-if args.compile:
+if args.clean:
     sp.check_call(['bash', '-c', 'time ninja -t clean'], cwd=build_dir, env=build_env)
+
+if args.compile:
     sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
 
 if args.ccache:
