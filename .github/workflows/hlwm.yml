@@ -2,8 +2,8 @@ name: HLWM CI
 
 on:
   push:
-    # branches:
-    # - master
+    branches:
+    - master
     paths-ignore:
     - '.mergify.yml'
     - 'share/**'
@@ -59,9 +59,9 @@ jobs:
         run: |
           cat "$CCACHE_LOGFILE"
 
-      # - name: Test
-      #   run: |
-      #     ci/build.py --run-tests
+      - name: Test
+        run: |
+          ci/build.py --run-tests
 
       - name: Codecov report
         continue-on-error: true
