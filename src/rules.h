@@ -137,7 +137,7 @@ public:
     bool expired() {
         return expired_;
     };
-    bool evaluate(Client* client, ClientChanges& changes);
+    bool evaluate(Client* client, ClientChanges& changes, Output output);
 
     std::string label;
     std::vector<Condition> conditions;

@@ -13,7 +13,7 @@ public:
     int unruleCommand(Input input, Output output);
     void unruleCompletion(Completion& complete);
     int listRulesCommand(Output output);
-    ClientChanges evaluateRules(Client* client, ClientChanges changes = {});
+    ClientChanges evaluateRules(Client* client, Output output, ClientChanges changes = {});
     static int parseRule(Input input, Output output, Rule& rule, bool& prepend);
 
 private:

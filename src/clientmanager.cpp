@@ -2,6 +2,7 @@
 
 #include <X11/Xlib.h>
 #include <algorithm>
+#include <iostream>
 #include <string>
 
 #include "attribute.h"
@@ -158,7 +159,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     if (additionalRules) {
         additionalRules(changes);
     }
-    changes = Root::get()->rules()->evaluateRules(client, changes);
+    changes = Root::get()->rules()->evaluateRules(client, std::cerr, changes);
     if (!changes.manage || force_unmanage) {
         // map it... just to be sure
         XMapWindow(g_display, win);
@@ -343,7 +344,7 @@ int ClientManager::applyRules(Client* client, Output output, bool changeFocus)
 {
     ClientChanges changes;
     changes.focus = client == focus();
-    changes = Root::get()->rules()->evaluateRules(client, changes);
+    changes = Root::get()->rules()->evaluateRules(client, output, changes);
     if (!changeFocus) {
         changes.focus = false;
     }
@@ -445,7 +446,7 @@ int ClientManager::applyTmpRuleCmd(Input input, Output output)
         Client* client = it.second;
         ClientChanges changes;
         changes.focus = client == focus();
-        rule.evaluate(client, changes);
+        rule.evaluate(client, changes, output);
         if (applyTo->size() > 1) {
             // if we apply the rule to more than one
             // client, then we leave the focus where it was
