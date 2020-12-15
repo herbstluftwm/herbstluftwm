@@ -21,6 +21,8 @@ jobs:
     container: hlwm/ci:focal
     env:
       HLWM_BUILDDIR: build
+      CCACHE_LOGFILE: /github/home/ccache.log
+      CCACHE_NOHASHDIR: 1
 
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
@@ -39,9 +41,23 @@ jobs:
           path: .tox-cache
           key: focal-tox
 
+      - name: Inspect ccache after restore
+        run: |
+          find ~/.ccache | grep 8/2/aeeb3d || true
+          find ~/.ccache | wc -l
+
       - name: Build
         run: |
           ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
+
+      - name: Inspect ccache after build
+        run: |
+          find ~/.ccache | grep 8/2/aeeb3d || true
+          find ~/.ccache | wc -l
+
+      - name: ccache log
+        run: |
+          cat "$CCACHE_LOGFILE"
 
       - name: Test
         run: |
@@ -59,6 +75,7 @@ jobs:
     container: hlwm/ci:focal
     env:
       HLWM_BUILDDIR: build
+      CCACHE_LOGFILE: /github/home/ccache.log
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -75,6 +92,11 @@ jobs:
           path: .tox-cache
           key: focal-tox # same name as in build-test-current
 
+      - name: Inspect ccache after restore
+        run: |
+          find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
+
       - name: Check usage of std-prefix
         run: |
           ci/build.py --check-using-std
@@ -86,6 +108,15 @@ jobs:
       - name: Build
         run: |
           ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
+
+      - name: Inspect after build
+        run: |
+          find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
+
+      - name: ccache log
+        run: |
+          cat "$CCACHE_LOGFILE"
 
       - name: Check includes using iwyu
         run: |
@@ -112,9 +143,12 @@ jobs:
           CXXFLAGS: -m32
           CFLAGS: -m32
         run: |
+          find ~/.ccache | wc -l
           ccache -z --max-size=500M
+          # ccache too old for --show-config
           mkdir build
           cd build
           cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES ..
           ninja -v -k10
           ccache -s
+          find ~/.ccache | wc -l
