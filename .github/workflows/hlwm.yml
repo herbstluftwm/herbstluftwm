@@ -43,7 +43,7 @@ jobs:
 
       - name: inspect ccache 1
         run: |
-          find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | grep 8/2/aeeb3d || true
           find ~/.ccache | wc -l
 
       - name: Build
@@ -52,7 +52,7 @@ jobs:
 
       - name: inspect ccache 2
         run: |
-          find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | grep 8/2/aeeb3d || true
           find ~/.ccache | wc -l
 
       - name: ccache log
@@ -66,7 +66,7 @@ jobs:
 
       - name: inspect ccache 3
         run: |
-          find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | grep 8/2/aeeb3d || true
           find ~/.ccache | wc -l
 
       - name: ccache log
