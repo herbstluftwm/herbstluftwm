@@ -5,7 +5,6 @@
 
 #include "client.h"
 #include "ewmh.h"
-#include "globals.h"
 #include "hook.h"
 #include "root.h"
 #include "utils.h"
@@ -147,7 +146,7 @@ Rule::Rule() {
  * @param the resulting changes
  * @return whether the rule matched.
  */
-bool Rule::evaluate(Client* client, ClientChanges& changes)
+bool Rule::evaluate(Client* client, ClientChanges& changes, Output output)
 {
     bool rule_match = true; // if entire rule matches
 
@@ -180,10 +179,9 @@ bool Rule::evaluate(Client* client, ClientChanges& changes)
             try {
                 Consequence::appliers.at(cons.name)(&cons, client, &changes);
             } catch (std::exception& e) {
-                HSWarning("Invalid argument \"%s\" for rule consequence \"%s\": %s\n",
-                  cons.value.c_str(),
-                  cons.name.c_str(),
-                  e.what());
+                output << "Invalid argument \"" << cons.value
+                       << "\" for rule consequence \"" << cons.name << "\": "
+                       << e.what() << "\n";
             }
         }
     }

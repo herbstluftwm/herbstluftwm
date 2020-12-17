@@ -1,4 +1,5 @@
 import pytest
+import re
 
 
 string_props = [
@@ -123,6 +124,26 @@ def test_add_rule_maxage_condition_operator(hlwm, command):
 def test_add_rule_maxage_condition_integer(hlwm, command):
     call = hlwm.call_xfail(f'{command} maxage=foo')
     call.expect_stderr('rule: Cannot parse integer from "foo"')
+
+
+@pytest.mark.parametrize('rulearg,errormsg', [
+    ("fullscreen=foo", 'only.*are valid booleans'),
+    ("keymask=(", 'Parenthesis is not closed'),
+    ("floatplacement=bar", 'Expecting one of: center, '),
+])
+@pytest.mark.parametrize('command', ['apply_rules', 'apply_tmp_rule'])
+def test_rule_parse_error_printed_at_client(hlwm, command, rulearg, errormsg):
+    winid, _ = hlwm.create_client()
+    full_cmd = [command, winid]
+    if command == 'apply_rules':
+        hlwm.call(['rule', rulearg])
+    else:
+        full_cmd += [rulearg]
+
+    proc = hlwm.call(full_cmd)
+    # since the command does not fail, the error
+    # message appears on stdout
+    assert re.search(errormsg, proc.stdout)
 
 
 @pytest.mark.parametrize('method', ['-F', '--all'])
