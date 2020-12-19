@@ -757,6 +757,9 @@ int frame_move_window_command(int argc, char** argv, Output output) {
 
             // layout was changed, so update it
             get_current_monitor()->applyLayout();
+        } else if (!client) {
+            output << argv[0] << ": No client focused\n";
+            return HERBST_FORBIDDEN;
         } else {
             output << argv[0] << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
