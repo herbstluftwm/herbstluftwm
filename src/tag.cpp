@@ -346,9 +346,9 @@ int HSTag::shiftInDirCommand(Input input, Output output)
         return success ? 0 : HERBST_FORBIDDEN;
     }
     // don't look for neighbours within the frame if 'external_only' is set
-    int index = external_only ? (-1) : sourceFrame->getInnerNeighbourIndex(direction);
-    if (index >= 0) {
-        sourceFrame->moveClient(index);
+    int indexInFrame = external_only ? (-1) : sourceFrame->getInnerNeighbourIndex(direction);
+    if (indexInFrame >= 0) {
+        sourceFrame->moveClient(indexInFrame);
         needsRelayout_.emit();
     } else {
         shared_ptr<Frame> neighbour = sourceFrame->neighbour(direction);
