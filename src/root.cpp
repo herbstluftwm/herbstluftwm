@@ -9,10 +9,10 @@
 #include "hookmanager.h"
 #include "keymanager.h"
 #include "layout.h"
+#include "metacommands.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
 #include "panelmanager.h"
-#include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
 #include "tag.h"
@@ -37,7 +37,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     , theme(*this, "theme")
     , tmp(*this, TMP_OBJECT_PATH)
     , globals(g)
-    , root_commands(make_unique<RootCommands>(*this))
+    , meta_commands(make_unique<MetaCommands>(*this))
     , X(xconnection)
     , ipcServer_(ipcServer)
     , panels(make_unique<PanelManager>(xconnection))

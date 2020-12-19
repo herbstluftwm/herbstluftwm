@@ -37,6 +37,7 @@ target_sources(herbstluftwm PRIVATE
     keymanager.cpp keymanager.h
     layout.cpp layout.h
     link.h
+    metacommands.cpp metacommands.h
     monitor.cpp monitor.h
     monitordetection.cpp monitordetection.h
     monitormanager.cpp monitormanager.h
@@ -50,7 +51,6 @@ target_sources(herbstluftwm PRIVATE
     panelmanager.h panelmanager.cpp
     rectangle.cpp rectangle.h
     regexstr.cpp regexstr.h
-    rootcommands.cpp rootcommands.h
     root.cpp root.h
     rulemanager.cpp rulemanager.h
     rules.cpp rules.h

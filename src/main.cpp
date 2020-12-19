@@ -20,12 +20,12 @@
 #include "ipc-server.h"
 #include "keymanager.h"
 #include "layout.h"
+#include "metacommands.h"
 #include "monitordetection.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
 #include "rectangle.h"
 #include "root.h"
-#include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
 #include "tagmanager.h"
@@ -65,7 +65,7 @@ int custom_hook_emit(Input input);
 int jumpto_command(int argc, char** argv, Output output);
 
 unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
-    RootCommands* root_commands = root->root_commands.get();
+    MetaCommands* meta_commands = root->meta_commands.get();
 
     ClientManager* clients = root->clients();
     KeyManager *keys = root->keys();
@@ -79,14 +79,14 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     std::initializer_list<pair<const string,CommandBinding>> init =
     {
         {"quit",           { quit } },
-        {"echo",           {root_commands, &RootCommands::echoCommand,
-                                           &RootCommands::echoCompletion }},
+        {"echo",           {meta_commands, &MetaCommands::echoCommand,
+                                           &MetaCommands::echoCompletion }},
         {"true",           {[] { return 0; }}},
         {"false",          {[] { return 1; }}},
-        {"try",            {root_commands, &RootCommands::tryCommand,
-                                           &RootCommands::completeCommandShifted1}},
-        {"silent",         {root_commands, &RootCommands::silentCommand,
-                                           &RootCommands::completeCommandShifted1}},
+        {"try",            {meta_commands, &MetaCommands::tryCommand,
+                                           &MetaCommands::completeCommandShifted1}},
+        {"silent",         {meta_commands, &MetaCommands::silentCommand,
+                                           &MetaCommands::completeCommandShifted1}},
         {"reload",         {[] { execute_autostart_file(); return 0; }}},
         {"version",        { version }},
         {"list_commands",  { list_commands }},
@@ -187,42 +187,42 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"set_layout",     { tags->frameCommand(&FrameTree::setLayoutCommand, &FrameTree::setLayoutCompletion) }},
         {"detect_monitors",{ monitors, &MonitorManager::detectMonitorsCommand,
                                        &MonitorManager::detectMonitorsCompletion }},
-        {"!",              { root_commands, &RootCommands::negateCommand,
-                                            &RootCommands::completeCommandShifted1 }},
-        {"chain",          { root_commands, &RootCommands::chainCommand,
-                                            &RootCommands::chainCompletion}},
-        {"and",            { root_commands, &RootCommands::chainCommand,
-                                            &RootCommands::chainCompletion}},
-        {"or",             { root_commands, &RootCommands::chainCommand,
-                                            &RootCommands::chainCompletion}},
-        {"object_tree",    { root_commands, &RootCommands::print_object_tree_command,
-                                            &RootCommands::print_object_tree_complete} },
-        {"substitute",     { root_commands, &RootCommands::substitute_cmd,
-                                            &RootCommands::substitute_complete} },
-        {"foreach",        { root_commands, &RootCommands::foreachCmd,
-                                            &RootCommands::foreachComplete} },
-        {"sprintf",        { root_commands, &RootCommands::sprintf_cmd,
-                                            &RootCommands::sprintf_complete} },
-        {"new_attr",       { root_commands, &RootCommands::new_attr_cmd,
-                                            &RootCommands::new_attr_complete} },
-        {"remove_attr",    { root_commands, &RootCommands::remove_attr_cmd,
-                                            &RootCommands::remove_attr_complete }},
-        {"compare",        { root_commands, &RootCommands::compare_cmd,
-                                            &RootCommands::compare_complete} },
-        {"getenv",         { root_commands, &RootCommands::getenvCommand,
-                                            &RootCommands::getenvUnsetenvCompletion}},
-        {"setenv",         { root_commands, &RootCommands::setenvCommand,
-                                            &RootCommands::setenvCompletion}},
-        {"export",         { root_commands, &RootCommands::exportEnvCommand,
-                                            &RootCommands::exportEnvCompletion}},
-        {"unsetenv",       { root_commands, &RootCommands::unsetenvCommand,
-                                            &RootCommands::getenvUnsetenvCompletion}},
-        {"get_attr",       { root_commands, &RootCommands::get_attr_cmd,
-                                            &RootCommands::get_attr_complete }},
-        {"set_attr",       { root_commands, &RootCommands::set_attr_cmd,
-                                            &RootCommands::set_attr_complete }},
-        {"attr",           { root_commands, &RootCommands::attr_cmd,
-                                            &RootCommands::attr_complete }},
+        {"!",              { meta_commands, &MetaCommands::negateCommand,
+                                            &MetaCommands::completeCommandShifted1 }},
+        {"chain",          { meta_commands, &MetaCommands::chainCommand,
+                                            &MetaCommands::chainCompletion}},
+        {"and",            { meta_commands, &MetaCommands::chainCommand,
+                                            &MetaCommands::chainCompletion}},
+        {"or",             { meta_commands, &MetaCommands::chainCommand,
+                                            &MetaCommands::chainCompletion}},
+        {"object_tree",    { meta_commands, &MetaCommands::print_object_tree_command,
+                                            &MetaCommands::print_object_tree_complete} },
+        {"substitute",     { meta_commands, &MetaCommands::substitute_cmd,
+                                            &MetaCommands::substitute_complete} },
+        {"foreach",        { meta_commands, &MetaCommands::foreachCmd,
+                                            &MetaCommands::foreachComplete} },
+        {"sprintf",        { meta_commands, &MetaCommands::sprintf_cmd,
+                                            &MetaCommands::sprintf_complete} },
+        {"new_attr",       { meta_commands, &MetaCommands::new_attr_cmd,
+                                            &MetaCommands::new_attr_complete} },
+        {"remove_attr",    { meta_commands, &MetaCommands::remove_attr_cmd,
+                                            &MetaCommands::remove_attr_complete }},
+        {"compare",        { meta_commands, &MetaCommands::compare_cmd,
+                                            &MetaCommands::compare_complete} },
+        {"getenv",         { meta_commands, &MetaCommands::getenvCommand,
+                                            &MetaCommands::getenvUnsetenvCompletion}},
+        {"setenv",         { meta_commands, &MetaCommands::setenvCommand,
+                                            &MetaCommands::setenvCompletion}},
+        {"export",         { meta_commands, &MetaCommands::exportEnvCommand,
+                                            &MetaCommands::exportEnvCompletion}},
+        {"unsetenv",       { meta_commands, &MetaCommands::unsetenvCommand,
+                                            &MetaCommands::getenvUnsetenvCompletion}},
+        {"get_attr",       { meta_commands, &MetaCommands::get_attr_cmd,
+                                            &MetaCommands::get_attr_complete }},
+        {"set_attr",       { meta_commands, &MetaCommands::set_attr_cmd,
+                                            &MetaCommands::set_attr_complete }},
+        {"attr",           { meta_commands, &MetaCommands::attr_cmd,
+                                            &MetaCommands::attr_complete }},
         {"mktemp",         { tmp, &Tmp::mktemp,
                                   &Tmp::mktempComplete }},
     };
