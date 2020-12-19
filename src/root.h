@@ -18,7 +18,7 @@ class KeyManager; // IWYU pragma: keep
 class MonitorManager; // IWYU pragma: keep
 class MouseManager; // IWYU pragma: keep
 class PanelManager;
-class RootCommands;
+class MetaCommands;
 class RuleManager; // IWYU pragma: keep
 class Settings; // IWYU pragma: keep
 class TagManager; // IWYU pragma: keep
@@ -59,7 +59,7 @@ public:
     Child_<Tmp> tmp;
 
     Globals globals;
-    std::unique_ptr<RootCommands> root_commands; // Using "pimpl" to avoid include
+    std::unique_ptr<MetaCommands> meta_commands; // Using "pimpl" to avoid include
     XConnection& X;
     IpcServer& ipcServer_;
     //! Temporary member. In the long run, ewmh should get its information

@@ -1,4 +1,4 @@
-#include "rootcommands.h"
+#include "metacommands.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -26,10 +26,10 @@ using std::vector;
 
 extern char** environ;
 
-RootCommands::RootCommands(Object& root_) : root(root_) {
+MetaCommands::MetaCommands(Object& root_) : root(root_) {
 }
 
-int RootCommands::get_attr_cmd(Input in, Output output) {
+int MetaCommands::get_attr_cmd(Input in, Output output) {
     string attrName;
     if (!(in >> attrName)) {
         return HERBST_NEED_MORE_ARGS;
@@ -43,7 +43,7 @@ int RootCommands::get_attr_cmd(Input in, Output output) {
     return 0;
 }
 
-int RootCommands::set_attr_cmd(Input in, Output output) {
+int MetaCommands::set_attr_cmd(Input in, Output output) {
     string path, new_value;
     if (!(in >> path >> new_value)) {
         return HERBST_NEED_MORE_ARGS;
@@ -65,7 +65,7 @@ int RootCommands::set_attr_cmd(Input in, Output output) {
     }
 }
 
-int RootCommands::attr_cmd(Input in, Output output) {
+int MetaCommands::attr_cmd(Input in, Output output) {
     string path = "", new_value = "";
     in >> path >> new_value;
     std::ostringstream dummy_output;
@@ -105,7 +105,7 @@ int RootCommands::attr_cmd(Input in, Output output) {
     }
 }
 
-Attribute* RootCommands::getAttribute(string path, Output output) {
+Attribute* MetaCommands::getAttribute(string path, Output output) {
     auto attr_path = Object::splitPath(path);
     auto child = root.child(attr_path.first);
     if (!child) {
@@ -129,7 +129,7 @@ Attribute* RootCommands::getAttribute(string path, Output output) {
     return a;
 }
 
-int RootCommands::print_object_tree_command(Input in, Output output) {
+int MetaCommands::print_object_tree_command(Input in, Output output) {
     auto path = Path(in.empty() ? string("") : in.front()).toVector();
     while (!path.empty() && path.back().empty()) {
         path.pop_back();
@@ -143,7 +143,7 @@ int RootCommands::print_object_tree_command(Input in, Output output) {
     return 0;
 }
 
-void RootCommands::print_object_tree_complete(Completion& complete) {
+void MetaCommands::print_object_tree_complete(Completion& complete) {
     if (complete == 0) {
         completeObjectPath(complete);
     } else {
@@ -152,7 +152,7 @@ void RootCommands::print_object_tree_complete(Completion& complete) {
 }
 
 
-int RootCommands::substitute_cmd(Input input, Output output)
+int MetaCommands::substitute_cmd(Input input, Output output)
 {
     string ident, path;
     if (!(input >> ident >> path )) {
@@ -168,7 +168,7 @@ int RootCommands::substitute_cmd(Input input, Output output)
     return Commands::call(carryover, output);
 }
 
-void RootCommands::substitute_complete(Completion& complete)
+void MetaCommands::substitute_complete(Completion& complete)
 {
     if (complete == 0) {
         // no completion for the identifier
@@ -181,7 +181,7 @@ void RootCommands::substitute_complete(Completion& complete)
     }
 }
 
-int RootCommands::foreachCmd(Input input, Output output)
+int MetaCommands::foreachCmd(Input input, Output output)
 {
     string ident, pathString;
     if (!(input >> ident >> pathString)) {
@@ -218,7 +218,7 @@ int RootCommands::foreachCmd(Input input, Output output)
     return lastStatusCode;
 }
 
-void RootCommands::foreachComplete(Completion& complete)
+void MetaCommands::foreachComplete(Completion& complete)
 {
     if (complete == 0) {
         // no completion for the identifier
@@ -232,7 +232,7 @@ void RootCommands::foreachComplete(Completion& complete)
 }
 
 //! parse a format string or throw an exception
-RootCommands::FormatString RootCommands::parseFormatString(const string &format)
+MetaCommands::FormatString MetaCommands::parseFormatString(const string &format)
 {
     FormatString blobs;
     size_t lastpos = 0; // the position where the last plaintext blob started
@@ -272,7 +272,7 @@ RootCommands::FormatString RootCommands::parseFormatString(const string &format)
     return blobs;
 }
 
-int RootCommands::sprintf_cmd(Input input, Output output)
+int MetaCommands::sprintf_cmd(Input input, Output output)
 {
     string ident, formatStringSrc;
     if (!(input >> ident >> formatStringSrc)) {
@@ -316,7 +316,7 @@ int RootCommands::sprintf_cmd(Input input, Output output)
     return Commands::call(carryover, output);
 }
 
-void RootCommands::sprintf_complete(Completion& complete)
+void MetaCommands::sprintf_complete(Completion& complete)
 {
     if (complete == 0) {
         // no completion for arg name
@@ -359,7 +359,7 @@ static std::map<string, function<Attribute*(string)>> name2constructor {
     { "uint",  [](string n) { return new Attribute_<unsigned long>(n, 0); }},
 };
 
-Attribute* RootCommands::newAttributeWithType(string typestr, string attr_name, Output output) {
+Attribute* MetaCommands::newAttributeWithType(string typestr, string attr_name, Output output) {
     auto it = name2constructor.find(typestr);
     if (it == name2constructor.end()) {
         output << "error: unknown type \"" << typestr << "\"";
@@ -370,7 +370,7 @@ Attribute* RootCommands::newAttributeWithType(string typestr, string attr_name, 
     return attr;
 }
 
-void RootCommands::completeAttributeType(Completion& complete)
+void MetaCommands::completeAttributeType(Completion& complete)
 {
     for (const auto& t : name2constructor) {
         complete.full(t.first);
@@ -379,7 +379,7 @@ void RootCommands::completeAttributeType(Completion& complete)
 
 
 
-int RootCommands::new_attr_cmd(Input input, Output output)
+int MetaCommands::new_attr_cmd(Input input, Output output)
 {
     string type, path, initialValue;
     bool initialValueSupplied = false;
@@ -429,7 +429,7 @@ int RootCommands::new_attr_cmd(Input input, Output output)
     return 0;
 }
 
-void RootCommands::new_attr_complete(Completion& complete)
+void MetaCommands::new_attr_complete(Completion& complete)
 {
     if (complete == 0) {
         completeAttributeType(complete);
@@ -449,7 +449,7 @@ void RootCommands::new_attr_complete(Completion& complete)
     }
 }
 
-int RootCommands::remove_attr_cmd(Input input, Output output)
+int MetaCommands::remove_attr_cmd(Input input, Output output)
 {
     string path;
     if (!(input >> path )) {
@@ -473,7 +473,7 @@ int RootCommands::remove_attr_cmd(Input input, Output output)
     return 0;
 }
 
-void RootCommands::remove_attr_complete(Completion& complete) {
+void MetaCommands::remove_attr_complete(Completion& complete) {
     if (complete == 0) {
         completeObjectPath(complete, true, [] (Attribute* a) {
             return a->name().substr(0,strlen(USER_ATTRIBUTE_PREFIX)) 
@@ -536,7 +536,7 @@ template<> Finite<CompareOperator>::ValueList Finite<CompareOperator>::values = 
     { { true, { -1 } }, "lt", },
 };
 
-int RootCommands::compare_cmd(Input input, Output output)
+int MetaCommands::compare_cmd(Input input, Output output)
 {
     string path, value;
     CompareOperator oper;
@@ -585,7 +585,7 @@ int RootCommands::compare_cmd(Input input, Output output)
     return (found == possible_values.end()) ? 1 : 0;
 }
 
-void RootCommands::compare_complete(Completion &complete) {
+void MetaCommands::compare_complete(Completion &complete) {
     if (complete == 0) {
         completeAttributePath(complete);
     } else if (complete == 1) {
@@ -598,7 +598,7 @@ void RootCommands::compare_complete(Completion &complete) {
 }
 
 
-void RootCommands::completeObjectPath(Completion& complete, bool attributes,
+void MetaCommands::completeObjectPath(Completion& complete, bool attributes,
                                       function<bool(Attribute*)> attributeFilter)
 {
     ArgList objectPathArgs = std::get<0>(Object::splitPath(complete.needle()));
@@ -623,11 +623,11 @@ void RootCommands::completeObjectPath(Completion& complete, bool attributes,
     }
 }
 
-void RootCommands::completeAttributePath(Completion& complete) {
+void MetaCommands::completeAttributePath(Completion& complete) {
     completeObjectPath(complete, true);
 }
 
-void RootCommands::get_attr_complete(Completion& complete) {
+void MetaCommands::get_attr_complete(Completion& complete) {
     if (complete == 0) {
         completeAttributePath(complete);
     } else {
@@ -635,7 +635,7 @@ void RootCommands::get_attr_complete(Completion& complete) {
     }
 }
 
-void RootCommands::set_attr_complete(Completion& complete) {
+void MetaCommands::set_attr_complete(Completion& complete) {
     if (complete == 0) {
         completeObjectPath(complete, true,
             [](Attribute* a) { return a->writeable(); } );
@@ -649,7 +649,7 @@ void RootCommands::set_attr_complete(Completion& complete) {
     }
 }
 
-void RootCommands::attr_complete(Completion& complete)
+void MetaCommands::attr_complete(Completion& complete)
 {
     if (complete == 0) {
         completeAttributePath(complete);
@@ -668,27 +668,27 @@ void RootCommands::attr_complete(Completion& complete)
     }
 }
 
-int RootCommands::tryCommand(Input input, Output output) {
+int MetaCommands::tryCommand(Input input, Output output) {
     Commands::call(input.fromHere(), output); // pass output
     return 0; // ignore exit code
 }
 
-int RootCommands::silentCommand(Input input, Output output) {
+int MetaCommands::silentCommand(Input input, Output output) {
     stringstream dummyOutput;
     // drop output but pass exit code
     return Commands::call(input.fromHere(), dummyOutput);
 }
 
-int RootCommands::negateCommand(Input input, Output output)
+int MetaCommands::negateCommand(Input input, Output output)
 {
     return ! Commands::call(input.fromHere(), output);
 }
 
-void RootCommands::completeCommandShifted1(Completion& complete) {
+void MetaCommands::completeCommandShifted1(Completion& complete) {
     complete.completeCommands(0);
 }
 
-int RootCommands::echoCommand(Input input, Output output)
+int MetaCommands::echoCommand(Input input, Output output)
 {
     string token;
     bool first = true;
@@ -701,7 +701,7 @@ int RootCommands::echoCommand(Input input, Output output)
 }
 
 
-int RootCommands::setenvCommand(Input input, Output output) {
+int MetaCommands::setenvCommand(Input input, Output output) {
     string name, value;
     if (!(input >> name >> value)) {
         return HERBST_NEED_MORE_ARGS;
@@ -715,7 +715,7 @@ int RootCommands::setenvCommand(Input input, Output output) {
     return 0;
 }
 
-void RootCommands::setenvCompletion(Completion& complete) {
+void MetaCommands::setenvCompletion(Completion& complete) {
     if (complete == 0) {
         return completeEnvName(complete);
     } else if (complete == 1) {
@@ -726,7 +726,7 @@ void RootCommands::setenvCompletion(Completion& complete) {
 }
 
 //! a wraper around setenv with the usual 'export' syntax in posix
-int RootCommands::exportEnvCommand(Input input, Output output)
+int MetaCommands::exportEnvCommand(Input input, Output output)
 {
     string arg;
     if (!(input >> arg )) {
@@ -741,7 +741,7 @@ int RootCommands::exportEnvCommand(Input input, Output output)
     return setenvCommand(newInput, output);
 }
 
-void RootCommands::exportEnvCompletion(Completion &complete)
+void MetaCommands::exportEnvCompletion(Completion &complete)
 {
     for (char** env = environ; *env; ++env) {
         vector<string> chunks = ArgList::split(*env, '=');
@@ -751,7 +751,7 @@ void RootCommands::exportEnvCompletion(Completion &complete)
     }
 }
 
-int RootCommands::getenvCommand(Input input, Output output) {
+int MetaCommands::getenvCommand(Input input, Output output) {
     string name;
     if (!(input >> name)) {
         return HERBST_NEED_MORE_ARGS;
@@ -765,7 +765,7 @@ int RootCommands::getenvCommand(Input input, Output output) {
 }
 
 //! completion for unsetenv and getenv
-void RootCommands::getenvUnsetenvCompletion(Completion& complete) {
+void MetaCommands::getenvUnsetenvCompletion(Completion& complete) {
     if (complete == 0) {
         return completeEnvName(complete);
     } else {
@@ -773,7 +773,7 @@ void RootCommands::getenvUnsetenvCompletion(Completion& complete) {
     }
 }
 
-int RootCommands::unsetenvCommand(Input input, Output output) {
+int MetaCommands::unsetenvCommand(Input input, Output output) {
     string name;
     if (!(input >> name)) {
         return HERBST_NEED_MORE_ARGS;
@@ -787,7 +787,7 @@ int RootCommands::unsetenvCommand(Input input, Output output) {
     return 0;
 }
 
-void RootCommands::completeEnvName(Completion& complete) {
+void MetaCommands::completeEnvName(Completion& complete) {
     for (char** env = environ; *env; ++env) {
         vector<string> chunks = ArgList::split(*env, '=');
         if (!chunks.empty()) {
@@ -796,7 +796,7 @@ void RootCommands::completeEnvName(Completion& complete) {
     }
 }
 
-int RootCommands::chainCommand(Input input, Output output)
+int MetaCommands::chainCommand(Input input, Output output)
 {
     vector<vector<string>> commands = splitCommandList(input.toVector());
     int returnCode = 0;
@@ -826,7 +826,7 @@ int RootCommands::chainCommand(Input input, Output output)
     return returnCode;
 }
 
-void RootCommands::chainCompletion(Completion& complete)
+void MetaCommands::chainCompletion(Completion& complete)
 {
     if (complete == 0) {
         // no completion for the separator
@@ -845,7 +845,7 @@ void RootCommands::chainCompletion(Completion& complete)
 }
 
 
-vector<vector<string>> RootCommands::splitCommandList(ArgList::Container input) {
+vector<vector<string>> MetaCommands::splitCommandList(ArgList::Container input) {
     vector<vector<string>> res;
     if (input.empty()) {
         return res;
