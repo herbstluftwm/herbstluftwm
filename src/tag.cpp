@@ -338,7 +338,7 @@ int HSTag::shiftInDirCommand(Input input, Output output)
     if (ap.parsingAllFails(input, output)) {
         return ap.exitCode();
     }
-    shared_ptr<FrameLeaf> frame = this->frame->focusedFrame();
+    shared_ptr<FrameLeaf> sourceFrame = this->frame->focusedFrame();
     Client* currentClient = focusedClient();
     if (currentClient && currentClient->is_client_floated()) {
         // try to move the floating window
@@ -346,16 +346,16 @@ int HSTag::shiftInDirCommand(Input input, Output output)
         return success ? 0 : HERBST_FORBIDDEN;
     }
     // don't look for neighbours within the frame if 'external_only' is set
-    int index = external_only ? (-1) : frame->getInnerNeighbourIndex(direction);
+    int index = external_only ? (-1) : sourceFrame->getInnerNeighbourIndex(direction);
     if (index >= 0) {
-        frame->moveClient(index);
+        sourceFrame->moveClient(index);
         needsRelayout_.emit();
     } else {
-        shared_ptr<Frame> neighbour = frame->neighbour(direction);
-        Client* client = frame->focusedClient();
+        shared_ptr<Frame> neighbour = sourceFrame->neighbour(direction);
+        Client* client = sourceFrame->focusedClient();
         if (client && neighbour) { // if neighbour was found
             // move window to neighbour
-            frame->removeClient(client);
+            sourceFrame->removeClient(client);
             FrameTree::focusedFrame(neighbour)->insertClient(client);
             neighbour->frameWithClient(client)->select(client);
 
