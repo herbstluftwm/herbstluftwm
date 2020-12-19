@@ -14,6 +14,7 @@ Current git version
   * New child object 'focused_frame' for the tiling object of each tag object.
   * New command 'mirror'
   * New command 'apply_tmp_rule'
+  * The 'apply_rules' command now reports parse errors
   * Bug fixes:
     - When hiding windows, correctly set their WM_STATE to IconicState (we set
       it to Withdrawn state before, which means "unmanaged" and thus is wrong).
