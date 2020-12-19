@@ -68,6 +68,8 @@ public:
 
     int focusInDirCommand(Input input, Output output);
     void focusInDirCompletion(Completion& complete);
+    int shiftInDirCommand(Input input, Output output);
+    void shiftInDirCompletion(Completion& complete);
 
     int cycleAllCommand(Input input, Output output);
     void cycleAllCompletion(Completion& complete);

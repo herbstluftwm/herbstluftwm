@@ -968,23 +968,32 @@ def test_set_layout_invalid_layout_name(hlwm):
         .expect_stderr('Cannot.* "foobar":.*one of: vertical, horizontal')
 
 
-def test_focus_edge(hlwm):
+@pytest.mark.parametrize("command", ['focus_edge', 'shift_edge'])
+def test_focus_edge_shift_edge(hlwm, command):
     hlwm.call('set focus_crosses_monitor_boundaries on')
     hlwm.call('add otherTag')
     hlwm.call('add_monitor 800x600+800+0')
     hlwm.call('split right')
     hlwm.call('split right')
 
+    if command == 'shift_edge':
+        # the only difference between 'shift_edge' and 'focus_edge'
+        # is that we take the focused window with us
+        hlwm.create_client()
+
     # we're on the leftmost frame
     layout_before = hlwm.call('dump').stdout
-    hlwm.call('focus_edge left')
+    hlwm.call([command, 'left'])
+    assert hlwm.attr.tags.focus.tiling.focused_frame.index() == '00'
     assert layout_before == hlwm.call('dump').stdout
     assert hlwm.get_attr('monitors.focus.index') == '0'
 
-    # focus_edge goes to the rightmost frame
-    hlwm.call('focus_edge right')
+    # focus_edge/shift_edge goes to the rightmost frame
+    hlwm.call([command, 'right'])
     # we're still on the first monitor
     assert hlwm.get_attr('monitors.focus.index') == '0'
+    # but in the right-most frame
+    assert hlwm.attr.tags.focus.tiling.focused_frame.index() == '1'
     # but right-most frame means, if we go right once more, we're on
     # the other monitor:
     hlwm.call('focus right')
