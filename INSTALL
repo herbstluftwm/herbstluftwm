@@ -55,8 +55,10 @@ variables which you can set on the initial cmake call and alter with ccmake:
     CMAKE_INSTALL_SYSCONF_PREFIX = $(DESTDIR)/etc/  # path to etc directory
 
 Individual paths for special files can be set with the *DIR variables, typically
-relative to CMAKE_INSTALL_PREFIX. If you are building package, you would
-typically build regularly, and install with DESTDIR=./path/to/fakeroot.
+relative to CMAKE_INSTALL_PREFIX. If you are building a package, you would
+typically build regularly, and install with DESTDIR=./path/to/fakeroot. If you
+are building from a source tarball, you can disable WITH_DOCUMENTATION because
+the built documentation is already contained in the tarball.
 
     mkdir build && cd build
     cmake ..
