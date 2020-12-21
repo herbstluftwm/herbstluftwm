@@ -158,6 +158,6 @@ jobs:
           cd build
           cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES ..
           ninja -v -k10
-          ninja -v doc_json
+          ninja -v -t doc_json
           ccache -s
           find ~/.ccache | wc -l
