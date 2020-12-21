@@ -98,6 +98,7 @@ struct Rectangle {
 
     bool operator<(const Rectangle& other) const;
     bool operator==(const Rectangle& other) const;
+    bool operator!=(const Rectangle& other) const { return !(this->operator==(other));}
 
     operator bool() const;
 

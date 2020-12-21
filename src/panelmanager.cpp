@@ -14,7 +14,7 @@ public:
     Window winid_;
     PanelManager& pm_;
     Rectangle size_;
-    vector<long> wmStrut_ = {0, 0, 0, 0};
+    vector<long> wmStrut_ = {};
     int operator[](PanelManager::WmStrut idx) const {
         size_t i = static_cast<size_t>(idx);
         if (i < wmStrut_.size()) {
@@ -52,7 +52,7 @@ void PanelManager::registerPanel(Window win)
 {
     Panel* p = new Panel(win, *this);
     panels_.insert(make_pair(win, p));
-    updateReservedSpace(p);
+    updateReservedSpace(p, xcon_.windowSize(win));
     panels_changed_.emit();
 }
 
@@ -76,7 +76,24 @@ void PanelManager::propertyChanged(Window win, Atom property)
     auto it = panels_.find(win);
     if (it != panels_.end()) {
         Panel* p = it->second;
-        if (updateReservedSpace(p)) {
+        if (updateReservedSpace(p, xcon_.windowSize(win))) {
+            panels_changed_.emit();
+        }
+    }
+}
+
+/**
+ * @brief the geometry of a window was changed, where window
+ * is possibly a panel window
+ * @param the window
+ * @param its new geometry
+ */
+void PanelManager::geometryChanged(Window win, Rectangle geometry)
+{
+    auto it = panels_.find(win);
+    if (it != panels_.end()) {
+        Panel* p = it->second;
+        if (updateReservedSpace(p, geometry)) {
             panels_changed_.emit();
         }
     }
@@ -87,10 +104,12 @@ void PanelManager::injectDependencies(Settings* settings)
     settings_ = settings;
 }
 
-//! read the reserved space from the panel window and return if there are changes
-bool PanelManager::updateReservedSpace(Panel* p)
+/**
+ * read the reserved space from the panel window and return if there are changes
+ * - size is the geometry of the panel
+ */
+bool PanelManager::updateReservedSpace(Panel* p, Rectangle size)
 {
-    Rectangle size = xcon_.windowSize(p->winid_);
     auto optionalWmStrut = xcon_.getWindowPropertyCardinal(p->winid_, atomWmStrut_);
     if (!optionalWmStrut) {
         optionalWmStrut= xcon_.getWindowPropertyCardinal(p->winid_, atomWmStrutPartial_);
@@ -120,10 +139,44 @@ PanelManager::ReservedSpace PanelManager::computeReservedSpace(Rectangle mon)
             // monitor does not intersect with panel at all
             continue;
         }
-        rs.left_ = (p[WmStrut::left] > 0) ? intersection.width : 0;
-        rs.right_ = (p[WmStrut::right] > 0) ? intersection.width : 0;
-        rs.top_ = (p[WmStrut::top] > 0) ? intersection.height : 0;
-        rs.bottom_ = (p[WmStrut::bottom] > 0) ? intersection.height : 0;
+        // we only reserve space for the panel if the panel defines
+        // wmStrut_ or if the aspect ratio clearly indicates whether the
+        // panel is horizontal or vertical
+        if (!p.wmStrut_.empty() || intersection.height > intersection.width) {
+            // vertical panels
+            if (intersection.x == mon.x) {
+                rs.left_ = intersection.width;
+            }
+            if (intersection.br().x == mon.br().x) {
+                rs.right_ = intersection.width;
+            }
+        }
+        if (!p.wmStrut_.empty() || intersection.height < intersection.width) {
+            // horizontal panels
+            if (intersection.y == mon.y) {
+                rs.top_ = intersection.height;
+            }
+            if (intersection.br().y == mon.br().y) {
+                rs.bottom_ = intersection.height;
+            }
+        }
+        if (!p.wmStrut_.empty()) {
+            // if the panel explicitly defines wmStrut, then
+            // we only consider the sides for the reserved space
+            // that are explicitly mentioned in wmStrut
+            if (p[WmStrut::left] == 0) {
+                rs.left_ = 0;
+            }
+            if (p[WmStrut::right] == 0) {
+                rs.right_ = 0;
+            }
+            if (p[WmStrut::top] == 0) {
+                rs.top_ = 0;
+            }
+            if (p[WmStrut::bottom] == 0) {
+                rs.bottom_ = 0;
+            }
+        }
         for (size_t i = 0; i < 4; i++) {
             rsTotal[i] = std::max(rsTotal[i], rs[i]);
         }

@@ -338,6 +338,9 @@ void XMainLoop::configurenotify(XConfigureEvent* event) {
             std::ostringstream void_output;
             root_->monitors->detectMonitorsCommand(input, void_output);
         }
+    } else {
+        Rectangle geometry = { event->x, event->y, event->width, event->height };
+        root_->panels->geometryChanged(event->window, geometry);
     }
     // HSDebug("name is: ConfigureNotify\n");
 }
