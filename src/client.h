@@ -33,7 +33,7 @@ public:
     Slice* slice = {};
     bool        ewmhfullscreen_ = false; // ewmh fullscreen state
     bool        neverfocus_ = false; // do not give the focus via XSetInputFocus
-    bool        visible_;
+    Attribute_<bool> visible_;
     bool        dragged_ = false;  // if this client is dragged currently
     int         ignore_unmaps_ = 0;  // Ignore one unmap for each reparenting
                                 // action, because reparenting creates an unmap
@@ -57,6 +57,7 @@ public:
     Attribute_<bool> urgent_;
     Attribute_<bool> floating_;
     Attribute_<bool> fullscreen_;
+    Attribute_<bool> minimized_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
     DynAttribute_<std::string> tag_str_;
     Attribute_<std::string> window_id_str;
@@ -111,7 +112,7 @@ public:
     bool applysizehints_xy(int *x, int *y, int *w, int *h);
     void updatesizehints();
 
-    void set_visible(bool visible_);
+    void set_visible(bool visible);
 
     void set_urgent_force(bool state);
     void requestClose(); //! ask the client to close

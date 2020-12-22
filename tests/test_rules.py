@@ -1,4 +1,5 @@
 import pytest
+import re
 
 
 string_props = [
@@ -84,37 +85,65 @@ def test_add_many_labeled_rules(hlwm):
     assert list_rules.stdout == expected_stdout
 
 
-def test_add_rule_with_misformatted_argument(hlwm):
-    call = hlwm.call_xfail('rule notevenanoperator')
+@pytest.mark.parametrize('command', ['rule', 'apply_tmp_rule --all'])
+def test_add_rule_with_misformatted_argument(hlwm, command):
+    call = hlwm.call_xfail(f'{command} notevenanoperator')
 
-    call.expect_stderr('rule: No operator in given arg: notevenanoperator')
+    arg0 = command.split(' ')[0]  # strip arguments
+    call.expect_stderr(f'{arg0}: No operator in given arg: notevenanoperator')
 
 
-def test_cannot_add_rule_with_empty_label(hlwm):
-    call = hlwm.call_xfail('rule label= class=Foo tag=bar')
+@pytest.mark.parametrize('command', ['rule', 'apply_tmp_rule --all'])
+def test_cannot_add_rule_with_empty_label(hlwm, command):
+    call = hlwm.call_xfail(f'{command} label= class=Foo tag=bar')
 
     assert call.stderr == 'rule: Rule label cannot be empty\n'
 
 
-def test_cannot_use_tilde_operator_for_rule_label(hlwm):
-    call = hlwm.call_xfail('rule label~bla class=Foo tag=bar')
+@pytest.mark.parametrize('command', ['rule', 'apply_tmp_rule --all'])
+def test_cannot_use_tilde_operator_for_rule_label(hlwm, command):
+    call = hlwm.call_xfail(f'{command} label~bla class=Foo tag=bar')
 
     assert call.stderr == 'rule: Unknown rule label operation "~"\n'
 
 
-def test_add_rule_with_unknown_condition(hlwm):
-    call = hlwm.call_xfail('rule foo=bar quit')
-    call.expect_stderr('rule: Unknown argument "foo=bar"')
+@pytest.mark.parametrize('command', ['rule', 'apply_tmp_rule --all'])
+def test_add_rule_with_unknown_condition(hlwm, command):
+    call = hlwm.call_xfail(f'{command} foo=bar quit')
+    arg0 = command.split(' ')[0]  # strip arguments
+    call.expect_stderr(f'{arg0}: Unknown argument "foo=bar"')
 
 
-def test_add_rule_maxage_condition_operator(hlwm):
-    call = hlwm.call_xfail('rule maxage~12')
+@pytest.mark.parametrize('command', ['rule', 'apply_tmp_rule --all'])
+def test_add_rule_maxage_condition_operator(hlwm, command):
+    call = hlwm.call_xfail(f'{command} maxage~12')
     call.expect_stderr('rule: Condition maxage only supports the = operator')
 
 
-def test_add_rule_maxage_condition_integer(hlwm):
-    call = hlwm.call_xfail('rule maxage=foo')
+@pytest.mark.parametrize('command', ['rule', 'apply_tmp_rule --all'])
+def test_add_rule_maxage_condition_integer(hlwm, command):
+    call = hlwm.call_xfail(f'{command} maxage=foo')
     call.expect_stderr('rule: Cannot parse integer from "foo"')
+
+
+@pytest.mark.parametrize('rulearg,errormsg', [
+    ("fullscreen=foo", 'only.*are valid booleans'),
+    ("keymask=(", 'Parenthesis is not closed'),
+    ("floatplacement=bar", 'Expecting one of: center, '),
+])
+@pytest.mark.parametrize('command', ['apply_rules', 'apply_tmp_rule'])
+def test_rule_parse_error_printed_at_client(hlwm, command, rulearg, errormsg):
+    winid, _ = hlwm.create_client()
+    full_cmd = [command, winid]
+    if command == 'apply_rules':
+        hlwm.call(['rule', rulearg])
+    else:
+        full_cmd += [rulearg]
+
+    proc = hlwm.call(full_cmd)
+    # since the command does not fail, the error
+    # message appears on stdout
+    assert re.search(errormsg, proc.stdout)
 
 
 @pytest.mark.parametrize('method', ['-F', '--all'])
@@ -316,17 +345,29 @@ def test_consequence_invalid_argument(hlwm):
     hlwm.create_client()
 
 
-def create_client(hlwm, client_before_rule, rule):
+class RuleMode:
+    """How to create a client with a rule"""
+    RULE_FIRST = 0  # first add a rule, then create a client
+    APPLY_RULES = 1  # first the client, then the rule , then 'apply_rules'
+    APPLY_TMP_RULE = 2  # first the client, then 'apply_tmp_rule' with the rule
+    values = [RULE_FIRST, APPLY_RULES, APPLY_TMP_RULE]
+
+
+def create_client(hlwm, rule_mode: RuleMode, rule):
     """create a client and the given rule. if client_before_rules, then
     first create the client, and later apply the rule to it via the
     apply_rule command"""
-    if client_before_rule:
+    if rule_mode == RuleMode.APPLY_RULES:
         winid, _ = hlwm.create_client()
         hlwm.call(['rule'] + rule)
         hlwm.call(['apply_rules', winid])
-    else:
+    elif rule_mode == RuleMode.RULE_FIRST:
         hlwm.call(['rule'] + rule)
         winid, _ = hlwm.create_client()
+    else:
+        assert rule_mode == RuleMode.APPLY_TMP_RULE
+        winid, _ = hlwm.create_client()
+        hlwm.call(['apply_tmp_rule', winid] + rule)
     return winid
 
 
@@ -334,9 +375,9 @@ def create_client(hlwm, client_before_rule, rule):
     'name',
     ['floating', 'pseudotile', 'fullscreen', 'ewmhrequests', 'ewmhnotify', 'fullscreen'])
 @pytest.mark.parametrize('value', [True, False])
-@pytest.mark.parametrize('apply_rules', [True, False])
-def test_bool_consequence_with_corresponding_attribute(hlwm, name, value, apply_rules):
-    winid = create_client(hlwm, apply_rules, [name + '=' + hlwm.bool(value)])
+@pytest.mark.parametrize('rule_mode', RuleMode.values)
+def test_bool_consequence_with_corresponding_attribute(hlwm, name, value, rule_mode):
+    winid = create_client(hlwm, rule_mode, [name + '=' + hlwm.bool(value)])
 
     assert hlwm.get_attr('clients.{}.{}'.format(winid, name)) == hlwm.bool(value)
 
@@ -344,10 +385,10 @@ def test_bool_consequence_with_corresponding_attribute(hlwm, name, value, apply_
 @pytest.mark.parametrize(
     'name',
     ['keymask', 'keys_inactive'])
-@pytest.mark.parametrize('apply_rules', [True, False])
-def test_regex_consequence_with_corresponding_attribute(hlwm, name, apply_rules):
+@pytest.mark.parametrize('rule_mode', RuleMode.values)
+def test_regex_consequence_with_corresponding_attribute(hlwm, name, rule_mode):
     value = 'someregex'
-    winid = create_client(hlwm, apply_rules, [name + '=' + value])
+    winid = create_client(hlwm, rule_mode, [name + '=' + value])
 
     assert hlwm.get_attr('clients.{}.{}'.format(winid, name)) == value
 
@@ -464,20 +505,72 @@ def test_apply_rules_all_no_focus(hlwm):
     assert 'focus' not in hlwm.list_children('clients')
 
 
-def test_apply_rules_all_focus_retained(hlwm):
-    hlwm.call('rule focus=on')
+@pytest.mark.parametrize('mode', ['apply_rules', 'apply_tmp_rule'])
+def test_apply_rules_all_focus_retained(hlwm, mode):
+    # test that passing --all to apply_rules or apply_tmp_rule
+    # does not change the focus.
+    if mode == 'apply_rules':
+        hlwm.call('rule focus=on pseudotile=on')
     client1, _ = hlwm.create_client()
     client2, _ = hlwm.create_client()
     client3, _ = hlwm.create_client()
     # check that the focus is retained, no matter in which
     # order they appear in the hash_map:
-    for client in [client1, client2, client3]:
+    all_clients = [client1, client2, client3]
+    for client in all_clients:
         hlwm.call(['jumpto', client])
         assert hlwm.get_attr('clients.focus.winid') == client
+        for c in all_clients:
+            # reset 'pseudotile' to off to verify that
+            # the rules were indeed evaluated and only 'focus' got ignored
+            hlwm.call(f'set_attr clients.{c}.pseudotile off')
 
-        hlwm.call('apply_rules --all')
+        if mode == 'apply_rules':
+            hlwm.call('apply_rules --all')
+        else:
+            hlwm.call('apply_tmp_rule --all focus=on pseudotile=on')
 
+        # the rules were evaluated
+        for c in all_clients:
+            assert hlwm.get_attr(f'clients.{c}.pseudotile') == hlwm.bool(True)
+        # but the focus is where it was before
         assert hlwm.get_attr('clients.focus.winid') == client
+
+
+@pytest.mark.parametrize('floating', [True, False])
+@pytest.mark.parametrize('source_tag', range(0, 4))
+@pytest.mark.parametrize('target_tag', range(0, 4))
+def test_apply_rules_minimized_client(hlwm, floating, source_tag, target_tag):
+    # set up some tags for different cases of focus/visibility:
+    tags = [
+        'on_focused_mon',
+        'on_unfocused_mon',
+        'unused_tag',
+        'other_unused_tag',
+    ]
+    for t in tags:
+        hlwm.call(['add', t])
+    hlwm.call('use on_focused_mon')
+    hlwm.call('add_monitor 800x600+300+300 on_unfocused_mon')
+    # put a client on the source_tag
+    hlwm.call(f'rule tag={tags[source_tag]} floating={hlwm.bool(floating)}')
+    winid, _ = hlwm.create_client()
+    # and minimize it there, so it is invisible in any case
+    hlwm.call(f'set_attr clients.{winid}.minimized on')
+    assert hlwm.get_attr(f'clients.{winid}.tag') == tags[source_tag]
+    assert hlwm.get_attr(f'clients.{winid}.visible') == hlwm.bool(False)
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == hlwm.bool(True)
+    assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(floating)
+
+    # move the minimized client from source_tag to target_tag
+    hlwm.call(f'rule tag={tags[target_tag]}')
+    hlwm.call(f'apply_rules {winid}')
+
+    # check that the client is on the target_tag and still invisible
+    assert hlwm.get_attr(f'clients.{winid}.tag') == tags[target_tag]
+    assert hlwm.get_attr(f'clients.{winid}.visible') == hlwm.bool(False)
+    assert hlwm.get_attr(f'clients.{winid}.minimized') == hlwm.bool(True)
+    assert hlwm.get_attr(f'clients.{winid}.floating') == hlwm.bool(floating)
 
 
 def test_rule_tag_nonexisting(hlwm):
@@ -786,3 +879,75 @@ def test_floatplacement_smart_invisible_windows(hlwm):
     hlwm.create_client()
     hlwm.create_client()
     hlwm.create_client()
+
+
+def test_apply_tmp_rule_ignores_other_clients_or_rules(hlwm):
+    target, _ = hlwm.create_client()
+    other, _ = hlwm.create_client()
+    hlwm.call('rule pseudotile=on')
+    for winid in [target, other]:
+        hlwm.call(f'set_attr clients.{winid}.fullscreen off')
+        hlwm.call(f'set_attr clients.{winid}.pseudotile off')
+
+    hlwm.call(f'apply_tmp_rule {target} fullscreen=on')
+
+    # only the target's fullscreen is set to true
+    assert hlwm.get_attr(f'clients.{target}.fullscreen') == hlwm.bool(True)
+    # everything else stays false
+    assert hlwm.get_attr(f'clients.{target}.pseudotile') == hlwm.bool(False)
+    assert hlwm.get_attr(f'clients.{other}.fullscreen') == hlwm.bool(False)
+    assert hlwm.get_attr(f'clients.{other}.pseudotile') == hlwm.bool(False)
+    # double check that the rule really would have worked:
+    hlwm.call(f'apply_rules {target}')
+    hlwm.get_attr(f'clients.{target}.pseudotile') == hlwm.bool(True)
+
+
+def test_apply_tmp_rule_all_ignores_other_rules(hlwm):
+    win1, _ = hlwm.create_client()
+    win2, _ = hlwm.create_client()
+    hlwm.call('rule pseudotile=on')
+    for winid in [win1, win2]:
+        hlwm.call(f'set_attr clients.{winid}.fullscreen off')
+        hlwm.call(f'set_attr clients.{winid}.pseudotile off')
+
+    hlwm.call('apply_tmp_rule --all fullscreen=on')
+
+    # the temporary rule only sets the fullscreen, but 'pseudotile' is unchanged
+    for winid in [win1, win2]:
+        hlwm.get_attr(f'clients.{winid}.fullscreen') == hlwm.bool(True)
+        hlwm.get_attr(f'clients.{winid}.pseudotile') == hlwm.bool(False)
+    # double check that the rule really would have worked:
+    hlwm.call('apply_rules --all')
+    for winid in [win1, win2]:
+        hlwm.get_attr(f'clients.{winid}.pseudotile') == hlwm.bool(True)
+
+
+def test_apply_tmp_rule_move_to_tag(hlwm):
+    client, _ = hlwm.create_client()
+    hlwm.call('add foo')
+    hlwm.call('add bar')
+    target = 'foo'
+    assert hlwm.get_attr(f'clients.{client}.tag') != target
+
+    hlwm.call(f'apply_tmp_rule {client} tag={target}')
+
+    assert hlwm.get_attr(f'clients.{client}.tag') == target
+
+
+def test_apply_tmp_rule_focus(hlwm):
+    oldfocus, _ = hlwm.create_client()
+    newfocus, _ = hlwm.create_client()
+    hlwm.call(f'jumpto {oldfocus}')
+    assert hlwm.get_attr('clients.focus.winid') == oldfocus
+
+    hlwm.call(f'apply_tmp_rule {newfocus} focus=on')
+
+    assert hlwm.get_attr('clients.focus.winid') == newfocus
+
+
+def test_apply_tmp_rule_parse_error(hlwm, hlwm_process):
+    # FIXME: Here, we only check that it does not crash if we pass an
+    # unparseable argument.. In the future, this should be a proper error
+    # message for 'apply_tmp_rule'!
+    hlwm.create_client()
+    hlwm.call('apply_tmp_rule --all focus=not-a-bool')

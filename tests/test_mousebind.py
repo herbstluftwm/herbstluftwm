@@ -3,7 +3,7 @@ import re
 import math
 
 # Note: For unknown reasons, mouse buttons 4 and 5 (scroll wheel) do not work
-# in Xvfb when running tests on Travis. Therefore, we maintain two lists of
+# in Xvfb when running tests in the CI. Therefore, we maintain two lists of
 # buttons:
 MOUSE_BUTTONS_THAT_EXIST = [1, 2, 3, 4, 5]
 MOUSE_BUTTONS_THAT_WORK = [1, 2, 3]
@@ -150,6 +150,14 @@ def test_drag_invisible_client(hlwm):
     hlwm.call_xfail(['drag', kid, 'resize']) \
         .expect_stderr('cannot drag invisible client')
     # inward he's grown :-)
+
+
+def test_drag_minimized_client(hlwm):
+    winid, _ = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.minimized on')
+
+    hlwm.call_xfail(['drag', winid, 'resize']) \
+        .expect_stderr('cannot drag invisible client')
 
 
 def test_drag_resize_tiled_client(hlwm, mouse):

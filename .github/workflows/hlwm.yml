@@ -1,0 +1,162 @@
+name: HLWM CI
+
+on:
+  push:
+    branches:
+    - master
+    paths-ignore:
+    - '.mergify.yml'
+    - 'share/**'
+  pull_request:
+    paths-ignore:
+    - '.mergify.yml'
+    - 'share/**'
+
+jobs:
+  build-test-current:
+    # Name the Job
+    name: Build and test on current ubuntu
+    # Set the type of machine to run on
+    runs-on: ubuntu-latest
+    container: hlwm/ci:focal
+    env:
+      HLWM_BUILDDIR: build
+      CCACHE_LOGFILE: /github/home/ccache.log
+      CCACHE_NOHASHDIR: 1
+
+    steps:
+      # Checks out a copy of your repository on the ubuntu-latest machine
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - uses: actions/cache@v1
+        name: Cache ~/.ccache
+        with:
+          path: ~/.ccache
+          key: focal-gcc-ccache-${{ github.run_number }}
+          # since the every new gha run gets a new key, we need to search
+          # for existing cache entries more sloppily:
+          restore-keys: |
+            focal-gcc-ccache-
+
+      - uses: actions/cache@v1
+        name: Cache .tox-cache
+        with:
+          path: .tox-cache
+          key: focal-tox
+
+      - name: Inspect ccache after restore
+        run: |
+          find ~/.ccache | grep 8/2/aeeb3d || true
+          find ~/.ccache | wc -l
+
+      - name: Build
+        run: |
+          ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
+
+      - name: Inspect ccache after build
+        run: |
+          find ~/.ccache | grep 8/2/aeeb3d || true
+          find ~/.ccache | wc -l
+
+      - name: ccache log
+        run: |
+          cat "$CCACHE_LOGFILE"
+
+      - name: Test
+        run: |
+          ci/build.py --run-tests
+
+      - name: Codecov report
+        continue-on-error: true
+        run: |
+          wget -O codecov-io.bash https://codecov.io/bash
+          bash codecov-io.bash -f coverage.info
+
+  build-clang:
+    name: Build with Clang, run linters and static analyzers
+    runs-on: ubuntu-latest
+    container: hlwm/ci:focal
+    env:
+      HLWM_BUILDDIR: build
+      CCACHE_LOGFILE: /github/home/ccache.log
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - uses: actions/cache@v1
+        name: Cache ~/.ccache
+        with:
+          path: ~/.ccache
+          key: focal-clang-ccache-${{ github.run_number }}
+          restore-keys: |
+            focal-clang-ccache-
+
+      - uses: actions/cache@v1
+        name: Cache .tox-cache
+        with:
+          path: .tox-cache
+          key: focal-tox # same name as in build-test-current
+
+      - name: Inspect ccache after restore
+        run: |
+          find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
+
+      - name: Check usage of std-prefix
+        run: |
+          ci/build.py --check-using-std
+
+      - name: Check python using flake8
+        run: |
+          ci/build.py --flake8
+
+      - name: Build
+        run: |
+          ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
+
+      - name: Inspect after build
+        run: |
+          find ~/.ccache | grep 8/f/64 || true
+          find ~/.ccache | wc -l
+
+      - name: ccache log
+        run: |
+          cat "$CCACHE_LOGFILE"
+
+      - name: Check includes using iwyu
+        run: |
+          ci/build.py --iwyu
+
+  build-old-32bit:
+    name: Build for 32bit with ancient GCC on Ubuntu 14.04
+    runs-on: ubuntu-latest
+    container: hlwm/ci:trusty
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - uses: actions/cache@v1
+        name: Cache ~/.ccache
+        with:
+          path: ~/.ccache
+          key: ccache-gcc-ancient-${{ github.run_number }}
+          restore-keys: |
+            ccache-gcc-ancient-
+
+      - name: Build
+        env:
+          CC: gcc-4.8
+          CXX: g++-4.8
+          CXXFLAGS: -m32
+          CFLAGS: -m32
+        run: |
+          find ~/.ccache | wc -l
+          ccache -z --max-size=500M
+          # ccache too old for --show-config
+          mkdir build
+          cd build
+          cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES ..
+          ninja -v -k10
+          ccache -s
+          find ~/.ccache | wc -l

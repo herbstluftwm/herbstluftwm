@@ -3,6 +3,7 @@
 
 #include "entity.h"
 #include "object.h"
+#include "signal.h"
 
 /*! A pointer to another object in the object tree. if this is
  * assigned a new value, then the child object in the owner is updated
@@ -27,7 +28,9 @@ public:
         } else {
             parent_.removeChild(name_);
         }
+        changed_.emit(new_value);
     }
+    Signal_<T*>& changed() { return changed_; }
     T* operator()() {
         return pointer;
     }
@@ -37,6 +40,7 @@ public:
 private:
     Object& parent_;
     std::string name_;
+    Signal_<T*> changed_;
     T* pointer = nullptr;
 };
 

@@ -1,8 +1,5 @@
-#ifndef __HERBSTLUFT_ROOTCOMMANDS_H_
-#define __HERBSTLUFT_ROOTCOMMANDS_H_
-
-/** commands that don't belong to a particular object
- * but modify the global state */
+#ifndef __HERBSTLUFT_METACOMMANDS_H_
+#define __HERBSTLUFT_METACOMMANDS_H_
 
 #include <functional>
 #include <memory>
@@ -15,15 +12,20 @@ class Object;
 class Completion;
 
 /** this class collects high-level commands that don't need any internal
- * structures but just the object tree as the user sees it. Hence, this does
- * not inherit from Object and is not exposed to the user as an object.
+ * structures but instead just uses:
+ *
+ *   - the object tree as the user sees it
+ *   - the command system (invokation of commands)
+ *   - generic c functions (e.g. accessing the environment)
+ *
+ * Hence, this does not inherit from Object and is not exposed to the user as an object.
 */
-class RootCommands {
+class MetaCommands {
 public:
     /** This class shall have minimal dependencies to other hlwm modules, therefore the
      * 'root' reference held by this class has the Object type instead of Root.
      */
-    RootCommands(Object& root);
+    MetaCommands(Object& root);
 
     Attribute* getAttribute(std::string path, Output output);
 

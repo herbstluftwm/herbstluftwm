@@ -4,7 +4,7 @@
 #include "command.h"
 #include "completion.h"
 #include "ipc-protocol.h"
-#include "rootcommands.h"
+#include "metacommands.h"
 
 using std::string;
 using std::to_string;
@@ -21,7 +21,7 @@ int Tmp::mktemp(Input input, Output output) {
     string attr_name =
         "tmp_" + to_string(number_active)
         + "_" +  to_string(number_total);
-    Attribute* a = RootCommands::newAttributeWithType(type, attr_name, output);
+    Attribute* a = MetaCommands::newAttributeWithType(type, attr_name, output);
     if (!a) {
         return HERBST_INVALID_ARGUMENT;
     }
@@ -41,7 +41,7 @@ int Tmp::mktemp(Input input, Output output) {
 void Tmp::mktempComplete(Completion& complete)
 {
     if (complete == 0) {
-        RootCommands::completeAttributeType(complete);
+        MetaCommands::completeAttributeType(complete);
     } else if (complete == 1) {
         // no completion for the identifier
     } else {

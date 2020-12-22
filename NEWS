@@ -7,14 +7,20 @@ older versions.
 Current git version
 -------------------
 
+  * Client minimization (controlled by the attribute 'minimized' of every client)
   * The 'index' attribute of tags is now writable. This allows adjusting the
     order of existing tags.
   * New child object 'focused_client' for each tag object.
   * New child object 'focused_frame' for the tiling object of each tag object.
+  * New command 'mirror'
+  * New command 'apply_tmp_rule'
+  * The 'apply_rules' command now reports parse errors
   * Bug fixes:
     - When hiding windows, correctly set their WM_STATE to IconicState (we set
       it to Withdrawn state before, which means "unmanaged" and thus is wrong).
       This may require restarting pagers when upgrading hlwm live.
+    - Fix crash in 'split explode'
+    - 'split explode' preserves the window focus (as in v0.7.2 and before)
 
 Release 0.9.0 on 2020-10-31
 ---------------------------

@@ -7,18 +7,22 @@ See LICENSE for details.
 
 ==== Requirements ====
 Build dependencies:
+
     - build environment (e.g. gcc or clang, make)
     - CMake 3.1 or later
     - asciidoc (only when building from git, not when building from tarball)
     - a posix system with _POSIX_TIMERS and _POSIX_MONOTONIC_CLOCK or a system
       with a current mach kernel
+
 Runtime dependencies:
+
     - bash (if you use the default autostart file)
     - libx11
     - xrandr
     - optionally: xinerama
 
 Optional run-time dependencies:
+
     - xsetroot (to set wallpaper color in default autostart)
     - xterm (used as the terminal in default autostart)
     - dzen2 (used in the default panel.sh, it works best with a new dzen2 which
@@ -47,13 +51,15 @@ The CMake build system is used. It is recommended to use an out-of-tree build
 directory. The compilation and installation is configured by the following CMake
 variables which you can set on the initial cmake call and alter with ccmake:
 
-CMAKE_INSTALL_PREFIX         = /usr/            # the prefix
-CMAKE_INSTALL_SYSCONF_PREFIX = $(DESTDIR)/etc/  # path to etc directory
+    CMAKE_INSTALL_PREFIX         = /usr/            # the prefix
+    CMAKE_INSTALL_SYSCONF_PREFIX = $(DESTDIR)/etc/  # path to etc directory
 
 Individual paths for special files can be set with the *DIR variables, typically
 relative to CMAKE_INSTALL_PREFIX. If you are building package, you would
 typically build regularly, and install with DESTDIR=./path/to/fakeroot.
 
+    mkdir build && cd build
+    cmake ..
     make
     sudo make DESTDIR=./pkg/ install
 
@@ -87,34 +93,37 @@ valgrind-xephyr.sh from your existing X session:
 5. copy share/herbstclient-completion.bash to your
    /usr/share/bash-completion/completions folder (and rename it to herbstclient)
    or source it in your bashrc
-6. run it in a session that has no windowmanager yet
+6. run it in a session that has no window manager yet
 
 ==== Starting Herbstluftwm ====
 To start the window manager within a running X-session, execute:
 
     herbstluftwm --locked
 
-The --locked causes herbstluftwm not to update the screen until you unlock it
-with: herbstclient unlock (This is done automatically by the default autostart)
+`--locked` causes herbstluftwm not to update the screen until you unlock it
+with: `herbstclient unlock` (This is done automatically by the default autostart)
 
 ==== Quirks ====
 Mac OSX:
 
 Problem: Mod1 is nowhere to be found.
+
 Solution: Set left Command (Apple) key to be Mod1.
-edit .Xmodmap
---- snip ---
-! Make the Alt/Option key be Alt_L instead of Mode_switch
-keycode 63 = Alt_L
 
-! Make Meta_L be a Mod4 and get rid of Mod2
-clear mod2
-clear mod4
-add mod4 = Meta_L
+Edit .Xmodmap:
 
-! Make Alt_L be a Mod1
-clear mod1
-add mod1 = Alt_L
---- snap ---
+    --- snip ---
+    ! Make the Alt/Option key be Alt_L instead of Mode_switch
+    keycode 63 = Alt_L
+    
+    ! Make Meta_L be a Mod4 and get rid of Mod2
+    clear mod2
+    clear mod4
+    add mod4 = Meta_L
+    
+    ! Make Alt_L be a Mod1
+    clear mod1
+    add mod1 = Alt_L
+    --- snap ---
 
 // vim: nowrap ft=asciidoc tw=80

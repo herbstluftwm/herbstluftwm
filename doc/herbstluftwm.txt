@@ -335,14 +335,14 @@ cycle ['DELTA']::
     means: cycle in the opposite direction by 1.
 
 cycle_all [*--skip-invisible*] ['DIRECTION']::
-    Cycles through all windows and frames on the current tag. 'DIRECTION' = 1
-    means forward, 'DIRECTION' = -1 means backward, 'DIRECTION' = 0 has no
-    effect. 'DIRECTION' defaults to 1. If there are multiple windows within one
-    frame, then it acts similar to the 'cycle' command. (The 'cycle_all' command
-    focuses the next/previous leaf in the 'layout' tree.). If
-    *--skip-invisible* is given, then this only cycles through all visible
-    windows and skips invisible windows in the max layout. The focused window
-    is raised.
+    Cycles through all non-minimized windows and frames on the current tag.
+    'DIRECTION' = 1 means forward (default value), 'DIRECTION' = -1 means backward, 'DIRECTION'
+    = 0 has no effect. If there are multiple windows within one frame, then it
+    acts similar to the 'cycle' command. If *--skip-invisible* is given,
+    then this only cycles through all visible windows and skips invisible
+    windows in the max layout (the flag only affects invisible windows in the
+    max layout; minimized windows are always skipped). After each focus
+    change, the focused window is raised.
 
 cycle_frame ['DIRECTION']::
     Cycles through all frames on the current tag. 'DIRECTION' = 1 means forward,
@@ -379,14 +379,14 @@ close_and_remove::
     Closes the focused window and removes the current frame if no other window
     is present in that frame. In floating mode, this acts as the close command.
 
-split 'ALIGN' ['FRACTION' ['FRAMEINDEX']::
+split 'ALIGN' ['FRACTION' ['FRAMEINDEX']]::
     Splits the focused frame (or the frame specified by 'FRAMEINDEX', see the
     section <<FRAME_INDEX,*frame index*>>) into two subframes with a specified
     'FRACTION' between 0 and 1 which defaults to 0.5. 'ALIGN' is one of
     +
         * 'top'
         * 'bottom' (= 'vertical')
-        * 'left',
+        * 'left'
         * 'right' (= 'horizontal')
         * 'explode'
         * 'auto' (split along longest side)
@@ -395,9 +395,9 @@ split 'ALIGN' ['FRACTION' ['FRAMEINDEX']::
     after the split. The other half will be occupied by the currently focused
     frame. After splitting, the originally focused frame will stay focused.
     One special 'ALIGN' mode is 'explode', which splits the frame in such a way
-    that the window sizes and positions are kept as much as possible. If no
-    'FRACTION' is given to 'explode' mode an optimal fraction is picked
-    automatically. Example:
+    that the window focus, window sizes, and positions are kept as much as
+    possible (so the default 'FRACTION' is not always 0.5, unlike for the other
+    'ALIGN' modes). Example:
 
         * split explode
         * split bottom 0.5
@@ -518,6 +518,11 @@ remove::
 rotate::
     Rotates the layout on the focused tag counterclockwise by 90 degrees. This
     only manipulates the alignment of frames, not the content of them.
+
+mirror ['vertical'|'horizontal'|'both']::
+    Mirrors the layout on the focused tag vertically, horizontally, or both; the
+    default is 'horizontal'. This command only manipulates the alignment of
+    frames, not the content of them.
 
 set 'NAME' 'VALUE'::
     Sets the specified setting 'NAME' to 'VALUE'. Allowed values for boolean
@@ -783,6 +788,16 @@ unrule 'LABEL'|*--all*|*-F*::
 apply_rules 'WINID'|*--all*::
     Apply the rules to the specified window 'WINID'. If *--all* is passed, then
     the rules are applied to all clients.
+
+apply_tmp_rule 'WINID'|*--all* ['RULEDESCRIPTION'...]::
+    Apply the rule 'RULEDESCRIPTION' to one particular client 'WINID' or all
+    clients (*--all*) without adding the rule to the rule list. The
+    'RULEDESCRIPTION' specifies a rule consisting of conditions and consequences
+    as one would pass it to the +rule+ command as described in the
+    <<RULES,*RULES section*>>. This allows testing rules before adding them.
+    Running +apply_tmp_rule+ only applies the particular rule given in the
+    arguments and ignores the existing rules.
+
 
 fullscreen [*on*|*off*|*toggle*]::
     Sets or toggles the fullscreen state of the focused client. If no argument

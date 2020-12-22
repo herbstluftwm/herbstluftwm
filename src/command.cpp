@@ -36,7 +36,6 @@ static int complete_against_commands(int argc, char** argv, int position, Output
 static bool g_shell_quoting = false;
 
 static const char* completion_directions[]    = { "left", "right", "down", "up",nullptr};
-static const char* completion_focus_args[]    = { "-i", "-e", nullptr };
 static const char* completion_special_winids[]= { "urgent", "", nullptr };
 static const char* completion_use_index_args[]= { "--skip-visible", nullptr };
 static const char* completion_pm_one[]= { "+1", "-1", nullptr };
@@ -49,7 +48,6 @@ static bool no_completion(int, char**, int) {
 }
 
 static bool first_parameter_is_tag(int argc, char** argv, int pos);
-static bool first_parameter_is_flag(int argc, char** argv, int pos);
 
 /* find out, if a command still expects a parameter at a certain index.
  * only if this returns true, than a completion will be searched.
@@ -72,8 +70,6 @@ struct {
     { "bring",          2,  no_completion },
     { "focus_edge",     2,  no_completion },
     { "shift_edge",     2,  no_completion },
-    { "shift",          3,  no_completion },
-    { "shift",          2,  first_parameter_is_flag },
     { "cycle_monitor",  2,  no_completion },
     { "focus_monitor",  2,  no_completion },
     { "shift_to_monitor",2,  no_completion },
@@ -137,9 +133,6 @@ struct {
     { "jumpto",         EQ, 1,  nullptr, completion_special_winids },
     { "jumpto",         EQ, 1,  complete_against_winids, 0 },
     { "shift_edge",     EQ, 1,  nullptr, completion_directions },
-    { "shift",          EQ, 1,  nullptr, completion_directions },
-    { "shift",          EQ, 1,  nullptr, completion_focus_args },
-    { "shift",          EQ, 2,  nullptr, completion_directions },
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },
     { "use",            EQ, 1,  complete_against_tags, 0 },
@@ -530,15 +523,6 @@ int complete_against_commands(int argc, char** argv, int position,
 static bool first_parameter_is_tag(int argc, char** argv, int pos) {
     // only complete if first parameter is a valid tag
     if (argc >= 2 && find_tag(argv[1]) && pos == 2) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-static bool first_parameter_is_flag(int argc, char** argv, int pos) {
-    // only complete if first parameter is a flag like -i or -e
-    if (argc >= 2 && argv[1][0] == '-' && pos == 2) {
         return true;
     } else {
         return false;

@@ -83,6 +83,7 @@ Ewmh::Ewmh(XConnection& xconnection)
         { WM::Protocols,    "WM_PROTOCOLS" },
         { WM::Delete,       "WM_DELETE_WINDOW" },
         { WM::State,        "WM_STATE" },
+        { WM::ChangeState,  "WM_CHANGE_STATE" },
         { WM::TakeFocus,    "WM_TAKE_FOCUS" },
     };
     for (const auto& init : wm2name) {
@@ -271,6 +272,15 @@ void Ewmh::handleClientMessage(XClientMessageEvent* me) {
     HSDebug("Received event: ClientMessage: \"%s\" for %lx\n",
             X_.atomName(me->message_type).c_str(),
             me->window);
+    if (me->message_type == wmatom(WM::ChangeState)) {
+        if (me->data.l[0] == static_cast<long>(WmState::WSIconicState)) {
+            Client* client = Root::common().client(me->window);
+            if (client) {
+                client->minimized_ = true;
+            }
+        }
+        return;
+    }
     int index;
     for (index = 0; index < NetCOUNT; index++) {
         if (me->message_type == netatom_[index]) {
@@ -419,6 +429,7 @@ void Ewmh::updateWindowState(Client* client) {
     } client_atoms[] = {
         { NetWmStateFullscreen,         client->ewmhfullscreen_  },
         { NetWmStateDemandsAttention,   client->urgent_          },
+        { NetWmStateHidden,             client->minimized_       },
     };
 
     /* find out which flags are set */

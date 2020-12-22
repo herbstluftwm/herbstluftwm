@@ -6,6 +6,7 @@
 #include <string>
 
 #include "child.h"
+#include "finite.h"
 #include "fixprecdec.h"
 #include "link.h"
 #include "object.h"
@@ -60,6 +61,14 @@ public:
     int focusNthCommand(Input input, Output output);
     int removeFrameCommand();
     int rotateCommand();
+    enum class MirrorDirection {
+        Horizontal,
+        Vertical,
+        Both,
+    };
+
+    int mirrorCommand(Input input, Output output);
+    void mirrorCompletion(Completion& complete);
     bool cycleAll(CycleDelta cdelta, bool skip_invisible);
     int cycleFrameCommand(Input input, Output output);
     int loadCommand(Input input, Output output);
@@ -90,5 +99,9 @@ private:
     HSTag* tag_;
     Settings* settings_;
 };
+
+template <>
+struct is_finite<FrameTree::MirrorDirection> : std::true_type {};
+template<> Finite<FrameTree::MirrorDirection>::ValueList Finite<FrameTree::MirrorDirection>::values;
 
 #endif

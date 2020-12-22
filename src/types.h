@@ -34,6 +34,10 @@ public:
     Input(const std::string command, Container::const_iterator from, Container::const_iterator to)
         : ArgList(from, to), command_(std::make_shared<std::string>(command)) {}
 
+    //! create a new Input but drop already parsed arguments
+    Input(const Input& other)
+        : ArgList(other.toVector()), command_(other.command_) {}
+
     const std::string& command() const { return *command_; }
 
     Input &operator>>(std::string &val) override;
@@ -56,7 +60,7 @@ protected:
 void completeFull(Completion& complete, std::string string);
 
 /* Primitive types that can be converted from/to user input/output */
-template<typename T>
+template<typename T, typename = void>
 struct Converter {
     /** Parse a text into the right type
      * @throws std::invalid_argument or std::out_of_range

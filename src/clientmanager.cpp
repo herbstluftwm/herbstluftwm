@@ -2,6 +2,7 @@
 
 #include <X11/Xlib.h>
 #include <algorithm>
+#include <iostream>
 #include <string>
 
 #include "attribute.h"
@@ -113,7 +114,10 @@ void ClientManager::add(Client* client)
     clients_[client->window_] = client;
     client->needsRelayout.connect(needsRelayout);
     client->floating_.changed().connect([this,client]() {
-        this->floatingStateChanged.emit(client);
+        this->clientStateChanged.emit(client);
+    });
+    client->minimized_.changed().connect([this,client]() {
+        this->clientStateChanged.emit(client);
     });
     addChild(client, client->window_id_str);
 }
@@ -155,7 +159,7 @@ Client* ClientManager::manage_client(Window win, bool visible_already, bool forc
     if (additionalRules) {
         additionalRules(changes);
     }
-    changes = Root::get()->rules()->evaluateRules(client, changes);
+    changes = Root::get()->rules()->evaluateRules(client, std::cerr, changes);
     if (!changes.manage || force_unmanage) {
         // map it... just to be sure
         XMapWindow(g_display, win);
@@ -340,7 +344,15 @@ int ClientManager::applyRules(Client* client, Output output, bool changeFocus)
 {
     ClientChanges changes;
     changes.focus = client == focus();
-    changes = Root::get()->rules()->evaluateRules(client, changes);
+    changes = Root::get()->rules()->evaluateRules(client, output, changes);
+    if (!changeFocus) {
+        changes.focus = false;
+    }
+    return applyChanges(client, changes, output);
+}
+
+int ClientManager::applyChanges(Client* client, ClientChanges changes, Output output)
+{
     if (changes.manage == false) {
         // only make unmanaging clients possible as soon as it is
         // possible to make them managed again
@@ -379,7 +391,7 @@ int ClientManager::applyRules(Client* client, Output output, bool changeFocus)
         }
         TagManager* tagman = Root::get()->tags();
         tagman->moveClient(client, tag, changes.tree_index, changes.focus);
-    } else if (changes.focus && (client != focus()) && changeFocus) {
+    } else if (changes.focus && (client != focus())) {
         // focus the client
         client->tag()->focusClient(client);
         Root::get()->monitors->relayoutTag(client->tag());
@@ -397,6 +409,61 @@ void ClientManager::applyRulesCompletion(Completion& complete)
         completeClients(complete);
     } else {
         complete.none();
+    }
+}
+
+int ClientManager::applyTmpRuleCmd(Input input, Output output)
+{
+    string clientStr;
+    if (!(input >> clientStr)) {
+        return HERBST_NEED_MORE_ARGS;
+    }
+    // 'applyTo' is a pointer to a map containing those to which the
+    // above rule shall be applied
+    std::unordered_map<Window, Client*> singletonMap;
+    std::unordered_map<Window, Client*>* applyTo = &singletonMap;
+    if (clientStr == "--all") {
+        // apply to all clients
+        applyTo = &clients_;
+    } else {
+        // use the 'singletonMap' if the rule shall be applied
+        // to only one client
+        Client* client = this->client(clientStr);
+        if (!client) {
+            output << "No such (managed) client: " << clientStr << "\n";
+            return HERBST_INVALID_ARGUMENT;
+        }
+        (*applyTo)[client->x11Window()] = client;
+    }
+    // parse the rule
+    bool prepend = false;
+    Rule rule;
+    int status = RuleManager::parseRule(input, output, rule, prepend);
+    if (status != 0) {
+        return status;
+    }
+    for (auto& it : *applyTo) {
+        Client* client = it.second;
+        ClientChanges changes;
+        changes.focus = client == focus();
+        rule.evaluate(client, changes, output);
+        if (applyTo->size() > 1) {
+            // if we apply the rule to more than one
+            // client, then we leave the focus where it was
+            changes.focus = false;
+        }
+        applyChanges(client, changes, output);
+    }
+    return 0;
+}
+
+void ClientManager::applyTmpRuleCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        complete.full("--all");
+        completeClients(complete);
+    } else {
+        Root::get()->rules->addRuleCompletion(complete);
     }
 }
 
@@ -436,6 +503,12 @@ void ClientManager::force_unmanage(Client* client) {
     tag_set_flags_dirty();
     // delete client
     this->remove(client->window_);
+    if (client == focus()) {
+        // this should never happen because we forced a relayout
+        // of the client's tag, so 'focus' must have been updated
+        // in the meantime. Anyway, lets be safe:
+        focus = nullptr;
+    }
     delete client;
 }
 

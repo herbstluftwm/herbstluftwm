@@ -205,3 +205,80 @@ def test_bool_attributes_writable(hlwm, attribute):
     hlwm.create_clients(1)
     for value in ['true', 'false', 'toggle']:
         hlwm.call(f'set_attr clients.focus.{attribute} {value}')
+
+
+@pytest.mark.parametrize("floating", ['on', 'off'])
+def test_minimization_of_visible_client(hlwm, floating):
+    winid, _ = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.floating {floating}')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'true'
+
+    hlwm.call(f'set_attr clients.{winid}.minimized on')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+
+    hlwm.call(f'set_attr clients.{winid}.minimized off')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'true'
+
+
+@pytest.mark.parametrize("floating", ['on', 'off'])
+def test_minimization_on_other_tag(hlwm, floating):
+    hlwm.call('add othertag')
+    hlwm.call('rule tag=othertag')
+    winid, _ = hlwm.create_client()
+
+    hlwm.call(f'set_attr clients.{winid}.floating {floating}')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+
+    hlwm.call(f'set_attr clients.{winid}.minimized on')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+
+    hlwm.call(f'set_attr clients.{winid}.minimized off')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+
+
+@pytest.mark.parametrize("floating", ['on', 'off'])
+def test_minimization_focus_other_tag(hlwm, floating):
+    # place a minimized client on an invisible tag
+    # so the client should be invisible, too
+    hlwm.call('add othertag')
+    hlwm.call('rule tag=othertag focus=on')
+    winid, _ = hlwm.create_client()
+    hlwm.create_client()  # another client taking the focus
+    hlwm.call(f'set_attr clients.{winid}.floating {floating}')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+    hlwm.call(f'set_attr clients.{winid}.minimized on')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+
+    # focus the other tag
+    hlwm.call('use othertag')
+
+    # now the client stays invisible since it's minimized
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+    # client becomes visible on un-minimization
+    hlwm.call(f'set_attr clients.{winid}.minimized off')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'true'
+
+
+@pytest.mark.parametrize("floating", ['on', 'off'])
+def test_minimization_focus_window(hlwm, floating):
+    winid, _ = hlwm.create_client()
+    hlwm.call(f'set_attr clients.{winid}.minimized on')
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'false'
+    assert 'focus' not in hlwm.list_children('clients')
+
+    # focus the client
+    hlwm.call(f'jumpto {winid}')
+
+    assert hlwm.get_attr(f'clients.{winid}.visible') == 'true'
+    assert hlwm.get_attr('clients.focus.winid') == winid
+
+
+def test_minimize_only_floating_client(hlwm):
+    hlwm.call('rule floating=on focus=on')
+    winid, _ = hlwm.create_client()
+    assert hlwm.get_attr('clients.focus.winid') == winid
+    assert hlwm.get_attr('tags.focus.floating_focused') == 'true'
+
+    hlwm.call(f'set_attr clients.{winid}.minimized on')
+
+    assert hlwm.get_attr('tags.focus.floating_focused') == 'false'
