@@ -18,6 +18,10 @@ def findfiles(sourcedir, regex_object):
                 yield os.path.join(root, file)
 
 
+class TokenRe:
+    identifier_re = '[a-zA-Z_][a-zA-Z0-9_]*'
+
+
 def extract_file_tokens(filepath):
     # in the following, it's important to use
     # non-capturing groups (?: .... )
@@ -30,7 +34,7 @@ def extract_file_tokens(filepath):
         "#(?:[^Z\n]|\\\\\n)*[^\\\\]\n",  # preprocessor
         '//[^\n]*\n',  # single-line comment
         r'/\*(?:[^\*]*|\**[^/*])*\*/',  # multiline comment
-        '[a-zA-Z_][a-zA-Z0-9_]*',  # identifiers
+        TokenRe.identifier_re,  # identifiers
         r'[0-9][0-9\.a-z]*',  # numbers
         '\'(?:\\\'|[^\']*)\'',
         "\"(?:\\\"|[^\"]*)\"",
@@ -681,8 +685,9 @@ class TokTreeInfoExtrator:
         arg1 = TokenStream.PatternArg()
         codeblock = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='{'))
         parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
+        initializers = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='{'))
         while not stream.try_match(codeblock):
-            if stream.try_match(arg1, parameters):
+            if stream.try_match(arg1, parameters) or stream.try_match(arg1, initializers):
                 # we found a member initialization
                 init_list = parameters.value.enclosed_tokens
                 self.objInfo.member_init(classname, arg1.value, init_list)
