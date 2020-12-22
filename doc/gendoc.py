@@ -430,9 +430,6 @@ class ObjectInformation:
     def process_member_init(self):
         """try to pass collected member initializations and docs to members"""
         for (clsname, attrs), attr in self.member2info.items():
-            if clsname == 'Settings':
-                # all attributes of the 'Settings' object are writeable
-                attr.writeable = True
             if attr.constructor_args is not None:
                 continue
             init_list = self.member2init.get((clsname, attr.cpp_name), None)
