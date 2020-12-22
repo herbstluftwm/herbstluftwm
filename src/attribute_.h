@@ -58,7 +58,7 @@ public:
         owner->addAttribute(this);
     }
 
-    //! A writable attribute of owner of type T
+    //! A writeable attribute of owner of type T
     template <typename Owner>
     Attribute_(Owner* owner, const std::string &name, const T &payload,
               std::string(Owner::*validator)(T))
@@ -72,7 +72,7 @@ public:
         // e.g. when we got rid of Object::wireAttributes()
         owner->addAttribute(this);
     }
-    //! A writable attribute of owner of type T
+    //! A writeable attribute of owner of type T
     Attribute_(Object* owner, const std::string &name, const T &payload,
               Validator validator)
         : Attribute(name, true)

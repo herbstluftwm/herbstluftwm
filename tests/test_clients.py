@@ -201,7 +201,7 @@ def test_fullscreen_pseudotile_command(hlwm, command):
     'sizehints_floating',
     'sizehints_tiling',
 ])
-def test_bool_attributes_writable(hlwm, attribute):
+def test_bool_attributes_writeable(hlwm, attribute):
     hlwm.create_clients(1)
     for value in ['true', 'false', 'toggle']:
         hlwm.call(f'set_attr clients.focus.{attribute} {value}')

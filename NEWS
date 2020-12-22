@@ -8,7 +8,7 @@ Current git version
 -------------------
 
   * Client minimization (controlled by the attribute 'minimized' of every client)
-  * The 'index' attribute of tags is now writable. This allows adjusting the
+  * The 'index' attribute of tags is now writeable. This allows adjusting the
     order of existing tags.
   * New child object 'focused_client' for each tag object.
   * New child object 'focused_frame' for the tiling object of each tag object.
@@ -73,7 +73,7 @@ Release 0.8.2 on 2020-05-04
       unlock_tag)
     - Fix the type of WM_STATE
     - The client attributes sizehints_tiling and sizehints_floating are now
-      writable
+      writeable
     - Fix EWMH urgency change for clients without WM hints set
     - Fix the exit code of the 'focus' command
 
