@@ -439,6 +439,13 @@ class ObjectInformation:
             if doc is not None:
                 attr.doc = doc
 
+    def add_hardcoded_info(self):
+        """Add additional information that is hardcoded and not derived
+        from the source"""
+        for (clsname, attrs), attr in self.member2info.items():
+            if clsname == 'Settings':
+                attr.writeable = True
+
     def attribute_info(self, classname: str, attr_cpp_name: str):
         """return the AttributeInformation object for
         a for a class and its attribute whose C++ variable name is
@@ -788,6 +795,7 @@ def main():
             extractor.main(list(toktree))
         # pass the member initializations to the attributes:
         objInfo.process_member_init()
+        objInfo.add_hardcoded_info()
         if args.objects:
             objInfo.print()
         else:

@@ -59,8 +59,8 @@ classname2examplepath = [
 
 
 @pytest.mark.parametrize('clsname,object_path', classname2examplepath)
-def test_documented_attributes_writable(hlwm, clsname, object_path, json_doc):
-    """test whether the writable field is correct. This checks the
+def test_documented_attributes_writeable(hlwm, clsname, object_path, json_doc):
+    """test whether the writeable field is correct. This checks the
     existence of the attributes implicitly
     """
     object_path = object_path(hlwm)
