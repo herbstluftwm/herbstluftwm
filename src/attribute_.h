@@ -238,6 +238,7 @@ public:
     template <typename Owner>
     DynAttribute_(Owner* owner, const std::string &name,
                   T (Owner::*getter)()
+                  // std::function<T(Owner*)> getter // this does not work!
                   )
         : Attribute(name, false)
         , getter_(std::bind(getter, owner))
@@ -252,7 +253,6 @@ public:
     //! same as above, but only with a const getter member function
     template <typename Owner>
     DynAttribute_(Owner* owner, const std::string &name,
-                  // std::function<T(Owner*)> getter // this does not work!
                   T (Owner::*getter)() const
                   )
         : Attribute(name, false)
