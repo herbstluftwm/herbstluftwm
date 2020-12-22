@@ -237,8 +237,8 @@ public:
     // the type checker fills the template argument 'Owner' automatically
     template <typename Owner>
     DynAttribute_(Owner* owner, const std::string &name,
-                  T (Owner::*getter)()
                   // std::function<T(Owner*)> getter // this does not work!
+                  T (Owner::*getter)()
                   )
         : Attribute(name, false)
         , getter_(std::bind(getter, owner))
