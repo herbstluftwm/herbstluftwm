@@ -45,19 +45,19 @@ class Attribute : public Entity, public HasDocumentation {
 public:
     Attribute(const std::string &name,
               bool writable)
-        : Entity(name), writable_(writeable) {}
+        : Entity(name), writable_(writable) {}
     ~Attribute() override = default;
 
     // set the owner after object creation (when pointer is available)
     void setOwner(Object *owner) { owner_ = owner; }
     // make this attribute writable (default is typically read-only)
-    void setWritable(bool writeable = true) { writeable_ = writeable; }
+    void setWritable(bool writable = true) { writable_ = writable; }
     // change if attribute can be expected to trigger hooks (rarely used)
     void setHookable(bool hookable) { hookable_ = hookable; }
 
     Type type() override { return Type::ATTRIBUTE; }
 
-    bool writable() const { return writeable_; }
+    bool writable() const { return writable_; }
     bool hookable() const { return hookable_; }
     virtual Signal& changed() = 0;
 
