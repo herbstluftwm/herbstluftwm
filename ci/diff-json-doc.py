@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import subprocess
 import os
 import sys
@@ -37,10 +38,12 @@ def parse_pr_id(text):
 
 
 def get_json_doc(tmp_dir):
-    return subprocess.run(['doc/gendoc.py', '--json'],
-                          stdout=subprocess.PIPE,
-                          universal_newlines=True,
-                          cwd=tmp_dir).stdout
+    json_txt = subprocess.run(['doc/gendoc.py', '--json'],
+                              stdout=subprocess.PIPE,
+                              universal_newlines=True,
+                              cwd=tmp_dir).stdout
+    # normalize it: add trailing commads to reduce diff size:
+    return re.sub(r'([^{,])\n', r'\1,\n', json_txt)
 
 
 def run_pipe_stdout(cmd):
