@@ -3,13 +3,13 @@ option(WITH_DOCUMENTATION "Build with documentation" ON)
 function(gen_json_doc destfile)
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${destfile}.json")
     AUX_SOURCE_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/../src" CPPSRC)
-    add_custom_target("doc_json" ALL DEPENDS ${dst})
+    add_custom_target("doc_json" DEPENDS ${dst})
     add_custom_command(
         OUTPUT ${dst}
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py" --sourcedir "${CMAKE_CURRENT_SOURCE_DIR}/../src" --json > ${dst}
         DEPENDS ${CPPSRC} "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py"
         )
-    install(FILES ${dst} DESTINATION ${DOCDIR})
+    install(FILES ${dst} DESTINATION ${DOCDIR} OPTIONAL)
 endfunction()
 
 function(gen_manpage sourcefile man_nr)
@@ -49,8 +49,6 @@ function(gen_html sourcefile)
     install(FILES ${dst} DESTINATION ${DOCDIR})
 endfunction()
 
-gen_json_doc(hlwm-doc)
-
 if (WITH_DOCUMENTATION)
     find_program(ASCIIDOC_A2X NAMES a2x DOC "Path to AsciiDoc a2x command")
     find_program(ASCIIDOC NAMES asciidoc DOC "Path to AsciiDoc command")
@@ -62,6 +60,13 @@ if (WITH_DOCUMENTATION)
     gen_html(herbstclient)
     gen_html(herbstluftwm)
     gen_html(herbstluftwm-tutorial)
+
+    # mark the doc_json target as mandatory
+    add_custom_target("doc_json_mandatory" ALL DEPENDS "doc_json")
 endif()
+
+# always create a doc_json target, but only make it mandatory
+# if WITH_DOCUMENTATION is set
+gen_json_doc(hlwm-doc)
 
 # vim: et:ts=4:sw=4

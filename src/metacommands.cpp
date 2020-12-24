@@ -366,7 +366,7 @@ Attribute* MetaCommands::newAttributeWithType(string typestr, string attr_name, 
         return nullptr;
     }
     auto attr = it->second(attr_name);
-    attr->setWriteable(true);
+    attr->setWritable(true);
     return attr;
 }
 
@@ -638,7 +638,7 @@ void MetaCommands::get_attr_complete(Completion& complete) {
 void MetaCommands::set_attr_complete(Completion& complete) {
     if (complete == 0) {
         completeObjectPath(complete, true,
-            [](Attribute* a) { return a->writeable(); } );
+            [](Attribute* a) { return a->writable(); } );
     } else if (complete == 1) {
         Attribute* a = root.deepAttribute(complete[0]);
         if (a) {
@@ -658,7 +658,7 @@ void MetaCommands::attr_complete(Completion& complete)
         if (!a) {
             return;
         }
-        if (a->writeable()) {
+        if (a->writable()) {
             a->complete(complete);
         } else {
             complete.none();
