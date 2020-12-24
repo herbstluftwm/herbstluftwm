@@ -52,7 +52,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     , settings(settings_)
     , monman(monman_)
 {
-    // explicitly set members writeable such that gendoc.py recognizes it
+    // explicitly set members writable such that gendoc.py recognizes it
     pad_up.setWritable();
     pad_right.setWritable();
     pad_down.setWritable();

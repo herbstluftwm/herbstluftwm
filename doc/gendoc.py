@@ -321,7 +321,7 @@ class ObjectInformation:
             self.default_value = None
             self.attribute_class = None  # whether this is an Attribute_ or sth else
             self.constructor_args = None  # the arguments to the constructor
-            self.writeable = None  # whether this attribute is user writeable
+            self.writable = None  # whether this attribute is user writable
             self.doc = None  # a longer doc string
 
         def add_constructor_args(self, args):
@@ -354,21 +354,21 @@ class ObjectInformation:
                     self.set_user_name(args[1])
                     self.set_default_value(args[2])
                 if len(args) >= 4:
-                    self.writeable = True
-                elif self.writeable is None:
+                    self.writable = True
+                elif self.writable is None:
                     # if we don't have further information, then it is not writable:
-                    self.writeable = False
+                    self.writable = False
             if self.attribute_class == 'DynAttribute_' and len(args) >= 2:
                 if args[0] == 'this':
                     self.set_user_name(args[1])
-                    self.writeable = len(args) >= 4
+                    self.writable = len(args) >= 4
                 else:  # args[0] != 'this':
                     self.set_user_name(args[0])
-                    self.writeable = len(args) >= 3
+                    self.writable = len(args) >= 3
             if self.attribute_class == 'AttributeProxy_':
                 self.set_user_name(args[0])
                 self.set_default_value(args[1])
-                self.writeable = True
+                self.writable = True
 
         def set_user_name(self, cpp_token):
             if cpp_token[0:1] == '"':
@@ -444,7 +444,7 @@ class ObjectInformation:
         from the source"""
         for (clsname, attrs), attr in self.member2info.items():
             if clsname == 'Settings':
-                attr.writeable = True
+                attr.writable = True
 
     def attribute_info(self, classname: str, attr_cpp_name: str):
         """return the AttributeInformation object for
@@ -557,8 +557,8 @@ class ObjectInformation:
                         }
                         if member.doc is not None:
                             obj['doc'] = member.doc
-                        if member.writeable is not None:
-                            obj['writeable'] = member.writeable
+                        if member.writable is not None:
+                            obj['writable'] = member.writable
                         attributes[member.user_name] = obj
                     if isinstance(member, ObjectInformation.ChildInformation):
                         # assert uniqueness:
@@ -709,9 +709,9 @@ class TokTreeInfoExtrator:
                 doc_tokens = parameters.value.enclosed_tokens
                 doc_string = ast.literal_eval(' '.join(doc_tokens))
                 self.objInfo.member_doc(classname, arg1.value, doc_string)
-            elif stream.try_match(arg1, '.', 'setWriteable', parameters, ';'):
+            elif stream.try_match(arg1, '.', 'setWritable', parameters, ';'):
                 attr = self.objInfo.attribute_info(classname, arg1.value)
-                attr.writeable = True
+                attr.writable = True
                 pass
             else:
                 stream.pop()
