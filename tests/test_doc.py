@@ -59,11 +59,22 @@ classname2examplepath = [
 
 
 @pytest.mark.parametrize('clsname,object_path', classname2examplepath)
-def test_documented_attributes_exist(hlwm, clsname, object_path, json_doc):
+def test_documented_attributes_writable(hlwm, clsname, object_path, json_doc):
+    """test whether the writable field is correct. This checks the
+    existence of the attributes implicitly
+    """
     object_path = object_path(hlwm)
     for _, attr in json_doc['objects'][clsname]['attributes'].items():
         print("checking attribute {}::{}".format(clsname, attr['cpp_name']))
-        hlwm.get_attr('{}.{}'.format(object_path, attr['name']).lstrip('.'))
+        full_attr_path = '{}.{}'.format(object_path, attr['name']).lstrip('.')
+        value = hlwm.get_attr(full_attr_path)
+        if value == 'default':
+            continue
+        if attr['writable']:
+            hlwm.call(['set_attr', full_attr_path, value])
+        else:
+            hlwm.call_xfail(['set_attr', full_attr_path, value]) \
+                .expect_stderr('attribute is read-only')
 
 
 def types_and_shorthands():
