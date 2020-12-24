@@ -53,10 +53,10 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     , monman(monman_)
 {
     // explicitly set members writeable such that gendoc.py recognizes it
-    pad_up.setWriteable();
-    pad_right.setWriteable();
-    pad_down.setWriteable();
-    pad_left.setWriteable();
+    pad_up.setWritable();
+    pad_right.setWritable();
+    pad_down.setWritable();
+    pad_left.setWritable();
     for (auto i : {&pad_up, &pad_left, &pad_right, &pad_down}) {
         i->changed().connect(this, &Monitor::applyLayout);
     }
