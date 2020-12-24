@@ -89,7 +89,7 @@ int MonitorManager::indexInDirection(Monitor* relativeTo, Direction dir) {
     for (Monitor* mon : *this) {
         rects.push_back(make_pair(mon->index(), mon->rect));
     }
-    int result = find_rectangle_in_direction(rects, int(relativeTo->index), dir);
+    int result = Floating::find_rectangle_in_direction(rects, int(relativeTo->index), dir);
     return result;
 }
 

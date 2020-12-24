@@ -64,7 +64,7 @@ static void rectlist_rotate(RectangleIdxVec& rects, int& idx, Direction dir) {
 
 //! fuzzily find a rectangle in the specified direction
 //! returns the found index in the original buffer
-int find_rectangle_in_direction(RectangleIdxVec& rects, int idx, Direction dir) {
+int Floating::find_rectangle_in_direction(RectangleIdxVec& rects, int idx, Direction dir) {
     rectlist_rotate(rects, idx, dir);
     return find_rectangle_right_of(rects, idx);
 }
@@ -101,7 +101,7 @@ static bool rectangle_is_right_of(Rectangle RC, Rectangle R2) {
     return true;
 }
 
-int find_rectangle_right_of(RectangleIdxVec rects, int idx) {
+int Floating::find_rectangle_right_of(RectangleIdxVec rects, int idx) {
     auto RC = rects[idx].second;
     int cx = RC.x + RC.width / 2;
     int cy = RC.y + RC.height / 2;
@@ -157,7 +157,7 @@ int find_rectangle_right_of(RectangleIdxVec rects, int idx) {
 }
 
 // returns the found index in the modified buffer
-int find_edge_in_direction(RectangleIdxVec& rects, int idx, Direction dir)
+int Floating::find_edge_in_direction(RectangleIdxVec& rects, int idx, Direction dir)
 {
     rectlist_rotate(rects, idx, dir);
     int found = find_edge_right_of(rects, idx);
@@ -177,7 +177,8 @@ int find_edge_in_direction(RectangleIdxVec& rects, int idx, Direction dir)
     rectlist_rotate(rects, found, dir);
     return found;
 }
-int find_edge_right_of(RectangleIdxVec rects, int idx) {
+
+int Floating::find_edge_right_of(RectangleIdxVec rects, int idx) {
     int xbound = rects[idx].second.x + rects[idx].second.width;
     int ylow = rects[idx].second.y;
     int yhigh = rects[idx].second.y + rects[idx].second.height;
@@ -212,7 +213,7 @@ int find_edge_right_of(RectangleIdxVec rects, int idx) {
 }
 
 
-bool floating_focus_direction(Direction dir) {
+bool Floating::focusDirection(Direction dir) {
     if (g_settings->monitors_locked()) { return false; }
     HSTag* tag = get_current_monitor()->tag;
     vector<Client*> clients;
@@ -245,7 +246,7 @@ bool floating_focus_direction(Direction dir) {
 //! when moving the given client on tag in the specified direction
 //! report the vector to travel until the collision happens. If curfocusrect
 //! is provided, use this as the geometry of 'curfocus'
-Point2D find_rectangle_collision_on_tag(HSTag* tag, Client* curfocus, Direction dir, Rectangle curfocusrect = {0,0,-1,-1}) {
+Point2D Floating::find_rectangle_collision_on_tag(HSTag* tag, Client* curfocus, Direction dir, Rectangle curfocusrect) {
     vector<Client*> clients;
     auto focusrect = curfocusrect
                 ? curfocusrect
@@ -313,7 +314,7 @@ Point2D find_rectangle_collision_on_tag(HSTag* tag, Client* curfocus, Direction 
     return {dx, dy};
 }
 
-bool floating_shift_direction(Direction dir) {
+bool Floating::shiftDirection(Direction dir) {
     if (g_settings->monitors_locked()) { return false; }
     HSTag* tag = get_current_monitor()->tag;
     Client* curfocus = tag->focusedClient();
@@ -359,7 +360,7 @@ static bool resize_by_delta(Client* client, Direction dir, int delta) {
     return true;
 }
 
-static bool grow_into_direction(HSTag* tag, Client* client, Direction dir) {
+bool Floating::grow_into_direction(HSTag* tag, Client* client, Direction dir) {
     Point2D delta = find_rectangle_collision_on_tag(tag, client, dir);
     if (delta == Point2D{0, 0}) {
         return false;
@@ -385,7 +386,7 @@ static bool grow_into_direction(HSTag* tag, Client* client, Direction dir) {
     return true;
 }
 
-static bool shrink_into_direction(Client* client, Direction dir) {
+bool Floating::shrink_into_direction(Client* client, Direction dir) {
     int delta_width = client->float_size_.width / -2;
     int delta_height = client->float_size_.height / -2;
     switch (dir) {
@@ -415,7 +416,7 @@ static bool shrink_into_direction(Client* client, Direction dir) {
     return false;
 }
 
-bool floating_resize_direction(HSTag* tag, Client* client, Direction dir)
+bool Floating::resizeDirection(HSTag* tag, Client* client, Direction dir)
 {
     if (g_settings->monitors_locked()) {
         return false;
@@ -442,7 +443,7 @@ bool floating_resize_direction(HSTag* tag, Client* client, Direction dir)
  * @param whether to consider only floating windows on 'tag' for the placement
  * @return the suggested position
  */
-Point2D floatingSmartPlacement(HSTag* tag, Client* client, Point2D area, int gap)
+Point2D Floating::smartPlacement(HSTag* tag, Client* client, Point2D area, int gap)
 {
     bool tagFloating = tag->floating();
     Rectangle clientOuter = client->outer_floating_rect();

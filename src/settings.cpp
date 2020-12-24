@@ -108,7 +108,7 @@ Settings::Settings()
          &frame_normal_opacity}) {
         i->changed().connect(&reset_client_colors);
     }
-    frame_bg_transparent.setWriteable();
+    frame_bg_transparent.setWritable();
     for (auto i : {&always_show_frame,
          &gapless_grid,
          &smart_frame_surroundings,
@@ -133,7 +133,7 @@ Settings::Settings()
     });
     g_settings = this;
     for (auto i : attributes()) {
-        i.second->setWriteable();
+        i.second->setWritable();
     }
 }
 
