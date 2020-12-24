@@ -133,6 +133,9 @@ if args.flake8:
     tox('-e flake8', build_dir)
 
 if args.run_tests:
+    # make sure, json doc exists
+    sp.check_call(['bash', '-c', 'time ninja doc_json'], cwd=build_dir)
+
     # Suppress warnings about known memory leaks:
     os.environ['LSAN_OPTIONS'] = f"suppressions={repo}/ci/lsan-suppressions.txt"
 

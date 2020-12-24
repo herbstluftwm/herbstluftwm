@@ -41,7 +41,7 @@ DecorationScheme::DecorationScheme()
 {
     for (auto i : proxyAttributes_) {
         addAttribute(i->toAttribute());
-        i->toAttribute()->setWriteable();
+        i->toAttribute()->setWritable();
         i->toAttribute()->changed().connect([this]() { this->scheme_changed_.emit(); });
     }
 }
