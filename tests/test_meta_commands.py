@@ -54,7 +54,7 @@ def test_set_attr_completion(hlwm, prefix):
         == 'false off on toggle true'.split(' ')
 
 
-def test_set_attr_only_writeable(hlwm):
+def test_set_attr_only_writable(hlwm):
     # attr completes read-only attributes
     assert hlwm.complete('attr monitors.c', position=1, partial=True) \
         == ['monitors.count ']
@@ -63,13 +63,13 @@ def test_set_attr_only_writeable(hlwm):
         == []
 
 
-def test_attr_only_second_argument_if_writeable(hlwm):
+def test_attr_only_second_argument_if_writable(hlwm):
     # attr does not complete values for read-only attributes
     assert hlwm.call_xfail_no_output('complete 2 attr monitors.count') \
         .returncode == 7
 
 
-def test_set_attr_can_not_set_writeable(hlwm):
+def test_set_attr_can_not_set_writable(hlwm):
     assert hlwm.call_xfail('set_attr tags.count 5') \
         .returncode == 3
 
@@ -224,7 +224,7 @@ def test_new_attr_missing_prefix(hlwm, attrtype, path):
 
 @pytest.mark.parametrize('attrtypevalues', ATTRIBUTE_TYPE_EXAMPLE_VALUES.items())
 @pytest.mark.parametrize('path', ['my_foo', 'monitors.my_bar'])
-def test_new_attr_is_writeable(hlwm, attrtypevalues, path):
+def test_new_attr_is_writable(hlwm, attrtypevalues, path):
     (attrtype, values) = attrtypevalues
     hlwm.call(['new_attr', attrtype, path])
     for v in values:

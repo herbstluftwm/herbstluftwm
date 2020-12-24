@@ -58,7 +58,7 @@ public:
         owner->addAttribute(this);
     }
 
-    //! A writeable attribute of owner of type T
+    //! A writable attribute of owner of type T
     template <typename Owner>
     Attribute_(Owner* owner, const std::string &name, const T &payload,
               std::string(Owner::*validator)(T))
@@ -72,7 +72,7 @@ public:
         // e.g. when we got rid of Object::wireAttributes()
         owner->addAttribute(this);
     }
-    //! A writeable attribute of owner of type T
+    //! A writable attribute of owner of type T
     Attribute_(Object* owner, const std::string &name, const T &payload,
               Validator validator)
         : Attribute(name, true)
@@ -96,10 +96,10 @@ public:
     }
 
     // set the method called for validation of external changes
-    // this implicitely makes the attribute writeable
+    // this implicitely makes the attribute writable
     void setValidator(Validator v) {
         validator_ = v;
-        writeable_ = true;
+        writable_ = true;
     }
 
     // delegate type() to a static methods in specializations,
@@ -142,7 +142,7 @@ public:
     }
 
     std::string change(const std::string &payload_str) override {
-        if (!writeable()) {
+        if (!writable()) {
             return "attribute is read-only";
         }
         try {
@@ -225,7 +225,7 @@ public:
         , setter_(setter)
     {
         hookable_ = false;
-        writeable_ = true;
+        writable_ = true;
     }
 
     void complete(Completion& completion) override {
@@ -275,7 +275,7 @@ public:
         , setter_(std::bind(setter, owner, std::placeholders::_1))
     {
         hookable_ = false;
-        writeable_ = true;
+        writable_ = true;
         // the following will call Attribute::setOwner()
         // maybe this should be changed at some point,
         // e.g. when we got rid of Object::wireAttributes()
@@ -294,7 +294,7 @@ public:
     }
 
     std::string change(const std::string &payload_str) override {
-        if (!writeable()) {
+        if (!writable()) {
             return "attribute is read-only";
         }
         try {
