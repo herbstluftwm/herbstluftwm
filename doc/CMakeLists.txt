@@ -9,7 +9,7 @@ function(gen_json_doc destfile)
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py" --sourcedir "${CMAKE_CURRENT_SOURCE_DIR}/../src" --json > ${dst}
         DEPENDS ${CPPSRC} "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py"
         )
-    install(FILES ${dst} DESTINATION ${DOCDIR})
+    install(FILES ${dst} DESTINATION ${DOCDIR} OPTIONAL)
 endfunction()
 
 function(gen_manpage sourcefile man_nr)
