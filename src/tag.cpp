@@ -289,7 +289,7 @@ int HSTag::focusInDirCommand(Input input, Output output)
     auto focusedFrame = frame->focusedFrame();
     bool neighbour_found = true;
     if (floating || floating_focused) {
-        neighbour_found = floating_focus_direction(direction);
+        neighbour_found = Floating::focusDirection(direction);
     } else {
         neighbour_found = frame->focusInDirection(direction, external_only);
         if (neighbour_found) {
@@ -342,7 +342,7 @@ int HSTag::shiftInDirCommand(Input input, Output output)
     Client* currentClient = focusedClient();
     if (currentClient && currentClient->is_client_floated()) {
         // try to move the floating window
-        bool success = floating_shift_direction(direction);
+        bool success = Floating::shiftDirection(direction);
         return success ? 0 : HERBST_FORBIDDEN;
     }
     // don't look for neighbours within the frame if 'external_only' is set
@@ -475,7 +475,7 @@ int HSTag::resizeCommand(Input input, Output output)
     }
     Client* client = focusedClient();
     if (client && client->is_client_floated()) {
-        if (!floating_resize_direction(this, client, direction)) {
+        if (!Floating::resizeDirection(this, client, direction)) {
             // no error message because this shouldn't happen anyway
             return HERBST_FORBIDDEN;
         }
