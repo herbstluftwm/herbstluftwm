@@ -18,6 +18,10 @@ def findfiles(sourcedir, regex_object):
                 yield os.path.join(root, file)
 
 
+class TokenRe:
+    identifier_re = '[a-zA-Z_][a-zA-Z0-9_]*'
+
+
 def extract_file_tokens(filepath):
     # in the following, it's important to use
     # non-capturing groups (?: .... )
@@ -30,7 +34,7 @@ def extract_file_tokens(filepath):
         "#(?:[^Z\n]|\\\\\n)*[^\\\\]\n",  # preprocessor
         '//[^\n]*\n',  # single-line comment
         r'/\*(?:[^\*]*|\**[^/*])*\*/',  # multiline comment
-        '[a-zA-Z_][a-zA-Z0-9_]*',  # identifiers
+        TokenRe.identifier_re,  # identifiers
         r'[0-9][0-9\.a-z]*',  # numbers
         '\'(?:\\\'|[^\']*)\'',
         "\"(?:\\\"|[^\"]*)\"",
@@ -317,6 +321,7 @@ class ObjectInformation:
             self.default_value = None
             self.attribute_class = None  # whether this is an Attribute_ or sth else
             self.constructor_args = None  # the arguments to the constructor
+            self.writable = None  # whether this attribute is user writable
             self.doc = None  # a longer doc string
 
         def add_constructor_args(self, args):
@@ -348,16 +353,22 @@ class ObjectInformation:
                 elif len(args) >= 3:
                     self.set_user_name(args[1])
                     self.set_default_value(args[2])
-            if self.attribute_class == 'DynAttribute_':
-                if len(args) == 2:
-                    self.set_user_name(args[0])
-                elif len(args) >= 3 and args[0] == 'this':
+                if len(args) >= 4:
+                    self.writable = True
+                elif self.writable is None:
+                    # if we don't have further information, then it is not writable:
+                    self.writable = False
+            if self.attribute_class == 'DynAttribute_' and len(args) >= 2:
+                if args[0] == 'this':
                     self.set_user_name(args[1])
-                elif len(args) >= 3 and args[0] != 'this':
+                    self.writable = len(args) >= 4
+                else:  # args[0] != 'this':
                     self.set_user_name(args[0])
+                    self.writable = len(args) >= 3
             if self.attribute_class == 'AttributeProxy_':
                 self.set_user_name(args[0])
                 self.set_default_value(args[1])
+                self.writable = True
 
         def set_user_name(self, cpp_token):
             if cpp_token[0:1] == '"':
@@ -427,6 +438,13 @@ class ObjectInformation:
             doc = self.member2doc.get((clsname, attr.cpp_name), None)
             if doc is not None:
                 attr.doc = doc
+
+    def add_hardcoded_info(self):
+        """Add additional information that is hardcoded and not derived
+        from the source"""
+        for (clsname, attrs), attr in self.member2info.items():
+            if clsname == 'Settings':
+                attr.writable = True
 
     def attribute_info(self, classname: str, attr_cpp_name: str):
         """return the AttributeInformation object for
@@ -539,6 +557,8 @@ class ObjectInformation:
                         }
                         if member.doc is not None:
                             obj['doc'] = member.doc
+                        if member.writable is not None:
+                            obj['writable'] = member.writable
                         attributes[member.user_name] = obj
                     if isinstance(member, ObjectInformation.ChildInformation):
                         # assert uniqueness:
@@ -671,17 +691,19 @@ class TokTreeInfoExtrator:
         arg1 = TokenStream.PatternArg()
         codeblock = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='{'))
         parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
+        initializers = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='{'))
         while not stream.try_match(codeblock):
-            if stream.try_match(arg1, parameters):
+            if stream.try_match(arg1, parameters) or stream.try_match(arg1, initializers):
                 # we found a member initialization
                 init_list = parameters.value.enclosed_tokens
                 self.objInfo.member_init(classname, arg1.value, init_list)
             else:
                 stream.pop()
         # we're now on a codeblock
-        self.stream_consume_setDoc(classname, TokenStream(codeblock.value.enclosed_tokens))
+        self.stream_consume_class_codeblock(classname, TokenStream(codeblock.value.enclosed_tokens))
 
-    def stream_consume_setDoc(self, classname, stream):
+    def stream_consume_class_codeblock(self, classname, stream):
+        """consume a codeblock in a member function of a class"""
         arg1 = TokenStream.PatternArg()
         parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
         while not stream.empty():
@@ -689,6 +711,10 @@ class TokTreeInfoExtrator:
                 doc_tokens = parameters.value.enclosed_tokens
                 doc_string = ast.literal_eval(' '.join(doc_tokens))
                 self.objInfo.member_doc(classname, arg1.value, doc_string)
+            elif stream.try_match(arg1, '.', 'setWritable', parameters, ';'):
+                attr = self.objInfo.attribute_info(classname, arg1.value)
+                attr.writable = True
+                pass
             else:
                 stream.pop()
 
@@ -771,6 +797,7 @@ def main():
             extractor.main(list(toktree))
         # pass the member initializations to the attributes:
         objInfo.process_member_init()
+        objInfo.add_hardcoded_info()
         if args.objects:
             objInfo.print()
         else:

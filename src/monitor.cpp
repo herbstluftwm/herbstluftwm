@@ -52,8 +52,12 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     , settings(settings_)
     , monman(monman_)
 {
+    // explicitly set members writable such that gendoc.py recognizes it
+    pad_up.setWritable();
+    pad_right.setWritable();
+    pad_down.setWritable();
+    pad_left.setWritable();
     for (auto i : {&pad_up, &pad_left, &pad_right, &pad_down}) {
-        i->setWriteable();
         i->changed().connect(this, &Monitor::applyLayout);
     }
 
@@ -757,7 +761,7 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
         case ClientPlacement::Smart:
             {
                 Point2D area = getFloatingArea().dimensions();
-                Point2D new_tl = floatingSmartPlacement(tag, client,
+                Point2D new_tl = Floating::smartPlacement(tag, client,
                                              area, settings->snap_gap);
                 client->float_size_.x = new_tl.x;
                 client->float_size_.y = new_tl.y;

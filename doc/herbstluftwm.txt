@@ -1431,7 +1431,7 @@ $ herbstclient attr tags.
 
 1 attributes:
  .---- type
- | .-- writeable
+ | .-- writable
  V V
  u - count                = 9
 
@@ -1439,7 +1439,7 @@ $ herbstclient attr tags.focus.
 0 children.
 6 attributes:
  .---- type
- | .-- writeable
+ | .-- writable
  V V
  s w name                 = "1"
  b w floating             = false
@@ -1461,7 +1461,7 @@ the child objects and then all attributes, telling for each attribute:
     * +s+ for string
     * +u+ for unsigned integer
 
-  - if it is writeable by the user: +w+ if yes, +-+ else.
+  - if it is writable by the user: +w+ if yes, +-+ else.
   - the name of the attribute
   - its current value (only quoted for strings)
 
@@ -1475,7 +1475,7 @@ $ herbstclient get_attr  clients.focus.title
 herbstluftwm.txt = (~/dev/c/herbstluftwm/doc) - VIM
 ----
 
-To change a writeable attribute value pass the new value to +attr+ or to
+To change a writable attribute value pass the new value to +attr+ or to
 +set_attr+:
 
 ----

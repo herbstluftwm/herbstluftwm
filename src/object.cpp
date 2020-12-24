@@ -74,12 +74,12 @@ void Object::ls(Output out)
         << (!attribs_.empty() ? ":" : ".") << endl;
 
     out << " .---- type\n"
-        << " | .-- writeable\n"
+        << " | .-- writable\n"
         << " | | .-- hookable\n"
         << " V V V" << endl;
     for (auto it : attribs_) {
         out << " " << it.second->typechar();
-        out << " " << (it.second->writeable() ? "w" : "-");
+        out << " " << (it.second->writable() ? "w" : "-");
         out << " " << (it.second->hookable() ? "h" : "-");
         out << " " << it.first;
         if (it.second->type() == Type::ATTRIBUTE_STRING

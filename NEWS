@@ -15,6 +15,7 @@ Current git version
   * New command 'mirror'
   * New command 'apply_tmp_rule'
   * The 'apply_rules' command now reports parse errors
+  * Only build json object doc if WITH_DOCUMENTATION is activated
   * Bug fixes:
     - When hiding windows, correctly set their WM_STATE to IconicState (we set
       it to Withdrawn state before, which means "unmanaged" and thus is wrong).

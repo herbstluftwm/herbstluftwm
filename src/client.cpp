@@ -61,16 +61,17 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 {
     stringstream tmp;
     window_id_str = WindowID(window).str();
-    floating_.setWriteable();
-    keyMask_.setWriteable();
-    keysInactive_.setWriteable();
-    ewmhnotify_.setWriteable();
-    ewmhrequests_.setWriteable();
-    sizehints_floating_.setWriteable();
-    sizehints_tiling_.setWriteable();
-    minimized_.setWriteable();
+    floating_.setWritable();
+    keyMask_.setWritable();
+    keysInactive_.setWritable();
+    ewmhnotify_.setWritable();
+    ewmhrequests_.setWritable();
+    fullscreen_.setWritable();
+    pseudotile_.setWritable();
+    sizehints_floating_.setWritable();
+    sizehints_tiling_.setWritable();
+    minimized_.setWritable();
     for (auto i : {&fullscreen_, &pseudotile_, &sizehints_floating_, &sizehints_tiling_}) {
-        i->setWriteable();
         i->changed().connect(this, &Client::requestRedraw);
     }
 
