@@ -577,6 +577,8 @@ class ObjectInformation:
                 'classname': clsname,
                 'children': ObjectInformation.sorted_dict(children),
                 'attributes': ObjectInformation.sorted_dict(attributes),
+                # list the superclasses of clsname that are objects themselves:
+                'inherits-from': [s for s in supers if 'Object' in superclasses[s] and s != 'Object'],
             }
         return {'objects': ObjectInformation.sorted_dict(result)}  # only generate object doc so far
 
