@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import subprocess
 import os
 import sys
@@ -37,10 +38,12 @@ def parse_pr_id(text):
 
 
 def get_json_doc(tmp_dir):
-    return subprocess.run(['doc/gendoc.py', '--json'],
-                          stdout=subprocess.PIPE,
-                          universal_newlines=True,
-                          cwd=tmp_dir).stdout
+    json_txt = subprocess.run(['doc/gendoc.py', '--json'],
+                              stdout=subprocess.PIPE,
+                              universal_newlines=True,
+                              cwd=tmp_dir).stdout
+    # normalize it: add trailing commads to reduce diff size:
+    return re.sub(r'([^{,])\n', r'\1,\n', json_txt)
 
 
 def run_pipe_stdout(cmd):
@@ -86,6 +89,8 @@ def main():
                         default='github/master',
                         nargs='?')
     parser.add_argument('newref', help='the new version, e.g. a pull request number like #1021')
+    parser.add_argument('--collapse-diff-lines', default=100, type=int,
+                        help='from which diff size on the diff is collapsed per default')
     parser.add_argument('--post-comment', default=None,
                         help='post diff as a comment in the specified ID of a github issue'
                              + ' Requires that the environment variable GITHUB_TOKEN is set')
@@ -129,13 +134,18 @@ def main():
     git_tmp.run('-c', 'advice.detachedHead=false', 'checkout', '-f', newref)
     newjson = get_json_doc(tmp_dir).splitlines(keepends=True)
 
-    diff = difflib.unified_diff(oldjson, newjson, fromfile=args.oldref, tofile=args.newref)
+    diff = list(difflib.unified_diff(oldjson, newjson, fromfile=args.oldref, tofile=args.newref))
     if comment_target is not None:
         gendoc_url = '/herbstluftwm/herbstluftwm/blob/master/doc/gendoc.py'
         comment = [f'Diff of the output of [`doc/gendoc.py --json`]({gendoc_url}):']
+        details_attr = ' open' if len(diff) < args.collapse_diff_lines else ''
+        comment += [f'<details{details_attr}>']
+        comment += [f'<summary>Full diff ({len(diff)} lines)</summary>']
+        comment += ['']
         comment += ['```diff']
         comment += [line.rstrip('\n') for line in diff]
         comment += ['```']
+        comment += ['</details>']
         comment_txt = '\n'.join(comment)
         post_comment(comment_target.lstrip('#'), comment_txt)
     else:

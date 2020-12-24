@@ -761,7 +761,7 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
         case ClientPlacement::Smart:
             {
                 Point2D area = getFloatingArea().dimensions();
-                Point2D new_tl = floatingSmartPlacement(tag, client,
+                Point2D new_tl = Floating::smartPlacement(tag, client,
                                              area, settings->snap_gap);
                 client->float_size_.x = new_tl.x;
                 client->float_size_.y = new_tl.y;
