@@ -43,7 +43,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , minimized_(this,  "minimized", false)
     , title_(this,  "title", "")
     , tag_str_(this,  "tag", &Client::tagName)
-    , frame_(*this,  "frame", &Client::containingFrame)
+    , parent_frame_(*this,  "parent_frame", &Client::parentFrame)
     , window_id_str(this,  "winid", "")
     , keyMask_(this,  "keymask", RegexStr::fromStr(""))
     , keysInactive_(this,  "keys_inactive", RegexStr::fromStr(""))
@@ -96,7 +96,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 
     init_from_X();
     visible_.setDoc("whether this client is rendered currently");
-    frame_.setDoc("the frame contaning this client if the client is tiled");
+    parent_frame_.setDoc("the frame contaning this client if the client is tiled");
 }
 
 void Client::init_from_X() {
@@ -584,7 +584,7 @@ string Client::getWindowInstance()
     return ewmh.X().getInstance(window_);
 }
 
-FrameLeaf* Client::containingFrame()
+FrameLeaf* Client::parentFrame()
 {
     if (is_client_floated()) {
         return nullptr;

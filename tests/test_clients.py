@@ -284,36 +284,36 @@ def test_minimize_only_floating_client(hlwm):
     assert hlwm.get_attr('tags.focus.floating_focused') == 'false'
 
 
-def test_frame_attribute_one_split(hlwm):
+def test_parent_frame_attribute_one_split(hlwm):
     c1, c2 = hlwm.create_clients(2)
     hlwm.call('split explode')
 
-    assert hlwm.attr.clients[c1].frame.index() == '0'
-    assert hlwm.attr.clients[c2].frame.index() == '1'
+    assert hlwm.attr.clients[c1].parent_frame.index() == '0'
+    assert hlwm.attr.clients[c2].parent_frame.index() == '1'
 
 
-def test_frame_attribute_no_split(hlwm):
+def test_parent_frame_attribute_no_split(hlwm):
     c1, c2 = hlwm.create_clients(2)
 
-    assert hlwm.attr.clients[c1].frame.index() == ''
-    assert hlwm.attr.clients[c2].frame.index() == ''
+    assert hlwm.attr.clients[c1].parent_frame.index() == ''
+    assert hlwm.attr.clients[c2].parent_frame.index() == ''
 
 
-def test_frame_attribute_window_floating(hlwm):
+def test_parent_frame_attribute_window_floating(hlwm):
     winid, _ = hlwm.create_client()
     # do it in a loop to verify that we don't have typos in the assert
     for value in ['on', 'off']:
         hlwm.attr.clients[winid].floating = value
 
-        assert ('frame' in hlwm.list_children(f'clients.{winid}')) \
+        assert ('parent_frame' in hlwm.list_children(f'clients.{winid}')) \
             == (value == 'off')
 
 
-def test_frame_attribute_tag_floating(hlwm):
+def test_parent_frame_attribute_tag_floating(hlwm):
     winid, _ = hlwm.create_client()
     # do it in a loop to verify that we don't have typos in the assert
     for value in ['on', 'off']:
         hlwm.attr.tags.focus.floating = value
 
-        assert ('frame' in hlwm.list_children(f'clients.{winid}')) \
+        assert ('parent_frame' in hlwm.list_children(f'clients.{winid}')) \
             == (value == 'off')
