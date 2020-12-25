@@ -446,6 +446,11 @@ class ObjectInformation:
             if clsname == 'Settings':
                 attr.writable = True
 
+        child = self.child_info('ClientManager', '0xWINDOWID')
+        child.user_name = "0xWINDOWID"
+        child.type = ClassName("Client")
+        child.doc = "One entry for every managed client for its WINDOWID"
+
     def attribute_info(self, classname: str, attr_cpp_name: str):
         """return the AttributeInformation object for
         a for a class and its attribute whose C++ variable name is
