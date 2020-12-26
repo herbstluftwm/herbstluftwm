@@ -641,6 +641,7 @@ def x11(x11_connection):
                           wm_class=None,
                           window_type=None,
                           transient_for=None,
+                          pre_map=lambda wh: None,  # called before the window is mapped
                           ):
             w = self.root.create_window(
                 geometry[0],
@@ -679,6 +680,7 @@ def x11(x11_connection):
                                   32,
                                   [pid])
 
+            pre_map(w)
             w.map()
             self.display.sync()
             if sync_hlwm:
