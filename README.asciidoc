@@ -1,6 +1,8 @@
 herbstluftwm
 ============
 
+image:https://github.com/herbstluftwm/herbstluftwm/workflows/HLWM%20CI/badge.svg[link=
+https://github.com/herbstluftwm/herbstluftwm/actions?query=workflow%3A%22HLWM+CI%22]
 image:https://codecov.io/gh/herbstluftwm/herbstluftwm/branch/master/graph/badge.svg[link=
 https://codecov.io/gh/herbstluftwm/herbstluftwm]
 

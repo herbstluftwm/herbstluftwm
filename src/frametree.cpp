@@ -383,7 +383,7 @@ shared_ptr<FrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_ptr
     return closestFrame;
 }
 
-Frame* FrameTree::focusedFramePlainPtr()
+FrameLeaf* FrameTree::focusedFramePlainPtr()
 {
     auto shared = focusedFrame();
     if (shared) {
