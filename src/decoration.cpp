@@ -1,7 +1,9 @@
 #include "decoration.h"
 
+#include <limits>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/Xft/Xft.h>
 
 #include "client.h"
 #include "ewmh.h"
@@ -43,7 +45,7 @@ void Decoration::createWindow() {
     XSetWindowAttributes at;
     long mask = 0;
     // copy attributes from client and not from the root window
-    Visual* visual = check_32bit_client(client_);
+    visual = check_32bit_client(client_);
     if (visual) {
         /* client has a 32-bit visual */
         mask = CWColormap | CWBackPixel | CWBorderPixel;
@@ -380,13 +382,37 @@ void Decoration::redrawPixmap() {
                        inner.width,
                        inner.height - dec->last_actual_rect.height);
     }
-    if (s.title_height() > 0 && s.title_font->data().xFontStruct_) {
-        XSetForeground(g_display, gc, get_client_color(s.title_color));
-        XFontStruct* font = s.title_font->data().xFontStruct_;
-        int font_x_offset = s.padding_left() + s.border_width;
-        XSetFont(g_display, gc, font->fid);
-        XDrawString(g_display, pix, gc, font_x_offset, s.title_height(),
+    if (s.title_height() > 0) {
+        FontData& fontData = s.title_font->data();
+        Point2D titlepos = {
+            static_cast<int>(s.padding_left() + s.border_width()),
+            static_cast<int>(s.title_height())
+        };
+        if (fontData.xftFont_) {
+            Visual* xftvisual = visual ? visual : DefaultVisual(g_display, g_screen);
+            Colormap xftcmap = colormap ? colormap : DefaultColormap(g_display, g_screen);
+            XftDraw* xftd = XftDrawCreate(g_display, pix, xftvisual, xftcmap);
+            XRenderColor xrendercol = {
+                    s.title_color->red_,
+                    s.title_color->green_,
+                    s.title_color->blue_,
+                    0xffff, // alpha as set by XftColorAllocName()
+            };
+            XftColor xftcol = { };
+            XftColorAllocValue(g_display, xftvisual, xftcmap, &xrendercol, &xftcol);
+            XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
+                           titlepos.x, titlepos.y,
+                           (const XftChar8*)client_->title_().c_str(),
+                           client_->title_().size());
+            XftDrawDestroy(xftd);
+            XftColorFree(g_display, xftvisual, xftcmap, &xftcol);
+        } else if (fontData.xFontStruct_) {
+            XSetForeground(g_display, gc, get_client_color(s.title_color));
+            XFontStruct* font = s.title_font->data().xFontStruct_;
+            XSetFont(g_display, gc, font->fid);
+            XDrawString(g_display, pix, gc, titlepos.x, titlepos.y,
                     client_->title_().c_str(), client_->title_().size());
+        }
     }
     // clean up
     XFreeGC(g_display, gc);

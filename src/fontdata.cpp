@@ -1,5 +1,7 @@
 #include "fontdata.h"
 
+#include <X11/Xft/Xft.h>
+
 #include "xconnection.h"
 
 using std::string;
@@ -18,6 +20,17 @@ void FontData::initFromStr(const string& source)
     if (!s_xconnection) {
         throw std::invalid_argument("X connection not established yet!");
     }
+    // if the font starts with a '-', then treat it as a XLFD and
+    // don't pass it to xft
+    if (source.size() > 0 && source[0] != '-') {
+        xftFont_ = XftFontOpenName(s_xconnection->display(),
+                                   s_xconnection->screen(),
+                                   source.c_str());
+    }
+    if (xftFont_) {
+        return;
+    }
+    // fall back to plain X fonts:
     xFontStruct_ = XLoadQueryFont(s_xconnection->display(), source.c_str());
     if (!xFontStruct_) {
         throw std::invalid_argument(

@@ -90,9 +90,17 @@ endif()
 
 ## dependencies X11 (link to Xext for XShape())
 target_include_directories(herbstluftwm SYSTEM PUBLIC
-    ${X11_X11_INCLUDE_PATH} ${X11_Xinerama_INCLUDE_PATH} ${X11_Xrandr_INCLUDE_PATH})
+    ${FREETYPE_INCLUDE_DIRS}
+    ${X11_X11_INCLUDE_PATH}
+    ${X11_Xft_INCLUDE_PATH}
+    ${X11_Xinerama_INCLUDE_PATH}
+    ${X11_Xrandr_INCLUDE_PATH})
 target_link_libraries(herbstluftwm PUBLIC
-    ${X11_X11_LIB} ${X11_Xext_LIB} ${X11_Xrandr_LIB})
+    ${FREETYPE_LIBRARIES}
+    ${X11_X11_LIB}
+    ${X11_Xext_LIB}
+    ${X11_Xft_LIB}
+    ${X11_Xrandr_LIB})
 
 ## export variables to the code
 # version string

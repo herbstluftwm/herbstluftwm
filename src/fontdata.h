@@ -4,6 +4,7 @@
 
 #include <X11/Xlib.h>
 
+struct _XftFont;
 class XConnection;
 
 /**
@@ -19,6 +20,7 @@ public:
 
     void initFromStr(const std::string& source);
 
+    struct _XftFont* xftFont_ = nullptr;
     XFontStruct* xFontStruct_ = nullptr;
 
     static XConnection* s_xconnection;
