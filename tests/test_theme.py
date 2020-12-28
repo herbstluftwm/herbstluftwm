@@ -94,7 +94,7 @@ def test_font_type_existing_font(hlwm):
     for value in ['*FIXED*', '*FiXed*', 'fixed']:
         hlwm.call(['set_attr', 'theme.title_font', value])
 
-        assert hlwm.attr.theme.font() == value
+        assert hlwm.attr.theme.title_font() == value
 
 
 def test_font_type_non_existing_font(hlwm):
