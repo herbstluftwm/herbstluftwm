@@ -9,6 +9,9 @@ using std::string;
 XConnection* FontData::s_xconnection = nullptr;
 
 FontData::~FontData() {
+    if (xftFont_ && s_xconnection) {
+        XftFontClose(s_xconnection->display(), xftFont_);
+    }
     if (xFontStruct_ && s_xconnection) {
         XFreeFont(s_xconnection->display(), xFontStruct_);
     }
@@ -22,7 +25,7 @@ void FontData::initFromStr(const string& source)
     }
     // if the font starts with a '-', then treat it as a XLFD and
     // don't pass it to xft
-    if (source.size() > 0 && source[0] != '-') {
+    if (!source.empty() && source[0] != '-') {
         xftFont_ = XftFontOpenName(s_xconnection->display(),
                                    s_xconnection->screen(),
                                    source.c_str());
