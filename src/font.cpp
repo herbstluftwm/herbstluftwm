@@ -27,7 +27,7 @@ std::map<string, weak_ptr<FontData>> HSFont::s_fontDescriptionToData;
  * @param The font description as the user would enter it
  * @return
  */
-HSFont HSFont::fromStr(const std::string& source)
+HSFont HSFont::fromStr(const string& source)
 {
     auto it = s_fontDescriptionToData.find(source);
     shared_ptr<FontData> data;
@@ -49,13 +49,13 @@ HSFont::HSFont()
 }
 
 template<>
-HSFont Converter<HSFont>::parse(const std::string& source)
+HSFont Converter<HSFont>::parse(const string& source)
 {
     return HSFont::fromStr(source);
 }
 
 template<>
-std::string Converter<HSFont>::str(HSFont payload)
+string Converter<HSFont>::str(HSFont payload)
 {
     return payload.str();
 }
