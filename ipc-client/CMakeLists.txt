@@ -17,9 +17,9 @@ set_target_properties(herbstclient PROPERTIES
 
 # dependencies X11
 target_include_directories(herbstclient SYSTEM PUBLIC
-    ${X11_X11_INCLUDE_PATH})
+    ${X11_INCLUDE_DIRS})
 target_link_libraries(herbstclient PUBLIC
-    ${X11_X11_LIB})
+    ${X11_LIBRARIES})
 
 # communicate version string
 export_version(main.c)
