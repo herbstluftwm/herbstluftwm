@@ -1,8 +1,7 @@
 #pragma once
 
-#include <string>
-
 #include <X11/Xlib.h>
+#include <string>
 
 struct _XftFont;
 class XConnection;
