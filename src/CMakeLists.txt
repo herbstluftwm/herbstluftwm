@@ -22,6 +22,8 @@ target_sources(herbstluftwm PRIVATE
     finite.h
     fixprecdec.cpp fixprecdec.h
     floating.cpp floating.h
+    font.cpp font.h
+    fontdata.cpp fontdata.h
     framedata.h framedata.cpp
     framedecoration.cpp framedecoration.h
     frameparser.h frameparser.cpp

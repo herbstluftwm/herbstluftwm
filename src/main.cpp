@@ -13,6 +13,7 @@
 #include "clientmanager.h"
 #include "command.h"
 #include "ewmh.h"
+#include "fontdata.h"
 #include "frametree.h"
 #include "globals.h"
 #include "hook.h"
@@ -540,7 +541,7 @@ int main(int argc, char* argv[]) {
 
     // setup ipc server
     IpcServer* ipcServer = new IpcServer(*X);
-
+    FontData::s_xconnection = X;
     auto root = make_shared<Root>(g, *X, *ipcServer);
     Root::setRoot(root);
     //test_object_system();
@@ -571,6 +572,7 @@ int main(int argc, char* argv[]) {
     root.reset();
     Root::setRoot(root);
     // and then close the x connection
+    FontData::s_xconnection = nullptr;
     delete ipcServer;
     delete X;
     // check if we shall restart an other window manager

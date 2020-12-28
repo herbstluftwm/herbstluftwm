@@ -26,6 +26,9 @@ DecorationScheme::DecorationScheme()
                            &DecorationScheme::resetSetterHelper)
     , proxyAttributes_ ({
         &border_width,
+        &title_height,
+        &title_font,
+        &title_color,
         &border_color,
         &tight_decoration,
         &inner_color,

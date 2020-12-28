@@ -21,6 +21,7 @@ public:
     // resize such that the window content fits into rect
     void resize_inner(Rectangle inner, const DecorationScheme& scheme);
     void change_scheme(const DecorationScheme& scheme);
+    void redraw();
 
     static Client* toClient(Window decoration_window);
 

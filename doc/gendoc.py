@@ -383,7 +383,8 @@ class ObjectInformation:
             if cpp_token[0:1] == ['-']:
                 # this is most probably a signed number
                 cpp_token = ''.join(cpp_token)
-            if cpp_token[0:4] == ['RegexStr', ':', ':', 'fromStr']:
+            if cpp_token[1:4] == [':', ':', 'fromStr']:
+                # the token is: SOMECLASS::fromStr(X)
                 # assume that the next token in the list 'cpp_token' is a
                 # token group
                 cpp_token = cpp_token[4].enclosed_tokens[0]
