@@ -31,7 +31,7 @@ HSFont HSFont::fromStr(const string& source)
 {
     auto it = s_fontDescriptionToData.find(source);
     shared_ptr<FontData> data;
-    if (false && it != s_fontDescriptionToData.end() && !it->second.expired()) {
+    if (it != s_fontDescriptionToData.end() && !it->second.expired()) {
         data = it->second.lock();
     } else {
         data = make_shared<FontData>();
