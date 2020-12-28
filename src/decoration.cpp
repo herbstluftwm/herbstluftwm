@@ -1,9 +1,9 @@
 #include "decoration.h"
 
-#include <limits>
+#include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/Xft/Xft.h>
+#include <limits>
 
 #include "client.h"
 #include "ewmh.h"
