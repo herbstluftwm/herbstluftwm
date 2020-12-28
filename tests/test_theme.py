@@ -92,12 +92,12 @@ def test_tight_decoration(hlwm, tight_dec):
 
 def test_font_type_existing_font(hlwm):
     for value in ['*FIXED*', '*FiXed*', 'fixed']:
-        hlwm.call(['set_attr', 'theme.font', value])
+        hlwm.call(['set_attr', 'theme.title_font', value])
 
         assert hlwm.attr.theme.font() == value
 
 
 def test_font_type_non_existing_font(hlwm):
     value = 'Some long font name that hopefully does not exist'
-    hlwm.call_xfail(['set_attr', 'theme.font', value]) \
+    hlwm.call_xfail(['set_attr', 'theme.title_font', value]) \
         .expect_stderr(f"cannot allocate font.*'{value}'")
