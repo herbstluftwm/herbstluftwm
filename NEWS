@@ -4,8 +4,8 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
-Current git version
--------------------
+Release 0.9.1 on 2020-12-28
+---------------------------
 
   * Client minimization (controlled by the attribute 'minimized' of every client)
   * Client window titles (controlled by the theme attributes 'title_height',
@@ -14,9 +14,12 @@ Current git version
     order of existing tags.
   * New child object 'focused_client' for each tag object.
   * New child object 'focused_frame' for the tiling object of each tag object.
+  * New child object 'parent_frame' for each client providing the frame the client sits in
   * New command 'mirror'
   * New command 'apply_tmp_rule'
   * The 'apply_rules' command now reports parse errors
+  * Reserve space for panels that do not set _NET_WM_STRUT e.g. conky windows
+    of type 'dock'.
   * Only build json object doc if WITH_DOCUMENTATION is activated
   * Bug fixes:
     - When hiding windows, correctly set their WM_STATE to IconicState (we set

@@ -9,10 +9,12 @@
 #include "clientmanager.h"
 #include "decoration.h"
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "keymanager.h"
+#include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
@@ -41,6 +43,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , minimized_(this,  "minimized", false)
     , title_(this,  "title", "")
     , tag_str_(this,  "tag", &Client::tagName)
+    , parent_frame_(*this,  "parent_frame", &Client::parentFrame)
     , window_id_str(this,  "winid", "")
     , keyMask_(this,  "keymask", RegexStr::fromStr(""))
     , keysInactive_(this,  "keys_inactive", RegexStr::fromStr(""))
@@ -93,6 +96,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 
     init_from_X();
     visible_.setDoc("whether this client is rendered currently");
+    parent_frame_.setDoc("the frame contaning this client if the client is tiled");
 }
 
 void Client::init_from_X() {
@@ -580,6 +584,15 @@ string Client::getWindowClass()
 string Client::getWindowInstance()
 {
     return ewmh.X().getInstance(window_);
+}
+
+FrameLeaf* Client::parentFrame()
+{
+    if (is_client_floated()) {
+        return nullptr;
+    } else {
+        return tag_->frame->findFrameWithClient(this).get();
+    }
 }
 
 void Client::requestRedraw()
