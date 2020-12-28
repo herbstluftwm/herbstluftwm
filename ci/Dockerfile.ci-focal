@@ -13,6 +13,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     lcov \
     libx11-dev \
     libxext-dev \
+    libxft-dev \
+    libfreetype-dev \
     libxinerama-dev \
     libxrandr-dev \
     ninja-build \
