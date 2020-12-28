@@ -4,8 +4,8 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
-Current git version
--------------------
+Release 0.9.1 on 2020-12-28
+---------------------------
 
   * Client minimization (controlled by the attribute 'minimized' of every client)
   * The 'index' attribute of tags is now writable. This allows adjusting the
