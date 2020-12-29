@@ -206,7 +206,7 @@ void Client::window_focus() {
 
     if (this != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
-         * twice.  see BUGS for more information
+         * twice.
          *
          * only emit the hook if the focus *really* changes */
         // unfocus last one
