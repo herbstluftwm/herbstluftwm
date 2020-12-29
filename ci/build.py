@@ -25,6 +25,7 @@ parser.add_argument('--cmake', action='store_true')
 parser.add_argument('--clean', action='store_true',
                     help='run ninja -t clean first')
 parser.add_argument('--compile', action='store_true')
+parser.add_argument('--install', action='store_true')
 parser.add_argument('--run-tests', action='store_true')
 parser.add_argument('--build-docs', action='store_true')
 parser.add_argument('--cxx', type=str)
@@ -95,6 +96,9 @@ if args.clean:
 
 if args.compile:
     sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
+
+if args.install:
+    sp.check_call(['bash', '-c', 'DESTDIR=$(mktemp -d) ninja -v install'], cwd=build_dir, env=build_env)
 
 if args.ccache:
     sp.check_call(['ccache', '-s'])
