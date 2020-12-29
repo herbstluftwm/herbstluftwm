@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-#include "xconnection.h"
 #include "globals.h"
+#include "xconnection.h"
 
 using std::string;
 using std::stringstream;
