@@ -121,6 +121,7 @@ hc set frame_transparent_width 5
 hc set frame_gap 4
 
 hc attr theme.title_height 15
+hc attr theme.title_font "-*-terminus-*-*-*-*-*-*-*-*-*-*-*-*"
 hc attr theme.active.color '#9fbc00'
 hc attr theme.normal.color '#454545'
 hc attr theme.urgent.color orange

@@ -4,6 +4,7 @@
 #include <string>
 
 class XConnection;
+struct _XOC;
 
 /**
  * @brief This class has two purposes: 1. Allow different
@@ -19,6 +20,7 @@ public:
     void initFromStr(const std::string& source);
 
     XFontStruct* xFontStruct_ = nullptr;
+    struct _XOC *xFontSet_ = nullptr; // _XOC* = XFontSet
 
     static XConnection* s_xconnection;
 private:
