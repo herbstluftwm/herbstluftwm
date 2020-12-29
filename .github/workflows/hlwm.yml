@@ -52,7 +52,7 @@ jobs:
 
       - name: Build
         run: |
-          ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
+          ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile --install
 
       - name: Inspect ccache after build
         run: |

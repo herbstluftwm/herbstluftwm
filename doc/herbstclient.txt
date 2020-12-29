@@ -81,7 +81,7 @@ other::
 
 BUGS
 ----
-See the *herbstluftwm* distribution BUGS file.
+See the *herbstluftwm* Github issues: https://github.com/herbstluftwm/herbstluftwm/issues
 
 COMMUNITY
 ---------
