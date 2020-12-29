@@ -518,8 +518,8 @@ int main(int argc, char* argv[]) {
     Globals g;
     parse_arguments(argc, argv, g);
 
-    if(!setlocale(LC_CTYPE, "") || !XSupportsLocale()) {
-        fputs("warning: no locale support\n", stderr);
+    if (!setlocale(LC_CTYPE, "") || !XSupportsLocale()) {
+        std::cerr << "warning: no locale support" << endl;
     }
     XConnection::setExitOnError(g.exitOnXlibError);
     XConnection* X = XConnection::connect();
