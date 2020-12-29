@@ -100,4 +100,4 @@ def test_font_type_existing_font(hlwm):
 def test_font_type_non_existing_font(hlwm):
     value = 'Some long font name that hopefully does not exist'
     hlwm.call_xfail(['set_attr', 'theme.title_font', value]) \
-        .expect_stderr(f"cannot allocate font.*'{value}'")
+        .expect_stderr(f"(cannot allocate font.*'{value}'|{value}.*The following charsets are unknown)")
