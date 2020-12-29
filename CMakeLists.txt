@@ -46,7 +46,7 @@ add_subdirectory(doc)
 add_subdirectory(share)
 
 ## install everything that was not installed from subdirectories
-install(FILES BUGS NEWS DESTINATION ${DOCDIR})
+install(FILES NEWS DESTINATION ${DOCDIR})
 install(FILES LICENSE DESTINATION ${LICENSEDIR})
 install(DIRECTORY scripts/ DESTINATION ${DOCDIR}/examples USE_SOURCE_PERMISSIONS)
 
