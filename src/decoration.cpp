@@ -384,6 +384,7 @@ void Decoration::redrawPixmap() {
     }
     if (s.title_height() > 0) {
         FontData& fontData = s.title_font->data();
+        string title = client_->title_();
         Point2D titlepos = {
             static_cast<int>(s.padding_left() + s.border_width()),
             static_cast<int>(s.title_height())
@@ -402,16 +403,19 @@ void Decoration::redrawPixmap() {
             XftColorAllocValue(g_display, xftvisual, xftcmap, &xrendercol, &xftcol);
             XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
                            titlepos.x, titlepos.y,
-                           (const XftChar8*)client_->title_().c_str(),
-                           client_->title_().size());
+                           (const XftChar8*)title.c_str(), title.size());
             XftDrawDestroy(xftd);
             XftColorFree(g_display, xftvisual, xftcmap, &xftcol);
+        } else if (fontData.xFontSet_) {
+            XSetForeground(g_display, gc, get_client_color(s.title_color));
+            XmbDrawString(g_display, pix, fontData.xFontSet_, gc, titlepos.x, titlepos.y,
+                    title.c_str(), title.size());
         } else if (fontData.xFontStruct_) {
             XSetForeground(g_display, gc, get_client_color(s.title_color));
             XFontStruct* font = s.title_font->data().xFontStruct_;
             XSetFont(g_display, gc, font->fid);
             XDrawString(g_display, pix, gc, titlepos.x, titlepos.y,
-                    client_->title_().c_str(), client_->title_().size());
+                    title.c_str(), title.size());
         }
     }
     // clean up

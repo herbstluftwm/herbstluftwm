@@ -1,6 +1,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <getopt.h>
+#include <locale.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <csignal>
@@ -516,6 +517,10 @@ static void sigaction_signal(int signum, void (*handler)(int)) {
 int main(int argc, char* argv[]) {
     Globals g;
     parse_arguments(argc, argv, g);
+
+    if (!setlocale(LC_CTYPE, "") || !XSupportsLocale()) {
+        std::cerr << "warning: no locale support" << endl;
+    }
     XConnection::setExitOnError(g.exitOnXlibError);
     XConnection* X = XConnection::connect();
     g_display = X->display();

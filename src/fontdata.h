@@ -5,6 +5,7 @@
 
 struct _XftFont;
 class XConnection;
+struct _XOC;
 
 /**
  * @brief This class has two purposes: 1. Allow different
@@ -21,6 +22,7 @@ public:
 
     struct _XftFont* xftFont_ = nullptr;
     XFontStruct* xFontStruct_ = nullptr;
+    struct _XOC *xFontSet_ = nullptr; // _XOC* = XFontSet
 
     static XConnection* s_xconnection;
 private:
