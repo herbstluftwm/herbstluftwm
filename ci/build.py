@@ -101,9 +101,6 @@ if args.compile:
 if args.install:
     sp.check_call(['bash', '-c', 'DESTDIR=$(mktemp -d) ninja -v install'], cwd=build_dir)
 
-if args.ccache:
-    sp.check_call(['ccache', '-s'])
-
 if args.iwyu:
     # Check lexicographical order of #include directives (cheap pre-check)
     fix_include = sp.run('fix_include --dry_run --sort_only --reorder */*.{h,cpp,c}', cwd=repo, shell=True, executable='bash', stdout=sp.PIPE)
