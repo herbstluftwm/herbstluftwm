@@ -45,19 +45,17 @@ jobs:
           path: .tox-cache
           key: focal-tox
 
-      - name: Inspect ccache after restore
+      - name: CMake
         run: |
-          find ~/.ccache | grep 8/2/aeeb3d || true
-          find ~/.ccache | wc -l
+          ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache
 
-      - name: Build
+      - name: Compile
         run: |
-          ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile --install
+          ci/build.py --compile
 
-      - name: Inspect ccache after build
+      - name: Install to temp directory
         run: |
-          find ~/.ccache | grep 8/2/aeeb3d || true
-          find ~/.ccache | wc -l
+          ci/build.py --install
 
       - name: ccache log
         run: |
@@ -98,11 +96,6 @@ jobs:
           path: .tox-cache
           key: focal-tox # same name as in build-test-current
 
-      - name: Inspect ccache after restore
-        run: |
-          find ~/.ccache | grep 8/f/64 || true
-          find ~/.ccache | wc -l
-
       - name: Check usage of std-prefix
         run: |
           ci/build.py --check-using-std
@@ -111,14 +104,13 @@ jobs:
         run: |
           ci/build.py --flake8
 
-      - name: Build
+      - name: CMake
         run: |
-          ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
+          ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache
 
-      - name: Inspect after build
+      - name: Compile
         run: |
-          find ~/.ccache | grep 8/f/64 || true
-          find ~/.ccache | wc -l
+          ci/build.py --compile
 
       - name: ccache log
         run: |
