@@ -75,10 +75,6 @@ if args.cmake:
         'CXX': args.cxx,
         'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
         'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
-
-        # In case clang-and-tidy.sh is used for building, it will need this to call
-        # clang-tidy:
-        'CLANG_TIDY_BUILD_DIR': str(build_dir),
     })
 
     cmake_args = [
@@ -88,20 +84,22 @@ if args.cmake:
         f'-DWITH_DOCUMENTATION={"YES" if args.build_docs else "NO"}',
         f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}',
     ]
-
     sp.check_call(['cmake', *cmake_args, repo], cwd=build_dir, env=build_env)
 
 if args.clean:
-    sp.check_call(['bash', '-c', 'time ninja -t clean'], cwd=build_dir, env=build_env)
+    sp.check_call(['bash', '-c', 'time ninja -t clean'], cwd=build_dir)
 
 if args.compile:
-    sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
+    env = os.environ.copy()
+    env.update({
+        # In case clang-and-tidy.sh is used for building, it will need this to call
+        # clang-tidy:
+        'CLANG_TIDY_BUILD_DIR': str(build_dir),
+    })
+    sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=env)
 
 if args.install:
-    sp.check_call(['bash', '-c', 'DESTDIR=$(mktemp -d) ninja -v install'], cwd=build_dir, env=build_env)
-
-if args.ccache:
-    sp.check_call(['ccache', '-s'])
+    sp.check_call(['bash', '-c', 'DESTDIR=$(mktemp -d) ninja -v install'], cwd=build_dir)
 
 if args.iwyu:
     # Check lexicographical order of #include directives (cheap pre-check)
