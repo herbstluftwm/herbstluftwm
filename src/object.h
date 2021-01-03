@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "entity.h"
 #include "types.h"
 
 #define OBJECT_PATH_SEPARATOR '.'
@@ -16,6 +17,21 @@
 class Attribute;
 class Action;
 class Hook;
+class Object;
+
+/*! a child object entry of an object is like the subdirectory of
+ * a directory. In addition, we have documentation, what this entry
+ * is good for.
+ */
+class ChildEntry : public HasDocumentation {
+protected:
+    ChildEntry(Object& owner, const std::string& name)
+        : owner_(owner)
+        , name_(name)
+    {}
+    Object& owner_;
+    std::string name_;
+};
 
 enum class HookEvent {
     CHILD_ADDED,
@@ -65,7 +81,6 @@ public:
     void addDynamicChild(std::function<Object*()> child, const std::string &name);
 
     void addChild(Object* child, const std::string &name);
-    void addStaticChild(Object* child, const std::string &name);
     void removeChild(const std::string &child);
 
     void addHook(Hook* hook);
