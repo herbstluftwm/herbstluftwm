@@ -243,12 +243,6 @@ void Object::printTree(Output output, string rootLabel) {
     tree_print_to(intface, output);
 }
 
-void Object::addStaticChild(Object* child, const string &name)
-{
-    children_[name] = child;
-    notifyHooks(HookEvent::CHILD_ADDED, name);
-}
-
 Attribute* Object::deepAttribute(const string &path) {
     std::ostringstream output;
     return deepAttribute(path, output);
