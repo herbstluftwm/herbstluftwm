@@ -627,6 +627,90 @@ void MetaCommands::completeAttributePath(Completion& complete) {
     completeObjectPath(complete, true);
 }
 
+int MetaCommands::helpCommand(Input input, Output output)
+{
+    string needle;
+    ArgParse args = ArgParse().mandatory(needle);
+    if (args.parsingAllFails(input, output)) {
+        return args.exitCode();
+    }
+    std::function<string(string)> header =
+            [] (const string& text) {
+        string buf = text + "\n";
+        for (size_t i = 0; i < text.size(); i++) {
+            buf += "-";
+        }
+        buf += "\n";
+        return buf;
+    };
+    // drop trailing '.'
+    if (!needle.empty() && *needle.rbegin() == '.') {
+        needle.pop_back();
+    }
+    // split the needle into the path to the owning object
+    // and the name of the entry.
+    auto path = Object::splitPath(needle);
+    Object* parent = root.child(path.first, output);
+    const HasDocumentation* childDoc = nullptr;
+    Object* object = nullptr;
+    if (parent) {
+        object = parent->child(path.second);
+    }
+    if (needle.empty()) {
+        object = &root;
+    }
+    bool helpFound = false;
+    if (parent) {
+        Attribute* attribute = parent->attribute(path.second);
+        if (attribute) {
+            helpFound = true;
+            output << header("Attribute \'" + path.second + "\' of \'"
+                             + path.first.join() + "\'");
+            output << endl; // empty line
+            output << "Type: " << Entity::typestr(attribute->type()) << endl;
+            output << "Current value: " << attribute->str() << endl;
+            output << endl; // empty line
+            const string& doc = attribute->doc();
+            if (!doc.empty()) {
+                output << doc;
+                output << endl;
+                output << endl; // empty line
+            }
+        }
+        // only print documentation on the entry if there
+        // is anything particular to be said.
+        childDoc = parent->childDoc(path.second);
+        if (childDoc && !childDoc->doc().empty()) {
+            helpFound = true;
+            output << header("Entry \'" + path.second + "\' of \'"
+                             + path.first.join() + "\'");
+            output << childDoc->doc() << endl;
+            output << endl; // empty line
+        }
+    }
+    if (object || childDoc) {
+        helpFound = true;
+        output << header("Object \'" + needle + "\'");
+    }
+    if (childDoc && !object) {
+        // if the entry may exist at some time but not at the
+        // moment then make the user aware of this
+        output << "(Entry does not exist at the moment)" << endl;
+    } else if (object) {
+        object->ls(output);
+    }
+    if (!helpFound) {
+        output << "No help found for \'" << needle << "\'" << endl;
+        return HERBST_INVALID_ARGUMENT;
+    }
+    return 0;
+}
+
+void MetaCommands::helpCompletion(Completion& complete)
+{
+    completeAttributePath(complete);
+}
+
 void MetaCommands::get_attr_complete(Completion& complete) {
     if (complete == 0) {
         completeAttributePath(complete);
