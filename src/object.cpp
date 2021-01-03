@@ -19,7 +19,7 @@ using std::shared_ptr;
 using std::string;
 using std::vector;
 
-ChildEntry::ChildEntry(Object& owner, const std::string& name)
+ChildEntry::ChildEntry(Object& owner, const string& name)
     : owner_(owner)
     , name_(name)
 {
@@ -188,7 +188,7 @@ void Object::removeChild(const string &child)
     children_.erase(child);
 }
 
-void Object::addChildDoc(const std::string& name, HasDocumentation* doc)
+void Object::addChildDoc(const string& name, HasDocumentation* doc)
 {
     childrenDoc_[name] = doc;
 }

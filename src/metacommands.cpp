@@ -634,7 +634,7 @@ int MetaCommands::helpCommand(Input input, Output output)
     if (args.parsingAllFails(input, output)) {
         return args.exitCode();
     }
-    std::function<string(string)> header =
+    function<string(string)> header =
             [] (const string& text) {
         string buf = text + "\n";
         for (size_t i = 0; i < text.size(); i++) {
