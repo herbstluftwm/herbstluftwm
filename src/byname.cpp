@@ -10,7 +10,7 @@ using std::string;
 ByName::ByName(Object& parent_)
     : parent(parent_)
 {
-    parent_.addStaticChild(this, "by-name");
+    parent_.addChild(this, "by-name");
     parent_.addHook(this);
 }
 
