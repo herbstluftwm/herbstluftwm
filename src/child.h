@@ -54,9 +54,9 @@ public:
     // owner is the 'parent' object
     // 'name' is the name of the child pointer
     template<typename... Args>
-    ChildMember_(Object& owner_, const std::string& name_, Args&&... args)
+    ChildMember_(Object& owner, const std::string& name, Args&&... args)
         : T(std::forward<Args>(args)...)
-        , ChildEntry(owner_, name_)
+        , ChildEntry(owner, name)
     {
         owner_.addChild(static_cast<T*>(this), name_);
     }
