@@ -10,12 +10,11 @@
  * automatically.
  */
 template<typename T>
-class Link_ : public HasDocumentation {
+class Link_ : public ChildEntry {
 public:
     // 'name' is the name of the child pointer
     Link_(Object& parent, std::string name)
-        : parent_(parent)
-        , name_(name)
+        : ChildEntry(parent, name)
     { }
     void operator=(T* new_value) {
         if (new_value == pointer) {
@@ -24,9 +23,9 @@ public:
         }
         pointer = new_value;
         if (pointer) {
-            parent_.addChild(pointer, name_);
+            owner_.addChild(pointer, name_);
         } else {
-            parent_.removeChild(name_);
+            owner_.removeChild(name_);
         }
         changed_.emit(new_value);
     }
@@ -38,8 +37,6 @@ public:
         return pointer;
     }
 private:
-    Object& parent_;
-    std::string name_;
     Signal_<T*> changed_;
     T* pointer = nullptr;
 };

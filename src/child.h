@@ -13,20 +13,19 @@
  * accordingly.
  */
 template<typename T>
-class Child_ : public HasDocumentation {
+class Child_ : public ChildEntry {
 public:
     // owner is the 'parent' object
     // 'name' is the name of the child pointer
-    Child_(Object& owner_, const std::string& name_)
-        : owner(owner_)
-        , name(name_)
+    Child_(Object& owner, const std::string& name)
+        : ChildEntry(owner, name)
     { }
 
     template<typename... Args>
     void init(Args&&... args)
     {
         pointer_ = std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-        owner.addChild(pointer_.get(), name);
+        owner_.addChild(pointer_.get(), name_);
     }
 
     void reset() {
@@ -40,8 +39,6 @@ public:
         return pointer_.get();
     }
 private:
-    Object& owner;
-    std::string name;
     std::unique_ptr<T> pointer_ = nullptr;
 };
 
@@ -52,33 +49,29 @@ private:
  * would use a member of type T.
  */
 template<typename T>
-class ChildMember_ : public T {
+class ChildMember_ : public T, public ChildEntry  {
 public:
     // owner is the 'parent' object
     // 'name' is the name of the child pointer
     template<typename... Args>
-    ChildMember_(Object& owner_, const std::string& name_, Args&&... args)
+    ChildMember_(Object& owner, const std::string& name, Args&&... args)
         : T(std::forward<Args>(args)...)
-        , owner(owner_)
-        , name(name_)
+        , ChildEntry(owner, name)
     {
-        owner.addChild(static_cast<T*>(this), name_);
+        owner_.addChild(static_cast<T*>(this), name_);
     }
-
-private:
-    Object& owner;
-    std::string name;
 };
 
 template<typename T>
-class DynChild_ : public HasDocumentation {
+class DynChild_ : public ChildEntry {
 public:
     // A dynamic child is a callback function that dynamically
     // returns an object of a certain type.
     template <typename Owner>
     DynChild_(Owner& owner, const std::string &name, T* (Owner::*getter)())
+        : ChildEntry(owner, name)
     {
-        owner.addDynamicChild( [&owner,getter] { return (owner.*getter)(); }, name);
+        owner_.addDynamicChild( [&owner,getter] { return (owner.*getter)(); }, name);
     }
 };
 
