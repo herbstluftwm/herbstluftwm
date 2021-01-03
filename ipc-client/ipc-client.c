@@ -151,21 +151,6 @@ bool hc_send_command(HCConnection* con, int argc, char* argv[],
     return true;
 }
 
-bool hc_send_command_once(int argc, char* argv[],
-                          char** ret_out, int* ret_status) {
-    HCConnection* con = hc_connect();
-    if (con == NULL) {
-        return false;
-    }
-    if (!hc_check_running(con)) {
-        hc_disconnect(con);
-        return false;
-    }
-    bool status = hc_send_command(con, argc, argv, ret_out, ret_status);
-    hc_disconnect(con);
-    return status;
-}
-
 static bool g_bad_window_occurred = false;
 
 static int log_bad_window_error(Display* display, XErrorEvent* ev) {
