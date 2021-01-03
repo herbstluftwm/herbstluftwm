@@ -81,7 +81,6 @@ public:
     void addDynamicChild(std::function<Object*()> child, const std::string &name);
 
     void addChild(Object* child, const std::string &name);
-    void addStaticChild(Object* child, const std::string &name);
     void removeChild(const std::string &child);
 
     void addHook(Hook* hook);
