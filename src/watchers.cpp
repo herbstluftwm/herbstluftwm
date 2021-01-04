@@ -24,7 +24,7 @@ void Watchers::scanForChanges()
 {
     for (auto& it :  lastValue_) {
         Attribute* attr = root_->deepAttribute(it.first);
-        std::string newValue = "";
+        string newValue = "";
         if (attr) {
             newValue = attr->str();
         }
@@ -42,7 +42,7 @@ int Watchers::watchCommand(Input input, Output output)
     if (args.parsingAllFails(input, output)) {
         return args.exitCode();
     }
-    std::string value = "";
+    string value = "";
     Attribute* attr = root_->deepAttribute(path);
     if (attr) {
         value = attr->str();
