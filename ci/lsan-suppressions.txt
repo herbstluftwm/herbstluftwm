@@ -5,4 +5,4 @@ leak:libXrandr
 # https://chromium.googlesource.com/chromium/src/build/+/master/sanitizers/lsan_suppressions.cc#22
 # http://crbug.com/39050
 # https://www.reddit.com/r/cpp/comments/41vm7r/is_clangs_leak_sanitizer_inaccurate_or_is_qt/
-leak:libfontconfig.so.1
+leak:libfontconfig
