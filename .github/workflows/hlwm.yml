@@ -6,11 +6,9 @@ on:
     - master
     paths-ignore:
     - '.mergify.yml'
-    - 'share/**'
   pull_request:
     paths-ignore:
     - '.mergify.yml'
-    - 'share/**'
 
 jobs:
   build-test-current:
