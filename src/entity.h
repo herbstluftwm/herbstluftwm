@@ -55,7 +55,7 @@ bool operator<(Type t1, Type t2);
 class HasDocumentation  {
 public:
     void setDoc(const char text[]) { doc_ = text; }
-    std::string doc() const { return doc_; };
+    std::string doc() const { return doc_ ? doc_ : ""; };
 private:
     /** we avoid the duplication of the doc string
      * with every instance of the owning class.

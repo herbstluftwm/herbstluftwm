@@ -35,6 +35,8 @@ ClientManager::ClientManager()
     , settings(nullptr)
     , ewmh(nullptr)
 {
+    setDoc("The managed windows. For every (managed) window id there "
+           "is an entry here.");
     focus.setDoc("the focused client (only exists if a client is focused)");
     dragged.setDoc("the object of a client which is currently dragged"
                    " by the mouse, if any. See the documentation of the"

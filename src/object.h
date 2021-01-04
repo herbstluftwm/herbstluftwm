@@ -39,7 +39,7 @@ enum class HookEvent {
     ATTRIBUTE_CHANGED
 };
 
-class Object {
+class Object : public HasDocumentation {
 
 public:
     Object() = default;

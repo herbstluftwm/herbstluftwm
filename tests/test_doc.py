@@ -140,3 +140,17 @@ def test_attributes_and_children_are_documented(hlwm, clsname, object_path, json
         else:
             assert entry[-1] == ' ', "it's an attribute if it's no child"
             assert entry[0:-1] in json_doc['objects'][clsname]['attributes']
+
+
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
+def test_class_doc(hlwm, clsname, object_path, json_doc):
+    path = object_path(hlwm)
+    attr_output = hlwm.call(['attr', path]).stdout
+
+    object_doc = json_doc['objects'][clsname].get('doc', None)
+    if object_doc is not None:
+        assert attr_output.startswith(object_doc)
+    else:
+        # if no class doc is in the json file, then there
+        # is indeed none:
+        assert re.match(r'1 child:|[0-9]* children[\.:]$', attr_output.splitlines()[0])
