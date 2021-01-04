@@ -708,7 +708,11 @@ int MetaCommands::helpCommand(Input input, Output output)
 
 void MetaCommands::helpCompletion(Completion& complete)
 {
-    completeAttributePath(complete);
+    if (complete == 0) {
+        completeAttributePath(complete);
+    } else {
+        complete.none();
+    }
 }
 
 void MetaCommands::get_attr_complete(Completion& complete) {
