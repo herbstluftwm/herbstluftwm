@@ -142,40 +142,34 @@ PanelManager::ReservedSpace PanelManager::computeReservedSpace(Rectangle mon)
         // we only reserve space for the panel if the panel defines
         // wmStrut_ or if the aspect ratio clearly indicates whether the
         // panel is horizontal or vertical
-        if (!p.wmStrut_.empty() || intersection.height > intersection.width) {
-            // vertical panels
-            if (intersection.x == mon.x) {
-                rs.left_ = intersection.width;
+        if (p.wmStrut_.empty()) {
+            // if the panel does not define wmStrut, then
+            // try to detect it automatically from the intersection
+            if (intersection.height > intersection.width) {
+                // vertical panels
+                if (intersection.x == mon.x) {
+                    rs.left_ = intersection.width;
+                }
+                if (intersection.br().x == mon.br().x) {
+                    rs.right_ = intersection.width;
+                }
             }
-            if (intersection.br().x == mon.br().x) {
-                rs.right_ = intersection.width;
+            if (intersection.height < intersection.width) {
+                // horizontal panels
+                if (intersection.y == mon.y) {
+                    rs.top_ = intersection.height;
+                }
+                if (intersection.br().y == mon.br().y) {
+                    rs.bottom_ = intersection.height;
+                }
             }
-        }
-        if (!p.wmStrut_.empty() || intersection.height < intersection.width) {
-            // horizontal panels
-            if (intersection.y == mon.y) {
-                rs.top_ = intersection.height;
-            }
-            if (intersection.br().y == mon.br().y) {
-                rs.bottom_ = intersection.height;
-            }
-        }
-        if (!p.wmStrut_.empty()) {
-            // if the panel explicitly defines wmStrut, then
-            // we only consider the sides for the reserved space
-            // that are explicitly mentioned in wmStrut
-            if (p[WmStrut::left] == 0) {
-                rs.left_ = 0;
-            }
-            if (p[WmStrut::right] == 0) {
-                rs.right_ = 0;
-            }
-            if (p[WmStrut::top] == 0) {
-                rs.top_ = 0;
-            }
-            if (p[WmStrut::bottom] == 0) {
-                rs.bottom_ = 0;
-            }
+        } else {
+            // if the panel explicitly defines wmStrut
+            // then simply use this
+            rs.left_ = p[WmStrut::left];
+            rs.right_ = p[WmStrut::right];
+            rs.top_ = p[WmStrut::top];
+            rs.bottom_ = p[WmStrut::bottom];
         }
         for (size_t i = 0; i < 4; i++) {
             rsTotal[i] = std::max(rsTotal[i], rs[i]);

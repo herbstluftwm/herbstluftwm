@@ -29,7 +29,7 @@ def test_panel_based_on_intersection(hlwm, x11, which_pad, pad_size, geometry):
 
 @pytest.mark.parametrize("which_pad, pad_size, geometry, wm_strut", [
     ("pad_left", 20, (-1, 0, 21, 4), [20, 0, 0, 0]),
-    ("pad_right", 30, (800 - 30, -2, 40, 11), [0, 20, 0, 0]),
+    ("pad_right", 35, (800 - 30, -2, 30, 11), [0, 35, 0, 0]),
     ("pad_up", 40, (0, 0, 30, 40), [0, 0, 40, 0]),
     ("pad_down", 15, (80, 600 - 15, 2, 15), [0, 0, 0, 15]),
 ])
@@ -63,3 +63,27 @@ def test_panel_based_on_wmstrut(hlwm, x11, which_pad, pad_size, geometry, wm_str
         if p == which_pad:
             continue
         assert hlwm.attr.monitors[0][p]() == '0'
+
+
+def test_panel_wm_strut_partial_on_big_screen(hlwm, x11):
+    """This reproduces the issue in
+    https://github.com/herbstluftwm/herbstluftwm/issues/1110
+    where the panel intersects with the top of the monitor but not at
+    y-coordinate 0
+    """
+    hlwm.call('set_monitors 1920x1200')
+    hlwm.call('set auto_detect_panels true')
+
+    def set_wm_strut(winhandle):
+        xproperty = x11.display.intern_atom('_NET_WM_STRUT')
+        winhandle.change_property(xproperty, Xatom.CARDINAL, 32, [0, 0, 54, 0])
+        xproperty = x11.display.intern_atom('_NET_WM_STRUT_PARTIAL')
+        winhandle.change_property(xproperty, Xatom.CARDINAL, 32,
+                                  [0, 0, 54, 0, 0, 0, 0, 0, 192, 1919, 0, 0])
+
+    winhandle, _ = x11.create_client(geometry=(192, 12, 1536, 42),
+                                     window_type='_NET_WM_WINDOW_TYPE_DOCK',
+                                     pre_map=set_wm_strut,
+                                     )
+
+    assert hlwm.call('list_padding').stdout.strip() == '54 0 0 0'
