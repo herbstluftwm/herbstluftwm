@@ -9,7 +9,7 @@ target_sources(herbstclient PRIVATE
     ipc-client.c	ipc-client.h
     )
 
-# we require C99, X/Open 6 for POSIC 2004
+# we require C99, X/Open 6 for POSIX 2004
 set_target_properties(herbstclient PROPERTIES
     C_STANDARD 99
     C_STANDARD_REQUIRED ON
