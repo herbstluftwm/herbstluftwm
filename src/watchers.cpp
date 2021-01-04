@@ -1,10 +1,10 @@
 #include "watchers.h"
 
 #include "argparse.h"
+#include "completion.h"
 #include "hook.h"
 #include "metacommands.h"
 #include "object.h"
-#include "completion.h"
 
 using std::string;
 using std::vector;
