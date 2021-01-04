@@ -1,7 +1,9 @@
 #include "decoration.h"
 
+#include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <limits>
 
 #include "client.h"
 #include "ewmh.h"
@@ -43,7 +45,7 @@ void Decoration::createWindow() {
     XSetWindowAttributes at;
     long mask = 0;
     // copy attributes from client and not from the root window
-    Visual* visual = check_32bit_client(client_);
+    visual = check_32bit_client(client_);
     if (visual) {
         /* client has a 32-bit visual */
         mask = CWColormap | CWBackPixel | CWBorderPixel;
@@ -387,7 +389,24 @@ void Decoration::redrawPixmap() {
             static_cast<int>(s.padding_left() + s.border_width()),
             static_cast<int>(s.title_height())
         };
-        if (fontData.xFontSet_) {
+        if (fontData.xftFont_) {
+            Visual* xftvisual = visual ? visual : DefaultVisual(g_display, g_screen);
+            Colormap xftcmap = colormap ? colormap : DefaultColormap(g_display, g_screen);
+            XftDraw* xftd = XftDrawCreate(g_display, pix, xftvisual, xftcmap);
+            XRenderColor xrendercol = {
+                    s.title_color->red_,
+                    s.title_color->green_,
+                    s.title_color->blue_,
+                    0xffff, // alpha as set by XftColorAllocName()
+            };
+            XftColor xftcol = { };
+            XftColorAllocValue(g_display, xftvisual, xftcmap, &xrendercol, &xftcol);
+            XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
+                           titlepos.x, titlepos.y,
+                           (const XftChar8*)title.c_str(), title.size());
+            XftDrawDestroy(xftd);
+            XftColorFree(g_display, xftvisual, xftcmap, &xftcol);
+        } else if (fontData.xFontSet_) {
             XSetForeground(g_display, gc, get_client_color(s.title_color));
             XmbDrawString(g_display, pix, fontData.xFontSet_, gc, titlepos.x, titlepos.y,
                     title.c_str(), title.size());

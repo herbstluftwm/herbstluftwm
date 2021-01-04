@@ -33,7 +33,6 @@ public:
         return !operator==(other);
     }
 
-private:
     // use the X-style definition of colors:
     // each of the color components is a value
     // in the range 0 to 65535 inclusive. (all 0 means black, all 65535 is
@@ -41,6 +40,8 @@ private:
     unsigned short red_ = 0;
     unsigned short green_ = 0;
     unsigned short blue_ = 0;
+
+private:
 
     // the x11 internal pixel value.
     unsigned long x11pixelValue_ = 0;
