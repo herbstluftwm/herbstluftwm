@@ -24,6 +24,7 @@ class Settings; // IWYU pragma: keep
 class TagManager; // IWYU pragma: keep
 class Theme; // IWYU pragma: keep
 class Tmp; // IWYU pragma: keep
+class Watchers;
 class XConnection;
 
 class Globals {
@@ -57,6 +58,7 @@ public:
     Child_<TagManager> tags;
     Child_<Theme> theme;
     Child_<Tmp> tmp;
+    Child_<Watchers> watchers;
 
     Globals globals;
     std::unique_ptr<MetaCommands> meta_commands; // Using "pimpl" to avoid include
