@@ -838,7 +838,7 @@ new_attr *bool*|*color*|*int*|*string*|*uint* 'PATH' ['VALUE']::
 [[watch]]watch 'PATH'::
     Watch the value of the given attribute 'PATH'. Whenever the value changes
     from 'OLDVALUE' to 'NEWVALUE', a hook is emitted: +
-    +attribute_changed+ 'PATH' 'NEWVALUE' 'OLDVALUE'
+    +attribute_changed+ 'PATH' 'OLDVALUE' 'NEWVALUE'
 
 remove_attr 'PATH'::
     Removes the user defined attribute 'PATH'.
@@ -1665,7 +1665,7 @@ receive or wait for them with link:herbstclient.html[*herbstclient*(1)]. Also cu
 emitted with the *emit_hook* command. The following hooks are emitted by
 herbstluftwm itself:
 
-attribute_changed 'PATH' 'NEWVALUE' 'OLDVALUE'::
+attribute_changed 'PATH' 'OLDVALUE' 'NEWVALUE'::
     The attribute 'PATH' was changed from 'OLDVALUE' to 'NEWVALUE'. Requires
     that the attribute 'PATH' has been passed to <<watch,the +watch+ command>>
     before.

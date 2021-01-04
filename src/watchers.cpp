@@ -29,7 +29,7 @@ void Watchers::scanForChanges()
             newValue = attr->str();
         }
         if (newValue != it.second) {
-            hook_emit({"attribute_changed", it.first, newValue, it.second});
+            hook_emit({"attribute_changed", it.first, it.second, newValue});
             it.second = newValue;
         }
     }
