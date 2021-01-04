@@ -10,6 +10,7 @@ Current git version
   * Client window titles (controlled by the theme attributes 'title_height',
     'title_color', 'title_font')
   * The 'lock_tag' attribute is now writable.
+  * New dependencies: xft, freetype, fontconfig
 
 Release 0.9.1 on 2020-12-28
 ---------------------------
