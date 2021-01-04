@@ -85,6 +85,7 @@ hc keybind $Mod-r remove
 hc keybind $Mod-s floating toggle
 hc keybind $Mod-f fullscreen toggle
 hc keybind $Mod-Shift-f set_attr clients.focus.floating toggle
+hc keybind $Mod-Shift-m set_attr clients.focus.minimized true
 hc keybind $Mod-p pseudotile toggle
 # The following cycles through the available layouts within a frame, but skips
 # layouts, if the layout change wouldn't affect the actual window positions.
@@ -121,7 +122,9 @@ hc set frame_transparent_width 5
 hc set frame_gap 4
 
 hc attr theme.title_height 15
-hc attr theme.title_font '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*'
+hc attr theme.title_font 'Dejavu Sans:pixelsize=12'  # example using Xft
+# hc attr theme.title_font '-*-fixed-medium-r-*-*-13-*-*-*-*-*-*-*'
+hc attr theme.padding_top 2  # space below the title's baseline (i.e. text depth)
 hc attr theme.active.color '#9fbc00'
 hc attr theme.normal.color '#454545'
 hc attr theme.urgent.color orange
