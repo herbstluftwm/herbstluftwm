@@ -598,7 +598,8 @@ void MetaCommands::compare_complete(Completion &complete) {
 }
 
 
-void MetaCommands::completeObjectPath(Completion& complete, bool attributes,
+void MetaCommands::completeObjectPath(Completion& complete, Object* rootObject,
+                                      bool attributes,
                                       function<bool(Attribute*)> attributeFilter)
 {
     ArgList objectPathArgs = std::get<0>(Object::splitPath(complete.needle()));
@@ -606,7 +607,7 @@ void MetaCommands::completeObjectPath(Completion& complete, bool attributes,
     if (!objectPath.empty()) {
         objectPath += OBJECT_PATH_SEPARATOR;
     }
-    Object* object = root.child(objectPathArgs);
+    Object* object = rootObject->child(objectPathArgs);
     if (!object) {
         return;
     }
@@ -621,6 +622,12 @@ void MetaCommands::completeObjectPath(Completion& complete, bool attributes,
     for (auto& it : object->children()) {
         complete.partial(objectPath + it.first + OBJECT_PATH_SEPARATOR);
     }
+}
+
+void MetaCommands::completeObjectPath(Completion& complete, bool attributes,
+                                      function<bool(Attribute*)> attributeFilter)
+{
+    MetaCommands::completeObjectPath(complete, &root, attributes, attributeFilter);
 }
 
 void MetaCommands::completeAttributePath(Completion& complete) {

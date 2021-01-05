@@ -838,6 +838,11 @@ new_attr *bool*|*color*|*int*|*string*|*uint* 'PATH' ['VALUE']::
     with +my_+. If 'VALUE' is supplied, then it is written to the attribute (if
     this fails the attribute still remains).
 
+[[watch]]watch 'PATH'::
+    Watch the value of the given attribute 'PATH'. Whenever the value changes
+    from 'OLDVALUE' to 'NEWVALUE', a hook is emitted: +
+    +attribute_changed+ 'PATH' 'OLDVALUE' 'NEWVALUE'
+
 remove_attr 'PATH'::
     Removes the user defined attribute 'PATH'.
 
@@ -1668,6 +1673,11 @@ On special events, herbstluftwm emits some hooks (with parameters). You can
 receive or wait for them with link:herbstclient.html[*herbstclient*(1)]. Also custom hooks can be
 emitted with the *emit_hook* command. The following hooks are emitted by
 herbstluftwm itself:
+
+attribute_changed 'PATH' 'OLDVALUE' 'NEWVALUE'::
+    The attribute 'PATH' was changed from 'OLDVALUE' to 'NEWVALUE'. Requires
+    that the attribute 'PATH' has been passed to <<watch,the +watch+ command>>
+    before.
 
 fullscreen [on|off] 'WINID'::
     The fullscreen state of window 'WINID' was changed to [on|off].

@@ -33,6 +33,7 @@
 #include "tagmanager.h"
 #include "tmp.h"
 #include "utils.h"
+#include "watchers.h"
 #include "xconnection.h"
 #include "xmainloop.h"
 
@@ -77,6 +78,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     Settings* settings = root->settings();
     TagManager* tags = root->tags();
     Tmp* tmp = root->tmp();
+    Watchers* watchers = root->watchers();
 
     std::initializer_list<pair<const string,CommandBinding>> init =
     {
@@ -228,6 +230,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                             &MetaCommands::helpCompletion }},
         {"attr",           { meta_commands, &MetaCommands::attr_cmd,
                                             &MetaCommands::attr_complete }},
+        {"watch",          { watchers, &Watchers::watchCommand,
+                                       &Watchers::watchCompletion }},
         {"mktemp",         { tmp, &Tmp::mktemp,
                                   &Tmp::mktempComplete }},
     };
