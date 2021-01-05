@@ -20,6 +20,7 @@
 #include "theme.h"
 #include "tmp.h"
 #include "utils.h"
+#include "watchers.h"
 
 using std::shared_ptr;
 
@@ -36,6 +37,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     , tags(*this, "tags")
     , theme(*this, "theme")
     , tmp(*this, TMP_OBJECT_PATH)
+    , watchers(*this, "watchers")
     , globals(g)
     , meta_commands(make_unique<MetaCommands>(*this))
     , X(xconnection)
@@ -54,6 +56,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     tags.init();
     theme.init();
     tmp.init();
+    watchers.init();
 
     // inject dependencies where needed
     ewmh->injectDependencies(this);
@@ -63,6 +66,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     monitors->injectDependencies(settings(), tags(), panels.get());
     mouse->injectDependencies(clients(), monitors());
     panels->injectDependencies(settings());
+    watchers->injectDependencies(this);
 
     // set temporary globals
     ::global_tags = tags();

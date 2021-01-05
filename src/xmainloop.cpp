@@ -27,6 +27,7 @@
 #include "tag.h"
 #include "tagmanager.h"
 #include "utils.h"
+#include "watchers.h"
 #include "xconnection.h"
 
 using std::function;
@@ -169,6 +170,7 @@ void XMainLoop::run() {
             if (handler != nullptr) {
                 (this ->* handler)(&event);
             }
+            root_->watchers->scanForChanges();
             XSync(X_.display(), False);
         }
     }
