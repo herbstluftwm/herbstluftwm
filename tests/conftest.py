@@ -511,12 +511,21 @@ def hlwm_spawner(tmpdir):
 
 
 @pytest.fixture()
-def xvfb():
+def xvfb(request):
     # start an Xvfb server (don't start Xephyr because
     # Xephyr requires another runnig xserver already).
     # also we add '-noreset' such that the server is not reset
     # when the last client connection is closed.
-    with MultiscreenDisplay(server='Xvfb', extra_args=['-noreset']) as xserver:
+    #
+    # the optional parameter is the resolution. If you want another resolution,
+    # then annotate the test case with:
+    #
+    #    @pytest.mark.parametrize("xvfb", [(1280, 1024)], indirect=True)
+    #
+    screens = [(800, 600)]
+    if hasattr(request, 'param'):
+        screens = [request.param]
+    with MultiscreenDisplay(server='Xvfb', screens=screens, extra_args=['-noreset']) as xserver:
         os.environ['DISPLAY'] = xserver.display
         yield xserver
 
