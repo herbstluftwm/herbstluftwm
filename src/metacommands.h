@@ -63,6 +63,9 @@ public:
                             std::function<bool(Attribute*)> attributeFilter = {});
     void completeAttributePath(Completion& complete);
 
+    int helpCommand(Input input, Output output);
+    void helpCompletion(Completion& complete);
+
     int tryCommand(Input input, Output output);
     int silentCommand(Input input, Output output);
     int negateCommand(Input input, Output output);

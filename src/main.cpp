@@ -226,6 +226,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                             &MetaCommands::get_attr_complete }},
         {"set_attr",       { meta_commands, &MetaCommands::set_attr_cmd,
                                             &MetaCommands::set_attr_complete }},
+        {"help",           { meta_commands, &MetaCommands::helpCommand,
+                                            &MetaCommands::helpCompletion }},
         {"attr",           { meta_commands, &MetaCommands::attr_cmd,
                                             &MetaCommands::attr_complete }},
         {"watch",          { watchers, &Watchers::watchCommand,
