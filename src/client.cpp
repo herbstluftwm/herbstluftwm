@@ -97,6 +97,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     init_from_X();
     visible_.setDoc("whether this client is rendered currently");
     parent_frame_.setDoc("the frame contaning this client if the client is tiled");
+    setDoc("a managed window");
 }
 
 void Client::init_from_X() {

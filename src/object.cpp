@@ -70,6 +70,15 @@ void Object::wireActions(vector<Action*> actions)
 
 void Object::ls(Output out)
 {
+    string docString = doc();
+    if (!docString.empty()) {
+        // print doc string and ensure that there is an empty line
+        // afterwards
+        out << docString << "\n";
+        if ('\n' != *docString.rbegin()) {
+            out << "\n";
+        }
+    }
     const auto& children = this->children();
     out << children.size() << (children.size() == 1 ? " child" : " children")
         << (!children.empty() ? ":" : ".") << endl;
