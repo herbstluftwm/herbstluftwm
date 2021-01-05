@@ -19,6 +19,28 @@ class NET_WM_STRUT_PARTIAL:
     bottom_end_x = 11
 
 
+@pytest.mark.parametrize("value", [True, False])
+def test_auto_detect_panels(hlwm, x11, value):
+    hlwm.attr.settings.auto_detect_panels = hlwm.bool(value)
+
+    x11.create_client(geometry=(0, 0, 800, 30),
+                      window_type='_NET_WM_WINDOW_TYPE_DOCK')
+    expected = [
+        '30 0 0 0',
+        '0 0 0 0',
+        '30 0 0 0',
+        '0 0 0 0',
+        '30 0 0 0',
+    ]
+    if value is False:
+        expected = expected[1:]  # drop first element
+
+    for e in expected:
+        assert hlwm.call('list_padding').stdout.strip() == e
+
+        hlwm.attr.settings.auto_detect_panels = 'toggle'
+
+
 @pytest.mark.parametrize("which_pad, pad_size, geometry", [
     ("pad_left", 10, (-1, 0, 11, 400)),
     ("pad_right", 20, (800 - 20, 23, 20, 400)),
