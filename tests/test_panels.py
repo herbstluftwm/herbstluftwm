@@ -1,7 +1,6 @@
 import pytest
 from Xlib import Xatom
-import conftest
-from conftest import MultiscreenDisplay
+
 
 class NET_WM_STRUT_PARTIAL:
     # the enum from _NET_WM_STRUT_PARTIAL in EWMH
@@ -18,6 +17,7 @@ class NET_WM_STRUT_PARTIAL:
     top_end_x = 9
     bottom_start_x = 10
     bottom_end_x = 11
+
 
 @pytest.mark.parametrize("which_pad, pad_size, geometry", [
     ("pad_left", 10, (-1, 0, 11, 400)),
