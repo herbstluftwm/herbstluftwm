@@ -198,6 +198,8 @@ PanelManager::ReservedSpace PanelManager::computeReservedSpace(Rectangle mon)
             horizontalPanel = intersection.height < intersection.width;
         }
         if (verticalPanel) {
+            // don't affect the monitor, if the intersection spans
+            // the entire monitor width.
             if (intersection.x == mon.x && intersection.width < mon.width) {
                 rs.left_ = intersection.width;
             }
@@ -206,6 +208,8 @@ PanelManager::ReservedSpace PanelManager::computeReservedSpace(Rectangle mon)
             }
         }
         if (horizontalPanel) {
+            // don't affect the monitor, if the intersection spans
+            // the entire monitor height.
             if (intersection.y == mon.y && intersection.height < mon.height) {
                 rs.top_ = intersection.height;
             }
