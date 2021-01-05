@@ -135,6 +135,10 @@ Settings::Settings()
     for (auto i : attributes()) {
         i.second->setWritable();
     }
+    setDoc(
+        "This has an attribute for each setting. Many settings are "
+        "wrappers around attributes and only exist for compatibility."
+    );
 }
 
 void Settings::injectDependencies(Root* root) {
