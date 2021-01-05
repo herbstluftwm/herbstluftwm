@@ -1,6 +1,23 @@
 import pytest
 from Xlib import Xatom
+import conftest
+from conftest import MultiscreenDisplay
 
+class NET_WM_STRUT_PARTIAL:
+    # the enum from _NET_WM_STRUT_PARTIAL in EWMH
+    # https://specifications.freedesktop.org/wm-spec/wm-spec-latest.html#idm45075509080400
+    left = 0
+    right = 1
+    top = 2
+    bottom = 3
+    left_start_y = 4
+    left_end_y = 5
+    right_start_y = 6
+    right_end_y = 7
+    top_start_x = 8
+    top_end_x = 9
+    bottom_start_x = 10
+    bottom_end_x = 11
 
 @pytest.mark.parametrize("which_pad, pad_size, geometry", [
     ("pad_left", 10, (-1, 0, 11, 400)),
@@ -87,3 +104,37 @@ def test_panel_wm_strut_partial_on_big_screen(hlwm, x11):
                                      )
 
     assert hlwm.call('list_padding').stdout.strip() == '54 0 0 0'
+
+
+@pytest.mark.parametrize("xvfb", [(1280 + 1024, 1024)], indirect=True)
+def test_panel_wm_strut_partial_different_sized_screens(hlwm, x11):
+    """This is the xinerama example from the EWMH doc on _NET_WM_STRUT_PARTIAL
+    https://specifications.freedesktop.org/wm-spec/wm-spec-latest.html#idm45075509080400
+
+    »Assume that the set up uses two monitors, one running at 1280x1024 and the
+    other to the right running at 1024x768, with the top edge of the two
+    physical displays aligned. If the panel wants to fill the entire bottom
+    edge of the smaller display with a panel 50 pixels tall, it should set a
+    bottom strut of 306, with bottom_start_x of 1280, and bottom_end_x of 2303.
+    Note that the strut is relative to the screen edge, and not the edge of the
+    xinerama monitor.«
+    """
+    hlwm.call('add anothertag')
+    hlwm.call('set_monitors 1280x1024+0+0 1024x768+1280+0')
+    hlwm.call('set auto_detect_panels true')
+
+    def set_wm_strut(winhandle):
+        xproperty = x11.display.intern_atom('_NET_WM_STRUT_PARTIAL')
+        values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        values[NET_WM_STRUT_PARTIAL.bottom] = 306
+        values[NET_WM_STRUT_PARTIAL.bottom_start_x] = 1280
+        values[NET_WM_STRUT_PARTIAL.bottom_end_x] = 2303
+        winhandle.change_property(xproperty, Xatom.CARDINAL, 32, values)
+
+    winhandle, _ = x11.create_client(geometry=(192, 12, 1536, 42),
+                                     window_type='_NET_WM_WINDOW_TYPE_DOCK',
+                                     pre_map=set_wm_strut,
+                                     )
+
+    assert hlwm.call('list_padding 0').stdout.strip() == '0 0 0 0'
+    assert hlwm.call('list_padding 1').stdout.strip() == '0 0 50 0'
