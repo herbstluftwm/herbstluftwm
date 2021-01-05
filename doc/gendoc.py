@@ -418,6 +418,7 @@ class ObjectInformation:
         self.member2info = {}  # mapping (classname,member) to ChildInformation or AttributeInformation
         self.member2init = {}  # mapping (classname,member) to its initializer list
         self.member2doc = {}  # mapping (classname,member) to its doc string
+        self.class2doc = {}  # mapping classname to its doc string
 
     def base_class(self, subclass, baseclass):
         if subclass not in self.base_classes:
@@ -470,6 +471,10 @@ class ObjectInformation:
     def member_doc(self, classname: str, cpp_name: str, doc: str):
         """set the doc string of a member variable of a class"""
         self.member2doc[(classname, cpp_name)] = doc
+
+    def class_doc(self, classname: str, doc: str):
+        """set the doc string of a class"""
+        self.class2doc[classname] = doc
 
     def superclasses_transitive(self):
         """return a set of a dict mapping a class to the set
@@ -581,6 +586,8 @@ class ObjectInformation:
                 # list the superclasses of clsname that are objects themselves:
                 'inherits-from': [s for s in supers if 'Object' in superclasses[s] and s != 'Object'],
             }
+            if clsname in self.class2doc:
+                result[clsname]['doc'] = self.class2doc[clsname]
         return {'objects': ObjectInformation.sorted_dict(result)}  # only generate object doc so far
 
 
@@ -712,6 +719,10 @@ class TokTreeInfoExtrator:
                 doc_tokens = parameters.value.enclosed_tokens
                 doc_string = ast.literal_eval(' '.join(doc_tokens))
                 self.objInfo.member_doc(classname, arg1.value, doc_string)
+            elif stream.try_match('setDoc', parameters, ';'):
+                doc_tokens = parameters.value.enclosed_tokens
+                doc_string = ast.literal_eval(' '.join(doc_tokens))
+                self.objInfo.class_doc(classname, doc_string)
             elif stream.try_match(arg1, '.', 'setWritable', parameters, ';'):
                 attr = self.objInfo.attribute_info(classname, arg1.value)
                 attr.writable = True

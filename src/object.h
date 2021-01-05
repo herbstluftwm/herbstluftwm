@@ -25,12 +25,10 @@ class Object;
  */
 class ChildEntry : public HasDocumentation {
 protected:
-    ChildEntry(Object& owner, const std::string& name)
-        : owner_(owner)
-        , name_(name)
-    {}
+    ChildEntry(Object& owner, const std::string& name);
+    friend class Object;
     Object& owner_;
-    std::string name_;
+    const std::string name_;
 };
 
 enum class HookEvent {
@@ -39,7 +37,7 @@ enum class HookEvent {
     ATTRIBUTE_CHANGED
 };
 
-class Object {
+class Object : public HasDocumentation {
 
 public:
     Object() = default;
@@ -83,6 +81,9 @@ public:
     void addChild(Object* child, const std::string &name);
     void removeChild(const std::string &child);
 
+    void addChildDoc(const std::string &name, HasDocumentation* doc);
+    const HasDocumentation* childDoc(const std::string& child);
+
     void addHook(Hook* hook);
     void removeHook(Hook* hook);
 
@@ -100,6 +101,7 @@ protected:
 
     std::map<std::string, std::function<Object*()>> childrenDynamic_;
     std::map<std::string, Object*> children_;
+    std::map<std::string, HasDocumentation*> childrenDoc_;
     std::vector<Hook*> hooks_;
 
     //DynamicAttribute nameAttribute_;

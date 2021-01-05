@@ -194,10 +194,10 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
         # regexes for list_children:
 
         children_re = \
-            re.compile(r'^[0-9]* (child|children)[\\.:]((\n  [^\n]*)*)')
+            re.compile(r'[0-9]* (child|children)[\\.:]((\n  [^\n]*)*)')
         line_re = re.compile('^  (.*)\\.$')
         output = self.call(['attr', object_path]).stdout
-        section_match = children_re.match(output)
+        section_match = children_re.search(output)
         assert section_match
         children = []
         for i in section_match.group(2).split('\n')[1:]:

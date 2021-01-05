@@ -9,9 +9,13 @@ Current git version
 
   * Client window titles (controlled by the theme attributes 'title_height',
     'title_color', 'title_font')
+  * New command 'help' for live documentation on the object tree
   * The 'lock_tag' attribute is now writable.
   * Bug fixes:
-    - Detect panels that leave a bit of space between the panel and the monitor edge.
+    - Correctly interpret _NET_WM_STRUT. This fixes panels that leave a bit of
+      space between the panel and the monitor edge and also panels between two
+      monitors.
+  * New dependencies: xft, freetype
 
 Release 0.9.1 on 2020-12-28
 ---------------------------

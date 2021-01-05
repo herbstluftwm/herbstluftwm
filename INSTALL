@@ -18,6 +18,7 @@ Runtime dependencies:
 
     - bash (if you use the default autostart file)
     - libx11
+    - xft and freetype
     - xrandr
     - optionally: xinerama
 
