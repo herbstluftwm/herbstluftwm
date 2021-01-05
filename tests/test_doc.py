@@ -156,7 +156,7 @@ def test_class_doc(hlwm, clsname, object_path, json_doc):
         assert re.match(r'1 child:|[0-9]* children[\.:]$', attr_output.splitlines()[0])
 
 
-@pytest.mark.parametrize('clsname,object_path', classname2examplepath)   
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
 def test_help_on_attribute_vs_json(hlwm, clsname, object_path, json_doc):
     path = object_path(hlwm)
     attrs_doc = json_doc['objects'][clsname]['attributes']
