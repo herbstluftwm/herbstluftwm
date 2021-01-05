@@ -154,3 +154,29 @@ def test_class_doc(hlwm, clsname, object_path, json_doc):
         # if no class doc is in the json file, then there
         # is indeed none:
         assert re.match(r'1 child:|[0-9]* children[\.:]$', attr_output.splitlines()[0])
+
+
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)   
+def test_help_on_attribute_vs_json(hlwm, clsname, object_path, json_doc):
+    path = object_path(hlwm)
+    attrs_doc = json_doc['objects'][clsname]['attributes']
+    for _, attr in attrs_doc.items():
+        attr_name = attr['name']
+        help_txt = hlwm.call(['help', f'{path}.{attr_name}'.lstrip('.')]).stdout
+
+        assert f"Attribute '{attr_name}'" in help_txt
+        doc = attr.get('doc', '')
+        assert doc in help_txt
+
+
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
+def test_help_on_children_vs_json(hlwm, clsname, object_path, json_doc):
+    path = object_path(hlwm)
+    child_doc = json_doc['objects'][clsname]['children']
+    for _, child in child_doc.items():
+        name = child['name']
+        help_txt = hlwm.call(['help', f'{path}.{name}'.lstrip('.')]).stdout
+
+        if 'doc' in child:
+            assert f"Entry '{name}'" in help_txt
+            assert child['doc'] in help_txt
