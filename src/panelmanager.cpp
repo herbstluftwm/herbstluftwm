@@ -102,6 +102,9 @@ void PanelManager::geometryChanged(Window win, Rectangle geometry)
 void PanelManager::injectDependencies(Settings* settings)
 {
     settings_ = settings;
+    settings_->auto_detect_panels.changed().connect([this]() {
+        panels_changed_.emit();
+    });
 }
 
 /**
