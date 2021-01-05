@@ -61,7 +61,7 @@ public:
                         0,
                         wmStrut(WmStrut::left_start_y),
                         wmStrut(WmStrut::left),
-                        wmStrut(WmStrut::left_start_y));
+                        wmStrut(WmStrut::left_end_y));
         }
         if (wmStrut(WmStrut::right) > 0) {
             // align with right edge
@@ -183,10 +183,6 @@ PanelManager::ReservedSpace PanelManager::computeReservedSpace(Rectangle mon)
             panelArea = p.size_;
         }
         Rectangle intersection = mon.intersectionWith(panelArea);
-        HSDebug("checking panel %lx\n", p.winid_);
-        HSDebug("rect mon: %s\n", Converter<Rectangle>::str(mon).c_str());
-        HSDebug("rect panel: %s\n", Converter<Rectangle>::str(panelArea).c_str());
-        HSDebug("intersection: %s\n", Converter<Rectangle>::str(intersection).c_str());
         if (!intersection) {
             // monitor does not intersect with panel at all
             continue;

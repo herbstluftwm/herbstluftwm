@@ -131,10 +131,78 @@ def test_panel_wm_strut_partial_different_sized_screens(hlwm, x11):
         values[NET_WM_STRUT_PARTIAL.bottom_end_x] = 2303
         winhandle.change_property(xproperty, Xatom.CARDINAL, 32, values)
 
-    winhandle, _ = x11.create_client(geometry=(192, 12, 1536, 42),
-                                     window_type='_NET_WM_WINDOW_TYPE_DOCK',
-                                     pre_map=set_wm_strut,
-                                     )
+    x11.create_client(geometry=(192, 12, 1536, 42),
+                      window_type='_NET_WM_WINDOW_TYPE_DOCK',
+                      pre_map=set_wm_strut,
+                      )
 
     assert hlwm.call('list_padding 0').stdout.strip() == '0 0 0 0'
     assert hlwm.call('list_padding 1').stdout.strip() == '0 0 50 0'
+
+
+@pytest.mark.parametrize("xvfb", [(800 + 700, 600)], indirect=True)
+def test_panel_wm_strut_between_monitors(hlwm, x11):
+    hlwm.call('add anothertag')
+    hlwm.call('set_monitors 800x600+0+0 700x600+800+0')
+    hlwm.call('set auto_detect_panels true')
+
+    def set_wm_strut(winhandle):
+        xproperty = x11.display.intern_atom('_NET_WM_STRUT')
+        values = [0, 0, 0, 0]
+        # The panel takes 730 pixels from the right, so it sits
+        # at the right edge of the left monitor
+        values[NET_WM_STRUT_PARTIAL.right] = 730
+        winhandle.change_property(xproperty, Xatom.CARDINAL, 32, values)
+
+    # window geometry does not matter if _NET_WM_STRUT is fully defined
+    x11.create_client(geometry=(100, 100, 100, 100),
+                      window_type='_NET_WM_WINDOW_TYPE_DOCK',
+                      pre_map=set_wm_strut,
+                      )
+
+    assert hlwm.call('list_padding 0').stdout.strip() == '0 30 0 0'
+    assert hlwm.call('list_padding 1').stdout.strip() == '0 0 0 0'
+
+
+@pytest.mark.parametrize("edge", ["left", "right", "up", "down"])
+@pytest.mark.parametrize("xvfb", [(2 * 800, 2 * 600)], indirect=True)
+def test_panel_wm_strut_between_monitors_2x2_grid(hlwm, x11, edge):
+    hlwm.call('chain , add t1 , add t2 , add t3')
+    hlwm.call(['set_monitors',
+               # screen layout is the following 2x2 grid:
+               '800x600+0+0', '800x600+800+0',
+               '800x600+0+600', '800x600+800+600'])
+    hlwm.call('set auto_detect_panels true')
+
+    def set_wm_strut(winhandle):
+        xproperty = x11.display.intern_atom('_NET_WM_STRUT')
+        values = [0, 0, 0, 0]
+        edge2wmstrut = {
+            "left": NET_WM_STRUT_PARTIAL.left,
+            "right": NET_WM_STRUT_PARTIAL.right,
+            "up": NET_WM_STRUT_PARTIAL.top,
+            "down": NET_WM_STRUT_PARTIAL.bottom,
+        }
+        # create a 30-pixel wide panel.
+        # thus the strut "spans" an entire monitor and
+        # overlaps another monitor by 30 pixels.
+        # e.g. for "left", the panel area entirely covers monitors 0 and 2
+        # and has an intersection of width 30 with monitors 1 and 2
+        values[edge2wmstrut[edge]] = 830 if edge in ["left", "right"] else 630
+        winhandle.change_property(xproperty, Xatom.CARDINAL, 32, values)
+
+    # window geometry does not matter if _NET_WM_STRUT is fully defined
+    x11.create_client(geometry=(100, 100, 100, 100),
+                      window_type='_NET_WM_WINDOW_TYPE_DOCK',
+                      pre_map=set_wm_strut,
+                      )
+    for pad in ["left", "right", "up", "down"]:
+        affected_monitors = {
+            "left": [1, 3],
+            "right": [0, 2],
+            "down": [0, 1],
+            "up": [2, 3],
+        }
+        for m in [0, 1, 2, 3]:
+            expected_pad = 30 if m in affected_monitors[edge] else 0
+            assert int(hlwm.attr.monitors[m]['pad_' + edge]()) == expected_pad
