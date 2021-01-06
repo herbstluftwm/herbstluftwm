@@ -51,7 +51,7 @@ def multiline_for_bulletitem(src):
     return '\n'.join(newlines)
 
 
-def printdoc_for_class(clsname, jsondoc, clsname2anchor={}, depth=0):
+def printdoc_for_class(clsname, jsondoc, clsname2anchor={}, path=[]):
     """print the documentation for a given class. However,
     if the documentation for it has already been generated,
     only insert a link to ot using clsname2anchor
@@ -65,6 +65,7 @@ def printdoc_for_class(clsname, jsondoc, clsname2anchor={}, depth=0):
     anchor = 'doc_cls_' + clsname
     label = '+' + clsname + '+ doc'
     clsname2anchor[clsname] = (anchor, label)
+    depth = len(path)
     ws_prefix = depth * ' ' + '   '  # whitespace prefix
 
     objdoc = jsondoc['objects'][clsname]
@@ -87,7 +88,7 @@ def printdoc_for_class(clsname, jsondoc, clsname2anchor={}, depth=0):
         docstr = ': ' + child['doc'].strip() if 'doc' in child else ''
         class_doc = jsondoc['objects'][child['type']].get('doc', '')
         print(f"{ws_prefix}{bulletprefix}* +{child['name']}+ {docstr}", end='')
-        printdoc_for_class(child['type'], jsondoc, clsname2anchor, depth=depth + 1)
+        printdoc_for_class(child['type'], jsondoc, clsname2anchor, path=path + [child['name']])
 
 
 def main():
