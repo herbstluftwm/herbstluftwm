@@ -39,4 +39,4 @@ template<> HSFont Converter<HSFont>::parse(const std::string& source);
 template<> std::string Converter<HSFont>::str(HSFont payload);
 
 template<>
-inline Type Attribute_<HSFont>::staticType() { return Type::ATTRIBUTE_FONT; }
+inline Type Attribute_<HSFont>::staticType() { return Type::FONT; }

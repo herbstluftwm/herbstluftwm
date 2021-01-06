@@ -555,10 +555,10 @@ int MetaCommands::compare_cmd(Input input, Output output)
     //    HERBST_INVALID_ARGUMENT if there was a parsing error
     std::map<Type, pair<bool, function<int(string,string,Output)>>> type2compare {
         // map a type name to "is it numeric" and a comperator function
-        { Type::ATTRIBUTE_INT,      { true,  parse_and_compare<int> }, },
-        { Type::ATTRIBUTE_ULONG,    { true,  parse_and_compare<int> }, },
-        { Type::ATTRIBUTE_BOOL,     { false, parse_and_compare<bool> }, },
-        { Type::ATTRIBUTE_COLOR,    { false, parse_and_compare<Color> }, },
+        { Type::INT,      { true,  parse_and_compare<int> }, },
+        { Type::ULONG,    { true,  parse_and_compare<int> }, },
+        { Type::BOOL,     { false, parse_and_compare<bool> }, },
+        { Type::COLOR,    { false, parse_and_compare<Color> }, },
     };
     // the default comparison is simply string based:
     pair<bool, function<int(string,string,Output)>> comparator =

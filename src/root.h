@@ -12,7 +12,6 @@ class ClientManager; // IWYU pragma: keep
 class Ewmh;
 class FrameLeaf;
 class HlwmCommon;
-class HookManager; // IWYU pragma: keep
 class IpcServer;
 class KeyManager; // IWYU pragma: keep
 class MonitorManager; // IWYU pragma: keep
@@ -49,7 +48,6 @@ public:
 
     // (in alphabetical order)
     Child_<ClientManager> clients;
-    Child_<HookManager> hooks;
     Child_<KeyManager> keys;
     Child_<MonitorManager> monitors;
     Child_<MouseManager> mouse;
