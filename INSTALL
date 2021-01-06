@@ -18,6 +18,7 @@ Runtime dependencies:
 
     - bash (if you use the default autostart file)
     - libx11
+    - xft and freetype
     - xrandr
     - optionally: xinerama
 
@@ -30,10 +31,9 @@ Optional run-time dependencies:
     - dmenu (used in some example scripts)
 
 ==== Help/Support/Bugs ====
-A list of known bugs is listed in BUGS. If you found other bugs or want to
-request features then open an issue on github.com/herbstluftwm/herbstluftwm or
-contact the mailing list. (The subscription process is explained in the HACKING
-file).
+If you found a bug or want to request features then open an issue on
+https://github.com/herbstluftwm/herbstluftwm/issues or contact the mailing list.
+(The subscription process is explained in the HACKING file).
 
 Mailing list: hlwm@lists.herbstluftwm.org
 

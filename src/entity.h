@@ -17,6 +17,7 @@ enum class Type {
     ATTRIBUTE_STRING,
     ATTRIBUTE_REGEX,
     ATTRIBUTE_NAMES, // a enum type containing names
+    ATTRIBUTE_FONT,
     HOOK,
     DIRECTORY,
     OBJECT,
@@ -39,6 +40,7 @@ static const std::map<Type, std::pair<std::string, char>> type_strings = {
     {Type::ATTRIBUTE_STRING,  {"String",       's'}},
     {Type::ATTRIBUTE_REGEX,   {"Regex",        'r'}},
     {Type::ATTRIBUTE_NAMES,   {"Names",        'n'}},
+    {Type::ATTRIBUTE_FONT,    {"Font",         'f'}},
     {Type::HOOK,              {"Hook",         'h'}},
     {Type::DIRECTORY,         {"Directory",    'o'}},
     {Type::OBJECT,            {"Object",       'o'}},
@@ -53,7 +55,7 @@ bool operator<(Type t1, Type t2);
 class HasDocumentation  {
 public:
     void setDoc(const char text[]) { doc_ = text; }
-    std::string doc() const { return doc_; };
+    std::string doc() const { return doc_ ? doc_ : ""; };
 private:
     /** we avoid the duplication of the doc string
      * with every instance of the owning class.

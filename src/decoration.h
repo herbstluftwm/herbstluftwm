@@ -21,6 +21,7 @@ public:
     // resize such that the window content fits into rect
     void resize_inner(Rectangle inner, const DecorationScheme& scheme);
     void change_scheme(const DecorationScheme& scheme);
+    void redraw();
 
     static Client* toClient(Window decoration_window);
 
@@ -43,6 +44,7 @@ private:
     Rectangle   last_outer_rect = {0, 0, 0, 0}; // only valid if width >= 0
     Rectangle   last_actual_rect = {0, 0, 0, 0}; // last actual client rect, relative to decoration
     /* X specific things */
+    Visual*                 visual = nullptr;
     Colormap                colormap = 0;
     unsigned int            depth = 0;
     Pixmap                  pixmap = 0;

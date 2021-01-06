@@ -25,8 +25,6 @@ bool hc_create_client_window(HCConnection* con);
 
 bool hc_send_command(HCConnection* con, int argc, char* argv[],
                      char** ret_out, int* ret_status);
-bool hc_send_command_once(int argc, char* argv[],
-                          char** ret_out, int* ret_status);
 
 bool hc_hook_window_connect(HCConnection* con);
 bool hc_next_hook(HCConnection* con, int* argc, char** argv[]);

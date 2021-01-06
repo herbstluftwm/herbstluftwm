@@ -19,6 +19,13 @@ using std::shared_ptr;
 using std::string;
 using std::vector;
 
+ChildEntry::ChildEntry(Object& owner, const string& name)
+    : owner_(owner)
+    , name_(name)
+{
+    owner_.addChildDoc(name_, this);
+}
+
 pair<ArgList,string> Object::splitPath(const string &path) {
     vector<string> splitpath = ArgList(path, OBJECT_PATH_SEPARATOR).toVector();
     if (splitpath.empty()) {
@@ -63,6 +70,15 @@ void Object::wireActions(vector<Action*> actions)
 
 void Object::ls(Output out)
 {
+    string docString = doc();
+    if (!docString.empty()) {
+        // print doc string and ensure that there is an empty line
+        // afterwards
+        out << docString << "\n";
+        if ('\n' != *docString.rbegin()) {
+            out << "\n";
+        }
+    }
     const auto& children = this->children();
     out << children.size() << (children.size() == 1 ? " child" : " children")
         << (!children.empty() ? ":" : ".") << endl;
@@ -181,6 +197,21 @@ void Object::removeChild(const string &child)
     children_.erase(child);
 }
 
+void Object::addChildDoc(const string& name, HasDocumentation* doc)
+{
+    childrenDoc_[name] = doc;
+}
+
+const HasDocumentation* Object::childDoc(const string& child)
+{
+    auto it = childrenDoc_.find(child);
+    if (it != childrenDoc_.end()) {
+        return it->second;
+    } else {
+        return nullptr;
+    }
+}
+
 void Object::addHook(Hook* hook)
 {
     hooks_.push_back(hook);
@@ -241,12 +272,6 @@ private:
 void Object::printTree(Output output, string rootLabel) {
     shared_ptr<TreeInterface> intface = make_shared<DirectoryTreeInterface>(rootLabel, this);
     tree_print_to(intface, output);
-}
-
-void Object::addStaticChild(Object* child, const string &name)
-{
-    children_[name] = child;
-    notifyHooks(HookEvent::CHILD_ADDED, name);
 }
 
 Attribute* Object::deepAttribute(const string &path) {

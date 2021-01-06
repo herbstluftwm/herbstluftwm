@@ -19,6 +19,26 @@ Theme::Theme()
     active.makeProxyFor({&tiling.active, &floating.active});
     normal.makeProxyFor({&tiling.normal, &floating.normal});
     urgent.makeProxyFor({&tiling.urgent, &floating.urgent});
+
+    setDoc(
+          "    inner_color/inner_width\n"
+          "          ╻        outer_color/outer_width\n"
+          "          │                  ╻\n"
+          "          │                  │\n"
+          "    ┌────╴│╶─────────────────┷─────┐ ⎫ border_width\n"
+          "    │     │      color             │ ⎬     +\n"
+          "    │  ┌──┷─────────────────────┐  │ ⎭ padding_top\n"
+          "    │  │====================....│  │\n"
+          "    │  │== window content ==....│  │\n"
+          "    │  │====================..╾──────── background_color\n"
+          "    │  │........................│  │\n"
+          "    │  └────────────────────────┘  │ ⎱ border_width +\n"
+          "    └──────────────────────────────┘ ⎰ padding_bottom\n"
+          "\n"
+          "Setting an attribute of the theme object just propagates the "
+          "value to the respective attribute of the tiling and the floating "
+          "object."
+    );
 }
 
 DecorationScheme::DecorationScheme()
@@ -26,6 +46,9 @@ DecorationScheme::DecorationScheme()
                            &DecorationScheme::resetSetterHelper)
     , proxyAttributes_ ({
         &border_width,
+        &title_height,
+        &title_font,
+        &title_color,
         &border_color,
         &tight_decoration,
         &inner_color,

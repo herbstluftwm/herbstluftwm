@@ -97,6 +97,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     init_from_X();
     visible_.setDoc("whether this client is rendered currently");
     parent_frame_.setDoc("the frame contaning this client if the client is tiled");
+    setDoc("a managed window");
 }
 
 void Client::init_from_X() {
@@ -135,6 +136,8 @@ void Client::make_full_client() {
     XSelectInput(g_display, window_,
                             StructureNotifyMask|FocusChangeMask
                             |EnterWindowMask|PropertyChangeMask);
+    // redraw decoration on title change
+    title_.changed().connect(dec.get(), &Decoration::redraw);
 }
 
 void Client::listen_for_events() {
@@ -204,7 +207,7 @@ void Client::window_focus() {
 
     if (this != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
-         * twice.  see BUGS for more information
+         * twice.
          *
          * only emit the hook if the focus *really* changes */
         // unfocus last one

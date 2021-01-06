@@ -1,6 +1,7 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <getopt.h>
+#include <locale.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <csignal>
@@ -13,6 +14,7 @@
 #include "clientmanager.h"
 #include "command.h"
 #include "ewmh.h"
+#include "fontdata.h"
 #include "frametree.h"
 #include "globals.h"
 #include "hook.h"
@@ -31,6 +33,7 @@
 #include "tagmanager.h"
 #include "tmp.h"
 #include "utils.h"
+#include "watchers.h"
 #include "xconnection.h"
 #include "xmainloop.h"
 
@@ -75,6 +78,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     Settings* settings = root->settings();
     TagManager* tags = root->tags();
     Tmp* tmp = root->tmp();
+    Watchers* watchers = root->watchers();
 
     std::initializer_list<pair<const string,CommandBinding>> init =
     {
@@ -222,8 +226,12 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                             &MetaCommands::get_attr_complete }},
         {"set_attr",       { meta_commands, &MetaCommands::set_attr_cmd,
                                             &MetaCommands::set_attr_complete }},
+        {"help",           { meta_commands, &MetaCommands::helpCommand,
+                                            &MetaCommands::helpCompletion }},
         {"attr",           { meta_commands, &MetaCommands::attr_cmd,
                                             &MetaCommands::attr_complete }},
+        {"watch",          { watchers, &Watchers::watchCommand,
+                                       &Watchers::watchCompletion }},
         {"mktemp",         { tmp, &Tmp::mktemp,
                                   &Tmp::mktempComplete }},
     };
@@ -515,6 +523,10 @@ static void sigaction_signal(int signum, void (*handler)(int)) {
 int main(int argc, char* argv[]) {
     Globals g;
     parse_arguments(argc, argv, g);
+
+    if (!setlocale(LC_CTYPE, "") || !XSupportsLocale()) {
+        std::cerr << "warning: no locale support" << endl;
+    }
     XConnection::setExitOnError(g.exitOnXlibError);
     XConnection* X = XConnection::connect();
     g_display = X->display();
@@ -540,7 +552,7 @@ int main(int argc, char* argv[]) {
 
     // setup ipc server
     IpcServer* ipcServer = new IpcServer(*X);
-
+    FontData::s_xconnection = X;
     auto root = make_shared<Root>(g, *X, *ipcServer);
     Root::setRoot(root);
     //test_object_system();
@@ -571,6 +583,7 @@ int main(int argc, char* argv[]) {
     root.reset();
     Root::setRoot(root);
     // and then close the x connection
+    FontData::s_xconnection = nullptr;
     delete ipcServer;
     delete X;
     // check if we shall restart an other window manager

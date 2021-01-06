@@ -57,6 +57,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     pad_right.setWritable();
     pad_down.setWritable();
     pad_left.setWritable();
+    lock_tag.setWritable();
     for (auto i : {&pad_up, &pad_left, &pad_right, &pad_down}) {
         i->changed().connect(this, &Monitor::applyLayout);
     }
