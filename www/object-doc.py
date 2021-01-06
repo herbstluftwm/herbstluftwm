@@ -19,6 +19,8 @@ def printdoc_for_class(clsname, jsondoc, clsname2anchor={}):
     clsname2anchor[clsname] = (anchor, label)
 
     objdoc = jsondoc['objects'][clsname]
+    if 'doc' in objdoc:
+        print(objdoc['doc'])
     print(f'<ul><a name="{anchor}"></a>')
     for _, attr in objdoc['attributes'].items():
         if attr['default_value'] is not None:
@@ -39,6 +41,7 @@ def printdoc_for_class(clsname, jsondoc, clsname2anchor={}):
         """)
     for _, child in objdoc['children'].items():
         docstr = ': ' + child['doc'] if 'doc' in child else ''
+        class_doc = jsondoc['objects'][child['type']].get('doc', '')
         print(f"""
         <li>
         <details>
