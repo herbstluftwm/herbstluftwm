@@ -55,8 +55,6 @@ public:
     // change if attribute can be expected to trigger hooks (rarely used)
     void setHookable(bool hookable) { hookable_ = hookable; }
 
-    Type type() override { return Type::ATTRIBUTE; }
-
     bool writable() const { return writable_; }
     bool hookable() const { return hookable_; }
     virtual Signal& changed() = 0;
@@ -80,19 +78,6 @@ protected:
     Object *owner_ = nullptr;
 
     bool writable_ = false, hookable_ = true;
-};
-
-class Action : public Entity {
-public:
-    Action() = default;
-    Action(const std::string &name)
-        : Entity(name) {}
-    void setOwner(Object *owner) { owner_ = owner; }
-
-    Type type() override { return Type::ACTION; }
-
-private:
-    Object *owner_ = {};
 };
 
 

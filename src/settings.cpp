@@ -254,7 +254,7 @@ int Settings::toggle_cmd(Input argv, Output output) {
             ": Setting \"" << set_name << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
-    if (attr->type() == Type::ATTRIBUTE_BOOL) {
+    if (attr->type() == Type::BOOL) {
         attr->change("toggle");
     } else {
         output << argv.command()
@@ -268,7 +268,7 @@ int Settings::toggle_cmd(Input argv, Output output) {
 void Settings::toggle_complete(Completion& complete) {
     if (complete == 0) {
         for (auto a : attributes()) {
-            if (a.second->type() == Type::ATTRIBUTE_BOOL) {
+            if (a.second->type() == Type::BOOL) {
                 complete.full(a.first);
             }
         }
