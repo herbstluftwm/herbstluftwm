@@ -7,7 +7,6 @@
 #include "object.h"
 
 using std::string;
-using std::vector;
 
 Watchers::Watchers()
     : count_(this, "count", &Watchers::count)
@@ -22,7 +21,7 @@ void Watchers::injectDependencies(Object* root)
 
 void Watchers::scanForChanges()
 {
-    for (auto& it :  lastValue_) {
+    for (auto& it : lastValue_) {
         Attribute* attr = root_->deepAttribute(it.first);
         string newValue = "";
         if (attr) {

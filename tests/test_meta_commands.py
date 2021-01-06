@@ -743,3 +743,9 @@ def test_help_on_objects(hlwm, path='', depth=8):
     for child in hlwm.list_children(path):
         newpath = (path + '.' + child).lstrip('.')
         test_help_on_objects(hlwm, path=newpath, depth=depth - 1)
+
+
+def test_watch_no_arguments(hlwm):
+    hlwm.call_xfail('watch').expect_stderr(
+        'Expected one argument, but got only 0 arguments.'
+    )
