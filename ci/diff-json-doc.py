@@ -13,7 +13,7 @@ class GitDir:
     def __init__(self, dirpath):
         self.dirpath = dirpath
 
-    def run(self, *cmd):
+    def run(self, check=True, *cmd):
         """
         run a git command in the git repository in the dir git_tmp.dir
         """
@@ -24,17 +24,19 @@ class GitDir:
             '--work-tree=' + tmp_dir
         ] + list(cmd)
         print(':: ' + ' '.join(full_cmd), file=sys.stderr)
-        subprocess.run(full_cmd, check=True)
+        return subprocess.run(full_cmd, check=check)
 
-
-def parse_pr_id(text):
-    """replace pr IDs by git refs and
-    leave other ref identifiers unchanged
-    """
-    if text[0:1] == '#':
-        return 'github/pull/' + text[1:] + '/head'
-    else:
-        return text
+    def parse_pr_id(self, text):
+        """replace pr IDs by git refs and
+        leave other ref identifiers unchanged
+        """
+        if self.run(['rev-parse', text]).returncode == 0:
+            # do interpret further if 'text' is a valid git revision
+            return text
+        if text[0:1] == '#' and self.run(['rev-parse', text]).returncode != 0:
+            return 'github/pull/' + text[1:] + '/head'
+        else:
+            return text
 
 
 def get_json_doc(tmp_dir):
@@ -133,8 +135,8 @@ def main():
             '+refs/pull/*:refs/remotes/github/pull/*',
             '+master:github/master')
 
-    oldref = parse_pr_id(args.oldref)
-    newref = parse_pr_id(args.newref)
+    oldref = git_tmp.parse_pr_id(args.oldref)
+    newref = git_tmp.parse_pr_id(args.newref)
     print(f'Diffing »{oldref}« and »{newref}«', file=sys.stderr)
     print(f'Checking out {oldref}', file=sys.stderr)
     git_tmp.run('checkout', '-f', oldref)
