@@ -24,7 +24,7 @@ class GitDir:
             '--work-tree=' + tmp_dir
         ] + list(cmd)
         print(':: ' + ' '.join(full_cmd), file=sys.stderr)
-        subprocess.run(full_cmd)
+        subprocess.run(full_cmd, check=True)
 
 
 def parse_pr_id(text):
@@ -89,6 +89,8 @@ def main():
                         default='github/master',
                         nargs='?')
     parser.add_argument('newref', help='the new version, e.g. a pull request number like #1021')
+    parser.add_argument('--no-tmp-dir', action='store_const', default=False, const=True,
+                        help='whether to hop between git refs in a tmp dir')
     parser.add_argument('--fetch-all', action='store_const', default=False, const=True,
                         help='whether to fetch all refs from the remote before diffing')
     parser.add_argument('--collapse-diff-lines', default=100, type=int,
@@ -113,7 +115,11 @@ def main():
         comment_target = args.post_comment
 
     git_root = run_pipe_stdout(['git', 'rev-parse', '--show-toplevel']).rstrip()
-    tmp_dir = os.path.join(git_root, '.hlwm-tmp-diff-json')
+    if args.no_tmp_dir:
+        tmp_dir = git_root
+    else:
+        # temp dir:
+        tmp_dir = os.path.join(git_root, '.hlwm-tmp-diff-json')
     git_tmp = GitDir(tmp_dir)
 
     if not os.path.isdir(tmp_dir):

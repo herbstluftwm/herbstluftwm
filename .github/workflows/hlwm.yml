@@ -185,12 +185,12 @@ jobs:
 
       - name: Generate diff
         run: |
-          ci/diff-json-doc.py "$(< old_commit)" $GITHUB_REF
+          ci/diff-json-doc.py --no-tmp-dir "$(< old_commit)" $GITHUB_REF
 
       - name: Post diff as comment (on pull requst)
         if: ${{ github.event_name == 'pull_request' }}
         env:
           GITHUB_TOKEN: ${{ secrets.HLWM_BOT_GITHUB_TOKEN }}
         run: |
-          ci/diff-json-doc.py --post-comment ${{ github.event.pull_request.number }} \
+          ci/diff-json-doc.py --no-tmp-dir --post-comment ${{ github.event.pull_request.number }} \
             "$(< old_commit)" $GITHUB_REF
