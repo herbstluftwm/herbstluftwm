@@ -94,6 +94,12 @@ class ObjectDocPrinter:
             self.clsname2path[clsname] = path
             return None
 
+    def class_doc_empty(self, clsname):
+        objdoc = self.jsondoc['objects'][clsname]
+        return 'doc' not in objdoc \
+            and len(objdoc['children']) == 0 \
+            and len(objdoc['attributes']) == 0
+
     def run(self, clsname, path=[]):
         """print the documentation for a given class. However,
         if the documentation for it has already been generated,
@@ -107,14 +113,21 @@ class ObjectDocPrinter:
         # otherwise, print it here:
         identifier = self.class_doc_id(clsname)
         depth = len(path)
-        ws_prefix = depth * ' ' + '   '  # whitespace prefix
 
         objdoc = self.jsondoc['objects'][clsname]
         print(f'[[{identifier}]]')
         if 'doc' in objdoc:
-            print(multiline_for_bulletitem(objdoc['doc']))
+            if depth > 1:
+                print(multiline_for_bulletitem(objdoc['doc']))
+            else:
+                print(objdoc['doc'])
         print('')
-        bulletprefix = depth * ' ' + depth * '*'
+        if path == []:
+            bulletprefix = ''
+            ws_prefix = ''
+        else:
+            bulletprefix = depth * ' ' + (depth - 1) * '*'
+            ws_prefix = depth * ' ' + '   '  # whitespace prefix
         for _, attr in objdoc['attributes'].items():
             if attr['default_value'] is not None:
                 default_val = '= ' + attr['default_value']
@@ -130,7 +143,15 @@ class ObjectDocPrinter:
             # class_doc = self.jsondoc['objects'][child['type']].get('doc', '')
             if len(docstr) > 0 and not docstr.endswith('.'):
                 docstr += '.'
-            print(f"{ws_prefix}{bulletprefix}* +{child['name']}+ {docstr} ", end='')
+            if depth > 0:
+                bullet = '*'
+            else:
+                bullet = '\n==='
+            if depth == 0 and self.class_doc_empty(child['type']):
+                # do not list subsystems that are entirely empty
+                # at the moment
+                continue
+            print(f"{ws_prefix}{bulletprefix}{bullet} +{child['name']}+ {docstr} ", end='')
             self.run(child['type'], path=path + [child['name']])
 
 
@@ -147,6 +168,9 @@ def main():
     The state of herbstluftwm can interactively be introspected
     and modified via the object system. Similarly to a file system,
     the objects are organized in a tree:
+
+    Objects
+    -------
     """))
 
     doc_printer = ObjectDocPrinter(jsondoc)
