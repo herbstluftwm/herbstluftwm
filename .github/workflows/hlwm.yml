@@ -159,3 +159,50 @@ jobs:
           ninja -v doc_json
           ccache -s
           find ~/.ccache | wc -l
+
+  diff-objects:
+    name: Diff object tree
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # fetch previous commits
+
+      - name: Extract git ref of target branch (on pull request)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          # github actions automatically creates
+          # a merge commit, so we can simply compare
+          # $GITHUB_REF with github.base_ref
+          #
+          # We only need to fetch it first
+          git fetch origin ${{ github.base_ref }}
+          git update-ref ${{ github.base_ref }} origin/${{ github.base_ref }}
+          echo ${{ github.base_ref }} > old_commit
+
+          git tag "#"${{ github.event.pull_request.number }} $GITHUB_SHA
+          echo "#"${{ github.event.pull_request.number }} > new_commit
+
+      - name: Extract git ref of previous commit (on push)
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          git tag previous-commit "${GITHUB_SHA}~1"
+          echo previous-commit > old_commit
+
+          git update-ref ${GITHUB_REF} ${GITHUB_SHA}
+          echo ${GITHUB_REF} > new_commit
+
+      - name: Generate diff
+        run: |
+          echo "old commit: $(< old_commit) -> $(git rev-parse $(< old_commit))"
+          echo "new commit: $(< new_commit) -> $(git rev-parse $(< new_commit))"
+          ci/diff-json-doc.py --no-tmp-dir "$(< old_commit)" "$(< new_commit)"
+
+      - name: Post diff as comment (on pull requst)
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.HLWM_BOT_GITHUB_TOKEN }}
+        run: |
+          ci/diff-json-doc.py --no-tmp-dir --post-comment ${{ github.event.pull_request.number }} \
+            "$(< old_commit)" "$(< new_commit)"
