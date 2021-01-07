@@ -38,6 +38,6 @@ template<> RegexStr Converter<RegexStr>::parse(const std::string& source);
 template<> std::string Converter<RegexStr>::str(RegexStr payload);
 
 template<>
-inline Type Attribute_<RegexStr>::staticType() { return Type::ATTRIBUTE_REGEX; }
+inline Type Attribute_<RegexStr>::staticType() { return Type::REGEX; }
 
 #endif // REGEXSTR_H

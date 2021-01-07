@@ -195,15 +195,15 @@ protected:
 
 /** Type mappings **/
 template<>
-inline Type Attribute_<int>::staticType() { return Type::ATTRIBUTE_INT; }
+inline Type Attribute_<int>::staticType() { return Type::INT; }
 template<>
-inline Type Attribute_<unsigned long>::staticType() { return Type::ATTRIBUTE_ULONG; }
+inline Type Attribute_<unsigned long>::staticType() { return Type::ULONG; }
 template<>
-inline Type Attribute_<bool>::staticType() { return Type::ATTRIBUTE_BOOL; }
+inline Type Attribute_<bool>::staticType() { return Type::BOOL; }
 template<>
-inline Type Attribute_<std::string>::staticType() { return Type::ATTRIBUTE_STRING; }
+inline Type Attribute_<std::string>::staticType() { return Type::STRING; }
 template<>
-inline Type Attribute_<Color>::staticType() { return Type::ATTRIBUTE_COLOR; }
+inline Type Attribute_<Color>::staticType() { return Type::COLOR; }
 
 template<typename T>
 class DynAttribute_ : public Attribute {

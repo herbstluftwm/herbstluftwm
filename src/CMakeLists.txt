@@ -31,7 +31,6 @@ target_sources(herbstluftwm PRIVATE
     globals.h
     hlwmcommon.cpp hlwmcommon.h
     hook.cpp hook.h
-    hookmanager.cpp hookmanager.h
     indexingobject.h
     ipc-protocol.h
     ipc-server.cpp ipc-server.h

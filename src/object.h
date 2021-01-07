@@ -15,7 +15,6 @@
 #define TMP_OBJECT_PATH "tmp"
 
 class Attribute;
-class Action;
 class Hook;
 class Object;
 
@@ -94,10 +93,8 @@ public:
 protected:
     // initialize an attribute (typically used by init())
     virtual void wireAttributes(std::vector<Attribute*> attrs);
-    virtual void wireActions(std::vector<Action*> actions);
 
     std::map<std::string, Attribute*> attribs_;
-    std::map<std::string, Action*> actions_;
 
     std::map<std::string, std::function<Object*()>> childrenDynamic_;
     std::map<std::string, Object*> children_;
