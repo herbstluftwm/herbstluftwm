@@ -159,3 +159,37 @@ jobs:
           ninja -v doc_json
           ccache -s
           find ~/.ccache | wc -l
+
+  diff-objects:
+    name: Diff object tree
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Extract git ref of target branch (on pull request)
+        if: ${{ contains(github.event, 'pull_request') }}
+        run: |
+          # here, we take the latest common ancestor of
+          # the target branch and the PR-branch, because
+          # we need to ignore newer commits in the target branch
+          #
+          # maybe we need: ${{ github.event.pull_request.base.ref }}
+          git merge-base ${{ github.base_ref }} $GITHUB_SHA > old_commit
+
+      - name: Extract git ref of previous commit (on push)
+        if: ${{ ! contains(github.event, 'pull_request') }}
+        run: |
+          echo ${GITHUB_REF}'^' > old_commit
+
+      - name: Generate diff
+        run: |
+          ci/diff-json-doc.py "$(< old_commit)" $GITHUB_REF
+
+      - name: Post diff as comment (on pull requst)
+        if: ${{ contains(github.event, 'pull_request') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.HLWM_BOT_GITHUB_TOKEN }}
+        run: |
+          ci/diff-json-doc.py --post-comment ${{ github.event.pull_request.number }} \
+            "$(< old_commit)" $GITHUB_REF
