@@ -6,7 +6,6 @@
 #include "clientmanager.h"
 #include "ewmh.h"
 #include "hlwmcommon.h"
-#include "hookmanager.h"
 #include "keymanager.h"
 #include "layout.h"
 #include "metacommands.h"
@@ -28,7 +27,6 @@ shared_ptr<Root> Root::root_;
 
 Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     : clients(*this, "clients")
-    , hooks(*this, "hooks")
     , keys(*this, "keys")
     , monitors(*this, "monitors")
     , mouse(*this, "mouse")
@@ -47,7 +45,6 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
 {
     // initialize root children (alphabetically)
     clients.init();
-    hooks.init();
     keys.init();
     monitors.init();
     mouse.init();
@@ -95,7 +92,6 @@ Root::~Root()
     tags.reset();
 
     // For the rest, order does not matter (do it alphabetically):
-    hooks.reset();
     keys.reset();
     rules.reset();
     settings.reset();

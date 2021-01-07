@@ -31,7 +31,7 @@ if which textwidth &> /dev/null ; then
 elif which dzen2-textwidth &> /dev/null ; then
     textwidth="dzen2-textwidth";
 elif which xftwidth &> /dev/null ; then # For guix
-    textwidth="xtfwidth";
+    textwidth="xftwidth";
 else
     echo "This script requires the textwidth tool of the dzen2 project."
     exit 1

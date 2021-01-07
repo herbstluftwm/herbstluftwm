@@ -60,14 +60,6 @@ void Object::removeAttribute(Attribute* attr) {
     attribs_.erase(it);
 }
 
-void Object::wireActions(vector<Action*> actions)
-{
-    for (auto action : actions) {
-        action->setOwner(this);
-        actions_[action->name()] = action;
-    }
-}
-
 void Object::ls(Output out)
 {
     string docString = doc();
@@ -98,19 +90,13 @@ void Object::ls(Output out)
         out << " " << (it.second->writable() ? "w" : "-");
         out << " " << (it.second->hookable() ? "h" : "-");
         out << " " << it.first;
-        if (it.second->type() == Type::ATTRIBUTE_STRING
-            || it.second->type() == Type::ATTRIBUTE_REGEX )
+        if (it.second->type() == Type::STRING
+            || it.second->type() == Type::REGEX )
         {
             out << " = \"" << it.second->str() << "\"" << endl;
         } else {
             out << " = " << it.second->str() << endl;
         }
-    }
-
-    out << actions_.size() << (actions_.size() == 1 ? " action" : " actions")
-        << (!actions_.empty() ? ":" : ".") << endl;
-    for (auto it : actions_) {
-        out << "  " << it.first << endl;
     }
 }
 
