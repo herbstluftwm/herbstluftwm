@@ -164,6 +164,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # fetch previous commits
 
       - name: Extract git ref of target branch (on pull request)
         if: ${{ github.event_name == 'pull_request' }}
