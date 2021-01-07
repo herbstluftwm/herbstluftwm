@@ -181,11 +181,11 @@ jobs:
       - name: Extract git ref of previous commit (on push)
         if: ${{ github.event_name != 'pull_request' }}
         run: |
-          echo ${GITHUB_REF}'^' > old_commit
+          echo ${GITHUB_SHA}'^' > old_commit
 
       - name: Generate diff
         run: |
-          ci/diff-json-doc.py --no-tmp-dir "$(< old_commit)" $GITHUB_REF
+          ci/diff-json-doc.py --no-tmp-dir "$(< old_commit)" $GITHUB_SHA
 
       - name: Post diff as comment (on pull requst)
         if: ${{ github.event_name == 'pull_request' }}
@@ -193,4 +193,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.HLWM_BOT_GITHUB_TOKEN }}
         run: |
           ci/diff-json-doc.py --no-tmp-dir --post-comment ${{ github.event.pull_request.number }} \
-            "$(< old_commit)" $GITHUB_REF
+            "$(< old_commit)" $GITHUB_SHA
