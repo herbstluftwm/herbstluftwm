@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import re
 import argparse
 import textwrap
 
@@ -69,6 +70,17 @@ def escape_string_value(string):
             return string
 
 
+def splitcamelcase(string):
+    """Transform CamelCase into camel case"""
+    res = ""
+    for ch in string:
+        if re.match('[A-Z]', ch):
+            res += ' ' + ch.lower()
+        else:
+            res += ch
+    return res
+
+
 class ObjectDocPrinter:
     def __init__(self, jsondoc):
         self.jsondoc = jsondoc
@@ -80,6 +92,11 @@ class ObjectDocPrinter:
         # tree. But one can also insert particular paths in the following dict
         # and then the class doc will be put there.
         self.clsname2path = {}
+
+        # the classes that are abstract. For abstract classes,
+        # we don't print the doc but instead the doc of all its
+        # implementing classes
+        self.abstractclass = set()
 
     def class_doc_id(self, clsname):
         """for a class name, return its id in the document
@@ -123,7 +140,7 @@ class ObjectDocPrinter:
         reference_cls_doc = self.reference_to_class_doc(clsname, path)
         if reference_cls_doc is not None:
             identifier, text = reference_cls_doc
-            print(f'See <<{identifier},{text}>>')
+            print(f'(see <<{identifier},{text}>>)')
             return
         # otherwise, print it here:
         identifier = self.class_doc_id(clsname)
@@ -168,8 +185,15 @@ class ObjectDocPrinter:
                 # do not list subsystems that are entirely empty
                 # at the moment
                 continue
-            print(f"{ws_prefix}{bulletprefix}{bullet} {itemname} {docstr} ", end='')
-            self.run(child['type'], path=path + [child['name']])
+            if child['type'] not in self.abstractclass:
+                print(f"{ws_prefix}{bulletprefix}{bullet} {itemname} {docstr} ", end='')
+                self.run(child['type'], path=path + [child['name']])
+            else:
+                for _, subclass in self.jsondoc['objects'].items():
+                    if child['type'] in subclass['inherits-from']:
+                        classname = splitcamelcase(subclass['classname'])
+                        print(f"{ws_prefix}{bulletprefix}{bullet} {itemname} can be a {classname}. {docstr} ", end='')
+                        self.run(subclass['classname'], path=path + [child['name']])
 
 
 def main():
@@ -182,15 +206,8 @@ def main():
         jsondoc = json.load(fh)
 
     print(textwrap.dedent("""
-    herbstluftwm-objects(7)
-    =======================
-
-    NAME
-    ----
-    herbstluftwm-objects - the object system
-
-    DESCRIPTION
-    -----------
+    OBJECTS
+    -------
     The state of herbstluftwm can interactively be introspected
     and modified via the object system. Similarly to a file system,
     the objects are organized in a tree:
@@ -198,9 +215,10 @@ def main():
     """))
 
     doc_printer = ObjectDocPrinter(jsondoc)
+    doc_printer.abstractclass.add('Frame')
     doc_printer.clsname2path.update({
         'Client': ['clients', 'focus'],
-        'FrameLeaf': ['tags', 'focus', 'tiling', 'focused_frame'],
+        'FrameLeaf': ['tags', 'focus', 'tiling', 'root'],
     })
     doc_printer.run('Root')
 
