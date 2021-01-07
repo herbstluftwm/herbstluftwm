@@ -176,16 +176,24 @@ jobs:
           #
           # We only need to fetch it first
           git fetch origin ${{ github.base_ref }}
-          echo origin/${{ github.base_ref }} > old_commit
+          git update-ref ${{ github.base_ref }} origin/${{ github.base_ref }}
+          echo ${{ github.base_ref }} > old_commit
+
+          git update-ref "#"${{ github.event.pull_request.number }} $GITHUB_SHA
+          echo "#"${{ github.event.pull_request.number }} > new_commit
 
       - name: Extract git ref of previous commit (on push)
         if: ${{ github.event_name != 'pull_request' }}
         run: |
-          echo ${GITHUB_SHA}'^' > old_commit
+          git update-ref previous-commit ${GITHUB_SHA}'^'
+          echo previous-commit > old_commit
+
+          git update-ref ${GITHUB_REF} ${GITHUB_SHA}
+          echo ${GITHUB_REF} > new_commit
 
       - name: Generate diff
         run: |
-          ci/diff-json-doc.py --no-tmp-dir "$(< old_commit)" $GITHUB_SHA
+          ci/diff-json-doc.py --no-tmp-dir "$(< old_commit)" "$(< new_commit)"
 
       - name: Post diff as comment (on pull requst)
         if: ${{ github.event_name == 'pull_request' }}
@@ -193,4 +201,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.HLWM_BOT_GITHUB_TOKEN }}
         run: |
           ci/diff-json-doc.py --no-tmp-dir --post-comment ${{ github.event.pull_request.number }} \
-            "$(< old_commit)" $GITHUB_SHA
+            "$(< old_commit)" "$(< new_commit)"
