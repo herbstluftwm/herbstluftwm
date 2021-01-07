@@ -178,7 +178,8 @@ jobs:
           # maybe we need: ${{ github.base_ref }}
           git fetch origin ${{ github.base_ref }}
           git rev-parse origin/${{ github.base_ref }}
-          git merge-base origin/${{ github.base_ref }} ${{ github.head_ref }} > old_commit
+          echo $GITHUB_SHA
+          git merge-base origin/${{ github.base_ref }} $GITHUB_SHA > old_commit
           echo old_commit
 
       - name: Extract git ref of previous commit (on push)
