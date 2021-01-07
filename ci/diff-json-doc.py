@@ -30,7 +30,7 @@ class GitDir:
         """replace pr IDs by git refs and
         leave other ref identifiers unchanged
         """
-        if self.run(['rev-parse', text]).returncode == 0:
+        if self.run(check=False, 'rev-parse', text).returncode == 0:
             # do interpret further if 'text' is a valid git revision
             return text
         if text[0:1] == '#' and self.run(['rev-parse', text]).returncode != 0:
