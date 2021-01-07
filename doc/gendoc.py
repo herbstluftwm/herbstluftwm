@@ -302,6 +302,8 @@ class ClassName:
             return 'string'
         if self.name == 'Color':
             return 'color'
+        if self.name == 'HSFont':
+            return 'font'
         if self.type_modifier == ['unsigned'] and self.name == 'long':
             return 'uint'
         if self.name == 'RegexStr':
