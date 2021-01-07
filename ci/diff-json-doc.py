@@ -89,6 +89,8 @@ def main():
                         default='github/master',
                         nargs='?')
     parser.add_argument('newref', help='the new version, e.g. a pull request number like #1021')
+    parser.add_argument('--fetch-all', action='store_const', type=bool, default=False, const=True,
+                        help='whether to fetch all refs from the remote before diffing')
     parser.add_argument('--collapse-diff-lines', default=100, type=int,
                         help='from which diff size on the diff is collapsed per default')
     parser.add_argument('--post-comment', default=None,
@@ -118,11 +120,12 @@ def main():
         subprocess.call(['git', 'clone', git_root, tmp_dir])
 
     # fetch all pull request heads
-    git_tmp.run(
-        'fetch',
-        'https://github.com/herbstluftwm/herbstluftwm',
-        '+refs/pull/*:refs/remotes/github/pull/*',
-        '+master:github/master')
+    if args.fetch_all:
+        git_tmp.run(
+            'fetch',
+            'https://github.com/herbstluftwm/herbstluftwm',
+            '+refs/pull/*:refs/remotes/github/pull/*',
+            '+master:github/master')
 
     oldref = parse_pr_id(args.oldref)
     newref = parse_pr_id(args.newref)
