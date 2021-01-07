@@ -176,7 +176,8 @@ jobs:
           #
           # maybe we need: ${{ github.event.pull_request.base.ref }}
           # maybe we need: ${{ github.base_ref }}
-          git merge-base ${{ github.event.pull_request.base.ref }} $GITHUB_SHA > old_commit
+          git fetch origin ${{ github.base_ref }}
+          git merge-base ${{ github.base_ref }} $GITHUB_SHA > old_commit
 
       - name: Extract git ref of previous commit (on push)
         if: ${{ github.event_name != 'pull_request' }}
