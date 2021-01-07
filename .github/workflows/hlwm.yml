@@ -179,7 +179,7 @@ jobs:
           git update-ref ${{ github.base_ref }} origin/${{ github.base_ref }}
           echo ${{ github.base_ref }} > old_commit
 
-          git update-ref "#"${{ github.event.pull_request.number }} $GITHUB_SHA
+          git tag "#"${{ github.event.pull_request.number }} $GITHUB_SHA
           echo "#"${{ github.event.pull_request.number }} > new_commit
 
       - name: Extract git ref of previous commit (on push)
@@ -193,6 +193,8 @@ jobs:
 
       - name: Generate diff
         run: |
+          echo "old commit: $(< old_commit)"
+          echo "new commit: $(< new_commit)"
           ci/diff-json-doc.py --no-tmp-dir "$(< old_commit)" "$(< new_commit)"
 
       - name: Post diff as comment (on pull requst)
