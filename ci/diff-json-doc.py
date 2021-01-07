@@ -13,7 +13,7 @@ class GitDir:
     def __init__(self, dirpath):
         self.dirpath = dirpath
 
-    def run(self, check=True, cmd):
+    def run(self, cmd, check=True):
         """
         run a git command in the git repository in the dir git_tmp.dir
         """
@@ -30,7 +30,7 @@ class GitDir:
         """replace pr IDs by git refs and
         leave other ref identifiers unchanged
         """
-        if self.run(check=False, ['rev-parse', text]).returncode == 0:
+        if self.run(['rev-parse', text], check=False).returncode == 0:
             # do interpret further if 'text' is a valid git revision
             return text
         if text[0:1] == '#' and self.run(['rev-parse', text]).returncode != 0:
