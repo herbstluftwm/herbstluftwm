@@ -183,9 +183,9 @@ jobs:
           echo "#"${{ github.event.pull_request.number }} > new_commit
 
       - name: Extract git ref of previous commit (on push)
-        if: ${{ github.event_name != 'pull_request' }}
+        # if: ${{ github.event_name != 'pull_request' }}
         run: |
-          git update-ref previous-commit ${GITHUB_SHA}'^'
+          git tag previous-commit ${GITHUB_SHA}'^'
           echo previous-commit > old_commit
 
           git update-ref ${GITHUB_REF} ${GITHUB_SHA}
