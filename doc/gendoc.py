@@ -446,7 +446,7 @@ class ObjectInformation:
         from the source"""
         for (clsname, attrs), attr in self.member2info.items():
             if clsname == 'Settings':
-                attr.writable = False  # TODO
+                attr.writable = True
 
     def attribute_info(self, classname: str, attr_cpp_name: str):
         """return the AttributeInformation object for
