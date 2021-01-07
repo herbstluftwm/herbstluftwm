@@ -144,14 +144,16 @@ class ObjectDocPrinter:
             if len(docstr) > 0 and not docstr.endswith('.'):
                 docstr += '.'
             if depth > 0:
+                itemname = f"+{child['name']}+"
                 bullet = '*'
             else:
+                itemname = f"{child['name']}"
                 bullet = '\n==='
             if depth == 0 and self.class_doc_empty(child['type']):
                 # do not list subsystems that are entirely empty
                 # at the moment
                 continue
-            print(f"{ws_prefix}{bulletprefix}{bullet} +{child['name']}+ {docstr} ", end='')
+            print(f"{ws_prefix}{bulletprefix}{bullet} {itemname} {docstr} ", end='')
             self.run(child['type'], path=path + [child['name']])
 
 
