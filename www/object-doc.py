@@ -167,12 +167,12 @@ def main():
         jsondoc = json.load(fh)
 
     print(textwrap.dedent("""
+    Objects
+    -------
     The state of herbstluftwm can interactively be introspected
     and modified via the object system. Similarly to a file system,
     the objects are organized in a tree:
 
-    Objects
-    -------
     """))
 
     doc_printer = ObjectDocPrinter(jsondoc)
