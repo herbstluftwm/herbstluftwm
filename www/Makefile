@@ -28,8 +28,8 @@ all: $(INSTALLFILES)
 %.html: %-content.html compose.py
 	./compose.py $< > $@
 
-object-doc.txt: hlwm-doc.json object-doc.py
-	./object-doc.py $< > $@
+object-doc.txt: hlwm-doc.json ../doc/format-doc.py
+	../doc/format-doc.py $< > $@
 
 herbstluftwm.svg: ../share/herbstluftwm.svg
 	cp $^ $@

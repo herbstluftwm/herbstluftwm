@@ -54,6 +54,21 @@ def multiline_for_bulletitem(src):
     return '\n'.join(newlines)
 
 
+def escape_string_value(string):
+    if string == '':
+        return '\"\"'
+    else:
+        needs_quotes = False
+        for ch in '*|` ':
+            if ch in string:
+                needs_quotes = True
+        string = string.replace('"', '\\"').replace('\'', '\\\'')
+        if needs_quotes:
+            return '\"{}\"'.format(string)
+        else:
+            return string
+
+
 class ObjectDocPrinter:
     def __init__(self, jsondoc):
         self.jsondoc = jsondoc
@@ -130,7 +145,7 @@ class ObjectDocPrinter:
             ws_prefix = depth * ' ' + '   '  # whitespace prefix
         for _, attr in objdoc['attributes'].items():
             if attr['default_value'] is not None:
-                default_val = '= ' + attr['default_value']
+                default_val = '= ' + escape_string_value(attr['default_value'])
             else:
                 default_val = ''
             if attr.get('doc', None) is not None:
