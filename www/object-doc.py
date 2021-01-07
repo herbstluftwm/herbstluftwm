@@ -3,12 +3,14 @@ import json
 import argparse
 import textwrap
 
+
 def count_whitespace_prefix(string):
     """return the number of spaces at the beginning of the given string"""
     for i, ch in enumerate(string):
         if ch != ' ':
             return i
     return len(string)
+
 
 def multiline_for_bulletitem(src):
     """requote a multiline asciidoc doc such
@@ -17,6 +19,7 @@ def multiline_for_bulletitem(src):
     lastline = ''
     # add explicit markers for code blocks
     newlines = []
+
     def force_linebreak():
         """insert a linebreak in `newlines`"""
         if len(newlines) > 0 and newlines[-1] == '+':
@@ -26,13 +29,13 @@ def multiline_for_bulletitem(src):
             newlines.append('+')
 
     codeblock_indent = 0
-    for l in lines:
-        if l.startswith('  ') and not lastline.startswith('  '):
+    for lin in lines:
+        if lin.startswith('  ') and not lastline.startswith('  '):
             force_linebreak()
-            newlines += ['----']  # codeblock starts with 'l'
-            codeblock_indent = count_whitespace_prefix(l)
-        if not l.startswith('  ') and lastline.startswith('  '):
-            # codeblock ended before 'l'
+            newlines += ['----']  # codeblock starts with 'lin'
+            codeblock_indent = count_whitespace_prefix(lin)
+        if not lin.startswith('  ') and lastline.startswith('  '):
+            # codeblock ended before 'lin'
             # so dedent the lines of this codeblock by `codeblock_indent`
             for i, codeblockline in reversed(list(enumerate(newlines))):
                 if not codeblockline.startswith('  '):
@@ -42,53 +45,93 @@ def multiline_for_bulletitem(src):
             newlines += ['----']
             force_linebreak()
         else:
-            codeblock_indent = min(codeblock_indent, count_whitespace_prefix(l))
-        if l == '':
+            codeblock_indent = min(codeblock_indent, count_whitespace_prefix(lin))
+        if lin == '':
             force_linebreak()
         else:
-            newlines.append(l)
-        lastline = l
+            newlines.append(lin)
+        lastline = lin
     return '\n'.join(newlines)
 
 
-def printdoc_for_class(clsname, jsondoc, clsname2anchor={}, path=[]):
-    """print the documentation for a given class. However,
-    if the documentation for it has already been generated,
-    only insert a link to ot using clsname2anchor
-    """
-    if clsname in clsname2anchor:
-        anchor, label = clsname2anchor[clsname]
-        print(f'<<{anchor},{label}>>')
-        return
+class ObjectDocPrinter:
+    def __init__(self, jsondoc):
+        self.jsondoc = jsondoc
+        # a set of class names whose documentation
+        # has been printed already.
+        #
+        # normally, the doc of class is printed when
+        # the first object (in depth-first order) of that class is found in the
+        # tree. But one can also insert particular paths in the following dict
+        # and then the class doc will be put there.
+        self.clsname2path = {}
 
-    # otherwise, create anchor and label:
-    anchor = 'doc_cls_' + clsname
-    label = '+' + clsname + '+ doc'
-    clsname2anchor[clsname] = (anchor, label)
-    depth = len(path)
-    ws_prefix = depth * ' ' + '   '  # whitespace prefix
+    def class_doc_id(self, clsname):
+        """for a class name, return its id in the document
+        such that it can be referenced.
+        """
+        return 'doc_cls_' + clsname
 
-    objdoc = jsondoc['objects'][clsname]
-    print(f'[[{anchor}]]')
-    if 'doc' in objdoc:
-        print(multiline_for_bulletitem(objdoc['doc']))
-    print('')
-    bulletprefix = depth * ' ' + depth * '*'
-    for _, attr in objdoc['attributes'].items():
-        if attr['default_value'] is not None:
-            default_val = '= ' + attr['default_value']
+    def reference_to_class_doc(self, clsname, path):
+        """
+        given a classname and a node in the tree (via path),
+        return one of the following:  (i.e. either or)
+
+        - an id and text if the doc of clsname should be referenced
+        - None if the documentation should be printed here
+        """
+        if clsname in self.clsname2path:
+            if self.clsname2path[clsname] == path:
+                # print the class doc here
+                return None
+            else:
+                # return a reference to the place of the class doc
+                identifier = self.class_doc_id(clsname)
+                text = '+' + '.'.join(self.clsname2path[clsname]) + '+'
+                return identifier, text
         else:
-            default_val = ''
-        if attr.get('doc', None) is not None:
-            docstr = attr.get('doc', None)
-        else:
-            docstr = ''
-        print(f"{ws_prefix}{bulletprefix}* {attr['type']} +{attr['name']}+ {default_val} {docstr}")
-    for _, child in objdoc['children'].items():
-        docstr = ': ' + child['doc'].strip() if 'doc' in child else ''
-        class_doc = jsondoc['objects'][child['type']].get('doc', '')
-        print(f"{ws_prefix}{bulletprefix}* +{child['name']}+ {docstr}", end='')
-        printdoc_for_class(child['type'], jsondoc, clsname2anchor, path=path + [child['name']])
+            # otherwise, print the class doc here:
+            self.clsname2path[clsname] = path
+            return None
+
+    def run(self, clsname, path=[]):
+        """print the documentation for a given class. However,
+        if the documentation for it has already been generated,
+        only insert a link to ot using clsname2anchor
+        """
+        reference_cls_doc = self.reference_to_class_doc(clsname, path)
+        if reference_cls_doc is not None:
+            identifier, text = reference_cls_doc
+            print(f'See <<{identifier},{text}>>')
+            return
+        # otherwise, print it here:
+        identifier = self.class_doc_id(clsname)
+        depth = len(path)
+        ws_prefix = depth * ' ' + '   '  # whitespace prefix
+
+        objdoc = self.jsondoc['objects'][clsname]
+        print(f'[[{identifier}]]')
+        if 'doc' in objdoc:
+            print(multiline_for_bulletitem(objdoc['doc']))
+        print('')
+        bulletprefix = depth * ' ' + depth * '*'
+        for _, attr in objdoc['attributes'].items():
+            if attr['default_value'] is not None:
+                default_val = '= ' + attr['default_value']
+            else:
+                default_val = ''
+            if attr.get('doc', None) is not None:
+                docstr = attr.get('doc', None)
+            else:
+                docstr = ''
+            print(f"{ws_prefix}{bulletprefix}* {attr['type']} +{attr['name']}+ {default_val} {docstr}")
+        for _, child in objdoc['children'].items():
+            docstr = ': ' + child['doc'].strip() if 'doc' in child else ''
+            # class_doc = self.jsondoc['objects'][child['type']].get('doc', '')
+            if len(docstr) > 0 and not docstr.endswith('.'):
+                docstr += '.'
+            print(f"{ws_prefix}{bulletprefix}* +{child['name']}+ {docstr} ", end='')
+            self.run(child['type'], path=path + [child['name']])
 
 
 def main():
@@ -106,6 +149,12 @@ def main():
     the objects are organized in a tree:
     """))
 
-    printdoc_for_class('Root', jsondoc)
+    doc_printer = ObjectDocPrinter(jsondoc)
+    doc_printer.clsname2path.update({
+        'Client': ['clients', 'focus'],
+        'FrameLeaf': ['tags', 'focus', 'tiling', 'focused_frame'],
+    })
+    doc_printer.run('Root')
+
 
 main()
