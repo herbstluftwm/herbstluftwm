@@ -13,7 +13,7 @@ class GitDir:
     def __init__(self, dirpath):
         self.dirpath = dirpath
 
-    def run(self, check=True, *cmd):
+    def run(self, check=True, cmd):
         """
         run a git command in the git repository in the dir git_tmp.dir
         """
@@ -30,7 +30,7 @@ class GitDir:
         """replace pr IDs by git refs and
         leave other ref identifiers unchanged
         """
-        if self.run(check=False, 'rev-parse', text).returncode == 0:
+        if self.run(check=False, ['rev-parse', text]).returncode == 0:
             # do interpret further if 'text' is a valid git revision
             return text
         if text[0:1] == '#' and self.run(['rev-parse', text]).returncode != 0:
@@ -129,20 +129,20 @@ def main():
 
     # fetch all pull request heads
     if args.fetch_all:
-        git_tmp.run(
+        git_tmp.run([
             'fetch',
             'https://github.com/herbstluftwm/herbstluftwm',
             '+refs/pull/*:refs/remotes/github/pull/*',
-            '+master:github/master')
+            '+master:github/master'])
 
     oldref = git_tmp.parse_pr_id(args.oldref)
     newref = git_tmp.parse_pr_id(args.newref)
     print(f'Diffing »{oldref}« and »{newref}«', file=sys.stderr)
     print(f'Checking out {oldref}', file=sys.stderr)
-    git_tmp.run('checkout', '-f', oldref)
+    git_tmp.run(['checkout', '-f', oldref])
     oldjson = get_json_doc(tmp_dir).splitlines(keepends=True)
     print(f'Checking out {newref}', file=sys.stderr)
-    git_tmp.run('-c', 'advice.detachedHead=false', 'checkout', '-f', newref)
+    git_tmp.run(['-c', 'advice.detachedHead=false', 'checkout', '-f', newref])
     newjson = get_json_doc(tmp_dir).splitlines(keepends=True)
 
     diff = list(difflib.unified_diff(oldjson, newjson, fromfile=args.oldref, tofile=args.newref))
