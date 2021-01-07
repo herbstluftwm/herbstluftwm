@@ -2,8 +2,6 @@ name: HLWM CI
 
 on:
   push:
-    branches:
-    - master
     paths-ignore:
     - '.mergify.yml'
   pull_request:
@@ -183,9 +181,9 @@ jobs:
           echo "#"${{ github.event.pull_request.number }} > new_commit
 
       - name: Extract git ref of previous commit (on push)
-        # if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' }}
         run: |
-          git tag previous-commit $(git log "--pretty=%P" -n 1 ${GITHUB_SHA}|cut '-d ' -f1)
+          git tag previous-commit "${GITHUB_SHA}~1"
           echo previous-commit > old_commit
 
           git update-ref ${GITHUB_REF} ${GITHUB_SHA}
@@ -193,8 +191,8 @@ jobs:
 
       - name: Generate diff
         run: |
-          echo "old commit: $(< old_commit)"
-          echo "new commit: $(< new_commit)"
+          echo "old commit: $(< old_commit) -> $(git rev-parse $(< old_commit))"
+          echo "new commit: $(< new_commit) -> $(git rev-parse $(< new_commit))"
           ci/diff-json-doc.py --no-tmp-dir "$(< old_commit)" "$(< new_commit)"
 
       - name: Post diff as comment (on pull requst)
