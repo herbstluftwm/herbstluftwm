@@ -31,7 +31,7 @@ class GitDir:
         leave other ref identifiers unchanged
         """
         if self.run(['rev-parse', text], check=False).returncode == 0:
-            # do interpret further if 'text' is a valid git revision
+            # do not interpret text if it is a valid git revision
             return text
         if text[0:1] == '#' and self.run(['rev-parse', text]).returncode != 0:
             return 'github/pull/' + text[1:] + '/head'
@@ -92,7 +92,7 @@ def main():
                         nargs='?')
     parser.add_argument('newref', help='the new version, e.g. a pull request number like #1021')
     parser.add_argument('--no-tmp-dir', action='store_const', default=False, const=True,
-                        help='whether to hop between git refs in a tmp dir')
+                        help='dangerous: if passed, perform git checkout on this repo')
     parser.add_argument('--fetch-all', action='store_const', default=False, const=True,
                         help='whether to fetch all refs from the remote before diffing')
     parser.add_argument('--collapse-diff-lines', default=100, type=int,
@@ -118,9 +118,9 @@ def main():
 
     git_root = run_pipe_stdout(['git', 'rev-parse', '--show-toplevel']).rstrip()
     if args.no_tmp_dir:
+        # use this repository for checking different revisions
         tmp_dir = git_root
     else:
-        # temp dir:
         tmp_dir = os.path.join(git_root, '.hlwm-tmp-diff-json')
     git_tmp = GitDir(tmp_dir)
 
