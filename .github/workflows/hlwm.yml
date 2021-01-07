@@ -178,7 +178,7 @@ jobs:
           # maybe we need: ${{ github.base_ref }}
           git fetch origin ${{ github.base_ref }}
           git rev-parse origin/${{ github.base_ref }}
-          echo $GITHUB_SHA
+          git show $GITHUB_SHA
           git merge-base origin/${{ github.base_ref }} $GITHUB_SHA > old_commit
           echo old_commit
 
