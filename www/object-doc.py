@@ -70,7 +70,7 @@ class ObjectDocPrinter:
         """for a class name, return its id in the document
         such that it can be referenced.
         """
-        return 'doc_cls_' + clsname
+        return 'doc_cls_' + clsname.lower()
 
     def reference_to_class_doc(self, clsname, path):
         """
