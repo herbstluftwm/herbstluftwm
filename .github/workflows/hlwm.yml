@@ -175,7 +175,8 @@ jobs:
           # we need to ignore newer commits in the target branch
           #
           # maybe we need: ${{ github.event.pull_request.base.ref }}
-          git merge-base ${{ github.base_ref }} $GITHUB_SHA > old_commit
+          # maybe we need: ${{ github.base_ref }}
+          git merge-base ${{ github.event.pull_request.base.ref }} $GITHUB_SHA > old_commit
 
       - name: Extract git ref of previous commit (on push)
         if: ${{ github.event_name != 'pull_request' }}
