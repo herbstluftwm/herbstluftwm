@@ -6,7 +6,7 @@
 #include "attribute_.h"
 #include "object.h"
 #include "rules.h"
-#include "x11-types.h"
+#include "rectangle.h"
 
 class HSTag;
 class MonitorManager;
