@@ -7,6 +7,7 @@
 #include "attribute_.h"
 #include "child.h"
 #include "object.h"
+#include "rectangle.h"
 #include "regexstr.h"
 #include "theme.h"
 #include "types.h"

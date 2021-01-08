@@ -7,6 +7,7 @@
 #include "child.h"
 #include "font.h"
 #include "object.h"
+#include "rectangle.h"
 
 /** The proxy interface
  */
