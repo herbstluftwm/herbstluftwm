@@ -778,7 +778,7 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
     }
 }
 
-std::string Monitor::atLeastMinWindowSize(Rectangle rect)
+string Monitor::atLeastMinWindowSize(Rectangle rect)
 {
     if (rect.width < WINDOW_MIN_WIDTH) {
         return "Rectangle too small; it must be at least "
