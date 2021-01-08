@@ -5,9 +5,9 @@
  *
  */
 
-#include <stdexcept>
 #include <map>
 #include <set>
+#include <stdexcept>
 #include <string>
 
 class Completion;
