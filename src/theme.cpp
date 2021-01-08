@@ -26,8 +26,8 @@ Theme::Theme()
           "          │                  ╻\n"
           "          │                  │\n"
           "    ┌────╴│╶─────────────────┷─────┐ ⎫ border_width\n"
-          "    │     │      color             │ ⎬     +\n"
-          "    │  ┌──┷─────────────────────┐  │ ⎭ padding_top\n"
+          "    │     │      color             │ ⎬ + title_height\n"
+          "    │  ┌──┷─────────────────────┐  │ ⎭ + padding_top\n"
           "    │  │====================....│  │\n"
           "    │  │== window content ==....│  │\n"
           "    │  │====================..╾──────── background_color\n"
@@ -36,9 +36,17 @@ Theme::Theme()
           "    └──────────────────────────────┘ ⎰ padding_bottom\n"
           "\n"
           "Setting an attribute of the theme object just propagates the "
-          "value to the respective attribute of the tiling and the floating "
+          "value to the respective attribute of the +tiling+ and the +floating+ "
           "object."
     );
+    tiling.setChildDoc(
+                "configures the decoration of tiled clients, setting one of "
+                "its attributes propagates the respective attribute of the "
+                "+active+, +normal+ and +urgent+ child objects.");
+    floating.setChildDoc("behaves analogously to +tiling+");
+    minimal.setChildDoc("configures clients with minimal decorations "
+                        "triggered by +smart_window_surroundings+");
+    fullscreen.setChildDoc("configures clients in fullscreen state");
 }
 
 DecorationScheme::DecorationScheme()
@@ -67,6 +75,22 @@ DecorationScheme::DecorationScheme()
         i->toAttribute()->setWritable();
         i->toAttribute()->changed().connect([this]() { this->scheme_changed_.emit(); });
     }
+    border_width.setDoc("the base width of the border");
+    padding_top.setDoc("additional border width on the top");
+    padding_right.setDoc("additional border width on the right");
+    padding_bottom.setDoc("additional border width on the bottom");
+    padding_left.setDoc("additional border width on the left");
+    border_color.setDoc("the basic background color of the border");
+    inner_width.setDoc("width of the border around the clients content");
+    inner_color.setDoc("color of the inner border");
+    outer_width.setDoc("width of an border close to the edge");
+    outer_color.setDoc("color of the outer border");
+    background_color.setDoc("color behind window contents visible on resize");
+    tight_decoration.setDoc("specifies whether the size hints also affect "
+                            "the window decoration or only the window "
+                            "contents of tiled clients (requires enabled "
+                            "sizehints_tiling)");
+    reset.setDoc("writing this resets all attributes to a default value");
 }
 
 DecTriple::DecTriple()
@@ -83,6 +107,9 @@ DecTriple::DecTriple()
     for (auto it : children) {
         it->scheme_changed_.connect([this]() { this->triple_changed_.emit(); });
     }
+    active.setChildDoc("configures the decoration the focused client");
+    normal.setChildDoc("configures the decoration of focused clients");
+    urgent.setChildDoc("configures the decoration of urgent clients");
 }
 
 //! reset all attributes to a default value

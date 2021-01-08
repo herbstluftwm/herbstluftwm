@@ -716,8 +716,9 @@ class TokTreeInfoExtrator:
         """consume a codeblock in a member function of a class"""
         arg1 = TokenStream.PatternArg()
         parameters = TokenStream.PatternArg(callback=lambda t: TokenGroup.IsTokenGroup(t, opening_token='('))
+        setDoc = TokenStream.PatternArg(re=re.compile(r'^(setDoc|setChildDoc)$'))
         while not stream.empty():
-            if stream.try_match(arg1, '.', 'setDoc', parameters, ';'):
+            if stream.try_match(arg1, '.', setDoc, parameters, ';'):
                 doc_tokens = parameters.value.enclosed_tokens
                 doc_string = ast.literal_eval(' '.join(doc_tokens))
                 self.objInfo.member_doc(classname, arg1.value, doc_string)
