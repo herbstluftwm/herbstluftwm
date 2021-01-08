@@ -58,7 +58,7 @@ public:
     std::string getDescription();
     void evaluateClientPlacement(Client* client, ClientPlacement placement) const;
 private:
-    std::string atLeastMinWindowSize(Rectangle rect);
+    std::string atLeastMinWindowSize(Rectangle geom);
     std::string getTagString();
     std::string setTagString(std::string new_tag);
     Settings* settings;
