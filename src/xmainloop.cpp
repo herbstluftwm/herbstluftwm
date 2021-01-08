@@ -288,8 +288,8 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
                 }
                 // the requested coordinates are relative to the root window.
                 // convert them to coordinates relative to the monitor.
-                cre->x -= m->rect.x + *m->pad_left;
-                cre->y -= m->rect.y + *m->pad_up;
+                cre->x -= m->rect->x + *m->pad_left;
+                cre->y -= m->rect->y + *m->pad_up;
                 newRect.x = cre->x;
                 newRect.y = cre->y;
             }

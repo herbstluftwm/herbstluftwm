@@ -48,7 +48,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     , dirty(true)
     , lock_frames(false)
     , mouse { 0, 0 }
-    , rect(rect_)
+    , rect(this, "rectangle", rect_, &Monitor::atLeastMinWindowSize)
     , settings(settings_)
     , monman(monman_)
 {
@@ -61,6 +61,9 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     for (auto i : {&pad_up, &pad_left, &pad_right, &pad_down}) {
         i->changed().connect(this, &Monitor::applyLayout);
     }
+    rect.changedByUser().connect(this, &Monitor::applyLayout);
+
+    rect.setDoc("the geometry of the monitor");
 
     stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
@@ -388,7 +391,7 @@ int monitor_rect_command(int argc, char** argv, Output output) {
     } else {
         m = get_current_monitor();
     }
-    auto rect = m->rect;
+    auto rect = m->rect();
     if (with_pad) {
         rect.x += m->pad_left;
         rect.width -= m->pad_left + m->pad_right;
@@ -626,31 +629,31 @@ void monitor_focus_by_index(unsigned new_selection) {
         unsigned int mask;
         if (True == XQueryPointer(g_display, g_root, &win, &child,
             &rx, &ry, &wx, &wy, &mask)) {
-            old->mouse.x = rx - old->rect.x;
-            old->mouse.y = ry - old->rect.y;
-            old->mouse.x = CLAMP(old->mouse.x, 0, old->rect.width-1);
-            old->mouse.y = CLAMP(old->mouse.y, 0, old->rect.height-1);
+            old->mouse.x = rx - old->rect->x;
+            old->mouse.y = ry - old->rect->y;
+            old->mouse.x = CLAMP(old->mouse.x, 0, old->rect->width-1);
+            old->mouse.y = CLAMP(old->mouse.y, 0, old->rect->height-1);
         }
     }
     // restore position of new monitor
     // but only if mouse pointer is not already on new monitor
     int new_x, new_y;
-    if ((monitor->rect.x <= rx) && (rx < monitor->rect.x + monitor->rect.width)
-        && (monitor->rect.y <= ry) && (ry < monitor->rect.y + monitor->rect.height)) {
+    if ((monitor->rect->x <= rx) && (rx < monitor->rect->x + monitor->rect->width)
+        && (monitor->rect->y <= ry) && (ry < monitor->rect->y + monitor->rect->height)) {
         // mouse already is on new monitor
     } else {
         // If the mouse is located in a gap indicated by
         // mouse_recenter_gap at the outer border of the monitor,
         // recenter the mouse.
-        if (std::min(monitor->mouse.x, abs(monitor->mouse.x - monitor->rect.width))
+        if (std::min(monitor->mouse.x, abs(monitor->mouse.x - monitor->rect->width))
                 < g_settings->mouse_recenter_gap()
-            || std::min(monitor->mouse.y, abs(monitor->mouse.y - monitor->rect.height))
+            || std::min(monitor->mouse.y, abs(monitor->mouse.y - monitor->rect->height))
                 < g_settings->mouse_recenter_gap()) {
-            monitor->mouse.x = monitor->rect.width / 2;
-            monitor->mouse.y = monitor->rect.height / 2;
+            monitor->mouse.x = monitor->rect->width / 2;
+            monitor->mouse.y = monitor->rect->height / 2;
         }
-        new_x = monitor->rect.x + monitor->mouse.x;
-        new_y = monitor->rect.y + monitor->mouse.y;
+        new_x = monitor->rect->x + monitor->mouse.x;
+        new_y = monitor->rect->y + monitor->mouse.y;
         XWarpPointer(g_display, None, g_root, 0, 0, 0, 0, new_x, new_y);
         // discard all mouse events caused by this pointer movage from the
         // event queue, so the focus really stays in the last focused window on
@@ -670,11 +673,11 @@ void monitor_update_focus_objects() {
 }
 
 int Monitor::relativeX(int x_root) {
-    return x_root - rect.x - pad_left;
+    return x_root - rect->x - pad_left;
 }
 
 int Monitor::relativeY(int y_root) {
-    return y_root - rect.y - pad_up;
+    return y_root - rect->y - pad_up;
 }
 
 void Monitor::restack() {
@@ -725,7 +728,7 @@ void all_monitors_replace_previous_tag(HSTag *old, HSTag *newmon) {
 
 Rectangle Monitor::getFloatingArea() const {
     auto m = this;
-    auto r = m->rect;
+    auto r = m->rect();
     r.x += m->pad_left;
     r.width -= m->pad_left + m->pad_right;
     r.y += m->pad_up;
@@ -773,4 +776,17 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
             // do not do anything
             break;
     }
+}
+
+std::string Monitor::atLeastMinWindowSize(Rectangle rect)
+{
+    if (rect.width < WINDOW_MIN_WIDTH) {
+        return "Rectangle too small; it must be at least "
+                + Converter<int>::str(WINDOW_MIN_WIDTH) + " wide.";
+    }
+    if (rect.height < WINDOW_MIN_HEIGHT) {
+        return "Rectangle too small; it must be at least "
+                + Converter<int>::str(WINDOW_MIN_HEIGHT) + " high.";
+    }
+    return {};
 }
