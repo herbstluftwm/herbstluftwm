@@ -142,7 +142,7 @@ int TagManager::removeTag(Input input, Output output) {
         targetTag->insertClient(client, {}, false);
     }
 
-    // Make transferred clients visible if target tag is visible
+    // Ask target tag to make transferred clients visible if necessary
     Monitor* monitor_target = find_monitor_with_tag(targetTag);
     if (monitor_target) {
         monitor_target->applyLayout();
