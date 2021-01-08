@@ -48,7 +48,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     , dirty(true)
     , lock_frames(false)
     , mouse { 0, 0 }
-    , rect(this, "rectangle", rect_, &Monitor::atLeastMinWindowSize)
+    , rect(this, "geometry", rect_, &Monitor::atLeastMinWindowSize)
     , settings(settings_)
     , monman(monman_)
 {
@@ -63,7 +63,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     }
     rect.changedByUser().connect(this, &Monitor::applyLayout);
 
-    rect.setDoc("the geometry of the monitor");
+    rect.setDoc("the outer geometry of the monitor");
 
     stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
