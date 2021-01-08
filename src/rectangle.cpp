@@ -1,7 +1,7 @@
 #include "rectangle.h"
 
-#include <queue>
 #include <X11/Xutil.h>
+#include <queue>
 
 #include "ipc-protocol.h"
 #include "utils.h"

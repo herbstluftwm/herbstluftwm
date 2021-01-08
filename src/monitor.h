@@ -5,8 +5,8 @@
 
 #include "attribute_.h"
 #include "object.h"
-#include "rules.h"
 #include "rectangle.h"
+#include "rules.h"
 
 class HSTag;
 class MonitorManager;
