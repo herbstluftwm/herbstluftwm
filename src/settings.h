@@ -4,6 +4,7 @@
 #include <string>
 
 #include "attribute_.h"
+#include "commandio.h"
 #include "globals.h"
 #include "object.h"
 #include "types.h"

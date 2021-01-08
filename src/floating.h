@@ -1,7 +1,7 @@
 #ifndef __HERBST_FLOATING_H_
 #define __HERBST_FLOATING_H_
 
-#include "types.h"
+#include "commandio.h"
 #include "x11-types.h"
 
 class Client;

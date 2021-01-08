@@ -3,6 +3,7 @@
 
 #include <functional>
 
+#include "commandio.h"
 #include "ipc-protocol.h"
 #include "types.h"
 

@@ -6,6 +6,7 @@
 
 #include "attribute_.h"
 #include "child.h"
+#include "commandio.h"
 #include "object.h"
 #include "regexstr.h"
 #include "theme.h"
