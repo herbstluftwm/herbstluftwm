@@ -12,6 +12,11 @@ ByName::ByName(Object& parent_)
 {
     parent_.addChild(this, "by-name");
     parent_.addHook(this);
+    setDoc(
+        "This has an entry \'name\' for every object with "
+        "the given \'name\'. If an object has an empty name "
+        "then it is not listed here."
+    );
 }
 
 ByName::~ByName() {
