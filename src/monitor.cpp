@@ -778,13 +778,13 @@ void Monitor::evaluateClientPlacement(Client* client, ClientPlacement placement)
     }
 }
 
-string Monitor::atLeastMinWindowSize(Rectangle rect)
+string Monitor::atLeastMinWindowSize(Rectangle geom)
 {
-    if (rect.width < WINDOW_MIN_WIDTH) {
+    if (geom.width < WINDOW_MIN_WIDTH) {
         return "Rectangle too small; it must be at least "
                 + Converter<int>::str(WINDOW_MIN_WIDTH) + " wide.";
     }
-    if (rect.height < WINDOW_MIN_HEIGHT) {
+    if (geom.height < WINDOW_MIN_HEIGHT) {
         return "Rectangle too small; it must be at least "
                 + Converter<int>::str(WINDOW_MIN_HEIGHT) + " high.";
     }
