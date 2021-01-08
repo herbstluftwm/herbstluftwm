@@ -146,9 +146,7 @@ int TagManager::removeTag(Input input, Output output) {
     Monitor* monitor_target = find_monitor_with_tag(targetTag);
     if (monitor_target) {
         monitor_target->applyLayout();
-        for (auto c : clients) {
-            c->set_visible(true);
-        }
+        targetTag->setVisible(true);
     }
 
     // Remove tag
