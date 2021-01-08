@@ -16,8 +16,7 @@ class IndexingObject : public Object {
 public:
     IndexingObject()
     : count(this, "count", &IndexingObject<T>::sizeUnsignedLong)
-    {
-    }
+    { }
     void addIndexed(T* newChild) {
         // the current array size is the index for the new child
         unsigned long index = data.size();
