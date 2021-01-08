@@ -64,7 +64,19 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
 
     stacking_window = XCreateSimpleWindow(g_display, g_root,
                                              42, 42, 42, 42, 1, 0, 0);
-
+    setDoc("The monitor is a rectangular part on the screen that holds "
+           "precisely one tag at a time. The pad attributes reserve "
+           "space on the monitor\'s edge for panels, so this space "
+           "(given in number of pixels) is never occuped by tiled clients.");
+    name.setDoc("the monitor\'s name (can be empty)");
+    index.setDoc("the monitor\'s index (starts at index 0)");
+    tag_string.setDoc("the name of the tag viewed here");
+    pad_up.setDoc("space for panels at the monitor\'s upper edge");
+    pad_right.setDoc("space for panels at the monitor\'s right edge");
+    pad_down.setDoc("space for panels at the monitor\'s lower edge");
+    pad_left.setDoc("space for panels at the monitor\'s left edge");
+    lock_tag.setDoc("if activated, then it it is not possible to switch "
+                    "this monitor to a different tag.");
 }
 
 Monitor::~Monitor() {
