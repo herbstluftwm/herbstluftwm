@@ -67,7 +67,7 @@ Monitor::Monitor(Settings* settings_, MonitorManager* monman_, Rectangle rect_, 
     setDoc("The monitor is a rectangular part on the screen that holds "
            "precisely one tag at a time. The pad attributes reserve "
            "space on the monitor\'s edge for panels, so this space "
-           "(given in number of pixels) is never occuped by tiled clients.");
+           "(given in number of pixels) is never occupied by tiled clients.");
     name.setDoc("the monitor\'s name (can be empty)");
     index.setDoc("the monitor\'s index (starts at index 0)");
     tag_string.setDoc("the name of the tag viewed here");
