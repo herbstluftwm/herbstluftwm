@@ -1,8 +1,8 @@
 #ifndef __HERBST_FLOATING_H_
 #define __HERBST_FLOATING_H_
 
+#include "rectangle.h"
 #include "types.h"
-#include "x11-types.h"
 
 class Client;
 class HSTag;

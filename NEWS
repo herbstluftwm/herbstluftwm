@@ -16,6 +16,7 @@ Current git version
     - Correctly interpret _NET_WM_STRUT. This fixes panels that leave a bit of
       space between the panel and the monitor edge and also panels between two
       monitors.
+    - Correctly handling minimized clients when removing a tag.
   * New dependencies: xft, freetype
 
 Release 0.9.1 on 2020-12-28
