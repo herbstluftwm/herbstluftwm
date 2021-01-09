@@ -7,6 +7,7 @@
 #include "attribute.h"
 #include "object.h"
 #include "signal.h"
+#include "rectangle.h"
 #include "x11-types.h" // for Color
 
 class Completion;
