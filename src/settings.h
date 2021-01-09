@@ -7,7 +7,6 @@
 #include "commandio.h"
 #include "globals.h"
 #include "object.h"
-#include "types.h"
 #include "x11-types.h"
 
 class Root;

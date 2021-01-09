@@ -10,7 +10,6 @@
 #include <string>
 
 #include "commandio.h"
-#include "types.h"
 
 #define LENGTH(X) (sizeof(X)/sizeof(*(X)))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
