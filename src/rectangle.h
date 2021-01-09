@@ -1,11 +1,11 @@
 #ifndef __HERBSTLUFT_RECTANGLE_H_
 #define __HERBSTLUFT_RECTANGLE_H_
 
+#include <string>
+
 #include "commandio.h"
 #include "types.h"
 #include "x11-types.h"
-
-#include <string>
 
 struct Rectangle {
     //! Construct a default rectangle (0/0/0/0)
