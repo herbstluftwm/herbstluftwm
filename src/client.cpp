@@ -120,6 +120,9 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     fullscreen_.setDoc(
                 "whether this client covers all other "
                 "windows and panels on its monitor.");
+    minimized_.setDoc(
+                "whether this client is minimized (also called "
+                "iconified).");
     floating_.setDoc("whether this client is floated above the tiled clients.");
     pseudotile_.setDoc(
                 "if activated, the client always has its floating "
