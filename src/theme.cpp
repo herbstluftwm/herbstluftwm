@@ -107,8 +107,8 @@ DecTriple::DecTriple()
     for (auto it : children) {
         it->scheme_changed_.connect([this]() { this->triple_changed_.emit(); });
     }
-    active.setChildDoc("configures the decoration the focused client");
-    normal.setChildDoc("configures the decoration of focused clients");
+    active.setChildDoc("configures the decoration of the focused client");
+    normal.setChildDoc("configures the decoration of unfocused and non-urgent clients");
     urgent.setChildDoc("configures the decoration of urgent clients");
 }
 
