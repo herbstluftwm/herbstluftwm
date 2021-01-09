@@ -6,7 +6,7 @@
 #include <string>
 
 #include "optional.h"
-#include "x11-types.h"
+#include "rectangle.h"
 
 class XConnection {
 private:

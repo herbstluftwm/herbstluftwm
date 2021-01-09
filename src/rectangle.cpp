@@ -1,30 +1,137 @@
 #include "rectangle.h"
 
+#include <X11/Xutil.h>
 #include <queue>
 
 #include "ipc-protocol.h"
 #include "utils.h"
 
 using std::endl;
+using std::string;
+using std::vector;
 
-static bool rects_intersect(const Rectangle &a, const Rectangle &b) {
-    bool is = true;
-    is = is && intervals_intersect(a.x, a.x + a.width,
-                                   b.x, b.x + b.width);
-    is = is && intervals_intersect(a.y, a.y + a.height,
-                                   b.y, b.y + b.height);
-    return is;
+
+Rectangle Rectangle::fromStr(const string &source) {
+    int x, y;
+    unsigned int w, h;
+    int flags = XParseGeometry(source.c_str(), &x, &y, &w, &h);
+
+    return {
+        (XValue & flags) ? x : 0,
+        (YValue & flags) ? y : 0,
+        (WidthValue & flags) ? (int)w : 0,
+        (HeightValue & flags) ? (int)h : 0
+    };
 }
 
-static Rectangle intersection_area(const Rectangle &a, const Rectangle &b) {
-    /* determine top-left as maximum of both */
-    Point2D tr = {std::max(a.x, b.x), std::max(a.y, b.y)};
+Rectangle Rectangle::fromCorners(int x1, int y1, int x2, int y2) {
+    Rectangle r;
+    r.x = x1;
+    r.y = y1;
+    r.width  = x2 - x1;
+    r.height = y2 - y1;
+    return r;
+}
 
-    /* determine bottom-right as minimum of both */
-    auto abr = a.br(), bbr = b.br();
-    Point2D br = {std::min(abr.x, bbr.x), std::min(abr.y, bbr.y)};
+Rectangle Rectangle::adjusted(int dx, int dy) const
+{
+    return adjusted(dx, dy, dx, dy);
+}
 
-    return {tr.x, tr.y, br.x - tr.x, br.y - tr.y};
+Rectangle Rectangle::adjusted(int left, int top, int right, int bottom) const
+{
+    return {x - left, y - top, width + left + right, height + top + bottom};
+}
+
+//! lexicographic order (wrt x,y,width,height)
+bool Rectangle::operator<(const Rectangle& other) const
+{
+    if (x != other.x) {
+        return x < other.x;
+    }
+    if (y != other.y) {
+        return y < other.y;
+    }
+    if (width != other.width) {
+        return width < other.width;
+    }
+    if (height != other.height) {
+        return height < other.height;
+    }
+    return false;
+}
+
+bool Rectangle::operator==(const Rectangle& other) const
+{
+    return x == other.x
+        && y == other.y
+        && width == other.width
+        && height == other.height;
+}
+
+/**
+ * @brief Check whether a rectangle has non-negative width and height
+ */
+Rectangle::operator bool() const
+{
+    return (width > 0) && (height > 0);
+}
+
+/**
+ * @brief Return the intersection with another rectangel
+ * @param the other rectangle
+ * @return the intersection
+ */
+Rectangle Rectangle::intersectionWith(const Rectangle &other) const
+{
+    return Rectangle::fromCorners(
+                std::max(x, other.x),
+                std::max(y, other.y),
+                std::min(br().x, other.br().x),
+                std::min(br().y, other.br().y));
+}
+
+//! the minimum distance between any two points from the one and the other
+//! rectangle
+int Rectangle::manhattanDistanceTo(Rectangle &other) const
+{
+    if (intersectionWith(other)) {
+        return 0; // distance 0 if there is an intersection
+    }
+    // if they don't intersect but are below each other
+    if (intervals_intersect(x, x + width, other.x, other.x + other.width)) {
+        return std::min(
+                    // this is below the other:
+                    std::abs(y - (other.y + other.height)),
+                    // this is above the other:
+                    std::abs(other.y - (y + height)));
+    }
+    // if they don't intersect but are next to each other
+    if (intervals_intersect(y, y + height, other.y, other.y + other.height)) {
+        return std::min(
+                    // this is right of the other
+                    std::abs(x - (other.x + other.width)),
+                    // this is left of the other
+                    std::abs(other.x - (x + width)));
+    }
+    vector<Point2D> thisCorners = { tl(), tr(), bl(), br() };
+    vector<Point2D> otherCorners = { other.tl(), other.tr(), other.bl(), other.br() };
+    int minDist = std::numeric_limits<int>::max();
+    for (const auto& p1 : thisCorners) {
+        for (const auto& p2 : otherCorners) {
+            minDist = std::min(minDist, (p1 - p2).manhattanLength());
+        }
+    }
+    return minDist;
+}
+
+std::ostream& operator<< (std::ostream& stream, const Rectangle& rect) {
+    stream
+        << rect.width << "x" << rect.height
+        << std::showpos
+        << rect.x << rect.y
+        << std::noshowpos;
+    return stream;
 }
 
 static RectangleVec disjoin_from_subset(Rectangle large, Rectangle center)
@@ -71,7 +178,7 @@ RectangleVec disjoin_rects(const RectangleVec &buf) {
         // find some rectangle in 'result' that intersects with rectToInsert
         size_t i;
         for (i = 0; i < result.size(); i++) {
-            if (rects_intersect(result[i], rectToInsert)) {
+            if (result[i].intersectionWith(rectToInsert)) {
                 break;
             }
         }
@@ -80,7 +187,7 @@ RectangleVec disjoin_rects(const RectangleVec &buf) {
             result.push_back(rectToInsert);
         } else {
             // if there's an intersection
-            Rectangle center = intersection_area(result[i], rectToInsert);
+            Rectangle center = result[i].intersectionWith(rectToInsert);
             // then cut both rectangles into pieces according to the intersection:
             // 1. all rectangles of 'result' are invariantly disjoint, and so we can add them
             // to the result

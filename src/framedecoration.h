@@ -5,7 +5,7 @@
 #include <map>
 #include <memory>
 
-#include "x11-types.h"
+#include "rectangle.h"
 
 class FrameLeaf;
 class HSTag;

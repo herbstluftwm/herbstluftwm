@@ -161,6 +161,9 @@ void HSTag::applyClientState(Client* client)
 void HSTag::setVisible(bool newVisible)
 {
     visible = newVisible;
+    // always pass the visibility state correctly
+    // to the clients, even though the state of
+    // `visible` may not have changed.
     frame->root_->setVisibleRecursive(visible);
     for (Client* c : floating_clients_) {
         if (c->minimized_()) {
