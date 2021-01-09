@@ -33,7 +33,7 @@ TagManager::TagManager()
 
     setDoc(
         "The tags (or virtual desktops or workspaces). This contains "
-        " has an entry \'index\' for each tag with the given \'index\'."
+        " an entry \'index\' for each tag with the given \'index\'."
     );
     focus_.setDoc(
         "the object of the focused tag, equivalently, "
