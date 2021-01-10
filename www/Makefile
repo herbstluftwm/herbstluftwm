@@ -7,12 +7,14 @@ ASCIIDOC = asciidoc
 ASCIIDOCFLAGS = -s
 TXT = $(wildcard *.txt)
 INSTALLFILES = $(TXT:.txt=.html) \
+	object-doc.html \
 	herbstluftwm.html \
 	herbstclient.html \
 	herbstluftwm.svg \
 	favicon.ico \
 	main.css \
 	.htaccess \
+	hlwm-doc.json \
 	$(LINKS)
 
 LINKS = NEWS MIGRATION
@@ -25,6 +27,9 @@ all: $(INSTALLFILES)
 
 %.html: %-content.html compose.py
 	./compose.py $< > $@
+
+object-doc.txt: hlwm-doc.json ../doc/format-doc.py
+	../doc/format-doc.py $< > $@
 
 herbstluftwm.svg: ../share/herbstluftwm.svg
 	cp $^ $@
@@ -47,6 +52,9 @@ faq.html: faq-toc.html
 favicon.ico: ../share/herbstluftwm.svg
 	convert -density 256x256 -background transparent $< \
         -define icon:auto-resize -colors 256 $@
+
+hlwm-doc.json: ../doc/gendoc.py $(wildcard ../src/*.*)
+	../doc/gendoc.py --sourcedir ../src --json > $@
 
 # some symbolic links to make links in these asciidoc files work in www, too
 $(LINKS):

@@ -2,6 +2,7 @@
 #define __HLWM_TAGMANAGER_H_
 
 #include "byname.h"
+#include "commandio.h"
 #include "indexingobject.h"
 #include "link.h"
 #include "signal.h"

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "attribute.h"
+#include "commandio.h"
 #include "types.h"
 
 class Object;

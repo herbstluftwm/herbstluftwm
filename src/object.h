@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "arglist.h"
+#include "commandio.h"
 #include "entity.h"
 #include "types.h"
 
