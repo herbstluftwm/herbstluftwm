@@ -6,6 +6,7 @@
 
 #include "attribute.h"
 #include "object.h"
+#include "rectangle.h"
 #include "signal.h"
 #include "x11-types.h" // for Color
 
@@ -204,6 +205,8 @@ template<>
 inline Type Attribute_<std::string>::staticType() { return Type::STRING; }
 template<>
 inline Type Attribute_<Color>::staticType() { return Type::COLOR; }
+template<>
+inline Type Attribute_<Rectangle>::staticType() { return Type::RECTANGLE; }
 
 template<typename T>
 class DynAttribute_ : public Attribute {
