@@ -108,7 +108,7 @@ DecTriple::DecTriple()
         it->scheme_changed_.connect([this]() { this->triple_changed_.emit(); });
     }
     active.setChildDoc("configures the decoration of the focused client");
-    normal.setChildDoc("configures the decoration of unfocused and non-urgent clients");
+    normal.setChildDoc("the default decoration scheme for clients");
     urgent.setChildDoc("configures the decoration of urgent clients");
 }
 
