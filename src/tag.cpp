@@ -70,6 +70,8 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
         return this->floatingLayerCanBeFocused(v);
     });
 
+    name.setDoc("name of the tag (must be non-empty)");
+    index.setDoc("index of this tag (the first index is 0)");
     visible.setDoc("if this tag is shown on some monitor");
     floating.setDoc("if the entire tag is set to floating mode");
     floating_focused.setDoc("if the floating layer is focused"

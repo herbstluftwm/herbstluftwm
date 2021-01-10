@@ -30,6 +30,15 @@ TagManager::TagManager()
         Ewmh::get().updateCurrentDesktop();
         tag_set_flags_dirty();
     });
+
+    setDoc(
+        "The tags (or virtual desktops or workspaces). This contains "
+        " an entry \'index\' for each tag with the given \'index\'."
+    );
+    focus_.setDoc(
+        "the object of the focused tag, equivalently, "
+        "the tag on the focused monitor."
+    );
 }
 
 void TagManager::injectDependencies(MonitorManager* m, Settings *s) {
