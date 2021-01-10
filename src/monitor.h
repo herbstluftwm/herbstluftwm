@@ -40,7 +40,7 @@ public:
         int x;
         int y;
     } mouse;
-    Rectangle   rect;   // area for this monitor
+    Attribute_<Rectangle>   rect;   // area for this monitor
     Window      stacking_window;   // window used for making stacking easy
     Signal monitorMoved;
     void setIndexAttribute(unsigned long index) override;
@@ -58,6 +58,7 @@ public:
     std::string getDescription();
     void evaluateClientPlacement(Client* client, ClientPlacement placement) const;
 private:
+    std::string atLeastMinWindowSize(Rectangle geom);
     std::string getTagString();
     std::string setTagString(std::string new_tag);
     Settings* settings;

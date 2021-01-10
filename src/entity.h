@@ -14,6 +14,7 @@ enum class Type {
     REGEX,
     NAMES, // a enum type containing names
     FONT,
+    RECTANGLE,
 };
 
 static const std::map<Type, std::pair<std::string, char>> type_strings = {
@@ -26,6 +27,7 @@ static const std::map<Type, std::pair<std::string, char>> type_strings = {
     {Type::REGEX,   {"Regex",        'r'}},
     {Type::NAMES,   {"Names",        'n'}},
     {Type::FONT,    {"Font",         'f'}},
+    {Type::RECTANGLE, {"Rectangle",  'R'}},
 };
 
 bool operator<(Type t1, Type t2);
