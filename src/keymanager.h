@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
+#include "commandio.h"
 #include "keycombo.h"
 #include "object.h"
 #include "regexstr.h"
-#include "types.h"
 #include "xkeygrabber.h"
 
 class Client;

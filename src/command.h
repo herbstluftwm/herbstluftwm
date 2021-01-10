@@ -5,7 +5,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "types.h"
+#include "commandio.h"
 
 // returns a command binding that internalizes object to given a command that
 // calls the member function of the given object
