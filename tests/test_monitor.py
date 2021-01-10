@@ -399,3 +399,36 @@ def test_lock_tag_command_vs_attribute(hlwm):
     assert hlwm.attr.monitors[0].lock_tag() == hlwm.bool(True)
     hlwm.call('unlock_tag 0')
     assert hlwm.attr.monitors[0].lock_tag() == hlwm.bool(False)
+
+
+def test_monitor_rect_too_small(hlwm):
+    hlwm.call_xfail('attr monitors.0.geometry 20x300+0+0') \
+        .expect_stderr('too small.*wide')
+    hlwm.call_xfail('attr monitors.0.geometry 400x30+0+0') \
+        .expect_stderr('too small.*high')
+
+
+def test_monitor_rect_is_updated(hlwm):
+    for rect in ['500x300+30+40', '500x300-30+40', '500x300+30-40', '500x300-30-40']:
+        hlwm.call(['move_monitor', 0, rect])
+        assert hlwm.attr.monitors[0].geometry() == rect
+
+
+def test_monitor_rect_parser(hlwm):
+    for rect in [(400, 800, a * 40, b * 60) for a in [1, -1] for b in [1, -1]]:
+
+        hlwm.attr.monitors[0].geometry = '%dx%d%+d%+d' % rect
+
+        expected_output = ' '.join([str(rect[i]) for i in [2, 3, 0, 1]])
+        assert hlwm.call('monitor_rect 0').stdout.strip() == expected_output
+
+
+def test_monitor_rect_apply_layout(hlwm, x11):
+    winhandle, winid = x11.create_client()
+    hlwm.attr.clients[winid].fullscreen = 'on'
+    for expected_geometry in [(600, 700, 40, 50), (400, 800, -10, 0)]:
+        hlwm.attr.monitors[0].geometry = '%dx%d%+d%+d' % expected_geometry
+
+        x11.display.sync()
+        geom = x11.get_absolute_geometry(winhandle)
+        assert (geom.width, geom.height, geom.x, geom.y) == expected_geometry

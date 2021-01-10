@@ -13,6 +13,7 @@
 #include "client.h"
 #include "clientmanager.h"
 #include "command.h"
+#include "commandio.h"
 #include "ewmh.h"
 #include "fontdata.h"
 #include "frametree.h"

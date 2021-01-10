@@ -399,3 +399,18 @@ def test_minimized_window_stays_minimized_on_tag_change(hlwm):
     # but after un-minimizing it, it is
     hlwm.call(f'set_attr clients.{winid}.minimized false')
     assert hlwm.get_attr('tags.focus.tiling.root.client_count') == '1'
+
+
+def test_merge_tag_minimized_into_visible_tag(hlwm):
+    hlwm.call('add source')
+    hlwm.call('add target')
+    hlwm.call('use source')
+    winid, _ = hlwm.create_client()
+    hlwm.attr.clients[winid].minimized = hlwm.bool(True)
+    hlwm.call('use target')
+
+    assert hlwm.attr.tags['by-name'].target.visible() == hlwm.bool(True)
+    hlwm.call('merge_tag source')
+
+    assert hlwm.attr.clients[winid].visible() == hlwm.bool(False)
+    assert winid not in hlwm.call('dump').stdout

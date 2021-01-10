@@ -4,6 +4,7 @@
 #include <X11/X.h>
 #include <map>
 
+#include "rectangle.h"
 #include "x11-types.h"
 
 class Client;

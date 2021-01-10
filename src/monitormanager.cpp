@@ -254,10 +254,10 @@ Monitor* MonitorManager::byTag(HSTag* tag) {
 Monitor* MonitorManager::byCoordinate(Point2D p)
 {
     for (Monitor* m : *this) {
-        if (m->rect.x + m->pad_left <= p.x
-            && m->rect.x + m->rect.width - m->pad_right > p.x
-            && m->rect.y + m->pad_up <= p.y
-            && m->rect.y + m->rect.height - m->pad_down > p.y) {
+        if (m->rect->x + m->pad_left <= p.x
+            && m->rect->x + m->rect->width - m->pad_right > p.x
+            && m->rect->y + m->pad_up <= p.y
+            && m->rect->y + m->rect->height - m->pad_down > p.y) {
             return &* m;
         }
     }
@@ -705,7 +705,7 @@ Rectangle MonitorManager::interpretGlobalGeometry(Rectangle globalGeometry)
     int bestArea = 0;
     Monitor* best = nullptr;
     for (Monitor* m : *this) {
-        auto intersection = m->rect.intersectionWith(globalGeometry);
+        auto intersection = m->rect->intersectionWith(globalGeometry);
         if (!intersection) {
             continue;
         }
@@ -716,8 +716,8 @@ Rectangle MonitorManager::interpretGlobalGeometry(Rectangle globalGeometry)
         }
     }
     if (best) {
-        globalGeometry.x -= best->rect.x + *best->pad_left;
-        globalGeometry.y -= best->rect.y + *best->pad_up;
+        globalGeometry.x -= best->rect->x + *best->pad_left;
+        globalGeometry.y -= best->rect->y + *best->pad_up;
     }
     return globalGeometry;
 }

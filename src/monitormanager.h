@@ -5,6 +5,7 @@
 #include <string>
 
 #include "byname.h"
+#include "commandio.h"
 #include "indexingobject.h"
 #include "link.h"
 #include "monitor.h"

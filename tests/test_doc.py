@@ -92,6 +92,7 @@ def types_and_shorthands():
         'SplitAlign': 'n',
         'LayoutAlgorithm': 'n',
         'font': 'f',
+        'Rectangle': 'R',
     }
 
 
