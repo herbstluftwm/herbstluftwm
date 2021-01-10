@@ -98,6 +98,42 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     visible_.setDoc("whether this client is rendered currently");
     parent_frame_.setDoc("the frame contaning this client if the client is tiled");
     setDoc("a managed window");
+
+    window_id_str.setDoc("its window id (as a hexadecimal number with 0x prefix)");
+    title_.setDoc("its window title");
+    keyMask_.setDoc(
+        "A regular expression that is matched against the string "
+        "representation of all key bindings (as they are printed "
+        "by list_keybinds). While this client is focused, only "
+        "bindings that match the expression will be active. "
+        "Any other bindings will be disabled. The default keymask "
+        "is an empty string (""), which does not disable any keybinding.");
+    keysInactive_.setDoc(
+        "A regular expression that describes which keybindings are inactive "
+        "while the client is focused. If a key combination is pressed and "
+        "its string representation (as given by list_keybinds) matches the "
+        "regex, then the key press is propagated to the client.");
+    tag_str_.setDoc("the name of the tag it's currently on.");
+    pid_.setDoc("the process id of it (-1 if unset).");
+    window_class_.setDoc("the class of it (second entry in WM_CLASS)");
+    window_instance_.setDoc("the instance of it (first entry in WM_CLASS)");
+    fullscreen_.setDoc(
+                "whether this client covers all other "
+                "windows and panels on its monitor.");
+    minimized_.setDoc(
+                "whether this client is minimized (also called "
+                "iconified).");
+    floating_.setDoc("whether this client is floated above the tiled clients.");
+    pseudotile_.setDoc(
+                "if activated, the client always has its floating "
+                "window size, even if it is in tiling mode.");
+    ewmhrequests_.setDoc("if ewmh requests are permitted for this client");
+    ewmhnotify_.setDoc("if the client is told about its state via ewmh");
+    urgent_.setDoc("the urgency state (also known as: demands attention)");
+    sizehints_tiling_.setDoc("if sizehints for this client "
+                             "should be respected in tiling mode");
+    sizehints_floating_.setDoc("if sizehints for this client should "
+                               "be respected in floating mode");
 }
 
 void Client::init_from_X() {
