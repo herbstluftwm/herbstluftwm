@@ -25,6 +25,8 @@ class Object;
  * is good for.
  */
 class ChildEntry : public HasDocumentation {
+public:
+    void setChildDoc(const char text[]) { setDoc(text); }
 protected:
     ChildEntry(Object& owner, const std::string& name);
     friend class Object;
