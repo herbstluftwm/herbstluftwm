@@ -2,7 +2,7 @@
 #define HLWM_COMPLETION
 
 #include "arglist.h"
-#include "types.h"
+#include "commandio.h"
 
 namespace Commands {
 void complete(Completion& completion);

@@ -412,20 +412,20 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
         return;
     }
     auto rect = this->float_size_;
-    rect.x += m->rect.x;
-    rect.y += m->rect.y;
+    rect.x += m->rect->x;
+    rect.y += m->rect->y;
     rect.x += m->pad_left();
     rect.y += m->pad_up();
     // ensure position is on monitor
     int space = g_monitor_float_treshold;
     rect.x =
         CLAMP(rect.x,
-              m->rect.x + m->pad_left() - rect.width + space,
-              m->rect.x + m->rect.width - m->pad_left() - m->pad_right() - space);
+              m->rect->x + m->pad_left() - rect.width + space,
+              m->rect->x + m->rect->width - m->pad_left() - m->pad_right() - space);
     rect.y =
         CLAMP(rect.y,
-              m->rect.y + m->pad_up() - rect.height + space,
-              m->rect.y + m->rect.height - m->pad_up() - m->pad_down() - space);
+              m->rect->y + m->pad_up() - rect.height + space,
+              m->rect->y + m->rect->height - m->pad_up() - m->pad_down() - space);
     dec->resize_inner(rect, theme[Theme::Type::Floating](isFocused,urgent_()));
     mostRecentThemeType = Theme::Type::Floating;
 }

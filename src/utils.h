@@ -9,7 +9,7 @@
 #include <sstream>
 #include <string>
 
-#include "types.h"
+#include "commandio.h"
 
 #define LENGTH(X) (sizeof(X)/sizeof(*(X)))
 #define SHIFT(ARGC, ARGV) (--(ARGC) && ++(ARGV))
