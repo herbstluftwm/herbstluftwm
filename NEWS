@@ -12,6 +12,7 @@ Current git version
   * New command 'help' for live documentation on the object tree
   * New 'watch' command that emits hooks when attribute values change.
   * The 'lock_tag' attribute is now writable.
+  * New 'geometry' attribute for monitors.
   * Bug fixes:
     - Correctly interpret _NET_WM_STRUT. This fixes panels that leave a bit of
       space between the panel and the monitor edge and also panels between two
