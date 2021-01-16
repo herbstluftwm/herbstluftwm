@@ -151,9 +151,6 @@ void Stack::raiseSlice(Slice* slice) {
         layers_[layer].raise(slice);
     }
     dirty = true;
-    // TODO: maybe only update the specific range and not the entire stack
-    // update
-    restack();
 }
 
 void Stack::markDirty() {

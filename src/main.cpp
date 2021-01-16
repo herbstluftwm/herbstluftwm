@@ -366,6 +366,7 @@ int raise_command(int argc, char** argv, Output output) {
     auto client = get_client(argv[1]);
     if (client) {
         client->raise();
+        client->needsRelayout.emit(client->tag());
     } else {
         auto window = get_window(argv[1]);
         if (window) {
