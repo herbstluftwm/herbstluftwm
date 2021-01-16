@@ -200,7 +200,7 @@ jobs:
           ci/diff-json-doc.py --no-tmp-dir "$(< old_commit)" "$(< new_commit)"
 
       - name: Post diff as comment (on pull requst)
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' && secrets.HLWM_BOT_GITHUB_TOKEN != ""}}
         env:
           GITHUB_TOKEN: ${{ secrets.HLWM_BOT_GITHUB_TOKEN }}
         run: |
