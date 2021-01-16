@@ -2,7 +2,6 @@
 import json
 import re
 import argparse
-import textwrap
 
 
 def count_whitespace_prefix(string):
