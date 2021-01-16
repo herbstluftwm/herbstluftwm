@@ -204,5 +204,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.HLWM_BOT_GITHUB_TOKEN }}
         run: |
-          ci/diff-json-doc.py --no-tmp-dir --post-comment ${{ github.event.pull_request.number }} \
-            "$(< old_commit)" "$(< new_commit)"
+          if [ -n "$GITHUB_TOKEN" ] ; then
+            ci/diff-json-doc.py --no-tmp-dir --post-comment ${{ github.event.pull_request.number }} \
+              "$(< old_commit)" "$(< new_commit)"
+          else
+            echo "Skipping comment posting because of absence of secret"
+          fi
