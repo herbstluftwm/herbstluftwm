@@ -1,0 +1,11 @@
+
+OBJECTS
+-------
+The state of herbstluftwm can interactively be introspected
+and modified via the object system. Similarly to a file system,
+the objects are organized in a tree whose root object has the following
+entries:
+
+include::hlwm-objects-gen.txt[]
+
+// vim: nowrap ft=asciidoc

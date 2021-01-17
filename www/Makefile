@@ -4,10 +4,9 @@
 TARGET = herbstluftwm.org:html/
 
 ASCIIDOC = asciidoc
-ASCIIDOCFLAGS = -s
-TXT = $(wildcard *.txt)
+ASCIIDOCFLAGS = -s -a "builddir=${PWD}"
+TXT = $(shell git ls-files '*.txt')
 INSTALLFILES = $(TXT:.txt=.html) \
-	object-doc.html \
 	herbstluftwm.html \
 	herbstclient.html \
 	herbstluftwm.svg \
@@ -28,7 +27,7 @@ all: $(INSTALLFILES)
 %.html: %-content.html compose.py
 	./compose.py $< > $@
 
-object-doc.txt: hlwm-doc.json ../doc/format-doc.py
+hlwm-objects-gen.txt: hlwm-doc.json ../doc/format-doc.py
 	../doc/format-doc.py $< > $@
 
 herbstluftwm.svg: ../share/herbstluftwm.svg
@@ -38,7 +37,9 @@ news.html: ../NEWS
 
 migration.html: ../MIGRATION
 
-herbstluftwm.html: ../doc/herbstluftwm.txt
+herbstluftwm.html: ../doc/herbstluftwm.txt hlwm-objects-gen.txt
+
+object-doc.html: hlwm-objects-gen.txt
 
 herbstclient.html: ../doc/herbstclient.txt
 
@@ -61,7 +62,7 @@ $(LINKS):
 	ln -sf $(shell echo $@ | tr A-Z a-z).html $@
 
 clean:
-	rm -f *.html *-content.html $(LINKS)
+	rm -f *.html *-content.html $(LINKS) hlwm-objects-gen.txt
 
 install: all
 	rsync -v -l $(INSTALLFILES) $(TARGET)

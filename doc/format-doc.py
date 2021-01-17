@@ -2,7 +2,6 @@
 import json
 import re
 import argparse
-import textwrap
 
 
 def count_whitespace_prefix(string):
@@ -204,15 +203,6 @@ def main():
 
     with open(args.jsondoc, 'r') as fh:
         jsondoc = json.load(fh)
-
-    print(textwrap.dedent("""
-    OBJECTS
-    -------
-    The state of herbstluftwm can interactively be introspected
-    and modified via the object system. Similarly to a file system,
-    the objects are organized in a tree:
-
-    """))
 
     doc_printer = ObjectDocPrinter(jsondoc)
     doc_printer.abstractclass.add('Frame')

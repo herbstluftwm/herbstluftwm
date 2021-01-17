@@ -12,6 +12,19 @@ function(gen_json_doc destfile)
     install(FILES ${dst} DESTINATION ${DOCDIR} OPTIONAL)
 endfunction()
 
+function(gen_object_asciidoc jsonfile destfile)
+    set(dst "${CMAKE_CURRENT_BINARY_DIR}/${destfile}")
+    set(absjson "${CMAKE_CURRENT_BINARY_DIR}/${jsonfile}")
+    add_custom_target(doc_asciidoc_objects DEPENDS ${dst})
+    add_custom_command(
+        OUTPUT ${dst}
+        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/format-doc.py" ${absjson} > ${dst}
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/format-doc.py" ${absjson}
+        )
+    add_dependencies(doc_html_herbstluftwm doc_asciidoc_objects)
+    add_dependencies(doc_man_herbstluftwm  doc_asciidoc_objects)
+endfunction()
+
 function(gen_manpage sourcefile man_nr)
     set(src_orig "${CMAKE_CURRENT_SOURCE_DIR}/${sourcefile}.txt")
     set(src "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.txt")
@@ -29,6 +42,7 @@ function(gen_manpage sourcefile man_nr)
                 -f manpage
                 -a \"herbstluftwmversion=herbstluftwm ${VERSION}\"
                 -a \"date=${BUILD_DATE}\"
+                -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
                 ${src}
         DEPENDS ${src_orig}
         )
@@ -43,7 +57,10 @@ function(gen_html sourcefile)
     add_custom_command(
         OUTPUT ${dst}
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMAND ${ASCIIDOC} -o ${dst} ${src}
+        COMMAND ${ASCIIDOC}
+                    -o ${dst}
+                    -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
+                    ${src}
         DEPENDS ${src}
         )
     install(FILES ${dst} DESTINATION ${DOCDIR})
@@ -60,6 +77,8 @@ if (WITH_DOCUMENTATION)
     gen_html(herbstclient)
     gen_html(herbstluftwm)
     gen_html(herbstluftwm-tutorial)
+
+    gen_object_asciidoc("hlwm-doc.json" "hlwm-objects-gen.txt")
 
     # mark the doc_json target as mandatory
     add_custom_target("doc_json_mandatory" ALL DEPENDS "doc_json")
