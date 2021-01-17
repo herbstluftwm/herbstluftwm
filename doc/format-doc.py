@@ -161,21 +161,25 @@ class ObjectDocPrinter:
             ws_prefix = depth * ' ' + '   '  # whitespace prefix
         for _, attr in objdoc['attributes'].items():
             if attr['default_value'] is not None:
-                default_val = '= ' + escape_string_value(attr['default_value'])
+                default_val = ' [defaultvalue]#= ' + escape_string_value(attr['default_value']) + '#'
             else:
                 default_val = ''
             if attr.get('doc', None) is not None:
-                docstr = attr.get('doc', None)
+                docstr = ': ' + attr.get('doc', None)
             else:
                 docstr = ''
-            print(f"{ws_prefix}{bulletprefix}* {attr['type']} +{attr['name']}+ {default_val} {docstr}")
+            # add multiple formats to the entry name such that the colors work
+            # both in html and in the man page output
+            print(f"{ws_prefix}{bulletprefix}* '[datatype]#{attr['type']}#' *+[entryname]#{attr['name']}#+*{default_val}{docstr}")
         for _, child in objdoc['children'].items():
             docstr = ': ' + child['doc'].strip() if 'doc' in child else ''
             # class_doc = self.jsondoc['objects'][child['type']].get('doc', '')
             if len(docstr) > 0 and not docstr.endswith('.'):
                 docstr += '.'
             if depth > 0:
-                itemname = f"+{child['name']}+"
+                # add multiple format indicators, as for the
+                # attribute name above
+                itemname = f"*+[entryname]#{child['name']}#+*"
                 bullet = '*'
             else:
                 itemname = f"{child['name']}"
