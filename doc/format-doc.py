@@ -198,9 +198,6 @@ class ObjectDocPrinter:
 def main():
     parser = argparse.ArgumentParser(description='Generate object documentation')
     parser.add_argument('jsondoc', help='the hlwm-doc.json file')
-    parser.add_argument('--objects-intro',
-                        action='store_const', default=False, const=True,
-                        help='say a few introductory words')
 
     args = parser.parse_args()
 

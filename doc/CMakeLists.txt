@@ -74,7 +74,6 @@ if (WITH_DOCUMENTATION)
     gen_manpage(herbstluftwm 1)
     gen_manpage(herbstluftwm-tutorial 7)
 
-
     gen_html(herbstclient)
     gen_html(herbstluftwm)
     gen_html(herbstluftwm-tutorial)
