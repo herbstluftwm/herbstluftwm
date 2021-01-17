@@ -21,11 +21,10 @@ function(gen_object_asciidoc jsonfile destfile)
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/format-doc.py" ${absjson} > ${dst}
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/format-doc.py" ${absjson}
         )
-    add_dependencies(doc_html_herbstluftwm doc_asciidoc_objects)
-    add_dependencies(doc_man_herbstluftwm  doc_asciidoc_objects)
 endfunction()
 
 function(gen_manpage sourcefile man_nr)
+    # additional arguments (${ARGN}) are passed as DEPENDS to the asciidoc command
     set(src_orig "${CMAKE_CURRENT_SOURCE_DIR}/${sourcefile}.txt")
     set(src "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.txt")
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.${man_nr}")
@@ -44,12 +43,13 @@ function(gen_manpage sourcefile man_nr)
                 -a \"date=${BUILD_DATE}\"
                 -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
                 ${src}
-        DEPENDS ${src_orig}
+        DEPENDS ${src_orig} ${ARGN}
         )
     install(FILES ${dst} DESTINATION "${MANDIR}/man${man_nr}")
 endfunction()
 
 function(gen_html sourcefile)
+    # additional arguments (${ARGN}) are passed as DEPENDS to the asciidoc command
     set(src "${CMAKE_CURRENT_SOURCE_DIR}/${sourcefile}.txt")
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.html")
 
@@ -61,7 +61,7 @@ function(gen_html sourcefile)
                     -o ${dst}
                     -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
                     ${src}
-        DEPENDS ${src}
+        DEPENDS ${src} ${ARGN}
         )
     install(FILES ${dst} DESTINATION ${DOCDIR})
 endfunction()
@@ -71,11 +71,11 @@ if (WITH_DOCUMENTATION)
     find_program(ASCIIDOC NAMES asciidoc DOC "Path to AsciiDoc command")
 
     gen_manpage(herbstclient 1)
-    gen_manpage(herbstluftwm 1)
+    gen_manpage(herbstluftwm 1 "${CMAKE_CURRENT_BINARY_DIR}/hlwm-objects-gen.txt")
     gen_manpage(herbstluftwm-tutorial 7)
 
     gen_html(herbstclient)
-    gen_html(herbstluftwm)
+    gen_html(herbstluftwm "${CMAKE_CURRENT_BINARY_DIR}/hlwm-objects-gen.txt")
     gen_html(herbstluftwm-tutorial)
 
     gen_object_asciidoc("hlwm-doc.json" "hlwm-objects-gen.txt")
