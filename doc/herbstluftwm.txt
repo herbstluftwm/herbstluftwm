@@ -1392,10 +1392,6 @@ follows:
 OBJECTS
 -------
 
-WARNING: The object tree is not stable yet, i.e. its interface may change until
-the next stable release. So check this documentation again after upgrading the
-next time.
-
 The object tree is a collection of objects with attributes similar to +/sys+
 known from the Linux kernel. Many entities (like tags, monitors, clients, ...)
 have objects to access their attributes directly. The tree is printed by the
