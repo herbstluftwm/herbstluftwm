@@ -139,14 +139,14 @@ class ObjectDocPrinter:
         reference_cls_doc = self.reference_to_class_doc(clsname, path)
         if reference_cls_doc is not None:
             identifier, text = reference_cls_doc
-            print(f'(see <<{identifier},{text}>>)')
+            print(f'For attributes and children, see <<{identifier},{text}>>')
             return
         # otherwise, print it here:
         identifier = self.class_doc_id(clsname)
         depth = len(path)
 
         objdoc = self.jsondoc['objects'][clsname]
-        print(f'[[{identifier}]]')
+        print(f'[[{identifier}]]', end='' if depth > 1 else '\n')
         if 'doc' in objdoc:
             if depth > 1:
                 print(multiline_for_bulletitem(objdoc['doc']))
@@ -172,10 +172,12 @@ class ObjectDocPrinter:
             # both in html and in the man page output
             print(f"{ws_prefix}{bulletprefix}* '[datatype]#{attr['type']}#' *+[entryname]#{attr['name']}#+*{default_val}{docstr}")
         for _, child in objdoc['children'].items():
-            docstr = ': ' + child['doc'].strip() if 'doc' in child else ''
+            docstr = child['doc'].strip() if 'doc' in child else ''
             # class_doc = self.jsondoc['objects'][child['type']].get('doc', '')
-            if len(docstr) > 0 and not docstr.endswith('.'):
-                docstr += '.'
+            if len(docstr) > 0:
+                if not docstr.endswith('.'):
+                    docstr += '.'
+                docstr += ' '
             if depth > 0:
                 # add multiple format indicators, as for the
                 # attribute name above
@@ -189,7 +191,7 @@ class ObjectDocPrinter:
                 # at the moment
                 continue
             if child['type'] not in self.abstractclass:
-                print(f"{ws_prefix}{bulletprefix}{bullet} {itemname} {docstr} ", end='')
+                print(f"{ws_prefix}{bulletprefix}{bullet} {itemname}: {docstr}", end='')
                 self.run(child['type'], path=path + [child['name']])
             else:
                 for _, subclass in self.jsondoc['objects'].items():
