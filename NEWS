@@ -19,6 +19,7 @@ Current git version
       monitors.
     - Correctly handling minimized clients when removing a tag.
     - Preserve stacking order when changing the floating state of a tag
+    - Update frame objects correctly in the commands 'mirror' and 'rotate'
   * New dependencies: xft, freetype
 
 Release 0.9.1 on 2020-12-28

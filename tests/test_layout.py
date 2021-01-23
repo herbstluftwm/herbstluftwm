@@ -1212,6 +1212,19 @@ def test_focused_frame_child(hlwm):
         assert hlwm.get_attr('tags.0.tiling.focused_frame.index') == focused_index
 
 
+def verify_frame_indices(hlwm, root='tags.focus.tiling.root', index=[]):
+    """traverse all frame objects under the given 'root' frame object
+    and verify that their 'index' attribute has the correct value according to
+    their path in the frame tree.
+    """
+    path = root.rstrip('.') + '.' + '.'.join(index)
+    assert hlwm.get_attr(path.rstrip('.') + '.index') == ''.join(index)
+    if '0' in hlwm.list_children(path):
+        # if 'path' is a frame split object
+        verify_frame_indices(hlwm, root=root, index=index + ['0'])
+        verify_frame_indices(hlwm, root=root, index=index + ['1'])
+
+
 @pytest.mark.parametrize("old,new", [
     ('(split vertical:0.4:0 {a} {b})', '(split vertical:0.6:1 {b} {a})'),
     ('(split horizontal:0.3:0 {a} {b})', '(split horizontal:0.7:1 {b} {a})'),
@@ -1231,6 +1244,7 @@ def test_mirror_horizontal_or_vertical_one_split(hlwm, old, new, mode):
     else:
         expected = new.format(a=frame_a, b=frame_b)
     assert hlwm.call('dump').stdout == expected
+    verify_frame_indices(hlwm)
 
 
 @pytest.mark.parametrize("num_splits", [1, 2, 3, 4])
@@ -1242,6 +1256,7 @@ def test_mirror_vs_rotate(hlwm, num_splits):
 
     # compute the effect of rotating by 180 degrees
     hlwm.call('chain , rotate , rotate')
+    verify_frame_indices(hlwm)
     layout_after_rotate = hlwm.call('dump').stdout
     # restore original layout
     hlwm.call(['load', layout])
@@ -1250,6 +1265,7 @@ def test_mirror_vs_rotate(hlwm, num_splits):
     # flipping both horizontally and vertically
     hlwm.call('mirror both')
     assert layout_after_rotate == hlwm.call('dump').stdout
+    verify_frame_indices(hlwm)
 
 
 @pytest.mark.parametrize("direction, frameindex", [
