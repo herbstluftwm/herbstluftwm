@@ -1213,11 +1213,16 @@ def test_focused_frame_child(hlwm):
 
 
 def verify_frame_indices(hlwm, root='tags.focus.tiling.root', index=[]):
+    """traverse all frame objects under the given 'root' frame object
+    and verify that their 'index' attribute has the correct value according to
+    their path in the frame tree.
+    """
     path = root.rstrip('.') + '.' + '.'.join(index)
     assert hlwm.get_attr(path.rstrip('.') + '.index') == ''.join(index)
     if '0' in hlwm.list_children(path):
+        # if 'path' is a frame split object
         verify_frame_indices(hlwm, root=root, index=index + ['0'])
-        verify_frame_indices(hlwm, root=root, index=index + ['0'])
+        verify_frame_indices(hlwm, root=root, index=index + ['1'])
 
 
 @pytest.mark.parametrize("old,new", [
