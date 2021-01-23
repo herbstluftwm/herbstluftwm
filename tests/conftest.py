@@ -578,6 +578,33 @@ def x11_connection(xvfb):
     display.close()
 
 
+class RawImage:
+    def __init__(self, data, width, height):
+        """
+        A raw image is an array of size width*height containing
+        (r, g, b) triples, line by line
+        """
+        self.data = data
+        self.width = width
+        self.height = height
+        assert len(data) == width * height
+
+    def pixel(self, x, y):
+        """return (r, g, b) triple for a pixel"""
+        return self.data[x + self.width * y]
+
+    def color_count(self, rgb_triple):
+        count = 0
+        for pix in self.data:
+            if pix == rgb_triple:
+                count += 1
+        return count
+
+    @staticmethod
+    def rgb2string(rgb_triple):
+        return '#%02x%02x%02x' % rgb_triple
+
+
 @pytest.fixture()
 def x11(x11_connection):
     """ Short-lived fixture for interacting with the X11 display and creating
@@ -697,7 +724,43 @@ def x11(x11_connection):
                 self.sync_with_hlwm()
             return w, self.winid_str(w)
 
+        def screenshot(self, win_handle):
+            geom = win_handle.get_geometry()
+            attr = win_handle.get_attributes()
+            # Xlib defines AllPlanes as: ((unsigned long)~0L)
+            all_planes = 0xffffffff
+            # Maybe, the following get_image() works differently
+            # than XGetImage(), because we still need to interpret
+            # the pixel values using the colormap, whereas the man
+            # page for XGetImage() does not mention 'colormap' at all
+            raw = win_handle.get_image(0, 0, geom.width, geom.height,
+                                       X.ZPixmap, all_planes)
+            # raw.data is a array of pixel-values, which need to
+            # be interpreted using the colormap:
+            colorDict = {}
+            for pixel in raw.data:
+                colorDict[pixel] = None
+            colorPixelList = list(colorDict)
+            colorRGBList = attr.colormap.query_colors(colorPixelList)
+            for pixelval, rgbval in zip(colorPixelList, colorRGBList):
+                # Useful debug output if something blows up again (which is likely)
+                # print(f'{pixelval} -> {rgbval.red}  {rgbval.blue} {rgbval.green}')
+                colorDict[pixelval] = (rgbval.red % 256, rgbval.green % 256, rgbval.blue % 256)
+            # the image size is enlarged such that the width
+            # is a multiple of 4. Hence we remove these extra
+            # columns in the end when mapping colorDict[] over the data array
+            width_padded = geom.width
+            while width_padded % 4 != 0:
+                width_padded += 1
+            rgbvals = [colorDict[p] for idx, p in enumerate(raw.data) if idx % width_padded < geom.width]
+            return RawImage(rgbvals, geom.width, geom.height)
+
+        def decoration_screenshot(self, win_handle):
+            decoration = self.get_decoration_window(win_handle)
+            return self.screenshot(decoration)
+
         def sync_with_hlwm(self):
+            self.display.sync()
             # wait for hlwm to flush all events:
             hlwm_bridge = HlwmBridge.INSTANCE
             assert hlwm_bridge is not None, "hlwm must be running"
