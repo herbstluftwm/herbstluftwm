@@ -744,7 +744,7 @@ def x11(x11_connection):
             colorRGBList = attr.colormap.query_colors(colorPixelList)
             for pixelval, rgbval in zip(colorPixelList, colorRGBList):
                 # Useful debug output if something blows up again (which is likely)
-                # print(f'{pixelval} -> {rgbval.red}  {rgbval.blue} {rgbval.green}')
+                # print(f'{pixelval} -> {rgbval.red}  {rgbval.green} {rgbval.blue}')
                 colorDict[pixelval] = (rgbval.red % 256, rgbval.green % 256, rgbval.blue % 256)
             # the image size is enlarged such that the width
             # is a multiple of 4. Hence we remove these extra
