@@ -219,6 +219,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: install asciidoc
+        run: sudo apt-get install asciidoc
+      - name: restrict cmake to doc
+        run: |
+          cat > CMakeLists.txt <<EOF
+          project(Herbstluftwm)
+          set(DOCDIR /tmp/)
+          set(MANDIR /tmp/)
+          add_subdirectory(doc)
+          EOF
       - name: run cmake
         run: |
           mkdir $BUILD
