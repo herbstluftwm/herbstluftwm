@@ -243,4 +243,5 @@ jobs:
       - name: build website
         run: |
           cd www/
-          make
+          make 2> >(tee asciidoc-stderr.log)
+          ! grep WARNING asciidoc-stderr.log # grep must not find warnings
