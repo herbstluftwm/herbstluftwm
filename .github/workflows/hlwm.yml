@@ -237,7 +237,9 @@ jobs:
       - name: build doc
         run: |
           cd $BUILD
-          make all_doc
+          make all_doc 2> >(tee asciidoc-stderr.log)
+          grep WARNING asciidoc-stderr.log
+          [[ $? -eq 0]] # grep must not find warnings
       - name: build website
         run: |
           cd www/
