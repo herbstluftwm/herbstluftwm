@@ -220,7 +220,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: install asciidoc
-        run: sudo apt-get install asciidoc
+        run: sudo apt-get install --no-install-recommends asciidoc
       - name: restrict cmake to doc
         run: |
           cat > CMakeLists.txt <<EOF
@@ -238,8 +238,8 @@ jobs:
         run: |
           cd $BUILD
           make all_doc 2> >(tee asciidoc-stderr.log)
-          grep WARNING asciidoc-stderr.log
-          [[ $? -eq 0]] # grep must not find warnings
+          echo == Checking that asciidoc built without warnings ==
+          ! grep WARNING asciidoc-stderr.log # grep must not find warnings
       - name: build website
         run: |
           cd www/
