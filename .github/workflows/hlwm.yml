@@ -225,8 +225,10 @@ jobs:
           cd $BUILD
           cmake -DWITH_DOCUMENTATION=YES ..
       - name: build doc
+        run: |
           cd $BUILD
           make all_doc
       - name: build website
+        run: |
           cd www/
           make
