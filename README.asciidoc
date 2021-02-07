@@ -7,7 +7,7 @@ image:https://codecov.io/gh/herbstluftwm/herbstluftwm/branch/master/graph/badge.
 https://codecov.io/gh/herbstluftwm/herbstluftwm]
 
 herbstluftwm is a manual tiling window manager for X. It licensed under the
-"Simplified BSD License" (see `LICENSE`).
+"Simplified BSD License" (see link:LICENSE[LICENSE]).
 
 - the layout is based on splitting frames into subframes which can be split
   again or can be filled with windows (similar to i3/ musca)
