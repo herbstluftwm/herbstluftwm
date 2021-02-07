@@ -73,7 +73,7 @@ if args.cmake:
     build_env.update({
         'CC': args.cc,
         'CXX': args.cxx,
-        'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
+        'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined -flto=auto -ffat-lto-objects',
         'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
     })
 
