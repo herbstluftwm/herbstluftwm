@@ -615,15 +615,6 @@ void tag_set_flags_dirty() {
     hook_emit({"tag_flags"});
 }
 
-HSTag* find_tag_with_toplevel_frame(Frame* frame) {
-    for (auto t : *global_tags) {
-        if (&* t->frame->root_ == frame) {
-            return &* t;
-        }
-    }
-    return nullptr;
-}
-
 //! close the focused client or remove if the frame is empty
 int HSTag::closeOrRemoveCommand() {
     Client* client = focusedClient();
