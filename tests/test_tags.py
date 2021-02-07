@@ -163,9 +163,8 @@ def test_rename_tag_existing_tag(hlwm, rename_command):
         .expect_stderr('"foobar" already exists')
 
 
-@pytest.mark.parametrize("rename_command", RENAMING_COMMANDS)
-def test_rename_non_existing_tag(hlwm, rename_command):
-    hlwm.call_xfail(rename_command('foobar', 'baz')) \
+def test_rename_non_existing_tag(hlwm):
+    hlwm.call_xfail(['rename', 'foobar', 'baz']) \
         .expect_stderr('"foobar" not found')
 
 
