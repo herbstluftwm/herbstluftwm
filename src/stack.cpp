@@ -135,25 +135,10 @@ void Stack::extractWindows(bool real_clients, function<void(Window)> yield) {
     }
 }
 
-void Stack::restack() {
-    if (!dirty) {
-        return;
-    }
-    vector<Window> buf;
-    extractWindows(false, [&buf](Window w) { buf.push_back(w); });
-    XRestackWindows(g_display, buf.data(), buf.size());
-    dirty = false;
-    Ewmh::get().updateClientListStacking();
-}
-
 void Stack::raiseSlice(Slice* slice) {
     for (auto layer : slice->layers) {
         layers_[layer].raise(slice);
     }
-    dirty = true;
-}
-
-void Stack::markDirty() {
     dirty = true;
 }
 
