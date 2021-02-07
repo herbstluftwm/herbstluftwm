@@ -74,7 +74,7 @@ if args.cmake:
         'CC': args.cc,
         'CXX': args.cxx,
         'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined -flto=auto -ffat-lto-objects',
-        'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
+        'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined -flto=auto -ffat-lto-objects',
     })
 
     cmake_args = [
