@@ -5,7 +5,7 @@ add_custom_target("all_doc")
 function(gen_json_doc destfile)
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${destfile}.json")
     AUX_SOURCE_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/../src" CPPSRC)
-    add_custom_target(gen_json_doc DEPENDS ${dst})
+    add_custom_target(doc_json DEPENDS ${dst})
     add_custom_command(
         OUTPUT ${dst}
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py" --sourcedir "${CMAKE_CURRENT_SOURCE_DIR}/../src" --json > ${dst}
@@ -17,7 +17,7 @@ endfunction()
 function(gen_object_asciidoc jsonfile destfile)
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${destfile}")
     set(absjson "${CMAKE_CURRENT_BINARY_DIR}/${jsonfile}")
-    add_custom_target(gen_object_asciidoc DEPENDS ${dst} gen_json_doc)
+    add_custom_target(gen_object_asciidoc DEPENDS ${dst} doc_json)
     add_custom_command(
         OUTPUT ${dst}
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/format-doc.py" ${absjson} > ${dst}
