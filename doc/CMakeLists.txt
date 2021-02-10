@@ -5,7 +5,7 @@ add_custom_target("all_doc")
 function(gen_json_doc destfile)
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${destfile}.json")
     AUX_SOURCE_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/../src" CPPSRC)
-    add_custom_target(doc_json DEPENDS ${dst})
+    add_custom_target("doc_json" DEPENDS ${dst})
     add_custom_command(
         OUTPUT ${dst}
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py" --sourcedir "${CMAKE_CURRENT_SOURCE_DIR}/../src" --json > ${dst}
@@ -75,11 +75,13 @@ function(gen_html sourcefile)
 endfunction()
 
 
+# always create a doc_json target, but only make it mandatory
+# if WITH_DOCUMENTATION is set
+gen_json_doc(hlwm-doc)
+
 if (WITH_DOCUMENTATION)
     find_program(ASCIIDOC_A2X NAMES a2x DOC "Path to AsciiDoc a2x command")
     find_program(ASCIIDOC NAMES asciidoc DOC "Path to AsciiDoc command")
-
-    gen_json_doc(hlwm-doc)
 
     gen_manpage(herbstclient 1)
     gen_manpage(herbstluftwm 1 "${CMAKE_CURRENT_BINARY_DIR}/hlwm-objects-gen.txt")
