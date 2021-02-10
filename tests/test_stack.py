@@ -46,11 +46,49 @@ def test_clients_stacked_in_reverse_order_of_creation(hlwm, count):
 @pytest.mark.parametrize('floatingmode', ['on', 'off'])
 def test_raise_client_already_on_top(hlwm, floatingmode):
     hlwm.call(['floating', floatingmode])
-    c1, c2 = hlwm.create_clients(2)
+    if floatingmode == 'off':
+        # in tiling mode, the focused client
+        # is raise, so make sure c2 is focused
+        hlwm.call(['rule', 'focus=on'])
+    c1, _ = hlwm.create_client()
+    c2, _ = hlwm.create_client()
 
     hlwm.call(['raise', c2])
 
     assert helper_get_stack_as_list(hlwm, strip_focus_layer=True) == [c2, c1]
+
+
+def test_focused_tiling_client_stays_on_top_in_max_layout(hlwm):
+    # in tiling mode, the focused window is always the top window within the
+    # tiling layer. Hence, trying to raise any other window must be undone
+    # immediately.
+    #
+    # the same holds for the 'selected' window within a max layout
+    # hlwm.attr.settings.hide_covered_windows = 'off'
+    win = hlwm.create_clients(7)
+    layout = f"""
+    (split horizontal:0.5:0
+      (clients max:0 {win[0]} {win[1]})
+      (split vertical:0.5:0
+        (clients max:1 {win[2]} {win[3]} {win[4]})
+        (clients max:0 {win[5]} {win[6]})))
+    """
+    hlwm.call(['load', layout])
+
+    def verify_stack():
+        """verify that the selected window in each max
+        layout frame is above all other windows of the same
+        frame
+        """
+        stack = helper_get_stack_as_list(hlwm)
+        assert stack.index(win[0]) < stack.index(win[1])
+        assert stack.index(win[3]) < stack.index(win[2])
+        assert stack.index(win[3]) < stack.index(win[4])
+        assert stack.index(win[5]) < stack.index(win[6])
+
+    for winid in win:
+        hlwm.call(['raise', winid])
+        verify_stack()
 
 
 def test_raise_bottom_client(hlwm):
@@ -155,3 +193,32 @@ def test_stack_tree(hlwm):
         - Window <windowid>
 '''
     assert strip_winids(stack.stdout) == expected_stack
+
+
+@pytest.mark.parametrize("focus_idx", range(0, 4))
+def test_tag_floating_state_on(hlwm, focus_idx):
+    win = hlwm.create_clients(5)
+    hlwm.attr.clients[win[4]].floating = 'on'
+    layout = f"""
+    (split vertical:0.5:0
+        (clients max:0 {win[0]} {win[1]})
+        (clients max:0 {win[2]} {win[3]}))
+    """.replace('\n', '')
+    hlwm.call(['load', layout])
+    hlwm.call(['jumpto', win[focus_idx]])
+
+    stack_before = helper_get_stack_as_list(hlwm)
+    assert stack_before[0] == win[4]  # the floating window must be on top anyway
+
+    hlwm.call('floating on')
+
+    # the stack should start with the floating window and the focused window
+    stack_expected = [win[4], win[focus_idx]]
+    # then the remaining tiled clients should follow and their order remains the same
+    stack_expected += [winid for winid in stack_before if winid not in stack_expected]
+    assert helper_get_stack_as_list(hlwm) == stack_expected
+
+    # turning floating off, just restores the old stack because
+    # we didn't do any raising since
+    hlwm.call('floating off')
+    assert helper_get_stack_as_list(hlwm) == stack_before

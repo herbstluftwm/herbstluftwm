@@ -3,6 +3,8 @@
 *.png
 *.jpeg
 *.jpg
+hlwm-objects-gen.txt
+hlwm-doc.json
 herbstluftwm.svg
 favicon.ico
 

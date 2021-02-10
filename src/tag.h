@@ -96,7 +96,6 @@ private:
 
 // for tags
 HSTag* find_tag(const char* name);
-HSTag* find_tag_with_toplevel_frame(class Frame* frame);
 HSTag* get_tag_by_index(int index);
 int    tag_get_count();
 void tag_force_update_flags();

@@ -2,7 +2,6 @@
 import json
 import re
 import argparse
-import textwrap
 
 
 def count_whitespace_prefix(string):
@@ -140,14 +139,14 @@ class ObjectDocPrinter:
         reference_cls_doc = self.reference_to_class_doc(clsname, path)
         if reference_cls_doc is not None:
             identifier, text = reference_cls_doc
-            print(f'(see <<{identifier},{text}>>)')
+            print(f'For attributes and children, see <<{identifier},{text}>>')
             return
         # otherwise, print it here:
         identifier = self.class_doc_id(clsname)
         depth = len(path)
 
         objdoc = self.jsondoc['objects'][clsname]
-        print(f'[[{identifier}]]')
+        print(f'[[{identifier}]]', end='' if depth > 1 else '\n')
         if 'doc' in objdoc:
             if depth > 1:
                 print(multiline_for_bulletitem(objdoc['doc']))
@@ -162,21 +161,27 @@ class ObjectDocPrinter:
             ws_prefix = depth * ' ' + '   '  # whitespace prefix
         for _, attr in objdoc['attributes'].items():
             if attr['default_value'] is not None:
-                default_val = '= ' + escape_string_value(attr['default_value'])
+                default_val = ' [defaultvalue]#= ' + escape_string_value(attr['default_value']) + '#'
             else:
                 default_val = ''
             if attr.get('doc', None) is not None:
-                docstr = attr.get('doc', None)
+                docstr = ': ' + attr.get('doc', None)
             else:
                 docstr = ''
-            print(f"{ws_prefix}{bulletprefix}* {attr['type']} +{attr['name']}+ {default_val} {docstr}")
+            # add multiple formats to the entry name such that the colors work
+            # both in html and in the man page output
+            print(f"{ws_prefix}{bulletprefix}* '[datatype]#{attr['type']}#' *+[entryname]#{attr['name']}#+*{default_val}{docstr}")
         for _, child in objdoc['children'].items():
-            docstr = ': ' + child['doc'].strip() if 'doc' in child else ''
+            docstr = child['doc'].strip() if 'doc' in child else ''
             # class_doc = self.jsondoc['objects'][child['type']].get('doc', '')
-            if len(docstr) > 0 and not docstr.endswith('.'):
-                docstr += '.'
+            if len(docstr) > 0:
+                if not docstr.endswith('.'):
+                    docstr += '.'
+                docstr += ' '
             if depth > 0:
-                itemname = f"+{child['name']}+"
+                # add multiple format indicators, as for the
+                # attribute name above
+                itemname = f"*+[entryname]#{child['name']}#+*"
                 bullet = '*'
             else:
                 itemname = f"{child['name']}"
@@ -186,7 +191,7 @@ class ObjectDocPrinter:
                 # at the moment
                 continue
             if child['type'] not in self.abstractclass:
-                print(f"{ws_prefix}{bulletprefix}{bullet} {itemname} {docstr} ", end='')
+                print(f"{ws_prefix}{bulletprefix}{bullet} {itemname}: {docstr}", end='')
                 self.run(child['type'], path=path + [child['name']])
             else:
                 for _, subclass in self.jsondoc['objects'].items():
@@ -204,15 +209,6 @@ def main():
 
     with open(args.jsondoc, 'r') as fh:
         jsondoc = json.load(fh)
-
-    print(textwrap.dedent("""
-    OBJECTS
-    -------
-    The state of herbstluftwm can interactively be introspected
-    and modified via the object system. Similarly to a file system,
-    the objects are organized in a tree:
-
-    """))
 
     doc_printer = ObjectDocPrinter(jsondoc)
     doc_printer.abstractclass.add('Frame')

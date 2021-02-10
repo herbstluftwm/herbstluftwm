@@ -507,16 +507,27 @@ void HSTag::resizeCompletion(Completion& complete)
 
 void HSTag::onGlobalFloatingChange(bool newState)
 {
-    // move tiling client slices between layers
-    frame->foreachClient([this,newState](Client* client) {
+    // move tiling clients to the floating layer or remove them
+    // from the floating layer
+    //
+    // we do it first for the focused tiling client such that
+    // it is guaranteed to be above the other tiling clients.
+    Client* tilingFocus = frame->root_->focusedClient();
+    if (tilingFocus && newState) {
+        stack->sliceAddLayer(tilingFocus->slice, LAYER_FLOATING, false);
+    }
+    for (Slice* slice : stack->layers_[LAYER_NORMAL]) {
+        // we add the tiled clients from the bottom such that they do not
+        // cover single-floated clients. Also, we do this by iterating over
+        // the tiling layer such that the relative stacking order between
+        // tiled clients is preserved
+        //
         if (newState) {
-            // we add the tiled clients from the bottom such that they do not
-            // cover single-floated clients
-            stack->sliceAddLayer(client->slice, LAYER_FLOATING, false);
+            stack->sliceAddLayer(slice, LAYER_FLOATING, false);
         } else {
-            stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
+            stack->sliceRemoveLayer(slice, LAYER_FLOATING);
         }
-    });
+    }
     needsRelayout_.emit();
 }
 
@@ -602,15 +613,6 @@ void tag_update_flags() {
 void tag_set_flags_dirty() {
     g_tag_flags_dirty = true;
     hook_emit({"tag_flags"});
-}
-
-HSTag* find_tag_with_toplevel_frame(Frame* frame) {
-    for (auto t : *global_tags) {
-        if (&* t->frame->root_ == frame) {
-            return &* t;
-        }
-    }
-    return nullptr;
 }
 
 //! close the focused client or remove if the frame is empty
