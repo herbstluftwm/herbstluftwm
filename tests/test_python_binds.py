@@ -1,10 +1,13 @@
 import pytest
-import herbstluftwm.example
+import os.path
+import subprocess
+import sys
 
 
 def test_example(hlwm):
     # test the example.py shipped with the bindings
-    herbstluftwm.example.main(hlwm)
+    example_py = os.path.join(os.path.dirname(__file__), '..', 'python', 'herbstluftwm', 'example.py')
+    assert subprocess.call([sys.executable, example_py]) == 0
 
 
 def test_attr_get(hlwm):
