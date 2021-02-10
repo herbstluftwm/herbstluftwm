@@ -222,3 +222,28 @@ def test_tag_floating_state_on(hlwm, focus_idx):
     # we didn't do any raising since
     hlwm.call('floating off')
     assert helper_get_stack_as_list(hlwm) == stack_before
+
+
+def test_focused_on_other_monitor_above_fullscreen(hlwm):
+    # on the unfocused monitor, put a fullscreen window
+    # and focus another window. then the focused window should
+    # be visible!
+    hlwm.call('add othertag')
+    hlwm.call('add_monitor 800x600+800+0')
+    hlwm.call('rule tag=othertag')
+    win_fullscreen, _ = hlwm.create_client()
+    hlwm.attr.clients[win_fullscreen].fullscreen = 'on'
+    win_focused, _ = hlwm.create_client()
+
+    hlwm.call(['jumpto', win_focused])
+    assert hlwm.attr.monitors.focus.index() == '1'
+    assert hlwm.attr.clients.focus.winid() == win_focused
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=False) \
+        == [win_focused, win_fullscreen]
+
+    # go back to first monitor
+    hlwm.call('focus_monitor 0')
+
+    # Then, the focused window still must be above
+    assert helper_get_stack_as_list(hlwm, strip_focus_layer=False) \
+        == [win_focused, win_fullscreen]
