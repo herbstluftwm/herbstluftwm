@@ -6,7 +6,6 @@ function(gen_json_doc destfile)
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${destfile}.json")
     AUX_SOURCE_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/../src" CPPSRC)
     add_custom_target("doc_json" DEPENDS ${dst})
-    add_dependencies(all_doc doc_json)
     add_custom_command(
         OUTPUT ${dst}
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py" --sourcedir "${CMAKE_CURRENT_SOURCE_DIR}/../src" --json > ${dst}
@@ -18,8 +17,7 @@ endfunction()
 function(gen_object_asciidoc jsonfile destfile)
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${destfile}")
     set(absjson "${CMAKE_CURRENT_BINARY_DIR}/${jsonfile}")
-    add_custom_target(doc_asciidoc_objects DEPENDS ${dst})
-    add_dependencies(all_doc doc_asciidoc_objects)
+    add_custom_target(gen_object_asciidoc DEPENDS ${dst} doc_json)
     add_custom_command(
         OUTPUT ${dst}
         COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/format-doc.py" ${absjson} > ${dst}
@@ -29,26 +27,26 @@ endfunction()
 
 function(gen_manpage sourcefile man_nr)
     # additional arguments (${ARGN}) are passed as DEPENDS to the asciidoc command
-    set(src_orig "${CMAKE_CURRENT_SOURCE_DIR}/${sourcefile}.txt")
-    set(src "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.txt")
+    set(src "${CMAKE_CURRENT_SOURCE_DIR}/${sourcefile}.txt")
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.${man_nr}")
     STRING(TIMESTAMP BUILD_DATE "%Y-%m-%d" UTC)
 
-    add_custom_target("doc_man_${sourcefile}" ALL DEPENDS ${dst})
+    # as a hack, every man page depends on gen_object_asciidoc, even though only
+    # 'herbstluftwm' needs it. We do this to avoid that hlwm-doc.json is built
+    # multiple times when make is invoked with -j8
+    add_custom_target("doc_man_${sourcefile}" ALL DEPENDS ${dst} gen_object_asciidoc)
     add_dependencies(all_doc "doc_man_${sourcefile}")
     add_custom_command(
         OUTPUT ${dst}
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}"
-        # asciidoc doesn't support destination directory for manpages
-        COMMAND ${CMAKE_COMMAND} -E copy ${src_orig} ${src}
         COMMAND ${ASCIIDOC_A2X}
                 --no-xmllint
                 -f manpage
                 -a \"herbstluftwmversion=herbstluftwm ${VERSION}\"
                 -a \"date=${BUILD_DATE}\"
                 -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
+                --destination-dir="${CMAKE_CURRENT_BINARY_DIR}"
                 ${src}
-        DEPENDS ${src_orig} ${ARGN}
+        DEPENDS ${ARGN}
         )
     install(FILES ${dst} DESTINATION "${MANDIR}/man${man_nr}")
 endfunction()
@@ -58,7 +56,11 @@ function(gen_html sourcefile)
     set(src "${CMAKE_CURRENT_SOURCE_DIR}/${sourcefile}.txt")
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${sourcefile}.html")
 
-    add_custom_target("doc_html_${sourcefile}" ALL DEPENDS ${dst})
+    # as a hack, every html doc depends on gen_object_asciidoc, even though only
+    # 'herbstluftwm' needs it. We do this to avoid that hlwm-doc.json is built
+    # multiple times when make is invoked with -j8
+    # 'herbstluftwm' needs it
+    add_custom_target("doc_html_${sourcefile}" ALL DEPENDS ${dst} gen_object_asciidoc)
     add_dependencies(all_doc "doc_html_${sourcefile}")
     add_custom_command(
         OUTPUT ${dst}
@@ -71,6 +73,7 @@ function(gen_html sourcefile)
         )
     install(FILES ${dst} DESTINATION ${DOCDIR})
 endfunction()
+
 
 # always create a doc_json target, but only make it mandatory
 # if WITH_DOCUMENTATION is set
@@ -89,9 +92,6 @@ if (WITH_DOCUMENTATION)
     gen_html(herbstluftwm-tutorial)
 
     gen_object_asciidoc("hlwm-doc.json" "hlwm-objects-gen.txt")
-
-    # mark the doc_json target as mandatory
-    add_custom_target("doc_json_mandatory" ALL DEPENDS "doc_json")
 endif()
 
 # vim: et:ts=4:sw=4
