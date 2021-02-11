@@ -257,7 +257,7 @@ def test_focused_on_other_monitor_above_fullscreen(hlwm, focus_other_monitor):
         # go back to first monitor
         hlwm.call('focus_monitor 0')
 
-    # even if 'othertag' is not foucsed, the focused window there still must be
+    # even if 'othertag' is not focused, the focused window there still must be
     # above
     assert helper_get_stack_as_list(hlwm, strip_focus_layer=False) \
         == [win_focused, win_fullscreen]
