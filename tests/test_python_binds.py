@@ -8,7 +8,7 @@ import conftest
 
 def test_example(hlwm):
     # test the example.py shipped with the bindings
-    example_py = os.path.join(os.path.dirname(__file__), '..', 'python', 'herbstluftwm', 'example.py')
+    example_py = os.path.join(os.path.dirname(__file__), '..', 'python', 'example.py')
     # make 'herbstclient' binary available in the PATH
     os.environ['PATH'] = conftest.BINDIR + ':' + os.environ['PATH']
     assert subprocess.call([sys.executable, example_py]) == 0
