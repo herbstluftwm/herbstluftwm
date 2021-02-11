@@ -224,26 +224,40 @@ def test_tag_floating_state_on(hlwm, focus_idx):
     assert helper_get_stack_as_list(hlwm) == stack_before
 
 
-def test_focused_on_other_monitor_above_fullscreen(hlwm):
-    # on the unfocused monitor, put a fullscreen window
+@pytest.mark.parametrize("focus_other_monitor", [True, False])
+def test_focused_on_other_monitor_above_fullscreen(hlwm, focus_other_monitor):
+    # On the unfocused monitor, put a fullscreen window
     # and focus another window. then the focused window should
     # be visible!
+    #
+    # Here, it does not matter if we focus this other monitor
+    # and then switch back to monitor 0 (focus_other_monitor=True) or
+    # whether we never have focused it (focus_other_monitor=False)
     hlwm.call('add othertag')
     hlwm.call('add_monitor 800x600+800+0')
     hlwm.call('rule tag=othertag')
+
     win_fullscreen, _ = hlwm.create_client()
     hlwm.attr.clients[win_fullscreen].fullscreen = 'on'
+
+    if not focus_other_monitor:
+        # if we  never want to focus the monitor with 'othertag'
+        # then we need to ensure from remote that 'win_focused'
+        # is the focused window
+        hlwm.call('rule focus=on switchtag=off')
     win_focused, _ = hlwm.create_client()
 
-    hlwm.call(['jumpto', win_focused])
-    assert hlwm.attr.monitors.focus.index() == '1'
-    assert hlwm.attr.clients.focus.winid() == win_focused
-    assert helper_get_stack_as_list(hlwm, strip_focus_layer=False) \
-        == [win_focused, win_fullscreen]
+    if focus_other_monitor:
+        hlwm.call(['jumpto', win_focused])
+        assert hlwm.attr.monitors.focus.index() == '1'
+        assert hlwm.attr.clients.focus.winid() == win_focused
+        assert helper_get_stack_as_list(hlwm, strip_focus_layer=False) \
+            == [win_focused, win_fullscreen]
 
-    # go back to first monitor
-    hlwm.call('focus_monitor 0')
+        # go back to first monitor
+        hlwm.call('focus_monitor 0')
 
-    # Then, the focused window still must be above
+    # even if 'othertag' is not foucsed, the focused window there still must be
+    # above
     assert helper_get_stack_as_list(hlwm, strip_focus_layer=False) \
         == [win_focused, win_fullscreen]
