@@ -1,10 +1,17 @@
 import pytest
-import herbstluftwm.example
+import os.path
+import subprocess
+import sys
+import os
+import conftest
 
 
 def test_example(hlwm):
     # test the example.py shipped with the bindings
-    herbstluftwm.example.main(hlwm)
+    example_py = os.path.join(os.path.dirname(__file__), '..', 'python', 'example.py')
+    # make 'herbstclient' binary available in the PATH
+    os.environ['PATH'] = conftest.BINDIR + ':' + os.environ['PATH']
+    assert subprocess.call([sys.executable, example_py]) == 0
 
 
 def test_attr_get(hlwm):

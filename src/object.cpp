@@ -19,6 +19,13 @@ using std::shared_ptr;
 using std::string;
 using std::vector;
 
+ChildEntry::ChildEntry(Object& owner, const string& name)
+    : owner_(owner)
+    , name_(name)
+{
+    owner_.addChildDoc(name_, this);
+}
+
 pair<ArgList,string> Object::splitPath(const string &path) {
     vector<string> splitpath = ArgList(path, OBJECT_PATH_SEPARATOR).toVector();
     if (splitpath.empty()) {
@@ -53,16 +60,17 @@ void Object::removeAttribute(Attribute* attr) {
     attribs_.erase(it);
 }
 
-void Object::wireActions(vector<Action*> actions)
-{
-    for (auto action : actions) {
-        action->setOwner(this);
-        actions_[action->name()] = action;
-    }
-}
-
 void Object::ls(Output out)
 {
+    string docString = doc();
+    if (!docString.empty()) {
+        // print doc string and ensure that there is an empty line
+        // afterwards
+        out << docString << "\n";
+        if ('\n' != *docString.rbegin()) {
+            out << "\n";
+        }
+    }
     const auto& children = this->children();
     out << children.size() << (children.size() == 1 ? " child" : " children")
         << (!children.empty() ? ":" : ".") << endl;
@@ -74,27 +82,21 @@ void Object::ls(Output out)
         << (!attribs_.empty() ? ":" : ".") << endl;
 
     out << " .---- type\n"
-        << " | .-- writeable\n"
+        << " | .-- writable\n"
         << " | | .-- hookable\n"
         << " V V V" << endl;
     for (auto it : attribs_) {
         out << " " << it.second->typechar();
-        out << " " << (it.second->writeable() ? "w" : "-");
+        out << " " << (it.second->writable() ? "w" : "-");
         out << " " << (it.second->hookable() ? "h" : "-");
         out << " " << it.first;
-        if (it.second->type() == Type::ATTRIBUTE_STRING
-            || it.second->type() == Type::ATTRIBUTE_REGEX )
+        if (it.second->type() == Type::STRING
+            || it.second->type() == Type::REGEX )
         {
             out << " = \"" << it.second->str() << "\"" << endl;
         } else {
             out << " = " << it.second->str() << endl;
         }
-    }
-
-    out << actions_.size() << (actions_.size() == 1 ? " action" : " actions")
-        << (!actions_.empty() ? ":" : ".") << endl;
-    for (auto it : actions_) {
-        out << "  " << it.first << endl;
     }
 }
 
@@ -181,6 +183,21 @@ void Object::removeChild(const string &child)
     children_.erase(child);
 }
 
+void Object::addChildDoc(const string& name, HasDocumentation* doc)
+{
+    childrenDoc_[name] = doc;
+}
+
+const HasDocumentation* Object::childDoc(const string& child)
+{
+    auto it = childrenDoc_.find(child);
+    if (it != childrenDoc_.end()) {
+        return it->second;
+    } else {
+        return nullptr;
+    }
+}
+
 void Object::addHook(Hook* hook)
 {
     hooks_.push_back(hook);
@@ -241,12 +258,6 @@ private:
 void Object::printTree(Output output, string rootLabel) {
     shared_ptr<TreeInterface> intface = make_shared<DirectoryTreeInterface>(rootLabel, this);
     tree_print_to(intface, output);
-}
-
-void Object::addStaticChild(Object* child, const string &name)
-{
-    children_[name] = child;
-    notifyHooks(HookEvent::CHILD_ADDED, name);
 }
 
 Attribute* Object::deepAttribute(const string &path) {

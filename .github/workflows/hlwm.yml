@@ -6,11 +6,9 @@ on:
     - master
     paths-ignore:
     - '.mergify.yml'
-    - 'share/**'
   pull_request:
     paths-ignore:
     - '.mergify.yml'
-    - 'share/**'
 
 jobs:
   build-test-current:
@@ -21,6 +19,8 @@ jobs:
     container: hlwm/ci:focal
     env:
       HLWM_BUILDDIR: build
+      CCACHE_LOGFILE: /github/home/ccache.log
+      CCACHE_NOHASHDIR: 1
 
     steps:
       # Checks out a copy of your repository on the ubuntu-latest machine
@@ -31,7 +31,11 @@ jobs:
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
-          key: focal-ccache
+          key: focal-gcc-ccache-${{ github.run_number }}
+          # since the every new gha run gets a new key, we need to search
+          # for existing cache entries more sloppily:
+          restore-keys: |
+            focal-gcc-ccache-
 
       - uses: actions/cache@v1
         name: Cache .tox-cache
@@ -39,9 +43,25 @@ jobs:
           path: .tox-cache
           key: focal-tox
 
-      - name: Build
+      - name: CMake
         run: |
-          ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache --compile
+          ci/build.py --cmake --cxx=g++-9 --cc=gcc-9 --build-type=Debug --ccache=$HOME/.ccache
+
+      - name: Compile
+        run: |
+          ci/build.py --compile
+
+      - name: Install to temp directory
+        run: |
+          ci/build.py --install
+
+      - name: ccache statistics
+        run: |
+          ccache -s
+
+      - name: ccache log
+        run: |
+          cat "$CCACHE_LOGFILE"
 
       - name: Test
         run: |
@@ -59,6 +79,7 @@ jobs:
     container: hlwm/ci:focal
     env:
       HLWM_BUILDDIR: build
+      CCACHE_LOGFILE: /github/home/ccache.log
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -67,7 +88,9 @@ jobs:
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
-          key: focal-clang-ccache # different name than in build-test-current
+          key: focal-clang-ccache-${{ github.run_number }}
+          restore-keys: |
+            focal-clang-ccache-
 
       - uses: actions/cache@v1
         name: Cache .tox-cache
@@ -83,9 +106,21 @@ jobs:
         run: |
           ci/build.py --flake8
 
-      - name: Build
+      - name: CMake
         run: |
-          ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache --compile
+          ci/build.py --cmake --cxx=$PWD/ci/clang++-and-tidy.sh --cc=$PWD/ci/clang-and-tidy.sh --build-type=Debug --ccache=$HOME/.ccache
+
+      - name: Compile
+        run: |
+          ci/build.py --compile
+
+      - name: ccache statistics
+        run: |
+          ccache -s
+
+      - name: ccache log
+        run: |
+          cat "$CCACHE_LOGFILE"
 
       - name: Check includes using iwyu
         run: |
@@ -103,7 +138,9 @@ jobs:
         name: Cache ~/.ccache
         with:
           path: ~/.ccache
-          key: ccache-gcc-4.8 # different name than in build-test-current
+          key: ccache-gcc-ancient-${{ github.run_number }}
+          restore-keys: |
+            ccache-gcc-ancient-
 
       - name: Build
         env:
@@ -112,9 +149,99 @@ jobs:
           CXXFLAGS: -m32
           CFLAGS: -m32
         run: |
+          find ~/.ccache | wc -l
           ccache -z --max-size=500M
+          # ccache too old for --show-config
           mkdir build
           cd build
           cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES ..
           ninja -v -k10
+          ninja -v doc_json
           ccache -s
+          find ~/.ccache | wc -l
+
+  diff-objects:
+    name: Diff object tree
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # fetch previous commits
+
+      - name: Extract git ref of target branch (on pull request)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          # github actions automatically creates
+          # a merge commit, so we can simply compare
+          # $GITHUB_REF with github.base_ref
+          #
+          # We only need to fetch it first
+          git fetch origin ${{ github.base_ref }}
+          git update-ref ${{ github.base_ref }} origin/${{ github.base_ref }}
+          echo ${{ github.base_ref }} > old_commit
+
+          git tag "#"${{ github.event.pull_request.number }} $GITHUB_SHA
+          echo "#"${{ github.event.pull_request.number }} > new_commit
+
+      - name: Extract git ref of previous commit (on push)
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          git tag previous-commit "${GITHUB_SHA}~1"
+          echo previous-commit > old_commit
+
+          git update-ref ${GITHUB_REF} ${GITHUB_SHA}
+          echo ${GITHUB_REF} > new_commit
+
+      - name: Generate diff
+        run: |
+          echo "old commit: $(< old_commit) -> $(git rev-parse $(< old_commit))"
+          echo "new commit: $(< new_commit) -> $(git rev-parse $(< new_commit))"
+          ci/diff-json-doc.py --no-tmp-dir "$(< old_commit)" "$(< new_commit)"
+
+      - name: Post diff as comment (on pull requst)
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.HLWM_BOT_GITHUB_TOKEN }}
+        run: |
+          if [ -n "$GITHUB_TOKEN" ] ; then
+            ci/diff-json-doc.py --no-tmp-dir --post-comment ${{ github.event.pull_request.number }} \
+              "$(< old_commit)" "$(< new_commit)"
+          else
+            echo "Skipping comment posting because of absence of secret"
+          fi
+
+  build-doc:
+    name: Build Documentation and website
+    runs-on: ubuntu-latest
+    env:
+      BUILD: build-${{ github.run_number }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: install asciidoc
+        run: sudo apt-get install --no-install-recommends asciidoc xsltproc docbook-xsl
+      - name: restrict cmake to doc
+        run: |
+          cat > CMakeLists.txt <<EOF
+          project(Herbstluftwm)
+          set(DOCDIR /tmp/)
+          set(MANDIR /tmp/)
+          add_subdirectory(doc)
+          EOF
+      - name: run cmake
+        run: |
+          mkdir $BUILD
+          cd $BUILD
+          cmake -DWITH_DOCUMENTATION=YES ..
+      - name: build doc
+        run: |
+          cd $BUILD
+          make all_doc 2> >(tee asciidoc-stderr.log)
+          echo == Checking that asciidoc built without warnings ==
+          ! grep WARNING asciidoc-stderr.log # grep must not find warnings
+      - name: build website
+        run: |
+          cd www/
+          make 2> >(tee asciidoc-stderr.log)
+          ! grep WARNING asciidoc-stderr.log # grep must not find warnings

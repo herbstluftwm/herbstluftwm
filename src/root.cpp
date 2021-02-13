@@ -6,13 +6,12 @@
 #include "clientmanager.h"
 #include "ewmh.h"
 #include "hlwmcommon.h"
-#include "hookmanager.h"
 #include "keymanager.h"
 #include "layout.h"
+#include "metacommands.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
 #include "panelmanager.h"
-#include "rootcommands.h"
 #include "rulemanager.h"
 #include "settings.h"
 #include "tag.h"
@@ -20,6 +19,7 @@
 #include "theme.h"
 #include "tmp.h"
 #include "utils.h"
+#include "watchers.h"
 
 using std::shared_ptr;
 
@@ -27,7 +27,6 @@ shared_ptr<Root> Root::root_;
 
 Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     : clients(*this, "clients")
-    , hooks(*this, "hooks")
     , keys(*this, "keys")
     , monitors(*this, "monitors")
     , mouse(*this, "mouse")
@@ -36,8 +35,9 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     , tags(*this, "tags")
     , theme(*this, "theme")
     , tmp(*this, TMP_OBJECT_PATH)
+    , watchers(*this, "watchers")
     , globals(g)
-    , root_commands(make_unique<RootCommands>(*this))
+    , meta_commands(make_unique<MetaCommands>(*this))
     , X(xconnection)
     , ipcServer_(ipcServer)
     , panels(make_unique<PanelManager>(xconnection))
@@ -45,7 +45,6 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
 {
     // initialize root children (alphabetically)
     clients.init();
-    hooks.init();
     keys.init();
     monitors.init();
     mouse.init();
@@ -54,6 +53,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     tags.init();
     theme.init();
     tmp.init();
+    watchers.init();
 
     // inject dependencies where needed
     ewmh->injectDependencies(this);
@@ -63,6 +63,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     monitors->injectDependencies(settings(), tags(), panels.get());
     mouse->injectDependencies(clients(), monitors());
     panels->injectDependencies(settings());
+    watchers->injectDependencies(this);
 
     // set temporary globals
     ::global_tags = tags();
@@ -91,7 +92,6 @@ Root::~Root()
     tags.reset();
 
     // For the rest, order does not matter (do it alphabetically):
-    hooks.reset();
     keys.reset();
     rules.reset();
     settings.reset();

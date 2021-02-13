@@ -59,11 +59,22 @@ classname2examplepath = [
 
 
 @pytest.mark.parametrize('clsname,object_path', classname2examplepath)
-def test_documented_attributes_exist(hlwm, clsname, object_path, json_doc):
+def test_documented_attributes_writable(hlwm, clsname, object_path, json_doc):
+    """test whether the writable field is correct. This checks the
+    existence of the attributes implicitly
+    """
     object_path = object_path(hlwm)
     for _, attr in json_doc['objects'][clsname]['attributes'].items():
         print("checking attribute {}::{}".format(clsname, attr['cpp_name']))
-        hlwm.get_attr('{}.{}'.format(object_path, attr['name']).lstrip('.'))
+        full_attr_path = '{}.{}'.format(object_path, attr['name']).lstrip('.')
+        value = hlwm.get_attr(full_attr_path)
+        if value == 'default':
+            continue
+        if attr['writable']:
+            hlwm.call(['set_attr', full_attr_path, value])
+        else:
+            hlwm.call_xfail(['set_attr', full_attr_path, value]) \
+                .expect_stderr('attribute is read-only')
 
 
 def types_and_shorthands():
@@ -80,6 +91,8 @@ def types_and_shorthands():
         'regex': 'r',
         'SplitAlign': 'n',
         'LayoutAlgorithm': 'n',
+        'font': 'f',
+        'Rectangle': 'R',
     }
 
 
@@ -128,3 +141,43 @@ def test_attributes_and_children_are_documented(hlwm, clsname, object_path, json
         else:
             assert entry[-1] == ' ', "it's an attribute if it's no child"
             assert entry[0:-1] in json_doc['objects'][clsname]['attributes']
+
+
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
+def test_class_doc(hlwm, clsname, object_path, json_doc):
+    path = object_path(hlwm)
+    attr_output = hlwm.call(['attr', path]).stdout
+
+    object_doc = json_doc['objects'][clsname].get('doc', None)
+    if object_doc is not None:
+        assert attr_output.startswith(object_doc)
+    else:
+        # if no class doc is in the json file, then there
+        # is indeed none:
+        assert re.match(r'1 child:|[0-9]* children[\.:]$', attr_output.splitlines()[0])
+
+
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
+def test_help_on_attribute_vs_json(hlwm, clsname, object_path, json_doc):
+    path = object_path(hlwm)
+    attrs_doc = json_doc['objects'][clsname]['attributes']
+    for _, attr in attrs_doc.items():
+        attr_name = attr['name']
+        help_txt = hlwm.call(['help', f'{path}.{attr_name}'.lstrip('.')]).stdout
+
+        assert f"Attribute '{attr_name}'" in help_txt
+        doc = attr.get('doc', '')
+        assert doc in help_txt
+
+
+@pytest.mark.parametrize('clsname,object_path', classname2examplepath)
+def test_help_on_children_vs_json(hlwm, clsname, object_path, json_doc):
+    path = object_path(hlwm)
+    child_doc = json_doc['objects'][clsname]['children']
+    for _, child in child_doc.items():
+        name = child['name']
+        help_txt = hlwm.call(['help', f'{path}.{name}'.lstrip('.')]).stdout
+
+        if 'doc' in child:
+            assert f"Entry '{name}'" in help_txt
+            assert child['doc'] in help_txt

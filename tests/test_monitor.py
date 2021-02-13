@@ -338,3 +338,97 @@ def test_cycle_monitor(hlwm, mon_num, focus_idx, delta, command):
 
     new_index = (focus_idx + int(delta) + mon_num) % mon_num
     assert hlwm.get_attr('monitors.focus.index') == str(new_index)
+
+
+@pytest.mark.parametrize("lock_tag_cmd", [
+    lambda index: ['lock_tag', str(index)],
+    lambda index: ['set_attr', f'monitors.{index}.lock_tag', 'on']
+])
+def test_lock_tag_switch_away(hlwm, lock_tag_cmd):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    hlwm.call('set_monitors 800x600+0+0 800x600+800+0')
+    hlwm.call(lock_tag_cmd(0))
+    assert hlwm.attr.monitors[0].lock_tag() == hlwm.bool(True)
+
+    hlwm.call('focus_monitor 0')
+
+    # can not switch to another tag on the locked monitor
+    hlwm.call_xfail('use tag2') \
+        .expect_stderr('Could not change .*monitor 0 is locked')
+
+
+@pytest.mark.parametrize("locked", [True, False])
+def test_lock_tag_switch_to_locked(hlwm, locked):
+    hlwm.call('add tag1')
+    hlwm.call('add tag2')
+    hlwm.call('set_monitors 800x600+0+0 800x600+800+0')
+    hlwm.call('set swap_monitors_to_get_tag on')
+
+    hlwm.attr.monitors[0].lock_tag = hlwm.bool(locked)
+    hlwm.call('focus_monitor 1')
+
+    # being on monitor 1, try to focus the tag on monitor 0
+    tag_on_locked_monitor = hlwm.attr.monitors[0].tag()
+    hlwm.call(['use', tag_on_locked_monitor])
+
+    if locked:
+        # if the monitor was locked, then the tag stays
+        # on monitor 0
+        expected_monitor_index = '0'
+    else:
+        # otherwise, the tag is moved to monitor 1 because
+        # of swap_monitors_to_get_tag
+        expected_monitor_index = '1'
+    assert hlwm.attr.tags.focus.name() == tag_on_locked_monitor
+    assert hlwm.attr.monitors.focus.index() == expected_monitor_index
+
+
+def test_lock_tag_command_vs_attribute(hlwm):
+    hlwm.call('add anothertag')
+    hlwm.call('set_monitors 800x600+0+0 800x600+800+0')
+    hlwm.call('focus_monitor 1')
+
+    # no argument modifies the attribute of the focused monitor
+    hlwm.call('lock_tag')
+    assert hlwm.attr.monitors[1].lock_tag() == hlwm.bool(True)
+    hlwm.call('unlock_tag')
+    assert hlwm.attr.monitors[1].lock_tag() == hlwm.bool(False)
+
+    hlwm.call('lock_tag 0')
+    assert hlwm.attr.monitors[0].lock_tag() == hlwm.bool(True)
+    hlwm.call('unlock_tag 0')
+    assert hlwm.attr.monitors[0].lock_tag() == hlwm.bool(False)
+
+
+def test_monitor_rect_too_small(hlwm):
+    hlwm.call_xfail('attr monitors.0.geometry 20x300+0+0') \
+        .expect_stderr('too small.*wide')
+    hlwm.call_xfail('attr monitors.0.geometry 400x30+0+0') \
+        .expect_stderr('too small.*high')
+
+
+def test_monitor_rect_is_updated(hlwm):
+    for rect in ['500x300+30+40', '500x300-30+40', '500x300+30-40', '500x300-30-40']:
+        hlwm.call(['move_monitor', 0, rect])
+        assert hlwm.attr.monitors[0].geometry() == rect
+
+
+def test_monitor_rect_parser(hlwm):
+    for rect in [(400, 800, a * 40, b * 60) for a in [1, -1] for b in [1, -1]]:
+
+        hlwm.attr.monitors[0].geometry = '%dx%d%+d%+d' % rect
+
+        expected_output = ' '.join([str(rect[i]) for i in [2, 3, 0, 1]])
+        assert hlwm.call('monitor_rect 0').stdout.strip() == expected_output
+
+
+def test_monitor_rect_apply_layout(hlwm, x11):
+    winhandle, winid = x11.create_client()
+    hlwm.attr.clients[winid].fullscreen = 'on'
+    for expected_geometry in [(600, 700, 40, 50), (400, 800, -10, 0)]:
+        hlwm.attr.monitors[0].geometry = '%dx%d%+d%+d' % expected_geometry
+
+        x11.display.sync()
+        geom = x11.get_absolute_geometry(winhandle)
+        assert (geom.width, geom.height, geom.x, geom.y) == expected_geometry

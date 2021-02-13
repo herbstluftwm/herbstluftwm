@@ -22,7 +22,10 @@ parser.add_argument('--build-dir', type=str,
                     default=os.environ.get('HLWM_BUILDDIR', None))
 parser.add_argument('--build-type', type=str, choices=('Release', 'Debug'))
 parser.add_argument('--cmake', action='store_true')
+parser.add_argument('--clean', action='store_true',
+                    help='run ninja -t clean first')
 parser.add_argument('--compile', action='store_true')
+parser.add_argument('--install', action='store_true')
 parser.add_argument('--run-tests', action='store_true')
 parser.add_argument('--build-docs', action='store_true')
 parser.add_argument('--cxx', type=str)
@@ -50,8 +53,14 @@ if args.ccache:
     if conf.exists():
         conf.unlink()
 
-    # Set a reasonable size limit
-    sp.check_call('ccache --max-size=500M', shell=True)
+    # Set a reasonable size limit.
+    #
+    # Hash-verifying the compiler is required when building with
+    # clang-and-tidy.sh (because the script's mtime is not stable) and for
+    # other cases, the overhead is minimal)
+    #
+    # Also, we add some more sloppiness here to avoid unnecessary cache misses
+    sp.check_call('ccache --max-size=800M -o compiler_check=content -o sloppiness=file_macro,locale,time_macros,include_file_mtime,include_file_ctime -o hash_dir=false', shell=True)
 
     # Wipe stats before build
     sp.check_call('ccache -z', shell=True)
@@ -66,15 +75,6 @@ if args.cmake:
         'CXX': args.cxx,
         'CFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
         'CXXFLAGS': '--coverage -Werror -fsanitize=address,leak,undefined',
-
-        # Hash-verifying the compiler is required when building with
-        # clang-and-tidy.sh (because the script's mtime is not stable) and for
-        # other cases, the overhead is minimal):
-        'CCACHE_COMPILERCHECK': 'content',
-
-        # In case clang-and-tidy.sh is used for building, it will need this to call
-        # clang-tidy:
-        'CLANG_TIDY_BUILD_DIR': str(build_dir),
     })
 
     cmake_args = [
@@ -84,14 +84,22 @@ if args.cmake:
         f'-DWITH_DOCUMENTATION={"YES" if args.build_docs else "NO"}',
         f'-DENABLE_CCACHE={"YES" if args.ccache else "NO"}',
     ]
-
     sp.check_call(['cmake', *cmake_args, repo], cwd=build_dir, env=build_env)
 
-if args.compile:
-    sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=build_env)
+if args.clean:
+    sp.check_call(['bash', '-c', 'time ninja -t clean'], cwd=build_dir)
 
-if args.ccache:
-    sp.check_call(['ccache', '-s'])
+if args.compile:
+    env = os.environ.copy()
+    env.update({
+        # In case clang-and-tidy.sh is used for building, it will need this to call
+        # clang-tidy:
+        'CLANG_TIDY_BUILD_DIR': str(build_dir),
+    })
+    sp.check_call(['bash', '-c', 'time ninja -v -k 10'], cwd=build_dir, env=env)
+
+if args.install:
+    sp.check_call(['bash', '-c', 'DESTDIR=$(mktemp -d) ninja -v install'], cwd=build_dir)
 
 if args.iwyu:
     # Check lexicographical order of #include directives (cheap pre-check)
@@ -127,6 +135,9 @@ if args.flake8:
     tox('-e flake8', build_dir)
 
 if args.run_tests:
+    # make sure, json doc exists
+    sp.check_call(['bash', '-c', 'time ninja doc_json'], cwd=build_dir)
+
     # Suppress warnings about known memory leaks:
     os.environ['LSAN_OPTIONS'] = f"suppressions={repo}/ci/lsan-suppressions.txt"
 

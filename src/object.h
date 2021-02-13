@@ -7,6 +7,9 @@
 #include <utility>
 #include <vector>
 
+#include "arglist.h"
+#include "commandio.h"
+#include "entity.h"
 #include "types.h"
 
 #define OBJECT_PATH_SEPARATOR '.'
@@ -14,8 +17,22 @@
 #define TMP_OBJECT_PATH "tmp"
 
 class Attribute;
-class Action;
 class Hook;
+class Object;
+
+/*! a child object entry of an object is like the subdirectory of
+ * a directory. In addition, we have documentation, what this entry
+ * is good for.
+ */
+class ChildEntry : public HasDocumentation {
+public:
+    void setChildDoc(const char text[]) { setDoc(text); }
+protected:
+    ChildEntry(Object& owner, const std::string& name);
+    friend class Object;
+    Object& owner_;
+    const std::string name_;
+};
 
 enum class HookEvent {
     CHILD_ADDED,
@@ -23,7 +40,7 @@ enum class HookEvent {
     ATTRIBUTE_CHANGED
 };
 
-class Object {
+class Object : public HasDocumentation {
 
 public:
     Object() = default;
@@ -65,8 +82,10 @@ public:
     void addDynamicChild(std::function<Object*()> child, const std::string &name);
 
     void addChild(Object* child, const std::string &name);
-    void addStaticChild(Object* child, const std::string &name);
     void removeChild(const std::string &child);
+
+    void addChildDoc(const std::string &name, HasDocumentation* doc);
+    const HasDocumentation* childDoc(const std::string& child);
 
     void addHook(Hook* hook);
     void removeHook(Hook* hook);
@@ -78,13 +97,12 @@ public:
 protected:
     // initialize an attribute (typically used by init())
     virtual void wireAttributes(std::vector<Attribute*> attrs);
-    virtual void wireActions(std::vector<Action*> actions);
 
     std::map<std::string, Attribute*> attribs_;
-    std::map<std::string, Action*> actions_;
 
     std::map<std::string, std::function<Object*()>> childrenDynamic_;
     std::map<std::string, Object*> children_;
+    std::map<std::string, HasDocumentation*> childrenDoc_;
     std::vector<Hook*> hooks_;
 
     //DynamicAttribute nameAttribute_;

@@ -60,14 +60,12 @@ public:
     void insertSlice(Slice* elem);
     void removeSlice(Slice* elem);
     void raiseSlice(Slice* slice);
-    void markDirty();
     void sliceAddLayer(Slice* slice, HSLayer layer, bool insertOnTop = true);
     void sliceRemoveLayer(Slice* slice, HSLayer layer);
     bool isLayerEmpty(HSLayer layer);
     void clearLayer(HSLayer layer);
 
     void extractWindows(bool real_clients, std::function<void(Window)> yield);
-    void restack();
 
     PlainStack<Slice*> layers_[LAYER_COUNT];
 

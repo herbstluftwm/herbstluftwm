@@ -70,6 +70,8 @@ HSTag::HSTag(string name_, TagManager* tags, Settings* settings)
         return this->floatingLayerCanBeFocused(v);
     });
 
+    name.setDoc("name of the tag (must be non-empty)");
+    index.setDoc("index of this tag (the first index is 0)");
     visible.setDoc("if this tag is shown on some monitor");
     floating.setDoc("if the entire tag is set to floating mode");
     floating_focused.setDoc("if the floating layer is focused"
@@ -161,6 +163,9 @@ void HSTag::applyClientState(Client* client)
 void HSTag::setVisible(bool newVisible)
 {
     visible = newVisible;
+    // always pass the visibility state correctly
+    // to the clients, even though the state of
+    // `visible` may not have changed.
     frame->root_->setVisibleRecursive(visible);
     for (Client* c : floating_clients_) {
         if (c->minimized_()) {
@@ -289,7 +294,7 @@ int HSTag::focusInDirCommand(Input input, Output output)
     auto focusedFrame = frame->focusedFrame();
     bool neighbour_found = true;
     if (floating || floating_focused) {
-        neighbour_found = floating_focus_direction(direction);
+        neighbour_found = Floating::focusDirection(direction);
     } else {
         neighbour_found = frame->focusInDirection(direction, external_only);
         if (neighbour_found) {
@@ -323,6 +328,63 @@ void HSTag::focusInDirCompletion(Completion &complete)
     } else {
         complete.none();
     }
+}
+
+int HSTag::shiftInDirCommand(Input input, Output output)
+{
+    bool external_only = settings_->default_direction_external_only();
+    Direction direction = Direction::Left; // some default to satisfy the linter
+    ArgParse ap;
+    ap.flags({
+        {"-i", [&external_only] () { external_only = false; }},
+        {"-e", [&external_only] () { external_only = true; }},
+    });
+    ap.mandatory(direction);
+    if (ap.parsingAllFails(input, output)) {
+        return ap.exitCode();
+    }
+    shared_ptr<FrameLeaf> sourceFrame = this->frame->focusedFrame();
+    Client* currentClient = focusedClient();
+    if (currentClient && currentClient->is_client_floated()) {
+        // try to move the floating window
+        bool success = Floating::shiftDirection(direction);
+        return success ? 0 : HERBST_FORBIDDEN;
+    }
+    // don't look for neighbours within the frame if 'external_only' is set
+    int indexInFrame = external_only ? (-1) : sourceFrame->getInnerNeighbourIndex(direction);
+    if (indexInFrame >= 0) {
+        sourceFrame->moveClient(indexInFrame);
+        needsRelayout_.emit();
+    } else {
+        shared_ptr<Frame> neighbour = sourceFrame->neighbour(direction);
+        Client* client = sourceFrame->focusedClient();
+        if (client && neighbour) { // if neighbour was found
+            // move window to neighbour
+            sourceFrame->removeClient(client);
+            FrameTree::focusedFrame(neighbour)->insertClient(client);
+            neighbour->frameWithClient(client)->select(client);
+
+            // change selection in parent
+            shared_ptr<FrameSplit> parent = neighbour->getParent();
+            assert(parent);
+            parent->swapSelection();
+
+            // layout was changed, so update it
+            get_current_monitor()->applyLayout();
+        } else if (!client) {
+            output << input.command() << ": No client focused\n";
+            return HERBST_FORBIDDEN;
+        } else {
+            output << input.command() << ": No neighbour found\n";
+            return HERBST_FORBIDDEN;
+        }
+    }
+    return 0;
+}
+
+void HSTag::shiftInDirCompletion(Completion& complete)
+{
+    focusInDirCompletion(complete);
 }
 
 int HSTag::cycleAllCommand(Input input, Output output)
@@ -418,7 +480,7 @@ int HSTag::resizeCommand(Input input, Output output)
     }
     Client* client = focusedClient();
     if (client && client->is_client_floated()) {
-        if (!floating_resize_direction(this, client, direction)) {
+        if (!Floating::resizeDirection(this, client, direction)) {
             // no error message because this shouldn't happen anyway
             return HERBST_FORBIDDEN;
         }
@@ -445,16 +507,27 @@ void HSTag::resizeCompletion(Completion& complete)
 
 void HSTag::onGlobalFloatingChange(bool newState)
 {
-    // move tiling client slices between layers
-    frame->foreachClient([this,newState](Client* client) {
+    // move tiling clients to the floating layer or remove them
+    // from the floating layer
+    //
+    // we do it first for the focused tiling client such that
+    // it is guaranteed to be above the other tiling clients.
+    Client* tilingFocus = frame->root_->focusedClient();
+    if (tilingFocus && newState) {
+        stack->sliceAddLayer(tilingFocus->slice, LAYER_FLOATING, false);
+    }
+    for (Slice* slice : stack->layers_[LAYER_NORMAL]) {
+        // we add the tiled clients from the bottom such that they do not
+        // cover single-floated clients. Also, we do this by iterating over
+        // the tiling layer such that the relative stacking order between
+        // tiled clients is preserved
+        //
         if (newState) {
-            // we add the tiled clients from the bottom such that they do not
-            // cover single-floated clients
-            stack->sliceAddLayer(client->slice, LAYER_FLOATING, false);
+            stack->sliceAddLayer(slice, LAYER_FLOATING, false);
         } else {
-            stack->sliceRemoveLayer(client->slice, LAYER_FLOATING);
+            stack->sliceRemoveLayer(slice, LAYER_FLOATING);
         }
-    });
+    }
     needsRelayout_.emit();
 }
 
@@ -540,15 +613,6 @@ void tag_update_flags() {
 void tag_set_flags_dirty() {
     g_tag_flags_dirty = true;
     hook_emit({"tag_flags"});
-}
-
-HSTag* find_tag_with_toplevel_frame(Frame* frame) {
-    for (auto t : *global_tags) {
-        if (&* t->frame->root_ == frame) {
-            return &* t;
-        }
-    }
-    return nullptr;
 }
 
 //! close the focused client or remove if the frame is empty

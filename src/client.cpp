@@ -9,10 +9,12 @@
 #include "clientmanager.h"
 #include "decoration.h"
 #include "ewmh.h"
+#include "frametree.h"
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
 #include "keymanager.h"
+#include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "mousemanager.h"
@@ -41,6 +43,7 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
     , minimized_(this,  "minimized", false)
     , title_(this,  "title", "")
     , tag_str_(this,  "tag", &Client::tagName)
+    , parent_frame_(*this,  "parent_frame", &Client::parentFrame)
     , window_id_str(this,  "winid", "")
     , keyMask_(this,  "keymask", RegexStr::fromStr(""))
     , keysInactive_(this,  "keys_inactive", RegexStr::fromStr(""))
@@ -61,16 +64,17 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 {
     stringstream tmp;
     window_id_str = WindowID(window).str();
-    floating_.setWriteable();
-    keyMask_.setWriteable();
-    keysInactive_.setWriteable();
-    ewmhnotify_.setWriteable();
-    ewmhrequests_.setWriteable();
-    sizehints_floating_.setWriteable();
-    sizehints_tiling_.setWriteable();
-    minimized_.setWriteable();
+    floating_.setWritable();
+    keyMask_.setWritable();
+    keysInactive_.setWritable();
+    ewmhnotify_.setWritable();
+    ewmhrequests_.setWritable();
+    fullscreen_.setWritable();
+    pseudotile_.setWritable();
+    sizehints_floating_.setWritable();
+    sizehints_tiling_.setWritable();
+    minimized_.setWritable();
     for (auto i : {&fullscreen_, &pseudotile_, &sizehints_floating_, &sizehints_tiling_}) {
-        i->setWriteable();
         i->changed().connect(this, &Client::requestRedraw);
     }
 
@@ -92,6 +96,44 @@ Client::Client(Window window, bool visible_already, ClientManager& cm)
 
     init_from_X();
     visible_.setDoc("whether this client is rendered currently");
+    parent_frame_.setDoc("the frame contaning this client if the client is tiled");
+    setDoc("a managed window");
+
+    window_id_str.setDoc("its window id (as a hexadecimal number with 0x prefix)");
+    title_.setDoc("its window title");
+    keyMask_.setDoc(
+        "A regular expression that is matched against the string "
+        "representation of all key bindings (as they are printed "
+        "by list_keybinds). While this client is focused, only "
+        "bindings that match the expression will be active. "
+        "Any other bindings will be disabled. The default keymask "
+        "is an empty string (""), which does not disable any keybinding.");
+    keysInactive_.setDoc(
+        "A regular expression that describes which keybindings are inactive "
+        "while the client is focused. If a key combination is pressed and "
+        "its string representation (as given by list_keybinds) matches the "
+        "regex, then the key press is propagated to the client.");
+    tag_str_.setDoc("the name of the tag it's currently on.");
+    pid_.setDoc("the process id of it (-1 if unset).");
+    window_class_.setDoc("the class of it (second entry in WM_CLASS)");
+    window_instance_.setDoc("the instance of it (first entry in WM_CLASS)");
+    fullscreen_.setDoc(
+                "whether this client covers all other "
+                "windows and panels on its monitor.");
+    minimized_.setDoc(
+                "whether this client is minimized (also called "
+                "iconified).");
+    floating_.setDoc("whether this client is floated above the tiled clients.");
+    pseudotile_.setDoc(
+                "if activated, the client always has its floating "
+                "window size, even if it is in tiling mode.");
+    ewmhrequests_.setDoc("if ewmh requests are permitted for this client");
+    ewmhnotify_.setDoc("if the client is told about its state via ewmh");
+    urgent_.setDoc("the urgency state (also known as: demands attention)");
+    sizehints_tiling_.setDoc("if sizehints for this client "
+                             "should be respected in tiling mode");
+    sizehints_floating_.setDoc("if sizehints for this client should "
+                               "be respected in floating mode");
 }
 
 void Client::init_from_X() {
@@ -130,6 +172,8 @@ void Client::make_full_client() {
     XSelectInput(g_display, window_,
                             StructureNotifyMask|FocusChangeMask
                             |EnterWindowMask|PropertyChangeMask);
+    // redraw decoration on title change
+    title_.changed().connect(dec.get(), &Decoration::redraw);
 }
 
 void Client::listen_for_events() {
@@ -199,7 +243,7 @@ void Client::window_focus() {
 
     if (this != lastfocus) {
         /* FIXME: this is a workaround because window_focus always is called
-         * twice.  see BUGS for more information
+         * twice.
          *
          * only emit the hook if the focus *really* changes */
         // unfocus last one
@@ -404,20 +448,20 @@ void Client::resize_floating(Monitor* m, bool isFocused) {
         return;
     }
     auto rect = this->float_size_;
-    rect.x += m->rect.x;
-    rect.y += m->rect.y;
+    rect.x += m->rect->x;
+    rect.y += m->rect->y;
     rect.x += m->pad_left();
     rect.y += m->pad_up();
     // ensure position is on monitor
     int space = g_monitor_float_treshold;
     rect.x =
         CLAMP(rect.x,
-              m->rect.x + m->pad_left() - rect.width + space,
-              m->rect.x + m->rect.width - m->pad_left() - m->pad_right() - space);
+              m->rect->x + m->pad_left() - rect.width + space,
+              m->rect->x + m->rect->width - m->pad_left() - m->pad_right() - space);
     rect.y =
         CLAMP(rect.y,
-              m->rect.y + m->pad_up() - rect.height + space,
-              m->rect.y + m->rect.height - m->pad_up() - m->pad_down() - space);
+              m->rect->y + m->pad_up() - rect.height + space,
+              m->rect->y + m->rect->height - m->pad_up() - m->pad_down() - space);
     dec->resize_inner(rect, theme[Theme::Type::Floating](isFocused,urgent_()));
     mostRecentThemeType = Theme::Type::Floating;
 }
@@ -577,6 +621,15 @@ string Client::getWindowClass()
 string Client::getWindowInstance()
 {
     return ewmh.X().getInstance(window_);
+}
+
+FrameLeaf* Client::parentFrame()
+{
+    if (is_client_floated()) {
+        return nullptr;
+    } else {
+        return tag_->frame->findFrameWithClient(this).get();
+    }
 }
 
 void Client::requestRedraw()

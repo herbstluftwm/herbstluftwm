@@ -5,7 +5,10 @@
 #include <X11/Xlib.h>
 
 #include "attribute_.h"
+#include "child.h"
+#include "commandio.h"
 #include "object.h"
+#include "rectangle.h"
 #include "regexstr.h"
 #include "theme.h"
 #include "types.h"
@@ -14,6 +17,7 @@
 class Decoration;
 class DecTriple;
 class Ewmh;
+class FrameLeaf;
 class Slice;
 class HSTag;
 class Monitor;
@@ -60,6 +64,7 @@ public:
     Attribute_<bool> minimized_;
     Attribute_<std::string> title_;  // or also called window title; this is never NULL
     DynAttribute_<std::string> tag_str_;
+    DynChild_<FrameLeaf> parent_frame_;
     Attribute_<std::string> window_id_str;
     Attribute_<RegexStr> keyMask_; // regex for key bindings that are active on this window
     Attribute_<RegexStr> keysInactive_; // regex for key bindings that are inactive on this window
@@ -125,6 +130,7 @@ private:
     std::string getWindowClass();
     std::string getWindowInstance();
     std::string triggerRelayoutMonitor();
+    FrameLeaf* parentFrame();
     void requestRedraw();
     friend Decoration;
     ClientManager& manager;

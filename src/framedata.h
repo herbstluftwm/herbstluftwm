@@ -33,7 +33,7 @@ struct is_finite<SplitAlign> : std::true_type {};
 template<> Finite<SplitAlign>::ValueList Finite<SplitAlign>::values;
 
 template<>
-inline Type Attribute_<SplitAlign>::staticType() { return Type::ATTRIBUTE_NAMES; }
+inline Type Attribute_<SplitAlign>::staticType() { return Type::NAMES; }
 
 enum class LayoutAlgorithm {
     vertical = 0,
@@ -47,7 +47,7 @@ struct is_finite<LayoutAlgorithm> : std::true_type {};
 template<> Finite<LayoutAlgorithm>::ValueList Finite<LayoutAlgorithm>::values;
 
 template<>
-inline Type Attribute_<LayoutAlgorithm>::staticType() { return Type::ATTRIBUTE_NAMES; }
+inline Type Attribute_<LayoutAlgorithm>::staticType() { return Type::NAMES; }
 
 LayoutAlgorithm splitAlignToLayoutAlgorithm(SplitAlign align);
 

@@ -228,7 +228,7 @@ int FrameTree::rotateCommand() {
                 case SplitAlign::horizontal:
                     s->align_ = SplitAlign::vertical;
                     s->selection_ = s->selection_ ? 0 : 1;
-                    swap(s->a_, s->b_);
+                    s->swapChildren();
                     s->fraction_ = FixPrecDec::fromInteger(1) - s->fraction_;
                     break;
             }
@@ -264,7 +264,7 @@ int FrameTree::mirrorCommand(Input input, Output output)
                 || (dir == MD::Vertical && s->align_ == SplitAlign::vertical);
             if (mirror) {
                 s->selection_ = s->selection_ ? 0 : 1;
-                swap(s->a_, s->b_);
+                s->swapChildren();
                 s->fraction_ = FixPrecDec::fromInteger(1) - s->fraction_;
             }
         };
@@ -383,7 +383,7 @@ shared_ptr<FrameLeaf> FrameTree::findEmptyFrameNearFocusGeometrically(shared_ptr
     return closestFrame;
 }
 
-Frame* FrameTree::focusedFramePlainPtr()
+FrameLeaf* FrameTree::focusedFramePlainPtr()
 {
     auto shared = focusedFrame();
     if (shared) {

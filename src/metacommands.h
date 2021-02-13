@@ -1,29 +1,32 @@
-#ifndef __HERBSTLUFT_ROOTCOMMANDS_H_
-#define __HERBSTLUFT_ROOTCOMMANDS_H_
-
-/** commands that don't belong to a particular object
- * but modify the global state */
+#ifndef __HERBSTLUFT_METACOMMANDS_H_
+#define __HERBSTLUFT_METACOMMANDS_H_
 
 #include <functional>
 #include <memory>
 #include <vector>
 
 #include "attribute.h"
+#include "commandio.h"
 #include "types.h"
 
 class Object;
 class Completion;
 
 /** this class collects high-level commands that don't need any internal
- * structures but just the object tree as the user sees it. Hence, this does
- * not inherit from Object and is not exposed to the user as an object.
+ * structures but instead just uses:
+ *
+ *   - the object tree as the user sees it
+ *   - the command system (invokation of commands)
+ *   - generic c functions (e.g. accessing the environment)
+ *
+ * Hence, this does not inherit from Object and is not exposed to the user as an object.
 */
-class RootCommands {
+class MetaCommands {
 public:
     /** This class shall have minimal dependencies to other hlwm modules, therefore the
      * 'root' reference held by this class has the Object type instead of Root.
      */
-    RootCommands(Object& root);
+    MetaCommands(Object& root);
 
     Attribute* getAttribute(std::string path, Output output);
 
@@ -54,9 +57,15 @@ public:
     void compare_complete(Completion& complete);
     static Attribute* newAttributeWithType(std::string typestr, std::string attr_name, Output output);
     static void completeAttributeType(Completion& complete);
+    static void completeObjectPath(Completion& complete, Object* rootObject,
+                                   bool attributes = false,
+                                   std::function<bool(Attribute*)> attributeFilter = {});
     void completeObjectPath(Completion& complete, bool attributes = false,
                             std::function<bool(Attribute*)> attributeFilter = {});
     void completeAttributePath(Completion& complete);
+
+    int helpCommand(Input input, Output output);
+    void helpCompletion(Completion& complete);
 
     int tryCommand(Input input, Output output);
     int silentCommand(Input input, Output output);

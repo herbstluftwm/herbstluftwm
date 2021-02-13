@@ -707,64 +707,6 @@ void FrameLeaf::moveClient(int new_index) {
     selection = new_index;
 }
 
-int frame_move_window_command(int argc, char** argv, Output output) {
-    // usage: move left|right|up|down
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    string dirstr = argv[1];
-    int external_only = g_settings->default_direction_external_only();
-    if (argc > 2 && !strcmp(argv[1], "-i")) {
-        external_only = false;
-        dirstr = argv[2];
-    }
-    if (argc > 2 && !strcmp(argv[1], "-e")) {
-        external_only = true;
-        dirstr = argv[2];
-    }
-    Direction direction;
-    try {
-        direction = Converter<Direction>::parse(dirstr);
-    } catch (const std::exception& e) {
-        output << argv[0] << ": " << e.what() << "\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    shared_ptr<FrameLeaf> frame = Frame::getGloballyFocusedFrame();
-    Client* currentClient = get_current_client();
-    if (currentClient && currentClient->is_client_floated()) {
-        // try to move the floating window
-        bool success = floating_shift_direction(direction);
-        return success ? 0 : HERBST_FORBIDDEN;
-    }
-    int index;
-    if (!external_only &&
-        (index = frame->getInnerNeighbourIndex(direction)) != -1) {
-        frame->moveClient(index);
-        get_current_monitor()->applyLayout();
-    } else {
-        shared_ptr<Frame> neighbour = frame->neighbour(direction);
-        Client* client = frame->focusedClient();
-        if (client && neighbour) { // if neighbour was found
-            // move window to neighbour
-            frame->removeClient(client);
-            FrameTree::focusedFrame(neighbour)->insertClient(client);
-            neighbour->frameWithClient(client)->select(client);
-
-            // change selection in parent
-            shared_ptr<FrameSplit> parent = neighbour->getParent();
-            assert(parent);
-            parent->swapSelection();
-
-            // layout was changed, so update it
-            get_current_monitor()->applyLayout();
-        } else {
-            output << argv[0] << ": No neighbour found\n";
-            return HERBST_FORBIDDEN;
-        }
-    }
-    return 0;
-}
-
 void FrameLeaf::select(Client* client) {
     auto it = find(clients.begin(), clients.end(), client);
     if (it != clients.end()) {
@@ -872,12 +814,13 @@ int frame_focus_edge(Input input, Output output) {
     return 0;
 }
 
-int frame_move_window_edge(int argc, char** argv, Output output) {
+int frame_move_window_edge(Input input, Output output) {
     // Moves a window to the edge in the specified direction
     g_monitors->lock();
     int oldval = g_settings->focus_crosses_monitor_boundaries();
     g_settings->focus_crosses_monitor_boundaries = false;
-    while (0 == frame_move_window_command(argc, argv, output)) {
+    Input inp = {"shift", input.toVector()};
+    while (0 == Commands::call(inp, output)) {
         ;
     }
     g_settings->focus_crosses_monitor_boundaries = oldval;

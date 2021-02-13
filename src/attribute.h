@@ -20,7 +20,7 @@ class Completion;
  * A validator can be specified that performs checks before accepting external
  * input. Error messages produced by the validator are propagated back to the user.
  * The validator is not called when the attribute is set internally.
- * Static attributes are read-only by default and need to set writeable either
+ * Static attributes are read-only by default and need to set writable either
  * explicitely or by setting a validator.
  * Static attributes provide a signal "changed" that emits whenever the attribute
  * is altered (internally or externally).
@@ -44,20 +44,18 @@ class Attribute : public Entity, public HasDocumentation {
 
 public:
     Attribute(const std::string &name,
-              bool writeable)
-        : Entity(name), writeable_(writeable) {}
+              bool writable)
+        : Entity(name), writable_(writable) {}
     ~Attribute() override = default;
 
     // set the owner after object creation (when pointer is available)
     void setOwner(Object *owner) { owner_ = owner; }
-    // make this attribute writeable (default is typically read-only)
-    void setWriteable(bool writeable = true) { writeable_ = writeable; }
+    // make this attribute writable (default is typically read-only)
+    void setWritable(bool writable = true) { writable_ = writable; }
     // change if attribute can be expected to trigger hooks (rarely used)
     void setHookable(bool hookable) { hookable_ = hookable; }
 
-    Type type() override { return Type::ATTRIBUTE; }
-
-    bool writeable() const { return writeable_; }
+    bool writable() const { return writable_; }
     bool hookable() const { return hookable_; }
     virtual Signal& changed() = 0;
 
@@ -79,20 +77,7 @@ public:
 protected:
     Object *owner_ = nullptr;
 
-    bool writeable_ = false, hookable_ = true;
-};
-
-class Action : public Entity {
-public:
-    Action() = default;
-    Action(const std::string &name)
-        : Entity(name) {}
-    void setOwner(Object *owner) { owner_ = owner; }
-
-    Type type() override { return Type::ACTION; }
-
-private:
-    Object *owner_ = {};
+    bool writable_ = false, hookable_ = true;
 };
 
 

@@ -108,7 +108,7 @@ Settings::Settings()
          &frame_normal_opacity}) {
         i->changed().connect(&reset_client_colors);
     }
-    frame_bg_transparent.setWriteable();
+    frame_bg_transparent.setWritable();
     for (auto i : {&always_show_frame,
          &gapless_grid,
          &smart_frame_surroundings,
@@ -133,8 +133,12 @@ Settings::Settings()
     });
     g_settings = this;
     for (auto i : attributes()) {
-        i.second->setWriteable();
+        i.second->setWritable();
     }
+    setDoc(
+        "This has an attribute for each setting. Many settings are "
+        "wrappers around attributes and only exist for compatibility."
+    );
 }
 
 void Settings::injectDependencies(Root* root) {
@@ -250,7 +254,7 @@ int Settings::toggle_cmd(Input argv, Output output) {
             ": Setting \"" << set_name << "\" not found\n";
         return HERBST_SETTING_NOT_FOUND;
     }
-    if (attr->type() == Type::ATTRIBUTE_BOOL) {
+    if (attr->type() == Type::BOOL) {
         attr->change("toggle");
     } else {
         output << argv.command()
@@ -264,7 +268,7 @@ int Settings::toggle_cmd(Input argv, Output output) {
 void Settings::toggle_complete(Completion& complete) {
     if (complete == 0) {
         for (auto a : attributes()) {
-            if (a.second->type() == Type::ATTRIBUTE_BOOL) {
+            if (a.second->type() == Type::BOOL) {
                 complete.full(a.first);
             }
         }

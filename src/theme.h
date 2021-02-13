@@ -5,7 +5,9 @@
 
 #include "attribute_.h"
 #include "child.h"
+#include "font.h"
 #include "object.h"
+#include "rectangle.h"
 
 /** The proxy interface
  */
@@ -76,9 +78,12 @@ public:
     ~DecorationScheme() override = default;
     DynAttribute_<std::string> reset;
     AttributeProxy_<unsigned long>     border_width = {"border_width", 0};
+    AttributeProxy_<unsigned long>     title_height = {"title_height", 0};
     AttributeProxy_<Color>   border_color = {"color", {"black"}};
     AttributeProxy_<bool>    tight_decoration = {"tight_decoration", false}; // if set, there is no space between the
                               // decoration and the window content
+    AttributeProxy_<HSFont>  title_font = {"title_font", HSFont::fromStr("fixed")};
+    AttributeProxy_<Color>   title_color = {"title_color", {"black"}};
     AttributeProxy_<Color>   inner_color = {"inner_color", {"black"}};
     AttributeProxy_<unsigned long>     inner_width = {"inner_width", 0};
     AttributeProxy_<Color>   outer_color = {"outer_color", {"black"}};

@@ -12,18 +12,18 @@ class ClientManager; // IWYU pragma: keep
 class Ewmh;
 class FrameLeaf;
 class HlwmCommon;
-class HookManager; // IWYU pragma: keep
 class IpcServer;
 class KeyManager; // IWYU pragma: keep
 class MonitorManager; // IWYU pragma: keep
 class MouseManager; // IWYU pragma: keep
 class PanelManager;
-class RootCommands;
+class MetaCommands;
 class RuleManager; // IWYU pragma: keep
 class Settings; // IWYU pragma: keep
 class TagManager; // IWYU pragma: keep
 class Theme; // IWYU pragma: keep
 class Tmp; // IWYU pragma: keep
+class Watchers;
 class XConnection;
 
 class Globals {
@@ -48,7 +48,6 @@ public:
 
     // (in alphabetical order)
     Child_<ClientManager> clients;
-    Child_<HookManager> hooks;
     Child_<KeyManager> keys;
     Child_<MonitorManager> monitors;
     Child_<MouseManager> mouse;
@@ -57,9 +56,10 @@ public:
     Child_<TagManager> tags;
     Child_<Theme> theme;
     Child_<Tmp> tmp;
+    Child_<Watchers> watchers;
 
     Globals globals;
-    std::unique_ptr<RootCommands> root_commands; // Using "pimpl" to avoid include
+    std::unique_ptr<MetaCommands> meta_commands; // Using "pimpl" to avoid include
     XConnection& X;
     IpcServer& ipcServer_;
     //! Temporary member. In the long run, ewmh should get its information

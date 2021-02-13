@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import subprocess
 import os
 import sys
@@ -12,7 +13,7 @@ class GitDir:
     def __init__(self, dirpath):
         self.dirpath = dirpath
 
-    def run(self, *cmd):
+    def run(self, cmd, check=True):
         """
         run a git command in the git repository in the dir git_tmp.dir
         """
@@ -23,24 +24,28 @@ class GitDir:
             '--work-tree=' + tmp_dir
         ] + list(cmd)
         print(':: ' + ' '.join(full_cmd), file=sys.stderr)
-        subprocess.run(full_cmd)
+        return subprocess.run(full_cmd, check=check)
 
-
-def parse_pr_id(text):
-    """replace pr IDs by git refs and
-    leave other ref identifiers unchanged
-    """
-    if text[0:1] == '#':
-        return 'github/pull/' + text[1:] + '/head'
-    else:
-        return text
+    def parse_pr_id(self, text):
+        """replace pr IDs by git refs and
+        leave other ref identifiers unchanged
+        """
+        if self.run(['rev-parse', text], check=False).returncode == 0:
+            # do not interpret text if it is a valid git revision
+            return text
+        if text[0:1] == '#' and self.run(['rev-parse', text]).returncode != 0:
+            return 'github/pull/' + text[1:] + '/head'
+        else:
+            return text
 
 
 def get_json_doc(tmp_dir):
-    return subprocess.run(['doc/gendoc.py', '--json'],
-                          stdout=subprocess.PIPE,
-                          universal_newlines=True,
-                          cwd=tmp_dir).stdout
+    json_txt = subprocess.run(['doc/gendoc.py', '--json'],
+                              stdout=subprocess.PIPE,
+                              universal_newlines=True,
+                              cwd=tmp_dir).stdout
+    # normalize it: add trailing commads to reduce diff size:
+    return re.sub(r'([^{,])\n', r'\1,\n', json_txt)
 
 
 def run_pipe_stdout(cmd):
@@ -86,6 +91,12 @@ def main():
                         default='github/master',
                         nargs='?')
     parser.add_argument('newref', help='the new version, e.g. a pull request number like #1021')
+    parser.add_argument('--no-tmp-dir', action='store_const', default=False, const=True,
+                        help='dangerous: if passed, perform git checkout on this repo')
+    parser.add_argument('--fetch-all', action='store_const', default=False, const=True,
+                        help='whether to fetch all refs from the remote before diffing')
+    parser.add_argument('--collapse-diff-lines', default=100, type=int,
+                        help='from which diff size on the diff is collapsed per default')
     parser.add_argument('--post-comment', default=None,
                         help='post diff as a comment in the specified ID of a github issue'
                              + ' Requires that the environment variable GITHUB_TOKEN is set')
@@ -106,36 +117,46 @@ def main():
         comment_target = args.post_comment
 
     git_root = run_pipe_stdout(['git', 'rev-parse', '--show-toplevel']).rstrip()
-    tmp_dir = os.path.join(git_root, '.hlwm-tmp-diff-json')
+    if args.no_tmp_dir:
+        # use this repository for checking different revisions
+        tmp_dir = git_root
+    else:
+        tmp_dir = os.path.join(git_root, '.hlwm-tmp-diff-json')
     git_tmp = GitDir(tmp_dir)
 
     if not os.path.isdir(tmp_dir):
         subprocess.call(['git', 'clone', git_root, tmp_dir])
 
     # fetch all pull request heads
-    git_tmp.run(
-        'fetch',
-        'https://github.com/herbstluftwm/herbstluftwm',
-        '+refs/pull/*:refs/remotes/github/pull/*',
-        '+master:github/master')
+    if args.fetch_all:
+        git_tmp.run([
+            'fetch',
+            'https://github.com/herbstluftwm/herbstluftwm',
+            '+refs/pull/*:refs/remotes/github/pull/*',
+            '+master:github/master'])
 
-    oldref = parse_pr_id(args.oldref)
-    newref = parse_pr_id(args.newref)
+    oldref = git_tmp.parse_pr_id(args.oldref)
+    newref = git_tmp.parse_pr_id(args.newref)
     print(f'Diffing »{oldref}« and »{newref}«', file=sys.stderr)
     print(f'Checking out {oldref}', file=sys.stderr)
-    git_tmp.run('checkout', '-f', oldref)
+    git_tmp.run(['checkout', '-f', oldref])
     oldjson = get_json_doc(tmp_dir).splitlines(keepends=True)
     print(f'Checking out {newref}', file=sys.stderr)
-    git_tmp.run('-c', 'advice.detachedHead=false', 'checkout', '-f', newref)
+    git_tmp.run(['-c', 'advice.detachedHead=false', 'checkout', '-f', newref])
     newjson = get_json_doc(tmp_dir).splitlines(keepends=True)
 
-    diff = difflib.unified_diff(oldjson, newjson, fromfile=args.oldref, tofile=args.newref)
+    diff = list(difflib.unified_diff(oldjson, newjson, fromfile=args.oldref, tofile=args.newref))
     if comment_target is not None:
         gendoc_url = '/herbstluftwm/herbstluftwm/blob/master/doc/gendoc.py'
         comment = [f'Diff of the output of [`doc/gendoc.py --json`]({gendoc_url}):']
+        details_attr = ' open' if len(diff) < args.collapse_diff_lines else ''
+        comment += [f'<details{details_attr}>']
+        comment += [f'<summary>Full diff ({len(diff)} lines)</summary>']
+        comment += ['']
         comment += ['```diff']
         comment += [line.rstrip('\n') for line in diff]
         comment += ['```']
+        comment += ['</details>']
         comment_txt = '\n'.join(comment)
         post_comment(comment_target.lstrip('#'), comment_txt)
     else:

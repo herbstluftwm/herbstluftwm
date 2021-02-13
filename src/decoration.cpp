@@ -1,10 +1,14 @@
 #include "decoration.h"
 
+#include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <limits>
 
 #include "client.h"
 #include "ewmh.h"
+#include "font.h"
+#include "fontdata.h"
 #include "globals.h"
 #include "settings.h"
 #include "theme.h"
@@ -41,7 +45,7 @@ void Decoration::createWindow() {
     XSetWindowAttributes at;
     long mask = 0;
     // copy attributes from client and not from the root window
-    Visual* visual = check_32bit_client(client_);
+    visual = check_32bit_client(client_);
     if (visual) {
         /* client has a 32-bit visual */
         mask = CWColormap | CWBackPixel | CWBorderPixel;
@@ -125,12 +129,14 @@ Client* Decoration::toClient(Window decoration_window)
 
 Rectangle DecorationScheme::outline_to_inner_rect(Rectangle rect) const {
     return rect.adjusted(-*border_width, -*border_width)
-            .adjusted(-*padding_left, -*padding_top, -*padding_right, -*padding_bottom);
+            .adjusted(-*padding_left, -*padding_top - *title_height,
+                      -*padding_right, -*padding_bottom);
 }
 
 Rectangle DecorationScheme::inner_rect_to_outline(Rectangle rect) const {
     return rect.adjusted(*border_width, *border_width)
-            .adjusted(*padding_left, *padding_top, *padding_right, *padding_bottom);
+            .adjusted(*padding_left, *padding_top + *title_height,
+                      *padding_right, *padding_bottom);
 }
 
 void Decoration::resize_inner(Rectangle inner, const DecorationScheme& scheme) {
@@ -283,6 +289,13 @@ void Decoration::change_scheme(const DecorationScheme& scheme) {
     }
 }
 
+void Decoration::redraw()
+{
+    if (last_scheme) {
+        change_scheme(*last_scheme);
+    }
+}
+
 unsigned int Decoration::get_client_color(Color color) {
     XColor xcol = color.toXColor();
     if (colormap) {
@@ -368,6 +381,42 @@ void Decoration::redrawPixmap() {
                        dec->last_actual_rect.y + dec->last_actual_rect.height,
                        inner.width,
                        inner.height - dec->last_actual_rect.height);
+    }
+    if (s.title_height() > 0) {
+        FontData& fontData = s.title_font->data();
+        string title = client_->title_();
+        Point2D titlepos = {
+            static_cast<int>(s.padding_left() + s.border_width()),
+            static_cast<int>(s.title_height())
+        };
+        if (fontData.xftFont_) {
+            Visual* xftvisual = visual ? visual : DefaultVisual(g_display, g_screen);
+            Colormap xftcmap = colormap ? colormap : DefaultColormap(g_display, g_screen);
+            XftDraw* xftd = XftDrawCreate(g_display, pix, xftvisual, xftcmap);
+            XRenderColor xrendercol = {
+                    s.title_color->red_,
+                    s.title_color->green_,
+                    s.title_color->blue_,
+                    0xffff, // alpha as set by XftColorAllocName()
+            };
+            XftColor xftcol = { };
+            XftColorAllocValue(g_display, xftvisual, xftcmap, &xrendercol, &xftcol);
+            XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
+                           titlepos.x, titlepos.y,
+                           (const XftChar8*)title.c_str(), title.size());
+            XftDrawDestroy(xftd);
+            XftColorFree(g_display, xftvisual, xftcmap, &xftcol);
+        } else if (fontData.xFontSet_) {
+            XSetForeground(g_display, gc, get_client_color(s.title_color));
+            XmbDrawString(g_display, pix, fontData.xFontSet_, gc, titlepos.x, titlepos.y,
+                    title.c_str(), title.size());
+        } else if (fontData.xFontStruct_) {
+            XSetForeground(g_display, gc, get_client_color(s.title_color));
+            XFontStruct* font = s.title_font->data().xFontStruct_;
+            XSetFont(g_display, gc, font->fid);
+            XDrawString(g_display, pix, gc, titlepos.x, titlepos.y,
+                    title.c_str(), title.size());
+        }
     }
     // clean up
     XFreeGC(g_display, gc);

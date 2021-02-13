@@ -230,12 +230,12 @@ void RuleManager::addRuleCompletion(Completion& complete) {
 
 
 //! Evaluate rules against a given client
-ClientChanges RuleManager::evaluateRules(Client* client, ClientChanges changes) {
+ClientChanges RuleManager::evaluateRules(Client* client, Output output, ClientChanges changes) {
     // go through all rules and remove those that expired.
     // Here, we use erase + remove_if because it uses a Forward Iterator
     // and so it is ensured that the rules are evaluated in the correct order.
     auto forEachRule = [&](unique_ptr<Rule>& rule) {
-        rule->evaluate(client, changes);
+        rule->evaluate(client, changes, output);
         return rule->expired();
     };
     rules_.erase(std::remove_if(rules_.begin(), rules_.end(), forEachRule),

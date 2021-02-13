@@ -50,7 +50,7 @@ template<> FixPrecDec Converter<FixPrecDec>::parse(const std::string& source);
 template<> std::string Converter<FixPrecDec>::str(FixPrecDec payload);
 
 template<>
-inline Type Attribute_<FixPrecDec>::staticType() { return Type::ATTRIBUTE_DECIMAL; }
+inline Type Attribute_<FixPrecDec>::staticType() { return Type::DECIMAL; }
 
 
 #endif // FIXPRECDEC_H

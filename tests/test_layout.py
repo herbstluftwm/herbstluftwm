@@ -5,6 +5,20 @@ import textwrap
 from decimal import Decimal
 
 
+def normalize_layout_string(layout_string):
+    """normalize a layout string such that it is characterwise identical
+    to the output of the 'dump' command
+    """
+    layout_string = layout_string.replace('\n', ' ')
+    # drop multiple whitespace
+    layout_string = re.sub(r'[ ]+', ' ', layout_string)
+    # drop whitespace after opening parenthesis
+    layout_string = re.sub(r'[(] ', r'(', layout_string)
+    # drop whitespace and before closing parenthesis
+    layout_string = re.sub(r' [)]', r')', layout_string)
+    return layout_string.strip()
+
+
 def verify_frame_objects_via_dump(hlwm, tag_object="tags.focus"):
     """verify, that the frame objects for the given tag_object match
     with the output of the 'dump' command this tag"""
@@ -89,11 +103,11 @@ def test_explode_second_client(hlwm):
 
     assert hlwm.get_attr('tags.0.curframe_wcount') == '1'
     assert hlwm.get_attr('tags.0.curframe_windex') == '0'
-    expected_layout = textwrap.dedent(f"""\
+    expected_layout = normalize_layout_string(f"""\
     (split vertical:0.5:1
     (clients vertical:0 {winids[0]})
     (clients vertical:0 {winids[1]}))
-    """).replace('\n', ' ').strip()
+    """)
     assert hlwm.call('dump').stdout == expected_layout
     verify_frame_objects_via_dump(hlwm)
 
@@ -954,23 +968,32 @@ def test_set_layout_invalid_layout_name(hlwm):
         .expect_stderr('Cannot.* "foobar":.*one of: vertical, horizontal')
 
 
-def test_focus_edge(hlwm):
+@pytest.mark.parametrize("command", ['focus_edge', 'shift_edge'])
+def test_focus_edge_shift_edge(hlwm, command):
     hlwm.call('set focus_crosses_monitor_boundaries on')
     hlwm.call('add otherTag')
     hlwm.call('add_monitor 800x600+800+0')
     hlwm.call('split right')
     hlwm.call('split right')
 
+    if command == 'shift_edge':
+        # the only difference between 'shift_edge' and 'focus_edge'
+        # is that we take the focused window with us
+        hlwm.create_client()
+
     # we're on the leftmost frame
     layout_before = hlwm.call('dump').stdout
-    hlwm.call('focus_edge left')
+    hlwm.call([command, 'left'])
+    assert hlwm.attr.tags.focus.tiling.focused_frame.index() == '00'
     assert layout_before == hlwm.call('dump').stdout
     assert hlwm.get_attr('monitors.focus.index') == '0'
 
-    # focus_edge goes to the rightmost frame
-    hlwm.call('focus_edge right')
+    # focus_edge/shift_edge goes to the rightmost frame
+    hlwm.call([command, 'right'])
     # we're still on the first monitor
     assert hlwm.get_attr('monitors.focus.index') == '0'
+    # but in the right-most frame
+    assert hlwm.attr.tags.focus.tiling.focused_frame.index() == '1'
     # but right-most frame means, if we go right once more, we're on
     # the other monitor:
     hlwm.call('focus right')
@@ -1189,6 +1212,19 @@ def test_focused_frame_child(hlwm):
         assert hlwm.get_attr('tags.0.tiling.focused_frame.index') == focused_index
 
 
+def verify_frame_indices(hlwm, root='tags.focus.tiling.root', index=[]):
+    """traverse all frame objects under the given 'root' frame object
+    and verify that their 'index' attribute has the correct value according to
+    their path in the frame tree.
+    """
+    path = root.rstrip('.') + '.' + '.'.join(index)
+    assert hlwm.get_attr(path.rstrip('.') + '.index') == ''.join(index)
+    if '0' in hlwm.list_children(path):
+        # if 'path' is a frame split object
+        verify_frame_indices(hlwm, root=root, index=index + ['0'])
+        verify_frame_indices(hlwm, root=root, index=index + ['1'])
+
+
 @pytest.mark.parametrize("old,new", [
     ('(split vertical:0.4:0 {a} {b})', '(split vertical:0.6:1 {b} {a})'),
     ('(split horizontal:0.3:0 {a} {b})', '(split horizontal:0.7:1 {b} {a})'),
@@ -1208,6 +1244,7 @@ def test_mirror_horizontal_or_vertical_one_split(hlwm, old, new, mode):
     else:
         expected = new.format(a=frame_a, b=frame_b)
     assert hlwm.call('dump').stdout == expected
+    verify_frame_indices(hlwm)
 
 
 @pytest.mark.parametrize("num_splits", [1, 2, 3, 4])
@@ -1219,6 +1256,7 @@ def test_mirror_vs_rotate(hlwm, num_splits):
 
     # compute the effect of rotating by 180 degrees
     hlwm.call('chain , rotate , rotate')
+    verify_frame_indices(hlwm)
     layout_after_rotate = hlwm.call('dump').stdout
     # restore original layout
     hlwm.call(['load', layout])
@@ -1227,3 +1265,113 @@ def test_mirror_vs_rotate(hlwm, num_splits):
     # flipping both horizontally and vertically
     hlwm.call('mirror both')
     assert layout_after_rotate == hlwm.call('dump').stdout
+    verify_frame_indices(hlwm)
+
+
+@pytest.mark.parametrize("direction, frameindex", [
+    ('left', '00'),
+    ('right', '1'),
+    ('up', '0100'),
+    ('down', '011'),
+])
+@pytest.mark.parametrize("clients_per_frame", [0, 1, 2])  # client count in other frame
+def test_shift_to_other_frame(hlwm, direction, frameindex, clients_per_frame):
+    """
+    in a frame grid with 3 columns, where the middle column has 3 rows, we put
+    the focused window in the middle, and then invoke 'shift' with the given
+    'direction'. Then, it is checked that the window stays focused but now
+    resides in the frame with the given 'frameindex'
+    """
+    winid, _ = hlwm.create_client()
+
+    def otherclients():
+        # put 'otherclients'-many clients in every other frame
+        winids = hlwm.create_clients(clients_per_frame)
+        return ' '.join(winids)
+
+    layout_131 = f"""
+    (split horizontal:0.66:0
+        (split horizontal:0.5:1
+            (clients vertical:0 {otherclients()})
+            (split vertical:0.66:0
+                (split vertical:0.5:1
+                    (clients vertical:0 {otherclients()})
+                    (clients vertical:0 {winid}))
+                (clients vertical:0 {otherclients()})))
+        (clients vertical:0 {otherclients()}))
+    """
+    hlwm.call(['load', layout_131])
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.tags.focus.tiling.focused_frame.index() == '0101'
+
+    hlwm.call(['shift', direction])
+
+    # the window is still focused
+    assert hlwm.attr.clients.focus.winid() == winid
+    # but it's now in another frame
+    assert hlwm.attr.tags.focus.tiling.focused_frame.index() == frameindex
+
+
+@pytest.mark.parametrize("flag", [None, '-i', '-e'])
+@pytest.mark.parametrize("setting", ['on', 'off'])
+@pytest.mark.parametrize("running_clients_num", [1, 2, 4])
+def test_shift_internal_vs_external(hlwm, flag, setting, running_clients):
+    winids = running_clients  # define a shorter name for the slicing later
+
+    def layout(upper_winids, lower_winids, focus_idx):
+        # 'focus_idx' is the index of the focused window in
+        # the list 'upper_winids + lower_winids'
+        if focus_idx < len(upper_winids):
+            frame_selected = 0
+            upper_idx = focus_idx
+            lower_idx = 0
+        else:
+            frame_selected = 1
+            upper_idx = 0
+            lower_idx = focus_idx - len(upper_winids)
+        return normalize_layout_string(f"""
+        (split vertical:0.5:{frame_selected}
+            (clients vertical:{upper_idx} {' '.join(upper_winids)})
+            (clients vertical:{lower_idx} {' '.join(lower_winids)}))
+        """)
+    # put all clients in the upper frame
+    hlwm.call(['load', layout(winids, [], 0)])
+    assert hlwm.attr.clients.focus.winid() == winids[0]
+    hlwm.attr.settings.default_direction_external_only = setting
+
+    if flag == '-e' or (flag is None and setting == 'on') or len(winids) == 1:
+        # client is moved do another frame
+        expected_layout = layout(winids[1:], [winids[0]], len(winids[1:]))
+    else:
+        # client is moved within frame
+        expected_layout = layout(winids[1:2] + [winids[0]] + winids[2:], [], 1)
+
+    # shift the window
+    cmd = ['shift']
+    cmd += [flag] if flag is not None else []
+    cmd += ['down']
+    hlwm.call(cmd)
+
+    # the same client is still focused
+    assert hlwm.attr.clients.focus.winid() == winids[0]
+    assert hlwm.call(['dump']).stdout == expected_layout
+
+
+def test_shift_no_client_focused(hlwm):
+    hlwm.call('split vertical')
+
+    hlwm.call_xfail('shift down') \
+        .expect_stderr('No client focused')
+
+
+@pytest.mark.parametrize("split", [True, False])
+def test_shift_no_neighbour_frame(hlwm, split):
+    if split:
+        # splitting 'vertical' does not make a difference
+        # because it will focus the first frame
+        hlwm.call('split vertical')
+
+    hlwm.create_client()
+
+    hlwm.call_xfail('shift up') \
+        .expect_stderr('No neighbour found')

@@ -7,13 +7,36 @@ older versions.
 Current git version
 -------------------
 
+  * Client window titles (controlled by the theme attributes 'title_height',
+    'title_color', 'title_font')
+  * New command 'help' for live documentation on the object tree
+  * New 'watch' command that emits hooks when attribute values change.
+  * The 'lock_tag' attribute is now writable.
+  * New 'geometry' attribute for monitors.
+  * Bug fixes:
+    - Correctly interpret _NET_WM_STRUT. This fixes panels that leave a bit of
+      space between the panel and the monitor edge and also panels between two
+      monitors.
+    - Correctly handling minimized clients when removing a tag.
+    - Preserve stacking order when changing the floating state of a tag
+    - Update frame objects correctly in the commands 'mirror' and 'rotate'
+  * New dependencies: xft, freetype
+
+Release 0.9.1 on 2020-12-28
+---------------------------
+
   * Client minimization (controlled by the attribute 'minimized' of every client)
   * The 'index' attribute of tags is now writable. This allows adjusting the
     order of existing tags.
   * New child object 'focused_client' for each tag object.
   * New child object 'focused_frame' for the tiling object of each tag object.
+  * New child object 'parent_frame' for each client providing the frame the client sits in
   * New command 'mirror'
   * New command 'apply_tmp_rule'
+  * The 'apply_rules' command now reports parse errors
+  * Reserve space for panels that do not set _NET_WM_STRUT e.g. conky windows
+    of type 'dock'.
+  * Only build json object doc if WITH_DOCUMENTATION is activated
   * Bug fixes:
     - When hiding windows, correctly set their WM_STATE to IconicState (we set
       it to Withdrawn state before, which means "unmanaged" and thus is wrong).

@@ -194,9 +194,22 @@ a:visited {
     font-weight: bold;
 }
 
-.code {
+code {
     font-family: monospace;
-    color: black;
+    color: #700718;
+}
+
+.entryname {
+    font-weight: normal;
+}
+
+.datatype {
+    color: #077024;
+    font-style: normal;
+}
+
+.defaultvalue {
+    color: #727272;
 }
 
 .screenshot img {
@@ -231,6 +244,10 @@ dt.hdlist1 {
 .listingblock .content pre {
     padding: 0.4em;
     margin: 0px;
+}
+
+.listingblock .content pre,
+.listingblock .content pre > code {
     color: #efefef;
 }
 

@@ -22,6 +22,11 @@ def test_add_tag(hlwm):
     assert hlwm.get_attr('tags.focus.name') == focus_before
 
 
+def test_add_tag_empty(hlwm):
+    hlwm.call_xfail(['add', '']) \
+        .expect_stderr('An empty tag name is not permitted')
+
+
 def test_use_tag(hlwm):
     assert hlwm.get_attr('tags.focus.index') == '0'
     hlwm.call('add foobar')
@@ -51,7 +56,8 @@ def test_new_clients_increase_client_count(hlwm, running_clients, running_client
     assert hlwm.get_attr('tags.0.client_count') == str(running_clients_num)
 
 
-def test_move_focused_client_to_new_tag(hlwm):
+@pytest.mark.parametrize("move_command", ["move", "move_index"])
+def test_move_focused_client_to_new_tag(hlwm, move_command):
     hlwm.call('add foobar')
     assert hlwm.get_attr('tags.0.client_count') == '0'
     assert hlwm.get_attr('tags.1.client_count') == '0'
@@ -60,13 +66,22 @@ def test_move_focused_client_to_new_tag(hlwm):
     assert hlwm.get_attr('tags.0.client_count') == '1'
     assert hlwm.get_attr('tags.1.client_count') == '0'
 
-    hlwm.call('move foobar')
+    if move_command == "move":
+        hlwm.call('move foobar')
+    elif move_command == "move_index":
+        target_tag_idx = hlwm.get_attr('tags.by-name.foobar.index')
+        hlwm.call(f'move_index {target_tag_idx}')
 
     assert hlwm.get_attr('tags.0.client_count') == '0'
     assert hlwm.get_attr('tags.0.curframe_wcount') == '0'
     assert hlwm.get_attr('tags.1.client_count') == '1'
     assert hlwm.get_attr('tags.1.curframe_wcount') == '1'
     assert hlwm.get_attr('clients', winid, 'tag') == 'foobar'
+
+
+def test_move_index_invalid_index(hlwm):
+    hlwm.call_xfail('move_index 4711') \
+        .expect_stderr('Invalid index "4711"')
 
 
 def test_merge_tag_into_another_tag(hlwm):
@@ -146,6 +161,11 @@ def test_rename_tag_existing_tag(hlwm, rename_command):
 
     hlwm.call_xfail(rename_command('default', 'foobar')) \
         .expect_stderr('"foobar" already exists')
+
+
+def test_rename_non_existing_tag(hlwm):
+    hlwm.call_xfail(['rename', 'foobar', 'baz']) \
+        .expect_stderr('"foobar" not found')
 
 
 def test_floating_invalid_parameter(hlwm):
@@ -399,3 +419,18 @@ def test_minimized_window_stays_minimized_on_tag_change(hlwm):
     # but after un-minimizing it, it is
     hlwm.call(f'set_attr clients.{winid}.minimized false')
     assert hlwm.get_attr('tags.focus.tiling.root.client_count') == '1'
+
+
+def test_merge_tag_minimized_into_visible_tag(hlwm):
+    hlwm.call('add source')
+    hlwm.call('add target')
+    hlwm.call('use source')
+    winid, _ = hlwm.create_client()
+    hlwm.attr.clients[winid].minimized = hlwm.bool(True)
+    hlwm.call('use target')
+
+    assert hlwm.attr.tags['by-name'].target.visible() == hlwm.bool(True)
+    hlwm.call('merge_tag source')
+
+    assert hlwm.attr.clients[winid].visible() == hlwm.bool(False)
+    assert winid not in hlwm.call('dump').stdout

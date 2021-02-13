@@ -11,11 +11,13 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     gcc-4.8-multilib \
     libx11-dev:i386 \
     libxext-dev:i386 \
+    libxft-dev:i386 \
+    libfreetype6-dev:i386 \
     libxinerama-dev:i386 \
     libxml2-utils \
     libxrandr-dev:i386 \
     ninja-build \
-    pkg-config \
+    pkg-config:i386 \
     xterm \
     xvfb \
     && rm -rf /var/lib/apt/lists/*

@@ -6,6 +6,7 @@
 
 #include "attribute.h"
 #include "object.h"
+#include "rectangle.h"
 #include "signal.h"
 #include "x11-types.h" // for Color
 
@@ -96,10 +97,10 @@ public:
     }
 
     // set the method called for validation of external changes
-    // this implicitely makes the attribute writeable
+    // this implicitely makes the attribute writable
     void setValidator(Validator v) {
         validator_ = v;
-        writeable_ = true;
+        writable_ = true;
     }
 
     // delegate type() to a static methods in specializations,
@@ -142,7 +143,7 @@ public:
     }
 
     std::string change(const std::string &payload_str) override {
-        if (!writeable()) {
+        if (!writable()) {
             return "attribute is read-only";
         }
         try {
@@ -195,15 +196,17 @@ protected:
 
 /** Type mappings **/
 template<>
-inline Type Attribute_<int>::staticType() { return Type::ATTRIBUTE_INT; }
+inline Type Attribute_<int>::staticType() { return Type::INT; }
 template<>
-inline Type Attribute_<unsigned long>::staticType() { return Type::ATTRIBUTE_ULONG; }
+inline Type Attribute_<unsigned long>::staticType() { return Type::ULONG; }
 template<>
-inline Type Attribute_<bool>::staticType() { return Type::ATTRIBUTE_BOOL; }
+inline Type Attribute_<bool>::staticType() { return Type::BOOL; }
 template<>
-inline Type Attribute_<std::string>::staticType() { return Type::ATTRIBUTE_STRING; }
+inline Type Attribute_<std::string>::staticType() { return Type::STRING; }
 template<>
-inline Type Attribute_<Color>::staticType() { return Type::ATTRIBUTE_COLOR; }
+inline Type Attribute_<Color>::staticType() { return Type::COLOR; }
+template<>
+inline Type Attribute_<Rectangle>::staticType() { return Type::RECTANGLE; }
 
 template<typename T>
 class DynAttribute_ : public Attribute {
@@ -225,7 +228,7 @@ public:
         , setter_(setter)
     {
         hookable_ = false;
-        writeable_ = true;
+        writable_ = true;
     }
 
     void complete(Completion& completion) override {
@@ -275,7 +278,7 @@ public:
         , setter_(std::bind(setter, owner, std::placeholders::_1))
     {
         hookable_ = false;
-        writeable_ = true;
+        writable_ = true;
         // the following will call Attribute::setOwner()
         // maybe this should be changed at some point,
         // e.g. when we got rid of Object::wireAttributes()
@@ -294,7 +297,7 @@ public:
     }
 
     std::string change(const std::string &payload_str) override {
-        if (!writeable()) {
+        if (!writable()) {
             return "attribute is read-only";
         }
         try {

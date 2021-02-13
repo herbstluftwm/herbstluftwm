@@ -147,8 +147,8 @@ void client_snap_vector(Client* client, Monitor* monitor,
     d.client    = client;
     // translate client rectangle to global coordinates
     d.rect      = client->outer_floating_rect();
-    d.rect.x += monitor->rect.x + monitor->pad_left;
-    d.rect.y += monitor->rect.y + monitor->pad_up;
+    d.rect.x += monitor->rect->x + monitor->pad_left;
+    d.rect.y += monitor->rect->y + monitor->pad_up;
     d.flags     = flags;
     d.dx        = distance;
     d.dy        = distance;
@@ -156,16 +156,16 @@ void client_snap_vector(Client* client, Monitor* monitor,
     // snap to monitor edges
     Monitor* m = monitor;
     if (flags & SNAP_EDGE_TOP) {
-        snap_1d(d.rect.y, m->rect.y + m->pad_up + g_settings->snap_gap(), &d.dy);
+        snap_1d(d.rect.y, m->rect->y + m->pad_up + g_settings->snap_gap(), &d.dy);
     }
     if (flags & SNAP_EDGE_LEFT) {
-        snap_1d(d.rect.x, m->rect.x + m->pad_left + g_settings->snap_gap(), &d.dx);
+        snap_1d(d.rect.x, m->rect->x + m->pad_left + g_settings->snap_gap(), &d.dx);
     }
     if (flags & SNAP_EDGE_RIGHT) {
-        snap_1d(d.rect.x + d.rect.width, m->rect.x + m->rect.width - m->pad_right - g_settings->snap_gap(), &d.dx);
+        snap_1d(d.rect.x + d.rect.width, m->rect->x + m->rect->width - m->pad_right - g_settings->snap_gap(), &d.dx);
     }
     if (flags & SNAP_EDGE_BOTTOM) {
-        snap_1d(d.rect.y + d.rect.height, m->rect.y + m->rect.height - m->pad_down - g_settings->snap_gap(), &d.dy);
+        snap_1d(d.rect.y + d.rect.height, m->rect->y + m->rect->height - m->pad_down - g_settings->snap_gap(), &d.dy);
     }
 
     // snap to other clients

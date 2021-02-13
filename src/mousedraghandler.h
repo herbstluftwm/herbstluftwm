@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "fixprecdec.h"
-#include "x11-types.h"
+#include "rectangle.h"
 
 class Client;
 class FrameLeaf;

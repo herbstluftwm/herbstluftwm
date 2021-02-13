@@ -27,6 +27,7 @@
 #include "tag.h"
 #include "tagmanager.h"
 #include "utils.h"
+#include "watchers.h"
 #include "xconnection.h"
 
 using std::function;
@@ -169,6 +170,7 @@ void XMainLoop::run() {
             if (handler != nullptr) {
                 (this ->* handler)(&event);
             }
+            root_->watchers->scanForChanges();
             XSync(X_.display(), False);
         }
     }
@@ -286,8 +288,8 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
                 }
                 // the requested coordinates are relative to the root window.
                 // convert them to coordinates relative to the monitor.
-                cre->x -= m->rect.x + *m->pad_left;
-                cre->y -= m->rect.y + *m->pad_up;
+                cre->x -= m->rect->x + *m->pad_left;
+                cre->y -= m->rect->y + *m->pad_up;
                 newRect.x = cre->x;
                 newRect.y = cre->y;
             }
@@ -338,6 +340,9 @@ void XMainLoop::configurenotify(XConfigureEvent* event) {
             std::ostringstream void_output;
             root_->monitors->detectMonitorsCommand(input, void_output);
         }
+    } else {
+        Rectangle geometry = { event->x, event->y, event->width, event->height };
+        root_->panels->geometryChanged(event->window, geometry);
     }
     // HSDebug("name is: ConfigureNotify\n");
 }

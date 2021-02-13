@@ -3,8 +3,8 @@
 #include <X11/X.h>
 #include <unordered_map>
 
+#include "rectangle.h"
 #include "signal.h"
-#include "x11-types.h"
 
 class Panel;
 class Settings;
@@ -37,13 +37,14 @@ public:
     void registerPanel(Window win);
     void unregisterPanel(Window win);
     void propertyChanged(Window win, Atom property);
+    void geometryChanged(Window win, Rectangle size);
     void injectDependencies(Settings* settings);
     ReservedSpace computeReservedSpace(Rectangle monitorDimension);
     Signal panels_changed_;
     void rootWindowChanged(int width, int height);
 private:
     friend Panel;
-    bool updateReservedSpace(Panel* p);
+    bool updateReservedSpace(Panel* p, Rectangle geometry);
 
     std::unordered_map<Window, Panel*> panels_;
     Atom atomWmStrut_;

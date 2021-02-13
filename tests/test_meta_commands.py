@@ -694,3 +694,58 @@ def test_dyn_attribute_invalid_argument(hlwm):
 def test_dyn_attribute_out_of_range(hlwm):
     hlwm.call_xfail('set_attr settings.window_border_inner_width 10000000000000000') \
         .expect_stderr('out of range: stoi')
+
+
+def test_help_trailing_period(hlwm):
+    with_period = hlwm.call('help clients.focus.').stdout
+    without_period = hlwm.call('help clients.focus').stdout
+
+    assert with_period == without_period
+
+
+def test_help_existence_note(hlwm):
+    # the doc if no client is focused
+    does_not_exist = hlwm.call('help clients.dragged').stdout
+
+    # the doc if some client is focused
+    hlwm.create_client()
+    does_exist = hlwm.call('help clients.focus').stdout
+
+    note = "Entry does not exist"
+
+    assert note not in does_exist
+    assert note in does_not_exist
+
+
+def test_help_root_object(hlwm):
+    help_txt = hlwm.call(['help', '']).stdout
+    assert "Object ''" in help_txt
+
+
+def test_help_root_attribute(hlwm):
+    hlwm.call('new_attr int my_foo 25')
+    help_txt = hlwm.call('help my_foo').stdout
+
+    assert 'Attribute' in help_txt
+    assert '25' in help_txt
+
+
+def test_help_on_objects(hlwm, path='', depth=8):
+    """test that running 'help' on all objects prints some
+    reasonable information
+    """
+    help_txt = hlwm.call(['help', path]).stdout
+    assert f"Object '{path}'" in help_txt
+
+    if depth < 0:
+        return
+
+    for child in hlwm.list_children(path):
+        newpath = (path + '.' + child).lstrip('.')
+        test_help_on_objects(hlwm, path=newpath, depth=depth - 1)
+
+
+def test_watch_no_arguments(hlwm):
+    hlwm.call_xfail('watch').expect_stderr(
+        'Expected one argument, but got only 0 arguments.'
+    )
