@@ -366,12 +366,6 @@ bool Client::applysizehints(int *w, int *h) {
     return *w != this->last_size_.width || *h != this->last_size_.height;
 }
 
-bool Client::applysizehints_xy(int *x, int *y,
-                                 int *w, int *h) {
-    return applysizehints(w,h) || *x != this->last_size_.x
-                               || *y != this->last_size_.y;
-}
-
 // from dwm.c
 void Client::updatesizehints() {
     long msize;
