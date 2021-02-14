@@ -114,7 +114,6 @@ public:
 
     void send_configure();
     bool applysizehints(int *w, int *h);
-    bool applysizehints_xy(int *x, int *y, int *w, int *h);
     void updatesizehints();
 
     void set_visible(bool visible);
