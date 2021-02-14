@@ -79,6 +79,24 @@ def test_move_focused_client_to_new_tag(hlwm, move_command):
     assert hlwm.get_attr('clients', winid, 'tag') == 'foobar'
 
 
+def test_move_focused_client_by_relative_index(hlwm):
+    hlwm.call('add foobar')
+    assert hlwm.get_attr('tags.0.client_count') == '0'
+    assert hlwm.get_attr('tags.1.client_count') == '0'
+
+    winid, _ = hlwm.create_client()
+    assert hlwm.get_attr('tags.0.client_count') == '1'
+    assert hlwm.get_attr('tags.1.client_count') == '0'
+
+    hlwm.call('move_index +1')
+
+    assert hlwm.get_attr('tags.0.client_count') == '0'
+    assert hlwm.get_attr('tags.0.curframe_wcount') == '0'
+    assert hlwm.get_attr('tags.1.client_count') == '1'
+    assert hlwm.get_attr('tags.1.curframe_wcount') == '1'
+    assert hlwm.get_attr('clients', winid, 'tag') == 'foobar'
+
+
 def test_move_index_invalid_index(hlwm):
     hlwm.call_xfail('move_index 4711') \
         .expect_stderr('Invalid index "4711"')
