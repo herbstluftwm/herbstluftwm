@@ -81,19 +81,29 @@ def test_move_focused_client_to_new_tag(hlwm, move_command):
 
 def test_move_focused_client_by_relative_index(hlwm):
     hlwm.call('add foobar')
+    hlwm.call('add baz')
     assert hlwm.get_attr('tags.0.client_count') == '0'
     assert hlwm.get_attr('tags.1.client_count') == '0'
+    assert hlwm.get_attr('tags.2.client_count') == '0'
 
     winid, _ = hlwm.create_client()
     assert hlwm.get_attr('tags.0.client_count') == '1'
     assert hlwm.get_attr('tags.1.client_count') == '0'
+    assert hlwm.get_attr('tags.2.client_count') == '0'
 
-    hlwm.call('move_index +1')
+    hlwm.call('move_index -1')
 
     assert hlwm.get_attr('tags.0.client_count') == '0'
-    assert hlwm.get_attr('tags.0.curframe_wcount') == '0'
+    assert hlwm.get_attr('tags.1.client_count') == '0'
+    assert hlwm.get_attr('tags.2.client_count') == '1'
+    assert hlwm.get_attr('clients', winid, 'tag') == 'baz'
+
+    hlwm.call('use_index -1')
+    hlwm.call('move_index +2')
+
+    assert hlwm.get_attr('tags.0.client_count') == '0'
     assert hlwm.get_attr('tags.1.client_count') == '1'
-    assert hlwm.get_attr('tags.1.curframe_wcount') == '1'
+    assert hlwm.get_attr('tags.2.client_count') == '0'
     assert hlwm.get_attr('clients', winid, 'tag') == 'foobar'
 
 
