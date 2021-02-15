@@ -181,7 +181,7 @@ jobs:
           mkdir -v -p $DESTDIR
           ninja -v install
           # check that the man page has been installed:
-          find $DESTDIR -printf '%P\n' -name 'herbstluftwm.1'
+          find $DESTDIR -name 'herbstluftwm.1' -printf '%P\n' | grep . # grep for the right exit-status
 
   diff-objects:
     name: Diff object tree
