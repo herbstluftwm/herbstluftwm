@@ -173,6 +173,15 @@ jobs:
           ccache -s
           find ~/.ccache | wc -l
 
+      - name: Install
+        env:
+          DESTDIR: ${{ github.workspace }}/install-herbstluftwm/
+        run: |
+          cd herbstluftwm-*/build/
+          mkdir -v -p $DESTDIR
+          ninja -v install
+          find $DESTDIR
+
   diff-objects:
     name: Diff object tree
     runs-on: ubuntu-latest
