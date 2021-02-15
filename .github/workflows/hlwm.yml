@@ -152,8 +152,8 @@ jobs:
         run: |
           cd herbstluftwm-*/doc/
           echo Checking that generated file have at least 10 lines
-          [[ "$(wc -l hlwm-objects-gen.txt)" -gt 10 ]]
-          [[ "$(wc -l hlwm-doc.json)" -gt 10 ]]
+          test "$(wc -l hlwm-objects-gen.txt|cut -d' ' -f1)" -gt 10 || exit 1
+          test "$(wc -l hlwm-doc.json|cut -d' ' -f1)" -gt 10 || exit 1
 
       - name: Build
         env:
