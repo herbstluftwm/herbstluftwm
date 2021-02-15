@@ -130,9 +130,11 @@ jobs:
     name: Build for 32bit with ancient GCC on Ubuntu 14.04
     runs-on: ubuntu-latest
     container: hlwm/ci:trusty
+    needs: build-doc  # using the tarball
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Download source tarball
+        uses: actions/download-artifact@v2
+        # we do not specify a name, hence all artifacts are downloaded
 
       - uses: actions/cache@v1
         name: Cache ~/.ccache
@@ -141,6 +143,10 @@ jobs:
           key: ccache-gcc-ancient-${{ github.run_number }}
           restore-keys: |
             ccache-gcc-ancient-
+
+      - name: List files
+        run: |
+          find
 
       - name: Build
         env:
