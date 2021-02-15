@@ -245,3 +245,10 @@ jobs:
           cd www/
           make 2> >(tee asciidoc-stderr.log)
           ! grep WARNING asciidoc-stderr.log # grep must not find warnings
+      - name: build source tarball
+        run: |
+          builddir=$BUILD ci/mktar.sh
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: herbstluftwm*.tar.gz
