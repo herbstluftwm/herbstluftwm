@@ -22,7 +22,7 @@ tarname=${tarname:-herbstluftwm-$version}
 # add compiled documentation
 :: tar --transform="flags=r;s,${builddir}/,${tarname}/,"  \
     --owner=0 --group=0 \
-    -uvf "${tarname}.tar" "${builddir}"/doc/*.{html,json,[1-9]}
+    -uvf "${tarname}.tar" "${builddir}"/doc/{*.{html,json,[1-9]},*-gen.txt}
 
 :: gzip "${tarname}.tar"
 

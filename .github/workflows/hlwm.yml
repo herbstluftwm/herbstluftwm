@@ -144,9 +144,16 @@ jobs:
           restore-keys: |
             ccache-gcc-ancient-
 
-      - name: List files
+      - name: Extract tarball
         run: |
-          find
+          tar xvf artifact/herbstluftwm*.tar.gz
+
+      - name: Sanity check tarball content
+        run: |
+          cd herbstluftwm-*/doc/
+          echo Checking that generated file have at least 10 lines
+          [[ "$(wc -l hlwm-objects-gen.txt)" -gt 10 ]]
+          [[ "$(wc -l hlwm-doc.json)" -gt 10 ]]
 
       - name: Build
         env:
@@ -155,14 +162,14 @@ jobs:
           CXXFLAGS: -m32
           CFLAGS: -m32
         run: |
+          cd herbstluftwm-*/
           find ~/.ccache | wc -l
           ccache -z --max-size=500M
           # ccache too old for --show-config
           mkdir build
           cd build
-          cmake -GNinja -DWITH_DOCUMENTATION=NO -DENABLE_CCACHE=YES ..
+          cmake -GNinja -DENABLE_CCACHE=YES ..
           ninja -v -k10
-          ninja -v doc_json
           ccache -s
           find ~/.ccache | wc -l
 

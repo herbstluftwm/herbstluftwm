@@ -38,12 +38,12 @@ function(gen_object_asciidoc jsonfile destfile)
     set(absjson "${CMAKE_CURRENT_BINARY_DIR}/${jsonfile}")
     add_custom_target(gen_object_asciidoc DEPENDS ${dst} doc_json)
     if (COPY_DOCUMENTATION)
-        # the object doc is not installed, so also is not shipped
-        # in the source tarball, so let us just pretend it's in the build directory
+        set(dst_prebuilt "${CMAKE_CURRENT_SOURCE_DIR}/${destfile}")
         add_custom_command(
             OUTPUT ${dst}
-            COMMAND ${CMAKE_COMMAND} -E touch ${dst}
-            COMMENT "Touching ${dst}"
+            COMMAND ${CMAKE_COMMAND} -E copy ${dst_prebuilt} ${dst}
+            DEPENDS ${dst_prebuilt}
+            COMMENT "Using pre-built ${dst_prebuilt}"
             )
     else()
         add_custom_command(
