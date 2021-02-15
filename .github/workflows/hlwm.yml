@@ -180,7 +180,8 @@ jobs:
           cd herbstluftwm-*/build/
           mkdir -v -p $DESTDIR
           ninja -v install
-          find $DESTDIR
+          # check that the man page has been installed:
+          find -printf '%P\n' $DESTDIR | grep 'herbstluftwm\.1'
 
   diff-objects:
     name: Diff object tree
