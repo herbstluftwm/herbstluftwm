@@ -3,8 +3,9 @@
 set -e
 
 # create a source tarball including pre-built documentation
-builddir=${builddir:-build}
-version=${version:-$(git describe|sed 's,^v,,')}
+gitroot=${gitroot:-$(git rev-parse --show-toplevel)}
+builddir=${builddir:-"${gitroot}/build/"}
+version=${version:-$(< "${gitroot}/VERSION")}
 tarname=${tarname:-herbstluftwm-$version}
 
 ::() {
@@ -16,13 +17,13 @@ tarname=${tarname:-herbstluftwm-$version}
 # we can't add additional files to the tar
 
 # take the git source files
-:: git archive --prefix=$tarname/ -o ${tarname}.tar HEAD
+:: git archive --prefix="$tarname/" -o "${tarname}".tar HEAD
 
 # add compiled documentation
 :: tar --transform="flags=r;s,${builddir}/,${tarname}/,"  \
     --owner=0 --group=0 \
-    -uvf ${tarname}.tar ${builddir}/doc/*.{html,json,[1-9]}
+    -uvf "${tarname}.tar" "${builddir}"/doc/*.{html,json,[1-9]}
 
-:: gzip ${tarname}.tar
+:: gzip "${tarname}.tar"
 
-echo To sign the tarball, run: gpg --detach-sign ${tarname}.tar.gz >&2
+echo To sign the tarball, run: gpg --detach-sign "${tarname}.tar.gz" >&2
