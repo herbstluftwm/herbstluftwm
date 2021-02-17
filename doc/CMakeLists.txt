@@ -1,16 +1,35 @@
 option(WITH_DOCUMENTATION "Build with documentation" ON)
 
+# don't rebuilt but instead only copy the documentation if hlwm-doc.json exists
+# in the source directory
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hlwm-doc.json")
+    set(doc_exists_in_src ON)
+else()
+    set(doc_exists_in_src OFF)
+endif()
+option(COPY_DOCUMENTATION "Use pre-built documentation (only available in tarballs)" ${doc_exists_in_src})
+
 add_custom_target("all_doc")
 
 function(gen_json_doc destfile)
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${destfile}.json")
     AUX_SOURCE_DIRECTORY("${CMAKE_CURRENT_SOURCE_DIR}/../src" CPPSRC)
     add_custom_target("doc_json" DEPENDS ${dst})
-    add_custom_command(
-        OUTPUT ${dst}
-        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py" --sourcedir "${CMAKE_CURRENT_SOURCE_DIR}/../src" --json > ${dst}
-        DEPENDS ${CPPSRC} "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py"
-        )
+    if (COPY_DOCUMENTATION)
+        set(dst_prebuilt "${CMAKE_CURRENT_SOURCE_DIR}/${destfile}.json")
+        add_custom_command(
+            OUTPUT ${dst}
+            COMMAND ${CMAKE_COMMAND} -E copy ${dst_prebuilt} ${dst}
+            DEPENDS ${dst_prebuilt}
+            COMMENT "Using pre-built ${dst_prebuilt}"
+            )
+    else()
+        add_custom_command(
+            OUTPUT ${dst}
+            COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py" --sourcedir "${CMAKE_CURRENT_SOURCE_DIR}/../src" --json > ${dst}
+            DEPENDS ${CPPSRC} "${CMAKE_CURRENT_SOURCE_DIR}/gendoc.py"
+            )
+    endif()
     install(FILES ${dst} DESTINATION ${DOCDIR} OPTIONAL)
 endfunction()
 
@@ -18,11 +37,21 @@ function(gen_object_asciidoc jsonfile destfile)
     set(dst "${CMAKE_CURRENT_BINARY_DIR}/${destfile}")
     set(absjson "${CMAKE_CURRENT_BINARY_DIR}/${jsonfile}")
     add_custom_target(gen_object_asciidoc DEPENDS ${dst} doc_json)
-    add_custom_command(
-        OUTPUT ${dst}
-        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/format-doc.py" ${absjson} > ${dst}
-        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/format-doc.py" ${absjson}
-        )
+    if (COPY_DOCUMENTATION)
+        set(dst_prebuilt "${CMAKE_CURRENT_SOURCE_DIR}/${destfile}")
+        add_custom_command(
+            OUTPUT ${dst}
+            COMMAND ${CMAKE_COMMAND} -E copy ${dst_prebuilt} ${dst}
+            DEPENDS ${dst_prebuilt}
+            COMMENT "Using pre-built ${dst_prebuilt}"
+            )
+    else()
+        add_custom_command(
+            OUTPUT ${dst}
+            COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/format-doc.py" ${absjson} > ${dst}
+            DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/format-doc.py" ${absjson}
+            )
+    endif()
 endfunction()
 
 function(gen_manpage sourcefile man_nr)
@@ -36,18 +65,28 @@ function(gen_manpage sourcefile man_nr)
     # multiple times when make is invoked with -j8
     add_custom_target("doc_man_${sourcefile}" ALL DEPENDS ${dst} gen_object_asciidoc)
     add_dependencies(all_doc "doc_man_${sourcefile}")
-    add_custom_command(
-        OUTPUT ${dst}
-        COMMAND ${ASCIIDOC_A2X}
-                --no-xmllint
-                -f manpage
-                -a \"herbstluftwmversion=herbstluftwm ${VERSION}\"
-                -a \"date=${BUILD_DATE}\"
-                -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
-                --destination-dir="${CMAKE_CURRENT_BINARY_DIR}"
-                ${src}
-        DEPENDS ${ARGN}
-        )
+    if (COPY_DOCUMENTATION)
+        set(dst_prebuilt "${CMAKE_CURRENT_SOURCE_DIR}/${sourcefile}.${man_nr}")
+        add_custom_command(
+            OUTPUT ${dst}
+            COMMAND ${CMAKE_COMMAND} -E copy ${dst_prebuilt} ${dst}
+            DEPENDS ${dst_prebuilt}
+            COMMENT "Using pre-built ${dst_prebuilt}"
+            )
+    else()
+        add_custom_command(
+            OUTPUT ${dst}
+            COMMAND ${ASCIIDOC_A2X}
+                    --no-xmllint
+                    -f manpage
+                    -a \"herbstluftwmversion=herbstluftwm ${VERSION}\"
+                    -a \"date=${BUILD_DATE}\"
+                    -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
+                    --destination-dir="${CMAKE_CURRENT_BINARY_DIR}"
+                    ${src}
+            DEPENDS ${ARGN}
+            )
+    endif()
     install(FILES ${dst} DESTINATION "${MANDIR}/man${man_nr}")
 endfunction()
 
@@ -62,15 +101,25 @@ function(gen_html sourcefile)
     # 'herbstluftwm' needs it
     add_custom_target("doc_html_${sourcefile}" ALL DEPENDS ${dst} gen_object_asciidoc)
     add_dependencies(all_doc "doc_html_${sourcefile}")
-    add_custom_command(
-        OUTPUT ${dst}
-        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMAND ${ASCIIDOC}
-                    -o ${dst}
-                    -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
-                    ${src}
-        DEPENDS ${src} ${ARGN}
-        )
+    if (COPY_DOCUMENTATION)
+        set(dst_prebuilt "${CMAKE_CURRENT_SOURCE_DIR}/${sourcefile}.html")
+        add_custom_command(
+            OUTPUT ${dst}
+            COMMAND ${CMAKE_COMMAND} -E copy ${dst_prebuilt} ${dst}
+            DEPENDS ${dst_prebuilt}
+            COMMENT "Using pre-built ${dst_prebuilt}"
+            )
+    else()
+        add_custom_command(
+            OUTPUT ${dst}
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}"
+            COMMAND ${ASCIIDOC}
+                        -o ${dst}
+                        -a \"builddir=${CMAKE_CURRENT_BINARY_DIR}\"
+                        ${src}
+            DEPENDS ${src} ${ARGN}
+            )
+    endif()
     install(FILES ${dst} DESTINATION ${DOCDIR})
 endfunction()
 
@@ -80,8 +129,10 @@ endfunction()
 gen_json_doc(hlwm-doc)
 
 if (WITH_DOCUMENTATION)
-    find_program(ASCIIDOC_A2X NAMES a2x DOC "Path to AsciiDoc a2x command")
-    find_program(ASCIIDOC NAMES asciidoc DOC "Path to AsciiDoc command")
+    if (NOT COPY_DOCUMENTATION)
+        find_program(ASCIIDOC_A2X NAMES a2x DOC "Path to AsciiDoc a2x command")
+        find_program(ASCIIDOC NAMES asciidoc DOC "Path to AsciiDoc command")
+    endif()
 
     gen_manpage(herbstclient 1)
     gen_manpage(herbstluftwm 1 "${CMAKE_CURRENT_BINARY_DIR}/hlwm-objects-gen.txt")
