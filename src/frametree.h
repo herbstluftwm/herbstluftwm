@@ -40,6 +40,7 @@ public:
     //! focus a frame within its tree
     static void focusFrame(std::shared_ptr<Frame> frame);
     bool focusInDirection(Direction dir, bool externalOnly);
+    bool shiftInDirection(Direction direction, bool externalOnly);
     //! return a frame in the tree that holds the client
     std::shared_ptr<FrameLeaf> findFrameWithClient(Client* client);
 
