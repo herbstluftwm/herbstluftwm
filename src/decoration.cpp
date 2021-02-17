@@ -296,16 +296,18 @@ void Decoration::redraw()
     }
 }
 
-unsigned int Decoration::get_client_color(Color color) {
+unsigned long Decoration::get_client_color(Color color) {
     XColor xcol = color.toXColor();
     if (colormap) {
         /* get pixel value back appropriate for client */
         XAllocColor(g_display, colormap, &xcol);
-        return xcol.pixel;
+        // explicitly set the alpha-byte to 0xff (fully opaque)
+        return xcol.pixel | (0xffu << 24);
     } else {
         /* get pixel value back appropriate for main color map*/
         XAllocColor(g_display, DefaultColormap(g_display, g_screen), &xcol);
-        return xcol.pixel;
+        // explicitly set the alpha-byte to 0xff (fully opaque)
+        return xcol.pixel | (0xffu << 24);
     }
 }
 

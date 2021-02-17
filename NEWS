@@ -4,6 +4,12 @@ herbstluftwm NEWS -- History of user-visible changes
 See the link:MIGRATION[] file for changes that introduced incompatibility to
 older versions.
 
+Current git version
+-------------------
+
+  * Bug fixes:
+    - Fix mistakenly transparent borders of argb clients
+
 Release 0.9.2 on 2021-02-17
 ---------------------------
 
