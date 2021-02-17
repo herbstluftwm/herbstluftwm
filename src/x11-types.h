@@ -11,7 +11,7 @@
 class Color {
 public:
     Color();
-    Color(XColor xcol);
+    Color(XColor xcol, unsigned short alpha = 0xff);
     Color(std::string name);
 
     static Color black();
@@ -27,7 +27,8 @@ public:
     bool operator==(const Color& other) const {
         return red_ == other.red_
             && green_ == other.green_
-            && blue_ == other.blue_;
+            && blue_ == other.blue_
+            && alpha_ == other.alpha_;
     };
     bool operator!=(const Color& other) const {
         return !operator==(other);
@@ -40,6 +41,7 @@ public:
     unsigned short red_ = 0;
     unsigned short green_ = 0;
     unsigned short blue_ = 0;
+    unsigned short alpha_ = 0xff; // 0 is fully transparent, 0xff is fully opaque
 
 private:
 
