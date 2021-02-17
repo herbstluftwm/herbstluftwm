@@ -10,6 +10,7 @@
 class Client;
 class Settings;
 class DecorationScheme;
+class XConnection;
 
 class Decoration {
 public:
