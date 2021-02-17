@@ -343,43 +343,25 @@ int HSTag::shiftInDirCommand(Input input, Output output)
     if (ap.parsingAllFails(input, output)) {
         return ap.exitCode();
     }
-    shared_ptr<FrameLeaf> sourceFrame = this->frame->focusedFrame();
     Client* currentClient = focusedClient();
-    if (currentClient && currentClient->is_client_floated()) {
+    if (!currentClient) {
+        output << input.command() << ": No client focused\n";
+        return HERBST_FORBIDDEN;
+    }
+    if (currentClient->is_client_floated()) {
         // try to move the floating window
         bool success = Floating::shiftDirection(direction);
         return success ? 0 : HERBST_FORBIDDEN;
-    }
-    // don't look for neighbours within the frame if 'external_only' is set
-    int indexInFrame = external_only ? (-1) : sourceFrame->getInnerNeighbourIndex(direction);
-    if (indexInFrame >= 0) {
-        sourceFrame->moveClient(indexInFrame);
-        needsRelayout_.emit();
     } else {
-        shared_ptr<Frame> neighbour = sourceFrame->neighbour(direction);
-        Client* client = sourceFrame->focusedClient();
-        if (client && neighbour) { // if neighbour was found
-            // move window to neighbour
-            sourceFrame->removeClient(client);
-            FrameTree::focusedFrame(neighbour)->insertClient(client);
-            neighbour->frameWithClient(client)->select(client);
-
-            // change selection in parent
-            shared_ptr<FrameSplit> parent = neighbour->getParent();
-            assert(parent);
-            parent->swapSelection();
-
-            // layout was changed, so update it
-            get_current_monitor()->applyLayout();
-        } else if (!client) {
-            output << input.command() << ": No client focused\n";
-            return HERBST_FORBIDDEN;
+        bool success = frame->shiftInDirection(direction, external_only);
+        if (success) {
+            needsRelayout_.emit();
+            return 0;
         } else {
             output << input.command() << ": No neighbour found\n";
             return HERBST_FORBIDDEN;
         }
     }
-    return 0;
 }
 
 void HSTag::shiftInDirCompletion(Completion& complete)

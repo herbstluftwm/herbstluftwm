@@ -248,6 +248,7 @@ jobs:
         run: |
           cat > CMakeLists.txt <<EOF
           project(Herbstluftwm)
+          file(STRINGS VERSION VERSION) # read file 'VERSION'
           set(DOCDIR /tmp/)
           set(MANDIR /tmp/)
           add_subdirectory(doc)

@@ -525,6 +525,36 @@ bool FrameTree::focusInDirection(Direction direction, bool externalOnly)
     return false;
 }
 
+bool FrameTree::shiftInDirection(Direction direction, bool externalOnly) {
+    shared_ptr<FrameLeaf> sourceFrame = this->focusedFrame();
+    Client* client = sourceFrame->focusedClient();
+    if (!client) {
+        return false;
+    }
+    // don't look for neighbours within the frame if 'external_only' is set
+    int indexInFrame = externalOnly ? (-1) : sourceFrame->getInnerNeighbourIndex(direction);
+    if (indexInFrame >= 0) {
+        sourceFrame->moveClient(indexInFrame);
+        return true;
+    } else {
+        shared_ptr<Frame> neighbour = sourceFrame->neighbour(direction);
+        if (neighbour) { // if neighbour was found
+            // move window to neighbour
+            sourceFrame->removeClient(client);
+            FrameTree::focusedFrame(neighbour)->insertClient(client);
+            neighbour->frameWithClient(client)->select(client);
+
+            // change selection in parent
+            shared_ptr<FrameSplit> parent = neighbour->getParent();
+            assert(parent);
+            parent->swapSelection();
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
 //! go to the specified frame. Return true on success, return false if
 //! the end is reached (this command never wraps). Skips covered windows
 //! if skipInvisible is set.
