@@ -79,7 +79,10 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     panels->panels_changed_.connect(monitors(), &MonitorManager::autoUpdatePads);
 }
 
-Root::~Root()
+Root::~Root() {
+}
+
+void Root::shutdown()
 {
     // Note: delete in reverse order of initialization!
     mouse.reset();

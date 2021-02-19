@@ -45,6 +45,7 @@ public:
     // constructor creates top-level objects
     Root(Globals g, XConnection& xconnection, IpcServer& ipcServer);
     ~Root() override;
+    void shutdown();
 
     // (in alphabetical order)
     Child_<ClientManager> clients;

@@ -581,7 +581,10 @@ int main(int argc, char* argv[]) {
     // main loop
     mainloop.run();
 
-    // enforce to clear the root
+    // Shut everything down. Root::get() still works.
+    root->shutdown();
+    // clear the root to destroy the object.
+    // Now Root::get() does not work anymore.
     root.reset();
     Root::setRoot(root);
     // and then close the x connection
