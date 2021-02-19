@@ -88,7 +88,6 @@ struct {
     { "dump",           3,  no_completion },
     { "load",           3,  no_completion },
     { "load",           2,  first_parameter_is_tag },
-    { "tag_status",     2,  no_completion },
     { "object_tree",    2,  no_completion },
 };
 
@@ -144,7 +143,6 @@ struct {
     { "name_monitor",   EQ, 1,  complete_against_monitors, 0 },
     { "monitor_rect",   EQ, 1,  complete_against_monitors, 0 },
     { "pad",            EQ, 1,  complete_against_monitors, 0 },
-    { "tag_status",     EQ, 1,  complete_against_monitors, 0 },
 };
 
 // Implementation of CommandBinding
