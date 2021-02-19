@@ -11,6 +11,8 @@
 class XConnection {
 private:
     XConnection(Display* disp);
+    // forbid copy constructor:
+    XConnection(const XConnection&) = delete;
 public:
     ~XConnection();
     static XConnection* connect(std::string display_name = {});
