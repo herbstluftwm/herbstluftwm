@@ -7,6 +7,8 @@ font_pool = [
 ]
 
 
+@pytest.mark.parametrize("xvfb", [{'xrender': v} for v in [True, False]], indirect=True)
+@pytest.mark.parametrize("hlwm_process", [{'transparency': v} for v in [True, False]], indirect=True)
 def test_window_border_plain(hlwm, x11):
     color = (0x9f, 0xbc, 0x12)
     bw = 5  # border width
@@ -21,6 +23,8 @@ def test_window_border_plain(hlwm, x11):
     assert img.color_count(color) == expected_count
 
 
+@pytest.mark.parametrize("xvfb", [{'xrender': v} for v in [True, False]], indirect=True)
+@pytest.mark.parametrize("hlwm_process", [{'transparency': v} for v in [True, False]], indirect=True)
 def test_window_border_inner(hlwm, x11):
     color = (239, 2, 190)
     bw = 5  # border width
@@ -40,6 +44,8 @@ def test_window_border_inner(hlwm, x11):
             assert img.pixel(x, y) == expected_color
 
 
+@pytest.mark.parametrize("xvfb", [{'xrender': v} for v in [True, False]], indirect=True)
+@pytest.mark.parametrize("hlwm_process", [{'transparency': v} for v in [True, False]], indirect=True)
 def test_window_border_outer(hlwm, x11):
     color = (239, 2, 190)
     bw = 6  # border width

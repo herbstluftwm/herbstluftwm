@@ -10,6 +10,7 @@
 
 #include "globals.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::string;
 using std::stringstream;
@@ -27,7 +28,7 @@ Color::Color()
 
 Color::Color(XColor xcol, unsigned short alpha)
     : red_(xcol.red), green_(xcol.green), blue_(xcol.blue), alpha_(alpha),
-      x11pixelValue_(xcol.pixel)
+      x11pixelValue_(x11PixelPlusAlpha(xcol.pixel, alpha))
 {
     // TODO: special interpretation of red, green, blue when
     // xcol.flags lacks one of DoRed, DoGreen, DoBlue?
@@ -58,8 +59,6 @@ string Color::str() const {
 Color Color::fromStr(const string& payload) {
     // get X11 color from color string. This fails if there is no x connection
     // from dwm.c
-    assert(g_display);
-    Colormap cmap = DefaultColormap(g_display, g_screen);
     XColor screen_color, ret_color;
     string rgb_str = payload;
     unsigned short alpha = 0xff;
@@ -79,7 +78,9 @@ Color Color::fromStr(const string& payload) {
                 string("invalid alpha value \'") + alpha_str + "\'");
         }
     }
-    auto success = XAllocNamedColor(g_display, cmap,
+    XConnection& xcon = XConnection::get();
+    auto success = XAllocNamedColor(xcon.display(),
+                                    xcon.colormap(),
                                     rgb_str.c_str(), &screen_color, &ret_color);
     if (!success) {
         throw std::invalid_argument(
