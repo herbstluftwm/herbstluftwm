@@ -1,8 +1,8 @@
 #include "framedecoration.h"
 
-#include <vector>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <vector>
 
 #include "client.h"
 #include "decoration.h"
