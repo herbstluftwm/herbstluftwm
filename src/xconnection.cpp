@@ -18,7 +18,7 @@ using std::string;
 using std::vector;
 
 bool XConnection::exitOnError_ = false;
-XConnection* XConnection::s_connection = nullptr;;
+XConnection* XConnection::s_connection = nullptr;
 
 void XConnection::setExitOnError(bool exitOnError)
 {
