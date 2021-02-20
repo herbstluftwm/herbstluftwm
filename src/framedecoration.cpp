@@ -111,8 +111,8 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
     if (settings->frame_bg_transparent() || data.hasClients) {
         vector<Rectangle> holes;
         if (settings->frame_bg_transparent()) {
-            int bw = settings->frame_transparent_width();
-            holes.push_back(Rectangle(bw, bw, rect.width - 2 * bw, rect.height - 2 * bw));
+            int ftw = settings->frame_transparent_width();
+            holes.push_back(Rectangle(ftw, ftw, rect.width - 2 * ftw, rect.height - 2 * ftw));
         }
         for (Client* client : frame_.clients) {
             Rectangle geom = client->dec->last_outer();
