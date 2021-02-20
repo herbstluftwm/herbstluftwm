@@ -30,6 +30,7 @@ target_sources(herbstluftwm PRIVATE
     frameparser.h frameparser.cpp
     frametree.h frametree.cpp
     globals.h
+    globalcommands.cpp globalcommands.h
     hlwmcommon.cpp hlwmcommon.h
     hook.cpp hook.h
     indexingobject.h
