@@ -1,8 +1,11 @@
 #include "framedecoration.h"
 
+#include <vector>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include "client.h"
+#include "decoration.h"
 #include "ewmh.h"
 #include "layout.h"
 #include "settings.h"
@@ -13,6 +16,7 @@
 #include "xconnection.h"
 
 using std::shared_ptr;
+using std::vector;
 
 std::map<Window, FrameDecoration*> FrameDecoration::s_windowToFrameDecoration;
 
@@ -104,13 +108,25 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
     }
 
     XSetWindowBackground(xcon.display(), window, bg_color);
-    if (settings->frame_bg_transparent()) {
+    if (settings->frame_bg_transparent() || data.hasClients) {
+        vector<Rectangle> holes;
+        if (settings->frame_bg_transparent()) {
+            int bw = settings->frame_transparent_width();
+            holes.push_back(Rectangle(bw, bw, rect.width - 2 * bw, rect.height - 2 * bw));
+        }
+        for (Client* client : frame_.clients) {
+            Rectangle geom = client->dec->last_outer();
+            geom.x -= data.geometry.x;
+            geom.y -= data.geometry.y;
+            holes.push_back(geom);
+        }
         window_cut_rect_hole(window, rect.width, rect.height,
-                             settings->frame_transparent_width());
+                             holes);
+        window_transparent = true;
     } else if (window_transparent) {
         window_make_intransparent(window, rect.width, rect.height);
+        window_transparent = false;
     }
-    window_transparent = settings->frame_bg_transparent();
     if (isFocused) {
         Ewmh::get().setWindowOpacity(window, settings->frame_active_opacity()/100.0);
     } else {

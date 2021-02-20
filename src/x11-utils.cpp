@@ -6,18 +6,19 @@
 
 #include "globals.h"
 
+using std::vector;
+
 /**
  * \brief   cut a rect out of the window, s.t. the window has geometry rect and
  * a frame of width framewidth remains
  */
-void window_cut_rect_hole(Window win, int width, int height, int framewidth) {
+void window_cut_rect_hole(Window win, int width, int height,
+                          const vector<Rectangle>& holes) {
     // inspired by the xhole.c example
     // http://www.answers.com/topic/xhole-c
     Display* d = g_display;
     GC gp;
     int bw = 100; // add a large border, just to be sure the border is visible
-    int holewidth = width - 2*framewidth;
-    int holeheight = height - 2*framewidth;
     width += 2*bw;
     height += 2*bw;
 
@@ -31,8 +32,10 @@ void window_cut_rect_hole(Window win, int width, int height, int framewidth) {
     //XFillArc(d, p, gp,
     //         width/2 - radius, height/2 - radius, radius, radius,
     //         0, 360*64);
-    XFillRectangle(d, p, gp, bw + framewidth, bw + framewidth,
-                             holewidth, holeheight);
+    for (const auto& rect : holes) {
+        XFillRectangle(d, p, gp, bw + rect.x, bw + rect.y,
+                                 rect.width, rect.height);
+    }
 
     /* set the pixmap as the new window mask;
     the pixmap is slightly larger than the window to allow for the window
