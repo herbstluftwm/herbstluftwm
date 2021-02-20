@@ -1,9 +1,9 @@
 #include "globalcommands.h"
 
 #include "argparse.h"
-#include "root.h"
 #include "monitor.h"
 #include "monitormanager.h"
+#include "root.h"
 #include "tag.h"
 #include "tagmanager.h"
 
