@@ -392,12 +392,14 @@ void execute_autostart_file() {
 
 static void parse_arguments(int argc, char** argv, Globals& g) {
     int exit_on_xerror = g.exitOnXlibError;
+    int noTransparency = !g.trueTransparency;
     int no_tag_import = 0;
     struct option long_options[] = {
         {"version",         0, nullptr, 'v'},
         {"help",            0, nullptr, 'h'},
         {"autostart",       1, nullptr, 'c'},
         {"locked",          0, nullptr, 'l'},
+        {"no-transparency", 0, &noTransparency, 1},
         {"exit-on-xerror",  0, &exit_on_xerror, 1},
         {"no-tag-import",   0, &no_tag_import, 1},
         {"verbose",         0, &g_verbose, 1},
@@ -454,6 +456,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
     }
     g.exitOnXlibError = exit_on_xerror != 0;
     g.importTagsFromEwmh = (no_tag_import == 0);
+    g.trueTransparency = !noTransparency;
 }
 
 static void remove_zombies(int) {
@@ -501,6 +504,9 @@ int main(int argc, char* argv[]) {
         std::cerr << "herbstluftwm: another window manager is already running" << endl;
         delete X;
         exit(EXIT_FAILURE);
+    }
+    if (g.trueTransparency) {
+        X->tryInitTransparency();
     }
     // remove zombies on SIGCHLD
     sigaction_signal(SIGCHLD, remove_zombies);

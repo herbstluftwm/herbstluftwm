@@ -8,6 +8,8 @@
 
 #include "types.h"
 
+class XConnection;
+
 class Color {
 public:
     Color();
@@ -23,6 +25,10 @@ public:
     // return an XColor as obtained form XQueryColor
     XColor toXColor() const;
     unsigned long toX11Pixel() const { return x11pixelValue_; }
+
+    static unsigned long x11PixelPlusAlpha(unsigned long x11pixel, unsigned short alpha) {
+        return (x11pixel & 0xffffffu) | (alpha << 24);
+    }
 
     bool operator==(const Color& other) const {
         return red_ == other.red_
@@ -44,8 +50,7 @@ public:
     unsigned short alpha_ = 0xff; // 0 is fully transparent, 0xff is fully opaque
 
 private:
-
-    // the x11 internal pixel value.
+    // the x11 internal pixel value
     unsigned long x11pixelValue_ = 0;
 };
 

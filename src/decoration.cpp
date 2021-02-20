@@ -9,7 +9,6 @@
 #include "ewmh.h"
 #include "font.h"
 #include "fontdata.h"
-#include "root.h"
 #include "settings.h"
 #include "theme.h"
 #include "xconnection.h"
@@ -23,6 +22,11 @@ std::map<Window,Client*> Decoration::decwin2client;
 Visual* Decoration::check_32bit_client(Client* c)
 {
     XConnection& xcon = xconnection();
+    if (xcon.usesTransparency()) {
+        // if we already use transparency everywhere
+        // then we do not need to handle transparent clients explicitly.
+        return nullptr;
+    }
     XWindowAttributes wattrib;
     Status ret;
 
@@ -50,12 +54,17 @@ void Decoration::createWindow() {
     long mask = 0;
     // copy attributes from client and not from the root window
     visual = check_32bit_client(client_);
-    if (visual) {
+    if (visual || xcon.usesTransparency()) {
         /* client has a 32-bit visual */
         mask = CWColormap | CWBackPixel | CWBorderPixel;
-        /* create a colormap with the visual */
-        dec->colormap = at.colormap =
-            XCreateColormap(display, xcon.root(), visual, AllocNone);
+        if (visual) {
+            // if the client has a visual different to the one of xconnection,
+            // then create a colormap with the visual
+            dec->colormap = XCreateColormap(display, xcon.root(), visual, AllocNone);
+            at.colormap = dec->colormap;
+        } else {
+            at.colormap = xcon.colormap();
+        }
         at.background_pixel = BlackPixel(display, xcon.screen());
         at.border_pixel = BlackPixel(display, xcon.screen());
     } else {
@@ -63,22 +72,22 @@ void Decoration::createWindow() {
     }
     dec->depth = visual
                  ? 32
-                 : (DefaultDepth(display, xcon.screen()));
+                 : xcon.depth();
     dec->decwin = XCreateWindow(display, xcon.root(), 0,0, 30, 30, 0,
                         dec->depth,
                         InputOutput,
                         visual
                             ? visual
-                            : DefaultVisual(display, xcon.screen()),
+                            : xcon.visual(),
                         mask, &at);
     mask = 0;
-    if (visual) {
+    if (visual || xcon.usesTransparency()) {
         /* client has a 32-bit visual */
         mask = CWColormap | CWBackPixel | CWBorderPixel;
         // TODO: why does DefaultColormap work in openbox but crashes hlwm here?
         // It somehow must be incompatible to the visual and thus causes the
         // BadMatch on XCreateWindow
-        at.colormap = dec->colormap;
+        at.colormap = xcon.usesTransparency() ? xcon.colormap() : dec->colormap;
         at.background_pixel = BlackPixel(display, xcon.screen());
         at.border_pixel = BlackPixel(display, xcon.screen());
     }
@@ -86,7 +95,7 @@ void Decoration::createWindow() {
     dec->bgwin = XCreateWindow(display, dec->decwin, 0,0, 30, 30, 0,
                         dec->depth,
                         InputOutput,
-                        CopyFromParent,
+                        xcon.visual(),
                         mask, &at);
     XMapWindow(display, dec->bgwin);
     // use a clients requested initial floating size as the initial size
@@ -285,7 +294,7 @@ void Decoration::updateFrameExtends() {
 
 XConnection& Decoration::xconnection()
 {
-    return Root::get()->X;
+    return XConnection::get();
 }
 
 void Decoration::change_scheme(const DecorationScheme& scheme) {
@@ -313,13 +322,12 @@ unsigned long Decoration::get_client_color(Color color) {
     if (colormap) {
         /* get pixel value back appropriate for client */
         XAllocColor(xcon.display(), colormap, &xcol);
-        // explicitly set the alpha-byte to 0xff (fully opaque)
-        return xcol.pixel | (0xffu << 24);
+        // explicitly set the alpha-byte to the one from the color
+        return Color::x11PixelPlusAlpha(xcol.pixel, color.alpha_);
     } else {
-        /* get pixel value back appropriate for main color map*/
-        XAllocColor(xcon.display(), DefaultColormap(xcon.display(), xcon.screen()), &xcol);
-        // explicitly set the alpha-byte to 0xff (fully opaque)
-        return xcol.pixel | (0xffu << 24);
+        // the pixel value reported by Color already includes the
+        // alpha value
+        return color.toX11Pixel();
     }
 }
 
@@ -406,13 +414,14 @@ void Decoration::redrawPixmap() {
             static_cast<int>(s.title_height())
         };
         if (fontData.xftFont_) {
-            Visual* xftvisual = visual ? visual : DefaultVisual(display, xcon.screen());
-            Colormap xftcmap = colormap ? colormap : DefaultColormap(display, xcon.screen());
+            Visual* xftvisual = visual ? visual : xcon.visual();
+            Colormap xftcmap = colormap ? colormap : xcon.colormap();
             XftDraw* xftd = XftDrawCreate(display, pix, xftvisual, xftcmap);
             XRenderColor xrendercol = {
                     s.title_color->red_,
                     s.title_color->green_,
                     s.title_color->blue_,
+                    // TODO: make xft respect the alpha value
                     0xffff, // alpha as set by XftColorAllocName()
             };
             XftColor xftcol = { };

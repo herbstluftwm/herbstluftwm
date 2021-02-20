@@ -33,6 +33,7 @@ public:
     int initial_monitors_locked = 0;
     bool exitOnXlibError = false;
     bool importTagsFromEwmh = true;
+    bool trueTransparency = true; // try true transparency via xrender
 };
 
 class Root : public Object {

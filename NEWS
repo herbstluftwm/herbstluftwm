@@ -7,8 +7,12 @@ older versions.
 Current git version
 -------------------
 
+  * True transparency support for frame and client decorations (requires a
+    compositor like picom, compton, or xcompmgr)
+  * Colors contain alpha-values (format #RRGGBBAA)
   * Bug fixes:
     - Fix mistakenly transparent borders of argb clients
+  * New dependency: xrender
 
 Release 0.9.2 on 2021-02-17
 ---------------------------
