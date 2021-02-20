@@ -11,6 +11,7 @@
 class ClientManager; // IWYU pragma: keep
 class Ewmh;
 class FrameLeaf;
+class GlobalCommands;
 class HlwmCommon;
 class IpcServer;
 class KeyManager; // IWYU pragma: keep
@@ -62,6 +63,7 @@ public:
 
     Globals globals;
     std::unique_ptr<MetaCommands> meta_commands; // Using "pimpl" to avoid include
+    std::unique_ptr<GlobalCommands> global_commands; // Using "pimpl" to avoid include
     XConnection& X;
     IpcServer& ipcServer_;
     //! Temporary member. In the long run, ewmh should get its information
