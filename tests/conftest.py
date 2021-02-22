@@ -743,7 +743,8 @@ def x11(x11_connection):
                 self.sync_with_hlwm()
             return w, self.winid_str(w)
 
-        def screenshot(self, win_handle):
+        def screenshot(self, win_handle) -> RawImage:
+            """screenshot of a windows content, not including its border"""
             geom = win_handle.get_geometry()
             attr = win_handle.get_attributes()
             # Xlib defines AllPlanes as: ((unsigned long)~0L)
