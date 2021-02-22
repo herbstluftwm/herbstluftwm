@@ -8,8 +8,8 @@
 #include "x11-types.h"
 
 // cut the specified rectangles out of the window
-void window_cut_rect_hole(Window win, int width, int height,
-                          const std::vector<Rectangle>& holes);
+void window_cut_rect_holes(Window win, int width, int height,
+                           const std::vector<Rectangle>& holes);
 // fill the hole again, i.e. remove all masks
 void window_make_intransparent(Window win, int width, int height);
 

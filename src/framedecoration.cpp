@@ -120,8 +120,7 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
             geom.y -= data.geometry.y;
             holes.push_back(geom);
         }
-        window_cut_rect_hole(window, rect.width, rect.height,
-                             holes);
+        window_cut_rect_holes(window, rect.width, rect.height, holes);
         window_transparent = true;
     } else if (window_transparent) {
         window_make_intransparent(window, rect.width, rect.height);
