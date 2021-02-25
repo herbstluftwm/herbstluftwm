@@ -16,15 +16,10 @@ GlobalCommands::GlobalCommands(Root& root)
 
 int GlobalCommands::tagStatusCommand(Input input, Output output)
 {
-    string monitorStr = "";
-    ArgParse argparse = ArgParse().optional(monitorStr);
+    Monitor* monitor = root_.monitors->focus();
+    ArgParse argparse = ArgParse().optional(monitor);
     if (argparse.parsingAllFails(input, output)) {
         return argparse.exitCode();
-    }
-    Monitor* monitor = root_.monitors->byString(monitorStr);
-    if (!monitor) {
-        output << input.command() << ": Monitor \"" << monitorStr << "\" not found!\n";
-        return HERBST_INVALID_ARGUMENT;
     }
     tag_update_flags();
     output << '\t';
@@ -60,7 +55,7 @@ int GlobalCommands::tagStatusCommand(Input input, Output output)
 void GlobalCommands::tagStatusCompletion(Completion& complete)
 {
     if (complete == 0) {
-        root_.monitors->completeMonitorName(complete);
+        Converter<Monitor*>::complete(complete);
     } else {
         complete.none();
     }

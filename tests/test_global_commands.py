@@ -1,6 +1,6 @@
 def test_tag_status_invalid_monitor(hlwm):
     hlwm.call_xfail('tag_status foobar') \
-        .expect_stderr('Monitor "foobar" not found!')
+        .expect_stderr('No such monitor: foobar')
 
 
 def test_tag_status_one_monitor(hlwm, x11):

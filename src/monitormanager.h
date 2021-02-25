@@ -10,6 +10,7 @@
 #include "link.h"
 #include "monitor.h"
 #include "plainstack.h"
+#include "runtimeconverter.h"
 #include "signal.h"
 
 extern MonitorManager* g_monitors;
@@ -26,7 +27,7 @@ typedef std::function<void(Monitor&,Completion&)> MonitorCompletion;
 typedef std::function<int(HSTag&,Input,Output)> TagCommand;
 typedef std::function<void(HSTag&,Completion&)> TagCompletion;
 
-class MonitorManager : public IndexingObject<Monitor> {
+class MonitorManager : public IndexingObject<Monitor>, public Manager<Monitor> {
 public:
     MonitorManager();
     ~MonitorManager();
@@ -40,6 +41,12 @@ public:
     Monitor* byTag(HSTag* tag);
     Monitor* byCoordinate(Point2D p);
     Monitor* byFrame(std::shared_ptr<Frame> frame);
+
+    // RunTimeConverter<Monitor*>:
+    virtual Monitor* parse(const std::string& str) override;
+    virtual std::string str(Monitor* monitor) override;
+    virtual void complete(Completion& completion) override;
+
     int list_monitors(Output output);
     int list_padding(Input input, Output output);
     int string_to_monitor_index(std::string string);
