@@ -10,6 +10,9 @@ Current git version
   * True transparency support for frame and client decorations (requires a
     compositor like picom, compton, or xcompmgr)
   * Colors contain alpha-values (format #RRGGBBAA)
+  * Do not draw frame background behind clients (so for semi-transparent
+    client decorations, one does not see the frame decoration behind but the
+    wallpaper instead)
   * Bug fixes:
     - Fix mistakenly transparent borders of argb clients
   * New dependency: xrender
