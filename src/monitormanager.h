@@ -27,6 +27,9 @@ typedef std::function<void(Monitor&,Completion&)> MonitorCompletion;
 typedef std::function<int(HSTag&,Input,Output)> TagCommand;
 typedef std::function<void(HSTag&,Completion&)> TagCompletion;
 
+template<>
+RunTimeConverter<Monitor*>* Converter<Monitor*>::converter;
+
 class MonitorManager : public IndexingObject<Monitor>, public Manager<Monitor> {
 public:
     MonitorManager();
