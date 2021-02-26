@@ -196,7 +196,7 @@ Monitor* MonitorManager::parse(const string& str)
     }
 }
 
-std::string MonitorManager::str(Monitor* monitor)
+string MonitorManager::str(Monitor* monitor)
 {
     if (monitor) {
         return monitor->index.str();
