@@ -235,7 +235,11 @@ class TokenStream:
                 if t == self.pos:
                     nextline += '^ here'
                 else:
-                    nextline += ' ' * len(self.tokens[t])
+                    if isinstance(self.tokens[t], list):
+                        length = len(self.tokens[t])
+                    else:
+                        length = len(str(self.tokens[t]))
+                    nextline += ' ' * length
             text += '\n' + nextline
             if msg != '':
                 text += "\n'{}'".format(msg)
@@ -622,9 +626,14 @@ class TokTreeInfoExtrator:
             name = arg.value
         if stream.try_match('<'):
             tok = stream.pop('expected template argument')
+            if stream.try_match('*'):
+                tok += '*'
             tmpl_args.append(tok)
             while stream.try_match(','):
-                tmpl_args.append(stream.pop('expected template argument'))
+                tok = stream.pop('expected template argument')
+                if stream.try_match('*'):
+                    tok += '*'
+                tmpl_args.append(tok)
             stream.assert_match('>',
                                 msg='expecting > after last template argument')
         return ClassName(name, type_modifier=type_modifier,
