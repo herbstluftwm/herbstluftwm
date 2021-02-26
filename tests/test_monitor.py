@@ -100,8 +100,8 @@ def test_remove_monitor_invalid_args(hlwm):
 
 
 def test_cannot_remove_nonexistent_monitor(hlwm):
-    call = hlwm.call_xfail('remove_monitor 1')
-    assert call.stderr == 'remove_monitor: Monitor "1" not found!\n'
+    hlwm.call_xfail('remove_monitor 1') \
+        .expect_stderr('No such monitor: 1')
     assert hlwm.get_attr('monitors.count') == '1'
 
 
