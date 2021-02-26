@@ -8,10 +8,12 @@
 
 #include "types.h"
 
+class XConnection;
+
 class Color {
 public:
     Color();
-    Color(XColor xcol);
+    Color(XColor xcol, unsigned short alpha = 0xff);
     Color(std::string name);
 
     static Color black();
@@ -24,10 +26,15 @@ public:
     XColor toXColor() const;
     unsigned long toX11Pixel() const { return x11pixelValue_; }
 
+    static unsigned long x11PixelPlusAlpha(unsigned long x11pixel, unsigned short alpha) {
+        return (x11pixel & 0xffffffu) | (alpha << 24);
+    }
+
     bool operator==(const Color& other) const {
         return red_ == other.red_
             && green_ == other.green_
-            && blue_ == other.blue_;
+            && blue_ == other.blue_
+            && alpha_ == other.alpha_;
     };
     bool operator!=(const Color& other) const {
         return !operator==(other);
@@ -40,10 +47,10 @@ public:
     unsigned short red_ = 0;
     unsigned short green_ = 0;
     unsigned short blue_ = 0;
+    unsigned short alpha_ = 0xff; // 0 is fully transparent, 0xff is fully opaque
 
 private:
-
-    // the x11 internal pixel value.
+    // the x11 internal pixel value
     unsigned long x11pixelValue_ = 0;
 };
 

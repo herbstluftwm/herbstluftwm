@@ -5,6 +5,7 @@
 #include "client.h"
 #include "clientmanager.h"
 #include "ewmh.h"
+#include "globalcommands.h"
 #include "hlwmcommon.h"
 #include "keymanager.h"
 #include "layout.h"
@@ -38,6 +39,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     , watchers(*this, "watchers")
     , globals(g)
     , meta_commands(make_unique<MetaCommands>(*this))
+    , global_commands(make_unique<GlobalCommands>(*this))
     , X(xconnection)
     , ipcServer_(ipcServer)
     , panels(make_unique<PanelManager>(xconnection))
@@ -79,7 +81,10 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     panels->panels_changed_.connect(monitors(), &MonitorManager::autoUpdatePads);
 }
 
-Root::~Root()
+Root::~Root() {
+}
+
+void Root::shutdown()
 {
     // Note: delete in reverse order of initialization!
     mouse.reset();

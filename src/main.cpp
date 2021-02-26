@@ -17,6 +17,7 @@
 #include "ewmh.h"
 #include "fontdata.h"
 #include "frametree.h"
+#include "globalcommands.h"
 #include "globals.h"
 #include "hook.h"
 #include "ipc-protocol.h"
@@ -59,7 +60,6 @@ static XMainLoop* g_main_loop = nullptr;
 
 int quit();
 int version(Output output);
-int print_tag_status_command(int argc, char** argv, Output output);
 void execute_autostart_file();
 int raise_command(int argc, char** argv, Output output);
 int spawn(int argc, char** argv);
@@ -70,6 +70,7 @@ int jumpto_command(int argc, char** argv, Output output);
 
 unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     MetaCommands* meta_commands = root->meta_commands.get();
+    GlobalCommands* global_cmds = root->global_commands.get();
 
     ClientManager* clients = root->clients();
     KeyManager *keys = root->keys();
@@ -155,7 +156,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
                                      &ClientManager::fullscreen_complete}},
         {"pseudotile",     {clients, &ClientManager::pseudotile_cmd,
                                      &ClientManager::pseudotile_complete}},
-        {"tag_status",     print_tag_status_command},
+        {"tag_status",     {global_cmds, &GlobalCommands::tagStatusCommand,
+                                         &GlobalCommands::tagStatusCompletion}},
         {"merge_tag",      BIND_OBJECT(tags, removeTag)},
         {"rename",         BIND_OBJECT(tags, tag_rename_command) },
         {"move",           BIND_OBJECT(tags, tag_move_window_command) },
@@ -253,48 +255,6 @@ int version(Output output) {
     output << "Released under the Simplified BSD License" << endl;
     for (const auto& d : MonitorDetection::detectors()) {
         output << d.name_ << " support: " << (d.detect_ ? "on" : "off") << endl;
-    }
-    return 0;
-}
-
-int print_tag_status_command(int argc, char** argv, Output output) {
-    Monitor* monitor;
-    if (argc >= 2) {
-        monitor = string_to_monitor(argv[1]);
-    } else {
-        monitor = get_current_monitor();
-    }
-    if (!monitor) {
-        output << argv[0] << ": Monitor \"" << argv[1] << "\" not found!\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    tag_update_flags();
-    output << '\t';
-    for (int i = 0; i < tag_get_count(); i++) {
-        HSTag* tag = get_tag_by_index(i);
-        // print flags
-        char c = '.';
-        if (tag->flags & TAG_FLAG_USED) {
-            c = ':';
-        }
-        Monitor *tag_monitor = find_monitor_with_tag(tag);
-        if (tag_monitor == monitor) {
-            c = '+';
-            if (monitor == get_current_monitor()) {
-                c = '#';
-            }
-        } else if (tag_monitor) {
-            c = '-';
-            if (get_current_monitor() == tag_monitor) {
-                c = '%';
-            }
-        }
-        if (tag->flags & TAG_FLAG_URGENT) {
-            c = '!';
-        }
-        output << c;
-        output << *tag->name;
-        output << '\t';
     }
     return 0;
 }
@@ -432,12 +392,14 @@ void execute_autostart_file() {
 
 static void parse_arguments(int argc, char** argv, Globals& g) {
     int exit_on_xerror = g.exitOnXlibError;
+    int noTransparency = !g.trueTransparency;
     int no_tag_import = 0;
     struct option long_options[] = {
         {"version",         0, nullptr, 'v'},
         {"help",            0, nullptr, 'h'},
         {"autostart",       1, nullptr, 'c'},
         {"locked",          0, nullptr, 'l'},
+        {"no-transparency", 0, &noTransparency, 1},
         {"exit-on-xerror",  0, &exit_on_xerror, 1},
         {"no-tag-import",   0, &no_tag_import, 1},
         {"verbose",         0, &g_verbose, 1},
@@ -494,6 +456,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
     }
     g.exitOnXlibError = exit_on_xerror != 0;
     g.importTagsFromEwmh = (no_tag_import == 0);
+    g.trueTransparency = !noTransparency;
 }
 
 static void remove_zombies(int) {
@@ -542,6 +505,9 @@ int main(int argc, char* argv[]) {
         delete X;
         exit(EXIT_FAILURE);
     }
+    if (g.trueTransparency) {
+        X->tryInitTransparency();
+    }
     // remove zombies on SIGCHLD
     sigaction_signal(SIGCHLD, remove_zombies);
     sigaction_signal(SIGINT,  handle_signal);
@@ -581,7 +547,10 @@ int main(int argc, char* argv[]) {
     // main loop
     mainloop.run();
 
-    // enforce to clear the root
+    // Shut everything down. Root::get() still works.
+    root->shutdown();
+    // clear the root to destroy the object.
+    // Now Root::get() does not work anymore.
     root.reset();
     Root::setRoot(root);
     // and then close the x connection

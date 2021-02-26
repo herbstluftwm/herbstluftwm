@@ -30,6 +30,7 @@ target_sources(herbstluftwm PRIVATE
     frameparser.h frameparser.cpp
     frametree.h frametree.cpp
     globals.h
+    globalcommands.cpp globalcommands.h
     hlwmcommon.cpp hlwmcommon.h
     hook.cpp hook.h
     indexingobject.h
@@ -97,6 +98,7 @@ target_include_directories(herbstluftwm SYSTEM PUBLIC
     ${XEXT_INCLUDE_DIRS}
     ${XINERAMA_INCLUDE_DIRS}
     ${XRANDR_INCLUDE_DIRS}
+    ${XRENDER_INCLUDE_DIRS}
     )
 target_link_libraries(herbstluftwm PUBLIC
     ${FREETYPE_LIBRARIES}
@@ -105,6 +107,7 @@ target_link_libraries(herbstluftwm PUBLIC
     ${XFT_LIBRARIES}
     ${XINERAMA_LIBRARIES}
     ${XRANDR_LIBRARIES}
+    ${XRENDER_LIBRARIES}
     )
 
 ## export variables to the code

@@ -2,17 +2,21 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <vector>
 
+#include "client.h"
+#include "decoration.h"
 #include "ewmh.h"
-#include "globals.h"
 #include "layout.h"
 #include "settings.h"
 #include "stack.h"
 #include "tag.h"
 #include "utils.h"
 #include "x11-utils.h"
+#include "xconnection.h"
 
 using std::shared_ptr;
+using std::vector;
 
 std::map<Window, FrameDecoration*> FrameDecoration::s_windowToFrameDecoration;
 
@@ -23,29 +27,35 @@ FrameDecoration::FrameDecoration(FrameLeaf& frame, HSTag* tag_, Settings* settin
     , tag(tag_)
     , settings(settings_)
 {
+    XConnection& xcon = XConnection::get();
     // set window attributes
     XSetWindowAttributes at;
-    at.background_pixel  = Color("red").toX11Pixel();
-    at.background_pixmap = ParentRelative;
+    at.background_pixel = BlackPixel(xcon.display(), xcon.screen());
+    at.border_pixel = BlackPixel(xcon.display(), xcon.screen());
     at.override_redirect = True;
     at.bit_gravity       = StaticGravity;
     at.event_mask        = SubstructureRedirectMask|SubstructureNotifyMask
          |ExposureMask|VisibilityChangeMask
          |EnterWindowMask|LeaveWindowMask|FocusChangeMask
          |ButtonPress;
-
-    window = XCreateWindow(g_display, g_root,
+    int mask = CWOverrideRedirect | CWBorderPixel | CWEventMask;
+    if (xcon.usesTransparency()) {
+        mask = mask | CWColormap;
+        at.colormap = xcon.colormap();
+    }
+    window = XCreateWindow(xcon.display(), xcon.root(),
                         42, 42, 42, 42, settings->frame_border_width(),
-                        DefaultDepth(g_display, DefaultScreen(g_display)),
-                        CopyFromParent,
-                        DefaultVisual(g_display, DefaultScreen(g_display)),
-                        CWOverrideRedirect | CWBackPixmap | CWEventMask, &at);
+                        // DefaultDepth(xcon.display(), xcon.screen()),
+                        xcon.depth(),
+                        InputOutput,
+                        xcon.visual(),
+                        mask, &at);
 
     // set wm_class for window
     XClassHint *hint = XAllocClassHint();
     hint->res_name = (char*)HERBST_FRAME_CLASS;
     hint->res_class = (char*)HERBST_FRAME_CLASS;
-    XSetClassHint(g_display, window, hint);
+    XSetClassHint(xcon.display(), window, hint);
 
     XFree(hint);
 
@@ -63,7 +73,7 @@ FrameDecoration::~FrameDecoration() {
     HSWeakAssert(it != s_windowToFrameDecoration.end());
     s_windowToFrameDecoration.erase(it);
 
-    XDestroyWindow(g_display, window);
+    XDestroyWindow(XConnection::get().display(), window);
     tag->stack->removeSlice(slice);
     delete slice;
 }
@@ -80,37 +90,49 @@ void FrameDecoration::render(const FrameDecorationData& data, bool isFocused) {
         bw = 0;
     }
     Rectangle rect = data.geometry;
-    XSetWindowBorderWidth(g_display, window, bw);
-    XMoveResizeWindow(g_display, window,
+    XConnection& xcon = XConnection::get();
+    XSetWindowBorderWidth(xcon.display(), window, bw);
+    XMoveResizeWindow(xcon.display(), window,
                       rect.x - bw,
                       rect.y - bw,
                       rect.width, rect.height);
 
     if (settings->frame_border_inner_width() > 0
         && settings->frame_border_inner_width() < settings->frame_border_width()) {
-        set_window_double_border(g_display, window,
+        set_window_double_border(xcon.display(), window,
                 settings->frame_border_inner_width(),
                 settings->frame_border_inner_color->toX11Pixel(),
                 border_color);
     } else {
-        XSetWindowBorder(g_display, window, border_color);
+        XSetWindowBorder(xcon.display(), window, border_color);
     }
 
-    XSetWindowBackground(g_display, window, bg_color);
-    if (settings->frame_bg_transparent()) {
-        window_cut_rect_hole(window, rect.width, rect.height,
-                             settings->frame_transparent_width());
+    XSetWindowBackground(xcon.display(), window, bg_color);
+    if (settings->frame_bg_transparent() || data.hasClients) {
+        vector<Rectangle> holes;
+        if (settings->frame_bg_transparent()) {
+            int ftw = settings->frame_transparent_width();
+            holes.push_back(Rectangle(ftw, ftw, rect.width - 2 * ftw, rect.height - 2 * ftw));
+        }
+        for (Client* client : frame_.clients) {
+            Rectangle geom = client->dec->last_outer();
+            geom.x -= data.geometry.x;
+            geom.y -= data.geometry.y;
+            holes.push_back(geom);
+        }
+        window_cut_rect_holes(window, rect.width, rect.height, holes);
+        window_transparent = true;
     } else if (window_transparent) {
         window_make_intransparent(window, rect.width, rect.height);
+        window_transparent = false;
     }
-    window_transparent = settings->frame_bg_transparent();
     if (isFocused) {
         Ewmh::get().setWindowOpacity(window, settings->frame_active_opacity()/100.0);
     } else {
         Ewmh::get().setWindowOpacity(window, settings->frame_normal_opacity()/100.0);
     }
 
-    XClearWindow(g_display, window);
+    XClearWindow(xcon.display(), window);
 }
 
 void FrameDecoration::updateVisibility(const FrameDecorationData& data, bool isFocused)
@@ -118,12 +140,13 @@ void FrameDecoration::updateVisibility(const FrameDecorationData& data, bool isF
     bool show = settings->always_show_frame()
               || data.hasClients
               || isFocused;
+    XConnection& xcon = XConnection::get();
     if (show != visible) {
         visible = show;
         if (visible) {
-            XMapWindow(g_display, window);
+            XMapWindow(xcon.display(), window);
         } else {
-            XUnmapWindow(g_display, window);
+            XUnmapWindow(xcon.display(), window);
         }
     }
 }
@@ -131,7 +154,7 @@ void FrameDecoration::updateVisibility(const FrameDecorationData& data, bool isF
 void FrameDecoration::hide() {
     if (visible) {
         visible = false;
-        XUnmapWindow(g_display, window);
+        XUnmapWindow(XConnection::get().display(), window);
     }
 }
 

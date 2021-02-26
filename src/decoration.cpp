@@ -9,9 +9,9 @@
 #include "ewmh.h"
 #include "font.h"
 #include "fontdata.h"
-#include "globals.h"
 #include "settings.h"
 #include "theme.h"
+#include "xconnection.h"
 
 using std::string;
 using std::vector;
@@ -19,12 +19,18 @@ using std::vector;
 std::map<Window,Client*> Decoration::decwin2client;
 
 // from openbox/frame.c
-static Visual* check_32bit_client(Client* c)
+Visual* Decoration::check_32bit_client(Client* c)
 {
+    XConnection& xcon = xconnection();
+    if (xcon.usesTransparency()) {
+        // if we already use transparency everywhere
+        // then we do not need to handle transparent clients explicitly.
+        return nullptr;
+    }
     XWindowAttributes wattrib;
     Status ret;
 
-    ret = XGetWindowAttributes(g_display, c->window_, &wattrib);
+    ret = XGetWindowAttributes(xcon.display(), c->window_, &wattrib);
     HSWeakAssert(ret != BadDrawable);
     HSWeakAssert(ret != BadWindow);
 
@@ -42,49 +48,56 @@ Decoration::Decoration(Client* client, Settings& settings)
 
 void Decoration::createWindow() {
     Decoration* dec = this;
+    XConnection& xcon = xconnection();
+    Display* display = xcon.display();
     XSetWindowAttributes at;
     long mask = 0;
     // copy attributes from client and not from the root window
     visual = check_32bit_client(client_);
-    if (visual) {
+    if (visual || xcon.usesTransparency()) {
         /* client has a 32-bit visual */
         mask = CWColormap | CWBackPixel | CWBorderPixel;
-        /* create a colormap with the visual */
-        dec->colormap = at.colormap =
-            XCreateColormap(g_display, g_root, visual, AllocNone);
-        at.background_pixel = BlackPixel(g_display, g_screen);
-        at.border_pixel = BlackPixel(g_display, g_screen);
+        if (visual) {
+            // if the client has a visual different to the one of xconnection,
+            // then create a colormap with the visual
+            dec->colormap = XCreateColormap(display, xcon.root(), visual, AllocNone);
+            at.colormap = dec->colormap;
+        } else {
+            at.colormap = xcon.colormap();
+        }
+        at.background_pixel = BlackPixel(display, xcon.screen());
+        at.border_pixel = BlackPixel(display, xcon.screen());
     } else {
         dec->colormap = 0;
     }
     dec->depth = visual
                  ? 32
-                 : (DefaultDepth(g_display, DefaultScreen(g_display)));
-    dec->decwin = XCreateWindow(g_display, g_root, 0,0, 30, 30, 0,
+                 : xcon.depth();
+    dec->decwin = XCreateWindow(display, xcon.root(), 0,0, 30, 30, 0,
                         dec->depth,
                         InputOutput,
                         visual
                             ? visual
-                            : DefaultVisual(g_display, DefaultScreen(g_display)),
+                            : xcon.visual(),
                         mask, &at);
     mask = 0;
-    if (visual) {
+    if (visual || xcon.usesTransparency()) {
         /* client has a 32-bit visual */
         mask = CWColormap | CWBackPixel | CWBorderPixel;
         // TODO: why does DefaultColormap work in openbox but crashes hlwm here?
         // It somehow must be incompatible to the visual and thus causes the
         // BadMatch on XCreateWindow
-        at.colormap = dec->colormap;
-        at.background_pixel = BlackPixel(g_display, g_screen);
-        at.border_pixel = BlackPixel(g_display, g_screen);
+        at.colormap = xcon.usesTransparency() ? xcon.colormap() : dec->colormap;
+        at.background_pixel = BlackPixel(display, xcon.screen());
+        at.border_pixel = BlackPixel(display, xcon.screen());
     }
     dec->bgwin = 0;
-    dec->bgwin = XCreateWindow(g_display, dec->decwin, 0,0, 30, 30, 0,
+    dec->bgwin = XCreateWindow(display, dec->decwin, 0,0, 30, 30, 0,
                         dec->depth,
                         InputOutput,
-                        CopyFromParent,
+                        xcon.visual(),
                         mask, &at);
-    XMapWindow(g_display, dec->bgwin);
+    XMapWindow(display, dec->bgwin);
     // use a clients requested initial floating size as the initial size
     dec->last_rect_inner = true;
     dec->last_inner_rect = client_->float_size_;
@@ -97,23 +110,24 @@ void Decoration::createWindow() {
     XClassHint *hint = XAllocClassHint();
     hint->res_name = (char*)HERBST_DECORATION_CLASS;
     hint->res_class = (char*)HERBST_DECORATION_CLASS;
-    XSetClassHint(g_display, dec->decwin, hint);
+    XSetClassHint(display, dec->decwin, hint);
     XFree(hint);
 }
 
 Decoration::~Decoration() {
+    XConnection& xcon = xconnection();
     decwin2client.erase(decwin);
     if (colormap) {
-        XFreeColormap(g_display, colormap);
+        XFreeColormap(xcon.display(), colormap);
     }
     if (pixmap) {
-        XFreePixmap(g_display, pixmap);
+        XFreePixmap(xcon.display(), pixmap);
     }
     if (bgwin) {
-        XDestroyWindow(g_display, bgwin);
+        XDestroyWindow(xcon.display(), bgwin);
     }
     if (decwin) {
-        XDestroyWindow(g_display, decwin);
+        XDestroyWindow(xcon.display(), decwin);
     }
 }
 
@@ -249,24 +263,25 @@ void Decoration::resize_outline(Rectangle outline, const DecorationScheme& schem
         last_actual_rect.height = changes.height;
     }
     redrawPixmap();
-    XSetWindowBackgroundPixmap(g_display, decwin, pixmap);
+    XConnection& xcon = xconnection();
+    XSetWindowBackgroundPixmap(xcon.display(), decwin, pixmap);
     if (!size_changed) {
         // if size changes, then the window is cleared automatically
-        XClearWindow(g_display, decwin);
+        XClearWindow(xcon.display(), decwin);
     }
     if (!client_->dragged_ || settings_.update_dragged_clients()) {
-        XConfigureWindow(g_display, win, mask, &changes);
-        XMoveResizeWindow(g_display, bgwin,
+        XConfigureWindow(xcon.display(), win, mask, &changes);
+        XMoveResizeWindow(xcon.display(), bgwin,
                           changes.x, changes.y,
                           changes.width, changes.height);
     }
-    XMoveResizeWindow(g_display, decwin,
+    XMoveResizeWindow(xcon.display(), decwin,
                       outline.x, outline.y, outline.width, outline.height);
     updateFrameExtends();
     if (!client_->dragged_ || settings_.update_dragged_clients()) {
         client_->send_configure();
     }
-    XSync(g_display, False);
+    XSync(xcon.display(), False);
 }
 
 void Decoration::updateFrameExtends() {
@@ -275,6 +290,11 @@ void Decoration::updateFrameExtends() {
     int right = last_outer_rect.width - last_inner_rect.width - left;
     int bottom = last_outer_rect.height - last_inner_rect.height - top;
     client_->ewmh.updateFrameExtents(client_->window_, left,right, top,bottom);
+}
+
+XConnection& Decoration::xconnection()
+{
+    return XConnection::get();
 }
 
 void Decoration::change_scheme(const DecorationScheme& scheme) {
@@ -296,16 +316,18 @@ void Decoration::redraw()
     }
 }
 
-unsigned int Decoration::get_client_color(Color color) {
+unsigned long Decoration::get_client_color(Color color) {
+    XConnection& xcon = xconnection();
     XColor xcol = color.toXColor();
     if (colormap) {
         /* get pixel value back appropriate for client */
-        XAllocColor(g_display, colormap, &xcol);
-        return xcol.pixel;
+        XAllocColor(xcon.display(), colormap, &xcol);
+        // explicitly set the alpha-byte to the one from the color
+        return Color::x11PixelPlusAlpha(xcol.pixel, color.alpha_);
     } else {
-        /* get pixel value back appropriate for main color map*/
-        XAllocColor(g_display, DefaultColormap(g_display, g_screen), &xcol);
-        return xcol.pixel;
+        // the pixel value reported by Color already includes the
+        // alpha value
+        return color.toX11Pixel();
     }
 }
 
@@ -315,6 +337,8 @@ void Decoration::redrawPixmap() {
         // do nothing if we don't have a scheme.
         return;
     }
+    XConnection& xcon = xconnection();
+    Display* display = xcon.display();
     const DecorationScheme& s = *last_scheme;
     auto dec = this;
     auto outer = last_outer_rect;
@@ -323,16 +347,16 @@ void Decoration::redrawPixmap() {
                                               || (dec->pixmap_height != outer.height);
     if (recreate_pixmap) {
         if (dec->pixmap) {
-            XFreePixmap(g_display, dec->pixmap);
+            XFreePixmap(display, dec->pixmap);
         }
-        dec->pixmap = XCreatePixmap(g_display, decwin, outer.width, outer.height, depth);
+        dec->pixmap = XCreatePixmap(display, decwin, outer.width, outer.height, depth);
     }
     Pixmap pix = dec->pixmap;
-    GC gc = XCreateGC(g_display, pix, 0, nullptr);
+    GC gc = XCreateGC(display, pix, 0, nullptr);
 
     // draw background
-    XSetForeground(g_display, gc, get_client_color(s.border_color()));
-    XFillRectangle(g_display, pix, gc, 0, 0, outer.width, outer.height);
+    XSetForeground(display, gc, get_client_color(s.border_color()));
+    XFillRectangle(display, pix, gc, 0, 0, outer.width, outer.height);
 
     // Draw inner border
     unsigned short iw = s.inner_width();
@@ -347,8 +371,8 @@ void Decoration::redrawPixmap() {
             { (short)(inner.x + inner.width), (short)(inner.y), iw, (unsigned short)(inner.height) }, /* right */
             { (short)(inner.x - iw), (short)(inner.y + inner.height), (unsigned short)(inner.width + 2*iw), iw }, /* bottom */
         };
-        XSetForeground(g_display, gc, get_client_color(s.inner_color()));
-        XFillRectangles(g_display, pix, gc, &rects.front(), rects.size());
+        XSetForeground(display, gc, get_client_color(s.inner_color()));
+        XFillRectangles(display, pix, gc, &rects.front(), rects.size());
     }
 
     // Draw outer border
@@ -363,20 +387,20 @@ void Decoration::redrawPixmap() {
             { (short)(outer.width - ow), (short)ow, ow, (unsigned short)(outer.height - 2*ow) }, /* right */
             { 0, (short)(outer.height - ow), (unsigned short)(outer.width), ow }, /* bottom */
         };
-        XSetForeground(g_display, gc, get_client_color(s.outer_color));
-        XFillRectangles(g_display, pix, gc, &rects.front(), rects.size());
+        XSetForeground(display, gc, get_client_color(s.outer_color));
+        XFillRectangles(display, pix, gc, &rects.front(), rects.size());
     }
     // fill inner rect that is not covered by the client
-    XSetForeground(g_display, gc, get_client_color(s.background_color));
+    XSetForeground(display, gc, get_client_color(s.background_color));
     if (dec->last_actual_rect.width < inner.width) {
-        XFillRectangle(g_display, pix, gc,
+        XFillRectangle(display, pix, gc,
                        dec->last_actual_rect.x + dec->last_actual_rect.width,
                        dec->last_actual_rect.y,
                        inner.width - dec->last_actual_rect.width,
                        dec->last_actual_rect.height);
     }
     if (dec->last_actual_rect.height < inner.height) {
-        XFillRectangle(g_display, pix, gc,
+        XFillRectangle(display, pix, gc,
                        dec->last_actual_rect.x,
                        dec->last_actual_rect.y + dec->last_actual_rect.height,
                        inner.width,
@@ -390,35 +414,36 @@ void Decoration::redrawPixmap() {
             static_cast<int>(s.title_height())
         };
         if (fontData.xftFont_) {
-            Visual* xftvisual = visual ? visual : DefaultVisual(g_display, g_screen);
-            Colormap xftcmap = colormap ? colormap : DefaultColormap(g_display, g_screen);
-            XftDraw* xftd = XftDrawCreate(g_display, pix, xftvisual, xftcmap);
+            Visual* xftvisual = visual ? visual : xcon.visual();
+            Colormap xftcmap = colormap ? colormap : xcon.colormap();
+            XftDraw* xftd = XftDrawCreate(display, pix, xftvisual, xftcmap);
             XRenderColor xrendercol = {
                     s.title_color->red_,
                     s.title_color->green_,
                     s.title_color->blue_,
+                    // TODO: make xft respect the alpha value
                     0xffff, // alpha as set by XftColorAllocName()
             };
             XftColor xftcol = { };
-            XftColorAllocValue(g_display, xftvisual, xftcmap, &xrendercol, &xftcol);
+            XftColorAllocValue(display, xftvisual, xftcmap, &xrendercol, &xftcol);
             XftDrawStringUtf8(xftd, &xftcol, fontData.xftFont_,
                            titlepos.x, titlepos.y,
                            (const XftChar8*)title.c_str(), title.size());
             XftDrawDestroy(xftd);
-            XftColorFree(g_display, xftvisual, xftcmap, &xftcol);
+            XftColorFree(display, xftvisual, xftcmap, &xftcol);
         } else if (fontData.xFontSet_) {
-            XSetForeground(g_display, gc, get_client_color(s.title_color));
-            XmbDrawString(g_display, pix, fontData.xFontSet_, gc, titlepos.x, titlepos.y,
+            XSetForeground(display, gc, get_client_color(s.title_color));
+            XmbDrawString(display, pix, fontData.xFontSet_, gc, titlepos.x, titlepos.y,
                     title.c_str(), title.size());
         } else if (fontData.xFontStruct_) {
-            XSetForeground(g_display, gc, get_client_color(s.title_color));
+            XSetForeground(display, gc, get_client_color(s.title_color));
             XFontStruct* font = s.title_font->data().xFontStruct_;
-            XSetFont(g_display, gc, font->fid);
-            XDrawString(g_display, pix, gc, titlepos.x, titlepos.y,
+            XSetFont(display, gc, font->fid);
+            XDrawString(display, pix, gc, titlepos.x, titlepos.y,
                     title.c_str(), title.size());
         }
     }
     // clean up
-    XFreeGC(g_display, gc);
+    XFreeGC(display, gc);
 }
 

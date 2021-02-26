@@ -4,6 +4,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/Xrender.h>
 #include <unistd.h>
 #include <climits>
 #include <iostream>
@@ -17,6 +18,7 @@ using std::string;
 using std::vector;
 
 bool XConnection::exitOnError_ = false;
+XConnection* XConnection::s_connection = nullptr;
 
 void XConnection::setExitOnError(bool exitOnError)
 {
@@ -30,6 +32,9 @@ XConnection::XConnection(Display* disp)
     m_screen_height = DisplayHeight(m_display, m_screen);
     m_root = RootWindow(m_display, m_screen);
     utf8StringAtom_ = XInternAtom(m_display, "UTF8_STRING", False);
+    visual_ = DefaultVisual(m_display, m_screen);
+    depth_ = DefaultDepth(m_display, m_screen);
+    colormap_ = DefaultColormap(m_display, m_screen);
 }
 
 XConnection::~XConnection() {
@@ -44,7 +49,8 @@ XConnection* XConnection::connect(string display_name) {
         std::cerr << "herbstluftwm: XOpenDisplay() failed" << endl;
         exit(EXIT_FAILURE);
     }
-    return new XConnection(d);
+    s_connection = new XConnection(d);
+    return s_connection;
 }
 
 static bool g_other_wm_running = false;
@@ -123,10 +129,43 @@ bool XConnection::checkotherwm() {
     }
 }
 
+void XConnection::tryInitTransparency()
+{
+    XVisualInfo* infos;
+    XRenderPictFormat* fmt;
+    int nitems;
+    int i;
+
+    XVisualInfo tpl = {
+        nullptr,
+        0,
+        m_screen, // screen
+        32, // depth
+        TrueColor, // class
+        // remaining unused members:
+        0, 0, 0, 0, 0,
+    };
+    long masks = VisualScreenMask | VisualDepthMask | VisualClassMask;
+
+    infos = XGetVisualInfo(m_display, masks, &tpl, &nitems);
+    for(i = 0; i < nitems; i ++) {
+        fmt = XRenderFindVisualFormat(m_display, infos[i].visual);
+        if (fmt->type == PictTypeDirect && fmt->direct.alphaMask) {
+            visual_ = infos[i].visual;
+            depth_ = infos[i].depth;
+            colormap_ = XCreateColormap(m_display, m_root, visual_, AllocNone);
+            usesTransparency_ = true;
+            break;
+        }
+    }
+
+    XFree(infos);
+}
+
 Rectangle XConnection::windowSize(Window window) {
-    unsigned int border, depth;
-    int x, y;
-    unsigned int w, h;
+    unsigned int border = 0, depth = 0;
+    int x = 0, y = 0;
+    unsigned int w = 0, h = 0;
     XGetGeometry(m_display, window, &m_root, &x, &y, &w, &h, &border, &depth);
     // treat wanted coordinates as floating coords
     return { x, y, (int)w, (int)h };

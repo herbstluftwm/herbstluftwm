@@ -10,6 +10,7 @@
 
 #include "globals.h"
 #include "utils.h"
+#include "xconnection.h"
 
 using std::string;
 using std::stringstream;
@@ -25,8 +26,9 @@ Color::Color()
 {
 }
 
-Color::Color(XColor xcol)
-    : red_(xcol.red), green_(xcol.green), blue_(xcol.blue), x11pixelValue_(xcol.pixel)
+Color::Color(XColor xcol, unsigned short alpha)
+    : red_(xcol.red), green_(xcol.green), blue_(xcol.blue), alpha_(alpha),
+      x11pixelValue_(x11PixelPlusAlpha(xcol.pixel, alpha))
 {
     // TODO: special interpretation of red, green, blue when
     // xcol.flags lacks one of DoRed, DoGreen, DoBlue?
@@ -48,23 +50,44 @@ string Color::str() const {
        << std::hex << std::setfill('0') << std::setw(2) << (green_ / divisor)
        << std::hex << std::setfill('0') << std::setw(2) << (blue_ / divisor)
     ;
+    if (alpha_ != 0xff) {
+        ss  << std::hex << std::setfill('0') << std::setw(2) << alpha_;
+    }
     return ss.str();
 }
 
 Color Color::fromStr(const string& payload) {
     // get X11 color from color string. This fails if there is no x connection
     // from dwm.c
-    assert(g_display);
-    Colormap cmap = DefaultColormap(g_display, g_screen);
     XColor screen_color, ret_color;
-    auto success = XAllocNamedColor(g_display, cmap,
-                                    payload.c_str(), &screen_color, &ret_color);
+    string rgb_str = payload;
+    unsigned short alpha = 0xff;
+    if (payload.size() == 9 && payload[0] == '#') {
+        // if the color has the format '#rrggbbaa'
+        rgb_str = payload.substr(0, 7);
+        string alpha_str = "0x" + payload.substr(7, 2);
+        size_t characters_processed = 0;
+        try {
+            alpha = std::stoi(alpha_str, &characters_processed, 16);
+        } catch(...) {
+            throw std::invalid_argument(
+                string("invalid alpha value \'") + alpha_str + "\'");
+        }
+        if (alpha > 0xff || characters_processed != alpha_str.size()) {
+            throw std::invalid_argument(
+                string("invalid alpha value \'") + alpha_str + "\'");
+        }
+    }
+    XConnection& xcon = XConnection::get();
+    auto success = XAllocNamedColor(xcon.display(),
+                                    xcon.colormap(),
+                                    rgb_str.c_str(), &screen_color, &ret_color);
     if (!success) {
         throw std::invalid_argument(
                 string("cannot allocate color \'") + payload + "\'");
     }
 
-    return Color(ret_color);
+    return Color(ret_color, alpha);
 }
 
 XColor Color::toXColor() const {

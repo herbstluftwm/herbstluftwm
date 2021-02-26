@@ -517,23 +517,42 @@ def xvfb(request):
     # also we add '-noreset' such that the server is not reset
     # when the last client connection is closed.
     #
-    # the optional parameter is the resolution. If you want another resolution,
-    # then annotate the test case with:
+    # the optional parameter is a dict for different settings. If you want
+    # another resolution, then annotate the test case with:
     #
-    #    @pytest.mark.parametrize("xvfb", [(1280, 1024)], indirect=True)
+    #    @pytest.mark.parametrize("xvfb", [{'resolution': (1280, 1024)}], indirect=True)
     #
-    screens = [(800, 600)]
+    parameters = {
+        'screens': [(800, 600)],
+        'xrender': True,
+    }
     if hasattr(request, 'param'):
-        screens = [request.param]
-    with MultiscreenDisplay(server='Xvfb', screens=screens, extra_args=['-noreset']) as xserver:
+        parameters.update(request.param)
+    if 'resolution' in parameters:
+        parameters['screens'] = [parameters['resolution']]
+    args = ['-noreset']
+    if parameters['xrender']:
+        args += ['+extension', 'RENDER']
+    with MultiscreenDisplay(server='Xvfb', screens=parameters['screens'], extra_args=args) as xserver:
         os.environ['DISPLAY'] = xserver.display
         yield xserver
 
 
 @pytest.fixture()
-def hlwm_process(hlwm_spawner, xvfb):
+def hlwm_process(hlwm_spawner, request, xvfb):
+    parameters = {
+        'transparency': True,
+    }
+    if hasattr(request, 'param'):
+        # the param must contain a dictionary possibly
+        # updating the default parameters
+        parameters.update(request.param)
+
     """Set up hlwm and also check that it shuts down gently afterwards"""
-    hlwm_proc = hlwm_spawner(['--no-tag-import'], display=xvfb.display)
+    additional_commandline = ['--no-tag-import']
+    if not parameters['transparency']:
+        additional_commandline += ['--no-transparency']
+    hlwm_proc = hlwm_spawner(additional_commandline, display=xvfb.display)
 
     yield hlwm_proc
 
@@ -724,7 +743,8 @@ def x11(x11_connection):
                 self.sync_with_hlwm()
             return w, self.winid_str(w)
 
-        def screenshot(self, win_handle):
+        def screenshot(self, win_handle) -> RawImage:
+            """screenshot of a windows content, not including its border"""
             geom = win_handle.get_geometry()
             attr = win_handle.get_attributes()
             # Xlib defines AllPlanes as: ((unsigned long)~0L)
@@ -737,22 +757,35 @@ def x11(x11_connection):
                                        X.ZPixmap, all_planes)
             # raw.data is a array of pixel-values, which need to
             # be interpreted using the colormap:
-            colorDict = {}
-            for pixel in raw.data:
-                colorDict[pixel] = None
-            colorPixelList = list(colorDict)
-            colorRGBList = attr.colormap.query_colors(colorPixelList)
-            for pixelval, rgbval in zip(colorPixelList, colorRGBList):
-                # Useful debug output if something blows up again (which is likely)
-                # print(f'{pixelval} -> {rgbval.red}  {rgbval.green} {rgbval.blue}')
-                colorDict[pixelval] = (rgbval.red % 256, rgbval.green % 256, rgbval.blue % 256)
-            # the image size is enlarged such that the width
-            # is a multiple of 4. Hence we remove these extra
-            # columns in the end when mapping colorDict[] over the data array
-            width_padded = geom.width
-            while width_padded % 4 != 0:
-                width_padded += 1
-            rgbvals = [colorDict[p] for idx, p in enumerate(raw.data) if idx % width_padded < geom.width]
+            if raw.depth == 8:
+                colorDict = {}
+                for pixel in raw.data:
+                    colorDict[pixel] = None
+                colorPixelList = list(colorDict)
+                colorRGBList = attr.colormap.query_colors(colorPixelList)
+                for pixelval, rgbval in zip(colorPixelList, colorRGBList):
+                    # Useful debug output if something blows up again (which is likely)
+                    # print(f'{pixelval} -> {rgbval.red}  {rgbval.green} {rgbval.blue}')
+                    colorDict[pixelval] = (rgbval.red % 256, rgbval.green % 256, rgbval.blue % 256)
+                # the image size is enlarged such that the width
+                # is a multiple of 4. Hence we remove these extra
+                # columns in the end when mapping colorDict[] over the data array
+                width_padded = geom.width
+                while width_padded % 4 != 0:
+                    width_padded += 1
+                rgbvals = [colorDict[p] for idx, p in enumerate(raw.data) if idx % width_padded < geom.width]
+            else:
+                assert raw.depth in [32, 24]
+                # both for depth 32 and 24, the order is BGRA
+                pixelsize = 4
+                (blue, green, red) = (0, 1, 2)
+                size = geom.width * geom.height
+                assert len(raw.data) == pixelsize * size
+                rgbvals = [(raw.data[pixelsize * (y * geom.width + x) + red],
+                            raw.data[pixelsize * (y * geom.width + x) + green],
+                            raw.data[pixelsize * (y * geom.width + x) + blue])
+                           for y in range(0, geom.height)
+                           for x in range(0, geom.width)]
             return RawImage(rgbvals, geom.width, geom.height)
 
         def decoration_screenshot(self, win_handle):
@@ -848,9 +881,10 @@ class MultiscreenDisplay:
         # ---------------------------
         self.screen_rects = []
         current_x_offset = 0
+        depth = 24
         for idx, (width, height) in enumerate(screens):
             self.screen_rects.append([current_x_offset, 0, width, height])
-            geo = '{}x{}x8'.format(width, height)
+            geo = '{}x{}x{}'.format(width, height, depth)
             if server == 'Xvfb':
                 self.full_cmd += ['-screen', str(idx), geo]
             else:

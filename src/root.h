@@ -11,6 +11,7 @@
 class ClientManager; // IWYU pragma: keep
 class Ewmh;
 class FrameLeaf;
+class GlobalCommands;
 class HlwmCommon;
 class IpcServer;
 class KeyManager; // IWYU pragma: keep
@@ -32,6 +33,7 @@ public:
     int initial_monitors_locked = 0;
     bool exitOnXlibError = false;
     bool importTagsFromEwmh = true;
+    bool trueTransparency = true; // try true transparency via xrender
 };
 
 class Root : public Object {
@@ -45,6 +47,7 @@ public:
     // constructor creates top-level objects
     Root(Globals g, XConnection& xconnection, IpcServer& ipcServer);
     ~Root() override;
+    void shutdown();
 
     // (in alphabetical order)
     Child_<ClientManager> clients;
@@ -60,6 +63,7 @@ public:
 
     Globals globals;
     std::unique_ptr<MetaCommands> meta_commands; // Using "pimpl" to avoid include
+    std::unique_ptr<GlobalCommands> global_commands; // Using "pimpl" to avoid include
     XConnection& X;
     IpcServer& ipcServer_;
     //! Temporary member. In the long run, ewmh should get its information

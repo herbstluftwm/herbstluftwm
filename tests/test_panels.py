@@ -128,7 +128,7 @@ def test_panel_wm_strut_partial_on_big_screen(hlwm, x11):
     assert hlwm.call('list_padding').stdout.strip() == '54 0 0 0'
 
 
-@pytest.mark.parametrize("xvfb", [(1280 + 1024, 1024)], indirect=True)
+@pytest.mark.parametrize("xvfb", [{'resolution': (1280 + 1024, 1024)}], indirect=True)
 def test_panel_wm_strut_partial_different_sized_screens(hlwm, x11):
     """This is the xinerama example from the EWMH doc on _NET_WM_STRUT_PARTIAL
     https://specifications.freedesktop.org/wm-spec/wm-spec-latest.html#idm45075509080400
@@ -162,7 +162,7 @@ def test_panel_wm_strut_partial_different_sized_screens(hlwm, x11):
     assert hlwm.call('list_padding 1').stdout.strip() == '0 0 50 0'
 
 
-@pytest.mark.parametrize("xvfb", [(800 + 700, 600)], indirect=True)
+@pytest.mark.parametrize("xvfb", [{'resolution': (800 + 700, 600)}], indirect=True)
 def test_panel_wm_strut_between_monitors(hlwm, x11):
     hlwm.call('add anothertag')
     hlwm.call('set_monitors 800x600+0+0 700x600+800+0')
@@ -187,7 +187,7 @@ def test_panel_wm_strut_between_monitors(hlwm, x11):
 
 
 @pytest.mark.parametrize("edge", ["left", "right", "up", "down"])
-@pytest.mark.parametrize("xvfb", [(2 * 800, 2 * 600)], indirect=True)
+@pytest.mark.parametrize("xvfb", [{'resolution': (2 * 800, 2 * 600)}], indirect=True)
 def test_panel_wm_strut_between_monitors_2x2_grid(hlwm, x11, edge):
     hlwm.call('chain , add t1 , add t2 , add t3')
     hlwm.call(['set_monitors',

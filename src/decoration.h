@@ -10,6 +10,7 @@
 class Client;
 class Settings;
 class DecorationScheme;
+class XConnection;
 
 class Decoration {
 public:
@@ -34,9 +35,11 @@ public:
     bool positionTriggersResize(Point2D p);
 
 private:
+    static Visual* check_32bit_client(Client* c);
+    static XConnection& xconnection();
     void redrawPixmap();
     void updateFrameExtends();
-    unsigned int get_client_color(Color color);
+    unsigned long get_client_color(Color color);
 
     Window                  decwin = 0; // the decoration window
     const DecorationScheme* last_scheme = {};
