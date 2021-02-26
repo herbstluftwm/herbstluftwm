@@ -71,4 +71,3 @@ minimize() {
 
 
 if [ "$1" = "minimize" ] ; then minimize ; else init ; fi
-  
