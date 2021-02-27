@@ -3,6 +3,7 @@
 #include <X11/Xlib.h>
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "attribute.h"
@@ -27,6 +28,9 @@ using std::endl;
 using std::function;
 using std::string;
 using std::vector;
+
+template<>
+RunTimeConverter<Client*>* Converter<Client*>::converter = nullptr;
 
 ClientManager::ClientManager()
     : focus(*this, "focus")
@@ -63,6 +67,11 @@ void ClientManager::injectDependencies(Settings* s, Theme* t, Ewmh* e) {
     ewmh = e;
 }
 
+std::string ClientManager::str(Client* client)
+{
+    return client->window_id_str;
+}
+
 Client* ClientManager::client(Window window)
 {
     auto entry = clients_.find(window);
@@ -73,18 +82,24 @@ Client* ClientManager::client(Window window)
 }
 
 /**
- * \brief   Resolve a window description to a client
+ * \brief   Resolve a window description to a client. If there is
+ *          no such client, throw an exception.
  *
  * \param   str     Describes the window: "" means the focused one, "urgent"
  *                  resolves to a arbitrary urgent window, "0x..." just
  *                  resolves to the given window given its hexadecimal window id,
  *                  a decimal number its decimal window id.
- * \return          Pointer to the resolved client, or null, if client not found
+ * \return          Pointer to the resolved client.
  */
-Client* ClientManager::client(const string &identifier)
+Client* ClientManager::parse(const std::string& identifier)
 {
     if (identifier.empty()) {
-        return focus();
+        Client* c = focus();
+        if (c) {
+            return c;
+        } else {
+            throw std::invalid_argument("No client is focused");
+        }
     }
     if (identifier == "urgent") {
         for (auto c : clients_) {
@@ -92,18 +107,27 @@ Client* ClientManager::client(const string &identifier)
                 return c.second;
             }
         }
-        return {}; // no urgent client found
+        throw std::invalid_argument("No client is urgent");
     }
+    Window win = Converter<WindowID>::parse(identifier);
+    auto entry = clients_.find(win);
+    if (entry != clients_.end()) {
+        return entry->second;
+    } else {
+        throw std::invalid_argument("No managed client with window id " + identifier);
+    }
+}
+
+Client* ClientManager::client(const string &identifier) {
     try {
-        Window win = Converter<WindowID>::parse(identifier);
-        return client(win);
-    } catch (...) {
+        return parse(identifier);
+    }  catch (...) {
         return nullptr;
     }
 }
 
 //! the completion-counterpart of ClientManager::client()
-void ClientManager::completeClients(Completion& complete)
+void ClientManager::completeEntries(Completion& complete)
 {
     complete.full("urgent");
     for (const auto& it : clients_) {
@@ -408,7 +432,7 @@ void ClientManager::applyRulesCompletion(Completion& complete)
 {
     if (complete == 0) {
         complete.full("--all");
-        completeClients(complete);
+        completeEntries(complete);
     } else {
         complete.none();
     }
@@ -463,7 +487,7 @@ void ClientManager::applyTmpRuleCompletion(Completion& complete)
 {
     if (complete == 0) {
         complete.full("--all");
-        completeClients(complete);
+        completeEntries(complete);
     } else {
         Root::get()->rules->addRuleCompletion(complete);
     }

@@ -205,7 +205,7 @@ string MonitorManager::str(Monitor* monitor)
     }
 }
 
-void MonitorManager::complete(Completion& completion)
+void MonitorManager::completeEntries(Completion& completion)
 {
     completeMonitorName(completion);
 }

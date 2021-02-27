@@ -66,7 +66,6 @@ int spawn(int argc, char** argv);
 int wmexec(int argc, char** argv);
 static void remove_zombies(int signal);
 int custom_hook_emit(Input input);
-int jumpto_command(int argc, char** argv, Output output);
 
 unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
     MetaCommands* meta_commands = root->meta_commands.get();
@@ -114,7 +113,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"spawn",          spawn},
         {"wmexec",         wmexec},
         {"emit_hook",      { custom_hook_emit }},
-        {"bring",          frame_current_bring},
+        {"bring",          {global_cmds, &GlobalCommands::bringCommand,
+                                         &GlobalCommands::bringCompletion}},
         {"focus_nth",      { tags->frameCommand(&FrameTree::focusNthCommand) }},
         {"cycle",          { tags->frameCommand(&FrameTree::cycleSelectionCommand) }},
         {"cycle_all",      monitors->tagCommand(&HSTag::cycleAllCommand,
@@ -149,7 +149,8 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"use",            monitor_set_tag_command},
         {"use_index",      monitor_set_tag_by_index_command},
         {"use_previous",   { monitor_set_previous_tag_command }},
-        {"jumpto",         jumpto_command},
+        {"jumpto",         {global_cmds, &GlobalCommands::jumptoCommand,
+                                         &GlobalCommands::jumptoCompletion}},
         {"floating",       { tags, &TagManager::floatingCmd,
                                    &TagManager::floatingComplete }},
         {"fullscreen",     {clients, &ClientManager::fullscreen_cmd,
@@ -337,20 +338,6 @@ int raise_command(int argc, char** argv, Output output) {
         }
     }
     return 0;
-}
-
-int jumpto_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    auto client = get_client(argv[1]);
-    if (client) {
-        focus_client(client, true, true, true);
-        return 0;
-    } else {
-        output << argv[0] << ": Could not find client \"" << argv[1] << "\".\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
 }
 
 void execute_autostart_file() {

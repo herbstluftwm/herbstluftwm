@@ -12,7 +12,7 @@ class RunTimeConverter {
 public:
     virtual T parse(const std::string& source) = 0;
     virtual std::string str(T payload) = 0;
-    virtual void complete(Completion& completion) = 0;
+    virtual void completeEntries(Completion& completion) = 0;
 };
 
 /**
@@ -40,7 +40,7 @@ public:
     }
     static void complete(Completion& completion) {
         if (converter) {
-            converter->complete(completion);
+            converter->completeEntries(completion);
         }
     }
     static void complete(Completion& completion, T const*) {

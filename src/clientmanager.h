@@ -7,6 +7,7 @@
 #include "commandio.h"
 #include "link.h"
 #include "object.h"
+#include "runtimeconverter.h"
 #include "signal.h"
 
 class Client;
@@ -17,18 +18,25 @@ class HSTag;
 class Settings;
 class Theme;
 
+template<>
+RunTimeConverter<Client*>* Converter<Client*>::converter;
+
 // Note: this is basically a singleton
 
-class ClientManager : public Object
+class ClientManager : public Object, public Manager<Client>
 {
 public:
     ClientManager();
     ~ClientManager() override;
     void injectDependencies(Settings* s, Theme* t, Ewmh* e);
 
+    // RunTimeConverter<Monitor*>:
+    virtual Client* parse(const std::string& identifier) override;
+    virtual std::string str(Client* client) override;
+    virtual void completeEntries(Completion& completion) override;
+
     Client* client(Window window);
     Client* client(const std::string &identifier);
-    void completeClients(Completion& complete);
     const std::unordered_map<Window, Client*>&
     clients() { return clients_; }
 

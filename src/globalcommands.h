@@ -18,6 +18,12 @@ public:
     GlobalCommands(Root& root);
     int tagStatusCommand(Input input, Output output);
     void tagStatusCompletion(Completion& complete);
+
+    int jumptoCommand(Input input, Output output);
+    void jumptoCompletion(Completion& complete);
+
+    int bringCommand(Input input, Output output);
+    void bringCompletion(Completion& complete);
 private:
     Root& root_;
 };

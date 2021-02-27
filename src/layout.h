@@ -193,9 +193,6 @@ private:
     friend class FrameTree;
 };
 
-// functions
-int frame_current_bring(int argc, char** argv, Output output);
-
 bool focus_client(Client* client, bool switch_tag, bool switch_monitor, bool raise);
 
 int frame_focus_edge(Input input, Output output);

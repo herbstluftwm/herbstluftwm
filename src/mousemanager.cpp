@@ -152,7 +152,7 @@ int MouseManager::dragCommand(Input input, Output output)
 void MouseManager::dragCompletion(Completion& complete)
 {
     if (complete == 0) {
-        Root::get()->clients->completeClients(complete);
+        Root::get()->clients->completeEntries(complete);
     } else if (complete == 1) {
         for (auto& it : mouseFunctions_) {
             complete.full(it.first);

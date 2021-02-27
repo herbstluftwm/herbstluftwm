@@ -44,3 +44,34 @@ def test_tag_status_completion(hlwm):
     hlwm.attr.monitors[1].name = monname
 
     assert monname in hlwm.complete('tag_status')
+
+
+def test_jumpto_bring_invalid_client(hlwm):
+    for cmd in ['jumpto', 'bring']:
+        hlwm.call_xfail([cmd, 'foobar']) \
+            .expect_stderr('Cannot parse argument "foobar": stoul')
+
+        hlwm.call_xfail([cmd, 'urgent']) \
+            .expect_stderr('No client is urgent')
+
+        hlwm.call_xfail([cmd, '']) \
+            .expect_stderr('No client is focused')
+
+        hlwm.call_xfail([cmd, '0xdead']) \
+            .expect_stderr('No managed client with window id 0xdead')
+
+
+def test_jumpto_bring_completion(hlwm):
+    for cmd in ['jumpto', 'bring']:
+        winid, proc = hlwm.create_client()
+
+        res = hlwm.complete([cmd])
+        assert winid in res
+        assert 'urgent' in res
+
+        proc.kill()
+        proc.wait(10)
+
+        res = hlwm.complete([cmd])
+        assert winid not in res
+        assert 'urgent' in res

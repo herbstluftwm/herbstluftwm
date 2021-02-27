@@ -159,11 +159,6 @@ def test_bring_from_different_tag(hlwm, x11):
     assert hlwm.get_attr('clients.focus.winid') == bonnie
 
 
-def test_bring_invalid_client(hlwm):
-    hlwm.call_xfail('bring foobar') \
-        .expect_stderr('Could not find client')
-
-
 def test_bring_from_same_tag_different_frame(hlwm, x11):
     hlwm.call('split horizontal')
     hlwm.call('focus right')
