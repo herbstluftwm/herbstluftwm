@@ -89,6 +89,8 @@ def test_remove_monitor_invalid_args(hlwm):
     hlwm.call_xfail('remove_monitor') \
         .expect_stderr('Expected one argument, but got only 0')
 
+    assert hlwm.get_attr('monitors.count') == '1'
+
     hlwm.call('add tag2')
     hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
 
@@ -98,11 +100,7 @@ def test_remove_monitor_invalid_args(hlwm):
     hlwm.call_xfail('remove_monitor 2') \
         .expect_stderr('No such monitor: 2')
 
-
-def test_cannot_remove_nonexistent_monitor(hlwm):
-    hlwm.call_xfail('remove_monitor 1') \
-        .expect_stderr('No such monitor: 1')
-    assert hlwm.get_attr('monitors.count') == '1'
+    assert hlwm.get_attr('monitors.count') == '2'
 
 
 def test_cannot_remove_last_monitor(hlwm):
