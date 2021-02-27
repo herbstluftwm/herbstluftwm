@@ -57,6 +57,7 @@ target_sources(herbstluftwm PRIVATE
     root.cpp root.h
     rulemanager.cpp rulemanager.h
     rules.cpp rules.h
+    runtimeconverter.h
     settings.cpp settings.h
     signal.h
     stack.cpp stack.h

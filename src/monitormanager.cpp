@@ -4,6 +4,7 @@
 #include <cassert>
 #include <memory>
 
+#include "argparse.h"
 #include "command.h"
 #include "completion.h"
 #include "ewmh.h"
@@ -32,6 +33,9 @@ using std::shared_ptr;
 using std::string;
 using std::to_string;
 using std::vector;
+
+template<>
+RunTimeConverter<Monitor*>* Converter<Monitor*>::converter = nullptr;
 
 MonitorManager* g_monitors;
 
@@ -182,6 +186,30 @@ Monitor* MonitorManager::byString(string str) {
     return ((idx >= 0) && idx < static_cast<int>(size())) ? byIdx(idx) : nullptr;
 }
 
+Monitor* MonitorManager::parse(const string& str)
+{
+    int idx = string_to_monitor_index(str);
+    if ((idx >= 0) && idx < static_cast<int>(size())) {
+        return byIdx(static_cast<size_t>(idx));
+    } else {
+        throw std::invalid_argument(string("No such monitor: ") + str);
+    }
+}
+
+string MonitorManager::str(Monitor* monitor)
+{
+    if (monitor) {
+        return monitor->index.str();
+    } else {
+        return {};
+    }
+}
+
+void MonitorManager::complete(Completion& completion)
+{
+    completeMonitorName(completion);
+}
+
 function<int(Input, Output)> MonitorManager::byFirstArg(MonitorCommand cmd)
 {
     return [this,cmd](Input input, Output output) -> int {
@@ -291,15 +319,10 @@ void MonitorManager::relayoutAll()
 
 int MonitorManager::removeMonitor(Input input, Output output)
 {
-    string monitorIdxString;
-    if (!(input >> monitorIdxString)) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    auto monitor = byString(monitorIdxString);
-
-    if (monitor == nullptr) {
-        output << input.command() << ": Monitor \"" << monitorIdxString << "\" not found!\n";
-        return HERBST_INVALID_ARGUMENT;
+    Monitor* monitor = nullptr;
+    ArgParse argparse = ArgParse().mandatory(monitor);
+    if (argparse.parsingAllFails(input, output)) {
+        return argparse.exitCode();
     }
 
     if (size() <= 1) {
