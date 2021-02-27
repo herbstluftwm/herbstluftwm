@@ -115,3 +115,84 @@ def test_title_different_letters_are_drawn(hlwm, x11, font):
 
     # then the number of pixels should have increased
     assert count1 < count2
+
+
+@pytest.mark.parametrize("frame_bg_transparent", ['on', 'off'])
+def test_frame_bg_transparent(hlwm, x11, frame_bg_transparent):
+    hlwm.attr.settings.frame_gap = 24  # should not matter
+    hlwm.attr.settings.frame_border_width = 0
+    hlwm.attr.settings.frame_bg_active_color = '#ef0000'
+    hlwm.attr.settings.frame_bg_transparent = frame_bg_transparent
+    tw = 8
+    hlwm.attr.settings.frame_transparent_width = tw
+
+    [frame_win] = x11.get_hlwm_frames()
+    img = x11.screenshot(frame_win)
+    w = img.width
+    h = img.height
+
+    for x, y in [(2, 2), (4, 2), (2, 8), (3, 4), (7, 7), (w - 1, h - 1), (w - tw, h - tw)]:
+        assert img.pixel(x, y) == (0xef, 0, 0), \
+            f"pixel at {x}, {y}"
+
+    # if there is a hole in the frame decoration, it seems that black is used
+    # (either as a default value or because that's the color of the root window)
+    color_expected = (0, 0, 0) if frame_bg_transparent == 'on' else (0xef, 0, 0)
+    for x, y in [(tw, tw), (tw, tw + 2), (w - tw - 1, h - tw - 1), (50, h - tw - 1), (w // 2, h // 2)]:
+        assert img.pixel(x, y) == color_expected, \
+            f"pixel at {x}, {y}"
+
+
+@pytest.mark.parametrize("frame_bg_transparent", ['on', 'off'])
+def test_frame_holes_for_tiled_client(hlwm, x11, frame_bg_transparent):
+    hlwm.attr.settings.frame_bg_active_color = '#efcd32'
+    hlwm.attr.settings.frame_bg_transparent = frame_bg_transparent
+    hlwm.attr.settings.frame_transparent_width = 8
+
+    def expect_frame_bg_color(winid, expected_color):
+        img = x11.screenshot(frame_win)
+        w = img.width
+        h = img.height
+        for x, y in [(0, 0), (0, h - 1), (w - 1, 0), (w - 1, h - 1)]:
+            assert img.pixel(x, y) == expected_color, \
+                f"pixel at {x}, {y}"
+
+    [frame_win] = x11.get_hlwm_frames()
+    expect_frame_bg_color(frame_win, (0xef, 0xcd, 0x32))
+
+    x11.create_client()
+
+    # one big tiled client should hide all of the frames bg color:
+    expect_frame_bg_color(frame_win, (0, 0, 0))
+
+
+@pytest.mark.parametrize("frame_bg_transparent", ['on', 'off'])
+def test_frame_holes_for_pseudotiled_client(hlwm, x11, frame_bg_transparent):
+    bgcol = (0xef, 0xcd, 0x32)
+    hlwm.attr.settings.frame_bg_active_color = RawImage.rgb2string(bgcol)
+    hlwm.attr.settings.frame_bg_transparent = frame_bg_transparent
+    hlwm.attr.settings.frame_transparent_width = 8
+
+    [frame_win] = x11.get_hlwm_frames()
+    geo = frame_win.get_geometry()
+    w = geo.width
+    h = geo.height
+
+    # create a pseudotiled client that is very wide but not very high:
+    winhandle, winid = x11.create_client(geometry=(0, 0, w + 10, h // 3 - 10))
+    hlwm.attr.clients[winid].pseudotile = 'on'
+
+    img = x11.screenshot(frame_win)
+    assert (img.width, img.height) == (w, h)
+
+    # the frame is visible on the top and bottom
+    img.pixel(0, 0) == bgcol
+    img.pixel(0, h - 1) == bgcol
+    img.pixel(w // 2, 0) == bgcol
+    img.pixel(w // 2, h - 1) == bgcol
+
+    # but the frame is not visible on the left and right
+    black = (0, 0, 0)
+    img.pixel(0, h // 2) == black
+    img.pixel(w - 1, h // 2) == black
+    img.pixel(w // 2, h // 2) == black

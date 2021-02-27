@@ -20,6 +20,7 @@ class Client;
 typedef std::function<void(Client*)> ClientAction;
 
 class HSTag;
+class FrameDecoration;
 class FrameLeaf;
 class FrameSplit;
 class Settings;
@@ -137,6 +138,7 @@ public:
     DynAttribute_<int> selectionAttr_;
     DynAttribute_<LayoutAlgorithm> algorithmAttr_;
 private:
+    friend class FrameDecoration;
     friend class FrameTree;
     // layout algorithms
     TilingResult layoutLinear(Rectangle rect, bool vertical);

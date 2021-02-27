@@ -51,7 +51,6 @@ public:
     virtual void complete(Completion& completion) override;
 
     int list_monitors(Output output);
-    int list_padding(Input input, Output output);
     int string_to_monitor_index(std::string string);
     void completeMonitorName(Completion& complete);
     Monitor* addMonitor(Rectangle rect, HSTag* tag);
