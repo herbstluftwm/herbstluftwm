@@ -67,7 +67,7 @@ void ClientManager::injectDependencies(Settings* s, Theme* t, Ewmh* e) {
     ewmh = e;
 }
 
-std::string ClientManager::str(Client* client)
+string ClientManager::str(Client* client)
 {
     return client->window_id_str;
 }
@@ -91,7 +91,7 @@ Client* ClientManager::client(Window window)
  *                  a decimal number its decimal window id.
  * \return          Pointer to the resolved client.
  */
-Client* ClientManager::parse(const std::string& identifier)
+Client* ClientManager::parse(const string& identifier)
 {
     if (identifier.empty()) {
         Client* c = focus();
