@@ -2,6 +2,7 @@
 
 #include "argparse.h"
 #include "client.h"
+#include "clientmanager.h"
 #include "frametree.h"
 #include "layout.h"
 #include "monitor.h"
