@@ -1,6 +1,10 @@
 #include "globalcommands.h"
 
 #include "argparse.h"
+#include "client.h"
+#include "clientmanager.h"
+#include "frametree.h"
+#include "layout.h"
 #include "monitor.h"
 #include "monitormanager.h"
 #include "root.h"
@@ -59,4 +63,58 @@ void GlobalCommands::tagStatusCompletion(Completion& complete)
     } else {
         complete.none();
     }
+}
+
+int GlobalCommands::jumptoCommand(Input input, Output output)
+{
+    Client* client = nullptr;
+    ArgParse argparse = ArgParse().mandatory(client);
+    if (argparse.parsingAllFails(input, output)) {
+        return argparse.exitCode();
+    }
+    focus_client(client, true, true, true);
+    return 0;
+}
+
+void GlobalCommands::jumptoCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        Converter<Client*>::complete(complete);
+    } else {
+        complete.none();
+    }
+}
+
+int GlobalCommands::bringCommand(Input input, Output output)
+{
+    Client* client = nullptr;
+    ArgParse argparse = ArgParse().mandatory(client);
+    if (argparse.parsingAllFails(input, output)) {
+        return argparse.exitCode();
+    }
+    HSTag* tag = get_current_monitor()->tag;
+    root_.tags->moveClient(client, tag, {}, true);
+    // mark as un-minimized first, such that a minimized tiling client
+    // is added to the frame tree now.
+    client->minimized_ = false;
+    auto frame = tag->frame->root_->frameWithClient(client);
+    if (frame && !frame->isFocused()) {
+        // regardless of the client's floating or minimization state:
+        // if the client was in the frame tree, it is moved
+        // to the focused frame
+        frame->removeClient(client);
+        tag->frame->focusedFrame()->insertClient(client, true);
+    }
+    focus_client(client, false, false, true);
+    return 0;
+}
+
+void GlobalCommands::bringCompletion(Completion& complete)
+{
+    if (complete == 0) {
+        Converter<Client*>::complete(complete);
+    } else {
+        complete.none();
+    }
+
 }

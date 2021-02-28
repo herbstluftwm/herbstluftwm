@@ -48,7 +48,7 @@ public:
     // RunTimeConverter<Monitor*>:
     virtual Monitor* parse(const std::string& str) override;
     virtual std::string str(Monitor* monitor) override;
-    virtual void complete(Completion& completion) override;
+    virtual void completeEntries(Completion& completion) override;
 
     int list_monitors(Output output);
     int string_to_monitor_index(std::string string);

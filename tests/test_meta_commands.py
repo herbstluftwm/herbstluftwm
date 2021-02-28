@@ -548,11 +548,6 @@ def test_integer_out_of_range(hlwm):
                 .expect_stderr('out of range')
 
 
-def test_jumpto_invalid_client(hlwm):
-    hlwm.call_xfail('jumpto foobar') \
-        .expect_stderr('Could not find client "foobar".')
-
-
 def test_raise_winid_missing(hlwm):
     hlwm.call_xfail('raise') \
         .expect_stderr('raise: not enough arguments\n')

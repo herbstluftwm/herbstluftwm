@@ -66,8 +66,6 @@ struct {
     { "cycle",          2,  no_completion },
     { "split",          4,  no_completion },
     { "raise",          2,  no_completion },
-    { "jumpto",         2,  no_completion },
-    { "bring",          2,  no_completion },
     { "focus_edge",     2,  no_completion },
     { "shift_edge",     2,  no_completion },
     { "cycle_monitor",  2,  no_completion },
@@ -114,8 +112,6 @@ struct {
 } g_completions[] = {
     /* name , relation, index,  completion method                   */
     { "add_monitor",    EQ, 2,  complete_against_tags, 0 },
-    { "bring",          EQ, 1,  nullptr, completion_special_winids },
-    { "bring",          EQ, 1,  complete_against_winids, 0 },
     { "close",          EQ, 1,  complete_against_winids, 0 },
     { "cycle",          EQ, 1,  nullptr, completion_pm_one },
     { "cycle_monitor",  EQ, 1,  nullptr, completion_pm_one },
@@ -129,8 +125,6 @@ struct {
     { "rename",         EQ, 1,  complete_against_tags, 0 },
     { "raise",          EQ, 1,  nullptr, completion_special_winids },
     { "raise",          EQ, 1,  complete_against_winids, 0 },
-    { "jumpto",         EQ, 1,  nullptr, completion_special_winids },
-    { "jumpto",         EQ, 1,  complete_against_winids, 0 },
     { "shift_edge",     EQ, 1,  nullptr, completion_directions },
     { "split",          EQ, 1,  nullptr, completion_split_modes },
     { "split",          EQ, 2,  nullptr, completion_split_ratios },

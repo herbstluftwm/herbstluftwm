@@ -429,37 +429,6 @@ void Frame::foreachClient(ClientAction action) {
          0);
 }
 
-int frame_current_bring(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    auto client = get_client(argv[1]);
-    if (!client) {
-        output << argv[0] << ": Could not find client";
-        if (argc > 1) {
-            output << " \"" << argv[1] << "\".\n";
-        } else {
-            output << ".\n";
-        }
-        return HERBST_INVALID_ARGUMENT;
-    }
-    HSTag* tag = get_current_monitor()->tag;
-    global_tags->moveClient(client, tag, {}, true);
-    // mark as un-minimized first, such that a minimized tiling client
-    // is added to the frame tree now.
-    client->minimized_ = false;
-    auto frame = tag->frame->root_->frameWithClient(client);
-    if (frame && !frame->isFocused()) {
-        // regardless of the client's floating or minimization state:
-        // if the client was in the frame tree, it is moved
-        // to the focused frame
-        frame->removeClient(client);
-        tag->frame->focusedFrame()->insertClient(client, true);
-    }
-    focus_client(client, false, false, true);
-    return 0;
-}
-
 void FrameLeaf::setSelection(int index) {
     if (clients.empty()) {
         return;
