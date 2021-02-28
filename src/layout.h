@@ -57,8 +57,6 @@ public:
 
     void setVisibleRecursive(bool visible);
 
-    static std::shared_ptr<FrameLeaf> getGloballyFocusedFrame();
-
     /*! a case distinction on the type of tree node. If `this` is a
      * FrameSplit, then onSplit is called, and otherwise onLeaf is called.
      * The return value is passed through.

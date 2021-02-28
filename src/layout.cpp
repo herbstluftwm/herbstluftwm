@@ -158,10 +158,6 @@ shared_ptr<FrameSplit> FrameSplit::thisSplit() {
     return dynamic_pointer_cast<FrameSplit>(shared_from_this());
 }
 
-shared_ptr<FrameLeaf> Frame::getGloballyFocusedFrame() {
-    return get_current_monitor()->tag->frame->focusedFrame();
-}
-
 string Frame::frameIndex() const
 {
     auto p = parent_.lock();
