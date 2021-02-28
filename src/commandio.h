@@ -55,3 +55,26 @@ protected:
     //! @note The C-style compatibility layer DEPENDS on the shared_ptr!
     std::shared_ptr<std::string> command_;
 };
+
+/**
+ * @brief The CallOrComplete class combines the functionality of
+ * 1. calling a command and 2. completing the arguments of a command.
+ * If a Completion object is given, the command should perform argument
+ * completion, and if Input/Output is given, the command should actually be
+ * called.
+ *
+ * This class should not be used directly, but only implicitly
+ * on the calling side (class Command) and on the receiving side (ArgParse)
+ */
+class CallOrComplete {
+public:
+    //! the name of the command that is called.
+    std::string command() { return command_; };
+private:
+    friend class CommandBinding;
+    friend class ArgParse;
+    std::string command_;
+    Completion* complete_ = nullptr;
+    std::pair<Input, Output>* inputOutput_ = nullptr;
+    int* exitCode_ = nullptr;
+};

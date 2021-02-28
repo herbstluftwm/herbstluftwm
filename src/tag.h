@@ -66,10 +66,10 @@ public:
     //! remove the client's slice from this tag's stack
     void removeClientSlice(Client* client);
 
-    int focusInDirCommand(Input input, Output output);
-    void focusInDirCompletion(Completion& complete);
-    int shiftInDirCommand(Input input, Output output);
-    void shiftInDirCompletion(Completion& complete);
+    void focusInDirCommand(CallOrComplete invoc);
+    int focusInDir(Direction direction, bool external_only, Output output);
+    void shiftInDirCommand(CallOrComplete invoc);
+    int shiftInDir(Direction direction, bool external_only, Output output);
 
     int cycleAllCommand(Input input, Output output);
     void cycleAllCompletion(Completion& complete);

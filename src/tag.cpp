@@ -277,7 +277,7 @@ void HSTag::removeClientSlice(Client* client)
 }
 
 //! directional focus command
-int HSTag::focusInDirCommand(Input input, Output output)
+void HSTag::focusInDirCommand(CallOrComplete invoc)
 {
     bool external_only = settings_->default_direction_external_only();
     Direction direction = Direction::Left; // some default to satisfy the linter
@@ -287,10 +287,14 @@ int HSTag::focusInDirCommand(Input input, Output output)
         {"-e", [&external_only] () { external_only = true; }},
     });
     ap.mandatory(direction);
-    if (ap.parsingAllFails(input, output)) {
-        return ap.exitCode();
-    }
+    ap.command(invoc,
+               [&] (Output output) {
+                    return focusInDir(direction, external_only, output);
+               });
+}
 
+int HSTag::focusInDir(Direction direction, bool external_only, Output output)
+{
     auto focusedFrame = frame->focusedFrame();
     bool neighbour_found = true;
     if (floating || floating_focused) {
@@ -310,27 +314,13 @@ int HSTag::focusInDirCommand(Input input, Output output)
         }
     }
     if (!neighbour_found) {
-        output << input.command() << ": No neighbour found\n";
+        output << "focus: No neighbour found\n";
         return HERBST_FORBIDDEN;
     }
     return 0;
 }
 
-void HSTag::focusInDirCompletion(Completion &complete)
-{
-    if (complete == 0) {
-        complete.full({"-i", "-e"});
-        Converter<Direction>::complete(complete, nullptr);
-    } else if (complete == 1
-               && (complete[0] == "-i" || complete[0] == "-e"))
-    {
-        Converter<Direction>::complete(complete, nullptr);
-    } else {
-        complete.none();
-    }
-}
-
-int HSTag::shiftInDirCommand(Input input, Output output)
+void HSTag::shiftInDirCommand(CallOrComplete invoc)
 {
     bool external_only = settings_->default_direction_external_only();
     Direction direction = Direction::Left; // some default to satisfy the linter
@@ -340,12 +330,17 @@ int HSTag::shiftInDirCommand(Input input, Output output)
         {"-e", [&external_only] () { external_only = true; }},
     });
     ap.mandatory(direction);
-    if (ap.parsingAllFails(input, output)) {
-        return ap.exitCode();
-    }
+    ap.command(invoc,
+               [&] (Output output) {
+                    return shiftInDir(direction, external_only, output);
+               });
+}
+
+int HSTag::shiftInDir(Direction direction, bool external_only, Output output)
+{
     Client* currentClient = focusedClient();
     if (!currentClient) {
-        output << input.command() << ": No client focused\n";
+        output << "shift: No client focused\n";
         return HERBST_FORBIDDEN;
     }
     if (currentClient->is_client_floated()) {
@@ -358,15 +353,10 @@ int HSTag::shiftInDirCommand(Input input, Output output)
             needsRelayout_.emit();
             return 0;
         } else {
-            output << input.command() << ": No neighbour found\n";
+            output << "shift: No neighbour found\n";
             return HERBST_FORBIDDEN;
         }
     }
-}
-
-void HSTag::shiftInDirCompletion(Completion& complete)
-{
-    focusInDirCompletion(complete);
 }
 
 int HSTag::cycleAllCommand(Input input, Output output)

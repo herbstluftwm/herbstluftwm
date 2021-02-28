@@ -109,6 +109,18 @@ def test_cannot_remove_last_monitor(hlwm):
     assert hlwm.get_attr('monitors.count') == '1'
 
 
+def test_remove_monitor_completion(hlwm):
+    hlwm.call('add tag2')
+    hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
+
+    completions = hlwm.complete(['remove_monitor'])
+    assert '0' in completions
+    assert '1' in completions
+    assert 'monitor2' in completions
+
+    hlwm.command_has_all_args(['remove_monitor', '0'])
+
+
 def test_move_monitor(hlwm):
     r = [8, 4, 400, 300]  # x,y,width,height
     hlwm.call('move_monitor \"0\" %dx%d%+d%+d' % (r[2], r[3], r[0], r[1]))

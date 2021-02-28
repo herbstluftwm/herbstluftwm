@@ -1375,3 +1375,18 @@ def test_shift_no_neighbour_frame(hlwm, split):
 
     hlwm.call_xfail('shift up') \
         .expect_stderr('No neighbour found')
+
+
+def test_focus_shift_completion(hlwm):
+    for cmd in ['shift', 'focus']:
+        directions = ['down', 'up', 'left', 'right']
+        flags = ['-i', '-e']
+        assert sorted(directions + flags) == hlwm.complete([cmd])
+
+        assert sorted(flags) == hlwm.complete([cmd, 'down'])
+
+        assert sorted(directions + ['-i']) == hlwm.complete([cmd, '-e'])
+
+        # actually, passing both -i and -e makes no sense,
+        # but ArgParse does not know that the flags exclude each other
+        hlwm.command_has_all_args([cmd, 'down', '-i', '-e'])

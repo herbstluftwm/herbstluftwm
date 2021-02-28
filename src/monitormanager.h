@@ -26,6 +26,7 @@ typedef std::function<int(Monitor&,Input,Output)> MonitorCommand;
 typedef std::function<void(Monitor&,Completion&)> MonitorCompletion;
 typedef std::function<int(HSTag&,Input,Output)> TagCommand;
 typedef std::function<void(HSTag&,Completion&)> TagCompletion;
+typedef std::function<void (HSTag&, CallOrComplete)> TagCallOrComplete;
 
 template<>
 RunTimeConverter<Monitor*>* Converter<Monitor*>::converter;
@@ -61,10 +62,11 @@ public:
     //! run the command on the currently focused tag
     CommandBinding tagCommand(TagCommand cmd, TagCompletion completer);
     CommandBinding tagCommand(std::function<int(HSTag&)> cmd);
+    CommandBinding tagCommand(TagCallOrComplete cmd);
     // relayout the monitor showing this tag, if there is any
     void relayoutTag(HSTag* tag);
     void relayoutAll();
-    int removeMonitor(Input input, Output output);
+    void removeMonitorCommand(CallOrComplete invoc);
     void removeMonitor(Monitor* monitor);
     // if the name is valid monitor name, return "", otherwise return an error message
     std::string isValidMonitorName(std::string name);

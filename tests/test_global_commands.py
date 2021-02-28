@@ -45,6 +45,8 @@ def test_tag_status_completion(hlwm):
 
     assert monname in hlwm.complete('tag_status')
 
+    hlwm.command_has_all_args(['tag_status', '0'])
+
 
 def test_jumpto_bring_invalid_client(hlwm):
     for cmd in ['jumpto', 'bring']:
@@ -75,3 +77,6 @@ def test_jumpto_bring_completion(hlwm):
         res = hlwm.complete([cmd])
         assert winid not in res
         assert 'urgent' in res
+
+        hlwm.command_has_all_args([cmd, 'urgent'])
+        hlwm.command_has_all_args([cmd, ''])

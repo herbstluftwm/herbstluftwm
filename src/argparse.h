@@ -2,6 +2,8 @@
 #define HLWM_ARGPARSE_H
 
 #include <functional>
+#include <string>
+#include <vector>
 
 #include "commandio.h"
 #include "ipc-protocol.h"
@@ -21,12 +23,17 @@ public:
     bool parsingFails(Input& input, Output& output);
     bool parsingAllFails(Input& input, Output& output);
 
+    using WordList = std::vector<std::string>;
+
     class Argument {
     public:
         /** try to parse the argument from the given string or
          * throw an exception
          */
         std::function<void(std::string)> tryParse_;
+        std::function<void(Completion&)> complete_;
+        //! in addition to the completion function suggested completions
+        WordList completionSuggestions_;
         //! whether the present argument is only optional
         bool optional_;
     };
@@ -61,11 +68,15 @@ public:
      * Defines a mandatory argument of type X
      */
     template<typename X>
-    ArgParse& mandatory(X& value) {
+    ArgParse& mandatory(X& value, WordList completionSuggestions = {}) {
         Argument arg {
             [&value] (std::string source) {
                 value = Converter<X>::parse(source);
             },
+            [] (Completion& complete) {
+                Converter<X>::complete(complete, nullptr);
+            },
+            completionSuggestions,
             false};
         arguments_.push_back(arg);
         return *this;
@@ -80,7 +91,7 @@ public:
      * if the present optional argument was supplied in the input.
      */
     template<typename X>
-    ArgParse& optional(X& value, bool* whetherArgumentSupplied = nullptr) {
+    ArgParse& optional(X& value, WordList completionSuggestions, bool* whetherArgumentSupplied) {
         if (whetherArgumentSupplied) {
             *whetherArgumentSupplied = false;
         }
@@ -91,16 +102,33 @@ public:
                     *whetherArgumentSupplied = true;
                 }
             },
+            [] (Completion& complete) {
+                Converter<X>::complete(complete, nullptr);
+            },
+            completionSuggestions,
             true};
         arguments_.push_back(arg);
         return *this;
+    }
+
+    template<typename X>
+    ArgParse& optional(X& value, WordList completionSuggestions = {}) {
+        return optional(value, completionSuggestions, nullptr);
+    }
+
+    template<typename X>
+    ArgParse& optional(X& value, bool* whetherArgumentSupplied) {
+        return optional(value, {}, whetherArgumentSupplied);
     }
 
     ArgParse& flags(std::initializer_list<Flag> flagTable);
 
     int exitCode() const { return errorCode_; }
 
+    void command(CallOrComplete invocation, std::function<int(Output)> command);
+
 private:
+    void completion(Completion& complete);
     bool unparsedTokens(Input& input, Output& output);
     bool tryParseFlag(std::string inputToken);
     std::vector<Argument> arguments_;

@@ -186,6 +186,16 @@ class HlwmBridge(herbstluftwm.Herbstluftwm):
                 items.append(unescaped[0] if len(unescaped) else '')
         return sorted(items)
 
+    def command_has_all_args(self, cmd):
+        """
+        ask the completion and assert that the given command does not allow
+        any further arguments
+        """
+        res = self.unchecked_call(['complete_shell', len(cmd)] + cmd)
+        assert res.returncode == 7
+        assert res.stdout == ''
+        assert res.stderr == ''
+
     def list_children_via_attr(self, object_path):
         """
         List the names of children of the

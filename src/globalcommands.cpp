@@ -18,13 +18,19 @@ GlobalCommands::GlobalCommands(Root& root)
 {
 }
 
-int GlobalCommands::tagStatusCommand(Input input, Output output)
+void GlobalCommands::tagStatusCommand(CallOrComplete invoc)
 {
     Monitor* monitor = root_.monitors->focus();
-    ArgParse argparse = ArgParse().optional(monitor);
-    if (argparse.parsingAllFails(input, output)) {
-        return argparse.exitCode();
-    }
+    ArgParse().optional(monitor).command(invoc,
+        [&] (Output output) {
+            tagStatus(monitor, output);
+            return 0;
+        }
+    );
+}
+
+void GlobalCommands::tagStatus(Monitor* monitor, Output output)
+{
     tag_update_flags();
     output << '\t';
     for (size_t i = 0; i < root_.tags->size(); i++) {
@@ -53,45 +59,32 @@ int GlobalCommands::tagStatusCommand(Input input, Output output)
         output << *tag->name;
         output << '\t';
     }
-    return 0;
 }
 
-void GlobalCommands::tagStatusCompletion(Completion& complete)
-{
-    if (complete == 0) {
-        Converter<Monitor*>::complete(complete);
-    } else {
-        complete.none();
-    }
-}
-
-int GlobalCommands::jumptoCommand(Input input, Output output)
+void GlobalCommands::jumptoCommand(CallOrComplete invoc)
 {
     Client* client = nullptr;
-    ArgParse argparse = ArgParse().mandatory(client);
-    if (argparse.parsingAllFails(input, output)) {
-        return argparse.exitCode();
-    }
-    focus_client(client, true, true, true);
-    return 0;
+    ArgParse().mandatory(client).command(invoc,
+        [&] (Output) {
+            focus_client(client, true, true, true);
+            return 0;
+        }
+    );
 }
 
-void GlobalCommands::jumptoCompletion(Completion& complete)
-{
-    if (complete == 0) {
-        Converter<Client*>::complete(complete);
-    } else {
-        complete.none();
-    }
-}
-
-int GlobalCommands::bringCommand(Input input, Output output)
+void GlobalCommands::bringCommand(CallOrComplete invoc)
 {
     Client* client = nullptr;
-    ArgParse argparse = ArgParse().mandatory(client);
-    if (argparse.parsingAllFails(input, output)) {
-        return argparse.exitCode();
-    }
+    ArgParse().mandatory(client).command(invoc,
+        [&] (Output) {
+            bring(client);
+            return 0;
+        }
+    );
+}
+
+void GlobalCommands::bring(Client* client)
+{
     HSTag* tag = get_current_monitor()->tag;
     root_.tags->moveClient(client, tag, {}, true);
     // mark as un-minimized first, such that a minimized tiling client
@@ -106,15 +99,5 @@ int GlobalCommands::bringCommand(Input input, Output output)
         tag->frame->focusedFrame()->insertClient(client, true);
     }
     focus_client(client, false, false, true);
-    return 0;
 }
 
-void GlobalCommands::bringCompletion(Completion& complete)
-{
-    if (complete == 0) {
-        Converter<Client*>::complete(complete);
-    } else {
-        complete.none();
-    }
-
-}
