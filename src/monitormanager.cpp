@@ -488,9 +488,9 @@ void MonitorManager::unlock() {
     lock_number_changed();
 }
 
-string MonitorManager::lock_number_changed() {
+void MonitorManager::lock_number_changed() {
     if (settings_->monitors_locked() < 0) {
-        return "must be non-negative";
+        return;
     }
     if (!settings_->monitors_locked()) {
         // if not locked anymore, then repaint all the dirty monitors
@@ -500,7 +500,6 @@ string MonitorManager::lock_number_changed() {
             }
         }
     }
-    return {};
 }
 
 //! return the stack of windows by successive calls to the given yield
