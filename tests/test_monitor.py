@@ -444,3 +444,35 @@ def test_monitor_rect_apply_layout(hlwm, x11):
         x11.display.sync()
         geom = x11.get_absolute_geometry(winhandle)
         assert (geom.width, geom.height, geom.x, geom.y) == expected_geometry
+
+
+def test_lock_unlock_sequence(hlwm):
+    value = 0
+    up = ('lock', 1)
+    down = ('unlock', -1)
+    assert int(hlwm.attr.settings.monitors_locked()) == value
+    for cmd, delta in [up, up, down, up, down, down, down, down, up, up]:
+        hlwm.call(cmd)
+        value = max(0, value + delta)
+        assert int(hlwm.attr.settings.monitors_locked()) == value
+
+
+def test_lock_unlock_window_not_resized(hlwm, x11):
+    hlwm.call(['load', '(split horizontal:0.5:1 (clients max:0) (clients max:0))'])
+    win, _ = x11.create_client()
+    hlwm.call('lock')
+
+    width = win.get_geometry().width
+    height = win.get_geometry().height
+
+    hlwm.call(['resize', 'right'])
+    x11.sync_with_hlwm()
+    # monitors locked => geometry does not change
+    assert width == win.get_geometry().width
+    assert height == win.get_geometry().height
+
+    hlwm.call(['unlock'])
+    x11.sync_with_hlwm()
+    # monitors unlocked => geometry is updated
+    assert width != win.get_geometry().width
+    assert height == win.get_geometry().height
