@@ -4,6 +4,7 @@
 
 #include "completion.h"
 
+using std::function;
 using std::pair;
 using std::string;
 
@@ -139,7 +140,7 @@ ArgParse& ArgParse::flags(std::initializer_list<Flag> flagTable)
     return *this;
 }
 
-void ArgParse::command(CallOrComplete invocation, std::function<int(Output)> command)
+void ArgParse::command(CallOrComplete invocation, function<int(Output)> command)
 {
     if (invocation.complete_) {
         completion(*(invocation.complete_));
