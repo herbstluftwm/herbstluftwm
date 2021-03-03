@@ -77,7 +77,7 @@ public:
 
     void lock();
     void unlock();
-    std::string lock_number_changed();
+    void lock_number_changed();
 
     int stackCommand(Output output);
     void extractWindowStack(bool real_clients, std::function<void(Window)> yield);
