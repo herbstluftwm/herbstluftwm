@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+#include "completion.h"
+
+using std::function;
 using std::pair;
 using std::string;
 
@@ -135,6 +138,72 @@ ArgParse& ArgParse::flags(std::initializer_list<Flag> flagTable)
         flags_.insert(pair<string, Flag>(it.name_, it));
     }
     return *this;
+}
+
+void ArgParse::command(CallOrComplete invocation, function<int(Output)> command)
+{
+    if (invocation.complete_) {
+        completion(*(invocation.complete_));
+    }
+    if (invocation.inputOutput_) {
+        int status = 0;
+        if (parsingAllFails(invocation.inputOutput_->first,
+                            invocation.inputOutput_->second)) {
+            status = exitCode();
+        } else {
+            // if parsing did not fail
+            status = command(invocation.inputOutput_->second);
+        }
+        if (invocation.exitCode_) {
+            *(invocation.exitCode_) = status;
+        }
+    }
+}
+
+void ArgParse::completion(Completion& complete)
+{
+    size_t completionIndex = complete.index();
+    std::set<string> flagsPassedSoFar;
+    for (size_t i = 0; i < completionIndex; i++) {
+        auto it = flags_.find(complete[i]);
+        if (it != flags_.end()) {
+            flagsPassedSoFar.insert(it->second.name_);
+        }
+    }
+    bool argsStillPossible = false;
+    // complete the unused flags:
+    for (auto& it : flags_) {
+        if (flagsPassedSoFar.find(it.second.name_) == flagsPassedSoFar.end()) {
+            // complete names of flags that were not mentioned so far
+            complete.full(it.second.name_);
+            argsStillPossible = true;
+        }
+    }
+    // the index of the current argument when neglecting
+    // the flags
+    size_t positionalIndex = completionIndex - flagsPassedSoFar.size();
+    // we iterate through all arguments_ to determine which of them
+    // might be possible at positionalIndex
+    size_t minPossibleIdx = 0;
+    size_t maxPossibleIdx = 0;
+    for (const auto& arg : arguments_) {
+        if (minPossibleIdx <= positionalIndex
+            && positionalIndex <= maxPossibleIdx)
+        {
+            arg.complete_(complete);
+            for (const auto& suggestion : arg.completionSuggestions_) {
+                complete.full(suggestion);
+            }
+            argsStillPossible = true;
+        }
+        maxPossibleIdx++;
+        if (!arg.optional_) {
+            minPossibleIdx++;
+        }
+    }
+    if (!argsStillPossible) {
+        complete.none();
+    }
 }
 
 /**

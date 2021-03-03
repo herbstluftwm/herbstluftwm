@@ -91,6 +91,36 @@ public:
     {
     }
 
+    /** Binding to a combined command invokation and completion
+     *  function.
+     */
+    CommandBinding(std::function<void(CallOrComplete)> callOrCompl)
+    {
+        command = [callOrCompl](Input input, Output output) -> int {
+            std::pair<Input, Output> io = {input, output};
+            int exitCode = 0;
+            CallOrComplete invoc;
+            invoc.command_ = input.command();
+            invoc.inputOutput_ = &io;
+            invoc.exitCode_ = &exitCode;
+            callOrCompl(invoc);
+            return exitCode;
+        };
+        completion_ = [callOrCompl](Completion& complete) {
+            CallOrComplete invoc;
+            invoc.complete_ = &complete;
+            callOrCompl(invoc);
+        };
+    }
+
+    template <typename ClassName>
+    CommandBinding(ClassName* object,
+                   void(ClassName::*member)(CallOrComplete))
+        : CommandBinding(std::bind(member, object,
+                            std::placeholders::_1))
+    {
+    }
+
     // FIXME: Remove after C++ transition
     // The following constructors are only there to ease the transition from
     // C functions to C++

@@ -264,6 +264,13 @@ CommandBinding MonitorManager::tagCommand(function<int (HSTag&)> cmd)
     });
 }
 
+CommandBinding MonitorManager::tagCommand(TagCallOrComplete cmd)
+{
+    return CommandBinding([this,cmd](CallOrComplete invoc) {
+        cmd(*(this->focus()->tag), invoc);
+    });
+}
+
 
 Monitor* MonitorManager::byTag(HSTag* tag) {
     for (Monitor* m : *this) {
@@ -317,22 +324,19 @@ void MonitorManager::relayoutAll()
     }
 }
 
-int MonitorManager::removeMonitor(Input input, Output output)
+void MonitorManager::removeMonitorCommand(CallOrComplete invoc)
 {
     Monitor* monitor = nullptr;
-    ArgParse argparse = ArgParse().mandatory(monitor);
-    if (argparse.parsingAllFails(input, output)) {
-        return argparse.exitCode();
-    }
-
-    if (size() <= 1) {
-        output << input.command() << ": Can't remove the last monitor\n";
-        return HERBST_FORBIDDEN;
-    }
-
-    removeMonitor(monitor);
-
-    return HERBST_EXIT_SUCCESS;
+    ArgParse().mandatory(monitor).command(invoc,
+        [&] (Output output) {
+            if (size() <= 1) {
+                output << invoc.command() << ": Can't remove the last monitor\n";
+                return HERBST_FORBIDDEN;
+            }
+            this->removeMonitor(monitor);
+            return HERBST_EXIT_SUCCESS;
+        }
+    );
 }
 
 void MonitorManager::removeMonitor(Monitor* monitor)

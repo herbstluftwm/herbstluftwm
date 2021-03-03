@@ -3,6 +3,8 @@
 
 #include "commandio.h"
 
+class Client;
+class Monitor;
 class Root;
 
 /**
@@ -16,14 +18,13 @@ class GlobalCommands
 {
 public:
     GlobalCommands(Root& root);
-    int tagStatusCommand(Input input, Output output);
-    void tagStatusCompletion(Completion& complete);
+    void tagStatusCommand(CallOrComplete invoc);
+    void tagStatus(Monitor* monitor, Output output);
 
-    int jumptoCommand(Input input, Output output);
-    void jumptoCompletion(Completion& complete);
+    void jumptoCommand(CallOrComplete invoc);
 
-    int bringCommand(Input input, Output output);
-    void bringCompletion(Completion& complete);
+    void bringCommand(CallOrComplete invoc);
+    void bring(Client* client);
 private:
     Root& root_;
 };

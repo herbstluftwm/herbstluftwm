@@ -56,6 +56,7 @@ public:
     bool operator<(size_t index) const { return index_ < index; }
     bool operator>=(size_t index) const { return index_ >= index; }
     bool operator>(size_t index) const { return index_ > index; }
+    size_t index() const { return index_; }
 
     std::string operator[](size_t index) const;
 
