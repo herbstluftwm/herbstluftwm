@@ -60,7 +60,7 @@ public:
     Attribute_<bool>          hide_covered_windows = {"hide_covered_windows", false};
     Attribute_<bool>          smart_frame_surroundings = {"smart_frame_surroundings", false};
     Attribute_<bool>          smart_window_surroundings = {"smart_window_surroundings", false};
-    Attribute_<int>           monitors_locked = {"monitors_locked", 0};
+    Attribute_<unsigned long> monitors_locked = {"monitors_locked", 0};
     Attribute_<bool>          auto_detect_monitors = {"auto_detect_monitors", false};
     Attribute_<bool>          auto_detect_panels = {"auto_detect_panels", true};
     Attribute_<int>           pseudotile_center_threshold = {"pseudotile_center_threshold", 10};
