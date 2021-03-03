@@ -1141,7 +1141,7 @@ focus_stealing_prevention (Boolean)::
     If set, only pagers and taskbars are allowed to change the focus. If unset,
     all applications can request a focus change.
 
-monitors_locked (Integer)::
+monitors_locked (Unsigned Integer)::
     If greater than 0, then the clients on all monitors aren't moved or resized
     anymore. If it is set to 0, then the arranging of monitors is enabled again,
     and all monitors are rearranged if their content has changed in the
