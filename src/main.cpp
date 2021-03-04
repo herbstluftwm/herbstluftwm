@@ -482,7 +482,8 @@ int main(int argc, char* argv[]) {
         delete X;
         exit(EXIT_FAILURE);
     }
-    if (X->checkotherwm()) {
+    Ewmh* ewmh = new Ewmh(*X);
+    if (X->otherWmListensRoot()) {
         std::cerr << "herbstluftwm: another window manager is already running" << endl;
         delete X;
         exit(EXIT_FAILURE);
@@ -499,11 +500,12 @@ int main(int argc, char* argv[]) {
     g_screen = X->screen();
     g_root = X->root();
     XSelectInput(X->display(), X->root(), SubstructureRedirectMask|SubstructureNotifyMask|ButtonPressMask|EnterWindowMask|LeaveWindowMask|StructureNotifyMask);
+    ewmh->installWmWindow();
 
     // setup ipc server
     IpcServer* ipcServer = new IpcServer(*X);
     FontData::s_xconnection = X;
-    auto root = make_shared<Root>(g, *X, *ipcServer);
+    auto root = make_shared<Root>(g, *X, *ewmh, *ipcServer);
     Root::setRoot(root);
     //test_object_system();
 
@@ -514,7 +516,7 @@ int main(int argc, char* argv[]) {
 
     // setup
     if (g.importTagsFromEwmh) {
-        const auto& initialState = root->ewmh->initialState();
+        const auto& initialState = ewmh->initialState();
         for (auto n : initialState.desktopNames) {
             root->tags->add_tag(n.c_str());
         }
@@ -523,7 +525,7 @@ int main(int argc, char* argv[]) {
     mainloop.scanExistingClients();
     tag_force_update_flags();
     all_monitors_apply_layout();
-    root->ewmh->updateAll();
+    ewmh->updateAll();
     execute_autostart_file();
 
     // main loop
@@ -538,6 +540,7 @@ int main(int argc, char* argv[]) {
     // and then close the x connection
     FontData::s_xconnection = nullptr;
     delete ipcServer;
+    delete ewmh;
     delete X;
     // check if we shall restart an other window manager
     if (g_exec_before_quit) {
