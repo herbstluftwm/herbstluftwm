@@ -583,33 +583,6 @@ int monitor_set_previous_tag_command(Output output) {
     }
 }
 
-int monitor_focus_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    int new_selection = g_monitors->string_to_monitor_index(argv[1]);
-    if (new_selection < 0) {
-        output << argv[0] <<
-            ": Monitor \"" << argv[1] << "\" not found!\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    // really change selection
-    monitor_focus_by_index((unsigned)new_selection);
-    return 0;
-}
-
-int monitor_cycle_command(int argc, char** argv) {
-    int delta = 1;
-    auto count = g_monitors->size();
-    if (argc >= 2) {
-        delta = atoi(argv[1]);
-    }
-    int new_selection = g_monitors->cur_monitor + delta; // signed for delta calculations
-    // really change selection
-    monitor_focus_by_index((unsigned)MOD(new_selection, count));
-    return 0;
-}
-
 void monitor_focus_by_index(unsigned new_selection) {
     // clamp to last
     new_selection = std::min(g_monitors->size() - 1, (size_t)new_selection);
@@ -707,20 +680,6 @@ void Monitor::restack() {
     };
     tag->stack->extractWindows(false, addToVector);
     XRestackWindows(g_display, buf.data(), buf.size());
-}
-
-int shift_to_monitor(int argc, char** argv, Output output) {
-    if (argc <= 1) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    char* monitor_str = argv[1];
-    Monitor* monitor = string_to_monitor(monitor_str);
-    if (!monitor) {
-        output << monitor_str << ": Invalid monitor\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    global_tags->moveFocusedClient(monitor->tag);
-    return 0;
 }
 
 void all_monitors_replace_previous_tag(HSTag *old, HSTag *newmon) {
