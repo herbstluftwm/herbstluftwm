@@ -731,7 +731,7 @@ public:
 };
 
 template<>
-EmptyOrInt Converter<EmptyOrInt>::parse(const std::string& source) {
+EmptyOrInt Converter<EmptyOrInt>::parse(const string& source) {
     if (source.empty()) {
         return EmptyOrInt::undefined();
     } else {
@@ -740,7 +740,7 @@ EmptyOrInt Converter<EmptyOrInt>::parse(const std::string& source) {
 }
 
 template<>
-std::string Converter<EmptyOrInt>::str(EmptyOrInt payload) {
+string Converter<EmptyOrInt>::str(EmptyOrInt payload) {
     return payload.defined_ ? Converter<int>::str(payload.value_) : "";
 }
 
