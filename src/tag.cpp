@@ -379,7 +379,6 @@ void HSTag::cycleAllCommand(CallOrComplete invoc)
     });
 }
 
-
 void HSTag::cycleAll(bool forward, bool skip_invisible)
 {
     int delta = forward ? 1 : -1;

@@ -98,3 +98,8 @@ def test_toggle_invalid_setting(hlwm):
 def test_cycle_value_invalid_setting(hlwm):
     hlwm.call_xfail('cycle_value foobar baz') \
         .expect_stderr('Setting "foobar" not found\n')
+
+
+def test_monitors_locked_negative_value(hlwm):
+    hlwm.call_xfail('set monitors_locked -1') \
+        .expect_stderr('out of range')

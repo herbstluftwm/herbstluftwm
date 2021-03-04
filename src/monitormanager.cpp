@@ -484,18 +484,15 @@ Monitor* MonitorManager::addMonitor(Rectangle rect, HSTag* tag) {
 
 void MonitorManager::lock() {
     settings_->monitors_locked = settings_->monitors_locked() + 1;
-    lock_number_changed();
 }
 
 void MonitorManager::unlock() {
-    settings_->monitors_locked = std::max(0, settings_->monitors_locked() - 1);
-    lock_number_changed();
+    if (settings_->monitors_locked > 0) {
+        settings_->monitors_locked = settings_->monitors_locked() - 1;
+    }
 }
 
 void MonitorManager::lock_number_changed() {
-    if (settings_->monitors_locked() < 0) {
-        return;
-    }
     if (!settings_->monitors_locked()) {
         // if not locked anymore, then repaint all the dirty monitors
         for (auto m : *this) {
