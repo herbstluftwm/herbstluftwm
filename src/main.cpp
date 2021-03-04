@@ -166,7 +166,7 @@ unique_ptr<CommandTable> commands(shared_ptr<Root> root) {
         {"move_monitor",   monitors->byFirstArg(&Monitor::move_cmd, &Monitor::move_complete) } ,
         {"rename_monitor", monitors->byFirstArg(&Monitor::renameCommand, &Monitor::renameComplete) },
         {"monitor_rect",   monitor_rect_command},
-        {"pad",            monitor_set_pad_command},
+        {"pad",            { monitors, &MonitorManager::padCommand }},
         {"raise",          raise_command},
         {"rule",           {rules, &RuleManager::addRuleCommand,
                                    &RuleManager::addRuleCompletion}},
