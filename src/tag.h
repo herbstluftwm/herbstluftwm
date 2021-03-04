@@ -71,8 +71,8 @@ public:
     void shiftInDirCommand(CallOrComplete invoc);
     int shiftInDir(Direction direction, bool external_only, Output output);
 
-    int cycleAllCommand(Input input, Output output);
-    void cycleAllCompletion(Completion& complete);
+    void cycleAllCommand(CallOrComplete invoc);
+    void cycleAll(bool forward, bool skip_invisible);
 
     int resizeCommand(Input input, Output output);
     void resizeCompletion(Completion& complete);
