@@ -343,19 +343,32 @@ int HSTag::shiftInDir(Direction direction, bool external_only, Output output)
         output << "shift: No client focused\n";
         return HERBST_FORBIDDEN;
     }
+    bool success = true;
     if (currentClient->is_client_floated()) {
         // try to move the floating window
-        bool success = Floating::shiftDirection(direction);
-        return success ? 0 : HERBST_FORBIDDEN;
+        success = Floating::shiftDirection(direction);
     } else {
-        bool success = frame->shiftInDirection(direction, external_only);
+        success = frame->shiftInDirection(direction, external_only);
         if (success) {
             needsRelayout_.emit();
-            return 0;
-        } else {
-            output << "shift: No neighbour found\n";
-            return HERBST_FORBIDDEN;
         }
+    }
+    if (!success && settings_->focus_crosses_monitor_boundaries()) {
+        // find monitor in the specified direction
+        MonitorManager* monitors = g_monitors;
+        int idx = monitors->indexInDirection(monitors->focus(), direction);
+        if (idx >= 0) {
+            Monitor* targetMonitor = monitors->byIdx(idx);
+            tags_->moveClient(currentClient, targetMonitor->tag);
+            monitor_focus_by_index(idx);
+            success = true;
+        }
+    }
+    if (success) {
+        return 0;
+    } else {
+        output << "shift: No neighbour found\n";
+        return HERBST_FORBIDDEN;
     }
 }
 
