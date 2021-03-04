@@ -716,6 +716,70 @@ int MonitorManager::detectMonitorsCommand(Input input, Output output)
     return 0;
 }
 
+
+/**
+ * @brief The type 'int' extended by an 'undefined' value represented by
+ * the empty string.
+ */
+class EmptyOrInt {
+public:
+    int value_;
+    bool defined_;
+    static EmptyOrInt undefined() {
+        return { 0, false };
+    }
+};
+
+template<>
+EmptyOrInt Converter<EmptyOrInt>::parse(const std::string& source) {
+    if (source.empty()) {
+        return EmptyOrInt::undefined();
+    } else {
+        return EmptyOrInt { Converter<int>::parse(source), true };
+    }
+}
+
+template<>
+std::string Converter<EmptyOrInt>::str(EmptyOrInt payload) {
+    return payload.defined_ ? Converter<int>::str(payload.value_) : "";
+}
+
+template<>
+void Converter<EmptyOrInt>::complete(Completion& complete, EmptyOrInt const* relTo) {
+    complete.full("");
+    Converter<int>::complete(complete, relTo ? &relTo->value_ : nullptr);
+}
+
+void MonitorManager::padCommand(CallOrComplete invoc)
+{
+    Monitor* monitor = focus();
+    vector<pair<Attribute_<int> Monitor::*, EmptyOrInt>> padAttributes = {
+        // the pad attributes in the parameter order
+        // of the 'pad' command:
+        { &Monitor::pad_up,     EmptyOrInt::undefined() },
+        { &Monitor::pad_right,  EmptyOrInt::undefined() },
+        { &Monitor::pad_down,   EmptyOrInt::undefined() },
+        { &Monitor::pad_left,   EmptyOrInt::undefined() },
+    };
+    ArgParse().mandatory(monitor)
+              .optional(padAttributes[0].second, {"0"})
+              .optional(padAttributes[1].second, {"0"})
+              .optional(padAttributes[2].second, {"0"})
+              .optional(padAttributes[3].second, {"0"})
+              .command(invoc, [&](Output) {
+        for (const auto& pad : padAttributes) {
+            // update those pad attributes that were given
+            // in the command line arguments
+            if (pad.second.defined_) {
+                Attribute_<int> Monitor::* pad_attribute = pad.first;
+                monitor->*pad_attribute = pad.second.value_;
+            }
+            monitor->applyLayout();
+        }
+        return 0;
+    });
+}
+
 /**
  * @brief Transform a rectangle on the screen into a rectangle relative to one of the monitor.
  * Currently, we pick the monitor that has the biggest intersection with the given rectangle.
