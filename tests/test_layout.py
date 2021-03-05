@@ -1622,7 +1622,7 @@ def test_frame_split_attribute_size_changes(hlwm, x11):
         assert hlwm.call('dump').stdout.strip() != layout
 
         x11.sync_with_hlwm()
-        # both updated attributes must lead to an increas of width of
+        # both updated attributes must lead to an increase of width of
         # the first client:
         assert width1 < win1.get_geometry().width
         assert width2 != win2.get_geometry().width
