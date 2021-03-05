@@ -394,3 +394,54 @@ def test_unminimize_via_xlib(hlwm, x11):
     x11.display.flush()
 
     assert hlwm.get_attr(f'clients.{winid}.minimized') == 'false'
+
+
+def test_net_wmname(hlwm, x11):
+    assert hlwm.attr.settings.wmname() == x11.ewmh.getWmName(x11.root).decode()
+
+    newname = 'LG3D'
+    hlwm.attr.settings.wmname = newname
+    x11.sync_with_hlwm()
+    assert x11.ewmh.getWmName(x11.root).decode() == newname
+
+
+def test_net_supporting_wm_check(hlwm, x11):
+    """
+    Test _NET_SUPPORTING_WM_CHECK
+    https://specifications.freedesktop.org/wm-spec/wm-spec-latest.html#idm45623487911552
+    """
+    winid_int = x11.get_property('_NET_SUPPORTING_WM_CHECK')[0]
+    handle = x11.display.create_resource_object('window', winid_int)
+    # "The child window MUST also have the _NET_SUPPORTING_WM_CHECK property set
+    # to the ID of the child window."
+    assert x11.get_property('_NET_SUPPORTING_WM_CHECK', window=handle)[0] == winid_int
+
+    # "The child window MUST also have the _NET_WM_NAME property set to the
+    # name of the Window Manager."
+    assert x11.ewmh.getWmName(handle).decode() == x11.ewmh.getWmName(x11.root).decode()
+
+    new_name = 'LG3D'
+    hlwm.attr.settings.wmname = 'LG3D'
+    x11.sync_with_hlwm()
+    assert x11.ewmh.getWmName(x11.root).decode() == new_name
+    assert x11.ewmh.getWmName(handle).decode() == new_name
+
+
+def test_net_supported(hlwm, x11):
+    """Test _NET_SUPPORTED"""
+    # a list of all ewmh actions supported:
+    supported_actions = x11.get_property('_NET_SUPPORTED')
+    # test that the list contains the most important ones:
+    expected_actions = [
+        '_NET_CLIENT_LIST',
+        '_NET_CURRENT_DESKTOP',
+        '_NET_DESKTOP_NAMES',
+        '_NET_NUMBER_OF_DESKTOPS',
+        '_NET_SUPPORTED',
+        '_NET_WM_DESKTOP',
+        '_NET_WM_NAME',
+        '_NET_WM_WINDOW_TYPE',
+    ]
+    for prop in expected_actions:
+        atom = x11.display.intern_atom(prop)
+        assert atom in supported_actions

@@ -84,10 +84,24 @@ class Root;
 class TagManager;
 class XConnection;
 
+/**
+ * @brief Implements EWMH and ICCCM communication to other
+ * X applications. Although the name only mentions EWMH, this also
+ * integrates ICCCM.
+ *
+ *   EWMH: https://specifications.freedesktop.org/wm-spec/wm-spec-latest.html
+ *   ICCCM: https://tronche.com/gui/x/icccm/
+ */
 class Ewmh {
 public:
     Ewmh(XConnection& xconnection);
     ~Ewmh();
+
+    void installWmWindow();
+
+    // ================================================
+    // the following functions can be called during bootup:
+    // ================================================
 
     //! initial EWMH state
     class InitialState {
@@ -99,9 +113,18 @@ public:
         void print(FILE* file);
     };
 
+    const InitialState &initialState();
+    long windowGetInitialDesktop(Window win);
+
     enum class WM { Name, Protocols, Delete, State, ChangeState, TakeFocus, Last };
 
     void injectDependencies(Root* root);
+
+    // ================================================
+    // The following functions may only be called after
+    // injectDependencies() was called!
+    // ================================================
+
     void updateAll();
 
     void addClient(Window win);
@@ -109,8 +132,6 @@ public:
     void updateWmName();
 
     void updateClientList();
-    const InitialState &initialState();
-    long windowGetInitialDesktop(Window win);
     void updateClientListStacking();
     void updateDesktops();
     void updateDesktopNames();

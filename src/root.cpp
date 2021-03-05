@@ -26,7 +26,7 @@ using std::shared_ptr;
 
 shared_ptr<Root> Root::root_;
 
-Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
+Root::Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer)
     : clients(*this, "clients")
     , keys(*this, "keys")
     , monitors(*this, "monitors")
@@ -43,7 +43,7 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     , X(xconnection)
     , ipcServer_(ipcServer)
     , panels(make_unique<PanelManager>(xconnection))
-    , ewmh(make_unique<Ewmh>(xconnection))
+    , ewmh_(ewmh)
 {
     // initialize root children (alphabetically)
     clients.init();
@@ -58,10 +58,10 @@ Root::Root(Globals g, XConnection& xconnection, IpcServer& ipcServer)
     watchers.init();
 
     // inject dependencies where needed
-    ewmh->injectDependencies(this);
+    ewmh_.injectDependencies(this);
     settings->injectDependencies(this);
     tags->injectDependencies(monitors(), settings());
-    clients->injectDependencies(settings(), theme(), ewmh.get());
+    clients->injectDependencies(settings(), theme(), &ewmh_);
     monitors->injectDependencies(settings(), tags(), panels.get());
     mouse->injectDependencies(clients(), monitors());
     panels->injectDependencies(settings());

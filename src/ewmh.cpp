@@ -91,22 +91,29 @@ Ewmh::Ewmh(XConnection& xconnection)
         wmatom_[static_cast<size_t>(init.first)] = atom;
     }
 
-    /* tell which ewmh atoms are supported */
-    XChangeProperty(X_.display(), X_.root(), netatom_[NetSupported], XA_ATOM, 32,
-        PropModeReplace, (unsigned char *) netatom_, NetCOUNT);
-
     readInitialEwmhState();
 
     /* init for the supporting wm check */
     windowManagerWindow_ = XCreateSimpleWindow(X_.display(), X_.root(),
                                       -100, -100, 1, 1, 0, 0, CWOverrideRedirect | CWEventMask);
-    X_.setPropertyWindow(X_.root(), netatom_[NetSupportingWmCheck], { windowManagerWindow_ });
     X_.setPropertyWindow(windowManagerWindow_, netatom_[NetSupportingWmCheck], { windowManagerWindow_ });
     XMapWindow(X_.display(), windowManagerWindow_);
+}
+
+/**
+ * @brief Fully take ownership of the window management.
+ */
+void Ewmh::installWmWindow()
+{
+    /* tell which ewmh atoms are supported */
+    XChangeProperty(X_.display(), X_.root(), netatom_[NetSupported], XA_ATOM, 32,
+        PropModeReplace, (unsigned char *) netatom_, NetCOUNT);
+    X_.setPropertyWindow(X_.root(), netatom_[NetSupportingWmCheck], { windowManagerWindow_ });
 
     /* init atoms that never change */
     X_.setPropertyCardinal(X_.root(), netatom_[NetDesktopViewport], {0, 0});
 }
+
 
 //! read the current ewmh properties from the root window
 void Ewmh::readInitialEwmhState()
@@ -506,7 +513,7 @@ void Ewmh::clearInputFocus() {
 }
 
 Ewmh& Ewmh::get() {
-    return *(Root::get()->ewmh);
+    return Root::get()->ewmh_;
 }
 
 /** send the given proto atom to the given window via XSendEvent(). If
