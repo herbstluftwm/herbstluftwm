@@ -42,8 +42,8 @@ Frame::~Frame() = default;
 FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent)
     : Frame(tag, settings, parent)
     , client_count_(this, "client_count", [this]() {return clientCount(); })
-    , selectionAttr_(this, "selection", &FrameLeaf::getSelection)
-    , algorithmAttr_(this, "algorithm", &FrameLeaf::getLayout)
+    , selectionAttr_(this, "selection", &FrameLeaf::getSelection, &FrameLeaf::userSetsSelection)
+    , algorithmAttr_(this, "algorithm", &FrameLeaf::getLayout, &FrameLeaf::userSetsLayout)
 {
     layout = settings->default_frame_layout();
 
@@ -54,9 +54,9 @@ FrameSplit::FrameSplit(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> pare
                        FixPrecDec fraction, SplitAlign align, shared_ptr<Frame> a,
                        shared_ptr<Frame> b)
              : Frame(tag, settings, parent)
-             , splitTypeAttr_(this, "split_type", &FrameSplit::getAlign)
-             , fractionAttr_(this, "fraction", &FrameSplit::getFraction)
-             , selectionAttr_(this, "selection", [this]() { return selection_;})
+             , splitTypeAttr_(this, "split_type", &FrameSplit::getAlign, &FrameSplit::userSetsSplitType)
+             , fractionAttr_(this, "fraction", &FrameSplit::getFraction, &FrameSplit::userSetsFraction)
+             , selectionAttr_(this, "selection", &FrameSplit::getSelection, &FrameSplit::userSetsSelection)
              , aLink_(*this, "0")
              , bLink_(*this, "1")
 {
@@ -154,6 +154,30 @@ shared_ptr<FrameSplit> FrameSplit::thisSplit() {
     return dynamic_pointer_cast<FrameSplit>(shared_from_this());
 }
 
+string FrameSplit::userSetsSplitType(SplitAlign align)
+{
+    align_ = align;
+    relayout();
+    return {};
+}
+
+string FrameSplit::userSetsSelection(int idx)
+{
+    if (idx < 0 || idx > 1) {
+        return "index out of range";
+    }
+    selection_ = idx;
+    relayout();
+    return {};
+}
+
+string FrameSplit::userSetsFraction(FixPrecDec fraction)
+{
+    setFraction(fraction);
+    relayout();
+    return {};
+}
+
 string Frame::frameIndex() const
 {
     auto p = parent_.lock();
@@ -165,6 +189,16 @@ string Frame::frameIndex() const
         // this is the root
         return "";
     }
+}
+
+/**
+ * @brief trigger relayouting of the frame tree.
+ * This should only be called if the user changes something
+ * via the attribute system.
+ */
+void Frame::relayout()
+{
+    tag_->needsRelayout_.emit();
 }
 
 TilingResult FrameLeaf::layoutLinear(Rectangle rect, bool vertical) {
@@ -661,6 +695,29 @@ int FrameLeaf::getInnerNeighbourIndex(Direction direction) {
         index = -1;
     }
     return index;
+}
+
+string FrameLeaf::userSetsLayout(LayoutAlgorithm algo)
+{
+    setLayout(algo);
+    relayout();
+    return {};
+}
+
+string FrameLeaf::userSetsSelection(int index)
+{
+    if (clients.empty() && index == 0) {
+        // if there is no client in this frame
+        // then index 0 is the fallback value and
+        // there is nothing to be done here
+        return {};
+    }
+    if (index < 0 || static_cast<size_t>(index) >= clients.size()) {
+        return "index out of range";
+    }
+    setSelection(index);
+    relayout();
+    return {};
 }
 
 void FrameLeaf::moveClient(int new_index) {

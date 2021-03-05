@@ -511,7 +511,9 @@ shift ['-i'|'-e'] 'DIRECTION'::
     Shifts the focused window to the next frame in the specified 'DIRECTION'.
     The 'DIRECTIONS' and '-i'|'-e' behave as specified at the 'focus' command.
     If the focused client is floated instead of being tiled, then client is
-    shifted to the next window or screen edge.
+    shifted to the next window or screen edge. If the window cannot be moved
+    and the setting 'focus_crosses_monitor_boundaries' is activated, then the
+    window is moved to the monitor in the specified 'DIRECTION'.
 
 shift_to_monitor 'MONITOR'::
     Moves the focused window to the tag on the specified 'MONITOR'.
@@ -1033,9 +1035,10 @@ frame_border_inner_width (Integer)::
     part of it.
 
 focus_crosses_monitor_boundaries (Boolean)::
-    If set, the +focus+ command crosses monitor boundaries. If there is no
+    If set, commands +focus+ and +shift+ cross monitor boundaries. If there is no
     client in the direction given to +focus+, then the monitor in the specified
-    direction is focused.
+    direction is focused. Similarly, if +shift+ cannot move a window within a
+    tag, the window is moved to the neighbour monitor in the desired direction.
 
 raise_on_focus (Boolean)::
     If set, a window is raised if it is focused. The value of this setting is

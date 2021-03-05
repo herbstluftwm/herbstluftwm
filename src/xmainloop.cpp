@@ -79,7 +79,7 @@ XMainLoop::XMainLoop(XConnection& X, Root* root)
 void XMainLoop::scanExistingClients() {
     XWindowAttributes wa;
     auto clientmanager = root_->clients();
-    auto& initialEwmhState = root_->ewmh->initialState();
+    auto& initialEwmhState = root_->ewmh_.initialState();
     auto& originalClients = initialEwmhState.original_client_list_;
     auto isInOriginalClients = [&originalClients] (Window win) {
         return originalClients.end()
@@ -91,7 +91,7 @@ void XMainLoop::scanExistingClients() {
                 return [] (ClientChanges&) {};
             }
             return [this,win] (ClientChanges& changes) {
-                long idx = this->root_->ewmh->windowGetInitialDesktop(win);
+                long idx = this->root_->ewmh_.windowGetInitialDesktop(win);
                 if (idx < 0) {
                     return;
                 }
@@ -111,16 +111,16 @@ void XMainLoop::scanExistingClients() {
         // but manage it if it was in the ewmh property _NET_CLIENT_LIST by
         // the previous window manager
         // TODO: what would dwm do?
-        if (root_->ewmh->isOwnWindow(win)) {
+        if (root_->ewmh_.isOwnWindow(win)) {
             continue;
         }
-        if (root_->ewmh->getWindowType(win) == NetWmWindowTypeDesktop)
+        if (root_->ewmh_.getWindowType(win) == NetWmWindowTypeDesktop)
         {
             DesktopWindow::registerDesktop(win);
             DesktopWindow::lowerDesktopWindows();
             XMapWindow(X_.display(), win);
         }
-        else if (root_->ewmh->getWindowType(win) == NetWmWindowTypeDock)
+        else if (root_->ewmh_.getWindowType(win) == NetWmWindowTypeDock)
         {
             root_->panels->registerPanel(win);
             XSelectInput(X_.display(), win, PropertyChangeMask);
@@ -329,7 +329,7 @@ void XMainLoop::configurerequest(XConfigureRequestEvent* cre) {
 }
 
 void XMainLoop::clientmessage(XClientMessageEvent* event) {
-    root_->ewmh->handleClientMessage(event);
+    root_->ewmh_.handleClientMessage(event);
 }
 
 void XMainLoop::configurenotify(XConfigureEvent* event) {
@@ -447,7 +447,7 @@ void XMainLoop::mapnotify(XMapEvent* event) {
         }
         // also update the window title - just to be sure
         c->update_title();
-    } else if (!root_->ewmh->isOwnWindow(event->window)
+    } else if (!root_->ewmh_.isOwnWindow(event->window)
                && !is_herbstluft_window(X_.display(), event->window)) {
         // the window is not managed.
         HSDebug("MapNotify: briefly managing 0x%lx to apply rules\n", event->window);
@@ -459,7 +459,7 @@ void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
     HSDebug("name is: MapRequest for 0x%lx\n", mapreq->window);
     Window window = mapreq->window;
     Client* c = root_->clients()->client(window);
-    if (root_->ewmh->isOwnWindow(window)
+    if (root_->ewmh_.isOwnWindow(window)
         || is_herbstluft_window(X_.display(), window))
     {
         // just map the window if it wants that
@@ -476,13 +476,13 @@ void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
         c->minimized_ = false;
     } else {
         // c = nullptr, so the window is not yet managed.
-        if (root_->ewmh->getWindowType(window) == NetWmWindowTypeDesktop)
+        if (root_->ewmh_.getWindowType(window) == NetWmWindowTypeDesktop)
         {
             DesktopWindow::registerDesktop(window);
             DesktopWindow::lowerDesktopWindows();
             XMapWindow(X_.display(), window);
         }
-        else if (root_->ewmh->getWindowType(window) == NetWmWindowTypeDock)
+        else if (root_->ewmh_.getWindowType(window) == NetWmWindowTypeDock)
         {
             root_->panels->registerPanel(window);
             XSelectInput(X_.display(), window, PropertyChangeMask);
@@ -521,7 +521,7 @@ void XMainLoop::propertynotify(XPropertyEvent* ev) {
                     m->applyLayout();
                 }
             } else if (ev->atom == XA_WM_NAME ||
-                       ev->atom == root_->ewmh->netatom(NetWmName)) {
+                       ev->atom == root_->ewmh_.netatom(NetWmName)) {
                 client->update_title();
             } else if (ev->atom == XA_WM_CLASS && client) {
                 // according to the ICCCM specification, the WM_CLASS property may only
