@@ -113,8 +113,12 @@ int XConnection::xerror(Display *dpy, XErrorEvent *ee) {
 }
 
 
-// from dwm.c
-bool XConnection::checkotherwm() {
+/**
+ * @brief Check whether another window manager listens
+ * for events on the root window.
+ * @return
+ */
+bool XConnection::otherWmListensRoot() {
     g_other_wm_running = False;
     g_xerrorxlib = XSetErrorHandler(xerrorstart);
     /* this causes an error if some other window manager is running */
