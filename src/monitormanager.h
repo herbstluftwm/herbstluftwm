@@ -92,6 +92,8 @@ public:
     int detectMonitorsCommand(Input input, Output output);
     void detectMonitorsCompletion(Completion& complete);
 
+    void padCommand(CallOrComplete invoc);
+
     Rectangle interpretGlobalGeometry(Rectangle globalGeometry);
 
     int cur_monitor;

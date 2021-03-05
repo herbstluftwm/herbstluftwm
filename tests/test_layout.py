@@ -454,6 +454,49 @@ def test_cycle_all_errors(hlwm):
         .expect_stderr('Cannot.*"-s"')
     hlwm.call_xfail('cycle_all --skip-invisible -s 1') \
         .expect_stderr('Cannot.*"-s"')
+    hlwm.call_xfail('cycle_all --skip-invisible -s 1') \
+        .expect_stderr('Cannot.*"-s"')
+    hlwm.call_xfail('cycle_all 1 2 3') \
+        .expect_stderr('Unknown argument.*2')
+    hlwm.call_xfail('cycle_all 1 2 --skip-invisible') \
+        .expect_stderr('Unknown argument.*2')
+    hlwm.call_xfail('cycle_all 1 --skip-invisible 3') \
+        .expect_stderr('Unknown argument.*3')
+
+
+def test_cycle_all_optionality(hlwm):
+    # on the other hand, the error handling should not be triggered
+    # by the following:
+    hlwm.call('split explode')
+    hlwm.call('split explode')
+
+    def layout(focus1, focus2):
+        return normalize_layout_string(f"""
+            (split horizontal:0.5:{focus1}
+                (clients max:0)
+                (split vertical:0.5:{focus2}
+                    (clients max:0)
+                    (clients max:0)))
+        """)
+
+    # on the above layout, the following args must have
+    # identical results
+    for args in [[], ['--skip-invisible', '+1'], ['+1', '--skip-invisible'], ['+1']]:
+        hlwm.call(['load', layout(0, 1)])
+        hlwm.call(['cycle_all'] + args)
+        assert hlwm.call('dump').stdout == layout(1, 0)
+
+
+def test_cycle_all_completion(hlwm):
+    assert hlwm.complete(['cycle_all']) == ['+1', '--skip-invisible', '-1']
+    assert hlwm.complete(['cycle_all', '--skip-invisible']) == ['+1', '-1']
+    assert hlwm.complete(['cycle_all', '-1']) == ['--skip-invisible']
+    hlwm.command_has_all_args(['cycle_all', '-1', '--skip-invisible'])
+    hlwm.command_has_all_args(['cycle_all', '--skip-invisible', '+1'])
+    # passing too many arguments still results in no completions:
+    hlwm.command_has_all_args(['cycle_all', '1', '2', '3'])
+    hlwm.command_has_all_args(['cycle_all', '1', '2', '3', '4'])
+    hlwm.command_has_all_args(['cycle_all', '1', '2', '3', '4', '5'])
 
 
 @pytest.mark.parametrize("running_clients_num", [4])
