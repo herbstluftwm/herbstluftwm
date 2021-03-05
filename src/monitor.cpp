@@ -407,32 +407,6 @@ int monitor_rect_command(int argc, char** argv, Output output) {
     return 0;
 }
 
-int monitor_set_pad_command(int argc, char** argv, Output output) {
-    if (argc < 2) {
-        return HERBST_NEED_MORE_ARGS;
-    }
-    Monitor* monitor = string_to_monitor(argv[1]);
-    if (!monitor) {
-        output << argv[0] <<
-            ": Monitor \"" << argv[1] << "\" not found!\n";
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (argc > 2 && argv[2][0] != '\0') {
-        monitor->pad_up = atoi(argv[2]);
-    }
-    if (argc > 3 && argv[3][0] != '\0') {
-        monitor->pad_right = atoi(argv[3]);
-    }
-    if (argc > 4 && argv[4][0] != '\0') {
-        monitor->pad_down = atoi(argv[4]);
-    }
-    if (argc > 5 && argv[5][0] != '\0') {
-        monitor->pad_left = atoi(argv[5]);
-    }
-    monitor->applyLayout();
-    return 0;
-}
-
 Monitor* find_monitor_with_tag(HSTag* tag) {
     for (auto m : *g_monitors) {
         if (m->tag == tag) {

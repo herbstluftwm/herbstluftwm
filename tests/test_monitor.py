@@ -568,3 +568,68 @@ def test_lock_unlock_window_not_resized(hlwm, x11):
     # monitors unlocked => geometry is updated
     assert width != win.get_geometry().width
     assert height == win.get_geometry().height
+
+
+def test_pad_command(hlwm):
+    # parameter order of the pad command:
+    pad_names = ['up', 'right', 'down', 'left']
+    defaults = [10, 20, 30, 40]
+    values = [11, 21, 31, 41]
+    args_passed_so_far = set()
+    # iterate over all combinations of omitting parameters
+    # or passing empty parameters:
+    for count, flags in [(count, flags)
+                         for count in range(0, 5)
+                         for flags in range(0, 2**count)]:
+        # (re)set pad defaults
+        for pad, val in zip(pad_names, defaults):
+            hlwm.attr.monitors[0]['pad_' + pad] = val
+
+        # we only pass parameters for 'count'-many elements of 'pad_names'
+        # among these, only those are non-empty that are activated by 'flags',
+        indices = [i for i in range(0, count) if ((2**i) & flags) != 0]
+        args = [(values[i] if i in indices else '') for i in range(0, count)]
+        hlwm.call(['pad', ''] + args)
+
+        for idx, pad in enumerate(pad_names):
+            expected = values[idx] if idx in indices else defaults[idx]
+            assert int(hlwm.attr.monitors[0]['pad_' + pad]()) == expected
+
+        # a little test-case self-test: verify that we really try distinct
+        args = tuple(args)  # make it hashable
+        assert args not in args_passed_so_far
+        args_passed_so_far.add(args)
+
+    assert len(args_passed_so_far) == 2**0 + 2**1 + 2**2 + 2**3 + 2**4
+
+
+def test_pad_invalid_arg(hlwm):
+    hlwm.call_xfail('pad') \
+        .expect_stderr('Expected between 1 and 5')
+
+    hlwm.call_xfail('pad 23') \
+        .expect_stderr('No such monitor: 23')
+
+    hlwm.call_xfail('pad 0 x') \
+        .expect_stderr('stoi')
+
+    hlwm.call_xfail('pad 0 23 x') \
+        .expect_stderr('stoi')
+
+    hlwm.call_xfail('pad 0 23 23 x') \
+        .expect_stderr('stoi')
+
+    hlwm.call_xfail('pad 0 23 23 23 x') \
+        .expect_stderr('stoi')
+
+    hlwm.call_xfail('pad 0 10 20 30 40 50') \
+        .expect_stderr('Unknown argument or flag \"50\"')
+
+
+def test_pad_completion(hlwm):
+    assert '0' in hlwm.complete('pad')
+    for cmd in ['pad 0', 'pad 0 12', 'pad 0 12 12', 'pad 0 12 12 12']:
+        res = hlwm.complete(cmd)
+        assert '' in res
+        assert '0' in res
+    hlwm.command_has_all_args('pad 0 10 20 30 40'.split(' '))
