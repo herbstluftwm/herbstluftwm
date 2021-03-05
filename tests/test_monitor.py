@@ -139,6 +139,26 @@ def test_focus_monitor(hlwm):
     assert hlwm.get_attr('tags.focus.index') == '1'
 
 
+def test_focus_monitor_invalid_arg(hlwm):
+    hlwm.call_xfail('focus_monitor foobar') \
+        .expect_stderr('No such monitor: foobar')
+
+    hlwm.call_xfail('focus_monitor 34') \
+        .expect_stderr('No such monitor: 34')
+
+
+def test_focus_monitor_shift_to_completion(hlwm):
+    assert '0' in hlwm.complete('focus_monitor')
+    hlwm.call('add othertag')
+    hlwm.call('add_monitor 800x600+800+0 othertag monname')
+
+    for cmd in ['focus_monitor', 'shift_to_monitor']:
+        assert 'monname' in hlwm.complete(cmd)
+
+        hlwm.command_has_all_args(['focus_monitor', '3'])
+        hlwm.command_has_all_args(['focus_monitor', '3', 'dummy'])
+
+
 def test_new_clients_appear_in_focused_monitor(hlwm):
     hlwm.call('add tag2')
     hlwm.call('add_monitor 800x600+40+40 tag2 monitor2')
@@ -301,7 +321,7 @@ def test_shift_to_monitor(hlwm):
 def test_shift_to_monitor_invalid_mon(hlwm):
     winid, _ = hlwm.create_client()
     hlwm.call_xfail('shift_to_monitor 34') \
-        .expect_stderr('Invalid monitor')
+        .expect_stderr('No such monitor: 34')
 
 
 def test_shift_to_monitor_no_client(hlwm):
@@ -362,6 +382,24 @@ def test_cycle_monitor(hlwm, mon_num, focus_idx, delta, command):
 
     new_index = (focus_idx + int(delta) + mon_num) % mon_num
     assert hlwm.get_attr('monitors.focus.index') == str(new_index)
+
+
+def test_cycle_monitor_invalid_arg(hlwm):
+    hlwm.call_xfail(['cycle_monitor', '']) \
+        .expect_stderr('stoi')
+
+    hlwm.call_xfail(['cycle_monitor', 'mon']) \
+        .expect_stderr('stoi')
+
+
+def test_cycle_monitor_completion(hlwm):
+    # just ensure that the monitor name does not show up in the completion
+    hlwm.attr.monitors.focus.name = 'mainmonitor'
+
+    res = hlwm.complete('cycle_monitor')
+    assert res == sorted(['-1', '+1'])
+
+    hlwm.command_has_all_args(['cycle_monitor', '+1'])
 
 
 @pytest.mark.parametrize("lock_tag_cmd", [
@@ -456,6 +494,48 @@ def test_monitor_rect_apply_layout(hlwm, x11):
         x11.display.sync()
         geom = x11.get_absolute_geometry(winhandle)
         assert (geom.width, geom.height, geom.x, geom.y) == expected_geometry
+
+
+def test_monitor_rect_command(hlwm):
+    hlwm.call('add othertag')
+    # two monitors with unique coordinates and pads
+    hlwm.call('set_monitors 300x400+1+2 500x600+300+4')
+    hlwm.attr.monitors[0].pad_left = 10
+    hlwm.attr.monitors[0].pad_right = 20
+    hlwm.attr.monitors[0].pad_up = 30
+    hlwm.attr.monitors[0].pad_down = 40
+
+    hlwm.attr.monitors[1].pad_left = 11
+    hlwm.attr.monitors[1].pad_right = 21
+    hlwm.attr.monitors[1].pad_up = 31
+    hlwm.attr.monitors[1].pad_down = 41
+
+    def monitor_rect(args):
+        return hlwm.call(['monitor_rect'] + args).stdout.strip()
+
+    assert monitor_rect([]) == '1 2 300 400'
+    assert monitor_rect(['0']) == monitor_rect([])
+    assert monitor_rect(['-p', '']) == '11 32 270 330'
+    assert monitor_rect(['1']) == '300 4 500 600'
+    assert monitor_rect(['-p', '1']) == '311 35 468 528'
+    assert monitor_rect(['-p', '1']) == monitor_rect(['1', '-p'])
+
+
+def test_monitor_rect_completion(hlwm):
+    res = hlwm.complete('monitor_rect')
+    assert '0' in res
+    assert '-p' in res
+
+    res = hlwm.complete('monitor_rect -p')
+    assert '0' in res
+    assert '-p' not in res
+
+    res = hlwm.complete('monitor_rect 0')
+    assert '0' not in res
+    assert '-p' in res
+
+    hlwm.command_has_all_args(['monitor_rect', '-p', '0'])
+    hlwm.command_has_all_args(['monitor_rect', '0', '-p'])
 
 
 def test_lock_unlock_sequence(hlwm):
