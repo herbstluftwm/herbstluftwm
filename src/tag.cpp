@@ -343,38 +343,58 @@ int HSTag::shiftInDir(Direction direction, bool external_only, Output output)
         output << "shift: No client focused\n";
         return HERBST_FORBIDDEN;
     }
+    bool success = true;
     if (currentClient->is_client_floated()) {
         // try to move the floating window
-        bool success = Floating::shiftDirection(direction);
-        return success ? 0 : HERBST_FORBIDDEN;
+        success = Floating::shiftDirection(direction);
     } else {
-        bool success = frame->shiftInDirection(direction, external_only);
+        success = frame->shiftInDirection(direction, external_only);
         if (success) {
             needsRelayout_.emit();
-            return 0;
-        } else {
-            output << "shift: No neighbour found\n";
-            return HERBST_FORBIDDEN;
         }
+    }
+    if (!success && settings_->focus_crosses_monitor_boundaries()) {
+        // find monitor in the specified direction
+        MonitorManager* monitors = g_monitors;
+        int idx = monitors->indexInDirection(monitors->focus(), direction);
+        if (idx >= 0) {
+            Monitor* targetMonitor = monitors->byIdx(idx);
+            tags_->moveClient(currentClient, targetMonitor->tag);
+            monitor_focus_by_index(idx);
+            success = true;
+        }
+    }
+    if (success) {
+        return 0;
+    } else {
+        output << "shift: No neighbour found\n";
+        return HERBST_FORBIDDEN;
     }
 }
 
-int HSTag::cycleAllCommand(Input input, Output output)
+void HSTag::cycleAllCommand(CallOrComplete invoc)
 {
     bool skip_invisible = false;
     int delta = 1;
-    ArgParse ap;
-    ap.flags({{"--skip-invisible", &skip_invisible}}).optional(delta);
-    if (ap.parsingAllFails(input, output)) {
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (delta < -1 || delta > 1) {
-        output << "argument out of range." << endl;
-        return HERBST_INVALID_ARGUMENT;
-    }
-    if (delta == 0) {
-        return 0; // nothing to do
-    }
+    ArgParse().flags({{"--skip-invisible", &skip_invisible}})
+              .optional(delta, {"+1", "-1"})
+              .command(invoc,
+                       [&] (Output output) {
+        if (delta < -1 || delta > 1) {
+            output << "argument out of range." << endl;
+            return HERBST_INVALID_ARGUMENT;
+        }
+        if (delta == 0) {
+            return HERBST_EXIT_SUCCESS; // nothing to do
+        }
+        cycleAll(delta == 1, skip_invisible);
+        return HERBST_EXIT_SUCCESS;
+    });
+}
+
+void HSTag::cycleAll(bool forward, bool skip_invisible)
+{
+    int delta = forward ? 1 : -1;
     if (floating_focused()) {
         int newIndex = static_cast<int>(floating_clients_focus_) + delta;
         // skip minimized clients
@@ -428,18 +448,6 @@ int HSTag::cycleAllCommand(Input input, Output output)
     }
     // finally, redraw the layout
     needsRelayout_.emit();
-    return 0;
-}
-
-void HSTag::cycleAllCompletion(Completion& complete)
-{
-    if (complete == 0) {
-        complete.full({"+1", "-1", "--skip-invisible" });
-    } else if (complete == 1 && complete[0] == "--skip-invisible") {
-        complete.full({"+1", "-1"});
-    } else {
-        complete.none();
-    }
 }
 
 int HSTag::resizeCommand(Input input, Output output)

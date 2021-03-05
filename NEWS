@@ -13,7 +13,9 @@ Current git version
   * Do not draw frame background behind clients (so for semi-transparent
     client decorations, one does not see the frame decoration behind but the
     wallpaper instead)
-  * The setting +monitors_locked+ is now explicitly an unsigned integer.
+  * The setting 'monitors_locked' is now explicitly an unsigned integer.
+  * The 'shift' command now moves the window to a neighboured monitor if
+    the window cannot be moved within a tag in the desired direction.
   * Bug fixes:
     - Fix mistakenly transparent borders of argb clients
   * New dependency: xrender

@@ -80,7 +80,6 @@ struct {
     { "move_index",     3,  no_completion },
     { "add_monitor",    7,  no_completion },
     { "monitor_rect",   3,  no_completion },
-    { "pad",            6,  no_completion },
     { "layout",         3,  no_completion },
     { "dump",           3,  no_completion },
     { "load",           3,  no_completion },
@@ -134,7 +133,6 @@ struct {
     { "shift_to_monitor",EQ, 1,  complete_against_monitors, 0 },
     { "name_monitor",   EQ, 1,  complete_against_monitors, 0 },
     { "monitor_rect",   EQ, 1,  complete_against_monitors, 0 },
-    { "pad",            EQ, 1,  complete_against_monitors, 0 },
 };
 
 // Implementation of CommandBinding

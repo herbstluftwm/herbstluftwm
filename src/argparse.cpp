@@ -170,6 +170,12 @@ void ArgParse::completion(Completion& complete)
             flagsPassedSoFar.insert(it->second.name_);
         }
     }
+    if (completionIndex - flagsPassedSoFar.size() > arguments_.size()) {
+        // if there were too many arguments passed
+        // already, then don't allow further arguments
+        complete.none();
+        return;
+    }
     bool argsStillPossible = false;
     // complete the unused flags:
     for (auto& it : flags_) {

@@ -77,7 +77,6 @@ int remove_monitor(int index);
 int monitor_rect_command(int argc, char** argv, Output output);
 Monitor* get_current_monitor();
 int monitor_set_tag(Monitor* monitor, HSTag* tag);
-int monitor_set_pad_command(int argc, char** argv, Output output);
 int monitor_set_tag_command(int argc, char** argv, Output output);
 int monitor_set_tag_by_index_command(int argc, char** argv, Output output);
 int monitor_set_previous_tag_command(Output output);

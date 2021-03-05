@@ -454,6 +454,49 @@ def test_cycle_all_errors(hlwm):
         .expect_stderr('Cannot.*"-s"')
     hlwm.call_xfail('cycle_all --skip-invisible -s 1') \
         .expect_stderr('Cannot.*"-s"')
+    hlwm.call_xfail('cycle_all --skip-invisible -s 1') \
+        .expect_stderr('Cannot.*"-s"')
+    hlwm.call_xfail('cycle_all 1 2 3') \
+        .expect_stderr('Unknown argument.*2')
+    hlwm.call_xfail('cycle_all 1 2 --skip-invisible') \
+        .expect_stderr('Unknown argument.*2')
+    hlwm.call_xfail('cycle_all 1 --skip-invisible 3') \
+        .expect_stderr('Unknown argument.*3')
+
+
+def test_cycle_all_optionality(hlwm):
+    # on the other hand, the error handling should not be triggered
+    # by the following:
+    hlwm.call('split explode')
+    hlwm.call('split explode')
+
+    def layout(focus1, focus2):
+        return normalize_layout_string(f"""
+            (split horizontal:0.5:{focus1}
+                (clients max:0)
+                (split vertical:0.5:{focus2}
+                    (clients max:0)
+                    (clients max:0)))
+        """)
+
+    # on the above layout, the following args must have
+    # identical results
+    for args in [[], ['--skip-invisible', '+1'], ['+1', '--skip-invisible'], ['+1']]:
+        hlwm.call(['load', layout(0, 1)])
+        hlwm.call(['cycle_all'] + args)
+        assert hlwm.call('dump').stdout == layout(1, 0)
+
+
+def test_cycle_all_completion(hlwm):
+    assert hlwm.complete(['cycle_all']) == ['+1', '--skip-invisible', '-1']
+    assert hlwm.complete(['cycle_all', '--skip-invisible']) == ['+1', '-1']
+    assert hlwm.complete(['cycle_all', '-1']) == ['--skip-invisible']
+    hlwm.command_has_all_args(['cycle_all', '-1', '--skip-invisible'])
+    hlwm.command_has_all_args(['cycle_all', '--skip-invisible', '+1'])
+    # passing too many arguments still results in no completions:
+    hlwm.command_has_all_args(['cycle_all', '1', '2', '3'])
+    hlwm.command_has_all_args(['cycle_all', '1', '2', '3', '4'])
+    hlwm.command_has_all_args(['cycle_all', '1', '2', '3', '4', '5'])
 
 
 @pytest.mark.parametrize("running_clients_num", [4])
@@ -1375,6 +1418,100 @@ def test_shift_no_neighbour_frame(hlwm, split):
 
     hlwm.call_xfail('shift up') \
         .expect_stderr('No neighbour found')
+
+
+@pytest.mark.parametrize("cross_monitor_bounds", [True, False])
+def test_shift_to_other_monitor_if_allowed_by_setting(hlwm, cross_monitor_bounds):
+    hlwm.attr.settings.focus_crosses_monitor_boundaries = hlwm.bool(cross_monitor_bounds)
+    hlwm.call('add othertag')
+    # monitor 1 right of monitor 0
+    hlwm.call('set_monitors 800x600+0+0 800x600+800+0')
+
+    hlwm.call('rule focus=on switchtag=off')
+    winid, _ = hlwm.create_client()
+    # put another window on the other tag
+    hlwm.call('rule tag=othertag')
+    hlwm.create_client()
+    # but the 'winid' is focused on monitor 0
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '0'
+
+    command = ['shift', 'right']
+    if cross_monitor_bounds:
+        # 'winid' gets moved to the monitor on the right
+        hlwm.call(command)
+        assert hlwm.attr.monitors.focus.index() == '1'
+    else:
+        # the setting forbids that the window leaves the tag
+        hlwm.call_xfail(command) \
+            .expect_stderr("No neighbour found")
+    # in any case 'winid' is still focused
+    assert hlwm.attr.clients.focus.winid() == winid
+
+
+@pytest.mark.parametrize("floating", ['off', 'tag', 'window'])
+def test_shift_to_other_monitor_floating(hlwm, floating):
+    hlwm.call('add othertag')
+    # monitor 1 left of monitor 0
+    hlwm.call('set_monitors 800x600+800+0 800x600+0+0')
+    snap_gap = 8
+    hlwm.attr.settings.snap_gap = snap_gap
+    winid, _ = hlwm.create_client(position=(snap_gap, snap_gap))
+    if floating == 'tag':
+        hlwm.attr.tags[0].floating = 'on'
+    elif floating == 'window':
+        hlwm.attr.clients[winid].floating = 'on'
+    else:
+        assert floating == 'off'
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '0'
+
+    hlwm.call('shift left')
+
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '1'
+
+
+@pytest.mark.parametrize("floating", [True, False])
+def test_shift_stays_on_monitor(hlwm, floating):
+    hlwm.call('add othertag')
+    # monitor 1 below monitor 0
+    hlwm.call('set_monitors 800x600+0+0 800x600+0+800')
+    if floating:
+        hlwm.attr.tags.focus.floating = 'on'
+    else:
+        # create empty frame at the bottom
+        hlwm.call('split bottom')
+
+    winid, _ = hlwm.create_client(position=(0, 0))
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '0'
+
+    # the new client is far away from the bottom edge of monitor 0.
+    # so shifting it downwards makes it stay on monitor 0
+    hlwm.call('shift down')
+
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '0'
+
+    # now the client is on the bottom corner of the monitor.
+    # so shifting it again will make it enter monitor 1
+    hlwm.call('shift down')
+
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '1'
+
+
+def test_shift_no_monitor_in_direction(hlwm):
+    hlwm.call('add othertag')
+    # monitor 1 below monitor 0
+    hlwm.call('set_monitors 800x600+0+0 800x600+0+800')
+    winid, _ = hlwm.create_client()
+
+    for direction in ['left', 'right', 'up']:
+        hlwm.call_xfail(['shift', direction]) \
+            .expect_stderr('No neighbour found')
+        assert hlwm.attr.clients.focus.winid() == winid
 
 
 def test_focus_shift_completion(hlwm):
