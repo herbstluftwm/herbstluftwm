@@ -45,7 +45,7 @@ public:
     static HlwmCommon common();
 
     // constructor creates top-level objects
-    Root(Globals g, XConnection& xconnection, IpcServer& ipcServer);
+    Root(Globals g, XConnection& xconnection, Ewmh& ewmh, IpcServer& ipcServer);
     ~Root() override;
     void shutdown();
 
@@ -69,7 +69,7 @@ public:
     //! Temporary member. In the long run, ewmh should get its information
     // automatically from the signals emitted by ClientManager, etc
     std::unique_ptr<PanelManager> panels; // Using "pimpl" to avoid include
-    std::unique_ptr<Ewmh> ewmh; // Using "pimpl" to avoid include
+    Ewmh& ewmh_;
 
     // global actions
     void focusFrame(std::shared_ptr<FrameLeaf> frameToFocus);
