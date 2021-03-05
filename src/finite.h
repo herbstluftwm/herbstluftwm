@@ -25,8 +25,8 @@ public:
         {}
 
         ValueList(bool allowIndicesAsNames, ValueListPlain plainValueList)
-            : allowIndicesAsNames_(allowIndicesAsNames)
-            , ValueListPlain(plainValueList)
+            : ValueListPlain(plainValueList)
+            , allowIndicesAsNames_(allowIndicesAsNames)
         {}
 
         /**
