@@ -83,3 +83,39 @@ def test_no_autostart(xvfb):
     hlwm_proc = HlwmProcess('', env, [])
     hlwm_proc.read_and_echo_output(until_stderr='Will not run autostart file.')
     hlwm_proc.shutdown()
+
+
+def test_herbstluftwm_help_flags():
+    hlwm = os.path.join(BINDIR, 'herbstluftwm')
+    for cmd in [[hlwm, '-h'], [hlwm, '--help']]:
+        proc = subprocess.run(cmd,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                              universal_newlines=True)
+        assert proc.returncode == 0
+        assert proc.stderr == ''
+        # look for some flag on stdout:
+        assert re.search('--autostart', proc.stdout)
+
+
+def test_herbstluftwm_unrecognized_option():
+    hlwm = os.path.join(BINDIR, 'herbstluftwm')
+    proc = subprocess.run([hlwm, '--foobar'],
+                          stdout=subprocess.PIPE,
+                          stderr=subprocess.PIPE,
+                          universal_newlines=True)
+    assert proc.returncode != 0
+    assert re.search('unrecognized option \'--foobar\'', proc.stderr)
+
+
+def test_herbstluftwm_version_flags():
+    hlwm = os.path.join(BINDIR, 'herbstluftwm')
+    for cmd in [[hlwm, '-v'], [hlwm, '--version']]:
+        proc = subprocess.run(cmd,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                              universal_newlines=True)
+        assert proc.returncode == 0
+        assert proc.stderr == ''
+        # look for some flag on stdout:
+        assert re.search('herbstluftwm', proc.stdout)
