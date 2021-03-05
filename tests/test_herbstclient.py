@@ -152,7 +152,7 @@ def test_version_without_hlwm_running():
 
 def test_quiet_without_hlwm_running():
     for flag in ['-q', '--quiet']:
-        cmd = [HC_PATH, flag, '-q', 'echo', 'test']
+        cmd = [HC_PATH, flag, 'echo', 'test']
         proc = subprocess.run(cmd,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
