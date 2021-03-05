@@ -55,7 +55,13 @@ struct Converter {
 // Integers
 template<>
 inline int Converter<int>::parse(const std::string &payload) {
-    return std::stoi(payload);
+    size_t pos = 0;
+    int val = std::stoi(payload, &pos);
+    if (pos < payload.size()) {
+        throw std::invalid_argument("unparsable suffix: "
+                                    + payload.substr(pos));
+    }
+    return val;
 }
 template<>
 unsigned long Converter<unsigned long>::parse(const std::string &source);
