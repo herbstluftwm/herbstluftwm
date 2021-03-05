@@ -48,8 +48,9 @@ def test_herbstclient_recognizes_hlwm_not_running(hlwm_spawner, x11, hlwm_mode, 
 
     # run herbstclient while no hlwm is running
     if hc_quiet:
-        hc_parameter = f'--quiet {hc_parameter}'
-    hc_command = [HC_PATH, hc_parameter]
+        hc_command = [HC_PATH, '--quiet', hc_parameter]
+    else:
+        hc_command = [HC_PATH, hc_parameter]
     result = subprocess.run(hc_command, stderr=subprocess.PIPE, universal_newlines=True)
 
     assert result.returncode != 0
