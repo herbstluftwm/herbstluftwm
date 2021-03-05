@@ -139,3 +139,83 @@ def test_lastarg_only(hlwm, repeat):
     assert proc.stdout.read().splitlines() == expected_lines
     proc.wait(20)
     assert proc.returncode == 0
+
+
+def test_version_without_hlwm_running():
+    for cmd in [[HC_PATH, '-v'], [HC_PATH, '--version']]:
+        proc = subprocess.run(cmd,
+                              stdout=subprocess.PIPE,
+                              universal_newlines=True)
+        # test that the output ends with a newline
+        assert re.match('^herbstclient.*\n$', proc.stdout)
+
+
+def test_quiet_without_hlwm_running():
+    for flag in ['-q', '--quiet']:
+        cmd = [HC_PATH, flag, '-q', 'echo', 'test']
+        proc = subprocess.run(cmd,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                              universal_newlines=True)
+        assert proc.returncode != 0
+        assert proc.stdout == ''
+        assert proc.stderr == ''
+
+
+def test_quiet_with_hlwm_running(hlwm):
+    # even with --quiet, herbstclient must produce output
+    for flag in ['-q', '--quiet']:
+        cmd = [HC_PATH, flag, '-q', 'echo', 'test']
+        proc = subprocess.run(cmd,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                              universal_newlines=True)
+        assert proc.returncode == 0
+        assert proc.stdout == 'test\n'
+        assert proc.stderr == ''
+
+
+def test_missing_command():
+    for cmd in [[HC_PATH], [HC_PATH, '-q']]:
+        proc = subprocess.run(cmd,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                              universal_newlines=True)
+        assert proc.returncode != 0
+        assert proc.stdout == ''
+        assert re.search('missing', proc.stderr)
+        assert re.search('Usage: .*COMMAND', proc.stderr)
+
+
+def test_invalid_options():
+    # in the following, -c is an option, but requires a parameter
+    for cmd in [[HC_PATH, '-X'], [HC_PATH, '--invalid-longopt'], [HC_PATH, '-c']]:
+        proc = subprocess.run(cmd,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                              universal_newlines=True)
+        assert proc.returncode != 0
+        assert proc.stdout == ''
+        assert re.search('option', proc.stderr)
+
+
+def test_ensure_newline(hlwm):
+    # if the command does not print "\n", then it is added:
+    proc1 = subprocess.run([HC_PATH, 'get_attr', 'tags.count'],
+                           stdout=subprocess.PIPE,
+                           universal_newlines=True)
+    proc2 = subprocess.run([HC_PATH, '-n', 'get_attr', 'tags.count'],
+                           stdout=subprocess.PIPE,
+                           universal_newlines=True)
+    assert not proc2.stdout.endswith("\n")
+    assert proc1.stdout == proc2.stdout + "\n"
+
+    # if the command prints "\n", then nothing is changed:
+    proc1 = subprocess.run([HC_PATH, 'echo', 'test'],
+                           stdout=subprocess.PIPE,
+                           universal_newlines=True)
+    proc2 = subprocess.run([HC_PATH, '-n', 'echo', 'test'],
+                           stdout=subprocess.PIPE,
+                           universal_newlines=True)
+    assert proc1.stdout == "test\n"
+    assert proc2.stdout == "test\n"
