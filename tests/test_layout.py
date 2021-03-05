@@ -1420,6 +1420,100 @@ def test_shift_no_neighbour_frame(hlwm, split):
         .expect_stderr('No neighbour found')
 
 
+@pytest.mark.parametrize("cross_monitor_bounds", [True, False])
+def test_shift_to_other_monitor_if_allowed_by_setting(hlwm, cross_monitor_bounds):
+    hlwm.attr.settings.focus_crosses_monitor_boundaries = hlwm.bool(cross_monitor_bounds)
+    hlwm.call('add othertag')
+    # monitor 1 right of monitor 0
+    hlwm.call('set_monitors 800x600+0+0 800x600+800+0')
+
+    hlwm.call('rule focus=on switchtag=off')
+    winid, _ = hlwm.create_client()
+    # put another window on the other tag
+    hlwm.call('rule tag=othertag')
+    hlwm.create_client()
+    # but the 'winid' is focused on monitor 0
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '0'
+
+    command = ['shift', 'right']
+    if cross_monitor_bounds:
+        # 'winid' gets moved to the monitor on the right
+        hlwm.call(command)
+        assert hlwm.attr.monitors.focus.index() == '1'
+    else:
+        # the setting forbids that the window leaves the tag
+        hlwm.call_xfail(command) \
+            .expect_stderr("No neighbour found")
+    # in any case 'winid' is still focused
+    assert hlwm.attr.clients.focus.winid() == winid
+
+
+@pytest.mark.parametrize("floating", ['off', 'tag', 'window'])
+def test_shift_to_other_monitor_floating(hlwm, floating):
+    hlwm.call('add othertag')
+    # monitor 1 left of monitor 0
+    hlwm.call('set_monitors 800x600+800+0 800x600+0+0')
+    snap_gap = 8
+    hlwm.attr.settings.snap_gap = snap_gap
+    winid, _ = hlwm.create_client(position=(snap_gap, snap_gap))
+    if floating == 'tag':
+        hlwm.attr.tags[0].floating = 'on'
+    elif floating == 'window':
+        hlwm.attr.clients[winid].floating = 'on'
+    else:
+        assert floating == 'off'
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '0'
+
+    hlwm.call('shift left')
+
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '1'
+
+
+@pytest.mark.parametrize("floating", [True, False])
+def test_shift_stays_on_monitor(hlwm, floating):
+    hlwm.call('add othertag')
+    # monitor 1 below monitor 0
+    hlwm.call('set_monitors 800x600+0+0 800x600+0+800')
+    if floating:
+        hlwm.attr.tags.focus.floating = 'on'
+    else:
+        # create empty frame at the bottom
+        hlwm.call('split bottom')
+
+    winid, _ = hlwm.create_client(position=(0, 0))
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '0'
+
+    # the new client is far away from the bottom edge of monitor 0.
+    # so shifting it downwards makes it stay on monitor 0
+    hlwm.call('shift down')
+
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '0'
+
+    # now the client is on the bottom corner of the monitor.
+    # so shifting it again will make it enter monitor 1
+    hlwm.call('shift down')
+
+    assert hlwm.attr.clients.focus.winid() == winid
+    assert hlwm.attr.monitors.focus.index() == '1'
+
+
+def test_shift_no_monitor_in_direction(hlwm):
+    hlwm.call('add othertag')
+    # monitor 1 below monitor 0
+    hlwm.call('set_monitors 800x600+0+0 800x600+0+800')
+    winid, _ = hlwm.create_client()
+
+    for direction in ['left', 'right', 'up']:
+        hlwm.call_xfail(['shift', direction]) \
+            .expect_stderr('No neighbour found')
+        assert hlwm.attr.clients.focus.winid() == winid
+
+
 def test_focus_shift_completion(hlwm):
     for cmd in ['shift', 'focus']:
         directions = ['down', 'up', 'left', 'right']
