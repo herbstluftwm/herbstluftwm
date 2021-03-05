@@ -1390,3 +1390,136 @@ def test_focus_shift_completion(hlwm):
         # actually, passing both -i and -e makes no sense,
         # but ArgParse does not know that the flags exclude each other
         hlwm.command_has_all_args([cmd, 'down', '-i', '-e'])
+
+
+def test_frame_leaf_selection_change(hlwm):
+    """test the attribute FrameLeaf::selection"""
+    clients = hlwm.create_clients(3)
+
+    def layout(idx):
+        return f"(clients vertical:{idx} {clients[0]} {clients[1]} {clients[2]})"
+
+    hlwm.call(['load', layout(0)])
+
+    for i in range(0, 3):
+        hlwm.attr.tags.focus.tiling.focused_frame.selection = i
+        assert hlwm.attr.clients.focus.winid() == clients[i]
+        assert hlwm.call('dump').stdout == layout(i)
+
+
+def test_frame_split_selection_change(hlwm):
+    """test the attribute FrameSplit::selection"""
+    clients = hlwm.create_clients(2)
+
+    def layout(idx):
+        return normalize_layout_string(f"""
+            (split horizontal:0.5:{idx}
+                (clients vertical:0 {clients[0]})
+                (clients vertical:0 {clients[1]}))
+        """)
+
+    hlwm.call(['load', layout(0)])
+
+    for i in [0, 1]:
+        hlwm.attr.tags.focus.tiling.root.selection = i
+        assert hlwm.attr.clients.focus.winid() == clients[i]
+        assert hlwm.call('dump').stdout == layout(i)
+
+
+def test_frame_selection_invalid_arg(hlwm):
+    hlwm.create_clients(6)  # 6 clients
+    hlwm.call('split explode')  # 2 frames, so 3 clients per frame
+    hlwm.call('dump')
+
+    # for frame splits, the selection can be 0 or 1
+    hlwm.call('attr tags.focus.tiling.root.selection 0')  # no failure
+    hlwm.call('attr tags.focus.tiling.root.selection 1')  # no failure
+    hlwm.call_xfail('attr tags.focus.tiling.root.selection -1') \
+        .expect_stderr('out of range')
+    hlwm.call_xfail('attr tags.focus.tiling.root.selection 2') \
+        .expect_stderr('out of range')
+
+    # for frame leafs, the selection only must be lower than the client count
+    hlwm.call('attr tags.focus.tiling.focused_frame.selection 0')  # no failure
+    hlwm.call('attr tags.focus.tiling.focused_frame.selection 1')  # no failure
+    hlwm.call('attr tags.focus.tiling.focused_frame.selection 2')  # no failure
+    hlwm.call_xfail('attr tags.focus.tiling.focused_frame.selection -1') \
+        .expect_stderr('out of range')
+    hlwm.call_xfail('attr tags.focus.tiling.focused_frame.selection 3') \
+        .expect_stderr('out of range')
+
+
+def test_frame_split_attribute_size_changes(hlwm, x11):
+    """
+    Test that changing the attributes 'fraction' or 'split_type' of FrameSplit
+    affects window sizes
+    """
+    # two clients side by side:
+    win1, winid1 = x11.create_client()
+    win2, winid2 = x11.create_client()
+    layout = f'(split horizontal:0.5:0 (clients max:0 {winid1}) (clients max:0 {winid2}))'
+    layout = normalize_layout_string(layout)
+    for attr, value in [('fraction', '0.6'), ('split_type', 'vertical')]:
+        hlwm.call(['load', layout])
+        x11.sync_with_hlwm()
+        width1 = win1.get_geometry().width
+        width2 = win2.get_geometry().width
+
+        hlwm.attr.tags.focus.tiling.root[attr] = value
+        assert hlwm.attr.tags.focus.tiling.root[attr]() == value
+        assert hlwm.call('dump').stdout.strip() != layout
+
+        x11.sync_with_hlwm()
+        # both updated attributes must lead to an increas of width of
+        # the first client:
+        assert width1 < win1.get_geometry().width
+        assert width2 != win2.get_geometry().width
+
+
+def test_frame_split_fraction_invalid_arg(hlwm):
+    hlwm.call(['load', '(split horizontal:0.5:0 (clients max:0) (clients max:0))'])
+
+    # test values that clamp to 0.1
+    for val in ['0.0', '0', '-0.1', '0.05', '0.1', '0.09', '-5', '-0.11']:
+        # reset the fraction
+        hlwm.attr.tags.focus.tiling.root.fraction = '0.5'
+        assert hlwm.attr.tags.focus.tiling.root.fraction() == '0.5'
+
+        hlwm.attr.tags.focus.tiling.root.fraction = val
+        assert hlwm.attr.tags.focus.tiling.root.fraction() == '0.1'
+
+    # test values that clamp to 0.9
+    for val in ['12', '1', '0.9', '0.95', '0.9', '0.91', '12312', '+23']:
+        # reset the fraction
+        hlwm.attr.tags.focus.tiling.root.fraction = '0.87'
+        assert hlwm.attr.tags.focus.tiling.root.fraction() == '0.87'
+
+        hlwm.attr.tags.focus.tiling.root.fraction = val
+        assert hlwm.attr.tags.focus.tiling.root.fraction() == '0.9'
+
+
+def test_frame_leaf_algorithm_change(hlwm, x11):
+    """
+    Test that changing the layout algorithm affects window sizes
+    """
+    # two clients below each other
+    win1, winid1 = x11.create_client()
+    win2, winid2 = x11.create_client()
+    hlwm.call('set_layout vertical')
+
+    geom1_before = win1.get_geometry()
+    geom2_before = win2.get_geometry()
+    assert geom1_before.width == geom2_before.width
+    assert geom1_before.height == geom2_before.height
+
+    # put them side by side
+    hlwm.attr.tags.focus.tiling.root.algorithm = 'horizontal'
+
+    x11.sync_with_hlwm()
+    geom1_now = win1.get_geometry()
+    geom2_now = win2.get_geometry()
+    # side by side implies: width decreases but height increases
+    assert geom1_before.width > geom1_now.width
+    assert geom1_before.height < geom1_now.height
+    assert geom1_now.width == geom2_now.width
+    assert geom1_now.height == geom2_now.height
