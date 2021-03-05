@@ -230,6 +230,7 @@ int main(int argc, char* argv[]) {
     if ((argc - arg_index == 0) && !g_wait_for_hook) {
         // if there are no non-option arguments, and no --idle/--wait, display
         // the help and exit
+        fprintf(stderr, "Error: COMMAND or --wait or --idle missing.\n");
         print_help(argv[0], stderr);
         exit(EXIT_FAILURE);
     }
