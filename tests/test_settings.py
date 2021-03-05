@@ -72,12 +72,61 @@ def test_cycle_value_loop(hlwm):
 
 def test_default_frame_layout_value_too_high(hlwm):
     hlwm.call_xfail('set default_frame_layout 99') \
-        .expect_stderr('set: Invalid value "99" for setting "default_frame_layout": layout number must be at most 3')
+        .expect_stderr('set: Invalid value "99" for setting "default_frame_layout": .*out of range')
 
 
 def test_default_frame_layout_value_negative(hlwm):
     hlwm.call_xfail('set default_frame_layout -23') \
-        .expect_stderr('set: Invalid value "-23" for setting "default_frame_layout": invalid argument: negative number is out of range')
+        .expect_stderr('set: Invalid value "-23" for setting "default_frame_layout": .*Expecting.*vertical')
+
+
+def test_default_frame_layout_after_split(hlwm):
+    """When splitting a FrameLeaf, then the new frame
+    inherits the layout algorithm. However, when a FrameSplit is
+    split, then default_frame_layout is used.
+    """
+    old_default = hlwm.attr.settings.default_frame_layout()
+    new_default = 'grid'
+    assert old_default != new_default, \
+        "the test is vacuous if the default didn't change"
+    hlwm.attr.settings.default_frame_layout = new_default
+    hlwm.call('split right')
+
+    # split the root frame
+    hlwm.call(['split', 'bottom', '0.5', ''])
+
+    # this new frame has the new default frame layout, but the two frames
+    # on the top still have the original algorithm:
+    assert hlwm.attr.tags.focus.tiling.root[0][0].algorithm() == old_default
+    assert hlwm.attr.tags.focus.tiling.root[0][1].algorithm() == old_default
+    assert hlwm.attr.tags.focus.tiling.root[1].algorithm() == new_default
+
+
+def test_default_frame_layout_on_new_tag(hlwm):
+    old_default = hlwm.attr.settings.default_frame_layout()
+    new_default = 'grid'
+    assert old_default != new_default, \
+        "the test is vacuous if the default didn't change"
+    hlwm.attr.settings.default_frame_layout = new_default
+
+    hlwm.call('add newtag')
+
+    assert hlwm.attr.tags[1].tiling.root.algorithm() == new_default
+    assert hlwm.attr.tags[0].tiling.root.algorithm() == old_default
+
+
+def test_default_frame_layout_index_as_name(hlwm):
+    """test backwards compatibility of default_frame_layout"""
+    layout_with_index_1 = 'horizontal'
+    assert hlwm.attr.settings.default_frame_layout() != layout_with_index_1
+
+    hlwm.attr.settings.default_frame_layout = '1'
+
+    assert hlwm.attr.settings.default_frame_layout() == layout_with_index_1
+
+
+def test_default_frame_layout_completion(hlwm):
+    assert 'grid' in hlwm.complete(['set', 'default_frame_layout'])
 
 
 def test_set_invalid_setting(hlwm):

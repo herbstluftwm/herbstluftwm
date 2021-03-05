@@ -394,6 +394,8 @@ class ObjectInformation:
                 # assume that the next token in the list 'cpp_token' is a
                 # token group
                 cpp_token = cpp_token[4].enclosed_tokens[0]
+            if cpp_token[0:3] == ['LayoutAlgorithm', ':', ':']:
+                cpp_token = cpp_token[3]
             if cpp_token == 'WINDOW_MANAGER_NAME':
                 cpp_token = 'herbstluftwm'
             if cpp_token[0:1] == '"':

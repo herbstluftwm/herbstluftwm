@@ -243,7 +243,7 @@ int FrameTree::rotateCommand() {
 }
 
 template<>
-Finite<FrameTree::MirrorDirection>::ValueList Finite<FrameTree::MirrorDirection>::values = {
+Finite<FrameTree::MirrorDirection>::ValueList Finite<FrameTree::MirrorDirection>::values = ValueListPlain {
     { FrameTree::MirrorDirection::Horizontal, "horizontal" },
     { FrameTree::MirrorDirection::Vertical, "vertical" },
     { FrameTree::MirrorDirection::Both, "both" },

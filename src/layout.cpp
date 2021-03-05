@@ -45,11 +45,7 @@ FrameLeaf::FrameLeaf(HSTag* tag, Settings* settings, weak_ptr<FrameSplit> parent
     , selectionAttr_(this, "selection", &FrameLeaf::getSelection)
     , algorithmAttr_(this, "algorithm", &FrameLeaf::getLayout)
 {
-    auto l = settings->default_frame_layout();
-    if (l >= layoutAlgorithmCount()) {
-        l = 0;
-    }
-    layout = (LayoutAlgorithm) l;
+    layout = settings->default_frame_layout();
 
     decoration = new FrameDecoration(*this, tag, settings);
 }
