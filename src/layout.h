@@ -53,8 +53,6 @@ public:
     // count the number of splits to the root with alignment "align"
     virtual int splitsToRoot(SplitAlign align);
 
-    HSTag* getTag() { return tag_; };
-
     void setVisibleRecursive(bool visible);
 
     /*! a case distinction on the type of tree node. If `this` is a
@@ -85,6 +83,7 @@ public: // soon will be protected:
     virtual std::shared_ptr<FrameSplit> isSplit() { return std::shared_ptr<FrameSplit>(); };
     virtual std::shared_ptr<FrameLeaf> isLeaf() { return std::shared_ptr<FrameLeaf>(); };
 protected:
+    void relayout();
     void foreachClient(ClientAction action);
     HSTag* tag_;
     Settings* settings_;
@@ -136,6 +135,8 @@ public:
     DynAttribute_<int> selectionAttr_;
     DynAttribute_<LayoutAlgorithm> algorithmAttr_;
 private:
+    std::string userSetsLayout(LayoutAlgorithm algo);
+    std::string userSetsSelection(int index);
     friend class FrameDecoration;
     friend class FrameTree;
     // layout algorithms
@@ -175,19 +176,23 @@ public:
     void swapChildren();
     void adjustFraction(FixPrecDec delta);
     void setFraction(FixPrecDec fraction);
-    FixPrecDec getFraction() const { return fraction_; }
+    FixPrecDec getFraction() { return fraction_; }
     static FixPrecDec clampFraction(FixPrecDec fraction);
     std::shared_ptr<FrameSplit> thisSplit();
     std::shared_ptr<FrameSplit> isSplit() override { return thisSplit(); }
     SplitAlign getAlign() { return align_; }
     void swapSelection() { selection_ = selection_ == 0 ? 1 : 0; }
     void setSelection(int s) { selection_ = s; }
+    int getSelection() { return selection_; }
     DynAttribute_<SplitAlign> splitTypeAttr_;
     DynAttribute_<FixPrecDec> fractionAttr_;
     DynAttribute_<int> selectionAttr_;
     Link_<Frame> aLink_;
     Link_<Frame> bLink_;
 private:
+    std::string userSetsSplitType(SplitAlign align);
+    std::string userSetsFraction(FixPrecDec fraction);
+    std::string userSetsSelection(int idx);
     friend class FrameTree;
 };
 
