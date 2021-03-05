@@ -75,9 +75,11 @@ def test_default_frame_layout_value_too_high(hlwm):
         .expect_stderr('set: Invalid value "99" for setting "default_frame_layout": .*out of range')
 
 
-def test_default_frame_layout_value_negative(hlwm):
+def test_default_frame_layout_value_invalid_value(hlwm):
     hlwm.call_xfail('set default_frame_layout -23') \
         .expect_stderr('set: Invalid value "-23" for setting "default_frame_layout": .*Expecting.*vertical')
+    hlwm.call_xfail('set default_frame_layout foobar') \
+        .expect_stderr('set: Invalid value "foobar" for setting "default_frame_layout": .*Expecting.*vertical')
 
 
 def test_default_frame_layout_after_split(hlwm):
