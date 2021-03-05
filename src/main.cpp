@@ -375,11 +375,13 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
     int exit_on_xerror = g.exitOnXlibError;
     int noTransparency = !g.trueTransparency;
     int no_tag_import = 0;
+    int replace = 0;
     struct option long_options[] = {
         {"version",         0, nullptr, 'v'},
         {"help",            0, nullptr, 'h'},
         {"autostart",       1, nullptr, 'c'},
         {"locked",          0, nullptr, 'l'},
+        {"replace",         0, &replace, 1},
         {"no-transparency", 0, &noTransparency, 1},
         {"exit-on-xerror",  0, &exit_on_xerror, 1},
         {"no-tag-import",   0, &no_tag_import, 1},
@@ -435,6 +437,7 @@ static void parse_arguments(int argc, char** argv, Globals& g) {
                 exit(EXIT_FAILURE);
         }
     }
+    g.replaceExistingWm = replace != 0;
     g.exitOnXlibError = exit_on_xerror != 0;
     g.importTagsFromEwmh = (no_tag_import == 0);
     g.trueTransparency = !noTransparency;
@@ -482,8 +485,8 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
     Ewmh* ewmh = new Ewmh(*X);
-    if (X->otherWmListensRoot()) {
-        std::cerr << "herbstluftwm: another window manager is already running" << endl;
+    if (!ewmh->acquireScreenSelection(g.replaceExistingWm) || X->otherWmListensRoot()) {
+        std::cerr << "herbstluftwm: another window manager is already running (try --replace)" << endl;
         delete X;
         exit(EXIT_FAILURE);
     }

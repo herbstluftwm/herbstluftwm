@@ -28,6 +28,34 @@ def test_herbstluftwm_already_running(hlwm):
     assert re.search(r'another window manager is already running', result.stderr)
 
 
+def test_herbstluftwm_quit(hlwm_spawner, xvfb):
+    hlwm_proc = hlwm_spawner(display=xvfb.display)
+    hlwm = conftest.HlwmBridge(xvfb.display, hlwm_proc)
+
+    assert hlwm.call('echo ping').stdout == 'ping\n'
+
+    hlwm.call('quit')
+
+    hlwm_proc.proc.wait(10)
+
+
+def test_herbstluftwm_replace(hlwm_spawner, xvfb):
+    hlwm_proc_old = hlwm_spawner(display=xvfb.display)
+    hlwm_old = conftest.HlwmBridge(xvfb.display, hlwm_proc_old)
+    assert hlwm_old.call('echo ping').stdout == 'ping\n'
+
+    hlwm_proc_new = hlwm_spawner(display=xvfb.display, args=['--replace'])
+
+    # --replace should make the old hlwm process shut down:
+    hlwm_proc_old.proc.wait(10)
+
+    # connect to new process
+    hlwm_new = conftest.HlwmBridge(xvfb.display, hlwm_proc_new)
+    assert hlwm_new.call('echo ping').stdout == 'ping\n'
+
+    hlwm_proc_new.shutdown()
+
+
 def test_herbstluftwm_default_autostart(hlwm):
     expected_tags = [str(tag) for tag in range(1, 10)]
     default_autostart = os.path.join(os.path.abspath(BINDIR), 'share/autostart')

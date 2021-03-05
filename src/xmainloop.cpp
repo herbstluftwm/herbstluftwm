@@ -69,7 +69,7 @@ XMainLoop::XMainLoop(XConnection& X, Root* root)
     handlerTable_[ MotionNotify      ] = EH(&XMainLoop::motionnotify);
     handlerTable_[ PropertyNotify    ] = EH(&XMainLoop::propertynotify);
     handlerTable_[ UnmapNotify       ] = EH(&XMainLoop::unmapnotify);
-
+    handlerTable_[ SelectionClear    ] = EH(&XMainLoop::selectionclear);
     root_->monitors->dropEnterNotifyEvents
             .connect(this, &XMainLoop::dropEnterNotifyEvents);
 }
@@ -496,6 +496,16 @@ void XMainLoop::maprequest(XMapRequestEvent* mapreq) {
                 XMapWindow(X_.display(), window);
             }
         }
+    }
+}
+
+void XMainLoop::selectionclear(XSelectionClearEvent* event)
+{
+    if (event->selection == root_->ewmh_.windowManagerSelection()
+        && event->window == root_->ewmh_.windowManagerWindow())
+    {
+        HSDebug("Getting replaced by another window manager. exiting.");
+        quit();
     }
 }
 

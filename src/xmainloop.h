@@ -40,6 +40,7 @@ private:
     void motionnotify(XMotionEvent* event);
     void mapnotify(XMapEvent* event);
     void maprequest(XMapRequestEvent* mapreq);
+    void selectionclear(XSelectionClearEvent* event);
     void propertynotify(XPropertyEvent* event);
     void unmapnotify(XUnmapEvent* event);
 
